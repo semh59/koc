@@ -606,22 +606,31 @@ function dayOptions(){
 }
 const fday=()=>($("#fday")||{}).value||dayKey();
 
+let kiloOk=null;
 function sheetKilo(){
-  openSheet(`<h3>Kilo ekle</h3><input class="in num" id="fv" inputmode="decimal" placeholder="84,3" autocomplete="off" autofocus>${dayOptions()}<button class="btn" data-go="kilo">Kaydet</button>`);
+  kiloOk=null;openSheet(`<h3>Kilo ekle</h3><input class="in num" id="fv" inputmode="decimal" placeholder="84,3" autocomplete="off" autofocus>${dayOptions()}<div class="hint" id="kwarn" role="alert"></div><button class="btn" data-go="kilo">Kaydet</button>`);
 }
 function goKilo(){
   const v=num($("#fv").value);
   if(!(v>=20&&v<=400))return toast("Kiloyu kg olarak yaz, örneğin 84,3");
   const day=fday(),m=weights(),ds=Object.keys(m).filter(k=>k<day).sort(),prev=ds.length?m[ds[ds.length-1]]:null;
+  if(prev!=null&&Math.abs(v-prev)>5&&kiloOk!==v){kiloOk=v;$("#kwarn").textContent=`Son tartın ${fmt(prev)} kg idi, ${fmtS(v-prev)} kg fark var. Yanlış yazmış olabilir misin? Doğruysa tekrar Kaydet'e dokun.`;return}
   const e=add("kilo",v,"",day);closeSheet();render();
   let msg=`${fmt(v)} kg kaydedildi`;
   if(prev!=null)msg+=`, öncekine göre ${fmtS(v-prev)} kg`;
   toast(msg,e.id);
 }
+function repeatYesterday(){
+  const y=keyOff(-1),src=of("yemek",y);
+  if(!src.length)return toast("Dün kayıtlı yemek yok");
+  const ids=src.map(e=>add("yemek",e.v,e.text,dayKey()).id);
+  closeSheet();render();
+  toast(`Dünkü ${ids.length} yemek bugüne eklendi`,()=>{S.entries=S.entries.filter(e=>!ids.includes(e.id));save();render()});
+}
 function sheetYemek(){
   const cnt={};for(const e of S.entries)if(e.type==="yemek"&&e.text){const k=tr(e.text);(cnt[k]=cnt[k]||{n:0,text:e.text,v:e.v}).n++;cnt[k].v=e.v}
   const fav=Object.values(cnt).sort((a,b)=>b.n-a.n).slice(0,6);favList=fav;
-  openSheet(`<h3>Yemek ekle</h3>${isNative()&&BS()?`<button class="btn ghost" data-act="barkod" style="margin-bottom:8px">📷 Barkod okut</button>`:""}<input class="in" id="fq" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off" autofocus><div id="flist" class="plist"></div>${fav.length?`<div class="lbl">Sık yediklerin</div><div class="chips">${fav.map((f,i)=>`<button class="chip" data-fav="${i}">${esc(f.text)}${f.v?" "+Math.round(f.v):""}</button>`).join("")}</div>`:""}
+  openSheet(`<h3>Yemek ekle</h3>${of("yemek",keyOff(-1)).length?`<button class="btn ghost" data-act="dunku" style="margin-bottom:8px">↺ Dünkünü tekrarla (${of("yemek",keyOff(-1)).length} kayıt)</button>`:""}${isNative()&&BS()?`<button class="btn ghost" data-act="barkod" style="margin-bottom:8px">📷 Barkod okut</button>`:""}<input class="in" id="fq" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off" autofocus><div id="flist" class="plist"></div>${fav.length?`<div class="lbl">Sık yediklerin</div><div class="chips">${fav.map((f,i)=>`<button class="chip" data-fav="${i}">${esc(f.text)}${f.v?" "+Math.round(f.v):""}</button>`).join("")}</div>`:""}
   <div class="lbl">Ya da kendin yaz</div><input class="in" id="ft" placeholder="Ne yedin?" autocomplete="off"><input class="in num" id="fv" inputmode="numeric" placeholder="Kalori (isteğe bağlı)">${dayOptions()}<button class="btn" data-go="yemek">Kaydet</button>`);
 }
 let curFood=null,curPor=0,foodAskQ="";
@@ -757,8 +766,14 @@ async function goYukle(){
 }
 
 /* ---------- bildirimler (yalnızca APK) ---------- */
+const WATER_REM=[2,3,4];
 const SCHED_DAYS=30;let lastSched=0;
 const LN=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.LocalNotifications;
+async function muteWaterToday(){
+  const ln=LN(),t=dayKey();
+  if(!ln||sum("su",t,t)<S.settings.waterMl)return;
+  try{await ln.cancel({notifications:WATER_REM.map(id=>({id:id*100}))})}catch(e){}
+}
 async function scheduleReminders(){
   const ln=LN();if(!ln)return "web";
   try{
@@ -769,9 +784,11 @@ async function scheduleReminders(){
     if(pend.notifications.length)await ln.cancel({notifications:pend.notifications.map(n=>({id:n.id}))});
     /* Eklentinin günlük tekrarı ilk bildirimden sonra Doze'da ertelenen bir alarm kurar. Bu yüzden her günü ayrı, uyku modunu delen tek seferlik alarmla kuruyoruz. */
     const list=[],now=Date.now();
+    const t0=dayKey(),waterDone=sum("su",t0,t0)>=S.settings.waterMl;
     for(const r of S.settings.reminders.filter(r=>r.on)){
       const [h,m]=r.t.split(":").map(Number);
       for(let i=0;i<SCHED_DAYS;i++){
+        if(i===0&&waterDone&&WATER_REM.includes(r.id))continue;
         const at=addDays(i);at.setHours(h,m,0,0);
         if(at.getTime()>now+5000)list.push({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}});
       }
@@ -879,8 +896,9 @@ document.addEventListener("click",ev=>{
   if(d.fp!==undefined){curPor=+d.fp;document.querySelectorAll("#fpc .chip").forEach(c=>c.setAttribute("aria-pressed",c===el));foodPreview();return}
   if(d.fav!==undefined){const f=favList[+d.fav];if(f){$("#ft").value=f.text;$("#fv").value=f.v?String(Math.round(f.v)):""}return}
   if(d.act){
-    if(d.act==="su"){const e=add("su",S.settings.glass);render();const t=dayKey(),top=sum("su",t,t);toast(`+${S.settings.glass} ml, bugün ${Math.round(top)} / ${S.settings.waterMl} ml`+(top-S.settings.glass<S.settings.waterMl&&top>=S.settings.waterMl?". Günlük hedef tamam":""),e.id)}
+    if(d.act==="su"){const e=add("su",S.settings.glass);render();muteWaterToday();const t=dayKey(),top=sum("su",t,t);toast(`+${S.settings.glass} ml, bugün ${Math.round(top)} / ${S.settings.waterMl} ml`+(top-S.settings.glass<S.settings.waterMl&&top>=S.settings.waterMl?". Günlük hedef tamam":""),e.id)}
     else if(d.act==="kilo")sheetKilo();
+    else if(d.act==="dunku")repeatYesterday();
     else if(d.act==="yemek")sheetYemek();
     else if(d.act==="spor")sheetSpor();
     else if(d.act==="not")sheetNot();
