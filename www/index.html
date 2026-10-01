@@ -539,7 +539,7 @@ function viewAyar(){
     ${fld("glass","Bir bardak (ml)",st.glass,"Su düğmesinin eklediği miktar","numeric")}
     ${fld("sportWeek","Haftalık spor (dk)",st.sportWeek,"","numeric")}
   </div>
-  <h2>Hatırlatmalar</h2><div class="card"><div class="status">${esc(nf)}</div>
+  <h2>Hatırlatmalar</h2><div class="card"><div class="status">${esc(nf)}</div>${notifDiag?`<p class="hint" style="padding:0 0 8px">${esc(notifDiag)}</p>`:""}${isNative()?`<div class="btns"><button class="btn ghost" data-act="bildirimtest">Test bildirimi gönder</button></div>`:""}
     ${st.reminders.map(r=>`<div class="rem"><span class="nm">${esc(r.name)}</span><input type="time" value="${r.t}" data-rt="${r.id}" aria-label="${esc(r.name)} saati"><label class="sw"><input type="checkbox" ${r.on?"checked":""} data-ro="${r.id}" aria-label="${esc(r.name)} açık"><span></span></label></div>`).join("")}
     <p class="hint">Koç bağlıysa sabah, öğleden sonra ve akşam bildirim metinlerini her gün yeniden yazar. Bağlı değilse sabit metinler kullanılır.</p></div>
   ${viewProviders()}
@@ -677,6 +677,19 @@ async function scheduleReminders(){
   }catch(e){return "Bildirimler kurulamadı: "+(e&&e.message||e)}
 }
 function setNotif(s){notifStatus=s;if(tab==="ayar")render()}
+let notifDiag="";
+async function notifTest(){
+  const ln=LN();if(!ln)return toast("Bildirimler yalnızca telefondaki uygulamada çalışır");
+  try{
+    const p=await ln.checkPermissions();
+    let ex="bilinmiyor";try{ex=(await ln.checkExactNotificationSetting()).exact_alarm}catch(e){}
+    const pend=(await ln.getPending()).notifications.length;
+    notifDiag=`Bildirim izni: ${p.display}. Tam saat alarmı: ${ex}. Kurulu hatırlatma: ${pend}.`;
+    if(p.display!=="granted"){render();return toast("Bildirim izni yok. Telefon ayarlarından NeoWell için bildirimleri aç")}
+    await ln.schedule({notifications:[{id:99,title:"NeoWell",body:"Test bildirimi çalışıyor",schedule:{at:new Date(Date.now()+5000),allowWhileIdle:true}}]});
+    render();toast("5 saniye içinde bildirim gelmeli. İstersen uygulamadan çık");
+  }catch(e){notifDiag="Hata: "+(e&&e.message||e);render()}
+}
 
 /* ---------- olaylar ---------- */
 document.addEventListener("click",ev=>{
@@ -705,6 +718,7 @@ document.addEventListener("click",ev=>{
     else if(d.act==="spor")sheetSpor();
     else if(d.act==="not")sheetNot();
     else if(d.act==="yedek")sheetYedek();
+    else if(d.act==="bildirimtest")notifTest();
     else if(d.act==="profil"){tab="ayar";render();window.scrollTo(0,0)}
     else if(d.act==="saglik")openSheet(`<h3>Sağlık notların</h3><div class="lbl">Hamilelik, hastalık, ilaç, yeme bozukluğu geçmişi gibi koçun bilmesi gerekenler.</div><textarea class="in" id="hn" maxlength="500" autofocus>${esc(S.settings.healthNote)}</textarea><button class="btn" data-go="saglik">Kaydet</button>`);
     else if(d.act.startsWith("uygula:")){S.settings.kcal=+d.act.slice(7);save();render();toast(`Kalori hedefi ${S.settings.kcal} kcal oldu`)}
