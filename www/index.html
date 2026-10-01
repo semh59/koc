@@ -333,7 +333,8 @@ const VR={bpSysHi:[80,300,true],bpDiaHi:[40,200,true],bpSysLo:[50,300,true],bpDi
 const RANGES={...VR,goalKg:[20,400,false],kcal:[800,8000,true],waterMl:[500,10000,true],glass:[50,1500,true],sportWeek:[10,3000,true],stepGoal:[1000,100000,true],heightCm:[100,250,true],age:[10,100,true]};
 const SETLBL={goalKg:"Hedef kilo",kcal:"Günlük kalori",waterMl:"Günlük su",glass:"Bir bardak",sportWeek:"Haftalık spor",stepGoal:"Günlük adım",heightCm:"Boy",age:"Yaş",bpSysHi:"Büyük tansiyon üst sınır",bpDiaHi:"Küçük tansiyon üst sınır",bpSysLo:"Büyük tansiyon alt sınır",bpDiaLo:"Küçük tansiyon alt sınır",gFastLo:"Açlık alt sınır",gFastHi:"Açlık üst sınır",gPostLo:"Yemek sonrası alt sınır",gPostHi:"Yemek sonrası üst sınır"};
 const ZEROOK=["goalKg","kcal","heightCm","age",...Object.keys(VR)];
-const {copyNutr}=LogLib;
+const {copyNutr,NUTR}=LogLib;
+const NLBL={p:"protein",c:"karbonhidrat",f:"yağ",fb:"lif",sg:"şeker",na:"sodyum"},NUNIT=k=>k==="na"?"mg":"g";
 const TYPES=["su","kilo","yemek","spor","not","adim"];
 const dayOk=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s);
 const timeOk=s=>typeof s==="string"&&/^([01]\d|2[0-3]):[0-5]\d$/.test(s);
@@ -373,8 +374,8 @@ function cleanMyFoods(arr){
   for(const x of (Array.isArray(arr)?arr:[]).slice(0,200)){
     if(!x||typeof x.n!=="string"||!x.n.trim()||!(x.k>=0&&x.k<=5000))continue;
     const n=x.n.trim().slice(0,60),key=tr(n);if(seen.has(key))continue;seen.add(key);
-    const f={n,k:Math.round(x.k*10)/10};if(Number.isFinite(x.p)&&x.p>=0&&x.p<=300)f.p=x.p;
-    for(const m of ["c","f"])if(Number.isFinite(x[m])&&x[m]>=0&&x[m]<=100)f[m]=x[m];
+    const f={n,k:Math.round(x.k*10)/10},lim={p:300,na:40000};
+    for(const m of NUTR)if(Number.isFinite(x[m])&&x[m]>=0&&x[m]<=(lim[m]||100))f[m]=x[m];
     if(typeof x.b==="string"&&/^\d{8,14}$/.test(x.b))f.b=x.b;
     if(x.src==="off")f.src="off";
     if(Array.isArray(x.u)){const u=x.u.filter(q=>Array.isArray(q)&&typeof q[0]==="string"&&q[1]>0&&q[1]<=5000).slice(0,4).map(q=>[q[0].slice(0,40),q[1]]);if(u.length)f.u=u}
@@ -542,6 +543,8 @@ function viewBugun(){
   const meals=S.entries.filter(e=>e.type==="yemek"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
   const pr=cur!=null?Algo.proteinRange(cur):null;
   const macro=meals.some(e=>e.p||e.c||e.f)?`<div class="macro num">Protein <b>${Math.round(mac("p"))}</b>${pr?` / ${pr[0]}–${pr[1]}`:""} g${meals.some(e=>e.c!=null||e.f!=null)?` · Karbonhidrat <b>${Math.round(mac("c"))}</b> g · Yağ <b>${Math.round(mac("f"))}</b> g`:""}</div>`:"";
+  const fm=meals.filter(e=>["fb","sg","na"].some(k=>e[k]!=null));
+  const micro=fm.length?`<div class="macro num">${["fb","sg","na"].map(k=>`${NLBL[k][0].toUpperCase()+NLBL[k].slice(1)} <b>${Math.round(mac(k))}</b> ${NUNIT(k)}`).join(" · ")} (${fm.length}/${meals.length} öğünde veri var)</div>`:"";
   const actions=`<div class="actions">
     <button class="act su" data-act="su"><span class="ic">💧</span>+${st.glass}</button>
     <button class="act" data-act="kilo"><span class="ic">⚖️</span>Kilo</button>
@@ -562,7 +565,7 @@ function viewBugun(){
   const oemB=isNative()&&oemXiaomi()&&!st.oemDone?`<div class="banner"><b>Hatırlatmalar için bir kez ayar gerekli</b><p>Telefon uygulamayı kapatınca hatırlatmalar gelmeyebilir. İki izin verince düzelir.</p><button class="btn" data-act="oem">Ayarla</button></div>`:"";
   const a7=(a,b)=>sum("adim",keyOff(a),keyOff(b));
   const stW=sOn&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?`<div class="banner"><b>Adım sayımı durmuş olabilir</b><p>Telefon adım sayarı arka planda kapatmış olabilir. Pil ayarında NeoWell'e kısıtlama koyma.</p><div class="lbtns"><button class="btn" data-act="adimduz">Ayarla</button><button class="btn ghost" data-act="adimgizle">Kapat</button></div></div>`:"";
-  return `${stB}${oemB}${stW}${bk}${weight}<div class="coach">${esc(coach())}</div>${rings}${macro}${actions}${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
+  return `${stB}${oemB}${stW}${bk}${weight}<div class="coach">${esc(coach())}</div>${rings}${macro}${micro}${actions}${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
 }
 
 function viewTrend(){
@@ -708,7 +711,7 @@ function goTpl(){
   S.mealTpl=LogLib.cleanTpl([...S.mealTpl,{id:Math.max(0,...S.mealTpl.map(t=>t.id))+1,n,items}]);save();closeSheet();toast(`"${n}" şablonu kaydedildi`);
 }
 let curFood=null,curPor=0,foodAskQ="";
-const allFoods=()=>S.myFoods.map(m=>({n:m.n,k:m.k,p:m.p==null?null:m.p,c:m.c==null?null:m.c,f:m.f==null?null:m.f,u:m.u||[["1 porsiyon",100]],my:true,b:m.b,src:m.src})).concat(FOODS);
+const allFoods=()=>S.myFoods.map(m=>Object.assign({n:m.n,k:m.k,u:m.u||[["1 porsiyon",100]],my:true,b:m.b,src:m.src},...NUTR.map(k=>({[k]:m[k]==null?null:m[k]})))).concat(FOODS);
 const foodListHtml=q=>{const L=allFoods(),ask=q.trim().length>=2?`<button class="prow" data-c="askfood"><span><b>"${esc(q.trim())}" için Koç'a sor</b><span class="mut sm">Yapay zekâ tahmin eder, sonra listene ekleyebilirsin</span></span><span class="plus">✨</span></button>`:"";return foodSearch(q,8,L).map(i=>{const f=L[i];return `<button class="prow" data-food="${i}"><span><b>${esc(f.n)}</b><span class="mut sm">${f.my?(f.u.length>1||f.u[0][1]!==100?`Benim ürünüm, 100 g: ${f.k} kcal`:`Benim besinim, 1 porsiyon: ${f.k} kcal`):`100 g: ${f.k} kcal, protein ${fmt(f.p,0)} g`}</span></span><span class="plus">+</span></button>`}).join("")+ask};
 function sheetPorsiyon(i,food){
   curFood=food||allFoods()[i];curPor=0;
@@ -720,11 +723,11 @@ function sheetPorsiyon(i,food){
 }
 function foodCalc(){
   const q=num($("#fqty").value),g=curFood.u[curPor][1]*(q>0&&q<=20?q:0),r=x=>x==null?null:x*g/100;
-  return {q,g,k:r(curFood.k),p:r(curFood.p),c:r(curFood.c),f:r(curFood.f)};
+  return Object.assign({q,g,k:r(curFood.k)},...NUTR.map(k=>({[k]:r(curFood[k])})));
 }
 function foodPreview(){
   const x=foodCalc();
-  $("#fprev").textContent=x.g?[`${Math.round(x.k)} kcal`,x.p!=null&&`protein ${fmt(x.p)} g`,x.c!=null&&`karbonhidrat ${fmt(x.c)} g`,x.f!=null&&`yağ ${fmt(x.f)} g`].filter(Boolean).join(" · "):"Miktarı 0,1 ile 20 arasında yaz";
+  $("#fprev").textContent=x.g?[`${Math.round(x.k)} kcal`,...NUTR.map(k=>x[k]!=null&&`${NLBL[k]} ${fmt(x[k])} ${NUNIT(k)}`)].filter(Boolean).join(" · "):"Miktarı 0,1 ile 20 arasında yaz";
 }
 const BS=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.BarcodeScanner;
 async function barkodOku(){
@@ -764,7 +767,7 @@ function goBesin(){
   const x=foodCalc();if(!x.g)return toast("Miktarı 0,1 ile 20 arasında yaz");
   const label=curFood.u[curPor][0],text=`${curFood.n}, ${x.q===1?"":fmt(x.q,x.q%1?1:0)+" × "}${label}`;
   const e=add("yemek",Math.round(x.k),text,fday());
-  for(const [k,v] of [["p",x.p],["c",x.c],["f",x.f]])if(v!=null)e[k]=Math.round(v*10)/10;
+  for(const k of NUTR)if(x[k]!=null)e[k]=Math.round(x[k]*10)/10;
   save();
   closeSheet();render();
   const t=dayKey(),top=sum("yemek",t,t),g=S.settings.kcal;
