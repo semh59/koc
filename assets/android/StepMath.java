@@ -10,7 +10,7 @@ final class StepMath {
     }
 
     private static long total(State s, float counter) {
-        return Math.max(0, Math.round(s.carry + counter - s.base));
+        return Math.max(0L, Math.round((double) (s.carry + counter - s.base)));
     }
 
     /** Telefon yeniden başladıysa sayaç sıfırlanır: o ana kadarki adımlar carry'ye alınır. */
@@ -34,7 +34,7 @@ final class StepMath {
         if (!s.day.equals(today)) {
             if (!s.day.isEmpty()) {
                 handleReboot(s, s.last);
-                history.put(s.day, Math.max(0, Math.round(s.carry + s.last - s.base)));
+                history.put(s.day, Math.max(0L, Math.round((double) (s.carry + s.last - s.base))));
             }
             s.day = today;
             s.base = counter;
