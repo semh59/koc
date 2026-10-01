@@ -617,7 +617,8 @@ function sheetPorsiyon(i){
   curFood=allFoods()[i];curPor=0;
   openSheet(`<h3>${esc(curFood.n)}</h3><div class="lbl">Porsiyon</div><div class="chips" id="fpc">${curFood.u.map((u,j)=>`<button class="chip" data-fp="${j}" aria-pressed="${j===0}">${esc(u[0])}</button>`).join("")}</div>
   <div class="lbl">Kaç porsiyon</div><input class="in num" id="fqty" inputmode="decimal" value="1" autocomplete="off">
-  <div class="stat" style="margin:8px 0"><div class="k">Tahmini değer</div><div class="v num" id="fprev"></div></div>${dayOptions()}<button class="btn" data-go="besin">Ekle</button>${curFood.my?`<button class="lnk dng" data-go="mysil">Bu besini listemden sil</button>`:""}`);
+  <div class="stat" style="margin:8px 0"><div class="k">Tahmini değer</div><div class="v num" id="fprev"></div></div>
+  <div class="mut sm" style="margin-bottom:8px">${curFood.my?"Yapay zekâ ya da senin girdiğin tahmin.":curFood.s?"Kaynak: USDA FoodData Central. Pişirme ve markaya göre değişebilir.":"Tahmini değer. Tarife ve markaya göre belirgin değişir."}</div>${dayOptions()}<button class="btn" data-go="besin">Ekle</button>${curFood.my?`<button class="lnk dng" data-go="mysil">Bu besini listemden sil</button>`:""}`);
   foodPreview();
 }
 function foodCalc(){
