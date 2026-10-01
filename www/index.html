@@ -610,9 +610,9 @@ function sheetYemek(){
   openSheet(`<h3>Yemek ekle</h3><input class="in" id="fq" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off" autofocus><div id="flist" class="plist"></div>${fav.length?`<div class="lbl">Sık yediklerin</div><div class="chips">${fav.map((f,i)=>`<button class="chip" data-fav="${i}">${esc(f.text)}${f.v?" "+Math.round(f.v):""}</button>`).join("")}</div>`:""}
   <div class="lbl">Ya da kendin yaz</div><input class="in" id="ft" placeholder="Ne yedin?" autocomplete="off"><input class="in num" id="fv" inputmode="numeric" placeholder="Kalori (isteğe bağlı)">${dayOptions()}<button class="btn" data-go="yemek">Kaydet</button>`);
 }
-let curFood=null,curPor=0;
+let curFood=null,curPor=0,foodAskQ="";
 const allFoods=()=>S.myFoods.map(m=>({n:m.n,k:m.k,p:m.p==null?null:m.p,c:null,f:null,u:[["1 porsiyon",100]],my:true})).concat(FOODS);
-const foodListHtml=q=>{const L=allFoods();return foodSearch(q,8,L).map(i=>{const f=L[i];return `<button class="prow" data-food="${i}"><span><b>${esc(f.n)}</b><span class="mut sm">${f.my?`Benim besinim, 1 porsiyon: ${f.k} kcal`:`100 g: ${f.k} kcal, protein ${fmt(f.p,0)} g`}</span></span><span class="plus">+</span></button>`}).join("")};
+const foodListHtml=q=>{const L=allFoods(),ask=q.trim().length>=2?`<button class="prow" data-c="askfood"><span><b>"${esc(q.trim())}" için Koç'a sor</b><span class="mut sm">Yapay zekâ tahmin eder, sonra listene ekleyebilirsin</span></span><span class="plus">✨</span></button>`:"";return foodSearch(q,8,L).map(i=>{const f=L[i];return `<button class="prow" data-food="${i}"><span><b>${esc(f.n)}</b><span class="mut sm">${f.my?`Benim besinim, 1 porsiyon: ${f.k} kcal`:`100 g: ${f.k} kcal, protein ${fmt(f.p,0)} g`}</span></span><span class="plus">+</span></button>`}).join("")+ask};
 function sheetPorsiyon(i){
   curFood=allFoods()[i];curPor=0;
   openSheet(`<h3>${esc(curFood.n)}</h3><div class="lbl">Porsiyon</div><div class="chips" id="fpc">${curFood.u.map((u,j)=>`<button class="chip" data-fp="${j}" aria-pressed="${j===0}">${esc(u[0])}</button>`).join("")}</div>
@@ -837,7 +837,7 @@ document.addEventListener("change",ev=>{
 document.addEventListener("input",ev=>{
   const id=ev.target.id;
   if(id==="gq"){gQuery=ev.target.value;$("#glist").innerHTML=gPickHtml()}
-  else if(id==="fq")$("#flist").innerHTML=foodListHtml(ev.target.value);
+  else if(id==="fq"){foodAskQ=ev.target.value;$("#flist").innerHTML=foodListHtml(ev.target.value)}
   else if(id==="fqty")foodPreview();
 });
 document.addEventListener("keydown",ev=>{
