@@ -20,11 +20,14 @@ const OffLib=(()=>{
     if(!(k>=0&&k<=900))return {status:"bad",why:"Kalori değeri makul değil"};
     const m=[pr,c,f];
     if(m.some(x=>x!=null&&!(x>=0&&x<=100))||m.reduce((s,x)=>s+(x||0),0)>100.5)return {status:"bad",why:"Besin değerleri makul değil"};
+    const fb=nm(n.fiber_100g),sg=nm(n.sugars_100g),na=nm(n.sodium_100g!=null?n.sodium_100g*1000:n.salt_100g!=null?n.salt_100g*400:null);
+    const sub={fb:fb>=0&&fb<=100?fb:null,sg:sg>=0&&sg<=100&&(c==null||sg<=c+0.5)?sg:null,na:na>=0&&na<=40000?na:null};
     const sq=nm(p.serving_quantity),pq=nm(p.product_quantity),u=[];
     if(sq>=1&&sq<=2000)u.push([`1 porsiyon (${r1(sq)} g)`,sq]);
     if(pq>=1&&pq<=5000&&pq!==sq)u.push([`1 paket (${r1(pq)} g)`,pq]);
     u.push(["100 g",100]);
     const food={n:name,k:r1(k),p:r1(pr),c:r1(c),f:r1(f),u,b:String(p.code||"")};
+    for(const k in sub)if(sub[k]!=null)food[k]=r1(sub[k]);
     if(m.some(x=>x==null))return {status:"partial",why:"Bazı besin değerleri eksik",food};
     const a=4*pr+4*c+9*f;
     if(Math.abs(k-a)>Math.max(20,0.25*Math.max(k,a)))return {status:"bad",why:"Kalori, besin değerleriyle tutarlı değil",food};

@@ -19,6 +19,16 @@ for(const [n,lines,exp] of cases)ok("etiket: "+n,eq(P(lines),exp),P(lines));
 ok("eksik satır boş kalır, uydurulmaz",(r=>r.p===undefined&&r.k===440)(P(["Enerji 440 kcal","Yağ 13 g","Karbonhidrat 70 g"])));
 ok("alakasız metin hiçbir şey çıkarmaz",LB.parse(["Üretici: ABC Gıda","İçindekiler: un, şeker, tuz","Son tüketim 12.2027"]).found.length===0);
 
+// lif, şeker, sodyum
+const X=l=>P(["Enerji 100 kcal",...l]);
+ok("Tuz 1,2 g -> sodyum 480 mg",X(["Tuz 1,2 g"]).na===480);
+ok("Sodyum 400 mg -> 400",X(["Sodyum 400 mg"]).na===400);
+ok("Şekerler 12 g -> sg 12",X(["  - Şekerler 12 g"]).sg===12);
+ok("Diyet lifi 3 g -> fb 3",X(["Diyet lifi 3 g"]).fb===3);
+ok("100 g sütunu seçilir (lif, şeker, tuz)",(f=>f.fb===3&&f.sg===25&&f.na===480)(P(["Besin Değerleri 100 g başına Porsiyon (30 g) başına","Enerji 440 kcal 132 kcal","Karbonhidrat 70 g 21 g","Şekerler 25 g 7,5 g","Lif 3 g 0,9 g","Tuz 1,2 g 0,4 g"])));
+ok("içindekiler satırındaki şeker/tuz sayı sayılmaz",(f=>f.sg===undefined&&f.na===undefined)(X(["Şeker, tuz, un"])));
+ok("check: lif/şeker/sodyum food'a geçer, şeker>karbonhidrat atılır",(c=>c.food.na===480&&c.food.fb===3&&c.food.sg===undefined)(LB.check("T",{k:440,p:8.5,c:10,f:13,fb:3,sg:25,na:480})));
+
 // tutarlılık
 const chk=(f,n)=>LB.check(n||"Test",f).status;
 ok("tutarlı etiket ok",chk({k:440,p:8.5,c:70,f:13})==="ok");
