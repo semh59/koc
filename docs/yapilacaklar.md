@@ -11,7 +11,7 @@ Durum: [ ] bekliyor, [~] yapıldı ama telefonda denenmedi, [x] telefonda denend
 - [~] Bildirimden tek dokunuşla "+250 ml" (yapıldı: su bildirimindeki düğme, ekran açılmadan kayıt, uygulama bir sonraki açılışta alır).
 - [~] Drive yedeği paylaş yöntemiyle (hesap bağlamadan): Ayarlar > Yedeği Drive'a gönder, parolalı şifreli dosya, parola isteğe bağlı Keystore'da saklanır, Pazar akşamı hatırlatma (yedek yeniyse atlanır).
 - [ ] Health Connect (Mi Band/saat kullanımı netleşince).
-- [ ] Öğün şablonları (şimdilik "Dünkünü tekrarla" yeterli görüldü).
+- [~] Öğün şablonları, favoriler, son yenilenler, elle adım, "sayım durdu" uyarısı yapıldı (telefon test maddeleri aşağıda).
 - Diğer fikirler: `docs/fikirler.md`.
 
 ## Telefonda tek tek test edilecekler
@@ -31,6 +31,9 @@ Sürüm: son APK (GitHub Releases, `neowell.apk`).
 - [~] İlaç hatırlatıcı (Ayarlar > İlaç hatırlatıcı > aç): ilaç ekle (saatler, günler, kür, stok), Bugün kartında Aldım/Atla, bildirimde "✔ Aldım" düğmesi (ekran açılmadan), uyum yüzdesi, stok azalınca uyarı, haftalık rapora ilaç uyumu. Uygulama kapalıyken bildirim geliyor mu, Xiaomi'de de.
 - [~] İlaç alarmı: dozda alarm sesiyle çalmalı, bildirim silinememeli (kalıcı), "Atla" ve "Aldım" düğmesi kapatmalı; dokunmazsan 10 ve 20 dk sonra "İlacını aldın mı?" tekrarı gelmeli; alt menüde 💊 İlaç sekmesi (6 sekme 360px'te sığıyor mu); Koç'a "ilaçlarımı düzenli alıyor muyum?" sor (önce veri paylaşımını kabul et). Xiaomi'de İlaç alarmı kanalının sesi ve "kilit ekranında göster" açık olmalı.
 - [~] Hareket algılama (Ayarlar > Hareket algılama, adım sayar açıkken): aç, fiziksel aktivite + konum + "Her zaman izin ver" izinlerini ver; 10+ dk yürü ve bir de koş; telefonu cebinde tut ve ekranı kapat; Adım ekranındaki Hareketler kartında süre, mesafe, hız, kalori makul mü (çok kısa aralıklar listelenmez). GPS'in yalnızca ilk yürüyüşlerde kısa süre açılması, 'Hareket ölçülüyor' bildiriminin ~1 dk içinde kapanması, pil tüketimi. Xiaomi'de uygulamaya Pil: Kısıtlama yok ve Otomatik başlat açık olmalı. Araçta (otobüs/araba) kayıt oluşmamalı.
+- [ ] Favori/şablon: Yemek ekle'de "Son yediklerin" satırına dokun (anında eklenmeli, makrolar dahil, Geri al çalışmalı); ☆ ile favori yap, favori en üstte; Bugün'de "Bu günün yemeklerinden şablon yap", Yemek ekle'de şablon çipi tüm kalemleri tek seferde ekler ve tek Geri al siler; Dünkünü tekrarla artık protein/karbonhidrat/yağı da taşıyor.
+- [ ] Elle adım: Adım ekranı > Adım ekle (elle); Bugün kartı ve halka sensör + elle gösteriyor, bir süre sonra sensör yenilenince elle eklenen kaybolmuyor, listeden silinebiliyor.
+- [ ] "Sayım durdu" kartı: adım sayar açıkken telefonu bir gün cebinde taşımadan ertesi gün Bugün'de kart çıkıyor mu; Ayarla (Xiaomi'de ayar sayfası, diğerlerinde pil ayarı) açılıyor mu, Kapat o gün gizliyor mu. Gece alarmı Doze'da geç kalırsa yanlış uyarı çıkabilir (eşik 26 saat), sık oluyorsa kaydır.
 - [ ] Sığma kontrolü: Bugün ekranı küçük ekranda taşmıyor.
 - [ ] Salon plaka/ısınma: ağırlıklı egzersizde ⋮ > Plaka ve ısınma; hedef kg gir, bir taraf plakaları ve "en yakın" notu doğru mu, "Isınmayı antrenmana ekle" ısınma setlerini başa koyuyor mu, ısınma setleri hacim ve rekora girmiyor mu. ⋮ > Tekrar aralığı (5-8) ile öneri değişiyor mu.
 - [ ] Set anında rekor: eski en iyiden ağır bir seti ✓ ile bitir; "Yeni rekor" bildirimi + titreşim bir kez gelmeli, aynı egzersizde ikinci kez gelmemeli.

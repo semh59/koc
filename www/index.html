@@ -315,7 +315,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- veri ---------- */
 const DEF={
-  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,lastPlan:"",lastWeekly:"",lastBackup:"",oemDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:true,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,reminders:[
+  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,lastPlan:"",lastWeekly:"",lastBackup:"",oemDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:true,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,stepWarnDay:"",reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -360,6 +360,7 @@ function cleanSettings(raw){
   if(o.motionOn===true)d.motionOn=true;
   if(o.medShowName===false)d.medShowName=false;
   if(o.stepsAsked===true)d.stepsAsked=true;
+  if(dayOk(o.stepWarnDay))d.stepWarnDay=o.stepWarnDay;
   if(Array.isArray(o.reminders))for(const r of d.reminders){
     const x=o.reminders.find(y=>y&&y.id===r.id);
     if(x){if(timeOk(x.t))r.t=x.t;if(typeof x.on==="boolean")r.on=x.on;if(typeof x.body==="string"&&x.body.trim().length>=5&&x.body.length<=110)r.body=x.body.trim()}
@@ -559,7 +560,9 @@ function viewBugun(){
   const bk=S.entries.length>=10&&(old==null||old>14)?`<div class="banner"><b>Yedek zamanı</b><p>${old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`} Telefon kaybolursa ya da uygulama silinirse veriler gider.</p><button class="btn" data-act="drive">Yedeği gönder</button></div>`:"";
   const stB=isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?`<div class="banner"><b>Adım sayar</b><p>Telefonun adım sensörünü kullanır, hesap gerekmez. Telefonu yanında taşıdığın adımları sayar.</p><div class="lbtns"><button class="btn" data-act="adimac">Aç</button><button class="btn ghost" data-act="adimdegil">Şimdi değil</button></div></div>`:"";
   const oemB=isNative()&&oemXiaomi()&&!st.oemDone?`<div class="banner"><b>Hatırlatmalar için bir kez ayar gerekli</b><p>Telefon uygulamayı kapatınca hatırlatmalar gelmeyebilir. İki izin verince düzelir.</p><button class="btn" data-act="oem">Ayarla</button></div>`:"";
-  return `${stB}${oemB}${bk}${weight}<div class="coach">${esc(coach())}</div>${rings}${macro}${actions}${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
+  const a7=(a,b)=>sum("adim",keyOff(a),keyOff(b));
+  const stW=sOn&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?`<div class="banner"><b>Adım sayımı durmuş olabilir</b><p>Telefon adım sayarı arka planda kapatmış olabilir. Pil ayarında NeoWell'e kısıtlama koyma.</p><div class="lbtns"><button class="btn" data-act="adimduz">Ayarla</button><button class="btn ghost" data-act="adimgizle">Kapat</button></div></div>`:"";
+  return `${stB}${oemB}${stW}${bk}${weight}<div class="coach">${esc(coach())}</div>${rings}${macro}${actions}${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
 }
 
 function viewTrend(){
@@ -883,7 +886,7 @@ async function scheduleReminders(){
 }
 function setNotif(s){notifStatus=s;if(tab==="ayar")render()}
 const SC=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.StepCounter;
-let stepToday=null;
+let stepToday=null,stepSnapAt=0;
 function setSteps(day,v){
   if(!(v>0&&v<=200000))return false;
   const e=S.entries.find(x=>x.type==="adim"&&x.day===day&&x.text!=="elle");
@@ -895,6 +898,7 @@ async function stepsSync(){
   if(!S.settings.stepsOn||!SC())return;
   try{
     const r=await SC().read();let ch=false;
+    if(stepSnapAt!==(+r.snapAt||0)){stepSnapAt=+r.snapAt||0;ch=true}
     for(const d in (r.history||{}))if(dayOk(d)&&setSteps(d,r.history[d]))ch=true;
     if(typeof r.steps==="number"){if(stepToday!==r.steps){stepToday=r.steps;ch=true}if(setSteps(dayKey(),r.steps))ch=true}
     if(ch){save();if((tab==="bugun"||tab==="adim")&&!$("#sheet").classList.contains("on"))render()}
@@ -947,6 +951,7 @@ async function stepsOpen(){
 }
 let notifDiag="",oem="";
 const DH=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.DeviceHelp;
+const openDH=m=>{const p=DH();if(p)p[m]().then(r=>{if(r.opened==="none")toast("Ayar ekranı açılamadı, telefon ayarlarından NeoWell'i bul")},()=>toast("Ayar ekranı açılamadı"))};
 const oemXiaomi=()=>/xiaomi|redmi|poco/.test(oem);
 function sheetOem(){
   openSheet(`<h3>Hatırlatmalar için bir kez ayar</h3><p class="hint" style="padding:0 0 8px">Xiaomi telefonlar, uygulamayı son uygulamalardan kaydırınca hatırlatmaları siler. Bunun için iki izin gerekir. Düğmeler doğrudan ilgili ekranı açar.</p>
@@ -1014,7 +1019,9 @@ document.addEventListener("click",ev=>{
     else if(d.act==="adimdegil"){S.settings.stepsAsked=true;save();render()}
     else if(d.act==="adimkapat"){S.settings.stepsOn=false;save();motionStopAll();render();toast("Adım sayar kapatıldı. Eski adım kayıtların durur")}
     else if(d.act==="oem")sheetOem();
-    else if(d.act==="oem1"||d.act==="oem2"){const p=DH();if(p)p[d.act==="oem1"?"openAutostart":"openBattery"]().then(r=>{if(r.opened==="none")toast("Ayar ekranı açılamadı, telefon ayarlarından NeoWell'i bul")},()=>toast("Ayar ekranı açılamadı"))}
+    else if(d.act==="oem1"||d.act==="oem2")openDH(d.act==="oem1"?"openAutostart":"openBattery");
+    else if(d.act==="adimduz"){if(oemXiaomi())sheetOem();else openDH("openBattery")}
+    else if(d.act==="adimgizle"){S.settings.stepWarnDay=dayKey();save();render()}
     else if(d.act==="oemok"){S.settings.oemDone=true;save();closeSheet();render();toast("Tamam, hatırlatmaları şimdi dene")}
     else if(d.act==="profil"){tab="ayar";render();window.scrollTo(0,0)}
     else if(d.act==="saglik")openSheet(`<h3>Sağlık notların</h3><div class="lbl">Hamilelik, hastalık, ilaç, yeme bozukluğu geçmişi gibi koçun bilmesi gerekenler.</div><textarea class="in" id="hn" maxlength="500" autofocus>${esc(S.settings.healthNote)}</textarea><button class="btn" data-go="saglik">Kaydet</button>`);

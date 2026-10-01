@@ -84,8 +84,14 @@ final class StepStore {
         SharedPreferences.Editor e = sp.edit();
         e.putString("day", s.day).putFloat("base", s.base).putFloat("carry", s.carry).putFloat("last", s.last);
         for (Map.Entry<String, Long> x : hist.entrySet()) e.putLong("h_" + x.getKey(), x.getValue());
+        if (closeFirst) e.putLong("snapAt", System.currentTimeMillis());
         e.apply();
         return steps;
+    }
+
+    /** Gece alarmının sensörden son başarılı okuma zamanı (ms), hiç olmadıysa 0. */
+    static long snapAt(Context c) {
+        return prefs(c).getLong("snapAt", 0L);
     }
 
     /** Biten günlerin adımları. */

@@ -68,6 +68,7 @@ public class StepCounterPlugin extends Plugin {
                 for (Map.Entry<String, Long> e : history.entrySet()) h.put(e.getKey(), e.getValue());
                 if (steps != null) r.put("steps", steps);
                 r.put("history", h);
+                r.put("snapAt", StepStore.snapAt(getContext()));
                 call.resolve(r);
             }
         });
