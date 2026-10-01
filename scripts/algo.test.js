@@ -29,4 +29,13 @@ ok("hedef BMI<18,5 engellenir",A.lossBlock({age:30,cm:175,kg:80,goalKg:50})!==""
 ok("sağlıklı yetişkin açık alır",g({age:30,cm:175}).rateKgWk<0&&g({age:30,cm:175}).blocked==="");
 const wi={},ii={};for(let i=0;i<29;i++){wi[day(i)]=88-0.05*i;ii[day(i)]=i%2?1800:850}
 ok("eksik girilmiş günler sayılmaz",near(A.adaptiveTdee({weights:wi,intake:ii,profile:{kg:86.6,cm:175,age:34,sex:"m",act:1}}).est,2185,15));
+const pl=A.plates(100);ok("plaka: 100 kg/20 bar → [25,15]",pl.side.join()==="25,15"&&pl.made===100,pl);
+const p61=A.plates(61);ok("plaka: 61 kg → en yakın 60",p61.made===60&&p61.side.join()==="20");
+ok("plaka: bar altı hedef → boş liste",A.plates(15).side.length===0&&A.plates(15).made===20);
+ok("plaka: 1,25 adımı",A.plates(22.5).side.join()==="1.25"&&A.plates(22.5).made===22.5);
+ok("ısınma 100 kg",JSON.stringify(A.warmup(100))===JSON.stringify([{kg:20,reps:10},{kg:40,reps:5},{kg:60,reps:3},{kg:80,reps:1}]),A.warmup(100));
+ok("ısınma 30 kg: bar altı ve tekrar atılır",JSON.stringify(A.warmup(30))===JSON.stringify([{kg:20,reps:10},{kg:22.5,reps:1}]),A.warmup(30));
+ok("ısınma: hedef bar veya altındaysa boş",A.warmup(20).length===0&&A.warmup(10).length===0);
+const n3=A.nextTarget([{kg:60,reps:8},{kg:60,reps:8}],{lo:5,hi:8,inc:2.5});ok("lo5 hi8: 8'e ulaşınca ağırlık artar, 5'ten başlar",n3.kg===62.5&&n3.reps===5,n3);
+ok("hacim ısınmayı saymaz",A.volume([{kg:20,reps:10,done:true,w:true},{kg:60,reps:5,done:true}])===300);
 process.exit(bad?1:0);

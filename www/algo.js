@@ -107,7 +107,26 @@ const Algo=(()=>{
     if(!(kg>0))return 0;
     return reps===1?kg:kg*(1+reps/30); // Epley
   }
-  function volume(sets){return sets.reduce((s,x)=>s+(x.done!==false&&x.reps>0?(x.kg||0)*x.reps:0),0)}
+  function volume(sets){return sets.reduce((s,x)=>s+(x.done!==false&&!x.w&&x.reps>0?(x.kg||0)*x.reps:0),0)}
+  const PLATES=[25,20,15,10,5,2.5,1.25];
+  /* Bir tarafa açgözlü plaka; tam tutmazsa made hedefin altındaki en yakın yapılabilir ağırlık. */
+  function plates(total,bar=20,inv=PLATES){
+    let rest=(total-bar)/2;const side=[];
+    if(!(rest>=0))return {side,made:bar};
+    for(const p of inv)while(rest>=p-1e-9){side.push(p);rest-=p}
+    return {side,made:bar+2*side.reduce((a,b)=>a+b,0)};
+  }
+  /* Boş bar × 10, sonra hedefin %40/60/80'i; yapılabilir plakaya yuvarlanır, bar altı ve tekrar eden atılır. */
+  function warmup(target,bar=20){
+    const out=[];
+    for(const [f,reps] of [[0,10],[0.4,5],[0.6,3],[0.8,1]]){
+      const kg=f?target*f:bar;
+      if(kg<bar)continue;
+      const made=plates(kg,bar).made;
+      if(made<target&&!out.some(x=>x.kg===made))out.push({kg:made,reps});
+    }
+    return out;
+  }
   /* Çift ilerleme: tüm setler üst tekrara çıkınca ağırlık artır, değilse aynı ağırlıkta +1 tekrar. */
   function nextTarget(sets,{lo=8,hi=12,inc=2.5}={}){
     const s=sets.filter(x=>x.reps>0);if(!s.length)return null;
@@ -117,6 +136,6 @@ const Algo=(()=>{
     if(minReps>=hi)return {kg:roundTo(kg+inc,0.25),reps:lo,why:"Tüm setlerde üst tekrara ulaştın, ağırlığı artır"};
     return {kg,reps:Math.min(hi,minReps+1),why:"Aynı ağırlıkta bir tekrar fazla dene"};
   }
-  return {KCAL_PER_KG,dayNum,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,lossBlock,etaWeeks,proteinRange,est1RM,volume,nextTarget,roundTo};
+  return {KCAL_PER_KG,dayNum,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,lossBlock,etaWeeks,proteinRange,est1RM,volume,nextTarget,roundTo,plates,warmup};
 })();
 if(typeof module!=="undefined")module.exports=Algo;
