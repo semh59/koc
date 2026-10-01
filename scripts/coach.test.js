@@ -3,7 +3,7 @@ const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify
 ok("baş dönmesi",C.redFlag("Bu sabah başım döndü")==="check");
 ok("bayılma acil",C.redFlag("Bayılacak gibiyim")==="emergency");
 ok("göğüs ağrısı",C.redFlag("göğsümde sıkışma var, nefes darlığı")==="emergency");
-ok("büyük İ/I",C.redFlag("BAŞIM DÖNÜYOR")==="check"||C.redFlag("BAŞIM DÖNÜYOR")===null);
+ok("büyük harf",C.redFlag("BAŞIM DÖNÜYOR")==="check");
 ok("yeme bozukluğu",C.redFlag("yedikten sonra kusuyorum")==="ed");
 ok("intihar",C.redFlag("yaşamak istemiyorum")==="mind");
 ok("normal mesaj",C.redFlag("2 yumurta yedim")===null);
@@ -19,4 +19,6 @@ ok("kcal alt sınır",C.clampKcal(900,{tdee:2400,bmr:1800}).kcal===1800&&C.clamp
 ok("kcal geçerli",C.clampKcal(2000,{tdee:2400,bmr:1700}).kcal===2000&&C.clampKcal("abc")===null&&C.clampKcal(100)===null);
 const t=C.contextText({profile:{cm:175,age:34,sex:"m",act:1,note:""},goals:{kg:75,kcal:1800,water:2500,sport:150},calc:{trendKg:84.1,slope:-0.6,tdee:2420,source:"veri",target:2110,protein:[136,187]},days:[{d:"2026-10-01",kg:83.7,kcal:1240,p:80,su:1200,sport:0}],today:["yemek ~220 kcal"],now:"12:42",workouts:[],notes:[]});
 ok("bağlam kısa ve sayılı",t.includes("2420")&&t.includes("83,7")&&t.length<1200,t.length);
+ok("hiç yemiyorum",C.redFlag("kilo için hiç yemiyorum")==="ed");
+ok("hayatıma son",C.redFlag("hayatıma son vermek istiyorum")==="mind");
 process.exit(bad?1:0);

@@ -99,7 +99,7 @@ function gWeekSets(){
   }
   return m;
 }
-const gDur=w=>Math.max(1,Math.round(((w.t1||Date.now())-w.t0)/60000));
+const gDur=w=>Math.min(600,Math.max(1,Math.round(((w.t1||Date.now())-w.t0)/60000))); // 600: spor kaydı üst sınırı
 const gClock=ms=>{const s=Math.max(0,Math.floor(ms/1000));return `${pad(Math.floor(s/60))}:${pad(s%60)}`};
 const gDate=d=>`${+d.slice(8)} ${AY[+d.slice(5,7)-1].slice(0,3)}`;
 
@@ -318,8 +318,8 @@ function gEnergy(){
   const intake={};for(const e of S.entries)if(e.type==="yemek"&&e.v)intake[e.day]=(intake[e.day]||0)+e.v;
   const r=Algo.adaptiveTdee({weights:wAll,intake,profile});
   if(!r.tdee)return "";
-  const bmr=Algo.bmrMifflin(profile),sg=Algo.suggestTarget({tdee:r.tdee,kg,goalKg:st.goalKg,bmr});
-  const slope=Algo.slopePerWeek(wAll),eta=Algo.etaWeeks(kg,st.goalKg,slope),pr=Algo.proteinRange(kg);
+  const bmr=Algo.bmrMifflin(profile),sg=Algo.suggestTarget({tdee:r.tdee,kg,goalKg:st.goalKg,bmr,age:st.age,cm:st.heightCm,health:!!st.healthNote.trim()});
+  const slope=Algo.slopePerWeek(wAll),eta=sg&&sg.blocked?null:Algo.etaWeeks(kg,st.goalKg,slope),pr=Algo.proteinRange(kg);
   const src=r.source==="formül"?"Formül tahmini. Veri biriktikçe kendini ayarlar.":`Gerçek verinden hesaplandı, güven %${Math.round(r.confidence*100)}.`;
   const cells=[["Tahmini harcama",`${Math.round(r.tdee/10)*10} kcal`]];
   if(slope!=null)cells.push(["Kilo hızı",`${fmtS(slope,2)} kg/hafta`]);
@@ -327,6 +327,6 @@ function gEnergy(){
   cells.push(["Protein aralığı",`${pr[0]}–${pr[1]} g`]);
   if(eta)cells.push(["Hedefe tahmini",`~${eta} hafta`]);
   return `<h2>Enerji dengesi</h2><div class="card"><div class="stats">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1]}</div></div>`).join("")}</div>
-  <p class="hint" style="padding:8px 0 0">${src}${sg&&sg.limited?" Hedef güvenli alt sınırda tutuldu.":""}</p>
+  <p class="hint" style="padding:8px 0 0">${src}${sg&&sg.limited?" Hedef güvenli alt sınırda tutuldu.":""}${sg&&sg.blocked?` ${esc(sg.blocked)}. Öneri bakım düzeyinde tutuldu.`:""}</p>
   ${sg&&sg.kcal!==st.kcal?`<div class="btns"><button class="btn ghost" data-act="uygula:${sg.kcal}">Hedefi ${sg.kcal} kcal yap</button></div>`:""}</div>`;
 }

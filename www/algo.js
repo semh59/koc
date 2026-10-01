@@ -40,14 +40,15 @@ const Algo=(()=>{
   function formulaTdee(p){return bmrMifflin(p)*(ACT[p.act==null?1:p.act]||1.45)}
 
   /* Uyarlanabilir harcama: ortalama alım − (trend değişimi × 7700 / gün).
-     intake: {gün: kcal}; yalnızca >=800 kcal girilen günler "tam kayıt" sayılır. */
+     intake: {gün: kcal}; yalnızca formül harcamasının yarısından (en az 800) fazla girilen günler "tam kayıt" sayılır. */
   function adaptiveTdee({weights,intake,profile,window=28}){
     const f=profile&&profile.cm&&profile.age?formulaTdee(profile):null;
     const t=trend(weights),ks=Object.keys(t).sort();
     if(!ks.length)return {tdee:f,source:f?"formül":null,confidence:0,formula:f,est:null};
     const lastDay=dayNum(ks[ks.length-1]);
     const inWin=k=>lastDay-dayNum(k)<window&&lastDay-dayNum(k)>=0;
-    const days=Object.keys(intake).filter(k=>inWin(k)&&intake[k]>=800);
+    const minDay=f?Math.max(800,f*0.5):800; // eksik girilmiş günler harcamayı düşük gösterir
+    const days=Object.keys(intake).filter(k=>inWin(k)&&intake[k]>=minDay);
     const pts=windowPts(weights,window);
     let est=null,conf=0;
     if(days.length>=10&&pts.length>=4){
@@ -64,11 +65,24 @@ const Algo=(()=>{
     return {tdee,source:conf>=0.99?"veri":"veri+formül",confidence:conf,formula:f,est};
   }
 
+  /* Kalori açığının güvenli olmadığı durumun nedeni, yoksa "". */
+  function lossBlock({age,cm,kg,goalKg,health}){
+    if(age>0&&age<18)return "18 yaş altında kalori açığı önerilmez";
+    if(health)return "Sağlık notun var, kalori açığı için önce hekimine danış";
+    const bmi=x=>kg>0&&cm>0?x/Math.pow(cm/100,2):null;
+    if(bmi(kg)!=null&&bmi(kg)<18.5)return "Kilon zaten düşük, kalori açığı önerilmez";
+    if(goalKg>0&&bmi(goalKg)!=null&&bmi(goalKg)<18.5)return "Hedef kilo boyuna göre çok düşük (BMI 18,5 altı)";
+    return "";
+  }
+
   /* Hedef önerisi. Kullanıcı onaylamadan uygulanmaz. */
-  function suggestTarget({tdee,kg,goalKg,bmr}){
+  function suggestTarget({tdee,kg,goalKg,bmr,age,cm,health}){
     if(!tdee||!kg)return null;
-    let rate=0,kcal=tdee,note="Bakım";
-    if(goalKg>0&&goalKg<kg-0.2){rate=-Math.min(0.005*kg,0.75);note="Kilo verme"}
+    let rate=0,kcal=tdee,note="Bakım",blocked="";
+    if(goalKg>0&&goalKg<kg-0.2){
+      blocked=lossBlock({age,cm,kg,goalKg,health});
+      if(!blocked){rate=-Math.min(0.005*kg,0.75);note="Kilo verme"}
+    }
     else if(goalKg>kg+0.2){rate=0.0025*kg;note="Kilo alma"}
     kcal=tdee+rate*KCAL_PER_KG/7;
     let limited=false;
@@ -76,7 +90,7 @@ const Algo=(()=>{
       const floor=Math.max(1200,bmr||0,tdee*0.75);
       if(kcal<floor){kcal=floor;limited=true;rate=(kcal-tdee)*7/KCAL_PER_KG}
     }
-    return {kcal:Math.round(kcal/10)*10,rateKgWk:rate,limited,note};
+    return {kcal:Math.round(kcal/10)*10,rateKgWk:rate,limited,note,blocked};
   }
   function etaWeeks(trendNow,goal,slope){
     if(slope==null||!(goal>0))return null;
@@ -103,6 +117,6 @@ const Algo=(()=>{
     if(minReps>=hi)return {kg:roundTo(kg+inc,0.25),reps:lo,why:"Tüm setlerde üst tekrara ulaştın, ağırlığı artır"};
     return {kg,reps:Math.min(hi,minReps+1),why:"Aynı ağırlıkta bir tekrar fazla dene"};
   }
-  return {KCAL_PER_KG,dayNum,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,etaWeeks,proteinRange,est1RM,volume,nextTarget,roundTo};
+  return {KCAL_PER_KG,dayNum,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,lossBlock,etaWeeks,proteinRange,est1RM,volume,nextTarget,roundTo};
 })();
 if(typeof module!=="undefined")module.exports=Algo;

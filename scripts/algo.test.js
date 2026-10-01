@@ -21,4 +21,12 @@ const n1=A.nextTarget([{kg:60,reps:12},{kg:60,reps:12},{kg:60,reps:12}],{lo:8,hi
 const n2=A.nextTarget([{kg:60,reps:10},{kg:60,reps:8},{kg:60,reps:8}]);ok("aynı kg +1 tekrar",n2.kg===60&&n2.reps===9);
 ok("vücut ağırlığı",A.nextTarget([{kg:0,reps:6}]).reps===7); ok("boşsa null",A.nextTarget([])===null);
 ok("trend boş gün",Object.keys(A.trend({"2026-09-01":80,"2026-09-05":79})).length===2);
+const g=(o)=>A.suggestTarget(Object.assign({tdee:2400,kg:84,goalKg:75,bmr:1800},o));
+ok("18 yaş altı açık almaz",g({age:12,cm:165}).kcal===2400&&g({age:12,cm:165}).blocked!=="");
+ok("sağlık notu açığı keser",g({age:30,cm:175,health:true}).blocked!==""&&g({age:30,cm:175,health:true}).rateKgWk===0);
+ok("düşük BMI hedefi engellenir",A.lossBlock({age:30,cm:175,kg:50,goalKg:38})!=="");
+ok("hedef BMI<18,5 engellenir",A.lossBlock({age:30,cm:175,kg:80,goalKg:50})!=="");
+ok("sağlıklı yetişkin açık alır",g({age:30,cm:175}).rateKgWk<0&&g({age:30,cm:175}).blocked==="");
+const wi={},ii={};for(let i=0;i<29;i++){wi[day(i)]=88-0.05*i;ii[day(i)]=i%2?1800:850}
+ok("eksik girilmiş günler sayılmaz",near(A.adaptiveTdee({weights:wi,intake:ii,profile:{kg:86.6,cm:175,age:34,sex:"m",act:1}}).est,2185,15));
 process.exit(bad?1:0);
