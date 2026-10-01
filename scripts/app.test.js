@@ -902,7 +902,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("Koç'a yorumlat consent yokken çağrı yapmaz",fetched===0&&!ev(`S.chat.find(m=>m.id===${wc.id}).card.asked`));
     ev("S.settings.consent=true;render()");
     q(`[data-c="whyai:${wc.id}"]`).click();await wait(30);
-    ok("Koç'a yorumlat consent ve sağlayıcı varken bir kez çağırır, yanıt sohbete düşer, düğme kalkar",fetched===1&&ev("S.chat[S.chat.length-1].text")==="Yorum"&&!q('[data-c^="whyai"]'),fetched);
+    ok("Koç'a yorumlat consent ve sağlayıcı varken bir kez çağırır, yanıt sohbete düşer, düğme kalkar",fetched===1&&ev("S.chat[S.chat.length-1].text")==="Yorum"&&!q('[data-c^="whyai"]')&&!q("#view").textContent.includes("gönderilmedi")&&q("#view").textContent.includes("Koç'a gönderildi"),fetched);
     const cc=JSON.parse(ev("JSON.stringify(cleanCoach(JSON.parse(JSON.stringify(S))))"));
     ok("neden kartı yeniden yüklemede kalır",cc.chat.some(m=>m.card&&m.card.kind==="why"&&m.card.items.length===wc.card.items.length&&m.card.asked===true));
     const g=JSON.parse(ev(`JSON.stringify(cleanCoach({chat:[{id:1,role:'coach',text:'',t:1,card:{kind:'why',items:'x'}},{id:2,role:'coach',text:'',t:1,card:{kind:'why',items:[null,{k:'X!',t:1}]}},{id:3,role:'user',text:'merhaba',t:1}]}))`));
