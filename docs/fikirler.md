@@ -28,3 +28,16 @@ Hepsi yerel kalır, sunucu gerektirmez.
 - Öncelik: aykırı değer uyarısı, öğün şablonları, hedefte sustur. Üçü de küçük ve günlük kullanımı doğrudan rahatlatır.
 - Fotoğraftan tahmin en büyük "vay" etkisi olan özellik, ama doğruluğu sınırlı. Önce uyarı ve porsiyon düzenleme arayüzü tasarlanmalı.
 - Sunucu gerektiren her şey (hesap, aile, bulut senkron) şimdilik dışarıda: uygulamanın gizlilik vaadi "veri yalnızca telefonda".
+
+## Eski NeoWell projelerinden alınacak iyi özellikler (1 Ekim 2026 incelemesi)
+Eski projeler çalışan ürün değil, ama şu fikirler `koc` için uygun ve yerel kalır.
+- **Besin etiketi OCR:** Barkodu olmayan ya da veritabanında bulunmayan ürünün etiketini fotoğrafla, besin değerleri otomatik dolsun (ML Kit metin tanıma). Barkodun "bulunamadı" boşluğunu kapatır.
+- **Adet döngüsü takibi:** Yerel, gizli, bildirimle birlikte.
+- **Tansiyon ve glukoz günlüğü:** Yalnızca kayıt ve grafik, tanı ya da uyarı yok (tıbbi cihaz sınıflaması riskinden kaçınmak için).
+- **Seri rozetleri ve sağlık skoru:** Basit, yerel, abartısız.
+- **Kriz kaynakları ve yapay zekâ uyarı metni şablonları:** Koç'un güvenlik kartlarını güçlendirmek için eski projelerdeki hukuki metinlerden uyarlanabilir (`D:\proje\NeoWellAI\docs\legal`).
+- **Hukuki not:** Sağlık verisi özel nitelikli kişisel veridir. Uygulama başkalarına dağıtılacaksa KVKK aydınlatma ve açık rıza metni şart.
+
+## Yapıldı
+- Barkod okutma (Open Food Facts).
+- Adım sayar (telefonun adım sensörü, hesap gerektirmez).
