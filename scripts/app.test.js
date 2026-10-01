@@ -34,6 +34,12 @@ setTimeout(()=>{
     ok("doğru parola veri ve anahtarı geri getirir",ev("S.settings.healthNote")==="gizli not"&&ev("getKeys().groq")==="KEY-sirri-12345",[ev("S.settings.healthNote"),ev("getKeys().groq"),ev("document.querySelector('#toast').textContent")]);
     process.exit(bad?1:0);
   });
+  const calls=[];
+  w.Capacitor={isNativePlatform:()=>true,Plugins:{LocalNotifications:{checkPermissions:async()=>({display:"granted"}),checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),getPending:async()=>({notifications:[1,2]}),schedule:async x=>{calls.push(x)}}}};
+  w.notifP=ev("notifTest()");
+  w.notifP.then(()=>{
+    ok("test bildirimi kurulur ve teşhis yazılır",calls.length===1&&calls[0].notifications[0].id===99&&ev("notifDiag").includes("granted")&&ev("notifDiag").includes("Kurulu hatırlatma: 2"),[calls.length,ev("notifDiag")]);
+  });
   ev("S.chat=[];S.cid=1;cReply({reply:'x',log:[],propose:null,flag:'safety'})");
   ok("model güvenlik işareti kart üretir",ev("S.chat.some(m=>m.card&&m.card.kind==='safety')"));
   ev("S.chat=[];Object.assign(S.settings,{age:12,heightCm:165,goalKg:45,healthNote:'',kcal:0});S.entries=[];for(let i=13;i>=0;i--)S.entries.push({id:100+i,day:keyOff(-i),time:'08:00',type:'kilo',v:60-i*0.01,text:''})");
