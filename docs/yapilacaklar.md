@@ -8,8 +8,8 @@ Durum: [ ] bekliyor, [~] yapıldı ama telefonda denenmedi, [x] telefonda denend
 - [~] **Tahlil takibi + PDF** (yapıldı, telefonda denenmedi; taranmış PDF/fotoğraf için OCR sonraki adım): tahlil sonuçlarını (kan değerleri vb.) tarihli kaydet, zaman içinde grafik göster, PDF olarak dışa aktar (doktora paylaşım). Karar bekleyen soru: PDF'ten sonuç okuma (içe aktarma) de istenir mi? Tanı ya da yorum yok, yalnızca kayıt ve grafik.
 - [~] Tansiyon ve şeker takibi (yapıldı, telefonda denenmedi, plan: docs/tansiyon-seker-plani.md).
 - [~] Haftalık rapor PDF'i yapıldı (Trend > Haftalık raporu paylaş; kilo, kalori, su, spor, adım, açıksa tansiyon/şeker; yorumsuz). Kalan: Koç'un "bu hafta neden kilo vermedin" analizi. Tahlil PDF'iyle aynı PDF altyapısı kullanılır.
-- [ ] Bildirimden tek dokunuşla "+250 ml".
-- [ ] Otomatik Drive yedeği.
+- [~] Bildirimden tek dokunuşla "+250 ml" (yapıldı: su bildirimindeki düğme, ekran açılmadan kayıt, uygulama bir sonraki açılışta alır).
+- [~] Drive yedeği paylaş yöntemiyle (hesap bağlamadan): Ayarlar > Yedeği Drive'a gönder, parolalı şifreli dosya, parola isteğe bağlı Keystore'da saklanır, Pazar akşamı hatırlatma (yedek yeniyse atlanır).
 - [ ] Health Connect (Mi Band/saat kullanımı netleşince).
 - [ ] Öğün şablonları (şimdilik "Dünkünü tekrarla" yeterli görüldü).
 - Diğer fikirler: `docs/fikirler.md`.
@@ -26,4 +26,6 @@ Sürüm: son APK (GitHub Releases, `neowell.apk`).
 - [~] Etiket okuma: gerçek bir paketin besin tablosunu çek (kalori ve makrolar doğru mu, ad yazıp kaydet, porsiyon ekranı). Tahlil fotoğrafı: rapor fotoğrafını okut, satırları kontrol et.
 - [~] Tansiyon ve şeker (Ayarlar > Sağlık ölçümleri'nden aç): tansiyon girişi (2 ölçüm, seans), şeker girişi (bağlam), hedef aralığı ön ayarları, Bugün'de Ölçümler kartı, Trend'de kartlar, grafikler, uç değerde 112 kutusu (yalnızca bugün tarihli), "emin misin" uyarısı, silme/geri al, hatırlatmalar (Ayarlar'da aç), Doktor raporu PDF (Türkçe karakter, grafik, tablo).
 - [~] Haftalık rapor: Trend sekmesi altındaki düğmeyle PDF üret, aç (Türkçe karakterler, tablo, kilo farkı doğru mu, kayıtsız gün '–').
+- [~] Bildirim düğmesi: su bildirimi geldiğinde "+250 ml" düğmesine dokun; ekran çok kısa yanıp sönmeli, sonra uygulamayı açınca su eklenmiş olmalı (bugün toplamı artmış, bildirim kaybolmuş). Uygulama tamamen kapalıyken de dene.
+- [~] Drive yedeği: Ayarlar > Yedeği Drive'a gönder > parola > paylaşım ekranında Drive'ı seç; Drive'da dosya var mı; başka telefonda/yeniden kurulumda Dosyadan oku ile geri yükle. Pazar 20:00 hatırlatması geliyor mu.
 - [ ] Sığma kontrolü: Bugün ekranı küçük ekranda taşmıyor.

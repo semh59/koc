@@ -402,6 +402,115 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("rapor içeriği: kilo, su, kalori, spor ve (takip açıksa) tansiyon",drawn.includes("NeoWell · Haftalık rapor")&&drawn.some(t=>t.includes("81,9"))&&drawn.some(t=>/günlük ortalama 2,0 L/.test(t))&&drawn.some(t=>/1900 kcal/.test(t))&&drawn.some(t=>/toplam 45 dk/.test(t))&&drawn.some(t=>/128\/82 mmHg/.test(t)),drawn);
     ev("S.entries=[];S.vitals=[];S.settings.bpOn=false;tab='bugun';render()");
   }
+  // ---- Bildirimden hızlı su, haftalık yedek hatırlatması, Drive'a gönder ----
+  {
+    const doc=w.document,q=s=>doc.querySelector(s),qa=s=>[...doc.querySelectorAll(s)];
+    const click=s=>q(s).click(),toastT=()=>q("#toast").textContent;
+    const lnOld=w.Capacitor.Plugins.LocalNotifications;
+    let types=null,list=[];
+    w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),cancel:async()=>{},registerActionTypes:async o=>{types=o.types},schedule:async o=>{list=o.notifications}};
+    ev("S.entries=[];S.vitals=[];S.settings.lastBackup='';S.settings.glass=250;S.settings.bpOn=false;S.settings.bsOn=false");
+
+    // bildirim düğmesi tanımı
+    await ev("scheduleReminders()");
+    ok("bildirim eylem türü kayıtlı: 'su' düğmesi +250 ml",types&&types[0].id==="water"&&types[0].actions[0].id==="su"&&types[0].actions[0].title==="+250 ml",types);
+    const water=list.filter(n=>[2,3,4].includes(Math.floor(n.id/100))),other=list.filter(n=>![2,3,4].includes(Math.floor(n.id/100)));
+    ok("su bildirimlerinde eylem türü ve miktar var",water.length>0&&water.every(n=>n.actionTypeId==="water"&&n.extra.act==="su"&&n.extra.v===250),water[0]);
+    ok("diğer bildirimlerde düğme yok",other.length>0&&other.every(n=>n.actionTypeId===undefined&&n.extra===undefined));
+    ev("S.settings.glass=330");await ev("scheduleReminders()");
+    ok("bardak boyutu değişince düğme metni ve miktar güncellenir",types[0].actions[0].title==="+330 ml"&&list.filter(n=>n.actionTypeId==="water").every(n=>n.extra.v===330));
+    ev("S.settings.glass=250");
+
+    // haftalık yedek hatırlatması
+    const bk=()=>list.filter(n=>Math.floor(n.id/100)===10);
+    await ev("scheduleReminders()");
+    ok("10 kayıttan azken yedek hatırlatması kurulmaz",bk().length===0);
+    ev("S.entries=Array.from({length:12},(_,i)=>({id:i+1,day:dayKey(),time:'08:00',type:'su',v:200,text:''}))");
+    await ev("scheduleReminders()");
+    ok("yedek hatırlatması yalnızca Pazar günleri kurulur (30 günde 4-5)",bk().length>=3&&bk().length<=5&&bk().every(n=>new Date(n.schedule.at).getDay()===0),bk().map(n=>new Date(n.schedule.at).getDay()));
+    ok("yedek bildirimi metni Drive'a yönlendirir",bk()[0].body.includes("Drive")&&bk()[0].title.includes("Yedek"));
+    ev("S.settings.lastBackup=dayKey()");await ev("scheduleReminders()");
+    const dayDiff=n=>Math.round((new Date(n.schedule.at).setHours(0,0,0,0)-new Date().setHours(0,0,0,0))/864e5);
+    ok("yeni yedekten sonraki 7 günde Pazar bildirimi atlanır, sonrakiler sürer",bk().length>=2&&bk().every(n=>dayDiff(n)>=7),bk().map(dayDiff));
+    ev("S.settings.lastBackup='2020-01-01'");await ev("scheduleReminders()");
+    ok("eski yedekte hatırlatma sürer",bk().length>=3);
+    ev("S.settings.reminders.find(r=>r.id===10).on=false");await ev("scheduleReminders()");
+    ok("kapatılınca hiç kurulmaz",bk().length===0);
+    ev("S.settings.reminders.find(r=>r.id===10).on=true;S.settings.lastBackup=''");
+    w.Capacitor.Plugins.LocalNotifications=lnOld;
+
+    // hızlı kayıt: yerel taraf biriktirir, JS ana veriye ekler
+    let pending=[];
+    w.Capacitor.Plugins.QuickLog={take:async()=>{const r={items:pending};pending=[];return r}};
+    const tms=(y,m,d,h,mi)=>new Date(y,m-1,d,h,mi).getTime();
+    ev("S.entries=[];S.settings.waterMl=2500");
+    pending=[{v:250,t:tms(2026,9,30,23,50)},{v:250,t:Date.now()-60000}];
+    await ev("quickIngest()");
+    ok("hızlı kayıtlar doğru gün ve saatle eklenir (gece yarısı öncesi dünün kaydı)",ev("S.entries.length")===2&&ev("S.entries[0].day")==="2026-09-30"&&ev("S.entries[0].time")==="23:50"&&ev("S.entries[0].type")==="su"&&ev("S.entries[0].v")===250,ev("S.entries"));
+    ok("bildirim toast'ı toplam miktarı yazar",toastT().includes("500 ml")&&toastT().includes("bugün 250"),toastT());
+    await ev("quickIngest()");
+    ok("aynı kayıtlar ikinci kez eklenmez (take bir kez verir)",ev("S.entries.length")===2);
+    pending=[{v:0,t:Date.now()},{v:1501,t:Date.now()},{v:250,t:Date.now()+36e5},{v:NaN,t:Date.now()},{v:250,t:0},{v:250},null,"x",{v:300,t:Date.now()-1000}];
+    await ev("quickIngest()");
+    ok("geçersiz kayıtlar (sınır dışı, gelecek, bozuk) atılır, geçerli biri eklenir",ev("S.entries.length")===3&&ev("S.entries[2].v")===300,ev("S.entries"));
+    pending=[];await ev("quickIngest()");
+    ok("boş liste: değişiklik yok",ev("S.entries.length")===3);
+    ev("S.entries=[]");pending=[{v:250,t:Date.now()-1000}];
+    const lnH=[];w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),cancel:async()=>{},registerActionTypes:async()=>{},schedule:async o=>{lnH.push(...o.notifications)}};
+    ev("S.settings.waterMl=500;add('su',250,'')");
+    await ev("quickIngest()");await new Promise(r=>setTimeout(r,50));
+    ok("hızlı kayıt hedefi tamamlarsa bildirimler yeniden kurulur, bugünün su alarmı yok",lnH.length>0&&![200,300,400].some(i=>lnH.some(n=>n.id===i)),lnH.length);
+    w.Capacitor.Plugins.LocalNotifications=lnOld;ev("S.settings.waterMl=2500");
+    delete w.Capacitor.Plugins.QuickLog;
+    ev("S.entries=[]");await ev("quickIngest()");
+    ok("eklenti yoksa (tarayıcı) sessizce geçer, kayıt eklenmez",ev("S.entries.length")===0);
+    ev("S.entries=[]");
+
+    // Drive'a gönder
+    let saved=null,shared=null,shareErr=null;
+    w.Capacitor.Plugins.Filesystem={writeFile:async o=>{saved=o;return {uri:"file:///cache/y.json"}}};
+    w.Capacitor.Plugins.Share={share:async o=>{if(shareErr)throw shareErr;shared=o}};
+    ev("S.settings.healthNote='gizli sağlık notu';S.settings.lastBackup=''");
+    ev("tab='ayar';render()");
+    ok("Ayarlar'da Drive'a gönder düğmesi",!!q('[data-act="drive"]'));
+    click('[data-act="drive"]');await new Promise(r=>setTimeout(r,30));
+    ok("yedek ekranı: parola alanları, hesap bağlama gerekmediği belirtilir",!!q("#bkp1")&&!!q("#bkp2")&&q("#sheet").textContent.includes("Hesap bağlamak gerekmez")&&!q("#bkrem"));
+    q("#bkp1").value="abc";q("#bkp2").value="abc";click('[data-bk="send"]');await new Promise(r=>setTimeout(r,30));
+    ok("kısa parola reddedilir",saved===null&&q("#bkw").textContent.includes("en az 6"));
+    q("#bkp1").value="parola123";q("#bkp2").value="parola124";click('[data-bk="send"]');await new Promise(r=>setTimeout(r,30));
+    ok("parolalar uyuşmazsa gönderilmez",saved===null&&q("#bkw").textContent.includes("aynı değil"));
+    q("#bkp2").value="parola123";click('[data-bk="send"]');await new Promise(r=>setTimeout(r,800));
+    ok("şifreli yedek paylaşılır: dosya adı, düz metin yok, paylaşım",saved&&/^neowell-yedek-\d{4}-\d{2}-\d{2}\.json$/.test(saved.path)&&JSON.parse(saved.data).enc==="aes-gcm-pbkdf2"&&!saved.data.includes("gizli sağlık notu")&&shared.files[0]==="file:///cache/y.json",saved&&saved.data.slice(0,120));
+    ok("paylaşım sonrası son yedek tarihi bugün olur, bildirim metni",ev("S.settings.lastBackup")===ev("dayKey()")&&toastT().includes("Drive"));
+    // geri yüklenebilir mi (gidiş dönüş)
+    doc.body.insertAdjacentHTML("beforeend",'<textarea id="bk2"></textarea>');
+    ev("S.settings.healthNote=''");
+    const encJ=saved.data;
+    ev("sheetYedek()");q("#bk").value=encJ;q("#bkpw").value="parola123";await ev("goYukle()");
+    ok("gönderilen yedek aynı parolayla geri yüklenir",ev("S.settings.healthNote")==="gizli sağlık notu");
+    // iptal
+    shareErr=new Error("Share canceled");saved=null;ev("S.settings.lastBackup=''");
+    ev("sheetDrive()");await new Promise(r=>setTimeout(r,30));
+    q("#bkp1").value="parola123";q("#bkp2").value="parola123";click('[data-bk="send"]');await new Promise(r=>setTimeout(r,800));
+    ok("paylaşım iptal edilirse yedek yapıldı sayılmaz",ev("S.settings.lastBackup")===""&&!toastT().includes("paylaşıldı"));
+    shareErr=null;
+
+    // parolayı Keystore ile saklama
+    w.Capacitor.Plugins.KeyVault={encrypt:async({text})=>({data:"ENC:"+Buffer.from(text).toString("base64")}),decrypt:async({data})=>({text:Buffer.from(data.slice(4),"base64").toString()})};
+    ev("vaultOn=true");
+    ev("sheetDrive()");await new Promise(r=>setTimeout(r,30));
+    ok("kasa varken 'parolayı sakla' kutusu işaretli gelir",!!q("#bkrem")&&q("#bkrem").checked);
+    q("#bkp1").value="parola123";q("#bkp2").value="parola123";click('[data-bk="send"]');await new Promise(r=>setTimeout(r,800));
+    ok("parola kasayla şifreli saklanır, düz metin saklanmaz",!!ev("localStorage.getItem('koc_bkpw_enc')")&&!ev("localStorage.getItem('koc_bkpw_enc')").includes("parola123")&&ev("localStorage.getItem('koc_bkpw_enc')").startsWith("ENC:"));
+    saved=null;ev("sheetDrive()");await new Promise(r=>setTimeout(r,30));
+    ok("saklı parolayla tek dokunuşla gönderme: parola alanı yok",!q("#bkp1")&&!!q('[data-bk="send"]')&&q("#sheet").textContent.includes("saklı"));
+    click('[data-bk="send"]');await new Promise(r=>setTimeout(r,800));
+    ok("saklı parolayla şifreli yedek gider",saved&&JSON.parse(saved.data).enc==="aes-gcm-pbkdf2");
+    ev("sheetDrive()");await new Promise(r=>setTimeout(r,30));click('[data-bk="forget"]');await new Promise(r=>setTimeout(r,30));
+    ok("parolayı unut: saklanan silinir, alanlar geri gelir",ev("localStorage.getItem('koc_bkpw_enc')")===null&&!!q("#bkp1"));
+    ev("closeSheet();vaultOn=false");delete w.Capacitor.Plugins.KeyVault;
+    ev("S.settings.healthNote='';S.settings.lastBackup='';tab='bugun';render()");
+  }
     process.exit(bad?1:0);
   });
   const calls=[];

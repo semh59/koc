@@ -23,20 +23,34 @@ console.log("Simgeler yerleştirildi.");
 
 // API anahtarı kasası: Keystore eklentisini kopyala, MainActivity'ye kaydet. Keystore AES-GCM için API 23 gerekir.
 const jdir="android/app/src/main/java/com/neowell/app";
-for(const f of ["KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
+for(const f of ["KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin","QuickMath","QuickLogPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
 fs.writeFileSync(`${jdir}/MainActivity.java`,`package com.neowell.app;
 
+import android.content.Intent;
 import android.os.Bundle;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        // Bildirimdeki "+250 ml" düğmesi: kayıt arka planda yazılır, ekran açık kalmaz. savedInstanceState != null ise yeniden oluşturmadır, tekrar sayılmaz.
+        boolean quick = savedInstanceState == null && QuickLogPlugin.handle(this, getIntent());
         registerPlugin(KeyVaultPlugin.class);
         registerPlugin(DeviceHelpPlugin.class);
         registerPlugin(StepCounterPlugin.class);
         registerPlugin(OcrPlugin.class);
+        registerPlugin(QuickLogPlugin.class);
         super.onCreate(savedInstanceState);
+        if (quick) moveTaskToBack(true);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        if (QuickLogPlugin.handle(this, intent)) {
+            moveTaskToBack(true);
+            return;
+        }
+        super.onNewIntent(intent);
     }
 }
 `);
