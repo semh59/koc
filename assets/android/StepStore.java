@@ -77,7 +77,9 @@ final class StepStore {
         s.last = sp.getFloat("last", -1);
         Map<String, Long> hist = new HashMap<>();
         String today = today();
-        if (closeFirst) StepMath.closeDay(s, today, counter, hist);
+        java.util.Calendar now = java.util.Calendar.getInstance();
+        int minutes = now.get(java.util.Calendar.HOUR_OF_DAY) * 60 + now.get(java.util.Calendar.MINUTE);
+        if (closeFirst) StepMath.closeDay(s, today, counter, minutes, hist);
         long steps = StepMath.update(s, today, counter, hist);
         SharedPreferences.Editor e = sp.edit();
         e.putString("day", s.day).putFloat("base", s.base).putFloat("carry", s.carry).putFloat("last", s.last);

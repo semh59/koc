@@ -86,6 +86,15 @@ setTimeout(async()=>{
   ok("yedek temizliği adım kaydını korur",ev("cleanEntries(S.entries).out.filter(e=>e.type==='adim').length")===2);
   ok("imkânsız adım değeri atılır",ev("cleanEntries([{type:'adim',day:'2026-01-01',v:999999}]).out.length")===0&&ev("setSteps('2026-01-01',0)")===false);
   ok("Trend tablosunda adım sütunu var",ev("viewTrend()").includes("<th>Adım</th>"));
+  ok("Adım halkası dokunulabilir",ev("viewBugun()").includes('data-act="adimdetay"'));
+  ev("S.settings.heightCm=170;S.settings.stepsOn=true");
+  ev("sheetAdim()");
+  const as=w.document.querySelector("#sheet").textContent;
+  ok("adım ayrıntısı: adım, ortalama, mesafe ve not görünür",as.includes("5.000")&&as.includes("7 gün ortalaması")&&as.includes("Yaklaşık mesafe")&&as.includes("kalori hedefine eklenmez"),as.slice(0,200));
+  ok("adım ayrıntısı: 7 çubuk çizilir",w.document.querySelectorAll("#sheet svg.bars rect").length===7);
+  ev("S.settings.heightCm=0");ev("sheetAdim()");
+  ok("boy yoksa mesafe gizlenir",!w.document.querySelector("#sheet").textContent.includes("Yaklaşık mesafe")&&w.document.querySelector("#sheet").textContent.includes("boyunu gir"));
+  ev("closeSheet()");
   ev("S.settings.stepsOn=false;S.entries=[]");
   const offJ=n=>({status:1,product:{code:"8690526010113",product_name:"Crax sticks",brands:"Eti",product_quantity:40,nutriments:n}});
   let fetched=0,resp=offJ({"energy-kcal_100g":440,proteins_100g:8.5,carbohydrates_100g:70,fat_100g:13});
