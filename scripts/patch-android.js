@@ -32,3 +32,20 @@ public class MainActivity extends BridgeActivity {
 const vg="android/variables.gradle";
 fs.writeFileSync(vg,fs.readFileSync(vg,"utf8").replace("minSdkVersion = 22","minSdkVersion = 23"));
 console.log("Anahtar kasası eklendi.");
+
+// Sabit imza: depodaki anahtarı doğrudan debug imzası yap, yoksa her derleme yeni anahtar üretir ve güncellemeler kurulamaz.
+const bg="android/app/build.gradle";
+let g=fs.readFileSync(bg,"utf8");
+if(!g.includes("koc-debug.keystore")){
+  g=g.replace(/android \{/,`android {
+    signingConfigs {
+        debug {
+            storeFile file("../../signing/koc-debug.keystore")
+            storePassword "android"
+            keyAlias "androiddebugkey"
+            keyPassword "android"
+        }
+    }`);
+  fs.writeFileSync(bg,g);
+}
+console.log("Sabit imza ayarlandı.");
