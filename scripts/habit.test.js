@@ -1,0 +1,20 @@
+const H=require("../www/habitlib.js");let bad=0;
+const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
+ok("sleepMin: 23:30-07:00 = 450 dk, gündüz uykusu da hesaplanır",H.sleepMin("23:30","07:00")===450&&H.sleepMin("01:00","08:30")===450);
+ok("sleepMin: aynı saat, 1 saatten kısa, 18 saatten uzun ve bozuk girdi reddedilir",[H.sleepMin("07:00","07:00"),H.sleepMin("07:00","07:30"),H.sleepMin("06:00","01:00"),H.sleepMin("25:00","07:00"),H.sleepMin(null,undefined)].every(x=>x===null));
+const H1=36e5,f={plan:16,t0:1e12,log:[]};
+let s=H.fastState(f,1e12+10*H1);
+ok("fastState 16:8: 10 saat sonra 6 saat kalır, bitmedi",s.elapsed===600&&s.left===360&&!s.done,s);
+s=H.fastState(f,1e12+17*H1);
+ok("fastState 16:8: 17 saat sonra bitti, kalan 0",s.left===0&&s.done&&s.elapsed===1020,s);
+ok("fastState: oruç yoksa, bozuk planda null; gelecekteki başlangıç 0 geçer",H.fastState({plan:16,t0:null},1)===null&&H.fastState({plan:7,t0:5},9)===null&&H.fastState(f,1e12-5*H1).elapsed===0);
+let r=H.cleanFast({plan:18,t0:5,log:[{t0:1,t1:2},{t0:5,t1:5},{t0:5,t1:4},{t0:0,t1:73*H1},{t0:"a",t1:9},null,{t0:10,t1:20,x:1}]});
+ok("cleanFast: geçersiz ve 72 saati aşan kayıtları atar, plan ve t0 korunur",JSON.stringify(r)==='{"plan":18,"t0":5,"log":[{"t0":1,"t1":2},{"t0":10,"t1":20}]}',r);
+ok("cleanFast: çöp girdide varsayılan döner, log en çok 200",JSON.stringify(H.cleanFast("x"))==='{"plan":16,"t0":null,"log":[]}'&&JSON.stringify(H.cleanFast({plan:99,t0:-1,log:5}))==='{"plan":16,"t0":null,"log":[]}'&&H.cleanFast({log:Array.from({length:250},(_,i)=>({t0:i,t1:i+1}))}).log.length===200);
+r=H.cleanSleep([{day:"2026-10-01",min:400,q:3},{day:"2026-10-01",min:450,q:9,src:"hc"},{day:"2026-10-02",min:30},{day:"2026-10-03",min:"x"},{day:"bozuk",min:400},null,{day:"2026-09-30",min:1080.4,q:1,src:"x"}]);
+ok("cleanSleep: gün başına son kayıt, aralık dışı atılır, q ve src doğrulanır, güne göre sıralı",JSON.stringify(r)==='[{"day":"2026-09-30","min":1080,"q":1},{"day":"2026-10-01","min":450,"src":"hc"}]',r);
+ok("cleanSleep: çöp girdide boş, en çok 400",H.cleanSleep(7).length===0&&H.cleanSleep(Array.from({length:500},(_,i)=>({day:new Date(Date.UTC(2020,0,1+i)).toISOString().slice(0,10),min:400}))).length===400);
+r=H.cleanMood([{day:"2026-10-01",v:2,t:"  eh "},{day:"2026-10-01",v:4},{day:"2026-10-02",v:6},{day:"2026-10-03",v:3,t:"x".repeat(150)},{day:"2026-10-04",v:2.5}]);
+ok("cleanMood: gün başına son kayıt, aralık dışı atılır, not 100 karaktere kesilir",JSON.stringify(r.map(x=>[x.day,x.v,x.t&&x.t.length]))==='[["2026-10-01",4,null],["2026-10-03",3,100]]',r);
+ok("cleanMood: çöp girdide boş",H.cleanMood(null).length===0&&H.cleanMood([1,"a",{}]).length===0);
+if(bad){console.log(bad+" test başarısız");process.exit(1)}
