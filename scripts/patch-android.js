@@ -19,6 +19,10 @@ if (!x.includes("MotionReceiver")) {
 if (!x.includes("com.google.mlkit.vision.DEPENDENCIES")) {
   x = x.replace("</application>", '    <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui"/>\n    </application>');
 }
+// Ana ekran widget'ı: APPWIDGET_UPDATE'i sistem gönderdiği için exported=true zorunlu; su ekleme bu alıcıda değil MainActivity yolunda.
+if (!x.includes("NeoWidget")) {
+  x = x.replace("</application>", '    <receiver android:name=".NeoWidget" android:exported="true"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE"/></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/nw_widget_info"/></receiver>\n    </application>');
+}
 fs.writeFileSync(p, x);
 console.log("Manifest güncellendi.");
 const res="android/app/src/main/res";
@@ -27,7 +31,7 @@ console.log("Simgeler yerleştirildi.");
 
 // API anahtarı kasası: Keystore eklentisini kopyala, MainActivity'ye kaydet. Keystore AES-GCM için API 23 gerekir.
 const jdir="android/app/src/main/java/com/neowell/app";
-for(const f of ["KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin","QuickMath","QuickLogPlugin","MotionMath","MotionStore","MotionGpsService","MotionReceiver","MotionPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
+for(const f of ["KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin","QuickMath","QuickLogPlugin","MotionMath","MotionStore","MotionGpsService","MotionReceiver","MotionPlugin","NeoWidget","WidgetPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
 fs.writeFileSync(`${jdir}/MainActivity.java`,`package com.neowell.app;
 
 import android.content.Intent;
@@ -50,6 +54,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(OcrPlugin.class);
         registerPlugin(QuickLogPlugin.class);
         registerPlugin(MotionPlugin.class);
+        registerPlugin(WidgetPlugin.class);
         super.onCreate(savedInstanceState);
         medChannel();
         if (quick) moveTaskToBack(true);

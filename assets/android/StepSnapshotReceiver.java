@@ -34,6 +34,8 @@ public class StepSnapshotReceiver extends BroadcastReceiver {
         boolean boot = Intent.ACTION_BOOT_COMPLETED.equals(i.getAction());
         StepStore.read(c, !boot, new StepStore.Callback() {
             public void done(Long steps, Map<String, Long> history) {
+                // Gece yarısı widget dünkü su/kaloriyi bugünmüş gibi göstermesin (updatePeriodMillis 30 dk ve MIUI'de gecikir).
+                NeoWidget.refresh(c);
                 pr.finish();
             }
         });

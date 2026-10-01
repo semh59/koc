@@ -10,6 +10,7 @@ Durum: [ ] bekliyor, [~] yapıldı ama telefonda denenmedi, [x] telefonda denend
 - [~] Haftalık rapor PDF'i yapıldı (Trend > Haftalık raporu paylaş; kilo, kalori, su, spor, adım, açıksa tansiyon/şeker; yorumsuz). Kalan: Koç'un "bu hafta neden kilo vermedin" analizi. Tahlil PDF'iyle aynı PDF altyapısı kullanılır.
 - [~] Bildirimden tek dokunuşla "+250 ml" (yapıldı: su bildirimindeki düğme, ekran açılmadan kayıt, uygulama bir sonraki açılışta alır).
 - [~] Drive yedeği paylaş yöntemiyle (hesap bağlamadan): Ayarlar > Yedeği Drive'a gönder, parolalı şifreli dosya, parola isteğe bağlı Keystore'da saklanır, Pazar akşamı hatırlatma (yedek yeniyse atlanır).
+- [~] Ana ekran widget'ı (kalan kalori, su, adım, "+250"): yapıldı, CI derlemesi ve telefonda deneme bekliyor (test maddeleri aşağıda).
 - [ ] Health Connect (Mi Band/saat kullanımı netleşince).
 - [~] Öğün şablonları, favoriler, son yenilenler, elle adım, "sayım durdu" uyarısı yapıldı (telefon test maddeleri aşağıda).
 - Diğer fikirler: `docs/fikirler.md`.
@@ -44,3 +45,7 @@ Sürüm: son APK (GitHub Releases, `neowell.apk`).
 - [ ] Plato sorusu: kilo verme hedefi varken 3 hafta düz tartılarla Koç'a "Son 3 haftadır trendin düz" mesajı düşüyor mu, "Bak" neden kartını açıyor mu, 14 gün içinde tekrar gelmiyor mu (gürültülü/seyrek tartıda nadiren çıkması beklenir).
 - [ ] Program kartı: Salon > "Koç'tan program iste" (gün, ekipman, süre, seviye) > İste; kart gün gün egzersizleri listeliyor mu, "Şablon olarak ekle" her günü Şablonlarım'a ekliyor mu, uygulamayı kapatıp açınca kart duruyor mu. Groq'ta limit hatası olursa not et.
 - [ ] Pazar bildirimi: Pazar 20:30'da "📊 Haftalık özet" geliyor mu; dokununca uygulama Koç sekmesinde (paylaşım kapalıysa Trend'de) açılıyor mu. Uygulama tamamen kapalıyken (soğuk açılış) de dene; olmazsa yalnız uygulama açılır.
+- [ ] Widget ekle: ana ekranda uzun bas > Widget'lar > NeoWell; 2×1 sığıyor ve büyütülebiliyor mu, kalan kalori, su "1,2 / 2,5 L" ve (adım sayar açıksa) adım görünüyor mu. Kalori hedefi 0 iken "hedef yok", adım sayar kapalıyken adım satırı yok mu.
+- [ ] Widget "+250": uygulama kapalı ve açıkken (arka planda) ayrı ayrı dokun; ekran kısa yanıp sönüp kapanıyor, widget'taki su hemen artıyor mu; uygulamayı açınca su kaydı Bugün'de bir kez görünüyor mu (çift sayım yok).
+- [ ] Widget dokunma: widget'a (düğme dışına) dokununca uygulama Bugün'de açılıyor mu; uygulama Koç ya da Salon'dayken arka plana alıp dene, tamamen kapalıyken de dene.
+- [ ] Widget gün değişimi: gece 00:00'dan sonra uygulamayı açmadan widget'a bak; su ve kalori "–" görünmeli (dünkü değer görünmemeli). Adım sayar kapalıysa gece yenilemesi yok, en geç 30 dk içinde (MIUI'de daha geç) düzelir. Uygulama açılınca bugünkü değerlere geçiyor mu, su/yemek ekleyince widget güncelleniyor mu.
