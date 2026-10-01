@@ -271,15 +271,14 @@ setTimeout(async()=>{
     click('#sheet [data-vt="close"]');
     click('[data-vt="menu"]');click('#sheet [data-vt="addbp"]');
     q("#fday").value=ev("keyOff(-3)");q("#bs1").value="190";q("#bd1").value="125";click('[data-vt="savebp"]');
-    click('[data-vt="savebp"]');
-    ok("geriye dönük uç değerde acil kutusu çıkmaz",ev("S.vitals.length")===4&&!doc.body.textContent.includes("112'yi ara")||!q("#sheet.on"),txt());
+    ok("geriye dönük uç değerde acil kutusu çıkmaz, tek kayıt eklenir",ev("S.vitals.length")===4&&!txt().includes("112"),[ev("S.vitals.length"),txt().slice(0,80)]);
     ev("closeSheet()");
 
     // Görünüm
     ev("tab='tansiyon';render()");
     const v=q("#view").textContent;
     ok("tansiyon görünümü: ev ortalaması, grafik noktaları, doktor raporu, silme düğmeleri",v.includes("Ev ortalaması")&&v.includes("mmHg")&&qa("#view svg circle").length>=3&&!!q('[data-vt="pdfmenu:t"]')&&qa('#view [data-vt^="del:"]').length>=2&&q("#ttl").textContent==="Tansiyon"&&q('nav [data-tab="trend"]').getAttribute("aria-current")==="page",v.slice(0,300));
-    ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
+ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("tanı dili görünümde yok",!BAN.test(v)&&!BAN.test(ev("viewBugun()")),v.match(BAN));
     ok("200/100 oturumu hedef aralığının üstünde işaretlenir",v.includes("▲"));
     const n0=ev("S.vitals.length");
@@ -338,6 +337,12 @@ setTimeout(async()=>{
     const bkJ=ev("JSON.stringify(S)"),cnt=ev("S.vitals.length");
     ev("S.vitals=[]");doc.querySelector("#bk").value=bkJ;await ev("goYukle()");
     ok("yedekten geri yüklemede ölçümler gelir",ev("S.vitals.length")===cnt&&ev("S.vitals.some(r=>r.k==='t'&&r.sid)"),[ev("S.vitals.length"),cnt]);
+    ev("tab='bugun';render()");click('[data-vt="menu"]');click('#sheet [data-vt="addbp"]');
+    q("#fday").value=ev("keyOff(-1)");q("#bs1").value="128";q("#bd1").value="82";q("#bs2").value="128";q("#bd2").value="82";click('[data-vt="savebp"]');if(q("#vwarn")&&q("#vwarn").textContent.includes("Yanlış"))click('[data-vt="savebp"]');
+    const twins=ev("S.vitals.filter(r=>r.day===keyOff(-1)&&r.sys===128&&r.dia===82).length");
+    ok("özdeş iki ölçüm (128/82 iki kez) UI'den iki satır olarak kaydedilir",twins===2&&ev("S.vitals.filter(r=>r.day===keyOff(-1)&&r.sys===128).every(r=>r.i===1||r.i===2)"),twins);
+    doc.querySelector("#bk").value=ev("JSON.stringify(S)");await ev("goYukle()");
+    ok("özdeş iki ölçüm yedek gidiş-dönüşünden sonra da iki satır",ev("S.vitals.filter(r=>r.day===keyOff(-1)&&r.sys===128&&r.dia===82).length")===2&&ev("VitalsLib.sessions(S.vitals).find(s=>s.day===keyOff(-1)&&s.sys===128).n")===2);
     doc.querySelector("#bk").value=JSON.stringify({...JSON.parse(bkJ),vitals:[{k:"t",day:"2026-09-10",time:"08:00",sys:300,dia:60},{k:"t",day:"2026-09-10",time:"08:01",sys:40,dia:60},{k:"s",day:"2026-09-10",time:"08:00",g:5},"çöp",null,{k:"s",day:"2026-09-10",time:"09:00",g:110,ctx:"acl"}]});
     await ev("goYukle()");
     ok("bozuk ölçüm satırları yüklemede ayıklanır",ev("S.vitals.length")===2,ev("S.vitals"));

@@ -100,7 +100,7 @@ function vSaveBp(){
   if(b.has&&(b.sys==null||b.dia==null))return toast("2. ölçümde büyük ve küçük tansiyonu birlikte yaz ya da boş bırak");
   for(const [r,n] of [[a,1],[b,2]]){
     if(!r.has)continue;
-    const c=VitalsLib.check({k:"t",day,time,sys:r.sys,dia:r.dia,nabiz:r.nabiz,ses:vSes,sid,not});
+    const c=VitalsLib.check({k:"t",day,time,sys:r.sys,dia:r.dia,nabiz:r.nabiz,ses:vSes,sid,i:n,not});
     if(!c.row)return toast(c.err==="tarih"?"Gün ve saati seç":c.err);
     rows.push(c.row);
   }
