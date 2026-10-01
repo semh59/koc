@@ -25,9 +25,10 @@ Koç, ücretsiz yapay zekâ servislerinden birine bağlanır. Uygulamada Ayarlar
 3. Test "Çalışıyor" derse Koç sekmesine geç. İlk seferde veri paylaşımı onayı çıkar.
 
 Notlar:
-- Anahtarlar yalnızca telefonda durur, yedek metnine girmez.
+- Anahtarlar yalnızca telefonda durur, uygulamanın yedek metnine girmez. Android'in kendi bulut yedeği açıksa telefon verisiyle birlikte Google hesabına yedeklenebilir.
 - Model adları ve ücretsiz limitler zamanla değişir. Test hata verirse **Modelleri getir** ile listeden güncel bir model seç.
 - Google Gemini kapalı gelir, çünkü ücretsiz katmanda istemler ürün geliştirmek için kullanılabilir. Açarsan her göndermeden önce onay ister.
+- 18 yaş altı, sağlık notu girilmiş ya da BMI'si düşük kullanıcılara kalori açığı önerilmez; öneri bakım düzeyinde kalır.
 - Koç hekim değildir. Baş dönmesi, göğüs ağrısı gibi belirtilerde uygulama kendi güvenlik kartını gösterir ve 112'yi önerir.
 - Su, kilo, yemek, spor ve salon kayıtları internet ve anahtar olmadan çalışmaya devam eder.
 

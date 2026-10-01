@@ -39,7 +39,7 @@ function cPush(m){const o=Object.assign({id:S.cid++,t:Date.now()},m);S.chat.push
 /* ---- bağlam ---- */
 function cCalc(){
   const st=S.settings,w=weights(),days=Object.keys(w).sort();
-  const out={trendKg:null,slope:null,tdee:null,source:"",target:null,protein:null,bmr:null};
+  const out={trendKg:null,slope:null,tdee:null,source:"",target:null,protein:null,bmr:null,block:""};
   if(!days.length)return out;
   out.trendKg=Algo.trend(w)[days[days.length-1]];out.slope=Algo.slopePerWeek(w);
   if(st.heightCm>0&&st.age>0){
@@ -47,7 +47,9 @@ function cCalc(){
     const intake={};for(const e of S.entries)if(e.type==="yemek"&&e.v)intake[e.day]=(intake[e.day]||0)+e.v;
     const r=Algo.adaptiveTdee({weights:w,intake,profile});out.tdee=r.tdee;out.source=r.source;
     out.bmr=Algo.bmrMifflin(profile);
-    const sg=Algo.suggestTarget({tdee:r.tdee,kg:out.trendKg,goalKg:st.goalKg,bmr:out.bmr});out.target=sg?sg.kcal:null;
+    const health=!!st.healthNote.trim();
+    out.block=Algo.lossBlock({age:st.age,cm:st.heightCm,kg:out.trendKg,goalKg:st.goalKg,health});
+    const sg=Algo.suggestTarget({tdee:r.tdee,kg:out.trendKg,goalKg:st.goalKg,bmr:out.bmr,age:st.age,cm:st.heightCm,health});out.target=sg?sg.kcal:null;
     out.protein=Algo.proteinRange(out.trendKg);
   }
   return out;
@@ -85,12 +87,13 @@ async function callProvider(p,key,messages,maxTokens=700){
 }
 const usable=()=>{const k=getKeys();return S.providers.filter(p=>p.on&&p.health&&k[p.id]&&(!cool[p.id]||cool[p.id]<Date.now()))};
 const hasKey=()=>{const k=getKeys();return S.providers.some(p=>p.on&&p.health&&k[p.id])};
-async function cAsk(messages,maxTokens){
-  const keys=getKeys(),list=usable();
+async function cAsk(messages,maxTokens,auto){
+  const keys=getKeys(),list=usable().filter(p=>!(auto&&p.confirm));
   if(!list.length)throw new Error(hasKey()?"fail":"none");
+  let declined=false,tried=false;
   for(const p of list){
-    if(p.confirm&&!confirm(`${p.name} ücretsiz katmanında istemler ürün geliştirmek için kullanılabilir. Sağlık verilerini bu sağlayıcıya göndermeyi onaylıyor musun?`))continue;
-    const t0=Date.now();
+    if(p.confirm&&!confirm(`${p.name} ücretsiz katmanında istemler ürün geliştirmek için kullanılabilir. Sağlık verilerini bu sağlayıcıya göndermeyi onaylıyor musun?`)){declined=true;continue}
+    tried=true;const t0=Date.now();
     try{
       const text=await callProvider(p,keys[p.id],messages,maxTokens);
       pstat[p.id]={s:"ok",t:Date.now(),ms:Date.now()-t0};return {text,provider:p};
@@ -101,7 +104,7 @@ async function cAsk(messages,maxTokens){
       else pstat[p.id]={s:"err",t:Date.now(),m:e&&e.name==="AbortError"?"zaman aşımı":(e&&e.message)||"hata"};
     }
   }
-  throw new Error("fail");
+  throw new Error(declined&&!tried?"declined":"fail");
 }
 
 /* ---- sohbet akışı ---- */
@@ -125,7 +128,10 @@ async function cFlush(){
     const o=CoachLib.parse(r.text);
     pend.forEach(m=>{m.pend=false});offline=null;
     cReply(o);
-  }catch(e){offline=e.message==="none"?"none":"fail"}
+  }catch(e){
+    if(e.message==="declined"){pend.forEach(m=>{m.pend=false});offline=null;toast("Gönderim onaylanmadı, mesaj yalnızca bu telefonda kaldı")}
+    else offline=e.message==="none"?"none":"fail";
+  }
   busy=false;typing=false;save();render();
 }
 function cReply(o,kind){
@@ -133,8 +139,10 @@ function cReply(o,kind){
   if(kind)msg.kind=kind;
   if(items.length)msg.card={kind:"log",items,state:"pending"};
   cPush(msg);
+  if(o.flag==="safety")cPush({role:"coach",text:"",card:{kind:"safety",level:"check"}});
   if(o.propose){
     const c=cCalc(),cl=CoachLib.clampKcal(o.propose.kcal,{tdee:c.tdee,bmr:c.bmr});
+    if(cl&&c.block&&c.tdee&&cl.kcal<c.tdee-50)return;
     if(cl&&cl.kcal!==S.settings.kcal)cPush({role:"coach",text:"",card:{kind:"propose",kcal:cl.kcal,why:String(o.propose.why||"").slice(0,160),limited:cl.limited,state:"pending"}});
   }
 }
@@ -186,7 +194,7 @@ async function cAuto(){
       const s=weekSummary(wk);
       user=`Geçen haftanın (${wk} günü biten 7 gün) raporunu yaz, 5-6 cümle. Uygulamanın hesapladığı özet: kayıt ${s.logged}/${s.n} gün, tartılar ${s.ws.map(x=>fmt(x)).join(", ")||"yok"}, ortalama kalori ${s.avgKcal||"veri yok"}, ortalama su ${s.avgSu||"veri yok"} ml, spor ${s.sport} dk. Hedefe uyumu değerlendir ve gelecek hafta için tek bir odak öner. Bu sayılar dışında rakam kullanma.`;
     }else user="Bugünün sabah planını hazırla (3 kısa hedef). 'notif' alanını doldur.";
-    const r=await cAsk(cMessages(user));
+    const r=await cAsk(cMessages(user),undefined,true);
     const o=CoachLib.parse(r.text);
     if(job==="weekly"){S.settings.lastWeekly=wk;cReply(Object.assign(o,{log:[]}),"weekly")}
     else{
