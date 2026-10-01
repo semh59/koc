@@ -24,4 +24,17 @@ ok("makroların toplamı 100 g'ı aşarsa reddedilir",r.status==="bad");
 ok("ürün yok",O.parse({status:0,status_verbose:"product not found"}).status==="none"&&O.parse(null).status==="none");
 ok("kalori yoksa none",O.parse(prod({nutriments:{proteins_100g:1}})).status==="none");
 ok("virgüllü sayı metni kabul edilir",O.parse(prod({nutriments:{"energy-kcal_100g":"440,0",proteins_100g:"8,5",carbohydrates_100g:"70",fat_100g:"13"}})).status==="ok");
+// lif, şeker, sodyum
+// gerçek Nutella yanıtı (Open Food Facts, 2026-10-02): sodium_100g gram cinsinden, salt_100g/2.5 ile aynı
+r=O.parse({status:1,product:{code:"3017620422003",product_name:"Nutella",brands:"Nutella, Ferrero",nutriments:{"energy-kcal_100g":539,proteins_100g:6.3,carbohydrates_100g:57.5,fat_100g:30.9,fiber_100g:0,sugars_100g:56.3,sodium_100g:0.0428,salt_100g:0.107}}});
+ok("gerçek ürün: sodium_100g gram, mg'a çevrilir; lif 0 korunur",r.status==="ok"&&r.food.na===42.8&&r.food.sg===56.3&&r.food.fb===0,r);
+r=O.parse(prod({nutriments:{"energy-kcal_100g":440,proteins_100g:8.5,carbohydrates_100g:70,fat_100g:13,salt_100g:1.2}}));
+ok("tuzdan sodyum hesaplanır (1,2 g tuz = 480 mg)",r.food.na===480,r.food);
+r=O.parse(prod({nutriments:{"energy-kcal_100g":440,proteins_100g:8.5,carbohydrates_100g:70,fat_100g:13,sodium_100g:0.2,salt_100g:1.2}}));
+ok("sodyum varsa tuz yok sayılır",r.food.na===200,r.food);
+r=O.parse(prod({nutriments:{"energy-kcal_100g":440,proteins_100g:8.5,carbohydrates_100g:70,fat_100g:13,sugars_100g:75,fiber_100g:3}}));
+ok("şeker karbonhidrattan büyükse şeker atılır, ürün ok kalır",r.status==="ok"&&r.food.sg===undefined&&r.food.fb===3,r);
+r=O.parse(prod({nutriments:{"energy-kcal_100g":440,proteins_100g:8.5,carbohydrates_100g:70,fat_100g:13,fiber_100g:250,sodium_100g:"x"}}));
+ok("imkânsız lif ve sayı olmayan sodyum atılır",r.status==="ok"&&r.food.fb===undefined&&r.food.na===undefined,r);
+ok("lif, şeker, sodyum yoksa alanlar da yok",(f=>f.fb===undefined&&f.sg===undefined&&f.na===undefined)(O.parse(prod({})).food));
 process.exit(bad?1:0);
