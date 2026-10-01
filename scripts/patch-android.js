@@ -2,10 +2,14 @@
 const fs = require("fs");
 const p = "android/app/src/main/AndroidManifest.xml";
 let x = fs.readFileSync(p, "utf8");
-for (const perm of ["POST_NOTIFICATIONS", "RECEIVE_BOOT_COMPLETED", "VIBRATE", "SCHEDULE_EXACT_ALARM", "USE_EXACT_ALARM", "CAMERA", "FLASHLIGHT"]) {
+for (const perm of ["POST_NOTIFICATIONS", "RECEIVE_BOOT_COMPLETED", "VIBRATE", "SCHEDULE_EXACT_ALARM", "USE_EXACT_ALARM", "CAMERA", "FLASHLIGHT", "ACTIVITY_RECOGNITION"]) {
   if (!x.includes(`android.permission.${perm}`)) {
     x = x.replace("</manifest>", `    <uses-permission android:name="android.permission.${perm}" />\n</manifest>`);
   }
+}
+// Adım sayacı: gece yarısı ve açılışta sayacı kaydeden alıcı.
+if (!x.includes("StepSnapshotReceiver")) {
+  x = x.replace("</application>", '    <receiver android:name=".StepSnapshotReceiver" android:exported="false"><intent-filter><action android:name="android.intent.action.BOOT_COMPLETED"/></intent-filter></receiver>\n    </application>');
 }
 // Barkod tarayıcı modülü uygulama kurulurken indirilsin (Google ML Kit).
 if (!x.includes("com.google.mlkit.vision.DEPENDENCIES")) {
@@ -19,7 +23,7 @@ console.log("Simgeler yerleştirildi.");
 
 // API anahtarı kasası: Keystore eklentisini kopyala, MainActivity'ye kaydet. Keystore AES-GCM için API 23 gerekir.
 const jdir="android/app/src/main/java/com/neowell/app";
-for(const f of ["KeyVaultPlugin","DeviceHelpPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
+for(const f of ["KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
 fs.writeFileSync(`${jdir}/MainActivity.java`,`package com.neowell.app;
 
 import android.os.Bundle;
@@ -30,6 +34,7 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(KeyVaultPlugin.class);
         registerPlugin(DeviceHelpPlugin.class);
+        registerPlugin(StepCounterPlugin.class);
         super.onCreate(savedInstanceState);
     }
 }

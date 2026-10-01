@@ -33,6 +33,11 @@ jobs:
       - name: Testleri çalıştır
         run: npm test
 
+      - name: Adım sayacı mantığı testi
+        run: |
+          javac -d /tmp/stepmath assets/android/StepMath.java scripts/StepMathTest.java
+          java -cp /tmp/stepmath com.neowell.app.StepMathTest
+
       - name: Android projesini oluştur
         run: |
           npx cap add android

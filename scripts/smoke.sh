@@ -10,7 +10,7 @@ grep -E "Capacitor/Console|chromium" full.log > smoke.log
 cat smoke.log
 diag=$(grep "NW-DIAG" smoke.log | tail -1)
 [ -n "$diag" ] || { echo "UYGULAMA AÇILMADI: NW-DIAG satırı yok"; exit 1; }
-for p in LocalNotifications Share Filesystem App KeyVault DeviceHelp BarcodeScanner; do
+for p in LocalNotifications Share Filesystem App KeyVault DeviceHelp BarcodeScanner StepCounter; do
   echo "$diag" | grep -q "$p=object" || { echo "EKLENTİ YOK: $p"; exit 1; }
 done
 n=$(adb shell dumpsys alarm | grep -E "RTC_WAKEUP.*com.neowell.app" | wc -l)
