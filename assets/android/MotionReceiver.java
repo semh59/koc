@@ -22,7 +22,7 @@ import java.util.Map;
 /** Etkinlik tanıma geçişleri (yürüme/koşma başladı-bitti): aralığı açar/kapatır, gerekirse kısa GPS penceresi başlatır. Açılışta kaydı yeniler. */
 public class MotionReceiver extends BroadcastReceiver {
     static final String ACTION = "com.neowell.app.MOTION", TICK = "com.neowell.app.MOTION_TICK";
-    private static final long TICK_MS = 150000, GPS_GAP_MS = 600000, MAX_BOUT_MS = 4L * 3600 * 1000;
+    private static final long TICK_MS = 150000, GPS_GAP_MS = 600000, MAX_BOUT_MS = 4L * 3600 * 1000, STALE_MS = 30L * 60000;
     /** Geçiş bildirimi bu kadar gecikmeden geldiyse olay zamanı kullanılır, daha geçse adım sayacıyla tutarlı olması için şimdiki zaman. */
     private static final long MAX_DELAY_MS = 90000;
 
@@ -40,7 +40,7 @@ public class MotionReceiver extends BroadcastReceiver {
     /** Açık aralık sürerken her ~2,5 dk adım sayacından kontrol noktası alınır: ritim düşüşü (yorulma) ve değişimi böyle görülür. */
     private static void scheduleTick(Context c) {
         AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
-        if (am != null) am.setAndAllowWhileIdle(AlarmManager.RTC, System.currentTimeMillis() + TICK_MS, tickIntent(c));
+        if (am != null) am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + TICK_MS, tickIntent(c));
     }
 
     static void cancelTick(Context c) {
@@ -70,7 +70,7 @@ public class MotionReceiver extends BroadcastReceiver {
     }
 
     /** Geçiş kaydı: yürüme ve koşma giriş/çıkış, diğer türlerde yalnızca giriş (açık aralığı kapatmak için). */
-    static void register(Context c) {
+    static com.google.android.gms.tasks.Task<Void> register(Context c) {
         List<ActivityTransition> l = new ArrayList<>();
         int[] foot = {DetectedActivity.WALKING, DetectedActivity.RUNNING};
         int[] other = {DetectedActivity.STILL, DetectedActivity.IN_VEHICLE, DetectedActivity.ON_BICYCLE};
@@ -79,7 +79,7 @@ public class MotionReceiver extends BroadcastReceiver {
             l.add(new ActivityTransition.Builder().setActivityType(t).setActivityTransition(ActivityTransition.ACTIVITY_TRANSITION_EXIT).build());
         }
         for (int t : other) l.add(new ActivityTransition.Builder().setActivityType(t).setActivityTransition(ActivityTransition.ACTIVITY_TRANSITION_ENTER).build());
-        ActivityRecognition.getClient(c).requestActivityTransitionUpdates(new ActivityTransitionRequest(l), intent(c));
+        return ActivityRecognition.getClient(c).requestActivityTransitionUpdates(new ActivityTransitionRequest(l), intent(c));
     }
 
     static void unregister(Context c) {
@@ -90,6 +90,8 @@ public class MotionReceiver extends BroadcastReceiver {
     public void onReceive(final Context c, Intent in) {
         String a = in.getAction();
         if (Intent.ACTION_BOOT_COMPLETED.equals(a) || Intent.ACTION_MY_PACKAGE_REPLACED.equals(a)) {
+            // Yeniden başlatmada adım sayacı sıfırlanır, güncellemede alarmlar silinir: açık aralık güvenilmez, atılır.
+            MotionStore.discard(c);
             if (MotionStore.enabled(c)) register(c);
             return;
         }
@@ -133,6 +135,11 @@ public class MotionReceiver extends BroadcastReceiver {
         boolean enter = e.getTransitionType() == ActivityTransition.ACTIVITY_TRANSITION_ENTER;
         boolean foot = type == DetectedActivity.WALKING || type == DetectedActivity.RUNNING;
         int mode = type == DetectedActivity.RUNNING ? MotionMath.RUN : MotionMath.WALK;
+        // Kontrol noktası 30 dk'dır gelmediyse çıkış olayı ya da alarm kaçmıştır: eski aralık atılıp yenisi açılır.
+        if (MotionStore.isOpen(c) && nowWall - MotionStore.lastActivityAt(c) > STALE_MS) {
+            cancelTick(c);
+            MotionStore.discard(c);
+        }
         if (MotionStore.isOpen(c) && (!enter && foot && mode == MotionStore.openMode(c) || enter && !(foot && mode == MotionStore.openMode(c)))) {
             MotionGpsService.stop(c);
             cancelTick(c);
@@ -141,7 +148,10 @@ public class MotionReceiver extends BroadcastReceiver {
         if (enter && foot && !MotionStore.isOpen(c)) {
             MotionStore.open(c, mode, t, steps);
             scheduleTick(c);
-            if (canGps(c) && MotionMath.gpsWanted(MotionStore.model(c), mode, Double.NaN, MotionStore.dayNum(), MotionStore.gpsToday(c), MotionGpsService.battery(c), MotionGpsService.powerSave(c))) MotionGpsService.start(c, mode);
+            if (canGps(c) && MotionMath.gpsWanted(MotionStore.model(c), mode, Double.NaN, MotionStore.dayNum(), MotionStore.gpsToday(c), MotionGpsService.battery(c), MotionGpsService.powerSave(c))) {
+                MotionStore.setLastGps(c, nowWall);
+                MotionGpsService.start(c, mode);
+            }
         }
     }
 

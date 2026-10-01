@@ -19,7 +19,7 @@ import java.util.List;
     name = "Motion",
     permissions = {
         @Permission(strings = { Manifest.permission.ACTIVITY_RECOGNITION }, alias = "activity"),
-        @Permission(strings = { Manifest.permission.ACCESS_FINE_LOCATION }, alias = "fine"),
+        @Permission(strings = { Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION }, alias = "fine"),
         @Permission(strings = { Manifest.permission.ACCESS_BACKGROUND_LOCATION }, alias = "bg")
     }
 )
@@ -83,8 +83,16 @@ public class MotionPlugin extends Plugin {
         }
         try {
             MotionStore.setEnabled(c, true);
-            MotionReceiver.register(c);
-            call.resolve(status());
+            MotionReceiver.register(c).addOnSuccessListener(new com.google.android.gms.tasks.OnSuccessListener<Void>() {
+                public void onSuccess(Void v) {
+                    call.resolve(status());
+                }
+            }).addOnFailureListener(new com.google.android.gms.tasks.OnFailureListener() {
+                public void onFailure(Exception e) {
+                    MotionStore.setEnabled(c, false);
+                    call.reject("Bu telefonda etkinlik tanıma (Google Play hizmetleri) kullanılamıyor");
+                }
+            });
         } catch (Exception e) {
             MotionStore.setEnabled(c, false);
             call.reject("Etkinlik tanıma kurulamadı: " + e.getMessage());

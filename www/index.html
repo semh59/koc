@@ -956,7 +956,7 @@ document.addEventListener("click",ev=>{
     else if(d.act==="barkod")barkodOku();
     else if(d.act==="adimac")stepsOpen();
     else if(d.act==="adimdegil"){S.settings.stepsAsked=true;save();render()}
-    else if(d.act==="adimkapat"){S.settings.stepsOn=false;save();render();toast("Adım sayar kapatıldı. Eski adım kayıtların durur")}
+    else if(d.act==="adimkapat"){S.settings.stepsOn=false;save();motionStopAll();render();toast("Adım sayar kapatıldı. Eski adım kayıtların durur")}
     else if(d.act==="oem")sheetOem();
     else if(d.act==="oem1"||d.act==="oem2"){const p=DH();if(p)p[d.act==="oem1"?"openAutostart":"openBattery"]().then(r=>{if(r.opened==="none")toast("Ayar ekranı açılamadı, telefon ayarlarından NeoWell'i bul")},()=>toast("Ayar ekranı açılamadı"))}
     else if(d.act==="oemok"){S.settings.oemDone=true;save();closeSheet();render();toast("Tamam, hatırlatmaları şimdi dene")}
@@ -1013,7 +1013,7 @@ document.addEventListener("keydown",ev=>{
   if(ev.key==="Enter"&&ev.target.id==="cmsg"){ev.preventDefault();const i=ev.target,t=i.value;i.value="";cSend(t);return}
   if(ev.key==="Enter"&&ev.target.closest("#sheet")&&ev.target.tagName==="INPUT"){const b=$("#sheet [data-go]");if(b)b.click()}
 });
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){quickIngest();motionIngest();motionConfigure();stepsSync();render();cFlush();cAuto();if(Date.now()-lastSched>6*36e5)scheduleReminders().then(setNotif)}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="ayar")render()});stepsSync();render();cFlush();cAuto();if(Date.now()-lastSched>6*36e5)scheduleReminders().then(setNotif)}});
 
 render();
 if(corruptNote)toast("Kayıtlı veri okunamadı. Eski hali ayrı bir kopyada saklandı.");

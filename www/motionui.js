@@ -29,6 +29,7 @@ function motionSettingsHtml(){
 async function motionToggle(){
   const m=MO(),st=S.settings;if(!m)return;
   if(st.motionOn){
+    await motionIngest();
     st.motionOn=false;save();try{await m.stop()}catch(e){}await motionStatus();render();return toast("Hareket algılama kapatıldı. Eski kayıtların durur");
   }
   try{
@@ -55,11 +56,19 @@ async function motionIngest(){
   if(tab==="adim"&&!$("#sheet").classList.contains("on"))render();
   console.log("NW-MOTION ingested "+n);
 }
+/* Adım sayar kapanınca hareket algılama da durur (ayar bloğu adım sayara bağlı). */
+async function motionStopAll(){
+  const m=MO();if(!S.settings.motionOn)return;
+  await motionIngest();S.settings.motionOn=false;save();
+  if(m)try{await m.stop()}catch(e){}
+}
+/* Yedekten gelen ya da izni geri alınmış ayarda yerel taraf kapalıysa ayarı düşür, kullanıcıya açık görünüp çalışmamasın. */
 async function motionBoot(){
   const m=MO();if(!m||!S.settings.motionOn)return;
-  motionConfigure();
-  try{await m.start()}catch(e){}
   await motionStatus();
+  if(motionPerm&&!motionPerm.activity){S.settings.motionOn=false;save();render();return}
+  motionConfigure();
+  try{await m.start()}catch(e){S.settings.motionOn=false;save();render();return}
   motionIngest();
 }
 
