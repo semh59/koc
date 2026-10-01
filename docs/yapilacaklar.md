@@ -5,7 +5,7 @@ Durum: [ ] bekliyor, [~] yapıldı ama telefonda denenmedi, [x] telefonda denend
 ## Yapılacak özellikler (sırayla)
 - [ ] Fotoğraftan yemek tahmini (Koç'a tabak fotoğrafı, "Listeme ekle" kartı, tahmin olduğu yazılı).
 - [ ] Besin etiketi okuma (ML Kit metin tanıma): barkodsuz ürünün değerleri otomatik dolar.
-- [ ] **Tahlil takibi + PDF:** tahlil sonuçlarını (kan değerleri vb.) tarihli kaydet, zaman içinde grafik göster, PDF olarak dışa aktar (doktora paylaşım). Karar bekleyen soru: PDF'ten sonuç okuma (içe aktarma) de istenir mi? Tanı ya da yorum yok, yalnızca kayıt ve grafik.
+- [~] **Tahlil takibi + PDF** (yapıldı, telefonda denenmedi; taranmış PDF/fotoğraf için OCR sonraki adım): tahlil sonuçlarını (kan değerleri vb.) tarihli kaydet, zaman içinde grafik göster, PDF olarak dışa aktar (doktora paylaşım). Karar bekleyen soru: PDF'ten sonuç okuma (içe aktarma) de istenir mi? Tanı ya da yorum yok, yalnızca kayıt ve grafik.
 - [ ] Haftalık rapor PDF'i (doktor/diyetisyen paylaşımı) ve Koç'un "bu hafta neden kilo vermedin" analizi. Tahlil PDF'iyle aynı PDF altyapısı kullanılır.
 - [ ] Bildirimden tek dokunuşla "+250 ml".
 - [ ] Otomatik Drive yedeği.
@@ -21,4 +21,5 @@ Sürüm: son APK (GitHub Releases, `neowell.apk`).
 - [~] Su hedefi dolunca o günün kalan su bildirimleri gelmiyor.
 - [~] Bildirimler uygulama kapalıyken geliyor (Xiaomi ayarları yapılmış halde).
 - [x] Barkod okutma.
+- [~] Tahlil: Trend sekmesi > Tahlil takibi > PDF'ten oku. Gerçek bir laboratuvar PDF'i okut (satırlar doğru mu, tarih, birim, referans), kaydet, test detayında grafik, "PDF olarak paylaş" ile çıkan PDF'i aç (Türkçe karakterler, grafik), korumalı PDF parolası, taranmış PDF mesajı.
 - [ ] Sığma kontrolü: Bugün ekranı küçük ekranda taşmıyor.
