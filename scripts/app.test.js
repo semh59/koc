@@ -1209,6 +1209,8 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("widget: değişiklik yoksa tekrar gönderilmez",wc.length===1);
     ev("S.settings.kcal=0;S.settings.stepsOn=false;render()");
     ok("widget: hedef yoksa kcalLeft, adım kapalıysa steps null",wc.length===2&&wc[1].kcalLeft===null&&wc[1].steps===null&&"kcalLeft" in wc[1]);
+    ev("S.settings.stepsOn=true;tab='trend';render()");stepSteps=3200;await ev("stepsSync()");
+    ok("widget: Bugün dışındayken de adım değişince güncellenir",wc[wc.length-1].steps===3700,wc[wc.length-1]);
     ev("tab='koc';logOff=-2;widgetOpen()");
     ok("widget: dokununca Bugün açılır",ev("tab")==="bugun"&&ev("logOff")===0);
     delete w.Capacitor.Plugins.Widget;

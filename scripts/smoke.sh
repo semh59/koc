@@ -21,9 +21,9 @@ grep -q "NW-OCR ok" smoke.log || { echo "YAZI TANIMA (ML Kit) ÇALIŞMADI"; grep
 grep -q "NW-VAULT ok" smoke.log || { echo "ANAHTAR KASASI ÇALIŞMADI"; exit 1; }
 if grep -Ei "Refused to|Content Security Policy|Uncaught" smoke.log; then echo "KONSOL HATASI"; exit 1; fi
 adb shell cmd package query-receivers -a android.appwidget.action.APPWIDGET_UPDATE | grep -q "NeoWidget" || { echo "WIDGET ALICISI KAYITLI DEĞİL"; exit 1; }
-wv() { adb shell run-as com.neowell.app cat shared_prefs/nw_widget.xml 2>/dev/null | grep -o 'water&quot;:[0-9]*' | grep -o '[0-9]*$'; }
+wv() { adb shell run-as com.neowell.app cat shared_prefs/nw_widget.xml > widget.xml 2>&1; grep -oE 'water(&quot;|")?:[0-9]+' widget.xml | grep -oE '[0-9]+$'; }
 w0=$(wv)
-[ -n "$w0" ] || { echo "WIDGET VERİSİ YAZILMADI (Widget.update)"; exit 1; }
+[ -n "$w0" ] || { echo "WIDGET VERİSİ YAZILMADI (Widget.update)"; cat widget.xml; exit 1; }
 # Bildirimdeki "+250 ml" düğmesi benzetimi: eylem uygulama açıkken gelir, kayıt yerelde birikir, uygulama öne gelince ana veriye alınır.
 adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction su --ei LocalNotificationId 200 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250}}'"
 sleep 4
@@ -32,7 +32,7 @@ cat quick.xml
 grep -q "250," quick.xml || { echo "HIZLI SU KAYDI YAZILMADI"; exit 1; }
 w1=$(wv)
 echo "Widget su: $w0 -> $w1"
-[ "$w1" = "$((w0 + 250))" ] || { echo "WIDGET SUYU ARTMADI"; exit 1; }
+[ "$w1" = "$((w0 + 250))" ] || { echo "WIDGET SUYU ARTMADI"; cat widget.xml; exit 1; }
 adb logcat -c
 adb shell monkey -p com.neowell.app -c android.intent.category.LAUNCHER 1
 sleep 10
