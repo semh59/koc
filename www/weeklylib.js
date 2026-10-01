@@ -2,7 +2,7 @@
 /* Haftalık özet raporu: kayıtlardan sayıları derler ve tek sayfalık PDF görüntüsünü çizer (DOM yok).
    Yalnızca kullanıcının girdiği kayıtları ve kendi hedeflerini yan yana koyar; yorum yapmaz. */
 const WeeklyLib=(()=>{
-  const VL=typeof VitalsLib!=="undefined"?VitalsLib:require("./vitalslib.js");
+  const VL=typeof VitalsLib!=="undefined"?VitalsLib:require("./vitalslib.js"),ML=typeof MedLib!=="undefined"?MedLib:require("./medlib.js");
   const GUNK=["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"];
   const RW=1240,RH=1754,RM=70,ROW=52;
   const p2=n=>String(n).padStart(2,"0");
@@ -14,7 +14,7 @@ const WeeklyLib=(()=>{
   const mean=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
 
   /* endDay "YYYY-MM-DD", days: pencere (7). S: durum. */
-  function build(S,endDay,days){
+  function build(S,endDay,days,nowTime){
     days=days||7;
     const [y,m,d]=endDay.split("-").map(Number),end=new Date(y,m-1,d),st=S.settings,es=S.entries,rows=[];
     for(let i=days-1;i>=0;i--){
@@ -38,6 +38,10 @@ const WeeklyLib=(()=>{
     const vit=S.vitals||[];
     if(st.bpOn){const h=VL.homeAvg(vit,endDay,days);if(h.all)summary.push(["Tansiyon",`ortalama ${Math.round(h.all.sys)}/${Math.round(h.all.dia)} mmHg (${h.all.n} ölçüm, ${h.days} gün)`])}
     if(st.bsOn){const g=VL.gStats(vit,from,endDay,st);if(g)summary.push(["Şeker",`ortalama ${Math.round(g.avg)} mg/dL (${g.n} ölçüm)${g.pct==null?"":`, hedef aralığında %${g.pct}`}`])}
+    if(st.medOn&&S.meds&&S.meds.length){
+      const a=ML.adherence(S.meds,S.medLog||[],from,endDay,endDay,nowTime||"23:59");
+      if(a.total)summary.push(["İlaç uyumu",`%${a.pct} (${a.taken} / ${a.total} doz alındı${a.missed?`, ${a.missed} kaçırılan`:""}${a.skipped?`, ${a.skipped} atlanan`:""})`]);
+    }
     return {rows,summary,from,end:endDay};
   }
 

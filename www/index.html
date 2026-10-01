@@ -253,6 +253,7 @@ select.in{appearance:none}
 <script src="lablib.js"></script>
 <script src="labellib.js"></script>
 <script src="vitalslib.js"></script>
+<script src="medlib.js"></script>
 <script src="weeklylib.js"></script>
 <script src="coachlib.js"></script>
 <script src="coach.js"></script>
@@ -261,6 +262,7 @@ select.in{appearance:none}
 <script src="vitalsui.js"></script>
 <script src="weeklyui.js"></script>
 <script src="quickui.js"></script>
+<script src="medui.js"></script>
 <script src="backupui.js"></script>
 <script>
 "use strict";
@@ -292,7 +294,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- veri ---------- */
 const DEF={
-  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,lastPlan:"",lastWeekly:"",lastBackup:"",oemDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,reminders:[
+  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,lastPlan:"",lastWeekly:"",lastBackup:"",oemDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:true,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -304,7 +306,7 @@ const DEF={
     {id:9,t:"07:30",on:false,name:"Şeker ölçümü",title:"🩸 Şeker ölçümü",body:"Şekerini ölç ve ne zaman ölçtüğünle kaydet."},
     {id:10,t:"20:00",on:true,dow:0,name:"Haftalık yedek (Pazar)",title:"☁️ Yedek zamanı",body:"Yedeği Drive'a göndermek için Ayarlar > Yedeği Drive'a gönder."}
   ]},
-  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,providers:defProviders(),chat:[],cid:1,myFoods:[],labs:[],vitals:[]
+  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,providers:defProviders(),chat:[],cid:1,myFoods:[],labs:[],vitals:[],meds:[],medLog:[]
 };
 const VR={bpSysHi:[80,300,true],bpDiaHi:[40,200,true],bpSysLo:[50,300,true],bpDiaLo:[30,200,true],gFastLo:[20,600,true],gFastHi:[20,600,true],gPostLo:[20,600,true],gPostHi:[20,600,true]};
 const RANGES={...VR,goalKg:[20,400,false],kcal:[800,8000,true],waterMl:[500,10000,true],glass:[50,1500,true],sportWeek:[10,3000,true],stepGoal:[1000,100000,true],heightCm:[100,250,true],age:[10,100,true]};
@@ -332,6 +334,8 @@ function cleanSettings(raw){
   if(o.stepsOn===true)d.stepsOn=true;
   if(o.bpOn===true)d.bpOn=true;
   if(o.bsOn===true)d.bsOn=true;
+  if(o.medOn===true)d.medOn=true;
+  if(o.medShowName===false)d.medShowName=false;
   if(o.stepsAsked===true)d.stepsAsked=true;
   if(Array.isArray(o.reminders))for(const r of d.reminders){
     const x=o.reminders.find(y=>y&&y.id===r.id);
@@ -339,6 +343,7 @@ function cleanSettings(raw){
   }
   return d;
 }
+function cleanMedState(r){const meds=MedLib.cleanMeds(r&&r.meds);return {meds,medLog:MedLib.cleanLog(r&&r.medLog,meds)}}
 function cleanMyFoods(arr){
   const out=[],seen=new Set();
   for(const x of (Array.isArray(arr)?arr:[]).slice(0,200)){
@@ -381,7 +386,7 @@ function load(){
     const r=JSON.parse(raw);
     if(r&&Array.isArray(r.entries)){
       const {out}=cleanEntries(r.entries);
-      return Object.assign({settings:cleanSettings(r.settings),entries:out,nextId:out.length+1,myFoods:cleanMyFoods(r.myFoods),labs:LabLib.cleanLabs(r.labs),vitals:VitalsLib.clean(r.vitals)},cleanGym(r),cleanCoach(r));
+      return Object.assign({settings:cleanSettings(r.settings),entries:out,nextId:out.length+1,myFoods:cleanMyFoods(r.myFoods),labs:LabLib.cleanLabs(r.labs),vitals:VitalsLib.clean(r.vitals)},cleanMedState(r),cleanGym(r),cleanCoach(r));
     }
   }catch(e){}
   try{localStorage.setItem("koc_v1_bozuk",raw)}catch(e){}
@@ -511,7 +516,7 @@ function viewBugun(){
     ${ring(su/sh,"var(--su)",fmt(su/1000,1),"Su",`/ ${fmt(sh/1000,1)} L`)}
     ${ring(kcP,"var(--kcal)",Math.round(kc),"Kalori",st.kcal>0?`/ ${st.kcal}`:"hedef yok")}
     ${ring(sw/st.sportWeek,"var(--spor)",Math.round(sw),"Spor",`/ ${st.sportWeek} dk hafta`)}
-  </div></div>${sOn?stepCard():""}${vCard()}`;
+  </div></div>${sOn?stepCard():""}${vCard()}${medCard()}`;
   const meals=S.entries.filter(e=>e.type==="yemek"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
   const pr=cur!=null?Algo.proteinRange(cur):null;
   const macro=meals.some(e=>e.p||e.c||e.f)?`<div class="macro num">Protein <b>${Math.round(mac("p"))}</b>${pr?` / ${pr[0]}–${pr[1]}`:""} g${meals.some(e=>e.c!=null||e.f!=null)?` · Karbonhidrat <b>${Math.round(mac("c"))}</b> g · Yağ <b>${Math.round(mac("f"))}</b> g`:""}</div>`:"";
@@ -592,6 +597,7 @@ function viewAyar(){
     ${isNative()&&SC()?`<div class="btns"><button class="btn ghost" data-act="${st.stepsOn?"adimkapat":"adimac"}">${st.stepsOn?"Adım sayarı kapat":"Adım sayarı aç"}</button></div>`:""}
   </div>
   ${vitalsSettingsHtml(fld)}
+  ${medSettingsHtml()}
   <h2>Hatırlatmalar</h2><div class="card"><div class="status">${esc(nf)}</div>${notifDiag?`<p class="hint" style="padding:0 0 8px">${esc(notifDiag)}</p>`:""}${isNative()?`<div class="btns"><button class="btn ghost" data-act="bildirimtest">Test bildirimi gönder</button>${oemXiaomi()?`<button class="btn ghost" data-act="oem">Xiaomi hatırlatma ayarları</button>`:""}</div>`:""}
     ${st.reminders.filter(r=>!((r.id===7||r.id===8)&&!st.bpOn)&&!(r.id===9&&!st.bsOn)).map(r=>`<div class="rem"><span class="nm">${esc(r.name)}</span><input type="time" value="${r.t}" data-rt="${r.id}" aria-label="${esc(r.name)} saati"><label class="sw"><input type="checkbox" ${r.on?"checked":""} data-ro="${r.id}" aria-label="${esc(r.name)} açık"><span></span></label></div>`).join("")}
     <p class="hint">Koç bağlıysa sabah, öğleden sonra ve akşam bildirim metinlerini her gün yeniden yazar. Bağlı değilse sabit metinler kullanılır.</p></div>
@@ -606,13 +612,13 @@ function viewAyar(){
 
 function render(){
   const v=$("#view");
-  const ttl={bugun:`${new Date().getDate()} ${AY[new Date().getMonth()]}, ${GUN[new Date().getDay()]}`,koc:"Koç",salon:"Salon",trend:"Trend",ayar:"Ayarlar",adim:"Adım raporu",tahlil:"Tahlil takibi",tansiyon:"Tansiyon",seker:"Şeker"}[tab];
+  const ttl={bugun:`${new Date().getDate()} ${AY[new Date().getMonth()]}, ${GUN[new Date().getDay()]}`,koc:"Koç",salon:"Salon",trend:"Trend",ayar:"Ayarlar",adim:"Adım raporu",tahlil:"Tahlil takibi",tansiyon:"Tansiyon",seker:"Şeker",ilac:"İlaçlar"}[tab];
   $("#ttl").textContent=ttl;
   const n=streak();$("#streak").innerHTML=n>0?`<b class="num">${n}</b> günlük seri`:"";
-  v.innerHTML=tab==="koc"?viewKoc():tab==="bugun"?viewBugun():tab==="salon"?viewSalon():tab==="trend"?viewTrend():tab==="adim"?viewAdim():tab==="tahlil"?viewTahlil():tab==="tansiyon"?viewTansiyon():tab==="seker"?viewSeker():viewAyar();
+  v.innerHTML=tab==="koc"?viewKoc():tab==="bugun"?viewBugun():tab==="salon"?viewSalon():tab==="trend"?viewTrend():tab==="adim"?viewAdim():tab==="tahlil"?viewTahlil():tab==="tansiyon"?viewTansiyon():tab==="seker"?viewSeker():tab==="ilac"?viewIlac():viewAyar();
   document.body.classList.toggle("koc",tab==="koc");$("#composer").hidden=tab!=="koc";
   if(tab==="koc")cScroll();
-  document.querySelectorAll("nav button").forEach(b=>{if(b.dataset.tab===({adim:"bugun",tahlil:"trend",tansiyon:"trend",seker:"trend"}[tab]||tab))b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
+  document.querySelectorAll("nav button").forEach(b=>{if(b.dataset.tab===({adim:"bugun",tahlil:"trend",tansiyon:"trend",seker:"trend",ilac:"bugun"}[tab]||tab))b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
 }
 
 /* ---------- alt sayfa ve bildirim ---------- */
@@ -773,7 +779,7 @@ async function goYukle(){
   if(!confirm(`${out.length} kayıt yüklenecek${drop?`, ${drop} geçersiz kayıt atlanacak`:""}. Mevcut veriler değişecek. Devam edilsin mi?`))return;
   const prevS=S;
   try{localStorage.setItem("koc_v1_onceki",JSON.stringify(prevS))}catch(e){}
-  S=Object.assign({settings:cleanSettings(r.settings),entries:out,nextId:out.length+1,myFoods:cleanMyFoods(r.myFoods),labs:LabLib.cleanLabs(r.labs),vitals:VitalsLib.clean(r.vitals)},cleanGym(r),cleanCoach(r));
+  S=Object.assign({settings:cleanSettings(r.settings),entries:out,nextId:out.length+1,myFoods:cleanMyFoods(r.myFoods),labs:LabLib.cleanLabs(r.labs),vitals:VitalsLib.clean(r.vitals)},cleanMedState(r),cleanGym(r),cleanCoach(r));
   /* Yedek, anahtarın gideceği adresi, onay ayarını ve veri paylaşım iznini değiştirememeli. */
   S.settings.consent=prevS.settings.consent;S.settings.lastBackup=dayKey();
   const keys=getKeys();
@@ -800,7 +806,7 @@ async function scheduleReminders(){
     const pend=await ln.getPending();
     if(pend.notifications.length)await ln.cancel({notifications:pend.notifications.map(n=>({id:n.id}))});
     /* Eklentinin günlük tekrarı ilk bildirimden sonra Doze'da ertelenen bir alarm kurar. Bu yüzden her günü ayrı, uyku modunu delen tek seferlik alarmla kuruyoruz. */
-    try{await ln.registerActionTypes({types:[{id:"water",actions:[{id:"su",title:`+${S.settings.glass} ml`}]}]})}catch(e){}
+    try{await ln.registerActionTypes({types:[{id:"water",actions:[{id:"su",title:`+${S.settings.glass} ml`}]},{id:"med",actions:[{id:"med",title:"✔ Aldım"}]}]})}catch(e){}
     const list=[],now=Date.now(),lb=S.settings.lastBackup;
     const t0=dayKey(),waterDone=sum("su",t0,t0)>=S.settings.waterMl;
     for(const r of S.settings.reminders.filter(r=>r.on)){
@@ -814,6 +820,11 @@ async function scheduleReminders(){
       }
     }
     lastSched=now;
+    if(S.settings.medOn){
+      for(const n of MedLib.notifications(S.meds,S.medLog,new Date(),SCHED_DAYS,S.settings.medShowName!==false))list.push({id:n.id,title:n.title,body:n.body,schedule:{at:n.at,allowWhileIdle:true},actionTypeId:n.actionTypeId,extra:n.extra});
+    }
+    // Android uygulama başına eşzamanlı alarm sınırı (500): en yakın tarihliler korunur, uzaktakiler uygulama açılınca yeniden kurulur.
+    list.sort((a,b)=>a.schedule.at-b.schedule.at);if(list.length>MedLib.BUDGET)list.length=MedLib.BUDGET;
     if(list.length)await ln.schedule({notifications:list});
     return "ok";
   }catch(e){return "Bildirimler kurulamadı: "+(e&&e.message||e)}

@@ -33,4 +33,14 @@ adb logcat -d | grep -E "Capacitor/Console" > quick.log
 grep -q "NW-QUICK ingested 1" quick.log || { echo "HIZLI SU KAYDI ANA VERİYE ALINMADI"; cat quick.log; exit 1; }
 adb shell run-as com.neowell.app cat shared_prefs/nw_quick.xml > quick2.xml 2>&1
 if grep -q "250," quick2.xml; then echo "BEKLEYEN KAYIT TEMİZLENMEDİ"; cat quick2.xml; exit 1; fi
+# İlaç bildirimindeki "Aldım" düğmesi benzetimi: yerel taraf kaydı "m<kimlik>_<saat>" anahtarıyla biriktirir, uygulama öne gelince tüketilir.
+adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction med --ei LocalNotificationId 1001001 --es LocalNotficationObject '{\"extra\":{\"act\":\"med\",\"m\":1,\"s\":\"08:00\"}}'"
+sleep 4
+adb shell run-as com.neowell.app cat shared_prefs/nw_quick.xml > quick3.xml 2>&1
+cat quick3.xml
+grep -q "m1_0800," quick3.xml || { echo "İLAÇ KAYDI YAZILMADI"; exit 1; }
+adb shell monkey -p com.neowell.app -c android.intent.category.LAUNCHER 1
+sleep 10
+adb shell run-as com.neowell.app cat shared_prefs/nw_quick.xml > quick4.xml 2>&1
+if grep -q "m1_0800," quick4.xml; then echo "İLAÇ KAYDI TÜKETİLMEDİ"; cat quick4.xml; exit 1; fi
 echo "Smoke testi geçti"

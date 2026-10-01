@@ -28,4 +28,5 @@ Sürüm: son APK (GitHub Releases, `neowell.apk`).
 - [~] Haftalık rapor: Trend sekmesi altındaki düğmeyle PDF üret, aç (Türkçe karakterler, tablo, kilo farkı doğru mu, kayıtsız gün '–').
 - [~] Bildirim düğmesi: su bildirimi geldiğinde "+250 ml" düğmesine dokun; ekran çok kısa yanıp sönmeli, sonra uygulamayı açınca su eklenmiş olmalı (bugün toplamı artmış, bildirim kaybolmuş). Uygulama tamamen kapalıyken de dene.
 - [~] Drive yedeği: Ayarlar > Yedeği Drive'a gönder > parola > paylaşım ekranında Drive'ı seç; Drive'da dosya var mı; başka telefonda/yeniden kurulumda Dosyadan oku ile geri yükle. Pazar 20:00 hatırlatması geliyor mu.
+- [~] İlaç hatırlatıcı (Ayarlar > İlaç hatırlatıcı > aç): ilaç ekle (saatler, günler, kür, stok), Bugün kartında Aldım/Atla, bildirimde "✔ Aldım" düğmesi (ekran açılmadan), uyum yüzdesi, stok azalınca uyarı, haftalık rapora ilaç uyumu. Uygulama kapalıyken bildirim geliyor mu, Xiaomi'de de.
 - [ ] Sığma kontrolü: Bugün ekranı küçük ekranda taşmıyor.
