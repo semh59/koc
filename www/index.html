@@ -59,6 +59,7 @@ main{flex:1;padding:6px 16px calc(92px + env(safe-area-inset-bottom))}
 .ring{position:relative}
 .ring svg{width:88px;height:88px;display:block;margin:0 auto}
 .ring .rt{fill:none;stroke:var(--soft);stroke-width:8}
+.macro{font-size:13px;color:var(--mut);margin:-4px 2px 12px}
 .about{display:flex;flex-direction:column;align-items:center;gap:4px;margin:24px 0 8px;font-size:17px}
 .about img{border-radius:50%}
 .ring .rp{fill:none;stroke-width:8;stroke-linecap:round}
@@ -243,6 +244,7 @@ select.in{appearance:none}
 <div id="toast" role="status"><span id="tmsg"></span><button id="tundo" hidden>Geri al</button></div>
 
 <script src="algo.js"></script>
+<script src="foods.js"></script>
 <script src="gym.js"></script>
 <script src="backuplib.js"></script>
 <script src="coachlib.js"></script>
@@ -327,6 +329,8 @@ function cleanEntries(arr){
     const ne={id:0,day:e.day,time:timeOk(e.time)?e.time:"00:00",type:e.type,v:e.type==="not"?null:v,text:typeof e.text==="string"?e.text.slice(0,500):""};
     if(Number.isInteger(e.wid))ne.wid=e.wid;
     if(e.type==="yemek"&&Number.isFinite(e.p)&&e.p>=0&&e.p<=500)ne.p=e.p;
+    if(e.type==="yemek"&&Number.isFinite(e.c)&&e.c>=0&&e.c<=2000)ne.c=e.c;
+    if(e.type==="yemek"&&Number.isFinite(e.f)&&e.f>=0&&e.f<=1000)ne.f=e.f;
     out.push(ne);
   }
   out.forEach((e,i)=>e.id=i+1);
@@ -471,6 +475,9 @@ function viewBugun(){
     ${ring(kcP,"var(--kcal)",Math.round(kc),"Kalori",st.kcal>0?`/ ${st.kcal}`:"hedef yok")}
     ${ring(sw/st.sportWeek,"var(--spor)",Math.round(sw),"Spor",`/ ${st.sportWeek} dk hafta`)}
   </div></div>`;
+  const meals=S.entries.filter(e=>e.type==="yemek"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
+  const pr=cur!=null?Algo.proteinRange(cur):null;
+  const macro=meals.some(e=>e.p||e.c||e.f)?`<div class="macro num">Protein <b>${Math.round(mac("p"))}</b>${pr?` / ${pr[0]}–${pr[1]}`:""} g · Karbonhidrat <b>${Math.round(mac("c"))}</b> g · Yağ <b>${Math.round(mac("f"))}</b> g</div>`:"";
   const actions=`<div class="actions">
     <button class="act su" data-act="su"><span class="ic">💧</span>+${st.glass}</button>
     <button class="act" data-act="kilo"><span class="ic">⚖️</span>Kilo</button>
@@ -488,7 +495,7 @@ function viewBugun(){
   const lb=st.lastBackup,old=lb?Algo.dayNum(t)-Algo.dayNum(lb):null;
   const bk=S.entries.length>=10&&(old==null||old>14)?`<div class="banner"><b>Yedek zamanı</b><p>${old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`} Telefon kaybolursa ya da uygulama silinirse veriler gider.</p><button class="btn" data-act="yedek">Yedek al</button></div>`:"";
   const oemB=isNative()&&oemXiaomi()&&!st.oemDone?`<div class="banner"><b>Hatırlatmalar için bir kez ayar gerekli</b><p>Telefon uygulamayı kapatınca hatırlatmalar gelmeyebilir. İki izin verince düzelir.</p><button class="btn" data-act="oem">Ayarla</button></div>`:"";
-  return `${oemB}${bk}${weight}<div class="coach">${esc(coach())}</div>${rings}${actions}${dnav}<div class="card">${log}</div>`;
+  return `${oemB}${bk}${weight}<div class="coach">${esc(coach())}</div>${rings}${macro}${actions}${dnav}<div class="card">${log}</div>`;
 }
 
 function viewTrend(){
@@ -591,8 +598,34 @@ function goKilo(){
 function sheetYemek(){
   const cnt={};for(const e of S.entries)if(e.type==="yemek"&&e.text){const k=tr(e.text);(cnt[k]=cnt[k]||{n:0,text:e.text,v:e.v}).n++;cnt[k].v=e.v}
   const fav=Object.values(cnt).sort((a,b)=>b.n-a.n).slice(0,6);favList=fav;
-  openSheet(`<h3>Yemek ekle</h3>${fav.length?`<div class="lbl">Sık yediklerin</div><div class="chips">${fav.map((f,i)=>`<button class="chip" data-fav="${i}">${esc(f.text)}${f.v?" "+Math.round(f.v):""}</button>`).join("")}</div>`:""}
-  <input class="in" id="ft" placeholder="Ne yedin?" autocomplete="off" autofocus><input class="in num" id="fv" inputmode="numeric" placeholder="Kalori (isteğe bağlı)">${dayOptions()}<button class="btn" data-go="yemek">Kaydet</button>`);
+  openSheet(`<h3>Yemek ekle</h3><input class="in" id="fq" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off" autofocus><div id="flist" class="plist"></div>${fav.length?`<div class="lbl">Sık yediklerin</div><div class="chips">${fav.map((f,i)=>`<button class="chip" data-fav="${i}">${esc(f.text)}${f.v?" "+Math.round(f.v):""}</button>`).join("")}</div>`:""}
+  <div class="lbl">Ya da kendin yaz</div><input class="in" id="ft" placeholder="Ne yedin?" autocomplete="off"><input class="in num" id="fv" inputmode="numeric" placeholder="Kalori (isteğe bağlı)">${dayOptions()}<button class="btn" data-go="yemek">Kaydet</button>`);
+}
+let curFood=null,curPor=0;
+const foodListHtml=q=>foodSearch(q).map(i=>`<button class="prow" data-food="${i}"><span><b>${esc(FOODS[i].n)}</b><span class="mut sm">100 g: ${FOODS[i].k} kcal, protein ${fmt(FOODS[i].p,0)} g</span></span><span class="plus">+</span></button>`).join("");
+function sheetPorsiyon(i){
+  curFood=FOODS[i];curPor=0;
+  openSheet(`<h3>${esc(curFood.n)}</h3><div class="lbl">Porsiyon</div><div class="chips" id="fpc">${curFood.u.map((u,j)=>`<button class="chip" data-fp="${j}" aria-pressed="${j===0}">${esc(u[0])}</button>`).join("")}</div>
+  <div class="lbl">Kaç porsiyon</div><input class="in num" id="fqty" inputmode="decimal" value="1" autocomplete="off">
+  <div class="stat" style="margin:8px 0"><div class="k">Tahmini değer</div><div class="v num" id="fprev"></div></div>${dayOptions()}<button class="btn" data-go="besin">Ekle</button>`);
+  foodPreview();
+}
+function foodCalc(){
+  const q=num($("#fqty").value),g=curFood.u[curPor][1]*(q>0&&q<=20?q:0),r=x=>x*g/100;
+  return {q,g,k:r(curFood.k),p:r(curFood.p),c:r(curFood.c),f:r(curFood.f)};
+}
+function foodPreview(){
+  const x=foodCalc();
+  $("#fprev").textContent=x.g?`${Math.round(x.k)} kcal · protein ${fmt(x.p)} g · karbonhidrat ${fmt(x.c)} g · yağ ${fmt(x.f)} g`:"Miktarı 0,1 ile 20 arasında yaz";
+}
+function goBesin(){
+  const x=foodCalc();if(!x.g)return toast("Miktarı 0,1 ile 20 arasında yaz");
+  const label=curFood.u[curPor][0],text=`${curFood.n}, ${x.q===1?"":fmt(x.q,x.q%1?1:0)+" × "}${label}`;
+  const e=add("yemek",Math.round(x.k),text,fday());
+  e.p=Math.round(x.p*10)/10;e.c=Math.round(x.c*10)/10;e.f=Math.round(x.f*10)/10;save();
+  closeSheet();render();
+  const t=dayKey(),top=sum("yemek",t,t),g=S.settings.kcal;
+  toast(g>0&&top?`Kaydedildi. Bugün ${Math.round(top)} / ${g} kcal`:"Yemek kaydedildi",e.id);
 }
 function goYemek(){
   const text=$("#ft").value.trim(),kc=num($("#fv").value,true);
@@ -713,7 +746,7 @@ async function notifTest(){
 
 /* ---------- olaylar ---------- */
 document.addEventListener("click",ev=>{
-  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-fav],[data-sp],[data-lo],[data-g],[data-sex],[data-actl],[data-c]");
+  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-fav],[data-sp],[data-lo],[data-g],[data-sex],[data-actl],[data-c],[data-food],[data-fp]");
   if(ev.target.id==="scrim")return closeSheet();
   if(!el)return;
   const d=el.dataset;
@@ -730,6 +763,8 @@ document.addEventListener("click",ev=>{
     toast("Kayıt silindi",()=>{S.entries.push(rm);S.entries.sort((a,b)=>a.id-b.id);save();render()});return;
   }
   if(d.sp){document.querySelectorAll("#sp .chip").forEach(c=>c.setAttribute("aria-pressed",c===el));return}
+  if(d.food!==undefined){sheetPorsiyon(+d.food);return}
+  if(d.fp!==undefined){curPor=+d.fp;document.querySelectorAll("#fpc .chip").forEach(c=>c.setAttribute("aria-pressed",c===el));foodPreview();return}
   if(d.fav!==undefined){const f=favList[+d.fav];if(f){$("#ft").value=f.text;$("#fv").value=f.v?String(Math.round(f.v)):""}return}
   if(d.act){
     if(d.act==="su"){const e=add("su",S.settings.glass);render();const t=dayKey(),top=sum("su",t,t);toast(`+${S.settings.glass} ml, bugün ${Math.round(top)} / ${S.settings.waterMl} ml`+(top-S.settings.glass<S.settings.waterMl&&top>=S.settings.waterMl?". Günlük hedef tamam":""),e.id)}
@@ -749,7 +784,7 @@ document.addEventListener("click",ev=>{
     return;
   }
   if(d.go){
-    ({kilo:goKilo,yemek:goYemek,spor:goSpor,not:goNot,yukle:goYukle,saglik:()=>{S.settings.healthNote=$("#hn").value.trim().slice(0,500);save();closeSheet();render();toast("Kaydedildi")}}[d.go]||(()=>{}))();
+    ({kilo:goKilo,yemek:goYemek,besin:goBesin,spor:goSpor,not:goNot,yukle:goYukle,saglik:()=>{S.settings.healthNote=$("#hn").value.trim().slice(0,500);save();closeSheet();render();toast("Kaydedildi")}}[d.go]||(()=>{}))();
     if(d.go==="kopyala")backupText().then(v=>{(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast("Panoya kopyalandı"),()=>{const b=$("#bk");b.value=v;b.select();document.execCommand&&document.execCommand("copy");toast("Metni seçtim, kopyala")})});
     if(d.go==="paylas")shareBackup();
     if(d.go==="indir")backupText().then(v=>{try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([v],{type:"application/json"}));a.download=`neowell-yedek-${dayKey()}.json`;a.click();markBackup()}catch(e){toast("İndirme bu cihazda çalışmadı, Kopyala'yı kullan")}});
@@ -784,7 +819,12 @@ document.addEventListener("change",ev=>{
     save();scheduleReminders().then(setNotif);
   }
 });
-document.addEventListener("input",ev=>{if(ev.target.id==="gq"){gQuery=ev.target.value;$("#glist").innerHTML=gPickHtml()}});
+document.addEventListener("input",ev=>{
+  const id=ev.target.id;
+  if(id==="gq"){gQuery=ev.target.value;$("#glist").innerHTML=gPickHtml()}
+  else if(id==="fq")$("#flist").innerHTML=foodListHtml(ev.target.value);
+  else if(id==="fqty")foodPreview();
+});
 document.addEventListener("keydown",ev=>{
   if(ev.key==="Escape")closeSheet();
   if(ev.key==="Enter"&&ev.target.id==="cmsg"){ev.preventDefault();const i=ev.target,t=i.value;i.value="";cSend(t);return}

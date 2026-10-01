@@ -43,6 +43,18 @@ setTimeout(async()=>{
   ok("Yaptım denince uyarı kalkar",!ev("viewBugun()").includes("Hatırlatmalar için bir kez ayar"));
   w.eval("oem='google';S.settings.oemDone=false");
   ok("Xiaomi dışında uyarı çıkmaz",!ev("viewBugun()").includes("Hatırlatmalar için bir kez ayar"));
+  ev("sheetYemek()");
+  const fq=w.document.querySelector("#fq");fq.value="mercimek";fq.dispatchEvent(new w.Event("input",{bubbles:true}));
+  ok("yemek penceresinde besin aranır",w.document.querySelector("#flist").innerHTML.includes("Mercimek çorbası")&&w.document.querySelector("#flist [data-food]"));
+  ev("S.entries=[];S.settings.oemDone=true");
+  const yi=ev("FOODS.findIndex(f=>f.n==='Haşlanmış yumurta')");
+  ev(`sheetPorsiyon(${yi})`);w.document.querySelector("#fqty").value="2";ev("foodPreview()");
+  ok("porsiyon önizlemesi hesaplanır",w.document.querySelector("#fprev").textContent.startsWith("155 kcal"),w.document.querySelector("#fprev").textContent);
+  ev("goBesin()");
+  const be=ev("S.entries.find(e=>e.type==='yemek')");
+  ok("besin kalori ve makrolarla kaydedilir",be&&be.v===155&&Math.abs(be.p-13)<0.1&&be.c>0&&be.f>10&&be.text.includes("2 ×"),be);
+  ok("yeniden yüklemede makrolar korunur",ev("cleanEntries(S.entries).out[0].f")===be.f);
+  ok("Bugün'de makro satırı görünür",ev("viewBugun()").includes("Karbonhidrat"));
   const sched=[];
   Object.assign(w.Capacitor.Plugins.LocalNotifications,{requestPermissions:async()=>({display:"granted"}),cancel:async()=>{},schedule:async x=>{sched.push(...x.notifications)}});
   ok("hatırlatma durumu ok",await ev("scheduleReminders()")==="ok");

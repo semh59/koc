@@ -17,6 +17,10 @@ Kişisel diyet ve spor takipçisi.
 6. İndirilen dosyaya dokun. Android "bilinmeyen kaynaklardan yükleme" izni isteyecek, bu uygulama için izin ver ve kur. Google Play Protect "uygulama taranmadı" uyarısı gösterirse **Yine de yükle** de, uygulamayı sen derledin.
 7. İlk açılışta bildirim iznini onayla.
 
+## Yemek eklemek
+
+Yemek ekle penceresinde besin adını yazarak ara (mercimek çorbası, simit, baklava…). Besini seçince porsiyonu ve kaç porsiyon olduğunu belirle, kalori, protein, karbonhidrat ve yağ otomatik hesaplanır. Bugün ekranında günün makroları ve protein aralığın görünür. Listede 100'den fazla yaygın Türk yemeği ve besin var. Değerler yaklaşıktır (100 g başına yuvarlak sayılar), kesin ölçüm yerine geçmez. Listede olmayanı kendin yazabilirsin.
+
 ## Koçu açmak (API anahtarı girmek)
 
 Koç, ücretsiz yapay zekâ servislerinden birine bağlanır. Uygulamada Ayarlar > **Yapay zekâ koç** bölümünde NVIDIA Build, Groq ve OpenRouter hazır gelir. Sırayla denenir, biri limite takılırsa sıradaki devreye girer.

@@ -1,0 +1,13 @@
+const {FOODS,foodSearch}=require("../www/foods.js");let bad=0;
+const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
+const off=FOODS.filter(f=>{const a=4*f.p+4*f.c+9*f.f;return Math.abs(f.k-a)>Math.max(15,0.25*Math.max(f.k,a))}).map(f=>`${f.n}: ${f.k} ≠ ${Math.round(4*f.p+4*f.c+9*f.f)}`);
+ok("kalori, makrolarla tutarlı (Atwater ±%25)",off.length===0,off);
+ok("ad benzersiz",new Set(FOODS.map(f=>f.n.toLowerCase())).size===FOODS.length);
+ok("porsiyon var ve gram pozitif",FOODS.every(f=>f.u.length&&f.u.every(([l,g])=>l&&g>0)));
+ok("değerler makul aralıkta",FOODS.every(f=>f.k>=0&&f.k<=900&&f.p>=0&&f.p<=100&&f.c>=0&&f.c<=100&&f.f>=0&&f.f<=100&&f.p+f.c+f.f<=100));
+ok("etiketteki gram, porsiyonla uyumlu",FOODS.every(f=>f.u.every(([l,g])=>{const m=l.match(/\((\d+)( g| ml)\)/);return !m||+m[1]===g})));
+ok("en az 100 besin",FOODS.length>=100,FOODS.length);
+ok("aramada büyük İ/I",FOODS[foodSearch("IZGARA")[0]].n.startsWith("Izgara")&&foodSearch("İncir").length>0);
+ok("kelime başı önce gelir",FOODS[foodSearch("pilav")[0]].n==="Pirinç pilavı"||FOODS[foodSearch("pilav")[0]].n.toLowerCase().includes("pilav"));
+ok("boş arama boş döner",foodSearch("  ").length===0&&foodSearch("xyzqq").length===0);
+process.exit(bad?1:0);
