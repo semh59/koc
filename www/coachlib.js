@@ -100,6 +100,7 @@ Sabah planı istenirse "notif" alanına {"morning":"...","afternoon":"...","even
     for(const r of d.days)L.push(`${r.d} | ${f1(r.kg)} | ${r.kcal||"–"} | ${r.p||"–"} | ${r.su||"–"} | ${r.sport||"–"} | ${r.ad||"–"}`);
     L.push("BUGÜN: "+(d.today.length?d.today.join("; "):"kayıt yok")+` (saat ${d.now})`);
     if(d.workouts.length)L.push("SON ANTRENMANLAR: "+d.workouts.join(" | "));
+    if(d.weekSets&&Object.keys(d.weekSets).length)L.push("BU HAFTA TAMAMLANAN SET (bölgeye göre): "+Object.keys(d.weekSets).map(k=>k+" "+d.weekSets[k]).join(", "));
     if(d.notes.length)L.push("SON NOTLAR: "+d.notes.join(" | "));
     if(d.meds&&d.meds.length){
       L.push("İLAÇLAR (kullanıcının kendi girdiği hatırlatıcı kaydı; doz veya ilaç değişikliği önerme, ilaçla ilgili soruları hekime/eczacıya yönlendir):");

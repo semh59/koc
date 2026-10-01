@@ -148,6 +148,17 @@ body.koc #toast{bottom:calc(150px + env(safe-area-inset-bottom))}
 .gbar .bar{margin:0}
 .livebar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 4px 10px}
 .livebar b{font-size:18px}.fin{width:auto;padding:11px 20px}
+.fig{width:100%;height:auto;display:block}
+.fg-far{stroke:var(--mut);opacity:.75}.fg-body,.fg-near{stroke:var(--prim)}.fg-head{stroke:var(--prim);fill:var(--card);stroke-width:2.6}
+.fg-prop{stroke:var(--kcal)}.fg-plate{stroke:var(--kcal);fill:color-mix(in srgb,var(--kcal) 35%,var(--card));stroke-width:1.6}.fg-floor{stroke:var(--line)}
+.exrow{gap:12px}.exthumb{flex:none;width:72px;height:54px;background:var(--bg);border-radius:10px;padding:2px}
+.exvis{display:flex;gap:8px;margin:10px 0}.exfig,.exph{flex:1;min-width:0;background:var(--bg);border-radius:14px;padding:4px;display:flex;align-items:center}
+.exph{position:relative;aspect-ratio:3/2;overflow:hidden;padding:0}.exph img{width:100%;height:100%;object-fit:cover;display:block}
+.exph img.b{position:absolute;inset:0;animation:exflip 1.8s steps(1,end) infinite}
+@keyframes exflip{0%,49%{opacity:0}50%,100%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.exph img.b{animation:none}}
+.cues{margin:8px 0 10px;padding-left:20px;font-size:14.5px}.cues li{margin:3px 0}
+.tgo{font-size:18px;color:var(--prim)}.rest.tim{background:color-mix(in srgb,var(--prim) 14%,var(--card));border-color:color-mix(in srgb,var(--prim) 40%,var(--line))}
 .rest{display:flex;align-items:center;gap:6px;background:color-mix(in srgb,var(--spor) 14%,var(--card));border:1px solid color-mix(in srgb,var(--spor) 35%,var(--line));border-radius:16px;padding:8px 10px;margin-bottom:10px}
 .rest[hidden]{display:none}.rest>div{flex:1;display:grid}.rest b{font-size:26px;line-height:1.1}
 .rest button{min-width:44px;height:44px;border-radius:10px;background:var(--card);font-weight:700;font-size:14px;padding:0 10px}
@@ -250,7 +261,12 @@ select.in{appearance:none}
 <script src="algo.js"></script>
 <script src="foods.js"></script>
 <script src="offlib.js"></script>
+<script src="exlib.js"></script>
+<script src="figlib.js"></script>
+<script src="figtpl.js"></script>
+<script src="excues.js"></script>
 <script src="gym.js"></script>
+<script src="exui.js"></script>
 <script src="backuplib.js"></script>
 <script src="lablib.js"></script>
 <script src="labellib.js"></script>
@@ -618,14 +634,14 @@ function viewAyar(){
 
 function render(){
   const v=$("#view");
-  const ttl={bugun:`${new Date().getDate()} ${AY[new Date().getMonth()]}, ${GUN[new Date().getDay()]}`,koc:"Koç",salon:"Salon",trend:"Trend",ayar:"Ayarlar",adim:"Adım raporu",tahlil:"Tahlil takibi",tansiyon:"Tansiyon",seker:"Şeker",ilac:"İlaçlar"}[tab];
+  const ttl={bugun:`${new Date().getDate()} ${AY[new Date().getMonth()]}, ${GUN[new Date().getDay()]}`,koc:"Koç",salon:"Salon",trend:"Trend",ayar:"Ayarlar",egz:"Egzersizler",adim:"Adım raporu",tahlil:"Tahlil takibi",tansiyon:"Tansiyon",seker:"Şeker",ilac:"İlaçlar"}[tab];
   $("#ttl").textContent=ttl;
   const n=streak();$("#streak").innerHTML=n>0?`<b class="num">${n}</b> günlük seri`:"";
-  v.innerHTML=tab==="koc"?viewKoc():tab==="bugun"?viewBugun():tab==="salon"?viewSalon():tab==="trend"?viewTrend():tab==="adim"?viewAdim():tab==="tahlil"?viewTahlil():tab==="tansiyon"?viewTansiyon():tab==="seker"?viewSeker():tab==="ilac"?viewIlac():viewAyar();
+  v.innerHTML=tab==="koc"?viewKoc():tab==="bugun"?viewBugun():tab==="salon"?viewSalon():tab==="trend"?viewTrend():tab==="adim"?viewAdim():tab==="tahlil"?viewTahlil():tab==="tansiyon"?viewTansiyon():tab==="seker"?viewSeker():tab==="egz"?viewEgz():tab==="ilac"?viewIlac():viewAyar();
   document.body.classList.toggle("koc",tab==="koc");$("#composer").hidden=tab!=="koc";
   if(tab==="koc")cScroll();
   $("#navIlac").hidden=!S.settings.medOn;
-  document.querySelectorAll("nav button").forEach(b=>{if(b.dataset.tab===({adim:"bugun",tahlil:"trend",tansiyon:"trend",seker:"trend"}[tab]||tab))b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
+  document.querySelectorAll("nav button").forEach(b=>{if(b.dataset.tab===({adim:"bugun",tahlil:"trend",tansiyon:"trend",seker:"trend",egz:"salon"}[tab]||tab))b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
 }
 
 /* ---------- alt sayfa ve bildirim ---------- */
@@ -820,7 +836,7 @@ async function scheduleReminders(){
       if(gone.length)await ln.removeDeliveredNotifications({notifications:gone});
     }catch(e){}
     const pend=await ln.getPending();
-    if(pend.notifications.length)await ln.cancel({notifications:pend.notifications.map(n=>({id:n.id}))});
+    const pn=pend.notifications.filter(n=>n.id!==9001);if(pn.length)await ln.cancel({notifications:pn.map(n=>({id:n.id}))});
     /* Eklentinin günlük tekrarı ilk bildirimden sonra Doze'da ertelenen bir alarm kurar. Bu yüzden her günü ayrı, uyku modunu delen tek seferlik alarmla kuruyoruz. */
     try{await ln.registerActionTypes({types:[{id:"water",actions:[{id:"su",title:`+${S.settings.glass} ml`}]},{id:"med",actions:[{id:"med",title:"✔ Aldım"},{id:"medskip",title:"Atla"}]}]})}catch(e){}
     const list=[],now=Date.now(),lb=S.settings.lastBackup;
@@ -1004,6 +1020,7 @@ document.addEventListener("change",ev=>{
 });
 document.addEventListener("input",ev=>{
   const id=ev.target.id;
+  if(id==="glq"){gLQ=ev.target.value;gLN=40;$("#gllist").innerHTML=exListHtml();return}
   if(id==="gq"){gQuery=ev.target.value;$("#glist").innerHTML=gPickHtml()}
   else if(id==="fq"){foodAskQ=ev.target.value;$("#flist").innerHTML=foodListHtml(ev.target.value)}
   else if(id==="fqty")foodPreview();
