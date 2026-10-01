@@ -52,7 +52,8 @@ function cleanCoach(r){
     if(["plan","weekly"].includes(m.kind))o.kind=m.kind;
     if(["check","ed"].includes(m.fl))o.fl=m.fl;
     const c=m.card;
-    if(c&&c.kind==="log"&&Array.isArray(c.items)){const items=CoachLib.cleanItems(c.items);if(items.length)o.card={kind:"log",items,state:["pending","ok","no"].includes(c.state)?c.state:"pending"}}
+    if(c&&c.kind==="log"&&Array.isArray(c.items)){const items=CoachLib.cleanItems(c.items);if(items.length)o.card={kind:"log",items,state:["pending","ok","no"].includes(c.state)?c.state:"pending",saved:c.saved===true}}
+    else if(c&&c.kind==="food"){const f=CoachLib.cleanFood({name:c.n,kcal:c.k,protein:c.p});if(f)o.card={kind:"food",f,state:["pending","ok","no"].includes(c.state)?c.state:"pending"}}
     else if(c&&c.kind==="safety"&&["emergency","check","mind","ed"].includes(c.level))o.card={kind:"safety",level:c.level};
     else if(c&&c.kind==="propose"&&Number.isFinite(c.kcal))o.card={kind:"propose",kcal:Math.round(c.kcal),why:String(c.why||"").slice(0,160),limited:c.limited===true,state:["pending","ok","no"].includes(c.state)?c.state:"pending"};
     chat.push(o);
@@ -164,12 +165,21 @@ function cReply(o,kind){
   if(kind)msg.kind=kind;
   if(items.length)msg.card={kind:"log",items,state:"pending"};
   cPush(msg);
+  const fd=CoachLib.cleanFood(o.food);
+  if(fd&&!items.length)cPush({role:"coach",text:"",card:{kind:"food",f:fd,state:"pending"}});
   if(o.flag==="safety")cPush({role:"coach",text:"",card:{kind:"safety",level:"check"}});
   if(o.propose){
     const c=cCalc(),cl=CoachLib.clampKcal(o.propose.kcal,{tdee:c.tdee,bmr:c.bmr});
     if(cl&&c.block&&c.tdee&&cl.kcal<c.tdee-50)return;
     if(cl&&cl.kcal!==S.settings.kcal)cPush({role:"coach",text:"",card:{kind:"propose",kcal:cl.kcal,why:String(o.propose.why||"").slice(0,160),limited:cl.limited,state:"pending"}});
   }
+}
+/* Kendi besinlerim: yapay zekâ tahmini ya da kaydedilen yemek, tek porsiyonluk değerle aranabilir listeye girer. */
+function myFoodAdd(n,kcal,p){
+  const key=tr(n),f={n:n.slice(0,60),k:Math.round(kcal)};if(p!=null&&p>=0)f.p=Math.round(p*10)/10;
+  const i=S.myFoods.findIndex(x=>tr(x.n)===key);
+  if(i>=0)S.myFoods[i]=f;else if(S.myFoods.length<200)S.myFoods.unshift(f);else return false;
+  return true;
 }
 function cApplyLog(id,el){
   const m=S.chat.find(x=>x.id===id);if(!m||!m.card||m.card.kind!=="log"||m.card.state!=="pending")return;
@@ -253,6 +263,10 @@ function cCard(m){
     return `<div class="card lcard"><b>Kalori hedefi önerisi: ${c.kcal} kcal</b>${c.why?`<div class="mut sm">${esc(c.why)}</div>`:""}${c.limited?`<div class="mut sm">Güvenli alt sınıra çekildi.</div>`:""}
     ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="applyk:${m.id}">Uygula</button><button class="btn ghost" data-c="nok:${m.id}">Şimdi değil</button></div>`:`<div class="mut sm">${c.state==="ok"?"Uygulandı":"Atlandı"}</div>`}</div>`;
   }
+  if(c.kind==="food"){
+    return `<div class="card lcard"><div class="lhead"><b>${esc(c.f.n)}</b><span class="tahmin">Tahmin</span></div><div class="mut sm">~${c.f.k} kcal${c.f.p!=null?`, protein ~${Math.round(c.f.p)} g`:""}</div>
+    ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="addfood:${m.id}">Listeme ekle</button><button class="btn ghost" data-c="nofood:${m.id}">Şimdi değil</button></div>`:`<div class="mut sm">${c.state==="ok"?"Besin listene eklendi":"Atlandı"}</div>`}</div>`;
+  }
   const rows=c.items.map((it,i)=>{
     const lbl=it.type==="yemek"?esc(it.text||"Öğün"):it.type==="su"?"Su":it.type==="kilo"?"Tartı":it.type==="spor"?esc(it.name):"Not";
     const val=it.type==="yemek"?(c.state==="pending"?`<span class="num">~<input class="kin num" data-ck="${i}" inputmode="numeric" aria-label="${esc(it.text)} kcal" value="${it.kcal==null?"":Math.round(it.kcal)}" placeholder="kcal"> kcal</span>`:`<span class="num">${it.kcal==null?"":"~"+Math.round(it.kcal)+" kcal"}</span>`)
@@ -261,7 +275,7 @@ function cCard(m){
   }).join("");
   const est=c.items.some(i=>i.type==="yemek");
   return `<div class="card lcard"><div class="lhead"><b>Kayıt önerisi</b>${est?`<span class="tahmin">Tahmin</span>`:""}</div>${rows}
-  ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="ok:${m.id}">Onayla</button><button class="btn ghost" data-c="no:${m.id}">Vazgeç</button></div>`:`<div class="mut sm">${c.state==="ok"?"Kaydedildi":"Vazgeçildi"}</div>`}</div>`;
+  ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="ok:${m.id}">Onayla</button><button class="btn ghost" data-c="no:${m.id}">Vazgeç</button></div>`:`<div class="mut sm">${c.state==="ok"?"Kaydedildi":"Vazgeçildi"}</div>${c.state==="ok"&&est&&!c.saved?`<div class="lbtns"><button class="btn ghost" data-c="savefood:${m.id}">Yemeği listeme kaydet</button></div>`:""}`}</div>`;
 }
 function viewKoc(){
   let h="";
@@ -366,6 +380,13 @@ function cClick(v,el){
     case "revoke":S.settings.consent=false;save();render();return;
     case "toprov":tab="ayar";render();window.scrollTo(0,0);return;
     case "ok":return cApplyLog(+p1,el);
+    case "addfood":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card&&m.card.kind==="food"&&m.card.state==="pending"){if(myFoodAdd(m.card.f.n,m.card.f.k,m.card.f.p)){m.card.state="ok";save();render();toast("Besin listene eklendi")}else toast("Listen dolu (en fazla 200 besin)")}return}
+    case "nofood":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card){m.card.state="no";save();render()}return}
+    case "savefood":{
+      const m=S.chat.find(x=>x.id===+p1);if(!m||!m.card||m.card.kind!=="log"||m.card.saved)return;
+      let n=0;for(const it of m.card.items)if(it.type==="yemek"&&it.text&&it.kcal!=null&&myFoodAdd(it.text,it.kcal,it.p))n++;
+      m.card.saved=true;save();render();toast(n?`${n} besin listene eklendi`:"Eklenecek besin yok");return;
+    }
     case "no":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card){m.card.state="no";save();render()}return}
     case "applyk":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card&&m.card.state==="pending"){S.settings.kcal=m.card.kcal;m.card.state="ok";save();render();toast(`Kalori hedefi ${m.card.kcal} kcal oldu`)}return}
     case "nok":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card){m.card.state="no";save();render()}return}

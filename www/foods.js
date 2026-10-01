@@ -124,13 +124,13 @@ const FOODS=(()=>{
 
 const foodLow=s=>String(s||"").replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 /* Ada göre ara: kelime başı eşleşmeleri önce gelir. En fazla `max` sonuç, FOODS indeksi döner. */
-function foodSearch(q,max=8){
+function foodSearch(q,max=8,list=FOODS){
   const t=foodLow(q).trim();if(!t)return [];
   const hit=[];
-  FOODS.forEach((f,i)=>{
+  list.forEach((f,i)=>{
     const n=foodLow(f.n),at=n.indexOf(t);
     if(at<0)return;
-    hit.push({i,rank:at===0?0:n.includes(" "+t)?1:2});
+    hit.push({i,rank:(at===0?0:n.includes(" "+t)?1:2)-(f.my?1:0)}); // kendi besinlerim aynı eşleşmede öne geçer
   });
   return hit.sort((a,b)=>a.rank-b.rank||a.i-b.i).slice(0,max).map(h=>h.i);
 }

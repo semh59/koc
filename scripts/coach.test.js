@@ -21,4 +21,9 @@ const t=C.contextText({profile:{cm:175,age:34,sex:"m",act:1,note:""},goals:{kg:7
 ok("bağlam kısa ve sayılı",t.includes("2420")&&t.includes("83,7")&&t.length<1200,t.length);
 ok("hiç yemiyorum",C.redFlag("kilo için hiç yemiyorum")==="ed");
 ok("hayatıma son",C.redFlag("hayatıma son vermek istiyorum")==="mind");
-process.exit(bad?1:0);
+const fd=C.cleanFood({name:" 1 dilim pizza ",kcal:"280",protein:"12,5"});
+ok("besin tahmini doğrulanır",fd&&fd.n==="1 dilim pizza"&&fd.k===280&&fd.p===12.5,fd);
+ok("geçersiz besin atılır",C.cleanFood({name:"",kcal:200})===null&&C.cleanFood({name:"x",kcal:99999})===null&&C.cleanFood(null)===null);
+ok("protein yoksa null",C.cleanFood({name:"çay",kcal:5}).p===null);
+ok("yanıttaki food ayrıştırılır",C.parse('{"reply":"~280 kcal","food":{"name":"1 dilim pizza","kcal":280}}').food.kcal===280);
+
