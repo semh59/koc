@@ -101,6 +101,10 @@ Sabah planı istenirse "notif" alanına {"morning":"...","afternoon":"...","even
     L.push("BUGÜN: "+(d.today.length?d.today.join("; "):"kayıt yok")+` (saat ${d.now})`);
     if(d.workouts.length)L.push("SON ANTRENMANLAR: "+d.workouts.join(" | "));
     if(d.notes.length)L.push("SON NOTLAR: "+d.notes.join(" | "));
+    if(d.meds&&d.meds.length){
+      L.push("İLAÇLAR (kullanıcının kendi girdiği hatırlatıcı kaydı; doz veya ilaç değişikliği önerme, ilaçla ilgili soruları hekime/eczacıya yönlendir):");
+      for(const m of d.meds)L.push(`${m.n}${m.d?" "+m.d:""} | saatler ${m.t.join(", ")}${m.w?" | haftanın günleri "+m.w.join(","):""} | son 7 gün: ${m.a?`${m.a.taken}/${m.a.total} alındı, ${m.a.missed} kaçırılan, ${m.a.skipped} atlanan`:"doz yok"}${m.left!=null?` | stok ~${m.left} doz`:""}`);
+    }
     return L.join("\n");
   }
   return {low,redFlag,parse,cleanItems,cleanFood,clampKcal,SYSTEM,contextText};

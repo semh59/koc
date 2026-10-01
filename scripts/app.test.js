@@ -564,7 +564,12 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
 
     // ilaçlar ekranı
     ev("tab='ilac';render()");
-    ok("ilaçlar ekranı: başlık, bugünün dozları, ilaç listesi, uyarı metni",q("#ttl").textContent==="İlaçlar"&&q("#view").textContent.includes("Test İlaç")&&q("#view").textContent.includes("08:00, 20:00 · her gün")&&q("#view").textContent.includes("doz önermez")&&q('nav [data-tab="bugun"]').getAttribute("aria-current")==="page");
+    ok("ilaçlar ekranı: başlık, bugünün dozları, ilaç listesi, uyarı metni",q("#ttl").textContent==="İlaçlar"&&q("#view").textContent.includes("Test İlaç")&&q("#view").textContent.includes("08:00, 20:00 · her gün")&&q("#view").textContent.includes("doz önermez")&&q('nav [data-tab="ilac"]').getAttribute("aria-current")==="page"&&!q('nav [data-tab="bugun"]').getAttribute("aria-current")&&!q("#navIlac").hidden);
+    ok("Koç bağlamı: ilaçlar adı, saati, son 7 gün uyumu ve uyarıyla gider",(c=>c.includes("İLAÇLAR")&&c.includes("Test İlaç")&&c.includes("08:00, 20:00")&&c.includes("son 7 gün:")&&c.includes("hekime"))(ev("CoachLib.contextText(cData())")));
+    ev("S.settings.medOn=false;render()");
+    ok("ilaç kapalıyken sekme gizli, Koç bağlamında ilaç yok",q("#navIlac").hidden&&!ev("CoachLib.contextText(cData())").includes("İLAÇLAR"));
+    ev("S.settings.medOn=true;render()");
+    ok("ilaç alarmı: Atla düğmesi dozu atlandı yazar, alındıyı ezmez",ev("(()=>{const sv=JSON.stringify([S.meds,S.medLog]),m=S.meds[0],s=m.t[1],t=Date.now();const r1=medIngest([{m:m.id,s,t,k:true}]).n;const r2=medIngest([{m:m.id,s,t,k:false}]).n;return r1===1&&r2===0&&MedLib.statusOf(S.medLog,m.id,MedLib.dayForTap(s,t),s)==='s'&&(([a,b])=>{S.meds=a;S.medLog=b;return true})(JSON.parse(sv))})()"));
     ev("S.medLog.push({id:99,m:1,day:keyOff(-1),slot:'08:00',st:'t'},{id:100,m:1,day:keyOff(-1),slot:'20:00',st:'s'})");ev("render()");
     ok("uyum kutuları: son 7 gün yüzdesi ve doz sayısı, günlük döküm",q("#view").textContent.includes("Son 7 gün uyum")&&/%\d+/.test(q("#view").textContent)&&q("#view").textContent.includes("doz alındı")&&q("#view").textContent.includes("atlanan 1"),q("#view").textContent.slice(0,400));
     ev("S.medLog=S.medLog.filter(x=>x.id!==99&&x.id!==100)");

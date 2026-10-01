@@ -50,8 +50,7 @@ function viewIlac(){
   const low=S.meds.filter(m=>m.on&&MedLib.stockLeft(m)!=null&&MedLib.stockLeft(m)<=5).map(m=>`<div class="mut sm" style="padding:4px 0">${esc(m.n)}: yaklaşık ${MedLib.stockLeft(m)} doz kaldı. Yenisini almayı unutma.</div>`).join("");
   const days=[];for(let i=6;i>=0;i--){const k=keyOff(-i),a=MedLib.adherence(S.meds,S.medLog,k,k,t,nowT);if(a.total)days.push(`<div class="row" style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--line)"><span>${k.slice(8)}.${k.slice(5,7)}</span><span class="num">${a.taken} / ${a.total}${a.missed?` · kaçırılan ${a.missed}`:""}${a.skipped?` · atlanan ${a.skipped}`:""}</span></div>`)}
   const list=S.meds.map(m=>`<div class="row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span style="flex:1;min-width:0"><b>${esc(m.n)}</b>${m.d?` <small class="mut">${esc(m.d)}</small>`:""}${m.on?"":` <small class="mut">(kapalı)</small>`}<div class="mut sm">${esc(medWhen(m))}${m.k!=null?` · stok ${m.k}`:""}</div></span><button class="chip" data-md="edit:${m.id}">Düzenle</button></div>`).join("");
-  return `<button class="btn" data-tab="bugun" style="margin:0 0 12px">‹ Bugün</button>
-  <div class="card"><div class="lbl">Bugün</div>${S.meds.length?medRows(t):`<p class="mut sm" style="margin:0">Henüz ilaç eklemedin.</p>`}</div>
+  return `<div class="card"><div class="lbl">Bugün</div>${S.meds.length?medRows(t):`<p class="mut sm" style="margin:0">Henüz ilaç eklemedin.</p>`}</div>
   ${low?`<div class="card"><div class="lbl">Stok</div>${low}</div>`:""}
   ${a30.total?`<div class="stats"><div class="stat"><div class="k">Son 7 gün uyum</div><div class="v num">${pct(a7)}</div><div class="mut sm">${cnt(a7)}</div></div><div class="stat"><div class="k">Son 30 gün uyum</div><div class="v num">${pct(a30)}</div><div class="mut sm">${cnt(a30)}</div></div></div>`:""}
   ${days.length?`<div class="card"><div class="lbl">Son 7 gün</div>${days.join("")}</div>`:""}
@@ -127,9 +126,9 @@ function medIngest(items){
     const m=S.meds.find(x=>x.id===i.m);
     if(!m||!MedLib.timeOk(i.s)||!m.t.includes(i.s))continue;
     const day=MedLib.dayForTap(i.s,i.t);
-    if(MedLib.statusOf(S.medLog,m.id,day,i.s)==="t")continue;
+    if(MedLib.statusOf(S.medLog,m.id,day,i.s))continue;
     const d=new Date(i.t);
-    if(MedLib.mark(S,m.id,day,i.s,"t",String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"))){n++;names.push(`${m.n} (${i.s})`)}
+    if(MedLib.mark(S,m.id,day,i.s,i.k?"s":"t",String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"))){n++;names.push(`${m.n} (${i.s})`)}
   }
   return {n,names};
 }

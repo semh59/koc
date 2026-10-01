@@ -39,8 +39,15 @@ sleep 4
 adb shell run-as com.neowell.app cat shared_prefs/nw_quick.xml > quick3.xml 2>&1
 cat quick3.xml
 grep -q "m1_0800," quick3.xml || { echo "İLAÇ KAYDI YAZILMADI"; exit 1; }
+# "Atla" düğmesi: k<kimlik>_<saat> anahtarı. Alarm kanalı (nw_med) yüksek önemli ve alarm sesli olarak oluşmuş olmalı.
+adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction medskip --ei LocalNotificationId 2001001 --es LocalNotficationObject '{\"extra\":{\"act\":\"med\",\"m\":1,\"s\":\"20:00\"}}'"
+sleep 4
+adb shell run-as com.neowell.app cat shared_prefs/nw_quick.xml > quick3b.xml 2>&1
+grep -q "k1_2000," quick3b.xml || { echo "ATLA KAYDI YAZILMADI"; cat quick3b.xml; exit 1; }
+adb shell dumpsys notification --noredact | grep -A12 "nw_med" | head -20
+adb shell dumpsys notification --noredact | grep -q "nw_med" || { echo "İLAÇ ALARM KANALI YOK"; exit 1; }
 adb shell monkey -p com.neowell.app -c android.intent.category.LAUNCHER 1
 sleep 10
 adb shell run-as com.neowell.app cat shared_prefs/nw_quick.xml > quick4.xml 2>&1
-if grep -q "m1_0800," quick4.xml; then echo "İLAÇ KAYDI TÜKETİLMEDİ"; cat quick4.xml; exit 1; fi
+if grep -q "k1_2000," quick4.xml || grep -q "m1_0800," quick4.xml; then echo "İLAÇ KAYDI TÜKETİLMEDİ"; cat quick4.xml; exit 1; fi
 echo "Smoke testi geçti"

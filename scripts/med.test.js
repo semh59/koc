@@ -69,7 +69,14 @@ ok("uyum: ilaç eklenmeden önceki günler 'kaçırılan' sayılmaz (başlangı�
 // bildirimler
 const now=new Date(2026,8,10,12,0,0);// 10 Eylül 2026 12:00
 const N=M.notifications(A,[],now,3,true);
-ok("bildirimler: bugünün geçmiş dozu yok, sonrası 3 gün",N.length===1+2+2&&N[0].at.getHours()===20&&N.every(n=>n.at>now),N.length);
+ok("bildirimler: bugünün geçmiş dozu yok, sonrası 3 gün (ana + 2 tekrar)",N.length===15&&N.filter(n=>n.title==="💊 İlaç zamanı").length===5&&N[0].at.getHours()===20&&N.every(n=>n.at>now),N.length);
+ok("alarm: kanal, kalıcı bildirim ve tekrarlar 10 / 20 dk sonra",N.every(n=>n.channelId==="nw_med"&&n.ongoing===true)&&N[1].title==="💊 İlacını aldın mı?"&&N[1].at-N[0].at===600000&&N[2].at-N[0].at===1200000);
+ok("alarm: kimlikten ilaç ve saat bulunur (ana ve tekrar)",N.slice(0,3).every(n=>{const d=M.doseOfId(A,n.id);return d&&d.m.id===1&&d.slot==="20:00"})&&M.doseOfId(A,5)===null&&M.doseOfId(A,1000000+500*1000)===null);
+const late=M.notifications(A,[],new Date(2026,8,10,20,5,0),1,true);
+ok("alarm: doz saati geçti ama tekrar yaklaşıyor: ana yok, 2 tekrar var",late.length===2&&late.every(n=>n.title==="💊 İlacını aldın mı?"));
+ok("alarm: alınan dozun tekrarları da kurulmaz",M.notifications(A,M.cleanLog([{m:1,day:"2026-09-10",slot:"20:00",st:"t"}],A),new Date(2026,8,10,20,5,0),1,true).length===0);
+const midn=M.notifications(M.cleanMeds([med({t:["23:55"]})]),[],new Date(2026,8,11,0,3,0),1,true);
+ok("alarm: gece yarısını aşan tekrar dünkü doza aittir",midn.some(n=>n.extra.s==="23:55"&&n.title==="💊 İlacını aldın mı?"&&n.at.getDate()===11)&&midn.every(n=>n.at>new Date(2026,8,11,0,3,0)));
 ok("bildirim içeriği: ad, doz, eylem türü ve ek veri",(n=>n.title==="💊 İlaç zamanı"&&n.body==="Ilac A"&&n.actionTypeId==="med"&&n.extra.act==="med"&&n.extra.m===1&&n.extra.s==="20:00")(N[0]));
 ok("ad gizliyse genel metin",M.notifications(A,[],now,1,false)[0].body==="İlaç saatin geldi."&&!JSON.stringify(M.notifications(A,[],now,1,false)).includes("Ilac A"));
 ok("doz bilgisi bildirimde ad yanında",M.notifications(M.cleanMeds([med({d:"10 mg"})]),[],now,1,true)[0].body==="Ilac A · 10 mg");

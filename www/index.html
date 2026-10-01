@@ -197,8 +197,9 @@ body.koc #toast{bottom:calc(150px + env(safe-area-inset-bottom))}
 
 /* Alt gezinme */
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:6px 10px calc(6px + env(safe-area-inset-bottom));z-index:5}
-nav .in{max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
-nav button{display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 0;border-radius:12px;font-size:12px;font-weight:600;color:var(--mut)}
+nav .in{max-width:520px;margin:0 auto;display:flex;gap:4px}
+nav button[hidden]{display:none}
+nav button{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 0;border-radius:12px;font-size:12px;font-weight:600;color:var(--mut)}
 nav button .ic{font-size:21px;line-height:1.2}
 nav button[aria-current="page"]{color:var(--prim);background:var(--soft)}
 
@@ -235,6 +236,7 @@ select.in{appearance:none}
   <button data-tab="bugun"><span class="ic">🏠</span>Bugün</button>
   <button data-tab="salon"><span class="ic">🏋️</span>Salon</button>
   <button data-tab="trend"><span class="ic">📈</span>Trend</button>
+  <button data-tab="ilac" id="navIlac" hidden><span class="ic">💊</span>İlaç</button>
   <button data-tab="ayar"><span class="ic">⚙️</span>Ayarlar</button>
 </div></nav>
 <div id="composer" hidden>
@@ -618,7 +620,8 @@ function render(){
   v.innerHTML=tab==="koc"?viewKoc():tab==="bugun"?viewBugun():tab==="salon"?viewSalon():tab==="trend"?viewTrend():tab==="adim"?viewAdim():tab==="tahlil"?viewTahlil():tab==="tansiyon"?viewTansiyon():tab==="seker"?viewSeker():tab==="ilac"?viewIlac():viewAyar();
   document.body.classList.toggle("koc",tab==="koc");$("#composer").hidden=tab!=="koc";
   if(tab==="koc")cScroll();
-  document.querySelectorAll("nav button").forEach(b=>{if(b.dataset.tab===({adim:"bugun",tahlil:"trend",tansiyon:"trend",seker:"trend",ilac:"bugun"}[tab]||tab))b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
+  $("#navIlac").hidden=!S.settings.medOn;
+  document.querySelectorAll("nav button").forEach(b=>{if(b.dataset.tab===({adim:"bugun",tahlil:"trend",tansiyon:"trend",seker:"trend"}[tab]||tab))b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
 }
 
 /* ---------- alt sayfa ve bildirim ---------- */
@@ -803,10 +806,19 @@ async function scheduleReminders(){
     let p=await ln.checkPermissions();
     if(p.display!=="granted")p=await ln.requestPermissions();
     if(p.display!=="granted")return "denied";
+    try{
+      const dl=await ln.getDeliveredNotifications(),t1=dayKey(),y=keyOff(-1),gone=[];
+      for(const n of dl.notifications){
+        if(n.id<1000000)continue;
+        const d=MedLib.doseOfId(S.meds,n.id);
+        if(!d||MedLib.statusOf(S.medLog,d.m.id,t1,d.slot)||MedLib.statusOf(S.medLog,d.m.id,y,d.slot))gone.push({id:n.id});
+      }
+      if(gone.length)await ln.removeDeliveredNotifications({notifications:gone});
+    }catch(e){}
     const pend=await ln.getPending();
     if(pend.notifications.length)await ln.cancel({notifications:pend.notifications.map(n=>({id:n.id}))});
     /* Eklentinin günlük tekrarı ilk bildirimden sonra Doze'da ertelenen bir alarm kurar. Bu yüzden her günü ayrı, uyku modunu delen tek seferlik alarmla kuruyoruz. */
-    try{await ln.registerActionTypes({types:[{id:"water",actions:[{id:"su",title:`+${S.settings.glass} ml`}]},{id:"med",actions:[{id:"med",title:"✔ Aldım"}]}]})}catch(e){}
+    try{await ln.registerActionTypes({types:[{id:"water",actions:[{id:"su",title:`+${S.settings.glass} ml`}]},{id:"med",actions:[{id:"med",title:"✔ Aldım"},{id:"medskip",title:"Atla"}]}]})}catch(e){}
     const list=[],now=Date.now(),lb=S.settings.lastBackup;
     const t0=dayKey(),waterDone=sum("su",t0,t0)>=S.settings.waterMl;
     for(const r of S.settings.reminders.filter(r=>r.on)){
@@ -821,7 +833,7 @@ async function scheduleReminders(){
     }
     lastSched=now;
     if(S.settings.medOn){
-      for(const n of MedLib.notifications(S.meds,S.medLog,new Date(),SCHED_DAYS,S.settings.medShowName!==false))list.push({id:n.id,title:n.title,body:n.body,schedule:{at:n.at,allowWhileIdle:true},actionTypeId:n.actionTypeId,extra:n.extra});
+      for(const n of MedLib.notifications(S.meds,S.medLog,new Date(),SCHED_DAYS,S.settings.medShowName!==false))list.push({id:n.id,title:n.title,body:n.body,schedule:{at:n.at,allowWhileIdle:true},actionTypeId:n.actionTypeId,extra:n.extra,channelId:n.channelId,ongoing:n.ongoing});
     }
     // Android uygulama başına eşzamanlı alarm sınırı (500): en yakın tarihliler korunur, uzaktakiler uygulama açılınca yeniden kurulur.
     list.sort((a,b)=>a.schedule.at-b.schedule.at);if(list.length>MedLib.BUDGET)list.length=MedLib.BUDGET;
