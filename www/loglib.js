@@ -16,6 +16,18 @@ const LogLib=(()=>{
     }
     return out.slice(0,20);
   }
+  function cleanTpl(arr){
+    const out=[],ids=new Set();
+    for(const t of Array.isArray(arr)?arr:[]){
+      if(!t||typeof t.n!=="string"||!t.n.trim()||!Array.isArray(t.items))continue;
+      const items=t.items.map(item).filter(Boolean).slice(0,15);
+      if(!items.length)continue;
+      const id=Number.isInteger(t.id)&&t.id>0&&!ids.has(t.id)?t.id:Math.max(0,...ids)+1;
+      ids.add(id);out.push({id,n:t.n.trim().slice(0,40),items});
+      if(out.length===20)break;
+    }
+    return out;
+  }
   function recents(entries,today){
     const out=[],seen=new Set(),t=Date.parse(today);
     const src=entries.filter(e=>e.type==="yemek"&&e.day<=today&&(t-Date.parse(e.day))/864e5<=30).sort((a,b)=>b.day.localeCompare(a.day)||b.id-a.id);
@@ -25,6 +37,6 @@ const LogLib=(()=>{
     }
     return out;
   }
-  return {NUTR,MAX,copyNutr,key,cleanFav,recents};
+  return {NUTR,MAX,copyNutr,key,cleanFav,cleanTpl,recents};
 })();
 if(typeof module!=="undefined")module.exports=LogLib;
