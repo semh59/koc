@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 /** Bildirimden hızlı su kaydı: saf mantık (Android'e bağımlı değil, test edilebilir). */
 final class QuickMath {
     static final int MAX = 200;
-    private static final Pattern EXTRA_V = Pattern.compile("\"extra\"\s*:\s*\{[^}]*\"v\"\s*:\s*(\d{1,5})");
+    private static final Pattern EXTRA_V = Pattern.compile("\"extra\"\\s*:\\s*\\{[^}]*\"v\"\\s*:\\s*(\\d{1,5})");
 
     /** Bildirimin JSON'undaki "extra":{"v":250} miktarı. Yoksa ya da 1-1500 dışındaysa 0. */
     static int amount(String json) {
