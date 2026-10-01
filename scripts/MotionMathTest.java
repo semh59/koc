@@ -88,7 +88,7 @@ public class MotionMathTest {
         long[] s1 = {0, 500, 800};
         MotionMath.Bout pf = MotionMath.path(f, MotionMath.WALK, 170, 70, t1, s1, 3, Double.NaN);
         MotionMath.Bout av = MotionMath.bout(f, MotionMath.WALK, 170, 70, 10, 800, Double.NaN);
-        ok("yol: yorulan yürüyüş (100/dk, sonra 60/dk) dilim dilim kalori", pf.ok && pf.steps == 800 && near(pf.kcal, 22.46, 0.1) && Math.abs(pf.kcal - av.kcal) > 0.5, pf.kcal);
+        ok("yol: yorulan yürüyüş (100/dk, sonra 60/dk) dilim dilim kalori", pf.ok && pf.steps == 800 && near(pf.kcal, 22.46, 0.1) && Math.abs(pf.kcal - av.kcal) > 0.5);
         ok("yol: dilim dilim mesafe elle hesapla", near(pf.km, 500 * MotionMath.priorStride(MotionMath.WALK, 170, 100) / 1000 + 300 * MotionMath.priorStride(MotionMath.WALK, 170, 60) / 1000, 1e-6));
         long[] t2 = {0, 300000, 600000};
         long[] s2 = {0, 600, 1200};
@@ -96,7 +96,7 @@ public class MotionMathTest {
         long[] t3 = {0, 300000, 600000, 900000};
         long[] s3 = {0, 600, 600, 1200};
         MotionMath.Bout pa = MotionMath.path(f, MotionMath.WALK, 170, 70, t3, s3, 4, Double.NaN);
-        ok("yol: ortadaki duraklama kaloriye girmez", pa.ok && near(pa.kcal, MotionMath.kcal(MotionMath.WALK, 600 * MotionMath.priorStride(MotionMath.WALK, 170, 120) / 1000 / (5.0 / 60), 70, 5) * 2, 0.5), pa.kcal);
+        ok("yol: ortadaki duraklama kaloriye girmez", pa.ok && near(pa.kcal, MotionMath.kcal(MotionMath.WALK, 600 * MotionMath.priorStride(MotionMath.WALK, 170, 120) / 1000 / (5.0 / 60), 70, 5) * 2, 0.5));
         long[] t4 = {0, 300000, 600000};
         long[] s4 = {0, 800, 1500};
         MotionMath.Bout pm = MotionMath.path(f, MotionMath.RUN, 170, 70, t4, s4, 3, Double.NaN);
