@@ -886,7 +886,7 @@ const SC=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugin
 let stepToday=null;
 function setSteps(day,v){
   if(!(v>0&&v<=200000))return false;
-  const e=S.entries.find(x=>x.type==="adim"&&x.day===day);
+  const e=S.entries.find(x=>x.type==="adim"&&x.day===day&&x.text!=="elle");
   if(e){if(e.v===v)return false;e.v=v}
   else S.entries.push({id:S.nextId++,day,time:"00:00",type:"adim",v,text:""});
   return true;
@@ -900,14 +900,22 @@ async function stepsSync(){
     if(ch){save();if((tab==="bugun"||tab==="adim")&&!$("#sheet").classList.contains("on"))render()}
   }catch(e){}
 }
+const manualSteps=()=>S.entries.filter(e=>e.type==="adim"&&e.text==="elle"&&e.day===dayKey()).reduce((s,e)=>s+e.v,0);
+const stepsShown=()=>stepToday==null?null:stepToday+manualSteps();
+function sheetAdim(){openSheet(`<h3>Adım ekle (elle)</h3><p class="hint" style="padding:0 0 8px">Telefonu taşımadığın adımlar için. Sensör değerine eklenir.</p><input class="in num" id="fv" inputmode="numeric" placeholder="Adım sayısı" autofocus>${dayOptions()}<button class="btn" data-go="adim">Ekle</button>`)}
+function goAdim(){
+  const n=num($("#fv").value,true);
+  if(!(n>=1&&n<=100000))return toast("Adımı 1 ile 100.000 arasında yaz");
+  const e=add("adim",n,"elle",fday());closeSheet();render();toast(`${Math.round(n).toLocaleString("tr-TR")} adım eklendi`,e.id);
+}
 function stepCard(){
-  const st=S.settings,v=stepToday==null?0:stepToday;
+  const st=S.settings,v=stepsShown()||0;
   return `<button class="stepcard" data-tab="adim" aria-label="Adım raporunu aç"><div class="row"><span class="mut">👣 Adım</span><span class="mut sm">Rapor ›</span></div><div class="row"><span class="big num">${stepToday==null?"–":Math.round(v).toLocaleString("tr-TR")}</span><span class="mut sm">/ ${st.stepGoal.toLocaleString("tr-TR")}</span></div><div class="bar"><i style="width:${Math.min(100,v/st.stepGoal*100).toFixed(0)}%"></i></div></button>`;
 }
 function viewAdim(){
   const st=S.settings,fm=x=>Math.round(x).toLocaleString("tr-TR"),N=14;
   const days=[];for(let i=N-1;i>=0;i--){const k=keyOff(-i);days.push({k,v:sum("adim",k,k),d:addDays(-i)})}
-  const vals=days.map(d=>d.v),today=stepToday==null?vals[N-1]:stepToday,max=Math.max(st.stepGoal,...vals,1);
+  const vals=days.map(d=>d.v),today=stepToday==null?vals[N-1]:stepsShown(),max=Math.max(st.stepGoal,...vals,1);
   const a7=vals.slice(-7).reduce((a,b)=>a+b,0)/7,a14=vals.reduce((a,b)=>a+b,0)/N;
   const best=days.reduce((a,b)=>b.v>a.v?b:a),hit=vals.filter(v=>v>=st.stepGoal).length;
   const W=320,H=130,bw=16,gap=(W-N*bw)/(N-1),Y=v=>H-18-(H-30)*(v/max);
@@ -916,12 +924,14 @@ function viewAdim(){
   const km=st.heightCm>0?today*st.heightCm*0.415/1e5:null;
   const extra=km!=null?`<div class="stat"><div class="k">Yaklaşık mesafe</div><div class="v num">${fmt(km,1)} km</div></div>${kg!=null?`<div class="stat"><div class="k">Yaklaşık enerji</div><div class="v num">${Math.round(0.5*kg*km)} kcal</div></div>`:""}`:"";
   const rows=days.slice().reverse().slice(0,7).map(d=>`<div class="row" style="display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)"><span>${d.k===dayKey()?"Bugün":GUNK[d.d.getDay()]+" "+d.d.getDate()+" "+AY[d.d.getMonth()]}</span><b class="num">${d.v?fm(d.v):"–"}</b></div>`).join("");
+  const man=S.entries.filter(e=>e.type==="adim"&&e.text==="elle"&&e.day>=days[0].k).sort((a,b)=>b.day.localeCompare(a.day)||b.id-a.id).map(e=>`<div class="row" style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-top:1px solid var(--line)"><span>${dm(e.day)}</span><b class="num">+${fm(e.v)}</b><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></div>`).join("");
   return `<button class="btn" data-tab="bugun" style="margin:0 0 12px">‹ Bugün</button>
   <div class="card" style="text-align:center">${ring(today/st.stepGoal,"var(--su)",fm(today),"Bugün",`/ ${fm(st.stepGoal)} adım`)}</div>
   <div class="card"><div class="lbl">Son ${N} gün</div><svg class="bars" viewBox="0 0 ${W} ${H}" role="img" aria-label="Son ${N} günün adımları" style="width:100%">${bars}<line x1="0" x2="${W}" y1="${Y(st.stepGoal).toFixed(1)}" y2="${Y(st.stepGoal).toFixed(1)}" stroke="var(--kcal)" stroke-width="1.4" stroke-dasharray="4 3"/></svg><div class="mut sm">Kesik çizgi hedef, koyu çubuk hedefe ulaşılan gün.</div></div>
   <div class="stats"><div class="stat"><div class="k">7 gün ortalaması</div><div class="v num">${fm(a7)}</div></div><div class="stat"><div class="k">14 gün ortalaması</div><div class="v num">${fm(a14)}</div></div><div class="stat"><div class="k">En iyi gün</div><div class="v num">${fm(best.v)}</div></div><div class="stat"><div class="k">Hedefe ulaşılan gün</div><div class="v num">${hit} / ${N}</div></div>${extra}</div>
   ${motionCard()}
   <div class="card"><div class="lbl">Günler</div>${rows}</div>
+  <div class="card"><div class="lbl">Elle eklenenler</div>${man||'<p class="hint">Henüz yok.</p>'}<button class="lnk" data-act="adimekle">Adım ekle (elle)</button></div>
   ${km==null?`<p class="hint">Mesafe için Ayarlar'dan boyunu gir.</p>`:""}
   <p class="hint">Kaynak: telefonun adım sensörü. Yalnızca telefonu taşıdığın adımlar sayılır. Çok yavaş yürüyüşte az sayabilir, genelde sapma %5-10 civarıdır. Enerji ve mesafe yaklaşıktır ve günlük kalori hedefine eklenmez: harcama tahmini zaten gerçek kilo değişimine dayanır.</p>`;
 }
@@ -1000,6 +1010,7 @@ document.addEventListener("click",ev=>{
     else if(d.act==="bildirimtest")notifTest();
     else if(d.act==="barkod")barkodOku();
     else if(d.act==="adimac")stepsOpen();
+    else if(d.act==="adimekle")sheetAdim();
     else if(d.act==="adimdegil"){S.settings.stepsAsked=true;save();render()}
     else if(d.act==="adimkapat"){S.settings.stepsOn=false;save();motionStopAll();render();toast("Adım sayar kapatıldı. Eski adım kayıtların durur")}
     else if(d.act==="oem")sheetOem();
@@ -1012,7 +1023,7 @@ document.addEventListener("click",ev=>{
     return;
   }
   if(d.go){
-    ({kilo:goKilo,yemek:goYemek,besin:goBesin,mysil:goMySil,tpl:goTpl,spor:goSpor,not:goNot,yukle:goYukle,saglik:()=>{S.settings.healthNote=$("#hn").value.trim().slice(0,500);save();closeSheet();render();toast("Kaydedildi")}}[d.go]||(()=>{}))();
+    ({kilo:goKilo,yemek:goYemek,besin:goBesin,mysil:goMySil,tpl:goTpl,adim:goAdim,spor:goSpor,not:goNot,yukle:goYukle,saglik:()=>{S.settings.healthNote=$("#hn").value.trim().slice(0,500);save();closeSheet();render();toast("Kaydedildi")}}[d.go]||(()=>{}))();
     if(d.go==="kopyala")backupText().then(v=>{(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast("Panoya kopyalandı"),()=>{const b=$("#bk");b.value=v;b.select();document.execCommand&&document.execCommand("copy");toast("Metni seçtim, kopyala")})});
     if(d.go==="paylas")shareBackup();
     if(d.go==="indir")backupText().then(v=>{try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([v],{type:"application/json"}));a.download=`neowell-yedek-${dayKey()}.json`;a.click();markBackup()}catch(e){toast("İndirme bu cihazda çalışmadı, Kopyala'yı kullan")}});
