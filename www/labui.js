@@ -138,15 +138,19 @@ function labBuildReport(){
   });
   return LabLib.buildPdf(jp);
 }
-async function labExport(){
-  let pdf;try{pdf=labBuildReport()}catch(e){return toast("PDF hazırlanamadı")}
-  const name=`neowell-tahlil-${dayKey()}.pdf`,P=window.Capacitor&&window.Capacitor.Plugins,fs=P&&P.Filesystem,sh=P&&P.Share;
+/* PDF baytlarını paylaşım ekranına verir (telefonda), tarayıcıda indirir. */
+async function sharePdf(pdf,name,title){
+  const P=window.Capacitor&&window.Capacitor.Plugins,fs=P&&P.Filesystem,sh=P&&P.Share;
   if(fs&&sh){
-    try{const f=await fs.writeFile({path:name,data:labB64(pdf),directory:"CACHE"});await sh.share({title:"Tahlil sonuçları",files:[f.uri]})}
+    try{const f=await fs.writeFile({path:name,data:labB64(pdf),directory:"CACHE"});await sh.share({title,files:[f.uri]})}
     catch(e){if(!/cancel/i.test(e&&e.message||""))toast("Paylaşılamadı")}
     return;
   }
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([pdf],{type:"application/pdf"}));a.download=name;document.body.appendChild(a);a.click();a.remove();
+}
+async function labExport(){
+  let pdf;try{pdf=labBuildReport()}catch(e){return toast("PDF hazırlanamadı")}
+  await sharePdf(pdf,`neowell-tahlil-${dayKey()}.pdf`,"Tahlil sonuçları");
 }
 
 document.addEventListener("change",ev=>{
