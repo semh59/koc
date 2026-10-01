@@ -921,6 +921,32 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("Bak yerel neden kartını açar, fetch yok",ev("S.chat.some(m=>m.card&&m.card.kind==='why')")&&fetched===f0);
     ok("lastPlateau kalıcı; eski ve çöp değerde boş",ev("cleanSettings(JSON.parse(JSON.stringify(S.settings))).lastPlateau")===ev("dayKey()")&&ev("cleanSettings({}).lastPlateau")===""&&ev("cleanSettings({lastPlateau:{a:1},kcal:1800}).lastPlateau")===""&&ev("cleanSettings({lastPlateau:7,kcal:1800}).kcal")===1800);
     ok("plato mesajı yeniden yüklemede kalır",JSON.parse(ev("JSON.stringify(cleanCoach(JSON.parse(JSON.stringify(S))))")).chat.some(m=>m.kind==="plateau"));
+    // Koç'tan program
+    ev("S.chat=[];S.templates=[];S.workouts=[];S.settings.consent=false;tab='salon';render()");
+    q('[data-c="prog"]').click();q('[data-c="po:d:2"]').click();q('[data-c="po:q:Ev tipi"]').click();
+    ok("program sayfası: seçimler işaretlenir",q('[data-c="po:d:2"]').getAttribute("aria-pressed")==="true"&&q('[data-c="po:q:Ev tipi"]').getAttribute("aria-pressed")==="true"&&ev("progOpt.q")==="Ev tipi");
+    let f1=fetched;q('[data-c="progask"]').click();await wait(20);
+    ok("program isteği consent yokken çağrı yapmaz",fetched===f1&&!ev("S.chat.length"));
+    ev("S.settings.consent=true;progOpt={d:3,q:'Salon',m:45,l:'Başlangıç'}");
+    reply={reply:"Program hazır",log:[],program:{name:"3 gün",days:[{n:"A",ex:["squat","bench","row"]},{n:"B",ex:["squat","uydurma"]},{n:"C",ex:["legpress","pulldown"]}]}};
+    let sent;w.fetch=async(u,o)=>{fetched++;sent=JSON.parse(o.body);return {ok:true,json:async()=>({choices:[{message:{content:JSON.stringify(reply)}}]})}};
+    await ev("cProgram(progOpt)");
+    const pm=ev("S.chat.find(m=>m.card&&m.card.kind==='program')");
+    ok("program kartı: katalog dışı kimlik ve tek egzersizli gün atılır, JSON metne yazılmaz",pm&&pm.card.days.length===2&&pm.text==="Program hazır"&&sent.max_tokens===900&&sent.messages[0].content.includes("KATALOG (kimlik|ad|bölge):\nsquat|Squat|Ön bacak"),[pm,sent&&sent.max_tokens]);
+    q(`[data-c="progadd:${pm.id}"]`).click();
+    ok("Şablon olarak ekle her günü şablona ekler",ev("S.templates.length")===2&&ev("S.templates[0].name")==="3 gün – A"&&ev("S.templates[0].ex.join()")==="squat,bench,row"&&!q('[data-c^="progadd"]'));
+    const pc=JSON.parse(ev("JSON.stringify(cleanCoach(JSON.parse(JSON.stringify(S))))")).chat.find(m=>m.card&&m.card.kind==="program");
+    ok("program kartı yeniden yüklemede kalır (durumuyla)",pc&&pc.card.days.length===2&&pc.card.state==="ok");
+    const gp=JSON.parse(ev(`JSON.stringify(cleanCoach({customEx:[{id:'c7'}],chat:[{id:1,role:'coach',text:'a',t:1,card:{kind:'program',name:'P',days:[{n:'X',ex:['c7','squat']}]}},{id:2,role:'coach',text:'b',t:1,card:{kind:'program',days:'x'}},{id:3,role:'coach',text:'c',t:1}]}))`));
+    ok("program kartı ham customEx kimliğini tanır; çöp kartta diğer mesajlar kalır",gp.chat.length===3&&gp.chat[0].card.days[0].ex.join()==="c7,squat"&&!gp.chat[1].card);
+    reply={reply:"bozuk",log:[]};ev("S.chat=[]");await ev("cProgram(progOpt)");
+    ok("bozuk program yanıtında kart yok, uyarı",!ev("S.chat.some(m=>m.card)")&&q("#tmsg").textContent.includes("Program okunamadı"));
+    // bağlam boyutu: dolu 14 gün + en büyük katalog
+    ev(`S.settings.healthNote='x'.repeat(300);S.entries=[];S.sleep=[];S.mood=[];for(let i=0;i<14;i++){const k=keyOff(-i);add('kilo',80,'',k);for(let j=0;j<4;j++){const e=add('yemek',650,'öğün',k);e.p=35}add('su',2500,'',k);add('spor',45,'Yürüyüş',k);add('adim',12345,'',k);add('not',null,'n'.repeat(100),k);S.sleep.push({day:k,min:450});S.mood.push({day:k,v:4})}S.workouts=[1,2,3].map(i=>({id:i,day:keyOff(-i),t0:i,t1:i+1,name:'Tam vücut',tpl:null,ex:['squat','bench','row','ohp','curl','legpress'].map(id=>({id,note:'',sets:[{kg:60,reps:10,done:true}]}))}))`);
+    const big=ev("CoachLib.contextText(cData()).length+cCatalog({q:'Salon',l:'İleri'}).text.length"),sys=ev("cMessages('x',cCatalog({q:'Salon',l:'İleri'}).text)[0].content.length");
+    console.log(`  bağlam+katalog ${big} karakter, sistem mesajı ${sys}`);
+    ok("contextText + katalog < 9000 karakter",big<9000,big);
+    ev("S.entries=[];S.sleep=[];S.mood=[];S.workouts=[];S.templates=[];S.chat=[];S.settings.healthNote='';S.settings.consent=false;tab='bugun';render()");
   }
     process.exit(bad?1:0);
   });
