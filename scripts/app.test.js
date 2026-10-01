@@ -648,6 +648,43 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("sıfırlama boş ilaç listesi başlatır",ev("DEF.meds.length")===0&&ev("DEF.medLog.length")===0&&ev("DEF.settings.medOn")===false);
     ev("S.meds=[];S.medLog=[];S.settings.medOn=false;tab='bugun';render()");
   }
+  {
+    // hareket algılama (yürüyüş/koşu otomatik)
+    const doc=w.document,q=s=>doc.querySelector(s),click=s=>q(s).click();
+    const so=ev("S.settings.stepsOn"),mcalls=[];let mperm={activity:true,fine:true,bg:false,on:false},mitems=[];
+    w.Capacitor.Plugins.Motion={status:async()=>mperm,requestAccess:async()=>{mcalls.push("req");mperm={...mperm,bg:true};return mperm},configure:async(o)=>{mcalls.push("cfg:"+o.cm)},start:async()=>{mcalls.push("start");return mperm},stop:async()=>{mcalls.push("stop");return mperm},take:async()=>{const r={items:mitems};mitems=[];return r}};
+    ev("S.settings.stepsOn=true;S.settings.heightCm=170;S.settings.motionOn=false;S.moves=[];tab='ayar';render()");
+    ok("hareket: ayarlarda blok, aç düğmesi ve gizlilik metni",q("#view").textContent.includes("Hareket algılama")&&q('[data-mo="toggle"]').textContent.includes("aç")&&q("#view").textContent.includes("kaydedilmez"));
+    click('[data-mo="toggle"]');await new Promise(r=>setTimeout(r,60));
+    ok("hareket: açınca izin istenir, boy gönderilir, algılama başlar",ev("S.settings.motionOn")===true&&mcalls.includes("req")&&mcalls.includes("cfg:170")&&mcalls.includes("start"),mcalls);
+    const mt0=Date.now()-30*60000;
+    mitems=[{t0:mt0,t1:mt0+22*60000,k:"w",steps:2400,km:2.1,kmh:5.7,kcal:110,gps:true},{t0:mt0,t1:mt0+3*60000,k:"w",steps:50,km:0.1,kmh:2,kcal:5,gps:false}];
+    await ev("motionIngest()");
+    ev("tab='adim';render()");
+    ok("hareket: geçerli aralık kaydedilir ve Adım ekranında listelenir, geçersiz atılır",ev("S.moves.length")===1&&q("#view").textContent.includes("Yürüyüş")&&q("#view").textContent.includes("22 dk")&&q("#view").textContent.includes("2,1 km")&&q("#view").textContent.includes("110 kcal"),ev("S.moves"));
+    await ev("motionIngest()");
+    ok("hareket: aynı aralık tekrar eklenmez",ev("S.moves.length")===1);
+    mitems=[{t0:mt0,t1:mt0+22*60000,k:"w",steps:2400,km:2.1,kmh:5.7,kcal:110,gps:true}];
+    await ev("motionIngest()");
+    ok("hareket: aynı gün-saat-tür kaydı ikinci kez eklenmez",ev("S.moves.length")===1);
+    const mbk=ev("JSON.stringify(S)");
+    ev("S.moves=[]");doc.querySelector("#bk").value=mbk;await ev("goYukle()");
+    ok("hareket: yedekten geri yüklemede aralıklar gelir",ev("S.moves.length")===1&&ev("S.moves[0].min")===22);
+    doc.querySelector("#bk").value=JSON.stringify({...JSON.parse(mbk),moves:[{day:"bozuk",t0:"07:00",min:5,k:"w",steps:500,km:1,kmh:3},{day:"2026-09-01",t0:"07:00",min:5,k:"w",steps:500,km:1,kmh:3},"x"]});
+    await ev("goYukle()");
+    ok("hareket: bozuk aralıklar yüklemede ayıklanır",ev("S.moves.length")===1&&ev("S.moves[0].day")==="2026-09-01");
+    ev("S.moves=[]");mcalls.length=0;
+    await ev("motionBoot()");
+    ok("hareket: uygulama açılışında algılama yeniden kaydedilir",mcalls.includes("start")&&mcalls.some(c=>c.startsWith("cfg:")),mcalls);
+    ev("tab='ayar';render()");click('[data-mo="toggle"]');await new Promise(r=>setTimeout(r,60));
+    ok("hareket: kapatınca durdurulur",ev("S.settings.motionOn")===false&&mcalls.includes("stop"),mcalls);
+    mitems=[{t0:mt0,t1:mt0+22*60000,k:"w",steps:2400,km:2.1,kmh:5.7,kcal:110,gps:true}];
+    await ev("motionIngest()");
+    ok("hareket: kapalıyken kayıt alınmaz",ev("S.moves.length")===0);
+    delete w.Capacitor.Plugins.Motion;ev("tab='ayar';render()");
+    ok("hareket: eklenti yoksa (tarayıcı) blok gizli",!q("#view").textContent.includes("Hareket algılama"));
+    ev("S.settings.stepsOn="+so+";S.settings.motionOn=false;S.moves=[];tab='bugun';render()");
+  }
     process.exit(bad?1:0);
   });
   const calls=[];
