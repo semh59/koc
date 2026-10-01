@@ -91,5 +91,6 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 33
+          emulator-build: 11237101
           arch: x86_64
           script: bash scripts/smoke.sh
