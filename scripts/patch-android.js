@@ -27,6 +27,11 @@ for(const f of ["KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepSto
 fs.writeFileSync(`${jdir}/MainActivity.java`,`package com.neowell.app;
 
 import android.content.Intent;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.media.AudioAttributes;
+import android.media.RingtoneManager;
+import android.os.Build;
 import android.os.Bundle;
 import com.getcapacitor.BridgeActivity;
 
@@ -41,7 +46,22 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(OcrPlugin.class);
         registerPlugin(QuickLogPlugin.class);
         super.onCreate(savedInstanceState);
+        medChannel();
         if (quick) moveTaskToBack(true);
+    }
+
+    // İlaç hatırlatıcısı alarm gibi çalar: alarm sesi kanalı, yüksek önem, titreşim. Sessiz modda da çalması kullanıcının telefon ayarına bağlıdır.
+    private void medChannel() {
+        if (Build.VERSION.SDK_INT < 26) return;
+        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (nm == null || nm.getNotificationChannel("nw_med") != null) return;
+        NotificationChannel ch = new NotificationChannel("nw_med", "İlaç alarmı", NotificationManager.IMPORTANCE_HIGH);
+        ch.setDescription("İlaç saatinde alarm gibi çalan hatırlatıcı");
+        ch.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM), new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
+        ch.enableVibration(true);
+        ch.setVibrationPattern(new long[] {0, 600, 300, 600, 300, 600});
+        ch.setLockscreenVisibility(1);
+        nm.createNotificationChannel(ch);
     }
 
     @Override

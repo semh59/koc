@@ -90,7 +90,12 @@ function cData(){
   const today=S.entries.filter(e=>e.day===t).map(e=>e.type==="yemek"?`yemek: ${e.text||"öğün"}${e.v?" ~"+Math.round(e.v)+" kcal":""}${e.p?", "+Math.round(e.p)+" g protein":""}`:e.type==="su"?`su ${e.v} ml`:e.type==="kilo"?`tartı ${fmt(e.v)} kg`:e.type==="spor"?`spor ${e.text||""} ${Math.round(e.v)} dk`:`not: ${e.text}`);
   const workouts=S.workouts.filter(x=>x.t1!=null).sort((a,b)=>b.t0-a.t0).slice(0,3).map(x=>`${x.day.slice(5)} ${x.name}: ${x.ex.map(e=>{const s=e.sets.filter(q=>q.done).sort((a,b)=>Algo.est1RM(b.kg,b.reps)-Algo.est1RM(a.kg,a.reps))[0];return s?`${gEx(e.id).n} ${fmt(s.kg||0,s.kg%1?1:0)}x${s.reps}`:""}).filter(Boolean).join(", ")}`);
   const from=keyOff(-7),notes=S.entries.filter(e=>e.type==="not"&&e.day>=from).slice(-3).map(e=>e.text.slice(0,100));
-  return {profile:{cm:st.heightCm,age:st.age,sex:st.sex,act:st.act,note:st.healthNote},goals:{kg:st.goalKg,kcal:st.kcal,water:st.waterMl,sport:st.sportWeek},calc:cCalc(),days:d,today,now:`${pad(now.getHours())}:${pad(now.getMinutes())}`,workouts,notes};
+  return {profile:{cm:st.heightCm,age:st.age,sex:st.sex,act:st.act,note:st.healthNote},goals:{kg:st.goalKg,kcal:st.kcal,water:st.waterMl,sport:st.sportWeek},calc:cCalc(),days:d,today,now:`${pad(now.getHours())}:${pad(now.getMinutes())}`,workouts,notes,meds:cMeds(t,now)};
+}
+function cMeds(t,now){
+  if(!S.settings.medOn||!S.meds.length)return [];
+  const nt=`${pad(now.getHours())}:${pad(now.getMinutes())}`,f=keyOff(-6);
+  return S.meds.filter(m=>m.on).map(m=>{const a=MedLib.adherence([m],S.medLog,f,t,t,nt),left=MedLib.stockLeft(m);return {n:m.n,d:m.d,t:m.t,w:m.w,a:a.total?a:null,left}});
 }
 function cMessages(extraUser,extraSys){
   const sys=CoachLib.SYSTEM+(extraSys?"\n\nNOT: "+extraSys:"")+"\n\n"+CoachLib.contextText(cData());

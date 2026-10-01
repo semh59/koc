@@ -12,7 +12,7 @@ final class QuickMath {
     private static final Pattern V = Pattern.compile("\"v\"\\s*:\\s*(\\d{1,5})(?![\\d.])");
     private static final Pattern M = Pattern.compile("\"m\"\\s*:\\s*(\\d{1,3})(?![\\d.])");
     private static final Pattern S = Pattern.compile("\"s\"\\s*:\\s*\"([01]\\d|2[0-3]):([0-5]\\d)\"");
-    private static final Pattern KEY = Pattern.compile("(\\d{1,4})|(m\\d{1,3}_\\d{4})");
+    private static final Pattern KEY = Pattern.compile("(\\d{1,4})|([mk]\\d{1,3}_\\d{4})");
 
     private static String extra(String json) {
         if (json == null) return null;
@@ -32,13 +32,18 @@ final class QuickMath {
 
     /** İlaç bildirimi: "extra" içindeki ilaç kimliği (1-999) ve doz saatinden "m12_0800" anahtarı. Eksik ya da bozuksa null. */
     static String medKey(String json) {
+        return medKey(json, false);
+    }
+
+    /** skip true ise "k12_0800" (atlandı), değilse "m12_0800" (alındı). */
+    static String medKey(String json, boolean skip) {
         String e = extra(json);
         if (e == null) return null;
         Matcher m = M.matcher(e), s = S.matcher(e);
         if (!m.find() || !s.find()) return null;
         int id = Integer.parseInt(m.group(1));
         if (id < 1 || id > 999) return null;
-        return "m" + id + "_" + s.group(1) + s.group(2);
+        return (skip ? "k" : "m") + id + "_" + s.group(1) + s.group(2);
     }
 
     /** Bekleyen kayıtlara "anahtar,zaman;" ekler, en çok MAX kayıt tutar (en eskiler atılır). */
@@ -60,7 +65,7 @@ final class QuickMath {
             try {
                 long t = Long.parseLong(f[1]);
                 if (t <= 0) continue;
-                if (f[0].charAt(0) != 'm') {
+                if (f[0].charAt(0) != 'm' && f[0].charAt(0) != 'k') {
                     int v = Integer.parseInt(f[0]);
                     if (v < 1 || v > 1500) continue;
                 }

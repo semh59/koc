@@ -25,6 +25,8 @@ public class QuickMathTest {
         ok("ilaç: bozuk saat ve sınır dışı kimlik null", QuickMath.medKey("{\"extra\":{\"m\":1,\"s\":\"25:00\"}}") == null && QuickMath.medKey("{\"extra\":{\"m\":1,\"s\":\"8:00\"}}") == null && QuickMath.medKey("{\"extra\":{\"m\":0,\"s\":\"08:00\"}}") == null && QuickMath.medKey("{\"extra\":{\"m\":1000,\"s\":\"08:00\"}}") == null);
         ok("ilaç: su bildirimi ilaç anahtarı üretmez", QuickMath.medKey("{\"extra\":{\"act\":\"su\",\"v\":250}}") == null);
 
+        ok("ilaç: atla anahtarı k ile başlar", "k12_0800".equals(QuickMath.medKey("{\"extra\":{\"act\":\"med\",\"m\":12,\"s\":\"08:00\"}}", true)));
+
         String s = QuickMath.append("", "250", 1000L);
         s = QuickMath.append(s, "m12_0800", 2000L);
         List<String[]> l = QuickMath.parse(s);
@@ -36,8 +38,8 @@ public class QuickMathTest {
         List<String[]> bl = QuickMath.parse(big);
         ok("sınır: en çok 200 kayıt, en eskiler atılır", bl.size() == 200 && bl.get(0)[1].equals("51") && bl.get(199)[1].equals("250"));
 
-        List<String[]> m = QuickMath.parse("250,1000;abc;,5;100,;0,50;5000,70;300,0;-5,10;200,3000;;300,4000,9;m7_0900,10;m7_9,10;mx_0800,10;m1000_0800,10;");
-        ok("ayrıştırma: bozuk ve sınır dışı parçalar atlanır", m.size() == 3 && m.get(0)[0].equals("250") && m.get(1)[0].equals("200") && m.get(2)[0].equals("m7_0900"));
+        List<String[]> m = QuickMath.parse("250,1000;abc;,5;100,;0,50;5000,70;300,0;-5,10;200,3000;;300,4000,9;m7_0900,10;k7_0900,11;m7_9,10;mx_0800,10;m1000_0800,10;");
+        ok("ayrıştırma: bozuk ve sınır dışı parçalar atlanır", m.size() == 4 && m.get(0)[0].equals("250") && m.get(1)[0].equals("200") && m.get(2)[0].equals("m7_0900") && m.get(3)[0].equals("k7_0900"));
         ok("ayrıştırma: boş ve null", QuickMath.parse("").isEmpty() && QuickMath.parse(null).isEmpty());
         System.exit(bad == 0 ? 0 : 1);
     }

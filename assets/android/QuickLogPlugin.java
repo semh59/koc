@@ -30,8 +30,8 @@ public class QuickLogPlugin extends Plugin {
         if ("su".equals(act)) {
             int v = QuickMath.amount(obj);
             if (v > 0) key = String.valueOf(v);
-        } else if ("med".equals(act)) {
-            key = QuickMath.medKey(obj);
+        } else if ("med".equals(act) || "medskip".equals(act)) {
+            key = QuickMath.medKey(obj, "medskip".equals(act));
         }
         if (key == null) return false;
         SharedPreferences p = prefs(c);
@@ -39,7 +39,11 @@ public class QuickLogPlugin extends Plugin {
         int id = in.getIntExtra(ID_KEY, Integer.MIN_VALUE);
         if (id != Integer.MIN_VALUE) {
             NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
-            if (nm != null) nm.cancel(id);
+            if (nm != null) {
+                nm.cancel(id);
+                // İlaç: ana bildirim ve tekrar hatırlatmaları aynı dozun kardeşidir (kimlik + 1.000.000 × sıra); hepsi kalkar.
+                if (id >= 1000000) for (int k = 0; k < 3; k++) nm.cancel(1000000 + (id - 1000000) % 1000000 + 1000000 * k);
+            }
         }
         in.removeExtra(ACTION_KEY);
         return true;
@@ -58,10 +62,11 @@ public class QuickLogPlugin extends Plugin {
         List<String[]> list = QuickMath.parse(takeAll(getContext()));
         for (String[] x : list) {
             JSObject o = new JSObject();
-            if (x[0].charAt(0) == 'm') {
+            if (x[0].charAt(0) == 'm' || x[0].charAt(0) == 'k') {
                 int us = x[0].indexOf('_');
                 o.put("m", Integer.parseInt(x[0].substring(1, us)));
                 o.put("s", x[0].substring(us + 1, us + 3) + ":" + x[0].substring(us + 3));
+                o.put("k", x[0].charAt(0) == 'k');
             } else {
                 o.put("v", Integer.parseInt(x[0]));
             }

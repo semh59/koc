@@ -89,21 +89,32 @@ const MedLib=(()=>{
 
   const nid=(m,ti,off)=>1000000+m.id*1000+ti*40+off;
   /* Bildirim listesi: önümüzdeki `days` gün, kaydı girilmiş dozlar atlanır. title/body gösterim ayarına göre. */
+  const NAGS=[10,20];
+  /* Bildirim kimliğinden (ana ya da tekrar) ilacı ve doz saatini bulur. */
+  function doseOfId(meds,id){
+    const b=(id-1000000)%1000000;if(!(b>=0))return null;
+    const m=meds.find(x=>x.id===Math.floor(b/1000)),slot=m&&m.t[Math.floor((b%1000)/40)];
+    return slot?{m,slot}:null;
+  }
   function notifications(meds,log,now,days,showName){
-    const out=[],today=key(now),nowT=now.getTime()+5000;
-    for(let off=0;off<days&&off<40;off++){
+    const out=[],today=key(now),nowT=now.getTime()+5000,body=m=>showName?`${m.n}${m.d?" · "+m.d:""}`:"İlaç saatin geldi.";
+    for(let off=-1;off<days&&off<40;off++){
       const day=addDay(today,off);
       for(const m of meds){
         if(!active(m,day))continue;
         m.t.forEach((slot,ti)=>{
           if(statusOf(log,m.id,day,slot))return;
           const at=parseDay(day);at.setHours(+slot.slice(0,2),+slot.slice(3,5),0,0);
-          if(at.getTime()<=nowT)return;
-          out.push({id:nid(m,ti,off),title:"💊 İlaç zamanı",body:showName?`${m.n}${m.d?" · "+m.d:""}`:"İlaç saatin geldi.",at,actionTypeId:"med",extra:{act:"med",m:m.id,s:slot}});
+          const id=nid(m,ti,off<0?39:off),extra={act:"med",m:m.id,s:slot};
+          if(at.getTime()>nowT)out.push({id,title:"💊 İlaç zamanı",body:body(m),at,extra});
+          NAGS.forEach((min,k)=>{
+            const t=new Date(at.getTime()+min*60000);
+            if(t.getTime()>nowT)out.push({id:id+1000000*(k+1),title:"💊 İlacını aldın mı?",body:body(m),at:t,extra});
+          });
         });
       }
     }
-    return out;
+    return out.map(n=>Object.assign(n,{actionTypeId:"med",channelId:"nw_med",ongoing:true}));
   }
   /* Tüm bildirimleri zamana göre sırala, Android'in uygulama başına alarm sınırına (500) karşı en yakın BUDGET tanesini al. */
   const budget=(list)=>list.slice().sort((a,b)=>a.at-b.at).slice(0,BUDGET);
@@ -113,6 +124,6 @@ const MedLib=(()=>{
     const d=new Date(tapMs),tm=d.getHours()*60+d.getMinutes(),sm=+slot.slice(0,2)*60+ +slot.slice(3,5);
     return sm-tm>360?addDay(key(d),-1):key(d);
   }
-  return {MAXM,MAXT,BUDGET,cleanMeds,cleanLog,dosesOn,statusOf,mark,adherence,stockLeft,notifications,budget,dayForTap,addDay,dayDiff,dayOk,timeOk,key};
+  return {doseOfId,MAXM,MAXT,BUDGET,cleanMeds,cleanLog,dosesOn,statusOf,mark,adherence,stockLeft,notifications,budget,dayForTap,addDay,dayDiff,dayOk,timeOk,key};
 })();
 if(typeof module!=="undefined")module.exports=MedLib;
