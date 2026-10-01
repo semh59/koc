@@ -662,6 +662,7 @@ async function goYukle(){
 }
 
 /* ---------- bildirimler (yalnızca APK) ---------- */
+const SCHED_DAYS=30;let lastSched=0;
 const LN=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.LocalNotifications;
 async function scheduleReminders(){
   const ln=LN();if(!ln)return "web";
@@ -671,7 +672,16 @@ async function scheduleReminders(){
     if(p.display!=="granted")return "denied";
     const pend=await ln.getPending();
     if(pend.notifications.length)await ln.cancel({notifications:pend.notifications.map(n=>({id:n.id}))});
-    const list=S.settings.reminders.filter(r=>r.on).map(r=>{const [h,m]=r.t.split(":").map(Number);return {id:r.id,title:r.title,body:r.body,schedule:{on:{hour:h,minute:m},allowWhileIdle:true}}});
+    /* Eklentinin günlük tekrarı ilk bildirimden sonra Doze'da ertelenen bir alarm kurar. Bu yüzden her günü ayrı, uyku modunu delen tek seferlik alarmla kuruyoruz. */
+    const list=[],now=Date.now();
+    for(const r of S.settings.reminders.filter(r=>r.on)){
+      const [h,m]=r.t.split(":").map(Number);
+      for(let i=0;i<SCHED_DAYS;i++){
+        const at=addDays(i);at.setHours(h,m,0,0);
+        if(at.getTime()>now+5000)list.push({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}});
+      }
+    }
+    lastSched=now;
     if(list.length)await ln.schedule({notifications:list});
     return "ok";
   }catch(e){return "Bildirimler kurulamadı: "+(e&&e.message||e)}
@@ -767,7 +777,7 @@ document.addEventListener("keydown",ev=>{
   if(ev.key==="Enter"&&ev.target.id==="cmsg"){ev.preventDefault();const i=ev.target,t=i.value;i.value="";cSend(t);return}
   if(ev.key==="Enter"&&ev.target.closest("#sheet")&&ev.target.tagName==="INPUT"){const b=$("#sheet [data-go]");if(b)b.click()}
 });
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){render();cFlush();cAuto()}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){render();cFlush();cAuto();if(Date.now()-lastSched>6*36e5)scheduleReminders().then(setNotif)}});
 
 render();
 if(corruptNote)toast("Kayıtlı veri okunamadı. Eski hali ayrı bir kopyada saklandı.");
