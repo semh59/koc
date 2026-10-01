@@ -813,6 +813,33 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("S.mood=[{day:dayKey(),v:3}]");ctx=ev("CoachLib.contextText(cData())");
     ok("Koç bağlamı: ruh hali sütunu",ctx.includes("| adım | ruh hali 1-5):"));
     ev("S.mood=[];render()");
+    // oruç
+    const wait=ms=>new Promise(r=>setTimeout(r,ms)),lnO=w.Capacitor.Plugins.LocalNotifications,sc=[];
+    w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[{id:9100}]}),getDeliveredNotifications:async()=>({notifications:[]}),removeDeliveredNotifications:async()=>{},registerActionTypes:async()=>{},cancel:async()=>{},schedule:async o=>{sc.push(o.notifications)}};
+    ev("S.fast={plan:16,t0:null,log:[]};S.settings.age=0;S.settings.healthNote='';tab='bugun';render()");
+    ok("oruç kartı: dört plan, varsayılan 16:8 seçili, hekim notu yok",q("#view").textContent.includes("14:10")&&q("#view").textContent.includes("20:4")&&q('[data-hb="plan:16"]').getAttribute("aria-pressed")==="true"&&!q("#view").textContent.includes("hekimine danış"));
+    click('[data-hb="plan:18"]');const t00=Date.now();click('[data-hb="fastgo"]');await wait(30);
+    const n9=(sc[sc.length-1]||[]).find(n=>n.id===9100);
+    ok("oruç başlayınca 9100 hedef saatte kurulur, kimlik 1.000.000 altında",ev("S.fast.plan")===18&&ev("S.fast.t0")>=t00&&n9&&Math.abs(n9.schedule.at.getTime()-(ev("S.fast.t0")+18*36e5))<1000&&sc[sc.length-1].every(n=>n.id<1e6),n9);
+    sc.length=0;await ev("scheduleReminders()");
+    ok("oruç sürerken her yeniden kurulumda 9100 durumdan yeniden kurulur",sc[0].some(n=>n.id===9100));
+    ev("S.fast.t0=Date.now()-10*36e5;S.fast.plan=16;render()");
+    ok("oruç kartı: geçen ve kalan süre dakika hassasiyetiyle",q("#view").textContent.includes("10 sa 0 dk geçti")&&q("#view").textContent.includes("6 sa 0 dk kaldı")&&!!q('[data-hb="fastend"]')&&!q('[data-hb="plan:14"]'));
+    ev("S.fast.t0=Date.now()-17*36e5;render()");
+    ok("oruç kartı: hedef dolunca 'Hedef doldu'",q("#view").textContent.includes("Hedef doldu"));
+    sc.length=0;click('[data-hb="fastend"]');await wait(30);
+    ok("oruç bitince log'a yazılır, 9100 kurulmaz, son oruçlar listelenir",ev("S.fast.t0")===null&&ev("S.fast.log.length")===1&&ev("S.fast.log[0].t1-S.fast.log[0].t0")>=16.9*36e5&&sc.length>0&&!sc[0].some(n=>n.id===9100)&&q("#view").textContent.includes("Son oruçlar: ")&&q("#view").textContent.includes("17 sa 0 dk"),ev("S.fast"));
+    ok("hatırlatıcı 11 varsayılan kapalı, eski veride de kapalı, kimliği 89 altında",ev("cleanSettings({}).reminders.find(r=>r.id===11).on")===false&&ev("cleanSettings({reminders:[{id:1,t:'09:00',on:true}]}).reminders.find(r=>r.id===11).on")===false&&ev("S.settings.reminders.every(r=>r.id<=89)"));
+    ev("S.settings.reminders.find(r=>r.id===11).on=false");sc.length=0;await ev("scheduleReminders()");
+    ok("hatırlatıcı 11 kapalıyken 1100 serisi kurulmaz",!sc[0].some(n=>n.id>=1100&&n.id<=1129));
+    ev("S.settings.reminders.find(r=>r.id===11).on=true");sc.length=0;await ev("scheduleReminders()");
+    ok("hatırlatıcı 11 açılınca 1100+ kimlikleri kurulur",sc[0].some(n=>n.id>=1100&&n.id<=1129)&&new Set(sc[0].map(n=>n.id)).size===sc[0].length);
+    ev("S.settings.reminders.find(r=>r.id===11).on=false;S.settings.age=15;render()");
+    ok("18 yaş altında oruç kartında hekim notu çıkar, engellenmez",q("#view").textContent.includes("hekimine danış")&&!!q('[data-hb="fastgo"]'));
+    ev("S.settings.age=0;S.settings.healthNote='tansiyon';render()");
+    ok("sağlık notu varken oruç kartında hekim notu çıkar",q("#view").textContent.includes("hekimine danış"));
+    ev("S.settings.healthNote='';S.fast={plan:16,t0:null,log:[]};render()");
+    w.Capacitor.Plugins.LocalNotifications=lnO;
   }
   {
     // plaka, ısınma, set anında rekor

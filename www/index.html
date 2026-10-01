@@ -327,7 +327,8 @@ const DEF={
     {id:7,t:"08:00",on:false,name:"Tansiyon (sabah)",title:"❤️ Tansiyon ölçümü",body:"5 dakika dinlen, tansiyonunu ölç ve kaydet."},
     {id:8,t:"20:00",on:false,name:"Tansiyon (akşam)",title:"❤️ Tansiyon ölçümü",body:"5 dakika dinlen, tansiyonunu ölç ve kaydet."},
     {id:9,t:"07:30",on:false,name:"Şeker ölçümü",title:"🩸 Şeker ölçümü",body:"Şekerini ölç ve ne zaman ölçtüğünle kaydet."},
-    {id:10,t:"20:00",on:true,dow:0,name:"Haftalık yedek (Pazar)",title:"☁️ Yedek zamanı",body:"Yedeği Drive'a göndermek için Ayarlar > Yedeği Drive'a gönder."}
+    {id:10,t:"20:00",on:true,dow:0,name:"Haftalık yedek (Pazar)",title:"☁️ Yedek zamanı",body:"Yedeği Drive'a göndermek için Ayarlar > Yedeği Drive'a gönder."},
+    {id:11,t:"20:00",on:false,name:"Oruç başlangıcı",title:"⏳ Oruç başlangıcı",body:"Oruç penceren başlıyor, istersen Bugün'den başlat."}
   ]},
   entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,exCfg:{},providers:defProviders(),chat:[],cid:1,myFoods:[],favFoods:[],mealTpl:[],fast:{plan:16,t0:null,log:[]},sleep:[],mood:[],labs:[],vitals:[],meds:[],medLog:[],moves:[]
 };
@@ -541,7 +542,7 @@ function viewBugun(){
     ${ring(su/sh,"var(--su)",fmt(su/1000,1),"Su",`/ ${fmt(sh/1000,1)} L`)}
     ${ring(kcP,"var(--kcal)",Math.round(kc),"Kalori",st.kcal>0?`/ ${st.kcal}`:"hedef yok")}
     ${ring(sw/st.sportWeek,"var(--spor)",Math.round(sw),"Spor",`/ ${st.sportWeek} dk hafta`)}
-  </div></div>${sOn?stepCard():""}${vCard()}${medCard()}${habitCard()}`;
+  </div></div>${sOn?stepCard():""}${vCard()}${medCard()}${fastCard()}${habitCard()}`;
   const meals=S.entries.filter(e=>e.type==="yemek"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
   const pr=cur!=null?Algo.proteinRange(cur):null;
   const macro=meals.some(e=>e.p||e.c||e.f)?`<div class="macro num">Protein <b>${Math.round(mac("p"))}</b>${pr?` / ${pr[0]}–${pr[1]}`:""} g${meals.some(e=>e.c!=null||e.f!=null)?` · Karbonhidrat <b>${Math.round(mac("c"))}</b> g · Yağ <b>${Math.round(mac("f"))}</b> g`:""}</div>`:"";
@@ -883,6 +884,7 @@ async function scheduleReminders(){
     if(S.settings.medOn){
       for(const n of MedLib.notifications(S.meds,S.medLog,new Date(),SCHED_DAYS,S.settings.medShowName!==false))list.push({id:n.id,title:n.title,body:n.body,schedule:{at:n.at,allowWhileIdle:true},actionTypeId:n.actionTypeId,extra:n.extra,channelId:n.channelId,ongoing:n.ongoing});
     }
+    if(S.fast.t0){const at=new Date(S.fast.t0+S.fast.plan*36e5);if(at.getTime()>now+5000)list.push({id:9100,title:"⏳ Oruç",body:"Oruç süren doldu. İstediğinde bitirebilirsin.",schedule:{at,allowWhileIdle:true}})}
     // Android uygulama başına eşzamanlı alarm sınırı (500): en yakın tarihliler korunur, uzaktakiler uygulama açılınca yeniden kurulur.
     list.sort((a,b)=>a.schedule.at-b.schedule.at);if(list.length>MedLib.BUDGET)list.length=MedLib.BUDGET;
     if(list.length)await ln.schedule({notifications:list});
