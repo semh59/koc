@@ -37,6 +37,7 @@ const LogLib=(()=>{
     }
     return out;
   }
-  return {NUTR,MAX,copyNutr,key,cleanFav,cleanTpl,recents};
+  const stalled=(snapAt,now,yest,prev7)=>(snapAt>0&&now-snapAt>26*36e5)||(yest===0&&prev7>1000);
+  return {stalled,NUTR,MAX,copyNutr,key,cleanFav,cleanTpl,recents};
 })();
 if(typeof module!=="undefined")module.exports=LogLib;

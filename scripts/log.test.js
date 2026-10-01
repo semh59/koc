@@ -14,4 +14,7 @@ ok("cleanTpl boş kalemli ve adsız şablonu atar, çakışan kimliği yeniden n
 r=L.cleanTpl(Array.from({length:25},(_,i)=>({id:i+1,n:"s"+i,items:Array.from({length:20},(_,j)=>it(j))})));
 ok("cleanTpl en çok 20 şablon ve şablon başına 15 kalem",r.length===20&&r.every(t=>t.items.length===15));
 ok("cleanTpl dizi olmayan girdide boş, uzun adı keser",L.cleanTpl({}).length===0&&L.cleanTpl([{n:"x".repeat(80),items:[it(1)]}])[0].n.length===40);
+const H=36e5,now=1e12;
+ok("stalled: 26 saatten uzun kapanışsızlık uyarır, 26 saat altı ve snapAt 0 uyarmaz",L.stalled(now-27*H,now,100,0)&&!L.stalled(now-25*H,now,100,0)&&!L.stalled(0,now,100,0));
+ok("stalled: dün 0 ve önceki ortalama 1000 üstü uyarır, sınırda ve dün adım varsa uyarmaz",L.stalled(0,now,0,1001)&&!L.stalled(0,now,0,1000)&&!L.stalled(0,now,10,5000));
 if(bad){console.log(bad+" test başarısız");process.exit(1)}
