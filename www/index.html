@@ -327,13 +327,13 @@ const DEF={
     {id:9,t:"07:30",on:false,name:"Şeker ölçümü",title:"🩸 Şeker ölçümü",body:"Şekerini ölç ve ne zaman ölçtüğünle kaydet."},
     {id:10,t:"20:00",on:true,dow:0,name:"Haftalık yedek (Pazar)",title:"☁️ Yedek zamanı",body:"Yedeği Drive'a göndermek için Ayarlar > Yedeği Drive'a gönder."}
   ]},
-  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,exCfg:{},providers:defProviders(),chat:[],cid:1,myFoods:[],labs:[],vitals:[],meds:[],medLog:[],moves:[]
+  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,exCfg:{},providers:defProviders(),chat:[],cid:1,myFoods:[],favFoods:[],labs:[],vitals:[],meds:[],medLog:[],moves:[]
 };
 const VR={bpSysHi:[80,300,true],bpDiaHi:[40,200,true],bpSysLo:[50,300,true],bpDiaLo:[30,200,true],gFastLo:[20,600,true],gFastHi:[20,600,true],gPostLo:[20,600,true],gPostHi:[20,600,true]};
 const RANGES={...VR,goalKg:[20,400,false],kcal:[800,8000,true],waterMl:[500,10000,true],glass:[50,1500,true],sportWeek:[10,3000,true],stepGoal:[1000,100000,true],heightCm:[100,250,true],age:[10,100,true]};
 const SETLBL={goalKg:"Hedef kilo",kcal:"Günlük kalori",waterMl:"Günlük su",glass:"Bir bardak",sportWeek:"Haftalık spor",stepGoal:"Günlük adım",heightCm:"Boy",age:"Yaş",bpSysHi:"Büyük tansiyon üst sınır",bpDiaHi:"Küçük tansiyon üst sınır",bpSysLo:"Büyük tansiyon alt sınır",bpDiaLo:"Küçük tansiyon alt sınır",gFastLo:"Açlık alt sınır",gFastHi:"Açlık üst sınır",gPostLo:"Yemek sonrası alt sınır",gPostHi:"Yemek sonrası üst sınır"};
 const ZEROOK=["goalKg","kcal","heightCm","age",...Object.keys(VR)];
-const {NUTR,MAX,copyNutr}=LogLib;
+const {copyNutr}=LogLib;
 const TYPES=["su","kilo","yemek","spor","not","adim"];
 const dayOk=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s);
 const timeOk=s=>typeof s==="string"&&/^([01]\d|2[0-3]):[0-5]\d$/.test(s);
@@ -366,7 +366,7 @@ function cleanSettings(raw){
   }
   return d;
 }
-function cleanHealthState(r){const meds=MedLib.cleanMeds(r&&r.meds);return {meds,medLog:MedLib.cleanLog(r&&r.medLog,meds),moves:MotionLib.clean(r&&r.moves)}}
+function cleanHealthState(r){const meds=MedLib.cleanMeds(r&&r.meds);return {meds,medLog:MedLib.cleanLog(r&&r.medLog,meds),moves:MotionLib.clean(r&&r.moves),favFoods:LogLib.cleanFav(r&&r.favFoods)}}
 function cleanMyFoods(arr){
   const out=[],seen=new Set();
   for(const x of (Array.isArray(arr)?arr:[]).slice(0,200)){
@@ -392,7 +392,7 @@ function cleanEntries(arr){
     if(bad){drop++;continue}
     const ne={id:0,day:e.day,time:timeOk(e.time)?e.time:"00:00",type:e.type,v:e.type==="not"?null:v,text:typeof e.text==="string"?e.text.slice(0,500):""};
     if(Number.isInteger(e.wid))ne.wid=e.wid;
-    if(e.type==="yemek")for(const k of NUTR)if(Number.isFinite(e[k])&&e[k]>=0&&e[k]<=MAX[k])ne[k]=e[k];
+    if(e.type==="yemek")copyNutr(e,ne);
     out.push(ne);
   }
   out.forEach((e,i)=>e.id=i+1);
@@ -440,7 +440,7 @@ function streak(){
 }
 
 /* ---------- arayüz durumu ---------- */
-let tab=(S.settings.consent&&keysStored())||S.chat.length?"koc":"bugun",range=30,toastTimer=null,lastUndo=null,logOff=0,favList=[],lastDay=dayKey();
+let tab=(S.settings.consent&&keysStored())||S.chat.length?"koc":"bugun",range=30,toastTimer=null,lastUndo=null,logOff=0,recList=[],lastDay=dayKey();
 function goalInfo(cur,first){
   const g=S.settings.goalKg;if(!(g>0))return null;
   const f=first==null?cur:first,dir=f>=g?-1:1;
@@ -680,10 +680,14 @@ function repeatYesterday(){
   if(!src.length)return toast("Dün kayıtlı yemek yok");
   addFoods(src,dayKey(),`Dünkü ${src.length} yemek bugüne eklendi`);
 }
+function favHtml(){
+  recList=LogLib.recents(S.entries,dayKey());
+  const fk=new Set(S.favFoods.map(f=>LogLib.key(f.text)));
+  const row=(x,i,a,b,star,lab)=>`<div class="prow"><button data-${a}="${i}" style="flex:1;text-align:left;min-height:56px"><b>${esc(x.text)}</b><span class="mut sm">${x.v!=null?Math.round(x.v)+" kcal":"kalori yok"}</span></button><button class="plus" data-${b}="${i}" aria-label="${lab}"${star==="★"&&b==="fva"?" disabled":""}>${star}</button></div>`;
+  return (S.favFoods.length?`<div class="lbl">Favoriler</div>${S.favFoods.map((x,i)=>row(x,i,"fv","fvd","★","Favoriden çıkar")).join("")}`:"")+(recList.length?`<div class="lbl">Son yediklerin</div>${recList.map((x,i)=>row(x,i,"rc","fva",fk.has(LogLib.key(x.text))?"★":"☆","Favoriye al")).join("")}`:"");
+}
 function sheetYemek(){
-  const cnt={};for(const e of S.entries)if(e.type==="yemek"&&e.text){const k=tr(e.text);(cnt[k]=cnt[k]||{n:0,text:e.text,v:e.v}).n++;cnt[k].v=e.v}
-  const fav=Object.values(cnt).sort((a,b)=>b.n-a.n).slice(0,6);favList=fav;
-  openSheet(`<h3>Yemek ekle</h3>${of("yemek",keyOff(-1)).length?`<button class="btn ghost" data-act="dunku" style="margin-bottom:8px">↺ Dünkünü tekrarla (${of("yemek",keyOff(-1)).length} kayıt)</button>`:""}${isNative()&&BS()?`<button class="btn ghost" data-act="barkod" style="margin-bottom:8px">📷 Barkod okut</button>`:""}${ocrBtn("etiket","🏷 Etiketi fotoğrafla oku")}<input class="in" id="fq" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off" autofocus><div id="flist" class="plist"></div>${fav.length?`<div class="lbl">Sık yediklerin</div><div class="chips">${fav.map((f,i)=>`<button class="chip" data-fav="${i}">${esc(f.text)}${f.v?" "+Math.round(f.v):""}</button>`).join("")}</div>`:""}
+  openSheet(`<h3>Yemek ekle</h3>${of("yemek",keyOff(-1)).length?`<button class="btn ghost" data-act="dunku" style="margin-bottom:8px">↺ Dünkünü tekrarla (${of("yemek",keyOff(-1)).length} kayıt)</button>`:""}${isNative()&&BS()?`<button class="btn ghost" data-act="barkod" style="margin-bottom:8px">📷 Barkod okut</button>`:""}${ocrBtn("etiket","🏷 Etiketi fotoğrafla oku")}<input class="in" id="fq" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off" autofocus><div id="flist" class="plist"></div><div id="frl" class="plist">${favHtml()}</div>
   <div class="lbl">Ya da kendin yaz</div><input class="in" id="ft" placeholder="Ne yedin?" autocomplete="off"><input class="in num" id="fv" inputmode="numeric" placeholder="Kalori (isteğe bağlı)">${dayOptions()}<button class="btn" data-go="yemek">Kaydet</button>`);
 }
 let curFood=null,curPor=0,foodAskQ="";
@@ -941,7 +945,7 @@ async function notifTest(){
 
 /* ---------- olaylar ---------- */
 document.addEventListener("click",ev=>{
-  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-fav],[data-sp],[data-lo],[data-g],[data-sex],[data-actl],[data-c],[data-food],[data-fp]");
+  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-rc],[data-fv],[data-fva],[data-fvd],[data-sp],[data-lo],[data-g],[data-sex],[data-actl],[data-c],[data-food],[data-fp]");
   if(ev.target.id==="scrim")return closeSheet();
   if(!el)return;
   const d=el.dataset;
@@ -960,7 +964,13 @@ document.addEventListener("click",ev=>{
   if(d.sp){document.querySelectorAll("#sp .chip").forEach(c=>c.setAttribute("aria-pressed",c===el));return}
   if(d.food!==undefined){sheetPorsiyon(+d.food);return}
   if(d.fp!==undefined){curPor=+d.fp;document.querySelectorAll("#fpc .chip").forEach(c=>c.setAttribute("aria-pressed",c===el));foodPreview();return}
-  if(d.fav!==undefined){const f=favList[+d.fav];if(f){$("#ft").value=f.text;$("#fv").value=f.v?String(Math.round(f.v)):""}return}
+  if(d.rc!==undefined||d.fv!==undefined){const x=d.rc!==undefined?recList[+d.rc]:S.favFoods[+d.fv];if(x)addFoods([x],fday(),`${x.text} eklendi`);return}
+  if(d.fva!==undefined){
+    const x=recList[+d.fva];if(!x)return;
+    if(S.favFoods.length>=20)return toast("En fazla 20 favori");
+    S.favFoods=LogLib.cleanFav([x,...S.favFoods]);save();$("#frl").innerHTML=favHtml();return;
+  }
+  if(d.fvd!==undefined){S.favFoods.splice(+d.fvd,1);save();$("#frl").innerHTML=favHtml();return}
   if(d.act){
     if(d.act==="su"){const e=add("su",S.settings.glass);render();const t=dayKey(),top=sum("su",t,t);if(top>=S.settings.waterMl&&top-S.settings.glass<S.settings.waterMl)scheduleReminders().then(setNotif);toast(`+${S.settings.glass} ml, bugün ${Math.round(top)} / ${S.settings.waterMl} ml`+(top-S.settings.glass<S.settings.waterMl&&top>=S.settings.waterMl?". Günlük hedef tamam":""),e.id)}
     else if(d.act==="kilo")sheetKilo();
