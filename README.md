@@ -44,7 +44,7 @@ Notlar:
 
 ## Bilmen gerekenler
 
-- Veriler yalnızca telefonda durur. Uygulamayı silersen kaybolur. Ayarlar > **Yedekle veya geri yükle** ile yedeği dosya olarak paylaş (Drive, WhatsApp, e-posta) ya da metni kopyala. Geri yüklerken **Dosyadan oku** ile dosyayı seçebilirsin. 14 günden uzun süredir yedek almadıysan Bugün ekranında hatırlatma çıkar.
+- Veriler yalnızca telefonda durur. Uygulamayı silersen kaybolur. Ayarlar > **Yedekle veya geri yükle** ile yedeği dosya olarak paylaş (Drive, WhatsApp, e-posta) ya da metni kopyala. Geri yüklerken **Dosyadan oku** ile dosyayı seçebilirsin. Parola yazarsan yedek şifrelenir ve API anahtarların da içine girer (telefon değiştirirken işe yarar). Parolayı unutursan yedek açılmaz. 14 günden uzun süredir yedek dosyası almadıysan Bugün ekranında hatırlatma çıkar. Android'in otomatik yedeği açıksa (telefon ayarlarında Google yedekleme) uygulama verisi ayrıca Google hesabına yedeklenir.
 - Hatırlatmalar sabit metinlidir ve uygulama kapalıyken de gelir. Saatleri ve hangilerinin açık olacağını Ayarlar'dan değiştirebilirsin.
 - Bildirimler hiç gelmiyorsa telefon ayarlarında NeoWell için bildirim iznini ve pil ayarlarında "kısıtlama yok" seçeneğini kontrol et. Bazı telefonlar (Xiaomi, Huawei, Samsung) arka plan bildirimlerini agresif keser.
 - Android 12 ve üstünde hatırlatmaların tam saatinde gelmesi için uygulama "Alarmlar ve hatırlatıcılar" iznini kullanır, kurulumda otomatik verilir. Gelmezse telefon ayarlarından NeoWell > İzinler bölümüne bak.

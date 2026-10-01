@@ -64,3 +64,25 @@ jobs:
         run: |
           gh release delete son-surum --yes --cleanup-tag || true
           gh release create son-surum neowell.apk --title "NeoWell APK (son sürüm)" --notes "Telefondan bu sayfadaki neowell.apk dosyasını indirip kur."
+
+  smoke:
+    needs: build
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: neowell-apk
+      - name: KVM iznini aç
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Emülatörde aç ve kontrol et
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          arch: x86_64
+          script: bash scripts/smoke.sh

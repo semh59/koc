@@ -4,7 +4,7 @@ const html=fs.readFileSync(www("index.html"),"utf8").replace(/<script src="([^"]
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const errs=[];
 const dom=new JSDOM(html,{runScripts:"dangerously",pretendToBeVisual:true,url:"https://localhost/",
-  beforeParse(w){w.structuredClone=structuredClone;w.confirm=()=>true;w.scrollTo=()=>{};w.addEventListener("error",e=>errs.push(e.message))}
+  beforeParse(w){Object.assign(w,{structuredClone,TextEncoder,TextDecoder});Object.defineProperty(w,"crypto",{value:require("node:crypto").webcrypto});w.confirm=()=>true;w.scrollTo=()=>{};w.addEventListener("error",e=>errs.push(e.message))}
 });
 setTimeout(()=>{
   const w=dom.window,ev=s=>w.eval(s);
@@ -19,6 +19,21 @@ setTimeout(()=>{
   ev("goYukle()");
   ok("yedek anahtar adresini değiştiremez",ev("S.providers.find(p=>p.id==='nvidia').base")==="https://integrate.api.nvidia.com/v1",ev("S.providers.map(p=>p.base)"));
   ok("yedek onayı ve izni değiştiremez",ev("S.settings.consent")===false&&ev("S.providers.find(p=>p.id==='gemini').confirm")===true);
+  ev("setKey('groq','KEY-sirri-12345');S.settings.healthNote='gizli not'");
+  ev("document.querySelector('#bkpw')||document.body.insertAdjacentHTML('beforeend','<input id=\"bkpw\">')");
+  w.document.querySelector("#bkpw").value="parola123";
+  w.backupP=ev("backupText()");
+  w.backupP.then(async enc=>{
+    ok("şifreli yedek düz metin içermez",!enc.includes("gizli not")&&!enc.includes("KEY-sirri-12345")&&JSON.parse(enc).enc==="aes-gcm-pbkdf2");
+    ev("setKey('groq','');S.settings.healthNote=''");
+    w.document.querySelector("#bk").value=enc;w.document.querySelector("#bkpw").value="yanlis";
+    await ev("goYukle()");
+    ok("yanlış parola geri yüklemez",ev("S.settings.healthNote")===""&&ev("getKeys().groq")===undefined);
+    w.document.querySelector("#bkpw").value="parola123";
+    await ev("goYukle()");
+    ok("doğru parola veri ve anahtarı geri getirir",ev("S.settings.healthNote")==="gizli not"&&ev("getKeys().groq")==="KEY-sirri-12345",[ev("S.settings.healthNote"),ev("getKeys().groq"),ev("document.querySelector('#toast').textContent")]);
+    process.exit(bad?1:0);
+  });
   ev("S.chat=[];S.cid=1;cReply({reply:'x',log:[],propose:null,flag:'safety'})");
   ok("model güvenlik işareti kart üretir",ev("S.chat.some(m=>m.card&&m.card.kind==='safety')"));
   ev("S.chat=[];Object.assign(S.settings,{age:12,heightCm:165,goalKg:45,healthNote:'',kcal:0});S.entries=[];for(let i=13;i>=0;i--)S.entries.push({id:100+i,day:keyOff(-i),time:'08:00',type:'kilo',v:60-i*0.01,text:''})");
@@ -28,5 +43,4 @@ setTimeout(()=>{
   ok("yedek yoksa uyarı çıkar",ev("viewBugun()").includes("Yedek zamanı"));
   ev("markBackup()");
   ok("yedek alınınca uyarı kalkar",!ev("viewBugun()").includes("Yedek zamanı")&&ev("cleanSettings({lastBackup:S.settings.lastBackup}).lastBackup")===ev("dayKey()"));
-  process.exit(bad?1:0);
 },100);
