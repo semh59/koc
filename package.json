@@ -18,6 +18,6 @@
     "pdfjs-dist": "4.10.38"
   },
   "scripts": {
-    "test": "node scripts/algo.test.js && node scripts/coach.test.js && node scripts/backup.test.js && node scripts/vault.test.js && node scripts/foods.test.js && node scripts/off.test.js && node scripts/lab.test.js && node scripts/label.test.js && node scripts/vitals.test.js && node scripts/weekly.test.js && node scripts/med.test.js && node scripts/motion.test.js && node scripts/fig.test.js && node scripts/app.test.js"
+    "test": "node scripts/algo.test.js && node scripts/coach.test.js && node scripts/backup.test.js && node scripts/vault.test.js && node scripts/foods.test.js && node scripts/off.test.js && node scripts/lab.test.js && node scripts/label.test.js && node scripts/vitals.test.js && node scripts/weekly.test.js && node scripts/log.test.js && node scripts/med.test.js && node scripts/motion.test.js && node scripts/fig.test.js && node scripts/app.test.js"
   }
 }
