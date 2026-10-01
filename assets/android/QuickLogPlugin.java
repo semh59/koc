@@ -27,8 +27,9 @@ public class QuickLogPlugin extends Plugin {
     static synchronized boolean handle(Context c, Intent in) {
         if (in == null) return false;
         String act = in.getStringExtra(ACTION_KEY), obj = in.getStringExtra(OBJ_KEY), key = null;
+        int v = 0;
         if ("su".equals(act)) {
-            int v = QuickMath.amount(obj);
+            v = QuickMath.amount(obj);
             if (v > 0) key = String.valueOf(v);
         } else if ("med".equals(act) || "medskip".equals(act)) {
             key = QuickMath.medKey(obj, "medskip".equals(act));
@@ -36,6 +37,7 @@ public class QuickLogPlugin extends Plugin {
         if (key == null) return false;
         SharedPreferences p = prefs(c);
         p.edit().putString("q", QuickMath.append(p.getString("q", ""), key, System.currentTimeMillis())).commit();
+        if (v > 0) NeoWidget.bump(c, v);
         int id = in.getIntExtra(ID_KEY, Integer.MIN_VALUE);
         if (id != Integer.MIN_VALUE) {
             NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);

@@ -655,6 +655,16 @@ function render(){
   if(tab==="koc")cScroll();
   $("#navIlac").hidden=!S.settings.medOn;
   document.querySelectorAll("nav button").forEach(b=>{if(b.dataset.tab===({adim:"bugun",tahlil:"trend",tansiyon:"trend",seker:"trend",egz:"salon"}[tab]||tab))b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
+  widgetPush();
+}
+const WG=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Widget;
+let widgetLast="";
+/* null değerler bilinçli: Java tarafı anahtar varsa ama null ise "hedef yok"/adım gizli, anahtar yoksa "–" gösterir. */
+function widgetPush(){
+  if(!WG())return;
+  const t=dayKey(),st=S.settings,d={day:t,water:sum("su",t,t),waterGoal:st.waterMl,glass:st.glass,kcalLeft:st.kcal>0?Math.round(st.kcal-sum("yemek",t,t)):null,steps:st.stepsOn?stepsShown():null};
+  const j=JSON.stringify(d);if(j===widgetLast)return;
+  widgetLast=j;try{WG().update(d).catch(()=>{})}catch(e){}
 }
 
 /* ---------- alt sayfa ve bildirim ---------- */
@@ -918,7 +928,7 @@ async function stepsSync(){
     if(stepSnapAt!==(+r.snapAt||0)){stepSnapAt=+r.snapAt||0;ch=true}
     for(const d in (r.history||{}))if(dayOk(d)&&setSteps(d,r.history[d]))ch=true;
     if(typeof r.steps==="number"){if(stepToday!==r.steps){stepToday=r.steps;ch=true}if(setSteps(dayKey(),r.steps))ch=true}
-    if(ch){save();if((tab==="bugun"||tab==="adim")&&!$("#sheet").classList.contains("on"))render()}
+    if(ch){save();if((tab==="bugun"||tab==="adim")&&!$("#sheet").classList.contains("on"))render();else widgetPush()}
   }catch(e){}
 }
 const manualSteps=()=>S.entries.filter(e=>e.type==="adim"&&e.text==="elle"&&e.day===dayKey()).reduce((s,e)=>s+e.v,0);
@@ -1106,9 +1116,11 @@ keysInit().then(()=>{render();cAuto();cFlush()});
 if(S.settings.stepsOn&&SC()){SC().start().catch(()=>{});stepsSync();motionBoot()}
 setInterval(()=>{if(!document.hidden&&tab==="bugun")stepsSync()},60000);
 if(DH())DH().info().then(r=>{oem=String(r.manufacturer||"");render()},()=>{});
-try{const P=window.Capacitor&&window.Capacitor.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp","BarcodeScanner","StepCounter","Ocr","Motion"].map(n=>n+"="+typeof P[n]).join(" "))}catch(e){}
+try{const P=window.Capacitor&&window.Capacitor.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp","BarcodeScanner","StepCounter","Ocr","Motion","Widget"].map(n=>n+"="+typeof P[n]).join(" "))}catch(e){}
 setInterval(()=>{if(dayKey()!==lastDay){lastDay=dayKey();logOff=0;render()}},60000);
 try{const ln=LN();if(ln&&ln.addListener)ln.addListener("localNotificationActionPerformed",notifTap)}catch(e){}
+function widgetOpen(){tab="bugun";logOff=0;closeSheet();render();window.scrollTo(0,0)}
+try{const wg=WG();if(wg&&wg.addListener)wg.addListener("open",widgetOpen)}catch(e){}
 try{
   const AP=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;
   if(AP&&AP.addListener)AP.addListener("backButton",()=>{

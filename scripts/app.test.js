@@ -1201,4 +1201,16 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
   ok("yedek yoksa uyarı çıkar",ev("viewBugun()").includes("Yedek zamanı"));
   ev("markBackup()");
   ok("yedek alınınca uyarı kalkar",!ev("viewBugun()").includes("Yedek zamanı")&&ev("cleanSettings({lastBackup:S.settings.lastBackup}).lastBackup")===ev("dayKey()"));
+  { // ana ekran widget'ı
+    const wc=[];w.Capacitor.Plugins.Widget={update:async d=>{wc.push(d)}};
+    ev("widgetLast='';tab='bugun';S.entries=[];add('su',250);add('yemek',400,'makarna');S.settings.kcal=1800;S.settings.waterMl=2500;S.settings.glass=250;S.settings.stepsOn=true;stepToday=3000;add('adim',500,'elle');render()");
+    ok("widget: render sonrası doğru alanlarla bir kez güncellenir",wc.length===1&&JSON.stringify(wc[0])===JSON.stringify({day:ev("dayKey()"),water:250,waterGoal:2500,glass:250,kcalLeft:1400,steps:3500}),wc);
+    ev("render()");
+    ok("widget: değişiklik yoksa tekrar gönderilmez",wc.length===1);
+    ev("S.settings.kcal=0;S.settings.stepsOn=false;render()");
+    ok("widget: hedef yoksa kcalLeft, adım kapalıysa steps null",wc.length===2&&wc[1].kcalLeft===null&&wc[1].steps===null&&"kcalLeft" in wc[1]);
+    ev("tab='koc';logOff=-2;widgetOpen()");
+    ok("widget: dokununca Bugün açılır",ev("tab")==="bugun"&&ev("logOff")===0);
+    delete w.Capacitor.Plugins.Widget;
+  }
 },100);
