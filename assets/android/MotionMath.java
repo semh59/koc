@@ -159,4 +159,44 @@ final class MotionMath {
         b.ok = true;
         return b;
     }
+
+    /** Ritim ölçülen son dilimden (ref) belirgin sapma: yorulma (düşüş) ya da hızlanma. Durma dilimleri (ritim < 40) sayılmaz. */
+    static boolean cadenceShift(double ref, double cad) {
+        return ref >= 70 && cad >= 40 && Math.abs(cad - ref) / ref >= 0.2;
+    }
+
+    /**
+     * Kontrol noktalarından (zaman ms, günlük adım) dilim dilim özet: her dilimin kendi ritminden adım uzunluğu ve hızı bulunur,
+     * böylece yorulma ya da tempo değişimi toplam mesafeye ve kaloriye yansır. Ritmi 50'nin altındaki dilimler duraklama sayılır (kalori 0).
+     * Tek dilimse bout() ile aynıdır.
+     */
+    static Bout path(Model m, int arMode, double cm, double kg, long[] t, long[] s, int n, double gpsSpeed) {
+        if (n < 2) return new Bout();
+        double minutes = (t[n - 1] - t[0]) / 60000.0;
+        int steps = (int) (s[n - 1] - s[0]);
+        if (n == 2) return bout(m, arMode, cm, kg, minutes, steps, gpsSpeed);
+        Bout b = new Bout();
+        b.minutes = minutes;
+        b.steps = steps;
+        if (!(minutes >= 3) || steps < 150) return b;
+        double oc = steps / minutes;
+        if (oc < 50 || oc > 220) return b;
+        double runKm = 0, walkKm = 0, kc = 0;
+        for (int i = 0; i + 1 < n; i++) {
+            double dt = (t[i + 1] - t[i]) / 60000.0, ds = s[i + 1] - s[i];
+            if (dt <= 0 || ds < 0) continue;
+            double cad = ds / dt, c = Math.max(50, Math.min(220, cad));
+            int md = classify(arMode, c, Double.NaN);
+            double km = ds * stride(m, md, cm, c) / 1000.0;
+            if (md == RUN) runKm += km; else walkKm += km;
+            if (cad >= 50 && kg > 0) kc += kcal(md, km / (dt / 60.0), kg, dt);
+        }
+        b.mode = runKm > walkKm ? RUN : WALK;
+        b.km = runKm + walkKm;
+        b.kmh = b.km / (minutes / 60.0);
+        if (b.kmh > 25 || (b.mode == WALK && b.kmh > 11)) return b;
+        if (kg > 0) b.kcal = kc;
+        b.ok = true;
+        return b;
+    }
 }

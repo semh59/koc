@@ -96,6 +96,7 @@ public class MotionPlugin extends Plugin {
         Context c = getContext();
         MotionStore.setEnabled(c, false);
         MotionStore.discard(c);
+        MotionReceiver.cancelTick(c);
         MotionGpsService.stop(c);
         try {
             MotionReceiver.unregister(c);
