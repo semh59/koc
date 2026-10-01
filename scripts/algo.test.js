@@ -1,0 +1,24 @@
+const A=require("../www/algo.js");let bad=0;
+const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+x));if(!c)bad++};
+const near=(a,b,e)=>Math.abs(a-b)<=e;
+const day=(i)=>new Date(Date.UTC(2026,8,1+i)).toISOString().slice(0,10);
+ok("Epley 62,5x8",near(A.est1RM(62.5,8),79.17,0.01),A.est1RM(62.5,8));
+ok("Epley 150x12",near(A.est1RM(150,12),210,0.01));
+ok("1 tekrar = kendisi",A.est1RM(100,1)===100); ok("20+ tekrar güvenilmez",A.est1RM(50,25)===0);
+ok("hacim",A.volume([{kg:62.5,reps:8,done:true},{kg:62.5,reps:8,done:true},{kg:62.5,reps:7,done:true}])===1437.5);
+const w={},intake={};for(let i=0;i<29;i++){w[day(i)]=88-0.05*i;intake[day(i)]=1800}
+const sl=A.slopePerWeek(w);ok("eğim ≈ -0,35 kg/hf",near(sl,-0.35,0.01),sl);
+const r=A.adaptiveTdee({weights:w,intake,profile:{kg:86.6,cm:175,age:34,sex:"m",act:1}});
+ok("uyarlanabilir TDEE ≈ 1800+0,05*7700=2185",near(r.est,2185,15)&&r.source!=="formül",JSON.stringify(r));
+ok("veri azsa formüle düşer",A.adaptiveTdee({weights:{[day(0)]:80,[day(3)]:79.8},intake:{},profile:{kg:80,cm:175,age:30,sex:"m",act:1}}).source==="formül");
+ok("profil yoksa null",A.adaptiveTdee({weights:{},intake:{},profile:{}}).tdee===null);
+const t=A.suggestTarget({tdee:2400,kg:84,goalKg:75,bmr:1800});
+ok("hedef: -0,42 kg/hf, taban korunur",t.kcal>=1800&&t.rateKgWk<0,JSON.stringify(t));
+const t2=A.suggestTarget({tdee:1600,kg:84,goalKg:75,bmr:1700});ok("taban BMR/1200/%75",t2.kcal>=1700&&t2.limited,JSON.stringify(t2));
+ok("bakım",A.suggestTarget({tdee:2300,kg:80,goalKg:0,bmr:1700}).kcal===2300);
+ok("ETA",A.etaWeeks(84,75,-0.5)===18&&A.etaWeeks(84,75,0.2)===null&&A.etaWeeks(75.1,75,-0.3)===0);
+const n1=A.nextTarget([{kg:60,reps:12},{kg:60,reps:12},{kg:60,reps:12}],{lo:8,hi:12,inc:2.5});ok("üst tekrar → +2,5 kg",n1.kg===62.5&&n1.reps===8);
+const n2=A.nextTarget([{kg:60,reps:10},{kg:60,reps:8},{kg:60,reps:8}]);ok("aynı kg +1 tekrar",n2.kg===60&&n2.reps===9);
+ok("vücut ağırlığı",A.nextTarget([{kg:0,reps:6}]).reps===7); ok("boşsa null",A.nextTarget([])===null);
+ok("trend boş gün",Object.keys(A.trend({"2026-09-01":80,"2026-09-05":79})).length===2);
+process.exit(bad?1:0);

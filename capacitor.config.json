@@ -1,0 +1,13 @@
+{
+  "appId": "com.benim.koc",
+  "appName": "Koç",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#eef2f0"
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
+}
