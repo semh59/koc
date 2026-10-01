@@ -276,7 +276,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- veri ---------- */
 const DEF={
-  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,lastPlan:"",lastWeekly:"",reminders:[
+  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,lastPlan:"",lastWeekly:"",lastBackup:"",reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -306,6 +306,7 @@ function cleanSettings(raw){
   if(o.consent===true)d.consent=true;
   if(dayOk(o.lastPlan))d.lastPlan=o.lastPlan;
   if(dayOk(o.lastWeekly))d.lastWeekly=o.lastWeekly;
+  if(dayOk(o.lastBackup))d.lastBackup=o.lastBackup;
   if(Array.isArray(o.reminders))for(const r of d.reminders){
     const x=o.reminders.find(y=>y&&y.id===r.id);
     if(x){if(timeOk(x.t))r.t=x.t;if(typeof x.on==="boolean")r.on=x.on;if(typeof x.body==="string"&&x.body.trim().length>=5&&x.body.length<=110)r.body=x.body.trim()}
@@ -482,7 +483,9 @@ function viewBugun(){
   const log=items.length?`<ul class="log">${items.map(e=>`<li><span class="t num">${e.time}</span><span class="ic">${ic[e.type]}</span><span class="tx">${ttx(e)}</span><span class="vl num">${vtxt(e)}</span><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></li>`).join("")}</ul>`:`<p class="hint">${logOff===0?"Bugün henüz kayıt yok. Yukarıdan bir bardak su eklemek iyi bir başlangıç.":"Bu gün için kayıt yok."}</p>`;
   const lname=logOff===0?"Bugünün kayıtları":logOff===1?"Dünün kayıtları":`${+lk.slice(8)} ${AY[+lk.slice(5,7)-1]} kayıtları`;
   const dnav=`<div class="dnav"><button data-lo="1" aria-label="Önceki gün">‹</button><h2>${lname}</h2><button data-lo="-1" aria-label="Sonraki gün"${logOff===0?" disabled":""}>›</button></div>`;
-  return `${weight}<div class="coach">${esc(coach())}</div>${rings}${actions}${dnav}<div class="card">${log}</div>`;
+  const lb=st.lastBackup,old=lb?Algo.dayNum(t)-Algo.dayNum(lb):null;
+  const bk=S.entries.length>=10&&(old==null||old>14)?`<div class="banner"><b>Yedek zamanı</b><p>${old==null?"Henüz yedek almadın.":`Son yedeğin ${old} gün önce.`} Telefon kaybolursa ya da uygulama silinirse veriler gider.</p><button class="btn" data-act="yedek">Yedek al</button></div>`:"";
+  return `${bk}${weight}<div class="coach">${esc(coach())}</div>${rings}${actions}${dnav}<div class="card">${log}</div>`;
 }
 
 function viewTrend(){
@@ -614,8 +617,17 @@ function goNot(){const t=$("#fv").value.trim();if(!t)return toast("Önce notunu 
 
 function sheetYedek(){
   openSheet(`<h3>Yedekle veya geri yükle</h3><div class="lbl">Yedek metni. Kopyalayıp bir yere kaydet, geri yüklerken buraya yapıştır.</div><textarea class="in" id="bk" spellcheck="false">${esc(JSON.stringify(S))}</textarea>
-  <div class="${isNative()?"btns":"two"}"><button class="btn ghost" data-go="kopyala">Kopyala</button>${isNative()?"":`<button class="btn ghost" data-go="indir">Dosya indir</button>`}</div>
-  <div class="btns"><button class="btn" data-go="yukle">Bu metinden geri yükle</button></div>`);
+  <div class="two"><button class="btn ghost" data-go="kopyala">Kopyala</button><button class="btn ghost" data-go="${isNative()?"paylas":"indir"}">${isNative()?"Dosya olarak paylaş":"Dosya indir"}</button></div>
+  <div class="btns"><label class="btn ghost" style="text-align:center">Dosyadan oku<input id="bkfile" type="file" accept=".json,application/json,text/plain" hidden></label><button class="btn" data-go="yukle">Bu metinden geri yükle</button></div>`);
+}
+function markBackup(){S.settings.lastBackup=dayKey();save()}
+async function shareBackup(){
+  const P=window.Capacitor&&window.Capacitor.Plugins,fs=P&&P.Filesystem,sh=P&&P.Share;
+  if(!fs||!sh)return toast("Paylaşım bu cihazda yok, Kopyala'yı kullan");
+  try{
+    const f=await fs.writeFile({path:`neowell-yedek-${dayKey()}.json`,data:$("#bk").value,directory:"CACHE",encoding:"utf8"});
+    await sh.share({title:"NeoWell yedeği",files:[f.uri]});markBackup();
+  }catch(e){if(!/cancel/i.test(e&&e.message||""))toast("Paylaşılamadı, Kopyala'yı kullan")}
 }
 function goYukle(){
   let r;try{r=JSON.parse($("#bk").value)}catch(e){return toast("Yedek metni okunamadı")}
@@ -627,7 +639,7 @@ function goYukle(){
   try{localStorage.setItem("koc_v1_onceki",JSON.stringify(prevS))}catch(e){}
   S=Object.assign({settings:cleanSettings(r.settings),entries:out,nextId:out.length+1},cleanGym(r),cleanCoach(r));
   /* Yedek, anahtarın gideceği adresi, onay ayarını ve veri paylaşım iznini değiştirememeli. */
-  S.settings.consent=prevS.settings.consent;
+  S.settings.consent=prevS.settings.consent;S.settings.lastBackup=dayKey();
   const keys=getKeys();
   for(const p of S.providers){
     const cur=prevS.providers.find(x=>x.id===p.id),def=defProviders().find(x=>x.id===p.id);
@@ -690,8 +702,9 @@ document.addEventListener("click",ev=>{
   }
   if(d.go){
     ({kilo:goKilo,yemek:goYemek,spor:goSpor,not:goNot,yukle:goYukle,saglik:()=>{S.settings.healthNote=$("#hn").value.trim().slice(0,500);save();closeSheet();render();toast("Kaydedildi")}}[d.go]||(()=>{}))();
-    if(d.go==="kopyala"){const v=$("#bk").value;(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast("Yedek kopyalandı"),()=>{$("#bk").select();document.execCommand&&document.execCommand("copy");toast("Metni seçtim, kopyala")})}
-    if(d.go==="indir"){try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([$("#bk").value],{type:"application/json"}));a.download=`neowell-yedek-${dayKey()}.json`;a.click()}catch(e){toast("İndirme bu cihazda çalışmadı, Kopyala'yı kullan")}}
+    if(d.go==="kopyala"){const v=$("#bk").value;(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>{markBackup();toast("Yedek kopyalandı")},()=>{$("#bk").select();document.execCommand&&document.execCommand("copy");toast("Metni seçtim, kopyala")})}
+    if(d.go==="paylas")shareBackup();
+    if(d.go==="indir"){try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([$("#bk").value],{type:"application/json"}));a.download=`neowell-yedek-${dayKey()}.json`;a.click();markBackup()}catch(e){toast("İndirme bu cihazda çalışmadı, Kopyala'yı kullan")}}
   }
 });
 $("#tundo").addEventListener("click",()=>{
@@ -702,6 +715,12 @@ $("#tundo").addEventListener("click",()=>{
 });
 document.addEventListener("change",ev=>{
   const t=ev.target;
+  if(t.id==="bkfile"){
+    const f=t.files&&t.files[0];if(!f)return;
+    if(f.size>5e6)return toast("Dosya çok büyük, bir NeoWell yedeği olmayabilir");
+    f.text().then(x=>{$("#bk").value=x;toast("Dosya okundu. Devam etmek için geri yükle'ye dokun")},()=>toast("Dosya okunamadı"));
+    return;
+  }
   if(t.dataset.gi){gInput(t);return}
   if(t.dataset.set){
     const k=t.dataset.set,st=S.settings,[lo,hi,int]=RANGES[k],raw=t.value.trim();
