@@ -3,7 +3,7 @@
 Durum: [ ] bekliyor, [~] yapıldı ama telefonda denenmedi, [x] telefonda denendi.
 
 ## Yapılacak özellikler (sırayla)
-- [ ] Fotoğraftan yemek tahmini (Koç'a tabak fotoğrafı, "Listeme ekle" kartı, tahmin olduğu yazılı).
+- [iptal] Fotoğraftan yemek tahmini: ücretsiz görsel model seçimi güvenilmez ve sağlayıcıya veri gönderir, Semih şimdilik istemedi (1 Ekim 2026). Fikir: sağlayıcı başına "fotoğraf okuyor mu" testi, onay, aralıklı tahmin.
 - [~] Besin etiketi okuma (ML Kit, telefonda, ücretsiz): Yemek ekle > Etiketi fotoğrafla oku. Aynı okuma tahlil fotoğrafı için de var (Tahlil takibi > Fotoğraftan oku).
 - [~] **Tahlil takibi + PDF** (yapıldı, telefonda denenmedi; taranmış PDF/fotoğraf için OCR sonraki adım): tahlil sonuçlarını (kan değerleri vb.) tarihli kaydet, zaman içinde grafik göster, PDF olarak dışa aktar (doktora paylaşım). Karar bekleyen soru: PDF'ten sonuç okuma (içe aktarma) de istenir mi? Tanı ya da yorum yok, yalnızca kayıt ve grafik.
 - [ ] Haftalık rapor PDF'i (doktor/diyetisyen paylaşımı) ve Koç'un "bu hafta neden kilo vermedin" analizi. Tahlil PDF'iyle aynı PDF altyapısı kullanılır.
