@@ -24,6 +24,9 @@ setTimeout(()=>{
   ev("S.chat=[];Object.assign(S.settings,{age:12,heightCm:165,goalKg:45,healthNote:'',kcal:0});S.entries=[];for(let i=13;i>=0;i--)S.entries.push({id:100+i,day:keyOff(-i),time:'08:00',type:'kilo',v:60-i*0.01,text:''})");
   ev("cReply({reply:'x',log:[],propose:{kcal:1300,why:'a'},flag:null})");
   ok("18 yaş altına açık önerisi çıkmaz",!ev("S.chat.some(m=>m.card&&m.card.kind==='propose')"));
-  ev("S.settings.reminders[0].t");
+  ev("S.entries=[];for(let i=0;i<10;i++)add('su',250)");ev("S.settings.lastBackup=''");
+  ok("yedek yoksa uyarı çıkar",ev("viewBugun()").includes("Yedek zamanı"));
+  ev("markBackup()");
+  ok("yedek alınınca uyarı kalkar",!ev("viewBugun()").includes("Yedek zamanı")&&ev("cleanSettings({lastBackup:S.settings.lastBackup}).lastBackup")===ev("dayKey()"));
   process.exit(bad?1:0);
 },100);
