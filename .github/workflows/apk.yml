@@ -53,6 +53,13 @@ jobs:
       - name: APK dosyasını hazırla
         run: cp android/app/build/outputs/apk/debug/app-debug.apk neowell.apk
 
+      - name: APK sabit imza anahtarıyla imzalandı mı
+        run: |
+          apk=$(unzip -p neowell.apk 'META-INF/*.RSA' | openssl pkcs7 -inform DER -print_certs | openssl x509 -noout -fingerprint -sha256 | cut -d= -f2)
+          key=$(keytool -list -keystore signing/koc-debug.keystore -storepass android | grep -i "SHA-256" | sed 's/.*: //')
+          echo "APK: $apk"; echo "Anahtar: $key"
+          [ -n "$apk" ] && [ "$apk" = "$key" ] || { echo "İMZA ANAHTARI UYUŞMUYOR"; exit 1; }
+
       - uses: actions/upload-artifact@v4
         with:
           name: neowell-apk
