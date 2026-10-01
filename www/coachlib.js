@@ -25,11 +25,11 @@ const CoachLib=(()=>{
       try{
         const o=JSON.parse(s.slice(a,b+1));
         if(o&&typeof o==="object"&&typeof o.reply==="string"){
-          return {reply:o.reply.trim().slice(0,1500),log:Array.isArray(o.log)?o.log:[],propose:o.propose&&typeof o.propose==="object"?o.propose:null,flag:typeof o.flag==="string"?o.flag:null,notif:o.notif&&typeof o.notif==="object"?o.notif:null};
+          return {reply:o.reply.trim().slice(0,1500),log:Array.isArray(o.log)?o.log:[],propose:o.propose&&typeof o.propose==="object"?o.propose:null,flag:typeof o.flag==="string"?o.flag:null,food:o.food&&typeof o.food==="object"?o.food:null,notif:o.notif&&typeof o.notif==="object"?o.notif:null};
         }
       }catch(e){}
     }
-    return {reply:s.replace(/[{}]/g,"").slice(0,1500),log:[],propose:null,flag:null,notif:null};
+    return {reply:s.replace(/[{}]/g,"").slice(0,1500),log:[],propose:null,flag:null,food:null,notif:null};
   }
 
   const num=(x,lo,hi)=>{const v=typeof x==="string"?parseFloat(x.replace(",",".")):x;return Number.isFinite(v)&&v>=lo&&v<=hi?v:null};
@@ -50,6 +50,14 @@ const CoachLib=(()=>{
     }
     return out;
   }
+  /* Kullanıcının sorduğu besin için modelin tahmini: bir porsiyonluk değerler. */
+  function cleanFood(x){
+    if(!x||typeof x!=="object")return null;
+    const n=String(x.name||x.n||"").trim().slice(0,60),k=num(x.kcal,1,5000);
+    if(!n||k==null)return null;
+    const p=num(x.protein!=null?x.protein:x.p,0,300);
+    return {n,k:Math.round(k),p:p==null?null:Math.round(p*10)/10};
+  }
   /* Model kalori hedefi önerirse güvenli alt sınıra çek. */
   function clampKcal(k,{tdee,bmr}={}){
     const v=num(k,800,5000);if(v==null)return null;
@@ -69,11 +77,13 @@ KURALLAR
 6. Yeme bozukluğu işareti görürsen kısıtlama önerme, yargılamadan bir uzmana yönlendir.
 7. Bilmediğin veya veride olmayan şeyi sor, tahmin yürütme.
 8. Kullanıcı bir şey yediğini, içtiğini, tartıldığını veya spor yaptığını yazarsa "log" listesine ekle. Kalori ve protein değerlerini makul bir tahmin olarak ver, kesinmiş gibi söyleme.
+9. Kullanıcı bir yemeğin ya da besinin kalorisini sorarsa ve yediğini söylemiyorsa "log" kullanma; "food" alanına tek porsiyonluk makul bir tahmin yaz. Porsiyonu adda belirt (ör. "1 dilim pizza"). Tahmin olduğunu reply'da söyle.
 
 ÇIKTI: Yalnızca tek bir JSON nesnesi, başka hiçbir metin yok:
-{"reply":"kullanıcıya metin","log":[],"propose":null,"flag":null,"notif":null}
+{"reply":"kullanıcıya metin","log":[],"propose":null,"flag":null,"notif":null,"food":null}
 log öğeleri: {"type":"yemek","text":"2 haşlanmış yumurta","kcal":140,"protein":12} | {"type":"su","ml":250} | {"type":"kilo","kg":83.7} | {"type":"spor","min":30,"name":"Yürüyüş"} | {"type":"not","text":"..."}. Dünkü kayıt için "day":"yesterday" ekle.
 propose: {"kcal":1900,"why":"kısa neden"} ya da null.
+food: {"name":"1 dilim pizza","kcal":280,"protein":12} ya da null.
 Sabah planı istenirse "notif" alanına {"morning":"...","afternoon":"...","evening":"..."} ekle: her biri en fazla 110 karakter, bildirim metni, rakam uydurma.`;
 
   const f1=x=>x==null?"–":String(Math.round(x*10)/10).replace(".",",");
@@ -93,6 +103,6 @@ Sabah planı istenirse "notif" alanına {"morning":"...","afternoon":"...","even
     if(d.notes.length)L.push("SON NOTLAR: "+d.notes.join(" | "));
     return L.join("\n");
   }
-  return {low,redFlag,parse,cleanItems,clampKcal,SYSTEM,contextText};
+  return {low,redFlag,parse,cleanItems,cleanFood,clampKcal,SYSTEM,contextText};
 })();
 if(typeof module!=="undefined")module.exports=CoachLib;

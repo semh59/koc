@@ -19,7 +19,7 @@ Kişisel diyet ve spor takipçisi.
 
 ## Yemek eklemek
 
-Yemek ekle penceresinde besin adını yazarak ara (mercimek çorbası, simit, baklava…). Besini seçince porsiyonu ve kaç porsiyon olduğunu belirle, kalori, protein, karbonhidrat ve yağ otomatik hesaplanır. Bugün ekranında günün makroları ve protein aralığın görünür. Listede 100'den fazla yaygın Türk yemeği ve besin var. Değerler yaklaşıktır (100 g başına yuvarlak sayılar), kesin ölçüm yerine geçmez. Listede olmayanı kendin yazabilirsin.
+Yemek ekle penceresinde besin adını yazarak ara (mercimek çorbası, simit, baklava…). Besini seçince porsiyonu ve kaç porsiyon olduğunu belirle, kalori, protein, karbonhidrat ve yağ otomatik hesaplanır. Bugün ekranında günün makroları ve protein aralığın görünür. Listede 100'den fazla yaygın Türk yemeği ve besin var. Değerler yaklaşıktır (100 g başına yuvarlak sayılar), kesin ölçüm yerine geçmez. Listede olmayanı kendin yazabilirsin. Koç'a "pizza kaç kalori" gibi bir besin sorarsan altında **Listeme ekle** düğmesi çıkar, böylece besin bir sonraki sefer aramada "Benim besinim" olarak, diğerlerinden önce görünür. Koç'un kayıt önerisini onayladıktan sonra **Yemeği listeme kaydet** ile de aynısı yapılır. Bu değerler yapay zekâ tahminidir, bir porsiyon için yaklaşık sayıdır. İstemediğin besini porsiyon penceresinden silebilirsin.
 
 ## Koçu açmak (API anahtarı girmek)
 
