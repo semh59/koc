@@ -23,7 +23,7 @@ console.log("Simgeler yerleştirildi.");
 
 // API anahtarı kasası: Keystore eklentisini kopyala, MainActivity'ye kaydet. Keystore AES-GCM için API 23 gerekir.
 const jdir="android/app/src/main/java/com/neowell/app";
-for(const f of ["KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
+for(const f of ["KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
 fs.writeFileSync(`${jdir}/MainActivity.java`,`package com.neowell.app;
 
 import android.os.Bundle;
@@ -35,6 +35,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(KeyVaultPlugin.class);
         registerPlugin(DeviceHelpPlugin.class);
         registerPlugin(StepCounterPlugin.class);
+        registerPlugin(OcrPlugin.class);
         super.onCreate(savedInstanceState);
     }
 }
@@ -65,4 +66,10 @@ if(!g.includes("dataBinding")){
     }`);
   fs.writeFileSync(bg,g);
 }
-console.log("Sabit imza ve data binding ayarlandı.");
+// Etiket ve tahlil fotoğrafı için ML Kit yazı tanıma (model uygulamanın içinde, internet gerekmez).
+g=fs.readFileSync(bg,"utf8");
+if(!g.includes("mlkit:text-recognition")){
+  g=g.replace(/dependencies \{/,m=>m+'\n    implementation "com.google.mlkit:text-recognition:16.0.1"');
+  fs.writeFileSync(bg,g);
+}
+console.log("Sabit imza, data binding ve yazı tanıma ayarlandı.");

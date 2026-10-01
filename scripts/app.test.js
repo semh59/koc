@@ -146,6 +146,74 @@ setTimeout(async()=>{
     ok("tüm tahlil kayıtları silinir",ev("S.labs.length")===0);
     ev("tab='bugun';render()");
   }
+  // ---- Fotoğraftan yazı okuma (etiket, tahlil) ----
+  {
+    const doc=w.document,q=s=>doc.querySelector(s),qa=s=>[...doc.querySelectorAll(s)];
+    const box=(t,x,y,wd=120,h=30)=>({t,x,y,w:wd,h});
+    const table=(k,p,c,f)=>({lines:[box("Besin Değerleri",50,350,300),box("100 g başına",500,352,160),box("Enerji",50,400,100),box(k,500,402,160),box("Yağ",50,450,60),box(f,500,449,60),box("Karbonhidrat",50,500,200),box(c,500,501,60),box("Protein",50,550,100),box(p,500,548,60)]});
+    let reply=table("1840 kJ / 440 kcal","8,5 g","70 g","13 g"),sent=null;
+    w.createImageBitmap=async()=>({width:2400,height:1800});
+    w.Capacitor.Plugins.Ocr={recognize:async o=>{sent=o;if(reply instanceof Error)throw reply;return reply}};
+    ev("S.myFoods=[]");
+    ev("sheetYemek()");
+    ok("Yemek ekle'de etiket oku düğmesi (eklenti varken)",!!q('[data-ocr="choose:etiket"]'));
+    q('[data-ocr="choose:etiket"]').click();
+    ok("seçim ekranı: fotoğraf çek ve galeri",!!q('[data-ocr="cam:etiket"]')&&!!q('[data-ocr="gal:etiket"]')&&q("#sheet").textContent.includes("hiçbir yere gönderilmez"));
+    const clicked=[];const oc=w.HTMLInputElement.prototype.click;
+    w.HTMLInputElement.prototype.click=function(){clicked.push(this)};
+    q('[data-ocr="cam:etiket"]').click();q('[data-ocr="gal:etiket"]').click();
+    w.HTMLInputElement.prototype.click=oc;
+    ok("kamera seçeneği capture ister, galeri istemez; yalnızca görüntü kabul edilir",clicked.length===2&&clicked[0].getAttribute("capture")==="environment"&&!clicked[1].hasAttribute("capture")&&clicked.every(i=>i.type==="file"&&i.accept==="image/*"));
+    clicked.forEach(i=>i.remove());
+
+    await ev("ocrRun")("etiket",{size:1000});
+    ok("fotoğraf küçültülüp eklentiye gönderilir",typeof sent.image==="string"&&sent.image.length>10);
+    ok("etiket ekranı: değerler dolu, ad boş",q("#ek").value==="440"&&q("#ep").value==="8,5"&&q("#ec").value==="70"&&q("#ef").value==="13"&&q("#en").value==="");
+    q('[data-ocr="esave"]').click();
+    ok("ad yazılmadan kaydedilmez",ev("S.myFoods.length")===0&&q("#toast").textContent.includes("adını"));
+    q("#en").value="Test Bisküvi";q('[data-ocr="esave"]').click();
+    ok("etiketten besin kaydedilir (100 g başına)",ev("S.myFoods.length")===1&&ev("S.myFoods[0].n")==="Test Bisküvi"&&ev("S.myFoods[0].k")===440&&ev("S.myFoods[0].p")===8.5&&ev("S.myFoods[0].c")===70&&ev("S.myFoods[0].f")===13&&ev("S.myFoods[0].u[0][1]")===100,ev("S.myFoods"));
+    ok("kayıttan sonra porsiyon ekranı açılır",q("#sheet").textContent.includes("Test Bisküvi")&&q("#sheet").textContent.includes("Porsiyon"));
+    ok("etiketten gelen besin 'Benim besinlerim' temizliğinden geçer",ev("cleanMyFoods(S.myFoods).length")===1);
+
+    ev("closeSheet()");reply=table("1840 kJ / 140 kcal","8,5 g","70 g","13 g");
+    await ev("ocrRun")("etiket",{size:1000});q("#en").value="Hatalı Okuma";q('[data-ocr="esave"]').click();
+    ok("tutarsız okuma uyarı verir, kaydetmez",ev("S.myFoods.length")===1&&q("#ewarn").textContent.includes("tutarlı değil"),q("#ewarn")&&q("#ewarn").textContent);
+    q('[data-ocr="esave"]').click();
+    ok("ikinci dokunuşta (kullanıcı onayıyla) kaydedilir",ev("S.myFoods.length")===2);
+
+    ev("closeSheet()");reply={lines:[box("Yağ",50,450,60),box("13 g",500,449,60),box("Karbonhidrat",50,500,200),box("70 g",500,501,60),box("Protein",50,550,100),box("8,5 g",500,548,60)]};
+    await ev("ocrRun")("etiket",{size:1000});
+    ok("kalori okunamazsa alan boş, okunmayanlar listelenir",q("#ek").value===""&&q("#sheet").textContent.includes("Okunamayan: kalori"));
+    q("#en").value="Kalorisiz";q('[data-ocr="esave"]').click();
+    ok("kalori yoksa kaydedilmez",ev("S.myFoods.length")===2&&q("#toast").textContent.includes("Kalori gerekli"));
+    q("#ek").value="abc";q('[data-ocr="esave"]').click();
+    ok("sayı olmayan değer reddedilir",ev("S.myFoods.length")===2&&q("#toast").textContent.includes("Sayı olarak"));
+
+    ev("closeSheet()");reply={lines:[]};
+    await ev("ocrRun")("etiket",{size:1000});
+    ok("yazı yoksa açıklama ve tekrar dene",q("#sheet").textContent.includes("Yazı bulunamadı")&&!!q('#sheet [data-ocr="choose:etiket"]'));
+    reply=new Error("boom");
+    await ev("ocrRun")("etiket",{size:1000});
+    ok("eklenti hata verirse çökmez, mesaj gösterir",q("#toast").textContent.includes("okunamadı"));
+    await ev("ocrRun")("etiket",{size:40e6});
+    ok("çok büyük fotoğraf reddedilir",q("#toast").textContent.includes("büyük"));
+
+    // tahlil fotoğrafı
+    ev("S.labs=[]");reply={lines:[box("Numune Tarihi: 12.09.2026",50,100,500),box("Glukoz",50,200,100),box("98",400,201,40),box("mg/dL",500,200,80),box("70 - 100",650,199,100)]};
+    await ev("ocrRun")("tahlil",{size:1000});
+    ok("tahlil fotoğrafı: onay ekranı, tarih ve satır dolu",q("#ld").value==="2026-09-12"&&qa('[id^="ln"]').length===1&&q("#ln0").value==="Glukoz"&&q("#lv0").value==="98",qa('[id^="ln"]').length);
+    click=s=>q(s).click();click('[data-lab="save"]');
+    ok("fotoğraftan okunan tahlil kaydedilir",ev("S.labs.length")===1&&ev("S.labs[0].k")==="glukoz");
+    reply={lines:[box("Kontrol metni",50,100,300)]};
+    await ev("ocrRun")("tahlil",{size:1000});
+    ok("tahlil satırı çıkmazsa açıklama",q("#sheet").textContent.includes("Sonuç bulunamadı"));
+    ev("closeSheet();S.labs=[];S.myFoods=[]");
+    delete w.Capacitor.Plugins.Ocr;
+    ev("sheetYemek()");
+    ok("eklenti yoksa (tarayıcı) etiket düğmesi görünmez",!q('[data-ocr="choose:etiket"]'));
+    ev("closeSheet()");
+  }
     process.exit(bad?1:0);
   });
   const calls=[];

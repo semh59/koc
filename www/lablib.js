@@ -343,6 +343,15 @@ const LabLib=(()=>{
     ctx.fillText(`NeoWell · sayfa ${info.page}/${info.total}`,RM,RH-45);
   }
 
-  return {RW,RH,paginate,drawPage,geom,rangeText,keyFor,slug,fold,DICT,toNum,groupLines,parseDate,parseRange,parseLine,parseLines,extract,cleanLabs,flag,series,buildPdf,dayOk};
+
+  /* ML Kit satırlarını (t,x,y,w,h; y aşağı doğru artar) tablo satırlarına çevirir. Ölçek satır yüksekliğine göre normalleştirilir. */
+  function ocrToLines(res){
+    const L=(res&&res.lines||[]).filter(l=>l&&typeof l.t==="string"&&l.h>0);
+    if(!L.length)return [];
+    const hs=L.map(l=>l.h).sort((a,b)=>a-b),sc=10/hs[Math.floor(hs.length/2)];
+    return groupLines(L.map(l=>({str:l.t,x:l.x*sc,y:-(l.y+l.h/2)*sc,w:l.w*sc})));
+  }
+
+  return {ocrToLines,RW,RH,paginate,drawPage,geom,rangeText,keyFor,slug,fold,DICT,toNum,groupLines,parseDate,parseRange,parseLine,parseLines,extract,cleanLabs,flag,series,buildPdf,dayOk};
 })();
 if(typeof module!=="undefined")module.exports=LabLib;
