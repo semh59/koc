@@ -39,6 +39,7 @@ Eski projeler çalışan ürün değil, ama şu fikirler `koc` için uygun ve ye
 - **Hukuki not:** Sağlık verisi özel nitelikli kişisel veridir. Uygulama başkalarına dağıtılacaksa KVKK aydınlatma ve açık rıza metni şart.
 
 ## Yapıldı
+- Aykırı tartı uyarısı, "Dünkünü tekrarla", su hedefi dolunca günün su bildirimlerini susturma.
 - Barkod okutma (Open Food Facts).
 - Adım sayar (telefonun adım sensörü, hesap gerektirmez): geç alarm/açılışta gün atfı düzeltildi, Adım ayrıntı ekranı (7 gün grafiği).
 
