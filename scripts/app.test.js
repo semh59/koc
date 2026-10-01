@@ -784,6 +784,42 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("S.workouts=[];S.customEx=[];tab='bugun';render()");
     w.Capacitor.Plugins.LocalNotifications=lnOld2;
   }
+  {
+    // plaka, ısınma, set anında rekor
+    const doc=w.document,q=s=>doc.querySelector(s),click=s=>q(s).click(),toastT=()=>q("#tmsg").textContent;
+    const fire=(sel,v)=>{q(sel).value=v;q(sel).dispatchEvent(new w.Event("change",{bubbles:true}))};
+    const Wk=(id,t0,t1,sets)=>`{id:${id},day:dayKey(),t0:${t0},t1:${t1},name:'T',tpl:null,ex:[{id:'squat',note:'',sets:${sets}}]}`;
+    ev(`S.bar=20;S.workouts=[${Wk(1,1000,2000,"[{kg:100,reps:5,done:true}]")},${Wk(2,Date.now(),null,"[{kg:null,reps:null,done:false},{kg:null,reps:null,done:false}]")}];S.gid=3;tab='salon';render()`);
+    click('[data-g="menu:0"]');click('[data-g="plate:0"]');
+    fire("#pk","100");q("#pk").dispatchEvent(new w.Event("input"));
+    ok("plaka sayfası: 100 kg → bir tarafa 25 + 15, ısınma listesi",q("#pres").textContent.includes("25 + 15")&&q("#pres").textContent.includes("40 × 5"),q("#pres").textContent);
+    q("#pk").value="61";q("#pk").dispatchEvent(new w.Event("input"));
+    ok("plaka sayfası: tam yapılamayan ağırlıkta en yakın",q("#pres").textContent.includes("en yakın: 60 kg"),q("#pres").textContent);
+    q("#pb").value="15";q("#pb").dispatchEvent(new w.Event("input"));
+    ok("bar değiştirilebilir ve kalıcı",ev("S.bar")===15);
+    q("#pk").value="100";q("#pb").value="20";q("#pb").dispatchEvent(new w.Event("input"));
+    click('[data-g="wadd:0"]');
+    ok("ısınma setleri başa w:true, done:false eklenir",ev("S.workouts[1].ex[0].sets.length")===6&&ev("S.workouts[1].ex[0].sets.slice(0,4).every(s=>s.w===true&&!s.done)")&&ev("S.workouts[1].ex[0].sets[3].kg")===80);
+    ok("ısınma satırı 'ısınma' etiketli ve çalışma seti önceki ile sıra eşler",q(".srow .sp").textContent==="ısınma"&&[...doc.querySelectorAll(".srow .sp")][4].textContent==="100 × 5");
+    fire('[data-gi="reps:0:3"]',"1");click('[data-g="done:0:3"]');
+    ok("ısınma seti hacme ve rekora girmez",ev("gWorkVol(S.workouts[1])")===0&&ev("gBest(S.workouts[1],'squat')")===0&&!toastT().includes("rekor"));
+    fire('[data-gi="kg:0:4"]',"100");fire('[data-gi="reps:0:4"]',"8");click('[data-g="done:0:4"]');
+    ok("set anında rekor toast'ı",toastT().startsWith("Yeni rekor: Squat, 100 kg × 8"),toastT());
+    ok("hacim yalnız çalışma setini sayar",ev("gWorkVol(S.workouts[1])")===800);
+    q("#tmsg").textContent="";
+    fire('[data-gi="kg:0:5"]',"100");fire('[data-gi="reps:0:5"]',"9");click('[data-g="done:0:5"]');
+    ok("aynı antrenmanda aynı egzersiz için ikinci toast yok",toastT()==="",toastT());
+    ok("gPRs ısınmayı saymaz, rekor tek",ev("gPRs(S.workouts[1]).length")===1&&ev("gPRs(S.workouts[1])[0].kg")===100);
+    ok("ısınma haftalık set sayısına girmez",(ev("S.workouts[1].t1=Date.now();gWeekSets()['Bacak']")||0)===2,ev("gWeekSets()"));
+    // kalıcılık
+    const C=JSON.parse(ev("JSON.stringify(cleanGym(JSON.parse(JSON.stringify(S))))"));
+    ok("w:true ve bar yeniden yüklemede korunur",C.workouts[1].ex[0].sets[0].w===true&&C.workouts[1].ex[0].sets[4].w===undefined&&C.bar===20);
+    const E=JSON.parse(ev(`JSON.stringify(cleanGym({workouts:[{id:5,day:'2026-09-01',t0:1,t1:2,ex:[{id:'squat',sets:[{kg:100,reps:5,done:true}]}]}]}))`));
+    ok("alansız eski yedek yüklenir: bar 20, kayıt aynen",E.bar===20&&E.workouts[0].ex[0].sets[0].kg===100&&E.workouts[0].ex[0].sets[0].w===undefined);
+    const G=JSON.parse(ev(`JSON.stringify(cleanGym({bar:'abc',workouts:[{id:5,day:'2026-09-01',t0:1,t1:2,ex:[{id:'squat',sets:[{kg:100,reps:5,done:true,w:'x'}]}]}]}))`));
+    ok("çöp bar/w değeri: diğer veri eksiksiz yüklenir",G.bar===20&&G.workouts[0].ex[0].sets[0].kg===100&&G.workouts[0].ex[0].sets[0].w===undefined&&JSON.parse(ev("JSON.stringify(cleanGym({bar:99}))")).bar===20);
+    ev("S.workouts=[];S.bar=20;closeSheet();tab='bugun';render()");
+  }
     process.exit(bad?1:0);
   });
   const calls=[];
