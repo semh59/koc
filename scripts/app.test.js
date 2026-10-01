@@ -4,7 +4,7 @@ const html=fs.readFileSync(www("index.html"),"utf8").replace(/<script src="([^"]
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const errs=[];
 const dom=new JSDOM(html,{runScripts:"dangerously",pretendToBeVisual:true,url:"https://localhost/",
-  beforeParse(w){Object.assign(w,{structuredClone,TextEncoder,TextDecoder});Object.defineProperty(w,"crypto",{value:require("node:crypto").webcrypto});w.confirm=()=>true;w.scrollTo=()=>{};w.addEventListener("error",e=>errs.push(e.message))}
+  beforeParse(w){Object.assign(w,{structuredClone,TextEncoder,TextDecoder,__noSelfTest:true});Object.defineProperty(w,"crypto",{value:require("node:crypto").webcrypto});w.confirm=()=>true;w.scrollTo=()=>{};w.addEventListener("error",e=>errs.push(e.message))}
 });
 setTimeout(async()=>{
   const w=dom.window,ev=s=>w.eval(s);
@@ -32,6 +32,120 @@ setTimeout(async()=>{
     w.document.querySelector("#bkpw").value="parola123";
     await ev("goYukle()");
     ok("doğru parola veri ve anahtarı geri getirir",ev("S.settings.healthNote")==="gizli not"&&ev("getKeys().groq")==="KEY-sirri-12345",[ev("S.settings.healthNote"),ev("getKeys().groq"),ev("document.querySelector('#toast').textContent")]);
+  // ---- Tahlil takibi ----
+  {
+    const {textPdf}=require("./pdfmaker.js");
+    const pdfjs=await import("pdfjs-dist/legacy/build/pdf.mjs");
+    const doc=w.document,q=s=>doc.querySelector(s),qa=s=>[...doc.querySelectorAll(s)];
+    const click=s=>q(s).click();
+    const lab=textPdf([
+      [["Hasta Adi Soyadi: Ali Veli",40]],[["T.C. Kimlik No: 12345678901",40]],[["Numune Alim Tarihi: 12.09.2026",40]],
+      [["Glukoz (Aclik)",40],["98",200],["mg/dL",260],["70 - 100",340]],
+      [["Lökosit",40],["7,2",200],["10^3/uL",260],["4,0 - 10,0",340]],
+      [["HbA1c",40],["5,4",200],["%",260],["4,0-5,6",340]],
+      [["LDL-Kolesterol",40],["130",200],["mg/dL",260],["< 100",340]]
+    ]);
+    let needPw=false;
+    w.__labPdfLib={getDocument:o=>{
+      if(needPw&&o.password!=="x")return {promise:Promise.reject({name:"PasswordException",code:o.password?2:1})};
+      return pdfjs.getDocument({...o,data:new Uint8Array(o.data)});
+    }};
+    const file=d=>({size:d.length,arrayBuffer:async()=>d.buffer.slice(d.byteOffset,d.byteOffset+d.length)});
+    ev("S.labs=[];S.entries=[]");
+    ok("Trend'de tahlil kartı var",ev("viewTrend()").includes("Tahlil takibi")&&ev("viewTrend()").includes('data-tab="tahlil"'));
+    ok("açılışta pdf.js yüklenmez (yalnızca tahlil açılınca)",!html.includes('<script src="vendor')&&!/<script src="[^"]*pdf/.test(fs.readFileSync(www("index.html"),"utf8")));
+    ev("tab='tahlil';render()");
+    ok("boş tahlil ekranı: okut ve elle ekle düğmeleri",!!q("#labfile")&&!!q('[data-lab="add"]')&&!q('[data-lab="pdf"]')&&q("#ttl").textContent==="Tahlil takibi"&&q('nav [data-tab="trend"]').getAttribute("aria-current")==="page");
+
+    await ev("labFile")(file(lab));
+    ok("okunan sonuçlar ekranı: 4 satır, tarih dolu",qa('[id^="ln"]').length===4&&q("#ld").value==="2026-09-12",qa('[id^="ln"]').length);
+    ok("hasta bilgisi ekranda ve durumda yok",!q("#sheet").innerHTML.match(/Ali|Veli|12345678901/)&&!JSON.stringify(ev("S")).match(/Ali Veli|12345678901/));
+    q("#lc1").checked=false;
+    click('[data-lab="save"]');
+    ok("işareti kaldırılan satır kaydedilmez",ev("S.labs.length")===3&&ev("S.labs.map(x=>x.k).join()")==="glukoz,hba1c,ldl",ev("S.labs.map(x=>x.k)"));
+    ok("kaydedince tahlil ekranına döner ve testler listelenir",ev("tab")==="tahlil"&&q("#view").textContent.includes("Glukoz")&&q("#view").textContent.includes("LDL kolesterol")&&q('[data-lab="pdf"]')!==null);
+    ok("referans dışı değer işaretlenir, normal değil",q("#view").textContent.includes("üstünde")&&(q("#view").textContent.match(/üstünde/g)||[]).length===1,q("#view").textContent);
+    ok("kayıtlı satırda yalnızca beklenen alanlar var",ev("Object.keys(S.labs[0]).sort().join()")==="day,hi,id,k,lo,n,u,v");
+
+    await ev("labFile")(file(lab));
+    q("#lc1").checked=false;click('[data-lab="save"]');
+    ok("aynı PDF tekrar okutulunca yinelenen kayıt oluşmaz",ev("S.labs.length")===3&&q("#toast").textContent.includes("zaten"),q("#toast").textContent);
+
+    ev("labReview({date:'',rows:[]},true)");
+    ok("elle ekleme: tarih bugün, bir boş satır",qa('[id^="ln"]').length===1&&q("#ld").value===ev("dayKey()"));
+    q("#ln0").value="Ferritin";q("#lv0").value="12";q("#lu0").value="ng/mL";q("#ll0").value="13";q("#lh0").value="150";
+    click('[data-lab="save"]');
+    ok("elle eklenen sonuç sözlük anahtarıyla kaydedilir",ev("S.labs.some(x=>x.k==='ferritin'&&x.v===12&&x.lo===13&&x.hi===150&&x.u==='ng/mL')"));
+
+    ev("labReview({date:'',rows:[]},true)");q("#ln0").value="Glukoz";q("#lv0").value="abc";click('[data-lab="save"]');
+    ok("okunamayan değer kaydedilmez ve uyarır",ev("S.labs.length")===4&&q("#toast").textContent.includes("okunamadı")&&!!q("#ld"),q("#toast").textContent);
+    q("#lv0").value="<20";q("#lu0").value="mg/dL";q("#ll0").value="5";q("#lh0").value="3";click('[data-lab="save"]');
+    ok("alt sınır üst sınırdan büyükse kaydedilmez",ev("S.labs.length")===4);
+    q("#ll0").value="";q("#lh0").value="";q("#ld").value="2999-01-01";click('[data-lab="save"]');
+    ok("gelecek tarih kaydedilmez",ev("S.labs.length")===4&&q("#toast").textContent.includes("ileri"));
+    q("#ld").value="2026-08-01";click('[data-lab="save"]');
+    ok("< niteleyicisi ve ikinci tarih kaydedilir",ev("S.labs.some(x=>x.k==='glukoz'&&x.q==='<'&&x.v===20&&x.day==='2026-08-01')"));
+
+    click('[data-lab="open:glukoz|mg/dL"]');
+    ok("ayrıntı: iki sonuç için grafik ve silme düğmeleri",!!q("#sheet svg")&&qa('#sheet [data-lab^="del:"]').length===2);
+    click('#sheet [data-lab^="del:"]');
+    ok("tek sonuç silinir, geri al düğmesi geri getirir",ev("S.labs.filter(x=>x.k==='glukoz').length")===1);
+    click("#tundo");
+    ok("geri al silinen sonucu geri getirir",ev("S.labs.filter(x=>x.k==='glukoz').length")===2);
+
+    // PDF dışa aktarma (tuval ve eklentiler taklit)
+    const drawn=[];let saved=null,shared=null;
+    const ctx=new Proxy({},{get:(t,k)=>k==="measureText"?()=>({width:100}):k==="fillText"?(s)=>drawn.push(s):()=>{} ,set:()=>true});
+    w.HTMLCanvasElement.prototype.getContext=()=>ctx;
+    const jpgB64="/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=";
+    w.HTMLCanvasElement.prototype.toDataURL=()=>"data:image/jpeg;base64,"+jpgB64;
+    w.Capacitor.Plugins.Filesystem={writeFile:async o=>{saved=o;return {uri:"file:///cache/x.pdf"}}};
+    w.Capacitor.Plugins.Share={share:async o=>{shared=o}};
+    await ev("labExport()");
+    const pdfBytes=Buffer.from(saved.data,"base64");
+    const pd=await pdfjs.getDocument({data:new Uint8Array(pdfBytes),verbosity:0}).promise;
+    ok("PDF dışa aktarılır: dosya adı, geçerli PDF, paylaşım",/^neowell-tahlil-\d{4}-\d{2}-\d{2}\.pdf$/.test(saved.path)&&pdfBytes.slice(0,5).toString()==="%PDF-"&&pd.numPages===1&&shared.files[0]==="file:///cache/x.pdf",[saved.path,pd.numPages]);
+    ok("PDF'e testler ve referans metni çizilir, hasta bilgisi yok",["Glukoz","LDL kolesterol","Ferritin","HbA1c"].every(n=>drawn.includes(n))&&drawn.some(t=>/Referans: 70 – 100/.test(t))&&!drawn.join("|").match(/Ali|Veli|12345678901/),drawn);
+    ok("aralık dışı değer PDF'te açıkça yazılır",drawn.includes("▲ Referans aralığının üstünde"));
+    ev("S.labs=S.labs.concat(Array.from({length:30},(_,i)=>({id:900+i,day:'2026-09-01',k:'t'+i,n:'Test '+i,v:i+1,u:'x'})))");
+    drawn.length=0;await ev("labExport()");
+    const pd2=await pdfjs.getDocument({data:new Uint8Array(Buffer.from(saved.data,"base64")),verbosity:0}).promise;
+    ok("çok test varsa sayfalara bölünür",pd2.numPages>=4&&drawn.some(t=>/sayfa 4\//.test(t)),pd2.numPages);
+    ev("S.labs=S.labs.filter(x=>x.id<900)");
+
+    // yedek: tahlil verisi yedekle-yükle gidiş dönüşünde korunur
+    const bkJ=ev("JSON.stringify(S)");
+    ev("S.labs=[]");doc.querySelector("#bk").value=bkJ;
+    await ev("goYukle()");
+    ok("yedekten geri yüklemede tahlil kayıtları gelir",ev("S.labs.length")>=4&&ev("S.labs.some(x=>x.k==='ferritin')"),ev("S.labs.length"));
+    doc.querySelector("#bk").value=JSON.stringify({...JSON.parse(bkJ),labs:[{day:"bozuk",n:"x",v:1},{day:"2026-01-01",n:"Glukoz",v:90,u:"mg/dL"},"çöp",null]});
+    await ev("goYukle()");
+    ok("bozuk tahlil satırları yüklemede ayıklanır",ev("S.labs.length")===1&&ev("S.labs[0].v")===90);
+    ok("sıfırlama yeni tahlil listesi başlatır",ev("DEF.labs.length")===0);
+
+    // taranmış PDF, PDF olmayan dosya, korumalı PDF
+    await ev("labFile")(file(textPdf([[["Sayfa",40]]])));
+    ok("taranmış PDF: açıklama ve elle ekleme önerilir",q("#sheet").textContent.includes("Metin bulunamadı")&&!!q('#sheet [data-lab="add"]'));
+    await ev("labFile")(file(new Uint8Array([1,2,3,4])));
+    ok("PDF olmayan dosya: hata mesajı, çökme yok",q("#toast").textContent.includes("açılamadı"),q("#toast").textContent);
+    await ev("labFile")({size:2e7,arrayBuffer:async()=>new ArrayBuffer(1)});
+    ok("15 MB üstü dosya reddedilir",q("#toast").textContent.includes("büyük"));
+    await ev("labFile")(file(textPdf([[["Numune Tarihi 01.09.2026",40]],[["Kontrol Metni",40]]])));
+    ok("sonuç satırı olmayan PDF: açıklama",q("#sheet").textContent.includes("Sonuç bulunamadı"));
+    needPw=true;
+    await ev("labFile")(file(lab));
+    ok("korumalı PDF: parola istenir",!!q("#labpw"));
+    q("#labpw").value="yanlis";click('[data-lab="pw"]');await new Promise(r=>setTimeout(r,50));
+    ok("yanlış parola: yeniden sorulur",!!q("#labpw")&&q("#sheet").textContent.includes("yanlış"));
+    q("#labpw").value="x";click('[data-lab="pw"]');await new Promise(r=>setTimeout(r,200));
+    ok("doğru parola: sonuçlar açılır",qa('[id^="ln"]').length===4);
+    needPw=false;ev("closeSheet()");
+
+    // tümünü sil
+    ev("tab='tahlil';render()");click('[data-lab="delall"]');
+    ok("tüm tahlil kayıtları silinir",ev("S.labs.length")===0);
+    ev("tab='bugun';render()");
+  }
     process.exit(bad?1:0);
   });
   const calls=[];
@@ -113,9 +227,10 @@ setTimeout(async()=>{
   w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),cancel:async o=>{cancelled=o.notifications.map(n=>n.id)},schedule:async o=>{sched1=o.notifications.map(n=>n.id)}};
   await ev("scheduleReminders()");
   ok("su hedefi dolmadan su hatırlatmaları kurulur",sched1.includes(201)&&sched1.includes(301));
-  ev("S.entries=[];add('su',2500,'')");
-  await ev("muteWaterToday()");
-  ok("su hedefi dolunca bugünün su bildirimleri iptal edilir",[200,300,400].every(i=>cancelled.includes(i)));
+  ev("S.entries=[];add('su',S.settings.waterMl-S.settings.glass,'')");sched1=[];
+  w.document.body.insertAdjacentHTML("beforeend",'<button id="tsu" data-act="su"></button>');w.document.querySelector("#tsu").click();
+  await new Promise(r=>setTimeout(r,50));
+  ok("su hedefi dolunca bildirimler yeniden kurulur, bugünün su alarmı yok",sched1.length>0&&![200,300,400].some(i=>sched1.includes(i))&&sched1.includes(201),sched1.length);
   await ev("scheduleReminders()");
   ok("hedef dolunca yeniden kurmada bugünün su alarmı yok, yarınki var",![200,300,400].some(i=>sched1.includes(i))&&sched1.includes(201));
   w.Capacitor.Plugins.LocalNotifications=lnOld;

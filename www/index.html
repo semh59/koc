@@ -250,8 +250,10 @@ select.in{appearance:none}
 <script src="offlib.js"></script>
 <script src="gym.js"></script>
 <script src="backuplib.js"></script>
+<script src="lablib.js"></script>
 <script src="coachlib.js"></script>
 <script src="coach.js"></script>
+<script src="labui.js"></script>
 <script>
 "use strict";
 /* ---------- yardımcılar ---------- */
@@ -290,7 +292,7 @@ const DEF={
     {id:5,t:"19:30",on:true,name:"Hareket",title:"🏃 Hareket zamanı",body:"20 dakikalık yürüyüş bile sayılır."},
     {id:6,t:"22:00",on:true,name:"Gün sonu",title:"🌙 Gün sonu",body:"Bugünün kayıtlarını kontrol et."}
   ]},
-  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,providers:defProviders(),chat:[],cid:1,myFoods:[]
+  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,providers:defProviders(),chat:[],cid:1,myFoods:[],labs:[]
 };
 const RANGES={goalKg:[20,400,false],kcal:[800,8000,true],waterMl:[500,10000,true],glass:[50,1500,true],sportWeek:[10,3000,true],stepGoal:[1000,100000,true],heightCm:[100,250,true],age:[10,100,true]};
 const SETLBL={goalKg:"Hedef kilo",kcal:"Günlük kalori",waterMl:"Günlük su",glass:"Bir bardak",sportWeek:"Haftalık spor",stepGoal:"Günlük adım",heightCm:"Boy",age:"Yaş"};
@@ -364,7 +366,7 @@ function load(){
     const r=JSON.parse(raw);
     if(r&&Array.isArray(r.entries)){
       const {out}=cleanEntries(r.entries);
-      return Object.assign({settings:cleanSettings(r.settings),entries:out,nextId:out.length+1,myFoods:cleanMyFoods(r.myFoods)},cleanGym(r),cleanCoach(r));
+      return Object.assign({settings:cleanSettings(r.settings),entries:out,nextId:out.length+1,myFoods:cleanMyFoods(r.myFoods),labs:LabLib.cleanLabs(r.labs)},cleanGym(r),cleanCoach(r));
     }
   }catch(e){}
   try{localStorage.setItem("koc_v1_bozuk",raw)}catch(e){}
@@ -546,6 +548,7 @@ function viewTrend(){
   <div class="card">${chart(range)}${stats}</div>
   ${gEnergy()}
   <h2>Son 7 gün</h2><div class="card"><table><thead><tr><th>Gün</th><th>Kilo</th><th>Su (L)</th><th>kcal</th><th>Spor (dk)</th><th>Adım</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <h2>Tahlil</h2>${labTrendCard()}
   <h2>Haftalık spor</h2><div class="card"><div class="num"><b>${Math.round(sw)}</b> / ${st.sportWeek} dk, ${sd} gün aktif</div><div class="bar"><i style="width:${pct.toFixed(0)}%"></i></div></div>`;
 }
 
@@ -584,13 +587,13 @@ function viewAyar(){
 
 function render(){
   const v=$("#view");
-  const ttl={bugun:`${new Date().getDate()} ${AY[new Date().getMonth()]}, ${GUN[new Date().getDay()]}`,koc:"Koç",salon:"Salon",trend:"Trend",ayar:"Ayarlar",adim:"Adım raporu"}[tab];
+  const ttl={bugun:`${new Date().getDate()} ${AY[new Date().getMonth()]}, ${GUN[new Date().getDay()]}`,koc:"Koç",salon:"Salon",trend:"Trend",ayar:"Ayarlar",adim:"Adım raporu",tahlil:"Tahlil takibi"}[tab];
   $("#ttl").textContent=ttl;
   const n=streak();$("#streak").innerHTML=n>0?`<b class="num">${n}</b> günlük seri`:"";
-  v.innerHTML=tab==="koc"?viewKoc():tab==="bugun"?viewBugun():tab==="salon"?viewSalon():tab==="trend"?viewTrend():tab==="adim"?viewAdim():viewAyar();
+  v.innerHTML=tab==="koc"?viewKoc():tab==="bugun"?viewBugun():tab==="salon"?viewSalon():tab==="trend"?viewTrend():tab==="adim"?viewAdim():tab==="tahlil"?viewTahlil():viewAyar();
   document.body.classList.toggle("koc",tab==="koc");$("#composer").hidden=tab!=="koc";
   if(tab==="koc")cScroll();
-  document.querySelectorAll("nav button").forEach(b=>{if(b.dataset.tab===(tab==="adim"?"bugun":tab))b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
+  document.querySelectorAll("nav button").forEach(b=>{if(b.dataset.tab===({adim:"bugun",tahlil:"trend"}[tab]||tab))b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
 }
 
 /* ---------- alt sayfa ve bildirim ---------- */
@@ -751,7 +754,7 @@ async function goYukle(){
   if(!confirm(`${out.length} kayıt yüklenecek${drop?`, ${drop} geçersiz kayıt atlanacak`:""}. Mevcut veriler değişecek. Devam edilsin mi?`))return;
   const prevS=S;
   try{localStorage.setItem("koc_v1_onceki",JSON.stringify(prevS))}catch(e){}
-  S=Object.assign({settings:cleanSettings(r.settings),entries:out,nextId:out.length+1,myFoods:cleanMyFoods(r.myFoods)},cleanGym(r),cleanCoach(r));
+  S=Object.assign({settings:cleanSettings(r.settings),entries:out,nextId:out.length+1,myFoods:cleanMyFoods(r.myFoods),labs:LabLib.cleanLabs(r.labs)},cleanGym(r),cleanCoach(r));
   /* Yedek, anahtarın gideceği adresi, onay ayarını ve veri paylaşım iznini değiştirememeli. */
   S.settings.consent=prevS.settings.consent;S.settings.lastBackup=dayKey();
   const keys=getKeys();
@@ -769,11 +772,6 @@ async function goYukle(){
 const WATER_REM=[2,3,4];
 const SCHED_DAYS=30;let lastSched=0;
 const LN=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.LocalNotifications;
-async function muteWaterToday(){
-  const ln=LN(),t=dayKey();
-  if(!ln||sum("su",t,t)<S.settings.waterMl)return;
-  try{await ln.cancel({notifications:WATER_REM.map(id=>({id:id*100}))})}catch(e){}
-}
 async function scheduleReminders(){
   const ln=LN();if(!ln)return "web";
   try{
@@ -896,7 +894,7 @@ document.addEventListener("click",ev=>{
   if(d.fp!==undefined){curPor=+d.fp;document.querySelectorAll("#fpc .chip").forEach(c=>c.setAttribute("aria-pressed",c===el));foodPreview();return}
   if(d.fav!==undefined){const f=favList[+d.fav];if(f){$("#ft").value=f.text;$("#fv").value=f.v?String(Math.round(f.v)):""}return}
   if(d.act){
-    if(d.act==="su"){const e=add("su",S.settings.glass);render();muteWaterToday();const t=dayKey(),top=sum("su",t,t);toast(`+${S.settings.glass} ml, bugün ${Math.round(top)} / ${S.settings.waterMl} ml`+(top-S.settings.glass<S.settings.waterMl&&top>=S.settings.waterMl?". Günlük hedef tamam":""),e.id)}
+    if(d.act==="su"){const e=add("su",S.settings.glass);render();const t=dayKey(),top=sum("su",t,t);if(top>=S.settings.waterMl&&top-S.settings.glass<S.settings.waterMl)scheduleReminders().then(setNotif);toast(`+${S.settings.glass} ml, bugün ${Math.round(top)} / ${S.settings.waterMl} ml`+(top-S.settings.glass<S.settings.waterMl&&top>=S.settings.waterMl?". Günlük hedef tamam":""),e.id)}
     else if(d.act==="kilo")sheetKilo();
     else if(d.act==="dunku")repeatYesterday();
     else if(d.act==="yemek")sheetYemek();
