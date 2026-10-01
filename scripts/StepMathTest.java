@@ -23,15 +23,31 @@ public class StepMathTest {
         ok("yeni gün 0'dan başlar", t == 0, t);
         ok("eski gün geçmişe yazılır", h.get("d1") == 580, h);
         ok("yeni gün artışı", StepMath.update(s, "d2", 400, h) == 310, 0);
-        StepMath.closeDay(s, "d3", 1000, h);
+        StepMath.closeDay(s, "d3", 1000, 0, h);
         ok("gece kapanışı eski günü tam yazar", h.get("d2") == 910, h);
         ok("kapanıştan sonra yeni gün 0", StepMath.update(s, "d3", 1000, h) == 0, 0);
         ok("kapanış aynı günde bir şey yapmaz", doNothing(), 0);
         StepMath.State r = new StepMath.State();
         StepMath.update(r, "x", 500, h);
         StepMath.update(r, "x", 800, h);
-        StepMath.closeDay(r, "y", 50, h);
+        StepMath.closeDay(r, "y", 50, 1, h);
         ok("gece kapanışında yeniden başlama", h.get("x") == 350, h.get("x"));
+        // Alarm sabah 07:00'de geç geldi: sayaç yeni günün adımlarını da içerir, eski güne yazılmamalı
+        StepMath.State late = new StepMath.State();
+        StepMath.update(late, "e1", 1000, h);
+        StepMath.update(late, "e1", 1600, h); // akşam son okuma: 600 adım
+        StepMath.closeDay(late, "e2", 2500, 420, h); // 07:00'de geç alarm
+        ok("geç alarm eski günü kapatmaz", !h.containsKey("e1"), h.get("e1"));
+        long morning = StepMath.update(late, "e2", 2500, h);
+        ok("geç alarmda eski gün son okumaya kadar yazılır", h.get("e1") == 600, h.get("e1"));
+        ok("geç alarmda sabah adımları eski güne geçmez, yeni gün 0'dan başlar", morning == 0, morning);
+        // Telefon sabah açıldı: gün kapatması yapılmaz (alıcı closeFirst=false verir), sayaç sıfırdan başlar
+        StepMath.State boot = new StepMath.State();
+        StepMath.update(boot, "f1", 5000, h);
+        StepMath.update(boot, "f1", 5800, h);
+        long afterBoot = StepMath.update(boot, "f2", 30, h);
+        ok("açılış sabahı: eski gün son okumada kalır", h.get("f1") == 800, h.get("f1"));
+        ok("açılış sabahı: yeni gün 0'dan başlar", afterBoot == 0, afterBoot);
         System.exit(bad == 0 ? 0 : 1);
     }
 
@@ -39,7 +55,7 @@ public class StepMathTest {
         StepMath.State z = new StepMath.State();
         Map<String, Long> m = new HashMap<>();
         StepMath.update(z, "k", 10, m);
-        StepMath.closeDay(z, "k", 99, m);
+        StepMath.closeDay(z, "k", 99, 0, m);
         return m.isEmpty() && z.day.equals("k");
     }
 }

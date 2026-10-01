@@ -40,4 +40,7 @@ Eski projeler çalışan ürün değil, ama şu fikirler `koc` için uygun ve ye
 
 ## Yapıldı
 - Barkod okutma (Open Food Facts).
-- Adım sayar (telefonun adım sensörü, hesap gerektirmez).
+- Adım sayar (telefonun adım sensörü, hesap gerektirmez): geç alarm/açılışta gün atfı düzeltildi, Adım ayrıntı ekranı (7 gün grafiği).
+
+## Karar
+- Health Connect telefon adımını daha doğru yapmaz (aynı sensör), yalnızca eksiksiz yapar. Mi Band/saat kullanımı netleşince ele alınacak.

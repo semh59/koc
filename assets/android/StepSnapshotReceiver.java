@@ -30,7 +30,9 @@ public class StepSnapshotReceiver extends BroadcastReceiver {
     public void onReceive(final Context c, Intent i) {
         final PendingResult pr = goAsync();
         schedule(c);
-        StepStore.read(c, true, new StepStore.Callback() {
+        // Açılışta sayaç sıfırlanmıştır, gün kapatması yalnızca gece alarmında yapılır.
+        boolean boot = Intent.ACTION_BOOT_COMPLETED.equals(i.getAction());
+        StepStore.read(c, !boot, new StepStore.Callback() {
             public void done(Long steps, Map<String, Long> history) {
                 pr.finish();
             }
