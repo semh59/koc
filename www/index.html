@@ -318,7 +318,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- veri ---------- */
 const DEF={
-  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,lastPlan:"",lastWeekly:"",lastBackup:"",oemDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:true,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,stepWarnDay:"",reminders:[
+  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,lastPlan:"",lastWeekly:"",lastPlateau:"",lastBackup:"",oemDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:true,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,stepWarnDay:"",reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -356,6 +356,7 @@ function cleanSettings(raw){
   if(o.consent===true)d.consent=true;
   if(dayOk(o.lastPlan))d.lastPlan=o.lastPlan;
   if(dayOk(o.lastWeekly))d.lastWeekly=o.lastWeekly;
+  if(dayOk(o.lastPlateau))d.lastPlateau=o.lastPlateau;
   if(dayOk(o.lastBackup))d.lastBackup=o.lastBackup;
   if(o.oemDone===true)d.oemDone=true;
   if(o.stepsOn===true)d.stepsOn=true;
@@ -1086,9 +1087,10 @@ document.addEventListener("keydown",ev=>{
   if(ev.key==="Enter"&&ev.target.id==="cmsg"){ev.preventDefault();const i=ev.target,t=i.value;i.value="";cSend(t);return}
   if(ev.key==="Enter"&&ev.target.closest("#sheet")&&ev.target.tagName==="INPUT"){const b=$("#sheet [data-go]");if(b)b.click()}
 });
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="ayar")render()});stepsSync();render();cFlush();cAuto();if(Date.now()-lastSched>6*36e5)scheduleReminders().then(setNotif)}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="ayar")render()});stepsSync();render();cPlateauCheck();cFlush();cAuto();if(Date.now()-lastSched>6*36e5)scheduleReminders().then(setNotif)}});
 
 render();
+cPlateauCheck();
 if(corruptNote)toast("Kayıtlı veri okunamadı. Eski hali ayrı bir kopyada saklandı.");
 quickIngest();
 scheduleReminders().then(s=>{notifStatus=s;if(tab==="ayar")render()});
