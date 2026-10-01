@@ -381,6 +381,27 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     // temizlik
     ev("S.vitals=[];S.labs=[];S.settings.bpOn=false;S.settings.bsOn=false;tab='bugun';render()");
   }
+  // ---- Haftalık rapor ----
+  {
+    const doc=w.document,q=s=>doc.querySelector(s);
+    const pdfjs=await import("pdfjs-dist/legacy/build/pdf.mjs");
+    const drawn=[];let saved=null,shared=null;
+    const ctx=new Proxy({},{get:(t,k)=>k==="measureText"?()=>({width:100}):k==="fillText"?s=>drawn.push(s):()=>{},set:()=>true});
+    w.HTMLCanvasElement.prototype.getContext=()=>ctx;
+    w.Capacitor.Plugins.Filesystem={writeFile:async o=>{saved=o;return {uri:"file:///cache/h.pdf"}}};
+    w.Capacitor.Plugins.Share={share:async o=>{shared=o}};
+    ev("S.entries=[];S.vitals=[];S.settings.bpOn=false;S.settings.bsOn=false;tab='trend';render()");
+    ok("Trend'de haftalık rapor düğmesi",!!q('[data-wk="pdf"]'));
+    q('[data-wk="pdf"]').click();await new Promise(r=>setTimeout(r,100));
+    ok("kayıt yokken rapor üretilmez, açıklama verir",saved===null&&q("#toast").textContent.includes("kayıt yok"));
+    ev("add('kilo',81.9,'');add('su',2000,'');add('yemek',1900,'Öğün');add('spor',45,'Yürüyüş')");
+    ev("S.settings.bpOn=true;S.vitals=[{id:1,k:'t',day:dayKey(),time:'08:00',sys:128,dia:82,ses:'sabah'}]");
+    q('[data-wk="pdf"]').click();await new Promise(r=>setTimeout(r,150));
+    const pb=Buffer.from(saved.data,"base64"),pd=await pdfjs.getDocument({data:new Uint8Array(pb),verbosity:0}).promise;
+    ok("haftalık rapor: geçerli tek sayfa PDF, dosya adı, paylaşım",/^neowell-haftalik-\d{4}-\d{2}-\d{2}\.pdf$/.test(saved.path)&&pb.slice(0,5).toString()==="%PDF-"&&pd.numPages===1&&shared.files[0]==="file:///cache/h.pdf",[saved.path,pd.numPages]);
+    ok("rapor içeriği: kilo, su, kalori, spor ve (takip açıksa) tansiyon",drawn.includes("NeoWell · Haftalık rapor")&&drawn.some(t=>t.includes("81,9"))&&drawn.some(t=>/günlük ortalama 2,0 L/.test(t))&&drawn.some(t=>/1900 kcal/.test(t))&&drawn.some(t=>/toplam 45 dk/.test(t))&&drawn.some(t=>/128\/82 mmHg/.test(t)),drawn);
+    ev("S.entries=[];S.vitals=[];S.settings.bpOn=false;tab='bugun';render()");
+  }
     process.exit(bad?1:0);
   });
   const calls=[];
