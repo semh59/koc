@@ -24,6 +24,13 @@ ok("clean: dizi olmayan girdi boş döner",V.clean(null).length===0&&V.clean("x"
 ok("clean: 5000 satırla sınırlı",V.clean(Array.from({length:6000},(_,i)=>G({g:50+(i%700),time:`${String(i%24).padStart(2,"0")}:${String(i%60).padStart(2,"0")}`,day:`2026-0${1+(i%9)}-1${i%9}`,ctx:V.CTX[i%5][0]}))).length<=5000);
 ok("clean: kendi çıktısı tekrar temizlenince değişmez",JSON.stringify(V.clean(cl))===JSON.stringify(cl));
 
+// aynı seansta iki özdeş ölçüm (128/82 iki kez) açılışta temizlenince kaybolmamalı
+const twin=V.clean([T({sid:"tw",i:1,sys:128,dia:82,time:"08:00"}),T({sid:"tw",i:2,sys:128,dia:82,time:"08:00"})]);
+ok("özdeş iki ölçüm clean sonrası ikisi de durur",twin.length===2&&V.sessions(twin)[0].n===2,twin);
+ok("özdeş ölçümler ikinci temizlikte de korunur (her açılışta çalışır)",V.clean(V.clean(twin)).length===2);
+ok("rapor satırlarında 1. ve 2. ölçüm numarası i alanından gelir",(r=>r[0].c==="Sabah, 1. ölçüm"&&r[1].c==="Sabah, 2. ölçüm")(V.reportRows(twin,"t","2026-09-01","2026-09-30",{})));
+ok("i yalnızca 1 ya da 2 olabilir",V.check(T({i:3})).row.i===undefined&&V.check(T({i:2})).row.i===2);
+
 // seanslar ve ev ortalaması
 const rows=V.clean([
   T({day:"2026-09-10",time:"07:30",sys:130,dia:84,nabiz:70,sid:"s1"}),T({day:"2026-09-10",time:"07:32",sys:134,dia:86,nabiz:72,sid:"s1"}),

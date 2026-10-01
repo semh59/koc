@@ -27,6 +27,7 @@ const VitalsLib=(()=>{
       if(x.nabiz!=null&&x.nabiz!==""){if(!inr(x.nabiz,LIM.pulse))return {err:"Nabız 25-250 arasında olmalı"};o.nabiz=Math.round(x.nabiz)}
       o.ses=SES.some(s=>s[0]===x.ses)?x.ses:"diger";
       if(typeof x.sid==="string"&&/^[a-z0-9]{1,12}$/.test(x.sid))o.sid=x.sid;
+      if(x.i===1||x.i===2)o.i=x.i;
     }else{
       if(!inr(x.g,LIM.g))return {err:"Şeker 20-800 mg/dL arasında olmalı"};
       o.g=r1(x.g);o.ctx=CTX.some(c=>c[0]===x.ctx)?x.ctx:"rast";
@@ -38,7 +39,7 @@ const VitalsLib=(()=>{
     const out=[],seen=new Set();let id=1;
     for(const x of (Array.isArray(arr)?arr:[]).slice(0,5000)){
       const c=check(x);if(!c.row)continue;
-      const o=c.row,sig=[o.k,o.day,o.time,o.sys,o.dia,o.g,o.ctx,o.sid,o.ses,o.nabiz].join("|");
+      const o=c.row,sig=[o.k,o.day,o.time,o.sys,o.dia,o.g,o.ctx,o.sid,o.i,o.ses,o.nabiz].join("|");
       if(seen.has(sig))continue;seen.add(sig);
       out.push(Object.assign({id:id++},o));
     }
@@ -118,7 +119,7 @@ const VitalsLib=(()=>{
     return a.map(r=>{
       const f=kind==="t"?flagBp(r.sys,r.dia,s):flagG(r,s);
       let ctx,val;
-      if(kind==="t"){const key=r.sid?r.sid+r.day:null,i=key?(nth.set(key,(nth.get(key)||0)+1),nth.get(key)):0;ctx=sesName(r.ses)+(i?`, ${i}. ölçüm`:"");val=`${r.sys}/${r.dia} mmHg`+(r.nabiz?`  nabız ${r.nabiz}`:"")}
+      if(kind==="t"){const key=r.sid?r.sid+r.day:null,i=!key?0:r.i?r.i:(nth.set(key,(nth.get(key)||0)+1),nth.get(key));ctx=sesName(r.ses)+(i?`, ${i}. ölçüm`:"");val=`${r.sys}/${r.dia} mmHg`+(r.nabiz?`  nabız ${r.nabiz}`:"")}
       else{ctx=ctxName(r.ctx);val=`${num(r.g)} mg/dL`}
       return {d:fmtD(r.day),t:r.time,c:ctx,v:val,f:f==="high"?"▲":f==="low"?"▼":"",not:r.not||""};
     });
