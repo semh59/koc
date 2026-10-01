@@ -120,8 +120,34 @@ function exTick(){
 }
 setInterval(exTick,1000);
 
+/* ---- plaka ve ısınma ---- */
+const exPlateIn=()=>({kg:num($("#pk").value),bar:num($("#pb").value)});
+function exPlateCalc(){
+  const {kg,bar}=exPlateIn(),box=$("#pres");
+  if(!(kg>0&&bar>=5&&bar<=50)){box.innerHTML=`<p class="hint">Hedef kg ve bar ağırlığı yaz (bar 5-50 kg).</p>`;return}
+  if(S.bar!==bar){S.bar=bar;save()}
+  const p=Algo.plates(kg,bar),wu=Algo.warmup(kg,bar);
+  box.innerHTML=`<div class="stat"><div class="k">Bir tarafa</div><div class="v num">${p.side.join(" + ")||"yalnız bar"} kg</div></div>
+  ${p.made!==kg?`<p class="hint">Tam yapılamıyor, en yakın: ${fkg(p.made)} kg</p>`:""}
+  ${wu.length?`<div class="lbl">Isınma</div><div class="num">${wu.map(x=>`${fkg(x.kg)} × ${x.reps}`).join(", ")}</div>`:""}`;
+}
+function exPlateSheet(ei){
+  const x=gActive().ex[ei],sug=gSuggest(x.id),w=x.sets.find(s=>!s.w&&s.kg>0),kg=w?w.kg:sug?sug.kg:"";
+  openSheet(`<h3>${esc(gEx(x.id).n)}</h3><div class="lbl">Hedef ağırlık (kg)</div><input class="in num" id="pk" inputmode="decimal" value="${fkg(kg)}">
+  <div class="lbl">Bar (kg)</div><input class="in num" id="pb" inputmode="decimal" value="${fkg(S.bar)}"><div id="pres"></div>
+  <div class="btns"><button class="btn" data-g="wadd:${ei}">Isınmayı antrenmana ekle</button><button class="btn ghost" data-g="closesheet">Kapat</button></div>`);
+  $("#pk").oninput=$("#pb").oninput=exPlateCalc;exPlateCalc();
+}
+function exWarmAdd(ei){
+  const {kg,bar}=exPlateIn(),x=gActive().ex[ei],wu=Algo.warmup(kg,bar);
+  if(!wu.length)return toast("Isınma için hedef barın üstünde olmalı");
+  x.sets=wu.map(t=>({kg:t.kg,reps:t.reps,done:false,w:true})).concat(x.sets.filter(s=>!(s.w&&!s.done)));
+  save();closeSheet();render();toast("Isınma setleri eklendi");
+}
+
 /* ---- tıklamalar (gClick'in bilinmeyen eylemleri) ---- */
 function exClick(a,p1,p2,el,w){
+  const ei=+p1;
   switch(a){
     case "lib":tab="egz";return render();
     case "lback":tab="salon";return render();
@@ -137,6 +163,8 @@ function exClick(a,p1,p2,el,w){
       if(wk.ex.some(x=>x.id===p1)){closeSheet();tab="salon";return render()}
       gAddEx(wk,p1);save();closeSheet();tab="salon";render();toast(`${gEx(p1).n} antrenmana eklendi`);return;
     }
+    case "plate":return exPlateSheet(ei);
+    case "wadd":return exWarmAdd(ei);
     case "tstart":return gTimStart(+p1,+p2);
     case "tstop":{
       if(!gTim)return;

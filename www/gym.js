@@ -24,7 +24,7 @@ const EXMERGED=(()=>{
 const gExAll=()=>EXMERGED.concat(S.customEx);
 const gKind=id=>gEx(id).k||"w";
 const gTimed=id=>"tic".includes(gKind(id));
-const gSetOk=s=>s.reps>0||s.sec>0;
+const gSetOk=s=>!s.w&&(s.reps>0||s.sec>0); // w: ısınma seti, hiçbir hesaba girmez
 const gEx=id=>gExAll().find(e=>e.id===id)||{id,n:"Silinmiş egzersiz",g:"Diğer",inc:2.5};
 const gActive=()=>S.workouts.find(w=>w.t1==null)||null;
 const gDone=w=>w.t1!=null;
@@ -32,7 +32,7 @@ const fkg=x=>x==null||x===""?"":String(Math.round(x*100)/100).replace(".",",");
 
 /* ---- doğrulama (yükleme ve geri yükleme için) ---- */
 function cleanGym(r){
-  const out={workouts:[],templates:[],customEx:[],gid:1};
+  const out={workouts:[],templates:[],customEx:[],gid:1,bar:r.bar>=5&&r.bar<=50?+r.bar:20};
   const idOk=x=>Number.isInteger(x)&&x>0;
   let maxId=0;
   const ce=Array.isArray(r.customEx)?r.customEx:[];
@@ -51,7 +51,9 @@ function cleanGym(r){
         if(!s)continue;
         const kg=s.kg==null?null:Number(s.kg),reps=s.reps==null?null:Number(s.reps),sec=s.sec==null?null:Number(s.sec);
         if((kg!=null&&!(kg>=0&&kg<=1000))||(reps!=null&&!(reps>=0&&reps<=200))||(sec!=null&&!(sec>=0&&sec<=7200)))continue;
-        sets.push(sec==null?{kg,reps,done:s.done===true}:{kg,reps,sec:Math.round(sec),done:s.done===true});
+        const o=sec==null?{kg,reps,done:s.done===true}:{kg,reps,sec:Math.round(sec),done:s.done===true};
+        if(s.w===true)o.w=true;
+        sets.push(o);
       }
       ex.push({id:x.id,note:typeof x.note==="string"?x.note.slice(0,300):"",sets});
     }
@@ -93,20 +95,23 @@ function gAddEx(w,exId){
 }
 function gBest(w,exId){
   let b=0;const x=w.ex.find(e=>e.id===exId);
-  if(x&&gKind(exId)==="w")for(const s of x.sets)if(s.done)b=Math.max(b,Algo.est1RM(s.kg,s.reps));
+  if(x&&gKind(exId)==="w")for(const s of x.sets)if(s.done&&!s.w)b=Math.max(b,Algo.est1RM(s.kg,s.reps));
   return b;
 }
-function gPRs(w){
-  const res=[];
-  for(const x of w.ex){
-    const cur=gBest(w,x.id);if(!cur)continue;
-    const prev=gHistory(x.id,w.t0).reduce((m,h)=>Math.max(m,gBest(h.w,x.id)),0);
-    if(prev>0&&cur>prev+0.05){
-      let top=null;for(const s of x.sets)if(s.done&&(!top||Algo.est1RM(s.kg,s.reps)>Algo.est1RM(top.kg,top.reps)))top=s;
-      res.push({ex:gEx(x.id),kg:top.kg,reps:top.reps,e1:cur,prev});
-    }
-  }
-  return res;
+function gIsPR(w,exId){
+  const cur=gBest(w,exId);if(!cur)return null;
+  const prev=gHistory(exId,w.t0).reduce((m,h)=>Math.max(m,gBest(h.w,exId)),0);
+  if(!(prev>0&&cur>prev+0.05))return null;
+  let top=null;for(const s of w.ex.find(e=>e.id===exId).sets)if(s.done&&gSetOk(s)&&(!top||Algo.est1RM(s.kg,s.reps)>Algo.est1RM(top.kg,top.reps)))top=s;
+  return {ex:gEx(exId),kg:top.kg,reps:top.reps,e1:cur,prev};
+}
+const gPRs=w=>w.ex.map(x=>gIsPR(w,x.id)).filter(Boolean);
+const gSeenPR=new Set();
+/* Set anında rekor: o set rekoru getirmiş olmalı, aynı antrenmanda egzersiz başına bir kez. */
+function gNewPR(w,exId,s){
+  const p=gIsPR(w,exId),k=w.id+":"+exId;
+  if(!p||gSeenPR.has(k)||Algo.est1RM(s.kg,s.reps)<p.e1)return null;
+  gSeenPR.add(k);return p;
 }
 const gWorkVol=w=>w.ex.reduce((s,x)=>s+Algo.volume(x.sets.filter(t=>t.done)),0);
 const gWorkSets=w=>w.ex.reduce((s,x)=>s+x.sets.filter(t=>t.done&&gSetOk(t)).length,0);
@@ -152,8 +157,9 @@ function gLive(w){
   const cards=w.ex.map((x,ei)=>{
     const ex=gEx(x.id),prev=gHistory(x.id,w.t0)[0],sug=gSuggest(x.id);
     const kind=gKind(x.id),tm=kind==="t"||kind==="i"||kind==="c",unit=kind==="c"?60:1;
+    let wi=0;
     const rows=x.sets.map((s,si)=>{
-      const ps=prev&&prev.sets[si],p=!ps?"–":tm?`${kind==="c"?Math.round(ps.sec/60)+" dk":ps.sec+" sn"}`:`${ps.kg?fkg(ps.kg)+" × ":""}${ps.reps}`;
+      const ps=!s.w&&prev&&prev.sets[wi++],p=s.w?"ısınma":!ps?"–":tm?`${kind==="c"?Math.round(ps.sec/60)+" dk":ps.sec+" sn"}`:`${ps.kg?fkg(ps.kg)+" × ":""}${ps.reps}`;
       const tick=`<button class="ok${s.done?" on":""}" data-g="done:${ei}:${si}" aria-label="${si+1}. set ${s.done?"geri al":"tamamlandı"}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>`;
       if(tm)return `<div class="srow${s.done?" dn":""}"><span class="sn">${si+1}</span><span class="sp num">${p}</span>
       <input class="sin num" inputmode="numeric" aria-label="${si+1}. set ${kind==="c"?"dakika":"saniye"}" data-gi="sec:${ei}:${si}" value="${s.sec==null?"":Math.round(s.sec/unit)}" placeholder="${kind==="c"?"dk":"sn"}">
@@ -208,6 +214,7 @@ function gMenu(ei){
   const w=gActive(),x=w.ex[ei];
   openSheet(`<h3>${esc(gEx(x.id).n)}</h3><div class="plist">
    <button class="prow" data-g="note:${ei}"><span><b>Egzersiz notu</b><span class="mut sm">Örn. bar yüksekliği, ağrı</span></span></button>
+   ${gKind(x.id)==="w"?`<button class="prow" data-g="plate:${ei}"><span><b>Plaka ve ısınma</b><span class="mut sm">Bar başına plaka, ısınma setleri</span></span></button>`:""}
    <button class="prow" data-g="mv:${ei}:-1"><span><b>Yukarı taşı</b></span></button>
    <button class="prow" data-g="mv:${ei}:1"><span><b>Aşağı taşı</b></span></button>
    <button class="prow dng" data-g="rmex:${ei}"><span><b>Egzersizi sil</b><span class="mut sm">${x.sets.length} set silinir</span></span></button></div>
@@ -302,11 +309,15 @@ function gClick(v,el){
         save();render();gTick();return;
       }
       const kg=num(row.querySelector("[data-gi^=kg]").value),reps=num(row.querySelector("[data-gi^=reps]").value,true);
+      let pr=null;
       if(!s.done){
         if(!(reps>0&&reps<=200))return toast("Önce tekrar sayısını yaz");
         s.kg=isNaN(kg)?0:kg;s.reps=reps;s.done=true;restEnd=Date.now()+REST_SEC*1000;
+        pr=!s.w&&gNewPR(w,w.ex[ei].id,s);
       }else s.done=false;
-      save();render();gTick();return;
+      save();render();gTick();
+      if(pr){toast(`Yeni rekor: ${pr.ex.n}, ${fkg(pr.kg)||0} kg × ${pr.reps}`);try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}
+      return;
     }
     case "rest":{const d=+p1;if(d===0)restEnd=0;else restEnd=Math.max(Date.now(),restEnd)+d*1000;gTick();return}
     case "finish":return gFinish();
