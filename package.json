@@ -1,8 +1,8 @@
 {
-  "name": "koc-app",
+  "name": "neowell-app",
   "version": "1.0.0",
   "private": true,
-  "description": "Kişisel diyet ve spor takipçisi",
+  "description": "NeoWell: Sağlığın yeni kaynağı",
   "dependencies": {
     "@capacitor/android": "^6.2.0",
     "@capacitor/app": "^6.0.0",

@@ -1,6 +1,6 @@
 {
-  "appId": "com.benim.koc",
-  "appName": "Koç",
+  "appId": "com.neowell.app",
+  "appName": "NeoWell",
   "webDir": "www",
   "android": {
     "backgroundColor": "#eef2f0"

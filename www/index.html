@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#eef2f0">
-<title>Koç</title>
+<title>NeoWell</title>
+<link rel="icon" href="logo.png">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <style>
 :root{
   --bg:#eef2f0; --card:#ffffff; --ink:#10232b; --mut:#62737a; --line:#d9e2de;
@@ -57,6 +59,8 @@ main{flex:1;padding:6px 16px calc(92px + env(safe-area-inset-bottom))}
 .ring{position:relative}
 .ring svg{width:88px;height:88px;display:block;margin:0 auto}
 .ring .rt{fill:none;stroke:var(--soft);stroke-width:8}
+.about{display:flex;flex-direction:column;align-items:center;gap:4px;margin:24px 0 8px;font-size:17px}
+.about img{border-radius:50%}
 .ring .rp{fill:none;stroke-width:8;stroke-linecap:round}
 .ring .rc{position:absolute;left:0;right:0;top:30px;font-weight:700;font-size:15px}
 .ring .rl{font-weight:600;font-size:14px;margin-top:2px}
@@ -538,7 +542,8 @@ function viewAyar(){
   <h2>Veriler</h2><div class="card"><div class="btns">
     <button class="btn ghost" data-act="yedek">Yedekle veya geri yükle</button>
     <button class="btn danger" data-act="sifirla">Tüm verileri sil</button></div>
-    <p class="hint">Veriler yalnızca bu telefonda durur. Uygulamayı silersen kaybolur, o yüzden ara sıra yedek al.</p></div>`;
+    <p class="hint">Veriler yalnızca bu telefonda durur. Uygulamayı silersen kaybolur, o yüzden ara sıra yedek al.</p></div>
+  <div class="about"><img src="logo.png" alt="NeoWell logosu" width="72" height="72"><b>NeoWell</b><span class="mut sm">Sağlığın yeni kaynağı</span></div>`;
 }
 
 function render(){
@@ -614,7 +619,7 @@ function sheetYedek(){
 }
 function goYukle(){
   let r;try{r=JSON.parse($("#bk").value)}catch(e){return toast("Yedek metni okunamadı")}
-  if(!r||!Array.isArray(r.entries))return toast("Bu bir Koç yedeği değil");
+  if(!r||!Array.isArray(r.entries))return toast("Bu bir NeoWell yedeği değil");
   const {out,drop}=cleanEntries(r.entries);
   if(!out.length&&r.entries.length)return toast("Yedekte geçerli kayıt yok");
   if(!confirm(`${out.length} kayıt yüklenecek${drop?`, ${drop} geçersiz kayıt atlanacak`:""}. Mevcut veriler değişecek. Devam edilsin mi?`))return;
@@ -686,7 +691,7 @@ document.addEventListener("click",ev=>{
   if(d.go){
     ({kilo:goKilo,yemek:goYemek,spor:goSpor,not:goNot,yukle:goYukle,saglik:()=>{S.settings.healthNote=$("#hn").value.trim().slice(0,500);save();closeSheet();render();toast("Kaydedildi")}}[d.go]||(()=>{}))();
     if(d.go==="kopyala"){const v=$("#bk").value;(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast("Yedek kopyalandı"),()=>{$("#bk").select();document.execCommand&&document.execCommand("copy");toast("Metni seçtim, kopyala")})}
-    if(d.go==="indir"){try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([$("#bk").value],{type:"application/json"}));a.download=`koc-yedek-${dayKey()}.json`;a.click()}catch(e){toast("İndirme bu cihazda çalışmadı, Kopyala'yı kullan")}}
+    if(d.go==="indir"){try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([$("#bk").value],{type:"application/json"}));a.download=`neowell-yedek-${dayKey()}.json`;a.click()}catch(e){toast("İndirme bu cihazda çalışmadı, Kopyala'yı kullan")}}
   }
 });
 $("#tundo").addEventListener("click",()=>{
