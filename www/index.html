@@ -260,6 +260,8 @@ select.in{appearance:none}
 <script src="ocrui.js"></script>
 <script src="vitalsui.js"></script>
 <script src="weeklyui.js"></script>
+<script src="quickui.js"></script>
+<script src="backupui.js"></script>
 <script>
 "use strict";
 /* ---------- yardımcılar ---------- */
@@ -299,7 +301,8 @@ const DEF={
     {id:6,t:"22:00",on:true,name:"Gün sonu",title:"🌙 Gün sonu",body:"Bugünün kayıtlarını kontrol et."},
     {id:7,t:"08:00",on:false,name:"Tansiyon (sabah)",title:"❤️ Tansiyon ölçümü",body:"5 dakika dinlen, tansiyonunu ölç ve kaydet."},
     {id:8,t:"20:00",on:false,name:"Tansiyon (akşam)",title:"❤️ Tansiyon ölçümü",body:"5 dakika dinlen, tansiyonunu ölç ve kaydet."},
-    {id:9,t:"07:30",on:false,name:"Şeker ölçümü",title:"🩸 Şeker ölçümü",body:"Şekerini ölç ve ne zaman ölçtüğünle kaydet."}
+    {id:9,t:"07:30",on:false,name:"Şeker ölçümü",title:"🩸 Şeker ölçümü",body:"Şekerini ölç ve ne zaman ölçtüğünle kaydet."},
+    {id:10,t:"20:00",on:true,dow:0,name:"Haftalık yedek (Pazar)",title:"☁️ Yedek zamanı",body:"Yedeği Drive'a göndermek için Ayarlar > Yedeği Drive'a gönder."}
   ]},
   entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,providers:defProviders(),chat:[],cid:1,myFoods:[],labs:[],vitals:[]
 };
@@ -527,7 +530,7 @@ function viewBugun(){
   const lname=logOff===0?"Bugünün kayıtları":logOff===1?"Dünün kayıtları":`${+lk.slice(8)} ${AY[+lk.slice(5,7)-1]} kayıtları`;
   const dnav=`<div class="dnav"><button data-lo="1" aria-label="Önceki gün">‹</button><h2>${lname}</h2><button data-lo="-1" aria-label="Sonraki gün"${logOff===0?" disabled":""}>›</button></div>`;
   const lb=st.lastBackup,old=lb?Algo.dayNum(t)-Algo.dayNum(lb):null;
-  const bk=S.entries.length>=10&&(old==null||old>14)?`<div class="banner"><b>Yedek zamanı</b><p>${old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`} Telefon kaybolursa ya da uygulama silinirse veriler gider.</p><button class="btn" data-act="yedek">Yedek al</button></div>`:"";
+  const bk=S.entries.length>=10&&(old==null||old>14)?`<div class="banner"><b>Yedek zamanı</b><p>${old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`} Telefon kaybolursa ya da uygulama silinirse veriler gider.</p><button class="btn" data-act="drive">Yedeği gönder</button></div>`:"";
   const stB=isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?`<div class="banner"><b>Adım sayar</b><p>Telefonun adım sensörünü kullanır, hesap gerekmez. Telefonu yanında taşıdığın adımları sayar.</p><div class="lbtns"><button class="btn" data-act="adimac">Aç</button><button class="btn ghost" data-act="adimdegil">Şimdi değil</button></div></div>`:"";
   const oemB=isNative()&&oemXiaomi()&&!st.oemDone?`<div class="banner"><b>Hatırlatmalar için bir kez ayar gerekli</b><p>Telefon uygulamayı kapatınca hatırlatmalar gelmeyebilir. İki izin verince düzelir.</p><button class="btn" data-act="oem">Ayarla</button></div>`:"";
   return `${stB}${oemB}${bk}${weight}<div class="coach">${esc(coach())}</div>${rings}${macro}${actions}${dnav}<div class="card">${log}</div>`;
@@ -594,6 +597,7 @@ function viewAyar(){
     <p class="hint">Koç bağlıysa sabah, öğleden sonra ve akşam bildirim metinlerini her gün yeniden yazar. Bağlı değilse sabit metinler kullanılır.</p></div>
   ${viewProviders()}
   <h2>Veriler</h2><div class="card"><div class="btns">
+    <button class="btn" data-act="drive">☁️ Yedeği Drive'a gönder</button>
     <button class="btn ghost" data-act="yedek">Yedekle veya geri yükle</button>
     <button class="btn danger" data-act="sifirla">Tüm verileri sil</button></div>
     <p class="hint">Veriler yalnızca bu telefonda durur. Uygulamayı silersen kaybolur, o yüzden ara sıra yedek al.</p></div>
@@ -784,7 +788,7 @@ async function goYukle(){
 }
 
 /* ---------- bildirimler (yalnızca APK) ---------- */
-const WATER_REM=[2,3,4];
+const WATER_REM=[2,3,4],BACKUP_REM=10;
 const SCHED_DAYS=30;let lastSched=0;
 const LN=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.LocalNotifications;
 async function scheduleReminders(){
@@ -796,14 +800,17 @@ async function scheduleReminders(){
     const pend=await ln.getPending();
     if(pend.notifications.length)await ln.cancel({notifications:pend.notifications.map(n=>({id:n.id}))});
     /* Eklentinin günlük tekrarı ilk bildirimden sonra Doze'da ertelenen bir alarm kurar. Bu yüzden her günü ayrı, uyku modunu delen tek seferlik alarmla kuruyoruz. */
-    const list=[],now=Date.now();
+    try{await ln.registerActionTypes({types:[{id:"water",actions:[{id:"su",title:`+${S.settings.glass} ml`}]}]})}catch(e){}
+    const list=[],now=Date.now(),lb=S.settings.lastBackup;
     const t0=dayKey(),waterDone=sum("su",t0,t0)>=S.settings.waterMl;
     for(const r of S.settings.reminders.filter(r=>r.on)){
-      const [h,m]=r.t.split(":").map(Number);
+      const [h,m]=r.t.split(":").map(Number),water=WATER_REM.includes(r.id);
       for(let i=0;i<SCHED_DAYS;i++){
-        if(i===0&&waterDone&&WATER_REM.includes(r.id))continue;
+        if(i===0&&waterDone&&water)continue;
         const at=addDays(i);at.setHours(h,m,0,0);
-        if(at.getTime()>now+5000)list.push({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}});
+        if(r.dow!=null&&at.getDay()!==r.dow)continue;
+        if(r.id===BACKUP_REM&&(S.entries.length<10||(lb&&Algo.dayNum(dayKey(at))-Algo.dayNum(lb)<7)))continue;
+        if(at.getTime()>now+5000)list.push(Object.assign({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}},water?{actionTypeId:"water",extra:{act:"su",v:S.settings.glass}}:{}));
       }
     }
     lastSched=now;
@@ -916,6 +923,7 @@ document.addEventListener("click",ev=>{
     else if(d.act==="spor")sheetSpor();
     else if(d.act==="not")sheetNot();
     else if(d.act==="yedek")sheetYedek();
+    else if(d.act==="drive")sheetDrive();
     else if(d.act==="bildirimtest")notifTest();
     else if(d.act==="barkod")barkodOku();
     else if(d.act==="adimac")stepsOpen();
@@ -977,10 +985,11 @@ document.addEventListener("keydown",ev=>{
   if(ev.key==="Enter"&&ev.target.id==="cmsg"){ev.preventDefault();const i=ev.target,t=i.value;i.value="";cSend(t);return}
   if(ev.key==="Enter"&&ev.target.closest("#sheet")&&ev.target.tagName==="INPUT"){const b=$("#sheet [data-go]");if(b)b.click()}
 });
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){stepsSync();render();cFlush();cAuto();if(Date.now()-lastSched>6*36e5)scheduleReminders().then(setNotif)}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){quickIngest();stepsSync();render();cFlush();cAuto();if(Date.now()-lastSched>6*36e5)scheduleReminders().then(setNotif)}});
 
 render();
 if(corruptNote)toast("Kayıtlı veri okunamadı. Eski hali ayrı bir kopyada saklandı.");
+quickIngest();
 scheduleReminders().then(s=>{notifStatus=s;if(tab==="ayar")render()});
 setInterval(gTick,1000);
 keysInit().then(()=>{render();cAuto();cFlush()});
