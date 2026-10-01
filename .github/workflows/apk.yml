@@ -35,9 +35,10 @@ jobs:
 
       - name: Adım sayacı mantığı testi
         run: |
-          javac -d /tmp/stepmath assets/android/StepMath.java assets/android/QuickMath.java scripts/StepMathTest.java scripts/QuickMathTest.java
+          javac -d /tmp/stepmath assets/android/StepMath.java assets/android/QuickMath.java assets/android/MotionMath.java scripts/StepMathTest.java scripts/QuickMathTest.java scripts/MotionMathTest.java
           java -cp /tmp/stepmath com.neowell.app.StepMathTest
           java -cp /tmp/stepmath com.neowell.app.QuickMathTest
+          java -cp /tmp/stepmath com.neowell.app.MotionMathTest
 
       - name: Android projesini oluştur
         run: |

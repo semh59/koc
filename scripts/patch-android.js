@@ -2,7 +2,7 @@
 const fs = require("fs");
 const p = "android/app/src/main/AndroidManifest.xml";
 let x = fs.readFileSync(p, "utf8");
-for (const perm of ["POST_NOTIFICATIONS", "RECEIVE_BOOT_COMPLETED", "VIBRATE", "SCHEDULE_EXACT_ALARM", "USE_EXACT_ALARM", "CAMERA", "FLASHLIGHT", "ACTIVITY_RECOGNITION"]) {
+for (const perm of ["POST_NOTIFICATIONS", "RECEIVE_BOOT_COMPLETED", "VIBRATE", "SCHEDULE_EXACT_ALARM", "USE_EXACT_ALARM", "CAMERA", "FLASHLIGHT", "ACTIVITY_RECOGNITION", "ACCESS_FINE_LOCATION", "ACCESS_BACKGROUND_LOCATION", "FOREGROUND_SERVICE", "FOREGROUND_SERVICE_LOCATION"]) {
   if (!x.includes(`android.permission.${perm}`)) {
     x = x.replace("</manifest>", `    <uses-permission android:name="android.permission.${perm}" />\n</manifest>`);
   }
@@ -10,6 +10,10 @@ for (const perm of ["POST_NOTIFICATIONS", "RECEIVE_BOOT_COMPLETED", "VIBRATE", "
 // Adım sayacı: gece yarısı ve açılışta sayacı kaydeden alıcı.
 if (!x.includes("StepSnapshotReceiver")) {
   x = x.replace("</application>", '    <receiver android:name=".StepSnapshotReceiver" android:exported="false"><intent-filter><action android:name="android.intent.action.BOOT_COMPLETED"/></intent-filter></receiver>\n    </application>');
+}
+// Otomatik yürüyüş/koşu algılama: etkinlik geçişi alıcısı ve kısa GPS penceresi için konum türünde ön plan servisi.
+if (!x.includes("MotionReceiver")) {
+  x = x.replace("</application>", '    <receiver android:name=".MotionReceiver" android:exported="false"><intent-filter><action android:name="android.intent.action.BOOT_COMPLETED"/><action android:name="android.intent.action.MY_PACKAGE_REPLACED"/></intent-filter></receiver>\n    <service android:name=".MotionGpsService" android:exported="false" android:foregroundServiceType="location"/>\n    </application>');
 }
 // Barkod tarayıcı modülü uygulama kurulurken indirilsin (Google ML Kit).
 if (!x.includes("com.google.mlkit.vision.DEPENDENCIES")) {
@@ -23,7 +27,7 @@ console.log("Simgeler yerleştirildi.");
 
 // API anahtarı kasası: Keystore eklentisini kopyala, MainActivity'ye kaydet. Keystore AES-GCM için API 23 gerekir.
 const jdir="android/app/src/main/java/com/neowell/app";
-for(const f of ["KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin","QuickMath","QuickLogPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
+for(const f of ["KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin","QuickMath","QuickLogPlugin","MotionMath","MotionStore","MotionGpsService","MotionReceiver","MotionPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
 fs.writeFileSync(`${jdir}/MainActivity.java`,`package com.neowell.app;
 
 import android.content.Intent;
@@ -45,6 +49,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(StepCounterPlugin.class);
         registerPlugin(OcrPlugin.class);
         registerPlugin(QuickLogPlugin.class);
+        registerPlugin(MotionPlugin.class);
         super.onCreate(savedInstanceState);
         medChannel();
         if (quick) moveTaskToBack(true);
@@ -104,6 +109,12 @@ if(!g.includes("dataBinding")){
 g=fs.readFileSync(bg,"utf8");
 if(!g.includes("mlkit:text-recognition")){
   g=g.replace(/dependencies \{/,m=>m+'\n    implementation "com.google.mlkit:text-recognition:16.0.1"');
+  fs.writeFileSync(bg,g);
+}
+// Etkinlik tanıma geçişleri (yürüme/koşma algısı) için Google Play hizmetleri konum kitaplığı.
+g=fs.readFileSync(bg,"utf8");
+if(!g.includes("play-services-location")){
+  g=g.replace(/dependencies \{/,m=>m+'\n    implementation "com.google.android.gms:play-services-location:21.3.0"');
   fs.writeFileSync(bg,g);
 }
 console.log("Sabit imza, data binding ve yazı tanıma ayarlandı.");
