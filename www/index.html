@@ -327,7 +327,7 @@ const DEF={
     {id:9,t:"07:30",on:false,name:"Şeker ölçümü",title:"🩸 Şeker ölçümü",body:"Şekerini ölç ve ne zaman ölçtüğünle kaydet."},
     {id:10,t:"20:00",on:true,dow:0,name:"Haftalık yedek (Pazar)",title:"☁️ Yedek zamanı",body:"Yedeği Drive'a göndermek için Ayarlar > Yedeği Drive'a gönder."}
   ]},
-  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,exCfg:{},providers:defProviders(),chat:[],cid:1,myFoods:[],favFoods:[],labs:[],vitals:[],meds:[],medLog:[],moves:[]
+  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,exCfg:{},providers:defProviders(),chat:[],cid:1,myFoods:[],favFoods:[],mealTpl:[],labs:[],vitals:[],meds:[],medLog:[],moves:[]
 };
 const VR={bpSysHi:[80,300,true],bpDiaHi:[40,200,true],bpSysLo:[50,300,true],bpDiaLo:[30,200,true],gFastLo:[20,600,true],gFastHi:[20,600,true],gPostLo:[20,600,true],gPostHi:[20,600,true]};
 const RANGES={...VR,goalKg:[20,400,false],kcal:[800,8000,true],waterMl:[500,10000,true],glass:[50,1500,true],sportWeek:[10,3000,true],stepGoal:[1000,100000,true],heightCm:[100,250,true],age:[10,100,true]};
@@ -366,7 +366,7 @@ function cleanSettings(raw){
   }
   return d;
 }
-function cleanHealthState(r){const meds=MedLib.cleanMeds(r&&r.meds);return {meds,medLog:MedLib.cleanLog(r&&r.medLog,meds),moves:MotionLib.clean(r&&r.moves),favFoods:LogLib.cleanFav(r&&r.favFoods)}}
+function cleanHealthState(r){const meds=MedLib.cleanMeds(r&&r.meds);return {meds,medLog:MedLib.cleanLog(r&&r.medLog,meds),moves:MotionLib.clean(r&&r.moves),favFoods:LogLib.cleanFav(r&&r.favFoods),mealTpl:LogLib.cleanTpl(r&&r.mealTpl)}}
 function cleanMyFoods(arr){
   const out=[],seen=new Set();
   for(const x of (Array.isArray(arr)?arr:[]).slice(0,200)){
@@ -559,7 +559,7 @@ function viewBugun(){
   const bk=S.entries.length>=10&&(old==null||old>14)?`<div class="banner"><b>Yedek zamanı</b><p>${old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`} Telefon kaybolursa ya da uygulama silinirse veriler gider.</p><button class="btn" data-act="drive">Yedeği gönder</button></div>`:"";
   const stB=isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?`<div class="banner"><b>Adım sayar</b><p>Telefonun adım sensörünü kullanır, hesap gerekmez. Telefonu yanında taşıdığın adımları sayar.</p><div class="lbtns"><button class="btn" data-act="adimac">Aç</button><button class="btn ghost" data-act="adimdegil">Şimdi değil</button></div></div>`:"";
   const oemB=isNative()&&oemXiaomi()&&!st.oemDone?`<div class="banner"><b>Hatırlatmalar için bir kez ayar gerekli</b><p>Telefon uygulamayı kapatınca hatırlatmalar gelmeyebilir. İki izin verince düzelir.</p><button class="btn" data-act="oem">Ayarla</button></div>`:"";
-  return `${stB}${oemB}${bk}${weight}<div class="coach">${esc(coach())}</div>${rings}${macro}${actions}${dnav}<div class="card">${log}</div>`;
+  return `${stB}${oemB}${bk}${weight}<div class="coach">${esc(coach())}</div>${rings}${macro}${actions}${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
 }
 
 function viewTrend(){
@@ -684,11 +684,25 @@ function favHtml(){
   recList=LogLib.recents(S.entries,dayKey());
   const fk=new Set(S.favFoods.map(f=>LogLib.key(f.text)));
   const row=(x,i,a,b,star,lab)=>`<div class="prow"><button data-${a}="${i}" style="flex:1;text-align:left;min-height:56px"><b>${esc(x.text)}</b><span class="mut sm">${x.v!=null?Math.round(x.v)+" kcal":"kalori yok"}</span></button><button class="plus" data-${b}="${i}" aria-label="${lab}"${star==="★"&&b==="fva"?" disabled":""}>${star}</button></div>`;
-  return (S.favFoods.length?`<div class="lbl">Favoriler</div>${S.favFoods.map((x,i)=>row(x,i,"fv","fvd","★","Favoriden çıkar")).join("")}`:"")+(recList.length?`<div class="lbl">Son yediklerin</div>${recList.map((x,i)=>row(x,i,"rc","fva",fk.has(LogLib.key(x.text))?"★":"☆","Favoriye al")).join("")}`:"");
+  const tp=S.mealTpl.length?`<div class="lbl">Şablonlar</div><div class="chips">${S.mealTpl.map((t,i)=>`<span class="chip" style="display:inline-flex;gap:10px;align-items:center"><button data-tp="${i}">${esc(t.n)} · ${t.items.length}</button><button data-tpd="${i}" aria-label="Şablonu sil">✕</button></span>`).join("")}</div>`:"";
+  return tp+(S.favFoods.length?`<div class="lbl">Favoriler</div>${S.favFoods.map((x,i)=>row(x,i,"fv","fvd","★","Favoriden çıkar")).join("")}`:"")+(recList.length?`<div class="lbl">Son yediklerin</div>${recList.map((x,i)=>row(x,i,"rc","fva",fk.has(LogLib.key(x.text))?"★":"☆","Favoriye al")).join("")}`:"");
 }
 function sheetYemek(){
   openSheet(`<h3>Yemek ekle</h3>${of("yemek",keyOff(-1)).length?`<button class="btn ghost" data-act="dunku" style="margin-bottom:8px">↺ Dünkünü tekrarla (${of("yemek",keyOff(-1)).length} kayıt)</button>`:""}${isNative()&&BS()?`<button class="btn ghost" data-act="barkod" style="margin-bottom:8px">📷 Barkod okut</button>`:""}${ocrBtn("etiket","🏷 Etiketi fotoğrafla oku")}<input class="in" id="fq" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off" autofocus><div id="flist" class="plist"></div><div id="frl" class="plist">${favHtml()}</div>
   <div class="lbl">Ya da kendin yaz</div><input class="in" id="ft" placeholder="Ne yedin?" autocomplete="off"><input class="in num" id="fv" inputmode="numeric" placeholder="Kalori (isteğe bağlı)">${dayOptions()}<button class="btn" data-go="yemek">Kaydet</button>`);
+}
+let tplSrc=[];
+function sheetTpl(){
+  tplSrc=of("yemek",keyOff(-logOff));
+  openSheet(`<h3>Öğün şablonu</h3><div class="lbl">Şablona girecek yemekler</div>${tplSrc.map((e,i)=>`<label class="prow"><span><b>${esc(e.text||"Öğün")}</b><span class="mut sm">${e.v?Math.round(e.v)+" kcal":""}</span></span><input type="checkbox" id="tc${i}" checked></label>`).join("")}<input class="in" id="tpn" placeholder="Şablon adı, örneğin Kahvaltım" maxlength="40" autocomplete="off" autofocus><button class="btn" data-go="tpl">Kaydet</button>`);
+}
+function goTpl(){
+  const items=tplSrc.filter((e,i)=>$("#tc"+i).checked).map(e=>copyNutr(e,{text:e.text||"Öğün",v:e.v})),n=$("#tpn").value.trim();
+  if(!items.length)return toast("En az bir yemek seç");
+  if(!n)return toast("Şablona bir ad yaz");
+  if(items.length>15)return toast("Bir şablonda en fazla 15 yemek olur");
+  if(S.mealTpl.length>=20)return toast("En fazla 20 şablon");
+  S.mealTpl=LogLib.cleanTpl([...S.mealTpl,{id:Math.max(0,...S.mealTpl.map(t=>t.id))+1,n,items}]);save();closeSheet();toast(`"${n}" şablonu kaydedildi`);
 }
 let curFood=null,curPor=0,foodAskQ="";
 const allFoods=()=>S.myFoods.map(m=>({n:m.n,k:m.k,p:m.p==null?null:m.p,c:m.c==null?null:m.c,f:m.f==null?null:m.f,u:m.u||[["1 porsiyon",100]],my:true,b:m.b,src:m.src})).concat(FOODS);
@@ -945,7 +959,7 @@ async function notifTest(){
 
 /* ---------- olaylar ---------- */
 document.addEventListener("click",ev=>{
-  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-rc],[data-fv],[data-fva],[data-fvd],[data-sp],[data-lo],[data-g],[data-sex],[data-actl],[data-c],[data-food],[data-fp]");
+  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-rc],[data-fv],[data-fva],[data-fvd],[data-tp],[data-tpd],[data-sp],[data-lo],[data-g],[data-sex],[data-actl],[data-c],[data-food],[data-fp]");
   if(ev.target.id==="scrim")return closeSheet();
   if(!el)return;
   const d=el.dataset;
@@ -970,11 +984,14 @@ document.addEventListener("click",ev=>{
     if(S.favFoods.length>=20)return toast("En fazla 20 favori");
     S.favFoods=LogLib.cleanFav([x,...S.favFoods]);save();$("#frl").innerHTML=favHtml();return;
   }
+  if(d.tp!==undefined){const t=S.mealTpl[+d.tp];if(t)addFoods(t.items,fday(),`${t.n}: ${t.items.length} yemek eklendi`);return}
+  if(d.tpd!==undefined){if(confirm("Şablon silinsin mi?")){S.mealTpl.splice(+d.tpd,1);save();$("#frl").innerHTML=favHtml()}return}
   if(d.fvd!==undefined){S.favFoods.splice(+d.fvd,1);save();$("#frl").innerHTML=favHtml();return}
   if(d.act){
     if(d.act==="su"){const e=add("su",S.settings.glass);render();const t=dayKey(),top=sum("su",t,t);if(top>=S.settings.waterMl&&top-S.settings.glass<S.settings.waterMl)scheduleReminders().then(setNotif);toast(`+${S.settings.glass} ml, bugün ${Math.round(top)} / ${S.settings.waterMl} ml`+(top-S.settings.glass<S.settings.waterMl&&top>=S.settings.waterMl?". Günlük hedef tamam":""),e.id)}
     else if(d.act==="kilo")sheetKilo();
     else if(d.act==="dunku")repeatYesterday();
+    else if(d.act==="tplyeni")sheetTpl();
     else if(d.act==="yemek")sheetYemek();
     else if(d.act==="spor")sheetSpor();
     else if(d.act==="not")sheetNot();
@@ -995,7 +1012,7 @@ document.addEventListener("click",ev=>{
     return;
   }
   if(d.go){
-    ({kilo:goKilo,yemek:goYemek,besin:goBesin,mysil:goMySil,spor:goSpor,not:goNot,yukle:goYukle,saglik:()=>{S.settings.healthNote=$("#hn").value.trim().slice(0,500);save();closeSheet();render();toast("Kaydedildi")}}[d.go]||(()=>{}))();
+    ({kilo:goKilo,yemek:goYemek,besin:goBesin,mysil:goMySil,tpl:goTpl,spor:goSpor,not:goNot,yukle:goYukle,saglik:()=>{S.settings.healthNote=$("#hn").value.trim().slice(0,500);save();closeSheet();render();toast("Kaydedildi")}}[d.go]||(()=>{}))();
     if(d.go==="kopyala")backupText().then(v=>{(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast("Panoya kopyalandı"),()=>{const b=$("#bk");b.value=v;b.select();document.execCommand&&document.execCommand("copy");toast("Metni seçtim, kopyala")})});
     if(d.go==="paylas")shareBackup();
     if(d.go==="indir")backupText().then(v=>{try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([v],{type:"application/json"}));a.download=`neowell-yedek-${dayKey()}.json`;a.click();markBackup()}catch(e){toast("İndirme bu cihazda çalışmadı, Kopyala'yı kullan")}});
