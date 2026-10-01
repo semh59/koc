@@ -60,7 +60,14 @@ public class MotionGpsService extends Service implements LocationListener {
 
     @Override
     public int onStartCommand(Intent in, int flags, int startId) {
-        if (started) return START_NOT_STICKY;
+        if (started) {
+            try {
+                foreground();
+            } catch (Exception e) {
+                // zaten ön planda
+            }
+            return START_NOT_STICKY;
+        }
         started = true;
         mode = in == null ? 0 : in.getIntExtra(EXTRA_MODE, 0);
         try {
@@ -135,7 +142,8 @@ public class MotionGpsService extends Service implements LocationListener {
         } catch (Exception e) {
             // zaten kapalı
         }
-        if (n < 20 || stepsStart < 0 || tLast - tFirst < 30000) {
+        // Sinyal pencerenin sonunda kesildiyse (bina, tünel) adım ve hız zamanları uyuşmaz: örnek atılır.
+        if (n < 20 || stepsStart < 0 || tLast - tFirst < 30000 || SystemClock.elapsedRealtime() - tLast > 5000) {
             stopSelf();
             return;
         }

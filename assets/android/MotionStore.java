@@ -80,6 +80,12 @@ final class MotionStore {
         return (s - ps) * 60000.0 / (t - pt);
     }
 
+    /** Açık aralıkta son hareket: son kontrol noktası, yoksa açılış zamanı. */
+    static synchronized long lastActivityAt(Context c) {
+        SharedPreferences sp = p(c);
+        return Math.max(sp.getLong("bT0", 0), sp.getLong("bLastT", 0));
+    }
+
     static synchronized long openedAt(Context c) {
         return p(c).getLong("bT0", 0);
     }
