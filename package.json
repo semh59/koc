@@ -16,6 +16,6 @@
     "jsdom": "^24.1.3"
   },
   "scripts": {
-    "test": "node scripts/algo.test.js && node scripts/coach.test.js && node scripts/backup.test.js && node scripts/app.test.js"
+    "test": "node scripts/algo.test.js && node scripts/coach.test.js && node scripts/backup.test.js && node scripts/vault.test.js && node scripts/app.test.js"
   }
 }

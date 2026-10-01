@@ -29,7 +29,7 @@ Koç, ücretsiz yapay zekâ servislerinden birine bağlanır. Uygulamada Ayarlar
 3. Test "Çalışıyor" derse Koç sekmesine geç. İlk seferde veri paylaşımı onayı çıkar.
 
 Notlar:
-- Anahtarlar yalnızca telefonda durur, uygulamanın yedek metnine girmez. Android'in kendi bulut yedeği açıksa telefon verisiyle birlikte Google hesabına yedeklenebilir.
+- Anahtarlar yalnızca telefonda durur ve Android Keystore'daki, telefondan çıkarılamayan bir anahtarla şifrelenir. Normal yedek metnine girmez, parolalı yedeğe girer. Telefon değiştirirsen ya da Android bulut yedeğinden geri yüklersen şifreli anahtarlar açılamaz, bu durumda anahtarları yeniden girmen istenir. Android 6 (API 23) ve üstü gerekir.
 - Model adları ve ücretsiz limitler zamanla değişir. Test hata verirse **Modelleri getir** ile listeden güncel bir model seç.
 - Google Gemini kapalı gelir, çünkü ücretsiz katmanda istemler ürün geliştirmek için kullanılabilir. Açarsan her göndermeden önce onay ister.
 - 18 yaş altı, sağlık notu girilmiş ya da BMI'si düşük kullanıcılara kalori açığı önerilmez; öneri bakım düzeyinde kalır.

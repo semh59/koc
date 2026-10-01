@@ -373,7 +373,7 @@ function streak(){
 }
 
 /* ---------- arayüz durumu ---------- */
-let tab=(S.settings.consent&&hasKey())||S.chat.length?"koc":"bugun",range=30,toastTimer=null,lastUndo=null,logOff=0,favList=[],lastDay=dayKey();
+let tab=(S.settings.consent&&keysStored())||S.chat.length?"koc":"bugun",range=30,toastTimer=null,lastUndo=null,logOff=0,favList=[],lastDay=dayKey();
 function goalInfo(cur,first){
   const g=S.settings.goalKg;if(!(g>0))return null;
   const f=first==null?cur:first,dir=f>=g?-1:1;
@@ -759,7 +759,7 @@ render();
 if(corruptNote)toast("Kayıtlı veri okunamadı. Eski hali ayrı bir kopyada saklandı.");
 scheduleReminders().then(s=>{notifStatus=s;if(tab==="ayar")render()});
 setInterval(gTick,1000);
-cAuto();cFlush();
+keysInit().then(()=>{render();cAuto();cFlush()});
 try{const P=window.Capacitor&&window.Capacitor.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App"].map(n=>n+"="+typeof P[n]).join(" "))}catch(e){}
 setInterval(()=>{if(dayKey()!==lastDay){lastDay=dayKey();logOff=0;render()}},60000);
 try{
