@@ -1,0 +1,343 @@
+"use strict";
+/* Koç: durum, sağlayıcı zinciri, sohbet ekranı ve ayarlar. coachlib.js ve algo.js'e dayanır. */
+const KEYS_LS="koc_keys";
+const getKeys=()=>{try{return JSON.parse(localStorage.getItem(KEYS_LS))||{}}catch(e){return {}}};
+function setKey(id,k){const m=getKeys();if(k)m[id]=k;else delete m[id];try{localStorage.setItem(KEYS_LS,JSON.stringify(m))}catch(e){}}
+const defProviders=()=>[
+  {id:"nvidia",name:"NVIDIA Build",base:"https://integrate.api.nvidia.com/v1",model:"meta/llama-3.3-70b-instruct",on:true,health:true,confirm:false},
+  {id:"groq",name:"Groq",base:"https://api.groq.com/openai/v1",model:"llama-3.3-70b-versatile",on:true,health:true,confirm:false},
+  {id:"openrouter",name:"OpenRouter",base:"https://openrouter.ai/api/v1",model:"meta-llama/llama-3.3-70b-instruct:free",on:true,health:true,confirm:false},
+  {id:"gemini",name:"Google Gemini",base:"https://generativelanguage.googleapis.com/v1beta/openai",model:"gemini-2.0-flash",on:false,health:false,confirm:true}
+];
+let pstat={},cool={},busy=false,typing=false,offline=null,lastAuto=0;
+
+/* ---- doğrulama ---- */
+function cleanCoach(r){
+  const provs=[];
+  for(const p of (Array.isArray(r.providers)?r.providers:[])){
+    if(!p||typeof p.id!=="string"||!/^[a-z0-9]{1,16}$/.test(p.id)||typeof p.name!=="string"||typeof p.base!=="string"||!/^https:\/\/[^\s]+$/.test(p.base)||typeof p.model!=="string")continue;
+    if(provs.some(x=>x.id===p.id))continue;
+    provs.push({id:p.id,name:p.name.slice(0,40),base:p.base.slice(0,200),model:p.model.slice(0,100),on:p.on===true,health:p.health===true,confirm:p.confirm===true});
+  }
+  const chat=[];
+  for(const m of (Array.isArray(r.chat)?r.chat:[]).slice(-150)){
+    if(!m||!Number.isInteger(m.id)||!["user","coach","sys"].includes(m.role)||!Number.isFinite(m.t))continue;
+    const o={id:m.id,role:m.role,text:typeof m.text==="string"?m.text.slice(0,1500):"",t:m.t};
+    if(m.pend===true)o.pend=true;
+    if(["plan","weekly"].includes(m.kind))o.kind=m.kind;
+    if(["check","ed"].includes(m.fl))o.fl=m.fl;
+    const c=m.card;
+    if(c&&c.kind==="log"&&Array.isArray(c.items)){const items=CoachLib.cleanItems(c.items);if(items.length)o.card={kind:"log",items,state:["pending","ok","no"].includes(c.state)?c.state:"pending"}}
+    else if(c&&c.kind==="safety"&&["emergency","check","mind","ed"].includes(c.level))o.card={kind:"safety",level:c.level};
+    else if(c&&c.kind==="propose"&&Number.isFinite(c.kcal))o.card={kind:"propose",kcal:Math.round(c.kcal),why:String(c.why||"").slice(0,160),limited:c.limited===true,state:["pending","ok","no"].includes(c.state)?c.state:"pending"};
+    chat.push(o);
+  }
+  return {providers:provs.length?provs:defProviders(),chat,cid:Math.max(1,...chat.map(m=>m.id+1),Number.isInteger(r.cid)?r.cid:1)};
+}
+function cPush(m){const o=Object.assign({id:S.cid++,t:Date.now()},m);S.chat.push(o);if(S.chat.length>150)S.chat.splice(0,S.chat.length-150);return o}
+
+/* ---- bağlam ---- */
+function cCalc(){
+  const st=S.settings,w=weights(),days=Object.keys(w).sort();
+  const out={trendKg:null,slope:null,tdee:null,source:"",target:null,protein:null,bmr:null};
+  if(!days.length)return out;
+  out.trendKg=Algo.trend(w)[days[days.length-1]];out.slope=Algo.slopePerWeek(w);
+  if(st.heightCm>0&&st.age>0){
+    const profile={kg:out.trendKg,cm:st.heightCm,age:st.age,sex:st.sex||"",act:st.act};
+    const intake={};for(const e of S.entries)if(e.type==="yemek"&&e.v)intake[e.day]=(intake[e.day]||0)+e.v;
+    const r=Algo.adaptiveTdee({weights:w,intake,profile});out.tdee=r.tdee;out.source=r.source;
+    out.bmr=Algo.bmrMifflin(profile);
+    const sg=Algo.suggestTarget({tdee:r.tdee,kg:out.trendKg,goalKg:st.goalKg,bmr:out.bmr});out.target=sg?sg.kcal:null;
+    out.protein=Algo.proteinRange(out.trendKg);
+  }
+  return out;
+}
+function cData(){
+  const st=S.settings,w=weights(),d=[];
+  for(let i=13;i>=0;i--){
+    const k=keyOff(-i),ents=S.entries.filter(e=>e.day===k);
+    d.push({d:k.slice(5),kg:w[k],kcal:Math.round(ents.filter(e=>e.type==="yemek").reduce((s,e)=>s+(e.v||0),0)),p:Math.round(ents.filter(e=>e.type==="yemek").reduce((s,e)=>s+(e.p||0),0)),su:Math.round(ents.filter(e=>e.type==="su").reduce((s,e)=>s+e.v,0)),sport:Math.round(ents.filter(e=>e.type==="spor").reduce((s,e)=>s+e.v,0))});
+  }
+  const t=dayKey(),now=new Date();
+  const today=S.entries.filter(e=>e.day===t).map(e=>e.type==="yemek"?`yemek: ${e.text||"öğün"}${e.v?" ~"+Math.round(e.v)+" kcal":""}${e.p?", "+Math.round(e.p)+" g protein":""}`:e.type==="su"?`su ${e.v} ml`:e.type==="kilo"?`tartı ${fmt(e.v)} kg`:e.type==="spor"?`spor ${e.text||""} ${Math.round(e.v)} dk`:`not: ${e.text}`);
+  const workouts=S.workouts.filter(x=>x.t1!=null).sort((a,b)=>b.t0-a.t0).slice(0,3).map(x=>`${x.day.slice(5)} ${x.name}: ${x.ex.map(e=>{const s=e.sets.filter(q=>q.done).sort((a,b)=>Algo.est1RM(b.kg,b.reps)-Algo.est1RM(a.kg,a.reps))[0];return s?`${gEx(e.id).n} ${fmt(s.kg||0,s.kg%1?1:0)}x${s.reps}`:""}).filter(Boolean).join(", ")}`);
+  const from=keyOff(-7),notes=S.entries.filter(e=>e.type==="not"&&e.day>=from).slice(-3).map(e=>e.text.slice(0,100));
+  return {profile:{cm:st.heightCm,age:st.age,sex:st.sex,act:st.act,note:st.healthNote},goals:{kg:st.goalKg,kcal:st.kcal,water:st.waterMl,sport:st.sportWeek},calc:cCalc(),days:d,today,now:`${pad(now.getHours())}:${pad(now.getMinutes())}`,workouts,notes};
+}
+function cMessages(extraUser,extraSys){
+  const sys=CoachLib.SYSTEM+(extraSys?"\n\nNOT: "+extraSys:"")+"\n\n"+CoachLib.contextText(cData());
+  const hist=S.chat.filter(m=>m.role!=="sys"&&m.text).slice(-10).map(m=>({role:m.role==="user"?"user":"assistant",content:m.text}));
+  const msgs=[{role:"system",content:sys}].concat(hist);
+  if(extraUser)msgs.push({role:"user",content:extraUser});
+  return msgs;
+}
+
+/* ---- sağlayıcı zinciri ---- */
+async function callProvider(p,key,messages,maxTokens=700){
+  const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),40000);
+  try{
+    const r=await fetch(p.base.replace(/\/+$/,"")+"/chat/completions",{method:"POST",signal:ctl.signal,headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},body:JSON.stringify({model:p.model,messages,temperature:0.3,max_tokens:maxTokens})});
+    if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;throw e}
+    const j=await r.json(),t=j&&j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;
+    if(typeof t!=="string"||!t.trim())throw new Error("Boş yanıt");
+    return t;
+  }finally{clearTimeout(to)}
+}
+const usable=()=>{const k=getKeys();return S.providers.filter(p=>p.on&&p.health&&k[p.id]&&(!cool[p.id]||cool[p.id]<Date.now()))};
+const hasKey=()=>{const k=getKeys();return S.providers.some(p=>p.on&&p.health&&k[p.id])};
+async function cAsk(messages,maxTokens){
+  const keys=getKeys(),list=usable();
+  if(!list.length)throw new Error(hasKey()?"fail":"none");
+  for(const p of list){
+    if(p.confirm&&!confirm(`${p.name} ücretsiz katmanında istemler ürün geliştirmek için kullanılabilir. Sağlık verilerini bu sağlayıcıya göndermeyi onaylıyor musun?`))continue;
+    const t0=Date.now();
+    try{
+      const text=await callProvider(p,keys[p.id],messages,maxTokens);
+      pstat[p.id]={s:"ok",t:Date.now(),ms:Date.now()-t0};return {text,provider:p};
+    }catch(e){
+      const st=e&&e.status;
+      if(st===429){cool[p.id]=Date.now()+60000;pstat[p.id]={s:"limit",t:Date.now()}}
+      else if(st===401||st===403){cool[p.id]=Date.now()+600000;pstat[p.id]={s:"key",t:Date.now()}}
+      else pstat[p.id]={s:"err",t:Date.now(),m:e&&e.name==="AbortError"?"zaman aşımı":(e&&e.message)||"hata"};
+    }
+  }
+  throw new Error("fail");
+}
+
+/* ---- sohbet akışı ---- */
+function cSend(text){
+  text=String(text||"").trim().slice(0,600);if(!text)return;
+  const fl=CoachLib.redFlag(text),m=cPush({role:"user",text,pend:true});
+  if(fl){
+    cPush({role:"coach",text:"",card:{kind:"safety",level:fl}});
+    if(fl==="emergency"||fl==="mind")m.pend=false;else m.fl=fl;
+  }
+  save();render();cFlush();
+}
+async function cFlush(){
+  if(busy)return;
+  const pend=S.chat.filter(m=>m.role==="user"&&m.pend);if(!pend.length)return;
+  if(!S.settings.consent){render();return}
+  busy=true;typing=true;render();
+  const fl=pend.map(m=>m.fl).find(Boolean);
+  try{
+    const r=await cAsk(cMessages(null,fl?"Kullanıcı bir belirti ya da yeme zorluğu bildirdi ve güvenlik kartı gösterildi. Kısa, ihtiyatlı yanıt ver, kalori kısıtlaması önerme.":""));
+    const o=CoachLib.parse(r.text);
+    pend.forEach(m=>{m.pend=false});offline=null;
+    cReply(o);
+  }catch(e){offline=e.message==="none"?"none":"fail"}
+  busy=false;typing=false;save();render();
+}
+function cReply(o,kind){
+  const items=CoachLib.cleanItems(o.log),msg={role:"coach",text:o.reply||"Tamam."};
+  if(kind)msg.kind=kind;
+  if(items.length)msg.card={kind:"log",items,state:"pending"};
+  cPush(msg);
+  if(o.propose){
+    const c=cCalc(),cl=CoachLib.clampKcal(o.propose.kcal,{tdee:c.tdee,bmr:c.bmr});
+    if(cl&&cl.kcal!==S.settings.kcal)cPush({role:"coach",text:"",card:{kind:"propose",kcal:cl.kcal,why:String(o.propose.why||"").slice(0,160),limited:cl.limited,state:"pending"}});
+  }
+}
+function cApplyLog(id,el){
+  const m=S.chat.find(x=>x.id===id);if(!m||!m.card||m.card.kind!=="log"||m.card.state!=="pending")return;
+  const box=el.closest(".lcard");
+  m.card.items.forEach((it,i)=>{
+    if(it.type==="yemek"){const inp=box.querySelector(`[data-ck="${i}"]`);if(inp){const v=num(inp.value,true);it.kcal=isNaN(v)?null:Math.min(v,5000)}}
+  });
+  let n=0;
+  for(const it of m.card.items){
+    const day=it.day==="yesterday"?keyOff(-1):dayKey();
+    if(it.type==="yemek"){const e=add("yemek",it.kcal,it.text||"Öğün",day);if(it.p!=null)e.p=it.p;n++}
+    else if(it.type==="su"){add("su",it.ml,"",day);n++}
+    else if(it.type==="kilo"){add("kilo",it.kg,"",day);n++}
+    else if(it.type==="spor"){add("spor",it.min,it.name,day);n++}
+    else if(it.type==="not"){add("not",null,it.text,day);n++}
+  }
+  m.card.state="ok";save();render();toast(`${n} kayıt eklendi`);
+}
+
+/* ---- otomatik mesajlar: sabah planı + haftalık rapor ---- */
+function weekKey(now=new Date()){
+  const d=new Date(now.getFullYear(),now.getMonth(),now.getDate(),20);
+  const back=d.getDay();d.setDate(d.getDate()-back); // en son pazar 20:00
+  if(d>now)d.setDate(d.getDate()-7);
+  return dayKey(d);
+}
+function weekSummary(endKey){
+  const e=new Date(+endKey.slice(0,4),+endKey.slice(5,7)-1,+endKey.slice(8)),ks=[];
+  for(let i=6;i>=0;i--)ks.push(dayKey(addDays(-i,e)));
+  const w=weights(),ws=ks.filter(k=>w[k]!=null).map(k=>w[k]);
+  const kc=ks.map(k=>sum("yemek",k,k)).filter(x=>x>=800),su=ks.map(k=>sum("su",k,k)).filter(x=>x>0);
+  const logged=ks.filter(k=>S.entries.some(x=>x.day===k)).length,sp=sum("spor",ks[0],ks[6]);
+  return {logged,n:ks.length,ws,avgKcal:kc.length?Math.round(kc.reduce((a,b)=>a+b,0)/kc.length):null,avgSu:su.length?Math.round(su.reduce((a,b)=>a+b,0)/su.length):null,sport:Math.round(sp),first:ws[0],last:ws[ws.length-1]};
+}
+async function cAuto(){
+  if(busy||!S.settings.consent||!usable().length||Date.now()-lastAuto<30*60000)return;
+  const now=new Date(),today=dayKey(now);
+  let job=null;
+  const wk=weekKey(now);
+  if(S.settings.lastWeekly!==wk&&weekSummary(wk).logged>=3)job="weekly";
+  else if(S.settings.lastPlan!==today&&now.getHours()>=5)job="plan";
+  if(!job)return;
+  lastAuto=Date.now();busy=true;
+  try{
+    let user;
+    if(job==="weekly"){
+      const s=weekSummary(wk);
+      user=`Geçen haftanın (${wk} günü biten 7 gün) raporunu yaz, 5-6 cümle. Uygulamanın hesapladığı özet: kayıt ${s.logged}/${s.n} gün, tartılar ${s.ws.map(x=>fmt(x)).join(", ")||"yok"}, ortalama kalori ${s.avgKcal||"veri yok"}, ortalama su ${s.avgSu||"veri yok"} ml, spor ${s.sport} dk. Hedefe uyumu değerlendir ve gelecek hafta için tek bir odak öner. Bu sayılar dışında rakam kullanma.`;
+    }else user="Bugünün sabah planını hazırla (3 kısa hedef). 'notif' alanını doldur.";
+    const r=await cAsk(cMessages(user));
+    const o=CoachLib.parse(r.text);
+    if(job==="weekly"){S.settings.lastWeekly=wk;cReply(Object.assign(o,{log:[]}),"weekly")}
+    else{
+      S.settings.lastPlan=today;cReply(Object.assign(o,{log:[]}),"plan");
+      if(o.notif){
+        const map={morning:1,afternoon:4,evening:6};let ch=false;
+        for(const k in map){const v=o.notif[k],rm=S.settings.reminders.find(x=>x.id===map[k]);if(rm&&typeof v==="string"&&v.trim().length>=5&&v.length<=110){rm.body=v.trim();ch=true}}
+        if(ch)scheduleReminders().then(setNotif);
+      }
+    }
+    save();
+  }catch(e){console.error("Otomatik mesaj üretilemedi:",e&&e.message)}
+  busy=false;render();
+}
+
+/* ---- ekran ---- */
+function cTime(t){const d=new Date(t);return `${pad(d.getHours())}:${pad(d.getMinutes())}`}
+function cSafety(level){
+  const T={
+    emergency:["Hemen yardım al","Bu belirtiler acil olabilir. Beklemeden 112'yi ara ya da en yakın acile git.",true],
+    check:["Bunu bir doktora danış","Baş dönmesinin nedeni az yemek olabilir ama başka nedenleri de var. Önce bir şeyler yiyip su iç. Geçmezse ya da çarpıntı olursa bugün bir hekime başvur. Bayılma, nefes darlığı veya göğüs ağrısında hemen 112.",true],
+    mind:["Yalnız değilsin","Kendine zarar vermeyi düşünüyorsan şimdi 112'yi ara ya da yanındaki birine söyle. Güvende olman her şeyden önemli.",true],
+    ed:["Bunu konuşmak iyi bir adım","Yemekle ilgili zorlanmalar için bir hekim, psikolog ya da diyetisyen desteği çok değerli. Bu konuda kalori kısıtlaması önermem.",false]
+  }[level];
+  return `<div class="scard"><b>${T[0]}</b><p>${T[1]}</p><div class="srow2">${T[2]?`<a class="sbtn" href="tel:112">112'yi ara</a>`:""}<button class="sbtn ghost" data-c="dismiss">Anladım</button></div><div class="mut sm">Yapay zekâ koçu hekim değildir, tanı koymaz.</div></div>`;
+}
+function cCard(m){
+  const c=m.card;if(!c)return "";
+  if(c.kind==="safety")return cSafety(c.level);
+  if(c.kind==="propose"){
+    return `<div class="card lcard"><b>Kalori hedefi önerisi: ${c.kcal} kcal</b>${c.why?`<div class="mut sm">${esc(c.why)}</div>`:""}${c.limited?`<div class="mut sm">Güvenli alt sınıra çekildi.</div>`:""}
+    ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="applyk:${m.id}">Uygula</button><button class="btn ghost" data-c="nok:${m.id}">Şimdi değil</button></div>`:`<div class="mut sm">${c.state==="ok"?"Uygulandı":"Atlandı"}</div>`}</div>`;
+  }
+  const rows=c.items.map((it,i)=>{
+    const lbl=it.type==="yemek"?esc(it.text||"Öğün"):it.type==="su"?"Su":it.type==="kilo"?"Tartı":it.type==="spor"?esc(it.name):"Not";
+    const val=it.type==="yemek"?(c.state==="pending"?`<span class="num">~<input class="kin num" data-ck="${i}" inputmode="numeric" aria-label="${esc(it.text)} kcal" value="${it.kcal==null?"":Math.round(it.kcal)}" placeholder="kcal"> kcal</span>`:`<span class="num">${it.kcal==null?"":"~"+Math.round(it.kcal)+" kcal"}</span>`)
+      :it.type==="su"?`<span class="num">${it.ml} ml</span>`:it.type==="kilo"?`<span class="num">${fmt(it.kg)} kg</span>`:it.type==="spor"?`<span class="num">${it.min} dk</span>`:`<span class="mut sm">${esc(it.text.slice(0,40))}</span>`;
+    return `<div class="lrow"><div>${lbl}${it.type==="yemek"&&it.p!=null?`<div class="mut sm">Protein ~${Math.round(it.p)} g</div>`:""}${it.day==="yesterday"?`<div class="mut sm">Dün</div>`:""}</div>${val}</div>`;
+  }).join("");
+  const est=c.items.some(i=>i.type==="yemek");
+  return `<div class="card lcard"><div class="lhead"><b>Kayıt önerisi</b>${est?`<span class="tahmin">Tahmin</span>`:""}</div>${rows}
+  ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="ok:${m.id}">Onayla</button><button class="btn ghost" data-c="no:${m.id}">Vazgeç</button></div>`:`<div class="mut sm">${c.state==="ok"?"Kaydedildi":"Vazgeçildi"}</div>`}</div>`;
+}
+function viewKoc(){
+  let h="";
+  if(offline==="none"||(!hasKey()&&!S.chat.length))h+=`<div class="banner"><b>Koç için API anahtarı gerekli</b><p>Ayarlar'dan en az bir sağlayıcıya anahtar ekle. Su, kilo, yemek ve spor kayıtları bundan bağımsız çalışır.</p><button class="btn" data-c="toprov">Sağlayıcılara git</button></div>`;
+  else if(offline==="fail")h+=`<div class="banner"><b>Koç şu an ulaşılamıyor</b><p>Su, kilo ve spor kaydı çalışıyor. Yemek tahmini bağlantı gelince yapılır.</p><button class="btn" data-c="retry">Yeniden dene</button></div>`;
+  if(!S.settings.consent)h+=`<div class="banner info"><b>Verilerin sağlayıcıya gönderilir</b><p>Koçun konuşabilmesi için profilin, kayıtların ve yazdıkların, sağlık verisi dahil, seçtiğin yapay zekâ sağlayıcılarına (${esc(S.providers.filter(p=>p.on&&p.health).map(p=>p.name).join(", ")||"hiçbiri seçili değil")}) gönderilir. Sağlayıcıları Ayarlar'dan yönetirsin.</p><button class="btn" data-c="consent">Anladım, kabul ediyorum</button></div>`;
+  if(!S.chat.length&&hasKey())h+=`<p class="hint">Bir şey yaz: "2 yumurta ve ekmek yedim", "83,7 çektim" ya da "bugün ne yapmalıyım?"</p>`;
+  for(const m of S.chat){
+    if(m.role==="user")h+=`<div class="ub">${esc(m.text)}</div>${m.pend?`<div class="pendl">Bekliyor, bağlantı gelince gönderilir</div>`:""}`;
+    else if(m.role==="coach"){
+      const lab=m.kind==="plan"?`Sabah planı, ${cTime(m.t)}`:m.kind==="weekly"?"Haftalık rapor":cTime(m.t);
+      h+=`<div class="cm" data-mid="${m.id}">${m.text?`<div class="mut sm">${lab}</div><p>${esc(m.text)}</p>`:""}${cCard(m)}</div>`;
+    }
+  }
+  if(typing)h+=`<div class="cm"><div class="mut sm">Koç yazıyor</div><p class="dots">• • •</p></div>`;
+  return `<div class="chat">${h}</div>`;
+}
+function cScroll(){if(tab==="koc")setTimeout(()=>window.scrollTo(0,document.body.scrollHeight),30)}
+
+/* ---- ayarlar: sağlayıcılar ---- */
+function pStatus(p){
+  const k=getKeys()[p.id],s=pstat[p.id];
+  if(!p.on)return ["Kapalı",""];
+  if(!p.health)return ["Sağlık verisi kapalı",""];
+  if(!k)return ["Anahtar yok",""];
+  if(s&&s.s==="ok")return ["Çalışıyor",`Son başarılı ${cTime(s.t)}, ${fmt(s.ms/1000,1)} sn`];
+  if(s&&s.s==="limit")return ["Limit doldu","Birazdan tekrar denenir"];
+  if(s&&s.s==="key")return ["Anahtar geçersiz",""];
+  if(s&&s.s==="err")return ["Hata",s.m||""];
+  return ["Hazır","Henüz denenmedi"];
+}
+function viewProviders(){
+  const rows=S.providers.map((p,i)=>{const [a,b]=pStatus(p);return `<button class="prow" data-c="prov:${p.id}"><span><span class="mut sm">${i+1}.</span><b>${esc(p.name)}</b><span class="mut sm">${esc(p.model)}${b?", "+esc(b):""}</span></span><span class="tag">${a}</span></button>`}).join("");
+  return `<h2>Yapay zekâ koç</h2><div class="card"><p class="hint" style="padding:0 0 8px">Sırayla denenir. Limite takılırsa sıradaki devreye girer. Anahtarlar yalnızca bu telefonda durur, yedeğe dahil edilmez.</p>${rows}
+  <div class="btns"><button class="btn ghost" data-c="addprov">Sağlayıcı ekle</button></div>
+  <p class="hint">Veri paylaşımı: ${S.settings.consent?"kabul edildi":"kabul edilmedi"}. ${S.settings.consent?`<button class="lnk" style="display:inline;width:auto;min-height:0" data-c="revoke">Geri al</button>`:""}</p>
+  <div class="btns"><button class="btn danger" data-c="clearchat">Sohbeti temizle</button></div></div>`;
+}
+function cSheetProv(id){
+  const p=S.providers.find(x=>x.id===id);if(!p)return;
+  const k=getKeys()[id],builtin=defProviders().some(d=>d.id===id);
+  const i=S.providers.indexOf(p);
+  openSheet(`<h3>${esc(p.name)}</h3>
+  <div class="lbl">Adres</div><input class="in" id="pb" value="${esc(p.base)}" autocomplete="off" spellcheck="false" style="font-size:14px">
+  <div class="lbl">Model</div><input class="in" id="pm" value="${esc(p.model)}" list="mlist" autocomplete="off" spellcheck="false" style="font-size:14px"><datalist id="mlist"></datalist>
+  <div class="lbl">API anahtarı</div><input class="in" id="pk" type="password" placeholder="${k?"••••"+esc(k.slice(-4)):"yapıştır"}" autocomplete="off" spellcheck="false" style="font-size:14px">
+  <label class="chkrow"><input type="checkbox" id="pon" ${p.on?"checked":""}> Bu sağlayıcıyı kullan</label>
+  <label class="chkrow"><input type="checkbox" id="ph" ${p.health?"checked":""}> Sağlık verisi gönder</label>
+  <div class="mut sm" style="margin:2px 0 10px">${p.confirm?"Bu sağlayıcıda ücretsiz katman istemleri ürün geliştirmek için kullanabilir. Açarsan her göndermeden önce onay istenir.":"Kapalıysa bu sağlayıcıya hiçbir şey gönderilmez."}</div>
+  <div class="two"><button class="btn ghost" data-c="ptest:${id}">Bağlantıyı test et</button><button class="btn ghost" data-c="pmodels:${id}">Modelleri getir</button></div>
+  <div class="two" style="margin-top:8px"><button class="btn ghost" data-c="pmove:${id}:-1"${i===0?" disabled":""}>Yukarı taşı</button><button class="btn ghost" data-c="pmove:${id}:1"${i===S.providers.length-1?" disabled":""}>Aşağı taşı</button></div>
+  <div class="btns"><button class="btn" data-c="psave:${id}">Kaydet</button>${k?`<button class="btn danger" data-c="pkeydel:${id}">Anahtarı sil</button>`:""}${builtin?"":`<button class="btn danger" data-c="pdel:${id}">Sağlayıcıyı kaldır</button>`}</div>`);
+}
+function pRead(id){
+  const p=S.providers.find(x=>x.id===id);
+  const base=$("#pb").value.trim(),model=$("#pm").value.trim();
+  if(!/^https:\/\/[^\s]+$/.test(base)){toast("Adres https:// ile başlamalı");return null}
+  if(!model){toast("Model adı yaz");return null}
+  p.base=base.slice(0,200);p.model=model.slice(0,100);p.on=$("#pon").checked;p.health=$("#ph").checked;
+  const key=$("#pk").value.trim();if(key)setKey(id,key);
+  save();return p;
+}
+async function cProvClick(a,p1,p2){
+  switch(a){
+    case "prov":return cSheetProv(p1);
+    case "addprov":
+      return openSheet(`<h3>Sağlayıcı ekle</h3><div class="lbl">OpenAI uyumlu bir servis (adres /chat/completions'ın bir üstü olmalı)</div><input class="in" id="an" placeholder="Ad" maxlength="40"><input class="in" id="ab" placeholder="https://.../v1" style="font-size:14px"><input class="in" id="am" placeholder="Model adı" style="font-size:14px"><button class="btn" data-c="mkprov">Ekle</button>`);
+    case "mkprov":{
+      const n=$("#an").value.trim(),b=$("#ab").value.trim(),m=$("#am").value.trim();
+      if(!n||!m||!/^https:\/\/[^\s]+$/.test(b))return toast("Ad, https adres ve model gerekli");
+      const id="u"+(S.cid++);S.providers.push({id,name:n.slice(0,40),base:b.slice(0,200),model:m.slice(0,100),on:true,health:true,confirm:false});save();render();return cSheetProv(id);
+    }
+    case "psave":{const p=pRead(p1);if(!p)return;closeSheet();render();return toast("Kaydedildi")}
+    case "ptest":{
+      const p=pRead(p1);if(!p)return;const key=getKeys()[p1];if(!key)return toast("Önce API anahtarı ekle");
+      toast("Deneniyor…");const t0=Date.now();
+      try{await callProvider(p,key,[{role:"user",content:"Sadece 'tamam' yaz."}],8);pstat[p1]={s:"ok",t:Date.now(),ms:Date.now()-t0};delete cool[p1];toast(`Çalışıyor, ${fmt((Date.now()-t0)/1000,1)} sn`)}
+      catch(e){const st=e&&e.status;pstat[p1]={s:st===429?"limit":st===401||st===403?"key":"err",t:Date.now(),m:e&&e.message};toast(st===401||st===403?"Anahtar geçersiz görünüyor":st===404?"Model ya da adres bulunamadı":st===429?"Limit dolu, birazdan dene":"Bağlanılamadı: "+((e&&e.message)||"hata"))}
+      render();return;
+    }
+    case "pmodels":{
+      const p=pRead(p1);if(!p)return;const key=getKeys()[p1];if(!key)return toast("Önce API anahtarı ekle");
+      try{
+        const r=await fetch(p.base.replace(/\/+$/,"")+"/models",{headers:{Authorization:"Bearer "+key}});
+        if(!r.ok)throw new Error("HTTP "+r.status);
+        const j=await r.json(),ids=(j.data||[]).map(x=>x.id).filter(x=>typeof x==="string").slice(0,300);
+        $("#mlist").innerHTML=ids.map(x=>`<option value="${esc(x)}">`).join("");toast(`${ids.length} model getirildi, Model alanına dokunup seç`);
+      }catch(e){toast("Model listesi alınamadı: "+((e&&e.message)||"hata"))}
+      return;
+    }
+    case "pmove":{const i=S.providers.findIndex(x=>x.id===p1),j=i+(+p2);if(i<0||j<0||j>=S.providers.length)return;[S.providers[i],S.providers[j]]=[S.providers[j],S.providers[i]];save();render();return cSheetProv(p1)}
+    case "pkeydel":setKey(p1,"");closeSheet();render();return toast("Anahtar silindi");
+    case "pdel":S.providers=S.providers.filter(x=>x.id!==p1);setKey(p1,"");save();closeSheet();render();return;
+  }
+}
+function cClick(v,el){
+  const [a,p1,p2]=v.split(":");
+  switch(a){
+    case "send":{const i=$("#cmsg");const t=i.value;i.value="";return cSend(t)}
+    case "retry":offline=null;cFlush();return render();
+    case "consent":S.settings.consent=true;save();render();cFlush();cAuto();return;
+    case "revoke":S.settings.consent=false;save();render();return;
+    case "toprov":tab="ayar";render();window.scrollTo(0,0);return;
+    case "ok":return cApplyLog(+p1,el);
+    case "no":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card){m.card.state="no";save();render()}return}
+    case "applyk":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card&&m.card.state==="pending"){S.settings.kcal=m.card.kcal;m.card.state="ok";save();render();toast(`Kalori hedefi ${m.card.kcal} kcal oldu`)}return}
+    case "nok":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card){m.card.state="no";save();render()}return}
+    case "dismiss":{const b=el.closest(".cm");if(b){S.chat=S.chat.filter(x=>x.id!==+b.dataset.mid);save();render()}return}
+    case "clearchat":if(confirm("Sohbet geçmişi silinsin mi? Kayıtların silinmez.")){S.chat=[];S.settings.lastPlan="";save();render()}return;
+    default:return cProvClick(a,p1,p2);
+  }
+}
