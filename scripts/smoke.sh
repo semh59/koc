@@ -12,5 +12,6 @@ diag=$(grep "NW-DIAG" smoke.log | tail -1)
 for p in LocalNotifications Share Filesystem App; do
   echo "$diag" | grep -q "$p=object" || { echo "EKLENTİ YOK: $p"; exit 1; }
 done
+grep -q "NW-VAULT ok" smoke.log || { echo "ANAHTAR KASASI ÇALIŞMADI"; exit 1; }
 if grep -Ei "Refused to|Content Security Policy|Uncaught" smoke.log; then echo "KONSOL HATASI"; exit 1; fi
 echo "Smoke testi geçti"

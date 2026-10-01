@@ -1,8 +1,33 @@
 "use strict";
 /* Koç: durum, sağlayıcı zinciri, sohbet ekranı ve ayarlar. coachlib.js ve algo.js'e dayanır. */
-const KEYS_LS="koc_keys";
-const getKeys=()=>{try{return JSON.parse(localStorage.getItem(KEYS_LS))||{}}catch(e){return {}}};
-function setKey(id,k){const m=getKeys();if(k)m[id]=k;else delete m[id];try{localStorage.setItem(KEYS_LS,JSON.stringify(m))}catch(e){}}
+/* API anahtarları: bellekte KEYS; telefonda Keystore kasası (KeyVault) ile şifreli, kasa yoksa (tarayıcı) düz metin. */
+const KEYS_LS="koc_keys",KEYS_ENC="koc_keys_enc";
+let KEYS={},vaultOn=false;
+const KV=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.KeyVault;
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const lsDel=k=>{try{localStorage.removeItem(k)}catch(e){}};
+const getKeys=()=>KEYS;
+const keysStored=()=>!!(lsGet(KEYS_ENC)||lsGet(KEYS_LS));
+async function persistKeys(){
+  const j=JSON.stringify(KEYS);
+  if(vaultOn){try{lsSet(KEYS_ENC,(await KV().encrypt({text:j})).data);lsDel(KEYS_LS);return}catch(e){vaultOn=false}}
+  lsSet(KEYS_LS,j);
+}
+function setKey(id,k){if(k)KEYS[id]=k;else delete KEYS[id];return persistKeys()}
+async function keysInit(){
+  const kv=KV(),enc=lsGet(KEYS_ENC);let lost=false;
+  const readPlain=()=>{try{KEYS=JSON.parse(lsGet(KEYS_LS))||{}}catch(e){KEYS={}}};
+  if(!kv){readPlain();return}
+  try{
+    if(enc){try{KEYS=JSON.parse((await kv.decrypt({data:enc})).text)||{}}catch(e){KEYS={};lost=true;lsDel(KEYS_ENC)}}
+    else readPlain();
+    vaultOn=true;await persistKeys();
+    if(vaultOn&&(await kv.decrypt({data:lsGet(KEYS_ENC)})).text!==JSON.stringify(KEYS)){vaultOn=false;lsSet(KEYS_LS,JSON.stringify(KEYS))}
+  }catch(e){vaultOn=false;if(!Object.keys(KEYS).length)readPlain();lsSet(KEYS_LS,JSON.stringify(KEYS))}
+  console.log("NW-VAULT "+(vaultOn?"ok":"fail"));
+  if(lost)toast("API anahtarları bu telefonda okunamadı, yeniden gir");
+}
 const defProviders=()=>[
   {id:"nvidia",name:"NVIDIA Build",base:"https://integrate.api.nvidia.com/v1",model:"meta/llama-3.3-70b-instruct",on:true,health:true,confirm:false},
   {id:"groq",name:"Groq",base:"https://api.groq.com/openai/v1",model:"llama-3.3-70b-versatile",on:true,health:true,confirm:false},
