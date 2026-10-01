@@ -253,11 +253,13 @@ select.in{appearance:none}
 <script src="lablib.js"></script>
 <script src="labellib.js"></script>
 <script src="vitalslib.js"></script>
+<script src="weeklylib.js"></script>
 <script src="coachlib.js"></script>
 <script src="coach.js"></script>
 <script src="labui.js"></script>
 <script src="ocrui.js"></script>
 <script src="vitalsui.js"></script>
+<script src="weeklyui.js"></script>
 <script>
 "use strict";
 /* ---------- yardımcılar ---------- */
@@ -560,7 +562,8 @@ function viewTrend(){
   <h2>Son 7 gün</h2><div class="card"><table><thead><tr><th>Gün</th><th>Kilo</th><th>Su (L)</th><th>kcal</th><th>Spor (dk)</th><th>Adım</th></tr></thead><tbody>${rows}</tbody></table></div>
   ${vTrendCards()}
   <h2>Tahlil</h2>${labTrendCard()}
-  <h2>Haftalık spor</h2><div class="card"><div class="num"><b>${Math.round(sw)}</b> / ${st.sportWeek} dk, ${sd} gün aktif</div><div class="bar"><i style="width:${pct.toFixed(0)}%"></i></div></div>`;
+  <h2>Haftalık spor</h2><div class="card"><div class="num"><b>${Math.round(sw)}</b> / ${st.sportWeek} dk, ${sd} gün aktif</div><div class="bar"><i style="width:${pct.toFixed(0)}%"></i></div></div>
+  <div class="btns"><button class="btn ghost" data-wk="pdf">📤 Haftalık raporu paylaş (PDF)</button></div>`;
 }
 
 let notifStatus="";
