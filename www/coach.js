@@ -49,7 +49,7 @@ function cleanCoach(r){
     if(!m||!Number.isInteger(m.id)||!["user","coach","sys"].includes(m.role)||!Number.isFinite(m.t))continue;
     const o={id:m.id,role:m.role,text:typeof m.text==="string"?m.text.slice(0,1500):"",t:m.t};
     if(m.pend===true)o.pend=true;
-    if(["plan","weekly"].includes(m.kind))o.kind=m.kind;
+    if(["plan","weekly","plateau"].includes(m.kind))o.kind=m.kind;
     if(["check","ed"].includes(m.fl))o.fl=m.fl;
     const c=m.card;
     if(c&&c.kind==="log"&&Array.isArray(c.items)){const items=CoachLib.cleanItems(c.items);if(items.length)o.card={kind:"log",items,state:["pending","ok","no"].includes(c.state)?c.state:"pending",saved:c.saved===true}}
@@ -239,6 +239,15 @@ async function cWhyAsk(id){
   finally{busy=false;typing=false;save();render()}
 }
 
+/* Plato sorusu yereldir: consent ve sağlayıcıdan bağımsız, AI çağrısı yapmaz; kullanıcı "Bak"a dokunursa yerel kart açılır. */
+function cPlateauCheck(){
+  const st=S.settings,w=weights(),days=Object.keys(w).sort(),t=dayKey();
+  if(!(st.goalKg>0)||!days.length||(st.lastPlateau&&Algo.dayNum(t)-Algo.dayNum(st.lastPlateau)<14))return;
+  const tk=Algo.trend(w)[days[days.length-1]];
+  if(!(st.goalKg<tk-0.5)||Algo.lossBlock({age:st.age,cm:st.heightCm,kg:tk,goalKg:st.goalKg,health:!!st.healthNote.trim()})||!InsightLib.plateau(w,t).ok)return;
+  st.lastPlateau=t;cPush({role:"coach",kind:"plateau",text:"Son 3 haftadır trendin düz. Birlikte bakalım mı?"});save();render();
+}
+
 /* ---- otomatik mesajlar: sabah planı + haftalık rapor ---- */
 function weekKey(now=new Date()){
   const d=new Date(now.getFullYear(),now.getMonth(),now.getDate(),20);
@@ -329,7 +338,7 @@ function viewKoc(){
     if(m.role==="user")h+=`<div class="ub">${esc(m.text)}</div>${m.pend?`<div class="pendl">Bekliyor, bağlantı gelince gönderilir</div>`:""}`;
     else if(m.role==="coach"){
       const lab=m.kind==="plan"?`Sabah planı, ${cTime(m.t)}`:m.kind==="weekly"?"Haftalık rapor":cTime(m.t);
-      h+=`<div class="cm" data-mid="${m.id}">${m.text?`<div class="mut sm">${lab}</div><p>${esc(m.text)}</p>`:""}${cCard(m)}</div>`;
+      h+=`<div class="cm" data-mid="${m.id}">${m.text?`<div class="mut sm">${lab}</div><p>${esc(m.text)}</p>`:""}${m.kind==="plateau"?`<div class="lbtns"><button class="btn" data-c="why">Bak</button></div>`:""}${cCard(m)}</div>`;
     }
   }
   if(typing)h+=`<div class="cm"><div class="mut sm">Koç yazıyor</div><p class="dots">• • •</p></div>`;

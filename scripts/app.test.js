@@ -907,6 +907,20 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("neden kartı yeniden yüklemede kalır",cc.chat.some(m=>m.card&&m.card.kind==="why"&&m.card.items.length===wc.card.items.length&&m.card.asked===true));
     const g=JSON.parse(ev(`JSON.stringify(cleanCoach({chat:[{id:1,role:'coach',text:'',t:1,card:{kind:'why',items:'x'}},{id:2,role:'coach',text:'',t:1,card:{kind:'why',items:[null,{k:'X!',t:1}]}},{id:3,role:'user',text:'merhaba',t:1}]}))`));
     ok("çöp neden kartında diğer mesajlar eksiksiz yüklenir",g.chat.length===3&&!g.chat[0].card&&!g.chat[1].card&&g.chat[2].text==="merhaba");
+    // plato
+    const f0=fetched,pq=()=>ev("S.chat.filter(m=>m.kind==='plateau').length");
+    ev("S.chat=[];S.settings.lastPlateau='';S.settings.goalKg=70;S.entries=[];[-20,-18,-16,-14,-12,-9,-7,-5,-2,0].forEach((o,i)=>add('kilo',80+[0.2,-0.1,0.3,-0.2,0,0.1,-0.3,0.2,-0.1,0][i],'',keyOff(o)));cPlateauCheck()");
+    ok("plato sorusu düşer, AI çağrısı yapılmaz (consent ve anahtar varken bile)",pq()===1&&ev("S.chat[0].text")==="Son 3 haftadır trendin düz. Birlikte bakalım mı?"&&fetched===f0&&ev("S.settings.lastPlateau")===ev("dayKey()"));
+    ev("cPlateauCheck();S.settings.lastPlateau=keyOff(-13);cPlateauCheck()");
+    ok("plato sorusu 14 gün içinde tekrar düşmez",pq()===1);
+    ev("S.settings.lastPlateau=keyOff(-14);cPlateauCheck()");
+    ok("14 gün dolunca yeniden düşebilir",pq()===2);
+    ev("S.chat=[];S.settings.lastPlateau='';S.settings.healthNote='tansiyon';cPlateauCheck();S.settings.healthNote='';S.settings.goalKg=79.8;cPlateauCheck()");
+    ok("kısıt (lossBlock) varken ya da hedef trende yakınken plato sorusu yok",pq()===0);
+    ev("S.settings.goalKg=70;cPlateauCheck();tab='koc';render()");q(`[data-mid="${ev("S.chat[0].id")}"] [data-c="why"]`).click();await wait(20);
+    ok("Bak yerel neden kartını açar, fetch yok",ev("S.chat.some(m=>m.card&&m.card.kind==='why')")&&fetched===f0);
+    ok("lastPlateau kalıcı; eski ve çöp değerde boş",ev("cleanSettings(JSON.parse(JSON.stringify(S.settings))).lastPlateau")===ev("dayKey()")&&ev("cleanSettings({}).lastPlateau")===""&&ev("cleanSettings({lastPlateau:{a:1},kcal:1800}).lastPlateau")===""&&ev("cleanSettings({lastPlateau:7,kcal:1800}).kcal")===1800);
+    ok("plato mesajı yeniden yüklemede kalır",JSON.parse(ev("JSON.stringify(cleanCoach(JSON.parse(JSON.stringify(S))))")).chat.some(m=>m.kind==="plateau"));
   }
     process.exit(bad?1:0);
   });
