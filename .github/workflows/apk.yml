@@ -51,16 +51,16 @@ jobs:
           ./gradlew assembleDebug --no-daemon
 
       - name: APK dosyasını hazırla
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk koc.apk
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk neowell.apk
 
       - uses: actions/upload-artifact@v4
         with:
-          name: koc-apk
-          path: koc.apk
+          name: neowell-apk
+          path: neowell.apk
 
       - name: Releases sayfasına yükle (telefondan kolay indirme)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete son-surum --yes --cleanup-tag || true
-          gh release create son-surum koc.apk --title "Koç APK (son sürüm)" --notes "Telefondan bu sayfadaki koc.apk dosyasını indirip kur."
+          gh release create son-surum neowell.apk --title "NeoWell APK (son sürüm)" --notes "Telefondan bu sayfadaki neowell.apk dosyasını indirip kur."

@@ -1,4 +1,4 @@
-// Bildirimler için gerekli izinleri Android manifest'ine ekler (tekrar çalıştırılırsa bir şey bozmaz).
+// Bildirim izinlerini Android manifest'ine ekler ve NeoWell simgelerini yerleştirir (tekrar çalıştırılırsa bir şey bozmaz).
 const fs = require("fs");
 const p = "android/app/src/main/AndroidManifest.xml";
 let x = fs.readFileSync(p, "utf8");
@@ -9,3 +9,6 @@ for (const perm of ["POST_NOTIFICATIONS", "RECEIVE_BOOT_COMPLETED", "VIBRATE", "
 }
 fs.writeFileSync(p, x);
 console.log("Manifest güncellendi.");
+const res="android/app/src/main/res";
+fs.cpSync("assets/android/res",res,{recursive:true});
+console.log("Simgeler yerleştirildi.");

@@ -1,4 +1,8 @@
-# Koç: kişisel diyet ve spor takipçisi
+# NeoWell: sağlığın yeni kaynağı
+
+![NeoWell](assets/logo.png)
+
+Kişisel diyet ve spor takipçisi.
 
 İnternetsiz çalışan, sadece senin telefonunda duran Android uygulaması. Kilo, su, yemek, spor ve not kaydeder. Salon sekmesinde set, tekrar ve ağırlık takibi, rekorlar ve bir sonraki antrenman için ağırlık önerisi var. Trend sekmesi kilo trendini, gerçek verinden harcamanı ve kalori hedefi önerisini gösterir. Günlük hatırlatma bildirimleri gönderir.
 
@@ -6,10 +10,10 @@
 
 1. https://github.com adresinde hesabın yoksa aç.
 2. Sağ üstteki **+** ile **New repository** de. İsim olarak `koc` yaz, **Private** seç ve oluştur.
-3. Açılan boş depoda **uploading an existing file** bağlantısına tıkla. Bu klasörün **içindekileri** sürükle (`www`, `scripts`, `signing`, `.github`, `package.json`, `package-lock.json`, `capacitor.config.json`, `.gitignore`). Klasörün kendisini değil, içindekileri yükle. `signing` klasöründeki anahtar dosyası güncellemelerin eski verinin üstüne kurulabilmesi için gerekli, bu yüzden depo mutlaka **Private** kalmalı. **Commit changes** de.
+3. Açılan boş depoda **uploading an existing file** bağlantısına tıkla. Bu klasörün **içindekileri** sürükle (`www`, `scripts`, `signing`, `.github`, `package.json`, `package-lock.json`, `capacitor.config.json`, `.gitignore`, `assets`). Klasörün kendisini değil, içindekileri yükle. `signing` klasöründeki anahtar dosyası güncellemelerin eski verinin üstüne kurulabilmesi için gerekli, bu yüzden depo mutlaka **Private** kalmalı. **Commit changes** de.
    - `.github` gizli klasör olduğu için dosya yöneticisinde görünmeyebilir. Mac'te Cmd+Shift+. ile, Windows'ta Görünüm > Gizli öğeler ile göster. Telefondan yüklüyorsan bunu bilgisayardan yapmak daha rahat.
 4. Depoda **Actions** sekmesine geç. "APK derle" çalışmaya başlamış olmalı. Başlamadıysa soldan **APK derle**, sonra **Run workflow** de. Yaklaşık 5 dakika sürer, yanında yeşil tik çıkınca bitmiştir.
-5. Telefonunun tarayıcısında deponun ana sayfasına git, sağdaki **Releases** bölümünden **Koç APK (son sürüm)** a gir ve `koc.apk` dosyasını indir. (Depo Private olduğu için GitHub'a giriş yapman istenir.)
+5. Telefonunun tarayıcısında deponun ana sayfasına git, sağdaki **Releases** bölümünden **NeoWell APK (son sürüm)** e gir ve `neowell.apk` dosyasını indir. (Depo Private olduğu için GitHub'a giriş yapman istenir.)
 6. İndirilen dosyaya dokun. Android "bilinmeyen kaynaklardan yükleme" izni isteyecek, bu uygulama için izin ver ve kur. Google Play Protect "uygulama taranmadı" uyarısı gösterirse **Yine de yükle** de, uygulamayı sen derledin.
 7. İlk açılışta bildirim iznini onayla.
 
@@ -42,8 +46,9 @@ Notlar:
 
 - Veriler yalnızca telefonda durur. Uygulamayı silersen kaybolur. Ayarlar > **Yedekle veya geri yükle** ile arada bir yedek metnini kopyalayıp bir notlar uygulamasına yapıştır.
 - Hatırlatmalar sabit metinlidir ve uygulama kapalıyken de gelir. Saatleri ve hangilerinin açık olacağını Ayarlar'dan değiştirebilirsin.
-- Bildirimler hiç gelmiyorsa telefon ayarlarında Koç için bildirim iznini ve pil ayarlarında "kısıtlama yok" seçeneğini kontrol et. Bazı telefonlar (Xiaomi, Huawei, Samsung) arka plan bildirimlerini agresif keser.
-- Android 12 ve üstünde hatırlatmaların tam saatinde gelmesi için uygulama "Alarmlar ve hatırlatıcılar" iznini kullanır, kurulumda otomatik verilir. Gelmezse telefon ayarlarından Koç > İzinler bölümüne bak.
+- Bildirimler hiç gelmiyorsa telefon ayarlarında NeoWell için bildirim iznini ve pil ayarlarında "kısıtlama yok" seçeneğini kontrol et. Bazı telefonlar (Xiaomi, Huawei, Samsung) arka plan bildirimlerini agresif keser.
+- Android 12 ve üstünde hatırlatmaların tam saatinde gelmesi için uygulama "Alarmlar ve hatırlatıcılar" iznini kullanır, kurulumda otomatik verilir. Gelmezse telefon ayarlarından NeoWell > İzinler bölümüne bak.
+- Uygulama adı ve paket adı NeoWell (`com.neowell.app`) olarak değişti. Eski "Koç" uygulaması ayrı bir uygulama sayılır: önce eskisinden yedek al, NeoWell'i kur, yedeği geri yükle, sonra eskisini sil. (Yapay zekâ sohbet sekmesinin adı Koç olarak kaldı.)
 - Kurulan APK "debug" imzalıdır. Kendi kullanımın için sorun değildir, Play Store'a yüklenemez.
 
 ## Bilgisayarda hızlı deneme
