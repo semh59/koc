@@ -37,3 +37,4 @@ Sürüm: son APK (GitHub Releases, `neowell.apk`).
 - [ ] Sığma kontrolü: Bugün ekranı küçük ekranda taşmıyor.
 - [ ] Salon plaka/ısınma: ağırlıklı egzersizde ⋮ > Plaka ve ısınma; hedef kg gir, bir taraf plakaları ve "en yakın" notu doğru mu, "Isınmayı antrenmana ekle" ısınma setlerini başa koyuyor mu, ısınma setleri hacim ve rekora girmiyor mu. ⋮ > Tekrar aralığı (5-8) ile öneri değişiyor mu.
 - [ ] Set anında rekor: eski en iyiden ağır bir seti ✓ ile bitir; "Yeni rekor" bildirimi + titreşim bir kez gelmeli, aynı egzersizde ikinci kez gelmemeli.
+- [ ] Lif/şeker/sodyum: gerçek bir ürünün barkodunu okut (Yemek ekle > barkod); porsiyon önizlemesinde lif, şeker, sodyum çıkıyor mu, eklenince Bugün'da "Lif · Şeker · Sodyum (n/m öğünde veri var)" satırı görünüyor mu. Etiket oku: Lif/Şeker/Sodyum kutuları (tuz yazan etikette sodyum = tuz x 400 mg) dolu geliyor mu.

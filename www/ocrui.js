@@ -45,6 +45,7 @@ async function ocrRun(kind,file){
 }
 
 const etFmt=v=>v==null?"":String(Number(v.toFixed(1))).replace(".",",");
+const ETX=[["fb","Lif","g"],["sg","Şeker","g"],["na","Sodyum","mg"]];
 function etiketReview(r){
   etiketOk=false;
   const f=r.food,miss=[["k","kalori"],["p","protein"],["c","karbonhidrat"],["f","yağ"]].filter(([k])=>f[k]==null).map(x=>x[1]);
@@ -52,6 +53,7 @@ function etiketReview(r){
   openSheet(`<h3>Etiketten okunan</h3><input class="in" id="en" placeholder="Ürünün adı (zorunlu)" autocomplete="off" autofocus>
   <div class="mut sm" style="margin-bottom:8px">100 g başına değerler. ${miss.length?`Okunamayan: ${miss.join(", ")}. Etiketten bakıp yaz.`:"Etiketle karşılaştırıp kontrol et."}</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><div class="lbl">Kalori (kcal)</div>${inp("ek",f.k,"kcal")}</div><div><div class="lbl">Protein (g)</div>${inp("ep",f.p,"g")}</div><div><div class="lbl">Karbonhidrat (g)</div>${inp("ec",f.c,"g")}</div><div><div class="lbl">Yağ (g)</div>${inp("ef",f.f,"g")}</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px">${ETX.map(([k,n,u])=>`<div><div class="lbl">${n}</div>${inp("e"+k,f[k],u)}</div>`).join("")}</div>
   <div class="hint" id="ewarn" role="alert"></div><button class="btn" data-ocr="esave">Kaydet ve ekle</button><button class="btn ghost" data-ocr="close" style="margin-top:8px">Vazgeç</button>`);
 }
 function etiketSave(){
@@ -59,15 +61,17 @@ function etiketSave(){
   if(!n)return toast("Ürünün adını yaz");
   const v=id=>{const s=g(id);return s===""?undefined:LabLib.toNum(s.replace(/^[<>]\s*/,""))};
   const f={k:v("ek"),p:v("ep"),c:v("ec"),f:v("ef")};
-  for(const [id,x] of [["ek",f.k],["ep",f.p],["ec",f.c],["ef",f.f]])if(g(id)!==""&&x==null)return toast("Sayı olarak yaz, örneğin 8,5");
+  for(const [k] of ETX)f[k]=v("e"+k);
+  for(const [id,x] of [["ek",f.k],["ep",f.p],["ec",f.c],["ef",f.f],...ETX.map(([k])=>["e"+k,f[k]])])if(g(id)!==""&&x==null)return toast("Sayı olarak yaz, örneğin 8,5");
   if(f.k==null)return toast("Kalori gerekli: etiketteki 100 g başına kcal değerini yaz");
-  const c=LabelLib.check(n,{k:f.k,p:f.p,c:f.c,f:f.f});
+  const c=LabelLib.check(n,f);
   if(c.status==="bad"&&!etiketOk){
     etiketOk=true;document.getElementById("ewarn").textContent=`${c.why}. Fotoğraf yanlış okunmuş olabilir: değerleri etiketle karşılaştır. Doğruysa tekrar Kaydet'e dokun.`;return;
   }
   if(!(f.k>=0&&f.k<=900))return toast("Kalori 100 g için 0-900 olmalı");
   const food={n,k:Math.round(f.k*10)/10,u:[["100 g",100]]};
   for(const m of ["p","c","f"])if(f[m]!=null&&f[m]>=0&&f[m]<=100)food[m]=f[m];
+  for(const m of ["fb","sg","na"])if(c.food&&c.food[m]!=null)food[m]=c.food[m];
   if(!myFoodPut(food))return toast("Besin listesi dolu (en çok 200)");
   save();
   const i=S.myFoods.findIndex(m=>m.n===n);

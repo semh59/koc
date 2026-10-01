@@ -1017,6 +1017,28 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
   ok("barkod: tarayıcı okuyunca ürün bulunur",ev("S.myFoods.length")===1&&w.scanOpts.formats.includes("EAN_13"));
   ev("sheetYemek()");
   ok("Yemek ekle'de barkod düğmesi görünür",w.document.querySelector("#sheet [data-act=barkod]")!==null);
+  { // lif, şeker, sodyum
+    const T=w.document.querySelector.bind(w.document),day=ev("dayKey()");
+    w.fetch=async()=>({ok:true,json:async()=>offJ({"energy-kcal_100g":440,proteins_100g:8.5,carbohydrates_100g:70,fat_100g:13,fiber_100g:4,sugars_100g:20,sodium_100g:0.4})});
+    ev("S.myFoods=[];S.entries=[];S.settings.oemDone=true");await ev("barkodBul('8690526010113')");
+    ok("barkod: lif/şeker/sodyum myFoods'a girer, önizleme gösterir",ev("[S.myFoods[0].fb,S.myFoods[0].sg,S.myFoods[0].na].join()")==="4,20,400"&&/lif 1,6 g · şeker 8,0 g · sodyum 160,0 mg/.test(T("#fprev").textContent),T("#fprev").textContent);
+    ev("goBesin()");
+    ok("kayda porsiyon oranında geçer ve yeniden yüklemede kalır",ev("JSON.stringify(cleanEntries(S.entries).out.map(e=>[e.fb,e.sg,e.na]))")==="[[1.6,8,160]]",ev("JSON.stringify(S.entries)"));
+    ev("add('yemek',100,'makrosuz',dayKey())");
+    ok("Bugün satırı kapsam notuyla (1/2 öğünde)",/Lif <b>2<\/b> g · Şeker <b>8<\/b> g · Sodyum <b>160<\/b> mg \(1\/2 öğünde veri var\)/.test(ev("viewBugun()")));
+    ev("S.entries=S.entries.filter(e=>e.text==='makrosuz')");
+    ok("hiçbir öğünde veri yoksa satır gizli",!ev("viewBugun()").includes("öğünde veri var"));
+    ev("S.entries=[];S.myFoods=[]");
+    const r=ev("JSON.parse(JSON.stringify({entries:[{day:dayKey(),type:'yemek',v:100,text:'a',fb:'x',sg:-1,na:1e9,p:5},{day:dayKey(),type:'yemek',v:50,text:'b',fb:3}],myFoods:[{n:'Z',k:10,fb:500,sg:5,na:100}]}))");
+    ev(`window.__r=${JSON.stringify(r)}`);
+    ok("çöp alanlı kayıtlar: p korunur, fb/sg/na yok",ev("(o=>o[0].p===5&&o[0].fb===undefined&&o[0].sg===undefined&&o[0].na===undefined&&o[1].fb===3)(cleanEntries(__r.entries).out)"));
+    ok("myFoods: sınır dışı lif atılır, şeker/sodyum kalır; eski kayıt (alansız) aynen",ev("(m=>m.fb===undefined&&m.sg===5&&m.na===100)(cleanMyFoods(__r.myFoods)[0])&&cleanMyFoods([{n:'Y',k:5,p:1}])[0].p===1"));
+    ev("S.myFoods=[];etiketReview({food:{k:440,p:8.5,c:70,f:13,fb:3,sg:12,na:480}})");
+    ok("etiket ekranında lif/şeker/sodyum dolu gelir",T("#efb").value==="3"&&T("#esg").value==="12"&&T("#ena").value==="480");
+    T("#en").value="Etiketli";T('[data-ocr="esave"]').click();
+    ok("etiket kaydı lif/şeker/sodyumu myFoods'a yazar",ev("[S.myFoods[0].fb,S.myFoods[0].sg,S.myFoods[0].na].join()")==="3,12,480",ev("S.myFoods"));
+    ev("closeSheet();S.myFoods=[]");
+  }
   ev("S.myFoods=[]");
   ev("S.entries=[];S.settings.oemDone=true");
   const yi=ev("allFoods().findIndex(f=>f.n==='Haşlanmış yumurta')");
