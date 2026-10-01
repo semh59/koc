@@ -138,6 +138,17 @@ function exPlateSheet(ei){
   <div class="btns"><button class="btn" data-g="wadd:${ei}">Isınmayı antrenmana ekle</button><button class="btn ghost" data-g="closesheet">Kapat</button></div>`);
   $("#pk").oninput=$("#pb").oninput=exPlateCalc;exPlateCalc();
 }
+const EXRANGES=["5-8","8-12","12-15"];
+function exRangeSheet(ei){
+  const id=gActive().ex[ei].id,c=S.exCfg[id]||{lo:8,hi:12};
+  openSheet(`<h3>${esc(gEx(id).n)}</h3><div class="lbl">Tekrar aralığı</div><div class="chips">${EXRANGES.map(r=>`<button class="chip" data-g="rngset:${ei}:${r}" aria-pressed="${r===c.lo+"-"+c.hi}">${r}</button>`).join("")}</div>
+  <p class="hint">Tüm setlerde üst tekrara ulaşınca öneri ağırlığı artırır.</p><button class="btn ghost" data-g="closesheet">Kapat</button>`);
+}
+function exRangeSet(ei,r){
+  const id=gActive().ex[ei].id,[lo,hi]=r.split("-").map(Number);
+  if(r==="8-12")delete S.exCfg[id];else S.exCfg[id]={lo,hi};
+  save();closeSheet();render();toast(`Tekrar aralığı ${r}`);
+}
 function exWarmAdd(ei){
   const {kg,bar}=exPlateIn(),x=gActive().ex[ei],wu=Algo.warmup(kg,bar);
   if(!wu.length)return toast("Isınma için hedef barın üstünde olmalı");
@@ -164,6 +175,8 @@ function exClick(a,p1,p2,el,w){
       gAddEx(wk,p1);save();closeSheet();tab="salon";render();toast(`${gEx(p1).n} antrenmana eklendi`);return;
     }
     case "plate":return exPlateSheet(ei);
+    case "rng":return exRangeSheet(ei);
+    case "rngset":return exRangeSet(ei,p2);
     case "wadd":return exWarmAdd(ei);
     case "tstart":return gTimStart(+p1,+p2);
     case "tstop":{

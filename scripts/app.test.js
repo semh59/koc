@@ -818,6 +818,18 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("alansız eski yedek yüklenir: bar 20, kayıt aynen",E.bar===20&&E.workouts[0].ex[0].sets[0].kg===100&&E.workouts[0].ex[0].sets[0].w===undefined);
     const G=JSON.parse(ev(`JSON.stringify(cleanGym({bar:'abc',workouts:[{id:5,day:'2026-09-01',t0:1,t1:2,ex:[{id:'squat',sets:[{kg:100,reps:5,done:true,w:'x'}]}]}]}))`));
     ok("çöp bar/w değeri: diğer veri eksiksiz yüklenir",G.bar===20&&G.workouts[0].ex[0].sets[0].kg===100&&G.workouts[0].ex[0].sets[0].w===undefined&&JSON.parse(ev("JSON.stringify(cleanGym({bar:99}))")).bar===20);
+    // egzersiz başına tekrar aralığı
+    ev(`S.exCfg={};S.workouts=[${Wk(1,1000,2000,"[{kg:60,reps:8,done:true},{kg:60,reps:8,done:true}]")},${Wk(2,Date.now(),null,"[{kg:null,reps:null,done:false}]")}];tab='salon';render()`);
+    ok("aralık seçilmemişse 8-12 (mevcut davranış)",ev("gSuggest('squat').reps")===9&&ev("gSuggest('squat').kg")===60);
+    click('[data-g="menu:0"]');click('[data-g="rng:0"]');click('[data-g="rngset:0:5-8"]');
+    ok("5-8 seçilince öneri bu aralığa göre: 8'e ulaşınca ağırlık artar, 5'ten başlar",ev("JSON.stringify(S.exCfg)")==='{"squat":{"lo":5,"hi":8}}'&&ev("gSuggest('squat').kg")===62.5&&ev("gSuggest('squat').reps")===5);
+    click('[data-g="menu:0"]');click('[data-g="rng:0"]');click('[data-g="rngset:0:8-12"]');
+    ok("8-12 seçilince varsayılana döner",ev("Object.keys(S.exCfg).length")===0);
+    const X=JSON.parse(ev(`JSON.stringify(cleanGym({exCfg:{squat:{lo:5,hi:8},bilinmeyen:{lo:5,hi:8},bench:{lo:9,hi:9},row:{lo:0,hi:5}}}))`));
+    ok("exCfg yeniden yüklemede korunur, bilinmeyen kimlik ve geçersiz aralık atılır",JSON.stringify(X.exCfg)==='{"squat":{"lo":5,"hi":8}}',X.exCfg);
+    const Y=JSON.parse(ev(`JSON.stringify(cleanGym({exCfg:[1,2],workouts:[{id:5,day:'2026-09-01',t0:1,t1:2,ex:[{id:'squat',sets:[{kg:100,reps:5,done:true}]}]}]}))`));
+    const Z=JSON.parse(ev(`JSON.stringify(cleanGym({exCfg:{squat:'x',bench:{lo:'5',hi:null},row:null},workouts:[{id:5,day:'2026-09-01',t0:1,t1:2,ex:[{id:'squat',sets:[{kg:100,reps:5,done:true}]}]}]}))`));
+    ok("exCfg yok (eski yedek) ve çöp değer: kayıtlar eksiksiz yüklenir",Object.keys(Y.exCfg).length===0&&Object.keys(Z.exCfg).length===0&&Y.workouts[0].ex[0].sets[0].kg===100&&Z.workouts[0].ex[0].sets[0].kg===100);
     ev("S.workouts=[];S.bar=20;closeSheet();tab='bugun';render()");
   }
     process.exit(bad?1:0);
