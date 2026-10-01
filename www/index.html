@@ -274,6 +274,7 @@ select.in{appearance:none}
 <script src="medlib.js"></script>
 <script src="motionlib.js"></script>
 <script src="weeklylib.js"></script>
+<script src="loglib.js"></script>
 <script src="coachlib.js"></script>
 <script src="coach.js"></script>
 <script src="labui.js"></script>
@@ -332,6 +333,7 @@ const VR={bpSysHi:[80,300,true],bpDiaHi:[40,200,true],bpSysLo:[50,300,true],bpDi
 const RANGES={...VR,goalKg:[20,400,false],kcal:[800,8000,true],waterMl:[500,10000,true],glass:[50,1500,true],sportWeek:[10,3000,true],stepGoal:[1000,100000,true],heightCm:[100,250,true],age:[10,100,true]};
 const SETLBL={goalKg:"Hedef kilo",kcal:"Günlük kalori",waterMl:"Günlük su",glass:"Bir bardak",sportWeek:"Haftalık spor",stepGoal:"Günlük adım",heightCm:"Boy",age:"Yaş",bpSysHi:"Büyük tansiyon üst sınır",bpDiaHi:"Küçük tansiyon üst sınır",bpSysLo:"Büyük tansiyon alt sınır",bpDiaLo:"Küçük tansiyon alt sınır",gFastLo:"Açlık alt sınır",gFastHi:"Açlık üst sınır",gPostLo:"Yemek sonrası alt sınır",gPostHi:"Yemek sonrası üst sınır"};
 const ZEROOK=["goalKg","kcal","heightCm","age",...Object.keys(VR)];
+const {NUTR,MAX,copyNutr}=LogLib;
 const TYPES=["su","kilo","yemek","spor","not","adim"];
 const dayOk=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s);
 const timeOk=s=>typeof s==="string"&&/^([01]\d|2[0-3]):[0-5]\d$/.test(s);
@@ -390,9 +392,7 @@ function cleanEntries(arr){
     if(bad){drop++;continue}
     const ne={id:0,day:e.day,time:timeOk(e.time)?e.time:"00:00",type:e.type,v:e.type==="not"?null:v,text:typeof e.text==="string"?e.text.slice(0,500):""};
     if(Number.isInteger(e.wid))ne.wid=e.wid;
-    if(e.type==="yemek"&&Number.isFinite(e.p)&&e.p>=0&&e.p<=500)ne.p=e.p;
-    if(e.type==="yemek"&&Number.isFinite(e.c)&&e.c>=0&&e.c<=2000)ne.c=e.c;
-    if(e.type==="yemek"&&Number.isFinite(e.f)&&e.f>=0&&e.f<=1000)ne.f=e.f;
+    if(e.type==="yemek")for(const k of NUTR)if(Number.isFinite(e[k])&&e[k]>=0&&e[k]<=MAX[k])ne[k]=e[k];
     out.push(ne);
   }
   out.forEach((e,i)=>e.id=i+1);
@@ -671,12 +671,14 @@ function goKilo(){
   if(prev!=null)msg+=`, öncekine göre ${fmtS(v-prev)} kg`;
   toast(msg,e.id);
 }
+function addFoods(items,day,msg){
+  const ids=items.map(s=>copyNutr(s,add("yemek",s.v,s.text,day)).id);save();closeSheet();render();
+  toast(msg,()=>{S.entries=S.entries.filter(e=>!ids.includes(e.id));save();render()});
+}
 function repeatYesterday(){
-  const y=keyOff(-1),src=of("yemek",y);
+  const src=of("yemek",keyOff(-1));
   if(!src.length)return toast("Dün kayıtlı yemek yok");
-  const ids=src.map(e=>add("yemek",e.v,e.text,dayKey()).id);
-  closeSheet();render();
-  toast(`Dünkü ${ids.length} yemek bugüne eklendi`,()=>{S.entries=S.entries.filter(e=>!ids.includes(e.id));save();render()});
+  addFoods(src,dayKey(),`Dünkü ${src.length} yemek bugüne eklendi`);
 }
 function sheetYemek(){
   const cnt={};for(const e of S.entries)if(e.type==="yemek"&&e.text){const k=tr(e.text);(cnt[k]=cnt[k]||{n:0,text:e.text,v:e.v}).n++;cnt[k].v=e.v}
