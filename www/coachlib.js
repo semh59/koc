@@ -96,8 +96,8 @@ Sabah planı istenirse "notif" alanına {"morning":"...","afternoon":"...","even
     const c=d.calc;
     L.push(`HESAPLANAN: trend kilo ${f1(c.trendKg)} kg, hız ${c.slope==null?"yetersiz veri":f1(c.slope)+" kg/hafta"}, tahmini harcama ${c.tdee?Math.round(c.tdee/10)*10+" kcal ("+c.source+")":"hesaplanamadı"}, önerilen hedef ${c.target||"–"} kcal, protein aralığı ${c.protein?c.protein[0]+"-"+c.protein[1]+" g":"–"}`);
     if(c.block)L.push("KISIT: "+c.block+". Kalori açığı önerme, gerekirse hekime yönlendir.");
-    L.push("SON 14 GÜN (gün | kilo | kcal | protein g | su ml | spor dk):");
-    for(const r of d.days)L.push(`${r.d} | ${f1(r.kg)} | ${r.kcal||"–"} | ${r.p||"–"} | ${r.su||"–"} | ${r.sport||"–"}`);
+    L.push("SON 14 GÜN (gün | kilo | kcal | protein g | su ml | spor dk | adım):");
+    for(const r of d.days)L.push(`${r.d} | ${f1(r.kg)} | ${r.kcal||"–"} | ${r.p||"–"} | ${r.su||"–"} | ${r.sport||"–"} | ${r.ad||"–"}`);
     L.push("BUGÜN: "+(d.today.length?d.today.join("; "):"kayıt yok")+` (saat ${d.now})`);
     if(d.workouts.length)L.push("SON ANTRENMANLAR: "+d.workouts.join(" | "));
     if(d.notes.length)L.push("SON NOTLAR: "+d.notes.join(" | "));

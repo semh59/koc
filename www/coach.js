@@ -84,7 +84,7 @@ function cData(){
   const st=S.settings,w=weights(),d=[];
   for(let i=13;i>=0;i--){
     const k=keyOff(-i),ents=S.entries.filter(e=>e.day===k);
-    d.push({d:k.slice(5),kg:w[k],kcal:Math.round(ents.filter(e=>e.type==="yemek").reduce((s,e)=>s+(e.v||0),0)),p:Math.round(ents.filter(e=>e.type==="yemek").reduce((s,e)=>s+(e.p||0),0)),su:Math.round(ents.filter(e=>e.type==="su").reduce((s,e)=>s+e.v,0)),sport:Math.round(ents.filter(e=>e.type==="spor").reduce((s,e)=>s+e.v,0))});
+    d.push({d:k.slice(5),kg:w[k],kcal:Math.round(ents.filter(e=>e.type==="yemek").reduce((s,e)=>s+(e.v||0),0)),p:Math.round(ents.filter(e=>e.type==="yemek").reduce((s,e)=>s+(e.p||0),0)),su:Math.round(ents.filter(e=>e.type==="su").reduce((s,e)=>s+e.v,0)),sport:Math.round(ents.filter(e=>e.type==="spor").reduce((s,e)=>s+e.v,0)),ad:Math.round(ents.filter(e=>e.type==="adim").reduce((s,e)=>s+e.v,0))});
   }
   const t=dayKey(),now=new Date();
   const today=S.entries.filter(e=>e.day===t).map(e=>e.type==="yemek"?`yemek: ${e.text||"öğün"}${e.v?" ~"+Math.round(e.v)+" kcal":""}${e.p?", "+Math.round(e.p)+" g protein":""}`:e.type==="su"?`su ${e.v} ml`:e.type==="kilo"?`tartı ${fmt(e.v)} kg`:e.type==="spor"?`spor ${e.text||""} ${Math.round(e.v)} dk`:`not: ${e.text}`);
