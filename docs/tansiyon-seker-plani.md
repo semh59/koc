@@ -1,6 +1,6 @@
 # Tansiyon ve şeker takibi: plan (1 Ekim 2026)
 
-Durum: plan, kod yazılmadı. Semih'in kararları (1 Ekim 2026):
+Durum: aşama 1-4 uygulandı (çekirdek, arayüz, hatırlatmalar, doktor raporu), telefonda denenmedi. Semih'in kararları (1 Ekim 2026):
 - Ön ayarlar **iki alanda da var**. Şeker düğmesi kapsamı açıkça yazar ("diyabetli yetişkinler için ADA hedefi"), tansiyon düğmesi "eşik" der.
 - Uç değer kutusu **olacak** (yalnızca bugün tarihli kayıtta, teşhissiz).
 - Uygulama **yalnızca Semih için**: KVKK metni şimdilik gerekmez (dağıtım olursa şart).
