@@ -277,7 +277,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- veri ---------- */
 const DEF={
-  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,lastPlan:"",lastWeekly:"",lastBackup:"",reminders:[
+  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,lastPlan:"",lastWeekly:"",lastBackup:"",oemDone:false,reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -308,6 +308,7 @@ function cleanSettings(raw){
   if(dayOk(o.lastPlan))d.lastPlan=o.lastPlan;
   if(dayOk(o.lastWeekly))d.lastWeekly=o.lastWeekly;
   if(dayOk(o.lastBackup))d.lastBackup=o.lastBackup;
+  if(o.oemDone===true)d.oemDone=true;
   if(Array.isArray(o.reminders))for(const r of d.reminders){
     const x=o.reminders.find(y=>y&&y.id===r.id);
     if(x){if(timeOk(x.t))r.t=x.t;if(typeof x.on==="boolean")r.on=x.on;if(typeof x.body==="string"&&x.body.trim().length>=5&&x.body.length<=110)r.body=x.body.trim()}
@@ -486,7 +487,8 @@ function viewBugun(){
   const dnav=`<div class="dnav"><button data-lo="1" aria-label="Önceki gün">‹</button><h2>${lname}</h2><button data-lo="-1" aria-label="Sonraki gün"${logOff===0?" disabled":""}>›</button></div>`;
   const lb=st.lastBackup,old=lb?Algo.dayNum(t)-Algo.dayNum(lb):null;
   const bk=S.entries.length>=10&&(old==null||old>14)?`<div class="banner"><b>Yedek zamanı</b><p>${old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`} Telefon kaybolursa ya da uygulama silinirse veriler gider.</p><button class="btn" data-act="yedek">Yedek al</button></div>`:"";
-  return `${bk}${weight}<div class="coach">${esc(coach())}</div>${rings}${actions}${dnav}<div class="card">${log}</div>`;
+  const oemB=isNative()&&oemXiaomi()&&!st.oemDone?`<div class="banner"><b>Hatırlatmalar için bir kez ayar gerekli</b><p>Telefon uygulamayı kapatınca hatırlatmalar gelmeyebilir. İki izin verince düzelir.</p><button class="btn" data-act="oem">Ayarla</button></div>`:"";
+  return `${oemB}${bk}${weight}<div class="coach">${esc(coach())}</div>${rings}${actions}${dnav}<div class="card">${log}</div>`;
 }
 
 function viewTrend(){
@@ -539,7 +541,7 @@ function viewAyar(){
     ${fld("glass","Bir bardak (ml)",st.glass,"Su düğmesinin eklediği miktar","numeric")}
     ${fld("sportWeek","Haftalık spor (dk)",st.sportWeek,"","numeric")}
   </div>
-  <h2>Hatırlatmalar</h2><div class="card"><div class="status">${esc(nf)}</div>${notifDiag?`<p class="hint" style="padding:0 0 8px">${esc(notifDiag)}</p>`:""}${isNative()?`<div class="btns"><button class="btn ghost" data-act="bildirimtest">Test bildirimi gönder</button></div>`:""}
+  <h2>Hatırlatmalar</h2><div class="card"><div class="status">${esc(nf)}</div>${notifDiag?`<p class="hint" style="padding:0 0 8px">${esc(notifDiag)}</p>`:""}${isNative()?`<div class="btns"><button class="btn ghost" data-act="bildirimtest">Test bildirimi gönder</button>${oemXiaomi()?`<button class="btn ghost" data-act="oem">Xiaomi hatırlatma ayarları</button>`:""}</div>`:""}
     ${st.reminders.map(r=>`<div class="rem"><span class="nm">${esc(r.name)}</span><input type="time" value="${r.t}" data-rt="${r.id}" aria-label="${esc(r.name)} saati"><label class="sw"><input type="checkbox" ${r.on?"checked":""} data-ro="${r.id}" aria-label="${esc(r.name)} açık"><span></span></label></div>`).join("")}
     <p class="hint">Koç bağlıysa sabah, öğleden sonra ve akşam bildirim metinlerini her gün yeniden yazar. Bağlı değilse sabit metinler kullanılır.</p></div>
   ${viewProviders()}
@@ -687,7 +689,15 @@ async function scheduleReminders(){
   }catch(e){return "Bildirimler kurulamadı: "+(e&&e.message||e)}
 }
 function setNotif(s){notifStatus=s;if(tab==="ayar")render()}
-let notifDiag="";
+let notifDiag="",oem="";
+const DH=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.DeviceHelp;
+const oemXiaomi=()=>/xiaomi|redmi|poco/.test(oem);
+function sheetOem(){
+  openSheet(`<h3>Hatırlatmalar için bir kez ayar</h3><p class="hint" style="padding:0 0 8px">Xiaomi telefonlar, uygulamayı son uygulamalardan kaydırınca hatırlatmaları siler. Bunun için iki izin gerekir. Düğmeler doğrudan ilgili ekranı açar.</p>
+  <div class="btns"><button class="btn ghost" data-act="oem1">1. Otomatik başlat: NeoWell'i aç</button><button class="btn ghost" data-act="oem2">2. Pil: Kısıtlama yok seç</button></div>
+  <p class="hint">3. Son uygulamalar ekranında NeoWell kartını basılı tutup kilitle (asma kilit simgesi). Bu en sağlam yoldur.</p>
+  <div class="btns"><button class="btn" data-act="oemok">Yaptım</button></div>`);
+}
 async function notifTest(){
   const ln=LN();if(!ln)return toast("Bildirimler yalnızca telefondaki uygulamada çalışır");
   try{
@@ -729,6 +739,9 @@ document.addEventListener("click",ev=>{
     else if(d.act==="not")sheetNot();
     else if(d.act==="yedek")sheetYedek();
     else if(d.act==="bildirimtest")notifTest();
+    else if(d.act==="oem")sheetOem();
+    else if(d.act==="oem1"||d.act==="oem2"){const p=DH();if(p)p[d.act==="oem1"?"openAutostart":"openBattery"]().then(r=>{if(r.opened==="none")toast("Ayar ekranı açılamadı, telefon ayarlarından NeoWell'i bul")},()=>toast("Ayar ekranı açılamadı"))}
+    else if(d.act==="oemok"){S.settings.oemDone=true;save();closeSheet();render();toast("Tamam, hatırlatmaları şimdi dene")}
     else if(d.act==="profil"){tab="ayar";render();window.scrollTo(0,0)}
     else if(d.act==="saglik")openSheet(`<h3>Sağlık notların</h3><div class="lbl">Hamilelik, hastalık, ilaç, yeme bozukluğu geçmişi gibi koçun bilmesi gerekenler.</div><textarea class="in" id="hn" maxlength="500" autofocus>${esc(S.settings.healthNote)}</textarea><button class="btn" data-go="saglik">Kaydet</button>`);
     else if(d.act.startsWith("uygula:")){S.settings.kcal=+d.act.slice(7);save();render();toast(`Kalori hedefi ${S.settings.kcal} kcal oldu`)}
@@ -784,7 +797,8 @@ if(corruptNote)toast("Kayıtlı veri okunamadı. Eski hali ayrı bir kopyada sak
 scheduleReminders().then(s=>{notifStatus=s;if(tab==="ayar")render()});
 setInterval(gTick,1000);
 keysInit().then(()=>{render();cAuto();cFlush()});
-try{const P=window.Capacitor&&window.Capacitor.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App"].map(n=>n+"="+typeof P[n]).join(" "))}catch(e){}
+if(DH())DH().info().then(r=>{oem=String(r.manufacturer||"");render()},()=>{});
+try{const P=window.Capacitor&&window.Capacitor.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp"].map(n=>n+"="+typeof P[n]).join(" "))}catch(e){}
 setInterval(()=>{if(dayKey()!==lastDay){lastDay=dayKey();logOff=0;render()}},60000);
 try{
   const AP=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;

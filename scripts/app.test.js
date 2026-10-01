@@ -36,6 +36,13 @@ setTimeout(async()=>{
   });
   const calls=[];
   w.Capacitor={isNativePlatform:()=>true,Plugins:{LocalNotifications:{checkPermissions:async()=>({display:"granted"}),checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),getPending:async()=>({notifications:[1,2]}),schedule:async x=>{calls.push(x)}}}};
+  w.Capacitor.Plugins.DeviceHelp={info:async()=>({manufacturer:"xiaomi"})};
+  w.eval("oem='xiaomi';S.settings.oemDone=false");
+  ok("Xiaomi'de ayar uyarısı çıkar",ev("viewBugun()").includes("Hatırlatmalar için bir kez ayar"));
+  w.eval("S.settings.oemDone=true");
+  ok("Yaptım denince uyarı kalkar",!ev("viewBugun()").includes("Hatırlatmalar için bir kez ayar"));
+  w.eval("oem='google';S.settings.oemDone=false");
+  ok("Xiaomi dışında uyarı çıkmaz",!ev("viewBugun()").includes("Hatırlatmalar için bir kez ayar"));
   const sched=[];
   Object.assign(w.Capacitor.Plugins.LocalNotifications,{requestPermissions:async()=>({display:"granted"}),cancel:async()=>{},schedule:async x=>{sched.push(...x.notifications)}});
   ok("hatırlatma durumu ok",await ev("scheduleReminders()")==="ok");
