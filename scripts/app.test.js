@@ -67,6 +67,11 @@ setTimeout(async()=>{
   ev("cClick('savefood:'+S.chat.find(m=>m.card&&m.card.kind==='log').id,document.body)");
   ok("kaydedilen yemek listeye girer",ev("S.myFoods.some(m=>m.n==='ev yapımı kek'&&m.k===300)"));
   ev("S.myFoods=[]");
+  ev("sheetYemek()");const fq3=w.document.querySelector("#fq");fq3.value="ev yapımı mantı";fq3.dispatchEvent(new w.Event("input",{bubbles:true}));
+  ok("listede olmayan yemek için Koç'a sor çıkar",w.document.querySelector("#flist [data-c=askfood]")&&w.document.querySelector("#flist").innerHTML.includes("ev yapımı mantı"));
+  ev("S.chat=[];cClick('askfood',document.body)");
+  ok("Koç'a sor mesajı gönderir",ev("S.chat.some(m=>m.role==='user'&&m.text.includes('ev yapımı mantı kaç kalori'))")&&ev("tab")==="koc");
+  ev("tab='bugun';S.chat=[]");
   ev("S.entries=[];S.settings.oemDone=true");
   const yi=ev("allFoods().findIndex(f=>f.n==='Haşlanmış yumurta')");
   ev(`sheetPorsiyon(${yi})`);w.document.querySelector("#fqty").value="2";ev("foodPreview()");

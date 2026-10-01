@@ -374,6 +374,7 @@ async function cProvClick(a,p1,p2){
 function cClick(v,el){
   const [a,p1,p2]=v.split(":");
   switch(a){
+    case "askfood":{const q=foodAskQ.trim();if(q){closeSheet();tab="koc";render();cSend(`${q} kaç kalori? Bir porsiyon için tahmin et.`)}return}
     case "send":{const i=$("#cmsg");const t=i.value;i.value="";return cSend(t)}
     case "retry":offline=null;cFlush();return render();
     case "consent":S.settings.consent=true;save();render();cFlush();cAuto();return;
