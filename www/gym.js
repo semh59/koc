@@ -32,7 +32,7 @@ const fkg=x=>x==null||x===""?"":String(Math.round(x*100)/100).replace(".",",");
 
 /* ---- doğrulama (yükleme ve geri yükleme için) ---- */
 function cleanGym(r){
-  const out={workouts:[],templates:[],customEx:[],gid:1,bar:r.bar>=5&&r.bar<=50?+r.bar:20};
+  const out={workouts:[],templates:[],customEx:[],gid:1,bar:r.bar>=5&&r.bar<=50?+r.bar:20,exCfg:{}};
   const idOk=x=>Number.isInteger(x)&&x>0;
   let maxId=0;
   const ce=Array.isArray(r.customEx)?r.customEx:[];
@@ -41,6 +41,11 @@ function cleanGym(r){
     out.customEx.push({id:e.id,n:e.n.slice(0,60),g:e.g,inc:2.5});maxId=Math.max(maxId,+e.id.slice(1));
   }
   const known=new Set(EXMERGED.map(e=>e.id).concat(out.customEx.map(e=>e.id)));
+  const cfg=r.exCfg&&typeof r.exCfg==="object"?r.exCfg:{};
+  for(const id of Object.keys(cfg)){
+    const c=cfg[id];
+    if(known.has(id)&&c&&Number.isInteger(c.lo)&&c.lo>=1&&c.lo<=30&&Number.isInteger(c.hi)&&c.hi>c.lo&&c.hi<=50)out.exCfg[id]={lo:c.lo,hi:c.hi};
+  }
   for(const w of (Array.isArray(r.workouts)?r.workouts:[])){
     if(!w||!idOk(w.id)||!dayOk(w.day)||!Number.isFinite(w.t0))continue;
     const ex=[];
@@ -78,7 +83,7 @@ function gHistory(exId,beforeT=Infinity){
 function gSuggest(exId){
   if(gKind(exId)!=="w")return null;
   const h=gHistory(exId)[0];if(!h)return null;
-  return Algo.nextTarget(h.sets,{lo:8,hi:12,inc:gEx(exId).inc});
+  return Algo.nextTarget(h.sets,Object.assign({lo:8,hi:12,inc:gEx(exId).inc},S.exCfg[exId]));
 }
 const GSEC={t:30,i:30,c:600};
 function gAddEx(w,exId){
@@ -215,6 +220,7 @@ function gMenu(ei){
   openSheet(`<h3>${esc(gEx(x.id).n)}</h3><div class="plist">
    <button class="prow" data-g="note:${ei}"><span><b>Egzersiz notu</b><span class="mut sm">Örn. bar yüksekliği, ağrı</span></span></button>
    ${gKind(x.id)==="w"?`<button class="prow" data-g="plate:${ei}"><span><b>Plaka ve ısınma</b><span class="mut sm">Bar başına plaka, ısınma setleri</span></span></button>`:""}
+   ${gKind(x.id)==="w"?`<button class="prow" data-g="rng:${ei}"><span><b>Tekrar aralığı</b><span class="mut sm">${(c=>c.lo+"-"+c.hi)(Object.assign({lo:8,hi:12},S.exCfg[x.id]))}, öneri bu aralığa göre</span></span></button>`:""}
    <button class="prow" data-g="mv:${ei}:-1"><span><b>Yukarı taşı</b></span></button>
    <button class="prow" data-g="mv:${ei}:1"><span><b>Aşağı taşı</b></span></button>
    <button class="prow dng" data-g="rmex:${ei}"><span><b>Egzersizi sil</b><span class="mut sm">${x.sets.length} set silinir</span></span></button></div>
