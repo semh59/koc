@@ -12,9 +12,19 @@ const EXLIB=[
   {id:"curl",n:"Biceps curl",g:"Kol",inc:2},{id:"crunch",n:"Crunch",g:"Karın",inc:2.5}
 ];
 const REST_SEC=90;
-let restEnd=0,gQuery="",gGroup="Tümü",gNew=false,gNewGroup="Bacak";
+let gTim=null,gPickMax=40,restEnd=0,gQuery="",gGroup="Tümü",gNew=false,gNewGroup="Bacak";
 
-const gExAll=()=>EXLIB.concat(S.customEx);
+/* Kütüphane (exlib.js) + eski 16 egzersiz: eski kimlikler ve adlar aynen korunur, kütüphane alanları (bölge, tür, şekil) eklenir. */
+const EXREG=["Göğüs","Sırt","Omuz","Biseps","Triseps","Ön kol","Karın","Bel","Kalça","Ön bacak","Arka bacak","Baldır","İç-dış bacak","Trapez","Boyun","Tüm vücut"];
+const EXMERGED=(()=>{
+  const old=new Map(EXLIB.map(e=>[e.id,e])),out=(typeof EXDB!=="undefined"?EXDB:[]).map(x=>old.has(x.id)?Object.assign({},x,old.get(x.id)):x);
+  for(const e of EXLIB)if(!out.some(x=>x.id===e.id))out.push(e);
+  return out;
+})();
+const gExAll=()=>EXMERGED.concat(S.customEx);
+const gKind=id=>gEx(id).k||"w";
+const gTimed=id=>"tic".includes(gKind(id));
+const gSetOk=s=>s.reps>0||s.sec>0;
 const gEx=id=>gExAll().find(e=>e.id===id)||{id,n:"Silinmiş egzersiz",g:"Diğer",inc:2.5};
 const gActive=()=>S.workouts.find(w=>w.t1==null)||null;
 const gDone=w=>w.t1!=null;
@@ -30,7 +40,7 @@ function cleanGym(r){
     if(!e||typeof e.id!=="string"||!/^c\d+$/.test(e.id)||typeof e.n!=="string"||!GROUPS.includes(e.g))continue;
     out.customEx.push({id:e.id,n:e.n.slice(0,60),g:e.g,inc:2.5});maxId=Math.max(maxId,+e.id.slice(1));
   }
-  const known=new Set(EXLIB.map(e=>e.id).concat(out.customEx.map(e=>e.id)));
+  const known=new Set(EXMERGED.map(e=>e.id).concat(out.customEx.map(e=>e.id)));
   for(const w of (Array.isArray(r.workouts)?r.workouts:[])){
     if(!w||!idOk(w.id)||!dayOk(w.day)||!Number.isFinite(w.t0))continue;
     const ex=[];
@@ -39,9 +49,9 @@ function cleanGym(r){
       const sets=[];
       for(const s of (Array.isArray(x.sets)?x.sets:[])){
         if(!s)continue;
-        const kg=s.kg==null?null:Number(s.kg),reps=s.reps==null?null:Number(s.reps);
-        if((kg!=null&&!(kg>=0&&kg<=1000))||(reps!=null&&!(reps>=0&&reps<=200)))continue;
-        sets.push({kg,reps,done:s.done===true});
+        const kg=s.kg==null?null:Number(s.kg),reps=s.reps==null?null:Number(s.reps),sec=s.sec==null?null:Number(s.sec);
+        if((kg!=null&&!(kg>=0&&kg<=1000))||(reps!=null&&!(reps>=0&&reps<=200))||(sec!=null&&!(sec>=0&&sec<=7200)))continue;
+        sets.push(sec==null?{kg,reps,done:s.done===true}:{kg,reps,sec:Math.round(sec),done:s.done===true});
       }
       ex.push({id:x.id,note:typeof x.note==="string"?x.note.slice(0,300):"",sets});
     }
@@ -61,13 +71,21 @@ function cleanGym(r){
 /* ---- geçmiş ve öneri ---- */
 function gHistory(exId,beforeT=Infinity){
   return S.workouts.filter(w=>gDone(w)&&w.t0<beforeT).sort((a,b)=>b.t0-a.t0)
-    .map(w=>({w,sets:(w.ex.find(x=>x.id===exId)||{sets:[]}).sets.filter(s=>s.done&&s.reps>0)})).filter(h=>h.sets.length);
+    .map(w=>({w,sets:(w.ex.find(x=>x.id===exId)||{sets:[]}).sets.filter(s=>s.done&&gSetOk(s))})).filter(h=>h.sets.length);
 }
 function gSuggest(exId){
+  if(gKind(exId)!=="w")return null;
   const h=gHistory(exId)[0];if(!h)return null;
   return Algo.nextTarget(h.sets,{lo:8,hi:12,inc:gEx(exId).inc});
 }
+const GSEC={t:30,i:30,c:600};
 function gAddEx(w,exId){
+  const kind=gKind(exId);
+  if(kind==="t"||kind==="i"||kind==="c"){
+    const h=gHistory(exId)[0],sec=h&&h.sets[0].sec||GSEC[kind],sets=[];
+    for(let i=0;i<(kind==="c"?1:h?Math.min(h.sets.length,6):kind==="i"?4:3);i++)sets.push({kg:null,reps:null,sec,done:false});
+    w.ex.push({id:exId,note:"",sets});return;
+  }
   const h=gHistory(exId)[0],sug=gSuggest(exId);
   const n=h?Math.min(Math.max(h.sets.length,1),6):3,sets=[];
   for(let i=0;i<n;i++)sets.push({kg:sug?sug.kg:null,reps:sug?sug.reps:null,done:false});
@@ -75,7 +93,7 @@ function gAddEx(w,exId){
 }
 function gBest(w,exId){
   let b=0;const x=w.ex.find(e=>e.id===exId);
-  if(x)for(const s of x.sets)if(s.done)b=Math.max(b,Algo.est1RM(s.kg,s.reps));
+  if(x&&gKind(exId)==="w")for(const s of x.sets)if(s.done)b=Math.max(b,Algo.est1RM(s.kg,s.reps));
   return b;
 }
 function gPRs(w){
@@ -91,11 +109,18 @@ function gPRs(w){
   return res;
 }
 const gWorkVol=w=>w.ex.reduce((s,x)=>s+Algo.volume(x.sets.filter(t=>t.done)),0);
-const gWorkSets=w=>w.ex.reduce((s,x)=>s+x.sets.filter(t=>t.done&&t.reps>0).length,0);
+const gWorkSets=w=>w.ex.reduce((s,x)=>s+x.sets.filter(t=>t.done&&gSetOk(t)).length,0);
 function gWeekSets(){
   const from=Date.now()-7*864e5,m={};
   for(const w of S.workouts)if(gDone(w)&&w.t0>=from)for(const x of w.ex){
-    const g=gEx(x.id).g;m[g]=(m[g]||0)+x.sets.filter(t=>t.done&&t.reps>0).length;
+    const g=gEx(x.id).g;m[g]=(m[g]||0)+x.sets.filter(t=>t.done&&gSetOk(t)).length;
+  }
+  return m;
+}
+function gWeekRegions(){
+  const from=Date.now()-7*864e5,m={};
+  for(const w of S.workouts)if(gDone(w)&&w.t0>=from)for(const x of w.ex){
+    const e=gEx(x.id),g=e.r||e.g;m[g]=(m[g]||0)+x.sets.filter(t=>t.done&&gSetOk(t)).length;
   }
   return m;
 }
@@ -118,6 +143,7 @@ function gHome(){
   const bars=Object.keys(wk).length?`<h2>Bu hafta, kas grubuna göre set</h2><div class="card">${GROUPS.concat(["Diğer"]).filter(g=>wk[g]).map(g=>`<div class="gbar"><span>${g}</span><span class="bar"><i style="width:${(wk[g]/mx*100).toFixed(0)}%"></i></span><span class="num">${wk[g]}</span></div>`).join("")}<p class="hint">Kas grubu başına haftada 10 ile 20 set çoğu kişi için makul bir aralıktır.</p></div>`:"";
   const rec=done.slice(0,8).map(x=>`<button class="rrow" data-g="sum:${x.id}"><span class="num mut">${gDate(x.day)}</span><span class="tx">${esc(x.name)}</span><span class="num mut">${Math.round(gWorkVol(x)).toLocaleString("tr-TR")} kg</span></button>`).join("");
   return `<button class="btn" data-g="start:">Boş antrenman başlat</button>
+  <button class="btn ghost" data-g="lib" style="margin-top:8px">📚 Egzersiz kütüphanesi (${EXMERGED.length}, animasyonlu)</button>
   <h2>Şablonlarım</h2>${tpl||`<p class="hint">Şablon yok. Bir antrenmanı bitirince "Şablon olarak kaydet" ile oluşur.</p>`}
   ${bars}
   <h2>Son antrenmanlar</h2><div class="card">${rec||`<p class="hint">Henüz antrenman yok.</p>`}</div>`;
@@ -125,19 +151,24 @@ function gHome(){
 function gLive(w){
   const cards=w.ex.map((x,ei)=>{
     const ex=gEx(x.id),prev=gHistory(x.id,w.t0)[0],sug=gSuggest(x.id);
+    const kind=gKind(x.id),tm=kind==="t"||kind==="i"||kind==="c",unit=kind==="c"?60:1;
     const rows=x.sets.map((s,si)=>{
-      const p=prev&&prev.sets[si]?`${fkg(prev.sets[si].kg)} × ${prev.sets[si].reps}`:"–";
+      const ps=prev&&prev.sets[si],p=!ps?"–":tm?`${kind==="c"?Math.round(ps.sec/60)+" dk":ps.sec+" sn"}`:`${ps.kg?fkg(ps.kg)+" × ":""}${ps.reps}`;
+      const tick=`<button class="ok${s.done?" on":""}" data-g="done:${ei}:${si}" aria-label="${si+1}. set ${s.done?"geri al":"tamamlandı"}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>`;
+      if(tm)return `<div class="srow${s.done?" dn":""}"><span class="sn">${si+1}</span><span class="sp num">${p}</span>
+      <input class="sin num" inputmode="numeric" aria-label="${si+1}. set ${kind==="c"?"dakika":"saniye"}" data-gi="sec:${ei}:${si}" value="${s.sec==null?"":Math.round(s.sec/unit)}" placeholder="${kind==="c"?"dk":"sn"}">
+      <button class="sin tgo" data-g="tstart:${ei}:${si}" aria-label="${si+1}. set zamanlayıcıyı başlat">${gTim&&gTim.ei===ei&&gTim.si===si?"⏸":"▶"}</button>${tick}</div>`;
       return `<div class="srow${s.done?" dn":""}"><span class="sn">${si+1}</span><span class="sp num">${p}</span>
-      <input class="sin num" inputmode="decimal" aria-label="${si+1}. set kg" data-gi="kg:${ei}:${si}" value="${s.kg==null?"":fkg(s.kg)}" placeholder="kg">
-      <input class="sin num" inputmode="numeric" aria-label="${si+1}. set tekrar" data-gi="reps:${ei}:${si}" value="${s.reps==null?"":s.reps}" placeholder="tek">
-      <button class="ok${s.done?" on":""}" data-g="done:${ei}:${si}" aria-label="${si+1}. set ${s.done?"geri al":"tamamlandı"}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button></div>`;
+      <input class="sin num" inputmode="decimal" aria-label="${si+1}. set kg" data-gi="kg:${ei}:${si}" value="${s.kg==null?"":fkg(s.kg)}" placeholder="${kind==="b"?"ek kg":"kg"}">
+      <input class="sin num" inputmode="numeric" aria-label="${si+1}. set tekrar" data-gi="reps:${ei}:${si}" value="${s.reps==null?"":s.reps}" placeholder="tek">${tick}</div>`;
     }).join("");
-    return `<div class="card ex"><div class="exh"><button class="exn" data-g="hist:${x.id}"><b>${esc(ex.n)}</b><span class="mut">${ex.g}</span></button><button class="del" data-g="menu:${ei}" aria-label="Egzersiz menüsü">⋮</button></div>
+    return `<div class="card ex"><div class="exh"><button class="exn" data-g="hist:${x.id}"><b>${esc(ex.n)}</b><span class="mut">${ex.r||ex.g}</span></button><button class="del" data-g="exinfo:${x.id}" aria-label="Egzersiz bilgisi">ⓘ</button><button class="del" data-g="menu:${ei}" aria-label="Egzersiz menüsü">⋮</button></div>
     ${sug?`<div class="sug">Öneri: ${fkg(sug.kg)||0} kg × ${sug.reps}. ${sug.why}.</div>`:""}${x.note?`<div class="note">${esc(x.note)}</div>`:""}
-    <div class="shead"><span>Set</span><span>Önceki</span><span>kg</span><span>Tekrar</span><span></span></div>${rows}
+    <div class="shead"><span>Set</span><span>Önceki</span>${tm?`<span>${kind==="c"?"Dakika":"Süre (sn)"}</span><span>Süre</span>`:`<span>${kind==="b"?"Ek kg":"kg"}</span><span>Tekrar</span>`}<span></span></div>${rows}
     <button class="lnk" data-g="addset:${ei}">Set ekle</button></div>`;
   }).join("");
   return `<div class="livebar"><div><b>${esc(w.name)}</b><div class="mut num" id="gstat">${gClock(Date.now()-w.t0)} süre, ${Math.round(gWorkVol(w)).toLocaleString("tr-TR")} kg hacim</div></div><button class="btn fin" data-g="finish">Bitir</button></div>
+  ${gTimBar()}
   <div class="rest" id="grest" hidden><div><span class="mut">Dinlenme</span><b class="num" id="gr"></b></div><button data-g="rest:-15">−15</button><button data-g="rest:15">+15</button><button data-g="rest:0">Atla</button></div>
   ${cards||`<p class="hint">Henüz egzersiz yok. Aşağıdan ekle.</p>`}
   <button class="btn ghost" data-g="pick">Egzersiz ekle</button>
@@ -158,17 +189,17 @@ function gTick(){
 /* ---- alt sayfalar ---- */
 function gPickHtml(){
   const q=tr(gQuery),w=gActive();
-  const list=gExAll().filter(e=>(gGroup==="Tümü"||e.g===gGroup)&&(!q||tr(e.n).includes(q)));
+  const all=gExAll().filter(e=>(gGroup==="Tümü"||(e.r||e.g)===gGroup)&&(!q||tr(e.n).includes(q))),list=all.slice(0,gPickMax);
   const inW=new Set(w?w.ex.map(x=>x.id):[]);
   return list.map(e=>{
-    const h=gHistory(e.id)[0],last=h?`son ${fkg(Math.max(...h.sets.map(s=>s.kg||0)))||0} kg × ${h.sets[0].reps}`:"henüz yok";
-    return `<button class="prow" data-g="addex:${e.id}"><span><b>${esc(e.n)}</b><span class="mut sm">${e.g}, ${last}</span></span>${inW.has(e.id)?`<span class="tag">Eklendi</span>`:`<span class="plus">+</span>`}</button>`;
-  }).join("")||`<p class="hint">Sonuç yok.</p>`;
+    const h=gHistory(e.id)[0],last=h?(gTimed(e.id)?`son ${h.sets[0].sec} sn`:`son ${fkg(Math.max(...h.sets.map(s=>s.kg||0)))||0} kg × ${h.sets[0].reps}`):"henüz yok";
+    return `<button class="prow" data-g="addex:${e.id}"><span><b>${esc(e.n)}</b><span class="mut sm">${e.r||e.g}${e.q?", "+e.q.toLowerCase():""}, ${last}</span></span>${inW.has(e.id)?`<span class="tag">Eklendi</span>`:`<span class="plus">+</span>`}</button>`;
+  }).join("")+(all.length>list.length?`<button class="lnk" data-g="pickmore">${all.length-list.length} egzersiz daha göster</button>`:"")||`<p class="hint">Sonuç yok.</p>`;
 }
 function gSheetPick(){
-  gQuery="";gGroup="Tümü";gNew=false;
+  gQuery="";gGroup="Tümü";gNew=false;gPickMax=40;
   openSheet(`<h3>Egzersiz ekle</h3><input class="in" id="gq" placeholder="Egzersiz ara" autocomplete="off">
-  <div class="chips" id="gchips">${["Tümü"].concat(GROUPS).map(g=>`<button class="chip" data-g="grp:${g}" aria-pressed="${g==="Tümü"}">${g}</button>`).join("")}</div>
+  <div class="chips" id="gchips">${["Tümü"].concat(EXREG).map(g=>`<button class="chip" data-g="grp:${g}" aria-pressed="${g==="Tümü"}">${g}</button>`).join("")}</div>
   <div id="glist" class="plist">${gPickHtml()}</div>
   <button class="lnk" data-g="newex">Yeni egzersiz oluştur</button><div id="gnew"></div>
   <button class="btn" data-g="closesheet">Tamam</button>`);
@@ -188,6 +219,7 @@ function gSheetNote(ei){
 }
 function gSheetHist(exId){
   const ex=gEx(exId),h=gHistory(exId);
+  if(gKind(exId)!=="w")return gSheetHistSimple(exId,h);
   if(!h.length)return openSheet(`<h3>${esc(ex.n)}</h3><p class="hint">Henüz tamamlanmış set yok.</p><button class="btn" data-g="closesheet">Kapat</button>`);
   const per=h.map(x=>({d:x.w.day,e:gBest(x.w,exId),vol:Algo.volume(x.sets),top:x.sets.reduce((a,s)=>Algo.est1RM(s.kg,s.reps)>Algo.est1RM(a.kg,a.reps)?s:a,x.sets[0])}));
   const best=per.reduce((a,b)=>b.e>a.e?b:a,per[0]);
@@ -201,7 +233,7 @@ function gSheetHist(exId){
 function gSheetSummary(id){
   const w=S.workouts.find(x=>x.id===id);if(!w)return;
   const prs=gPRs(w),sets={};
-  for(const x of w.ex)sets[gEx(x.id).g]=(sets[gEx(x.id).g]||0)+x.sets.filter(s=>s.done&&s.reps>0).length;
+  for(const x of w.ex)sets[gEx(x.id).g]=(sets[gEx(x.id).g]||0)+x.sets.filter(s=>s.done&&gSetOk(s)).length;
   openSheet(`<h3>${esc(w.name)}</h3><div class="mut sm">${gDate(w.day)}, ${gDur(w)} dk</div>
   <div class="sumv num">${Math.round(gWorkVol(w)).toLocaleString("tr-TR")} <small>kg hacim</small></div>
   <div class="two"><div class="stat"><div class="k">Set</div><div class="v num">${gWorkSets(w)}</div></div><div class="stat"><div class="k">Egzersiz</div><div class="v num">${w.ex.length}</div></div></div>
@@ -220,7 +252,8 @@ function gStart(tplId){
 }
 function gFinish(){
   const w=gActive();if(!w)return;
-  const open=w.ex.reduce((s,x)=>s+x.sets.filter(t=>!t.done&&t.reps>0).length,0);
+  gTimStop();
+  const open=w.ex.reduce((s,x)=>s+x.sets.filter(t=>!t.done&&gSetOk(t)).length,0);
   if(open&&!confirm(`${open} set tamamlanmadı olarak işaretli. Bunlar sayılmadan bitirilsin mi?`))return;
   for(const x of w.ex)x.sets=x.sets.filter(s=>s.done);
   w.ex=w.ex.filter(x=>x.sets.length);
@@ -240,7 +273,8 @@ function gClick(v,el){
     case "start":return gStart(p1?+p1:null);
     case "pick":return gSheetPick();
     case "closesheet":return closeSheet();
-    case "grp":gGroup=p1;document.querySelectorAll("#gchips .chip").forEach(c=>c.setAttribute("aria-pressed",c.dataset.g==="grp:"+gGroup));$("#glist").innerHTML=gPickHtml();return;
+    case "pickmore":gPickMax+=60;$("#glist").innerHTML=gPickHtml();return;
+    case "grp":gGroup=p1;gPickMax=40;document.querySelectorAll("#gchips .chip").forEach(c=>c.setAttribute("aria-pressed",c.dataset.g==="grp:"+gGroup));$("#glist").innerHTML=gPickHtml();return;
     case "addex":{
       if(!w)return;const i=w.ex.findIndex(x=>x.id===p1);
       if(i>=0)return toast("Bu egzersiz zaten ekli");
@@ -257,11 +291,16 @@ function gClick(v,el){
     case "menu":return gMenu(ei);
     case "note":return gSheetNote(ei);
     case "savenote":w.ex[ei].note=$("#gnote").value.trim().slice(0,300);save();closeSheet();render();return;
-    case "mv":{const j=ei+si;if(j<0||j>=w.ex.length){return}[w.ex[ei],w.ex[j]]=[w.ex[j],w.ex[ei]];save();closeSheet();render();return}
-    case "rmex":{const rm=w.ex[ei];w.ex.splice(ei,1);save();closeSheet();render();toast("Egzersiz silindi",()=>{w.ex.splice(ei,0,rm);save();render()});return}
+    case "mv":{gTimStop();const j=ei+si;if(j<0||j>=w.ex.length){return}[w.ex[ei],w.ex[j]]=[w.ex[j],w.ex[ei]];save();closeSheet();render();return}
+    case "rmex":{gTimStop();const rm=w.ex[ei];w.ex.splice(ei,1);save();closeSheet();render();toast("Egzersiz silindi",()=>{w.ex.splice(ei,0,rm);save();render()});return}
     case "addset":{const s=w.ex[ei].sets,l=s[s.length-1];s.push({kg:l?l.kg:null,reps:l?l.reps:null,done:false});save();render();return}
     case "done":{
       const s=w.ex[ei].sets[si],row=el.closest(".srow");
+      if(gTimed(w.ex[ei].id)){
+        if(!s.done){if(!(s.sec>0))return toast("Önce süreyi yaz");s.done=true;if(gTim&&gTim.ei===ei&&gTim.si===si)gTimStop();restEnd=Date.now()+(gKind(w.ex[ei].id)==="c"?0:30000)}
+        else s.done=false;
+        save();render();gTick();return;
+      }
       const kg=num(row.querySelector("[data-gi^=kg]").value),reps=num(row.querySelector("[data-gi^=reps]").value,true);
       if(!s.done){
         if(!(reps>0&&reps<=200))return toast("Önce tekrar sayısını yaz");
@@ -273,9 +312,10 @@ function gClick(v,el){
     case "finish":return gFinish();
     case "cancel":{
       if(!confirm("Bu antrenman kaydedilmeden silinsin mi?"))return;
-      S.workouts=S.workouts.filter(x=>x!==w);save();restEnd=0;render();return;
+      gTimStop();S.workouts=S.workouts.filter(x=>x!==w);save();restEnd=0;render();return;
     }
     case "hist":return gSheetHist(p1);
+    default:return typeof exClick==="function"&&exClick(a,p1,p2,el,w);
     case "sum":return gSheetSummary(+p1);
     case "savetpl":{
       const x=S.workouts.find(y=>y.id===+p1);if(!x)return;
@@ -298,7 +338,11 @@ function gInput(t){
   const [f,ei,si]=t.dataset.gi.split(":"),w=gActive();if(!w)return;
   const s=w.ex[+ei]&&w.ex[+ei].sets[+si];if(!s)return;
   const raw=t.value.trim();
-  if(f==="kg"){
+  if(f==="sec"){
+    const unit=gKind(w.ex[+ei].id)==="c"?60:1,max=unit===60?120:7200;
+    if(raw===""){s.sec=null}
+    else{const v=num(raw,true);if(isNaN(v)||v<1||v>max){t.value=s.sec==null?"":Math.round(s.sec/unit);return toast(unit===60?"Süre 1 ile 120 dakika arasında olmalı":"Süre 1 ile 7200 saniye arasında olmalı")}s.sec=v*unit;t.value=v}
+  }else if(f==="kg"){
     if(raw===""){s.kg=null}
     else{const v=num(raw);if(isNaN(v)||v<0||v>1000){t.value=s.kg==null?"":fkg(s.kg);return toast("Ağırlık 0 ile 1000 kg arasında olmalı")}s.kg=v;t.value=fkg(v)}
   }else{

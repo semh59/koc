@@ -90,8 +90,8 @@ def main():
              "c": {"strength": "g", "stretching": "e", "cardio": "k", "plyometrics": "p", "powerlifting": "g", "strongman": "g", "olympic weightlifting": "g"}[cat],
              "inc": INC.get(eq, 1 if kind == "b" else 2.5), "tp": tpl, "im": imgs[id_]}
         pr = prop.strip()
-        if pr and pr != "none":
-            d["pr"] = pr
+        if pr:
+            d["pr"] = "-" if pr == "none" else pr
         if o.strip():
             d["o"] = json.loads(o)
         out.append(d)

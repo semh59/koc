@@ -39,5 +39,5 @@ ok("kütüphane: görseli olanların dosyaları diskte, %95'inin görseli var",X
 ok("görsel boyutu: toplam ≤ 12 MB",(()=>{let s=0;for(const e of X)for(let i=0;i<e.im;i++)s+=fs.statSync(path.join(__dirname,"../www/ex",e.id,i+".webp")).size;return s<12e6})());
 const svg=F.svg(Object.assign({},T.squat,{o:{}}),{label:"Squat"}),st=F.svg(T.squat,{anim:false});
 ok("svg: animasyonlu ve durağan üretilir, sayı hatası yok",svg.startsWith("<svg")&&svg.includes("<animate")&&!st.includes("<animate")&&!/NaN|undefined/.test(svg+st));
-ok("svg: tüm egzersizler çizilir",X.every(e=>{const s=F.svg(Object.assign({},T[e.tp],e.o?{o:e.o}:{},e.pr?{prop:{k:e.pr.split("@")[0],at:e.pr.split("@")[1]==="sh"?"shoulder":"wrist"}}:{}),{});return !/NaN|undefined/.test(s)}));
+ok("svg: tüm egzersizler çizilir",X.every(e=>{const s=F.svg(Object.assign({},T[e.tp],e.o?{o:e.o}:{},e.pr&&e.pr!=="-"?{prop:{k:e.pr.split("@")[0],at:e.pr.split("@")[1]==="sh"?"shoulder":"wrist"}}:{}),{});return !/NaN|undefined/.test(s)}));
 console.log(bad?"\n"+bad+" HATA":"\nTüm şekil testleri geçti");process.exit(bad?1:0);

@@ -698,6 +698,92 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("hareket: eklenti yoksa (tarayıcı) blok gizli",!q("#view").textContent.includes("Hareket algılama"));
     ev("S.settings.stepsOn="+so+";S.settings.motionOn=false;S.moves=[];tab='bugun';render()");
   }
+  {
+    // egzersiz kütüphanesi, süreli setler ve zamanlayıcı
+    const doc=w.document,q=s=>doc.querySelector(s),qa=s=>[...doc.querySelectorAll(s)],click=s=>q(s).click(),wait=ms=>new Promise(r=>setTimeout(r,ms)),toastT=()=>q("#toast").textContent;
+    const fire=(sel,v)=>{q(sel).value=v;q(sel).dispatchEvent(new w.Event("change",{bubbles:true}))};
+    const lnOld2=w.Capacitor.Plugins.LocalNotifications,lnLog=[];
+    w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),getPending:async()=>({notifications:[{id:9001},{id:5}]}),getDeliveredNotifications:async()=>({notifications:[]}),removeDeliveredNotifications:async()=>{},registerActionTypes:async()=>{},cancel:async o=>{lnLog.push(["c",o.notifications.map(n=>n.id)])},schedule:async o=>{lnLog.push(["s",o.notifications.map(n=>n.id)])}};
+    ev("S.workouts=[];S.templates=[];S.customEx=[];S.gid=1;tab='salon';render()");
+    ok("kütüphane: ≥300 egzersiz, eski kimlikler ve adlar korunur, şekil eklenir",ev("EXMERGED.length")>=300&&ev("gEx('squat').n")==="Squat"&&ev("gEx('squat').tp")==="squat"&&ev("gEx('ohp').n")==="Omuz press"&&ev("gEx('curl').inc")===2);
+    ok("salon ana ekranı kütüphane düğmesini gösterir",!!q('[data-g="lib"]'));
+    click('[data-g="lib"]');
+    ok("kütüphane ekranı açılır: başlık, 40 satır, küçük şekiller, devamı düğmesi",ev("tab")==="egz"&&q("#ttl").textContent==="Egzersizler"&&qa("#gllist .exrow").length===40&&!!q(".exthumb svg")&&!!q('[data-g="lmore"]'),qa("#gllist .exrow").length);
+    click('[data-g="lreg:Biseps"]');
+    const nb=ev("EXMERGED.filter(e=>e.r==='Biseps').length");
+    ok("bölge süzgeci: yalnız o bölge",qa("#gllist .exrow").length===nb&&nb>=15&&!q("#gllist").textContent.includes("Bench press"),qa("#gllist .exrow").length);
+    click('[data-g="lreg:Tümü"]');click('[data-g="leq:Ağırlıksız"]');click('[data-g="lcat:Esneme"]');
+    ok("tür ve ekipman süzgeci birlikte çalışır",qa("#gllist .exrow").length===ev("EXMERGED.filter(e=>e.q==='Ağırlıksız'&&e.c==='e').length")&&qa("#gllist .exrow").length>=5);
+    click('[data-g="leq:Tümü"]');click('[data-g="lcat:Tümü"]');
+    q("#glq").value="plank";q("#glq").dispatchEvent(new w.Event("input",{bubbles:true}));
+    ok("arama: plank bulunur",q("#gllist").textContent.includes("Plank")&&qa("#gllist .exrow").length<10);
+    click('[data-g="exinfo:plank"]');
+    ok("ayrıntı: hareketli şekil, form ipucu, foto, kayıt türü",q("#sheet .exfig svg animate")&&q("#sheet").textContent.includes("Vücut baştan topuğa")&&q('#sheet img[src="ex/plank/0.webp"]')&&q("#sheet").textContent.includes("Süreli tutuş"));
+    click('[data-g="exadd:plank"]');
+    ok("antrenmana ekle: antrenman başlar, plank 3 set × 30 sn",ev("S.workouts.length")===1&&ev("S.workouts[0].ex[0].id")==="plank"&&ev("S.workouts[0].ex[0].sets.length")===3&&ev("S.workouts[0].ex[0].sets[0].sec")===30&&ev("tab")==="salon"&&!!q('[data-gi="sec:0:0"]')&&!!q('[data-g="tstart:0:0"]'));
+    click('[data-g="tstart:0:0"]');await wait(20);
+    ok("zamanlayıcı başlar: çubuk görünür, bildirim 9001 kurulur",ev("!!gTim&&gTim.phase==='work'&&gTim.total===30")&&!q("#gtim").hidden&&lnLog.some(l=>l[0]==="s"&&l[1].includes(9001)),lnLog);
+    ev("render()");
+    ok("yeniden çizimde zamanlayıcı çubuğu korunur",!q("#gtim").hidden&&q("#gtv").textContent.length>=4);
+    ev("gTim.end=Date.now()-1;exTick()");
+    ok("süre dolunca set tamamlanır, dinlenme başlar, zamanlayıcı kapanır",ev("S.workouts[0].ex[0].sets[0].done")===true&&ev("gTim")===null&&ev("restEnd")>Date.now()&&toastT().includes("1. set tamamlandı"),toastT());
+    click('[data-g="tstart:0:1"]');click('[data-g="tstart:0:1"]');
+    ok("çalışan zamanlayıcıya tekrar basmak durdurur (set tamamlanmaz)",ev("gTim")===null&&ev("S.workouts[0].ex[0].sets[1].done")===false);
+    click('[data-g="done:0:1"]');
+    ok("süreli set elle tamamlanabilir",ev("S.workouts[0].ex[0].sets[1].done")===true);
+    fire('[data-gi="sec:0:2"]',"0");
+    ok("geçersiz süre reddedilir",ev("S.workouts[0].ex[0].sets[2].sec")===30&&toastT().includes("Süre"),toastT());
+    // aralıklı tur
+    ev("gAddEx(gActive(),'climber');save();render()");
+    ok("aralıklı: 4 tur × 30 sn",ev("S.workouts[0].ex[1].sets.length")===4&&ev("S.workouts[0].ex[1].sets[0].sec")===30);
+    click('[data-g="tstart:1:0"]');ev("gTim.end=Date.now()-1;exTick()");
+    ok("aralıklı: tur bitince otomatik 20 sn dinlenme, sonra sıradaki tur",ev("S.workouts[0].ex[1].sets[0].done")&&ev("gTim.phase")==="rest"&&ev("gTim.si")===1&&ev("gTim.total")===20);
+    ev("gTim.end=Date.now()-1;exTick()");
+    ok("aralıklı: dinlenme bitince 2. tur otomatik başlar",ev("gTim.phase")==="work"&&ev("gTim.si")===1&&ev("gTim.total")===30);
+    click('[data-g="tstop"]');
+    ok("Bitir: tur tamamlanır, dinlenmeye geçer",ev("S.workouts[0].ex[1].sets[1].done")===true&&ev("gTim&&gTim.phase")==="rest");
+    ev("gTimStop()");
+    // kardiyo (dakika)
+    ev("gAddEx(gActive(),'treadjog');save();render()");
+    ok("kardiyo: tek set 10 dk, dakika olarak gösterilir",ev("S.workouts[0].ex[2].sets.length")===1&&ev("S.workouts[0].ex[2].sets[0].sec")===600&&q('[data-gi="sec:2:0"]').value==="10");
+    fire('[data-gi="sec:2:0"]',"25");
+    ok("kardiyo: dakika saniyeye çevrilip saklanır",ev("S.workouts[0].ex[2].sets[0].sec")===1500);
+    fire('[data-gi="sec:2:0"]',"121");
+    ok("kardiyo: 120 dakikadan uzun reddedilir",ev("S.workouts[0].ex[2].sets[0].sec")===1500);
+    // vücut ağırlığı
+    ev("gAddEx(gActive(),'pushup');save();render()");
+    ok("vücut ağırlığı: 'ek kg' alanı",q('[data-gi="kg:3:0"]').placeholder==="ek kg");
+    fire('[data-gi="reps:3:0"]',"12");
+    click('[data-g="done:3:0"]');
+    ok("vücut ağırlığı: yalnız tekrarla tamamlanır",ev("S.workouts[0].ex[3].sets[0].done")===true&&ev("S.workouts[0].ex[3].sets[0].reps")===12&&ev("S.workouts[0].ex[3].sets[0].kg")===0);
+    // kalıcılık ve eski veri
+    const R=JSON.parse(ev("JSON.stringify(cleanGym(JSON.parse(JSON.stringify(S))))"));
+    ok("kayıt turu: süre alanı korunur",R.workouts[0].ex[0].sets[0].sec===30&&R.workouts[0].ex[2].sets[0].sec===1500&&R.workouts[0].ex.length===4);
+    const old={workouts:[{id:5,day:"2026-09-01",t0:1,t1:2,name:"Eski",tpl:null,ex:[{id:"squat",note:"",sets:[{kg:100,reps:5,done:true}]},{id:"bench",note:"n",sets:[{kg:60,reps:8,done:true}]},{id:"silinmis_x",note:"",sets:[{kg:1,reps:1,done:true}]}]}],templates:[{id:6,name:"T",ex:["squat","row","bilinmeyen"]}],customEx:[{id:"c7",n:"Benim",g:"Kol"},{id:"c8",n:"Kötü",g:"Yok"}],gid:9};
+    const O=JSON.parse(ev("JSON.stringify(cleanGym("+JSON.stringify(old)+"))"));
+    ok("eski kayıt kaybolmaz: eski kimlikler, şablon, eski gruplu özel egzersiz",O.workouts.length===1&&O.workouts[0].ex.length===2&&O.workouts[0].ex[0].sets[0].kg===100&&O.workouts[0].ex[0].sets[0].sec===undefined&&O.templates[0].ex.join()==="squat,row"&&O.customEx.length===1&&O.customEx[0].g==="Kol",O);
+    ok("tüm kütüphane kimlikleri kayıtlarda geçerli",ev("EXMERGED.every(e=>cleanGym({workouts:[{id:1,day:'2026-09-01',t0:1,ex:[{id:e.id,sets:[{kg:1,reps:1,done:true}]}]}]}).workouts[0].ex.length===1)"));
+    ev("S.workouts[0].t1=Date.now();render()");
+    ok("haftalık set sayısı süreli setleri de sayar (Karın)",ev("gWeekSets()['Karın']")>=2,ev("gWeekSets()"));
+    click('[data-g="sum:1"]');
+    ok("antrenman özeti süreli setlerle bozulmaz",q("#sheet").textContent.length>20&&!/NaN|undefined/.test(q("#sheet").textContent),q("#sheet").textContent.slice(0,200));
+    ev("closeSheet();render()");
+    ev("gSheetHist('plank')");
+    ok("süreli egzersiz geçmişi: saniyeler listelenir",q("#sheet").textContent.includes("30 sn")&&!q("#sheet").textContent.includes("1TM"),q("#sheet").textContent.slice(0,120));
+    ev("closeSheet();S.workouts[0].t1=null;tab='salon';render()");
+    // hatırlatma yeniden kurulumu zamanlayıcı bildirimini silmez
+    lnLog.length=0;ev("S.settings.reminders.forEach(r=>r.on=true)");await ev("scheduleReminders()");
+    ok("hatırlatmalar yeniden kurulurken zamanlayıcı bildirimi (9001) iptal edilmez",lnLog.some(l=>l[0]==="c"&&l[1].includes(5))&&!lnLog.some(l=>l[0]==="c"&&l[1].includes(9001)),lnLog.filter(l=>l[0]==="c"));
+    click('[data-g="tstart:0:0"]');
+    click('[data-g="menu:0"]');click('[data-g="rmex:0"]');
+    ok("egzersiz silinince zamanlayıcı durur",ev("gTim")===null);
+    ev("S.workouts=[{id:50,day:dayKey(),t0:Date.now()-3600000,t1:Date.now(),name:'Test',tpl:null,ex:[{id:'plank',note:'',sets:[{kg:null,reps:null,sec:30,done:true},{kg:null,reps:null,sec:30,done:true}]},{id:'pushup',note:'',sets:[{kg:0,reps:12,done:true}]},{id:'treadjog',note:'',sets:[{kg:null,reps:null,sec:1500,done:true}]},{id:'squat',note:'',sets:[{kg:100,reps:5,done:true}]}]}]");
+    const ctx=ev("CoachLib.contextText(cData())");
+    ok("Koç bağlamı: süreli, vücut ağırlığı, kardiyo ve ağırlıklı egzersizler okunur",ctx.includes("Plank 2x30 sn")&&ctx.includes("Şınav 1x12")&&ctx.includes("25 dk")&&ctx.includes("Squat 100x5"),ctx.split("\n").filter(l=>l.startsWith("SON ANTRENMAN")));
+    ok("Koç bağlamı: haftalık set bölgeye göre",ctx.includes("BU HAFTA TAMAMLANAN SET (bölgeye göre):")&&ctx.includes("Karın 2")&&ctx.includes("Ön bacak 1"),ctx.split("\n").filter(l=>l.startsWith("BU HAFTA")));
+    ev("S.workouts=[];S.customEx=[];tab='bugun';render()");
+    w.Capacitor.Plugins.LocalNotifications=lnOld2;
+  }
     process.exit(bad?1:0);
   });
   const calls=[];
