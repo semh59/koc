@@ -175,11 +175,14 @@ function cReply(o,kind){
   }
 }
 /* Kendi besinlerim: yapay zekâ tahmini ya da kaydedilen yemek, tek porsiyonluk değerle aranabilir listeye girer. */
-function myFoodAdd(n,kcal,p){
-  const key=tr(n),f={n:n.slice(0,60),k:Math.round(kcal)};if(p!=null&&p>=0)f.p=Math.round(p*10)/10;
-  const i=S.myFoods.findIndex(x=>tr(x.n)===key);
+function myFoodPut(f){
+  const i=S.myFoods.findIndex(x=>(f.b&&x.b===f.b)||tr(x.n)===tr(f.n));
   if(i>=0)S.myFoods[i]=f;else if(S.myFoods.length<200)S.myFoods.unshift(f);else return false;
   return true;
+}
+function myFoodAdd(n,kcal,p){
+  const f={n:n.slice(0,60),k:Math.round(kcal)};if(p!=null&&p>=0)f.p=Math.round(p*10)/10;
+  return myFoodPut(f);
 }
 function cApplyLog(id,el){
   const m=S.chat.find(x=>x.id===id);if(!m||!m.card||m.card.kind!=="log"||m.card.state!=="pending")return;
