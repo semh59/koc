@@ -275,6 +275,7 @@ select.in{appearance:none}
 <script src="motionlib.js"></script>
 <script src="weeklylib.js"></script>
 <script src="loglib.js"></script>
+<script src="habitlib.js"></script>
 <script src="coachlib.js"></script>
 <script src="coach.js"></script>
 <script src="labui.js"></script>
@@ -283,6 +284,7 @@ select.in{appearance:none}
 <script src="weeklyui.js"></script>
 <script src="quickui.js"></script>
 <script src="medui.js"></script>
+<script src="habitui.js"></script>
 <script src="motionui.js"></script>
 <script src="backupui.js"></script>
 <script>
@@ -327,7 +329,7 @@ const DEF={
     {id:9,t:"07:30",on:false,name:"Şeker ölçümü",title:"🩸 Şeker ölçümü",body:"Şekerini ölç ve ne zaman ölçtüğünle kaydet."},
     {id:10,t:"20:00",on:true,dow:0,name:"Haftalık yedek (Pazar)",title:"☁️ Yedek zamanı",body:"Yedeği Drive'a göndermek için Ayarlar > Yedeği Drive'a gönder."}
   ]},
-  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,exCfg:{},providers:defProviders(),chat:[],cid:1,myFoods:[],favFoods:[],mealTpl:[],labs:[],vitals:[],meds:[],medLog:[],moves:[]
+  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,exCfg:{},providers:defProviders(),chat:[],cid:1,myFoods:[],favFoods:[],mealTpl:[],fast:{plan:16,t0:null,log:[]},sleep:[],mood:[],labs:[],vitals:[],meds:[],medLog:[],moves:[]
 };
 const VR={bpSysHi:[80,300,true],bpDiaHi:[40,200,true],bpSysLo:[50,300,true],bpDiaLo:[30,200,true],gFastLo:[20,600,true],gFastHi:[20,600,true],gPostLo:[20,600,true],gPostHi:[20,600,true]};
 const RANGES={...VR,goalKg:[20,400,false],kcal:[800,8000,true],waterMl:[500,10000,true],glass:[50,1500,true],sportWeek:[10,3000,true],stepGoal:[1000,100000,true],heightCm:[100,250,true],age:[10,100,true]};
@@ -368,7 +370,7 @@ function cleanSettings(raw){
   }
   return d;
 }
-function cleanHealthState(r){const meds=MedLib.cleanMeds(r&&r.meds);return {meds,medLog:MedLib.cleanLog(r&&r.medLog,meds),moves:MotionLib.clean(r&&r.moves),favFoods:LogLib.cleanFav(r&&r.favFoods),mealTpl:LogLib.cleanTpl(r&&r.mealTpl)}}
+function cleanHealthState(r){const meds=MedLib.cleanMeds(r&&r.meds);return {meds,medLog:MedLib.cleanLog(r&&r.medLog,meds),moves:MotionLib.clean(r&&r.moves),favFoods:LogLib.cleanFav(r&&r.favFoods),mealTpl:LogLib.cleanTpl(r&&r.mealTpl),fast:HabitLib.cleanFast(r&&r.fast),sleep:HabitLib.cleanSleep(r&&r.sleep),mood:HabitLib.cleanMood(r&&r.mood)}}
 function cleanMyFoods(arr){
   const out=[],seen=new Set();
   for(const x of (Array.isArray(arr)?arr:[]).slice(0,200)){
@@ -539,7 +541,7 @@ function viewBugun(){
     ${ring(su/sh,"var(--su)",fmt(su/1000,1),"Su",`/ ${fmt(sh/1000,1)} L`)}
     ${ring(kcP,"var(--kcal)",Math.round(kc),"Kalori",st.kcal>0?`/ ${st.kcal}`:"hedef yok")}
     ${ring(sw/st.sportWeek,"var(--spor)",Math.round(sw),"Spor",`/ ${st.sportWeek} dk hafta`)}
-  </div></div>${sOn?stepCard():""}${vCard()}${medCard()}`;
+  </div></div>${sOn?stepCard():""}${vCard()}${medCard()}${habitCard()}`;
   const meals=S.entries.filter(e=>e.type==="yemek"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
   const pr=cur!=null?Algo.proteinRange(cur):null;
   const macro=meals.some(e=>e.p||e.c||e.f)?`<div class="macro num">Protein <b>${Math.round(mac("p"))}</b>${pr?` / ${pr[0]}–${pr[1]}`:""} g${meals.some(e=>e.c!=null||e.f!=null)?` · Karbonhidrat <b>${Math.round(mac("c"))}</b> g · Yağ <b>${Math.round(mac("f"))}</b> g`:""}</div>`:"";

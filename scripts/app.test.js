@@ -785,6 +785,36 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     w.Capacitor.Plugins.LocalNotifications=lnOld2;
   }
   {
+    // uyku, ruh hali, oruç
+    const doc=w.document,q=s=>doc.querySelector(s),click=s=>q(s).click();
+    ev("S.sleep=[];S.mood=[];tab='bugun';render()");
+    click('[data-hb="sleep"]');q("#hbb").value="23:30";q("#hbw").value="07:00";q("#hbq").value="4";click('[data-hb="sleepgo"]');
+    ok("uyku: yatış-kalkış gece yarısını aşarak 450 dk, kalite kaydedilir, Bugün'de görünür",JSON.stringify(ev("S.sleep"))===JSON.stringify([{day:ev("dayKey()"),min:450,q:4}])&&q("#view").textContent.includes("7 sa 30 dk"),ev("S.sleep"));
+    click('[data-hb="sleep"]');q("#hbh").value="6,5";click('[data-hb="sleepgo"]');
+    ok("uyku: aynı gün yeniden giriş üzerine yazar (süre girişiyle)",ev("S.sleep.length")===1&&ev("S.sleep[0].min")===390);
+    click('[data-hb="sleep"]');q("#hbb").value="07:00";q("#hbw").value="07:00";click('[data-hb="sleepgo"]');
+    ok("uyku: aynı saat girdisi reddedilir, kayıt değişmez",ev("S.sleep[0].min")===390&&q("#sheet").classList.contains("on"));
+    ev("closeSheet()");
+    click('[data-hb="mood"]');q("#hbn").value="yorgun";click('[data-hb="mood:2"]');click('[data-hb="mood"]');click('[data-hb="mood:4"]');
+    ok("ruh hali: gün başına tek kayıt (son kazanır), not kaydedilir",ev("S.mood.length")===1&&ev("S.mood[0].v")===4&&!ev("S.mood[0].t")&&q("#view").textContent.includes("Ruh hali"),ev("S.mood"));
+    click('[data-hb="mood"]');q("#hbn").value="  iyi  ";click('[data-hb="mood:5"]');
+    ok("ruh hali: not kırpılır",ev("S.mood[0].t")==="iyi");
+    ev("add('su',250)");const bk=ev("JSON.stringify(S)");ev("S.sleep=[];S.mood=[]");q("#bk")||ev("sheetYedek()");q("#bk").value=bk;await ev("goYukle()");
+    ok("uyku ve ruh hali yedekten geri gelir",ev("S.sleep.length")===1&&ev("S.mood[0].v")===5);
+    const old=JSON.parse(bk);delete old.sleep;delete old.mood;delete old.fast;q("#bk").value=JSON.stringify(old);await ev("goYukle()");
+    ok("alansız eski yedek yüklenir: mevcut kayıtlar kalır, yeni alanlar boş",ev("S.entries.length")>0&&ev("S.sleep.length")===0&&ev("S.fast.t0")===null&&ev("S.fast.plan")===16);
+    q("#bk").value=JSON.stringify({...JSON.parse(bk),sleep:"x",mood:{a:1},fast:7});await ev("goYukle()");
+    ok("çöp uyku/ruh hali/oruç değerinde diğer veriler eksiksiz yüklenir",ev("S.entries.length")===JSON.parse(bk).entries.length&&ev("S.sleep.length")===0&&ev("S.fast.log.length")===0);
+    ev("S.sleep=[{day:dayKey(),min:450}];S.mood=[]");
+    let ctx=ev("CoachLib.contextText(cData())");
+    ok("Koç bağlamı: uyku sütunu yalnız veri varken, ruh hali sütunu yoksa yok",ctx.includes("| adım | uyku sa):")&&ctx.includes("| 7,5")&&!ctx.includes("ruh hali"),ctx.split("\n").filter(l=>l.startsWith("SON 14")));
+    ev("S.sleep=[]");ctx=ev("CoachLib.contextText(cData())");
+    ok("Koç bağlamı: uyku ve ruh hali verisi yokken sütun başlığı eski haliyle",ctx.includes("| spor dk | adım):")&&!ctx.includes("uyku"));
+    ev("S.mood=[{day:dayKey(),v:3}]");ctx=ev("CoachLib.contextText(cData())");
+    ok("Koç bağlamı: ruh hali sütunu",ctx.includes("| adım | ruh hali 1-5):"));
+    ev("S.mood=[];render()");
+  }
+  {
     // plaka, ısınma, set anında rekor
     const doc=w.document,q=s=>doc.querySelector(s),click=s=>q(s).click(),toastT=()=>q("#tmsg").textContent;
     const fire=(sel,v)=>{q(sel).value=v;q(sel).dispatchEvent(new w.Event("change",{bubbles:true}))};
