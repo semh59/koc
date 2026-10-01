@@ -1,0 +1,344 @@
+# Egzersiz kütüphanesi kaynağı: veri seti adı|kimlik|Türkçe ad|bölge|şablon|aksesuar|tür|poz değişikliği (JSON)
+# bölgeler: Göğüs Sırt Omuz Biseps Triseps Ön kol Karın Bel Kalça Ön bacak Arka bacak Baldır İç-dış bacak Boyun Trapez Tüm vücut
+# tür boşsa kategoriden: güç+ağırlıksız=b, güç+ekipman=w, esneme=t, kardiyo=c, pliometrik=b. aksesuar: bar db kb ball none, bar@sh = omuzda bar
+# kimlik: eski 16 kimlik (squat bench ...) değişmez; yeni kimlikler de bir daha silinmez (scripts/exlib-ids.json)
+## ---- bacak: ön bacak
+Barbell Squat|squat|Squat|Ön bacak|squat|bar@sh||{"a1":-60,"a2":-10}
+Barbell Full Squat|fullsquat|Derin halterli squat|Ön bacak|squat|bar@sh||{"a1":-60,"a2":-10}
+Front Barbell Squat|frontsquat|Ön squat|Ön bacak|squat|bar@sh||{"a1":70,"a2":160}
+Bodyweight Squat|bwsquat|Vücut ağırlığı squat|Ön bacak|squat|none
+Goblet Squat|goblet|Goblet squat|Ön bacak|squat|kb||{"a1":60,"a2":140}
+Dumbbell Squat|dbsquat|Dumbbell squat|Ön bacak|squat|db||{"a1":4,"a2":4}
+Wide Stance Barbell Squat|widesquat|Geniş duruş squat|Ön bacak|squat|bar@sh||{"a1":-60,"a2":-10}
+Narrow Stance Squats|narrowsquat|Dar duruş squat|Ön bacak|squat|bar@sh||{"a1":-60,"a2":-10}
+Smith Machine Squat|smithsquat|Smith squat|Ön bacak|squat|bar@sh||{"a1":-60,"a2":-10}
+Box Squat|boxsquat|Kutuya squat|Ön bacak|squat|bar@sh||{"a1":-60,"a2":-10}
+Overhead Squat|ohsquat|Baş üstü squat|Ön bacak|squat|bar||{"a1":175,"a2":175}
+Plie Dumbbell Squat|pliesquat|Plie squat|Ön bacak|squat|db||{"a1":4,"a2":4}
+Chair Squat|chairsquat|Sandalye squat|Ön bacak|squat|none
+Freehand Jump Squat|jumpsquat|Sıçrama squat|Ön bacak|squat|none
+Hack Squat|hacksquat|Hack squat|Ön bacak|squat|none||{"a1":4,"a2":4}
+Barbell Lunge|bblunge|Halterli hamle|Ön bacak|lunge|bar@sh||{"a1":-60,"a2":-10}
+Dumbbell Lunges|dblunge|Dumbbell hamle|Ön bacak|lunge|db||{"a1":2,"a2":2}
+Bodyweight Walking Lunge|walklunge|Yürüyüş hamlesi|Ön bacak|lunge|none
+Dumbbell Rear Lunge|rearlunge|Geri hamle|Ön bacak|lunge|db||{"a1":2,"a2":2}
+Split Squat with Dumbbells|splitsquat|Bölünmüş squat|Ön bacak|lunge|db||{"a1":2,"a2":2}
+Dumbbell Step Ups|dbstepup|Basamağa çıkış (dumbbell)|Ön bacak|stepup|db||{"a1":2,"a2":2}
+Barbell Step Ups|bbstepup|Basamağa çıkış (halter)|Ön bacak|stepup|bar@sh||{"a1":-60,"a2":-10}
+Leg Press|legpress|Leg press|Ön bacak|legpress|none
+Narrow Stance Leg Press|narrowpress|Dar duruş leg press|Ön bacak|legpress|none
+Smith Machine Leg Press|smithpress|Smith leg press|Ön bacak|legpress|none
+Leg Extensions|legext|Leg extension|Ön bacak|legext|none
+Single-Leg Leg Extension|legext1|Tek bacak leg extension|Ön bacak|legext|none
+## ---- arka bacak
+Romanian Deadlift|rdl|Romanian deadlift|Arka bacak|hinge|bar
+Stiff-Legged Barbell Deadlift|stiffdl|Düz bacak deadlift|Arka bacak|hinge|bar
+Stiff-Legged Dumbbell Deadlift|dbstiffdl|Düz bacak deadlift (dumbbell)|Arka bacak|hinge|db
+Good Morning|goodmorning|Good morning|Arka bacak|hinge|bar@sh||{"a1":-60,"a2":-10}
+Lying Leg Curls|legcurl|Leg curl|Arka bacak|legcurl|none
+Seated Leg Curl|seatedcurl|Oturarak leg curl|Arka bacak|legcurl|none
+Standing Leg Curl|standcurl|Ayakta leg curl|Arka bacak|legcurl|none
+Ball Leg Curl|ballcurl|Top ile leg curl|Arka bacak|legcurl|none
+Glute Ham Raise|ghr|Glute-ham raise|Arka bacak|backext|none
+Reverse Hyperextension|revhyper|Ters hiperekstansiyon|Arka bacak|backext|none
+Kettlebell One-Legged Deadlift|kbdl1|Tek bacak kettlebell deadlift|Arka bacak|hinge|kb
+One-Arm Kettlebell Swings|kbswing|Kettlebell sallama|Arka bacak|hinge|kb
+Sumo Deadlift|sumodl|Sumo deadlift|Arka bacak|hinge|bar
+Clean Deadlift|cleandl|Clean deadlift|Arka bacak|hinge|bar
+Wide Stance Stiff Legs|widestiff|Geniş duruş düz bacak|Arka bacak|hinge|bar
+Band Good Morning|bandgm|Lastikle good morning|Arka bacak|hinge|none
+Cable Deadlifts|cabledl|Kablo deadlift|Arka bacak|hinge|none
+Trap Bar Deadlift|trapdl|Trap bar deadlift|Arka bacak|hinge|bar
+## ---- kalça
+Barbell Hip Thrust|hipthrust|Hip thrust|Kalça|bridge|bar
+Barbell Glute Bridge|glutebridge|Halterli kalça köprüsü|Kalça|bridge|bar
+Butt Lift (Bridge)|bridge|Kalça köprüsü|Kalça|bridge|none
+Single Leg Glute Bridge|bridge1|Tek bacak köprü|Kalça|bridge|none
+Physioball Hip Bridge|ballbridge|Top ile köprü|Kalça|bridge|none
+Hip Lift with Band|bandbridge|Lastikle kalça kaldırma|Kalça|bridge|none
+Pull Through|pullthrough|Kablo pull-through|Kalça|hinge|none
+Glute Kickback|kickbackglute|Kalça geri tekme|Kalça|legcurl|none
+One-Legged Cable Kickback|cablekick|Kablo geri tekme|Kalça|legcurl|none
+Step-up with Knee Raise|stepupknee|Diz kaldırmalı basamak|Kalça|stepup|none
+Monster Walk|monsterwalk|Canavar yürüyüşü|Kalça|legspread|none
+Hip Extension with Bands|bandhipext|Lastikle kalça ekstansiyonu|Kalça|legcurl|none
+## ---- baldır
+Standing Calf Raises|calf|Calf raise|Baldır|calf|none
+Standing Dumbbell Calf Raise|dbcalf|Dumbbell calf raise|Baldır|calf|db||{"a1":2,"a2":2}
+Standing Barbell Calf Raise|bbcalf|Halterli calf raise|Baldır|calf|bar@sh||{"a1":-60,"a2":-10}
+Smith Machine Calf Raise|smithcalf|Smith calf raise|Baldır|calf|none
+Calf Press On The Leg Press Machine|presscalf|Leg press'te calf|Baldır|calf|none
+Calf Raises - With Bands|bandcalf|Lastikle calf raise|Baldır|calf|none
+Seated Calf Raise|seatedcalf|Oturarak calf raise|Baldır|calf|none
+Dumbbell Seated One-Leg Calf Raise|calf1|Tek bacak calf raise|Baldır|calf|db||{"a1":2,"a2":2}
+## ---- iç-dış bacak
+Thigh Abductor|abductor|Dış bacak makinesi|İç-dış bacak|legspread|none
+Thigh Adductor|adductor|İç bacak makinesi|İç-dış bacak|legspread|none
+Band Hip Adductions|bandadd|Lastikle iç bacak|İç-dış bacak|legspread|none
+Side Leg Raises|sideleg|Yana bacak kaldırma|İç-dış bacak|legspread|none
+Lateral Bound|latbound|Yana sıçrama|İç-dış bacak|legspread|none
+Cable Hip Adduction|cableadd|Kablo iç bacak|İç-dış bacak|legspread|none
+## ---- göğüs
+Barbell Bench Press - Medium Grip|bench|Bench press|Göğüs|bench|bar
+Barbell Incline Bench Press - Medium Grip|incbench|Eğimli bench press|Göğüs|incline|bar
+Decline Barbell Bench Press|decbench|Ters eğimli bench press|Göğüs|bench|bar
+Dumbbell Bench Press|dbbench|Dumbbell bench press|Göğüs|bench|db
+Incline Dumbbell Press|incdb|Incline dumbbell press|Göğüs|incline|db
+Decline Dumbbell Bench Press|decdb|Ters eğimli dumbbell press|Göğüs|bench|db
+Incline Dumbbell Bench With Palms Facing In|incdbin|Eğimli dumbbell press (nötr tutuş)|Göğüs|incline|db
+Dumbbell Bench Press with Neutral Grip|dbbenchn|Nötr tutuşlu dumbbell press|Göğüs|bench|db
+One Arm Dumbbell Bench Press|dbbench1|Tek kol dumbbell press|Göğüs|bench|db
+Smith Machine Bench Press|smithbench|Smith bench press|Göğüs|bench|bar
+Smith Machine Incline Bench Press|smithinc|Smith eğimli press|Göğüs|incline|bar
+Machine Bench Press|machbench|Makinede göğüs press|Göğüs|bench|none
+Leverage Chest Press|levchest|Kaldıraçlı göğüs press|Göğüs|bench|none
+Leverage Incline Chest Press|levincchest|Kaldıraçlı eğimli press|Göğüs|incline|none
+Cable Chest Press|cablepress|Kablo göğüs press|Göğüs|bench|none
+Dumbbell Flyes|dbfly|Dumbbell fly|Göğüs|fly|db
+Incline Dumbbell Flyes|incfly|Eğimli dumbbell fly|Göğüs|fly|db
+Decline Dumbbell Flyes|decfly|Ters eğimli dumbbell fly|Göğüs|fly|db
+Cable Crossover|crossover|Kablo crossover|Göğüs|fly|none
+Low Cable Crossover|lowcross|Alt kablo crossover|Göğüs|fly|none
+Butterfly|butterfly|Pec deck (kelebek)|Göğüs|fly|none
+Flat Bench Cable Flyes|cablefly|Kablo fly|Göğüs|fly|none
+Pushups|pushup|Şınav|Göğüs|pushup|none
+Push-Up Wide|pushupwide|Geniş şınav|Göğüs|pushup|none
+Push-Ups - Close Triceps Position|pushupclose|Dar şınav|Göğüs|pushup|none
+Incline Push-Up|pushupinc|Eğimli şınav|Göğüs|pushup|none
+Push-Ups With Feet Elevated|pushupfeet|Ayaklar yüksekte şınav|Göğüs|pushup|none
+Decline Push-Up|pushupdec|Ters eğimli şınav|Göğüs|pushup|none
+Single-Arm Push-Up|pushup1|Tek kol şınav|Göğüs|pushup|none
+Plyo Push-up|plyopushup|Sıçramalı şınav|Göğüs|pushup|none
+Dips - Chest Version|dipschest|Paralel bar dips (göğüs)|Göğüs|dips|none
+Bench Press - With Bands|bandbench|Lastikli bench press|Göğüs|bench|none
+Alternating Floor Press|floorpress|Yerde dumbbell press|Göğüs|bench|kb
+Bent-Arm Dumbbell Pullover|pullover|Pullover|Göğüs|bench|db
+Isometric Chest Squeezes|chestsqueeze|Göğüs sıkma|Göğüs|fly|none|t
+## ---- omuz
+Dumbbell Shoulder Press|ohp|Omuz press|Omuz|ohp|db
+Barbell Shoulder Press|bbohp|Halterli omuz press|Omuz|ohp|bar
+Arnold Dumbbell Press|arnold|Arnold press|Omuz|ohp|db
+Dumbbell One-Arm Shoulder Press|dbohp1|Tek kol omuz press|Omuz|ohp|db
+Cable Shoulder Press|cableohp|Kablo omuz press|Omuz|ohp|none
+Leverage Shoulder Press|levohp|Makinede omuz press|Omuz|ohp|none
+Push Press|pushpress|Push press|Omuz|ohp|bar
+Kettlebell Seated Press|kbpress|Kettlebell press|Omuz|ohp|kb
+Side Lateral Raise|lat|Lateral raise|Omuz|latraise|db
+Lateral Raise - With Bands|bandlat|Lastikle lateral raise|Omuz|latraise|none
+Cable Seated Lateral Raise|cablelat|Kablo lateral raise|Omuz|latraise|none
+Alternating Deltoid Raise|altraise|Dönüşümlü omuz kaldırma|Omuz|frontraise|db
+Front Dumbbell Raise|frontraise|Ön omuz kaldırma|Omuz|frontraise|db
+Front Two-Dumbbell Raise|frontraise2|İki dumbbell ön kaldırma|Omuz|frontraise|db
+Front Cable Raise|cablefront|Kablo ön kaldırma|Omuz|frontraise|none
+Front Plate Raise|plateraise|Plaka ön kaldırma|Omuz|frontraise|ball
+Dumbbell Scaption|scaption|Scaption|Omuz|frontraise|db
+Bent Over Dumbbell Rear Delt Raise With Head On Bench|reardelt|Arka omuz kaldırma|Omuz|row|db|w|{"a1":2,"a2":2,"t":70}
+Cable Rear Delt Fly|cablerear|Kablo arka omuz fly|Omuz|latraise|none
+Face Pull|facepull|Face pull|Omuz|seatedrow|none
+Band Pull Apart|pullapart|Lastik açma|Omuz|latraise|none
+Upright Row - With Bands|bandupright|Lastikle dik çekiş|Omuz|curl|none|w|{"a1":-10,"a2":120}
+Standing Dumbbell Upright Row|dbupright|Dik çekiş (dumbbell)|Omuz|curl|db|w|{"a1":-10,"a2":120}
+Dumbbell One-Arm Upright Row|dbupright1|Tek kol dik çekiş|Omuz|curl|db|w|{"a1":-10,"a2":120}
+Kettlebell Halo|kbhalo|Kettlebell halo|Omuz|ohp|kb
+Handstand Push-Ups|handstand|Amudiye şınav|Omuz|ohp|none
+External Rotation|extrot|Dış rotasyon|Omuz|curl|db|w|{"a1":4,"a2":90}
+## ---- trapez
+Barbell Shrug|bbshrug|Halterli omuz silkme|Trapez|shrug|bar
+Dumbbell Shrug|shrug|Dumbbell omuz silkme|Trapez|shrug|db
+Cable Shrugs|cableshrug|Kablo omuz silkme|Trapez|shrug|none
+Leverage Shrug|levshrug|Makinede omuz silkme|Trapez|shrug|none
+Smith Machine Upright Row|smithupright|Smith dik çekiş|Trapez|curl|bar|w|{"a1":-10,"a2":120}
+Scapular Pull-Up|scappull|Kürek kemiği barfiks|Trapez|pullup|none
+## ---- sırt
+Pullups|pullup|Barfiks|Sırt|pullup|none
+Chin-Up|chinup|Chin-up|Sırt|pullup|none
+V-Bar Pullup|vbarpull|V-bar barfiks|Sırt|pullup|none
+Wide-Grip Rear Pull-Up|widepull|Geniş tutuş barfiks|Sırt|pullup|none
+Band Assisted Pull-Up|bandpullup|Lastik destekli barfiks|Sırt|pullup|none
+Wide-Grip Lat Pulldown|pulldown|Lat pulldown|Sırt|pulldown|none
+Close-Grip Front Lat Pulldown|closepulldown|Dar tutuş lat pulldown|Sırt|pulldown|none
+V-Bar Pulldown|vbarpulldown|V-bar pulldown|Sırt|pulldown|none
+Underhand Cable Pulldowns|underpulldown|Ters tutuş pulldown|Sırt|pulldown|none
+One Arm Lat Pulldown|pulldown1|Tek kol pulldown|Sırt|pulldown|none
+Straight-Arm Pulldown|straightarm|Düz kol pulldown|Sırt|pulldown|none
+Bent Over Barbell Row|row|Kürek çekme|Sırt|row|bar
+Bent Over Two-Dumbbell Row|dbrow|İki dumbbell kürek|Sırt|row|db
+One-Arm Dumbbell Row|dbrow1|Tek kol dumbbell kürek|Sırt|row|db
+Bent Over One-Arm Long Bar Row|longrow1|Tek kol uzun bar kürek|Sırt|row|bar
+T-Bar Row with Handle|tbar|T-bar kürek|Sırt|row|bar
+Reverse Grip Bent-Over Rows|revrow|Ters tutuş kürek|Sırt|row|bar
+Smith Machine Bent Over Row|smithrow|Smith kürek|Sırt|row|bar
+One-Arm Kettlebell Row|kbrow|Kettlebell kürek|Sırt|row|kb
+Seated Cable Rows|seatedrow|Oturarak kablo kürek|Sırt|seatedrow|none
+Leverage High Row|levrow|Makinede yüksek kürek|Sırt|seatedrow|none
+Seated One-arm Cable Pulley Rows|seatedrow1|Tek kol kablo kürek|Sırt|seatedrow|none
+Inverted Row|invrow|Ters kürek|Sırt|seatedrow|none
+Suspended Row|susprow|Askıda kürek|Sırt|seatedrow|none
+Dumbbell Incline Row|incrow|Eğimli dumbbell kürek|Sırt|row|db
+Barbell Deadlift|deadlift|Deadlift|Sırt|hinge|bar
+Rack Pulls|rackpull|Rack pull|Sırt|hinge|bar
+Deficit Deadlift|defdl|Deficit deadlift|Sırt|hinge|bar
+## ---- bel
+Hyperextensions (Back Extensions)|backext|Sırt ekstansiyonu|Bel|backext|none
+Hyperextensions With No Hyperextension Bench|backextfloor|Yerde sırt ekstansiyonu|Bel|backext|none
+Weighted Ball Hyperextension|ballhyper|Top ile sırt ekstansiyonu|Bel|backext|none
+Stiff Leg Barbell Good Morning|stiffgm|Düz bacak good morning|Bel|hinge|bar@sh||{"a1":-60,"a2":-10}
+Superman|superman|Superman|Bel|backext|none
+Seated Good Mornings|seatedgm|Oturarak good morning|Bel|hinge|bar@sh||{"a1":-60,"a2":-10}
+## ---- biseps
+Dumbbell Bicep Curl|curl|Biceps curl|Biseps|curl|db
+Barbell Curl|bbcurl|Halter curl|Biseps|curl|bar
+EZ-Bar Curl|ezcurl|EZ bar curl|Biseps|curl|bar
+Hammer Curls|hammer|Çekiç curl|Biseps|curl|db
+Alternate Hammer Curl|althammer|Dönüşümlü çekiç curl|Biseps|curl|db
+Dumbbell Alternate Bicep Curl|altcurl|Dönüşümlü biceps curl|Biseps|curl|db
+Incline Dumbbell Curl|inccurl|Eğimli dumbbell curl|Biseps|curl|db
+Seated Dumbbell Curl|seatedcurl2|Oturarak dumbbell curl|Biseps|curl|db
+Concentration Curls|concurl|Konsantre curl|Biseps|curl|db
+Preacher Curl|preacher|Preacher curl|Biseps|curl|bar
+Machine Preacher Curls|machpreacher|Makinede preacher curl|Biseps|curl|none
+One Arm Dumbbell Preacher Curl|preacher1|Tek kol preacher curl|Biseps|curl|db
+Standing Biceps Cable Curl|cablecurl|Kablo curl|Biseps|curl|none
+Cable Hammer Curls - Rope Attachment|cablehammer|Kablo çekiç curl|Biseps|curl|none
+Machine Bicep Curl|machcurl|Makinede biceps curl|Biseps|curl|none
+Reverse Barbell Curl|revcurl|Ters tutuş curl|Biseps|curl|bar
+Zottman Curl|zottman|Zottman curl|Biseps|curl|db
+Cross Body Hammer Curl|crosshammer|Çapraz çekiç curl|Biseps|curl|db
+Spider Curl|spider|Spider curl|Biseps|curl|bar
+Wide-Grip Standing Barbell Curl|widecurl|Geniş tutuş halter curl|Biseps|curl|bar
+Close-Grip Standing Barbell Curl|closecurl|Dar tutuş halter curl|Biseps|curl|bar
+## ---- triseps
+Triceps Pushdown|tri|Triceps pushdown|Triseps|pushdown|none
+Triceps Pushdown - Rope Attachment|ropepushdown|İp ile pushdown|Triseps|pushdown|none
+Triceps Pushdown - V-Bar Attachment|vbarpushdown|V-bar pushdown|Triseps|pushdown|none
+Reverse Grip Triceps Pushdown|revpushdown|Ters tutuş pushdown|Triseps|pushdown|none
+Low Cable Triceps Extension|lowtri|Alt kablo triceps|Triseps|pushdown|none
+Cable One Arm Tricep Extension|cabletri1|Tek kol kablo triceps|Triseps|pushdown|none
+Triceps Overhead Extension with Rope|ropeoverhead|İple baş üstü triceps|Triseps|overheadext|none
+Cable Rope Overhead Triceps Extension|cableoverhead|Kablo baş üstü triceps|Triseps|overheadext|none
+Standing Dumbbell Triceps Extension|dboverhead|Ayakta dumbbell triceps|Triseps|overheadext|db
+Standing One-Arm Dumbbell Triceps Extension|dboverhead1|Tek kol baş üstü triceps|Triseps|overheadext|db
+Standing Overhead Barbell Triceps Extension|bboverhead|Halterle baş üstü triceps|Triseps|overheadext|bar
+Seated Triceps Press|seatedtri|Oturarak triceps press|Triseps|overheadext|db
+Kettlebell Overhead Triceps Extension|kboverhead|Kettlebell baş üstü triceps|Triseps|overheadext|kb
+EZ-Bar Skullcrusher|skull|Skull crusher|Triseps|skull|bar
+Lying Dumbbell Tricep Extension|dbskull|Yatarak dumbbell triceps|Triseps|skull|db
+Decline EZ Bar Triceps Extension|decskull|Ters eğimli skull crusher|Triseps|skull|bar
+Band Skull Crusher|bandskull|Lastikle skull crusher|Triseps|skull|none
+Tricep Dumbbell Kickback|kickback|Triceps kickback|Triseps|kickback|db
+Standing Bent-Over One-Arm Dumbbell Triceps Extension|kickback1|Eğilerek tek kol triceps|Triseps|kickback|db
+Close-Grip Barbell Bench Press|closebench|Dar tutuş bench press|Triseps|bench|bar
+Close-Grip Dumbbell Press|closedbpress|Dar tutuş dumbbell press|Triseps|bench|db
+Dips - Triceps Version|dipstri|Paralel bar dips (triceps)|Triseps|dips|none
+Parallel Bar Dip|paralleldip|Paralel bar dips|Triseps|dips|none
+Bench Dips|benchdips|Bench dips|Triseps|dips|none
+Dip Machine|dipmachine|Dips makinesi|Triseps|dips|none
+Push-Ups - Close Triceps Position|pushuptri|Triceps şınavı|Triseps|pushup|none
+Isometric Neck Exercise - Front And Back|neckfb|Boyun izometrik (ön-arka)|Boyun|neckstretch|none|t
+Seated Head Harness Neck Resistance|neckharness|Boyun direnç (koşumlu)|Boyun|neckstretch|none|w
+## ---- ön kol
+Palms-Up Dumbbell Wrist Curl Over A Bench|wristcurl|Bilek curl|Ön kol|curl|db|w|{"a1":-10,"a2":60}
+Palms-Down Dumbbell Wrist Curl Over A Bench|wristrev|Ters bilek curl|Ön kol|curl|db|w|{"a1":-10,"a2":60}
+Seated Palm-Up Barbell Wrist Curl|wristcurlbar|Halterle bilek curl|Ön kol|curl|bar|w|{"a1":-10,"a2":60}
+Wrist Roller|wristroller|Bilek makarası|Ön kol|frontraise|none|w
+Farmer's Walk|farmer|Çiftçi yürüyüşü|Ön kol|walk|db|c
+Plate Pinch|platepinch|Plaka tutma|Ön kol|shrug|none|t
+## ---- karın
+Crunches|crunch|Crunch|Karın|crunch|none
+Cable Crunch|cablecrunch|Kablo crunch|Karın|crunch|none
+Decline Crunch|deccrunch|Ters eğimli crunch|Karın|crunch|none
+Exercise Ball Crunch|ballcrunch|Top ile crunch|Karın|crunch|none
+Crunch - Hands Overhead|crunchoverhead|Eller yukarıda crunch|Karın|crunch|none
+Oblique Crunches|obliquecrunch|Yan crunch|Karın|crunch|none
+Cross-Body Crunch|crosscrunch|Çapraz crunch|Karın|crunch|none
+Reverse Crunch|revcrunch|Ters crunch|Karın|legraise|none
+3/4 Sit-Up|sit34|Üç çeyrek mekik|Karın|situp|none
+Jackknife Sit-Up|jackknife|Çakı mekik|Karın|situp|none
+Janda Sit-Up|janda|Janda mekik|Karın|situp|none
+Dead Bug|deadbug|Dead bug|Karın|legraise|none
+Flat Bench Lying Leg Raise|benchlegraise|Sırada bacak kaldırma|Karın|legraise|none
+Bent-Knee Hip Raise|kneehipraise|Bükük diz kalça kaldırma|Karın|legraise|none
+Leg Pull-In|legpullin|Bacak çekme|Karın|legraise|none
+Flutter Kicks|flutter|Makas bacak|Karın|legraise|none
+Scissor Kick|scissor|Makas tekme|Karın|legraise|none
+Hanging Leg Raise|hangingraise|Asılı bacak kaldırma|Karın|hangraise|none
+Hanging Pike|hangpike|Asılı pike|Karın|hangraise|none
+Knee/Hip Raise On Parallel Bars|dipraise|Paralel barda diz kaldırma|Karın|hangraise|none
+Plank|plank|Plank|Karın|plank|none|t
+Ab Roller|abroller|Karın tekerleği|Karın|plank|none
+Barbell Ab Rollout|rollout|Halterle rollout|Karın|plank|bar
+Mountain Climbers|climber|Dağcı|Karın|climber|none|i
+Barbell Side Bend|sidebendbar|Halterle yan eğilme|Karın|sidebend|bar
+Dumbbell Side Bend|sidebend|Yan eğilme|Karın|sidebend|db
+One-Arm High-Pulley Cable Side Bends|cablesidebend|Kablo yan eğilme|Karın|sidebend|none
+Cable Russian Twists|russiantwist|Rus bükülmesi|Karın|woodchop|none
+Pallof Press|pallof|Pallof press|Karın|woodchop|none
+Medicine Ball Full Twist|ballwoodchop|Top ile bükülme|Karın|woodchop|ball
+Standing Lateral Stretch|latstretch|Ayakta yan esneme|Karın|sidebend|none|t
+Air Bike|airbike|Hava bisikleti|Karın|cycle|none
+Alternate Heel Touchers|heeltouch|Topuk dokunma|Karın|crunch|none
+## ---- tüm vücut / kardiyo
+Jogging, Treadmill|treadjog|Koşu bandında jog|Tüm vücut|run|none
+Running, Treadmill|treadrun|Koşu bandı|Tüm vücut|run|none
+Trail Running/Walking|trail|Doğada koşu/yürüyüş|Tüm vücut|run|none
+Walking, Treadmill|treadwalk|Bantta yürüyüş|Tüm vücut|walk|none
+Bicycling|bike|Bisiklet|Tüm vücut|cycle|none
+Bicycling, Stationary|statbike|Sabit bisiklet|Tüm vücut|cycle|none
+Recumbent Bike|recbike|Yatay bisiklet|Tüm vücut|cycle|none
+Elliptical Trainer|elliptical|Eliptik|Tüm vücut|walk|none
+Stairmaster|stairs|Merdiven makinesi|Tüm vücut|stepup|none
+Rope Jumping|jumprope|İp atlama|Tüm vücut|jumprope|none
+Star Jump|jumpingjack|Açılıp kapanma sıçraması|Tüm vücut|jack|none|i
+Scissors Jump|scissorjump|Makas sıçrama|Tüm vücut|jack|none|i
+Fast Skipping|skipping|Hızlı sekme|Tüm vücut|highknees|none|i
+Double Leg Butt Kick|buttkick|Topuk kalçaya|Tüm vücut|highknees|none|i
+Single Leg Butt Kick|buttkick1|Tek bacak topuk kalçaya|Tüm vücut|highknees|none|i
+Split Jump|splitjump|Bölünmüş sıçrama|Tüm vücut|lunge|none|i
+Standing Long Jump|longjump|Durarak uzun atlama|Tüm vücut|squat|none
+Rocket Jump|rocketjump|Roket sıçrama|Tüm vücut|squat|none
+Front Box Jump|boxjump|Kutuya sıçrama|Tüm vücut|stepup|none
+Bench Jump|benchjump|Sıraya sıçrama|Tüm vücut|stepup|none
+Rowing, Stationary|rower|Kürek makinesi|Tüm vücut|seatedrow|none|c
+Battling Ropes|battleropes|Savaş halatı|Tüm vücut|woodchop|none|i
+Kettlebell Thruster|thruster|Thruster|Tüm vücut|squat|kb|w
+Clean and Press|cleanpress|Clean ve press|Tüm vücut|ohp|bar
+Kettlebell Turkish Get-Up (Squat style)|getup|Turkish get-up|Tüm vücut|situp|kb
+Inchworm|inchworm|Tırtıl|Tüm vücut|plank|none|i
+## ---- esneme (süreli tutuş)
+Hamstring Stretch|hamstretch|Arka bacak esnetme|Arka bacak|hamstretch|none|t
+Seated Floor Hamstring Stretch|seatedhamstretch|Oturarak arka bacak esnetme|Arka bacak|hamstretch|none|t
+Standing Toe Touches|toetouch|Ayakta parmak ucu uzanma|Arka bacak|hinge|none|t
+Standing Hamstring and Calf Stretch|hamcalfstretch|Arka bacak ve baldır esnetme|Arka bacak|hamstretch|none|t
+Quad Stretch|quadstretch|Ön bacak esnetme|Ön bacak|qstretch|none|t
+Standing Elevated Quad Stretch|elevquad|Yüksekte ön bacak esnetme|Ön bacak|qstretch|none|t
+On Your Side Quad Stretch|sidequad|Yanda ön bacak esnetme|Ön bacak|qstretch|none|t
+Kneeling Hip Flexor|hipflexor|Kalça fleksörü esnetme|Kalça|lunge|none|t
+Standing Hip Flexors|standhipflexor|Ayakta kalça fleksörü|Kalça|lunge|none|t
+Knee Across The Body|kneeacross|Dizi çapraz çekme|Kalça|hamstretch|none|t
+One Knee To Chest|kneechest|Dizi göğse çekme|Kalça|hamstretch|none|t
+Seated Glute|seatedglute|Oturarak kalça esnetme|Kalça|hamstretch|none|t
+Standing Gastrocnemius Calf Stretch|calfstretch|Baldır esnetme|Baldır|lunge|none|t
+Calf Stretch Hands Against Wall|wallcalf|Duvarda baldır esnetme|Baldır|lunge|none|t
+Seated Calf Stretch|seatedcalfstretch|Oturarak baldır esnetme|Baldır|hamstretch|none|t
+Chest And Front Of Shoulder Stretch|chestshoulder|Göğüs ve ön omuz esnetme|Göğüs|armstretch|none|t
+Dynamic Chest Stretch|dynchest|Dinamik göğüs esnetme|Göğüs|fly|none|t
+Behind Head Chest Stretch|behindchest|Baş arkası göğüs esnetme|Göğüs|armstretch|none|t
+Shoulder Stretch|shoulderstretch|Omuz esnetme|Omuz|armstretch|none|t
+Arm Circles|armcircles|Kol daireleri|Omuz|armstretch|none|t
+Shoulder Circles|shouldercircles|Omuz daireleri|Omuz|shrug|none|t
+Upward Stretch|upstretch|Yukarı esneme|Omuz|armstretch|none|t
+Triceps Stretch|tristretch|Triceps esnetme|Triseps|overheadext|none|t
+Standing Biceps Stretch|bistretch|Biceps esnetme|Biseps|frontraise|none|t
+Chin To Chest Stretch|chinchest|Çene göğüse esneme|Boyun|neckstretch|none|t
+Side Neck Stretch|sideneck|Yan boyun esnetme|Boyun|neckstretch|none|t
+Isometric Neck Exercise - Sides|neckiso|Boyun izometrik (yan)|Boyun|neckstretch|none|t
+Child's Pose|childpose|Çocuk pozu|Bel|hamstretch|none|t
+Cat Stretch|catstretch|Kedi esnemesi|Bel|plank|none|t
+Torso Rotation|torsotwist|Gövde döndürme|Karın|twiststretch|none|t
+Middle Back Stretch|midback|Orta sırt esnetme|Sırt|twiststretch|none|t
+Upper Back Stretch|upperback|Üst sırt esnetme|Sırt|armstretch|none|t
+Overhead Lat|overheadlat|Baş üstü kanat esnetme|Sırt|armstretch|none|t
+Lower Back Curl|lowerbackcurl|Bel kıvırma|Bel|crunch|none|t
+Windmills|windmills|Yel değirmeni|Tüm vücut|twiststretch|none|t
+World's Greatest Stretch|wgstretch|Dünyanın en iyi esnemesi|Tüm vücut|lunge|none|t
+Groiners|groiners|Kasık esnetme|İç-dış bacak|lunge|none|t
