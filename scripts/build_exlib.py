@@ -1,0 +1,110 @@
+"""Egzersiz kütüphanesini üretir: scripts/exlib-src.txt + free-exercise-db (Unlicense, sabit sürüm) -> www/exlib.js + www/ex/<kimlik>/{0,1}.webp.
+Kullanım: python scripts/build_exlib.py   (internet gerekir; resimler önbelleğe alınır)
+"""
+import io, json, os, re, sys, urllib.request
+from concurrent.futures import ThreadPoolExecutor
+from PIL import Image
+
+SHA = "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5"
+RAW = f"https://raw.githubusercontent.com/yuhonas/free-exercise-db/{SHA}/"
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CACHE = os.path.join(os.environ.get("TEMP", "/tmp"), "exlib-cache")
+os.makedirs(CACHE, exist_ok=True)
+
+REGION_G = {"Göğüs": "İtiş", "Triseps": "İtiş", "Omuz": "Omuz", "Trapez": "Omuz", "Boyun": "Omuz", "Sırt": "Çekiş", "Bel": "Çekiş",
+            "Biseps": "Kol", "Ön kol": "Kol", "Karın": "Karın", "Kalça": "Bacak", "Ön bacak": "Bacak", "Arka bacak": "Bacak",
+            "Baldır": "Bacak", "İç-dış bacak": "Bacak", "Tüm vücut": "Bacak"}
+INC = {"barbell": 2.5, "e-z curl bar": 2.5, "dumbbell": 2, "kettlebells": 2, "machine": 2.5, "cable": 2.5}
+LEVEL = {"beginner": "Başlangıç", "intermediate": "Orta", "expert": "İleri"}
+EQ_HOME = {"dumbbell", "bands", "kettlebells", "medicine ball", "exercise ball", "other"}
+EQ_GYM = {"barbell", "machine", "cable", "e-z curl bar"}
+
+def fetch(path):
+    f = os.path.join(CACHE, path.replace("/", "__"))
+    if os.path.exists(f):
+        return open(f, "rb").read()
+    for _ in range(3):
+        try:
+            b = urllib.request.urlopen(RAW + path, timeout=30).read()
+            open(f, "wb").write(b)
+            return b
+        except Exception as e:
+            err = e
+    raise SystemExit(f"indirilemedi: {path}: {err}")
+
+def webp(b):
+    im = Image.open(io.BytesIO(b)).convert("RGB")
+    h = 360
+    im = im.resize((round(im.size[0] * h / im.size[1]), h), Image.LANCZOS)
+    out = io.BytesIO()
+    im.save(out, "WEBP", quality=55, method=6)
+    return out.getvalue()
+
+def main():
+    ds = json.loads(fetch("dist/exercises.json"))
+    by = {e["name"]: e for e in ds}
+    rows, ids, miss = [], set(), []
+    for line in open(os.path.join(ROOT, "scripts", "exlib-src.txt"), encoding="utf-8"):
+        line = line.rstrip("\n")
+        if not line or line.startswith("#"):
+            continue
+        p = line.split("|")
+        p += [""] * (8 - len(p))
+        name, id_, tr, region, tpl, prop, kind, o = p[:8]
+        if id_ in ids:
+            raise SystemExit("yinelenen kimlik: " + id_)
+        ids.add(id_)
+        if name not in by:
+            miss.append(name)
+            continue
+        if region not in REGION_G:
+            raise SystemExit("bilinmeyen bölge: " + region)
+        rows.append((by[name], id_, tr, region, tpl, prop, kind, o))
+    if miss:
+        raise SystemExit("veri setinde olmayan adlar:\n" + "\n".join(miss))
+
+    imgs = {}
+    def job(r):
+        e, id_ = r[0], r[1]
+        d = os.path.join(ROOT, "www", "ex", id_)
+        os.makedirs(d, exist_ok=True)
+        pics = e["images"][:2] or []
+        n = 0
+        for i, im in enumerate(pics):
+            out = webp(fetch("exercises/" + im))
+            open(os.path.join(d, f"{i}.webp"), "wb").write(out)
+            n += 1
+        imgs[id_] = n
+    with ThreadPoolExecutor(8) as ex:
+        list(ex.map(job, rows))
+
+    out = []
+    for e, id_, tr, region, tpl, prop, kind, o in rows:
+        eq = e["equipment"]
+        cat = e["category"]
+        if not kind:
+            kind = "t" if cat == "stretching" else "c" if cat == "cardio" else "b" if cat == "plyometrics" or eq in (None, "body only", "foam roll") else "w"
+        group = "Ev" if eq in (None, "body only", "foam roll") else None
+        eqtr = "Ağırlıksız" if eq in (None, "body only", "foam roll") else "Salon" if eq in EQ_GYM else "Ev tipi"
+        d = {"id": id_, "n": tr, "r": region, "g": REGION_G[region], "k": kind, "q": eqtr, "l": LEVEL[e["level"]],
+             "c": {"strength": "g", "stretching": "e", "cardio": "k", "plyometrics": "p", "powerlifting": "g", "strongman": "g", "olympic weightlifting": "g"}[cat],
+             "inc": INC.get(eq, 1 if kind == "b" else 2.5), "tp": tpl, "im": imgs[id_]}
+        pr = prop.strip()
+        if pr and pr != "none":
+            d["pr"] = pr
+        if o.strip():
+            d["o"] = json.loads(o)
+        out.append(d)
+    idf = os.path.join(ROOT, "scripts", "exlib-ids.json")
+    old = json.load(open(idf, encoding="utf-8")) if os.path.exists(idf) else []
+    gone = sorted(set(old) - {d["id"] for d in out})
+    if gone:
+        raise SystemExit("kütüphaneden çıkarılan kimlikler (kullanıcı kayıtlarını bozar, geri koy): " + ", ".join(gone))
+    json.dump(sorted({d["id"] for d in out} | set(old)), open(idf, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
+    js = '"use strict";\n/* Üretildi: scripts/build_exlib.py (kaynak: scripts/exlib-src.txt + free-exercise-db, Unlicense). Elle düzenleme. */\nconst EXDB=' + json.dumps(out, ensure_ascii=False, separators=(",", ":")) + ";\nif(typeof module!==\"undefined\")module.exports=EXDB;\n"
+    open(os.path.join(ROOT, "www", "exlib.js"), "w", encoding="utf-8").write(js)
+    size = sum(os.path.getsize(os.path.join(dp, f)) for dp, _, fs in os.walk(os.path.join(ROOT, "www", "ex")) for f in fs)
+    print(f"{len(out)} egzersiz, {sum(imgs.values())} resim, {size/1e6:.1f} MB")
+
+if __name__ == "__main__":
+    main()
