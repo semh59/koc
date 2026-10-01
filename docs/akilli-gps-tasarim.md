@@ -21,3 +21,6 @@ Kaynak: developer.android.com "Restrictions on starting a foreground service fro
 
 ## Test planı
 Saf mantık Java sınıfında (StepMath/QuickMath gibi): nokta süzme, adım uzunluğu doğrusu, araç ayıklama, yürü/koş sınıflama, kısa aralık atma, MET kalori. Emülatör `adb emu geo fix` ile GPS yolunu smoke'ta kapsar. Etkinlik Tanıma emülatörde yok, telefon testi.
+
+## Yorulma ve tempo değişimi (eklendi)
+Açık aralık sürerken her ~2,5 dk adım sayacından kontrol noktası alınır (yalnızca hareket sürerken, alarm pil maliyeti ihmal edilebilir). Aralık kapanınca özet dilim dilim hesaplanır: her dilimin kendi ritminden adım uzunluğu, hız ve kalori bulunur; ritmi 50'nin altı dilimler duraklama sayılır (kalori yok). Ritim bir önceki dilimden %20 sapar ve o ritim aralığı öğrenilmemişse, son GPS penceresinden 10 dk geçtiyse kısa GPS penceresi açılır. Böylece "dakikada adım düştü" bilgisi hem toplam mesafeye hem GPS kararına yansır.

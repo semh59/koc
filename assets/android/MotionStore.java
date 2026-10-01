@@ -60,7 +60,44 @@ final class MotionStore {
 
     /** Açık aralık: tür (MotionMath.WALK/RUN), başlangıç zamanı, başlangıçtaki günlük adım. */
     static synchronized void open(Context c, int mode, long t0, long steps0) {
-        p(c).edit().putInt("bMode", mode).putLong("bT0", t0).putLong("bS0", steps0).putFloat("bSpeed", -1).apply();
+        p(c).edit().putInt("bMode", mode).putLong("bT0", t0).putLong("bS0", steps0).putFloat("bSpeed", -1).putFloat("bRef", -1).putLong("gpsT", 0)
+            .remove("bCp").remove("bLastT").remove("bLastS").apply();
+    }
+
+    /** Kontrol noktası ekler; önceki noktadan bu yana dilimin ritmini (adım/dk) döndürür, hesaplanamazsa NaN. */
+    static synchronized double addCp(Context c, long t, long s) {
+        SharedPreferences sp = p(c);
+        long pt = sp.getLong("bLastT", sp.getLong("bT0", 0)), ps = sp.getLong("bLastS", sp.getLong("bS0", 0));
+        if (t <= pt || s < ps) return Double.NaN;
+        String all = sp.getString("bCp", "") + t + ":" + s + ";";
+        String[] parts = all.split(";");
+        if (parts.length > 150) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = parts.length - 150; i < parts.length; i++) sb.append(parts[i]).append(';');
+            all = sb.toString();
+        }
+        sp.edit().putString("bCp", all).putLong("bLastT", t).putLong("bLastS", s).apply();
+        return (s - ps) * 60000.0 / (t - pt);
+    }
+
+    static synchronized long openedAt(Context c) {
+        return p(c).getLong("bT0", 0);
+    }
+
+    static synchronized double refCad(Context c) {
+        return p(c).getFloat("bRef", -1);
+    }
+
+    static synchronized void setRefCad(Context c, double cad) {
+        p(c).edit().putFloat("bRef", (float) cad).apply();
+    }
+
+    static synchronized long lastGps(Context c) {
+        return p(c).getLong("gpsT", 0);
+    }
+
+    static synchronized void setLastGps(Context c, long t) {
+        p(c).edit().putLong("gpsT", t).apply();
     }
 
     static synchronized boolean isOpen(Context c) {
@@ -87,7 +124,26 @@ final class MotionStore {
         double speed = sp.getFloat("bSpeed", -1);
         sp.edit().remove("bT0").apply();
         if (t0 <= 0 || t1 <= t0 || t1 - t0 > MAX_BOUT_MS || steps1 < s0) return false;
-        MotionMath.Bout b = MotionMath.bout(model(c), mode, cm(c), kg(c), (t1 - t0) / 60000.0, (int) (steps1 - s0), speed >= 0 ? speed : Double.NaN);
+        long[] ts = new long[160], ss = new long[160];
+        int n = 0;
+        ts[n] = t0;
+        ss[n++] = s0;
+        for (String part : sp.getString("bCp", "").split(";")) {
+            String[] f = part.split(":");
+            if (f.length != 2 || n >= 158) continue;
+            try {
+                long t = Long.parseLong(f[0]), st = Long.parseLong(f[1]);
+                if (t > ts[n - 1] && t < t1 && st >= ss[n - 1] && st <= steps1) {
+                    ts[n] = t;
+                    ss[n++] = st;
+                }
+            } catch (NumberFormatException e) {
+                // bozuk kontrol noktası atlanır
+            }
+        }
+        ts[n] = t1;
+        ss[n++] = steps1;
+        MotionMath.Bout b = MotionMath.path(model(c), mode, cm(c), kg(c), ts, ss, n, speed >= 0 ? speed : Double.NaN);
         if (!b.ok) return false;
         String rec = t0 + "," + t1 + "," + (b.mode == MotionMath.RUN ? "r" : "w") + "," + b.steps + "," + Math.round(b.km * 100) + "," + Math.round(b.kmh * 10) + "," + Math.round(b.kcal) + "," + (speed >= 0 ? 1 : 0) + ";";
         String all = sp.getString("pend", "") + rec;
