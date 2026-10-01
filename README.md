@@ -21,6 +21,10 @@ Kişisel diyet ve spor takipçisi.
 
 Yemek ekle penceresinde besin adını yazarak ara (mercimek çorbası, simit, baklava…). Besini seçince porsiyonu ve kaç porsiyon olduğunu belirle, kalori, protein, karbonhidrat ve yağ otomatik hesaplanır. Bugün ekranında günün makroları ve protein aralığın görünür. Listede 100'den fazla yaygın Türk yemeği ve besin var. Değerler yaklaşıktır (100 g başına yuvarlak sayılar), kesin ölçüm yerine geçmez. Listede olmayanı kendin yazabilirsin. Koç'a "pizza kaç kalori" gibi bir besin sorarsan altında **Listeme ekle** düğmesi çıkar, böylece besin bir sonraki sefer aramada "Benim besinim" olarak, diğerlerinden önce görünür. Koç'un kayıt önerisini onayladıktan sonra **Yemeği listeme kaydet** ile de aynısı yapılır. Bu değerler yapay zekâ tahminidir, bir porsiyon için yaklaşık sayıdır. İstemediğin besini porsiyon penceresinden silebilirsin.
 
+## Barkod okutmak
+
+Yemek ekle penceresinde **Barkod okut**'a dokun, paketin barkodunu göster. Ürün [Open Food Facts](https://world.openfoodfacts.org) (topluluk veritabanı, ODbL lisansı) üzerinden aranır. Kalori, protein, karbonhidrat ve yağ değerleri birbiriyle tutarlıysa ürün otomatik olarak listene kaydolur ve bir dahaki sefer internetsiz bulunur. Değerler eksikse ürün yalnızca o seferlik kullanılır, tutarsızsa ya da ürün bulunamazsa etiketteki değerleri elle yazman ya da Koç'a sorman istenir. Türkiye'deki ürünlerin hepsi veritabanında yok, kapsam Eti gibi büyük markalarda daha iyi. Gerekli Google barkod modülü kurulumda iner, ilk kullanımda indirilmediyse bir dakika sonra tekrar dene.
+
 ## Koçu açmak (API anahtarı girmek)
 
 Koç, ücretsiz yapay zekâ servislerinden birine bağlanır. Uygulamada Ayarlar > **Yapay zekâ koç** bölümünde NVIDIA Build, Groq ve OpenRouter hazır gelir. Sırayla denenir, biri limite takılırsa sıradaki devreye girer.

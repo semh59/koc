@@ -245,6 +245,7 @@ select.in{appearance:none}
 
 <script src="algo.js"></script>
 <script src="foods.js"></script>
+<script src="offlib.js"></script>
 <script src="gym.js"></script>
 <script src="backuplib.js"></script>
 <script src="coachlib.js"></script>
@@ -322,7 +323,12 @@ function cleanMyFoods(arr){
   for(const x of (Array.isArray(arr)?arr:[]).slice(0,200)){
     if(!x||typeof x.n!=="string"||!x.n.trim()||!(x.k>=0&&x.k<=5000))continue;
     const n=x.n.trim().slice(0,60),key=tr(n);if(seen.has(key))continue;seen.add(key);
-    const f={n,k:Math.round(x.k)};if(Number.isFinite(x.p)&&x.p>=0&&x.p<=300)f.p=x.p;out.push(f);
+    const f={n,k:Math.round(x.k*10)/10};if(Number.isFinite(x.p)&&x.p>=0&&x.p<=300)f.p=x.p;
+    for(const m of ["c","f"])if(Number.isFinite(x[m])&&x[m]>=0&&x[m]<=100)f[m]=x[m];
+    if(typeof x.b==="string"&&/^\d{8,14}$/.test(x.b))f.b=x.b;
+    if(x.src==="off")f.src="off";
+    if(Array.isArray(x.u)){const u=x.u.filter(q=>Array.isArray(q)&&typeof q[0]==="string"&&q[1]>0&&q[1]<=5000).slice(0,4).map(q=>[q[0].slice(0,40),q[1]]);if(u.length)f.u=u}
+    out.push(f);
   }
   return out;
 }
@@ -607,18 +613,18 @@ function goKilo(){
 function sheetYemek(){
   const cnt={};for(const e of S.entries)if(e.type==="yemek"&&e.text){const k=tr(e.text);(cnt[k]=cnt[k]||{n:0,text:e.text,v:e.v}).n++;cnt[k].v=e.v}
   const fav=Object.values(cnt).sort((a,b)=>b.n-a.n).slice(0,6);favList=fav;
-  openSheet(`<h3>Yemek ekle</h3><input class="in" id="fq" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off" autofocus><div id="flist" class="plist"></div>${fav.length?`<div class="lbl">Sık yediklerin</div><div class="chips">${fav.map((f,i)=>`<button class="chip" data-fav="${i}">${esc(f.text)}${f.v?" "+Math.round(f.v):""}</button>`).join("")}</div>`:""}
+  openSheet(`<h3>Yemek ekle</h3>${isNative()&&BS()?`<button class="btn ghost" data-act="barkod" style="margin-bottom:8px">📷 Barkod okut</button>`:""}<input class="in" id="fq" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off" autofocus><div id="flist" class="plist"></div>${fav.length?`<div class="lbl">Sık yediklerin</div><div class="chips">${fav.map((f,i)=>`<button class="chip" data-fav="${i}">${esc(f.text)}${f.v?" "+Math.round(f.v):""}</button>`).join("")}</div>`:""}
   <div class="lbl">Ya da kendin yaz</div><input class="in" id="ft" placeholder="Ne yedin?" autocomplete="off"><input class="in num" id="fv" inputmode="numeric" placeholder="Kalori (isteğe bağlı)">${dayOptions()}<button class="btn" data-go="yemek">Kaydet</button>`);
 }
 let curFood=null,curPor=0,foodAskQ="";
-const allFoods=()=>S.myFoods.map(m=>({n:m.n,k:m.k,p:m.p==null?null:m.p,c:null,f:null,u:[["1 porsiyon",100]],my:true})).concat(FOODS);
-const foodListHtml=q=>{const L=allFoods(),ask=q.trim().length>=2?`<button class="prow" data-c="askfood"><span><b>"${esc(q.trim())}" için Koç'a sor</b><span class="mut sm">Yapay zekâ tahmin eder, sonra listene ekleyebilirsin</span></span><span class="plus">✨</span></button>`:"";return foodSearch(q,8,L).map(i=>{const f=L[i];return `<button class="prow" data-food="${i}"><span><b>${esc(f.n)}</b><span class="mut sm">${f.my?`Benim besinim, 1 porsiyon: ${f.k} kcal`:`100 g: ${f.k} kcal, protein ${fmt(f.p,0)} g`}</span></span><span class="plus">+</span></button>`}).join("")+ask};
-function sheetPorsiyon(i){
-  curFood=allFoods()[i];curPor=0;
+const allFoods=()=>S.myFoods.map(m=>({n:m.n,k:m.k,p:m.p==null?null:m.p,c:m.c==null?null:m.c,f:m.f==null?null:m.f,u:m.u||[["1 porsiyon",100]],my:true,b:m.b,src:m.src})).concat(FOODS);
+const foodListHtml=q=>{const L=allFoods(),ask=q.trim().length>=2?`<button class="prow" data-c="askfood"><span><b>"${esc(q.trim())}" için Koç'a sor</b><span class="mut sm">Yapay zekâ tahmin eder, sonra listene ekleyebilirsin</span></span><span class="plus">✨</span></button>`:"";return foodSearch(q,8,L).map(i=>{const f=L[i];return `<button class="prow" data-food="${i}"><span><b>${esc(f.n)}</b><span class="mut sm">${f.my?(f.u.length>1||f.u[0][1]!==100?`Benim ürünüm, 100 g: ${f.k} kcal`:`Benim besinim, 1 porsiyon: ${f.k} kcal`):`100 g: ${f.k} kcal, protein ${fmt(f.p,0)} g`}</span></span><span class="plus">+</span></button>`}).join("")+ask};
+function sheetPorsiyon(i,food){
+  curFood=food||allFoods()[i];curPor=0;
   openSheet(`<h3>${esc(curFood.n)}</h3><div class="lbl">Porsiyon</div><div class="chips" id="fpc">${curFood.u.map((u,j)=>`<button class="chip" data-fp="${j}" aria-pressed="${j===0}">${esc(u[0])}</button>`).join("")}</div>
   <div class="lbl">Kaç porsiyon</div><input class="in num" id="fqty" inputmode="decimal" value="1" autocomplete="off">
   <div class="stat" style="margin:8px 0"><div class="k">Tahmini değer</div><div class="v num" id="fprev"></div></div>
-  <div class="mut sm" style="margin-bottom:8px">${curFood.my?"Yapay zekâ ya da senin girdiğin tahmin.":curFood.s?"Kaynak: USDA FoodData Central. Pişirme ve markaya göre değişebilir.":"Tahmini değer. Tarife ve markaya göre belirgin değişir."}</div>${dayOptions()}<button class="btn" data-go="besin">Ekle</button>${curFood.my?`<button class="lnk dng" data-go="mysil">Bu besini listemden sil</button>`:""}`);
+  <div class="mut sm" style="margin-bottom:8px">${curFood.hint||(curFood.src==="off"?"Kaynak: Open Food Facts (topluluk verisi, ODbL).":curFood.my?"Yapay zekâ ya da senin girdiğin tahmin.":curFood.s?"Kaynak: USDA FoodData Central. Pişirme ve markaya göre değişebilir.":"Tahmini değer. Tarife ve markaya göre belirgin değişir.")}</div>${dayOptions()}<button class="btn" data-go="besin">Ekle</button>${curFood.my&&!curFood.hint?`<button class="lnk dng" data-go="mysil">Bu besini listemden sil</button>`:""}`);
   foodPreview();
 }
 function foodCalc(){
@@ -628,6 +634,37 @@ function foodCalc(){
 function foodPreview(){
   const x=foodCalc();
   $("#fprev").textContent=x.g?[`${Math.round(x.k)} kcal`,x.p!=null&&`protein ${fmt(x.p)} g`,x.c!=null&&`karbonhidrat ${fmt(x.c)} g`,x.f!=null&&`yağ ${fmt(x.f)} g`].filter(Boolean).join(" · "):"Miktarı 0,1 ile 20 arasında yaz";
+}
+const BS=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.BarcodeScanner;
+async function barkodOku(){
+  const bs=BS();if(!bs)return toast("Barkod okuma yalnızca telefondaki uygulamada çalışır");
+  try{
+    const a=await bs.isGoogleBarcodeScannerModuleAvailable().catch(()=>({available:true}));
+    if(!a.available){toast("Barkod modülü indiriliyor, bir dakika sonra tekrar dene");return bs.installGoogleBarcodeScannerModule()}
+    const r=await bs.scan({formats:["EAN_13","EAN_8","UPC_A","UPC_E"]}),b=r.barcodes&&r.barcodes[0];
+    if(b&&b.rawValue)await barkodBul(b.rawValue);
+  }catch(e){if(!/cancel/i.test(e&&e.message||""))toast("Barkod okunamadı: "+((e&&e.message)||"hata"))}
+}
+async function barkodBul(raw){
+  const code=String(raw).replace(/\D/g,"");
+  if(code.length<8||code.length>14)return toast("Bu bir ürün barkodu değil");
+  const L=allFoods(),li=L.findIndex(f=>f.b===code);
+  if(li>=0)return sheetPorsiyon(li);
+  toast("Ürün aranıyor…");
+  let j;
+  try{
+    const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=${OffLib.FIELDS}`,{headers:{"User-Agent":"NeoWell/1.0 (kisisel kullanim)"}});
+    j=await r.json();
+  }catch(e){return toast("İnternete ulaşılamadı, barkod aranamadı")}
+  const x=OffLib.parse(j);
+  if(x.status==="none"||x.status==="bad"){
+    sheetYemek();toast(`${x.why}. Etiketteki değerleri elle yaz ya da Koç'a sor`);return;
+  }
+  if(x.status==="ok"){
+    myFoodPut(Object.assign({},x.food,{src:"off"}));save();
+    return sheetPorsiyon(S.myFoods.findIndex(m=>m.b===code));
+  }
+  sheetPorsiyon(0,Object.assign({},x.food,{my:true,src:"off",hint:"Kaynak: Open Food Facts. Bazı besin değerleri eksik olduğu için listene kaydedilmedi."}));
 }
 function goMySil(){
   S.myFoods=S.myFoods.filter(m=>tr(m.n)!==tr(curFood.n));save();closeSheet();render();toast("Besin listenden silindi");
@@ -789,6 +826,7 @@ document.addEventListener("click",ev=>{
     else if(d.act==="not")sheetNot();
     else if(d.act==="yedek")sheetYedek();
     else if(d.act==="bildirimtest")notifTest();
+    else if(d.act==="barkod")barkodOku();
     else if(d.act==="oem")sheetOem();
     else if(d.act==="oem1"||d.act==="oem2"){const p=DH();if(p)p[d.act==="oem1"?"openAutostart":"openBattery"]().then(r=>{if(r.opened==="none")toast("Ayar ekranı açılamadı, telefon ayarlarından NeoWell'i bul")},()=>toast("Ayar ekranı açılamadı"))}
     else if(d.act==="oemok"){S.settings.oemDone=true;save();closeSheet();render();toast("Tamam, hatırlatmaları şimdi dene")}
@@ -853,7 +891,7 @@ scheduleReminders().then(s=>{notifStatus=s;if(tab==="ayar")render()});
 setInterval(gTick,1000);
 keysInit().then(()=>{render();cAuto();cFlush()});
 if(DH())DH().info().then(r=>{oem=String(r.manufacturer||"");render()},()=>{});
-try{const P=window.Capacitor&&window.Capacitor.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp"].map(n=>n+"="+typeof P[n]).join(" "))}catch(e){}
+try{const P=window.Capacitor&&window.Capacitor.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp","BarcodeScanner"].map(n=>n+"="+typeof P[n]).join(" "))}catch(e){}
 setInterval(()=>{if(dayKey()!==lastDay){lastDay=dayKey();logOff=0;render()}},60000);
 try{
   const AP=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;

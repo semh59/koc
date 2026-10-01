@@ -2,10 +2,14 @@
 const fs = require("fs");
 const p = "android/app/src/main/AndroidManifest.xml";
 let x = fs.readFileSync(p, "utf8");
-for (const perm of ["POST_NOTIFICATIONS", "RECEIVE_BOOT_COMPLETED", "VIBRATE", "SCHEDULE_EXACT_ALARM", "USE_EXACT_ALARM"]) {
+for (const perm of ["POST_NOTIFICATIONS", "RECEIVE_BOOT_COMPLETED", "VIBRATE", "SCHEDULE_EXACT_ALARM", "USE_EXACT_ALARM", "CAMERA", "FLASHLIGHT"]) {
   if (!x.includes(`android.permission.${perm}`)) {
     x = x.replace("</manifest>", `    <uses-permission android:name="android.permission.${perm}" />\n</manifest>`);
   }
+}
+// Barkod tarayıcı modülü uygulama kurulurken indirilsin (Google ML Kit).
+if (!x.includes("com.google.mlkit.vision.DEPENDENCIES")) {
+  x = x.replace("</application>", '    <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui"/>\n    </application>');
 }
 fs.writeFileSync(p, x);
 console.log("Manifest güncellendi.");
@@ -49,4 +53,11 @@ if(!g.includes("koc-debug.keystore")){
     }`);
   fs.writeFileSync(bg,g);
 }
-console.log("Sabit imza ayarlandı.");
+if(!g.includes("dataBinding")){
+  g=fs.readFileSync(bg,"utf8").replace(/android \{/,`android {
+    buildFeatures {
+        dataBinding true
+    }`);
+  fs.writeFileSync(bg,g);
+}
+console.log("Sabit imza ve data binding ayarlandı.");
