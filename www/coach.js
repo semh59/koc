@@ -38,7 +38,7 @@ let pstat={},cool={},busy=false,typing=false,offline=null,lastAuto=0;
 
 /* ---- doğrulama ---- */
 function cleanCoach(r){
-  const provs=[];
+  const provs=[],known=EXMERGED.map(e=>e.id).concat((Array.isArray(r.customEx)?r.customEx:[]).map(e=>e&&e.id).filter(i=>typeof i==="string"&&/^c\d+$/.test(i)));
   for(const p of (Array.isArray(r.providers)?r.providers:[])){
     if(!p||typeof p.id!=="string"||!/^[a-z0-9]{1,16}$/.test(p.id)||typeof p.name!=="string"||typeof p.base!=="string"||!/^https:\/\/[^\s]+$/.test(p.base)||typeof p.model!=="string")continue;
     if(provs.some(x=>x.id===p.id))continue;
@@ -59,6 +59,7 @@ function cleanCoach(r){
       const items=c.items.filter(x=>x&&typeof x.k==="string"&&/^[a-z]{1,8}$/.test(x.k)&&typeof x.t==="string"&&x.t.trim()).slice(0,6).map(x=>({k:x.k,t:x.t.slice(0,160)}));
       if(items.length)o.card=Object.assign({kind:"why",items},c.asked===true?{asked:true}:{});
     }
+    else if(c&&c.kind==="program"){const pg=CoachLib.cleanProgram(c,known);if(pg)o.card=Object.assign({kind:"program",state:c.state==="ok"?"ok":"pending"},pg)}
     else if(c&&c.kind==="propose"&&Number.isFinite(c.kcal))o.card={kind:"propose",kcal:Math.round(c.kcal),why:String(c.why||"").slice(0,160),limited:c.limited===true,state:["pending","ok","no"].includes(c.state)?c.state:"pending"};
     chat.push(o);
   }
@@ -239,6 +240,30 @@ async function cWhyAsk(id){
   finally{busy=false;typing=false;save();render()}
 }
 
+/* ---- Koç'tan program ---- */
+let progOpt={d:3,q:"Salon",m:45,l:"Başlangıç"};
+function cCatalog(o){const c=CoachLib.catalog(EXMERGED,o,EXLIB.map(e=>e.id));return {ids:c.map(e=>e.id),text:c.map(e=>`${e.id}|${e.n}|${e.r||e.g}`).join("\n")}}
+function cProgSheet(){
+  const o=progOpt,g=(k,vals,lbl=v=>v)=>`<div class="chips">${vals.map(v=>`<button class="chip" data-c="po:${k}:${v}" aria-pressed="${o[k]===v}">${lbl(v)}</button>`).join("")}</div>`;
+  openSheet(`<h3>Koç'tan program iste</h3><div class="lbl">Haftada gün</div>${g("d",[2,3,4,5,6])}<div class="lbl">Ekipman</div>${g("q",["Salon","Ev tipi","Ağırlıksız"])}<div class="lbl">Seans süresi</div>${g("m",[30,45,60],v=>v+" dk")}<div class="lbl">Seviye</div>${g("l",["Başlangıç","Orta","İleri"])}
+  <p class="hint">Koç yalnız kütüphanedeki egzersizlerden seçer. İstek, profil ve kayıtlarınla birlikte sağlayıcıya gönderilir.</p><button class="btn" data-c="progask">İste</button>`);
+}
+async function cProgram(o){
+  if(busy)return;
+  if(!S.settings.consent){tab="koc";render();return toast("Önce Koç'ta veri paylaşımını kabul et")}
+  if(!usable().length)return toast("Koç için API anahtarı gerekli (Ayarlar)");
+  const {ids,text}=cCatalog(o);
+  cPush({role:"user",text:`Program iste: haftada ${o.d} gün, ${o.m} dk, ${o.q}, ${o.l}`});
+  tab="koc";busy=true;typing=true;render();
+  try{
+    const r=await cAsk(cMessages(`Haftada ${o.d} gün, seans ${o.m} dakika, ekipman ${o.q}, seviye ${o.l} için antrenman programı hazırla. "program" alanını doldur, reply'da kısaca anlat.`,"KATALOG (kimlik|ad|bölge):\n"+text),900);
+    const p=CoachLib.parse(r.text),pg=CoachLib.cleanProgram(p.program,ids);offline=null;
+    if(pg)cPush({role:"coach",text:p.reply,card:Object.assign({kind:"program",state:"pending"},pg)});
+    else toast("Program okunamadı, tekrar dene");
+  }catch(e){toast(e.message==="declined"?"Gönderim onaylanmadı":"Koç şu an ulaşılamıyor, sonra tekrar dene")}
+  finally{busy=false;typing=false;save();render()}
+}
+
 /* Plato sorusu yereldir: consent ve sağlayıcıdan bağımsız, AI çağrısı yapmaz; kullanıcı "Bak"a dokunursa yerel kart açılır. */
 function cPlateauCheck(){
   const st=S.settings,w=weights(),days=Object.keys(w).sort(),t=dayKey();
@@ -308,6 +333,8 @@ function cSafety(level){
 function cCard(m){
   const c=m.card;if(!c)return "";
   if(c.kind==="safety")return cSafety(c.level);
+  if(c.kind==="program")return `<div class="card lcard"><b>${esc(c.name)}</b>${c.days.map(d=>`<div class="lrow"><div><b>${esc(d.n)}</b><div class="mut sm">${esc(d.ex.map(i=>gEx(i).n).join(", "))}</div></div></div>`).join("")}
+    ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="progadd:${m.id}">Şablon olarak ekle</button></div>`:`<div class="mut sm">${c.days.length} şablon Salon'a eklendi</div>`}</div>`;
   if(c.kind==="why")return `<div class="card lcard"><b>Son 7 gün</b>${c.items.map(x=>`<p class="sm">${esc(x.t)}</p>`).join("")}<div class="mut sm">Telefonda hesaplandı, hiçbir yere gönderilmedi.</div>
     ${!c.asked&&S.settings.consent&&usable().length?`<div class="lbtns"><button class="btn ghost" data-c="whyai:${m.id}">Koç'a yorumlat</button></div>`:""}</div>`;
   if(c.kind==="propose"){
@@ -433,6 +460,14 @@ function cClick(v,el){
     case "revoke":S.settings.consent=false;save();render();return;
     case "toprov":tab="ayar";render();window.scrollTo(0,0);return;
     case "why":return cWhy();
+    case "prog":return cProgSheet();
+    case "po":if(p1 in progOpt){progOpt[p1]=p1==="d"||p1==="m"?+p2:p2;cProgSheet()}return;
+    case "progask":closeSheet();return cProgram(progOpt);
+    case "progadd":{
+      const m=S.chat.find(x=>x.id===+p1);if(!m||!m.card||m.card.kind!=="program"||m.card.state!=="pending")return;
+      for(const d of m.card.days)S.templates.push({id:S.gid++,name:`${m.card.name} – ${d.n}`.slice(0,60),ex:d.ex.slice()});
+      m.card.state="ok";save();render();return toast(`${m.card.days.length} şablon eklendi`);
+    }
     case "whyai":return cWhyAsk(+p1);
     case "ok":return cApplyLog(+p1,el);
     case "addfood":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card&&m.card.kind==="food"&&m.card.state==="pending"){if(myFoodAdd(m.card.f.n,m.card.f.k,m.card.f.p)){m.card.state="ok";save();render();toast("Besin listene eklendi")}else toast("Listen dolu (en fazla 200 besin)")}return}

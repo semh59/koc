@@ -25,11 +25,11 @@ const CoachLib=(()=>{
       try{
         const o=JSON.parse(s.slice(a,b+1));
         if(o&&typeof o==="object"&&typeof o.reply==="string"){
-          return {reply:o.reply.trim().slice(0,1500),log:Array.isArray(o.log)?o.log:[],propose:o.propose&&typeof o.propose==="object"?o.propose:null,flag:typeof o.flag==="string"?o.flag:null,food:o.food&&typeof o.food==="object"?o.food:null,notif:o.notif&&typeof o.notif==="object"?o.notif:null};
+          return {reply:o.reply.trim().slice(0,1500),log:Array.isArray(o.log)?o.log:[],propose:o.propose&&typeof o.propose==="object"?o.propose:null,flag:typeof o.flag==="string"?o.flag:null,food:o.food&&typeof o.food==="object"?o.food:null,notif:o.notif&&typeof o.notif==="object"?o.notif:null,program:o.program&&typeof o.program==="object"?o.program:null};
         }
       }catch(e){}
     }
-    return {reply:s.replace(/[{}]/g,"").slice(0,1500),log:[],propose:null,flag:null,food:null,notif:null};
+    return {reply:s.replace(/[{}]/g,"").slice(0,1500),log:[],propose:null,flag:null,food:null,notif:null,program:null};
   }
 
   const num=(x,lo,hi)=>{const v=typeof x==="string"?parseFloat(x.replace(",",".")):x;return Number.isFinite(v)&&v>=lo&&v<=hi?v:null};
@@ -58,6 +58,28 @@ const CoachLib=(()=>{
     const p=num(x.protein!=null?x.protein:x.p,0,300);
     return {n,k:Math.round(k),p:p==null?null:Math.round(p*10)/10};
   }
+  /* Model programı: yalnız bilinen kimlikler, gün başına 2-8 egzersiz, en fazla 6 gün. */
+  function cleanProgram(p,known){
+    if(!p||typeof p!=="object"||!Array.isArray(p.days))return null;
+    const ok=new Set(known),days=[];
+    for(const d of p.days){
+      if(days.length>=6)break;
+      if(!d||typeof d!=="object"||!Array.isArray(d.ex))continue;
+      const ex=[...new Set(d.ex.filter(i=>typeof i==="string"&&ok.has(i)))].slice(0,8);
+      if(ex.length>=2)days.push({n:(typeof d.n==="string"&&d.n.trim()?d.n.trim():"Gün "+(days.length+1)).slice(0,40),ex});
+    }
+    return days.length?{name:(typeof p.name==="string"&&p.name.trim()?p.name.trim():"Koç programı").slice(0,60),days}:null;
+  }
+  const LV=["Başlangıç","Orta","İleri"],EQ={"Salon":["Salon","Ev tipi","Ağırlıksız"],"Ev tipi":["Ev tipi","Ağırlıksız"],"Ağırlıksız":["Ağırlıksız"]};
+  /* Program kataloğu yalnız program isteğinde gider: bağlam küçük kalsın diye bölge başına 4, en fazla 60 egzersiz; önce klasikler ve seçilen seviye. */
+  function catalog(list,o,prio){
+    const eq=EQ[o.q]||EQ.Salon,lv=Math.max(0,LV.indexOf(o.l)),pr=new Set(prio),rank=e=>(pr.has(e.id)?0:2)+(e.l===o.l?0:1),n={},out=[];
+    for(const e of list.filter(e=>(e.k==="w"||e.k==="b")&&eq.includes(e.q)&&LV.indexOf(e.l)<=lv).sort((a,b)=>rank(a)-rank(b))){
+      const r=e.r||e.g;n[r]=(n[r]||0)+1;
+      if(n[r]<=4&&out.length<60)out.push(e);
+    }
+    return out;
+  }
   /* Model kalori hedefi önerirse güvenli alt sınıra çek. */
   function clampKcal(k,{tdee,bmr}={}){
     const v=num(k,800,5000);if(v==null)return null;
@@ -84,6 +106,7 @@ KURALLAR
 log öğeleri: {"type":"yemek","text":"2 haşlanmış yumurta","kcal":140,"protein":12} | {"type":"su","ml":250} | {"type":"kilo","kg":83.7} | {"type":"spor","min":30,"name":"Yürüyüş"} | {"type":"not","text":"..."}. Dünkü kayıt için "day":"yesterday" ekle.
 propose: {"kcal":1900,"why":"kısa neden"} ya da null.
 food: {"name":"1 dilim pizza","kcal":280,"protein":12} ya da null.
+Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex":["kimlik"]}]} yaz: yalnız KATALOG'daki kimlikler, gün başına 3-8 egzersiz.
 Sabah planı istenirse "notif" alanına {"morning":"...","afternoon":"...","evening":"..."} ekle: her biri en fazla 110 karakter, bildirim metni, rakam uydurma.`;
 
   const f1=x=>x==null?"–":String(Math.round(x*10)/10).replace(".",",");
@@ -109,6 +132,6 @@ Sabah planı istenirse "notif" alanına {"morning":"...","afternoon":"...","even
     }
     return L.join("\n");
   }
-  return {low,redFlag,parse,cleanItems,cleanFood,clampKcal,SYSTEM,contextText};
+  return {low,redFlag,parse,cleanItems,cleanFood,cleanProgram,catalog,clampKcal,SYSTEM,contextText};
 })();
 if(typeof module!=="undefined")module.exports=CoachLib;

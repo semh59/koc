@@ -154,6 +154,7 @@ function gHome(){
   const rec=done.slice(0,8).map(x=>`<button class="rrow" data-g="sum:${x.id}"><span class="num mut">${gDate(x.day)}</span><span class="tx">${esc(x.name)}</span><span class="num mut">${Math.round(gWorkVol(x)).toLocaleString("tr-TR")} kg</span></button>`).join("");
   return `<button class="btn" data-g="start:">Boş antrenman başlat</button>
   <button class="btn ghost" data-g="lib" style="margin-top:8px">📚 Egzersiz kütüphanesi (${EXMERGED.length}, animasyonlu)</button>
+  <button class="btn ghost" data-c="prog" style="margin-top:8px">Koç'tan program iste</button>
   <h2>Şablonlarım</h2>${tpl||`<p class="hint">Şablon yok. Bir antrenmanı bitirince "Şablon olarak kaydet" ile oluşur.</p>`}
   ${bars}
   <h2>Son antrenmanlar</h2><div class="card">${rec||`<p class="hint">Henüz antrenman yok.</p>`}</div>`;

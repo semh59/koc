@@ -27,3 +27,15 @@ ok("geçersiz besin atılır",C.cleanFood({name:"",kcal:200})===null&&C.cleanFoo
 ok("protein yoksa null",C.cleanFood({name:"çay",kcal:5}).p===null);
 ok("yanıttaki food ayrıştırılır",C.parse('{"reply":"~280 kcal","food":{"name":"1 dilim pizza","kcal":280}}').food.kcal===280);
 
+const K=["squat","bench","row","curl","ohp"],day=ex=>({n:"G",ex});
+const pg=C.cleanProgram({name:"P",days:[day(["squat","uydurma","bench"]),day(["row","yok"]),day(["curl","ohp"]),day(K),day(K),day(K),day(K)]},K);
+ok("cleanProgram: bilinmeyen kimlik ve 1 egzersizli gün atılır, 6 günde kesilir",pg.days.length===6&&pg.days[0].ex.join()==="squat,bench"&&pg.days[1].ex.join()==="curl,ohp",pg);
+ok("cleanProgram: hepsi geçersizse ya da çöp girdide null, hata yok",C.cleanProgram({days:[day(["x","y"])]},K)===null&&C.cleanProgram("x",K)===null&&C.cleanProgram({days:"x"},K)===null&&C.cleanProgram({days:[null,{ex:[1,{}]}]},K)===null&&C.cleanProgram(null)===null);
+ok("cleanProgram: en fazla 8 egzersiz, tekrar eden kimlik tekilleşir, ad varsayılanı",C.cleanProgram({days:[{ex:["squat","squat","bench"]}]},K).days[0].ex.length===2&&C.cleanProgram({days:[{ex:["squat","bench"]}]},K).name==="Koç programı");
+ok("parse program anahtarını döndürür",C.parse('{"reply":"ok","program":{"name":"P","days":[]}}').program.name==="P"&&C.parse('{"reply":"ok"}').program===null&&C.parse("düz").program===null);
+const EX=require("../www/exlib.js"),cat=o=>C.catalog(EX,o,["squat","bench","pullup","crunch"]);
+const c1=cat({q:"Salon",l:"İleri"}),reg={};c1.forEach(e=>reg[e.r]=(reg[e.r]||0)+1);
+ok("katalog: en fazla 60 satır, bölge başına 4, yalnız w/b, klasikler önce",c1.length<=60&&Object.values(reg).every(n=>n<=4)&&c1.every(e=>e.k==="w"||e.k==="b")&&c1[0].id==="squat",[c1.length,reg]);
+const c2=cat({q:"Ev tipi",l:"Başlangıç"});
+ok("katalog: ekipman ve seviye süzülür",c2.length>0&&c2.every(e=>e.q!=="Salon"&&e.l==="Başlangıç")&&cat({q:"Ağırlıksız",l:"Orta"}).every(e=>e.q==="Ağırlıksız"));
+process.exit(bad?1:0);
