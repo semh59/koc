@@ -12,7 +12,7 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import java.util.List;
 
-/** Bildirimdeki "+250 ml" düğmesi: kayıt uygulama açılmadan SharedPreferences'a yazılır, uygulama bir sonraki açılışta alır. */
+/** Bildirim düğmeleri ("+250 ml", "Aldım"): kayıt uygulama açılmadan SharedPreferences'a yazılır, uygulama bir sonraki açılışta alır. */
 @CapacitorPlugin(name = "QuickLog")
 public class QuickLogPlugin extends Plugin {
     private static final String ACTION_KEY = "LocalNotificationUserAction";
@@ -23,13 +23,19 @@ public class QuickLogPlugin extends Plugin {
         return c.getSharedPreferences("nw_quick", Context.MODE_PRIVATE);
     }
 
-    /** MainActivity'den çağrılır. Bildirim düğmesi "su" ise kaydı saklar, bildirimi kaldırır ve true döner. */
+    /** MainActivity'den çağrılır. Düğme "su" ya da "med" ise kaydı saklar, bildirimi kaldırır ve true döner. */
     static synchronized boolean handle(Context c, Intent in) {
-        if (in == null || !"su".equals(in.getStringExtra(ACTION_KEY))) return false;
-        int v = QuickMath.amount(in.getStringExtra(OBJ_KEY));
-        if (v == 0) return false;
+        if (in == null) return false;
+        String act = in.getStringExtra(ACTION_KEY), obj = in.getStringExtra(OBJ_KEY), key = null;
+        if ("su".equals(act)) {
+            int v = QuickMath.amount(obj);
+            if (v > 0) key = String.valueOf(v);
+        } else if ("med".equals(act)) {
+            key = QuickMath.medKey(obj);
+        }
+        if (key == null) return false;
         SharedPreferences p = prefs(c);
-        p.edit().putString("q", QuickMath.append(p.getString("q", ""), v, System.currentTimeMillis())).commit();
+        p.edit().putString("q", QuickMath.append(p.getString("q", ""), key, System.currentTimeMillis())).commit();
         int id = in.getIntExtra(ID_KEY, Integer.MIN_VALUE);
         if (id != Integer.MIN_VALUE) {
             NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -39,7 +45,7 @@ public class QuickLogPlugin extends Plugin {
         return true;
     }
 
-    private static synchronized String take(Context c) {
+    private static synchronized String takeAll(Context c) {
         SharedPreferences p = prefs(c);
         String s = p.getString("q", "");
         if (!s.isEmpty()) p.edit().remove("q").commit();
@@ -49,11 +55,17 @@ public class QuickLogPlugin extends Plugin {
     @PluginMethod
     public void take(PluginCall call) {
         JSArray items = new JSArray();
-        List<long[]> list = QuickMath.parse(take(getContext()));
-        for (long[] x : list) {
+        List<String[]> list = QuickMath.parse(takeAll(getContext()));
+        for (String[] x : list) {
             JSObject o = new JSObject();
-            o.put("v", x[0]);
-            o.put("t", x[1]);
+            if (x[0].charAt(0) == 'm') {
+                int us = x[0].indexOf('_');
+                o.put("m", Integer.parseInt(x[0].substring(1, us)));
+                o.put("s", x[0].substring(us + 1, us + 3) + ":" + x[0].substring(us + 3));
+            } else {
+                o.put("v", Integer.parseInt(x[0]));
+            }
+            o.put("t", Long.parseLong(x[1]));
             items.put(o);
         }
         JSObject r = new JSObject();

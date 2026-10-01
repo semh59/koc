@@ -5,7 +5,7 @@ Durum: bekliyor. Sıralama değer ve emek tahminidir, karar değildir.
 ## D:\PROJECT\NeowellAI vizyon belgesinden (1 Ekim 2026'da seçildi)
 Hepsi yerel kalır, sunucu gerektirmez.
 1. Uyku ve ruh hali kaydı.
-2. İlaç hatırlatıcı: doz ve stok kaydı, mevcut yerel bildirim altyapısıyla.
+2. İlaç hatırlatıcı: doz ve stok kaydı, mevcut yerel bildirim altyapısıyla. (Yapıldı: 1 Ekim 2026)
 3. Gizlilik paneli ve kategori bazlı silme (yalnızca su, yalnızca not vb.).
 4. Seri ve uyum skoru (yerel, basit).
 5. Doktora paylaşılacak PDF ve haftalık rapor. Sonra Play Store için release imzası ve gizlilik politikası.

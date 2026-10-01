@@ -511,6 +511,138 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("closeSheet();vaultOn=false");delete w.Capacitor.Plugins.KeyVault;
     ev("S.settings.healthNote='';S.settings.lastBackup='';tab='bugun';render()");
   }
+  // ---- İlaç hatırlatıcı ----
+  {
+    const doc=w.document,q=s=>doc.querySelector(s),qa=s=>[...doc.querySelectorAll(s)];
+    const click=s=>q(s).click(),toastT=()=>q("#toast").textContent,txt=()=>q("#sheet").textContent;
+    const wait=ms=>new Promise(r=>setTimeout(r,ms));
+    ev("S.meds=[];S.medLog=[];S.settings.medOn=false;S.settings.medShowName=true;S.entries=[];S.vitals=[];tab='bugun';render()");
+    ok("özellik kapalıyken Bugün'de ilaç kartı yok",!ev("viewBugun()").includes("💊"));
+    ev("tab='ayar';render()");
+    ok("Ayarlar'da ilaç hatırlatıcıyı aç düğmesi ve uyarı metni",!!q('[data-md="toggle"]')&&q("#view").textContent.includes("doz önermez")&&!q('[data-md="shown"]'));
+    click('[data-md="toggle"]');
+    ok("açılınca ilaç adı seçeneği ve düzenleme bağlantısı çıkar",ev("S.settings.medOn")===true&&!!q('[data-md="shown"]')&&q('[data-md="shown"]').checked&&!!q('#view [data-tab="ilac"]'));
+    ev("tab='bugun';render()");
+    ok("ilaç yokken kart 'ilaç ekle' önerir",q("#view").textContent.includes("Henüz ilaç eklemedin")&&!!q('[data-md="new"]'));
+
+    // ekleme ve doğrulama
+    click('[data-md="new"]');
+    ok("ilaç ekranı: ad, doz, saat, günler, stok",!!q("#mn")&&!!q("#md")&&!!q("#mt0")&&qa("[data-md^='wd:']").length===7&&!!q("#mk")&&!q('[data-md="del"]'));
+    click('[data-md="save"]');
+    ok("adsız ilaç kaydedilmez",ev("S.meds.length")===0&&q("#mwarn").textContent.includes("adını"));
+    q("#mn").value="Test İlaç";q("#md").value="1 tablet";
+    click('[data-md="addtime"]');
+    ok("saat ekleyince yazılanlar korunur",q("#mn").value==="Test İlaç"&&!!q("#mt1"));
+    q("#mt0").value="08:00";q("#mt1").value="08:00";click('[data-md="save"]');
+    ok("yinelenen saat reddedilir",ev("S.meds.length")===0&&q("#mwarn").textContent.includes("Saatleri"));
+    q("#mt1").value="20:00";q("#mk").value="abc";click('[data-md="save"]');
+    ok("sayı olmayan stok reddedilir",ev("S.meds.length")===0&&q("#mwarn").textContent.includes("sayı"));
+    q("#mk").value="10";q("#mp").value="1";q("#mc").value="0";click('[data-md="save"]');
+    ok("gün sayısı 0 reddedilir",ev("S.meds.length")===0&&q("#mwarn").textContent.includes("Gün sayısı"));
+    q("#mc").value="";
+    for(const w_ of [0,1,2,3,4,5,6])click(`[data-md="wd:${w_}"]`);
+    click('[data-md="save"]');
+    ok("hiç gün seçilmezse reddedilir",ev("S.meds.length")===0&&q("#mwarn").textContent.includes("bir gün"));
+    for(const w_ of [0,1,2,3,4,5,6])click(`[data-md="wd:${w_}"]`);
+    click('[data-md="save"]');
+    ok("ilaç kaydedilir: ad, doz, saatler, stok, her gün",ev("S.meds.length")===1&&ev("S.meds[0].n")==="Test İlaç"&&ev("S.meds[0].d")==="1 tablet"&&ev("S.meds[0].t.join()")==="08:00,20:00"&&ev("S.meds[0].k")===10&&ev("S.meds[0].w")===undefined&&toastT().includes("kaydedildi"),ev("S.meds"));
+    ev("tab='bugun';render()");
+    const rows=()=>qa("#view .row").filter(r=>r.textContent.includes("Test İlaç"));
+    ok("Bugün kartı iki dozu ve düğmelerini gösterir",rows().length===2&&qa('[data-md^="take:1:"]').length===2&&qa('[data-md^="skip:1:"]').length===2);
+
+    // alındı / atlandı / geri al
+    click('[data-md="take:1:08:00"]');
+    ok("alındı: kayıt, saat, stok düşer, toast",ev("S.medLog.length")===1&&ev("S.medLog[0].st")==="t"&&/^\d\d:\d\d$/.test(ev("S.medLog[0].at"))&&ev("S.meds[0].k")===9&&toastT().includes("alındı"),ev("S.medLog"));
+    ok("kartta ✓ görünür, düğmeler gider",q("#view").textContent.includes("✓")&&!q('[data-md="take:1:08:00"]')&&!!q('[data-md="clear:1:08:00"]')&&!!q('[data-md="take:1:20:00"]'));
+    click("#tundo");
+    ok("geri al kaydı ve stoğu eski haline getirir",ev("S.medLog.length")===0&&ev("S.meds[0].k")===10&&!!q('[data-md="take:1:08:00"]'));
+    click('[data-md="skip:1:20:00"]');
+    ok("atlandı: kayıt, stok değişmez",ev("S.medLog[0].st")==="s"&&ev("S.meds[0].k")===10&&q("#view").textContent.includes("Atlandı"));
+    click('[data-md="take:1:20:00"]'.replace("take","clear"));
+    ok("işaret geri alınır (↩)",ev("S.medLog.length")===0);
+    click('[data-md="take:1:08:00"]');
+
+    // ilaçlar ekranı
+    ev("tab='ilac';render()");
+    ok("ilaçlar ekranı: başlık, bugünün dozları, ilaç listesi, uyarı metni",q("#ttl").textContent==="İlaçlar"&&q("#view").textContent.includes("Test İlaç")&&q("#view").textContent.includes("08:00, 20:00 · her gün")&&q("#view").textContent.includes("doz önermez")&&q('nav [data-tab="bugun"]').getAttribute("aria-current")==="page");
+    ev("S.medLog.push({id:99,m:1,day:keyOff(-1),slot:'08:00',st:'t'},{id:100,m:1,day:keyOff(-1),slot:'20:00',st:'s'})");ev("render()");
+    ok("uyum kutuları: son 7 gün yüzdesi ve doz sayısı, günlük döküm",q("#view").textContent.includes("Son 7 gün uyum")&&/%\d+/.test(q("#view").textContent)&&q("#view").textContent.includes("doz alındı")&&q("#view").textContent.includes("atlanan 1"),q("#view").textContent.slice(0,400));
+    ev("S.medLog=S.medLog.filter(x=>x.id!==99&&x.id!==100)");
+    ev("S.meds[0].k=3");ev("render()");
+    ok("stok azalınca uyarı",q("#view").textContent.includes("yaklaşık 3 doz kaldı"));
+    ok("tanı/öneri dili yok",!/etkileşim kontrol|dozu artır|doktora danış|yan etki/i.test(q("#view").textContent.replace("etkileşimlerini denetlemez","")));
+
+    // düzenle, kapat, sil
+    click('[data-md="edit:1"]');
+    ok("düzenleme: alanlar dolu, sil düğmesi var",q("#mn").value==="Test İlaç"&&q("#mt0").value==="08:00"&&q("#mt1").value==="20:00"&&!!q('[data-md="del"]')&&q("#mon").checked);
+    q("#mn").value="Yeni Ad";q("#mon").checked=false;click('[data-md="save"]');
+    ok("düzenleme kaydedilir; kapalı ilaç günün dozlarında çıkmaz",ev("S.meds[0].n")==="Yeni Ad"&&ev("S.meds[0].on")===false&&ev("S.meds.length")===1&&ev("MedLib.dosesOn(S.meds,dayKey()).length")===0);
+    click('[data-md="edit:1"]');q("#mon").checked=true;click('[data-md="save"]');
+    ok("tekrar açılır",ev("S.meds[0].on")===true);
+    click('[data-md="edit:1"]');click('[data-md="del"]');
+    ok("silinince ilaç ve kayıtları gider, geri al getirir",ev("S.meds.length")===0&&ev("S.medLog.length")===0);
+    click("#tundo");
+    ok("geri al ilacı ve kayıtlarını getirir",ev("S.meds.length")===1&&ev("S.medLog.length")===1);
+
+    // kür
+    click('[data-md="new"]');q("#mn").value="Kür";q("#mc").value="3";click('[data-md="save"]');
+    ok("kür: başlangıç bugün, bitiş 3. gün",ev("S.meds.find(m=>m.n==='Kür').s")===ev("dayKey()")&&ev("S.meds.find(m=>m.n==='Kür').e")===ev("MedLib.addDay(dayKey(),2)")&&ev("MedLib.dosesOn(S.meds,MedLib.addDay(dayKey(),3)).filter(x=>x.m.n==='Kür').length")===0);
+    ev("S.meds=S.meds.filter(m=>m.n!=='Kür')");
+
+    // bildirim kurulumu
+    const lnOld=w.Capacitor.Plugins.LocalNotifications;let types=null,list=[];
+    w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),cancel:async()=>{},registerActionTypes:async o=>{types=o.types},schedule:async o=>{list=o.notifications}};
+    ev("S.medLog=[]");
+    await ev("scheduleReminders()");
+    const medN=()=>list.filter(n=>n.id>=1e6);
+    ok("ilaç bildirimleri kurulur: büyük kimlik, 'Aldım' eylemi, ek veri, ad görünür",medN().length>=40&&medN().every(n=>n.actionTypeId==="med"&&n.extra.act==="med"&&n.extra.m===1)&&medN()[0].body.includes("Yeni Ad"),medN()[0]);
+    ok("eylem türleri: su ve ilaç ('✔ Aldım')",types.some(t=>t.id==="med"&&t.actions[0].id==="med"&&t.actions[0].title==="✔ Aldım")&&types.some(t=>t.id==="water"));
+    ok("normal hatırlatmalar ilaç kimlikleriyle çakışmaz, kimlikler benzersiz",new Set(list.map(n=>n.id)).size===list.length);
+    ev("S.settings.medShowName=false");await ev("scheduleReminders()");
+    ok("ad gizliyse bildirimde ilaç adı yok",medN().length>0&&medN().every(n=>!JSON.stringify(n).includes("Yeni Ad")&&n.body==="İlaç saatin geldi."));
+    ev("S.settings.medShowName=true;S.settings.medOn=false");await ev("scheduleReminders()");
+    ok("özellik kapalıyken ilaç bildirimi kurulmaz",medN().length===0);
+    ev("S.settings.medOn=true");
+    ev("S.medLog=[{id:1,m:1,day:dayKey(),slot:'20:00',st:'t'}]");await ev("scheduleReminders()");
+    ok("bugün alınmış dozun bildirimi kurulmaz",!medN().some(n=>n.extra.s==="20:00"&&n.id===1000000+1*1000+1*40+0));
+    ev("S.meds=Array.from({length:20},(_,i)=>({id:i+1,n:'M'+i,t:['06:00','10:00','14:00','18:00','22:00','23:00'],on:true}));S.medLog=[]");
+    await ev("scheduleReminders()");
+    ok("çok ilaçta toplam alarm 440 ile sınırlı (Android 500 sınırı)",list.length===440,list.length);
+    ok("sınırlandırmada en yakın tarihliler korunur (kalan alarmlar yalnızca ilk 5 güne ait)",Math.max(...list.filter(n=>n.id>=1e6).map(n=>n.id%40))<=4&&list.filter(n=>n.id>=1e6).some(n=>n.id%40===0),Math.max(...list.filter(n=>n.id>=1e6).map(n=>n.id%40)));
+    w.Capacitor.Plugins.LocalNotifications=lnOld;
+    ev("S.meds=[{id:1,n:'Test İlaç',d:'1 tablet',t:['08:00','20:00'],on:true,k:10}];S.medLog=[]");
+
+    // bildirimden Aldım
+    let pend=[];const sch=[];
+    w.Capacitor.Plugins.QuickLog={take:async()=>{const r={items:pend};pend=[];return r}};
+    w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),cancel:async()=>{},registerActionTypes:async()=>{},schedule:async o=>{sch.push(...o.notifications)}};
+    pend=[{m:1,s:"08:00",t:Date.now()-60000}];
+    await ev("quickIngest()");await wait(50);
+    ok("bildirimden 'Aldım': doz bugün için alındı olarak işlenir, stok düşer, bildirim yeniden kurulur",ev("S.medLog.length")===1&&ev("S.medLog[0].st")==="t"&&ev("S.medLog[0].day")===ev("dayKey()")&&ev("S.meds[0].k")===9&&toastT().includes("Test İlaç")&&sch.length>0,[ev("S.medLog"),toastT()]);
+    pend=[{m:1,s:"08:00",t:Date.now()-1000}];
+    await ev("quickIngest()");
+    ok("aynı doz ikinci kez bildirimden gelirse tekrar sayılmaz, stok düşmez",ev("S.medLog.length")===1&&ev("S.meds[0].k")===9);
+    pend=[{m:77,s:"08:00",t:Date.now()-1000},{m:1,s:"09:30",t:Date.now()-1000},{m:1,s:"bozuk",t:Date.now()-1000},{m:1.5,s:"08:00",t:Date.now()-1000}];
+    await ev("quickIngest()");
+    ok("bilinmeyen ilaç, programda olmayan saat ve bozuk veri atılır",ev("S.medLog.length")===1);
+    const t0=new Date();t0.setHours(0,10,0,0);
+    ev("S.medLog=[];S.meds[0].t=['23:30'];S.meds[0].k=10");
+    pend=[{m:1,s:"23:30",t:t0.getTime()}];await ev("quickIngest()");
+    ok("gece yarısından sonra basılan 23:30 dozu önceki güne yazılır",ev("S.medLog.length")===1&&ev("S.medLog[0].day")===ev("MedLib.addDay(dayKey(new Date("+t0.getTime()+")),-1)"),ev("S.medLog"));
+    ev("S.meds[0].t=['08:00','20:00'];S.medLog=[];S.meds[0].k=10");
+    w.Capacitor.Plugins.LocalNotifications=lnOld;delete w.Capacitor.Plugins.QuickLog;
+
+    // yedek ve temizlik
+    ev("S.medLog=[{id:1,m:1,day:dayKey(),slot:'08:00',st:'t',at:'08:03'}]");
+    const bkJ=ev("JSON.stringify(S)");
+    ev("S.meds=[];S.medLog=[]");doc.querySelector("#bk").value=bkJ;await ev("goYukle()");
+    ok("yedekten geri yüklemede ilaçlar ve kayıtlar gelir",ev("S.meds.length")===1&&ev("S.meds[0].n")==="Test İlaç"&&ev("S.medLog.length")===1&&ev("S.medLog[0].at")==="08:03");
+    doc.querySelector("#bk").value=JSON.stringify({...JSON.parse(bkJ),meds:[{id:1,n:"İyi",t:["08:00"]},{id:2,n:"",t:["09:00"]},{id:3,n:"Saatsiz",t:[]},"çöp",null],medLog:[{m:1,day:"2026-09-10",slot:"08:00",st:"t"},{m:2,day:"2026-09-10",slot:"09:00",st:"t"},{m:1,day:"bozuk",slot:"08:00",st:"t"}]});
+    await ev("goYukle()");
+    ok("bozuk ilaç ve kayıtlar yüklemede ayıklanır (silinmiş ilacın kaydı da)",ev("S.meds.length")===1&&ev("S.medLog.length")===1&&ev("S.medLog[0].m")===1,[ev("S.meds"),ev("S.medLog")]);
+    ok("sıfırlama boş ilaç listesi başlatır",ev("DEF.meds.length")===0&&ev("DEF.medLog.length")===0&&ev("DEF.settings.medOn")===false);
+    ev("S.meds=[];S.medLog=[];S.settings.medOn=false;tab='bugun';render()");
+  }
     process.exit(bad?1:0);
   });
   const calls=[];

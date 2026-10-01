@@ -1,7 +1,7 @@
 "use strict";
 /* Haftalık rapor PDF'i: son 7 günün kayıtlarını derleyip paylaşım ekranına verir. */
 async function weeklyPdf(){
-  const today=dayKey(),data=WeeklyLib.build(S,today,7);
+  const today=dayKey(),data=WeeklyLib.build(S,today,7,medNowHM());
   if(!data.rows.some(r=>r.kilo!=null||r.su||r.kcal||r.spor||r.adim))return toast("Bu hafta rapor için kayıt yok");
   let pdf;
   try{
