@@ -251,9 +251,11 @@ select.in{appearance:none}
 <script src="gym.js"></script>
 <script src="backuplib.js"></script>
 <script src="lablib.js"></script>
+<script src="labellib.js"></script>
 <script src="coachlib.js"></script>
 <script src="coach.js"></script>
 <script src="labui.js"></script>
+<script src="ocrui.js"></script>
 <script>
 "use strict";
 /* ---------- yardımcılar ---------- */
@@ -633,7 +635,7 @@ function repeatYesterday(){
 function sheetYemek(){
   const cnt={};for(const e of S.entries)if(e.type==="yemek"&&e.text){const k=tr(e.text);(cnt[k]=cnt[k]||{n:0,text:e.text,v:e.v}).n++;cnt[k].v=e.v}
   const fav=Object.values(cnt).sort((a,b)=>b.n-a.n).slice(0,6);favList=fav;
-  openSheet(`<h3>Yemek ekle</h3>${of("yemek",keyOff(-1)).length?`<button class="btn ghost" data-act="dunku" style="margin-bottom:8px">↺ Dünkünü tekrarla (${of("yemek",keyOff(-1)).length} kayıt)</button>`:""}${isNative()&&BS()?`<button class="btn ghost" data-act="barkod" style="margin-bottom:8px">📷 Barkod okut</button>`:""}<input class="in" id="fq" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off" autofocus><div id="flist" class="plist"></div>${fav.length?`<div class="lbl">Sık yediklerin</div><div class="chips">${fav.map((f,i)=>`<button class="chip" data-fav="${i}">${esc(f.text)}${f.v?" "+Math.round(f.v):""}</button>`).join("")}</div>`:""}
+  openSheet(`<h3>Yemek ekle</h3>${of("yemek",keyOff(-1)).length?`<button class="btn ghost" data-act="dunku" style="margin-bottom:8px">↺ Dünkünü tekrarla (${of("yemek",keyOff(-1)).length} kayıt)</button>`:""}${isNative()&&BS()?`<button class="btn ghost" data-act="barkod" style="margin-bottom:8px">📷 Barkod okut</button>`:""}${ocrBtn("etiket","🏷 Etiketi fotoğrafla oku")}<input class="in" id="fq" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off" autofocus><div id="flist" class="plist"></div>${fav.length?`<div class="lbl">Sık yediklerin</div><div class="chips">${fav.map((f,i)=>`<button class="chip" data-fav="${i}">${esc(f.text)}${f.v?" "+Math.round(f.v):""}</button>`).join("")}</div>`:""}
   <div class="lbl">Ya da kendin yaz</div><input class="in" id="ft" placeholder="Ne yedin?" autocomplete="off"><input class="in num" id="fv" inputmode="numeric" placeholder="Kalori (isteğe bağlı)">${dayOptions()}<button class="btn" data-go="yemek">Kaydet</button>`);
 }
 let curFood=null,curPor=0,foodAskQ="";
@@ -972,7 +974,7 @@ keysInit().then(()=>{render();cAuto();cFlush()});
 if(S.settings.stepsOn&&SC()){SC().start().catch(()=>{});stepsSync()}
 setInterval(()=>{if(!document.hidden&&tab==="bugun")stepsSync()},60000);
 if(DH())DH().info().then(r=>{oem=String(r.manufacturer||"");render()},()=>{});
-try{const P=window.Capacitor&&window.Capacitor.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp","BarcodeScanner","StepCounter"].map(n=>n+"="+typeof P[n]).join(" "))}catch(e){}
+try{const P=window.Capacitor&&window.Capacitor.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp","BarcodeScanner","StepCounter","Ocr"].map(n=>n+"="+typeof P[n]).join(" "))}catch(e){}
 setInterval(()=>{if(dayKey()!==lastDay){lastDay=dayKey();logOff=0;render()}},60000);
 try{
   const AP=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;
