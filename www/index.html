@@ -329,7 +329,8 @@ const DEF={
     {id:8,t:"20:00",on:false,name:"Tansiyon (akşam)",title:"❤️ Tansiyon ölçümü",body:"5 dakika dinlen, tansiyonunu ölç ve kaydet."},
     {id:9,t:"07:30",on:false,name:"Şeker ölçümü",title:"🩸 Şeker ölçümü",body:"Şekerini ölç ve ne zaman ölçtüğünle kaydet."},
     {id:10,t:"20:00",on:true,dow:0,name:"Haftalık yedek (Pazar)",title:"☁️ Yedek zamanı",body:"Yedeği Drive'a göndermek için Ayarlar > Yedeği Drive'a gönder."},
-    {id:11,t:"20:00",on:false,name:"Oruç başlangıcı",title:"⏳ Oruç başlangıcı",body:"Oruç penceren başlıyor, istersen Bugün'den başlat."}
+    {id:11,t:"20:00",on:false,name:"Oruç başlangıcı",title:"⏳ Oruç başlangıcı",body:"Oruç penceren başlıyor, istersen Bugün'den başlat."},
+    {id:12,t:"20:30",on:true,dow:0,name:"Haftalık özet (Pazar)",title:"📊 Haftalık özet",body:"Haftanın özeti hazır, bakmak için dokun."}
   ]},
   entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,exCfg:{},providers:defProviders(),chat:[],cid:1,myFoods:[],favFoods:[],mealTpl:[],fast:{plan:16,t0:null,log:[]},sleep:[],mood:[],labs:[],vitals:[],meds:[],medLog:[],moves:[]
 };
@@ -849,7 +850,7 @@ async function goYukle(){
 }
 
 /* ---------- bildirimler (yalnızca APK) ---------- */
-const WATER_REM=[2,3,4],BACKUP_REM=10;
+const WATER_REM=[2,3,4],BACKUP_REM=10,WEEKLY_REM=12;
 const SCHED_DAYS=30;let lastSched=0;
 const LN=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.LocalNotifications;
 async function scheduleReminders(){
@@ -880,7 +881,7 @@ async function scheduleReminders(){
         const at=addDays(i);at.setHours(h,m,0,0);
         if(r.dow!=null&&at.getDay()!==r.dow)continue;
         if(r.id===BACKUP_REM&&(S.entries.length<10||(lb&&Algo.dayNum(dayKey(at))-Algo.dayNum(lb)<7)))continue;
-        if(at.getTime()>now+5000)list.push(Object.assign({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}},water?{actionTypeId:"water",extra:{act:"su",v:S.settings.glass}}:{}));
+        if(at.getTime()>now+5000)list.push(Object.assign({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}},water?{actionTypeId:"water",extra:{act:"su",v:S.settings.glass}}:r.id===WEEKLY_REM?{extra:{act:"open",tab:"koc"}}:{}));
       }
     }
     lastSched=now;
@@ -893,6 +894,12 @@ async function scheduleReminders(){
     if(list.length)await ln.schedule({notifications:list});
     return "ok";
   }catch(e){return "Bildirimler kurulamadı: "+(e&&e.message||e)}
+}
+/* Yalnız bildirime dokunma ("tap"); su/ilaç düğmeleri QuickLogPlugin'de yerelde yakalanır. Koç izni yoksa haftalık özet Trend'de açılır. */
+function notifTap(e){
+  const x=e&&e.notification&&e.notification.extra;
+  if(!e||e.actionId!=="tap"||!x||x.act!=="open")return;
+  tab=x.tab==="koc"&&S.settings.consent?"koc":"trend";closeSheet();render();window.scrollTo(0,0);
 }
 function setNotif(s){notifStatus=s;if(tab==="ayar")render()}
 const SC=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.StepCounter;
@@ -1101,6 +1108,7 @@ setInterval(()=>{if(!document.hidden&&tab==="bugun")stepsSync()},60000);
 if(DH())DH().info().then(r=>{oem=String(r.manufacturer||"");render()},()=>{});
 try{const P=window.Capacitor&&window.Capacitor.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp","BarcodeScanner","StepCounter","Ocr","Motion"].map(n=>n+"="+typeof P[n]).join(" "))}catch(e){}
 setInterval(()=>{if(dayKey()!==lastDay){lastDay=dayKey();logOff=0;render()}},60000);
+try{const ln=LN();if(ln&&ln.addListener)ln.addListener("localNotificationActionPerformed",notifTap)}catch(e){}
 try{
   const AP=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;
   if(AP&&AP.addListener)AP.addListener("backButton",()=>{
