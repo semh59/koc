@@ -1,6 +1,10 @@
 # Tansiyon ve şeker takibi: plan (1 Ekim 2026)
 
-Durum: plan, onay bekliyor. Kod yazılmadı.
+Durum: plan, kod yazılmadı. Semih'in kararları (1 Ekim 2026):
+- Ön ayarlar **iki alanda da var**. Şeker düğmesi kapsamı açıkça yazar ("diyabetli yetişkinler için ADA hedefi"), tansiyon düğmesi "eşik" der.
+- Uç değer kutusu **olacak** (yalnızca bugün tarihli kayıtta, teşhissiz).
+- Uygulama **yalnızca Semih için**: KVKK metni şimdilik gerekmez (dağıtım olursa şart).
+- mmol/L ilk sürümde yok.
 
 ## Amaç ve sınır
 Kullanıcının evde kendi cihazıyla ölçtüğü tansiyon ve kan şekerini kaydetmek, ortalama ve eğilimi göstermek, doktora PDF vermek. Uygulama **kayıt ve grafik** tutar. Teşhis, yorum, ilaç/insülin dozu, "hastasınız / sağlıklısınız" demek yok.
