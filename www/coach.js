@@ -55,6 +55,10 @@ function cleanCoach(r){
     if(c&&c.kind==="log"&&Array.isArray(c.items)){const items=CoachLib.cleanItems(c.items);if(items.length)o.card={kind:"log",items,state:["pending","ok","no"].includes(c.state)?c.state:"pending",saved:c.saved===true}}
     else if(c&&c.kind==="food"){const f=CoachLib.cleanFood({name:c.n,kcal:c.k,protein:c.p});if(f)o.card={kind:"food",f,state:["pending","ok","no"].includes(c.state)?c.state:"pending"}}
     else if(c&&c.kind==="safety"&&["emergency","check","mind","ed"].includes(c.level))o.card={kind:"safety",level:c.level};
+    else if(c&&c.kind==="why"&&Array.isArray(c.items)){
+      const items=c.items.filter(x=>x&&typeof x.k==="string"&&/^[a-z]{1,8}$/.test(x.k)&&typeof x.t==="string"&&x.t.trim()).slice(0,6).map(x=>({k:x.k,t:x.t.slice(0,160)}));
+      if(items.length)o.card=Object.assign({kind:"why",items},c.asked===true?{asked:true}:{});
+    }
     else if(c&&c.kind==="propose"&&Number.isFinite(c.kcal))o.card={kind:"propose",kcal:Math.round(c.kcal),why:String(c.why||"").slice(0,160),limited:c.limited===true,state:["pending","ok","no"].includes(c.state)?c.state:"pending"};
     chat.push(o);
   }
@@ -216,6 +220,25 @@ function cApplyLog(id,el){
   m.card.state="ok";save();render();toast(`${n} kayıt eklendi`);
 }
 
+/* ---- "bu hafta neden kilo vermedim": yerel etmenler, isteğe bağlı Koç yorumu ---- */
+function cWhy(){
+  const days=[];
+  for(let i=21;i>=0;i--){const k=keyOff(-i);days.push({kcal:sum("yemek",k,k),su:sum("su",k,k),ad:sum("adim",k,k),sl:(S.sleep.find(x=>x.day===k)||{}).min})}
+  const items=InsightLib.weekWhy({days,goalKcal:S.settings.kcal,goalWater:S.settings.waterMl,weights:weights(),today:dayKey()});
+  cPush({role:"user",text:"Bu hafta neden kilo vermedim?"});cPush({role:"coach",text:"",card:{kind:"why",items}});
+  tab="koc";save();render();
+}
+async function cWhyAsk(id){
+  const m=S.chat.find(x=>x.id===id);
+  if(busy||!m||!m.card||m.card.kind!=="why"||m.card.asked||!S.settings.consent||!usable().length)return;
+  m.card.asked=true;busy=true;typing=true;render();
+  try{
+    const r=await cAsk(cMessages("Bu sorumu yalnız NOT'taki etmenlerle 4-5 cümlede yorumla. Bu sayılar dışında rakam kullanma, suçlama, tıbbi yorum yapma.","Uygulamanın son 7 gün için yerel hesabı:\n"+m.card.items.map(x=>"- "+x.t).join("\n")));
+    cReply(Object.assign(CoachLib.parse(r.text),{log:[]}));offline=null;
+  }catch(e){m.card.asked=false;toast(e.message==="declined"?"Gönderim onaylanmadı":"Koç şu an ulaşılamıyor, sonra tekrar dene")}
+  finally{busy=false;typing=false;save();render()}
+}
+
 /* ---- otomatik mesajlar: sabah planı + haftalık rapor ---- */
 function weekKey(now=new Date()){
   const d=new Date(now.getFullYear(),now.getMonth(),now.getDate(),20);
@@ -276,6 +299,8 @@ function cSafety(level){
 function cCard(m){
   const c=m.card;if(!c)return "";
   if(c.kind==="safety")return cSafety(c.level);
+  if(c.kind==="why")return `<div class="card lcard"><b>Son 7 gün</b>${c.items.map(x=>`<p class="sm">${esc(x.t)}</p>`).join("")}<div class="mut sm">Telefonda hesaplandı, hiçbir yere gönderilmedi.</div>
+    ${!c.asked&&S.settings.consent&&usable().length?`<div class="lbtns"><button class="btn ghost" data-c="whyai:${m.id}">Koç'a yorumlat</button></div>`:""}</div>`;
   if(c.kind==="propose"){
     return `<div class="card lcard"><b>Kalori hedefi önerisi: ${c.kcal} kcal</b>${c.why?`<div class="mut sm">${esc(c.why)}</div>`:""}${c.limited?`<div class="mut sm">Güvenli alt sınıra çekildi.</div>`:""}
     ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="applyk:${m.id}">Uygula</button><button class="btn ghost" data-c="nok:${m.id}">Şimdi değil</button></div>`:`<div class="mut sm">${c.state==="ok"?"Uygulandı":"Atlandı"}</div>`}</div>`;
@@ -308,6 +333,7 @@ function viewKoc(){
     }
   }
   if(typing)h+=`<div class="cm"><div class="mut sm">Koç yazıyor</div><p class="dots">• • •</p></div>`;
+  else h+=`<div class="chips"><button class="chip" data-c="why">Bu hafta neden kilo vermedim?</button></div>`;
   return `<div class="chat">${h}</div>`;
 }
 function cScroll(){if(tab==="koc")setTimeout(()=>window.scrollTo(0,document.body.scrollHeight),30)}
@@ -397,6 +423,8 @@ function cClick(v,el){
     case "consent":S.settings.consent=true;save();render();cFlush();cAuto();return;
     case "revoke":S.settings.consent=false;save();render();return;
     case "toprov":tab="ayar";render();window.scrollTo(0,0);return;
+    case "why":return cWhy();
+    case "whyai":return cWhyAsk(+p1);
     case "ok":return cApplyLog(+p1,el);
     case "addfood":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card&&m.card.kind==="food"&&m.card.state==="pending"){if(myFoodAdd(m.card.f.n,m.card.f.k,m.card.f.p)){m.card.state="ok";save();render();toast("Besin listene eklendi")}else toast("Listen dolu (en fazla 200 besin)")}return}
     case "nofood":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card){m.card.state="no";save();render()}return}

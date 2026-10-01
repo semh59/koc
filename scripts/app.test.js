@@ -889,6 +889,25 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("exCfg yok (eski yedek) ve çöp değer: kayıtlar eksiksiz yüklenir",Object.keys(Y.exCfg).length===0&&Object.keys(Z.exCfg).length===0&&Y.workouts[0].ex[0].sets[0].kg===100&&Z.workouts[0].ex[0].sets[0].kg===100);
     ev("S.workouts=[];S.bar=20;closeSheet();tab='bugun';render()");
   }
+  {
+    // Koç analizi: neden kartı, plato, program, haftalık özet bildirimi
+    const doc=w.document,q=s=>doc.querySelector(s),wait=ms=>new Promise(r=>setTimeout(r,ms));
+    let fetched=0,reply={reply:"Yorum",log:[]};
+    w.fetch=async()=>{fetched++;return {ok:true,json:async()=>({choices:[{message:{content:JSON.stringify(reply)}}]})}};
+    ev("S.chat=[];S.cid=1;S.settings.consent=false;setKey('nvidia','K1');S.entries=[];S.sleep=[];Object.assign(S.settings,{kcal:1800,goalKg:0,age:0,healthNote:''});for(let i=1;i<=7;i++)add('yemek',i%2?2000:300,'y',keyOff(-i));tab='trend';render()");
+    q('[data-c="why"]').click();await wait(20);
+    const wc=ev("S.chat.find(m=>m.card&&m.card.kind==='why')");
+    ok("neden kartı consent yokken yerel çıkar, fetch yok, Koç'a yorumlat görünmez",ev("tab")==="koc"&&wc&&wc.card.items[0].t.includes("hedefin 1800 kcal")&&fetched===0&&!q('[data-c^="whyai"]'),[wc,fetched]);
+    await ev(`cWhyAsk(${wc.id})`);
+    ok("Koç'a yorumlat consent yokken çağrı yapmaz",fetched===0&&!ev(`S.chat.find(m=>m.id===${wc.id}).card.asked`));
+    ev("S.settings.consent=true;render()");
+    q(`[data-c="whyai:${wc.id}"]`).click();await wait(30);
+    ok("Koç'a yorumlat consent ve sağlayıcı varken bir kez çağırır, yanıt sohbete düşer, düğme kalkar",fetched===1&&ev("S.chat[S.chat.length-1].text")==="Yorum"&&!q('[data-c^="whyai"]'),fetched);
+    const cc=JSON.parse(ev("JSON.stringify(cleanCoach(JSON.parse(JSON.stringify(S))))"));
+    ok("neden kartı yeniden yüklemede kalır",cc.chat.some(m=>m.card&&m.card.kind==="why"&&m.card.items.length===wc.card.items.length&&m.card.asked===true));
+    const g=JSON.parse(ev(`JSON.stringify(cleanCoach({chat:[{id:1,role:'coach',text:'',t:1,card:{kind:'why',items:'x'}},{id:2,role:'coach',text:'',t:1,card:{kind:'why',items:[null,{k:'X!',t:1}]}},{id:3,role:'user',text:'merhaba',t:1}]}))`));
+    ok("çöp neden kartında diğer mesajlar eksiksiz yüklenir",g.chat.length===3&&!g.chat[0].card&&!g.chat[1].card&&g.chat[2].text==="merhaba");
+  }
     process.exit(bad?1:0);
   });
   const calls=[];

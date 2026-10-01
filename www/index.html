@@ -597,6 +597,7 @@ function viewTrend(){
   const sd=new Set(S.entries.filter(e=>e.type==="spor"&&e.day>=keyOff(-6)).map(e=>e.day)).size;
   return `<div class="seg" role="group" aria-label="Aralık"><button data-range="30" aria-pressed="${range==30}">30 gün</button><button data-range="90" aria-pressed="${range==90}">90 gün</button></div>
   <div class="card">${chart(range)}${stats}</div>
+  <div class="btns"><button class="btn ghost" data-c="why">Bu hafta neden kilo vermedim?</button></div>
   ${gEnergy()}
   <h2>Son 7 gün</h2><div class="card"><table><thead><tr><th>Gün</th><th>Kilo</th><th>Su (L)</th><th>kcal</th><th>Spor (dk)</th><th>Adım</th></tr></thead><tbody>${rows}</tbody></table></div>
   ${vTrendCards()}
