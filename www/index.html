@@ -38,11 +38,13 @@ button{cursor:pointer;border:0;background:none;padding:0}
 #app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
 header{padding:18px 20px 6px;display:flex;align-items:center;gap:12px}
 header h1{flex:1;min-width:0;margin:0;font-size:20px;font-weight:700;letter-spacing:-.01em}
-#back{width:44px;height:44px;margin:-10px -10px -10px -14px;flex:none;font-size:30px;line-height:1;color:var(--prim)}
+#back{width:44px;height:44px;margin:-10px -10px -10px -14px;flex:none;color:var(--prim)}
 header .streak{font-size:14px;color:var(--mut);white-space:nowrap}
 header .streak b{color:var(--ink)}
 main{flex:1;padding:6px 16px calc(92px + env(safe-area-inset-bottom))}
 .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+.i{width:1.25em;height:1.25em;vertical-align:-.25em;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#back .i,#csend .i{width:24px;height:24px;vertical-align:middle}
 
 .stepcard .wv{color:var(--prim)}.stepcard .wv small{font-size:15px;font-weight:600}.stepcard .ws{text-align:right;max-width:60%}
 
@@ -68,7 +70,8 @@ main{flex:1;padding:6px 16px calc(92px + env(safe-area-inset-bottom))}
 .actions{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
 .act{background:var(--card);border:1px solid var(--line);border-radius:var(--r-s);padding:10px 0 8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12.5px;font-weight:600;min-height:68px;transition:transform .08s}
 .act:active{transform:scale(.95)}
-.act .ic{font-size:24px;line-height:1.1}
+.act .ic .i{width:26px;height:26px}
+.act[data-act=su] .ic{color:var(--su)}.act[data-act=yemek] .ic{color:var(--kcal)}.act[data-act=kilo] .ic{color:var(--prim)}.act[data-act=spor] .ic{color:var(--spor)}.act[data-act=not] .ic{color:var(--mut)}
 .act.su{border-color:color-mix(in srgb,var(--su) 55%,var(--line))}
 
 h2{font-size:15px;margin:18px 4px 8px;font-weight:700}
@@ -76,7 +79,7 @@ h2{font-size:15px;margin:18px 4px 8px;font-weight:700}
 .log li{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line)}
 .log li:last-child{border-bottom:0}
 .log .t{color:var(--mut);font-size:13px;width:42px;flex:none}
-.log .ic{width:22px;text-align:center;flex:none}
+.log .ic{width:22px;text-align:center;flex:none;color:var(--mut)}
 .log .tx{flex:1;min-width:0;overflow-wrap:anywhere}
 .log .vl{color:var(--mut);font-size:14px;white-space:nowrap}
 .del{width:44px;height:44px;margin:-8px 0;border-radius:50%;color:var(--mut);font-size:18px;flex:none}
@@ -173,7 +176,7 @@ body.koc #toast{bottom:calc(150px + env(safe-area-inset-bottom))}
 .ok.on{background:var(--spor);border-color:var(--spor);color:var(--spor-ink)}
 .lnk{display:block;width:100%;min-height:44px;color:var(--prim);font-weight:700;font-size:14px}.lnk.dng{color:var(--warn);margin-top:6px}
 .prow{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:56px;padding:6px 4px;border-top:1px solid var(--line);text-align:left}
-.prow.dng{color:var(--warn)}.card>.prow:first-child{border-top:0}.prow b{display:block}.plus{font-size:24px;color:var(--prim);width:44px;min-height:44px;text-align:center}
+.prow.dng{color:var(--warn)}.aic{color:var(--prim)}.aic .i{width:24px;height:24px}.card>.prow:first-child{border-top:0}.prow b{display:block}.plus{font-size:24px;color:var(--prim);width:44px;min-height:44px;text-align:center}
 .tag{font-size:13px;font-weight:600;background:color-mix(in srgb,var(--prim) 18%,var(--card));border-radius:99px;padding:3px 10px}
 .plist{max-height:42vh;overflow:auto;margin-bottom:8px}
 .sumv{font-size:56px;font-weight:800;letter-spacing:-.03em;color:var(--spor);line-height:1.1;margin:6px 0}.sumv small{font-size:18px;font-weight:600;color:var(--mut)}
@@ -210,7 +213,7 @@ nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px
 nav .in{max-width:520px;margin:0 auto;display:flex;gap:4px}
 nav button[hidden]{display:none}
 nav button{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 0;border-radius:12px;font-size:12px;font-weight:600;color:var(--mut)}
-nav button .ic{font-size:21px;line-height:1.2}
+nav button .ic .i{width:24px;height:24px;margin:2px 0}
 nav button[aria-current="page"]{color:var(--prim);background:var(--soft)}
 
 /* Alt sayfa */
@@ -241,25 +244,26 @@ input.in,select.in,.chip>button{min-height:44px}
 </head>
 <body>
 <div id="app">
-  <header><button id="back" aria-label="Geri" hidden>‹</button><h1 id="ttl">Bugün</h1><div class="streak" id="streak"></div></header>
+  <header><button id="back" aria-label="Geri" data-ic="back" hidden></button><h1 id="ttl">Bugün</h1><div class="streak" id="streak"></div></header>
   <main id="view"></main>
 </div>
 <nav aria-label="Ana menü"><div class="in">
-  <button data-tab="koc"><span class="ic">💬</span>Koç</button>
-  <button data-tab="bugun"><span class="ic">🏠</span>Bugün</button>
-  <button data-tab="salon"><span class="ic">🏋️</span>Salon</button>
-  <button data-tab="trend"><span class="ic">📈</span>Trend</button>
-  <button data-tab="ilac" id="navIlac" hidden><span class="ic">💊</span>İlaç</button>
-  <button data-tab="ayar"><span class="ic">⚙️</span>Ayarlar</button>
+  <button data-tab="koc"><span class="ic" data-ic="koc"></span>Koç</button>
+  <button data-tab="bugun"><span class="ic" data-ic="bugun"></span>Bugün</button>
+  <button data-tab="salon"><span class="ic" data-ic="salon"></span>Salon</button>
+  <button data-tab="trend"><span class="ic" data-ic="trend"></span>Trend</button>
+  <button data-tab="ilac" id="navIlac" hidden><span class="ic" data-ic="ilac"></span>İlaç</button>
+  <button data-tab="ayar"><span class="ic" data-ic="ayar"></span>Ayarlar</button>
 </div></nav>
 <div id="composer" hidden>
-  <div class="chiprow"><button class="chip" data-act="su">💧 +250</button><button class="chip" data-act="kilo">⚖️ Kilo</button><button class="chip" data-act="yemek">🍽 Yemek</button><button class="chip" data-tab="salon">🏃 Spor</button></div>
-  <div class="cin"><input id="cmsg" aria-label="Koça yaz" placeholder="Koça yaz" autocomplete="off" maxlength="600"><button id="csend" data-c="send" aria-label="Gönder">➤</button></div>
+  <div class="chiprow"><button class="chip" data-act="su"><span data-ic="su"></span> +250</button><button class="chip" data-act="kilo"><span data-ic="kilo"></span> Kilo</button><button class="chip" data-act="yemek"><span data-ic="yemek"></span> Yemek</button><button class="chip" data-tab="salon"><span data-ic="spor"></span> Spor</button></div>
+  <div class="cin"><input id="cmsg" aria-label="Koça yaz" placeholder="Koça yaz" autocomplete="off" maxlength="600"><button id="csend" data-c="send" aria-label="Gönder" data-ic="send"></button></div>
 </div>
 <div id="scrim"></div>
 <div id="sheet" role="dialog" aria-modal="true"></div>
 <div id="toast" role="status"><span id="tmsg"></span><button id="tundo" hidden>Geri al</button></div>
 
+<script src="icons.js"></script>
 <script src="algo.js"></script>
 <script src="foods.js"></script>
 <script src="offlib.js"></script>
@@ -541,11 +545,11 @@ function viewBugun(){
   /* Kilo kartı Trend kısayolu: tek satır özet, grafik ve ayrıntı Trend'de. */
   let weight;
   if(cur==null){
-    weight=`<button class="stepcard" data-act="kilo"><div class="row"><span class="mut">⚖️ Kilo</span><span class="mut sm">Ekle ›</span></div><div class="mut sm">Henüz tartı kaydı yok. İlk tartın başlangıç noktan olur.</div></button>`;
+    weight=`<button class="stepcard" data-act="kilo"><div class="row"><span class="mut">${Icons.svg("kilo")} Kilo</span><span class="mut sm">Ekle ›</span></div><div class="mut sm">Henüz tartı kaydı yok. İlk tartın başlangıç noktan olur.</div></button>`;
   }else{
     const gi=goalInfo(cur,wAll[days[0]]),sl=Algo.slopePerWeek(wAll);
     const bits=[sl!=null?`${fmtS(sl,2)} kg/hafta`:prev!=null?`öncekine göre ${fmtS(cur-prev)} kg`:"",gi?(gi.done?"Hedefe ulaştın":`hedefe ${fmt(gi.left)} kg`):""].filter(Boolean);
-    weight=`<button class="stepcard" data-tab="trend" aria-label="Kilo grafiğini Trend'de aç"><div class="row"><span class="mut">⚖️ ${curDay===t?"Bugünkü tartı":"Son tartı, "+dm(curDay)}</span><span class="mut sm">Trend ›</span></div><div class="row"><span class="big num wv">${fmt(cur)} <small>kg</small></span><span class="mut sm num ws">${bits.join(" · ")}</span></div></button>`;
+    weight=`<button class="stepcard" data-tab="trend" aria-label="Kilo grafiğini Trend'de aç"><div class="row"><span class="mut">${Icons.svg("kilo")} ${curDay===t?"Bugünkü tartı":"Son tartı, "+dm(curDay)}</span><span class="mut sm">Trend ›</span></div><div class="row"><span class="big num wv">${fmt(cur)} <small>kg</small></span><span class="mut sm num ws">${bits.join(" · ")}</span></div></button>`;
   }
   const su=sum("su",t,t),sh=st.waterMl,kc=sum("yemek",t,t),sw=sum("spor",keyOff(-6),t);
   const kcP=st.kcal>0?kc/st.kcal:0;
@@ -565,30 +569,29 @@ function viewBugun(){
   const mi=["fb","sg","na"].map(k=>[k,meals.filter(e=>e[k]!=null).length]).filter(x=>x[1]).map(([k,n])=>`${NLBL[k][0].toUpperCase()+NLBL[k].slice(1)} <b>${Math.round(mac(k))}</b> ${NUNIT(k)} (${n}/${meals.length})`);
   const micro=mi.length?`<div class="macro num">${mi.join(" · ")} <span class="mut sm">öğünde veri var</span></div>`:"";
   const actions=`<div class="actions">
-    <button class="act su" data-act="su"><span class="ic">💧</span>+${st.glass}</button>
-    <button class="act" data-act="yemek"><span class="ic">🍽</span>Yemek</button>
-    <button class="act" data-act="kilo"><span class="ic">⚖️</span>Kilo</button>
-    <button class="act" data-act="spor"><span class="ic">🏃</span>Spor</button>
-    <button class="act" data-act="not"><span class="ic">📝</span>Not</button></div>`;
-  const ic={su:"💧",kilo:"⚖️",yemek:"🍽",spor:"🏃",not:"📝"};
+    <button class="act su" data-act="su"><span class="ic">${Icons.svg("su")}</span>+${st.glass}</button>
+    <button class="act" data-act="yemek"><span class="ic">${Icons.svg("yemek")}</span>Yemek</button>
+    <button class="act" data-act="kilo"><span class="ic">${Icons.svg("kilo")}</span>Kilo</button>
+    <button class="act" data-act="spor"><span class="ic">${Icons.svg("spor")}</span>Spor</button>
+    <button class="act" data-act="not"><span class="ic">${Icons.svg("not")}</span>Not</button></div>`;
   const lk=keyOff(-logOff);
   const items=S.entries.filter(e=>e.day===lk&&e.type!=="adim").sort((a,b)=>b.id-a.id);
   const vtxt=e=>e.type==="su"?`${e.v} ml`:e.type==="kilo"?`${fmt(e.v)} kg`:e.type==="yemek"?(e.v?`${Math.round(e.v)} kcal`:""):e.type==="spor"?`${Math.round(e.v)} dk`:"";
   const ttx=e=>e.type==="su"?"Su":e.type==="kilo"?"Tartı":esc(e.text||(e.type==="yemek"?"Öğün":"Antrenman"));
-  const log=items.length?`<ul class="log">${items.map(e=>`<li><span class="t num">${e.time}</span><span class="ic">${ic[e.type]}</span><span class="tx">${ttx(e)}</span><span class="vl num">${vtxt(e)}</span><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></li>`).join("")}</ul>`:`<p class="hint">${logOff===0?"Bugün henüz kayıt yok. Yukarıdan bir bardak su eklemek iyi bir başlangıç.":"Bu gün için kayıt yok."}</p>`;
+  const log=items.length?`<ul class="log">${items.map(e=>`<li><span class="t num">${e.time}</span><span class="ic">${Icons.svg(e.type)}</span><span class="tx">${ttx(e)}</span><span class="vl num">${vtxt(e)}</span><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></li>`).join("")}</ul>`:`<p class="hint">${logOff===0?"Bugün henüz kayıt yok. Yukarıdan bir bardak su eklemek iyi bir başlangıç.":"Bu gün için kayıt yok."}</p>`;
   const lname=logOff===0?"Bugünün kayıtları":logOff===1?"Dünün kayıtları":`${+lk.slice(8)} ${AY[+lk.slice(5,7)-1]} kayıtları`;
   const dnav=`<div class="dnav"><button data-lo="1" aria-label="Önceki gün">‹</button><h2>${lname}</h2><button data-lo="-1" aria-label="Sonraki gün"${logOff===0?" disabled":""}>›</button></div>`;
   const lb=st.lastBackup,old=lb?Algo.dayNum(t)-Algo.dayNum(lb):null;
   const a7=(a,b)=>sum("adim",keyOff(a),keyOff(b));
-  const row=(ic,b,sub,btns)=>`<div class="row"><span>${ic} ${b}<small class="mut sm">${sub}</small></span>${btns.map(([a,l])=>`<button class="chip" data-act="${a}">${l}</button>`).join("")}</div>`;
+  const row=(ic,b,sub,btns)=>`<div class="row"><span>${Icons.svg(ic)} ${b}<small class="mut sm">${sub}</small></span>${btns.map(([a,l])=>`<button class="chip" data-act="${a}">${l}</button>`).join("")}</div>`;
   /* Ayrı kartlar yerine tek liste: yalnız açık modülün bugün bekleyen işi; boşsa kart yok. */
   const todo=[...medTodo(),...fastTodo(),...vTodo(),
-    sOn&&stepsRead&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?row("👣","Adım sayımı durmuş olabilir","Pil ayarında NeoWell'e kısıtlama koyma.",[["adimduz","Ayarla"],["adimgizle","Kapat"]]):"",
-    storeMsg()?row("💾",storeMsg()[0],storeMsg()[1],[["veriyedek","Yedek al"]]):"",
-    isNative()&&!exactOk&&st.medOn&&S.meds.length?row("⏰","İlaç alarmı birkaç dakika gecikebilir","Tam saat alarm izni kapalı. İzin verirsen tam saatinde çalar.",[["tamalarm","İzin ver"]]):"",
-    isNative()&&oemXiaomi()&&!st.oemDone?row("🔔","Hatırlatmalar için bir kez ayar gerekli","İki izin verince hatırlatmalar kaçmaz.",[["oem","Ayarla"]]):"",
-    isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?row("👣","Adım sayarı aç","Telefonun sensörü sayar, hesap gerekmez.",[["adimac","Aç"],["adimdegil","Şimdi değil"]]):"",
-    S.entries.length>=10&&(old==null||old>14)?row("☁️","Yedek zamanı",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Gönder"]]):""].filter(Boolean);
+    sOn&&stepsRead&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?row("adim","Adım sayımı durmuş olabilir","Pil ayarında NeoWell'e kısıtlama koyma.",[["adimduz","Ayarla"],["adimgizle","Kapat"]]):"",
+    storeMsg()?row("save",storeMsg()[0],storeMsg()[1],[["veriyedek","Yedek al"]]):"",
+    isNative()&&!exactOk&&st.medOn&&S.meds.length?row("clock","İlaç alarmı birkaç dakika gecikebilir","Tam saat alarm izni kapalı. İzin verirsen tam saatinde çalar.",[["tamalarm","İzin ver"]]):"",
+    isNative()&&oemXiaomi()&&!st.oemDone?row("bell","Hatırlatmalar için bir kez ayar gerekli","İki izin verince hatırlatmalar kaçmaz.",[["oem","Ayarla"]]):"",
+    isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?row("adim","Adım sayarı aç","Telefonun sensörü sayar, hesap gerekmez.",[["adimac","Aç"],["adimdegil","Şimdi değil"]]):"",
+    S.entries.length>=10&&(old==null||old>14)?row("cloud","Yedek zamanı",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Gönder"]]):""].filter(Boolean);
   const todoCard=todo.length?`<div class="card todo"><div class="lbl">Bugün yapılacaklar</div>${todo.join("")}</div>`:"";
   return `${actions}${habitRow()}${rings}${macro}${micro}${sOn?stepCard():""}${todoCard}${gTodayCard()}${weight}<button class="coach" data-tab="koc">${esc(coach())} <b>Koç ›</b></button>${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
 }
@@ -621,7 +624,7 @@ function viewTrend(){
   ${vTrendCards()}
   <h2>Tahlil</h2>${labTrendCard()}
   <h2>Haftalık spor</h2><div class="card"><div class="num"><b>${Math.round(sw)}</b> / ${st.sportWeek} dk, ${sd} gün aktif</div><div class="bar"><i style="width:${pct.toFixed(0)}%"></i></div></div>
-  <div class="btns"><button class="btn ghost" data-wk="pdf">📤 Haftalık raporu paylaş (PDF)</button></div>`;
+  <div class="btns"><button class="btn ghost" data-wk="pdf">${Icons.svg("share")} Haftalık raporu paylaş (PDF)</button></div>`;
 }
 
 let notifStatus="";
@@ -629,7 +632,7 @@ const fld=(id,label,val,small,mode)=>`<div class="field"><label for="${id}">${la
 const segb=(attr,opts,sel)=>`<div class="seg2" role="group">${opts.map(([v,l])=>`<button data-${attr}="${v}" aria-pressed="${sel===v}">${l}</button>`).join("")}</div>`;
 /* Kapalı modülün hatırlatması listede görünmez. */
 const remShown=r=>{const st=S.settings;return !((r.id===7||r.id===8)&&!st.bpOn)&&!(r.id===9&&!st.bsOn)&&!(r.id===11&&!st.fastOn)};
-const AYAR=[["profil","Profil ve hedefler"],["modul","Modüller"],["hatir","Hatırlatmalar"],["koc","Koç"],["veri","Veri ve yedek"],["hak","Hakkında"]];
+const AYAR=[["profil","Profil ve hedefler","user"],["modul","Modüller","grid"],["hatir","Hatırlatmalar","bell"],["koc","Koç","koc"],["veri","Veri ve yedek","data"],["hak","Hakkında","info"]];
 /* Alt ekranın üst ekranı: başlıktaki ‹, Android ve tarayıcı geri tuşu buna döner. */
 const PARENT=Object.fromEntries(AYAR.map(([k])=>["ayar-"+k,"ayar"]));
 function viewAyar(){
@@ -639,7 +642,7 @@ function viewAyar(){
     const d={profil:[st.heightCm&&st.heightCm+" cm",st.age&&st.age+" yaş",st.goalKg&&"hedef "+fmt(st.goalKg)+" kg"].filter(Boolean).join(" · ")||"Boy, yaş ve hedefler",
       modul:on.length?on.join(", ")+" açık":"Hepsi kapalı",hatir:st.reminders.filter(r=>r.on&&remShown(r)).length+" hatırlatma açık",
       koc:keysStored()?"Anahtar kayıtlı":"Anahtar yok",veri:storeMsg()?storeMsg()[0]:st.lastBackup?"Son yedek "+st.lastBackup:"Henüz yedek dosyası yok",hak:"NeoWell ve tıbbi uyarı"};
-    return `<div class="card">${AYAR.map(([k,t])=>`<button class="prow" data-tab="ayar-${k}"><span><b>${t}</b><span class="mut sm">${esc(d[k])}</span></span><span class="plus" aria-hidden="true">›</span></button>`).join("")}</div>`;
+    return `<div class="card">${AYAR.map(([k,t,ic])=>`<button class="prow" data-tab="ayar-${k}"><span class="aic">${Icons.svg(ic)}</span><span style="flex:1"><b>${t}</b><span class="mut sm">${esc(d[k])}</span></span><span class="plus" aria-hidden="true">›</span></button>`).join("")}</div>`;
   }
   if(sub==="profil")return `<h2>Profil</h2><div class="card">
     ${fld("heightCm","Boy (cm)",st.heightCm||"","Enerji hesabı için","numeric")}
@@ -671,7 +674,7 @@ function viewAyar(){
     <p class="hint">Koç bağlıysa sabah, öğleden sonra ve akşam bildirim metinlerini her gün yeniden yazar. Bağlı değilse sabit metinler kullanılır.</p></div>`;
   }
   if(sub==="veri")return `<div class="card"><div class="btns">
-    <button class="btn" data-act="drive">☁️ Yedeği Drive'a gönder</button>
+    <button class="btn" data-act="drive">${Icons.svg("cloud")} Yedeği Drive'a gönder</button>
     <button class="btn ghost" data-act="yedek">Yedekle veya geri yükle</button>
     <button class="btn ghost" data-pv="csv">Tabloya aktar (CSV)</button>
     <button class="btn ghost" data-pv="open">Gizlilik ve veri</button>
@@ -688,7 +691,7 @@ function render(){
   const ttl={bugun:`${new Date().getDate()} ${AY[new Date().getMonth()]}, ${GUN[new Date().getDay()]}`,koc:"Koç",salon:"Salon",trend:"Trend",ayar:"Ayarlar",egz:"Egzersizler",adim:"Adım raporu",tahlil:"Tahlil takibi",tansiyon:"Tansiyon",seker:"Şeker",ilac:"İlaçlar",...Object.fromEntries(AYAR.map(([k,t])=>["ayar-"+k,t]))}[tab];
   $("#ttl").textContent=ttl;
   const n=streak();$("#streak").innerHTML=n>0?`<b class="num">${n}</b> günlük seri`:"";
-  v.innerHTML=(saveFail&&tab!=="bugun"&&tab!=="ayar-veri"?`<div class="card todo" role="alert"><div class="row"><span>💾 <b>${storeMsg()[0]}</b><small class="mut sm">${storeMsg()[1]}</small></span><button class="chip" data-act="veriyedek">Yedek al</button></div></div>`:"")+(tab==="koc"?viewKoc():tab==="bugun"?viewBugun():tab==="salon"?viewSalon():tab==="trend"?viewTrend():tab==="adim"?viewAdim():tab==="tahlil"?viewTahlil():tab==="tansiyon"?viewTansiyon():tab==="seker"?viewSeker():tab==="egz"?viewEgz():tab==="ilac"?viewIlac():viewAyar());
+  v.innerHTML=(saveFail&&tab!=="bugun"&&tab!=="ayar-veri"?`<div class="card todo" role="alert"><div class="row"><span>${Icons.svg("save")} <b>${storeMsg()[0]}</b><small class="mut sm">${storeMsg()[1]}</small></span><button class="chip" data-act="veriyedek">Yedek al</button></div></div>`:"")+(tab==="koc"?viewKoc():tab==="bugun"?viewBugun():tab==="salon"?viewSalon():tab==="trend"?viewTrend():tab==="adim"?viewAdim():tab==="tahlil"?viewTahlil():tab==="tansiyon"?viewTansiyon():tab==="seker"?viewSeker():tab==="egz"?viewEgz():tab==="ilac"?viewIlac():viewAyar());
   document.body.classList.toggle("koc",tab==="koc");$("#composer").hidden=tab!=="koc";
   if(tab==="koc")cScroll();
   $("#navIlac").hidden=!S.settings.medOn;
@@ -760,7 +763,7 @@ function favHtml(){
   return tp+(S.favFoods.length?`<div class="lbl">Favoriler</div>${S.favFoods.map((x,i)=>row(x,i,"fv","fvd","★","Favoriden çıkar")).join("")}`:"")+(recList.length?`<div class="lbl">Son yediklerin</div>${recList.map((x,i)=>row(x,i,"rc","fva",fk.has(LogLib.key(x.text))?"★":"☆","Favoriye al")).join("")}`:"");
 }
 function sheetYemek(){
-  openSheet(`<h3>Yemek ekle</h3>${of("yemek",keyOff(-1)).length?`<button class="btn ghost" data-act="dunku" style="margin-bottom:8px">↺ Dünkünü tekrarla (${of("yemek",keyOff(-1)).length} kayıt)</button>`:""}${isNative()&&BS()?`<button class="btn ghost" data-act="barkod" style="margin-bottom:8px">📷 Barkod okut</button>`:""}${ocrBtn("etiket","🏷 Etiketi fotoğrafla oku")}<input class="in" id="fq" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off" autofocus><div id="flist" class="plist"></div><div id="frl" class="plist">${favHtml()}</div>
+  openSheet(`<h3>Yemek ekle</h3>${of("yemek",keyOff(-1)).length?`<button class="btn ghost" data-act="dunku" style="margin-bottom:8px">↺ Dünkünü tekrarla (${of("yemek",keyOff(-1)).length} kayıt)</button>`:""}${isNative()&&BS()?`<button class="btn ghost" data-act="barkod" style="margin-bottom:8px">${Icons.svg("camera")} Barkod okut</button>`:""}${ocrBtn("etiket",Icons.svg("tag")+" Etiketi fotoğrafla oku")}<input class="in" id="fq" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off" autofocus><div id="flist" class="plist"></div><div id="frl" class="plist">${favHtml()}</div>
   <div class="lbl">Ya da kendin yaz</div><input class="in" id="ft" placeholder="Ne yedin?" autocomplete="off"><input class="in num" id="fv" inputmode="numeric" placeholder="Kalori (isteğe bağlı)"><div class="ferr" id="yerr" role="alert"></div>${dayOptions()}<button class="btn" data-go="yemek">Kaydet</button>`);
 }
 let tplSrc=[];
@@ -1002,7 +1005,7 @@ function goAdim(){
 }
 function stepCard(){
   const st=S.settings,v=stepsShown()||0;
-  return `<button class="stepcard" data-tab="adim" aria-label="Adım raporunu aç"><div class="row"><span class="mut">👣 Adım</span><span class="mut sm">Rapor ›</span></div><div class="row"><span class="big num">${stepToday==null?"–":Math.round(v).toLocaleString("tr-TR")}</span><span class="mut sm">/ ${st.stepGoal.toLocaleString("tr-TR")}</span></div><div class="bar"><i style="width:${Math.min(100,v/st.stepGoal*100).toFixed(0)}%"></i></div></button>`;
+  return `<button class="stepcard" data-tab="adim" aria-label="Adım raporunu aç"><div class="row"><span class="mut">${Icons.svg("adim")} Adım</span><span class="mut sm">Rapor ›</span></div><div class="row"><span class="big num">${stepToday==null?"–":Math.round(v).toLocaleString("tr-TR")}</span><span class="mut sm">/ ${st.stepGoal.toLocaleString("tr-TR")}</span></div><div class="bar"><i style="width:${Math.min(100,v/st.stepGoal*100).toFixed(0)}%"></i></div></button>`;
 }
 function viewAdim(){
   const st=S.settings,fm=x=>Math.round(x).toLocaleString("tr-TR"),N=14;
@@ -1172,6 +1175,7 @@ document.addEventListener("keydown",ev=>{
 });
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="ayar-modul")render()});stepsSync();render();cPlateauCheck();cFlush();cAuto();if(Date.now()-lastSched>6*36e5||!exactOk)scheduleReminders().then(setNotif)}});
 
+document.querySelectorAll("[data-ic]").forEach(e=>e.innerHTML=Icons.svg(e.dataset.ic));
 render();
 cPlateauCheck();
 if(corruptNote)toast("Kayıtlı veri okunamadı. Eski hali ayrı bir kopyada saklandı.");

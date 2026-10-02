@@ -43,20 +43,20 @@ function vWhen(r){return (r.day===dayKey()?"bugün ":vDayLbl(r.day)+" ")+r.time}
 /* Bugün yapılacaklar: açık ve bugün henüz ölçülmemiş tür başına bir satır. */
 function vTodo(){
   const st=S.settings,t=dayKey(),out=[];
-  for(const [on,k,ic,label,act,txt] of [[st.bpOn,"t","❤️","Tansiyon","addbp",r=>`${r.sys}/${r.dia}`],[st.bsOn,"s","🩸","Şeker","addbs",r=>vFmt(r.g)]]){
+  for(const [on,k,ic,label,act,txt] of [[st.bpOn,"t","heart","Tansiyon","addbp",r=>`${r.sys}/${r.dia}`],[st.bsOn,"s","su","Şeker","addbs",r=>vFmt(r.g)]]){
     const r=vLast(k);if(!on||(r&&r.day===t))continue;
-    out.push(`<div class="row"><span>${ic} ${label} ölç<small class="mut sm num">${r?`son: ${txt(r)}, ${vWhen(r)}`:"ölçüm yok"}</small></span><button class="chip" data-vt="${act}">Ekle</button></div>`);
+    out.push(`<div class="row"><span>${Icons.svg(ic)} ${label} ölç<small class="mut sm num">${r?`son: ${txt(r)}, ${vWhen(r)}`:"ölçüm yok"}</small></span><button class="chip" data-vt="${act}">Ekle</button></div>`);
   }
   return out;
 }
 function vTrendCards(){
   const st=S.settings,c=(tab,t,txt)=>`<button class="stepcard" data-tab="${tab}"><div class="row"><span class="mut">${t}</span><span class="mut sm">Aç ›</span></div><div class="row"><span class="mut sm">${txt}</span></div></button>`;
   const one=(k,none)=>{const r=vLast(k);return r?`son: ${k==="t"?r.sys+"/"+r.dia:vFmt(r.g)}, ${vWhen(r)}`:none};
-  return (st.bpOn?c("tansiyon","❤️ Tansiyon",one("t","Henüz ölçüm yok")):"")+(st.bsOn?c("seker","🩸 Şeker",one("s","Henüz ölçüm yok")):"");
+  return (st.bpOn?c("tansiyon",Icons.svg("heart")+" Tansiyon",one("t","Henüz ölçüm yok")):"")+(st.bsOn?c("seker",Icons.svg("su")+" Şeker",one("s","Henüz ölçüm yok")):"");
 }
 function vMenu(){
   const st=S.settings,b=(a,t)=>`<button class="btn ghost" data-vt="${a}" style="margin-bottom:8px">${t}</button>`;
-  openSheet(`<h3>Ölçüm</h3>${st.bpOn?b("addbp","➕ Tansiyon ekle"):""}${st.bsOn?b("addbs","➕ Şeker ekle"):""}${st.bpOn?b("go:tansiyon","📊 Tansiyon raporu ve grafik"):""}${st.bsOn?b("go:seker","📊 Şeker raporu ve grafik"):""}<button class="btn ghost" data-vt="close">Kapat</button>`);
+  openSheet(`<h3>Ölçüm</h3>${st.bpOn?b("addbp",Icons.svg("plus")+" Tansiyon ekle"):""}${st.bsOn?b("addbs",Icons.svg("plus")+" Şeker ekle"):""}${st.bpOn?b("go:tansiyon",Icons.svg("chart")+" Tansiyon raporu ve grafik"):""}${st.bsOn?b("go:seker",Icons.svg("chart")+" Şeker raporu ve grafik"):""}<button class="btn ghost" data-vt="close">Kapat</button>`);
 }
 
 /* ---- Giriş ekranları ---- */
@@ -135,7 +135,7 @@ function vSvg(series,band,from,to,W,H){
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Ölçüm grafiği" style="width:100%;display:block">${bd}<rect x="8" y="8" width="${W-16}" height="${H-30}" fill="none" stroke="var(--line)"/>${body}<text x="8" y="${H-6}" style="font-size:10px;fill:var(--mut)">${vDayLbl(from)}</text><text x="${W-8}" y="${H-6}" text-anchor="end" style="font-size:10px;fill:var(--mut)">${vDayLbl(to)}</text><text x="${W-10}" y="18" text-anchor="end" style="font-size:10px;fill:var(--mut)">${Math.round(hi)}</text><text x="${W-10}" y="${H-26}" text-anchor="end" style="font-size:10px;fill:var(--mut)">${Math.round(lo)}</text></svg>`;
 }
 const vSeg=()=>`<div class="seg" role="group" aria-label="Aralık">${[7,14,30].map(n=>`<button data-vt="range:${n}" aria-pressed="${vRange===n}">${n} gün</button>`).join("")}</div>`;
-const vBtns=(kind,add)=>`<div class="card"><div class="btns" style="display:grid;gap:8px"><button class="btn" data-vt="${add}">➕ Ölçüm ekle</button><button class="btn ghost" data-vt="pdfmenu:${kind}">📤 Doktor raporu (PDF)</button></div></div>`;
+const vBtns=(kind,add)=>`<div class="card"><div class="btns" style="display:grid;gap:8px"><button class="btn" data-vt="${add}">${Icons.svg("plus")} Ölçüm ekle</button><button class="btn ghost" data-vt="pdfmenu:${kind}">${Icons.svg("share")} Doktor raporu (PDF)</button></div></div>`;
 const vBack=`<button class="btn" data-tab="trend" style="margin:0 0 12px">‹ Trend</button>`;
 const vDel=ids=>`<button class="chip" data-vt="del:${ids.join(",")}" aria-label="Ölçümü sil">✕</button>`;
 

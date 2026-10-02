@@ -10,7 +10,7 @@ function ocrBtn(kind,label,cls){
 function ocrChoose(kind){
   const tip=kind==="etiket"?"Etiketteki besin değerleri tablosunu düz tut, iyi ışıkta çek. Tablo çerçeveyi doldursun, parlama olmasın.":"Raporu düz bir zemine koy, sayfanın tamamı ve yazılar net görünsün. Çok sayfa varsa her sayfayı ayrı oku.";
   openSheet(`<h3>${kind==="etiket"?"Etiket oku":"Tahlil fotoğrafı"}</h3><p class="mut sm">${tip} Yazı telefonda okunur, fotoğraf hiçbir yere gönderilmez.</p>
-  <button class="btn" data-ocr="cam:${kind}" style="margin-bottom:8px">📷 Fotoğraf çek</button><button class="btn ghost" data-ocr="gal:${kind}">🖼 Galeriden seç</button><button class="btn ghost" data-ocr="close" style="margin-top:8px">Vazgeç</button>`);
+  <button class="btn" data-ocr="cam:${kind}" style="margin-bottom:8px">${Icons.svg("camera")} Fotoğraf çek</button><button class="btn ghost" data-ocr="gal:${kind}">${Icons.svg("image")} Galeriden seç</button><button class="btn ghost" data-ocr="close" style="margin-top:8px">Vazgeç</button>`);
 }
 /* Dokunma işleyicisinin içinde eşzamanlı çağrılmalı (tarayıcı kullanıcı hareketi ister). */
 function ocrPick(capture,kind){
@@ -38,7 +38,7 @@ async function ocrRun(kind,file){
   if(!lines.length)return openSheet(`<h3>Yazı bulunamadı</h3><p class="mut">Fotoğrafta okunabilir yazı yok. Daha yakından, düz ve aydınlık çekip tekrar dene.</p>${ocrBtn(kind,"📷 Tekrar dene","")}<button class="btn ghost" data-ocr="close">Kapat</button>`);
   if(kind==="tahlil"){
     const parsed=LabLib.parseLines(lines,dayKey());
-    if(!parsed.rows.length)return openSheet(`<h3>Sonuç bulunamadı</h3><p class="mut">Fotoğraftaki yazıdan tahlil satırı çıkaramadım. Daha net çekip tekrar dene ya da değerleri elle ekle.</p>${ocrBtn("tahlil","📷 Tekrar dene","")}<button class="btn ghost" data-lab="add">➕ Elle ekle</button>`);
+    if(!parsed.rows.length)return openSheet(`<h3>Sonuç bulunamadı</h3><p class="mut">Fotoğraftaki yazıdan tahlil satırı çıkaramadım. Daha net çekip tekrar dene ya da değerleri elle ekle.</p>${ocrBtn("tahlil",Icons.svg("camera")+" Tekrar dene","")}<button class="btn ghost" data-lab="add">${Icons.svg("plus")} Elle ekle</button>`);
     return labReview(parsed,false);
   }
   etiketReview(LabelLib.parse(lines));

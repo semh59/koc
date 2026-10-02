@@ -1772,7 +1772,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("halkalar birim ve kalanı yazar",(t=>t.includes("520kcal kaldı")&&t.includes("1380 / 1900 kcal")&&t.includes("1,5L kaldı")&&t.includes("1,0 / 2,5 L")&&t.includes("150dk kaldı")&&t.includes("0 / 150 dk")&&t.includes("Spor · hafta"))($q(".rings").textContent),$q(".rings").textContent);
     ev("add('yemek',700,'Fazla');add('su',1500);add('spor',150,'Yürüyüş');render()");
     ok("hedef aşılınca 'kcal fazla', su ve spor 'tamam'",(t=>t.includes("180kcal fazla")&&(t.match(/✓tamam/g)||[]).length===2)($q(".rings").textContent),$q(".rings").textContent);
-    ok("kilo kartı küçük: grafik yok, tek satır özet, Trend'e götürür",!v().includes('class="weight"')&&!!$q('#view .stepcard[data-tab="trend"]')&&!$q('#view .stepcard[data-tab="trend"] svg')&&$q('#view .stepcard[data-tab="trend"]').textContent.includes("86,0"));
+    ok("kilo kartı küçük: grafik yok, tek satır özet, Trend'e götürür",!v().includes('class="weight"')&&!!$q('#view .stepcard[data-tab="trend"]')&&!$q('#view .stepcard[data-tab="trend"] svg:not(.i)')&&$q('#view .stepcard[data-tab="trend"]').textContent.includes("86,0"));
     ok("Koç cümlesi Koç kısayolu",!!$q('#view button.coach[data-tab="koc"]'));
     ev("S.settings.medOn=true;S.meds=[{id:1,n:'İlaç A',t:['08:00','20:00'],on:true}];S.settings.fastOn=true;S.settings.bpOn=true;render()");
     ok("ilaç, oruç ve ölçüm tek 'Bugün yapılacaklar' kartında, ayrı kart yok",ev("document.querySelectorAll('#view .todo').length")===1&&$q(".todo").querySelectorAll('[data-md^="take:"]').length===2&&!!$q('.todo [data-hb="fastgo"]')&&!!$q('.todo [data-vt="addbp"]')&&!v().includes("💊 İlaçlar")&&!v().includes("Ölçümler"));
@@ -1922,5 +1922,15 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("tab='trend';render()");ev("document.body.insertAdjacentHTML('beforeend','<button id=\"pf\" data-act=\"profil\"></button>')");q("#pf").click();q("#pf").remove();
     ok("profil bağlantısı (Enerji dengesi) Profil ve hedefler'i açar",ev("tab")==="ayar-profil"&&!!q("#heightCm"));
     ev("S.settings.medOn=false;S.settings.fastOn=false;S.settings.bpOn=false;S.settings.bsOn=false;S.settings.heightCm=0;S.settings.age=0;S.settings.goalKg=0;tab='bugun';render()");
+  }
+  { // SVG ikonlar (C5)
+    const q=s=>$q(s),qa=s=>[...w.document.querySelectorAll(s)],emo=/\p{Extended_Pictographic}/u;
+    ev("closeSheet();S.settings.medOn=true;S.settings.obDone=true;tab='bugun';render()");
+    const zones=()=>["nav","#view .actions","#view .hrow","#composer .chiprow","#csend","#back"].map(s=>q(s));
+    const okZ=()=>zones().every(z=>z&&!emo.test(z.textContent)&&z.querySelectorAll("svg").length>0&&[...z.querySelectorAll("svg")].every(g=>g.getAttribute("aria-hidden")==="true"));
+    const z1=okZ();ev("tab='ayar';render()");
+    ok("alt menü, hızlı kayıt, alışkanlık, Koç çipleri, gönder ve geri: emoji yok, ikonlar SVG ve aria-hidden; metin etiketi kalır",z1&&qa("nav button").every(b=>b.textContent.trim().length>1)&&qa('#view [data-tab^="ayar-"] svg[aria-hidden="true"]').length===6&&!emo.test(q("#view").textContent));
+    ok("etkin sekme ikonu metinle aynı renk (currentColor), Icons nesnesi index'ten önce yüklenir",/\.i\{[^}]*stroke:currentColor/.test(html)&&/nav button\[aria-current="page"\]\{color:var\(--prim\)/.test(html)&&html.indexOf("Icons={")<html.indexOf("const DEF="));
+    ev("S.settings.medOn=false;tab='bugun';render()");
   }
 },100);

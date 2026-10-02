@@ -12,7 +12,7 @@ function medSettingsHtml(){
   return `<h2>İlaç hatırlatıcı</h2><div class="card">
     <p class="mut sm" style="margin:0 0 10px">İlaçlarını ve saatlerini gir, zamanı gelince bildirim al. Bildirimdeki "Aldım" düğmesiyle uygulamayı açmadan kaydet. Uygulama doz önermez ve ilaç etkileşimlerini denetlemez: doktorunun ve eczacının söylediği gibi kullan.</p>
     <button class="btn ghost" data-md="toggle" style="margin-bottom:8px">${st.medOn?"İlaç hatırlatıcıyı kapat":"İlaç hatırlatıcıyı aç"}</button>
-    ${st.medOn?`<label style="min-height:44px;display:flex;gap:8px;align-items:center;margin-bottom:10px"><input type="checkbox" data-md="shown" ${st.medShowName?"checked":""} style="width:22px;height:22px">İlaç adı bildirimde görünsün (kilit ekranında da)</label><button class="btn ghost" data-tab="ilac">💊 İlaçlarımı düzenle</button>`:""}
+    ${st.medOn?`<label style="min-height:44px;display:flex;gap:8px;align-items:center;margin-bottom:10px"><input type="checkbox" data-md="shown" ${st.medShowName?"checked":""} style="width:22px;height:22px">İlaç adı bildirimde görünsün (kilit ekranında da)</label><button class="btn ghost" data-tab="ilac">${Icons.svg("ilac")} İlaçlarımı düzenle</button>`:""}
   </div>`;
 }
 function medToggle(){
@@ -28,16 +28,16 @@ function medRows(day){
     const st=MedLib.statusOf(S.medLog,m.id,day,slot),r=S.medLog.find(x=>x.m===m.id&&x.day===day&&x.slot===slot);
     const tail=st==="t"?`<span class="num" style="font-weight:700">✓ ${r&&r.at?r.at:""}</span><button class="chip" data-md="clear:${m.id}:${slot}" aria-label="${esc(m.n)} kaydını geri al">↩</button>`
       :st==="s"?`<span class="mut">Atlandı</span><button class="chip" data-md="clear:${m.id}:${slot}" aria-label="${esc(m.n)} kaydını geri al">↩</button>`
-      :`${day===dayKey()&&slot<=medNowHM()?`<small class="mut">Gecikti</small>`:""}<button class="chip" data-md="take:${m.id}:${slot}" style="font-weight:700">✔ Aldım</button><button class="chip" data-md="skip:${m.id}:${slot}">Atla</button>`;
+      :`${day===dayKey()&&slot<=medNowHM()?`<small class="mut">Gecikti</small>`:""}<button class="chip" data-md="take:${m.id}:${slot}" style="font-weight:700">${Icons.svg("check")} Aldım</button><button class="chip" data-md="skip:${m.id}:${slot}">Atla</button>`;
     return `<div class="row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span class="num" style="min-width:48px">${slot}</span><span style="flex:1;min-width:0">${esc(m.n)}${m.d?`<small class="mut"> ${esc(m.d)}</small>`:""}</span>${tail}</div>`;
   }).join("");
 }
 /* Bugün yapılacaklar: yalnız alınmamış ve atlanmamış dozlar; işaretlenen doz toast'tan ya da İlaçlar ekranından geri alınır. */
 function medTodo(){
   if(!S.settings.medOn)return [];
-  if(!S.meds.length)return [`<div class="row"><span>💊 Henüz ilaç eklemedin</span><button class="chip" data-md="new">➕ Ekle</button></div>`];
+  if(!S.meds.length)return [`<div class="row"><span>${Icons.svg("ilac")} Henüz ilaç eklemedin</span><button class="chip" data-md="new">${Icons.svg("plus")} Ekle</button></div>`];
   const t=dayKey(),now=medNowHM();
-  return MedLib.dosesOn(S.meds,t).filter(({m,slot})=>!MedLib.statusOf(S.medLog,m.id,t,slot)).map(({m,slot})=>`<div class="row"><span>💊 <span class="num">${slot}</span> ${esc(m.n)}<small class="mut sm">${[esc(m.d),slot<=now?"Gecikti":""].filter(Boolean).join(" · ")}</small></span><button class="chip" data-md="take:${m.id}:${slot}" style="font-weight:700">✔ Aldım</button><button class="chip" data-md="skip:${m.id}:${slot}">Atla</button></div>`);
+  return MedLib.dosesOn(S.meds,t).filter(({m,slot})=>!MedLib.statusOf(S.medLog,m.id,t,slot)).map(({m,slot})=>`<div class="row"><span>${Icons.svg("ilac")} <span class="num">${slot}</span> ${esc(m.n)}<small class="mut sm">${[esc(m.d),slot<=now?"Gecikti":""].filter(Boolean).join(" · ")}</small></span><button class="chip" data-md="take:${m.id}:${slot}" style="font-weight:700">${Icons.svg("check")} Aldım</button><button class="chip" data-md="skip:${m.id}:${slot}">Atla</button></div>`);
 }
 
 /* ---- İlaçlar ekranı ---- */
@@ -56,7 +56,7 @@ function viewIlac(){
   ${low?`<div class="card"><div class="lbl">Stok</div>${low}</div>`:""}
   ${a30.total?`<div class="stats"><div class="stat"><div class="k">Son 7 gün uyum</div><div class="v num">${pct(a7)}</div><div class="mut sm">${cnt(a7)}</div></div><div class="stat"><div class="k">Son 30 gün uyum</div><div class="v num">${pct(a30)}</div><div class="mut sm">${cnt(a30)}</div></div></div>`:""}
   ${days.length?`<div class="card"><div class="lbl">Son 7 gün</div>${days.join("")}</div>`:""}
-  <div class="card"><div class="lbl">İlaçlarım</div>${list||`<p class="mut sm" style="margin:0">Liste boş.</p>`}<button class="btn" data-md="new" style="margin-top:10px">➕ İlaç ekle</button></div>
+  <div class="card"><div class="lbl">İlaçlarım</div>${list||`<p class="mut sm" style="margin:0">Liste boş.</p>`}<button class="btn" data-md="new" style="margin-top:10px">${Icons.svg("plus")} İlaç ekle</button></div>
   <p class="hint">Uygulama doz önermez, ilaç etkileşimlerini denetlemez, tıbbi yorum yapmaz. Kayıt yalnızca senin hatırlatıcın ve günlüğündür. İlaçlarını doktorunun ve eczacının söylediği gibi kullan.</p>`;
 }
 
