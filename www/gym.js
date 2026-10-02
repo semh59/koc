@@ -271,7 +271,7 @@ function gFinish(){
   if(open&&!confirm(`${open} set tamamlanmadı olarak işaretli. Bunlar sayılmadan bitirilsin mi?`))return;
   for(const x of w.ex)x.sets=x.sets.filter(s=>s.done);
   w.ex=w.ex.filter(x=>x.sets.length);
-  if(!w.ex.length){S.workouts=S.workouts.filter(x=>x!==w);save();restEnd=0;render();return toast("Tamamlanan set yok, antrenman kaydedilmedi")}
+  if(!w.ex.some(x=>x.sets.some(s=>!s.w))){S.workouts=S.workouts.filter(x=>x!==w);save();restEnd=0;render();return toast(w.ex.length?"Yalnız ısınma seti tamamlandı, antrenman kaydedilmedi":"Tamamlanan set yok, antrenman kaydedilmedi")}
   w.t1=Date.now();
   const e=add("spor",gDur(w),`Ağırlık, ${w.name}`,w.day);e.wid=w.id;
   save();restEnd=0;render();gSheetSummary(w.id);

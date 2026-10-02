@@ -122,9 +122,11 @@ setInterval(exTick,1000);
 
 /* ---- plaka ve ısınma ---- */
 const exPlateIn=()=>({kg:num($("#pk").value),bar:num($("#pb").value)});
+/* Üst sınır: Algo.plates plaka döngüsü hedefle orantılı, çok büyük sayı sayfayı kilitler. */
+const exPlateOk=({kg,bar})=>kg>0&&kg<=1000&&bar>=5&&bar<=50,EXPLATE_HINT="Hedef 1000 kg'a kadar, bar 5-50 kg olmalı";
 function exPlateCalc(){
   const {kg,bar}=exPlateIn(),box=$("#pres");
-  if(!(kg>0&&bar>=5&&bar<=50)){box.innerHTML=`<p class="hint">Hedef kg ve bar ağırlığı yaz (bar 5-50 kg).</p>`;return}
+  if(!exPlateOk({kg,bar})){box.innerHTML=`<p class="hint">${EXPLATE_HINT}.</p>`;return}
   if(S.bar!==bar){S.bar=bar;save()}
   const p=Algo.plates(kg,bar),wu=Algo.warmup(kg,bar);
   box.innerHTML=`<div class="stat"><div class="k">Bir tarafa</div><div class="v num">${p.side.join(" + ")||"yalnız bar"} kg</div></div>
@@ -150,9 +152,12 @@ function exRangeSet(ei,r){
   save();closeSheet();render();toast(`Tekrar aralığı ${r}`);
 }
 function exWarmAdd(ei){
-  const {kg,bar}=exPlateIn(),x=gActive().ex[ei],wu=Algo.warmup(kg,bar);
-  if(!wu.length)return toast("Isınma için hedef barın üstünde olmalı");
-  x.sets=wu.map(t=>({kg:t.kg,reps:t.reps,done:false,w:true})).concat(x.sets.filter(s=>!(s.w&&!s.done)));
+  const v=exPlateIn(),x=gActive().ex[ei];
+  if(!exPlateOk(v))return toast(EXPLATE_HINT);
+  // Yeniden eklemede bekleyen eski ısınmalar yenilenir; tamamlananlar kalır ve aynı ağırlık yeniden eklenmez.
+  const done=x.sets.filter(s=>s.w&&s.done),wu=Algo.warmup(v.kg,v.bar).filter(t=>!done.some(s=>s.kg===t.kg));
+  if(!wu.length)return toast(done.length?"Isınma setleri zaten tamamlandı":"Isınma için hedef barın üstünde olmalı");
+  x.sets=done.concat(wu.map(t=>({kg:t.kg,reps:t.reps,done:false,w:true}))).sort((a,b)=>a.kg-b.kg).concat(x.sets.filter(s=>!s.w));
   save();closeSheet();render();toast("Isınma setleri eklendi");
 }
 
