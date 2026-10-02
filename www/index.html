@@ -199,7 +199,7 @@ body.koc #toast{bottom:calc(150px + env(safe-area-inset-bottom))}
 .ok.on{background:var(--spor);border-color:var(--spor);color:var(--spor-ink)}
 .lnk{display:block;width:100%;min-height:44px;color:var(--prim);font-weight:700;font-size:14px}.lnk.dng{color:var(--warn);margin-top:6px}
 .prow{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:56px;padding:6px 4px;border-top:1px solid var(--line);text-align:left}
-.prow.dng{color:var(--warn)}.aic{color:var(--prim)}.aic .i{width:24px;height:24px}.card>.prow:first-child{border-top:0}.prow b{display:block}.plus{font-size:24px;color:var(--prim);width:44px;min-height:44px;text-align:center}
+.prow.off b,.prow.off .aic{color:var(--mut)}.prow.dng{color:var(--warn)}.aic{color:var(--prim)}.aic .i{width:24px;height:24px}.card>.prow:first-child{border-top:0}.prow b{display:block}.plus{font-size:24px;color:var(--prim);width:44px;min-height:44px;text-align:center}
 .tag{font-size:13px;font-weight:600;background:color-mix(in srgb,var(--prim) 18%,var(--card));border-radius:99px;padding:3px 10px}
 .plist{max-height:42vh;overflow:auto;margin-bottom:8px}
 .sumv{font-size:56px;font-weight:800;letter-spacing:-.03em;color:var(--spor);line-height:1.1;margin:6px 0}.sumv small{font-size:18px;font-weight:600;color:var(--mut)}
@@ -234,7 +234,6 @@ body.ob nav{display:none}body.ob main{padding-bottom:24px}
 /* Alt gezinme */
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:6px 10px calc(6px + env(safe-area-inset-bottom));z-index:5}
 nav .in{max-width:520px;margin:0 auto;display:flex;gap:4px}
-nav button[hidden]{display:none}
 nav button{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 0;border-radius:12px;font-size:12px;font-weight:600;color:var(--mut)}
 nav button .ic .i{width:24px;height:24px;margin:2px 0}
 nav button[aria-current="page"]{color:var(--prim);background:var(--soft)}
@@ -271,12 +270,11 @@ input.in,select.in,.chip>button{min-height:44px}
   <main id="view"></main>
 </div>
 <nav aria-label="Ana menü"><div class="in">
-  <button data-tab="koc"><span class="ic" data-ic="koc"></span>Koç</button>
   <button data-tab="bugun"><span class="ic" data-ic="bugun"></span>Bugün</button>
   <button data-tab="salon"><span class="ic" data-ic="salon"></span>Salon</button>
   <button data-tab="trend"><span class="ic" data-ic="trend"></span>Trend</button>
-  <button data-tab="ilac" id="navIlac" hidden><span class="ic" data-ic="ilac"></span>İlaç</button>
-  <button data-tab="ayar"><span class="ic" data-ic="ayar"></span>Ayarlar</button>
+  <button data-tab="koc"><span class="ic" data-ic="koc"></span>Koç</button>
+  <button data-tab="daha"><span class="ic" data-ic="daha"></span>Daha fazla</button>
 </div></nav>
 <div id="composer" hidden>
   <div class="chiprow"><button class="chip" data-act="su"><span data-ic="su"></span> +250</button><button class="chip" data-act="kilo"><span data-ic="kilo"></span> Kilo</button><button class="chip" data-act="yemek"><span data-ic="yemek"></span> Yemek</button><button class="chip" data-tab="salon"><span data-ic="spor"></span> Spor</button></div>
@@ -519,7 +517,7 @@ function streak(){
 }
 
 /* ---------- arayüz durumu ---------- */
-let tab=(S.settings.consent&&keysStored())||S.chat.length?"koc":"bugun",range=30,toastTimer=null,lastUndo=null,logOff=0,recList=[],lastDay=dayKey();
+let tab="bugun",via=null,range=30,toastTimer=null,lastUndo=null,logOff=0,recList=[],lastDay=dayKey();
 function goalInfo(cur,first){
   const g=S.settings.goalKg;if(!(g>0))return null;
   const f=first==null?cur:first,dir=f>=g?-1:1;
@@ -705,7 +703,15 @@ const segb=(attr,opts,sel)=>`<div class="seg2" role="group">${opts.map(([v,l])=>
 const remShown=r=>{const st=S.settings;return !((r.id===7||r.id===8)&&!st.bpOn)&&!(r.id===9&&!st.bsOn)&&!(r.id===11&&!st.fastOn)};
 const AYAR=[["profil","Profil ve hedefler","user"],["modul","Modüller","grid"],["hatir","Hatırlatmalar","bell"],["koc","Koç","koc"],["veri","Veri ve yedek","data"],["hak","Hakkında","info"]];
 /* Alt ekranın üst ekranı: başlıktaki ‹, Android ve tarayıcı geri tuşu buna döner. */
-const PARENT={adim:"bugun",tahlil:"trend",tansiyon:"trend",seker:"trend",egz:"salon",...Object.fromEntries(AYAR.map(([k])=>["ayar-"+k,"ayar"]))};
+const PARENT={adim:"bugun",tahlil:"trend",tansiyon:"trend",seker:"trend",egz:"salon",ilac:"daha",ayar:"daha",...Object.fromEntries(AYAR.map(([k])=>["ayar-"+k,"ayar"]))};
+/* Bir alt ekran başka bir sekmeden açıldıysa (Bugün'den İlaç, Daha fazla'dan Adım) ‹ ve etkin sekme oraya döner; derin bağlantıda sabit üst ekran geçerli. */
+const UP=t=>via&&via.t===t?via.p:PARENT[t];
+const topTab=t=>{for(let p;(p=UP(t));)t=p;return t};
+const DAHA=[["data-tab=\"ilac\"","İlaçlar","ilac","medOn","İlaç saatleri ve bugünkü dozlar"],["data-tab=\"adim\"","Adım raporu","adim","stepsOn","Günlük adım ve yürüyüş"],["data-tab=\"tahlil\"","Tahlil takibi","file",0,"Sonuçlar ve değişim"],["data-tab=\"tansiyon\"","Tansiyon","heart","bpOn","Ev ölçümleri ve ortalama"],["data-tab=\"seker\"","Şeker","su","bsOn","Ölçümler ve ortalama"],["data-tab=\"egz\"","Egzersiz kütüphanesi","salon",0,"Hareketler, kaslar, ekipman"],["data-tab=\"ayar\"","Ayarlar","ayar",0,"Profil, modüller, hatırlatmalar, yedek"],["data-pv=\"open\"","Gizlilik ve veri","lock",0,"Verilerin nerede durduğu"],["data-tab=\"ayar-hak\"","Hakkında","info",0,"NeoWell ve tıbbi uyarı"]];
+function viewDaha(){
+  const st=S.settings,ic=n=>`<span class="aic">${Icons.svg(n)}</span>`;
+  return `<div class="card">${DAHA.map(([a,t,i,k,sub])=>k&&!st[k]?`<button class="prow off" data-tab="ayar-modul" aria-label="${t}, kapalı. Ayarlar, Modüller'den aç">${ic(i)}<span style="flex:1"><b>${t}</b><span class="mut sm">Kapalı: Ayarlar &gt; Modüller'den aç</span></span><span class="plus" style="font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center" aria-hidden="true">Aç</span></button>`:`<button class="prow" ${a}>${ic(i)}<span style="flex:1"><b>${t}</b><span class="mut sm">${sub}</span></span><span class="plus" aria-hidden="true">›</span></button>`).join("")}</div>`;
+}
 function viewAyar(){
   const st=S.settings,sub=tab.slice(5);
   if(!sub){
@@ -764,21 +770,20 @@ function render(){
   const v=$("#view"),onb=obNeeded();
   const de=document.documentElement;if(S.settings.theme)de.dataset.theme=S.settings.theme;else delete de.dataset.theme;
   $('meta[name="theme-color"]').content=getComputedStyle(de).getPropertyValue("--bg").trim();
-  document.body.classList.toggle("ob",onb);$("#back").hidden=onb||!PARENT[tab];
+  document.body.classList.toggle("ob",onb);$("#back").hidden=onb||!UP(tab);
   if(onb){$("#ttl").textContent="NeoWell";$("#streak").innerHTML="";$("#composer").hidden=true;v.innerHTML=obView();widgetPush();return}
-  const ttl={bugun:`${fd(dayKey())}, ${GUN[new Date().getDay()]}`,koc:"Koç",salon:"Salon",trend:"Trend",ayar:"Ayarlar",egz:"Egzersizler",adim:"Adım raporu",tahlil:"Tahlil takibi",tansiyon:"Tansiyon",seker:"Şeker",ilac:"İlaçlar",...Object.fromEntries(AYAR.map(([k,t])=>["ayar-"+k,t]))}[tab];
+  const ttl={bugun:`${fd(dayKey())}, ${GUN[new Date().getDay()]}`,koc:"Koç",salon:"Salon",trend:"Trend",daha:"Daha fazla",ayar:"Ayarlar",egz:"Egzersizler",adim:"Adım raporu",tahlil:"Tahlil takibi",tansiyon:"Tansiyon",seker:"Şeker",ilac:"İlaçlar",...Object.fromEntries(AYAR.map(([k,t])=>["ayar-"+k,t]))}[tab];
   $("#ttl").textContent=ttl;
   const n=streak();$("#streak").innerHTML=n>0?`<b class="num">${n}</b> günlük seri`:"";
-  v.innerHTML=(saveFail&&tab!=="bugun"&&tab!=="ayar-veri"?`<div class="card todo" role="alert"><div class="row"><span>${Icons.svg("save")} <b>${storeMsg()[0]}</b><small class="mut sm">${storeMsg()[1]}</small></span><button class="chip" data-act="veriyedek">Yedek al</button></div></div>`:"")+(tab==="koc"?viewKoc():tab==="bugun"?viewBugun():tab==="salon"?viewSalon():tab==="trend"?viewTrend():tab==="adim"?viewAdim():tab==="tahlil"?viewTahlil():tab==="tansiyon"?viewTansiyon():tab==="seker"?viewSeker():tab==="egz"?viewEgz():tab==="ilac"?viewIlac():viewAyar());
+  v.innerHTML=(saveFail&&tab!=="bugun"&&tab!=="ayar-veri"?`<div class="card todo" role="alert"><div class="row"><span>${Icons.svg("save")} <b>${storeMsg()[0]}</b><small class="mut sm">${storeMsg()[1]}</small></span><button class="chip" data-act="veriyedek">Yedek al</button></div></div>`:"")+(tab==="koc"?viewKoc():tab==="bugun"?viewBugun():tab==="salon"?viewSalon():tab==="trend"?viewTrend():tab==="adim"?viewAdim():tab==="tahlil"?viewTahlil():tab==="tansiyon"?viewTansiyon():tab==="seker"?viewSeker():tab==="egz"?viewEgz():tab==="ilac"?viewIlac():tab==="daha"?viewDaha():viewAyar());
   document.body.classList.toggle("koc",tab==="koc");$("#composer").hidden=tab!=="koc";
   if(tab==="koc")cScroll();
-  $("#navIlac").hidden=!S.settings.medOn;
-  document.querySelectorAll("nav button").forEach(b=>{if(b.dataset.tab===(PARENT[tab]||tab))b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
+  document.querySelectorAll("nav button").forEach(b=>{if(b.dataset.tab===topTab(tab))b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
   /* Tarayıcıda alt ekran için bir geçmiş kaydı: geri tuşu popstate ile üst ekrana döner. */
-  if(PARENT[tab]&&!history.state)history.pushState({sub:1},"");else if(!PARENT[tab]&&history.state)history.replaceState(null,"");
+  if(UP(tab)&&!history.state)history.pushState({sub:1},"");else if(!UP(tab)&&history.state)history.replaceState(null,"");
   widgetPush();
 }
-function goBack(){tab=PARENT[tab];render();window.scrollTo(0,0)}
+function goBack(){tab=UP(tab);via=null;render();window.scrollTo(0,0)}
 const WG=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Widget;
 let widgetLast="";
 /* null değerler bilinçli: Java tarafı anahtar varsa ama null ise "hedef yok"/adım gizli, anahtar yoksa "–" gösterir. */
@@ -1059,7 +1064,7 @@ async function scheduleReminders(){
 function notifTap(e){
   const x=e&&e.notification&&e.notification.extra;
   if(!e||e.actionId!=="tap"||!x||x.act!=="open")return;
-  tab=x.tab==="koc"&&S.settings.consent?"koc":x.tab==="ayar-veri"?x.tab:"trend";closeSheet();render();window.scrollTo(0,0);
+  tab=x.tab==="koc"&&S.settings.consent?"koc":x.tab==="ayar-veri"?x.tab:x.tab==="ilac"?(S.settings.medOn?"ilac":"daha"):"trend";via=null;closeSheet();render();window.scrollTo(0,0);
 }
 function setNotif(s){notifStatus=s;if(tab==="ayar-hatir")render()}
 /* İzin verilince önceki yaklaşık alarmlar kendiliğinden tam saate dönmez; yeniden kurulur. */
@@ -1169,7 +1174,7 @@ document.addEventListener("click",ev=>{
   if(ev.target.id==="scrim")return closeSheet();
   if(!el)return;
   const d=el.dataset;
-  if(d.tab){tab=d.tab;render();window.scrollTo(0,0);return}
+  if(d.tab){via=!PARENT[tab]&&PARENT[d.tab]?{t:d.tab,p:tab}:null;tab=d.tab;render();window.scrollTo(0,0);return}
   if(d.c){cClick(d.c,el);return}
   if(d.g){gClick(d.g,el);return}
   if(d.sex!==undefined){S.settings.sex=d.sex;save();render();return}
@@ -1313,12 +1318,12 @@ function backKey(){
   if(gdBack())return true;
   if($("#sheet").classList.contains("on")){closeSheet();return true}
   if(obNeeded()&&ob.step){ob.step--;render();return true}
-  if(PARENT[tab]){goBack();return true}
+  if(UP(tab)){goBack();return true}
   if(tab!=="bugun"||logOff){tab="bugun";logOff=0;render();return true}
   return false;
 }
 $("#back").addEventListener("click",goBack);
-addEventListener("popstate",()=>{if($("#sheet").classList.contains("on"))closeSheet();else if(PARENT[tab])goBack()});
+addEventListener("popstate",()=>{if($("#sheet").classList.contains("on"))closeSheet();else if(UP(tab))goBack()});
 </script>
 </body>
 </html>

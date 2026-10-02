@@ -816,10 +816,10 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
 
     // ilaçlar ekranı
     ev("tab='ilac';render()");
-    ok("ilaçlar ekranı: başlık, bugünün dozları, ilaç listesi, uyarı metni",q("#ttl").textContent==="İlaçlar"&&q("#view").textContent.includes("Test İlaç")&&q("#view").textContent.includes("08:00, 20:00 · her gün")&&q("#view").textContent.includes("doz önermez")&&q('nav [data-tab="ilac"]').getAttribute("aria-current")==="page"&&!q('nav [data-tab="bugun"]').getAttribute("aria-current")&&!q("#navIlac").hidden);
+    ok("ilaçlar ekranı: başlık, bugünün dozları, ilaç listesi, uyarı metni",q("#ttl").textContent==="İlaçlar"&&q("#view").textContent.includes("Test İlaç")&&q("#view").textContent.includes("08:00, 20:00 · her gün")&&q("#view").textContent.includes("doz önermez")&&q('nav [data-tab="daha"]').getAttribute("aria-current")==="page"&&!q('nav [data-tab="bugun"]').getAttribute("aria-current"));
     ok("Koç bağlamı: ilaçlar adı, saati, son 7 gün uyumu ve uyarıyla gider",(c=>c.includes("İLAÇLAR")&&c.includes("Test İlaç")&&c.includes("08:00, 20:00")&&c.includes("son 7 gün:")&&c.includes("hekime"))(ev("CoachLib.contextText(cData())")));
     ev("S.settings.medOn=false;render()");
-    ok("ilaç kapalıyken sekme gizli, Koç bağlamında ilaç yok",q("#navIlac").hidden&&!ev("CoachLib.contextText(cData())").includes("İLAÇLAR"));
+    ok("ilaç kapalıyken alt menü aynı 5 sekme, Koç bağlamında ilaç yok",qa("nav button").map(b=>b.dataset.tab).join()==="bugun,salon,trend,koc,daha"&&!ev("CoachLib.contextText(cData())").includes("İLAÇLAR"));
     ev("S.settings.medOn=true;render()");
     ok("ilaç alarmı: Atla düğmesi dozu atlandı yazar, alındıyı ezmez",ev("(()=>{const sv=JSON.stringify([S.meds,S.medLog]),m=S.meds[0],s=m.t[1],t=Date.now();const r1=medIngest([{m:m.id,s,t,k:true}]).n;const r2=medIngest([{m:m.id,s,t,k:false}]).n;return r1===1&&r2===0&&MedLib.statusOf(S.medLog,m.id,MedLib.dayForTap(s,t),s)==='s'&&(([a,b])=>{S.meds=a;S.medLog=b;return true})(JSON.parse(sv))})()"));
     ev("S.medLog.push({id:99,m:1,day:keyOff(-1),slot:'08:00',st:'t'},{id:100,m:1,day:keyOff(-1),slot:'20:00',st:'s'})");ev("render()");
@@ -1957,21 +1957,22 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     const q=s=>$q(s),qa=s=>[...w.document.querySelectorAll(s)],v=()=>q("#view").textContent;
     ev("closeSheet();S.settings.obDone=true;S.settings.heightCm=170;S.settings.age=30;S.settings.goalKg=72;S.settings.medOn=true;S.settings.fastOn=true;S.settings.bpOn=true;S.settings.bsOn=true;S.settings.stepsOn=false;S.settings.lastBackup='';tab='ayar';render()");
     const rows=qa('#view [data-tab^="ayar-"]').map(b=>b.dataset.tab);
-    ok("Ayarlar ana ekranı kısa liste: 6 bölüm, özet değer ve ›, alan yok, başlıkta ‹ yok",rows.join()==="ayar-profil,ayar-modul,ayar-hatir,ayar-koc,ayar-veri,ayar-hak"&&v().includes("170 cm · 30 yaş · hedef 72,0 kg")&&v().includes("İlaç, Oruç, Tansiyon, Şeker açık")&&v().includes("Henüz yedek dosyası yok")&&!q("#view input")&&q("#back").hidden&&q('nav [data-tab="ayar"]').getAttribute("aria-current")==="page",v());
+    ok("Ayarlar ana ekranı kısa liste: 6 bölüm, özet değer ve ›, alan yok, başlıkta ‹ var (Daha fazla'ya)",rows.join()==="ayar-profil,ayar-modul,ayar-hatir,ayar-koc,ayar-veri,ayar-hak"&&v().includes("170 cm · 30 yaş · hedef 72,0 kg")&&v().includes("İlaç, Oruç, Tansiyon, Şeker açık")&&v().includes("Henüz yedek dosyası yok")&&!q("#view input")&&!q("#back").hidden&&q('nav [data-tab="daha"]').getAttribute("aria-current")==="page",v());
     const T={profil:"Profil ve hedefler",modul:"Modüller",hatir:"Hatırlatmalar",koc:"Koç",veri:"Veri ve yedek",hak:"Hakkında"},seen=new Set();
     let titles=true;
     for(const k in T){
       q(`[data-tab="ayar-${k}"]`).click();
-      titles=titles&&q("#ttl").textContent===T[k]&&!q("#back").hidden&&q('nav [data-tab="ayar"]').getAttribute("aria-current")==="page";
+      titles=titles&&q("#ttl").textContent===T[k]&&!q("#back").hidden&&q('nav [data-tab="daha"]').getAttribute("aria-current")==="page";
       for(const e of qa("#view *"))for(const a of e.attributes)if(a.name.startsWith("data-")||a.name==="id")seen.add(a.name==="id"?"id="+a.value:a.name+"="+a.value);
       q("#back").click();titles=titles&&ev("tab")==="ayar";
     }
-    ok("her bölüm kendi alt ekranı: başlık, ‹ görünür, Ayarlar sekmesi etkin; ‹ listeye döner",titles);
+    ok("her bölüm kendi alt ekranı: başlık, ‹ görünür, Daha fazla sekmesi etkin; ‹ listeye döner",titles);
     const need=["heightCm","age","goalKg","kcal","waterMl","glass","sportWeek","stepGoal","bpSysHi","bpDiaHi","bpSysLo","bpDiaLo","gFastLo","gFastHi","gPostLo","gPostHi"].map(k=>"data-set="+k)
       .concat([1,2,3,4,5,6,7,8,9,10,11,12].flatMap(i=>["data-rt="+i,"data-ro="+i]),["data-act=saglik","data-act=drive","data-act=yedek","data-act=sifirla","data-pv=csv","data-pv=open","data-c=addprov","data-c=clearchat","data-g=gdb:2.5","data-g=gpl:25","data-hb=fasttoggle","data-hb=plan:16","data-md=toggle","data-md=shown","data-tab=ilac","data-vt=bptoggle","data-vt=bstoggle","data-vt=bppreset","data-vt=gpreset","data-aw=","data-rpe=","data-sex=m","data-actl=2"]);
     ok("eski tek sayfadaki tüm kimlikler alt ekranlarda korunur",need.every(x=>seen.has(x)),need.filter(x=>!seen.has(x)));
     ev("tab='ayar-modul';render()");ev("backKey()");const b1=ev("tab");ev("backKey()");
-    ok("Android geri: alt ekrandan Ayarlar'a, Ayarlar'dan Bugün'e",b1==="ayar"&&ev("tab")==="bugun");
+    const b2=ev("tab");ev("backKey()");
+    ok("Android geri: alt ekrandan Ayarlar'a, Daha fazla'ya, Bugün'e",b1==="ayar"&&b2==="daha"&&ev("tab")==="bugun");
     ev("tab='ayar-hatir';render()");w.dispatchEvent(new w.PopStateEvent("popstate"));
     ok("tarayıcı geri (popstate): alt ekrandan Ayarlar'a, alt ekranda geçmiş kaydı vardı",ev("tab")==="ayar");
     ev("tab='ayar-hatir';render();setNotif('denied')");
@@ -1979,6 +1980,37 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("tab='trend';render()");ev("document.body.insertAdjacentHTML('beforeend','<button id=\"pf\" data-act=\"profil\"></button>')");q("#pf").click();q("#pf").remove();
     ok("profil bağlantısı (Enerji dengesi) Profil ve hedefler'i açar",ev("tab")==="ayar-profil"&&!!q("#heightCm"));
     ev("S.settings.medOn=false;S.settings.fastOn=false;S.settings.bpOn=false;S.settings.bsOn=false;S.settings.heightCm=0;S.settings.age=0;S.settings.goalKg=0;tab='bugun';render()");
+  }
+  { // 5 sabit sekme ve Daha fazla (C14)
+    const q=s=>$q(s),qa=s=>[...w.document.querySelectorAll(s)],cur=()=>(q('nav [aria-current="page"]')||{dataset:{}}).dataset.tab,go=t=>ev(`closeSheet();tab='${t}';via=null;render()`);
+    const tabs=()=>qa("nav button").map(b=>b.dataset.tab).join(),rowsOf=()=>qa('#view .prow');
+    ev("S.settings.obDone=true;S.settings.medOn=false;S.settings.bpOn=false;S.settings.bsOn=false;S.settings.stepsOn=false");go("bugun");
+    const kapali=tabs();ev("S.settings.medOn=true;S.settings.bpOn=true;S.settings.bsOn=true;S.settings.stepsOn=true");go("bugun");
+    ok("alt menü her zaman aynı 5 sekme (ilaç kapalı ya da açık): Bugün, Salon, Trend, Koç, Daha fazla; açılış Bugün",kapali==="bugun,salon,trend,koc,daha"&&tabs()===kapali&&!q("#navIlac")&&/let tab="bugun"/.test(html)&&qa("nav button").pop().textContent.includes("Daha fazla"));
+    go("daha");
+    ok("Daha fazla açık modüllerle: 9 satır, başlık, ‹ yok, sekme etkin, kapalı satır yok",q("#ttl").textContent==="Daha fazla"&&q("#back").hidden&&cur()==="daha"&&rowsOf().length===9&&!q(".prow.off")&&["ilac","adim","tahlil","tansiyon","seker","egz","ayar","ayar-hak"].every(t=>!!q(`#view [data-tab="${t}"]`))&&!!q('#view [data-pv="open"]'));
+    ev("S.settings.medOn=false;S.settings.bsOn=false;S.settings.stepsOn=false;render()");
+    const off=qa(".prow.off");
+    ok("kapalı modüller gri satır ve Aç: İlaç, Adım, Şeker; Modüller'e götürür, satırlar 44 px+ düğme",off.map(b=>b.querySelector("b").textContent).join()==="İlaçlar,Adım raporu,Şeker"&&off.every(b=>b.dataset.tab==="ayar-modul"&&b.textContent.includes("Aç")&&b.textContent.includes("Modüller'den aç"))&&!q('#view [data-tab="ilac"]')&&!!q('#view [data-tab="tansiyon"]')&&/\.prow\{[^}]*min-height:56px/.test(html));
+    off[0].click();const viaDaha=ev("tab")==="ayar-modul"&&cur()==="daha";q("#back").click();
+    ok("Aç: Ayarlar > Modüller açılır, Daha fazla etkin kalır, ‹ Daha fazla'ya döner",viaDaha&&ev("tab")==="daha");
+    ev("S.settings.medOn=true;S.settings.stepsOn=true;render()");
+    q('#view [data-tab="adim"]').click();
+    ok("Daha fazla'dan Adım: başlık, Daha fazla etkin, ‹ Daha fazla'ya döner",q("#ttl").textContent==="Adım raporu"&&cur()==="daha"&&!q("#back").hidden);
+    q("#back").click();const a1=ev("tab")==="daha";
+    ev("S.meds=[{id:1,n:'Test İlaç',d:'1 tablet',t:['23:58'],on:true,k:10}];S.medLog=[]");go("bugun");q('#view .todo [data-tab="ilac"]')&&q('#view .todo [data-tab="ilac"]').click();
+    ok("Bugün yapılacaklardan İlaç: Bugün etkin, ‹ Bugün'e döner (alt ekran açıldığı yerin altında)",ev("tab")==="ilac"&&cur()==="bugun"&&(q("#back").click(),ev("tab")==="bugun")&&a1);
+    go("ilac");const d1=cur();ev("backKey()");const d2=ev("tab");ev("backKey()");
+    ok("derin bağlantı İlaç: Daha fazla etkin; Android geri Daha fazla'ya, sonra Bugün'e",d1==="daha"&&d2==="daha"&&ev("tab")==="bugun");
+    go("trend");q('#view [data-tab="tansiyon"]').click();const t1=cur()==="trend";q("#back").click();
+    const t2=ev("tab")==="trend";go("tansiyon");const t3=cur();go("ayar-hak");
+    ok("Trend'den Tansiyon Trend etkin ve ‹ Trend'e; derin tansiyon Trend, Hakkında Daha fazla etkin",t1&&t2&&t3==="trend"&&cur()==="daha");
+    ev("S.meds=[];S.medLog=[]");
+    go("bugun");const tap=(x,m)=>{ev(`S.settings.medOn=${m};S.settings.consent=true;tab='bugun';notifTap(${JSON.stringify({actionId:"tap",notification:{extra:x}})})`);return ev("tab")};
+    ok("bildirim dokunma: ilac sekmesi İlaç (ilaç açıkken) ya da Daha fazla; koc, ayar-veri ve eski adlar korunur",tap({act:"open",tab:"ilac"},true)==="ilac"&&tap({act:"open",tab:"ilac"},false)==="daha"&&tap({act:"open",tab:"koc"},true)==="koc"&&tap({act:"open",tab:"ayar-veri"},true)==="ayar-veri"&&tap({act:"open",tab:"ayar"},true)==="trend");
+    ev("S.settings.consent=false;S.settings.medOn=false");go("koc");const c1=!q("#composer").hidden;go("daha");
+    ok("Koç composer yalnız Koç sekmesinde",c1&&q("#composer").hidden&&(go("salon"),q("#composer").hidden));
+    go("bugun");
   }
   { // SVG ikonlar (C5)
     const q=s=>$q(s),qa=s=>[...w.document.querySelectorAll(s)],emo=/\p{Extended_Pictographic}/u;

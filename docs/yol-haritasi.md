@@ -57,7 +57,7 @@ Ayrıntı ve test adımları `yapilacaklar.md`'de. Telefonda denenen tek özelli
 | C11 (yapıldı) | Grafik okunurluğu | Tansiyon çizgileri etiketli ve eşik bandlı, adım grafiğinde "Cu/Ct/Pz/Pt", renkler tutarlı olur. | S | rekabet-arayuz | – |
 | C12 (yapıldı) | Tutarlılık paketi | Tek tarih biçimi, başlıkta küçük "‹" geri ve Sistem/Açık/Koyu tema seçici gelir. | S | rekabet-arayuz | – |
 | C13 (yapıldı) | Haftalık PDF'e grafik | Boş yarım sayfaya kilo ve tansiyon grafikleri eklenir. | S | rekabet-arayuz | – |
-| C14 | 5 sabit sekme | Bugün ilk sekme olur, koşullu sekmeler kalkar, "Daha fazla" sekmesi gelir. | L | rekabet-arayuz §d | G9 |
+| C14 (yapıldı) | 5 sabit sekme | Bugün ilk sekme olur, koşullu sekmeler kalkar, "Daha fazla" sekmesi gelir. | L | rekabet-arayuz §d | G9 |
 
 ## D) Yeni özellikler
 
