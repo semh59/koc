@@ -141,6 +141,7 @@ body.koc #toast{bottom:calc(150px + env(safe-area-inset-bottom))}
 .srow2{display:flex;gap:8px;margin-bottom:8px}.sbtn{flex:1;min-height:46px;border-radius:12px;background:#1f5f86;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;text-decoration:none}
 .sbtn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
 .lcard{margin:8px 0 0}.lhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.chip:disabled{opacity:.5;cursor:default}
 .tahmin{font-size:12px;font-weight:600;color:#6b3f08;background:#fbe9d2;border-radius:99px;padding:3px 10px}
 .lrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
 .kin{width:64px;height:44px;text-align:right;border:1px solid var(--mut);border-radius:8px;background:var(--bg);padding:0 6px}
@@ -802,7 +803,7 @@ function goKilo(){
 }
 /* Dünkü kayıt kendi öğününü taşır; favori ve şablonda öğün yok, seçilen çip geçerli. */
 function addFoods(items,day,msg){
-  const ids=items.map(s=>{const e=copyNutr(s,add("yemek",s.v,s.text,day));e.meal=s.time?LogLib.mealOf(s):fmeal();return e.id});save();closeSheet();render();
+  const ids=items.map(s=>{const e=copyNutr(s,add("yemek",s.v,s.text,day));e.meal=LogLib.mealKey(s.meal)||(s.time?LogLib.mealOf(s):fmeal());return e.id});save();closeSheet();render();
   toast(msg,()=>{S.entries=S.entries.filter(e=>!ids.includes(e.id));save();render()});
 }
 function repeatYesterday(){

@@ -60,6 +60,7 @@ function cleanCoach(r){
       if(items.length)o.card=Object.assign({kind:"why",items},c.asked===true?{asked:true}:{});
     }
     else if(c&&c.kind==="program"){const pg=CoachLib.cleanProgram(c,known);if(pg)o.card=Object.assign({kind:"program",state:c.state==="ok"?"ok":"pending"},pg)}
+    else if(c&&c.kind==="menu"){const mn=CoachLib.cleanMenu({days:c.days},null,c.kcal);if(mn)o.card=Object.assign({kind:"menu",chk:(Array.isArray(c.chk)?c.chk:[]).filter(x=>typeof x==="string").map(x=>x.slice(0,60)).slice(0,100)},mn)}
     else if(c&&c.kind==="propose"&&Number.isFinite(c.kcal))o.card={kind:"propose",kcal:Math.round(c.kcal),why:String(c.why||"").slice(0,160),limited:c.limited===true,state:["pending","ok","no"].includes(c.state)?c.state:"pending"};
     chat.push(o);
   }
@@ -111,9 +112,9 @@ function cMeds(t,now){
   const nt=`${pad(now.getHours())}:${pad(now.getMinutes())}`,f=keyOff(-6);
   return S.meds.filter(m=>m.on).map(m=>{const a=MedLib.adherence([m],S.medLog,f,t,t,nt),left=MedLib.stockLeft(m);return {n:m.n,d:m.d,t:m.t,w:m.w,a:a.total||a.late?a:null,left}});
 }
-function cMessages(extraUser,extraSys){
+function cMessages(extraUser,extraSys,noHist){
   const sys=CoachLib.SYSTEM+(extraSys?"\n\nNOT: "+extraSys:"")+"\n\n"+CoachLib.contextText(cData());
-  const hist=S.chat.filter(m=>m.role!=="sys"&&m.text).slice(-10).map(m=>({role:m.role==="user"?"user":"assistant",content:m.text}));
+  const hist=noHist?[]:S.chat.filter(m=>m.role!=="sys"&&m.text).slice(-10).map(m=>({role:m.role==="user"?"user":"assistant",content:m.text}));
   const msgs=[{role:"system",content:sys}].concat(hist);
   if(extraUser)msgs.push({role:"user",content:extraUser});
   return msgs;
@@ -272,6 +273,71 @@ async function cProgram(o){
   finally{busy=false;typing=false;save();render()}
 }
 
+/* ---- Koç'tan haftalık menü ---- */
+let menuNote="";
+/* Katalog: önce benim besinlerim, favoriler, şablonlar, kalan yer yerleşik listeden (kategorilere yayılmış). Toplam en çok 60 satır. */
+function cMenuCat(){
+  const cat={},lines=[],clean=t=>String(t).replace(/[|\r\n]+/g," ").trim().slice(0,30),nn=v=>v==null?null:v;
+  const add=(id,n,k,p,c,f,g,a)=>{cat[id]={n:clean(n),k,p,c,f,g,a};lines.push(`${id}|${cat[id].n}${g?" "+g+" g":""}|${Math.round(k)}|${p==null?"?":Math.round(p)}`)};
+  const per=(id,f,g)=>{const x=v=>v==null?null:v*g/100,m=f.u&&f.u[0][0].match(/^(\d+(?:[.,]\d+)?)\s*adet/);add(id,f.n,f.k*g/100,x(f.p),x(f.c),x(f.f),Math.round(g),m?+m[1].replace(",","."):null)};
+  S.myFoods.slice(0,20).forEach((f,i)=>f.u?per("m"+i,f,f.u[0][1]):add("m"+i,f.n,f.k,nn(f.p),nn(f.c),nn(f.f),null,null));
+  S.favFoods.slice(0,10).forEach((x,i)=>{if(x.v!=null)add("f"+i,x.text,x.v,nn(x.p),nn(x.c),nn(x.f),null,null)});
+  S.mealTpl.slice(0,8).forEach((t,i)=>{if(t.items.every(x=>x.v!=null))add("t"+i,"Şablon: "+t.n,t.items.reduce((a,x)=>a+x.v,0),t.items.every(x=>x.p!=null)?t.items.reduce((a,x)=>a+x.p,0):null,null,null,null,null)});
+  const ok=FOODS.map((f,i)=>i).filter(i=>FOODS[i].k<450&&!["Şeker","Kola","Meyve suyu"].includes(FOODS[i].n)),n=Math.min(Math.max(0,60-lines.length),ok.length);
+  for(let j=0;j<n;j++){const i=ok[Math.floor(j*ok.length/n)];per("b"+i,FOODS[i],FOODS[i].u[0][1])}
+  return {cat,text:lines.join("\n")};
+}
+/* Hedef: kalori açığı engeli varsa ve hedef bakımın altındaysa bakım düzeyi (cReply'daki kuralın aynısı); yeme düzeni işareti ya da bakım hesaplanamıyorsa menü yok. */
+function cMenuPlan(){
+  const st=S.settings,c=cCalc(),goal=st.kcal>0?st.kcal:c.target;
+  if(!(goal>0))return {why:"Önce Ayarlar > Profil ve hedefler'den günlük kalori hedefi belirle"};
+  if(S.chat.some(m=>m.fl==="ed"||(m.card&&m.card.kind==="safety"&&m.card.level==="ed")))return {why:"Yeme düzeniyle ilgili işaret gördüm; kısıtlayıcı menü önermiyorum, bir uzmana danış"};
+  const block=Algo.lossBlock({age:st.age,cm:st.heightCm,kg:c.trendKg,goalKg:st.goalKg,health:!!st.healthNote.trim()});
+  let kcal=goal,held=false;
+  if(block){
+    if(!c.tdee)return {why:block+". Menü hedefi hesaplanamadı; hekimine ya da diyetisyene danış"};
+    if(goal<c.tdee-50){kcal=Math.round(c.tdee/10)*10;held=true}
+  }
+  const cl=CoachLib.clampKcal(kcal,{tdee:c.tdee,bmr:c.bmr});
+  return {kcal:cl?cl.kcal:kcal,protein:c.protein,held,block};
+}
+function cMenuSheet(){
+  const pl=cMenuPlan();
+  openSheet(`<h3>Haftalık menü öner</h3>${pl.why?`<p class="mut">${esc(pl.why)}</p>`:`<p class="mut sm">Hedef: günde ~${pl.kcal} kcal${pl.protein?`, protein ${pl.protein[0]}-${pl.protein[1]} g`:""}.${pl.held?` ${esc(pl.block)}; menü bakım düzeyinde hazırlanır, hekimine danış.`:""}</p>`}
+  <label class="lbl" for="mnote">Kısıt ya da alerji (isteğe bağlı)</label><textarea class="in" id="mnote" maxlength="200" placeholder="Örneğin: fıstık alerjisi, domuz eti yemem">${esc(menuNote)}</textarea>
+  <p class="hint">Koç yalnız Benim besinlerim, favorilerin, şablonların ve yerleşik listeden seçer. Tıbbi diyet ya da hastalık menüsü değildir; hastalığın varsa diyetisyenine danış. Yazdığın not, profilin ve kayıtlarınla birlikte sağlayıcıya gönderilir.</p>
+  <button class="btn" data-c="menuask"${pl.why?" disabled":""}>İste</button>`);
+}
+async function cMenu(){
+  if(busy)return;
+  if(!S.settings.consent){tab="koc";render();return toast("Önce Koç'ta veri paylaşımını kabul et")}
+  if(!usable().length)return toast("Koç için API anahtarı gerekli (Ayarlar)");
+  const pl=cMenuPlan(),note=menuNote;
+  if(pl.why)return toast(pl.why);
+  if(CoachLib.redFlag(note))return toast("Notunda sağlık uyarısı işareti var, menü hazırlamıyorum; hekimine danış");
+  const {cat,text}=cMenuCat(),p=pl.protein;
+  cPush({role:"user",text:`Haftalık menü iste: günde ~${pl.kcal} kcal${note?`, not: ${note}`:""}`});
+  tab="koc";busy=true;typing=true;render();
+  try{
+    const r=await cAsk(cMessages(`7 günlük menü hazırla. "menu" alanını doldur, reply'da en fazla 2 cümle yaz.`,`MENÜ İSTEĞİ. Hedef günlük ${pl.kcal} kcal (gün toplamı ±%10), ${p?`protein ${p[0]}-${p[1]} g/gün`:"protein yeterli olsun"}. YALNIZ KATALOG kimliklerini kullan, listede olmayan besin ekleme. Günde 3-6 öğün, öğün anahtarı: kah, ogl, aks, atis. Katalogdaki kcal ve protein BİR porsiyon içindir; q porsiyon çarpanıdır (0.25-4).${note?`\nKullanıcının kısıt/alerji notu (uy): ${note}`:""}\nTıbbi diyet ya da hastalık menüsü yazma.${pl.block?` KISIT var: ${pl.block}; kalori açığı kurma.`:""}\nÇıktı JSON: {"reply":"...","menu":{"days":[{"n":"Pazartesi","meals":[{"m":"kah","i":[["kimlik",1]]}]}]}}\nKATALOG (kimlik|ad|kcal|protein):\n${text}`,true),2400);
+    const o=CoachLib.parse(r.text),mn=CoachLib.cleanMenu(o.menu,cat,pl.kcal);offline=null;
+    if(mn)cPush({role:"coach",text:o.reply,card:Object.assign({kind:"menu",chk:[]},mn)});
+    else toast("Menü okunamadı, tekrar dene");
+  }catch(e){toast(e.message==="declined"?"Gönderim onaylanmadı":"Koç şu an ulaşılamıyor, sonra tekrar dene")}
+  finally{busy=false;typing=false;save();render()}
+}
+const menuCard=id=>{const m=S.chat.find(x=>x.id===id);return m&&m.card&&m.card.kind==="menu"?m.card:null};
+const mealLbl=k=>(LogLib.MEALS.find(x=>x[0]===k)||[0,"Öğün"])[1];
+const qTxt=q=>q===1?"":" × "+String(q).replace(".",",");
+function menuEntries(d){return d.meals.flatMap(b=>b.items.map(i=>LogLib.copyNutr(i,{text:i.n+qTxt(i.q),v:i.k,meal:b.m})))}
+function cShopText(c){const ch=new Set(c.chk);return "Alışveriş listesi\n"+CoachLib.shopList(c).map(x=>`${ch.has(x.n)?"[x]":"[ ]"} ${x.n}: ${x.t}`).join("\n")}
+function cShop(id){
+  const c=menuCard(id);if(!c)return;
+  const L=CoachLib.shopList(c),ch=new Set(c.chk);
+  openSheet(`<h3>Alışveriş listesi</h3><p class="mut sm">Menüden bu telefonda hesaplandı, hiçbir yere gönderilmedi. Miktarlar menüdeki porsiyonlara göredir.</p>${L.map((x,i)=>`<button class="prow" data-c="shopchk:${id}:${i}" aria-pressed="${ch.has(x.n)}"><span><b${ch.has(x.n)?' style="text-decoration:line-through"':""}>${esc(x.n)}</b><span class="mut sm">${esc(x.t)}</span></span><span class="plus" aria-hidden="true">${ch.has(x.n)?Icons.svg("check"):""}</span></button>`).join("")}
+  <div class="two" style="margin-top:10px"><button class="btn ghost" data-c="shopcopy:${id}">Kopyala</button><button class="btn ghost" data-c="shopshare:${id}">Paylaş</button></div>`);
+}
+
 /* Plato sorusu yereldir: consent ve sağlayıcıdan bağımsız, AI çağrısı yapmaz; kullanıcı "Bak"a dokunursa yerel kart açılır. */
 function cPlateauCheck(){
   const st=S.settings,t=dayKey();
@@ -342,6 +408,10 @@ function cCard(m){
   if(c.kind==="safety")return cSafety(c.level);
   if(c.kind==="program")return `<div class="card lcard"><b>${esc(c.name)}</b>${c.days.map(d=>`<div class="lrow"><div><b>${esc(d.n)}</b><div class="mut sm">${esc(d.ex.map(i=>gEx(i).n).join(", "))}</div></div></div>`).join("")}
     ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="progadd:${m.id}">Şablon olarak ekle</button></div>`:`<div class="mut sm">${c.days.length} şablon Salon'a eklendi</div>`}<p class="hint">${gPgNote}</p></div>`;
+  if(c.kind==="menu")return `<div class="card lcard"><div class="lhead"><b>Haftalık menü</b><span class="tahmin">Tahmin</span></div><div class="mut sm">Hedef ${c.kcal?"~"+c.kcal+" kcal/gün":"belirtilmedi"}. Tıbbi diyet ya da hastalık menüsü değildir.</div>
+    ${c.days.map((d,di)=>`<div style="padding:8px 0;border-top:1px solid var(--line)"><div class="lhead"><b>${esc(d.n)}</b><span class="num">~${d.k} kcal</span></div>${d.off?`<div class="mut sm">Hedefin %15'inden fazla sapıyor</div>`:""}${d.meals.map(b=>`<div class="mut sm"><b>${mealLbl(b.m)}:</b> ${esc(b.items.map(i=>i.n+qTxt(i.q)).join(", "))}</div>`).join("")}
+    <div class="lbtns"><button class="chip" data-c="menuadd:${m.id}:${di}">Bugüne ekle</button><button class="chip" data-c="menutpl:${m.id}:${di}">Şablon yap</button></div></div>`).join("")}
+    <div class="lbtns"><button class="btn" data-c="shop:${m.id}">Alışveriş listesi</button></div></div>`;
   if(c.kind==="why")return `<div class="card lcard"><b>Son 7 gün</b>${c.items.map(x=>`<p class="sm">${esc(x.t)}</p>`).join("")}<div class="mut sm">${c.asked?"Telefonda hesaplandı; yorum için Koç'a gönderildi.":"Telefonda hesaplandı, hiçbir yere gönderilmedi."}</div>
     ${!c.asked&&S.settings.consent&&usable().length?`<div class="lbtns"><button class="btn ghost" data-c="whyai:${m.id}">Koç'a yorumlat</button></div>`:""}</div>`;
   if(c.kind==="propose"){
@@ -388,6 +458,10 @@ function viewKoc(){
   }
   if(typing)h+=`<div class="cm"><div class="mut sm">Koç yazıyor</div><p class="dots">• • •</p></div>`;
   else if(lossAsk())h+=`<div class="chips"><button class="chip" data-c="why">Bu hafta neden kilo vermedim?</button></div>`;
+  if(!typing){
+    const why=!S.settings.consent?"Menü için önce yukarıdaki veri paylaşımını kabul et":!usable().length?"Menü için Koç'a API anahtarı gerekli (Ayarlar > Yapay zekâ koç)":"";
+    h+=`<div class="chips"><button class="chip" data-c="menu"${why?' disabled aria-disabled="true"':""}>Haftalık menü öner</button></div>${why?`<p class="hint">${why}</p>`:""}`;
+  }
   return `<div class="chat">${h}</div>`;
 }
 function cScroll(){if(tab==="koc")setTimeout(()=>window.scrollTo(0,document.body.scrollHeight),30)}
@@ -506,6 +580,27 @@ function cClick(v,el){
       m.card.state="ok";save();render();return toast(`${m.card.days.length} şablon eklendi`);
     }
     case "whyai":return cWhyAsk(+p1);
+    case "menu":return cMenuSheet();
+    case "menuask":{menuNote=($("#mnote").value||"").replace(/\s+/g," ").trim().slice(0,200);closeSheet();return cMenu()}
+    case "menuadd":{
+      const c=menuCard(+p1),d=c&&c.days[+p2];if(!d)return;
+      const it=menuEntries(d);return addFoods(it,dayKey(),`${d.n}: ${it.length} yemek bugüne eklendi`);
+    }
+    case "menutpl":{
+      const c=menuCard(+p1),d=c&&c.days[+p2];if(!d)return;
+      if(S.mealTpl.length>=20)return toast("En fazla 20 şablon");
+      const all=menuEntries(d),id=Math.max(0,...S.mealTpl.map(t=>t.id))+1;
+      S.mealTpl=LogLib.cleanTpl([...S.mealTpl,{id,n:("Menü: "+d.n).slice(0,40),items:all.slice(0,15).map(x=>LogLib.copyNutr(x,{text:x.text,v:x.v}))}]);save();
+      return toast(`Şablon kaydedildi${all.length>15?" (ilk 15 yemek)":""}`,()=>{S.mealTpl=S.mealTpl.filter(t=>t.id!==id);save()});
+    }
+    case "shop":return cShop(+p1);
+    case "shopchk":{
+      const c=menuCard(+p1),x=c&&CoachLib.shopList(c)[+p2];if(!x)return;
+      const on=!c.chk.includes(x.n);c.chk=on?[...c.chk,x.n].slice(-100):c.chk.filter(n=>n!==x.n);save();
+      el.setAttribute("aria-pressed",on);el.querySelector(".plus").innerHTML=on?Icons.svg("check"):"";el.querySelector("b").style.textDecoration=on?"line-through":"";return;
+    }
+    case "shopcopy":{const c=menuCard(+p1);if(!c)return;const t=cShopText(c);(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Liste panoya kopyalandı"),()=>toast("Kopyalanamadı, Paylaş'ı kullan"));return}
+    case "shopshare":{const c=menuCard(+p1);if(c)shareFile(`neowell-alisveris-${dayKey()}.txt`,"Alışveriş listesi","text/plain",cShopText(c),true);return}
     case "ok":return cApplyLog(+p1,el);
     case "addfood":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card&&m.card.kind==="food"&&m.card.state==="pending"){if(myFoodAdd(m.card.f.n,m.card.f.k,m.card.f.p)){m.card.state="ok";save();render();toast("Besin listene eklendi")}else toast("Listen dolu (en fazla 200 besin)")}return}
     case "nofood":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card){m.card.state="no";save();render()}return}
