@@ -874,6 +874,7 @@ async function scheduleReminders(){
     try{
       const dl=await ln.getDeliveredNotifications(),t1=dayKey(),y=keyOff(-1),gone=[];
       for(const n of dl.notifications){
+        if(n.id===9100&&!S.fast.t0)gone.push({id:9100});
         if(n.id<1000000)continue;
         const d=MedLib.doseOfId(S.meds,n.id);
         if(!d||MedLib.statusOf(S.medLog,d.m.id,t1,d.slot)||MedLib.statusOf(S.medLog,d.m.id,y,d.slot))gone.push({id:n.id});

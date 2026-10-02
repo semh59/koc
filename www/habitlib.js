@@ -27,6 +27,11 @@ const HabitLib=(()=>{
     const elapsed=Math.max(0,Math.floor((now-f.t0)/6e4)),left=Math.max(0,f.plan*60-elapsed);
     return {elapsed,left,done:left===0};
   }
-  return {PLANS,cleanFast,cleanSleep,cleanMood,sleepMin,fastState};
+  /* cleanFast 72 saati aşanı attığı için süre tavanda kırpılır (sessizce kaybolmasın); 1 dakikadan kısa, gelecekte başlamış ya da saati geri alınmış oruç geçmişe yazılmaz. */
+  function endFast(f,now){
+    const t1=Math.min(now,f.t0+H72),min=Math.floor((t1-f.t0)/6e4),log=min>=1?f.log.concat({t0:f.t0,t1}):f.log;
+    return {fast:cleanFast({...f,t0:null,log}),min:Math.max(0,min),capped:now>f.t0+H72};
+  }
+  return {PLANS,cleanFast,cleanSleep,cleanMood,sleepMin,fastState,endFast};
 })();
 if(typeof module!=="undefined")module.exports=HabitLib;
