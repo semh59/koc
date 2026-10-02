@@ -33,7 +33,7 @@ function sheetUyku(){
   <div class="lbl">Kalktığın saat</div><input class="in" type="time" id="hbw">
   <div class="lbl">Ya da süre (saat)</div><input class="in num" id="hbh" inputmode="decimal" placeholder="7,5" autocomplete="off">
   <div class="lbl">Kalite (isteğe bağlı)</div><select class="in" id="hbq"><option value="">–</option>${[1,2,3,4,5].map(i=>`<option>${i}</option>`).join("")}</select>
-  <button class="btn" data-hb="sleepgo">Kaydet</button>${S.sleep.slice(-7).reverse().map(x=>hbRow(`${dm(x.day)} ${hbDur(x.min)}${x.q?` · kalite ${x.q}`:""}`,"sdel:"+x.day)).join("")}`);
+  <button class="btn" data-hb="sleepgo">Kaydet</button>${S.sleep.slice().reverse().map(x=>hbRow(`${dm(x.day)} ${hbDur(x.min)}${x.q?` · kalite ${x.q}`:""}`,"sdel:"+x.day)).join("")}`);
 }
 function sleepSave(){
   const b=$("#hbb").value,w=$("#hbw").value,h=num($("#hbh").value);
@@ -44,7 +44,7 @@ function sleepSave(){
 }
 function sheetMood(){
   openSheet(`<h3>Ruh halin</h3>${dayOptions()}<div class="chiprow">${MOODS.map((e,i)=>`<button class="chip" data-hb="mood:${i+1}" aria-label="Ruh hali ${i+1} / 5" style="font-size:24px">${e}</button>`).join("")}</div>
-  <input class="in" id="hbn" maxlength="100" placeholder="Kısa not (isteğe bağlı)" autocomplete="off">${S.mood.slice(-7).reverse().map(x=>hbRow(`${dm(x.day)} ${MOODS[x.v-1]}${x.t?" "+esc(x.t):""}`,"mdel:"+x.day)).join("")}`);
+  <input class="in" id="hbn" maxlength="100" placeholder="Kısa not (isteğe bağlı)" autocomplete="off">${S.mood.slice().reverse().map(x=>hbRow(`${dm(x.day)} ${MOODS[x.v-1]}${x.t?" "+esc(x.t):""}`,"mdel:"+x.day)).join("")}`);
 }
 function moodSave(v){
   const day=fday(),old=S.mood.some(x=>x.day===day),t=$("#hbn").value;
