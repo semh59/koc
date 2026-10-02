@@ -286,10 +286,8 @@ function gSheetHist(exId){
   if(!h.length)return openSheet(`<h3>${esc(ex.n)}</h3><p class="hint">Henüz tamamlanmış set yok.</p><button class="btn" data-g="closesheet">Kapat</button>`);
   const per=h.map(x=>({d:x.w.day,e:gBest(x.w,exId),vol:Algo.volume(x.sets),top:x.sets.reduce((a,s)=>Algo.est1RM(s.kg,s.reps)>Algo.est1RM(a.kg,a.reps)?s:a,x.sets[0])}));
   const best=per.reduce((a,b)=>b.e>a.e?b:a,per[0]);
-  const pts=per.slice(0,12).reverse().map((p,i)=>({i,v:p.e}));
   openSheet(`<h3>${esc(ex.n)}</h3><div class="two"><div class="stat"><div class="k">En iyi set</div><div class="v num">${fkg(best.top.kg)||0} kg × ${best.top.reps}</div></div><div class="stat"><div class="k">Tahmini 1TM</div><div class="v num">${Math.round(best.e)} kg</div></div></div>
-  ${pts.length>1?`<div class="sparkbox" style="color:var(--spor)">${spark(pts)}</div>`:""}
-  <p class="hint">1TM, setten hesaplanan bir tahmindir (Epley), gerçek bir 1 tekrar denemesi değildir.</p>
+  ${exCharts(exId)}
   <table><thead><tr><th>Tarih</th><th>En iyi set</th><th>Hacim</th></tr></thead><tbody>${per.slice(0,6).map(p=>`<tr><td>${gDate(p.d)}</td><td class="num">${fkg(p.top.kg)||0} × ${p.top.reps}</td><td class="num">${Math.round(p.vol).toLocaleString("tr-TR")} kg</td></tr>`).join("")}</tbody></table>
   <button class="btn" data-g="closesheet">Kapat</button>`);
 }

@@ -998,6 +998,23 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("8-12 seçilince varsayılana döner",ev("Object.keys(S.exCfg).length")===0);
     const X=JSON.parse(ev(`JSON.stringify(cleanGym({exCfg:{squat:{lo:5,hi:8},bilinmeyen:{lo:5,hi:8},bench:{lo:9,hi:9},row:{lo:0,hi:5}}}))`));
     ok("exCfg yeniden yüklemede korunur, bilinmeyen kimlik ve geçersiz aralık atılır",JSON.stringify(X.exCfg)==='{"squat":{"lo":5,"hi":8}}',X.exCfg);
+    { // tüm geçmiş grafikleri (D-Ant6)
+      const mk=(i,kg,r,extra="")=>`{id:${800+i},day:'${new Date(Date.now()-(60-i)*864e5).toISOString().slice(0,10)}',t0:${1000+i},t1:${2000+i},name:'T',tpl:null,ex:[{id:'squat',note:'',sets:[{kg:${kg},reps:${r},done:true},{kg:${kg},reps:${r},done:true}${extra}]}]}`;
+      const open=()=>{ev("closeSheet();exSheet('squat')")};
+      ev("S.workouts=[];tab='salon';render()");open();
+      ok("grafik: geçmiş yoksa grafik alanı çıkmaz",!q('#xch'));
+      ev(`S.workouts=[${mk(0,60,8)}]`);open();
+      ok("grafik: tek seansta boş durum yazısı, SVG yok, değer görünür",q('#xch').textContent.includes("en az iki seans")&&!q('#xch svg')&&q('#xch').textContent.includes("76 kg"),q('#xch').textContent);
+      ev(`S.workouts=[${Array.from({length:30},(_,i)=>mk(i,60+i,8,i===29?",{kg:200,reps:10,done:true,w:true}":"")).join(",")}]`);open();
+      ok("grafik: 30 seansın hepsi çizilir (12 ile sınırlı değil), ısınma setleri sayılmaz",q('#xch svg')&&q('#xch').querySelectorAll('rect[data-g^="chp:"]').length===30&&q("#xch").textContent.includes("113 kg")&&q('#xch').textContent.includes("30/30"),q('#xch').textContent);
+      click('[data-g="chp:0"]');
+      ok("grafik: dokununca o seansın değeri görünür",q('#xch').textContent.includes("76 kg")&&q('#xch').textContent.includes("1/30"),q('#xch').textContent);
+      click('[data-g="chm:t"]');
+      ok("grafik: en ağır set ve hacim sekmeleri",q('#xch').textContent.includes("60 kg × 8")&&(click('[data-g="chm:v"]'),q('#xch').textContent.includes("960 kg")),q('#xch').textContent);
+      ev("closeSheet();tab='salon';render();gSheetHist('squat')");
+      ok("grafik: geçmiş ekranında da var",!!q('#xch svg'));
+      ev("closeSheet();S.workouts=[]");
+    }
     { // akıllı ilerleme (D-Ant5)
       const set=(kg,r)=>`[{kg:${kg},reps:${r},done:true},{kg:${kg},reps:${r},done:true},{kg:${kg},reps:${r},done:true,w:false},{kg:20,reps:10,done:true,w:true}]`;
       ev(`S.exCfg={};S.workouts=[${Wk(1,1000,2000,set(60,7))},${Wk(2,3000,4000,set(60,6))},${Wk(3,Date.now(),null,"[{kg:null,reps:null,done:false}]")}];tab='salon';render()`);
