@@ -927,7 +927,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     w.confirm=()=>false;
     ev(`S.entries=S.entries.filter(e=>e.type!=='spor');S.workouts=[${Tk(21,"B",nowT,null,Ex("squat","[{kg:60,reps:5,done:true},{kg:70,reps:5,done:false}]"))}];gFinish()`);
     w.confirm=()=>true;
-    ok("İptal: işaretsiz set sayılmadan antrenman biter",ev("S.workouts[0].t1")!=null&&ev("S.workouts[0].ex[0].sets.length")===1);
+    ok("İptal: antrenman açık kalır, işaretsiz set silinmez",ev("S.workouts[0].t1")==null&&ev("S.workouts[0].ex[0].sets.length")===2);
     ev(`S.workouts=[${Tk(22,"C",nowT,null,Ex("squat","[{kg:null,reps:null,done:false}]"))}];gFinish()`);
     ok("değerli set yoksa kaydedilmez, antrenman silinmez, toast neden söyler",ev("S.workouts.length")===1&&ev("S.workouts[0].t1")===null&&toastT().startsWith("Kaydedilmedi"),toastT());
     ev(`S.workouts=[${Tk(23,"D",nowT,null,Ex("squat","[{kg:20,reps:10,done:false,w:true}]"))}];gFinish()`);

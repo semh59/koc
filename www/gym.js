@@ -288,8 +288,11 @@ function gFinish(){
   const w=gActive();if(!w)return;
   gTimStop();
   const open=w.ex.reduce((s,x)=>s+x.sets.filter(t=>!t.done&&gSetOk(t)).length,0);
-  if(open&&confirm(`${open} set işaretlenmemiş. Tamamlandı sayılıp kaydedilsin mi?
-Tamam: sayılır, İptal: sayılmadan bitir`))for(const x of w.ex)for(const t of x.sets)if(gSetOk(t))t.done=true;
+  if(open){
+    if(!confirm(`${open} set işaretlenmemiş. Tamamlandı sayılıp kaydedilsin mi?
+Tamam: sayılır, İptal: antrenmana dön`))return;
+    for(const x of w.ex)for(const t of x.sets)if(gSetOk(t))t.done=true;
+  }
   if(!w.ex.some(x=>x.sets.some(t=>t.done&&gSetOk(t))))return toast(w.ex.length?"Kaydedilmedi: değeri girilmiş set yok. Tekrar ya da süre gir, ✓ koy; vazgeçtiysen Antrenmanı iptal et":"Kaydedilmedi: antrenmanda egzersiz yok. Egzersiz ekle ya da Antrenmanı iptal et");
   for(const x of w.ex)x.sets=x.sets.filter(s=>s.done);
   w.ex=w.ex.filter(x=>x.sets.length);
