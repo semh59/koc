@@ -111,6 +111,15 @@ const Algo=(()=>{
     if(Math.abs(slope)<0.05||Math.sign(slope)!==Math.sign(d))return null;
     const w=d/slope;return w>104?null:Math.ceil(w);
   }
+  /* Adım istatistiği. vals: eskiden yeniye günlük toplamlar. Ortalama yalnız kayıtlı (>0) günlerden; seri: hedefi art arda geçen gün,
+     bugün henüz hedefin altındaysa seri bozulmuş sayılmaz, dünden geriye sayılır. */
+  function stepStats(vals,goal){
+    const rec=vals.filter(v=>v>0);
+    let best=-1;vals.forEach((v,i)=>{if(v>0&&(best<0||v>vals[best]))best=i});
+    let i=vals.length-1;if(i>=0&&vals[i]<goal)i--;
+    let streak=0;while(i>=0&&vals[i]>=goal){streak++;i--}
+    return {n:rec.length,avg:rec.length?rec.reduce((a,b)=>a+b,0)/rec.length:0,best,hit:vals.filter(v=>v>=goal).length,streak};
+  }
   const proteinRange=kg=>[Math.round(1.6*kg),Math.round(2.2*kg)];
 
   /* Salon */
@@ -165,6 +174,6 @@ const Algo=(()=>{
     }
     return r;
   }
-  return {KCAL_PER_KG,dayNum,fdate,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,lossBlock,etaWeeks,isLosing,goalEta,proteinRange,est1RM,volume,nextTarget,roundTo,plates,warmup};
+  return {KCAL_PER_KG,dayNum,fdate,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,lossBlock,etaWeeks,isLosing,goalEta,proteinRange,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
 })();
 if(typeof module!=="undefined")module.exports=Algo;
