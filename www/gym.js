@@ -176,13 +176,6 @@ function gNewPR(w,exId,s){
 }
 const gWorkVol=w=>w.ex.reduce((s,x)=>s+Algo.volume(x.sets.filter(t=>t.done)),0);
 const gWorkSets=w=>w.ex.reduce((s,x)=>s+x.sets.filter(t=>t.done&&gSetOk(t)).length,0);
-function gWeekSets(){
-  const from=Date.now()-7*864e5,m={};
-  for(const w of S.workouts)if(gDone(w)&&w.t0>=from)for(const x of w.ex){
-    const g=gEx(x.id).g;m[g]=(m[g]||0)+x.sets.filter(t=>t.done&&gSetOk(t)).length;
-  }
-  return m;
-}
 function gWeekRegions(){
   const from=Date.now()-7*864e5,m={};
   for(const w of S.workouts)if(gDone(w)&&w.t0>=from)for(const x of w.ex){
@@ -220,8 +213,8 @@ function gHome(){
     const last=done.find(w=>w.tpl===t.id);
     return `<div class="card trow"><button class="tmain" data-g="start:${t.id}"><b>${esc(t.name)}</b><span class="mut">${esc(t.ex.map(i=>gEx(i).n).join(", ")||"Egzersiz yok")}</span><span class="mut">${last?"Son: "+gDate(last.day):"Henüz yapılmadı"}</span></button><button class="del" data-g="tedit:${t.id}" aria-label="Şablonu düzenle">✎</button><button class="del" data-g="tdel:${t.id}" aria-label="Şablonu sil">✕</button></div>`;
   }).join("");
-  const wk=gWeekSets(),mx=Math.max(14,...Object.values(wk));
-  const bars=Object.keys(wk).length?`<h2>Bu hafta, kas grubuna göre set</h2><div class="card">${GROUPS.concat(["Diğer"]).filter(g=>wk[g]).map(g=>`<div class="gbar"><span>${g}</span><span class="bar"><i style="width:${(wk[g]/mx*100).toFixed(0)}%"></i></span><span class="num">${wk[g]}</span></div>`).join("")}<p class="hint">Kas grubu başına haftada 10 ile 20 set çoğu kişi için makul bir aralıktır.</p></div>`:"";
+  const wk=gWeekRegions(),rk=Object.keys(wk).sort((a,b)=>wk[b]-wk[a]),mx=Math.max(14,...Object.values(wk));
+  const bars=rk.length?`<h2>Bu hafta, bölgeye göre set</h2><div class="card">${rk.map(g=>`<div class="gbar"><span>${g}</span><span class="bar"><i style="width:${(wk[g]/mx*100).toFixed(0)}%"></i></span><span class="num">${wk[g]}</span></div>`).join("")}<p class="hint">Bölge başına haftada 10 ile 20 set çoğu kişi için makul bir aralıktır.</p></div>`:"";
   const note=gWeekNote(gWeekRegions(),done.length>0).map(l=>`<p class="hint">${l}</p>`).join("");
   const rec=gHistHtml(done);
   return `<button class="btn" data-g="start:">Boş antrenman başlat</button>
