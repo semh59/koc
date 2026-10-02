@@ -40,11 +40,20 @@ function sheetPrivacy(){
   ${st.consent?`<button class="btn ghost" data-pv="revoke">Rızamı geri al</button>`:consentOk()?`<button class="btn" data-pv="consent">Açık rızamı veriyorum</button>`:""}</div>
   <button class="btn ghost" data-pv="close" style="margin-top:8px">Kapat</button>`);
 }
+/* Her tablo ayrı paylaşılır: zincirleme paylaşım ekranı ikinci dosyada açılmayabilir. */
+const pvCsv=()=>CsvLib.files(S,{exName:id=>gEx(id).n,vctx:r=>r.k==="t"?VitalsLib.sesName(r.ses):VitalsLib.ctxName(r.ctx)});
+function sheetCsv(){
+  openSheet(`<h3>Tabloya aktar (CSV)</h3><p class="mut sm">Excel ve Google Sheets'te açılır. Dosya şifresizdir, paylaştığın yere gider; yedek yerine geçmez.</p>
+  ${pvCsv().map((f,i)=>`<div class="row" style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)"><span style="flex:1;min-width:0"><b>${f.label}</b><small class="mut sm" style="display:block">${f.n} satır</small></span><button class="chip" data-pv="csvsh:${i}" ${f.n?"":"disabled"} aria-label="${f.label} paylaş">Paylaş</button></div>`).join("")}
+  <button class="btn ghost" data-pv="close" style="margin-top:12px">Kapat</button>`);
+}
 document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-pv]");if(!el)return;
   const [a,arg]=el.dataset.pv.split(":");
   if(a==="open")sheetPrivacy();
   else if(a==="close")closeSheet();
   else if(a==="del")pvDelete(+arg);
+  else if(a==="csv")sheetCsv();
+  else if(a==="csvsh"){const f=pvCsv()[+arg];shareFile(`neowell-${f.key}-${dayKey()}.csv`,f.label,"text/csv",f.build(),true)}
   else if(a==="consent"||a==="revoke"){cConsent(a==="consent");sheetPrivacy()}
 });
