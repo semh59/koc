@@ -646,7 +646,7 @@ function viewAyar(){
 function render(){
   const v=$("#view"),onb=obNeeded();
   document.body.classList.toggle("ob",onb);
-  if(onb){$("#ttl").textContent="NeoWell";$("#streak").innerHTML="";$("#composer").hidden=true;v.innerHTML=obView();return}
+  if(onb){$("#ttl").textContent="NeoWell";$("#streak").innerHTML="";$("#composer").hidden=true;v.innerHTML=obView();widgetPush();return}
   const ttl={bugun:`${new Date().getDate()} ${AY[new Date().getMonth()]}, ${GUN[new Date().getDay()]}`,koc:"Koç",salon:"Salon",trend:"Trend",ayar:"Ayarlar",egz:"Egzersizler",adim:"Adım raporu",tahlil:"Tahlil takibi",tansiyon:"Tansiyon",seker:"Şeker",ilac:"İlaçlar"}[tab];
   $("#ttl").textContent=ttl;
   const n=streak();$("#streak").innerHTML=n>0?`<b class="num">${n}</b> günlük seri`:"";
