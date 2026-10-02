@@ -1,6 +1,7 @@
 const L=require("../www/loglib.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 ok("copyNutr yalnız sayısal makroları taşır",JSON.stringify(L.copyNutr({p:5,c:null,f:0,text:"x"},{}))==='{"p":5,"f":0}');
+ok("copyNutr: öğün başı sodyum 100.000 mg sınırına kadar korunur (100 g başı 40.000 sınırı ayrı)",L.copyNutr({na:60000},{}).na===60000&&L.copyNutr({na:100001},{}).na===undefined);
 const e=(day,id,text,v,x)=>Object.assign({type:"yemek",day,id,text,v},x);
 let r=L.recents([e("2026-10-01",1,"Menemen",200),e("2026-10-01",2,"menemen",210,{p:9}),e("2026-09-30",3,"Ekmek",90),e("2026-08-01",4,"Eski",50),e("2026-10-03",5,"Gelecek",5),{type:"su",day:"2026-10-01",id:6,text:"x",v:250}],"2026-10-02");
 ok("recents metne göre tekilleştirir, en yeniyi tutar, sıralar, 30 günden eskiyi ve geleceği almaz",JSON.stringify(r.map(x=>[x.text,x.v]))==='[["menemen",210],["Ekmek",90]]'&&r[0].p===9,r);

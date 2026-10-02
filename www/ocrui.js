@@ -64,14 +64,18 @@ function etiketSave(){
   for(const [k] of ETX)f[k]=v("e"+k);
   for(const [id,x] of [["ek",f.k],["ep",f.p],["ec",f.c],["ef",f.f],...ETX.map(([k])=>["e"+k,f[k]])])if(g(id)!==""&&x==null)return toast("Sayı olarak yaz, örneğin 8,5");
   if(f.k==null)return toast("Kalori gerekli: etiketteki 100 g başına kcal değerini yaz");
+  const ew=document.getElementById("ewarn");
+  if(f.sg!=null&&f.c!=null&&f.sg>f.c+0.5){ew.textContent="Şeker, karbonhidrattan büyük olamaz: değerleri etiketle karşılaştır ya da şeker kutusunu boş bırak.";return}
+  const big=ETX.find(([k])=>f[k]!=null&&!(f[k]>=0&&f[k]<=(k==="na"?40000:100)));
+  if(big){ew.textContent=`${big[1]} değeri 100 g için makul değil (${big[0]==="na"?"0-40.000 mg":"0-100 g"}).`;return}
   const c=LabelLib.check(n,f);
   if(c.status==="bad"&&!etiketOk){
-    etiketOk=true;document.getElementById("ewarn").textContent=`${c.why}. Fotoğraf yanlış okunmuş olabilir: değerleri etiketle karşılaştır. Doğruysa tekrar Kaydet'e dokun.`;return;
+    etiketOk=true;ew.textContent=`${c.why}. Fotoğraf yanlış okunmuş olabilir: değerleri etiketle karşılaştır. Doğruysa tekrar Kaydet'e dokun.`;return;
   }
   if(!(f.k>=0&&f.k<=900))return toast("Kalori 100 g için 0-900 olmalı");
   const food={n,k:Math.round(f.k*10)/10,u:[["100 g",100]]};
   for(const m of ["p","c","f"])if(f[m]!=null&&f[m]>=0&&f[m]<=100)food[m]=f[m];
-  for(const m of ["fb","sg","na"])if(c.food&&c.food[m]!=null)food[m]=c.food[m];
+  for(const [m] of ETX)if(f[m]!=null)food[m]=Math.round(f[m]*10)/10;
   if(!myFoodPut(food))return toast("Besin listesi dolu (en çok 200)");
   save();
   const i=S.myFoods.findIndex(m=>m.n===n);

@@ -549,8 +549,8 @@ function viewBugun(){
   const meals=S.entries.filter(e=>e.type==="yemek"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
   const pr=cur!=null?Algo.proteinRange(cur):null;
   const macro=meals.some(e=>e.p||e.c||e.f)?`<div class="macro num">Protein <b>${Math.round(mac("p"))}</b>${pr?` / ${pr[0]}–${pr[1]}`:""} g${meals.some(e=>e.c!=null||e.f!=null)?` · Karbonhidrat <b>${Math.round(mac("c"))}</b> g · Yağ <b>${Math.round(mac("f"))}</b> g`:""}</div>`:"";
-  const fm=meals.filter(e=>["fb","sg","na"].some(k=>e[k]!=null));
-  const micro=fm.length?`<div class="macro num">${["fb","sg","na"].map(k=>`${NLBL[k][0].toUpperCase()+NLBL[k].slice(1)} <b>${Math.round(mac(k))}</b> ${NUNIT(k)}`).join(" · ")} (${fm.length}/${meals.length} öğünde veri var)</div>`:"";
+  const mi=["fb","sg","na"].map(k=>[k,meals.filter(e=>e[k]!=null).length]).filter(x=>x[1]).map(([k,n])=>`${NLBL[k][0].toUpperCase()+NLBL[k].slice(1)} <b>${Math.round(mac(k))}</b> ${NUNIT(k)} (${n}/${meals.length})`);
+  const micro=mi.length?`<div class="macro num">${mi.join(" · ")} <span class="mut sm">öğünde veri var</span></div>`:"";
   const actions=`<div class="actions">
     <button class="act su" data-act="su"><span class="ic">💧</span>+${st.glass}</button>
     <button class="act" data-act="kilo"><span class="ic">⚖️</span>Kilo</button>

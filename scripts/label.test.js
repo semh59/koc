@@ -29,6 +29,34 @@ ok("100 g sütunu seçilir (lif, şeker, tuz)",(f=>f.fb===3&&f.sg===25&&f.na===4
 ok("içindekiler satırındaki şeker/tuz sayı sayılmaz",(f=>f.sg===undefined&&f.na===undefined)(X(["Şeker, tuz, un"])));
 ok("check: lif/şeker/sodyum food'a geçer, şeker>karbonhidrat atılır",(c=>c.food.na===480&&c.food.fb===3&&c.food.sg===undefined)(LB.check("T",{k:440,p:8.5,c:10,f:13,fb:3,sg:25,na:480})));
 
+// gerçekçi etiket metinleri (inceleme regresyonu): [ad, satırlar, beklenen alanlar]
+const reg=[
+  ["karbonhidrat ve 'bunun şekere' aynı satır",["Enerji 250 kcal","Karbonhidrat 12 g, bunun şekere 4 g"],{c:12,sg:4}],
+  ["Tuz 0,5 g",["Enerji 250 kcal","Tuz 0,5 g"],{na:200}],
+  ["Diyet lifi virgüllü",["Enerji 250 kcal","Diyet lifi 2,5 g"],{fb:2.5}],
+  ["Sodyum 200 mg",["Enerji 250 kcal","Sodyum 200 mg"],{na:200}],
+  ["Tuz <0,5 g",["Enerji 250 kcal","Tuz <0,5 g"],{na:200}],
+  ["kJ/kcal ve şeker",["Enerji 1046 kJ / 250 kcal","Şekerler 4 g"],{k:250,sg:4}],
+  ["porsiyon sütunu önce",["Besin öğeleri Porsiyon (25 g) 100 g","Enerji 125 kcal 500 kcal","Karbonhidrat 15 g 60 g","- Şekerler 10 g 40 g","Lif 1 g 4 g","Tuz 0,1 g 0,4 g"],{k:500,c:60,sg:40,fb:4,na:160}],
+  ["İngilizce, noktalı ondalık",["Energy 250 kcal","Sugars 4.5 g","Salt 0.75 g","Fibre 3.2 g"],{sg:4.5,na:300,fb:3.2}],
+  ["doymuş yağ ve şekerler alt satırı",["Enerji 500 kcal","Yağ 30 g","- Doymuş yağ 10 g","Karbonhidrat 50 g","- Şekerler 30 g","Protein 5 g"],{f:30,c:50,sg:30}],
+  ["Sodyum gram cinsinden mg'a çevrilir",["Enerji 250 kcal","Sodyum 0,2 g"],{na:200}],
+  ["sarılmış içindekiler satırı şeker/tuz sayılmaz",["İçindekiler: un, bitkisel yağ,","şeker (%12), tuz (%1,5), maya","Enerji 400 kcal","Karbonhidrat 70 g","Şekerler 5 g","Tuz 0,8 g"],{c:70,sg:5,na:320}],
+  ["içindekilerin tuzla başlayan devamı sayılmaz",["Enerji 400 kcal","tuz (%1,5), maya"],{na:undefined}],
+  ["'bunlardan şekerler' satırı",["Enerji 400 kcal","Karbonhidrat 70 g","bunlardan şekerler 5 g"],{c:70,sg:5}],
+  ["şeker alkolleri şeker sayılmaz, sonraki Şekerler okunur",["Enerji 230 kcal","Karbonhidrat 60 g","Şeker alkolleri (polioller) 55 g","Şekerler 0 g"],{sg:0}],
+  ["önce gelen sodyum korunur",["Enerji 250 kcal","Sodyum 400 mg","Tuz 1 g"],{na:400}],
+  ["ambalaj iddiası lif/şeker sayılmaz",["Lif kaynağı! %30 daha az şeker","Enerji 250 kcal","Lif 6 g","Şekerler 9 g"],{fb:6,sg:9}],
+  ["birimsiz tuz gram sayılır",["Enerji 250 kcal","Tuz 0,52"],{na:208}],
+  ["birimsiz sodyum okunmaz",["Enerji 250 kcal","Sodyum 0,2"],{na:undefined}],
+  ["iki sütunda 'bunun şekere' 100 g sütunu",["100 g'da Porsiyonda","Enerji 400 kcal 100 kcal","Karbonhidrat 12 g 3 g, bunun şekere 4 g 1 g"],{k:400,c:12,sg:4}],
+  ["Tuz* 450 mg",["Enerji 250 kcal","Tuz* 450 mg"],{na:180}],
+  ["Tuz 50 mg",["Enerji 250 kcal","Tuz 50 mg"],{na:20}],
+  ["Sodyum ve %RI",["Enerji 250 kcal","Sodyum 200 mg %10"],{na:200}],
+  ["şeker satırında önce %RI",["Enerji 250 kcal","Şekerler %5 4 g"],{sg:4}]
+];
+for(const [n,l,exp] of reg){const f=P(l);ok("etiket: "+n,Object.keys(exp).every(k=>f[k]===exp[k]),f)}
+
 // tutarlılık
 const chk=(f,n)=>LB.check(n||"Test",f).status;
 ok("tutarlı etiket ok",chk({k:440,p:8.5,c:70,f:13})==="ok");

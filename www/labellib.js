@@ -20,26 +20,30 @@ const LabelLib=(()=>{
     }
     return 0;
   }
+  /* [alan, satır başı, [birim, çarpan] seçenekleri, birimsiz sayının çarpanı]. Lif, şeker ve sodyumda birim zorunlu:
+     içindekiler satırındaki "%12" ya da ambalajdaki "%30 daha az şeker" sayı sayılmasın. */
   const ROWS=[
     ["k",/^(enerji|energy|kalori|energie)\b/],
-    ["f",/^(toplam\s+)?(yag|yaglar|fat)\b/],
-    ["c",/^(toplam\s+)?(karbonhidrat|karbonhidratlar|carbohydrate|carbohydrates)\b/],
-    ["p",/^(protein|proteinler)\b/],
-    ["fb",/^(diyet\s+lifi|lif|lifler|posa|dietary\s+fib(?:re|er)|fib(?:re|er))\b/],
-    ["sg",/^(toplam\s+)?(seker|sekerler|sugar|sugars)\b/],
-    ["na",/^(tuz|salt)\b/,"g",400],
-    ["na",/^(sodyum|sodium)\b/,"mg",1]
+    ["f",/^(toplam\s+)?(yag|yaglar|fat)\b/,[["g",1]],1],
+    ["c",/^(toplam\s+)?(karbonhidrat|karbonhidratlar|carbohydrate|carbohydrates)\b/,[["g",1]],1],
+    ["p",/^(protein|proteinler)\b/,[["g",1]],1],
+    ["fb",/^(diyet\s+lifi|lif|lifler|posa|dietary\s+fib(?:re|er)|fib(?:re|er))\b/,[["g",1]],null],
+    ["sg",/^(toplam\s+)?(seker\w*|sugars?)\b/,[["g",1]],null],
+    ["na",/^(tuz|salt)\b/,[["mg",0.4],["g",400]],400],
+    ["na",/^(sodyum|sodium)\b/,[["mg",1],["g",1000]],null]
   ];
-  const SKIPF=/doymus|saturated|trans|tekli|coklu|mono|poli/;
+  const SKIP={f:/doymus|saturated|trans|tekli|coklu|mono|poli/,sg:/alkol|poliol|polyol/};
+  /* "Karbonhidrat 12 g, bunun şekere 4 g": alt kalem ayrı satır okunur, yoksa iki sütunlu etikette şeker değeri karbonhidrat sanılır. */
+  const SUB=/\s*[,;(]?\s*\b(?:bunun|bunlardan|of which)\s+/i;
+  const split=l=>{const m=SUB.exec(l);return m?[l.slice(0,m.index),l.slice(m.index+m[0].length)].filter(Boolean):[l]};
   function pick(arr,i){return arr.length?(arr[i]!=null?arr[i]:arr[0]):null}
   /* lines: gruplanmış satır metinleri. Döner {food:{k,p,c,f}, found:[...], note}. */
   function parse(lines){
     const ci=col100(lines),res={},found=[];
-    for(const raw of lines){
+    for(const raw of lines.flatMap(split)){
       const f=fold(raw).replace(/^[\s\-–•*:]+/,"");
-      for(const [key,re,unit="g",mul=1] of ROWS){
-        if(res[key]!=null||!re.test(f))continue;
-        if(key==="f"&&SKIPF.test(f))continue;
+      for(const [key,re,units,bare] of ROWS){
+        if(res[key]!=null||!re.test(f)||(SKIP[key]&&SKIP[key].test(f)))continue;
         let v=null;
         if(key==="k"){
           const kc=pairs(raw,"kcal"),kj=pairs(raw,"kj");
@@ -49,14 +53,12 @@ const LabelLib=(()=>{
             if(n!=null)v=/kj/i.test(raw)&&!/kcal/i.test(raw)?n/4.184:n;
           }
         }else{
-          const g=pairs(raw,unit);
-          v=pick(g,ci);
-          if(v==null){// "Protein 8,5" gibi birimsiz sayı
-            const rest=raw.replace(/^\D*/,""),m=[...rest.matchAll(new RegExp(NUM,"g"))].map(x=>toN(x[1]));
-            v=pick(m,ci);
+          for(const [u,mul] of units){const g=pick(pairs(raw,u),ci);if(g!=null){v=g*mul;break}}
+          if(v==null&&bare!=null){// "Protein 8,5" gibi birimsiz sayı; "(%1,5)" gibi yüzde sayılmaz
+            const rest=raw.replace(/%\s*\d+(?:[.,]\d+)?/g,"").replace(/^\D*/,""),n=pick([...rest.matchAll(new RegExp(NUM,"g"))].map(x=>toN(x[1])),ci);
+            if(n!=null)v=n*bare;
           }
         }
-        if(v!=null&&key!=="k")v*=mul;
         if(v!=null){res[key]=Math.round(v*10)/10;found.push(key)}
       }
     }
