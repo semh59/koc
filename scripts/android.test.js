@@ -41,4 +41,14 @@ ok("ekran açık: keepAwake eklenti metodu, UI iş parçacığında bayrak ekler
   ok("yedek klasörü: SAF klasör seçimi, kalıcı izin yalnız seçilene, adres JS'e verilmez ve loglanmaz",/ACTION_OPEN_DOCUMENT_TREE/.test(bf)&&/takePersistableUriPermission\(u, FLAGS\)/.test(bf)&&/release\(u\);/.test(bf)&&!/Log\.|printStackTrace|System\.out/.test(bf)&&!/r\.put\("(uri|tree)"/.test(bf)&&!/getMessage/.test(bf));
   ok("yedek klasörü: yalnız yedek adlı dosyalar yazılır ve silinir",/NAME_RE = "neowell-yedek-\\\\d\{4\}-\\\\d\{2\}-\\\\d\{2\}\\\\\.json"/.test(bf)&&/!name\.matches\(NAME_RE\)/.test(bf)&&/n\.matches\(NAME_RE\)\) out\.put/.test(bf)&&/Uri doc = have\.get\(names\.getString\(i\)\)/.test(bf));
 }
+{ // D-Ant15: rehberli mod sesli komutu
+  const sp=rd("assets/android/SpeechPlugin.java"),diag=rd("www/index.html").match(/NW-DIAG "\+\[([^\]]+)\]/)[1],init=sp.slice(sp.indexOf("new TextToSpeech("),sp.indexOf("ready = true;"));
+  ok("ses: eklenti kopyalanır, kaydedilir, NW-DIAG ve smoke listesinde",/"SpeechPlugin","BackupFolderPlugin"\]\)fs\.copyFileSync/.test(patch)&&/registerPlugin\(SpeechPlugin\.class\);/.test(onCreate)&&diag.includes('"Speech"')&&/ Speech Widget BackupFolder; do/.test(rd("scripts/smoke.sh"))&&/@CapacitorPlugin\(name = "Speech"\)/.test(sp));
+  ok("ses: Android 11+ TTS motor sorgusu manifestte (paket görünürlüğü), bir kez eklenir",patch.includes(`if (!x.includes("android.intent.action.TTS_SERVICE"))`)&&patch.includes('<queries><intent><action android:name="android.intent.action.TTS_SERVICE"/></intent></queries>'));
+  ok("ses: speak, stop, isAvailable eklenti metodu; hata yerine spoken:false, reject yok",["speak","stop","isAvailable"].every(m=>new RegExp(`@PluginMethod\\s+public void ${m}\\(PluginCall call\\)`).test(sp))&&/r\.put\("spoken", ok\)/.test(sp)&&!/call\.reject|throw /.test(sp));
+  ok("ses: init asenkron, başarısızlıkta tts'e dokunulmaz, hazır olmadan konuşulmaz",/status != TextToSpeech\.SUCCESS \|\| tts == null\) return;/.test(init)&&/if \(ready && text != null/.test(sp)&&/if \(ready\) tts\.stop\(\)/.test(sp));
+  ok("ses: Türkçe (tr-TR) varsa seçilir, yoksa motorun varsayılan dili",/Locale\.forLanguageTag\("tr-TR"\)/.test(init)&&/isLanguageAvailable\(tr\) >= TextToSpeech\.LANG_AVAILABLE\) turkish = tts\.setLanguage\(tr\)/.test(init));
+  ok("ses: müzik kısa kısılır (GAIN_TRANSIENT_MAY_DUCK), son söz bitince odak bırakılır, API 26 ayrımı",(sp.match(/AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK/g)||[]).length===2&&/Build\.VERSION\.SDK_INT >= 26/.test(sp)&&/abandonAudioFocusRequest/.test(sp)&&/if \(lastId\.equals\(id\)\) abandonFocus\(\)/.test(sp)&&["onDone","onError","onStop"].every(m=>new RegExp(`public void ${m}\\(String id[^)]*\\) \\{ release\\(id\\); \\}`).test(sp)));
+  ok("ses: kapanışta motor kapatılır",/protected void handleOnDestroy\(\) \{\s*if \(tts != null\) tts\.shutdown\(\);/.test(sp));
+}
 process.exit(bad?1:0);

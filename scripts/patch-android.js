@@ -34,6 +34,10 @@ if (!x.includes('android:allowBackup="false"')) {
   if (!x.includes('android:allowBackup="true"')) throw new Error("allowBackup bulunamadı: şablon değişmiş, yedek kapatılamadı");
   x = x.replace('android:allowBackup="true"', 'android:allowBackup="false"\n        android:fullBackupContent="@xml/nw_backup_rules"\n        android:dataExtractionRules="@xml/nw_data_rules"');
 }
+// Android 11+ paket görünürlüğü: TTS motoru sorgusu bildirilmezse TextToSpeech motor bulamaz, rehberli mod sessiz kalır.
+if (!x.includes("android.intent.action.TTS_SERVICE")) {
+  x = x.replace("</manifest>", '    <queries><intent><action android:name="android.intent.action.TTS_SERVICE"/></intent></queries>\n</manifest>');
+}
 fs.writeFileSync(p, x);
 console.log("Manifest güncellendi.");
 const res="android/app/src/main/res";
@@ -42,7 +46,7 @@ console.log("Simgeler yerleştirildi.");
 
 // API anahtarı kasası: Keystore eklentisini kopyala, MainActivity'ye kaydet. Keystore AES-GCM için API 23 gerekir.
 const jdir="android/app/src/main/java/com/neowell/app";
-for(const f of ["KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin","QuickMath","QuickLogPlugin","MotionMath","MotionStore","MotionGpsService","MotionReceiver","MotionPlugin","NeoWidget","WidgetPlugin","WaterReceiver","BackupFolderPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
+for(const f of ["KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin","QuickMath","QuickLogPlugin","MotionMath","MotionStore","MotionGpsService","MotionReceiver","MotionPlugin","NeoWidget","WidgetPlugin","WaterReceiver","SpeechPlugin","BackupFolderPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
 fs.writeFileSync(`${jdir}/MainActivity.java`,`package com.neowell.app;
 
 import android.content.Intent;
@@ -69,6 +73,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(QuickLogPlugin.class);
         registerPlugin(MotionPlugin.class);
         registerPlugin(WidgetPlugin.class);
+        registerPlugin(SpeechPlugin.class);
         registerPlugin(BackupFolderPlugin.class);
         super.onCreate(savedInstanceState);
         medChannel();
