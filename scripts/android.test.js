@@ -24,6 +24,8 @@ ok("ekran açık: keepAwake eklenti metodu, UI iş parçacığında bayrak ekler
   ok("izin: USE_EXACT_ALARM ve kullanılmayan FLASHLIGHT istenmez, SCHEDULE_EXACT_ALARM kalır",!/USE_EXACT_ALARM"|FLASHLIGHT/.test(perms)&&perms.includes('"SCHEDULE_EXACT_ALARM"'));
   const www=fs.readdirSync(path.join(__dirname,"../www")).filter(f=>/\.(js|html)$/.test(f)).map(f=>rd("www/"+f)).join("\n");
   ok("izin: fener (torch) kullanılmıyor, FLASHLIGHT gereksiz",!/enableTorch|toggleTorch/.test(www));
+  const java=fs.readdirSync(path.join(__dirname,"../assets/android")).filter(f=>f.endsWith(".java")).map(f=>[f,rd("assets/android/"+f)]);
+  ok("izin: USE_EXACT_ALARM olmadan tam alarm kuran Java kodu reddi yakalar (SecurityException ya da canScheduleExactAlarms)",java.filter(([,s])=>/setExact|setAlarmClock/.test(s)).every(([,s])=>/catch \(SecurityException|canScheduleExactAlarms/.test(s)));
   // D-Veri3: APK boyutu
   ok("boyut: ABI arm64, armeabi-v7a ve smoke emülatörü için x86_64; 32 bit x86 yok",patch.includes('ndk { abiFilters "arm64-v8a", "armeabi-v7a", "x86_64" }')&&/arch: x86_64/.test(rd(".github/workflows/apk.yml")));
   ok("boyut: gömülü barkod motoru paketlenmez ve uygulama onu çağırmaz (yalnız scan)",patch.includes('excludes += ["**/libbarhopper_v3.so"]')&&!/startScan|readBarcodesFromImage/.test(www)&&/bs\.scan\(/.test(www));

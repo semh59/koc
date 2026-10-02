@@ -77,7 +77,8 @@ jobs:
           if grep -qE "USE_EXACT_ALARM|FLASHLIGHT" manifest.txt; then echo "PLAY'E UYGUN OLMAYAN İZİN VAR"; exit 1; fi
           ls -l neowell.apk
           unzip -lv neowell.apk | awk 'NR>3 && length($7)==8 && $7 ~ /^[0-9a-f]+$/ {split($8,p,"/"); k=(p[1]=="lib"||p[1]=="assets")?p[1]"/"p[2]:p[1]; s[k]+=$3} END {for (k in s) printf "%8.2f MB  %s\n", s[k]/1e6, k}' | sort -rn | head -12
-          if unzip -l neowell.apk | grep -qE "lib/x86/|libbarhopper"; then echo "APK KÜÇÜLTMESİ UYGULANMADI"; exit 1; fi
+          unzip -l neowell.apk > apk-list.txt
+          if grep -qE "lib/x86/|libbarhopper" apk-list.txt; then echo "APK KÜÇÜLTMESİ UYGULANMADI"; exit 1; fi
 
       - uses: actions/upload-artifact@v4
         with:

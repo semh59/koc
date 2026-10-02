@@ -1144,7 +1144,7 @@ document.addEventListener("keydown",ev=>{
   if(ev.key==="Enter"&&ev.target.id==="cmsg"){ev.preventDefault();const i=ev.target,t=i.value;i.value="";cSend(t);return}
   if(ev.key==="Enter"&&ev.target.closest("#sheet")&&ev.target.tagName==="INPUT"){const b=$("#sheet [data-go]");if(b)b.click()}
 });
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="ayar")render()});stepsSync();render();cPlateauCheck();cFlush();cAuto();if(Date.now()-lastSched>6*36e5)scheduleReminders().then(setNotif)}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="ayar")render()});stepsSync();render();cPlateauCheck();cFlush();cAuto();if(Date.now()-lastSched>6*36e5||!exactOk)scheduleReminders().then(setNotif)}});
 
 render();
 cPlateauCheck();
