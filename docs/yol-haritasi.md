@@ -85,7 +85,7 @@ Ayrıntı ve test adımları `yapilacaklar.md`'de. Telefonda denenen tek özelli
 | D-Ant12 (yapıldı) | Hızlı set girişi | kg/tekrar ± düğmeleri ve ✓ sonrası sıradaki sete odak eklenir. | S | rekabet-egzersiz #15 | – |
 | D-Ant13 (yapıldı) | Yerel haftalık antrenman notu | Yapay zekâsız "bu hafta göğüs 6 set, aralığın altında" notu çıkar. | S | rekabet-egzersiz #17 | – |
 | D-Ant14 (yapıldı) | Ev ekipmanı profili | Öneri ve plaka hesabı eldeki dambıl ve plakalara yuvarlanır. | S | rekabet-egzersiz #18 | – |
-| D-Ant15 | Rehberli mod ve esneme akışları | Animasyon, sayaç ve sesli komutla takip edilen ev ve esneme antrenmanı sunulur. | L | rekabet-egzersiz #12, #13 | yerel TTS eklentisi |
+| D-Ant15 (yapıldı) | Rehberli mod ve esneme akışları | Animasyon, sayaç ve sesli komutla takip edilen ev ve esneme antrenmanı sunulur. | L | rekabet-egzersiz #12, #13 | yerel TTS eklentisi |
 
 ### Adım ve hareket
 | # | Ad | Değer | Emek | Kaynak | Bağımlılık / karar |
