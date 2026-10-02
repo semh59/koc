@@ -1536,6 +1536,23 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
   const as=w.document.querySelector("#view").textContent;
   ok("adım raporu: adım, ortalama, mesafe ve not görünür",as.includes("5.000")&&as.includes("7 gün ortalaması")&&as.includes("Yaklaşık mesafe")&&as.includes("kalori hedefine eklenmez"),as.slice(0,200));
   ok("adım raporu: 14 çubuk çizilir",w.document.querySelectorAll("#view svg.bars rect").length===14);
+  { // D-Adım5: aralık seçici, seri, en iyi gün, ortalama
+    ev("window.__e=structuredClone(S.entries);window.__n=S.nextId;S.entries=S.entries.filter(e=>e.type!=='adim');S.settings.stepGoal=8000");
+    const bars=()=>w.document.querySelectorAll("#view svg.bars rect").length,txt=()=>w.document.querySelector("#view").textContent;
+    ev("tab='adim';stepRange=14;render()");
+    ok("adım kaydı yoksa grafik yerine boş durum, ortalama ve seri tire/0",bars()===0&&txt().includes("Bu aralıkta adım kaydı yok")&&txt().includes("0 gün"));
+    for(const [i,v] of [[0,9000],[1,9000],[2,3000],[3,9000],[4,10000],[5,12000]])ev(`add('adim',${v},'',keyOff(-${i}))`);
+    ev("add('adim',500,'elle',keyOff(-3))");
+    ev("tab='adim';render()");
+    ok("seri bugünden geriye: bugün+dün hedef üstü, 3. gün altı -> 2",ev("Algo.stepStats([1,9000,9000],8000).streak")===2&&txt().includes("Hedef serisi")&&/Hedef serisi2 gün/.test(txt()));
+    ok("elle adım tek kez sayılır: 3 gün önce 9.500, en iyi gün 12.000 (5 gün önce)",ev("sum('adim',keyOff(-3),keyOff(-3))")===9500&&txt().includes("12.000"));
+    ok("7 gün ortalaması yalnız kayıtlı günlerden: (9000+9000+3000+9500+10000+12000)/6",txt().includes("8.750"));
+    const click=n=>{$q(`[data-sr="${n}"]`).click()};
+    click(7);ok("7 gün: 7 çubuk, Pzt..Paz kısaltmaları",bars()===7&&/Paz|Pzt|Sal|Çar|Per|Cum|Cmt/.test(w.document.querySelector("#view svg.bars").textContent));
+    click(30);ok("30 gün: 30 çubuk, ✓ işareti yok",bars()===30&&!w.document.querySelector("#view svg.bars").textContent.includes("✓"));
+    click(0);ok("Bu ay: ayın günü kadar çubuk",bars()===ev("new Date().getDate()")&&$q('[data-sr="0"]').getAttribute("aria-pressed")==="true");
+    ev("S.entries=window.__e;S.nextId=window.__n;stepRange=14;S.settings.stepGoal=8000;render()");
+  }
   ev("S.settings.heightCm=0;render()");
   ok("boy yoksa mesafe gizlenir",!w.document.querySelector("#view").textContent.includes("Yaklaşık mesafe")&&w.document.querySelector("#view").textContent.includes("boyunu gir"));
   ev("tab='adim';render()");

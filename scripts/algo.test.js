@@ -71,4 +71,10 @@ ok("ısınma setleri hesaba girmez (en son, önceki ve tek başına)",A.nextTarg
   ok("[2.5] seti: 1,25 plakası yok, 22,5 kg 20'ye iner",A.plates(22.5,20,[2.5]).made===20&&A.plates(25,20,[2.5]).side.join()==="2.5");
   ok("ısınma da envantere göre yuvarlanır",A.warmup(100,20,[20]).every(x=>(x.kg-20)%40===0)&&A.warmup(100,20,[20]).length>=1);
 }
+{ // D-Adım5
+  const a=A.stepStats([5000,9000,9000,0,9000,9000,9000],8000);
+  ok("stepStats: seri bugün dahil, 0'lı gün serisini böler",a.streak===3&&a.hit===5&&a.best===1&&a.n===6&&near(a.avg,50000/6,0.01),JSON.stringify(a));
+  ok("stepStats: bugün hedefin altındaysa seri dünden sayılır",A.stepStats([9000,9000,2000],8000).streak===2&&A.stepStats([9000,2000,9000],8000).streak===1);
+  ok("stepStats: boş veri",JSON.stringify(A.stepStats([0,0],8000))==='{"n":0,"avg":0,"best":-1,"hit":0,"streak":0}'&&A.stepStats([],8000).streak===0);
+}
 process.exit(bad?1:0);
