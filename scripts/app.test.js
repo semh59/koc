@@ -48,6 +48,68 @@ setTimeout(async()=>{
     ok("Tüm verileri sil sonrası onboarding yeniden çıkar",ev("obNeeded()")&&q("#view").textContent.includes("Adım 1/3"));
     ev("S=structuredClone(DEF);S.settings.obDone=true;tab='bugun';render()");
   }
+  { // Şablon editörü (D-Ant2)
+    const q=s=>$q(s),sh=()=>q("#sheet").textContent,set=(sel,v)=>{q(sel).value=v};
+    ev("closeSheet();S.workouts=[];S.templates=[];S.customEx=[];S.exCfg={};S.gid=1;tab='salon';render()");
+    const T=JSON.parse(ev(`JSON.stringify((()=>{const src={templates:[{id:1,name:"Eski",ex:["squat","bench"]},{id:2,name:"Yeni",ex:["squat","plank","bilinmez"],tg:{squat:{sets:4,reps:6,hi:10},plank:{sets:3,sec:45},bilinmez:{sets:3},bench:{sets:3}}},{id:3,name:"Çöp",ex:["squat","row"],tg:{squat:{sets:0,reps:"x",hi:3,sec:-1},row:{sets:3,reps:8,hi:8}}},{id:4,name:"Biçim",ex:["squat"],tg:"x"}]},c=JSON.stringify(src);const o=cleanGym(src);return {o,same:c===JSON.stringify(src)}})())`));
+    ok("cleanGym tg: geçerli hedef korunur, bilinmeyen/çıkarılmış egzersiz ve çöp değer atılır",JSON.stringify(T.o.templates[1].tg)==='{"squat":{"sets":4,"reps":6,"hi":10},"plank":{"sets":3,"sec":45}}'&&JSON.stringify(T.o.templates[2].tg)==='{"row":{"sets":3,"reps":8}}',T.o.templates);
+    ok("eski şablon (tg yok) aynı biçimde kalır, temizleyici girdiye dokunmaz",JSON.stringify(T.o.templates[0])==='{"id":1,"name":"Eski","ex":["squat","bench"]}'&&T.o.templates[3].tg===undefined&&T.same);
+    // tg'siz başlatma eski davranışta; tg'li başlatma hedefle dolar, kg önceki seanstan
+    ev(`S.workouts=[{id:5,day:'2026-09-01',t0:1000,t1:2000,name:'Eski',tpl:null,ex:[{id:'squat',note:'',sets:[{kg:100,reps:12,done:true},{kg:100,reps:12,done:true}]},{id:'plank',note:'',sets:[{kg:null,reps:null,sec:40,done:true}]}]}];S.gid=10;render()`);
+    ev("S.templates=[{id:11,name:'Tg yok',ex:['squat','plank']},{id:12,name:'Hedefli',ex:['squat','plank','bwsquat'],tg:{squat:{sets:4,reps:6,hi:10},plank:{sets:2,sec:60},bwsquat:{sets:5,reps:15}}}];render()");
+    ev("gStart(11)");let a=ev("JSON.stringify(gActive().ex.map(x=>[x.id,x.sets.length,x.sets[0].kg,x.sets[0].reps,x.sets[0].sec||0]))");
+    ok("tg'siz şablon eski gibi başlar: set sayısı geçmişten, kg ve tekrar öneriden, süre geçmişten",a==='[["squat",2,102.5,8,0],["plank",1,null,null,40]]',a);
+    ev("S.workouts=S.workouts.filter(x=>x.t1!=null);gStart(12)");a=ev("JSON.stringify(gActive().ex.map(x=>[x.id,x.sets.length,x.sets[0].kg,x.sets[0].reps,x.sets[0].sec||0]))");
+    ok("tg'li şablon: set sayısı, tekrar ve süre hedeften; kg önceki seanstan/öneriden",a==='[["squat",4,102.5,6,0],["plank",2,null,null,60],["bwsquat",5,null,15,0]]',a);
+    ev("S.workouts=S.workouts.filter(x=>x.t1!=null);render()");
+    ev("S.gid=50"); // editör: yeni şablon
+    q('[data-g="tedit:"]').click();
+    ok("Yeni şablon sayfası açılır",sh().includes("Yeni şablon")&&q("#gten")&&q('[data-g="tesave"]'));
+    q('[data-g="tesave"]').click();
+    ok("adsız şablon kaydedilmez",ev("S.templates.length")===2&&q("#toast").textContent.includes("ad"));
+    set("#gten","İtiş günü");q('[data-g="tesave"]').click();
+    ok("egzersizsiz şablon kaydedilmez",ev("S.templates.length")===2&&q("#toast").textContent.includes("egzersiz"));
+    q('[data-g="teadd"]').click();ev("gClick('addex:bench',document.body)");ev("gClick('addex:plank',document.body)");ev("gClick('addex:bench',document.body)");
+    ok("seçicide eklenenler işaretli, aynısı iki kez eklenmez, canlı antrenman oluşmaz",ev("gTe.ex.join()")==="bench,plank"&&!ev("gActive()")&&(ev("gQuery='bench'"),ev("gPickHtml()").includes("Eklendi")));
+    q('[data-g="teback"]').click();
+    ok("seçiciden dönünce editör: ad ve eklenen egzersizler korunur",q("#gten").value==="İtiş günü"&&q('[data-te="sets:1"]')&&q('[data-te="sec:1"]').value==="30"&&q('[data-te="reps:0"]').value==="8-12");
+    set('[data-te="sets:0"]',"5");set('[data-te="reps:0"]',"5");set('[data-te="sec:1"]',"45");
+    q('[data-g="temv:1:-1"]').click();
+    ok("yukarı taşı: sıra değişir, yazılan değerler yeniden çizimde kaybolmaz",ev("gTe.ex.join()")==="plank,bench"&&q('[data-te="sec:0"]').value==="45"&&q('[data-te="reps:1"]').value==="5"&&q('[data-te="sets:1"]').value==="5");
+    q('[data-g="temv:0:-1"]').click();
+    ok("ilk satırı yukarı taşımak bir şey yapmaz",ev("gTe.ex.join()")==="plank,bench");
+    q('[data-g="teadd"]').click();ev("gClick('addex:squat',document.body)");q('[data-g="teback"]').click();q('[data-g="term:2"]').click();
+    ok("çıkar: egzersiz ve hedefi taslaktan gider",ev("gTe.ex.join()")==="plank,bench"&&!("squat" in ev("gTe.tg")));
+    set('[data-te="reps:1"]',"abc");set('[data-te="sets:1"]',"99");q('[data-g="temv:1:1"]').click();
+    ok("geçersiz set/tekrar eski değeri korur",ev("gTe.tg.bench.sets")===5&&ev("gTe.tg.bench.reps")===5&&ev("gTe.tg.bench.hi")===undefined);
+    q('[data-g="tesave"]').click();
+    let t=ev("S.templates.find(x=>x.name==='İtiş günü')");
+    ok("kaydet: ad, sıra ve hedefler şablona yazılır; sayfa kapanır",t&&t.ex.join()==="plank,bench"&&t.tg.bench.sets===5&&t.tg.bench.reps===5&&t.tg.plank.sec===45&&!q("#sheet").classList.contains("on"),t);
+    ok("kayıt turu: tg kalıcı, ana ekranda şablon görünür",ev("cleanGym(JSON.parse(JSON.stringify(S))).templates.find(x=>x.name==='İtiş günü').tg.plank.sec")===45&&q("#view").textContent.includes("İtiş günü"));
+    // düzenle: kimlik ve bağ korunur
+    const id=t.id;ev(`S.workouts.push({id:20,day:'2026-09-02',t0:3000,t1:4000,name:'İtiş günü',tpl:${id},ex:[{id:'bench',note:'',sets:[{kg:60,reps:8,done:true},{kg:60,reps:7,done:true},{kg:20,reps:5,w:true,done:true}]},{id:'squat',note:'',sets:[{kg:80,reps:10,done:true}]}]});S.gid=30;render()`);
+    q(`[data-g="tedit:${id}"]`).click();
+    ok("düzenle: mevcut değerlerle açılır",q("#gten").value==="İtiş günü"&&sh().includes("Şablonu düzenle")&&q('[data-te="sets:1"]').value==="5");
+    set("#gten","İtiş B");q('[data-g="tesave"]').click();
+    ok("ad değişir, kimlik ve antrenman bağı aynı kalır",ev(`S.templates.find(x=>x.id===${id}).name`)==="İtiş B"&&ev("S.workouts.find(x=>x.id===20).tpl")===id&&ev("S.templates.filter(x=>x.name.startsWith('İtiş')).length")===1);
+    // seans sonrası güncelle (zorunlu değil)
+    ev("gSheetSummary(20)");
+    ok("özet: şablonlu antrenmanda 'şablonu güncelle' sunulur, 'şablon olarak kaydet' sunulmaz",sh().includes("Şablonu bu seansa göre güncelle")&&!sh().includes("Şablon olarak kaydet"));
+    ok("güncellemeden kapatmak şablonu değiştirmez",ev(`S.templates.find(x=>x.id===${id}).ex.join()`)==="plank,bench");
+    q(`[data-g="tplupd:20"]`).click();
+    t=ev(`S.templates.find(x=>x.id===${id})`);
+    ok("güncelle: egzersizler seans sırasında, set sayısı ısınmasız, tekrar en az tekrar; antrenman bağı sürer",t.ex.join()==="bench,squat"&&t.tg.bench.sets===2&&t.tg.bench.reps===7&&t.tg.squat.sets===1&&t.tg.squat.reps===10&&ev("S.workouts.find(x=>x.id===20).tpl")===id,t);
+    q("#tundo").click();
+    ok("güncellemeyi geri al",ev(`S.templates.find(x=>x.id===${id}).ex.join()`)==="plank,bench"&&ev(`S.templates.find(x=>x.id===${id}).tg.bench.sets`)===5);
+    ev("gSheetSummary(5)");
+    ok("şablonsuz antrenmanda 'Şablon olarak kaydet' akışı durur ve tg yazmaz",sh().includes("Şablon olarak kaydet")&&(()=>{const w0=w.prompt;w.prompt=()=>"Kayıtlı";q('[data-g="savetpl:5"]').click();w.prompt=w0;const k=ev("S.templates.find(x=>x.name==='Kayıtlı')");return k&&k.ex.join()==="squat,plank"&&k.tg===undefined&&ev("S.workouts.find(x=>x.id===5).tpl")===k.id})());
+    // silme onaylı
+    w.confirm=()=>false;const n0=ev("S.templates.length");q(`[data-g="tdel:${id}"]`).click();
+    ok("silme: onay verilmezse şablon kalır",ev("S.templates.length")===n0);
+    w.confirm=()=>true;q(`[data-g="tdel:${id}"]`).click();
+    ok("silme: onayla silinir, geri al döner",ev("S.templates.length")===n0-1&&(q("#tundo").click(),ev("S.templates.length")===n0));
+    ev("S.workouts=[];S.templates=[];closeSheet();render()");
+  }
   { // Koç ilk izlenimi (C7)
     const q=s=>$q(s),k=()=>ev("viewKoc()");
     ev("S.chat=[];S.settings.consent=false;offline=null");

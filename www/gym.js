@@ -12,7 +12,7 @@ const EXLIB=[
   {id:"curl",n:"Biceps curl",g:"Kol",inc:2},{id:"crunch",n:"Crunch",g:"Karın",inc:2.5}
 ];
 const REST_SEC=90;
-let gHistMax=20,gTim=null,gPickMax=40,restEnd=0,gQuery="",gGroup="Tümü",gNew=false,gNewGroup="Bacak";
+let gTe=null,gTeOn=false,gHistMax=20,gTim=null,gPickMax=40,restEnd=0,gQuery="",gGroup="Tümü",gNew=false,gNewGroup="Bacak";
 
 /* Kütüphane (exlib.js) + eski 16 egzersiz: eski kimlikler ve adlar aynen korunur, kütüphane alanları (bölge, tür, şekil) eklenir. */
 const EXREG=["Göğüs","Sırt","Omuz","Biseps","Triseps","Ön kol","Karın","Bel","Kalça","Ön bacak","Arka bacak","Baldır","İç-dış bacak","Trapez","Boyun","Tüm vücut"];
@@ -89,7 +89,16 @@ function cleanGym(r){
   let seen=false;for(const w of out.workouts)if(w.t1==null){if(seen)w.t1=w.t0;seen=true}
   for(const t of (Array.isArray(r.templates)?r.templates:[])){
     if(!t||!idOk(t.id)||typeof t.name!=="string"||!Array.isArray(t.ex))continue;
-    out.templates.push({id:t.id,name:t.name.slice(0,60),ex:t.ex.filter(i=>known.has(i))});maxId=Math.max(maxId,t.id);
+    const ex=t.ex.filter(i=>known.has(i)),tg={},g=t.tg&&typeof t.tg==="object"?t.tg:{},iv=(v,lo,hi)=>Number.isInteger(v)&&v>=lo&&v<=hi;
+    for(const i of ex){
+      const a=g[i],o={};if(!a||typeof a!=="object")continue;
+      if(iv(a.sets,1,10))o.sets=a.sets;
+      if(iv(a.reps,1,200)){o.reps=a.reps;if(iv(a.hi,a.reps+1,200))o.hi=a.hi}
+      if(iv(a.sec,1,7200))o.sec=a.sec;
+      if(Object.keys(o).length)tg[i]=o;
+    }
+    const o={id:t.id,name:t.name.slice(0,60),ex};if(Object.keys(tg).length)o.tg=tg;
+    out.templates.push(o);maxId=Math.max(maxId,t.id);
   }
   out.gid=Math.max(maxId+1,idOk(r.gid)?r.gid:1);
   return out;
@@ -106,16 +115,16 @@ function gSuggest(exId){
   return Algo.nextTarget(h.sets,Object.assign({lo:8,hi:12,inc:gEx(exId).inc,prev:old.slice(0,2).map(x=>x.sets)},S.exCfg[exId]));
 }
 const GSEC={t:30,i:30,c:600};
-function gAddEx(w,exId){
-  const kind=gKind(exId);
+/* tg: şablon hedefi {sets,reps,sec}. Varsa set sayısı, tekrar ve süre ondan gelir; kg yine önceki seanstan/öneriden. */
+function gAddEx(w,exId,tg){
+  const kind=gKind(exId),t=tg||{},h=gHistory(exId)[0],sets=[];
   if(kind==="t"||kind==="i"||kind==="c"){
-    const h=gHistory(exId)[0],sec=h&&h.sets[0].sec||GSEC[kind],sets=[];
-    for(let i=0;i<(kind==="c"?1:h?Math.min(h.sets.length,6):kind==="i"?4:3);i++)sets.push({kg:null,reps:null,sec,done:false});
-    w.ex.push({id:exId,note:"",sets});return;
+    const sec=t.sec||h&&h.sets[0].sec||GSEC[kind],n=kind==="c"?1:t.sets||(h?Math.min(h.sets.length,6):kind==="i"?4:3);
+    for(let i=0;i<n;i++)sets.push({kg:null,reps:null,sec,done:false});
+  }else{
+    const sug=gSuggest(exId),n=t.sets||(h?Math.min(Math.max(h.sets.length,1),6):3);
+    for(let i=0;i<n;i++)sets.push({kg:sug?sug.kg:null,reps:t.reps||(sug?sug.reps:null),done:false});
   }
-  const h=gHistory(exId)[0],sug=gSuggest(exId);
-  const n=h?Math.min(Math.max(h.sets.length,1),6):3,sets=[];
-  for(let i=0;i<n;i++)sets.push({kg:sug?sug.kg:null,reps:sug?sug.reps:null,done:false});
   w.ex.push({id:exId,note:"",sets});
 }
 function gBest(w,exId){
@@ -182,7 +191,7 @@ function gHome(){
   const done=S.workouts.filter(gDone).sort((a,b)=>b.t0-a.t0);
   const tpl=S.templates.map(t=>{
     const last=done.find(w=>w.tpl===t.id);
-    return `<div class="card trow"><button class="tmain" data-g="start:${t.id}"><b>${esc(t.name)}</b><span class="mut">${esc(t.ex.map(i=>gEx(i).n).join(", ")||"Egzersiz yok")}</span><span class="mut">${last?"Son: "+gDate(last.day):"Henüz yapılmadı"}</span></button><button class="del" data-g="tdel:${t.id}" aria-label="Şablonu sil">✕</button></div>`;
+    return `<div class="card trow"><button class="tmain" data-g="start:${t.id}"><b>${esc(t.name)}</b><span class="mut">${esc(t.ex.map(i=>gEx(i).n).join(", ")||"Egzersiz yok")}</span><span class="mut">${last?"Son: "+gDate(last.day):"Henüz yapılmadı"}</span></button><button class="del" data-g="tedit:${t.id}" aria-label="Şablonu düzenle">✎</button><button class="del" data-g="tdel:${t.id}" aria-label="Şablonu sil">✕</button></div>`;
   }).join("");
   const wk=gWeekSets(),mx=Math.max(14,...Object.values(wk));
   const bars=Object.keys(wk).length?`<h2>Bu hafta, kas grubuna göre set</h2><div class="card">${GROUPS.concat(["Diğer"]).filter(g=>wk[g]).map(g=>`<div class="gbar"><span>${g}</span><span class="bar"><i style="width:${(wk[g]/mx*100).toFixed(0)}%"></i></span><span class="num">${wk[g]}</span></div>`).join("")}<p class="hint">Kas grubu başına haftada 10 ile 20 set çoğu kişi için makul bir aralıktır.</p></div>`:"";
@@ -191,7 +200,7 @@ function gHome(){
   return `<button class="btn" data-g="start:">Boş antrenman başlat</button>
   <button class="btn ghost" data-g="lib" style="margin-top:8px">📚 Egzersiz kütüphanesi (${EXMERGED.length}, animasyonlu)</button>
   <button class="btn ghost" data-c="prog" style="margin-top:8px">Koç'tan program iste</button>
-  <h2>Şablonlarım</h2>${tpl||`<p class="hint">Şablon yok. Bir antrenmanı bitirince "Şablon olarak kaydet" ile oluşur.</p>`}
+  <h2>Şablonlarım</h2>${tpl||`<p class="hint">Şablon yok. "Yeni şablon" ile kur ya da bir antrenmanı bitirince "Şablon olarak kaydet" de.</p>`}<button class="btn ghost" data-g="tedit:">+ Yeni şablon</button>
   ${bars}${note?`<div class="card" id="wknote">${note}</div>`:""}
   <h2>Antrenman geçmişi</h2><div class="card">${rec||`<p class="hint">Henüz antrenman yok.</p>`}</div>`;
 }
@@ -278,19 +287,19 @@ function gTick(){
 function gPickHtml(){
   const q=tr(gQuery),w=gActive();
   const all=gExAll().filter(e=>(gGroup==="Tümü"||(e.r||e.g)===gGroup)&&(!q||tr(e.n).includes(q))),list=all.slice(0,gPickMax);
-  const inW=new Set(w?w.ex.map(x=>x.id):[]);
+  const inW=new Set(gTeOn?gTe.ex:w?w.ex.map(x=>x.id):[]);
   return list.map(e=>{
     const h=gHistory(e.id)[0],last=h?(gTimed(e.id)?`son ${h.sets[0].sec} sn`:`son ${fkg(Math.max(...h.sets.map(s=>s.kg||0)))||0} kg × ${h.sets[0].reps}`):"henüz yok";
     return `<button class="prow" data-g="addex:${e.id}"><span><b>${esc(e.n)}</b><span class="mut sm">${e.r||e.g}${e.q?", "+e.q.toLowerCase():""}, ${last}</span></span>${inW.has(e.id)?`<span class="tag">Eklendi</span>`:`<span class="plus">+</span>`}</button>`;
   }).join("")+(all.length>list.length?`<button class="lnk" data-g="pickmore">${all.length-list.length} egzersiz daha göster</button>`:"")||`<p class="hint">Sonuç yok.</p>`;
 }
-function gSheetPick(){
-  gQuery="";gGroup="Tümü";gNew=false;gPickMax=40;
+function gSheetPick(te){
+  gTeOn=!!te;gQuery="";gGroup="Tümü";gNew=false;gPickMax=40;
   openSheet(`<h3>Egzersiz ekle</h3><input class="in" id="gq" placeholder="Egzersiz ara" autocomplete="off">
   <div class="chips" id="gchips">${["Tümü"].concat(EXREG).map(g=>`<button class="chip" data-g="grp:${g}" aria-pressed="${g==="Tümü"}">${g}</button>`).join("")}</div>
   <div id="glist" class="plist">${gPickHtml()}</div>
   <button class="lnk" data-g="newex">Yeni egzersiz oluştur</button><div id="gnew"></div>
-  <button class="btn" data-g="closesheet">Tamam</button>`);
+  <button class="btn" data-g="${te?"teback":"closesheet"}">Tamam</button>`);
 }
 function gMenu(ei){
   const w=gActive(),x=w.ex[ei];
@@ -328,7 +337,71 @@ function gSheetSummary(id){
   <div class="two"><div class="stat"><div class="k">Set</div><div class="v num">${gWorkSets(w)}</div></div><div class="stat"><div class="k">Egzersiz</div><div class="v num">${w.ex.length}</div></div></div>
   ${prs.length?`<div class="pr"><b>${prs.length} yeni rekor</b>${prs.map(p=>`<div>${esc(p.ex.n)}, ${fkg(p.kg)||0} kg × ${p.reps}<div class="mut sm">Tahmini 1TM ${Math.round(p.e1)} kg, önceki ${Math.round(p.prev)} kg</div></div>`).join("")}</div>`:""}
   <div class="mut sm" style="margin:8px 0">${Object.keys(sets).map(g=>`${g} ${sets[g]}`).join(", ")}</div>
-  <div class="btns">${w.tpl==null?`<button class="btn ghost" data-g="savetpl:${w.id}">Şablon olarak kaydet</button>`:""}<button class="btn ghost" data-g="closesheet">Kapat</button><button class="btn danger" data-g="delw:${w.id}">Antrenmanı sil</button></div>`);
+  <div class="btns">${w.tpl==null?`<button class="btn ghost" data-g="savetpl:${w.id}">Şablon olarak kaydet</button>`:S.templates.some(t=>t.id===w.tpl)?`<button class="btn ghost" data-g="tplupd:${w.id}">Şablonu bu seansa göre güncelle</button>`:""}<button class="btn ghost" data-g="closesheet">Kapat</button><button class="btn danger" data-g="delw:${w.id}">Antrenmanı sil</button></div>`);
+}
+
+/* ---- şablon editörü ---- */
+const gRepsTx=a=>a.reps?a.reps+(a.hi?"-"+a.hi:""):"";
+function gTgDef(id){
+  const k=gKind(id);
+  return k==="c"?{sets:1,sec:600}:k==="t"?{sets:3,sec:30}:k==="i"?{sets:4,sec:30}:{sets:3,reps:8,hi:12};
+}
+function gTePush(id){gTe.ex.push(id);gTe.tg[id]=gTgDef(id)}
+/* Seanstaki çalışma setlerinden hedef: tekrar alt sınırı en az tekrarın kendisi, eski üst sınır korunur. */
+function gTgFrom(w,prev){
+  const tg={};
+  for(const x of w.ex){
+    const s=x.sets.filter(t=>t.done&&gSetOk(t)&&!t.w);if(!s.length)continue;
+    const o={sets:Math.min(10,s.length)};
+    if(gTimed(x.id))o.sec=Math.min(7200,s[0].sec);
+    else{o.reps=Math.min(200,Math.min(...s.map(t=>t.reps)));const h=prev&&prev[x.id]&&prev[x.id].hi;if(h>o.reps)o.hi=h}
+    tg[x.id]=o;
+  }
+  return tg;
+}
+function gTeOpen(id){
+  const t=id?S.templates.find(x=>x.id===id):null;
+  gTe={id:t?t.id:null,name:t?t.name:"",ex:t?t.ex.slice():[],tg:t?structuredClone(t.tg||{}):{}};
+  for(const i of gTe.ex)if(!gTe.tg[i])gTe.tg[i]=gTgDef(i);
+  gTeSheet();
+}
+function gTeSheet(){
+  const rows=gTe.ex.map((id,i)=>{
+    const e=gEx(id),a=gTe.tg[id]||{},k=gKind(id),tm=gTimed(id),u=k==="c"?60:1;
+    return `<div class="card ex"><div class="exh"><div class="exn"><b>${esc(e.n)}</b><span class="mut">${e.r||e.g}</span></div><button class="del" data-g="temv:${i}:-1" aria-label="Yukarı taşı">▲</button><button class="del" data-g="temv:${i}:1" aria-label="Aşağı taşı">▼</button><button class="del" data-g="term:${i}" aria-label="Çıkar">✕</button></div>
+    <div class="two"><div><div class="lbl">Set</div><input class="in num" inputmode="numeric" data-te="sets:${i}" value="${a.sets||""}" ${k==="c"?"disabled":""} aria-label="${esc(e.n)} set sayısı"></div>
+    <div><div class="lbl">${tm?k==="c"?"Süre (dk)":"Süre (sn)":"Tekrar"}</div><input class="in num" inputmode="${tm?"numeric":"text"}" data-te="${tm?"sec":"reps"}:${i}" value="${tm?a.sec?Math.round(a.sec/u):"":gRepsTx(a)}" placeholder="${tm?"":"8-12"}" aria-label="${esc(e.n)} ${tm?"süre":"tekrar"}"></div></div></div>`;
+  }).join("");
+  openSheet(`<h3>${gTe.id?"Şablonu düzenle":"Yeni şablon"}</h3><div class="lbl">Ad</div><input class="in" id="gten" maxlength="60" value="${esc(gTe.name)}" placeholder="Örn. İtiş günü">
+  ${rows||`<p class="hint">Henüz egzersiz yok.</p>`}
+  <button class="btn ghost" data-g="teadd" style="margin-bottom:8px">+ Egzersiz ekle</button>
+  <div class="btns"><button class="btn" data-g="tesave">Kaydet</button><button class="btn ghost" data-g="closesheet">Vazgeç</button></div>`);
+}
+/* Yeniden çizimden önce yazılanlar taslağa alınır. Geçersiz alan eski değeri korur. */
+function gTeSync(){
+  const n=$("#gten");if(!n)return;
+  gTe.name=n.value;
+  for(const el of document.querySelectorAll("#sheet [data-te]")){
+    const [f,i]=el.dataset.te.split(":"),id=gTe.ex[+i],a=id&&gTe.tg[id];if(!a)continue;
+    const v=el.value.trim();
+    if(f==="reps"){
+      const m=/^(\d{1,3})(?:\s*-\s*(\d{1,3}))?$/.exec(v);
+      if(m&&+m[1]>=1&&+m[1]<=200){a.reps=+m[1];if(m[2]&&+m[2]>a.reps&&+m[2]<=200)a.hi=+m[2];else delete a.hi}
+    }else{
+      const x=num(v,true),u=f==="sec"&&gKind(id)==="c"?60:1;
+      if(f==="sets"&&x>=1&&x<=10)a.sets=x;
+      if(f==="sec"&&x>=1&&x*u<=7200)a.sec=x*u;
+    }
+  }
+}
+function gTeSave(){
+  gTeSync();
+  const name=gTe.name.trim().slice(0,60);
+  if(!name)return toast("Şablona ad yaz");
+  if(!gTe.ex.length)return toast("En az bir egzersiz ekle");
+  const o={name,ex:gTe.ex.slice(),tg:structuredClone(gTe.tg)},t=gTe.id&&S.templates.find(x=>x.id===gTe.id);
+  if(t)Object.assign(t,o);else S.templates.push(Object.assign({id:S.gid++},o));
+  gTe=null;save();closeSheet();render();toast("Şablon kaydedildi");
 }
 
 /* ---- eylemler ---- */
@@ -336,7 +409,7 @@ function gStart(tplId){
   if(gActive()){tab="salon";return render()}
   const t=tplId?S.templates.find(x=>x.id===tplId):null;
   const w={id:S.gid++,day:dayKey(),t0:Date.now(),t1:null,name:t?t.name:"Antrenman",tpl:t?t.id:null,ex:[]};
-  if(t)for(const i of t.ex)gAddEx(w,i);
+  if(t)for(const i of t.ex)gAddEx(w,i,t.tg&&t.tg[i]);
   S.workouts.push(w);save();tab="salon";render();
 }
 function gFinish(){
@@ -370,6 +443,10 @@ function gClick(v,el){
     case "pickmore":gPickMax+=60;$("#glist").innerHTML=gPickHtml();return;
     case "grp":gGroup=p1;gPickMax=40;document.querySelectorAll("#gchips .chip").forEach(c=>c.setAttribute("aria-pressed",c.dataset.g==="grp:"+gGroup));$("#glist").innerHTML=gPickHtml();return;
     case "addex":{
+      if(gTeOn){
+        if(gTe.ex.includes(p1))return toast("Bu egzersiz zaten ekli");
+        gTePush(p1);$("#glist").innerHTML=gPickHtml();return;
+      }
       if(!w)return;const i=w.ex.findIndex(x=>x.id===p1);
       if(i>=0)return toast("Bu egzersiz zaten ekli");
       gAddEx(w,p1);save();$("#glist").innerHTML=gPickHtml();render();return;
@@ -380,6 +457,7 @@ function gClick(v,el){
       const n=$("#gnn").value.trim();if(!n)return toast("Egzersiz adı yaz");
       if(gExAll().some(e=>tr(e.n)===tr(n)))return toast("Bu adda egzersiz var");
       const ex={id:"c"+(S.gid++),n,g:gNewGroup,inc:2.5};S.customEx.push(ex);
+      if(gTeOn){gTePush(ex.id);save();return gTeSheet()}
       if(w)gAddEx(w,ex.id);save();closeSheet();render();return;
     }
     case "menu":return gMenu(ei);
@@ -434,7 +512,24 @@ function gClick(v,el){
     }
     case "tdel":{
       const t=S.templates.find(x=>x.id===+p1);if(!t)return;
+      if(!confirm(`"${t.name}" şablonu silinsin mi?`))return;
       S.templates=S.templates.filter(x=>x!==t);save();render();toast("Şablon silindi",()=>{S.templates.push(t);save();render()});return;
+    }
+    case "tedit":return gTeOpen(p1?+p1:null);
+    case "teback":gTeSync();return gTeSheet();
+    case "teadd":gTeSync();return gSheetPick(true);
+    case "temv":case "term":{
+      gTeSync();const j=ei+(a==="temv"?+p2:0);
+      if(a==="term"){const id=gTe.ex.splice(ei,1)[0];delete gTe.tg[id]}
+      else if(j>=0&&j<gTe.ex.length)[gTe.ex[ei],gTe.ex[j]]=[gTe.ex[j],gTe.ex[ei]];
+      return gTeSheet();
+    }
+    case "tesave":return gTeSave();
+    case "tplupd":{
+      const x=S.workouts.find(y=>y.id===+p1),t=x&&S.templates.find(y=>y.id===x.tpl);if(!t)return;
+      const old={ex:t.ex,tg:t.tg};
+      t.ex=x.ex.map(e=>e.id);t.tg=gTgFrom(x,t.tg);save();closeSheet();render();
+      toast("Şablon bu seansa göre güncellendi",()=>{t.ex=old.ex;if(old.tg)t.tg=old.tg;else delete t.tg;save();render()});return;
     }
     case "delw":{
       const x=S.workouts.find(y=>y.id===+p1);if(!x)return;
