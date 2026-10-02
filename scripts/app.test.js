@@ -1165,11 +1165,27 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
   ev("S.entries=[];S.settings.stepsOn=false;S.nextId=1");
   ev("add('kilo',80,'',keyOff(-1))");
   ev("sheetKilo()");w.document.querySelector("#fv").value="90";ev("goKilo()");
-  ok("5 kg'dan büyük fark uyarı verir, kaydetmez",ev("weights()[dayKey()]")===undefined&&w.document.querySelector("#kwarn").textContent.includes("fark var"));
+  ok("3 kg ve üstü fark turuncu uyarı ve 'Yine de kaydet' çıkarır, kaydetmez",ev("weights()[dayKey()]")===undefined&&w.document.querySelector("#kwarn .banner").textContent.includes("fark var")&&w.document.querySelector('#kwarn [data-go="kilo"]').textContent==="Yine de kaydet");
   ev("goKilo()");
   ok("aynı değer ikinci kez onaylanırsa kaydedilir",ev("weights()[dayKey()]")===90);
   ev("S.entries=[]");ev("add('kilo',80,'',keyOff(-1))");ev("sheetKilo()");w.document.querySelector("#fv").value="82,5";ev("goKilo()");
   ok("küçük fark uyarısız kaydedilir",ev("weights()[dayKey()]")===82.5);
+  { // C10: kilo girişi
+    ev("S.entries=[];add('kilo',80,'',keyOff(-1));sheetKilo()");
+    ok("kilo girişinde son tartı yazılı gelir ve odakta seçilir",$q("#fv").value==="80,0"&&$q("#fv").getAttribute("onfocus")==="this.select()");
+    $q('[data-kd="1"]').click();$q('[data-kd="1"]').click();
+    ok("+0,1 iki kez: 80,2",$q("#fv").value==="80,2",$q("#fv").value);
+    $q('[data-kd="-1"]').click();$q('[data-kd="-1"]').click();$q('[data-kd="-1"]').click();
+    ok("−0,1 üç kez: 79,9 (kayan nokta hatası yok)",$q("#fv").value==="79,9",$q("#fv").value);
+    $q("#fv").value="77";ev("goKilo()");
+    ok("tam 3,0 kg fark uyarır",ev("weights()[dayKey()]")===undefined&&!!$q("#kwarn .banner"));
+    $q('#kwarn [data-go="kilo"]').click();
+    ok("'Yine de kaydet' kaydeder",ev("weights()[dayKey()]")===77);
+    ev("S.entries=[];add('kilo',80,'',keyOff(-1));sheetKilo()");$q("#fv").value="82,9";ev("goKilo()");
+    ok("2,9 kg fark uyarısız kaydedilir",ev("weights()[dayKey()]")===82.9);
+    ev("S.entries=[];sheetKilo()");
+    ok("tartı yokken alan boş gelir",$q("#fv").value==="");ev("closeSheet()");
+  }
   { // C6: dokunma hedefleri ve alan altı hata
     const css=html.match(/<style>([\s\S]*?)<\/style>/)[1],rule=sel=>{const i=css.indexOf("\n"+sel+"{")>=0?css.indexOf("\n"+sel+"{")+1:css.indexOf("}"+sel+"{")+1;return i>0?css.slice(i+sel.length+1,css.indexOf("}",i)):""};
     ok("dokunma hedefleri: genel .del 44×44, .chip, .seg, toast düğmesi, alanlar en az 44 px",/width:44px;height:44px/.test(rule(".del"))&&/min-height:44px/.test(rule(".chip"))&&/min-width:44px/.test(rule(".chip"))&&/min-height:44px/.test(rule(".seg button"))&&/min-height:44px/.test(rule("#toast button"))&&/height:44px/.test(rule(".sw input"))&&/min-height:44px/.test(rule("input.in,select.in,.chip>button")),[rule(".del"),rule(".chip"),rule(".sw input")]);
