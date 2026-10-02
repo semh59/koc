@@ -50,4 +50,16 @@ ok("ısınma 30 kg: bar altı ve tekrar atılır",JSON.stringify(A.warmup(30))==
 ok("ısınma: hedef bar veya altındaysa boş",A.warmup(20).length===0&&A.warmup(10).length===0);
 const n3=A.nextTarget([{kg:60,reps:8},{kg:60,reps:8}],{lo:5,hi:8,inc:2.5});ok("lo5 hi8: 8'e ulaşınca ağırlık artar, 5'ten başlar",n3.kg===62.5&&n3.reps===5,n3);
 ok("hacim ısınmayı saymaz",A.volume([{kg:20,reps:10,done:true,w:true},{kg:60,reps:5,done:true}])===300);
+const S3=(kg,r)=>[{kg,reps:r},{kg,reps:r},{kg,reps:r}];
+const d1=A.nextTarget(S3(60,6),{prev:[S3(60,7)]});ok("aynı ağırlıkta 2 seans alt tekrarın altında: %10 düşür, alt tekrardan başla, neden yazılı",d1.kg===55&&d1.reps===8&&d1.why==="Son 2 seans hedefin altında, %10 düşür",d1);
+ok("tek seans altında: eski davranış (+1 tekrar)",A.nextTarget(S3(60,6),{prev:[]}).kg===60&&A.nextTarget(S3(60,6),{prev:[]}).reps===7);
+ok("önceki seans farklı ağırlıktaysa düşürülmez",A.nextTarget(S3(60,6),{prev:[S3(65,5)]}).kg===60);
+ok("önceki seans aralıktaysa düşürülmez",A.nextTarget(S3(60,6),{prev:[S3(60,9)]}).kg===60);
+ok("vücut ağırlığı (0 kg) düşürülmez",A.nextTarget(S3(0,3),{prev:[S3(0,3)]}).kg===0);
+ok("düşürme inc'e yuvarlanır ve ağırlığı gerçekten azaltır",A.nextTarget(S3(10,6),{prev:[S3(10,6)],inc:2.5}).kg===7.5);
+const dl=A.nextTarget(S3(60,9),{prev:[S3(60,9),S3(60,9)]});ok("3 seans gelişim yok: kg/tekrar aynı, deload notu 'istersen'",dl.kg===60&&dl.reps===10&&/İstersen/.test(dl.note)&&/deload/.test(dl.note),dl);
+ok("2 seans yetmez, gelişim varsa not yok",!A.nextTarget(S3(60,9),{prev:[S3(60,9)]}).note&&!A.nextTarget(S3(60,10),{prev:[S3(60,9),S3(60,9)]}).note);
+ok("üst tekrara çıkınca ağırlık artar, deload notu eklenmez",!A.nextTarget(S3(60,12),{prev:[S3(60,12),S3(60,12)]}).note&&A.nextTarget(S3(60,12),{prev:[S3(60,12),S3(60,12)]}).kg===62.5);
+const WU=[{kg:20,reps:10,w:true},{kg:40,reps:5,w:true}];
+ok("ısınma setleri hesaba girmez (en son, önceki ve tek başına)",A.nextTarget(S3(60,9).concat(WU),{}).kg===60&&A.nextTarget(WU)===null&&A.nextTarget(S3(60,6),{prev:[WU.concat(S3(60,6))]}).kg===55&&A.nextTarget(S3(60,6),{prev:[WU]}).kg===60);
 process.exit(bad?1:0);

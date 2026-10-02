@@ -136,14 +136,27 @@ const Algo=(()=>{
     }
     return out;
   }
-  /* Çift ilerleme: tüm setler üst tekrara çıkınca ağırlık artır, değilse aynı ağırlıkta +1 tekrar. */
-  function nextTarget(sets,{lo=8,hi=12,inc=2.5}={}){
-    const s=sets.filter(x=>x.reps>0);if(!s.length)return null;
-    const kg=Math.max(...s.map(x=>x.kg||0));
-    const top=s.filter(x=>(x.kg||0)===kg),minReps=Math.min(...top.map(x=>x.reps));
+  /* Çift ilerleme: tüm setler üst tekrara çıkınca ağırlık artır, değilse aynı ağırlıkta +1 tekrar.
+     prev: önceki seansların setleri (yeniden eskiye). Aynı ağırlıkta üst üste 2 seans alt tekrarın altında kalınırsa %10 düşürme önerilir;
+     son 3 seansta tahmini 1TM artmadıysa deload notu eklenir (yalnız ağırlık artırılmıyorsa). Isınma setleri hiçbir hesaba girmez. */
+  function nextTarget(sets,{lo=8,hi=12,inc=2.5,prev=[]}={}){
+    const work=a=>a.filter(x=>x.reps>0&&!x.w),top=a=>{const kg=Math.max(...a.map(x=>x.kg||0));return {kg,min:Math.min(...a.filter(x=>(x.kg||0)===kg).map(x=>x.reps))}};
+    const s=work(sets);if(!s.length)return null;
+    const {kg,min:minReps}=top(s);
     if(kg===0)return {kg:0,reps:minReps+1,why:"Bir tekrar fazla dene"};
     if(minReps>=hi)return {kg:roundTo(kg+inc,0.25),reps:lo,why:"Tüm setlerde üst tekrara ulaştın, ağırlığı artır"};
-    return {kg,reps:Math.min(hi,minReps+1),why:"Aynı ağırlıkta bir tekrar fazla dene"};
+    const p=prev.map(work).filter(a=>a.length),p1=p[0]&&top(p[0]);
+    if(minReps<lo&&p1&&p1.kg===kg&&p1.min<lo){
+      const d=roundTo(kg*0.9,inc);
+      return {kg:d<kg?d:Math.max(0,kg-inc),reps:lo,why:"Son 2 seans hedefin altında, %10 düşür"};
+    }
+    const r={kg,reps:Math.min(hi,minReps+1),why:"Aynı ağırlıkta bir tekrar fazla dene"};
+    if(p.length>=2){
+      const best=a=>Math.max(...a.map(x=>est1RM(x.kg||0,x.reps)));
+      const old=best(p[1]);
+      if(old>0&&best(s)<=old+0.05&&best(p[0])<=old+0.05)r.note="Son 3 seansta gelişme görünmüyor. İstersen bu hafta ağırlığı %10 azaltıp dinlenme haftası (deload) deneyebilirsin.";
+    }
+    return r;
   }
   return {KCAL_PER_KG,dayNum,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,lossBlock,etaWeeks,isLosing,goalEta,proteinRange,est1RM,volume,nextTarget,roundTo,plates,warmup};
 })();
