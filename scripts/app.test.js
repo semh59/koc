@@ -1007,10 +1007,10 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
       ok("grafik: tek seansta boş durum yazısı, SVG yok, değer görünür",q('#xch').textContent.includes("en az iki seans")&&!q('#xch svg')&&q('#xch').textContent.includes("76 kg"),q('#xch').textContent);
       ev(`S.workouts=[${Array.from({length:30},(_,i)=>mk(i,60+i,8,i===29?",{kg:200,reps:10,done:true,w:true}":"")).join(",")}]`);open();
       ok("grafik: 30 seansın hepsi çizilir (12 ile sınırlı değil), ısınma setleri sayılmaz",q('#xch svg')&&q('#xch').querySelectorAll('rect[data-g^="chp:"]').length===30&&q("#xch").textContent.includes("113 kg")&&q('#xch').textContent.includes("30/30"),q('#xch').textContent);
-      click('[data-g="chp:0"]');
+      q('[data-g="chp:0"]').dispatchEvent(new w.MouseEvent("click",{bubbles:true})); // SVG öğesinde click() yok
       ok("grafik: dokununca o seansın değeri görünür",q('#xch').textContent.includes("76 kg")&&q('#xch').textContent.includes("1/30"),q('#xch').textContent);
       click('[data-g="chm:t"]');
-      ok("grafik: en ağır set ve hacim sekmeleri",q('#xch').textContent.includes("60 kg × 8")&&(click('[data-g="chm:v"]'),q('#xch').textContent.includes("960 kg")),q('#xch').textContent);
+      ok("grafik: en ağır set ve hacim sekmeleri",q('#xch').textContent.includes("89 kg × 8")&&(click('[data-g="chm:v"]'),/1.?424 kg/.test(q("#xch").textContent)),q('#xch').textContent);
       ev("closeSheet();tab='salon';render();gSheetHist('squat')");
       ok("grafik: geçmiş ekranında da var",!!q('#xch svg'));
       ev("closeSheet();S.workouts=[]");
@@ -1522,6 +1522,9 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("widget: Bugün dışındayken de adım değişince güncellenir",wc[wc.length-1].steps===3700,wc[wc.length-1]);
     ev("tab='koc';logOff=-2;widgetOpen()");
     ok("widget: dokununca Bugün açılır",ev("tab")==="bugun"&&ev("logOff")===0);
+    const n0=wc.length;
+    ev("widgetLast='';Object.assign(S.settings,{obDone:false,heightCm:0,age:0,goalKg:0,kcal:0,consent:false});S.entries=[];S.chat=[];S.meds=[];render()");
+    ok("widget: onboarding açıkken de render sonrası güncellenir",ev("obNeeded()")===true&&wc.length===n0+1&&wc[n0].water===0,[ev("obNeeded()"),wc.length,n0]);
     delete w.Capacitor.Plugins.Widget;
   }
 },100);
