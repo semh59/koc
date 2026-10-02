@@ -2052,4 +2052,26 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("ağırlıksız (vücut ağırlığı) harekette kg boş olabilir, 0 olarak kaydedilir",ev("gActive().ex[2].sets[0].done")===true&&ev("gActive().ex[2].sets[0].kg")===0);
     ev("S=structuredClone(DEF);S.settings.obDone=true;tab='bugun';render()");
   }
+  { // Grafik okunurluğu: tansiyon etiket/bant/şekil, adım gün kısaltmaları, şeker şekilleri (C11)
+    const q=s=>$q(s),qa=s=>[...w.document.querySelectorAll(s)];
+    ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.bpOn=true;S.settings.bsOn=true;S.settings.bpSysHi=0;S.settings.bpDiaHi=0;S.vitals=[];for(let i=0;i<5;i++){const d=keyOff(-i);S.vitals.push({id:i*3+1,k:'t',day:d,time:'08:00',sys:120+i*4,dia:78+i,ses:'sabah',sid:'a'+i},{id:i*3+2,k:'s',day:d,time:'07:00',g:90+i,ctx:'acl'},{id:i*3+3,k:'s',day:d,time:'21:00',g:140+i,ctx:'sonra'})}vRange=14;tab='tansiyon';render()`);
+    let c=q("#view svg.chart");
+    ok("tansiyon: çizgiler doğrudan etiketli (Sistolik, Diyastolik), renge ek olarak şekil: sistolik daire, diyastolik kare + kesik çizgi",c.textContent.includes("Sistolik")&&c.textContent.includes("Diyastolik")&&c.querySelectorAll("circle").length===5&&c.querySelectorAll("rect").length>=5+1&&!!c.querySelector("polyline[stroke-dasharray]"));
+    ok("tansiyon: lejant her seri için işaret çizer (çizgi + şekil), renk adına dayanmaz",qa("#view .legend span").length===2&&qa("#view .legend span").every(x=>x.querySelector("svg line")&&x.querySelector("svg circle,svg rect"))&&!q("#view").textContent.includes("Yeşil: büyük"));
+    ok("tansiyon: genel referans bandı (iki gölgeli bölge) ve 'genel referans' notu, tanı dili yok",c.querySelectorAll('rect[opacity=".12"]').length===2&&c.textContent.includes("genel referans")&&q("#view").textContent.includes("Tanı ya da kişisel hedef değildir")&&!/(yüksek tansiyon|hipertansiyon|hastalık|teşhis)/i.test(c.parentNode.textContent));
+    ev("S.settings.bpSysHi=135;S.settings.bpDiaHi=85;render()");c=q("#view svg.chart");
+    ok("kullanıcı kendi üst sınırını girdiyse bant onu gösterir, 'genel referans' yazmaz",c.textContent.includes("hedef aralığın")&&!c.textContent.includes("genel referans")&&q("#view").textContent.includes("senin girdiğin"));
+    const P=JSON.parse(c.dataset.tip);
+    c.dispatchEvent(Object.assign(new w.Event("pointerdown",{bubbles:true}),{clientX:P[0][0]}));
+    ok("tansiyon grafiğine dokununca değer balonu (gün, saat, seri, değer)",/Sistolik|Diyastolik/.test(q("#view svg.chart .tip").textContent)&&/\d{3}|\d{2}/.test(q("#view svg.chart .tip").textContent));
+    ev("tab='seker';render()");c=q("#view svg.chart");
+    ok("şeker: bağlam başına ayrı şekil (daire, üçgen), lejant ad ve işaretle",qa("#view .legend span").length===2&&!!c.querySelector("polygon")&&c.querySelectorAll("circle").length===5&&qa("#view .legend").pop().textContent.includes("Açlık")&&!q("#view").textContent.includes("Yeşil: açlık"));
+    // adım
+    ev(`S.settings.stepsOn=true;S.entries=[];for(let i=0;i<14;i++)S.entries.push({id:i+1,day:keyOff(-i),time:"20:00",type:"adim",v:i%2?4000:9000,text:""});S.settings.stepGoal=8000;tab='adim';render()`);
+    const labs=qa("#view svg.bars text").map(t=>t.textContent).filter(t=>t!=="✓");
+    ok("adım grafiği: 14 çubuğun hepsi Pzt/Sal/Çar/Per/Cum/Cmt/Paz biçiminde, tek harf ya da Cu/Ct/Pz/Pt yok",labs.length===14&&labs.every(t=>["Pzt","Sal","Çar","Per","Cum","Cmt","Paz"].includes(t))&&new Set(labs).size===7);
+    ok("adım grafiği: hedefe ulaşan günler renge ek olarak ✓ ile işaretli, tek renk",qa("#view svg.bars text").filter(t=>t.textContent==="✓").length===7&&new Set(qa("#view svg.bars rect").map(r=>r.getAttribute("fill"))).size===1&&q("#view").textContent.includes("✓ ve koyu çubuk"));
+    ok("adım grafiği etiketleri viewBox içinde (kenarda kesilmez)",qa("#view svg.bars text").every(t=>+t.getAttribute("x")>=10&&+t.getAttribute("x")<=310));
+    ev("S=structuredClone(DEF);S.settings.obDone=true;tab='bugun';render()");
+  }
 },100);
