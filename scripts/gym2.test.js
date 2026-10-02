@@ -96,6 +96,29 @@ setTimeout(async()=>{
     ok("CSV dışa aktarma: set türü ve süperset sütunu",csvb.includes("set_türü;süperset")&&csvb.includes("drop;"+ev("S.workouts[0].ex[0].ss")),csvb);
     ev("S.workouts=[];S.templates=[];render();closeSheet()");
   }
+  { // D-Ant9
+    const M=ev("MuscleMap");
+    ev("S.workouts=[];S.customEx=[];tab='salon';render()");
+    ok("veri yokken şema gri (tüm bölgeler l0) ve 'Bu hafta set yok'",q("#mminfo").textContent==="Bu hafta set yok."&&q(".mmwrap").querySelectorAll(".mmr").length>=15&&q(".mmwrap").querySelectorAll(".mmr:not(.l0)").length===0&&q(".mmwrap").querySelectorAll(".mmt").length===0);
+    ok("kademe sınırları: 0, 1-4, 5-9, 10-20, 21+",[0,1,4,5,9,10,20,21].map(n=>ev(`MuscleMap.lvl(${n})`)).join()==="0,1,1,2,2,3,3,4");
+    ok("15 şema bölgesi + Tüm vücut = 16 bölge adı",ev("MuscleMap.REGIONS.length")===15&&ev("MuscleMap.REGIONS.every(r=>EXREG.includes(r))")&&EXREGOK());
+    function EXREGOK(){return ev("EXREG.length")===16&&ev("EXREG.filter(r=>!MuscleMap.REGIONS.includes(r))[0]")==="Tüm vücut"}
+    const mk=(id,n)=>`{id:'${id}',note:'',sets:Array.from({length:${n}},()=>({kg:50,reps:8,done:true}))}`;
+    ev(`S.customEx=[{id:'c1',n:'X',g:'Bacak',inc:2.5,r:'Tüm vücut'}];S.workouts=[{id:1,day:dayKey(),t0:Date.now()-3600000,t1:Date.now()-1800000,name:'A',tpl:null,ex:[${mk("bench",12)},${mk("row",22)},${mk("curl",3)},${mk("tri",7)},{id:'c1',note:'',sets:[{kg:1,reps:1,done:true}]}]},{id:2,day:'2020-01-01',t0:1000,t1:2000,name:'Eski',tpl:null,ex:[${mk("squat",30)}]}];render()`);
+    const L=n=>q(`[data-g="mm:${n}"]`);
+    ok("haftalık sete göre kademe sınıfı: Göğüs 12 (l3), Sırt 22 (l4), Biseps 3 (l1), Triseps 7 (l2), Ön bacak 0 (l0); 7 gün dışı sayılmaz",L("Göğüs").classList.contains("l3")&&L("Sırt").classList.contains("l4")&&L("Biseps").classList.contains("l1")&&L("Triseps").classList.contains("l2")&&L("Ön bacak").classList.contains("l0"));
+    ok("renk dışında sayı da yazılır, erişilebilir ad set sayısını içerir",[...q(".mmwrap").querySelectorAll(".mmt")].map(t=>t.textContent).sort().join()==="12,22,3,7"&&L("Sırt").getAttribute("aria-label").includes("22 set"));
+    L("Göğüs").dispatchEvent(new w.MouseEvent("click",{bubbles:true}));
+    ok("dokununca bölge adı, set sayısı ve aralık içinde metni",q("#mminfo").textContent==="Göğüs: 12 set, haftalık 10-20 kılavuz aralığının içinde"&&L("Göğüs").classList.contains("on"));
+    L("Biseps").dispatchEvent(new w.MouseEvent("click",{bubbles:true}));
+    ok("aralığın altında metni; önceki seçim kalkar",q("#mminfo").textContent.includes("3 set")&&q("#mminfo").textContent.includes("altında")&&!L("Göğüs").classList.contains("on"));
+    L("Sırt").dispatchEvent(new w.MouseEvent("click",{bubbles:true}));
+    ok("aralığın üstünde metni",q("#mminfo").textContent.includes("üstünde"));
+    L("Ön bacak").dispatchEvent(new w.MouseEvent("click",{bubbles:true}));
+    ok("setsiz bölge: bu hafta set yok",q("#mminfo").textContent==="Ön bacak: bu hafta set yok");
+    ok("şemada olmayan bölge (Tüm vücut) düğme olarak ve bölgeler listesinde",q('[data-g="mm:Tüm vücut"]').textContent.includes("1")&&q("#view").textContent.includes("Sırt"));
+    ev("S.workouts=[];S.customEx=[];S.templates=[];tab='bugun';render();closeSheet()");
+  }
   ok("sayfa hatasız çalıştı",errs.length===0,errs);
   console.log(bad?bad+" test başarısız":"TAMAM");process.exit(bad?1:0);
 },100);
