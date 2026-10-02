@@ -17,11 +17,23 @@ const CoachLib=(()=>{
   }
 
   /* Model çıktısını toleranslı ayrıştır. */
+  /* İlk "{" ile dengelenen "}"; JSON'dan sonra gelen metindeki "}" ayrıştırmayı bozmasın. */
+  function end(s,a){
+    let d=0,q=false;
+    for(let i=a;i<s.length;i++){
+      const c=s[i];
+      if(q){if(c==="\\")i++;else if(c==='"')q=false}
+      else if(c==='"')q=true;
+      else if(c==="{")d++;
+      else if(c==="}"&&--d===0)return i;
+    }
+    return -1;
+  }
   function parse(text){
     let s=String(text==null?"":text).trim();
     s=s.replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();
-    const a=s.indexOf("{"),b=s.lastIndexOf("}");
-    if(a>=0&&b>a){
+    const a=s.indexOf("{"),b=a<0?-1:end(s,a);
+    if(b>a){
       try{
         const o=JSON.parse(s.slice(a,b+1));
         if(o&&typeof o==="object"&&typeof o.reply==="string"){
@@ -59,11 +71,11 @@ const CoachLib=(()=>{
     return {n,k:Math.round(k),p:p==null?null:Math.round(p*10)/10};
   }
   /* Model programı: yalnız bilinen kimlikler, gün başına 2-8 egzersiz, en fazla 6 gün. */
-  function cleanProgram(p,known){
+  function cleanProgram(p,known,want){
     if(!p||typeof p!=="object"||!Array.isArray(p.days))return null;
-    const ok=new Set(known),days=[];
+    const ok=new Set(known),days=[],max=Number.isInteger(want)&&want>=2&&want<=6?want:6;
     for(const d of p.days){
-      if(days.length>=6)break;
+      if(days.length>=max)break;
       if(!d||typeof d!=="object"||!Array.isArray(d.ex))continue;
       const ex=[...new Set(d.ex.filter(i=>typeof i==="string"&&ok.has(i)))].slice(0,8);
       if(ex.length>=2)days.push({n:(typeof d.n==="string"&&d.n.trim()?d.n.trim():"Gün "+(days.length+1)).slice(0,40),ex});

@@ -11,14 +11,26 @@ ok("-0,5 kg/hafta seri → plato değil",!p.ok&&p.slope<-0.4,p);
 p=I.plateau(W([-20,-13,-6,0],()=>80),T);
 ok("4 tartı → yetersiz veri",!p.ok&&!p.enough);
 ok("6 tartı ama 14 günden kısa yayılım → yetersiz",!I.plateau(W([-12,-10,-8,-6,-3,0],()=>80),T).enough);
-const NOISY=[0.8,-0.9,0.7,-0.6,0.9,-0.8];
-p=I.plateau(W([-20,-16,-12,-8,-4,0],(o,i)=>80+o*0.05/7+NOISY[i]),T);
-ok("gürültülü (±0,9) seride güven aralığı geniş → plato değil",!p.ok&&p.enough&&p.ci>0.25,p);
+ok("6 tartı → gürültü tahmini için yetersiz (en az 8)",!I.plateau(W([-20,-16,-12,-8,-4,0],()=>80),T).enough);
+p=I.plateau(W([-15,-13,-11,-9,-6,-4,-2,0],(o,i)=>80+[1.6,-1.7,1.5,-1.4,1.8,-1.6,1.2,-1.5][i]),T);
+ok("çok gürültülü (±1,6) kısa seride güven aralığı geniş → plato değil",!p.ok&&p.enough&&p.ci>0.3,p);
+ok("son tartı 7 günden eski → yetersiz",!I.plateau(W(D10.map(o=>o-8),(o,i)=>80+N[i]),T).enough);
+ok("plato yayılım gününü döndürür",I.plateau(W(D10,(o,i)=>80+N[i]),T).days===20);
 p=I.plateau(W([-20,-19,-18,-17,-16,-15,-1,0],(o,i)=>80+[0.1,-0.1,0,0.1,-0.1,0,0.1,-0.1][i]),T);
 ok("kümelenmiş düzensiz aralık: iki uçta tartı, düz → plato",p.ok,p);
 ok("eski düz seri (son tartı 30 gün önce) plato sayılmaz",!I.plateau(W(D10.map(o=>o-30),(o,i)=>80+N[i]),T).enough);
 ok("çöp girdi hata atmaz",!I.plateau(null,T).ok&&!I.plateau({x:1,"2026-10-01":"a"},T).ok&&I.noiseSd(undefined,T)===null);
-ok("noiseSd: düz seride küçük, en az 4 tartı ister",I.noiseSd(W(D10,(o,i)=>80+N[i]),T)<0.3&&I.noiseSd(W([-3,-2,0],()=>80),T)===null);
+ok("noiseSd: düz seride küçük, en az 8 tartı ister",I.noiseSd(W(D10,(o,i)=>80+N[i]),T)<0.3&&I.noiseSd(W([-12,-10,-8,-6,-4,-2,0],(o,i)=>80+N[i]),T)===null);
+
+// Sabit tohumlu benzetim: 35 gün, her gün tartı olasılığı q, günlük gürültü sd (normal). Hedef: düz seride ≥%60, gerçek −0,3 kg/hafta ve hızlı kayıpta ≤%5.
+{
+  let seed=20261002;const rnd=()=>(seed=seed*16807%2147483647)/2147483647,gauss=()=>Math.sqrt(-2*Math.log(rnd()))*Math.cos(2*Math.PI*rnd());
+  const rate=(slope,sd,q,R=600)=>{let k=0;for(let r=0;r<R;r++){const w={};for(let o=-34;o<=0;o++)if(o===0||rnd()<q)w[key(o)]=80+slope*o/7+sd*gauss();if(I.plateau(w,T).ok)k++}return k/R};
+  const res=[];
+  for(const q of [1,0.8])for(const sd of [0.4,0.7,1.0])res.push([q,sd,rate(0,sd,q),rate(-0.3,sd,q),rate(-0.5,sd,q)]);
+  ok("benzetim: düz seride tespit ≥%60 (sd 0,4/0,7/1,0; her gün ve %80 gün tartı)",res.every(r=>r[2]>=0.6),res);
+  ok("benzetim: −0,3 ve −0,5 kg/hafta seride yanlış plato ≤%5",res.every(r=>r[3]<=0.05&&r[4]<=0.05),res);
+}
 
 const day=(kcal,su,ad,sl)=>({kcal,su,ad,sl});
 const days=Array.from({length:22},(_,i)=>i<14?day(2000,1500,9000):i<21?day(i%2?2100:300,2000,6000,i===20?420:null):day(400,250,500,null));

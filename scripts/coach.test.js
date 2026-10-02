@@ -10,6 +10,8 @@ ok("normal mesaj",C.redFlag("2 yumurta yedim")===null);
 const p=C.parse('```json\n{"reply":"Merhaba","log":[{"type":"su","ml":250}],"propose":null,"flag":null}\n```');
 ok("fence ayrıştır",p.reply==="Merhaba"&&p.log.length===1);
 ok("metin içinde json",C.parse('Tabii: {"reply":"ok","log":[]} bitti').reply==="ok");
+ok("JSON'dan sonra '}' içeren metin ayrıştırmayı bozmaz",(r=>r.reply==="ok"&&r.log.length===1)(C.parse('{"reply":"ok","log":[{"type":"su","ml":250}]} Not: {x} ve } işareti')));
+ok("tırnak içindeki '}' dengelemeyi bozmaz",C.parse('Yanıt: {"reply":"a } b \\" c","log":[]} son}').reply==='a } b " c');
 ok("json değilse düz metin",C.parse("Sadece metin").reply==="Sadece metin");
 ok("bozuk json düz metne düşer",C.parse('{"reply":"x",').reply.length>0);
 const it=C.cleanItems([{type:"yemek",text:"yumurta",kcal:140,protein:"12"},{type:"yemek",kcal:99999},{type:"su",ml:"250"},{type:"su",ml:5},{type:"kilo",kg:"83,7"},{type:"kilo",kg:5},{type:"spor",min:30},{type:"x"},null,{type:"not",text:" "}]);
@@ -30,6 +32,7 @@ ok("yanıttaki food ayrıştırılır",C.parse('{"reply":"~280 kcal","food":{"na
 const K=["squat","bench","row","curl","ohp"],day=ex=>({n:"G",ex});
 const pg=C.cleanProgram({name:"P",days:[day(["squat","uydurma","bench"]),day(["row","yok"]),day(["curl","ohp"]),day(K),day(K),day(K),day(K)]},K);
 ok("cleanProgram: bilinmeyen kimlik ve 1 egzersizli gün atılır, 6 günde kesilir",pg.days.length===6&&pg.days[0].ex.join()==="squat,bench"&&pg.days[1].ex.join()==="curl,ohp",pg);
+ok("cleanProgram: istenen gün sayısından fazlası kesilir, geçersiz istek 6'ya düşer",C.cleanProgram({days:[day(K),day(K),day(K),day(K)]},K,3).days.length===3&&C.cleanProgram({days:Array(7).fill(day(K))},K,9).days.length===6);
 ok("cleanProgram: hepsi geçersizse ya da çöp girdide null, hata yok",C.cleanProgram({days:[day(["x","y"])]},K)===null&&C.cleanProgram("x",K)===null&&C.cleanProgram({days:"x"},K)===null&&C.cleanProgram({days:[null,{ex:[1,{}]}]},K)===null&&C.cleanProgram(null)===null);
 ok("cleanProgram: en fazla 8 egzersiz, tekrar eden kimlik tekilleşir, ad varsayılanı",C.cleanProgram({days:[{ex:["squat","squat","bench"]}]},K).days[0].ex.length===2&&C.cleanProgram({days:[{ex:["squat","bench"]}]},K).name==="Koç programı");
 ok("parse program anahtarını döndürür",C.parse('{"reply":"ok","program":{"name":"P","days":[]}}').program.name==="P"&&C.parse('{"reply":"ok"}').program===null&&C.parse("düz").program===null);
