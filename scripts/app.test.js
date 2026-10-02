@@ -1435,6 +1435,11 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("dinleyici: su düğmesi ve act'siz bildirim yok sayılır, bilinmeyen sekme Trend'e düşer",tap("su",{act:"open",tab:"koc"})==="bugun"&&tap("tap",{act:"su"})==="bugun"&&tap("tap",{act:"open",tab:"ayar"})==="trend");
     ev("tab='bugun';render()");
   }
+  { // B7: aktif antrenmanda ağrı notu
+    ev("gStart(null);tab='salon';render()");
+    ok("aktif antrenmanda ağrı notu",ev("!!gActive()")&&$q("#view").textContent.includes(ev("gPainNote"))&&ev("gPainNote").includes("fizyoterapist"));
+    ev("S.workouts=S.workouts.filter(w=>gDone(w));tab='bugun';render()");
+  }
   { // B8: depolama sınırı ve kota hatası
     const v=()=>$q("#view").textContent,SP=w.Storage.prototype,set0=SP.setItem;
     ev("tab='bugun';S.entries=[];render()");
