@@ -244,10 +244,32 @@ function gNext(w){
   for(let ei=0;ei<w.ex.length;ei++){const si=w.ex[ei].sets.findIndex(s=>!s.done);if(si>=0)return {ei,si}}
   return null;
 }
+/* Önceki seanstaki aynı sıradaki çalışma seti; ısınma setinin karşılığı yok. */
+const gPrevSet=(w,x,si,prev=gHistory(x.id,w.t0)[0])=>!x.sets[si].w&&prev&&(prev.sets[x.sets.slice(0,si).filter(t=>!t.w).length]||prev.sets[prev.sets.length-1]);
+/* Şablon önizlemesi: başlatınca gelecek setlerin aynısı (gAddEx), egzersiz başına hedef. */
+function gTplPreview(id){
+  const t=S.templates.find(x=>x.id===id);if(!t)return;
+  const tmp={ex:[]};for(const i of t.ex)gAddEx(tmp,i,t.tg&&t.tg[i]);
+  const row=x=>{
+    const s=x.sets[0],hi=t.tg&&t.tg[x.id]&&t.tg[x.id].hi,k=gKind(x.id);
+    const tg=s.sec!=null?(k==="c"?`${Math.round(s.sec/60)} dk`:`${s.sec} sn`):s.reps?`${s.kg?fkg(s.kg)+" kg × ":""}${s.reps}${hi>s.reps?"–"+hi:""} tekrar`:"hedef yok, antrenmanda girersin";
+    return `<div class="prow"><span><b>${esc(gEx(x.id).n)}</b><span class="mut sm">${x.sets.length} set · ${tg}</span></span></div>`;
+  };
+  openSheet(`<h3>${esc(t.name)}</h3><div class="plist">${tmp.ex.map(row).join("")||`<p class="hint">Bu şablonda egzersiz yok. Başlatınca egzersizi sen eklersin.</p>`}</div><button class="btn" data-g="startgo:${id}">Başlat</button><button class="btn ghost" data-g="closesheet" style="margin-top:8px">Vazgeç</button>`);
+}
+/* Boş kg ya da tekrarla ✓: önceki seansın değeri önerilir, yoksa net uyarı; sessizce 0 yazılmaz. */
+function gEmptySet(w,ei,si,kgIn,repsIn,kind){
+  const x=w.ex[ei],ps=gPrevSet(w,x,si);
+  const need=[!repsIn&&"tekrar",!kgIn&&kind==="w"&&"kg"].filter(Boolean);
+  if(!need.length)return false;
+  if(!ps||(need.includes("tekrar")&&!ps.reps)||(need.includes("kg")&&ps.kg==null)){toast(need.includes("tekrar")?"Önce tekrar sayısını yaz":"Ağırlığı yaz, ağırlıksızsa 0 yaz");return true}
+  openSheet(`<h3>Set boş</h3><p>${need.join(" ve ")} girilmedi. Önceki seansta bu set: <b class="num">${ps.kg?fkg(ps.kg)+" kg × ":""}${ps.reps} tekrar</b>.</p><button class="btn" data-g="fillok:${ei}:${si}">Bu değerle tamamla</button><button class="btn ghost" data-g="closesheet" style="margin-top:8px">Kendim yazayım</button>`);
+  return true;
+}
 /* Panel: kg ve tekrar için ± (adım egzersizin inc'i) ve önceki seanstaki aynı sıradaki setle tek dokunuşla doldurma. */
 function gStepPanel(w,ei,si,prev){
   const x=w.ex[ei],s=x.sets[si],st=(f,l,v)=>`<div class="stp"><button data-g="${f}m:${ei}:${si}" aria-label="${l} azalt">−</button><span class="num" aria-label="${l}">${v}</span><button data-g="${f}p:${ei}:${si}" aria-label="${l} artır">+</button></div>`;
-  const ps=!s.w&&prev&&(prev.sets[x.sets.slice(0,si).filter(t=>!t.w).length]||prev.sets[prev.sets.length-1]);
+  const ps=gPrevSet(w,x,si,prev);
   const same=ps&&(ps.kg||0)!==(s.kg||0)||ps&&ps.reps!==s.reps;
   return `<div class="sx">${st("kg","Ağırlık",s.kg==null?"–":fkg(s.kg))}${st("rp","Tekrar",s.reps==null?"–":s.reps)}
   ${same?`<button class="lnk sxs" data-g="same:${ei}:${si}">Önceki seansla aynı: ${ps.kg?fkg(ps.kg)+" × ":""}${ps.reps}</button>`:""}</div>`;
@@ -267,7 +289,7 @@ function gLive(w){
       <button class="sin tgo" data-g="tstart:${ei}:${si}" aria-label="${si+1}. set zamanlayıcıyı başlat">${gTim&&gTim.ei===ei&&gTim.si===si?"⏸":"▶"}</button>${tick}</div>`;
       return `<div class="srow${rpe?" r":""}${s.done?" dn":""}${on?" nx":""}"><span class="sn">${si+1}</span><span class="sp num">${p}</span>
       <input class="sin num" inputmode="decimal" aria-label="${si+1}. set kg" data-gi="kg:${ei}:${si}" value="${s.kg==null?"":fkg(s.kg)}" placeholder="${kind==="b"?"ek kg":"kg"}">
-      <input class="sin num" inputmode="numeric" aria-label="${si+1}. set tekrar" data-gi="reps:${ei}:${si}" value="${s.reps==null?"":s.reps}" placeholder="tek">${rpe?`<input class="sin num" inputmode="decimal" aria-label="${si+1}. set zorluk (RPE)" data-gi="rpe:${ei}:${si}" value="${s.rpe==null?"":fkg(s.rpe)}" placeholder="RPE">`:""}${tick}</div>${on?gStepPanel(w,ei,si,prev):""}`;
+      <input class="sin num" inputmode="numeric" aria-label="${si+1}. set tekrar" data-gi="reps:${ei}:${si}" value="${s.reps==null?"":s.reps}" placeholder="tekrar">${rpe?`<input class="sin num" inputmode="decimal" aria-label="${si+1}. set zorluk (RPE)" data-gi="rpe:${ei}:${si}" value="${s.rpe==null?"":fkg(s.rpe)}" placeholder="RPE">`:""}${tick}</div>${on?gStepPanel(w,ei,si,prev):""}`;
     }).join("");
     return `<div class="card ex"><div class="exh"><button class="exn" data-g="hist:${x.id}"><b>${esc(ex.n)}</b><span class="mut">${ex.r||ex.g}</span></button><button class="del" data-g="exinfo:${x.id}" aria-label="Egzersiz bilgisi">ⓘ</button><button class="del" data-g="menu:${ei}" aria-label="Egzersiz menüsü">⋮</button></div>
     ${sug?`<div class="sug">Öneri: ${fkg(sug.kg)||0} kg × ${sug.reps}. ${sug.why}.${sug.note?` <span class="mut">${sug.note}</span>`:""}</div>`:""}${x.note?`<div class="note">${esc(x.note)}</div>`:""}
@@ -496,7 +518,15 @@ function gClick(v,el){
   const [a,p1,p2]=v.split(":"),w=gActive();
   const ei=+p1,si=+p2;
   switch(a){
-    case "start":return gStart(p1?+p1:null);
+    case "start":return p1?gTplPreview(+p1):gStart(null);
+    case "startgo":closeSheet();return gStart(+p1);
+    case "fillok":{
+      const x=w.ex[ei],ps=gPrevSet(w,x,si),k=document.querySelector(`[data-gi="kg:${ei}:${si}"]`),r=document.querySelector(`[data-gi="reps:${ei}:${si}"]`);
+      if(!ps||!k||!r)return;
+      if(!k.value.trim())k.value=fkg(ps.kg||0)||"0";
+      if(!r.value.trim())r.value=ps.reps;
+      closeSheet();return document.querySelector(`[data-g="done:${ei}:${si}"]`).click();
+    }
     case "pick":return gSheetPick();
     case "closesheet":return closeSheet();
     case "histmore":gHistMax+=20;return render();
@@ -534,10 +564,11 @@ function gClick(v,el){
         else s.done=false;
         save();render();gTick();return;
       }
-      const kg=num(row.querySelector("[data-gi^=kg]").value),reps=num(row.querySelector("[data-gi^=reps]").value,true);
+      const kgI=row.querySelector("[data-gi^=kg]").value.trim(),kg=num(kgI),reps=num(row.querySelector("[data-gi^=reps]").value,true);
       let pr=null;
       if(!s.done){
-        if(!(reps>0&&reps<=200))return toast("Önce tekrar sayısını yaz");
+        if(gEmptySet(w,ei,si,kgI,!isNaN(reps),gKind(w.ex[ei].id)))return;
+        if(!(reps>0&&reps<=200))return toast("Tekrar 1 ile 200 arasında olmalı");
         s.kg=isNaN(kg)?0:kg;s.reps=reps;s.done=true;gRestSet(Date.now()+gRestSec(w.ex[ei].id)*1000,w.ex[ei].id);
         pr=!s.w&&gNewPR(w,w.ex[ei].id,s);
       }else s.done=false;
@@ -554,7 +585,7 @@ function gClick(v,el){
     }
     case "same":{
       const x=w.ex[ei],s=x.sets[si],prev=gHistory(x.id,w.t0)[0];
-      const ps=prev&&(prev.sets[x.sets.slice(0,si).filter(t=>!t.w).length]||prev.sets[prev.sets.length-1]);
+      const ps=gPrevSet(w,x,si,prev);
       if(!ps)return;s.kg=ps.kg;s.reps=ps.reps;save();return render();
     }
     case "rest":{const d=+p1;gRestSet(d&&Math.max(Date.now(),restEnd)+d*1000);gTick();return}
