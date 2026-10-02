@@ -998,6 +998,16 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("8-12 seçilince varsayılana döner",ev("Object.keys(S.exCfg).length")===0);
     const X=JSON.parse(ev(`JSON.stringify(cleanGym({exCfg:{squat:{lo:5,hi:8},bilinmeyen:{lo:5,hi:8},bench:{lo:9,hi:9},row:{lo:0,hi:5}}}))`));
     ok("exCfg yeniden yüklemede korunur, bilinmeyen kimlik ve geçersiz aralık atılır",JSON.stringify(X.exCfg)==='{"squat":{"lo":5,"hi":8}}',X.exCfg);
+    { // akıllı ilerleme (D-Ant5)
+      const set=(kg,r)=>`[{kg:${kg},reps:${r},done:true},{kg:${kg},reps:${r},done:true},{kg:${kg},reps:${r},done:true,w:false},{kg:20,reps:10,done:true,w:true}]`;
+      ev(`S.exCfg={};S.workouts=[${Wk(1,1000,2000,set(60,7))},${Wk(2,3000,4000,set(60,6))},${Wk(3,Date.now(),null,"[{kg:null,reps:null,done:false}]")}];tab='salon';render()`);
+      ok("gSuggest son 2 seansa bakar: aynı ağırlıkta hedefin altında → düşürme, kart nedeni yazar",ev("gSuggest('squat').kg")===55&&q('.sug').textContent.includes("Son 2 seans hedefin altında, %10 düşür."),q('.sug').textContent);
+      ev(`S.workouts=[${Wk(0,500,600,set(60,9))},${Wk(1,1000,2000,set(60,9))},${Wk(2,3000,4000,set(60,9))},${Wk(3,Date.now(),null,"[{kg:null,reps:null,done:false}]")}];render()`);
+      ok("3 seans gelişim yok: deload notu kartta ('istersen')",/İstersen/.test(q('.sug').textContent)&&ev("gSuggest('squat').kg")===60,q('.sug').textContent);
+      ev(`S.workouts=[${Wk(1,1000,2000,"[{kg:null,reps:null,sec:30,done:true}]").replace("id:'squat'","id:'plank'")},${Wk(2,Date.now(),null,"[{kg:null,reps:null,sec:30,done:false}]").replace("id:'squat'","id:'plank'")}];render()`);
+      ok("süreli egzersizde öneri yok",ev("gSuggest('plank')")===null&&!q('.sug'));
+      ev(`S.workouts=[${Wk(1,1000,2000,"[{kg:60,reps:8,done:true},{kg:60,reps:8,done:true}]")},${Wk(2,Date.now(),null,"[{kg:null,reps:null,done:false}]")}];render()`);
+    }
     const Y=JSON.parse(ev(`JSON.stringify(cleanGym({exCfg:[1,2],workouts:[{id:5,day:'2026-09-01',t0:1,t1:2,ex:[{id:'squat',sets:[{kg:100,reps:5,done:true}]}]}]}))`));
     const Z=JSON.parse(ev(`JSON.stringify(cleanGym({exCfg:{squat:'x',bench:{lo:'5',hi:null},row:null},workouts:[{id:5,day:'2026-09-01',t0:1,t1:2,ex:[{id:'squat',sets:[{kg:100,reps:5,done:true}]}]}]}))`));
     ok("exCfg yok (eski yedek) ve çöp değer: kayıtlar eksiksiz yüklenir",Object.keys(Y.exCfg).length===0&&Object.keys(Z.exCfg).length===0&&Y.workouts[0].ex[0].sets[0].kg===100&&Z.workouts[0].ex[0].sets[0].kg===100);

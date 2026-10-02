@@ -100,8 +100,8 @@ function gHistory(exId,beforeT=Infinity){
 }
 function gSuggest(exId){
   if(gKind(exId)!=="w")return null;
-  const h=gHistory(exId)[0];if(!h)return null;
-  return Algo.nextTarget(h.sets,Object.assign({lo:8,hi:12,inc:gEx(exId).inc},S.exCfg[exId]));
+  const [h,...old]=gHistory(exId);if(!h)return null;
+  return Algo.nextTarget(h.sets,Object.assign({lo:8,hi:12,inc:gEx(exId).inc,prev:old.slice(0,2).map(x=>x.sets)},S.exCfg[exId]));
 }
 const GSEC={t:30,i:30,c:600};
 function gAddEx(w,exId){
@@ -213,7 +213,7 @@ function gLive(w){
       <input class="sin num" inputmode="numeric" aria-label="${si+1}. set tekrar" data-gi="reps:${ei}:${si}" value="${s.reps==null?"":s.reps}" placeholder="tek">${tick}</div>`;
     }).join("");
     return `<div class="card ex"><div class="exh"><button class="exn" data-g="hist:${x.id}"><b>${esc(ex.n)}</b><span class="mut">${ex.r||ex.g}</span></button><button class="del" data-g="exinfo:${x.id}" aria-label="Egzersiz bilgisi">ⓘ</button><button class="del" data-g="menu:${ei}" aria-label="Egzersiz menüsü">⋮</button></div>
-    ${sug?`<div class="sug">Öneri: ${fkg(sug.kg)||0} kg × ${sug.reps}. ${sug.why}.</div>`:""}${x.note?`<div class="note">${esc(x.note)}</div>`:""}
+    ${sug?`<div class="sug">Öneri: ${fkg(sug.kg)||0} kg × ${sug.reps}. ${sug.why}.${sug.note?` <span class="mut">${sug.note}</span>`:""}</div>`:""}${x.note?`<div class="note">${esc(x.note)}</div>`:""}
     <div class="shead"><span>Set</span><span>Önceki</span>${tm?`<span>${kind==="c"?"Dakika":"Süre (sn)"}</span><span>Süre</span>`:`<span>${kind==="b"?"Ek kg":"kg"}</span><span>Tekrar</span>`}<span></span></div>${rows}
     <button class="lnk" data-g="addset:${ei}">Set ekle</button></div>`;
   }).join("");
