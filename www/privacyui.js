@@ -1,5 +1,5 @@
 "use strict";
-/* Kategori başına sayı ve silme. Besin kütüphanesi ile antrenman şablonları kullanıcının hazırladığı içeriktir, yalnız "Tüm verileri sil" ile gider. */
+/* Kategori başına sayı ve silme. Kendi besinleri, favoriler ve şablonlar kullanıcının hazırladığı içeriktir, yalnız "Tüm verileri sil" ile gider. */
 const pvE=(...t)=>[()=>S.entries.filter(e=>t.includes(e.type)).length,()=>{S.entries=S.entries.filter(e=>!t.includes(e.type))}];
 const PV_CATS=[
   ["Yemek ve su kayıtları",...pvE("yemek","su")],
@@ -12,7 +12,8 @@ const PV_CATS=[
   ["Uyku, ruh hali ve oruç",()=>S.sleep.length+S.mood.length+S.fast.log.length+(S.fast.t0?1:0),()=>{S.sleep=[];S.mood=[];S.fast.log=[];S.fast.t0=null}],
   ["Koç sohbeti",()=>S.chat.length,cClearChat],
   ["Notlar",...pvE("not")],
-  ["Vücut ölçüleri (bel, kalça…)",()=>S.measures.length,()=>{S.measures=[]}]
+  ["Vücut ölçüleri (bel, kalça…)",()=>S.measures.length,()=>{S.measures=[]}],
+  ["Tariflerim",()=>S.recipes.length,()=>{S.recipes=[]}]
 ];
 function pvDelete(i){
   const [name,n,del]=PV_CATS[i],lb=S.settings.lastBackup;
@@ -36,7 +37,7 @@ function sheetPrivacy(){
   <div class="lbl">Verilerini sil</div>
   <p class="mut sm">Kategori başına silinir, geri alınamaz. <button class="lnk" style="display:inline;width:auto;min-height:44px" data-act="yedek">Önce yedek al</button></p>
   ${PV_CATS.map(([name,n],i)=>`<div class="row" style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)"><span style="flex:1;min-width:0"><b>${name}</b><small class="mut sm" style="display:block">${n()} kayıt</small></span><button class="chip" data-pv="del:${i}" ${n()?"":"disabled"} aria-label="${name} sil">Sil</button></div>`).join("")}
-  <p class="hint">Besin kütüphanen ve antrenman şablonların bu listede yoktur; yalnız Ayarlar > Veri ve yedek > Tüm verileri sil ile gider.</p>
+  <p class="hint">Kendi besinlerin, favorilerin, öğün şablonların ve antrenman şablonların bu listede yoktur; yalnız Ayarlar > Veri ve yedek > Tüm verileri sil ile gider.</p>
   <div class="banner info" style="margin-top:10px">${consentHtml()}<p>Durum: ${st.consent?`kabul edildi (${esc(st.consentAt)})`:"kabul edilmedi"}</p>
   ${st.consent?`<button class="btn ghost" data-pv="revoke">Rızamı geri al</button>`:consentOk()?`<button class="btn" data-pv="consent">Açık rızamı veriyorum</button>`:""}</div>
   <button class="btn ghost" data-pv="close" style="margin-top:8px">Kapat</button>`);

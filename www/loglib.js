@@ -37,6 +37,43 @@ const LogLib=(()=>{
     }
     return out;
   }
+  /* Tarif: kalemler 100 g başına değerlerin kopyasıdır; sonradan besin silinse ya da değişse tarif bozulmaz. */
+  const PER100={p:300,c:100,f:100,fb:100,sg:100,na:40000},RLBL={k:"kalori",p:"protein",c:"karbonhidrat",f:"yağ",fb:"lif",sg:"şeker",na:"sodyum"};
+  function recipeItem(x){
+    if(!x||typeof x.n!=="string"||!x.n.trim()||!(x.g>0&&x.g<=5000)||!(x.k>=0&&x.k<=5000))return null;
+    const o={n:x.n.trim().slice(0,60),g:Math.round(x.g*10)/10,k:x.k};
+    for(const m of NUTR)if(Number.isFinite(x[m])&&x[m]>=0&&x[m]<=PER100[m])o[m]=x[m];
+    return o;
+  }
+  function cleanRecipes(arr){
+    const out=[],ids=new Set(),names=new Set();
+    for(const r of Array.isArray(arr)?arr:[]){
+      if(!r||typeof r.n!=="string"||!r.n.trim()||!Array.isArray(r.items))continue;
+      const n=r.n.trim().slice(0,60),items=r.items.map(recipeItem).filter(Boolean).slice(0,30);
+      if(!items.length||names.has(key(n)))continue;
+      names.add(key(n));
+      const id=Number.isInteger(r.id)&&r.id>0&&!ids.has(r.id)?r.id:Math.max(0,...ids)+1,s=Math.round(r.s);
+      ids.add(id);out.push({id,n,s:s>=1&&s<=50?s:1,items});
+      if(out.length===50)break;
+    }
+    return out;
+  }
+  /* Bir besin için kalem toplamı yalnız TÜM kalemlerde veri varsa yazılır; kısmi toplam eksik değeri tam gibi gösterir. part: [besin, veri olan kalem sayısı]. */
+  function recipeCalc(r){
+    const g=r.items.reduce((s,i)=>s+i.g,0),tot={},part=[];
+    for(const m of ["k",...NUTR]){
+      const have=r.items.filter(i=>i[m]!=null).length;
+      if(have===r.items.length)tot[m]=r.items.reduce((s,i)=>s+i[m]*i.g/100,0);else if(have)part.push([m,have]);
+    }
+    return {g,tot,part,n:r.items.length};
+  }
+  const recipeNote=c=>"Çiğ ağırlıklarla hesaplandı, pişince değişir; tahmindir."+c.part.map(([m,h])=>` ${RLBL[m][0].toUpperCase()+RLBL[m].slice(1)}: ${h}/${c.n} malzemede veri var, toplam yazılmadı.`).join("");
+  /* Yemek arama listesindeki biçim (allFoods): tarif tek besin gibi aranır, porsiyon başı eklenir. */
+  function recipeFood(r){
+    const c=recipeCalc(r),pg=c.g/r.s,f={n:r.n,k:c.tot.k*100/c.g,my:true,src:"tarif",rec:r.id,hint:`Tarifim, ${r.s} porsiyon. ${recipeNote(c)}`,u:[[`1 porsiyon (${Math.round(pg)} g)`,pg],["100 g",100]]};
+    for(const m of NUTR)f[m]=c.tot[m]==null?null:c.tot[m]*100/c.g;
+    return f;
+  }
   const MEALS=[["kah","Kahvaltı"],["ogl","Öğle"],["aks","Akşam"],["atis","Atıştırmalık"]];
   const mealKey=k=>MEALS.some(m=>m[0]===k)?k:"";
   /* Eski kayıtta meal yok: saatten türer. */
@@ -48,6 +85,6 @@ const LogLib=(()=>{
     return {groups,su,suMl:su.reduce((s,e)=>s+(e.v||0),0),rest:items.filter(e=>e.type!=="yemek"&&e.type!=="su")};
   }
   const stalled=(snapAt,now,yest,prev7)=>(snapAt>0&&now-snapAt>26*36e5)||(yest===0&&prev7>1000);
-  return {MEALS,mealKey,mealOf,dayLog,stalled,NUTR,MAX,copyNutr,key,cleanFav,cleanTpl,recents};
+  return {PER100,RLBL,cleanRecipes,recipeCalc,recipeNote,recipeFood,MEALS,mealKey,mealOf,dayLog,stalled,NUTR,MAX,copyNutr,key,cleanFav,cleanTpl,recents};
 })();
 if(typeof module!=="undefined")module.exports=LogLib;
