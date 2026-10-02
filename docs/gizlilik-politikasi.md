@@ -1,0 +1,82 @@
+# NeoWell Gizlilik Politikası ve KVKK Aydınlatma Metni
+
+> **Bu metin hukuki danışmanlık değildir.** Uygulamanın gerçek davranışından (kod ve izin listesi) çıkarılmış bir taslaktır. Yayınlamadan önce bir hukukçuya gösterilmesi önerilir (açık karar: G7, `docs/yol-haritasi.md`). Köşeli parantezli `[DOLDURULACAK: ...]` alanları yayın öncesi **mutlaka** doldurulmalıdır; hiçbiri uydurulmamıştır.
+
+Son güncelleme: [DOLDURULACAK: yayın tarihi] · Uygulama sürümü: [DOLDURULACAK]
+
+## 1. Veri sorumlusu (6698 sayılı KVKK md. 10)
+- Ad / unvan: [DOLDURULACAK: AD]
+- Adres: [DOLDURULACAK: ADRES]
+- İletişim (e-posta): [DOLDURULACAK: İLETİŞİM E-POSTASI]
+- KEP / VERBİS bilgisi (varsa): [DOLDURULACAK]
+
+NeoWell'in kendi sunucusu, kullanıcı hesabı ya da reklam/analitik altyapısı yoktur. Verilerin büyük bölümü yalnızca kullanıcının telefonunda işlenir ve geliştiriciye ulaşmaz (bkz. bölüm 5 ve 6).
+
+## 2. İşlenen veri kategorileri
+Hepsini kullanıcı kendisi girer ya da telefon sensörlerinden, kullanıcının verdiği izinle alınır:
+
+| Kategori | İçerik |
+|---|---|
+| Profil | boy, yaş, cinsiyet (isteğe bağlı), hareket düzeyi, hedefler |
+| Sağlık verisi (özel nitelikli) | kilo, yemek ve su kayıtları, spor ve antrenman setleri, adım ve hareket, tahlil sonuçları, tansiyon ve şeker ölçümleri, ilaç adı-saat-alım kaydı, uyku, ruh hali, oruç, kullanıcının yazdığı sağlık notu |
+| Notlar ve Koç sohbeti | kullanıcının yazdığı notlar, Koç ile mesajlar |
+| Cihaz | bildirim izni durumu; yürüyüş/koşu algılandığında yaklaşık 1 dakikalık konum ölçümü (yalnız mesafe ve hız sonucu saklanır, konum noktası ve rota saklanmaz); kamera (etiket ve tahlil fotoğrafı telefonda okunur, fotoğraf saklanmaz ve gönderilmez) |
+| Koç anahtarı | kullanıcının kendi API anahtarı; yalnız telefonda, Android Keystore ile şifreli saklanır, yedeğe yalnız yedek parolayla şifrelenirse girer |
+
+## 3. İşleme amaçları
+Kişisel sağlık günlüğü, hedef ve kalori hesabı, hatırlatma bildirimleri, grafik ve raporlar (PDF/CSV), kullanıcı isterse yapay zekâ destekli Koç sohbeti. Veri reklam, profilleme ya da satış için kullanılmaz.
+
+## 4. Hukuki sebep
+- Uygulamanın temel işlevleri (kayıt, grafik, hatırlatma): veri yalnızca kullanıcının cihazında, kullanıcının kendi eylemiyle işlenir.
+- **Koç ile veri paylaşımı ve yurt dışına aktarım: kullanıcının açık rızası.** Rıza uygulama içinde, ne gönderileceği, kime gideceği ve yurt dışına aktarım olduğu açıkça yazılarak sorulur; her an geri alınabilir; verilmezse uygulama tam çalışır. Rıza metni sürümlenir; metin değişirse rıza yeniden istenir.
+- [DOLDURULACAK: hukukçu onayı: özel nitelikli veri ve yurt dışı aktarım için hukuki sebep ifadesi]
+
+## 5. Alıcılar ve yurt dışına aktarım
+Kullanıcının telefonundan internete çıkan tek veri akışları:
+
+| Hizmet | Ne gider | Ne zaman |
+|---|---|---|
+| Open Food Facts (açık veri tabanı) | Yalnızca barkod numarası (ve her internet isteğinde olduğu gibi IP adresi) | Kullanıcı barkod okutursa |
+| Koç sağlayıcısı: NVIDIA Build, Groq, OpenRouter, Google Gemini ya da kullanıcının kendi eklediği OpenAI uyumlu servis | Kullanıcı mesajları; profil; sağlık notu; hedefler; son 14 günün kilo, yemek, su, spor, adım (varsa uyku, ruh hali) özeti; son antrenmanlar; son notlar; ilaç modülü açıksa ilaç adı ve saatleri; kullanıcının API anahtarı (yalnızca kimlik doğrulama). **Tahlil, tansiyon, şeker, fotoğraf ve yedek gönderilmez.** | Yalnızca açık rıza verilmişse ve kullanıcı Koç'u kullandığında (otomatik günlük/haftalık yorumlar dahil). Sağlayıcıların sunucuları yurt dışındadır; bu bir yurt dışına aktarımdır. Gemini'de her gönderimden önce ayrıca onay sorulur. |
+| Google barkod tarayıcı (Google Play hizmetleri, ML Kit) | NeoWell görüntüyü almaz; görüntü telefonda işlenir. Google kendi koşullarına göre kullanım ve tanılama bilgisi toplayabilir. | Barkod okutulurken |
+| Google Drive ya da başka paylaşım hedefi | Kullanıcının kendi seçtiği dosya (yedek parolayla şifrelenir; PDF/CSV şifresizdir) | Yalnızca kullanıcı "paylaş" derse |
+
+Her sağlayıcı kendi gizlilik politikasından sorumludur; kullanıcı kendi hesabıyla ve kendi anahtarıyla bağlandığından o sağlayıcıyla ilişki kullanıcıdadır. [DOLDURULACAK: sağlayıcı politikalarına bağlantılar]
+
+## 6. Saklama süresi
+Veriler telefonda, kullanıcı silene ya da uygulamayı kaldırana kadar durur. Ayarlar > Gizlilik ve veri'den kategori bazında, Ayarlar > Veriler'den tamamen silinebilir. Koç sağlayıcısına gönderilmiş veriye o sağlayıcının saklama politikası uygulanır; NeoWell bunu silemez. Yedek ve dışa aktarılan dosyalar kullanıcının seçtiği yerde durur ve oradan silinmesi kullanıcıya aittir. Veriler Android otomatik yedeğine ve cihazlar arası aktarıma bilerek dahil edilmez.
+
+## 7. İlgili kişinin hakları (KVKK md. 11)
+Kişisel verilerinizin işlenip işlenmediğini öğrenme, bilgi talep etme, amacına uygun kullanılıp kullanılmadığını öğrenme, yurt içinde/dışında aktarıldığı kişileri bilme, düzeltme, silme/yok etme, bunların aktarıldığı kişilere bildirilmesini isteme, otomatik analiz sonucuna itiraz etme ve zarar halinde giderim talep etme haklarına sahipsiniz.
+
+Pratikte: veriler cihazınızdadır; **tablo (CSV) dışa aktarma ile kopyasını alabilir**, **kategori bazlı silme ile verinizi silebilir**, **Koç rızasını Ayarlar'dan geri alabilirsiniz**. Bunun dışındaki talepler için: [DOLDURULACAK: BAŞVURU YOLU, ör. e-posta, yanıt süresi].
+
+## 8. Çocuklar
+NeoWell 18 yaş altına yönelik değildir. Profilde 18 yaş altı bir yaş girilirse Koç veri paylaşımı (yurt dışı aktarım) uygulamada kapalı tutulur. [DOLDURULACAK: 18 yaş altı kullanıcı politikası, Play Aile politikası beyanı]
+
+## 9. Güvenlik
+Veriler yalnız uygulamanın özel depolamasındadır; API anahtarları Android Keystore ile şifrelenir; yedek isteğe bağlı parolayla şifrelenir. Cihazınızı ekran kilidiyle korumanız önerilir.
+
+## 10. Tıbbi uyarı
+NeoWell tıbbi cihaz değildir, tanı koymaz ve tedavi önermez; hekim yerine geçmez. Sağlık kararları için hekiminize danışın. Koç yanıtları genel bilgidir.
+
+## 11. Değişiklikler
+Metin değişirse uygulama içinde duyurulur; Koç onay metni değişirse onay yeniden istenir. Güncel metin: [DOLDURULACAK: yayın URL'si]
+
+---
+
+# NeoWell Privacy Policy (short English version)
+
+> Not legal advice. Fields marked `[TO BE FILLED]` must be completed before publication.
+
+**Controller:** [TO BE FILLED: NAME / ADDRESS / CONTACT E-MAIL]. NeoWell has no servers, accounts, ads or analytics.
+
+**Where data lives:** all entries (profile, weight, food, water, workouts, steps, lab results, blood pressure and glucose, medication log, sleep, mood, fasting, notes, coach chat) stay only on your phone. Backups, PDF and CSV files go only where you choose to share them. They are excluded from Android auto-backup.
+
+**What goes online:** (1) Open Food Facts: only the barcode number you scan. (2) The AI Coach, only if you give explicit consent and add your own API key: your chat messages, profile, health note, goals, a 14-day summary of weight/food/water/sport/steps (and sleep/mood if present), recent workouts and notes, and medication names and times if that module is on, to the provider you selected (NVIDIA Build, Groq, OpenRouter, Google Gemini or a custom one). These servers are outside Turkey; this is a cross-border transfer based on your consent. Lab results, blood pressure, glucose, photos and backups are never sent. You can withdraw consent at any time (Settings > Privacy and data) and the app works fully without it. (3) Google's barcode scanner (Play services): NeoWell never receives the image; Google may collect usage and diagnostics under its own terms. (4) Google Drive only if you share a backup there.
+
+**Your rights (KVKK art. 11):** export your data as CSV, delete it by category in the app, withdraw consent; other requests: [TO BE FILLED: CONTACT].
+
+**Children:** not intended for users under 18; Coach data sharing is disabled for ages under 18.
+
+**Medical:** NeoWell is not a medical device, does not diagnose or recommend treatment.

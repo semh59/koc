@@ -290,6 +290,7 @@ input.in,select.in,.chip>button{min-height:44px}
 <script src="habitui.js"></script>
 <script src="motionui.js"></script>
 <script src="backupui.js"></script>
+<script src="privacyui.js"></script>
 <script src="onboardui.js"></script>
 <script>
 "use strict";
@@ -321,7 +322,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- veri ---------- */
 const DEF={
-  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,lastPlan:"",lastWeekly:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,stepWarnDay:"",reminders:[
+  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",lastPlan:"",lastWeekly:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,stepWarnDay:"",reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -348,6 +349,9 @@ const dayOk=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s);
 const timeOk=s=>typeof s==="string"&&/^([01]\d|2[0-3]):[0-5]\d$/.test(s);
 let corruptNote=false;
 /* Eski varsayılan metin özet üretilmese de "hazır" diyordu; değiştirilmemişse yeni varsayılan geçerli olsun. */
+/* Koç onay metni değiştiğinde artırılır: eski sürümle verilmiş onay geçersiz sayılır ve yeniden sorulur. */
+const CONSENT_V=1;
+const MED_NOTE="NeoWell tıbbi cihaz değildir, tanı koymaz ve tedavi önermez; hekim yerine geçmez. Sağlık kararların için hekimine danış.";
 const OLD_WEEKLY_BODY="Haftanın özeti hazır, bakmak için dokun.";
 function cleanSettings(raw,fast){
   const d=structuredClone(DEF.settings),o=raw&&typeof raw==="object"?raw:{};
@@ -359,7 +363,7 @@ function cleanSettings(raw,fast){
   if(o.sex==="m"||o.sex==="f")d.sex=o.sex;
   if(o.act===0||o.act===1||o.act===2)d.act=o.act;
   if(typeof o.healthNote==="string")d.healthNote=o.healthNote.slice(0,500);
-  if(o.consent===true)d.consent=true;
+  if(o.consent===true&&o.consentV===CONSENT_V){d.consent=true;d.consentV=CONSENT_V;if(dayOk(o.consentAt))d.consentAt=o.consentAt}
   if(dayOk(o.lastPlan))d.lastPlan=o.lastPlan;
   if(dayOk(o.lastWeekly))d.lastWeekly=o.lastWeekly;
   if(dayOk(o.lastPlateau))d.lastPlateau=o.lastPlateau;
@@ -653,10 +657,11 @@ function viewAyar(){
   <h2>Veriler</h2><div class="card"><div class="btns">
     <button class="btn" data-act="drive">☁️ Yedeği Drive'a gönder</button>
     <button class="btn ghost" data-act="yedek">Yedekle veya geri yükle</button>
+    <button class="btn ghost" data-pv="open">Gizlilik ve veri</button>
     <button class="btn danger" data-act="sifirla">Tüm verileri sil</button></div>
     ${storeMsg()?`<p class="status" role="alert"><b>${storeMsg()[0]}.</b> ${storeMsg()[1]}</p>`:""}<p class="hint">Kullanılan alan: yaklaşık ${fmt(storeBytes/1e6)} MB (sınır telefona göre 5-10 MB).</p>
     <p class="hint">Veriler yalnızca bu telefonda durur. Google otomatik yedeğine ve telefondan telefona aktarıma bilerek dahil edilmez. Uygulamayı silersen ya da telefon değiştirirsen kaybolur; yeni telefona geçmeden önce yedek dosyanı al.</p></div>
-  <div class="about"><img src="logo.png" alt="NeoWell logosu" width="72" height="72"><b>NeoWell</b><span class="mut sm">Sağlığın yeni kaynağı</span></div>`;
+  <div class="about"><img src="logo.png" alt="NeoWell logosu" width="72" height="72"><b>NeoWell</b><span class="mut sm">Sağlığın yeni kaynağı</span><p class="hint" style="text-align:center">${MED_NOTE}</p></div>`;
 }
 
 function render(){
@@ -872,7 +877,7 @@ async function goYukle(){
   otherBytes=lsOther();
   S=Object.assign({settings:cleanSettings(r.settings,r.fast),entries:out,nextId:out.length+1,myFoods:cleanMyFoods(r.myFoods),labs:LabLib.cleanLabs(r.labs),vitals:VitalsLib.clean(r.vitals)},cleanHealthState(r),cleanGym(r),cleanCoach(r));
   /* Yedek, anahtarın gideceği adresi, onay ayarını ve veri paylaşım iznini değiştirememeli. */
-  S.settings.consent=prevS.settings.consent;S.settings.lastBackup=dayKey();
+  Object.assign(S.settings,{consent:prevS.settings.consent,consentV:prevS.settings.consentV,consentAt:prevS.settings.consentAt,lastBackup:dayKey()});
   const keys=getKeys();
   for(const p of S.providers){
     const cur=prevS.providers.find(x=>x.id===p.id),def=defProviders().find(x=>x.id===p.id);

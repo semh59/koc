@@ -26,7 +26,7 @@ function viewTahlil(){
   const nTxt=txt.length?`<p class="hint">${txt.length} yazılı sonuç (ör. Negatif) kayıtlı. Bunlar grafikte gösterilmez, PDF'e eklenmez.</p>`:"";
   return `<button class="btn" data-tab="trend" style="margin:0 0 12px">‹ Trend</button>
   <div class="card"><div class="lbl">Tahlil sonuçları</div>
-    <p class="mut sm" style="margin:0 0 10px">PDF'ten okut ya da elle ekle. Veriler yalnızca bu telefonda kalır. Uygulama yorum yapmaz, laboratuvarın yazdığı referans aralığını gösterir.</p>
+    <p class="mut sm" style="margin:0 0 10px">PDF'ten okut ya da elle ekle. Veriler yalnızca bu telefonda kalır. Laboratuvarın yazdığı referans aralığı gösterilir. ${MED_NOTE}</p>
     <div class="btns" style="display:grid;gap:8px"><label class="btn" style="text-align:center">📄 PDF'ten oku<input id="labfile" type="file" accept="application/pdf,.pdf" hidden></label>
     ${ocrBtn("tahlil","📷 Fotoğraftan oku")}<button class="btn ghost" data-lab="add">➕ Elle ekle</button>${list.length?`<button class="btn ghost" data-lab="pdf">📤 PDF olarak paylaş</button>`:""}</div></div>
   ${cards||`<div class="card"><p class="mut">Henüz tahlil sonucu yok. İlk PDF'ini okutarak başla.</p></div>`}${nTxt}

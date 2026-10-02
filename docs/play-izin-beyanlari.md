@@ -11,7 +11,7 @@ Son gözden geçirme: 2 Ekim 2026. Kaynak: `scripts/patch-android.js`, eklenti m
 ## Kalan izinler
 | İzin | Hangi özellik | Kullanıcı nasıl görüyor | Play Console |
 |---|---|---|---|
-| `INTERNET`, `ACCESS_NETWORK_STATE` | Koç (kullanıcının kendi API anahtarıyla dil modeli), Open Food Facts barkod araması. `ACCESS_NETWORK_STATE` Google Play hizmetleri kitaplığından geliyor. | Sistem penceresi yok (normal izin). | Beyan gerekmez. Veri güvenliği formunda Koç'a giden veri yazılmalı (B6). |
+| `INTERNET`, `ACCESS_NETWORK_STATE` | Koç (kullanıcının kendi API anahtarıyla dil modeli), Open Food Facts barkod araması. `ACCESS_NETWORK_STATE` Google Play hizmetleri kitaplığından geliyor. | Sistem penceresi yok (normal izin). | Beyan gerekmez. Veri güvenliği formunda Koç'a giden veri yazılmalı: kaynak `docs/gizlilik-politikasi.md` bölüm 5. |
 | `POST_NOTIFICATIONS` | Su, tartı, ilaç, oruç ve yedek hatırlatmaları. | Android 13+ sistem penceresi, ilk hatırlatma kurulurken. Ayarlar > Hatırlatmalar durumu gösterir. | Beyan gerekmez. |
 | `SCHEDULE_EXACT_ALARM` | İlaç alarmı ve hatırlatmaların tam saatinde çalması. | Android 13+ yeni kurulumda izin verilmiş gelmez. İzin yoksa eklenti alarmı yaklaşık saate kurar (çökme yok). Bugün > yapılacaklar listesinde (ilaç varsa) ve Ayarlar > Hatırlatmalar'da uyarı çıkar. "İzin ver" düğmesi sistem ekranını açar, dönünce hatırlatmalar yeniden kurulur. | Beyan formu yok. Kullanıcı izni sistem ekranından verir. |
 | `RECEIVE_BOOT_COMPLETED` | Telefon yeniden açılınca alarmları, adım anlık görüntüsünü ve hareket algılamayı yeniden kurmak. | Sistem penceresi yok. | Beyan gerekmez. |
@@ -33,7 +33,7 @@ Video: Ayarlar > Hareket algılama > Aç > "Konum izni hakkında" ekranı > Deva
 **Ön plan servisi, konum türü (FOREGROUND_SERVICE_LOCATION)**
 > İşlev: Algılanan yürüyüş veya koşu sırasında mesafe ölçümü için yaklaşık 1 dakikalık GPS penceresi; ölçüm bitince servis kendini kapatır ve bildirim kalkar. Ertelenir ya da kesilirse: o yürüyüşün mesafesi GPS yerine adım ritminden tahmin edilir; veri kaybı olmaz.
 
-**Sağlık uygulaması beyanı:** "Tıbbi cihaz değildir; tanı ve tedavi önermez" (B6/B10 ile birlikte).
+**Sağlık uygulaması beyanı:** "Tıbbi cihaz değildir; tanı ve tedavi önermez" (uygulamada `MED_NOTE`, Gizlilik ve veri ekranında ve Hakkında bölümünde görünür).
 
 ## Açık risk
 - Konum servisi kullanıcı o anda dokunmadan, yürüyüş algılanınca başlıyor. Play'in ön plan servisi sayfası bunu "arka plan konumuna eşdeğer" sayıyor ve tam arka plan konum şartlarını uyguluyor. Listedeki hazır kullanım durumları (konum paylaşımı, navigasyon, coğrafi sınır) birebir uymuyor, durumu elle yazmak gerekecek. Ret gelirse seçenek: GPS ölçümünü kaldırıp yalnız adım ritmiyle hız (izin listesi kısalır).
