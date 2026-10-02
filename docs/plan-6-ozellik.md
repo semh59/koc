@@ -323,7 +323,7 @@ En yüksek riskli iş: Gradle/SDK/Kotlin değişikliği tüm APK derlemesini kı
 | Kimlik | Kullanım | Not |
 |---|---|---|
 | 99 | Test bildirimi (`notifTest`) | |
-| 100-1029 | Hatırlatıcılar `r.id*100+i`, r.id 1-10, i<30 gün | **yeni hatırlatıcı r.id ≤ 89 olmalı** (90 → 9000-9029, 9001 ile çakışır) |
+| 100-1029 | Hatırlatıcılar `r.id*100+i`, r.id 1-10, i<30 gün | **yeni hatırlatıcı r.id ≤ 89 olmalı** (90 → 9000-9029, 9001/9002 ile çakışır) |
 | 1100-1129 | YENİ hatırlatıcı 11: oruç başlangıcı | |
 | 1200-1229 | YENİ hatırlatıcı 12: haftalık özet (Pazar) | |
 | 7101 | MotionGpsService ön plan bildirimi (yerel) | LocalNotifications ile aynı NotificationManager kimlik alanı, JS kullanmamalı |
