@@ -32,10 +32,12 @@ function medRows(day){
     return `<div class="row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span class="num" style="min-width:48px">${slot}</span><span style="flex:1;min-width:0">${esc(m.n)}${m.d?`<small class="mut"> ${esc(m.d)}</small>`:""}</span>${tail}</div>`;
   }).join("");
 }
-function medCard(){
-  const st=S.settings;if(!st.medOn)return "";
-  if(!S.meds.length)return `<div class="card"><div class="lbl">💊 İlaçlar</div><p class="mut sm" style="margin:0 0 8px">Henüz ilaç eklemedin.</p><button class="btn ghost" data-md="new">➕ İlaç ekle</button></div>`;
-  return `<div class="card"><div class="row" style="display:flex;justify-content:space-between;align-items:baseline"><span class="mut">💊 İlaçlar</span><button class="chip" data-tab="ilac">Tümü ›</button></div>${medRows(dayKey())}</div>`;
+/* Bugün yapılacaklar: yalnız alınmamış ve atlanmamış dozlar; işaretlenen doz toast'tan ya da İlaçlar ekranından geri alınır. */
+function medTodo(){
+  if(!S.settings.medOn)return [];
+  if(!S.meds.length)return [`<div class="row"><span>💊 Henüz ilaç eklemedin</span><button class="chip" data-md="new">➕ Ekle</button></div>`];
+  const t=dayKey(),now=medNowHM();
+  return MedLib.dosesOn(S.meds,t).filter(({m,slot})=>!MedLib.statusOf(S.medLog,m.id,t,slot)).map(({m,slot})=>`<div class="row"><span>💊 <span class="num">${slot}</span> ${esc(m.n)}<small class="mut sm">${[esc(m.d),slot<=now?"Gecikti":""].filter(Boolean).join(" · ")}</small></span><button class="chip" data-md="take:${m.id}:${slot}" style="font-weight:700">✔ Aldım</button><button class="chip" data-md="skip:${m.id}:${slot}">Atla</button></div>`);
 }
 
 /* ---- İlaçlar ekranı ---- */

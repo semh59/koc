@@ -40,11 +40,14 @@ function vPreset(kind){
 /* ---- Bugün ve Trend kartları ---- */
 function vLast(k){return S.vitals.filter(r=>r.k===k).sort((a,b)=>a.day<b.day?1:a.day>b.day?-1:a.time<b.time?1:a.time>b.time?-1:b.id-a.id)[0]}
 function vWhen(r){return (r.day===dayKey()?"bugün ":vDayLbl(r.day)+" ")+r.time}
-function vCard(){
-  const st=S.settings;if(!st.bpOn&&!st.bsOn)return "";
-  const line=(k,label,txt)=>{const r=vLast(k);return `<div class="row"><span class="mut">${label}</span><span class="${r?"num":"mut sm"}">${r?txt(r):"ölçüm yok"}</span></div>`};
-  return `<button class="stepcard" data-vt="menu" aria-label="Ölçüm ekle ya da raporları aç"><div class="row"><span class="mut">❤️ Ölçümler</span><span class="mut sm">Ekle ›</span></div>
-  ${st.bpOn?line("t","Tansiyon",r=>`${r.sys}/${r.dia} <small class="mut">${vWhen(r)}</small>`):""}${st.bsOn?line("s","Şeker",r=>`${vFmt(r.g)} <small class="mut">${esc(VitalsLib.ctxName(r.ctx))}, ${vWhen(r)}</small>`):""}</button>`;
+/* Bugün yapılacaklar: açık ve bugün henüz ölçülmemiş tür başına bir satır. */
+function vTodo(){
+  const st=S.settings,t=dayKey(),out=[];
+  for(const [on,k,ic,label,act,txt] of [[st.bpOn,"t","❤️","Tansiyon","addbp",r=>`${r.sys}/${r.dia}`],[st.bsOn,"s","🩸","Şeker","addbs",r=>vFmt(r.g)]]){
+    const r=vLast(k);if(!on||(r&&r.day===t))continue;
+    out.push(`<div class="row"><span>${ic} ${label} ölç<small class="mut sm num">${r?`son: ${txt(r)}, ${vWhen(r)}`:"ölçüm yok"}</small></span><button class="chip" data-vt="${act}">Ekle</button></div>`);
+  }
+  return out;
 }
 function vTrendCards(){
   const st=S.settings,c=(tab,t,txt)=>`<button class="stepcard" data-tab="${tab}"><div class="row"><span class="mut">${t}</span><span class="mut sm">Aç ›</span></div><div class="row"><span class="mut sm">${txt}</span></div></button>`;

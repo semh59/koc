@@ -229,7 +229,7 @@ setTimeout(async()=>{
     click('[data-vt="bppreset"]');
     ok("ön ayar 135/85 eşiğini doldurur",ev("S.settings.bpSysHi")===135&&ev("S.settings.bpDiaHi")===85&&q("#bpSysHi").value==="135");
     ev("tab='bugun';render()");
-    ok("Bugün'de ölçümler kartı (ölçüm yok)",qa('[data-vt="menu"]').length===1&&q('[data-vt="menu"]').textContent.includes("ölçüm yok")&&!q('[data-vt="menu"]').textContent.includes("Şeker"));
+    ok("Bugün yapılacaklar: tansiyon satırı (ölçüm yok), şeker kapalıyken satırı yok",qa('#view .todo [data-vt="addbp"]').length===1&&q(".todo").textContent.includes("ölçüm yok")&&!q('#view [data-vt="addbs"]'));
     ev("tab='trend';render()");
     ok("Trend'de tansiyon kartı, şeker kartı yok",!!q('[data-tab="tansiyon"]')&&!q('[data-tab="seker"]'));
 
@@ -245,7 +245,7 @@ setTimeout(async()=>{
 
     // Tansiyon girişi
     ev("tab='bugun';render()");
-    click('[data-vt="menu"]');
+    ev("vMenu()");
     ok("menü: yalnızca tansiyon seçenekleri",!!q('#sheet [data-vt="addbp"]')&&!q('#sheet [data-vt="addbs"]')&&!!q('#sheet [data-vt="go:tansiyon"]'));
     click('#sheet [data-vt="addbp"]');
     ok("tansiyon ekranı: iki ölçüm alanı, seans, gün, saat",!!q("#bs1")&&!!q("#bs2")&&qa("[data-vses]").length===3&&!!q("#fday")&&/^\d\d:\d\d$/.test(q("#vtime").value));
@@ -260,16 +260,16 @@ setTimeout(async()=>{
     q("#bd2").value="86";click('[data-vt="savebp"]');
     ok("iki ölçüm kaydedilir: aynı seans, ham değerler ayrı, seçilen seans",ev("S.vitals.length")===2&&ev("S.vitals[0].sid")===ev("S.vitals[1].sid")&&ev("S.vitals[0].ses")==="aksam"&&ev("S.vitals[0].sys")===128&&ev("S.vitals[1].sys")===132&&ev("S.vitals[0].nabiz")===70,ev("S.vitals"));
     ok("kayıt bildirimi: ortalama ve hedef aralığı notu yok (130/84 aralıkta)",toastT().includes("130/84 (ortalama)")&&!toastT().includes("üstünde"),toastT());
-    ok("Bugün kartı son ölçümü gösterir",q('[data-vt="menu"]').textContent.includes("/"));
+    ok("bugün ölçülünce Bugün'deki tansiyon satırı kalkar",!q('#view [data-vt="addbp"]'));
 
     // Aykırı değer ve uç değer kutusu
-    click('[data-vt="menu"]');click('#sheet [data-vt="addbp"]');
+    ev("vMenu()");click('#sheet [data-vt="addbp"]');
     q("#bs1").value="200";q("#bd1").value="100";click('[data-vt="savebp"]');
     ok("önceki ölçümden >60 farklıysa uyarı verir, kaydetmez",ev("S.vitals.length")===2&&q("#vwarn").textContent.includes("Yanlış yazmış"),q("#vwarn").textContent);
     click('[data-vt="savebp"]');
     ok("ikinci dokunuşta kaydedilir ve bugün tarihli uç değerde 112 kutusu çıkar",ev("S.vitals.length")===3&&txt().includes("112")&&txt().includes("kaydedildi")&&!txt().match(/teşhis|hasta/i),txt());
     click('#sheet [data-vt="close"]');
-    click('[data-vt="menu"]');click('#sheet [data-vt="addbp"]');
+    ev("vMenu()");click('#sheet [data-vt="addbp"]');
     q("#fday").value=ev("keyOff(-3)");q("#bs1").value="190";q("#bd1").value="125";click('[data-vt="savebp"]');
     ok("geriye dönük uç değerde acil kutusu çıkmaz, tek kayıt eklenir",ev("S.vitals.length")===4&&!txt().includes("112"),[ev("S.vitals.length"),txt().slice(0,80)]);
     ev("closeSheet()");
@@ -295,8 +295,8 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     click('[data-vt="gpreset"]');
     ok("şeker ön ayarı: 80-130 ve 180, uyarı toast'ı",ev("S.settings.gFastLo")===80&&ev("S.settings.gFastHi")===130&&ev("S.settings.gPostHi")===180&&toastT().includes("diyabetli yetişkinler"));
     ev("tab='bugun';render()");
-    ok("Bugün kartında şeker de var",q('[data-vt="menu"]').textContent.includes("Şeker")&&q('[data-vt="menu"]').textContent.includes("Tansiyon"));
-    const addG=(g,ctx,day)=>{click('[data-vt="menu"]');click('#sheet [data-vt="addbs"]');q("#gv").value=String(g);click(`[data-vctx="${ctx}"]`);if(day)q("#fday").value=day;click('[data-vt="savebs"]')};
+    ok("Bugün yapılacaklarda şeker satırı, ölçülmüş tansiyon yok",!!q('#view .todo [data-vt="addbs"]')&&q(".todo").textContent.includes("Şeker")&&!q('#view [data-vt="addbp"]'));
+    const addG=(g,ctx,day)=>{ev("vMenu()");click('#sheet [data-vt="addbs"]');q("#gv").value=String(g);click(`[data-vctx="${ctx}"]`);if(day)q("#fday").value=day;click('[data-vt="savebs"]')};
     addG(95,"acl");
     ok("şeker kaydedilir: bağlam ve değer",ev("S.vitals.filter(r=>r.k==='s').length")===1&&ev("S.vitals.find(r=>r.k==='s').ctx")==="acl"&&ev("S.vitals.find(r=>r.k==='s').g")===95&&toastT().includes("95 mg/dL")&&!toastT().includes("üstünde"),toastT());
     addG(160,"sonra");
@@ -337,7 +337,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     const bkJ=ev("JSON.stringify(S)"),cnt=ev("S.vitals.length");
     ev("S.vitals=[]");doc.querySelector("#bk").value=bkJ;await ev("goYukle()");
     ok("yedekten geri yüklemede ölçümler gelir",ev("S.vitals.length")===cnt&&ev("S.vitals.some(r=>r.k==='t'&&r.sid)"),[ev("S.vitals.length"),cnt]);
-    ev("tab='bugun';render()");click('[data-vt="menu"]');click('#sheet [data-vt="addbp"]');
+    ev("tab='bugun';render()");ev("vMenu()");click('#sheet [data-vt="addbp"]');
     q("#fday").value=ev("keyOff(-1)");q("#bs1").value="128";q("#bd1").value="82";q("#bs2").value="128";q("#bd2").value="82";click('[data-vt="savebp"]');if(q("#vwarn")&&q("#vwarn").textContent.includes("Yanlış"))click('[data-vt="savebp"]');
     const twins=ev("S.vitals.filter(r=>r.day===keyOff(-1)&&r.sys===128&&r.dia===82).length");
     ok("özdeş iki ölçüm (128/82 iki kez) UI'den iki satır olarak kaydedilir",twins===2&&ev("S.vitals.filter(r=>r.day===keyOff(-1)&&r.sys===128).every(r=>r.i===1||r.i===2)"),twins);
@@ -554,14 +554,16 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     // alındı / atlandı / geri al
     click('[data-md="take:1:08:00"]');
     ok("alındı: kayıt, saat, stok düşer, toast",ev("S.medLog.length")===1&&ev("S.medLog[0].st")==="t"&&/^\d\d:\d\d$/.test(ev("S.medLog[0].at"))&&ev("S.meds[0].k")===9&&toastT().includes("alındı"),ev("S.medLog"));
-    ok("kartta ✓ görünür, düğmeler gider",q("#view").textContent.includes("✓")&&!q('[data-md="take:1:08:00"]')&&!!q('[data-md="clear:1:08:00"]')&&!!q('[data-md="take:1:20:00"]'));
-    click("#tundo");
+    ok("alınan doz Bugün yapılacaklardan kalkar, bekleyen kalır",!q('[data-md="take:1:08:00"]')&&!!q('.todo [data-md="take:1:20:00"]'));
+    ev("tab='ilac';render()");
+    ok("İlaçlar ekranında ✓ ve ↩ görünür",q("#view").textContent.includes("✓")&&!!q('[data-md="clear:1:08:00"]'));
+    ev("tab='bugun';render()");click("#tundo");
     ok("geri al kaydı ve stoğu eski haline getirir",ev("S.medLog.length")===0&&ev("S.meds[0].k")===10&&!!q('[data-md="take:1:08:00"]'));
-    click('[data-md="skip:1:20:00"]');
+    click('[data-md="skip:1:20:00"]');ev("tab='ilac';render()");
     ok("atlandı: kayıt, stok değişmez",ev("S.medLog[0].st")==="s"&&ev("S.meds[0].k")===10&&q("#view").textContent.includes("Atlandı"));
     click('[data-md="take:1:20:00"]'.replace("take","clear"));
     ok("işaret geri alınır (↩)",ev("S.medLog.length")===0);
-    click('[data-md="take:1:08:00"]');
+    ev("tab='bugun';render()");click('[data-md="take:1:08:00"]');
 
     // ilaçlar ekranı
     ev("tab='ilac';render()");
@@ -823,9 +825,13 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     // oruç
     const wait=ms=>new Promise(r=>setTimeout(r,ms)),lnO=w.Capacitor.Plugins.LocalNotifications,sc=[],rmv=[];
     w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[{id:9100}]}),getDeliveredNotifications:async()=>({notifications:[{id:9100}]}),removeDeliveredNotifications:async o=>{rmv.push(...o.notifications.map(n=>n.id))},registerActionTypes:async()=>{},cancel:async()=>{},schedule:async o=>{sc.push(o.notifications)}};
-    ev("S.fast={plan:16,t0:null,log:[]};S.settings.age=0;S.settings.healthNote='';tab='bugun';render()");
-    ok("oruç kartı: dört plan, varsayılan 16:8 seçili, hekim notu yok",q("#view").textContent.includes("14:10")&&q("#view").textContent.includes("20:4")&&q('[data-hb="plan:16"]').getAttribute("aria-pressed")==="true"&&!q("#view").textContent.includes("hekimine danış"));
-    click('[data-hb="plan:18"]');const t00=Date.now();click('[data-hb="fastgo"]');await wait(30);
+    ev("S.fast={plan:16,t0:null,log:[]};S.settings.fastOn=false;S.settings.age=0;S.settings.healthNote='';tab='bugun';render()");
+    ok("oruç kapalıyken Bugün'de oruç satırı yok",!q('[data-hb="fastgo"]')&&!q("#view").textContent.includes("Oruç"));
+    ev("tab='ayar';render()");click('[data-hb="fasttoggle"]');
+    ok("Ayarlar'da oruç açılır: dört plan, varsayılan 16:8 seçili",ev("S.settings.fastOn")===true&&q("#view").textContent.includes("14:10")&&q("#view").textContent.includes("20:4")&&q('[data-hb="plan:16"]').getAttribute("aria-pressed")==="true");
+    click('[data-hb="plan:18"]');ev("tab='bugun';render()");
+    ok("Bugün yapılacaklarda tek oruç satırı (plan düğmeleri yok), hekim notu yok",!!q('.todo [data-hb="fastgo"]')&&q(".todo").textContent.includes("18:6")&&!q('#view [data-hb^="plan:"]')&&!q("#view").textContent.includes("hekimine danış"));
+    const t00=Date.now();click('[data-hb="fastgo"]');await wait(30);
     const n9=(sc[sc.length-1]||[]).find(n=>n.id===9100);
     ok("oruç başlayınca 9100 hedef saatte kurulur, kimlik 1.000.000 altında",ev("S.fast.plan")===18&&ev("S.fast.t0")>=t00&&n9&&Math.abs(n9.schedule.at.getTime()-(ev("S.fast.t0")+18*36e5))<1000&&sc[sc.length-1].every(n=>n.id<1e6),n9);
     sc.length=0;await ev("scheduleReminders()");
@@ -835,14 +841,18 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("S.fast.t0=Date.now()-17*36e5;render()");
     ok("oruç kartı: hedef dolunca 'Hedef doldu'",q("#view").textContent.includes("Hedef doldu"));
     sc.length=0;click('[data-hb="fastend"]');await wait(30);
-    ok("oruç bitince log'a yazılır, 9100 kurulmaz, son oruçlar listelenir",ev("S.fast.t0")===null&&ev("S.fast.log.length")===1&&ev("S.fast.log[0].t1-S.fast.log[0].t0")>=16.9*36e5&&sc.length>0&&!sc[0].some(n=>n.id===9100)&&q("#view").textContent.includes("Son oruçlar")&&q("#view").textContent.includes("17 sa 0 dk"),ev("S.fast"));
+    ok("oruç bitince log'a yazılır, 9100 kurulmaz, son oruçlar listelenir",ev("S.fast.t0")===null&&ev("S.fast.log.length")===1&&ev("S.fast.log[0].t1-S.fast.log[0].t0")>=16.9*36e5&&sc.length>0&&!sc[0].some(n=>n.id===9100)&&ev("fastSettingsHtml()").includes("Son oruçlar")&&ev("fastSettingsHtml()").includes("17 sa 0 dk")&&!!q('.todo [data-hb="fastgo"]'),ev("S.fast"));
     ok("oruç bitince ekrandaki 'Oruç süren doldu' bildirimi (9100) kaldırılır",rmv.includes(9100),rmv);
     ev("S.fast.t0=Date.now()-80*36e5;render()");click('[data-hb="fastend"]');await wait(30);
     ok("72 saati aşan oruç silinmez: 72 saat olarak yazılır ve söylenir",ev("S.fast.log.length")===2&&ev("S.fast.log[1].t1-S.fast.log[1].t0")===72*36e5&&q("#tmsg").textContent.includes("72 saat"),q("#tmsg").textContent);
     ev("S.fast.t0=Date.now()-30e3;render()");click('[data-hb="fastend"]');await wait(30);
     ok("1 dakikadan kısa oruç geçmişe yazılmaz, oruç kapanır",ev("S.fast.log.length")===2&&ev("S.fast.t0")===null&&q("#tmsg").textContent.includes("1 dakikadan kısa"));
-    click('[data-hb^="fdel:"]');await wait(30);
-    ok("oruç geçmişinden silinir, geri alınabilir",ev("S.fast.log.length")===1&&(click("#tundo"),ev("S.fast.log.length")===2));
+    ev("tab='ayar';render()");click('[data-hb^="fdel:"]');await wait(30);
+    ok("oruç geçmişinden (Ayarlar) silinir, geri alınabilir",ev("S.fast.log.length")===1&&(click("#tundo"),ev("S.fast.log.length")===2));
+    ev("S.fast.t0=Date.now()-36e5;render()");click('[data-hb="fasttoggle"]');
+    ok("oruç sürerken zamanlayıcı kapatılamaz",ev("S.settings.fastOn")===true&&q("#tmsg").textContent.includes("Önce orucu bitir"));
+    ev("S.fast.t0=null;tab='bugun';render()");
+    ok("oruç ayarı göçü: eski veride oruç geçmişi/sürmesi varsa açık, yoksa ve açıkça kapalıysa kapalı",ev("cleanSettings({},{plan:16,t0:Date.now()-36e5,log:[]}).fastOn")===true&&ev("cleanSettings({},{plan:16,t0:null,log:[{t0:1e12,t1:1e12+6e7}]}).fastOn")===true&&ev("cleanSettings({}).fastOn")===false&&ev("cleanSettings({fastOn:false},{plan:16,t0:Date.now(),log:[]}).fastOn")===false&&ev("cleanSettings({fastOn:true}).fastOn")===true);
     ok("hatırlatıcı 11 varsayılan kapalı, eski veride de kapalı, kimliği 89 altında",ev("cleanSettings({}).reminders.find(r=>r.id===11).on")===false&&ev("cleanSettings({reminders:[{id:1,t:'09:00',on:true}]}).reminders.find(r=>r.id===11).on")===false&&ev("S.settings.reminders.every(r=>r.id<=89)"));
     ev("S.settings.reminders.find(r=>r.id===11).on=false");sc.length=0;await ev("scheduleReminders()");
     ok("hatırlatıcı 11 kapalıyken 1100 serisi kurulmaz",!sc[0].some(n=>n.id>=1100&&n.id<=1129));
@@ -1337,6 +1347,25 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
   ok("yedek yoksa uyarı çıkar",ev("viewBugun()").includes("Yedek zamanı"));
   ev("markBackup()");
   ok("yedek alınınca uyarı kalkar",!ev("viewBugun()").includes("Yedek zamanı")&&ev("cleanSettings({lastBackup:S.settings.lastBackup}).lastBackup")===ev("dayKey()"));
+  { // C1: Bugün sadeleştirme
+    const st0=ev("JSON.stringify(S)");
+    ev("S.entries=[];S.meds=[];S.medLog=[];S.vitals=[];S.workouts=S.workouts.filter(x=>x.t1);S.fast={plan:16,t0:null,log:[]};Object.assign(S.settings,{medOn:false,fastOn:false,bpOn:false,bsOn:false,stepsOn:false,stepsAsked:true,oemDone:true,waterMl:2500,kcal:1900,sportWeek:150,glass:250});oem='google';tab='bugun';logOff=0");
+    ok("yapılacak iş yoksa 'Bugün yapılacaklar' kartı yok",!ev("viewBugun()").includes("Bugün yapılacaklar"));
+    ev("add('su',1000);add('yemek',1380,'Öğün');add('kilo',86,'');add('kilo',87,'',keyOff(-3));render()");
+    const v=()=>ev("viewBugun()"),at=s=>v().indexOf(s);
+    ok("kayıt düğmeleri en üstte, sıra Su, Yemek, Kilo, Spor",v().startsWith('<div class="actions">')&&[...$q(".actions").querySelectorAll("button")].map(b=>b.dataset.act).join()==="su,yemek,kilo,spor,not");
+    ok("halkalar birim ve kalanı yazar",(t=>t.includes("520kcal kaldı")&&t.includes("1380 / 1900 kcal")&&t.includes("1,5L kaldı")&&t.includes("1,0 / 2,5 L")&&t.includes("150dk kaldı")&&t.includes("0 / 150 dk")&&t.includes("Spor · hafta"))($q(".rings").textContent),$q(".rings").textContent);
+    ev("add('yemek',700,'Fazla');add('su',1500);add('spor',150,'Yürüyüş');render()");
+    ok("hedef aşılınca 'kcal fazla', su ve spor 'tamam'",(t=>t.includes("180kcal fazla")&&(t.match(/✓tamam/g)||[]).length===2)($q(".rings").textContent),$q(".rings").textContent);
+    ok("kilo kartı küçük: grafik yok, tek satır özet, Trend'e götürür",!v().includes('class="weight"')&&!!$q('#view .stepcard[data-tab="trend"]')&&!$q('#view .stepcard[data-tab="trend"] svg')&&$q('#view .stepcard[data-tab="trend"]').textContent.includes("86,0"));
+    ok("Koç cümlesi Koç kısayolu",!!$q('#view button.coach[data-tab="koc"]'));
+    ev("S.settings.medOn=true;S.meds=[{id:1,n:'İlaç A',t:['08:00','20:00'],on:true}];S.settings.fastOn=true;S.settings.bpOn=true;render()");
+    ok("ilaç, oruç ve ölçüm tek 'Bugün yapılacaklar' kartında, ayrı kart yok",ev("document.querySelectorAll('#view .todo').length")===1&&$q(".todo").querySelectorAll('[data-md^="take:"]').length===2&&!!$q('.todo [data-hb="fastgo"]')&&!!$q('.todo [data-vt="addbp"]')&&!v().includes("💊 İlaçlar")&&!v().includes("Ölçümler"));
+    ok("bilgi hiyerarşisi: kayıt, özet, yapılacaklar, Trend/Koç kısayolu",at('class="actions"')<at('class="rings"')&&at('class="rings"')<at("Bugün yapılacaklar")&&at("Bugün yapılacaklar")<at('data-tab="trend"')&&at('data-tab="trend"')<at('class="coach"'));
+    ev("S.settings.medOn=false;S.settings.fastOn=false;S.settings.bpOn=false;render()");
+    ok("modüller kapanınca kart kalkar",!v().includes("Bugün yapılacaklar"));
+    ev(`S=Object.assign(S,JSON.parse(${JSON.stringify(st0)}));render()`);
+  }
   { // ana ekran widget'ı
     const wc=[];w.Capacitor.Plugins.Widget={update:async d=>{wc.push(d)}};
     ev("widgetLast='';tab='bugun';S.entries=[];add('su',250);add('yemek',400,'makarna');S.settings.kcal=1800;S.settings.waterMl=2500;S.settings.glass=250;S.settings.stepsOn=true;stepToday=3000;add('adim',500,'elle');render()");
