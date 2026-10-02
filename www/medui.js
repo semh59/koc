@@ -37,7 +37,8 @@ function medTodo(){
   if(!S.settings.medOn)return [];
   if(!S.meds.length)return [`<div class="row"><span>${Icons.svg("ilac")} Henüz ilaç eklemedin</span><button class="chip" data-md="new">${Icons.svg("plus")} Ekle</button></div>`];
   const t=dayKey(),now=medNowHM();
-  return MedLib.dosesOn(S.meds,t).filter(({m,slot})=>!MedLib.statusOf(S.medLog,m.id,t,slot)).map(({m,slot})=>`<div class="row"><span>${Icons.svg("ilac")} <span class="num">${slot}</span> ${esc(m.n)}<small class="mut sm">${[esc(m.d),slot<=now?"Gecikti":""].filter(Boolean).join(" · ")}</small></span><button class="chip" data-md="take:${m.id}:${slot}" style="font-weight:700">${Icons.svg("check")} Aldım</button><button class="chip" data-md="skip:${m.id}:${slot}">Atla</button></div>`);
+  const rows=MedLib.dosesOn(S.meds,t).filter(({m,slot})=>!MedLib.statusOf(S.medLog,m.id,t,slot)).map(({m,slot})=>`<div class="row"><span>${Icons.svg("ilac")} <span class="num">${slot}</span> ${esc(m.n)}<small class="mut sm">${[esc(m.d),slot<=now?"Gecikti":""].filter(Boolean).join(" · ")}</small></span><button class="chip" data-md="take:${m.id}:${slot}" style="font-weight:700">${Icons.svg("check")} Aldım</button><button class="chip" data-md="skip:${m.id}:${slot}">Atla</button></div>`);
+  return rows.length?[...rows,`<div class="row"><span>${Icons.svg("ilac")} Tüm ilaçlar</span><button class="chip" data-tab="ilac">Aç ›</button></div>`]:rows;
 }
 
 /* ---- İlaçlar ekranı ---- */
