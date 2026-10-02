@@ -156,6 +156,21 @@ const Algo=(()=>{
     if(!raw||!n(raw.t0,1,now+6e4)||now-raw.t0>864e5)return null;
     return {t0:raw.t0,s0:n(raw.s0,0,2e5)?raw.s0:null,t1:n(raw.t1,raw.t0+1,now+6e4)?raw.t1:null,s1:n(raw.s1,0,2e5)?raw.s1:null};
   }
+  /* Bir günün kayıtlı hareket enerjisi (net kcal), adım dahil değil: hareket düzeyi çarpanı günlük adımı zaten içerir.
+     spor: {time: bitiş "SS:DD", v: dk, kcal}; moves: {t0: başlangıç, min, kcal}. Spor aralığı [bitiş−süre, bitiş]; aynı aralığa düşen otomatik hareket
+     aynı çıkıştır, ikinci kez sayılmaz. */
+  function exerciseKcal(spor,moves){
+    const mm=t=>+t.slice(0,2)*60+ +t.slice(3);
+    const iv=spor.filter(s=>s.v>0).map(s=>[mm(s.time)-s.v,mm(s.time)]);
+    let k=spor.reduce((a,s)=>a+(s.kcal>0?s.kcal:0),0);
+    for(const m of moves){
+      const a=mm(m.t0),b=a+m.min;
+      if(m.kcal>0&&!iv.some(([c,d])=>a<d&&c<b))k+=m.kcal;
+    }
+    return k;
+  }
+  /* Hedefe eklenecek kısım: yakılanın yarısı (tahmin hatalı, TDEE'de zaten ortalama hareket var), en çok 800, asla negatif: hedefi yalnız artırır. */
+  const moveBonus=(kcal,pct=0.5)=>kcal>0?Math.min(800,Math.round(kcal*pct)):0;
   const proteinRange=kg=>[Math.round(1.6*kg),Math.round(2.2*kg)];
 
   /* Salon */
@@ -210,6 +225,6 @@ const Algo=(()=>{
     }
     return r;
   }
-  return {KCAL_PER_KG,dayNum,fdate,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,lossBlock,etaWeeks,isLosing,goalEta,proteinRange,moveSummary,cleanWalk,netKcal,gymKcal,MEASURES,cleanMeasures,whtr,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
+  return {KCAL_PER_KG,dayNum,fdate,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,lossBlock,etaWeeks,isLosing,goalEta,proteinRange,exerciseKcal,moveBonus,moveSummary,cleanWalk,netKcal,gymKcal,MEASURES,cleanMeasures,whtr,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
 })();
 if(typeof module!=="undefined")module.exports=Algo;

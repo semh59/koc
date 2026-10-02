@@ -341,7 +341,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- veri ---------- */
 const DEF={
-  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",lastPlan:"",lastWeekly:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,stepWarnDay:"",reminders:[
+  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",lastPlan:"",lastWeekly:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -397,6 +397,7 @@ function cleanSettings(raw,fast){
   /* Oruç ayarı yokken oruç kullanmış eski veri, oruç satırını kaybetmesin. */
   if(o.fastOn===true||(!("fastOn" in o)&&((f=>f.t0||f.log.length)(HabitLib.cleanFast(fast))||(Array.isArray(o.reminders)&&o.reminders.some(x=>x&&x.id===11&&x.on===true)))))d.fastOn=true;
   if(o.motionOn===true)d.motionOn=true;
+  if(o.moveKcalOn===true)d.moveKcalOn=true;
   if(o.medShowName===false)d.medShowName=false;
   if(o.awakeOn===false)d.awakeOn=false;
   if(o.rpeOn===true)d.rpeOn=true;
@@ -481,6 +482,9 @@ function add(type,v,text,day){
 }
 const of=(type,day)=>S.entries.filter(e=>e.type===type&&e.day===day);
 const sum=(type,a,b)=>S.entries.filter(e=>e.type===type&&e.day>=a&&e.day<=b).reduce((s,e)=>s+(e.v||0),0);
+/* Hareket kalorisi ayarı açıksa o günün kalori hedefine eklenen kısım; kapalıysa 0. Ring, widget ve toast tek yerden okur. */
+const moveAdd=day=>S.settings.moveKcalOn&&S.settings.kcal>0?Algo.moveBonus(Algo.exerciseKcal(of("spor",day),S.moves.filter(m=>m.day===day))):0;
+const kcalGoal=day=>S.settings.kcal>0?S.settings.kcal+moveAdd(day):0;
 function weights(a="0000",b="9999"){const m={};for(const e of S.entries)if(e.type==="kilo"&&e.day>=a&&e.day<=b)m[e.day]=e.v;return m}
 const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
 const vals=m=>Object.values(m);
@@ -582,17 +586,17 @@ function viewBugun(){
     weight=`<button class="stepcard" data-tab="trend" aria-label="Kilo grafiğini Trend'de aç"><div class="row"><span class="mut">${Icons.svg("kilo")} ${curDay===t?"Bugünkü tartı":"Son tartı, "+fd(curDay)}</span><span class="mut sm">Trend ›</span></div><div class="row"><span class="big num wv">${fmt(cur)} <small>kg</small></span><span class="mut sm num ws">${bits.join(" · ")}</span></div></button>`;
   }
   const su=sum("su",t,t),sh=st.waterMl,kc=sum("yemek",t,t),sw=sum("spor",keyOff(-6),t);
-  const kcP=st.kcal>0?kc/st.kcal:0;
+  const kgl=kcalGoal(t),kcP=kgl>0?kc/kgl:0;
   const sOn=S.settings.stepsOn&&isNative();
   /* Halka ortası kalanı gösterir; yapılan / hedef altta birimle. */
   const left=(v,g,u)=>v<g?[null,`${u} kaldı`]:["✓","tamam"];
   const [suC,suU]=left(su,sh,"L"),[spC,spU]=left(sw,st.sportWeek,"dk");
-  const kcC=st.kcal>0?Math.round(Math.abs(st.kcal-kc)):Math.round(kc),kcU=st.kcal>0?(kc>st.kcal?"kcal fazla":"kcal kaldı"):"kcal";
+  const kcC=kgl>0?Math.round(Math.abs(kgl-kc)):Math.round(kc),kcU=kgl>0?(kc>kgl?"kcal fazla":"kcal kaldı"):"kcal";
   const rings=`<div class="card"><div class="rings">
-    ${ring(kcP,"var(--kcal)",kcC,"Kalori",st.kcal>0?`${Math.round(kc)} / ${st.kcal} kcal`:"hedef yok",kcU)}
+    ${ring(kcP,"var(--kcal)",kcC,"Kalori",kgl>0?`${Math.round(kc)} / ${kgl} kcal`:"hedef yok",kcU)}
     ${ring(su/sh,"var(--su)",suC||fmt((sh-su)/1000,1),"Su",`${fmt(su/1000,1)} / ${fmt(sh/1000,1)} L`,suU)}
     ${ring(sw/st.sportWeek,"var(--spor)",spC||Math.round(st.sportWeek-sw),"Spor · hafta",`${Math.round(sw)} / ${st.sportWeek} dk`,spU)}
-  </div></div>`;
+  </div>${moveAdd(t)?`<p class="hint" style="padding:6px 0 0">Hedefe hareketten +${moveAdd(t)} kcal eklendi (kayıtlı antrenman ve yürüyüşün yarısı, tahmindir).</p>`:""}</div>`;
   const meals=S.entries.filter(e=>e.type==="yemek"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
   const pr=cur!=null?Algo.proteinRange(cur):null;
   const macro=meals.some(e=>e.p||e.c||e.f)?`<div class="macro num">Protein <b>${Math.round(mac("p"))}</b>${pr?` / ${pr[0]}–${pr[1]}`:""} g${meals.some(e=>e.c!=null||e.f!=null)?` · Karbonhidrat <b>${Math.round(mac("c"))}</b> g · Yağ <b>${Math.round(mac("f"))}</b> g`:""}</div>`:"";
@@ -700,6 +704,8 @@ function viewAyar(){
     ${fld("glass","Bir bardak (ml)",st.glass,"Su düğmesinin eklediği miktar","numeric")}
     ${fld("sportWeek","Haftalık spor (dk)",st.sportWeek,"","numeric")}
     ${fld("stepGoal","Günlük adım",st.stepGoal,"Adım sayar açıksa","numeric")}
+    <label style="min-height:44px;display:flex;gap:8px;align-items:center;margin-top:8px"><input type="checkbox" data-mk ${st.moveKcalOn?"checked":""} style="width:22px;height:22px">Hareket kalorisini hedefe ekle</label>
+    <p class="hint">Açıkken günlük kalori hedefine, kayıtlı antrenman, yürüyüş ve koşuların tahmini enerjisinin %50'si eklenir. Adımlar sayılmaz: hareket düzeyin ve kilo trendin günlük adımı zaten içerir, bu yüzden yarısı eklenir; yine de tahmin hatalıdır ve fazla yemene yol açabilir. Hedefi yalnız artırır, azaltmaz. Kilo vermek istiyorsan kapalı bırakman daha güvenlidir.</p>
   </div>`;
   if(sub==="modul")return `${medSettingsHtml()}
   ${fastSettingsHtml()}
@@ -750,7 +756,7 @@ let widgetLast="";
 /* null değerler bilinçli: Java tarafı anahtar varsa ama null ise "hedef yok"/adım gizli, anahtar yoksa "–" gösterir. */
 function widgetPush(){
   if(!WG())return;
-  const t=dayKey(),st=S.settings,d={day:t,water:sum("su",t,t),waterGoal:st.waterMl,glass:st.glass,kcalLeft:st.kcal>0?Math.round(st.kcal-sum("yemek",t,t)):null,steps:st.stepsOn?stepsShown():null};
+  const t=dayKey(),st=S.settings,d={day:t,water:sum("su",t,t),waterGoal:st.waterMl,glass:st.glass,kcalLeft:st.kcal>0?Math.round(kcalGoal(t)-sum("yemek",t,t)):null,steps:st.stepsOn?stepsShown():null};
   const j=JSON.stringify(d);if(j===widgetLast)return;
   widgetLast=j;try{WG().update(d).catch(()=>{})}catch(e){}
 }
@@ -896,7 +902,7 @@ function goBesin(){
   for(const k of NUTR)if(x[k]!=null)e[k]=Math.round(x[k]*10)/10;
   save();
   closeSheet();render();
-  const t=dayKey(),top=sum("yemek",t,t),g=S.settings.kcal;
+  const t=dayKey(),top=sum("yemek",t,t),g=kcalGoal(t);
   toast(g>0&&top?`Kaydedildi. Bugün ${Math.round(top)} / ${g} kcal`:"Yemek kaydedildi",e.id);
 }
 function goYemek(){
@@ -904,7 +910,7 @@ function goYemek(){
   if(!text&&isNaN(kc))return ferr("yerr","Yemeğin adını ya da kalorisini yaz");
   if(!isNaN(kc)&&kc>20000)return ferr("yerr","Kalori çok yüksek görünüyor, kontrol et");
   const e=add("yemek",isNaN(kc)?null:kc,text,fday());e.meal=fmeal();save();closeSheet();render();
-  const t=dayKey(),top=sum("yemek",t,t),g=S.settings.kcal;
+  const t=dayKey(),top=sum("yemek",t,t),g=kcalGoal(t);
   toast(g>0&&top?`Kaydedildi. Bugün ${Math.round(top)} / ${g} kcal`:"Yemek kaydedildi",e.id);
 }
 const SPOR=["Yürüyüş","Koşu","Ağırlık","Bisiklet","Yüzme","Yoga","Diğer"];
@@ -1092,7 +1098,7 @@ function viewAdim(){
   <div class="card"><div class="lbl">Günler</div>${rows}</div>
   <div class="card"><div class="lbl">Elle eklenenler</div>${man||'<p class="hint">Henüz yok.</p>'}<button class="lnk" data-act="adimekle">Adım ekle (elle)</button></div>
   ${km==null?`<p class="hint">Mesafe için Ayarlar'dan boyunu gir.</p>`:""}
-  <p class="hint">Kaynak: telefonun adım sensörü. Yalnızca telefonu taşıdığın adımlar sayılır. Çok yavaş yürüyüşte az sayabilir, genelde sapma %5-10 civarıdır. Enerji ve mesafe yaklaşıktır ve günlük kalori hedefine eklenmez: harcama tahmini zaten gerçek kilo değişimine dayanır. Ortalamalar yalnız adım kaydı olan günlerden hesaplanır.</p>`;
+  <p class="hint">Kaynak: telefonun adım sensörü. Yalnızca telefonu taşıdığın adımlar sayılır. Çok yavaş yürüyüşte az sayabilir, genelde sapma %5-10 civarıdır. ${S.settings.moveKcalOn?"Enerji ve mesafe yaklaşıktır. Adımlar kalori hedefine eklenmez; Profil'deki ayar açık olduğundan yalnız kayıtlı antrenman ve hareketler eklenir.":"Enerji ve mesafe yaklaşıktır ve günlük kalori hedefine eklenmez: harcama tahmini zaten gerçek kilo değişimine dayanır."} Ortalamalar yalnız adım kaydı olan günlerden hesaplanır.</p>`;
 }
 async function stepsOpen(){
   const p=SC();if(!p)return;
@@ -1216,6 +1222,7 @@ document.addEventListener("change",ev=>{
     return;
   }
   if(t.dataset.gi){gInput(t);return}
+  if(t.dataset.mk!==undefined){S.settings.moveKcalOn=t.checked;save();return}
   if(t.dataset.rpe!==undefined){S.settings.rpeOn=t.checked;save();return}
   if(t.dataset.aw!==undefined){S.settings.awakeOn=t.checked;save();gAwake();return}
   if(t.dataset.set){

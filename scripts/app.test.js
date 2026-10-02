@@ -2177,4 +2177,34 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("24 saatten eski ya da geleceğe ait yarım yürüyüş temizlikte atılır",ev("Algo.cleanWalk({t0:Date.now()-25*36e5},Date.now())")===null&&ev("Algo.cleanWalk({t0:Date.now()+1e7},Date.now())")===null&&ev("Algo.cleanWalk({t0:Date.now()-36e5,s0:-5,t1:5},Date.now())").s0===null);
     ev("S=structuredClone(DEF);S.settings.obDone=true;stepToday=null;tab='bugun';render()");
   }
+  { // D-Adım4: hareket kalorisini hedefe ekle
+    const q=s=>$q(s),txt=()=>q("#view").textContent,wc=[];
+    w.Capacitor.Plugins.Widget={update:async d=>{wc.push(d)}};
+    ev("S=structuredClone(DEF);S.settings.obDone=true;S.settings.kcal=2000;S.settings.heightCm=170;S.settings.age=30;add('kilo',80);widgetLast='';tab='bugun'");
+    ev("add('spor',60,'Ağırlık, A').kcal=300;S.entries.find(e=>e.type==='spor').time='18:00';render()");
+    ok("varsayılan KAPALI: ayar false, hedef 2000, ring eklemesiz",ev("DEF.settings.moveKcalOn")===false&&ev("cleanSettings({}).moveKcalOn")===false&&ev("kcalGoal(dayKey())")===2000&&txt().includes("/ 2000 kcal")&&!txt().includes("Hedefe hareketten"));
+    ev("tab='ayar-profil';render()");
+    ok("Profil ve hedefler'de ayar, %50 ve 'tahmin hatalıdır' ile adım hariç gerekçesi",txt().includes("Hareket kalorisini hedefe ekle")&&txt().includes("%50")&&txt().includes("tahmin hatalıdır")&&txt().includes("Adımlar sayılmaz")&&q("[data-mk]").checked===false);
+    q("[data-mk]").checked=true;q("[data-mk]").dispatchEvent(new w.Event("change",{bubbles:true}));
+    ok("açınca kalıcı (temizleyici korur): hedef 2000 + 300×0,5 = 2150",ev("S.settings.moveKcalOn")===true&&ev("cleanSettings(JSON.parse(JSON.stringify(S.settings))).moveKcalOn")===true&&ev("kcalGoal(dayKey())")===2150);
+    ev("tab='bugun';render()");
+    ok("Bugün: ring yeni hedefle (kalan = 2150 - yenen), eklenen kısım ve 'tahmindir' notu",txt().includes("/ 2150 kcal")&&txt().includes("+150 kcal")&&txt().includes("tahmindir"));
+    ev("add('yemek',500,'x');render()");
+    ok("kalan kalori yeni hedeften: 2150-500=1650",txt().includes("1.650")||txt().includes("1650"));
+    ok("widget kalan kalori aynı hedeften",wc.length>0&&wc[wc.length-1].kcalLeft===1650,JSON.stringify(wc[wc.length-1]));
+    ev("add('adim',30000,'')");
+    ok("adım hedefe eklenmez: 30.000 adım hedefi değiştirmez",ev("kcalGoal(dayKey())")===2150);
+    ev("S.moves=[{day:dayKey(),t0:'17:30',min:30,k:'w',steps:3000,km:2,kmh:4,kcal:150,gps:false},{day:dayKey(),t0:'08:00',min:30,k:'w',steps:3000,km:2,kmh:4,kcal:100,gps:false}]");
+    ok("spor aralığıyla çakışan otomatik hareket sayılmaz (17:30 ∈ [17:00,18:00]), çakışmayan sayılır: (300+100)×0,5=200",ev("kcalGoal(dayKey())")===2200);
+    ev("S.settings.moveKcalOn=false");
+    ok("ayar kapanınca her şey eski hedefe döner (ring, widget)",ev("kcalGoal(dayKey())")===2000);
+    // kalori açığı engelli (18 yaş altı) kullanıcı: hedef yalnız artar, azalmaz; antrenman yoksa hiç değişmez
+    ev("S.settings.moveKcalOn=true;S.settings.age=16;S.settings.goalKg=70");
+    ok("lossBlock profilinde hedef tabandan düşük olamaz",ev("Algo.lossBlock")({age:16,cm:170,kg:80,goalKg:70})!==""&&ev("kcalGoal(dayKey())")>=2000);
+    ev("S.entries=S.entries.filter(e=>e.type!=='spor');S.moves=[]");
+    ok("hareket kaydı yoksa hedef değişmez",ev("kcalGoal(dayKey())")===2000);
+    ev("S.settings.kcal=0;add('spor',60,'x').kcal=300");
+    ok("kalori hedefi yoksa ek de yok (hedef 0 kalır)",ev("kcalGoal(dayKey())")===0&&ev("moveAdd(dayKey())")===0);
+    ev("S=structuredClone(DEF);S.settings.obDone=true;tab='bugun';render()");
+  }
 },100);
