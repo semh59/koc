@@ -531,11 +531,11 @@ function viewBugun(){
   if(cur==null){
     weight=`<div class="weight"><div class="cap">Kilo</div><p class="empty">Henüz tartı kaydı yok. İlk tartın başlangıç noktan olur.</p><button class="wbtn" data-act="kilo">Kilo ekle</button></div>`;
   }else{
-    const a1=avg(vals(weights(keyOff(-6),t))),a0=avg(vals(weights(keyOff(-13),keyOff(-7))));
     const first=wAll[days[0]];
     const bits=[];
     if(prev!=null&&days.length>1)bits.push(`Önceki tartıya göre ${fmtS(cur-prev)} kg`);
-    if(a1!=null&&a0!=null)bits.push(`Haftalık ortalama ${fmtS(a1-a0)} kg`);
+    const sl=Algo.slopePerWeek(wAll);
+    if(sl!=null)bits.push(`Hız ${fmtS(sl,2)} kg/hafta`);
     if(days.length>1)bits.push(`Başlangıçtan ${fmtS(cur-first)} kg`);
     const gi=goalInfo(cur,first);
     if(gi)bits.push(gi.done?"Hedefe ulaştın":`Hedefe ${fmt(gi.left)} kg kaldı`);
@@ -584,15 +584,12 @@ function viewTrend(){
   let stats="";
   if(days.length){
     const cur=wAll[days[days.length-1]],first=wAll[days[0]];
-    const a1=avg(vals(weights(keyOff(-6),t))),a0=avg(vals(weights(keyOff(-13),keyOff(-7))));
-    const cells=[["Başlangıç",`${fmt(first)} kg`],["Şimdi",`${fmt(cur)} kg`],["Toplam değişim",`${fmtS(cur-first)} kg`]];
-    if(a1!=null&&a0!=null)cells.push(["Haftalık ortalama farkı",`${fmtS(a1-a0)} kg`]);
+    const ge=Algo.goalEta(wAll,st.goalKg),cells=[["Başlangıç",`${fmt(first)} kg`],["Şimdi",`${fmt(cur)} kg`],["Toplam değişim",`${fmtS(cur-first)} kg`]];
+    if(ge.slope!=null)cells.push(["Kilo hızı",`${fmtS(ge.slope,2)} kg/hafta`]);
     const gi=goalInfo(cur,first);
     if(gi)cells.push(["Hedefe kalan",gi.done?"Ulaştın":`${fmt(gi.left)} kg`]);
-    if(gi&&!gi.done&&gi.dir<0&&!Algo.lossBlock({age:st.age,cm:st.heightCm,kg:cur,goalKg:st.goalKg,health:!!st.healthNote.trim()})&&a1!=null&&a0!=null&&a1-a0<-0.05&&a1>st.goalKg){
-      cells.push(["Kaba tahmin",`~${Math.ceil((a1-st.goalKg)/(a0-a1))} hafta`]);
-    }
-    stats=`<div class="stats">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1]}</div></div>`).join("")}</div>`;
+    const eta=gi&&!gi.done&&!(gi.dir<0&&Algo.lossBlock({age:st.age,cm:st.heightCm,kg:cur,goalKg:st.goalKg,health:!!st.healthNote.trim()}))?ge.weeks:null;
+    stats=`<div class="stats">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1]}</div></div>`).join("")}</div>${eta?`<p class="hint" style="padding:8px 0 0">Son 3 haftanın eğimi sürerse ~${eta} hafta.</p>`:""}`;
   }
   let rows="";
   for(let i=6;i>=0;i--){

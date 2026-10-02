@@ -24,6 +24,11 @@ ok("isLosing: düz ve artan kilo vermiyor",!A.isLosing(wk(()=>80))&&!A.isLosing(
 ok("isLosing: -0,2 kg/hf sınırının altı veriyor, üstü vermiyor",A.isLosing(wk(i=>80-0.04*i))&&!A.isLosing(wk(i=>80-0.02*i)));
 ok("isLosing: yalnız son 14 gün sayılır (eski düşüş, yeni plato)",!A.isLosing(wk(i=>i<8?90-0.3*i:87.6)));
 ok("isLosing: veri yetersizse veriyor sayılmaz",!A.isLosing({[day(0)]:80,[day(2)]:79}));
+let ge=A.goalEta(wk(i=>88-0.05*i),80);
+ok("goalEta: tek hız ve tek tahmin (eğim sürerse)",near(ge.slope,-0.35,0.01)&&ge.weeks>=20&&ge.weeks<=23,JSON.stringify(ge));
+ok("goalEta: hedef yönü eğimle çelişirse tahmin yok",A.goalEta(wk(i=>88-0.05*i),95).weeks===null&&A.goalEta(wk(i=>80+0.05*i),70).weeks===null);
+ok("goalEta: hız ~0 ise tahmin yok, hızı yine verir",A.goalEta(wk(()=>80),70).weeks===null&&A.goalEta(wk(()=>80),70).slope===0);
+ok("goalEta: hedefte ya da hedef yoksa tahmin yok, veri yoksa hız yok",A.goalEta(wk(()=>80),80).weeks===null&&A.goalEta(wk(i=>88-0.05*i),0).weeks===null&&A.goalEta({},70).slope===null);
 const n1=A.nextTarget([{kg:60,reps:12},{kg:60,reps:12},{kg:60,reps:12}],{lo:8,hi:12,inc:2.5});ok("üst tekrar → +2,5 kg",n1.kg===62.5&&n1.reps===8);
 const n2=A.nextTarget([{kg:60,reps:10},{kg:60,reps:8},{kg:60,reps:8}]);ok("aynı kg +1 tekrar",n2.kg===60&&n2.reps===9);
 ok("vücut ağırlığı",A.nextTarget([{kg:0,reps:6}]).reps===7); ok("boşsa null",A.nextTarget([])===null);
