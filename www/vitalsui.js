@@ -134,7 +134,7 @@ function vSvg(series,band,from,to,W,H){
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Ölçüm grafiği" style="width:100%;display:block">${bd}<rect x="8" y="8" width="${W-16}" height="${H-30}" fill="none" stroke="var(--line)"/>${body}<text x="8" y="${H-6}" style="font-size:10px;fill:var(--mut)">${fd(from)}</text><text x="${W-8}" y="${H-6}" text-anchor="end" style="font-size:10px;fill:var(--mut)">${fd(to)}</text><text x="${W-10}" y="18" text-anchor="end" style="font-size:10px;fill:var(--mut)">${Math.round(hi)}</text><text x="${W-10}" y="${H-26}" text-anchor="end" style="font-size:10px;fill:var(--mut)">${Math.round(lo)}</text></svg>`;
 }
 const vSeg=()=>`<div class="seg" role="group" aria-label="Aralık">${[7,14,30].map(n=>`<button data-vt="range:${n}" aria-pressed="${vRange===n}">${n} gün</button>`).join("")}</div>`;
-const vBtns=(kind,add)=>`<div class="card"><div class="btns" style="display:grid;gap:8px"><button class="btn" data-vt="${add}">${Icons.svg("plus")} Ölçüm ekle</button><button class="btn ghost" data-vt="pdfmenu:${kind}">${Icons.svg("share")} Doktor raporu (PDF)</button></div></div>`;
+const vBtns=add=>`<div class="card"><div class="btns" style="display:grid;gap:8px"><button class="btn" data-vt="${add}">${Icons.svg("plus")} Ölçüm ekle</button></div></div>`;
 const vDel=ids=>`<button class="chip" data-vt="del:${ids.join(",")}" aria-label="Ölçümü sil">✕</button>`;
 
 function viewTansiyon(){
@@ -148,7 +148,7 @@ function viewTansiyon(){
     const f=VitalsLib.flagBp(s.sys,s.dia,st);
     return `<div class="row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span style="flex:1">${fd(s.day)} ${s.time}<small class="mut"> ${VitalsLib.sesName(s.ses)}${s.n>1?`, ${s.n} ölçüm`:""}</small></span><b class="num">${Math.round(s.sys)}/${Math.round(s.dia)}</b><span class="mut sm">${s.nabiz?s.nabiz:""}</span><span aria-hidden="true">${f==="high"?"▲":f==="low"?"▼":""}</span>${vDel(s.raw.map(x=>x.id))}</div>`;
   }).join("");
-  return `${vBtns("t","addbp")}
+  return `${vBtns("addbp")}
   <div class="card"><div class="lbl">Ev ortalaması (son 7 gün)</div>
     ${h.all?`<div class="sumv num" style="color:var(--ink)">${avgTxt(h.all)} <small>mmHg</small></div><div class="mut sm">${h.all.n} ölçüm, ${h.days} gün${hf?" · "+vFlagTxt(hf):""}</div>${h.enough?"":`<div class="mut sm">Ortalama için en az 3 gün, tercihen 7 gün sabah ve akşam ölçüm gerekir.</div>`}
     <div class="stats" style="margin-top:8px"><div class="stat"><div class="k">Sabah ortalaması</div><div class="v num">${avgTxt(h.sabah)}</div></div><div class="stat"><div class="k">Akşam ortalaması</div><div class="v num">${avgTxt(h.aksam)}</div></div></div>`:`<p class="mut">Henüz ölçüm yok. Günde 2 kez (sabah ve akşam), her seferinde 2 ölçüm, 3-7 gün ölçersen anlamlı bir ortalama çıkar.</p>`}
@@ -166,7 +166,7 @@ function viewSeker(){
   const band=a.length&&(fastOnly||postOnly)?(()=>{const r=VitalsLib.rangeG(fastOnly?"acl":"sonra",st);return r.lo!=null||r.hi!=null?r:null})():null;
   const rows=a.slice().reverse().map(r=>{const f=VitalsLib.flagG(r,st);return `<div class="row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span style="flex:1">${fd(r.day)} ${r.time}<small class="mut"> ${esc(VitalsLib.ctxName(r.ctx))}</small></span><b class="num">${vFmt(r.g)}</b><span aria-hidden="true">${f==="high"?"▲":f==="low"?"▼":""}</span>${vDel([r.id])}</div>`}).join("");
   const labA1c=S.labs.filter(l=>l.k==="hba1c"&&l.v!=null).sort((x,y)=>x.day<y.day?1:-1)[0];
-  return `${vBtns("s","addbs")}
+  return `${vBtns("addbs")}
   <div class="card"><div class="lbl">Son ölçüm</div>${last?`<div class="sumv num" style="color:var(--ink)">${vFmt(last.g)} <small>mg/dL</small></div><div class="mut sm">${esc(VitalsLib.ctxName(last.ctx))}, ${vWhen(last)}${VitalsLib.flagG(last,st)?" · "+vFlagTxt(VitalsLib.flagG(last,st)):""}</div>`:`<p class="mut">Henüz ölçüm yok.</p>`}</div>
   ${vSeg()}${gs?`<div class="stats"><div class="stat"><div class="k">Ortalama</div><div class="v num">${Math.round(gs.avg)}</div></div><div class="stat"><div class="k">Ölçüm sayısı</div><div class="v num">${gs.n}</div></div><div class="stat"><div class="k">En düşük / en yüksek</div><div class="v num">${gs.min} / ${gs.max}</div></div><div class="stat"><div class="k">Hedef aralığında</div><div class="v num">${gs.pct==null?"–":"%"+gs.pct}</div></div></div>${gs.pct==null?`<p class="hint">Yüzde için Ayarlar'dan hedef aralığı gir.</p>`:`<p class="hint">Her ölçüm kendi bağlamının (açlık, yemekten sonra) aralığıyla değerlendirilir. ${gs.ranged} ölçümün aralığı var.</p>`}
   <div class="card"><div class="lbl">Bağlama göre ortalama</div>${Object.entries(gs.byCtx).map(([c,x])=>`<div class="row" style="display:flex;justify-content:space-between;padding:6px 0"><span>${esc(VitalsLib.ctxName(c))}</span><b class="num">${Math.round(x.avg)} <small class="mut">(${x.n})</small></b></div>`).join("")}</div>`:""}

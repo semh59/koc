@@ -273,7 +273,7 @@ setTimeout(async()=>{
     q("#lc1").checked=false;
     click('[data-lab="save"]');
     ok("işareti kaldırılan satır kaydedilmez",ev("S.labs.length")===3&&ev("S.labs.map(x=>x.k).join()")==="glukoz,hba1c,ldl",ev("S.labs.map(x=>x.k)"));
-    ok("kaydedince tahlil ekranına döner ve testler listelenir",ev("tab")==="tahlil"&&q("#view").textContent.includes("Glukoz")&&q("#view").textContent.includes("LDL kolesterol")&&q('[data-lab="pdf"]')!==null);
+    ok("kaydedince tahlil ekranına döner ve testler listelenir",ev("tab")==="tahlil"&&q("#view").textContent.includes("Glukoz")&&q("#view").textContent.includes("LDL kolesterol")&&!q('[data-lab="pdf"]'));
     ok("referans dışı değer işaretlenir, normal değil",q("#view").textContent.includes("üstünde")&&(q("#view").textContent.match(/üstünde/g)||[]).length===1,q("#view").textContent);
     ok("kayıtlı satırda yalnızca beklenen alanlar var",ev("Object.keys(S.labs[0]).sort().join()")==="day,hi,id,k,lo,n,u,v");
 
@@ -487,7 +487,7 @@ setTimeout(async()=>{
     // Görünüm
     ev("tab='tansiyon';render()");
     const v=q("#view").textContent;
-    ok("tansiyon görünümü: ev ortalaması, grafik noktaları, doktor raporu, silme düğmeleri",v.includes("Ev ortalaması")&&v.includes("mmHg")&&qa("#view svg circle").length>=3&&!!q('[data-vt="pdfmenu:t"]')&&qa('#view [data-vt^="del:"]').length>=2&&q("#ttl").textContent==="Tansiyon"&&q('nav [data-tab="trend"]').getAttribute("aria-current")==="page",v.slice(0,300));
+    ok("tansiyon görünümü: ev ortalaması, grafik noktaları, doktor raporu, silme düğmeleri",v.includes("Ev ortalaması")&&v.includes("mmHg")&&qa("#view svg circle").length>=3&&!q('[data-vt="pdfmenu:t"]')&&qa('#view [data-vt^="del:"]').length>=2&&q("#ttl").textContent==="Tansiyon"&&q('nav [data-tab="trend"]').getAttribute("aria-current")==="page",v.slice(0,300));
 ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("tanı dili görünümde yok",!BAN.test(v)&&!BAN.test(ev("viewBugun()")),v.match(BAN));
     ok("200/100 oturumu hedef aralığının üstünde işaretlenir",v.includes("▲"));
@@ -569,7 +569,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev(`(()=>{const t=dayKey();S.vitals=[
       {id:1,k:'t',day:t,time:'07:30',sys:128,dia:82,nabiz:70,ses:'sabah',sid:'a1'},{id:2,k:'t',day:t,time:'07:32',sys:140,dia:90,ses:'sabah',sid:'a1'},
       {id:3,k:'s',day:t,time:'07:00',g:95,ctx:'acl'},{id:4,k:'s',day:t,time:'09:30',g:150,ctx:'sonra'}]})()`);
-    ev("tab='tansiyon';render()");click('[data-vt="pdfmenu:t"]');
+    ev("S.settings.bpOn=S.settings.bsOn=true;tab='trend';render()");click('[data-vt="pdfmenu:t"]');
     ok("rapor dönemi seçimi: 7/14/30/90",qa('#sheet [data-vt^="pdf:t:"]').length===4);
     click('[data-vt="pdf:t:30"]');await new Promise(r=>setTimeout(r,150));
     const pb=Buffer.from(saved.data,"base64"),pd=await pdfjs.getDocument({data:new Uint8Array(pb),verbosity:0}).promise;
@@ -577,7 +577,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("tansiyon raporu: iki ham ölçüm ayrı satır, ortalama, uyarı notu",drawn.includes("NeoWell · Tansiyon raporu")&&drawn.includes("128/82 mmHg  nabız 70")&&drawn.includes("140/90 mmHg")&&drawn.includes("Sabah, 1. ölçüm")&&drawn.includes("Sabah, 2. ölçüm")&&drawn.some(t=>/Tıbbi yorum içermez/.test(t))&&drawn.some(t=>/134\/86 mmHg/.test(t)),drawn);
     ok("raporda tanı dili yok",!BAN.test(drawn.join(" ")));
     drawn.length=0;saved=null;
-    ev("tab='seker';render()");click('[data-vt="pdfmenu:s"]');click('[data-vt="pdf:s:7"]');await new Promise(r=>setTimeout(r,150));
+    ev("tab='trend';render()");click('[data-vt="pdfmenu:s"]');click('[data-vt="pdf:s:7"]');await new Promise(r=>setTimeout(r,150));
     ok("şeker raporu: bağlam ve değerler, hedefte yüzde",drawn.includes("NeoWell · Şeker raporu")&&drawn.includes("Açlık")&&drawn.includes("95 mg/dL")&&drawn.includes("Yemekten 2 saat sonra")&&drawn.some(t=>/%100 \(2 ölçüm\)/.test(t)),drawn);
     ev(`(()=>{const t=dayKey();S.vitals=[];for(let i=0;i<120;i++)S.vitals.push({id:i+1,k:'s',day:keyOff(-(i%25)),time:String(6+(i%12)).padStart(2,'0')+':'+String(i%60).padStart(2,'0'),g:80+(i%60),ctx:'rast'})})()`);
     drawn.length=0;saved=null;
@@ -1978,5 +1978,38 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("S.favFoods=[{text:'Elma',v:50}];sheetYemek()");q('#fml [data-ml="kah"]').click();q("[data-fv]").click();
     ok("favoriden ekleme seçili öğünü kullanır",ev("S.entries.find(e=>e.text==='Elma').meal")==="kah");
     ev("S.favFoods=[];S.entries=[];render()");
+  }
+  { // Trend: boş durum, veriye göre eksen, değer balonu, tek Raporlar bölümü (C8)
+    const q=s=>$q(s),qa=s=>[...w.document.querySelectorAll(s)];
+    ev("S=structuredClone(DEF);S.settings.obDone=true;S.settings.goalKg=0;closeSheet();tab='trend';render()");
+    ok("trend boşken: tek boş durum kartı, kilo ekle düğmesi; grafik, aralık seçici ve boş tablo yok",q(".empty")&&q(".empty").textContent.includes("Henüz tartı kaydı yok")&&!q("svg.chart")&&!q("#view table")&&!q("[data-range]")&&!!q('.empty [data-act="kilo"]'));
+    q('.empty [data-act="kilo"]').click();
+    ok("boş durumdaki düğme kilo ekleme sayfasını açar",q("#sheet").classList.contains("on")&&q("#sheet").textContent.includes("Kilo"));
+    const wts=g=>ev(`closeSheet();S.settings.goalKg=${g};S.entries=[];for(let i=29;i>=0;i--)S.entries.push({id:i+1,day:keyOff(-i),time:"07:00",type:"kilo",v:86+(i%7)*.5,text:""});range=30;render()`);
+    const ticks=()=>qa("svg.chart text[text-anchor=end]").map(t=>t.textContent).filter(t=>/^\d+,\d$/.test(t)).map(t=>+t.replace(",","."));
+    wts(60);
+    ok("kilo ekseni veriye göre: uzak hedef (60 kg) ekseni sıfıra/hedefe çekmez, kenarda ▼ etiketle gösterilir",Math.min(...ticks())>84&&Math.max(...ticks())<91&&q("svg.chart").textContent.includes("▼ Hedef 60,0 kg")&&!q('svg.chart line[stroke="var(--kcal)"]'),ticks());
+    wts(87);
+    ok("hedef veri aralığındaysa çizgi çizilir, kenar etiketi çıkmaz",!!q('svg.chart line[stroke="var(--kcal)"]')&&!q("svg.chart").textContent.includes("Hedef 87"));
+    ev("S.entries=S.entries.filter(e=>e.day===keyOff(0));render()");
+    ok("tek tartıda eksen çökmez (en az 2 kg aralık), aralık seçici duruyor",q("[data-range]")&&!/NaN/.test(q("#view").innerHTML));
+    wts(0);
+    const tipSvg=q("svg.chart"),P=JSON.parse(tipSvg.dataset.tip);
+    ok("değer balonu verisi: her tartı için nokta, gün, kg ve trend",P.length===30&&/kg · trend/.test(P[0][2])&&P.every(p=>p[0]>=0&&p[1]>=0));
+    tipSvg.dispatchEvent(Object.assign(new w.Event("pointerdown",{bubbles:true}),{clientX:P[10][0]}));
+    const tp=q("svg.chart .tip");
+    ok("dokununca en yakın noktanın balonu çıkar (tek balon), balon viewBox içinde",!!tp&&tp.textContent===P[10][2]&&qa("svg.chart .tip").length===1&&+tp.querySelector("rect").getAttribute("x")>=2);
+    tipSvg.dispatchEvent(Object.assign(new w.Event("pointerdown",{bubbles:true}),{clientX:P[29][0]}));
+    ok("başka noktaya dokununca balon yer değiştirir, uçta kenara taşmaz",qa("svg.chart .tip").length===1&&q("svg.chart .tip").textContent===P[29][2]&&+q("svg.chart .tip rect").getAttribute("x")+ +q("svg.chart .tip rect").getAttribute("width")<=340);
+    q("#view h2, #view .seg").dispatchEvent(new w.Event("pointerdown",{bubbles:true}));
+    ok("grafik dışına dokununca balon kalkar",!q("svg.chart .tip"));
+    // Raporlar
+    const rep=()=>qa("#view h2").filter(h=>h.textContent==="Raporlar").length;
+    ev("S.settings.bpOn=false;S.settings.bsOn=false;S.labs=[];render()");
+    ok("Raporlar: yalnız haftalık rapor (kapalı modül ve boş tahlil için satır yok)",rep()===1&&!!q('[data-wk="pdf"]')&&!q('[data-vt^="pdfmenu"]')&&!q('[data-lab="pdf"]'));
+    ev("S.settings.bpOn=true;S.settings.bsOn=true;S.labs=[{id:1,day:keyOff(0),n:'Glukoz',v:90,u:'mg/dL'}];render()");
+    ok("Raporlar: açık modüller ve tahlil verisi varsa hepsi aynı bölümde, 44 px satırlar",rep()===1&&!!q('[data-wk="pdf"]')&&!!q('[data-vt="pdfmenu:t"]')&&!!q('[data-vt="pdfmenu:s"]')&&!!q('[data-lab="pdf"]')&&/\.prow\{[^}]*min-height:56px/.test(html));
+    ok("alt ekranlarda PDF düğmesi kalmadı (tansiyon, şeker, tahlil)",["tansiyon","seker","tahlil"].every(t=>{ev(`tab='${t}';render()`);return !q('#view [data-vt^="pdfmenu"]')&&!q('#view [data-lab="pdf"]')}));
+    ev("S=structuredClone(DEF);S.settings.obDone=true;tab='bugun';render()");
   }
 },100);
