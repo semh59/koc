@@ -331,7 +331,7 @@ En yüksek riskli iş: Gradle/SDK/Kotlin değişikliği tüm APK derlemesini kı
 | 1.001.000-1.999.239 | İlaç ana: `1e6+m.id*1000+ti*40+off` | |
 | +1e6, +2e6 (→3.999.239) | İlaç tekrarları (10, 20 dk) | |
 
-PendingIntent request code: 7001 (StepSnapshotReceiver ve MotionReceiver, farklı bileşen olduğu için çakışmıyor), 7002 (Motion tick). Widget için 7201/7202.
+PendingIntent request code: 7001 (StepSnapshotReceiver gece alarmı ve MotionReceiver, farklı bileşen olduğu için çakışmıyor), 7002 (Motion tick), 7003 (StepSnapshotReceiver 23:58 örneği). Widget için 7201/7202. Native alarmlar (7001, 7002, 7003) LocalNotifications'ın 440 bütçesinin dışında, 500 sınırına 60 pay kalır.
 
 Üç tuzak:
 1. `scheduleReminders` 9001 dışındaki **tüm** bekleyen bildirimleri iptal eder. Tek seferlik bildirimler (oruç 9100, ileride başka) başka yerde kurulursa bir sonraki çağrıda silinir; **mutlaka `scheduleReminders` içinde durumdan** üretilmeli.

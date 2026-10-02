@@ -75,14 +75,15 @@ final class StepStore {
         s.base = sp.getFloat("base", 0);
         s.carry = sp.getFloat("carry", 0);
         s.last = sp.getFloat("last", -1);
+        s.sampled = sp.getBoolean("sampled", false);
         Map<String, Long> hist = new HashMap<>();
         String today = today();
         java.util.Calendar now = java.util.Calendar.getInstance();
         int minutes = now.get(java.util.Calendar.HOUR_OF_DAY) * 60 + now.get(java.util.Calendar.MINUTE);
         boolean closed = closeFirst && StepMath.closeDay(s, today, counter, minutes, hist);
-        long steps = StepMath.update(s, today, counter, hist);
+        long steps = StepMath.update(s, today, counter, minutes, hist);
         SharedPreferences.Editor e = sp.edit();
-        e.putString("day", s.day).putFloat("base", s.base).putFloat("carry", s.carry).putFloat("last", s.last);
+        e.putString("day", s.day).putFloat("base", s.base).putFloat("carry", s.carry).putFloat("last", s.last).putBoolean("sampled", s.sampled);
         for (Map.Entry<String, Long> x : hist.entrySet()) e.putLong("h_" + x.getKey(), x.getValue());
         if (closed) e.putLong("snapAt", System.currentTimeMillis());
         e.apply();
