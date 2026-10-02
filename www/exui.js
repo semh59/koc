@@ -25,14 +25,20 @@ function exListHtml(){
 }
 const exChips=(arr,cur,act)=>arr.map(x=>`<button class="chip" data-g="${act}:${x}" aria-pressed="${x===cur}">${x}</button>`).join("");
 function viewEgz(){
-  return `<input class="in" id="glq" placeholder="Egzersiz ara" autocomplete="off" value="${esc(gLQ)}">
-  <div class="chips" id="glreg" style="margin-top:10px">${exChips(["Tümü"].concat(EXREG),gLReg,"lreg")}</div>
-  <div class="chips" id="glcat">${exChips(["Tümü","Güç","Esneme","Kardiyo","Pliyometrik"],gLCat,"lcat")}</div>
-  <div class="chips" id="gleq">${exChips(["Tümü","Ağırlıksız","Ev tipi","Salon"],gLEq,"leq")}</div>
+  return `<div class="srch"><input class="in" id="glq" placeholder="Egzersiz ara" autocomplete="off" value="${esc(gLQ)}"><span id="glfb">${exFilterBtn()}</span></div>
   <div id="gllist" class="plist">${exListHtml()}</div>
   <p class="hint">Hareketler genel bilgi amaçlıdır, kişisel antrenman ya da tıbbi tavsiye değildir. Fotoğraflar free-exercise-db (kamu malı) kaynaklıdır.</p>`;
 }
+const exFilterN=()=>[gLReg,gLCat,gLEq].filter(x=>x!=="Tümü").length;
+const exFilterBtn=()=>{const n=exFilterN();return `<button class="btn ghost" data-g="lfilter" aria-label="Filtre${n?`, ${n} etkin`:""}">Filtre${n?` <span class="badge num">${n}</span>`:""}</button>`};
+function exFilterSheet(){
+  openSheet(`<h3>Filtre</h3><div class="lbl">Bölge</div><div class="chips" id="glreg">${exChips(["Tümü"].concat(EXREG),gLReg,"lreg")}</div>
+  <div class="lbl">Tür</div><div class="chips" id="glcat">${exChips(["Tümü","Güç","Esneme","Kardiyo","Pliyometrik"],gLCat,"lcat")}</div>
+  <div class="lbl">Ekipman</div><div class="chips" id="gleq">${exChips(["Tümü","Ağırlıksız","Ev tipi","Salon"],gLEq,"leq")}</div>
+  <button class="btn" data-g="closesheet" id="glok">${exFiltered().length} egzersizi göster</button><button class="lnk" data-g="lclear">Filtreleri temizle</button>`);
+}
 const exRefreshChips=()=>{
+  const fb=$("#glfb");if(fb)fb.innerHTML=exFilterBtn();const ok=$("#glok");if(ok)ok.textContent=`${exFiltered().length} egzersizi göster`;
   for(const [id,arr,cur,act] of [["glreg",["Tümü"].concat(EXREG),gLReg,"lreg"],["glcat",["Tümü","Güç","Esneme","Kardiyo","Pliyometrik"],gLCat,"lcat"],["gleq",["Tümü","Ağırlıksız","Ev tipi","Salon"],gLEq,"leq"]]){const el=$("#"+id);if(el)el.innerHTML=exChips(arr,cur,act)}
   const l=$("#gllist");if(l)l.innerHTML=exListHtml();
 };
@@ -219,6 +225,8 @@ function exClick(a,p1,p2,el,w){
       S.plates=GPLATE_ALL.filter(x=>x===v?!on:S.plates.includes(x));save();return render();
     }
     case "lib":tab="egz";return render();
+    case "lfilter":return exFilterSheet();
+    case "lclear":gLReg=gLCat=gLEq="Tümü";gLN=40;exFilterSheet();return exRefreshChips();
     case "lreg":gLReg=p1;gLN=40;return exRefreshChips();
     case "lcat":gLCat=p1;gLN=40;return exRefreshChips();
     case "leq":gLEq=p1;gLN=40;return exRefreshChips();
