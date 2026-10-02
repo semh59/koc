@@ -49,6 +49,9 @@ sleep 4
 w3=$(wv)
 echo "Widget su (uygulama günü): $w2 -> $w3"
 [ "$w3" = "$((w2 + 250))" ] || { echo "WIDGET SUYU AYNI GÜNE EKLENMEDİ (gün anahtarı uyuşmuyor)"; cat widget.xml; exit 1; }
+# Su düğmesi uygulamayı arkaya aldı; öne getirilmeden gelen am start ek alanları teslim etmez.
+adb shell monkey -p com.neowell.app -c android.intent.category.LAUNCHER 1
+sleep 10
 # İlaç bildirimindeki "Aldım" düğmesi benzetimi: yerel taraf kaydı "m<kimlik>_<saat>" anahtarıyla biriktirir, uygulama öne gelince tüketilir.
 adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction med --ei LocalNotificationId 1001001 --es LocalNotficationObject '{\"extra\":{\"act\":\"med\",\"m\":1,\"s\":\"08:00\"}}'"
 sleep 4
