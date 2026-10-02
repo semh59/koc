@@ -136,4 +136,20 @@ if(!g.includes("play-services-location")){
   g=g.replace(/dependencies \{/,m=>m+'\n    implementation "com.google.android.gms:play-services-location:21.3.0"');
   fs.writeFileSync(bg,g);
 }
+// APK boyutu: 32 bit x86 telefon yok; x86_64 emülatör smoke testi (yazı tanıma dahil) için kalır.
+g=fs.readFileSync(bg,"utf8");
+if(!g.includes("abiFilters")){
+  g=g.replace(/defaultConfig \{/,m=>m+'\n        ndk { abiFilters "arm64-v8a", "armeabi-v7a", "x86_64" }');
+  fs.writeFileSync(bg,g);
+}
+// Barkod Google'ın tarayıcı ekranıyla (scan) okunur; eklentinin gömülü barkod motoru (startScan, readBarcodesFromImage) çağrılmadığı için paketlenmez.
+if(!g.includes("libbarhopper_v3.so")){
+  g=g.replace(/android \{/,`android {
+    packaging {
+        jniLibs {
+            excludes += ["**/libbarhopper_v3.so"]
+        }
+    }`);
+  fs.writeFileSync(bg,g);
+}
 console.log("Sabit imza, data binding ve yazı tanıma ayarlandı.");
