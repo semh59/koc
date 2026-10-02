@@ -408,7 +408,7 @@ function viewProviders(){
   const rows=S.providers.map((p,i)=>{const [a,b]=pStatus(p);return `<button class="prow" data-c="prov:${p.id}"><span><span class="mut sm">${i+1}.</span><b>${esc(p.name)}</b><span class="mut sm">${esc(p.model)}${b?", "+esc(b):""}</span></span><span class="tag">${a}</span></button>`}).join("");
   return `<h2>Yapay zekâ koç</h2><div class="card"><p class="hint" style="padding:0 0 8px">Sırayla denenir. Limite takılırsa sıradaki devreye girer. Anahtarlar yalnızca bu telefonda durur, yedeğe dahil edilmez.</p>${rows}
   <div class="btns"><button class="btn ghost" data-c="addprov">Sağlayıcı ekle</button></div>
-  <p class="hint">Veri paylaşımı: ${S.settings.consent?`kabul edildi (${esc(S.settings.consentAt)})`:"kabul edilmedi"}. ${S.settings.consent?`<button class="lnk" style="display:inline-block;width:auto" data-c="revoke">Geri al</button>`:""}</p>
+  <p class="hint">Veri paylaşımı: ${S.settings.consent?`kabul edildi (${fd(S.settings.consentAt)})`:"kabul edilmedi"}. ${S.settings.consent?`<button class="lnk" style="display:inline-block;width:auto" data-c="revoke">Geri al</button>`:""}</p>
   <div class="btns"><button class="btn danger" data-c="clearchat">Sohbeti temizle</button></div></div>`;
 }
 /* Adresler yalnız yaygın bilinen anahtar sayfaları; panel düğme adları değişebilir. */

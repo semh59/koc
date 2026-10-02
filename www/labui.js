@@ -4,7 +4,6 @@
 let labRows=[],labDate="",labManual=false,labKeep=null;
 const labNum=s=>{const t=String(s==null?"":s).trim();return t===""?undefined:LabLib.toNum(t)};
 const labFmt=v=>{const s=Number(v.toFixed(2));return String(s).replace(".",",")};
-const labDay=k=>k.slice(8)+"."+k.slice(5,7)+"."+k.slice(0,4);
 
 function labSvg(s,W,H){
   const g=LabLib.geom(s,8,8,W-16,H-28),band=g.band;
@@ -12,7 +11,7 @@ function labSvg(s,W,H){
   const line=g.pts.length>1?`<polyline points="${g.pts.map(q=>q.x.toFixed(1)+","+q.y.toFixed(1)).join(" ")}" fill="none" stroke="var(--prim)" stroke-width="2.2" stroke-linejoin="round"/>`:"";
   const dots=g.pts.map(q=>`<circle cx="${q.x.toFixed(1)}" cy="${q.y.toFixed(1)}" r="4.2" fill="${q.out?"var(--warn)":"var(--prim)"}"/>`).join("");
   const first=s.pts[0].day,last=s.pts[s.pts.length-1].day;
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(s.n)} grafiği" style="width:100%;display:block">${bd}<rect x="8" y="8" width="${W-16}" height="${H-28}" fill="none" stroke="var(--line)"/>${line}${dots}<text x="8" y="${H-6}" style="font-size:10px;fill:var(--mut)">${labDay(first)}</text>${s.pts.length>1?`<text x="${W-8}" y="${H-6}" text-anchor="end" style="font-size:10px;fill:var(--mut)">${labDay(last)}</text>`:""}</svg>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(s.n)} grafiği" style="width:100%;display:block">${bd}<rect x="8" y="8" width="${W-16}" height="${H-28}" fill="none" stroke="var(--line)"/>${line}${dots}<text x="8" y="${H-6}" style="font-size:10px;fill:var(--mut)">${fd(first)}</text>${s.pts.length>1?`<text x="${W-8}" y="${H-6}" text-anchor="end" style="font-size:10px;fill:var(--mut)">${fd(last)}</text>`:""}</svg>`;
 }
 const labFlagTxt=f=>f==="high"?"▲ Referans aralığının üstünde":f==="low"?"▼ Referans aralığının altında":"";
 const labSid=s=>s.id;
@@ -21,11 +20,10 @@ function viewTahlil(){
   const list=LabLib.series(S.labs),txt=S.labs.filter(r=>r.t);
   const cards=list.map(s=>{
     const last=s.pts[s.pts.length-1],f=LabLib.flag(last),rt=LabLib.rangeText(last);
-    return `<button class="stepcard" data-lab="open:${esc(s.id)}" aria-label="${esc(s.n)} ayrıntısı"><div class="row"><b>${esc(s.n)}</b><span class="mut sm">${labDay(last.day)}</span></div><div class="row"><span class="big num">${last.q||""}${labFmt(last.v)} <small class="mut">${esc(s.u)}</small></span><span class="mut sm">${rt?"Ref. "+esc(rt):""}</span></div>${f?`<div class="sm" style="font-weight:700">${labFlagTxt(f)}</div>`:""}${s.pts.length>1?`<div style="margin-top:6px">${labSvg(s,300,58)}</div>`:""}</button>`;
+    return `<button class="stepcard" data-lab="open:${esc(s.id)}" aria-label="${esc(s.n)} ayrıntısı"><div class="row"><b>${esc(s.n)}</b><span class="mut sm">${fd(last.day)}</span></div><div class="row"><span class="big num">${last.q||""}${labFmt(last.v)} <small class="mut">${esc(s.u)}</small></span><span class="mut sm">${rt?"Ref. "+esc(rt):""}</span></div>${f?`<div class="sm" style="font-weight:700">${labFlagTxt(f)}</div>`:""}${s.pts.length>1?`<div style="margin-top:6px">${labSvg(s,300,58)}</div>`:""}</button>`;
   }).join("");
   const nTxt=txt.length?`<p class="hint">${txt.length} yazılı sonuç (ör. Negatif) kayıtlı. Bunlar grafikte gösterilmez, PDF'e eklenmez.</p>`:"";
-  return `<button class="btn" data-tab="trend" style="margin:0 0 12px">‹ Trend</button>
-  <div class="card"><div class="lbl">Tahlil sonuçları</div>
+  return `<div class="card"><div class="lbl">Tahlil sonuçları</div>
     <p class="mut sm" style="margin:0 0 10px">PDF'ten okut ya da elle ekle. Veriler yalnızca bu telefonda kalır. Laboratuvarın yazdığı referans aralığı gösterilir. ${MED_NOTE}</p>
     <div class="btns" style="display:grid;gap:8px"><label class="btn" style="text-align:center">${Icons.svg("file")} PDF'ten oku<input id="labfile" type="file" accept="application/pdf,.pdf" hidden></label>
     ${ocrBtn("tahlil",Icons.svg("camera")+" Fotoğraftan oku")}<button class="btn ghost" data-lab="add">${Icons.svg("plus")} Elle ekle</button>${list.length?`<button class="btn ghost" data-lab="pdf">${Icons.svg("share")} PDF olarak paylaş</button>`:""}</div></div>
@@ -34,14 +32,14 @@ function viewTahlil(){
 }
 function labTrendCard(){
   const n=LabLib.series(S.labs).length,d=S.labs.length?S.labs.map(r=>r.day).sort().pop():"";
-  return `<button class="stepcard" data-tab="tahlil"><div class="row"><span class="mut">🧪 Tahlil takibi</span><span class="mut sm">Aç ›</span></div><div class="row"><span class="mut sm">${n?`${n} test, son: ${labDay(d)}`:"PDF'ten okut ya da elle ekle"}</span></div></button>`;
+  return `<button class="stepcard" data-tab="tahlil"><div class="row"><span class="mut">🧪 Tahlil takibi</span><span class="mut sm">Aç ›</span></div><div class="row"><span class="mut sm">${n?`${n} test, son: ${fd(d)}`:"PDF'ten okut ya da elle ekle"}</span></div></button>`;
 }
 
 function labDetail(id){
   const s=LabLib.series(S.labs).find(x=>x.id===id);
   if(!s){closeSheet();return render()}
   const last=s.pts[s.pts.length-1],f=LabLib.flag(last);
-  const rows=[...s.pts].reverse().map(p=>{const pf=LabLib.flag(p),rt=LabLib.rangeText(p);return `<div class="row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span style="flex:1">${labDay(p.day)}</span><b class="num">${p.q||""}${labFmt(p.v)}</b><span class="mut sm" style="min-width:64px;text-align:right">${rt?esc(rt):""}</span><span aria-hidden="true">${pf==="high"?"▲":pf==="low"?"▼":""}</span><button class="chip" data-lab="del:${p.id}" aria-label="${labDay(p.day)} sonucunu sil">✕</button></div>`}).join("");
+  const rows=[...s.pts].reverse().map(p=>{const pf=LabLib.flag(p),rt=LabLib.rangeText(p);return `<div class="row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span style="flex:1">${fd(p.day)}</span><b class="num">${p.q||""}${labFmt(p.v)}</b><span class="mut sm" style="min-width:64px;text-align:right">${rt?esc(rt):""}</span><span aria-hidden="true">${pf==="high"?"▲":pf==="low"?"▼":""}</span><button class="chip" data-lab="del:${p.id}" aria-label="${fd(p.day)} sonucunu sil">✕</button></div>`}).join("");
   openSheet(`<h3>${esc(s.n)}</h3><div class="mut sm">${esc(s.u)}${f?" · "+labFlagTxt(f):""}</div><div style="margin:10px 0">${s.pts.length>1?labSvg(s,320,150):`<p class="hint">Grafik için aynı testten en az iki sonuç gerekir.</p>`}</div>
   <div class="mut sm">Gölgeli bölge laboratuvarın yazdığı referans aralığıdır.</div><div style="max-height:34vh;overflow:auto">${rows}</div><button class="btn ghost" data-lab="close" style="margin-top:10px">Kapat</button>`);
 }

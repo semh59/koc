@@ -2,6 +2,9 @@
 /* Saf hesap fonksiyonları (DOM yok). Tarayıcıda global Algo, Node'da module.exports. */
 const Algo=(()=>{
   const KCAL_PER_KG=7700;
+  const AY3=["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
+  /* Uygulamanın tek tarih biçimi: "2 Eki", yıl istenirse "2 Eki 2026". CSV ISO kalır. */
+  const fdate=(k,yr)=>`${+k.slice(8,10)} ${AY3[+k.slice(5,7)-1]}${yr?" "+k.slice(0,4):""}`;
   const dayNum=k=>Math.round(Date.UTC(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10))/864e5);
   const roundTo=(x,step)=>Math.round(x/step)*step;
 
@@ -162,6 +165,6 @@ const Algo=(()=>{
     }
     return r;
   }
-  return {KCAL_PER_KG,dayNum,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,lossBlock,etaWeeks,isLosing,goalEta,proteinRange,est1RM,volume,nextTarget,roundTo,plates,warmup};
+  return {KCAL_PER_KG,dayNum,fdate,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,lossBlock,etaWeeks,isLosing,goalEta,proteinRange,est1RM,volume,nextTarget,roundTo,plates,warmup};
 })();
 if(typeof module!=="undefined")module.exports=Algo;

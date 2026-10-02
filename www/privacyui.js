@@ -15,7 +15,7 @@ const PV_CATS=[
 ];
 function pvDelete(i){
   const [name,n,del]=PV_CATS[i],lb=S.settings.lastBackup;
-  if(!n()||!confirm(`${name}: ${n()} kayıt silinecek. Bu geri alınamaz. Son yedek: ${lb?lb.slice(8)+"."+lb.slice(5,7)+"."+lb.slice(0,4):"yok"}. Önce yedek almanı öneririz. Silinsin mi?`))return;
+  if(!n()||!confirm(`${name}: ${n()} kayıt silinecek. Bu geri alınamaz. Son yedek: ${lb?fd(lb):"yok"}. Önce yedek almanı öneririz. Silinsin mi?`))return;
   del();save();render();scheduleReminders().then(setNotif);sheetPrivacy();toast(`${name} silindi`);
 }
 /* Gizlilik ve veri: verinin nerede durduğu, internete çıkan hizmetler ve Koç açık rızası. Sheet olduğu için onboarding'den de açılır. */

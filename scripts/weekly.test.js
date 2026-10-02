@@ -14,7 +14,7 @@ const S={settings:settings({}),entries:[
 const d=W.build(S,end,7);
 const sm=Object.fromEntries(d.summary);
 ok("7 satır, eskiden yeniye, gün etiketleri",d.rows.length===7&&d.rows[0].day==="2026-09-24"&&d.rows[6].day==="2026-09-30"&&d.rows[6].label==="Çar 30",d.rows.map(r=>r.label));
-ok("dönem başlığı",sm["Dönem"]==="24.09.2026 - 30.09.2026");
+ok("dönem başlığı",sm["Dönem"]==="24 Eyl 2026 - 30 Eyl 2026");
 ok("kilo: ilk ve son ölçüm, fark işaretli (eksi gerçek eksi işareti)",sm["Kilo"]==="82,4 → 81,9 kg (−0,5)",sm["Kilo"]);
 ok("pencere dışı kayıtlar dahil edilmez (10 Eylül)",!JSON.stringify(sm).includes("99")&&!JSON.stringify(d.rows).includes("5000"));
 ok("kalori: yalnızca kayıtlı günlerin ortalaması, hedef yan yana",sm["Kalori"]==="günlük ortalama 1900 kcal (hedef 2000), 2 gün kayıt",sm["Kalori"]);
@@ -48,7 +48,7 @@ ok("bugünün vakti gelmemiş dozu sayılmaz (saat 12:00)",Object.fromEntries(W.
 // çizim
 const drawn=[];const ctx=new Proxy({},{get:(t,k)=>k==="measureText"?()=>({width:100}):k==="fillText"?s=>drawn.push(s):()=>{},set:()=>true});
 W.drawPage(ctx,d,{today:"2026-10-01"});
-ok("çizim: başlık, özet satırları, tablo başlıkları ve günler, uyarı notu",drawn.includes("NeoWell · Haftalık rapor")&&drawn.includes("Kilo")&&drawn.includes("Spor (dk)")&&drawn.includes("Çar 30")&&drawn.some(t=>/Tıbbi yorum içermez/.test(t))&&drawn.some(t=>t.includes("01.10.2026")),drawn.slice(0,12));
+ok("çizim: başlık, özet satırları, tablo başlıkları ve günler, uyarı notu",drawn.includes("NeoWell · Haftalık rapor")&&drawn.includes("Kilo")&&drawn.includes("Spor (dk)")&&drawn.includes("Çar 30")&&drawn.some(t=>/Tıbbi yorum içermez/.test(t))&&drawn.some(t=>t.includes("1 Eki 2026")),drawn.slice(0,12));
 ok("çizim: tablo değerleri (1.800+300 kcal tek gün toplamı 2100)",drawn.includes("2100")&&drawn.includes("9.000")&&drawn.includes("81,9"));
 W.drawPage(ctx,empty,{today:"2026-10-01"});
 ok("boş hafta çizimi çökmez",true);

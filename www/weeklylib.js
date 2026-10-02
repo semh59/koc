@@ -9,7 +9,7 @@ const WeeklyLib=(()=>{
   const key=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
   const fmt=(x,d)=>Number(x).toFixed(d==null?1:d).replace(".",",");
   const fmtS=x=>(x>0?"+":x<0?"−":"")+fmt(Math.abs(x));
-  const dmy=k=>k.slice(8)+"."+k.slice(5,7)+"."+k.slice(0,4);
+  const dmy=k=>(typeof Algo!=="undefined"?Algo:require("./algo.js")).fdate(k,true);
   const sumOf=(es,t,k)=>es.filter(e=>e.type===t&&e.day===k).reduce((s,e)=>s+(e.v||0),0);
   const mean=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
 

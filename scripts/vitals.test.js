@@ -93,7 +93,7 @@ ok("ön ayarlar belgelenen değerler",V.BP_PRESET.bpSysHi===135&&V.BP_PRESET.bpD
 
 // rapor
 const rr=V.reportRows(rows,"t","2026-09-01","2026-09-30",S1);
-ok("rapor satırları: her ham ölçüm bir satır, tarih sıralı, seans ve ölçüm sırası",rr.length===8&&rr[0].d==="01.09.2026"&&rr.some(r=>r.c==="Sabah, 1. ölçüm"&&r.v.startsWith("130/84"))&&rr.some(r=>r.c==="Sabah, 2. ölçüm"&&r.v.startsWith("134/86")),rr);
+ok("rapor satırları: her ham ölçüm bir satır, tarih sıralı, seans ve ölçüm sırası",rr.length===8&&rr[0].d==="1 Eyl 2026"&&rr.some(r=>r.c==="Sabah, 1. ölçüm"&&r.v.startsWith("130/84"))&&rr.some(r=>r.c==="Sabah, 2. ölçüm"&&r.v.startsWith("134/86")),rr);
 ok("rapor satırı: nabız ve aralık işareti",rr.some(r=>/nabız 70/.test(r.v))&&rr.filter(r=>r.f==="▲").length>=3);
 ok("rapor: şeker satırı bağlamı ve birimi",V.reportRows(gr,"s","2026-09-01","2026-09-30",SG).some(r=>r.c==="Yemekten 2 saat sonra"&&r.v==="150 mg/dL"));
 ok("rapor: dönem dışı ölçümler gelmez",V.reportRows(gr,"s","2026-09-01","2026-09-30",SG).length===5);
