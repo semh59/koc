@@ -1,4 +1,23 @@
 "use strict";
+/* Kategori başına sayı ve silme. Besin kütüphanesi ile antrenman şablonları kullanıcının hazırladığı içeriktir, yalnız "Tüm verileri sil" ile gider. */
+const pvE=(...t)=>[()=>S.entries.filter(e=>t.includes(e.type)).length,()=>{S.entries=S.entries.filter(e=>!t.includes(e.type))}];
+const PV_CATS=[
+  ["Yemek ve su kayıtları",...pvE("yemek","su")],
+  ["Kilo",...pvE("kilo")],
+  ["Spor ve antrenman",()=>S.workouts.length+S.entries.filter(e=>e.type==="spor"&&e.wid==null).length,()=>{S.workouts=[];S.entries=S.entries.filter(e=>e.type!=="spor")}],
+  ["Adım ve hareket",()=>S.moves.length+S.entries.filter(e=>e.type==="adim").length,()=>{S.moves=[];S.entries=S.entries.filter(e=>e.type!=="adim")}],
+  ["İlaç",()=>S.meds.length+S.medLog.length,()=>{S.meds=[];S.medLog=[]}],
+  ["Sağlık ölçümleri (tansiyon, şeker)",()=>S.vitals.length,()=>{S.vitals=[]}],
+  ["Tahlil",()=>S.labs.length,()=>{S.labs=[]}],
+  ["Uyku, ruh hali ve oruç",()=>S.sleep.length+S.mood.length+S.fast.log.length+(S.fast.t0?1:0),()=>{S.sleep=[];S.mood=[];S.fast.log=[];S.fast.t0=null}],
+  ["Koç sohbeti",()=>S.chat.length,cClearChat],
+  ["Notlar",...pvE("not")]
+];
+function pvDelete(i){
+  const [name,n,del]=PV_CATS[i],lb=S.settings.lastBackup;
+  if(!n()||!confirm(`${name}: ${n()} kayıt silinecek. Bu geri alınamaz. Son yedek: ${lb?lb.slice(8)+"."+lb.slice(5,7)+"."+lb.slice(0,4):"yok"}. Önce yedek almanı öneririz. Silinsin mi?`))return;
+  del();save();render();scheduleReminders().then(setNotif);sheetPrivacy();toast(`${name} silindi`);
+}
 /* Gizlilik ve veri: verinin nerede durduğu, internete çıkan hizmetler ve Koç açık rızası. Sheet olduğu için onboarding'den de açılır. */
 function sheetPrivacy(){
   const st=S.settings;
@@ -13,14 +32,19 @@ function sheetPrivacy(){
     <li><b>Google barkod tarayıcı</b> (Play hizmetleri): görüntü telefonda işlenir, NeoWell görüntüyü almaz. Google, kendi koşullarına göre kullanım ve tanılama bilgisi toplayabilir.</li>
     <li><b>Google Drive</b>: yalnızca sen yedeği paylaşım ekranından Drive'a gönderirsen. Yedek parolayla şifrelenir.</li>
   </ul>
-  <div class="banner info">${consentHtml()}<p>Durum: ${st.consent?`kabul edildi (${esc(st.consentAt)})`:"kabul edilmedi"}</p>
+  <div class="lbl">Verilerini sil</div>
+  <p class="mut sm">Kategori başına silinir, geri alınamaz. <button class="lnk" style="display:inline;width:auto;min-height:44px" data-act="yedek">Önce yedek al</button></p>
+  ${PV_CATS.map(([name,n],i)=>`<div class="row" style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)"><span style="flex:1;min-width:0"><b>${name}</b><small class="mut sm" style="display:block">${n()} kayıt</small></span><button class="chip" data-pv="del:${i}" ${n()?"":"disabled"} aria-label="${name} sil">Sil</button></div>`).join("")}
+  <p class="hint">Besin kütüphanen ve antrenman şablonların bu listede yoktur; yalnız Ayarlar > Tüm verileri sil ile gider.</p>
+  <div class="banner info" style="margin-top:10px">${consentHtml()}<p>Durum: ${st.consent?`kabul edildi (${esc(st.consentAt)})`:"kabul edilmedi"}</p>
   ${st.consent?`<button class="btn ghost" data-pv="revoke">Rızamı geri al</button>`:consentOk()?`<button class="btn" data-pv="consent">Açık rızamı veriyorum</button>`:""}</div>
   <button class="btn ghost" data-pv="close" style="margin-top:8px">Kapat</button>`);
 }
 document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-pv]");if(!el)return;
-  const a=el.dataset.pv;
+  const [a,arg]=el.dataset.pv.split(":");
   if(a==="open")sheetPrivacy();
   else if(a==="close")closeSheet();
+  else if(a==="del")pvDelete(+arg);
   else if(a==="consent"||a==="revoke"){cConsent(a==="consent");sheetPrivacy()}
 });
