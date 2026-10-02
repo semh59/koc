@@ -42,7 +42,15 @@ const WeeklyLib=(()=>{
       const a=ML.adherence(S.meds,S.medLog||[],from,endDay,endDay,nowTime||"23:59");
       if(a.total)summary.push(["İlaç uyumu",`%${a.pct} (${a.taken} / ${a.total} doz alındı${a.missed?`, ${a.missed} kaçırılan`:""}${a.late?`, ${a.late} bugün bekliyor`:""}${a.skipped?`, ${a.skipped} atlanan`:""})`]);
     }
-    return {rows,summary,from,end:endDay};
+    /* Grafikler yalnız en az iki günlük veri varsa çıkar. Renkler uygulamadaki ile aynı: kilo prim, sistolik ink, diyastolik su. */
+    const charts=[],kp=rows.filter(r=>r.kilo!=null).map(r=>({day:r.day,v:r.kilo}));
+    if(kp.length>=2)charts.push({title:"Kilo (kg)",series:[{pts:kp,color:"#0f5c55",shape:"c",vals:true,fmt:v=>fmt(v)}],band:null,from,to:endDay});
+    if(st.bpOn){
+      const byDay={};for(const r of vit)if(r.k==="t"&&r.day>=from&&r.day<=endDay)(byDay[r.day]=byDay[r.day]||[]).push(r);
+      const ds=Object.keys(byDay).sort(),avg=f=>ds.map(k=>({day:k,v:mean(byDay[k].map(r=>r[f]))}));
+      if(ds.length>=2)charts.push({title:"Tansiyon (mmHg), günlük ortalama",series:[{pts:avg("sys"),color:"#10232b",shape:"c",short:"Sistolik"},{pts:avg("dia"),color:"#2a86bd",shape:"s",dash:true,short:"Diyastolik",below:true}],band:VL.bpBand(st).bands,note:VL.bpBand(st).mine?"Gölgeli alan girdiğin üst sınırlardır.":"Gölgeli alan genel referans aralığıdır (büyük 90–130, küçük 60–80); tanı değildir.",from,to:endDay});
+    }
+    return {rows,summary,charts,from,end:endDay};
   }
 
   function drawPage(ctx,data,info){
@@ -68,6 +76,19 @@ const WeeklyLib=(()=>{
       ctx.fillStyle="#10232b";c.forEach((t,i)=>ctx.fillText(t,cols[i][1],y+32));
       ctx.strokeStyle="#e3ebe8";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(RM,y+ROW-4);ctx.lineTo(RW-RM,y+ROW-4);ctx.stroke();
       y+=ROW;
+    }
+    /* Tablonun altındaki boşluk: iki grafik yan yana, tek grafik tam genişlikte. Sığmazsa hiç çizilmez. */
+    y+=20;
+    const cs=data.charts||[],h=Math.min(320,RH-90-y-110);
+    if(cs.length&&h>=150){
+      const colW=(RW-2*RM)/cs.length,w=cs.length>1?colW-150:RW-2*RM-110;
+      cs.forEach((c,i)=>{
+        const x=RM+i*colW;
+        ctx.fillStyle="#10232b";ctx.font="bold 26px sans-serif";ctx.fillText(c.title,x,y+26);
+        VL.drawChart(ctx,x,y+46,w,h,c.series,c.band,c.from,c.to);
+      });
+      const note=cs.map(c=>c.note).filter(Boolean).join(" ");
+      if(note){ctx.fillStyle="#62737a";ctx.font="20px sans-serif";ctx.fillText(note,RM,y+46+h+66)}
     }
     ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText("NeoWell",RM,RH-45);
   }
