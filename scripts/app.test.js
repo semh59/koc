@@ -719,6 +719,45 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("saklı parolayla şifreli yedek gider",saved&&JSON.parse(saved.data).enc==="aes-gcm-pbkdf2");
     ev("sheetDrive()");await new Promise(r=>setTimeout(r,30));click('[data-bk="forget"]');await new Promise(r=>setTimeout(r,30));
     ok("parolayı unut: saklanan silinir, alanlar geri gelir",ev("localStorage.getItem('koc_bkpw_enc')")===null&&!!q("#bkp1"));
+
+    // D-Veri2: otomatik şifreli yedek
+    ev("closeSheet()");
+    ok("otomatik yedek: varsayılan kapalı, temizleyici yalnız true ve geçerli tarihi alır",ev("DEF.settings.autoBk")===false&&ev("cleanSettings({autoBk:'evet',lastAutoBk:'x'}).autoBk")===false&&ev("cleanSettings({autoBk:'evet',lastAutoBk:'x'}).lastAutoBk")===""&&ev("cleanSettings({autoBk:true,lastAutoBk:'2026-09-01'}).lastAutoBk")==="2026-09-01");
+    ev("tab='ayar-veri';render()");
+    ok("otomatik yedek: eklenti yoksa (tarayıcı) ayar görünmez",!q("[data-ab]"));
+    const files={},bfLog=[];let bfFail=false;
+    w.Capacitor.Plugins.BackupFolder={pick:async()=>{bfLog.push("pick");return {name:"NeoWell"}},status:async()=>({set:true,name:"NeoWell"}),clear:async()=>{bfLog.push("clear")},
+      write:async({name,data})=>{bfLog.push("write");if(bfFail)throw new Error("yazılamadı");files[name]=data;return {names:Object.keys(files)}},remove:async({names})=>{names.forEach(n=>delete files[n])}};
+    ev("render()");
+    ok("otomatik yedek: Veri ve yedek'te kapalı kutu ve 'haftada bir aç' notu",!!q('[data-ab="toggle"]')&&!q('[data-ab="toggle"]').checked&&q("#view").textContent.includes("en az haftada bir"));
+    click('[data-ab="toggle"]');await new Promise(r=>setTimeout(r,30));
+    ok("otomatik yedek: açınca parola istenir, kutu henüz işaretlenmez",!!q("#abp1")&&!!q("#abp2")&&ev("S.settings.autoBk")===false&&q("#sheet").textContent.includes("parolayla aç"));
+    q("#abp1").value="abc";q("#abp2").value="abc";click('[data-ab="pick"]');await new Promise(r=>setTimeout(r,30));
+    ok("otomatik yedek: kısa parola reddedilir, klasör sorulmaz",q("#abw").textContent.includes("en az 6")&&!bfLog.includes("pick"));
+    const old=["2026-08-01","2026-08-08","2026-08-15","2026-08-22","2026-08-29"].map(d=>`neowell-yedek-${d}.json`);old.forEach(n=>{files[n]="{}"});files["baska.txt"]="x";
+    ev("S.settings.lastBackup='';S.settings.healthNote='oto yedek notu'");
+    q("#abp1").value="parola123";q("#abp2").value="parola123";click('[data-ab="pick"]');await new Promise(r=>setTimeout(r,1200));
+    const today=`neowell-yedek-${ev("dayKey()")}.json`,env=files[today]&&JSON.parse(files[today]);
+    ok("otomatik yedek: klasör seçilince açılır, parola kasada saklanır, bugünkü şifreli dosya yazılır",ev("S.settings.autoBk")===true&&ev("localStorage.getItem('koc_bkpw_enc')").startsWith("ENC:")&&env&&env.enc==="aes-gcm-pbkdf2"&&!files[today].includes("oto yedek notu"));
+    ok("otomatik yedek: aynı parolayla geri yüklenebilir biçim (S ve anahtarlar)",(await ev("BackupLib.decrypt")(env,"parola123")).S.settings.healthNote==="oto yedek notu");
+    ok("otomatik yedek: en yeni 4 yedek kalır, başka dosyaya dokunulmaz",Object.keys(files).filter(n=>n.startsWith("neowell-yedek-")).sort().join()===[...old.slice(2),today].join()&&files["baska.txt"]==="x");
+    ok("otomatik yedek: son otomatik yedek ve son yedek bugün, ekranda klasör adı",ev("S.settings.lastAutoBk")===ev("dayKey()")&&ev("S.settings.lastBackup")===ev("dayKey()")&&q("#view").textContent.includes("Klasör: NeoWell")&&q('[data-ab="toggle"]').checked);
+    bfLog.length=0;await ev("abRun()");
+    ok("otomatik yedek: 7 gün dolmadan yeniden yazılmaz",!bfLog.includes("write"));
+    bfFail=true;ev("S.settings.lastAutoBk='2026-01-01'");await ev("abRun()");
+    ok("otomatik yedek: yazma hatası sessiz geçmez (bildirim, Bugün satırı, Veri ve yedek'te kapatma önerisi)",toastT().includes("Otomatik yedek alınamadı")&&ev("viewBugun()").includes("Otomatik yedek alınamadı")&&!!q('[data-ab="off"]')&&!!q('[data-ab="setup"]')&&ev("S.settings.lastAutoBk")==="2026-01-01");
+    bfLog.length=0;await ev("abRun()");
+    ok("otomatik yedek: hata sonrası aynı oturumda tekrar denenmez",!bfLog.includes("write"));
+    { // geri yükleme bu telefonun otomatik yedek ayarını değiştirmez
+      const r=ev("JSON.parse(JSON.stringify(S))");r.settings.autoBk=false;r.settings.lastAutoBk="2025-01-01";
+      ev("sheetYedek()");q("#bk").value=JSON.stringify(r);q("#bkpw").value="";await ev("goYukle()");
+      ok("otomatik yedek: geri yükleme yerel ayarı korur",ev("S.settings.autoBk")===true&&ev("S.settings.lastAutoBk")==="2026-01-01");
+    }
+    click('[data-ab="off"]');await new Promise(r=>setTimeout(r,30));
+    ok("otomatik yedek: kapat, klasör izni bırakılır",ev("S.settings.autoBk")===false&&bfLog.includes("clear")&&!q('[data-ab="off"]'));
+    ev("S.settings.autoBk=true");ev("sheetDrive()");await new Promise(r=>setTimeout(r,30));click('[data-bk="forget"]');await new Promise(r=>setTimeout(r,30));
+    ok("otomatik yedek: parolayı unutunca otomatik yedek de kapanır",ev("S.settings.autoBk")===false);
+    bfFail=false;ev("abErr='';closeSheet()");delete w.Capacitor.Plugins.BackupFolder;
     ev("closeSheet();vaultOn=false");delete w.Capacitor.Plugins.KeyVault;
     ev("S.settings.healthNote='';S.settings.lastBackup='';tab='bugun';render()");
   }

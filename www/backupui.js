@@ -51,6 +51,77 @@ document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-bk]");if(!el)return;
   const a=el.dataset.bk;
   if(a==="send")bkSend();
-  else if(a==="forget"){lsDel(BKPW_LS);sheetDrive()}
+  else if(a==="forget"){lsDel(BKPW_LS);if(S.settings.autoBk){abOff();toast("Parola unutuldu, otomatik yedek de kapatıldı")}sheetDrive()}
   else if(a==="close")closeSheet();
+});
+
+/* Otomatik yedek: uygulama açılınca ve sekmeye dönünce, son otomatik yedek 7 günden eskiyse seçilen klasöre aynı şifreli biçimde yazar.
+   Arka plan işi yok: veri WebView'da, yerel taraf okuyamaz. Parola, Drive yedeğindeki gibi Keystore ile şifreli saklanır;
+   anahtar yalnız Keystore'da olsaydı telefon kaybolunca yedek açılamazdı, parola yeni telefonda da açar. */
+const BF=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.BackupFolder;
+let abErr="",abName="",abBusy=false;
+function abHtml(){
+  if(!BF())return "";
+  const st=S.settings;
+  return `<div class="card"><label style="min-height:44px;display:flex;gap:8px;align-items:center"><input type="checkbox" data-ab="toggle" ${st.autoBk?"checked":""} style="width:22px;height:22px"><b>Otomatik yedek</b></label>
+  <p class="hint">${st.autoBk?`Klasör: ${esc(abName||"seçili")}. ${st.lastAutoBk?`Son otomatik yedek: ${fd(st.lastAutoBk)}.`:"İlk yedek birazdan yazılır."} `:"Seçtiğin klasöre haftada bir şifreli yedek yazar, en son 4 dosyayı tutar. "}Arka planda çalışmaz: uygulamayı en az haftada bir açtığında yedek alınır.</p>
+  ${abErr?`<p class="status" role="alert"><b>Otomatik yedek alınamadı.</b> ${esc(abErr)}</p><div class="btns"><button class="btn ghost" data-ab="setup">Klasörü yeniden seç</button><button class="btn ghost" data-ab="off">Otomatik yedeği kapat</button></div>`:""}</div>`;
+}
+async function abSetup(){
+  if(!KV()||!vaultOn)return toast("Bu telefonda parola güvenle saklanamıyor, otomatik yedek kullanılamaz");
+  const rem=await bkRemembered();
+  openSheet(`<h3>Otomatik yedek</h3>
+  <p class="mut sm" style="margin:0 0 10px">Uygulamayı açtığında son yedek 7 günden eskiyse seçeceğin klasöre şifreli yedek yazılır, en son 4 dosya kalır. Uygulamayı en az haftada bir aç.</p>
+  ${rem?`<p>Yedek parolası bu telefonda saklı, o kullanılır.</p>`:`<input class="in" id="abp1" type="password" placeholder="Yedek parolası (en az 6 karakter)" autocomplete="new-password"><input class="in" id="abp2" type="password" placeholder="Parolayı tekrar yaz" autocomplete="new-password">`}
+  <p class="hint">Telefon değişirse dosyaları yeni telefona taşı ve Yedekle veya geri yükle > Dosyadan oku ile bu parolayla aç. Parolayı unutursan yedek açılmaz.</p>
+  <div class="hint" id="abw" role="alert"></div><button class="btn" data-ab="pick">Klasör seç ve aç</button><button class="btn ghost" data-bk="close" style="margin-top:8px">Vazgeç</button>`);
+}
+async function abPick(){
+  const warn=m=>{const e=document.getElementById("abw");if(e)e.textContent=m},p1=document.getElementById("abp1");
+  let pw=null;
+  if(p1){
+    pw=p1.value;
+    if(pw.length<6)return warn("Parola en az 6 karakter olmalı");
+    if(pw!==document.getElementById("abp2").value)return warn("Parolalar aynı değil");
+  }
+  let r;
+  try{r=await BF().pick()}catch(e){return warn(/cancel/i.test(e&&e.message||"")?"Klasör seçilmedi":"Klasör izni alınamadı")}
+  if(pw!=null&&!await bkRemember(pw))return warn("Parola bu telefonda saklanamadı");
+  Object.assign(S.settings,{autoBk:true,lastAutoBk:""});abName=r.name||"";abErr="";save();closeSheet();render();
+  toast("Otomatik yedek açık");abRun();
+}
+async function abOff(){
+  S.settings.autoBk=false;abErr="";save();
+  try{await BF().clear()}catch(e){}
+}
+async function abBoot(){
+  if(!S.settings.autoBk||!BF())return;
+  try{abName=(await BF().status()).name||""}catch(e){}
+  abRun();
+}
+async function abRun(){
+  const st=S.settings,bf=BF();
+  if(!st.autoBk||!bf||abBusy||abErr||!BackupLib.autoDue(st.lastAutoBk,dayKey()))return;
+  abBusy=true;
+  try{
+    await keysP;
+    const pw=await bkRemembered();
+    if(!pw)throw new Error("parola");
+    const r=await bf.write({name:BackupLib.autoName(dayKey()),data:JSON.stringify(await BackupLib.encrypt({v:1,S,keys:getKeys()},pw))});
+    const old=BackupLib.autoPrune(r.names||[]);
+    if(old.length)await bf.remove({names:old}).catch(()=>{});
+    st.lastAutoBk=dayKey();markBackup();
+  }catch(e){
+    abErr=e.message==="parola"?"Yedek parolası bu telefonda bulunamadı.":"Klasöre yazılamadı. Klasör silinmiş ya da izni kaldırılmış olabilir.";
+    toast("Otomatik yedek alınamadı. Ayarlar > Veri ve yedek'ten yeniden kurabilir ya da kapatabilirsin");
+  }
+  abBusy=false;render();
+}
+document.addEventListener("click",ev=>{
+  const el=ev.target.closest("[data-ab]");if(!el)return;
+  const a=el.dataset.ab;
+  if(a==="toggle"){if(el.checked){el.checked=false;abSetup()}else{abOff().then(render);toast("Otomatik yedek kapatıldı. Klasördeki dosyalar duruyor")}}
+  else if(a==="setup")abSetup();
+  else if(a==="off"){abOff().then(render);toast("Otomatik yedek kapatıldı")}
+  else if(a==="pick")abPick();
 });
