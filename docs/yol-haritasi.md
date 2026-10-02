@@ -74,7 +74,7 @@ Ayrıntı ve test adımları `yapilacaklar.md`'de. Telefonda denenen tek özelli
 | D-Ant1 (yapıldı) | Dinlenme bildirimi | Sabit 90 sn ve yalnız Salon açıkken çalışan sayaç bildirimli, ekranı açık tutan ve egzersiz başına ayarlı olur. | S | rekabet-egzersiz #1 | – (DeviceHelp.keepAwake, eklentisiz) |
 | D-Ant2 (yapıldı) | Şablon editörü | Şablon elle oluşturulur, düzenlenir, set/tekrar hedefi tutar, bitişte güncellenir. | M | rekabet-egzersiz #2 | – |
 | D-Ant3 (yapıldı) | Çevrimdışı hazır programlar | Koç ve anahtar olmadan 5 hazır program (ev ekipmansız dahil) sunulur. | M | rekabet-egzersiz #3 | D-Ant2 |
-| D-Ant4 | Strong/Hevy CSV içe aktarma | Rakipten gelen kullanıcının geçmişi taşınır. | M | rekabet-egzersiz #5 | – |
+| D-Ant4 (yapıldı) | Strong/Hevy CSV içe aktarma | Rakipten gelen kullanıcının geçmişi taşınır. | M | rekabet-egzersiz #5 | – |
 | D-Ant5 (yapıldı) | Akıllı ilerleme | Son 2-3 seansa bakılır, başarısızlıkta düşürme ve deload önerilir. | S | rekabet-egzersiz #6 | – |
 | D-Ant6 (yapıldı) | Tüm geçmiş grafikleri | 1TM, en ağır set ve hacim tüm geçmişte çizilir. | S | rekabet-egzersiz #9 | – |
 | D-Ant7 | Süperset ve drop set | Rakiplerin ücretsiz verdiği set türleri eklenir. | M | rekabet-egzersiz #7 | – |

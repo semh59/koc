@@ -310,6 +310,8 @@ input.in,select.in,.chip>button{min-height:44px}
 <script src="walkui.js"></script>
 <script src="backupui.js"></script>
 <script src="csvlib.js"></script>
+<script src="importlib.js"></script>
+<script src="importui.js"></script>
 <script src="privacyui.js"></script>
 <script src="onboardui.js"></script>
 <script>
@@ -730,6 +732,7 @@ function viewAyar(){
     <button class="btn" data-act="drive">${Icons.svg("cloud")} Yedeği Drive'a gönder</button>
     <button class="btn ghost" data-act="yedek">Yedekle veya geri yükle</button>
     <button class="btn ghost" data-pv="csv">Tabloya aktar (CSV)</button>
+    <button class="btn ghost" data-imp="open">Antrenman geçmişini içe aktar</button>
     <button class="btn ghost" data-pv="open">Gizlilik ve veri</button>
     <button class="btn danger" data-act="sifirla">Tüm verileri sil</button></div>
     ${storeMsg()?`<p class="status" role="alert"><b>${storeMsg()[0]}.</b> ${storeMsg()[1]}</p>`:""}<p class="hint">Kullanılan alan: yaklaşık ${fmt(storeBytes/1e6)} MB (sınır telefona göre 5-10 MB).</p>
