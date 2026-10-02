@@ -35,7 +35,7 @@ async function ocrRun(kind,file){
   try{lines=LabLib.ocrToLines(await P.recognize({image:await ocrImage(file)}))}
   catch(e){return toast("Fotoğraf okunamadı, daha net çekip tekrar dene")}
   document.getElementById("toast").classList.remove("on");
-  if(!lines.length)return openSheet(`<h3>Yazı bulunamadı</h3><p class="mut">Fotoğrafta okunabilir yazı yok. Daha yakından, düz ve aydınlık çekip tekrar dene.</p>${ocrBtn(kind,"📷 Tekrar dene","")}<button class="btn ghost" data-ocr="close">Kapat</button>`);
+  if(!lines.length)return openSheet(`<h3>Yazı bulunamadı</h3><p class="mut">Fotoğrafta okunabilir yazı yok. Daha yakından, düz ve aydınlık çekip tekrar dene.</p>${ocrBtn(kind,Icons.svg("camera")+" Tekrar dene","")}<button class="btn ghost" data-ocr="close">Kapat</button>`);
   if(kind==="tahlil"){
     const parsed=LabLib.parseLines(lines,dayKey());
     if(!parsed.rows.length)return openSheet(`<h3>Sonuç bulunamadı</h3><p class="mut">Fotoğraftaki yazıdan tahlil satırı çıkaramadım. Daha net çekip tekrar dene ya da değerleri elle ekle.</p>${ocrBtn("tahlil",Icons.svg("camera")+" Tekrar dene","")}<button class="btn ghost" data-lab="add">${Icons.svg("plus")} Elle ekle</button>`);
