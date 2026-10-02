@@ -132,17 +132,39 @@ const VitalsLib=(()=>{
     while(i<rowsN){const n=Math.min(rest,rowsN-i);pages.push({n});i+=n}
     return pages;
   }
+  /* Genel referans bandı (tanı değil) ya da kullanıcının girdiği üst sınırlar; ekran ve PDF aynı tanımı kullanır. */
+  function bpBand(s){
+    const mine=pos(s.bpSysHi)||pos(s.bpDiaHi);
+    return {mine,bands:mine?[pos(s.bpSysHi)&&{lo:90,hi:s.bpSysHi,label:"hedef aralığın"},pos(s.bpDiaHi)&&{lo:60,hi:s.bpDiaHi}].filter(Boolean):[{lo:90,hi:130,label:"genel referans"},{lo:60,hi:80}]};
+  }
+  /* Renk körü ve siyah-beyaz baskı için seri şekli (c daire, s kare, t üçgen, d baklava), kesik çizgi ve doğrudan etiket (short) taşır. */
+  function mark(ctx,sh,x,y,r){
+    ctx.beginPath();
+    if(sh==="s")ctx.rect(x-r,y-r,2*r,2*r);
+    else if(sh==="t"){ctx.moveTo(x,y-r*1.3);ctx.lineTo(x+r*1.2,y+r);ctx.lineTo(x-r*1.2,y+r);ctx.closePath()}
+    else if(sh==="d"){ctx.moveTo(x,y-r*1.3);ctx.lineTo(x+r*1.3,y);ctx.lineTo(x,y+r*1.3);ctx.lineTo(x-r*1.3,y);ctx.closePath()}
+    else ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fill();
+  }
   function drawChart(ctx,x,y,w,h,series,band,from,to){
-    const f=dayN(from),t=dayN(to),span=Math.max(1,t-f);
-    const vs=series.flatMap(s=>s.pts.map(p=>p.v));if(band){if(band.lo!=null)vs.push(band.lo);if(band.hi!=null)vs.push(band.hi)}
+    const f=dayN(from),t=dayN(to),span=Math.max(1,t-f),bands=band?[].concat(band):[];
+    const vs=series.flatMap(s=>s.pts.map(p=>p.v));for(const b of bands){if(b.lo!=null)vs.push(b.lo);if(b.hi!=null)vs.push(b.hi)}
     if(!vs.length)return;
     let lo=Math.min(...vs),hi=Math.max(...vs);if(hi===lo){hi+=1;lo-=1}const pad=(hi-lo)*.12;lo-=pad;hi+=pad;
-    const X=d=>x+w*(dayN(d)-f)/span,Y=v=>y+h-h*(v-lo)/(hi-lo);
-    if(band){const y1=band.hi!=null?Y(band.hi):y,y2=band.lo!=null?Y(band.lo):y+h;ctx.fillStyle="#e3efe9";ctx.fillRect(x,Math.min(y1,y2),w,Math.abs(y2-y1))}
+    const ip=16,X=d=>x+ip+(w-2*ip)*(dayN(d)-f)/span,Y=v=>y+h-h*(v-lo)/(hi-lo);
+    ctx.font="22px sans-serif";
+    for(const b of bands){const y1=b.hi!=null?Y(b.hi):y,y2=b.lo!=null?Y(b.lo):y+h,top=Math.min(y1,y2);ctx.fillStyle="#e3efe9";ctx.fillRect(x,top,w,Math.abs(y2-y1));if(b.label){ctx.fillStyle="#62737a";ctx.fillText(b.label,x+8,top+Math.abs(y2-y1)-8)}}
     ctx.strokeStyle="#9fb4ad";ctx.lineWidth=1.5;ctx.strokeRect(x,y,w,h);
     for(const s of series){
-      ctx.strokeStyle=s.color;ctx.lineWidth=2.5;ctx.beginPath();s.pts.forEach((p,i)=>i?ctx.lineTo(X(p.day),Y(p.v)):ctx.moveTo(X(p.day),Y(p.v)));ctx.stroke();
-      for(const p of s.pts){ctx.fillStyle=p.out?"#b3261e":s.color;ctx.beginPath();ctx.arc(X(p.day),Y(p.v),6,0,Math.PI*2);ctx.fill()}
+      ctx.strokeStyle=s.color;ctx.lineWidth=2.5;if(ctx.setLineDash)ctx.setLineDash(s.dash?[14,8]:[]);ctx.beginPath();s.pts.forEach((p,i)=>i?ctx.lineTo(X(p.day),Y(p.v)):ctx.moveTo(X(p.day),Y(p.v)));ctx.stroke();if(ctx.setLineDash)ctx.setLineDash([]);
+      for(const p of s.pts){ctx.fillStyle=p.out?"#b3261e":s.color;mark(ctx,s.shape,X(p.day),Y(p.v),6)}
+      if(s.vals){
+        /* Değer etiketi yalnız ilk, son, en düşük ve en yüksek noktada; birbirine binen etiket atlanır. */
+        const vv=s.pts.map(p=>p.v),keep=new Set([0,s.pts.length-1,vv.indexOf(Math.min(...vv)),vv.indexOf(Math.max(...vv))]);let right=-1e9;
+        ctx.fillStyle="#10232b";ctx.font="22px sans-serif";
+        s.pts.forEach((p,i)=>{if(!keep.has(i))return;const tx=s.fmt?s.fmt(p.v):String(Math.round(p.v)),tw=ctx.measureText(tx).width,lx=Math.min(Math.max(X(p.day)-tw/2,x+2),x+w-tw-2);if(lx<right+6)return;right=lx+tw;ctx.fillText(tx,lx,Y(p.v)-14)});
+      }
+      if(s.short&&s.pts.length){const p=s.pts[s.pts.length-1],tw=ctx.measureText(s.short).width;ctx.fillStyle="#10232b";ctx.font="bold 22px sans-serif";ctx.fillText(s.short,Math.min(X(p.day),x+w-tw-4),Y(p.v)+(s.below?34:-14));ctx.font="22px sans-serif"}
     }
     ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText(fmtD(from),x,y+h+30);const e=fmtD(to);ctx.fillText(e,x+w-ctx.measureText(e).width,y+h+30);
     ctx.fillText(`${Math.round(lo)} – ${Math.round(hi)}`,x+w+12,y+h);
@@ -175,6 +197,6 @@ const VitalsLib=(()=>{
     }
     ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText(`NeoWell · sayfa ${info.page}/${info.total}`,RM,RH-45);
   }
-  return {CTX,SES,ctxName,sesName,LIM,check,clean,sessions,homeAvg,flagBp,flagG,rangeG,gStats,crisis,needsConfirm,BP_PRESET,G_PRESET,reportRows,paginate,drawPage,drawChart,RW,RH,dayN,num};
+  return {CTX,SES,ctxName,sesName,LIM,check,clean,sessions,homeAvg,flagBp,flagG,rangeG,gStats,crisis,needsConfirm,BP_PRESET,G_PRESET,reportRows,paginate,drawPage,drawChart,bpBand,RW,RH,dayN,num};
 })();
 if(typeof module!=="undefined")module.exports=VitalsLib;

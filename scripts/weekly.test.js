@@ -53,4 +53,19 @@ ok("çizim: tablo değerleri (1.800+300 kcal tek gün toplamı 2100)",drawn.incl
 W.drawPage(ctx,empty,{today:"2026-10-01"});
 ok("boş hafta çizimi çökmez",true);
 ok("yorum ve tanı dili yok",!/hipertansiyon|diyabet|hipoglisemi|anormal|tehlikeli|iyi gidiyor|kötü|başarılı|yetersiz|fazla|az yedin/i.test(drawn.join(" ")+JSON.stringify(d.summary)));
+{ // C13: haftalık PDF grafikleri
+  const T=(day,sys,dia)=>({id:1,k:"t",day,time:"08:00",sys,dia,ses:"sabah"});
+  const vit=[T("2026-09-26",120,80),T("2026-09-26",130,84),T("2026-09-28",126,82),T("2026-09-30",132,86),{id:9,k:"t",day:"2026-09-10",time:"08:00",sys:200,dia:120,ses:"sabah"}];
+  const SB={...S,settings:settings({bpOn:true}),vitals:vit},c=W.build(SB,end,7).charts;
+  ok("kilo ve tansiyon verisi varsa iki grafik (kilo, tansiyon)",c.length===2&&c[0].title.startsWith("Kilo")&&c[1].title.startsWith("Tansiyon"),c.map(x=>x.title));
+  ok("tansiyon grafiği günlük ortalama, pencere dışı ölçüm yok, iki seri",c[1].series[0].pts.length===3&&c[1].series[0].pts[0].v===125&&Math.max(...c[1].series[0].pts.map(p=>p.v))<200&&c[1].series.length===2);
+  ok("siyah-beyazda okunur: seriler şekil, çizgi biçimi ve doğrudan etiketle ayrılır (yalnız renge bağlı değil)",c[1].series[0].shape!==c[1].series[1].shape&&!c[1].series[0].dash&&c[1].series[1].dash&&c[1].series.every(x=>x.short)&&c[1].series[0].color!==c[1].series[1].color);
+  ok("renkler uygulamadakiyle aynı: kilo prim, sistolik ink, diyastolik su",c[0].series[0].color==="#0f5c55"&&c[1].series[0].color==="#10232b"&&c[1].series[1].color==="#2a86bd");
+  ok("genel referans bandı ve 'tanı değildir' notu; kullanıcı sınırı varsa onu gösterir",c[1].note.includes("tanı değildir")&&c[1].band.length===2&&W.build({...SB,settings:settings({bpOn:true,bpSysHi:135,bpDiaHi:85})},end,7).charts[1].band[0].hi===135);
+  ok("veri yoksa bölüm yok: tek tartı, takip kapalı, tek gün ölçüm",W.build({...S,entries:[E("kilo","2026-09-28",80)],settings:settings({bpOn:true}),vitals:[T("2026-09-28",120,80)]},end,7).charts.length===0&&W.build({...S,settings:settings({bpOn:false}),vitals:vit},end,7).charts.length===1&&W.build({settings:settings({}),entries:[],vitals:[]},end,7).charts.length===0);
+  const rec=data=>{const t=[],calls=[];const ctx=new Proxy({},{get:(_,k)=>k==="measureText"?x=>({width:String(x).length*10}):k==="fillText"?x=>t.push(x):(...a)=>{calls.push(k)},set:()=>true});W.drawPage(ctx,data,{today:end});return {t,calls}};
+  const r1=rec(W.build(SB,end,7)),r0=rec(W.build({settings:settings({}),entries:[],vitals:[]},end,7));
+  ok("sayfa grafik başlıklarını, etiketleri ve notu çizer; kesik çizgi için setLineDash kullanılır",r1.t.includes("Kilo (kg)")&&r1.t.includes("Sistolik")&&r1.t.includes("Diyastolik")&&r1.t.some(x=>/genel referans/.test(x))&&r1.calls.includes("setLineDash"));
+  ok("veri yokken grafik başlığı hiç çizilmez",r0.t.filter(x=>x==="Kilo (kg)").length===1&&!r0.t.some(x=>/^Tansiyon \(/.test(x))&&!r0.calls.includes("setLineDash")&&r1.t.filter(x=>x==="Kilo (kg)").length===2);
+}
 console.log(bad?"\n"+bad+" HATA":"\nTüm haftalık rapor testleri geçti");process.exit(bad?1:0);

@@ -132,7 +132,7 @@ function vSvg(series,band,from,to,W,H){
   if(!series.some(s=>s.pts.length))return `<p class="hint">Bu dönemde ölçüm yok.</p>`;
   let lo=Math.min(...vs),hi=Math.max(...vs);if(hi===lo){hi+=1;lo-=1}const pad=(hi-lo)*.12;lo-=pad;hi+=pad;
   const X=p=>8+(W-16)*(VitalsLib.dayN(p.day)+vToMin(p.time)/1440-f)/span,Y=v=>8+(H-30)*(1-(v-lo)/(hi-lo));
-  const bd=bands.map(b=>{const y1=b.hi!=null?Y(b.hi):8,y2=b.lo!=null?Y(b.lo):H-22,top=Math.min(y1,y2);return `<rect x="8" y="${top.toFixed(1)}" width="${W-16}" height="${Math.abs(y2-y1).toFixed(1)}" fill="var(--prim)" opacity=".12"/>${b.label?`<text x="12" y="${(top+13).toFixed(1)}">${b.label}</text>`:""}`}).join("");
+  const bd=bands.map(b=>{const y1=b.hi!=null?Y(b.hi):8,y2=b.lo!=null?Y(b.lo):H-22,top=Math.min(y1,y2);return `<rect x="8" y="${top.toFixed(1)}" width="${W-16}" height="${Math.abs(y2-y1).toFixed(1)}" fill="var(--prim)" opacity=".12"/>${b.label?`<text x="12" y="${(top+Math.abs(y2-y1)-6).toFixed(1)}">${b.label}</text>`:""}`}).join("");
   const body=series.map(s=>`${s.pts.length>1?`<polyline points="${s.pts.map(p=>X(p).toFixed(1)+","+Y(p.v).toFixed(1)).join(" ")}" fill="none" stroke="${s.color}" stroke-width="1.8" stroke-linejoin="round"${s.dash?' stroke-dasharray="5 3"':""} opacity="${s.line===false?0:.85}"/>`:""}${s.pts.map(p=>vMark(s.shape,X(p),Y(p.v),3.8,p.out?"var(--warn)":s.color)).join("")}`).join("");
   const lab=series.filter(s=>s.short&&s.pts.length).map(s=>{const p=s.pts[s.pts.length-1];return `<text x="${Math.min(X(p)+4,W-8).toFixed(1)}" y="${(Y(p.v)+(s.below?19:-9)).toFixed(1)}" text-anchor="end" style="fill:var(--ink);font-weight:700">${s.short}</text>`}).join("");
   const tip=esc(JSON.stringify(series.flatMap(s=>s.pts.map(p=>[+X(p).toFixed(1),+Y(p.v).toFixed(1),`${fd(p.day)} ${p.time} · ${s.short||s.label||""} ${p.txt||Math.round(p.v)}`.trim()]))));
@@ -148,7 +148,7 @@ function viewTansiyon(){
   const pt=(rows,f)=>rows.map(r=>({day:r.day,time:r.time,v:r[f],out:!!VitalsLib.flagBp(r.sys,r.dia,st)}));
   const raw=S.vitals.filter(r=>r.k==="t"&&r.day>=from&&r.day<=end);
   const bpSeries=[{pts:pt(raw,"sys"),color:"var(--ink)",shape:"c",label:"Sistolik (büyük)",short:"Sistolik"},{pts:pt(raw,"dia"),color:"var(--su)",shape:"s",dash:true,below:true,label:"Diyastolik (küçük)",short:"Diyastolik"}];
-  const bpMine=st.bpSysHi>0||st.bpDiaHi>0,bpBand=bpMine?[st.bpSysHi>0&&{lo:90,hi:st.bpSysHi,label:"hedef aralığın"},st.bpDiaHi>0&&{lo:60,hi:st.bpDiaHi}].filter(Boolean):[{lo:90,hi:130,label:"genel referans"},{lo:60,hi:80}];
+  const {mine:bpMine,bands:bpBand}=VitalsLib.bpBand(st);
   const hf=h.all?VitalsLib.flagBp(h.all.sys,h.all.dia,st):null;
   const avgTxt=a=>a?`${Math.round(a.sys)}/${Math.round(a.dia)}`:"–";
   const rows=ses.slice().reverse().map(s=>{
