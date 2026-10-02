@@ -869,7 +869,10 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     w.Capacitor.Plugins.Motion={status:async()=>mperm,requestAccess:async()=>{mcalls.push("req");mperm={...mperm,bg:true};return mperm},configure:async(o)=>{mcalls.push("cfg:"+o.cm)},start:async()=>{mcalls.push("start");return mperm},stop:async()=>{mcalls.push("stop");return mperm},take:async()=>{const r={items:mitems};mitems=[];return r}};
     ev("S.settings.stepsOn=true;S.settings.heightCm=170;S.settings.motionOn=false;S.moves=[];tab='ayar';render()");
     ok("hareket: ayarlarda blok, aç düğmesi ve gizlilik metni",q("#view").textContent.includes("Hareket algılama")&&q('[data-mo="toggle"]').textContent.includes("aç")&&q("#view").textContent.includes("kaydedilmez"));
-    click('[data-mo="toggle"]');await new Promise(r=>setTimeout(r,60));
+    click('[data-mo="toggle"]');
+    const disc=q("#sheet").textContent;
+    ok("hareket: izinden önce konum açıklaması (konum, kapalıyken, özellik), Vazgeç izin istemez",disc.includes("konum")&&disc.includes("uygulama kapalıyken")&&disc.includes("Hareket algılama")&&!mcalls.length&&(click('[data-mo="no"]'),!mcalls.length&&ev("S.settings.motionOn")===false),disc);
+    click('[data-mo="toggle"]');click('[data-mo="go:toggle"]');await new Promise(r=>setTimeout(r,60));
     ok("hareket: açınca izin istenir, boy gönderilir, algılama başlar",ev("S.settings.motionOn")===true&&mcalls.includes("req")&&mcalls.includes("cfg:170")&&mcalls.includes("start"),mcalls);
     const mt0=Date.now()-30*60000;
     mitems=[{t0:mt0,t1:mt0+22*60000,k:"w",steps:2400,km:2.1,kmh:5.7,kcal:110,gps:true},{t0:mt0,t1:mt0+3*60000,k:"w",steps:50,km:0.1,kmh:2,kcal:5,gps:false}];
@@ -1430,6 +1433,16 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("tab='bugun'");
     ok("dinleyici: su düğmesi ve act'siz bildirim yok sayılır, bilinmeyen sekme Trend'e düşer",tap("su",{act:"open",tab:"koc"})==="bugun"&&tap("tap",{act:"su"})==="bugun"&&tap("tap",{act:"open",tab:"ayar"})==="trend");
     ev("tab='bugun';render()");
+  }
+  { // B11: tam saat alarm izni reddinde çökme yok, kullanıcıya söylenir, izin sonrası yeniden kurulur
+    const P=w.Capacitor.Plugins,old=P.LocalNotifications;let ex="denied",n=0;
+    P.LocalNotifications={checkPermissions:async()=>({display:"granted"}),checkExactNotificationSetting:async()=>({exact_alarm:ex}),changeExactNotificationSetting:async()=>{ex="granted";return {exact_alarm:ex}},getPending:async()=>({notifications:[]}),cancel:async()=>{},registerActionTypes:async()=>{},schedule:async()=>{n++}};
+    ev("S.settings.medOn=true;S.meds=[{id:1,n:'İlaç',t:['08:00']}];tab='bugun';render()");
+    const r=await ev("scheduleReminders()");
+    ok("tam saat izni yok: alarmlar yine kurulur, Bugün'de ve Hatırlatmalar'da uyarı",r==="ok"&&n===1&&$q("#view").textContent.includes("İlaç alarmı birkaç dakika gecikebilir")&&(ev("tab='ayar';render()"),$q("#view").textContent.includes("Tam saat alarm izni kapalı")),r);
+    $q('[data-act="tamalarm"]').click();await new Promise(s=>setTimeout(s,30));
+    ok("izin verilince uyarı kalkar ve hatırlatmalar yeniden kurulur",n===2&&!$q("#view").textContent.includes("Tam saat alarm izni kapalı"),n);
+    P.LocalNotifications=old;ev("S.settings.medOn=false;S.meds=[];tab='bugun';render()");
   }
     process.exit(bad?1:0);
   });

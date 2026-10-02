@@ -2,7 +2,8 @@
 const fs = require("fs");
 const p = "android/app/src/main/AndroidManifest.xml";
 let x = fs.readFileSync(p, "utf8");
-for (const perm of ["POST_NOTIFICATIONS", "RECEIVE_BOOT_COMPLETED", "VIBRATE", "SCHEDULE_EXACT_ALARM", "USE_EXACT_ALARM", "CAMERA", "FLASHLIGHT", "ACTIVITY_RECOGNITION", "ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "ACCESS_BACKGROUND_LOCATION", "FOREGROUND_SERVICE", "FOREGROUND_SERVICE_LOCATION"]) {
+// USE_EXACT_ALARM yok: Play onu yalnız alarm/takvim uygulamalarına veriyor. İzin kapalıysa eklenti alarmı yaklaşık saate kurar, arayüz söyler.
+for (const perm of ["POST_NOTIFICATIONS", "RECEIVE_BOOT_COMPLETED", "VIBRATE", "SCHEDULE_EXACT_ALARM", "CAMERA", "ACTIVITY_RECOGNITION", "ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "ACCESS_BACKGROUND_LOCATION", "FOREGROUND_SERVICE", "FOREGROUND_SERVICE_LOCATION"]) {
   if (!x.includes(`android.permission.${perm}`)) {
     x = x.replace("</manifest>", `    <uses-permission android:name="android.permission.${perm}" />\n</manifest>`);
   }

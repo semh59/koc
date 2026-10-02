@@ -571,6 +571,7 @@ function viewBugun(){
   /* Ayrı kartlar yerine tek liste: yalnız açık modülün bugün bekleyen işi; boşsa kart yok. */
   const todo=[...medTodo(),...fastTodo(),...vTodo(),
     sOn&&stepsRead&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?row("👣","Adım sayımı durmuş olabilir","Pil ayarında NeoWell'e kısıtlama koyma.",[["adimduz","Ayarla"],["adimgizle","Kapat"]]):"",
+    isNative()&&!exactOk&&st.medOn&&S.meds.length?row("⏰","İlaç alarmı birkaç dakika gecikebilir","Tam saat alarm izni kapalı. İzin verirsen tam saatinde çalar.",[["tamalarm","İzin ver"]]):"",
     isNative()&&oemXiaomi()&&!st.oemDone?row("🔔","Hatırlatmalar için bir kez ayar gerekli","İki izin verince hatırlatmalar kaçmaz.",[["oem","Ayarla"]]):"",
     isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?row("👣","Adım sayarı aç","Telefonun sensörü sayar, hesap gerekmez.",[["adimac","Aç"],["adimdegil","Şimdi değil"]]):"",
     S.entries.length>=10&&(old==null||old>14)?row("☁️","Yedek zamanı",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Gönder"]]):""].filter(Boolean);
@@ -637,7 +638,7 @@ function viewAyar(){
   ${fastSettingsHtml()}
   <h2>Salon</h2><div class="card"><label style="min-height:44px;display:flex;gap:8px;align-items:center"><input type="checkbox" data-aw ${st.awakeOn?"checked":""} style="width:22px;height:22px">Antrenmanda ekranı açık tut</label>
   <label style="min-height:44px;display:flex;gap:8px;align-items:center"><input type="checkbox" data-rpe ${st.rpeOn?"checked":""} style="width:22px;height:22px">Zorluk (RPE) alanı</label><p class="hint">Set satırına isteğe bağlı 6-10 zorluk alanı ekler (10 en zor). Yalnız kayıt içindir, önerileri ve hesapları değiştirmez.</p><p class="hint">Antrenman sürerken Salon açıkken ekran kararmaz. Başka sekmeye geçince, uygulamadan çıkınca ya da antrenman bitince normale döner.</p>${gGearHtml()}</div>
-  <h2>Hatırlatmalar</h2><div class="card"><div class="status">${esc(nf)}</div>${notifDiag?`<p class="hint" style="padding:0 0 8px">${esc(notifDiag)}</p>`:""}${isNative()?`<div class="btns"><button class="btn ghost" data-act="bildirimtest">Test bildirimi gönder</button>${oemXiaomi()?`<button class="btn ghost" data-act="oem">Xiaomi hatırlatma ayarları</button>`:""}</div>`:""}
+  <h2>Hatırlatmalar</h2><div class="card"><div class="status">${esc(nf)}</div>${isNative()&&!exactOk?`<p class="hint" style="padding:0 0 8px">Tam saat alarm izni kapalı: hatırlatmalar birkaç dakika gecikebilir.</p><div class="btns"><button class="btn ghost" data-act="tamalarm">Tam saat alarm iznini aç</button></div>`:""}${notifDiag?`<p class="hint" style="padding:0 0 8px">${esc(notifDiag)}</p>`:""}${isNative()?`<div class="btns"><button class="btn ghost" data-act="bildirimtest">Test bildirimi gönder</button>${oemXiaomi()?`<button class="btn ghost" data-act="oem">Xiaomi hatırlatma ayarları</button>`:""}</div>`:""}
     ${st.reminders.filter(r=>!((r.id===7||r.id===8)&&!st.bpOn)&&!(r.id===9&&!st.bsOn)&&!(r.id===11&&!st.fastOn)).map(r=>`<div class="rem"><span class="nm">${esc(r.name)}</span><input type="time" value="${r.t}" data-rt="${r.id}" aria-label="${esc(r.name)} saati"><label class="sw"><input type="checkbox" ${r.on?"checked":""} data-ro="${r.id}" aria-label="${esc(r.name)} açık"><span></span></label></div>`).join("")}
     <p class="hint">Koç bağlıysa sabah, öğleden sonra ve akşam bildirim metinlerini her gün yeniden yazar. Bağlı değilse sabit metinler kullanılır.</p></div>
   ${viewProviders()}
@@ -873,7 +874,7 @@ async function goYukle(){
 
 /* ---------- bildirimler (yalnızca APK) ---------- */
 const WATER_REM=[2,3,4],BACKUP_REM=10,WEEKLY_REM=12;
-const SCHED_DAYS=30;let lastSched=0;
+const SCHED_DAYS=30;let lastSched=0,exactOk=true;
 const LN=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.LocalNotifications;
 async function scheduleReminders(){
   const ln=LN();if(!ln)return "web";
@@ -881,6 +882,8 @@ async function scheduleReminders(){
     let p=await ln.checkPermissions();
     if(p.display!=="granted")p=await ln.requestPermissions();
     if(p.display!=="granted")return "denied";
+    /* Android 14+ tam saat alarm iznini yeni kurulumda vermez; eklenti o zaman alarmı yaklaşık saate kurar, kullanıcıya söylenir. */
+    try{const v=(await ln.checkExactNotificationSetting()).exact_alarm!=="denied";if(v!==exactOk){exactOk=v;if(tab==="bugun")render()}}catch(e){}
     try{
       const dl=await ln.getDeliveredNotifications(),t1=dayKey(),y=keyOff(-1),gone=[];
       for(const n of dl.notifications){
@@ -925,6 +928,13 @@ function notifTap(e){
   tab=x.tab==="koc"&&S.settings.consent?"koc":"trend";closeSheet();render();window.scrollTo(0,0);
 }
 function setNotif(s){notifStatus=s;if(tab==="ayar")render()}
+/* İzin verilince önceki yaklaşık alarmlar kendiliğinden tam saate dönmez; yeniden kurulur. */
+async function exactAsk(){
+  const ln=LN();if(!ln)return;
+  try{exactOk=(await ln.changeExactNotificationSetting()).exact_alarm!=="denied"}catch(e){return toast("Ayar ekranı açılamadı, telefon ayarlarında Alarmlar ve hatırlatıcılar'ı bul")}
+  setNotif(await scheduleReminders());render();
+  toast(exactOk?"Hatırlatmalar tam saatinde çalacak":"İzin verilmedi. Hatırlatmalar birkaç dakika gecikebilir");
+}
 const SC=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.StepCounter;
 /* stepsRead: açılıştaki ilk sensör okuması bitmeden dünkü adım henüz yazılmamış olabilir, "sayım durdu" kartı yanlış çıkmasın. */
 let stepToday=null,stepSnapAt=0,stepsRead=false;
@@ -1053,6 +1063,7 @@ document.addEventListener("click",ev=>{
     else if(d.act==="spor")sheetSpor();
     else if(d.act==="not")sheetNot();
     else if(d.act==="yedek")sheetYedek();
+    else if(d.act==="tamalarm")exactAsk();
     else if(d.act==="drive")sheetDrive();
     else if(d.act==="bildirimtest")notifTest();
     else if(d.act==="barkod")barkodOku();

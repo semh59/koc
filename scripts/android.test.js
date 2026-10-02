@@ -19,4 +19,10 @@ ok("ekran açık: keepAwake eklenti metodu, UI iş parçacığında bayrak ekler
   ok("yedek: Android 12+ bulut yedeği ve cihaz aktarımında tüm alanlar dışarıda",/^<\?xml[^>]*\?>\s*(<!--[\s\S]*?-->\s*)?<data-extraction-rules>/.test(dr)&&["cloud-backup","device-transfer"].every(t=>all(sec(t),[...doms,...doms.slice(0,4).map(d=>"device_"+d)])));
   ok("yedek: Android 11 ve altı tam yedek kuralı tüm alanları dışlar",/<full-backup-content>/.test(fb)&&all(fb,doms));
 }
+{ // B11: Play izin uyumu
+  const perms=patch.slice(patch.indexOf("for (const perm of ["),patch.indexOf("]) {"));
+  ok("izin: USE_EXACT_ALARM ve kullanılmayan FLASHLIGHT istenmez, SCHEDULE_EXACT_ALARM kalır",!/USE_EXACT_ALARM"|FLASHLIGHT/.test(perms)&&perms.includes('"SCHEDULE_EXACT_ALARM"'));
+  const www=fs.readdirSync(path.join(__dirname,"../www")).filter(f=>/\.(js|html)$/.test(f)).map(f=>rd("www/"+f)).join("\n");
+  ok("izin: fener (torch) kullanılmıyor, FLASHLIGHT gereksiz",!/enableTorch|toggleTorch/.test(www));
+}
 process.exit(bad?1:0);

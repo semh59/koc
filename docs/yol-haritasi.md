@@ -39,7 +39,7 @@ Ayrıntı ve test adımları `yapilacaklar.md`'de. Telefonda denenen tek özelli
 | B8 | Depolama sınırı uyarısı | localStorage (5-10 MB) dolmadan boyut ölçülüp uyarılır, uzun geçmişte sessiz veri kaybı önlenir. | S | rekabet-egzersiz #19 | – |
 | B9 | Release imzası | Debug anahtarı yerine saklanan bir release anahtarıyla imzalanır. | S | android/app/build.gradle:9 | G3; imza değişince yerinde güncelleme olmaz: önce şifreli yedek, sonra yeniden kurulum |
 | B10 | targetSdk 34 yükseltmesi | Play'in güncel hedef API şartı karşılanır (değer doğrulanacak). | L | android/variables.gradle | G12; Capacitor sürüm atlaması gerekebilir |
-| B11 | Play izin uyumu | Arka plan konumu, `USE_EXACT_ALARM` ve konum servisi için beyan hazırlanır ya da gereksiz izin kaldırılır. | S | AndroidManifest.xml | – |
+| B11 (yapıldı) | Play izin uyumu | Arka plan konumu, `USE_EXACT_ALARM` ve konum servisi için beyan hazırlanır ya da gereksiz izin kaldırılır. `USE_EXACT_ALARM` ve `FLASHLIGHT` kaldırıldı; tam saat izni yoksa uyarı + yeniden kurulum; konum izninden önce açıklama ekranı; beyanlar `docs/play-izin-beyanlari.md`. Açık risk: otomatik başlayan konum servisi Play incelemesinde sorun çıkarabilir. | S | AndroidManifest.xml | – |
 
 ## C) Arayüz ve tasarım
 | # | Ad | Değer | Emek | Kaynak | Bağımlılık / karar |

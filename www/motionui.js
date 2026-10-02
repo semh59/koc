@@ -82,9 +82,19 @@ function motionCard(){
   return `<div class="card"><div class="lbl">Hareketler</div>${body}<p class="hint" style="padding:8px 0 0">Algılama 1-2 dakika gecikebilir, süre ve mesafe yaklaşıktır.${S.settings.heightCm>0?"":" Mesafe için Ayarlar'dan boyunu gir."}</p></div>`;
 }
 
+/* Play kuralı: arka plan konum izni penceresinden önce uygulama içinde "konum" ve "kapalıyken" geçen açıklama gösterilir. */
+function motionDisclose(next){
+  openSheet(`<h3>Konum izni hakkında</h3><p class="hint" style="padding:0 0 8px">Hareket algılama açıkken NeoWell, yürüyüş ve koşunun mesafesini ölçmek için <b>uygulama kapalıyken ya da kullanılmıyorken de</b> konum verisi toplar. GPS yalnız yürüyüş algılandığında yaklaşık 1 dakika açılır. Konum noktası ve rota saklanmaz, telefondan çıkmaz, reklam için kullanılmaz.</p>
+  <p class="hint" style="padding:0 0 8px">Sıradaki pencerelerde fiziksel aktivite ve konum izni istenir. GPS ölçümü için konumda "Her zaman izin ver" gerekir; vermezsen hız yalnız adım ritminden hesaplanır.</p>
+  <div class="btns"><button class="btn" data-mo="go:${next}">Devam</button><button class="btn ghost" data-mo="no">Vazgeç</button></div>`);
+}
+
 document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-mo]");if(!el)return;
   const a=el.dataset.mo;
-  if(a==="toggle")motionToggle();
-  else if(a==="perm")motionPermAsk();
+  if(a==="toggle")S.settings.motionOn?motionToggle():motionDisclose("toggle");
+  else if(a==="perm")motionDisclose("perm");
+  else if(a==="no")closeSheet();
+  else if(a==="go:toggle"){closeSheet();motionToggle()}
+  else if(a==="go:perm"){closeSheet();motionPermAsk()}
 });
