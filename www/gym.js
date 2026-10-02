@@ -28,6 +28,12 @@ const gSetOk=s=>!s.w&&(s.reps>0||s.sec>0); // w: ısınma seti, hiçbir hesaba g
 const gEx=id=>gExAll().find(e=>e.id===id)||{id,n:"Silinmiş egzersiz",g:"Diğer",inc:2.5};
 const gActive=()=>S.workouts.find(w=>w.t1==null)||null;
 const gDone=w=>w.t1!=null;
+const gRestSec=id=>{const k=gKind(id);return k==="c"?0:"ti".includes(k)?30:REST_SEC};
+/* Dinlenme bitişi yerel bildirimle de duyurulur: JS sayacı ekran kapalıyken ya da uygulama arkadayken çalışmaz. */
+function gRestSet(end,exId){
+  restEnd=end>Date.now()?end:0;
+  if(restEnd)gNotify(restEnd,"⏱ Dinlenme bitti",exId?`Sıradaki set: ${gEx(exId).n}`:"Sıradaki sete geç",9002);else gNotifyCancel(9002);
+}
 const fkg=x=>x==null||x===""?"":String(Math.round(x*100)/100).replace(".",",");
 
 /* ---- doğrulama (yükleme ve geri yükleme için) ---- */
@@ -201,7 +207,7 @@ function gLive(w){
   }).join("");
   return `<div class="livebar"><div><b>${esc(w.name)}</b><div class="mut num" id="gstat">${gClock(Date.now()-w.t0)} süre, ${Math.round(gWorkVol(w)).toLocaleString("tr-TR")} kg hacim</div></div><button class="btn fin" data-g="finish">Bitir</button></div>
   ${gTimBar()}
-  <div class="rest" id="grest" hidden><div><span class="mut">Dinlenme</span><b class="num" id="gr"></b></div><button data-g="rest:-15">−15</button><button data-g="rest:15">+15</button><button data-g="rest:0">Atla</button></div>
+  <div class="rest" id="grest"${restEnd>Date.now()?"":" hidden"}><div><span class="mut">Dinlenme</span><b class="num" id="gr">${restEnd>Date.now()?gClock(restEnd-Date.now()):""}</b></div><button data-g="rest:-15">−15</button><button data-g="rest:15">+15</button><button data-g="rest:0">Atla</button></div>
   ${cards||`<p class="hint">Henüz egzersiz yok. Aşağıdan ekle.</p>`}
   <button class="btn ghost" data-g="pick">Egzersiz ekle</button>
   <button class="lnk dng" data-g="cancel">Antrenmanı iptal et</button>`;
@@ -214,6 +220,7 @@ function gTick(){
   if(left>0){r.hidden=false;$("#gr").textContent=gClock(left)}
   else{
     if(restEnd&&!r.hidden){try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}
+    // 9002 burada iptal edilmez: iptal teslim edilmiş bildirimi de siler, arkadaki gecikmeli tik onu kullanıcı görmeden kaldırırdı.
     r.hidden=true;restEnd=0;
   }
 }
@@ -298,7 +305,7 @@ Tamam: sayılır, İptal: antrenmana dön`))return;
   w.ex=w.ex.filter(x=>x.sets.length);
   w.t1=Date.now();
   const e=add("spor",gDur(w),`Ağırlık, ${w.name}`,w.day);e.wid=w.id;
-  save();restEnd=0;render();gSheetSummary(w.id);
+  save();gRestSet(0);render();gSheetSummary(w.id);
 }
 function gRestore(w,entries){
   S.workouts.push(w);for(const e of entries)S.entries.push(e);
@@ -336,7 +343,7 @@ function gClick(v,el){
     case "done":{
       const s=w.ex[ei].sets[si],row=el.closest(".srow");
       if(gTimed(w.ex[ei].id)){
-        if(!s.done){if(!(s.sec>0))return toast("Önce süreyi yaz");s.done=true;if(gTim&&gTim.ei===ei&&gTim.si===si)gTimStop();restEnd=Date.now()+(gKind(w.ex[ei].id)==="c"?0:30000)}
+        if(!s.done){if(!(s.sec>0))return toast("Önce süreyi yaz");s.done=true;if(gTim&&gTim.ei===ei&&gTim.si===si)gTimStop();gRestSet(Date.now()+gRestSec(w.ex[ei].id)*1000,w.ex[ei].id)}
         else s.done=false;
         save();render();gTick();return;
       }
@@ -344,18 +351,18 @@ function gClick(v,el){
       let pr=null;
       if(!s.done){
         if(!(reps>0&&reps<=200))return toast("Önce tekrar sayısını yaz");
-        s.kg=isNaN(kg)?0:kg;s.reps=reps;s.done=true;restEnd=Date.now()+REST_SEC*1000;
+        s.kg=isNaN(kg)?0:kg;s.reps=reps;s.done=true;gRestSet(Date.now()+gRestSec(w.ex[ei].id)*1000,w.ex[ei].id);
         pr=!s.w&&gNewPR(w,w.ex[ei].id,s);
       }else s.done=false;
       save();render();gTick();
       if(pr){toast(`Yeni rekor: ${pr.ex.n}, ${fkg(pr.kg)||0} kg × ${pr.reps}`);try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}
       return;
     }
-    case "rest":{const d=+p1;if(d===0)restEnd=0;else restEnd=Math.max(Date.now(),restEnd)+d*1000;gTick();return}
+    case "rest":{const d=+p1;gRestSet(d&&Math.max(Date.now(),restEnd)+d*1000);gTick();return}
     case "finish":return gFinish();
     case "cancel":{
       if(!confirm("Bu antrenman kaydedilmeden silinsin mi?"))return;
-      gTimStop();S.workouts=S.workouts.filter(x=>x!==w);save();restEnd=0;render();return;
+      gTimStop();S.workouts=S.workouts.filter(x=>x!==w);save();gRestSet(0);render();return;
     }
     case "hist":return gSheetHist(p1);
     default:return typeof exClick==="function"&&exClick(a,p1,p2,el,w);
