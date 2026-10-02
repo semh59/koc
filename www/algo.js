@@ -33,6 +33,8 @@ const Algo=(()=>{
     if(pts.length<4||pts[pts.length-1][0]-pts[0][0]<7)return null;
     const f=ols(pts);return f?7*f.m:null;
   }
+  /* Son 14 günün eğimi -0,2 kg/hafta'tan hızlı düşüyorsa kilo veriyor demektir. Veri yetersizse (eğim yok) "veriyor" sayılmaz. */
+  function isLosing(w){const s=slopePerWeek(w,14);return s!=null&&s<-0.2}
   function bmrMifflin({kg,cm,age,sex}){
     return 10*kg+6.25*cm-5*age+(sex==="m"?5:sex==="f"?-161:-78);
   }
@@ -136,6 +138,6 @@ const Algo=(()=>{
     if(minReps>=hi)return {kg:roundTo(kg+inc,0.25),reps:lo,why:"Tüm setlerde üst tekrara ulaştın, ağırlığı artır"};
     return {kg,reps:Math.min(hi,minReps+1),why:"Aynı ağırlıkta bir tekrar fazla dene"};
   }
-  return {KCAL_PER_KG,dayNum,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,lossBlock,etaWeeks,proteinRange,est1RM,volume,nextTarget,roundTo,plates,warmup};
+  return {KCAL_PER_KG,dayNum,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,lossBlock,etaWeeks,isLosing,proteinRange,est1RM,volume,nextTarget,roundTo,plates,warmup};
 })();
 if(typeof module!=="undefined")module.exports=Algo;
