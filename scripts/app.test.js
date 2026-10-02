@@ -601,7 +601,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("S.medLog=[]");
     await ev("scheduleReminders()");
     const medN=()=>list.filter(n=>n.id>=1e6);
-    ok("ilaç bildirimleri kurulur: büyük kimlik, 'Aldım' eylemi, ek veri, ad görünür",medN().length>=40&&medN().every(n=>n.actionTypeId==="med"&&n.extra.act==="med"&&n.extra.m===1)&&medN()[0].body.includes("Yeni Ad"),medN()[0]);
+    ok("ilaç bildirimleri kurulur: büyük kimlik, 'Aldım' eylemi, ek veri, ad görünür",medN().length>=40&&medN().every(n=>n.actionTypeId==="med"&&n.extra.act==="med"&&n.extra.m===1&&n.extra.at===new Date(n.schedule.at).getTime())&&medN()[0].body.includes("Yeni Ad"),medN()[0]);
     ok("eylem türleri: su ve ilaç ('✔ Aldım')",types.some(t=>t.id==="med"&&t.actions[0].id==="med"&&t.actions[0].title==="✔ Aldım")&&types.some(t=>t.id==="water"));
     ok("normal hatırlatmalar ilaç kimlikleriyle çakışmaz, kimlikler benzersiz",new Set(list.map(n=>n.id)).size===list.length);
     ev("S.settings.medShowName=false");await ev("scheduleReminders()");
