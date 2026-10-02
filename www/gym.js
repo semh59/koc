@@ -12,7 +12,7 @@ const EXLIB=[
   {id:"curl",n:"Biceps curl",g:"Kol",inc:2},{id:"crunch",n:"Crunch",g:"Karın",inc:2.5}
 ];
 const REST_SEC=90;
-let gTe=null,gTeOn=false,gHistMax=20,gTim=null,gPickMax=40,restEnd=0,gQuery="",gGroup="Tümü",gNew=false,gNewGroup="Bacak";
+let gPgF={d:0,lv:""},gPgD=0,gTe=null,gTeOn=false,gHistMax=20,gTim=null,gPickMax=40,restEnd=0,gQuery="",gGroup="Tümü",gNew=false,gNewGroup="Bacak";
 
 /* Kütüphane (exlib.js) + eski 16 egzersiz: eski kimlikler ve adlar aynen korunur, kütüphane alanları (bölge, tür, şekil) eklenir. */
 const EXREG=["Göğüs","Sırt","Omuz","Biseps","Triseps","Ön kol","Karın","Bel","Kalça","Ön bacak","Arka bacak","Baldır","İç-dış bacak","Trapez","Boyun","Tüm vücut"];
@@ -201,6 +201,7 @@ function gHome(){
   <button class="btn ghost" data-g="lib" style="margin-top:8px">📚 Egzersiz kütüphanesi (${EXMERGED.length}, animasyonlu)</button>
   <button class="btn ghost" data-c="prog" style="margin-top:8px">Koç'tan program iste</button>
   <h2>Şablonlarım</h2>${tpl||`<p class="hint">Şablon yok. "Yeni şablon" ile kur ya da bir antrenmanı bitirince "Şablon olarak kaydet" de.</p>`}<button class="btn ghost" data-g="tedit:">+ Yeni şablon</button>
+  ${gPgHtml()}
   ${bars}${note?`<div class="card" id="wknote">${note}</div>`:""}
   <h2>Antrenman geçmişi</h2><div class="card">${rec||`<p class="hint">Henüz antrenman yok.</p>`}</div>`;
 }
@@ -338,6 +339,36 @@ function gSheetSummary(id){
   ${prs.length?`<div class="pr"><b>${prs.length} yeni rekor</b>${prs.map(p=>`<div>${esc(p.ex.n)}, ${fkg(p.kg)||0} kg × ${p.reps}<div class="mut sm">Tahmini 1TM ${Math.round(p.e1)} kg, önceki ${Math.round(p.prev)} kg</div></div>`).join("")}</div>`:""}
   <div class="mut sm" style="margin:8px 0">${Object.keys(sets).map(g=>`${g} ${sets[g]}`).join(", ")}</div>
   <div class="btns">${w.tpl==null?`<button class="btn ghost" data-g="savetpl:${w.id}">Şablon olarak kaydet</button>`:S.templates.some(t=>t.id===w.tpl)?`<button class="btn ghost" data-g="tplupd:${w.id}">Şablonu bu seansa göre güncelle</button>`:""}<button class="btn ghost" data-g="closesheet">Kapat</button><button class="btn danger" data-g="delw:${w.id}">Antrenmanı sil</button></div>`);
+}
+
+/* ---- hazır programlar (programs.js) ---- */
+const gPgMatch=p=>(!gPgF.d||(gPgF.d>=p.d[0]&&gPgF.d<=p.d[1]))&&(!gPgF.lv||p.lv===gPgF.lv);
+const gPgMeta=p=>`${p.d[0]===p.d[1]?p.d[0]:p.d[0]+"-"+p.d[1]} gün · ${p.q==="Ağırlıksız"?"ekipmansız":"salon"} · ${p.lv.toLowerCase()}`;
+const gPgNote="Genel bilgidir, kişisel antrenman ya da tıbbi tavsiye değildir. Ağrı veya sakatlığın varsa başlamadan hekime ya da fizyoterapiste danış.";
+function gPgHtml(){
+  const chips=(k,vals,lbl)=>`<div class="chips">${vals.map(v=>`<button class="chip" data-g="pgf:${k}:${v}" aria-pressed="${gPgF[k]===v}">${lbl(v)}</button>`).join("")}</div>`;
+  const list=PrgLib.PROGRAMS.filter(gPgMatch);
+  return `<h2>Hazır programlar</h2><div class="card"><div class="lbl">Haftada gün</div>${chips("d",[0,3,4,5,6],v=>v||"Hepsi")}<div class="lbl">Seviye</div>${chips("lv",["","Başlangıç","Orta"],v=>v||"Hepsi")}
+  ${list.map(p=>`<button class="rrow" data-g="pg:${p.id}"><span class="tx"><b>${p.n}</b><span class="mut sm">${gPgMeta(p)}</span></span><span class="plus">›</span></button>`).join("")||`<p class="hint">Bu seçime uyan program yok.</p>`}
+  <p class="hint">${gPgNote}</p></div>`;
+}
+function gPgSheet(id){
+  const p=PrgLib.PROGRAMS.find(x=>x.id===id);if(!p)return;
+  if(p.d[0]<p.d[1])gPgD=Math.max(p.d[0],Math.min(p.d[1],gPgD||gPgF.d||p.d[0]));else gPgD=p.d[0];
+  const ds=PrgLib.days(p,gPgD);
+  openSheet(`<h3>${p.n}</h3><div class="mut sm">${gPgMeta(p)}</div><p class="hint" style="padding:6px 0">${p.about}</p>
+  ${p.d[0]<p.d[1]?`<div class="lbl">Gün sayısı</div><div class="chips">${Array.from({length:p.d[1]-p.d[0]+1},(_,i)=>p.d[0]+i).map(n=>`<button class="chip" data-g="pgd:${p.id}:${n}" aria-pressed="${n===gPgD}">${n}</button>`).join("")}</div>`:""}
+  ${ds.map(d=>`<div class="lbl">${d.n}</div><div style="margin-bottom:8px">${d.ex.map(r=>{const t=PrgLib.tg(r);return `${esc(gEx(r[0]).n)} <span class="mut num" style="white-space:nowrap">${t.sets}×${t.sec?t.sec+" sn":gRepsTx(t)}</span>`}).join(", ")}</div>`).join("")}
+  <p class="hint">${gPgNote}</p>
+  <div class="btns"><button class="btn" data-g="pgadd:${p.id}">Şablonlarıma ekle</button><button class="btn ghost" data-g="closesheet">Kapat</button></div>`);
+}
+/* Koç programı ve hazır program aynı yoldan eklenir; günler "Ad – Gün" adlı şablon olur. */
+function gTplAdd(name,ds){
+  const ids=ds.map(d=>{
+    const t={id:S.gid++,name:`${name} – ${d.n}`.slice(0,60),ex:d.ex.slice()};if(d.tg)t.tg=d.tg;
+    S.templates.push(t);return t.id;
+  });
+  return ids;
 }
 
 /* ---- şablon editörü ---- */
@@ -514,6 +545,14 @@ function gClick(v,el){
       const t=S.templates.find(x=>x.id===+p1);if(!t)return;
       if(!confirm(`"${t.name}" şablonu silinsin mi?`))return;
       S.templates=S.templates.filter(x=>x!==t);save();render();toast("Şablon silindi",()=>{S.templates.push(t);save();render()});return;
+    }
+    case "pgf":gPgF[p1]=p1==="d"?+p2:p2;return render();
+    case "pg":gPgD=0;return gPgSheet(p1);
+    case "pgd":gPgD=+p2;return gPgSheet(p1);
+    case "pgadd":{
+      const p=PrgLib.PROGRAMS.find(x=>x.id===p1);if(!p)return;
+      const ids=gTplAdd(p.n,PrgLib.days(p,gPgD).map(PrgLib.toTpl));save();closeSheet();render();
+      toast(`${ids.length} şablon eklendi`,()=>{S.templates=S.templates.filter(t=>!ids.includes(t.id));save();render()});return;
     }
     case "tedit":return gTeOpen(p1?+p1:null);
     case "teback":gTeSync();return gTeSheet();

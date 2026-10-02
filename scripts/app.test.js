@@ -110,6 +110,36 @@ setTimeout(async()=>{
     ok("silme: onayla silinir, geri al döner",ev("S.templates.length")===n0-1&&(q("#tundo").click(),ev("S.templates.length")===n0));
     ev("S.workouts=[];S.templates=[];closeSheet();render()");
   }
+  { // Hazır programlar (D-Ant3)
+    const q=s=>$q(s),qa=s=>[...w.document.querySelectorAll(s)],sh=()=>q("#sheet").textContent;
+    ev("closeSheet();S.workouts=[];S.templates=[];S.customEx=[];S.exCfg={};S.gid=1;S.chat=[];S.settings.consent=false;gPgF={d:0,lv:''};tab='salon';render()");
+    ok("tüm program kimlikleri EXMERGED'de",ev("PrgLib.PROGRAMS.every(p=>p.days.every(d=>d.ex.every(r=>EXMERGED.some(e=>e.id===r[0]))))"));
+    ok("Salon ana ekranında 'Hazır programlar': 5 program, anahtarsız/Koç'suz, kısa not",q("#view").textContent.includes("Hazır programlar")&&qa('[data-g^="pg:"]').length===5&&q("#view").textContent.includes("hekime ya da fizyoterapiste")&&ev("S.settings.consent")===false);
+    q('[data-g="pgf:d:4"]').click();
+    ok("gün filtresi: 4 günlük programlar (aralıklı olan dahil)",qa('[data-g^="pg:"]').map(b=>b.dataset.g).join()==="pg:home4,pg:gym4,pg:ppl"&&q('[data-g="pgf:d:4"]').getAttribute("aria-pressed")==="true");
+    q('[data-g="pgf:lv:Başlangıç"]').click();
+    ok("seviye filtresi birleşir; uyan yoksa açıklama",qa('[data-g^="pg:"]').length===0&&q("#view").textContent.includes("uyan program yok"));
+    q('[data-g="pgf:d:0"]').click();q('[data-g="pgf:lv:"]').click();
+    ok("Hepsi: 5 program",qa('[data-g^="pg:"]').length===5);
+    q('[data-g="pg:gym3"]').click();
+    ok("program sayfası: günler, set × tekrar, not ve ekle düğmesi",sh().includes("Salon tüm vücut")&&sh().includes("Squat 5×5")&&sh().includes("Gün C")&&sh().includes("fizyoterapiste")&&q('[data-g="pgadd:gym3"]')&&!q("#sheet [data-g^=pgd]"));
+    q('[data-g="pgadd:gym3"]').click();
+    const T=ev("S.templates"),t0=T[0];
+    ok("Şablonlarıma ekle: her gün bir şablon, 'Program – Gün' adı, hedefler dolu",T.length===3&&t0.name==="Salon tüm vücut – Gün A"&&t0.ex.join()==="squat,bench,row,bbohp,tri,crunch"&&t0.tg.squat.sets===5&&t0.tg.squat.reps===5&&t0.tg.bbohp.hi===10&&!q("#sheet").classList.contains("on"),T);
+    ok("eklenen şablonlar kayıt turunda hedefleriyle kalır",ev("JSON.stringify(cleanGym(JSON.parse(JSON.stringify(S))).templates)")===JSON.stringify(T));
+    ev("S.workouts=[];gStart(S.templates[0].id)");
+    ok("şablondan antrenman: set sayısı ve tekrar hedeften",ev("gActive().ex.map(x=>x.sets.length+'x'+x.sets[0].reps).join()")==="5x5,5x5,5x5,3x8,3x10,3x12"&&ev("gActive().ex.find(x=>x.id==='bbohp').sets[0].reps")===8);
+    ev("S.workouts=[];tab='salon';render()");
+    q('[data-g="pg:ppl"]').click();
+    ok("itiş-çekiş-bacak: gün sayısı seçilir (3-6), varsayılan 3",sh().includes("Bacak A")&&!sh().includes("İtiş B")&&q('[data-g="pgd:ppl:3"]').getAttribute("aria-pressed")==="true");
+    q('[data-g="pgd:ppl:5"]').click();
+    ok("5 gün: ilk 5 gün gösterilir",sh().includes("Çekiş B")&&!sh().includes("Bacak B"));
+    ev("S.templates=[]");q('[data-g="pgadd:ppl"]').click();
+    ok("5 gün seçilince 5 şablon eklenir; geri al hepsini kaldırır",ev("S.templates.length")===5&&ev("S.templates[4].name")==="Salon itiş-çekiş-bacak – Çekiş B"&&(q("#tundo").click(),ev("S.templates.length")===0));
+    ev("S.templates=[];gPgF.d=6");ev("render()");q('[data-g="pg:ppl"]').click();
+    ok("gün filtresi seçili programa taşınır (6)",q('[data-g="pgd:ppl:6"]').getAttribute("aria-pressed")==="true"&&sh().includes("Bacak B"));
+    ev("gPgF={d:0,lv:''};closeSheet();S.templates=[];render()");
+  }
   { // Koç ilk izlenimi (C7)
     const q=s=>$q(s),k=()=>ev("viewKoc()");
     ev("S.chat=[];S.settings.consent=false;offline=null");

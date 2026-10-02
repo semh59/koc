@@ -492,7 +492,7 @@ function cClick(v,el){
     case "progask":closeSheet();return cProgram(progOpt);
     case "progadd":{
       const m=S.chat.find(x=>x.id===+p1);if(!m||!m.card||m.card.kind!=="program"||m.card.state!=="pending")return;
-      for(const d of m.card.days)S.templates.push({id:S.gid++,name:`${m.card.name} – ${d.n}`.slice(0,60),ex:d.ex.slice()});
+      gTplAdd(m.card.name,m.card.days);
       m.card.state="ok";save();render();return toast(`${m.card.days.length} şablon eklendi`);
     }
     case "whyai":return cWhyAsk(+p1);
