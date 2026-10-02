@@ -218,7 +218,7 @@ function gHome(){
   const note=gWeekNote(gWeekRegions(),done.length>0).map(l=>`<p class="hint">${l}</p>`).join("");
   const rec=gHistHtml(done);
   return `<button class="btn" data-g="start:">Boş antrenman başlat</button>
-  <button class="btn ghost" data-g="lib" style="margin-top:8px">📚 Egzersiz kütüphanesi (${EXMERGED.length}, animasyonlu)</button>
+  <button class="btn ghost" data-g="lib" style="margin-top:8px">${Icons.svg("book")} Egzersiz kütüphanesi (${EXMERGED.length}, animasyonlu)</button>
   <button class="btn ghost" data-c="prog" style="margin-top:8px">Koç'tan program iste</button>
   <h2>Şablonlarım</h2>${tpl||`<p class="hint">Şablon yok. "Yeni şablon" ile kur ya da bir antrenmanı bitirince "Şablon olarak kaydet" de.</p>`}<button class="btn ghost" data-g="tedit:">+ Yeni şablon</button>
   ${gPgHtml()}

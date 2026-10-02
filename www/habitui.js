@@ -10,14 +10,14 @@ function hbSet(key,val,msg){
 }
 function habitRow(){
   const t=dayKey(),sl=S.sleep.find(x=>x.day===t),mo=S.mood.find(x=>x.day===t);
-  return `<div class="hrow"><button class="btn ghost" data-hb="sleep">😴 ${sl?hbDur(sl.min):"Uyku ekle"}</button><button class="btn ghost" data-hb="mood">${mo?MOODS[mo.v-1]+" Ruh hali":"🙂 Ruh hali"}</button></div>`;
+  return `<div class="hrow"><button class="btn ghost" data-hb="sleep">${Icons.svg("moon")} ${sl?hbDur(sl.min):"Uyku ekle"}</button><button class="btn ghost" data-hb="mood">${mo?MOODS[mo.v-1]+" Ruh hali":Icons.svg("smile")+" Ruh hali"}</button></div>`;
 }
 /* Bugün yapılacaklar satırı: oruç açıksa sürüyor/başlat; plan ve geçmiş Ayarlar'da. */
 function fastTodo(){
   const f=S.fast,st=S.settings;if(!st.fastOn)return [];
   const s=HabitLib.fastState(f,Date.now()),warn=Algo.lossBlock({age:st.age,cm:0,kg:0,goalKg:0,health:!!st.healthNote.trim()})?`<small class="mut sm">Oruç öncesi hekimine danış.</small>`:"";
-  return [s?`<div class="row"><span>⏳ Oruç ${f.plan}:${24-f.plan} · <b class="num">${hbDur(s.elapsed)}</b> geçti<small class="mut sm num">${s.done?"Hedef doldu":hbDur(s.left)+" kaldı"}</small>${warn}</span><button class="chip" data-hb="fastend">Orucu bitir</button></div>`
-    :`<div class="row"><span>⏳ Oruç ${f.plan}:${24-f.plan}<small class="mut sm">Plan Ayarlar > Modüller'de değişir</small>${warn}</span><button class="chip" data-hb="fastgo">Orucu başlat</button></div>`];
+  return [s?`<div class="row"><span>${Icons.svg("fast")} Oruç ${f.plan}:${24-f.plan} · <b class="num">${hbDur(s.elapsed)}</b> geçti<small class="mut sm num">${s.done?"Hedef doldu":hbDur(s.left)+" kaldı"}</small>${warn}</span><button class="chip" data-hb="fastend">Orucu bitir</button></div>`
+    :`<div class="row"><span>${Icons.svg("fast")} Oruç ${f.plan}:${24-f.plan}<small class="mut sm">Plan Ayarlar > Modüller'de değişir</small>${warn}</span><button class="chip" data-hb="fastgo">Orucu başlat</button></div>`];
 }
 function fastSettingsHtml(){
   const f=S.fast,on=S.settings.fastOn,last=f.log.slice(-7).reverse().map(x=>hbRow(`${dm(dayKey(new Date(x.t1)))} ${hbDur(Math.round((x.t1-x.t0)/6e4))}`,"fdel:"+x.t0)).join("");

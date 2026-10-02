@@ -27,8 +27,8 @@ function viewTahlil(){
   return `<button class="btn" data-tab="trend" style="margin:0 0 12px">‹ Trend</button>
   <div class="card"><div class="lbl">Tahlil sonuçları</div>
     <p class="mut sm" style="margin:0 0 10px">PDF'ten okut ya da elle ekle. Veriler yalnızca bu telefonda kalır. Laboratuvarın yazdığı referans aralığı gösterilir. ${MED_NOTE}</p>
-    <div class="btns" style="display:grid;gap:8px"><label class="btn" style="text-align:center">📄 PDF'ten oku<input id="labfile" type="file" accept="application/pdf,.pdf" hidden></label>
-    ${ocrBtn("tahlil","📷 Fotoğraftan oku")}<button class="btn ghost" data-lab="add">➕ Elle ekle</button>${list.length?`<button class="btn ghost" data-lab="pdf">📤 PDF olarak paylaş</button>`:""}</div></div>
+    <div class="btns" style="display:grid;gap:8px"><label class="btn" style="text-align:center">${Icons.svg("file")} PDF'ten oku<input id="labfile" type="file" accept="application/pdf,.pdf" hidden></label>
+    ${ocrBtn("tahlil",Icons.svg("camera")+" Fotoğraftan oku")}<button class="btn ghost" data-lab="add">${Icons.svg("plus")} Elle ekle</button>${list.length?`<button class="btn ghost" data-lab="pdf">${Icons.svg("share")} PDF olarak paylaş</button>`:""}</div></div>
   ${cards||`<div class="card"><p class="mut">Henüz tahlil sonucu yok. İlk PDF'ini okutarak başla.</p></div>`}${nTxt}
   ${S.labs.length?`<button class="btn danger" data-lab="delall" style="margin-top:8px">Tüm tahlil kayıtlarını sil</button>`:""}`;
 }
@@ -113,9 +113,9 @@ async function labRead(data,password){
   }
   labKeep=null;
   if(ex.error)return toast(ex.error);
-  if(ex.scanned)return openSheet(`<h3>Metin bulunamadı</h3><p class="mut">Bu PDF bir görüntü (taranmış ya da fotoğraf) olduğu için içindeki yazıyı okuyamıyorum. Değerleri elle ekleyebilirsin.</p><button class="btn" data-lab="add">➕ Elle ekle</button><button class="btn ghost" data-lab="close" style="margin-top:8px">Kapat</button>`);
+  if(ex.scanned)return openSheet(`<h3>Metin bulunamadı</h3><p class="mut">Bu PDF bir görüntü (taranmış ya da fotoğraf) olduğu için içindeki yazıyı okuyamıyorum. Değerleri elle ekleyebilirsin.</p><button class="btn" data-lab="add">${Icons.svg("plus")} Elle ekle</button><button class="btn ghost" data-lab="close" style="margin-top:8px">Kapat</button>`);
   const parsed=LabLib.parseLines(ex.lines,dayKey());
-  if(!parsed.rows.length)return openSheet(`<h3>Sonuç bulunamadı</h3><p class="mut">PDF'te tanıyabildiğim bir sonuç satırı yok. Rapor düzeni farklı olabilir. Değerleri elle ekleyebilirsin.</p><button class="btn" data-lab="add">➕ Elle ekle</button><button class="btn ghost" data-lab="close" style="margin-top:8px">Kapat</button>`);
+  if(!parsed.rows.length)return openSheet(`<h3>Sonuç bulunamadı</h3><p class="mut">PDF'te tanıyabildiğim bir sonuç satırı yok. Rapor düzeni farklı olabilir. Değerleri elle ekleyebilirsin.</p><button class="btn" data-lab="add">${Icons.svg("plus")} Elle ekle</button><button class="btn ghost" data-lab="close" style="margin-top:8px">Kapat</button>`);
   labReview(parsed,false);
 }
 async function labFile(f){
