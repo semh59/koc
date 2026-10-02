@@ -64,6 +64,9 @@ setTimeout(async()=>{
     ok("geri tuşu: akış bitirilir, özet görünür",gt().includes("Akış durduruldu")&&ev("gd.fin"));
     ok("özet: ekran açık bırakılır",awk[awk.length-1]===false);
     const before=ev("JSON.stringify(S.workouts)");stops.length=0;
+    ev("gd.st.done[1]=5");w.confirm=()=>false;ev("backKey()");
+    ok("özette geri tuşu: tamamlanan varsa sormadan atmaz",!q("#guide").hidden&&ev("gd.fin"));
+    w.confirm=()=>true;
     ev("backKey()");
     ok("kaydetmeden kapat: S.workouts değişmez, ses durur, katman gizli",ev("JSON.stringify(S.workouts)")===before&&stops.length===1&&q("#guide").hidden&&ev("gd")===null);
   }
@@ -80,11 +83,17 @@ setTimeout(async()=>{
     fin("f:tabata4");click('[data-gd="save"]');
     const t=ev("S.workouts[1]");
     ok("Tabata kaydı: aralıklı setler süreli, done, sec 20; spor dakikası eklenir",t.ex.length===4&&t.ex.every(x=>x.sets.length===2&&x.sets.every(s=>s.done&&s.sec===20&&!s.w))&&ev("S.entries.filter(x=>x.wid===S.workouts[1].id&&x.type==='spor').length")===1);
-    // ağırlıklı şablon: kg önceki seanstan, öneri bozulmaz
-    ev(`S.workouts.push({id:3,day:'2026-09-01',t0:1000,t1:2000,name:'Eski',tpl:null,ex:[{id:'squat',note:'',sets:[{kg:60,reps:8,done:true}]}]});S.templates=[{id:7,name:'Bacak',ex:['squat'],tg:{squat:{sets:2,reps:8}}}]`);
-    fin("t:7");click('[data-gd="save"]');
+    // ağırlıklı şablon: kg öneriden (62,5) değil önceki gerçek setten (60), kullanıcı düzeltebilir
+    ev(`S.workouts.push({id:3,day:'2026-09-01',t0:1000,t1:2000,name:'Eski',tpl:null,ex:[{id:'squat',note:'',sets:[{kg:60,reps:12,done:true}]}]});S.templates=[{id:7,name:'Bacak',ex:['squat'],tg:{squat:{sets:2,reps:12}}}]`);
+    fin("t:7");
+    ok("özet: ağırlıklı harekette kg alanı önceki seansın gerçek ağırlığıyla dolu (öneri 62,5 değil)",ev("gSuggest('squat').kg")===62.5&&q('[data-gdkg="squat"]').value==="60");
+    const n0=ev("S.workouts.length");q('[data-gdkg="squat"]').value="";click('[data-gd="save"]');
+    ok("boş kg ile kaydedilmez, uyarı",ev("S.workouts.length")===n0&&q("#tmsg").textContent.includes("Ağırlığı"));
+    q('[data-gdkg="squat"]').value="60";click('[data-gd="save"]');
     const sq=ev("S.workouts[S.workouts.length-1]");
-    ok("ağırlıklı şablon: kg önceki/önerilen ağırlık, tekrar ve süre yazılır, şablona bağlı",sq.tpl===7&&sq.ex[0].sets.length===2&&sq.ex[0].sets.every(s=>s.kg===60&&s.reps===8&&s.sec===20&&s.done));
+    ok("ağırlıklı şablon: yazılan kg, tekrar ve süre kaydedilir, şablona bağlı, sahte rekor yok",sq.tpl===7&&sq.ex[0].sets.length===2&&sq.ex[0].sets.every(s=>s.kg===60&&s.reps===12&&s.sec===20&&s.done)&&ev("gPRs(S.workouts[S.workouts.length-1]).length")===0);
+    ev(`S.templates.push({id:8,name:'Kayıttan',ex:['plank','trail']})`);
+    ok("set/süre hedefi olmayan şablon türün varsayılanını alır (süreli 3×30 sn, kardiyo 1×10 dk)",JSON.stringify(ev("gdTplSteps(S.templates[1]).map(s=>[s.n,s.sec])"))==="[[3,30],[1,600]]");
     ok("rehberli kayıt sonrası öneri sayı (NaN değil)",(r=>r&&Number.isFinite(r.kg)&&Number.isFinite(r.reps))(ev("gSuggest('squat')")));
     ok("cleanGym turu: rehberli kayıtlar aynen yaşar",JSON.stringify(ev("cleanGym(JSON.parse(JSON.stringify(S))).workouts"))===JSON.stringify(ev("S.workouts")));
     ev("gdStart('f:tabata4');gdClick('end')");
