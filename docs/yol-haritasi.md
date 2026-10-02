@@ -71,7 +71,7 @@ Ayrıntı ve test adımları `yapilacaklar.md`'de. Telefonda denenen tek özelli
 ### Antrenman
 | # | Ad | Değer | Emek | Kaynak | Bağımlılık / karar |
 |---|---|---|---|---|---|
-| D-Ant1 | Dinlenme bildirimi | Sabit 90 sn ve yalnız Salon açıkken çalışan sayaç bildirimli, ekranı açık tutan ve egzersiz başına ayarlı olur. | S | rekabet-egzersiz #1 | keep-awake eklentisi |
+| D-Ant1 (yapıldı) | Dinlenme bildirimi | Sabit 90 sn ve yalnız Salon açıkken çalışan sayaç bildirimli, ekranı açık tutan ve egzersiz başına ayarlı olur. | S | rekabet-egzersiz #1 | – (DeviceHelp.keepAwake, eklentisiz) |
 | D-Ant2 | Şablon editörü | Şablon elle oluşturulur, düzenlenir, set/tekrar hedefi tutar, bitişte güncellenir. | M | rekabet-egzersiz #2 | – |
 | D-Ant3 | Çevrimdışı hazır programlar | Koç ve anahtar olmadan 5 hazır program (ev ekipmansız dahil) sunulur. | M | rekabet-egzersiz #3 | D-Ant2 |
 | D-Ant4 | Strong/Hevy CSV içe aktarma | Rakipten gelen kullanıcının geçmişi taşınır. | M | rekabet-egzersiz #5 | – |
