@@ -142,14 +142,25 @@ function exPlateSheet(ei){
 }
 const EXRANGES=["5-8","8-12","12-15"];
 function exRangeSheet(ei){
-  const id=gActive().ex[ei].id,c=S.exCfg[id]||{lo:8,hi:12};
+  const id=gActive().ex[ei].id,c=Object.assign({lo:8,hi:12},S.exCfg[id]);
   openSheet(`<h3>${esc(gEx(id).n)}</h3><div class="lbl">Tekrar aralığı</div><div class="chips">${EXRANGES.map(r=>`<button class="chip" data-g="rngset:${ei}:${r}" aria-pressed="${r===c.lo+"-"+c.hi}">${r}</button>`).join("")}</div>
   <p class="hint">Tüm setlerde üst tekrara ulaşınca öneri ağırlığı artırır.</p><button class="btn ghost" data-g="closesheet">Kapat</button>`);
 }
 function exRangeSet(ei,r){
   const id=gActive().ex[ei].id,[lo,hi]=r.split("-").map(Number);
-  if(r==="8-12")delete S.exCfg[id];else S.exCfg[id]={lo,hi};
+  gCfg(id,r==="8-12"?{lo:null,hi:null}:{lo,hi});
   save();closeSheet();render();toast(`Tekrar aralığı ${r}`);
+}
+const EXRESTS=[0,30,45,60,75,90,120,150,180,240];
+function exRestSheet(ei){
+  const id=gActive().ex[ei].id,cur=S.exCfg[id]&&S.exCfg[id].rest,def=gRestDef(id);
+  openSheet(`<h3>${esc(gEx(id).n)}</h3><div class="lbl">Dinlenme süresi</div><div class="chips"><button class="chip" data-g="rstset:${ei}:d" aria-pressed="${cur==null}">Varsayılan (${gRestTx(def)})</button>${EXRESTS.map(v=>`<button class="chip" data-g="rstset:${ei}:${v}" aria-pressed="${v===cur}">${gRestTx(v)}</button>`).join("")}</div>
+  <p class="hint">Set ✓ sonrası sayaç bu süreyle başlar, bitince ekran kapalıyken de bildirim gelir. Sayaçta ±15 ve Atla her zaman var.</p><button class="btn ghost" data-g="closesheet">Kapat</button>`);
+}
+function exRestSet(ei,v){
+  const id=gActive().ex[ei].id,sec=v==="d"?null:+v;
+  if(sec!=null&&!EXRESTS.includes(sec))return;
+  gCfg(id,{rest:sec});save();closeSheet();render();toast(`Dinlenme ${gRestTx(gRestSec(id))}`);
 }
 function exWarmAdd(ei){
   const v=exPlateIn(),x=gActive().ex[ei];
@@ -182,6 +193,8 @@ function exClick(a,p1,p2,el,w){
     case "plate":return exPlateSheet(ei);
     case "rng":return exRangeSheet(ei);
     case "rngset":return exRangeSet(ei,p2);
+    case "rst":return exRestSheet(ei);
+    case "rstset":return exRestSet(ei,p2);
     case "wadd":return exWarmAdd(ei);
     case "tstart":return gTimStart(+p1,+p2);
     case "tstop":{
