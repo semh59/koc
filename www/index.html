@@ -572,7 +572,7 @@ function viewBugun(){
   const stB=isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?`<div class="banner"><b>Adım sayar</b><p>Telefonun adım sensörünü kullanır, hesap gerekmez. Telefonu yanında taşıdığın adımları sayar.</p><div class="lbtns"><button class="btn" data-act="adimac">Aç</button><button class="btn ghost" data-act="adimdegil">Şimdi değil</button></div></div>`:"";
   const oemB=isNative()&&oemXiaomi()&&!st.oemDone?`<div class="banner"><b>Hatırlatmalar için bir kez ayar gerekli</b><p>Telefon uygulamayı kapatınca hatırlatmalar gelmeyebilir. İki izin verince düzelir.</p><button class="btn" data-act="oem">Ayarla</button></div>`:"";
   const a7=(a,b)=>sum("adim",keyOff(a),keyOff(b));
-  const stW=sOn&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?`<div class="banner"><b>Adım sayımı durmuş olabilir</b><p>Telefon adım sayarı arka planda kapatmış olabilir. Pil ayarında NeoWell'e kısıtlama koyma.</p><div class="lbtns"><button class="btn" data-act="adimduz">Ayarla</button><button class="btn ghost" data-act="adimgizle">Kapat</button></div></div>`:"";
+  const stW=sOn&&stepsRead&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?`<div class="banner"><b>Adım sayımı durmuş olabilir</b><p>Telefon adım sayarı arka planda kapatmış olabilir. Pil ayarında NeoWell'e kısıtlama koyma.</p><div class="lbtns"><button class="btn" data-act="adimduz">Ayarla</button><button class="btn ghost" data-act="adimgizle">Kapat</button></div></div>`:"";
   return `${stB}${oemB}${stW}${bk}${weight}<div class="coach">${esc(coach())}</div>${rings}${macro}${micro}${actions}${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
 }
 
@@ -916,7 +916,8 @@ function notifTap(e){
 }
 function setNotif(s){notifStatus=s;if(tab==="ayar")render()}
 const SC=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.StepCounter;
-let stepToday=null,stepSnapAt=0;
+/* stepsRead: açılıştaki ilk sensör okuması bitmeden dünkü adım henüz yazılmamış olabilir, "sayım durdu" kartı yanlış çıkmasın. */
+let stepToday=null,stepSnapAt=0,stepsRead=false;
 function setSteps(day,v){
   if(!(v>0&&v<=200000))return false;
   const e=S.entries.find(x=>x.type==="adim"&&x.day===day&&x.text!=="elle");
@@ -927,7 +928,7 @@ function setSteps(day,v){
 async function stepsSync(){
   if(!S.settings.stepsOn||!SC())return;
   try{
-    const r=await SC().read();let ch=false;
+    const r=await SC().read();let ch=!stepsRead;stepsRead=true;
     if(stepSnapAt!==(+r.snapAt||0)){stepSnapAt=+r.snapAt||0;ch=true}
     for(const d in (r.history||{}))if(dayOk(d)&&setSteps(d,r.history[d]))ch=true;
     if(typeof r.steps==="number"){if(stepToday!==r.steps){stepToday=r.steps;ch=true}if(setSteps(dayKey(),r.steps))ch=true}
@@ -958,7 +959,7 @@ function viewAdim(){
   const km=st.heightCm>0?today*st.heightCm*0.415/1e5:null;
   const extra=km!=null?`<div class="stat"><div class="k">Yaklaşık mesafe</div><div class="v num">${fmt(km,1)} km</div></div>${kg!=null?`<div class="stat"><div class="k">Yaklaşık enerji</div><div class="v num">${Math.round(0.5*kg*km)} kcal</div></div>`:""}`:"";
   const rows=days.slice().reverse().slice(0,7).map(d=>`<div class="row" style="display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)"><span>${d.k===dayKey()?"Bugün":GUNK[d.d.getDay()]+" "+d.d.getDate()+" "+AY[d.d.getMonth()]}</span><b class="num">${d.v?fm(d.v):"–"}</b></div>`).join("");
-  const man=S.entries.filter(e=>e.type==="adim"&&e.text==="elle"&&e.day>=days[0].k).sort((a,b)=>b.day.localeCompare(a.day)||b.id-a.id).map(e=>`<div class="row" style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-top:1px solid var(--line)"><span>${dm(e.day)}</span><b class="num">+${fm(e.v)}</b><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></div>`).join("");
+  const man=S.entries.filter(e=>e.type==="adim"&&e.text==="elle").sort((a,b)=>b.day.localeCompare(a.day)||b.id-a.id).map(e=>`<div class="row" style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-top:1px solid var(--line)"><span>${dm(e.day)}</span><b class="num">+${fm(e.v)}</b><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></div>`).join("");
   return `<button class="btn" data-tab="bugun" style="margin:0 0 12px">‹ Bugün</button>
   <div class="card" style="text-align:center">${ring(today/st.stepGoal,"var(--su)",fm(today),"Bugün",`/ ${fm(st.stepGoal)} adım`)}</div>
   <div class="card"><div class="lbl">Son ${N} gün</div><svg class="bars" viewBox="0 0 ${W} ${H}" role="img" aria-label="Son ${N} günün adımları" style="width:100%">${bars}<line x1="0" x2="${W}" y1="${Y(st.stepGoal).toFixed(1)}" y2="${Y(st.stepGoal).toFixed(1)}" stroke="var(--kcal)" stroke-width="1.4" stroke-dasharray="4 3"/></svg><div class="mut sm">Kesik çizgi hedef, koyu çubuk hedefe ulaşılan gün.</div></div>
