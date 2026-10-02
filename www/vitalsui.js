@@ -123,15 +123,20 @@ function vSaveBs(){
 }
 
 /* ---- Grafik (SVG) ---- */
+/* Renge ek olarak şekil (daire, kare, üçgen, baklava) ve çizgi biçimi: renk körü ve siyah-beyaz baskıda seri ayırt edilir. */
+const vMark=(sh,x,y,r,fill)=>sh==="s"?`<rect x="${(x-r).toFixed(1)}" y="${(y-r).toFixed(1)}" width="${2*r}" height="${2*r}" fill="${fill}"/>`:sh==="t"?`<polygon points="${x.toFixed(1)},${(y-r*1.25).toFixed(1)} ${(x+r*1.15).toFixed(1)},${(y+r*.9).toFixed(1)} ${(x-r*1.15).toFixed(1)},${(y+r*.9).toFixed(1)}" fill="${fill}"/>`:sh==="d"?`<polygon points="${x.toFixed(1)},${(y-r*1.3).toFixed(1)} ${(x+r*1.3).toFixed(1)},${y.toFixed(1)} ${x.toFixed(1)},${(y+r*1.3).toFixed(1)} ${(x-r*1.3).toFixed(1)},${y.toFixed(1)}" fill="${fill}"/>`:`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${fill}"/>`;
+const vLegend=series=>`<div class="legend">${series.map(s=>`<span><svg width="26" height="12" viewBox="0 0 26 12" aria-hidden="true">${s.line===false?"":`<line x1="0" x2="26" y1="6" y2="6" stroke="${s.color}" stroke-width="2"${s.dash?' stroke-dasharray="4 3"':""}/>`}${vMark(s.shape,13,6,4,s.color)}</svg>${s.label}</span>`).join("")}</div>`;
 function vSvg(series,band,from,to,W,H){
-  const f=VitalsLib.dayN(from),t=VitalsLib.dayN(to)+1,span=Math.max(1,t-f),vs=series.flatMap(s=>s.pts.map(p=>p.v));
-  if(band){if(band.lo!=null)vs.push(band.lo);if(band.hi!=null)vs.push(band.hi)}
-  if(!vs.length)return `<p class="hint">Bu dönemde ölçüm yok.</p>`;
+  const f=VitalsLib.dayN(from),t=VitalsLib.dayN(to)+1,span=Math.max(1,t-f),vs=series.flatMap(s=>s.pts.map(p=>p.v)),bands=band?[].concat(band):[];
+  for(const b of bands){if(b.lo!=null)vs.push(b.lo);if(b.hi!=null)vs.push(b.hi)}
+  if(!series.some(s=>s.pts.length))return `<p class="hint">Bu dönemde ölçüm yok.</p>`;
   let lo=Math.min(...vs),hi=Math.max(...vs);if(hi===lo){hi+=1;lo-=1}const pad=(hi-lo)*.12;lo-=pad;hi+=pad;
   const X=p=>8+(W-16)*(VitalsLib.dayN(p.day)+vToMin(p.time)/1440-f)/span,Y=v=>8+(H-30)*(1-(v-lo)/(hi-lo));
-  const bd=band?(()=>{const y1=band.hi!=null?Y(band.hi):8,y2=band.lo!=null?Y(band.lo):H-22;return `<rect x="8" y="${Math.min(y1,y2).toFixed(1)}" width="${W-16}" height="${Math.abs(y2-y1).toFixed(1)}" fill="var(--prim)" opacity=".12"/>`})():"";
-  const body=series.map(s=>`${s.pts.length>1?`<polyline points="${s.pts.map(p=>X(p).toFixed(1)+","+Y(p.v).toFixed(1)).join(" ")}" fill="none" stroke="${s.color}" stroke-width="1.8" stroke-linejoin="round" opacity="${s.line===false?0:.85}"/>`:""}${s.pts.map(p=>`<circle cx="${X(p).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="3.8" fill="${p.out?"var(--warn)":s.color}"/>`).join("")}`).join("");
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Ölçüm grafiği" style="width:100%;display:block">${bd}<rect x="8" y="8" width="${W-16}" height="${H-30}" fill="none" stroke="var(--line)"/>${body}<text x="8" y="${H-6}" style="font-size:10px;fill:var(--mut)">${fd(from)}</text><text x="${W-8}" y="${H-6}" text-anchor="end" style="font-size:10px;fill:var(--mut)">${fd(to)}</text><text x="${W-10}" y="18" text-anchor="end" style="font-size:10px;fill:var(--mut)">${Math.round(hi)}</text><text x="${W-10}" y="${H-26}" text-anchor="end" style="font-size:10px;fill:var(--mut)">${Math.round(lo)}</text></svg>`;
+  const bd=bands.map(b=>{const y1=b.hi!=null?Y(b.hi):8,y2=b.lo!=null?Y(b.lo):H-22,top=Math.min(y1,y2);return `<rect x="8" y="${top.toFixed(1)}" width="${W-16}" height="${Math.abs(y2-y1).toFixed(1)}" fill="var(--prim)" opacity=".12"/>${b.label?`<text x="12" y="${(top+13).toFixed(1)}">${b.label}</text>`:""}`}).join("");
+  const body=series.map(s=>`${s.pts.length>1?`<polyline points="${s.pts.map(p=>X(p).toFixed(1)+","+Y(p.v).toFixed(1)).join(" ")}" fill="none" stroke="${s.color}" stroke-width="1.8" stroke-linejoin="round"${s.dash?' stroke-dasharray="5 3"':""} opacity="${s.line===false?0:.85}"/>`:""}${s.pts.map(p=>vMark(s.shape,X(p),Y(p.v),3.8,p.out?"var(--warn)":s.color)).join("")}`).join("");
+  const lab=series.filter(s=>s.short&&s.pts.length).map(s=>{const p=s.pts[s.pts.length-1];return `<text x="${Math.min(X(p)+4,W-8).toFixed(1)}" y="${(Y(p.v)+(s.below?19:-9)).toFixed(1)}" text-anchor="end" style="fill:var(--ink);font-weight:700">${s.short}</text>`}).join("");
+  const tip=esc(JSON.stringify(series.flatMap(s=>s.pts.map(p=>[+X(p).toFixed(1),+Y(p.v).toFixed(1),`${fd(p.day)} ${p.time} · ${s.short||s.label||""} ${p.txt||Math.round(p.v)}`.trim()]))));
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Ölçüm grafiği" data-tip="${tip}">${bd}<rect x="8" y="8" width="${W-16}" height="${H-30}" fill="none" stroke="var(--line)"/>${body}${lab}<text x="8" y="${H-6}">${fd(from)}</text><text x="${W-8}" y="${H-6}" text-anchor="end">${fd(to)}</text><text x="12" y="20">${Math.round(hi)}</text><text x="12" y="${H-26}">${Math.round(lo)}</text></svg>`;
 }
 const vSeg=()=>`<div class="seg" role="group" aria-label="Aralık">${[7,14,30].map(n=>`<button data-vt="range:${n}" aria-pressed="${vRange===n}">${n} gün</button>`).join("")}</div>`;
 const vBtns=add=>`<div class="card"><div class="btns" style="display:grid;gap:8px"><button class="btn" data-vt="${add}">${Icons.svg("plus")} Ölçüm ekle</button></div></div>`;
@@ -142,6 +147,8 @@ function viewTansiyon(){
   const ses=VitalsLib.sessions(S.vitals).filter(s=>s.day>=from&&s.day<=end);
   const pt=(rows,f)=>rows.map(r=>({day:r.day,time:r.time,v:r[f],out:!!VitalsLib.flagBp(r.sys,r.dia,st)}));
   const raw=S.vitals.filter(r=>r.k==="t"&&r.day>=from&&r.day<=end);
+  const bpSeries=[{pts:pt(raw,"sys"),color:"var(--ink)",shape:"c",label:"Sistolik (büyük)",short:"Sistolik"},{pts:pt(raw,"dia"),color:"var(--su)",shape:"s",dash:true,below:true,label:"Diyastolik (küçük)",short:"Diyastolik"}];
+  const bpMine=st.bpSysHi>0||st.bpDiaHi>0,bpBand=bpMine?[st.bpSysHi>0&&{lo:90,hi:st.bpSysHi,label:"hedef aralığın"},st.bpDiaHi>0&&{lo:60,hi:st.bpDiaHi}].filter(Boolean):[{lo:90,hi:130,label:"genel referans"},{lo:60,hi:80}];
   const hf=h.all?VitalsLib.flagBp(h.all.sys,h.all.dia,st):null;
   const avgTxt=a=>a?`${Math.round(a.sys)}/${Math.round(a.dia)}`:"–";
   const rows=ses.slice().reverse().map(s=>{
@@ -153,7 +160,7 @@ function viewTansiyon(){
     ${h.all?`<div class="sumv num" style="color:var(--ink)">${avgTxt(h.all)} <small>mmHg</small></div><div class="mut sm">${h.all.n} ölçüm, ${h.days} gün${hf?" · "+vFlagTxt(hf):""}</div>${h.enough?"":`<div class="mut sm">Ortalama için en az 3 gün, tercihen 7 gün sabah ve akşam ölçüm gerekir.</div>`}
     <div class="stats" style="margin-top:8px"><div class="stat"><div class="k">Sabah ortalaması</div><div class="v num">${avgTxt(h.sabah)}</div></div><div class="stat"><div class="k">Akşam ortalaması</div><div class="v num">${avgTxt(h.aksam)}</div></div></div>`:`<p class="mut">Henüz ölçüm yok. Günde 2 kez (sabah ve akşam), her seferinde 2 ölçüm, 3-7 gün ölçersen anlamlı bir ortalama çıkar.</p>`}
   </div>
-  ${vSeg()}<div class="card">${vSvg([{pts:pt(raw,"sys"),color:"var(--prim)"},{pts:pt(raw,"dia"),color:"var(--su)"}],st.bpSysHi>0?{hi:st.bpSysHi}:null,from,end,320,150)}<div class="mut sm">Yeşil: büyük tansiyon, mavi: küçük tansiyon.${st.bpSysHi>0?" Gölgeli bölge büyük tansiyon için hedef aralığıdır.":""} Turuncu nokta: hedef aralığı dışı.</div></div>
+  ${vSeg()}<div class="card">${vSvg(bpSeries,bpBand,from,end,320,170)}${vLegend(bpSeries)}<div class="mut sm">${bpMine?"Gölgeli bölgeler senin girdiğin üst sınırlardır.":"Gölgeli bölgeler genel referans aralığıdır (büyük 90–130, küçük 60–80 mmHg). Tanı ya da kişisel hedef değildir; yorumu için hekimine danış."} Kırmızı işaret: hedef aralığı dışı.</div></div>
   <div class="card"><div class="lbl">Ölçümler (son ${vRange} gün)</div>${rows||`<p class="mut">Bu dönemde ölçüm yok.</p>`}</div>
   <p class="hint">${MED_NOTE} Hedef aralığı Ayarlar > Modüller'den girilir.</p>`;
 }
@@ -161,7 +168,8 @@ function viewSeker(){
   const st=S.settings,end=dayKey(),from=keyOff(1-vRange),a=S.vitals.filter(r=>r.k==="s"&&r.day>=from&&r.day<=end).sort((x,y)=>x.day<y.day?-1:x.day>y.day?1:x.time<y.time?-1:1);
   const gs=VitalsLib.gStats(S.vitals,from,end,st),last=vLast("s");
   const COL={acl:"var(--prim)",once:"var(--prim)",sonra:"var(--kcal)",yatis:"var(--su)",rast:"var(--mut)"};
-  const series=VitalsLib.CTX.map(([c])=>({pts:a.filter(r=>r.ctx===c).map(r=>({day:r.day,time:r.time,v:r.g,out:!!VitalsLib.flagG(r,st)})),color:COL[c],line:false})).filter(s=>s.pts.length);
+  const SHP={acl:"c",once:"d",sonra:"t",yatis:"s",rast:"c"};
+  const series=VitalsLib.CTX.map(([c])=>({pts:a.filter(r=>r.ctx===c).map(r=>({day:r.day,time:r.time,v:r.g,out:!!VitalsLib.flagG(r,st)})),color:COL[c],shape:SHP[c],label:VitalsLib.ctxName(c),short:"",line:false})).filter(s=>s.pts.length);
   const ctxs=new Set(a.map(r=>r.ctx)),fastOnly=[...ctxs].every(c=>c==="acl"||c==="once"),postOnly=[...ctxs].every(c=>c==="sonra");
   const band=a.length&&(fastOnly||postOnly)?(()=>{const r=VitalsLib.rangeG(fastOnly?"acl":"sonra",st);return r.lo!=null||r.hi!=null?r:null})():null;
   const rows=a.slice().reverse().map(r=>{const f=VitalsLib.flagG(r,st);return `<div class="row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span style="flex:1">${fd(r.day)} ${r.time}<small class="mut"> ${esc(VitalsLib.ctxName(r.ctx))}</small></span><b class="num">${vFmt(r.g)}</b><span aria-hidden="true">${f==="high"?"▲":f==="low"?"▼":""}</span>${vDel([r.id])}</div>`}).join("");
@@ -170,7 +178,7 @@ function viewSeker(){
   <div class="card"><div class="lbl">Son ölçüm</div>${last?`<div class="sumv num" style="color:var(--ink)">${vFmt(last.g)} <small>mg/dL</small></div><div class="mut sm">${esc(VitalsLib.ctxName(last.ctx))}, ${vWhen(last)}${VitalsLib.flagG(last,st)?" · "+vFlagTxt(VitalsLib.flagG(last,st)):""}</div>`:`<p class="mut">Henüz ölçüm yok.</p>`}</div>
   ${vSeg()}${gs?`<div class="stats"><div class="stat"><div class="k">Ortalama</div><div class="v num">${Math.round(gs.avg)}</div></div><div class="stat"><div class="k">Ölçüm sayısı</div><div class="v num">${gs.n}</div></div><div class="stat"><div class="k">En düşük / en yüksek</div><div class="v num">${gs.min} / ${gs.max}</div></div><div class="stat"><div class="k">Hedef aralığında</div><div class="v num">${gs.pct==null?"–":"%"+gs.pct}</div></div></div>${gs.pct==null?`<p class="hint">Yüzde için Ayarlar'dan hedef aralığı gir.</p>`:`<p class="hint">Her ölçüm kendi bağlamının (açlık, yemekten sonra) aralığıyla değerlendirilir. ${gs.ranged} ölçümün aralığı var.</p>`}
   <div class="card"><div class="lbl">Bağlama göre ortalama</div>${Object.entries(gs.byCtx).map(([c,x])=>`<div class="row" style="display:flex;justify-content:space-between;padding:6px 0"><span>${esc(VitalsLib.ctxName(c))}</span><b class="num">${Math.round(x.avg)} <small class="mut">(${x.n})</small></b></div>`).join("")}</div>`:""}
-  <div class="card">${vSvg(series,band,from,end,320,150)}<div class="mut sm">Yeşil: açlık/yemek öncesi, turuncu: yemekten sonra, mavi: yatmadan önce, gri: rastgele. Gölgeli bölge ancak tek tür ölçüm varsa gösterilir.</div></div>
+  <div class="card">${vSvg(series,band,from,end,320,150)}${vLegend(series)}<div class="mut sm">Gölgeli bölge ancak tek tür ölçüm varsa gösterilir. Kırmızı işaret: hedef aralığı dışı.</div></div>
   <div class="card"><div class="lbl">Ölçümler (son ${vRange} gün)</div>${rows||`<p class="mut">Bu dönemde ölçüm yok.</p>`}</div>
   ${labA1c?`<div class="card"><div class="lbl">Tahlil sonucun</div><div class="row" style="display:flex;justify-content:space-between"><span>HbA1c (${fd(labA1c.day)}.${labA1c.day.slice(0,4)})</span><b class="num">${vFmt(labA1c.v)} ${esc(labA1c.u||"")}</b></div><div class="mut sm">Tahlil takibinden alındı, ölçümlerle karıştırılmaz.</div></div>`:""}
   <p class="hint">${MED_NOTE} Hedef aralığı Ayarlar > Modüller'den girilir.</p>`;
