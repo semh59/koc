@@ -2295,4 +2295,21 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("Koç bağlamına tarif gitmez",(ev("S.recipes=[{id:1,n:'GizliTarifAdi',s:1,items:[{n:'GizliMalzeme',g:5,k:5}]}]"),!JSON.stringify(ev("cMessages('merhaba')")).includes("Gizli")));
     ev("S=structuredClone(DEF);S.settings.obDone=true;closeSheet();tab='bugun';render()");
   }
+  { // D-Bes3: yemeklerde aralık
+    const q=s=>$q(s);
+    ev("S=structuredClone(DEF);S.settings.obDone=true;tab='bugun';render();sheetPorsiyon(allFoods().findIndex(f=>f.n==='Mantı (haşlanmış)'))");
+    q("#fqty").value="2";ev("foodPreview()");
+    ok("önizleme: ~aralık ve ortalama (2 × 200 g mantı: 680 ortalama, ±%30)",q("#fprev").textContent.startsWith("~476-884 kcal (ortalama 680)")&&q("#fprev").textContent.includes("protein"),q("#fprev").textContent);
+    ok("kural tabanlı olduğu notla söylenir, ölçüm değil; ekle ortalamayı kaydeder",q("#sheet").textContent.includes("kural tabanlı")&&q("#sheet").textContent.includes("ölçüm değildir")&&q("#sheet").textContent.includes("ortalamayı"));
+    ev("goBesin()");
+    ok("kayıt ortalamayı tutar, aralık yalnız satırda: ~680 kcal, altında 476-884 aralık",ev("S.entries[0].v")===680&&ev("S.entries[0].lo")===476&&ev("S.entries[0].hi")===884&&ev("viewBugun()").includes("~680 kcal")&&ev("viewBugun()").includes("<small class=\"mut sm\" style=\"display:block\">476-884</small>"));
+    ok("günlük toplamı aralıksız ortalamayla (680)",ev("sum('yemek',dayKey(),dayKey())")===680);
+    ev("sheetPorsiyon(allFoods().findIndex(f=>f.n==='Haşlanmış yumurta'))");
+    ok("aralıksız besin eskisi gibi tek sayı, kural notu yok",q("#fprev").textContent.startsWith("78 kcal")&&!q("#sheet").textContent.includes("kural tabanlı"),q("#fprev").textContent);
+    ev("goBesin()");
+    ok("aralıksız kayıtta lo/hi yok, satırda '~' yok",ev("S.entries[1].lo")===undefined&&!ev("viewBugun()").includes("~78 kcal"));
+    const r=ev("JSON.stringify(cleanEntries([{day:dayKey(),type:'yemek',v:100,text:'a',lo:80,hi:120},{day:dayKey(),type:'yemek',v:100,text:'b',lo:101,hi:120},{day:dayKey(),type:'yemek',v:100,text:'c',lo:'x',hi:120},{day:dayKey(),type:'yemek',v:100,text:'d'},{day:dayKey(),type:'yemek',v:null,text:'e',lo:1,hi:2}]).out.map(e=>[e.lo,e.hi]))");
+    ok("cleanEntries: tutarlı aralık korunur, ortalamayı içermeyen ya da sayı olmayan atılır, eski kayıt aynen",r==="[[80,120],[null,null],[null,null],[null,null],[null,null]]",r);
+    ev("S=structuredClone(DEF);S.settings.obDone=true;closeSheet();tab='bugun';render()");
+  }
 },100);

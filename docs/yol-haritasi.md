@@ -66,7 +66,7 @@ Ayrıntı ve test adımları `yapilacaklar.md`'de. Telefonda denenen tek özelli
 |---|---|---|---|---|---|
 | D-Bes1 | Besin veritabanı ~106 → ~500 | Kullanıcının "bulamadım" demesi azalır (150'lik partilerle). | L | rekabet-ozellik, besin-arastirmasi | G13 |
 | D-Bes2 (yapıldı) | Kendi tarifim | Malzemeden tarif hesaplanır, Türk mutfağındaki tarif farkını kullanıcı kapatır. | M | rekabet-ozellik | – |
-| D-Bes3 | Yemeklerde aralık | Türk yemeklerinde tek sayı yerine aralık gösterilir (180-260 kcal). | S | besin-arastirmasi | – |
+| D-Bes3 (yapıldı) | Yemeklerde aralık | Türk yemeklerinde tek sayı yerine aralık gösterilir (180-260 kcal). | S | besin-arastirmasi | – |
 
 ### Antrenman
 | # | Ad | Değer | Emek | Kaynak | Bağımlılık / karar |

@@ -120,7 +120,12 @@ const FOODS=(()=>{
     ["Dondurma",209,3.5,24,11,[["1 top (60 g)",60]],1],
     ["Cips",544,6.5,53,34,[["1 küçük paket (30 g)",30]],1]
   ];
-  return R.map(([n,k,p,c,f,u,s])=>({n,k,p,c,f,u,s:s===1}));
+  /* Ev yemeği kural tablosu: tarif farkı yağ ve hamur miktarına bağlıdır. Yağlı ya da hamurlu yemekte ±%30, sade yemekte ±%15 (kcal, 100 g başına). */
+  const SPREAD={y:0.3,s:0.15},HOME={
+    s:["Mercimek çorbası","Ezogelin çorbası","Domates çorbası","Tarhana çorbası","Yayla çorbası","Kuru fasulye yemeği","Nohut yemeği","Etli sebze yemeği","Zeytinyağlı taze fasulye"],
+    y:["Menemen","Su böreği (peynirli)","Gözleme (peynirli)","Lahmacun","Mantı (haşlanmış)","Pirinç pilavı","Bulgur pilavı","Karnıyarık","İmam bayıldı","Zeytinyağlı yaprak sarma","Izgara köfte","İçli köfte"]};
+  const cls=n=>HOME.s.includes(n)?"s":HOME.y.includes(n)?"y":null;
+  return R.map(([n,k,p,c,f,u,s])=>{const sp=SPREAD[cls(n)];return Object.assign({n,k,p,c,f,u,s:s===1},sp?{lo:Math.round(k*(1-sp)),hi:Math.round(k*(1+sp))}:{})});
 })();
 
 const foodLow=s=>String(s||"").replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();

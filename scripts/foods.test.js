@@ -12,4 +12,8 @@ ok("en az 100 besin",FOODS.length>=100,FOODS.length);
 ok("aramada büyük İ/I",FOODS[foodSearch("IZGARA")[0]].n.startsWith("Izgara")&&foodSearch("İncir").length>0);
 ok("kelime başı önce gelir",FOODS[foodSearch("pilav")[0]].n==="Pirinç pilavı"||FOODS[foodSearch("pilav")[0]].n.toLowerCase().includes("pilav"));
 ok("boş arama boş döner",foodSearch("  ").length===0&&foodSearch("xyzqq").length===0);
+const rg=FOODS.filter(f=>f.lo!=null);
+ok("ev yemeği aralığı: çorba, kuru fasulye, mantı, börek, pilav, köfte aralıklı",["Mercimek çorbası","Kuru fasulye yemeği","Mantı (haşlanmış)","Su böreği (peynirli)","Pirinç pilavı","Izgara köfte"].every(n=>{const f=FOODS.find(x=>x.n===n);return f&&f.lo!=null&&f.hi!=null}));
+ok("aralık kuralı: sade yemekte ±%15, yağlı/hamurlu ±%30 (kcal), ortalama aralığın içinde",rg.length>=15&&rg.every(f=>{const sp=(f.hi-f.k)/f.k;return f.lo<f.k&&f.k<f.hi&&(Math.abs(sp-0.15)<0.01||Math.abs(sp-0.3)<0.01)&&Math.abs((f.k-f.lo)/f.k-sp)<0.01}),rg.map(f=>[f.n,f.lo,f.k,f.hi]));
+ok("aralık yalnız kural listesindekilerde: USDA'yla doğrulanmış besin ve ham besin aralıksız",FOODS.filter(f=>f.s||/^(Elma|Süt|Yumurta|Simit|Baklava)/.test(f.n)).every(f=>f.lo===undefined)&&rg.every(f=>!f.s));
 process.exit(bad?1:0);
