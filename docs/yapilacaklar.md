@@ -16,6 +16,11 @@ Durum: [ ] bekliyor, [~] yapıldı ama telefonda denenmedi, [x] telefonda denend
 - Diğer fikirler: `docs/fikirler.md`.
 
 ## Telefonda tek tek test edilecekler
+- [~] **B5/B11/B8/D-Veri3 (2 Ekim 2026), önce CI:** push sonrası Actions'ta "APK derle"yi **elle (workflow_dispatch)** çalıştır ki smoke da koşsun. "APK içeriği denetimi" adımında allowBackup=false, izin listesinde USE_EXACT_ALARM/FLASHLIGHT yok, APK ~47 MB ve `lib/x86`/`libbarhopper` yok olmalı; smoke'ta OCR, barkod eklentisi ve alarm sayısı yeşil.
+- [~] Barkod okutma küçültme sonrası hâlâ çalışıyor mu (gömülü motor çıkarıldı, Google tarayıcı ekranı kullanılıyor). Etiket fotoğrafı OCR da dene.
+- [~] Android 14+ telefonda temiz kurulum: ilaç ekle; Bugün'de "İlaç alarmı birkaç dakika gecikebilir" satırı çıkmalı. "İzin ver" > Alarmlar ve hatırlatıcılar açılmalı, izin verip dönünce satır kalkmalı, ilaç alarmı tam saatinde çalmalı. İzni sonra kapatınca uygulama çökmemeli (sistem uygulamayı kapatır; açınca uyarı geri gelmeli).
+- [~] Hareket algılamayı aç: sistem izinlerinden önce "Konum izni hakkında" ekranı çıkmalı; Vazgeç hiçbir izin sormamalı.
+- [~] Telefondan telefona aktarım (ya da Google yedeğinden geri yükleme) sonrası NeoWell verisi gelmemeli; yedek dosyasıyla geri yükleme çalışmalı.
 Sürüm: son APK (GitHub Releases, `neowell.apk`).
 - [~] Adım sayar: Bugün'de adım kartı, karta dokununca Adım raporu. 100 adım yürüyüp sayıyı kontrol et. Geceyi geçince önceki günün adımı doğru güne yazılıyor mu.
 - [~] Aykırı tartı uyarısı: son tartından 5 kg'dan fazla farklı değer gir, uyarı çıkmalı, tekrar Kaydet ile kaydolmalı.
