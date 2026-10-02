@@ -433,11 +433,18 @@ function load(){
   corruptNote=true;
   return structuredClone(DEF);
 }
-let saveWarned=false;
+/* localStorage tarayıcıya göre 5-10 MB; JS dizesi UTF-16 olduğu için karakter başına 2 bayt sayılır. Yedek öncesi kopya gibi diğer anahtarlar da aynı kotadan yer. */
+const STORE_WARN=3.5e6;
+const lsOther=()=>{let n=0;try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k!=="koc_v1")n+=(k.length+(localStorage.getItem(k)||"").length)*2}}catch(e){}return n};
+let saveFail=false,otherBytes=lsOther(),storeBytes=otherBytes+JSON.stringify(S).length*2;
+/* Yazılamazsa değişiklik bellekte kalır: her seferinde söylenir, Bugün ve Ayarlar'da kalıcı uyarı çıkar, yedek ekranı bellekteki hali alır. */
 function save(){
-  try{localStorage.setItem("koc_v1",JSON.stringify(S));return true}
-  catch(e){if(!saveWarned){saveWarned=true;toast("Kaydedilemedi. Depolama dolu ya da kapalı olabilir.")}return false}
+  const j=JSON.stringify(S);storeBytes=otherBytes+j.length*2;
+  try{localStorage.setItem("koc_v1",j);saveFail=false;return true}
+  catch(e){saveFail=true;toast("Son değişiklik kaydedilemedi: depolama dolu. Uygulamayı kapatmadan yedek al.");return false}
 }
+const storeMsg=()=>saveFail?["Son değişiklik kaydedilemedi","Depolama dolu; değişiklik yalnız açık uygulamada duruyor. Kapatmadan yedek al, sonra Koç sohbetini temizle ya da eski kayıtları sil."]
+  :storeBytes>STORE_WARN?["Depolama dolmak üzere",`${fmt(storeBytes/1e6)} MB kullanılıyor. Yedek al, sonra Koç sohbetini temizle ya da eski kayıtları sil.`]:null;
 const isNative=()=>!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 
@@ -571,6 +578,7 @@ function viewBugun(){
   /* Ayrı kartlar yerine tek liste: yalnız açık modülün bugün bekleyen işi; boşsa kart yok. */
   const todo=[...medTodo(),...fastTodo(),...vTodo(),
     sOn&&stepsRead&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?row("👣","Adım sayımı durmuş olabilir","Pil ayarında NeoWell'e kısıtlama koyma.",[["adimduz","Ayarla"],["adimgizle","Kapat"]]):"",
+    storeMsg()?row("💾",storeMsg()[0],storeMsg()[1],[["yedek","Yedek al"]]):"",
     isNative()&&!exactOk&&st.medOn&&S.meds.length?row("⏰","İlaç alarmı birkaç dakika gecikebilir","Tam saat alarm izni kapalı. İzin verirsen tam saatinde çalar.",[["tamalarm","İzin ver"]]):"",
     isNative()&&oemXiaomi()&&!st.oemDone?row("🔔","Hatırlatmalar için bir kez ayar gerekli","İki izin verince hatırlatmalar kaçmaz.",[["oem","Ayarla"]]):"",
     isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?row("👣","Adım sayarı aç","Telefonun sensörü sayar, hesap gerekmez.",[["adimac","Aç"],["adimdegil","Şimdi değil"]]):"",
@@ -646,6 +654,7 @@ function viewAyar(){
     <button class="btn" data-act="drive">☁️ Yedeği Drive'a gönder</button>
     <button class="btn ghost" data-act="yedek">Yedekle veya geri yükle</button>
     <button class="btn danger" data-act="sifirla">Tüm verileri sil</button></div>
+    ${storeMsg()?`<p class="status" role="alert"><b>${storeMsg()[0]}.</b> ${storeMsg()[1]}</p>`:""}<p class="hint">Kullanılan alan: yaklaşık ${fmt(storeBytes/1e6)} MB (sınır telefona göre 5-10 MB).</p>
     <p class="hint">Veriler yalnızca bu telefonda durur. Google otomatik yedeğine ve telefondan telefona aktarıma bilerek dahil edilmez. Uygulamayı silersen ya da telefon değiştirirsen kaybolur; yeni telefona geçmeden önce yedek dosyanı al.</p></div>
   <div class="about"><img src="logo.png" alt="NeoWell logosu" width="72" height="72"><b>NeoWell</b><span class="mut sm">Sağlığın yeni kaynağı</span></div>`;
 }
@@ -858,6 +867,7 @@ async function goYukle(){
   if(!confirm(`${out.length} kayıt yüklenecek${drop?`, ${drop} geçersiz kayıt atlanacak`:""}. Mevcut veriler değişecek. Devam edilsin mi?`))return;
   const prevS=S;
   try{localStorage.setItem("koc_v1_onceki",JSON.stringify(prevS))}catch(e){}
+  otherBytes=lsOther();
   S=Object.assign({settings:cleanSettings(r.settings,r.fast),entries:out,nextId:out.length+1,myFoods:cleanMyFoods(r.myFoods),labs:LabLib.cleanLabs(r.labs),vitals:VitalsLib.clean(r.vitals)},cleanHealthState(r),cleanGym(r),cleanCoach(r));
   /* Yedek, anahtarın gideceği adresi, onay ayarını ve veri paylaşım iznini değiştirememeli. */
   S.settings.consent=prevS.settings.consent;S.settings.lastBackup=dayKey();

@@ -1435,6 +1435,26 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("dinleyici: su düğmesi ve act'siz bildirim yok sayılır, bilinmeyen sekme Trend'e düşer",tap("su",{act:"open",tab:"koc"})==="bugun"&&tap("tap",{act:"su"})==="bugun"&&tap("tap",{act:"open",tab:"ayar"})==="trend");
     ev("tab='bugun';render()");
   }
+  { // B8: depolama sınırı ve kota hatası
+    const v=()=>$q("#view").textContent,SP=w.Storage.prototype,set0=SP.setItem;
+    ev("tab='bugun';S.entries=[];render()");
+    ok("depolama: küçük veride uyarı yok, boyut ölçülür",!v().includes("Depolama dolmak üzere")&&ev("storeBytes")>=ev("JSON.stringify(S).length*2"));
+    ev("storeBytes=4e6;render()");
+    ok("depolama: eşik aşılınca Bugün yapılacaklarda yedek önerisi",$q(".todo").textContent.includes("Depolama dolmak üzere")&&$q(".todo").textContent.includes("4,0 MB")&&!!$q('.todo [data-act="yedek"]'));
+    ev("tab='ayar';render()");
+    ok("depolama: Ayarlar > Veriler'de uyarı ve kullanılan alan",v().includes("Depolama dolmak üzere")&&v().includes("Kullanılan alan"));
+    SP.setItem=function(k){if(k==="koc_v1")throw new w.DOMException("dolu","QuotaExceededError");return set0.apply(this,arguments)};
+    const msgs=[];const t0=w.toast;w.toast=m=>msgs.push(m);
+    ev("tab='bugun';render()");
+    $q('[data-act="su"]').click();$q('[data-act="su"]').click();
+    ok("kota hatası: her başarısız kayıtta söylenir, değişiklik bellekte kalır, kalıcı uyarı",msgs.filter(m=>/kaydedilemedi/.test(m)).length===2&&ev("of('su',dayKey()).length")===2&&$q(".todo").textContent.includes("Son değişiklik kaydedilemedi"),msgs);
+    $q('.todo [data-act="yedek"]').click();
+    ok("kota hatası: yedek ekranı bellekteki (kaydedilemeyen) hali içerir",JSON.parse($q("#bk").value).entries.filter(e=>e.type==="su").length===2);
+    ev("closeSheet()");SP.setItem=set0;w.toast=t0;
+    ev("save();render()");
+    ok("kota açılınca kayıt yazılır, uyarı kalkar",!v().includes("kaydedilemedi")&&JSON.parse(w.localStorage.getItem("koc_v1")).entries.length===2);
+    ev("S.entries=[];save();render()");
+  }
   { // B11: tam saat alarm izni reddinde çökme yok, kullanıcıya söylenir, izin sonrası yeniden kurulur
     const P=w.Capacitor.Plugins,old=P.LocalNotifications;let ex="denied",n=0;
     P.LocalNotifications={checkPermissions:async()=>({display:"granted"}),checkExactNotificationSetting:async()=>({exact_alarm:ex}),changeExactNotificationSetting:async()=>{ex="granted";return {exact_alarm:ex}},getPending:async()=>({notifications:[]}),cancel:async()=>{},registerActionTypes:async()=>{},schedule:async()=>{n++}};
