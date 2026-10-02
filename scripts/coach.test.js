@@ -49,4 +49,15 @@ const c1=cat({q:"Salon",l:"İleri"}),reg={};c1.forEach(e=>reg[e.r]=(reg[e.r]||0)
 ok("katalog: en fazla 60 satır, bölge başına 4, yalnız w/b, klasikler önce",c1.length<=60&&Object.values(reg).every(n=>n<=4)&&c1.every(e=>e.k==="w"||e.k==="b")&&c1[0].id==="squat",[c1.length,reg]);
 const c2=cat({q:"Ev tipi",l:"Başlangıç"});
 ok("katalog: ekipman ve seviye süzülür",c2.length>0&&c2.every(e=>e.q!=="Salon"&&e.l==="Başlangıç")&&cat({q:"Ağırlıksız",l:"Orta"}).every(e=>e.q==="Ağırlıksız"));
+{ // D-Koç1: cleanMenu ve alışveriş listesi
+  const mcat={a:{n:"A",k:100,p:5,g:50,a:1}},meal=(m,n=1)=>({m,i:Array.from({length:n},()=>["a",1])}),day=x=>({meals:x});
+  const big=C.cleanMenu({days:Array.from({length:9},(_,i)=>day(["kah","ogl","aks","atis","atis","atis","atis","bilinmez"].map(m=>meal(m,10))))},mcat,2000);
+  ok("cleanMenu: en çok 7 gün, günde 6 öğün, öğünde 8 kalem, bilinmeyen öğün anahtarı 'atis'",big.days.length===7&&big.days.every(d=>d.meals.length===6&&d.meals.every(b=>b.items.length===8)),big.days.map(d=>d.meals.length));
+  ok("cleanMenu: kimliksiz/kataloğa olmayan besin atılır, boş öğün ve 3 öğünden az gün düşer, JSON dışı girdide null",C.cleanMenu({days:[day([meal("kah"),meal("ogl"),{m:"aks",i:[["x",1],"y",null]}])]},mcat,2000)===null&&C.cleanMenu(null,mcat)===null&&C.cleanMenu({days:"x"},mcat)===null&&C.cleanMenu({days:[]},mcat)===null);
+  ok("cleanMenu: porsiyon çarpanı 0,25-4 aralığına kenetlenir, çöp 1 olur, virgüllü metin kabul",(r=>r.days[0].meals.map(b=>b.items[0].q).join()==="0.25,4,1,1.5")(C.cleanMenu({days:[day([{m:"kah",i:[["a",0.01]]},{m:"ogl",i:[["a",99]]},{m:"aks",i:[["a","x"]]},{m:"atis",i:[["a","1,5"]]}])]},mcat,2000)));
+  ok("cleanMenu: id'siz kayıtlı kalem biçimi de doğrulanır, hedef 800-5000 dışında null",C.cleanMenu({days:[day(["kah","ogl","aks"].map(m=>({m,items:[{n:"A",q:1,k:700}]})))]},null,99999).kcal===null);
+  ok("parse: menu anahtarı döner, yoksa null",C.parse('{"reply":"ok","menu":{"days":[]}}').menu.days.length===0&&C.parse('{"reply":"ok"}').menu===null&&C.parse("düz").menu===null);
+  const sl=C.shopList({days:[{meals:[{m:"kah",items:[{n:"Yumurta",q:2,g:100,a:2},{n:"Süt",q:1,g:200,a:null}]}]},{meals:[{m:"kah",items:[{n:"yumurta",q:1,g:50,a:1},{n:"Ayran",q:1.5,g:null,a:null}]}]}]});
+  ok("shopList: ad İ/I duyarsız toplanır, gram ve adet toplamı, gramsız kalem porsiyonla, Türkçe sıralı",sl.map(x=>x.n+":"+x.t).join("|")==="Ayran:1,5 porsiyon|Süt:200 g|Yumurta:150 g · 3 adet",sl);
+}
 process.exit(bad?1:0);

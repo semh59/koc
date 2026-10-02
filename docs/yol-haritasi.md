@@ -107,7 +107,7 @@ Ayrıntı ve test adımları `yapilacaklar.md`'de. Telefonda denenen tek özelli
 ### Koç ve yapay zekâ
 | # | Ad | Değer | Emek | Kaynak | Bağımlılık / karar |
 |---|---|---|---|---|---|
-| D-Koç1 | Menü önerisi ve alışveriş listesi | Koç hedef kaloriye ve "Benim besinlerim"e göre haftalık menü önerir. | M | rekabet-ozellik, fikirler | kullanıcının anahtarı ve onayı |
+| D-Koç1 (yapıldı) | Menü önerisi ve alışveriş listesi | Koç hedef kaloriye ve "Benim besinlerim"e göre haftalık menü önerir. | M | rekabet-ozellik, fikirler | kullanıcının anahtarı ve onayı |
 
 Koç kurulum rehberi C7'de, güvenlik metinleri B7'de.
 
