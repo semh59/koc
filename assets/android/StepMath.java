@@ -7,7 +7,12 @@ final class StepMath {
     static final class State {
         String day = "";
         float base = 0, carry = 0, last = -1;
+        /** Son okuma günün son dakikalarında (SAMPLE_MINUTES sonrası) yapıldı: gün toplamı bilinir. */
+        boolean sampled = false;
     }
+
+    /** 23:58 örnekleme alarmı. Gece alarmı Doze'da gecikse de bu okumaya kadarki adımlar biten güne, sonrası yeni güne yazılır. */
+    static final int SAMPLE_MINUTES = 23 * 60 + 58;
 
     private static long total(State s, float counter) {
         return Math.max(0L, Math.round((double) (s.carry + counter - s.base)));
@@ -27,27 +32,38 @@ final class StepMath {
 
     /** Gece alarmı: biten günü şimdiki okumayla kapatır ve kapattıysa true döner. */
     static boolean closeDay(State s, String today, float counter, int minutesSinceMidnight, Map<String, Long> history) {
-        if (s.day.isEmpty() || s.day.equals(today) || minutesSinceMidnight > MAX_LATE_MINUTES) return false;
+        if (s.day.isEmpty() || s.day.equals(today)) return false;
+        if (s.sampled) {
+            update(s, today, counter, minutesSinceMidnight, history);
+            return true;
+        }
+        if (minutesSinceMidnight > MAX_LATE_MINUTES) return false;
         handleReboot(s, counter);
         history.put(s.day, total(s, counter));
         s.day = "";
         return true;
     }
 
-    /** Yeni okumayı işler ve bugünkü adım sayısını döndürür. Gün değiştiyse ve gece alarmı kaçtıysa, son okumaya kadarki adımlar eski güne yazılır. */
-    static long update(State s, String today, float counter, Map<String, Long> history) {
+    /** Yeni okumayı işler ve bugünkü adım sayısını döndürür. Gün değiştiyse ve gece alarmı kaçtıysa, son okumaya kadarki adımlar eski güne yazılır; son okuma 23:58 örneğiyse sonrası yeni güne sayılır. */
+    static long update(State s, String today, float counter, int minutesSinceMidnight, Map<String, Long> history) {
         if (!s.day.equals(today)) {
             if (!s.day.isEmpty()) {
                 handleReboot(s, s.last);
                 history.put(s.day, Math.max(0L, Math.round((double) (s.carry + s.last - s.base))));
             }
             s.day = today;
-            s.base = counter;
             s.carry = 0;
+            if (s.sampled) {
+                s.base = s.last;
+                handleReboot(s, counter);
+            } else {
+                s.base = counter;
+            }
         } else {
             handleReboot(s, counter);
         }
         s.last = counter;
+        s.sampled = minutesSinceMidnight >= SAMPLE_MINUTES;
         return total(s, counter);
     }
 }
