@@ -1852,7 +1852,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("onay verilmezse hiçbir şey silinmez",cnt()===all);
     let msg="";w.confirm=m=>{msg=m;return true};
     del(0);
-    ok("yemek ve su: yalnız onlar gider; uyarıda sayı, geri alınamaz, son yedek tarihi",ev("S.entries.filter(e=>e.type==='yemek'||e.type==='su').length")===0&&ev("S.entries.length")===6&&/geri alınamaz/.test(msg)&&msg.includes("30.09.2026")&&msg.includes("2 kayıt"),msg);
+    ok("yemek ve su: yalnız onlar gider; uyarıda sayı, geri alınamaz, son yedek tarihi",ev("S.entries.filter(e=>e.type==='yemek'||e.type==='su').length")===0&&ev("S.entries.length")===6&&/geri alınamaz/.test(msg)&&msg.includes(ev("fd('2026-09-30')"))&&msg.includes("2 kayıt"),msg);
     ok("silme sonrası widget güncellenir (su 0)",wc.length&&wc[wc.length-1].water===0,wc[wc.length-1]);
     ok("silme sonrası liste yenilenir, Geri al düğmesi yok (lastUndo temiz)",sh().includes("0 kayıt")&&q("#tundo").hidden===true);
     seed();del(1);
@@ -1932,5 +1932,24 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("alt menü, hızlı kayıt, alışkanlık, Koç çipleri, gönder ve geri: emoji yok, ikonlar SVG ve aria-hidden; metin etiketi kalır",z1&&qa("nav button").every(b=>b.textContent.trim().length>1)&&qa('#view [data-tab^="ayar-"] svg[aria-hidden="true"]').length===6&&!emo.test(q("#view").textContent));
     ok("etkin sekme ikonu metinle aynı renk (currentColor), Icons nesnesi index'ten önce yüklenir",/\.i\{[^}]*stroke:currentColor/.test(html)&&/nav button\[aria-current="page"\]\{color:var\(--prim\)/.test(html)&&html.indexOf("Icons={")<html.indexOf("const DEF="));
     ev("S.settings.medOn=false;tab='bugun';render()");
+  }
+  { // Tutarlılık paketi (C12)
+    const q=s=>$q(s),src=["index.html","algo.js","gym.js","exui.js","labui.js","vitalsui.js","habitui.js","medui.js","privacyui.js","backupui.js","coach.js","lablib.js","vitalslib.js","weeklylib.js"].map(f=>fs.readFileSync(www(f),"utf8")).join("\n");
+    const y=ev("dayKey().slice(0,4)");
+    ok("tek tarih biçimi: Algo.fdate gün ay (yıl), ekranda bu yıl yılsız; eski yardımcılar ve gg.aa kalıpları yok",ev("Algo.fdate('2026-10-02')")==="2 Eki"&&ev("Algo.fdate('2026-01-09',true)")==="9 Oca 2026"&&ev(`fd('${y}-03-05')`)==="5 Mar"&&ev("fd('2019-12-31')")==="31 Ara 2019"&&!/\b(dm|gDate|vDayLbl|labDay)\(|slice\(8\)\+"\."|\.slice\(8\)\}\./.test(src)&&q("#view")&&ev("S.settings.lastBackup='2026-09-30';tab='ayar';render();document.querySelector('#view').textContent").includes("Son yedek "+ev("fd('2026-09-30')")));
+    let back=true;
+    for(const [t,p,ttl] of [["adim","bugun","Adım raporu"],["tahlil","trend","Tahlil takibi"],["tansiyon","trend","Tansiyon"],["seker","trend","Şeker"],["egz","salon","Egzersizler"]]){
+      ev(`closeSheet();tab='${t}';render()`);
+      back=back&&!q("#back").hidden&&q("#ttl").textContent===ttl&&![...w.document.querySelectorAll("#view .btn")].some(b=>b.textContent.trim().startsWith("‹"))&&q(`nav [data-tab="${p}"]`).getAttribute("aria-current")==="page";
+      q("#back").click();back=back&&ev("tab")===p&&q("#back").hidden;
+    }
+    ok("alt ekranlarda başlıkta küçük ‹ (44 px, aria-label Geri): büyük geri düğmesi yok, üst ekrana döner",back&&q("#back").getAttribute("aria-label")==="Geri"&&/#back\{width:44px;height:44px/.test(html));
+    ok("tema ayarı: varsayılan Sistem, yalnız light/dark kalır, eski yedekte Sistem",ev("DEF.settings.theme")===""&&ev("cleanSettings({theme:'dark'}).theme")==="dark"&&ev("cleanSettings({theme:'mavi'}).theme")===""&&ev("cleanSettings({kcal:1800}).theme")==="");
+    ev("tab='ayar';render()");const de=w.document.documentElement;
+    q('[data-thm="dark"]').click();const t1=de.dataset.theme,s1=ev("S.settings.theme"),p1=q('[data-thm="dark"]').getAttribute("aria-pressed");
+    q('[data-thm="light"]').click();const t2=de.dataset.theme;
+    q('[data-thm=""]').click();
+    ok("tema seçici Sistem/Açık/Koyu: data-theme yazılır, Sistem'de öznitelik kalkar, kaydedilir",t1==="dark"&&s1==="dark"&&p1==="true"&&t2==="light"&&!de.hasAttribute("data-theme")&&ev("S.settings.theme")===""&&ev("JSON.parse(localStorage.getItem('koc_v1')).settings.theme")==="");
+    ev("tab='bugun';render()");
   }
 },100);

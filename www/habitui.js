@@ -20,7 +20,7 @@ function fastTodo(){
     :`<div class="row"><span>${Icons.svg("fast")} Oruç ${f.plan}:${24-f.plan}<small class="mut sm">Plan Ayarlar > Modüller'de değişir</small>${warn}</span><button class="chip" data-hb="fastgo">Orucu başlat</button></div>`];
 }
 function fastSettingsHtml(){
-  const f=S.fast,on=S.settings.fastOn,last=f.log.slice(-7).reverse().map(x=>hbRow(`${dm(dayKey(new Date(x.t1)))} ${hbDur(Math.round((x.t1-x.t0)/6e4))}`,"fdel:"+x.t0)).join("");
+  const f=S.fast,on=S.settings.fastOn,last=f.log.slice(-7).reverse().map(x=>hbRow(`${fd(dayKey(new Date(x.t1)))} ${hbDur(Math.round((x.t1-x.t0)/6e4))}`,"fdel:"+x.t0)).join("");
   return `<h2>Oruç zamanlayıcısı</h2><div class="card"><button class="btn ghost" data-hb="fasttoggle">${on?"Oruç zamanlayıcısını kapat":"Oruç zamanlayıcısını aç"}</button>
   ${on?`<div class="lbl" style="margin-top:10px">Plan (oruç:yeme saati)</div><div class="chiprow">${HabitLib.PLANS.map(p=>`<button class="chip" data-hb="plan:${p}" aria-pressed="${f.plan===p}">${p}:${24-p}</button>`).join("")}</div>`:""}
   ${last?`<div class="mut sm" style="margin-top:8px">Son oruçlar</div>${last}`:""}</div>`;
@@ -39,7 +39,7 @@ function sheetUyku(){
   <div class="lbl">Kalktığın saat</div><input class="in" type="time" id="hbw">
   <div class="lbl">Ya da süre (saat)</div><input class="in num" id="hbh" inputmode="decimal" placeholder="7,5" autocomplete="off">
   <div class="lbl">Kalite (isteğe bağlı)</div><select class="in" id="hbq"><option value="">–</option>${[1,2,3,4,5].map(i=>`<option>${i}</option>`).join("")}</select>
-  <button class="btn" data-hb="sleepgo">Kaydet</button>${S.sleep.slice().reverse().map(x=>hbRow(`${dm(x.day)} ${hbDur(x.min)}${x.q?` · kalite ${x.q}`:""}`,"sdel:"+x.day)).join("")}`);
+  <button class="btn" data-hb="sleepgo">Kaydet</button>${S.sleep.slice().reverse().map(x=>hbRow(`${fd(x.day)} ${hbDur(x.min)}${x.q?` · kalite ${x.q}`:""}`,"sdel:"+x.day)).join("")}`);
 }
 function sleepSave(){
   const b=$("#hbb").value,w=$("#hbw").value,h=num($("#hbh").value);
@@ -50,7 +50,7 @@ function sleepSave(){
 }
 function sheetMood(){
   openSheet(`<h3>Ruh halin</h3>${dayOptions()}<div class="chiprow">${MOODS.map((e,i)=>`<button class="chip" data-hb="mood:${i+1}" aria-label="Ruh hali ${i+1} / 5" style="font-size:24px">${e}</button>`).join("")}</div>
-  <input class="in" id="hbn" maxlength="100" placeholder="Kısa not (isteğe bağlı)" autocomplete="off">${S.mood.slice().reverse().map(x=>hbRow(`${dm(x.day)} ${MOODS[x.v-1]}${x.t?" "+esc(x.t):""}`,"mdel:"+x.day)).join("")}`);
+  <input class="in" id="hbn" maxlength="100" placeholder="Kısa not (isteğe bağlı)" autocomplete="off">${S.mood.slice().reverse().map(x=>hbRow(`${fd(x.day)} ${MOODS[x.v-1]}${x.t?" "+esc(x.t):""}`,"mdel:"+x.day)).join("")}`);
 }
 function moodSave(v){
   const day=fday(),old=S.mood.some(x=>x.day===day),t=$("#hbn").value;

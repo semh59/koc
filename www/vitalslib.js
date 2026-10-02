@@ -110,7 +110,7 @@ const VitalsLib=(()=>{
 
   /* ---- Doktor raporu PDF'i ---- */
   const RW=1240,RH=1754,RM=70,ROW=44,FOOT=80;
-  const fmtD=k=>k.slice(8)+"."+k.slice(5,7)+"."+k.slice(0,4);
+  const fmtD=k=>(typeof Algo!=="undefined"?Algo:require("./algo.js")).fdate(k,true);
   const num=x=>String(r1(x)).replace(".",",");
   /* Tablo satırları: her ham ölçüm bir satır. */
   function reportRows(rows,kind,from,to,s){

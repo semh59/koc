@@ -200,7 +200,6 @@ const gStats=w=>[`${gWorkSets(w)} set`,`${gDur(w)} dk`,gVolTx(w)].filter(Boolean
 const gNames=(w,n)=>{const a=w.ex.map(x=>gEx(x.id).n);return a.slice(0,n).join(", ")+(a.length>n?` +${a.length-n}`:"")};
 const gDur=w=>Math.min(600,Math.max(1,Math.round(((w.t1||Date.now())-w.t0)/60000))); // 600: spor kaydı üst sınırı
 const gClock=ms=>{const s=Math.max(0,Math.floor(ms/1000));return `${pad(Math.floor(s/60))}:${pad(s%60)}`};
-const gDate=d=>`${+d.slice(8)} ${AY[+d.slice(5,7)-1].slice(0,3)}`;
 
 /* ---- ekranlar ---- */
 function viewSalon(){
@@ -211,7 +210,7 @@ function gHome(){
   const done=S.workouts.filter(gDone).sort((a,b)=>b.t0-a.t0);
   const tpl=S.templates.map(t=>{
     const last=done.find(w=>w.tpl===t.id);
-    return `<div class="card trow"><button class="tmain" data-g="start:${t.id}"><b>${esc(t.name)}</b><span class="mut">${esc(t.ex.map(i=>gEx(i).n).join(", ")||"Egzersiz yok")}</span><span class="mut">${last?"Son: "+gDate(last.day):"Henüz yapılmadı"}</span></button><button class="del" data-g="tedit:${t.id}" aria-label="Şablonu düzenle">✎</button><button class="del" data-g="tdel:${t.id}" aria-label="Şablonu sil">✕</button></div>`;
+    return `<div class="card trow"><button class="tmain" data-g="start:${t.id}"><b>${esc(t.name)}</b><span class="mut">${esc(t.ex.map(i=>gEx(i).n).join(", ")||"Egzersiz yok")}</span><span class="mut">${last?"Son: "+fd(last.day):"Henüz yapılmadı"}</span></button><button class="del" data-g="tedit:${t.id}" aria-label="Şablonu düzenle">✎</button><button class="del" data-g="tdel:${t.id}" aria-label="Şablonu sil">✕</button></div>`;
   }).join("");
   const wk=gWeekRegions(),rk=Object.keys(wk).sort((a,b)=>wk[b]-wk[a]),mx=Math.max(14,...Object.values(wk));
   const bars=rk.length?`<h2>Bu hafta, bölgeye göre set</h2><div class="card">${rk.map(g=>`<div class="gbar"><span>${g}</span><span class="bar"><i style="width:${(wk[g]/mx*100).toFixed(0)}%"></i></span><span class="num">${wk[g]}</span></div>`).join("")}<p class="hint">Bölge başına haftada 10 ile 20 set çoğu kişi için makul bir aralıktır.</p></div>`:"";
@@ -237,7 +236,7 @@ function gHistHtml(done){
   const rows=done.slice(0,gHistMax);let ym="";
   return rows.map(x=>{
     const h=x.day.slice(0,7)===ym?"":`<div class="lbl">${AY[+x.day.slice(5,7)-1]} ${x.day.slice(0,4)}</div>`;ym=x.day.slice(0,7);
-    return `${h}<button class="rrow" data-g="sum:${x.id}"><span class="num mut">${gDate(x.day)}</span><span class="tx" style="min-width:0;overflow-wrap:anywhere"><b>${esc(x.name)}</b><span class="mut sm">${esc(gNames(x,3))}</span><span class="mut sm num">${gStats(x)}</span></span></button>`;
+    return `${h}<button class="rrow" data-g="sum:${x.id}"><span class="num mut">${fd(x.day)}</span><span class="tx" style="min-width:0;overflow-wrap:anywhere"><b>${esc(x.name)}</b><span class="mut sm">${esc(gNames(x,3))}</span><span class="mut sm num">${gStats(x)}</span></span></button>`;
   }).join("")+(done.length>rows.length?`<button class="lnk" data-g="histmore">Daha fazla göster (${done.length-rows.length})</button>`:"");
 }
 /* Sıradaki set: antrenmanın ilk işaretsiz seti. Satırı vurgulanır, ± paneli onun altında açılır. */
@@ -355,14 +354,14 @@ function gSheetHist(exId){
   const best=per.reduce((a,b)=>b.e>a.e?b:a,per[0]);
   openSheet(`<h3>${esc(ex.n)}</h3><div class="two"><div class="stat"><div class="k">En iyi set</div><div class="v num">${fkg(best.top.kg)||0} kg × ${best.top.reps}</div></div><div class="stat"><div class="k">Tahmini 1TM</div><div class="v num">${Math.round(best.e)} kg</div></div></div>
   ${exCharts(exId)}
-  <table><thead><tr><th>Tarih</th><th>En iyi set</th><th>Hacim</th></tr></thead><tbody>${per.slice(0,6).map(p=>`<tr><td>${gDate(p.d)}</td><td class="num">${fkg(p.top.kg)||0} × ${p.top.reps}${gRpeTx(p.top)}</td><td class="num">${Math.round(p.vol).toLocaleString("tr-TR")} kg</td></tr>`).join("")}</tbody></table>
+  <table><thead><tr><th>Tarih</th><th>En iyi set</th><th>Hacim</th></tr></thead><tbody>${per.slice(0,6).map(p=>`<tr><td>${fd(p.d)}</td><td class="num">${fkg(p.top.kg)||0} × ${p.top.reps}${gRpeTx(p.top)}</td><td class="num">${Math.round(p.vol).toLocaleString("tr-TR")} kg</td></tr>`).join("")}</tbody></table>
   <button class="btn" data-g="closesheet">Kapat</button>`);
 }
 function gSheetSummary(id){
   const w=S.workouts.find(x=>x.id===id);if(!w)return;
   const prs=gPRs(w),sets={};
   for(const x of w.ex)sets[gEx(x.id).g]=(sets[gEx(x.id).g]||0)+x.sets.filter(s=>s.done&&gSetOk(s)).length;
-  openSheet(`<h3>${esc(w.name)}</h3><div class="mut sm">${gDate(w.day)}, ${gDur(w)} dk</div>
+  openSheet(`<h3>${esc(w.name)}</h3><div class="mut sm">${fd(w.day)}, ${gDur(w)} dk</div>
   ${gWorkVol(w)>0?`<div class="sumv num">${Math.round(gWorkVol(w)).toLocaleString("tr-TR")} <small>kg hacim</small></div>`:gTimedSec(w)>0?`<div class="sumv num">${gSecTx(gTimedSec(w))} <small>toplam süre</small></div>`:""}
   <div class="two"><div class="stat"><div class="k">Set</div><div class="v num">${gWorkSets(w)}</div></div><div class="stat"><div class="k">Egzersiz</div><div class="v num">${w.ex.length}</div></div></div>
   ${prs.length?`<div class="pr"><b>${prs.length} yeni rekor</b>${prs.map(p=>`<div>${esc(p.ex.n)}, ${fkg(p.kg)||0} kg × ${p.reps}<div class="mut sm">Tahmini 1TM ${Math.round(p.e1)} kg, önceki ${Math.round(p.prev)} kg</div></div>`).join("")}</div>`:""}

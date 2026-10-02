@@ -25,8 +25,7 @@ function exListHtml(){
 }
 const exChips=(arr,cur,act)=>arr.map(x=>`<button class="chip" data-g="${act}:${x}" aria-pressed="${x===cur}">${x}</button>`).join("");
 function viewEgz(){
-  return `<button class="btn" data-g="lback" style="margin:0 0 12px">‹ Salon</button>
-  <input class="in" id="glq" placeholder="Egzersiz ara" autocomplete="off" value="${esc(gLQ)}">
+  return `<input class="in" id="glq" placeholder="Egzersiz ara" autocomplete="off" value="${esc(gLQ)}">
   <div class="chips" id="glreg" style="margin-top:10px">${exChips(["Tümü"].concat(EXREG),gLReg,"lreg")}</div>
   <div class="chips" id="glcat">${exChips(["Tümü","Güç","Esneme","Kardiyo","Pliyometrik"],gLCat,"lcat")}</div>
   <div class="chips" id="gleq">${exChips(["Tümü","Ağırlıksız","Ev tipi","Salon"],gLEq,"leq")}</div>
@@ -42,7 +41,7 @@ const exRefreshChips=()=>{
 function exHistLine(e){
   const h=gHistory(e.id).slice(0,3);if(!h.length)return "";
   const t=gTimed(e.id);
-  return `<div class="mut sm" style="margin:8px 0">Son: ${h.map(x=>`${gDate(x.w.day)} ${t?x.sets.map(s=>s.sec).join("/")+" sn":x.sets.map(s=>(s.kg?fkg(s.kg)+"×":"")+s.reps+gRpeTx(s)).join(", ")}`).join(" · ")}</div>`;
+  return `<div class="mut sm" style="margin:8px 0">Son: ${h.map(x=>`${fd(x.w.day)} ${t?x.sets.map(s=>s.sec).join("/")+" sn":x.sets.map(s=>(s.kg?fkg(s.kg)+"×":"")+s.reps+gRpeTx(s)).join(", ")}`).join(" · ")}</div>`;
 }
 /* Tüm geçmiş grafikleri: seans başına bir nokta, x ekseni gerçek tarihe orantılı. Isınma ve işaretsiz setler gHistory'de zaten dışarıda. */
 const EXMET={e:["Tahmini 1TM","kg"],t:["En ağır set","kg"],v:["Hacim","kg"]};
@@ -66,7 +65,7 @@ function exChartSvg(pts,m,sel){
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${EXMET[m][0]} grafiği">${grid}<path d="${line}" fill="none" stroke="var(--spor)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
   ${pts.length<=40?pts.map(p=>`<circle cx="${X(p).toFixed(1)}" cy="${Y(p[m]).toFixed(1)}" r="2.6" fill="var(--spor)"/>`).join(""):""}
   <circle cx="${X(sp).toFixed(1)}" cy="${Y(sp[m]).toFixed(1)}" r="5" fill="var(--card)" stroke="var(--spor)" stroke-width="2.6"/>
-  <text x="${pl}" y="${H-6}" text-anchor="start">${gDate(pts[0].d)}</text><text x="${W-pr}" y="${H-6}" text-anchor="end">${gDate(pts[pts.length-1].d)}</text>${hit}</svg>`;
+  <text x="${pl}" y="${H-6}" text-anchor="start">${fd(pts[0].d)}</text><text x="${W-pr}" y="${H-6}" text-anchor="end">${fd(pts[pts.length-1].d)}</text>${hit}</svg>`;
 }
 function exChartBody(id){
   const pts=exSeries(id);if(!pts.length)return "";
@@ -74,7 +73,7 @@ function exChartBody(id){
   const val=m==="t"?`${fkg(p.t)||0} kg × ${p.r}`:`${Math.round(p[m]).toLocaleString("tr-TR")} kg`;
   const body=pts.length<2?`<p class="hint">Grafik için en az iki seans gerekir. Şimdilik tek seans var.</p>`:exChartSvg(pts,m,sel);
   return `<div class="chips" style="margin:8px 0 4px">${Object.keys(EXMET).map(k=>`<button class="chip" data-g="chm:${k}" aria-pressed="${k===m}">${EXMET[k][0]}</button>`).join("")}</div>
-  <div class="num" aria-live="polite"><b>${val}</b> <span class="mut sm">${gDate(p.d)}, ${sel+1}/${pts.length}. seans</span></div>${body}`;
+  <div class="num" aria-live="polite"><b>${val}</b> <span class="mut sm">${fd(p.d)}, ${sel+1}/${pts.length}. seans</span></div>${body}`;
 }
 function exCharts(id){
   if(gKind(id)!=="w"||!gHistory(id).length)return "";
@@ -94,7 +93,7 @@ function exSheet(id){
 }
 function gSheetHistSimple(exId,h){
   const ex=gEx(exId),t=gTimed(exId);
-  openSheet(`<h3>${esc(ex.n)}</h3>${h.length?`<table><thead><tr><th>Tarih</th><th>Setler</th></tr></thead><tbody>${h.slice(0,8).map(x=>`<tr><td>${gDate(x.w.day)}</td><td class="num">${t?x.sets.map(s=>exKindSec(exId,s.sec)).join(" · "):x.sets.map(s=>(s.kg?fkg(s.kg)+" × ":"")+s.reps).join(" · ")}</td></tr>`).join("")}</tbody></table>`:`<p class="hint">Henüz tamamlanmış set yok.</p>`}<button class="btn" data-g="closesheet">Kapat</button>`);
+  openSheet(`<h3>${esc(ex.n)}</h3>${h.length?`<table><thead><tr><th>Tarih</th><th>Setler</th></tr></thead><tbody>${h.slice(0,8).map(x=>`<tr><td>${fd(x.w.day)}</td><td class="num">${t?x.sets.map(s=>exKindSec(exId,s.sec)).join(" · "):x.sets.map(s=>(s.kg?fkg(s.kg)+" × ":"")+s.reps).join(" · ")}</td></tr>`).join("")}</tbody></table>`:`<p class="hint">Henüz tamamlanmış set yok.</p>`}<button class="btn" data-g="closesheet">Kapat</button>`);
 }
 const exKindSec=(id,sec)=>gKind(id)==="c"?Math.round(sec/60)+" dk":sec+" sn";
 
@@ -220,7 +219,6 @@ function exClick(a,p1,p2,el,w){
       S.plates=GPLATE_ALL.filter(x=>x===v?!on:S.plates.includes(x));save();return render();
     }
     case "lib":tab="egz";return render();
-    case "lback":tab="salon";return render();
     case "lreg":gLReg=p1;gLN=40;return exRefreshChips();
     case "lcat":gLCat=p1;gLN=40;return exRefreshChips();
     case "leq":gLEq=p1;gLN=40;return exRefreshChips();
