@@ -129,6 +129,14 @@ const Algo=(()=>{
     return [...m.values()].sort((a,b)=>a.day<b.day?-1:a.day>b.day?1:0).slice(-400);
   }
   const whtr=(waist,cm)=>waist>0&&cm>0?waist/cm:null;
+  /* Net aktivite enerjisi (dinlenme hariç): (MET−1)×kg×saat. MotionMath.kcal ile aynı tanım; BMR zaten TDEE'de. kg yoksa ya da süre 0 ise null. */
+  const netKcal=(met,kg,min)=>kg>0&&min>0?Math.round(Math.max(0,met-1)*kg*min/60):null;
+  /* Ağırlık antrenmanı: yoğunluk set/dk. Unutulan seans şişmesin diye süre en çok set×4 dk sayılır; MET 3,5 / 5 / 6. */
+  function gymKcal({min,sets,kg}){
+    if(!(sets>0&&min>0))return null;
+    const eff=Math.min(min,sets*4),rate=sets/eff;
+    return netKcal(rate<0.3?3.5:rate<0.4?5:6,kg,eff);
+  }
   const proteinRange=kg=>[Math.round(1.6*kg),Math.round(2.2*kg)];
 
   /* Salon */
@@ -183,6 +191,6 @@ const Algo=(()=>{
     }
     return r;
   }
-  return {KCAL_PER_KG,dayNum,fdate,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,lossBlock,etaWeeks,isLosing,goalEta,proteinRange,MEASURES,cleanMeasures,whtr,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
+  return {KCAL_PER_KG,dayNum,fdate,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,lossBlock,etaWeeks,isLosing,goalEta,proteinRange,netKcal,gymKcal,MEASURES,cleanMeasures,whtr,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
 })();
 if(typeof module!=="undefined")module.exports=Algo;
