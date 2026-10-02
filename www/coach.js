@@ -222,7 +222,15 @@ function cApplyLog(id,el){
 }
 
 /* ---- "bu hafta neden kilo vermedim": yerel etmenler, isteğe bağlı Koç yorumu ---- */
+/* Soru ve plato yalnız kilo verme hedefi olan, kalori açığı engeli (yaş, düşük kilo, sağlık notu, yeme bozukluğu işareti) olmayan kullanıcıya. */
+function lossAsk(){
+  const st=S.settings,w=weights(),days=Object.keys(w).sort();
+  if(!(st.goalKg>0)||!days.length)return false;
+  const tk=Algo.trend(w)[days[days.length-1]];
+  return st.goalKg<tk-0.5&&!Algo.lossBlock({age:st.age,cm:st.heightCm,kg:tk,goalKg:st.goalKg,health:!!st.healthNote.trim()})&&!S.chat.some(m=>m.fl==="ed"||(m.card&&m.card.kind==="safety"&&m.card.level==="ed"));
+}
 function cWhy(){
+  if(!lossAsk())return;
   const days=[];
   for(let i=21;i>=0;i--){const k=keyOff(-i);days.push({kcal:sum("yemek",k,k),su:sum("su",k,k),ad:sum("adim",k,k),sl:(S.sleep.find(x=>x.day===k)||{}).min})}
   const items=InsightLib.weekWhy({days,goalKcal:S.settings.kcal,goalWater:S.settings.waterMl,weights:weights(),today:dayKey()});
@@ -257,7 +265,7 @@ async function cProgram(o){
   tab="koc";busy=true;typing=true;render();
   try{
     const r=await cAsk(cMessages(`Haftada ${o.d} gün, seans ${o.m} dakika, ekipman ${o.q}, seviye ${o.l} için antrenman programı hazırla. "program" alanını doldur, reply'da kısaca anlat.`,"KATALOG (kimlik|ad|bölge):\n"+text),900);
-    const p=CoachLib.parse(r.text),pg=CoachLib.cleanProgram(p.program,ids);offline=null;
+    const p=CoachLib.parse(r.text),pg=CoachLib.cleanProgram(p.program,ids,o.d);offline=null;
     if(pg)cPush({role:"coach",text:p.reply,card:Object.assign({kind:"program",state:"pending"},pg)});
     else toast("Program okunamadı, tekrar dene");
   }catch(e){toast(e.message==="declined"?"Gönderim onaylanmadı":"Koç şu an ulaşılamıyor, sonra tekrar dene")}
@@ -266,11 +274,10 @@ async function cProgram(o){
 
 /* Plato sorusu yereldir: consent ve sağlayıcıdan bağımsız, AI çağrısı yapmaz; kullanıcı "Bak"a dokunursa yerel kart açılır. */
 function cPlateauCheck(){
-  const st=S.settings,w=weights(),days=Object.keys(w).sort(),t=dayKey();
-  if(!(st.goalKg>0)||!days.length||(st.lastPlateau&&Algo.dayNum(t)-Algo.dayNum(st.lastPlateau)<14))return;
-  const tk=Algo.trend(w)[days[days.length-1]];
-  if(!(st.goalKg<tk-0.5)||Algo.lossBlock({age:st.age,cm:st.heightCm,kg:tk,goalKg:st.goalKg,health:!!st.healthNote.trim()})||!InsightLib.plateau(w,t).ok)return;
-  st.lastPlateau=t;cPush({role:"coach",kind:"plateau",text:"Son 3 haftadır trendin düz. Birlikte bakalım mı?"});save();render();
+  const st=S.settings,t=dayKey();
+  if((st.lastPlateau&&Algo.dayNum(t)-Algo.dayNum(st.lastPlateau)<14)||!lossAsk())return;
+  const p=InsightLib.plateau(weights(),t);if(!p.ok)return;
+  st.lastPlateau=t;cPush({role:"coach",kind:"plateau",text:`Son ${Math.round(p.days/7)} haftadır kilon düşmüyor. Birlikte bakalım mı?`});save();render();
 }
 
 /* ---- otomatik mesajlar: sabah planı + haftalık rapor ---- */
@@ -365,11 +372,11 @@ function viewKoc(){
     if(m.role==="user")h+=`<div class="ub">${esc(m.text)}</div>${m.pend?`<div class="pendl">Bekliyor, bağlantı gelince gönderilir</div>`:""}`;
     else if(m.role==="coach"){
       const lab=m.kind==="plan"?`Sabah planı, ${cTime(m.t)}`:m.kind==="weekly"?"Haftalık rapor":cTime(m.t);
-      h+=`<div class="cm" data-mid="${m.id}">${m.text?`<div class="mut sm">${lab}</div><p>${esc(m.text)}</p>`:""}${m.kind==="plateau"?`<div class="lbtns"><button class="btn" data-c="why">Bak</button></div>`:""}${cCard(m)}</div>`;
+      h+=`<div class="cm" data-mid="${m.id}">${m.text?`<div class="mut sm">${lab}</div><p>${esc(m.text)}</p>`:""}${m.kind==="plateau"&&lossAsk()?`<div class="lbtns"><button class="btn" data-c="why">Bak</button></div>`:""}${cCard(m)}</div>`;
     }
   }
   if(typing)h+=`<div class="cm"><div class="mut sm">Koç yazıyor</div><p class="dots">• • •</p></div>`;
-  else h+=`<div class="chips"><button class="chip" data-c="why">Bu hafta neden kilo vermedim?</button></div>`;
+  else if(lossAsk())h+=`<div class="chips"><button class="chip" data-c="why">Bu hafta neden kilo vermedim?</button></div>`;
   return `<div class="chat">${h}</div>`;
 }
 function cScroll(){if(tab==="koc")setTimeout(()=>window.scrollTo(0,document.body.scrollHeight),30)}

@@ -5,8 +5,8 @@ const InsightLib=(()=>{
   const f1=x=>String(Math.round(x*10)/10).replace(".",",");
   const sgn=x=>(x>0?"+":x<0?"-":"")+f1(Math.abs(x));
   const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
-  // %95 iki yönlü t değerleri, sd 4..19 (21 günlük pencerede günde tek tartı: n en fazla 21)
-  const T95=[2.776,2.571,2.447,2.365,2.306,2.262,2.228,2.201,2.179,2.160,2.145,2.131,2.120,2.110,2.101,2.093];
+  /* Tek yönlü t kritik değeri (z=1,8 ≈ %96,4; Cornish-Fisher düzeltmesi, df≥6'da tablodan sapma <0,01). */
+  const tq=df=>{const z=1.8;return z+(z**3+z)/(4*df)+(5*z**5+16*z**3+3*z)/(96*df*df)};
   /* Pencere bugüne göre: tartmayı bırakan birinin eski düz serisi plato sayılmasın. */
   function pts(w,today,days){
     const t=dn(today),out=[];
@@ -25,14 +25,16 @@ const InsightLib=(()=>{
     const m=sxy/sxx,b=my-m*mx,s2=p.reduce((s,[x,y])=>s+(y-b-m*x)**2,0)/(n-2);
     return {m,n,sd:Math.sqrt(s2),se:Math.sqrt(s2/sxx)};
   }
-  /* Son 28 günde doğru çevresindeki artıkların standart sapması (kg). */
-  function noiseSd(w,today){const f=fit(pts(w,today,28));return f&&f.n>=4?f.sd:null}
-  /* Düz trend: eğim |<0,1| kg/hafta VE %95 güven aralığının tamamı ±0,25 içinde; geniş aralık (az/gürültülü veri) plato sayılmaz. */
+  /* Son 28 günde doğru çevresindeki artıkların standart sapması (kg). 8 tartıdan azında serbestlik derecesi gürültüyü tahmine yetmez. */
+  function noiseSd(w,today){const f=fit(pts(w,today,28));return f&&f.n>=8?f.sd:null}
+  /* Plato = kilo vermiyor: eğimin tek yönlü alt güven sınırı −0,3 kg/haftanın üstünde. Eşik gürültüyle ölçeklenir (se), böylece
+     günlük 0,7-1 kg oynamada da düz seri yakalanır; gerçek −0,3 kg/hafta kayıpta yanlış alarm ≤%5. 21 günde günlük 1 kg oynamada
+     se buna yetmediği için pencere 35 gün; son tartı 7 günden eskiyse tartmayı bırakan birinin eski serisi sayılmaz. */
   function plateau(w,today){
-    const p=pts(w,today,21),xs=p.map(q=>q[0]);
-    if(p.length<6||Math.max(...xs)-Math.min(...xs)<14)return {ok:false,enough:false};
-    const f=fit(p),slope=7*f.m,ci=7*f.se*T95[Math.min(f.n-2,19)-4];
-    return {ok:Math.abs(slope)<0.1&&Math.abs(slope)+ci<=0.25,enough:true,slope,ci};
+    const p=pts(w,today,35),xs=p.map(q=>q[0]),days=Math.max(...xs)-Math.min(...xs);
+    if(p.length<8||days<14||dn(today)-Math.max(...xs)>7)return {ok:false,enough:false};
+    const f=fit(p),slope=7*f.m,ci=7*f.se*tq(f.n-2);
+    return {ok:slope-ci>-0.3&&slope<0.3,enough:true,slope,ci,days};
   }
   /* d.days: bugün dahil son 22 gün {kcal,su,ad,sl}, eskiden yeniye. Bugün yarım gün olduğu için kalori, su ve adımda sayılmaz. */
   function weekWhy(d){
