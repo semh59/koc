@@ -77,7 +77,7 @@ Ayrıntı ve test adımları `yapilacaklar.md`'de. Telefonda denenen tek özelli
 | D-Ant4 (yapıldı) | Strong/Hevy CSV içe aktarma | Rakipten gelen kullanıcının geçmişi taşınır. | M | rekabet-egzersiz #5 | – |
 | D-Ant5 (yapıldı) | Akıllı ilerleme | Son 2-3 seansa bakılır, başarısızlıkta düşürme ve deload önerilir. | S | rekabet-egzersiz #6 | – |
 | D-Ant6 (yapıldı) | Tüm geçmiş grafikleri | 1TM, en ağır set ve hacim tüm geçmişte çizilir. | S | rekabet-egzersiz #9 | – |
-| D-Ant7 | Süperset ve drop set | Rakiplerin ücretsiz verdiği set türleri eklenir. | M | rekabet-egzersiz #7 | – |
+| D-Ant7 (yapıldı) | Süperset ve drop set | Rakiplerin ücretsiz verdiği set türleri eklenir. | M | rekabet-egzersiz #7 | – |
 | D-Ant8 (yapıldı) | RPE/RIR | Varsayılan gizli, isteğe bağlı zorluk alanı eklenir. | S | rekabet-egzersiz #8 | – |
 | D-Ant9 | Kas haritası | Hazır 16 bölgelik haftalık set verisi önden/arkadan SVG ile gösterilir. | M | rekabet-egzersiz #10 | – |
 | D-Ant10 (yapıldı) | Antrenman kalorisi (MET) | Salon seansı "tahmini" etiketli kaloriye çevrilir. | S | rekabet-egzersiz #11 | G11 |

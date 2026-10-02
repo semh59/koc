@@ -31,6 +31,20 @@ const gExAll=()=>EXMERGED.concat(S.customEx);
 const gKind=id=>gEx(id).k||"w";
 const gTimed=id=>"tic".includes(gKind(id));
 const gSetOk=s=>!s.w&&(s.reps>0||s.sec>0); // w: ısınma seti, hiçbir hesaba girmez
+/* Rekor ve ilerleme kuralı tek yerde: drop set (t:"d") hacme girer, ama düşük ağırlıkla çok tekrar 1TM tahminini ve öneriyi bozmasın diye rekor/öneri dışıdır. */
+const gRecOk=s=>gSetOk(s)&&s.t!=="d";
+const gWork=a=>{const r=a.filter(gRecOk);return r.length?r:a};
+const gSetTx=s=>s.w?"ısınma":s.t==="d"?"drop set":s.t==="f"?"başarısızlığa kadar":"normal";
+/* Süperset: ardışık egzersizlerde aynı ss. Gruplama yalnız komşuluğa bakar; tek kalan ss temizlenir. */
+function gSsNorm(l){for(let i=0;i<l.length;i++){const v=l[i].ss;if(v&&!(i&&l[i-1].ss===v)&&!(i<l.length-1&&l[i+1].ss===v))delete l[i].ss}}
+function gGrp(w,ei){
+  const v=w.ex[ei].ss;if(!v)return null;let a=ei,b=ei;
+  while(a>0&&w.ex[a-1].ss===v)a--;while(b<w.ex.length-1&&w.ex[b+1].ss===v)b++;
+  return b>a?{a,b,n:b-a+1,i:ei-a+1}:null;
+}
+const gSsLast=(w,ei)=>{const g=gGrp(w,ei);return !g||ei===g.b};
+const gSsGroups=w=>w.ex.map((x,i)=>gGrp(w,i)).filter((g,i)=>g&&g.a===i).map(g=>w.ex.slice(g.a,g.b+1));
+const gDrops=w=>w.ex.reduce((n,x)=>n+x.sets.filter(t=>t.done&&t.t==="d").length,0);
 const gEx=id=>gExAll().find(e=>e.id===id)||{id,n:"Silinmiş egzersiz",g:"Diğer",inc:2.5};
 const gActive=()=>S.workouts.find(w=>w.t1==null)||null;
 const gDone=w=>w.t1!=null;
@@ -45,6 +59,7 @@ function gCfg(id,patch){
   if(Object.keys(c).length)S.exCfg[id]=c;else delete S.exCfg[id];
 }
 /* Dinlenme bitişi yerel bildirimle de duyurulur: JS sayacı ekran kapalıyken ya da uygulama arkadayken çalışmaz. */
+const gRestGo=(w,ei)=>{if(gSsLast(w,ei))gRestSet(Date.now()+gRestSec(w.ex[ei].id)*1000,w.ex[ei].id)};
 function gRestSet(end,exId){
   restEnd=end>Date.now()?end:0;
   if(restEnd)gNotify(restEnd,"⏱ Dinlenme bitti",exId?`Sıradaki set: ${gEx(exId).n}`:"Sıradaki sete geç",9002);else gNotifyCancel(9002);
@@ -88,12 +103,15 @@ function cleanGym(r){
         const kg=s.kg==null?null:Number(s.kg),reps=s.reps==null?null:Number(s.reps),sec=s.sec==null?null:Number(s.sec);
         if((kg!=null&&!(kg>=0&&kg<=1000))||(reps!=null&&!(reps>=0&&reps<=200))||(sec!=null&&!(sec>=0&&sec<=7200)))continue;
         const o=sec==null?{kg,reps,done:s.done===true}:{kg,reps,sec:Math.round(sec),done:s.done===true};
-        if(s.w===true)o.w=true;
+        if(s.w===true)o.w=true;else if(s.t==="d"||s.t==="f")o.t=s.t;
         if(typeof s.rpe==="number"&&s.rpe>=6&&s.rpe<=10&&s.rpe*2===Math.round(s.rpe*2))o.rpe=s.rpe;
         sets.push(o);
       }
-      ex.push({id:x.id,note:typeof x.note==="string"?x.note.slice(0,300):"",sets});
+      const o={id:x.id,note:typeof x.note==="string"?x.note.slice(0,300):"",sets};
+      if(Number.isInteger(x.ss)&&x.ss>0&&x.ss<1000)o.ss=x.ss;
+      ex.push(o);
     }
+    gSsNorm(ex);
     out.workouts.push({id:w.id,day:w.day,t0:w.t0,t1:Number.isFinite(w.t1)?w.t1:null,name:typeof w.name==="string"?w.name.slice(0,60):"Antrenman",tpl:idOk(w.tpl)?w.tpl:null,ex});
     maxId=Math.max(maxId,w.id);
   }
@@ -107,8 +125,10 @@ function cleanGym(r){
       if(iv(a.sets,1,10))o.sets=a.sets;
       if(iv(a.reps,1,200)){o.reps=a.reps;if(iv(a.hi,a.reps+1,200))o.hi=a.hi}
       if(iv(a.sec,1,7200))o.sec=a.sec;
+      if(iv(a.ss,1,999))o.ss=a.ss;
       if(Object.keys(o).length)tg[i]=o;
     }
+    const sl=ex.map(i=>tg[i]||{});gSsNorm(sl);ex.forEach((i,k)=>{if(tg[i]&&!sl[k].ss)delete tg[i].ss;if(tg[i]&&!Object.keys(tg[i]).length)delete tg[i]});
     const o={id:t.id,name:t.name.slice(0,60),ex};if(Object.keys(tg).length)o.tg=tg;
     out.templates.push(o);maxId=Math.max(maxId,t.id);
   }
@@ -130,7 +150,7 @@ function gInc(id){
 function gSuggest(exId){
   if(gKind(exId)!=="w")return null;
   const [h,...old]=gHistory(exId);if(!h)return null;
-  const r=Algo.nextTarget(h.sets,Object.assign({lo:8,hi:12,inc:gInc(exId),prev:old.slice(0,2).map(x=>x.sets)},S.exCfg[exId])),p=gPr(exId);
+  const r=Algo.nextTarget(gWork(h.sets),Object.assign({lo:8,hi:12,inc:gInc(exId),prev:old.slice(0,2).map(x=>gWork(x.sets))},S.exCfg[exId])),p=gPr(exId);
   if(!r)return r;
   if(p==="bar"&&r.kg>=S.bar)r.kg=Algo.plates(r.kg,S.bar,S.plates).made;
   else if(p==="db"&&S.dbStep)r.kg=Algo.roundTo(r.kg,S.dbStep);
@@ -153,17 +173,18 @@ function gAddEx(w,exId,tg){
     for(let i=0;i<n;i++)sets.push({kg:sug?sug.kg:null,reps:t.reps||(sug?sug.reps:null),done:false});
   }
   w.ex.push({id:exId,note:"",sets});
+  if(t.ss)w.ex[w.ex.length-1].ss=t.ss;
 }
 function gBest(w,exId){
   let b=0;const x=w.ex.find(e=>e.id===exId);
-  if(x&&gKind(exId)==="w")for(const s of x.sets)if(s.done&&!s.w)b=Math.max(b,Algo.est1RM(s.kg,s.reps));
+  if(x&&gKind(exId)==="w")for(const s of x.sets)if(s.done&&gRecOk(s))b=Math.max(b,Algo.est1RM(s.kg,s.reps));
   return b;
 }
 function gIsPR(w,exId){
   const cur=gBest(w,exId);if(!cur)return null;
   const prev=gHistory(exId,w.t0).reduce((m,h)=>Math.max(m,gBest(h.w,exId)),0);
   if(!(prev>0&&cur>prev+0.05))return null;
-  let top=null;for(const s of w.ex.find(e=>e.id===exId).sets)if(s.done&&gSetOk(s)&&(!top||Algo.est1RM(s.kg,s.reps)>Algo.est1RM(top.kg,top.reps)))top=s;
+  let top=null;for(const s of w.ex.find(e=>e.id===exId).sets)if(s.done&&gRecOk(s)&&(!top||Algo.est1RM(s.kg,s.reps)>Algo.est1RM(top.kg,top.reps)))top=s;
   return {ex:gEx(exId),kg:top.kg,reps:top.reps,e1:cur,prev};
 }
 const gPRs=w=>w.ex.map(x=>gIsPR(w,x.id)).filter(Boolean);
@@ -196,7 +217,7 @@ function gWeekNote(regs,hasHistory){
 const gTimedSec=w=>w.ex.reduce((s,x)=>s+(gTimed(x.id)?x.sets.filter(t=>t.done&&gSetOk(t)).reduce((a,t)=>a+(t.sec||0),0):0),0);
 const gSecTx=s=>s>=120?Math.round(s/60)+" dk":s+" sn";
 const gVolTx=w=>{const v=gWorkVol(w),t=gTimedSec(w);return [v>0&&`${Math.round(v).toLocaleString("tr-TR")} kg`,t>0&&gSecTx(t)].filter(Boolean).join(", ")};
-const gStats=w=>[`${gWorkSets(w)} set`,`${gDur(w)} dk`,gVolTx(w)].filter(Boolean).join(" · ");
+const gStats=w=>[`${gWorkSets(w)} set`,`${gDur(w)} dk`,gVolTx(w),gSsGroups(w).length&&`${gSsGroups(w).length} süperset`,gDrops(w)&&`${gDrops(w)} drop set`].filter(Boolean).join(" · ");
 const gNames=(w,n)=>{const a=w.ex.map(x=>gEx(x.id).n);return a.slice(0,n).join(", ")+(a.length>n?` +${a.length-n}`:"")};
 const gDur=w=>Math.min(600,Math.max(1,Math.round(((w.t1||Date.now())-w.t0)/60000))); // 600: spor kaydı üst sınırı
 const gClock=ms=>{const s=Math.max(0,Math.floor(ms/1000));return `${pad(Math.floor(s/60))}:${pad(s%60)}`};
@@ -280,18 +301,18 @@ function gLive(w){
     const ex=gEx(x.id),prev=gHistory(x.id,w.t0)[0],sug=gSuggest(x.id);
     const kind=gKind(x.id),tm=kind==="t"||kind==="i"||kind==="c",unit=kind==="c"?60:1,rpe=S.settings.rpeOn&&!tm;
     let wi=0;
-    const rows=x.sets.map((s,si)=>{
+    const g=gGrp(w,ei),rows=x.sets.map((s,si)=>{
       const ps=!s.w&&prev&&prev.sets[wi++],p=s.w?"ısınma":!ps?"–":tm?`${kind==="c"?Math.round(ps.sec/60)+" dk":ps.sec+" sn"}`:`${ps.kg?fkg(ps.kg)+" × ":""}${ps.reps}`;
       const tick=`<button class="ok${s.done?" on":""}" data-g="done:${ei}:${si}" aria-label="${si+1}. set ${s.done?"geri al":"tamamlandı"}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>`;
       const on=nx&&nx.ei===ei&&nx.si===si;
       if(tm)return `<div class="srow${s.done?" dn":""}${on?" nx":""}"><span class="sn">${si+1}</span><span class="sp num">${p}</span>
       <input class="sin num" inputmode="numeric" aria-label="${si+1}. set ${kind==="c"?"dakika":"saniye"}" data-gi="sec:${ei}:${si}" value="${s.sec==null?"":Math.round(s.sec/unit)}" placeholder="${kind==="c"?"dk":"sn"}">
       <button class="sin tgo" data-g="tstart:${ei}:${si}" aria-label="${si+1}. set zamanlayıcıyı başlat">${gTim&&gTim.ei===ei&&gTim.si===si?"⏸":"▶"}</button>${tick}</div>`;
-      return `<div class="srow${rpe?" r":""}${s.done?" dn":""}${on?" nx":""}"><span class="sn">${si+1}</span><span class="sp num">${p}</span>
+      return `<div class="srow${rpe?" r":""}${s.done?" dn":""}${on?" nx":""}"><button class="sn tb" data-g="stype:${ei}:${si}" aria-label="${si+1}. set türü: ${gSetTx(s)}">${si+1}${s.t?`<b class="tbd">${s.t.toUpperCase()}</b>`:""}</button><span class="sp num">${p}</span>
       <input class="sin num" inputmode="decimal" aria-label="${si+1}. set kg" data-gi="kg:${ei}:${si}" value="${s.kg==null?"":fkg(s.kg)}" placeholder="${kind==="b"?"ek kg":"kg"}">
       <input class="sin num" inputmode="numeric" aria-label="${si+1}. set tekrar" data-gi="reps:${ei}:${si}" value="${s.reps==null?"":s.reps}" placeholder="tekrar">${rpe?`<input class="sin num" inputmode="decimal" aria-label="${si+1}. set zorluk (RPE)" data-gi="rpe:${ei}:${si}" value="${s.rpe==null?"":fkg(s.rpe)}" placeholder="RPE">`:""}${tick}</div>${on?gStepPanel(w,ei,si,prev):""}`;
     }).join("");
-    return `<div class="card ex"><div class="exh"><button class="exn" data-g="hist:${x.id}"><b>${esc(ex.n)}</b><span class="mut">${ex.r||ex.g}</span></button><button class="del" data-g="exinfo:${x.id}" aria-label="Egzersiz bilgisi">ⓘ</button><button class="del" data-g="menu:${ei}" aria-label="Egzersiz menüsü">⋮</button></div>
+    return `<div class="card ex${g?" ssg":""}"><div class="exh"><button class="exn" data-g="hist:${x.id}"><b>${esc(ex.n)}</b><span class="mut">${ex.r||ex.g}${g?` · Süperset ${g.i}/${g.n}`:""}</span></button><button class="del" data-g="exinfo:${x.id}" aria-label="Egzersiz bilgisi">ⓘ</button><button class="del" data-g="menu:${ei}" aria-label="Egzersiz menüsü">⋮</button></div>
     ${sug?`<div class="sug">Öneri: ${fkg(sug.kg)||0} kg × ${sug.reps}. ${sug.why}.${sug.note?` <span class="mut">${sug.note}</span>`:""}</div>`:""}${x.note?`<div class="note">${esc(x.note)}</div>`:""}
     <div class="shead${rpe?" r":""}"><span>Set</span><span>Önceki</span>${tm?`<span>${kind==="c"?"Dakika":"Süre (sn)"}</span><span>Süre</span>`:`<span>${kind==="b"?"Ek kg":"kg"}</span><span>Tekrar</span>${rpe?"<span>RPE</span>":""}`}<span></span></div>${rows}
     <button class="lnk" data-g="addset:${ei}">Set ekle</button></div>`;
@@ -359,6 +380,7 @@ function gMenu(ei){
    ${gKind(x.id)==="w"?`<button class="prow" data-g="plate:${ei}"><span><b>Plaka ve ısınma</b><span class="mut sm">Bar başına plaka, ısınma setleri</span></span></button>`:""}
    ${gKind(x.id)==="w"?`<button class="prow" data-g="rng:${ei}"><span><b>Tekrar aralığı</b><span class="mut sm">${(c=>c.lo+"-"+c.hi)(Object.assign({lo:8,hi:12},S.exCfg[x.id]))}, öneri bu aralığa göre</span></span></button>`:""}
    <button class="prow" data-g="rst:${ei}"><span><b>Dinlenme süresi</b><span class="mut sm">${gRestTx(gRestSec(x.id))}, set ✓ sonrası sayaç ve bildirim</span></span></button>
+   ${ei>0?(x.ss&&w.ex[ei-1].ss===x.ss?`<button class="prow" data-g="ssu:${ei}"><span><b>Süpersetten çıkar</b></span></button>`:`<button class="prow" data-g="ssl:${ei}"><span><b>Önceki egzersizle süperset yap</b><span class="mut sm">${esc(gEx(w.ex[ei-1].id).n)} ile arka arkaya, dinlenme grubun sonunda</span></span></button>`):""}
    <button class="prow" data-g="mv:${ei}:-1"><span><b>Yukarı taşı</b></span></button>
    <button class="prow" data-g="mv:${ei}:1"><span><b>Aşağı taşı</b></span></button>
    <button class="prow dng" data-g="rmex:${ei}"><span><b>Egzersizi sil</b><span class="mut sm">${x.sets.length} set silinir</span></span></button></div>
@@ -372,7 +394,7 @@ function gSheetHist(exId){
   const ex=gEx(exId),h=gHistory(exId);
   if(gKind(exId)!=="w")return gSheetHistSimple(exId,h);
   if(!h.length)return openSheet(`<h3>${esc(ex.n)}</h3><p class="hint">Henüz tamamlanmış set yok.</p><button class="btn" data-g="closesheet">Kapat</button>`);
-  const per=h.map(x=>({d:x.w.day,e:gBest(x.w,exId),vol:Algo.volume(x.sets),top:x.sets.reduce((a,s)=>Algo.est1RM(s.kg,s.reps)>Algo.est1RM(a.kg,a.reps)?s:a,x.sets[0])}));
+  const per=h.map(x=>({d:x.w.day,e:gBest(x.w,exId),vol:Algo.volume(x.sets),top:gWork(x.sets).reduce((a,s)=>Algo.est1RM(s.kg,s.reps)>Algo.est1RM(a.kg,a.reps)?s:a,gWork(x.sets)[0])}));
   const best=per.reduce((a,b)=>b.e>a.e?b:a,per[0]);
   openSheet(`<h3>${esc(ex.n)}</h3><div class="two"><div class="stat"><div class="k">En iyi set</div><div class="v num">${fkg(best.top.kg)||0} kg × ${best.top.reps}</div></div><div class="stat"><div class="k">Tahmini 1TM</div><div class="v num">${Math.round(best.e)} kg</div></div></div>
   ${exCharts(exId)}
@@ -389,6 +411,7 @@ function gSheetSummary(id){
   ${prs.length?`<div class="pr"><b>${prs.length} yeni rekor</b>${prs.map(p=>`<div>${esc(p.ex.n)}, ${fkg(p.kg)||0} kg × ${p.reps}<div class="mut sm">Tahmini 1TM ${Math.round(p.e1)} kg, önceki ${Math.round(p.prev)} kg</div></div>`).join("")}</div>`:""}
   ${(k=>k?`<div class="mut sm" style="margin-top:8px">Tahmini ~${k} kcal (dinlenme hariç, tahmindir)</div>`:"")((S.entries.find(e=>e.wid===w.id)||{}).kcal)}
   <div class="mut sm" style="margin:8px 0">${Object.keys(sets).map(g=>`${g} ${sets[g]}`).join(", ")}</div>
+  ${gSsGroups(w).map(g=>`<div class="mut sm">Süperset: ${esc(g.map(x=>gEx(x.id).n).join(" + "))}</div>`).join("")}${gDrops(w)?`<div class="mut sm">${gDrops(w)} drop set (hacme girer, rekor hesabına girmez)</div>`:""}
   <div class="btns">${w.tpl==null?`<button class="btn ghost" data-g="savetpl:${w.id}">Şablon olarak kaydet</button>`:S.templates.some(t=>t.id===w.tpl)?`<button class="btn ghost" data-g="tplupd:${w.id}">Şablonu bu seansa göre güncelle</button>`:""}<button class="btn ghost" data-g="closesheet">Kapat</button><button class="btn danger" data-g="delw:${w.id}">Antrenmanı sil</button></div>`);
 }
 
@@ -435,7 +458,7 @@ function gTgFrom(w,prev){
   const tg={};
   for(const x of w.ex){
     const s=x.sets.filter(t=>t.done&&gSetOk(t)&&!t.w);if(!s.length)continue;
-    const o={sets:Math.min(10,s.length)};
+    const o={sets:Math.min(10,s.length)};if(x.ss)o.ss=x.ss;
     if(gTimed(x.id))o.sec=Math.min(7200,s[0].sec);
     else{o.reps=Math.min(200,Math.min(...s.map(t=>t.reps)));const h=prev&&prev[x.id]&&prev[x.id].hi;if(h>o.reps)o.hi=h}
     tg[x.id]=o;
@@ -445,7 +468,7 @@ function gTgFrom(w,prev){
 function gTeOpen(id){
   const t=id?S.templates.find(x=>x.id===id):null;
   gTe={id:t?t.id:null,name:t?t.name:"",ex:t?t.ex.slice():[],tg:t?structuredClone(t.tg||{}):{}};
-  for(const i of gTe.ex)if(!gTe.tg[i])gTe.tg[i]=gTgDef(i);
+  for(const i of gTe.ex){const a=gTe.tg[i];if(!a||!(a.sets||a.reps||a.sec))gTe.tg[i]=Object.assign(gTgDef(i),a)}
   gTeSheet();
 }
 function gTeSheet(){
@@ -556,13 +579,39 @@ function gClick(v,el){
     case "menu":return gMenu(ei);
     case "note":return gSheetNote(ei);
     case "savenote":w.ex[ei].note=$("#gnote").value.trim().slice(0,300);save();closeSheet();render();return;
-    case "mv":{gTimStop();const j=ei+si;if(j<0||j>=w.ex.length){return}[w.ex[ei],w.ex[j]]=[w.ex[j],w.ex[ei]];save();closeSheet();render();return}
-    case "rmex":{gTimStop();const rm=w.ex[ei];w.ex.splice(ei,1);save();closeSheet();render();toast("Egzersiz silindi",()=>{w.ex.splice(ei,0,rm);save();render()});return}
+    case "mv":{gTimStop();const j=ei+si;if(j<0||j>=w.ex.length){return}[w.ex[ei],w.ex[j]]=[w.ex[j],w.ex[ei]];gSsNorm(w.ex);save();closeSheet();render();return}
+    case "rmex":{
+      gTimStop();const rm=w.ex[ei],ss=w.ex.map(x=>x.ss);w.ex.splice(ei,1);gSsNorm(w.ex);save();closeSheet();render();
+      toast("Egzersiz silindi",()=>{w.ex.splice(ei,0,rm);w.ex.forEach((x,i)=>{if(ss[i])x.ss=ss[i];else delete x.ss});save();render()});return;
+    }
+    case "ssl":{
+      const x=w.ex[ei],p=w.ex[ei-1],old=x.ss;if(!p)return;
+      if(!p.ss)p.ss=Math.max(0,...w.ex.map(y=>y.ss||0))+1;
+      for(let j=ei;j<w.ex.length&&(j===ei||(old&&w.ex[j].ss===old));j++)w.ex[j].ss=p.ss;
+      save();closeSheet();render();return;
+    }
+    case "ssu":{
+      const x=w.ex[ei],old=x.ss,nv=Math.max(0,...w.ex.map(y=>y.ss||0))+1;
+      for(let j=ei+1;j<w.ex.length&&w.ex[j].ss===old;j++)w.ex[j].ss=nv;
+      delete x.ss;gSsNorm(w.ex);save();closeSheet();render();return;
+    }
+    case "stype":{
+      const s=w.ex[ei].sets[si];if(!s)return;
+      const cur=s.w?"w":s.t||"n",o=(k,t,d)=>`<button class="prow" data-g="sty${k}:${ei}:${si}"><span><b>${t}</b><span class="mut sm">${d}</span></span>${cur===k?`<span class="tag">Seçili</span>`:""}</button>`;
+      openSheet(`<h3>${si+1}. set türü</h3><div class="plist">${o("n","Normal","Çalışma seti")}${o("w","Isınma","Hacme, öneriye ve rekora girmez")}${o("d","Drop set","Ağırlığı düşürüp devam; hacme girer, rekora girmez")}${o("f","Başarısızlığa kadar","Tekrar yapamayana dek; hacme ve rekora girer")}</div><button class="btn ghost" data-g="closesheet">Kapat</button>`);
+      return;
+    }
+    case "styn":case "styw":case "styd":case "styf":{
+      const s=w.ex[ei].sets[si];if(!s)return;
+      delete s.w;delete s.t;
+      if(a==="styw")s.w=true;else if(a==="styd")s.t="d";else if(a==="styf")s.t="f";
+      save();closeSheet();render();return;
+    }
     case "addset":{const s=w.ex[ei].sets,l=s[s.length-1];s.push({kg:l?l.kg:null,reps:l?l.reps:null,done:false});save();render();return}
     case "done":{
       const s=w.ex[ei].sets[si],row=el.closest(".srow");
       if(gTimed(w.ex[ei].id)){
-        if(!s.done){if(!(s.sec>0))return toast("Önce süreyi yaz");s.done=true;if(gTim&&gTim.ei===ei&&gTim.si===si)gTimStop();gRestSet(Date.now()+gRestSec(w.ex[ei].id)*1000,w.ex[ei].id)}
+        if(!s.done){if(!(s.sec>0))return toast("Önce süreyi yaz");s.done=true;if(gTim&&gTim.ei===ei&&gTim.si===si)gTimStop();gRestGo(w,ei)}
         else s.done=false;
         save();render();gTick();return;
       }
@@ -571,8 +620,8 @@ function gClick(v,el){
       if(!s.done){
         if(gEmptySet(w,ei,si,kgI,!isNaN(reps),gKind(w.ex[ei].id)))return;
         if(!(reps>0&&reps<=200))return toast("Tekrar 1 ile 200 arasında olmalı");
-        s.kg=isNaN(kg)?0:kg;s.reps=reps;s.done=true;gRestSet(Date.now()+gRestSec(w.ex[ei].id)*1000,w.ex[ei].id);
-        pr=!s.w&&gNewPR(w,w.ex[ei].id,s);
+        s.kg=isNaN(kg)?0:kg;s.reps=reps;s.done=true;gRestGo(w,ei);
+        pr=gRecOk(s)&&gNewPR(w,w.ex[ei].id,s);
       }else s.done=false;
       save();render();gTick();
       if(s.done){const n=document.querySelector(".srow.nx");if(n)n.scrollIntoView({block:"center",behavior:"smooth"})}
@@ -602,7 +651,10 @@ function gClick(v,el){
     case "savetpl":{
       const x=S.workouts.find(y=>y.id===+p1);if(!x)return;
       const name=(prompt("Şablon adı",x.name)||"").trim();if(!name)return;
-      const t={id:S.gid++,name:name.slice(0,60),ex:x.ex.map(e=>e.id)};S.templates.push(t);x.tpl=t.id;save();closeSheet();render();toast("Şablon kaydedildi");return;
+      const t={id:S.gid++,name:name.slice(0,60),ex:x.ex.map(e=>e.id)},tg={};
+      for(const e of x.ex)if(e.ss)tg[e.id]={ss:e.ss};
+      if(Object.keys(tg).length)t.tg=tg;
+      S.templates.push(t);x.tpl=t.id;save();closeSheet();render();toast("Şablon kaydedildi");return;
     }
     case "tdel":{
       const t=S.templates.find(x=>x.id===+p1);if(!t)return;

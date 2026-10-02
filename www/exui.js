@@ -55,7 +55,7 @@ let exChM="e",exChI=null,exChId=null;
 const exChRefresh=()=>{const b=$("#xch");if(b)b.innerHTML=exChartBody(exChId)};
 function exSeries(id){
   return gHistory(id).reverse().map(h=>{
-    const top=h.sets.reduce((a,s)=>(s.kg||0)>(a.kg||0)||((s.kg||0)===(a.kg||0)&&s.reps>a.reps)?s:a,h.sets[0]);
+    const ws=gWork(h.sets),top=ws.reduce((a,s)=>(s.kg||0)>(a.kg||0)||((s.kg||0)===(a.kg||0)&&s.reps>a.reps)?s:a,ws[0]);
     return {d:h.w.day,x:Algo.dayNum(h.w.day),e:gBest(h.w,id),t:top.kg||0,r:top.reps,v:Algo.volume(h.sets)};
   });
 }
