@@ -32,7 +32,7 @@ function viewTahlil(){
 }
 function labTrendCard(){
   const n=LabLib.series(S.labs).length,d=S.labs.length?S.labs.map(r=>r.day).sort().pop():"";
-  return `<button class="stepcard" data-tab="tahlil"><div class="row"><span class="mut">🧪 Tahlil takibi</span><span class="mut sm">Aç ›</span></div><div class="row"><span class="mut sm">${n?`${n} test, son: ${fd(d)}`:"PDF'ten okut ya da elle ekle"}</span></div></button>`;
+  return `<button class="stepcard" data-tab="tahlil"><div class="row"><span class="mut">${Icons.svg("file")} Tahlil takibi</span><span class="mut sm">Aç ›</span></div><div class="row"><span class="mut sm">${n?`${n} test, son: ${fd(d)}`:"PDF'ten okut ya da elle ekle"}</span></div></button>`;
 }
 
 function labDetail(id){

@@ -2,7 +2,7 @@
 /* İlk açılış: 3 adım. Girdiler mevcut profil ve ayar alanlarına yazılır; taslak yalnızca bellekte durur. */
 const obFresh=()=>({step:0,kg:"",cm:"",age:"",sex:"",dir:"koru",goal:"",hn:false,mods:[],err:"",bad:""});
 const ob=obFresh();
-const OB_MODS=[["med","💊 İlaç hatırlatıcı"],["fast","⏳ Oruç takibi"],["steps","👣 Adım sayar"],["bp","❤️ Tansiyon"],["bs","🩸 Şeker"]];
+const OB_MODS=[["med","İlaç hatırlatıcı","ilac"],["fast","Oruç takibi","fast"],["steps","Adım sayar","adim"],["bp","Tansiyon","heart"],["bs","Şeker","su"]];
 const OB_DIRS=[["ver","Kilo ver"],["koru","Koru"],["al","Kilo al"]];
 /* Eski kullanıcıya hiç gösterilmez: bayrak, profil, kayıt, sohbet ya da ilaç varsa atlanır. */
 const obNeeded=()=>{const s=S.settings;return !s.obDone&&!s.heightCm&&!s.age&&!s.goalKg&&!s.kcal&&!s.consent&&!S.entries.length&&!S.chat.length&&!S.meds.length};
@@ -46,7 +46,7 @@ function obView(){
     ${ob.dir!=="koru"?fld("goal","Hedef kilo (kg)",ob.goal,"","decimal"):""}
     <label class="chkrow" style="margin-top:6px"><input type="checkbox" id="obhn" ${ob.hn?"checked":""}>Hamileyim, yeme bozukluğu geçmişim var ya da hekim kontrolündeyim</label></div>${err}`;
   else if(st===1)body=`<h2>Hangileri açık olsun?</h2><div class="card"><p class="hint" style="padding:0 0 8px">Kapalı olanlar ekranında görünmez. İstediğini sonra Ayarlar'dan açarsın.</p>
-    <div class="chips">${OB_MODS.map(([k,l])=>`<button class="chip" data-ob="mod:${k}" aria-pressed="${ob.mods.includes(k)}">${l}</button>`).join("")}</div>
+    <div class="chips">${OB_MODS.map(([k,l,ic])=>`<button class="chip" data-ob="mod:${k}" aria-pressed="${ob.mods.includes(k)}">${Icons.svg(ic)} ${l}</button>`).join("")}</div>
     ${ob.mods.includes("steps")?`<p class="hint" style="padding:0">Adım sayar için telefon izni, Bugün ekranındaki "Adım sayarı aç" satırından istenir.</p>`:""}</div>`;
   else{
     const p=obParse(),pl=obPlan(p);next="Başla";
