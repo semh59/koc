@@ -254,7 +254,8 @@ Yeni: `www/insightlib.js` (`weekWhy(data)`, `plateau(weights,today)`, `noiseSd(w
 4. Widgete dokununca uygulama Bugün sekmesinde açılır.
 
 ### Tasarım (en kısa yol)
-- "+250": `PendingIntent.getActivity(MainActivity)` ile **bildirim düğmesiyle aynı ek alanlar** (`LocalNotificationUserAction=su`, `LocalNotficationObject={"extra":{"act":"su","v":<glass>}}`). `QuickLogPlugin.handle` bunu zaten kaydedip ekranı arkaya alıyor ve smoke bu yolu zaten test ediyor. `handle` su kaydından sonra `NeoWidget.bump(c,v)` çağırır (widget önbelleğine ekleyip yeniler).
+- "+250" (güncel): `PendingIntent.getBroadcast(WaterReceiver, 7202)`, exported=false; alıcı `QuickLogPlugin.handle`'ı aynı ek alanlarla çağırır. Ekran açılmaz, activity intent'inin yeniden teslimiyle çift su oluşmaz. Bildirim düğmeleri activity yolunda kalır; tekrar teslimde `extra.at` (planlanan an) + kimlik imzası `nw_quick/seen`'de tutulur, görülmüş imza yok sayılır.
+- "+250" (ilk tasarım, değişti): `PendingIntent.getActivity(MainActivity)` ile **bildirim düğmesiyle aynı ek alanlar** (`LocalNotificationUserAction=su`, `LocalNotficationObject={"extra":{"act":"su","v":<glass>}}`). `QuickLogPlugin.handle` bunu zaten kaydedip ekranı arkaya alıyor ve smoke bu yolu zaten test ediyor. `handle` su kaydından sonra `NeoWidget.bump(c,v)` çağırır (widget önbelleğine ekleyip yeniler).
 - Veri: JS → `Widget.update({day,water,waterGoal,glass,kcalLeft,steps})` → SharedPreferences `nw_widget` → `AppWidgetManager.updateAppWidget`. JS tarafı `save()` içinde değil, `render()` sonunda değişiklik varsa çağırır (son gönderilen JSON ile karşılaştırma, köprü trafiği az).
 - Adım: widget `onUpdate`'te (updatePeriodMillis 30 dk, sistem alt sınırı) `StepStore.read` ile tazelenir (goAsync; adım sayar kapalıysa gizli).
 - Request code: 7201 (tıkla-aç), 7202 (+su). 7001/7002 dolu.
@@ -268,9 +269,9 @@ Yeni: `assets/android/NeoWidget.java` (AppWidgetProvider + statik `push/bump`), 
 - Smoke: yukarıdaki üç kontrol. Widget görünümü emülatörde doğrulanamaz → telefon test listesine (`docs/yapilacaklar.md`) madde.
 
 ### Riskler
-- `exported="true"` zorunlu (sistem APPWIDGET_UPDATE gönderir); su ekleme bu alıcıda değil MainActivity yolunda, dışarıdan tetikleme yüzeyi genişlemez.
+- `exported="true"` zorunlu (sistem APPWIDGET_UPDATE gönderir); su ekleme bu alıcıda değil exported=false `WaterReceiver`'da, dışarıdan tetikleme yüzeyi genişlemez.
 - MIUI'de widget güncellemesi gecikebilir; değerler uygulama açılışında düzelir.
-- Ekran kısa yanıp söner (bildirim düğmesiyle aynı, kabul edilmiş davranış).
+- Widget'ta ekran açılmaz; bildirim düğmesinde ekran kısa yanıp söner (Capacitor mekanizması).
 
 ---
 

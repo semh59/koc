@@ -23,7 +23,7 @@ public class QuickLogPlugin extends Plugin {
         return c.getSharedPreferences("nw_quick", Context.MODE_PRIVATE);
     }
 
-    /** MainActivity'den çağrılır. Düğme "su" ya da "med" ise kaydı saklar, bildirimi kaldırır ve true döner. */
+    /** MainActivity ve WaterReceiver'dan çağrılır. Düğme "su" ya da "med" ise kaydı saklar, bildirimi kaldırır ve true döner. */
     static synchronized boolean handle(Context c, Intent in) {
         if (in == null) return false;
         // Son uygulamalardan açılışta sistem ilk intent'i (ek alanlarıyla) yeniden verir; kayıt ilk seferde yazıldı.
@@ -40,10 +40,19 @@ public class QuickLogPlugin extends Plugin {
             key = QuickMath.medKey(obj, "medskip".equals(act));
         }
         if (key == null) return false;
-        SharedPreferences p = prefs(c);
-        p.edit().putString("q", QuickMath.append(p.getString("q", ""), key, System.currentTimeMillis())).commit();
-        if (v > 0) NeoWidget.bump(c, v);
         int id = in.getIntExtra(ID_KEY, Integer.MIN_VALUE);
+        SharedPreferences p = prefs(c);
+        // Bildirim intent'ini sistem yeniden teslim edebilir (süreç ölümü, MIUI); aynı planlanmış bildirim iki kez yazılmaz.
+        // Meşru ikinci dokunuş olamaz: bildirim ilk dokunuşta kaldırılır, her yeni bildirimin "at"ı farklıdır.
+        String tok = QuickMath.token(obj), sig = tok == null ? null : id + "@" + tok, seen = p.getString("seen", "");
+        if (sig != null && QuickMath.seen(seen, sig)) {
+            in.removeExtra(ACTION_KEY);
+            return false;
+        }
+        SharedPreferences.Editor e = p.edit().putString("q", QuickMath.append(p.getString("q", ""), key, System.currentTimeMillis()));
+        if (sig != null) e.putString("seen", QuickMath.remember(seen, sig));
+        e.commit();
+        if (v > 0) NeoWidget.bump(c, v);
         if (id != Integer.MIN_VALUE) {
             NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
             if (nm != null) {

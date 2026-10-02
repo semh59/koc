@@ -41,6 +41,16 @@ public class QuickMathTest {
         List<String[]> m = QuickMath.parse("250,1000;abc;,5;100,;0,50;5000,70;300,0;-5,10;200,3000;;300,4000,9;m7_0900,10;k7_0900,11;m7_9,10;mx_0800,10;m1000_0800,10;");
         ok("ayrıştırma: bozuk ve sınır dışı parçalar atlanır", m.size() == 4 && m.get(0)[0].equals("250") && m.get(1)[0].equals("200") && m.get(2)[0].equals("m7_0900") && m.get(3)[0].equals("k7_0900"));
         ok("ayrıştırma: boş ve null", QuickMath.parse("").isEmpty() && QuickMath.parse(null).isEmpty());
+
+        String n = "{\"id\":200,\"schedule\":{\"at\":\"2026-10-02T08:00\"},\"extra\":{\"act\":\"su\",\"v\":250,\"at\":1790928000000}}";
+        ok("imza: extra.at okunur, schedule.at karışmaz", "1790928000000".equals(QuickMath.token(n)) && QuickMath.amount(n) == 250);
+        ok("imza: at yoksa ya da kısaysa null (eski bildirim, tekrar denetimi yok)", QuickMath.token("{\"extra\":{\"act\":\"su\",\"v\":250}}") == null && QuickMath.token("{\"extra\":{\"at\":123}}") == null);
+        String sn = QuickMath.remember("", "200@1790928000000");
+        ok("tekrar: aynı bildirim görülmüş, aynı saatteki başka bildirim ve önek eşleşmesi görülmemiş",
+            QuickMath.seen(sn, "200@1790928000000") && !QuickMath.seen(sn, "201@1790928000000") && !QuickMath.seen(sn, "0@1790928000000") && !QuickMath.seen("", "200@1"));
+        String many = "";
+        for (int i = 0; i < 60; i++) many = QuickMath.remember(many, i + "@1790928000000");
+        ok("tekrar: son 50 imza tutulur", QuickMath.seen(many, "59@1790928000000") && QuickMath.seen(many, "10@1790928000000") && !QuickMath.seen(many, "9@1790928000000"));
         System.exit(bad == 0 ? 0 : 1);
     }
 }

@@ -12,6 +12,7 @@ final class QuickMath {
     private static final Pattern V = Pattern.compile("\"v\"\\s*:\\s*(\\d{1,5})(?![\\d.])");
     private static final Pattern M = Pattern.compile("\"m\"\\s*:\\s*(\\d{1,3})(?![\\d.])");
     private static final Pattern S = Pattern.compile("\"s\"\\s*:\\s*\"([01]\\d|2[0-3]):([0-5]\\d)\"");
+    private static final Pattern AT = Pattern.compile("\"at\"\\s*:\\s*(\\d{10,15})(?![\\d.])");
     private static final Pattern KEY = Pattern.compile("(\\d{1,4})|([mk]\\d{1,3}_\\d{4})");
 
     private static String extra(String json) {
@@ -46,10 +47,31 @@ final class QuickMath {
         return (skip ? "k" : "m") + id + "_" + s.group(1) + s.group(2);
     }
 
+    /** Bildirimin planlandığı an (ms, "extra.at"): her bildirim oluşumunda farklı, yeniden teslim edilen intent'te aynı. Yoksa null. */
+    static String token(String json) {
+        String e = extra(json);
+        if (e == null) return null;
+        Matcher m = AT.matcher(e);
+        return m.find() ? m.group(1) : null;
+    }
+
+    static boolean seen(String list, String sig) {
+        return (";" + list).contains(";" + sig + ";");
+    }
+
+    /** İşlenen bildirim imzalarına ekler, son 50'yi tutar. */
+    static String remember(String list, String sig) {
+        return tail(list + sig + ";", 50);
+    }
+
     /** Bekleyen kayıtlara "anahtar,zaman;" ekler, en çok MAX kayıt tutar (en eskiler atılır). */
     static String append(String pending, String key, long t) {
-        String[] p = ((pending == null ? "" : pending) + key + "," + t + ";").split(";");
-        int from = Math.max(0, p.length - MAX);
+        return tail((pending == null ? "" : pending) + key + "," + t + ";", MAX);
+    }
+
+    private static String tail(String joined, int max) {
+        String[] p = joined.split(";");
+        int from = Math.max(0, p.length - max);
         StringBuilder sb = new StringBuilder();
         for (int i = from; i < p.length; i++) if (!p[i].isEmpty()) sb.append(p[i]).append(';');
         return sb.toString();

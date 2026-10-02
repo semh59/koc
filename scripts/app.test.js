@@ -416,6 +416,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("bildirim eylem türü kayıtlı: 'su' düğmesi +250 ml",types&&types[0].id==="water"&&types[0].actions[0].id==="su"&&types[0].actions[0].title==="+250 ml",types);
     const water=list.filter(n=>[2,3,4].includes(Math.floor(n.id/100))),other=list.filter(n=>![2,3,4].includes(Math.floor(n.id/100)));
     ok("su bildirimlerinde eylem türü ve miktar var",water.length>0&&water.every(n=>n.actionTypeId==="water"&&n.extra.act==="su"&&n.extra.v===250),water[0]);
+    ok("su bildiriminin extra.at'ı planlanan an (yeniden teslimde tekrar denetimi imzası), her bildirimde farklı",water.every(n=>n.extra.at===new Date(n.schedule.at).getTime())&&new Set(water.map(n=>n.extra.at)).size===water.length,water[0]);
     ok("diğer bildirimlerde düğme yok",other.length>0&&other.every(n=>n.actionTypeId===undefined&&(n.extra===undefined||n.extra.act==="open")));
     ev("S.settings.glass=330");await ev("scheduleReminders()");
     ok("bardak boyutu değişince düğme metni ve miktar güncellenir",types[0].actions[0].title==="+330 ml"&&list.filter(n=>n.actionTypeId==="water").every(n=>n.extra.v===330));
