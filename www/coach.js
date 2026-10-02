@@ -364,9 +364,10 @@ function cCard(m){
 }
 function viewKoc(){
   let h="";
-  if(offline==="none"||(!hasKey()&&!S.chat.length))h+=`<div class="banner"><b>Koç için API anahtarı gerekli</b><p>Ayarlar'dan en az bir sağlayıcıya anahtar ekle. Su, kilo, yemek ve spor kayıtları bundan bağımsız çalışır.</p><button class="btn" data-c="toprov">Sağlayıcılara git</button></div>`;
+  const intro=offline==="none"||(!hasKey()&&!S.chat.length);
+  if(intro)h+=`<div class="banner info"><b>Koç ne yapar?</b><p>Yazdıklarından yemek, su ve kilo kaydı önerir, günü ve haftayı yorumlar, hedefini ayarlamana yardım eder.</p><b>Verin nereye gider?</b><p>Koç yapay zekâ kullanır: internet ister, çevrimdışı çalışmaz. Yalnızca sen onay verirsen ve kendi ücretsiz hesabından alacağın bir anahtarla çalışır. Onay verirsen profilin, kayıtların ve yazdıkların seçtiğin sağlayıcıya gider.</p><p><b>Koç olmadan da uygulama tam çalışır.</b></p><button class="btn" data-c="guide">Koçu etkinleştir, yaklaşık 2 dakika</button></div>`;
   else if(offline==="fail")h+=`<div class="banner"><b>Koç şu an ulaşılamıyor</b><p>Su, kilo ve spor kaydı çalışıyor. Yemek tahmini bağlantı gelince yapılır.</p><button class="btn" data-c="retry">Yeniden dene</button></div>`;
-  if(!S.settings.consent)h+=`<div class="banner info"><b>Verilerin sağlayıcıya gönderilir</b><p>Koçun konuşabilmesi için profilin, kayıtların ve yazdıkların, sağlık verisi dahil, seçtiğin yapay zekâ sağlayıcılarına (${esc(S.providers.filter(p=>p.on&&p.health).map(p=>p.name).join(", ")||"hiçbiri seçili değil")}) gönderilir. Sağlayıcıları Ayarlar'dan yönetirsin.</p><button class="btn" data-c="consent">Anladım, kabul ediyorum</button></div>`;
+  if(!S.settings.consent&&!intro)h+=`<div class="banner info"><b>Verilerin sağlayıcıya gönderilir</b><p>Koçun konuşabilmesi için profilin, kayıtların ve yazdıkların, sağlık verisi dahil, seçtiğin yapay zekâ sağlayıcılarına (${esc(S.providers.filter(p=>p.on&&p.health).map(p=>p.name).join(", ")||"hiçbiri seçili değil")}) gönderilir. Sağlayıcıları Ayarlar'dan yönetirsin.</p><button class="btn" data-c="consent">Anladım, kabul ediyorum</button></div>`;
   if(!S.chat.length&&hasKey())h+=`<p class="hint">Bir şey yaz: "2 yumurta ve ekmek yedim", "83,7 çektim" ya da "bugün ne yapmalıyım?"</p>`;
   for(const m of S.chat){
     if(m.role==="user")h+=`<div class="ub">${esc(m.text)}</div>${m.pend?`<div class="pendl">Bekliyor, bağlantı gelince gönderilir</div>`:""}`;
@@ -399,6 +400,20 @@ function viewProviders(){
   <div class="btns"><button class="btn ghost" data-c="addprov">Sağlayıcı ekle</button></div>
   <p class="hint">Veri paylaşımı: ${S.settings.consent?"kabul edildi":"kabul edilmedi"}. ${S.settings.consent?`<button class="lnk" style="display:inline-block;width:auto" data-c="revoke">Geri al</button>`:""}</p>
   <div class="btns"><button class="btn danger" data-c="clearchat">Sohbeti temizle</button></div></div>`;
+}
+/* Adresler yalnız yaygın bilinen anahtar sayfaları; panel düğme adları değişebilir. */
+const GUIDE={
+  nvidia:{site:"build.nvidia.com",steps:["Tarayıcında build.nvidia.com adresini aç, hesap oluştur ya da giriş yap.","Bir model sayfası aç (örneğin llama).","Sayfadaki anahtar oluşturma düğmesine bas. Düğme adı değişebilir, geliştirici panelinden anahtar oluştur.","Çıkan anahtarı kopyala ve aşağıya yapıştır."]},
+  groq:{site:"console.groq.com/keys",steps:["Tarayıcında console.groq.com adresini aç, hesap oluştur ya da giriş yap.","Menüden anahtarlar bölümüne (API Keys) gir.","Anahtar oluştur düğmesine (Create API Key) bas, bir ad ver.","Anahtarı kopyala, bir daha gösterilmeyebilir. Aşağıya yapıştır."]},
+  openrouter:{site:"openrouter.ai/keys",steps:["Tarayıcında openrouter.ai adresini aç, hesap oluştur ya da giriş yap.","Hesap menüsünden anahtarlar sayfasına (Keys) gir.","Anahtar oluştur düğmesine (Create Key) bas, bir ad ver.","Anahtarı kopyala ve aşağıya yapıştır."]},
+  gemini:{site:"aistudio.google.com/apikey",steps:["Tarayıcında aistudio.google.com adresini aç ve Google hesabınla giriş yap.","Anahtar sayfasına (Get API key) gir.","Yeni anahtar oluştur düğmesine bas.","Anahtarı kopyala ve aşağıya yapıştır. Ücretsiz katmanda istemler ürün geliştirmek için kullanılabilir, bu yüzden her göndermeden önce sorulur."]}
+};
+function cGuide(id){
+  const p=S.providers.find(x=>x.id===id),g=GUIDE[id];
+  if(!p||!g)return openSheet(`<h3>Koçu etkinleştir</h3><p class="hint" style="padding:0 0 8px">Bir sağlayıcıdan ücretsiz anahtar alırsın. Ücretsiz kullanım sınırları sağlayıcıya göre değişir.</p>${S.providers.filter(x=>GUIDE[x.id]).map(x=>`<button class="prow" data-c="guide:${x.id}"><span><b>${esc(x.name)}</b>${getKeys()[x.id]?`<span class="mut sm">Anahtar kayıtlı</span>`:""}</span><span class="tag">Rehber ›</span></button>`).join("")}`);
+  openSheet(`<h3>${esc(p.name)} anahtarı</h3><div class="mut sm" style="margin-bottom:6px">${esc(g.site)}</div><ol class="cues">${g.steps.map(t=>`<li>${esc(t)}</li>`).join("")}</ol>
+  <input class="in" id="gk" type="password" aria-label="${esc(p.name)} anahtarı" placeholder="Anahtarı yapıştır" autocomplete="off" spellcheck="false" style="font-size:14px">
+  <button class="btn" data-c="gsave:${id}">Kaydet</button><div class="btns"><button class="btn ghost" data-c="guide">‹ Sağlayıcılar</button></div>`);
 }
 function cSheetProv(id){
   const p=S.providers.find(x=>x.id===id);if(!p)return;
@@ -465,7 +480,12 @@ function cClick(v,el){
     case "retry":offline=null;cFlush();return render();
     case "consent":S.settings.consent=true;save();render();cFlush();cAuto();return;
     case "revoke":S.settings.consent=false;save();render();return;
-    case "toprov":tab="ayar";render();window.scrollTo(0,0);return;
+    case "guide":return cGuide(p1);
+    case "gsave":{
+      const p=S.providers.find(x=>x.id===p1),k=$("#gk").value.trim();
+      if(!p||k.length<8||/\s/.test(k))return toast("Anahtar eksik ya da yanlış yapıştırılmış görünüyor");
+      p.on=p.health=true;setKey(p1,k);save();closeSheet();render();return toast(`${p.name} anahtarı kaydedildi`);
+    }
     case "why":return cWhy();
     case "prog":return cProgSheet();
     case "po":if(p1 in progOpt){progOpt[p1]=p1==="d"||p1==="m"?+p2:p2;cProgSheet()}return;
