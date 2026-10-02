@@ -7,7 +7,8 @@ const dom=new JSDOM(html,{runScripts:"dangerously",pretendToBeVisual:true,url:"h
   beforeParse(w){Object.assign(w,{structuredClone,TextEncoder,TextDecoder,__noSelfTest:true});Object.defineProperty(w,"crypto",{value:require("node:crypto").webcrypto});w.confirm=()=>true;w.scrollTo=()=>{};w.addEventListener("error",e=>errs.push(e.message))}
 });
 setTimeout(async()=>{
-  const w=dom.window,ev=s=>w.eval(s),$q=s=>w.document.querySelector(s),macros=()=>ev("JSON.stringify(of('yemek',dayKey()).map(e=>[e.v,e.p,e.c,e.f]))");
+  const w=dom.window,sc=[];w.HTMLElement.prototype.scrollIntoView=function(){sc.push(this)}; // jsdom'da yok
+  const ev=s=>w.eval(s),$q=s=>w.document.querySelector(s),macros=()=>ev("JSON.stringify(of('yemek',dayKey()).map(e=>[e.v,e.p,e.c,e.f]))");
   ok("sayfa hatasız açılır",errs.length===0&&ev("document.querySelector('#view').innerHTML.length")>100,errs);
   { // onboarding (C2)
     const q=s=>$q(s),click=s=>q(s).click(),val=(id,v)=>{q("#ob"+id).value=v},v=()=>q("#view").textContent;
@@ -1014,6 +1015,31 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
       ev("closeSheet();tab='salon';render();gSheetHist('squat')");
       ok("grafik: geçmiş ekranında da var",!!q('#xch svg'));
       ev("closeSheet();S.workouts=[]");
+    }
+    { // hızlı set girişi (D-Ant12)
+      sc.length=0;
+      const set=(kg,r,d)=>`{kg:${kg},reps:${r},done:${d}}`;
+      ev(`S.exCfg={};S.workouts=[${Wk(1,1000,2000,`[${set(60,8,true)},${set(65,6,true)}]`)},${Wk(2,Date.now(),null,`[${set(60,8,true)},${set(null,null,false)},${set(60,8,false)}]`)}];tab='salon';render()`);
+      const rows=()=>[...w.document.querySelectorAll(".srow")];
+      ok("sıradaki set: yalnız ilk işaretsiz satır vurgulanır, ± paneli tek ve onun altında",rows().filter(r=>r.classList.contains("nx")).length===1&&rows()[1].classList.contains("nx")&&rows()[1].nextElementSibling.classList.contains("sx")&&w.document.querySelectorAll(".sx").length===1);
+      click('[data-g="kgp:0:1"]');
+      ok("kg +: adım egzersizin inc'i (squat 2,5), boş değer 0'dan başlar",ev("S.workouts[1].ex[0].sets[1].kg")===2.5&&q('[data-gi="kg:0:1"]').value==="2,5");
+      click('[data-g="kgm:0:1"]');click('[data-g="kgm:0:1"]');
+      ok("kg −: 0'ın altına inmez",ev("S.workouts[1].ex[0].sets[1].kg")===0);
+      click('[data-g="rpp:0:1"]');click('[data-g="rpp:0:1"]');click('[data-g="rpm:0:1"]');
+      ok("tekrar ±1, alt sınır 1",ev("S.workouts[1].ex[0].sets[1].reps")===1&&(click('[data-g="rpm:0:1"]'),ev("S.workouts[1].ex[0].sets[1].reps")===1));
+      ok("önceki seansla aynı düğmesi aynı sıradaki seti gösterir (2. set: 65 × 6)",q('.sxs').textContent.includes("65 × 6"),q('.sxs').textContent);
+      click('.sxs');
+      ok("tek dokunuşla doldurur, set ✓ yapılmaz; artık fark yok, düğme kalkar",ev("S.workouts[1].ex[0].sets[1].kg")===65&&ev("S.workouts[1].ex[0].sets[1].reps")===6&&ev("S.workouts[1].ex[0].sets[1].done")===false&&!q('.sxs'));
+      sc.length=0;click('[data-g="done:0:1"]');
+      ok("✓ sonrası odak sıradaki işaretsiz sete gider (kaydırma + vurgu), panel oraya taşınır",sc.length===1&&sc[0]===rows()[2]&&rows()[2].classList.contains("nx")&&!!rows()[2].nextElementSibling.classList.contains("sx"));
+      sc.length=0;click('[data-g="done:0:1"]');
+      ok("✓ geri alınca kaydırma yapılmaz",sc.length===0&&rows()[1].classList.contains("nx"));
+      click('[data-g="addset:0"]');
+      ok("yeni set önceki setten dolu gelir (mevcut davranış korunur)",ev("S.workouts[1].ex[0].sets[3].kg")===60&&ev("S.workouts[1].ex[0].sets[3].reps")===8);
+      ev(`S.workouts[1].ex=[{id:'plank',note:'',sets:[{kg:null,reps:null,sec:30,done:false}]}];render()`);
+      ok("süreli egzersizde ± paneli yok, satır yine vurgulu",!q('.sx')&&!!q('.srow.nx'));
+      ev("S.workouts=[]");
     }
     { // akıllı ilerleme (D-Ant5)
       const set=(kg,r)=>`[{kg:${kg},reps:${r},done:true},{kg:${kg},reps:${r},done:true},{kg:${kg},reps:${r},done:true,w:false},{kg:20,reps:10,done:true,w:true}]`;

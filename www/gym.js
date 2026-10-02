@@ -197,7 +197,21 @@ function gHistHtml(done){
     return `${h}<button class="rrow" data-g="sum:${x.id}"><span class="num mut">${gDate(x.day)}</span><span class="tx" style="min-width:0;overflow-wrap:anywhere"><b>${esc(x.name)}</b><span class="mut sm">${esc(gNames(x,3))}</span><span class="mut sm num">${gStats(x)}</span></span></button>`;
   }).join("")+(done.length>rows.length?`<button class="lnk" data-g="histmore">Daha fazla göster (${done.length-rows.length})</button>`:"");
 }
+/* Sıradaki set: antrenmanın ilk işaretsiz seti. Satırı vurgulanır, ± paneli onun altında açılır. */
+function gNext(w){
+  for(let ei=0;ei<w.ex.length;ei++){const si=w.ex[ei].sets.findIndex(s=>!s.done);if(si>=0)return {ei,si}}
+  return null;
+}
+/* Panel: kg ve tekrar için ± (adım egzersizin inc'i) ve önceki seanstaki aynı sıradaki setle tek dokunuşla doldurma. */
+function gStepPanel(w,ei,si,prev){
+  const x=w.ex[ei],s=x.sets[si],st=(f,l,v)=>`<div class="stp"><button data-g="${f}m:${ei}:${si}" aria-label="${l} azalt">−</button><span class="num" aria-label="${l}">${v}</span><button data-g="${f}p:${ei}:${si}" aria-label="${l} artır">+</button></div>`;
+  const ps=!s.w&&prev&&(prev.sets[x.sets.slice(0,si).filter(t=>!t.w).length]||prev.sets[prev.sets.length-1]);
+  const same=ps&&(ps.kg||0)!==(s.kg||0)||ps&&ps.reps!==s.reps;
+  return `<div class="sx">${st("kg","Ağırlık",s.kg==null?"–":fkg(s.kg))}${st("rp","Tekrar",s.reps==null?"–":s.reps)}
+  ${same?`<button class="lnk sxs" data-g="same:${ei}:${si}">Önceki seansla aynı: ${ps.kg?fkg(ps.kg)+" × ":""}${ps.reps}</button>`:""}</div>`;
+}
 function gLive(w){
+  const nx=gNext(w);
   const cards=w.ex.map((x,ei)=>{
     const ex=gEx(x.id),prev=gHistory(x.id,w.t0)[0],sug=gSuggest(x.id);
     const kind=gKind(x.id),tm=kind==="t"||kind==="i"||kind==="c",unit=kind==="c"?60:1;
@@ -205,12 +219,13 @@ function gLive(w){
     const rows=x.sets.map((s,si)=>{
       const ps=!s.w&&prev&&prev.sets[wi++],p=s.w?"ısınma":!ps?"–":tm?`${kind==="c"?Math.round(ps.sec/60)+" dk":ps.sec+" sn"}`:`${ps.kg?fkg(ps.kg)+" × ":""}${ps.reps}`;
       const tick=`<button class="ok${s.done?" on":""}" data-g="done:${ei}:${si}" aria-label="${si+1}. set ${s.done?"geri al":"tamamlandı"}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>`;
-      if(tm)return `<div class="srow${s.done?" dn":""}"><span class="sn">${si+1}</span><span class="sp num">${p}</span>
+      const on=nx&&nx.ei===ei&&nx.si===si;
+      if(tm)return `<div class="srow${s.done?" dn":""}${on?" nx":""}"><span class="sn">${si+1}</span><span class="sp num">${p}</span>
       <input class="sin num" inputmode="numeric" aria-label="${si+1}. set ${kind==="c"?"dakika":"saniye"}" data-gi="sec:${ei}:${si}" value="${s.sec==null?"":Math.round(s.sec/unit)}" placeholder="${kind==="c"?"dk":"sn"}">
       <button class="sin tgo" data-g="tstart:${ei}:${si}" aria-label="${si+1}. set zamanlayıcıyı başlat">${gTim&&gTim.ei===ei&&gTim.si===si?"⏸":"▶"}</button>${tick}</div>`;
-      return `<div class="srow${s.done?" dn":""}"><span class="sn">${si+1}</span><span class="sp num">${p}</span>
+      return `<div class="srow${s.done?" dn":""}${on?" nx":""}"><span class="sn">${si+1}</span><span class="sp num">${p}</span>
       <input class="sin num" inputmode="decimal" aria-label="${si+1}. set kg" data-gi="kg:${ei}:${si}" value="${s.kg==null?"":fkg(s.kg)}" placeholder="${kind==="b"?"ek kg":"kg"}">
-      <input class="sin num" inputmode="numeric" aria-label="${si+1}. set tekrar" data-gi="reps:${ei}:${si}" value="${s.reps==null?"":s.reps}" placeholder="tek">${tick}</div>`;
+      <input class="sin num" inputmode="numeric" aria-label="${si+1}. set tekrar" data-gi="reps:${ei}:${si}" value="${s.reps==null?"":s.reps}" placeholder="tek">${tick}</div>${on?gStepPanel(w,ei,si,prev):""}`;
     }).join("");
     return `<div class="card ex"><div class="exh"><button class="exn" data-g="hist:${x.id}"><b>${esc(ex.n)}</b><span class="mut">${ex.r||ex.g}</span></button><button class="del" data-g="exinfo:${x.id}" aria-label="Egzersiz bilgisi">ⓘ</button><button class="del" data-g="menu:${ei}" aria-label="Egzersiz menüsü">⋮</button></div>
     ${sug?`<div class="sug">Öneri: ${fkg(sug.kg)||0} kg × ${sug.reps}. ${sug.why}.${sug.note?` <span class="mut">${sug.note}</span>`:""}</div>`:""}${x.note?`<div class="note">${esc(x.note)}</div>`:""}
@@ -375,8 +390,20 @@ function gClick(v,el){
         pr=!s.w&&gNewPR(w,w.ex[ei].id,s);
       }else s.done=false;
       save();render();gTick();
+      if(s.done){const n=document.querySelector(".srow.nx");if(n)n.scrollIntoView({block:"center",behavior:"smooth"})}
       if(pr){toast(`Yeni rekor: ${pr.ex.n}, ${fkg(pr.kg)||0} kg × ${pr.reps}`);try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}
       return;
+    }
+    case "kgm":case "kgp":case "rpm":case "rpp":{
+      const x=w.ex[ei],s=x.sets[si],up=a[2]==="p";
+      if(a[0]==="k")s.kg=Math.min(1000,Math.max(0,Math.round(((s.kg||0)+(up?1:-1)*gEx(x.id).inc)*100)/100));
+      else s.reps=Math.min(200,Math.max(1,(s.reps||0)+(up?1:-1)));
+      save();return render();
+    }
+    case "same":{
+      const x=w.ex[ei],s=x.sets[si],prev=gHistory(x.id,w.t0)[0];
+      const ps=prev&&(prev.sets[x.sets.slice(0,si).filter(t=>!t.w).length]||prev.sets[prev.sets.length-1]);
+      if(!ps)return;s.kg=ps.kg;s.reps=ps.reps;save();return render();
     }
     case "rest":{const d=+p1;gRestSet(d&&Math.max(Date.now(),restEnd)+d*1000);gTick();return}
     case "finish":return gFinish();
