@@ -63,18 +63,18 @@ const exKindSec=(id,sec)=>gKind(id)==="c"?Math.round(sec/60)+" dk":sec+" sn";
 
 /* ---- süreli set zamanlayıcısı ---- */
 const LNP=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.LocalNotifications;
-async function gNotify(at,title,body){
-  const ln=LNP();if(!ln)return;
-  try{await ln.cancel({notifications:[{id:9001}]});await ln.schedule({notifications:[{id:9001,title,body,schedule:{at:new Date(at),allowWhileIdle:true}}]})}catch(e){}
-}
-async function gNotifyCancel(){const ln=LNP();if(ln)try{await ln.cancel({notifications:[{id:9001}]})}catch(e){}}
+/* Sıraya alınır: hızlı ✓ ardından Atla'da iptal, önceki kurmanın schedule'ından önce çalışıp bildirimi kurulu bırakmasın. */
+let gLnQ=Promise.resolve();
+const gLn=f=>gLnQ=gLnQ.then(()=>{const ln=LNP();return ln&&f(ln)}).catch(()=>{});
+const gNotify=(at,title,body,id=9001)=>gLn(async ln=>{await ln.cancel({notifications:[{id}]});await ln.schedule({notifications:[{id,title,body,schedule:{at:new Date(at),allowWhileIdle:true}}]})});
+const gNotifyCancel=(id=9001)=>gLn(ln=>ln.cancel({notifications:[{id}]}));
 function gTimStop(){if(gTim){gTim=null;gNotifyCancel()}}
 function gTimStart(ei,si){
   const w=gActive();if(!w)return;
   const x=w.ex[ei],s=x&&x.sets[si];if(!s)return;
   if(gTim&&gTim.ei===ei&&gTim.si===si&&gTim.phase==="work"){gTimStop();return render()}
   if(!(s.sec>0))return toast("Önce süreyi yaz");
-  gTimStop();restEnd=0;
+  gTimStop();gRestSet(0);
   gTim={ei,si,end:Date.now()+s.sec*1000,total:s.sec,phase:"work"};
   gNotify(gTim.end,"⏱ Süre doldu",gEx(x.id).n);
   render();exTick();
@@ -100,7 +100,7 @@ function gTimDone(skip){
     if(kind==="i"&&nx&&!nx.done&&nx.sec>0){
       gTim={ei:t.ei,si:t.si+1,end:Date.now()+20000,total:20,phase:"rest"};
       gNotify(gTim.end,"Sıradaki tur başlıyor",gEx(x.id).n);
-    }else{gNotifyCancel();if(kind!=="c")restEnd=Date.now()+30000}
+    }else{gNotifyCancel();gRestSet(Date.now()+gRestSec(x.id)*1000,x.id)}
     toast(`${gEx(x.id).n}: ${t.si+1}. set tamamlandı`);
   }else{
     const nx=x.sets[t.si];

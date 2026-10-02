@@ -894,7 +894,7 @@ async function scheduleReminders(){
       if(gone.length)await ln.removeDeliveredNotifications({notifications:gone});
     }catch(e){}
     const pend=await ln.getPending();
-    const pn=pend.notifications.filter(n=>n.id!==9001);if(pn.length)await ln.cancel({notifications:pn.map(n=>({id:n.id}))});
+    const pn=pend.notifications.filter(n=>n.id!==9001&&n.id!==9002);if(pn.length)await ln.cancel({notifications:pn.map(n=>({id:n.id}))});
     /* Eklentinin günlük tekrarı ilk bildirimden sonra Doze'da ertelenen bir alarm kurar. Bu yüzden her günü ayrı, uyku modunu delen tek seferlik alarmla kuruyoruz. */
     try{await ln.registerActionTypes({types:[{id:"water",actions:[{id:"su",title:`+${S.settings.glass} ml`}]},{id:"med",actions:[{id:"med",title:"✔ Aldım"},{id:"medskip",title:"Atla"}]}]})}catch(e){}
     const list=[],now=Date.now(),lb=S.settings.lastBackup;
