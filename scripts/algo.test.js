@@ -62,4 +62,13 @@ ok("2 seans yetmez, gelişim varsa not yok",!A.nextTarget(S3(60,9),{prev:[S3(60,
 ok("üst tekrara çıkınca ağırlık artar, deload notu eklenmez",!A.nextTarget(S3(60,12),{prev:[S3(60,12),S3(60,12)]}).note&&A.nextTarget(S3(60,12),{prev:[S3(60,12),S3(60,12)]}).kg===62.5);
 const WU=[{kg:20,reps:10,w:true},{kg:40,reps:5,w:true}];
 ok("ısınma setleri hesaba girmez (en son, önceki ve tek başına)",A.nextTarget(S3(60,9).concat(WU),{}).kg===60&&A.nextTarget(WU)===null&&A.nextTarget(S3(60,6),{prev:[WU.concat(S3(60,6))]}).kg===55&&A.nextTarget(S3(60,6),{prev:[WU]}).kg===60);
+{ // plaka envanteri (D-Ant14)
+  const DEF=[25,20,15,10,5,2.5,1.25],greedy=(total,bar)=>{let r=(total-bar)/2;const s=[];for(const p of DEF)while(r>=p-1e-9){s.push(p);r-=p}return {side:s,made:bar+2*s.reduce((a,b)=>a+b,0)}};
+  let diff=null;for(const bar of [10,15,20])for(let t=0;t<=1000&&!diff;t+=0.25){const a=A.plates(t,bar),b=greedy(t,bar);if(a.side.join()!==b.side.join()||a.made!==b.made)diff=[t,bar,a,b]}
+  ok("varsayılan plaka seti eski açgözlü sonuçla birebir aynı (0-1000 kg)",!diff,JSON.stringify(diff));
+  const e=A.plates(60,20,[15,10]);ok("[15,10] ile 20 kg/taraf: 10+10 (açgözlü 15'te takılırdı)",e.made===60&&e.side.join()==="10,10",e);
+  ok("[15,10]: yapılamayan hedef en yakın alta iner",A.plates(62.5,20,[15,10]).made===60&&A.plates(70,20,[15,10]).made===70&&A.plates(70,20,[15,10]).side.join()==="15,10");
+  ok("[2.5] seti: 1,25 plakası yok, 22,5 kg 20'ye iner",A.plates(22.5,20,[2.5]).made===20&&A.plates(25,20,[2.5]).side.join()==="2.5");
+  ok("ısınma da envantere göre yuvarlanır",A.warmup(100,20,[20]).every(x=>(x.kg-20)%40===0)&&A.warmup(100,20,[20]).length>=1);
+}
 process.exit(bad?1:0);

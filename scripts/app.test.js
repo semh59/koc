@@ -168,6 +168,41 @@ setTimeout(async()=>{
     ok("ad yazılmadan oluşturulmaz, aynı ad reddedilir",(q('[data-g="mkex"]').click(),ev("S.customEx.length")===1)&&(q("#gnn").value="benim plankım",q('[data-g="mkex"]').click(),ev("S.customEx.length")===1&&q("#toast").textContent.includes("var")));
     ev("closeSheet();S.customEx=[];S.workouts=[];render()");
   }
+  { // Ev ekipmanı profili (D-Ant14)
+    const q=s=>$q(s),qa=s=>[...w.document.querySelectorAll(s)];
+    const H=(id,kg,reps,n=3)=>`S.workouts=[{id:5,day:'2026-09-01',t0:1000,t1:2000,name:'E',tpl:null,ex:[{id:'${id}',note:'',sets:[${Array(n).fill(`{kg:${kg},reps:${reps},done:true}`).join()}]}]}];`;
+    ev("closeSheet();S.workouts=[];S.templates=[];S.customEx=[];S.exCfg={};S.gid=10;S.bar=20;S.dbStep=0;S.plates=GPLATE_DEF.slice();tab='salon';render()");
+    const D=JSON.parse(ev("JSON.stringify(cleanGym({}))")),B=JSON.parse(ev("JSON.stringify(cleanGym({dbStep:3,plates:['x',99,25,25,10,0.5],bar:15}))")),Z=JSON.parse(ev("JSON.stringify([cleanGym({plates:[]}).plates,cleanGym({plates:'x',dbStep:'2'}),cleanGym({dbStep:2.5}).dbStep])"));
+    ok("eski yedek (alansız): dambıl adımı kapalı, plaka seti varsayılan, bar korunur",D.dbStep===0&&D.plates.join()==="25,20,15,10,5,2.5,1.25"&&D.bar===20&&B.bar===15);
+    ok("çöp değerler atılır: geçersiz adım 0, plakalar listeden süzülür/sıralanır, boş ya da bozuk liste varsayılan",B.dbStep===0&&B.plates.join()==="25,10,0.5"&&Z[0].join()==="25,20,15,10,5,2.5,1.25"&&Z[1].plates.length===7&&Z[1].dbStep===0&&Z[2]===2.5);
+    ok("varsayılan envanterde her egzersizin artışı eskisiyle aynı",ev("EXMERGED.every(e=>gInc(e.id)===e.inc)")&&ev("gInc('lat')")===1);
+    ev("S.dbStep=2");
+    ok("dambıl adımı yalnız dambıllı harekete uygulanır",ev("gInc('dbbench')")===2&&ev("gInc('squat')")===2.5&&ev("gInc('tri')")===2.5&&ev("gInc('lat')")===2);
+    ev(H("dbbench",12,12));
+    ok("öneri dambıl adımına yuvarlanır (12 × 12 → 14)",ev("gSuggest('dbbench').kg")===14,ev("gSuggest('dbbench')"));
+    ev("S.dbStep=0;S.plates=[25,20,15,10,5]");
+    ev(H("squat",100,12));
+    ok("1,25 ve 2,5 plakası yokken barlı artış 10 kg, öneri yapılabilir ağırlık",ev("gInc('squat')")===10&&ev("gSuggest('squat').kg")===110);
+    ev(H("squat",102.5,8));
+    ok("yapılamayan kg öneri alta iner (102,5 → 100)",ev("gSuggest('squat').kg")===100);
+    ev("S.plates=GPLATE_DEF.slice()");ev(H("squat",102.5,8));
+    ok("varsayılan envanterde öneri değişmez",ev("gSuggest('squat').kg")===102.5);
+    ev("S.plates=[25,20,15,10,5];S.workouts=[];gStart(null);gAddEx(gActive(),'squat');gActive().ex[0].sets[0].kg=100;gClick('kgp:0:0',document.body)");
+    ok("± düğmesi envanter adımıyla artar",ev("gActive().ex[0].sets[0].kg")===110);
+    ev("S.plates=[20,10];exPlateSheet(0)");
+    q("#pk").value="100";q("#pk").dispatchEvent(new w.Event("input"));
+    ok("plaka hesabı eldeki plakalara göre (100 kg, [20,10] → 20 + 20)",q("#pres").textContent.includes("20 + 20 kg"),q("#pres").textContent);
+    q("#pk").value="95";q("#pk").dispatchEvent(new w.Event("input"));
+    ok("yapılamayan hedefte en yakın alt ağırlık yazılır",q("#pres").textContent.includes("en yakın: 80 kg"),q("#pres").textContent);
+    ev("closeSheet();S.workouts=[];S.plates=GPLATE_DEF.slice();tab='ayar';render()");
+    ok("Ayarlar > Salon: dambıl adımı ve plaka düğmeleri",qa('[data-g^="gdb:"]').length===4&&qa('[data-g^="gpl:"]').length===10&&q('[data-g="gdb:0"]').getAttribute("aria-pressed")==="true"&&q('[data-g="gpl:25"]').getAttribute("aria-pressed")==="true"&&q('[data-g="gpl:2"]').getAttribute("aria-pressed")==="false");
+    q('[data-g="gdb:2.5"]').click();q('[data-g="gpl:1.25"]').click();q('[data-g="gpl:0.5"]').click();
+    ok("seçimler kaydedilir, işaretler güncellenir, liste büyükten küçüğe",ev("S.dbStep")===2.5&&ev("S.plates.join()")==="25,20,15,10,5,2.5,0.5"&&q('[data-g="gdb:2.5"]').getAttribute("aria-pressed")==="true"&&q('[data-g="gpl:1.25"]').getAttribute("aria-pressed")==="false");
+    ev("S.plates=[25]");q('[data-g="gpl:25"]').click();
+    ok("son plaka kaldırılamaz",ev("S.plates.join()")==="25"&&q("#toast").textContent.includes("En az bir plaka"));
+    ok("kayıt turu: envanter kalıcı",ev("(()=>{const c=cleanGym(JSON.parse(JSON.stringify(S)));return c.dbStep===2.5&&c.plates.join()==='25'})()"));
+    ev("S.dbStep=0;S.plates=GPLATE_DEF.slice();tab='bugun';render()");
+  }
   { // Koç ilk izlenimi (C7)
     const q=s=>$q(s),k=()=>ev("viewKoc()");
     ev("S.chat=[];S.settings.consent=false;offline=null");
