@@ -118,20 +118,24 @@ const Algo=(()=>{
   }
   function volume(sets){return sets.reduce((s,x)=>s+(x.done!==false&&!x.w&&x.reps>0?(x.kg||0)*x.reps:0),0)}
   const PLATES=[25,20,15,10,5,2.5,1.25];
-  /* Bir tarafa açgözlü plaka; tam tutmazsa made hedefin altındaki en yakın yapılabilir ağırlık. */
+  /* Bir tarafa en az plaka; tam tutmazsa made hedefin altındaki en yakın yapılabilir ağırlık. inv büyükten küçüğe sıralı.
+     Düzenlenmiş plaka setinde ([15,10] gibi) açgözlü yöntem 20'yi yapamaz, bu yüzden 0,25 kg birimlerinde küçük bir DP. */
   function plates(total,bar=20,inv=PLATES){
-    let rest=(total-bar)/2;const side=[];
+    const rest=(total-bar)/2,side=[];
     if(!(rest>=0))return {side,made:bar};
-    for(const p of inv)while(rest>=p-1e-9){side.push(p);rest-=p}
+    const U=p=>Math.round(p*4),cap=Math.floor(rest*4+1e-9),best=[0];
+    for(let u=1;u<=cap;u++){best[u]=Infinity;for(const p of inv)if(U(p)<=u&&best[u-U(p)]+1<best[u])best[u]=best[u-U(p)]+1}
+    let u=cap;while(best[u]===Infinity)u--;
+    for(let r=u;r>0;){const p=inv.find(x=>U(x)<=r&&best[r-U(x)]===best[r]-1);side.push(p);r-=U(p)}
     return {side,made:bar+2*side.reduce((a,b)=>a+b,0)};
   }
   /* Boş bar × 10, sonra hedefin %40/60/80'i; yapılabilir plakaya yuvarlanır, bar altı ve tekrar eden atılır. */
-  function warmup(target,bar=20){
+  function warmup(target,bar=20,inv=PLATES){
     const out=[];
     for(const [f,reps] of [[0,10],[0.4,5],[0.6,3],[0.8,1]]){
       const kg=f?target*f:bar;
       if(kg<bar)continue;
-      const made=plates(kg,bar).made;
+      const made=plates(kg,bar,inv).made;
       if(made<target&&!out.some(x=>x.kg===made))out.push({kg:made,reps});
     }
     return out;

@@ -1,5 +1,6 @@
 "use strict";
 /* Salon: veri modeli, ekranlar ve etkileşim. index.html'deki global yardımcıları kullanır. */
+const GPLATE_DEF=[25,20,15,10,5,2.5,1.25],GPLATE_ALL=[25,20,15,10,5,2.5,2,1.25,1,0.5];
 const GROUPS=["Bacak","İtiş","Çekiş","Omuz","Kol","Karın"];
 const EXLIB=[
   {id:"squat",n:"Squat",g:"Bacak",inc:2.5},{id:"legpress",n:"Leg press",g:"Bacak",inc:5},
@@ -53,7 +54,8 @@ const fkg=x=>x==null||x===""?"":String(Math.round(x*100)/100).replace(".",",");
 
 /* ---- doğrulama (yükleme ve geri yükleme için) ---- */
 function cleanGym(r){
-  const out={workouts:[],templates:[],customEx:[],gid:1,bar:r.bar>=5&&r.bar<=50?+r.bar:20,exCfg:{}};
+  const pl=Array.isArray(r.plates)?GPLATE_ALL.filter(p=>r.plates.includes(p)):[];
+  const out={workouts:[],templates:[],customEx:[],gid:1,bar:r.bar>=5&&r.bar<=50?+r.bar:20,dbStep:[1,2,2.5].includes(r.dbStep)?r.dbStep:0,plates:pl.length?pl:GPLATE_DEF.slice(),exCfg:{}};
   const idOk=x=>Number.isInteger(x)&&x>0;
   let maxId=0;
   const ce=Array.isArray(r.customEx)?r.customEx:[];
@@ -119,10 +121,25 @@ function gHistory(exId,beforeT=Infinity){
   return S.workouts.filter(w=>gDone(w)&&w.t0<beforeT).sort((a,b)=>b.t0-a.t0)
     .map(w=>({w,sets:(w.ex.find(x=>x.id===exId)||{sets:[]}).sets.filter(s=>s.done&&gSetOk(s))})).filter(h=>h.sets.length);
 }
+/* Artış ve öneri eldeki envantere uyar: dambıl adımı (ayarlıysa), barlı harekette en küçük plakanın iki katı. Ayar yoksa egzersizin kendi adımı. */
+const gPr=id=>(gEx(id).pr||"").split("@")[0];
+function gInc(id){
+  const inc=gEx(id).inc,p=gPr(id);
+  return p==="db"&&S.dbStep?S.dbStep:p==="bar"?Math.max(inc,2*Math.min(...S.plates)):inc;
+}
 function gSuggest(exId){
   if(gKind(exId)!=="w")return null;
   const [h,...old]=gHistory(exId);if(!h)return null;
-  return Algo.nextTarget(h.sets,Object.assign({lo:8,hi:12,inc:gEx(exId).inc,prev:old.slice(0,2).map(x=>x.sets)},S.exCfg[exId]));
+  const r=Algo.nextTarget(h.sets,Object.assign({lo:8,hi:12,inc:gInc(exId),prev:old.slice(0,2).map(x=>x.sets)},S.exCfg[exId])),p=gPr(exId);
+  if(!r)return r;
+  if(p==="bar"&&r.kg>=S.bar)r.kg=Algo.plates(r.kg,S.bar,S.plates).made;
+  else if(p==="db"&&S.dbStep)r.kg=Algo.roundTo(r.kg,S.dbStep);
+  return r;
+}
+function gGearHtml(){
+  return `<div class="lbl" style="margin-top:8px">Dambıl adımı</div><div class="chips">${[0,1,2,2.5].map(v=>`<button class="chip" data-g="gdb:${v}" aria-pressed="${S.dbStep===v}">${v?fkg(v)+" kg":"Varsayılan"}</button>`).join("")}</div>
+  <div class="lbl">Eldeki plakalar (kg)</div><div class="chips">${GPLATE_ALL.map(v=>`<button class="chip" data-g="gpl:${v}" aria-pressed="${S.plates.includes(v)}">${fkg(v)}</button>`).join("")}</div>
+  <p class="hint">Ağırlık önerileri ve plaka hesabı eldeki dambıl adımına ve plakalara yuvarlanır. Bar ağırlığı plaka hesabı sayfasında ayarlanır.</p>`;
 }
 const GSEC={t:30,i:30,c:600};
 /* tg: şablon hedefi {sets,reps,sec}. Varsa set sayısı, tekrar ve süre ondan gelir; kg yine önceki seanstan/öneriden. */
@@ -537,7 +554,7 @@ function gClick(v,el){
     }
     case "kgm":case "kgp":case "rpm":case "rpp":{
       const x=w.ex[ei],s=x.sets[si],up=a[2]==="p";
-      if(a[0]==="k")s.kg=Math.min(1000,Math.max(0,Math.round(((s.kg||0)+(up?1:-1)*gEx(x.id).inc)*100)/100));
+      if(a[0]==="k")s.kg=Math.min(1000,Math.max(0,Math.round(((s.kg||0)+(up?1:-1)*gInc(x.id))*100)/100));
       else s.reps=Math.min(200,Math.max(1,(s.reps||0)+(up?1:-1)));
       save();return render();
     }

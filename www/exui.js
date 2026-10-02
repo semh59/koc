@@ -165,7 +165,7 @@ function exPlateCalc(){
   const {kg,bar}=exPlateIn(),box=$("#pres");
   if(!exPlateOk({kg,bar})){box.innerHTML=`<p class="hint">${EXPLATE_HINT}.</p>`;return}
   if(S.bar!==bar){S.bar=bar;save()}
-  const p=Algo.plates(kg,bar),wu=Algo.warmup(kg,bar);
+  const p=Algo.plates(kg,bar,S.plates),wu=Algo.warmup(kg,bar,S.plates);
   box.innerHTML=`<div class="stat"><div class="k">Bir tarafa</div><div class="v num">${p.side.join(" + ")||"yalnız bar"} kg</div></div>
   ${p.made!==kg?`<p class="hint">Tam yapılamıyor, en yakın: ${fkg(p.made)} kg</p>`:""}
   ${wu.length?`<div class="lbl">Isınma</div><div class="num">${wu.map(x=>`${fkg(x.kg)} × ${x.reps}`).join(", ")}</div>`:""}`;
@@ -203,7 +203,7 @@ function exWarmAdd(ei){
   const v=exPlateIn(),x=gActive().ex[ei];
   if(!exPlateOk(v))return toast(EXPLATE_HINT);
   // Yeniden eklemede bekleyen eski ısınmalar yenilenir; tamamlananlar kalır ve aynı ağırlık yeniden eklenmez.
-  const done=x.sets.filter(s=>s.w&&s.done),wu=Algo.warmup(v.kg,v.bar).filter(t=>!done.some(s=>s.kg===t.kg));
+  const done=x.sets.filter(s=>s.w&&s.done),wu=Algo.warmup(v.kg,v.bar,S.plates).filter(t=>!done.some(s=>s.kg===t.kg));
   if(!wu.length)return toast(done.length?"Isınma setleri zaten tamamlandı":"Isınma için hedef barın üstünde olmalı");
   x.sets=done.concat(wu.map(t=>({kg:t.kg,reps:t.reps,done:false,w:true}))).sort((a,b)=>a.kg-b.kg).concat(x.sets.filter(s=>!s.w));
   save();closeSheet();render();toast("Isınma setleri eklendi");
@@ -213,6 +213,12 @@ function exWarmAdd(ei){
 function exClick(a,p1,p2,el,w){
   const ei=+p1;
   switch(a){
+    case "gdb":S.dbStep=+p1;save();return render();
+    case "gpl":{
+      const v=+p1,on=S.plates.includes(v);
+      if(on&&S.plates.length===1)return toast("En az bir plaka kalmalı");
+      S.plates=GPLATE_ALL.filter(x=>x===v?!on:S.plates.includes(x));save();return render();
+    }
     case "lib":tab="egz";return render();
     case "lback":tab="salon";return render();
     case "lreg":gLReg=p1;gLN=40;return exRefreshChips();
