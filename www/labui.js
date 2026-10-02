@@ -138,16 +138,17 @@ function labBuildReport(){
   });
   return LabLib.buildPdf(jp);
 }
-/* PDF baytlarını paylaşım ekranına verir (telefonda), tarayıcıda indirir. */
-async function sharePdf(pdf,name,title){
+/* Dosyayı paylaşım ekranına verir (telefonda), tarayıcıda indirir. data: utf8 true ise metin, değilse base64. */
+async function shareFile(name,title,mime,data,utf8){
   const P=window.Capacitor&&window.Capacitor.Plugins,fs=P&&P.Filesystem,sh=P&&P.Share;
   if(fs&&sh){
-    try{const f=await fs.writeFile({path:name,data:labB64(pdf),directory:"CACHE"});await sh.share({title,files:[f.uri]})}
+    try{const f=await fs.writeFile(utf8?{path:name,data,directory:"CACHE",encoding:"utf8"}:{path:name,data,directory:"CACHE"});await sh.share({title,files:[f.uri]})}
     catch(e){if(!/cancel/i.test(e&&e.message||""))toast("Paylaşılamadı")}
     return;
   }
-  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([pdf],{type:"application/pdf"}));a.download=name;document.body.appendChild(a);a.click();a.remove();
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([utf8?data:labUnb64(data)],{type:mime}));a.download=name;document.body.appendChild(a);a.click();a.remove();
 }
+const sharePdf=(pdf,name,title)=>shareFile(name,title,"application/pdf",labB64(pdf));
 async function labExport(){
   let pdf;try{pdf=labBuildReport()}catch(e){return toast("PDF hazırlanamadı")}
   await sharePdf(pdf,`neowell-tahlil-${dayKey()}.pdf`,"Tahlil sonuçları");

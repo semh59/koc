@@ -1877,4 +1877,19 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("scheduleReminders=window.__osr;closeSheet();S.settings.consent=false;S.settings.consentV=0;S.settings.consentAt='';S.fast={plan:16,t0:null,log:[]};S.chat=[];S.entries=[];S.meds=[];S.workouts=[];tab='bugun';render()");
     delete w.Capacitor.Plugins.Widget;
   }
+  { // D-Veri1: CSV dışa aktarma
+    const q=s=>$q(s),qa=s=>[...w.document.querySelectorAll(s)],wr=[],shr=[];
+    w.Capacitor.Plugins.Filesystem={writeFile:async o=>{wr.push(o);return {uri:"file:///cache/"+o.path}}};
+    w.Capacitor.Plugins.Share={share:async o=>{shr.push(o)}};
+    ev("closeSheet();S.entries=[];S.nextId=1;S.workouts=[];S.vitals=[];S.sleep=[];S.mood=[];S.fast={plan:16,t0:null,log:[]};S.meds=[];S.medLog=[];add('kilo',80.5);add('not',null,'=1+1');S.settings.obDone=true;tab='ayar';render()");
+    q('[data-pv="csv"]').click();
+    const sheet=()=>q("#sheet").textContent;
+    ok("Ayarlar > Veriler'de Tabloya aktar: 7 dosya, satır sayılarıyla; boş olanın düğmesi kapalı",sheet().includes("Kayıtlar (yemek, su, kilo, spor, adım, not)")&&sheet().includes("2 satır")&&qa('[data-pv^="csvsh:"]').length===7&&qa('[data-pv^="csvsh:"]').filter(b=>b.disabled).length===6);
+    q('[data-pv="csvsh:0"]').click();await new Promise(r=>setTimeout(r,20));
+    ok("paylaşım: tek dosya, UTF-8 metin, BOM, ; ayırıcı, ondalık virgül, enjeksiyon engelli, paylaşım ekranına uri gider",wr.length===1&&wr[0].encoding==="utf8"&&wr[0].directory==="CACHE"&&/^neowell-kayitlar-\d{4}-\d\d-\d\d\.csv$/.test(wr[0].path)&&wr[0].data.startsWith("﻿tarih;saat;")&&wr[0].data.includes(";kilo;80,5;kg;")&&wr[0].data.includes("'=1+1")&&shr.length===1&&shr[0].files[0]==="file:///cache/"+wr[0].path,wr[0]);
+    ev("S.nextId=1");
+    await ev("sharePdf(new Uint8Array([37,80,68,70]),'x.pdf','PDF')");
+    ok("PDF paylaşımı aynı yoldan, base64 ve kodlamasız (gerileme yok)",wr.length===2&&wr[1].path==="x.pdf"&&wr[1].encoding===undefined&&wr[1].data==="JVBERg==",wr[1]);
+    delete w.Capacitor.Plugins.Filesystem;delete w.Capacitor.Plugins.Share;ev("closeSheet();S.entries=[];tab='bugun';render()");
+  }
 },100);
