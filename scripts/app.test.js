@@ -830,6 +830,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     await ev("gLnQ");lnLog.length=0;ev("S.settings.reminders.forEach(r=>r.on=true)");await ev("scheduleReminders()");
     ok("hatırlatmalar yeniden kurulurken zamanlayıcı bildirimi (9001) iptal edilmez",lnLog.some(l=>l[0]==="c"&&l[1].includes(5))&&!lnLog.some(l=>l[0]==="c"&&l[1].includes(9001)),lnLog.filter(l=>l[0]==="c"));
     ok("hatırlatmalar yeniden kurulurken dinlenme bildirimi (9002) iptal edilmez",!lnLog.some(l=>l[0]==="c"&&l[1].includes(9002)));
+    ok("hatırlatma kimlikleri 9001/9002 ile çakışmaz",ev("Math.max(...S.settings.reminders.map(r=>r.id))*100+SCHED_DAYS-1")<9001&&!lnLog.some(l=>l[0]==="s"&&(l[1].includes(9001)||l[1].includes(9002))));
     // dinlenme bildirimi 9002 (süreli set bildirimi 9001'den ayrı)
     const lnAt=[];w.Capacitor.Plugins.LocalNotifications.schedule=async o=>{lnLog.push(["s",o.notifications.map(n=>n.id)]);lnAt.push(...o.notifications)};
     const has=(k,id)=>lnLog.some(l=>l[0]===k&&l[1].includes(id)),reset=async()=>{await ev("gLnQ");lnLog.length=0;lnAt.length=0},drain=()=>ev("gLnQ");
