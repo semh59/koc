@@ -1952,4 +1952,31 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("tema seçici Sistem/Açık/Koyu: data-theme yazılır, Sistem'de öznitelik kalkar, kaydedilir",t1==="dark"&&s1==="dark"&&p1==="true"&&t2==="light"&&!de.hasAttribute("data-theme")&&ev("S.settings.theme")===""&&ev("JSON.parse(localStorage.getItem('koc_v1')).settings.theme")==="");
     ev("tab='bugun';render()");
   }
+  { // Günlük öğün grupları, su birleşimi, yemek ekle sırası (C4)
+    const q=s=>$q(s),lg=()=>q(".log").textContent,mk=(t,time,v,x)=>({id:0,day:ev("dayKey()"),time,type:t,v,text:t==="yemek"?"Menemen":"",...x});
+    ev("closeSheet();tab='bugun';logOff=0;S.entries=[];S.nextId=1;render()");
+    ok("cleanEntries: meal beyaz listede, geçersiz atılır, eski kayıtta alan yok",ev(`(()=>{const d=dayKey(),r=cleanEntries([{day:d,time:"09:00",type:"yemek",v:1,meal:"aks"},{day:d,time:"09:00",type:"yemek",v:1,meal:"x"},{day:d,time:"09:00",type:"yemek",v:1},{day:d,time:"09:00",type:"su",v:1,meal:"aks"}]).out;return r.map(e=>e.meal).join()})()`)==="aks,,,");
+    ev(`S.entries=cleanEntries([${JSON.stringify(mk("yemek","08:10",200))},${JSON.stringify(mk("yemek","13:00",300))},${JSON.stringify(mk("yemek","19:00",150,{meal:"atis"}))},${JSON.stringify(mk("su","09:00",250))},${JSON.stringify(mk("su","10:00",250))},${JSON.stringify(mk("su","11:00",500))}]).out;render()`);
+    const heads=[...w.document.querySelectorAll(".log .gh")].map(h=>h.textContent);
+    ok("günlük öğüne göre gruplanır, her grupta alt toplam kcal; yemek saatinden varsayılan öğün, meal'li kayıt seçtiği grupta",heads.join("|")==="Kahvaltı200 kcal|Öğle300 kcal|Atıştırmalık150 kcal",heads);
+    ok("su kayıtları günlükte tek satır: 'Su: 1 L (1,0), 3 kayıt' biçimi",w.document.querySelectorAll(".log [data-suall]").length===1&&lg().includes("Su: 1,0 L, 3 kayıt")&&!lg().includes("250 ml"),lg());
+    q("[data-suall]").click();
+    ok("su satırına dokununca ayrıntı sayfası: her kayıt saatle, 44 px silme düğmesiyle",q("#sheet").textContent.includes("09:00")&&q("#sheet").textContent.includes("500 ml")&&q("#sheet").querySelectorAll("[data-del]").length===3);
+    q("#sheet [data-del]").click();
+    ok("ayrıntıdan silince kayıt gider, özet güncellenir, sayfa açık kalır",ev("S.entries.filter(e=>e.type==='su').length")===2&&lg().includes("2 kayıt")&&q("#sheet").classList.contains("on")&&q("#sheet").querySelectorAll("[data-del]").length===2);
+    ev("closeSheet()");
+    q('[data-meal="1"]').click();
+    q('[data-mset="1:aks"]').click();
+    ok("öğün değiştirilebilir: kayıt meal alır, grup değişir, kayıt saklanır",ev("S.entries.find(e=>e.id===1).meal")==="aks"&&[...w.document.querySelectorAll(".log .gh")].map(h=>h.querySelector("b").textContent).join()==="Öğle,Akşam,Atıştırmalık"&&JSON.parse(ev("localStorage.getItem('koc_v1')")).entries.find(e=>e.id===1).meal==="aks");
+    ev("S.entries=[];render()");
+    ok("yalnız su varsa öğün başlığı çıkmaz",(ev("add('su',250);render();1"),w.document.querySelectorAll(".log .gh").length===0&&lg().includes("Su: 250 ml, 1 kayıt")));
+    ev("S.entries=[];render();sheetYemek()");
+    const ch=[...q("#sheet").children].map(n=>n.id||n.className);
+    ok("yemek ekle: arama kutusu başlığın hemen altında, düğmelerden ve listelerden önce",ch.indexOf("fq")===2&&ch.indexOf("fq")<ch.indexOf("frl")&&q("#sheet").querySelector(".qrow")&&ch.indexOf("fq")<ch.indexOf("qrow"),ch);
+    q("#ft").value="Simit";q('#fml [data-ml="aks"]').click();q('[data-go="yemek"]').click();
+    ok("yemek ekle: seçilen öğün kayda yazılır, çip tek seçili",ev("S.entries[0].meal")==="aks"&&ev("S.entries[0].text")==="Simit");
+    ev("S.favFoods=[{text:'Elma',v:50}];sheetYemek()");q('#fml [data-ml="kah"]').click();q("[data-fv]").click();
+    ok("favoriden ekleme seçili öğünü kullanır",ev("S.entries.find(e=>e.text==='Elma').meal")==="kah");
+    ev("S.favFoods=[];S.entries=[];render()");
+  }
 },100);

@@ -47,7 +47,7 @@ Ayrıntı ve test adımları `yapilacaklar.md`'de. Telefonda denenen tek özelli
 | C1 (yapıldı) | Bugün'ü sadeleştir | Kayıt düğmeleri ilk ekrana gelir, kilo kartı küçülür, ilaç/oruç/ölçüm tek "Bugün yapılacaklar" listesinde, halkalarda birim ve "kalan". | M | rekabet-arayuz | – |
 | C2 (yapıldı) | Onboarding | 3 adımda kilo, hedef, boy, yaş ve modüller sorulur, kişisel kalori ve protein hedefi hemen çıkar. | M | rekabet-arayuz | – |
 | C3 (yapıldı) | Ayarlar alt sayfaları | ~5.000 px'lik tek sayfa Profil · Modüller · Hatırlatmalar · Koç · Veri ve yedek · Hakkında olarak bölünür. | M | rekabet-arayuz | – |
-| C4 | Yemek ekle ve günlük | Arama en üste çıkar, günlük öğüne göre gruplanır, su tek satırda birleşir. | M | rekabet-arayuz | – |
+| C4 (yapıldı) | Yemek ekle ve günlük | Arama en üste çıkar, günlük öğüne göre gruplanır, su tek satırda birleşir. | M | rekabet-arayuz | – |
 | C5 (yapıldı) | SVG ikon seti | Emoji yerine tek renkli, `aria-hidden` ikonlar ve etkin sekmede renk kullanılır. | M | rekabet-arayuz | – |
 | C6 (yapıldı) | Dokunma hedefleri ve hata yeri | Tüm hedefler 44 px olur, hata mesajı balon yerine alanın altında çıkar. | S | rekabet-arayuz | – |
 | C7 (yapıldı) | Koç ilk izlenimi | Anahtar yokken "API" demeyen tanıtım ekranı ve adım adım anahtar rehberi gösterilir. | M | rekabet-arayuz, rekabet-ozellik | – |
