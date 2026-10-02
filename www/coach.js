@@ -365,6 +365,8 @@ function cCard(m){
 /* Onay metni tek yerde: Koç ekranı ve Gizlilik ve veri aynı metni gösterir. Değiştirirsen CONSENT_V'yi artır. */
 const consentOk=()=>!(S.settings.age>0&&S.settings.age<18);
 const consentHtml=()=>`<b>Koç ile veri paylaşımına açık rızan</b><ul style="margin:6px 0;padding-left:18px"><li><b>Ne gönderilir:</b> yazdığın mesajlar, profilin (boy, yaş, cinsiyet, hareket düzeyi), sağlık notun, hedeflerin, son 14 günün kilo, yemek, su, spor ve adım özeti (varsa uyku ve ruh hali), son antrenmanların, son notların ve ilaç modülü açıksa ilaç adın ve saatlerin. Tahlil, tansiyon, şeker, fotoğraf ve yedek gönderilmez.</li><li><b>Kime:</b> seçtiğin sağlayıcıya (${esc(S.providers.filter(p=>p.on&&p.health).map(p=>p.name).join(", ")||"hiçbiri seçili değil")}), kendi anahtarınla. Sunucuları yurt dışındadır; bu bir yurt dışına aktarımdır.</li><li><b>Geri alma:</b> istediğin an Ayarlar > Gizlilik ve veri ya da Yapay zekâ koç bölümünden. Geri alınca yeni veri gitmez; önceden gönderilene sağlayıcının kendi politikası uygulanır.</li><li><b>Onay vermezsen</b> uygulama tam çalışır, yalnız Koç konuşmaz.</li></ul>${consentOk()?"":`<p><b>18 yaş altı için Koç veri paylaşımı kapalıdır.</b></p>`}`;
+/* Sohbeti siler, onaya dokunmaz. */
+function cClearChat(){S.chat=[];S.settings.lastPlan="";save()}
 function cConsent(on){
   const s=S.settings;if(on&&!consentOk())return;
   Object.assign(s,{consent:on,consentV:on?CONSENT_V:0,consentAt:on?dayKey():""});save();render();
@@ -516,7 +518,7 @@ function cClick(v,el){
     case "applyk":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card&&m.card.state==="pending"){S.settings.kcal=m.card.kcal;m.card.state="ok";save();render();toast(`Kalori hedefi ${m.card.kcal} kcal oldu`)}return}
     case "nok":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card){m.card.state="no";save();render()}return}
     case "dismiss":{const b=el.closest(".cm");if(b){S.chat=S.chat.filter(x=>x.id!==+b.dataset.mid);save();render()}return}
-    case "clearchat":if(confirm("Sohbet geçmişi silinsin mi? Kayıtların silinmez.")){S.chat=[];S.settings.lastPlan="";save();render()}return;
+    case "clearchat":if(confirm("Sohbet geçmişi silinsin mi? Kayıtların silinmez.")){cClearChat();render()}return;
     default:return cProvClick(a,p1,p2);
   }
 }

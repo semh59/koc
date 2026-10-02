@@ -117,7 +117,7 @@ Koç kurulum rehberi C7'de, güvenlik metinleri B7'de.
 | D-Veri1 | CSV dışa aktarma | Antrenman ve kayıtlar tablo olarak dışa aktarılır. | S | rekabet-egzersiz #4 | – |
 | D-Veri2 | Otomatik şifreli yedek | Yedek haftalık olarak seçilen klasöre ya da Drive'a kendiliğinden gider. | M | rekabet-ozellik §7 | – |
 | D-Veri3 (yapıldı) | APK boyutu (76 MB) | APK analiz edilip küçültülür. Ölçüm (son sürüm, sıkıştırılmış): ML Kit yazı tanıma .so 41 MB (4 ABI), gömülü barkod .so 18 MB, `lib/x86` 17 MB, `www/ex` 7,6 MB, dex 4,5 MB. Yapılan: 32 bit x86 çıkarıldı, kullanılmayan gömülü barkod motoru paketlenmiyor; tahmini 76,3 → ~46,6 MB (CI her derlemede bileşen dökümü yazar). Yapılmayan: R8/shrinkResources (debug derleme, Capacitor yansıma riski, cihaz testi yok, kazanç ≤4 MB), yazı tanımayı Play hizmetlerinden indirmek (çevrimdışı vaadi ve smoke OCR testi bozulur, ~29 MB), webp zaten kalite 55. | S | kullanıcı notu, ölçüm | – |
-| D-Veri4 | Gizlilik paneli, kategori bazlı silme | Yalnız su ya da yalnız not gibi seçerek silme ve verinin nerede durduğu gösterilir. | M | fikirler | – |
+| D-Veri4 (yapıldı) | Gizlilik paneli, kategori bazlı silme | Yalnız su ya da yalnız not gibi seçerek silme ve verinin nerede durduğu gösterilir. | M | fikirler | – |
 
 ### Pazarlama ve mağaza
 | # | Ad | Değer | Emek | Kaynak | Bağımlılık / karar |
