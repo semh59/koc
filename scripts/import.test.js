@@ -46,4 +46,11 @@ ok("CSV enjeksiyonu: =HYPERLINK adı yalnız kısaltılmış metin olarak kalır
  ok("sığmayan geçmişte kısmi içe aktarım: en yeni N antrenman, yalnız kullanılan yeni egzersizler",I.fit(P,I.bytes(P)/5)>80&&I.fit(P,I.bytes(P)/5)<120&&cut.workouts.length===100&&cut.workouts.every(w=>w.t0>=P.workouts[400].t0),I.fit(P,I.bytes(P)/5));}
 ok("yeni egzersiz sınırı: aşan egzersizler alınmaz ve adları bildirilir",(q=>q.newEx.length===I.MAX_NEW&&q.stats.over.length===5)(I.plan(I.read("Date,Workout Name,Exercise Name,Set Order,Weight,Reps\n"+Array.from({length:105},(_,i)=>`2024-03-15 18:30,A,Zz${i},1,5,5`).join("\n")+"\n").workouts,ctx({find:()=>null}))));
 ok("tablo: her kimlik kütüphanede var",Object.entries(I.MAP).every(([k,id])=>lib.some(e=>e.id===id)),Object.entries(I.MAP).filter(([k,id])=>!lib.some(e=>e.id===id)));
+{const hv='title,start_time,end_time,exercise_title,superset_id,set_index,set_type,weight_kg,reps\n'
+ +'A,2024-03-15 18:30,2024-03-15 19:00,Squat (Barbell),7,0,normal,100,5\nA,2024-03-15 18:30,2024-03-15 19:00,Squat (Barbell),7,1,dropset,60,12\n'
+ +'A,2024-03-15 18:30,2024-03-15 19:00,Bench Press (Barbell),7,0,failure,80,6\nA,2024-03-15 18:30,2024-03-15 19:00,Lat Pulldown (Cable),3,0,normal,40,10\n';
+ const q=I.plan(I.read(hv).workouts,ctx()).workouts[0];
+ ok("Hevy: dropset -> t:d, failure -> t:f, superset_id -> aynı ss (tek kalan ss atılır)",q.ex[0].sets[1].t==="d"&&q.ex[1].sets[0].t==="f"&&q.ex[0].ss>0&&q.ex[0].ss===q.ex[1].ss&&q.ex[2].ss===undefined,q);
+ const sd=I.plan(I.read('Date,Workout Name,Exercise Name,Set Order,Weight,Reps\n2024-03-15 18:30,A,Squat (Barbell),1,50,5\n2024-03-15 18:30,A,Squat (Barbell),D,40,8\n2024-03-15 18:30,A,Squat (Barbell),F,40,3\n').workouts,ctx()).workouts[0].ex[0].sets;
+ ok("Strong: Set Order D ve F set türü olur, atlanmaz",sd.length===3&&sd[1].t==="d"&&sd[2].t==="f");}
 process.exit(bad?1:0);

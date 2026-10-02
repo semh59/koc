@@ -65,7 +65,7 @@ const ImportLib=(()=>{
     const c=hevy?{
       date:col(m,"starttime"),end:col(m,"endtime"),name:col(m,"title"),dur:-1,ex:col(m,"exercisetitle"),ord:col(m,"settype"),
       w:col(m,"weightkg","weightlbs","weightlb"),reps:col(m,"reps"),dist:col(m,"distancekm","distancemiles","distancemi"),sec:col(m,"durationseconds"),
-      note:col(m,"exercisenotes"),rpe:col(m,"rpe")
+      note:col(m,"exercisenotes"),rpe:col(m,"rpe"),ss:col(m,"supersetid")
     }:{
       date:col(m,"date"),end:-1,name:col(m,"workoutname"),dur:col(m,"duration"),ex:col(m,"exercisename"),ord:col(m,"setorder"),
       w:col(m,"weightkg","weightlbs","weightlb","weight"),reps:col(m,"reps"),dist:col(m,"distance"),sec:col(m,"seconds"),
@@ -87,11 +87,11 @@ const ImportLib=(()=>{
         if(hevy){const e=stamp(get(r,c.end));if(e&&e.t>st.t)t1=e.t}else{const ms=duration(get(r,c.dur));if(ms)t1=st.t+Math.min(ms,864e5)}
         w={day:st.day,t0:st.t,t1:Math.max(t1||0,st.t+6e4),name:clean(get(r,c.name),60)||"Antrenman",ex:[],by:new Map()};ws.set(key,w);
       }
-      const warm=hevy?ord==="warmup":ord==="w";
+      const warm=hevy?ord==="warmup":ord==="w",ty=ord==="d"||ord==="dropset"?"d":ord==="f"||ord==="failure"?"f":null;
       if(!exn||(!hevy&&!warm&&!/^(\d+|d|f)$/.test(ord))){skipped++;continue}
-      let x=w.by.get(exn);if(!x){x={name:exn,note:"",sets:[]};w.by.set(exn,x);w.ex.push(x)}
+      let x=w.by.get(exn);if(!x){x={name:exn,note:"",sets:[],ss:hevy?clean(get(r,c.ss),40):""};w.by.set(exn,x);w.ex.push(x)}
       if(!x.note)x.note=clean(get(r,c.note),300);
-      const kg=num(get(r,c.w)),rpe=num(get(r,c.rpe)),s={kg:kg==null?null:Math.round(kg*f*100)/100,reps:num(get(r,c.reps)),sec:num(get(r,c.sec)),dist:num(get(r,c.dist)),w:warm};
+      const kg=num(get(r,c.w)),rpe=num(get(r,c.rpe)),s={kg:kg==null?null:Math.round(kg*f*100)/100,reps:num(get(r,c.reps)),sec:num(get(r,c.sec)),dist:num(get(r,c.dist)),w:warm};if(ty)s.t=ty;
       if(rpe>=6&&rpe<=10)s.rpe=Math.round(rpe*2)/2;
       x.sets.push(s);
     }
@@ -174,10 +174,13 @@ const ImportLib=(()=>{
           if(!o){skippedSets++;continue}
           if(s.w&&!timed)o.w=true;
           if(s.rpe&&!timed&&!s.w)o.rpe=s.rpe;
+          if(s.t&&!timed&&!s.w)o.t=s.t;
           sets_.push(o);
         }
-        if(sets_.length)ex.push({id:e.id,note:x.note,sets:sets_});
+        if(sets_.length)ex.push({id:e.id,note:x.note,sets:sets_,_ss:x.ss});
       }
+      const gr=new Map();for(const x of ex)if(x._ss)gr.set(x._ss,(gr.get(x._ss)||0)+1);
+      const nums=[...gr.keys()];for(const x of ex){if(x._ss&&gr.get(x._ss)>1)x.ss=nums.indexOf(x._ss)+1;delete x._ss}
       if(!ex.length)continue;
       const k=KEY(w,ex.map(x=>x.id));
       if(have.has(k)){dup++;continue}
