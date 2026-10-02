@@ -93,7 +93,7 @@ Ayrıntı ve test adımları `yapilacaklar.md`'de. Telefonda denenen tek özelli
 | D-Adım1 | Health Connect keşfi | Kitaplık, minSdk, Kotlin köprüsü ve manifest öğeleri doğrulanıp boş eklentiyle CI yeşil alınır. | S | plan-6 §9 (6.0) | G1 |
 | D-Adım2 | Health Connect okuma | Saat/bant adımı (telefonla max, asla toplam), uyku ve nabız uygulamaya gelir. | L | plan-6 §9 (6.1-6.2) | D-Adım1, G1 |
 | D-Adım3 (yapıldı) | Elle yürüyüş başlat/durdur | Tek yürüyüşün mesafe, süre ve kalorisi elle ölçülür. | M | oneri #3, adim-arastirma | – |
-| D-Adım4 | Hareket kalorisini hedefe ekleme | Varsayılan kapalı bir ayarla yakılan kalori günlük hedefe eklenir. | S | oneri #5 | G11 |
+| D-Adım4 (yapıldı) | Hareket kalorisini hedefe ekleme | Varsayılan kapalı bir ayarla yakılan kalori günlük hedefe eklenir. | S | oneri #5 | G11 |
 | D-Adım5 (yapıldı) | Aylık adım grafiği ve adım serisi | 14 günlük grafiğe aylık görünüm ve adım hedefi serisi eklenir. | S | oneri #6 | – |
 | D-Adım6 | Uzun hareket aralığını bölme | 4 saati ya da gece yarısını aşan aralık atılmak yerine gün sınırında bölünür. | S | akilli-gps "Bilinen sınırlar" | – |
 

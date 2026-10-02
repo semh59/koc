@@ -98,4 +98,11 @@ ok("ısınma setleri hesaba girmez (en son, önceki ve tek başına)",A.nextTarg
   ok("moveSummary bisiklet: mesafe yok, MET 6,8",b.km===null&&b.met===6.8&&b.kcal===Math.round(5.8*80));
   ok("moveSummary: adım yok / ritim saçma / boy yoksa mesafe yok, kalori süre ve kiloyla (yürüyüş 3,5 MET)",A.moveSummary({kind:"w",min:30,steps:null,cm:170,kg:80}).km===null&&A.moveSummary({kind:"w",min:30,steps:30000,cm:170,kg:80}).km===null&&A.moveSummary({kind:"w",min:30,steps:3000,cm:0,kg:80}).km===null&&A.moveSummary({kind:"w",min:30,steps:null,cm:170,kg:80}).kcal===Math.round(2.5*80*0.5)&&A.moveSummary({kind:"w",min:30,steps:null,cm:170,kg:0}).kcal===null);
 }
+{ // D-Adım4
+  const sp=(time,v,kcal)=>({time,v,kcal}),mv=(t0,min,kcal)=>({t0,min,kcal});
+  ok("exerciseKcal: spor kcal toplanır, kcal'siz kayıt 0",A.exerciseKcal([sp("10:00",30,100),sp("19:00",45,200),sp("20:00",20)],[])===300);
+  ok("exerciseKcal: çakışan hareket sayılmaz, çakışmayan sayılır, kenar teması çakışma değil",A.exerciseKcal([sp("18:00",60,300)],[mv("17:30",30,150),mv("08:00",30,100),mv("18:00",30,50),mv("16:00",60,70)])===300+100+50+70);
+  ok("exerciseKcal: kcal'siz spor da aralık sayılır (aynı çıkışı kaplar)",A.exerciseKcal([sp("18:00",60)],[mv("17:40",10,80)])===0);
+  ok("moveBonus: %50, tamsayı, 800 üst sınır, asla negatif/NaN",A.moveBonus(301)===151&&A.moveBonus(5000)===800&&A.moveBonus(0)===0&&A.moveBonus(-50)===0&&A.moveBonus(NaN)===0&&A.moveBonus(200,1)===200);
+}
 process.exit(bad?1:0);
