@@ -305,6 +305,7 @@ input.in,select.in,.chip>button{min-height:44px}
 <script src="habitui.js"></script>
 <script src="motionui.js"></script>
 <script src="measureui.js"></script>
+<script src="walkui.js"></script>
 <script src="backupui.js"></script>
 <script src="csvlib.js"></script>
 <script src="privacyui.js"></script>
@@ -354,7 +355,7 @@ const DEF={
     {id:11,t:"20:00",on:false,name:"Oruç başlangıcı",title:"⏳ Oruç başlangıcı",body:"Oruç penceren başlıyor, istersen Bugün'den başlat."},
     {id:12,t:"20:30",on:true,dow:0,name:"Haftalık özet (Pazar)",title:"📊 Haftalık özet",body:"Haftanı birlikte inceleyelim, bakmak için dokun."}
   ]},
-  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,dbStep:0,plates:GPLATE_DEF.slice(),exCfg:{},providers:defProviders(),chat:[],cid:1,myFoods:[],favFoods:[],mealTpl:[],fast:{plan:16,t0:null,log:[]},sleep:[],mood:[],labs:[],vitals:[],meds:[],medLog:[],moves:[],measures:[]
+  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,dbStep:0,plates:GPLATE_DEF.slice(),exCfg:{},providers:defProviders(),chat:[],cid:1,myFoods:[],favFoods:[],mealTpl:[],fast:{plan:16,t0:null,log:[]},sleep:[],mood:[],labs:[],vitals:[],meds:[],medLog:[],moves:[],measures:[],walk:null
 };
 const VR={bpSysHi:[80,300,true],bpDiaHi:[40,200,true],bpSysLo:[50,300,true],bpDiaLo:[30,200,true],gFastLo:[20,600,true],gFastHi:[20,600,true],gPostLo:[20,600,true],gPostHi:[20,600,true]};
 const RANGES={...VR,goalKg:[20,400,false],kcal:[800,8000,true],waterMl:[500,10000,true],glass:[50,1500,true],sportWeek:[10,3000,true],stepGoal:[1000,100000,true],heightCm:[100,250,true],age:[10,100,true]};
@@ -408,7 +409,7 @@ function cleanSettings(raw,fast){
   }
   return d;
 }
-function cleanHealthState(r){const meds=MedLib.cleanMeds(r&&r.meds);return {meds,medLog:MedLib.cleanLog(r&&r.medLog,meds),moves:MotionLib.clean(r&&r.moves),measures:Algo.cleanMeasures(r&&r.measures),favFoods:LogLib.cleanFav(r&&r.favFoods),mealTpl:LogLib.cleanTpl(r&&r.mealTpl),fast:HabitLib.cleanFast(r&&r.fast),sleep:HabitLib.cleanSleep(r&&r.sleep),mood:HabitLib.cleanMood(r&&r.mood)}}
+function cleanHealthState(r){const meds=MedLib.cleanMeds(r&&r.meds);return {meds,medLog:MedLib.cleanLog(r&&r.medLog,meds),moves:MotionLib.clean(r&&r.moves),measures:Algo.cleanMeasures(r&&r.measures),walk:Algo.cleanWalk(r&&r.walk,Date.now()),favFoods:LogLib.cleanFav(r&&r.favFoods),mealTpl:LogLib.cleanTpl(r&&r.mealTpl),fast:HabitLib.cleanFast(r&&r.fast),sleep:HabitLib.cleanSleep(r&&r.sleep),mood:HabitLib.cleanMood(r&&r.mood)}}
 function cleanMyFoods(arr){
   const out=[],seen=new Set();
   for(const x of (Array.isArray(arr)?arr:[]).slice(0,200)){
@@ -618,6 +619,7 @@ function viewBugun(){
   const row=(ic,b,sub,btns)=>`<div class="row"><span>${Icons.svg(ic)} ${b}<small class="mut sm">${sub}</small></span>${btns.map(([a,l])=>`<button class="chip" data-act="${a}">${l}</button>`).join("")}</div>`;
   /* Ayrı kartlar yerine tek liste: yalnız açık modülün bugün bekleyen işi; boşsa kart yok. */
   const todo=[...medTodo(),...fastTodo(),...vTodo(),
+    S.walk?row("adim",S.walk.t1?"Yürüyüş kaydedilmedi":"Yürüyüş sürüyor","Adım raporunda bitir ya da kaydet.",[["walkgo","Aç"]]):"",
     sOn&&stepsRead&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?row("adim","Adım sayımı durmuş olabilir","Pil ayarında NeoWell'e kısıtlama koyma.",[["adimduz","Ayarla"],["adimgizle","Kapat"]]):"",
     storeMsg()?row("save",storeMsg()[0],storeMsg()[1],[["veriyedek","Yedek al"]]):"",
     isNative()&&!exactOk&&st.medOn&&S.meds.length?row("clock","İlaç alarmı birkaç dakika gecikebilir","Tam saat alarm izni kapalı. İzin verirsen tam saatinde çalar.",[["tamalarm","İzin ver"]]):"",
@@ -1083,6 +1085,7 @@ function viewAdim(){
   const rows=all.slice(-7).reverse().map(d=>`<div class="row" style="display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)"><span>${d.k===dayKey()?"Bugün":GUNK[d.d.getDay()]+" "+fd(d.k)}</span><b class="num">${d.v?fm(d.v):"–"}</b></div>`).join("");
   const man=S.entries.filter(e=>e.type==="adim"&&e.text==="elle").sort((a,b)=>b.day.localeCompare(a.day)||b.id-a.id).map(e=>`<div class="row" style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-top:1px solid var(--line)"><span>${fd(e.day)}</span><b class="num">+${fm(e.v)}</b><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></div>`).join("");
   return `<div class="card" style="text-align:center">${ring(today/st.stepGoal,"var(--su)",fm(today),"Bugün",`/ ${fm(st.stepGoal)} adım`,"adım")}</div>
+  ${walkCard()}
   <div class="card"><div class="lbl">Adım grafiği</div>${seg}${chartBody}</div>
   <div class="stats"><div class="stat"><div class="k">7 gün ortalaması</div><div class="v num">${s7.n?fm(s7.avg):"–"}</div></div><div class="stat"><div class="k">30 gün ortalaması</div><div class="v num">${s30.n?fm(s30.avg):"–"}</div></div><div class="stat"><div class="k">En iyi gün</div><div class="v num">${best?fm(best.v):"–"}</div>${best?`<div class="mut sm">${fd(best.k)}</div>`:""}</div><div class="stat"><div class="k">Hedef serisi</div><div class="v num">${sl.streak} gün</div></div><div class="stat"><div class="k">Hedefe ulaşılan gün</div><div class="v num">${sr.hit} / ${N}</div></div>${extra}</div>
   ${motionCard()}
@@ -1177,6 +1180,7 @@ document.addEventListener("click",ev=>{
     else if(d.act==="barkod")barkodOku();
     else if(d.act==="adimac")stepsOpen();
     else if(d.act==="adimekle")sheetAdim();
+    else if(d.act==="walkgo"){tab="adim";render();window.scrollTo(0,0)}
     else if(d.act==="adimdegil"){S.settings.stepsAsked=true;save();render()}
     else if(d.act==="adimkapat"){S.settings.stepsOn=false;save();motionStopAll();render();toast("Adım sayar kapatıldı. Eski adım kayıtların durur")}
     else if(d.act==="oem")sheetOem();
