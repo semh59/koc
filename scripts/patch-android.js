@@ -25,8 +25,8 @@ if (!x.includes("NeoWidget")) {
 }
 // Widget "+su": exported=false, başka uygulama sahte su yazamaz; widget'ın PendingIntent'i uygulama adına gönderdiği için çalışır.
 if (!x.includes("WaterReceiver")) {
-  x = x.replace("</application>", '    <receiver android:name=".WaterReceiver" android:exported="false"/>
-    </application>');
+  x = x.replace("</application>", `    <receiver android:name=".WaterReceiver" android:exported="false"/>
+    </application>`);
 }
 fs.writeFileSync(p, x);
 console.log("Manifest güncellendi.");
