@@ -573,7 +573,7 @@ function viewBugun(){
   const oemB=isNative()&&oemXiaomi()&&!st.oemDone?`<div class="banner"><b>Hatırlatmalar için bir kez ayar gerekli</b><p>Telefon uygulamayı kapatınca hatırlatmalar gelmeyebilir. İki izin verince düzelir.</p><button class="btn" data-act="oem">Ayarla</button></div>`:"";
   const a7=(a,b)=>sum("adim",keyOff(a),keyOff(b));
   const stW=sOn&&stepsRead&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?`<div class="banner"><b>Adım sayımı durmuş olabilir</b><p>Telefon adım sayarı arka planda kapatmış olabilir. Pil ayarında NeoWell'e kısıtlama koyma.</p><div class="lbtns"><button class="btn" data-act="adimduz">Ayarla</button><button class="btn ghost" data-act="adimgizle">Kapat</button></div></div>`:"";
-  return `${stB}${oemB}${stW}${bk}${weight}<div class="coach">${esc(coach())}</div>${rings}${macro}${micro}${actions}${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
+  return `${stB}${oemB}${stW}${bk}${weight}<div class="coach">${esc(coach())}</div>${rings}${macro}${micro}${gTodayCard()}${actions}${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
 }
 
 function viewTrend(){

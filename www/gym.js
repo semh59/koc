@@ -12,7 +12,7 @@ const EXLIB=[
   {id:"curl",n:"Biceps curl",g:"Kol",inc:2},{id:"crunch",n:"Crunch",g:"Karın",inc:2.5}
 ];
 const REST_SEC=90;
-let gTim=null,gPickMax=40,restEnd=0,gQuery="",gGroup="Tümü",gNew=false,gNewGroup="Bacak";
+let gHistMax=20,gTim=null,gPickMax=40,restEnd=0,gQuery="",gGroup="Tümü",gNew=false,gNewGroup="Bacak";
 
 /* Kütüphane (exlib.js) + eski 16 egzersiz: eski kimlikler ve adlar aynen korunur, kütüphane alanları (bölge, tür, şekil) eklenir. */
 const EXREG=["Göğüs","Sırt","Omuz","Biseps","Triseps","Ön kol","Karın","Bel","Kalça","Ön bacak","Arka bacak","Baldır","İç-dış bacak","Trapez","Boyun","Tüm vücut"];
@@ -134,6 +134,11 @@ function gWeekRegions(){
   }
   return m;
 }
+const gTimedSec=w=>w.ex.reduce((s,x)=>s+(gTimed(x.id)?x.sets.filter(t=>t.done&&gSetOk(t)).reduce((a,t)=>a+(t.sec||0),0):0),0);
+const gSecTx=s=>s>=120?Math.round(s/60)+" dk":s+" sn";
+const gVolTx=w=>{const v=gWorkVol(w),t=gTimedSec(w);return [v>0&&`${Math.round(v).toLocaleString("tr-TR")} kg`,t>0&&gSecTx(t)].filter(Boolean).join(", ")};
+const gStats=w=>[`${gWorkSets(w)} set`,`${gDur(w)} dk`,gVolTx(w)].filter(Boolean).join(" · ");
+const gNames=(w,n)=>{const a=w.ex.map(x=>gEx(x.id).n);return a.slice(0,n).join(", ")+(a.length>n?` +${a.length-n}`:"")};
 const gDur=w=>Math.min(600,Math.max(1,Math.round(((w.t1||Date.now())-w.t0)/60000))); // 600: spor kaydı üst sınırı
 const gClock=ms=>{const s=Math.max(0,Math.floor(ms/1000));return `${pad(Math.floor(s/60))}:${pad(s%60)}`};
 const gDate=d=>`${+d.slice(8)} ${AY[+d.slice(5,7)-1].slice(0,3)}`;
@@ -151,13 +156,28 @@ function gHome(){
   }).join("");
   const wk=gWeekSets(),mx=Math.max(14,...Object.values(wk));
   const bars=Object.keys(wk).length?`<h2>Bu hafta, kas grubuna göre set</h2><div class="card">${GROUPS.concat(["Diğer"]).filter(g=>wk[g]).map(g=>`<div class="gbar"><span>${g}</span><span class="bar"><i style="width:${(wk[g]/mx*100).toFixed(0)}%"></i></span><span class="num">${wk[g]}</span></div>`).join("")}<p class="hint">Kas grubu başına haftada 10 ile 20 set çoğu kişi için makul bir aralıktır.</p></div>`:"";
-  const rec=done.slice(0,8).map(x=>`<button class="rrow" data-g="sum:${x.id}"><span class="num mut">${gDate(x.day)}</span><span class="tx">${esc(x.name)}</span><span class="num mut">${Math.round(gWorkVol(x)).toLocaleString("tr-TR")} kg</span></button>`).join("");
+  const rec=gHistHtml(done);
   return `<button class="btn" data-g="start:">Boş antrenman başlat</button>
   <button class="btn ghost" data-g="lib" style="margin-top:8px">📚 Egzersiz kütüphanesi (${EXMERGED.length}, animasyonlu)</button>
   <button class="btn ghost" data-c="prog" style="margin-top:8px">Koç'tan program iste</button>
   <h2>Şablonlarım</h2>${tpl||`<p class="hint">Şablon yok. Bir antrenmanı bitirince "Şablon olarak kaydet" ile oluşur.</p>`}
   ${bars}
-  <h2>Son antrenmanlar</h2><div class="card">${rec||`<p class="hint">Henüz antrenman yok.</p>`}</div>`;
+  <h2>Antrenman geçmişi</h2><div class="card">${rec||`<p class="hint">Henüz antrenman yok.</p>`}</div>`;
+}
+/* Bugün ekranı: bitmemiş antrenman yalnız Salon'da görünüyordu, bitenler de yalnız Salon'da. */
+function gTodayCard(){
+  const a=gActive(),d=S.workouts.filter(w=>gDone(w)&&w.day===dayKey()).sort((x,y)=>y.t0-x.t0);
+  if(!a&&!d.length)return "";
+  const row=(w,k,l)=>`<button class="rrow" data-g="${k}"><span class="tx" style="min-width:0;overflow-wrap:anywhere"><b>${esc(w.name)}</b><span class="mut sm">${esc(gNames(w,4))||"Egzersiz yok"}</span><span class="mut sm num">${l}</span></span>${k==="start:"?`<span class="tag">Devam et</span>`:""}</button>`;
+  const ws=a?a.ex.reduce((s,x)=>s+x.sets.filter(t=>!t.w).length,0):0;
+  return `<div class="card">${a?row(a,"start:",`Devam ediyor, ${a.ex.length} egzersiz, ${a.ex.reduce((s,x)=>s+x.sets.filter(t=>t.done&&gSetOk(t)).length,0)}/${ws} set işaretli`):""}${d.map(w=>row(w,"sum:"+w.id,gStats(w))).join("")}</div>`;
+}
+function gHistHtml(done){
+  const rows=done.slice(0,gHistMax);let ym="";
+  return rows.map(x=>{
+    const h=x.day.slice(0,7)===ym?"":`<div class="lbl">${AY[+x.day.slice(5,7)-1]} ${x.day.slice(0,4)}</div>`;ym=x.day.slice(0,7);
+    return `${h}<button class="rrow" data-g="sum:${x.id}"><span class="num mut">${gDate(x.day)}</span><span class="tx" style="min-width:0;overflow-wrap:anywhere"><b>${esc(x.name)}</b><span class="mut sm">${esc(gNames(x,3))}</span><span class="mut sm num">${gStats(x)}</span></span></button>`;
+  }).join("")+(done.length>rows.length?`<button class="lnk" data-g="histmore">Daha fazla göster (${done.length-rows.length})</button>`:"");
 }
 function gLive(w){
   const cards=w.ex.map((x,ei)=>{
@@ -249,7 +269,7 @@ function gSheetSummary(id){
   const prs=gPRs(w),sets={};
   for(const x of w.ex)sets[gEx(x.id).g]=(sets[gEx(x.id).g]||0)+x.sets.filter(s=>s.done&&gSetOk(s)).length;
   openSheet(`<h3>${esc(w.name)}</h3><div class="mut sm">${gDate(w.day)}, ${gDur(w)} dk</div>
-  <div class="sumv num">${Math.round(gWorkVol(w)).toLocaleString("tr-TR")} <small>kg hacim</small></div>
+  ${gWorkVol(w)>0?`<div class="sumv num">${Math.round(gWorkVol(w)).toLocaleString("tr-TR")} <small>kg hacim</small></div>`:gTimedSec(w)>0?`<div class="sumv num">${gSecTx(gTimedSec(w))} <small>toplam süre</small></div>`:""}
   <div class="two"><div class="stat"><div class="k">Set</div><div class="v num">${gWorkSets(w)}</div></div><div class="stat"><div class="k">Egzersiz</div><div class="v num">${w.ex.length}</div></div></div>
   ${prs.length?`<div class="pr"><b>${prs.length} yeni rekor</b>${prs.map(p=>`<div>${esc(p.ex.n)}, ${fkg(p.kg)||0} kg × ${p.reps}<div class="mut sm">Tahmini 1TM ${Math.round(p.e1)} kg, önceki ${Math.round(p.prev)} kg</div></div>`).join("")}</div>`:""}
   <div class="mut sm" style="margin:8px 0">${Object.keys(sets).map(g=>`${g} ${sets[g]}`).join(", ")}</div>
@@ -268,10 +288,11 @@ function gFinish(){
   const w=gActive();if(!w)return;
   gTimStop();
   const open=w.ex.reduce((s,x)=>s+x.sets.filter(t=>!t.done&&gSetOk(t)).length,0);
-  if(open&&!confirm(`${open} set tamamlanmadı olarak işaretli. Bunlar sayılmadan bitirilsin mi?`))return;
+  if(open&&confirm(`${open} set işaretlenmemiş. Tamamlandı sayılıp kaydedilsin mi?
+Tamam: sayılır, İptal: sayılmadan bitir`))for(const x of w.ex)for(const t of x.sets)if(gSetOk(t))t.done=true;
+  if(!w.ex.some(x=>x.sets.some(t=>t.done&&gSetOk(t))))return toast(w.ex.length?"Kaydedilmedi: değeri girilmiş set yok. Tekrar ya da süre gir, ✓ koy; vazgeçtiysen Antrenmanı iptal et":"Kaydedilmedi: antrenmanda egzersiz yok. Egzersiz ekle ya da Antrenmanı iptal et");
   for(const x of w.ex)x.sets=x.sets.filter(s=>s.done);
   w.ex=w.ex.filter(x=>x.sets.length);
-  if(!w.ex.some(x=>x.sets.some(s=>!s.w))){S.workouts=S.workouts.filter(x=>x!==w);save();restEnd=0;render();return toast(w.ex.length?"Yalnız ısınma seti tamamlandı, antrenman kaydedilmedi":"Tamamlanan set yok, antrenman kaydedilmedi")}
   w.t1=Date.now();
   const e=add("spor",gDur(w),`Ağırlık, ${w.name}`,w.day);e.wid=w.id;
   save();restEnd=0;render();gSheetSummary(w.id);
@@ -287,6 +308,7 @@ function gClick(v,el){
     case "start":return gStart(p1?+p1:null);
     case "pick":return gSheetPick();
     case "closesheet":return closeSheet();
+    case "histmore":gHistMax+=20;return render();
     case "pickmore":gPickMax+=60;$("#glist").innerHTML=gPickHtml();return;
     case "grp":gGroup=p1;gPickMax=40;document.querySelectorAll("#gchips .chip").forEach(c=>c.setAttribute("aria-pressed",c.dataset.g==="grp:"+gGroup));$("#glist").innerHTML=gPickHtml();return;
     case "addex":{
