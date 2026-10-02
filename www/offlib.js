@@ -20,7 +20,7 @@ const OffLib=(()=>{
     if(!(k>=0&&k<=900))return {status:"bad",why:"Kalori değeri makul değil"};
     const m=[pr,c,f];
     if(m.some(x=>x!=null&&!(x>=0&&x<=100))||m.reduce((s,x)=>s+(x||0),0)>100.5)return {status:"bad",why:"Besin değerleri makul değil"};
-    const fb=nm(n.fiber_100g),sg=nm(n.sugars_100g),na=nm(n.sodium_100g!=null?n.sodium_100g*1000:n.salt_100g!=null?n.salt_100g*400:null);
+    const fb=nm(n.fiber_100g),sg=nm(n.sugars_100g),sod=nm(n.sodium_100g),salt=nm(n.salt_100g),na=sod!=null?sod*1000:salt!=null?salt*400:null;
     const sub={fb:fb>=0&&fb<=100?fb:null,sg:sg>=0&&sg<=100&&(c==null||sg<=c+0.5)?sg:null,na:na>=0&&na<=40000?na:null};
     const sq=nm(p.serving_quantity),pq=nm(p.product_quantity),u=[];
     if(sq>=1&&sq<=2000)u.push([`1 porsiyon (${r1(sq)} g)`,sq]);

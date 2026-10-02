@@ -36,5 +36,7 @@ r=O.parse(prod({nutriments:{"energy-kcal_100g":440,proteins_100g:8.5,carbohydrat
 ok("şeker karbonhidrattan büyükse şeker atılır, ürün ok kalır",r.status==="ok"&&r.food.sg===undefined&&r.food.fb===3,r);
 r=O.parse(prod({nutriments:{"energy-kcal_100g":440,proteins_100g:8.5,carbohydrates_100g:70,fat_100g:13,fiber_100g:250,sodium_100g:"x"}}));
 ok("imkânsız lif ve sayı olmayan sodyum atılır",r.status==="ok"&&r.food.fb===undefined&&r.food.na===undefined,r);
+const na=o=>O.parse(prod({nutriments:Object.assign({"energy-kcal_100g":440,proteins_100g:8.5,carbohydrates_100g:70,fat_100g:13},o)})).food.na;
+ok("virgüllü sodyum metni işlenir, boş sodyum metni tuza düşer",na({sodium_100g:"0,4"})===400&&na({sodium_100g:"",salt_100g:1})===400&&na({salt_100g:"1,0"})===400,[na({sodium_100g:"0,4"}),na({sodium_100g:"",salt_100g:1}),na({salt_100g:"1,0"})]);
 ok("lif, şeker, sodyum yoksa alanlar da yok",(f=>f.fb===undefined&&f.sg===undefined&&f.na===undefined)(O.parse(prod({})).food));
 process.exit(bad?1:0);
