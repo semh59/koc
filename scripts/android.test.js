@@ -35,4 +35,10 @@ ok("ekran açık: keepAwake eklenti metodu, UI iş parçacığında bayrak ekler
   ok("hareket: tick gün dönünce ya da 3 saatte aralığı kapatıp yeniden açar, atmaz",/ROLL_MS = 3L \* 3600 \* 1000/.test(mr)&&/MotionStore\.dayOf\(now\) != MotionStore\.dayOf\(MotionStore\.lastActivityAt\(c\)\)/.test(tk)&&/MotionStore\.close\(c, now, steps\) == 0 && !newDay\) return;\s*MotionStore\.open\(c, mode, now, steps\);/.test(tk)&&!/discard/.test(tk));
   ok("hareket: kapanış gün numarasıyla bölünür, parça başına 4 saat sınırı; yeniden başlatma ve 30 dk kuralı yerinde",/MotionMath\.split\(model\(c\), mode, cm\(c\), kg\(c\), ts, ss, ds, n,/.test(ms)&&/ds\[i\] = dayOf\(ts\[i\]\)/.test(ms)&&/b\.t1 - b\.t0 > MAX_BOUT_MS\) continue/.test(ms)&&/STALE_MS = 30L \* 60000/.test(mr)&&/ACTION_MY_PACKAGE_REPLACED\.equals\(a\)\) \{[\s\S]{0,200}MotionStore\.discard\(c\)/.test(mr));
 }
+{ // D-Veri2: otomatik yedek klasörü
+  const bf=rd("assets/android/BackupFolderPlugin.java"),diag=rd("www/index.html").match(/NW-DIAG "\+\[([^\]]+)\]/)[1];
+  ok("yedek klasörü: eklenti kopyalanır, kaydedilir, NW-DIAG ve smoke listesinde",/"BackupFolderPlugin"\]\)fs\.copyFileSync/.test(patch)&&/registerPlugin\(BackupFolderPlugin\.class\);\s*super\.onCreate/.test(patch)&&diag.includes('"BackupFolder"')&&/Widget BackupFolder; do/.test(rd("scripts/smoke.sh")));
+  ok("yedek klasörü: SAF klasör seçimi, kalıcı izin yalnız seçilene, adres JS'e verilmez ve loglanmaz",/ACTION_OPEN_DOCUMENT_TREE/.test(bf)&&/takePersistableUriPermission\(u, FLAGS\)/.test(bf)&&/release\(u\);/.test(bf)&&!/Log\.|printStackTrace|System\.out/.test(bf)&&!/r\.put\("(uri|tree)"/.test(bf)&&!/getMessage/.test(bf));
+  ok("yedek klasörü: yalnız yedek adlı dosyalar yazılır ve silinir",/NAME_RE = "neowell-yedek-\\\\d\{4\}-\\\\d\{2\}-\\\\d\{2\}\\\\\.json"/.test(bf)&&/!name\.matches\(NAME_RE\)/.test(bf)&&/n\.matches\(NAME_RE\)\) out\.put/.test(bf)&&/Uri doc = have\.get\(names\.getString\(i\)\)/.test(bf));
+}
 process.exit(bad?1:0);
