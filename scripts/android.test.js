@@ -12,4 +12,11 @@ ok("widget: kalori satırı sondan kesilir, 'Kalan/Fazla' ve sayı başta",/elli
 ok("adım: snapAt yalnız gün gerçekten kapanınca yazılır",/boolean closed = closeFirst && StepMath\.closeDay\(/.test(rd("assets/android/StepStore.java"))&&/if \(closed\) e\.putLong\("snapAt"/.test(rd("assets/android/StepStore.java")));
 const dh=rd("assets/android/DeviceHelpPlugin.java"),ka=dh.slice(dh.indexOf("public void keepAwake"));
 ok("ekran açık: keepAwake eklenti metodu, UI iş parçacığında bayrak ekler/kaldırır ve çağrıyı çözer",/@PluginMethod\s+public void keepAwake\(PluginCall call\)/.test(dh)&&/import android\.view\.WindowManager;/.test(dh)&&/runOnUiThread\(/.test(ka)&&/addFlags\(WindowManager\.LayoutParams\.FLAG_KEEP_SCREEN_ON\)/.test(ka)&&/clearFlags\(WindowManager\.LayoutParams\.FLAG_KEEP_SCREEN_ON\)/.test(ka)&&/call\.resolve\(\)/.test(ka)&&rd("scripts/patch-android.js").includes('"DeviceHelpPlugin"'));
+{ // B5: otomatik yedek ve cihaz aktarımı kapalı
+  const dr=rd("assets/android/res/xml/nw_data_rules.xml"),fb=rd("assets/android/res/xml/nw_backup_rules.xml"),doms=["root","file","database","sharedpref","external"];
+  const sec=t=>dr.slice(dr.indexOf(`<${t}>`),dr.indexOf(`</${t}>`)),all=(s,d)=>d.every(x=>s.includes(`<exclude domain="${x}" path="."/>`))&&!/<include/.test(s);
+  ok("yedek: manifest allowBackup=false ve iki kural dosyası, şablon değişirse yama durur",patch.includes(`'android:allowBackup="false"\\n        android:fullBackupContent="@xml/nw_backup_rules"\\n        android:dataExtractionRules="@xml/nw_data_rules"'`)&&/throw new Error\("allowBackup bulunamadı/.test(patch));
+  ok("yedek: Android 12+ bulut yedeği ve cihaz aktarımında tüm alanlar dışarıda",/^<\?xml[^>]*\?>\s*(<!--[\s\S]*?-->\s*)?<data-extraction-rules>/.test(dr)&&["cloud-backup","device-transfer"].every(t=>all(sec(t),[...doms,...doms.slice(0,4).map(d=>"device_"+d)])));
+  ok("yedek: Android 11 ve altı tam yedek kuralı tüm alanları dışlar",/<full-backup-content>/.test(fb)&&all(fb,doms));
+}
 process.exit(bad?1:0);

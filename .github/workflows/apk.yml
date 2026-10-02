@@ -67,6 +67,13 @@ jobs:
           echo "APK: $apk"; echo "Anahtar: $key"
           [ -n "$apk" ] && [ "$apk" = "$key" ] || { echo "İMZA ANAHTARI UYUŞMUYOR"; exit 1; }
 
+      - name: APK içeriği denetimi
+        run: |
+          aapt2=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)aapt2
+          $aapt2 dump xmltree neowell.apk --file AndroidManifest.xml > manifest.txt
+          grep -E "allowBackup|dataExtractionRules|fullBackupContent" manifest.txt
+          grep -qE "allowBackup[^=]*=(false|0x0)" manifest.txt || { echo "OTOMATİK YEDEK AÇIK"; exit 1; }
+
       - uses: actions/upload-artifact@v4
         with:
           name: neowell-apk

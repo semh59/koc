@@ -28,6 +28,11 @@ if (!x.includes("WaterReceiver")) {
   x = x.replace("</application>", `    <receiver android:name=".WaterReceiver" android:exported="false"/>
     </application>`);
 }
+// Sağlık verisi Google yedeğine ve telefondan telefona aktarıma gitmesin; kullanıcının kendi şifreli yedeği bundan etkilenmez.
+if (!x.includes('android:allowBackup="false"')) {
+  if (!x.includes('android:allowBackup="true"')) throw new Error("allowBackup bulunamadı: şablon değişmiş, yedek kapatılamadı");
+  x = x.replace('android:allowBackup="true"', 'android:allowBackup="false"\n        android:fullBackupContent="@xml/nw_backup_rules"\n        android:dataExtractionRules="@xml/nw_data_rules"');
+}
 fs.writeFileSync(p, x);
 console.log("Manifest güncellendi.");
 const res="android/app/src/main/res";
