@@ -140,6 +140,34 @@ setTimeout(async()=>{
     ok("gün filtresi seçili programa taşınır (6)",q('[data-g="pgd:ppl:6"]').getAttribute("aria-pressed")==="true"&&sh().includes("Bacak B"));
     ev("gPgF={d:0,lv:''};closeSheet();S.templates=[];render()");
   }
+  { // Kendi egzersizi (D-Ant11)
+    const q=s=>$q(s),qa=s=>[...w.document.querySelectorAll(s)];
+    ev("closeSheet();S.workouts=[];S.templates=[];S.customEx=[];S.exCfg={};S.gid=1;gNewS={n:'',k:'w',r:'Ön bacak',q:'Salon',tp:''};tab='salon';render()");
+    const C=JSON.parse(ev(`JSON.stringify(cleanGym({customEx:[{id:"c1",n:"Eski",g:"Kol"},{id:"c2",n:"Yeni",g:"Karın",r:"Karın",k:"t",q:"Ev tipi",tp:"plank",c:"x"},{id:"c3",n:"Çöp",g:"Bacak",r:"Yok",k:"zz",q:"Uzay",tp:"yok"},{id:"c4",n:"Boş",g:"Bacak",r:5,k:"",q:null,tp:"__proto__"},{id:"c5",n:"Kardiyo",g:"Bacak",k:"c"},{id:"c6",n:"Aralık",g:"Bacak",k:"i"}]}).customEx)`));
+    ok("eski özel egzersiz (yalnız g) aynı biçimde kalır",JSON.stringify(C[0])==='{"id":"c1","n":"Eski","g":"Kol","inc":2.5}');
+    ok("geçerli tür/bölge/ekipman/figür korunur, kategori türür",JSON.stringify(C[1])==='{"id":"c2","n":"Yeni","g":"Karın","inc":2.5,"r":"Karın","k":"t","c":"g","q":"Ev tipi","tp":"plank"}'&&C[4].k==="c"&&C[4].c==="k");
+    ok("geçersiz alanlar atılır, egzersiz kalır",JSON.stringify(C[2])==='{"id":"c3","n":"Çöp","g":"Bacak","inc":2.5}'&&JSON.stringify(C[3])==='{"id":"c4","n":"Boş","g":"Bacak","inc":2.5}'&&JSON.stringify(C[5])==='{"id":"c6","n":"Aralık","g":"Bacak","inc":2.5}');
+    ev("S.customEx=[{id:'c1',n:'Eski',g:'Kol',inc:2.5}];S.gid=5;gStart(null)");
+    ev("gAddEx(gActive(),'c1');render()");
+    ok("eski özel egzersiz çalışır: ağırlık×tekrar, bölge olarak grup adı",ev("gKind('c1')")==="w"&&ev("gActive().ex[0].sets.length")===3&&q("#view").textContent.includes("Kol")&&ev("gEx('c1').r||gEx('c1').g")==="Kol");
+    ev("S.workouts=[];S.customEx=[];gSheetPick()");
+    q('[data-g="newex"]').click();
+    ok("form: tür, bölge (16), ekipman ve figür seçimi",qa('[data-g^="nf:k:"]').length===4&&qa('[data-g^="nf:r:"]').length===16&&qa('[data-g^="nf:q:"]').length===3&&q("#gntp").options.length>40);
+    q("#gnn").value="Benim plankım";
+    q('[data-g="nf:k:t"]').click();q('[data-g="nf:r:Karın"]').click();q('[data-g="nf:q:Ağırlıksız"]').click();
+    ok("seçim yeniden çizimde işaretli kalır, yazılan ad kaybolmaz",q('[data-g="nf:k:t"]').getAttribute("aria-pressed")==="true"&&q('[data-g="nf:r:Karın"]').getAttribute("aria-pressed")==="true"&&q('[data-g="nf:r:Ön bacak"]').getAttribute("aria-pressed")==="false"&&q("#gnn").value==="Benim plankım");
+    q("#gntp").value="plank";q('[data-g="mkex"]').click();
+    const e=ev("S.customEx[0]");
+    ok("oluştur: tür, bölge, ekipman, figür ve türetilmiş grup yazılır",e&&e.n==="Benim plankım"&&e.k==="t"&&e.r==="Karın"&&e.g==="Karın"&&e.q==="Ağırlıksız"&&e.tp==="plank"&&e.c==="g",e);
+    ok("yeni egzersiz süreli davranır, figürü çizilir, kütüphanede bölgeyle listelenir",ev("gTimed(S.customEx[0].id)")===true&&ev("exFig(S.customEx[0],false)").includes("<svg")&&ev("exFiltered().some(x=>x.id===S.customEx[0].id)")===true&&(ev("gLReg='Karın'"),ev("exListHtml()").includes("Benim plankım")));
+    ev("gLReg='Tümü'");
+    ok("kayıt turu: yeni alanlar kalıcı",JSON.stringify(ev("cleanGym(JSON.parse(JSON.stringify(S))).customEx[0]"))===JSON.stringify(e));
+    ev("S.workouts=[];gStart(null);gAddEx(gActive(),S.customEx[0].id)");
+    ok("antrenmana eklenince süreli set (saniye) gelir",ev("gActive().ex[0].sets[0].sec")===30&&ev("gActive().ex[0].sets[0].reps")===null);
+    ev("S.workouts=[];gSheetPick()");q('[data-g="newex"]').click();
+    ok("ad yazılmadan oluşturulmaz, aynı ad reddedilir",(q('[data-g="mkex"]').click(),ev("S.customEx.length")===1)&&(q("#gnn").value="benim plankım",q('[data-g="mkex"]').click(),ev("S.customEx.length")===1&&q("#toast").textContent.includes("var")));
+    ev("closeSheet();S.customEx=[];S.workouts=[];render()");
+  }
   { // Koç ilk izlenimi (C7)
     const q=s=>$q(s),k=()=>ev("viewKoc()");
     ev("S.chat=[];S.settings.consent=false;offline=null");

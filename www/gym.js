@@ -12,7 +12,7 @@ const EXLIB=[
   {id:"curl",n:"Biceps curl",g:"Kol",inc:2},{id:"crunch",n:"Crunch",g:"Karın",inc:2.5}
 ];
 const REST_SEC=90;
-let gPgF={d:0,lv:""},gPgD=0,gTe=null,gTeOn=false,gHistMax=20,gTim=null,gPickMax=40,restEnd=0,gQuery="",gGroup="Tümü",gNew=false,gNewGroup="Bacak";
+let gPgF={d:0,lv:""},gPgD=0,gTe=null,gTeOn=false,gHistMax=20,gTim=null,gPickMax=40,restEnd=0,gQuery="",gGroup="Tümü",gNew=false;
 
 /* Kütüphane (exlib.js) + eski 16 egzersiz: eski kimlikler ve adlar aynen korunur, kütüphane alanları (bölge, tür, şekil) eklenir. */
 const EXREG=["Göğüs","Sırt","Omuz","Biseps","Triseps","Ön kol","Karın","Bel","Kalça","Ön bacak","Arka bacak","Baldır","İç-dış bacak","Trapez","Boyun","Tüm vücut"];
@@ -21,6 +21,11 @@ const EXMERGED=(()=>{
   for(const e of EXLIB)if(!out.some(x=>x.id===e.id))out.push(e);
   return out;
 })();
+/* Kendi egzersizi: bölgeden eski 6'lı grup türetilir (özet ve eski ekranlar g okur). */
+const GREG={"Göğüs":"İtiş","Triseps":"İtiş","Sırt":"Çekiş","Bel":"Çekiş","Omuz":"Omuz","Trapez":"Omuz","Boyun":"Omuz","Biseps":"Kol","Ön kol":"Kol","Karın":"Karın"};
+const GNEWK={w:"Ağırlık × tekrar",b:"Tekrar",t:"Süreli",c:"Kardiyo"},GNEWQ=["Ağırlıksız","Ev tipi","Salon"];
+const GFIG={squat:"Çömelme",hinge:"Kalça menteşesi",lunge:"Hamle",stepup:"Basamağa çıkış",legext:"Bacak açma",legcurl:"Bacak bükme",legpress:"Leg press",bridge:"Kalça köprüsü",calf:"Baldır kaldırma",legspread:"Yana adım",pushup:"Şınav",bench:"Yatarak itiş",incline:"Eğimli itiş",fly:"Açma (fly)",dips:"Dips",ohp:"Omuz press",latraise:"Yana kaldırma",frontraise:"Öne kaldırma",skull:"Yatarak triceps",row:"Öne eğilip çekiş",pullup:"Barfiks",pulldown:"Yukarıdan çekiş",seatedrow:"Oturarak çekiş",backext:"Bel ekstansiyonu",shrug:"Omuz silkme",curl:"Biceps curl",pushdown:"Triceps pushdown",kickback:"Triceps kickback",overheadext:"Baş üstü triceps",crunch:"Mekik",situp:"Tam mekik",legraise:"Ters mekik",hangraise:"Asılı bacak kaldırma",plank:"Plank",climber:"Dağcı",sidebend:"Yan eğilme",woodchop:"Gövde bükme",jack:"Açılıp kapanma",run:"Koşu",highknees:"Yüksek diz",walk:"Yürüyüş",jumprope:"İp atlama",cycle:"Bisiklet",qstretch:"Ön bacak esnetme",hamstretch:"Arka bacak esnetme",armstretch:"Göğüs esnetme",neckstretch:"Boyun",twiststretch:"Gövde döndürme"};
+let gNewS={n:"",k:"w",r:"Ön bacak",q:"Salon",tp:""};
 const gExAll=()=>EXMERGED.concat(S.customEx);
 const gKind=id=>gEx(id).k||"w";
 const gTimed=id=>"tic".includes(gKind(id));
@@ -54,7 +59,12 @@ function cleanGym(r){
   const ce=Array.isArray(r.customEx)?r.customEx:[];
   for(const e of ce){
     if(!e||typeof e.id!=="string"||!/^c\d+$/.test(e.id)||typeof e.n!=="string"||!GROUPS.includes(e.g))continue;
-    out.customEx.push({id:e.id,n:e.n.slice(0,60),g:e.g,inc:2.5});maxId=Math.max(maxId,+e.id.slice(1));
+    const o={id:e.id,n:e.n.slice(0,60),g:e.g,inc:2.5};
+    if(EXREG.includes(e.r))o.r=e.r;
+    if(typeof e.k==="string"&&e.k.length===1&&"wbtc".includes(e.k)){o.k=e.k;o.c=e.k==="c"?"k":"g"}
+    if(GNEWQ.includes(e.q))o.q=e.q;
+    if(typeof e.tp==="string"&&GFIG[e.tp]&&FigTpl[e.tp]&&FigTpl[e.tp].frames)o.tp=e.tp;
+    out.customEx.push(o);maxId=Math.max(maxId,+e.id.slice(1));
   }
   const known=new Set(EXMERGED.map(e=>e.id).concat(out.customEx.map(e=>e.id)));
   const cfg=r.exCfg&&typeof r.exCfg==="object"?r.exCfg:{};
@@ -302,6 +312,14 @@ function gSheetPick(te){
   <button class="lnk" data-g="newex">Yeni egzersiz oluştur</button><div id="gnew"></div>
   <button class="btn" data-g="${te?"teback":"closesheet"}">Tamam</button>`);
 }
+function gNewRead(){const n=$("#gnn"),t=$("#gntp");if(n)gNewS.n=n.value;if(t)gNewS.tp=t.value}
+function gNewHtml(){
+  const ch=(f,vals,lbl)=>`<div class="chips">${vals.map(v=>`<button class="chip" data-g="nf:${f}:${v}" aria-pressed="${gNewS[f]===v}">${lbl(v)}</button>`).join("")}</div>`;
+  return `<div class="card" style="margin-top:8px"><input class="in" id="gnn" placeholder="Egzersiz adı" maxlength="60" value="${esc(gNewS.n)}">
+  <div class="lbl">Tür</div>${ch("k",Object.keys(GNEWK),v=>GNEWK[v])}<div class="lbl">Bölge</div>${ch("r",EXREG,v=>v)}<div class="lbl">Ekipman</div>${ch("q",GNEWQ,v=>v)}
+  <div class="lbl">Hareket şekli (figür)</div><select class="in" id="gntp" aria-label="Hareket şekli"><option value="">Figür yok</option>${Object.keys(GFIG).map(k=>`<option value="${k}"${k===gNewS.tp?" selected":""}>${GFIG[k]}</option>`).join("")}</select>
+  <button class="btn" data-g="mkex">Oluştur ve ekle</button></div>`;
+}
 function gMenu(ei){
   const w=gActive(),x=w.ex[ei];
   openSheet(`<h3>${esc(gEx(x.id).n)}</h3><div class="plist">
@@ -482,12 +500,13 @@ function gClick(v,el){
       if(i>=0)return toast("Bu egzersiz zaten ekli");
       gAddEx(w,p1);save();$("#glist").innerHTML=gPickHtml();render();return;
     }
-    case "newex":gNew=!gNew;$("#gnew").innerHTML=gNew?`<div class="card" style="margin-top:8px"><input class="in" id="gnn" placeholder="Egzersiz adı" maxlength="60"><div class="lbl">Kas grubu</div><div class="chips" id="gng">${GROUPS.map(g=>`<button class="chip" data-g="ng:${g}" aria-pressed="${g===gNewGroup}">${g}</button>`).join("")}</div><button class="btn" data-g="mkex">Oluştur ve ekle</button></div>`:"";return;
-    case "ng":gNewGroup=p1;document.querySelectorAll("#gng .chip").forEach(c=>c.setAttribute("aria-pressed",c.dataset.g==="ng:"+gNewGroup));return;
+    case "newex":gNew=!gNew;$("#gnew").innerHTML=gNew?gNewHtml():"";return;
+    case "nf":gNewRead();gNewS[p1]=p2;$("#gnew").innerHTML=gNewHtml();return;
     case "mkex":{
-      const n=$("#gnn").value.trim();if(!n)return toast("Egzersiz adı yaz");
+      gNewRead();const n=gNewS.n.trim();if(!n)return toast("Egzersiz adı yaz");
       if(gExAll().some(e=>tr(e.n)===tr(n)))return toast("Bu adda egzersiz var");
-      const ex={id:"c"+(S.gid++),n,g:gNewGroup,inc:2.5};S.customEx.push(ex);
+      const {k,r,q,tp}=gNewS,ex={id:"c"+(S.gid++),n,g:GREG[r]||"Bacak",inc:2.5,r,k,c:k==="c"?"k":"g",q};if(tp)ex.tp=tp;
+      S.customEx.push(ex);gNewS.n="";gNewS.tp="";
       if(gTeOn){gTePush(ex.id);save();return gTeSheet()}
       if(w)gAddEx(w,ex.id);save();closeSheet();render();return;
     }
