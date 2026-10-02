@@ -28,7 +28,16 @@ const gSetOk=s=>!s.w&&(s.reps>0||s.sec>0); // w: ısınma seti, hiçbir hesaba g
 const gEx=id=>gExAll().find(e=>e.id===id)||{id,n:"Silinmiş egzersiz",g:"Diğer",inc:2.5};
 const gActive=()=>S.workouts.find(w=>w.t1==null)||null;
 const gDone=w=>w.t1!=null;
-const gRestSec=id=>{const k=gKind(id);return k==="c"?0:"ti".includes(k)?30:REST_SEC};
+/* Ağır bileşik hareketlerde toparlanma daha uzun sürer (ACSM: 2-3 dk), izolasyonda 1-2 dk yeter. Süreli 30 sn ve kardiyo 0 eski davranış;
+   şekli olmayan (kendi) egzersiz eski 90 sn'de kalır. */
+const GREST_BIG=new Set(["squat","lunge","legpress","hinge","bench","incline","ohp","row","seatedrow","pullup","pulldown","dips"]);
+const gRestDef=id=>{const e=gEx(id),k=gKind(id);return k==="c"?0:"ti".includes(k)?30:!e.tp?REST_SEC:GREST_BIG.has(e.tp)?150:75};
+const gRestSec=id=>{const c=S.exCfg[id];return c&&c.rest!=null?c.rest:gRestDef(id)};
+const gRestTx=s=>s?gClock(s*1000):"kapalı";
+function gCfg(id,patch){
+  const c=Object.assign({},S.exCfg[id],patch);for(const k in c)if(c[k]==null)delete c[k];
+  if(Object.keys(c).length)S.exCfg[id]=c;else delete S.exCfg[id];
+}
 /* Dinlenme bitişi yerel bildirimle de duyurulur: JS sayacı ekran kapalıyken ya da uygulama arkadayken çalışmaz. */
 function gRestSet(end,exId){
   restEnd=end>Date.now()?end:0;
@@ -49,8 +58,11 @@ function cleanGym(r){
   const known=new Set(EXMERGED.map(e=>e.id).concat(out.customEx.map(e=>e.id)));
   const cfg=r.exCfg&&typeof r.exCfg==="object"?r.exCfg:{};
   for(const id of Object.keys(cfg)){
-    const c=cfg[id];
-    if(known.has(id)&&c&&Number.isInteger(c.lo)&&c.lo>=1&&c.lo<=30&&Number.isInteger(c.hi)&&c.hi>c.lo&&c.hi<=50)out.exCfg[id]={lo:c.lo,hi:c.hi};
+    const c=cfg[id],o={};
+    if(!known.has(id)||!c)continue;
+    if(Number.isInteger(c.lo)&&c.lo>=1&&c.lo<=30&&Number.isInteger(c.hi)&&c.hi>c.lo&&c.hi<=50)Object.assign(o,{lo:c.lo,hi:c.hi});
+    if(Number.isInteger(c.rest)&&c.rest>=0&&c.rest<=600)o.rest=c.rest;
+    if(Object.keys(o).length)out.exCfg[id]=o;
   }
   for(const w of (Array.isArray(r.workouts)?r.workouts:[])){
     if(!w||!idOk(w.id)||!dayOk(w.day)||!Number.isFinite(w.t0))continue;
@@ -249,6 +261,7 @@ function gMenu(ei){
    <button class="prow" data-g="note:${ei}"><span><b>Egzersiz notu</b><span class="mut sm">Örn. bar yüksekliği, ağrı</span></span></button>
    ${gKind(x.id)==="w"?`<button class="prow" data-g="plate:${ei}"><span><b>Plaka ve ısınma</b><span class="mut sm">Bar başına plaka, ısınma setleri</span></span></button>`:""}
    ${gKind(x.id)==="w"?`<button class="prow" data-g="rng:${ei}"><span><b>Tekrar aralığı</b><span class="mut sm">${(c=>c.lo+"-"+c.hi)(Object.assign({lo:8,hi:12},S.exCfg[x.id]))}, öneri bu aralığa göre</span></span></button>`:""}
+   <button class="prow" data-g="rst:${ei}"><span><b>Dinlenme süresi</b><span class="mut sm">${gRestTx(gRestSec(x.id))}, set ✓ sonrası sayaç ve bildirim</span></span></button>
    <button class="prow" data-g="mv:${ei}:-1"><span><b>Yukarı taşı</b></span></button>
    <button class="prow" data-g="mv:${ei}:1"><span><b>Aşağı taşı</b></span></button>
    <button class="prow dng" data-g="rmex:${ei}"><span><b>Egzersizi sil</b><span class="mut sm">${x.sets.length} set silinir</span></span></button></div>

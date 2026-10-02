@@ -1000,6 +1000,20 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     const Y=JSON.parse(ev(`JSON.stringify(cleanGym({exCfg:[1,2],workouts:[{id:5,day:'2026-09-01',t0:1,t1:2,ex:[{id:'squat',sets:[{kg:100,reps:5,done:true}]}]}]}))`));
     const Z=JSON.parse(ev(`JSON.stringify(cleanGym({exCfg:{squat:'x',bench:{lo:'5',hi:null},row:null},workouts:[{id:5,day:'2026-09-01',t0:1,t1:2,ex:[{id:'squat',sets:[{kg:100,reps:5,done:true}]}]}]}))`));
     ok("exCfg yok (eski yedek) ve çöp değer: kayıtlar eksiksiz yüklenir",Object.keys(Y.exCfg).length===0&&Object.keys(Z.exCfg).length===0&&Y.workouts[0].ex[0].sets[0].kg===100&&Z.workouts[0].ex[0].sets[0].kg===100);
+    // egzersiz başına dinlenme süresi
+    ok("dinlenme varsayılanı türe göre: bileşik 150, izolasyon 75, süreli 30, kardiyo 0, şekilsiz kendi egzersizi 90",JSON.stringify(["squat","bench","pullup","lat","curl","plank","treadjog"].map(i=>ev(`gRestSec('${i}')`)))==="[150,150,150,75,75,30,0]"&&ev("S.customEx.push({id:'c99',n:'K',g:'Kol',inc:2.5});const r=gRestSec('c99');S.customEx.pop();r")===90);
+    ev("S.exCfg={};render()");click('[data-g="menu:0"]');
+    ok("egzersiz menüsü dinlenme süresini gösterir",q("#sheet").textContent.includes("Dinlenme süresi")&&q("#sheet").textContent.includes("02:30"));
+    click('[data-g="rst:0"]');click('[data-g="rstset:0:90"]');
+    click('[data-g="menu:0"]');click('[data-g="rng:0"]');click('[data-g="rngset:0:5-8"]');
+    click('[data-g="menu:0"]');click('[data-g="rng:0"]');click('[data-g="rngset:0:8-12"]');
+    ok("seçilen dinlenme kaydedilir, tekrar aralığı değişince silinmez",ev("JSON.stringify(S.exCfg)")==='{"squat":{"rest":90}}',ev("JSON.stringify(S.exCfg)"));
+    fire('[data-gi="reps:0:0"]',"8");click('[data-g="done:0:0"]');
+    ok("set ✓ sonrası sayaç egzersizin süresiyle başlar",Math.abs(ev("restEnd-Date.now()")-90000)<1000);
+    click('[data-g="rest:0"]');click('[data-g="menu:0"]');click('[data-g="rst:0"]');click('[data-g="rstset:0:d"]');
+    ok("Varsayılan seçilince kayıt silinir",ev("Object.keys(S.exCfg).length")===0);
+    const RC=JSON.parse(ev(`JSON.stringify(cleanGym({exCfg:{squat:{rest:120},bench:{lo:5,hi:8,rest:601},row:{rest:'60'},curl:{rest:0},lat:{rest:1.5}}}).exCfg)`));
+    ok("cleanGym: dinlenme yalnız tam sayı 0-600, aralık ayrı doğrulanır",JSON.stringify(RC)==='{"squat":{"rest":120},"bench":{"lo":5,"hi":8},"curl":{"rest":0}}',RC);
     // bitirme, Bugün kartı, geçmiş
     const Tk=(id,name,t0,t1,exs,day)=>`{id:${id},day:${day||"dayKey()"},t0:${t0},t1:${t1},name:'${name}',tpl:null,ex:[${exs}]}`;
     const Ex=(id,sets)=>`{id:'${id}',note:'',sets:${sets}}`;
