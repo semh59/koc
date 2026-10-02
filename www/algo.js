@@ -67,6 +67,13 @@ const Algo=(()=>{
     return {tdee,source:conf>=0.99?"veri":"veri+formül",confidence:conf,formula:f,est};
   }
 
+  /* Trend ekranının tek hızı ve tek tahmini: son 21 günün eğimi (kg/hafta) sürerse hedefe kaç hafta; yön ters, hız ~0, hedef yok ya da hedefte ise weeks null. */
+  function goalEta(w,goalKg){
+    const ks=Object.keys(w).sort(),slope=slopePerWeek(w);
+    if(!ks.length)return {slope:null,weeks:null};
+    const wk=etaWeeks(trend(w)[ks[ks.length-1]],goalKg,slope);
+    return {slope,weeks:wk>0?wk:null};
+  }
   /* Kalori açığının güvenli olmadığı durumun nedeni, yoksa "". */
   function lossBlock({age,cm,kg,goalKg,health}){
     if(age>0&&age<18)return "18 yaş altında kalori açığı önerilmez";
@@ -138,6 +145,6 @@ const Algo=(()=>{
     if(minReps>=hi)return {kg:roundTo(kg+inc,0.25),reps:lo,why:"Tüm setlerde üst tekrara ulaştın, ağırlığı artır"};
     return {kg,reps:Math.min(hi,minReps+1),why:"Aynı ağırlıkta bir tekrar fazla dene"};
   }
-  return {KCAL_PER_KG,dayNum,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,lossBlock,etaWeeks,isLosing,proteinRange,est1RM,volume,nextTarget,roundTo,plates,warmup};
+  return {KCAL_PER_KG,dayNum,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,lossBlock,etaWeeks,isLosing,goalEta,proteinRange,est1RM,volume,nextTarget,roundTo,plates,warmup};
 })();
 if(typeof module!=="undefined")module.exports=Algo;
