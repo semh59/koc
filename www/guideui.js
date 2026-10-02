@@ -19,7 +19,8 @@ function gdPick(){
   ${tpl?`<div class="lbl">Şablonlarım</div><div class="plist">${tpl}</div>`:""}
   <p class="hint">${gPgNote}</p><button class="btn ghost" data-g="closesheet">Kapat</button>`);
 }
-const gdTplSteps=t=>GuideLib.fromTpl(t,gTimed,gRestSec);
+// "Şablon olarak kaydet" şablonunda set/süre yok: editördeki gibi türün varsayılanı.
+const gdTplSteps=t=>GuideLib.fromTpl({ex:t.ex,tg:Object.fromEntries(t.ex.map(i=>[i,Object.assign(gTgDef(i),t.tg&&t.tg[i])]))},gTimed,gRestSec);
 /* v: "f:akış", "t:şablon", "p:program-günSırası". */
 function gdStart(v){
   const [k,id]=[v.slice(0,1),v.slice(2)];let steps,meta;
@@ -92,22 +93,29 @@ function gdFinish(natural){
 }
 function gdSumHtml(){
   const r=GuideLib.result(gd.st),n=r.reduce((s,x)=>s+x.sets.length,0);
-  const rows=r.map(x=>`<div class="prow"><span><b>${esc(gdName(x.ex))}</b><span class="mut sm num">${x.sets.map(s=>s.reps?s.reps+" tekrar":s.sec+" sn").join(" · ")}</span></span></div>`).join("");
+  const rows=r.map(x=>`<div class="prow"><span style="flex:1;min-width:0"><b>${esc(gdName(x.ex))}</b><span class="mut sm num">${x.sets.map(s=>s.reps?s.reps+" tekrar":s.sec+" sn").join(" · ")}</span></span>${gKind(x.ex)==="w"&&!gd.meta.warm?`<input class="in num" style="width:84px;margin:0" inputmode="decimal" data-gdkg="${x.ex}" value="${fkg(gdLastKg(x.ex))}" placeholder="kg" aria-label="${esc(gdName(x.ex))} ağırlık (kg)">`:""}</span></div>`).join("");
   return `<div class="gdtop"><b>${esc(gd.meta.n)}</b></div>
   <h2 class="gdn" style="text-align:left;margin:8px 0">${GuideLib.over(gd.st)?"Akış bitti":"Akış durduruldu"}</h2>
   <div class="two"><div class="stat"><div class="k">Süre</div><div class="v num">${gClock(gd.t1-gd.st.t0)}</div></div><div class="stat"><div class="k">Tamamlanan</div><div class="v num">${n}/${GuideLib.works(gd.st)}</div></div></div>
   <div class="plist">${rows||`<p class="hint">Tamamlanan hareket yok.</p>`}</div>
-  ${n?`<p class="hint">${gd.meta.warm?"Isınma seti olarak kaydedilir: hacme, haftalık set sayısına ve spor dakikasına girmez.":"Salon geçmişine süresiyle ve spor dakikasına eklenir. Ağırlıklı setlere önceki seansın önerilen ağırlığı yazılır."}</p>
+  ${n?`<p class="hint">${gd.meta.warm?"Isınma seti olarak kaydedilir: hacme, haftalık set sayısına ve spor dakikasına girmez.":"Salon geçmişine süresiyle ve spor dakikasına eklenir. Ağırlıklı harekette kullandığın ağırlığı yaz (önceki seanstaki dolu gelir)."}</p>
   <button class="btn" data-gd="save">Antrenman olarak kaydet</button>`:""}<button class="btn ghost" data-gd="close" style="margin-top:8px">${n?"Kaydetmeden kapat":"Kapat"}</button>`;
 }
-/* Yalnız kullanıcı onaylayınca: gAddEx ile set yapısı (öneri kg, tür) kurulur, tamamlananlar done:true ve sec dolu. */
+/* Ağırlık öneriden değil önceki seansın gerçek setinden: öneri bir hedeftir, kaydedilirse yapılmamış artış ve sahte rekor üretir. */
+const gdLastKg=id=>{const h=gHistory(id)[0];return h?Math.max(...gWork(h.sets).map(s=>s.kg||0)):""};
+/* Yalnız kullanıcı onaylayınca: gAddEx ile set yapısı (tür, set sayısı) kurulur, tamamlananlar done:true ve sec dolu. */
 function gdSave(){
   const r=GuideLib.result(gd.st);if(!r.length)return;
+  const kg={};
+  for(const el of document.querySelectorAll("#guide [data-gdkg]")){
+    const v=num(el.value);if(el.value.trim()===""||isNaN(v)||v<0||v>1000)return toast("Ağırlığı 0-1000 kg arasında yaz, ağırlıksızsa 0 yaz");
+    kg[el.dataset.gdkg]=v;
+  }
   const w={id:S.gid++,day:dayKey(new Date(gd.st.t0)),t0:gd.st.t0,t1:gd.t1,name:gd.meta.n.slice(0,60),tpl:gd.meta.tpl||null,ex:[]};
   for(const x of r){
     gAddEx(w,x.ex,{sets:x.sets.length});
     const y=w.ex[w.ex.length-1];
-    y.sets=y.sets.map((s,i)=>Object.assign({kg:s.kg,reps:x.sets[i].reps||s.reps,sec:x.sets[i].sec,done:true},gd.meta.warm?{w:true}:{}));
+    y.sets=y.sets.map((s,i)=>Object.assign({kg:x.ex in kg?kg[x.ex]:s.kg,reps:x.sets[i].reps||s.reps,sec:x.sets[i].sec,done:true},gd.meta.warm?{w:true}:{}));
   }
   S.workouts.push(w);
   if(!gd.meta.warm)gLogSpor(w,"Rehberli");
@@ -120,7 +128,7 @@ function gdClose(){
 }
 function gdEnd(){if(GuideLib.over(gd.st)||confirm("Akış burada bitirilsin mi? Tamamlananları kaydedebilirsin."))gdFinish(false)}
 /* Donanım geri tuşu: akış sürerken bitirme sorusu, özetteyken kapatır. */
-function gdBack(){if(!gd)return false;if(gd.fin)gdClose();else gdEnd();return true}
+function gdBack(){if(!gd)return false;if(!gd.fin)gdEnd();else if(!GuideLib.result(gd.st).length||confirm("Tamamlananlar kaydedilmeden kapatılsın mı?"))gdClose();return true}
 function gdClick(a){
   const st=gd&&gd.st,now=Date.now();if(!st)return;
   switch(a){
