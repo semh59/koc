@@ -30,4 +30,9 @@ ok("ekran açık: keepAwake eklenti metodu, UI iş parçacığında bayrak ekler
   ok("boyut: ABI arm64, armeabi-v7a ve smoke emülatörü için x86_64; 32 bit x86 yok",patch.includes('ndk { abiFilters "arm64-v8a", "armeabi-v7a", "x86_64" }')&&/arch: x86_64/.test(rd(".github/workflows/apk.yml")));
   ok("boyut: gömülü barkod motoru paketlenmez ve uygulama onu çağırmaz (yalnız scan)",patch.includes('excludes += ["**/libbarhopper_v3.so"]')&&!/startScan|readBarcodesFromImage/.test(www)&&/bs\.scan\(/.test(www));
 }
+{ // D-Adım6: uzun aralık atılmaz, parça parça kaydedilir
+  const mr=rd("assets/android/MotionReceiver.java"),tk=mr.slice(mr.indexOf("private static void tick"),mr.indexOf("double cad = MotionStore.addCp")),ms=rd("assets/android/MotionStore.java");
+  ok("hareket: tick gün dönünce ya da 3 saatte aralığı kapatıp yeniden açar, atmaz",/ROLL_MS = 3L \* 3600 \* 1000/.test(mr)&&/MotionStore\.dayOf\(now\) != MotionStore\.dayOf\(MotionStore\.lastActivityAt\(c\)\)/.test(tk)&&/MotionStore\.close\(c, now, steps\) == 0 && !newDay\) return;\s*MotionStore\.open\(c, mode, now, steps\);/.test(tk)&&!/discard/.test(tk));
+  ok("hareket: kapanış gün numarasıyla bölünür, parça başına 4 saat sınırı; yeniden başlatma ve 30 dk kuralı yerinde",/MotionMath\.split\(model\(c\), mode, cm\(c\), kg\(c\), ts, ss, ds, n,/.test(ms)&&/ds\[i\] = dayOf\(ts\[i\]\)/.test(ms)&&/b\.t1 - b\.t0 > MAX_BOUT_MS\) continue/.test(ms)&&/STALE_MS = 30L \* 60000/.test(mr)&&/ACTION_MY_PACKAGE_REPLACED\.equals\(a\)\) \{[\s\S]{0,200}MotionStore\.discard\(c\)/.test(mr));
+}
 process.exit(bad?1:0);

@@ -26,7 +26,8 @@ Saf mantık Java sınıfında (StepMath/QuickMath gibi): nokta süzme, adım uzu
 Açık aralık sürerken her ~2,5 dk adım sayacından kontrol noktası alınır (yalnızca hareket sürerken, alarm pil maliyeti ihmal edilebilir). Aralık kapanınca özet dilim dilim hesaplanır: her dilimin kendi ritminden adım uzunluğu, hız ve kalori bulunur; ritmi 50'nin altı dilimler duraklama sayılır (kalori yok). Ritim bir önceki dilimden %20 sapar ve o ritim aralığı öğrenilmemişse, son GPS penceresinden 10 dk geçtiyse kısa GPS penceresi açılır. Böylece "dakikada adım düştü" bilgisi hem toplam mesafeye hem GPS kararına yansır.
 
 ## Bilinen sınırlar (bağımsız inceleme sonrası)
-- 4 saatten uzun ya da gece yarısını geçen tek aralık atılır (günlük adım sayacı gece sıfırlanır).
+- Uzun aralık parça parça kaydedilir: açık aralık 3 saatte bir ve gün dönünce ilk kontrol noktasında kapatılıp aynı türle yeniden açılır (kayıt ≤ 4 saat kuralı korunur). Gece yarısını geçen aralıkta her günün adımı o günün sayaç farkından gelir; günler arasındaki dilim (son kontrol noktası ile gece yarısı sonrası ilk nokta, ~2,5 dk) atılır, orantıyla paylaştırılmaz. Yeni günde kontrol noktası yoksa o kısım atılır, önceki gün korunur. Parçalar zamanda ayrık, kalori iki kez sayılmaz.
+- 3 saatlik parça geçersizse (ortalama ritim < 50: çıkış olayı kaçmış, kullanıcı duruyor) aralık yeniden açılmaz, kontrol noktası alarmı durur. Bu parçada yürüyüş de varsa o kısım kaybolur.
 - Doze'da toplu gelen geçiş olayları (giriş+çıkış aynı pakette, >90 sn gecikme) atılır.
 - Yeniden başlatma/güncelleme ve 30 dk kontrol noktası gelmeyen açık aralık güvenilmez sayılıp atılır.
 - Alarm (tick) ile başlayan GPS penceresi Android'in arka plan başlatma muafiyetlerine bağlı; telefonda doğrulanacak, olmazsa yalnızca aralık başında GPS açılır.
