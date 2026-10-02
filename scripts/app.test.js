@@ -1170,6 +1170,20 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
   ok("aynı değer ikinci kez onaylanırsa kaydedilir",ev("weights()[dayKey()]")===90);
   ev("S.entries=[]");ev("add('kilo',80,'',keyOff(-1))");ev("sheetKilo()");w.document.querySelector("#fv").value="82,5";ev("goKilo()");
   ok("küçük fark uyarısız kaydedilir",ev("weights()[dayKey()]")===82.5);
+  { // C6: dokunma hedefleri ve alan altı hata
+    const css=html.match(/<style>([\s\S]*?)<\/style>/)[1],rule=sel=>{const i=css.indexOf("\n"+sel+"{")>=0?css.indexOf("\n"+sel+"{")+1:css.indexOf("}"+sel+"{")+1;return i>0?css.slice(i+sel.length+1,css.indexOf("}",i)):""};
+    ok("dokunma hedefleri: genel .del 44×44, .chip, .seg, toast düğmesi, alanlar en az 44 px",/width:44px;height:44px/.test(rule(".del"))&&/min-height:44px/.test(rule(".chip"))&&/min-width:44px/.test(rule(".chip"))&&/min-height:44px/.test(rule(".seg button"))&&/min-height:44px/.test(rule("#toast button"))&&/height:44px/.test(rule(".sw input"))&&/min-height:44px/.test(rule("input.in,select.in,.chip>button")),[rule(".del"),rule(".chip"),rule(".sw input")]);
+    ok("Bugün dışındaki silme ✕ düğmeleri de .del (44 px)",ev("hbRow('x','fdel:1')").includes('class="del"')&&ev("S.mealTpl=[{id:1,n:'K',items:[{text:'a',v:1}]}];favHtml()").includes('class="del" data-tpd="0"'));
+    ev("S.mealTpl=[];toast('');sheetKilo()");$q("#fv").value="abc";ev("goKilo()");
+    ok("kilo hatası alanın altında, toast'ta değil",$q("#kerr").textContent.includes("kg olarak")&&!$q("#tmsg").textContent.includes("kg olarak")&&$q("#sheet").classList.contains("on"));
+    ev("sheetYemek()");$q("#ft").value="";$q("#fv").value="";ev("goYemek()");
+    ok("yemek hatası alanın altında",$q("#yerr").textContent.includes("adını")&&!$q("#tmsg").textContent.includes("adını"));
+    $q("#fv").value="30000";ev("goYemek()");
+    ok("aşırı kalori hatası alanın altında",$q("#yerr").textContent.includes("çok yüksek"));
+    ev("sheetPorsiyon(0,FOODS[0])");$q("#fqty").value="0";ev("goBesin()");
+    ok("porsiyon hatası alanın altında",$q("#berr").textContent.includes("0,1 ile 20")&&!$q("#tmsg").textContent.includes("0,1 ile 20"));
+    ev("closeSheet()");
+  }
   ev("S.entries=[];add('yemek',200,'Menemen',keyOff(-1));add('yemek',90,'Ekmek',keyOff(-1))");
   ev("sheetYemek()");
   ok("dünkünü tekrarla düğmesi görünür",w.document.querySelector('[data-act="dunku"]')!==null);

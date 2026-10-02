@@ -48,7 +48,7 @@ function labDetail(id){
 
 function labRowHtml(r,i){
   const inp=(id,v,ph,cls,mode)=>`<input class="in ${cls||""}" id="${id}${i}" value="${esc(v==null?"":v)}" placeholder="${ph}" ${mode?`inputmode="${mode}"`:""} autocomplete="off" style="margin:0;padding:9px 10px;font-size:16px;min-width:0">`;
-  return `<div class="card" style="padding:10px;margin-bottom:8px"><label style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><input type="checkbox" id="lc${i}" ${r.off?"":"checked"} style="width:22px;height:22px">${inp("ln",r.n,"Test adı","","")}</label>
+  return `<div class="card" style="padding:10px;margin-bottom:8px"><label style="min-height:44px;display:flex;align-items:center;gap:8px;margin-bottom:6px"><input type="checkbox" id="lc${i}" ${r.off?"":"checked"} style="width:22px;height:22px">${inp("ln",r.n,"Test adı","","")}</label>
   <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:6px">${inp("lv",(r.q||"")+(r.v==null?"":labFmt(r.v)),"Değer","num","decimal")}${inp("lu",r.u,"Birim","")}${inp("ll",r.lo==null?"":labFmt(r.lo),"Alt","num","decimal")}${inp("lh",r.hi==null?"":labFmt(r.hi),"Üst","num","decimal")}</div>${r.guess?`<div class="mut sm" style="margin-top:4px">Emin değilim: satırı kontrol et.</div>`:""}</div>`;
 }
 function labRender(){
