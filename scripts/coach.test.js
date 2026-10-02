@@ -1,5 +1,13 @@
 const C=require("../www/coachlib.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
+{ // B7: güvenlik kuralları; eski 3-6 aynen kalır
+  const S=C.SYSTEM;
+  ok("SYSTEM: eski kural 3-6 değişmedi",["3. Çok düşük kalori veya hızlı kilo kaybı önerme. Hamilelik, emzirme, 18 yaş altı, yeme bozukluğu geçmişi, ciddi hastalık veya ilaç kullanımı varsa kalori açığı önerme, hekime yönlendir.","4. Baş dönmesi, bayılma, göğüs ağrısı, nefes darlığı, çarpıntı gibi belirtilerde önce hekime başvurmasını söyle. Acil belirtilerde 112. \"flag\" alanına \"safety\" yaz.","5. İlaç, doz, takviye tedavisi önerme.","6. Yeme bozukluğu işareti görürsen kısıtlama önerme, yargılamadan bir uzmana yönlendir."].every(r=>S.includes(r)));
+  const R=n=>S.split("\n").find(l=>l.startsWith(n+". "))||"",has=(l,...w)=>w.every(x=>l.includes(x));
+  ok("SYSTEM: ağrı/sakatlıkta tanı-tedavi yok, hareketi bırak, hekim veya fizyoterapist",has(R(10),"ağrı","sakatlık","tanı koyma","tedavi","bırakmasını","hekime","fizyoterapist"));
+  ok("SYSTEM: ilaç ve takviyede doz yorumu yok, hekim veya eczacı",has(R(11),"İlaç ve takviye","doz","hekime","eczacıya"));
+  ok("SYSTEM: programda uyarı; hamilelik, 18 yaş altı, yeme bozukluğu kuralı",has(R(12),"Program önerirken","hekime danış","Hamilelik","18 yaş altında","Yeme bozukluğu"));
+}
 ok("baş dönmesi",C.redFlag("Bu sabah başım döndü")==="check");
 ok("bayılma acil",C.redFlag("Bayılacak gibiyim")==="emergency");
 ok("göğüs ağrısı",C.redFlag("göğsümde sıkışma var, nefes darlığı")==="emergency");
