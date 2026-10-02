@@ -20,6 +20,8 @@ const CsvLib=(()=>{
         by(S.workouts,day,x=>x.t0).flatMap(w=>w.ex.flatMap(x=>x.sets.map((s,i)=>s.done&&[w.day,w.name,h.exName(x.id),i+1,s.kg,s.reps,s.sec,s.rpe,s.w?"evet":""]).filter(Boolean)))],
       ["saglik","Sağlık ölçümleri (tansiyon, şeker)",["tarih","saat","tür","sistolik","diyastolik","nabız","şeker_mgdl","ölçüm_zamanı","not"],
         by(S.vitals,day,time).map(r=>[r.day,r.time,r.k==="t"?"tansiyon":"şeker",r.sys,r.dia,r.nabiz,r.g,h.vctx(r),r.not])],
+      ["tarifler","Tarifler (malzemeler, 100 g başına değerler)",["tarif","porsiyon_sayısı","malzeme","gram","kcal_100g","protein_100g","karbonhidrat_100g","yağ_100g","lif_100g","şeker_100g","sodyum_100g"],
+        (S.recipes||[]).flatMap(r=>r.items.map(i=>[r.n,r.s,i.n,i.g,i.k,i.p,i.c,i.f,i.fb,i.sg,i.na]))],
       ["uyku","Uyku",["tarih","süre_dk","süre_saat","kalite_1_5"],S.sleep.map(r=>[r.day,r.min,r.min/60,r.q])],
       ["ruh","Ruh hali",["tarih","ruh_hali_1_5","not"],S.mood.map(r=>[r.day,r.v,r.t])],
       ["oruc","Oruç",["başlangıç","bitiş","süre_saat"],S.fast.log.map(r=>[iso(r.t0),iso(r.t1),(r.t1-r.t0)/36e5])],

@@ -13,10 +13,12 @@ const S={entries:[{id:2,day:"2026-10-02",time:"09:00",type:"kilo",v:80.5,text:""
   meds:[{id:1,n:"Vitamin D",d:"1000 IU",t:["09:00"]}],medLog:[{m:1,day:"2026-10-01",slot:"09:00",st:"t",at:"09:10"},{m:1,day:"2026-10-02",slot:"09:00",st:"s"}]};
 const F=C.files(S,{exName:id=>({squat:"Squat",plank:"Plank"}[id]),vctx:r=>r.k==="t"?"Sabah":"Açlık"});
 const g=k=>F.find(f=>f.key===k).build().split("\r\n").slice(0,-1);
-ok("7 ayrı dosya: kayıtlar, antrenman, sağlık, uyku, ruh hali, oruç, ilaç; satır sayıları",F.map(f=>f.key+f.n).join()==="kayitlar4,antrenman3,saglik2,uyku1,ruh1,oruc1,ilac2",F.map(f=>f.key+f.n));
+ok("8 ayrı dosya: kayıtlar, antrenman, sağlık, tarifler, uyku, ruh hali, oruç, ilaç; satır sayıları",F.map(f=>f.key+f.n).join()==="kayitlar4,antrenman3,saglik2,tarifler0,uyku1,ruh1,oruc1,ilac2",F.map(f=>f.key+f.n));
 ok("kayıtlar: tarihe-saate göre sıralı, birim, makrolar, adım türü, not değersiz, metin enjeksiyonu engelli",g("kayitlar").slice(1).join("|")==="2026-10-01;20:00;yemek;300;kcal;'=cmd|' /C calc'!A0;12,5;30;5;;;|2026-10-02;08:00;not;;;\"uyku;kötü\";;;;;;|2026-10-02;09:00;kilo;80,5;kg;;;;;;;|2026-10-02;10:00;adım;4000;adım;;;;;;;",g("kayitlar"));
 ok("antrenman: yalnız tamamlanan setler, set sıra numarası, ısınma ve rpe, süreli sette süre",g("antrenman").slice(1).join("|")==="2026-10-01;A;Squat;1;20;10;;;evet|2026-10-01;A;Squat;2;60;8;;8,5;|2026-10-01;A;Plank;1;;;45;;",g("antrenman"));
 ok("sağlık: tansiyon ve şeker, bağlam, '-' ile başlayan not korunur",g("saglik").slice(1).join("|")==="2026-10-01;07:00;şeker;;;;95,5;Açlık;'-düşük|2026-10-01;08:00;tansiyon;120;80;70;;Sabah;",g("saglik"));
 ok("uyku saat ondalık virgülle; ruh hali; oruç ISO yerel saat ve süre; ilaç adı, doz, durum",g("uyku")[1]==="2026-10-01;450;7,5;4"&&g("ruh")[1]==="2026-10-01;4;"&&g("oruc")[1]==="2026-10-01T20:00;2026-10-02T12:30;16,5"&&g("ilac").slice(1).join("|")==="2026-10-01;09:00;Vitamin D;1000 IU;alındı;09:10|2026-10-02;09:00;Vitamin D;1000 IU;atlandı;");
+{const t=C.files(Object.assign({},S,{recipes:[{n:"Köfte",s:4,items:[{n:"Kıyma",g:250,k:239,p:26},{n:"Bulgur",g:50.5,k:342}]}]}),{exName:x=>x,vctx:()=>""}).find(f=>f.key==="tarifler").build().split("\r\n");
+ok("tarifler: malzeme başına satır, ondalık virgül, olmayan değer boş",t.length===4&&t[1]==="Köfte;4;Kıyma;250;239;26;;;;;"&&t[2]==="Köfte;4;Bulgur;50,5;342;;;;;;",t);}
 ok("boş veri: satır sayısı 0, yalnız başlık",C.files({entries:[],workouts:[],vitals:[],sleep:[],mood:[],fast:{log:[]},meds:[],medLog:[]},{}).every(f=>f.n===0&&f.build().split("\r\n").length===2));
 process.exit(bad?1:0);

@@ -296,6 +296,7 @@ input.in,select.in,.chip>button{min-height:44px}
 <script src="insightlib.js"></script>
 <script src="coachlib.js"></script>
 <script src="coach.js"></script>
+<script src="recipeui.js"></script>
 <script src="labui.js"></script>
 <script src="ocrui.js"></script>
 <script src="vitalsui.js"></script>
@@ -355,7 +356,7 @@ const DEF={
     {id:11,t:"20:00",on:false,name:"Oruç başlangıcı",title:"⏳ Oruç başlangıcı",body:"Oruç penceren başlıyor, istersen Bugün'den başlat."},
     {id:12,t:"20:30",on:true,dow:0,name:"Haftalık özet (Pazar)",title:"📊 Haftalık özet",body:"Haftanı birlikte inceleyelim, bakmak için dokun."}
   ]},
-  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,dbStep:0,plates:GPLATE_DEF.slice(),exCfg:{},providers:defProviders(),chat:[],cid:1,myFoods:[],favFoods:[],mealTpl:[],fast:{plan:16,t0:null,log:[]},sleep:[],mood:[],labs:[],vitals:[],meds:[],medLog:[],moves:[],measures:[],walk:null
+  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,dbStep:0,plates:GPLATE_DEF.slice(),exCfg:{},providers:defProviders(),chat:[],cid:1,myFoods:[],recipes:[],favFoods:[],mealTpl:[],fast:{plan:16,t0:null,log:[]},sleep:[],mood:[],labs:[],vitals:[],meds:[],medLog:[],moves:[],measures:[],walk:null
 };
 const VR={bpSysHi:[80,300,true],bpDiaHi:[40,200,true],bpSysLo:[50,300,true],bpDiaLo:[30,200,true],gFastLo:[20,600,true],gFastHi:[20,600,true],gPostLo:[20,600,true],gPostHi:[20,600,true]};
 const RANGES={...VR,goalKg:[20,400,false],kcal:[800,8000,true],waterMl:[500,10000,true],glass:[50,1500,true],sportWeek:[10,3000,true],stepGoal:[1000,100000,true],heightCm:[100,250,true],age:[10,100,true]};
@@ -412,14 +413,14 @@ function cleanSettings(raw,fast){
   }
   return d;
 }
-function cleanHealthState(r){const meds=MedLib.cleanMeds(r&&r.meds);return {meds,medLog:MedLib.cleanLog(r&&r.medLog,meds),moves:MotionLib.clean(r&&r.moves),measures:Algo.cleanMeasures(r&&r.measures),walk:Algo.cleanWalk(r&&r.walk,Date.now()),favFoods:LogLib.cleanFav(r&&r.favFoods),mealTpl:LogLib.cleanTpl(r&&r.mealTpl),fast:HabitLib.cleanFast(r&&r.fast),sleep:HabitLib.cleanSleep(r&&r.sleep),mood:HabitLib.cleanMood(r&&r.mood)}}
+function cleanHealthState(r){const meds=MedLib.cleanMeds(r&&r.meds);return {meds,medLog:MedLib.cleanLog(r&&r.medLog,meds),moves:MotionLib.clean(r&&r.moves),measures:Algo.cleanMeasures(r&&r.measures),walk:Algo.cleanWalk(r&&r.walk,Date.now()),favFoods:LogLib.cleanFav(r&&r.favFoods),recipes:LogLib.cleanRecipes(r&&r.recipes),mealTpl:LogLib.cleanTpl(r&&r.mealTpl),fast:HabitLib.cleanFast(r&&r.fast),sleep:HabitLib.cleanSleep(r&&r.sleep),mood:HabitLib.cleanMood(r&&r.mood)}}
 function cleanMyFoods(arr){
   const out=[],seen=new Set();
   for(const x of (Array.isArray(arr)?arr:[]).slice(0,200)){
     if(!x||typeof x.n!=="string"||!x.n.trim()||!(x.k>=0&&x.k<=5000))continue;
     const n=x.n.trim().slice(0,60),key=tr(n);if(seen.has(key))continue;seen.add(key);
-    const f={n,k:Math.round(x.k*10)/10},lim={p:300,na:40000};
-    for(const m of NUTR)if(Number.isFinite(x[m])&&x[m]>=0&&x[m]<=(lim[m]||100))f[m]=x[m];
+    const f={n,k:Math.round(x.k*10)/10};
+    for(const m of NUTR)if(Number.isFinite(x[m])&&x[m]>=0&&x[m]<=LogLib.PER100[m])f[m]=x[m];
     if(typeof x.b==="string"&&/^\d{8,14}$/.test(x.b))f.b=x.b;
     if(x.src==="off")f.src="off";
     if(Array.isArray(x.u)){const u=x.u.filter(q=>Array.isArray(q)&&typeof q[0]==="string"&&q[1]>0&&q[1]<=5000).slice(0,4).map(q=>[q[0].slice(0,40),q[1]]);if(u.length)f.u=u}
@@ -814,13 +815,13 @@ function favHtml(){
   const fk=new Set(S.favFoods.map(f=>LogLib.key(f.text)));
   const row=(x,i,a,b,star,lab)=>`<div class="prow"><button data-${a}="${i}" style="flex:1;text-align:left;min-height:56px"><b>${esc(x.text)}</b><span class="mut sm">${x.v!=null?Math.round(x.v)+" kcal":"kalori yok"}</span></button><button class="plus" data-${b}="${i}" aria-label="${lab}"${star==="★"&&b==="fva"?" disabled":""}>${star}</button></div>`;
   const tp=S.mealTpl.length?`<div class="lbl">Şablonlar</div><div class="chips">${S.mealTpl.map((t,i)=>`<span class="chip" style="display:inline-flex;gap:4px;align-items:center;padding:0 2px 0 14px"><button data-tp="${i}">${esc(t.n)} · ${t.items.length}</button><button class="del" data-tpd="${i}" aria-label="Şablonu sil">✕</button></span>`).join("")}</div>`:"";
-  return tp+(S.favFoods.length?`<div class="lbl">Favoriler</div>${S.favFoods.map((x,i)=>row(x,i,"fv","fvd","★","Favoriden çıkar")).join("")}`:"")+(recList.length?`<div class="lbl">Son yediklerin</div>${recList.map((x,i)=>row(x,i,"rc","fva",fk.has(LogLib.key(x.text))?"★":"☆","Favoriye al")).join("")}`:"");
+  return recipeListHtml()+tp+(S.favFoods.length?`<div class="lbl">Favoriler</div>${S.favFoods.map((x,i)=>row(x,i,"fv","fvd","★","Favoriden çıkar")).join("")}`:"")+(recList.length?`<div class="lbl">Son yediklerin</div>${recList.map((x,i)=>row(x,i,"rc","fva",fk.has(LogLib.key(x.text))?"★":"☆","Favoriye al")).join("")}`:"");
 }
 const mealChips=()=>{const d=LogLib.mealOf({time:`${pad(new Date().getHours())}:00`});return `<div class="lbl">Öğün</div><div class="chips" id="fml">${LogLib.MEALS.map(([k,n])=>`<button class="chip" data-ml="${k}" aria-pressed="${k===d}">${n}</button>`).join("")}</div>`};
 const fmeal=()=>{const b=document.querySelector("#fml [aria-pressed=true]");return b?b.dataset.ml:undefined};
 function sheetYemek(){
   const dn=of("yemek",keyOff(-1)).length;
-  openSheet(`<h3>Yemek ekle</h3><input class="in" id="fq" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off" autofocus><div id="flist" class="plist"></div><div class="qrow">${dn?`<button class="btn ghost" data-act="dunku">↺ Dünkünü tekrarla (${dn})</button>`:""}${isNative()&&BS()?`<button class="btn ghost" data-act="barkod">${Icons.svg("camera")} Barkod okut</button>`:""}${ocrBtn("etiket",Icons.svg("tag")+" Etiket oku")}</div><div id="frl" class="plist">${favHtml()}</div>
+  openSheet(`<h3>Yemek ekle</h3><input class="in" id="fq" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off" autofocus><div id="flist" class="plist"></div><div class="qrow">${dn?`<button class="btn ghost" data-act="dunku">↺ Dünkünü tekrarla (${dn})</button>`:""}<button class="btn ghost" data-rp="new">Tarif oluştur</button>${isNative()&&BS()?`<button class="btn ghost" data-act="barkod">${Icons.svg("camera")} Barkod okut</button>`:""}${ocrBtn("etiket",Icons.svg("tag")+" Etiket oku")}</div><div id="frl" class="plist">${favHtml()}</div>
   <div class="lbl">Ya da kendin yaz</div><input class="in" id="ft" placeholder="Ne yedin?" autocomplete="off"><input class="in num" id="fv" inputmode="numeric" placeholder="Kalori (isteğe bağlı)"><div class="ferr" id="yerr" role="alert"></div>${mealChips()}${dayOptions()}<button class="btn" data-go="yemek">Kaydet</button>`);
 }
 function sheetSu(){
@@ -846,14 +847,14 @@ function goTpl(){
   S.mealTpl=LogLib.cleanTpl([...S.mealTpl,{id:Math.max(0,...S.mealTpl.map(t=>t.id))+1,n,items}]);save();closeSheet();toast(`"${n}" şablonu kaydedildi`);
 }
 let curFood=null,curPor=0,foodAskQ="";
-const allFoods=()=>S.myFoods.map(m=>Object.assign({n:m.n,k:m.k,u:m.u||[["1 porsiyon",100]],my:true,b:m.b,src:m.src},...NUTR.map(k=>({[k]:m[k]==null?null:m[k]})))).concat(FOODS);
-const foodListHtml=q=>{const L=allFoods(),ask=q.trim().length>=2?`<button class="prow" data-c="askfood"><span><b>"${esc(q.trim())}" için Koç'a sor</b><span class="mut sm">Yapay zekâ tahmin eder, sonra listene ekleyebilirsin</span></span><span class="plus" aria-hidden="true">✨</span></button>`:"";return foodSearch(q,8,L).map(i=>{const f=L[i];return `<button class="prow" data-food="${i}"><span><b>${esc(f.n)}</b><span class="mut sm">${f.my?(f.u.length>1||f.u[0][1]!==100?`Benim ürünüm, 100 g: ${f.k} kcal`:`Benim besinim, 1 porsiyon: ${f.k} kcal`):`100 g: ${f.k} kcal, protein ${fmt(f.p,0)} g`}</span></span><span class="plus">+</span></button>`}).join("")+ask};
+const allFoods=()=>S.myFoods.map(m=>Object.assign({n:m.n,k:m.k,u:m.u||[["1 porsiyon",100]],my:true,b:m.b,src:m.src},...NUTR.map(k=>({[k]:m[k]==null?null:m[k]})))).concat(S.recipes.map(LogLib.recipeFood),FOODS);
+const foodListHtml=q=>{const L=allFoods(),ask=q.trim().length>=2?`<button class="prow" data-c="askfood"><span><b>"${esc(q.trim())}" için Koç'a sor</b><span class="mut sm">Yapay zekâ tahmin eder, sonra listene ekleyebilirsin</span></span><span class="plus" aria-hidden="true">✨</span></button>`:"";return foodSearch(q,8,L).map(i=>{const f=L[i];return `<button class="prow" data-food="${i}"><span><b>${esc(f.n)}</b><span class="mut sm">${f.rec?`Tarifim, 1 porsiyon: ${Math.round(f.k*f.u[0][1]/100)} kcal`:f.my?(f.u.length>1||f.u[0][1]!==100?`Benim ürünüm, 100 g: ${f.k} kcal`:`Benim besinim, 1 porsiyon: ${f.k} kcal`):`100 g: ${f.k} kcal, protein ${fmt(f.p,0)} g`}</span></span><span class="plus">+</span></button>`}).join("")+ask};
 function sheetPorsiyon(i,food){
   curFood=food||allFoods()[i];curPor=0;
   openSheet(`<h3>${esc(curFood.n)}</h3><div class="lbl">Porsiyon</div><div class="chips" id="fpc">${curFood.u.map((u,j)=>`<button class="chip" data-fp="${j}" aria-pressed="${j===0}">${esc(u[0])}</button>`).join("")}</div>
   <div class="lbl">Kaç porsiyon</div><input class="in num" id="fqty" inputmode="decimal" value="1" autocomplete="off"><div class="ferr" id="berr" role="alert"></div>
   <div class="stat" style="margin:8px 0"><div class="k">Tahmini değer</div><div class="v num" id="fprev"></div></div>
-  <div class="mut sm" style="margin-bottom:8px">${curFood.hint||(curFood.src==="off"?"Kaynak: Open Food Facts (topluluk verisi, ODbL).":curFood.my?"Yapay zekâ ya da senin girdiğin tahmin.":curFood.s?"Kaynak: USDA FoodData Central. Pişirme ve markaya göre değişebilir.":"Tahmini değer. Tarife ve markaya göre belirgin değişir.")}</div>${mealChips()}${dayOptions()}<button class="btn" data-go="besin">Ekle</button>${curFood.my&&!curFood.hint?`<button class="lnk dng" data-go="mysil">Bu besini listemden sil</button>`:""}`);
+  <div class="mut sm" style="margin-bottom:8px">${curFood.hint||(curFood.src==="off"?"Kaynak: Open Food Facts (topluluk verisi, ODbL).":curFood.my?"Yapay zekâ ya da senin girdiğin tahmin.":curFood.s?"Kaynak: USDA FoodData Central. Pişirme ve markaya göre değişebilir.":"Tahmini değer. Tarife ve markaya göre belirgin değişir.")}</div>${mealChips()}${dayOptions()}<button class="btn" data-go="besin">Ekle</button>${curFood.rec?`<button class="lnk" data-rp="edit:${curFood.rec}">Tarifi düzenle</button>`:""}${curFood.my&&!curFood.hint?`<button class="lnk dng" data-go="mysil">Bu besini listemden sil</button>`:""}`);
   foodPreview();
 }
 function foodCalc(){
