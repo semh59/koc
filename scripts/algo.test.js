@@ -77,4 +77,11 @@ ok("ısınma setleri hesaba girmez (en son, önceki ve tek başına)",A.nextTarg
   ok("stepStats: bugün hedefin altındaysa seri dünden sayılır",A.stepStats([9000,9000,2000],8000).streak===2&&A.stepStats([9000,2000,9000],8000).streak===1);
   ok("stepStats: boş veri",JSON.stringify(A.stepStats([0,0],8000))==='{"n":0,"avg":0,"best":-1,"hit":0,"streak":0}'&&A.stepStats([],8000).streak===0);
 }
+{ // D-Sağ1
+  const r=[{day:"2026-09-01",k:"waist",v:90},{day:"2026-09-01",k:"waist",v:89.04},{day:"2026-09-01",k:"neck",v:40},{day:"2026-09-02",k:"hip",v:19.9},{day:"2026-09-02",k:"hip",v:250.1},{day:"bad",k:"arm",v:30},{day:"2026-08-30",k:"arm",v:"30"},{day:"2026-08-30",k:"arm",v:20},null];
+  const c=A.cleanMeasures(r);
+  ok("cleanMeasures: sınırlar, bilinmeyen bölge, tekrar (son kazanır), sıralı",JSON.stringify(c)==='[{"day":"2026-08-30","k":"arm","v":20},{"day":"2026-09-01","k":"waist","v":89}]'&&r.length===9,JSON.stringify(c));
+  ok("cleanMeasures: 20 ve 250 dahil, dizi değilse boş",A.cleanMeasures([{day:"2026-01-01",k:"arm",v:250}]).length===1&&A.cleanMeasures("x").length===0);
+  ok("whtr: bel/boy, eksikse null",near(A.whtr(85,170),0.5,1e-9)&&A.whtr(0,170)===null&&A.whtr(85,0)===null);
+}
 process.exit(bad?1:0);

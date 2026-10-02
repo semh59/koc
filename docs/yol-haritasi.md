@@ -100,7 +100,7 @@ Ayrıntı ve test adımları `yapilacaklar.md`'de. Telefonda denenen tek özelli
 ### Sağlık kayıtları
 | # | Ad | Değer | Emek | Kaynak | Bağımlılık / karar |
 |---|---|---|---|---|---|
-| D-Sağ1 | Bel çevresi ve vücut ölçüleri | Kilo sabitken ilerleme görünür. | S | oneri #14, fikirler | – |
+| D-Sağ1 (yapıldı) | Bel çevresi ve vücut ölçüleri | Kilo sabitken ilerleme görünür. | S | oneri #14, fikirler | – |
 | D-Sağ2 | Adet döngüsü | Yerel, gizli ve bildirimli döngü takibi eklenir. | M | fikirler, rekabet-ozellik | G10 |
 | D-Sağ3 | Tahlil okuyucuyu sağlamlaştırma | Gerçek laboratuvar PDF'leriyle ayrıştırıcı düzeltilir, taranmış PDF için OCR eklenir. | M | yapilacaklar, oneri | G4 |
 

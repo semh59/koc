@@ -304,6 +304,7 @@ input.in,select.in,.chip>button{min-height:44px}
 <script src="medui.js"></script>
 <script src="habitui.js"></script>
 <script src="motionui.js"></script>
+<script src="measureui.js"></script>
 <script src="backupui.js"></script>
 <script src="csvlib.js"></script>
 <script src="privacyui.js"></script>
@@ -353,7 +354,7 @@ const DEF={
     {id:11,t:"20:00",on:false,name:"Oruç başlangıcı",title:"⏳ Oruç başlangıcı",body:"Oruç penceren başlıyor, istersen Bugün'den başlat."},
     {id:12,t:"20:30",on:true,dow:0,name:"Haftalık özet (Pazar)",title:"📊 Haftalık özet",body:"Haftanı birlikte inceleyelim, bakmak için dokun."}
   ]},
-  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,dbStep:0,plates:GPLATE_DEF.slice(),exCfg:{},providers:defProviders(),chat:[],cid:1,myFoods:[],favFoods:[],mealTpl:[],fast:{plan:16,t0:null,log:[]},sleep:[],mood:[],labs:[],vitals:[],meds:[],medLog:[],moves:[]
+  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,dbStep:0,plates:GPLATE_DEF.slice(),exCfg:{},providers:defProviders(),chat:[],cid:1,myFoods:[],favFoods:[],mealTpl:[],fast:{plan:16,t0:null,log:[]},sleep:[],mood:[],labs:[],vitals:[],meds:[],medLog:[],moves:[],measures:[]
 };
 const VR={bpSysHi:[80,300,true],bpDiaHi:[40,200,true],bpSysLo:[50,300,true],bpDiaLo:[30,200,true],gFastLo:[20,600,true],gFastHi:[20,600,true],gPostLo:[20,600,true],gPostHi:[20,600,true]};
 const RANGES={...VR,goalKg:[20,400,false],kcal:[800,8000,true],waterMl:[500,10000,true],glass:[50,1500,true],sportWeek:[10,3000,true],stepGoal:[1000,100000,true],heightCm:[100,250,true],age:[10,100,true]};
@@ -407,7 +408,7 @@ function cleanSettings(raw,fast){
   }
   return d;
 }
-function cleanHealthState(r){const meds=MedLib.cleanMeds(r&&r.meds);return {meds,medLog:MedLib.cleanLog(r&&r.medLog,meds),moves:MotionLib.clean(r&&r.moves),favFoods:LogLib.cleanFav(r&&r.favFoods),mealTpl:LogLib.cleanTpl(r&&r.mealTpl),fast:HabitLib.cleanFast(r&&r.fast),sleep:HabitLib.cleanSleep(r&&r.sleep),mood:HabitLib.cleanMood(r&&r.mood)}}
+function cleanHealthState(r){const meds=MedLib.cleanMeds(r&&r.meds);return {meds,medLog:MedLib.cleanLog(r&&r.medLog,meds),moves:MotionLib.clean(r&&r.moves),measures:Algo.cleanMeasures(r&&r.measures),favFoods:LogLib.cleanFav(r&&r.favFoods),mealTpl:LogLib.cleanTpl(r&&r.mealTpl),fast:HabitLib.cleanFast(r&&r.fast),sleep:HabitLib.cleanSleep(r&&r.sleep),mood:HabitLib.cleanMood(r&&r.mood)}}
 function cleanMyFoods(arr){
   const out=[],seen=new Set();
   for(const x of (Array.isArray(arr)?arr:[]).slice(0,200)){
@@ -623,7 +624,7 @@ function viewBugun(){
     isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?row("adim","Adım sayarı aç","Telefonun sensörü sayar, hesap gerekmez.",[["adimac","Aç"],["adimdegil","Şimdi değil"]]):"",
     S.entries.length>=10&&(old==null||old>14)?row("cloud","Yedek zamanı",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Gönder"]]):""].filter(Boolean);
   const todoCard=todo.length?`<div class="card todo"><div class="lbl">Bugün yapılacaklar</div>${todo.join("")}</div>`:"";
-  return `${actions}${habitRow()}${rings}${macro}${micro}${sOn?stepCard():""}${todoCard}${gTodayCard()}${weight}<button class="coach" data-tab="koc">${esc(coach())} <b>Koç ›</b></button>${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
+  return `${actions}${habitRow()}${rings}${macro}${micro}${sOn?stepCard():""}${todoCard}${gTodayCard()}${weight}<button class="lnk" data-ms="open">Ölçü ekle (bel, kalça…)</button><button class="coach" data-tab="koc">${esc(coach())} <b>Koç ›</b></button>${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
 }
 
 /* PDF raporlar tek yerde; paylaşım işleyicileri belgede dinlediği için ekrandan bağımsız çalışır. */
@@ -657,6 +658,7 @@ function viewTrend(){
   <div class="card">${chart(range)}${stats}</div>`:empty}
   ${lossAsk()?`<div class="btns"><button class="btn ghost" data-c="why">Bu hafta neden kilo vermedim?</button></div>`:""}
   ${gEnergy()}
+  ${measureCard()}
   ${hasWeek?`<h2>Son 7 gün</h2><div class="card"><table><thead><tr><th>Gün</th><th>Kilo</th><th>Su (L)</th><th>kcal</th><th>Spor (dk)</th><th>Adım</th></tr></thead><tbody>${rows}</tbody></table></div>`:""}
   ${vTrendCards()}
   <h2>Tahlil</h2>${labTrendCard()}
