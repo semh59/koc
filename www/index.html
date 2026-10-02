@@ -1299,7 +1299,7 @@ abBoot();
 if(S.settings.stepsOn&&SC()){SC().start().catch(()=>{});stepsSync();motionBoot()}
 setInterval(()=>{if(!document.hidden&&tab==="bugun")stepsSync()},60000);
 if(DH())DH().info().then(r=>{oem=String(r.manufacturer||"");render()},()=>{});
-try{const P=window.Capacitor&&window.Capacitor.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp","BarcodeScanner","StepCounter","Ocr","Motion","Widget","BackupFolder"].map(n=>n+"="+typeof P[n]).join(" "))}catch(e){}
+try{const P=window.Capacitor&&window.Capacitor.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp","BarcodeScanner","StepCounter","Ocr","Motion","Speech","Widget","BackupFolder"].map(n=>n+"="+typeof P[n]).join(" "))}catch(e){}
 setInterval(()=>{if(dayKey()!==lastDay){lastDay=dayKey();logOff=0;render()}},60000);
 try{const ln=LN();if(ln&&ln.addListener)ln.addListener("localNotificationActionPerformed",notifTap)}catch(e){}
 function widgetOpen(){tab="bugun";logOff=0;closeSheet();render();window.scrollTo(0,0)}
