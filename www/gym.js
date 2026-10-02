@@ -224,7 +224,16 @@ function gLive(w){
   <button class="btn ghost" data-g="pick">Egzersiz ekle</button>
   <button class="lnk dng" data-g="cancel">Antrenmanı iptal et</button>`;
 }
+/* Yerel pencere bayrağı (DeviceHelp.keepAwake): navigator.wakeLock'un Android WebView desteği belgelerde yalnız Chrome'dan çıkarım. */
+let gAwakeOn=false;
+function gAwake(force){
+  const on=!!(S.settings.awakeOn&&gActive()&&tab==="salon"&&!document.hidden),d=DH();
+  if((on===gAwakeOn&&!force)||!d||!d.keepAwake)return;
+  gAwakeOn=on;d.keepAwake({on}).catch(()=>{});
+}
+document.addEventListener("visibilitychange",()=>gAwake(true));
 function gTick(){
+  gAwake();
   const w=gActive();if(!w||tab!=="salon")return;
   const st=$("#gstat");if(st)st.textContent=`${gClock(Date.now()-w.t0)} süre, ${Math.round(gWorkVol(w)).toLocaleString("tr-TR")} kg hacim`;
   const r=$("#grest");if(!r)return;
