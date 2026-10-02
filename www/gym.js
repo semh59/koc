@@ -372,7 +372,7 @@ function gSheetSummary(id){
 /* ---- hazır programlar (programs.js) ---- */
 const gPgMatch=p=>(!gPgF.d||(gPgF.d>=p.d[0]&&gPgF.d<=p.d[1]))&&(!gPgF.lv||p.lv===gPgF.lv);
 const gPgMeta=p=>`${p.d[0]===p.d[1]?p.d[0]:p.d[0]+"-"+p.d[1]} gün · ${p.q==="Ağırlıksız"?"ekipmansız":"salon"} · ${p.lv.toLowerCase()}`;
-const gPgNote="Genel bilgidir, kişisel antrenman ya da tıbbi tavsiye değildir. Ağrı veya sakatlığın varsa başlamadan hekime ya da fizyoterapiste danış.";
+const gPgNote="Genel bilgidir, kişisel antrenman ya da tıbbi tavsiye değildir. Ağrın, sakatlığın, gebeliğin, yakın zamanda ameliyatın ya da sağlık sorunun varsa başlamadan hekime ya da fizyoterapiste danış. Antrenmanda ağrı olursa hareketi bırak.";
 function gPgHtml(){
   const chips=(k,vals,lbl)=>`<div class="chips">${vals.map(v=>`<button class="chip" data-g="pgf:${k}:${v}" aria-pressed="${gPgF[k]===v}">${lbl(v)}</button>`).join("")}</div>`;
   const list=PrgLib.PROGRAMS.filter(gPgMatch);

@@ -1398,6 +1398,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     await ev("cProgram(progOpt)");
     const pm=ev("S.chat.find(m=>m.card&&m.card.kind==='program')");
     ok("program kartı: katalog dışı kimlik ve tek egzersizli gün atılır, JSON metne yazılmaz",pm&&pm.card.days.length===2&&pm.text==="Program hazır"&&sent.max_tokens===900&&sent.messages[0].content.includes("KATALOG (kimlik|ad|bölge):\nsquat|Squat|Ön bacak"),[pm,sent&&sent.max_tokens]);
+    ok("Koç program kartında hazır programlarla aynı güvenlik notu",q(`[data-c="progadd:${pm.id}"]`).closest(".lcard").textContent.includes(ev("gPgNote"))&&ev("gPgNote").includes("gebeliğin")&&ev("gPgNote").includes("hareketi bırak"));
     q(`[data-c="progadd:${pm.id}"]`).click();
     ok("Şablon olarak ekle her günü şablona ekler",ev("S.templates.length")===2&&ev("S.templates[0].name")==="3 gün – A"&&ev("S.templates[0].ex.join()")==="squat,bench,row"&&!q('[data-c^="progadd"]'));
     const pc=JSON.parse(ev("JSON.stringify(cleanCoach(JSON.parse(JSON.stringify(S))))")).chat.find(m=>m.card&&m.card.kind==="program");
