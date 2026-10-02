@@ -234,7 +234,7 @@ function gHome(){
     return `<div class="card trow"><button class="tmain" data-g="start:${t.id}"><b>${esc(t.name)}</b><span class="mut">${esc(t.ex.map(i=>gEx(i).n).join(", ")||"Egzersiz yok")}</span><span class="mut">${last?"Son: "+fd(last.day):"Henüz yapılmadı"}</span></button><button class="del" data-g="tedit:${t.id}" aria-label="Şablonu düzenle">✎</button><button class="del" data-g="tdel:${t.id}" aria-label="Şablonu sil">✕</button></div>`;
   }).join("");
   const wk=gWeekRegions(),rk=Object.keys(wk).sort((a,b)=>wk[b]-wk[a]),mx=Math.max(14,...Object.values(wk));
-  const bars=rk.length?`<h2>Bu hafta, bölgeye göre set</h2><div class="card">${rk.map(g=>`<div class="gbar"><span>${g}</span><span class="bar"><i style="width:${(wk[g]/mx*100).toFixed(0)}%"></i></span><span class="num">${wk[g]}</span></div>`).join("")}<p class="hint">Bölge başına haftada 10 ile 20 set çoğu kişi için makul bir aralıktır.</p></div>`:"";
+  const bars=`<h2>Bu hafta, bölgeye göre set</h2><div class="card">${MuscleMap.html(wk)}${rk.map(g=>`<div class="gbar"><span>${g}</span><span class="bar"><i style="width:${(wk[g]/mx*100).toFixed(0)}%"></i></span><span class="num">${wk[g]}</span></div>`).join("")}<p class="hint">Bölge başına haftada 10 ile 20 set çoğu kişi için makul bir aralıktır.</p></div>`;
   const note=gWeekNote(gWeekRegions(),done.length>0).map(l=>`<p class="hint">${l}</p>`).join("");
   const rec=gHistHtml(done);
   return `<button class="btn" data-g="start:">Boş antrenman başlat</button>
@@ -646,6 +646,12 @@ function gClick(v,el){
       gTimStop();S.workouts=S.workouts.filter(x=>x!==w);save();gRestSet(0);render();return;
     }
     case "hist":return gSheetHist(p1);
+    case "mm":{
+      const i=$("#mminfo");if(!i)return;
+      document.querySelectorAll(".mmr.on").forEach(e=>e.classList.remove("on"));
+      if(el&&el.classList&&el.classList.contains("mmr"))el.classList.add("on");
+      i.textContent=MuscleMap.tx(p1,gWeekRegions()[p1]||0);return;
+    }
     default:return typeof exClick==="function"&&exClick(a,p1,p2,el,w);
     case "sum":return gSheetSummary(+p1);
     case "savetpl":{
