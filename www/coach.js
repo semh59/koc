@@ -109,7 +109,7 @@ function cWorkoutEx(e){
 function cMeds(t,now){
   if(!S.settings.medOn||!S.meds.length)return [];
   const nt=`${pad(now.getHours())}:${pad(now.getMinutes())}`,f=keyOff(-6);
-  return S.meds.filter(m=>m.on).map(m=>{const a=MedLib.adherence([m],S.medLog,f,t,t,nt),left=MedLib.stockLeft(m);return {n:m.n,d:m.d,t:m.t,w:m.w,a:a.total?a:null,left}});
+  return S.meds.filter(m=>m.on).map(m=>{const a=MedLib.adherence([m],S.medLog,f,t,t,nt),left=MedLib.stockLeft(m);return {n:m.n,d:m.d,t:m.t,w:m.w,a:a.total||a.late?a:null,left}});
 }
 function cMessages(extraUser,extraSys){
   const sys=CoachLib.SYSTEM+(extraSys?"\n\nNOT: "+extraSys:"")+"\n\n"+CoachLib.contextText(cData());
