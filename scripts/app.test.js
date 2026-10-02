@@ -2122,4 +2122,21 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("ölçü yokken Trend kartı boş durumla Ölçü ekle sunar",txt().includes("Vücut ölçüleri")&&!!q('#view [data-ms="open"]'));
     ev("S=structuredClone(DEF);S.settings.obDone=true;tab='bugun';render()");
   }
+  { // D-Ant10: antrenman kalorisi
+    const q=s=>$q(s),click=s=>q(s).click();
+    ev("S=structuredClone(DEF);S.settings.obDone=true;add('kilo',80);S.gid=50;tab='salon';render()");
+    const sets=n=>"["+Array.from({length:n},()=>"{kg:50,reps:8,done:true}").join(",")+"]";
+    const W=(id,min,n)=>`S.workouts=[{id:${id},day:dayKey(),t0:Date.now()-${min}*60000,t1:null,name:'Güç',tpl:null,ex:[{id:'squat',note:'',sets:${sets(n)}}]}];S.entries=S.entries.filter(e=>e.type!=='spor');gFinish()`;
+    ev(W(51,50,20));
+    ok("seans bitince spor kaydı dakika kalıbını korur, kcal alanı net MET 6: 5×80×50/60=333",ev("S.entries.find(e=>e.type==='spor'&&e.wid===51).v")===50&&ev("S.entries.find(e=>e.wid===51).kcal")===333);
+    ok("antrenman özeti tahmini kaloriyi etiketle gösterir",q("#sheet").textContent.includes("~333 kcal")&&q("#sheet").textContent.includes("tahmin"));
+    ev("closeSheet();tab='bugun';render()");
+    ok("Bugün günlüğünde spor kaydı tahmini kalori ile",q("#view").textContent.includes("~333 kcal tahmini"));
+    ok("kcal yeniden yükleme/yedekte kalır; geçersiz kcal atılır, eski kayıt (kcal yok) geçerli",ev("cleanEntries(S.entries).out.find(e=>e.type==='spor').kcal")===333&&ev("cleanEntries([{type:'spor',day:'2026-01-01',v:30,kcal:-5},{type:'spor',day:'2026-01-01',v:30,kcal:99999},{type:'spor',day:'2026-01-01',v:30,kcal:1.5}]).out.every(e=>e.kcal===undefined)")&&ev("cleanEntries([{type:'spor',day:'2026-01-01',v:30}]).out.length")===1);
+    ev("S.entries=S.entries.filter(e=>e.type==='kilo')");ev("S.entries=[];");
+    ev(W(52,40,10));
+    ok("kilo kaydı yoksa kalori yazılmaz ve özette görünmez",ev("S.entries.find(e=>e.wid===52).kcal")===undefined&&!q("#sheet").textContent.includes("kcal"));
+    ev("closeSheet();add('kilo',80);sheetSpor()");click('[data-sp="Koşu"]');q("#fv").value="30";click('[data-go="spor"]');
+    ok("Spor ekle: tür MET'iyle kcal (Koşu 30 dk, 80 kg: 7,3×80×0,5=292)",ev("S.entries.filter(e=>e.type==='spor').pop().kcal")===292);
+  }
 },100);

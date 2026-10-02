@@ -387,6 +387,7 @@ function gSheetSummary(id){
   ${gWorkVol(w)>0?`<div class="sumv num">${Math.round(gWorkVol(w)).toLocaleString("tr-TR")} <small>kg hacim</small></div>`:gTimedSec(w)>0?`<div class="sumv num">${gSecTx(gTimedSec(w))} <small>toplam süre</small></div>`:""}
   <div class="two"><div class="stat"><div class="k">Set</div><div class="v num">${gWorkSets(w)}</div></div><div class="stat"><div class="k">Egzersiz</div><div class="v num">${w.ex.length}</div></div></div>
   ${prs.length?`<div class="pr"><b>${prs.length} yeni rekor</b>${prs.map(p=>`<div>${esc(p.ex.n)}, ${fkg(p.kg)||0} kg × ${p.reps}<div class="mut sm">Tahmini 1TM ${Math.round(p.e1)} kg, önceki ${Math.round(p.prev)} kg</div></div>`).join("")}</div>`:""}
+  ${(k=>k?`<div class="mut sm" style="margin-top:8px">Tahmini ~${k} kcal (dinlenme hariç, tahmindir)</div>`:"")((S.entries.find(e=>e.wid===w.id)||{}).kcal)}
   <div class="mut sm" style="margin:8px 0">${Object.keys(sets).map(g=>`${g} ${sets[g]}`).join(", ")}</div>
   <div class="btns">${w.tpl==null?`<button class="btn ghost" data-g="savetpl:${w.id}">Şablon olarak kaydet</button>`:S.templates.some(t=>t.id===w.tpl)?`<button class="btn ghost" data-g="tplupd:${w.id}">Şablonu bu seansa göre güncelle</button>`:""}<button class="btn ghost" data-g="closesheet">Kapat</button><button class="btn danger" data-g="delw:${w.id}">Antrenmanı sil</button></div>`);
 }
@@ -508,6 +509,7 @@ Tamam: sayılır, İptal: antrenmana dön`))return;
   w.ex=w.ex.filter(x=>x.sets.length);
   w.t1=Date.now();
   const e=add("spor",gDur(w),`Ağırlık, ${w.name}`,w.day);e.wid=w.id;
+  const kc=Algo.gymKcal({min:gDur(w),sets:gWorkSets(w),kg:motionKg()});if(kc)e.kcal=kc;
   save();gRestSet(0);render();gSheetSummary(w.id);
 }
 function gRestore(w,entries){

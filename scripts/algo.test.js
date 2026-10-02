@@ -84,4 +84,9 @@ ok("ısınma setleri hesaba girmez (en son, önceki ve tek başına)",A.nextTarg
   ok("cleanMeasures: 20 ve 250 dahil, dizi değilse boş",A.cleanMeasures([{day:"2026-01-01",k:"arm",v:250}]).length===1&&A.cleanMeasures("x").length===0);
   ok("whtr: bel/boy, eksikse null",near(A.whtr(85,170),0.5,1e-9)&&A.whtr(0,170)===null&&A.whtr(85,0)===null);
 }
+{ // D-Ant10
+  ok("gymKcal: set yoğunluğu 3,5 / 5 / 6 MET sınırları (net: MET−1)",A.gymKcal({min:50,sets:14,kg:80})===Math.round(2.5*80*50/60)&&A.gymKcal({min:50,sets:15,kg:80})===Math.round(4*80*50/60)&&A.gymKcal({min:50,sets:19,kg:80})===Math.round(4*80*50/60)&&A.gymKcal({min:50,sets:20,kg:80})===Math.round(5*80*50/60));
+  ok("gymKcal: unutulan seans süresi set×4 dk ile sınırlanır",A.gymKcal({min:600,sets:10,kg:80})===Math.round(2.5*80*40/60)&&A.gymKcal({min:600,sets:10,kg:80})<A.gymKcal({min:60,sets:30,kg:80}));
+  ok("gymKcal/netKcal: kilo, set ya da süre yoksa null; MET 1 altı negatif olmaz",A.gymKcal({min:50,sets:10,kg:0})===null&&A.gymKcal({min:50,sets:0,kg:80})===null&&A.netKcal(3.5,80,0)===null&&A.netKcal(0.5,80,60)===0);
+}
 process.exit(bad?1:0);

@@ -434,6 +434,7 @@ function cleanEntries(arr){
     if(bad){drop++;continue}
     const ne={id:0,day:e.day,time:timeOk(e.time)?e.time:"00:00",type:e.type,v:e.type==="not"?null:v,text:typeof e.text==="string"?e.text.slice(0,500):""};
     if(Number.isInteger(e.wid))ne.wid=e.wid;
+    if(e.type==="spor"){if(Number.isInteger(e.kcal)&&e.kcal>=0&&e.kcal<=5000)ne.kcal=e.kcal;if(typeof e.km==="number"&&e.km>=0&&e.km<=100)ne.km=Math.round(e.km*100)/100}
     if(e.type==="yemek"){copyNutr(e,ne);if(LogLib.mealKey(e.meal))ne.meal=e.meal}
     out.push(ne);
   }
@@ -605,7 +606,7 @@ function viewBugun(){
   const lk=keyOff(-logOff);
   const items=S.entries.filter(e=>e.day===lk&&e.type!=="adim");
   const vtxt=e=>e.type==="kilo"?`${fmt(e.v)} kg`:e.type==="yemek"?(e.v?`${Math.round(e.v)} kcal`:""):e.type==="spor"?`${Math.round(e.v)} dk`:"";
-  const ttx=e=>e.type==="kilo"?"Tartı":esc(e.text||(e.type==="yemek"?"Öğün":"Antrenman"));
+  const ttx=e=>e.type==="kilo"?"Tartı":esc(e.text||(e.type==="yemek"?"Öğün":"Antrenman"))+(e.kcal?` · ~${e.kcal} kcal tahmini`:"");
   const li=(e,tx)=>`<li><span class="t num">${e.time}</span><span class="ic">${Icons.svg(e.type)}</span>${tx}<span class="vl num">${vtxt(e)}</span><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></li>`;
   const dl=LogLib.dayLog(items);
   const suTxt=dl.suMl<1000?`${Math.round(dl.suMl)} ml`:`${fmt(dl.suMl/1000,1)} L`;
@@ -905,6 +906,7 @@ function goYemek(){
   toast(g>0&&top?`Kaydedildi. Bugün ${Math.round(top)} / ${g} kcal`:"Yemek kaydedildi",e.id);
 }
 const SPOR=["Yürüyüş","Koşu","Ağırlık","Bisiklet","Yüzme","Yoga","Diğer"];
+const SPORMET={Yürüyüş:3.5,Koşu:8.3,Ağırlık:5,Bisiklet:6.8,Yüzme:6,Yoga:2.5,Diğer:4};
 function sheetSpor(){
   openSheet(`<h3>Spor ekle</h3><div class="chips" id="sp">${SPOR.map((s,i)=>`<button class="chip" data-sp="${s}" aria-pressed="${i==0}">${s}</button>`).join("")}</div>
   <input class="in num" id="fv" inputmode="numeric" placeholder="Süre (dakika)" autofocus>${dayOptions()}<button class="btn" data-go="spor">Kaydet</button>`);
@@ -913,7 +915,7 @@ function goSpor(){
   const dk=num($("#fv").value,true);
   if(!(dk>0&&dk<=600))return toast("Süreyi dakika olarak yaz, örneğin 40");
   const pr=document.querySelector("#sp [aria-pressed=true]"),name=pr?pr.dataset.sp:"Antrenman";
-  const e=add("spor",dk,name,fday());closeSheet();render();
+  const e=add("spor",dk,name,fday()),kc=Algo.netKcal(SPORMET[name],motionKg(),dk);if(kc)e.kcal=kc;save();closeSheet();render();
   const w=sum("spor",keyOff(-6),dayKey());
   toast(`${name} ${Math.round(dk)} dk kaydedildi. Hafta: ${Math.round(w)} / ${S.settings.sportWeek} dk`,e.id);
 }
