@@ -9,6 +9,44 @@ const dom=new JSDOM(html,{runScripts:"dangerously",pretendToBeVisual:true,url:"h
 setTimeout(async()=>{
   const w=dom.window,ev=s=>w.eval(s),$q=s=>w.document.querySelector(s),macros=()=>ev("JSON.stringify(of('yemek',dayKey()).map(e=>[e.v,e.p,e.c,e.f]))");
   ok("sayfa hatasız açılır",errs.length===0&&ev("document.querySelector('#view').innerHTML.length")>100,errs);
+  { // onboarding (C2)
+    const q=s=>$q(s),click=s=>q(s).click(),val=(id,v)=>{q("#ob"+id).value=v},v=()=>q("#view").textContent;
+    const fill=(cm,kg,age)=>{val("cm",cm);val("kg",kg);val("age",age)};
+    ok("ilk açılışta onboarding: adım 1/3, menü gizli, alanlar etiketli",v().includes("Adım 1/3")&&w.document.body.classList.contains("ob")&&["cm","kg","age"].every(k=>q(`label[for="ob${k}"]`)&&q("#ob"+k)));
+    ok("mevcut kullanıcıya gösterilmez: bayraksız eski ayar, kayıt, profil",ev("cleanSettings({kcal:1800}).obDone")===true&&ev("cleanSettings({obDone:false,kcal:1}).obDone")===false&&ev("cleanSettings(undefined).obDone")===false&&ev("(()=>{const r=[];const s0=S;for(const f of [()=>S.entries.push({}),()=>{S.settings.heightCm=170},()=>{S.settings.goalKg=70},()=>{S.settings.obDone=true}]){S=structuredClone(DEF);f();r.push(obNeeded())}S=s0;return r.join()})()")==="false,false,false,false");
+    click('[data-ob="next"]');
+    ok("boş alan reddedilir: hata alanın altında, aria-invalid",q("#oberr").textContent.includes("Boy")&&q("#obcm").getAttribute("aria-invalid")==="true"&&v().includes("Adım 1/3"));
+    for(const [a,b,c,m] of [["99","80","30","Boy"],["251","80","30","Boy"],["170","19","30","Kilo"],["170","80","9","Yaş"],["170","80","101","Yaş"]]){fill(a,b,c);click('[data-ob="next"]');ok(`aralık dışı reddedilir: ${a}/${b}/${c}`,q("#oberr").textContent.startsWith(m)&&v().includes("Adım 1/3"),q("#oberr").textContent)}
+    fill("170","80","30");click('[data-ob="dir:ver"]');val("goal","85");click('[data-ob="next"]');
+    ok("kilo ver: hedef şimdikinden yüksekse reddedilir ve değerler korunur",q("#oberr").textContent.includes("düşük")&&q("#obcm").value==="170"&&q("#obgoal").getAttribute("aria-invalid")==="true");
+    val("goal","72");click('[data-ob="sex:m"]');click('[data-ob="next"]');
+    ok("adım 2: modül seçenekleri, hepsi kapalı başlar",v().includes("Adım 2/3")&&q("#view").querySelectorAll('[data-ob^="mod:"]').length===5&&q("#view").querySelectorAll('[data-ob^="mod:"][aria-pressed="true"]').length===0);
+    click('[data-ob="mod:med"]');click('[data-ob="mod:fast"]');click('[data-ob="mod:steps"]');click('[data-ob="mod:fast"]');
+    click('[data-ob="back"]');
+    ok("geri: değerler ve seçimler korunur",v().includes("Adım 1/3")&&q("#obkg").value==="80"&&q("#obgoal").value==="72"&&q('[data-ob="sex:m"]').getAttribute("aria-pressed")==="true");
+    click('[data-ob="next"]');click('[data-ob="next"]');
+    const exp=ev("(()=>{const q={kg:80,cm:170,age:30,sex:'m'};return Algo.suggestTarget({tdee:Algo.formulaTdee({...q,act:1}),kg:80,goalKg:72,bmr:Algo.bmrMifflin(q),age:30,cm:170}).kcal})()");
+    ok("özet: kişisel kalori ve protein hedefi Algo hesabıyla",v().includes("Adım 3/3")&&v().includes(exp.toLocaleString("tr-TR"))&&v().includes("128–176")&&!v().includes("açığı önermiyorum"),[exp,v()]);
+    click('[data-ob="next"]');
+    const s=ev("S.settings");
+    ok("Başla: değerler mevcut profil alanlarına yazılır, Bugün'e düşülür",s.heightCm===170&&s.age===30&&s.sex==="m"&&s.goalKg===72&&s.kcal===exp&&s.obDone&&ev("weights()[dayKey()]")===80&&ev("tab")==="bugun"&&!w.document.body.classList.contains("ob"),s);
+    ok("modüller: seçilen açık, seçilmeyen kapalı; adım için izin penceresi açılmaz",s.medOn&&!s.fastOn&&!s.bpOn&&!s.bsOn&&!s.stepsOn&&!s.stepsAsked&&!s.consent);
+    // sağlık işareti ve 18 yaş altı: kalori açığı önerilmez, hekim notu
+    ev("S=structuredClone(DEF);render()");
+    fill("170","80","30");click('[data-ob="dir:ver"]');val("goal","70");q("#obhn").checked=true;click('[data-ob="next"]');click('[data-ob="next"]');
+    const mt=ev("(()=>{const q={kg:80,cm:170,age:30,sex:''};return Math.round(Algo.formulaTdee({...q,act:1})/10)*10})()");
+    ok("sağlık işareti: açık önerilmez, bakım düzeyi ve hekim notu",v().includes("açığı önermiyorum")&&v().includes("hekim")&&v().includes(mt.toLocaleString("tr-TR")),v());
+    click('[data-ob="next"]');
+    ok("sağlık işareti sağlık notuna yazılır",ev("S.settings.healthNote").includes("hekim kontrolü"));
+    ev("S=structuredClone(DEF);render()");
+    fill("165","60","16");click('[data-ob="next"]');click('[data-ob="next"]');
+    ok("18 yaş altı: açık önerilmez",v().includes("18 yaş altında")&&v().includes("Hekimine"),v());
+    click('[data-ob="skip"]');
+    ok("Şimdilik geç: hiçbir şey yazılmaz, bir daha çıkmaz",ev("S.settings.obDone")&&ev("S.entries.length")===0&&ev("S.settings.heightCm")===0&&ev("obNeeded()")===false&&ev("tab")==="bugun");
+    ev("tab='ayar';render()");click('[data-act="sifirla"]');
+    ok("Tüm verileri sil sonrası onboarding yeniden çıkar",ev("obNeeded()")&&q("#view").textContent.includes("Adım 1/3"));
+    ev("S=structuredClone(DEF);S.settings.obDone=true;tab='bugun';render()");
+  }
   ok("sayı ayrıştırma",ev("[num('83,7'),num('83.7'),num('1.234,5'),num('1.500',true),num('abc')]").slice(0,4).join()==="83.7,83.7,1234.5,1500"&&isNaN(ev("num('abc')")));
   ok("geçersiz spor süresi atılır",ev("cleanEntries([{type:'spor',day:'2026-01-01',v:1500},{type:'spor',day:'2026-01-01',v:30}]).out.length")===1);
   ok("bildirim metni korunur",ev("cleanSettings({reminders:[{id:1,t:'09:00',on:true,body:'Bugün su içmeyi unutma'}]}).reminders[0].body")==="Bugün su içmeyi unutma");

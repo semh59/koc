@@ -199,6 +199,7 @@ body.koc #toast{bottom:calc(150px + env(safe-area-inset-bottom))}
 .btn.ghost{background:var(--soft);color:var(--ink)}
 .btn.danger{background:transparent;color:var(--warn);border:1px solid var(--line)}
 .btns{display:grid;gap:8px;margin-top:8px}
+body.ob nav{display:none}body.ob main{padding-bottom:24px}
 .status{font-size:14px;color:var(--mut);padding:2px 2px 8px}
 
 /* Alt gezinme */
@@ -286,6 +287,7 @@ input.in,select.in,.chip>button{min-height:44px}
 <script src="habitui.js"></script>
 <script src="motionui.js"></script>
 <script src="backupui.js"></script>
+<script src="onboardui.js"></script>
 <script>
 "use strict";
 /* ---------- yardımcılar ---------- */
@@ -316,7 +318,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- veri ---------- */
 const DEF={
-  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,lastPlan:"",lastWeekly:"",lastPlateau:"",lastBackup:"",oemDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,stepWarnDay:"",reminders:[
+  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,lastPlan:"",lastWeekly:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,stepWarnDay:"",reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -360,6 +362,8 @@ function cleanSettings(raw,fast){
   if(dayOk(o.lastPlateau))d.lastPlateau=o.lastPlateau;
   if(dayOk(o.lastBackup))d.lastBackup=o.lastBackup;
   if(o.oemDone===true)d.oemDone=true;
+  /* Bayrak eklenmeden önceki yedek ve kayıtlar mevcut kullanıcıdır, onboarding görmez. */
+  if(o.obDone===true||(!("obDone" in o)&&Object.keys(o).length))d.obDone=true;
   if(o.stepsOn===true)d.stepsOn=true;
   if(o.bpOn===true)d.bpOn=true;
   if(o.bsOn===true)d.bsOn=true;
@@ -648,7 +652,9 @@ function viewAyar(){
 }
 
 function render(){
-  const v=$("#view");
+  const v=$("#view"),onb=obNeeded();
+  document.body.classList.toggle("ob",onb);
+  if(onb){$("#ttl").textContent="NeoWell";$("#streak").innerHTML="";$("#composer").hidden=true;v.innerHTML=obView();return}
   const ttl={bugun:`${new Date().getDate()} ${AY[new Date().getMonth()]}, ${GUN[new Date().getDay()]}`,koc:"Koç",salon:"Salon",trend:"Trend",ayar:"Ayarlar",egz:"Egzersizler",adim:"Adım raporu",tahlil:"Tahlil takibi",tansiyon:"Tansiyon",seker:"Şeker",ilac:"İlaçlar"}[tab];
   $("#ttl").textContent=ttl;
   const n=streak();$("#streak").innerHTML=n>0?`<b class="num">${n}</b> günlük seri`:"";
@@ -1136,6 +1142,7 @@ try{
   const AP=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;
   if(AP&&AP.addListener)AP.addListener("backButton",()=>{
     if($("#sheet").classList.contains("on"))return closeSheet();
+    if(obNeeded()&&ob.step){ob.step--;render();return}
     if(tab!=="bugun"||logOff){tab="bugun";logOff=0;render();return}
     AP.exitApp&&AP.exitApp();
   });
