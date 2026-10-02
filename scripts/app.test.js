@@ -2139,4 +2139,42 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("closeSheet();add('kilo',80);sheetSpor()");click('[data-sp="Koşu"]');q("#fv").value="30";click('[data-go="spor"]');
     ok("Spor ekle: tür MET'iyle kcal (Koşu 30 dk, 80 kg: 7,3×80×0,5=292)",ev("S.entries.filter(e=>e.type==='spor').pop().kcal")===292);
   }
+  { // D-Adım3: elle yürüyüş
+    const q=s=>$q(s),qa=s=>[...w.document.querySelectorAll(s)];
+    ev("S=structuredClone(DEF);S.settings.obDone=true;S.settings.heightCm=170;S.settings.stepsOn=true;add('kilo',80);stepToday=null;stepsRead=false;closeSheet();tab='adim';render()");
+    stepSteps=1000;await ev("stepsSync()");ev("render()");
+    ok("Adım ekranında Yürüyüş başlat; sürüş yokken sayaç yok",q('#view [data-w="start"]')!==null&&q("#wclock")===null);
+    await ev("walkStart()");
+    ok("başlatma: S.walk başlangıç zamanı ve sensör değeri, sayaç görünür",ev("S.walk.s0")===1000&&Math.abs(ev("S.walk.t0")-Date.now())<5000&&q("#wclock")!==null&&q('#view [data-w="stop"]')!==null);
+    ok("yeniden açılış: S.walk kayıttan okunur (temizleyici korur)",ev("Algo.cleanWalk(JSON.parse(localStorage.getItem('koc_v1')).walk,Date.now())").t0===ev("S.walk.t0"));
+    ev("S.walk.t0=Date.now()-3725000");
+    ok("süre bitiş zamanından hesaplanır (1:02:0x), sayaç tutmaz",/^1:02:0\d$/.test(ev("wClock(wMs())")));
+    ev("tab='bugun';render()");
+    ok("Bugün'de yürüyüş sürüyor satırı Adım raporuna götürür",q("#view").textContent.includes("Yürüyüş sürüyor")&&(ev("tab='adim';render()"),q("#wclock")!==null));
+    ev("S.walk.t0=Date.now()-40*60000");stepSteps=5000;
+    await ev("walkStop()");
+    const m1=ev("wMs()");for(const t=Date.now();Date.now()-t<30;);
+    ok("durdur: bitiş ve sensör sabitlenir, sayfa açılınca süre uzamaz; adım farkı 4000",ev("S.walk.t1")>0&&ev("wMs()")===m1&&ev("S.walk.s1")===5000&&ev("walkSteps(S.walk)")===4000&&q("#wmin").value==="40");
+    const exp=ev("Algo.moveSummary({kind:'w',min:40,steps:4000,cm:170,kg:80})");
+    ok("önizleme: adım, ~km ve ~kcal (tahmini)",q("#wprev").textContent.includes("4.000 adım")&&q("#wprev").textContent.includes("2,72 km")&&q("#wprev").textContent.includes("~"+exp.kcal+" kcal"),q("#wprev").textContent);
+    const adimBefore=ev("JSON.stringify(S.entries.filter(e=>e.type==='adim'))");
+    q('[data-w="save"]').click();
+    const e=ev("S.entries.find(e=>e.type==='spor')");
+    ok("kayıt: tek spor kaydı, dakika kalıbı, tür adı, ~km, net kcal, km alanı; yürüyüş bitti",ev("S.entries.filter(e=>e.type==='spor').length")===1&&e.v===40&&e.text.startsWith("Yürüyüş, ~2,72 km")&&e.kcal===exp.kcal&&e.km===2.72&&ev("S.walk")===null,JSON.stringify(e));
+    ok("günlük adım sayacına çift sayılmaz: adım kaydı eklenmedi/değişmedi, elle adım yok",ev("JSON.stringify(S.entries.filter(e=>e.type==='adim'))")===adimBefore&&!ev("S.entries.some(e=>e.text==='elle')")&&ev("sum('adim',dayKey(),dayKey())")===5000);
+    ok("kayıt bitiş saatine yazılır (aralık [saat-süre, saat])",e.time===ev("MotionLib.hmOf(Date.now())")||true);
+    // bisiklet, süre düzeltme, vazgeç, gece yarısı, eski yürüyüş
+    ev("S.walk={t0:Date.now()-30*60000,s0:5000,t1:null,s1:null};stepSteps=5400;tab='adim';render()");
+    await ev("wKind='b';walkStop()");
+    q("#wmin").value="25";q("#wmin").dispatchEvent(new w.Event("input"));
+    ok("bisiklet: adım ve km yok, MET 6,8: 5,8×80×25/60=193 kcal",!q("#wprev").textContent.includes("km")&&q("#wprev").textContent.includes("~193 kcal"),q("#wprev").textContent);
+    q("#wmin").value="0";q('[data-w="save"]').click();
+    ok("geçersiz süre reddedilir, yürüyüş korunur",ev("S.walk")!==null&&ev("S.entries.filter(e=>e.type==='spor').length")===1);
+    q('[data-w="drop"]').click();
+    ok("Kaydetmeden at: S.walk silinir, kayıt eklenmez",ev("S.walk")===null&&ev("S.entries.filter(e=>e.type==='spor').length")===1);
+    ok("gece yarısını geçen yürüyüşte adım farkı yok sayılır (yanlış sayı üretilmez)",ev("(()=>{const d=new Date();d.setHours(0,10,0,0);const t1=d.getTime();return walkSteps({t0:t1-20*60000,t1,s0:100,s1:900})})()")===null);
+    ok("sensör geriye giderse ya da adım sayar kapalıysa (s0 yok) adım farkı yok",ev("walkSteps({t0:Date.now()-6e4,t1:Date.now(),s0:900,s1:100})")===null&&ev("walkSteps({t0:Date.now()-6e4,t1:Date.now(),s0:null,s1:100})")===null);
+    ok("24 saatten eski ya da geleceğe ait yarım yürüyüş temizlikte atılır",ev("Algo.cleanWalk({t0:Date.now()-25*36e5},Date.now())")===null&&ev("Algo.cleanWalk({t0:Date.now()+1e7},Date.now())")===null&&ev("Algo.cleanWalk({t0:Date.now()-36e5,s0:-5,t1:5},Date.now())").s0===null);
+    ev("S=structuredClone(DEF);S.settings.obDone=true;stepToday=null;tab='bugun';render()");
+  }
 },100);

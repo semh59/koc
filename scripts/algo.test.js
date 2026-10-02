@@ -89,4 +89,13 @@ ok("ısınma setleri hesaba girmez (en son, önceki ve tek başına)",A.nextTarg
   ok("gymKcal: unutulan seans süresi set×4 dk ile sınırlanır",A.gymKcal({min:600,sets:10,kg:80})===Math.round(2.5*80*40/60)&&A.gymKcal({min:600,sets:10,kg:80})<A.gymKcal({min:60,sets:30,kg:80}));
   ok("gymKcal/netKcal: kilo, set ya da süre yoksa null; MET 1 altı negatif olmaz",A.gymKcal({min:50,sets:10,kg:0})===null&&A.gymKcal({min:50,sets:0,kg:80})===null&&A.netKcal(3.5,80,0)===null&&A.netKcal(0.5,80,60)===0);
 }
+{ // D-Adım3
+  const w=A.moveSummary({kind:"w",min:40,steps:4000,cm:170,kg:80});
+  ok("moveSummary yürüyüş: adım uzunluğu 1,70×(0,30+0,001×100)=0,68 m, 2,72 km, ~4,08 km/s, MET 3,05",w.km===2.72&&near(w.kmh,4.08,0.01)&&near(w.met,3.05,0.01)&&w.kcal===Math.round(2.05*80*40/60),JSON.stringify(w));
+  const r=A.moveSummary({kind:"r",min:30,steps:5100,cm:180,kg:70});
+  ok("moveSummary koşu: koşu adımı yürüyüşten uzun, MET tablodan",r.km>A.moveSummary({kind:"w",min:30,steps:5100,cm:180,kg:70}).km&&r.met>=8.3);
+  const b=A.moveSummary({kind:"b",min:60,steps:3000,cm:170,kg:80});
+  ok("moveSummary bisiklet: mesafe yok, MET 6,8",b.km===null&&b.met===6.8&&b.kcal===Math.round(5.8*80));
+  ok("moveSummary: adım yok / ritim saçma / boy yoksa mesafe yok, kalori süre ve kiloyla (yürüyüş 3,5 MET)",A.moveSummary({kind:"w",min:30,steps:null,cm:170,kg:80}).km===null&&A.moveSummary({kind:"w",min:30,steps:30000,cm:170,kg:80}).km===null&&A.moveSummary({kind:"w",min:30,steps:3000,cm:0,kg:80}).km===null&&A.moveSummary({kind:"w",min:30,steps:null,cm:170,kg:80}).kcal===Math.round(2.5*80*0.5)&&A.moveSummary({kind:"w",min:30,steps:null,cm:170,kg:0}).kcal===null);
+}
 process.exit(bad?1:0);
