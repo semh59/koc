@@ -11,7 +11,8 @@ const PV_CATS=[
   ["Tahlil",()=>S.labs.length,()=>{S.labs=[]}],
   ["Uyku, ruh hali ve oruç",()=>S.sleep.length+S.mood.length+S.fast.log.length+(S.fast.t0?1:0),()=>{S.sleep=[];S.mood=[];S.fast.log=[];S.fast.t0=null}],
   ["Koç sohbeti",()=>S.chat.length,cClearChat],
-  ["Notlar",...pvE("not")]
+  ["Notlar",...pvE("not")],
+  ["Vücut ölçüleri (bel, kalça…)",()=>S.measures.length,()=>{S.measures=[]}]
 ];
 function pvDelete(i){
   const [name,n,del]=PV_CATS[i],lb=S.settings.lastBackup;

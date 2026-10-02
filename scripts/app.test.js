@@ -1865,7 +1865,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     const cnt=()=>ev("JSON.stringify([S.entries.length,S.workouts.length,S.moves.length,S.meds.length+S.medLog.length,S.vitals.length,S.labs.length,S.sleep.length+S.mood.length+S.fast.log.length+(S.fast.t0?1:0),S.chat.length])");
     const del=i=>{q(`[data-pv="del:${i}"]`).click()};
     seed();const all=cnt();
-    ok("liste: 10 kategori, her biri kayıt sayısıyla ve Sil düğmesiyle; yedek hatırlatması",qa('[data-pv^="del:"]').length===10&&sh().includes("Yemek ve su kayıtları")&&sh().includes("2 kayıt")&&sh().includes("Önce yedek al")&&sh().includes("Koç sohbeti"));
+    ok("liste: 11 kategori, her biri kayıt sayısıyla ve Sil düğmesiyle; yedek hatırlatması",qa('[data-pv^="del:"]').length===11&&sh().includes("Yemek ve su kayıtları")&&sh().includes("2 kayıt")&&sh().includes("Önce yedek al")&&sh().includes("Koç sohbeti"));
     ev("window.confirm=()=>false");del(0);
     ok("onay verilmezse hiçbir şey silinmez",cnt()===all);
     let msg="";w.confirm=m=>{msg=m;return true};
@@ -1906,7 +1906,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("closeSheet();S.entries=[];S.nextId=1;S.workouts=[];S.vitals=[];S.sleep=[];S.mood=[];S.fast={plan:16,t0:null,log:[]};S.meds=[];S.medLog=[];add('kilo',80.5);add('not',null,'=1+1');S.settings.obDone=true;tab='ayar-veri';render()");
     q('[data-pv="csv"]').click();
     const sheet=()=>q("#sheet").textContent;
-    ok("Ayarlar > Veriler'de Tabloya aktar: 7 dosya, satır sayılarıyla; boş olanın düğmesi kapalı",sheet().includes("Kayıtlar (yemek, su, kilo, spor, adım, not)")&&sheet().includes("2 satır")&&qa('[data-pv^="csvsh:"]').length===7&&qa('[data-pv^="csvsh:"]').filter(b=>b.disabled).length===6);
+    ok("Ayarlar > Veriler'de Tabloya aktar: 7 dosya, satır sayılarıyla; boş olanın düğmesi kapalı",sheet().includes("Kayıtlar (yemek, su, kilo, ölçü, spor, adım, not)")&&sheet().includes("2 satır")&&qa('[data-pv^="csvsh:"]').length===7&&qa('[data-pv^="csvsh:"]').filter(b=>b.disabled).length===6);
     q('[data-pv="csvsh:0"]').click();await new Promise(r=>setTimeout(r,20));
     ok("paylaşım: tek dosya, UTF-8 metin, BOM, ; ayırıcı, ondalık virgül, enjeksiyon engelli, paylaşım ekranına uri gider",wr.length===1&&wr[0].encoding==="utf8"&&wr[0].directory==="CACHE"&&/^neowell-kayitlar-\d{4}-\d\d-\d\d\.csv$/.test(wr[0].path)&&wr[0].data.startsWith("﻿tarih;saat;")&&wr[0].data.includes(";kilo;80,5;kg;")&&wr[0].data.includes("'=1+1")&&shr.length===1&&shr[0].files[0]==="file:///cache/"+wr[0].path,wr[0]);
     ev("S.nextId=1");
@@ -2089,6 +2089,37 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("adım grafiği: 14 çubuğun hepsi Pzt/Sal/Çar/Per/Cum/Cmt/Paz biçiminde, tek harf ya da Cu/Ct/Pz/Pt yok",labs.length===14&&labs.every(t=>["Pzt","Sal","Çar","Per","Cum","Cmt","Paz"].includes(t))&&new Set(labs).size===7);
     ok("adım grafiği: hedefe ulaşan günler renge ek olarak ✓ ile işaretli, tek renk",qa("#view svg.bars text").filter(t=>t.textContent==="✓").length===7&&new Set(qa("#view svg.bars rect").map(r=>r.getAttribute("fill"))).size===1&&q("#view").textContent.includes("✓ ve koyu çubuk"));
     ok("adım grafiği etiketleri viewBox içinde (kenarda kesilmez)",qa("#view svg.bars text").every(t=>+t.getAttribute("x")>=10&&+t.getAttribute("x")<=310));
+    ev("S=structuredClone(DEF);S.settings.obDone=true;tab='bugun';render()");
+  }
+  { // D-Sağ1: vücut ölçüleri
+    const q=s=>$q(s),qa=s=>[...w.document.querySelectorAll(s)],txt=()=>q("#view").textContent;
+    ev("S=structuredClone(DEF);S.settings.obDone=true;S.settings.heightCm=170;tab='bugun';render()");
+    ok("Bugün: kilo kartının yanında Ölçü ekle düğmesi",!!q('#view [data-ms="open"]'));
+    const add=(k,v,day)=>{ev("closeSheet();sheetOlcu()");q(`[data-ms="k:${k}"]`).click();q("#fv").value=v;if(day)q("#fday").value=day;q('[data-ms="go"]').click()};
+    ev("sheetOlcu()");
+    ok("sayfa: 5 bölge çipi, ilki seçili; alan etiketli yer tutucu",qa('#mk .chip').length===5&&q('#mk .chip').getAttribute("aria-pressed")==="true"&&q("#fv").placeholder.includes("Santimetre"));
+    for(const v of ["19","251","abc",""]){q("#fv").value=v;q('[data-ms="go"]').click();}
+    ok("20-250 dışı ve sayı olmayan reddedilir, hata alanın altında, kayıt yok",ev("S.measures.length")===0&&q("#merr").textContent.includes("20 ile 250"));
+    add("waist","88,4");add("waist","86,0",ev("keyOff(-6)"));add("hip","101");
+    ok("kayıt: bel 88,4 ve 86,0, kalça 101; Algo temizliğinden geçer",JSON.stringify(ev("S.measures.map(m=>m.k+m.v)"))==='["waist86","waist88.4","hip101"]'||ev("S.measures.length")===3,ev("JSON.stringify(S.measures)"));
+    add("waist","87");
+    ok("aynı gün ve bölge: yenisi eskinin yerine geçer",ev("S.measures.filter(m=>m.k==='waist'&&m.day===dayKey()).length")===1&&ev("S.measures.find(m=>m.k==='waist'&&m.day===dayKey()).v")===87);
+    ev("closeSheet();tab='trend';render()");
+    ok("Trend: ölçü grafiği 2 noktalı çizgi, bel/boy oranı genel bilgi notuyla (tanı/yorum yok)",qa("#view svg.chart[aria-label='Bel ölçü grafiği'] circle").length===2&&txt().includes("0,51")&&txt().includes("tanı ya da yorum değildir")&&!/yüksek|riskli|obez|şişman/i.test(txt()));
+    q('#view [data-ms="k:hip"]').click();
+    ok("bölge seçilir: kalçada tek ölçü olduğundan grafik yerine bilgi",txt().includes("en az iki ölçü")&&q('#view [data-ms="k:hip"]').getAttribute("aria-pressed")==="true");
+    ev("msel='waist';render()");
+    // yedek, temizlik, silme, CSV, Koç
+    const back=JSON.parse(ev("JSON.stringify(S)"));
+    ok("yedek: S.measures yedekte, geri yüklemede korunur; eski yedekte (alan yok) boş dizi",ev(`Algo.cleanMeasures(${JSON.stringify(back.measures)}).length`)===3&&ev("cleanHealthState({}).measures.length")===0&&ev("cleanHealthState({measures:'x'}).measures.length")===0);
+    const many=JSON.stringify(Array.from({length:450},(_,i)=>({day:new Date(Date.UTC(2024,0,1+i)).toISOString().slice(0,10),k:"waist",v:80})));
+    ok("temizleyici: en çok 400 (en yeni), girdi dizisini değiştirmez",ev(`(()=>{const a=${many};const r=Algo.cleanMeasures(a);return r.length===400&&a.length===450&&r[399].day===a[449].day})()`));
+    ok("CSV: kayitlar dosyasında ölçü satırı (tür ölçü_bel, birim cm, ondalık virgül), yeni dosya yok",(()=>{const f=ev("pvCsv()");return f.length===7&&f[0].build().includes("ölçü_bel;87;cm")&&f[0].build().includes("ölçü_kalça;101;cm")})());
+    ok("Koç bağlamına ölçü girmez",!/ölçü|measure|87|101|bel/i.test(JSON.stringify(ev("cData()")).replace(/belirt|belki/gi,"")));
+    ev("sheetPrivacy()");
+    ok("kategori silme: Vücut ölçüleri listede, silinince yalnız ölçü gider",ev("PV_CATS.some(c=>c[0].startsWith('Vücut ölçüleri'))")&&(ev("pvDelete(PV_CATS.findIndex(c=>c[0].startsWith('Vücut ölçüleri')))"),ev("S.measures.length")===0));
+    ev("closeSheet();tab='trend';render()");
+    ok("ölçü yokken Trend kartı boş durumla Ölçü ekle sunar",txt().includes("Vücut ölçüleri")&&!!q('#view [data-ms="open"]'));
     ev("S=structuredClone(DEF);S.settings.obDone=true;tab='bugun';render()");
   }
 },100);
