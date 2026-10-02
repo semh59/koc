@@ -26,7 +26,7 @@ function viewTahlil(){
   return `<div class="card"><div class="lbl">Tahlil sonuçları</div>
     <p class="mut sm" style="margin:0 0 10px">PDF'ten okut ya da elle ekle. Veriler yalnızca bu telefonda kalır. Laboratuvarın yazdığı referans aralığı gösterilir. ${MED_NOTE}</p>
     <div class="btns" style="display:grid;gap:8px"><label class="btn" style="text-align:center">${Icons.svg("file")} PDF'ten oku<input id="labfile" type="file" accept="application/pdf,.pdf" hidden></label>
-    ${ocrBtn("tahlil",Icons.svg("camera")+" Fotoğraftan oku")}<button class="btn ghost" data-lab="add">${Icons.svg("plus")} Elle ekle</button>${list.length?`<button class="btn ghost" data-lab="pdf">${Icons.svg("share")} PDF olarak paylaş</button>`:""}</div></div>
+    ${ocrBtn("tahlil",Icons.svg("camera")+" Fotoğraftan oku")}<button class="btn ghost" data-lab="add">${Icons.svg("plus")} Elle ekle</button></div></div>
   ${cards||`<div class="card"><p class="mut">Henüz tahlil sonucu yok. İlk PDF'ini okutarak başla.</p></div>`}${nTxt}
   ${S.labs.length?`<button class="btn danger" data-lab="delall" style="margin-top:8px">Tüm tahlil kayıtlarını sil</button>`:""}`;
 }

@@ -104,7 +104,7 @@ h2{font-size:15px;margin:18px 4px 8px;font-weight:700}
 .seg button{min-height:44px;padding:7px 16px;border-radius:999px;font-size:14px;font-weight:600;color:var(--mut)}
 .seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgb(0 0 0/.12)}
 .chart{width:100%;height:auto;display:block}
-.chart text{fill:var(--mut);font-size:10.5px}
+.empty{text-align:center}.empty .btn{margin-top:4px}.chart{touch-action:pan-y}.chart text{fill:var(--mut);font-size:12px}.chart .tip text{fill:var(--ink)}
 .legend{display:flex;gap:16px;font-size:13px;color:var(--mut);margin-top:6px;flex-wrap:wrap}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin-top:6px}
@@ -535,20 +535,35 @@ function chart(N){
   const W=340,H=180,pl=36,pr=10,pt=10,pb=24;
   let lo=Math.min(...pts.map(p=>p.v)),hi=Math.max(...pts.map(p=>p.v));
   const g=S.settings.goalKg;
-  if(g>0&&g>=lo-6&&g<=hi+6){lo=Math.min(lo,g);hi=Math.max(hi,g)}
-  lo-=0.4;hi+=0.4;if(hi-lo<1.5){const m=(hi+lo)/2;lo=m-.75;hi=m+.75}
+  /* Eksen yalnız veriye göre: uzak hedef eğimi ezmesin, kenarda okla gösterilir. */
+  const pay=Math.max((hi-lo)*.15,.4);lo-=pay;hi+=pay;if(hi-lo<2){const m=(hi+lo)/2;lo=m-1;hi=m+1}
   const X=i=>pl+(W-pl-pr)*(N<=1?0:i/(N-1)),Y=v=>pt+(H-pt-pb)*(1-(v-lo)/(hi-lo));
   let grid="";
   for(let t=0;t<=3;t++){const v=lo+(hi-lo)*t/3,y=Y(v);grid+=`<line x1="${pl}" x2="${W-pr}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--line)" stroke-width="1"/><text x="${pl-6}" y="${(y+3.5).toFixed(1)}" text-anchor="end">${fmt(v,1)}</text>`}
   const line=ma.map((p,k)=>(k?"L":"M")+X(p.i).toFixed(1)+" "+Y(p.v).toFixed(1)).join("");
   const dots=pts.map(p=>`<circle cx="${X(p.i).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="3" fill="var(--mut)" opacity=".55"/>`).join("");
   const goal=(g>0&&g>=lo&&g<=hi)?`<line x1="${pl}" x2="${W-pr}" y1="${Y(g).toFixed(1)}" y2="${Y(g).toFixed(1)}" stroke="var(--kcal)" stroke-width="1.6" stroke-dasharray="5 4"/>`:"";
+  const edge=g>0&&!goal?`<text x="${W-pr}" y="${g>hi?pt+10:H-pb-4}" text-anchor="end">${g>hi?"▲":"▼"} Hedef ${fmt(g,1)} kg</text>`:"";
+  const tip=esc(JSON.stringify(pts.map((p,k)=>[+X(p.i).toFixed(1),+Y(p.v).toFixed(1),`${fd(p.k)} · ${fmt(p.v)} kg · trend ${fmt(ma[k].v)}`])));
   const xl=[0,Math.floor((N-1)/2),N-1].map((i,k)=>`<text x="${X(i).toFixed(1)}" y="${H-6}" text-anchor="${k==0?"start":k==2?"end":"middle"}">${fd(keys[i])}</text>`).join("");
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Kilo grafiği">${grid}${goal}${dots}<path d="${line}" fill="none" stroke="var(--prim)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>${xl}</svg>
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Kilo grafiği" data-tip="${tip}">${grid}${goal}${edge}${dots}<path d="${line}" fill="none" stroke="var(--prim)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>${xl}</svg>
   <div class="legend"><span><i style="background:var(--prim)"></i>Trend çizgisi</span><span><i style="background:var(--mut);opacity:.6"></i>Günlük tartı</span>${goal?`<span><i style="background:var(--kcal)"></i>Hedef</span>`:""}</div>`;
 }
 
 /* ---------- ekranlar ---------- */
+/* Dokunma/sürükleme: en yakın noktanın değeri balonda. data-tip: [[x,y,metin]...] (viewBox birimi). */
+function chartTip(svg,cx){
+  const P=JSON.parse(svg.dataset.tip),[,,W]=svg.getAttribute("viewBox").split(" ").map(Number),r=svg.getBoundingClientRect(),x=(cx-r.left)*W/(r.width||W);
+  const b=P.reduce((m,p)=>Math.abs(p[0]-x)<Math.abs(m[0]-x)?p:m);
+  const w=b[2].length*6.6+14,bx=Math.min(Math.max(b[0]-w/2,2),W-w-2),by=b[1]>40?b[1]-34:b[1]+10;
+  svg.querySelector(".tip")?.remove();
+  svg.insertAdjacentHTML("beforeend",`<g class="tip" pointer-events="none"><circle cx="${b[0]}" cy="${b[1]}" r="5" fill="none" stroke="var(--ink)" stroke-width="2"/><rect x="${bx.toFixed(1)}" y="${by}" width="${w.toFixed(1)}" height="24" rx="6" fill="var(--card)" stroke="var(--mut)"/><text x="${(bx+7).toFixed(1)}" y="${by+16}">${esc(b[2])}</text></g>`);
+}
+for(const t of ["pointerdown","pointermove"])document.addEventListener(t,ev=>{
+  const s=ev.target.closest&&ev.target.closest("svg[data-tip]");
+  if(s&&(t==="pointerdown"||ev.buttons||ev.pointerType==="mouse"))chartTip(s,ev.clientX);
+  else if(t==="pointerdown")document.querySelectorAll(".tip").forEach(n=>n.remove());
+});
 function viewBugun(){
   const t=dayKey(),st=S.settings;
   const wAll=weights(),days=Object.keys(wAll).sort();
@@ -611,6 +626,11 @@ function viewBugun(){
   return `${actions}${habitRow()}${rings}${macro}${micro}${sOn?stepCard():""}${todoCard}${gTodayCard()}${weight}<button class="coach" data-tab="koc">${esc(coach())} <b>Koç ›</b></button>${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
 }
 
+/* PDF raporlar tek yerde; paylaşım işleyicileri belgede dinlediği için ekrandan bağımsız çalışır. */
+function reportsCard(){
+  const st=S.settings,r=(a,ic,t,sub)=>`<button class="prow" ${a}><span><b>${t}</b><span class="mut sm">${sub}</span></span><span class="aic">${Icons.svg(ic)}</span></button>`;
+  return `<h2>Raporlar</h2><div class="card">${r('data-wk="pdf"',"share","Haftalık rapor","Son 7 gün, PDF")}${st.bpOn?r('data-vt="pdfmenu:t"',"heart","Tansiyon doktor raporu","Dönem seç, PDF"):""}${st.bsOn?r('data-vt="pdfmenu:s"',"su","Şeker doktor raporu","Dönem seç, PDF"):""}${LabLib.series(S.labs).length?r('data-lab="pdf"',"file","Tahlil raporu","Tüm sonuçlar, PDF"):""}</div>`;
+}
 function viewTrend(){
   const t=dayKey(),st=S.settings;
   const wAll=weights(),days=Object.keys(wAll).sort();
@@ -624,22 +644,24 @@ function viewTrend(){
     const eta=gi&&!gi.done&&!(gi.dir<0&&Algo.lossBlock({age:st.age,cm:st.heightCm,kg:cur,goalKg:st.goalKg,health:!!st.healthNote.trim()}))?ge.weeks:null;
     stats=`<div class="stats">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1]}</div></div>`).join("")}</div>${eta?`<p class="hint" style="padding:8px 0 0">Son 3 haftanın eğimi sürerse ~${eta} hafta.</p>`:""}`;
   }
-  let rows="";
+  let rows="",hasWeek=false;
   for(let i=6;i>=0;i--){
     const d=addDays(-i),k=dayKey(d),w=weights(k,k)[k],su=sum("su",k,k),kc=sum("yemek",k,k),sp=sum("spor",k,k),as=sum("adim",k,k);
+    if(w!=null||su||kc||sp||as)hasWeek=true;
     rows+=`<tr><td class="${i==0?"today":""}">${GUNK[d.getDay()]} ${d.getDate()}</td><td class="num">${w!=null?fmt(w):"–"}</td><td class="num">${su?fmt(su/1000,1):"–"}</td><td class="num">${kc?Math.round(kc):"–"}</td><td class="num">${sp?Math.round(sp):"–"}</td><td class="num">${as?Math.round(as).toLocaleString("tr-TR"):"–"}</td></tr>`;
   }
   const sw=sum("spor",keyOff(-6),t),pct=Math.min(sw/st.sportWeek,1)*100;
   const sd=new Set(S.entries.filter(e=>e.type==="spor"&&e.day>=keyOff(-6)).map(e=>e.day)).size;
-  return `<div class="seg" role="group" aria-label="Aralık"><button data-range="30" aria-pressed="${range==30}">30 gün</button><button data-range="90" aria-pressed="${range==90}">90 gün</button></div>
-  <div class="card">${chart(range)}${stats}</div>
+  const empty=`<div class="card empty"><b>Henüz tartı kaydı yok</b><p class="mut sm">İlk tartını gir, grafik ikinci tartıdan sonra çizilir. Su, yemek, spor ve adım kayıtların da burada haftalık tabloya girer.</p><button class="btn" data-act="kilo">${Icons.svg("kilo")} Kilo ekle</button></div>`;
+  return `${days.length?`<div class="seg" role="group" aria-label="Aralık"><button data-range="30" aria-pressed="${range==30}">30 gün</button><button data-range="90" aria-pressed="${range==90}">90 gün</button></div>
+  <div class="card">${chart(range)}${stats}</div>`:empty}
   ${lossAsk()?`<div class="btns"><button class="btn ghost" data-c="why">Bu hafta neden kilo vermedim?</button></div>`:""}
   ${gEnergy()}
-  <h2>Son 7 gün</h2><div class="card"><table><thead><tr><th>Gün</th><th>Kilo</th><th>Su (L)</th><th>kcal</th><th>Spor (dk)</th><th>Adım</th></tr></thead><tbody>${rows}</tbody></table></div>
+  ${hasWeek?`<h2>Son 7 gün</h2><div class="card"><table><thead><tr><th>Gün</th><th>Kilo</th><th>Su (L)</th><th>kcal</th><th>Spor (dk)</th><th>Adım</th></tr></thead><tbody>${rows}</tbody></table></div>`:""}
   ${vTrendCards()}
   <h2>Tahlil</h2>${labTrendCard()}
   <h2>Haftalık spor</h2><div class="card"><div class="num"><b>${Math.round(sw)}</b> / ${st.sportWeek} dk, ${sd} gün aktif</div><div class="bar"><i style="width:${pct.toFixed(0)}%"></i></div></div>
-  <div class="btns"><button class="btn ghost" data-wk="pdf">${Icons.svg("share")} Haftalık raporu paylaş (PDF)</button></div>`;
+  ${reportsCard()}`;
 }
 
 let notifStatus="";
