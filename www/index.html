@@ -666,7 +666,7 @@ function render(){
   const ttl={bugun:`${new Date().getDate()} ${AY[new Date().getMonth()]}, ${GUN[new Date().getDay()]}`,koc:"Koç",salon:"Salon",trend:"Trend",ayar:"Ayarlar",egz:"Egzersizler",adim:"Adım raporu",tahlil:"Tahlil takibi",tansiyon:"Tansiyon",seker:"Şeker",ilac:"İlaçlar"}[tab];
   $("#ttl").textContent=ttl;
   const n=streak();$("#streak").innerHTML=n>0?`<b class="num">${n}</b> günlük seri`:"";
-  v.innerHTML=tab==="koc"?viewKoc():tab==="bugun"?viewBugun():tab==="salon"?viewSalon():tab==="trend"?viewTrend():tab==="adim"?viewAdim():tab==="tahlil"?viewTahlil():tab==="tansiyon"?viewTansiyon():tab==="seker"?viewSeker():tab==="egz"?viewEgz():tab==="ilac"?viewIlac():viewAyar();
+  v.innerHTML=(saveFail&&tab!=="bugun"&&tab!=="ayar"?`<div class="card todo" role="alert"><div class="row"><span>💾 <b>${storeMsg()[0]}</b><small class="mut sm">${storeMsg()[1]}</small></span><button class="chip" data-act="yedek">Yedek al</button></div></div>`:"")+(tab==="koc"?viewKoc():tab==="bugun"?viewBugun():tab==="salon"?viewSalon():tab==="trend"?viewTrend():tab==="adim"?viewAdim():tab==="tahlil"?viewTahlil():tab==="tansiyon"?viewTansiyon():tab==="seker"?viewSeker():tab==="egz"?viewEgz():tab==="ilac"?viewIlac():viewAyar());
   document.body.classList.toggle("koc",tab==="koc");$("#composer").hidden=tab!=="koc";
   if(tab==="koc")cScroll();
   $("#navIlac").hidden=!S.settings.medOn;
@@ -687,6 +687,8 @@ function widgetPush(){
 function openSheet(html){$("#toast").classList.remove("on");const s=$("#sheet");s.innerHTML=`<div class="grab"></div>${html}`;s.classList.add("on");$("#scrim").classList.add("on");const f=s.querySelector("[autofocus]");if(f)setTimeout(()=>f.focus(),220)}
 function closeSheet(){$("#sheet").classList.remove("on");$("#scrim").classList.remove("on")}
 function toast(msg,undo){
+  /* Kayıt başarısızken ardından gelen "+250 ml" gibi mesaj hatayı örtmesin. */
+  if(saveFail&&!msg.includes("kaydedilemedi"))msg="Kaydedilemedi, depolama dolu. "+msg;
   $("#tmsg").textContent=msg;lastUndo=undo==null?null:undo;$("#tundo").hidden=lastUndo==null;
   $("#toast").classList.add("on");clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("#toast").classList.remove("on"),undo!=null?6000:3800);
 }
