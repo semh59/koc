@@ -42,7 +42,7 @@ const exRefreshChips=()=>{
 function exHistLine(e){
   const h=gHistory(e.id).slice(0,3);if(!h.length)return "";
   const t=gTimed(e.id);
-  return `<div class="mut sm" style="margin:8px 0">Son: ${h.map(x=>`${gDate(x.w.day)} ${t?x.sets.map(s=>s.sec).join("/")+" sn":x.sets.map(s=>(s.kg?fkg(s.kg)+"×":"")+s.reps).join(", ")}`).join(" · ")}</div>`;
+  return `<div class="mut sm" style="margin:8px 0">Son: ${h.map(x=>`${gDate(x.w.day)} ${t?x.sets.map(s=>s.sec).join("/")+" sn":x.sets.map(s=>(s.kg?fkg(s.kg)+"×":"")+s.reps+gRpeTx(s)).join(", ")}`).join(" · ")}</div>`;
 }
 /* Tüm geçmiş grafikleri: seans başına bir nokta, x ekseni gerçek tarihe orantılı. Isınma ve işaretsiz setler gHistory'de zaten dışarıda. */
 const EXMET={e:["Tahmini 1TM","kg"],t:["En ağır set","kg"],v:["Hacim","kg"]};
