@@ -35,7 +35,7 @@ function sheetPrivacy(){
   <div class="lbl">Verilerini sil</div>
   <p class="mut sm">Kategori başına silinir, geri alınamaz. <button class="lnk" style="display:inline;width:auto;min-height:44px" data-act="yedek">Önce yedek al</button></p>
   ${PV_CATS.map(([name,n],i)=>`<div class="row" style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)"><span style="flex:1;min-width:0"><b>${name}</b><small class="mut sm" style="display:block">${n()} kayıt</small></span><button class="chip" data-pv="del:${i}" ${n()?"":"disabled"} aria-label="${name} sil">Sil</button></div>`).join("")}
-  <p class="hint">Besin kütüphanen ve antrenman şablonların bu listede yoktur; yalnız Ayarlar > Tüm verileri sil ile gider.</p>
+  <p class="hint">Besin kütüphanen ve antrenman şablonların bu listede yoktur; yalnız Ayarlar > Veri ve yedek > Tüm verileri sil ile gider.</p>
   <div class="banner info" style="margin-top:10px">${consentHtml()}<p>Durum: ${st.consent?`kabul edildi (${esc(st.consentAt)})`:"kabul edilmedi"}</p>
   ${st.consent?`<button class="btn ghost" data-pv="revoke">Rızamı geri al</button>`:consentOk()?`<button class="btn" data-pv="consent">Açık rızamı veriyorum</button>`:""}</div>
   <button class="btn ghost" data-pv="close" style="margin-top:8px">Kapat</button>`);
