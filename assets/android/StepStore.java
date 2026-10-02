@@ -79,17 +79,17 @@ final class StepStore {
         String today = today();
         java.util.Calendar now = java.util.Calendar.getInstance();
         int minutes = now.get(java.util.Calendar.HOUR_OF_DAY) * 60 + now.get(java.util.Calendar.MINUTE);
-        if (closeFirst) StepMath.closeDay(s, today, counter, minutes, hist);
+        boolean closed = closeFirst && StepMath.closeDay(s, today, counter, minutes, hist);
         long steps = StepMath.update(s, today, counter, hist);
         SharedPreferences.Editor e = sp.edit();
         e.putString("day", s.day).putFloat("base", s.base).putFloat("carry", s.carry).putFloat("last", s.last);
         for (Map.Entry<String, Long> x : hist.entrySet()) e.putLong("h_" + x.getKey(), x.getValue());
-        if (closeFirst) e.putLong("snapAt", System.currentTimeMillis());
+        if (closed) e.putLong("snapAt", System.currentTimeMillis());
         e.apply();
         return steps;
     }
 
-    /** Gece alarmının sensörden son başarılı okuma zamanı (ms), hiç olmadıysa 0. */
+    /** Gece alarmının günü gerçekten kapattığı son zaman (ms), hiç olmadıysa 0. */
     static long snapAt(Context c) {
         return prefs(c).getLong("snapAt", 0L);
     }

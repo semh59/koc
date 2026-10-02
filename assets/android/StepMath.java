@@ -21,15 +21,17 @@ final class StepMath {
         }
     }
 
-    /** Alarm bu kadar dakikadan geç gelirse sayaç yeni günün adımlarını da içerir, bu yüzden kapatma yapılmaz. */
-    static final int MAX_LATE_MINUTES = 20;
+    /** Geç alarmda gece yarısından sonraki adımlar eski güne yazılır; kapatmazsak son okumadan sonraki akşam adımları hiçbir güne yazılmaz.
+     *  Gece 06:00'ya kadar adım azdır, daha geç alarmda sabah adımları baskın olduğu için kapatma yapılmaz. */
+    static final int MAX_LATE_MINUTES = 360;
 
-    /** Gece yarısı alarmı: biten günü şimdiki okumayla kapatır. Yalnızca gece yarısından hemen sonra geçerlidir (minutesSinceMidnight). */
-    static void closeDay(State s, String today, float counter, int minutesSinceMidnight, Map<String, Long> history) {
-        if (s.day.isEmpty() || s.day.equals(today) || minutesSinceMidnight > MAX_LATE_MINUTES) return;
+    /** Gece alarmı: biten günü şimdiki okumayla kapatır ve kapattıysa true döner. */
+    static boolean closeDay(State s, String today, float counter, int minutesSinceMidnight, Map<String, Long> history) {
+        if (s.day.isEmpty() || s.day.equals(today) || minutesSinceMidnight > MAX_LATE_MINUTES) return false;
         handleReboot(s, counter);
         history.put(s.day, total(s, counter));
         s.day = "";
+        return true;
     }
 
     /** Yeni okumayı işler ve bugünkü adım sayısını döndürür. Gün değiştiyse ve gece alarmı kaçtıysa, son okumaya kadarki adımlar eski güne yazılır. */

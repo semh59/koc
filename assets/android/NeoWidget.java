@@ -90,7 +90,8 @@ public class NeoWidget extends AppWidgetProvider {
         else if (o.isNull("kcalLeft")) kcal = "hedef yok";
         else {
             int left = o.optInt("kcalLeft");
-            kcal = left >= 0 ? num(left) + " kcal kaldı" : num(-left) + " kcal fazla";
+            // Dar widget'ta sondan kesilir: anlamı taşıyan sözcük ve sayı başta, birim sonda.
+            kcal = (left >= 0 ? "Kalan " + num(left) : "Fazla " + num(-left)) + " kcal";
         }
         v.setTextViewText(R.id.nw_kcal, kcal);
         int goal = o.optInt("waterGoal");
