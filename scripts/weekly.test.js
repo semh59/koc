@@ -41,7 +41,7 @@ ok("ölçüm yoksa satır yok",!Object.fromEntries(W.build({...S,settings:settin
 const meds=[{id:1,n:"A",t:["08:00","20:00"],on:true}],mlog=[{id:1,m:1,day:"2026-09-29",slot:"08:00",st:"t"},{id:2,m:1,day:"2026-09-29",slot:"20:00",st:"t"},{id:3,m:1,day:"2026-09-30",slot:"08:00",st:"s"}];
 const medS=settings({medOn:true});
 const mo=Object.fromEntries(W.build({...S,settings:medS,meds,medLog:mlog},end,7,"23:59").summary);
-ok("ilaç uyumu satırı: alınan / toplam, kaçırılan ve atlanan",mo["İlaç uyumu"]==="%14 (2 / 14 doz alındı, 11 kaçırılan, 1 atlanan)",mo["İlaç uyumu"]);
+ok("ilaç uyumu satırı: alınan / toplam, kaçırılan, bugün bekleyen (kaçırılan değil) ve atlanan",mo["İlaç uyumu"]==="%15 (2 / 13 doz alındı, 10 kaçırılan, 1 bugün bekliyor, 1 atlanan)",mo["İlaç uyumu"]);
 ok("takip kapalıyken ya da ilaç yokken ilaç satırı yok",!Object.fromEntries(W.build({...S,settings:settings({medOn:false}),meds,medLog:mlog},end,7).summary)["İlaç uyumu"]&&!Object.fromEntries(W.build({...S,settings:medS,meds:[],medLog:[]},end,7).summary)["İlaç uyumu"]);
 ok("bugünün vakti gelmemiş dozu sayılmaz (saat 12:00)",Object.fromEntries(W.build({...S,settings:medS,meds,medLog:mlog},end,7,"12:00").summary)["İlaç uyumu"]==="%15 (2 / 13 doz alındı, 10 kaçırılan, 1 atlanan)");
 

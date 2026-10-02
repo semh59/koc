@@ -58,13 +58,21 @@ ok("kalan doz: stok / doz başına adet",M.stockLeft({k:10,p:2})===5&&M.stockLef
 const A=M.cleanMeds([med({})]);// günde 2 doz
 const log=M.cleanLog([{m:1,day:"2026-09-10",slot:"08:00",st:"t"},{m:1,day:"2026-09-10",slot:"20:00",st:"s"},{m:1,day:"2026-09-11",slot:"08:00",st:"t"}],A);
 let a=M.adherence(A,log,"2026-09-10","2026-09-11","2026-09-11","23:00");
-ok("uyum: alınan, atlanan ve kaçırılan ayrı sayılır",a.total===4&&a.taken===2&&a.skipped===1&&a.missed===1&&a.pct===50,a);
+ok("uyum: bugünün saati geçmiş kayıtsız dozu gün bitene kadar 'gecikti' (kaçırılan değil, paydada yok)",a.total===3&&a.taken===2&&a.skipped===1&&a.missed===0&&a.late===1&&a.pct===67,a);
+a=M.adherence(A,log,"2026-09-10","2026-09-12","2026-09-12","09:00");
+ok("uyum: ertesi gün 09:00'da dünkü kayıtsız doz kaçırılan olur, bugünün 08:00'ı gecikti",a.missed===1&&a.late===1&&a.total===4&&a.taken===2,a);
+a=M.adherence(A,log,"2026-09-10","2026-09-11","2026-09-11","23:59");
+ok("uyum: 23:59'da hâlâ gecikti",a.missed===0&&a.late===1,a);
+const logLate=M.cleanLog([...log,{m:1,day:"2026-09-11",slot:"20:00",st:"t",at:"21:30"}],A);
+a=M.adherence(A,logLate,"2026-09-10","2026-09-11","2026-09-11","23:00");
+ok("uyum: geç kayıt eklenince doz alındı sayılır, gecikti kalkar",a.late===0&&a.taken===3&&a.total===4&&a.pct===75,a);
+ok("uyum: eski kayıtlı (at'siz) yedek aynı sonucu verir",M.adherence(A,M.cleanLog(JSON.parse(JSON.stringify(log)),A),"2026-09-10","2026-09-11","2026-09-11","23:00").late===1);
 a=M.adherence(A,log,"2026-09-10","2026-09-11","2026-09-11","12:00");
 ok("uyum: bugün vakti gelmemiş doz sayılmaz",a.total===3&&a.taken===2&&a.missed===0&&a.pct===67,a);
 a=M.adherence(A,log,"2026-09-10","2026-09-20","2026-09-11","08:00");
 ok("uyum: gelecek günler ve tam saatinde olan doz",a.total===3&&a.taken===2,a);
 ok("uyum: doz yoksa yüzde yok",M.adherence([],[],"2026-09-10","2026-09-11","2026-09-11","12:00").pct===null);
-ok("uyum: ilaç eklenmeden önceki günler 'kaçırılan' sayılmaz (başlangıç tarihi)",M.adherence(M.cleanMeds([med({s:"2026-09-11"})]),[],"2026-09-01","2026-09-11","2026-09-11","23:00").total===2);
+ok("uyum: ilaç eklenmeden önceki günler 'kaçırılan' sayılmaz (başlangıç tarihi)",M.adherence(M.cleanMeds([med({s:"2026-09-11"})]),[],"2026-09-01","2026-09-12","2026-09-12","23:00").total===2);
 
 // bildirimler
 const now=new Date(2026,8,10,12,0,0);// 10 Eylül 2026 12:00

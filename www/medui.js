@@ -28,7 +28,7 @@ function medRows(day){
     const st=MedLib.statusOf(S.medLog,m.id,day,slot),r=S.medLog.find(x=>x.m===m.id&&x.day===day&&x.slot===slot);
     const tail=st==="t"?`<span class="num" style="font-weight:700">✓ ${r&&r.at?r.at:""}</span><button class="chip" data-md="clear:${m.id}:${slot}" aria-label="${esc(m.n)} kaydını geri al">↩</button>`
       :st==="s"?`<span class="mut">Atlandı</span><button class="chip" data-md="clear:${m.id}:${slot}" aria-label="${esc(m.n)} kaydını geri al">↩</button>`
-      :`<button class="chip" data-md="take:${m.id}:${slot}" style="font-weight:700">✔ Aldım</button><button class="chip" data-md="skip:${m.id}:${slot}">Atla</button>`;
+      :`${day===dayKey()&&slot<=medNowHM()?`<small class="mut">Gecikti</small>`:""}<button class="chip" data-md="take:${m.id}:${slot}" style="font-weight:700">✔ Aldım</button><button class="chip" data-md="skip:${m.id}:${slot}">Atla</button>`;
     return `<div class="row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span class="num" style="min-width:48px">${slot}</span><span style="flex:1;min-width:0">${esc(m.n)}${m.d?`<small class="mut"> ${esc(m.d)}</small>`:""}</span>${tail}</div>`;
   }).join("");
 }
@@ -48,7 +48,7 @@ function viewIlac(){
   const t=dayKey(),nowT=medNowHM(),a7=MedLib.adherence(S.meds,S.medLog,keyOff(-6),t,t,nowT),a30=MedLib.adherence(S.meds,S.medLog,keyOff(-29),t,t,nowT);
   const pct=a=>a.pct==null?"–":"%"+a.pct,cnt=a=>a.total?`${a.taken} / ${a.total} doz alındı`:"doz yok";
   const low=S.meds.filter(m=>m.on&&MedLib.stockLeft(m)!=null&&MedLib.stockLeft(m)<=5).map(m=>`<div class="mut sm" style="padding:4px 0">${esc(m.n)}: yaklaşık ${MedLib.stockLeft(m)} doz kaldı. Yenisini almayı unutma.</div>`).join("");
-  const days=[];for(let i=6;i>=0;i--){const k=keyOff(-i),a=MedLib.adherence(S.meds,S.medLog,k,k,t,nowT);if(a.total)days.push(`<div class="row" style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--line)"><span>${k.slice(8)}.${k.slice(5,7)}</span><span class="num">${a.taken} / ${a.total}${a.missed?` · kaçırılan ${a.missed}`:""}${a.skipped?` · atlanan ${a.skipped}`:""}</span></div>`)}
+  const days=[];for(let i=6;i>=0;i--){const k=keyOff(-i),a=MedLib.adherence(S.meds,S.medLog,k,k,t,nowT);if(a.total||a.late)days.push(`<div class="row" style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--line)"><span>${k.slice(8)}.${k.slice(5,7)}</span><span class="num">${a.taken} / ${a.total}${a.missed?` · kaçırılan ${a.missed}`:""}${a.late?` · gecikti ${a.late}`:""}${a.skipped?` · atlanan ${a.skipped}`:""}</span></div>`)}
   const list=S.meds.map(m=>`<div class="row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span style="flex:1;min-width:0"><b>${esc(m.n)}</b>${m.d?` <small class="mut">${esc(m.d)}</small>`:""}${m.on?"":` <small class="mut">(kapalı)</small>`}<div class="mut sm">${esc(medWhen(m))}${m.k!=null?` · stok ${m.k}`:""}</div></span><button class="chip" data-md="edit:${m.id}">Düzenle</button></div>`).join("");
   return `<div class="card"><div class="lbl">Bugün</div>${S.meds.length?medRows(t):`<p class="mut sm" style="margin:0">Henüz ilaç eklemedin.</p>`}</div>
   ${low?`<div class="card"><div class="lbl">Stok</div>${low}</div>`:""}

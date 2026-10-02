@@ -40,7 +40,7 @@ const WeeklyLib=(()=>{
     if(st.bsOn){const g=VL.gStats(vit,from,endDay,st);if(g)summary.push(["Şeker",`ortalama ${Math.round(g.avg)} mg/dL (${g.n} ölçüm)${g.pct==null?"":`, hedef aralığında %${g.pct}`}`])}
     if(st.medOn&&S.meds&&S.meds.length){
       const a=ML.adherence(S.meds,S.medLog||[],from,endDay,endDay,nowTime||"23:59");
-      if(a.total)summary.push(["İlaç uyumu",`%${a.pct} (${a.taken} / ${a.total} doz alındı${a.missed?`, ${a.missed} kaçırılan`:""}${a.skipped?`, ${a.skipped} atlanan`:""})`]);
+      if(a.total)summary.push(["İlaç uyumu",`%${a.pct} (${a.taken} / ${a.total} doz alındı${a.missed?`, ${a.missed} kaçırılan`:""}${a.late?`, ${a.late} bugün bekliyor`:""}${a.skipped?`, ${a.skipped} atlanan`:""})`]);
     }
     return {rows,summary,from,end:endDay};
   }

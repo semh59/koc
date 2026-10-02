@@ -71,18 +71,21 @@ const MedLib=(()=>{
     }};
   }
 
-  /* Uyum: [from,to] arasında vakti geçmiş dozlar. Kayıtsız geçmiş doz "kaçırılan" sayılır. */
+  /* Uyum: tek tanım (PDF, haftalık rapor, Koç ve ekranlar buna bağlı). Kullanıcı bugünün dozuna gün bitene kadar geç kayıt
+     ekleyebildiği için bugünün kayıtsız, vakti geçmiş dozu "late" (gecikti) olur; ne "missed" ne de payda sayılır.
+     "Kaçırılan" yalnız günü bitmiş ve kaydı olmayan dozdur. */
   function adherence(meds,log,from,to,nowDay,nowTime){
-    let t=0,s=0,miss=0,total=0;
+    let t=0,s=0,miss=0,total=0,late=0;
     for(let d=from;d<=to&&d<=nowDay;d=addDay(d,1)){
       for(const {m,slot} of dosesOn(meds,d)){
         if(d===nowDay&&slot>nowTime)continue;
-        total++;
         const st=statusOf(log,m.id,d,slot);
+        if(!st&&d===nowDay){late++;continue}
+        total++;
         if(st==="t")t++;else if(st==="s")s++;else miss++;
       }
     }
-    return {total,taken:t,skipped:s,missed:miss,pct:total?Math.round(100*t/total):null};
+    return {total,taken:t,skipped:s,missed:miss,late,pct:total?Math.round(100*t/total):null};
   }
   /* Kalan doz sayısı (stok girildiyse). */
   const stockLeft=m=>m.k==null?null:Math.floor((m.k+1e-9)/(m.p||1));
