@@ -19,9 +19,14 @@ if (!x.includes("MotionReceiver")) {
 if (!x.includes("com.google.mlkit.vision.DEPENDENCIES")) {
   x = x.replace("</application>", '    <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui"/>\n    </application>');
 }
-// Ana ekran widget'ı: APPWIDGET_UPDATE'i sistem gönderdiği için exported=true zorunlu; su ekleme bu alıcıda değil MainActivity yolunda.
+// Ana ekran widget'ı: APPWIDGET_UPDATE'i sistem gönderdiği için exported=true zorunlu; su ekleme bu alıcıda değil WaterReceiver'da.
 if (!x.includes("NeoWidget")) {
   x = x.replace("</application>", '    <receiver android:name=".NeoWidget" android:exported="true"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE"/></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/nw_widget_info"/></receiver>\n    </application>');
+}
+// Widget "+su": exported=false, başka uygulama sahte su yazamaz; widget'ın PendingIntent'i uygulama adına gönderdiği için çalışır.
+if (!x.includes("WaterReceiver")) {
+  x = x.replace("</application>", '    <receiver android:name=".WaterReceiver" android:exported="false"/>
+    </application>');
 }
 fs.writeFileSync(p, x);
 console.log("Manifest güncellendi.");
@@ -31,7 +36,7 @@ console.log("Simgeler yerleştirildi.");
 
 // API anahtarı kasası: Keystore eklentisini kopyala, MainActivity'ye kaydet. Keystore AES-GCM için API 23 gerekir.
 const jdir="android/app/src/main/java/com/neowell/app";
-for(const f of ["KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin","QuickMath","QuickLogPlugin","MotionMath","MotionStore","MotionGpsService","MotionReceiver","MotionPlugin","NeoWidget","WidgetPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
+for(const f of ["KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin","QuickMath","QuickLogPlugin","MotionMath","MotionStore","MotionGpsService","MotionReceiver","MotionPlugin","NeoWidget","WidgetPlugin","WaterReceiver"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
 fs.writeFileSync(`${jdir}/MainActivity.java`,`package com.neowell.app;
 
 import android.content.Intent;
@@ -46,7 +51,7 @@ import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        // Bildirim ve widget su düğmesi: kayıt arka planda yazılır, ekran açık kalmaz. savedInstanceState != null ise süreç öldükten sonra
+        // Bildirim su/ilaç düğmesi: kayıt arka planda yazılır, ekran açık kalmaz. savedInstanceState != null ise süreç öldükten sonra
         // yeniden oluşturmadır ve intent eskisidir; BridgeActivity.load() super.onCreate içinde onu onNewIntent'e verdiği için ek alan burada silinir.
         boolean quick = false;
         if (savedInstanceState == null) quick = QuickLogPlugin.handle(this, getIntent());

@@ -894,7 +894,7 @@ async function scheduleReminders(){
         const at=addDays(i);at.setHours(h,m,0,0);
         if(r.dow!=null&&at.getDay()!==r.dow)continue;
         if(r.id===BACKUP_REM&&(S.entries.length<10||(lb&&Algo.dayNum(dayKey(at))-Algo.dayNum(lb)<7)))continue;
-        if(at.getTime()>now+5000)list.push(Object.assign({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}},water?{actionTypeId:"water",extra:{act:"su",v:S.settings.glass}}:r.id===WEEKLY_REM?{extra:{act:"open",tab:"koc"}}:{}));
+        if(at.getTime()>now+5000)list.push(Object.assign({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}},water?{actionTypeId:"water",extra:{act:"su",v:S.settings.glass,at:at.getTime()}}:r.id===WEEKLY_REM?{extra:{act:"open",tab:"koc"}}:{}));
       }
     }
     lastSched=now;

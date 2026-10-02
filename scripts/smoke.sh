@@ -93,4 +93,57 @@ p2=$(adb shell pidof com.neowell.app)
 n=$(cat replay1.log replay2.log | grep -oE "NW-QUICK ingested [0-9]+" | grep -oE "[0-9]+$" | awk '{s+=$1} END{print s+0}')
 echo "Tekrar testi: alınan su kaydı $n"
 [ "$n" = "1" ] || { echo "SU KAYDI TEKRARLANDI YA DA ALINMADI ($n)"; cat replay1.log replay2.log; exit 1; }
+# Bildirim intent'i yeniden teslim edilirse (aynı planlanmış bildirim, aynı extra.at) su ikinci kez yazılmamalı; uygulama normal açılır.
+SU_AT="am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction su --ei LocalNotificationId 201 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250,\"at\":1790928000000}}'"
+qn() { adb shell run-as com.neowell.app cat shared_prefs/nw_quick.xml 2>/dev/null | grep -oE '250,[0-9]+' | wc -l; }
+adb shell monkey -p com.neowell.app -c android.intent.category.LAUNCHER 1
+sleep 8
+adb shell "$SU_AT"
+sleep 4
+[ "$(qn)" = "1" ] || { echo "İMZALI SU KAYDI YAZILMADI"; exit 1; }
+adb shell monkey -p com.neowell.app -c android.intent.category.LAUNCHER 1
+sleep 10
+adb shell "$SU_AT"
+sleep 4
+[ "$(qn)" = "0" ] || { echo "YENİDEN TESLİM EDİLEN BİLDİRİM SUYU İKİNCİ KEZ YAZILDI"; exit 1; }
+# Widget "+su": exported=false yayın alıcısı, ekran açılmaz. Kabuk (uid 2000) ulaşamamalı; widget'ın PendingIntent'i root ile benzetilir.
+wsu() { adb shell "am broadcast -n com.neowell.app/.WaterReceiver --es LocalNotificationUserAction su --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250}}'"; sleep 3; }
+ingested() { adb logcat -d | grep -E "Capacitor/Console" | grep -oE "NW-QUICK ingested [0-9]+" | grep -oE "[0-9]+$" | awk '{s+=$1} END{print s+0}'; }
+reopen() { adb logcat -c; adb shell monkey -p com.neowell.app -c android.intent.category.LAUNCHER 1; sleep 12; }
+adb shell input keyevent KEYCODE_HOME
+sleep 2
+if [ "$(adb shell id -u | tr -d '\r')" != "0" ]; then
+  wsu
+  [ "$(qn)" = "0" ] || { echo "WIDGET SU ALICISI DIŞARIDAN TETİKLENEBİLİYOR (exported=false değil)"; exit 1; }
+fi
+adb root
+adb wait-for-device
+sleep 3
+# Uygulama açık (arka planda): kayıt ve widget suyu hemen, ekran öne gelmeden.
+w4=$(wv)
+wsu
+[ "$(qn)" = "1" ] || { echo "WIDGET SUYU (UYGULAMA AÇIK) YAZILMADI"; exit 1; }
+w5=$(wv)
+echo "Widget yayını su: $w4 -> $w5"
+[ "$w5" = "$((w4 + 250))" ] || { echo "WIDGET YAYINI SUYU ARTIRMADI"; cat widget.xml; exit 1; }
+adb shell dumpsys activity activities | grep "ResumedActivity" | grep -q "com.neowell.app" && { echo "WIDGET SUYU EKRANI AÇTI"; exit 1; }
+reopen
+[ "$(ingested)" = "1" ] || { echo "WIDGET SUYU (UYGULAMA AÇIK) ANA VERİYE ALINMADI"; exit 1; }
+# Uygulama kapalı (süreç yok): alıcı süreci kendisi başlatır. force-stop paketi durdurulmuş yapar ve yayın hiç gelmez, bu yüzden am kill.
+adb shell input keyevent KEYCODE_HOME
+sleep 2
+adb shell am kill com.neowell.app
+sleep 2
+[ -z "$(adb shell pidof com.neowell.app)" ] || { echo "SÜREÇ ÖLDÜRÜLEMEDİ, kapalı uygulama testi yapılamadı"; exit 1; }
+wsu
+[ "$(qn)" = "1" ] || { echo "WIDGET SUYU (UYGULAMA KAPALI) YAZILMADI"; exit 1; }
+reopen
+[ "$(ingested)" = "1" ] || { echo "WIDGET SUYU (UYGULAMA KAPALI) ANA VERİYE ALINMADI"; exit 1; }
+# Süreç öldürülüp yeniden açılınca hiçbir su yeniden alınmamalı.
+adb shell input keyevent KEYCODE_HOME
+sleep 2
+adb shell am kill com.neowell.app
+sleep 2
+reopen
+[ "$(ingested)" = "0" ] && [ "$(qn)" = "0" ] || { echo "WIDGET SUYU YENİDEN AÇILIŞTA TEKRARLANDI"; exit 1; }
 echo "Smoke testi geçti"

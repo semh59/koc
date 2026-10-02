@@ -104,11 +104,11 @@ public class NeoWidget extends AppWidgetProvider {
         int flags = PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT;
         Intent open = new Intent(c, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).putExtra(OPEN, true);
         v.setOnClickPendingIntent(R.id.nw_root, PendingIntent.getActivity(c, 7201, open, flags));
-        // Bildirimdeki "+250 ml" düğmesiyle aynı ek alanlar: kaydı QuickLogPlugin.handle yazar, ekran arkaya alınır.
-        Intent add = new Intent(c, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        // Activity açan intent'i sistem yeniden teslim edebildiği için (çift su) yayın: ekran açılmaz, kaydı QuickLogPlugin.handle yazar.
+        Intent add = new Intent(c, WaterReceiver.class)
             .putExtra("LocalNotificationUserAction", "su")
             .putExtra("LocalNotficationObject", "{\"extra\":{\"act\":\"su\",\"v\":" + glass + "}}");
-        v.setOnClickPendingIntent(R.id.nw_add, PendingIntent.getActivity(c, 7202, add, flags));
+        v.setOnClickPendingIntent(R.id.nw_add, PendingIntent.getBroadcast(c, 7202, add, flags));
         return v;
     }
 
