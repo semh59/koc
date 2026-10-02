@@ -318,7 +318,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- veri ---------- */
 const DEF={
-  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,lastPlan:"",lastWeekly:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,stepWarnDay:"",reminders:[
+  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,lastPlan:"",lastWeekly:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,stepWarnDay:"",reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -372,6 +372,7 @@ function cleanSettings(raw,fast){
   if(o.fastOn===true||(!("fastOn" in o)&&((f=>f.t0||f.log.length)(HabitLib.cleanFast(fast))||(Array.isArray(o.reminders)&&o.reminders.some(x=>x&&x.id===11&&x.on===true)))))d.fastOn=true;
   if(o.motionOn===true)d.motionOn=true;
   if(o.medShowName===false)d.medShowName=false;
+  if(o.awakeOn===false)d.awakeOn=false;
   if(o.stepsAsked===true)d.stepsAsked=true;
   if(dayOk(o.stepWarnDay))d.stepWarnDay=o.stepWarnDay;
   if(Array.isArray(o.reminders))for(const r of d.reminders){
@@ -639,6 +640,7 @@ function viewAyar(){
   ${vitalsSettingsHtml(fld)}
   ${medSettingsHtml()}
   ${fastSettingsHtml()}
+  <h2>Salon</h2><div class="card"><label style="min-height:44px;display:flex;gap:8px;align-items:center"><input type="checkbox" data-aw ${st.awakeOn?"checked":""} style="width:22px;height:22px">Antrenmanda ekranı açık tut</label><p class="hint">Antrenman sürerken Salon açıkken ekran kararmaz. Başka sekmeye geçince, uygulamadan çıkınca ya da antrenman bitince normale döner.</p></div>
   <h2>Hatırlatmalar</h2><div class="card"><div class="status">${esc(nf)}</div>${notifDiag?`<p class="hint" style="padding:0 0 8px">${esc(notifDiag)}</p>`:""}${isNative()?`<div class="btns"><button class="btn ghost" data-act="bildirimtest">Test bildirimi gönder</button>${oemXiaomi()?`<button class="btn ghost" data-act="oem">Xiaomi hatırlatma ayarları</button>`:""}</div>`:""}
     ${st.reminders.filter(r=>!((r.id===7||r.id===8)&&!st.bpOn)&&!(r.id===9&&!st.bsOn)&&!(r.id===11&&!st.fastOn)).map(r=>`<div class="rem"><span class="nm">${esc(r.name)}</span><input type="time" value="${r.t}" data-rt="${r.id}" aria-label="${esc(r.name)} saati"><label class="sw"><input type="checkbox" ${r.on?"checked":""} data-ro="${r.id}" aria-label="${esc(r.name)} açık"><span></span></label></div>`).join("")}
     <p class="hint">Koç bağlıysa sabah, öğleden sonra ve akşam bildirim metinlerini her gün yeniden yazar. Bağlı değilse sabit metinler kullanılır.</p></div>
@@ -1095,6 +1097,7 @@ document.addEventListener("change",ev=>{
     return;
   }
   if(t.dataset.gi){gInput(t);return}
+  if(t.dataset.aw!==undefined){S.settings.awakeOn=t.checked;save();gAwake();return}
   if(t.dataset.set){
     const k=t.dataset.set,st=S.settings,[lo,hi,int]=RANGES[k],raw=t.value.trim();
     const show=x=>x?String(x).replace(".",","):"";

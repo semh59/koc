@@ -1014,6 +1014,25 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("Varsayılan seçilince kayıt silinir",ev("Object.keys(S.exCfg).length")===0);
     const RC=JSON.parse(ev(`JSON.stringify(cleanGym({exCfg:{squat:{rest:120},bench:{lo:5,hi:8,rest:601},row:{rest:'60'},curl:{rest:0},lat:{rest:1.5}}}).exCfg)`));
     ok("cleanGym: dinlenme yalnız tam sayı 0-600, aralık ayrı doğrulanır",JSON.stringify(RC)==='{"squat":{"rest":120},"bench":{"lo":5,"hi":8},"curl":{"rest":0}}',RC);
+    // antrenmanda ekranı açık tut (yerel pencere bayrağı)
+    const dhOld=w.Capacitor.Plugins.DeviceHelp,awk=[],last=()=>awk[awk.length-1];
+    w.Capacitor.Plugins.DeviceHelp={keepAwake:async o=>{awk.push(o.on)}};
+    const vis=h=>{Object.defineProperty(doc,"hidden",{configurable:true,get:()=>h});doc.dispatchEvent(new w.Event("visibilitychange"))};
+    ev("gAwakeOn=false;tab='salon';render();gTick()");
+    ok("ekran açık: antrenman sürerken Salon'da açılır",last()===true);
+    ev("tab='bugun';gTick()");const offTab=last();ev("tab='salon';gTick()");
+    ok("ekran açık: sekme değişince bırakılır, dönünce yeniden açılır",offTab===false&&last()===true,awk);
+    vis(true);const offBg=last();vis(false);
+    ok("ekran açık: arka plana geçince bırakılır, öne gelince yeniden uygulanır",offBg===false&&last()===true,awk);
+    const n0=awk.length;ev("gTick();gTick()");
+    ok("ekran açık: durum değişmedikçe eklenti yeniden çağrılmaz",awk.length===n0);
+    ev("tab='ayar';render()");q('[data-aw]').checked=false;q('[data-aw]').dispatchEvent(new w.Event("change",{bubbles:true}));ev("tab='salon';gTick()");
+    ok("Ayarlar anahtarı kapatılınca Salon'da da açılmaz",ev("S.settings.awakeOn")===false&&last()===false);
+    ev("S.settings.awakeOn=true;gTick()");const wid=ev("gActive().id");ev("gActive().t1=Date.now();gTick()");
+    ok("ekran açık: antrenman bitince bırakılır",last()===false);
+    ev(`S.workouts.find(x=>x.id===${wid}).t1=null`);
+    ok("ayar: varsayılan açık, eski yedekte açık, yalnız false kapatır",ev("cleanSettings({}).awakeOn")===true&&ev("cleanSettings({kcal:1800}).awakeOn")===true&&ev("cleanSettings({awakeOn:'x'}).awakeOn")===true&&ev("cleanSettings({awakeOn:false}).awakeOn")===false);
+    if(dhOld)w.Capacitor.Plugins.DeviceHelp=dhOld;else delete w.Capacitor.Plugins.DeviceHelp;ev("gAwakeOn=false");
     // bitirme, Bugün kartı, geçmiş
     const Tk=(id,name,t0,t1,exs,day)=>`{id:${id},day:${day||"dayKey()"},t0:${t0},t1:${t1},name:'${name}',tpl:null,ex:[${exs}]}`;
     const Ex=(id,sets)=>`{id:'${id}',note:'',sets:${sets}}`;
