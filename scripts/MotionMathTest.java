@@ -103,6 +103,20 @@ public class MotionMathTest {
         ok("yol: koşu ağırlıklı dilimlerde tür koşu", pm.ok && pm.mode == MotionMath.RUN && pm.kcal > 80);
         ok("yol: kısa ya da az adımlı ya da tek nokta elenir", !MotionMath.path(f, MotionMath.WALK, 170, 70, new long[] {0, 60000, 120000}, new long[] {0, 100, 200}, 3, Double.NaN).ok && !MotionMath.path(f, MotionMath.WALK, 170, 70, new long[] {0}, new long[] {0}, 1, Double.NaN).ok);
         ok("yol: iki nokta bout ile aynı", near(MotionMath.path(f, MotionMath.WALK, 170, 70, new long[] {0, 600000}, new long[] {0, 1100}, 2, Double.NaN).km, MotionMath.bout(f, MotionMath.WALK, 170, 70, 10, 1100, Double.NaN).km, 1e-9));
+        // Gece yarısı: 23:50-00:10, gün 1'de 0→1100 (10 dk), 00:00:30'da yeni gün sayacı 40'tan 1140'a (10 dk); aradaki dilim atılır.
+        long M = 60000;
+        long[] tn = {0, 5 * M, 10 * M, 10 * M + 30000, 20 * M + 30000};
+        long[] sn = {0, 550, 1100, 40, 1140};
+        int[] dn = {1, 1, 1, 2, 2};
+        java.util.List<MotionMath.Bout> sp = MotionMath.split(f, MotionMath.WALK, 170, 70, tn, sn, dn, 5, Double.NaN);
+        ok("bölme: gece yarısını geçen aralık iki güne, adım her günün sayacından", sp.size() == 2 && sp.get(0).steps == 1100 && sp.get(1).steps == 1100 && sp.get(0).t0 == 0 && sp.get(0).t1 == 10 * M && sp.get(1).t0 == 10 * M + 30000 && sp.get(1).t1 == 20 * M + 30000);
+        ok("bölme: günler arası dilim kaloriye girmez (çift sayım yok)", near(sp.get(0).kcal + sp.get(1).kcal, 2 * w.kcal, 0.01));
+        java.util.List<MotionMath.Bout> sq = MotionMath.split(f, MotionMath.WALK, 170, 70, new long[] {0, 5 * M, 10 * M, 12 * M}, new long[] {0, 550, 1100, 30}, new int[] {1, 1, 1, 2}, 4, Double.NaN);
+        ok("bölme: yeni günde kontrol noktası yoksa o kısım atılır, önceki gün korunur", sq.size() == 1 && sq.get(0).steps == 1100 && sq.get(0).t1 == 10 * M);
+        ok("bölme: sayaç gün içinde geri giderse de bölünür", MotionMath.split(f, MotionMath.WALK, 170, 70, new long[] {0, 10 * M, 11 * M, 21 * M}, new long[] {5000, 6100, 10, 1110}, new int[] {1, 1, 1, 1}, 4, Double.NaN).size() == 2);
+        java.util.List<MotionMath.Bout> one = MotionMath.split(f, MotionMath.WALK, 170, 70, t1, s1, new int[] {1, 1, 1}, 3, Double.NaN);
+        ok("bölme: tek günde path ile aynı", one.size() == 1 && near(one.get(0).kcal, pf.kcal, 1e-9) && one.get(0).t0 == 0 && one.get(0).t1 == 600000);
+        ok("bölme: geçersiz parça listeye girmez", MotionMath.split(f, MotionMath.WALK, 170, 70, new long[] {0, M, 2 * M}, new long[] {0, 100, 10}, new int[] {1, 1, 2}, 3, Double.NaN).isEmpty());
         System.exit(bad == 0 ? 0 : 1);
     }
 }

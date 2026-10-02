@@ -36,8 +36,11 @@ final class MotionStore {
     }
 
     static int dayNum() {
-        long now = System.currentTimeMillis();
-        return (int) ((now + TimeZone.getDefault().getOffset(now)) / 86400000L);
+        return dayOf(System.currentTimeMillis());
+    }
+
+    static int dayOf(long t) {
+        return (int) ((t + TimeZone.getDefault().getOffset(t)) / 86400000L);
     }
 
     static synchronized MotionMath.Model model(Context c) {
@@ -122,14 +125,14 @@ final class MotionStore {
         p(c).edit().remove("bT0").apply();
     }
 
-    /** Açık aralığı kapatır ve özetini bekleyenlere ekler. Çok eski, adımı geriye giden ya da elenen aralık atılır. */
-    static synchronized boolean close(Context c, long t1, long steps1) {
+    /** Açık aralığı kapatır, gün sınırında bölünmüş geçerli parçalarını bekleyenlere ekler; eklenen parça sayısını döndürür. */
+    static synchronized int close(Context c, long t1, long steps1) {
         SharedPreferences sp = p(c);
         long t0 = sp.getLong("bT0", 0), s0 = sp.getLong("bS0", 0);
         int mode = sp.getInt("bMode", 0);
         double speed = sp.getFloat("bSpeed", -1);
         sp.edit().remove("bT0").apply();
-        if (t0 <= 0 || t1 <= t0 || t1 - t0 > MAX_BOUT_MS || steps1 < s0) return false;
+        if (t0 <= 0 || t1 <= t0) return 0;
         long[] ts = new long[160], ss = new long[160];
         int n = 0;
         ts[n] = t0;
@@ -139,7 +142,7 @@ final class MotionStore {
             if (f.length != 2 || n >= 158) continue;
             try {
                 long t = Long.parseLong(f[0]), st = Long.parseLong(f[1]);
-                if (t > ts[n - 1] && t < t1 && st >= ss[n - 1] && st <= steps1) {
+                if (t > ts[n - 1] && t < t1) {
                     ts[n] = t;
                     ss[n++] = st;
                 }
@@ -149,9 +152,17 @@ final class MotionStore {
         }
         ts[n] = t1;
         ss[n++] = steps1;
-        MotionMath.Bout b = MotionMath.path(model(c), mode, cm(c), kg(c), ts, ss, n, speed >= 0 ? speed : Double.NaN);
-        if (!b.ok) return false;
-        String rec = t0 + "," + t1 + "," + (b.mode == MotionMath.RUN ? "r" : "w") + "," + b.steps + "," + Math.round(b.km * 100) + "," + Math.round(b.kmh * 10) + "," + Math.round(b.kcal) + "," + (speed >= 0 ? 1 : 0) + ";";
+        int[] ds = new int[n];
+        for (int i = 0; i < n; i++) ds[i] = dayOf(ts[i]);
+        StringBuilder rec = new StringBuilder();
+        int added = 0;
+        for (MotionMath.Bout b : MotionMath.split(model(c), mode, cm(c), kg(c), ts, ss, ds, n, speed >= 0 ? speed : Double.NaN)) {
+            if (b.t1 - b.t0 > MAX_BOUT_MS) continue;
+            rec.append(b.t0).append(',').append(b.t1).append(',').append(b.mode == MotionMath.RUN ? "r" : "w").append(',').append(b.steps).append(',').append(Math.round(b.km * 100)).append(',')
+                .append(Math.round(b.kmh * 10)).append(',').append(Math.round(b.kcal)).append(',').append(speed >= 0 ? 1 : 0).append(';');
+            added++;
+        }
+        if (added == 0) return 0;
         String all = sp.getString("pend", "") + rec;
         String[] parts = all.split(";");
         if (parts.length > MAX_PENDING) {
@@ -160,7 +171,7 @@ final class MotionStore {
             all = sb.toString();
         }
         sp.edit().putString("pend", all).commit();
-        return true;
+        return added;
     }
 
     /** Bekleyen aralıklar: {t0, t1, tür, adım, km×100, km/s×10, kcal, gps}. Bozuk parçalar atlanır. */

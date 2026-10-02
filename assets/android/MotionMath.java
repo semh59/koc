@@ -139,6 +139,7 @@ final class MotionMath {
     static final class Bout {
         boolean ok;
         int mode, steps;
+        long t0, t1;
         double minutes, km, kmh, kcal = -1;
     }
 
@@ -198,5 +199,25 @@ final class MotionMath {
         if (kg > 0) b.kcal = kc;
         b.ok = true;
         return b;
+    }
+
+    /**
+     * Noktaları aynı yerel günde ve adımı geri gitmeyen parçalara böler, her parçayı path() ile özetler; geçerli parçalar döner.
+     * Günlük sayaç gece sıfırlandığı için iki gün arasındaki dilimin adımı bilinmez: o dilim atılır, orantıyla paylaştırılmaz.
+     * d: her noktanın yerel gün numarası.
+     */
+    static java.util.List<Bout> split(Model m, int arMode, double cm, double kg, long[] t, long[] s, int[] d, int n, double gpsSpeed) {
+        java.util.List<Bout> out = new java.util.ArrayList<>();
+        for (int a = 0, i = 1; i <= n; i++) {
+            if (i < n && d[i] == d[a] && s[i] >= s[i - 1]) continue;
+            if (i - a >= 2) {
+                Bout b = path(m, arMode, cm, kg, java.util.Arrays.copyOfRange(t, a, i), java.util.Arrays.copyOfRange(s, a, i), i - a, gpsSpeed);
+                b.t0 = t[a];
+                b.t1 = t[i - 1];
+                if (b.ok) out.add(b);
+            }
+            a = i;
+        }
+        return out;
     }
 }

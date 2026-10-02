@@ -95,7 +95,7 @@ Ayrıntı ve test adımları `yapilacaklar.md`'de. Telefonda denenen tek özelli
 | D-Adım3 (yapıldı) | Elle yürüyüş başlat/durdur | Tek yürüyüşün mesafe, süre ve kalorisi elle ölçülür. | M | oneri #3, adim-arastirma | – |
 | D-Adım4 (yapıldı) | Hareket kalorisini hedefe ekleme | Varsayılan kapalı bir ayarla yakılan kalori günlük hedefe eklenir. | S | oneri #5 | G11 |
 | D-Adım5 (yapıldı) | Aylık adım grafiği ve adım serisi | 14 günlük grafiğe aylık görünüm ve adım hedefi serisi eklenir. | S | oneri #6 | – |
-| D-Adım6 | Uzun hareket aralığını bölme | 4 saati ya da gece yarısını aşan aralık atılmak yerine gün sınırında bölünür. | S | akilli-gps "Bilinen sınırlar" | – |
+| D-Adım6 (yapıldı) | Uzun hareket aralığını bölme | 4 saati ya da gece yarısını aşan aralık atılmak yerine gün sınırında bölünür. Gece yarısında ve 3 saatte bir açık aralık kontrol noktasında kapatılıp yeniden açılır; günler arası dilim (adımı bilinmez) atılır, orantıyla paylaştırılmaz. | S | akilli-gps "Bilinen sınırlar" | – |
 
 ### Sağlık kayıtları
 | # | Ad | Değer | Emek | Kaynak | Bağımlılık / karar |

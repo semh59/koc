@@ -22,7 +22,7 @@ import java.util.Map;
 /** Etkinlik tanıma geçişleri (yürüme/koşma başladı-bitti): aralığı açar/kapatır, gerekirse kısa GPS penceresi başlatır. Açılışta kaydı yeniler. */
 public class MotionReceiver extends BroadcastReceiver {
     static final String ACTION = "com.neowell.app.MOTION", TICK = "com.neowell.app.MOTION_TICK";
-    private static final long TICK_MS = 150000, GPS_GAP_MS = 600000, MAX_BOUT_MS = 4L * 3600 * 1000, STALE_MS = 30L * 60000;
+    private static final long TICK_MS = 150000, GPS_GAP_MS = 600000, ROLL_MS = 3L * 3600 * 1000, STALE_MS = 30L * 60000;
     /** Geçiş bildirimi bu kadar gecikmeden geldiyse olay zamanı kullanılır, daha geçse adım sayacıyla tutarlı olması için şimdiki zaman. */
     private static final long MAX_DELAY_MS = 90000;
 
@@ -52,8 +52,16 @@ public class MotionReceiver extends BroadcastReceiver {
     private static void tick(Context c, long steps) {
         if (!MotionStore.isOpen(c)) return;
         long now = System.currentTimeMillis();
-        if (now - MotionStore.openedAt(c) > MAX_BOUT_MS) {
-            MotionStore.discard(c);
+        // Gece sayaç sıfırlanır ve kayıt 4 saati aşamaz: gün dönünce ya da 3 saatte bir aralık bu noktada kapatılıp yeniden açılır.
+        // Geçersiz 3 saatlik parça çıkış olayının kaçtığını gösterir: yeniden açılmaz, alarm durur.
+        boolean newDay = MotionStore.dayOf(now) != MotionStore.dayOf(MotionStore.lastActivityAt(c));
+        if (newDay || now - MotionStore.openedAt(c) >= ROLL_MS) {
+            int mode = MotionStore.openMode(c);
+            long gps = MotionStore.lastGps(c);
+            if (MotionStore.close(c, now, steps) == 0 && !newDay) return;
+            MotionStore.open(c, mode, now, steps);
+            MotionStore.setLastGps(c, gps);
+            scheduleTick(c);
             return;
         }
         double cad = MotionStore.addCp(c, now, steps), ref = MotionStore.refCad(c);
