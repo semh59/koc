@@ -60,7 +60,7 @@ document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-hb]");if(!el)return;
   const a=el.dataset.hb;
   if(a==="sleep")sheetUyku();
-  else if(a==="fasttoggle"){if(S.fast.t0)return toast("Önce orucu bitir");S.settings.fastOn=!S.settings.fastOn;save();render()}
+  else if(a==="fasttoggle"){if(S.fast.t0)return toast("Önce orucu bitir");S.settings.fastOn=!S.settings.fastOn;if(!S.settings.fastOn)S.settings.reminders.find(r=>r.id===11).on=false;save();render();scheduleReminders().then(setNotif)}
   else if(a.startsWith("plan:")){S.fast.plan=+a.slice(5);save();render()}
   else if(a==="fastgo")fastSet(Date.now(),"Oruç başladı");
   else if(a==="fastend")fastEnd();

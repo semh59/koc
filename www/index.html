@@ -365,7 +365,7 @@ function cleanSettings(raw,fast){
   if(o.bsOn===true)d.bsOn=true;
   if(o.medOn===true)d.medOn=true;
   /* Oruç ayarı yokken oruç kullanmış eski veri, oruç satırını kaybetmesin. */
-  if(o.fastOn===true||(!("fastOn" in o)&&(f=>f.t0||f.log.length)(HabitLib.cleanFast(fast))))d.fastOn=true;
+  if(o.fastOn===true||(!("fastOn" in o)&&((f=>f.t0||f.log.length)(HabitLib.cleanFast(fast))||(Array.isArray(o.reminders)&&o.reminders.some(x=>x&&x.id===11&&x.on===true)))))d.fastOn=true;
   if(o.motionOn===true)d.motionOn=true;
   if(o.medShowName===false)d.medShowName=false;
   if(o.stepsAsked===true)d.stepsAsked=true;
@@ -545,7 +545,7 @@ function viewBugun(){
     ${ring(kcP,"var(--kcal)",kcC,"Kalori",st.kcal>0?`${Math.round(kc)} / ${st.kcal} kcal`:"hedef yok",kcU)}
     ${ring(su/sh,"var(--su)",suC||fmt((sh-su)/1000,1),"Su",`${fmt(su/1000,1)} / ${fmt(sh/1000,1)} L`,suU)}
     ${ring(sw/st.sportWeek,"var(--spor)",spC||Math.round(st.sportWeek-sw),"Spor · hafta",`${Math.round(sw)} / ${st.sportWeek} dk`,spU)}
-  </div></div>${sOn?stepCard():""}`;
+  </div></div>`;
   const meals=S.entries.filter(e=>e.type==="yemek"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
   const pr=cur!=null?Algo.proteinRange(cur):null;
   const macro=meals.some(e=>e.p||e.c||e.f)?`<div class="macro num">Protein <b>${Math.round(mac("p"))}</b>${pr?` / ${pr[0]}–${pr[1]}`:""} g${meals.some(e=>e.c!=null||e.f!=null)?` · Karbonhidrat <b>${Math.round(mac("c"))}</b> g · Yağ <b>${Math.round(mac("f"))}</b> g`:""}</div>`:"";
@@ -575,7 +575,7 @@ function viewBugun(){
     isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?row("👣","Adım sayarı aç","Telefonun sensörü sayar, hesap gerekmez.",[["adimac","Aç"],["adimdegil","Şimdi değil"]]):"",
     S.entries.length>=10&&(old==null||old>14)?row("☁️","Yedek zamanı",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Gönder"]]):""].filter(Boolean);
   const todoCard=todo.length?`<div class="card todo"><div class="lbl">Bugün yapılacaklar</div>${todo.join("")}</div>`:"";
-  return `${actions}${habitRow()}${rings}${macro}${micro}${todoCard}${gTodayCard()}${weight}<button class="coach" data-tab="koc">${esc(coach())} <b>Koç ›</b></button>${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
+  return `${actions}${habitRow()}${rings}${macro}${micro}${sOn?stepCard():""}${todoCard}${gTodayCard()}${weight}<button class="coach" data-tab="koc">${esc(coach())} <b>Koç ›</b></button>${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
 }
 
 function viewTrend(){
@@ -636,7 +636,7 @@ function viewAyar(){
   ${medSettingsHtml()}
   ${fastSettingsHtml()}
   <h2>Hatırlatmalar</h2><div class="card"><div class="status">${esc(nf)}</div>${notifDiag?`<p class="hint" style="padding:0 0 8px">${esc(notifDiag)}</p>`:""}${isNative()?`<div class="btns"><button class="btn ghost" data-act="bildirimtest">Test bildirimi gönder</button>${oemXiaomi()?`<button class="btn ghost" data-act="oem">Xiaomi hatırlatma ayarları</button>`:""}</div>`:""}
-    ${st.reminders.filter(r=>!((r.id===7||r.id===8)&&!st.bpOn)&&!(r.id===9&&!st.bsOn)).map(r=>`<div class="rem"><span class="nm">${esc(r.name)}</span><input type="time" value="${r.t}" data-rt="${r.id}" aria-label="${esc(r.name)} saati"><label class="sw"><input type="checkbox" ${r.on?"checked":""} data-ro="${r.id}" aria-label="${esc(r.name)} açık"><span></span></label></div>`).join("")}
+    ${st.reminders.filter(r=>!((r.id===7||r.id===8)&&!st.bpOn)&&!(r.id===9&&!st.bsOn)&&!(r.id===11&&!st.fastOn)).map(r=>`<div class="rem"><span class="nm">${esc(r.name)}</span><input type="time" value="${r.t}" data-rt="${r.id}" aria-label="${esc(r.name)} saati"><label class="sw"><input type="checkbox" ${r.on?"checked":""} data-ro="${r.id}" aria-label="${esc(r.name)} açık"><span></span></label></div>`).join("")}
     <p class="hint">Koç bağlıysa sabah, öğleden sonra ve akşam bildirim metinlerini her gün yeniden yazar. Bağlı değilse sabit metinler kullanılır.</p></div>
   ${viewProviders()}
   <h2>Veriler</h2><div class="card"><div class="btns">
@@ -687,13 +687,14 @@ const ferr=(id,msg)=>{$("#"+id).textContent=msg};
 let kiloOk=null;
 function sheetKilo(){
   const m=weights(),ds=Object.keys(m).sort(),last=ds.length?fmt(m[ds[ds.length-1]]):"";
-  /* Son tartı yazılı gelir; odakta seçilir ki yazılan sayı eskisinin sonuna eklenmesin. */
-  kiloOk=null;openSheet(`<h3>Kilo ekle</h3><div class="kstep"><button class="chip" data-kd="-1" aria-label="0,1 kg azalt">−0,1</button><input class="in num" id="fv" inputmode="decimal" placeholder="84,3" value="${last}" autocomplete="off" autofocus onfocus="this.select()"><button class="chip" data-kd="1" aria-label="0,1 kg artır">+0,1</button></div><div class="ferr" id="kerr" role="alert"></div>${dayOptions()}<div id="kwarn" role="alert"></div><button class="btn" data-go="kilo">Kaydet</button>`);
+  /* Son tartı yazılı gelir; odakta ve ilk dokunuşta seçilir ki yazılan sayı eskisine eklenmesin. */
+  kiloOk=null;openSheet(`<h3>Kilo ekle</h3><div class="kstep"><button class="chip" data-kd="-1" aria-label="0,1 kg azalt">−0,1</button><input class="in num" id="fv" inputmode="decimal" placeholder="84,3" value="${last}" autocomplete="off" autofocus onfocus="this.select()" onclick="if(!this.dataset.s){this.dataset.s=1;this.select()}"><button class="chip" data-kd="1" aria-label="0,1 kg artır">+0,1</button></div><div class="ferr" id="kerr" role="alert"></div>${dayOptions()}<div id="kwarn" role="alert"></div><button class="btn" data-go="kilo">Kaydet</button>`);
 }
 function kiloStep(d){const f=$("#fv"),v=num(f.value);if(v>=20&&v<=400)f.value=fmt(Math.round(v*10+d)/10)}
 function goKilo(){
-  const v=num($("#fv").value);
-  if(!(v>=20&&v<=400))return ferr("kerr","Kiloyu kg olarak yaz, örneğin 84,3");
+  const raw=$("#fv").value,v=num(raw);
+  /* Seçim telefonda kaybolursa "86,0" sonuna yazılan "85" 86,085 olur; tartı 2 haneden fazla ondalık vermez. */
+  if(!(v>=20&&v<=400)||/[.,]\d{3}/.test(raw))return ferr("kerr","Kiloyu kg olarak yaz, örneğin 84,3");
   const day=fday(),m=weights(),ds=Object.keys(m).filter(k=>k<day).sort(),prev=ds.length?m[ds[ds.length-1]]:null;
   if(prev!=null&&Math.round(Math.abs(v-prev)*10)>=30&&kiloOk!==v){kiloOk=v;$("#kerr").textContent="";$("#kwarn").innerHTML=`<div class="banner"><b>${fmtS(v-prev)} kg fark var</b><p>Son tartın ${fmt(prev)} kg idi. Yanlış yazmış olabilir misin?</p><button class="btn" data-go="kilo">Yine de kaydet</button></div>`;return}
   const e=add("kilo",v,"",day);closeSheet();render();
