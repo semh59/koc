@@ -106,10 +106,10 @@ const MedLib=(()=>{
           if(statusOf(log,m.id,day,slot))return;
           const at=parseDay(day);at.setHours(+slot.slice(0,2),+slot.slice(3,5),0,0);
           const id=nid(m,ti,off<0?39:off),extra={act:"med",m:m.id,s:slot};
-          if(at.getTime()>nowT)out.push({id,title:"💊 İlaç zamanı",body:body(m),at,extra});
+          if(at.getTime()>nowT)out.push({id,title:"💊 İlaç zamanı",body:body(m),at,extra:{...extra,at:at.getTime()}});
           NAGS.forEach((min,k)=>{
             const t=new Date(at.getTime()+min*60000);
-            if(t.getTime()>nowT)out.push({id:id+1000000*(k+1),title:"💊 İlacını aldın mı?",body:body(m),at:t,extra});
+            if(t.getTime()>nowT)out.push({id:id+1000000*(k+1),title:"💊 İlacını aldın mı?",body:body(m),at:t,extra:{...extra,at:t.getTime()}});
           });
         });
       }
