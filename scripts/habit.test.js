@@ -17,4 +17,10 @@ ok("cleanSleep: çöp girdide boş, en çok 400",H.cleanSleep(7).length===0&&H.c
 r=H.cleanMood([{day:"2026-10-01",v:2,t:"  eh "},{day:"2026-10-01",v:4},{day:"2026-10-02",v:6},{day:"2026-10-03",v:3,t:"x".repeat(150)},{day:"2026-10-04",v:2.5}]);
 ok("cleanMood: gün başına son kayıt, aralık dışı atılır, not 100 karaktere kesilir",JSON.stringify(r.map(x=>[x.day,x.v,x.t&&x.t.length]))==='[["2026-10-01",4,null],["2026-10-03",3,100]]',r);
 ok("cleanMood: çöp girdide boş",H.cleanMood(null).length===0&&H.cleanMood([1,"a",{}]).length===0);
+const F=(t0,log=[])=>({plan:16,t0,log});
+let e=H.endFast(F(1e12),1e12+80*H1);
+ok("endFast: 72 saati aşan oruç silinmez, tavanda kırpılır",e.capped&&e.fast.log.length===1&&e.fast.log[0].t1-e.fast.log[0].t0===72*H1&&e.fast.t0===null,e);
+e=H.endFast(F(1e12),1e12+16*H1);
+ok("endFast: normal oruç olduğu gibi yazılır",!e.capped&&e.min===960&&e.fast.log[0].t1===1e12+16*H1,e);
+ok("endFast: 1 dakikadan kısa, gelecekte başlayan ve geri alınmış saatte kayıt yazılmaz, oruç kapanır",[H.endFast(F(1e12),1e12+59e3),H.endFast(F(1e12+H1),1e12),H.endFast(F(1e12,[{t0:1,t1:2}]),1e12-5)].map(r=>[r.fast.t0,r.min,r.fast.log.length].join()).join("|")===",0,0|,0,0|,0,1");
 if(bad){console.log(bad+" test başarısız");process.exit(1)}
