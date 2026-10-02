@@ -137,7 +137,7 @@ async function cAsk(messages,maxTokens,auto){
   if(!list.length)throw new Error(hasKey()?"fail":"none");
   let declined=false,tried=false;
   for(const p of list){
-    if(p.confirm&&!confirm(`${p.name} ücretsiz katmanında istemler ürün geliştirmek için kullanılabilir. Sağlık verilerini bu sağlayıcıya göndermeyi onaylıyor musun?`)){declined=true;continue}
+    if(p.confirm&&!confirm(`${p.name} ücretsiz katmanında istemler ürün geliştirmek için kullanılabilir. Sunucuları yurt dışında olan bu sağlayıcıya sağlık verilerini göndermeyi onaylıyor musun?`)){declined=true;continue}
     tried=true;const t0=Date.now();
     try{
       const text=await callProvider(p,keys[p.id],messages,maxTokens);
@@ -362,12 +362,20 @@ function cCard(m){
   return `<div class="card lcard"><div class="lhead"><b>Kayıt önerisi</b>${est?`<span class="tahmin">Tahmin</span>`:""}</div>${rows}
   ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="ok:${m.id}">Onayla</button><button class="btn ghost" data-c="no:${m.id}">Vazgeç</button></div>`:`<div class="mut sm">${c.state==="ok"?"Kaydedildi":"Vazgeçildi"}</div>${c.state==="ok"&&est&&!c.saved?`<div class="lbtns"><button class="btn ghost" data-c="savefood:${m.id}">Yemeği listeme kaydet</button></div>`:""}`}</div>`;
 }
+/* Onay metni tek yerde: Koç ekranı ve Gizlilik ve veri aynı metni gösterir. Değiştirirsen CONSENT_V'yi artır. */
+const consentOk=()=>!(S.settings.age>0&&S.settings.age<18);
+const consentHtml=()=>`<b>Koç ile veri paylaşımına açık rızan</b><ul style="margin:6px 0;padding-left:18px"><li><b>Ne gönderilir:</b> yazdığın mesajlar, profilin (boy, yaş, cinsiyet, hareket düzeyi), sağlık notun, hedeflerin, son 14 günün kilo, yemek, su, spor ve adım özeti (varsa uyku ve ruh hali), son antrenmanların, son notların ve ilaç modülü açıksa ilaç adın ve saatlerin. Tahlil, tansiyon, şeker, fotoğraf ve yedek gönderilmez.</li><li><b>Kime:</b> seçtiğin sağlayıcıya (${esc(S.providers.filter(p=>p.on&&p.health).map(p=>p.name).join(", ")||"hiçbiri seçili değil")}), kendi anahtarınla. Sunucuları yurt dışındadır; bu bir yurt dışına aktarımdır.</li><li><b>Geri alma:</b> istediğin an Ayarlar > Gizlilik ve veri ya da Yapay zekâ koç bölümünden. Geri alınca yeni veri gitmez; önceden gönderilene sağlayıcının kendi politikası uygulanır.</li><li><b>Onay vermezsen</b> uygulama tam çalışır, yalnız Koç konuşmaz.</li></ul>${consentOk()?"":`<p><b>18 yaş altı için Koç veri paylaşımı kapalıdır.</b></p>`}`;
+function cConsent(on){
+  const s=S.settings;if(on&&!consentOk())return;
+  Object.assign(s,{consent:on,consentV:on?CONSENT_V:0,consentAt:on?dayKey():""});save();render();
+  if(on){cFlush();cAuto()}
+}
 function viewKoc(){
   let h="";
   const intro=offline==="none"||(!hasKey()&&!S.chat.length);
-  if(intro)h+=`<div class="banner info"><b>Koç ne yapar?</b><p>Yazdıklarından yemek, su ve kilo kaydı önerir, günü ve haftayı yorumlar, hedefini ayarlamana yardım eder.</p><b>Verin nereye gider?</b><p>Koç yapay zekâ kullanır: internet ister, çevrimdışı çalışmaz. Yalnızca sen onay verirsen ve kendi ücretsiz hesabından alacağın bir anahtarla çalışır. Onay verirsen profilin, kayıtların ve yazdıkların seçtiğin sağlayıcıya gider.</p><p><b>Koç olmadan da uygulama tam çalışır.</b></p><button class="btn" data-c="guide">Koçu etkinleştir, yaklaşık 2 dakika</button></div>`;
+  if(intro)h+=`<div class="banner info"><b>Koç ne yapar?</b><p>Yazdıklarından yemek, su ve kilo kaydı önerir, günü ve haftayı yorumlar, hedefini ayarlamana yardım eder.</p><b>Verin nereye gider?</b><p>Koç yapay zekâ kullanır: internet ister, çevrimdışı çalışmaz. Yalnızca sen onay verirsen ve kendi ücretsiz hesabından alacağın bir anahtarla çalışır. Onay verirsen profilin, kayıtların ve yazdıkların seçtiğin sağlayıcıya gider; sağlayıcının sunucuları yurt dışındadır. İstediğin an geri alırsın (Ayarlar > Gizlilik ve veri).</p><p><b>Koç olmadan da uygulama tam çalışır.</b></p><button class="btn" data-c="guide">Koçu etkinleştir, yaklaşık 2 dakika</button></div>`;
   else if(offline==="fail")h+=`<div class="banner"><b>Koç şu an ulaşılamıyor</b><p>Su, kilo ve spor kaydı çalışıyor. Yemek tahmini bağlantı gelince yapılır.</p><button class="btn" data-c="retry">Yeniden dene</button></div>`;
-  if(!S.settings.consent&&!intro)h+=`<div class="banner info"><b>Verilerin sağlayıcıya gönderilir</b><p>Koçun konuşabilmesi için profilin, kayıtların ve yazdıkların, sağlık verisi dahil, seçtiğin yapay zekâ sağlayıcılarına (${esc(S.providers.filter(p=>p.on&&p.health).map(p=>p.name).join(", ")||"hiçbiri seçili değil")}) gönderilir. Sağlayıcıları Ayarlar'dan yönetirsin.</p><button class="btn" data-c="consent">Anladım, kabul ediyorum</button></div>`;
+  if(!S.settings.consent&&!intro)h+=`<div class="banner info">${consentHtml()}${consentOk()?`<button class="btn" data-c="consent">Açık rızamı veriyorum</button>`:""}<button class="lnk" data-pv="open">Gizlilik ve veri</button></div>`;
   if(!S.chat.length&&hasKey())h+=`<p class="hint">Bir şey yaz: "2 yumurta ve ekmek yedim", "83,7 çektim" ya da "bugün ne yapmalıyım?"</p>`;
   for(const m of S.chat){
     if(m.role==="user")h+=`<div class="ub">${esc(m.text)}</div>${m.pend?`<div class="pendl">Bekliyor, bağlantı gelince gönderilir</div>`:""}`;
@@ -398,7 +406,7 @@ function viewProviders(){
   const rows=S.providers.map((p,i)=>{const [a,b]=pStatus(p);return `<button class="prow" data-c="prov:${p.id}"><span><span class="mut sm">${i+1}.</span><b>${esc(p.name)}</b><span class="mut sm">${esc(p.model)}${b?", "+esc(b):""}</span></span><span class="tag">${a}</span></button>`}).join("");
   return `<h2>Yapay zekâ koç</h2><div class="card"><p class="hint" style="padding:0 0 8px">Sırayla denenir. Limite takılırsa sıradaki devreye girer. Anahtarlar yalnızca bu telefonda durur, yedeğe dahil edilmez.</p>${rows}
   <div class="btns"><button class="btn ghost" data-c="addprov">Sağlayıcı ekle</button></div>
-  <p class="hint">Veri paylaşımı: ${S.settings.consent?"kabul edildi":"kabul edilmedi"}. ${S.settings.consent?`<button class="lnk" style="display:inline-block;width:auto" data-c="revoke">Geri al</button>`:""}</p>
+  <p class="hint">Veri paylaşımı: ${S.settings.consent?`kabul edildi (${esc(S.settings.consentAt)})`:"kabul edilmedi"}. ${S.settings.consent?`<button class="lnk" style="display:inline-block;width:auto" data-c="revoke">Geri al</button>`:""}</p>
   <div class="btns"><button class="btn danger" data-c="clearchat">Sohbeti temizle</button></div></div>`;
 }
 /* Adresler yalnız yaygın bilinen anahtar sayfaları; panel düğme adları değişebilir. */
@@ -478,8 +486,8 @@ function cClick(v,el){
     case "askfood":{const q=foodAskQ.trim();if(q){closeSheet();tab="koc";render();cSend(`${q} kaç kalori? Bir porsiyon için tahmin et.`)}return}
     case "send":{const i=$("#cmsg");const t=i.value;i.value="";return cSend(t)}
     case "retry":offline=null;cFlush();return render();
-    case "consent":S.settings.consent=true;save();render();cFlush();cAuto();return;
-    case "revoke":S.settings.consent=false;save();render();return;
+    case "consent":return cConsent(true);
+    case "revoke":return cConsent(false);
     case "guide":return cGuide(p1);
     case "gsave":{
       const p=S.providers.find(x=>x.id===p1),k=$("#gk").value.trim();

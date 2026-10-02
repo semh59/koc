@@ -52,6 +52,7 @@ function obView(){
     const p=obParse(),pl=obPlan(p);next="Başla";
     body=`<h2>Günlük hedefin</h2><div class="card"><div class="lbl">Kalori</div><div class="sumv num">${pl.kcal.toLocaleString("tr-TR")} <small>kcal</small></div>
     <div class="lbl">Protein</div><div class="num" style="font-size:22px;font-weight:700">${pl.protein[0]}–${pl.protein[1]} <small class="mut">g</small></div>
+    <p class="hint">Verilerin yalnızca telefonunda durur. Koç'u açarsan, yalnızca onayınla, seçtiğin yapay zekâ sağlayıcısına (yurt dışı) gider. Koç olmadan da uygulama tam çalışır. ${MED_NOTE} <button class="lnk" style="display:inline-block;width:auto" data-pv="open">Gizlilik ve veri</button></p>
     ${pl.blocked?`<div class="banner" style="margin:12px 0 0"><b>Kalori açığı önermiyorum</b><p>${esc(pl.blocked)}. ${/hekim/.test(pl.blocked)?"":"Hekimine ya da diyetisyenine danış. "}Yukarıdaki değer kilonu koruma düzeyidir.</p></div>`:`<p class="hint">${pl.note==="Kilo verme"?"Yavaş ve güvenli kilo verme hızına göre":pl.note==="Kilo alma"?"Yavaş kilo alma hızına göre":"Kilonu koruma düzeyine göre"} hesaplandı. Kayıt girdikçe gerçek verine göre güncellenir. Tahmindir, tıbbi tavsiye değildir.</p>`}</div>`;
   }
   const dots=`<div class="hint" role="status" style="padding:0 4px 4px">Adım ${st+1}/3</div>`;

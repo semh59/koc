@@ -208,7 +208,7 @@ setTimeout(async()=>{
   { // Koç ilk izlenimi (C7)
     const q=s=>$q(s),k=()=>ev("viewKoc()");
     ev("S.chat=[];S.settings.consent=false;offline=null");
-    ok("anahtar yokken tanıtım: ne yapar, veri nereye gider, çevrimdışı, Koç'suz çalışır; 'API' yok",k().includes("Koç ne yapar")&&k().includes("Verin nereye gider")&&k().includes("çevrimdışı çalışmaz")&&k().includes("onay verirsen")&&k().includes("Koç olmadan da uygulama tam çalışır")&&!/\bAPI\b/.test(k())&&!k().includes("Anladım, kabul ediyorum"),k());
+    ok("anahtar yokken tanıtım: ne yapar, veri nereye gider, çevrimdışı, Koç'suz çalışır; 'API' yok",k().includes("Koç ne yapar")&&k().includes("Verin nereye gider")&&k().includes("çevrimdışı çalışmaz")&&k().includes("onay verirsen")&&k().includes("Koç olmadan da uygulama tam çalışır")&&!/\bAPI\b/.test(k())&&!k().includes("Açık rızamı veriyorum"),k());
     ev("openSheet('x');cClick('guide',document.body)");
     const names=ev("S.providers.filter(p=>GUIDE[p.id]).map(p=>p.name)");
     ok("rehber listesi coach.js'teki sağlayıcıları sıralar",names.length===4&&names.every(n=>q("#sheet").textContent.includes(n))&&!/\bAPI\b/.test(q("#sheet").textContent.replace("API Keys","")),names);
@@ -216,7 +216,7 @@ setTimeout(async()=>{
     ev("cGuide('groq')");q("#gk").value="kısa";q('[data-c="gsave:groq"]').click();
     ok("eksik anahtar kaydedilmez",ev("getKeys().groq")===undefined&&q("#toast").textContent.includes("eksik"));
     q("#gk").value="gsk_ornekanahtar123";q('[data-c="gsave:groq"]').click();
-    ok("anahtar kaydedilir ve sağlayıcı açılır, tanıtım yerini onay bildirimine bırakır",ev("getKeys().groq")==="gsk_ornekanahtar123"&&ev("S.providers.find(p=>p.id==='groq').on")&&!k().includes("Koç ne yapar")&&k().includes("Anladım, kabul ediyorum")&&!q("#sheet").classList.contains("on"));
+    ok("anahtar kaydedilir ve sağlayıcı açılır, tanıtım yerini onay bildirimine bırakır",ev("getKeys().groq")==="gsk_ornekanahtar123"&&ev("S.providers.find(p=>p.id==='groq').on")&&!k().includes("Koç ne yapar")&&k().includes("Açık rızamı veriyorum")&&!q("#sheet").classList.contains("on"));
     ev("setKey('groq','');S.settings.consent=false");
   }
   ok("sayı ayrıştırma",ev("[num('83,7'),num('83.7'),num('1.234,5'),num('1.500',true),num('abc')]").slice(0,4).join()==="83.7,83.7,1234.5,1500"&&isNaN(ev("num('abc')")));
@@ -1793,5 +1793,37 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("widgetLast='';Object.assign(S.settings,{obDone:false,heightCm:0,age:0,goalKg:0,kcal:0,consent:false});S.entries=[];S.chat=[];S.meds=[];render()");
     ok("widget: onboarding açıkken de render sonrası güncellenir",ev("obNeeded()")===true&&wc.length===n0+1&&wc[n0].water===0,[ev("obNeeded()"),wc.length,n0]);
     delete w.Capacitor.Plugins.Widget;
+  }
+  { // B6: KVKK açık rıza, Gizlilik ve veri
+    const q=s=>$q(s),k=()=>q("#view").textContent,sh=()=>q("#sheet").textContent;
+    ev("closeSheet();S.settings.age=30;S.settings.consent=false;S.settings.consentV=0;S.settings.consentAt='';S.chat=[];S.entries=[];Object.assign(S.settings,{obDone:true});setKey('nvidia','K1');tab='koc';render()");
+    const t=ev("document.querySelector('#view .banner.info').textContent");
+    ok("onay metni: ne gönderilir, kime (sağlayıcı adı), yurt dışı aktarım, geri alma, onaysız tam çalışır",["Ne gönderilir","NVIDIA Build","yurt dışına aktarım","Geri alma","Onay vermezsen","uygulama tam çalışır"].every(x=>t.includes(x))&&!!q('[data-c="consent"]'),t);
+    ev("cConsent(true)");
+    ok("onay: consentV ve consentAt yazılır, kayıtlı",ev("S.settings.consent&&S.settings.consentV===CONSENT_V&&S.settings.consentAt===dayKey()")&&JSON.parse(w.localStorage.getItem("koc_v1")).settings.consentAt===ev("dayKey()"));
+    ev("cConsent(false)");
+    ok("geri alma: consent, sürüm ve tarih temizlenir",ev("!S.settings.consent&&S.settings.consentV===0&&S.settings.consentAt===''"));
+    ok("eski onay (sürümsüz ya da farklı sürüm) geçersiz, güncel sürüm geçerli",ev("[cleanSettings({consent:true}).consent,cleanSettings({consent:true,consentV:CONSENT_V+1}).consent,cleanSettings({consent:true,consentV:CONSENT_V,consentAt:'2026-10-01'}).consentAt]").join()==="false,false,2026-10-01");
+    ev("S.settings.consent=true;S.settings.consentV=CONSENT_V-1;save()");
+    ok("yeniden başlatınca eski sürümle verilmiş onay düşer",ev("load().settings.consent")===false);
+    ev("cConsent(true);sheetYedek()");
+    ev("(()=>{const x=JSON.parse(document.querySelector('#bk').value);x.settings.consent=false;x.settings.consentV=0;x.settings.consentAt='';x.entries=[{id:1,day:'2026-09-01',time:'10:00',type:'su',v:250,text:''}];document.querySelector('#bk').value=JSON.stringify(x)})()");
+    await ev("goYukle()");
+    ok("yedek geri yükleme onay sürümünü ve tarihini korur",ev("S.settings.consent&&S.settings.consentV===CONSENT_V&&S.settings.consentAt===dayKey()&&load().settings.consent"));
+    ev("S.settings.age=16;cConsent(false);cConsent(true);tab='koc';render()");
+    ok("18 yaş altı: onay verilemez, düğme yok, açıklama var",!ev("S.settings.consent")&&!q('[data-c="consent"]')&&k().includes("18 yaş altı"));
+    ev("S.settings.age=30;tab='ayar';render()");
+    q('[data-pv="open"]').click();
+    const g=sh();
+    ok("Gizlilik ve veri: nerede, Open Food Facts yalnız barkod, ML Kit, Drive, Koç onay metni aynı, tıbbi uyarı",["Verin nerede","Open Food Facts","yalnızca barkod numarası","Google barkod tarayıcı","Google Drive","Koç ile veri paylaşımına açık rızan"].every(x=>g.includes(x))&&g.includes(ev("(()=>{const d=document.createElement(\"div\");d.innerHTML=consentHtml();return d.textContent})()"))&&g.includes(ev("MED_NOTE")),g.slice(0,200));
+    q('[data-pv="consent"]').click();
+    ok("sheet'ten onay: sheet açık kalır, durum güncellenir, geri alma düğmesi gelir",ev("S.settings.consent")&&sh().includes("kabul edildi")&&!!q('[data-pv="revoke"]'));
+    q('[data-pv="revoke"]').click();
+    ok("sheet'ten geri alma",!ev("S.settings.consent")&&sh().includes("kabul edilmedi"));
+    ev("closeSheet()");
+    ok("tıbbi uyarı tek metin: Hakkında, tansiyon, şeker, tahlil",["ayar","tansiyon","seker","tahlil"].every(t=>{ev(`tab='${t}';render()`);return k().includes(ev("MED_NOTE"))}));
+    ev("Object.assign(S.settings,{obDone:false,heightCm:0,goalKg:0,kcal:0,age:0});S.entries=[];S.chat=[];S.meds=[];Object.assign(ob,{cm:'170',kg:'80',age:'30',step:2});render()");
+    ok("onboarding son adımı: kısa özet ve bağlantı, sheet açılır",k().includes("yalnızca telefonunda durur")&&k().includes(ev("MED_NOTE"))&&(q('[data-pv="open"]').click(),sh().includes("Verin nerede")));
+    ev("closeSheet()");
   }
 },100);
