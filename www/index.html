@@ -230,6 +230,7 @@ nav button[aria-current="page"]{color:var(--prim);background:var(--soft)}
 .chip{background:var(--soft);border-radius:99px;padding:8px 14px;min-height:44px;min-width:44px;font-size:14px;font-weight:600}
 .chip[aria-pressed="true"]{background:var(--prim);color:var(--prim-ink)}
 .lbl{font-size:13px;color:var(--mut);margin:2px 2px 6px}
+.kstep{display:flex;gap:8px;align-items:center;margin-bottom:10px}#sheet .kstep .in{flex:1;text-align:center;margin:0}.kstep .chip{min-width:64px;min-height:50px}
 .ferr{color:var(--warn);font-size:14px;margin:-4px 2px 10px}.ferr:empty{display:none}
 select.in{appearance:none}
 input.in,select.in,.chip>button{min-height:44px}
@@ -687,13 +688,16 @@ const ferr=(id,msg)=>{$("#"+id).textContent=msg};
 
 let kiloOk=null;
 function sheetKilo(){
-  kiloOk=null;openSheet(`<h3>Kilo ekle</h3><input class="in num" id="fv" inputmode="decimal" placeholder="84,3" autocomplete="off" autofocus><div class="ferr" id="kerr" role="alert"></div>${dayOptions()}<div class="hint" id="kwarn" role="alert"></div><button class="btn" data-go="kilo">Kaydet</button>`);
+  const m=weights(),ds=Object.keys(m).sort(),last=ds.length?fmt(m[ds[ds.length-1]]):"";
+  /* Son tartı yazılı gelir; odakta seçilir ki yazılan sayı eskisinin sonuna eklenmesin. */
+  kiloOk=null;openSheet(`<h3>Kilo ekle</h3><div class="kstep"><button class="chip" data-kd="-1" aria-label="0,1 kg azalt">−0,1</button><input class="in num" id="fv" inputmode="decimal" placeholder="84,3" value="${last}" autocomplete="off" autofocus onfocus="this.select()"><button class="chip" data-kd="1" aria-label="0,1 kg artır">+0,1</button></div><div class="ferr" id="kerr" role="alert"></div>${dayOptions()}<div id="kwarn" role="alert"></div><button class="btn" data-go="kilo">Kaydet</button>`);
 }
+function kiloStep(d){const f=$("#fv"),v=num(f.value);if(v>=20&&v<=400)f.value=fmt(Math.round(v*10+d)/10)}
 function goKilo(){
   const v=num($("#fv").value);
   if(!(v>=20&&v<=400))return ferr("kerr","Kiloyu kg olarak yaz, örneğin 84,3");
   const day=fday(),m=weights(),ds=Object.keys(m).filter(k=>k<day).sort(),prev=ds.length?m[ds[ds.length-1]]:null;
-  if(prev!=null&&Math.abs(v-prev)>5&&kiloOk!==v){kiloOk=v;$("#kwarn").textContent=`Son tartın ${fmt(prev)} kg idi, ${fmtS(v-prev)} kg fark var. Yanlış yazmış olabilir misin? Doğruysa tekrar Kaydet'e dokun.`;return}
+  if(prev!=null&&Math.round(Math.abs(v-prev)*10)>=30&&kiloOk!==v){kiloOk=v;$("#kerr").textContent="";$("#kwarn").innerHTML=`<div class="banner"><b>${fmtS(v-prev)} kg fark var</b><p>Son tartın ${fmt(prev)} kg idi. Yanlış yazmış olabilir misin?</p><button class="btn" data-go="kilo">Yine de kaydet</button></div>`;return}
   const e=add("kilo",v,"",day);closeSheet();render();
   let msg=`${fmt(v)} kg kaydedildi`;
   if(prev!=null)msg+=`, öncekine göre ${fmtS(v-prev)} kg`;
@@ -1008,7 +1012,7 @@ async function notifTest(){
 
 /* ---------- olaylar ---------- */
 document.addEventListener("click",ev=>{
-  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-rc],[data-fv],[data-fva],[data-fvd],[data-tp],[data-tpd],[data-sp],[data-lo],[data-g],[data-sex],[data-actl],[data-c],[data-food],[data-fp]");
+  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-rc],[data-fv],[data-fva],[data-fvd],[data-tp],[data-tpd],[data-sp],[data-lo],[data-kd],[data-g],[data-sex],[data-actl],[data-c],[data-food],[data-fp]");
   if(ev.target.id==="scrim")return closeSheet();
   if(!el)return;
   const d=el.dataset;
@@ -1018,6 +1022,7 @@ document.addEventListener("click",ev=>{
   if(d.sex!==undefined){S.settings.sex=d.sex;save();render();return}
   if(d.actl!==undefined){S.settings.act=+d.actl;save();render();return}
   if(d.range){range=+d.range;render();return}
+  if(d.kd){kiloStep(+d.kd);return}
   if(d.lo){logOff=Math.max(0,Math.min(365,logOff+(+d.lo)));render();return}
   if(d.del){
     const id=+d.del,rm=S.entries.find(e=>e.id===id);if(!rm)return;
