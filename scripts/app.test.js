@@ -1041,6 +1041,30 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
       ok("süreli egzersizde ± paneli yok, satır yine vurgulu",!q('.sx')&&!!q('.srow.nx'));
       ev("S.workouts=[]");
     }
+    { // RPE (D-Ant8)
+      const set=(kg,r,x="")=>`{kg:${kg},reps:${r},done:true${x}}`;
+      ok("RPE ayarı varsayılan kapalı; bayraksız eski ayar ve çöp değer kapalı kalır, true açık",ev("DEF.settings.rpeOn")===false&&ev("cleanSettings({kcal:1800}).rpeOn")===false&&ev("cleanSettings({rpeOn:'evet'}).rpeOn")===false&&ev("cleanSettings({rpeOn:true}).rpeOn")===true);
+      ev(`S.settings.rpeOn=false;S.workouts=[${Wk(1,1000,2000,`[${set(60,8,",rpe:8")}]`)},${Wk(2,Date.now(),null,"[{kg:60,reps:8,done:false}]")}];tab='salon';render()`);
+      ok("kapalıyken set satırında RPE alanı yok, geçmişte kayıtlı RPE yine görünür",!q('[data-gi^="rpe"]')&&!q('.srow.r')&&ev("exHistLine(gEx('squat'))").includes("60×8 @8"),ev("exHistLine(gEx('squat'))"));
+      ev("tab='ayar';render()");
+      ok("Ayarlar > Salon: Zorluk (RPE) anahtarı kapalı gelir",q('[data-rpe]')&&!q('[data-rpe]').checked);
+      q('[data-rpe]').checked=true;q('[data-rpe]').dispatchEvent(new w.Event("change",{bubbles:true}));
+      ev("tab='salon';render()");
+      ok("açılınca her çalışma satırında RPE alanı ve başlığı çıkar",ev("S.settings.rpeOn")===true&&!!q('[data-gi="rpe:0:0"]')&&q('.shead.r')&&q('.srow.r'));
+      fire('[data-gi="rpe:0:0"]',"8,5");
+      ok("RPE 8,5 kaydedilir",ev("S.workouts[1].ex[0].sets[0].rpe")===8.5&&q('[data-gi="rpe:0:0"]').value==="8,5");
+      for(const bad of ["5","11","7.3","abc"]){fire('[data-gi="rpe:0:0"]',bad);}
+      ok("geçersiz RPE (5, 11, 7,3, abc) reddedilir, eski değer ve kg/tekrar korunur",ev("S.workouts[1].ex[0].sets[0].rpe")===8.5&&ev("S.workouts[1].ex[0].sets[0].kg")===60&&ev("S.workouts[1].ex[0].sets[0].reps")===8);
+      fire('[data-gi="rpe:0:0"]',"");
+      ok("alan boşaltılınca RPE silinir",!("rpe" in ev("S.workouts[1].ex[0].sets[0]")));
+      const sg=ev("JSON.stringify([gSuggest('squat'),gWorkVol(S.workouts[0])])");ev("S.workouts[0].ex[0].sets[0].rpe=10");
+      ok("RPE öneriye ve hacme girmez",ev("JSON.stringify([gSuggest('squat'),gWorkVol(S.workouts[0])])")===sg);
+      const C=JSON.parse(ev(`JSON.stringify(cleanGym({workouts:[{id:5,day:'2026-09-01',t0:1,t1:2,ex:[{id:'squat',sets:[${[8.5,5,11,7.3,"'x'",null,10,6].map(r=>`{kg:100,reps:5,done:true,rpe:${r}}`).join(",")},{kg:100,reps:5,done:true}]}]}]}))`)).workouts[0].ex[0].sets;
+      ok("cleanGym: yalnız 6-10 ve 0,5 adımlı RPE kalır, set ve kg/tekrar kaybolmaz; eski setlerde alan yok",JSON.stringify(C.map(x=>x.rpe))===JSON.stringify([8.5,undefined,undefined,undefined,undefined,undefined,10,6,undefined])&&C.length===9&&C.every(x=>x.kg===100&&x.reps===5),C);
+      ev(`S.workouts[1].ex=[{id:'plank',note:'',sets:[{kg:null,reps:null,sec:30,done:false}]}];render()`);
+      ok("süreli egzersizde RPE alanı yok",!q('[data-gi^="rpe"]'));
+      ev("S.settings.rpeOn=false;S.workouts=[]");
+    }
     { // akıllı ilerleme (D-Ant5)
       const set=(kg,r)=>`[{kg:${kg},reps:${r},done:true},{kg:${kg},reps:${r},done:true},{kg:${kg},reps:${r},done:true,w:false},{kg:20,reps:10,done:true,w:true}]`;
       ev(`S.exCfg={};S.workouts=[${Wk(1,1000,2000,set(60,7))},${Wk(2,3000,4000,set(60,6))},${Wk(3,Date.now(),null,"[{kg:null,reps:null,done:false}]")}];tab='salon';render()`);

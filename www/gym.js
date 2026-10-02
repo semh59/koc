@@ -43,6 +43,7 @@ function gRestSet(end,exId){
   restEnd=end>Date.now()?end:0;
   if(restEnd)gNotify(restEnd,"⏱ Dinlenme bitti",exId?`Sıradaki set: ${gEx(exId).n}`:"Sıradaki sete geç",9002);else gNotifyCancel(9002);
 }
+const gRpeTx=s=>s&&s.rpe?` @${fkg(s.rpe)}`:"";
 const fkg=x=>x==null||x===""?"":String(Math.round(x*100)/100).replace(".",",");
 
 /* ---- doğrulama (yükleme ve geri yükleme için) ---- */
@@ -76,6 +77,7 @@ function cleanGym(r){
         if((kg!=null&&!(kg>=0&&kg<=1000))||(reps!=null&&!(reps>=0&&reps<=200))||(sec!=null&&!(sec>=0&&sec<=7200)))continue;
         const o=sec==null?{kg,reps,done:s.done===true}:{kg,reps,sec:Math.round(sec),done:s.done===true};
         if(s.w===true)o.w=true;
+        if(typeof s.rpe==="number"&&s.rpe>=6&&s.rpe<=10&&s.rpe*2===Math.round(s.rpe*2))o.rpe=s.rpe;
         sets.push(o);
       }
       ex.push({id:x.id,note:typeof x.note==="string"?x.note.slice(0,300):"",sets});
@@ -214,7 +216,7 @@ function gLive(w){
   const nx=gNext(w);
   const cards=w.ex.map((x,ei)=>{
     const ex=gEx(x.id),prev=gHistory(x.id,w.t0)[0],sug=gSuggest(x.id);
-    const kind=gKind(x.id),tm=kind==="t"||kind==="i"||kind==="c",unit=kind==="c"?60:1;
+    const kind=gKind(x.id),tm=kind==="t"||kind==="i"||kind==="c",unit=kind==="c"?60:1,rpe=S.settings.rpeOn&&!tm;
     let wi=0;
     const rows=x.sets.map((s,si)=>{
       const ps=!s.w&&prev&&prev.sets[wi++],p=s.w?"ısınma":!ps?"–":tm?`${kind==="c"?Math.round(ps.sec/60)+" dk":ps.sec+" sn"}`:`${ps.kg?fkg(ps.kg)+" × ":""}${ps.reps}`;
@@ -223,13 +225,13 @@ function gLive(w){
       if(tm)return `<div class="srow${s.done?" dn":""}${on?" nx":""}"><span class="sn">${si+1}</span><span class="sp num">${p}</span>
       <input class="sin num" inputmode="numeric" aria-label="${si+1}. set ${kind==="c"?"dakika":"saniye"}" data-gi="sec:${ei}:${si}" value="${s.sec==null?"":Math.round(s.sec/unit)}" placeholder="${kind==="c"?"dk":"sn"}">
       <button class="sin tgo" data-g="tstart:${ei}:${si}" aria-label="${si+1}. set zamanlayıcıyı başlat">${gTim&&gTim.ei===ei&&gTim.si===si?"⏸":"▶"}</button>${tick}</div>`;
-      return `<div class="srow${s.done?" dn":""}${on?" nx":""}"><span class="sn">${si+1}</span><span class="sp num">${p}</span>
+      return `<div class="srow${rpe?" r":""}${s.done?" dn":""}${on?" nx":""}"><span class="sn">${si+1}</span><span class="sp num">${p}</span>
       <input class="sin num" inputmode="decimal" aria-label="${si+1}. set kg" data-gi="kg:${ei}:${si}" value="${s.kg==null?"":fkg(s.kg)}" placeholder="${kind==="b"?"ek kg":"kg"}">
-      <input class="sin num" inputmode="numeric" aria-label="${si+1}. set tekrar" data-gi="reps:${ei}:${si}" value="${s.reps==null?"":s.reps}" placeholder="tek">${tick}</div>${on?gStepPanel(w,ei,si,prev):""}`;
+      <input class="sin num" inputmode="numeric" aria-label="${si+1}. set tekrar" data-gi="reps:${ei}:${si}" value="${s.reps==null?"":s.reps}" placeholder="tek">${rpe?`<input class="sin num" inputmode="decimal" aria-label="${si+1}. set zorluk (RPE)" data-gi="rpe:${ei}:${si}" value="${s.rpe==null?"":fkg(s.rpe)}" placeholder="RPE">`:""}${tick}</div>${on?gStepPanel(w,ei,si,prev):""}`;
     }).join("");
     return `<div class="card ex"><div class="exh"><button class="exn" data-g="hist:${x.id}"><b>${esc(ex.n)}</b><span class="mut">${ex.r||ex.g}</span></button><button class="del" data-g="exinfo:${x.id}" aria-label="Egzersiz bilgisi">ⓘ</button><button class="del" data-g="menu:${ei}" aria-label="Egzersiz menüsü">⋮</button></div>
     ${sug?`<div class="sug">Öneri: ${fkg(sug.kg)||0} kg × ${sug.reps}. ${sug.why}.${sug.note?` <span class="mut">${sug.note}</span>`:""}</div>`:""}${x.note?`<div class="note">${esc(x.note)}</div>`:""}
-    <div class="shead"><span>Set</span><span>Önceki</span>${tm?`<span>${kind==="c"?"Dakika":"Süre (sn)"}</span><span>Süre</span>`:`<span>${kind==="b"?"Ek kg":"kg"}</span><span>Tekrar</span>`}<span></span></div>${rows}
+    <div class="shead${rpe?" r":""}"><span>Set</span><span>Önceki</span>${tm?`<span>${kind==="c"?"Dakika":"Süre (sn)"}</span><span>Süre</span>`:`<span>${kind==="b"?"Ek kg":"kg"}</span><span>Tekrar</span>${rpe?"<span>RPE</span>":""}`}<span></span></div>${rows}
     <button class="lnk" data-g="addset:${ei}">Set ekle</button></div>`;
   }).join("");
   return `<div class="livebar"><div><b>${esc(w.name)}</b><div class="mut num" id="gstat">${gClock(Date.now()-w.t0)} süre, ${Math.round(gWorkVol(w)).toLocaleString("tr-TR")} kg hacim</div></div><button class="btn fin" data-g="finish">Bitir</button></div>
@@ -303,7 +305,7 @@ function gSheetHist(exId){
   const best=per.reduce((a,b)=>b.e>a.e?b:a,per[0]);
   openSheet(`<h3>${esc(ex.n)}</h3><div class="two"><div class="stat"><div class="k">En iyi set</div><div class="v num">${fkg(best.top.kg)||0} kg × ${best.top.reps}</div></div><div class="stat"><div class="k">Tahmini 1TM</div><div class="v num">${Math.round(best.e)} kg</div></div></div>
   ${exCharts(exId)}
-  <table><thead><tr><th>Tarih</th><th>En iyi set</th><th>Hacim</th></tr></thead><tbody>${per.slice(0,6).map(p=>`<tr><td>${gDate(p.d)}</td><td class="num">${fkg(p.top.kg)||0} × ${p.top.reps}</td><td class="num">${Math.round(p.vol).toLocaleString("tr-TR")} kg</td></tr>`).join("")}</tbody></table>
+  <table><thead><tr><th>Tarih</th><th>En iyi set</th><th>Hacim</th></tr></thead><tbody>${per.slice(0,6).map(p=>`<tr><td>${gDate(p.d)}</td><td class="num">${fkg(p.top.kg)||0} × ${p.top.reps}${gRpeTx(p.top)}</td><td class="num">${Math.round(p.vol).toLocaleString("tr-TR")} kg</td></tr>`).join("")}</tbody></table>
   <button class="btn" data-g="closesheet">Kapat</button>`);
 }
 function gSheetSummary(id){
@@ -439,6 +441,9 @@ function gInput(t){
     const unit=gKind(w.ex[+ei].id)==="c"?60:1,max=unit===60?120:7200;
     if(raw===""){s.sec=null}
     else{const v=num(raw,true);if(isNaN(v)||v<1||v>max){t.value=s.sec==null?"":Math.round(s.sec/unit);return toast(unit===60?"Süre 1 ile 120 dakika arasında olmalı":"Süre 1 ile 7200 saniye arasında olmalı")}s.sec=v*unit;t.value=v}
+  }else if(f==="rpe"){
+    if(raw===""){delete s.rpe}
+    else{const v=num(raw);if(isNaN(v)||v<6||v>10||v*2!==Math.round(v*2)){t.value=s.rpe==null?"":fkg(s.rpe);return toast("Zorluk 6 ile 10 arasında, 0,5 adımla olmalı")}s.rpe=v;t.value=fkg(v)}
   }else if(f==="kg"){
     if(raw===""){s.kg=null}
     else{const v=num(raw);if(isNaN(v)||v<0||v>1000){t.value=s.kg==null?"":fkg(s.kg);return toast("Ağırlık 0 ile 1000 kg arasında olmalı")}s.kg=v;t.value=fkg(v)}
