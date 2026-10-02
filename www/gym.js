@@ -280,6 +280,7 @@ function gLive(w){
   <div class="rest" id="grest"${restEnd>Date.now()?"":" hidden"}><div><span class="mut">Dinlenme</span><b class="num" id="gr">${restEnd>Date.now()?gClock(restEnd-Date.now()):""}</b></div><button data-g="rest:-15">−15</button><button data-g="rest:15">+15</button><button data-g="rest:0">Atla</button></div>
   ${cards||`<p class="hint">Henüz egzersiz yok. Aşağıdan ekle.</p>`}
   <button class="btn ghost" data-g="pick">Egzersiz ekle</button>
+  <p class="hint">${gPainNote}</p>
   <button class="lnk dng" data-g="cancel">Antrenmanı iptal et</button>`;
 }
 /* Yerel pencere bayrağı (DeviceHelp.keepAwake): navigator.wakeLock'un Android WebView desteği belgelerde yalnız Chrome'dan çıkarım. */
@@ -372,6 +373,7 @@ function gSheetSummary(id){
 /* ---- hazır programlar (programs.js) ---- */
 const gPgMatch=p=>(!gPgF.d||(gPgF.d>=p.d[0]&&gPgF.d<=p.d[1]))&&(!gPgF.lv||p.lv===gPgF.lv);
 const gPgMeta=p=>`${p.d[0]===p.d[1]?p.d[0]:p.d[0]+"-"+p.d[1]} gün · ${p.q==="Ağırlıksız"?"ekipmansız":"salon"} · ${p.lv.toLowerCase()}`;
+const gPainNote="Ağrı olursa hareketi bırak; sürerse hekime ya da fizyoterapiste danış.";
 const gPgNote="Genel bilgidir, kişisel antrenman ya da tıbbi tavsiye değildir. Ağrın, sakatlığın, gebeliğin, yakın zamanda ameliyatın ya da sağlık sorunun varsa başlamadan hekime ya da fizyoterapiste danış. Antrenmanda ağrı olursa hareketi bırak.";
 function gPgHtml(){
   const chips=(k,vals,lbl)=>`<div class="chips">${vals.map(v=>`<button class="chip" data-g="pgf:${k}:${v}" aria-pressed="${gPgF[k]===v}">${lbl(v)}</button>`).join("")}</div>`;
