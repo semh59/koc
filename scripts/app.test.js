@@ -47,6 +47,20 @@ setTimeout(async()=>{
     ok("Tüm verileri sil sonrası onboarding yeniden çıkar",ev("obNeeded()")&&q("#view").textContent.includes("Adım 1/3"));
     ev("S=structuredClone(DEF);S.settings.obDone=true;tab='bugun';render()");
   }
+  { // Koç ilk izlenimi (C7)
+    const q=s=>$q(s),k=()=>ev("viewKoc()");
+    ev("S.chat=[];S.settings.consent=false;offline=null");
+    ok("anahtar yokken tanıtım: ne yapar, veri nereye gider, çevrimdışı, Koç'suz çalışır; 'API' yok",k().includes("Koç ne yapar")&&k().includes("Verin nereye gider")&&k().includes("çevrimdışı çalışmaz")&&k().includes("onay verirsen")&&k().includes("Koç olmadan da uygulama tam çalışır")&&!/\bAPI\b/.test(k())&&!k().includes("Anladım, kabul ediyorum"),k());
+    ev("openSheet('x');cClick('guide',document.body)");
+    const names=ev("S.providers.filter(p=>GUIDE[p.id]).map(p=>p.name)");
+    ok("rehber listesi coach.js'teki sağlayıcıları sıralar",names.length===4&&names.every(n=>q("#sheet").textContent.includes(n))&&!/\bAPI\b/.test(q("#sheet").textContent.replace("API Keys","")),names);
+    ok("her sağlayıcının rehberi 3-4 adım, anahtar alanı ve kaydet düğmesi içerir",ev("S.providers.filter(p=>GUIDE[p.id]).every(p=>{cGuide(p.id);const s=document.querySelector('#sheet');const n=s.querySelectorAll('ol li').length;return n>=3&&n<=4&&!!s.querySelector('#gk[type=password]')&&!!s.querySelector('[data-c=\"gsave:'+p.id+'\"]')})"));
+    ev("cGuide('groq')");q("#gk").value="kısa";q('[data-c="gsave:groq"]').click();
+    ok("eksik anahtar kaydedilmez",ev("getKeys().groq")===undefined&&q("#toast").textContent.includes("eksik"));
+    q("#gk").value="gsk_ornekanahtar123";q('[data-c="gsave:groq"]').click();
+    ok("anahtar kaydedilir ve sağlayıcı açılır, tanıtım yerini onay bildirimine bırakır",ev("getKeys().groq")==="gsk_ornekanahtar123"&&ev("S.providers.find(p=>p.id==='groq').on")&&!k().includes("Koç ne yapar")&&k().includes("Anladım, kabul ediyorum")&&!q("#sheet").classList.contains("on"));
+    ev("setKey('groq','');S.settings.consent=false");
+  }
   ok("sayı ayrıştırma",ev("[num('83,7'),num('83.7'),num('1.234,5'),num('1.500',true),num('abc')]").slice(0,4).join()==="83.7,83.7,1234.5,1500"&&isNaN(ev("num('abc')")));
   ok("geçersiz spor süresi atılır",ev("cleanEntries([{type:'spor',day:'2026-01-01',v:1500},{type:'spor',day:'2026-01-01',v:30}]).out.length")===1);
   ok("bildirim metni korunur",ev("cleanSettings({reminders:[{id:1,t:'09:00',on:true,body:'Bugün su içmeyi unutma'}]}).reminders[0].body")==="Bugün su içmeyi unutma");
