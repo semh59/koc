@@ -222,12 +222,12 @@ function cApplyLog(id,el){
 }
 
 /* ---- "bu hafta neden kilo vermedim": yerel etmenler, isteğe bağlı Koç yorumu ---- */
-/* Soru ve plato yalnız kilo verme hedefi olan, kalori açığı engeli (yaş, düşük kilo, sağlık notu, yeme bozukluğu işareti) olmayan kullanıcıya. */
+/* Soru ve plato yalnız kilo verme hedefi olan, son 14 günde kilo vermeyen, kalori açığı engeli (yaş, düşük kilo, sağlık notu, yeme bozukluğu işareti) olmayan kullanıcıya. */
 function lossAsk(){
   const st=S.settings,w=weights(),days=Object.keys(w).sort();
   if(!(st.goalKg>0)||!days.length)return false;
   const tk=Algo.trend(w)[days[days.length-1]];
-  return st.goalKg<tk-0.5&&!Algo.lossBlock({age:st.age,cm:st.heightCm,kg:tk,goalKg:st.goalKg,health:!!st.healthNote.trim()})&&!S.chat.some(m=>m.fl==="ed"||(m.card&&m.card.kind==="safety"&&m.card.level==="ed"));
+  return st.goalKg<tk-0.5&&!Algo.isLosing(w)&&!Algo.lossBlock({age:st.age,cm:st.heightCm,kg:tk,goalKg:st.goalKg,health:!!st.healthNote.trim()})&&!S.chat.some(m=>m.fl==="ed"||(m.card&&m.card.kind==="safety"&&m.card.level==="ed"));
 }
 function cWhy(){
   if(!lossAsk())return;

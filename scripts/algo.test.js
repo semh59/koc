@@ -17,6 +17,13 @@ ok("hedef: -0,42 kg/hf, taban korunur",t.kcal>=1800&&t.rateKgWk<0,JSON.stringify
 const t2=A.suggestTarget({tdee:1600,kg:84,goalKg:75,bmr:1700});ok("taban BMR/1200/%75",t2.kcal>=1700&&t2.limited,JSON.stringify(t2));
 ok("bakım",A.suggestTarget({tdee:2300,kg:80,goalKg:0,bmr:1700}).kcal===2300);
 ok("ETA",A.etaWeeks(84,75,-0.5)===18&&A.etaWeeks(84,75,0.2)===null&&A.etaWeeks(75.1,75,-0.3)===0);
+// B3/B4: tek hız, tek tahmin, kilo veren için "neden" kapısı
+const wk=(f,n=22)=>{const o={};for(let i=0;i<n;i++)o[day(i)]=f(i);return o};
+ok("isLosing: 14 günde -0,35 kg/hf düşen kilo veriyor",A.isLosing(wk(i=>88-0.05*i)));
+ok("isLosing: düz ve artan kilo vermiyor",!A.isLosing(wk(()=>80))&&!A.isLosing(wk(i=>80+0.05*i)));
+ok("isLosing: -0,2 kg/hf sınırının altı veriyor, üstü vermiyor",A.isLosing(wk(i=>80-0.04*i))&&!A.isLosing(wk(i=>80-0.02*i)));
+ok("isLosing: yalnız son 14 gün sayılır (eski düşüş, yeni plato)",!A.isLosing(wk(i=>i<8?90-0.3*i:87.6)));
+ok("isLosing: veri yetersizse veriyor sayılmaz",!A.isLosing({[day(0)]:80,[day(2)]:79}));
 const n1=A.nextTarget([{kg:60,reps:12},{kg:60,reps:12},{kg:60,reps:12}],{lo:8,hi:12,inc:2.5});ok("üst tekrar → +2,5 kg",n1.kg===62.5&&n1.reps===8);
 const n2=A.nextTarget([{kg:60,reps:10},{kg:60,reps:8},{kg:60,reps:8}]);ok("aynı kg +1 tekrar",n2.kg===60&&n2.reps===9);
 ok("vücut ağırlığı",A.nextTarget([{kg:0,reps:6}]).reps===7); ok("boşsa null",A.nextTarget([])===null);
