@@ -44,7 +44,9 @@ setTimeout(async()=>{
     ok("18 yaş altı: açık önerilmez",v().includes("18 yaş altında")&&v().includes("Hekimine"),v());
     click('[data-ob="skip"]');
     ok("Şimdilik geç: hiçbir şey yazılmaz, bir daha çıkmaz",ev("S.settings.obDone")&&ev("S.entries.length")===0&&ev("S.settings.heightCm")===0&&ev("obNeeded()")===false&&ev("tab")==="bugun");
-    ev("tab='ayar';render()");click('[data-act="sifirla"]');
+    ev("tab='ayar';render()");
+    ok("Veriler: otomatik yedek kapalı ve telefon değişiminde yedek dosyası gerektiği yazar",v().includes("Google otomatik yedeğine")&&v().includes("telefon değiştirirsen")&&v().includes("yedek dosyanı al"));
+    click('[data-act="sifirla"]');
     ok("Tüm verileri sil sonrası onboarding yeniden çıkar",ev("obNeeded()")&&q("#view").textContent.includes("Adım 1/3"));
     ev("S=structuredClone(DEF);S.settings.obDone=true;tab='bugun';render()");
   }

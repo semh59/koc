@@ -33,7 +33,7 @@ Ayrıntı ve test adımları `yapilacaklar.md`'de. Telefonda denenen tek özelli
 | B2 (yapıldı) | Kontrast düzeltmesi | Koyu temadaki 1,98:1 "Geri al" ile `--mut`, `--warn`, turuncu ve grafik çizgileri AA düzeyine çıkar. | S | rekabet-arayuz | – |
 | B3 (yapıldı) | "Neden kilo vermedim" koşulu | Düğme ve Koç çipi yalnız son 14 günde trend düz ya da artarken görünür, kilo verene çıkmaz. | S | rekabet-arayuz | – |
 | B4 (yapıldı) | Trend'de tek tahmin, tek hız | "~11 hafta / ~9 hafta" ve iki hız tanımı yerine tek, koşulu yazılı tahmin gösterilir. | S | rekabet-arayuz | – |
-| B5 | `allowBackup` kapatma | Sağlık verisinin Google otomatik yedeğine gitmesi engellenir, "veri telefonda" vaadi doğru olur. | S | akilli-gps, AndroidManifest.xml:5 | G8 |
+| B5 (yapıldı) | `allowBackup` kapatma | Sağlık verisinin Google otomatik yedeğine gitmesi engellenir, "veri telefonda" vaadi doğru olur. `allowBackup="false"` + `dataExtractionRules`/`fullBackupContent` ile bulut yedeği ve cihaz aktarımı kapalı; CI APK manifestini denetler. Şifreli yedek dosyası etkilenmez. | S | akilli-gps, AndroidManifest.xml:5 | G8 |
 | B6 | KVKK aydınlatma, açık rıza, gizlilik politikası | Koç'a onayın yurt dışı aktarım olduğu açıkça yazılır, Play şartı karşılanır. | M | rekabet-ozellik §9 | G7 |
 | B7 | Koç ve program güvenlik metinleri | Ağrı, ilaç ve programlarda "hekime / eczacıya / fizyoterapiste danış" kuralları eklenir. | S | rekabet-egzersiz §9, rekabet-ozellik §9 | – |
 | B8 | Depolama sınırı uyarısı | localStorage (5-10 MB) dolmadan boyut ölçülüp uyarılır, uzun geçmişte sessiz veri kaybı önlenir. | S | rekabet-egzersiz #19 | – |
