@@ -17,7 +17,7 @@ async function sheetDrive(){
   <p class="mut sm" style="margin:0 0 10px">Verilerin parolayla şifrelenir. Paylaşım ekranında Google Drive'ı (ya da istediğin yeri) seç. Hesap bağlamak gerekmez.${lb?` Son yedek: ${lb.slice(8)}.${lb.slice(5,7)}.${lb.slice(0,4)}.`:""}</p>
   ${rem?`<p>Parola bu telefonda saklı.</p><button class="btn" data-bk="send">Şimdi gönder</button><button class="btn ghost" data-bk="forget" style="margin-top:8px">Parolayı unut</button>`
   :`<input class="in" id="bkp1" type="password" placeholder="Parola (en az 6 karakter)" autocomplete="new-password"><input class="in" id="bkp2" type="password" placeholder="Parolayı tekrar yaz" autocomplete="new-password">
-  ${native?`<label style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><input type="checkbox" id="bkrem" checked style="width:22px;height:22px">Parolayı bu telefonda sakla (Keystore ile şifreli)</label>`:""}
+  ${native?`<label style="min-height:44px;display:flex;gap:8px;align-items:center;margin-bottom:10px"><input type="checkbox" id="bkrem" checked style="width:22px;height:22px">Parolayı bu telefonda sakla (Keystore ile şifreli)</label>`:""}
   <div class="hint" id="bkw" role="alert"></div><button class="btn" data-bk="send">Şifrele ve gönder</button>`}
   <p class="hint">Parolayı unutursan yedek açılmaz. Geri yüklemek için: Ayarlar > Yedekle veya geri yükle > Dosyadan oku (dosyayı Drive'dan seçebilirsin).</p>
   <button class="btn ghost" data-bk="close" style="margin-top:8px">Vazgeç</button>`);

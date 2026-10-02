@@ -85,17 +85,17 @@ h2{font-size:15px;margin:18px 4px 8px;font-weight:700}
 .log .ic{width:22px;text-align:center;flex:none}
 .log .tx{flex:1;min-width:0;overflow-wrap:anywhere}
 .log .vl{color:var(--mut);font-size:14px;white-space:nowrap}
-.log .del{width:44px;height:44px;margin:-6px -6px -6px 0;border-radius:50%;color:var(--mut);font-size:18px;flex:none}
+.del{width:44px;height:44px;margin:-8px 0;border-radius:50%;color:var(--mut);font-size:18px;flex:none}
 .dnav{display:flex;align-items:center;justify-content:space-between}
 .dnav h2{flex:1;text-align:center;margin:10px 4px 4px}
 .dnav button{width:44px;height:44px;border-radius:50%;font-size:24px;color:var(--mut)}
 .dnav button:disabled{opacity:.3;cursor:default}
-.log .del:active{background:var(--soft)}
+.del:active{background:var(--soft)}.log .del{margin:-6px -6px -6px 0}
 .hint{color:var(--mut);font-size:14px;padding:6px 4px 2px}
 
 /* Trend */
 .seg{display:inline-flex;background:var(--soft);border-radius:999px;padding:3px;margin:2px 0 10px}
-.seg button{padding:7px 16px;border-radius:999px;font-size:14px;font-weight:600;color:var(--mut)}
+.seg button{min-height:44px;padding:7px 16px;border-radius:999px;font-size:14px;font-weight:600;color:var(--mut)}
 .seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgb(0 0 0/.12)}
 .chart{width:100%;height:auto;display:block}
 .chart text{fill:var(--mut);font-size:10.5px}
@@ -117,7 +117,7 @@ td.today,th.today{font-weight:700}
 #composer[hidden]{display:none}
 .chiprow{display:flex;gap:6px;margin-bottom:6px;overflow:hidden}.chiprow .chip{flex:1 1 auto;min-height:44px;padding:0 8px;font-size:13.5px;border:1px solid var(--mut);background:var(--card)}
 .cin{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--mut);border-radius:26px;padding:0 4px 0 16px;height:50px}
-.cin input{flex:1;min-width:0;border:0;outline:0;background:none;font-size:16px}
+.cin input{align-self:stretch;flex:1;min-width:0;border:0;outline:0;background:none;font-size:16px}
 #csend{width:44px;height:44px;border-radius:50%;background:var(--prim);color:var(--prim-ink);font-size:18px}
 body.koc main{padding-bottom:calc(200px + env(safe-area-inset-bottom))}
 body.koc #toast{bottom:calc(150px + env(safe-area-inset-bottom))}
@@ -136,7 +136,7 @@ body.koc #toast{bottom:calc(150px + env(safe-area-inset-bottom))}
 .lcard{margin:8px 0 0}.lhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
 .tahmin{font-size:12px;font-weight:600;color:#6b3f08;background:#fbe9d2;border-radius:99px;padding:3px 10px}
 .lrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
-.kin{width:64px;height:40px;text-align:right;border:1px solid var(--mut);border-radius:8px;background:var(--bg);padding:0 6px}
+.kin{width:64px;height:44px;text-align:right;border:1px solid var(--mut);border-radius:8px;background:var(--bg);padding:0 6px}
 .lbtns{display:flex;gap:8px;margin-top:10px}.lbtns .btn{padding:12px}
 .chkrow{display:flex;align-items:center;gap:10px;min-height:44px;font-size:15px}.chkrow input{width:22px;height:22px}
 /* Salon */
@@ -176,7 +176,7 @@ body.koc #toast{bottom:calc(150px + env(safe-area-inset-bottom))}
 .ok.on{background:var(--spor);border-color:var(--spor);color:var(--spor-ink)}
 .lnk{display:block;width:100%;min-height:44px;color:var(--prim);font-weight:700;font-size:14px}.lnk.dng{color:var(--warn);margin-top:6px}
 .prow{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:56px;padding:6px 4px;border-top:1px solid var(--line);text-align:left}
-.prow.dng{color:var(--warn)}.prow b{display:block}.plus{font-size:24px;color:var(--prim);width:44px;text-align:center}
+.prow.dng{color:var(--warn)}.prow b{display:block}.plus{font-size:24px;color:var(--prim);width:44px;min-height:44px;text-align:center}
 .tag{font-size:13px;font-weight:600;background:color-mix(in srgb,var(--prim) 18%,var(--card));border-radius:99px;padding:3px 10px}
 .plist{max-height:42vh;overflow:auto;margin-bottom:8px}
 .sumv{font-size:56px;font-weight:800;letter-spacing:-.03em;color:var(--spor);line-height:1.1;margin:6px 0}.sumv small{font-size:18px;font-weight:600;color:var(--mut)}
@@ -190,13 +190,13 @@ body.koc #toast{bottom:calc(150px + env(safe-area-inset-bottom))}
 .field:last-child{border-bottom:0}
 .field label{flex:1}
 .field small{display:block;color:var(--mut);font-size:13px}
-.field input[type=text],.field input[type=time],.field input[type=number]{width:104px;text-align:right;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+.field input[type=text],.field input[type=time],.field input[type=number]{width:104px;min-height:44px;text-align:right;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 10px}
 .rem{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line)}
 .rem:last-child{border-bottom:0}
 .rem .nm{flex:1;font-size:15px}
-.rem input[type=time]{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:7px 8px}
+.rem input[type=time]{min-height:44px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:7px 8px}
 .sw{position:relative;width:46px;height:28px;flex:none}
-.sw input{position:absolute;inset:0;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+.sw input{position:absolute;left:0;top:-8px;opacity:0;width:100%;height:44px;margin:0;cursor:pointer}
 .sw span{position:absolute;inset:0;background:var(--line);border-radius:99px;transition:background .15s;pointer-events:none}
 .sw span::after{content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .15s}
 .sw input:checked+span{background:var(--prim)}
@@ -227,15 +227,17 @@ nav button[aria-current="page"]{color:var(--prim);background:var(--soft)}
 #sheet textarea.in{min-height:96px;resize:vertical;font-size:16px}
 #sheet .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
-.chip{background:var(--soft);border-radius:99px;padding:8px 14px;font-size:14px;font-weight:600}
+.chip{background:var(--soft);border-radius:99px;padding:8px 14px;min-height:44px;min-width:44px;font-size:14px;font-weight:600}
 .chip[aria-pressed="true"]{background:var(--prim);color:var(--prim-ink)}
 .lbl{font-size:13px;color:var(--mut);margin:2px 2px 6px}
+.ferr{color:var(--warn);font-size:14px;margin:-4px 2px 10px}.ferr:empty{display:none}
 select.in{appearance:none}
+input.in,select.in,.chip>button{min-height:44px}
 
 #toast{position:fixed;left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));max-width:488px;margin:0 auto;background:var(--tbg);color:var(--tfg);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;z-index:20;transform:translateY(30px);opacity:0;pointer-events:none;transition:all .2s;font-size:15px}
 #toast.on{transform:none;opacity:1;pointer-events:auto}
 #toast span{flex:1}
-#toast button{font-weight:700;color:var(--tact);padding:4px 6px}
+#toast button{font-weight:700;color:var(--tact);min-height:44px;margin:-10px -6px -10px 0;padding:0 10px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -680,14 +682,16 @@ function dayOptions(){
   return `<div class="lbl">Gün</div><select class="in" id="fday">${o}</select>`;
 }
 const fday=()=>($("#fday")||{}).value||dayKey();
+/* Hata, toast'ın kapattığı alanın yerine alanın hemen altında kalır. */
+const ferr=(id,msg)=>{$("#"+id).textContent=msg};
 
 let kiloOk=null;
 function sheetKilo(){
-  kiloOk=null;openSheet(`<h3>Kilo ekle</h3><input class="in num" id="fv" inputmode="decimal" placeholder="84,3" autocomplete="off" autofocus>${dayOptions()}<div class="hint" id="kwarn" role="alert"></div><button class="btn" data-go="kilo">Kaydet</button>`);
+  kiloOk=null;openSheet(`<h3>Kilo ekle</h3><input class="in num" id="fv" inputmode="decimal" placeholder="84,3" autocomplete="off" autofocus><div class="ferr" id="kerr" role="alert"></div>${dayOptions()}<div class="hint" id="kwarn" role="alert"></div><button class="btn" data-go="kilo">Kaydet</button>`);
 }
 function goKilo(){
   const v=num($("#fv").value);
-  if(!(v>=20&&v<=400))return toast("Kiloyu kg olarak yaz, örneğin 84,3");
+  if(!(v>=20&&v<=400))return ferr("kerr","Kiloyu kg olarak yaz, örneğin 84,3");
   const day=fday(),m=weights(),ds=Object.keys(m).filter(k=>k<day).sort(),prev=ds.length?m[ds[ds.length-1]]:null;
   if(prev!=null&&Math.abs(v-prev)>5&&kiloOk!==v){kiloOk=v;$("#kwarn").textContent=`Son tartın ${fmt(prev)} kg idi, ${fmtS(v-prev)} kg fark var. Yanlış yazmış olabilir misin? Doğruysa tekrar Kaydet'e dokun.`;return}
   const e=add("kilo",v,"",day);closeSheet();render();
@@ -708,12 +712,12 @@ function favHtml(){
   recList=LogLib.recents(S.entries,dayKey());
   const fk=new Set(S.favFoods.map(f=>LogLib.key(f.text)));
   const row=(x,i,a,b,star,lab)=>`<div class="prow"><button data-${a}="${i}" style="flex:1;text-align:left;min-height:56px"><b>${esc(x.text)}</b><span class="mut sm">${x.v!=null?Math.round(x.v)+" kcal":"kalori yok"}</span></button><button class="plus" data-${b}="${i}" aria-label="${lab}"${star==="★"&&b==="fva"?" disabled":""}>${star}</button></div>`;
-  const tp=S.mealTpl.length?`<div class="lbl">Şablonlar</div><div class="chips">${S.mealTpl.map((t,i)=>`<span class="chip" style="display:inline-flex;gap:10px;align-items:center"><button data-tp="${i}">${esc(t.n)} · ${t.items.length}</button><button data-tpd="${i}" aria-label="Şablonu sil">✕</button></span>`).join("")}</div>`:"";
+  const tp=S.mealTpl.length?`<div class="lbl">Şablonlar</div><div class="chips">${S.mealTpl.map((t,i)=>`<span class="chip" style="display:inline-flex;gap:4px;align-items:center;padding:0 2px 0 14px"><button data-tp="${i}">${esc(t.n)} · ${t.items.length}</button><button class="del" data-tpd="${i}" aria-label="Şablonu sil">✕</button></span>`).join("")}</div>`:"";
   return tp+(S.favFoods.length?`<div class="lbl">Favoriler</div>${S.favFoods.map((x,i)=>row(x,i,"fv","fvd","★","Favoriden çıkar")).join("")}`:"")+(recList.length?`<div class="lbl">Son yediklerin</div>${recList.map((x,i)=>row(x,i,"rc","fva",fk.has(LogLib.key(x.text))?"★":"☆","Favoriye al")).join("")}`:"");
 }
 function sheetYemek(){
   openSheet(`<h3>Yemek ekle</h3>${of("yemek",keyOff(-1)).length?`<button class="btn ghost" data-act="dunku" style="margin-bottom:8px">↺ Dünkünü tekrarla (${of("yemek",keyOff(-1)).length} kayıt)</button>`:""}${isNative()&&BS()?`<button class="btn ghost" data-act="barkod" style="margin-bottom:8px">📷 Barkod okut</button>`:""}${ocrBtn("etiket","🏷 Etiketi fotoğrafla oku")}<input class="in" id="fq" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off" autofocus><div id="flist" class="plist"></div><div id="frl" class="plist">${favHtml()}</div>
-  <div class="lbl">Ya da kendin yaz</div><input class="in" id="ft" placeholder="Ne yedin?" autocomplete="off"><input class="in num" id="fv" inputmode="numeric" placeholder="Kalori (isteğe bağlı)">${dayOptions()}<button class="btn" data-go="yemek">Kaydet</button>`);
+  <div class="lbl">Ya da kendin yaz</div><input class="in" id="ft" placeholder="Ne yedin?" autocomplete="off"><input class="in num" id="fv" inputmode="numeric" placeholder="Kalori (isteğe bağlı)"><div class="ferr" id="yerr" role="alert"></div>${dayOptions()}<button class="btn" data-go="yemek">Kaydet</button>`);
 }
 let tplSrc=[];
 function sheetTpl(){
@@ -734,7 +738,7 @@ const foodListHtml=q=>{const L=allFoods(),ask=q.trim().length>=2?`<button class=
 function sheetPorsiyon(i,food){
   curFood=food||allFoods()[i];curPor=0;
   openSheet(`<h3>${esc(curFood.n)}</h3><div class="lbl">Porsiyon</div><div class="chips" id="fpc">${curFood.u.map((u,j)=>`<button class="chip" data-fp="${j}" aria-pressed="${j===0}">${esc(u[0])}</button>`).join("")}</div>
-  <div class="lbl">Kaç porsiyon</div><input class="in num" id="fqty" inputmode="decimal" value="1" autocomplete="off">
+  <div class="lbl">Kaç porsiyon</div><input class="in num" id="fqty" inputmode="decimal" value="1" autocomplete="off"><div class="ferr" id="berr" role="alert"></div>
   <div class="stat" style="margin:8px 0"><div class="k">Tahmini değer</div><div class="v num" id="fprev"></div></div>
   <div class="mut sm" style="margin-bottom:8px">${curFood.hint||(curFood.src==="off"?"Kaynak: Open Food Facts (topluluk verisi, ODbL).":curFood.my?"Yapay zekâ ya da senin girdiğin tahmin.":curFood.s?"Kaynak: USDA FoodData Central. Pişirme ve markaya göre değişebilir.":"Tahmini değer. Tarife ve markaya göre belirgin değişir.")}</div>${dayOptions()}<button class="btn" data-go="besin">Ekle</button>${curFood.my&&!curFood.hint?`<button class="lnk dng" data-go="mysil">Bu besini listemden sil</button>`:""}`);
   foodPreview();
@@ -782,7 +786,7 @@ function goMySil(){
   S.myFoods=S.myFoods.filter(m=>tr(m.n)!==tr(curFood.n));save();closeSheet();render();toast("Besin listenden silindi");
 }
 function goBesin(){
-  const x=foodCalc();if(!x.g)return toast("Miktarı 0,1 ile 20 arasında yaz");
+  const x=foodCalc();if(!x.g)return ferr("berr","Miktarı 0,1 ile 20 arasında yaz");
   const label=curFood.u[curPor][0],text=`${curFood.n}, ${x.q===1?"":fmt(x.q,x.q%1?1:0)+" × "}${label}`;
   const e=add("yemek",Math.round(x.k),text,fday());
   for(const k of NUTR)if(x[k]!=null)e[k]=Math.round(x[k]*10)/10;
@@ -793,8 +797,8 @@ function goBesin(){
 }
 function goYemek(){
   const text=$("#ft").value.trim(),kc=num($("#fv").value,true);
-  if(!text&&isNaN(kc))return toast("Yemeğin adını ya da kalorisini yaz");
-  if(!isNaN(kc)&&kc>20000)return toast("Kalori çok yüksek görünüyor, kontrol et");
+  if(!text&&isNaN(kc))return ferr("yerr","Yemeğin adını ya da kalorisini yaz");
+  if(!isNaN(kc)&&kc>20000)return ferr("yerr","Kalori çok yüksek görünüyor, kontrol et");
   const e=add("yemek",isNaN(kc)?null:kc,text,fday());closeSheet();render();
   const t=dayKey(),top=sum("yemek",t,t),g=S.settings.kcal;
   toast(g>0&&top?`Kaydedildi. Bugün ${Math.round(top)} / ${g} kcal`:"Yemek kaydedildi",e.id);

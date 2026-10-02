@@ -12,7 +12,7 @@ function medSettingsHtml(){
   return `<h2>İlaç hatırlatıcı</h2><div class="card">
     <p class="mut sm" style="margin:0 0 10px">İlaçlarını ve saatlerini gir, zamanı gelince bildirim al. Bildirimdeki "Aldım" düğmesiyle uygulamayı açmadan kaydet. Uygulama doz önermez ve ilaç etkileşimlerini denetlemez: doktorunun ve eczacının söylediği gibi kullan.</p>
     <button class="btn ghost" data-md="toggle" style="margin-bottom:8px">${st.medOn?"İlaç hatırlatıcıyı kapat":"İlaç hatırlatıcıyı aç"}</button>
-    ${st.medOn?`<label style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><input type="checkbox" data-md="shown" ${st.medShowName?"checked":""} style="width:22px;height:22px">İlaç adı bildirimde görünsün (kilit ekranında da)</label><button class="btn ghost" data-tab="ilac">💊 İlaçlarımı düzenle</button>`:""}
+    ${st.medOn?`<label style="min-height:44px;display:flex;gap:8px;align-items:center;margin-bottom:10px"><input type="checkbox" data-md="shown" ${st.medShowName?"checked":""} style="width:22px;height:22px">İlaç adı bildirimde görünsün (kilit ekranında da)</label><button class="btn ghost" data-tab="ilac">💊 İlaçlarımı düzenle</button>`:""}
   </div>`;
 }
 function medToggle(){
@@ -78,7 +78,7 @@ function medRender(){
   <div class="lbl">Kaç gün kullanılacak? (boş bırakırsan sürekli)</div><input class="in num" id="mc" inputmode="numeric" placeholder="örn. 7" value="${esc(d.mc)}">
   <div class="lbl">Stok takibi (isteğe bağlı)</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input class="in num" id="mk" inputmode="decimal" placeholder="Kutuda kaç adet" value="${esc(d.k)}"><input class="in num" id="mp" inputmode="decimal" placeholder="Her seferde kaç adet" value="${esc(d.p)}"></div>
-  ${d.id?`<label style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><input type="checkbox" id="mon" ${d.on?"checked":""} style="width:22px;height:22px">Hatırlatma açık</label>`:""}
+  ${d.id?`<label style="min-height:44px;display:flex;gap:8px;align-items:center;margin-bottom:10px"><input type="checkbox" id="mon" ${d.on?"checked":""} style="width:22px;height:22px">Hatırlatma açık</label>`:""}
   <div class="hint" id="mwarn" role="alert"></div>
   <button class="btn" data-md="save">Kaydet</button>${d.id?`<button class="btn danger" data-md="del" style="margin-top:8px">Sil</button>`:""}<button class="btn ghost" data-md="close" style="margin-top:8px">Vazgeç</button>`);
 }
