@@ -329,6 +329,7 @@ En yüksek riskli iş: Gradle/SDK/Kotlin değişikliği tüm APK derlemesini kı
 | 7101 | MotionGpsService ön plan bildirimi (yerel) | LocalNotifications ile aynı NotificationManager kimlik alanı, JS kullanmamalı |
 | 9001 | Süreli set zamanlayıcısı (exui.js) | `scheduleReminders` iptal etmez |
 | 9002 | Dinlenme bitişi (gym.js `gRestSet`) | `scheduleReminders` iptal etmez; set ✓ ile kurulur, Atla/süreli set/antrenman bitir-iptal ile iptal, doğal bitişte iptal edilmez (teslim edileni silmesin) |
+| 9003 | Rehberli mod evre bitişi (guideui.js `GD_NID`) | `scheduleReminders` iptal etmez; her evrede yeniden kurulur, duraklat/bitir/kapat ile iptal. 9001 ile aynı anda kurulu olabilir (süreli set sayacı arkada sürebilir) |
 | 9100 | YENİ oruç bitişi | `scheduleReminders` içinde durumdan yeniden kurulur |
 | 1.001.000-1.999.239 | İlaç ana: `1e6+m.id*1000+ti*40+off` | |
 | +1e6, +2e6 (→3.999.239) | İlaç tekrarları (10, 20 dk) | |
@@ -336,9 +337,9 @@ En yüksek riskli iş: Gradle/SDK/Kotlin değişikliği tüm APK derlemesini kı
 PendingIntent request code: 7001 (StepSnapshotReceiver gece alarmı ve MotionReceiver, farklı bileşen olduğu için çakışmıyor), 7002 (Motion tick), 7003 (StepSnapshotReceiver 23:58 örneği). Widget için 7201/7202. Native alarmlar (7001, 7002, 7003) LocalNotifications'ın 440 bütçesinin dışında, 500 sınırına 60 pay kalır.
 
 Üç tuzak:
-1. `scheduleReminders` 9001 ve 9002 dışındaki **tüm** bekleyen bildirimleri iptal eder. Tek seferlik bildirimler (oruç 9100, ileride başka) başka yerde kurulursa bir sonraki çağrıda silinir; **mutlaka `scheduleReminders` içinde durumdan** üretilmeli.
+1. `scheduleReminders` 9001, 9002 ve 9003 dışındaki **tüm** bekleyen bildirimleri iptal eder. Tek seferlik bildirimler (oruç 9100, ileride başka) başka yerde kurulursa bir sonraki çağrıda silinir; **mutlaka `scheduleReminders` içinde durumdan** üretilmeli.
 2. `QuickLogPlugin.handle` ve `scheduleReminders`'ın teslim edilmiş bildirim temizliği `id ≥ 1.000.000`'u ilaç sayar (kardeşlerini iptal eder). Yeni kimlikler 1.000.000'un altında kalmalı.
-3. Toplam alarm bütçesi `MedLib.BUDGET=440` (Android 500 sınırı); 9001 ve 9002 ile en çok 442, yerel 3 alarmla 445. Yeni bildirimler aynı listeye girer ve en yakın tarihliler korunur; günlük yeni hatırlatıcı 30 alarm daha demek.
+3. Toplam alarm bütçesi `MedLib.BUDGET=440` (Android 500 sınırı); 9001, 9002 ve 9003 ile en çok 443, yerel 3 alarmla 446. Yeni bildirimler aynı listeye girer ve en yakın tarihliler korunur; günlük yeni hatırlatıcı 30 alarm daha demek.
 
 ### 10.2 Yüksek riskli / ince parçalar ve kime verileceği
 
