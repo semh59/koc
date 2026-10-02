@@ -440,7 +440,7 @@ function cleanEntries(arr){
     const ne={id:0,day:e.day,time:timeOk(e.time)?e.time:"00:00",type:e.type,v:e.type==="not"?null:v,text:typeof e.text==="string"?e.text.slice(0,500):""};
     if(Number.isInteger(e.wid))ne.wid=e.wid;
     if(e.type==="spor"){if(Number.isInteger(e.kcal)&&e.kcal>=0&&e.kcal<=5000)ne.kcal=e.kcal;if(typeof e.km==="number"&&e.km>=0&&e.km<=100)ne.km=Math.round(e.km*100)/100}
-    if(e.type==="yemek"){copyNutr(e,ne);if(LogLib.mealKey(e.meal))ne.meal=e.meal}
+    if(e.type==="yemek"){copyNutr(e,ne);if(LogLib.mealKey(e.meal))ne.meal=e.meal;if(ne.v!=null&&Number.isInteger(e.lo)&&Number.isInteger(e.hi)&&e.lo>=0&&e.lo<=ne.v&&ne.v<=e.hi&&e.hi<=20000){ne.lo=e.lo;ne.hi=e.hi}}
     out.push(ne);
   }
   out.forEach((e,i)=>e.id=i+1);
@@ -613,7 +613,7 @@ function viewBugun(){
     <button class="act" data-act="not"><span class="ic">${Icons.svg("not")}</span>Not</button></div>`;
   const lk=keyOff(-logOff);
   const items=S.entries.filter(e=>e.day===lk&&e.type!=="adim");
-  const vtxt=e=>e.type==="kilo"?`${fmt(e.v)} kg`:e.type==="yemek"?(e.v?`${Math.round(e.v)} kcal`:""):e.type==="spor"?`${Math.round(e.v)} dk`:"";
+  const vtxt=e=>e.type==="kilo"?`${fmt(e.v)} kg`:e.type==="yemek"?(e.v?e.lo!=null?`~${Math.round(e.v)} kcal<small class="mut sm" style="display:block">${e.lo}-${e.hi}</small>`:`${Math.round(e.v)} kcal`:""):e.type==="spor"?`${Math.round(e.v)} dk`:"";
   const ttx=e=>e.type==="kilo"?"Tartı":esc(e.text||(e.type==="yemek"?"Öğün":"Antrenman"))+(e.kcal?` · ~${e.kcal} kcal tahmini`:"");
   const li=(e,tx)=>`<li><span class="t num">${e.time}</span><span class="ic">${Icons.svg(e.type)}</span>${tx}<span class="vl num">${vtxt(e)}</span><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></li>`;
   const dl=LogLib.dayLog(items);
@@ -854,16 +854,17 @@ function sheetPorsiyon(i,food){
   openSheet(`<h3>${esc(curFood.n)}</h3><div class="lbl">Porsiyon</div><div class="chips" id="fpc">${curFood.u.map((u,j)=>`<button class="chip" data-fp="${j}" aria-pressed="${j===0}">${esc(u[0])}</button>`).join("")}</div>
   <div class="lbl">Kaç porsiyon</div><input class="in num" id="fqty" inputmode="decimal" value="1" autocomplete="off"><div class="ferr" id="berr" role="alert"></div>
   <div class="stat" style="margin:8px 0"><div class="k">Tahmini değer</div><div class="v num" id="fprev"></div></div>
-  <div class="mut sm" style="margin-bottom:8px">${curFood.hint||(curFood.src==="off"?"Kaynak: Open Food Facts (topluluk verisi, ODbL).":curFood.my?"Yapay zekâ ya da senin girdiğin tahmin.":curFood.s?"Kaynak: USDA FoodData Central. Pişirme ve markaya göre değişebilir.":"Tahmini değer. Tarife ve markaya göre belirgin değişir.")}</div>${mealChips()}${dayOptions()}<button class="btn" data-go="besin">Ekle</button>${curFood.rec?`<button class="lnk" data-rp="edit:${curFood.rec}">Tarifi düzenle</button>`:""}${curFood.my&&!curFood.hint?`<button class="lnk dng" data-go="mysil">Bu besini listemden sil</button>`:""}`);
+  <div class="mut sm" style="margin-bottom:8px">${curFood.hint||(curFood.src==="off"?"Kaynak: Open Food Facts (topluluk verisi, ODbL).":curFood.my?"Yapay zekâ ya da senin girdiğin tahmin.":curFood.s?"Kaynak: USDA FoodData Central. Pişirme ve markaya göre değişebilir.":"Tahmini değer. Tarife ve markaya göre belirgin değişir.")}${curFood.lo!=null?RNOTE:""}</div>${mealChips()}${dayOptions()}<button class="btn" data-go="besin">Ekle</button>${curFood.rec?`<button class="lnk" data-rp="edit:${curFood.rec}">Tarifi düzenle</button>`:""}${curFood.my&&!curFood.hint?`<button class="lnk dng" data-go="mysil">Bu besini listemden sil</button>`:""}`);
   foodPreview();
 }
+const RNOTE=" Aralık, tarif farkını yansıtan kural tabanlı bir tahmindir (sade yemekte ±%15, yağlı ya da hamurlu yemekte ±%30), ölçüm değildir. Ekle düğmesi ortalamayı kaydeder.";
 function foodCalc(){
   const q=num($("#fqty").value),g=curFood.u[curPor][1]*(q>0&&q<=20?q:0),r=x=>x==null?null:x*g/100;
-  return Object.assign({q,g,k:r(curFood.k)},...NUTR.map(k=>({[k]:r(curFood[k])})));
+  return Object.assign({q,g,k:r(curFood.k),lo:r(curFood.lo),hi:r(curFood.hi)},...NUTR.map(k=>({[k]:r(curFood[k])})));
 }
 function foodPreview(){
   const x=foodCalc();
-  $("#fprev").textContent=x.g?[`${Math.round(x.k)} kcal`,...NUTR.map(k=>x[k]!=null&&`${NLBL[k]} ${fmt(x[k])} ${NUNIT(k)}`)].filter(Boolean).join(" · "):"Miktarı 0,1 ile 20 arasında yaz";
+  $("#fprev").textContent=x.g?[x.lo!=null?`~${Math.round(x.lo)}-${Math.round(x.hi)} kcal (ortalama ${Math.round(x.k)})`:`${Math.round(x.k)} kcal`,...NUTR.map(k=>x[k]!=null&&`${NLBL[k]} ${fmt(x[k])} ${NUNIT(k)}`)].filter(Boolean).join(" · "):"Miktarı 0,1 ile 20 arasında yaz";
 }
 const BS=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.BarcodeScanner;
 async function barkodOku(){
@@ -904,6 +905,7 @@ function goBesin(){
   const label=curFood.u[curPor][0],text=`${curFood.n}, ${x.q===1?"":fmt(x.q,x.q%1?1:0)+" × "}${label}`;
   const e=add("yemek",Math.round(x.k),text,fday());e.meal=fmeal();
   for(const k of NUTR)if(x[k]!=null)e[k]=Math.round(x[k]*10)/10;
+  if(x.lo!=null){e.lo=Math.round(x.lo);e.hi=Math.round(x.hi)}
   save();
   closeSheet();render();
   const t=dayKey(),top=sum("yemek",t,t),g=kcalGoal(t);
