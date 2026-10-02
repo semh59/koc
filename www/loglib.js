@@ -37,7 +37,17 @@ const LogLib=(()=>{
     }
     return out;
   }
+  const MEALS=[["kah","Kahvaltı"],["ogl","Öğle"],["aks","Akşam"],["atis","Atıştırmalık"]];
+  const mealKey=k=>MEALS.some(m=>m[0]===k)?k:"";
+  /* Eski kayıtta meal yok: saatten türer. */
+  const mealOf=e=>{const h=+String(e.time).slice(0,2);return mealKey(e.meal)||(h>=5&&h<11?"kah":h>=11&&h<16?"ogl":h>=16&&h<21?"aks":"atis")};
+  /* Günlük: öğün grupları (saat sırasıyla, alt toplam kcal), tek satıra inen su, kalanlar. */
+  function dayLog(items){
+    const meals=items.filter(e=>e.type==="yemek"),su=items.filter(e=>e.type==="su");
+    const groups=MEALS.map(([k,n])=>{const L=meals.filter(e=>mealOf(e)===k).sort((a,b)=>a.time.localeCompare(b.time)||a.id-b.id);return {k,n,items:L,kcal:L.reduce((s,e)=>s+(e.v||0),0)}}).filter(g=>g.items.length);
+    return {groups,su,suMl:su.reduce((s,e)=>s+(e.v||0),0),rest:items.filter(e=>e.type!=="yemek"&&e.type!=="su")};
+  }
   const stalled=(snapAt,now,yest,prev7)=>(snapAt>0&&now-snapAt>26*36e5)||(yest===0&&prev7>1000);
-  return {stalled,NUTR,MAX,copyNutr,key,cleanFav,cleanTpl,recents};
+  return {MEALS,mealKey,mealOf,dayLog,stalled,NUTR,MAX,copyNutr,key,cleanFav,cleanTpl,recents};
 })();
 if(typeof module!=="undefined")module.exports=LogLib;

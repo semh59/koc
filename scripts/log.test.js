@@ -18,4 +18,12 @@ ok("cleanTpl dizi olmayan girdide boş, uzun adı keser",L.cleanTpl({}).length==
 const H=36e5,now=1e12;
 ok("stalled: 26 saatten uzun kapanışsızlık uyarır, 26 saat altı ve snapAt 0 uyarmaz",L.stalled(now-27*H,now,100,0)&&!L.stalled(now-25*H,now,100,0)&&!L.stalled(0,now,100,0));
 ok("stalled: dün 0 ve önceki ortalama 1000 üstü uyarır, sınırda ve dün adım varsa uyarmaz",L.stalled(0,now,0,1001)&&!L.stalled(0,now,0,1000)&&!L.stalled(0,now,10,5000));
+{ // C4: öğün grupları
+  const y=(id,time,v,meal)=>({id,type:"yemek",time,v,text:"x",...(meal?{meal}:{})});
+  ok("mealOf: meal yoksa saatten (05-11 kahvaltı, 11-16 öğle, 16-21 akşam, kalan atıştırmalık), geçersiz meal yok sayılır",["04:59","05:00","10:59","11:00","15:59","16:00","20:59","21:00","00:00"].map(t=>L.mealOf({time:t})).join()==="atis,kah,kah,ogl,ogl,aks,aks,atis,atis"&&L.mealOf({time:"08:00",meal:"zz"})==="kah");
+  ok("mealOf: kullanıcının seçtiği öğün saate üstün gelir",L.mealOf({time:"08:00",meal:"aks"})==="aks");
+  const d=L.dayLog([y(1,"13:00",300),y(2,"08:30",200),y(3,"08:10",50),y(4,"19:00",null,"atis"),{id:5,type:"su",time:"09:00",v:250},{id:6,type:"su",time:"10:00",v:250},{id:7,type:"kilo",time:"07:00",v:80}]);
+  ok("dayLog: boş grup yok, grup içi saat sırası, alt toplam kcal (kcal'siz 0)",d.groups.map(g=>g.k+":"+g.kcal+":"+g.items.map(e=>e.id)).join()==="kah:250:3,2,ogl:300:1,atis:0:4");
+  ok("dayLog: su tek toplamda birleşir, kilo yemek grubuna girmez",d.su.length===2&&d.suMl===500&&d.rest.length===1&&d.rest[0].id===7);
+}
 if(bad){console.log(bad+" test başarısız");process.exit(1)}
