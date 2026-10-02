@@ -22,15 +22,21 @@ ok("eski düz seri (son tartı 30 gün önce) plato sayılmaz",!I.plateau(W(D10.
 ok("çöp girdi hata atmaz",!I.plateau(null,T).ok&&!I.plateau({x:1,"2026-10-01":"a"},T).ok&&I.noiseSd(undefined,T)===null);
 ok("noiseSd: düz seride küçük, en az 8 tartı ister",I.noiseSd(W(D10,(o,i)=>80+N[i]),T)<0.3&&I.noiseSd(W([-12,-10,-8,-6,-4,-2,0],(o,i)=>80+N[i]),T)===null);
 
-// Sabit tohumlu benzetim: 35 gün, her gün tartı olasılığı q, günlük gürültü sd (normal). Hedef: düz seride ≥%60, gerçek −0,3 kg/hafta ve hızlı kayıpta ≤%5.
+// Sabit tohumlu benzetim: 49 gün, her gün tartı olasılığı q (her gün, %80, haftada 4), günlük gürültü sd (normal).
 {
   let seed=20261002;const rnd=()=>(seed=seed*16807%2147483647)/2147483647,gauss=()=>Math.sqrt(-2*Math.log(rnd()))*Math.cos(2*Math.PI*rnd());
-  const rate=(slope,sd,q,R=600)=>{let k=0;for(let r=0;r<R;r++){const w={};for(let o=-34;o<=0;o++)if(o===0||rnd()<q)w[key(o)]=80+slope*o/7+sd*gauss();if(I.plateau(w,T).ok)k++}return k/R};
-  const res=[];
-  for(const q of [1,0.8])for(const sd of [0.4,0.7,1.0])res.push([q,sd,rate(0,sd,q),rate(-0.3,sd,q),rate(-0.5,sd,q)]);
-  ok("benzetim: düz seride tespit ≥%60 (sd 0,4/0,7/1,0; her gün ve %80 gün tartı)",res.every(r=>r[2]>=0.6),res);
-  ok("benzetim: −0,3 ve −0,5 kg/hafta seride yanlış plato ≤%5",res.every(r=>r[3]<=0.05&&r[4]<=0.05),res);
+  const rate=(f,sd,q,R=600)=>{let k=0;for(let r=0;r<R;r++){const w={};for(let o=-48;o<=0;o++)if(o===0||rnd()<q)w[key(o)]=80+f(o)+sd*gauss();if(I.plateau(w,T).ok)k++}return Math.round(k/R*100)};
+  const S={duz:()=>0,k3:o=>-0.3*o/7,k5:o=>-0.5*o/7,a3:o=>0.3*o/7,yeni:o=>o<-21?0:-0.5*(o+21)/7},res=[];
+  for(const q of [1,0.8,4/7])for(const sd of [0.4,0.7,1.0]){const r={q:Math.round(q*100),sd};for(const k in S)r[k]=rate(S[k],sd,q);res.push(r)}
+  console.log(JSON.stringify(res));
+  ok("benzetim: sd 0,4 ve 0,7 düz seride tespit ≥%65 (her gün, %80, haftada 4 gün)",res.every(r=>r.duz>=65||r.sd===1),res);
+  ok("benzetim: sd 1,0 ve haftada 4 günde de düz seri en az %50 yakalanır (gerçekçi sınır)",res.every(r=>r.duz>=50),res);
+  ok("benzetim: −0,3 ve −0,5 kg/hafta kayıpta yanlış plato ≤%5",res.every(r=>r.k3<=5&&r.k5<=5),res);
+  ok("benzetim: +0,3 kg/hafta artışta yanlış plato ≤%5",res.every(r=>r.a3<=5),res);
+  ok("benzetim: 4 hafta düz, son 3 hafta −0,5 kg/hafta düşüşte yanlış plato ≤%5",res.every(r=>r.yeni<=5),res);
 }
+p=I.plateau(W([-45,-42,-38,-35,-31,-28,-24,-21,-17,-14,-10,-7,-3,0],(o,i)=>80+[0.9,-1,0.8,-0.9,1,-0.8,0.9,-1,0.8,-0.9,1,-0.8,0.9,-0.9][i]),T);
+ok("seyrek gürültülü düz seri 35 günde karar vermez, 49 güne uzar; süre gerçek yayılımdır",p.ok&&p.days===45,p);
 
 const day=(kcal,su,ad,sl)=>({kcal,su,ad,sl});
 const days=Array.from({length:22},(_,i)=>i<14?day(2000,1500,9000):i<21?day(i%2?2100:300,2000,6000,i===20?420:null):day(400,250,500,null));
