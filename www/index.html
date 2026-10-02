@@ -43,18 +43,11 @@ header .streak b{color:var(--ink)}
 main{flex:1;padding:6px 16px calc(92px + env(safe-area-inset-bottom))}
 .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
 
-/* Kilo kartı: tek vurgu */
-.weight{background:var(--prim);color:var(--prim-ink);border-radius:26px;padding:20px 20px 16px;margin-bottom:12px}
-.weight .cap{font-size:14px;opacity:.82}
-.weight .big{display:flex;align-items:baseline;gap:8px;margin:2px 0 4px}
-.weight .big .v{font-size:76px;line-height:1;font-weight:800;letter-spacing:-.04em}
-.weight .big .u{font-size:22px;font-weight:600;opacity:.8}
-.weight .row{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;opacity:.92}
-.weight svg{display:block;width:100%;height:44px;margin-top:10px}
-.weight .empty{font-size:17px;margin:6px 0 2px;line-height:1.35}
-.weight .wbtn{margin-top:12px;background:var(--prim-ink);color:var(--prim);border-radius:999px;padding:10px 18px;font-weight:700}
+.stepcard .wv{color:var(--prim)}.stepcard .wv small{font-size:15px;font-weight:600}.stepcard .ws{text-align:right;max-width:60%}
 
-.coach{margin:2px 4px 14px;color:var(--mut);font-size:15px}
+.coach{display:block;width:100%;min-height:44px;margin:0 0 12px;padding:4px;text-align:left;color:var(--mut);font-size:15px}.coach b{color:var(--prim);white-space:nowrap}
+.hrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:-4px 0 12px}.hrow .btn{min-height:44px;padding:8px 10px}
+.todo .row{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)}.todo .row:first-of-type{border-top:0}.todo .row>span{flex:1;min-width:0;overflow-wrap:anywhere}.todo small.sm{display:block}
 
 .card{background:var(--card);border-radius:var(--r);padding:14px 14px 12px;margin-bottom:12px;border:1px solid var(--line)}
 .rings{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center}
@@ -67,7 +60,7 @@ main{flex:1;padding:6px 16px calc(92px + env(safe-area-inset-bottom))}
 .about{display:flex;flex-direction:column;align-items:center;gap:4px;margin:24px 0 8px;font-size:17px}
 .about img{border-radius:50%}
 .ring .rp{fill:none;stroke-width:8;stroke-linecap:round}
-.ring .rc{position:absolute;left:0;right:0;top:30px;font-weight:700;font-size:15px}
+.ring .rc{position:absolute;left:0;right:0;top:24px;font-weight:700;font-size:16px;line-height:1.15}.ring .rc small{display:block;font-size:11px;font-weight:600;color:var(--mut)}
 .ring .rl{font-weight:600;font-size:14px;margin-top:2px}
 .ring .rs{font-size:12.5px;color:var(--mut)}
 
@@ -323,7 +316,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- veri ---------- */
 const DEF={
-  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,lastPlan:"",lastWeekly:"",lastPlateau:"",lastBackup:"",oemDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:true,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,stepWarnDay:"",reminders:[
+  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,lastPlan:"",lastWeekly:"",lastPlateau:"",lastBackup:"",oemDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,stepWarnDay:"",reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -351,7 +344,7 @@ const timeOk=s=>typeof s==="string"&&/^([01]\d|2[0-3]):[0-5]\d$/.test(s);
 let corruptNote=false;
 /* Eski varsayılan metin özet üretilmese de "hazır" diyordu; değiştirilmemişse yeni varsayılan geçerli olsun. */
 const OLD_WEEKLY_BODY="Haftanın özeti hazır, bakmak için dokun.";
-function cleanSettings(raw){
+function cleanSettings(raw,fast){
   const d=structuredClone(DEF.settings),o=raw&&typeof raw==="object"?raw:{};
   for(const k in RANGES){
     const [lo,hi,int]=RANGES[k],v=o[k];
@@ -371,6 +364,8 @@ function cleanSettings(raw){
   if(o.bpOn===true)d.bpOn=true;
   if(o.bsOn===true)d.bsOn=true;
   if(o.medOn===true)d.medOn=true;
+  /* Oruç ayarı yokken oruç kullanmış eski veri, oruç satırını kaybetmesin. */
+  if(o.fastOn===true||(!("fastOn" in o)&&(f=>f.t0||f.log.length)(HabitLib.cleanFast(fast))))d.fastOn=true;
   if(o.motionOn===true)d.motionOn=true;
   if(o.medShowName===false)d.medShowName=false;
   if(o.stepsAsked===true)d.stepsAsked=true;
@@ -422,7 +417,7 @@ function load(){
     const r=JSON.parse(raw);
     if(r&&Array.isArray(r.entries)){
       const {out}=cleanEntries(r.entries);
-      return Object.assign({settings:cleanSettings(r.settings),entries:out,nextId:out.length+1,myFoods:cleanMyFoods(r.myFoods),labs:LabLib.cleanLabs(r.labs),vitals:VitalsLib.clean(r.vitals)},cleanHealthState(r),cleanGym(r),cleanCoach(r));
+      return Object.assign({settings:cleanSettings(r.settings,r.fast),entries:out,nextId:out.length+1,myFoods:cleanMyFoods(r.myFoods),labs:LabLib.cleanLabs(r.labs),vitals:VitalsLib.clean(r.vitals)},cleanHealthState(r),cleanGym(r),cleanCoach(r));
     }
   }catch(e){}
   try{localStorage.setItem("koc_v1_bozuk",raw)}catch(e){}
@@ -482,9 +477,9 @@ function coach(){
 }
 
 /* ---------- bileşenler ---------- */
-function ring(p,color,center,label,sub){
+function ring(p,color,center,label,sub,unit){
   const r=34,c=2*Math.PI*r,f=Math.min(Math.max(p,0),1);
-  return `<div class="ring"><svg viewBox="0 0 84 84" aria-hidden="true"><circle class="rt" cx="42" cy="42" r="${r}"/>${f>0?`<circle class="rp" cx="42" cy="42" r="${r}" stroke="${color}" stroke-dasharray="${(c*f).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 42 42)"/>`:""}</svg><div class="rc num">${center}</div><div class="rl">${label}</div><div class="rs num">${sub}</div></div>`;
+  return `<div class="ring"><svg viewBox="0 0 84 84" aria-hidden="true"><circle class="rt" cx="42" cy="42" r="${r}"/>${f>0?`<circle class="rp" cx="42" cy="42" r="${r}" stroke="${color}" stroke-dasharray="${(c*f).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 42 42)"/>`:""}</svg><div class="rc num">${center}<small>${unit}</small></div><div class="rl">${label}</div><div class="rs num">${sub}</div></div>`;
 }
 function spark(points){ // points: [{i,v}] i=0..n-1
   if(points.length<2)return "";
@@ -530,29 +525,27 @@ function viewBugun(){
   const wAll=weights(),days=Object.keys(wAll).sort();
   const cur=days.length?wAll[days[days.length-1]]:null,prev=days.length>1?wAll[days[days.length-2]]:null;
   const curDay=days[days.length-1];
+  /* Kilo kartı Trend kısayolu: tek satır özet, grafik ve ayrıntı Trend'de. */
   let weight;
   if(cur==null){
-    weight=`<div class="weight"><div class="cap">Kilo</div><p class="empty">Henüz tartı kaydı yok. İlk tartın başlangıç noktan olur.</p><button class="wbtn" data-act="kilo">Kilo ekle</button></div>`;
+    weight=`<button class="stepcard" data-act="kilo"><div class="row"><span class="mut">⚖️ Kilo</span><span class="mut sm">Ekle ›</span></div><div class="mut sm">Henüz tartı kaydı yok. İlk tartın başlangıç noktan olur.</div></button>`;
   }else{
-    const first=wAll[days[0]];
-    const bits=[];
-    if(prev!=null&&days.length>1)bits.push(`Önceki tartıya göre ${fmtS(cur-prev)} kg`);
-    const sl=Algo.slopePerWeek(wAll);
-    if(sl!=null)bits.push(`Hız ${fmtS(sl,2)} kg/hafta`);
-    if(days.length>1)bits.push(`Başlangıçtan ${fmtS(cur-first)} kg`);
-    const gi=goalInfo(cur,first);
-    if(gi)bits.push(gi.done?"Hedefe ulaştın":`Hedefe ${fmt(gi.left)} kg kaldı`);
-    const sp=trendSeries(14).ma.map(p=>({i:p.i,v:p.v}));
-    weight=`<div class="weight"><div class="cap">${curDay===t?"Bugünkü tartı":"Son tartı, "+dm(curDay)}</div><div class="big num"><span class="v">${fmt(cur)}</span><span class="u">kg</span></div><div class="row num">${bits.map(b=>`<span>${b}</span>`).join("")}</div>${spark(sp)}</div>`;
+    const gi=goalInfo(cur,wAll[days[0]]),sl=Algo.slopePerWeek(wAll);
+    const bits=[sl!=null?`${fmtS(sl,2)} kg/hafta`:prev!=null?`öncekine göre ${fmtS(cur-prev)} kg`:"",gi?(gi.done?"Hedefe ulaştın":`hedefe ${fmt(gi.left)} kg`):""].filter(Boolean);
+    weight=`<button class="stepcard" data-tab="trend" aria-label="Kilo grafiğini Trend'de aç"><div class="row"><span class="mut">⚖️ ${curDay===t?"Bugünkü tartı":"Son tartı, "+dm(curDay)}</span><span class="mut sm">Trend ›</span></div><div class="row"><span class="big num wv">${fmt(cur)} <small>kg</small></span><span class="mut sm num ws">${bits.join(" · ")}</span></div></button>`;
   }
   const su=sum("su",t,t),sh=st.waterMl,kc=sum("yemek",t,t),sw=sum("spor",keyOff(-6),t);
   const kcP=st.kcal>0?kc/st.kcal:0;
   const sOn=S.settings.stepsOn&&isNative();
+  /* Halka ortası kalanı gösterir; yapılan / hedef altta birimle. */
+  const left=(v,g,u)=>v<g?[null,`${u} kaldı`]:["✓","tamam"];
+  const [suC,suU]=left(su,sh,"L"),[spC,spU]=left(sw,st.sportWeek,"dk");
+  const kcC=st.kcal>0?Math.round(Math.abs(st.kcal-kc)):Math.round(kc),kcU=st.kcal>0?(kc>st.kcal?"kcal fazla":"kcal kaldı"):"kcal";
   const rings=`<div class="card"><div class="rings">
-    ${ring(su/sh,"var(--su)",fmt(su/1000,1),"Su",`/ ${fmt(sh/1000,1)} L`)}
-    ${ring(kcP,"var(--kcal)",Math.round(kc),"Kalori",st.kcal>0?`/ ${st.kcal}`:"hedef yok")}
-    ${ring(sw/st.sportWeek,"var(--spor)",Math.round(sw),"Spor",`/ ${st.sportWeek} dk hafta`)}
-  </div></div>${sOn?stepCard():""}${vCard()}${medCard()}${fastCard()}${habitCard()}`;
+    ${ring(kcP,"var(--kcal)",kcC,"Kalori",st.kcal>0?`${Math.round(kc)} / ${st.kcal} kcal`:"hedef yok",kcU)}
+    ${ring(su/sh,"var(--su)",suC||fmt((sh-su)/1000,1),"Su",`${fmt(su/1000,1)} / ${fmt(sh/1000,1)} L`,suU)}
+    ${ring(sw/st.sportWeek,"var(--spor)",spC||Math.round(st.sportWeek-sw),"Spor · hafta",`${Math.round(sw)} / ${st.sportWeek} dk`,spU)}
+  </div></div>${sOn?stepCard():""}`;
   const meals=S.entries.filter(e=>e.type==="yemek"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
   const pr=cur!=null?Algo.proteinRange(cur):null;
   const macro=meals.some(e=>e.p||e.c||e.f)?`<div class="macro num">Protein <b>${Math.round(mac("p"))}</b>${pr?` / ${pr[0]}–${pr[1]}`:""} g${meals.some(e=>e.c!=null||e.f!=null)?` · Karbonhidrat <b>${Math.round(mac("c"))}</b> g · Yağ <b>${Math.round(mac("f"))}</b> g`:""}</div>`:"";
@@ -560,8 +553,8 @@ function viewBugun(){
   const micro=mi.length?`<div class="macro num">${mi.join(" · ")} <span class="mut sm">öğünde veri var</span></div>`:"";
   const actions=`<div class="actions">
     <button class="act su" data-act="su"><span class="ic">💧</span>+${st.glass}</button>
-    <button class="act" data-act="kilo"><span class="ic">⚖️</span>Kilo</button>
     <button class="act" data-act="yemek"><span class="ic">🍽</span>Yemek</button>
+    <button class="act" data-act="kilo"><span class="ic">⚖️</span>Kilo</button>
     <button class="act" data-act="spor"><span class="ic">🏃</span>Spor</button>
     <button class="act" data-act="not"><span class="ic">📝</span>Not</button></div>`;
   const ic={su:"💧",kilo:"⚖️",yemek:"🍽",spor:"🏃",not:"📝"};
@@ -573,12 +566,16 @@ function viewBugun(){
   const lname=logOff===0?"Bugünün kayıtları":logOff===1?"Dünün kayıtları":`${+lk.slice(8)} ${AY[+lk.slice(5,7)-1]} kayıtları`;
   const dnav=`<div class="dnav"><button data-lo="1" aria-label="Önceki gün">‹</button><h2>${lname}</h2><button data-lo="-1" aria-label="Sonraki gün"${logOff===0?" disabled":""}>›</button></div>`;
   const lb=st.lastBackup,old=lb?Algo.dayNum(t)-Algo.dayNum(lb):null;
-  const bk=S.entries.length>=10&&(old==null||old>14)?`<div class="banner"><b>Yedek zamanı</b><p>${old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`} Telefon kaybolursa ya da uygulama silinirse veriler gider.</p><button class="btn" data-act="drive">Yedeği gönder</button></div>`:"";
-  const stB=isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?`<div class="banner"><b>Adım sayar</b><p>Telefonun adım sensörünü kullanır, hesap gerekmez. Telefonu yanında taşıdığın adımları sayar.</p><div class="lbtns"><button class="btn" data-act="adimac">Aç</button><button class="btn ghost" data-act="adimdegil">Şimdi değil</button></div></div>`:"";
-  const oemB=isNative()&&oemXiaomi()&&!st.oemDone?`<div class="banner"><b>Hatırlatmalar için bir kez ayar gerekli</b><p>Telefon uygulamayı kapatınca hatırlatmalar gelmeyebilir. İki izin verince düzelir.</p><button class="btn" data-act="oem">Ayarla</button></div>`:"";
   const a7=(a,b)=>sum("adim",keyOff(a),keyOff(b));
-  const stW=sOn&&stepsRead&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?`<div class="banner"><b>Adım sayımı durmuş olabilir</b><p>Telefon adım sayarı arka planda kapatmış olabilir. Pil ayarında NeoWell'e kısıtlama koyma.</p><div class="lbtns"><button class="btn" data-act="adimduz">Ayarla</button><button class="btn ghost" data-act="adimgizle">Kapat</button></div></div>`:"";
-  return `${stB}${oemB}${stW}${bk}${weight}<div class="coach">${esc(coach())}</div>${rings}${macro}${micro}${gTodayCard()}${actions}${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
+  const row=(ic,b,sub,btns)=>`<div class="row"><span>${ic} ${b}<small class="mut sm">${sub}</small></span>${btns.map(([a,l])=>`<button class="chip" data-act="${a}">${l}</button>`).join("")}</div>`;
+  /* Ayrı kartlar yerine tek liste: yalnız açık modülün bugün bekleyen işi; boşsa kart yok. */
+  const todo=[...medTodo(),...fastTodo(),...vTodo(),
+    sOn&&stepsRead&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?row("👣","Adım sayımı durmuş olabilir","Pil ayarında NeoWell'e kısıtlama koyma.",[["adimduz","Ayarla"],["adimgizle","Kapat"]]):"",
+    isNative()&&oemXiaomi()&&!st.oemDone?row("🔔","Hatırlatmalar için bir kez ayar gerekli","İki izin verince hatırlatmalar kaçmaz.",[["oem","Ayarla"]]):"",
+    isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?row("👣","Adım sayarı aç","Telefonun sensörü sayar, hesap gerekmez.",[["adimac","Aç"],["adimdegil","Şimdi değil"]]):"",
+    S.entries.length>=10&&(old==null||old>14)?row("☁️","Yedek zamanı",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Gönder"]]):""].filter(Boolean);
+  const todoCard=todo.length?`<div class="card todo"><div class="lbl">Bugün yapılacaklar</div>${todo.join("")}</div>`:"";
+  return `${actions}${habitRow()}${rings}${macro}${micro}${todoCard}${gTodayCard()}${weight}<button class="coach" data-tab="koc">${esc(coach())} <b>Koç ›</b></button>${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
 }
 
 function viewTrend(){
@@ -637,6 +634,7 @@ function viewAyar(){
   ${motionSettingsHtml()}
   ${vitalsSettingsHtml(fld)}
   ${medSettingsHtml()}
+  ${fastSettingsHtml()}
   <h2>Hatırlatmalar</h2><div class="card"><div class="status">${esc(nf)}</div>${notifDiag?`<p class="hint" style="padding:0 0 8px">${esc(notifDiag)}</p>`:""}${isNative()?`<div class="btns"><button class="btn ghost" data-act="bildirimtest">Test bildirimi gönder</button>${oemXiaomi()?`<button class="btn ghost" data-act="oem">Xiaomi hatırlatma ayarları</button>`:""}</div>`:""}
     ${st.reminders.filter(r=>!((r.id===7||r.id===8)&&!st.bpOn)&&!(r.id===9&&!st.bsOn)).map(r=>`<div class="rem"><span class="nm">${esc(r.name)}</span><input type="time" value="${r.t}" data-rt="${r.id}" aria-label="${esc(r.name)} saati"><label class="sw"><input type="checkbox" ${r.on?"checked":""} data-ro="${r.id}" aria-label="${esc(r.name)} açık"><span></span></label></div>`).join("")}
     <p class="hint">Koç bağlıysa sabah, öğleden sonra ve akşam bildirim metinlerini her gün yeniden yazar. Bağlı değilse sabit metinler kullanılır.</p></div>
@@ -854,7 +852,7 @@ async function goYukle(){
   if(!confirm(`${out.length} kayıt yüklenecek${drop?`, ${drop} geçersiz kayıt atlanacak`:""}. Mevcut veriler değişecek. Devam edilsin mi?`))return;
   const prevS=S;
   try{localStorage.setItem("koc_v1_onceki",JSON.stringify(prevS))}catch(e){}
-  S=Object.assign({settings:cleanSettings(r.settings),entries:out,nextId:out.length+1,myFoods:cleanMyFoods(r.myFoods),labs:LabLib.cleanLabs(r.labs),vitals:VitalsLib.clean(r.vitals)},cleanHealthState(r),cleanGym(r),cleanCoach(r));
+  S=Object.assign({settings:cleanSettings(r.settings,r.fast),entries:out,nextId:out.length+1,myFoods:cleanMyFoods(r.myFoods),labs:LabLib.cleanLabs(r.labs),vitals:VitalsLib.clean(r.vitals)},cleanHealthState(r),cleanGym(r),cleanCoach(r));
   /* Yedek, anahtarın gideceği adresi, onay ayarını ve veri paylaşım iznini değiştirememeli. */
   S.settings.consent=prevS.settings.consent;S.settings.lastBackup=dayKey();
   const keys=getKeys();
@@ -968,7 +966,7 @@ function viewAdim(){
   const rows=days.slice().reverse().slice(0,7).map(d=>`<div class="row" style="display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)"><span>${d.k===dayKey()?"Bugün":GUNK[d.d.getDay()]+" "+d.d.getDate()+" "+AY[d.d.getMonth()]}</span><b class="num">${d.v?fm(d.v):"–"}</b></div>`).join("");
   const man=S.entries.filter(e=>e.type==="adim"&&e.text==="elle").sort((a,b)=>b.day.localeCompare(a.day)||b.id-a.id).map(e=>`<div class="row" style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-top:1px solid var(--line)"><span>${dm(e.day)}</span><b class="num">+${fm(e.v)}</b><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></div>`).join("");
   return `<button class="btn" data-tab="bugun" style="margin:0 0 12px">‹ Bugün</button>
-  <div class="card" style="text-align:center">${ring(today/st.stepGoal,"var(--su)",fm(today),"Bugün",`/ ${fm(st.stepGoal)} adım`)}</div>
+  <div class="card" style="text-align:center">${ring(today/st.stepGoal,"var(--su)",fm(today),"Bugün",`/ ${fm(st.stepGoal)} adım`,"adım")}</div>
   <div class="card"><div class="lbl">Son ${N} gün</div><svg class="bars" viewBox="0 0 ${W} ${H}" role="img" aria-label="Son ${N} günün adımları" style="width:100%">${bars}<line x1="0" x2="${W}" y1="${Y(st.stepGoal).toFixed(1)}" y2="${Y(st.stepGoal).toFixed(1)}" stroke="var(--kcal)" stroke-width="1.4" stroke-dasharray="4 3"/></svg><div class="mut sm">Kesik çizgi hedef, koyu çubuk hedefe ulaşılan gün.</div></div>
   <div class="stats"><div class="stat"><div class="k">7 gün ortalaması</div><div class="v num">${fm(a7)}</div></div><div class="stat"><div class="k">14 gün ortalaması</div><div class="v num">${fm(a14)}</div></div><div class="stat"><div class="k">En iyi gün</div><div class="v num">${fm(best.v)}</div></div><div class="stat"><div class="k">Hedefe ulaşılan gün</div><div class="v num">${hit} / ${N}</div></div>${extra}</div>
   ${motionCard()}
