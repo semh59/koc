@@ -23,8 +23,8 @@ public class StepMathTest {
         ok("yeni gün 0'dan başlar", t == 0, t);
         ok("eski gün geçmişe yazılır", h.get("d1") == 580, h);
         ok("yeni gün artışı", StepMath.update(s, "d2", 400, h) == 310, 0);
-        StepMath.closeDay(s, "d3", 1000, 0, h);
-        ok("gece kapanışı eski günü tam yazar", h.get("d2") == 910, h);
+        boolean closed = StepMath.closeDay(s, "d3", 1000, 0, h);
+        ok("gece kapanışı eski günü tam yazar ve true döner", closed && h.get("d2") == 910, h);
         ok("kapanıştan sonra yeni gün 0", StepMath.update(s, "d3", 1000, h) == 0, 0);
         ok("kapanış aynı günde bir şey yapmaz", doNothing(), 0);
         StepMath.State r = new StepMath.State();
@@ -36,11 +36,19 @@ public class StepMathTest {
         StepMath.State late = new StepMath.State();
         StepMath.update(late, "e1", 1000, h);
         StepMath.update(late, "e1", 1600, h); // akşam son okuma: 600 adım
-        StepMath.closeDay(late, "e2", 2500, 420, h); // 07:00'de geç alarm
-        ok("geç alarm eski günü kapatmaz", !h.containsKey("e1"), h.get("e1"));
+        boolean lateClosed = StepMath.closeDay(late, "e2", 2500, 420, h); // 07:00'de geç alarm
+        ok("07:00 alarmı eski günü kapatmaz, false döner (snapAt yazılmaz)", !lateClosed && !h.containsKey("e1"), h.get("e1"));
         long morning = StepMath.update(late, "e2", 2500, h);
         ok("geç alarmda eski gün son okumaya kadar yazılır", h.get("e1") == 600, h.get("e1"));
         ok("geç alarmda sabah adımları eski güne geçmez, yeni gün 0'dan başlar", morning == 0, morning);
+        // Alarm 02:30'da geç geldi: son okumadan (akşam) sonraki adımlar kaybolmaz, eski güne yazılır
+        StepMath.State night = new StepMath.State();
+        StepMath.update(night, "n1", 1000, h);
+        StepMath.update(night, "n1", 1600, h); // 18:00 son okuma
+        boolean nightClosed = StepMath.closeDay(night, "n2", 4600, 150, h); // akşam 3000 adım
+        ok("02:30 geç alarmı akşam adımlarıyla eski günü kapatır", nightClosed && h.get("n1") == 3600, h.get("n1"));
+        ok("02:30 kapanışından sonra yeni gün 0'dan başlar", StepMath.update(night, "n2", 4600, h) == 0, 0);
+        ok("aynı günde kapanış false döner", !StepMath.closeDay(night, "n2", 4700, 10, h), 0);
         // Telefon sabah açıldı: gün kapatması yapılmaz (alıcı closeFirst=false verir), sayaç sıfırdan başlar
         StepMath.State boot = new StepMath.State();
         StepMath.update(boot, "f1", 5000, h);

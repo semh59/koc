@@ -15,7 +15,7 @@ import java.util.List;
 /** Bildirim düğmeleri ("+250 ml", "Aldım"): kayıt uygulama açılmadan SharedPreferences'a yazılır, uygulama bir sonraki açılışta alır. */
 @CapacitorPlugin(name = "QuickLog")
 public class QuickLogPlugin extends Plugin {
-    private static final String ACTION_KEY = "LocalNotificationUserAction";
+    static final String ACTION_KEY = "LocalNotificationUserAction";
     private static final String ID_KEY = "LocalNotificationId";
     private static final String OBJ_KEY = "LocalNotficationObject";
 
@@ -26,6 +26,11 @@ public class QuickLogPlugin extends Plugin {
     /** MainActivity'den çağrılır. Düğme "su" ya da "med" ise kaydı saklar, bildirimi kaldırır ve true döner. */
     static synchronized boolean handle(Context c, Intent in) {
         if (in == null) return false;
+        // Son uygulamalardan açılışta sistem ilk intent'i (ek alanlarıyla) yeniden verir; kayıt ilk seferde yazıldı.
+        if ((in.getFlags() & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0) {
+            in.removeExtra(ACTION_KEY);
+            return false;
+        }
         String act = in.getStringExtra(ACTION_KEY), obj = in.getStringExtra(OBJ_KEY), key = null;
         int v = 0;
         if ("su".equals(act)) {

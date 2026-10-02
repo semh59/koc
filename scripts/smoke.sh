@@ -40,6 +40,15 @@ adb logcat -d | grep -E "Capacitor/Console" > quick.log
 grep -q "NW-QUICK ingested 1" quick.log || { echo "HIZLI SU KAYDI ANA VERİYE ALINMADI"; cat quick.log; exit 1; }
 adb shell run-as com.neowell.app cat shared_prefs/nw_quick.xml > quick2.xml 2>&1
 if grep -q "250," quick2.xml; then echo "BEKLEYEN KAYIT TEMİZLENMEDİ"; cat quick2.xml; exit 1; fi
+# Gün anahtarı denetimi: uygulama widget'a kendi gününü ve 250 ml'yi yazdı; ikinci düğme aynı güne eklemeli. Başlangıç 0 olsaydı
+# "yeni gün" dalı da 250 verirdi ve gün uyuşmazlığı görünmezdi.
+w2=$(wv)
+[ "$w2" = "$((w0 + 250))" ] || { echo "UYGULAMA WIDGET SUYUNU YAZMADI: $w2"; cat widget.xml; exit 1; }
+adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction su --ei LocalNotificationId 200 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250}}'"
+sleep 4
+w3=$(wv)
+echo "Widget su (uygulama günü): $w2 -> $w3"
+[ "$w3" = "$((w2 + 250))" ] || { echo "WIDGET SUYU AYNI GÜNE EKLENMEDİ (gün anahtarı uyuşmuyor)"; cat widget.xml; exit 1; }
 # İlaç bildirimindeki "Aldım" düğmesi benzetimi: yerel taraf kaydı "m<kimlik>_<saat>" anahtarıyla biriktirir, uygulama öne gelince tüketilir.
 adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction med --ei LocalNotificationId 1001001 --es LocalNotficationObject '{\"extra\":{\"act\":\"med\",\"m\":1,\"s\":\"08:00\"}}'"
 sleep 4
@@ -61,4 +70,24 @@ adb shell monkey -p com.neowell.app -c android.intent.category.LAUNCHER 1
 sleep 10
 adb shell run-as com.neowell.app cat shared_prefs/nw_quick.xml > quick5.xml 2>&1
 if grep -q "k1_2000," quick5.xml; then echo "ATLA KAYDI TÜKETİLMEDİ"; cat quick5.xml; exit 1; fi
+# Süreç ölümü sonrası yeniden kurulum: su düğmesiyle soğuk açılıp arkaya alınan uygulama öldürülüp yeniden açılınca
+# sistem ilk intent'i yeniden verir; aynı su ikinci kez yazılmamalı (iki aşamada toplam 1 kayıt).
+adb shell am force-stop com.neowell.app
+sleep 2
+adb logcat -c
+adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction su --ei LocalNotificationId 200 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250}}'"
+sleep 15
+adb logcat -d | grep -E "Capacitor/Console" > replay1.log
+p1=$(adb shell pidof com.neowell.app)
+adb shell am kill com.neowell.app
+sleep 3
+adb logcat -c
+adb shell monkey -p com.neowell.app -c android.intent.category.LAUNCHER 1
+sleep 12
+adb logcat -d | grep -E "Capacitor/Console" > replay2.log
+p2=$(adb shell pidof com.neowell.app)
+[ -n "$p1" ] && [ "$p1" != "$p2" ] || { echo "SÜREÇ ÖLDÜRÜLEMEDİ (am kill: $p1 -> $p2), tekrar testi yapılamadı"; exit 1; }
+n=$(cat replay1.log replay2.log | grep -oE "NW-QUICK ingested [0-9]+" | grep -oE "[0-9]+$" | awk '{s+=$1} END{print s+0}')
+echo "Tekrar testi: alınan su kaydı $n"
+[ "$n" = "1" ] || { echo "SU KAYDI TEKRARLANDI YA DA ALINMADI ($n)"; cat replay1.log replay2.log; exit 1; }
 echo "Smoke testi geçti"

@@ -46,8 +46,11 @@ import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        // Bildirimdeki "+250 ml" düğmesi: kayıt arka planda yazılır, ekran açık kalmaz. savedInstanceState != null ise yeniden oluşturmadır, tekrar sayılmaz.
-        boolean quick = savedInstanceState == null && QuickLogPlugin.handle(this, getIntent());
+        // Bildirim ve widget su düğmesi: kayıt arka planda yazılır, ekran açık kalmaz. savedInstanceState != null ise süreç öldükten sonra
+        // yeniden oluşturmadır ve intent eskisidir; BridgeActivity.load() super.onCreate içinde onu onNewIntent'e verdiği için ek alan burada silinir.
+        boolean quick = false;
+        if (savedInstanceState == null) quick = QuickLogPlugin.handle(this, getIntent());
+        else getIntent().removeExtra(QuickLogPlugin.ACTION_KEY);
         registerPlugin(KeyVaultPlugin.class);
         registerPlugin(DeviceHelpPlugin.class);
         registerPlugin(StepCounterPlugin.class);
