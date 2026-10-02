@@ -154,6 +154,16 @@ function gWeekRegions(){
   }
   return m;
 }
+const GBIG=["Göğüs","Sırt","Omuz","Ön bacak","Arka bacak"];
+/* Kural tabanlı haftalık not (yapay zekâsız): bölge → set sayısı. 10-20 set/hafta genel bir kılavuz aralığıdır, hedef ya da tıbbi iddia değil. */
+function gWeekNote(regs,hasHistory){
+  const n=r=>regs[r]||0,low=EXREG.filter(r=>n(r)>0&&n(r)<10).sort((a,b)=>n(a)-n(b)).slice(0,3),miss=GBIG.filter(r=>!n(r));
+  if(!EXREG.some(n))return hasHistory?["Son 7 günde antrenman kaydı yok. İstediğinde bir şablonla küçük bir seansla başlayabilirsin."]:[];
+  const out=[];
+  if(low.length)out.push(`${low.map(r=>`${r} ${n(r)}`).join(", ")} set, önerilen haftalık 10-20 aralığının altında.`);
+  if(miss.length)out.push(`Bu hafta henüz set girmediğin büyük kas grupları: ${miss.join(", ")}.`);
+  return out.length?out:["Kaydettiğin bölgelerin hepsi haftalık 10 set ve üstünde."];
+}
 const gTimedSec=w=>w.ex.reduce((s,x)=>s+(gTimed(x.id)?x.sets.filter(t=>t.done&&gSetOk(t)).reduce((a,t)=>a+(t.sec||0),0):0),0);
 const gSecTx=s=>s>=120?Math.round(s/60)+" dk":s+" sn";
 const gVolTx=w=>{const v=gWorkVol(w),t=gTimedSec(w);return [v>0&&`${Math.round(v).toLocaleString("tr-TR")} kg`,t>0&&gSecTx(t)].filter(Boolean).join(", ")};
@@ -176,12 +186,13 @@ function gHome(){
   }).join("");
   const wk=gWeekSets(),mx=Math.max(14,...Object.values(wk));
   const bars=Object.keys(wk).length?`<h2>Bu hafta, kas grubuna göre set</h2><div class="card">${GROUPS.concat(["Diğer"]).filter(g=>wk[g]).map(g=>`<div class="gbar"><span>${g}</span><span class="bar"><i style="width:${(wk[g]/mx*100).toFixed(0)}%"></i></span><span class="num">${wk[g]}</span></div>`).join("")}<p class="hint">Kas grubu başına haftada 10 ile 20 set çoğu kişi için makul bir aralıktır.</p></div>`:"";
+  const note=gWeekNote(gWeekRegions(),done.length>0).map(l=>`<p class="hint">${l}</p>`).join("");
   const rec=gHistHtml(done);
   return `<button class="btn" data-g="start:">Boş antrenman başlat</button>
   <button class="btn ghost" data-g="lib" style="margin-top:8px">📚 Egzersiz kütüphanesi (${EXMERGED.length}, animasyonlu)</button>
   <button class="btn ghost" data-c="prog" style="margin-top:8px">Koç'tan program iste</button>
   <h2>Şablonlarım</h2>${tpl||`<p class="hint">Şablon yok. Bir antrenmanı bitirince "Şablon olarak kaydet" ile oluşur.</p>`}
-  ${bars}
+  ${bars}${note?`<div class="card" id="wknote">${note}</div>`:""}
   <h2>Antrenman geçmişi</h2><div class="card">${rec||`<p class="hint">Henüz antrenman yok.</p>`}</div>`;
 }
 /* Bugün ekranı: bitmemiş antrenman yalnız Salon'da görünüyordu, bitenler de yalnız Salon'da. */

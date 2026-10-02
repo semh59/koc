@@ -1065,6 +1065,20 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
       ok("süreli egzersizde RPE alanı yok",!q('[data-gi^="rpe"]'));
       ev("S.settings.rpeOn=false;S.workouts=[]");
     }
+    { // haftalık not (D-Ant13)
+      const N=(r,h=true)=>JSON.stringify(ev(`gWeekNote(${JSON.stringify(r)},${h})`));
+      ok("not: aralığın altındaki bölge adı, set sayısı ve aralıkla yazılır",N({Göğüs:6,Sırt:12,Omuz:10,"Ön bacak":10,"Arka bacak":10}).includes("Göğüs 6 set, önerilen haftalık 10-20 aralığının altında"),N({Göğüs:6}));
+      ok("not: set girilmeyen büyük kas grupları sayılır, küçükler (Biseps) sayılmaz",N({Göğüs:12}).includes("Sırt, Omuz, Ön bacak, Arka bacak")&&!N({Göğüs:12}).includes("Biseps"));
+      ok("not: hepsi 10+ ve büyük gruplar tamsa tek olumlu satır",N({Göğüs:10,Sırt:10,Omuz:10,"Ön bacak":10,"Arka bacak":14})==='["Kaydettiğin bölgelerin hepsi haftalık 10 set ve üstünde."]');
+      ok("not: en çok 3 düşük bölge, en azdan başlar",N({Göğüs:9,Sırt:3,Omuz:5,Biseps:7,"Ön bacak":10,"Arka bacak":10}).includes("Sırt 3, Omuz 5, Biseps 7 set"));
+      ok("not: antrenman yoksa geçmişi olan kullanıcıya nazik not, hiç geçmişi olmayana not yok",N({}).includes("antrenman kaydı yok")&&!N({}).match(/ayıp|yapmadın|tembel/)&&N({},false)==="[]");
+      ev(`S.workouts=[${Wk(1,Date.now()-864e5,Date.now()-8e7,"[{kg:60,reps:8,done:true},{kg:60,reps:8,done:true},{kg:60,reps:8,done:true,w:true}]")}];tab='salon';render()`);
+      ok("ana ekran: 'bu hafta' kartının altında not kartı çıkar (ısınma setleri sayılmaz)",ev("gWeekRegions()['Ön bacak']")===2&&q('#wknote').textContent.includes("Ön bacak 2 set")&&q('#wknote').previousElementSibling.textContent.includes("Kas grubu başına"),q('#wknote')&&q('#wknote').textContent);
+      ev(`S.workouts=[${Wk(1,Date.now()-20*864e5,Date.now()-20*864e5+1e6,"[{kg:60,reps:8,done:true}]")}];render()`);
+      ok("ana ekran: son 7 günde antrenman yoksa kart yine de nazik not gösterir",q('#wknote').textContent.includes("Son 7 günde antrenman kaydı yok"));
+      ev("S.workouts=[];render()");
+      ok("ana ekran: hiç antrenman yoksa not kartı yok",!q('#wknote'));
+    }
     { // akıllı ilerleme (D-Ant5)
       const set=(kg,r)=>`[{kg:${kg},reps:${r},done:true},{kg:${kg},reps:${r},done:true},{kg:${kg},reps:${r},done:true,w:false},{kg:20,reps:10,done:true,w:true}]`;
       ev(`S.exCfg={};S.workouts=[${Wk(1,1000,2000,set(60,7))},${Wk(2,3000,4000,set(60,6))},${Wk(3,Date.now(),null,"[{kg:null,reps:null,done:false}]")}];tab='salon';render()`);
