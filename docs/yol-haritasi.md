@@ -44,16 +44,16 @@ Ayrıntı ve test adımları `yapilacaklar.md`'de. Telefonda denenen tek özelli
 ## C) Arayüz ve tasarım
 | # | Ad | Değer | Emek | Kaynak | Bağımlılık / karar |
 |---|---|---|---|---|---|
-| C1 | Bugün'ü sadeleştir | Kayıt düğmeleri ilk ekrana gelir, kilo kartı küçülür, ilaç/oruç/ölçüm tek "Bugün yapılacaklar" listesinde, halkalarda birim ve "kalan". | M | rekabet-arayuz | – |
+| C1 (yapıldı) | Bugün'ü sadeleştir | Kayıt düğmeleri ilk ekrana gelir, kilo kartı küçülür, ilaç/oruç/ölçüm tek "Bugün yapılacaklar" listesinde, halkalarda birim ve "kalan". | M | rekabet-arayuz | – |
 | C2 | Onboarding | 3 adımda kilo, hedef, boy, yaş ve modüller sorulur, kişisel kalori ve protein hedefi hemen çıkar. | M | rekabet-arayuz | – |
 | C3 | Ayarlar alt sayfaları | ~5.000 px'lik tek sayfa Profil · Modüller · Hatırlatmalar · Koç · Veri ve yedek · Hakkında olarak bölünür. | M | rekabet-arayuz | – |
 | C4 | Yemek ekle ve günlük | Arama en üste çıkar, günlük öğüne göre gruplanır, su tek satırda birleşir. | M | rekabet-arayuz | – |
 | C5 | SVG ikon seti | Emoji yerine tek renkli, `aria-hidden` ikonlar ve etkin sekmede renk kullanılır. | M | rekabet-arayuz | – |
-| C6 | Dokunma hedefleri ve hata yeri | Tüm hedefler 44 px olur, hata mesajı balon yerine alanın altında çıkar. | S | rekabet-arayuz | – |
+| C6 (yapıldı) | Dokunma hedefleri ve hata yeri | Tüm hedefler 44 px olur, hata mesajı balon yerine alanın altında çıkar. | S | rekabet-arayuz | – |
 | C7 | Koç ilk izlenimi | Anahtar yokken "API" demeyen tanıtım ekranı ve adım adım anahtar rehberi gösterilir. | M | rekabet-arayuz, rekabet-ozellik | – |
 | C8 | Trend ekranı | Boş durum kartı, veriye göre eksen, dokununca değer balonu ve tek "Raporlar" bölümü eklenir. | M | rekabet-arayuz | – |
 | C9 | Salon ekranı | Filtreler alt sayfaya, boş set önceki değerle onaylanır, şablon önce önizlenir, "tek" yerine "tekrar" yazılır. | M | rekabet-arayuz | – |
-| C10 | Kilo girişi | Son kilo önceden yazılı gelir, ±0,1 düğmesi ve turuncu "Yine de kaydet" uyarısı eklenir. | S | rekabet-arayuz | – |
+| C10 (yapıldı) | Kilo girişi | Son kilo önceden yazılı gelir, ±0,1 düğmesi ve turuncu "Yine de kaydet" uyarısı eklenir. | S | rekabet-arayuz | – |
 | C11 | Grafik okunurluğu | Tansiyon çizgileri etiketli ve eşik bandlı, adım grafiğinde "Cu/Ct/Pz/Pt", renkler tutarlı olur. | S | rekabet-arayuz | – |
 | C12 | Tutarlılık paketi | Tek tarih biçimi, başlıkta küçük "‹" geri ve Sistem/Açık/Koyu tema seçici gelir. | S | rekabet-arayuz | – |
 | C13 | Haftalık PDF'e grafik | Boş yarım sayfaya kilo ve tansiyon grafikleri eklenir. | S | rekabet-arayuz | – |
