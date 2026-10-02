@@ -29,7 +29,7 @@ function vToggle(kind){
   st[on]=!st[on];
   if(!st[on]){for(const r of st.reminders)if(ids.includes(r.id))r.on=false}
   save();render();scheduleReminders().then(setNotif);
-  toast(st[on]?(kind==="bp"?"Tansiyon takibi açık. Hatırlatmaları aşağıdan açabilirsin":"Şeker takibi açık. Hatırlatmayı aşağıdan açabilirsin"):"Kapatıldı. Kayıtların durur");
+  toast(st[on]?(kind==="bp"?"Tansiyon takibi açık. Hatırlatmaları Ayarlar > Hatırlatmalar'dan açabilirsin":"Şeker takibi açık. Hatırlatmayı Ayarlar > Hatırlatmalar'dan açabilirsin"):"Kapatıldı. Kayıtların durur");
 }
 function vPreset(kind){
   Object.assign(S.settings,kind==="bp"?VitalsLib.BP_PRESET:VitalsLib.G_PRESET);
@@ -157,7 +157,7 @@ function viewTansiyon(){
   </div>
   ${vSeg()}<div class="card">${vSvg([{pts:pt(raw,"sys"),color:"var(--prim)"},{pts:pt(raw,"dia"),color:"var(--su)"}],st.bpSysHi>0?{hi:st.bpSysHi}:null,from,end,320,150)}<div class="mut sm">Yeşil: büyük tansiyon, mavi: küçük tansiyon.${st.bpSysHi>0?" Gölgeli bölge büyük tansiyon için hedef aralığıdır.":""} Turuncu nokta: hedef aralığı dışı.</div></div>
   <div class="card"><div class="lbl">Ölçümler (son ${vRange} gün)</div>${rows||`<p class="mut">Bu dönemde ölçüm yok.</p>`}</div>
-  <p class="hint">${MED_NOTE} Hedef aralığı Ayarlar'dan girilir.</p>`;
+  <p class="hint">${MED_NOTE} Hedef aralığı Ayarlar > Modüller'den girilir.</p>`;
 }
 function viewSeker(){
   const st=S.settings,end=dayKey(),from=keyOff(1-vRange),a=S.vitals.filter(r=>r.k==="s"&&r.day>=from&&r.day<=end).sort((x,y)=>x.day<y.day?-1:x.day>y.day?1:x.time<y.time?-1:1);
@@ -175,7 +175,7 @@ function viewSeker(){
   <div class="card">${vSvg(series,band,from,end,320,150)}<div class="mut sm">Yeşil: açlık/yemek öncesi, turuncu: yemekten sonra, mavi: yatmadan önce, gri: rastgele. Gölgeli bölge ancak tek tür ölçüm varsa gösterilir.</div></div>
   <div class="card"><div class="lbl">Ölçümler (son ${vRange} gün)</div>${rows||`<p class="mut">Bu dönemde ölçüm yok.</p>`}</div>
   ${labA1c?`<div class="card"><div class="lbl">Tahlil sonucun</div><div class="row" style="display:flex;justify-content:space-between"><span>HbA1c (${vDayLbl(labA1c.day)}.${labA1c.day.slice(0,4)})</span><b class="num">${vFmt(labA1c.v)} ${esc(labA1c.u||"")}</b></div><div class="mut sm">Tahlil takibinden alındı, ölçümlerle karıştırılmaz.</div></div>`:""}
-  <p class="hint">${MED_NOTE} Hedef aralığı Ayarlar'dan girilir.</p>`;
+  <p class="hint">${MED_NOTE} Hedef aralığı Ayarlar > Modüller'den girilir.</p>`;
 }
 
 /* ---- Doktor raporu ---- */

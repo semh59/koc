@@ -36,8 +36,9 @@ button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none;padding:0}
 :focus-visible{outline:2px solid var(--prim);outline-offset:2px}
 #app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
-header{padding:18px 20px 6px;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-header h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-.01em}
+header{padding:18px 20px 6px;display:flex;align-items:center;gap:12px}
+header h1{flex:1;min-width:0;margin:0;font-size:20px;font-weight:700;letter-spacing:-.01em}
+#back{width:44px;height:44px;margin:-10px -10px -10px -14px;flex:none;font-size:30px;line-height:1;color:var(--prim)}
 header .streak{font-size:14px;color:var(--mut);white-space:nowrap}
 header .streak b{color:var(--ink)}
 main{flex:1;padding:6px 16px calc(92px + env(safe-area-inset-bottom))}
@@ -172,7 +173,7 @@ body.koc #toast{bottom:calc(150px + env(safe-area-inset-bottom))}
 .ok.on{background:var(--spor);border-color:var(--spor);color:var(--spor-ink)}
 .lnk{display:block;width:100%;min-height:44px;color:var(--prim);font-weight:700;font-size:14px}.lnk.dng{color:var(--warn);margin-top:6px}
 .prow{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:56px;padding:6px 4px;border-top:1px solid var(--line);text-align:left}
-.prow.dng{color:var(--warn)}.prow b{display:block}.plus{font-size:24px;color:var(--prim);width:44px;min-height:44px;text-align:center}
+.prow.dng{color:var(--warn)}.card>.prow:first-child{border-top:0}.prow b{display:block}.plus{font-size:24px;color:var(--prim);width:44px;min-height:44px;text-align:center}
 .tag{font-size:13px;font-weight:600;background:color-mix(in srgb,var(--prim) 18%,var(--card));border-radius:99px;padding:3px 10px}
 .plist{max-height:42vh;overflow:auto;margin-bottom:8px}
 .sumv{font-size:56px;font-weight:800;letter-spacing:-.03em;color:var(--spor);line-height:1.1;margin:6px 0}.sumv small{font-size:18px;font-weight:600;color:var(--mut)}
@@ -240,7 +241,7 @@ input.in,select.in,.chip>button{min-height:44px}
 </head>
 <body>
 <div id="app">
-  <header><h1 id="ttl">Bugün</h1><div class="streak" id="streak"></div></header>
+  <header><button id="back" aria-label="Geri" hidden>‹</button><h1 id="ttl">Bugün</h1><div class="streak" id="streak"></div></header>
   <main id="view"></main>
 </div>
 <nav aria-label="Ana menü"><div class="in">
@@ -333,7 +334,7 @@ const DEF={
     {id:7,t:"08:00",on:false,name:"Tansiyon (sabah)",title:"❤️ Tansiyon ölçümü",body:"5 dakika dinlen, tansiyonunu ölç ve kaydet."},
     {id:8,t:"20:00",on:false,name:"Tansiyon (akşam)",title:"❤️ Tansiyon ölçümü",body:"5 dakika dinlen, tansiyonunu ölç ve kaydet."},
     {id:9,t:"07:30",on:false,name:"Şeker ölçümü",title:"🩸 Şeker ölçümü",body:"Şekerini ölç ve ne zaman ölçtüğünle kaydet."},
-    {id:10,t:"20:00",on:true,dow:0,name:"Haftalık yedek (Pazar)",title:"☁️ Yedek zamanı",body:"Yedeği Drive'a göndermek için Ayarlar > Yedeği Drive'a gönder."},
+    {id:10,t:"20:00",on:true,dow:0,name:"Haftalık yedek (Pazar)",title:"☁️ Yedek zamanı",body:"Yedeği Drive'a göndermek için dokun."},
     {id:11,t:"20:00",on:false,name:"Oruç başlangıcı",title:"⏳ Oruç başlangıcı",body:"Oruç penceren başlıyor, istersen Bugün'den başlat."},
     {id:12,t:"20:30",on:true,dow:0,name:"Haftalık özet (Pazar)",title:"📊 Haftalık özet",body:"Haftanı birlikte inceleyelim, bakmak için dokun."}
   ]},
@@ -349,11 +350,11 @@ const TYPES=["su","kilo","yemek","spor","not","adim"];
 const dayOk=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s);
 const timeOk=s=>typeof s==="string"&&/^([01]\d|2[0-3]):[0-5]\d$/.test(s);
 let corruptNote=false;
-/* Eski varsayılan metin özet üretilmese de "hazır" diyordu; değiştirilmemişse yeni varsayılan geçerli olsun. */
+/* Eski varsayılan metinler (özet üretilmese de "hazır" diyen, eski menü yolunu gösteren) değiştirilmemişse yeni varsayılan geçerli olsun. */
 /* Koç onay metni değiştiğinde artırılır: eski sürümle verilmiş onay geçersiz sayılır ve yeniden sorulur. */
 const CONSENT_V=1;
 const MED_NOTE="NeoWell tıbbi cihaz değildir, tanı koymaz ve tedavi önermez; hekim yerine geçmez. Sağlık kararların için hekimine danış.";
-const OLD_WEEKLY_BODY="Haftanın özeti hazır, bakmak için dokun.";
+const OLD_BODIES=["Haftanın özeti hazır, bakmak için dokun.","Yedeği Drive'a göndermek için Ayarlar > Yedeği Drive'a gönder."];
 function cleanSettings(raw,fast){
   const d=structuredClone(DEF.settings),o=raw&&typeof raw==="object"?raw:{};
   for(const k in RANGES){
@@ -386,7 +387,7 @@ function cleanSettings(raw,fast){
   if(dayOk(o.stepWarnDay))d.stepWarnDay=o.stepWarnDay;
   if(Array.isArray(o.reminders))for(const r of d.reminders){
     const x=o.reminders.find(y=>y&&y.id===r.id);
-    if(x){if(timeOk(x.t))r.t=x.t;if(typeof x.on==="boolean")r.on=x.on;if(typeof x.body==="string"&&x.body.trim().length>=5&&x.body.length<=110&&x.body!==OLD_WEEKLY_BODY)r.body=x.body.trim()}
+    if(x){if(timeOk(x.t))r.t=x.t;if(typeof x.on==="boolean")r.on=x.on;if(typeof x.body==="string"&&x.body.trim().length>=5&&x.body.length<=110&&!OLD_BODIES.includes(x.body))r.body=x.body.trim()}
   }
   return d;
 }
@@ -583,7 +584,7 @@ function viewBugun(){
   /* Ayrı kartlar yerine tek liste: yalnız açık modülün bugün bekleyen işi; boşsa kart yok. */
   const todo=[...medTodo(),...fastTodo(),...vTodo(),
     sOn&&stepsRead&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?row("👣","Adım sayımı durmuş olabilir","Pil ayarında NeoWell'e kısıtlama koyma.",[["adimduz","Ayarla"],["adimgizle","Kapat"]]):"",
-    storeMsg()?row("💾",storeMsg()[0],storeMsg()[1],[["yedek","Yedek al"]]):"",
+    storeMsg()?row("💾",storeMsg()[0],storeMsg()[1],[["veriyedek","Yedek al"]]):"",
     isNative()&&!exactOk&&st.medOn&&S.meds.length?row("⏰","İlaç alarmı birkaç dakika gecikebilir","Tam saat alarm izni kapalı. İzin verirsen tam saatinde çalar.",[["tamalarm","İzin ver"]]):"",
     isNative()&&oemXiaomi()&&!st.oemDone?row("🔔","Hatırlatmalar için bir kez ayar gerekli","İki izin verince hatırlatmalar kaçmaz.",[["oem","Ayarla"]]):"",
     isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?row("👣","Adım sayarı aç","Telefonun sensörü sayar, hesap gerekmez.",[["adimac","Aç"],["adimdegil","Şimdi değil"]]):"",
@@ -624,12 +625,23 @@ function viewTrend(){
 }
 
 let notifStatus="";
+const fld=(id,label,val,small,mode)=>`<div class="field"><label for="${id}">${label}${small?`<small>${small}</small>`:""}</label><input id="${id}" type="text" inputmode="${mode||"decimal"}" value="${val}" data-set="${id}"></div>`;
+const segb=(attr,opts,sel)=>`<div class="seg2" role="group">${opts.map(([v,l])=>`<button data-${attr}="${v}" aria-pressed="${sel===v}">${l}</button>`).join("")}</div>`;
+/* Kapalı modülün hatırlatması listede görünmez. */
+const remShown=r=>{const st=S.settings;return !((r.id===7||r.id===8)&&!st.bpOn)&&!(r.id===9&&!st.bsOn)&&!(r.id===11&&!st.fastOn)};
+const AYAR=[["profil","Profil ve hedefler"],["modul","Modüller"],["hatir","Hatırlatmalar"],["koc","Koç"],["veri","Veri ve yedek"],["hak","Hakkında"]];
+/* Alt ekranın üst ekranı: başlıktaki ‹, Android ve tarayıcı geri tuşu buna döner. */
+const PARENT=Object.fromEntries(AYAR.map(([k])=>["ayar-"+k,"ayar"]));
 function viewAyar(){
-  const st=S.settings;
-  const nf={web:"Bildirimler yalnızca telefondaki uygulamada çalışır.",ok:"Hatırlatmalar açık.",denied:"Bildirim izni kapalı. Telefon ayarlarından Koç için bildirimleri aç.","":""}[notifStatus]||notifStatus;
-  const fld=(id,label,val,small,mode)=>`<div class="field"><label for="${id}">${label}${small?`<small>${small}</small>`:""}</label><input id="${id}" type="text" inputmode="${mode||"decimal"}" value="${val}" data-set="${id}"></div>`;
-  const segb=(attr,opts,sel)=>`<div class="seg2" role="group">${opts.map(([v,l])=>`<button data-${attr}="${v}" aria-pressed="${sel===v}">${l}</button>`).join("")}</div>`;
-  return `<h2>Profil</h2><div class="card">
+  const st=S.settings,sub=tab.slice(5);
+  if(!sub){
+    const on=[st.medOn&&"İlaç",st.fastOn&&"Oruç",st.stepsOn&&"Adım",st.bpOn&&"Tansiyon",st.bsOn&&"Şeker"].filter(Boolean);
+    const d={profil:[st.heightCm&&st.heightCm+" cm",st.age&&st.age+" yaş",st.goalKg&&"hedef "+fmt(st.goalKg)+" kg"].filter(Boolean).join(" · ")||"Boy, yaş ve hedefler",
+      modul:on.length?on.join(", ")+" açık":"Hepsi kapalı",hatir:st.reminders.filter(r=>r.on&&remShown(r)).length+" hatırlatma açık",
+      koc:keysStored()?"Anahtar kayıtlı":"Anahtar yok",veri:storeMsg()?storeMsg()[0]:st.lastBackup?"Son yedek "+st.lastBackup:"Henüz yedek dosyası yok",hak:"NeoWell ve tıbbi uyarı"};
+    return `<div class="card">${AYAR.map(([k,t])=>`<button class="prow" data-tab="ayar-${k}"><span><b>${t}</b><span class="mut sm">${esc(d[k])}</span></span><span class="plus" aria-hidden="true">›</span></button>`).join("")}</div>`;
+  }
+  if(sub==="profil")return `<h2>Profil</h2><div class="card">
     ${fld("heightCm","Boy (cm)",st.heightCm||"","Enerji hesabı için","numeric")}
     ${fld("age","Yaş",st.age||"","","numeric")}
     <div class="lbl" style="margin-top:10px">Cinsiyet (isteğe bağlı)</div>${segb("sex",[["m","Erkek"],["f","Kadın"],["","Belirtmem"]],st.sex)}
@@ -643,43 +655,49 @@ function viewAyar(){
     ${fld("glass","Bir bardak (ml)",st.glass,"Su düğmesinin eklediği miktar","numeric")}
     ${fld("sportWeek","Haftalık spor (dk)",st.sportWeek,"","numeric")}
     ${fld("stepGoal","Günlük adım",st.stepGoal,"Adım sayar açıksa","numeric")}
-    ${isNative()&&SC()?`<div class="btns"><button class="btn ghost" data-act="${st.stepsOn?"adimkapat":"adimac"}">${st.stepsOn?"Adım sayarı kapat":"Adım sayarı aç"}</button></div>`:""}
-  </div>
-  ${motionSettingsHtml()}
-  ${vitalsSettingsHtml(fld)}
-  ${medSettingsHtml()}
+  </div>`;
+  if(sub==="modul")return `${medSettingsHtml()}
   ${fastSettingsHtml()}
+  ${isNative()&&SC()?`<h2>Adım sayar</h2><div class="card"><button class="btn ghost" data-act="${st.stepsOn?"adimkapat":"adimac"}">${st.stepsOn?"Adım sayarı kapat":"Adım sayarı aç"}</button></div>`:""}
+  ${motionSettingsHtml()}
   <h2>Salon</h2><div class="card"><label style="min-height:44px;display:flex;gap:8px;align-items:center"><input type="checkbox" data-aw ${st.awakeOn?"checked":""} style="width:22px;height:22px">Antrenmanda ekranı açık tut</label>
   <label style="min-height:44px;display:flex;gap:8px;align-items:center"><input type="checkbox" data-rpe ${st.rpeOn?"checked":""} style="width:22px;height:22px">Zorluk (RPE) alanı</label><p class="hint">Set satırına isteğe bağlı 6-10 zorluk alanı ekler (10 en zor). Yalnız kayıt içindir, önerileri ve hesapları değiştirmez.</p><p class="hint">Antrenman sürerken Salon açıkken ekran kararmaz. Başka sekmeye geçince, uygulamadan çıkınca ya da antrenman bitince normale döner.</p>${gGearHtml()}</div>
-  <h2>Hatırlatmalar</h2><div class="card"><div class="status">${esc(nf)}</div>${isNative()&&!exactOk?`<p class="hint" style="padding:0 0 8px">Tam saat alarm izni kapalı: hatırlatmalar birkaç dakika gecikebilir.</p><div class="btns"><button class="btn ghost" data-act="tamalarm">Tam saat alarm iznini aç</button></div>`:""}${notifDiag?`<p class="hint" style="padding:0 0 8px">${esc(notifDiag)}</p>`:""}${isNative()?`<div class="btns"><button class="btn ghost" data-act="bildirimtest">Test bildirimi gönder</button>${oemXiaomi()?`<button class="btn ghost" data-act="oem">Xiaomi hatırlatma ayarları</button>`:""}</div>`:""}
-    ${st.reminders.filter(r=>!((r.id===7||r.id===8)&&!st.bpOn)&&!(r.id===9&&!st.bsOn)&&!(r.id===11&&!st.fastOn)).map(r=>`<div class="rem"><span class="nm">${esc(r.name)}</span><input type="time" value="${r.t}" data-rt="${r.id}" aria-label="${esc(r.name)} saati"><label class="sw"><input type="checkbox" ${r.on?"checked":""} data-ro="${r.id}" aria-label="${esc(r.name)} açık"><span></span></label></div>`).join("")}
-    <p class="hint">Koç bağlıysa sabah, öğleden sonra ve akşam bildirim metinlerini her gün yeniden yazar. Bağlı değilse sabit metinler kullanılır.</p></div>
-  ${viewProviders()}
-  <h2>Veriler</h2><div class="card"><div class="btns">
+  ${vitalsSettingsHtml(fld)}`;
+  if(sub==="koc")return viewProviders();
+  if(sub==="hatir"){
+    const nf={web:"Bildirimler yalnızca telefondaki uygulamada çalışır.",ok:"Hatırlatmalar açık.",denied:"Bildirim izni kapalı. Telefon ayarlarından Koç için bildirimleri aç.","":""}[notifStatus]||notifStatus;
+    return `<div class="card"><div class="status">${esc(nf)}</div>${isNative()&&!exactOk?`<p class="hint" style="padding:0 0 8px">Tam saat alarm izni kapalı: hatırlatmalar birkaç dakika gecikebilir.</p><div class="btns"><button class="btn ghost" data-act="tamalarm">Tam saat alarm iznini aç</button></div>`:""}${notifDiag?`<p class="hint" style="padding:0 0 8px">${esc(notifDiag)}</p>`:""}${isNative()?`<div class="btns"><button class="btn ghost" data-act="bildirimtest">Test bildirimi gönder</button>${oemXiaomi()?`<button class="btn ghost" data-act="oem">Xiaomi hatırlatma ayarları</button>`:""}</div>`:""}
+    ${st.reminders.filter(remShown).map(r=>`<div class="rem"><span class="nm">${esc(r.name)}</span><input type="time" value="${r.t}" data-rt="${r.id}" aria-label="${esc(r.name)} saati"><label class="sw"><input type="checkbox" ${r.on?"checked":""} data-ro="${r.id}" aria-label="${esc(r.name)} açık"><span></span></label></div>`).join("")}
+    <p class="hint">Koç bağlıysa sabah, öğleden sonra ve akşam bildirim metinlerini her gün yeniden yazar. Bağlı değilse sabit metinler kullanılır.</p></div>`;
+  }
+  if(sub==="veri")return `<div class="card"><div class="btns">
     <button class="btn" data-act="drive">☁️ Yedeği Drive'a gönder</button>
     <button class="btn ghost" data-act="yedek">Yedekle veya geri yükle</button>
     <button class="btn ghost" data-pv="csv">Tabloya aktar (CSV)</button>
     <button class="btn ghost" data-pv="open">Gizlilik ve veri</button>
     <button class="btn danger" data-act="sifirla">Tüm verileri sil</button></div>
     ${storeMsg()?`<p class="status" role="alert"><b>${storeMsg()[0]}.</b> ${storeMsg()[1]}</p>`:""}<p class="hint">Kullanılan alan: yaklaşık ${fmt(storeBytes/1e6)} MB (sınır telefona göre 5-10 MB).</p>
-    <p class="hint">Veriler yalnızca bu telefonda durur. Google otomatik yedeğine ve telefondan telefona aktarıma bilerek dahil edilmez. Uygulamayı silersen ya da telefon değiştirirsen kaybolur; yeni telefona geçmeden önce yedek dosyanı al.</p></div>
-  <div class="about"><img src="logo.png" alt="NeoWell logosu" width="72" height="72"><b>NeoWell</b><span class="mut sm">Sağlığın yeni kaynağı</span><p class="hint" style="text-align:center">${MED_NOTE}</p></div>`;
+    <p class="hint">Veriler yalnızca bu telefonda durur. Google otomatik yedeğine ve telefondan telefona aktarıma bilerek dahil edilmez. Uygulamayı silersen ya da telefon değiştirirsen kaybolur; yeni telefona geçmeden önce yedek dosyanı al.</p></div>`;
+  return `<div class="about"><img src="logo.png" alt="NeoWell logosu" width="72" height="72"><b>NeoWell</b><span class="mut sm">Sağlığın yeni kaynağı</span><p class="hint" style="text-align:center">${MED_NOTE}</p></div>`;
 }
 
 function render(){
   const v=$("#view"),onb=obNeeded();
-  document.body.classList.toggle("ob",onb);
+  document.body.classList.toggle("ob",onb);$("#back").hidden=onb||!PARENT[tab];
   if(onb){$("#ttl").textContent="NeoWell";$("#streak").innerHTML="";$("#composer").hidden=true;v.innerHTML=obView();widgetPush();return}
-  const ttl={bugun:`${new Date().getDate()} ${AY[new Date().getMonth()]}, ${GUN[new Date().getDay()]}`,koc:"Koç",salon:"Salon",trend:"Trend",ayar:"Ayarlar",egz:"Egzersizler",adim:"Adım raporu",tahlil:"Tahlil takibi",tansiyon:"Tansiyon",seker:"Şeker",ilac:"İlaçlar"}[tab];
+  const ttl={bugun:`${new Date().getDate()} ${AY[new Date().getMonth()]}, ${GUN[new Date().getDay()]}`,koc:"Koç",salon:"Salon",trend:"Trend",ayar:"Ayarlar",egz:"Egzersizler",adim:"Adım raporu",tahlil:"Tahlil takibi",tansiyon:"Tansiyon",seker:"Şeker",ilac:"İlaçlar",...Object.fromEntries(AYAR.map(([k,t])=>["ayar-"+k,t]))}[tab];
   $("#ttl").textContent=ttl;
   const n=streak();$("#streak").innerHTML=n>0?`<b class="num">${n}</b> günlük seri`:"";
-  v.innerHTML=(saveFail&&tab!=="bugun"&&tab!=="ayar"?`<div class="card todo" role="alert"><div class="row"><span>💾 <b>${storeMsg()[0]}</b><small class="mut sm">${storeMsg()[1]}</small></span><button class="chip" data-act="yedek">Yedek al</button></div></div>`:"")+(tab==="koc"?viewKoc():tab==="bugun"?viewBugun():tab==="salon"?viewSalon():tab==="trend"?viewTrend():tab==="adim"?viewAdim():tab==="tahlil"?viewTahlil():tab==="tansiyon"?viewTansiyon():tab==="seker"?viewSeker():tab==="egz"?viewEgz():tab==="ilac"?viewIlac():viewAyar());
+  v.innerHTML=(saveFail&&tab!=="bugun"&&tab!=="ayar-veri"?`<div class="card todo" role="alert"><div class="row"><span>💾 <b>${storeMsg()[0]}</b><small class="mut sm">${storeMsg()[1]}</small></span><button class="chip" data-act="veriyedek">Yedek al</button></div></div>`:"")+(tab==="koc"?viewKoc():tab==="bugun"?viewBugun():tab==="salon"?viewSalon():tab==="trend"?viewTrend():tab==="adim"?viewAdim():tab==="tahlil"?viewTahlil():tab==="tansiyon"?viewTansiyon():tab==="seker"?viewSeker():tab==="egz"?viewEgz():tab==="ilac"?viewIlac():viewAyar());
   document.body.classList.toggle("koc",tab==="koc");$("#composer").hidden=tab!=="koc";
   if(tab==="koc")cScroll();
   $("#navIlac").hidden=!S.settings.medOn;
-  document.querySelectorAll("nav button").forEach(b=>{if(b.dataset.tab===({adim:"bugun",tahlil:"trend",tansiyon:"trend",seker:"trend",egz:"salon"}[tab]||tab))b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
+  document.querySelectorAll("nav button").forEach(b=>{if(b.dataset.tab===({adim:"bugun",tahlil:"trend",tansiyon:"trend",seker:"trend",egz:"salon"}[tab]||PARENT[tab]||tab))b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
+  /* Tarayıcıda alt ekran için bir geçmiş kaydı: geri tuşu popstate ile üst ekrana döner. */
+  if(PARENT[tab]&&!history.state)history.pushState({sub:1},"");else if(!PARENT[tab]&&history.state)history.replaceState(null,"");
   widgetPush();
 }
+function goBack(){tab=PARENT[tab];render();window.scrollTo(0,0)}
 const WG=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Widget;
 let widgetLast="";
 /* null değerler bilinçli: Java tarafı anahtar varsa ama null ise "hedef yok"/adım gizli, anahtar yoksa "–" gösterir. */
@@ -926,7 +944,7 @@ async function scheduleReminders(){
         const at=addDays(i);at.setHours(h,m,0,0);
         if(r.dow!=null&&at.getDay()!==r.dow)continue;
         if(r.id===BACKUP_REM&&(S.entries.length<10||(lb&&Algo.dayNum(dayKey(at))-Algo.dayNum(lb)<7)))continue;
-        if(at.getTime()>now+5000)list.push(Object.assign({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}},water?{actionTypeId:"water",extra:{act:"su",v:S.settings.glass,at:at.getTime()}}:r.id===WEEKLY_REM?{extra:{act:"open",tab:"koc"}}:{}));
+        if(at.getTime()>now+5000)list.push(Object.assign({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}},water?{actionTypeId:"water",extra:{act:"su",v:S.settings.glass,at:at.getTime()}}:r.id===WEEKLY_REM?{extra:{act:"open",tab:"koc"}}:r.id===BACKUP_REM?{extra:{act:"open",tab:"ayar-veri"}}:{}));
       }
     }
     lastSched=now;
@@ -940,13 +958,13 @@ async function scheduleReminders(){
     return "ok";
   }catch(e){return "Bildirimler kurulamadı: "+(e&&e.message||e)}
 }
-/* Yalnız bildirime dokunma ("tap"); su/ilaç düğmeleri QuickLogPlugin'de yerelde yakalanır. Koç izni yoksa haftalık özet Trend'de açılır. */
+/* Yalnız bildirime dokunma ("tap"); su/ilaç düğmeleri QuickLogPlugin'de yerelde yakalanır. Koç izni yoksa haftalık özet Trend'de açılır, yedek hatırlatması Veri ve yedek'te. */
 function notifTap(e){
   const x=e&&e.notification&&e.notification.extra;
   if(!e||e.actionId!=="tap"||!x||x.act!=="open")return;
-  tab=x.tab==="koc"&&S.settings.consent?"koc":"trend";closeSheet();render();window.scrollTo(0,0);
+  tab=x.tab==="koc"&&S.settings.consent?"koc":x.tab==="ayar-veri"?x.tab:"trend";closeSheet();render();window.scrollTo(0,0);
 }
-function setNotif(s){notifStatus=s;if(tab==="ayar")render()}
+function setNotif(s){notifStatus=s;if(tab==="ayar-hatir")render()}
 /* İzin verilince önceki yaklaşık alarmlar kendiliğinden tam saate dönmez; yeniden kurulur. */
 async function exactAsk(){
   const ln=LN();if(!ln)return;
@@ -1082,6 +1100,7 @@ document.addEventListener("click",ev=>{
     else if(d.act==="spor")sheetSpor();
     else if(d.act==="not")sheetNot();
     else if(d.act==="yedek")sheetYedek();
+    else if(d.act==="veriyedek"){tab="ayar-veri";render();sheetYedek()}
     else if(d.act==="tamalarm")exactAsk();
     else if(d.act==="drive")sheetDrive();
     else if(d.act==="bildirimtest")notifTest();
@@ -1095,7 +1114,7 @@ document.addEventListener("click",ev=>{
     else if(d.act==="adimduz"){if(oemXiaomi())sheetOem();else openDH("openBattery")}
     else if(d.act==="adimgizle"){S.settings.stepWarnDay=dayKey();save();render()}
     else if(d.act==="oemok"){S.settings.oemDone=true;save();closeSheet();render();toast("Tamam, hatırlatmaları şimdi dene")}
-    else if(d.act==="profil"){tab="ayar";render();window.scrollTo(0,0)}
+    else if(d.act==="profil"){tab="ayar-profil";render();window.scrollTo(0,0)}
     else if(d.act==="saglik")openSheet(`<h3>Sağlık notların</h3><div class="lbl">Hamilelik, hastalık, ilaç, yeme bozukluğu geçmişi gibi koçun bilmesi gerekenler.</div><textarea class="in" id="hn" maxlength="500" autofocus>${esc(S.settings.healthNote)}</textarea><button class="btn" data-go="saglik">Kaydet</button>`);
     else if(d.act.startsWith("uygula:")){S.settings.kcal=+d.act.slice(7);save();render();toast(`Kalori hedefi ${S.settings.kcal} kcal oldu`)}
     else if(d.act==="sifirla"){if(confirm("Tüm kayıtlar silinecek. Bu geri alınamaz. Devam edilsin mi?")){try{localStorage.removeItem("koc_v1")}catch(e){}S=structuredClone(DEF);save();logOff=0;render();scheduleReminders().then(setNotif);toast("Tüm veriler silindi")}}
@@ -1151,13 +1170,13 @@ document.addEventListener("keydown",ev=>{
   if(ev.key==="Enter"&&ev.target.id==="cmsg"){ev.preventDefault();const i=ev.target,t=i.value;i.value="";cSend(t);return}
   if(ev.key==="Enter"&&ev.target.closest("#sheet")&&ev.target.tagName==="INPUT"){const b=$("#sheet [data-go]");if(b)b.click()}
 });
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="ayar")render()});stepsSync();render();cPlateauCheck();cFlush();cAuto();if(Date.now()-lastSched>6*36e5||!exactOk)scheduleReminders().then(setNotif)}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="ayar-modul")render()});stepsSync();render();cPlateauCheck();cFlush();cAuto();if(Date.now()-lastSched>6*36e5||!exactOk)scheduleReminders().then(setNotif)}});
 
 render();
 cPlateauCheck();
 if(corruptNote)toast("Kayıtlı veri okunamadı. Eski hali ayrı bir kopyada saklandı.");
 quickIngest();
-scheduleReminders().then(s=>{notifStatus=s;if(tab==="ayar")render()});
+scheduleReminders().then(setNotif);
 setInterval(gTick,1000);
 keysInit().then(()=>{render();cAuto();cFlush()});
 if(S.settings.stepsOn&&SC()){SC().start().catch(()=>{});stepsSync();motionBoot()}
@@ -1170,13 +1189,18 @@ function widgetOpen(){tab="bugun";logOff=0;closeSheet();render();window.scrollTo
 try{const wg=WG();if(wg&&wg.addListener)wg.addListener("open",widgetOpen)}catch(e){}
 try{
   const AP=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;
-  if(AP&&AP.addListener)AP.addListener("backButton",()=>{
-    if($("#sheet").classList.contains("on"))return closeSheet();
-    if(obNeeded()&&ob.step){ob.step--;render();return}
-    if(tab!=="bugun"||logOff){tab="bugun";logOff=0;render();return}
-    AP.exitApp&&AP.exitApp();
-  });
+  if(AP&&AP.addListener)AP.addListener("backButton",()=>{if(!backKey())AP.exitApp&&AP.exitApp()});
 }catch(e){}
+/* Android geri tuşu: sayfa, onboarding adımı, alt ekran, Bugün sırasıyla; false dönerse uygulamadan çıkılır. */
+function backKey(){
+  if($("#sheet").classList.contains("on")){closeSheet();return true}
+  if(obNeeded()&&ob.step){ob.step--;render();return true}
+  if(PARENT[tab]){goBack();return true}
+  if(tab!=="bugun"||logOff){tab="bugun";logOff=0;render();return true}
+  return false;
+}
+$("#back").addEventListener("click",goBack);
+addEventListener("popstate",()=>{if($("#sheet").classList.contains("on"))closeSheet();else if(PARENT[tab])goBack()});
 </script>
 </body>
 </html>
