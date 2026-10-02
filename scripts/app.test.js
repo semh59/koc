@@ -892,8 +892,9 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     // kalıcılık
     const C=JSON.parse(ev("JSON.stringify(cleanGym(JSON.parse(JSON.stringify(S))))"));
     ok("w:true ve bar yeniden yüklemede korunur",C.workouts[1].ex[0].sets[0].w===true&&C.workouts[1].ex[0].sets[4].w===undefined&&C.bar===20);
-    ev(`S.workouts.push(${Wk(9,Date.now(),null,"[{kg:20,reps:10,done:true,w:true},{kg:60,reps:5,done:false}]")});S.entries=S.entries.filter(e=>e.type!=='spor');gFinish()`);
-    ok("yalnız ısınma seti tamamlanan antrenman spor kaydı ve dakika oluşturmaz",!ev("S.workouts.some(x=>x.id===9)")&&!ev("S.entries.some(e=>e.type==='spor')")&&toastT().includes("Yalnız ısınma"),toastT());
+    ev(`S.workouts.push(${Wk(9,Date.now(),null,"[{kg:20,reps:10,done:true,w:true},{kg:null,reps:null,done:false}]")});S.entries=S.entries.filter(e=>e.type!=='spor');gFinish()`);
+    ok("yalnız ısınma seti tamamlanan antrenman kaydedilmez, silinmez, spor kaydı oluşmaz, neden yazılır",ev("S.workouts.find(x=>x.id===9).t1")===null&&!ev("S.entries.some(e=>e.type==='spor')")&&toastT().includes("Kaydedilmedi"),toastT());
+    ev("S.workouts=S.workouts.filter(x=>x.id!==9)");
     const E=JSON.parse(ev(`JSON.stringify(cleanGym({workouts:[{id:5,day:'2026-09-01',t0:1,t1:2,ex:[{id:'squat',sets:[{kg:100,reps:5,done:true}]}]}]}))`));
     ok("alansız eski yedek yüklenir: bar 20, kayıt aynen",E.bar===20&&E.workouts[0].ex[0].sets[0].kg===100&&E.workouts[0].ex[0].sets[0].w===undefined);
     const G=JSON.parse(ev(`JSON.stringify(cleanGym({bar:'abc',workouts:[{id:5,day:'2026-09-01',t0:1,t1:2,ex:[{id:'squat',sets:[{kg:100,reps:5,done:true,w:'x'}]}]}]}))`));
@@ -910,6 +911,45 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     const Y=JSON.parse(ev(`JSON.stringify(cleanGym({exCfg:[1,2],workouts:[{id:5,day:'2026-09-01',t0:1,t1:2,ex:[{id:'squat',sets:[{kg:100,reps:5,done:true}]}]}]}))`));
     const Z=JSON.parse(ev(`JSON.stringify(cleanGym({exCfg:{squat:'x',bench:{lo:'5',hi:null},row:null},workouts:[{id:5,day:'2026-09-01',t0:1,t1:2,ex:[{id:'squat',sets:[{kg:100,reps:5,done:true}]}]}]}))`));
     ok("exCfg yok (eski yedek) ve çöp değer: kayıtlar eksiksiz yüklenir",Object.keys(Y.exCfg).length===0&&Object.keys(Z.exCfg).length===0&&Y.workouts[0].ex[0].sets[0].kg===100&&Z.workouts[0].ex[0].sets[0].kg===100);
+    // bitirme, Bugün kartı, geçmiş
+    const Tk=(id,name,t0,t1,exs,day)=>`{id:${id},day:${day||"dayKey()"},t0:${t0},t1:${t1},name:'${name}',tpl:null,ex:[${exs}]}`;
+    const Ex=(id,sets)=>`{id:'${id}',note:'',sets:${sets}}`;
+    const nowT=Date.now();
+    ev(`S.entries=S.entries.filter(e=>e.type!=='spor');S.workouts=[${Tk(20,"A",nowT,null,Ex("squat","[{kg:60,reps:5,done:true},{kg:60,reps:5,done:false},{kg:null,reps:null,done:false}]"))}];S.gid=30;tab='bugun';render()`);
+    ok("Bugün: devam eden antrenman kartı, işaretli/toplam set ve Devam et",q('.rrow[data-g="start:"] .tag').textContent==="Devam et"&&q("#view").textContent.includes("1 egzersiz, 1/3 set işaretli"),q("#view").textContent.includes("Devam ediyor"));
+    click('.rrow[data-g="start:"]');
+    ok("Devam et Salon'u açar",ev("tab")==="salon");
+    ev("gFinish()");
+    ok("işaretsiz değerli set onayda (Tamam) done:true olur ve kaydedilir",ev("S.workouts[0].t1")!=null&&ev("S.workouts[0].ex[0].sets.length")===2&&ev("S.workouts[0].ex[0].sets.every(s=>s.done)")&&ev("S.entries.some(e=>e.type==='spor'&&e.wid===20)"));
+    ev("closeSheet();tab='bugun';render()");
+    ok("Bugün: biten antrenman kartı ad, set, süre, hacim; dokununca özet",q("#view").textContent.includes("Squat")&&q("#view").textContent.includes("2 set")&&q("#view").textContent.includes("600 kg")&&(click('.rrow[data-g="sum:20"]'),q("#sheet").textContent.includes("600")));
+    ev("closeSheet()");
+    w.confirm=()=>false;
+    ev(`S.entries=S.entries.filter(e=>e.type!=='spor');S.workouts=[${Tk(21,"B",nowT,null,Ex("squat","[{kg:60,reps:5,done:true},{kg:70,reps:5,done:false}]"))}];gFinish()`);
+    w.confirm=()=>true;
+    ok("İptal: işaretsiz set sayılmadan antrenman biter",ev("S.workouts[0].t1")!=null&&ev("S.workouts[0].ex[0].sets.length")===1);
+    ev(`S.workouts=[${Tk(22,"C",nowT,null,Ex("squat","[{kg:null,reps:null,done:false}]"))}];gFinish()`);
+    ok("değerli set yoksa kaydedilmez, antrenman silinmez, toast neden söyler",ev("S.workouts.length")===1&&ev("S.workouts[0].t1")===null&&toastT().startsWith("Kaydedilmedi"),toastT());
+    ev(`S.workouts=[${Tk(23,"D",nowT,null,Ex("squat","[{kg:20,reps:10,done:false,w:true}]"))}];gFinish()`);
+    ok("ısınma seti işaretsiz değerli sayılmaz: antrenman kaydedilmez",ev("S.workouts[0].t1")===null);
+    ev("S.workouts=[];tab='bugun';render()");
+    ok("antrenman yoksa Bugün kartı görünmez",!q('[data-g="start:"]')&&!q("#view").textContent.includes("Devam ediyor"));
+    // süreli: 0 kg yok; 5 egzersiz: ilk 4 + "+1"
+    ev(`S.workouts=[${Tk(24,"Süreli",nowT-1000,nowT,Ex("superman","[{kg:null,reps:null,sec:90,done:true}]")+","+Ex("squat","[{kg:20,reps:10,done:true,w:true}]")+","+Ex("bench","[{kg:50,reps:5,done:true}]")+","+Ex("row","[{kg:40,reps:5,done:true}]")+","+Ex("curl","[{kg:10,reps:5,done:true}]")+","+Ex("crunch","[{kg:0,reps:5,done:true}]"))}];tab='bugun';render()`);
+    ok("Bugün kartı: en fazla 4 egzersiz adı + '+N'",/ \+2/.test(q('.rrow[data-g="sum:24"]').textContent),q('.rrow[data-g="sum:24"]').textContent);
+    ev(`S.workouts=[${Tk(25,"Süreli",nowT-1000,nowT,Ex("superman","[{kg:null,reps:null,sec:90,done:true},{kg:null,reps:null,sec:30,done:true,w:true}]"))}];tab='bugun';render()`);
+    const card=q('.rrow[data-g="sum:25"]').textContent;
+    click('.rrow[data-g="sum:25"]');const sm=q("#sheet").textContent;
+    ev("closeSheet();tab='salon';render()");
+    ok("süreli egzersiz: kart, özet ve geçmiş '0 kg' göstermez, süreyi gösterir (ısınma sayılmaz)",!card.includes("0 kg")&&!sm.includes("0 kg")&&!q('.rrow[data-g="sum:25"]').textContent.includes("0 kg")&&card.includes("90 sn")&&sm.includes("90 sn")&&card.includes("1 set"),[card,sm]);
+    // geçmiş: tümü, ay başlıkları, 20 + daha fazla
+    const many=[];for(let i=1;i<=25;i++)many.push(Tk(100+i,"H"+i,nowT-i*864e5*3,nowT-i*864e5*3+60000,Ex("squat","[{kg:50,reps:5,done:true}]"),`keyOff(-${i*3})`));
+    ev(`S.workouts=[${many.join(",")}];gHistMax=20;tab='salon';render()`);
+    const hr=()=>doc.querySelectorAll('.rrow[data-g^="sum:"]').length;
+    ok("geçmiş: ilk 20 satır, ay başlığı, 'Daha fazla göster'",hr()===20&&doc.querySelectorAll(".card .lbl").length>=2&&!!q('[data-g="histmore"]'));
+    click('[data-g="histmore"]');
+    ok("daha fazla göster kalanları getirir (25), düğme kaybolur, en yeni üstte",hr()===25&&!q('[data-g="histmore"]')&&q('.rrow[data-g^="sum:"]').dataset.g==="sum:101");
+    ok("Son antrenmanlar bölümü geçmişle yer değiştirdi",q("#view").textContent.includes("Antrenman geçmişi")&&!q("#view").textContent.includes("Son antrenmanlar"));
     ev("S.workouts=[];S.bar=20;closeSheet();tab='bugun';render()");
   }
   {
