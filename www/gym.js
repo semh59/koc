@@ -200,7 +200,7 @@ const gWorkSets=w=>w.ex.reduce((s,x)=>s+x.sets.filter(t=>t.done&&gSetOk(t)).leng
 function gWeekRegions(){
   const from=Date.now()-7*864e5,m={};
   for(const w of S.workouts)if(gDone(w)&&w.t0>=from)for(const x of w.ex){
-    const e=gEx(x.id),g=e.r||e.g;m[g]=(m[g]||0)+x.sets.filter(t=>t.done&&gSetOk(t)).length;
+    const e=gEx(x.id),g=e.r||e.g,n=x.sets.filter(t=>t.done&&gSetOk(t)).length;if(n)m[g]=(m[g]||0)+n; // yalnız ısınma seti olan bölge 0 satırı açmasın
   }
   return m;
 }
@@ -238,6 +238,7 @@ function gHome(){
   const note=gWeekNote(gWeekRegions(),done.length>0).map(l=>`<p class="hint">${l}</p>`).join("");
   const rec=gHistHtml(done);
   return `<button class="btn" data-g="start:">Boş antrenman başlat</button>
+  <button class="btn ghost" data-g="gdpick" style="margin-top:8px">Rehberli başlat: esneme, ısınma, Tabata</button>
   <button class="btn ghost" data-g="lib" style="margin-top:8px">${Icons.svg("book")} Egzersiz kütüphanesi (${EXMERGED.length}, animasyonlu)</button>
   <button class="btn ghost" data-c="prog" style="margin-top:8px">Koç'tan program iste</button>
   <h2>Şablonlarım</h2>${tpl||`<p class="hint">Şablon yok. "Yeni şablon" ile kur ya da bir antrenmanı bitirince "Şablon olarak kaydet" de.</p>`}<button class="btn ghost" data-g="tedit:">+ Yeni şablon</button>
@@ -276,7 +277,7 @@ function gTplPreview(id){
     const tg=s.sec!=null?(k==="c"?`${Math.round(s.sec/60)} dk`:`${s.sec} sn`):s.reps?`${s.kg?fkg(s.kg)+" kg × ":""}${s.reps}${hi>s.reps?"–"+hi:""} tekrar`:"hedef yok, antrenmanda girersin";
     return `<div class="prow"><span><b>${esc(gEx(x.id).n)}</b><span class="mut sm">${x.sets.length} set · ${tg}</span></span></div>`;
   };
-  openSheet(`<h3>${esc(t.name)}</h3><div class="plist">${tmp.ex.map(row).join("")||`<p class="hint">Bu şablonda egzersiz yok. Başlatınca egzersizi sen eklersin.</p>`}</div><button class="btn" data-g="startgo:${id}">Başlat</button><button class="btn ghost" data-g="closesheet" style="margin-top:8px">Vazgeç</button>`);
+  openSheet(`<h3>${esc(t.name)}</h3><div class="plist">${tmp.ex.map(row).join("")||`<p class="hint">Bu şablonda egzersiz yok. Başlatınca egzersizi sen eklersin.</p>`}</div><button class="btn" data-g="startgo:${id}">Başlat</button>${t.ex.length?`<button class="btn ghost" data-g="gdgo:t:${id}" style="margin-top:8px">Rehberli başlat</button>`:""}<button class="btn ghost" data-g="closesheet" style="margin-top:8px">Vazgeç</button>`);
 }
 /* Boş kg ya da tekrarla ✓: önceki seansın değeri önerilir, yoksa net uyarı; sessizce 0 yazılmaz. */
 function gEmptySet(w,ei,si,kgIn,repsIn,kind){
@@ -328,7 +329,7 @@ function gLive(w){
 /* Yerel pencere bayrağı (DeviceHelp.keepAwake): navigator.wakeLock'un Android WebView desteği belgelerde yalnız Chrome'dan çıkarım. */
 let gAwakeOn=false;
 function gAwake(force){
-  const on=!!(S.settings.awakeOn&&gActive()&&tab==="salon"&&!document.hidden),d=DH();
+  const on=!!(S.settings.awakeOn&&(gActive()&&tab==="salon"||typeof gdOn==="function"&&gdOn())&&!document.hidden),d=DH();
   if((on===gAwakeOn&&!force)||!d||!d.keepAwake)return;
   gAwakeOn=on;d.keepAwake({on}).catch(()=>{});
 }
@@ -435,6 +436,7 @@ function gPgSheet(id){
   ${p.d[0]<p.d[1]?`<div class="lbl">Gün sayısı</div><div class="chips">${Array.from({length:p.d[1]-p.d[0]+1},(_,i)=>p.d[0]+i).map(n=>`<button class="chip" data-g="pgd:${p.id}:${n}" aria-pressed="${n===gPgD}">${n}</button>`).join("")}</div>`:""}
   ${ds.map(d=>`<div class="lbl">${d.n}</div><div style="margin-bottom:8px">${d.ex.map(r=>{const t=PrgLib.tg(r);return `${esc(gEx(r[0]).n)} <span class="mut num" style="white-space:nowrap">${t.sets}×${t.sec?t.sec+" sn":gRepsTx(t)}</span>`}).join(", ")}</div>`).join("")}
   <p class="hint">${gPgNote}</p>
+  <div class="lbl">Rehberli başlat</div><div class="chips">${ds.map((d,i)=>`<button class="chip" data-g="gdgo:p:${p.id}-${i}">${d.n}</button>`).join("")}</div>
   <div class="btns"><button class="btn" data-g="pgadd:${p.id}">Şablonlarıma ekle</button><button class="btn ghost" data-g="closesheet">Kapat</button></div>`);
 }
 /* Koç programı ve hazır program aynı yoldan eklenir; günler "Ad – Gün" adlı şablon olur. */
@@ -531,9 +533,13 @@ Tamam: sayılır, İptal: antrenmana dön`))return;
   for(const x of w.ex)x.sets=x.sets.filter(s=>s.done);
   w.ex=w.ex.filter(x=>x.sets.length);
   w.t1=Date.now();
-  const e=add("spor",gDur(w),`Ağırlık, ${w.name}`,w.day);e.wid=w.id;
-  const kc=Algo.gymKcal({min:gDur(w),sets:gWorkSets(w),kg:motionKg()});if(kc)e.kcal=kc;
+  gLogSpor(w,"Ağırlık");
   save();gRestSet(0);render();gSheetSummary(w.id);
+}
+/* Biten antrenmanın spor dakikası ve kalori tahmini (bitiş ve rehberli kayıt). */
+function gLogSpor(w,kind){
+  const e=add("spor",gDur(w),`${kind}, ${w.name}`,w.day);e.wid=w.id;
+  const kc=Algo.gymKcal({min:gDur(w),sets:gWorkSets(w),kg:motionKg()});if(kc)e.kcal=kc;
 }
 function gRestore(w,entries){
   S.workouts.push(w);for(const e of entries)S.entries.push(e);
@@ -545,6 +551,8 @@ function gClick(v,el){
   switch(a){
     case "start":return p1?gTplPreview(+p1):gStart(null);
     case "startgo":closeSheet();return gStart(+p1);
+    case "gdpick":return gdPick();
+    case "gdgo":return gdStart(v.slice(5));
     case "fillok":{
       const x=w.ex[ei],ps=gPrevSet(w,x,si),k=document.querySelector(`[data-gi="kg:${ei}:${si}"]`),r=document.querySelector(`[data-gi="reps:${ei}:${si}"]`);
       if(!ps||!k||!r)return;

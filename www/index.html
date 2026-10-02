@@ -159,6 +159,15 @@ body.koc #toast{bottom:calc(150px + env(safe-area-inset-bottom))}
 .livebar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 4px 10px}
 .livebar b{font-size:18px}.fin{width:auto;padding:11px 20px}
 .fig{width:100%;height:auto;display:block}
+#guide{position:fixed;inset:0;z-index:15;max-width:520px;margin:0 auto;background:var(--card);display:flex;flex-direction:column;padding:calc(6px + env(safe-area-inset-top)) 16px calc(10px + env(safe-area-inset-bottom));overflow-y:auto}#guide[hidden]{display:none}body.gdon{overflow:hidden}
+.gdtop{display:flex;align-items:center;gap:8px;min-height:44px}.gdtop b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gdx{width:44px;height:44px;font-size:22px;color:var(--mut);flex:none}
+.gdbar{height:6px;background:var(--soft);border-radius:3px;overflow:hidden;flex:none}.gdbar i{display:block;height:100%;width:0;background:var(--prim)}
+.gdfig{flex:1 1 140px;min-height:110px;max-height:240px;display:flex;justify-content:center;margin:8px 0 4px;background:var(--bg);border-radius:16px;overflow:hidden}.gdfig .fig{height:100%;width:auto;max-width:100%}
+.gdl{text-align:center;font-size:14px;font-weight:700;color:var(--mut)}.gdn{text-align:center;font-size:24px;margin:0;line-height:1.2}.gdc{text-align:center;color:var(--mut);font-size:15px;margin:2px 0 4px}
+.gdring{position:relative;width:min(44vw,180px);margin:2px auto;flex:none}.gdring svg{display:block;width:100%;transform:rotate(-90deg)}.gdring circle{fill:none;stroke-width:9}.gdring .tr{stroke:var(--soft)}.gdring .pg{stroke:var(--prim);stroke-linecap:round}.gdring.gdrs .pg{stroke:var(--su)}
+.gdtm{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}.gdtm b{font-size:44px;line-height:1}
+.gdnx{display:flex;align-items:baseline;gap:8px;background:var(--bg);border-radius:12px;padding:10px 12px;margin:6px 0 0;flex:none}.gdnx b{flex:1;min-width:0;overflow-wrap:anywhere}
+.gdctl{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:8px;margin-top:8px;flex:none}.gdctl .btn{min-height:56px;padding:8px}.gdrem{text-align:center;margin:6px 0 0}#guide .hint{text-align:center;padding:4px 0 0}
 .fg-far{stroke:var(--mut);opacity:.75}.fg-body,.fg-near{stroke:var(--prim)}.fg-head{stroke:var(--prim);fill:var(--card);stroke-width:2.6}
 .fg-prop{stroke:var(--kcal)}.fg-plate{stroke:var(--kcal);fill:color-mix(in srgb,var(--kcal) 35%,var(--card));stroke-width:1.6}.fg-floor{stroke:var(--line)}
 .exrow{gap:12px}.exthumb{flex:none;width:72px;height:54px;background:var(--bg);border-radius:10px;padding:2px}
@@ -239,7 +248,7 @@ nav button[aria-current="page"]{color:var(--prim);background:var(--soft)}
 #sheet h3{margin:0 0 12px;font-size:18px}
 #sheet .in{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:var(--r-s);padding:13px 14px;font-size:18px;margin-bottom:10px}
 #sheet textarea.in{min-height:96px;resize:vertical;font-size:16px}
-#sheet .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#sheet .two,#guide .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
 .chip{background:var(--soft);border-radius:99px;padding:8px 14px;min-height:44px;min-width:44px;font-size:14px;font-weight:600}
 .chip[aria-pressed="true"]{background:var(--prim);color:var(--prim-ink)}
@@ -275,6 +284,7 @@ input.in,select.in,.chip>button{min-height:44px}
 </div>
 <div id="scrim"></div>
 <div id="sheet" role="dialog" aria-modal="true"></div>
+<div id="guide" role="dialog" aria-modal="true" aria-label="Rehberli antrenman" hidden></div>
 <div id="toast" role="status"><span id="tmsg"></span><button id="tundo" hidden>Geri al</button></div>
 
 <script src="icons.js"></script>
@@ -289,6 +299,8 @@ input.in,select.in,.chip>button{min-height:44px}
 <script src="musclemap.js"></script>
 <script src="gym.js"></script>
 <script src="exui.js"></script>
+<script src="guidelib.js"></script>
+<script src="guideui.js"></script>
 <script src="backuplib.js"></script>
 <script src="lablib.js"></script>
 <script src="labellib.js"></script>
@@ -349,7 +361,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- veri ---------- */
 const DEF={
-  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",lastPlan:"",lastWeekly:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",autoBk:false,lastAutoBk:"",reminders:[
+  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",lastPlan:"",lastWeekly:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",autoBk:false,lastAutoBk:"",reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -410,6 +422,8 @@ function cleanSettings(raw,fast){
   if(o.moveKcalOn===true)d.moveKcalOn=true;
   if(o.medShowName===false)d.medShowName=false;
   if(o.awakeOn===false)d.awakeOn=false;
+  if(o.gdVoice===false)d.gdVoice=false;
+  if(o.gdVib===false)d.gdVib=false;
   if(o.rpeOn===true)d.rpeOn=true;
   if(o.theme==="light"||o.theme==="dark")d.theme=o.theme;
   if(o.stepsAsked===true)d.stepsAsked=true;
@@ -723,7 +737,9 @@ function viewAyar(){
   ${isNative()&&SC()?`<h2>Adım sayar</h2><div class="card"><button class="btn ghost" data-act="${st.stepsOn?"adimkapat":"adimac"}">${st.stepsOn?"Adım sayarı kapat":"Adım sayarı aç"}</button></div>`:""}
   ${motionSettingsHtml()}
   <h2>Salon</h2><div class="card"><label style="min-height:44px;display:flex;gap:8px;align-items:center"><input type="checkbox" data-aw ${st.awakeOn?"checked":""} style="width:22px;height:22px">Antrenmanda ekranı açık tut</label>
-  <label style="min-height:44px;display:flex;gap:8px;align-items:center"><input type="checkbox" data-rpe ${st.rpeOn?"checked":""} style="width:22px;height:22px">Zorluk (RPE) alanı</label><p class="hint">Set satırına isteğe bağlı 6-10 zorluk alanı ekler (10 en zor). Yalnız kayıt içindir, önerileri ve hesapları değiştirmez.</p><p class="hint">Antrenman sürerken Salon açıkken ekran kararmaz. Başka sekmeye geçince, uygulamadan çıkınca ya da antrenman bitince normale döner.</p>${gGearHtml()}</div>
+  <label style="min-height:44px;display:flex;gap:8px;align-items:center"><input type="checkbox" data-rpe ${st.rpeOn?"checked":""} style="width:22px;height:22px">Zorluk (RPE) alanı</label>
+  <label style="min-height:44px;display:flex;gap:8px;align-items:center"><input type="checkbox" data-gdv ${st.gdVoice?"checked":""} style="width:22px;height:22px">Rehberli modda sesli komut</label>
+  <label style="min-height:44px;display:flex;gap:8px;align-items:center"><input type="checkbox" data-gdb ${st.gdVib?"checked":""} style="width:22px;height:22px">Rehberli modda titreşim</label><p class="hint">Sesli komut telefonun metin okuma (TTS) sesiyle çalışır; Türkçe ses yoksa telefonun varsayılan dili kullanılır, ses hiç yoksa sessiz devam eder. Müzik çalarken kısa süre kısılır.</p><p class="hint">Set satırına isteğe bağlı 6-10 zorluk alanı ekler (10 en zor). Yalnız kayıt içindir, önerileri ve hesapları değiştirmez.</p><p class="hint">Antrenman sürerken Salon açıkken ekran kararmaz. Başka sekmeye geçince, uygulamadan çıkınca ya da antrenman bitince normale döner.</p>${gGearHtml()}</div>
   ${vitalsSettingsHtml(fld)}`;
   if(sub==="koc")return viewProviders();
   if(sub==="hatir"){
@@ -1013,7 +1029,7 @@ async function scheduleReminders(){
       if(gone.length)await ln.removeDeliveredNotifications({notifications:gone});
     }catch(e){}
     const pend=await ln.getPending();
-    const pn=pend.notifications.filter(n=>n.id!==9001&&n.id!==9002);if(pn.length)await ln.cancel({notifications:pn.map(n=>({id:n.id}))});
+    const pn=pend.notifications.filter(n=>n.id!==9001&&n.id!==9002&&n.id!==GD_NID);if(pn.length)await ln.cancel({notifications:pn.map(n=>({id:n.id}))});
     /* Eklentinin günlük tekrarı ilk bildirimden sonra Doze'da ertelenen bir alarm kurar. Bu yüzden her günü ayrı, uyku modunu delen tek seferlik alarmla kuruyoruz. */
     try{await ln.registerActionTypes({types:[{id:"water",actions:[{id:"su",title:`+${S.settings.glass} ml`}]},{id:"med",actions:[{id:"med",title:"✔ Aldım"},{id:"medskip",title:"Atla"}]}]})}catch(e){}
     const list=[],now=Date.now(),lb=S.settings.lastBackup;
@@ -1239,6 +1255,8 @@ document.addEventListener("change",ev=>{
   if(t.dataset.gi){gInput(t);return}
   if(t.dataset.mk!==undefined){S.settings.moveKcalOn=t.checked;save();return}
   if(t.dataset.rpe!==undefined){S.settings.rpeOn=t.checked;save();return}
+  if(t.dataset.gdv!==undefined){S.settings.gdVoice=t.checked;save();return}
+  if(t.dataset.gdb!==undefined){S.settings.gdVib=t.checked;save();return}
   if(t.dataset.aw!==undefined){S.settings.awakeOn=t.checked;save();gAwake();return}
   if(t.dataset.set){
     const k=t.dataset.set,st=S.settings,[lo,hi,int]=RANGES[k],raw=t.value.trim();
@@ -1292,6 +1310,7 @@ try{
 }catch(e){}
 /* Android geri tuşu: sayfa, onboarding adımı, alt ekran, Bugün sırasıyla; false dönerse uygulamadan çıkılır. */
 function backKey(){
+  if(gdBack())return true;
   if($("#sheet").classList.contains("on")){closeSheet();return true}
   if(obNeeded()&&ob.step){ob.step--;render();return true}
   if(PARENT[tab]){goBack();return true}
