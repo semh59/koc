@@ -70,6 +70,17 @@ setTimeout(async()=>{
     ok("Bugüne ekle: günün yemekleri entry.meal ile (kah/ogl/aks), porsiyon çarpanı metinde, değerler kopyalanır",ents.length===5&&ents.filter(e=>e[0]==="kah").length===2&&ents.filter(e=>e[0]==="ogl").length===1&&ents.filter(e=>e[0]==="aks").length===2&&ents[0][2]==="Yumurtam × 2"&&ents[0][1]===140&&ev("S.entries[0].p")===12&&ev("S.entries[0].day")===ev("dayKey()"),ents);
     ev("lastUndo()");
     ok("Geri al: eklenen yemekler gider",ev("S.entries.filter(e=>e.type==='yemek').length")===0);
+    { // hedeften %15'ten fazla sapan gün ve kalori açığı engeli onay ister
+      let msg="";w.confirm=m=>{msg=m;return false};const card=ev("S.chat.find(m=>m.card&&m.card.kind==='menu').card"),n=()=>ev("S.entries.filter(e=>e.type==='yemek').length");
+      click(`[data-c="menuadd:${mc.id}:0"]`);
+      ok("sapan gün (off) onaysız eklenmez, onay metni %15'i söyler",n()===0&&msg.includes("%15"),msg);
+      msg="";ev("S.chat.find(m=>m.card&&m.card.kind==='menu').card.days[1].off=false");click(`[data-c="menuadd:${mc.id}:1"]`);
+      ok("hedefe yakın gün onay sormadan eklenir",msg===""&&n()>0);ev("lastUndo()");
+      ev("S.settings.healthNote='tansiyon'");ev(`{const c=S.chat.find(m=>m.card&&m.card.kind==='menu').card;c.days[1].off=false;c.days[1].k=c.kcal-100}`);msg="";
+      click(`[data-c="menuadd:${mc.id}:1"]`);
+      ok("kalori açığı engelinde hedefin altındaki gün onaysız eklenmez",n()===0&&msg.includes("Kalori açığı önerilmiyor"),msg);
+      ev("S.settings.healthNote=''");w.confirm=()=>true;ev("S.entries=[]");
+    }
     ev("{const c=S.chat.find(m=>m.card&&m.card.kind==='menu').card,L=Array.from({length:8},(_,i)=>({n:'K'+i,q:1,k:10,p:null,c:null,f:null,g:null,a:null}));c.days[0].meals[0].items=L;c.days[0].meals[1].items=L.slice()}");
     click(`[data-c="menutpl:${mc.id}:0"]`);
     ok("Şablon yap: ad 'Menü: gün', en çok 15 yemek, uyarı",ev("S.mealTpl.length")===1&&ev("S.mealTpl[0].n")==="Menü: Pazartesi"&&ev("S.mealTpl[0].items.length")===15&&q("#toast").textContent.includes("ilk 15"));

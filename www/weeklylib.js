@@ -48,7 +48,7 @@ const WeeklyLib=(()=>{
     if(st.bpOn){
       const byDay={};for(const r of vit)if(r.k==="t"&&r.day>=from&&r.day<=endDay)(byDay[r.day]=byDay[r.day]||[]).push(r);
       const ds=Object.keys(byDay).sort(),avg=f=>ds.map(k=>({day:k,v:mean(byDay[k].map(r=>r[f]))}));
-      if(ds.length>=2)charts.push({title:"Tansiyon (mmHg), günlük ortalama",series:[{pts:avg("sys"),color:"#10232b",shape:"c",short:"Sistolik"},{pts:avg("dia"),color:"#2a86bd",shape:"s",dash:true,short:"Diyastolik",below:true}],band:VL.bpBand(st).bands,note:VL.bpBand(st).mine?"Gölgeli alan girdiğin üst sınırlardır.":"Gölgeli alan genel referans aralığıdır (büyük 90–130, küçük 60–80); tanı değildir.",from,to:endDay});
+      if(ds.length>=2)charts.push({title:"Tansiyon (mmHg), günlük ortalama",series:[{pts:avg("sys"),color:"#10232b",shape:"c",short:"Sistolik"},{pts:avg("dia"),color:"#2a86bd",shape:"s",dash:true,short:"Diyastolik",below:true}],band:VL.bpBand(st).bands,note:VL.bpBand(st).mine?"Gölgeli alan girdiğin üst sınırlardır.":"Gölgeli alan genel referans aralığıdır (büyük 90–135, küçük 60–85); tanı değildir.",from,to:endDay});
     }
     return {rows,summary,charts,from,end:endDay};
   }

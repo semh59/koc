@@ -160,7 +160,7 @@ function viewTansiyon(){
     ${h.all?`<div class="sumv num" style="color:var(--ink)">${avgTxt(h.all)} <small>mmHg</small></div><div class="mut sm">${h.all.n} ölçüm, ${h.days} gün${hf?" · "+vFlagTxt(hf):""}</div>${h.enough?"":`<div class="mut sm">Ortalama için en az 3 gün, tercihen 7 gün sabah ve akşam ölçüm gerekir.</div>`}
     <div class="stats" style="margin-top:8px"><div class="stat"><div class="k">Sabah ortalaması</div><div class="v num">${avgTxt(h.sabah)}</div></div><div class="stat"><div class="k">Akşam ortalaması</div><div class="v num">${avgTxt(h.aksam)}</div></div></div>`:`<p class="mut">Henüz ölçüm yok. Günde 2 kez (sabah ve akşam), her seferinde 2 ölçüm, 3-7 gün ölçersen anlamlı bir ortalama çıkar.</p>`}
   </div>
-  ${vSeg()}<div class="card">${vSvg(bpSeries,bpBand,from,end,320,170)}${vLegend(bpSeries)}<div class="mut sm">${bpMine?"Gölgeli bölgeler senin girdiğin üst sınırlardır.":"Gölgeli bölgeler genel referans aralığıdır (büyük 90–130, küçük 60–80 mmHg). Tanı ya da kişisel hedef değildir; yorumu için hekimine danış."} Kırmızı işaret: hedef aralığı dışı.</div></div>
+  ${vSeg()}<div class="card">${vSvg(bpSeries,bpBand,from,end,320,170)}${vLegend(bpSeries)}<div class="mut sm">${bpMine?"Gölgeli bölgeler senin girdiğin üst sınırlardır.":"Gölgeli bölgeler genel referans aralığıdır (büyük 90–135, küçük 60–85 mmHg). Tanı ya da kişisel hedef değildir; yorumu için hekimine danış. Üst sınır girmediğin için kırmızı işaret çıkmaz."} ${bpMine?"Kırmızı işaret: sınırının dışı.":""}</div></div>
   <div class="card"><div class="lbl">Ölçümler (son ${vRange} gün)</div>${rows||`<p class="mut">Bu dönemde ölçüm yok.</p>`}</div>
   <p class="hint">${MED_NOTE} Hedef aralığı Ayarlar > Modüller'den girilir.</p>`;
 }

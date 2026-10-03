@@ -43,6 +43,7 @@ const LogLib=(()=>{
     if(!x||typeof x.n!=="string"||!x.n.trim()||!(x.g>0&&x.g<=5000)||!(x.k>=0&&x.k<=5000))return null;
     const o={n:x.n.trim().slice(0,60),g:Math.round(x.g*10)/10,k:x.k};
     for(const m of NUTR)if(Number.isFinite(x[m])&&x[m]>=0&&x[m]<=PER100[m])o[m]=x[m];
+    if(x.por===true)o.por=true; // gramı bilinmeyen porsiyon besini: g = porsiyon × 100 (değerler porsiyon başına girilmişti)
     return o;
   }
   function cleanRecipes(arr){
@@ -70,7 +71,7 @@ const LogLib=(()=>{
   const recipeNote=c=>"Çiğ ağırlıklarla hesaplandı, pişince değişir; tahmindir."+c.part.map(([m,h])=>` ${RLBL[m][0].toUpperCase()+RLBL[m].slice(1)}: ${h}/${c.n} malzemede veri var, toplam yazılmadı.`).join("");
   /* Yemek arama listesindeki biçim (allFoods): tarif tek besin gibi aranır, porsiyon başı eklenir. */
   function recipeFood(r){
-    const c=recipeCalc(r),pg=c.g/r.s,f={n:r.n,k:c.tot.k*100/c.g,my:true,src:"tarif",rec:r.id,hint:`Tarifim, ${r.s} porsiyon. ${recipeNote(c)}`,u:[[`1 porsiyon (${Math.round(pg)} g)`,pg],["100 g",100]]};
+    const c=recipeCalc(r),pg=c.g/r.s,f={n:r.n,k:c.tot.k*100/c.g,my:true,src:"tarif",rec:r.id,hint:`Tarifim, ${r.s} porsiyon. ${recipeNote(c)}`,u:[[r.items.some(i=>i.por)?"1 porsiyon":`1 porsiyon (${Math.round(pg)} g)`,pg],["100 g",100]]};
     for(const m of NUTR)f[m]=c.tot[m]==null?null:c.tot[m]*100/c.g;
     return f;
   }

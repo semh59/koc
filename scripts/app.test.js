@@ -2154,6 +2154,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("tansiyon: çizgiler doğrudan etiketli (Sistolik, Diyastolik), renge ek olarak şekil: sistolik daire, diyastolik kare + kesik çizgi",c.textContent.includes("Sistolik")&&c.textContent.includes("Diyastolik")&&c.querySelectorAll("circle").length===5&&c.querySelectorAll("rect").length>=5+1&&!!c.querySelector("polyline[stroke-dasharray]"));
     ok("tansiyon: lejant her seri için işaret çizer (çizgi + şekil), renk adına dayanmaz",qa("#view .legend span").length===2&&qa("#view .legend span").every(x=>x.querySelector("svg line")&&x.querySelector("svg circle,svg rect"))&&!q("#view").textContent.includes("Yeşil: büyük"));
     ok("tansiyon: genel referans bandı (iki gölgeli bölge) ve 'genel referans' notu, tanı dili yok",c.querySelectorAll('rect[opacity=".12"]').length===2&&c.textContent.includes("genel referans")&&q("#view").textContent.includes("Tanı ya da kişisel hedef değildir")&&!/(yüksek tansiyon|hipertansiyon|hastalık|teşhis)/i.test(c.parentNode.textContent));
+    ok("tansiyon: genel referans bandı hazır sınırla (135/85) aynı, sınır girilmemişken 'Kırmızı işaret' vaadi yok",ev("VitalsLib.bpBand({}).bands[0].hi")===ev("VitalsLib.BP_PRESET.bpSysHi")&&ev("VitalsLib.bpBand({}).bands[1].hi")===ev("VitalsLib.BP_PRESET.bpDiaHi")&&q("#view").textContent.includes("90–135")&&!q("#view").textContent.includes("Kırmızı işaret"));
     ev("S.settings.bpSysHi=135;S.settings.bpDiaHi=85;render()");c=q("#view svg.chart");
     ok("kullanıcı kendi üst sınırını girdiyse bant onu gösterir, 'genel referans' yazmaz",c.textContent.includes("hedef aralığın")&&!c.textContent.includes("genel referans")&&q("#view").textContent.includes("senin girdiğin"));
     const P=JSON.parse(c.dataset.tip);
@@ -2423,6 +2424,25 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     const ctx=ev("CoachLib.contextText(cData())"),cat=ev("cMenuCat().text");
     ok("metinde adı geçen her veri gerçekten bağlamda: doz, haftanın günleri, uyum, stok, bugünkü yemek, kendi besin adı",ctx.includes("1 tablet")&&ctx.includes("haftanın günleri")&&ctx.includes("son 7 gün")&&ctx.includes("stok")&&cat.includes("Kendi besinim")&&["doz","haftanın günleri","son 7 günün uyumu","stok","bugünkü kayıtların","kendi besin"].every(k=>sent.includes(k)));
     ok("politika: Drive/otomatik yedekte parola zorunlu (en az 6), paylaş/kopyada isteğe bağlı; vücut ölçüleri ve tarifler tabloda",doc.includes("parola zorunlu, en az 6 karakter")&&doc.includes("vücut ölçüleri (bel, kalça")&&doc.includes("kendi tarifleri"));
+    reset();
+  }
+  { // Dalga 11 (12): karbonhidrat/yağ toplamında eksik öğün notu
+    reset();ev("S.entries=[];{const e=add('yemek',300,'A');e.p=10;e.c=40;e.f=8}{const e=add('yemek',200,'B');e.p=5}");
+    ok("Bugün: değeri olmayan öğün varsa karbonhidrat/yağ 'n/m öğünde veri var' notu taşır",ev("viewBugun()").includes("Karbonhidrat 1/2, yağ 1/2 öğünde veri var"));
+    ev("S.entries=[];{const e=add('yemek',300,'A');e.p=10;e.c=40;e.f=8}");
+    ok("tüm öğünlerde veri varsa not yok",!ev("viewBugun()").includes("öğünde veri var; toplam"));
+    reset();
+  }
+  { // Dalga 11 (12): Koç'un porsiyon besini tarifte 100 g sayılmaz
+    reset();ev("S.myFoods=[{n:'Koç lahmacun',k:300,p:10,por:true},{n:'Gramlı besin',k:200,u:[['1 adet (50 g)',50]]}];sheetTarif()");
+    const pick=name=>{const r=$q("#rq");r.value=name;r.dispatchEvent(new w.Event("input",{bubbles:true}));$q('[data-rp="pick:0"]').click()};
+    pick("Koç lahmacun");pick("Gramlı besin");ok("Koç kartından eklenen besin por işaretiyle saklanır, temizleyici korur",ev("(()=>{S.myFoods=[];myFoodAdd('Test',250,5);return S.myFoods[0].por===true&&cleanMyFoods(S.myFoods)[0].por===true&&cleanMyFoods([{n:'a',k:1}])[0].por===undefined})()"));ev("S.myFoods=[{n:'Koç lahmacun',k:300,p:10,por:true},{n:'Gramlı besin',k:200,u:[['1 adet (50 g)',50]]}];sheetTarif()");pick("Koç lahmacun");pick("Gramlı besin");
+    const gi=()=>[...w.document.querySelectorAll("[data-rg]")],sh=()=>$q("#sheet").textContent;
+    ok("gramı bilinmeyen (Koç) besin tarifte porsiyon olarak girilir, gramlı besin gramla",ev("rd.items[0].por")===true&&ev("rd.items[1].por")===undefined&&sh().includes("1 porsiyon: 300 kcal")&&sh().includes("100 g: 200 kcal"));
+    gi()[0].value="2";gi()[0].dispatchEvent(new w.Event("input",{bubbles:true}));gi()[1].value="100";gi()[1].dispatchEvent(new w.Event("input",{bubbles:true}));
+    ok("2 porsiyon Koç besini = 600 kcal (100 g × 2 değil), gramlı 100 g = 200 kcal; toplam 800",ev("rd.items[0].g")===200&&$q("#rsum").textContent.includes("800 kcal"),$q("#rsum").textContent);
+    $q("#rn").value="Karışık";$q("#rs").value="2";$q('[data-rp="save"]').click();
+    ok("kayıtlı tarifte por korunur; eski tarif (por yok) değişmez; tarif porsiyonu 400 kcal",ev("S.recipes[0].items[0].por")===true&&ev("LogLib.cleanRecipes([{n:'a',items:[{n:'x',g:100,k:50}]}])[0].items[0].por")===undefined&&Math.round(ev("LogLib.recipeFood(S.recipes[0]).k*LogLib.recipeFood(S.recipes[0]).u[0][1]/100"))===400);
     reset();
   }
   console.log("son satıra ulaşıldı, "+total+" test");

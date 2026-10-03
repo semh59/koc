@@ -7,12 +7,12 @@ function recipeListHtml(){
   return `<div class="lbl">Tariflerim</div>${S.recipes.map(r=>{const f=LogLib.recipeFood(r);return `<div class="prow"><button data-rp="add:${r.id}" style="flex:1;text-align:left;min-height:56px"><b>${esc(r.n)}</b><span class="mut sm">1 porsiyon: ${Math.round(f.k*f.u[0][1]/100)} kcal</span></button><button class="plus" data-rp="edit:${r.id}" aria-label="${esc(r.n)} tarifini düzenle">${Icons.svg("not")}</button></div>`}).join("")}`;
 }
 function rpRows(){
-  return rd.items.map((it,i)=>`<div class="prow"><span style="flex:1;min-width:0"><b>${esc(it.n)}</b><span class="mut sm">100 g: ${Math.round(it.k)} kcal</span></span><input class="in num" data-rg="${i}" inputmode="decimal" aria-label="${esc(it.n)} gram" value="${it.g||""}" style="width:76px;margin:0"><span class="mut">g</span><button class="del" data-rp="rm:${i}" aria-label="${esc(it.n)} malzemesini çıkar">✕</button></div>`).join("")||`<p class="mut sm">Henüz malzeme yok. Aşağıdan ara ve ekle.</p>`;
+  return rd.items.map((it,i)=>`<div class="prow"><span style="flex:1;min-width:0"><b>${esc(it.n)}</b><span class="mut sm">${it.por?"1 porsiyon":"100 g"}: ${Math.round(it.k)} kcal</span></span><input class="in num" data-rg="${i}" inputmode="decimal" aria-label="${esc(it.n)} ${it.por?"porsiyon":"gram"}" value="${it.por?(it.g?it.g/100:""):it.g||""}" style="width:76px;margin:0"><span class="mut">${it.por?"porsiyon":"g"}</span><button class="del" data-rp="rm:${i}" aria-label="${esc(it.n)} malzemesini çıkar">✕</button></div>`).join("")||`<p class="mut sm">Henüz malzeme yok. Aşağıdan ara ve ekle.</p>`;
 }
 function rpSum(){
   const ok=rd.items.filter(i=>i.g>0),c=LogLib.recipeCalc({items:ok.length?ok:[{n:"x",g:1,k:0}]}),s=Math.round(num($("#rs").value))||1;
   const line=div=>[`${Math.round(c.tot.k/div)} kcal`,...NUTR.map(m=>c.tot[m]!=null&&`${NLBL[m]} ${rpFmt(c.tot[m]/div)} ${NUNIT(m)}`)].filter(Boolean).join(" · ");
-  $("#rsum").innerHTML=ok.length?`<div class="k">Porsiyon başı (${s} porsiyon, ${Math.round(c.g/s)} g)</div><div class="v num">${line(s)}</div><div class="k" style="margin-top:6px">Tarifin tamamı (${Math.round(c.g)} g)</div><div class="v num">${line(1)}</div>`:`<div class="k">Malzeme ve gram girince değerler burada görünür</div>`;
+  $("#rsum").innerHTML=ok.length?`<div class="k">Porsiyon başı (${s} porsiyon${rd.items.some(i=>i.por)?"":`, ${Math.round(c.g/s)} g`})</div><div class="v num">${line(s)}</div><div class="k" style="margin-top:6px">Tarifin tamamı${rd.items.some(i=>i.por)?"":` (${Math.round(c.g)} g)`}</div><div class="v num">${line(1)}</div>`:`<div class="k">Malzeme ve gram girince değerler burada görünür</div>`;
   $("#rnote").textContent=ok.length?LogLib.recipeNote(c):"Çiğ ağırlıklarla hesaplanır, pişince değişir; tahmindir.";
 }
 function rpRead(){if(!rd)return;rd.n=$("#rn").value;rd.s=$("#rs").value}
@@ -51,7 +51,7 @@ document.addEventListener("click",ev=>{
   else if(a==="pick"){
     const f=rres[+p];rpRead();if(!f)return;
     if(rd.items.length>=30)return ferr("rerr","Bir tarifte en fazla 30 malzeme olur");
-    const it=LogLib.cleanRecipes([{n:"x",items:[{n:f.n,g:Math.min(5000,Math.round(f.u[0][1])),...f}]}])[0];
+    const it=LogLib.cleanRecipes([{n:"x",items:[{n:f.n,g:f.por?100:Math.min(5000,Math.round(f.u[0][1])),...f}]}])[0];
     if(it){rd.items.push(it.items[0]);$("#rrows").innerHTML=rpRows();$("#rq").value="";$("#rlist").innerHTML="";rpSum()}
   }else if(a==="dup"&&rd.id!=null){
     rpRead();const base=rd.n.trim().slice(0,52);let n=`${base} (kopya)`,i=2;
@@ -69,6 +69,6 @@ document.addEventListener("input",ev=>{
   if(t.id==="rq"){
     const q=t.value.trim();rres=q.length<1?[]:foodSearch(q,6,allFoods()).map(i=>allFoods()[i]);
     $("#rlist").innerHTML=rres.map((f,i)=>`<button class="prow" data-rp="pick:${i}"><span><b>${esc(f.n)}</b><span class="mut sm">100 g: ${Math.round(f.k)} kcal</span></span><span class="plus" aria-hidden="true">+</span></button>`).join("");
-  }else if(t.dataset.rg!==undefined&&rd){const v=num(t.value);rd.items[+t.dataset.rg].g=v>0?v:0;rpSum()}
+  }else if(t.dataset.rg!==undefined&&rd){const v=num(t.value);const it=rd.items[+t.dataset.rg];it.g=v>0?v*(it.por?100:1):0;rpSum()}
   else if(t.id==="rs"&&rd)rpSum();
 });

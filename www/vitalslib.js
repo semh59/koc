@@ -135,7 +135,7 @@ const VitalsLib=(()=>{
   /* Genel referans bandı (tanı değil) ya da kullanıcının girdiği üst sınırlar; ekran ve PDF aynı tanımı kullanır. */
   function bpBand(s){
     const mine=pos(s.bpSysHi)||pos(s.bpDiaHi);
-    return {mine,bands:mine?[pos(s.bpSysHi)&&{lo:90,hi:s.bpSysHi,label:"hedef aralığın"},pos(s.bpDiaHi)&&{lo:60,hi:s.bpDiaHi}].filter(Boolean):[{lo:90,hi:130,label:"genel referans"},{lo:60,hi:80}]};
+    return {mine,bands:mine?[pos(s.bpSysHi)&&{lo:90,hi:s.bpSysHi,label:"hedef aralığın"},pos(s.bpDiaHi)&&{lo:60,hi:s.bpDiaHi}].filter(Boolean):[{lo:90,hi:BP_PRESET.bpSysHi,label:"genel referans"},{lo:60,hi:BP_PRESET.bpDiaHi}]}; // hazır sınır (135/85) ile aynı: bant ve "doldur" düğmesi tutarlı
   }
   /* Renk körü ve siyah-beyaz baskı için seri şekli (c daire, s kare, t üçgen, d baklava), kesik çizgi ve doğrudan etiket (short) taşır. */
   function mark(ctx,sh,x,y,r){

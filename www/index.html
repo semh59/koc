@@ -443,6 +443,7 @@ function cleanMyFoods(arr){
     for(const m of NUTR)if(Number.isFinite(x[m])&&x[m]>=0&&x[m]<=LogLib.PER100[m])f[m]=x[m];
     if(typeof x.b==="string"&&/^\d{8,14}$/.test(x.b))f.b=x.b;
     if(x.src==="off")f.src="off";
+    if(x.por===true)f.por=true; // Koç kartından: değerler 1 porsiyon başına, gramı bilinmiyor
     if(Array.isArray(x.u)){const u=x.u.filter(q=>Array.isArray(q)&&typeof q[0]==="string"&&q[1]>0&&q[1]<=5000).slice(0,4).map(q=>[q[0].slice(0,40),q[1]]);if(u.length)f.u=u}
     out.push(f);
   }
@@ -624,6 +625,8 @@ function viewBugun(){
   const pr=cur!=null?Algo.proteinRange(cur):null;
   const macro=meals.some(e=>e.p||e.c||e.f)?`<div class="macro num">Protein <b>${Math.round(mac("p"))}</b>${pr?` / ${pr[0]}–${pr[1]}`:""} g${meals.some(e=>e.c!=null||e.f!=null)?` · Karbonhidrat <b>${Math.round(mac("c"))}</b> g · Yağ <b>${Math.round(mac("f"))}</b> g`:""}</div>`:"";
   const mi=["fb","sg","na"].map(k=>[k,meals.filter(e=>e[k]!=null).length]).filter(x=>x[1]).map(([k,n])=>`${NLBL[k][0].toUpperCase()+NLBL[k].slice(1)} <b>${Math.round(mac(k))}</b> ${NUNIT(k)} (${n}/${meals.length})`);
+  const nc=meals.filter(e=>e.c!=null).length,nf=meals.filter(e=>e.f!=null).length;
+  const macroNote=macro&&meals.some(e=>e.c!=null||e.f!=null)&&(nc<meals.length||nf<meals.length)?`<div class="mut sm macro">Karbonhidrat ${nc}/${meals.length}, yağ ${nf}/${meals.length} öğünde veri var; toplam eksik olabilir.</div>`:"";
   const micro=mi.length?`<div class="macro num">${mi.join(" · ")} <span class="mut sm">öğünde veri var</span></div>`:"";
   const actions=`<div class="actions">
     <button class="act su" data-act="su"><span class="ic">${Icons.svg("su")}</span>+${st.glass}</button>
@@ -655,7 +658,7 @@ function viewBugun(){
     isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?row("adim","Adım sayarı aç","Telefonun sensörü sayar, hesap gerekmez.",[["adimac","Aç"],["adimdegil","Şimdi değil"]]):"",
     S.entries.length>=10&&(old==null||old>14)?row("cloud","Yedek zamanı",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Gönder"]]):""].filter(Boolean);
   const todoCard=todo.length?`<div class="card todo"><div class="lbl">Bugün yapılacaklar</div>${todo.join("")}</div>`:"";
-  return `${actions}${habitRow()}${rings}${macro}${micro}${sOn?stepCard():""}${todoCard}${gTodayCard()}${weight}<button class="lnk" data-ms="open">Ölçü ekle (bel, kalça…)</button><button class="coach" data-tab="koc">${esc(coach())} <b>Koç ›</b></button>${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
+  return `${actions}${habitRow()}${rings}${macro}${macroNote}${micro}${sOn?stepCard():""}${todoCard}${gTodayCard()}${weight}<button class="lnk" data-ms="open">Ölçü ekle (bel, kalça…)</button><button class="coach" data-tab="koc">${esc(coach())} <b>Koç ›</b></button>${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
 }
 
 /* PDF raporlar tek yerde; paylaşım işleyicileri belgede dinlediği için ekrandan bağımsız çalışır. */
@@ -877,7 +880,7 @@ function goTpl(){
   S.mealTpl=LogLib.cleanTpl([...S.mealTpl,{id:Math.max(0,...S.mealTpl.map(t=>t.id))+1,n,items}]);save();closeSheet();toast(`"${n}" şablonu kaydedildi`);
 }
 let curFood=null,curPor=0,foodAskQ="";
-const allFoods=()=>S.myFoods.map(m=>Object.assign({n:m.n,k:m.k,u:m.u||[["1 porsiyon",100]],my:true,b:m.b,src:m.src},...NUTR.map(k=>({[k]:m[k]==null?null:m[k]})))).concat(S.recipes.map(LogLib.recipeFood),FOODS);
+const allFoods=()=>S.myFoods.map(m=>Object.assign({n:m.n,k:m.k,u:m.u||[["1 porsiyon",100]],por:m.por===true,my:true,b:m.b,src:m.src},...NUTR.map(k=>({[k]:m[k]==null?null:m[k]})))).concat(S.recipes.map(LogLib.recipeFood),FOODS);
 const foodListHtml=q=>{const L=allFoods(),ask=q.trim().length>=2?`<button class="prow" data-c="askfood"><span><b>"${esc(q.trim())}" için Koç'a sor</b><span class="mut sm">Yapay zekâ tahmin eder, sonra listene ekleyebilirsin</span></span><span class="plus" aria-hidden="true">✨</span></button>`:"";return foodSearch(q,8,L).map(i=>{const f=L[i];return `<button class="prow" data-food="${i}"><span><b>${esc(f.n)}</b><span class="mut sm">${f.rec?`Tarifim, 1 porsiyon: ${Math.round(f.k*f.u[0][1]/100)} kcal`:f.my?(f.u.length>1||f.u[0][1]!==100?`Benim ürünüm, 100 g: ${f.k} kcal`:`Benim besinim, 1 porsiyon: ${f.k} kcal`):`100 g: ${f.k} kcal, protein ${fmt(f.p,0)} g`}</span></span><span class="plus">+</span></button>`}).join("")+ask};
 function sheetPorsiyon(i,food){
   curFood=food||allFoods()[i];curPor=0;

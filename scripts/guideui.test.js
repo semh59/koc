@@ -92,6 +92,9 @@ setTimeout(async()=>{
     q('[data-gdkg="squat"]').value="60";click('[data-gd="save"]');
     const sq=ev("S.workouts[S.workouts.length-1]");
     ok("ağırlıklı şablon: yazılan kg, tekrar ve süre kaydedilir, şablona bağlı, sahte rekor yok",sq.tpl===7&&sq.ex[0].sets.length===2&&sq.ex[0].sets.every(s=>s.kg===60&&s.reps===12&&s.sec===20&&s.done)&&ev("gPRs(S.workouts[S.workouts.length-1]).length")===0);
+    ev(`gdStart('t:7');while(!GuideLib.over(gd.st)){const p=gd.st.ph[gd.st.i];p.reps?GuideLib.finish(gd.st,gd.st.at+3*36e5):GuideLib.tick(gd.st,gd.st.end)}gdEnter()`);
+    q('[data-gdkg="squat"]').value="60";click('[data-gd="save"]');
+    ok("tekrarlı harekette 3 saat beklenip Bitti denirse set süresi 7200 sn ile sınırlanır (sonraki açılışta atılmaz)",ev("S.workouts[S.workouts.length-1].ex[0].sets.every(s=>s.sec>0&&s.sec<=7200)")&&ev("cleanGym({workouts:JSON.parse(JSON.stringify(S.workouts))}).workouts.at(-1).ex[0].sets.length")===2);
     ev(`S.templates.push({id:8,name:'Kayıttan',ex:['plank','trail']})`);
     ok("set/süre hedefi olmayan şablon türün varsayılanını alır (süreli 3×30 sn, kardiyo 1×10 dk)",JSON.stringify(ev("gdTplSteps(S.templates[1]).map(s=>[s.n,s.sec])"))==="[[3,30],[1,600]]");
     ok("rehberli kayıt sonrası öneri sayı (NaN değil)",(r=>r&&Number.isFinite(r.kg)&&Number.isFinite(r.reps))(ev("gSuggest('squat')")));

@@ -115,7 +115,7 @@ function gdSave(){
   for(const x of r){
     gAddEx(w,x.ex,{sets:x.sets.length});
     const y=w.ex[w.ex.length-1];
-    y.sets=y.sets.map((s,i)=>Object.assign({kg:x.ex in kg?kg[x.ex]:s.kg,reps:x.sets[i].reps||s.reps,sec:x.sets[i].sec,done:true},gd.meta.warm?{w:true}:{}));
+    y.sets=y.sets.map((s,i)=>Object.assign({kg:x.ex in kg?kg[x.ex]:s.kg,reps:x.sets[i].reps||s.reps,sec:Math.min(7200,x.sets[i].sec),done:true},gd.meta.warm?{w:true}:{}));
   }
   S.workouts.push(w);
   if(!gd.meta.warm)gLogSpor(w,"Rehberli");

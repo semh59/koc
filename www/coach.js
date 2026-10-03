@@ -204,7 +204,7 @@ function myFoodPut(f){
   return true;
 }
 function myFoodAdd(n,kcal,p){
-  const f={n:n.slice(0,60),k:Math.round(kcal)};if(p!=null&&p>=0)f.p=Math.round(p*10)/10;
+  const f={n:n.slice(0,60),k:Math.round(kcal),por:true};if(p!=null&&p>=0)f.p=Math.round(p*10)/10;
   return myFoodPut(f);
 }
 function cApplyLog(id,el){
@@ -291,11 +291,12 @@ function cMenuCat(){
   return {cat,text:lines.join("\n")};
 }
 /* Hedef: kalori açığı engeli varsa ve hedef bakımın altındaysa bakım düzeyi (cReply'daki kuralın aynısı); yeme düzeni işareti ya da bakım hesaplanamıyorsa menü yok. */
+const menuBlock=(c=cCalc())=>Algo.lossBlock({age:S.settings.age,cm:S.settings.heightCm,kg:c.trendKg,goalKg:S.settings.goalKg,health:!!S.settings.healthNote.trim()});
 function cMenuPlan(){
   const st=S.settings,c=cCalc(),goal=st.kcal>0?st.kcal:c.target;
   if(!(goal>0))return {why:"Önce Ayarlar > Profil ve hedefler'den günlük kalori hedefi belirle"};
   if(S.chat.some(m=>m.fl==="ed"||(m.card&&m.card.kind==="safety"&&m.card.level==="ed")))return {why:"Yeme düzeniyle ilgili işaret gördüm; kısıtlayıcı menü önermiyorum, bir uzmana danış"};
-  const block=Algo.lossBlock({age:st.age,cm:st.heightCm,kg:c.trendKg,goalKg:st.goalKg,health:!!st.healthNote.trim()});
+  const block=menuBlock(c);
   let kcal=goal,held=false;
   if(block){
     if(!c.tdee)return {why:block+". Menü hedefi hesaplanamadı; hekimine ya da diyetisyene danış"};
@@ -593,6 +594,8 @@ function cClick(v,el){
     case "menuask":{menuNote=($("#mnote").value||"").replace(/\s+/g," ").trim().slice(0,200);closeSheet();return cMenu()}
     case "menuadd":{
       const c=menuCard(+p1),d=c&&c.days[+p2];if(!d)return;
+      const bl=menuBlock(),why=d.off?`Bu günün toplamı ${d.k} kcal, hedefin (${c.kcal}) %15'inden fazla sapıyor.`:bl&&c.kcal&&d.k<c.kcal-50?`Kalori açığı önerilmiyor (${bl}); bu gün hedefin altında (${d.k} kcal).`:"";
+      if(why&&!confirm(why+" Yine de bugüne eklensin mi?"))return;
       const it=menuEntries(d);return addFoods(it,dayKey(),`${d.n}: ${it.length} yemek bugüne eklendi`);
     }
     case "menutpl":{
