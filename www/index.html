@@ -387,7 +387,7 @@ const timeOk=s=>typeof s==="string"&&/^([01]\d|2[0-3]):[0-5]\d$/.test(s);
 let corruptNote=false;
 /* Eski varsayılan metinler (özet üretilmese de "hazır" diyen, eski menü yolunu gösteren) değiştirilmemişse yeni varsayılan geçerli olsun. */
 /* Koç onay metni değiştiğinde artırılır: eski sürümle verilmiş onay geçersiz sayılır ve yeniden sorulur. */
-const CONSENT_V=1;
+const CONSENT_V=2;
 const MED_NOTE="NeoWell tıbbi cihaz değildir, tanı koymaz ve tedavi önermez; hekim yerine geçmez. Sağlık kararların için hekimine danış.";
 const OLD_BODIES=["Haftanın özeti hazır, bakmak için dokun.","Yedeği Drive'a göndermek için Ayarlar > Yedeği Drive'a gönder."];
 function cleanSettings(raw,fast){

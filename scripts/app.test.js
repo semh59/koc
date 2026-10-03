@@ -2411,6 +2411,16 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("eski kayıt (s yok) düzenlenince geçmişi bozulmaz",ev("S.meds[0].s")===undefined&&ev("MedLib.adherence(S.meds,S.medLog,keyOff(-5),dayKey(),dayKey(),'23:59')").missed>=5);
     reset();
   }
+  { // Dalga 11 (9): onay metni gerçek veriyle ve politikayla aynı
+    const doc=require("fs").readFileSync(path.join(__dirname,"../docs/gizlilik-politikasi.md"),"utf8"),sent=ev("CONSENT_SENT"),not=ev("CONSENT_NOT");
+    ok("onay metni sürüm 2; eski sürüm onayı düşer",ev("CONSENT_V")===2&&ev("cleanSettings({consent:true,consentV:1}).consent")===false);
+    ok("uygulama içi onay metni ile politika §5 aynı gönderilen/gönderilmeyen listesini taşır",doc.includes("**Koç'a gönderilenler** (uygulama içindeki onay metniyle aynıdır): "+sent+".")&&doc.includes("**Koç'a gönderilmeyenler:** "+not)&&ev("consentHtml()").includes(sent)&&ev("consentHtml()").includes(not));
+    reset();ev("S.settings.medOn=true;S.meds=[{id:1,n:'Ilac',d:'1 tablet',t:['08:00'],w:[1],on:true,k:10}];S.mealTpl=[];S.myFoods=[{n:'Kendi besinim',k:100,p:5}]");
+    const ctx=ev("CoachLib.contextText(cData())"),cat=ev("cMenuCat().text");
+    ok("metinde adı geçen her veri gerçekten bağlamda: doz, haftanın günleri, uyum, stok, bugünkü yemek, kendi besin adı",ctx.includes("1 tablet")&&ctx.includes("haftanın günleri")&&ctx.includes("son 7 gün")&&ctx.includes("stok")&&cat.includes("Kendi besinim")&&["doz","haftanın günleri","son 7 günün uyumu","stok","bugünkü kayıtların","kendi besin"].every(k=>sent.includes(k)));
+    ok("politika: Drive/otomatik yedekte parola zorunlu (en az 6), paylaş/kopyada isteğe bağlı; vücut ölçüleri ve tarifler tabloda",doc.includes("parola zorunlu, en az 6 karakter")&&doc.includes("vücut ölçüleri (bel, kalça")&&doc.includes("kendi tarifleri"));
+    reset();
+  }
   console.log("son satıra ulaşıldı, "+total+" test");
   process.exit(bad||total<MIN_TESTS?1:0);
 },100);

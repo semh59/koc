@@ -18,7 +18,8 @@ Hepsini kullanıcı kendisi girer ya da telefon sensörlerinden, kullanıcının
 | Kategori | İçerik |
 |---|---|
 | Profil | boy, yaş, cinsiyet (isteğe bağlı), hareket düzeyi, hedefler |
-| Sağlık verisi (özel nitelikli) | kilo, yemek ve su kayıtları, spor ve antrenman setleri, adım ve hareket, tahlil sonuçları, tansiyon ve şeker ölçümleri, ilaç adı-saat-alım kaydı, uyku, ruh hali, oruç, kullanıcının yazdığı sağlık notu |
+| Sağlık verisi (özel nitelikli) | kilo, vücut ölçüleri (bel, kalça vb.), yemek ve su kayıtları, spor ve antrenman setleri, adım ve hareket, tahlil sonuçları, tansiyon ve şeker ölçümleri, ilaç adı-doz-saat-alım kaydı ve stok, uyku, ruh hali, oruç, kullanıcının yazdığı sağlık notu |
+| Kullanıcı içeriği | kendi tarifleri, besinleri, favorileri, öğün ve antrenman şablonları |
 | Notlar ve Koç sohbeti | kullanıcının yazdığı notlar, Koç ile mesajlar |
 | Cihaz | bildirim izni durumu; yürüyüş/koşu algılandığında yaklaşık 1 dakikalık konum ölçümü (yalnız mesafe ve hız sonucu saklanır, konum noktası ve rota saklanmaz); kamera (etiket ve tahlil fotoğrafı telefonda okunur, fotoğraf saklanmaz ve gönderilmez) |
 | Koç anahtarı | kullanıcının kendi API anahtarı; yalnız telefonda, Android Keystore ile şifreli saklanır, yedeğe yalnız yedek parolayla şifrelenirse girer |
@@ -37,9 +38,13 @@ Kullanıcının telefonundan internete çıkan tek veri akışları:
 | Hizmet | Ne gider | Ne zaman |
 |---|---|---|
 | Open Food Facts (açık veri tabanı) | Yalnızca barkod numarası (ve her internet isteğinde olduğu gibi IP adresi) | Kullanıcı barkod okutursa |
-| Koç sağlayıcısı: NVIDIA Build, Groq, OpenRouter, Google Gemini ya da kullanıcının kendi eklediği OpenAI uyumlu servis | Kullanıcı mesajları; profil; sağlık notu; hedefler; son 14 günün kilo, yemek, su, spor, adım (varsa uyku, ruh hali) özeti; son antrenmanlar; son notlar; ilaç modülü açıksa ilaç adı ve saatleri; kullanıcının API anahtarı (yalnızca kimlik doğrulama). **Tahlil, tansiyon, şeker, fotoğraf ve yedek gönderilmez.** | Yalnızca açık rıza verilmişse ve kullanıcı Koç'u kullandığında (otomatik günlük/haftalık yorumlar dahil). Sağlayıcıların sunucuları yurt dışındadır; bu bir yurt dışına aktarımdır. Gemini'de her gönderimden önce ayrıca onay sorulur. |
+| Koç sağlayıcısı: NVIDIA Build, Groq, OpenRouter, Google Gemini ya da kullanıcının kendi eklediği OpenAI uyumlu servis | Aşağıdaki "Koç'a gönderilenler" listesi; ayrıca kullanıcının API anahtarı (yalnızca kimlik doğrulama) | Yalnızca açık rıza verilmişse ve kullanıcı Koç'u kullandığında (otomatik günlük/haftalık yorumlar dahil). 18 yaş altında hiç gönderilmez. Sağlayıcıların sunucuları yurt dışındadır; bu bir yurt dışına aktarımdır. Gemini'de her gönderimden önce ayrıca onay sorulur. |
 | Google barkod tarayıcı (Google Play hizmetleri, ML Kit) | NeoWell görüntüyü almaz; görüntü telefonda işlenir. Google kendi koşullarına göre kullanım ve tanılama bilgisi toplayabilir. | Barkod okutulurken |
 | Google Drive ya da başka paylaşım hedefi | Kullanıcının kendi seçtiği dosya (yedek parolayla şifrelenir; PDF/CSV şifresizdir) | Yalnızca kullanıcı "paylaş" derse |
+
+**Koç'a gönderilenler** (uygulama içindeki onay metniyle aynıdır): yazdığın mesajlar ve son 10 sohbet mesajı (Koç yanıtları dahil); profilin (boy, yaş, cinsiyet, hareket düzeyi); sağlık notun; hedeflerin ve hesaplanan değerler (trend kilo, tahmini harcama, protein aralığı); son 14 günün kilo, yemek (kcal ve protein), su, spor ve adım özeti (varsa uyku ve ruh hali); bugünkü kayıtların (yemek adları, su, tartı, spor ve not metinleri); son 3 antrenman (hareket adları, en iyi set) ve bu haftaki bölge başına set sayıları; son 7 günün en çok 3 notu; ilaç modülü açıksa ilaç adı, doz, saatler, haftanın günleri, son 7 günün uyumu ve stok; menü ya da program istersen yazdığın istek notu ve menü kataloğunda kendi besin, favori ve şablon adların (kalori ve protein değerleriyle).
+
+**Koç'a gönderilmeyenler:** Tahlil, tansiyon, şeker, vücut ölçüleri, tarifler, oruç kayıtları, fotoğraf, konum ve yedek gönderilmez.
 
 Her sağlayıcı kendi gizlilik politikasından sorumludur; kullanıcı kendi hesabıyla ve kendi anahtarıyla bağlandığından o sağlayıcıyla ilişki kullanıcıdadır. [DOLDURULACAK: sağlayıcı politikalarına bağlantılar]
 
@@ -55,13 +60,13 @@ Pratikte: veriler cihazınızdadır; **tablo (CSV) dışa aktarma ile kopyasın�
 NeoWell 18 yaş altına yönelik değildir. Profilde 18 yaş altı bir yaş girilirse Koç veri paylaşımı (yurt dışı aktarım) uygulamada kapalı tutulur. [DOLDURULACAK: 18 yaş altı kullanıcı politikası, Play Aile politikası beyanı]
 
 ## 9. Güvenlik
-Veriler yalnız uygulamanın özel depolamasındadır; API anahtarları Android Keystore ile şifrelenir; yedek isteğe bağlı parolayla şifrelenir. Cihazınızı ekran kilidiyle korumanız önerilir.
+Veriler yalnız uygulamanın özel depolamasındadır; API anahtarları Android Keystore ile şifrelenir; Google Drive'a gönderilen ve otomatik yedek her zaman parolayla şifrelenir (parola zorunlu, en az 6 karakter); paylaş/kopyala yedeğinde parola isteğe bağlıdır ve boş bırakılırsa dosya düz metindir. Cihazınızı ekran kilidiyle korumanız önerilir.
 
 ## 10. Tıbbi uyarı
 NeoWell tıbbi cihaz değildir, tanı koymaz ve tedavi önermez; hekim yerine geçmez. Sağlık kararları için hekiminize danışın. Koç yanıtları genel bilgidir.
 
 ## 11. Değişiklikler
-Metin değişirse uygulama içinde duyurulur; Koç onay metni değişirse onay yeniden istenir. Güncel metin: [DOLDURULACAK: yayın URL'si]
+Metin değişirse uygulama içinde duyurulur; Koç onay metni değişirse (sürüm 2: gönderilen verilerin tam listesi) eski onay düşer ve yeniden istenir. Güncel metin: [DOLDURULACAK: yayın URL'si]
 
 ---
 
@@ -73,7 +78,7 @@ Metin değişirse uygulama içinde duyurulur; Koç onay metni değişirse onay y
 
 **Where data lives:** all entries (profile, weight, food, water, workouts, steps, lab results, blood pressure and glucose, medication log, sleep, mood, fasting, notes, coach chat) stay only on your phone. Backups, PDF and CSV files go only where you choose to share them. They are excluded from Android auto-backup.
 
-**What goes online:** (1) Open Food Facts: only the barcode number you scan. (2) The AI Coach, only if you give explicit consent and add your own API key: your chat messages, profile, health note, goals, a 14-day summary of weight/food/water/sport/steps (and sleep/mood if present), recent workouts and notes, and medication names and times if that module is on, to the provider you selected (NVIDIA Build, Groq, OpenRouter, Google Gemini or a custom one). These servers are outside Turkey; this is a cross-border transfer based on your consent. Lab results, blood pressure, glucose, photos and backups are never sent. You can withdraw consent at any time (Settings > Privacy and data) and the app works fully without it. (3) Google's barcode scanner (Play services): NeoWell never receives the image; Google may collect usage and diagnostics under its own terms. (4) Google Drive only if you share a backup there.
+**What goes online:** (1) Open Food Facts: only the barcode number you scan. (2) The AI Coach, only if you give explicit consent and add your own API key: your chat messages, profile, health note, goals, the last 10 chat messages, a 14-day summary of weight/food/water/sport/steps (and sleep/mood if present), today's entries (including meal names), recent workouts and weekly set counts, recent notes, medication names, doses, times, weekdays, 7-day adherence and stock if that module is on, and, when you ask for a menu or program, your request note plus the names of your own foods, favourites and templates in the menu catalogue, to the provider you selected (NVIDIA Build, Groq, OpenRouter, Google Gemini or a custom one). These servers are outside Turkey; this is a cross-border transfer based on your consent. Lab results, blood pressure, glucose, body measurements, recipes, fasting records, photos, location and backups are never sent. You can withdraw consent at any time (Settings > Privacy and data) and the app works fully without it. (3) Google's barcode scanner (Play services): NeoWell never receives the image; Google may collect usage and diagnostics under its own terms. (4) Google Drive only if you share a backup there.
 
 **Your rights (KVKK art. 11):** export your data as CSV, delete it by category in the app, withdraw consent; other requests: [TO BE FILLED: CONTACT].
 
