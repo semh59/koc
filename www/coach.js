@@ -26,7 +26,7 @@ async function keysInit(){
     if(vaultOn&&(await kv.decrypt({data:lsGet(KEYS_ENC)})).text!==JSON.stringify(KEYS)){vaultOn=false;lsSet(KEYS_LS,JSON.stringify(KEYS))}
   }catch(e){vaultOn=false;if(!Object.keys(KEYS).length)readPlain();lsSet(KEYS_LS,JSON.stringify(KEYS))}
   console.log("NW-VAULT "+(vaultOn?"ok":"fail"));
-  if(lost)toast("API anahtarları bu telefonda okunamadı, yeniden gir");
+  if(lost)toast("Koç anahtarları bu telefonda okunamadı, yeniden gir");
 }
 const defProviders=()=>[
   {id:"nvidia",name:"NVIDIA Build",base:"https://integrate.api.nvidia.com/v1",model:"meta/llama-3.3-70b-instruct",on:true,health:true,confirm:false},
@@ -263,7 +263,7 @@ function cProgSheet(){
 async function cProgram(o){
   if(busy)return;
   if(!coachOn()){tab="koc";render();return toast("Önce Koç'ta veri paylaşımını kabul et")}
-  if(!usable().length)return toast("Koç için API anahtarı gerekli (Ayarlar)");
+  if(!usable().length)return toast("Koç için anahtar gerekli: Ayarlar > Koç");
   const {ids,text}=cCatalog(o);
   cPush({role:"user",text:`Program iste: haftada ${o.d} gün, ${o.m} dk, ${o.q}, ${o.l}`});
   tab="koc";busy=true;typing=true;render();
@@ -315,7 +315,7 @@ function cMenuSheet(){
 async function cMenu(){
   if(busy)return;
   if(!coachOn()){tab="koc";render();return toast("Önce Koç'ta veri paylaşımını kabul et")}
-  if(!usable().length)return toast("Koç için API anahtarı gerekli (Ayarlar)");
+  if(!usable().length)return toast("Koç için anahtar gerekli: Ayarlar > Koç");
   const pl=cMenuPlan(),note=menuNote;
   if(pl.why)return toast(pl.why);
   if(CoachLib.redFlag(note))return toast("Notunda sağlık uyarısı işareti var, menü hazırlamıyorum; hekimine danış");
@@ -469,7 +469,7 @@ function viewKoc(){
   if(typing)h+=`<div class="cm"><div class="mut sm">Koç yazıyor</div><p class="dots">• • •</p></div>`;
   else if(lossAsk())h+=`<div class="chips"><button class="chip" data-c="why">Bu hafta neden kilo vermedim?</button></div>`;
   if(!typing){
-    const why=!S.settings.consent?"Menü için önce yukarıdaki veri paylaşımını kabul et":!usable().length?"Menü için Koç'a API anahtarı gerekli (Ayarlar > Yapay zekâ koç)":"";
+    const why=!S.settings.consent?"Menü için önce yukarıdaki veri paylaşımını kabul et":!usable().length?"Menü için Koç anahtarı gerekli (Ayarlar > Koç)":"";
     h+=`<div class="chips"><button class="chip" data-c="menu"${why?' disabled aria-disabled="true"':""}>Haftalık menü öner</button></div>${why?`<p class="hint">${why}</p>`:""}`;
   }
   return `<div class="chat">${h}</div>`;
@@ -489,7 +489,7 @@ function pStatus(p){
   return ["Hazır","Henüz denenmedi"];
 }
 function viewProviders(){
-  const rows=S.providers.map((p,i)=>{const [a,b]=pStatus(p);return `<button class="prow" data-c="prov:${p.id}"><span><span class="mut sm">${i+1}.</span><b>${esc(p.name)}</b><span class="mut sm">${esc(p.model)}${b?", "+esc(b):""}</span></span><span class="tag">${a}</span></button>`}).join("");
+  const rows=S.providers.map((p,i)=>{const [a,b]=pStatus(p);return `<button class="prow" data-c="prov:${p.id}"><span style="min-width:0"><b>${esc(p.name)}</b><span class="mut sm">${esc(p.model)}${b?", "+esc(b):""}</span></span><span class="tag">${a}</span></button>`}).join("");
   return `<h2>Yapay zekâ koç</h2><div class="card"><p class="hint" style="padding:0 0 8px">Sırayla denenir. Limite takılırsa sıradaki devreye girer. Anahtarlar yalnızca bu telefonda durur, yedeğe dahil edilmez.</p>${rows}
   <div class="btns"><button class="btn ghost" data-c="addprov">Sağlayıcı ekle</button></div>
   <p class="hint">Veri paylaşımı: ${S.settings.consent?`kabul edildi (${fd(S.settings.consentAt)})`:"kabul edilmedi"}. ${S.settings.consent?`<button class="lnk" style="display:inline-block;width:auto" data-c="revoke">Geri al</button>`:""}</p>
@@ -516,7 +516,7 @@ function cSheetProv(id){
   openSheet(`<h3>${esc(p.name)}</h3>
   <div class="lbl">Adres</div><input class="in" id="pb" value="${esc(p.base)}" autocomplete="off" spellcheck="false" style="font-size:14px">
   <div class="lbl">Model</div><input class="in" id="pm" value="${esc(p.model)}" list="mlist" autocomplete="off" spellcheck="false" style="font-size:14px"><datalist id="mlist"></datalist>
-  <div class="lbl">API anahtarı</div><input class="in" id="pk" type="password" placeholder="${k?"••••"+esc(k.slice(-4)):"yapıştır"}" autocomplete="off" spellcheck="false" style="font-size:14px">
+  <div class="lbl">Anahtar</div><input class="in" id="pk" type="password" placeholder="${k?"••••"+esc(k.slice(-4)):"yapıştır"}" autocomplete="off" spellcheck="false" style="font-size:14px">
   <label class="chkrow"><input type="checkbox" id="pon" ${p.on?"checked":""}> Bu sağlayıcıyı kullan</label>
   <label class="chkrow"><input type="checkbox" id="ph" ${p.health?"checked":""}> Sağlık verisi gönder</label>
   <div class="mut sm" style="margin:2px 0 10px">${p.confirm?"Bu sağlayıcıda ücretsiz katman istemleri ürün geliştirmek için kullanabilir. Açarsan her göndermeden önce onay istenir.":"Kapalıysa bu sağlayıcıya hiçbir şey gönderilmez."}</div>
@@ -545,14 +545,14 @@ async function cProvClick(a,p1,p2){
     }
     case "psave":{const p=pRead(p1);if(!p)return;closeSheet();render();return toast("Kaydedildi")}
     case "ptest":{
-      const p=pRead(p1);if(!p)return;const key=getKeys()[p1];if(!key)return toast("Önce API anahtarı ekle");
+      const p=pRead(p1);if(!p)return;const key=getKeys()[p1];if(!key)return toast("Önce anahtarı ekle");
       toast("Deneniyor…");const t0=Date.now();
       try{await callProvider(p,key,[{role:"user",content:"Sadece 'tamam' yaz."}],8);pstat[p1]={s:"ok",t:Date.now(),ms:Date.now()-t0};delete cool[p1];toast(`Çalışıyor, ${fmt((Date.now()-t0)/1000,1)} sn`)}
       catch(e){const st=e&&e.status;pstat[p1]={s:st===429?"limit":st===401||st===403?"key":"err",t:Date.now(),m:e&&e.message};toast(st===401||st===403?"Anahtar geçersiz görünüyor":st===404?"Model ya da adres bulunamadı":st===429?"Limit dolu, birazdan dene":"Bağlanılamadı: "+((e&&e.message)||"hata"))}
       render();return;
     }
     case "pmodels":{
-      const p=pRead(p1);if(!p)return;const key=getKeys()[p1];if(!key)return toast("Önce API anahtarı ekle");
+      const p=pRead(p1);if(!p)return;const key=getKeys()[p1];if(!key)return toast("Önce anahtarı ekle");
       try{
         const r=await fetch(p.base.replace(/\/+$/,"")+"/models",{headers:{Authorization:"Bearer "+key}});
         if(!r.ok)throw new Error("HTTP "+r.status);

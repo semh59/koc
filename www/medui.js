@@ -27,8 +27,8 @@ function medRows(day){
   return doses.map(({m,slot})=>{
     const st=MedLib.statusOf(S.medLog,m.id,day,slot),r=S.medLog.find(x=>x.m===m.id&&x.day===day&&x.slot===slot);
     const late=!st&&day===dayKey()&&slot<=medNowHM();
-    const tail=st==="t"?`<span class="num" style="font-weight:700">✓ ${r&&r.at?r.at:""}</span><button class="chip" data-md="clear:${m.id}:${slot}" aria-label="${esc(m.n)} kaydını geri al">↩</button>`
-      :st==="s"?`<span class="mut">Atlandı</span><button class="chip" data-md="clear:${m.id}:${slot}" aria-label="${esc(m.n)} kaydını geri al">↩</button>`
+    const tail=st==="t"?`<span class="num" style="font-weight:700">✓ ${r&&r.at?r.at:""}</span><button class="chip" data-md="clear:${m.id}:${slot}" aria-label="${esc(m.n)} kaydını geri al">${Icons.svg("undo")}</button>`
+      :st==="s"?`<span class="mut">Atlandı</span><button class="chip" data-md="clear:${m.id}:${slot}" aria-label="${esc(m.n)} kaydını geri al">${Icons.svg("undo")}</button>`
       :`<button class="chip" data-md="take:${m.id}:${slot}" style="font-weight:700">${Icons.svg("check")} Aldım</button><button class="chip" data-md="skip:${m.id}:${slot}">Atla</button>`;
     return `<div class="row" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span class="num" style="min-width:48px">${slot}</span><span style="flex:1 1 120px;min-width:0">${esc(m.n)}${m.d?`<small class="mut"> ${esc(m.d)}</small>`:""}${late?`<small class="mut" style="display:block">Gecikti</small>`:""}</span><span style="display:flex;align-items:center;gap:8px;margin-left:auto">${tail}</span></div>`;
   }).join("");

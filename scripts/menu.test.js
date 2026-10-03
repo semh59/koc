@@ -18,7 +18,7 @@ setTimeout(async()=>{
     ev(base.replace("S.settings.consent=true;","S.settings.consent=false;").replace("setKey('nvidia','K1');","KEYS={};"));
     ok("izin yokken menü düğmesi gri ve nedeni yazılı",q('[data-c="menu"]').disabled&&q("#view").textContent.includes("veri paylaşımını kabul et"));
     ev(base.replace("setKey('nvidia','K1');","KEYS={};"));
-    ok("anahtar yokken menü düğmesi gri, neden: API anahtarı",q('[data-c="menu"]').disabled&&q("#view").textContent.includes("API anahtarı gerekli"));
+    ok("anahtar yokken menü düğmesi gri, neden: anahtar yok",q('[data-c="menu"]').disabled&&q("#view").textContent.includes("Koç anahtarı gerekli"));
     ev(base);
     ok("izin ve anahtar varken menü düğmesi açık, neden yazısı yok",!q('[data-c="menu"]').disabled&&!q("#view").textContent.includes("Menü için"));
     // en kötü durum: 30 besin (60 karakter ad), 20 favori, 20 şablon, 14 dolu gün, uzun sağlık notu ve sohbet geçmişi
