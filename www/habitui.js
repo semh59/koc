@@ -22,7 +22,7 @@ function fastTodo(){
     :`<div class="row"><span>${Icons.svg("fast")} Oruç ${f.plan}:${24-f.plan}${warn||`<small class="mut sm">Plan Ayarlar > Modüller'de değişir</small>`}</span>${hard?"":r.block?`<button class="chip" data-act="riskok">Hekimime danıştım</button>`:`<button class="chip" data-hb="fastgo">Orucu başlat</button>`}</div>`];
 }
 function fastInfo(){
-  openSheet(`<h3>Oruç zamanlayıcısı</h3><p>Aralıklı oruç herkes için uygun değildir. Şu durumlarda yapma ya da önce hekimine danış: Hamilelik ya da emzirme, 18 yaş altı, yeme bozukluğu geçmişi, diyabet, insülin ya da şeker düşüren ilaç kullanımı, düşük kilo. Baş dönmesi, halsizlik ya da çarpıntı olursa orucu bitir.</p>
+  openSheet(`<h3>Oruç zamanlayıcısı</h3><p>Aralıklı oruç herkes için uygun değildir. Şu durumlarda yapma ya da önce hekimine danış: Hamilelik ya da emzirme, 18 yaş altı, yeme bozukluğu geçmişi, diyabet, insülin ya da şeker düşüren ilaç kullanımı, düşük kilo. Baş dönmesi, halsizlik ya da çarpıntı olursa orucu bitir ve hekimine danış.</p>
   <p class="hint">${MED_NOTE}</p><label class="chkrow"><input type="checkbox" id="fic">Okudum; bu durumlar bende yok ya da hekimime danıştım</label><button class="btn" data-hb="fastinfo">Oruç zamanlayıcısını aç</button>`);
 }
 function fastGo(){
@@ -30,7 +30,7 @@ function fastGo(){
   if(risk().block)return render();
   if(!st.fastInfoOk)return fastInfo();
   if(S.fast.plan>=18&&!st.fastLongOk){
-    if(!confirm(`${S.fast.plan} saatlik oruç uzun bir plandır; baş dönmesi ve halsizlik daha sık görülür. Hekiminle konuştuysan devam et. Başlatılsın mı?`))return;
+    if(!confirm(`${S.fast.plan} saatlik oruç uzun bir plandır. Hekiminle konuştuysan devam et. Başlatılsın mı?`))return;
     st.fastLongOk=true;
   }
   fastSet(Date.now(),"Oruç başladı");

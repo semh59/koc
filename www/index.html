@@ -493,8 +493,9 @@ let saveFail=false,otherBytes=lsOther(),storeBytes=otherBytes+JSON.stringify(S).
 /* Yazılamazsa değişiklik bellekte kalır: her seferinde söylenir, Bugün ve Ayarlar'da kalıcı uyarı çıkar, yedek ekranı bellekteki hali alır. */
 function save(){
   const j=JSON.stringify(S);storeBytes=otherBytes+j.length*2;
-  try{localStorage.setItem("koc_v1",j);saveFail=false;fastWatch();return true}
+  try{localStorage.setItem("koc_v1",j);saveFail=false}
   catch(e){saveFail=true;toast("Son değişiklik kaydedilemedi: depolama dolu. Uygulamayı kapatmadan yedek al.");return false}
+  fastWatch();return true;
 }
 /* Oruç freni not, ilaç, ölçüm, sohbet işareti ya da onayla değişince oruç bildirimleri hangi ekrandan olursa olsun yeniden kurulur. */
 let fastBlk=null;
@@ -521,7 +522,7 @@ function riskInput(kg){
   return {age:st.age,cm:st.heightCm,kg:kg!=null?kg:ks.length?Algo.trend(w)[ks[ks.length-1]]:0,goalKg:st.goalKg,healthNote:st.healthNote,meds:S.meds.length,glucoseCount90d:n("s"),bpCount90d:n("t"),
     edFlag:S.chat.some(m=>m.fl==="ed"||(m.card&&m.card.kind==="safety"&&m.card.level==="ed")),clearedAt:st.riskClearedAt,today:dayKey()};
 }
-const risk=kg=>Algo.riskFlags(riskInput(kg));
+function risk(kg){return Algo.riskFlags(riskInput(kg))}
 /* Fren açıklaması: sert engelde yalnız açıklama, yumuşakta 30 günlük "Hekimime danıştım" onayı. */
 const riskBox=(r,title)=>r.block?`<div class="banner"><b>${title}</b><p>${esc((r.hard.length?r.hard:r.soft).join(". "))}. ${r.hard.length?"Hekimine ya da diyetisyenine danış. Bilgi yanlışsa Profil > Sağlık notların'dan düzelt.":"Önce hekimine danış; konuştuysan 30 gün için devam edebilirsin."}</p>${r.hard.length?"":`<button class="btn ghost" data-act="riskok">Hekimime danıştım, devam</button>`}</div>`:"";
 function weights(a="0000",b="9999"){const m={};for(const e of S.entries)if(e.type==="kilo"&&e.day>=a&&e.day<=b)m[e.day]=e.v;return m}
