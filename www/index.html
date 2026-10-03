@@ -1064,8 +1064,8 @@ async function scheduleReminders(){
 /* Yalnız bildirime dokunma ("tap"); su/ilaç düğmeleri QuickLogPlugin'de yerelde yakalanır. Koç izni yoksa haftalık özet Trend'de açılır, yedek hatırlatması Veri ve yedek'te. */
 function notifTap(e){
   const x=e&&e.notification&&e.notification.extra;
-  if(!e||e.actionId!=="tap"||!x||x.act!=="open")return;
-  tab=x.tab==="koc"&&S.settings.consent?"koc":x.tab==="ayar-veri"?x.tab:x.tab==="ilac"?(S.settings.medOn?"ilac":"daha"):"trend";via=null;closeSheet();render();window.scrollTo(0,0);
+  if(!e||e.actionId!=="tap"||!x||(x.act!=="open"&&x.act!=="med"))return;
+  tab=x.act==="med"||x.tab==="ilac"?(S.settings.medOn?"ilac":"daha"):x.tab==="koc"&&S.settings.consent?"koc":x.tab==="ayar-veri"?x.tab:"trend";via=null;closeSheet();render();window.scrollTo(0,0);
 }
 function setNotif(s){notifStatus=s;if(tab==="ayar-hatir")render()}
 /* İzin verilince önceki yaklaşık alarmlar kendiliğinden tam saate dönmez; yeniden kurulur. */
