@@ -26,10 +26,11 @@ function medRows(day){
   if(!doses.length)return `<p class="mut sm" style="margin:0">Bugün için ilaç yok.</p>`;
   return doses.map(({m,slot})=>{
     const st=MedLib.statusOf(S.medLog,m.id,day,slot),r=S.medLog.find(x=>x.m===m.id&&x.day===day&&x.slot===slot);
+    const late=!st&&day===dayKey()&&slot<=medNowHM();
     const tail=st==="t"?`<span class="num" style="font-weight:700">✓ ${r&&r.at?r.at:""}</span><button class="chip" data-md="clear:${m.id}:${slot}" aria-label="${esc(m.n)} kaydını geri al">↩</button>`
       :st==="s"?`<span class="mut">Atlandı</span><button class="chip" data-md="clear:${m.id}:${slot}" aria-label="${esc(m.n)} kaydını geri al">↩</button>`
-      :`${day===dayKey()&&slot<=medNowHM()?`<small class="mut">Gecikti</small>`:""}<button class="chip" data-md="take:${m.id}:${slot}" style="font-weight:700">${Icons.svg("check")} Aldım</button><button class="chip" data-md="skip:${m.id}:${slot}">Atla</button>`;
-    return `<div class="row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span class="num" style="min-width:48px">${slot}</span><span style="flex:1;min-width:0">${esc(m.n)}${m.d?`<small class="mut"> ${esc(m.d)}</small>`:""}</span>${tail}</div>`;
+      :`<button class="chip" data-md="take:${m.id}:${slot}" style="font-weight:700">${Icons.svg("check")} Aldım</button><button class="chip" data-md="skip:${m.id}:${slot}">Atla</button>`;
+    return `<div class="row" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span class="num" style="min-width:48px">${slot}</span><span style="flex:1 1 120px;min-width:0">${esc(m.n)}${m.d?`<small class="mut"> ${esc(m.d)}</small>`:""}${late?`<small class="mut" style="display:block">Gecikti</small>`:""}</span><span style="display:flex;align-items:center;gap:8px;margin-left:auto">${tail}</span></div>`;
   }).join("");
 }
 /* Bugün yapılacaklar: yalnız alınmamış ve atlanmamış dozlar; işaretlenen doz toast'tan ya da İlaçlar ekranından geri alınır. */
@@ -88,8 +89,8 @@ function medRender(){
 function medOpen(id){
   const m=id?S.meds.find(x=>x.id===id):null;
   if(!m&&S.meds.length>=MedLib.MAXM)return toast(`En çok ${MedLib.MAXM} ilaç eklenebilir`);
-  medDraft=m?{id:m.id,n:m.n,d:m.d||"",t:m.t.slice(),w:m.w?m.w.slice():[0,1,2,3,4,5,6],on:m.on,mc:"",k:m.k==null?"":String(m.k).replace(".",","),p:m.p==null?"":String(m.p).replace(".",","),s:m.s,e:m.e}
-    :{id:0,n:"",d:"",t:["08:00"],w:[0,1,2,3,4,5,6],on:true,mc:"",k:"",p:""};
+  medDraft=m?{id:m.id,n:m.n,d:m.d||"",t:m.t.slice(),w:m.w?m.w.slice():[0,1,2,3,4,5,6],on:m.on,mc:"",k:m.k==null?"":String(m.k).replace(".",","),p:m.p==null?"":String(m.p).replace(".",","),s:m.s,e:m.e,ts:m.ts,t0:m.t.slice()}
+    :{id:0,n:"",d:"",t:["08:00"],w:[0,1,2,3,4,5,6],on:true,mc:"",k:"",p:"",t0:[]};
   medRender();
 }
 function medSave(){
@@ -104,7 +105,9 @@ function medSave(){
   if(d.mc.trim()!==""&&(c==null||!Number.isInteger(c)||c<1||c>365))return warn("Gün sayısı 1 ile 365 arasında bir tam sayı olmalı");
   const o={id:d.id,n:d.n.trim(),d:d.d.trim(),t:times,w:d.w.length===7?undefined:d.w.slice().sort(),on:d.on!==false};
   if(k!=null)o.k=k;if(p!=null)o.p=p;
-  if(c!=null){o.s=dayKey();o.e=MedLib.addDay(o.s,c-1)}else{if(d.s)o.s=d.s;if(d.e)o.e=d.e}
+  const today=dayKey();
+  if(c!=null){o.s=today;o.e=MedLib.addDay(o.s,c-1)}else{if(d.s||!d.id)o.s=d.s||today;if(d.e)o.e=d.e}
+  const ts=MedLib.sinceFor(d.t0,times,d.ts,today,medNowHM());if(ts)o.ts=ts;
   const before=S.meds.slice();
   if(!o.id){for(let i=1;i<=999;i++)if(!S.meds.some(m=>m.id===i)){o.id=i;break}}
   const others=S.meds.filter(m=>m.id!==o.id);
