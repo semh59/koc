@@ -12,17 +12,33 @@ function habitRow(){
   const t=dayKey(),sl=S.sleep.find(x=>x.day===t),mo=S.mood.find(x=>x.day===t);
   return `<div class="hrow"><button class="btn ghost" data-hb="sleep">${Icons.svg("moon")} ${sl?hbDur(sl.min):"Uyku ekle"}</button><button class="btn ghost" data-hb="mood">${mo?MOODS[mo.v-1]+" Ruh hali":Icons.svg("smile")+" Ruh hali"}</button></div>`;
 }
-/* Bugün yapılacaklar satırı: oruç açıksa sürüyor/başlat; plan ve geçmiş Ayarlar'da. */
+/* Bugün yapılacaklar satırı: oruç açıksa sürüyor/başlat; plan ve geçmiş Ayarlar'da. Fren: sert engelde başlatılamaz (süren oruç bitirilebilir),
+   yumuşakta "Hekimime danıştım" onayından sonra. */
 function fastTodo(){
   const f=S.fast,st=S.settings;if(!st.fastOn)return [];
-  const s=HabitLib.fastState(f,Date.now()),warn=risk().block?`<small class="mut sm">Oruç öncesi hekimine danış.</small>`:"";
+  const s=HabitLib.fastState(f,Date.now()),r=risk(),hard=r.hard.length;
+  const warn=r.block?`<small class="mut sm">${esc((hard?r.hard:r.soft).join(". "))}. ${hard?"Oruç önerilmez, hekimine danış.":"Oruç öncesi hekimine danış."}</small>`:"";
   return [s?`<div class="row"><span>${Icons.svg("fast")} Oruç ${f.plan}:${24-f.plan} · <b class="num">${hbDur(s.elapsed)}</b> geçti<small class="mut sm num">${s.done?"Hedef doldu":hbDur(s.left)+" kaldı"}</small>${warn}</span><button class="chip" data-hb="fastend">Orucu bitir</button></div>`
-    :`<div class="row"><span>${Icons.svg("fast")} Oruç ${f.plan}:${24-f.plan}<small class="mut sm">Plan Ayarlar > Modüller'de değişir</small>${warn}</span><button class="chip" data-hb="fastgo">Orucu başlat</button></div>`];
+    :`<div class="row"><span>${Icons.svg("fast")} Oruç ${f.plan}:${24-f.plan}${warn||`<small class="mut sm">Plan Ayarlar > Modüller'de değişir</small>`}</span>${hard?"":r.block?`<button class="chip" data-act="riskok">Hekimime danıştım</button>`:`<button class="chip" data-hb="fastgo">Orucu başlat</button>`}</div>`];
+}
+function fastInfo(){
+  openSheet(`<h3>Oruç zamanlayıcısı</h3><p>Aralıklı oruç herkes için uygun değildir. Şu durumlarda yapma ya da önce hekimine danış: Hamilelik ya da emzirme, 18 yaş altı, yeme bozukluğu geçmişi, diyabet, insülin ya da şeker düşüren ilaç kullanımı, düşük kilo. Baş dönmesi, halsizlik ya da çarpıntı olursa orucu bitir.</p>
+  <p class="hint">${MED_NOTE}</p><label class="chkrow"><input type="checkbox" id="fic">Okudum; bu durumlar bende yok ya da hekimime danıştım</label><button class="btn" data-hb="fastinfo">Oruç zamanlayıcısını aç</button>`);
+}
+function fastGo(){
+  const st=S.settings;
+  if(risk().block)return render();
+  if(!st.fastInfoOk)return fastInfo();
+  if(S.fast.plan>=18&&!st.fastLongOk){
+    if(!confirm(`${S.fast.plan} saatlik oruç uzun bir plandır; baş dönmesi ve halsizlik daha sık görülür. Hekiminle konuştuysan devam et. Başlatılsın mı?`))return;
+    st.fastLongOk=true;
+  }
+  fastSet(Date.now(),"Oruç başladı");
 }
 function fastSettingsHtml(){
   const f=S.fast,on=S.settings.fastOn,last=f.log.slice(-7).reverse().map(x=>hbRow(`${fd(dayKey(new Date(x.t1)))} ${hbDur(Math.round((x.t1-x.t0)/6e4))}`,"fdel:"+x.t0)).join("");
   return `<h2>Oruç zamanlayıcısı</h2><div class="card"><button class="btn ghost" data-hb="fasttoggle">${on?"Oruç zamanlayıcısını kapat":"Oruç zamanlayıcısını aç"}</button>
-  ${on?`<div class="lbl" style="margin-top:10px">Plan (oruç:yeme saati)</div><div class="chiprow">${HabitLib.PLANS.map(p=>`<button class="chip" data-hb="plan:${p}" aria-pressed="${f.plan===p}">${p}:${24-p}</button>`).join("")}</div>`:""}
+  ${on?`<div class="lbl" style="margin-top:10px">Plan (oruç:yeme saati)</div><div class="chiprow">${HabitLib.PLANS.map(p=>`<button class="chip" data-hb="plan:${p}" aria-pressed="${f.plan===p}"${p>=18&&risk().hard.length?" disabled":""}>${p}:${24-p}</button>`).join("")}</div>`:""}
   ${last?`<div class="mut sm" style="margin-top:8px">Son oruçlar</div>${last}`:""}</div>`;
 }
 function fastSet(t0,msg){
@@ -60,9 +76,10 @@ document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-hb]");if(!el)return;
   const a=el.dataset.hb;
   if(a==="sleep")sheetUyku();
-  else if(a==="fasttoggle"){if(S.fast.t0)return toast("Önce orucu bitir");S.settings.fastOn=!S.settings.fastOn;if(!S.settings.fastOn)S.settings.reminders.find(r=>r.id===11).on=false;save();render();scheduleReminders().then(setNotif)}
+  else if(a==="fasttoggle"){if(S.fast.t0)return toast("Önce orucu bitir");if(!S.settings.fastOn&&!S.settings.fastInfoOk)return fastInfo();S.settings.fastOn=!S.settings.fastOn;if(!S.settings.fastOn)S.settings.reminders.find(r=>r.id===11).on=false;save();render();scheduleReminders().then(setNotif)}
   else if(a.startsWith("plan:")){S.fast.plan=+a.slice(5);save();render()}
-  else if(a==="fastgo")fastSet(Date.now(),"Oruç başladı");
+  else if(a==="fastgo")fastGo();
+  else if(a==="fastinfo"){if(!$("#fic").checked)return toast("Önce kutuyu işaretle");Object.assign(S.settings,{fastInfoOk:true,fastOn:true});save();closeSheet();render();scheduleReminders().then(setNotif)}
   else if(a==="fastend")fastEnd();
   else if(a==="sleepgo")sleepSave();
   else if(a==="mood")sheetMood();

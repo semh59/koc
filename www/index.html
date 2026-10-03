@@ -359,7 +359,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- veri ---------- */
 const DEF={
-  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",lastPlan:"",lastWeekly:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",reminders:[
+  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",lastPlan:"",lastWeekly:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -418,6 +418,8 @@ function cleanSettings(raw,fast){
   /* Oruç ayarı yokken oruç kullanmış eski veri, oruç satırını kaybetmesin. */
   if(o.fastOn===true||(!("fastOn" in o)&&((f=>f.t0||f.log.length)(HabitLib.cleanFast(fast))||(Array.isArray(o.reminders)&&o.reminders.some(x=>x&&x.id===11&&x.on===true)))))d.fastOn=true;
   if(o.motionOn===true)d.motionOn=true;
+  if(o.fastInfoOk===true)d.fastInfoOk=true;
+  if(o.fastLongOk===true)d.fastLongOk=true;
   if(o.moveKcalOn===true)d.moveKcalOn=true;
   if(o.medShowName===false)d.medShowName=false;
   if(o.awakeOn===false)d.awakeOn=false;
@@ -491,9 +493,12 @@ let saveFail=false,otherBytes=lsOther(),storeBytes=otherBytes+JSON.stringify(S).
 /* Yazılamazsa değişiklik bellekte kalır: her seferinde söylenir, Bugün ve Ayarlar'da kalıcı uyarı çıkar, yedek ekranı bellekteki hali alır. */
 function save(){
   const j=JSON.stringify(S);storeBytes=otherBytes+j.length*2;
-  try{localStorage.setItem("koc_v1",j);saveFail=false;return true}
+  try{localStorage.setItem("koc_v1",j);saveFail=false;fastWatch();return true}
   catch(e){saveFail=true;toast("Son değişiklik kaydedilemedi: depolama dolu. Uygulamayı kapatmadan yedek al.");return false}
 }
+/* Oruç freni not, ilaç, ölçüm, sohbet işareti ya da onayla değişince oruç bildirimleri hangi ekrandan olursa olsun yeniden kurulur. */
+let fastBlk=null;
+function fastWatch(){const b=!!(S.settings.fastOn&&risk().block);if(fastBlk!=null&&b!==fastBlk)scheduleReminders().then(setNotif);fastBlk=b}
 const storeMsg=()=>saveFail?["Son değişiklik kaydedilemedi","Depolama dolu; değişiklik yalnız açık uygulamada duruyor. Kapatmadan yedek al, sonra Koç sohbetini temizle ya da eski kayıtları sil."]
   :storeBytes>STORE_WARN?["Depolama dolmak üzere",`${fmt(storeBytes/1e6)} MB kullanılıyor. Yedek al, sonra Koç sohbetini temizle ya da eski kayıtları sil.`]:null;
 const isNative=()=>!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
@@ -1052,8 +1057,8 @@ async function scheduleReminders(){
     /* Eklentinin günlük tekrarı ilk bildirimden sonra Doze'da ertelenen bir alarm kurar. Bu yüzden her günü ayrı, uyku modunu delen tek seferlik alarmla kuruyoruz. */
     try{await ln.registerActionTypes({types:[{id:"water",actions:[{id:"su",title:`+${S.settings.glass} ml`}]},{id:"med",actions:[{id:"med",title:"✔ Aldım"},{id:"medskip",title:"Atla"}]}]})}catch(e){}
     const list=[],now=Date.now(),lb=S.settings.lastBackup;
-    const t0=dayKey(),waterDone=sum("su",t0,t0)>=S.settings.waterMl;
-    for(const r of S.settings.reminders.filter(r=>r.on)){
+    const t0=dayKey(),waterDone=sum("su",t0,t0)>=S.settings.waterMl,fastBlock=!!risk().block;
+    for(const r of S.settings.reminders.filter(r=>r.on&&!(r.id===11&&fastBlock))){
       const [h,m]=r.t.split(":").map(Number),water=WATER_REM.includes(r.id);
       for(let i=0;i<SCHED_DAYS;i++){
         if(i===0&&waterDone&&water)continue;
@@ -1067,7 +1072,7 @@ async function scheduleReminders(){
     if(S.settings.medOn){
       for(const n of MedLib.notifications(S.meds,S.medLog,new Date(),SCHED_DAYS,S.settings.medShowName!==false))list.push({id:n.id,title:n.title,body:n.body,schedule:{at:n.at,allowWhileIdle:true},actionTypeId:n.actionTypeId,extra:n.extra,channelId:n.channelId,ongoing:n.ongoing});
     }
-    if(S.fast.t0){const at=new Date(S.fast.t0+S.fast.plan*36e5);if(at.getTime()>now+5000)list.push({id:9100,title:"⏳ Oruç",body:"Oruç süren doldu. İstediğinde bitirebilirsin.",schedule:{at,allowWhileIdle:true}})}
+    if(S.fast.t0&&!fastBlock){const at=new Date(S.fast.t0+S.fast.plan*36e5);if(at.getTime()>now+5000)list.push({id:9100,title:"⏳ Oruç",body:"Oruç süren doldu. İstediğinde bitirebilirsin.",schedule:{at,allowWhileIdle:true}})}
     // Android uygulama başına eşzamanlı alarm sınırı (500): en yakın tarihliler korunur, uzaktakiler uygulama açılınca yeniden kurulur.
     list.sort((a,b)=>a.schedule.at-b.schedule.at);if(list.length>MedLib.BUDGET)list.length=MedLib.BUDGET;
     if(list.length)await ln.schedule({notifications:list});
