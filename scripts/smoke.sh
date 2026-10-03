@@ -16,7 +16,11 @@ diag=$(grep "NW-DIAG" smoke.log | tail -1)
 for p in LocalNotifications Share Filesystem App KeyVault DeviceHelp BarcodeScanner StepCounter Ocr Motion Speech Widget BackupFolder; do
   echo "$diag" | grep -q "$p=object" || { echo "EKLENTİ YOK: $p"; exit 1; }
 done
-n=$(adb shell dumpsys alarm | grep -E "RTC_WAKEUP.*com.neowell.app" | wc -l)
+for i in 1 2 3 4 5 6; do
+  n=$(adb shell dumpsys alarm | grep -E "RTC_WAKEUP.*com.neowell.app" | wc -l)
+  [ "$n" -ge 100 ] && break; sleep 10
+done
+[ "$n" -ge 100 ] || adb shell dumpsys alarm | grep "com.neowell.app" | grep -oE "^ *[A-Z_]+ #|type [0-9]|tag=[^ ]+" | sort | uniq -c | head -20
 echo "Kurulu uyandıran alarm sayısı: $n"
 [ "$n" -ge 100 ] || { echo "HATIRLATMA ALARMLARI KURULMADI"; exit 1; }
 grep -q "NW-PDF ok pages=1" smoke.log || { echo "PDF (tuval, pdf.js) ÇALIŞMADI"; grep "NW-PDF" smoke.log; exit 1; }
