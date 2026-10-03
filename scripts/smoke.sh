@@ -4,6 +4,8 @@ adb install -r neowell.apk || exit 1
 # Çökme kaydı (Java FATAL EXCEPTION ve yerel tombstone) crash tamponuna düşer; logcat -c onu da sildiği için her temizlikten önce ve sonda bakılır.
 crashcheck() { adb logcat -d -b crash > crash.log; if grep -qE "Process: com\.neowell\.app|>>> com\.neowell\.app <<<" crash.log; then echo "UYGULAMA ÇÖKTÜ"; cat crash.log; exit 1; fi; }
 clr() { crashcheck; adb logcat -c; }
+# API 36'da am kill arkadaki süreci her zaman öldürmüyor; düşük bellek ölümü gibi SIGKILL yedeği.
+appkill() { adb shell am kill com.neowell.app; sleep 1; p=$(adb shell pidof com.neowell.app); [ -z "$p" ] || adb shell run-as com.neowell.app kill -9 $p; }
 adb shell pm grant com.neowell.app android.permission.POST_NOTIFICATIONS
 clr
 adb shell monkey -p com.neowell.app -c android.intent.category.LAUNCHER 1
@@ -95,14 +97,14 @@ adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MA
 sleep 15
 adb logcat -d | grep -E "Capacitor/Console" > replay1.log
 p1=$(adb shell pidof com.neowell.app)
-adb shell am kill com.neowell.app
+appkill
 sleep 3
 clr
 adb shell monkey -p com.neowell.app -c android.intent.category.LAUNCHER 1
 sleep 12
 adb logcat -d | grep -E "Capacitor/Console" > replay2.log
 p2=$(adb shell pidof com.neowell.app)
-[ -n "$p1" ] && [ "$p1" != "$p2" ] || { echo "SÜREÇ ÖLDÜRÜLEMEDİ (am kill: $p1 -> $p2), tekrar testi yapılamadı"; exit 1; }
+[ -n "$p1" ] && [ "$p1" != "$p2" ] || { echo "SÜREÇ ÖLDÜRÜLEMEDİ ($p1 -> $p2), tekrar testi yapılamadı"; exit 1; }
 n=$(cat replay1.log replay2.log | grep -oE "NW-QUICK ingested [0-9]+" | grep -oE "[0-9]+$" | awk '{s+=$1} END{print s+0}')
 echo "Tekrar testi: alınan su kaydı $n"
 [ "$n" = "1" ] || { echo "SU KAYDI TEKRARLANDI YA DA ALINMADI ($n)"; cat replay1.log replay2.log; exit 1; }
@@ -145,7 +147,7 @@ reopen
 # Uygulama kapalı (süreç yok): alıcı süreci kendisi başlatır. force-stop paketi durdurulmuş yapar ve yayın hiç gelmez, bu yüzden am kill.
 adb shell input keyevent KEYCODE_HOME
 sleep 2
-adb shell am kill com.neowell.app
+appkill
 sleep 2
 [ -z "$(adb shell pidof com.neowell.app)" ] || { echo "SÜREÇ ÖLDÜRÜLEMEDİ, kapalı uygulama testi yapılamadı"; exit 1; }
 wsu
@@ -155,7 +157,7 @@ reopen
 # Süreç öldürülüp yeniden açılınca hiçbir su yeniden alınmamalı.
 adb shell input keyevent KEYCODE_HOME
 sleep 2
-adb shell am kill com.neowell.app
+appkill
 sleep 2
 reopen
 [ "$(ingested)" = "0" ] && [ "$(qn)" = "0" ] || { echo "WIDGET SUYU YENİDEN AÇILIŞTA TEKRARLANDI"; exit 1; }
