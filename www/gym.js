@@ -360,7 +360,7 @@ function gPickHtml(){
 }
 function gSheetPick(te){
   gTeOn=!!te;gQuery="";gGroup="Tümü";gNew=false;gPickMax=40;
-  openSheet(`<h3>Egzersiz ekle</h3><input class="in" id="gq" placeholder="Egzersiz ara" autocomplete="off">
+  openSheet(`<h3>Egzersiz ekle</h3><input class="in" id="gq" type="search" enterkeyhint="search" aria-label="Egzersiz ara" placeholder="Egzersiz ara" autocomplete="off">
   <div class="chips" id="gchips">${["Tümü"].concat(EXREG).map(g=>`<button class="chip" data-g="grp:${g}" aria-pressed="${g==="Tümü"}">${g}</button>`).join("")}</div>
   <div id="glist" class="plist">${gPickHtml()}</div>
   <button class="lnk" data-g="newex">Yeni egzersiz oluştur</button><div id="gnew"></div>

@@ -25,7 +25,7 @@ function exListHtml(){
 }
 const exChips=(arr,cur,act)=>arr.map(x=>`<button class="chip" data-g="${act}:${x}" aria-pressed="${x===cur}">${x}</button>`).join("");
 function viewEgz(){
-  return `<div class="srch"><input class="in" id="glq" placeholder="Egzersiz ara" autocomplete="off" value="${esc(gLQ)}"><span id="glfb">${exFilterBtn()}</span></div>
+  return `<div class="srch"><input class="in" id="glq" type="search" enterkeyhint="search" aria-label="Egzersiz ara" placeholder="Egzersiz ara" autocomplete="off" value="${esc(gLQ)}"><span id="glfb">${exFilterBtn()}</span></div>
   <div id="gllist" class="plist">${exListHtml()}</div>
   <p class="hint">Hareketler genel bilgi amaçlıdır, kişisel antrenman ya da tıbbi tavsiye değildir. Fotoğraflar free-exercise-db (kamu malı) kaynaklıdır.</p>`;
 }
