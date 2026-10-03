@@ -34,7 +34,7 @@ const off=Object.fromEntries(W.build({...S,vitals:vit},end,7).summary);
 ok("takip kapalıyken tansiyon ve şeker satırı yok",!off["Tansiyon"]&&!off["Şeker"]);
 const on=Object.fromEntries(W.build({...S,settings:settings({bpOn:true,bsOn:true,gFastLo:80,gFastHi:130}),vitals:vit},end,7).summary);
 ok("takip açıkken tansiyon ortalaması",on["Tansiyon"]==="ortalama 132/85 mmHg (2 ölçüm, 2 gün)",on["Tansiyon"]);
-ok("şeker ortalaması ve hedefte yüzde",on["Şeker"]==="ortalama 130 mg/dL (2 ölçüm), hedef aralığında %50",on["Şeker"]);
+ok("şeker ortalaması, hedef yüzdesi yok",on["Şeker"]==="ortalama 130 mg/dL (2 ölçüm)",on["Şeker"]);
 ok("ölçüm yoksa satır yok",!Object.fromEntries(W.build({...S,settings:settings({bpOn:true,bsOn:true}),vitals:[]},end,7).summary)["Tansiyon"]);
 
 // ilaç uyumu: yalnızca takip açık ve ilaç varsa
@@ -61,11 +61,11 @@ ok("yorum ve tanı dili yok",!/hipertansiyon|diyabet|hipoglisemi|anormal|tehlike
   ok("tansiyon grafiği günlük ortalama, pencere dışı ölçüm yok, iki seri",c[1].series[0].pts.length===3&&c[1].series[0].pts[0].v===125&&Math.max(...c[1].series[0].pts.map(p=>p.v))<200&&c[1].series.length===2);
   ok("siyah-beyazda okunur: seriler şekil, çizgi biçimi ve doğrudan etiketle ayrılır (yalnız renge bağlı değil)",c[1].series[0].shape!==c[1].series[1].shape&&!c[1].series[0].dash&&c[1].series[1].dash&&c[1].series.every(x=>x.short)&&c[1].series[0].color!==c[1].series[1].color);
   ok("renkler uygulamadakiyle aynı: kilo prim, sistolik ink, diyastolik su",c[0].series[0].color==="#0f5c55"&&c[1].series[0].color==="#10232b"&&c[1].series[1].color==="#2a86bd");
-  ok("genel referans bandı ve 'tanı değildir' notu; kullanıcı sınırı varsa onu gösterir",c[1].note.includes("tanı değildir")&&c[1].band.length===2&&W.build({...SB,settings:settings({bpOn:true,bpSysHi:135,bpDiaHi:85})},end,7).charts[1].band[0].hi===135);
+  ok("tansiyon grafiğinde bant ve not yok (yorumlanmaz)",!c[1].note&&!c[1].band&&!("band" in c[0]));
   ok("veri yoksa bölüm yok: tek tartı, takip kapalı, tek gün ölçüm",W.build({...S,entries:[E("kilo","2026-09-28",80)],settings:settings({bpOn:true}),vitals:[T("2026-09-28",120,80)]},end,7).charts.length===0&&W.build({...S,settings:settings({bpOn:false}),vitals:vit},end,7).charts.length===1&&W.build({settings:settings({}),entries:[],vitals:[]},end,7).charts.length===0);
   const rec=data=>{const t=[],calls=[];const ctx=new Proxy({},{get:(_,k)=>k==="measureText"?x=>({width:String(x).length*10}):k==="fillText"?x=>t.push(x):(...a)=>{calls.push(k)},set:()=>true});W.drawPage(ctx,data,{today:end});return {t,calls}};
   const r1=rec(W.build(SB,end,7)),r0=rec(W.build({settings:settings({}),entries:[],vitals:[]},end,7));
-  ok("sayfa grafik başlıklarını, etiketleri ve notu çizer; kesik çizgi için setLineDash kullanılır",r1.t.includes("Kilo (kg)")&&r1.t.includes("Sistolik")&&r1.t.includes("Diyastolik")&&r1.t.some(x=>/genel referans/.test(x))&&r1.calls.includes("setLineDash"));
+  ok("sayfa grafik başlıklarını ve etiketleri çizer; kesik çizgi için setLineDash kullanılır",r1.t.includes("Kilo (kg)")&&r1.t.includes("Sistolik")&&r1.t.includes("Diyastolik")&&!r1.t.some(x=>/referans/.test(x))&&r1.calls.includes("setLineDash"));
   ok("veri yokken grafik başlığı hiç çizilmez",r0.t.filter(x=>x==="Kilo (kg)").length===1&&!r0.t.some(x=>/^Tansiyon \(/.test(x))&&!r0.calls.includes("setLineDash")&&r1.t.filter(x=>x==="Kilo (kg)").length===2);
 }
 console.log(bad?"\n"+bad+" HATA":"\nTüm haftalık rapor testleri geçti");process.exit(bad?1:0);

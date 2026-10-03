@@ -796,7 +796,7 @@ function viewAyar(){
   <label style="min-height:44px;display:flex;gap:8px;align-items:center"><input type="checkbox" data-rpe ${st.rpeOn?"checked":""} style="width:22px;height:22px">Zorluk (RPE) alanı</label>
   <label style="min-height:44px;display:flex;gap:8px;align-items:center"><input type="checkbox" data-gdv ${st.gdVoice?"checked":""} style="width:22px;height:22px">Rehberli modda sesli komut</label>
   <label style="min-height:44px;display:flex;gap:8px;align-items:center"><input type="checkbox" data-gdb ${st.gdVib?"checked":""} style="width:22px;height:22px">Rehberli modda titreşim</label><p class="hint">Sesli komut telefonun metin okuma (TTS) sesiyle çalışır; Türkçe ses yoksa telefonun varsayılan dili kullanılır, ses hiç yoksa sessiz devam eder. Müzik çalarken kısa süre kısılır.</p><p class="hint">Set satırına isteğe bağlı 6-10 zorluk alanı ekler (10 en zor). Yalnız kayıt içindir, önerileri ve hesapları değiştirmez.</p><p class="hint">Antrenman sürerken Salon açıkken ekran kararmaz. Başka sekmeye geçince, uygulamadan çıkınca ya da antrenman bitince normale döner.</p>${gGearHtml()}</div>
-  ${vitalsSettingsHtml(fld)}`;
+  ${vitalsSettingsHtml()}`;
   if(sub==="koc")return viewProviders();
   if(sub==="hatir"){
     const nf={web:"Bildirimler yalnızca telefondaki uygulamada çalışır.",ok:"Hatırlatmalar açık.",denied:"Bildirim izni kapalı. Telefon ayarlarından Koç için bildirimleri aç.","":""}[notifStatus]||notifStatus;

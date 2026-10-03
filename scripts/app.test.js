@@ -319,8 +319,8 @@ setTimeout(async()=>{
     const pdfBytes=Buffer.from(saved.data,"base64");
     const pd=await pdfjs.getDocument({data:new Uint8Array(pdfBytes),verbosity:0}).promise;
     ok("PDF dışa aktarılır: dosya adı, geçerli PDF, paylaşım",/^neowell-tahlil-\d{4}-\d{2}-\d{2}\.pdf$/.test(saved.path)&&pdfBytes.slice(0,5).toString()==="%PDF-"&&pd.numPages===1&&shared.files[0]==="file:///cache/x.pdf",[saved.path,pd.numPages]);
-    ok("PDF'e testler ve referans metni çizilir, hasta bilgisi yok",["Glukoz","LDL kolesterol","Ferritin","HbA1c"].every(n=>drawn.includes(n))&&drawn.some(t=>/Referans: 70 – 100/.test(t))&&!drawn.join("|").match(/Ali|Veli|12345678901/),drawn);
-    ok("aralık dışı değer PDF'te açıkça yazılır",drawn.includes("▲ Referans aralığının üstünde"));
+    ok("PDF'e testler ve referans metni çizilir, hasta bilgisi yok",["Glukoz","LDL kolesterol","Ferritin","HbA1c"].every(n=>drawn.includes(n))&&drawn.some(t=>/Raporda yazan aralık: 70 – 100/.test(t))&&!drawn.join("|").match(/Ali|Veli|12345678901/),drawn);
+    ok("aralık dışı değer PDF'te açıkça yazılır",drawn.includes("▲ Raporda yazan aralığın üstünde")&&drawn.some(t=>/Bu değerleri hekiminle değerlendir\./.test(t)));
     ev("S.labs=S.labs.concat(Array.from({length:30},(_,i)=>({id:900+i,day:'2026-09-01',k:'t'+i,n:'Test '+i,v:i+1,u:'x'})))");
     drawn.length=0;await ev("labExport()");
     const pd2=await pdfjs.getDocument({data:new Uint8Array(Buffer.from(saved.data,"base64")),verbosity:0}).promise;
@@ -437,25 +437,13 @@ setTimeout(async()=>{
     ev("S.vitals=[];S.labs=[];S.entries=[];S.settings.bpOn=false;S.settings.bsOn=false;tab='bugun';render()");
     ok("özellik kapalıyken Bugün ve Trend'de görünmez",!ev("viewBugun()").includes("Ölçümler")&&!ev("viewTrend()").includes("Tansiyon")&&!ev("viewTrend()").includes("Şeker"));
     ev("tab='ayar-modul';render()");
-    ok("Ayarlar'da tansiyon ve şeker takibini aç düğmeleri, hatırlatmalar gizli",!!q('[data-vt="bptoggle"]')&&!!q('[data-vt="bstoggle"]')&&!q("#bpSysHi")&&!shown().includes(7)&&!shown().includes(9));
+    ok("Ayarlar'da tansiyon ve şeker takibini aç düğmeleri, hatırlatmalar gizli",!!q('[data-vt="bptoggle"]')&&!!q('[data-vt="bstoggle"]')&&!shown().includes(7)&&!shown().includes(9));
     click('[data-vt="bptoggle"]');
-    ok("tansiyon takibi açılır: alanlar, ön ayar düğmesi, tansiyon hatırlatmaları",ev("S.settings.bpOn")===true&&!!q("#bpSysHi")&&!!q('[data-vt="bppreset"]')&&shown().includes(7)&&shown().includes(8)&&!shown().includes(9));
-    click('[data-vt="bppreset"]');
-    ok("ön ayar 135/85 eşiğini doldurur",ev("S.settings.bpSysHi")===135&&ev("S.settings.bpDiaHi")===85&&q("#bpSysHi").value==="135");
+    ok("tansiyon takibi açılır: alanlar yok (eşik girilmez), ön ayar düğmesi yok, tansiyon hatırlatmaları",ev("S.settings.bpOn")===true&&!q("#bpSysHi")&&!q('[data-vt="bppreset"]')&&shown().includes(7)&&shown().includes(8)&&!shown().includes(9));
     ev("tab='bugun';render()");
     ok("Bugün yapılacaklar: tansiyon satırı (ölçüm yok), şeker kapalıyken satırı yok",qa('#view .todo [data-vt="addbp"]').length===1&&q(".todo").textContent.includes("ölçüm yok")&&!q('#view [data-vt="addbs"]'));
     ev("tab='trend';render()");
     ok("Trend'de tansiyon kartı, şeker kartı yok",!!q('[data-tab="tansiyon"]')&&!q('[data-tab="seker"]'));
-
-    // Ayarlar alanları doğrulama
-    ev("tab='ayar-modul';render()");
-    q("#bpSysHi").value="140";q("#bpSysHi").dispatchEvent(new w.Event("change",{bubbles:true}));
-    ok("üst sınır değiştirilebilir",ev("S.settings.bpSysHi")===140);
-    q("#bpSysHi").value="10";q("#bpSysHi").dispatchEvent(new w.Event("change",{bubbles:true}));
-    ok("geçersiz sınır reddedilir",ev("S.settings.bpSysHi")===140&&toastT().includes("arasında olmalı"));
-    q("#bpSysHi").value="";q("#bpSysHi").dispatchEvent(new w.Event("change",{bubbles:true}));
-    ok("boş bırakınca karşılaştırma kapanır",ev("S.settings.bpSysHi")===0);
-    ev("S.settings.bpSysHi=135");
 
     // Tansiyon girişi
     ev("tab='bugun';render()");
@@ -494,7 +482,7 @@ setTimeout(async()=>{
     ok("tansiyon görünümü: ev ortalaması, grafik noktaları, doktor raporu, silme düğmeleri",v.includes("Ev ortalaması")&&v.includes("mmHg")&&qa("#view svg circle").length>=3&&!q('[data-vt="pdfmenu:t"]')&&qa('#view [data-vt^="del:"]').length>=2&&q("#ttl").textContent==="Tansiyon"&&q('nav [data-tab="trend"]').getAttribute("aria-current")==="page",v.slice(0,300));
 ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("tanı dili görünümde yok",!BAN.test(v)&&!BAN.test(ev("viewBugun()")),v.match(BAN));
-    ok("200/100 oturumu hedef aralığının üstünde işaretlenir",v.includes("▲"));
+    ok("200/100 oturumu işaretlenmez, yorum yok",!/▲|▼|üstünde|altında/.test(v)&&v.includes("Bu değerleri hekiminle değerlendir."));
     const n0=ev("S.vitals.length");
     click('#view [data-vt^="del:"]');
     ok("ölçüm silinir, geri al getirir",ev("S.vitals.length")<n0);
@@ -505,18 +493,16 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
 
     // Şeker
     ev("tab='ayar-modul';render()");click('[data-vt="bstoggle"]');
-    ok("şeker takibi açılır, hatırlatma görünür",ev("S.settings.bsOn")===true&&!!q("#gFastHi")&&shown().includes(9)&&!!q('[data-vt="gpreset"]')&&q("#view").textContent.includes("yalnızca diyabetli yetişkinlerin tedavi hedefidir"));
-    click('[data-vt="gpreset"]');
-    ok("şeker ön ayarı: 80-130 ve 180, uyarı toast'ı",ev("S.settings.gFastLo")===80&&ev("S.settings.gFastHi")===130&&ev("S.settings.gPostHi")===180&&toastT().includes("diyabetli yetişkinler"));
+    ok("şeker takibi açılır, hatırlatma görünür; hedef alanı ve ADA ön ayarı yok",ev("S.settings.bsOn")===true&&!q("#gFastHi")&&shown().includes(9)&&!q('[data-vt="gpreset"]')&&!/ADA 20|diyabet/i.test(q("#view").textContent));
     ev("tab='bugun';render()");
     ok("Bugün yapılacaklarda şeker satırı, ölçülmüş tansiyon yok",!!q('#view .todo [data-vt="addbs"]')&&q(".todo").textContent.includes("Şeker")&&!q('#view [data-vt="addbp"]'));
     const addG=(g,ctx,day)=>{ev("vMenu()");click('#sheet [data-vt="addbs"]');q("#gv").value=String(g);click(`[data-vctx="${ctx}"]`);if(day)q("#fday").value=day;click('[data-vt="savebs"]')};
     addG(95,"acl");
     ok("şeker kaydedilir: bağlam ve değer",ev("S.vitals.filter(r=>r.k==='s').length")===1&&ev("S.vitals.find(r=>r.k==='s').ctx")==="acl"&&ev("S.vitals.find(r=>r.k==='s').g")===95&&toastT().includes("95 mg/dL")&&!toastT().includes("üstünde"),toastT());
     addG(160,"sonra");
-    ok("160 yemekten sonra aralıkta (işaret yok)",!toastT().includes("üstünde")&&ev("S.vitals.filter(r=>r.k==='s').length")===2,toastT());
+    ok("160 yemekten sonra: işaret yok",!toastT().includes("üstünde")&&ev("S.vitals.filter(r=>r.k==='s').length")===2,toastT());
     addG(150,"acl");
-    ok("160/150 açlıkta hedef aralığının üstünde yazılır",toastT().includes("hedef aralığının üstünde")&&ev("S.vitals.filter(r=>r.k==='s').length")===3,toastT());
+    ok("160/150 açlıkta da işaret yok, yorum yazılmaz",!/üstünde|altında|aralığ/.test(toastT())&&ev("S.vitals.filter(r=>r.k==='s').length")===3,toastT());
     addG(250,"sonra");
     ok("açlık 95 / yemek sonrası 250: bağlam farklı, aykırı uyarısı yok",ev("S.vitals.filter(r=>r.k==='s').length")===4);
     addG(310,"acl");
@@ -531,8 +517,9 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("S.labs=[{id:1,day:'2026-09-01',k:'hba1c',n:'HbA1c',v:5.4,u:'%'}]");
     ev("tab='seker';render()");
     const sv=q("#view").textContent;
-    ok("şeker görünümü: son ölçüm, ortalama, hedefte yüzde, bağlama göre, grafik, tahlil HbA1c",sv.includes("Son ölçüm")&&sv.includes("Ortalama")&&/Hedefaralığında%\d+/.test(sv.replace(/\s/g,""))&&sv.includes("Bağlama göre ortalama")&&qa("#view svg circle").length>=5&&sv.includes("HbA1c")&&sv.includes("karıştırılmaz"),[sv.includes("Son ölçüm"),/Hedefaralığında%\d+/.test(sv.replace(/\s/g,"")),qa("#view svg circle").length,sv.includes("HbA1c"),sv.includes("karıştırılmaz"),ev("S.labs.length")]);
+    ok("şeker görünümü: son ölçüm, ortalama, hedef yüzdesi yok, bağlama göre, grafik, tahlil HbA1c",sv.includes("Son ölçüm")&&sv.includes("Ortalama")&&!sv.includes("Hedef aralığında")&&sv.includes("Bağlama göre ortalama")&&qa("#view svg circle").length>=5&&sv.includes("HbA1c")&&sv.includes("karıştırılmaz"),[sv.includes("Son ölçüm"),/Hedefaralığında%\d+/.test(sv.replace(/\s/g,"")),qa("#view svg circle").length,sv.includes("HbA1c"),sv.includes("karıştırılmaz"),ev("S.labs.length")]);
     ok("şeker görünümünde tanı dili yok",!BAN.test(sv),sv.match(BAN));
+    ok("tansiyon ve şeker ekranlarında yorum etiketi çıkmaz (normal/yüksek/prediyabet/diyabet/hipertansiyon)",!/normal|yüksek|prediyabet|diyabet|hipertansiyon/i.test(sv.replace(/En düşük \/ en yüksek/g,"")+v.replace(/En düşük \/ en yüksek/g,"")),[sv,v].map(x=>x.match(/normal|yüksek|prediyabet|diyabet|hipertansiyon/i)));
 
     // Hatırlatma kurulumu
     const sched=[];const lnOld=w.Capacitor.Plugins.LocalNotifications;
@@ -578,11 +565,11 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     click('[data-vt="pdf:t:30"]');await new Promise(r=>setTimeout(r,150));
     const pb=Buffer.from(saved.data,"base64"),pd=await pdfjs.getDocument({data:new Uint8Array(pb),verbosity:0}).promise;
     ok("tansiyon raporu: geçerli PDF, dosya adı, paylaşım",/^neowell-tansiyon-\d{4}-\d{2}-\d{2}\.pdf$/.test(saved.path)&&pb.slice(0,5).toString()==="%PDF-"&&pd.numPages===1&&shared.files[0]==="file:///cache/r.pdf",[saved.path,pd.numPages]);
-    ok("tansiyon raporu: iki ham ölçüm ayrı satır, ortalama, uyarı notu",drawn.includes("NeoWell · Tansiyon raporu")&&drawn.includes("128/82 mmHg  nabız 70")&&drawn.includes("140/90 mmHg")&&drawn.includes("Sabah, 1. ölçüm")&&drawn.includes("Sabah, 2. ölçüm")&&drawn.some(t=>/Tıbbi yorum içermez/.test(t))&&drawn.some(t=>/134\/86 mmHg/.test(t)),drawn);
+    ok("tansiyon raporu: iki ham ölçüm ayrı satır, ortalama, uyarı notu",drawn.includes("NeoWell · Tansiyon raporu")&&drawn.includes("128/82 mmHg  nabız 70")&&drawn.includes("140/90 mmHg")&&drawn.includes("Sabah, 1. ölçüm")&&drawn.includes("Sabah, 2. ölçüm")&&drawn.some(t=>/Bu değerleri hekiminle değerlendir\./.test(t))&&drawn.some(t=>/134\/86 mmHg/.test(t)),drawn);
     ok("raporda tanı dili yok",!BAN.test(drawn.join(" ")));
     drawn.length=0;saved=null;
     ev("tab='trend';render()");click('[data-vt="pdfmenu:s"]');click('[data-vt="pdf:s:7"]');await new Promise(r=>setTimeout(r,150));
-    ok("şeker raporu: bağlam ve değerler, hedefte yüzde",drawn.includes("NeoWell · Şeker raporu")&&drawn.includes("Açlık")&&drawn.includes("95 mg/dL")&&drawn.includes("Yemekten 2 saat sonra")&&drawn.some(t=>/%100 \(2 ölçüm\)/.test(t)),drawn);
+    ok("şeker raporu: bağlam ve değerler, hedef yüzdesi yok",drawn.includes("NeoWell · Şeker raporu")&&drawn.includes("Açlık")&&drawn.includes("95 mg/dL")&&drawn.includes("Yemekten 2 saat sonra")&&!drawn.some(t=>/Hedef aralığ/.test(t)),drawn);
     ev(`(()=>{const t=dayKey();S.vitals=[];for(let i=0;i<120;i++)S.vitals.push({id:i+1,k:'s',day:keyOff(-(i%25)),time:String(6+(i%12)).padStart(2,'0')+':'+String(i%60).padStart(2,'0'),g:80+(i%60),ctx:'rast'})})()`);
     drawn.length=0;saved=null;
     await ev("vPdf")("s",30);
@@ -1948,7 +1935,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     q('[data-pv="revoke"]').click();
     ok("sheet'ten geri alma",!ev("S.settings.consent")&&sh().includes("kabul edilmedi"));
     ev("closeSheet()");
-    ok("tıbbi uyarı tek metin: Hakkında, tansiyon, şeker, tahlil",["ayar-hak","tansiyon","seker","tahlil"].every(t=>{ev(`tab='${t}';render()`);return k().includes(ev("MED_NOTE"))}));
+    ok("tıbbi uyarı: Hakkında MED_NOTE, tansiyon/şeker/tahlil tek kalıp 'Bu değerleri hekiminle değerlendir.'",(ev("tab='ayar-hak';render()"),k().includes(ev("MED_NOTE")))&&["tansiyon","seker","tahlil"].every(t=>{ev(`tab='${t}';render()`);return k().includes("Bu değerleri hekiminle değerlendir.")}));
     ev("Object.assign(S.settings,{obDone:false,heightCm:0,goalKg:0,kcal:0,age:0});S.entries=[];S.chat=[];S.meds=[];Object.assign(ob,{cm:'170',kg:'80',age:'30',step:2});render()");
     ok("onboarding son adımı: kısa özet ve bağlantı, sheet açılır",k().includes("yalnızca telefonunda durur")&&k().includes(ev("MED_NOTE"))&&(q('[data-pv="open"]').click(),sh().includes("Verin nerede")));
     ev("closeSheet()");
@@ -2033,8 +2020,8 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
       q("#back").click();titles=titles&&ev("tab")==="ayar";
     }
     ok("her bölüm kendi alt ekranı: başlık, ‹ görünür, Daha fazla sekmesi etkin; ‹ listeye döner",titles);
-    const need=["heightCm","age","goalKg","kcal","waterMl","glass","sportWeek","stepGoal","bpSysHi","bpDiaHi","bpSysLo","bpDiaLo","gFastLo","gFastHi","gPostLo","gPostHi"].map(k=>"data-set="+k)
-      .concat([1,2,3,4,5,6,7,8,9,10,11,12].flatMap(i=>["data-rt="+i,"data-ro="+i]),["data-act=saglik","data-act=drive","data-act=yedek","data-act=sifirla","data-pv=csv","data-pv=open","data-c=addprov","data-c=clearchat","data-g=gdb:2.5","data-g=gpl:25","data-hb=fasttoggle","data-hb=plan:16","data-md=toggle","data-md=shown","data-tab=ilac","data-vt=bptoggle","data-vt=bstoggle","data-vt=bppreset","data-vt=gpreset","data-aw=","data-rpe=","data-sex=m","data-actl=2"]);
+    const need=["heightCm","age","goalKg","kcal","waterMl","glass","sportWeek","stepGoal"].map(k=>"data-set="+k)
+      .concat([1,2,3,4,5,6,7,8,9,10,11,12].flatMap(i=>["data-rt="+i,"data-ro="+i]),["data-act=saglik","data-act=drive","data-act=yedek","data-act=sifirla","data-pv=csv","data-pv=open","data-c=addprov","data-c=clearchat","data-g=gdb:2.5","data-g=gpl:25","data-hb=fasttoggle","data-hb=plan:16","data-md=toggle","data-md=shown","data-tab=ilac","data-vt=bptoggle","data-vt=bstoggle","data-aw=","data-rpe=","data-sex=m","data-actl=2"]);
     ok("eski tek sayfadaki tüm kimlikler alt ekranlarda korunur",need.every(x=>seen.has(x)),need.filter(x=>!seen.has(x)));
     ev("tab='ayar-modul';render()");ev("backKey()");const b1=ev("tab");ev("backKey()");
     const b2=ev("tab");ev("backKey()");
@@ -2215,10 +2202,8 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     let c=q("#view svg.chart");
     ok("tansiyon: çizgiler doğrudan etiketli (Sistolik, Diyastolik), renge ek olarak şekil: sistolik daire, diyastolik kare + kesik çizgi",c.textContent.includes("Sistolik")&&c.textContent.includes("Diyastolik")&&c.querySelectorAll("circle").length===5&&c.querySelectorAll("rect").length>=5+1&&!!c.querySelector("polyline[stroke-dasharray]"));
     ok("tansiyon: lejant her seri için işaret çizer (çizgi + şekil), renk adına dayanmaz",qa("#view .legend span").length===2&&qa("#view .legend span").every(x=>x.querySelector("svg line")&&x.querySelector("svg circle,svg rect"))&&!q("#view").textContent.includes("Yeşil: büyük"));
-    ok("tansiyon: genel referans bandı (iki gölgeli bölge) ve 'genel referans' notu, tanı dili yok",c.querySelectorAll('rect[opacity=".12"]').length===2&&c.textContent.includes("genel referans")&&q("#view").textContent.includes("Tanı ya da kişisel hedef değildir")&&!/(yüksek tansiyon|hipertansiyon|hastalık|teşhis)/i.test(c.parentNode.textContent));
-    ok("tansiyon: genel referans bandı hazır sınırla (135/85) aynı, sınır girilmemişken 'Kırmızı işaret' vaadi yok",ev("VitalsLib.bpBand({}).bands[0].hi")===ev("VitalsLib.BP_PRESET.bpSysHi")&&ev("VitalsLib.bpBand({}).bands[1].hi")===ev("VitalsLib.BP_PRESET.bpDiaHi")&&q("#view").textContent.includes("90–135")&&!q("#view").textContent.includes("Kırmızı işaret"));
-    ev("S.settings.bpSysHi=135;S.settings.bpDiaHi=85;render()");c=q("#view svg.chart");
-    ok("kullanıcı kendi üst sınırını girdiyse bant onu gösterir, 'genel referans' yazmaz",c.textContent.includes("hedef aralığın")&&!c.textContent.includes("genel referans")&&q("#view").textContent.includes("senin girdiğin"));
+    ok("tansiyon: bant, kırmızı işaret ve referans notu yok; eski kayıtlı eşikler de yorum üretmez",ev("S.settings.bpSysHi=135;S.settings.bpDiaHi=85;render();1")&&!q("#view svg.chart rect[opacity]")&&!/referans|Kırmızı|gölgeli/i.test(q("#view").textContent)&&!q("#view").innerHTML.includes("var(--warn)"));
+    c=q("#view svg.chart");
     const P=JSON.parse(c.dataset.tip);
     c.dispatchEvent(Object.assign(new w.Event("pointerdown",{bubbles:true}),{clientX:P[0][0]}));
     ok("tansiyon grafiğine dokununca değer balonu (gün, saat, seri, değer)",/Sistolik|Diyastolik/.test(q("#view svg.chart .tip").textContent)&&/\d{3}|\d{2}/.test(q("#view svg.chart .tip").textContent));

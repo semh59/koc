@@ -28,7 +28,7 @@ ok("clean: kendi çıktısı tekrar temizlenince değişmez",JSON.stringify(V.cl
 const twin=V.clean([T({sid:"tw",i:1,sys:128,dia:82,time:"08:00"}),T({sid:"tw",i:2,sys:128,dia:82,time:"08:00"})]);
 ok("özdeş iki ölçüm clean sonrası ikisi de durur",twin.length===2&&V.sessions(twin)[0].n===2,twin);
 ok("özdeş ölçümler ikinci temizlikte de korunur (her açılışta çalışır)",V.clean(V.clean(twin)).length===2);
-ok("rapor satırlarında 1. ve 2. ölçüm numarası i alanından gelir",(r=>r[0].c==="Sabah, 1. ölçüm"&&r[1].c==="Sabah, 2. ölçüm")(V.reportRows(twin,"t","2026-09-01","2026-09-30",{})));
+ok("rapor satırlarında 1. ve 2. ölçüm numarası i alanından gelir",(r=>r[0].c==="Sabah, 1. ölçüm"&&r[1].c==="Sabah, 2. ölçüm")(V.reportRows(twin,"t","2026-09-01","2026-09-30")));
 ok("i yalnızca 1 ya da 2 olabilir",V.check(T({i:3})).row.i===undefined&&V.check(T({i:2})).row.i===2);
 
 // seanslar ve ev ortalaması
@@ -51,29 +51,16 @@ ok("ev ortalaması: 3 günden az günde yetersiz",V.homeAvg(rows,"2026-09-09",7)
 ok("ev ortalaması: pencere sınırı (tam 7 gün)",V.homeAvg(rows,"2026-09-08",7).all.n===1&&V.homeAvg(rows,"2026-09-07",7).all.n===1&&V.homeAvg(rows,"2026-09-07",7).all.sys===170&&V.homeAvg(rows,"2026-08-20",7).all===null);
 ok("ev ortalaması: veri yoksa null, çökmez",V.homeAvg([],"2026-09-10",7).all===null&&V.homeAvg([],"2026-09-10",7).days===0);
 
-// hedef aralığı: tansiyon
-const S0={bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0};
-const S1={...S0,...V.BP_PRESET};
-ok("aralık yokken tansiyon işaretlenmez",V.flagBp(200,120,S0)===null);
-ok("aralık: eşik dahil değil, üstü işaretlenir",V.flagBp(135,85,S1)===null&&V.flagBp(136,80,S1)==="high"&&V.flagBp(120,86,S1)==="high"&&V.flagBp(100,60,S1)===null);
-ok("alt sınır girilirse altı işaretlenir",V.flagBp(85,60,{...S0,bpSysLo:90})==="low"&&V.flagBp(95,50,{...S0,bpDiaLo:60})==="low");
-
-// hedef aralığı: şeker bağlam başına
-const SG={...S0,...V.G_PRESET};
-ok("160 mg/dL: yemekten sonra aralıkta, açlıkta üstünde",V.flagG(G({g:160,ctx:"sonra"}),SG)===null&&V.flagG(G({g:160,ctx:"acl"}),SG)==="high");
-ok("açlık ve yemek öncesi aynı aralığı kullanır",V.flagG(G({g:70,ctx:"acl"}),SG)==="low"&&V.flagG(G({g:70,ctx:"once"}),SG)==="low"&&V.flagG(G({g:100,ctx:"once"}),SG)===null);
-ok("yatmadan önce ve rastgele için bant yok",V.flagG(G({g:300,ctx:"yatis"}),SG)===null&&V.flagG(G({g:30,ctx:"rast"}),SG)===null);
-ok("yalnızca üst sınırlı aralık (yemekten sonra) alt değeri işaretlemez",V.flagG(G({g:40,ctx:"sonra"}),SG)===null);
-ok("sınır değerler aralıkta sayılır",V.flagG(G({g:80}),SG)===null&&V.flagG(G({g:130}),SG)===null&&V.flagG(G({g:131}),SG)==="high"&&V.flagG(G({g:79}),SG)==="low");
+// yorum yok: eşik, işaret ve ön ayar API'si kaldırıldı
+ok("eşik/işaret/ön ayar işlevleri yok",["flagBp","flagG","rangeG","bpBand","BP_PRESET","G_PRESET"].every(k=>!(k in V)));
 
 // şeker özeti
 const gr=V.clean([G({g:90,time:"07:00"}),G({g:140,time:"08:00"}),G({g:150,ctx:"sonra",time:"09:00"}),G({g:200,ctx:"sonra",time:"10:00"}),G({g:250,ctx:"rast",time:"11:00"}),G({g:100,day:"2026-08-01"})]);
-const st=V.gStats(gr,"2026-09-01","2026-09-30",SG);
+const st=V.gStats(gr,"2026-09-01","2026-09-30");
 ok("şeker özeti: sayı, ortalama, en düşük/yüksek",st.n===5&&Math.abs(st.avg-166)<0.1&&st.min===90&&st.max===250,st);
-ok("hedefte %: yalnızca aralığı olan ölçümler, her biri kendi bağlamıyla",st.ranged===4&&st.pct===50,st);
+ok("şeker özeti hedef yüzdesi taşımaz",!("pct" in st)&&!("ranged" in st),st);
 ok("bağlama göre ortalama",st.byCtx.acl.avg===115&&st.byCtx.sonra.avg===175&&st.byCtx.rast.n===1);
-ok("aralık hiç yoksa yüzde yok",V.gStats(gr,"2026-09-01","2026-09-30",S0).pct===null);
-ok("dönem boşsa null",V.gStats(gr,"2026-01-01","2026-01-31",SG)===null&&V.gStats([],"2026-01-01","2026-12-31",SG)===null);
+ok("dönem boşsa null",V.gStats(gr,"2026-01-01","2026-01-31")===null&&V.gStats([],"2026-01-01","2026-12-31")===null);
 
 // uç değer kutusu
 const today="2026-10-01";
@@ -88,25 +75,22 @@ ok("şeker: aynı bağlamda fark >150 sorar",!!V.needsConfirm(prev,G({g:241,ctx:
 ok("şeker: farklı bağlamlar arası fark sormaz (açlık 90, yemek sonrası 250)",V.needsConfirm(prev,G({g:250,ctx:"sonra"}))===null&&V.needsConfirm(prev,G({g:300,ctx:"yatis"}))===null);
 ok("ilk ölçümde soru yok",V.needsConfirm([],T({sys:200,dia:100}))===null&&V.needsConfirm([],G({g:500}))===null);
 
-// ön ayarlar
-ok("ön ayarlar belgelenen değerler",V.BP_PRESET.bpSysHi===135&&V.BP_PRESET.bpDiaHi===85&&V.G_PRESET.gFastLo===80&&V.G_PRESET.gFastHi===130&&V.G_PRESET.gPostHi===180);
-
 // rapor
-const rr=V.reportRows(rows,"t","2026-09-01","2026-09-30",S1);
+const rr=V.reportRows(rows,"t","2026-09-01","2026-09-30");
 ok("rapor satırları: her ham ölçüm bir satır, tarih sıralı, seans ve ölçüm sırası",rr.length===8&&rr[0].d==="1 Eyl 2026"&&rr.some(r=>r.c==="Sabah, 1. ölçüm"&&r.v.startsWith("130/84"))&&rr.some(r=>r.c==="Sabah, 2. ölçüm"&&r.v.startsWith("134/86")),rr);
-ok("rapor satırı: nabız ve aralık işareti",rr.some(r=>/nabız 70/.test(r.v))&&rr.filter(r=>r.f==="▲").length>=3);
-ok("rapor: şeker satırı bağlamı ve birimi",V.reportRows(gr,"s","2026-09-01","2026-09-30",SG).some(r=>r.c==="Yemekten 2 saat sonra"&&r.v==="150 mg/dL"));
-ok("rapor: dönem dışı ölçümler gelmez",V.reportRows(gr,"s","2026-09-01","2026-09-30",SG).length===5);
+ok("rapor satırı: nabız var, aralık işareti yok",rr.some(r=>/nabız 70/.test(r.v))&&rr.every(r=>!("f" in r)));
+ok("rapor: şeker satırı bağlamı ve birimi",V.reportRows(gr,"s","2026-09-01","2026-09-30").some(r=>r.c==="Yemekten 2 saat sonra"&&r.v==="150 mg/dL"));
+ok("rapor: dönem dışı ölçümler gelmez",V.reportRows(gr,"s","2026-09-01","2026-09-30").length===5);
 const pg=V.paginate(200,4);
 ok("sayfalama: tüm satırlar dağıtılır, her sayfa sığar",pg.reduce((a,p)=>a+p.n,0)===200&&pg.length>=5&&pg.every(p=>p.n>0)||pg[0].n===0,pg);
 ok("sayfalama: az satırda tek sayfa",V.paginate(5,4).length===1&&V.paginate(0,4).length===1);
 
 // çizim: tuval bağlamı taklidi
 const drawn=[];const ctx=new Proxy({},{get:(t,k)=>k==="measureText"?()=>({width:100}):k==="fillText"?s=>drawn.push(s):()=>{},set:()=>true});
-const items=rr.slice(0,6),info={kind:"t",title:"NeoWell · Tansiyon raporu",period:"01.09.2026 - 30.09.2026",summary:[["7 gün ev ortalaması","132/85 mmHg (14 ölçüm)"]],rows:rr,chart:{series:[{pts:[{day:"2026-09-08",v:110},{day:"2026-09-10",v:132,out:true}],color:"#0f5c52"}],band:{hi:135},from:"2026-09-01",to:"2026-09-30"},page:1,total:1,today};
+const items=rr.slice(0,6),info={kind:"t",title:"NeoWell · Tansiyon raporu",period:"01.09.2026 - 30.09.2026",summary:[["7 gün ev ortalaması","132/85 mmHg (14 ölçüm)"]],rows:rr,chart:{series:[{pts:[{day:"2026-09-08",v:110},{day:"2026-09-10",v:132}],color:"#0f5c52"}],from:"2026-09-01",to:"2026-09-30"},page:1,total:1,today};
 V.drawPage(ctx,items,info);
-ok("rapor çizimi: başlık, özet, tablo ve uyarı notu",drawn.includes("NeoWell · Tansiyon raporu")&&drawn.includes("7 gün ev ortalaması")&&drawn.some(t=>/Tıbbi yorum içermez/.test(t))&&drawn.includes("Sabah, 1. ölçüm"),drawn);
-ok("rapor çizimi: aralık dışı satırda nötr ifade",drawn.some(t=>/hedef aralığının üstünde/.test(t)));
+ok("rapor çizimi: başlık, özet, tablo ve uyarı notu",drawn.includes("NeoWell · Tansiyon raporu")&&drawn.includes("7 gün ev ortalaması")&&drawn.some(t=>/Bu değerleri hekiminle değerlendir\./.test(t))&&drawn.includes("Sabah, 1. ölçüm"),drawn);
+ok("rapor çizimi: aralık/işaret ifadesi çıkmaz",!drawn.some(t=>/aralığ|▲|▼/.test(t)));
 V.drawPage(ctx,[],{...info,chart:null,page:2,total:2});
 ok("boş sayfa ve grafiksiz çizim çökmez",true);
 

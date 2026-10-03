@@ -1,26 +1,20 @@
 "use strict";
 /* Tansiyon ve şeker takibi arayüzü. index.html'deki S, save, toast, openSheet, closeSheet, esc, render, dayKey, keyOff, dayOptions ile çalışır.
-   Kayıt ve grafik tutar; teşhis, yorum ya da doz önerisi yapmaz. Veriler Koç'a gönderilmez. */
+   Kayıt, ortalama ve grafik tutar; değer yorumlamaz, eşik ya da hedef karşılaştırması yapmaz. Veriler Koç'a gönderilmez. */
 let vRange=14,vSes="sabah",vCtx="acl",vConfirm="";
 const vN=s=>{const t=String(s==null?"":s).trim();return t===""?undefined:LabLib.toNum(t)};
 const vFmt=x=>VitalsLib.num(x);
 const vNow=()=>{const d=new Date();return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")};
 const vNextId=()=>Math.max(0,...S.vitals.map(r=>r.id))+1;
-const vFlagTxt=f=>f==="high"?"▲ hedef aralığının üstünde":f==="low"?"▼ hedef aralığının altında":"";
 const vToMin=t=>+t.slice(0,2)*60+ +t.slice(3,5);
 
 /* ---- Ayarlar ---- */
-function vitalsSettingsHtml(fld){
+function vitalsSettingsHtml(){
   const st=S.settings,seg=(on,key,label)=>`<button class="btn ghost" data-vt="${key}" style="margin-bottom:8px">${on?label+" takibini kapat":label+" takibini aç"}</button>`;
   return `<h2>Sağlık ölçümleri</h2><div class="card">
-    <p class="mut sm" style="margin:0 0 10px">Evde ölçtüğün tansiyon ve şekeri kaydet. Uygulama yorum yapmaz, yalnızca senin ya da doktorunun verdiği hedef aralığıyla karşılaştırır. Veriler telefondan çıkmaz.</p>
+    <p class="mut sm" style="margin:0 0 10px">Evde ölçtüğün tansiyon ve şekeri kaydet. Uygulama değerleri yorumlamaz; kaydeder, ortalamasını ve grafiğini gösterir. Veriler telefondan çıkmaz.</p>
     ${seg(st.bpOn,"bptoggle","Tansiyon")}
-    ${st.bpOn?`${fld("bpSysHi","Büyük tansiyon üst sınır",st.bpSysHi||"","Boş bırakırsan karşılaştırma yapılmaz","numeric")}${fld("bpDiaHi","Küçük tansiyon üst sınır",st.bpDiaHi||"","","numeric")}${fld("bpSysLo","Büyük tansiyon alt sınır",st.bpSysLo||"","İsteğe bağlı","numeric")}${fld("bpDiaLo","Küçük tansiyon alt sınır",st.bpDiaLo||"","İsteğe bağlı","numeric")}
-    <div class="btns"><button class="btn ghost" data-vt="bppreset">135/85 eşiğini doldur (ESC 2024, ev ölçümü eşiği)</button></div>`:""}
     ${seg(st.bsOn,"bstoggle","Şeker")}
-    ${st.bsOn?`${fld("gFastLo","Açlık / yemek öncesi alt sınır (mg/dL)",st.gFastLo||"","Doktorunun verdiği hedef","numeric")}${fld("gFastHi","Açlık / yemek öncesi üst sınır (mg/dL)",st.gFastHi||"","","numeric")}${fld("gPostLo","Yemekten 2 saat sonra alt sınır (mg/dL)",st.gPostLo||"","İsteğe bağlı","numeric")}${fld("gPostHi","Yemekten 2 saat sonra üst sınır (mg/dL)",st.gPostHi||"","","numeric")}
-    <div class="btns"><button class="btn ghost" data-vt="gpreset">Diyabetli yetişkinler için ADA 2026 hedeflerini doldur (80-130 ve 180)</button></div>
-    <p class="hint">Bu ADA değerleri yalnızca diyabetli yetişkinlerin tedavi hedefidir. Diyabeti olmayan biri için geçerli değildir. Kendi hedefini doktorunla belirle.</p>`:""}
   </div>`;
 }
 function vToggle(kind){
@@ -30,12 +24,6 @@ function vToggle(kind){
   save();render();scheduleReminders().then(setNotif);
   toast(st[on]?(kind==="bp"?"Tansiyon takibi açık. Hatırlatmaları Ayarlar > Hatırlatmalar'dan açabilirsin":"Şeker takibi açık. Hatırlatmayı Ayarlar > Hatırlatmalar'dan açabilirsin"):"Kapatıldı. Kayıtların durur");
 }
-function vPreset(kind){
-  Object.assign(S.settings,kind==="bp"?VitalsLib.BP_PRESET:VitalsLib.G_PRESET);
-  save();render();
-  toast(kind==="bp"?"135/85 eşiği dolduruldu. Doktorun farklı bir hedef verdiyse değiştir":"ADA hedefleri dolduruldu. Yalnızca diyabetli yetişkinler için geçerli, kendi hedefini doktorunla belirle");
-}
-
 /* ---- Bugün ve Trend kartları ---- */
 function vLast(k){return S.vitals.filter(r=>r.k===k).sort((a,b)=>a.day<b.day?1:a.day>b.day?-1:a.time<b.time?1:a.time>b.time?-1:b.id-a.id)[0]}
 function vWhen(r){return (r.day===dayKey()?"bugün ":fd(r.day)+" ")+r.time}
@@ -90,7 +78,7 @@ function vFinish(rows,msg){
   const ids=S.vitals.slice(-rows.length).map(r=>r.id);
   closeSheet();render();
   if(rows.some(r=>VitalsLib.crisis(r,dayKey()))){
-    return openSheet(`<h3>Çok uç bir değer</h3><p>Ölçüm kaydedildi. Bu değer çok uç. Cihazı kontrol edip ölçümü tekrarla. Belirtin varsa ya da değer doğruysa 112'yi ara.</p><button class="btn" data-vt="close">Tamam</button>`);
+    return openSheet(`<h3>Ölçüm kaydedildi</h3><p>Cihazı kontrol edip ölçümü tekrarla. Belirtin varsa ya da değer doğruysa 112'yi ara.</p><button class="btn" data-vt="close">Tamam</button>`);
   }
   toast(msg,()=>{S.vitals=S.vitals.filter(r=>!ids.includes(r.id));save();render()});
 }
@@ -108,8 +96,8 @@ function vSaveBp(){
   }
   const sig=JSON.stringify(rows.map(r=>[r.sys,r.dia,r.day,r.time])),why=VitalsLib.needsConfirm(S.vitals,rows[0]);
   if(why&&vConfirm!==sig){vConfirm=sig;return vWarn(`${why} Yanlış yazmış olabilir misin? Doğruysa tekrar Kaydet'e dokun.`)}
-  const m=rows.reduce((t,r)=>({s:t.s+r.sys,d:t.d+r.dia}),{s:0,d:0}),as=Math.round(m.s/rows.length),ad=Math.round(m.d/rows.length),f=VitalsLib.flagBp(as,ad,S.settings);
-  vFinish(rows,`Kaydedildi: ${as}/${ad}${rows.length>1?" (ortalama)":""}${f?", "+vFlagTxt(f):""}`);
+  const m=rows.reduce((t,r)=>({s:t.s+r.sys,d:t.d+r.dia}),{s:0,d:0}),as=Math.round(m.s/rows.length),ad=Math.round(m.d/rows.length);
+  vFinish(rows,`Kaydedildi: ${as}/${ad}${rows.length>1?" (ortalama)":""}`);
 }
 function vSaveBs(){
   const day=vGet("fday"),time=vGet("vtime"),g=vN(vGet("gv"));
@@ -118,70 +106,62 @@ function vSaveBs(){
   if(!c.row)return toast(c.err==="tarih"?"Gün ve saati seç":c.err);
   const sig=JSON.stringify([c.row.g,c.row.day,c.row.time,c.row.ctx]),why=VitalsLib.needsConfirm(S.vitals,c.row);
   if(why&&vConfirm!==sig){vConfirm=sig;return vWarn(`${why} Yanlış yazmış olabilir misin? Doğruysa tekrar Kaydet'e dokun.`)}
-  const f=VitalsLib.flagG(c.row,S.settings);
-  vFinish([c.row],`Kaydedildi: ${vFmt(c.row.g)} mg/dL (${VitalsLib.ctxName(c.row.ctx).toLowerCase()})${f?", "+vFlagTxt(f):""}`);
+  vFinish([c.row],`Kaydedildi: ${vFmt(c.row.g)} mg/dL (${VitalsLib.ctxName(c.row.ctx).toLowerCase()})`);
 }
 
 /* ---- Grafik (SVG) ---- */
 /* Renge ek olarak şekil (daire, kare, üçgen, baklava) ve çizgi biçimi: renk körü ve siyah-beyaz baskıda seri ayırt edilir. */
 const vMark=(sh,x,y,r,fill)=>sh==="s"?`<rect x="${(x-r).toFixed(1)}" y="${(y-r).toFixed(1)}" width="${2*r}" height="${2*r}" fill="${fill}"/>`:sh==="t"?`<polygon points="${x.toFixed(1)},${(y-r*1.25).toFixed(1)} ${(x+r*1.15).toFixed(1)},${(y+r*.9).toFixed(1)} ${(x-r*1.15).toFixed(1)},${(y+r*.9).toFixed(1)}" fill="${fill}"/>`:sh==="d"?`<polygon points="${x.toFixed(1)},${(y-r*1.3).toFixed(1)} ${(x+r*1.3).toFixed(1)},${y.toFixed(1)} ${x.toFixed(1)},${(y+r*1.3).toFixed(1)} ${(x-r*1.3).toFixed(1)},${y.toFixed(1)}" fill="${fill}"/>`:`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${fill}"/>`;
 const vLegend=series=>`<div class="legend">${series.map(s=>`<span><svg width="26" height="12" viewBox="0 0 26 12" aria-hidden="true">${s.line===false?"":`<line x1="0" x2="26" y1="6" y2="6" stroke="${s.color}" stroke-width="2"${s.dash?' stroke-dasharray="4 3"':""}/>`}${vMark(s.shape,13,6,4,s.color)}</svg>${s.label}</span>`).join("")}</div>`;
-function vSvg(series,band,from,to,W,H){
-  const f=VitalsLib.dayN(from),t=VitalsLib.dayN(to)+1,span=Math.max(1,t-f),vs=series.flatMap(s=>s.pts.map(p=>p.v)),bands=band?[].concat(band):[];
-  for(const b of bands){if(b.lo!=null)vs.push(b.lo);if(b.hi!=null)vs.push(b.hi)}
+function vSvg(series,from,to,W,H){
+  const f=VitalsLib.dayN(from),t=VitalsLib.dayN(to)+1,span=Math.max(1,t-f),vs=series.flatMap(s=>s.pts.map(p=>p.v));
   if(!series.some(s=>s.pts.length))return `<p class="hint">Bu dönemde ölçüm yok.</p>`;
   let lo=Math.min(...vs),hi=Math.max(...vs);if(hi===lo){hi+=1;lo-=1}const pad=(hi-lo)*.12;lo-=pad;hi+=pad;
   const X=p=>8+(W-16)*(VitalsLib.dayN(p.day)+vToMin(p.time)/1440-f)/span,Y=v=>8+(H-30)*(1-(v-lo)/(hi-lo));
-  const bd=bands.map(b=>{const y1=b.hi!=null?Y(b.hi):8,y2=b.lo!=null?Y(b.lo):H-22,top=Math.min(y1,y2);return `<rect x="8" y="${top.toFixed(1)}" width="${W-16}" height="${Math.abs(y2-y1).toFixed(1)}" fill="var(--prim)" opacity=".12"/>${b.label?`<text x="12" y="${(top+Math.abs(y2-y1)-6).toFixed(1)}">${b.label}</text>`:""}`}).join("");
-  const body=series.map(s=>`${s.pts.length>1?`<polyline points="${s.pts.map(p=>X(p).toFixed(1)+","+Y(p.v).toFixed(1)).join(" ")}" fill="none" stroke="${s.color}" stroke-width="1.8" stroke-linejoin="round"${s.dash?' stroke-dasharray="5 3"':""} opacity="${s.line===false?0:.85}"/>`:""}${s.pts.map(p=>vMark(s.shape,X(p),Y(p.v),3.8,p.out?"var(--warn)":s.color)).join("")}`).join("");
+  const body=series.map(s=>`${s.pts.length>1?`<polyline points="${s.pts.map(p=>X(p).toFixed(1)+","+Y(p.v).toFixed(1)).join(" ")}" fill="none" stroke="${s.color}" stroke-width="1.8" stroke-linejoin="round"${s.dash?' stroke-dasharray="5 3"':""} opacity="${s.line===false?0:.85}"/>`:""}${s.pts.map(p=>vMark(s.shape,X(p),Y(p.v),3.8,s.color)).join("")}`).join("");
   const lab=series.filter(s=>s.short&&s.pts.length).map(s=>{const p=s.pts[s.pts.length-1];return `<text x="${Math.min(X(p)+4,W-8).toFixed(1)}" y="${(Y(p.v)+(s.below?19:-9)).toFixed(1)}" text-anchor="end" style="fill:var(--ink);font-weight:700">${s.short}</text>`}).join("");
   const tip=esc(JSON.stringify(series.flatMap(s=>s.pts.map(p=>[+X(p).toFixed(1),+Y(p.v).toFixed(1),`${fd(p.day)} ${p.time} · ${s.short||s.label||""} ${p.txt||Math.round(p.v)}`.trim()]))));
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Ölçüm grafiği" data-tip="${tip}">${bd}<rect x="8" y="8" width="${W-16}" height="${H-30}" fill="none" stroke="var(--line)"/>${body}${lab}<text x="8" y="${H-6}">${fd(from)}</text><text x="${W-8}" y="${H-6}" text-anchor="end">${fd(to)}</text><text x="12" y="20">${Math.round(hi)}</text><text x="12" y="${H-26}">${Math.round(lo)}</text></svg>`;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Ölçüm grafiği" data-tip="${tip}"><rect x="8" y="8" width="${W-16}" height="${H-30}" fill="none" stroke="var(--line)"/>${body}${lab}<text x="8" y="${H-6}">${fd(from)}</text><text x="${W-8}" y="${H-6}" text-anchor="end">${fd(to)}</text><text x="12" y="20">${Math.round(hi)}</text><text x="12" y="${H-26}">${Math.round(lo)}</text></svg>`;
 }
 const vSeg=()=>`<div class="seg" role="group" aria-label="Aralık">${[7,14,30].map(n=>`<button data-vt="range:${n}" aria-pressed="${vRange===n}">${n} gün</button>`).join("")}</div>`;
 const vBtns=add=>`<button class="btn" data-vt="${add}" style="margin-bottom:12px">${Icons.svg("plus")} Ölçüm ekle</button>`;
 const vDel=ids=>`<button class="chip" data-vt="del:${ids.join(",")}" aria-label="Ölçümü sil">✕</button>`;
 
 function viewTansiyon(){
-  const st=S.settings,end=dayKey(),from=keyOff(1-vRange),h=VitalsLib.homeAvg(S.vitals,end,7);
+  const end=dayKey(),from=keyOff(1-vRange),h=VitalsLib.homeAvg(S.vitals,end,7);
   const ses=VitalsLib.sessions(S.vitals).filter(s=>s.day>=from&&s.day<=end);
-  const pt=(rows,f)=>rows.map(r=>({day:r.day,time:r.time,v:r[f],out:!!VitalsLib.flagBp(r.sys,r.dia,st)}));
+  const pt=(rows,f)=>rows.map(r=>({day:r.day,time:r.time,v:r[f]}));
   const raw=S.vitals.filter(r=>r.k==="t"&&r.day>=from&&r.day<=end);
   const bpSeries=[{pts:pt(raw,"sys"),color:"var(--ink)",shape:"c",label:"Sistolik (büyük)",short:"Sistolik"},{pts:pt(raw,"dia"),color:"var(--su)",shape:"s",dash:true,below:true,label:"Diyastolik (küçük)",short:"Diyastolik"}];
-  const {mine:bpMine,bands:bpBand}=VitalsLib.bpBand(st);
-  const hf=h.all?VitalsLib.flagBp(h.all.sys,h.all.dia,st):null;
   const avgTxt=a=>a?`${Math.round(a.sys)}/${Math.round(a.dia)}`:"–";
   const rows=ses.slice().reverse().map(s=>{
-    const f=VitalsLib.flagBp(s.sys,s.dia,st);
-    return `<div class="row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span style="flex:1">${fd(s.day)} ${s.time}<small class="mut"> ${VitalsLib.sesName(s.ses)}${s.n>1?`, ${s.n} ölçüm`:""}</small></span><b class="num">${Math.round(s.sys)}/${Math.round(s.dia)}</b><span class="mut sm">${s.nabiz?s.nabiz:""}</span><span aria-hidden="true">${f==="high"?"▲":f==="low"?"▼":""}</span>${vDel(s.raw.map(x=>x.id))}</div>`;
+    return `<div class="row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span style="flex:1">${fd(s.day)} ${s.time}<small class="mut"> ${VitalsLib.sesName(s.ses)}${s.n>1?`, ${s.n} ölçüm`:""}</small></span><b class="num">${Math.round(s.sys)}/${Math.round(s.dia)}</b><span class="mut sm">${s.nabiz?s.nabiz:""}</span>${vDel(s.raw.map(x=>x.id))}</div>`;
   }).join("");
   return `${vBtns("addbp")}
   <div class="card"><div class="lbl">Ev ortalaması (son 7 gün)</div>
-    ${h.all?`<div class="sumv num" style="color:var(--ink)">${avgTxt(h.all)} <small>mmHg</small></div><div class="mut sm">${h.all.n} ölçüm, ${h.days} gün${hf?" · "+vFlagTxt(hf):""}</div>${h.enough?"":`<div class="mut sm">Ortalama için en az 3 gün, tercihen 7 gün sabah ve akşam ölçüm gerekir.</div>`}
+    ${h.all?`<div class="sumv num" style="color:var(--ink)">${avgTxt(h.all)} <small>mmHg</small></div><div class="mut sm">${h.all.n} ölçüm, ${h.days} gün</div>${h.enough?"":`<div class="mut sm">Ortalama için en az 3 gün, tercihen 7 gün sabah ve akşam ölçüm gerekir.</div>`}
     <div class="stats" style="margin-top:8px"><div class="stat"><div class="k">Sabah ortalaması</div><div class="v num">${avgTxt(h.sabah)}</div></div><div class="stat"><div class="k">Akşam ortalaması</div><div class="v num">${avgTxt(h.aksam)}</div></div></div>`:`<p class="mut">Henüz ölçüm yok. Günde 2 kez (sabah ve akşam), her seferinde 2 ölçüm, 3-7 gün ölçersen anlamlı bir ortalama çıkar.</p>`}
   </div>
-  ${vSeg()}<div class="card">${vSvg(bpSeries,bpBand,from,end,320,170)}${vLegend(bpSeries)}<div class="mut sm">${bpMine?"Gölgeli bölgeler senin girdiğin üst sınırlardır.":"Gölgeli bölgeler genel referans aralığıdır (büyük 90–135, küçük 60–85 mmHg). Tanı ya da kişisel hedef değildir; yorumu için hekimine danış. Üst sınır girmediğin için kırmızı işaret çıkmaz."} ${bpMine?"Kırmızı işaret: sınırının dışı.":""}</div></div>
+  ${vSeg()}<div class="card">${vSvg(bpSeries,from,end,320,170)}${vLegend(bpSeries)}</div>
   <div class="card"><div class="lbl">Ölçümler (son ${vRange} gün)</div>${rows||`<p class="mut">Bu dönemde ölçüm yok.</p>`}</div>
-  <p class="hint">${MED_NOTE} Hedef aralığı Ayarlar > Modüller'den girilir.</p>`;
+  <p class="hint">Bu değerleri hekiminle değerlendir.</p>`;
 }
 function viewSeker(){
-  const st=S.settings,end=dayKey(),from=keyOff(1-vRange),a=S.vitals.filter(r=>r.k==="s"&&r.day>=from&&r.day<=end).sort((x,y)=>x.day<y.day?-1:x.day>y.day?1:x.time<y.time?-1:1);
-  const gs=VitalsLib.gStats(S.vitals,from,end,st),last=vLast("s");
+  const end=dayKey(),from=keyOff(1-vRange),a=S.vitals.filter(r=>r.k==="s"&&r.day>=from&&r.day<=end).sort((x,y)=>x.day<y.day?-1:x.day>y.day?1:x.time<y.time?-1:1);
+  const gs=VitalsLib.gStats(S.vitals,from,end),last=vLast("s");
   const COL={acl:"var(--prim)",once:"var(--prim)",sonra:"var(--kcal)",yatis:"var(--su)",rast:"var(--mut)"};
   const SHP={acl:"c",once:"d",sonra:"t",yatis:"s",rast:"c"};
-  const series=VitalsLib.CTX.map(([c])=>({pts:a.filter(r=>r.ctx===c).map(r=>({day:r.day,time:r.time,v:r.g,out:!!VitalsLib.flagG(r,st)})),color:COL[c],shape:SHP[c],label:VitalsLib.ctxName(c),short:"",line:false})).filter(s=>s.pts.length);
-  const ctxs=new Set(a.map(r=>r.ctx)),fastOnly=[...ctxs].every(c=>c==="acl"||c==="once"),postOnly=[...ctxs].every(c=>c==="sonra");
-  const band=a.length&&(fastOnly||postOnly)?(()=>{const r=VitalsLib.rangeG(fastOnly?"acl":"sonra",st);return r.lo!=null||r.hi!=null?r:null})():null;
-  const rows=a.slice().reverse().map(r=>{const f=VitalsLib.flagG(r,st);return `<div class="row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span style="flex:1">${fd(r.day)} ${r.time}<small class="mut"> ${esc(VitalsLib.ctxName(r.ctx))}</small></span><b class="num">${vFmt(r.g)}</b><span aria-hidden="true">${f==="high"?"▲":f==="low"?"▼":""}</span>${vDel([r.id])}</div>`}).join("");
+  const series=VitalsLib.CTX.map(([c])=>({pts:a.filter(r=>r.ctx===c).map(r=>({day:r.day,time:r.time,v:r.g})),color:COL[c],shape:SHP[c],label:VitalsLib.ctxName(c),short:"",line:false})).filter(s=>s.pts.length);
+  const rows=a.slice().reverse().map(r=>{return `<div class="row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span style="flex:1">${fd(r.day)} ${r.time}<small class="mut"> ${esc(VitalsLib.ctxName(r.ctx))}</small></span><b class="num">${vFmt(r.g)}</b>${vDel([r.id])}</div>`}).join("");
   const labA1c=S.labs.filter(l=>l.k==="hba1c"&&l.v!=null).sort((x,y)=>x.day<y.day?1:-1)[0];
   return `${vBtns("addbs")}
-  <div class="card"><div class="lbl">Son ölçüm</div>${last?`<div class="sumv num" style="color:var(--ink)">${vFmt(last.g)} <small>mg/dL</small></div><div class="mut sm">${esc(VitalsLib.ctxName(last.ctx))}, ${vWhen(last)}${VitalsLib.flagG(last,st)?" · "+vFlagTxt(VitalsLib.flagG(last,st)):""}</div>`:`<p class="mut">Henüz ölçüm yok.</p>`}</div>
-  ${vSeg()}${gs?`<div class="stats"><div class="stat"><div class="k">Ortalama</div><div class="v num">${Math.round(gs.avg)}</div></div><div class="stat"><div class="k">Ölçüm sayısı</div><div class="v num">${gs.n}</div></div><div class="stat"><div class="k">En düşük / en yüksek</div><div class="v num">${gs.min} / ${gs.max}</div></div><div class="stat"><div class="k">Hedef aralığında</div><div class="v num">${gs.pct==null?"–":"%"+gs.pct}</div></div></div>${gs.pct==null?`<p class="hint">Yüzde için Ayarlar'dan hedef aralığı gir.</p>`:`<p class="hint">Her ölçüm kendi bağlamının (açlık, yemekten sonra) aralığıyla değerlendirilir. ${gs.ranged} ölçümün aralığı var.</p>`}
+  <div class="card"><div class="lbl">Son ölçüm</div>${last?`<div class="sumv num" style="color:var(--ink)">${vFmt(last.g)} <small>mg/dL</small></div><div class="mut sm">${esc(VitalsLib.ctxName(last.ctx))}, ${vWhen(last)}</div>`:`<p class="mut">Henüz ölçüm yok.</p>`}</div>
+  ${vSeg()}${gs?`<div class="stats"><div class="stat"><div class="k">Ortalama</div><div class="v num">${Math.round(gs.avg)}</div></div><div class="stat"><div class="k">Ölçüm sayısı</div><div class="v num">${gs.n}</div></div><div class="stat"><div class="k">En düşük / en yüksek</div><div class="v num">${gs.min} / ${gs.max}</div></div></div>
   <div class="card"><div class="lbl">Bağlama göre ortalama</div>${Object.entries(gs.byCtx).map(([c,x])=>`<div class="row" style="display:flex;justify-content:space-between;padding:6px 0"><span>${esc(VitalsLib.ctxName(c))}</span><b class="num">${Math.round(x.avg)} <small class="mut">(${x.n})</small></b></div>`).join("")}</div>`:""}
-  <div class="card">${vSvg(series,band,from,end,320,150)}${vLegend(series)}<div class="mut sm">Gölgeli bölge ancak tek tür ölçüm varsa gösterilir. Kırmızı işaret: hedef aralığı dışı.</div></div>
+  <div class="card">${vSvg(series,from,end,320,150)}${vLegend(series)}</div>
   <div class="card"><div class="lbl">Ölçümler (son ${vRange} gün)</div>${rows||`<p class="mut">Bu dönemde ölçüm yok.</p>`}</div>
   ${labA1c?`<div class="card"><div class="lbl">Tahlil sonucun</div><div class="row" style="display:flex;justify-content:space-between"><span>HbA1c (${fd(labA1c.day)}.${labA1c.day.slice(0,4)})</span><b class="num">${vFmt(labA1c.v)} ${esc(labA1c.u||"")}</b></div><div class="mut sm">Tahlil takibinden alındı, ölçümlerle karıştırılmaz.</div></div>`:""}
-  <p class="hint">${MED_NOTE} Hedef aralığı Ayarlar > Modüller'den girilir.</p>`;
+  <p class="hint">Bu değerleri hekiminle değerlendir.</p>`;
 }
 
 /* ---- Doktor raporu ---- */
@@ -189,26 +169,26 @@ function vPdfMenu(kind){
   openSheet(`<h3>Doktor raporu</h3><p class="mut sm">Hangi dönemi rapora ekleyelim?</p>${[7,14,30,90].map(n=>`<button class="btn ghost" data-vt="pdf:${kind}:${n}" style="margin-bottom:8px">Son ${n} gün</button>`).join("")}<button class="btn ghost" data-vt="close">Vazgeç</button>`);
 }
 function vReportInfo(kind,days){
-  const st=S.settings,end=dayKey(),from=keyOff(1-days),all=S.vitals,rows=VitalsLib.reportRows(all,kind,from,end,st);
+  const end=dayKey(),from=keyOff(1-days),all=S.vitals,rows=VitalsLib.reportRows(all,kind,from,end);
   const summary=[["Dönem",`${fd(from)}.${from.slice(0,4)} - ${fd(end)}.${end.slice(0,4)} (${days} gün)`],["Ölçüm sayısı",String(rows.length)]];
   let series,title;
   if(kind==="t"){
     title="NeoWell · Tansiyon raporu";
     const raw=all.filter(r=>r.k==="t"&&r.day>=from&&r.day<=end),h=VitalsLib.homeAvg(all,end,days),a=h.all;
     const t=x=>x?`${Math.round(x.sys)}/${Math.round(x.dia)} mmHg (${x.n} ölçüm)`:"–";
-    summary.push(["Dönem ortalaması",t(a)],["Sabah ortalaması",t(h.sabah)],["Akşam ortalaması",t(h.aksam)],["Hedef aralığı",st.bpSysHi>0||st.bpDiaHi>0?`üst ${st.bpSysHi||"-"}/${st.bpDiaHi||"-"}${st.bpSysLo>0||st.bpDiaLo>0?`, alt ${st.bpSysLo||"-"}/${st.bpDiaLo||"-"}`:""}`:"girilmemiş"]);
-    const pt=f=>raw.map(r=>({day:r.day,v:r[f],out:!!VitalsLib.flagBp(r.sys,r.dia,st)}));
+    summary.push(["Dönem ortalaması",t(a)],["Sabah ortalaması",t(h.sabah)],["Akşam ortalaması",t(h.aksam)]);
+    const pt=f=>raw.map(r=>({day:r.day,v:r[f]}));
     series=[{pts:pt("sys"),color:"#0f5c52"},{pts:pt("dia"),color:"#2b6cb0"}];
   }else{
     title="NeoWell · Şeker raporu";
-    const g=VitalsLib.gStats(all,from,end,st);
-    if(g){summary.push(["Ortalama",`${Math.round(g.avg)} mg/dL`],["En düşük / en yüksek",`${g.min} / ${g.max} mg/dL`],["Hedef aralığında",g.pct==null?"hedef aralığı girilmemiş":`%${g.pct} (${g.ranged} ölçüm)`]);
+    const g=VitalsLib.gStats(all,from,end);
+    if(g){summary.push(["Ortalama",`${Math.round(g.avg)} mg/dL`],["En düşük / en yüksek",`${g.min} / ${g.max} mg/dL`]);
       for(const [c,x] of Object.entries(g.byCtx))summary.push([`Ortalama: ${VitalsLib.ctxName(c)}`,`${Math.round(x.avg)} mg/dL (${x.n})`])}
     const raw=all.filter(r=>r.k==="s"&&r.day>=from&&r.day<=end);
-    series=[{pts:raw.map(r=>({day:r.day,v:r.g,out:!!VitalsLib.flagG(r,st)})),color:"#0f5c52"}];
+    series=[{pts:raw.map(r=>({day:r.day,v:r.g})),color:"#0f5c52"}];
   }
   const pages=VitalsLib.paginate(rows.length,summary.length);
-  return {rows,pages,info:{kind,title,period:`${from} - ${end}`.split(" - ").map(d=>Algo.fdate(d,true)).join(" - "),summary,chart:series.some(s=>s.pts.length)?{series,band:null,from,to:end}:null,today:end,total:0}};
+  return {rows,pages,info:{kind,title,period:`${from} - ${end}`.split(" - ").map(d=>Algo.fdate(d,true)).join(" - "),summary,chart:series.some(s=>s.pts.length)?{series,from,to:end}:null,today:end,total:0}};
 }
 async function vPdf(kind,days){
   closeSheet();
@@ -236,8 +216,6 @@ document.addEventListener("click",ev=>{
   const [a,...rest]=el.dataset.vt.split(":"),arg=rest.join(":");
   if(a==="bptoggle")vToggle("bp");
   else if(a==="bstoggle")vToggle("bs");
-  else if(a==="bppreset")vPreset("bp");
-  else if(a==="gpreset")vPreset("g");
   else if(a==="menu")vMenu();
   else if(a==="addbp")sheetBp();
   else if(a==="addbs")sheetBs();
