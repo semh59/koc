@@ -80,13 +80,13 @@ setTimeout(async()=>{
     ok("paylaş: tek .txt dosyası, UTF-8, paylaşım ekranına gider",wr.length===1&&/^neowell-alisveris-\d{4}-\d\d-\d\d\.txt$/.test(wr[0].path)&&wr[0].encoding==="utf8"&&wr[0].data===clip&&shr.length===1&&shr[0].files[0]==="file:///cache/"+wr[0].path);
     // güvenlik kapıları
     ev("closeSheet()");
-    ev(base+";S.chat=[];S.settings.age=16;S.settings.kcal=1500;for(let i=1;i<=7;i++)add('kilo',70,'',keyOff(-i))");
+    ev(base+";S.chat=[];S.settings.healthNote='tansiyon';S.settings.kcal=1500;for(let i=1;i<=7;i++)add('kilo',70,'',keyOff(-i))");
     const hp=ev("cMenuPlan()");
-    ok("kalori açığı engeli (18 yaş altı) + hedef bakımın altında: menü bakım düzeyinde, hekim notu",hp.held===true&&hp.kcal>1500&&hp.block.includes("18 yaş"),hp);
+    ok("kalori açığı engeli (sağlık notu) + hedef bakımın altında: menü bakım düzeyinde, hekim notu",hp.held===true&&hp.kcal>1500&&hp.block.includes("Sağlık notun"),hp);
     ev("menuNote=''");reply={reply:"x",menu:null};
     await ev("cMenu()");
-    ok("engelde istek KISIT satırı taşır ve açık kurmamasını söyler",sent.messages[0].content.includes("KISIT var: 18 yaş altında")&&sent.messages[0].content.includes("kalori açığı kurma"));
-    ev(base+";S.chat=[];S.settings.age=16;S.settings.kcal=1500;S.entries=[]");
+    ok("engelde istek KISIT satırı taşır ve açık kurmamasını söyler",sent.messages[0].content.includes("KISIT var: Sağlık notun var")&&sent.messages[0].content.includes("kalori açığı kurma"));
+    ev(base+";S.chat=[];S.settings.healthNote='tansiyon';S.settings.kcal=1500;S.entries=[]");
     ok("engel var ama bakım hesaplanamıyorsa (kilo kaydı yok) menü yok, nedeni yazar",ev("cMenuPlan().why").includes("hekimine ya da diyetisyene danış"));
     ev(base+";S.chat=[{id:1,role:'user',text:'x',t:1,fl:'ed'}]");
     ok("yeme düzeni işareti varsa menü yok",ev("cMenuPlan().why").includes("kısıtlayıcı menü önermiyorum"));
