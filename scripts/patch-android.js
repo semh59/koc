@@ -40,6 +40,8 @@ if (!x.includes('android:allowBackup="false"')) {
 if (!x.includes("android.intent.action.TTS_SERVICE")) {
   x = x.replace("</manifest>", '    <queries><intent><action android:name="android.intent.action.TTS_SERVICE"/></intent></queries>\n</manifest>');
 }
+// Klavye açılınca WebView küçülsün; arayüz de visualViewport ile ayrıca ayarlanır.
+if (!x.includes("windowSoftInputMode")) x = x.replace('android:name=".MainActivity"', 'android:name=".MainActivity" android:windowSoftInputMode="adjustResize"');
 fs.writeFileSync(p, x);
 console.log("Manifest güncellendi.");
 const res="android/app/src/main/res";
