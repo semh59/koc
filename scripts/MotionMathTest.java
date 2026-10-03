@@ -117,6 +117,9 @@ public class MotionMathTest {
         java.util.List<MotionMath.Bout> one = MotionMath.split(f, MotionMath.WALK, 170, 70, t1, s1, new int[] {1, 1, 1}, 3, Double.NaN);
         ok("bölme: tek günde path ile aynı", one.size() == 1 && near(one.get(0).kcal, pf.kcal, 1e-9) && one.get(0).t0 == 0 && one.get(0).t1 == 600000);
         ok("bölme: geçersiz parça listeye girmez", MotionMath.split(f, MotionMath.WALK, 170, 70, new long[] {0, M, 2 * M}, new long[] {0, 100, 10}, new int[] {1, 1, 2}, 3, Double.NaN).isEmpty());
+        long mid = 20000L * 86400000L - 3 * 3600000L; // UTC+3 gece yarısı
+        ok("gün: olay ve sayaç okuması aynı günde ise olay zamanı korunur", MotionMath.onCounterDay(mid - 60000, 10800000, mid - 2000, 10800000) == mid - 60000);
+        ok("gün: olay gece yarısından önce, okuma sonra ise sayacın anı kullanılır", MotionMath.onCounterDay(mid - 2000, 10800000, mid + 1000, 10800000) == mid + 1000);
         System.exit(bad == 0 ? 0 : 1);
     }
 }

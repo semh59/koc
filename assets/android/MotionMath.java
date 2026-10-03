@@ -220,4 +220,13 @@ final class MotionMath {
         }
         return out;
     }
+
+    static int dayOf(long t, int offsetMs) {
+        return (int) ((t + offsetMs) / 86400000L);
+    }
+
+    /** Adım değeri at anında okunan günün sayacıdır (gece sıfırlanır). Olay zamanı t başka güne düşerse at kullanılır: yoksa aralık dünün büyük değeriyle bugünün küçük değerini karıştırır ve yürüyüş kaybolur. */
+    static long onCounterDay(long t, int offT, long at, int offAt) {
+        return dayOf(t, offT) == dayOf(at, offAt) ? t : at;
+    }
 }

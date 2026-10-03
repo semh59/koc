@@ -40,7 +40,7 @@ final class MotionStore {
     }
 
     static int dayOf(long t) {
-        return (int) ((t + TimeZone.getDefault().getOffset(t)) / 86400000L);
+        return MotionMath.dayOf(t, TimeZone.getDefault().getOffset(t));
     }
 
     static synchronized MotionMath.Model model(Context c) {
