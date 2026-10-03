@@ -2343,6 +2343,36 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("cleanEntries: tutarlı aralık korunur, ortalamayı içermeyen ya da sayı olmayan atılır, eski kayıt aynen",r==="[[80,120],[null,null],[null,null],[null,null],[null,null]]",r);
     ev("S=structuredClone(DEF);S.settings.obDone=true;closeSheet();tab='bugun';render()");
   }
+  { // Dalga 11 (2-4): silme, adım silme, geri yükleme depolaması
+    const SP=w.Storage.prototype,set0=SP.setItem,ls=w.localStorage,seed=()=>{ls.setItem("koc_v1_onceki",'{"settings":{"healthNote":"gizli"}}');ls.setItem("koc_v1_bozuk","x");ls.setItem("koc_keys",'{"groq":"K"}');ls.setItem("koc_keys_enc","z")};
+    const gone=()=>["koc_v1_onceki","koc_v1_bozuk","koc_keys","koc_keys_enc"].every(k=>ls.getItem(k)===null);
+    reset();seed();let msg="";w.confirm=m=>{msg=m;return true};
+    ev("tab='ayar-veri';render()");$q('[data-act="sifirla"]').click();
+    ok("Tüm verileri sil: güvenlik kopyası, bozuk kopya ve API anahtarları da gider; onay metni anahtarları söyler",gone()&&Object.keys(ev("getKeys()")).length===0&&msg.includes("API anahtar"),[msg,Object.keys(ls)]);
+    reset();seed();ev("S.meds=[{id:1,n:'A',t:['08:00']}]");ev("pvDelete(PV_CATS.findIndex(c=>c[0]==='İlaç'))");
+    ok("kategori silince güvenlik kopyası da silinir (silinen veri orada kalmaz)",ls.getItem("koc_v1_onceki")===null);
+    // adım: silinen geçmiş sensör senkronuyla geri gelmez, süren yürüyüş silinir
+    reset();ev("S.settings.stepsOn=true;S.walk={t0:Date.now()-6e4,s0:0,t1:null,s1:null}");
+    const SCp=w.Capacitor.Plugins;SCp.StepCounter={read:async()=>({steps:500,snapAt:1,history:{[ev("keyOff(-2)")]:3000,[ev("keyOff(-1)")]:4000}})};
+    await ev("stepsSync()");const n0=ev("S.entries.filter(e=>e.type==='adim').length");
+    ev("pvDelete(PV_CATS.findIndex(c=>c[0]==='Adım ve hareket'))");await ev("stepsSync()");
+    ok("adım silinince sensör geçmişi geri yazılmaz, S.walk temizlenir",n0===3&&ev("S.entries.filter(e=>e.type==='adim').length")===0&&ev("S.walk")===null&&ev("S.settings.stepsFrom")>ev("dayKey()"),[n0,ev("S.settings.stepsFrom")]);
+    ok("stepsFrom eski yedekte yok: boş, çöp atılır",ev("cleanSettings({}).stepsFrom")===""&&ev("cleanSettings({stepsFrom:5}).stepsFrom")===""&&ev("cleanSettings({stepsFrom:'2026-09-01'}).stepsFrom")==="2026-09-01");
+    delete SCp.StepCounter;reset();
+    // geri yükleme: önce yeni veri, sonra kopya; kopya sığmazsa atlanır
+    const big=n=>JSON.stringify({entries:Array.from({length:n},(_,i)=>({id:i+1,day:"2026-09-01",time:"08:00",type:"not",v:null,text:"x".repeat(200)})),settings:{obDone:true}});
+    const load=async t=>{w.document.body.insertAdjacentHTML("beforeend",'<textarea id="bk2"></textarea>');w.document.querySelector("#bk").value=t;await ev("goYukle()")};
+    ev("S.entries=[];for(let i=0;i<100;i++)add('not',null,'x'.repeat(200));save()");
+    const a=ls.getItem("koc_v1").length;await load(big(150));const b=ls.getItem("koc_v1").length;
+    ev("S.entries=[];for(let i=0;i<100;i++)add('not',null,'x'.repeat(200));save()");ls.removeItem("koc_v1_onceki");
+    const Q=2*a+(b-a)/2,used=k=>{let t=0;for(let i=0;i<ls.length;i++){const x=ls.key(i);if(x!==k)t+=ls.getItem(x).length}return t};
+    SP.setItem=function(k,v){if(used(k)+v.length>Q)throw new w.DOMException("dolu","QuotaExceededError");return set0.apply(this,arguments)};
+    await load(big(150));
+    ok("geri yükleme: yer varken yeni veri yazılır, sığmayan güvenlik kopyası atlanır",ev("S.entries.length")===150&&ls.getItem("koc_v1_onceki")===null&&!ev("saveFail"),[a,b,Q]);
+    SP.setItem=set0;ev("S.entries=[];save()");await load(big(5));
+    ok("geri yükleme: sığınca güvenlik kopyası yazılır; depolama ölçüsü kopya ve bozuk kopyayı saymaz",ls.getItem("koc_v1_onceki")!==null&&(ls.setItem("koc_v1_bozuk","y".repeat(1e5)),ev("lsOther()"))<1e4);
+    ls.removeItem("koc_v1_bozuk");w.confirm=()=>true;reset();
+  }
   console.log("son satıra ulaşıldı, "+total+" test");
   process.exit(bad||total<MIN_TESTS?1:0);
 },100);
