@@ -15,6 +15,8 @@ ok("ilk 513 kayıt adı ve sırası değişmedi (yedekler ve kullanıcı kayıtl
 const og=FOODS.filter(f=>f.o);
 ok("en az 150 öğün kaydı, hepsi 513. kayıttan sonra",og.length>=150&&FOODS.slice(0,513).every(f=>!f.o),og.length);
 ok("öğün porsiyonu gerçekçi: 40-800 g, 40-1200 kcal",og.every(f=>{const g=f.u[0][1],k=f.k*g/100;return g>=40&&g<=800&&k>=40&&k<=1200}),og.filter(f=>{const g=f.u[0][1],k=f.k*g/100;return !(g>=40&&g<=800&&k>=40&&k<=1200)}).map(f=>[f.n,f.u[0][1],Math.round(f.k*f.u[0][1]/100)]));
+const wset=n=>n.toLocaleLowerCase("tr").replace(/[^\p{L}\p{N}]+/gu," ").trim().split(" ").sort().join(" ");
+ok("aynı kelimelerden oluşan iki öğün kaydı yok (farklı kcal ile karışmasın)",new Set(og.map(f=>wset(f.n))).size===og.length,og.filter((f,i)=>og.findIndex(x=>wset(x.n)===wset(f.n))!==i).map(f=>f.n));
 ok("öğün kayıtlarında marka adı yok",!og.concat(FOODS.slice(513)).some(f=>/mcdonald|burger king|kfc|domino|pizza hut|papa john|starbucks|big mac|clif|snickers|nutella/i.test(f.n)));
 ok("her öğün kategorisi var: kahvaltı, çorba, ızgara, atıştırma, döner, lahmacun, hamburger, pizza",["kahvaltı","çorba","Izgara","Karışık kuruyemiş","Döner","Lahmacun","Hamburger","Pizza"].every(a=>og.some(f=>f.n.includes(a))));
 ok("restoran öğünü aralıklı (±%30), ev yemeği bileşeni aralığını taşır",["Döner dürüm (dana)","Hamburger menü (tek köfte, orta patates, kola)"].every(n=>{const f=og.find(x=>x.n===n);return f&&f.lo<f.k&&f.k<f.hi})&&og.find(f=>f.n==="Kuru fasulye, pilav ve turşu").lo!=null);

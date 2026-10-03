@@ -29,7 +29,7 @@ Reçelli tereyağlı ekmek | cig | 1 adet | Ekmek (beyaz) 90;Tereyağı 10;Meyve
 Fındık kremalı ekmek | cig | 1 adet | Ekmek (beyaz) 60;Fındık kreması (kakaolu) 25 | -
 Lor peynirli sebze kahvaltısı | cig | 1 tabak | Lor 60;Domates 80;Salatalık 60;Zeytinyağı 5;Ekmek (tam buğday) 60 | kahvalti
 Peynirli börek ve salata | cig | 1 tabak | Peynirli börek 150;Domates 60;Salatalık 40 | -
-Peynirli poğaça ve ayran | cig | 1 tabak | Peynirli poğaça 140;Yoğurt 90;Su 110 | -
+Peynirli poğaça (2 adet) ve ayran | cig | 1 tabak | Peynirli poğaça 140;Yoğurt 90;Su 110 | -
 Patatesli gözleme ve ayran | cig | 1 tabak | Patatesli gözleme 150;Yoğurt 90;Su 110 | -
 Pişi, beyaz peynir ve domates | cig | 1 tabak | Pişi 80;Beyaz peynir 30;Domates 60 | -
 Yumurtalı ekmek ve salatalık | cig | 1 tabak | Yumurtalı ekmek 150;Salatalık 80;Domates 60 | -
@@ -133,7 +133,7 @@ Beyaz peynir ve ceviz | cig | 1 porsiyon | Beyaz peynir 40;Ceviz 20 | -
 Beyaz peynir, domates ve ekmek | cig | 1 porsiyon | Beyaz peynir 40;Domates 80;Ekmek (beyaz) 30 | -
 Havuç ve humus | cig | 1 porsiyon | Havuç 100;Humus (ev yapımı) 50 | -
 Havuç, salatalık ve haydari | cig | 1 porsiyon | Havuç 80;Salatalık 80;Haydari 40 | -
-Ayran ve peynirli poğaça | cig | 1 porsiyon | Yoğurt 90;Su 110;Peynirli poğaça 70 | -
+Peynirli poğaça (1 adet) ve ayran | cig | 1 porsiyon | Yoğurt 90;Su 110;Peynirli poğaça 70 | -
 Ayran ve kraker | cig | 1 porsiyon | Yoğurt 90;Su 110;Kraker 30 | -
 Süt ve Marie bisküvi | cig | 1 porsiyon | Süt 200;Marie bisküvi 28 | -
 Süt ve muz | cig | 1 porsiyon | Süt 200;Muz 100 | -
