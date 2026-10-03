@@ -29,6 +29,17 @@ setTimeout(async()=>{
     const tot=sent.messages.reduce((a,m)=>a+m.content.length,0);
     console.log(`  menü isteği toplam bağlam ${tot} karakter`);
     ok("en kötü durumda (60 satır katalog, 14 gün, 200 karakter kısıt notu) gerçek istek toplam bağlamı < 9000 karakter",tot<9000&&sent.messages.length===2,tot);
+    // Dalga 11: gerçekçi en kötü durum: 12 ilaç (6 saat), bugün 10 uzun yemek, 12 uzun sohbet mesajı, 500 karakter sağlık notu, 3 antrenman
+    ev(base+";S.settings.healthNote='h'.repeat(500);S.entries=[];S.meds=Array.from({length:12},(_,i)=>({id:i+1,n:'İlaç '+i+' '+'a'.repeat(34),d:'d'.repeat(30),t:['06:00','09:00','12:00','15:00','18:00','21:00'],w:[1,2,3,4,5],on:true,k:50}));S.settings.medOn=true;for(let i=0;i<14;i++){add('kilo',80,'',keyOff(-i));add('yemek',500,'y',keyOff(-i))}for(let i=0;i<10;i++)add('yemek',500,'Uzun yemek adı '+'b'.repeat(80));for(let i=0;i<9;i++)add('su',250,'');for(let i=0;i<8;i++)add('spor',30,'s'.repeat(60));for(let i=0;i<6;i++)add('not',null,'n'.repeat(300));add('adim',500,'');S.chat=Array.from({length:12},(_,i)=>({id:i+1,role:i%2?'coach':'user',text:'m'.repeat(1500),t:i+1}));S.cid=13;S.workouts=Array.from({length:3},(_,i)=>({id:i+1,day:keyOff(-i),t0:Date.now()-i*1e6-1e5,t1:Date.now()-i*1e6,name:'Antrenman '+i,ex:EXLIB.slice(0,12).map(e=>({id:e.id,note:'',sets:[{kg:100,reps:10,done:true}]}))}))");
+    const ctx=ev("CoachLib.contextText(cData())");
+    ok("bağlam: ilaç en çok 8 satır, yemek en çok 12 satır ve ad 40 karakter, su tek satır, boş 'not:' satırı yok",(ctx.match(/\| saatler /g)||[]).length===8&&(ctx.match(/yemek: /g)||[]).length===11&&!ctx.includes("b".repeat(41))&&(ctx.match(/; su \d+ ml/g)||[]).length===1&&!/^BUGÜN:.*not: (;|\()/m.test(ctx)&&ctx.includes("not: "+"n".repeat(100))&&!ctx.includes("n".repeat(101)),ctx.length);
+    ok("sohbet geçmişi son 10 mesaj, her biri en çok 300 karakter",ev("cMessages('x').length")===12&&ev("cMessages('x').slice(1,11).every(m=>m.content.length===300)"));
+    const size=()=>sent.messages.reduce((a,m)=>a+m.content.length,0),LIM={chat:11500,menu:11300,program:13000},got={};
+    sent=null;ev("cSend('merhaba')");await wait(50);got.chat=size();
+    sent=null;ev("menuNote='n'.repeat(200)");await ev("cMenu()");got.menu=size();
+    sent=null;ev("progOpt={d:6,q:'Salon',m:60,l:'İleri'}");await ev("cProgram(progOpt)");got.program=size();
+    console.log("  en kötü durum bağlam (karakter):",JSON.stringify(got));
+    ok("en kötü durumda sohbet, menü ve program isteği toplam bağlamı sınırın altında (docs/plan-6-ozellik.md)",Object.keys(LIM).every(k=>got[k]>0&&got[k]<LIM[k]),got);
     ev(base.replace("S.settings.consent=true;","S.settings.consent=true;S.settings.kcal=0;"));
     click('[data-c="menu"]');
     ok("kalori hedefi ve profil yoksa menü sayfası nedenini yazar, İste kapalı",sh().includes("kalori hedefi belirle")&&q('[data-c="menuask"]').disabled);

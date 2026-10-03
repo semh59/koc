@@ -93,8 +93,10 @@ function cData(){
     d.push({d:k.slice(5),kg:w[k],kcal:Math.round(ents.filter(e=>e.type==="yemek").reduce((s,e)=>s+(e.v||0),0)),p:Math.round(ents.filter(e=>e.type==="yemek").reduce((s,e)=>s+(e.p||0),0)),su:Math.round(ents.filter(e=>e.type==="su").reduce((s,e)=>s+e.v,0)),sport:Math.round(ents.filter(e=>e.type==="spor").reduce((s,e)=>s+e.v,0)),ad:Math.round(ents.filter(e=>e.type==="adim").reduce((s,e)=>s+e.v,0)),sl:(S.sleep.find(x=>x.day===k)||{}).min,mo:(S.mood.find(x=>x.day===k)||{}).v});
   }
   const t=dayKey(),now=new Date();
-  const today=S.entries.filter(e=>e.day===t).map(e=>e.type==="yemek"?`yemek: ${e.text||"öğün"}${e.v?" ~"+Math.round(e.v)+" kcal":""}${e.p?", "+Math.round(e.p)+" g protein":""}`:e.type==="su"?`su ${e.v} ml`:e.type==="kilo"?`tartı ${fmt(e.v)} kg`:e.type==="spor"?`spor ${e.text||""} ${Math.round(e.v)} dk`:`not: ${e.text}`);
-  const workouts=S.workouts.filter(x=>x.t1!=null).sort((a,b)=>b.t0-a.t0).slice(0,3).map(x=>`${x.day.slice(5)} ${x.name}: ${x.ex.map(cWorkoutEx).filter(Boolean).join(", ")}`);
+  /* Bağlam boyutu için üst sınırlar (en kötü durum menu.test.js'te ölçülür): yemek 12 satır/ad 40, spor 5, not 3, su tek toplam. */
+  const ent=S.entries.filter(e=>e.day===t),lastOf=(type,n)=>ent.filter(e=>e.type===type).slice(-n),suMl=Math.round(ent.filter(e=>e.type==="su").reduce((a,e)=>a+e.v,0));
+  const today=[...lastOf("yemek",12).map(e=>`yemek: ${(e.text||"öğün").slice(0,40)}${e.v?" ~"+Math.round(e.v)+" kcal":""}${e.p?", "+Math.round(e.p)+" g protein":""}`),...(suMl?[`su ${suMl} ml`]:[]),...lastOf("kilo",1).map(e=>`tartı ${fmt(e.v)} kg`),...lastOf("spor",5).map(e=>`spor ${(e.text||"").slice(0,30)} ${Math.round(e.v)} dk`),...lastOf("not",3).map(e=>`not: ${e.text.slice(0,100)}`)];
+  const workouts=S.workouts.filter(x=>x.t1!=null).sort((a,b)=>b.t0-a.t0).slice(0,3).map(x=>`${x.day.slice(5)} ${x.name}: ${x.ex.map(cWorkoutEx).filter(Boolean).join(", ")}`.slice(0,300));
   const from=keyOff(-7),notes=S.entries.filter(e=>e.type==="not"&&e.day>=from).slice(-3).map(e=>e.text.slice(0,100));
   return {profile:{cm:st.heightCm,age:st.age,sex:st.sex,act:st.act,note:st.healthNote},goals:{kg:st.goalKg,kcal:st.kcal,water:st.waterMl,sport:st.sportWeek},calc:cCalc(),days:d,today,now:`${pad(now.getHours())}:${pad(now.getMinutes())}`,workouts,notes,meds:cMeds(t,now),weekSets:gWeekRegions()};
 }
@@ -110,11 +112,11 @@ function cWorkoutEx(e){
 function cMeds(t,now){
   if(!S.settings.medOn||!S.meds.length)return [];
   const nt=`${pad(now.getHours())}:${pad(now.getMinutes())}`,f=keyOff(-6);
-  return S.meds.filter(m=>m.on).map(m=>{const a=MedLib.adherence([m],S.medLog,f,t,t,nt),left=MedLib.stockLeft(m);return {n:m.n,d:m.d,t:m.t,w:m.w,a:a.total||a.late?a:null,left}});
+  return S.meds.filter(m=>m.on).slice(0,8).map(m=>{const a=MedLib.adherence([m],S.medLog,f,t,t,nt),left=MedLib.stockLeft(m);return {n:m.n.slice(0,30),d:m.d&&m.d.slice(0,20),t:m.t,w:m.w,a:a.total||a.late?a:null,left}});
 }
 function cMessages(extraUser,extraSys,noHist){
   const sys=CoachLib.SYSTEM+(extraSys?"\n\nNOT: "+extraSys:"")+"\n\n"+CoachLib.contextText(cData());
-  const hist=noHist?[]:S.chat.filter(m=>m.role!=="sys"&&m.text).slice(-10).map(m=>({role:m.role==="user"?"user":"assistant",content:m.text}));
+  const hist=noHist?[]:S.chat.filter(m=>m.role!=="sys"&&m.text).slice(-10).map(m=>({role:m.role==="user"?"user":"assistant",content:m.text.slice(0,300)}));
   const msgs=[{role:"system",content:sys}].concat(hist);
   if(extraUser)msgs.push({role:"user",content:extraUser});
   return msgs;
