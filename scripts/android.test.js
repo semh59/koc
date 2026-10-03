@@ -39,6 +39,10 @@ ok("ekran açık: keepAwake eklenti metodu, UI iş parçacığında bayrak ekler
   const mr=rd("assets/android/MotionReceiver.java"),st=rd("assets/android/StepStore.java");
   ok("hareket: tick ve geçiş zamanı sayaç okumasının anından, gün anahtarı aynı örnekten",/long now = StepStore\.sampledAt\(\);/.test(mr)&&/handle\(app, e, steps, StepStore\.sampledAt\(\), nowWall, nowEl\)/.test(mr)&&/t = MotionMath\.onCounterDay\(t, z\.getOffset\(t\), at, z\.getOffset\(at\)\);/.test(mr)&&/sampledAt = at;[\s\S]{0,120}format\(new Date\(at\)\)[\s\S]{0,120}now\.setTimeInMillis\(at\);/.test(st)&&!/System\.currentTimeMillis\(\)/.test(mr.slice(mr.indexOf("private static void tick"),mr.indexOf("double cad"))));
 }
+{ // Dalga 11: smoke çökme denetimi
+  const sm=rd("scripts/smoke.sh");
+  ok("smoke: crash tamponunda uygulamanın çökmesi (Java ve yerel) aranır, her logcat temizliğinden önce ve sonda",/crashcheck\(\) \{ adb logcat -d -b crash > crash\.log; if grep -qE "Process: com\\.neowell\\.app\|>>> com\\.neowell\\.app <<<" crash\.log/.test(sm)&&/clr\(\) \{ crashcheck; adb logcat -c; \}/.test(sm)&&(sm.match(/adb logcat -c/g)||[]).length===1&&/crashcheck\necho "Smoke testi geçti"/.test(sm));
+}
 { // D-Veri2: otomatik yedek klasörü
   const bf=rd("assets/android/BackupFolderPlugin.java"),diag=rd("www/index.html").match(/NW-DIAG "\+\[([^\]]+)\]/)[1];
   ok("yedek klasörü: eklenti kopyalanır, kaydedilir, NW-DIAG ve smoke listesinde",/"BackupFolderPlugin"\]\)fs\.copyFileSync/.test(patch)&&/registerPlugin\(BackupFolderPlugin\.class\);\s*super\.onCreate/.test(patch)&&diag.includes('"BackupFolder"')&&/Widget BackupFolder; do/.test(rd("scripts/smoke.sh")));
