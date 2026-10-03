@@ -8,8 +8,12 @@ on:
 permissions:
   contents: write
 
+env:
+  # Release (Play upload) anahtarının sertifika parmak izi; gizli değişken başka bir anahtarla değiştirilirse CI durur.
+  RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+
 concurrency:
-  group: apk
+  group: apk-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -46,32 +50,50 @@ jobs:
           node scripts/patch-android.js
           npx cap sync android
 
-      - name: Sabit imza anahtarını yerleştir
+      - name: Release anahtarını çöz
+        env:
+          RELEASE_KEYSTORE_B64: ${{ secrets.RELEASE_KEYSTORE_B64 }}
         run: |
-          mkdir -p ~/.android
-          cp signing/koc-debug.keystore ~/.android/debug.keystore
+          # Gizli değişken yoksa debug imzaya düşülmez: yayınlanan APK herkesçe bilinen anahtarla imzalanmış olurdu.
+          [ -n "$RELEASE_KEYSTORE_B64" ] || { echo "RELEASE_KEYSTORE_B64 gizli değişkeni yok, release imzalanamaz"; exit 1; }
+          echo "$RELEASE_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "RELEASE_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
 
-      - name: APK derle
+      - name: APK ve AAB derle
         working-directory: android
+        env:
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug assembleRelease bundleRelease --no-daemon
 
-      - name: APK dosyasını hazırla
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk neowell.apk
-
-      - name: APK sabit imza anahtarıyla imzalandı mı
+      - name: Dosyaları hazırla
         run: |
-          apk=$(unzip -p neowell.apk 'META-INF/*.RSA' | openssl pkcs7 -inform DER -print_certs | openssl x509 -noout -fingerprint -sha256 | cut -d= -f2)
-          key=$(keytool -list -keystore signing/koc-debug.keystore -storepass android | grep -i "SHA-256" | sed 's/.*: //')
-          echo "APK: $apk"; echo "Anahtar: $key"
-          [ -n "$apk" ] && [ "$apk" = "$key" ] || { echo "İMZA ANAHTARI UYUŞMUYOR"; exit 1; }
+          mkdir -p smoke
+          cp android/app/build/outputs/apk/debug/app-debug.apk smoke/neowell.apk
+          cp android/app/build/outputs/apk/release/app-release.apk neowell.apk
+          cp android/app/build/outputs/bundle/release/app-release.aab neowell.aab
+
+      - name: Release imzası beklenen anahtar mı
+        run: |
+          norm() { tr -d ': ' | tr 'A-F' 'a-f'; }
+          apksigner=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)apksigner
+          $apksigner verify neowell.apk
+          apk=$($apksigner verify --print-certs neowell.apk | grep "Signer #1 certificate SHA-256" | sed 's/.*: //' | norm)
+          aab=$(keytool -printcert -jarfile neowell.aab | grep -m1 "SHA256:" | sed 's/.*SHA256: //' | norm)
+          dbg=$(keytool -list -keystore signing/koc-debug.keystore -storepass android | grep -i "SHA-256" | sed 's/.*: //' | norm)
+          echo "APK: $apk"; echo "AAB: $aab"; echo "Beklenen: $RELEASE_SHA256"; echo "Debug: $dbg"
+          [ -n "$dbg" ] && [ "$apk" != "$dbg" ] && [ "$aab" != "$dbg" ] || { echo "YAYINLANAN DOSYA DEBUG ANAHTARIYLA İMZALI"; exit 1; }
+          [ "$apk" = "$RELEASE_SHA256" ] && [ "$aab" = "$RELEASE_SHA256" ] || { echo "RELEASE İMZA ANAHTARI UYUŞMUYOR"; exit 1; }
 
       - name: APK içeriği denetimi
         run: |
           aapt2=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)aapt2
           $aapt2 dump xmltree neowell.apk --file AndroidManifest.xml > manifest.txt
           grep -E "allowBackup|dataExtractionRules|fullBackupContent" manifest.txt
+          if grep -q "debuggable" manifest.txt; then echo "RELEASE APK DEBUGGABLE"; exit 1; fi
           grep -qE "allowBackup[^=]*=(false|0x0)" manifest.txt || { echo "OTOMATİK YEDEK AÇIK"; exit 1; }
           grep -oE "android\.permission\.[A-Z_]+" manifest.txt | sort -u
           if grep -qE "USE_EXACT_ALARM|FLASHLIGHT|ACCESS_BACKGROUND_LOCATION" manifest.txt; then echo "PLAY'E UYGUN OLMAYAN İZİN VAR"; exit 1; fi
@@ -83,15 +105,23 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: neowell-apk
-          path: neowell.apk
+          name: neowell-release
+          path: |
+            neowell.apk
+            neowell.aab
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: neowell-smoke
+          path: smoke/neowell.apk
 
       - name: Releases sayfasına yükle (telefondan kolay indirme)
+        if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete son-surum --yes --cleanup-tag || true
-          gh release create son-surum neowell.apk --title "NeoWell APK (son sürüm)" --notes "Telefondan bu sayfadaki neowell.apk dosyasını indirip kur."
+          gh release create son-surum neowell.apk neowell.aab --title "NeoWell (son sürüm)" --notes "Telefondan neowell.apk dosyasını indirip kur. neowell.aab Play Console yüklemesi içindir."
 
   smoke:
     needs: build
@@ -102,7 +132,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: neowell-apk
+          name: neowell-smoke
+      - uses: actions/download-artifact@v4
+        with:
+          name: neowell-release
+          path: release
       - name: KVM iznini aç
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -114,4 +148,4 @@ jobs:
           api-level: 33
           emulator-build: 11237101
           arch: x86_64
-          script: bash scripts/smoke.sh
+          script: bash scripts/smoke.sh && bash scripts/smoke-release.sh
