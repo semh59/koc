@@ -110,10 +110,11 @@ const vg="android/variables.gradle";
 fs.writeFileSync(vg,fs.readFileSync(vg,"utf8").replace("minSdkVersion = 22","minSdkVersion = 23"));
 console.log("Anahtar kasası eklendi.");
 
-// Sabit imza: depodaki anahtarı doğrudan debug imzası yap, yoksa her derleme yeni anahtar üretir ve güncellemeler kurulamaz.
+// Debug derleme yalnız CI smoke testi içindir (run-as debuggable ister); depodaki herkesçe bilinen anahtarla imzalanır.
+// Yayınlanan release derleme, CI'ın gizli değişkenlerden çözdüğü anahtarla imzalanır; anahtar yoksa imza eksik kalır ve CI durur.
 const bg="android/app/build.gradle";
 let g=fs.readFileSync(bg,"utf8");
-if(!g.includes("koc-debug.keystore")){
+if(!g.includes("signingConfigs")){
   g=g.replace(/android \{/,`android {
     signingConfigs {
         debug {
@@ -121,6 +122,19 @@ if(!g.includes("koc-debug.keystore")){
             storePassword "android"
             keyAlias "androiddebugkey"
             keyPassword "android"
+        }
+        release {
+            if (System.getenv("RELEASE_KEYSTORE_FILE")) {
+                storeFile file(System.getenv("RELEASE_KEYSTORE_FILE"))
+                storePassword System.getenv("RELEASE_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("RELEASE_KEY_ALIAS")
+                keyPassword System.getenv("RELEASE_KEY_PASSWORD")
+            }
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
         }
     }`);
   fs.writeFileSync(bg,g);
