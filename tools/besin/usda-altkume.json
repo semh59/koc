@@ -775,6 +775,25 @@
 ]
 ]
 },
+"#172935":{
+"id":172935,
+"d":"Salami, cooked, beef",
+"p":12.6,
+"l":0.0,
+"f":22.2,
+"c":1.9,
+"k":261.0,
+"por":[
+[
+"1 slice ",
+26.0
+],
+[
+"1 oz ",
+28.35
+]
+]
+},
 "#173147":{
 "id":173147,
 "d":"Snacks, pita chips, salted",
@@ -963,6 +982,37 @@
 [
 "1 drink, extra large (44 fl oz) ",
 1353.0
+]
+]
+},
+"#174900":{
+"id":174900,
+"d":"Bagels, plain, enriched, with calcium propionate (includes onion, poppy, sesame), toasted",
+"p":11.14,
+"l":1.8,
+"f":1.43,
+"c":57.39,
+"k":287.0,
+"por":[
+[
+"1 mini bagel (2-1/2\" dia) ",
+24.0
+],
+[
+"1 small bagel (3\" dia) ",
+65.0
+],
+[
+"1 medium bagel (3-1/2\" to 4\" dia) ",
+99.0
+],
+[
+"1 large bagel (4-1/2\") ",
+123.0
+],
+[
+"1 oz ",
+28.35
 ]
 ]
 },

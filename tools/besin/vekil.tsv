@@ -36,3 +36,35 @@ Baklava	Çapraz kontrol: CoFID baklava 456 kcal; değer %5 düşük.
 Lokum	Çapraz kontrol: CoFID lokum 295 (cevizsiz) ile 348 (cevizli) kcal; değer bu aralıkta.
 Helva (tahin)	Çapraz kontrol: USDA tahin helvası 469 kcal; değer %8 yüksek, yağ ve şeker oranı markaya göre değişir.
 Et döner	Çapraz kontrol: CoFID döner eti 377 kcal (İngiltere, yağlı), USDA ızgara dana kıyma 254-270 kcal; değer orta yağlı ev/lokanta dönerine göre seçildi, çok yağlı dönerde yüksek olabilir.
+Çökelek	Vekil: çökelek yerine yarı yarıya CIQUAL kesilmiş süt peyniri (quark, %2-3 yağlı, 76 kcal) ve CoFID cottage peyniri (103 kcal). Çökelek yağsız ayrandan yapılır; tuz ve yağ oranı ürüne göre değişir.
+Tulum peyniri	Vekil: tulum yerine yarı yarıya CoFID feta (250 kcal) ve CIQUAL koyun pecorino (383 kcal). Tulum fetadan kuru ve yağlıdır; marka ve olgunlaşma süresi değeri değiştirir.
+Pide peyniri	Vekil: taze kaşar/dil peyniri yerine yarı yarıya USDA düşük nemli mozzarella (dil peyniri, 295 kcal) ve USDA provolone (kaşar, 351 kcal).
+Kaymak	Vekil: kaymak yerine yarı yarıya CoFID clotted cream (586 kcal, %63,5 yağ) ve USDA kaymaklık krema (340 kcal). Kaymağın yağ oranı markaya ve mevsime göre geniş değişir.
+Salam (dana, pişmiş)	Vekil: USDA pişmiş dana salam (261 kcal). Salam çeşitleri 172 (hindi) ile 407 (kuru domuz) kcal arasında; yerli salamın yağ ve dolgu oranı markaya göre değişir.
+Kokoreç	Hesap: kuzu bağırsağı ve sakatat yerine CoFID işkembe (33 kcal) 40, CoFID kuzu ciğeri (237 kcal) 20, USDA kuzu kıyma (yağlı doku vekili) 40; ızgarada %25 su kaybı varsayıldı. Bağırsak yağı ve ızgara yağı hesapta yok, aralık geniş.
+Tantuni	Hesap: dana kuşbaşı, domates; pamuk yağı yerine USDA ayçiçek yağı (10 g/100 g et); sotede %28 su kaybı varsayıldı. Yağ miktarı yere göre değişir.
+Ciğer şiş (kuzu)	Vekil: ciğer şiş yerine CoFID mısırözü yağında kızartılmış kuzu ciğeri (237 kcal); ızgarada yağ azdır, değer biraz düşük olabilir.
+Midye dolma	Hesap: USDA haşlanmış midye 25 g, haşlanmış pirinç 55 g, soğan 15 g, zeytinyağı 5 g (100 g = yaklaşık 4 adet). Kabuk hesapta yok; tuz, kuş üzümü ve baharat sayılmadı.
+Etli yaprak sarma	Hesap: pirinç, dana kıyma, soğan, salça ve zeytinyağı; asma yaprağı hesapta yok. Zeytinyağlı yaprak sarma için CoFID değeri 263 kcal.
+Çiğ börek (kıymalı)	Hesap: hamur ve kıymalı iç; tava kızartmasında hamur başına 15 g yağ emilimi varsayıldı (tarif.txt kuralı). Boyut ve yağ yere göre değişir.
+Şakşuka	Hesap: patlıcan tavada kızarır (15 g yağ/100 g sebze), biber ve domates sosla pişer. Yağ miktarı evden eve değişir.
+Muhammara	Hesap: ceviz, kırmızı biber, salça, galeta unu, zeytinyağı, nar ekşisi. Ev ve restoran tarifi ceviz oranına göre değişir.
+Etli ekmek	Hesap: Konya tipi etli ekmek; hamur, kuzu kıyma, soğan, domates, biber, tereyağı. Hamur kalınlığı ve et oranı yere göre değişir.
+Kuşbaşılı pide	Hesap: pide hamuru (un 400 g, su 240 g), dana kuşbaşı, sebze, tereyağı; Kıymalı pide kaydı ile aynı hamur ve ölçek.
+Sucuklu pide	Hesap: pide hamuru, CIQUAL kuru sosis (sucuk vekili, 418 kcal), kaşar ve tereyağı; sucuk kızarırken yağ bırakır, hesapta yok.
+Sade poğaça	Hesap: Peynirli poğaça tarifinden peynirsiz hamur; yağ ve yoğurt oranı ev tarifine göre değişir.
+Patatesli poğaça	Hesap: Peynirli poğaça hamuru, iç harç olarak patates, soğan ve zeytinyağı.
+Zeytinli poğaça	Hesap: Peynirli poğaça hamuru, iç harç olarak siyah zeytin.
+Kıymalı poğaça	Hesap: Peynirli poğaça hamuru, iç harç olarak dana kıyma ve soğan.
+İşkembe çorbası	Hesap: CoFID işkembe (33 kcal), süt, un, tereyağı, yumurta sarısı, sarımsak ve sirke; restoran versiyonunda tereyağı ve süt oranı yüksek olabilir.
+Tel kadayıf	Hesap: tel kadayıf teli yerine un-su hamuru, tereyağı, şerbet için şeker, ceviz. Telin gerçek bileşimi hesapta yok, şerbet miktarı yere göre değişir.
+Güllaç	Hesap: güllaç yaprağı yerine mısır nişastası (yaprak nişasta bazlı), süt, şeker, ceviz. Yaprak ve süt oranı ev tarifine göre değişir.
+Hoşaf (kuru meyve kompostosu)	Hesap: kuru kayısı, kuru üzüm, şeker ve su; meyve içinde kalan şeker ve su payı yere göre değişir.
+Limonlu şerbet (içecek)	Hesap: şeker 120 g, limon suyu 60 g, su 800 g; şerbet sulandırma oranına göre değişir (soğuk içecek).
+Meyve dondurması (sorbe)	Vekil: CIQUAL kutu sorbe (122 kcal); süt içermez, meyve oranı markaya göre değişir.
+Kaymaklı dondurma (Maraş tipi)	Hesap: CIQUAL kutu dondurma (191 kcal) 85 g, kaymak 15 g. Maraş dondurmasının tarifi (salep, keçi sütü, yağ oranı) hesapta yok.
+Kokoreç ekmek arası	Hesap: yarım ekmek (80 g), kokoreç 100 g, domates; porsiyon yere göre ±%35 değişir.
+Tantuni dürüm	Hesap: lavaş yerine buğday tortilla 70 g, tantuni 100 g, domates, soğan.
+Kaymak, bal ve ekmek	Hesap: ekmek 60 g, kaymak 30 g, bal 20 g (1 yemek kaşığı kaymak ~25 g).
+Simit ve beyaz peynir	Hesap: simit yerine USDA bagel (287 kcal, kızarmış) 120 g, USDA beyaz peynir 40 g.
+Kaymaklı ekmek kadayıfı	Hesap: ekmek kadayıfı tarifi 120 g, üstüne kaymak 30 g.

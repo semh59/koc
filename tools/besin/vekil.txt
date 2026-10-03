@@ -29,3 +29,34 @@ Türk kahvesi (şekerli) | cig | 1 fincan (83 g)=83 | Espresso 70;Şeker 13 | tu
 Çay (1 kesme şekerli) | cig | 1 çay bardağı (103 g)=103 | Çay (şekersiz) 100;Şeker 3 | seker cay | ~30
 Çay (2 kesme şekerli) | cig | 1 çay bardağı (106 g)=106 | Çay (şekersiz) 100;Şeker 6 | seker cay | ~30
 Çay (3 kesme şekerli) | cig | 1 çay bardağı (109 g)=109 | Çay (şekersiz) 100;Şeker 9 | seker cay | ~30
+# --- Süt ürünleri, şarküteri ve kahvaltılık (ikinci tur) ---
+Çökelek | cig | 3 yemek kaşığı (50 g)=50 | Quark (CIQUAL vekili) 50;Cottage peyniri (CoFID vekili) 50 | lor çökelek süzme peynir | ~35
+Tulum peyniri | cig | 1 dilim (30 g)=30 | Feta (CoFID vekili) 50;Pecorino (CIQUAL vekili) 50 | tulum | ~25
+Pide peyniri | cig | 1 dilim (30 g)=30 | Dil peyniri 50;Kaşar 50 | taze kaşar | ~25
+Kaymak | cig | 1 yemek kaşığı (25 g)=25 | Clotted cream (CoFID vekili) 50;Krema 50 | süt kaymağı | ~30
+Salam (dana, pişmiş) | cig | 3 dilim (30 g)=30 | Salam (dana, pişmiş vekili) 100 | salam | ~25
+# --- Sakatat, sokak lezzeti ve ızgara ---
+Kokoreç | 0.75 | 1 porsiyon (100 g)=100 | İşkembe (CoFID vekili) 40;Kuzu ciğeri (CoFID vekili) 20;Kuzu kıyma (çiğ) 40 | kokorec | ~40
+Tantuni | 0.72 | 1 porsiyon (100 g)=100 | Dana kuşbaşı (çiğ) 100;Domates 10;Ayçiçek yağı 10 | tantuni eti | ~35
+Ciğer şiş (kuzu) | cig | 1 porsiyon (120 g)=120 | Kuzu ciğeri (CoFID vekili) 100;Soğan 20 | ciğer kebabı | ~25
+Midye dolma | cig | 4 adet (100 g)=100;1 adet (25 g)=25;10 adet (250 g)=250 | Midye (haşlanmış) 25;Beyaz pirinç (haşlanmış) 55;Soğan 15;Zeytinyağı 5 | stuffed mussels | ~25
+Etli yaprak sarma | yemek | 5 adet (150 g)=150 | Pirinç (çiğ) 100;Dana kıyma (çiğ) 100;Soğan 80;Domates salçası 15;Zeytinyağı 25;Su 300 | sarma | ~30
+Çiğ börek (kıymalı) | kizart | 1 adet (120 g)=120 | Buğday unu 300;Su 130;Yumurta (çiğ) 50;Dana kıyma (çiğ, %20 yağlı) 150;Soğan 60;Ayçiçek yağı 65 | çibörek | ~30
+# --- Meze ve hamur işi ---
+Şakşuka | yemek | 1 porsiyon (150 g)=150 | Patlıcan 300;Ayçiçek yağı 45;Yeşil biber (çiğ) 80;Domates 250;Sarımsak 6;Zeytinyağı 20 | saksuka | ~30
+Muhammara | cig | 3 yemek kaşığı (60 g)=60 | Ceviz 40;Kırmızı biber (çiğ) 60;Domates salçası 20;Galeta unu 20;Zeytinyağı 20;Nar ekşisi 5 | antep ezmesi | ~30
+Etli ekmek | firin | 1 adet (220 g)=220 | Buğday unu 150;Su 90;Kuzu kıyma (çiğ) 100;Soğan 60;Domates 60;Yeşil biber (çiğ) 30;Tereyağı 10 | konya etli ekmek | ~30
+Kuşbaşılı pide | hamur | 1 adet (260 g)=260 | Buğday unu 400;Su 240;Dana kuşbaşı (çiğ) 200;Soğan 80;Domates 100;Yeşil biber (çiğ) 60;Tereyağı 30 | kuşbaşılı | ~30
+Sucuklu pide | hamur | 1 adet (250 g)=250 | Buğday unu 400;Su 240;Sucuk (kuru sosis vekili) 200;Kaşar 60;Tereyağı 20 | sucuklu kaşarlı pide | ~30
+Sade poğaça | hamur | 1 adet (60 g)=60 | Buğday unu 500;Yoğurt 100;Ayçiçek yağı 100;Yumurta (çiğ) 100;Su 200 | poğaça | ~25
+Patatesli poğaça | hamur | 1 adet (70 g)=70 | Buğday unu 500;Yoğurt 100;Ayçiçek yağı 100;Yumurta (çiğ) 100;Patates (çiğ) 250;Soğan 30;Zeytinyağı 10;Su 150 | poğaça | ~30
+Zeytinli poğaça | hamur | 1 adet (65 g)=65 | Buğday unu 500;Yoğurt 100;Ayçiçek yağı 100;Yumurta (çiğ) 100;Siyah zeytin 150;Su 200 | poğaça | ~30
+Kıymalı poğaça | hamur | 1 adet (75 g)=75 | Buğday unu 500;Yoğurt 100;Ayçiçek yağı 100;Yumurta (çiğ) 100;Dana kıyma (çiğ) 150;Soğan 50;Su 150 | poğaça | ~30
+# --- Çorba, tatlı ve içecek ---
+İşkembe çorbası | corba | 1 kase (250 g)=250 | İşkembe (CoFID vekili) 80;Süt 100;Buğday unu 15;Tereyağı 25;Yumurta sarısı 15;Sarımsak 5;Sirke 10;Su 800 | iskembe | ~40
+Tel kadayıf | tatli | 1 dilim (60 g)=60 | Buğday unu 200;Su 150;Tereyağı 100;Şeker 200;Su 200;Ceviz 100 | cevizli tel kadayıf | ~30
+Güllaç | cig | 1 porsiyon (200 g)=200 | Süt 220;Şeker 25;Mısır nişastası 18;Ceviz 20 | gullac | ~30
+Hoşaf (kuru meyve kompostosu) | cig | 1 su bardağı (200 g)=200 | Kuru kayısı 40;Kuru üzüm 15;Şeker 30;Su 400 | komposto hosaf | ~30
+Limonlu şerbet (içecek) | cig | 1 bardak (200 g)=200 | Şeker 120;Limon suyu 60;Su 800 | serbet | ~25
+Meyve dondurması (sorbe) | cig | 1 top (60 g)=60 | Sorbe (CIQUAL vekili) 100 | sorbe sorbet | ~25
+Kaymaklı dondurma (Maraş tipi) | cig | 1 top (70 g)=70 | Dondurma (CIQUAL vekili) 85;Kaymak 15 | maraş dondurması | ~30
