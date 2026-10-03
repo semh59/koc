@@ -8,7 +8,7 @@ const YAG=new Set(["Zeytinyağı","Tereyağı","Ayçiçek yağı","Margarin","M�
 const VERIM={cig:1,corba:.9,yemek:.85,pilav:.94,firin:.8,kizart:.85,hamur:.88,tatli:.9};
 const r1=x=>Math.round(x*10)/10,q=x=>JSON.stringify(x);
 const por=s=>s.split(";").map(x=>{const[l,g]=x.split("=");return[l.trim(),parseFloat(g)]});
-const rows=[],ad={},alt={};const veri={};
+const rows=[],alt={};const veri={};
 const hata=m=>{console.error("HATA: "+m);process.exit(2)};
 for(const l of rd("genel.tsv")){
   const[n,kw,p,e]=l.split("\t"),u=U[kw];if(!u)hata("altkümede yok: "+kw);

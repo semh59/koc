@@ -929,7 +929,7 @@ function sheetPorsiyon(i,food){
   <div class="mut sm" style="margin-bottom:8px">${curFood.hint||(curFood.src==="off"?"Kaynak: Open Food Facts (topluluk verisi, ODbL).":curFood.my?"Yapay zekâ ya da senin girdiğin tahmin.":curFood.s?"Kaynak: USDA FoodData Central. Pişirme ve markaya göre değişebilir.":"Tahmini değer. Tarife ve markaya göre belirgin değişir.")}${curFood.lo!=null?RNOTE:""}</div>${mealChips()}${dayOptions()}<button class="btn" data-go="besin">Ekle</button>${curFood.rec?`<button class="lnk" data-rp="edit:${curFood.rec}">Tarifi düzenle</button>`:""}${curFood.my&&!curFood.hint?`<button class="lnk dng" data-go="mysil">Bu besini listemden sil</button>`:""}`);
   foodPreview();
 }
-const RNOTE=" Aralık, tarifin az ve bol yağlı yapılışını yansıtan hesaplı bir tahmindir, ölçüm değildir. Ekle düğmesi ortalamayı kaydeder.";
+const RNOTE=" Aralık, tarif farkını (yağ, hamur) yansıtan bir tahmindir, ölçüm değildir. Ekle düğmesi ortalamayı kaydeder.";
 function foodCalc(){
   const q=num($("#fqty").value),g=curFood.u[curPor][1]*(q>0&&q<=20?q:0),r=x=>x==null?null:x*g/100;
   return Object.assign({q,g,k:r(curFood.k),lo:r(curFood.lo),hi:r(curFood.hi)},...NUTR.map(k=>({[k]:r(curFood[k])})));

@@ -1,7 +1,7 @@
 "use strict";
 /* Besin listesi: 100 g başına değerler. Bu dosya elle değil, tools/besin/uret.js ile üretilir (kaynaklar: tools/besin/*.tsv, tarif.txt).
    Satır: [ad, kcal, protein g, karbonhidrat g, yağ g, [[porsiyon etiketi, gram], ...], 1, [lo, hi]]. İlk porsiyon varsayılandır.
-   Karbonhidrat tanımı: USDA "Carbohydrate, by difference" (toplam karbonhidrat, lif DAHİL) ve tüm satırlarda aynıdır. Paket etiketi ve Open Food Facts değerleri lifi ayrı sayar (lifsiz); barkoddan gelen besinler etiket tanımıyla gösterilir.
+   Karbonhidrat tanımı: USDA "Carbohydrate, by difference" (toplam karbonhidrat, lif DAHİL) ve USDA ile tarif hesaplı satırların tümünde aynıdır; ilk 106 satırdan USDA ile karşılaştırılmamış (1 işaretsiz) elle girilmiş olanlar yaklaşık değerdir. Paket etiketi ve Open Food Facts değerleri lifi ayrı sayar (lifsiz); barkoddan gelen besinler etiket tanımıyla gösterilir.
    Sondaki 1: USDA FoodData Central SR Legacy (CC0) değerleri birebir ya da eski elle derlenmiş satırın USDA ile karşılaştırılıp uyumlu bulunması. 0 ya da yok: tarif ve markaya göre değişen tahmin; tarif hesaplı satırlar USDA malzeme değerlerinden hesaplanmıştır (tools/besin/tarif.txt).
    [lo, hi]: tarif hesaplı satırlarda az ve bol yağlı varyantın 100 g başına kcal değeri. */
 const FOODS=(()=>{
