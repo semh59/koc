@@ -60,4 +60,5 @@ ok("katalog: ekipman ve seviye süzülür",c2.length>0&&c2.every(e=>e.q!=="Salon
   const sl=C.shopList({days:[{meals:[{m:"kah",items:[{n:"Yumurta",q:2,g:100,a:2},{n:"Süt",q:1,g:200,a:null}]}]},{meals:[{m:"kah",items:[{n:"yumurta",q:1,g:50,a:1},{n:"Ayran",q:1.5,g:null,a:null}]}]}]});
   ok("shopList: ad İ/I duyarsız toplanır, gram ve adet toplamı, gramsız kalem porsiyonla, Türkçe sıralı",sl.map(x=>x.n+":"+x.t).join("|")==="Ayran:1,5 porsiyon|Süt:200 g|Yumurta:150 g · 3 adet",sl);
 }
+ok("kural 3 KISIT satırına (riskFlags) bağlı: kalori açığı, oruç, yüksek protein",/3\.[^\n]*"KISIT"[^\n]*oruç[^\n]*protein/.test(C.SYSTEM)&&C.contextText({profile:{},goals:{},calc:{block:"x",why:"İlaç kaydın var"},days:[],today:[],now:"",workouts:[],notes:[]}).includes("KISIT: İlaç kaydın var"));
 process.exit(bad?1:0);

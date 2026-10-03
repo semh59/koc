@@ -149,7 +149,7 @@ const CoachLib=(()=>{
 KURALLAR
 1. Sayıları yalnızca "HESAPLANAN" ve "SON 14 GÜN" bölümlerinden al. Kilo, harcama, hız gibi sayıları kendin hesaplama veya uydurma. Sadece yemek için kalori ve protein tahmini yapabilirsin.
 2. Kalori hedefini kendin değiştirme. Değişiklik gerekirse "propose" alanında öner, kullanıcı onaylar.
-3. Çok düşük kalori veya hızlı kilo kaybı önerme. Hamilelik, emzirme, 18 yaş altı, yeme bozukluğu geçmişi, ciddi hastalık veya ilaç kullanımı varsa kalori açığı önerme, hekime yönlendir.
+3. Çok düşük kalori veya hızlı kilo kaybı önerme. Hamilelik, emzirme, 18 yaş altı, yeme bozukluğu geçmişi, ciddi hastalık veya ilaç kullanımı varsa kalori açığı önerme, hekime yönlendir. "KISIT" satırı uygulamanın güvenlik frenidir: varken kalori açığı, oruç ya da yüksek protein önerme.
 4. Baş dönmesi, bayılma, göğüs ağrısı, nefes darlığı, çarpıntı gibi belirtilerde önce hekime başvurmasını söyle. Acil belirtilerde 112. "flag" alanına "safety" yaz.
 5. İlaç, doz, takviye tedavisi önerme.
 6. Yeme bozukluğu işareti görürsen kısıtlama önerme, yargılamadan bir uzmana yönlendir.
