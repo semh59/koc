@@ -105,6 +105,19 @@ ok("düğme: gece yarısını aşan geç basış önceki günün dozudur (23:30 
 ok("düğme: erken basış aynı gün (20:00 dozuna 19:00'da basıldı)",M.dayForTap("20:00",T(2026,9,10,19,0))==="2026-09-10");
 ok("düğme: 6 saat sınırı (22:00 dozu; sabah 3 ve 5'te basış önceki günün, 16:00 sınırda aynı gün, 15:59 önceki gün)",M.dayForTap("22:00",T(2026,9,11,3,0))==="2026-09-10"&&M.dayForTap("22:00",T(2026,9,11,5,0))==="2026-09-10"&&M.dayForTap("22:00",T(2026,9,11,16,0))==="2026-09-11"&&M.dayForTap("22:00",T(2026,9,11,15,59))==="2026-09-10");
 
+// başlangıç: ilaç ve saat başına since; eski kayıt eskisi gibi
+const sd=M.cleanMeds([med({s:"2026-09-10",t:["08:00","20:00"],ts:{"20:00":"2026-09-12","09:00":"2026-09-01","08:00":"bozuk"}})])[0];
+ok("cleanMeds: ts yalnız ilacın saatleri ve geçerli gün; çıktısı değişmez",JSON.stringify(sd.ts)==='{"20:00":"2026-09-12"}'&&JSON.stringify(M.cleanMeds([sd])[0])===JSON.stringify(sd)&&M.cleanMeds([med({})])[0].ts===undefined);
+ok("sinceFor: yeni saat bugünden, vakti geçmiş saat yarından, eski saat korunur, hiç yoksa alan yok",JSON.stringify(M.sinceFor(["08:00"],["08:00","12:00","20:00"],{"08:00":"2026-09-01"},"2026-09-10","14:00"))==='{"08:00":"2026-09-01","12:00":"2026-09-11","20:00":"2026-09-10"}'&&M.sinceFor(["08:00"],["08:00"],undefined,"2026-09-10","14:00")===undefined);
+{
+  const m=[med({s:"2026-09-10",t:["08:00","20:00"],ts:{"08:00":"2026-09-11"}})];
+  ok("dosesOn: saatin başlangıcından önceki gün o saati üretmez",M.dosesOn(m,"2026-09-10").map(x=>x.slot).join()==="20:00"&&M.dosesOn(m,"2026-09-11").map(x=>x.slot).join()==="08:00,20:00");
+  const a=M.adherence(m,[],"2026-09-01","2026-09-12","2026-09-12","23:59");
+  ok("uyum: başlangıçtan önceki gün ve dozlar saymaz (10'unda yalnız 20:00, 11'de iki doz; bugün 12'si gecikti sayılır)",a.total===3&&a.missed===3&&a.late===2,a);
+  ok("bildirim: başlangıçtan önceki saat için kurulmaz",M.notifications(m,[],new Date(2026,8,10,6,0),2,true).every(n=>!(n.extra.s==="08:00"&&new Date(n.extra.at).getDate()===10)));
+  const old=[med({t:["08:00"]})];
+  ok("eski kayıt (s ve ts yok) geçmiş günleri eskisi gibi sayar",M.adherence(old,[],"2026-09-01","2026-09-10","2026-09-10","23:59").total===9);
+}
 // yorum ve tanı dili yok
 const src=require("fs").readFileSync(require("path").join(__dirname,"../www/medlib.js"),"utf8").replace(/\/\*[\s\S]*?\*\//g,"");
 ok("doz önerisi/yorum dili kullanılmaz",!/öner|tavsiye|etkileşim|yan etki|aşırı doz|tehlikeli/i.test(src));

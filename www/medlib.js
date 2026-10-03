@@ -28,6 +28,8 @@ const MedLib=(()=>{
       if(w.length&&w.length<7)o.w=w;
       if(dayOk(x.s))o.s=x.s;
       if(dayOk(x.e)&&(!o.s||x.e>=o.s))o.e=x.e;
+      const ts={};for(const sl of times)if(x.ts&&dayOk(x.ts[sl]))ts[sl]=x.ts[sl];
+      if(Object.keys(ts).length)o.ts=ts;
       if(fin(x.k)&&x.k>=0&&x.k<=99999)o.k=Math.round(x.k*10)/10;
       if(fin(x.p)&&x.p>0&&x.p<=100)o.p=Math.round(x.p*100)/100;
       out.push(o);
@@ -46,10 +48,20 @@ const MedLib=(()=>{
     return [...m.values()].slice(-MAXLOG).map((o,i)=>Object.assign({id:i+1},o));
   }
   const active=(m,day)=>m.on&&(!m.s||day>=m.s)&&(!m.e||day<=m.e)&&(!m.w||m.w.includes(parseDay(day).getDay()));
+  /* Saat başına başlangıç (ts): sonradan eklenen ya da bugün vakti geçmiş saat, önceki günlerde "kaçırılmış" sayılmaz.
+     Alanı olmayan (eski) kayıt ve saat eskisi gibi davranır. */
+  const slotOn=(m,day,slot)=>!(m.ts&&m.ts[slot]&&day<m.ts[slot]);
+  /* Kaydedilirken: ilaçta olmayan her saat bugünden, bugünkü vakti geçmişse yarından başlar. */
+  function sinceFor(prevT,t,ts,today,nowT){
+    const o={};
+    for(const sl of t)o[sl]=prevT.includes(sl)?(ts&&ts[sl])||undefined:(sl<=nowT?addDay(today,1):today);
+    for(const sl in o)if(o[sl]===undefined)delete o[sl];
+    return Object.keys(o).length?o:undefined;
+  }
   /* Günün dozları: saate göre sıralı. */
   function dosesOn(meds,day){
     const out=[];
-    for(const m of meds)if(active(m,day))for(const slot of m.t)out.push({m,slot});
+    for(const m of meds)if(active(m,day))for(const slot of m.t)if(slotOn(m,day,slot))out.push({m,slot});
     return out.sort((a,b)=>a.slot<b.slot?-1:a.slot>b.slot?1:a.m.id-b.m.id);
   }
   const statusOf=(log,mid,day,slot)=>{const r=log.find(x=>x.m===mid&&x.day===day&&x.slot===slot);return r?r.st:null};
@@ -106,7 +118,7 @@ const MedLib=(()=>{
       for(const m of meds){
         if(!active(m,day))continue;
         m.t.forEach((slot,ti)=>{
-          if(statusOf(log,m.id,day,slot))return;
+          if(statusOf(log,m.id,day,slot)||!slotOn(m,day,slot))return;
           const at=parseDay(day);at.setHours(+slot.slice(0,2),+slot.slice(3,5),0,0);
           const id=nid(m,ti,off<0?39:off),extra={act:"med",m:m.id,s:slot};
           if(at.getTime()>nowT)out.push({id,title:"💊 İlaç zamanı",body:body(m),at,extra:{...extra,at:at.getTime()}});
@@ -127,6 +139,6 @@ const MedLib=(()=>{
     const d=new Date(tapMs),tm=d.getHours()*60+d.getMinutes(),sm=+slot.slice(0,2)*60+ +slot.slice(3,5);
     return sm-tm>360?addDay(key(d),-1):key(d);
   }
-  return {doseOfId,MAXM,MAXT,BUDGET,cleanMeds,cleanLog,dosesOn,statusOf,mark,adherence,stockLeft,notifications,budget,dayForTap,addDay,dayDiff,dayOk,timeOk,key};
+  return {sinceFor,doseOfId,MAXM,MAXT,BUDGET,cleanMeds,cleanLog,dosesOn,statusOf,mark,adherence,stockLeft,notifications,budget,dayForTap,addDay,dayDiff,dayOk,timeOk,key};
 })();
 if(typeof module!=="undefined")module.exports=MedLib;

@@ -826,6 +826,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("ilaç kapalıyken alt menü aynı 5 sekme, Koç bağlamında ilaç yok",qa("nav button").map(b=>b.dataset.tab).join()==="bugun,salon,trend,koc,daha"&&!ev("CoachLib.contextText(cData())").includes("İLAÇLAR"));
     ev("S.settings.medOn=true;render()");
     ok("ilaç alarmı: Atla düğmesi dozu atlandı yazar, alındıyı ezmez",ev("(()=>{const sv=JSON.stringify([S.meds,S.medLog]),m=S.meds[0],s=m.t[1],t=Date.now();const r1=medIngest([{m:m.id,s,t,k:true}]).n;const r2=medIngest([{m:m.id,s,t,k:false}]).n;return r1===1&&r2===0&&MedLib.statusOf(S.medLog,m.id,MedLib.dayForTap(s,t),s)==='s'&&(([a,b])=>{S.meds=a;S.medLog=b;return true})(JSON.parse(sv))})()"));
+    ev("S.meds[0].s=keyOff(-3);delete S.meds[0].ts"); // ilaç 3 gün önce eklenmiş gibi
     ev("S.medLog.push({id:99,m:1,day:keyOff(-1),slot:'08:00',st:'t'},{id:100,m:1,day:keyOff(-1),slot:'20:00',st:'s'})");ev("render()");
     ok("uyum kutuları: son 7 gün yüzdesi ve doz sayısı, günlük döküm",q("#view").textContent.includes("Son 7 gün uyum")&&/%\d+/.test(q("#view").textContent)&&q("#view").textContent.includes("doz alındı")&&q("#view").textContent.includes("atlanan 1"),q("#view").textContent.slice(0,400));
     ev("S.medLog=S.medLog.filter(x=>x.id!==99&&x.id!==100)");
@@ -2391,6 +2392,21 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("18 yaş altı: sohbet, program, menü, otomatik ve doğrudan cAsk istek göndermez",n===0&&t==="consent",[n,t]);
     ok("yedek/açılış temizleyicisi: yaş<18 ise onay geçersiz, 18+ ise korunur",ev("cleanSettings({consent:true,consentV:CONSENT_V,age:16}).consent")===false&&ev("cleanSettings({consent:true,consentV:CONSENT_V,age:30}).consent")===true);
     reset();ev("S.chat=[];S.settings.age=0");
+  }
+  { // Dalga 11 (7): yeni ilaç geçmiş günlerde kaçırılmış sayılmaz
+    reset();ev("S.settings.medOn=true;tab='ilac';render()");
+    const doc=w.document,q=s=>doc.querySelector(s);
+    ev("medOpen(0)");q("#mn").value="D vitamini 1000 IU";q("#mt0").value="23:59";q('[data-md="addtime"]').click();q("#mt1").value="00:00";q('[data-md="save"]').click();
+    const m=ev("S.meds[0]"),t=ev("dayKey()"),y=ev("keyOff(1)");
+    ok("gün sayısı girilmeden eklenen ilaca başlangıç (bugün) yazılır, vakti geçmiş saat yarından başlar",m.s===t&&m.ts["00:00"]===y&&m.ts["23:59"]===t,m);
+    const a=ev("MedLib.adherence(S.meds,S.medLog,keyOff(-29),dayKey(),dayKey(),'23:59')");
+    ok("yeni ilaç: 30 günlük uyum geçmişi kaçırılmış saymaz",a.missed===0&&a.pct===null,a);
+    ok("ilaç ekranı: yeni ilaçta %0 ve 0/29 yok",!ev("viewIlac()").includes("kaçırılan")&&!ev("viewIlac()").includes("/ 29"));
+    ev("medOpen(1)");q('[data-md="addtime"]').click();q("#mt2").value="12:00";q('[data-md="save"]').click();
+    ok("düzenlemede eklenen yeni saat kendi gününden başlar, eski saatler korunur",ev("S.meds[0].ts['12:00']")>=t&&ev("S.meds[0].ts['00:00']")===y&&ev("S.meds[0].s")===t);
+    ev("S.meds=[{id:1,n:'Eski',t:['08:00'],on:true}];S.medLog=[]");ev("medOpen(1)");q("#mn").value="Eski2";q('[data-md="save"]').click();
+    ok("eski kayıt (s yok) düzenlenince geçmişi bozulmaz",ev("S.meds[0].s")===undefined&&ev("MedLib.adherence(S.meds,S.medLog,keyOff(-5),dayKey(),dayKey(),'23:59')").missed>=5);
+    reset();
   }
   console.log("son satıra ulaşıldı, "+total+" test");
   process.exit(bad||total<MIN_TESTS?1:0);
