@@ -16,6 +16,8 @@ const PAIRS=[
  ["tact","tbg",4.5,"toast 'Geri al' düğmesi"],["tfg","tbg",4.5,"toast metni"],
  ["su","card",3,"su grafiği"],["kcal","card",3,"kalori halkası ve hedef çizgisi"],["prim","card",3,"grafik çizgisi"],["spor","card",3,"spor grafiği"],["warn","card",3,"uyarı grafiği"],
  ["mut","card",3,"giriş kenarlığı ve soluk çizgiler"],
+ ["prim","soft",4.5,"ikincil (tonlu) düğme metni"],["prim","prim-soft",3,"etkin sekme ikonu"],["ink","field",4.5,"giriş alanı metni"],["mut","field",4.5,"giriş alanı yer tutucusu"],
+ ["ban-ink","ban-bg",4.5,"uyarı kutusu"],["inf-ink","inf-bg",4.5,"bilgi kutusu"],["ink","inf-bg",4.5,"bilgi kartı"],["tah-ink","tah-bg",4.5,"tahmin rozeti"],["#ffffff","sbtn",4.5,"mavi düğme"],
 ];
 for(const [name,t] of [["açık",light],["koyu",dark]]){
   for(const [f,b,min,d] of PAIRS){
@@ -23,9 +25,6 @@ for(const [name,t] of [["açık",light],["koyu",dark]]){
     const r=cr(fh,bh);ok(`${name}: ${d} ${f} ${fh} / ${b} ${bh} ≥ ${min}`,r>=min,r.toFixed(2));
   }
 }
-/* Temadan bağımsız sabit renkli bileşenler (açık/koyu banner, bilgi kartı, tahmin rozeti, mavi düğme). */
-for(const [f,b,d] of [["#4d2f07","#fbeede","banner (açık)"],["#14425e","#e6f0f6","bilgi banner (açık)"],["#10232b","#e6f0f6","bilgi kartı (açık)"],["#6b3f08","#fbe9d2","tahmin rozeti"],["#ffffff","#1f5f86","mavi düğme"],
- ["#f3dcb8","#3a2a14","banner (koyu)"],["#d5e8f3","#16303d","bilgi banner (koyu)"],["#e8f0ee","#16303d","bilgi kartı (koyu)"]]){const r=cr(f,b);ok(`sabit: ${d} ${f} / ${b} ≥ 4.5`,r>=4.5,r.toFixed(2))}
 const forced=vars(html.match(/:root\[data-theme="dark"\]\{([^}]*)\}/)[1]),mediaDark=vars(html.match(/prefers-color-scheme:dark\)\{\s*:root:not\(\[data-theme="light"\]\)\{([^}]*)\}/)[1]);
 const ovr=re=>[...html.matchAll(re)].map(m=>m[1]+m[2]);
 ok("Koyu seçimi (data-theme=dark) sistem koyusuyla aynı renkler: değişkenler ve banner/bilgi kartı",JSON.stringify(forced)===JSON.stringify(mediaDark)&&Object.keys(forced).length>=16&&JSON.stringify(ovr(/:root:not\(\[data-theme="light"\]\) (\.[\w.]+)(\{[^}]*\})/g))===JSON.stringify(ovr(/:root\[data-theme="dark"\] (\.[\w.]+)(\{[^}]*\})/g))&&/:root\[data-theme="dark"\]\{color-scheme:dark/.test(html)&&/:root\[data-theme="light"\]\{color-scheme:light\}/.test(html));

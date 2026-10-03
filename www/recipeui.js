@@ -22,7 +22,7 @@ function sheetTarif(r){
   <label class="lbl" for="rn">Tarif adı</label><input class="in" id="rn" maxlength="60" autocomplete="off" value="${esc(rd.n)}" placeholder="Örneğin mercimek köftesi">
   <label class="lbl" for="rs">Kaç porsiyon çıkar</label><input class="in num" id="rs" inputmode="numeric" autocomplete="off" value="${rd.s}">
   <div class="lbl">Malzemeler (gram)</div><div id="rrows">${rpRows()}</div>
-  <label class="lbl" for="rq">Malzeme ekle</label><input class="in" id="rq" placeholder="Ara: un, yumurta, süt…" autocomplete="off"><div id="rlist" class="plist"></div>
+  <label class="lbl" for="rq">Malzeme ekle</label><input class="in" id="rq" type="search" enterkeyhint="search" aria-label="Malzeme ara" placeholder="Un, yumurta, süt…" autocomplete="off"><div id="rlist" class="plist"></div>
   <div class="stat" id="rsum" style="margin:8px 0"></div><div class="mut sm" id="rnote" style="margin-bottom:8px"></div>
   <div class="ferr" id="rerr" role="alert"></div><button class="btn" data-rp="save">Kaydet</button>${r?`<div class="two"><button class="btn ghost" data-rp="dup">Çoğalt</button><button class="btn danger" data-rp="del">Sil</button></div>`:""}`);
   rpSum();
