@@ -83,7 +83,7 @@ jobs:
           $apksigner verify neowell.apk
           apk=$($apksigner verify --print-certs neowell.apk | grep "Signer #1 certificate SHA-256" | sed 's/.*: //' | norm)
           aab=$(keytool -printcert -jarfile neowell.aab | grep -m1 "SHA256:" | sed 's/.*SHA256: //' | norm)
-          dbg=$(keytool -list -keystore signing/koc-debug.keystore -storepass android | grep -i "SHA-256" | sed 's/.*: //' | norm)
+          dbg=$(keytool -list -keystore signing/bilinen-debug-yalniz-smoke.keystore -storepass android | grep -i "SHA-256" | sed 's/.*: //' | norm)
           echo "APK: $apk"; echo "AAB: $aab"; echo "Beklenen: $RELEASE_SHA256"; echo "Debug: $dbg"
           [ -n "$dbg" ] && [ "$apk" != "$dbg" ] && [ "$aab" != "$dbg" ] || { echo "YAYINLANAN DOSYA DEBUG ANAHTARIYLA İMZALI"; exit 1; }
           [ "$apk" = "$RELEASE_SHA256" ] && [ "$aab" = "$RELEASE_SHA256" ] || { echo "RELEASE İMZA ANAHTARI UYUŞMUYOR"; exit 1; }

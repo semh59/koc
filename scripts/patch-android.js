@@ -118,7 +118,7 @@ if(!g.includes("signingConfigs")){
   g=g.replace(/android \{/,`android {
     signingConfigs {
         debug {
-            storeFile file("../../signing/koc-debug.keystore")
+            storeFile file("../../signing/bilinen-debug-yalniz-smoke.keystore")
             storePassword "android"
             keyAlias "androiddebugkey"
             keyPassword "android"
