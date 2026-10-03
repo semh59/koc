@@ -22,11 +22,11 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * Otomatik yedek klasörü: kullanıcı Storage Access Framework ile bir klasör seçer, kalıcı izin yalnız o klasöre alınır.
- * Klasör adresi yalnız burada saklanır, JS'e verilmez ve loglanmaz. Yalnız yedek adındaki dosyalar yazılır ve silinir.
+ * Klasör adresi yalnız burada saklanır, JS'e verilmez ve loglanmaz. Yalnız otomatik yedek adındaki (neowell-oto-) dosyalar yazılır ve silinir; elle yedeklere dokunulmaz.
  */
 @CapacitorPlugin(name = "BackupFolder")
 public class BackupFolderPlugin extends Plugin {
-    private static final String NAME_RE = "neowell-yedek-\\d{4}-\\d{2}-\\d{2}\\.json";
+    private static final String NAME_RE = "neowell-oto-\\d{4}-\\d{2}-\\d{2}\\.json";
     private static final int FLAGS = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
 
     private SharedPreferences prefs() {
