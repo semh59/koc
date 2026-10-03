@@ -19,7 +19,7 @@ fi
 # NW-DIAG görünmese de JS köprüsü ve yerel eklentiler şu yan etkilerle doğrulanır: Widget.update tercih dosyası, LocalNotifications alarmları.
 adb root >/dev/null; adb wait-for-device; sleep 2
 adb shell cat /data/data/$P/shared_prefs/nw_widget.xml | grep -qE 'water(&quot;|")?:[0-9]+' || { echo "RELEASE: WIDGET VERİSİ YAZILMADI"; exit 1; }
-n=$(adb shell dumpsys alarm | grep -E "RTC_WAKEUP.*$P" | wc -l)
+for i in $(seq 9); do n=$(adb shell dumpsys alarm | grep -E "RTC_WAKEUP.*$P" | wc -l); [ "$n" -ge 100 ] && break; sleep 10; done
 echo "Release alarm sayısı: $n"
 [ "$n" -ge 100 ] || { echo "RELEASE: HATIRLATMA ALARMLARI KURULMADI"; exit 1; }
 echo "Release denetimi geçti"
