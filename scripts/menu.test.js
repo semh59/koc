@@ -107,7 +107,7 @@ setTimeout(async()=>{
     ok("kalori açığı engeli (sağlık notu) + hedef bakımın altında: menü bakım düzeyinde, hekim notu",hp.held===true&&hp.kcal>1500&&hp.block.includes("Sağlık notun"),hp);
     ev("menuNote=''");reply={reply:"x",menu:null};
     await ev("cMenu()");
-    ok("engelde istek KISIT satırı taşır ve açık kurmamasını söyler",sent.messages[0].content.includes("KISIT var: Sağlık notun var")&&sent.messages[0].content.includes("kalori açığı kurma"));
+    ok("engelde istek KISIT satırı taşır ve açık kurmamasını söyler",sent.messages[0].content.includes("KISIT var: Sağlık notunda hekim takibi")&&sent.messages[0].content.includes("kalori açığı kurma"));
     ev(base+";S.chat=[];S.settings.healthNote='tansiyon';S.settings.kcal=1500;S.entries=[]");
     ok("engel var ama bakım hesaplanamıyorsa (kilo kaydı yok) menü yok, nedeni yazar",ev("cMenuPlan().why").includes("hekimine ya da diyetisyene danış"));
     ev(base+";S.chat=[{id:1,role:'user',text:'x',t:1,fl:'ed'}]");

@@ -79,22 +79,45 @@ const Algo=(()=>{
     const wk=etaWeeks(trend(w)[ks[ks.length-1]],goalKg,slope);
     return {slope,weeks:wk>0?wk:null};
   }
-  /* Kalori açığının güvenli olmadığı durumun nedeni, yoksa "". */
-  function lossBlock({age,cm,kg,goalKg,health}){
-    if(age>0&&age<18)return "18 yaş altında kalori açığı önerilmez";
-    if(health)return "Sağlık notun var, kalori açığı için önce hekimine danış";
-    const bmi=x=>kg>0&&cm>0?x/Math.pow(cm/100,2):null;
-    if(bmi(kg)!=null&&bmi(kg)<18.5)return "Kilon zaten düşük, kalori açığı önerilmez";
-    if(goalKg>0&&bmi(goalKg)!=null&&bmi(goalKg)<18.5)return "Hedef kilo boyuna göre çok düşük (BMI 18,5 altı)";
-    return "";
+  /* Güvenlik freni (kalori açığı, oruç, yüksek protein) tek kaynak. hard onayla kalkmaz; soft "Hekimime danıştım" (clearedAt) günü dahil 30 gün kalkar.
+     Anahtar, Türkçe olumsuzlamada ("hamile değilim", "emzirmiyorum", "kusmadım", "böbrek sorunum yok") sayılmaz; not doluysa yine soft kalır. */
+  const low=s=>String(s||"").replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
+  const ED=/yeme bozuklu|anoreksi|bulimi|tıkınma|kus(?=ma|uyor|tur|ar|tu)/g,PREG=/hamile|gebe|emzir|lohusa/g,KIDNEY=/böbrek|diyaliz|karaciğer|siroz/g,
+    CHRONIC=/diyabet|şeker hasta|insülin|böbrek|diyaliz|karaciğer|siroz|kalp|tiroid|guatr|epilep|kanser|kemoterapi|tansiyon/g;
+  function said(t,re){
+    for(const m of t.matchAll(re)){
+      const rest=t.slice(m.index+m[0].length),suf=rest.match(/^[^\s,.;:!?]*/)[0];
+      const next=rest.slice(suf.length).split(/[,.;:!?\n]/)[0].trim().split(/\s+/).slice(0,2);
+      if(!/^(m[ıiuü]yor|m[ae](d[ıiuü]|z|m[ıi]ş|y[ae]c))/.test(suf)&&!next.some(w=>/^(değil|yok|olmayan|olmad|hayır)|m[ıiuü]yor|m[ae]d[ıiuü]/.test(w)))return true;
+    }
+    return false;
   }
+  const dateOk=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&!isNaN(dayNum(s));
+  function riskFlags({age,cm,kg,goalKg,healthNote,meds,glucoseCount90d,bpCount90d,edFlag,clearedAt,today}){
+    const t=low(healthNote).trim(),bmi=x=>x>0&&cm>0?x/Math.pow(cm/100,2):null,n=Array.isArray(meds)?meds.length:meds>0?meds:0;
+    const ed=!!edFlag||said(t,ED),pregnant=said(t,PREG),hard=[],soft=[];
+    if(age>0&&age<18)hard.push("18 yaş altındasın");
+    if(ed)hard.push("Yeme düzeniyle ilgili bir işaret var");
+    if(pregnant)hard.push("Sağlık notunda hamilelik ya da emzirme geçiyor");
+    if(bmi(kg)!=null&&bmi(kg)<18.5)hard.push("Kilon boyuna göre düşük (BMI 18,5 altı)");
+    if(goalKg>0&&bmi(goalKg)!=null&&bmi(goalKg)<18.5)hard.push("Hedef kilo boyuna göre çok düşük (BMI 18,5 altı)");
+    if(t)soft.push(said(t,CHRONIC)?"Sağlık notunda hekim takibi gerektiren bir durum geçiyor":"Sağlık notun var");
+    if(n)soft.push("İlaç kaydın var");
+    if(glucoseCount90d>0)soft.push("Son 90 günde şeker ölçümün var");
+    if(bpCount90d>0)soft.push("Son 90 günde tansiyon ölçümün var");
+    const d=dateOk(clearedAt)&&dateOk(today)?dayNum(today)-dayNum(clearedAt):-1,cleared=d>=0&&d<30;
+    return {hard,soft,cleared,kidney:said(t,KIDNEY),pregnant,ed,meds:n,block:hard[0]||(!cleared&&soft[0])||""};
+  }
+  /* Kalori açığının güvenli olmadığı durumun nedeni, yoksa "". Eski çağrılar health:boolean geçer. */
+  const lossBlock=o=>riskFlags({...o,healthNote:o.healthNote!=null?o.healthNote:o.health?"var":""}).block;
 
-  /* Hedef önerisi. Kullanıcı onaylamadan uygulanmaz. */
-  function suggestTarget({tdee,kg,goalKg,bmr,age,cm,health}){
+  /* Hedef önerisi. Kullanıcı onaylamadan uygulanmaz. o: riskFlags girdisi + tdee, bmr. */
+  function suggestTarget(o){
+    const {tdee,kg,goalKg,bmr}=o;
     if(!tdee||!kg)return null;
     let rate=0,kcal=tdee,note="Bakım",blocked="";
     if(goalKg>0&&goalKg<kg-0.2){
-      blocked=lossBlock({age,cm,kg,goalKg,health});
+      blocked=lossBlock(o);
       if(!blocked){rate=-Math.min(0.005*kg,0.75);note="Kilo verme"}
     }
     else if(goalKg>kg+0.2){rate=0.0025*kg;note="Kilo alma"}
@@ -227,6 +250,6 @@ const Algo=(()=>{
     }
     return r;
   }
-  return {KCAL_PER_KG,dayNum,fdate,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,lossBlock,etaWeeks,isLosing,lossKnown,goalEta,proteinRange,exerciseKcal,moveBonus,moveSummary,cleanWalk,netKcal,gymKcal,MEASURES,cleanMeasures,whtr,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
+  return {KCAL_PER_KG,dayNum,fdate,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,riskFlags,lossBlock,etaWeeks,isLosing,lossKnown,goalEta,proteinRange,exerciseKcal,moveBonus,moveSummary,cleanWalk,netKcal,gymKcal,MEASURES,cleanMeasures,whtr,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
 })();
 if(typeof module!=="undefined")module.exports=Algo;

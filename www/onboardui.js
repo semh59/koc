@@ -1,6 +1,6 @@
 "use strict";
 /* İlk açılış: 3 adım. Girdiler mevcut profil ve ayar alanlarına yazılır; taslak yalnızca bellekte durur. */
-const obFresh=()=>({step:0,kg:"",cm:"",age:"",sex:"",dir:"koru",goal:"",hn:false,mods:[],err:"",bad:""});
+const obFresh=()=>({step:0,kg:"",cm:"",age:"",sex:"",dir:"koru",goal:"",hd:false,hn:false,mods:[],err:"",bad:""});
 const ob=obFresh();
 const OB_MODS=[["med","İlaç hatırlatıcı","ilac"],["fast","Oruç takibi","fast"],["steps","Adım sayar","adim"],["bp","Tansiyon","heart"],["bs","Şeker","su"]];
 const OB_DIRS=[["ver","Kilo ver"],["koru","Koru"],["al","Kilo al"]];
@@ -9,7 +9,7 @@ const obNeeded=()=>{const s=S.settings;return !s.obDone&&!s.heightCm&&!s.age&&!s
 
 function obRead(){
   for(const k of ["cm","kg","age","goal"]){const f=$("#ob"+k);if(f)ob[k]=f.value.trim()}
-  const h=$("#obhn");if(h)ob.hn=h.checked;
+  for(const k of ["hd","hn"]){const h=$("#ob"+k);if(h)ob[k]=h.checked}
 }
 /* Doğrulanmış sayılar ya da hata; hata alanın altında yazılır ve alan aria-invalid olur. */
 function obParse(){
@@ -28,10 +28,13 @@ function obParse(){
   }
   return o;
 }
+/* İşaretler sağlık notuna yazılır; ilki riskFlags'ta sert (hamilelik), ikincisi yumuşak sayılır. */
+const OB_HD="İlk kurulumda işaretlendi: hamilelik, emzirme ya da yeme bozukluğu geçmişi",OB_HN="İlk kurulumda işaretlendi: hekim kontrolü ya da düzenli ilaç";
+const obNote=()=>[S.settings.healthNote,ob.hd&&OB_HD,ob.hn&&OB_HN].filter(Boolean).join(". ").slice(0,500);
 function obPlan(p){
-  const health=ob.hn||!!S.settings.healthNote.trim(),sex=ob.sex,q={kg:p.kg,cm:p.cm,age:p.age,sex};
-  const t=Algo.suggestTarget({tdee:Algo.formulaTdee({...q,act:S.settings.act}),kg:p.kg,goalKg:p.goal,bmr:Algo.bmrMifflin(q),age:p.age,cm:p.cm,health});
-  return {kcal:t.kcal,note:t.note,protein:Algo.proteinRange(p.kg),blocked:Algo.lossBlock({age:p.age,cm:p.cm,kg:p.kg,goalKg:p.goal,health})};
+  const q={kg:p.kg,cm:p.cm,age:p.age,sex:ob.sex},inp={...riskInput(p.kg),age:p.age,cm:p.cm,goalKg:p.goal,healthNote:obNote()};
+  const t=Algo.suggestTarget({...inp,tdee:Algo.formulaTdee({...q,act:S.settings.act}),bmr:Algo.bmrMifflin(q)});
+  return {kcal:t.kcal,note:t.note,protein:Algo.proteinRange(p.kg),risk:Algo.riskFlags(inp)};
 }
 function obView(){
   const st=ob.step,bad=k=>ob.bad===k?` aria-invalid="true" aria-describedby="oberr"`:"";
@@ -44,7 +47,8 @@ function obView(){
     <div class="lbl" style="margin-top:10px">Cinsiyet (isteğe bağlı)</div>${seg("sex",[["m","Erkek"],["f","Kadın"],["","Belirtmem"]],ob.sex)}
     <div class="lbl" style="margin-top:10px">Hedefin</div>${seg("dir",OB_DIRS,ob.dir)}
     ${ob.dir!=="koru"?fld("goal","Hedef kilo (kg)",ob.goal,"","decimal"):""}
-    <label class="chkrow" style="margin-top:6px"><input type="checkbox" id="obhn" ${ob.hn?"checked":""}>Hamileyim, yeme bozukluğu geçmişim var ya da hekim kontrolündeyim</label></div>${err}`;
+    <label class="chkrow" style="margin-top:6px"><input type="checkbox" id="obhd" ${ob.hd?"checked":""}>Hamileyim, emziriyorum ya da yeme bozukluğu geçmişim var</label>
+    <label class="chkrow"><input type="checkbox" id="obhn" ${ob.hn?"checked":""}>Hekim kontrolündeyim ya da düzenli ilaç kullanıyorum</label></div>${err}`;
   else if(st===1)body=`<h2>Hangileri açık olsun?</h2><div class="card"><p class="hint" style="padding:0 0 8px">Kapalı olanlar ekranında görünmez. İstediğini sonra Ayarlar'dan açarsın.</p>
     <div class="chips">${OB_MODS.map(([k,l,ic])=>`<button class="chip" data-ob="mod:${k}" aria-pressed="${ob.mods.includes(k)}">${Icons.svg(ic)} ${l}</button>`).join("")}</div>
     ${ob.mods.includes("steps")?`<p class="hint" style="padding:0">Adım sayar için telefon izni, Bugün ekranındaki "Adım sayarı aç" satırından istenir.</p>`:""}</div>`;
@@ -53,7 +57,7 @@ function obView(){
     body=`<h2>Günlük hedefin</h2><div class="card"><div class="lbl">Kalori</div><div class="sumv num">${pl.kcal.toLocaleString("tr-TR")} <small>kcal</small></div>
     <div class="lbl">Protein</div><div class="num" style="font-size:22px;font-weight:700">${pl.protein[0]}–${pl.protein[1]} <small class="mut">g</small></div>
     <p class="hint">Verilerin yalnızca telefonunda durur. Koç'u açarsan, yalnızca onayınla, seçtiğin yapay zekâ sağlayıcısına (yurt dışı) gider. Koç olmadan da uygulama tam çalışır. ${MED_NOTE} <button class="lnk" style="display:inline-block;width:auto" data-pv="open">Gizlilik ve veri</button></p>
-    ${pl.blocked?`<div class="banner" style="margin:12px 0 0"><b>Kalori açığı önermiyorum</b><p>${esc(pl.blocked)}. ${/hekim/.test(pl.blocked)?"":"Hekimine ya da diyetisyenine danış. "}Yukarıdaki değer kilonu koruma düzeyidir.</p></div>`:`<p class="hint">${pl.note==="Kilo verme"?"Yavaş ve güvenli kilo verme hızına göre":pl.note==="Kilo alma"?"Yavaş kilo alma hızına göre":"Kilonu koruma düzeyine göre"} hesaplandı. Kayıt girdikçe gerçek verine göre güncellenir. Tahmindir, tıbbi tavsiye değildir.</p>`}</div>`;
+    ${pl.risk.block?riskBox(pl.risk,"Kalori açığı önermiyorum")+(p.goal>p.kg?"":`<p class="hint">Yukarıdaki değer kilonu koruma düzeyidir.</p>`):`<p class="hint">${pl.note==="Kilo verme"?"Yavaş ve güvenli kilo verme hızına göre":pl.note==="Kilo alma"?"Yavaş kilo alma hızına göre":"Kilonu koruma düzeyine göre"} hesaplandı. Kayıt girdikçe gerçek verine göre güncellenir. Tahmindir, tıbbi tavsiye değildir.</p>`}</div>`;
   }
   const dots=`<div class="hint" role="status" style="padding:0 4px 4px">Adım ${st+1}/3</div>`;
   return `<div class="row" style="display:flex;justify-content:space-between;align-items:center">${dots}<button class="lnk" style="width:auto;padding:0 8px" data-ob="skip">Şimdilik geç</button></div>${body}
@@ -65,7 +69,7 @@ function obFinish(){
   const st=S.settings,pl=obPlan(p),mods=ob.mods;
   Object.assign(st,{heightCm:p.cm,age:p.age,sex:ob.sex,goalKg:p.goal,medOn:mods.includes("med"),fastOn:mods.includes("fast"),bpOn:mods.includes("bp"),bsOn:mods.includes("bs")});
   if(pl.kcal>=RANGES.kcal[0]&&pl.kcal<=RANGES.kcal[1])st.kcal=pl.kcal;
-  if(ob.hn&&!st.healthNote)st.healthNote="Hamilelik, yeme bozukluğu geçmişi ya da hekim kontrolü (ilk kurulumda işaretlendi)";
+  if(ob.hd||ob.hn)st.healthNote=obNote();
   if(!mods.includes("steps"))st.stepsAsked=true;
   add("kilo",p.kg);
   obDone();scheduleReminders().then(setNotif);

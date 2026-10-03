@@ -359,7 +359,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- veri ---------- */
 const DEF={
-  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",lastPlan:"",lastWeekly:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",reminders:[
+  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",lastPlan:"",lastWeekly:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -407,6 +407,7 @@ function cleanSettings(raw,fast){
   if(dayOk(o.lastBackup))d.lastBackup=o.lastBackup;
   if(o.autoBk===true)d.autoBk=true;
   if(dayOk(o.lastAutoBk))d.lastAutoBk=o.lastAutoBk;
+  if(dayOk(o.riskClearedAt))d.riskClearedAt=o.riskClearedAt;
   if(o.oemDone===true)d.oemDone=true;
   /* Bayrak eklenmeden önceki yedek ve kayıtlar mevcut kullanıcıdır, onboarding görmez. */
   if(o.obDone===true||(!("obDone" in o)&&Object.keys(o).length))d.obDone=true;
@@ -509,6 +510,15 @@ const sum=(type,a,b)=>S.entries.filter(e=>e.type===type&&e.day>=a&&e.day<=b).red
 /* Hareket kalorisi ayarı açıksa o günün kalori hedefine eklenen kısım; kapalıysa 0. Ring, widget ve toast tek yerden okur. */
 const moveAdd=day=>S.settings.moveKcalOn&&S.settings.kcal>0?Algo.moveBonus(Algo.exerciseKcal(of("spor",day),S.moves.filter(m=>m.day===day))):0;
 const kcalGoal=day=>S.settings.kcal>0?S.settings.kcal+moveAdd(day):0;
+/* Güvenlik freninin girdisi tek yerde; kg verilmezse son trend kilo. */
+function riskInput(kg){
+  const st=S.settings,from=keyOff(-89),w=weights(),ks=Object.keys(w).sort(),n=k=>S.vitals.filter(v=>v.k===k&&v.day>=from).length;
+  return {age:st.age,cm:st.heightCm,kg:kg!=null?kg:ks.length?Algo.trend(w)[ks[ks.length-1]]:0,goalKg:st.goalKg,healthNote:st.healthNote,meds:S.meds.length,glucoseCount90d:n("s"),bpCount90d:n("t"),
+    edFlag:S.chat.some(m=>m.fl==="ed"||(m.card&&m.card.kind==="safety"&&m.card.level==="ed")),clearedAt:st.riskClearedAt,today:dayKey()};
+}
+const risk=kg=>Algo.riskFlags(riskInput(kg));
+/* Fren açıklaması: sert engelde yalnız açıklama, yumuşakta 30 günlük "Hekimime danıştım" onayı. */
+const riskBox=(r,title)=>r.block?`<div class="banner"><b>${title}</b><p>${esc((r.hard.length?r.hard:r.soft).join(". "))}. ${r.hard.length?"Hekimine ya da diyetisyenine danış. Bilgi yanlışsa Profil > Sağlık notların'dan düzelt.":"Önce hekimine danış; konuştuysan 30 gün için devam edebilirsin."}</p>${r.hard.length?"":`<button class="btn ghost" data-act="riskok">Hekimime danıştım, devam</button>`}</div>`:"";
 function weights(a="0000",b="9999"){const m={};for(const e of S.entries)if(e.type==="kilo"&&e.day>=a&&e.day<=b)m[e.day]=e.v;return m}
 const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
 const vals=m=>Object.values(m);
@@ -676,7 +686,7 @@ function viewTrend(){
     if(ge.slope!=null)cells.push(["Kilo hızı",`${fmtS(ge.slope,2)} kg/hafta`]);
     const gi=goalInfo(cur,first);
     if(gi)cells.push(["Hedefe kalan",gi.done?"Ulaştın":`${fmt(gi.left)} kg`]);
-    const eta=gi&&!gi.done&&!(gi.dir<0&&Algo.lossBlock({age:st.age,cm:st.heightCm,kg:cur,goalKg:st.goalKg,health:!!st.healthNote.trim()}))?ge.weeks:null;
+    const eta=gi&&!gi.done&&!(gi.dir<0&&risk(cur).block)?ge.weeks:null;
     stats=`<div class="stats">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1]}</div></div>`).join("")}</div>${eta?`<p class="hint" style="padding:8px 0 0">Son 3 haftanın eğimi sürerse ~${eta} hafta.</p>`:""}`;
   }
   let rows="",hasWeek=false;
@@ -1236,6 +1246,7 @@ document.addEventListener("click",ev=>{
     else if(d.act==="oemok"){S.settings.oemDone=true;save();closeSheet();render();toast("Tamam, hatırlatmaları şimdi dene")}
     else if(d.act==="profil"){tab="ayar-profil";render();window.scrollTo(0,0)}
     else if(d.act==="saglik")openSheet(`<h3>Sağlık notların</h3><div class="lbl">Hamilelik, hastalık, ilaç, yeme bozukluğu geçmişi gibi koçun bilmesi gerekenler.</div><textarea class="in" id="hn" maxlength="500" autofocus>${esc(S.settings.healthNote)}</textarea><button class="btn" data-go="saglik">Kaydet</button>`);
+    else if(d.act==="riskok"){S.settings.riskClearedAt=dayKey();save();render();toast("Onaylandı, 30 gün geçerli")}
     else if(d.act.startsWith("uygula:")){S.settings.kcal=+d.act.slice(7);save();render();toast(`Kalori hedefi ${S.settings.kcal} kcal oldu`)}
     else if(d.act==="sifirla"){if(confirm("Tüm kayıtlar, güvenlik kopyası ve kayıtlı API anahtarları silinecek. Bu geri alınamaz. Devam edilsin mi?")){["koc_v1","koc_v1_onceki","koc_v1_bozuk",KEYS_LS,KEYS_ENC].forEach(lsDel);KEYS={};S=structuredClone(DEF);save();logOff=0;render();scheduleReminders().then(setNotif);toast("Tüm veriler silindi")}}
     return;

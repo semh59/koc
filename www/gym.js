@@ -738,13 +738,14 @@ function gEnergy(){
   const intake={};for(const e of S.entries)if(e.type==="yemek"&&e.v)intake[e.day]=(intake[e.day]||0)+e.v;
   const r=Algo.adaptiveTdee({weights:wAll,intake,profile});
   if(!r.tdee)return "";
-  const bmr=Algo.bmrMifflin(profile),sg=Algo.suggestTarget({tdee:r.tdee,kg,goalKg:st.goalKg,bmr,age:st.age,cm:st.heightCm,health:!!st.healthNote.trim()});
+  const bmr=Algo.bmrMifflin(profile),sg=Algo.suggestTarget({...riskInput(kg),tdee:r.tdee,bmr});
   const pr=Algo.proteinRange(kg);
   const src=r.source==="formül"?"Formül tahmini. Veri biriktikçe kendini ayarlar.":`Gerçek verinden hesaplandı, güven %${Math.round(r.confidence*100)}.`;
   const cells=[["Tahmini harcama",`${Math.round(r.tdee/10)*10} kcal`]];
   if(sg)cells.push(["Önerilen hedef",`${sg.kcal} kcal`]);
   cells.push(["Protein aralığı",`${pr[0]}–${pr[1]} g`]);
   return `<h2>Enerji dengesi</h2><div class="card"><div class="stats">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1]}</div></div>`).join("")}</div>
-  <p class="hint" style="padding:8px 0 0">${src}${sg&&sg.limited?" Hedef güvenli alt sınırda tutuldu.":""}${sg&&sg.blocked?` ${esc(sg.blocked)}. Öneri bakım düzeyinde tutuldu.`:""}</p>
+  <p class="hint" style="padding:8px 0 0">${src}${sg&&sg.limited?" Hedef güvenli alt sınırda tutuldu.":""}${sg&&sg.blocked?" Öneri bakım düzeyinde tutuldu.":""}</p>
+  ${sg&&sg.blocked?riskBox(risk(kg),"Kalori açığı önermiyorum"):""}
   ${sg&&sg.kcal!==st.kcal?`<div class="btns"><button class="btn ghost" data-act="uygula:${sg.kcal}">Hedefi ${sg.kcal} kcal yap</button></div>`:""}</div>`;
 }
