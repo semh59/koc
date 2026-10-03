@@ -72,6 +72,8 @@ function cPush(m){const o=Object.assign({id:S.cid++,t:Date.now()},m);S.chat.push
 function cCalc(){
   const st=S.settings,w=weights(),days=Object.keys(w).sort();
   const out={trendKg:null,slope:null,tdee:null,source:"",target:null,protein:null,bmr:null,block:""};
+  /* Fren boy, yaş ve tartıdan bağımsız: hamilelik ya da ed işareti tartısız da bağlama gider. */
+  const rk=risk(days.length?Algo.trend(w)[days[days.length-1]]:0);out.block=rk.block;out.why=[...rk.hard,...(rk.cleared?[]:rk.soft)].join("; ");
   if(!days.length)return out;
   out.trendKg=Algo.trend(w)[days[days.length-1]];out.slope=Algo.slopePerWeek(w);
   if(st.heightCm>0&&st.age>0){
@@ -79,9 +81,7 @@ function cCalc(){
     const intake={};for(const e of S.entries)if(e.type==="yemek"&&e.v)intake[e.day]=(intake[e.day]||0)+e.v;
     const r=Algo.adaptiveTdee({weights:w,intake,profile});out.tdee=r.tdee;out.source=r.source;
     out.bmr=Algo.bmrMifflin(profile);
-    const health=!!st.healthNote.trim();
-    out.block=Algo.lossBlock({age:st.age,cm:st.heightCm,kg:out.trendKg,goalKg:st.goalKg,health});
-    const sg=Algo.suggestTarget({tdee:r.tdee,kg:out.trendKg,goalKg:st.goalKg,bmr:out.bmr,age:st.age,cm:st.heightCm,health});out.target=sg?sg.kcal:null;
+    const sg=Algo.suggestTarget({...riskInput(out.trendKg),tdee:r.tdee,bmr:out.bmr});out.target=sg?sg.kcal:null;
     out.protein=Algo.proteinRange(out.trendKg);
   }
   return out;
@@ -231,7 +231,7 @@ function lossAsk(){
   const st=S.settings,w=weights(),days=Object.keys(w).sort();
   if(!(st.goalKg>0)||!days.length)return false;
   const tk=Algo.trend(w)[days[days.length-1]];
-  return st.goalKg<tk-0.5&&Algo.lossKnown(w)&&!Algo.isLosing(w)&&!Algo.lossBlock({age:st.age,cm:st.heightCm,kg:tk,goalKg:st.goalKg,health:!!st.healthNote.trim()})&&!S.chat.some(m=>m.fl==="ed"||(m.card&&m.card.kind==="safety"&&m.card.level==="ed"));
+  return st.goalKg<tk-0.5&&Algo.lossKnown(w)&&!Algo.isLosing(w)&&!risk(tk).block;
 }
 function cWhy(){
   if(!lossAsk())return;
@@ -291,11 +291,11 @@ function cMenuCat(){
   return {cat,text:lines.join("\n")};
 }
 /* Hedef: kalori açığı engeli varsa ve hedef bakımın altındaysa bakım düzeyi (cReply'daki kuralın aynısı); yeme düzeni işareti ya da bakım hesaplanamıyorsa menü yok. */
-const menuBlock=(c=cCalc())=>Algo.lossBlock({age:S.settings.age,cm:S.settings.heightCm,kg:c.trendKg,goalKg:S.settings.goalKg,health:!!S.settings.healthNote.trim()});
+const menuBlock=(c=cCalc())=>c.block;
 function cMenuPlan(){
   const st=S.settings,c=cCalc(),goal=st.kcal>0?st.kcal:c.target;
   if(!(goal>0))return {why:"Önce Ayarlar > Profil ve hedefler'den günlük kalori hedefi belirle"};
-  if(S.chat.some(m=>m.fl==="ed"||(m.card&&m.card.kind==="safety"&&m.card.level==="ed")))return {why:"Yeme düzeniyle ilgili işaret gördüm; kısıtlayıcı menü önermiyorum, bir uzmana danış"};
+  if(risk(c.trendKg).ed)return {why:"Yeme düzeniyle ilgili işaret gördüm; kısıtlayıcı menü önermiyorum, bir uzmana danış"};
   const block=menuBlock(c);
   let kcal=goal,held=false;
   if(block){

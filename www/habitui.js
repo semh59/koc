@@ -15,7 +15,7 @@ function habitRow(){
 /* Bugün yapılacaklar satırı: oruç açıksa sürüyor/başlat; plan ve geçmiş Ayarlar'da. */
 function fastTodo(){
   const f=S.fast,st=S.settings;if(!st.fastOn)return [];
-  const s=HabitLib.fastState(f,Date.now()),warn=Algo.lossBlock({age:st.age,cm:0,kg:0,goalKg:0,health:!!st.healthNote.trim()})?`<small class="mut sm">Oruç öncesi hekimine danış.</small>`:"";
+  const s=HabitLib.fastState(f,Date.now()),warn=risk().block?`<small class="mut sm">Oruç öncesi hekimine danış.</small>`:"";
   return [s?`<div class="row"><span>${Icons.svg("fast")} Oruç ${f.plan}:${24-f.plan} · <b class="num">${hbDur(s.elapsed)}</b> geçti<small class="mut sm num">${s.done?"Hedef doldu":hbDur(s.left)+" kaldı"}</small>${warn}</span><button class="chip" data-hb="fastend">Orucu bitir</button></div>`
     :`<div class="row"><span>${Icons.svg("fast")} Oruç ${f.plan}:${24-f.plan}<small class="mut sm">Plan Ayarlar > Modüller'de değişir</small>${warn}</span><button class="chip" data-hb="fastgo">Orucu başlat</button></div>`];
 }

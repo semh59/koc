@@ -800,7 +800,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     for(const w_ of [0,1,2,3,4,5,6])click(`[data-md="wd:${w_}"]`);
     click('[data-md="save"]');
     ok("ilaç kaydedilir: ad, doz, saatler, stok, her gün",ev("S.meds.length")===1&&ev("S.meds[0].n")==="Test İlaç"&&ev("S.meds[0].d")==="1 tablet"&&ev("S.meds[0].t.join()")==="08:00,20:00"&&ev("S.meds[0].k")===10&&ev("S.meds[0].w")===undefined&&toastT().includes("kaydedildi"),ev("S.meds"));
-    ev("tab='bugun';render()");
+    ev("delete S.meds[0].ts;tab='bugun';render()"); // 08:00 geçtiyse bugünkü 08:00 dozu yarından başlar; test saatten bağımsız olsun
     const rows=()=>qa("#view .row").filter(r=>r.textContent.includes("Test İlaç"));
     ok("Bugün kartı iki dozu ve düğmelerini gösterir",rows().length===2&&qa('[data-md^="take:1:"]').length===2&&qa('[data-md^="skip:1:"]').length===2);
 
@@ -2465,6 +2465,41 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("2 porsiyon Koç besini = 600 kcal (100 g × 2 değil), gramlı 100 g = 200 kcal; toplam 800",ev("rd.items[0].g")===200&&$q("#rsum").textContent.includes("800 kcal"),$q("#rsum").textContent);
     $q("#rn").value="Karışık";$q("#rs").value="2";$q('[data-rp="save"]').click();
     ok("kayıtlı tarifte por korunur; eski tarif (por yok) değişmez; tarif porsiyonu 400 kcal",ev("S.recipes[0].items[0].por")===true&&ev("LogLib.cleanRecipes([{n:'a',items:[{n:'x',g:100,k:50}]}])[0].items[0].por")===undefined&&Math.round(ev("LogLib.recipeFood(S.recipes[0]).k*LogLib.recipeFood(S.recipes[0]).u[0][1]/100"))===400);
+    reset();
+  }
+  { // Dalga 12 (A): güvenlik freni tek kaynaktan, gerçek verilerle
+    const MED="[{id:1,n:'Vitamin D',t:['08:00'],on:true}]";
+    const prof=`S.entries=[];S.chat=[];S.meds=[];S.vitals=[];Object.assign(S.settings,{heightCm:175,age:35,goalKg:80,healthNote:'',riskClearedAt:'',kcal:0});for(let i=0;i<20;i++)add('kilo',90+i*0.1,'',keyOff(-i));`;
+    reset();ev(prof);
+    ok("temiz profil: KISIT yok, onay düğmesi yok, Trend'de hedef süresi var",!ev("CoachLib.contextText(cData())").includes("KISIT")&&!ev("gEnergy()").includes("riskok")&&ev("viewTrend()").includes("hafta.</p>"));
+    ev(`S.meds=${MED}`);
+    const ctx=()=>ev("CoachLib.contextText(cData())");
+    ok("notsuz 90 kg, ilaç kaydı: Koç KISIT satırı gerekçeyle",ctx().includes("KISIT: İlaç kaydın var"),ctx().split("\n").filter(l=>l.includes("KISIT")));
+    const tdee=ev("Math.round(cCalc().tdee/10)*10");
+    ok("ilaç kaydı: önerilen hedef bakım düzeyi, 'Hekimime danıştım' düğmesi",ev("cCalc().target")===tdee&&ev("gEnergy()").includes('data-act="riskok"'));
+    ev("tab='trend';render()");$q('[data-act="riskok"]').click();
+    ok("'Hekimime danıştım': bugün kaydedilir, düğme kalkar, kalori açığı önerilir, KISIT kalkar",ev("S.settings.riskClearedAt")===ev("dayKey()")&&!$q('[data-act="riskok"]')&&ev("cCalc().target")<tdee&&!ctx().includes("KISIT"));
+    ev("S.settings.riskClearedAt=keyOff(-30)");ok("onay 30 gün sonra düşer",ctx().includes("KISIT"));
+    ev("S.settings.riskClearedAt='';S.meds=[];S.vitals=[{id:1,k:'t',day:keyOff(-10),time:'08:00',sys:128,dia:82,ses:'sabah'}]");
+    ok("son 90 günde tansiyon ölçümü freni açar",ctx().includes("tansiyon ölçümün var"));
+    ev("S.vitals=[{id:1,k:'s',day:keyOff(-95),time:'08:00',g:110,ctx:'ac'}]");ok("95 gün önceki şeker ölçümü sayılmaz",!ctx().includes("KISIT"));
+    ev("S.vitals=[];S.settings.age=16;S.settings.riskClearedAt=dayKey();tab='trend';render()");
+    ok("sert engel (18 yaş altı): onay düğmesi yok, onay kaldırmaz, açıklama var",!$q('[data-act="riskok"]')&&$q("#view").textContent.includes("18 yaş altındasın")&&ctx().includes("KISIT: 18 yaş altındasın"));
+    ok("Trend: engelde hedefe kalan süre tahmini yok",!ev("viewTrend()").includes("hafta.</p>"));
+    ev("S.settings.age=35;S.settings.heightCm=0;S.settings.healthNote='hamileyim';S.entries=[]");
+    ok("boy ve tartı yokken de hamilelik KISIT satırı gider",ctx().includes("KISIT: Sağlık notunda hamilelik"));
+    ev("S.settings.healthNote='';S.chat=[{id:1,t:1,role:'user',text:'x',fl:'ed'}]");
+    ok("sohbet ed bayrağı KISIT ve menü engeli",ctx().includes("Yeme düzeniyle")&&!!ev("cMenuPlan().why"));
+    ok("cleanSettings riskClearedAt: geçerli gün korunur, bozuk ve eksik boş",ev("cleanSettings({riskClearedAt:'2026-09-01'}).riskClearedAt")==="2026-09-01"&&ev("cleanSettings({riskClearedAt:'dün'}).riskClearedAt")===""&&ev("cleanSettings({}).riskClearedAt")==="");
+    reset();
+  }
+  { // Dalga 12 (A): onboarding sert ve yumuşak işaret ayrı
+    ev("S=structuredClone(DEF);Object.assign(ob,obFresh());render()");
+    const q=s=>$q(s),val=(id,v)=>{q("#ob"+id).value=v},v=()=>q("#view").textContent;
+    val("cm","170");val("kg","80");val("age","30");q('[data-ob="dir:ver"]').click();val("goal","70");q("#obhd").checked=true;q('[data-ob="next"]').click();q('[data-ob="next"]').click();
+    ok("onboarding hamilelik/yeme bozukluğu işareti: sert, onay düğmesi yok",v().includes("açığı önermiyorum")&&!q('[data-act="riskok"]'));
+    q('[data-ob="next"]').click();
+    ok("yazılan not riskFlags'ta sert sayılır",ev("risk().hard.length")>0);
     reset();
   }
   console.log("son satıra ulaşıldı, "+total+" test");
