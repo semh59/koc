@@ -2520,6 +2520,11 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("onboarding hamilelik/yeme bozukluğu işareti: sert, onay düğmesi yok",v().includes("açığı önermiyorum")&&!q('[data-act="riskok"]'));
     q('[data-ob="next"]').click();
     ok("yazılan not riskFlags'ta sert sayılır",ev("risk().hard.length")>0);
+    ev("S=structuredClone(DEF);Object.assign(ob,obFresh());render()");
+    val("cm","170");val("kg","80");val("age","30");q('[data-ob="dir:ver"]').click();val("goal","70");q("#obhn").checked=true;q('[data-ob="next"]').click();q('[data-ob="next"]').click();
+    q('[data-act="riskok"]').click();
+    ok("onboarding yumuşak işaret: 'Hekimime danıştım' çalışır, kalori açığı önerilir",ev("S.settings.riskClearedAt")===ev("dayKey()")&&!v().includes("açığı önermiyorum")&&v().includes("Adım 3/3"));
+    q('[data-ob="next"]').click();
     reset();
   }
   { // Dalga 12 (B): protein ayarlı ağırlıkla, hekim yönlendirmesi ve dipnot her gösterimde
