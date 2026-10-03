@@ -124,7 +124,7 @@ h2{font-size:var(--fs-h2);margin:24px 4px 10px;font-weight:700;letter-spacing:-.
 .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin-top:6px}
 .stat .k{font-size:var(--fs-s);color:var(--mut)}
-.stat .v{font-size:22px;font-weight:700;letter-spacing:-.01em}
+.stat .v{font-size:22px;font-weight:700;letter-spacing:-.01em}.stat .v small{font-size:var(--fs-s);font-weight:600;color:var(--mut);letter-spacing:0}
 table{width:100%;border-collapse:collapse;font-size:14px}
 th{font-weight:600;color:var(--mut);text-align:right;padding:4px 4px 8px;font-size:13px}
 th:first-child,td:first-child{text-align:left}
@@ -134,7 +134,7 @@ td.today,th.today{font-weight:700}
 .bar>i{display:block;height:100%;background:var(--spor);border-radius:99px}
 
 /* Koç */
-#composer{position:fixed;left:0;right:0;bottom:calc(62px + env(safe-area-inset-bottom));z-index:6;background:var(--bg);padding:6px 12px 8px;max-width:520px;margin:0 auto}
+#composer{position:fixed;left:0;right:0;bottom:calc(68px + env(safe-area-inset-bottom));z-index:6;background:var(--bg);padding:6px 12px 8px;max-width:520px;margin:0 auto}
 #composer[hidden]{display:none}
 .chiprow{display:flex;gap:6px;margin-bottom:8px;overflow:hidden}.chiprow .chip{flex:1 1 auto;min-height:44px;padding:0 8px;font-size:13.5px;background:var(--card);box-shadow:var(--sh);border:1px solid var(--card-bd)}.chiprow .chip .i{color:var(--mut)}
 .cin{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);box-shadow:var(--sh);border-radius:26px;padding:0 4px 0 16px;min-height:52px}.cin:focus-within{border-color:var(--prim)}
@@ -170,7 +170,7 @@ body.koc #toast{bottom:calc(150px + env(safe-area-inset-bottom))}
 .gbar{display:grid;grid-template-columns:92px 1fr 28px;gap:10px;align-items:center;font-size:14px;margin:6px 0}
 .gbar .bar{margin:0}
 .livebar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 4px 10px}
-.livebar b{font-size:18px}.fin{width:auto;padding:11px 20px}
+.livebar>div{flex:1;min-width:0}.livebar b{font-size:var(--fs-h3)}.livebar .mut{font-size:var(--fs-s)}.btn.fin{width:auto;flex:none;padding:11px 22px}
 .fig{width:100%;height:auto;display:block}
 #guide{position:fixed;inset:0;z-index:15;max-width:520px;margin:0 auto;background:var(--card);display:flex;flex-direction:column;padding:calc(6px + env(safe-area-inset-top)) 16px calc(10px + env(safe-area-inset-bottom));overflow-y:auto}#guide[hidden]{display:none}body.gdon{overflow:hidden}
 .gdtop{display:flex;align-items:center;gap:8px;min-height:44px}.gdtop b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gdx{width:44px;height:44px;font-size:22px;color:var(--mut);flex:none}
@@ -207,7 +207,7 @@ body.koc #toast{bottom:calc(150px + env(safe-area-inset-bottom))}
 .mmr.l1,.mmleg .l1{fill:color-mix(in srgb,var(--spor) 22%,var(--card));background:color-mix(in srgb,var(--spor) 22%,var(--card))}.mmr.l2,.mmleg .l2{fill:color-mix(in srgb,var(--spor) 42%,var(--card));background:color-mix(in srgb,var(--spor) 42%,var(--card))}.mmr.l3,.mmleg .l3{fill:color-mix(in srgb,var(--spor) 66%,var(--card));background:color-mix(in srgb,var(--spor) 66%,var(--card))}.mmr.l4,.mmleg .l4{fill:color-mix(in srgb,var(--spor) 90%,var(--card));background:color-mix(in srgb,var(--spor) 90%,var(--card))}.mmr.l4{stroke-dasharray:3 1.5}.mmleg .l4{border-style:dashed}
 .mmt{font-size:7px;font-weight:700;fill:var(--ink);stroke:var(--card);stroke-width:2.2px;paint-order:stroke;text-anchor:middle;pointer-events:none}.mmf{font-size:8px;fill:var(--mut);text-anchor:middle}.mmi{margin:6px 0;min-height:22px;font-size:14px}.mmleg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--mut);margin:6px 0 10px}.mmleg i{display:inline-block;width:14px;height:14px;border-radius:4px;border:1px solid var(--mut);vertical-align:-2px;margin-right:4px}.mmleg .l0{background:var(--soft)}
 .tbd{font-size:10px;color:var(--spor);margin-top:1px}.card.ssg{border-left:4px solid var(--spor)}.sp{font-size:14px;color:var(--mut)}
-.sin{height:44px;width:100%;text-align:center;border:1px solid var(--fbd);border-radius:var(--r-xs);background:var(--field);font-weight:700;padding:0}
+.sin::placeholder{color:var(--mut);font-weight:500;opacity:.8}.sin{height:44px;width:100%;text-align:center;border:1px solid var(--fbd);border-radius:var(--r-xs);background:var(--field);font-weight:700;padding:0}
 .ok{width:44px;height:44px;border-radius:12px;border:2px solid var(--mut);color:var(--mut);display:flex;align-items:center;justify-content:center}
 .ok.on{background:var(--spor);border-color:var(--spor);color:var(--spor-ink)}
 .lnk{display:block;width:100%;min-height:44px;color:var(--prim);font-weight:600;font-size:var(--fs-2);border-radius:var(--r-s)}.lnk:active{background:var(--soft)}.lnk.dng{color:var(--warn);margin-top:6px}
@@ -246,11 +246,13 @@ body.koc #toast{bottom:calc(150px + env(safe-area-inset-bottom))}
 .btns{display:grid;gap:8px;margin-top:8px}
 body.ob nav{display:none}body.ob main{padding-bottom:24px}
 .status{font-size:14px;color:var(--mut);padding:2px 2px 8px}
+.obp{display:grid;gap:6px;flex:1;padding:4px 4px 0}.obbar{display:flex;gap:6px}.obbar i{flex:1;height:4px;border-radius:2px;background:var(--line);transition:background var(--dur)}.obbar i.on{background:var(--prim)}
 
 /* Alt gezinme */
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom));z-index:5}
 nav .in{max-width:520px;margin:0 auto;display:flex;gap:4px}
-nav button{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;min-height:52px;font-size:12px;font-weight:600;color:var(--mut)}
+/* Sabit yükseklik: Koç yazma alanı menünün hemen üstüne oturur, büyük yazı tipinde de çakışmaz. */
+nav button{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:56px;font-size:12px;font-weight:600;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
 nav button .ic{display:flex;justify-content:center;width:56px;padding:4px 0;border-radius:99px;transition:background var(--dur)}
 nav button .ic .i{width:24px;height:24px}
 nav button[aria-current="page"]{color:var(--prim)}nav button[aria-current="page"] .ic{background:var(--prim-soft)}
@@ -702,7 +704,7 @@ function viewBugun(){
 
 /* PDF raporlar tek yerde; paylaşım işleyicileri belgede dinlediği için ekrandan bağımsız çalışır. */
 function reportsCard(){
-  const st=S.settings,r=(a,ic,t,sub)=>`<button class="prow" ${a}><span><b>${t}</b><span class="mut sm">${sub}</span></span><span class="aic">${Icons.svg(ic)}</span></button>`;
+  const st=S.settings,r=(a,ic,t,sub)=>navRow(a,ic,t,sub);
   return `<h2>Raporlar</h2><div class="card">${r('data-wk="pdf"',"share","Haftalık rapor","Son 7 gün, PDF")}${st.bpOn?r('data-vt="pdfmenu:t"',"heart","Tansiyon doktor raporu","Dönem seç, PDF"):""}${st.bsOn?r('data-vt="pdfmenu:s"',"su","Şeker doktor raporu","Dönem seç, PDF"):""}${LabLib.series(S.labs).length?r('data-lab="pdf"',"file","Tahlil raporu","Tüm sonuçlar, PDF"):""}</div>`;
 }
 function viewTrend(){
@@ -716,7 +718,7 @@ function viewTrend(){
     const gi=goalInfo(cur,first);
     if(gi)cells.push(["Hedefe kalan",gi.done?"Ulaştın":`${fmt(gi.left)} kg`]);
     const eta=gi&&!gi.done&&!(gi.dir<0&&risk(cur).block)?ge.weeks:null;
-    stats=`<div class="stats">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1]}</div></div>`).join("")}</div>${eta?`<p class="hint" style="padding:8px 0 0">Son 3 haftanın eğimi sürerse ~${eta} hafta.</p>`:""}`;
+    stats=`<div class="stats">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1].replace(/ (kg\/hafta|kg)$/," <small>$1</small>")}</div></div>`).join("")}</div>${eta?`<p class="hint" style="padding:8px 0 0">Son 3 haftanın eğimi sürerse ~${eta} hafta.</p>`:""}`;
   }
   let rows="",hasWeek=false;
   for(let i=6;i>=0;i--){

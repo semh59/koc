@@ -139,7 +139,7 @@ function vSvg(series,band,from,to,W,H){
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Ölçüm grafiği" data-tip="${tip}">${bd}<rect x="8" y="8" width="${W-16}" height="${H-30}" fill="none" stroke="var(--line)"/>${body}${lab}<text x="8" y="${H-6}">${fd(from)}</text><text x="${W-8}" y="${H-6}" text-anchor="end">${fd(to)}</text><text x="12" y="20">${Math.round(hi)}</text><text x="12" y="${H-26}">${Math.round(lo)}</text></svg>`;
 }
 const vSeg=()=>`<div class="seg" role="group" aria-label="Aralık">${[7,14,30].map(n=>`<button data-vt="range:${n}" aria-pressed="${vRange===n}">${n} gün</button>`).join("")}</div>`;
-const vBtns=add=>`<div class="card"><div class="btns" style="display:grid;gap:8px"><button class="btn" data-vt="${add}">${Icons.svg("plus")} Ölçüm ekle</button></div></div>`;
+const vBtns=add=>`<button class="btn" data-vt="${add}" style="margin-bottom:12px">${Icons.svg("plus")} Ölçüm ekle</button>`;
 const vDel=ids=>`<button class="chip" data-vt="del:${ids.join(",")}" aria-label="Ölçümü sil">✕</button>`;
 
 function viewTansiyon(){

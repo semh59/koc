@@ -42,7 +42,7 @@ function obView(){
   const seg=(attr,opts,sel)=>`<div class="seg2" role="group">${opts.map(([v,l])=>`<button data-ob="${attr}:${v}" aria-pressed="${sel===v}">${l}</button>`).join("")}</div>`;
   const err=`<div class="ferr" id="oberr" role="alert">${esc(ob.err)}</div>`;
   let body,next="Devam";
-  if(st===0)body=`<h2>Seni tanıyalım</h2><div class="card">
+  if(st===0)body=`<h2>Seni tanıyalım</h2><p class="hint" style="margin:-6px 0 10px">Günlük kalori ve protein hedefini buna göre hesaplarız.</p><div class="card">
     ${fld("cm","Boy (cm)",ob.cm,"","numeric")}${fld("kg","Kilo (kg)",ob.kg,"","decimal")}${fld("age","Yaş",ob.age,"","numeric")}
     <div class="lbl" style="margin-top:10px">Cinsiyet (isteğe bağlı)</div>${seg("sex",[["m","Erkek"],["f","Kadın"],["","Belirtmem"]],ob.sex)}
     <div class="lbl" style="margin-top:10px">Hedefin</div>${seg("dir",OB_DIRS,ob.dir)}
@@ -54,13 +54,13 @@ function obView(){
     ${ob.mods.includes("steps")?`<p class="hint" style="padding:0">Adım sayar için telefon izni, Bugün ekranındaki "Adım sayarı aç" satırından istenir.</p>`:""}</div>`;
   else{
     const p=obParse(),pl=obPlan(p);next="Başla";
-    body=`<h2>Günlük hedefin</h2><div class="card"><div class="lbl">Kalori</div><div class="sumv num">${pl.kcal.toLocaleString("tr-TR")} <small>kcal</small></div>
+    body=`<h2>Günlük hedefin</h2><div class="card"><div class="lbl">Kalori</div><div class="sumv num" style="color:var(--prim)">${pl.kcal.toLocaleString("tr-TR")} <small>kcal</small></div>
     <div class="lbl">Protein</div><div class="num" style="font-size:22px;font-weight:700">${pl.protein?`${pl.protein[0]}–${pl.protein[1]} <small class="mut">g</small>`:"Hekiminle belirle"}</div><p class="hint" style="padding:0">${Algo.PROTEIN_NOTE}</p>
     <p class="hint">Verilerin yalnızca telefonunda durur. Koç'u açarsan, yalnızca onayınla, seçtiğin yapay zekâ sağlayıcısına (yurt dışı) gider. Koç olmadan da uygulama tam çalışır. ${MED_NOTE} <button class="lnk" style="display:inline-block;width:auto" data-pv="open">Gizlilik ve veri</button></p>
     ${pl.risk.block?riskBox(pl.risk,"Kalori açığı önermiyorum")+(p.goal>p.kg?"":`<p class="hint">Yukarıdaki değer kilonu koruma düzeyidir.</p>`):`<p class="hint">${pl.note==="Kilo verme"?"Yavaş ve güvenli kilo verme hızına göre":pl.note==="Kilo alma"?"Yavaş kilo alma hızına göre":"Kilonu koruma düzeyine göre"} hesaplandı. Kayıt girdikçe gerçek verine göre güncellenir. Tahmindir, tıbbi tavsiye değildir.</p>`}</div>`;
   }
-  const dots=`<div class="hint" role="status" style="padding:0 4px 4px">Adım ${st+1}/3</div>`;
-  return `<div class="row" style="display:flex;justify-content:space-between;align-items:center">${dots}<button class="lnk" style="width:auto;padding:0 8px" data-ob="skip">Şimdilik geç</button></div>${body}
+  const dots=`<div class="obp" role="status"><span class="mut sm">Adım ${st+1}/3</span><span class="obbar" aria-hidden="true">${[0,1,2].map(i=>`<i${i<=st?' class="on"':""}></i>`).join("")}</span></div>`;
+  return `<div class="row" style="display:flex;justify-content:space-between;align-items:center;gap:16px">${dots}<button class="lnk" style="width:auto;padding:0 8px" data-ob="skip">Şimdilik geç</button></div>${body}
   <div class="two" style="display:grid;grid-template-columns:${st?"1fr 2fr":"1fr"};gap:10px">${st?`<button class="btn ghost" data-ob="back">Geri</button>`:""}<button class="btn" data-ob="next">${next}</button></div>`;
 }
 function obDone(){Object.assign(ob,obFresh());S.settings.obDone=true;tab="bugun";logOff=0;save();render();window.scrollTo(0,0)}
