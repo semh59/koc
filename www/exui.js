@@ -152,7 +152,8 @@ function gTimDone(skip){
   render();
 }
 function exTick(){
-  const bar=$("#gtim");if(!bar)return;
+  // $ ana betikte tanımlanır; yavaş telefonda bu aralık ondan önce tetiklenebilir.
+  const bar=document.getElementById("gtim");if(!bar)return;
   const t=gTim;
   if(!t){bar.hidden=true;return}
   if(tab!=="salon"||!gActive()){return}
