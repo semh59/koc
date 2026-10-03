@@ -54,7 +54,7 @@ if(!sx.includes("windowSplashScreenBackground")){
 }
 console.log("Simgeler ve açılış ekranı yerleştirildi.");
 
-// API anahtarı kasası: Keystore eklentisini kopyala, MainActivity'ye kaydet. Keystore AES-GCM için API 23 gerekir.
+// API anahtarı kasası: Keystore eklentisini kopyala, MainActivity'ye kaydet.
 const jdir="android/app/src/main/java/com/neowell/app";
 for(const f of ["KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin","QuickMath","QuickLogPlugin","MotionMath","MotionStore","MotionGpsService","MotionReceiver","MotionPlugin","NeoWidget","WidgetPlugin","WaterReceiver","SpeechPlugin","BackupFolderPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
 fs.writeFileSync(`${jdir}/MainActivity.java`,`package com.neowell.app;
@@ -114,8 +114,6 @@ public class MainActivity extends BridgeActivity {
     }
 }
 `);
-const vg="android/variables.gradle";
-fs.writeFileSync(vg,fs.readFileSync(vg,"utf8").replace("minSdkVersion = 22","minSdkVersion = 23"));
 console.log("Anahtar kasası eklendi.");
 
 // Debug derleme yalnız CI smoke testi içindir (run-as debuggable ister); depodaki herkesçe bilinen anahtarla imzalanır.
