@@ -12,7 +12,7 @@ sleep 25
 adb logcat -d -b crash | grep -qE "Process: $P|>>> $P <<<" && { echo "RELEASE UYGULAMA ÇÖKTÜ"; adb logcat -d -b crash; exit 1; }
 [ -n "$(adb shell pidof $P)" ] || { echo "RELEASE UYGULAMA AÇILMADI"; exit 1; }
 diag=$(adb logcat -d | grep "NW-DIAG" | tail -1)
-echo "NW-DIAG: ${diag:-yok (release derlemede konsol logcat'e yazılmıyor olabilir)}"
+echo "NW-DIAG: ${diag:-yok (release derlemede konsol logcata yazılmıyor olabilir)}"
 if [ -n "$diag" ]; then
   for p in LocalNotifications KeyVault Widget BackupFolder; do echo "$diag" | grep -q "$p=object" || { echo "EKLENTİ YOK: $p"; exit 1; }; done
 fi
