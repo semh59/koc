@@ -41,6 +41,15 @@ Ayrıntı ve test adımları `yapilacaklar.md`'de. Telefonda denenen tek özelli
 | B10 | targetSdk 34 yükseltmesi | Play'in güncel hedef API şartı karşılanır (değer doğrulanacak). | L | android/variables.gradle | G12; Capacitor sürüm atlaması gerekebilir |
 | B11 (yapıldı) | Play izin uyumu | Arka plan konumu, `USE_EXACT_ALARM` ve konum servisi için beyan hazırlanır ya da gereksiz izin kaldırılır. `USE_EXACT_ALARM` ve `FLASHLIGHT` kaldırıldı; tam saat izni yoksa uyarı + yeniden kurulum; konum izninden önce açıklama ekranı; beyanlar `docs/play-izin-beyanlari.md`. Açık risk: otomatik başlayan konum servisi Play incelemesinde sorun çıkarabilir. | S | AndroidManifest.xml | – |
 
+### İnceleme düzeltmeleri (Dalga 11)
+Android yerel katman ve veri bütünlüğü incelemesi (3 Ekim 2026):
+- **A1 (ertelendi, kritik): bildirim düğmesi sahteciliği.** `MainActivity` exported; herhangi bir uygulama `am start … --es LocalNotificationUserAction su|med|medskip` ile sahte su/ilaç kaydı yazdırabilir. Tasarım: `nw_quick`'te rastgele token (SecureRandom, 128 bit), `QuickLog.getToken`; `scheduleReminders` (`index.html`) su ve ilaç (`medlib.js` extra) bildirimlerinin `extra.k`'sına koyar; `handle` token'ı yalnız MainActivity yolunda denetler (WaterReceiver widget yolu token'sız kalır, exported=false). Geçiş: açılışta `scheduleReminders` 9001-9003 dışındaki tüm bekleyenleri iptal edip yeniden kurduğu için bekleyenler ilk açılışta token alır; yalnız güncellemeden önce teslim edilmiş bildirimin düğmesi sessizce yoksayılır (dokunma uygulamayı açar), kabul edilebilir. smoke.sh token'ı `run-as … cat shared_prefs/nw_quick.xml` ile okuyup kullanmalı, token'sız/yanlış token'la `nw_quick.xml` değişmemeli. Ertelenme nedeni: JS tarafı `index.html` ve `medlib.js`'te, o dosyalar bu dalgada başka işte; yalnız Java denetimi tüm su/Aldım/Atla düğmelerini öldürürdü.
+- **A2 (kısmen): otomatik yedek.** Yapıldı: budama az önce yazılanı hariç tutar (saat geri alınınca yeni dosya silinmez), `wt` desteklemeyen sağlayıcıda sil-oluştur-`w`, klasör değişince/kapatınca yalnız eski klasörün izni bırakılır. Ertelendi: otomatik yedeğe ayrı önek (`neowell-oto-YYYY-MM-DD.json`) ve elle yedeğe hiç dokunmama; `app.test.js` (D-Veri2 bloğu) otomatik yedeğin `neowell-yedek-` adını sınıyor, değişiklik o testle birlikte yapılmalı.
+- **A3 (yapıldı): sesli komut kesilmesi.** Kısa komut (≤20 karakter) sıraya eklenir, uzun evre cümlesi eskisini keser; 10 sn'den kısa dinlenme ve hazırlıkta yalnız "Sıradaki: <ad>".
+- **A4 (yapıldı): smoke çökme denetimi.** crash tamponunda uygulamanın Java/yerel çökmesi her logcat temizliğinden önce ve sonda aranır. Emülatör API 33'te kaldı (API 34 riski yapılacaklar'da).
+- **A5 (yapıldı): gece yarısı adım yarışı.** Adım değeri, gün anahtarı ve zaman aynı sayaç örneğinden; geçiş olayı ile okuma gece yarısının iki yanındaysa zaman sayacın gününe çekilir.
+- **A6 (yapıldı): yanıltıcı güvenlik notu** (`patch-android.js`, `plan-6-ozellik.md` 10.1 tuzak 4).
+
 ## C) Arayüz ve tasarım
 | # | Ad | Değer | Emek | Kaynak | Bağımlılık / karar |
 |---|---|---|---|---|---|
