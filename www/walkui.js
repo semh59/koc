@@ -18,6 +18,7 @@ async function walkStart(){
 async function walkStop(){
   const w=S.walk;if(!w)return;
   if(!w.t1){w.t1=Date.now();save();walkGpsOff();await stepsSync();w.s1=stepToday==null?null:stepToday;save()}
+  await motionStatus(); // yürüyüşte GPS'in öğrendiği adım uzunluğu mesafeye girsin
   render();walkSheet();
 }
 /* Adım farkı yalnız aynı günün sensör sayacından; gece yarısını geçen ya da sayaç geriye giden yürüyüşte adım yok sayılır. */
@@ -27,7 +28,7 @@ function walkSteps(w){
 }
 function walkCalc(min){
   const w=S.walk;
-  return Algo.moveSummary({kind:wKind,min,steps:walkSteps(w),cm:S.settings.heightCm,kg:motionKg()});
+  return Algo.moveSummary({kind:wKind,min,steps:walkSteps(w),cm:S.settings.heightCm,kg:motionKg(),f:motionPerm&&motionPerm[wKind==="r"?"fr":"fw"]});
 }
 function walkPrev(){
   const min=num($("#wmin").value,true);
@@ -66,7 +67,7 @@ document.addEventListener("click",ev=>{
   const [a,p]=el.dataset.w.split(":");
   if(a==="start")walkStart();
   else if(a==="stop")walkStop();
-  else if(a==="sheet")walkSheet();
+  else if(a==="sheet")motionStatus().then(walkSheet);
   else if(a==="save")walkSave();
   else if(a==="close")closeSheet();
   else if(a==="drop"){if(confirm("Bu yürüyüş kaydedilmeden silinsin mi?")){S.walk=null;save();walkGpsOff();closeSheet();render()}}

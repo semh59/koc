@@ -49,6 +49,7 @@ Android yerel katman ve veri bütünlüğü incelemesi (3 Ekim 2026):
 - **A4 (yapıldı): smoke çökme denetimi.** crash tamponunda uygulamanın Java/yerel çökmesi her logcat temizliğinden önce ve sonda aranır. Emülatör API 33'te kaldı (API 34 riski yapılacaklar'da).
 - **A5 (yapıldı): gece yarısı adım yarışı.** Adım değeri, gün anahtarı ve zaman aynı sayaç örneğinden; geçiş olayı ile okuma gece yarısının iki yanındaysa zaman sayacın gününe çekilir.
 - **A6 (yapıldı): yanıltıcı güvenlik notu** (`patch-android.js`, `plan-6-ozellik.md` 10.1 tuzak 4).
+- **A7 (yapıldı): elle yürüyüş km'si öğrenilmiş adım uzunluğuyla.** `MotionPlugin.status` öğrenilmiş ölçeği (`fw`/`fr`) verir; `Algo.moveSummary` (tek hesap yeri) boy önseli × ölçek kullanır, ölçek yoksa ya da 0,7-1,3 dışındaysa boy önseli. Durum Bitir'de ve Kaydet sayfası açılırken tazelenir (o yürüyüşte öğrenilen ölçek de girer).
 
 Uygulama katmanı incelemesi (5 Opus incelemesi, 3 Ekim 2026). İşaret: [x] yapıldı, testli.
 - [x] **1 test güvenilirliği:** `app.test.js` tek sıralı zincir (yedek şifreleme bloğu await), ortak başlangıç ve `reset()`, `notifTest` await, son satır sayacı (en az 856 test) ve unhandledRejection çıkış 1; kasıtlı FAIL çıkış 1 verir. Diğer test dosyalarında eşzamanlı zincir yok.

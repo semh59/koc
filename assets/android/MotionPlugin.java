@@ -33,6 +33,9 @@ public class MotionPlugin extends Plugin {
         r.put("activity", has("activity"));
         r.put("fine", has("fine"));
         r.put("on", MotionStore.enabled(getContext()));
+        MotionMath.Model m = MotionStore.model(getContext());
+        r.put("fw", m.f[MotionMath.WALK]);
+        r.put("fr", m.f[MotionMath.RUN]);
         return r;
     }
 

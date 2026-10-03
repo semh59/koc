@@ -95,6 +95,7 @@ ok("ısınma setleri hesaba girmez (en son, önceki ve tek başına)",A.nextTarg
 { // D-Adım3
   const w=A.moveSummary({kind:"w",min:40,steps:4000,cm:170,kg:80});
   ok("moveSummary yürüyüş: adım uzunluğu 1,70×(0,30+0,001×100)=0,68 m, 2,72 km, ~4,08 km/s, MET 3,05",w.km===2.72&&near(w.kmh,4.08,0.01)&&near(w.met,3.05,0.01)&&w.kcal===Math.round(2.05*80*40/60),JSON.stringify(w));
+  ok("moveSummary: öğrenilmiş ölçek f adım uzunluğunu çarpar (1,1 → 2,99 km); 0,7-1,3 dışı, NaN ya da yoksa boy önseli",A.moveSummary({kind:"w",min:40,steps:4000,cm:170,kg:80,f:1.1}).km===2.99&&[1.31,0.69,NaN,null,undefined].every(f=>A.moveSummary({kind:"w",min:40,steps:4000,cm:170,kg:80,f}).km===2.72)&&A.moveSummary({kind:"b",min:60,steps:3000,cm:170,kg:80,f:1.2}).km===null);
   const r=A.moveSummary({kind:"r",min:30,steps:5100,cm:180,kg:70});
   ok("moveSummary koşu: koşu adımı yürüyüşten uzun, MET tablodan",r.km>A.moveSummary({kind:"w",min:30,steps:5100,cm:180,kg:70}).km&&r.met>=8.3);
   const b=A.moveSummary({kind:"b",min:60,steps:3000,cm:170,kg:80});

@@ -162,15 +162,16 @@ const Algo=(()=>{
     const eff=Math.min(min,sets*4),rate=sets/eff;
     return netKcal(rate<0.3?3.5:rate<0.4?5:6,kg,eff);
   }
-  /* Elle hareket (yürüyüş w / koşu r / bisiklet b): mesafe MotionMath'in adım uzunluğu önsel modelinden (kişiye özel öğrenilmiş ölçek JS'e açık değil),
+  /* Elle hareket (yürüyüş w / koşu r / bisiklet b): mesafe MotionMath'in adım uzunluğu modelinden: boy önseli × GPS ile öğrenilmiş kişisel ölçek f
+     (MotionPlugin.status fw/fr; 0,7-1,3 dışı ya da yoksa 1),
      MET Compendium tablosundan hızla; bisiklette adım anlamsız, mesafe yok. Ritim 40-220 adım/dk dışındaysa adım güvenilmez sayılır. */
   const interp=(x,y,v)=>{if(v<=x[0])return y[0];for(let i=1;i<x.length;i++)if(v<=x[i])return y[i-1]+(y[i]-y[i-1])*(v-x[i-1])/(x[i]-x[i-1]);return y[y.length-1]};
   const WK=[3.2,4,4.8,5.6,6.4,7.2],WM=[2.8,3,3.5,4.3,5,7],RK=[8,9.7,11.3,12.9,14.5,16.1],RM=[8.3,9.8,11,11.8,12.8,14.5];
-  function moveSummary({kind,min,steps,cm,kg}){
+  function moveSummary({kind,min,steps,cm,kg,f}){
     let km=null,kmh=null;
     if(kind!=="b"&&min>0&&steps>0&&cm>=120&&cm<=230){
       const cad=steps/min;
-      if(cad>=40&&cad<=220){km=steps*cm/100*(kind==="r"?0.40+0.0017*cad:0.30+0.0010*cad)/1000;kmh=km*60/min}
+      if(cad>=40&&cad<=220){km=steps*cm/100*(kind==="r"?0.40+0.0017*cad:0.30+0.0010*cad)*(f>=0.7&&f<=1.3?f:1)/1000;kmh=km*60/min}
     }
     const met=kind==="b"?6.8:kind==="r"?(kmh?interp(RK,RM,kmh):9.8):(kmh?interp(WK,WM,kmh):3.5);
     return {km:km==null?null:Math.round(km*100)/100,kmh,met,kcal:netKcal(met,kg,min)};
