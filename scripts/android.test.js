@@ -42,6 +42,9 @@ ok("ekran açık: keepAwake eklenti metodu, UI iş parçacığında bayrak ekler
 { // Arka planda otomatik GPS yok: alıcı konum servisine dokunmaz, karar mantığı silindi
   const mr=rd("assets/android/MotionReceiver.java"),mm=rd("assets/android/MotionMath.java"),gs=rd("assets/android/MotionGpsService.java");
   ok("hareket: etkinlik geçişi ve alarm GPS servisini başlatmaz ya da durdurmaz, arka plan konum izni okunmaz",!/MotionGpsService|LOCATION/.test(mr)&&/MotionStore\.addCp\(c, now, steps\);/.test(mr));
+  const mp=rd("assets/android/MotionPlugin.java"),wg=mp.slice(mp.indexOf("public void walkGps"),mp.indexOf("public void configure"));
+  ok("yürüyüş GPS: eklentide arka plan konum takma adı yok, walkGps yalnız konum izniyle açar, algılamayı kapatmak GPS'i kapatmaz",!/BACKGROUND|"bg"/.test(mp)&&/has\("fine"\)/.test(wg)&&/MotionGpsService\.start\(getContext\(\)\)/.test(wg)&&/MotionGpsService\.stop\(getContext\(\)\)/.test(wg)&&(mp.match(/MotionGpsService\./g)||[]).length===2);
+  ok("yürüyüş GPS: servis ön planda startService ile başlar ve hemen konum türünde startForeground çağırır",/c\.startService\(new Intent\(c, MotionGpsService\.class\)\)/.test(gs)&&!/c\.startForegroundService\(/.test(gs)&&/startForeground\(NOTIF_ID, n, ServiceInfo\.FOREGROUND_SERVICE_TYPE_LOCATION\)/.test(gs));
   ok("hareket: otomatik GPS karar mantığı (gpsWanted, ritim aralığı, sapma, pil) kalmadı",!/gpsWanted|bucket|cadenceShift|BatteryManager|isPowerSaveMode|gpsToday/.test(mm+gs+rd("assets/android/MotionStore.java")));
 }
 { // Dalga 11: smoke çökme denetimi

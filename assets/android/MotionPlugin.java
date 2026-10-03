@@ -14,13 +14,12 @@ import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
 import java.util.List;
 
-/** Otomatik yürüyüş/koşu algılama: izinler, açma/kapama, kullanıcı boyu-kilosu ve biten aralıkların alınması. */
+/** Otomatik yürüyüş/koşu algılama: izinler, açma/kapama, kullanıcı boyu-kilosu, biten aralıkların alınması ve elle yürüyüşte GPS penceresi. Arka plan konum izni yok. */
 @CapacitorPlugin(
     name = "Motion",
     permissions = {
         @Permission(strings = { Manifest.permission.ACTIVITY_RECOGNITION }, alias = "activity"),
-        @Permission(strings = { Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION }, alias = "fine"),
-        @Permission(strings = { Manifest.permission.ACCESS_BACKGROUND_LOCATION }, alias = "bg")
+        @Permission(strings = { Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION }, alias = "fine")
     }
 )
 public class MotionPlugin extends Plugin {
@@ -33,7 +32,6 @@ public class MotionPlugin extends Plugin {
         JSObject r = new JSObject();
         r.put("activity", has("activity"));
         r.put("fine", has("fine"));
-        r.put("bg", has("bg"));
         r.put("on", MotionStore.enabled(getContext()));
         return r;
     }
@@ -43,7 +41,7 @@ public class MotionPlugin extends Plugin {
         call.resolve(status());
     }
 
-    /** Sırayla: fiziksel aktivite, hassas konum, "her zaman" konum. Her biri ayrı sistem penceresidir. */
+    /** Otomatik algılama yalnız fiziksel aktivite izni ister; konum izni elle yürüyüş başlatılırken requestPermissions ile istenir. */
     @PluginMethod
     public void requestAccess(PluginCall call) {
         if (!has("activity")) requestPermissionForAlias("activity", call, "afterActivity");
@@ -52,20 +50,18 @@ public class MotionPlugin extends Plugin {
 
     @PermissionCallback
     private void afterActivity(PluginCall call) {
-        if (!has("activity")) call.resolve(status());
-        else if (!has("fine")) requestPermissionForAlias("fine", call, "afterFine");
-        else afterFine(call);
-    }
-
-    @PermissionCallback
-    private void afterFine(PluginCall call) {
-        if (!has("fine") || has("bg")) call.resolve(status());
-        else requestPermissionForAlias("bg", call, "afterBg");
-    }
-
-    @PermissionCallback
-    private void afterBg(PluginCall call) {
         call.resolve(status());
+    }
+
+    /** Elle yürüyüş başlarken (uygulama görünür) GPS penceresini açar, yürüyüş bitince kapatır. Konum izni yoksa açmaz. */
+    @PluginMethod
+    public void walkGps(PluginCall call) {
+        boolean on = Boolean.TRUE.equals(call.getBoolean("on", false)) && has("fine");
+        if (on) MotionGpsService.start(getContext());
+        else MotionGpsService.stop(getContext());
+        JSObject r = new JSObject();
+        r.put("gps", on);
+        call.resolve(r);
     }
 
     @PluginMethod
@@ -105,7 +101,6 @@ public class MotionPlugin extends Plugin {
         MotionStore.setEnabled(c, false);
         MotionStore.discard(c);
         MotionReceiver.cancelTick(c);
-        MotionGpsService.stop(c);
         try {
             MotionReceiver.unregister(c);
         } catch (Exception e) {

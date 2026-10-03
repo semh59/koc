@@ -12,11 +12,12 @@ async function walkStart(){
   if(S.walk)return;
   await stepsSync();
   S.walk={t0:Date.now(),s0:stepToday==null?null:stepToday,t1:null,s1:null};save();render();
+  walkGpsOn();
 }
 /* Durdur: bitiş zamanı ve sensör değeri hemen sabitlenir, kayıt sayfası kapansa da süre uzamaz. */
 async function walkStop(){
   const w=S.walk;if(!w)return;
-  if(!w.t1){w.t1=Date.now();save();await stepsSync();w.s1=stepToday==null?null:stepToday;save()}
+  if(!w.t1){w.t1=Date.now();save();walkGpsOff();await stepsSync();w.s1=stepToday==null?null:stepToday;save()}
   render();walkSheet();
 }
 /* Adım farkı yalnız aynı günün sensör sayacından; gece yarısını geçen ya da sayaç geriye giden yürüyüşte adım yok sayılır. */
@@ -68,6 +69,6 @@ document.addEventListener("click",ev=>{
   else if(a==="sheet")walkSheet();
   else if(a==="save")walkSave();
   else if(a==="close")closeSheet();
-  else if(a==="drop"){if(confirm("Bu yürüyüş kaydedilmeden silinsin mi?")){S.walk=null;save();closeSheet();render()}}
+  else if(a==="drop"){if(confirm("Bu yürüyüş kaydedilmeden silinsin mi?")){S.walk=null;save();walkGpsOff();closeSheet();render()}}
   else if(a==="k"){wKind=p;document.querySelectorAll("#wk .chip").forEach(c=>c.setAttribute("aria-pressed",c===el));document.querySelector("#sheet h3").textContent=`${WKIND[p][0]} kaydı`;walkPrev()}
 });

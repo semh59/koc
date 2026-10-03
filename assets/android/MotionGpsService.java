@@ -19,17 +19,15 @@ import android.os.SystemClock;
 import java.util.Map;
 
 /**
- * Kısa GPS penceresi: yürüyüş/koşu sırasında Doppler hızını ve adım ritmini birlikte ölçüp adım uzunluğu modelini günceller.
- * Konum noktası saklanmaz. Pencere ≈ 45 sn, en çok 150 sn.
+ * Kısa GPS penceresi: kullanıcının elle başlattığı yürüyüşte Doppler hızını ve adım ritmini birlikte ölçüp adım uzunluğu modelini günceller.
+ * Konum noktası saklanmaz. İyi sinyalde ≈ 45 sn; ilk iyi nokta için (evden çıkış) en çok 10 dk beklenir.
  */
 public class MotionGpsService extends Service implements LocationListener {
-    static final String EXTRA_MODE = "mode";
     private static final int NOTIF_ID = 7101;
-    private static final long WINDOW_MS = 45000, HARD_MS = 150000;
+    private static final long WINDOW_MS = 45000, HARD_MS = 600000;
 
     private final Handler h = new Handler(Looper.getMainLooper());
     private LocationManager lm;
-    private int mode;
     private boolean finished, started;
     private final double[] speeds = new double[400];
     private int n;
@@ -41,13 +39,15 @@ public class MotionGpsService extends Service implements LocationListener {
         }
     };
 
-    static void start(Context c, int mode) {
+    /**
+     * Yalnız uygulama görünürken (kullanıcı dokunuşuyla) çağrılır: ön planda başlatılan konum servisi "kullanırken" izniyle çalışır,
+     * ekran kapansa da sürer. startForegroundService değil: konum kapalı ya da izin yoksa servis 5 sn kuralına takılmadan kapanır.
+     */
+    static void start(Context c) {
         try {
-            Intent i = new Intent(c, MotionGpsService.class).putExtra(EXTRA_MODE, mode);
-            if (Build.VERSION.SDK_INT >= 26) c.startForegroundService(i);
-            else c.startService(i);
+            c.startService(new Intent(c, MotionGpsService.class));
         } catch (Exception e) {
-            // arka planda konum izni yok: GPS'siz devam edilir
+            // başlatılamadı: yürüyüş boy önseliyle sürer
         }
     }
 
@@ -66,7 +66,6 @@ public class MotionGpsService extends Service implements LocationListener {
             return START_NOT_STICKY;
         }
         started = true;
-        mode = in == null ? 0 : in.getIntExtra(EXTRA_MODE, 0);
         try {
             foreground();
             lm = (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -84,7 +83,7 @@ public class MotionGpsService extends Service implements LocationListener {
         if (Build.VERSION.SDK_INT >= 26 && nm != null && nm.getNotificationChannel("nw_motion") == null)
             nm.createNotificationChannel(new NotificationChannel("nw_motion", "Hareket ölçümü", NotificationManager.IMPORTANCE_LOW));
         Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(this, "nw_motion") : new Notification.Builder(this);
-        Notification n = b.setSmallIcon(android.R.drawable.ic_menu_mylocation).setContentTitle("NeoWell").setContentText("Yürüyüş hızı ölçülüyor (kısa süreli)").setOngoing(true).build();
+        Notification n = b.setSmallIcon(android.R.drawable.ic_menu_mylocation).setContentTitle("NeoWell").setContentText("Yürüyüşte adım uzunluğu ölçülüyor (kısa süreli)").setOngoing(true).build();
         if (Build.VERSION.SDK_INT >= 29) startForeground(NOTIF_ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION);
         else startForeground(NOTIF_ID, n);
     }
@@ -144,7 +143,7 @@ public class MotionGpsService extends Service implements LocationListener {
         if (cad < 50 || cad > 220 || speed < 0.4 || MotionMath.stdev(speeds, cnt) > 0.6) return;
         MotionStore.hint(this, speed);
         MotionMath.Model m = MotionStore.model(this);
-        int md = MotionMath.classify(mode, cad, speed);
+        int md = MotionMath.classify(MotionMath.WALK, cad, speed);
         if (MotionMath.addSample(m, md, MotionStore.cm(this), cad, speed * 60.0 / cad)) MotionStore.saveModel(this, m);
     }
 
