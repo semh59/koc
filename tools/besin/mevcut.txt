@@ -46,7 +46,7 @@
     ["Izgara tavuk göğsü",160,31,0,3.6,[["1 porsiyon (150 g)",150]],1],
     ["Fırın tavuk but",205,26,0,11,[["1 adet (150 g)",150]]],
     ["Tavuk döner",190,24,1,10,[["1 porsiyon (150 g)",150]]],
-    ["Et döner",218,22,1,14,[["1 porsiyon (150 g)",150]]],
+    ["Et döner",284,24,2,20,[["1 porsiyon (150 g)",150]]],
     ["Adana kebap",247,17,2,19,[["1 porsiyon (150 g)",150]]],
     ["Izgara köfte",236,18,5,16,[["4 adet (120 g)",120]]],
     ["İçli köfte",240,8,25,12,[["1 adet (80 g)",80]]],
