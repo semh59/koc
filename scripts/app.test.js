@@ -2502,6 +2502,17 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("yazılan not riskFlags'ta sert sayılır",ev("risk().hard.length")>0);
     reset();
   }
+  { // Dalga 12 (B): protein ayarlı ağırlıkla, hekim yönlendirmesi ve dipnot her gösterimde
+    reset();ev("S.entries=[];Object.assign(S.settings,{heightCm:180,age:35,goalKg:0,healthNote:''});for(let i=0;i<20;i++)add('kilo',140,'',keyOff(-i));add('yemek',500,'Tavuk').p=40;tab='bugun';render()");
+    const FOOT="Böbrek ya da karaciğer sorunun varsa hekimine danış";
+    ok("Bugün: 140 kg/180 cm protein 153–200 g ve dipnot",ev("viewBugun()").includes("/ 153–200 g")&&ev("viewBugun()").includes(FOOT),ev("viewBugun()").match(/Protein.{0,80}/));
+    ok("Enerji kartı ve Koç bağlamı aynı aralık, dipnot",ev("gEnergy()").includes("153–200 g")&&ev("gEnergy()").includes(FOOT)&&ev("CoachLib.contextText(cData())").includes("protein aralığı 153-200 g"));
+    ev("S.settings.healthNote='diyalize giriyorum'");
+    ok("böbrek notu: Bugün, Enerji, Koç ve menüde aralık yok, 'hekiminle belirle'",ev("viewBugun()").includes("hekiminle belirle")&&!ev("viewBugun()").includes("153–200")&&ev("gEnergy()").includes("Hekiminle belirle")&&ev("CoachLib.contextText(cData())").includes("protein aralığı hekimle belirlenmeli")&&ev("cMenuPlan().protein")===null);
+    ev("S.settings.healthNote='';S.settings.age=70;S.meds=[{id:1,n:'X',t:['08:00'],on:true}]");
+    ok("yaş 70 + ilaç: aralık yok",ev("viewBugun()").includes("hekiminle belirle"));
+    ev("S.meds=[]");reset();
+  }
   console.log("son satıra ulaşıldı, "+total+" test");
   process.exit(bad||total<MIN_TESTS?1:0);
 },100);

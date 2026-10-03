@@ -34,7 +34,7 @@ const obNote=()=>[S.settings.healthNote,ob.hd&&OB_HD,ob.hn&&OB_HN].filter(Boolea
 function obPlan(p){
   const q={kg:p.kg,cm:p.cm,age:p.age,sex:ob.sex},inp={...riskInput(p.kg),age:p.age,cm:p.cm,goalKg:p.goal,healthNote:obNote()};
   const t=Algo.suggestTarget({...inp,tdee:Algo.formulaTdee({...q,act:S.settings.act}),bmr:Algo.bmrMifflin(q)});
-  return {kcal:t.kcal,note:t.note,protein:Algo.proteinRange(p.kg),risk:Algo.riskFlags(inp)};
+  return {kcal:t.kcal,note:t.note,protein:Algo.protein(inp).range,risk:Algo.riskFlags(inp)};
 }
 function obView(){
   const st=ob.step,bad=k=>ob.bad===k?` aria-invalid="true" aria-describedby="oberr"`:"";
@@ -55,7 +55,7 @@ function obView(){
   else{
     const p=obParse(),pl=obPlan(p);next="Başla";
     body=`<h2>Günlük hedefin</h2><div class="card"><div class="lbl">Kalori</div><div class="sumv num">${pl.kcal.toLocaleString("tr-TR")} <small>kcal</small></div>
-    <div class="lbl">Protein</div><div class="num" style="font-size:22px;font-weight:700">${pl.protein[0]}–${pl.protein[1]} <small class="mut">g</small></div>
+    <div class="lbl">Protein</div><div class="num" style="font-size:22px;font-weight:700">${pl.protein?`${pl.protein[0]}–${pl.protein[1]} <small class="mut">g</small>`:"Hekiminle belirle"}</div><p class="hint" style="padding:0">${Algo.PROTEIN_NOTE}</p>
     <p class="hint">Verilerin yalnızca telefonunda durur. Koç'u açarsan, yalnızca onayınla, seçtiğin yapay zekâ sağlayıcısına (yurt dışı) gider. Koç olmadan da uygulama tam çalışır. ${MED_NOTE} <button class="lnk" style="display:inline-block;width:auto" data-pv="open">Gizlilik ve veri</button></p>
     ${pl.risk.block?riskBox(pl.risk,"Kalori açığı önermiyorum")+(p.goal>p.kg?"":`<p class="hint">Yukarıdaki değer kilonu koruma düzeyidir.</p>`):`<p class="hint">${pl.note==="Kilo verme"?"Yavaş ve güvenli kilo verme hızına göre":pl.note==="Kilo alma"?"Yavaş kilo alma hızına göre":"Kilonu koruma düzeyine göre"} hesaplandı. Kayıt girdikçe gerçek verine göre güncellenir. Tahmindir, tıbbi tavsiye değildir.</p>`}</div>`;
   }
