@@ -64,14 +64,14 @@ function abHtml(){
   if(!BF())return "";
   const st=S.settings;
   return `<div class="card"><label style="min-height:44px;display:flex;gap:8px;align-items:center"><input type="checkbox" data-ab="toggle" ${st.autoBk?"checked":""} style="width:22px;height:22px"><b>Otomatik yedek</b></label>
-  <p class="hint">${st.autoBk?`Klasör: ${esc(abName||"seçili")}. ${st.lastAutoBk?`Son otomatik yedek: ${fd(st.lastAutoBk)}.`:"İlk yedek birazdan yazılır."} `:"Seçtiğin klasöre haftada bir şifreli yedek yazar, en son 4 dosyayı tutar. "}Arka planda çalışmaz: uygulamayı en az haftada bir açtığında yedek alınır.</p>
+  <p class="hint">${st.autoBk?`Klasör: ${esc(abName||"seçili")}. ${st.lastAutoBk?`Son otomatik yedek: ${fd(st.lastAutoBk)}.`:"İlk yedek birazdan yazılır."} `:"Seçtiğin klasöre haftada bir şifreli yedek yazar, en son 4 otomatik yedeği tutar. "}Arka planda çalışmaz: uygulamayı en az haftada bir açtığında yedek alınır.</p>
   ${abErr?`<p class="status" role="alert"><b>Otomatik yedek alınamadı.</b> ${esc(abErr)}</p><div class="btns"><button class="btn ghost" data-ab="setup">Klasörü yeniden seç</button><button class="btn ghost" data-ab="off">Otomatik yedeği kapat</button></div>`:""}</div>`;
 }
 async function abSetup(){
   if(!KV()||!vaultOn)return toast("Bu telefonda parola güvenle saklanamıyor, otomatik yedek kullanılamaz");
   const rem=await bkRemembered();
   openSheet(`<h3>Otomatik yedek</h3>
-  <p class="mut sm" style="margin:0 0 10px">Uygulamayı açtığında son yedek 7 günden eskiyse seçeceğin klasöre şifreli yedek yazılır, en son 4 dosya kalır. Uygulamayı en az haftada bir aç.</p>
+  <p class="mut sm" style="margin:0 0 10px">Uygulamayı açtığında son yedek 7 günden eskiyse seçeceğin klasöre şifreli yedek (neowell-oto-…) yazılır, en son 4 otomatik yedek kalır; elle aldığın yedeklere dokunulmaz. Uygulamayı en az haftada bir aç.</p>
   ${rem?`<p>Yedek parolası bu telefonda saklı, o kullanılır.</p>`:`<input class="in" id="abp1" type="password" placeholder="Yedek parolası (en az 6 karakter)" autocomplete="new-password"><input class="in" id="abp2" type="password" placeholder="Parolayı tekrar yaz" autocomplete="new-password">`}
   <p class="hint">Telefon değişirse dosyaları yeni telefona taşı ve Yedekle veya geri yükle > Dosyadan oku ile bu parolayla aç. Parolayı unutursan yedek açılmaz.</p>
   <div class="hint" id="abw" role="alert"></div><button class="btn" data-ab="pick">Klasör seç ve aç</button><button class="btn ghost" data-bk="close" style="margin-top:8px">Vazgeç</button>`);
