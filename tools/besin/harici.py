@@ -6,7 +6,7 @@ import glob,json,os,re,sys
 import openpyxl
 H=os.path.dirname(os.path.abspath(__file__))+'/'
 anah=[l.split('\t')[0].strip() for l in open(H+'harici.tsv',encoding='utf-8') if l.strip() and not l.startswith('#')]
-num=lambda s:0.0 if s.strip().startswith(('traces','Tr')) else float(s.strip().lstrip('<').replace(',','.') or 'nan')
+num=lambda s:0.0 if s.strip().startswith(('traces','Tr','-')) else float(s.strip().replace('&lt;','').lstrip('<').strip().replace(',','.') or 'nan')
 out={}
 cq=[k[4:] for k in anah if k.startswith('ciq:')]
 if cq:
@@ -25,6 +25,8 @@ if cf:
         if r[0] in cf:
             n=lambda j:0.0 if r[j] in('Tr',None) else float(r[j])
             out['cof:'+r[0]]=dict(d=r[1],k=n(12),p=n(9),c=round(n(11)+n(25),2),f=n(10))
+bozuk=[k for k,x in out.items() if abs(x['k']-4*x['p']-4*x['c']-9*x['f'])>0.15*x['k']+5]
+if bozuk:sys.exit('KCAL/MAKRO TUTMUYOR (eksik bileşen?): '+' | '.join(bozuk))
 miss=[k for k in anah if k not in out]
 if miss:sys.exit('ÇÖZÜLEMEYEN: '+' | '.join(miss))
 json.dump(out,open(H+'harici.json','w',encoding='utf-8'),ensure_ascii=False,indent=0,separators=(',',':'))
