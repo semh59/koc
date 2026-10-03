@@ -1,0 +1,46 @@
+# Hazır ürün ve restoran kayıtları, USDA SR Legacy'den birebir (marka adlı kayıt alınmaz): ad<TAB>USDA anahtarı (#id)<TAB>porsiyonlar<TAB>eş adlar<TAB>öğün (1 = Öğün etiketi)
+Hamburger, tek köfteli, soslu (restoran)	#170694	1 adet (97 g)=97	hamburger	1
+Cheeseburger, tek köfteli (restoran)	#170691	1 adet (127 g)=127	cheeseburger	1
+Cheeseburger, çift köfteli (restoran)	#173319	1 adet (155 g)=155	cheeseburger	1
+Büyük hamburger, tek köfteli (restoran)	#170710	1 adet (171 g)=171	hamburger	1
+Tavuk burger, fileto (restoran)	#170295	1 adet (187 g)=187	chicken burger	1
+Balık burger, tartar soslu (restoran)	#170296	1 adet (220 g)=220	fish burger	1
+Patates kızartması, orta boy (restoran)	#170698	1 orta boy (117 g)=117;1 küçük boy (71 g)=71;1 büyük boy (154 g)=154	french fries	1
+Soğan halkası (restoran)	#170697	1 porsiyon (117 g)=117	onion rings	1
+Çıtır tavuk şerit (restoran)	#173321	3 şerit (90 g)=90;1 porsiyon (184 g)=184	chicken tenders nugget	1
+Peynirli pizza dilimi (restoran)	#173292	1 dilim (107 g)=107	pizza	1
+Pepperoni pizza dilimi (restoran)	#173295	1 dilim (111 g)=111	pizza	1
+Karışık pizza dilimi, etli ve sebzeli (restoran)	#172055	1 dilim (136 g)=136	pizza	1
+Tavuklu soft taco (restoran)	#170764	1 adet (98 g)=98	taco	1
+Etli soft taco (restoran)	#170763	1 adet (102 g)=102	taco	1
+Fasulyeli peynirli burrito (restoran)	#172039	1 adet (185 g)=185	burrito	1
+Tavuklu quesadilla (restoran)	#170765	1 adet (180 g)=180	quesadilla	1
+Rosto biftekli sandviç (restoran)	#170695	1 adet (149 g)=149	roast beef sandwich	1
+Hash brown patates (restoran)	#173273	1 adet (53 g)=53;1 porsiyon (77 g)=77	hashbrown	1
+Lahana salatası, coleslaw (restoran)	#170300	1 küçük kase (116 g)=116	coleslaw	1
+Kızarmış mozzarella çubukları (restoran)	#169015	1 porsiyon (245 g)=245;1 adet (31 g)=31	mozzarella sticks	1
+Pretzel (tuzlu, sert)	#167555	1 avuç (28 g)=28;10 adet (60 g)=60	pretzel	
+Pirinç krakeri (sade)	#167966	2 adet (18 g)=18	pirinç patlağı rice cracker	
+Mısır cipsi (tortilla, tuzlu)	#167558	1 avuç (28 g)=28	tortilla chips nachos	
+Peynir aromalı mısır çerezi	#167949	1 avuç (28 g)=28	cheese puffs	
+Marie bisküvi	#171867	5 adet (28 g)=28	petibör	
+Vanilyalı bisküvi	#174974	8 adet (30 g)=30		
+Kremalı çikolatalı sandviç bisküvi	#172718	3 adet (36 g)=36		
+Çikolata kaplı gofret	#174088	3 adet (29 g)=29	gofret	
+Kremalı gofret	#172736	3 adet (36 g)=36		
+İncir dolgulu bisküvi	#172721	2 adet (32 g)=32	fig bar	
+Yulaflı üzümlü kurabiye	#174963	1 adet (24 g)=24		
+Bademli sütlü çikolata	#168754	1 bar (41 g)=41		
+Çikolata kaplı yer fıstığı	#168001	10 adet (40 g)=40		
+Çikolata kaplı kuru üzüm	#169576	1 avuç (30 g)=30		
+Meyve rulosu (pestil benzeri)	#167541	1 adet (21 g)=21	fruit leather	
+Karışık kuruyemiş (kavrulmuş, tuzsuz)	#170585	1 avuç (28 g)=28	mixed nuts	
+Kuruyemiş ve kuru meyve karışımı (trail mix)	#167561	1 avuç (42 g)=42	trail mix	
+Meyve dolgulu granola bar (yağsız)	#168861	1 bar (35 g)=35		
+Fıstık ezmeli granola bar	#169681	1 bar (24 g)=24		
+Çikolata parçacıklı granola bar	#167952	1 bar (24 g)=24		
+Çikolata parçacıklı pirinç patlaklı bar	#167951	1 bar (28 g)=28	cereal bar	
+Peynir aromalı patlamış mısır	#167960	1 kase (22 g)=22		
+Peynirli kraker	#174975	1 paket (28 g)=28		
+Tam buğday kraker	#172749	6 adet (28 g)=28		
+Pita cips (tuzlu)	#173147	1 avuç (28 g)=28		

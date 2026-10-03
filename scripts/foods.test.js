@@ -11,6 +11,15 @@ ok("ton balığı protein değeri gerçekçi",FOODS.find(f=>f.n.startsWith("Ton"
 ok("en az 500 besin",FOODS.length>=500,FOODS.length);
 ok("ilk 106 kayıt adı ve sırası değişmedi (kullanıcı kayıtları ada bağlı)",require("crypto").createHash("sha1").update(FOODS.slice(0,106).map(f=>f.n).join("|")).digest("hex")==="9bef746b28129de499d279621f64728db5d6a117");
 ok("www/foods.js tools/besin/uret.js çıktısıyla aynı",(()=>{try{require("child_process").execFileSync("node",["tools/besin/uret.js","--kontrol"],{stdio:"pipe"});return true}catch(e){return String(e.stderr)}})());
+ok("ilk 513 kayıt adı ve sırası değişmedi (yedekler ve kullanıcı kayıtları ada bağlı)",require("crypto").createHash("sha1").update(FOODS.slice(0,513).map(f=>f.n).join("|")).digest("hex")==="326eb38e7b4b91bdb11135b61d7b3ff3813e4b0c");
+const og=FOODS.filter(f=>f.o);
+ok("en az 150 öğün kaydı, hepsi 513. kayıttan sonra",og.length>=150&&FOODS.slice(0,513).every(f=>!f.o),og.length);
+ok("öğün porsiyonu gerçekçi: 40-800 g, 40-1200 kcal",og.every(f=>{const g=f.u[0][1],k=f.k*g/100;return g>=40&&g<=800&&k>=40&&k<=1200}),og.filter(f=>{const g=f.u[0][1],k=f.k*g/100;return !(g>=40&&g<=800&&k>=40&&k<=1200)}).map(f=>[f.n,f.u[0][1],Math.round(f.k*f.u[0][1]/100)]));
+ok("öğün kayıtlarında marka adı yok",!og.concat(FOODS.slice(513)).some(f=>/mcdonald|burger king|kfc|domino|pizza hut|papa john|starbucks|big mac|clif|snickers|nutella/i.test(f.n)));
+ok("her öğün kategorisi var: kahvaltı, çorba, ızgara, atıştırma, döner, lahmacun, hamburger, pizza",["kahvaltı","çorba","Izgara","Karışık kuruyemiş","Döner","Lahmacun","Hamburger","Pizza"].every(a=>og.some(f=>f.n.includes(a))));
+ok("restoran öğünü aralıklı (±%30), ev yemeği bileşeni aralığını taşır",["Döner dürüm (dana)","Hamburger menü (tek köfte, orta patates, kola)"].every(n=>{const f=og.find(x=>x.n===n);return f&&f.lo<f.k&&f.k<f.hi})&&og.find(f=>f.n==="Kuru fasulye, pilav ve turşu").lo!=null);
+ok("aramada öğün, aynı eşleşmedeki ham besinden sonra gelir",!FOODS[foodSearch("muz")[0]].o&&!FOODS[foodSearch("tavuk")[0]].o&&FOODS[foodSearch("kahvalti",3)[0]].o);
+ok("hazır ürün kategorileri (USDA, öğün değil): pretzel, granola bar, bisküvi, gofret, mısır cipsi",["Pretzel","Çikolata parçacıklı granola bar","Marie bisküvi","Çikolata kaplı gofret","Mısır cipsi"].every(n=>FOODS.some(f=>f.n.startsWith(n)&&f.s&&!f.o)));
 ok("hesaplı tarif sayısı",FOODS.filter(f=>!f.s).length>=150,FOODS.filter(f=>!f.s).length);
 ok("aramada büyük İ/I",FOODS[foodSearch("IZGARA")[0]].n.startsWith("Izgara")&&foodSearch("İncir").length>0);
 ok("kelime başı önce gelir",FOODS[foodSearch("pilav")[0]].n==="Pirinç pilavı"||FOODS[foodSearch("pilav")[0]].n.toLowerCase().includes("pilav"));

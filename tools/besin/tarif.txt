@@ -182,3 +182,6 @@ Elmalı yoğurt | cig | 1 kase (250 g)=250 | Yoğurt 150;Elma 100;Bal 15
 Sütlü yulaf lapası | cig | 1 kase (315 g)=315 | Yulaf (çiğ) 50;Süt 250;Bal 15
 Sıcak çikolata | cig | 1 bardak (225 g)=225 | Süt 200;Kakao (toz) 10;Şeker 15
 Ev yapımı limonata | cig | 1 bardak (200 ml)=200 | Limon suyu 60;Şeker 50;Su 600
+Menemen (2 yumurtalı) | yemek | 1 porsiyon (240 g)=240 | Yumurta (çiğ) 100;Domates 120;Yeşil biber (çiğ) 50;Zeytinyağı 10
+Kırmızı mercimek çorbası | corba | 1 kase (250 g)=250 | Kırmızı mercimek (çiğ) 125;Soğan 60;Havuç 50;Tereyağı 25;Su 1100
+Lahmacun (tarif hesaplı) | firin | 1 adet (108 g)=108 | Buğday unu 42;Su 22;Dana kıyma (çiğ, %20 yağlı) 25;Soğan 13;Domates 17;Yeşil biber (çiğ) 7;Domates salçası 3;Maydanoz 3;Zeytinyağı 2
