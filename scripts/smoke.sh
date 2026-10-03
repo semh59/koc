@@ -1,8 +1,11 @@
 #!/bin/bash
 # Emülatörde APK'yı kurar, açar ve logcat'ten eklentilerin yüklendiğini ve hata olmadığını doğrular.
 adb install -r neowell.apk || exit 1
+# Çökme kaydı (Java FATAL EXCEPTION ve yerel tombstone) crash tamponuna düşer; logcat -c onu da sildiği için her temizlikten önce ve sonda bakılır.
+crashcheck() { adb logcat -d -b crash > crash.log; if grep -qE "Process: com\.neowell\.app|>>> com\.neowell\.app <<<" crash.log; then echo "UYGULAMA ÇÖKTÜ"; cat crash.log; exit 1; fi; }
+clr() { crashcheck; adb logcat -c; }
 adb shell pm grant com.neowell.app android.permission.POST_NOTIFICATIONS
-adb logcat -c
+clr
 adb shell monkey -p com.neowell.app -c android.intent.category.LAUNCHER 1
 sleep 25
 adb logcat -d > full.log
@@ -33,7 +36,7 @@ grep -q "250," quick.xml || { echo "HIZLI SU KAYDI YAZILMADI"; exit 1; }
 w1=$(wv)
 echo "Widget su: $w0 -> $w1"
 [ "$w1" = "$((w0 + 250))" ] || { echo "WIDGET SUYU ARTMADI"; cat widget.xml; exit 1; }
-adb logcat -c
+clr
 adb shell monkey -p com.neowell.app -c android.intent.category.LAUNCHER 1
 sleep 10
 adb logcat -d | grep -E "Capacitor/Console" > quick.log
@@ -77,14 +80,14 @@ if grep -q "k1_2000," quick5.xml; then echo "ATLA KAYDI TÜKETİLMEDİ"; cat qui
 # sistem ilk intent'i yeniden verir; aynı su ikinci kez yazılmamalı (iki aşamada toplam 1 kayıt).
 adb shell am force-stop com.neowell.app
 sleep 2
-adb logcat -c
+clr
 adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction su --ei LocalNotificationId 200 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250}}'"
 sleep 15
 adb logcat -d | grep -E "Capacitor/Console" > replay1.log
 p1=$(adb shell pidof com.neowell.app)
 adb shell am kill com.neowell.app
 sleep 3
-adb logcat -c
+clr
 adb shell monkey -p com.neowell.app -c android.intent.category.LAUNCHER 1
 sleep 12
 adb logcat -d | grep -E "Capacitor/Console" > replay2.log
@@ -109,7 +112,7 @@ sleep 4
 # Widget "+su": exported=false yayın alıcısı, ekran açılmaz. Kabuk (uid 2000) ulaşamamalı; widget'ın PendingIntent'i root ile benzetilir.
 wsu() { adb shell "am broadcast -n com.neowell.app/.WaterReceiver --es LocalNotificationUserAction su --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250}}'"; sleep 3; }
 ingested() { adb logcat -d | grep -E "Capacitor/Console" | grep -oE "NW-QUICK ingested [0-9]+" | grep -oE "[0-9]+$" | awk '{s+=$1} END{print s+0}'; }
-reopen() { adb logcat -c; adb shell monkey -p com.neowell.app -c android.intent.category.LAUNCHER 1; sleep 12; }
+reopen() { clr; adb shell monkey -p com.neowell.app -c android.intent.category.LAUNCHER 1; sleep 12; }
 adb shell input keyevent KEYCODE_HOME
 sleep 2
 if [ "$(adb shell id -u | tr -d '\r')" != "0" ]; then
@@ -146,4 +149,5 @@ adb shell am kill com.neowell.app
 sleep 2
 reopen
 [ "$(ingested)" = "0" ] && [ "$(qn)" = "0" ] || { echo "WIDGET SUYU YENİDEN AÇILIŞTA TEKRARLANDI"; exit 1; }
+crashcheck
 echo "Smoke testi geçti"
