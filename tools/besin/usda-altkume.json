@@ -1,4 +1,1066 @@
 {
+"#167541":{
+"id":167541,
+"d":"Snacks, fruit leather, rolls",
+"p":0.1,
+"c":85.8,
+"k":371.0,
+"l":0.0,
+"f":3.0,
+"por":[
+[
+"1 large ",
+21.0
+],
+[
+"1 small ",
+14.0
+]
+]
+},
+"#167555":{
+"id":167555,
+"d":"Snacks, pretzels, hard, plain, salted",
+"k":384.0,
+"l":3.4,
+"p":10.04,
+"c":80.39,
+"f":2.93,
+"por":[
+[
+"1 oz ",
+28.35
+],
+[
+"10 twists ",
+60.0
+]
+]
+},
+"#167558":{
+"id":167558,
+"d":"Snacks, tortilla chips, plain, white corn, salted",
+"f":20.68,
+"c":67.78,
+"k":472.0,
+"p":7.1,
+"l":5.4,
+"por":[
+[
+"1 oz ",
+28.35
+],
+[
+"1 bag ",
+213.0
+]
+]
+},
+"#167561":{
+"id":167561,
+"d":"Snacks, trail mix, regular",
+"p":13.8,
+"f":29.4,
+"c":44.9,
+"k":462.0,
+"por":[
+[
+"1 cup ",
+150.0
+],
+[
+"1 oz ",
+28.35
+],
+[
+"1.5 oz ",
+42.0
+]
+]
+},
+"#167949":{
+"id":167949,
+"d":"Snacks, corn-based, extruded, puffs or twists, cheese-flavor",
+"p":5.46,
+"l":0.8,
+"f":36.54,
+"c":54.54,
+"k":567.0,
+"por":[
+[
+"1 oz crunchy (about 21 pieces) ",
+28.35
+],
+[
+"1 oz puffs (about 13 pieces) ",
+28.35
+]
+]
+},
+"#167951":{
+"id":167951,
+"d":"Snacks, crisped rice bar, chocolate chip",
+"l":2.2,
+"p":5.1,
+"f":13.5,
+"c":73.0,
+"k":404.0,
+"por":[
+[
+"1 bar (1 oz) ",
+28.0
+]
+]
+},
+"#167952":{
+"id":167952,
+"d":"Snacks, granola bars, hard, chocolate chip",
+"f":16.3,
+"c":72.1,
+"k":438.0,
+"l":4.4,
+"p":7.3,
+"por":[
+[
+"1 oz ",
+28.35
+],
+[
+"1 bar ",
+24.0
+]
+]
+},
+"#167960":{
+"id":167960,
+"d":"Snacks, popcorn, cheese-flavor",
+"p":9.3,
+"l":9.9,
+"f":33.2,
+"c":51.6,
+"k":526.0,
+"por":[
+[
+"1 cup ",
+11.0
+],
+[
+"1 oz ",
+28.35
+]
+]
+},
+"#167966":{
+"id":167966,
+"d":"Snacks, rice cracker brown rice, plain",
+"f":2.8,
+"c":81.5,
+"k":387.0,
+"l":4.2,
+"p":8.2,
+"por":[
+[
+"1 cake ",
+9.0
+],
+[
+"2 cakes ",
+18.0
+]
+]
+},
+"#168001":{
+"id":168001,
+"d":"Candies, milk chocolate coated peanuts",
+"l":4.7,
+"p":13.1,
+"f":33.5,
+"c":49.7,
+"k":519.0,
+"por":[
+[
+"1 cup ",
+149.0
+],
+[
+"10 pieces ",
+40.0
+]
+]
+},
+"#168754":{
+"id":168754,
+"d":"Candies, milk chocolate, with almonds",
+"f":34.4,
+"p":9.0,
+"l":6.2,
+"c":53.4,
+"k":526.0,
+"por":[
+[
+"1 bar (1.45 oz) ",
+41.0
+],
+[
+"1 bar (1.55 oz) ",
+44.0
+]
+]
+},
+"#168861":{
+"id":168861,
+"d":"Snacks, granola bar, fruit-filled, nonfat",
+"k":342.0,
+"l":7.4,
+"p":5.9,
+"f":0.9,
+"c":77.6,
+"por":[]
+},
+"#169015":{
+"id":169015,
+"d":"Restaurant, family style, fried mozzarella sticks",
+"f":18.33,
+"c":25.14,
+"k":325.0,
+"l":2.0,
+"p":14.75,
+"por":[
+[
+"1 serving ",
+245.0
+],
+[
+"1 piece ",
+31.0
+]
+]
+},
+"#169094":{
+"id":169094,
+"d":"Olives, ripe, canned (small-extra large)",
+"p":0.84,
+"l":1.6,
+"f":10.9,
+"c":6.04,
+"k":116.0,
+"por":[
+[
+"1 tbsp ",
+8.4
+],
+[
+"1 large ",
+4.4
+],
+[
+"1 small ",
+3.2
+]
+]
+},
+"#169576":{
+"id":169576,
+"d":"Candies, milk chocolate coated raisins",
+"f":14.8,
+"p":4.1,
+"c":68.4,
+"k":390.0,
+"l":3.1,
+"por":[
+[
+"1 cup ",
+180.0
+],
+[
+"10 pieces ",
+10.0
+]
+]
+},
+"#169641":{
+"id":169641,
+"d":"Jams and preserves",
+"p":0.37,
+"f":0.07,
+"l":1.1,
+"c":68.86,
+"k":278.0,
+"por":[
+[
+"1 tbsp ",
+20.0
+],
+[
+"1 packet (0.5 oz) ",
+14.0
+]
+]
+},
+"#169681":{
+"id":169681,
+"d":"Snacks, granola bars, hard, peanut butter",
+"l":2.9,
+"f":23.8,
+"c":62.3,
+"k":483.0,
+"p":9.8,
+"por":[
+[
+"1 oz ",
+28.35
+],
+[
+"1 bar ",
+24.0
+]
+]
+},
+"#170295":{
+"id":170295,
+"d":"Fast foods, chicken fillet sandwich, plain with pickles",
+"p":16.28,
+"l":1.4,
+"f":11.19,
+"c":20.89,
+"k":250.0,
+"por":[
+[
+"1 sandwich ",
+187.0
+]
+]
+},
+"#170296":{
+"id":170296,
+"d":"Fast foods, fish sandwich, with tartar sauce",
+"l":1.0,
+"p":10.29,
+"f":12.45,
+"c":26.69,
+"k":257.0,
+"por":[
+[
+"1 sandwich ",
+220.0
+]
+]
+},
+"#170300":{
+"id":170300,
+"d":"Fast foods, coleslaw",
+"f":9.91,
+"c":14.89,
+"k":153.0,
+"p":0.95,
+"l":1.9,
+"por":[
+[
+"1 cup ",
+191.0
+],
+[
+"1 package ",
+116.0
+]
+]
+},
+"#170585":{
+"id":170585,
+"d":"Nuts, mixed nuts, dry roasted, with peanuts, without salt added",
+"p":19.5,
+"l":6.4,
+"f":53.5,
+"c":22.42,
+"k":607.0,
+"por":[
+[
+"1 cup ",
+131.0
+],
+[
+"1 oz ",
+28.35
+]
+]
+},
+"#170691":{
+"id":170691,
+"d":"Fast foods, cheeseburger; single, regular patty, with condiments",
+"c":25.46,
+"k":270.0,
+"f":12.9,
+"l":1.9,
+"p":13.49,
+"por":[
+[
+"1 item ",
+127.0
+]
+]
+},
+"#170694":{
+"id":170694,
+"d":"Fast foods, hamburger; single, regular patty; with condiments",
+"l":1.8,
+"p":13.3,
+"f":10.18,
+"c":29.57,
+"k":263.0,
+"por":[
+[
+"1 sandwich ",
+97.0
+]
+]
+},
+"#170695":{
+"id":170695,
+"d":"Fast foods, roast beef sandwich, plain",
+"f":10.3,
+"c":22.21,
+"k":244.0,
+"p":15.17,
+"l":1.3,
+"por":[
+[
+"1 sandwich ",
+149.0
+]
+]
+},
+"#170697":{
+"id":170697,
+"d":"Fast foods, onion rings, breaded and fried",
+"f":25.23,
+"c":43.58,
+"k":411.0,
+"l":2.7,
+"p":3.86,
+"por":[
+[
+"1 package (18 onion rings) ",
+117.0
+]
+]
+},
+"#170698":{
+"id":170698,
+"d":"Fast foods, potato, french fried in vegetable oil",
+"p":3.43,
+"l":3.8,
+"f":14.73,
+"c":41.44,
+"k":312.0,
+"por":[
+[
+"1 serving small ",
+71.0
+],
+[
+"1 serving medium ",
+117.0
+],
+[
+"1 serving large ",
+154.0
+]
+]
+},
+"#170710":{
+"id":170710,
+"d":"Fast foods, hamburger, large, single patty, with condiments",
+"f":11.6,
+"p":15.68,
+"l":1.1,
+"k":256.0,
+"c":22.14,
+"por":[
+[
+"1 item ",
+171.0
+]
+]
+},
+"#170763":{
+"id":170763,
+"d":"Fast foods, taco with beef, cheese and lettuce, soft",
+"f":9.75,
+"c":20.23,
+"k":206.0,
+"p":9.25,
+"l":2.9,
+"por":[
+[
+"1 each taco ",
+102.0
+]
+]
+},
+"#170764":{
+"id":170764,
+"d":"Fast foods, taco with chicken, lettuce and cheese, soft",
+"p":13.3,
+"l":1.2,
+"f":6.35,
+"c":19.69,
+"k":189.0,
+"por":[
+[
+"1 each taco ",
+98.0
+]
+]
+},
+"#170765":{
+"id":170765,
+"d":"Fast foods, quesadilla, with chicken",
+"f":15.25,
+"c":24.04,
+"k":294.0,
+"p":15.05,
+"l":1.7,
+"por":[
+[
+"1 each quesadilla ",
+180.0
+]
+]
+},
+"#171797":{
+"id":171797,
+"d":"Beef, ground, 80% lean meat / 20% fat, patty, cooked, broiled",
+"c":0.0,
+"l":0.0,
+"p":25.75,
+"f":17.78,
+"k":270.0,
+"por":[
+[
+"3 oz ",
+85.0
+]
+]
+},
+"#171867":{
+"id":171867,
+"d":"Cookies, Marie biscuit",
+"f":10.58,
+"c":70.54,
+"k":406.0,
+"p":7.05,
+"l":3.5,
+"por":[
+[
+"5 cookie ",
+28.0
+]
+]
+},
+"#172039":{
+"id":172039,
+"d":"Fast foods, burrito, with beans and cheese",
+"f":6.05,
+"c":31.23,
+"k":205.0,
+"p":7.35,
+"l":4.2,
+"por":[
+[
+"1 each burrito ",
+185.0
+]
+]
+},
+"#172055":{
+"id":172055,
+"d":"Fast Food, Pizza Chain, 14\" pizza, meat and vegetable topping, regular crust",
+"f":10.9,
+"l":2.2,
+"p":11.02,
+"c":25.38,
+"k":244.0,
+"por":[
+[
+"1 slice ",
+136.0
+],
+[
+"1 pie ",
+1168.0
+]
+]
+},
+"#172187":{
+"id":172187,
+"d":"Egg, whole, cooked, scrambled",
+"l":0.0,
+"p":9.99,
+"f":10.98,
+"c":1.61,
+"k":149.0,
+"por":[
+[
+"1 large ",
+61.0
+],
+[
+"1 tbsp ",
+13.7
+],
+[
+"1 cup ",
+220.0
+]
+]
+},
+"#172454":{
+"id":172454,
+"d":"Hummus, home prepared",
+"f":8.59,
+"p":4.86,
+"l":4.0,
+"c":20.12,
+"k":177.0,
+"por":[
+[
+"1 tablespoon ",
+15.0
+],
+[
+"1 cup ",
+246.0
+]
+]
+},
+"#172688":{
+"id":172688,
+"d":"Bread, whole-wheat, commercially prepared",
+"f":3.5,
+"c":42.71,
+"k":252.0,
+"p":12.45,
+"l":6.0,
+"por":[
+[
+"1 slice ",
+32.0
+],
+[
+"1 oz ",
+28.35
+]
+]
+},
+"#172718":{
+"id":172718,
+"d":"Cookies, chocolate sandwich, with creme filling, regular",
+"c":71.0,
+"l":2.9,
+"p":5.21,
+"k":464.0,
+"f":19.14,
+"por":[
+[
+"3 cookie ",
+36.0
+],
+[
+"1 oz ",
+28.35
+]
+]
+},
+"#172721":{
+"id":172721,
+"d":"Cookies, fig bars",
+"p":3.7,
+"l":4.6,
+"f":7.3,
+"c":70.9,
+"k":348.0,
+"por":[
+[
+"1 oz ",
+28.35
+],
+[
+"1 Figaroo (2 square halves) ",
+43.0
+],
+[
+"1 cookie ",
+16.0
+],
+[
+"1 individual package (2 oz package containing 2 3\" bars) ",
+57.0
+]
+]
+},
+"#172736":{
+"id":172736,
+"d":"Cookies, sugar wafers with creme filling, regular",
+"p":3.84,
+"l":1.6,
+"f":23.24,
+"c":70.64,
+"k":502.0,
+"por":[
+[
+"3 cookies ",
+36.0
+],
+[
+"1 cookie ",
+10.1
+],
+[
+"1 oz ",
+28.35
+]
+]
+},
+"#172749":{
+"id":172749,
+"d":"Crackers, whole-wheat",
+"p":10.58,
+"l":10.3,
+"f":14.13,
+"c":69.55,
+"k":427.0,
+"por":[
+[
+"1 serving ",
+28.0
+],
+[
+"6 crackers, Triscuits, regular size ",
+28.0
+],
+[
+"1 cracker ",
+4.6
+],
+[
+"0.5 oz ",
+14.2
+],
+[
+"1 cup, crushed ",
+94.0
+],
+[
+"10 Triscuit Bits ",
+10.0
+]
+]
+},
+"#172927":{
+"id":172927,
+"d":"Pastrami, turkey",
+"f":6.21,
+"p":16.3,
+"l":0.1,
+"c":3.34,
+"k":139.0,
+"por":[
+[
+"2 slices ",
+57.0
+],
+[
+"1 package (8 oz) ",
+227.0
+]
+]
+},
+"#173147":{
+"id":173147,
+"d":"Snacks, pita chips, salted",
+"p":11.79,
+"l":3.8,
+"f":15.2,
+"c":68.26,
+"k":457.0,
+"por":[
+[
+"1 oz ",
+28.35
+],
+[
+"1 bag ",
+262.0
+]
+]
+},
+"#173273":{
+"id":173273,
+"d":"Fast foods, potatoes, hash browns, round pieces or patty",
+"l":2.7,
+"p":2.58,
+"f":17.04,
+"c":28.88,
+"k":272.0,
+"por":[
+[
+"1 round piece ",
+5.5
+],
+[
+"1 patty ",
+53.0
+],
+[
+"1 serving 14 round pieces ",
+77.0
+],
+[
+"1 serving 29 round pieces ",
+160.0
+]
+]
+},
+"#173292":{
+"id":173292,
+"d":"Fast Food, Pizza Chain, 14\" pizza, cheese topping, regular crust",
+"f":9.69,
+"c":33.33,
+"k":266.0,
+"p":11.39,
+"l":2.3,
+"por":[
+[
+"1 slice ",
+107.0
+],
+[
+"1 pizza ",
+853.0
+]
+]
+},
+"#173295":{
+"id":173295,
+"d":"Fast Food, Pizza Chain, 14\" pizza, pepperoni topping, regular crust",
+"p":11.74,
+"l":2.3,
+"f":11.91,
+"c":31.98,
+"k":282.0,
+"por":[
+[
+"1 slice ",
+111.0
+],
+[
+"1 pizza ",
+895.0
+]
+]
+},
+"#173319":{
+"id":173319,
+"d":"Fast foods, cheeseburger; double, regular patty; with condiments",
+"l":0.9,
+"f":16.18,
+"c":17.97,
+"k":282.0,
+"p":16.24,
+"por":[
+[
+"1 sandwich ",
+155.0
+]
+]
+},
+"#173321":{
+"id":173321,
+"d":"Fast foods, chicken tenders",
+"l":1.2,
+"p":19.22,
+"f":13.95,
+"c":17.25,
+"k":271.0,
+"por":[
+[
+"1 strip ",
+30.0
+],
+[
+"1 serving ",
+184.0
+]
+]
+},
+"#174032":{
+"id":174032,
+"d":"Beef, ground, 85% lean meat / 15% fat, patty, cooked, broiled",
+"l":0.0,
+"p":25.93,
+"f":15.41,
+"k":250.0,
+"c":0.0,
+"por":[
+[
+"3 oz ",
+85.0
+],
+[
+"1 patty (yield from 1/4 lb raw meat) ",
+77.0
+]
+]
+},
+"#174088":{
+"id":174088,
+"d":"Cookies, sugar wafer, chocolate-covered",
+"p":3.45,
+"l":3.4,
+"f":27.59,
+"c":65.99,
+"k":526.0,
+"por":[
+[
+"3 cookie ",
+29.0
+]
+]
+},
+"#174852":{
+"id":174852,
+"d":"Beverages, carbonated, cola, regular",
+"f":0.25,
+"c":10.36,
+"k":42.0,
+"l":0.0,
+"p":0.0,
+"por":[
+[
+"1 fl oz ",
+30.7
+],
+[
+"1 can or bottle (12 fl oz) ",
+370.0
+],
+[
+"1 can or bottle (16 fl oz) ",
+492.0
+],
+[
+"1 drink, small (16 fl oz) ",
+492.0
+],
+[
+"1 drink, medium (22 fl oz) ",
+676.0
+],
+[
+"1 drink, large (32 fl oz) ",
+984.0
+],
+[
+"1 drink, extra large (44 fl oz) ",
+1353.0
+]
+]
+},
+"#174963":{
+"id":174963,
+"d":"Cookies, oatmeal, with raisins",
+"f":15.76,
+"c":68.95,
+"k":441.0,
+"p":5.86,
+"l":3.3,
+"por":[
+[
+"1 oz ",
+28.35
+],
+[
+"1 cookie ",
+24.0
+]
+]
+},
+"#174974":{
+"id":174974,
+"d":"Cookies, vanilla wafers, higher fat",
+"p":4.9,
+"l":1.6,
+"f":16.41,
+"c":72.6,
+"k":455.0,
+"por":[
+[
+"8 wafers ",
+30.0
+],
+[
+"8 wafers mini wafers ",
+11.6
+]
+]
+},
+"#174975":{
+"id":174975,
+"d":"Crackers, cheese, regular",
+"p":10.93,
+"l":2.3,
+"f":22.74,
+"c":59.42,
+"k":489.0,
+"por":[
+[
+"0.5 oz ",
+14.2
+],
+[
+"1 cup, bite size ",
+62.0
+],
+[
+"1 cup, crushed ",
+72.0
+],
+[
+"1 gold fish ",
+0.6
+],
+[
+"1 bag, single serving ",
+28.0
+],
+[
+"1 snack stick ",
+2.0
+],
+[
+"1 cracker (1\" square) ",
+1.0
+]
+]
+},
+"#175039":{
+"id":175039,
+"d":"Waffles, plain, prepared from recipe",
+"p":7.9,
+"f":14.1,
+"c":32.9,
+"k":291.0,
+"por":[
+[
+"1 oz ",
+28.35
+],
+[
+"1 waffle, round (7\" dia) ",
+75.0
+]
+]
+},
 "apple juice, canned or bottled, unsweetened, without added ascorbic acid":{
 "id":173933,
 "d":"Apple juice, canned or bottled, unsweetened, without added ascorbic acid",

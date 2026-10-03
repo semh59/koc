@@ -1,0 +1,190 @@
+# Öğün kayıtları: tek tabak, sandviç ya da menü. Satır: ad | yöntem | porsiyon etiketi | bileşenler (ad gram;...) | eş adlar (yoksa -) | isteğe bağlı ~N (restoran porsiyonu için ±N% kcal aralığı)
+# Gramlar yenilen halin ağırlığıdır; bileşenler USDA (genel, malzeme, hazır) ya da tarif.txt satırlarıdır. Yöntem "cig" (ağırlık toplamı, pişme yok). Porsiyon gramı = bileşen toplamı (uret.js hesaplar).
+# Bileşen tarif satırıysa onun az/bol yağlı aralığı öğüne taşınır; yağ malzemesi x0,6 ve x1,5. Restoran öğünlerinde ~30: porsiyon ve yağ miktarı yere göre değişir (eski ev yemeği kuralındaki yağlı/hamurlu ±%30).
+# Döner ve köfte için USDA'da karşılık yoktur: ızgara dana kıyma (%15/%20 yağlı, pişmiş) vekil alınır, ~30 aralığı bunu da kapsar. Sucuk, simit, pekmez, protein bar için USDA karşılığı olmadığından öğün yapılmadı.
+# --- Kahvaltı ---
+Sade kahvaltı tabağı | cig | 1 tabak | Beyaz peynir 40;Yeşil zeytin 20;Domates 60;Salatalık 50;Ekmek (beyaz) 60 | kahvalti
+Serpme kahvaltı (1 kişilik) | cig | 1 tabak | Beyaz peynir 40;Kaşar 30;Haşlanmış yumurta 50;Yeşil zeytin 20;Siyah zeytin 15;Domates 60;Salatalık 50;Tereyağı 10;Bal 20;Meyve reçeli 20;Ekmek (beyaz) 90 | kahvalti
+Hafif kahvaltı (yumurta, peynir, tam buğday ekmeği) | cig | 1 tabak | Haşlanmış yumurta 50;Beyaz peynir 30;Domates 80;Salatalık 60;Ekmek (tam buğday) 60 | kahvalti
+Haşlanmış yumurta, ekmek ve domates | cig | 1 tabak | Haşlanmış yumurta 100;Ekmek (beyaz) 60;Domates 80;Yeşil zeytin 10 | kahvalti
+Sahanda yumurta ve ekmek | cig | 1 tabak | Sahanda yumurta 92;Ekmek (beyaz) 60;Domates 80;Salatalık 40 | kahvalti
+Çırpılmış yumurta, peynir ve ekmek | cig | 1 tabak | Yumurta (çırpılmış, pişmiş) 100;Beyaz peynir 30;Ekmek (beyaz) 60;Domates 60 | kahvalti
+Peynirli omlet, ekmek ve salata | cig | 1 tabak | Peynirli omlet 130;Ekmek (beyaz) 60;Domates 60;Salatalık 40 | kahvalti
+Sebzeli omlet ve tam buğday ekmeği | cig | 1 tabak | Sebzeli omlet 150;Ekmek (tam buğday) 60;Salatalık 50 | kahvalti
+Menemen ve ekmek | cig | 1 tabak | Menemen (2 yumurtalı) 240;Ekmek (beyaz) 60 | kahvalti
+Menemen, peynir ve ekmek | cig | 1 tabak | Menemen (2 yumurtalı) 240;Beyaz peynir 30;Ekmek (beyaz) 90 | kahvalti
+Kaşarlı tost | cig | 1 adet | Ekmek (beyaz) 60;Kaşar 40;Tereyağı 5 | -
+Jambonlu kaşarlı tost | cig | 1 adet | Ekmek (beyaz) 60;Kaşar 30;Jambon 25;Tereyağı 5 | -
+Hindi füme ve kaşarlı sandviç | cig | 1 adet | Ekmek (tam buğday) 70;Hindi füme 40;Kaşar 20;Domates 40;Marul 15 | -
+Avokadolu yumurtalı tost | cig | 1 tabak | Ekmek (tam buğday) 60;Avokado 70;Haşlanmış yumurta 50 | -
+Muzlu cevizli yulaf lapası | cig | 1 kase | Yulaf lapası 200;Muz 100;Ceviz 15;Bal 10 | -
+Elmalı sütlü yulaf lapası | cig | 1 kase | Sütlü yulaf lapası 315;Elma 100 | -
+Yulaflı müsli kasesi | cig | 1 kase | Yulaf (çiğ) 40;Süt 120;Yoğurt 60;Çilek 80;Chia tohumu 5 | müsli
+Granola, yoğurt ve muz | cig | 1 kase | Granola 40;Yoğurt (yarım yağlı) 150;Muz 80 | -
+Granola ve süt | cig | 1 kase | Granola 40;Süt 150 | -
+Süzme yoğurt, bal ve ceviz | cig | 1 kase | Süzme yoğurt (tam yağlı) 150;Bal 15;Ceviz 20 | -
+Fıstık ezmeli muzlu ekmek | cig | 1 adet | Ekmek (tam buğday) 60;Fıstık ezmesi 20;Muz 80 | -
+Tahinli ballı ekmek | cig | 1 adet | Ekmek (beyaz) 60;Tahin 20;Bal 20 | -
+Reçelli tereyağlı ekmek | cig | 1 adet | Ekmek (beyaz) 90;Tereyağı 10;Meyve reçeli 30 | -
+Fındık kremalı ekmek | cig | 1 adet | Ekmek (beyaz) 60;Fındık kreması (kakaolu) 25 | -
+Lor peynirli sebze kahvaltısı | cig | 1 tabak | Lor 60;Domates 80;Salatalık 60;Zeytinyağı 5;Ekmek (tam buğday) 60 | kahvalti
+Peynirli börek ve salata | cig | 1 tabak | Peynirli börek 150;Domates 60;Salatalık 40 | -
+Peynirli poğaça ve ayran | cig | 1 tabak | Peynirli poğaça 140;Yoğurt 90;Su 110 | -
+Patatesli gözleme ve ayran | cig | 1 tabak | Patatesli gözleme 150;Yoğurt 90;Su 110 | -
+Pişi, beyaz peynir ve domates | cig | 1 tabak | Pişi 80;Beyaz peynir 30;Domates 60 | -
+Yumurtalı ekmek ve salatalık | cig | 1 tabak | Yumurtalı ekmek 150;Salatalık 80;Domates 60 | -
+Kuymak ve ekmek | cig | 1 tabak | Kuymak 150;Ekmek (beyaz) 60 | mıhlama
+Çılbır ve ekmek | cig | 1 tabak | Çılbır 250;Ekmek (beyaz) 60 | -
+Patatesli yumurta ve ekmek | cig | 1 tabak | Patatesli yumurta 200;Ekmek (beyaz) 30;Domates 60 | -
+Ballı krep | cig | 1 tabak | Krep 100;Bal 20 | -
+Çikolatalı muzlu krep | cig | 1 tabak | Krep 100;Fındık kreması (kakaolu) 20;Muz 60 | -
+Pankek, akçaağaç şurubu ve yaban mersini | cig | 1 tabak | Pankek 100;Akçaağaç şurubu 30;Yaban mersini 50 | pancake
+Waffle, fındık kreması ve muz | cig | 1 adet | Waffle (sade) 75;Fındık kreması (kakaolu) 30;Muz 60 | -
+# --- Öğle ve akşam tabakları ---
+Kuru fasulye, pilav ve turşu | cig | 1 tabak | Etli kuru fasulye 250;Tereyağlı pirinç pilavı 150;Salatalık turşusu 40 | -
+Kuru fasulye pilaki, pilav ve soğan | cig | 1 tabak | Kuru fasulye pilaki 250;Tereyağlı pirinç pilavı 150;Soğan 30 | -
+Etli nohut, pilav ve cacık | cig | 1 tabak | Etli nohut yemeği 250;Tereyağlı pirinç pilavı 150;Cacık 100 | -
+Mercimek yemeği, bulgur pilavı ve salata | cig | 1 tabak | Mercimek yemeği 250;Domatesli bulgur pilavı 150;Gavurdağı salatası 100 | -
+Zeytinyağlı barbunya, pilav ve salata | cig | 1 tabak | Zeytinyağlı barbunya 200;Şehriyeli pilav 150;Akdeniz yeşillik salatası 100 | -
+Izgara tavuk, bulgur pilavı ve salata | cig | 1 tabak | Izgara tavuk göğsü 130;Domatesli bulgur pilavı 150;Akdeniz yeşillik salatası 150 | -
+Izgara tavuk, pilav ve salata | cig | 1 tabak | Izgara tavuk göğsü 130;Tereyağlı pirinç pilavı 150;Gavurdağı salatası 150 | -
+Tavuk şiş, pilav ve salata | cig | 1 tabak | Tavuk şiş 130;Tereyağlı pirinç pilavı 150;Gavurdağı salatası 100 | -
+Tavuk şiş, bulgur pilavı ve cacık | cig | 1 tabak | Tavuk şiş 130;Sebzeli bulgur pilavı 150;Cacık 100 | -
+Dana şiş, pilav ve salata | cig | 1 tabak | Dana şiş 130;Tereyağlı pirinç pilavı 150;Akdeniz yeşillik salatası 100 | -
+Kuzu şiş, bulgur pilavı ve salata | cig | 1 tabak | Kuzu şiş 130;Domatesli bulgur pilavı 150;Gavurdağı salatası 100 | -
+Izgara köfte, pilav ve salata | cig | 1 tabak | Dana kıyma (ızgara, %20 yağlı) 120;Tereyağlı pirinç pilavı 150;Gavurdağı salatası 100 | -
+Kadınbudu köfte, pilav ve cacık | cig | 1 tabak | Kadınbudu köfte 160;Tereyağlı pirinç pilavı 150;Cacık 100 | -
+Hindi köfte, bulgur pilavı ve salata | cig | 1 tabak | Hindi köfte 130;Sebzeli bulgur pilavı 150;Akdeniz yeşillik salatası 150 | -
+İzmir köfte ve pilav | cig | 1 tabak | İzmir köfte 300;Tereyağlı pirinç pilavı 100 | -
+Fırında levrek, fırın patates ve salata | cig | 1 tabak | Fırında levrek 180;Fırın patates 150;Akdeniz yeşillik salatası 150 | -
+Hamsi tava, ekmek ve salata | cig | 1 tabak | Hamsi tava 150;Ekmek (beyaz) 60;Akdeniz yeşillik salatası 150 | -
+Izgara somon, bulgur ve salata | cig | 1 tabak | Izgara somon 150;Bulgur (haşlanmış) 120;Akdeniz yeşillik salatası 150 | -
+Izgara somon, patates ve brokoli | cig | 1 tabak | Izgara somon 150;Haşlanmış patates 150;Brokoli (haşlanmış) 100;Zeytinyağı 5 | -
+Balık buğulama ve patates püresi | cig | 1 tabak | Balık buğulama 200;Patates püresi 200 | -
+Ton balıklı salata ve tam buğday ekmeği | cig | 1 tabak | Ton balıklı salata 250;Ekmek (tam buğday) 60 | -
+Tavuk salatası ve ekmek | cig | 1 tabak | Tavuk salatası 250;Ekmek (tam buğday) 60 | -
+Karides güveç ve pilav | cig | 1 tabak | Karides güveç 200;Tereyağlı pirinç pilavı 150 | -
+Etli taze fasulye ve pilav | cig | 1 tabak | Etli taze fasulye 250;Tereyağlı pirinç pilavı 150 | -
+Etli bamya ve pilav | cig | 1 tabak | Etli bamya 250;Tereyağlı pirinç pilavı 150 | -
+Etli ıspanak ve bulgur pilavı | cig | 1 tabak | Etli ıspanak 250;Domatesli bulgur pilavı 150 | -
+Etli bezelye ve pilav | cig | 1 tabak | Etli bezelye 250;Tereyağlı pirinç pilavı 150 | -
+Etli türlü, pilav ve cacık | cig | 1 tabak | Etli türlü 250;Tereyağlı pirinç pilavı 120;Cacık 100 | -
+Tas kebabı ve pilav | cig | 1 tabak | Tas kebabı 250;Tereyağlı pirinç pilavı 150 | -
+Orman kebabı ve pilav | cig | 1 tabak | Orman kebabı 250;Tereyağlı pirinç pilavı 150 | -
+Kuzu tandır ve bulgur pilavı | cig | 1 tabak | Kuzu tandır 150;Domatesli bulgur pilavı 150;Gavurdağı salatası 100 | -
+Kuzu güveç ve salata | cig | 1 tabak | Kuzu güveç 300;Akdeniz yeşillik salatası 150 | -
+Kuzu pirzola, pilav ve salata | cig | 1 tabak | Kuzu pirzola (ızgara) 120;Tereyağlı pirinç pilavı 150;Gavurdağı salatası 100 | -
+Patlıcan musakka ve pilav | cig | 1 tabak | Patlıcan musakka 250;Tereyağlı pirinç pilavı 150 | -
+Patlıcan kebabı ve bulgur pilavı | cig | 1 tabak | Patlıcan kebabı 250;Domatesli bulgur pilavı 150 | -
+Kıymalı ıspanak ve yoğurt | cig | 1 tabak | Kıymalı ıspanak 250;Yoğurt 100;Ekmek (beyaz) 30 | -
+Lahana dolması ve yoğurt | cig | 1 tabak | Lahana dolması (etli) 250;Yoğurt 100 | -
+Etli biber dolması ve cacık | cig | 1 tabak | Etli biber dolması 250;Cacık 100 | -
+Zeytinyağlı biber dolması ve yoğurt | cig | 1 tabak | Zeytinyağlı biber dolması 250;Yoğurt 100 | -
+Zeytinyağlı türlü, yoğurt ve ekmek | cig | 1 tabak | Zeytinyağlı türlü 250;Yoğurt 100;Ekmek (beyaz) 30 | -
+Spagetti napoliten ve yeşil salata | cig | 1 tabak | Spagetti napoliten 250;Yeşil salata 100 | -
+Kıymalı makarna ve cacık | cig | 1 tabak | Kıymalı makarna 250;Cacık 100 | -
+Fırın makarna ve salata | cig | 1 tabak | Fırın makarna 250;Akdeniz yeşillik salatası 100 | -
+Peynirli makarna ve salata | cig | 1 tabak | Peynirli makarna 200;Akdeniz yeşillik salatası 100 | -
+Tavuk sote ve pilav | cig | 1 tabak | Tavuk sote 250;Tereyağlı pirinç pilavı 150 | -
+Mantarlı tavuk sote ve bulgur pilavı | cig | 1 tabak | Mantarlı tavuk sote 250;Sebzeli bulgur pilavı 150 | -
+Tavuk güveç ve pilav | cig | 1 tabak | Tavuk güveç 300;Tereyağlı pirinç pilavı 100 | -
+Fırında tavuk, patates ve salata | cig | 1 tabak | Fırında tavuk ve patates 300;Akdeniz yeşillik salatası 150 | -
+Yoğurtlu tavuk göğsü, bulgur ve salata | cig | 1 tabak | Yoğurtlu tavuk göğsü (fırın) 130;Domatesli bulgur pilavı 150;Akdeniz yeşillik salatası 150 | -
+Kremalı mantarlı tavuk ve makarna | cig | 1 tabak | Kremalı mantarlı tavuk 250;Makarna (haşlanmış) 150 | -
+Mücver ve cacık | cig | 1 tabak | Mücver 150;Cacık 150;Ekmek (beyaz) 30 | -
+Patates köftesi ve yoğurt | cig | 1 tabak | Patates köftesi 150;Yoğurt 100;Domates 60 | -
+Falafel, humus ve salata | cig | 1 tabak | Falafel 100;Humus (ev yapımı) 60;Akdeniz yeşillik salatası 100 | -
+Meze tabağı (humus, haydari, ezme) ve ekmek | cig | 1 tabak | Humus (ev yapımı) 40;Haydari 40;Domates ezme 40;Ekmek (beyaz) 60 | -
+Mercimek çorbası ve ekmek | cig | 1 tabak | Kırmızı mercimek çorbası 250;Ekmek (beyaz) 60 | -
+Mercimek çorbası, yeşil salata ve ekmek | cig | 1 tabak | Kırmızı mercimek çorbası 250;Yeşil salata 100;Ekmek (beyaz) 60 | -
+Sebzeli mercimek çorbası ve ekmek | cig | 1 tabak | Sebzeli mercimek çorbası 250;Ekmek (beyaz) 60 | -
+Bulgurlu mercimek çorbası ve peynir | cig | 1 tabak | Bulgurlu mercimek çorbası 250;Beyaz peynir 40;Ekmek (beyaz) 60 | -
+Düğün çorbası ve ekmek | cig | 1 tabak | Düğün çorbası 250;Ekmek (beyaz) 60 | -
+Terbiyeli tavuk çorbası ve ekmek | cig | 1 tabak | Terbiyeli tavuk çorbası 250;Ekmek (beyaz) 60 | -
+Sebze çorbası ve ekmek | cig | 1 tabak | Sebze çorbası 250;Ekmek (beyaz) 60 | -
+Şehriye çorbası ve ekmek | cig | 1 tabak | Şehriye çorbası 250;Ekmek (beyaz) 60 | -
+Yeşil mercimek çorbası, peynir ve ekmek | cig | 1 tabak | Yeşil mercimek çorbası 250;Beyaz peynir 40;Ekmek (beyaz) 60 | -
+Izgara tavuklu yeşil salata | cig | 1 tabak | Izgara tavuk göğsü 120;Marul 80;Domates 80;Salatalık 60;Zeytinyağı 10;Limon suyu 10 | -
+Ton balıklı yeşil salata | cig | 1 tabak | Ton balığı (konserve, suda) 80;Marul 80;Domates 80;Mısır (konserve) 40;Zeytinyağı 10 | -
+Nohutlu salata | cig | 1 tabak | Nohut (konserve) 100;Domates 80;Salatalık 60;Maydanoz 10;Zeytinyağı 10;Limon suyu 10 | -
+Kinoalı sebze salatası | cig | 1 tabak | Kinoa (haşlanmış) 120;Domates 80;Salatalık 60;Maydanoz 10;Zeytinyağı 10 | -
+Peynirli yeşillik salatası ve ekmek | cig | 1 tabak | Beyaz peynir 50;Marul 80;Domates 80;Salatalık 60;Zeytinyağı 10;Ekmek (tam buğday) 60 | -
+Tavuk, pirinç ve brokoli | cig | 1 tabak | Tavuk göğsü (fırında) 130;Beyaz pirinç (haşlanmış) 150;Brokoli (haşlanmış) 100;Zeytinyağı 5 | fit tabak
+Hindi, bulgur ve sebze | cig | 1 tabak | Hindi göğsü (fırında) 130;Bulgur (haşlanmış) 150;Brokoli (haşlanmış) 100;Zeytinyağı 5 | fit tabak
+Somon, kinoa ve ıspanak | cig | 1 tabak | Izgara somon 130;Kinoa (haşlanmış) 120;Ispanak (haşlanmış) 100;Zeytinyağı 5 | fit tabak
+Tavuk but, pilav ve salata | cig | 1 tabak | Tavuk but (derisiz, fırında) 150;Tereyağlı pirinç pilavı 150;Akdeniz yeşillik salatası 100 | -
+# --- Ara öğün ve atıştırmalık ---
+Yoğurt ve muz | cig | 1 kase | Yoğurt 150;Muz 100 | -
+Yoğurt ve elma | cig | 1 kase | Yoğurt (yarım yağlı) 150;Elma 150 | -
+Yoğurt, bal ve ceviz | cig | 1 kase | Yoğurt 150;Bal 10;Ceviz 15 | -
+Yoğurt, çilek ve granola | cig | 1 kase | Yoğurt 150;Çilek 100;Granola 25 | -
+Yoğurt ve kuru kayısı | cig | 1 kase | Yoğurt 150;Kuru kayısı 30 | -
+Yoğurt, yaban mersini ve badem | cig | 1 kase | Yoğurt (yarım yağlı) 150;Yaban mersini 60;Badem 15 | -
+Süzme yoğurt ve meyve | cig | 1 kase | Süzme yoğurt (az yağlı) 150;Çilek 80;Elma 80 | -
+Ceviz ve kuru üzüm | cig | 1 avuç | Ceviz 30;Kuru üzüm 30 | -
+Badem ve kuru kayısı | cig | 1 avuç | Badem 25;Kuru kayısı 40 | -
+Fındık ve kuru incir | cig | 1 avuç | Fındık 25;Kuru incir 40 | -
+Karışık kuruyemiş (badem, ceviz, fındık, kuru üzüm) | cig | 1 avuç | Badem 10;Ceviz 10;Fındık 10;Kuru üzüm 15 | -
+Fıstık ezmeli elma | cig | 1 porsiyon | Elma 150;Fıstık ezmesi 20 | -
+Fıstık ezmeli muz | cig | 1 porsiyon | Muz 100;Fıstık ezmesi 20 | -
+Hurma ve ceviz | cig | 1 porsiyon | Hurma (medjool) 48;Ceviz 20 | -
+Hurma ve badem | cig | 1 porsiyon | Hurma (medjool) 48;Badem 20 | -
+Beyaz peynir ve ceviz | cig | 1 porsiyon | Beyaz peynir 40;Ceviz 20 | -
+Beyaz peynir, domates ve ekmek | cig | 1 porsiyon | Beyaz peynir 40;Domates 80;Ekmek (beyaz) 30 | -
+Havuç ve humus | cig | 1 porsiyon | Havuç 100;Humus (ev yapımı) 50 | -
+Havuç, salatalık ve haydari | cig | 1 porsiyon | Havuç 80;Salatalık 80;Haydari 40 | -
+Ayran ve peynirli poğaça | cig | 1 porsiyon | Yoğurt 90;Su 110;Peynirli poğaça 70 | -
+Ayran ve kraker | cig | 1 porsiyon | Yoğurt 90;Su 110;Kraker 30 | -
+Süt ve Marie bisküvi | cig | 1 porsiyon | Süt 200;Marie bisküvi 28 | -
+Süt ve muz | cig | 1 porsiyon | Süt 200;Muz 100 | -
+Karışık meyve tabağı | cig | 1 tabak | Elma 100;Portakal 100;Muz 80 | -
+Çilek, kivi ve muz | cig | 1 kase | Çilek 80;Kivi 75;Muz 60 | -
+Bitter çikolata ve badem | cig | 1 porsiyon | Bitter çikolata 20;Badem 20 | -
+Haşlanmış yumurta, havuç ve salatalık | cig | 1 porsiyon | Haşlanmış yumurta 100;Havuç 60;Salatalık 60 | -
+Kraker ve beyaz peynir | cig | 1 porsiyon | Kraker 30;Beyaz peynir 30 | -
+Protein shake (süt, protein tozu, muz) | cig | 1 bardak | Süt 250;Protein tozu (peynir altı suyu) 30;Muz 100 | -
+Yulaf, muz ve fıstık ezmeli atıştırma | cig | 1 porsiyon | Yulaf lapası 150;Muz 80;Fıstık ezmesi 15 | -
+Meyve salatası ve yoğurt | cig | 1 kase | Meyve salatası 200;Yoğurt 100 | -
+Muhallebi ve çilek | cig | 1 kase | Muhallebi 150;Çilek 80 | -
+Poğaça, kurabiye ve çay | cig | 1 porsiyon | Peynirli poğaça 70;Un kurabiyesi 30;Çay (şekersiz) 200 | -
+# --- Restoran ve fast food ---
+Döner dürüm (dana) | cig | 1 dürüm | Tortilla (buğday) 70;Dana kıyma (ızgara, %15 yağlı) 100;Domates 40;Soğan 20;Marul 20 | doner dürüm | ~30
+Tavuk döner dürüm | cig | 1 dürüm | Tortilla (buğday) 70;Tavuk göğsü (fırında) 70;Tavuk but (derili, fırında) 50;Domates 40;Marul 20;Soğan 15 | doner dürüm | ~30
+Döner ekmek arası (dana) | cig | 1 porsiyon | Pide ekmeği 100;Dana kıyma (ızgara, %15 yağlı) 90;Domates 40;Soğan 15;Marul 15 | doner | ~30
+Tavuk döner ekmek arası | cig | 1 porsiyon | Pide ekmeği 100;Tavuk göğsü (fırında) 60;Tavuk but (derili, fırında) 40;Domates 40;Soğan 15;Marul 15 | doner | ~30
+Pilav üstü döner (dana) | cig | 1 porsiyon | Dana kıyma (ızgara, %15 yağlı) 100;Tereyağlı pirinç pilavı 150;Domates 50;Yeşil biber (çiğ) 20 | doner | ~30
+Pilav üstü tavuk döner | cig | 1 porsiyon | Tavuk göğsü (fırında) 60;Tavuk but (derili, fırında) 50;Tereyağlı pirinç pilavı 150;Domates 50;Yeşil biber (çiğ) 20 | doner | ~30
+Döner porsiyon (dana, pilav ve salata) | cig | 1 porsiyon | Dana kıyma (ızgara, %15 yağlı) 150;Tereyağlı pirinç pilavı 100;Domates 50;Yeşil biber (çiğ) 30;Soğan 20 | doner | ~30
+Tavuk döner porsiyon (pilav ve salata) | cig | 1 porsiyon | Tavuk göğsü (fırında) 90;Tavuk but (derili, fırında) 60;Tereyağlı pirinç pilavı 100;Domates 50;Yeşil biber (çiğ) 30;Soğan 20 | doner | ~30
+İskender (dana, ekmek, yoğurt, tereyağı) | cig | 1 porsiyon | Dana kıyma (ızgara, %15 yağlı) 100;Pide ekmeği 60;Domates 50;Tereyağı 25;Yoğurt 80 | doner iskender | ~30
+Tavuk şiş dürüm | cig | 1 dürüm | Tortilla (buğday) 70;Tavuk şiş 100;Domates 40;Marul 20;Soğan 15 | - | ~30
+Köfte ekmek | cig | 1 porsiyon | Pide ekmeği 100;Dana kıyma (ızgara, %20 yağlı) 100;Domates 40;Soğan 15 | kofte | ~30
+Adana kebap, lavaş ve közlenmiş sebze | cig | 1 porsiyon | Dana kıyma (ızgara, %20 yağlı) 150;Pide ekmeği 60;Domates 80;Yeşil biber (çiğ) 40;Soğan 30 | kebap | ~30
+Lahmacun (2 adet), salata ve ayran | cig | 1 porsiyon | Lahmacun (tarif hesaplı) 216;Marul 30;Domates 30;Yoğurt 90;Su 110 | - | ~30
+Lahmacun (3 adet) ve ayran | cig | 1 porsiyon | Lahmacun (tarif hesaplı) 324;Yoğurt 90;Su 110 | - | ~30
+Kıymalı pide ve ayran | cig | 1 porsiyon | Kıymalı pide 250;Yoğurt 90;Su 110 | - | ~30
+Kaşarlı pide, salata ve ayran | cig | 1 porsiyon | Kaşarlı pide 250;Marul 30;Domates 30;Yoğurt 90;Su 110 | - | ~30
+Tavuk dürüm ve ayran | cig | 1 porsiyon | Tavuk dürüm 280;Yoğurt 90;Su 110 | - | ~30
+Balık ekmek (ızgara uskumru) | cig | 1 adet | Pide ekmeği 100;Uskumru (ızgara) 100;Marul 20;Soğan 20 | - | ~30
+Kumpir (kaşar, mısır, mayonez) | cig | 1 adet | Fırın patates 250;Kaşar 40;Tereyağı 10;Mısır (konserve) 30;Mayonez 15;Salatalık turşusu 10 | - | ~30
+Karışık tost (kaşar, jambon, sos) | cig | 1 adet | Ekmek (beyaz) 90;Kaşar 40;Jambon 30;Tereyağı 10;Ketçap 10;Mayonez 10 | - | ~30
+Latte (tam yağlı süt) | cig | 1 bardak | Süt 240;Espresso 30 | - | ~30
+Cappuccino (tam yağlı süt) | cig | 1 bardak | Süt 120;Espresso 30 | - | ~30
+Donut ve filtre kahve | cig | 1 porsiyon | Donut 60;Filtre kahve (şekersiz) 250 | - | ~30
+Peynirli kruvasan | cig | 1 adet | Kruvasan 60;Kaşar 20 | - | ~30
+Hamburger menü (tek köfte, orta patates, kola) | cig | 1 menü | Hamburger, tek köfteli, soslu (restoran) 97;Patates kızartması, orta boy (restoran) 117;Kola (gazlı içecek) 370 | - | ~30
+Cheeseburger menü (tek köfte, orta patates, kola) | cig | 1 menü | Cheeseburger, tek köfteli (restoran) 127;Patates kızartması, orta boy (restoran) 117;Kola (gazlı içecek) 370 | - | ~30
+Çift köfteli cheeseburger menü (orta patates, kola) | cig | 1 menü | Cheeseburger, çift köfteli (restoran) 155;Patates kızartması, orta boy (restoran) 117;Kola (gazlı içecek) 370 | - | ~30
+Tavuk burger menü (orta patates, kola) | cig | 1 menü | Tavuk burger, fileto (restoran) 187;Patates kızartması, orta boy (restoran) 117;Kola (gazlı içecek) 370 | - | ~30
+Balık burger menü (orta patates, kola) | cig | 1 menü | Balık burger, tartar soslu (restoran) 220;Patates kızartması, orta boy (restoran) 117;Kola (gazlı içecek) 370 | - | ~30
+Çıtır tavuk menü (şerit, orta patates, kola) | cig | 1 menü | Çıtır tavuk şerit (restoran) 184;Patates kızartması, orta boy (restoran) 117;Kola (gazlı içecek) 370 | - | ~30
+Hamburger, soğan halkası ve kola | cig | 1 menü | Büyük hamburger, tek köfteli (restoran) 171;Soğan halkası (restoran) 117;Kola (gazlı içecek) 370 | - | ~30
+Pizza, 2 dilim peynirli | cig | 2 dilim | Peynirli pizza dilimi (restoran) 214 | pizza | ~30
+Pizza, 2 dilim karışık | cig | 2 dilim | Karışık pizza dilimi, etli ve sebzeli (restoran) 272 | pizza | ~30
+Pizza, 3 dilim pepperoni ve kola | cig | 1 menü | Pepperoni pizza dilimi (restoran) 333;Kola (gazlı içecek) 370 | pizza | ~30
+Pizza, 2 dilim peynirli ve ayran | cig | 1 menü | Peynirli pizza dilimi (restoran) 214;Yoğurt 90;Su 110 | pizza | ~30
+Patates kızartması ve ketçap | cig | 1 porsiyon | Patates kızartması, orta boy (restoran) 117;Ketçap 30 | - | ~30
+Tavuk nugget, patates ve ketçap | cig | 1 porsiyon | Çıtır tavuk şerit (restoran) 90;Patates kızartması, orta boy (restoran) 117;Ketçap 20 | - | ~30
+Taco, 2 adet (tavuklu) | cig | 2 adet | Tavuklu soft taco (restoran) 196 | taco | ~30
+Burrito ve kola | cig | 1 menü | Fasulyeli peynirli burrito (restoran) 185;Kola (gazlı içecek) 370 | - | ~30
+Hash brown, sahanda yumurta ve ekmek | cig | 1 tabak | Hash brown patates (restoran) 77;Sahanda yumurta 92;Ekmek (beyaz) 30 | kahvalti | ~30

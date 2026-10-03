@@ -26,7 +26,7 @@ por={}
 for r in rd('food_portion.csv'):
     por.setdefault(r['fdc_id'],[]).append([(r['amount']+' '+r['modifier']).strip()+' '+r['portion_description'],float(r['gram_weight'])])
 anah=set()
-for f in ('genel.tsv','malzeme.tsv'):
+for f in ('genel.tsv','malzeme.tsv','ek.tsv'):
     for l in open(H+f,encoding='utf-8'):
         if l.strip() and not l.startswith('#'):anah.add(l.split('\t')[1].strip())
 out={};hata=[]
