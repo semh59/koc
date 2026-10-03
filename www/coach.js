@@ -183,6 +183,8 @@ async function cFlush(){
   }
   busy=false;typing=false;save();render();
 }
+/* Fren varken bakımın altındaki ya da bakımı bilinmeyen hedef açık olabilir; öneri de uygulama da durur. */
+const kcalBlocked=(k,c=cCalc())=>!!c.block&&!(c.tdee&&k>=c.tdee-50);
 function cReply(o,kind){
   const items=CoachLib.cleanItems(o.log),msg={role:"coach",text:o.reply||"Tamam."};
   if(kind)msg.kind=kind;
@@ -193,7 +195,7 @@ function cReply(o,kind){
   if(o.flag==="safety")cPush({role:"coach",text:"",card:{kind:"safety",level:"check"}});
   if(o.propose){
     const c=cCalc(),cl=CoachLib.clampKcal(o.propose.kcal,{tdee:c.tdee,bmr:c.bmr});
-    if(cl&&c.block&&!(c.tdee&&cl.kcal>=c.tdee-50))return;
+    if(cl&&kcalBlocked(cl.kcal,c))return;
     if(cl&&cl.kcal!==S.settings.kcal)cPush({role:"coach",text:"",card:{kind:"propose",kcal:cl.kcal,why:String(o.propose.why||"").slice(0,160),limited:cl.limited,state:"pending"}});
   }
 }
@@ -622,7 +624,7 @@ function cClick(v,el){
       m.card.saved=true;save();render();toast(n?`${n} besin listene eklendi`:"Eklenecek besin yok");return;
     }
     case "no":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card){m.card.state="no";save();render()}return}
-    case "applyk":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card&&m.card.state==="pending"){S.settings.kcal=m.card.kcal;m.card.state="ok";save();render();toast(`Kalori hedefi ${m.card.kcal} kcal oldu`)}return}
+    case "applyk":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card&&m.card.state==="pending"){if(kcalBlocked(m.card.kcal)){m.card.state="no";save();render();return toast(cCalc().block)}S.settings.kcal=m.card.kcal;m.card.state="ok";save();render();toast(`Kalori hedefi ${m.card.kcal} kcal oldu`)}return}
     case "nok":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card){m.card.state="no";save();render()}return}
     case "dismiss":{const b=el.closest(".cm");if(b){S.chat=S.chat.filter(x=>x.id!==+b.dataset.mid);save();render()}return}
     case "clearchat":if(confirm("Sohbet geçmişi silinsin mi? Kayıtların silinmez.")){cClearChat();render()}return;
