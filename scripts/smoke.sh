@@ -7,8 +7,8 @@ clr() { crashcheck; adb logcat -c; }
 adb shell pm grant com.neowell.app android.permission.POST_NOTIFICATIONS
 clr
 adb shell monkey -p com.neowell.app -c android.intent.category.LAUNCHER 1
-sleep 25
-adb logcat -d > full.log
+# API 36 emülatörü yavaş: açılış denetimleri sabit süre yerine yazı tanıma sonucu (en son biten) düşene kadar, en çok 2 dk beklenir.
+for i in $(seq 12); do sleep 10; adb logcat -d > full.log; grep -q "NW-OCR" full.log && break; done
 grep -E "Capacitor/Console|chromium" full.log > smoke.log
 cat smoke.log
 diag=$(grep "NW-DIAG" smoke.log | tail -1)
@@ -16,11 +16,7 @@ diag=$(grep "NW-DIAG" smoke.log | tail -1)
 for p in LocalNotifications Share Filesystem App KeyVault DeviceHelp BarcodeScanner StepCounter Ocr Motion Speech Widget BackupFolder; do
   echo "$diag" | grep -q "$p=object" || { echo "EKLENTİ YOK: $p"; exit 1; }
 done
-for i in 1 2 3 4 5 6; do
-  n=$(adb shell dumpsys alarm | grep -E "RTC_WAKEUP.*com.neowell.app" | wc -l)
-  [ "$n" -ge 100 ] && break; sleep 10
-done
-[ "$n" -ge 100 ] || adb shell dumpsys alarm | grep "com.neowell.app" | grep -oE "^ *[A-Z_]+ #|type [0-9]|tag=[^ ]+" | sort | uniq -c | head -20
+for i in $(seq 6); do n=$(adb shell dumpsys alarm | grep -E "RTC_WAKEUP.*com.neowell.app" | wc -l); [ "$n" -ge 100 ] && break; sleep 10; done
 echo "Kurulu uyandıran alarm sayısı: $n"
 [ "$n" -ge 100 ] || { echo "HATIRLATMA ALARMLARI KURULMADI"; exit 1; }
 grep -q "NW-PDF ok pages=1" smoke.log || { echo "PDF (tuval, pdf.js) ÇALIŞMADI"; grep "NW-PDF" smoke.log; exit 1; }
