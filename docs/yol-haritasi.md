@@ -64,6 +64,13 @@ Uygulama katmanı incelemesi (5 Opus incelemesi, 3 Ekim 2026). İşaret: [x] yap
 - [x] **11 Bağlam boyutu:** ilaç 8 satır, yemek 12 satır, geçmiş 300 karakter üst sınırları; gerçek sınır ve ölçüm `plan-6-ozellik.md` 2.2 notunda.
 - [x] **12 Küçükler:** boş "not:" satırı, tansiyon bandı 135/85 ve metin, karbonhidrat/yağ eksik öğün notu, menü %15 sapma ve kalori açığı onayı, Koç porsiyon besini tarifte porsiyon olarak, rehberli süre tavanı 7200 sn.
 
+### Güvenlik freni (Dalga 12)
+Harici değerlendirmede bildirilen açık sağlık güvenliği boşlukları (3 Ekim 2026). Tek kaynak `Algo.riskFlags`, veri `riskInput()` (index.html).
+- [x] **A Kalori açığı freni:** sert engel (18 yaş altı, yeme bozukluğu işareti: not, Koç sohbeti ya da onboarding; hamilelik/emzirme; BMI ya da hedef BMI < 18,5) onayla kalkmaz; yumuşak engel (sağlık notu, ilaç kaydı, son 90 gün şeker/tansiyon ölçümü, kronik hastalık anahtarı) "Hekimime danıştım" ile 30 gün kalkar (`riskClearedAt`). Türkçe olumsuzlama ("hamile değilim", "emzirmiyorum", "kusmadım", "yok") sert saymaz, not dolu olduğu için yumuşak kalır. Koç KISIT satırı, menü, plato sorusu, Trend süresi, Enerji kartı, onboarding aynı kaynaktan; KISIT boy/tartı yokken de gider. Onboarding işareti ikiye ayrıldı (sert / yumuşak). Eski birleşik onboarding notu ("Hamilelik, yeme bozukluğu…") sert sayılır, kullanıcı notu düzelterek kaldırır.
+- [x] **B Protein:** BMI≥30'da ayarlı ağırlık (BMI 25 ağırlığı + fazlanın %25'i), boy yoksa üst 2,0 g/kg, her durumda üst 200 g; böbrek/diyaliz/karaciğer anahtarı, sert engel ya da 65+ yaşta ilaç/yumuşak engelde aralık yok ("hekiminle belirle"); her gösterimde böbrek/karaciğer dipnotu.
+- [x] **C Oruç:** sert engelde başlatma ve 18:6/20:4 kapalı (süren oruç bitirilebilir), yumuşakta onaydan sonra; uzun planlar için tek seferlik ek onay; modül ilk açılışta riskli gruplar bilgisi onay kutusuyla; engelde hatırlatıcı 11 ve 9100 kurulmaz, fren durumu değişince bildirimler yeniden kurulur.
+- Açık: yumuşak ağ geniş (tek tansiyon ölçümü ya da vitamin kaydı yeter, tek dokunuşla 30 gün kalkar); sohbet ed işareti sohbet temizlenince ya da 150 mesaj sınırını aşınca kaybolur; anahtar kelime eşleşmesi tıbbi değerlendirme değildir. Hukuki ve tıbbi metinler (oruç bilgilendirmesi, protein dipnotu) bir hekim/hukukçu gözünden geçmedi.
+
 ## C) Arayüz ve tasarım
 | # | Ad | Değer | Emek | Kaynak | Bağımlılık / karar |
 |---|---|---|---|---|---|
