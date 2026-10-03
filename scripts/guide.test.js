@@ -60,12 +60,14 @@ const T0=1e6,P=G.PREP*1000;
 { // sesli komut metinleri
   const nm=id=>({plank:"Plank",pushup:"Şınav"})[id];
   const st=G.start([{ex:"plank",sec:30,rest:10,n:1},{ex:"pushup",reps:12,rest:0,n:1}],T0);
-  ok("hazırlıkta: sıradaki egzersiz ve süre",G.cue(st,nm)==="Sıradaki: Plank, 30 saniye");
+  ok("hazırlık (5 sn, kısa): yalnız sıradaki egzersiz, geri sayıma yetişir",G.cue(st,nm)==="Sıradaki: Plank");
   G.tick(st,T0+P);
   ok("geri sayım söylendiyse çalışmada tekrar söylenmez, söylenmediyse ad ve başla",G.cue(st,nm,true)===""&&G.cue(st,nm,false)==="Plank, 30 saniye. Başla");
   G.tick(st,T0+P+30000);
   ok("dinlenme: dinlen ve sıradaki (tekrarlı)",G.cue(st,nm)==="Dinlen. Sıradaki: Şınav, 12 tekrar");
   ok("geri sayım metni ve bitiş",G.SAY.go==="3, 2, 1, başla"&&(G.tick(st,T0+P+40000),G.finish(st,T0+P+70000),G.cue(st,nm)===G.SAY.end));
   ok("metinler kısa (sesli komut)",[G.SAY.go,G.SAY.rest,G.SAY.end,G.SAY.pause].every(s=>s.length<=20));
+  const s5=G.start([{ex:"plank",sec:30,rest:5,n:1},{ex:"pushup",reps:12,rest:0,n:1}],T0);G.tick(s5,T0+P+30000);
+  ok("5 sn dinlenme: 'Dinlen' ve süre söylenmez, yalnız sıradaki",s5.ph[s5.i].k==="r"&&G.cue(s5,nm)==="Sıradaki: Şınav");
 }
 process.exit(bad?1:0);

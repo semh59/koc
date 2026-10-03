@@ -22,6 +22,8 @@ public class SpeechPlugin extends Plugin {
         .setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
         .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
         .build();
+    /** guidelib.js komut metinleri bu sınırın altında tutulur (guide.test.js). */
+    private static final int SHORT = 20;
     private TextToSpeech tts;
     private volatile boolean ready;
     private volatile boolean turkish;
@@ -84,7 +86,9 @@ public class SpeechPlugin extends Plugin {
             String id = "nw" + (++seq);
             lastId = id;
             requestFocus();
-            ok = tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, id) == TextToSpeech.SUCCESS;
+            // Kısa komut ("3, 2, 1, başla", "Duraklatıldı") süren cümlenin arkasına eklenir, onu kesmez; yeni evre cümlesi (Geç/Geri) eskimiş cümleyi keser.
+            int mode = text.length() <= SHORT ? TextToSpeech.QUEUE_ADD : TextToSpeech.QUEUE_FLUSH;
+            ok = tts.speak(text, mode, null, id) == TextToSpeech.SUCCESS;
             if (!ok) abandonFocus();
         }
         r.put("spoken", ok);
