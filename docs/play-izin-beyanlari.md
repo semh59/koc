@@ -1,12 +1,13 @@
 # Play izin beyanları
 
-Son gözden geçirme: 2 Ekim 2026. Kaynak: `scripts/patch-android.js`, eklenti manifestleri ve son APK'nın birleşik manifesti. CI her derlemede APK'nın izin listesini yazdırır ve `USE_EXACT_ALARM` ya da `FLASHLIGHT` görürse durur.
+Son gözden geçirme: 3 Ekim 2026. Kaynak: `scripts/patch-android.js`, eklenti manifestleri ve son APK'nın birleşik manifesti. CI her derlemede APK'nın izin listesini yazdırır. `USE_EXACT_ALARM`, `FLASHLIGHT` ya da `ACCESS_BACKGROUND_LOCATION` görürse, ya da `FOREGROUND_SERVICE_LOCATION` yoksa durur.
 
 ## Kaldırılan izinler
 | İzin | Neden kaldırıldı |
 |---|---|
 | `USE_EXACT_ALARM` | Play bu izni yalnız "alarm veya zamanlayıcı uygulaması" ile "etkinlik bildirimi gösteren takvim uygulaması" için kabul ediyor, diğer uygulamalara `SCHEDULE_EXACT_ALARM` diyor. NeoWell'in ana işlevi bunlardan biri değil, ilaç hatırlatıcı bu tanıma girmiyor. |
 | `FLASHLIGHT` | Fener hiçbir yerde açılmıyor. Barkod Google'ın tarayıcı ekranıyla (`scan()`) okunuyor, `enableTorch` çağrılmıyor. |
+| `ACCESS_BACKGROUND_LOCATION` | 3 Ekim 2026'da kaldırıldı. Otomatik algılanan yürüyüşte GPS açmak arka plan konumu gerektiriyordu, beslenme uygulamasında bu iznin gerekçesi zayıf. Otomatik algılama artık GPS açmıyor; konum yalnız kullanıcının uygulama içinden başlattığı yürüyüşte kullanılıyor. Eski sürümde izni vermiş kullanıcı için: uygulama bu izni artık bildirmediği için Android onu uygulamaya vermez, uygulama da kullanmaz. |
 
 ## Kalan izinler
 | İzin | Hangi özellik | Kullanıcı nasıl görüyor | Play Console |
@@ -18,29 +19,27 @@ Son gözden geçirme: 2 Ekim 2026. Kaynak: `scripts/patch-android.js`, eklenti m
 | `WAKE_LOCK` | Bildirim eklentisi ve Play hizmetleri, alarm teslimi sırasında. | Sistem penceresi yok. | Beyan gerekmez. |
 | `VIBRATE` | Dinlenme süresi bitti titreşimi, rekor titreşimi, ilaç alarm kanalı. | Sistem penceresi yok. | Beyan gerekmez. |
 | `CAMERA` | Besin etiketi ve tahlil fotoğrafı (ML Kit yazı tanıma, telefonda). Fotoğraf alanı kamerayı açtığında Capacitor izni sorar. | Fotoğraf çekmek istendiğinde sistem penceresi. | Beyan gerekmez. |
-| `ACTIVITY_RECOGNITION` | Adım sayar ve yürüyüş/koşu algılama. | "Adım sayarı aç" ya da "Hareket algılamayı aç" sırasında sistem penceresi. | Beyan gerekmez. Sağlık uygulaması beyanında adım/aktivite verisi yazılmalı. |
-| `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION` | Hareket algılamada yürüyüş/koşu sırasında yaklaşık 1 dakikalık GPS ölçümü (adım uzunluğu, mesafe). Rota ve konum noktası saklanmaz. | Önce uygulama içi "Konum izni hakkında" açıklaması, sonra sistem penceresi. | Konum verisi veri güvenliği formunda "toplanmaz/cihazda işlenir" olarak doğru işaretlenmeli. |
-| `ACCESS_BACKGROUND_LOCATION` | Aynı GPS ölçümünün uygulama kapalıyken de yapılması. | Açıklama ekranı kodda var (`motionui.js`, `motionDisclose`): "konum", "uygulama kapalıyken ya da kullanılmıyorken", özellik adı ve reklam yok bilgisi, Devam/Vazgeç. Vazgeç izin istemez. Ardından "Her zaman izin ver" sistem ekranı. | İzin beyan formu ve en fazla 30 saniyelik video gerekir (özellik açılışı, açıklama ekranı, sistem izni). Taslak aşağıda. |
-| `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_LOCATION` | `MotionGpsService`: GPS ölçümü sürerken görünen bildirimli konum servisi (Android 14 türlü servis kuralı). | Ölçüm boyunca kalıcı bildirim. | Ön plan servisi beyanı: işlev açıklaması, ertelenirse etkisi, video. Taslak aşağıda. |
+| `ACTIVITY_RECOGNITION` | Adım sayar ve yürüyüş/koşu algılama. | "Adım sayarı aç" ya da "Hareket algılamayı aç" sırasında sistem penceresi. Hareket algılama yalnız bu izni ister. | Beyan gerekmez. Sağlık uygulaması beyanında adım/aktivite verisi yazılmalı. |
+| `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION` | Ön plan konumu. Kullanıcının Adım ekranında "Yürüyüş başlat" ile başlattığı yürüyüşte kısa GPS ölçümü: Doppler hızı ÷ adım ritmi ile adım uzunluğu öğrenilir. Yalnız adım sayar ve hareket algılama açıkken. Rota ve konum noktası saklanmaz. | İzin yalnız "Yürüyüş başlat"ta istenir: önce uygulama içi "Yürüyüşte konum" açıklaması (`motionui.js`, `motionDisclose`; İzin ver / Konumsuz devam), sonra sistem penceresi ("Uygulamayı kullanırken"). Ret ya da Konumsuz devam: yürüyüş boy tahminiyle sürer, bir daha sorulmaz; Ayarlar > Hareket algılama'dan yeniden istenebilir. | Arka plan konum beyanı ve videosu gerekmez. Veri güvenliği formunda konum "cihazda işlenir, toplanmaz/paylaşılmaz". |
+| `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_LOCATION` | `MotionGpsService`: elle yürüyüşteki GPS ölçümü için konum türünde ön plan servisi. Uygulama görünürken, kullanıcının dokunuşuyla başlar; uygulama arka plana geçse ya da ekran kapansa da "kullanırken" izniyle sürer (Android'e göre ön plan konumu). İyi sinyalde ≈ 45 sn, ilk iyi nokta için en çok 10 dk; yürüyüş bitince kapanır. | Ölçüm boyunca kalıcı bildirim: "Yürüyüşte adım uzunluğu ölçülüyor". | Android 14+ hedefinde ön plan servisi türü beyanı gerekir. Play yardım sayfası (13392821) her ön plan servisi özelliği için tetikleme adımlarını gösteren video bağlantısı istiyor. Kısa açıklama ve video adımları aşağıda. |
 
 ## Beyan metni taslakları
 
-**Arka plan konumu (ACCESS_BACKGROUND_LOCATION)**
-> NeoWell'in hareket algılama özelliği, kullanıcı açtığında yürüyüş ve koşuyu kendisi algılar. Bir yürüyüş başladığında adım uzunluğunu ve mesafeyi ölçmek için GPS'i yaklaşık 1 dakika açar. Yürüyüş çoğu zaman uygulama kapalıyken başladığı için bu ölçüm arka planda konum gerektirir. Konum noktaları ve rota saklanmaz, yalnız mesafe ve hız sonucu telefonda kaydedilir; veri sunucuya gönderilmez ve reklam için kullanılmaz. İzin verilmezse hız adım ritminden hesaplanır, özellik çalışmaya devam eder.
-
-Video: Ayarlar > Hareket algılama > Aç > "Konum izni hakkında" ekranı > Devam > sistem izinleri ("Her zaman izin ver") > Adım ekranında Hareketler kartı.
-
 **Ön plan servisi, konum türü (FOREGROUND_SERVICE_LOCATION)**
-> İşlev: Algılanan yürüyüş veya koşu sırasında mesafe ölçümü için yaklaşık 1 dakikalık GPS penceresi; ölçüm bitince servis kendini kapatır ve bildirim kalkar. Ertelenir ya da kesilirse: o yürüyüşün mesafesi GPS yerine adım ritminden tahmin edilir; veri kaybı olmaz.
+> İşlev: Kullanıcı uygulamada "Yürüyüş başlat"a dokunduğunda, yürüyüş sırasında hız ve adım ritmini ölçerek adım uzunluğunu öğrenmek için kısa GPS penceresi açılır. Servis uygulama ekrandayken, kullanıcının eylemiyle başlar; ölçüm (iyi sinyalde yaklaşık 1 dakika, en çok 10 dakika) bitince ya da kullanıcı yürüyüşü bitirince kapanır ve bildirim kalkar. Arka plan konum izni kullanılmaz. Konum noktası ve rota saklanmaz, telefondan çıkmaz. Ertelenir ya da kesilirse: o yürüyüşün mesafesi boy ve adım ritminden tahmin edilir, veri kaybı olmaz.
+
+Video (kısa): Adım ekranı > Yürüyüş başlat > "Yürüyüşte konum" açıklaması > İzin ver > sistem izni ("Uygulamayı kullanırken") > bildirimde "Yürüyüşte adım uzunluğu ölçülüyor" > Bitir > bildirim kalkar.
 
 **Sağlık uygulaması beyanı:** "Tıbbi cihaz değildir; tanı ve tedavi önermez" (uygulamada `MED_NOTE`, Gizlilik ve veri ekranında ve Hakkında bölümünde görünür).
 
 ## Açık risk
-- Konum servisi kullanıcı o anda dokunmadan, yürüyüş algılanınca başlıyor. Play'in ön plan servisi sayfası bunu "arka plan konumuna eşdeğer" sayıyor ve tam arka plan konum şartlarını uyguluyor. Listedeki hazır kullanım durumları (konum paylaşımı, navigasyon, coğrafi sınır) birebir uymuyor, durumu elle yazmak gerekecek. Ret gelirse seçenek: GPS ölçümünü kaldırıp yalnız adım ritmiyle hız (izin listesi kısalır).
+- Konum türü ön plan servisinin hazır kullanım durumları (konum paylaşımı, navigasyon) birebir uymayabilir; "kullanıcının başlattığı yürüyüş takibi" olarak elle yazılmalı. Servis artık yalnız kullanıcı eylemiyle ve uygulama görünürken başlıyor, arka plandan başlatılmıyor. Ret gelirse seçenek: GPS penceresini tümden kaldırmak (yalnız boy tahmini; konum izinleri ve `FOREGROUND_SERVICE_LOCATION` da kalkar).
 - `SCHEDULE_EXACT_ALARM` izni Android 14'te yedekten geri yüklenen kurulumda da kapalı gelir. Uyarı satırı bu durumu da kapsıyor.
 
 ## Kaynaklar
 - Exact alarm politikası: https://support.google.com/googleplay/android-developer/answer/13161072
 - Exact alarm izni ve davranış: https://developer.android.com/develop/background-work/services/alarms/schedule
-- Arka plan konumu: https://support.google.com/googleplay/android-developer/answer/9799150
+- Arka plan konumu (artık kullanılmıyor): https://support.google.com/googleplay/android-developer/answer/9799150
+- Ön plan konumu (servis ön planda başlarsa arka plana geçince erişim sürer): https://developer.android.com/develop/sensors-and-location/location/permissions
+- Konum türü servis şartları: https://developer.android.com/develop/background-work/services/fgs/service-types
 - Ön plan servisi beyanı: https://support.google.com/googleplay/android-developer/answer/13392821

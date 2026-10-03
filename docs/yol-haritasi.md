@@ -9,7 +9,7 @@ Ayrıntı ve test adımları `yapilacaklar.md`'de. Telefonda denenen tek özelli
 
 - A1 Adım sayar: gece kapanışı, 23:58 örneği, geç alarm
 - A2 Elle adım ve "sayım durdu" kartı
-- A3 Hareket algılama ve alarmla başlayan GPS penceresi
+- A3 Hareket algılama (GPS'siz) ve elle yürüyüşte ön plan GPS penceresi
 - A4 Bildirimler uygulama kapalıyken (Xiaomi), su hedefi dolunca susma
 - A5 Su bildirimindeki "+250 ml" düğmesi ve MIUI'de tekrar teslim
 - A6 Widget: ekleme, +250, dokunma, gün değişimi, dar boyut, çift su
@@ -39,7 +39,7 @@ Ayrıntı ve test adımları `yapilacaklar.md`'de. Telefonda denenen tek özelli
 | B8 (yapıldı) | Depolama sınırı uyarısı | localStorage (5-10 MB) dolmadan boyut ölçülüp uyarılır, uzun geçmişte sessiz veri kaybı önlenir. Tüm anahtarlar ölçülür, 3,5 MB üstünde Bugün ve Ayarlar > Veriler'de uyarı; kota hatasında her seferinde mesaj ve kalıcı uyarı, değişiklik bellekte kalır, yedek ekranı onu alır. Toplu "eski kayıtları temizle" aracı yok (ayrı iş). | S | rekabet-egzersiz #19 | – |
 | B9 | Release imzası | Debug anahtarı yerine saklanan bir release anahtarıyla imzalanır. | S | android/app/build.gradle:9 | G3; imza değişince yerinde güncelleme olmaz: önce şifreli yedek, sonra yeniden kurulum |
 | B10 | targetSdk 34 yükseltmesi | Play'in güncel hedef API şartı karşılanır (değer doğrulanacak). | L | android/variables.gradle | G12; Capacitor sürüm atlaması gerekebilir |
-| B11 (yapıldı) | Play izin uyumu | Arka plan konumu, `USE_EXACT_ALARM` ve konum servisi için beyan hazırlanır ya da gereksiz izin kaldırılır. `USE_EXACT_ALARM` ve `FLASHLIGHT` kaldırıldı; tam saat izni yoksa uyarı + yeniden kurulum; konum izninden önce açıklama ekranı; beyanlar `docs/play-izin-beyanlari.md`. Açık risk: otomatik başlayan konum servisi Play incelemesinde sorun çıkarabilir. | S | AndroidManifest.xml | – |
+| B11 (yapıldı) | Play izin uyumu | Arka plan konumu, `USE_EXACT_ALARM` ve konum servisi için beyan hazırlanır ya da gereksiz izin kaldırılır. `USE_EXACT_ALARM` ve `FLASHLIGHT` kaldırıldı; tam saat izni yoksa uyarı + yeniden kurulum; konum izninden önce açıklama ekranı; beyanlar `docs/play-izin-beyanlari.md`. 3 Ekim 2026: `ACCESS_BACKGROUND_LOCATION` ve otomatik GPS kaldırıldı; konum yalnız elle başlatılan yürüyüşte, uygulama görünürken başlayan konum servisiyle; CI APK'da arka plan konumunu görürse durur. Kalan: ön plan servisi beyanı (kısa video). | S | AndroidManifest.xml | – |
 
 ### İnceleme düzeltmeleri (Dalga 11)
 Android yerel katman ve veri bütünlüğü incelemesi (3 Ekim 2026):
