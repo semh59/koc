@@ -30,14 +30,16 @@ const Algo=(()=>{
     const last=dayNum(ks[ks.length-1]);
     return ks.filter(k=>last-dayNum(k)<days).map(k=>[dayNum(k),w[k]]);
   }
-  /* Son `days` gün için kg/hafta. En az 4 tartı ve 7 gün aralık ister. */
-  function slopePerWeek(w,days=21){
+  /* Son `days` gün için kg/hafta. Varsayılan: en az 4 tartı ve 7 gün aralık. */
+  function slopePerWeek(w,days=21,minPts=4,minSpan=7){
     const pts=windowPts(w,days);
-    if(pts.length<4||pts[pts.length-1][0]-pts[0][0]<7)return null;
+    if(pts.length<minPts||pts[pts.length-1][0]-pts[0][0]<minSpan)return null;
     const f=ols(pts);return f?7*f.m:null;
   }
-  /* Son 14 günün eğimi -0,2 kg/hafta'tan hızlı düşüyorsa kilo veriyor demektir. Veri yetersizse (eğim yok) "veriyor" sayılmaz. */
-  function isLosing(w){const s=slopePerWeek(w,14);return s!=null&&s<-0.2}
+  /* Haftada bir tartılan da ölçülebilsin diye 28 gün, en az 3 tartı ve 14 gün yayılım; yetersizse null (lossKnown false). */
+  const lossSlope=w=>slopePerWeek(w,28,3,14);
+  const lossKnown=w=>lossSlope(w)!=null;
+  function isLosing(w){const s=lossSlope(w);return s!=null&&s<-0.2}
   function bmrMifflin({kg,cm,age,sex}){
     return 10*kg+6.25*cm-5*age+(sex==="m"?5:sex==="f"?-161:-78);
   }
@@ -225,6 +227,6 @@ const Algo=(()=>{
     }
     return r;
   }
-  return {KCAL_PER_KG,dayNum,fdate,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,lossBlock,etaWeeks,isLosing,goalEta,proteinRange,exerciseKcal,moveBonus,moveSummary,cleanWalk,netKcal,gymKcal,MEASURES,cleanMeasures,whtr,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
+  return {KCAL_PER_KG,dayNum,fdate,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,lossBlock,etaWeeks,isLosing,lossKnown,goalEta,proteinRange,exerciseKcal,moveBonus,moveSummary,cleanWalk,netKcal,gymKcal,MEASURES,cleanMeasures,whtr,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
 })();
 if(typeof module!=="undefined")module.exports=Algo;
