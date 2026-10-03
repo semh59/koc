@@ -31,13 +31,18 @@ ok("ekran açık: keepAwake eklenti metodu, UI iş parçacığında bayrak ekler
   ok("boyut: gömülü barkod motoru paketlenmez ve uygulama onu çağırmaz (yalnız scan)",patch.includes('excludes += ["**/libbarhopper_v3.so"]')&&!/startScan|readBarcodesFromImage/.test(www)&&/bs\.scan\(/.test(www));
 }
 { // D-Adım6: uzun aralık atılmaz, parça parça kaydedilir
-  const mr=rd("assets/android/MotionReceiver.java"),tk=mr.slice(mr.indexOf("private static void tick"),mr.indexOf("double cad = MotionStore.addCp")),ms=rd("assets/android/MotionStore.java");
+  const mr=rd("assets/android/MotionReceiver.java"),tk=mr.slice(mr.indexOf("private static void tick"),mr.indexOf("MotionStore.addCp(c, now, steps);")),ms=rd("assets/android/MotionStore.java");
   ok("hareket: tick gün dönünce ya da 3 saatte aralığı kapatıp yeniden açar, atmaz",/ROLL_MS = 3L \* 3600 \* 1000/.test(mr)&&/MotionStore\.dayOf\(now\) != MotionStore\.dayOf\(MotionStore\.lastActivityAt\(c\)\)/.test(tk)&&/MotionStore\.close\(c, now, steps\) == 0 && !newDay\) return;\s*MotionStore\.open\(c, mode, now, steps\);/.test(tk)&&!/discard/.test(tk));
   ok("hareket: kapanış gün numarasıyla bölünür, parça başına 4 saat sınırı; yeniden başlatma ve 30 dk kuralı yerinde",/MotionMath\.split\(model\(c\), mode, cm\(c\), kg\(c\), ts, ss, ds, n,/.test(ms)&&/ds\[i\] = dayOf\(ts\[i\]\)/.test(ms)&&/b\.t1 - b\.t0 > MAX_BOUT_MS\) continue/.test(ms)&&/STALE_MS = 30L \* 60000/.test(mr)&&/ACTION_MY_PACKAGE_REPLACED\.equals\(a\)\) \{[\s\S]{0,200}MotionStore\.discard\(c\)/.test(mr));
 }
 { // Dalga 11: adım değeri ile zamanı aynı örnekten (gece yarısı yarışı)
   const mr=rd("assets/android/MotionReceiver.java"),st=rd("assets/android/StepStore.java");
-  ok("hareket: tick ve geçiş zamanı sayaç okumasının anından, gün anahtarı aynı örnekten",/long now = StepStore\.sampledAt\(\);/.test(mr)&&/handle\(app, e, steps, StepStore\.sampledAt\(\), nowWall, nowEl\)/.test(mr)&&/t = MotionMath\.onCounterDay\(t, z\.getOffset\(t\), at, z\.getOffset\(at\)\);/.test(mr)&&/sampledAt = at;[\s\S]{0,120}format\(new Date\(at\)\)[\s\S]{0,120}now\.setTimeInMillis\(at\);/.test(st)&&!/System\.currentTimeMillis\(\)/.test(mr.slice(mr.indexOf("private static void tick"),mr.indexOf("double cad"))));
+  ok("hareket: tick ve geçiş zamanı sayaç okumasının anından, gün anahtarı aynı örnekten",/long now = StepStore\.sampledAt\(\);/.test(mr)&&/handle\(app, e, steps, StepStore\.sampledAt\(\), nowWall, nowEl\)/.test(mr)&&/t = MotionMath\.onCounterDay\(t, z\.getOffset\(t\), at, z\.getOffset\(at\)\);/.test(mr)&&/sampledAt = at;[\s\S]{0,120}format\(new Date\(at\)\)[\s\S]{0,120}now\.setTimeInMillis\(at\);/.test(st)&&!/System\.currentTimeMillis\(\)/.test(mr.slice(mr.indexOf("private static void tick"),mr.indexOf("MotionStore.addCp(c, now, steps);"))));
+}
+{ // Arka planda otomatik GPS yok: alıcı konum servisine dokunmaz, karar mantığı silindi
+  const mr=rd("assets/android/MotionReceiver.java"),mm=rd("assets/android/MotionMath.java"),gs=rd("assets/android/MotionGpsService.java");
+  ok("hareket: etkinlik geçişi ve alarm GPS servisini başlatmaz ya da durdurmaz, arka plan konum izni okunmaz",!/MotionGpsService|LOCATION/.test(mr)&&/MotionStore\.addCp\(c, now, steps\);/.test(mr));
+  ok("hareket: otomatik GPS karar mantığı (gpsWanted, ritim aralığı, sapma, pil) kalmadı",!/gpsWanted|bucket|cadenceShift|BatteryManager|isPowerSaveMode|gpsToday/.test(mm+gs+rd("assets/android/MotionStore.java")));
 }
 { // Dalga 11: smoke çökme denetimi
   const sm=rd("scripts/smoke.sh");

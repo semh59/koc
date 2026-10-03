@@ -35,10 +35,6 @@ final class MotionStore {
         return p(c).getFloat("kg", 0);
     }
 
-    static int dayNum() {
-        return dayOf(System.currentTimeMillis());
-    }
-
     static int dayOf(long t) {
         return MotionMath.dayOf(t, TimeZone.getDefault().getOffset(t));
     }
@@ -51,27 +47,17 @@ final class MotionStore {
         p(c).edit().putString("model", m.enc()).apply();
     }
 
-    static synchronized int gpsToday(Context c) {
-        SharedPreferences sp = p(c);
-        return sp.getInt("gpsDay", -1) == dayNum() ? sp.getInt("gpsN", 0) : 0;
-    }
-
-    static synchronized void incGps(Context c) {
-        int n = gpsToday(c) + 1;
-        p(c).edit().putInt("gpsDay", dayNum()).putInt("gpsN", n).apply();
-    }
-
     /** Açık aralık: tür (MotionMath.WALK/RUN), başlangıç zamanı, başlangıçtaki günlük adım. */
     static synchronized void open(Context c, int mode, long t0, long steps0) {
-        p(c).edit().putInt("bMode", mode).putLong("bT0", t0).putLong("bS0", steps0).putFloat("bSpeed", -1).putFloat("bRef", -1).putLong("gpsT", 0)
+        p(c).edit().putInt("bMode", mode).putLong("bT0", t0).putLong("bS0", steps0).putFloat("bSpeed", -1)
             .remove("bCp").remove("bLastT").remove("bLastS").apply();
     }
 
-    /** Kontrol noktası ekler; önceki noktadan bu yana dilimin ritmini (adım/dk) döndürür, hesaplanamazsa NaN. */
-    static synchronized double addCp(Context c, long t, long s) {
+    /** Kontrol noktası ekler; zaman ilerlemiyor ya da adım geri gidiyorsa eklemez. */
+    static synchronized void addCp(Context c, long t, long s) {
         SharedPreferences sp = p(c);
         long pt = sp.getLong("bLastT", sp.getLong("bT0", 0)), ps = sp.getLong("bLastS", sp.getLong("bS0", 0));
-        if (t <= pt || s < ps) return Double.NaN;
+        if (t <= pt || s < ps) return;
         String all = sp.getString("bCp", "") + t + ":" + s + ";";
         String[] parts = all.split(";");
         if (parts.length > 150) {
@@ -80,7 +66,6 @@ final class MotionStore {
             all = sb.toString();
         }
         sp.edit().putString("bCp", all).putLong("bLastT", t).putLong("bLastS", s).apply();
-        return (s - ps) * 60000.0 / (t - pt);
     }
 
     /** Açık aralıkta son hareket: son kontrol noktası, yoksa açılış zamanı. */
@@ -91,22 +76,6 @@ final class MotionStore {
 
     static synchronized long openedAt(Context c) {
         return p(c).getLong("bT0", 0);
-    }
-
-    static synchronized double refCad(Context c) {
-        return p(c).getFloat("bRef", -1);
-    }
-
-    static synchronized void setRefCad(Context c, double cad) {
-        p(c).edit().putFloat("bRef", (float) cad).apply();
-    }
-
-    static synchronized long lastGps(Context c) {
-        return p(c).getLong("gpsT", 0);
-    }
-
-    static synchronized void setLastGps(Context c, long t) {
-        p(c).edit().putLong("gpsT", t).apply();
     }
 
     static synchronized boolean isOpen(Context c) {

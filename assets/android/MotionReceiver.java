@@ -1,12 +1,10 @@
 package com.neowell.app;
 
-import android.Manifest;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.SystemClock;
 import com.google.android.gms.location.ActivityRecognition;
@@ -20,10 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-/** Etkinlik tanıma geçişleri (yürüme/koşma başladı-bitti): aralığı açar/kapatır, gerekirse kısa GPS penceresi başlatır. Açılışta kaydı yeniler. */
+/** Etkinlik tanıma geçişleri (yürüme/koşma başladı-bitti): aralığı açar/kapatır. GPS açmaz: arka planda konum kullanılmaz. Açılışta kaydı yeniler. */
 public class MotionReceiver extends BroadcastReceiver {
     static final String ACTION = "com.neowell.app.MOTION", TICK = "com.neowell.app.MOTION_TICK";
-    private static final long TICK_MS = 150000, GPS_GAP_MS = 600000, ROLL_MS = 3L * 3600 * 1000, STALE_MS = 30L * 60000;
+    private static final long TICK_MS = 150000, ROLL_MS = 3L * 3600 * 1000, STALE_MS = 30L * 60000;
     /** Geçiş bildirimi bu kadar gecikmeden geldiyse olay zamanı kullanılır, daha geçse adım sayacıyla tutarlı olması için şimdiki zaman. */
     private static final long MAX_DELAY_MS = 90000;
 
@@ -38,7 +36,7 @@ public class MotionReceiver extends BroadcastReceiver {
         return PendingIntent.getBroadcast(c, 7002, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
-    /** Açık aralık sürerken her ~2,5 dk adım sayacından kontrol noktası alınır: ritim düşüşü (yorulma) ve değişimi böyle görülür. */
+    /** Açık aralık sürerken her ~2,5 dk adım sayacından kontrol noktası alınır: ritim düşüşü (yorulma) ve değişimi mesafe ve kaloriye böyle yansır. */
     private static void scheduleTick(Context c) {
         AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
         if (am != null) am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + TICK_MS, tickIntent(c));
@@ -49,7 +47,6 @@ public class MotionReceiver extends BroadcastReceiver {
         if (am != null) am.cancel(tickIntent(c));
     }
 
-    /** Kontrol noktası: dilimin ritmi bir öncekinden belirgin saparsa ve o ritim aralığı öğrenilmemişse kısa GPS penceresi. */
     private static void tick(Context c, long steps) {
         if (!MotionStore.isOpen(c)) return;
         long now = StepStore.sampledAt();
@@ -58,23 +55,12 @@ public class MotionReceiver extends BroadcastReceiver {
         boolean newDay = MotionStore.dayOf(now) != MotionStore.dayOf(MotionStore.lastActivityAt(c));
         if (newDay || now - MotionStore.openedAt(c) >= ROLL_MS) {
             int mode = MotionStore.openMode(c);
-            long gps = MotionStore.lastGps(c);
             if (MotionStore.close(c, now, steps) == 0 && !newDay) return;
             MotionStore.open(c, mode, now, steps);
-            MotionStore.setLastGps(c, gps);
             scheduleTick(c);
             return;
         }
-        double cad = MotionStore.addCp(c, now, steps), ref = MotionStore.refCad(c);
-        if (!Double.isNaN(cad) && cad >= 40) {
-            int mode = MotionStore.openMode(c);
-            if (MotionMath.cadenceShift(ref, cad) && now - MotionStore.lastGps(c) > GPS_GAP_MS && canGps(c)
-                && MotionMath.gpsWanted(MotionStore.model(c), MotionMath.classify(mode, cad, Double.NaN), cad, MotionStore.dayNum(), MotionStore.gpsToday(c), MotionGpsService.battery(c), MotionGpsService.powerSave(c))) {
-                MotionStore.setLastGps(c, now);
-                MotionGpsService.start(c, mode);
-            }
-            MotionStore.setRefCad(c, cad);
-        }
+        MotionStore.addCp(c, now, steps);
         scheduleTick(c);
     }
 
@@ -153,23 +139,13 @@ public class MotionReceiver extends BroadcastReceiver {
             MotionStore.discard(c);
         }
         if (MotionStore.isOpen(c) && (!enter && foot && mode == MotionStore.openMode(c) || enter && !(foot && mode == MotionStore.openMode(c)))) {
-            MotionGpsService.stop(c);
             cancelTick(c);
             MotionStore.close(c, t, steps);
         }
         if (enter && foot && !MotionStore.isOpen(c)) {
             MotionStore.open(c, mode, t, steps);
             scheduleTick(c);
-            if (canGps(c) && MotionMath.gpsWanted(MotionStore.model(c), mode, Double.NaN, MotionStore.dayNum(), MotionStore.gpsToday(c), MotionGpsService.battery(c), MotionGpsService.powerSave(c))) {
-                MotionStore.setLastGps(c, nowWall);
-                MotionGpsService.start(c, mode);
-            }
         }
     }
 
-    /** Konum ön plan servisini arka plandan başlatmak "Her zaman izin ver" konum izni ister. */
-    static boolean canGps(Context c) {
-        if (c.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) return false;
-        return Build.VERSION.SDK_INT < 29 || c.checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED;
-    }
 }
