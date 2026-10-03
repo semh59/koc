@@ -37,18 +37,18 @@ const WeeklyLib=(()=>{
     if(ad.length)summary.push(["Adım",`günlük ortalama ${Math.round(mean(ad.map(r=>r.adim))).toLocaleString("tr-TR")} (hedef ${st.stepGoal.toLocaleString("tr-TR")}), ${ad.length} gün`]);
     const vit=S.vitals||[];
     if(st.bpOn){const h=VL.homeAvg(vit,endDay,days);if(h.all)summary.push(["Tansiyon",`ortalama ${Math.round(h.all.sys)}/${Math.round(h.all.dia)} mmHg (${h.all.n} ölçüm, ${h.days} gün)`])}
-    if(st.bsOn){const g=VL.gStats(vit,from,endDay,st);if(g)summary.push(["Şeker",`ortalama ${Math.round(g.avg)} mg/dL (${g.n} ölçüm)${g.pct==null?"":`, hedef aralığında %${g.pct}`}`])}
+    if(st.bsOn){const g=VL.gStats(vit,from,endDay,st);if(g)summary.push(["Şeker",`ortalama ${Math.round(g.avg)} mg/dL (${g.n} ölçüm)`])}
     if(st.medOn&&S.meds&&S.meds.length){
       const a=ML.adherence(S.meds,S.medLog||[],from,endDay,endDay,nowTime||"23:59");
       if(a.total)summary.push(["İlaç uyumu",`%${a.pct} (${a.taken} / ${a.total} doz alındı${a.missed?`, ${a.missed} kaçırılan`:""}${a.late?`, ${a.late} bugün bekliyor`:""}${a.skipped?`, ${a.skipped} atlanan`:""})`]);
     }
     /* Grafikler yalnız en az iki günlük veri varsa çıkar. Renkler uygulamadaki ile aynı: kilo prim, sistolik ink, diyastolik su. */
     const charts=[],kp=rows.filter(r=>r.kilo!=null).map(r=>({day:r.day,v:r.kilo}));
-    if(kp.length>=2)charts.push({title:"Kilo (kg)",series:[{pts:kp,color:"#0f5c55",shape:"c",vals:true,fmt:v=>fmt(v)}],band:null,from,to:endDay});
+    if(kp.length>=2)charts.push({title:"Kilo (kg)",series:[{pts:kp,color:"#0f5c55",shape:"c",vals:true,fmt:v=>fmt(v)}],from,to:endDay});
     if(st.bpOn){
       const byDay={};for(const r of vit)if(r.k==="t"&&r.day>=from&&r.day<=endDay)(byDay[r.day]=byDay[r.day]||[]).push(r);
       const ds=Object.keys(byDay).sort(),avg=f=>ds.map(k=>({day:k,v:mean(byDay[k].map(r=>r[f]))}));
-      if(ds.length>=2)charts.push({title:"Tansiyon (mmHg), günlük ortalama",series:[{pts:avg("sys"),color:"#10232b",shape:"c",short:"Sistolik"},{pts:avg("dia"),color:"#2a86bd",shape:"s",dash:true,short:"Diyastolik",below:true}],band:VL.bpBand(st).bands,note:VL.bpBand(st).mine?"Gölgeli alan girdiğin üst sınırlardır.":"Gölgeli alan genel referans aralığıdır (büyük 90–135, küçük 60–85); tanı değildir.",from,to:endDay});
+      if(ds.length>=2)charts.push({title:"Tansiyon (mmHg), günlük ortalama",series:[{pts:avg("sys"),color:"#10232b",shape:"c",short:"Sistolik"},{pts:avg("dia"),color:"#2a86bd",shape:"s",dash:true,short:"Diyastolik",below:true}],from,to:endDay});
     }
     return {rows,summary,charts,from,end:endDay};
   }
@@ -85,10 +85,8 @@ const WeeklyLib=(()=>{
       cs.forEach((c,i)=>{
         const x=RM+i*colW;
         ctx.fillStyle="#10232b";ctx.font="bold 26px sans-serif";ctx.fillText(c.title,x,y+26);
-        VL.drawChart(ctx,x,y+46,w,h,c.series,c.band,c.from,c.to);
+        VL.drawChart(ctx,x,y+46,w,h,c.series,c.from,c.to);
       });
-      const note=cs.map(c=>c.note).filter(Boolean).join(" ");
-      if(note){ctx.fillStyle="#62737a";ctx.font="20px sans-serif";ctx.fillText(note,RM,y+46+h+66)}
     }
     ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText("NeoWell",RM,RH-45);
   }

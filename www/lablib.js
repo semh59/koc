@@ -314,7 +314,7 @@ const LabLib=(()=>{
       ctx.font="bold 46px sans-serif";ctx.fillText("NeoWell · Tahlil sonuçları",RM,y+46);
       ctx.font="24px sans-serif";ctx.fillStyle="#62737a";
       ctx.fillText(`Oluşturulma: ${fmtD(info.today)}   ·   ${info.count} test, ${info.rows} sonuç`,RM,y+90);
-      ctx.fillText("Değerler kullanıcının girdiği ya da PDF'ten okuduğu verilerdir. Referans aralığı laboratuvar raporundan alınmıştır.",RM,y+124);
+      ctx.fillText("Değerler kullanıcının girdiği ya da PDF'ten okuduğu verilerdir. Aralık, raporda yazdığı gibi alınmıştır; yorumlanmamıştır. Bu değerleri hekiminle değerlendir.",RM,y+124);
       y+=HEAD-RM;
     }
     for(const s of items){
@@ -327,13 +327,13 @@ const LabLib=(()=>{
       ctx.font="26px sans-serif";ctx.fillStyle="#62737a";ctx.fillText(s.u||"",RM+vw+12,y+120);
       ctx.fillText(fmtD(last.day),RM,y+158);
       const rt=rangeText(last);
-      if(rt)ctx.fillText(`Referans: ${rt} ${s.u||""}`,RM,y+192);
-      if(f){ctx.fillStyle="#b3261e";ctx.font="bold 24px sans-serif";ctx.fillText(f==="high"?"▲ Referans aralığının üstünde":"▼ Referans aralığının altında",RM,y+224)}
+      if(rt)ctx.fillText(`Raporda yazan aralık: ${rt} ${s.u||""}`,RM,y+192);
+      if(f){ctx.fillStyle="#10232b";ctx.font="bold 24px sans-serif";ctx.fillText(f==="high"?"▲ Raporda yazan aralığın üstünde":"▼ Raporda yazan aralığın altında",RM,y+224)}
       const cx=520,cy=y+30,cw=RW-RM-cx-10,ch=150,g=geom(s,cx,cy,cw,ch);
       if(g.band){ctx.fillStyle="#e3efe9";ctx.fillRect(cx,Math.min(g.band.y1,g.band.y2),cw,Math.abs(g.band.y2-g.band.y1))}
       ctx.strokeStyle="#9fb4ad";ctx.lineWidth=1.5;ctx.strokeRect(cx,cy,cw,ch);
       ctx.strokeStyle="#0f5c52";ctx.lineWidth=3;ctx.beginPath();g.pts.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y));ctx.stroke();
-      for(const q of g.pts){ctx.fillStyle=q.out?"#b3261e":"#0f5c52";ctx.beginPath();ctx.arc(q.x,q.y,7,0,Math.PI*2);ctx.fill()}
+      for(const q of g.pts){ctx.fillStyle="#0f5c52";ctx.beginPath();ctx.arc(q.x,q.y,7,0,Math.PI*2);ctx.fill()}
       ctx.fillStyle="#62737a";ctx.font="22px sans-serif";
       ctx.fillText(fmtD(s.pts[0].day),cx,cy+ch+30);
       if(s.pts.length>1){const t=fmtD(last.day);ctx.fillText(t,cx+cw-ctx.measureText(t).width,cy+ch+30)}

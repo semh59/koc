@@ -1,6 +1,6 @@
 "use strict";
-/* Tansiyon ve şeker ölçümleri: doğrulama, ortalama, hedef aralığı karşılaştırması, doktor raporu (DOM yok).
-   Teşhis ya da yorum yapmaz; yalnızca kullanıcının girdiği ölçümleri ve kendi (ya da doktorunun) hedef aralığını karşılaştırır. */
+/* Tansiyon ve şeker ölçümleri: doğrulama, ortalama, doktor raporu (DOM yok).
+   Değerleri yorumlamaz: eşik, etiket ve renk yok; yalnızca kaydeder, ortalar, çizer. */
 const VitalsLib=(()=>{
   const CTX=[["acl","Açlık"],["once","Yemek öncesi"],["sonra","Yemekten 2 saat sonra"],["yatis","Yatmadan önce"],["rast","Rastgele"]];
   const SES=[["sabah","Sabah"],["aksam","Akşam"],["diger","Diğer"]];
@@ -69,32 +69,13 @@ const VitalsLib=(()=>{
     return {all:avgOf(raw),sabah:avgOf(raw.filter(r=>r.ses==="sabah")),aksam:avgOf(raw.filter(r=>r.ses==="aksam")),days:dset.size,enough:dset.size>=3};
   }
 
-  const pos=x=>fin(x)&&x>0;
-  /* Hedef aralığı karşılaştırması. Aralık boşsa null. */
-  function flagBp(sys,dia,s){
-    if((pos(s.bpSysHi)&&sys>s.bpSysHi)||(pos(s.bpDiaHi)&&dia>s.bpDiaHi))return "high";
-    if((pos(s.bpSysLo)&&sys<s.bpSysLo)||(pos(s.bpDiaLo)&&dia<s.bpDiaLo))return "low";
-    return null;
-  }
-  const rangeG=(ctx,s)=>{
-    const [lo,hi]=ctx==="acl"||ctx==="once"?[s.gFastLo,s.gFastHi]:ctx==="sonra"?[s.gPostLo,s.gPostHi]:[0,0];
-    const o={};if(pos(lo))o.lo=lo;if(pos(hi))o.hi=hi;return o;
-  };
-  function flagG(r,s){
-    const g=rangeG(r.ctx,s);
-    if(g.hi!=null&&r.g>g.hi)return "high";
-    if(g.lo!=null&&r.g<g.lo)return "low";
-    return null;
-  }
-  const hasRange=(r,s)=>{const g=rangeG(r.ctx,s);return g.lo!=null||g.hi!=null};
-
-  /* Şeker özeti: her ölçüm kendi bağlamının aralığıyla değerlendirilir. */
-  function gStats(rows,from,to,s){
+  /* Şeker özeti: sayı, ortalama, uç değerler, bağlama göre ortalama. */
+  function gStats(rows,from,to){
     const a=rows.filter(r=>r.k==="s"&&r.day>=from&&r.day<=to);
     if(!a.length)return null;
-    const v=a.map(r=>r.g),ranged=a.filter(r=>hasRange(r,s)),inN=ranged.filter(r=>!flagG(r,s)).length,byCtx={};
+    const v=a.map(r=>r.g),byCtx={};
     for(const [c] of CTX){const x=a.filter(r=>r.ctx===c);if(x.length)byCtx[c]={n:x.length,avg:r1(x.reduce((t,r)=>t+r.g,0)/x.length)}}
-    return {n:a.length,avg:r1(v.reduce((t,x)=>t+x,0)/v.length),min:Math.min(...v),max:Math.max(...v),pct:ranged.length?Math.round(100*inN/ranged.length):null,ranged:ranged.length,byCtx};
+    return {n:a.length,avg:r1(v.reduce((t,x)=>t+x,0)/v.length),min:Math.min(...v),max:Math.max(...v),byCtx};
   }
   /* Uç değer kutusu: yalnızca bugün tarihli kayıtlarda. */
   const crisis=(r,today)=>r.day===today&&(r.k==="t"?(r.sys>=180||r.dia>=120):(r.g<54||r.g>400));
@@ -105,23 +86,20 @@ const VitalsLib=(()=>{
     if(n.k==="t")return Math.abs(n.sys-prev.sys)>60?`Son sistolik ölçümün ${prev.sys} idi, şimdi ${n.sys}.`:null;
     return Math.abs(n.g-prev.g)>150?`Aynı bağlamdaki son ölçümün ${prev.g} idi, şimdi ${n.g}.`:null;
   }
-  const BP_PRESET={bpSysHi:135,bpDiaHi:85};
-  const G_PRESET={gFastLo:80,gFastHi:130,gPostHi:180};
 
   /* ---- Doktor raporu PDF'i ---- */
   const RW=1240,RH=1754,RM=70,ROW=44,FOOT=80;
   const fmtD=k=>(typeof Algo!=="undefined"?Algo:require("./algo.js")).fdate(k,true);
   const num=x=>String(r1(x)).replace(".",",");
   /* Tablo satırları: her ham ölçüm bir satır. */
-  function reportRows(rows,kind,from,to,s){
+  function reportRows(rows,kind,from,to){
     const a=rows.filter(r=>r.k===kind&&r.day>=from&&r.day<=to).sort((x,y)=>x.day<y.day?-1:x.day>y.day?1:x.time<y.time?-1:x.time>y.time?1:x.id-y.id);
     const nth=new Map();
     return a.map(r=>{
-      const f=kind==="t"?flagBp(r.sys,r.dia,s):flagG(r,s);
       let ctx,val;
       if(kind==="t"){const key=r.sid?r.sid+r.day:null,i=!key?0:r.i?r.i:(nth.set(key,(nth.get(key)||0)+1),nth.get(key));ctx=sesName(r.ses)+(i?`, ${i}. ölçüm`:"");val=`${r.sys}/${r.dia} mmHg`+(r.nabiz?`  nabız ${r.nabiz}`:"")}
       else{ctx=ctxName(r.ctx);val=`${num(r.g)} mg/dL`}
-      return {d:fmtD(r.day),t:r.time,c:ctx,v:val,f:f==="high"?"▲":f==="low"?"▼":"",not:r.not||""};
+      return {d:fmtD(r.day),t:r.time,c:ctx,v:val,not:r.not||""};
     });
   }
   const HEAD1=330,CHART=360;
@@ -132,11 +110,6 @@ const VitalsLib=(()=>{
     while(i<rowsN){const n=Math.min(rest,rowsN-i);pages.push({n});i+=n}
     return pages;
   }
-  /* Genel referans bandı (tanı değil) ya da kullanıcının girdiği üst sınırlar; ekran ve PDF aynı tanımı kullanır. */
-  function bpBand(s){
-    const mine=pos(s.bpSysHi)||pos(s.bpDiaHi);
-    return {mine,bands:mine?[pos(s.bpSysHi)&&{lo:90,hi:s.bpSysHi,label:"hedef aralığın"},pos(s.bpDiaHi)&&{lo:60,hi:s.bpDiaHi}].filter(Boolean):[{lo:90,hi:BP_PRESET.bpSysHi,label:"genel referans"},{lo:60,hi:BP_PRESET.bpDiaHi}]}; // hazır sınır (135/85) ile aynı: bant ve "doldur" düğmesi tutarlı
-  }
   /* Renk körü ve siyah-beyaz baskı için seri şekli (c daire, s kare, t üçgen, d baklava), kesik çizgi ve doğrudan etiket (short) taşır. */
   function mark(ctx,sh,x,y,r){
     ctx.beginPath();
@@ -146,18 +119,16 @@ const VitalsLib=(()=>{
     else ctx.arc(x,y,r,0,Math.PI*2);
     ctx.fill();
   }
-  function drawChart(ctx,x,y,w,h,series,band,from,to){
-    const f=dayN(from),t=dayN(to),span=Math.max(1,t-f),bands=band?[].concat(band):[];
-    const vs=series.flatMap(s=>s.pts.map(p=>p.v));for(const b of bands){if(b.lo!=null)vs.push(b.lo);if(b.hi!=null)vs.push(b.hi)}
-    if(!vs.length)return;
+  function drawChart(ctx,x,y,w,h,series,from,to){
+    const f=dayN(from),t=dayN(to),span=Math.max(1,t-f);
+    const vs=series.flatMap(s=>s.pts.map(p=>p.v));if(!vs.length)return;
     let lo=Math.min(...vs),hi=Math.max(...vs);if(hi===lo){hi+=1;lo-=1}const pad=(hi-lo)*.12;lo-=pad;hi+=pad;
     const ip=16,X=d=>x+ip+(w-2*ip)*(dayN(d)-f)/span,Y=v=>y+h-h*(v-lo)/(hi-lo);
     ctx.font="22px sans-serif";
-    for(const b of bands){const y1=b.hi!=null?Y(b.hi):y,y2=b.lo!=null?Y(b.lo):y+h,top=Math.min(y1,y2);ctx.fillStyle="#e3efe9";ctx.fillRect(x,top,w,Math.abs(y2-y1));if(b.label){ctx.fillStyle="#62737a";ctx.fillText(b.label,x+8,top+Math.abs(y2-y1)-8)}}
     ctx.strokeStyle="#9fb4ad";ctx.lineWidth=1.5;ctx.strokeRect(x,y,w,h);
     for(const s of series){
       ctx.strokeStyle=s.color;ctx.lineWidth=2.5;if(ctx.setLineDash)ctx.setLineDash(s.dash?[14,8]:[]);ctx.beginPath();s.pts.forEach((p,i)=>i?ctx.lineTo(X(p.day),Y(p.v)):ctx.moveTo(X(p.day),Y(p.v)));ctx.stroke();if(ctx.setLineDash)ctx.setLineDash([]);
-      for(const p of s.pts){ctx.fillStyle=p.out?"#b3261e":s.color;mark(ctx,s.shape,X(p.day),Y(p.v),6)}
+      for(const p of s.pts){ctx.fillStyle=s.color;mark(ctx,s.shape,X(p.day),Y(p.v),6)}
       if(s.vals){
         /* Değer etiketi yalnız ilk, son, en düşük ve en yüksek noktada; birbirine binen etiket atlanır. */
         const vv=s.pts.map(p=>p.v),keep=new Set([0,s.pts.length-1,vv.indexOf(Math.min(...vv)),vv.indexOf(Math.max(...vv))]);let right=-1e9;
@@ -169,7 +140,7 @@ const VitalsLib=(()=>{
     ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText(fmtD(from),x,y+h+30);const e=fmtD(to);ctx.fillText(e,x+w-ctx.measureText(e).width,y+h+30);
     ctx.fillText(`${Math.round(lo)} – ${Math.round(hi)}`,x+w+12,y+h);
   }
-  /* info: {kind,title,period,summary:[[etiket,değer]],rows (reportRows),chart:{series,band,from,to},page,total,today} */
+  /* info: {kind,title,period,summary:[[etiket,değer]],rows (reportRows),chart:{series,from,to},page,total,today} */
   function drawPage(ctx,items,info){
     ctx.fillStyle="#ffffff";ctx.fillRect(0,0,RW,RH);ctx.textBaseline="alphabetic";
     let y=RM;
@@ -177,12 +148,12 @@ const VitalsLib=(()=>{
       ctx.fillStyle="#10232b";ctx.font="bold 46px sans-serif";ctx.fillText(info.title,RM,y+46);
       ctx.fillStyle="#62737a";ctx.font="24px sans-serif";
       ctx.fillText(`${info.period}   ·   Oluşturulma: ${fmtD(info.today)}`,RM,y+90);
-      ctx.fillText("Kullanıcının girdiği ölçümlerdir. Tıbbi yorum içermez, tanı ve tedavi yerine geçmez.",RM,y+124);
+      ctx.fillText("Kullanıcının girdiği ölçümlerdir; yorumlanmamıştır. Bu değerleri hekiminle değerlendir.",RM,y+124);
       y+=HEAD1-RM-110;
       ctx.fillStyle="#10232b";ctx.font="28px sans-serif";
       for(const [k,v] of info.summary){ctx.fillStyle="#62737a";ctx.fillText(k,RM,y+30);ctx.fillStyle="#10232b";ctx.font="bold 28px sans-serif";ctx.fillText(v,RM+420,y+30);ctx.font="28px sans-serif";y+=38}
       y+=20;
-      if(info.chart)drawChart(ctx,RM,y,RW-2*RM-110,CHART-80,info.chart.series,info.chart.band,info.chart.from,info.chart.to);
+      if(info.chart)drawChart(ctx,RM,y,RW-2*RM-110,CHART-80,info.chart.series,info.chart.from,info.chart.to);
       y+=CHART;
     }
     ctx.font="bold 24px sans-serif";ctx.fillStyle="#62737a";
@@ -192,11 +163,10 @@ const VitalsLib=(()=>{
     ctx.font="26px sans-serif";
     for(const r of items){
       ctx.fillStyle="#10232b";ctx.fillText(r.d,RM,y+30);ctx.fillText(r.t,RM+190,y+30);ctx.fillText(r.c,RM+300,y+30);ctx.fillText(r.v,RM+700,y+30);
-      if(r.f){ctx.fillStyle="#b3261e";ctx.fillText(r.f==="▲"?"▲ hedef aralığının üstünde":"▼ hedef aralığının altında",RM+950,y+30)}
       y+=ROW;
     }
     ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText(`NeoWell · sayfa ${info.page}/${info.total}`,RM,RH-45);
   }
-  return {CTX,SES,ctxName,sesName,LIM,check,clean,sessions,homeAvg,flagBp,flagG,rangeG,gStats,crisis,needsConfirm,BP_PRESET,G_PRESET,reportRows,paginate,drawPage,drawChart,bpBand,RW,RH,dayN,num};
+  return {CTX,SES,ctxName,sesName,LIM,check,clean,sessions,homeAvg,gStats,crisis,needsConfirm,reportRows,paginate,drawPage,drawChart,RW,RH,dayN,num};
 })();
 if(typeof module!=="undefined")module.exports=VitalsLib;

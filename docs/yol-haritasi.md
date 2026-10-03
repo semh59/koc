@@ -71,6 +71,7 @@ Harici değerlendirmede bildirilen açık sağlık güvenliği boşlukları (3 E
 - [x] **B Protein:** BMI≥30'da ayarlı ağırlık (BMI 25 ağırlığı + fazlanın %25'i), boy yoksa üst 2,0 g/kg, her durumda üst 200 g; böbrek/diyaliz/karaciğer anahtarı, sert engel ya da 65+ yaşta ilaç/yumuşak engelde aralık yok ("hekiminle belirle"); her gösterimde böbrek/karaciğer dipnotu.
 - [x] **C Oruç:** sert engelde başlatma ve 18:6/20:4 kapalı (süren oruç bitirilebilir), yumuşakta onaydan sonra; uzun planlar için tek seferlik ek onay; modül ilk açılışta riskli gruplar bilgisi onay kutusuyla; engelde hatırlatıcı 11 ve 9100 kurulmaz, fren durumu değişince bildirimler yeniden kurulur.
 - Açık: yumuşak ağ geniş (tek tansiyon ölçümü ya da vitamin kaydı yeter, tek dokunuşla 30 gün kalkar); sohbet ed işareti sohbet temizlenince ya da 150 mesaj sınırını aşınca kaybolur; anahtar kelime eşleşmesi tıbbi değerlendirme değildir. Hukuki ve tıbbi metinler (oruç bilgilendirmesi, protein dipnotu) bir hekim/hukukçu gözünden geçmedi.
+- [x] **Tanı koymak yok:** tansiyon/şeker ölçümleri yorumlanmaz (eşik, hedef alanı, ADA/135-85 ön ayarı, bant, kırmızı işaret, hedef yüzdesi kaldırıldı); tahlilde yalnız raporda yazan aralık, nötr renkle; tek uyarı "Bu değerleri hekiminle değerlendir."; `riskFlags` freni aynen (yalnız ölçümün varlığına bakar). Play tıbbi kategori riski azaldı (`play-data-safety.md` madde 4). Ayarlardaki eski eşik alanları yedek uyumu için veri modelinde durur, arayüzde yok.
 
 ## C) Arayüz ve tasarım
 | # | Ad | Değer | Emek | Kaynak | Bağımlılık / karar |
@@ -85,7 +86,7 @@ Harici değerlendirmede bildirilen açık sağlık güvenliği boşlukları (3 E
 | C8 (yapıldı) | Trend ekranı | Boş durum kartı, veriye göre eksen, dokununca değer balonu ve tek "Raporlar" bölümü eklenir. | M | rekabet-arayuz | – |
 | C9 (yapıldı) | Salon ekranı | Filtreler alt sayfaya, boş set önceki değerle onaylanır, şablon önce önizlenir, "tek" yerine "tekrar" yazılır. | M | rekabet-arayuz | – |
 | C10 (yapıldı) | Kilo girişi | Son kilo önceden yazılı gelir, ±0,1 düğmesi ve turuncu "Yine de kaydet" uyarısı eklenir. | S | rekabet-arayuz | – |
-| C11 (yapıldı) | Grafik okunurluğu | Tansiyon çizgileri etiketli ve eşik bandlı, adım grafiğinde "Cu/Ct/Pz/Pt", renkler tutarlı olur. | S | rekabet-arayuz | – |
+| C11 (yapıldı) | Grafik okunurluğu | Tansiyon çizgileri etiketli (eşik bandı sonradan kaldırıldı), adım grafiğinde "Cu/Ct/Pz/Pt", renkler tutarlı olur. | S | rekabet-arayuz | – |
 | C12 (yapıldı) | Tutarlılık paketi | Tek tarih biçimi, başlıkta küçük "‹" geri ve Sistem/Açık/Koyu tema seçici gelir. | S | rekabet-arayuz | – |
 | C13 (yapıldı) | Haftalık PDF'e grafik | Boş yarım sayfaya kilo ve tansiyon grafikleri eklenir. | S | rekabet-arayuz | – |
 | C14 (yapıldı) | 5 sabit sekme | Bugün ilk sekme olur, koşullu sekmeler kalkar, "Daha fazla" sekmesi gelir. | L | rekabet-arayuz §d | G9 |
