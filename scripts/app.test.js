@@ -2300,6 +2300,18 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("kayıt: tek spor kaydı, dakika kalıbı, tür adı, ~km, net kcal, km alanı; yürüyüş bitti",ev("S.entries.filter(e=>e.type==='spor').length")===1&&e.v===40&&e.text.startsWith("Yürüyüş, ~2,72 km")&&e.kcal===exp.kcal&&e.km===2.72&&ev("S.walk")===null,JSON.stringify(e));
     ok("günlük adım sayacına çift sayılmaz: adım kaydı eklenmedi/değişmedi, elle adım yok",ev("JSON.stringify(S.entries.filter(e=>e.type==='adim'))")===adimBefore&&!ev("S.entries.some(e=>e.text==='elle')")&&ev("sum('adim',dayKey(),dayKey())")===5000);
     ok("kayıt bitiş saatine yazılır (aralık [saat-süre, saat])",e.time===ev("MotionLib.hmOf(Date.now())")||true);
+    { // öğrenilmiş adım uzunluğu: Bitir'de ve soğuk açılışta Kaydet sayfası açılırken MotionPlugin.status'tan tazelenir
+      let fw=1.1;w.Capacitor.Plugins.Motion={status:async()=>({activity:true,fine:true,on:true,fw,fr:1}),walkGps:async()=>({gps:false})};const keepE=ev("JSON.stringify(S.entries)");
+      ev("S.entries=S.entries.filter(e=>e.type!=='spor');motionPerm=null;S.walk={t0:Date.now()-40*60000,s0:1000,t1:null,s1:null};stepSteps=5000;wKind='w';tab='adim';render()");
+      await ev("walkStop()");
+      ok("elle yürüyüş km'si öğrenilmiş ölçekle (1,1 → 2,99 km)",q("#wprev").textContent.includes("2,99 km"),q("#wprev").textContent);
+      ev("closeSheet();motionPerm=null;render()");q('#view [data-w="sheet"]').click();await new Promise(r=>setTimeout(r,60));
+      q('[data-w="save"]').click();
+      ok("soğuk açılışta (durum yok) Kaydet sayfası ölçeği alır, kayıt km 2,99",ev("S.entries.find(e=>e.type==='spor').km")===2.99,ev("JSON.stringify(S.entries.find(e=>e.type==='spor'))"));
+      fw=0.5;ev("S.entries=S.entries.filter(e=>e.type!=='spor');S.walk={t0:Date.now()-40*60000,s0:1000,t1:null,s1:null};render()");await ev("walkStop()");
+      ok("geçersiz ölçek (0,5) yok sayılır, boy önseli 2,72 km",q("#wprev").textContent.includes("2,72 km"),q("#wprev").textContent);
+      ev(`closeSheet();S.walk=null;motionPerm=null;S.entries=${keepE}`);delete w.Capacitor.Plugins.Motion;
+    }
     // bisiklet, süre düzeltme, vazgeç, gece yarısı, eski yürüyüş
     ev("S.walk={t0:Date.now()-30*60000,s0:5000,t1:null,s1:null};stepSteps=5400;tab='adim';render()");
     await ev("wKind='b';walkStop()");

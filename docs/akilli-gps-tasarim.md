@@ -36,7 +36,7 @@ Açık aralık sürerken her ~2,5 dk adım sayacından kontrol noktası alınır
 ## Bilinen sınırlar
 - Otomatik aralığın mesafesi, kullanıcı elle GPS'li yürüyüş yapmadıkça boy önseline dayanır (kişiden kişiye ±%10-15). Boy girilmemişse 170 cm varsayılır.
 - Kişisel ölçek yalnız elle yürüyüşlerden öğrenilir, her yürüyüşte en çok bir örnek. Ölçülen ritim aralığı kullanıcının elle yürüdüğü tempoyla sınırlı; koşu ölçeği kullanıcı koşuyu elle başlatmadıkça öğrenilmez.
-- Elle yürüyüş kaydının km'si (`Algo.moveSummary`) öğrenilen ölçeği kullanmaz, boy önseliyle hesaplanır. Ölçek otomatik aralıklara yansır.
+- Elle yürüyüş kaydının km'si (`Algo.moveSummary`) aynı modeli kullanır: boy önseli × öğrenilmiş ölçek (`MotionPlugin.status` `fw`/`fr`, Bitir'de ve Kaydet sayfası açılırken tazelenir; o yürüyüşte öğrenilen ölçek de girer). Ölçek yoksa ya da 0,7-1,3 dışındaysa boy önseli. Boy girilmemişse elle kayıtta km yok (otomatik aralık 170 cm varsayar).
 - Hareket algılama kapalıyken öğrenilen ölçeği kullanan bir yer olmadığı için GPS açılmaz ve izin istenmez.
 - Eski sürümde "Her zaman" konum izni vermiş kullanıcı: uygulama bu izni artık istemez, manifestte bildirmez ve kullanmaz; Android bildirilmeyen izni uygulamaya vermez, izin ekranında "Her zaman" seçeneği görünmemeli (telefon testi `yapilacaklar.md`).
 - Eski sürümün GPS sayaçları (`gpsDay`, `gpsN`, `gpsT`, `bRef`) SharedPreferences'ta okunmadan kalır, zararsız.

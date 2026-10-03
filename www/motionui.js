@@ -78,7 +78,7 @@ function motionCard(){
   return `<div class="card"><div class="lbl">Hareketler</div>${body}<p class="hint" style="padding:8px 0 0">Algılama 1-2 dakika gecikebilir, süre ve mesafe yaklaşıktır.${S.settings.heightCm>0?"":" Mesafe için Ayarlar'dan boyunu gir."}</p></div>`;
 }
 
-/* Elle yürüyüşte GPS: adım uzunluğunu öğrenmenin tek yolu. Ritim adım sayacından gelir, öğrenilen ölçeği otomatik aralıklar kullanır;
+/* Elle yürüyüşte GPS: adım uzunluğunu öğrenmenin tek yolu. Ritim adım sayacından gelir, öğrenilen ölçeği otomatik aralıklar ve elle yürüyüş mesafesi kullanır;
    bu yüzden yalnız ikisi de açıkken. Konum izni burada istenir, ret telefona özel bayrakla hatırlanır (yedeğe girmez). */
 const WGPS_NO="nw_walkgps_no";
 async function walkGpsOn(){
@@ -98,7 +98,7 @@ async function walkGpsAsk(){
   if(tab==="ayar-modul")render();
 }
 function motionDisclose(){
-  openSheet(`<h3>Yürüyüşte konum</h3><p class="hint" style="padding:0 0 8px">Hareket algılama açıkken NeoWell, adım uzunluğunu öğrenmek için <b>yalnız senin başlattığın yürüyüşte</b> GPS'i kısa süre açar: iyi sinyalde yaklaşık 1 dakika, en çok 10 dakika. Ölçüm sürerken bildirim görünür, ekranı kapatsan da bu süre içinde sürer. Öğrenilen adım uzunluğu otomatik algılanan yürüyüşlerin mesafesini düzeltir.</p>
+  openSheet(`<h3>Yürüyüşte konum</h3><p class="hint" style="padding:0 0 8px">Hareket algılama açıkken NeoWell, adım uzunluğunu öğrenmek için <b>yalnız senin başlattığın yürüyüşte</b> GPS'i kısa süre açar: iyi sinyalde yaklaşık 1 dakika, en çok 10 dakika. Ölçüm sürerken bildirim görünür, ekranı kapatsan da bu süre içinde sürer. Öğrenilen adım uzunluğu yürüyüşlerinin (otomatik algılanan ve elle kaydedilen) mesafesini düzeltir.</p>
   <p class="hint" style="padding:0 0 8px">Arka planda konum istenmez. Konum noktası ve rota saklanmaz, telefondan çıkmaz, reklam için kullanılmaz. İzin vermezsen mesafe boyuna göre tahmin edilir.</p>
   <div class="btns"><button class="btn" data-mo="gps">İzin ver</button><button class="btn ghost" data-mo="nogps">Konumsuz devam</button></div>`);
 }
