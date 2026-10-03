@@ -1,5 +1,5 @@
 "use strict";
-/* Besin listesi: 100 g başına yaklaşık değerler (TürKomp ve USDA'dan derlenmiş yuvarlak sayılar).
+/* Besin listesi: 100 g başına yaklaşık değerler (yuvarlak, elle derlenmiş tahminler; kaynağı belgelenmiş olan yalnız sondaki 1 işaretliler).
    Satır: [ad, kcal, protein g, karbonhidrat g, yağ g, [[porsiyon etiketi, gram], ...], 1]. İlk porsiyon varsayılandır.
    Sondaki 1: USDA FoodData Central SR Legacy (CC0) ile karşılaştırılıp uyumlu bulunmuş. Diğerleri tarife ve markaya göre değişen tahmindir. */
 const FOODS=(()=>{
