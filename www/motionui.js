@@ -1,5 +1,5 @@
 "use strict";
-/* Otomatik yürüyüş/koşu algılama arayüzü: Ayarlar bloğu, Adım ekranındaki Hareketler kartı, yerel taraftan kayıt alma.
+/* Otomatik yürüyüş/koşu algılama arayüzü: Ayarlar bloğu, Adım ekranındaki Hareketler kartı, yerel taraftan kayıt alma, elle yürüyüşte GPS.
    index.html'deki S, save, toast, esc, fmt, render, tab, isNative, weights, Algo ile çalışır. */
 const MO=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Motion;
 let motionPerm=null;
@@ -18,11 +18,11 @@ async function motionStatus(){
 function motionSettingsHtml(){
   if(!isNative()||!MO()||!S.settings.stepsOn)return "";
   const st=S.settings,p=motionPerm||{};
-  const gps=p.bg?"Her zaman konum izni var: kısa GPS ölçümleri otomatik açılır.":p.fine?"Konum izni yalnız uygulama açıkken. Otomatik GPS ölçümü için \"Her zaman izin ver\" gerekir; yoksa hız yalnız adım ritminden hesaplanır.":"Konum izni yok: hız yalnız adım ritminden hesaplanır.";
+  const gps=p.fine?"Konum izni var: elle başlattığın yürüyüşte GPS kısa süre açılır.":"Konum izni yok: mesafe boyuna göre tahmin edilir.";
   return `<h2>Hareket algılama</h2><div class="card">
-    <p class="mut sm" style="margin:0 0 10px">Yürüyüş ve koşuyu kendisi algılar, süre, mesafe, hız ve kaloriyi (boy ve kilona göre) Adım ekranında listeler. Adım uzunluğunu öğrenmek için GPS'i arada kısa süre (yaklaşık 1 dk) açar. Rota ve konum noktası kaydedilmez, her şey telefonda kalır.</p>
+    <p class="mut sm" style="margin:0 0 10px">Yürüyüş ve koşuyu kendisi algılar, süre, mesafe, hız ve kaloriyi (boy ve kilona göre) Adım ekranında listeler. Konum yalnız elle başlattığın yürüyüşlerde kullanılır: ölçüm uygulama açıkken başlar, sürdüğü kısa süre bildirim görünür. Arka planda konum kullanılmaz. Rota ve konum noktası kaydedilmez, her şey telefonda kalır.</p>
     <button class="btn ghost" data-mo="toggle" style="margin-bottom:8px">${st.motionOn?"Hareket algılamayı kapat":"Hareket algılamayı aç"}</button>
-    ${st.motionOn?`<p class="mut sm" style="margin:0 0 8px">${gps}</p>${p.bg?"":`<button class="btn ghost" data-mo="perm">Konum iznini ayarla</button>`}`:""}
+    ${st.motionOn?`<p class="mut sm" style="margin:0 0 8px">${gps}</p>${p.fine?"":`<button class="btn ghost" data-mo="perm">Yürüyüşte konumu kullan</button>`}`:""}
   </div>`;
 }
 
@@ -38,12 +38,8 @@ async function motionToggle(){
     motionConfigure();
     await m.start();
     st.motionOn=true;save();motionPerm=p;render();
-    toast(p.bg?"Hareket algılama açık":"Açık. Otomatik GPS için konum iznini \"Her zaman\" yap");
+    toast("Hareket algılama açık");
   }catch(e){toast("Hareket algılama açılamadı: "+(e&&e.message||e))}
-}
-async function motionPermAsk(){
-  const m=MO();if(!m)return;
-  try{motionPerm=await m.requestAccess();render()}catch(e){toast("İzin istenemedi")}
 }
 
 /* Yerel taraftan biten aralıkları al, kaydet. */
@@ -82,19 +78,36 @@ function motionCard(){
   return `<div class="card"><div class="lbl">Hareketler</div>${body}<p class="hint" style="padding:8px 0 0">Algılama 1-2 dakika gecikebilir, süre ve mesafe yaklaşıktır.${S.settings.heightCm>0?"":" Mesafe için Ayarlar'dan boyunu gir."}</p></div>`;
 }
 
-/* Play kuralı: arka plan konum izni penceresinden önce uygulama içinde "konum" ve "kapalıyken" geçen açıklama gösterilir. */
-function motionDisclose(next){
-  openSheet(`<h3>Konum izni hakkında</h3><p class="hint" style="padding:0 0 8px">Hareket algılama açıkken NeoWell, yürüyüş ve koşunun mesafesini ölçmek için <b>uygulama kapalıyken ya da kullanılmıyorken de</b> konum verisi toplar. GPS yalnız yürüyüş algılandığında yaklaşık 1 dakika açılır. Konum noktası ve rota saklanmaz, telefondan çıkmaz, reklam için kullanılmaz.</p>
-  <p class="hint" style="padding:0 0 8px">Sıradaki pencerelerde fiziksel aktivite ve konum izni istenir. GPS ölçümü için konumda "Her zaman izin ver" gerekir; vermezsen hız yalnız adım ritminden hesaplanır.</p>
-  <div class="btns"><button class="btn" data-mo="go:${next}">Devam</button><button class="btn ghost" data-mo="no">Vazgeç</button></div>`);
+/* Elle yürüyüşte GPS: adım uzunluğunu öğrenmenin tek yolu. Ritim adım sayacından gelir, öğrenilen ölçeği otomatik aralıklar kullanır;
+   bu yüzden yalnız ikisi de açıkken. Konum izni burada istenir, ret telefona özel bayrakla hatırlanır (yedeğe girmez). */
+const WGPS_NO="nw_walkgps_no";
+async function walkGpsOn(){
+  const m=MO(),st=S.settings;if(!m||!isNative()||!st.stepsOn||!st.motionOn)return;
+  await motionStatus();
+  if(motionPerm&&motionPerm.fine)walkGpsGo();
+  else if(!lsGet(WGPS_NO))motionDisclose();
+}
+function walkGpsGo(){const m=MO();if(m&&S.walk&&!S.walk.t1)m.walkGps({on:true}).catch(()=>{})}
+function walkGpsOff(){const m=MO();if(m)m.walkGps({on:false}).catch(()=>{})}
+async function walkGpsAsk(){
+  const m=MO();if(!m)return;
+  let ok=false;try{ok=(await m.requestPermissions({permissions:["fine"]})).fine==="granted"}catch(e){}
+  await motionStatus();
+  if(ok){lsDel(WGPS_NO);walkGpsGo();toast("Konum izni verildi")}
+  else{lsSet(WGPS_NO,"1");toast("Konum izni verilmedi. Mesafe boyuna göre tahmin edilir")}
+  if(tab==="ayar-modul")render();
+}
+function motionDisclose(){
+  openSheet(`<h3>Yürüyüşte konum</h3><p class="hint" style="padding:0 0 8px">Hareket algılama açıkken NeoWell, adım uzunluğunu öğrenmek için <b>yalnız senin başlattığın yürüyüşte</b> GPS'i kısa süre açar: iyi sinyalde yaklaşık 1 dakika, en çok 10 dakika. Ölçüm sürerken bildirim görünür, ekranı kapatsan da bu süre içinde sürer. Öğrenilen adım uzunluğu otomatik algılanan yürüyüşlerin mesafesini düzeltir.</p>
+  <p class="hint" style="padding:0 0 8px">Arka planda konum istenmez. Konum noktası ve rota saklanmaz, telefondan çıkmaz, reklam için kullanılmaz. İzin vermezsen mesafe boyuna göre tahmin edilir.</p>
+  <div class="btns"><button class="btn" data-mo="gps">İzin ver</button><button class="btn ghost" data-mo="nogps">Konumsuz devam</button></div>`);
 }
 
 document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-mo]");if(!el)return;
   const a=el.dataset.mo;
-  if(a==="toggle")S.settings.motionOn?motionToggle():motionDisclose("toggle");
-  else if(a==="perm")motionDisclose("perm");
-  else if(a==="no")closeSheet();
-  else if(a==="go:toggle"){closeSheet();motionToggle()}
-  else if(a==="go:perm"){closeSheet();motionPermAsk()}
+  if(a==="toggle")motionToggle();
+  else if(a==="perm")motionDisclose();
+  else if(a==="gps"){closeSheet();walkGpsAsk()}
+  else if(a==="nogps"){closeSheet();lsSet(WGPS_NO,"1");toast("Tamam. Mesafe boyuna göre tahmin edilir")}
 });
