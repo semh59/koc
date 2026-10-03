@@ -1879,6 +1879,8 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
   ok("18 yaş altına açık önerisi çıkmaz",!ev("S.chat.some(m=>m.card&&m.card.kind==='propose')"));
   ev("S.entries=[];cReply({reply:'x',log:[],propose:{kcal:1300,why:'a'},flag:null})");
   ok("fren varken bakım hesaplanamıyorsa (tartı yok) kalori önerisi çıkmaz",!ev("S.chat.some(m=>m.card&&m.card.kind==='propose')"));
+  ev("S.settings.kcal=0;cClick('applyk:'+cPush({role:'coach',text:'',card:{kind:'propose',kcal:1300,why:'',limited:false,state:'pending'}}).id)");
+  ok("frenden önce kalmış bekleyen öneri uygulanmaz",ev("S.settings.kcal")===0&&ev("S.chat[S.chat.length-1].card.state")==="no");
   ev("S.entries=[];for(let i=0;i<10;i++)add('su',250)");ev("S.settings.lastBackup=''");
   ok("yedek yoksa uyarı çıkar",ev("viewBugun()").includes("Yedek zamanı"));
   ev("markBackup()");
