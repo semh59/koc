@@ -16,7 +16,7 @@ const PAIRS=[
  ["tact","tbg",4.5,"toast 'Geri al' düğmesi"],["tfg","tbg",4.5,"toast metni"],
  ["su","card",3,"su grafiği"],["kcal","card",3,"kalori halkası ve hedef çizgisi"],["prim","card",3,"grafik çizgisi"],["spor","card",3,"spor grafiği"],["warn","card",3,"uyarı grafiği"],
  ["mut","card",3,"giriş kenarlığı ve soluk çizgiler"],
- ["prim","soft",4.5,"ikincil (tonlu) düğme metni"],["prim","prim-soft",3,"etkin sekme ikonu"],["ink","field",4.5,"giriş alanı metni"],["mut","field",4.5,"giriş alanı yer tutucusu"],
+ ["prim","soft",4.5,"ikincil (tonlu) düğme metni"],["prim","prim-soft",3,"etkin sekme ikonu"],["ink","field",4.5,"giriş alanı metni"],["mut","field",4.5,"giriş alanı yer tutucusu"],["fbd","card",3,"giriş kenarlığı (kartta)"],["fbd","bg",3,"giriş kenarlığı (sayfada)"],["ink","card",4.5,"seri sayısı"],
  ["ban-ink","ban-bg",4.5,"uyarı kutusu"],["inf-ink","inf-bg",4.5,"bilgi kutusu"],["ink","inf-bg",4.5,"bilgi kartı"],["tah-ink","tah-bg",4.5,"tahmin rozeti"],["#ffffff","sbtn",4.5,"mavi düğme"],
 ];
 for(const [name,t] of [["açık",light],["koyu",dark]]){

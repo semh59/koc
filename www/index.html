@@ -12,12 +12,12 @@
 /* Tasarım token'ları: kurallar docs/tasarim-dili.md'de. Renkler 6 haneli hex olmalı (contrast.test.js okur). */
 :root{
   --bg:#f2f4f3; --card:#ffffff; --ink:#10232b; --mut:#56666d; --line:#dfe5e2;
-  --prim:#0f5c55; --prim-ink:#ffffff; --soft:#e7eeeb; --prim-soft:#d7ebe5; --field:#f4f6f5;
+  --prim:#0f5c55; --prim-ink:#ffffff; --soft:#e7eeeb; --prim-soft:#d7ebe5; --field:#f4f6f5; --fbd:#7d898f;
   --su:#2a86bd; --kcal:#b8691a; --spor:#7d56c8; --warn:#b03a24;
   --spor-ink:#ffffff; --tbg:#10232b; --tfg:#eef2f0; --tact:#7cc4f0;
   --ban-bg:#fbeede; --ban-bd:#ecd0a8; --ban-ink:#4d2f07; --inf-bg:#e8f1f6; --inf-bd:#c3d9e6; --inf-ink:#14425e;
   --tah-bg:#fbe9d2; --tah-ink:#6b3f08; --sbtn:#1f5f86;
-  --sh:0 1px 2px rgb(16 35 43/.06),0 2px 8px rgb(16 35 43/.04); --card-bd:transparent; --fbd:color-mix(in srgb,var(--mut) 70%,var(--card));
+  --sh:0 1px 2px rgb(16 35 43/.06),0 2px 8px rgb(16 35 43/.04); --card-bd:transparent;
   --r:16px; --r-s:12px; --r-xs:8px;
   --fs-cap:12px; --fs-s:13px; --fs-2:15px; --fs-1:16px; --fs-h3:18px; --fs-h2:17px; --fs-h1:24px;
   --ease:cubic-bezier(.2,.8,.2,1); --dur:.16s;
@@ -25,7 +25,7 @@
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
     --bg:#0c1416; --card:#152024; --ink:#e8f0ee; --mut:#92a4aa; --line:#26353b;
-    --prim:#4fc2a8; --prim-ink:#06211c; --soft:#1c2a2f; --prim-soft:#163a34; --field:#101a1d;
+    --prim:#4fc2a8; --prim-ink:#06211c; --soft:#1c2a2f; --prim-soft:#163a34; --field:#101a1d; --fbd:#6c7c82;
     --su:#5bb4ea; --kcal:#f0a24f; --spor:#a98cec; --warn:#ef7a62;
     --spor-ink:#1a1030; --tbg:#e8f0ee; --tfg:#0e1618; --tact:#14557d;
     --ban-bg:#3a2a14; --ban-bd:#5b4322; --ban-ink:#f3dcb8; --inf-bg:#16303d; --inf-bd:#2a4b5d; --inf-ink:#d5e8f3;
@@ -37,7 +37,7 @@
 :root[data-theme="light"]{color-scheme:light}
 :root[data-theme="dark"]{color-scheme:dark;
     --bg:#0c1416; --card:#152024; --ink:#e8f0ee; --mut:#92a4aa; --line:#26353b;
-    --prim:#4fc2a8; --prim-ink:#06211c; --soft:#1c2a2f; --prim-soft:#163a34; --field:#101a1d;
+    --prim:#4fc2a8; --prim-ink:#06211c; --soft:#1c2a2f; --prim-soft:#163a34; --field:#101a1d; --fbd:#6c7c82;
     --su:#5bb4ea; --kcal:#f0a24f; --spor:#a98cec; --warn:#ef7a62;
     --spor-ink:#1a1030; --tbg:#e8f0ee; --tfg:#0e1618; --tact:#14557d;
     --ban-bg:#3a2a14; --ban-bd:#5b4322; --ban-ink:#f3dcb8; --inf-bg:#16303d; --inf-bd:#2a4b5d; --inf-ink:#d5e8f3;
@@ -63,7 +63,7 @@ header h1{flex:1;min-width:0;margin:0;font-size:var(--fs-h1);font-weight:700;let
 header .streak{display:inline-flex;align-items:center;gap:4px;font-size:var(--fs-s);font-weight:600;color:var(--mut);white-space:nowrap;background:var(--card);box-shadow:var(--sh);border:1px solid var(--card-bd);border-radius:99px;padding:4px 10px 4px 8px}
 header .streak:empty{display:none}
 header .brand{vertical-align:-5px;margin-right:10px}
-header .streak b{color:var(--kcal)}
+header .streak b{color:var(--ink)}
 header .streak .i{width:16px;height:16px;color:var(--kcal)}
 main{flex:1;padding:4px 16px calc(92px + env(safe-area-inset-bottom))}
 .num,.stat .v,.big,.rc,td,.sumv{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
@@ -208,12 +208,12 @@ body.koc #toast{bottom:calc(150px + env(safe-area-inset-bottom))}
 .mmr.l1,.mmleg .l1{fill:color-mix(in srgb,var(--spor) 22%,var(--card));background:color-mix(in srgb,var(--spor) 22%,var(--card))}.mmr.l2,.mmleg .l2{fill:color-mix(in srgb,var(--spor) 42%,var(--card));background:color-mix(in srgb,var(--spor) 42%,var(--card))}.mmr.l3,.mmleg .l3{fill:color-mix(in srgb,var(--spor) 66%,var(--card));background:color-mix(in srgb,var(--spor) 66%,var(--card))}.mmr.l4,.mmleg .l4{fill:color-mix(in srgb,var(--spor) 90%,var(--card));background:color-mix(in srgb,var(--spor) 90%,var(--card))}.mmr.l4{stroke-dasharray:3 1.5}.mmleg .l4{border-style:dashed}
 .mmt{font-size:7px;font-weight:700;fill:var(--ink);stroke:var(--card);stroke-width:2.2px;paint-order:stroke;text-anchor:middle;pointer-events:none}.mmf{font-size:8px;fill:var(--mut);text-anchor:middle}.mmi{margin:6px 0;min-height:22px;font-size:14px}.mmleg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--mut);margin:6px 0 10px}.mmleg i{display:inline-block;width:14px;height:14px;border-radius:4px;border:1px solid var(--mut);vertical-align:-2px;margin-right:4px}.mmleg .l0{background:var(--soft)}
 .tbd{font-size:10px;color:var(--spor);margin-top:1px}.card.ssg{border-left:4px solid var(--spor)}.sp{font-size:14px;color:var(--mut)}
-.sin::placeholder{color:var(--mut);font-weight:500;opacity:.8}.sin{height:44px;width:100%;text-align:center;border:1px solid var(--fbd);border-radius:var(--r-xs);background:var(--field);font-weight:700;padding:0}
+.sin::placeholder{color:var(--mut);font-weight:500;opacity:1}.sin{height:44px;width:100%;text-align:center;border:1px solid var(--fbd);border-radius:var(--r-xs);background:var(--field);font-weight:700;padding:0}
 .ok{width:44px;height:44px;border-radius:12px;border:2px solid var(--mut);color:var(--mut);display:flex;align-items:center;justify-content:center}
 .ok.on{background:var(--spor);border-color:var(--spor);color:var(--spor-ink)}
 .lnk{display:block;width:100%;min-height:44px;color:var(--prim);font-weight:600;font-size:var(--fs-2);border-radius:var(--r-s)}.lnk:active{background:var(--soft)}.lnk.dng{color:var(--warn);margin-top:6px}
 .prow{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:56px;padding:8px 4px;border-top:1px solid var(--line);text-align:left;transition:background var(--dur)}.prow:active,.rrow:active{background:var(--soft)}button.prow .sm{margin-top:1px}
-.prow.off b,.prow.off .aic{color:var(--mut)}.prow.dng{color:var(--warn)}.aic{color:var(--prim)}.aic .i{width:24px;height:24px}.card>.prow:first-child{border-top:0}.prow b{display:block;font-weight:600}.plus{font-size:24px;color:var(--mut);width:44px;min-height:44px;text-align:center}
+.prow.off b,.prow.off .aic{color:var(--mut)}.prow.dng,.prow.dng .aic{color:var(--warn)}.aic{color:var(--prim)}.aic .i{width:24px;height:24px}.card>.prow:first-child{border-top:0}.prow b{display:block;font-weight:600}.plus{font-size:24px;color:var(--mut);width:44px;min-height:44px;text-align:center}
 .tag{font-size:var(--fs-s);font-weight:600;background:var(--prim-soft);border-radius:99px;padding:3px 10px;white-space:nowrap}
 .card:has(>.prow:first-child){padding-top:4px;padding-bottom:4px}
 .plist{max-height:42vh;overflow:auto;margin-bottom:8px}
@@ -269,7 +269,7 @@ nav button[aria-current="page"]{color:var(--prim)}nav button[aria-current="page"
 input.in,select.in,textarea.in{width:100%;background:var(--field);border:1px solid var(--fbd);border-radius:var(--r-s);padding:12px 14px;font-size:var(--fs-1);margin-bottom:10px;transition:border-color var(--dur),box-shadow var(--dur)}
 #sheet input.in,#sheet select.in{font-size:17px}
 input.in:focus,select.in:focus,textarea.in:focus,.field input:focus,.rem input:focus,.sin:focus,.kin:focus{outline:none;border-color:var(--prim);box-shadow:0 0 0 3px color-mix(in srgb,var(--prim) 22%,transparent)}
-input.in::placeholder,textarea.in::placeholder{color:var(--mut);opacity:.85}
+input.in::placeholder,textarea.in::placeholder{color:var(--mut);opacity:1}
 input.in[type=search]{padding-left:42px;background:var(--field) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237b8a90' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E") no-repeat 14px 50%/20px}
 input.in[type=search]::-webkit-search-decoration{display:none}
 #sheet textarea.in{min-height:96px;resize:vertical;font-size:16px}
@@ -280,7 +280,7 @@ input.in[type=search]::-webkit-search-decoration{display:none}
 .lbl{font-size:var(--fs-s);font-weight:600;color:var(--mut);margin:4px 2px 6px}
 .kstep{display:flex;gap:8px;align-items:center;margin-bottom:10px}#sheet .kstep .in{flex:1;text-align:center;margin:0}.kstep .chip{min-width:64px;min-height:50px}
 .ferr{color:var(--warn);font-size:14px;margin:-4px 2px 10px}.ferr:empty{display:none}
-select.in{appearance:none}
+select.in{appearance:none;padding-right:40px;background:var(--field) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237b8a90' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center/20px}
 input.in,select.in,.chip>button{min-height:44px}
 
 #toast{position:fixed;left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));max-width:488px;margin:0 auto;background:var(--tbg);color:var(--tfg);border-radius:var(--r-s);box-shadow:0 6px 24px rgb(0 0 0/.18);padding:12px 14px;display:flex;align-items:center;gap:12px;z-index:20;transform:translateY(30px);opacity:0;pointer-events:none;transition:all .2s;font-size:15px}
