@@ -82,29 +82,27 @@ public class BackupFolderPlugin extends Plugin {
             call.reject("izin alınamadı");
             return;
         }
-        release(u);
+        String old = prefs().getString("tree", null);
+        if (old != null && !old.equals(u.toString())) release(Uri.parse(old));
         prefs().edit().putString("tree", u.toString()).apply();
         JSObject r = new JSObject();
         r.put("name", folderName(u));
         call.resolve(r);
     }
 
-    /** Eski klasörün kalıcı iznini bırakır (keep dışındaki); keep null ise hepsini. */
-    private void release(Uri keep) {
-        ContentResolver cr = getContext().getContentResolver();
-        for (UriPermission p : cr.getPersistedUriPermissions()) {
-            if (p.getUri().equals(keep)) continue;
-            try {
-                cr.releasePersistableUriPermission(p.getUri(), FLAGS);
-            } catch (SecurityException e) {
-                // izin zaten yok
-            }
+    /** Yalnız bu klasörün kalıcı izni bırakılır; uygulamanın başka kalıcı izinleri varsa onlara dokunulmaz. */
+    private void release(Uri u) {
+        try {
+            getContext().getContentResolver().releasePersistableUriPermission(u, FLAGS);
+        } catch (SecurityException e) {
+            // izin zaten yok
         }
     }
 
     @PluginMethod
     public void clear(PluginCall call) {
-        release(null);
+        String old = prefs().getString("tree", null);
+        if (old != null) release(Uri.parse(old));
         prefs().edit().remove("tree").apply();
         call.resolve();
     }
@@ -138,12 +136,14 @@ public class BackupFolderPlugin extends Plugin {
         }
         try {
             ContentResolver cr = getContext().getContentResolver();
-            Uri doc = list(t).get(name);
-            if (doc == null) doc = DocumentsContract.createDocument(cr, DocumentsContract.buildDocumentUriUsingTree(t, DocumentsContract.getTreeDocumentId(t)), "application/json", name);
-            if (doc == null) throw new IllegalStateException("oluşturulamadı");
-            try (OutputStream os = cr.openOutputStream(doc, "wt")) {
-                if (os == null) throw new IllegalStateException("açılamadı");
-                os.write(data.getBytes(StandardCharsets.UTF_8));
+            Uri dir = DocumentsContract.buildDocumentUriUsingTree(t, DocumentsContract.getTreeDocumentId(t)), doc = list(t).get(name);
+            if (doc == null) doc = create(cr, dir, name);
+            try {
+                put(cr, doc, "wt", data);
+            } catch (Exception e) {
+                // "wt" desteklemeyen sağlayıcı: "w" var olan dosyayı kısaltmayabilir (sonda eski baytlar kalır, yedek açılmaz); dosya silinip yeniden oluşturulur.
+                DocumentsContract.deleteDocument(cr, doc);
+                put(cr, create(cr, dir, name), "w", data);
             }
             JSArray names = new JSArray();
             for (String n : list(t).keySet()) names.put(n);
@@ -152,6 +152,19 @@ public class BackupFolderPlugin extends Plugin {
             call.resolve(r);
         } catch (Exception e) {
             call.reject("yazılamadı");
+        }
+    }
+
+    private static Uri create(ContentResolver cr, Uri dir, String name) throws Exception {
+        Uri doc = DocumentsContract.createDocument(cr, dir, "application/json", name);
+        if (doc == null) throw new IllegalStateException("oluşturulamadı");
+        return doc;
+    }
+
+    private static void put(ContentResolver cr, Uri doc, String mode, String data) throws Exception {
+        try (OutputStream os = cr.openOutputStream(doc, mode)) {
+            if (os == null) throw new IllegalStateException("açılamadı");
+            os.write(data.getBytes(StandardCharsets.UTF_8));
         }
     }
 

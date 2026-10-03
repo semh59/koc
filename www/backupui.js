@@ -107,8 +107,8 @@ async function abRun(){
     await keysP;
     const pw=await bkRemembered();
     if(!pw)throw new Error("parola");
-    const r=await bf.write({name:BackupLib.autoName(dayKey()),data:JSON.stringify(await BackupLib.encrypt({v:1,S,keys:getKeys()},pw))});
-    const old=BackupLib.autoPrune(r.names||[]);
+    const name=BackupLib.autoName(dayKey()),r=await bf.write({name,data:JSON.stringify(await BackupLib.encrypt({v:1,S,keys:getKeys()},pw))});
+    const old=BackupLib.autoPrune(r.names||[],name);
     if(old.length)await bf.remove({names:old}).catch(()=>{});
     st.lastAutoBk=dayKey();markBackup();
   }catch(e){
