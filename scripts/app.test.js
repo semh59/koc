@@ -2410,7 +2410,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("S=structuredClone(DEF);S.settings.obDone=true;tab='bugun';render();sheetPorsiyon(allFoods().findIndex(f=>f.n==='Mantı (haşlanmış)'))");
     q("#fqty").value="2";ev("foodPreview()");
     ok("önizleme: ~aralık ve ortalama (2 × 200 g mantı: 680 ortalama, ±%30)",q("#fprev").textContent.startsWith("~476-884 kcal (ortalama 680)")&&q("#fprev").textContent.includes("protein"),q("#fprev").textContent);
-    ok("hesaplı tahmin olduğu notla söylenir, ölçüm değil; ekle ortalamayı kaydeder",q("#sheet").textContent.includes("hesaplı bir tahmin")&&q("#sheet").textContent.includes("ölçüm değildir")&&q("#sheet").textContent.includes("ortalamayı"));
+    ok("tahmin olduğu notla söylenir, ölçüm değil; ekle ortalamayı kaydeder",q("#sheet").textContent.includes("tarif farkını")&&q("#sheet").textContent.includes("ölçüm değildir")&&q("#sheet").textContent.includes("ortalamayı"));
     ev("goBesin()");
     ok("kayıt ortalamayı tutar, aralık yalnız satırda: ~680 kcal, altında 476-884 aralık",ev("S.entries[0].v")===680&&ev("S.entries[0].lo")===476&&ev("S.entries[0].hi")===884&&ev("viewBugun()").includes("~680 kcal")&&ev("viewBugun()").includes("<small class=\"mut sm\" style=\"display:block\">476-884</small>"));
     ok("günlük toplamı aralıksız ortalamayla (680)",ev("sum('yemek',dayKey(),dayKey())")===680);
