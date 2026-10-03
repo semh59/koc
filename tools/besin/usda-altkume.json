@@ -4630,6 +4630,40 @@
 ]
 ]
 },
+"millet, raw":{
+"id":169702,
+"d":"Millet, raw",
+"f":4.22,
+"c":72.85,
+"k":378.0,
+"l":8.5,
+"p":11.02,
+"por":[
+[
+"1 cup ",
+200.0
+]
+]
+},
+"molasses":{
+"id":168820,
+"d":"Molasses",
+"c":74.73,
+"k":290.0,
+"f":0.1,
+"l":0.0,
+"p":0.0,
+"por":[
+[
+"1 cup ",
+337.0
+],
+[
+"1 serving 1 tbsp ",
+20.0
+]
+]
+},
 "mollusks, mussel, blue, cooked, moist heat":{
 "id":174217,
 "d":"Mollusks, mussel, blue, cooked, moist heat",
@@ -5762,6 +5796,25 @@
 [
 "1 NLEA serving ",
 151.0
+]
+]
+},
+"pomegranate juice, bottled":{
+"id":167787,
+"d":"Pomegranate juice, bottled",
+"f":0.29,
+"c":13.13,
+"k":54.0,
+"p":0.15,
+"l":0.1,
+"por":[
+[
+"1 cup ",
+249.0
+],
+[
+"1 fl oz ",
+31.4
 ]
 ]
 },

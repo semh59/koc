@@ -4,7 +4,8 @@
    Karbonhidrat tanımı: USDA "Carbohydrate, by difference" (toplam karbonhidrat, lif DAHİL) ve USDA ile tarif hesaplı satırların tümünde aynıdır; ilk 106 satırdan USDA ile karşılaştırılmamış (1 işaretsiz) elle girilmiş olanlar yaklaşık değerdir. Paket etiketi ve Open Food Facts değerleri lifi ayrı sayar (lifsiz); barkoddan gelen besinler etiket tanımıyla gösterilir.
    Sondaki 1: USDA FoodData Central SR Legacy (CC0) değerleri birebir ya da eski elle derlenmiş satırın USDA ile karşılaştırılıp uyumlu bulunması. 0 ya da yok: tarif ve markaya göre değişen tahmin; tarif hesaplı satırlar USDA malzeme değerlerinden hesaplanmıştır (tools/besin/tarif.txt).
    Son 1 (o): öğün kaydı (tek tabak, menü, restoran porsiyonu; arayüzde "Öğün" etiketi). Öğünlerde [lo, hi]: tarif bileşeninin aralığı ya da restoran porsiyonu için ±%30.
-   [lo, hi]: tarif hesaplı satırlarda az ve bol yağlı varyantın 100 g başına kcal değeri. */
+   [lo, hi]: tarif hesaplı satırlarda az ve bol yağlı varyantın 100 g başına kcal değeri; vekil.txt satırlarında vekil/ev değişkenliği aralığı (±%15-45).
+   v: vekil nedeni ya da çapraz kontrol notu (tools/besin/vekil.tsv); arayüzde "Tahmini değer." notundan sonra gösterilir. CIQUAL ve CoFID değerli satırlar da 0 işaretlidir (1 yalnız USDA). */
 const FOODS=(()=>{
   const R=[
 /*SATIRLAR*/
@@ -15,7 +16,7 @@ const FOODS=(()=>{
     s:["Mercimek çorbası","Ezogelin çorbası","Domates çorbası","Tarhana çorbası","Yayla çorbası","Kuru fasulye yemeği","Nohut yemeği","Etli sebze yemeği","Zeytinyağlı taze fasulye"],
     y:["Menemen","Su böreği (peynirli)","Gözleme (peynirli)","Lahmacun","Mantı (haşlanmış)","Pirinç pilavı","Bulgur pilavı","Karnıyarık","İmam bayıldı","Zeytinyağlı yaprak sarma","Izgara köfte","İçli köfte"]};
   const cls=n=>HOME.s.includes(n)?"s":HOME.y.includes(n)?"y":null;
-  return R.map(([n,k,p,c,f,u,s,r,o])=>{const sp=SPREAD[cls(n)];return Object.assign({n,k,p,c,f,u,s:s===1},r?{lo:r[0],hi:r[1]}:sp?{lo:Math.round(k*(1-sp)),hi:Math.round(k*(1+sp))}:{},ALT[n]?{a:ALT[n]}:{},o?{o:true}:{})});
+  return R.map(([n,k,p,c,f,u,s,r,o])=>{const sp=SPREAD[cls(n)];return Object.assign({n,k,p,c,f,u,s:s===1},r?{lo:r[0],hi:r[1]}:sp?{lo:Math.round(k*(1-sp)),hi:Math.round(k*(1+sp))}:{},ALT[n]?{a:ALT[n]}:{},VEK[n]?{v:VEK[n]}:{},o?{o:true}:{})});
 })();
 
 /* Koç menü kataloğu yalnız yemek odaklı ilk satırlardan örneklenir; ham besin ve tarif satırları isteği şişirmesin. */

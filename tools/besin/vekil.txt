@@ -1,0 +1,31 @@
+# Tam karşılığı olmayan yaygın Türk besinleri: vekil ya da bileşenden hesap; her satırın nedeni vekil.tsv'dedir. Biçim tarif.txt ile aynı: ad | yöntem | porsiyonlar | malzemeler | eş adlar | ~N (±N% kcal aralığı)
+# Aralık ~N: bu besinlerin tek bir USDA kaydı yoktur; vekil kayıtlar arası fark ve ev/ürün değişkenliği yüzünden geniş tutulur (en çok ±45).
+# Verim: sucuk ve pastırma kızartmada ~%25 su kaybeder (varsayım): verim = 1 - 0,25 x sucuk (pastırma) gramı / su dahil girdi gramı. Kurutulan tarhana: kuru madde (un %88, yoğurt %12, domates %5,5; USDA su değerleriyle) %10 nemle kuruyunca 2000 g girdinin ~1080 g'ı kalır (0,54).
+# --- Yumurtalı ve sucuklu ---
+Sucuklu yumurta | 0.91 | 1 porsiyon (129 g)=129 | Sahanda yumurta 92;Sucuk (kuru sosis vekili) 50 | sucuklu sahanda yumurta sucuk yumurta | ~30
+Pastırmalı yumurta | 0.92 | 1 porsiyon (126 g)=126 | Sahanda yumurta 92;Pastırma (kuru sığır vekili) 40;Tereyağı 5 | pastirmali sahanda yumurta | ~30
+Kavurmalı yumurta | cig | 1 porsiyon (142 g)=142 | Sahanda yumurta 92;Kuzu kavurma 50 | kavurmali sahanda yumurta | ~30
+Kaşarlı sahanda yumurta | cig | 1 porsiyon (122 g)=122 | Sahanda yumurta 92;Kaşar 30 | peynirli sahanda yumurta | ~25
+Sucuklu kaşarlı tost | 0.94 | 1 adet (118 g)=118 | Ekmek (beyaz) 60;Kaşar 30;Sucuk (kuru sosis vekili) 30;Tereyağı 5 | sucuklu tost | ~30
+Sucuk ekmek (yarım somun) | 0.91 | 1 adet (146 g)=146 | Ekmek (beyaz) 100;Sucuk (kuru sosis vekili) 60 | sucuklu sandviç sucuk ekmek | ~30
+# --- Şarküteri ve peynir ---
+Sucuk (çiğ) | cig | 5 dilim (50 g)=50 | Sucuk (kuru sosis vekili) 100 | sucuk dilim | ~25
+Pastırma | cig | 3 dilim (30 g)=30 | Pastırma (kuru sığır vekili) 100 | pastirma | ~25
+Hellim peyniri | cig | 1 dilim (40 g)=40 | Hellim (CoFID) 100 | halloumi hellim | ~15
+# --- Tarhana, tatlandırıcı ve atıştırmalık ---
+Tarhana (kuru) | 0.54 | 4 yemek kaşığı (35 g)=35 | Buğday unu 1000;Yoğurt 500;Domates 500 | kuru tarhana | ~25
+Tahin pekmez | cig | 1 yemek kaşığı (20 g)=20 | Tahin 50;Pekmez (melas vekili) 50 | tahin pekmez | ~15
+Nar ekşisi | 0.25 | 1 yemek kaşığı (15 g)=15 | Nar suyu 100 | pomegranate molasses | ~35
+Leblebi (kavrulmuş) | cig | 1 avuç (30 g)=30 | Nohut (çiğ) 100 | kavrulmuş nohut roasted chickpea | ~15
+Protein bar (jenerik, whey ve yulaf) | cig | 1 bar (60 g)=60 | Protein tozu (peynir altı suyu) 36;Fıstık ezmesi 14;Yulaf (çiğ) 20;Bal 14;Bitter çikolata 16 | protein bar protein barı | ~30
+# --- İçecekler ---
+Şalgam suyu | cig | 1 bardak (200 g)=200 | Havuç 30;Şalgam (kök) 20;Su 150 | salgam | ~45
+Boza | cig | 1 bardak (200 g)=200 | Darı (çiğ) 15;Şeker 10;Su 75 | boza | ~30
+Salep | cig | 1 bardak (205 g)=205 | Süt 190;Mısır nişastası 5;Şeker 10 | sahlep sıcak salep | ~25
+Türk kahvesi (sade) | cig | 1 fincan (70 g)=70 | Espresso 70 | turk kahvesi sade | ~45
+Türk kahvesi (az şekerli) | cig | 1 fincan (74 g)=74 | Espresso 70;Şeker 4 | turk kahvesi az şekerli | ~30
+Türk kahvesi (orta şekerli) | cig | 1 fincan (78 g)=78 | Espresso 70;Şeker 8 | turk kahvesi orta şekerli | ~30
+Türk kahvesi (şekerli) | cig | 1 fincan (83 g)=83 | Espresso 70;Şeker 13 | turk kahvesi şekerli | ~30
+Çay (1 kesme şekerli) | cig | 1 çay bardağı (103 g)=103 | Çay (şekersiz) 100;Şeker 3 | seker cay | ~30
+Çay (2 kesme şekerli) | cig | 1 çay bardağı (106 g)=106 | Çay (şekersiz) 100;Şeker 6 | seker cay | ~30
+Çay (3 kesme şekerli) | cig | 1 çay bardağı (109 g)=109 | Çay (şekersiz) 100;Şeker 9 | seker cay | ~30

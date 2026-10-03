@@ -4,7 +4,7 @@
 #   cig 1.0 (salata, meze, püre) | corba 0.90 | yemek 0.85 (kapaklı tencere) | pilav 0.94 | firin 0.80 | kizart 0.85 | hamur 0.88 | tatli 0.90
 # Yağ emilimi: kızartmada yutulan yağ (yüzeyde kalan değil) ayrı malzeme olarak yazılır: tava kızartması 15-18 g yağ/100 g sebze ya da hamur, 12-14 g/100 g köfte, 8-10 g/100 g unlanmış balık.
 # Aralık: yağ malzemeleri (zeytinyağı, tereyağı, ayçiçek yağı, margarin) az yağlı varyantta x0,6, bol yağlı varyantta x1,5 alınır, 100 g kcal değeri lo/hi olur.
-# Baharat, tuz ve karabiber hesaba katılmadı (kcal etkisi %1'in altında). Vekil USDA kayıtları: yufka = "Phyllo dough", beyaz peynir = feta, kaşar = provolone, lor = ricotta (kısmen yağsız).
+# Baharat, tuz ve karabiber hesaba katılmadı (kcal etkisi %1'in altında). Vekil USDA kayıtları: yufka = "Phyllo dough", beyaz peynir = feta, kaşar = provolone, lor = ricotta (kısmen yağsız); CoFID/CIQUAL ile karşılaştırması docs/besin-veri-arastirmasi.md bölüm F'de.
 Şehriye çorbası | corba | 1 kase (250 g)=250 | Makarna (çiğ) 60;Tereyağı 15;Domates salçası 20;Su 1000
 Terbiyeli tavuk çorbası | corba | 1 kase (250 g)=250 | Tavuk göğsü (çiğ) 150;Buğday unu 20;Yumurta sarısı 34;Limon suyu 15;Tereyağı 20;Su 1200
 Düğün çorbası | corba | 1 kase (250 g)=250 | Dana kuşbaşı (çiğ) 200;Buğday unu 30;Tereyağı 30;Yumurta sarısı 34;Yoğurt 100;Limon suyu 15;Su 1500
