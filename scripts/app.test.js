@@ -1,14 +1,18 @@
-const {JSDOM}=require("jsdom"),fs=require("fs"),path=require("path");let bad=0;
+const {JSDOM}=require("jsdom"),fs=require("fs"),path=require("path");let bad=0,total=0;process.on("unhandledRejection",e=>{console.log("FAIL beklenmeyen hata",e);process.exit(1)});
 const www=f=>path.join(__dirname,"../www",f);
 const html=fs.readFileSync(www("index.html"),"utf8").replace(/<script src="([^"]+)"><\/script>/g,(_,f)=>"<script>"+fs.readFileSync(www(f),"utf8")+"</script>");
-const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
-const errs=[];
+const ok=(n,c,x)=>{total++;console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
+const MIN_TESTS=856,errs=[]; // son satıra ulaşılmadan çıkış (zamanlama kayması) başarı sayılmasın
 const dom=new JSDOM(html,{runScripts:"dangerously",pretendToBeVisual:true,url:"https://localhost/",
   beforeParse(w){Object.assign(w,{structuredClone,TextEncoder,TextDecoder,__noSelfTest:true});Object.defineProperty(w,"crypto",{value:require("node:crypto").webcrypto});w.confirm=()=>true;w.scrollTo=()=>{};w.addEventListener("error",e=>errs.push(e.message))}
 });
 setTimeout(async()=>{
   const w=dom.window,sc=[];w.HTMLElement.prototype.scrollIntoView=function(){sc.push(this)}; // jsdom'da yok
   const ev=s=>w.eval(s),shown=()=>ev("S.settings.reminders.filter(remShown).map(r=>r.id)"),$q=s=>w.document.querySelector(s),macros=()=>ev("JSON.stringify(of('yemek',dayKey()).map(e=>[e.v,e.p,e.c,e.f]))");
+  const calls=[];
+  w.Capacitor={isNativePlatform:()=>true,Plugins:{LocalNotifications:{checkPermissions:async()=>({display:"granted"}),checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),getPending:async()=>({notifications:[1,2]}),schedule:async x=>{calls.push(x)}}}};
+  w.Capacitor.Plugins.DeviceHelp={info:async()=>({manufacturer:"xiaomi"})};
+  const reset=()=>{ev("closeSheet();S=structuredClone(DEF);S.settings.obDone=true;tab='bugun'");w.localStorage.clear();ev("render()")};
   ok("sayfa hatasız açılır",errs.length===0&&ev("document.querySelector('#view').innerHTML.length")>100,errs);
   { // onboarding (C2)
     const q=s=>$q(s),click=s=>q(s).click(),val=(id,v)=>{q("#ob"+id).value=v},v=()=>q("#view").textContent;
@@ -233,7 +237,7 @@ setTimeout(async()=>{
   ev("document.querySelector('#bkpw')||document.body.insertAdjacentHTML('beforeend','<input id=\"bkpw\">')");
   w.document.querySelector("#bkpw").value="parola123";
   w.backupP=ev("backupText()");
-  w.backupP.then(async enc=>{
+  const enc=await w.backupP;{
     ok("şifreli yedek düz metin içermez",!enc.includes("gizli not")&&!enc.includes("KEY-sirri-12345")&&JSON.parse(enc).enc==="aes-gcm-pbkdf2");
     ev("setKey('groq','');S.settings.healthNote=''");
     w.document.querySelector("#bk").value=enc;w.document.querySelector("#bkpw").value="yanlis";
@@ -1516,11 +1520,8 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("izin verilince uyarı kalkar ve hatırlatmalar yeniden kurulur",n===2&&!$q("#view").textContent.includes("Tam saat alarm izni kapalı"),n);
     P.LocalNotifications=old;ev("S.settings.medOn=false;S.meds=[];tab='bugun';render()");
   }
-    process.exit(bad?1:0);
-  });
-  const calls=[];
-  w.Capacitor={isNativePlatform:()=>true,Plugins:{LocalNotifications:{checkPermissions:async()=>({display:"granted"}),checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),getPending:async()=>({notifications:[1,2]}),schedule:async x=>{calls.push(x)}}}};
-  w.Capacitor.Plugins.DeviceHelp={info:async()=>({manufacturer:"xiaomi"})};
+  }
+  reset();
   w.eval("oem='xiaomi';S.settings.oemDone=false");
   ok("Xiaomi'de ayar uyarısı çıkar",ev("viewBugun()").includes("Hatırlatmalar için bir kez ayar"));
   w.eval("S.settings.oemDone=true");
@@ -1806,10 +1807,8 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
   Object.assign(w.Capacitor.Plugins.LocalNotifications,{requestPermissions:async()=>({display:"granted"}),cancel:async()=>{},schedule:async x=>{sched.push(...x.notifications)}});
   ok("hatırlatma durumu ok",await ev("scheduleReminders()")==="ok");
   ok("30 günlük tek seferlik alarmlar kurulur",sched.length>=150&&new Set(sched.map(n=>n.id)).size===sched.length&&sched.every(n=>n.schedule.at>new Date()&&n.schedule.allowWhileIdle&&!n.schedule.on),[sched.length]);
-  w.notifP=ev("notifTest()");
-  w.notifP.then(()=>{
-    ok("test bildirimi kurulur ve teşhis yazılır",sched.some(n=>n.id===99)&&ev("notifDiag").includes("granted")&&ev("notifDiag").includes("Kurulu hatırlatma: 2"),[sched.length,ev("notifDiag")]);
-  });
+  await ev("notifTest()");
+  ok("test bildirimi kurulur ve teşhis yazılır",sched.some(n=>n.id===99)&&ev("notifDiag").includes("granted")&&ev("notifDiag").includes("Kurulu hatırlatma: 2"),[sched.length,ev("notifDiag")]);
   ev("S.chat=[];S.cid=1;cReply({reply:'x',log:[],propose:null,flag:'safety'})");
   ok("model güvenlik işareti kart üretir",ev("S.chat.some(m=>m.card&&m.card.kind==='safety')"));
   ev("S.chat=[];Object.assign(S.settings,{age:12,heightCm:165,goalKg:45,healthNote:'',kcal:0});S.entries=[];for(let i=13;i>=0;i--)S.entries.push({id:100+i,day:keyOff(-i),time:'08:00',type:'kilo',v:60-i*0.01,text:''})");
@@ -2344,4 +2343,6 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("cleanEntries: tutarlı aralık korunur, ortalamayı içermeyen ya da sayı olmayan atılır, eski kayıt aynen",r==="[[80,120],[null,null],[null,null],[null,null],[null,null]]",r);
     ev("S=structuredClone(DEF);S.settings.obDone=true;closeSheet();tab='bugun';render()");
   }
+  console.log("son satıra ulaşıldı, "+total+" test");
+  process.exit(bad||total<MIN_TESTS?1:0);
 },100);
