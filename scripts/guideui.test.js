@@ -42,7 +42,7 @@ setTimeout(async()=>{
     ok("tam ekran katman açılır, görünüm yeniden çizilince kalır",!q("#guide").hidden&&(ev("render()"),!q("#guide").hidden)&&q("#guide").getAttribute("aria-modal")==="true");
     ok("ekran: animasyonlu figür, ad, form ipucu, halka, sonraki önizleme, ilerleme, kalan süre",!!q("#guide svg.fig animate")&&gt().includes("Açılıp kapanma sıçraması")&&gt().includes(ev("EXCUE.jack[0]"))&&!!q("#gdpg")&&q(".gdnx").textContent.includes("Dağcı")&&!!q("#gdbar")&&q("#gdrem").textContent.includes("8 adım"));
     ok("ekran açık: Salon dışında da akış sürerken keepAwake açılır",awk[awk.length-1]===true);
-    ok("hazırlıkta sesli komut: sıradaki egzersiz ve süre",said[0]==="Sıradaki: Açılıp kapanma sıçraması, 20 saniye");
+    ok("hazırlıkta sesli komut: sıradaki egzersiz (kısa hazırlıkta süre yok)",said[0]==="Sıradaki: Açılıp kapanma sıçraması");
     const n=ln.filter(l=>l[0]==="s").map(l=>l[1][0]).find(x=>x.id===9003);
     ok("evre bitişine yerel bildirim 9003 kurulur (9001/9002'ye dokunulmaz), tam bitiş anı",n&&+n.schedule.at===ev("gd.st.end")&&n.schedule.allowWhileIdle&&n.title.startsWith("Başla")&&!ln.some(l=>l[0]==="s"&&l[1].some(x=>x.id===9001||x.id===9002)));
     // geri sayım bir kez

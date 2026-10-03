@@ -53,6 +53,7 @@ ok("ekran açık: keepAwake eklenti metodu, UI iş parçacığında bayrak ekler
   ok("ses: init asenkron, başarısızlıkta tts'e dokunulmaz, hazır olmadan konuşulmaz",/status != TextToSpeech\.SUCCESS \|\| tts == null\) return;/.test(init)&&/if \(ready && text != null/.test(sp)&&/if \(ready\) tts\.stop\(\)/.test(sp));
   ok("ses: Türkçe (tr-TR) varsa seçilir, yoksa motorun varsayılan dili",/Locale\.forLanguageTag\("tr-TR"\)/.test(init)&&/isLanguageAvailable\(tr\) >= TextToSpeech\.LANG_AVAILABLE\) turkish = tts\.setLanguage\(tr\)/.test(init));
   ok("ses: müzik kısa kısılır (GAIN_TRANSIENT_MAY_DUCK), son söz bitince odak bırakılır, API 26 ayrımı",(sp.match(/AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK/g)||[]).length===2&&/Build\.VERSION\.SDK_INT >= 26/.test(sp)&&/abandonAudioFocusRequest/.test(sp)&&/if \(lastId\.equals\(id\)\) abandonFocus\(\)/.test(sp)&&["onDone","onError","onStop"].every(m=>new RegExp(`public void ${m}\\(String id[^)]*\\) \\{ release\\(id\\); \\}`).test(sp)));
+  ok("ses: kısa komut (≤20 karakter) sıraya eklenir, uzun evre cümlesi eskisini keser; guidelib kısa metinleri bu sınırda",/SHORT = 20;/.test(sp)&&/int mode = text\.length\(\) <= SHORT \? TextToSpeech\.QUEUE_ADD : TextToSpeech\.QUEUE_FLUSH;/.test(sp)&&/tts\.speak\(text, mode, null, id\)/.test(sp)&&/s\.length<=20/.test(rd("scripts/guide.test.js")));
   ok("ses: kapanışta motor kapatılır",/protected void handleOnDestroy\(\) \{\s*if \(tts != null\) tts\.shutdown\(\);/.test(sp));
 }
 process.exit(bad?1:0);

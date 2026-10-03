@@ -84,14 +84,15 @@ const GuideLib=(()=>{
     });
   }
 
-  /* Sesli komut metinleri tek yerde: kısa, Türkçe. */
+  /* Sesli komut metinleri tek yerde: kısa, Türkçe. 20 karakterden kısa metni yerel taraf süren cümlenin arkasına ekler, uzun cümle öncekini keser. */
   const amount=p=>p.reps?`${p.reps} tekrar`:`${p.sec} saniye`;
-  const SAY={next:(n,p)=>`Sıradaki: ${n}, ${amount(p)}`,go:"3, 2, 1, başla",rest:"Dinlen",start:(n,p)=>`${n}, ${amount(p)}. Başla`,end:"Bitti. Tebrikler",pause:"Duraklatıldı"};
+  const SAY={next:(n,p)=>`Sıradaki: ${n}, ${amount(p)}`,nextShort:n=>`Sıradaki: ${n}`,go:"3, 2, 1, başla",rest:"Dinlen",start:(n,p)=>`${n}, ${amount(p)}. Başla`,end:"Bitti. Tebrikler",pause:"Duraklatıldı"};
+  const SHORT_REST=10; // saniye; geri sayım son 3 sn'de, daha kısa dinlenmede uzun cümle ona yetişmez
   /* Evreye girişte söylenecek metin. cd: önceki dinlenmede geri sayım söylendi, tekrar "başla" denmez. */
   function cue(st,name,cd){
     if(over(st))return SAY.end;
     const p=st.ph[st.i];
-    if(p.k==="r"){const nx=nextWork(st);return nx?(st.i?SAY.rest+". ":"")+SAY.next(name(nx.ex),nx):SAY.rest}
+    if(p.k==="r"){const nx=nextWork(st);return !nx?SAY.rest:p.sec<SHORT_REST?SAY.nextShort(name(nx.ex)):(st.i?SAY.rest+". ":"")+SAY.next(name(nx.ex),nx)}
     return cd?"":SAY.start(name(p.ex),p);
   }
   return {TEMPO,PREP,phases,start,tick,finish,skip,back,pause,resume,left,elapsed,total,remain,stepsLeft,nextWork,works,over,result,tabata,hiit,stretch,FLOWS,fromTpl,SAY,cue};
