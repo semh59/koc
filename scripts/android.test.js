@@ -41,7 +41,7 @@ ok("ekran açık: keepAwake eklenti metodu, UI iş parçacığında bayrak ekler
 }
 { // Dalga 11: smoke çökme denetimi
   const sm=rd("scripts/smoke.sh");
-  ok("smoke: crash tamponunda uygulamanın çökmesi (Java ve yerel) aranır, her logcat temizliğinden önce ve sonda",/crashcheck\(\) \{ adb logcat -d -b crash > crash\.log; if grep -qE "Process: com\\.neowell\\.app\|>>> com\\.neowell\\.app <<<" crash\.log/.test(sm)&&/clr\(\) \{ crashcheck; adb logcat -c; \}/.test(sm)&&(sm.match(/adb logcat -c/g)||[]).length===1&&/crashcheck\necho "Smoke testi geçti"/.test(sm));
+  ok("smoke: crash tamponunda uygulamanın çökmesi (Java ve yerel) aranır, her logcat temizliğinden önce ve sonda",/crashcheck\(\) \{ adb logcat -d -b crash > crash\.log; if grep -qE "Process: com\\.neowell\\.app\|>>> com\\.neowell\\.app <<<" crash\.log/.test(sm)&&/clr\(\) \{ crashcheck; adb logcat -c; \}/.test(sm)&&(sm.match(/adb logcat -c/g)||[]).length===1&&/crashcheck\r?\necho "Smoke testi geçti"/.test(sm));
 }
 { // D-Veri2: otomatik yedek klasörü
   const bf=rd("assets/android/BackupFolderPlugin.java"),diag=rd("www/index.html").match(/NW-DIAG "\+\[([^\]]+)\]/)[1];
