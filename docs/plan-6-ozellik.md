@@ -269,7 +269,7 @@ Yeni: `assets/android/NeoWidget.java` (AppWidgetProvider + statik `push/bump`), 
 - Smoke: yukarıdaki üç kontrol. Widget görünümü emülatörde doğrulanamaz → telefon test listesine (`docs/yapilacaklar.md`) madde.
 
 ### Riskler
-- `exported="true"` zorunlu (sistem APPWIDGET_UPDATE gönderir); su ekleme bu alıcıda değil exported=false `WaterReceiver`'da, dışarıdan tetikleme yüzeyi genişlemez.
+- `exported="true"` zorunlu (sistem APPWIDGET_UPDATE gönderir); su ekleme bu alıcıda değil exported=false `WaterReceiver`'da, widget dışarıdan tetikleme yüzeyini genişletmez. Bildirim düğmelerinin yolu (exported `MainActivity`) ise dışarıdan tetiklenebilir: bkz. 10.1 tuzak 4.
 - MIUI'de widget güncellemesi gecikebilir; değerler uygulama açılışında düzelir.
 - Widget'ta ekran açılmaz; bildirim düğmesinde ekran kısa yanıp söner (Capacitor mekanizması).
 
@@ -336,10 +336,11 @@ En yüksek riskli iş: Gradle/SDK/Kotlin değişikliği tüm APK derlemesini kı
 
 PendingIntent request code: 7001 (StepSnapshotReceiver gece alarmı ve MotionReceiver, farklı bileşen olduğu için çakışmıyor), 7002 (Motion tick), 7003 (StepSnapshotReceiver 23:58 örneği). Widget için 7201/7202. Native alarmlar (7001, 7002, 7003) LocalNotifications'ın 440 bütçesinin dışında, 500 sınırına 60 pay kalır.
 
-Üç tuzak:
+Dört tuzak:
 1. `scheduleReminders` 9001, 9002 ve 9003 dışındaki **tüm** bekleyen bildirimleri iptal eder. Tek seferlik bildirimler (oruç 9100, ileride başka) başka yerde kurulursa bir sonraki çağrıda silinir; **mutlaka `scheduleReminders` içinde durumdan** üretilmeli.
 2. `QuickLogPlugin.handle` ve `scheduleReminders`'ın teslim edilmiş bildirim temizliği `id ≥ 1.000.000`'u ilaç sayar (kardeşlerini iptal eder). Yeni kimlikler 1.000.000'un altında kalmalı.
 3. Toplam alarm bütçesi `MedLib.BUDGET=440` (Android 500 sınırı); 9001, 9002 ve 9003 ile en çok 443, yerel 3 alarmla 446. Yeni bildirimler aynı listeye girer ve en yakın tarihliler korunur; günlük yeni hatırlatıcı 30 alarm daha demek.
+4. Bildirim su/ilaç düğmeleri (`LocalNotificationUserAction` su/med/medskip) `QuickLogPlugin.handle`'a exported `MainActivity` üzerinden gelir. Telefondaki herhangi bir uygulama `am start` ile aynı ek alanları gönderip sahte su ya da ilaç kaydı yazdırabilir; yalnız widget yolu (`WaterReceiver`, exported=false) kapalıdır. Çözüm (yapılmadı, yol haritası Dalga 11): `nw_quick`'te rastgele token, `QuickLog.getToken`, `scheduleReminders` token'ı su/ilaç bildirimi `extra`'sına koyar, `handle` yalnız MainActivity yolunda token'ı denetler.
 
 ### 10.2 Yüksek riskli / ince parçalar ve kime verileceği
 
