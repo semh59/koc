@@ -18,35 +18,25 @@ public class MotionMathTest {
         ok("boy bilinmiyorsa 170 varsayılır", near(MotionMath.priorStride(MotionMath.WALK, 0, 110), 0.697, 0.001) && near(MotionMath.priorStride(MotionMath.WALK, 999, 110), 0.697, 0.001));
         ok("ritim arttıkça adım uzar", MotionMath.priorStride(MotionMath.WALK, 170, 130) > MotionMath.priorStride(MotionMath.WALK, 170, 100));
 
-        ok("ritim aralığı: sınırlar", MotionMath.bucket(110) == 4 && MotionMath.bucket(40) == 0 && MotionMath.bucket(10) == 0 && MotionMath.bucket(300) == 11);
 
         MotionMath.Model m = new MotionMath.Model();
-        ok("örnek: makul GPS adımı modele girer", MotionMath.addSample(m, MotionMath.WALK, 170, 110, 0.766, 100) && near(m.f[0], 1.0495, 0.001) && m.n[0] == 1 && m.last[0] == 100 && m.bucket[0][4] == 1);
-        ok("örnek: imkânsız adım uzunluğu reddedilir", !MotionMath.addSample(m, MotionMath.WALK, 170, 110, 1.6, 100) && m.n[0] == 1);
-        ok("örnek: imkânsız ritim reddedilir", !MotionMath.addSample(m, MotionMath.WALK, 170, 30, 0.5, 100) && !MotionMath.addSample(m, MotionMath.WALK, 170, 250, 0.5, 100));
+        ok("örnek: makul GPS adımı modele girer", MotionMath.addSample(m, MotionMath.WALK, 170, 110, 0.766) && near(m.f[0], 1.0495, 0.001) && m.n[0] == 1);
+        ok("örnek: imkânsız adım uzunluğu reddedilir", !MotionMath.addSample(m, MotionMath.WALK, 170, 110, 1.6) && m.n[0] == 1);
+        ok("örnek: imkânsız ritim reddedilir", !MotionMath.addSample(m, MotionMath.WALK, 170, 30, 0.5) && !MotionMath.addSample(m, MotionMath.WALK, 170, 250, 0.5));
         ok("ölçek 0,7-1,3 aralığında kalır", (new Object() {
             boolean run() {
                 MotionMath.Model x = new MotionMath.Model();
-                for (int i = 0; i < 200; i++) MotionMath.addSample(x, MotionMath.RUN, 170, 170, 1.1713 * 1.45, 100);
+                for (int i = 0; i < 200; i++) MotionMath.addSample(x, MotionMath.RUN, 170, 170, 1.1713 * 1.45);
                 return x.f[1] <= 1.3 && x.f[1] > 1.25;
             }
         }).run());
         ok("öğrenilen ölçek adım uzunluğuna yansır", near(MotionMath.stride(m, MotionMath.WALK, 170, 110), 0.697 * 1.0495, 0.002));
 
-        MotionMath.Model g = new MotionMath.Model();
-        ok("GPS: yeni modelde istenir", MotionMath.gpsWanted(g, MotionMath.WALK, Double.NaN, 100, 0, 80, false));
-        ok("GPS: pil azsa ya da tasarruf açıksa istenmez", !MotionMath.gpsWanted(g, MotionMath.WALK, Double.NaN, 100, 0, 19, false) && !MotionMath.gpsWanted(g, MotionMath.WALK, Double.NaN, 100, 0, 80, true));
-        ok("GPS: günlük üst sınır 6", MotionMath.gpsWanted(g, MotionMath.WALK, Double.NaN, 100, 5, 80, false) && !MotionMath.gpsWanted(g, MotionMath.WALK, Double.NaN, 100, 6, 80, false));
-        MotionMath.addSample(g, MotionMath.WALK, 170, 110, 0.70, 100);
-        ok("GPS: o ritimde 1 örnek varken hâlâ istenir", MotionMath.gpsWanted(g, MotionMath.WALK, 110, 101, 0, 80, false));
-        MotionMath.addSample(g, MotionMath.WALK, 170, 112, 0.70, 100);
-        ok("GPS: o ritim aralığı dolunca istenmez", !MotionMath.gpsWanted(g, MotionMath.WALK, 110, 101, 0, 80, false));
-        ok("GPS: başka ritim aralığında yine istenir", MotionMath.gpsWanted(g, MotionMath.WALK, 135, 101, 0, 80, false));
-        ok("GPS: 14 günden eski modelde günde en çok 1 doğrulama", MotionMath.gpsWanted(g, MotionMath.WALK, 110, 120, 0, 80, false) && !MotionMath.gpsWanted(g, MotionMath.WALK, 110, 120, 1, 80, false));
-
         MotionMath.Model r = MotionMath.Model.dec(m.enc());
         ok("model: kodla ve çöz aynı", r.enc().equals(m.enc()) && r.n[0] == 1 && near(r.f[0], m.f[0], 1e-9));
-        ok("model: bozuk metin varsayılana döner", MotionMath.Model.dec("x").n[0] == 0 && MotionMath.Model.dec(null).f[1] == 1 && MotionMath.Model.dec("1,1,0,0,-1,-1,a").f[0] == 1 && MotionMath.Model.dec("9,1,0,0,-1,-1" + ",0".repeat(24)).f[0] == 1);
+        ok("model: bozuk metin varsayılana döner", MotionMath.Model.dec("x").n[0] == 0 && MotionMath.Model.dec(null).f[1] == 1 && MotionMath.Model.dec("1,1,0,0,-1,-1,a").f[0] == 1 && MotionMath.Model.dec("9,1,0,0").f[0] == 1 && MotionMath.Model.dec("1,1,0").f[0] == 1);
+        MotionMath.Model old = MotionMath.Model.dec("1.08,0.95,7,3,20000,19990" + ",1".repeat(24));
+        ok("model: eski 30 alanlı kayıt (gün ve ritim aralığı sayaçlarıyla) ölçek ve örnek sayısını korur", near(old.f[0], 1.08, 1e-9) && near(old.f[1], 0.95, 1e-9) && old.n[0] == 7 && old.n[1] == 3 && old.enc().equals("1.08,0.95,7,3"));
 
         ok("GPS noktası: iyi", MotionMath.goodFix(10, 0.5f, 1.4f) && MotionMath.goodFix(10, -1f, 1.4f));
         ok("GPS noktası: kötü doğruluk ya da hız doğruluğu ya da hız reddedilir", !MotionMath.goodFix(20, 0.5f, 1.4f) && !MotionMath.goodFix(10, 1.2f, 1.4f) && !MotionMath.goodFix(10, 0.5f, -1f) && !MotionMath.goodFix(0, 0.5f, 1f) && !MotionMath.goodFix(10, 0.5f, 16f));
@@ -76,13 +66,11 @@ public class MotionMathTest {
         ok("aralık: öğrenilmiş uzun adım mesafeyi büyütür", (new Object() {
             boolean run() {
                 MotionMath.Model x = new MotionMath.Model();
-                for (int i = 0; i < 6; i++) MotionMath.addSample(x, MotionMath.WALK, 170, 110, 0.697 * 1.2, 100);
+                for (int i = 0; i < 6; i++) MotionMath.addSample(x, MotionMath.WALK, 170, 110, 0.697 * 1.2);
                 return MotionMath.bout(x, MotionMath.WALK, 170, 70, 10, 1100, Double.NaN).km > MotionMath.bout(f, MotionMath.WALK, 170, 70, 10, 1100, Double.NaN).km * 1.15;
             }
         }).run());
 
-        ok("sapma: ritim %20 düşünce ya da artınca", MotionMath.cadenceShift(120, 90) && MotionMath.cadenceShift(120, 150) && !MotionMath.cadenceShift(120, 110) && !MotionMath.cadenceShift(120, 130));
-        ok("sapma: durma dilimi ve düşük referans sapma sayılmaz", !MotionMath.cadenceShift(120, 20) && !MotionMath.cadenceShift(60, 90));
 
         long[] t1 = {0, 300000, 600000};
         long[] s1 = {0, 500, 800};

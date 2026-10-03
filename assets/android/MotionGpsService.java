@@ -10,29 +10,27 @@ import android.content.pm.ServiceInfo;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.os.PowerManager;
 import android.os.SystemClock;
 import java.util.Map;
 
 /**
  * Kısa GPS penceresi: yürüyüş/koşu sırasında Doppler hızını ve adım ritmini birlikte ölçüp adım uzunluğu modelini günceller.
- * Konum noktası saklanmaz. Pencere ≈ 45 sn, en çok 150 sn. Ritim aralığı zaten öğrenilmişse erken kapanır.
+ * Konum noktası saklanmaz. Pencere ≈ 45 sn, en çok 150 sn.
  */
 public class MotionGpsService extends Service implements LocationListener {
     static final String EXTRA_MODE = "mode";
     private static final int NOTIF_ID = 7101;
-    private static final long WINDOW_MS = 45000, EARLY_MS = 20000, HARD_MS = 150000;
+    private static final long WINDOW_MS = 45000, HARD_MS = 150000;
 
     private final Handler h = new Handler(Looper.getMainLooper());
     private LocationManager lm;
     private int mode;
-    private boolean finished, early, started;
+    private boolean finished, started;
     private final double[] speeds = new double[400];
     private int n;
     private long tFirst, tLast;
@@ -43,7 +41,6 @@ public class MotionGpsService extends Service implements LocationListener {
         }
     };
 
-    /** Çağıran taraf (alıcı) önce MotionMath.gpsWanted ile karar verir. İzin ya da ön plan servisi kısıtı varsa sessizce vazgeçilir. */
     static void start(Context c, int mode) {
         try {
             Intent i = new Intent(c, MotionGpsService.class).putExtra(EXTRA_MODE, mode);
@@ -78,7 +75,6 @@ public class MotionGpsService extends Service implements LocationListener {
             stopSelf();
             return START_NOT_STICKY;
         }
-        MotionStore.incGps(this);
         h.postDelayed(hard, HARD_MS);
         return START_NOT_STICKY;
     }
@@ -109,28 +105,7 @@ public class MotionGpsService extends Service implements LocationListener {
         }
         if (n < speeds.length) speeds[n++] = l.getSpeed();
         tLast = now;
-        long span = now - tFirst;
-        if (stepsStart < 0) return;
-        if (!early && span >= EARLY_MS) {
-            early = true;
-            checkEarly();
-        } else if (span >= WINDOW_MS) {
-            finish();
-        }
-    }
-
-    /** Ritim ölçülebiliyorsa ve bu aralık zaten öğrenilmişse GPS'i erkenden kapat. */
-    private void checkEarly() {
-        StepStore.read(this, false, new StepStore.Callback() {
-            public void done(Long steps, Map<String, Long> history) {
-                if (finished || steps == null || stepsStart < 0 || tLast <= tFirst) return;
-                double cad = (steps - stepsStart) * 60000.0 / (tLast - tFirst);
-                if (cad >= 50 && cad <= 220 && !MotionMath.gpsWanted(MotionStore.model(MotionGpsService.this), mode, cad, MotionStore.dayNum(), MotionStore.gpsToday(MotionGpsService.this) - 1, 100, false)) {
-                    n = 0;
-                    finish();
-                }
-            }
-        });
+        if (stepsStart >= 0 && now - tFirst >= WINDOW_MS) finish();
     }
 
     private void finish() {
@@ -170,18 +145,7 @@ public class MotionGpsService extends Service implements LocationListener {
         MotionStore.hint(this, speed);
         MotionMath.Model m = MotionStore.model(this);
         int md = MotionMath.classify(mode, cad, speed);
-        if (MotionMath.addSample(m, md, MotionStore.cm(this), cad, speed * 60.0 / cad, MotionStore.dayNum())) MotionStore.saveModel(this, m);
-    }
-
-    /** Pil ve tasarruf modu: alıcı karar verirken kullanır. */
-    static int battery(Context c) {
-        BatteryManager bm = (BatteryManager) c.getSystemService(Context.BATTERY_SERVICE);
-        return bm == null ? 100 : bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
-    }
-
-    static boolean powerSave(Context c) {
-        PowerManager pm = (PowerManager) c.getSystemService(Context.POWER_SERVICE);
-        return pm != null && pm.isPowerSaveMode();
+        if (MotionMath.addSample(m, md, MotionStore.cm(this), cad, speed * 60.0 / cad)) MotionStore.saveModel(this, m);
     }
 
     @Override

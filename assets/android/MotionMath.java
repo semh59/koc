@@ -1,9 +1,8 @@
 package com.neowell.app;
 
-/** Hareket algılama mantığı (Android'e bağımlı değil, test edilebilir): adım uzunluğu modeli, GPS kararı, yürü/koş ayrımı, MET kalori. */
+/** Hareket algılama mantığı (Android'e bağımlı değil, test edilebilir): adım uzunluğu modeli, yürü/koş ayrımı, MET kalori. */
 final class MotionMath {
     static final int WALK = 0, RUN = 1;
-    static final int BUCKETS = 12;
     static final double DEFAULT_CM = 170;
 
     /** Ritme göre beklenen adım uzunluğu (m): boy × (a + b·ritim). 110 adım/dk yürüyüşte boy × 0,41. */
@@ -13,36 +12,26 @@ final class MotionMath {
         return mode == RUN ? h * (0.40 + 0.0017 * c) : h * (0.30 + 0.0010 * c);
     }
 
-    /** Kişiye özel ölçek (f) ve hangi ritim aralıklarında GPS örneği alındığı. */
+    /** Kişiye özel ölçek (f) ve örnek sayısı (n), yürüyüş ve koşu için ayrı. */
     static final class Model {
         final double[] f = {1, 1};
-        final int[] n = new int[2], last = {-1, -1};
-        final int[][] bucket = new int[2][BUCKETS];
+        final int[] n = new int[2];
 
         String enc() {
-            StringBuilder sb = new StringBuilder();
-            sb.append(f[0]).append(',').append(f[1]).append(',').append(n[0]).append(',').append(n[1]).append(',').append(last[0]).append(',').append(last[1]);
-            for (int m = 0; m < 2; m++) for (int b = 0; b < BUCKETS; b++) sb.append(',').append(bucket[m][b]);
-            return sb.toString();
+            return f[0] + "," + f[1] + "," + n[0] + "," + n[1];
         }
 
+        /** Eski biçim (30 alan: ardından gün ve ritim aralığı sayaçları) da okunur: öğrenilmiş ölçek güncellemede kaybolmaz. */
         static Model dec(String s) {
             Model m = new Model();
             if (s == null) return m;
             String[] p = s.split(",");
-            if (p.length != 6 + 2 * BUCKETS) return m;
+            if (p.length != 4 && p.length != 30) return m;
             try {
                 double f0 = Double.parseDouble(p[0]), f1 = Double.parseDouble(p[1]);
-                int n0 = Integer.parseInt(p[2]), n1 = Integer.parseInt(p[3]), l0 = Integer.parseInt(p[4]), l1 = Integer.parseInt(p[5]);
-                int[][] b = new int[2][BUCKETS];
-                for (int i = 0; i < 2 * BUCKETS; i++) {
-                    int v = Integer.parseInt(p[6 + i]);
-                    if (v < 0 || v > 10000) return new Model();
-                    b[i / BUCKETS][i % BUCKETS] = v;
-                }
-                if (!(f0 >= 0.7 && f0 <= 1.3 && f1 >= 0.7 && f1 <= 1.3) || n0 < 0 || n1 < 0 || n0 > 100000 || n1 > 100000) return new Model();
-                m.f[0] = f0; m.f[1] = f1; m.n[0] = n0; m.n[1] = n1; m.last[0] = l0; m.last[1] = l1;
-                for (int i = 0; i < 2; i++) System.arraycopy(b[i], 0, m.bucket[i], 0, BUCKETS);
+                int n0 = Integer.parseInt(p[2]), n1 = Integer.parseInt(p[3]);
+                if (!(f0 >= 0.7 && f0 <= 1.3 && f1 >= 0.7 && f1 <= 1.3) || n0 < 0 || n1 < 0 || n0 > 100000 || n1 > 100000) return m;
+                m.f[0] = f0; m.f[1] = f1; m.n[0] = n0; m.n[1] = n1;
             } catch (NumberFormatException e) {
                 return new Model();
             }
@@ -50,33 +39,18 @@ final class MotionMath {
         }
     }
 
-    static int bucket(double cad) {
-        return Math.max(0, Math.min(BUCKETS - 1, (int) Math.floor((cad - 40) / 15)));
-    }
-
     static double stride(Model m, int mode, double cm, double cad) {
         return priorStride(mode, cm, cad) * m.f[mode];
     }
 
-    /** GPS'ten ölçülen adım uzunluğu (hız ÷ ritim) makul mü ve modele eklenir mi. dayNum: gün sayısı. */
-    static boolean addSample(Model m, int mode, double cm, double cad, double strideObs, int dayNum) {
+    /** GPS'ten ölçülen adım uzunluğu (hız ÷ ritim) makul mü ve modele eklenir mi. */
+    static boolean addSample(Model m, int mode, double cm, double cad, double strideObs) {
         double prior = priorStride(mode, cm, cad), r = strideObs / prior;
         if (!(cad >= 50 && cad <= 220) || !(r >= 0.6 && r <= 1.5)) return false;
         double w = m.n[mode] < 10 ? 1.0 / (m.n[mode] + 2) : 0.12;
         m.f[mode] = Math.max(0.7, Math.min(1.3, m.f[mode] * (1 - w) + r * w));
         m.n[mode]++;
-        m.last[mode] = dayNum;
-        int b = bucket(cad);
-        if (m.bucket[mode][b] < 10000) m.bucket[mode][b]++;
         return true;
-    }
-
-    /** GPS penceresi açılsın mı. cad: ritim biliniyorsa değer, bilinmiyorsa NaN. */
-    static boolean gpsWanted(Model m, int mode, double cad, int dayNum, int gpsToday, int batteryPct, boolean powerSave) {
-        if (powerSave || batteryPct < 20 || gpsToday >= 6) return false;
-        boolean stale = m.last[mode] < 0 || dayNum - m.last[mode] >= 14;
-        if (Double.isNaN(cad)) return m.n[mode] < 12 || (stale && gpsToday < 1);
-        return m.bucket[mode][bucket(cad)] < 2 || (stale && gpsToday < 1);
     }
 
     /** Doppler hızı güvenilir mi: konum doğruluğu ≤ 15 m, hız doğruluğu biliniyorsa ≤ 0,8 m/s. */
@@ -159,11 +133,6 @@ final class MotionMath {
         if (kg > 0) b.kcal = kcal(b.mode, b.kmh, kg, minutes);
         b.ok = true;
         return b;
-    }
-
-    /** Ritim ölçülen son dilimden (ref) belirgin sapma: yorulma (düşüş) ya da hızlanma. Durma dilimleri (ritim < 40) sayılmaz. */
-    static boolean cadenceShift(double ref, double cad) {
-        return ref >= 70 && cad >= 40 && Math.abs(cad - ref) / ref >= 0.2;
     }
 
     /**
