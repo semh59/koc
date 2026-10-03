@@ -80,8 +80,8 @@ jobs:
         run: |
           norm() { tr -d ': ' | tr 'A-F' 'a-f'; }
           apksigner=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)apksigner
-          $apksigner verify neowell.apk
-          apk=$($apksigner verify --print-certs neowell.apk | grep "Signer #1 certificate SHA-256" | sed 's/.*: //' | norm)
+          $apksigner verify neowell.apk 2>/dev/null
+          apk=$($apksigner verify --print-certs neowell.apk | grep -m1 "certificate SHA-256 digest" | sed 's/.*: //' | norm)
           aab=$(keytool -printcert -jarfile neowell.aab | grep -m1 "SHA256:" | sed 's/.*SHA256: //' | norm)
           dbg=$(keytool -list -keystore signing/bilinen-debug-yalniz-smoke.keystore -storepass android | grep -i "SHA-256" | sed 's/.*: //' | norm)
           echo "APK: $apk"; echo "AAB: $aab"; echo "Beklenen: $RELEASE_SHA256"; echo "Debug: $dbg"
