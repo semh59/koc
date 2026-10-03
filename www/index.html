@@ -1076,6 +1076,7 @@ async function scheduleReminders(){
     if(S.fast.t0&&!fastBlock){const at=new Date(S.fast.t0+S.fast.plan*36e5);if(at.getTime()>now+5000)list.push({id:9100,title:"⏳ Oruç",body:"Oruç süren doldu. İstediğinde bitirebilirsin.",schedule:{at,allowWhileIdle:true}})}
     // Android uygulama başına eşzamanlı alarm sınırı (500): en yakın tarihliler korunur, uzaktakiler uygulama açılınca yeniden kurulur.
     list.sort((a,b)=>a.schedule.at-b.schedule.at);if(list.length>MedLib.BUDGET)list.length=MedLib.BUDGET;
+    const tk=await quickToken();if(tk)for(const n of list)if(n.extra&&(n.extra.act==="su"||n.extra.act==="med"))n.extra.tk=tk;
     if(list.length)await ln.schedule({notifications:list});
     return "ok";
   }catch(e){return "Bildirimler kurulamadı: "+(e&&e.message||e)}

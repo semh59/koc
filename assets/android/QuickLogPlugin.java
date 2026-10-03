@@ -10,6 +10,7 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import java.security.SecureRandom;
 import java.util.List;
 
 /** Bildirim düğmeleri ("+250 ml", "Aldım"): kayıt uygulama açılmadan SharedPreferences'a yazılır, uygulama bir sonraki açılışta alır. */
@@ -23,8 +24,26 @@ public class QuickLogPlugin extends Plugin {
         return c.getSharedPreferences("nw_quick", Context.MODE_PRIVATE);
     }
 
-    /** MainActivity ve WaterReceiver'dan çağrılır. Düğme "su" ya da "med" ise kaydı saklar, bildirimi kaldırır ve true döner. */
-    static synchronized boolean handle(Context c, Intent in) {
+    /** Bildirimlere konan gizli anahtar (128 bit, ilk istekte üretilir). Kayıt yalnız bu anahtarı taşıyan bildirimden yazılır. */
+    static synchronized String secret(Context c) {
+        SharedPreferences p = prefs(c);
+        String s = p.getString("tk", null);
+        if (s != null) return s;
+        byte[] b = new byte[16];
+        new SecureRandom().nextBytes(b);
+        StringBuilder sb = new StringBuilder();
+        for (byte x : b) sb.append(Character.forDigit((x >> 4) & 15, 16)).append(Character.forDigit(x & 15, 16));
+        s = sb.toString();
+        p.edit().putString("tk", s).commit();
+        return s;
+    }
+
+    /**
+     * MainActivity ve WaterReceiver'dan çağrılır. Düğme "su" ya da "med" ise kaydı saklar, bildirimi kaldırır ve true döner.
+     * MainActivity exported olduğu için her uygulama aynı ek alanlarla onu açabilir; o yoldan (widget=false) kayıt yalnız
+     * gizli anahtarı taşıyan bildirimden yazılır. Widget alıcısı exported=false, yalnız uygulamanın PendingIntent'i ulaşır.
+     */
+    static synchronized boolean handle(Context c, Intent in, boolean widget) {
         if (in == null) return false;
         // Son uygulamalardan açılışta sistem ilk intent'i (ek alanlarıyla) yeniden verir; kayıt ilk seferde yazıldı.
         if ((in.getFlags() & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0) {
@@ -39,7 +58,7 @@ public class QuickLogPlugin extends Plugin {
         } else if ("med".equals(act) || "medskip".equals(act)) {
             key = QuickMath.medKey(obj, "medskip".equals(act));
         }
-        if (key == null) return false;
+        if (key == null || (!widget && !QuickMath.signed(obj, secret(c)))) return false;
         int id = in.getIntExtra(ID_KEY, Integer.MIN_VALUE);
         SharedPreferences p = prefs(c);
         // Bildirim intent'ini sistem yeniden teslim edebilir (süreç ölümü, MIUI); aynı planlanmış bildirim iki kez yazılmaz.
@@ -70,6 +89,13 @@ public class QuickLogPlugin extends Plugin {
         String s = p.getString("q", "");
         if (!s.isEmpty()) p.edit().remove("q").commit();
         return s;
+    }
+
+    @PluginMethod
+    public void getToken(PluginCall call) {
+        JSObject r = new JSObject();
+        r.put("tk", secret(getContext()));
+        call.resolve(r);
     }
 
     @PluginMethod

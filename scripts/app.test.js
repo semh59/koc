@@ -676,6 +676,21 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     await ev("quickIngest()");await new Promise(r=>setTimeout(r,50));
     ok("hızlı kayıt hedefi tamamlarsa bildirimler yeniden kurulur, bugünün su alarmı yok",lnH.length>0&&![200,300,400].some(i=>lnH.some(n=>n.id===i)),lnH.length);
     w.Capacitor.Plugins.LocalNotifications=lnOld;ev("S.settings.waterMl=2500");
+    { // bildirim düğmesi anahtarı: güncellemeden kalan anahtarsız bekleyenler açılışta iptal edilip anahtarla yeniden kurulur
+      const TK="0123456789abcdef0123456789abcdef",can=[],out=[],keep=ev("JSON.stringify({o:S.settings.medOn,m:S.meds,l:S.medLog,e:S.entries})");
+      w.Capacitor.Plugins.QuickLog.getToken=async()=>({tk:TK});
+      w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[{id:200,extra:{act:"su",v:250,at:1}},{id:1001001,extra:{act:"med",m:1,s:"08:00",at:1}}]}),cancel:async o=>{can.push(...o.notifications.map(n=>n.id))},registerActionTypes:async()=>{},schedule:async o=>{out.push(...o.notifications)}};
+      ev("S.entries=[];S.settings.medOn=true;S.meds=[{id:1,n:'A',t:['08:00'],on:true}];S.medLog=[]");
+      await ev("scheduleReminders()");
+      const btn=out.filter(n=>n.extra&&(n.extra.act==="su"||n.extra.act==="med"));
+      ok("anahtar: eski bekleyen su/ilaç bildirimleri iptal edilir, yeniden kurulan su ve ilaç (tekrarlar dahil) bildirimlerinde extra.tk, diğerlerinde yok",can.includes(200)&&can.includes(1001001)&&btn.some(n=>n.extra.act==="su")&&btn.some(n=>n.extra.act==="med"&&n.id>=2e6)&&btn.every(n=>n.extra.tk===TK)&&out.every(n=>!n.extra||n.extra.act==="su"||n.extra.act==="med"||!("tk" in n.extra)),can.slice(0,5));
+      for(const g of [undefined,async()=>{throw new Error("yok")}]){
+        if(g)w.Capacitor.Plugins.QuickLog.getToken=g;else delete w.Capacitor.Plugins.QuickLog.getToken;
+        out.length=0;await ev("scheduleReminders()");
+        ok(`anahtar: ${g?"getToken hata verirse":"eklentide getToken yoksa"} bildirimler anahtarsız kurulur`,out.some(n=>n.extra&&n.extra.act==="su")&&out.every(n=>!n.extra||!("tk" in n.extra)));
+      }
+      w.Capacitor.Plugins.LocalNotifications=lnOld;ev(`{const k=${keep};S.settings.medOn=k.o;S.meds=k.m;S.medLog=k.l;S.entries=k.e}`);
+    }
     delete w.Capacitor.Plugins.QuickLog;
     ev("S.entries=[]");await ev("quickIngest()");
     ok("eklenti yoksa (tarayıcı) sessizce geçer, kayıt eklenmez",ev("S.entries.length")===0);
