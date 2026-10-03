@@ -53,7 +53,7 @@ function cleanCoach(r){
     if(["check","ed"].includes(m.fl))o.fl=m.fl;
     const c=m.card;
     if(c&&c.kind==="log"&&Array.isArray(c.items)){const items=CoachLib.cleanItems(c.items);if(items.length)o.card={kind:"log",items,state:["pending","ok","no"].includes(c.state)?c.state:"pending",saved:c.saved===true}}
-    else if(c&&c.kind==="food"){const f=CoachLib.cleanFood({name:c.n,kcal:c.k,protein:c.p});if(f)o.card={kind:"food",f,state:["pending","ok","no"].includes(c.state)?c.state:"pending"}}
+    else if(c&&c.kind==="food"){const f=CoachLib.cleanFood(c.f&&typeof c.f==="object"?{name:c.f.n,kcal:c.f.k,protein:c.f.p}:{name:c.n,kcal:c.k,protein:c.p});if(f)o.card={kind:"food",f,state:["pending","ok","no"].includes(c.state)?c.state:"pending"}}
     else if(c&&c.kind==="safety"&&["emergency","check","mind","ed"].includes(c.level))o.card={kind:"safety",level:c.level};
     else if(c&&c.kind==="why"&&Array.isArray(c.items)){
       const items=c.items.filter(x=>x&&typeof x.k==="string"&&/^[a-z]{1,8}$/.test(x.k)&&typeof x.t==="string"&&x.t.trim()).slice(0,6).map(x=>({k:x.k,t:x.t.slice(0,160)}));
@@ -134,6 +134,7 @@ async function callProvider(p,key,messages,maxTokens=700){
 const usable=()=>{const k=getKeys();return S.providers.filter(p=>p.on&&p.health&&k[p.id]&&(!cool[p.id]||cool[p.id]<Date.now()))};
 const hasKey=()=>{const k=getKeys();return S.providers.some(p=>p.on&&p.health&&k[p.id])};
 async function cAsk(messages,maxTokens,auto){
+  if(!coachOn())throw new Error("consent");
   const keys=getKeys(),list=usable().filter(p=>!(auto&&p.confirm));
   if(!list.length)throw new Error(hasKey()?"fail":"none");
   let declined=false,tried=false;
@@ -166,7 +167,7 @@ function cSend(text){
 async function cFlush(){
   if(busy)return;
   const pend=S.chat.filter(m=>m.role==="user"&&m.pend);if(!pend.length)return;
-  if(!S.settings.consent){render();return}
+  if(!coachOn()){render();return}
   busy=true;typing=true;render();
   const fl=pend.map(m=>m.fl).find(Boolean);
   try{
@@ -240,7 +241,7 @@ function cWhy(){
 }
 async function cWhyAsk(id){
   const m=S.chat.find(x=>x.id===id);
-  if(busy||!m||!m.card||m.card.kind!=="why"||m.card.asked||!S.settings.consent||!usable().length)return;
+  if(busy||!m||!m.card||m.card.kind!=="why"||m.card.asked||!coachOn()||!usable().length)return;
   m.card.asked=true;busy=true;typing=true;render();
   try{
     const r=await cAsk(cMessages("Bu sorumu yalnız NOT'taki etmenlerle 4-5 cümlede yorumla. Bu sayılar dışında rakam kullanma, suçlama, tıbbi yorum yapma.","Uygulamanın son 7 gün için yerel hesabı:\n"+m.card.items.map(x=>"- "+x.t).join("\n")));
@@ -259,7 +260,7 @@ function cProgSheet(){
 }
 async function cProgram(o){
   if(busy)return;
-  if(!S.settings.consent){tab="koc";render();return toast("Önce Koç'ta veri paylaşımını kabul et")}
+  if(!coachOn()){tab="koc";render();return toast("Önce Koç'ta veri paylaşımını kabul et")}
   if(!usable().length)return toast("Koç için API anahtarı gerekli (Ayarlar)");
   const {ids,text}=cCatalog(o);
   cPush({role:"user",text:`Program iste: haftada ${o.d} gün, ${o.m} dk, ${o.q}, ${o.l}`});
@@ -310,7 +311,7 @@ function cMenuSheet(){
 }
 async function cMenu(){
   if(busy)return;
-  if(!S.settings.consent){tab="koc";render();return toast("Önce Koç'ta veri paylaşımını kabul et")}
+  if(!coachOn()){tab="koc";render();return toast("Önce Koç'ta veri paylaşımını kabul et")}
   if(!usable().length)return toast("Koç için API anahtarı gerekli (Ayarlar)");
   const pl=cMenuPlan(),note=menuNote;
   if(pl.why)return toast(pl.why);
@@ -362,7 +363,7 @@ function weekSummary(endKey){
   return {logged,n:ks.length,ws,avgKcal:kc.length?Math.round(kc.reduce((a,b)=>a+b,0)/kc.length):null,avgSu:su.length?Math.round(su.reduce((a,b)=>a+b,0)/su.length):null,sport:Math.round(sp),first:ws[0],last:ws[ws.length-1]};
 }
 async function cAuto(){
-  if(busy||!S.settings.consent||!usable().length||Date.now()-lastAuto<30*60000)return;
+  if(busy||!coachOn()||!usable().length||Date.now()-lastAuto<30*60000)return;
   const now=new Date(),today=dayKey(now);
   let job=null;
   const wk=weekKey(now);
@@ -413,7 +414,7 @@ function cCard(m){
     <div class="lbtns"><button class="chip" data-c="menuadd:${m.id}:${di}">Bugüne ekle</button><button class="chip" data-c="menutpl:${m.id}:${di}">Şablon yap</button></div></div>`).join("")}
     <div class="lbtns"><button class="btn" data-c="shop:${m.id}">Alışveriş listesi</button></div></div>`;
   if(c.kind==="why")return `<div class="card lcard"><b>Son 7 gün</b>${c.items.map(x=>`<p class="sm">${esc(x.t)}</p>`).join("")}<div class="mut sm">${c.asked?"Telefonda hesaplandı; yorum için Koç'a gönderildi.":"Telefonda hesaplandı, hiçbir yere gönderilmedi."}</div>
-    ${!c.asked&&S.settings.consent&&usable().length?`<div class="lbtns"><button class="btn ghost" data-c="whyai:${m.id}">Koç'a yorumlat</button></div>`:""}</div>`;
+    ${!c.asked&&coachOn()&&usable().length?`<div class="lbtns"><button class="btn ghost" data-c="whyai:${m.id}">Koç'a yorumlat</button></div>`:""}</div>`;
   if(c.kind==="propose"){
     return `<div class="card lcard"><b>Kalori hedefi önerisi: ${c.kcal} kcal</b>${c.why?`<div class="mut sm">${esc(c.why)}</div>`:""}${c.limited?`<div class="mut sm">Güvenli alt sınıra çekildi.</div>`:""}
     ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="applyk:${m.id}">Uygula</button><button class="btn ghost" data-c="nok:${m.id}">Şimdi değil</button></div>`:`<div class="mut sm">${c.state==="ok"?"Uygulandı":"Atlandı"}</div>`}</div>`;
@@ -434,6 +435,9 @@ function cCard(m){
 }
 /* Onay metni tek yerde: Koç ekranı ve Gizlilik ve veri aynı metni gösterir. Değiştirirsen CONSENT_V'yi artır. */
 const consentOk=()=>!(S.settings.age>0&&S.settings.age<18);
+/* Yaş sonradan 18'in altına inerse (ayar, yedek) verilmiş onay da düşer; gönderim yolları coachOn'dan geçer. */
+const coachOn=()=>S.settings.consent&&consentOk();
+function cAgeGuard(){if(S.settings.consent&&!consentOk()){Object.assign(S.settings,{consent:false,consentV:0,consentAt:""});toast("18 yaş altında Koç veri paylaşımı kapatıldı")}}
 const consentHtml=()=>`<b>Koç ile veri paylaşımına açık rızan</b><ul style="margin:6px 0;padding-left:18px"><li><b>Ne gönderilir:</b> yazdığın mesajlar, profilin (boy, yaş, cinsiyet, hareket düzeyi), sağlık notun, hedeflerin, son 14 günün kilo, yemek, su, spor ve adım özeti (varsa uyku ve ruh hali), son antrenmanların, son notların ve ilaç modülü açıksa ilaç adın ve saatlerin. Tahlil, tansiyon, şeker, fotoğraf ve yedek gönderilmez.</li><li><b>Kime:</b> seçtiğin sağlayıcıya (${esc(S.providers.filter(p=>p.on&&p.health).map(p=>p.name).join(", ")||"hiçbiri seçili değil")}), kendi anahtarınla. Sunucuları yurt dışındadır; bu bir yurt dışına aktarımdır.</li><li><b>Geri alma:</b> istediğin an Ayarlar > Gizlilik ve veri ya da Yapay zekâ koç bölümünden. Geri alınca yeni veri gitmez; önceden gönderilene sağlayıcının kendi politikası uygulanır.</li><li><b>Onay vermezsen</b> uygulama tam çalışır, yalnız Koç konuşmaz.</li></ul>${consentOk()?"":`<p><b>18 yaş altı için Koç veri paylaşımı kapalıdır.</b></p>`}`;
 /* Sohbeti siler, onaya dokunmaz. */
 function cClearChat(){S.chat=[];S.settings.lastPlan="";save()}
