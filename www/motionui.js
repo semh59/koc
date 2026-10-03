@@ -71,7 +71,7 @@ async function motionBoot(){
 /* Adım ekranı kartı: son 2 gün. */
 function motionCard(){
   if(!S.settings.motionOn)return "";
-  const t=dayKey(),y=keyOff(-1),row=m=>`<div class="row" style="display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span><b>${m.t0}</b> ${m.k==="r"?"🏃 Koşu":"🚶 Yürüyüş"} <small class="mut">${m.min} dk</small></span><span class="num" style="text-align:right">${fmt(m.km,1)} km · ${fmt(m.kmh,1)} km/s${m.kcal!=null?` · ${m.kcal} kcal`:""}</span></div>`;
+  const t=dayKey(),y=keyOff(-1),row=m=>`<div class="row" style="display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span><b>${m.t0}</b> ${m.k==="r"?"Koşu":"Yürüyüş"} <small class="mut">${m.min} dk</small></span><span class="num" style="text-align:right">${fmt(m.km,1)} km · ${fmt(m.kmh,1)} km/s${m.kcal!=null?` · ${m.kcal} kcal`:""}</span></div>`;
   const tl=S.moves.filter(m=>m.day===t),yl=S.moves.filter(m=>m.day===y),tt=MotionLib.totals(tl);
   const body=tl.length||yl.length?`${tl.length?`<div class="mut sm" style="margin-bottom:4px">Bugün ${tt.min} dk, ${fmt(tt.km,1)} km${tt.kcalN?`, ${tt.kcal} kcal`:""}</div>${tl.slice().reverse().map(row).join("")}`:`<p class="mut sm" style="margin:0 0 6px">Bugün henüz algılanan yürüyüş ya da koşu yok.</p>`}${yl.length?`<div class="mut sm" style="margin:10px 0 4px">Dün</div>${yl.slice().reverse().map(row).join("")}`:""}`
     :`<p class="mut sm" style="margin:0">Henüz algılanan yürüyüş ya da koşu yok. En az 3 dakikalık, kesintisiz yürüyüşler listelenir.</p>`;

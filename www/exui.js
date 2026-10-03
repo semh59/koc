@@ -20,13 +20,13 @@ function exFiltered(){
 }
 function exListHtml(){
   const all=exFiltered(),list=all.slice(0,gLN);
-  return `<p class="hint" style="padding:0 0 6px">${all.length} egzersiz</p>`+list.map(e=>`<button class="prow exrow" data-g="exinfo:${e.id}"><span class="exthumb" aria-hidden="true">${e.tp?exFig(e,false):""}</span><span style="flex:1;min-width:0"><b>${esc(e.n)}</b><span class="mut sm">${e.r||e.g}${e.q?" · "+e.q.toLowerCase():""}${e.l?" · "+e.l.toLowerCase():""}</span></span><span class="plus">›</span></button>`).join("")
-    +(all.length>list.length?`<button class="lnk" data-g="lmore">${all.length-list.length} egzersiz daha göster</button>`:"")+(all.length?"":`<p class="hint">Sonuç yok.</p>`);
+  return (gLQ||exFilterN()?`<p class="hint" style="padding:0 4px 6px">${all.length} sonuç</p>`:"")+list.map(e=>`<button class="prow exrow" data-g="exinfo:${e.id}"><span class="exthumb" aria-hidden="true">${e.tp?exFig(e,false):""}</span><span style="flex:1;min-width:0"><b>${esc(e.n)}</b><span class="mut sm">${e.r||e.g}${e.q?" · "+e.q.toLowerCase():""}${e.l?" · "+e.l.toLowerCase():""}</span></span><span class="plus">›</span></button>`).join("")
+    +(all.length>list.length?`<button class="lnk" data-g="lmore">Daha fazla göster</button>`:"")+(all.length?"":`<p class="hint">Eşleşen hareket yok. Başka bir ad dene ya da filtreleri temizle.</p>`);
 }
 const exChips=(arr,cur,act)=>arr.map(x=>`<button class="chip" data-g="${act}:${x}" aria-pressed="${x===cur}">${x}</button>`).join("");
 function viewEgz(){
   return `<div class="srch"><input class="in" id="glq" type="search" enterkeyhint="search" aria-label="Egzersiz ara" placeholder="Egzersiz ara" autocomplete="off" value="${esc(gLQ)}"><span id="glfb">${exFilterBtn()}</span></div>
-  <div id="gllist" class="plist">${exListHtml()}</div>
+  <div id="gllist" class="card exlist">${exListHtml()}</div>
   <p class="hint">Hareketler genel bilgi amaçlıdır, kişisel antrenman ya da tıbbi tavsiye değildir. Fotoğraflar free-exercise-db (kamu malı) kaynaklıdır.</p>`;
 }
 const exFilterN=()=>[gLReg,gLCat,gLEq].filter(x=>x!=="Tümü").length;
@@ -35,10 +35,10 @@ function exFilterSheet(){
   openSheet(`<h3>Filtre</h3><div class="lbl">Bölge</div><div class="chips" id="glreg">${exChips(["Tümü"].concat(EXREG),gLReg,"lreg")}</div>
   <div class="lbl">Tür</div><div class="chips" id="glcat">${exChips(["Tümü","Güç","Esneme","Kardiyo","Pliyometrik"],gLCat,"lcat")}</div>
   <div class="lbl">Ekipman</div><div class="chips" id="gleq">${exChips(["Tümü","Ağırlıksız","Ev tipi","Salon"],gLEq,"leq")}</div>
-  <button class="btn" data-g="closesheet" id="glok">${exFiltered().length} egzersizi göster</button><button class="lnk" data-g="lclear">Filtreleri temizle</button>`);
+  <button class="btn" data-g="closesheet" id="glok">${exFiltered().length} sonucu göster</button><button class="lnk" data-g="lclear">Filtreleri temizle</button>`);
 }
 const exRefreshChips=()=>{
-  const fb=$("#glfb");if(fb)fb.innerHTML=exFilterBtn();const ok=$("#glok");if(ok)ok.textContent=`${exFiltered().length} egzersizi göster`;
+  const fb=$("#glfb");if(fb)fb.innerHTML=exFilterBtn();const ok=$("#glok");if(ok)ok.textContent=`${exFiltered().length} sonucu göster`;
   for(const [id,arr,cur,act] of [["glreg",["Tümü"].concat(EXREG),gLReg,"lreg"],["glcat",["Tümü","Güç","Esneme","Kardiyo","Pliyometrik"],gLCat,"lcat"],["gleq",["Tümü","Ağırlıksız","Ev tipi","Salon"],gLEq,"leq"]]){const el=$("#"+id);if(el)el.innerHTML=exChips(arr,cur,act)}
   const l=$("#gllist");if(l)l.innerHTML=exListHtml();
 };
@@ -99,7 +99,7 @@ function exSheet(id){
 }
 function gSheetHistSimple(exId,h){
   const ex=gEx(exId),t=gTimed(exId);
-  openSheet(`<h3>${esc(ex.n)}</h3>${h.length?`<table><thead><tr><th>Tarih</th><th>Setler</th></tr></thead><tbody>${h.slice(0,8).map(x=>`<tr><td>${fd(x.w.day)}</td><td class="num">${t?x.sets.map(s=>exKindSec(exId,s.sec)).join(" · "):x.sets.map(s=>(s.kg?fkg(s.kg)+" × ":"")+s.reps).join(" · ")}</td></tr>`).join("")}</tbody></table>`:`<p class="hint">Henüz tamamlanmış set yok.</p>`}<button class="btn" data-g="closesheet">Kapat</button>`);
+  openSheet(`<h3>${esc(ex.n)}</h3>${h.length?`<table><thead><tr><th>Tarih</th><th>Setler</th></tr></thead><tbody>${h.slice(0,8).map(x=>`<tr><td>${fd(x.w.day)}</td><td class="num">${t?x.sets.map(s=>exKindSec(exId,s.sec)).join(" · "):x.sets.map(s=>(s.kg?fkg(s.kg)+" × ":"")+s.reps).join(" · ")}</td></tr>`).join("")}</tbody></table>`:`<p class="hint">Bu hareketle tamamladığın setler burada görünür.</p>`}<button class="btn" data-g="closesheet">Kapat</button>`);
 }
 const exKindSec=(id,sec)=>gKind(id)==="c"?Math.round(sec/60)+" dk":sec+" sn";
 

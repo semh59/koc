@@ -41,8 +41,11 @@ const Icons={
     back:"M15 5l-7 7 7 7",
     flame:"M12 21a6 6 0 0 0 6-6c0-3.5-2.5-5.5-3.5-8.5-.8 1.8-2 2.7-3 3C11.5 6.8 10.5 4.6 8.5 3c.3 3.2-2.5 5.6-2.5 9.5a6 6 0 0 0 6 8.5z",
     chev:"M9 6l6 6-6 6",
+    trash:"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3",
     search:"M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4",
     play:"M7 5v14l11-7z",
+    pause:"M8 5v14M16 5v14",
+    undo:"M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3",
     sparkle:"M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"
   },
   svg:n=>`<svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${Icons.P[n]}"/></svg>`
