@@ -81,4 +81,9 @@ ok("hareket: status öğrenilmiş adım ölçeğini (fw/fr) JS'e verir, elle yü
   ok("ses: kısa komut (≤20 karakter) sıraya eklenir, uzun evre cümlesi eskisini keser; guidelib kısa metinleri bu sınırda",/SHORT = 20;/.test(sp)&&/int mode = text\.length\(\) <= SHORT \? TextToSpeech\.QUEUE_ADD : TextToSpeech\.QUEUE_FLUSH;/.test(sp)&&/tts\.speak\(text, mode, null, id\)/.test(sp)&&/s\.length<=20/.test(rd("scripts/guide.test.js")));
   ok("ses: kapanışta motor kapatılır",/protected void handleOnDestroy\(\) \{\s*if \(tts != null\) tts\.shutdown\(\);/.test(sp));
 }
+{ // Marka: uyarlanabilir simge (Android 13 temalı simge katmanı dahil), açılış görüntüleri ve Android 12+ açılış teması
+  const ai=rd("assets/android/res/mipmap-anydpi-v26/ic_launcher.xml"),q=["mdpi","hdpi","xhdpi","xxhdpi","xxxhdpi"],ex=f=>fs.existsSync(path.join(__dirname,"..",f));
+  ok("marka: uyarlanabilir simgede arka plan, ön plan ve tek renk katmanı; her yoğunlukta dört PNG",/<monochrome android:drawable="@mipmap\/ic_launcher_monochrome"\/>/.test(ai)&&/@color\/ic_launcher_background/.test(ai)&&q.every(d=>["ic_launcher","ic_launcher_round","ic_launcher_foreground","ic_launcher_monochrome"].every(n=>ex(`assets/android/res/mipmap-${d}/${n}.png`))));
+  ok("marka: 11 açılış görüntüsü; 12+ açılış teması bir kez eklenir, şablon değişirse yama durur",ex("assets/android/res/drawable/splash.png")&&q.every(d=>ex(`assets/android/res/drawable-port-${d}/splash.png`)&&ex(`assets/android/res/drawable-land-${d}/splash.png`))&&patch.includes('if(!sx.includes("windowSplashScreenBackground"))')&&/throw new Error\("açılış teması bulunamadı/.test(patch)&&patch.includes("@mipmap/ic_launcher_foreground"));
+}
 process.exit(bad?1:0);

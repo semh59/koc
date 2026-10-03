@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#eef2f0">
+<meta name="theme-color" content="#f2f4f3">
 <title>NeoWell</title>
 <link rel="icon" href="logo.png">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https:; object-src 'none'; base-uri 'none'; form-action 'none'">
@@ -62,6 +62,7 @@ header h1{flex:1;min-width:0;margin:0;font-size:var(--fs-h1);font-weight:700;let
 #back:active{background:var(--soft)}
 header .streak{display:inline-flex;align-items:center;gap:4px;font-size:var(--fs-s);font-weight:600;color:var(--mut);white-space:nowrap;background:var(--card);box-shadow:var(--sh);border:1px solid var(--card-bd);border-radius:99px;padding:4px 10px 4px 8px}
 header .streak:empty{display:none}
+header .brand{vertical-align:-5px;margin-right:10px}
 header .streak b{color:var(--kcal)}
 header .streak .i{width:16px;height:16px;color:var(--kcal)}
 main{flex:1;padding:4px 16px calc(92px + env(safe-area-inset-bottom))}
@@ -813,7 +814,7 @@ function render(){
   const de=document.documentElement;if(S.settings.theme)de.dataset.theme=S.settings.theme;else delete de.dataset.theme;
   $('meta[name="theme-color"]').content=getComputedStyle(de).getPropertyValue("--bg").trim();
   document.body.classList.toggle("ob",onb);$("#back").hidden=onb||!UP(tab);
-  if(onb){$("#ttl").textContent="NeoWell";$("#streak").innerHTML="";$("#composer").hidden=true;v.innerHTML=obView();widgetPush();return}
+  if(onb){$("#ttl").innerHTML='<img class="brand" src="logo.svg" alt="" width="28" height="28">NeoWell';$("#streak").innerHTML="";$("#composer").hidden=true;v.innerHTML=obView();widgetPush();return}
   const ttl={bugun:`${fd(dayKey())}, ${GUN[new Date().getDay()]}`,koc:"Koç",salon:"Salon",trend:"Trend",daha:"Daha fazla",ayar:"Ayarlar",egz:"Egzersizler",adim:"Adım raporu",tahlil:"Tahlil takibi",tansiyon:"Tansiyon",seker:"Şeker",ilac:"İlaçlar",...Object.fromEntries(AYAR.map(([k,t])=>["ayar-"+k,t]))}[tab];
   $("#ttl").textContent=ttl;
   const n=streak();$("#streak").innerHTML=n>0&&tab==="bugun"?`${Icons.svg("flame")}<b class="num">${n}</b> gün`:"";$("#streak").setAttribute("aria-label",n+" günlük seri");

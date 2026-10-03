@@ -44,7 +44,15 @@ fs.writeFileSync(p, x);
 console.log("Manifest güncellendi.");
 const res="android/app/src/main/res";
 fs.cpSync("assets/android/res",res,{recursive:true});
-console.log("Simgeler yerleştirildi.");
+// Android 12+ açılış ekranını sistem çizer: arka plan ve simge temada verilmezse beyaz zemin ve varsayılan simge çıkar.
+const sty=`${res}/values/styles.xml`;let sx=fs.readFileSync(sty,"utf8");
+if(!sx.includes("windowSplashScreenBackground")){
+  const anchor='<item name="android:background">@drawable/splash</item>';
+  if(!sx.includes(anchor))throw new Error("açılış teması bulunamadı: şablon değişmiş");
+  sx=sx.replace(anchor,`${anchor}\n        <item name="windowSplashScreenBackground">@color/ic_launcher_background</item>\n        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>\n        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>`);
+  fs.writeFileSync(sty,sx);
+}
+console.log("Simgeler ve açılış ekranı yerleştirildi.");
 
 // API anahtarı kasası: Keystore eklentisini kopyala, MainActivity'ye kaydet. Keystore AES-GCM için API 23 gerekir.
 const jdir="android/app/src/main/java/com/neowell/app";

@@ -3,7 +3,7 @@
   "appName": "NeoWell",
   "webDir": "www",
   "android": {
-    "backgroundColor": "#eef2f0"
+    "backgroundColor": "#f2f4f3"
   },
   "plugins": {
     "CapacitorHttp": {
