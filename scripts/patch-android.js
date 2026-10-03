@@ -168,6 +168,12 @@ if(!g.includes("abiFilters")){
   g=g.replace(/defaultConfig \{/,m=>m+'\n        ndk { abiFilters "arm64-v8a", "armeabi-v7a", "x86_64" }');
   fs.writeFileSync(bg,g);
 }
+// Play aynı versionCode'la ikinci yüklemeyi reddeder: CI çalışma numarası her derlemede artar.
+g=fs.readFileSync(bg,"utf8");
+if(process.env.GITHUB_RUN_NUMBER&&!g.includes("versionCode "+process.env.GITHUB_RUN_NUMBER)){
+  g=g.replace(/versionCode \d+/,"versionCode "+process.env.GITHUB_RUN_NUMBER);
+  fs.writeFileSync(bg,g);
+}
 // Barkod Google'ın tarayıcı ekranıyla (scan) okunur; eklentinin gömülü barkod motoru (startScan, readBarcodesFromImage) çağrılmadığı için paketlenmez.
 if(!g.includes("libbarhopper_v3.so")){
   g=g.replace(/android \{/,`android {
