@@ -5,7 +5,7 @@ const PV_CATS=[
   ["Yemek ve su kayıtları",...pvE("yemek","su")],
   ["Kilo",...pvE("kilo")],
   ["Spor ve antrenman",()=>S.workouts.length+S.entries.filter(e=>e.type==="spor"&&e.wid==null).length,()=>{S.workouts=[];S.entries=S.entries.filter(e=>e.type!=="spor")}],
-  ["Adım ve hareket",()=>S.moves.length+S.entries.filter(e=>e.type==="adim").length,()=>{S.moves=[];S.entries=S.entries.filter(e=>e.type!=="adim")}],
+  ["Adım ve hareket",()=>S.moves.length+S.entries.filter(e=>e.type==="adim").length,()=>{S.moves=[];S.walk=null;S.settings.stepsFrom=keyOff(1);S.entries=S.entries.filter(e=>e.type!=="adim")}],
   ["İlaç",()=>S.meds.length+S.medLog.length,()=>{S.meds=[];S.medLog=[]}],
   ["Sağlık ölçümleri (tansiyon, şeker)",()=>S.vitals.length,()=>{S.vitals=[]}],
   ["Tahlil",()=>S.labs.length,()=>{S.labs=[]}],
@@ -18,7 +18,7 @@ const PV_CATS=[
 function pvDelete(i){
   const [name,n,del]=PV_CATS[i],lb=S.settings.lastBackup;
   if(!n()||!confirm(`${name}: ${n()} kayıt silinecek. Bu geri alınamaz. Son yedek: ${lb?fd(lb):"yok"}. Önce yedek almanı öneririz. Silinsin mi?`))return;
-  del();save();render();scheduleReminders().then(setNotif);sheetPrivacy();toast(`${name} silindi`);
+  del();lsDel("koc_v1_onceki");save();render();scheduleReminders().then(setNotif);sheetPrivacy();toast(`${name} silindi`);
 }
 /* Gizlilik ve veri: verinin nerede durduğu, internete çıkan hizmetler ve Koç açık rızası. Sheet olduğu için onboarding'den de açılır. */
 function sheetPrivacy(){

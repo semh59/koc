@@ -359,7 +359,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- veri ---------- */
 const DEF={
-  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",lastPlan:"",lastWeekly:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",autoBk:false,lastAutoBk:"",reminders:[
+  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",lastPlan:"",lastWeekly:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -426,6 +426,7 @@ function cleanSettings(raw,fast){
   if(o.theme==="light"||o.theme==="dark")d.theme=o.theme;
   if(o.stepsAsked===true)d.stepsAsked=true;
   if(dayOk(o.stepWarnDay))d.stepWarnDay=o.stepWarnDay;
+  if(dayOk(o.stepsFrom))d.stepsFrom=o.stepsFrom;
   if(Array.isArray(o.reminders))for(const r of d.reminders){
     const x=o.reminders.find(y=>y&&y.id===r.id);
     if(x){if(timeOk(x.t))r.t=x.t;if(typeof x.on==="boolean")r.on=x.on;if(typeof x.body==="string"&&x.body.trim().length>=5&&x.body.length<=110&&!OLD_BODIES.includes(x.body))r.body=x.body.trim()}
@@ -483,7 +484,7 @@ function load(){
 }
 /* localStorage tarayıcıya göre 5-10 MB; JS dizesi UTF-16 olduğu için karakter başına 2 bayt sayılır. Yedek öncesi kopya gibi diğer anahtarlar da aynı kotadan yer. */
 const STORE_WARN=3.5e6;
-const lsOther=()=>{let n=0;try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k!=="koc_v1")n+=(k.length+(localStorage.getItem(k)||"").length)*2}}catch(e){}return n};
+const lsOther=()=>{let n=0;try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!["koc_v1","koc_v1_onceki","koc_v1_bozuk"].includes(k))n+=(k.length+(localStorage.getItem(k)||"").length)*2}}catch(e){}return n};
 let saveFail=false,otherBytes=lsOther(),storeBytes=otherBytes+JSON.stringify(S).length*2;
 /* Yazılamazsa değişiklik bellekte kalır: her seferinde söylenir, Bugün ve Ayarlar'da kalıcı uyarı çıkar, yedek ekranı bellekteki hali alır. */
 function save(){
@@ -995,8 +996,7 @@ async function goYukle(){
   if(!out.length&&r.entries.length)return toast("Yedekte geçerli kayıt yok");
   if(!confirm(`${out.length} kayıt yüklenecek${drop?`, ${drop} geçersiz kayıt atlanacak`:""}. Mevcut veriler değişecek. Devam edilsin mi?`))return;
   const prevS=S;
-  try{localStorage.setItem("koc_v1_onceki",JSON.stringify(prevS))}catch(e){}
-  otherBytes=lsOther();
+  lsDel("koc_v1_onceki");otherBytes=lsOther();
   S=Object.assign({settings:cleanSettings(r.settings,r.fast),entries:out,nextId:out.length+1,myFoods:cleanMyFoods(r.myFoods),labs:LabLib.cleanLabs(r.labs),vitals:VitalsLib.clean(r.vitals)},cleanHealthState(r),cleanGym(r),cleanCoach(r));
   /* Yedek, anahtarın gideceği adresi, onay ayarını ve veri paylaşım iznini değiştirememeli. Otomatik yedek klasörü bu telefona ait. */
   Object.assign(S.settings,{consent:prevS.settings.consent,consentV:prevS.settings.consentV,consentAt:prevS.settings.consentAt,lastBackup:dayKey(),autoBk:prevS.settings.autoBk,lastAutoBk:prevS.settings.lastAutoBk});
@@ -1008,6 +1008,7 @@ async function goYukle(){
   }
   if(keysIn&&typeof keysIn==="object")for(const id in keysIn)if(typeof keysIn[id]==="string"&&S.providers.some(p=>p.id===id))setKey(id,keysIn[id]);
   if(!save()){S=prevS;return toast("Yedek yüklenemedi, depolama dolu")}
+  lsSet("koc_v1_onceki",JSON.stringify(prevS)); // yeni veriden sonra: sığmazsa kopyasız devam
   logOff=0;closeSheet();render();scheduleReminders().then(setNotif);toast(drop?`Yedek yüklendi, ${drop} geçersiz kayıt atlandı`:"Yedek yüklendi");
 }
 
@@ -1078,7 +1079,7 @@ const SC=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugin
 /* stepsRead: açılıştaki ilk sensör okuması bitmeden dünkü adım henüz yazılmamış olabilir, "sayım durdu" kartı yanlış çıkmasın. */
 let stepToday=null,stepSnapAt=0,stepsRead=false;
 function setSteps(day,v){
-  if(!(v>0&&v<=200000))return false;
+  if(!(v>0&&v<=200000)||day<S.settings.stepsFrom)return false; // silinen adımlar sensör geçmişinden geri yazılmaz
   const e=S.entries.find(x=>x.type==="adim"&&x.day===day&&x.text!=="elle");
   if(e){if(e.v===v)return false;e.v=v}
   else S.entries.push({id:S.nextId++,day,time:"00:00",type:"adim",v,text:""});
@@ -1233,7 +1234,7 @@ document.addEventListener("click",ev=>{
     else if(d.act==="profil"){tab="ayar-profil";render();window.scrollTo(0,0)}
     else if(d.act==="saglik")openSheet(`<h3>Sağlık notların</h3><div class="lbl">Hamilelik, hastalık, ilaç, yeme bozukluğu geçmişi gibi koçun bilmesi gerekenler.</div><textarea class="in" id="hn" maxlength="500" autofocus>${esc(S.settings.healthNote)}</textarea><button class="btn" data-go="saglik">Kaydet</button>`);
     else if(d.act.startsWith("uygula:")){S.settings.kcal=+d.act.slice(7);save();render();toast(`Kalori hedefi ${S.settings.kcal} kcal oldu`)}
-    else if(d.act==="sifirla"){if(confirm("Tüm kayıtlar silinecek. Bu geri alınamaz. Devam edilsin mi?")){try{localStorage.removeItem("koc_v1")}catch(e){}S=structuredClone(DEF);save();logOff=0;render();scheduleReminders().then(setNotif);toast("Tüm veriler silindi")}}
+    else if(d.act==="sifirla"){if(confirm("Tüm kayıtlar, güvenlik kopyası ve kayıtlı API anahtarları silinecek. Bu geri alınamaz. Devam edilsin mi?")){["koc_v1","koc_v1_onceki","koc_v1_bozuk",KEYS_LS,KEYS_ENC].forEach(lsDel);KEYS={};S=structuredClone(DEF);save();logOff=0;render();scheduleReminders().then(setNotif);toast("Tüm veriler silindi")}}
     return;
   }
   if(d.go){
