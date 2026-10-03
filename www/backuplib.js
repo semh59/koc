@@ -20,10 +20,11 @@ const BackupLib=(()=>{
     const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(env.iv)},await derive(pw,unb64(env.salt),env.iter),unb64(env.data));
     return JSON.parse(td.decode(pt));
   }
-  /* Otomatik yedek: elle paylaşılan yedekle aynı ad ve biçim; klasörde en yeni KEEP dosya kalır. */
+  /* Otomatik yedek: elle paylaşılan yedekle aynı ad ve biçim; klasörde az önce yazılan (cur) ve en yeni KEEP-1 dosya kalır.
+     cur ayrı tutulur: telefon saati geri alınınca yeni dosya adı eskilerden küçük kalır ve silinirdi. */
   const KEEP=4,NAME=/^neowell-yedek-\d{4}-\d{2}-\d{2}\.json$/;
   const autoName=day=>`neowell-yedek-${day}.json`;
-  const autoPrune=names=>names.filter(n=>NAME.test(n)).sort().slice(0,-KEEP);
+  const autoPrune=(names,cur)=>names.filter(n=>NAME.test(n)&&n!==cur).sort().slice(0,-(KEEP-1));
   const autoDue=(last,today)=>{const d=(Date.parse(today)-Date.parse(last))/864e5;return !(d>=0&&d<7)}; // saat geri alınıp son tarih ileride kalırsa da yedeklenir
   return {encrypt,decrypt,autoName,autoPrune,autoDue};
 })();

@@ -11,7 +11,8 @@ const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify
   ok("aşırı yineleme sayısı reddedilir",await B.decrypt(Object.assign({},e,{iter:1e9}),"parola").then(()=>false,()=>true));
   ok("iki şifreleme farklı",(await B.encrypt(obj,"parola")).data!==e.data);
   ok("otomatik yedek: ad elle yedekle aynı biçim",B.autoName("2026-10-02")==="neowell-yedek-2026-10-02.json");
-  ok("otomatik yedek: en yeni 4 kalır, yalnız yedek adları silinir",JSON.stringify(B.autoPrune(["neowell-yedek-2026-09-04.json","neowell-yedek-2026-09-25.json","not.txt","neowell-yedek-2026-08-28.json","neowell-yedek-2026-09-11.json","neowell-yedek-2026-09-18.json","neowell-yedek-x.json"]))===JSON.stringify(["neowell-yedek-2026-08-28.json"])&&B.autoPrune(["neowell-yedek-2026-09-04.json"]).length===0);
+  ok("otomatik yedek: en yeni 4 kalır, yalnız yedek adları silinir",JSON.stringify(B.autoPrune(["neowell-yedek-2026-09-04.json","neowell-yedek-2026-09-25.json","not.txt","neowell-yedek-2026-08-28.json","neowell-yedek-2026-09-11.json","neowell-yedek-2026-09-18.json","neowell-yedek-x.json"],"neowell-yedek-2026-09-25.json"))===JSON.stringify(["neowell-yedek-2026-08-28.json"])&&B.autoPrune(["neowell-yedek-2026-09-04.json"],"neowell-yedek-2026-09-04.json").length===0);
+  ok("otomatik yedek: saat geri alınınca az önce yazılan (en eski adlı) dosya silinmez, en yeni 3 diğeriyle 4 kalır",JSON.stringify(B.autoPrune(["neowell-yedek-2026-09-11.json","neowell-yedek-2026-09-18.json","neowell-yedek-2026-09-25.json","neowell-yedek-2026-10-02.json","neowell-yedek-2026-09-01.json"],"neowell-yedek-2026-09-01.json"))===JSON.stringify(["neowell-yedek-2026-09-11.json"]));
   ok("otomatik yedek: 7 gün dolunca ya da hiç yokken zamanı gelir",B.autoDue("","2026-10-02")&&B.autoDue("2026-09-25","2026-10-02")&&!B.autoDue("2026-09-26","2026-10-02")&&!B.autoDue("2026-10-02","2026-10-02")&&B.autoDue("2026-10-05","2026-10-02"));
   process.exit(bad?1:0);
 })();
