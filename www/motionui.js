@@ -94,7 +94,7 @@ async function walkGpsAsk(){
   let ok=false;try{ok=(await m.requestPermissions({permissions:["fine"]})).fine==="granted"}catch(e){}
   await motionStatus();
   if(ok){lsDel(WGPS_NO);walkGpsGo();toast("Konum izni verildi")}
-  else{lsSet(WGPS_NO,"1");toast("Konum izni verilmedi. Mesafe boyuna göre tahmin edilir")}
+  else{lsSet(WGPS_NO,"1");toast("Hassas konum izni verilmedi. Mesafe boyuna göre tahmin edilir")}
   if(tab==="ayar-modul")render();
 }
 function motionDisclose(){
