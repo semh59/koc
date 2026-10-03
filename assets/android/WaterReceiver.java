@@ -8,6 +8,6 @@ import android.content.Intent;
 public class WaterReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context c, Intent i) {
-        QuickLogPlugin.handle(c, i);
+        QuickLogPlugin.handle(c, i, true);
     }
 }

@@ -1,6 +1,8 @@
 "use strict";
 /* Bildirim düğmelerinden ("+250 ml", "Aldım") gelen kayıtlar: yerel taraf uygulama kapalıyken biriktirir, burada ana veriye eklenir. */
 const QL=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.QuickLog;
+/* Yerel taraf su/ilaç düğmesini yalnız bu anahtarı taşıyan bildirimden kaydeder (başka uygulama sahte kayıt yazdıramasın). Eklenti yoksa null. */
+async function quickToken(){const q=QL();try{return q&&q.getToken&&(await q.getToken()).tk||null}catch(e){return null}}
 async function quickIngest(){
   const q=QL();if(!q)return;
   let r;try{r=await q.take()}catch(e){return}

@@ -1,5 +1,6 @@
 package com.neowell.app;
 
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -13,6 +14,7 @@ final class QuickMath {
     private static final Pattern M = Pattern.compile("\"m\"\\s*:\\s*(\\d{1,3})(?![\\d.])");
     private static final Pattern S = Pattern.compile("\"s\"\\s*:\\s*\"([01]\\d|2[0-3]):([0-5]\\d)\"");
     private static final Pattern AT = Pattern.compile("\"at\"\\s*:\\s*(\\d{10,15})(?![\\d.])");
+    private static final Pattern TK = Pattern.compile("\"tk\"\\s*:\\s*\"([0-9a-f]{32})\"");
     private static final Pattern KEY = Pattern.compile("(\\d{1,4})|([mk]\\d{1,3}_\\d{4})");
 
     private static String extra(String json) {
@@ -53,6 +55,14 @@ final class QuickMath {
         if (e == null) return null;
         Matcher m = AT.matcher(e);
         return m.find() ? m.group(1) : null;
+    }
+
+    /** Bildirimi uygulama mı kurdu: "extra.tk" uygulamanın gizli anahtarıyla aynı mı. */
+    static boolean signed(String json, String secret) {
+        String e = extra(json);
+        if (e == null || secret == null) return false;
+        Matcher m = TK.matcher(e);
+        return m.find() && MessageDigest.isEqual(m.group(1).getBytes(), secret.getBytes());
     }
 
     static boolean seen(String list, String sig) {

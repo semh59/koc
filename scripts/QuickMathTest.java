@@ -27,6 +27,15 @@ public class QuickMathTest {
 
         ok("ilaç: atla anahtarı k ile başlar", "k12_0800".equals(QuickMath.medKey("{\"extra\":{\"act\":\"med\",\"m\":12,\"s\":\"08:00\"}}", true)));
 
+        String sec = "0123456789abcdef0123456789abcdef";
+        ok("anahtar: extra.tk eşitse imzalı", QuickMath.signed("{\"extra\":{\"act\":\"su\",\"v\":250,\"tk\":\"" + sec + "\"}}", sec));
+        ok("anahtar: tk yok, yanlış, extra dışında ya da gizli anahtar yoksa imzasız",
+            !QuickMath.signed("{\"extra\":{\"act\":\"su\",\"v\":250}}", sec)
+                && !QuickMath.signed("{\"extra\":{\"tk\":\"00000000000000000000000000000000\"}}", sec)
+                && !QuickMath.signed("{\"tk\":\"" + sec + "\",\"extra\":{\"act\":\"su\"}}", sec)
+                && !QuickMath.signed("{\"extra\":{\"tk\":\"" + sec.substring(1) + "\"}}", sec.substring(1))
+                && !QuickMath.signed(null, sec) && !QuickMath.signed("{\"extra\":{\"tk\":\"" + sec + "\"}}", null));
+
         String s = QuickMath.append("", "250", 1000L);
         s = QuickMath.append(s, "m12_0800", 2000L);
         List<String[]> l = QuickMath.parse(s);

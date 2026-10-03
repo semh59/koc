@@ -26,7 +26,7 @@ if (!x.includes("NeoWidget")) {
   x = x.replace("</application>", '    <receiver android:name=".NeoWidget" android:exported="true"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE"/></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/nw_widget_info"/></receiver>\n    </application>');
 }
 // Widget "+su": exported=false, bu alıcıya başka uygulama ulaşamaz; widget'ın PendingIntent'i uygulama adına gönderdiği için çalışır.
-// Bildirim su/ilaç düğmeleri ise exported MainActivity'den geçer: oraya her uygulama aynı ek alanlarla sahte kayıt yazdırabilir (token doğrulaması yapılmadı, docs/plan-6-ozellik.md 10.1).
+// Bildirim su/ilaç düğmeleri exported MainActivity'den geçer; orada kayıt yalnız uygulamanın gizli anahtarını (extra.tk) taşıyan bildirimden yazılır (QuickLogPlugin.handle).
 if (!x.includes("WaterReceiver")) {
   x = x.replace("</application>", `    <receiver android:name=".WaterReceiver" android:exported="false"/>
     </application>`);
@@ -66,7 +66,7 @@ public class MainActivity extends BridgeActivity {
         // Bildirim su/ilaç düğmesi: kayıt arka planda yazılır, ekran açık kalmaz. savedInstanceState != null ise süreç öldükten sonra
         // yeniden oluşturmadır ve intent eskisidir; BridgeActivity.load() super.onCreate içinde onu onNewIntent'e verdiği için ek alan burada silinir.
         boolean quick = false;
-        if (savedInstanceState == null) quick = QuickLogPlugin.handle(this, getIntent());
+        if (savedInstanceState == null) quick = QuickLogPlugin.handle(this, getIntent(), false);
         else getIntent().removeExtra(QuickLogPlugin.ACTION_KEY);
         registerPlugin(KeyVaultPlugin.class);
         registerPlugin(DeviceHelpPlugin.class);
@@ -98,7 +98,7 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     protected void onNewIntent(Intent intent) {
-        if (QuickLogPlugin.handle(this, intent)) {
+        if (QuickLogPlugin.handle(this, intent, false)) {
             moveTaskToBack(true);
             return;
         }

@@ -27,8 +27,18 @@ adb shell cmd package query-receivers -a android.appwidget.action.APPWIDGET_UPDA
 wv() { adb shell run-as com.neowell.app cat shared_prefs/nw_widget.xml > widget.xml 2>&1; grep -oE 'water(&quot;|")?:[0-9]+' widget.xml | grep -oE '[0-9]+$'; }
 w0=$(wv)
 [ -n "$w0" ] || { echo "WIDGET VERİSİ YAZILMADI (Widget.update)"; cat widget.xml; exit 1; }
-# Bildirimdeki "+250 ml" düğmesi benzetimi: eylem uygulama açıkken gelir, kayıt yerelde birikir, uygulama öne gelince ana veriye alınır.
+# MainActivity exported: düğme kaydı yalnız uygulamanın bildirime koyduğu gizli anahtarla (extra.tk) yazılır. Anahtar ilk bildirim kurulumunda üretilir.
+TK=$(adb shell run-as com.neowell.app cat shared_prefs/nw_quick.xml 2>/dev/null | grep -oE 'name="tk">[0-9a-f]{32}' | grep -oE '[0-9a-f]{32}')
+[ -n "$TK" ] || { echo "BİLDİRİM ANAHTARI ÜRETİLMEDİ (nw_quick.xml tk)"; exit 1; }
+# Başka uygulamanın sahte intent'i: anahtarsız ve yanlış anahtarlı su kaydı yazılmamalı, widget suyu artmamalı.
 adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction su --ei LocalNotificationId 200 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250}}'"
+sleep 4
+adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction su --ei LocalNotificationId 200 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250,\"tk\":\"00000000000000000000000000000000\"}}'"
+sleep 4
+adb shell run-as com.neowell.app cat shared_prefs/nw_quick.xml > quick0.xml 2>&1
+if grep -q "250," quick0.xml || [ "$(wv)" != "$w0" ]; then echo "SAHTE SU KAYDI YAZILDI (anahtarsız intent)"; cat quick0.xml; exit 1; fi
+# Bildirimdeki "+250 ml" düğmesi benzetimi: eylem uygulama açıkken gelir, kayıt yerelde birikir, uygulama öne gelince ana veriye alınır.
+adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction su --ei LocalNotificationId 200 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250,\"tk\":\"$TK\"}}'"
 sleep 4
 adb shell run-as com.neowell.app cat shared_prefs/nw_quick.xml > quick.xml 2>&1
 cat quick.xml
@@ -47,7 +57,7 @@ if grep -q "250," quick2.xml; then echo "BEKLEYEN KAYIT TEMİZLENMEDİ"; cat qui
 # "yeni gün" dalı da 250 verirdi ve gün uyuşmazlığı görünmezdi.
 w2=$(wv)
 [ "$w2" = "$((w0 + 250))" ] || { echo "UYGULAMA WIDGET SUYUNU YAZMADI: $w2"; cat widget.xml; exit 1; }
-adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction su --ei LocalNotificationId 200 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250}}'"
+adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction su --ei LocalNotificationId 200 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250,\"tk\":\"$TK\"}}'"
 sleep 4
 w3=$(wv)
 echo "Widget su (uygulama günü): $w2 -> $w3"
@@ -56,7 +66,7 @@ echo "Widget su (uygulama günü): $w2 -> $w3"
 adb shell monkey -p com.neowell.app -c android.intent.category.LAUNCHER 1
 sleep 10
 # İlaç bildirimindeki "Aldım" düğmesi benzetimi: yerel taraf kaydı "m<kimlik>_<saat>" anahtarıyla biriktirir, uygulama öne gelince tüketilir.
-adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction med --ei LocalNotificationId 1001001 --es LocalNotficationObject '{\"extra\":{\"act\":\"med\",\"m\":1,\"s\":\"08:00\"}}'"
+adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction med --ei LocalNotificationId 1001001 --es LocalNotficationObject '{\"extra\":{\"act\":\"med\",\"m\":1,\"s\":\"08:00\",\"tk\":\"$TK\"}}'"
 sleep 4
 adb shell run-as com.neowell.app cat shared_prefs/nw_quick.xml > quick3.xml 2>&1
 cat quick3.xml
@@ -66,7 +76,7 @@ sleep 10
 adb shell run-as com.neowell.app cat shared_prefs/nw_quick.xml > quick4.xml 2>&1
 if grep -q "m1_0800," quick4.xml; then echo "İLAÇ KAYDI TÜKETİLMEDİ"; cat quick4.xml; exit 1; fi
 # "Atla" düğmesi: k<kimlik>_<saat> anahtarı. Alarm kanalı (nw_med) yüksek önemli ve alarm sesli olarak oluşmuş olmalı.
-adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction medskip --ei LocalNotificationId 2001001 --es LocalNotficationObject '{\"extra\":{\"act\":\"med\",\"m\":1,\"s\":\"20:00\"}}'"
+adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction medskip --ei LocalNotificationId 2001001 --es LocalNotficationObject '{\"extra\":{\"act\":\"med\",\"m\":1,\"s\":\"20:00\",\"tk\":\"$TK\"}}'"
 sleep 4
 adb shell run-as com.neowell.app cat shared_prefs/nw_quick.xml > quick3b.xml 2>&1
 grep -q "k1_2000," quick3b.xml || { echo "ATLA KAYDI YAZILMADI"; cat quick3b.xml; exit 1; }
@@ -81,7 +91,7 @@ if grep -q "k1_2000," quick5.xml; then echo "ATLA KAYDI TÜKETİLMEDİ"; cat qui
 adb shell am force-stop com.neowell.app
 sleep 2
 clr
-adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction su --ei LocalNotificationId 200 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250}}'"
+adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction su --ei LocalNotificationId 200 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250,\"tk\":\"$TK\"}}'"
 sleep 15
 adb logcat -d | grep -E "Capacitor/Console" > replay1.log
 p1=$(adb shell pidof com.neowell.app)
@@ -97,7 +107,7 @@ n=$(cat replay1.log replay2.log | grep -oE "NW-QUICK ingested [0-9]+" | grep -oE
 echo "Tekrar testi: alınan su kaydı $n"
 [ "$n" = "1" ] || { echo "SU KAYDI TEKRARLANDI YA DA ALINMADI ($n)"; cat replay1.log replay2.log; exit 1; }
 # Bildirim intent'i yeniden teslim edilirse (aynı planlanmış bildirim, aynı extra.at) su ikinci kez yazılmamalı; uygulama normal açılır.
-SU_AT="am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction su --ei LocalNotificationId 201 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250,\"at\":1790928000000}}'"
+SU_AT="am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction su --ei LocalNotificationId 201 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250,\"at\":1790928000000,\"tk\":\"$TK\"}}'"
 qn() { adb shell run-as com.neowell.app cat shared_prefs/nw_quick.xml 2>/dev/null | grep -oE '250,[0-9]+' | wc -l; }
 adb shell monkey -p com.neowell.app -c android.intent.category.LAUNCHER 1
 sleep 8
