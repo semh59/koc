@@ -32,5 +32,7 @@ ok("tarif aralığı: en az 100 yemekte, ortalama aralığın içinde ve makul g
 const top=q=>foodSearch(q,5).map(i=>FOODS[i].n);
 ok("aramada ç/ğ/ı/ö/ş/ü duyarsız: sut, yogurt, cacik, sogan, kofte, serbet, uzum",["sut:Süt (tam yağlı)","yogurt:Yoğurt (tam yağlı)","cacik:Cacık","sogan:Soğan","kofte:Izgara köfte","uzum:Üzüm","simit:Simit"].every(x=>{const[q,n]=x.split(":");return top(q).includes(n)}),["sut","yogurt","cacik","sogan","kofte","uzum"].map(top));
 ok("eş anlamlı: potato→patates, doner→döner, hummus→humus, feta→beyaz peynir, fileto→tavuk göğsü",[["potato","Haşlanmış patates"],["doner","Et döner"],["hummus","Humus"],["feta","Beyaz peynir"],["fileto","Izgara tavuk göğsü"]].every(([q,n])=>top(q).includes(n)),["potato","doner","hummus","feta","fileto"].map(top));
+ok("tam kelime (iyelik ekiyle) kelime başından önce: peynir, yumurta, ekmek, pilav",top("peynir")[0]==="Beyaz peynir"&&top("peynir").includes("Kaşar peyniri")&&top("yumurta")[0]==="Haşlanmış yumurta"&&top("ekmek")[0]==="Beyaz ekmek"&&top("pilav")[0]==="Pirinç pilavı",["peynir","yumurta","ekmek","pilav"].map(top));
+ok("kelime sırası ve fazla boşluk önemsiz",top("doner tavuk")[0]==="Tavuk döner"&&top("corba mercimek")[0]==="Mercimek çorbası"&&top("tavuk  döner")[0]==="Tavuk döner",[top("doner tavuk"),top("tavuk  döner")]);
 ok("adla eşleşme eş adlı eşleşmeden önce gelir",top("patates")[0].toLowerCase().includes("patates"));
 process.exit(bad?1:0);
