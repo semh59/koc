@@ -46,9 +46,9 @@ Notlar:
 
 ## Güncelleme
 
-`www/index.html` dosyasını GitHub'da düzenleyip kaydettiğin her seferde APK kendiliğinden yeniden derlenir. Her derleme aynı imza anahtarıyla yapıldığı için yeni APK'yı eskisinin üstüne kurabilirsin, veriler silinmez. Yine de güncellemeden önce Ayarlar'dan yedek al.
+`www/index.html` dosyasını GitHub'da düzenleyip kaydettiğin her seferde APK kendiliğinden yeniden derlenir. Her derleme aynı release anahtarıyla imzalandığı için yeni APK'yı eskisinin üstüne kurabilirsin, veriler silinmez. Yine de güncellemeden önce Ayarlar'dan yedek al. İmza ve yayın akışı: [docs/dagitim.md](docs/dagitim.md).
 
-**Önemli:** Bu düzeltmeden önce kurduğun bir sürüm varsa, onun imzası farklıdır. Android üstüne kurmaya izin vermez. Bir kereliğine eski uygulamayı sil (önce yedek al), yenisini kur, yedeği geri yükle. Bundan sonraki güncellemeler sorunsuz olur.
+**Önemli:** Release imzasından (Ekim 2026) önce kurduğun sürüm debug anahtarıyla imzalıdır, Android yenisini üstüne kurmaz. Bir kereliğine yedek al, eski uygulamayı sil, yenisini kur, yedeği geri yükle.
 
 ## Bilmen gerekenler
 
@@ -57,7 +57,7 @@ Notlar:
 - Bildirimler hiç gelmiyorsa telefon ayarlarında NeoWell için bildirim iznini ve pil ayarlarında "kısıtlama yok" seçeneğini kontrol et. Bazı telefonlar (Xiaomi, Huawei, Samsung) arka plan bildirimlerini agresif keser.
 - Android 12 ve üstünde hatırlatmaların tam saatinde gelmesi için uygulama "Alarmlar ve hatırlatıcılar" iznini kullanır, kurulumda otomatik verilir. Gelmezse telefon ayarlarından NeoWell > İzinler bölümüne bak.
 - Uygulama adı ve paket adı NeoWell (`com.neowell.app`) olarak değişti. Eski "Koç" uygulaması ayrı bir uygulama sayılır: önce eskisinden yedek al, NeoWell'i kur, yedeği geri yükle, sonra eskisini sil. (Yapay zekâ sohbet sekmesinin adı Koç olarak kaldı.)
-- Kurulan APK "debug" imzalıdır. Kendi kullanımın için sorun değildir, Play Store'a yüklenemez.
+- APK ve Play'e yüklenecek AAB release (Play upload) anahtarıyla imzalıdır; anahtar depoda değil, GitHub gizli değişkenlerinde ve sahibinin yedeğindedir.
 
 ## Bilgisayarda hızlı deneme
 
