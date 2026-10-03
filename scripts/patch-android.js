@@ -136,6 +136,10 @@ if(!g.includes("signingConfigs")){
         release {
             signingConfig signingConfigs.release
         }
+    }
+    lint {
+        // lintVitalRelease, nw_data_rules.xml'deki belgelenmiş device_* alanlarını tanımıyor (yanlış pozitif).
+        disable "FullBackupContent"
     }`);
   fs.writeFileSync(bg,g);
 }
