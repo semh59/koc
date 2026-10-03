@@ -27,6 +27,7 @@ function sheetPrivacy(){
   <div class="banner" style="margin-bottom:10px"><p style="margin:0">${MED_NOTE}</p></div>
   <div class="lbl">Verin nerede</div>
   <p class="mut sm">Tüm kayıtların yalnızca bu telefonda durur; NeoWell'in sunucusu ve hesabı yoktur. Yedek dosyasını sen oluşturur, nereye kaydedeceğini sen seçersin. PDF ve tablo paylaşımları da senin seçtiğin yere gider. Google otomatik yedeğine ve telefondan telefona aktarıma bilerek dahil edilmez.</p>
+  <p class="mut sm">Konum yalnız elle başlattığın yürüyüşte, uygulama açıkken başlayan kısa bir ölçüm için kullanılır (sürerken bildirim görünür). Yalnız öğrenilen adım uzunluğu saklanır, konum noktası ve rota saklanmaz. Arka planda konum istenmez.</p>
   <div class="lbl">İnternete çıkanlar</div>
   <ul class="mut sm" style="margin:0 0 10px;padding-left:18px">
     <li><b>Open Food Facts</b> (barkod araması): yalnızca barkod numarası gider. Hizmet, her internet isteğinde olduğu gibi IP adresini görür.</li>
