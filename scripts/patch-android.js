@@ -24,7 +24,8 @@ if (!x.includes("com.google.mlkit.vision.DEPENDENCIES")) {
 if (!x.includes("NeoWidget")) {
   x = x.replace("</application>", '    <receiver android:name=".NeoWidget" android:exported="true"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE"/></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/nw_widget_info"/></receiver>\n    </application>');
 }
-// Widget "+su": exported=false, başka uygulama sahte su yazamaz; widget'ın PendingIntent'i uygulama adına gönderdiği için çalışır.
+// Widget "+su": exported=false, bu alıcıya başka uygulama ulaşamaz; widget'ın PendingIntent'i uygulama adına gönderdiği için çalışır.
+// Bildirim su/ilaç düğmeleri ise exported MainActivity'den geçer: oraya her uygulama aynı ek alanlarla sahte kayıt yazdırabilir (token doğrulaması yapılmadı, docs/plan-6-ozellik.md 10.1).
 if (!x.includes("WaterReceiver")) {
   x = x.replace("</application>", `    <receiver android:name=".WaterReceiver" android:exported="false"/>
     </application>`);
