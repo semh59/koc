@@ -301,3 +301,17 @@ Uygunluk puanı 1-5 arasıdır (5 = NeoWell'e APK içinde gömülebilir, ticari 
 - Rodríguez-Jiménez ve ark. 2025 [O]: https://pmc.ncbi.nlm.nih.gov/articles/PMC12655113/
 - O'Hara ve ark. 2025 [O]: https://pmc.ncbi.nlm.nih.gov/articles/PMC11858203/
 - NutriBench: https://arxiv.org/pdf/2407.12843
+
+---
+
+## F) Uygulama (3 Ekim 2026)
+
+`www/foods.js` elle değil `node tools/besin/uret.js` ile üretilir; `scripts/foods.test.js` üretilen çıktıyla dosyanın aynı olduğunu denetler.
+
+- **Kaynak dosyalar (`tools/besin/`):** `genel.tsv` (Türkçe ad, USDA anahtarı, porsiyon, eş ad), `malzeme.tsv` (yalnız tarifte geçen USDA malzemeleri), `tarif.txt` (tarifler), `esad.tsv` (eski satırlar için eş adlar), `mevcut.txt` (ilk 106 kayıt, değişmedi), `usda-altkume.json` (kullanılan USDA kayıtları: fdc_id, açıklama, enerji, protein, karbonhidrat, yağ, lif, porsiyon ağırlıkları), `cikar.py` (USDA CSV'den alt küme çıkarır), `uret.js`.
+- **Genel besinler:** değerler SR Legacy'den birebir (kcal 1008, protein 1003, karbonhidrat 1005 "by difference", yağ 1004). Anahtar, en kısa eşleşen açıklamayı seçer; sonuç `usda-altkume.json` içindedir. Alkollü ve lif ağırlıklı (kakao, kepek, limon) kayıtlar Atwater testine uymadığı için genel listeye alınmadı.
+- **Tarifler:** her satırda çiğ malzeme gramı (ya da adında "haşlanmış/fırında" geçen pişmiş USDA kaydı), pişme verimi ve porsiyon vardır. 100 g değeri = malzeme USDA değerlerinin toplamı / pişmiş ağırlık. Verim tablosu ve yağ emilimi varsayımları `tarif.txt` başındadır; bunlar ölçüm değil belgelenmiş varsayımdır. Tuz ve baharat hesaba katılmadı (%1'in altında). `lo/hi`: eklenen yağ x0,6 ve x1,5 ile hesaplanan 100 g kcal değeri; yağ eklenmeyen yemekte aralık yoktur.
+- **Karbonhidrat:** tüm satırlarda USDA toplam karbonhidrat (lif dahil). Eski elle girilmiş satırlar da USDA ile karşılaştırılmıştı. Open Food Facts barkod değerleri etiket tanımıyla (lifsiz) gelir ve ayrı gösterilir.
+- **Arama:** ç, ğ, ı, ö, ş, ü katlanır; eş adlar (potato, doner, hummus, feta, fileto vb.) ad eşleşmesinden sonra sıralanır.
+- **Alınmayanlar:** USDA'da karşılığı olmayan tarhana, sucuk, pekmez, Türk beyaz peyniri (feta ile yaklaşık), yufka (yerine USDA "Phyllo dough" kullanıldı, yaklaşık). Bunlar için TürKomp izni ya da üretici etiketi gerekir (G13).
+- **Koç menü kataloğu** yalnız ilk 106 satırdan örneklenir (`FOOD_CORE`); ham besin ve tarif satırları istek boyutunu şişirmesin.
