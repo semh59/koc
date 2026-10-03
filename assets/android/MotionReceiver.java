@@ -18,6 +18,7 @@ import com.google.android.gms.location.DetectedActivity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 /** Etkinlik tanıma geçişleri (yürüme/koşma başladı-bitti): aralığı açar/kapatır, gerekirse kısa GPS penceresi başlatır. Açılışta kaydı yeniler. */
 public class MotionReceiver extends BroadcastReceiver {
@@ -51,7 +52,7 @@ public class MotionReceiver extends BroadcastReceiver {
     /** Kontrol noktası: dilimin ritmi bir öncekinden belirgin saparsa ve o ritim aralığı öğrenilmemişse kısa GPS penceresi. */
     private static void tick(Context c, long steps) {
         if (!MotionStore.isOpen(c)) return;
-        long now = System.currentTimeMillis();
+        long now = StepStore.sampledAt();
         // Gece sayaç sıfırlanır ve kayıt 4 saati aşamaz: gün dönünce ya da 3 saatte bir aralık bu noktada kapatılıp yeniden açılır.
         // Geçersiz 3 saatlik parça çıkış olayının kaçtığını gösterir: yeniden açılmaz, alarm durur.
         boolean newDay = MotionStore.dayOf(now) != MotionStore.dayOf(MotionStore.lastActivityAt(c));
@@ -128,7 +129,7 @@ public class MotionReceiver extends BroadcastReceiver {
         StepStore.read(app, false, new StepStore.Callback() {
             public void done(Long steps, Map<String, Long> history) {
                 try {
-                    if (steps != null) for (ActivityTransitionEvent e : ev) handle(app, e, steps, nowWall, nowEl);
+                    if (steps != null) for (ActivityTransitionEvent e : ev) handle(app, e, steps, StepStore.sampledAt(), nowWall, nowEl);
                 } finally {
                     pr.finish();
                 }
@@ -136,9 +137,12 @@ public class MotionReceiver extends BroadcastReceiver {
         });
     }
 
-    private static void handle(Context c, ActivityTransitionEvent e, long steps, long nowWall, long nowEl) {
+    private static void handle(Context c, ActivityTransitionEvent e, long steps, long at, long nowWall, long nowEl) {
         long delay = Math.max(0, (nowEl - e.getElapsedRealTimeNanos()) / 1000000L);
         long t = delay <= MAX_DELAY_MS ? nowWall - delay : nowWall;
+        // Sayaç okuması 4 sn'ye kadar sürer; olay ile okuma gece yarısının iki yanındaysa zaman sayacın gününe çekilir.
+        TimeZone z = TimeZone.getDefault();
+        t = MotionMath.onCounterDay(t, z.getOffset(t), at, z.getOffset(at));
         int type = e.getActivityType();
         boolean enter = e.getTransitionType() == ActivityTransition.ACTIVITY_TRANSITION_ENTER;
         boolean foot = type == DetectedActivity.WALKING || type == DetectedActivity.RUNNING;

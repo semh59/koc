@@ -68,6 +68,13 @@ final class StepStore {
         h.postDelayed(timeout, 4000);
     }
 
+    private static long sampledAt;
+
+    /** Son okumanın gün anahtarını belirleyen an. Okuma ana iş parçacığında ve geri çağrıdan hemen önce olduğu için geri çağrı kendi okumasının anını görür. */
+    static synchronized long sampledAt() {
+        return sampledAt;
+    }
+
     private static synchronized long apply(Context c, float counter, boolean closeFirst) {
         SharedPreferences sp = prefs(c);
         StepMath.State s = new StepMath.State();
@@ -77,15 +84,19 @@ final class StepStore {
         s.last = sp.getFloat("last", -1);
         s.sampled = sp.getBoolean("sampled", false);
         Map<String, Long> hist = new HashMap<>();
-        String today = today();
+        // Gün anahtarı, dakika ve geri çağrıya verilen an tek örnekten: gece yarısında ayrı ayrı alınırsa adım dünün, zaman bugünün olur.
+        long at = System.currentTimeMillis();
+        sampledAt = at;
+        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date(at));
         java.util.Calendar now = java.util.Calendar.getInstance();
+        now.setTimeInMillis(at);
         int minutes = now.get(java.util.Calendar.HOUR_OF_DAY) * 60 + now.get(java.util.Calendar.MINUTE);
         boolean closed = closeFirst && StepMath.closeDay(s, today, counter, minutes, hist);
         long steps = StepMath.update(s, today, counter, minutes, hist);
         SharedPreferences.Editor e = sp.edit();
         e.putString("day", s.day).putFloat("base", s.base).putFloat("carry", s.carry).putFloat("last", s.last).putBoolean("sampled", s.sampled);
         for (Map.Entry<String, Long> x : hist.entrySet()) e.putLong("h_" + x.getKey(), x.getValue());
-        if (closed) e.putLong("snapAt", System.currentTimeMillis());
+        if (closed) e.putLong("snapAt", at);
         e.apply();
         return steps;
     }
