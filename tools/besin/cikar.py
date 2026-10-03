@@ -30,7 +30,7 @@ for f in ('genel.tsv','malzeme.tsv','ek.tsv'):
     for l in open(H+f,encoding='utf-8'):
         if l.strip() and not l.startswith('#'):anah.add(l.split('\t')[1].strip())
 out={};hata=[]
-for kw in sorted(anah):
+for kw in sorted(k for k in anah if k[:4] not in('ciq:','cof:')):
     i=coz(kw)
     if not i or i not in full:hata.append(kw);continue
     out[kw]=dict(id=int(i),d=desc[i],**nut[i],por=por.get(i,[]))

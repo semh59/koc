@@ -1,0 +1,38 @@
+# ad	not (arayüzde "Tahmini değer." notundan sonra gösterilir). "Vekil:" tam karşılığı olmayan kaynak, "Çapraz kontrol:" elle girilmiş eski değerin kaynak aralığıyla karşılaştırması.
+Sucuklu yumurta	Vekil: sucuk yerine CIQUAL kuru sosis (418 kcal); yumurta USDA sahanda yumurta. Kızartmada %25 su kaybı varsayıldı.
+Pastırmalı yumurta	Vekil: pastırma yerine CIQUAL kuru sığır eti (Grisons, 207 kcal). Çemen ve yağ hesapta yok, aralık geniş.
+Kavurmalı yumurta	Vekil: kavurma yerine tarifle hesaplanmış kuzu kavurma (333 kcal); yumurta USDA sahanda yumurta.
+Kaşarlı sahanda yumurta	Vekil: kaşar yerine USDA provolone (356 kcal); yumurta USDA sahanda yumurta.
+Sucuklu kaşarlı tost	Vekil: sucuk yerine CIQUAL kuru sosis (418 kcal), kaşar yerine USDA provolone; ekmek ve tereyağı USDA.
+Sucuk ekmek (yarım somun)	Vekil: sucuk yerine CIQUAL kuru sosis (418 kcal); ekmek USDA beyaz ekmek. Kızartmada %25 su kaybı varsayıldı.
+Sucuk (çiğ)	Vekil: Türk sucuğu yerine CIQUAL kuru sosis (418 kcal). Diğer kuru sosis kayıtları 362-474 kcal arasında (USDA yaz sosisi 362, kuru salam 407, CoFID salam 438, CIQUAL baharatlı 474); dana ve yağ oranı markaya göre değişir.
+Pastırma	Vekil: pastırma yerine CIQUAL kuru sığır eti (Grisons, 207 kcal; bresaola 172). Çemenli ve yağlı pastırmada değer yükselir.
+Hellim peyniri	Vekil: UK CoFID 2021 "Cheese, Halloumi" (313 kcal); aynı peynir türü, markaya göre değişir.
+Tarhana (kuru)	Vekil: tarhana USDA'da yok; 1000 g un, 500 g yoğurt, 500 g domates karışımının kurutulmasından hesaplandı (kuru ağırlık 2000 g girdinin yaklaşık %54'ü). Soğan, biber ve maya hesapta yok.
+Tahin pekmez	Vekil: pekmez yerine USDA melas (290 kcal); tahinle yarı yarıya karışım varsayıldı.
+Nar ekşisi	Vekil: USDA nar suyunun dörtte bire kaynatılması (şekersiz ev tipi). Şeker eklenmiş ticari ürünlerde değer yükselir.
+Leblebi (kavrulmuş)	Vekil: leblebi yerine USDA çiğ kuru nohut; kavurmadaki su kaybı hesaba katılmadı.
+Protein bar (jenerik, whey ve yulaf)	Vekil: markasız jenerik bar; 60 g'lık, yaklaşık 20 g proteinli bar oranları varsayıldı (whey, yulaf, fıstık ezmesi, bal, bitter çikolata). Gerçek ürünlerde bar başına 200-300 kcal arası değişir.
+Şalgam suyu	Vekil: şalgam suyu USDA'da yok; havuç, şalgam kökü ve su oranından hesaplandı (ev tarifi); ticari ürün farklı olabilir.
+Boza	Vekil: boza USDA'da yok; darı, şeker ve su oranından hesaplandı; yoğunluk ve şeker oranı ürüne göre değişir.
+Salep	Vekil: salep tozu yerine USDA mısır nişastası; süt ve şeker oranı tipik ev tarifidir.
+Türk kahvesi (sade)	Vekil: Türk kahvesi yerine USDA espresso (restoran) kaydı; 1 fincan 70 ml.
+Türk kahvesi (az şekerli)	Vekil: USDA espresso (restoran) kaydı + 1 çay kaşığı şeker (4 g).
+Türk kahvesi (orta şekerli)	Vekil: USDA espresso (restoran) kaydı + 2 çay kaşığı şeker (8 g).
+Türk kahvesi (şekerli)	Vekil: USDA espresso (restoran) kaydı + 3 çay kaşığı şeker (13 g).
+Çay (1 kesme şekerli)	Hesap: USDA demli çay + 1 kesme şeker (3 g).
+Çay (2 kesme şekerli)	Hesap: USDA demli çay + 2 kesme şeker (6 g).
+Çay (3 kesme şekerli)	Hesap: USDA demli çay + 3 kesme şeker (9 g).
+Sucuk (pişmiş)	Çapraz kontrol: kuru sosis kayıtları 362-474 kcal (USDA yaz sosisi 362, kuru salam 407, CIQUAL kuru sosis 418, CoFID salam 438, CIQUAL baharatlı 474); değer bu aralıkta.
+Pekmez	Çapraz kontrol: USDA melas 290, CIQUAL 300, CoFID 266 kcal; değer bu aralıkta.
+Ayran	Çapraz kontrol: yarı yoğurt, yarı su hesabı yaklaşık 31 kcal (USDA tam yağlı yoğurt 61 kcal).
+Simit	Çapraz kontrol: USDA ve CoFID sade bagel 250-278 kcal; simit susam ve pekmez nedeniyle biraz yüksek olabilir.
+Tarhana çorbası	Çapraz kontrol: 25 g kuru tarhana, 230 g su ve 5 g tereyağı hesabı yaklaşık 55 kcal/100 g (Tarhana (kuru) kaydından).
+Beyaz peynir	Vekil: USDA feta (264 kcal); CoFID feta 250 kcal ile uyumlu. Türk beyaz peyniri markaya göre daha tuzlu ya da yağsız olabilir.
+Kaşar peyniri	Vekil: Türk kaşarı yerine USDA provolone (356 kcal).
+Lor peyniri	Çapraz kontrol: CoFID quark 74, CoFID cottage 103, USDA ricotta (yarım yağsız) 138 kcal; değer bu aralıkta.
+Yufka benzeri hamur (phyllo)	Vekil: yufka yerine USDA phyllo (299 kcal); CoFID filo hamuru çiğ 278, pişmiş 363 kcal.
+Baklava	Çapraz kontrol: CoFID baklava 456 kcal; değer %5 düşük.
+Lokum	Çapraz kontrol: CoFID lokum 295 (cevizsiz) ile 348 (cevizli) kcal; değer bu aralıkta.
+Helva (tahin)	Çapraz kontrol: USDA tahin helvası 469 kcal; değer %8 yüksek, yağ ve şeker oranı markaya göre değişir.
+Et döner	Çapraz kontrol: CoFID döner eti 377 kcal (İngiltere, yağlı), USDA ızgara dana kıyma 254-270 kcal; değer alt sınırda, yağlı restoran dönerinde çok daha yüksek olabilir.

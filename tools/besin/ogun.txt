@@ -1,7 +1,7 @@
 # Öğün kayıtları: tek tabak, sandviç ya da menü. Satır: ad | yöntem | porsiyon etiketi | bileşenler (ad gram;...) | eş adlar (yoksa -) | isteğe bağlı ~N (restoran porsiyonu için ±N% kcal aralığı)
 # Gramlar yenilen halin ağırlığıdır; bileşenler USDA (genel, malzeme, hazır) ya da tarif.txt satırlarıdır. Yöntem "cig" (ağırlık toplamı, pişme yok). Porsiyon gramı = bileşen toplamı (uret.js hesaplar).
 # Bileşen tarif satırıysa onun az/bol yağlı aralığı öğüne taşınır; yağ malzemesi x0,6 ve x1,5. Restoran öğünlerinde ~30: porsiyon ve yağ miktarı yere göre değişir (eski ev yemeği kuralındaki yağlı/hamurlu ±%30).
-# Döner ve köfte için USDA'da karşılık yoktur: ızgara dana kıyma (%15/%20 yağlı, pişmiş) vekil alınır, ~30 aralığı bunu da kapsar. Sucuk, simit, pekmez, protein bar için USDA karşılığı olmadığından öğün yapılmadı.
+# Döner ve köfte için USDA'da karşılık yoktur: ızgara dana kıyma (%15/%20 yağlı, pişmiş) vekil alınır, ~30 aralığı bunu da kapsar. Sucuk, pekmez ve protein bar vekil kaydıdır (vekil.txt).
 # --- Kahvaltı ---
 Sade kahvaltı tabağı | cig | 1 tabak | Beyaz peynir 40;Yeşil zeytin 20;Domates 60;Salatalık 50;Ekmek (beyaz) 60 | kahvalti
 Serpme kahvaltı (1 kişilik) | cig | 1 tabak | Beyaz peynir 40;Kaşar 30;Haşlanmış yumurta 50;Yeşil zeytin 20;Siyah zeytin 15;Domates 60;Salatalık 50;Tereyağı 10;Bal 20;Meyve reçeli 20;Ekmek (beyaz) 90 | kahvalti
