@@ -95,7 +95,7 @@ Harici değerlendirmede bildirilen açık sağlık güvenliği boşlukları (3 E
 ### Beslenme
 | # | Ad | Değer | Emek | Kaynak | Bağımlılık / karar |
 |---|---|---|---|---|---|
-| D-Bes1 | Besin veritabanı ~106 → ~500 | Kullanıcının "bulamadım" demesi azalır (150'lik partilerle). | L | rekabet-ozellik, besin-arastirmasi | G13 |
+| D-Bes1 (yapıldı) | Besin veritabanı 106 → 513 | 230 USDA SR Legacy satırı (birebir, `1` işaretli) ve 177 tarif hesaplı Türk yemeği (`lo/hi` aralıklı); `tools/besin/` betikle üretilir, karbonhidrat tanımı USDA "by difference" (lif dahil), arama ç/ğ/ı/ö/ş/ü duyarsız ve eş adlı, Hakkında'da kaynak atfı. Açık: TürKomp izni (G13), OFF için tıklanabilir bağlantı yok, USDA'da yufka/tarhana/sucuk/pekmez olmadığından tarifler phyllo ile yaklaşık ya da hiç yok. | L | rekabet-ozellik, besin-arastirmasi | G13 |
 | D-Bes2 (yapıldı) | Kendi tarifim | Malzemeden tarif hesaplanır, Türk mutfağındaki tarif farkını kullanıcı kapatır. | M | rekabet-ozellik | – |
 | D-Bes3 (yapıldı) | Yemeklerde aralık | Türk yemeklerinde tek sayı yerine aralık gösterilir (180-260 kcal). | S | besin-arastirmasi | – |
 
