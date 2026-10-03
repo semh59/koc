@@ -1877,6 +1877,8 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
   ev("S.chat=[];Object.assign(S.settings,{age:12,heightCm:165,goalKg:45,healthNote:'',kcal:0});S.entries=[];for(let i=13;i>=0;i--)S.entries.push({id:100+i,day:keyOff(-i),time:'08:00',type:'kilo',v:60-i*0.01,text:''})");
   ev("cReply({reply:'x',log:[],propose:{kcal:1300,why:'a'},flag:null})");
   ok("18 yaş altına açık önerisi çıkmaz",!ev("S.chat.some(m=>m.card&&m.card.kind==='propose')"));
+  ev("S.entries=[];cReply({reply:'x',log:[],propose:{kcal:1300,why:'a'},flag:null})");
+  ok("fren varken bakım hesaplanamıyorsa (tartı yok) kalori önerisi çıkmaz",!ev("S.chat.some(m=>m.card&&m.card.kind==='propose')"));
   ev("S.entries=[];for(let i=0;i<10;i++)add('su',250)");ev("S.settings.lastBackup=''");
   ok("yedek yoksa uyarı çıkar",ev("viewBugun()").includes("Yedek zamanı"));
   ev("markBackup()");
