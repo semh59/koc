@@ -806,7 +806,7 @@ function viewAyar(){
     <div class="card" style="margin-top:12px">${navRow('data-act="yedek"',"save","Yedekle veya geri yükle","Şifreli yedek dosyası oluştur ya da yükle")}${navRow('data-pv="csv"',"file","Tabloya aktar (CSV)","Excel ya da Sheets'te açılır")}${navRow('data-imp="open"',"salon","Antrenman geçmişini içe aktar","Başka bir uygulamadan dışa aktardığın dosya")}${navRow('data-pv="open"',"lock","Gizlilik ve veri","Verilerin nerede durduğu")}${navRow('data-act="sifirla"',"trash","Tüm verileri sil","Geri alınamaz","  dng")}</div>
     <div class="card">${storeMsg()?`<p class="status" role="alert"><b>${storeMsg()[0]}.</b> ${storeMsg()[1]}</p>`:""}<p class="hint">Kullanılan alan: yaklaşık ${fmt(storeBytes/1e6)} MB (sınır telefona göre 5-10 MB).</p>
     <p class="hint">Veriler yalnızca bu telefonda durur. Google otomatik yedeğine ve telefondan telefona aktarıma bilerek dahil edilmez. Uygulamayı silersen ya da telefon değiştirirsen kaybolur; yeni telefona geçmeden önce yedek dosyanı al.</p></div>${abHtml()}`;
-  return `<div class="about"><img src="logo.png" alt="NeoWell logosu" width="72" height="72"><b>NeoWell</b><span class="mut sm">Sağlığın yeni kaynağı</span><p class="hint" style="text-align:center">${MED_NOTE}</p></div>`;
+  return `<div class="about"><img src="logo.png" alt="NeoWell logosu" width="72" height="72"><b>NeoWell</b><span class="mut sm">Sağlığın yeni kaynağı</span><p class="hint" style="text-align:center">${MED_NOTE}</p></div><div class="card"><b>Besin verisi kaynakları</b><p class="hint">Genel besinlerin değerleri ABD Tarım Bakanlığı FoodData Central (SR Legacy) verisidir, CC0 kamu malı: fdc.nal.usda.gov. Türk ev yemekleri bu değerlerden tarifle hesaplanmış tahminlerdir. Barkoddan gelen ürünler Open Food Facts verisini içerir, Open Database License (ODbL) ile sunulur: world.openfoodfacts.org. Tablo ve paket etiketi değerleri yaklaşık olup ±%20 sapabilir.</p></div>`;
 }
 
 function render(){
@@ -929,7 +929,7 @@ function sheetPorsiyon(i,food){
   <div class="mut sm" style="margin-bottom:8px">${curFood.hint||(curFood.src==="off"?"Kaynak: Open Food Facts (topluluk verisi, ODbL).":curFood.my?"Yapay zekâ ya da senin girdiğin tahmin.":curFood.s?"Kaynak: USDA FoodData Central. Pişirme ve markaya göre değişebilir.":"Tahmini değer. Tarife ve markaya göre belirgin değişir.")}${curFood.lo!=null?RNOTE:""}</div>${mealChips()}${dayOptions()}<button class="btn" data-go="besin">Ekle</button>${curFood.rec?`<button class="lnk" data-rp="edit:${curFood.rec}">Tarifi düzenle</button>`:""}${curFood.my&&!curFood.hint?`<button class="lnk dng" data-go="mysil">Bu besini listemden sil</button>`:""}`);
   foodPreview();
 }
-const RNOTE=" Aralık, tarif farkını yansıtan kural tabanlı bir tahmindir (sade yemekte ±%15, yağlı ya da hamurlu yemekte ±%30), ölçüm değildir. Ekle düğmesi ortalamayı kaydeder.";
+const RNOTE=" Aralık, tarifin az ve bol yağlı yapılışını yansıtan hesaplı bir tahmindir, ölçüm değildir. Ekle düğmesi ortalamayı kaydeder.";
 function foodCalc(){
   const q=num($("#fqty").value),g=curFood.u[curPor][1]*(q>0&&q<=20?q:0),r=x=>x==null?null:x*g/100;
   return Object.assign({q,g,k:r(curFood.k),lo:r(curFood.lo),hi:r(curFood.hi)},...NUTR.map(k=>({[k]:r(curFood[k])})));
