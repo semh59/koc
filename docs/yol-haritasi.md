@@ -50,6 +50,20 @@ Android yerel katman ve veri bütünlüğü incelemesi (3 Ekim 2026):
 - **A5 (yapıldı): gece yarısı adım yarışı.** Adım değeri, gün anahtarı ve zaman aynı sayaç örneğinden; geçiş olayı ile okuma gece yarısının iki yanındaysa zaman sayacın gününe çekilir.
 - **A6 (yapıldı): yanıltıcı güvenlik notu** (`patch-android.js`, `plan-6-ozellik.md` 10.1 tuzak 4).
 
+Uygulama katmanı incelemesi (5 Opus incelemesi, 3 Ekim 2026). İşaret: [x] yapıldı, testli.
+- [x] **1 test güvenilirliği:** `app.test.js` tek sıralı zincir (yedek şifreleme bloğu await), ortak başlangıç ve `reset()`, `notifTest` await, son satır sayacı (en az 856 test) ve unhandledRejection çıkış 1; kasıtlı FAIL çıkış 1 verir. Diğer test dosyalarında eşzamanlı zincir yok.
+- [x] **2 Tüm verileri sil:** güvenlik kopyası, bozuk kopya ve API anahtarları da silinir (onay metni söyler); kategori silme güvenlik kopyasını da siler.
+- [x] **3 Adım silme:** `stepsFrom` (silme günü sonrası) ile sensör geçmişi geri yazılmaz, süren yürüyüş (`S.walk`) silinir. Silinen gün ve bugün için sensör değeri yeniden yazılmaz.
+- [x] **4 Geri yükleme depolaması:** önce yeni veri, sonra güvenlik kopyası (sığmazsa atlanır); depolama ölçüsü kopya ve bozuk kopyayı saymaz.
+- [x] **5 Koç besin kartı:** temizleyici `card.f` biçimini okur, kart yeniden yüklemede kalır.
+- [x] **6 18 yaş altı:** tek kapı `coachOn` (onay ve yaş); `cAsk` dahil tüm gönderim yolları, yaş ayarı, yedekten dönüş ve açılış temizleyicisi onayı düşürür.
+- [x] **7 İlaç başlangıcı:** ilaca `s`, saate `ts` yazılır; uyum, günün dozları ve bildirimler bunlardan öncesini saymaz (eski kayıt eskisi gibi, düzenlenince geçmişi bozulmaz). İlaçlar satırı 360 px'te ad geniş, durum alt satır.
+- [x] **8 İlaç bildirimine dokunma:** gerçek `act:"med"` extra'sı İlaçlar'ı (kapalıysa Daha fazla) açar.
+- [x] **9 Onay metni:** `CONSENT_SENT` ve `CONSENT_NOT` tek kaynak, politika §5 aynı metin (testle eşit), `CONSENT_V=2`. Politika §9: parola Drive ve otomatik yedekte zorunlu (en az 6), paylaş/kopyada isteğe bağlı; yani "isteğe bağlı" yalnız o yolda doğru kalır. §2 tabloya vücut ölçüleri ve tarifler eklendi.
+- [x] **10 isLosing:** 28 gün, en az 3 tartı ve 14 gün yayılım; veri yetersizse "neden" sorusu ve plato çıkmaz.
+- [x] **11 Bağlam boyutu:** ilaç 8 satır, yemek 12 satır, geçmiş 300 karakter üst sınırları; gerçek sınır ve ölçüm `plan-6-ozellik.md` 2.2 notunda.
+- [x] **12 Küçükler:** boş "not:" satırı, tansiyon bandı 135/85 ve metin, karbonhidrat/yağ eksik öğün notu, menü %15 sapma ve kalori açığı onayı, Koç porsiyon besini tarifte porsiyon olarak, rehberli süre tavanı 7200 sn.
+
 ## C) Arayüz ve tasarım
 | # | Ad | Değer | Emek | Kaynak | Bağımlılık / karar |
 |---|---|---|---|---|---|
