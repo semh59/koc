@@ -400,7 +400,7 @@ function cleanSettings(raw,fast){
   if(o.sex==="m"||o.sex==="f")d.sex=o.sex;
   if(o.act===0||o.act===1||o.act===2)d.act=o.act;
   if(typeof o.healthNote==="string")d.healthNote=o.healthNote.slice(0,500);
-  if(o.consent===true&&o.consentV===CONSENT_V){d.consent=true;d.consentV=CONSENT_V;if(dayOk(o.consentAt))d.consentAt=o.consentAt}
+  if(o.consent===true&&o.consentV===CONSENT_V&&!(d.age>0&&d.age<18)){d.consent=true;d.consentV=CONSENT_V;if(dayOk(o.consentAt))d.consentAt=o.consentAt}
   if(dayOk(o.lastPlan))d.lastPlan=o.lastPlan;
   if(dayOk(o.lastWeekly))d.lastWeekly=o.lastWeekly;
   if(dayOk(o.lastPlateau))d.lastPlateau=o.lastPlateau;
@@ -999,7 +999,7 @@ async function goYukle(){
   lsDel("koc_v1_onceki");otherBytes=lsOther();
   S=Object.assign({settings:cleanSettings(r.settings,r.fast),entries:out,nextId:out.length+1,myFoods:cleanMyFoods(r.myFoods),labs:LabLib.cleanLabs(r.labs),vitals:VitalsLib.clean(r.vitals)},cleanHealthState(r),cleanGym(r),cleanCoach(r));
   /* Yedek, anahtarın gideceği adresi, onay ayarını ve veri paylaşım iznini değiştirememeli. Otomatik yedek klasörü bu telefona ait. */
-  Object.assign(S.settings,{consent:prevS.settings.consent,consentV:prevS.settings.consentV,consentAt:prevS.settings.consentAt,lastBackup:dayKey(),autoBk:prevS.settings.autoBk,lastAutoBk:prevS.settings.lastAutoBk});
+  Object.assign(S.settings,{consent:prevS.settings.consent,consentV:prevS.settings.consentV,consentAt:prevS.settings.consentAt,lastBackup:dayKey(),autoBk:prevS.settings.autoBk,lastAutoBk:prevS.settings.lastAutoBk});cAgeGuard();
   const keys=getKeys();
   for(const p of S.providers){
     const cur=prevS.providers.find(x=>x.id===p.id),def=defProviders().find(x=>x.id===p.id);
@@ -1270,7 +1270,7 @@ document.addEventListener("change",ev=>{
     if(raw===""&&ZEROOK.includes(k)){st[k]=0;save();t.value="";toast(`${SETLBL[k]} kapatıldı`);return}
     const v=num(raw,int);
     if(isNaN(v)||v<lo||v>hi){t.value=show(st[k]);toast(`${SETLBL[k]} ${String(lo).replace(".",",")} ile ${String(hi).replace(".",",")} arasında olmalı`);return}
-    st[k]=v;save();t.value=show(v);return;
+    st[k]=v;if(k==="age")cAgeGuard();save();t.value=show(v);return;
   }
   if(t.dataset.rt||t.dataset.ro){
     const r=S.settings.reminders.find(x=>x.id===+(t.dataset.rt||t.dataset.ro));

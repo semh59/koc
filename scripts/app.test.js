@@ -2373,6 +2373,25 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("geri yükleme: sığınca güvenlik kopyası yazılır; depolama ölçüsü kopya ve bozuk kopyayı saymaz",ls.getItem("koc_v1_onceki")!==null&&(ls.setItem("koc_v1_bozuk","y".repeat(1e5)),ev("lsOther()"))<1e4);
     ls.removeItem("koc_v1_bozuk");w.confirm=()=>true;reset();
   }
+  { // Dalga 11 (5): Koç besin kartı yeniden yüklemede kalır
+    reset();ev("S.chat=[];cReply({reply:'x',log:[],food:{name:'Lahmacun',kcal:300,protein:12.5}})");
+    const c1=ev("JSON.stringify(S.chat.find(m=>m.card&&m.card.kind==='food').card)"),c2=ev("JSON.stringify(cleanCoach(JSON.parse(JSON.stringify(S))).chat.find(m=>m.card&&m.card.kind==='food').card)");
+    ok("Koç besin kartı temizleyiciden geçince kaybolmaz, değerler aynı",c1===c2&&c2.includes("Lahmacun"),[c1,c2]);
+    reset();
+  }
+  { // Dalga 11 (6): 18 yaş altı tek kapı
+    reset();await ev("setKey('nvidia','K1')");ev("S.settings.age=30;cConsent(true)");
+    let n=0;w.fetch=async()=>{n++;return {ok:true,json:async()=>({choices:[{message:{content:'{"reply":"x","log":[]}'}}]})}};
+    w.document.body.insertAdjacentHTML("beforeend",'<input id="ageIn" data-set="age">');
+    const inp=w.document.querySelector("#ageIn");inp.value="16";inp.dispatchEvent(new w.Event("change",{bubbles:true}));
+    ok("onay verildikten sonra yaş 16 yapılınca onay düşer",ev("S.settings.consent")===false&&ev("S.settings.consentV")===0);
+    ev("S.settings.consent=true;S.settings.consentV=CONSENT_V"); // eski/dışarıdan gelen durum
+    ev("cSend('merhaba')");await ev("cFlush()");ev("progOpt={d:3,q:'Salon',m:45,l:'Başlangıç'}");await ev("cProgram(progOpt)");await ev("cMenu()");ev("lastAuto=0");await ev("cAuto()");
+    let t="none";try{await ev("cAsk([{role:'user',content:'x'}],10)")}catch(e){t=e.message}
+    ok("18 yaş altı: sohbet, program, menü, otomatik ve doğrudan cAsk istek göndermez",n===0&&t==="consent",[n,t]);
+    ok("yedek/açılış temizleyicisi: yaş<18 ise onay geçersiz, 18+ ise korunur",ev("cleanSettings({consent:true,consentV:CONSENT_V,age:16}).consent")===false&&ev("cleanSettings({consent:true,consentV:CONSENT_V,age:30}).consent")===true);
+    reset();ev("S.chat=[];S.settings.age=0");
+  }
   console.log("son satıra ulaşıldı, "+total+" test");
   process.exit(bad||total<MIN_TESTS?1:0);
 },100);
