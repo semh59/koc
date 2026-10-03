@@ -193,7 +193,7 @@ function cReply(o,kind){
   if(o.flag==="safety")cPush({role:"coach",text:"",card:{kind:"safety",level:"check"}});
   if(o.propose){
     const c=cCalc(),cl=CoachLib.clampKcal(o.propose.kcal,{tdee:c.tdee,bmr:c.bmr});
-    if(cl&&c.block&&c.tdee&&cl.kcal<c.tdee-50)return;
+    if(cl&&c.block&&!(c.tdee&&cl.kcal>=c.tdee-50))return;
     if(cl&&cl.kcal!==S.settings.kcal)cPush({role:"coach",text:"",card:{kind:"propose",kcal:cl.kcal,why:String(o.propose.why||"").slice(0,160),limited:cl.limited,state:"pending"}});
   }
 }
