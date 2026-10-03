@@ -31,4 +31,15 @@ ok("eski lossBlock: health:true engeller, boş profil engellemez",A.lossBlock({a
 ok("eski lossBlock: yaş 16 ve düşük hedef BMI",A.lossBlock({age:16,cm:170,kg:80,goalKg:70})!==""&&A.lossBlock({age:30,cm:175,kg:80,goalKg:50})!=="");
 ok("lossBlock yeni alanları kullanır (ilaç, ölçüm, ed)",A.lossBlock({...base,meds:1})!==""&&A.lossBlock({...base,bpCount90d:1})!==""&&A.lossBlock({...base,edFlag:true})!=="");
 ok("böbrek/karaciğer/diyaliz anahtarı kidney",R({healthNote:"böbrek yetmezliği"}).kidney&&R({healthNote:"diyalize giriyorum"}).kidney&&R({healthNote:"Karaciğer yağlanması"}).kidney);
+// protein: ayarlı ağırlık, üst sınırlar, hekim yönlendirmesi
+const P=o=>A.protein({...base,...o});
+ok("protein 140 kg/180 cm: ayarlı ağırlıkla 153-200 g (eski 224-308)",JSON.stringify(P({kg:140,cm:180}).range)==="[153,200]",P({kg:140,cm:180}));
+ok("protein 90 kg/175 cm (BMI<30): değişmez 144-198",JSON.stringify(P({kg:90,cm:175}).range)==="[144,198]",P({kg:90,cm:175}));
+ok("protein 55 kg/165 cm: değişmez 88-121",JSON.stringify(P({kg:55,cm:165,goalKg:0}).range)==="[88,121]",P({kg:55,cm:165,goalKg:0}));
+ok("boy yok 140 kg: 2,0 g/kg ve 200 g tavanı, alt ≤ üst (160-200)",JSON.stringify(P({kg:140,cm:0,goalKg:0}).range)==="[160,200]",P({kg:140,cm:0,goalKg:0}));
+ok("boy yok 70 kg: üst 2,0 g/kg (112-140)",JSON.stringify(P({kg:70,cm:0,goalKg:0}).range)==="[112,140]",P({kg:70,cm:0,goalKg:0}));
+ok("böbrek notu: aralık yok, hekimle belirle",(p=>!p.range&&p.doc)(P({healthNote:"böbrek hastalığım var"})));
+ok("yaş 70 + ilaç: aralık yok; yaş 70 temiz: aralık var",(p=>!p.range&&p.doc)(P({age:70,meds:1,clearedAt:T}))&&!!P({age:70}).range);
+ok("sert engel (18 yaş altı): protein yükseltme yok",(p=>!p.range&&p.doc)(P({age:16})));
+ok("kilo yoksa aralık da yönlendirme de yok",(p=>!p.range&&!p.doc)(P({kg:0})));
 process.exit(bad?1:0);

@@ -196,7 +196,17 @@ const Algo=(()=>{
   }
   /* Hedefe eklenecek kısım: yakılanın yarısı (tahmin hatalı, TDEE'de zaten ortalama hareket var), en çok 800, asla negatif: hedefi yalnız artırır. */
   const moveBonus=(kcal,pct=0.5)=>kcal>0?Math.min(800,Math.round(kcal*pct)):0;
-  const proteinRange=kg=>[Math.round(1.6*kg),Math.round(2.2*kg)];
+  /* Protein 1,6-2,2 g/kg: BMI≥30'da ayarlı ağırlık (BMI 25 ağırlığı + fazlanın %25'i), boy yoksa üst 2,0 g/kg, her durumda üst 200 g.
+     Böbrek/karaciğer anahtarı, sert engel ya da 65+ yaşta ilaç/yumuşak engel varsa aralık yok: hekimle belirlenir. o: riskFlags girdisi. */
+  const PROTEIN_NOTE="Böbrek ya da karaciğer sorunun varsa hekimine danış.";
+  function protein(o){
+    if(!(o.kg>0))return {range:null,doc:false};
+    const r=riskFlags(o),{kg,cm}=o;
+    if(r.kidney||r.hard.length||o.age>=65&&(r.meds||r.soft.length))return {range:null,doc:true};
+    const w25=cm>0?25*Math.pow(cm/100,2):0,b=w25&&kg>=w25*1.2?w25+0.25*(kg-w25):kg;
+    const hi=Math.min(Math.round(2.2*b),cm>0?200:Math.min(Math.round(2*kg),200));
+    return {range:[Math.min(Math.round(1.6*b),Math.round(0.8*hi)),hi],doc:false};
+  }
 
   /* Salon */
   function est1RM(kg,reps){
@@ -250,6 +260,6 @@ const Algo=(()=>{
     }
     return r;
   }
-  return {KCAL_PER_KG,dayNum,fdate,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,riskFlags,lossBlock,etaWeeks,isLosing,lossKnown,goalEta,proteinRange,exerciseKcal,moveBonus,moveSummary,cleanWalk,netKcal,gymKcal,MEASURES,cleanMeasures,whtr,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
+  return {KCAL_PER_KG,dayNum,fdate,trend,slopePerWeek,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,riskFlags,lossBlock,etaWeeks,isLosing,lossKnown,goalEta,protein,PROTEIN_NOTE,exerciseKcal,moveBonus,moveSummary,cleanWalk,netKcal,gymKcal,MEASURES,cleanMeasures,whtr,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
 })();
 if(typeof module!=="undefined")module.exports=Algo;
