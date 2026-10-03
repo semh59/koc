@@ -654,8 +654,8 @@ function gClick(v,el){
     case "hist":return gSheetHist(p1);
     case "mm":{
       const i=$("#mminfo");if(!i)return;
-      document.querySelectorAll(".mmr.on").forEach(e=>e.classList.remove("on"));
-      if(el&&el.classList&&el.classList.contains("mmr"))el.classList.add("on");
+      document.querySelectorAll(".mmwrap .on").forEach(e=>e.classList.remove("on"));
+      document.querySelectorAll(".mmwrap [data-g]").forEach(e=>{if(e.dataset.g==="mm:"+p1)e.classList.add("on")});
       i.textContent=MuscleMap.tx(p1,gWeekRegions()[p1]||0);return;
     }
     default:return typeof exClick==="function"&&exClick(a,p1,p2,el,w);

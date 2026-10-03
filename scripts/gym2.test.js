@@ -119,6 +119,14 @@ setTimeout(async()=>{
     ok("şemada olmayan bölge (Tüm vücut) düğme olarak ve bölgeler listesinde",q('[data-g="mm:Tüm vücut"]').textContent.includes("1")&&q("#view").textContent.includes("Sırt"));
     ev("S.workouts=[];S.customEx=[];S.templates=[];tab='bugun';render();closeSheet()");
   }
+  { // Dokunma hedefi ve klavye
+    ev("S=structuredClone(DEF);S.settings.obDone=true;tab='salon';render()");
+    const pills=[...q(".mmp").querySelectorAll("button.chip")];
+    ok("şema bölgeleri için 44 px'lik düğme sırası: 15 bölge, .chip en az 44 px",pills.length>=15&&/\.chip\{[^}]*min-height:44px/.test(html),pills.length);
+    pills.find(b=>b.dataset.g==="mm:Biseps").click();
+    ok("düğmeyle seçim bilgi satırını günceller ve seçili işaretlenir",q("#mminfo").textContent.startsWith("Biseps")&&q('.mmp [data-g="mm:Biseps"]').classList.contains("on")&&q('svg [data-g="mm:Biseps"]').classList.contains("on"));
+    ok("klavye açıkken alt çubuk gizlenir, yazma kutusu ve sheet --kb kadar yükselir",/body\.kb nav,body\.kb \.chiprow\{display:none\}/.test(html)&&/body\.kb #composer\{bottom:var\(--kb/.test(html)&&/body\.kb #sheet\{bottom:var\(--kb/.test(html)&&html.includes("visualViewport"));
+  }
   ok("sayfa hatasız çalıştı",errs.length===0,errs);
   console.log(bad?bad+" test başarısız":"TAMAM");process.exit(bad?1:0);
 },100);
