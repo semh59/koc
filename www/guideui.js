@@ -78,12 +78,12 @@ function gdRender(){
     <div class="gdtm">${p.reps?`<b class="num">${p.reps}</b><span class="mut sm">tekrar</span>`:`<b class="num" id="gdt" role="timer"></b><span class="mut sm">${paused?"duraklatıldı":rest?"dinlenme":"saniye"}</span>`}</div></div>`;
   el.innerHTML=`<div class="gdtop"><button class="gdx" data-gd="end" aria-label="Akışı bitir">✕</button><b>${esc(gd.meta.n)}</b><span class="num mut sm">${k}/${GuideLib.works(st)}</span></div>
   <div class="gdbar" aria-hidden="true"><i id="gdbar"></i></div>
-  <div class="gdfig">${fig}</div>
-  <div class="gdl">${lbl}</div><h2 class="gdn">${e?esc(e.n):""}</h2>${cue?`<p class="gdc">${esc(cue)}</p>`:""}
-  ${ring}${p.reps?`<p class="gdc">Bitince Bitti'ye dokun · kılavuz ~${p.sec} sn</p>`:""}
+  <div class="gdbody"><div class="gdA"><div class="gdfig">${fig}</div>
+  <div class="gdl">${lbl}</div><h2 class="gdn">${e?esc(e.n):""}</h2>${cue?`<p class="gdc">${esc(cue)}</p>`:""}</div>
+  <div class="gdB">${ring}${p.reps?`<p class="gdc">Bitince Bitti'ye dokun · kılavuz ~${p.sec} sn</p>`:""}
   ${nx?`<div class="gdnx"><span class="mut sm">Sonra</span><b>${esc(gdName(nx.ex))}</b><span class="num mut sm">${nx.reps?nx.reps+" tekrar":nx.sec+" sn"}</span></div>`:`<div class="gdnx"><span class="mut sm">Son hareket</span></div>`}
   <div class="gdctl"><button class="btn ghost" data-gd="back">Geri</button><button class="btn${paused?"":" ghost"}" data-gd="${paused?"resume":"pause"}">${paused?"Devam":"Duraklat"}</button><button class="btn${p.reps&&!paused?"":" ghost"}" data-gd="${p.k==="w"&&p.reps?"done":"skip"}">${p.k==="w"&&p.reps?"Bitti":"Geç"}</button></div>
-  <p class="gdrem num mut sm" id="gdrem"></p><p class="hint">Genel bilgidir, tıbbi tavsiye değildir. ${gPainNote}</p>`;
+  <p class="gdrem num mut sm" id="gdrem"></p><p class="hint">Genel bilgidir, tıbbi tavsiye değildir. ${gPainNote}</p></div></div>`;
   gdUpd();
 }
 function gdFinish(natural){
@@ -98,8 +98,8 @@ function gdSumHtml(){
   <h2 class="gdn" style="text-align:left;margin:8px 0">${GuideLib.over(gd.st)?"Akış bitti":"Akış durduruldu"}</h2>
   <div class="two"><div class="stat"><div class="k">Süre</div><div class="v num">${gClock(gd.t1-gd.st.t0)}</div></div><div class="stat"><div class="k">Tamamlanan</div><div class="v num">${n}/${GuideLib.works(gd.st)}</div></div></div>
   <div class="plist">${rows||`<p class="hint">Tamamlanan hareket yok.</p>`}</div>
-  ${n?`<p class="hint">${gd.meta.warm?"Isınma seti olarak kaydedilir: hacme, haftalık set sayısına ve spor dakikasına girmez.":"Salon geçmişine süresiyle ve spor dakikasına eklenir. Ağırlıklı harekette kullandığın ağırlığı yaz (önceki seanstaki dolu gelir)."}</p>
-  <button class="btn" data-gd="save">Antrenman olarak kaydet</button>`:""}<button class="btn ghost" data-gd="close" style="margin-top:8px">${n?"Kaydetmeden kapat":"Kapat"}</button>`;
+  ${n?`<p class="hint">${gd.meta.warm?"Isınma seti olarak kaydedilir: hacme, haftalık set sayısına ve spor dakikasına girmez.":"Salon geçmişine süresiyle ve spor dakikasına eklenir. Ağırlıklı harekette kullandığın ağırlığı yaz (önceki seanstaki dolu gelir)."}</p>`:""}
+  <div class="gdfoot">${n?`<button class="btn" data-gd="save">Antrenman olarak kaydet</button>`:""}<button class="btn ghost" data-gd="close">${n?"Kaydetmeden kapat":"Kapat"}</button></div>`;
 }
 /* Ağırlık öneriden değil önceki seansın gerçek setinden: öneri bir hedeftir, kaydedilirse yapılmamış artış ve sahte rekor üretir. */
 const gdLastKg=id=>{const h=gHistory(id)[0];return h?Math.max(...gWork(h.sets).map(s=>s.kg||0)):""};
