@@ -15,5 +15,7 @@ const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify
   ok("otomatik yedek: elle yedekler ve eski 'neowell-yedek-' adlı dosyalar (aynı gün dahil) hiç budanmaz",JSON.stringify(B.autoPrune(["neowell-yedek-2026-08-01.json","neowell-yedek-2026-10-02.json","neowell-oto-2026-09-11.json","neowell-oto-2026-09-18.json","neowell-oto-2026-09-25.json","neowell-oto-2026-10-02.json","neowell-yedek-2026-09-04.json"],"neowell-oto-2026-10-02.json"))===JSON.stringify([]));
   ok("otomatik yedek: saat geri alınınca az önce yazılan (en eski adlı) dosya silinmez, en yeni 3 diğeriyle 4 kalır",JSON.stringify(B.autoPrune(["neowell-oto-2026-09-11.json","neowell-oto-2026-09-18.json","neowell-oto-2026-09-25.json","neowell-oto-2026-10-02.json","neowell-oto-2026-09-01.json"],"neowell-oto-2026-09-01.json"))===JSON.stringify(["neowell-oto-2026-09-11.json"]));
   ok("otomatik yedek: 7 gün dolunca ya da hiç yokken zamanı gelir",B.autoDue("","2026-10-02")&&B.autoDue("2026-09-25","2026-10-02")&&!B.autoDue("2026-09-26","2026-10-02")&&!B.autoDue("2026-10-02","2026-10-02")&&B.autoDue("2026-10-05","2026-10-02"));
+  ok("parola kuralı: boş, kısa, yalnız rakam, tekrar ve kolay parola reddedilir",["","abc","1234567","12345678","aaaaaaaa","PASSWORD"].every(p=>B.pwCheck(p)!==""));
+  ok("parola kuralı: 8+ karakterli karışık parola kabul edilir",B.pwCheck("parola123")===""&&B.pwCheck("mavi bulut 7")==="");
   process.exit(bad?1:0);
 })();

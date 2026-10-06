@@ -27,6 +27,10 @@ const BackupLib=(()=>{
   const autoName=day=>`neowell-oto-${day}.json`;
   const autoPrune=(names,cur)=>names.filter(n=>NAME.test(n)&&n!==cur).sort().slice(0,-(KEEP-1));
   const autoDue=(last,today)=>{const d=(Date.parse(today)-Date.parse(last))/864e5;return !(d>=0&&d<7)}; // saat geri alınıp son tarih ileride kalırsa da yedeklenir
-  return {encrypt,decrypt,autoName,autoPrune,autoDue};
+  /* Yedek parolası kuralı (tüm yedek yolları): en az 8 karakter; yalnız rakam, tek karakter tekrarı ve bilinen kolay parolalar reddedilir. Hata yoksa "" döner. */
+  const MINPW=8,EASY=["password","parola12","qwertyui","abcdefgh","sifre123","12345678","123456789"];
+  const pwCheck=pw=>pw.length<MINPW?`Parola en az ${MINPW} karakter olmalı`
+    :/^\d+$/.test(pw)||/^(.)+$/.test(pw)||EASY.includes(pw.toLowerCase())?"Bu parola çok kolay tahmin edilir. Harf ve rakam karıştır ya da birkaç kelime yaz":"";
+  return {encrypt,decrypt,pwCheck,MINPW,autoName,autoPrune,autoDue};
 })();
 if(typeof module!=="undefined")module.exports=BackupLib;

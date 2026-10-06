@@ -22,7 +22,7 @@ Hepsini kullanıcı kendisi girer ya da telefon sensörlerinden, kullanıcının
 | Kullanıcı içeriği | kendi tarifleri, besinleri, favorileri, öğün ve antrenman şablonları |
 | Notlar ve Koç sohbeti | kullanıcının yazdığı notlar, Koç ile mesajlar |
 | Cihaz | bildirim izni durumu; yalnız elle başlattığın yürüyüşte, uygulama açıkken başlayan kısa konum ölçümü (iyi sinyalde yaklaşık 1 dakika, en çok 10 dakika; sürerken bildirim görünür; yalnız öğrenilen adım uzunluğu saklanır, konum noktası ve rota saklanmaz; arka planda konum istenmez); kamera (etiket ve tahlil fotoğrafı telefonda okunur, fotoğraf saklanmaz ve gönderilmez) |
-| Koç anahtarı | kullanıcının kendi API anahtarı; yalnız telefonda, Android Keystore ile şifreli saklanır, yedeğe yalnız yedek parolayla şifrelenirse girer |
+| Koç anahtarı | kullanıcının kendi API anahtarı; yalnız telefonda, Android Keystore ile şifreli saklanır, yedeğe yalnız yedek parolayla şifrelenmiş olarak girer |
 
 ## 3. İşleme amaçları
 Kişisel sağlık günlüğü, hedef ve kalori hesabı, hatırlatma bildirimleri, grafik ve raporlar (PDF/CSV), kullanıcı isterse yapay zekâ destekli Koç sohbeti. Veri reklam, profilleme ya da satış için kullanılmaz.
@@ -60,7 +60,7 @@ Pratikte: veriler cihazınızdadır; **tablo (CSV) dışa aktarma ile kopyasın�
 NeoWell 18 yaş altına yönelik değildir. Profilde 18 yaş altı bir yaş girilirse Koç veri paylaşımı (yurt dışı aktarım) uygulamada kapalı tutulur. [DOLDURULACAK: 18 yaş altı kullanıcı politikası, Play Aile politikası beyanı]
 
 ## 9. Güvenlik
-Veriler yalnız uygulamanın özel depolamasındadır; API anahtarları Android Keystore ile şifrelenir; Google Drive'a gönderilen ve otomatik yedek her zaman parolayla şifrelenir (parola zorunlu, en az 6 karakter); paylaş/kopyala yedeğinde parola isteğe bağlıdır ve boş bırakılırsa dosya düz metindir. Cihazınızı ekran kilidiyle korumanız önerilir.
+Veriler yalnız uygulamanın özel depolamasındadır; API anahtarları Android Keystore ile şifrelenir; tüm yedekler (Drive'a gönderilen, paylaş/kopyala/indir ve otomatik yedek) her zaman parolayla şifrelenir; parola zorunludur, en az 8 karakterdir ve çok kolay parolalar kabul edilmez. Parola unutulursa yedek açılamaz, kurtarma yolu yoktur. Eski sürümlerden kalmış şifresiz yedekler yalnız geri yüklenebilir. Cihazınızı ekran kilidiyle korumanız önerilir.
 
 ## 10. Tıbbi uyarı
 NeoWell tıbbi cihaz değildir, tanı koymaz ve tedavi önermez; hekim yerine geçmez. Sağlık kararları için hekiminize danışın. Koç yanıtları genel bilgidir.

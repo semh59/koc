@@ -16,10 +16,10 @@ async function sheetDrive(){
   openSheet(`<h3>Yedeği Drive'a gönder</h3>
   <p class="mut sm" style="margin:0 0 10px">Verilerin parolayla şifrelenir. Paylaşım ekranında Google Drive'ı (ya da istediğin yeri) seç. Hesap bağlamak gerekmez.${lb?` Son yedek: ${fd(lb)}.`:""}</p>
   ${rem?`<p>Parola bu telefonda saklı.</p><button class="btn" data-bk="send">Şimdi gönder</button><button class="btn ghost" data-bk="forget" style="margin-top:8px">Parolayı unut</button>`
-  :`<input class="in" id="bkp1" type="password" placeholder="Parola (en az 6 karakter)" autocomplete="new-password"><input class="in" id="bkp2" type="password" placeholder="Parolayı tekrar yaz" autocomplete="new-password">
+  :`<input class="in" id="bkp1" type="password" placeholder="Parola (en az 8 karakter)" autocomplete="new-password"><input class="in" id="bkp2" type="password" placeholder="Parolayı tekrar yaz" autocomplete="new-password">
   ${native?`<label style="min-height:44px;display:flex;gap:8px;align-items:center;margin-bottom:10px"><input type="checkbox" id="bkrem" checked style="width:22px;height:22px">Parolayı bu telefonda sakla (Keystore ile şifreli)</label>`:""}
   <div class="hint" id="bkw" role="alert"></div><button class="btn" data-bk="send">Şifrele ve gönder</button>`}
-  <p class="hint">Parolayı unutursan yedek açılmaz. Geri yüklemek için: Ayarlar > Veri ve yedek > Yedekle veya geri yükle > Dosyadan oku (dosyayı Drive'dan seçebilirsin).</p>
+  <p class="hint">Parolayı unutursan yedeğini kimse açamaz, kurtarma yolu yoktur. Parolayı güvenli bir yere yaz. Geri yüklemek için: Ayarlar > Veri ve yedek > Yedekle veya geri yükle > Dosyadan oku (dosyayı Drive'dan seçebilirsin).</p>
   <button class="btn ghost" data-bk="close" style="margin-top:8px">Vazgeç</button>`);
 }
 async function bkSend(){
@@ -27,7 +27,7 @@ async function bkSend(){
   let pw=await bkRemembered(),fresh=false;
   if(pw==null){
     pw=document.getElementById("bkp1").value;
-    if(pw.length<6)return warn("Parola en az 6 karakter olmalı");
+    const bad=BackupLib.pwCheck(pw);if(bad)return warn(bad);
     if(pw!==document.getElementById("bkp2").value)return warn("Parolalar aynı değil");
     fresh=true;
   }
@@ -72,8 +72,8 @@ async function abSetup(){
   const rem=await bkRemembered();
   openSheet(`<h3>Otomatik yedek</h3>
   <p class="mut sm" style="margin:0 0 10px">Uygulamayı açtığında son yedek 7 günden eskiyse seçeceğin klasöre şifreli yedek (neowell-oto-…) yazılır, en son 4 otomatik yedek kalır; elle aldığın yedeklere dokunulmaz. Uygulamayı en az haftada bir aç.</p>
-  ${rem?`<p>Yedek parolası bu telefonda saklı, o kullanılır.</p>`:`<input class="in" id="abp1" type="password" placeholder="Yedek parolası (en az 6 karakter)" autocomplete="new-password"><input class="in" id="abp2" type="password" placeholder="Parolayı tekrar yaz" autocomplete="new-password">`}
-  <p class="hint">Telefon değişirse dosyaları yeni telefona taşı ve Yedekle veya geri yükle > Dosyadan oku ile bu parolayla aç. Parolayı unutursan yedek açılmaz.</p>
+  ${rem?`<p>Yedek parolası bu telefonda saklı, o kullanılır.</p>`:`<input class="in" id="abp1" type="password" placeholder="Yedek parolası (en az 8 karakter)" autocomplete="new-password"><input class="in" id="abp2" type="password" placeholder="Parolayı tekrar yaz" autocomplete="new-password">`}
+  <p class="hint">Telefon değişirse dosyaları yeni telefona taşı ve Yedekle veya geri yükle > Dosyadan oku ile bu parolayla aç. Parolayı unutursan yedeğini kimse açamaz, kurtarma yolu yoktur. Parolayı güvenli bir yere yaz.</p>
   <div class="hint" id="abw" role="alert"></div><button class="btn" data-ab="pick">Klasör seç ve aç</button><button class="btn ghost" data-bk="close" style="margin-top:8px">Vazgeç</button>`);
 }
 async function abPick(){
@@ -81,7 +81,7 @@ async function abPick(){
   let pw=null;
   if(p1){
     pw=p1.value;
-    if(pw.length<6)return warn("Parola en az 6 karakter olmalı");
+    const bad=BackupLib.pwCheck(pw);if(bad)return warn(bad);
     if(pw!==document.getElementById("abp2").value)return warn("Parolalar aynı değil");
   }
   let r;

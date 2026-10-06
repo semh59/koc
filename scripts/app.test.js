@@ -284,7 +284,13 @@ setTimeout(async()=>{
   ok("kaldırılan eski hazır model yenisine geçer, kullanıcının seçtiği model ve özel sağlayıcı korunur",ev("JSON.stringify(cleanCoach({providers:[{id:'openrouter',name:'OpenRouter',base:'https://openrouter.ai/api/v1',model:'meta-llama/llama-3.3-70b-instruct:free',on:true,health:true},{id:'nvidia',name:'NVIDIA',base:'https://integrate.api.nvidia.com/v1',model:'benim/modelim',on:true,health:true},{id:'u7',name:'X',base:'https://x.example/v1',model:'gemini-2.0-flash',on:true,health:true}]}).providers.slice(0,3).map(p=>p.model))")==='["google/gemma-4-31b-it:free","benim/modelim","gemini-2.0-flash"]');
   ev("setKey('groq','KEY-sirri-12345');S.settings.healthNote='gizli not'");
   ev("document.querySelector('#bkpw')||document.body.insertAdjacentHTML('beforeend','<input id=\"bkpw\">')");
-  w.document.querySelector("#bkpw").value="parola123";
+  ev("document.querySelector('#bkpw2')||document.body.insertAdjacentHTML('beforeend','<input id=\"bkpw2\"><div id=\"bkw\"></div>')");
+  const pw1=w.document.querySelector("#bkpw"),pw2=w.document.querySelector("#bkpw2");
+  for(const [a,b,msg,n] of [["","","en az 8","parolasız"],["abc","abc","en az 8","kısa"],["12345678","12345678","kolay","yalnız rakam"],["Password","Password","kolay","bilinen kolay"],["parola123","parola124","aynı değil","uyuşmayan"]]){
+    pw1.value=a;pw2.value=b;
+    ok(`parolasız/zayıf yedek reddedilir: ${n}`,await ev("backupText()")===null&&w.document.querySelector("#bkw").textContent.includes(msg),w.document.querySelector("#bkw").textContent);
+  }
+  w.document.querySelector("#bkw").remove();pw1.value="parola123";pw2.value="parola123";
   w.backupP=ev("backupText()");
   const enc=await w.backupP;{
     ok("şifreli yedek düz metin içermez",!enc.includes("gizli not")&&!enc.includes("KEY-sirri-12345")&&JSON.parse(enc).enc==="aes-gcm-pbkdf2");
@@ -742,7 +748,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     click('[data-act="drive"]');await new Promise(r=>setTimeout(r,30));
     ok("yedek ekranı: parola alanları, hesap bağlama gerekmediği belirtilir",!!q("#bkp1")&&!!q("#bkp2")&&q("#sheet").textContent.includes("Hesap bağlamak gerekmez")&&!q("#bkrem"));
     q("#bkp1").value="abc";q("#bkp2").value="abc";click('[data-bk="send"]');await new Promise(r=>setTimeout(r,30));
-    ok("kısa parola reddedilir",saved===null&&q("#bkw").textContent.includes("en az 6"));
+    ok("kısa parola reddedilir",saved===null&&q("#bkw").textContent.includes("en az 8"));
     q("#bkp1").value="parola123";q("#bkp2").value="parola124";click('[data-bk="send"]');await new Promise(r=>setTimeout(r,30));
     ok("parolalar uyuşmazsa gönderilmez",saved===null&&q("#bkw").textContent.includes("aynı değil"));
     q("#bkp2").value="parola123";click('[data-bk="send"]');await new Promise(r=>setTimeout(r,800));
@@ -788,7 +794,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     click('[data-ab="toggle"]');await new Promise(r=>setTimeout(r,30));
     ok("otomatik yedek: açınca parola istenir, kutu henüz işaretlenmez",!!q("#abp1")&&!!q("#abp2")&&ev("S.settings.autoBk")===false&&q("#sheet").textContent.includes("parolayla aç"));
     q("#abp1").value="abc";q("#abp2").value="abc";click('[data-ab="pick"]');await new Promise(r=>setTimeout(r,30));
-    ok("otomatik yedek: kısa parola reddedilir, klasör sorulmaz",q("#abw").textContent.includes("en az 6")&&!bfLog.includes("pick"));
+    ok("otomatik yedek: kısa parola reddedilir, klasör sorulmaz",q("#abw").textContent.includes("en az 8")&&!bfLog.includes("pick"));
     const old=["2026-08-01","2026-08-08","2026-08-15","2026-08-22","2026-08-29"].map(d=>`neowell-oto-${d}.json`);old.forEach(n=>{files[n]="{}"});files["baska.txt"]="x";
     const manual=["2026-07-01","2026-08-02","2026-08-09",ev("dayKey()")].map(d=>`neowell-yedek-${d}.json`);manual.forEach(n=>{files[n]="elle "+n});
     ev("S.settings.lastBackup='';S.settings.healthNote='oto yedek notu'");
@@ -806,7 +812,8 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("otomatik yedek: hata sonrası aynı oturumda tekrar denenmez",!bfLog.includes("write"));
     { // geri yükleme bu telefonun otomatik yedek ayarını değiştirmez
       const r=ev("JSON.parse(JSON.stringify(S))");r.settings.autoBk=false;r.settings.lastAutoBk="2025-01-01";
-      ev("sheetYedek()");q("#bk").value=JSON.stringify(r);q("#bkpw").value="";await ev("goYukle()");
+      ev("sheetYedek()");q("#bk").value=JSON.stringify(r);q("#bkpw").value="";ev("S.settings.healthNote='x'");let cmsg="";w.confirm=m=>{cmsg=m;return true};await ev("goYukle()");w.confirm=()=>true;
+      ok("eski parolasız yedek hâlâ yüklenir ve parolasız olduğu söylenir",ev("S.settings.healthNote")==="oto yedek notu"&&cmsg.includes("parolasız"),cmsg);
       ok("otomatik yedek: geri yükleme yerel ayarı korur",ev("S.settings.autoBk")===true&&ev("S.settings.lastAutoBk")==="2026-01-01");
     }
     click('[data-ab="off"]');await new Promise(r=>setTimeout(r,30));
@@ -1603,7 +1610,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("kota hatası: diğer sekmelerde de kalıcı uyarı",$q("#view").textContent.includes("Son değişiklik kaydedilemedi"));
     ev("tab='bugun';render()");
     $q('.todo [data-act="veriyedek"]').click();
-    ok("kota hatası: Yedek al Veri ve yedek'e gider, yedek ekranı bellekteki (kaydedilemeyen) hali içerir",ev("tab")==="ayar-veri"&&JSON.parse($q("#bk").value).entries.filter(e=>e.type==="su").length===2);
+    ok("kota hatası: Yedek al Veri ve yedek'e gider, yedek ekranı bellekteki (kaydedilemeyen) hali içerir",ev("tab")==="ayar-veri"&&(()=>{$q("#bkpw").value="parola123";$q("#bkpw2").value="parola123";return true})()&&(await (await ev("BackupLib.decrypt"))(JSON.parse(await ev("backupText()")),"parola123")).S.entries.filter(e=>e.type==="su").length===2);
     ev("closeSheet()");SP.setItem=set0;
     ev("save();render()");
     ok("kota açılınca kayıt yazılır, uyarı kalkar",!v().includes("kaydedilemedi")&&JSON.parse(w.localStorage.getItem("koc_v1")).entries.length===2);
@@ -2003,7 +2010,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("S.settings.consent=true;S.settings.consentV=CONSENT_V-1;save()");
     ok("yeniden başlatınca eski sürümle verilmiş onay düşer",ev("load().settings.consent")===false);
     ev("cConsent(true);sheetYedek()");
-    ev("(()=>{const x=JSON.parse(document.querySelector('#bk').value);x.settings.consent=false;x.settings.consentV=0;x.settings.consentAt='';x.entries=[{id:1,day:'2026-09-01',time:'10:00',type:'su',v:250,text:''}];document.querySelector('#bk').value=JSON.stringify(x)})()");
+    ev("(()=>{const x=JSON.parse(JSON.stringify(S));x.settings.consent=false;x.settings.consentV=0;x.settings.consentAt='';x.entries=[{id:1,day:'2026-09-01',time:'10:00',type:'su',v:250,text:''}];document.querySelector('#bk').value=JSON.stringify(x)})()");
     await ev("goYukle()");
     ok("yedek geri yükleme onay sürümünü ve tarihini korur",ev("S.settings.consent&&S.settings.consentV===CONSENT_V&&S.settings.consentAt===dayKey()&&load().settings.consent"));
     ev("S.settings.age=16;cConsent(false);cConsent(true);tab='koc';render()");
