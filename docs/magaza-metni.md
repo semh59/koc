@@ -47,8 +47,8 @@ Bu bölümler kayıt ve görüntüleme içindir. Hedef aralıkları sen belirler
 
 KOÇ (İSTEĞE BAĞLI, YAPAY ZEKÂ)
 - Kendi API anahtarını girersen sohbet ve kayıt önerileri alırsın. İnternet ister.
-- Koç yalnız sen açık rıza verirsen çalışır. Rıza verirsen sohbetin, profilin ve son kayıtların seçtiğin sağlayıcıya (NVIDIA Build, Groq, OpenRouter, Google Gemini, OpenAI, Anthropic Claude ya da kendi eklediğin servis; OpenAI ve Anthropic ücretlidir) gider; sunucuları yurt dışındadır. Rızayı istediğin an geri alırsın; vermezsen uygulama tam çalışır.
-- 18 yaş altına veri gönderilmez.
+- Koç yalnız sen açık rıza verirsen çalışır. Rıza verirsen, yalnız sen bir düğmeye bastığında (mesaj, yorum, menü ya da program isteği) sohbetin, profilin ve son kayıtların seçtiğin sağlayıcıya (NVIDIA Build, Groq, OpenRouter, Google Gemini, OpenAI, Anthropic Claude ya da kendi eklediğin servis; OpenAI ve Anthropic ücretlidir) gider; kendiliğinden ya da arka planda hiçbir şey gönderilmez. Sunucuları yurt dışındadır. Rızayı istediğin an geri alırsın; vermezsen uygulama tam çalışır.
+- NeoWell 18 yaş ve üzeri içindir; kurulumda 18 yaş altı kabul edilmez.
 
 GİZLİLİK
 - Hesap, kendi sunucumuz, reklam ve analitik yok.
@@ -98,8 +98,8 @@ These sections are for logging and viewing. You set your own target ranges or en
 
 COACH (OPTIONAL, AI)
 - Add your own API key to get chat and logging suggestions. Needs internet.
-- The Coach works only with your explicit consent. If you consent, your chat, profile and recent entries are sent to the provider you picked (NVIDIA Build, Groq, OpenRouter, Google Gemini, OpenAI, Anthropic Claude or a service you add; OpenAI and Anthropic are paid); their servers are outside Turkey. You can withdraw consent at any time; without it the app works fully.
-- Nothing is sent for users under 18.
+- The Coach works only with your explicit consent. If you consent, only when you tap a button (send a message, ask for a comment, menu or program) your chat, profile and recent entries are sent to the provider you picked (NVIDIA Build, Groq, OpenRouter, Google Gemini, OpenAI, Anthropic Claude or a service you add; OpenAI and Anthropic are paid); nothing is sent automatically or in the background. Their servers are outside Turkey. You can withdraw consent at any time; without it the app works fully.
+- NeoWell is for adults (18+); setup does not accept ages under 18.
 
 PRIVACY
 - No account, no servers of our own, no ads, no analytics.

@@ -2,7 +2,7 @@
 
 Kaynak: kod (`www/coach.js`, `www/index.html` barkod, `scripts/patch-android.js`), `docs/gizlilik-politikasi.md` bölüm 2 ve 5, `docs/play-izin-beyanlari.md`. Son gözden geçirme: 3 Ekim 2026. Hukukçu/hekim onayı gerektiren noktalar en altta.
 
-Ağ çağrıları (kodda tek tek doğrulandı, başka yok): (1) Koç: `www/coach.js` `fetch` ile NVIDIA Build, Groq, OpenRouter, Google Gemini, OpenAI, Anthropic Claude ya da kullanıcının eklediği https servis; sağlık verisi yalnız açık rızayla. Kurulumda (onaydan önce de) yalnız kullanıcının anahtarı ve sabit bir deneme cümlesi gider (model listesi, bağlantı denemesi). (2) Open Food Facts: `www/index.html` barkod araması, yalnız barkod numarası. USDA FoodData Central çalışma anında çağrılmaz, veri uygulamaya gömülüdür. Reklam, analitik, kilit açma/hesap, çökme raporu SDK'sı yok.
+Ağ çağrıları (kodda tek tek doğrulandı, başka yok): (1) Koç: `www/coach.js` `fetch` ile NVIDIA Build, Groq, OpenRouter, Google Gemini, OpenAI, Anthropic Claude ya da kullanıcının eklediği https servis; sağlık verisi yalnız açık rızayla ve yalnız kullanıcı bir düğmeye bastığında (mesaj, yorum, menü, program isteği); otomatik, açılışta ya da arka planda Koç isteği yok (`scripts/oto.test.js` kilitler). Kurulumda (onaydan önce de) yalnız kullanıcının anahtarı ve sabit bir deneme cümlesi gider (model listesi, bağlantı denemesi). (2) Open Food Facts: `www/index.html` barkod araması, yalnız barkod numarası. USDA FoodData Central çalışma anında çağrılmaz, veri uygulamaya gömülüdür. Reklam, analitik, kilit açma/hesap, çökme raporu SDK'sı yok.
 
 ## Genel sorular
 | Soru | Cevap |
@@ -33,7 +33,7 @@ Ağ çağrıları (kodda tek tek doğrulandı, başka yok): (1) Koç: `www/coach
 - Veri iletimde şifreli: evet (https).
 - Silme talebi mekanizması: uygulama içi (kategori bazlı silme, Koç rızasını geri alma). Geliştiricinin sunucusunda veri olmadığı için ayrıca web silme formu gerekmez.
 - Bağımsız güvenlik incelemesi: yok, işaretleme.
-- Aile politikası: 18 yaş altına yönelik değil; Koç 18 yaş altında kapalı. Hedef kitle: yetişkin (18+).
+- Aile politikası: 18 yaş altına yönelik değil. Hedef kitle: yalnız yetişkin (18+). Kurulumda 18 yaş altı kabul edilmez (veri kaydedilmez); eski 18 yaş altı profilde Koç, kalori açığı ve oruç önerisi kapalı.
 
 ## Sağlık uygulaması beyanı (Play Console > Uygulama içeriği > Sağlık)
 - Uygulama kategorisi: sağlık/fitness takibi. "Tıbbi cihaz ya da klinik karar desteği değildir".
@@ -45,7 +45,7 @@ Ağ çağrıları (kodda tek tek doğrulandı, başka yok): (1) Koç: `www/coach
 tedavi, iyileştirir, teşhis, tanı, garanti, "X kilo ver", "yağ yakar", "hekim yerine", "klinik olarak kanıtlanmış", "doğrulanmış sağlık verisi", "veriler asla telefondan çıkmaz" (mutlak). Kullanılan kalıp: "tıbbi cihaz değildir, tanı koymaz, tedavi önermez". Ayrıntı: `docs/magaza-metni.md`.
 
 ## Kullanıcının karar vermesi gerekenler
-1. **Koç = "paylaşım" mı?** Play'e göre kullanıcı talimatıyla, kullanıcının kendi anahtarıyla bir hizmet sağlayıcıya aktarım "paylaşım" sayılmayabilir, ama sağlayıcı kendi amacıyla (ücretsiz katman, Gemini istemleri ürün geliştirmede kullanabilir) işleyebildiği için bu belgede temkinli olarak "paylaşılıyor: evet" yazıldı. Hukukçu teyidi gerekir.
+1. **Koç = "paylaşım" mı?** Play'e göre kullanıcı talimatıyla, kullanıcının kendi anahtarıyla bir hizmet sağlayıcıya aktarım "paylaşım" sayılmayabilir, ama sağlayıcı kendi amacıyla (ücretsiz katman, Gemini istemleri ürün geliştirmede kullanabilir) işleyebildiği için bu belgede temkinli olarak "paylaşılıyor: evet" yazıldı. Otomatik gönderim kaldırıldığı için artık her aktarım kullanıcı eylemiyle başlar; Play'in kullanıcı eylemi istisnası ([10787469](https://support.google.com/googleplay/android-developer/answer/10787469)) uygulanabilir. "Evet"ten vazgeçmek hukukçu kararıdır.
 2. **Özel nitelikli veri ve yurt dışı aktarım (KVKK md. 6, 9):** açık rıza ifadesi ve veri sorumlusu bilgileri `gizlilik-politikasi.md` içinde `[DOLDURULACAK]` duruyor; hukukçu doldurmadan yayın yapılmamalı.
 3. **Open Food Facts IP adresi:** IP "cihaz veya diğer kimlikler/ağ verisi" sayılabilir mi? Önerilen: bildirme (uygulama işlevi için zorunlu teknik istek). Hukukçu isterse "Cihaz veya diğer kimlikler: paylaşılıyor" işaretlenir.
 4. **Tıbbi kategori riski azaldı (karar: "tanı koymak yok"):** tansiyon ve şeker artık yorumlanmaz; 135/85 ve ADA ön ayarları, hedef/eşik alanları, bant, kırmızı işaret ve "hedef aralığında %" kaldırıldı. Tahlilde yalnız laboratuvarın raporda yazdığı aralık "raporda yazan aralık" olarak gösterilir. Tek uyarı kalıbı: "Bu değerleri hekiminle değerlendir."; çok uç ve bugün tarihli değerde etiketsiz tek nötr cümle (cihazı kontrol et, belirtin varsa 112) korunur. Kalan soru: ölçüm kaydı ve ilaç hatırlatıcısı Play'de yine de "tıbbi" beyan gerektirir mi; hekim ve Play yardımıyla netleşmeli.

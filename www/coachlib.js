@@ -37,11 +37,11 @@ const CoachLib=(()=>{
       try{
         const o=JSON.parse(s.slice(a,b+1));
         if(o&&typeof o==="object"&&typeof o.reply==="string"){
-          return {reply:o.reply.trim().slice(0,1500),log:Array.isArray(o.log)?o.log:[],propose:o.propose&&typeof o.propose==="object"?o.propose:null,flag:typeof o.flag==="string"?o.flag:null,food:o.food&&typeof o.food==="object"?o.food:null,notif:o.notif&&typeof o.notif==="object"?o.notif:null,program:o.program&&typeof o.program==="object"?o.program:null,menu:o.menu&&typeof o.menu==="object"?o.menu:null};
+          return {reply:o.reply.trim().slice(0,1500),log:Array.isArray(o.log)?o.log:[],propose:o.propose&&typeof o.propose==="object"?o.propose:null,flag:typeof o.flag==="string"?o.flag:null,food:o.food&&typeof o.food==="object"?o.food:null,program:o.program&&typeof o.program==="object"?o.program:null,menu:o.menu&&typeof o.menu==="object"?o.menu:null};
         }
       }catch(e){}
     }
-    return {reply:s.replace(/[{}]/g,"").slice(0,1500),log:[],propose:null,flag:null,food:null,notif:null,program:null,menu:null};
+    return {reply:s.replace(/[{}]/g,"").slice(0,1500),log:[],propose:null,flag:null,food:null,program:null,menu:null};
   }
 
   const num=(x,lo,hi)=>{const v=typeof x==="string"?parseFloat(x.replace(",",".")):x;return Number.isFinite(v)&&v>=lo&&v<=hi?v:null};
@@ -218,12 +218,11 @@ KURALLAR
 12. Program önerirken reply'da "ağrın, sakatlığın ya da sağlık sorunun varsa başlamadan hekime danış" uyarısını kısaca ver. Hamilelik veya emzirmede, yakın zamanda ameliyatta ya da ciddi hastalıkta önce hekime yönlendir. 18 yaş altında ağır yük ve kalori açığı içeren program önerme, ailesi ve hekimiyle planlamasını söyle. Yeme bozukluğu işaretinde kalori yakmak için spor önerme.
 
 ÇIKTI: Yalnızca tek bir JSON nesnesi, başka hiçbir metin yok:
-{"reply":"kullanıcıya metin","log":[],"propose":null,"flag":null,"notif":null,"food":null}
+{"reply":"kullanıcıya metin","log":[],"propose":null,"flag":null,"food":null}
 log öğeleri: {"type":"yemek","text":"pilav","g":100,"kcal":130,"protein":3,"carbs":28,"fat":1,"meal":"kah"} (meal kah/ogl/aks/atis) | {"type":"su","ml":250} | {"type":"kilo","kg":83.7} | {"type":"spor","min":30,"name":"Koşu","kcal":250} | {"type":"not","text":"..."}. Dünkü kayıt için "day":"yesterday" ekle.
 propose: {"kcal":1900,"why":"kısa neden"} ya da null.
 food: {"name":"1 dilim pizza","kcal":280,"protein":12} ya da null.
-Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex":["kimlik"]}]} yaz: yalnız KATALOG'daki kimlikler, gün başına 3-8 egzersiz.
-Sabah planı istenirse "notif" alanına {"morning":"...","afternoon":"...","evening":"..."} ekle: her biri en fazla 110 karakter, bildirim metni, rakam uydurma.`;
+Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex":["kimlik"]}]} yaz: yalnız KATALOG'daki kimlikler, gün başına 3-8 egzersiz.`;
 
   const f1=x=>x==null?"–":String(Math.round(x*10)/10).replace(".",",");
   /* Bağlam metni. d: uygulamanın hesapladığı veri. */
