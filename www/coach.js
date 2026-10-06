@@ -32,8 +32,16 @@ const defProviders=()=>[
   {id:"nvidia",name:"NVIDIA Build",base:"https://integrate.api.nvidia.com/v1",model:"google/gemma-4-31b-it",on:true,health:true,confirm:false},
   {id:"groq",name:"Groq",base:"https://api.groq.com/openai/v1",model:"llama-3.3-70b-versatile",on:true,health:true,confirm:false},
   {id:"openrouter",name:"OpenRouter",base:"https://openrouter.ai/api/v1",model:"google/gemma-4-31b-it:free",on:true,health:true,confirm:false},
-  {id:"gemini",name:"Google Gemini",base:"https://generativelanguage.googleapis.com/v1beta/openai",model:"gemini-3.5-flash-lite",on:false,health:false,confirm:true}
+  {id:"gemini",name:"Google Gemini",base:"https://generativelanguage.googleapis.com/v1beta/openai",model:"gemini-3.5-flash-lite",on:false,health:false,confirm:true},
+  {id:"openai",name:"OpenAI",base:"https://api.openai.com/v1",model:"gpt-6-luna",on:false,health:false,confirm:false},
+  {id:"anthropic",name:"Anthropic Claude",base:"https://api.anthropic.com/v1",model:"claude-haiku-4-5",on:false,health:false,confirm:false}
 ];
+/* Ücretli hazır sağlayıcılar: kurulumda ücret notu gösterilir. */
+const PAID=["openai","anthropic"];
+/* Sağlayıcı adları tek kaynaktan: gizlilik ekranı ve belgeler (app.test.js) bu listeyi kullanır. */
+const provNames=()=>defProviders().map(p=>p.name).join(", ");
+/* Anthropic yerel Messages API: x-api-key + sürüm başlığı; WebView'da CORS ön kontrolü yalnız direct-browser başlığıyla geçer. */
+const pHeaders=(p,key)=>p.id==="anthropic"?{"x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"}:{Authorization:"Bearer "+key};
 /* Sağlayıcının kaldırdığı eski hazır modeller: kayıtta tam bu değer duruyorsa yenisine geçilir, kullanıcının seçtiği model korunur. */
 const DEAD_MODEL={nvidia:"meta/llama-3.3-70b-instruct",openrouter:"meta-llama/llama-3.3-70b-instruct:free",gemini:"gemini-2.0-flash"};
 let pstat={},cool={},busy=false,typing=false,offline=null,lastAuto=0;
@@ -47,6 +55,8 @@ function cleanCoach(r){
     const model=DEAD_MODEL[p.id]===p.model?defProviders().find(d=>d.id===p.id).model:p.model.slice(0,100);
     provs.push({id:p.id,name:p.name.slice(0,40),base:p.base.slice(0,200),model,on:p.on===true,health:p.health===true,confirm:p.confirm===true});
   }
+  /* Sonradan eklenen hazır sağlayıcılar eski kayda kapalı olarak eklenir. */
+  if(provs.length)for(const d of defProviders())if(!provs.some(x=>x.id===d.id))provs.push(d);
   const chat=[];
   for(const m of (Array.isArray(r.chat)?r.chat:[]).slice(-150)){
     if(!m||!Number.isInteger(m.id)||!["user","coach","sys"].includes(m.role)||!Number.isFinite(m.t))continue;
@@ -129,14 +139,28 @@ function cMessages(extraUser,extraSys,noHist){
 async function callProvider(p,key,messages,maxTokens=700){
   const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),40000);
   try{
-    /* Gemini 3 düşünmeyi kapatamıyor; düşük çaba yanıt bütçesini düşünmeye harcatmaz. */
-    const body={model:p.model,messages,temperature:0.3,max_tokens:maxTokens};if(p.id==="gemini")body.reasoning_effort="low";
-    const r=await fetch(p.base.replace(/\/+$/,"")+"/chat/completions",{method:"POST",signal:ctl.signal,headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},body:JSON.stringify(body)});
+    const ant=p.id==="anthropic",r=await fetch(p.base.replace(/\/+$/,"")+(ant?"/messages":"/chat/completions"),{method:"POST",signal:ctl.signal,headers:Object.assign({"Content-Type":"application/json"},pHeaders(p,key)),body:JSON.stringify(pBody(p,messages,maxTokens))});
     if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;try{e.body=(await r.text()).slice(0,600)}catch(x){}throw e}
-    const j=await r.json(),t=j&&j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;
+    const j=await r.json(),t=ant?(j&&Array.isArray(j.content)?j.content.filter(b=>b&&b.type==="text").map(b=>b.text).join(""):""):j&&j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;
     if(typeof t!=="string"||!t.trim()){const e=new Error("Boş yanıt");e.kind="empty";throw e}
     return t;
   }finally{clearTimeout(to)}
+}
+const pModelsUrl=p=>p.base.replace(/\/+$/,"")+"/models"+(p.id==="anthropic"?"?limit=1000":"");
+/* İstek gövdesi sağlayıcıya göre. Düşünen modellerde düşünme jetonu yanıt sınırından yer; düşük çaba ve pay verilir.
+   OpenAI güncel modelleri max_tokens kabul etmez. Anthropic: sistem metni ayrı alan, ilk mesaj kullanıcı; Haiku 4.5 sıcaklık alır, Sonnet/Opus 5.x almaz (çaba alır). */
+function pBody(p,messages,maxTokens){
+  if(p.id==="openai")return {model:p.model,messages,max_completion_tokens:maxTokens*3,reasoning_effort:"low"};
+  if(p.id==="anthropic"){
+    const sys=messages.filter(m=>m.role==="system").map(m=>m.content).join("\n\n"),ms=messages.filter(m=>m.role!=="system");
+    while(ms.length&&ms[0].role!=="user")ms.shift();
+    const b={model:p.model,max_tokens:maxTokens,messages:ms.length?ms:[{role:"user",content:"Merhaba"}]};if(sys)b.system=sys;
+    if(/haiku/.test(p.model))b.temperature=0.3;else{b.output_config={effort:"low"};b.max_tokens=maxTokens+2000}
+    return b;
+  }
+  const b={model:p.model,messages,temperature:0.3,max_tokens:maxTokens};
+  if(p.id==="gemini")b.reasoning_effort="low"; // Gemini 3 düşünmeyi kapatamıyor
+  return b;
 }
 const errOf=e=>{const kind=(e&&e.kind)||CoachLib.errKind(e&&e.status,e&&e.body,e&&e.name);return {kind,text:CoachLib.errText(kind,e&&e.status)}};
 function pFail(id,e){
@@ -464,7 +488,7 @@ function cConsent(on){
 function viewKoc(){
   let h="";
   const intro=offline==="none"||(!hasKey()&&!S.chat.length);
-  if(intro)h+=`<div class="banner info"><b>Koç ne yapar?</b><p>Yazdıklarından yemek, su ve kilo kaydı önerir, günü ve haftayı yorumlar, hedefini ayarlamana yardım eder.</p><b>Verin nereye gider?</b><p>Koç yapay zekâ kullanır: internet ister, çevrimdışı çalışmaz. Yalnızca sen onay verirsen ve kendi ücretsiz hesabından alacağın bir anahtarla çalışır. Onay verirsen profilin, kayıtların ve yazdıkların seçtiğin sağlayıcıya gider; sağlayıcının sunucuları yurt dışındadır. İstediğin an geri alırsın (Ayarlar > Gizlilik ve veri).</p><p><b>Koç olmadan da uygulama tam çalışır.</b></p><button class="btn" data-c="guide">Koçu etkinleştir, yaklaşık 2 dakika</button></div>`;
+  if(intro)h+=`<div class="banner info"><b>Koç ne yapar?</b><p>Yazdıklarından yemek, su ve kilo kaydı önerir, günü ve haftayı yorumlar, hedefini ayarlamana yardım eder.</p><b>Verin nereye gider?</b><p>Koç yapay zekâ kullanır: internet ister, çevrimdışı çalışmaz. Yalnızca sen onay verirsen ve kendi hesabından alacağın bir anahtarla çalışır (ücretsiz seçenekler var). Onay verirsen profilin, kayıtların ve yazdıkların seçtiğin sağlayıcıya gider; sağlayıcının sunucuları yurt dışındadır. İstediğin an geri alırsın (Ayarlar > Gizlilik ve veri).</p><p><b>Koç olmadan da uygulama tam çalışır.</b></p><button class="btn" data-c="guide">Koçu etkinleştir, yaklaşık 2 dakika</button></div>`;
   else if(offline==="fail"){
     const x=S.providers.filter(p=>pstat[p.id]&&pstat[p.id].s!=="ok").sort((a,b)=>pstat[b.id].t-pstat[a.id].t)[0];
     h+=`<div class="banner"><b>Koç şu an ulaşılamıyor</b>${x&&pstat[x.id].m?`<p>${esc(x.name)}: ${esc(pstat[x.id].m)}</p>`:""}<p>Su, kilo ve spor kaydı çalışıyor. Yemek tahmini bağlantı gelince yapılır.</p><button class="btn" data-c="retry">Yeniden dene</button></div>`;
@@ -512,7 +536,9 @@ const GUIDE={
   nvidia:{site:"build.nvidia.com",steps:["Tarayıcında build.nvidia.com adresini aç, hesap oluştur ya da giriş yap.","Bir model sayfası aç (örneğin llama).","Sayfadaki anahtar oluşturma düğmesine bas. Düğme adı değişebilir, geliştirici panelinden anahtar oluştur.","Çıkan anahtarı kopyala ve aşağıya yapıştır."]},
   groq:{site:"console.groq.com/keys",steps:["Tarayıcında console.groq.com adresini aç, hesap oluştur ya da giriş yap.","Menüden anahtarlar bölümüne (API Keys) gir.","Anahtar oluştur düğmesine (Create API Key) bas, bir ad ver.","Anahtarı kopyala, bir daha gösterilmeyebilir. Aşağıya yapıştır."]},
   openrouter:{site:"openrouter.ai/keys",steps:["Tarayıcında openrouter.ai adresini aç, hesap oluştur ya da giriş yap.","Hesap menüsünden anahtarlar sayfasına (Keys) gir.","Anahtar oluştur düğmesine (Create Key) bas, bir ad ver.","Anahtarı kopyala ve aşağıya yapıştır."]},
-  gemini:{site:"aistudio.google.com/apikey",steps:["Tarayıcında aistudio.google.com adresini aç ve Google hesabınla giriş yap.","Anahtar sayfasına (Get API key) gir.","Yeni anahtar oluştur düğmesine bas.","Anahtarı kopyala ve aşağıya yapıştır. Ücretsiz katmanda istemler ürün geliştirmek için kullanılabilir, bu yüzden her göndermeden önce sorulur."]}
+  gemini:{site:"aistudio.google.com/apikey",steps:["Tarayıcında aistudio.google.com adresini aç ve Google hesabınla giriş yap.","Anahtar sayfasına (Get API key) gir.","Yeni anahtar oluştur düğmesine bas.","Anahtarı kopyala ve aşağıya yapıştır. Ücretsiz katmanda istemler ürün geliştirmek için kullanılabilir, bu yüzden her göndermeden önce sorulur."]},
+  openai:{site:"platform.openai.com/api-keys",steps:["Tarayıcında platform.openai.com adresini aç, hesap oluştur ya da giriş yap.","Faturalandırma (Billing) bölümünden ödeme yöntemi ve harcama sınırı belirle; ücretli bir servistir.","Anahtarlar sayfasında (API keys) yeni anahtar oluştur (Create new secret key).","Anahtarı kopyala, bir daha gösterilmez. Aşağıya yapıştır."]},
+  anthropic:{site:"platform.claude.com/settings/keys",steps:["Tarayıcında platform.claude.com adresini aç, hesap oluştur ya da giriş yap.","Faturalandırma (Billing) bölümünden kredi yükle ya da harcama sınırı belirle; ücretli bir servistir.","Anahtarlar sayfasında (API keys) yeni anahtar oluştur (Create Key).","Anahtarı kopyala, bir daha gösterilmez. Aşağıya yapıştır."]}
 };
 function cGuide(id){
   const p=S.providers.find(x=>x.id===id),g=GUIDE[id];if(!p||!g)return cSetup(true);
@@ -522,7 +548,7 @@ function cGuide(id){
 }
 /* ---- kurulum: 1 anahtar (sağlayıcı önekten tahmin), 2 doğrula ve modelleri getir (Önerilen hazır seçili), 3 test et ve kaydet.
    Ağ çağrısı yalnız düğmeye basınca ve yalnız seçilen sağlayıcıya gider; giden yalnız anahtar ve sabit test cümlesi. Model listesi bellekte kalır, yedeğe girmez. */
-const PNOTE={nvidia:"Ücretsiz deneme kredisi",groq:"Ücretsiz, çok hızlı",openrouter:"Ücretsiz modeller var",gemini:"Ücretsiz katman, her gönderimde sorulur"};
+const PNOTE={nvidia:"Ücretsiz deneme kredisi",groq:"Ücretsiz, çok hızlı",openrouter:"Ücretsiz modeller var",gemini:"Ücretsiz katman, her gönderimde sorulur",openai:"Ücretli, ucuz model önerilir",anthropic:"Ücretli, ucuz model önerilir"};
 const suNew=()=>({k:"",id:null,models:null,rec:"",model:"",adv:false,msg:"",fail:"",busy:false});
 let su=suNew();
 const suProv=()=>GUIDE[su.id]?S.providers.find(p=>p.id===su.id):null;
@@ -534,13 +560,12 @@ function cSetup(fresh){
 }
 function suBody(){
   const g=CoachLib.keyProvider(su.k),p=suProv();
-  let h=g==="openai"||g==="anthropic"?`<p class="hint">Bu bir ${g==="openai"?"OpenAI":"Anthropic (Claude)"} anahtarına benziyor. Koç şimdilik aşağıdaki dört sağlayıcıyla çalışır; birinden ücretsiz anahtar alabilirsin.</p>`
-    :p&&g===su.id?`<p class="hint">${esc(p.name)} anahtarı olarak tanındı. Yanlışsa aşağıdan değiştir.</p>`
+  let h=p&&g===su.id?`<p class="hint">${esc(p.name)} anahtarı olarak tanındı. Yanlışsa aşağıdan değiştir.</p>`
     :su.k&&!p?`<p class="hint">Sağlayıcı tanınmadı. Anahtarı hangi siteden aldıysan onu seç.</p>`:`<p class="hint">Anahtarı hangi siteden aldın? Yoksa birini seç, nasıl alınacağını gösteririz.</p>`;
   h+=S.providers.filter(x=>GUIDE[x.id]).map(x=>`<button class="prow" data-c="sp:${x.id}" aria-pressed="${su.id===x.id}"><span><b>${esc(x.name)}</b><span class="mut sm">${PNOTE[x.id]}</span></span><span class="tag">${su.id===x.id?"Seçili":"Seç"}</span></button>`).join("");
   if(!p)return h;
-  h+=`<button class="lnk" data-c="guide:${p.id}">${esc(p.name)} anahtarı nereden alınır?</button>
-  <div class="lbl">2. Modeli seç</div><button class="btn ghost" data-c="sfetch"${su.busy?" disabled":""}>Doğrula ve modelleri getir</button>`;
+  h+=`<button class="lnk" data-c="guide:${p.id}">${esc(p.name)} anahtarı nereden alınır?</button>${PAID.includes(p.id)?`<p class="hint">${esc(p.name)} ücretli bir servistir: kullandıkça ücret çıkabilir; kotayı sağlayıcı sitende sen belirlersin.</p>`:""}
+  <div class="lbl">2. Modeli seç</div><p class="hint">Anahtarını ve bir deneme cümlesini sağlayıcıya göndeririz; sağlık verin gitmez.</p><button class="btn ghost" data-c="sfetch"${su.busy?" disabled":""}>Doğrula ve modelleri getir</button>`;
   if(su.models){
     const m=su.models.find(x=>x.id===su.model),tag=[su.model===su.rec?"Önerilen":"",m&&m.free?"ücretsiz":""].filter(Boolean).join(", ");
     h+=`<p style="margin:10px 0 4px;overflow-wrap:anywhere"><b>${esc(su.model)}</b>${tag?` <span class="tag">${tag}</span>`:""}</p>`;
@@ -558,7 +583,7 @@ function suCheck(){
   const k=su.k.trim();
   if(!consentOk())su.msg="18 yaş altında Koç kapalı.";
   else if(k.length<8||/\s/.test(k))su.msg="Anahtar eksik ya da yanlış yapıştırılmış görünüyor.";
-  else if(["openai","anthropic"].includes(CoachLib.keyProvider(k)))su.msg="Bu anahtar seçili sağlayıcıya ait değil, gönderilmedi.";
+  else if(PAID.includes(CoachLib.keyProvider(k))&&CoachLib.keyProvider(k)!==su.id)su.msg="Bu anahtar seçili sağlayıcıya ait değil, gönderilmedi.";
   else return k;
   suRender();return null;
 }
@@ -566,7 +591,7 @@ async function suFetch(){
   const p=suProv(),k=p&&!su.busy&&suCheck();if(!k)return;
   su.busy=true;su.msg="Modeller getiriliyor…";su.fail="";suRender();
   try{
-    const r=await fetch(p.base.replace(/\/+$/,"")+"/models",{headers:{Authorization:"Bearer "+k}});
+    const r=await fetch(pModelsUrl(p),{headers:pHeaders(p,k)});
     if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;try{e.body=await r.text()}catch(x){}throw e}
     su.models=CoachLib.parseModels(await r.json());su.rec=CoachLib.pickModel(p.id,su.models)||p.model;su.model=su.rec;su.adv=false;
     su.msg=su.models.length?`${su.models.length} model bulundu, önerilen seçildi. Test et ile anahtarı ve modeli dene.`:"Model listesi boş geldi; hazır model denenecek.";
@@ -585,8 +610,7 @@ async function suTest(){
 }
 document.addEventListener("input",ev=>{
   const t=ev.target;
-  /* OpenAI/Anthropic anahtarı önceden seçilmiş sağlayıcıya gitmesin: seçim düşer, test düğmesi kalkar. */
-  if(t.id==="sk"){su.k=t.value;const g=CoachLib.keyProvider(su.k);if(g!==su.id&&(GUIDE[g]||g==="openai"||g==="anthropic")){su.id=GUIDE[g]?g:null;su.models=null}su.msg=su.fail="";suRender()}
+  if(t.id==="sk"){su.k=t.value;const g=CoachLib.keyProvider(su.k);if(GUIDE[g]&&g!==su.id){su.id=g;su.models=null}su.msg=su.fail="";suRender()}
   else if(t.id==="smfree"&&t.value.trim())su.model=t.value.trim();
 });
 document.addEventListener("change",ev=>{const t=ev.target;if(t.id==="smsel"){su.model=t.value;suRender()}else if(t.id==="pmsel")$("#pm").value=t.value});
@@ -635,7 +659,7 @@ async function cProvClick(a,p1,p2){
     case "pmodels":{
       const p=pRead(p1);if(!p)return;const key=getKeys()[p1];if(!key)return toast("Önce anahtarı ekle");if(!consentOk())return toast("18 yaş altında Koç kapalı");
       try{
-        const r=await fetch(p.base.replace(/\/+$/,"")+"/models",{headers:{Authorization:"Bearer "+key}});
+        const r=await fetch(pModelsUrl(p),{headers:pHeaders(p,key)});
         if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;try{e.body=await r.text()}catch(x){}throw e}
         const ms=CoachLib.parseModels(await r.json()),rec=CoachLib.pickModel(p1,ms),box=$("#pmlist");
         if(box)box.innerHTML=`<label class="lbl" for="pmsel">${ms.length} model bulundu</label><select class="in" id="pmsel">${ms.map(x=>`<option value="${esc(x.id)}"${x.id===p.model?" selected":""}>${esc(x.id)}${x.id===rec?" (önerilen)":x.free?" (ücretsiz)":""}</option>`).join("")}</select>`;
