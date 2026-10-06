@@ -143,7 +143,7 @@ Harici değerlendirmede bildirilen açık sağlık güvenliği boşlukları (3 E
 |---|---|---|---|---|---|
 | D-Koç1 (yapıldı) | Menü önerisi ve alışveriş listesi | Koç hedef kaloriye ve "Benim besinlerim"e göre haftalık menü önerir. | M | rekabet-ozellik, fikirler | kullanıcının anahtarı ve onayı |
 | D-Koç2 (yapıldı) | Kolay anahtar ve model kurulumu | Anahtar yapıştırılır, sağlayıcı önekten tahmin edilir, canlı listeden "Önerilen" model hazır seçilir, "Test et ve kaydet" anlaşılır Türkçe hata verir. Kaldırılan 3 hazır model güncellendi. | M | koc-saglayici-analizi | – |
-| D-Koç3 | OpenAI ve Anthropic hazır sağlayıcı | Ücretli; OpenAI için `max_completion_tokens`, Anthropic için ayrı başlık gerekir. Gizlilik politikası, mağaza metni ve veri güvenliği formu güncellenir. | M | koc-saglayici-analizi §3 | **Semih kararı** |
+| D-Koç3 (yapıldı) | OpenAI ve Anthropic hazır sağlayıcı | Ücretli, kapalı gelir; kurulumda ücret notu. OpenAI `max_completion_tokens` + düşük çaba, Anthropic yerel Messages API (x-api-key, sürüm, tarayıcı başlığı). Politika, mağaza metni, veri güvenliği formu ve gizlilik ekranı sağlayıcı listesi güncellendi. | M | koc-saglayici-analizi §3 | Semih kararı 2026-10-06 |
 
 Koç kurulum rehberi C7'de, güvenlik metinleri B7'de.
 

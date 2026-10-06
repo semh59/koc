@@ -27,7 +27,7 @@ Yemek ekle penceresinde **Barkod okut**'a dokun, paketin barkodunu göster. Ür�
 
 ## Koçu açmak (API anahtarı girmek)
 
-Koç, ücretsiz yapay zekâ servislerinden birine bağlanır. Uygulamada Ayarlar > **Yapay zekâ koç** bölümünde NVIDIA Build, Groq ve OpenRouter hazır gelir. Sırayla denenir, biri limite takılırsa sıradaki devreye girer.
+Koç, kullanıcının kendi anahtarıyla bir yapay zekâ servisine bağlanır. Hazır gelenler: NVIDIA Build, Groq, OpenRouter, Google Gemini (ücretsiz katmanlı), OpenAI ve Anthropic Claude (ücretli). Ayarlar > **Yapay zekâ koç** > **Anahtar ekle**: anahtarı yapıştır, sağlayıcı tanınır, önerilen model seçilir, **Test et ve kaydet**. Sırayla denenir, biri limite takılırsa sıradaki devreye girer.
 
 1. Anahtar al (hepsi ücretsiz hesapla):
    - NVIDIA Build: https://build.nvidia.com (hesap aç, bir modelin sayfasında **Get API Key**)
