@@ -21,7 +21,7 @@ setTimeout(async()=>{
     ok("mevcut kullanıcıya gösterilmez: bayraksız eski ayar, kayıt, profil",ev("cleanSettings({kcal:1800}).obDone")===true&&ev("cleanSettings({obDone:false,kcal:1}).obDone")===false&&ev("cleanSettings(undefined).obDone")===false&&ev("(()=>{const r=[];const s0=S;for(const f of [()=>S.entries.push({}),()=>{S.settings.heightCm=170},()=>{S.settings.goalKg=70},()=>{S.settings.obDone=true}]){S=structuredClone(DEF);f();r.push(obNeeded())}S=s0;return r.join()})()")==="false,false,false,false");
     click('[data-ob="next"]');
     ok("boş alan reddedilir: hata alanın altında, aria-invalid",q("#oberr").textContent.includes("Boy")&&q("#obcm").getAttribute("aria-invalid")==="true"&&v().includes("Adım 1/3"));
-    for(const [a,b,c,m] of [["99","80","30","Boy"],["251","80","30","Boy"],["170","19","30","Kilo"],["170","80","9","Yaş"],["170","80","101","Yaş"]]){fill(a,b,c);click('[data-ob="next"]');ok(`aralık dışı reddedilir: ${a}/${b}/${c}`,q("#oberr").textContent.startsWith(m)&&v().includes("Adım 1/3"),q("#oberr").textContent)}
+    for(const [a,b,c,m] of [["99","80","30","Boy"],["251","80","30","Boy"],["170","19","30","Kilo"],["170","80","101","Yaş"]]){fill(a,b,c);click('[data-ob="next"]');ok(`aralık dışı reddedilir: ${a}/${b}/${c}`,q("#oberr").textContent.startsWith(m)&&v().includes("Adım 1/3"),q("#oberr").textContent)}
     fill("170","80","30");click('[data-ob="dir:ver"]');val("goal","85");click('[data-ob="next"]');
     ok("kilo ver: hedef şimdikinden yüksekse reddedilir ve değerler korunur",q("#oberr").textContent.includes("düşük")&&q("#obcm").value==="170"&&q("#obgoal").getAttribute("aria-invalid")==="true");
     val("goal","72");click('[data-ob="sex:m"]');click('[data-ob="next"]');
@@ -44,8 +44,14 @@ setTimeout(async()=>{
     click('[data-ob="next"]');
     ok("sağlık işareti sağlık notuna yazılır",ev("S.settings.healthNote").includes("hekim kontrolü"));
     ev("S=structuredClone(DEF);render()");
-    fill("165","60","16");click('[data-ob="next"]');click('[data-ob="next"]');
-    ok("18 yaş altı: açık önerilmez",v().includes("18 yaş altında")&&v().includes("Hekimine"),v());
+    const ls0=w.localStorage.getItem("koc_v1");
+    fill("165","60","17");click('[data-ob="next"]');
+    ok("yaş 17: kurulum durur, nazik ekran; geç, geri ve devam yok; taslak ve kayıt yok",v().includes("18 yaş ve üzeri için")&&v().includes("hekiminle ya da diyetisyeninle")&&!q('[data-ob="skip"]')&&!q('[data-ob="next"]')&&!q('[data-ob="back"]')&&ev("ob.age+ob.kg+ob.cm")===""&&ev("S.settings.age")===0&&!ev("S.settings.obDone")&&ev("S.entries.length")===0&&w.localStorage.getItem("koc_v1")===ls0,v());
+    for(const a of ["9","1"]){click('[data-ob="fixage"]');fill("165","60",a);click('[data-ob="next"]');ok(`yaş ${a}: aralık hatası yerine aynı ekran`,v().includes("18 yaş ve üzeri için"))}
+    click('[data-ob="fixage"]');
+    ok("Yaşımı yanlış girdim: boş adım 1'e döner",v().includes("Adım 1/3")&&q("#obage").value==="");
+    fill("165","60","18");click('[data-ob="next"]');
+    ok("yaş 18: kurulum devam eder",v().includes("Adım 2/3")&&!v().includes("18 yaş ve üzeri için"));
     click('[data-ob="skip"]');
     ok("Şimdilik geç: hiçbir şey yazılmaz, bir daha çıkmaz",ev("S.settings.obDone")&&ev("S.entries.length")===0&&ev("S.settings.heightCm")===0&&ev("obNeeded()")===false&&ev("tab")==="bugun");
     ev("tab='ayar-veri';render()");
@@ -2561,10 +2567,14 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     const inp=w.document.querySelector("#ageIn");inp.value="16";inp.dispatchEvent(new w.Event("change",{bubbles:true}));
     ok("onay verildikten sonra yaş 16 yapılınca onay düşer",ev("S.settings.consent")===false&&ev("S.settings.consentV")===0);
     ev("S.settings.consent=true;S.settings.consentV=CONSENT_V"); // eski/dışarıdan gelen durum
-    ev("cSend('merhaba')");await ev("cFlush()");ev("progOpt={d:3,q:'Salon',m:45,l:'Başlangıç'}");await ev("cProgram(progOpt)");await ev("cMenu()");ev("lastAuto=0");await ev("cAuto()");
+    ev("cSend('merhaba')");await ev("cFlush()");ev("progOpt={d:3,q:'Salon',m:45,l:'Başlangıç'}");await ev("cProgram(progOpt)");await ev("cMenu()");await ev("cComment('plan')");await ev("cComment('weekly')");
     let t="none";try{await ev("cAsk([{role:'user',content:'x'}],10)")}catch(e){t=e.message}
-    ok("18 yaş altı: sohbet, program, menü, otomatik ve doğrudan cAsk istek göndermez",n===0&&t==="consent",[n,t]);
+    ok("18 yaş altı: sohbet, program, menü, yorum ve doğrudan cAsk istek göndermez",n===0&&t==="consent",[n,t]);
     ok("yedek/açılış temizleyicisi: yaş<18 ise onay geçersiz, 18+ ise korunur",ev("cleanSettings({consent:true,consentV:CONSENT_V,age:16}).consent")===false&&ev("cleanSettings({consent:true,consentV:CONSENT_V,age:30}).consent")===true);
+    ok("eski veride 18 yaş altı yaş korunur (fren zinciri sürer)",ev("cleanSettings({age:15}).age")===15&&ev("cleanSettings({age:17,consent:true,consentV:CONSENT_V}).consent")===false);
+    reset();ev("Object.assign(S.settings,{age:16,fastOn:true,heightCm:165});S.entries=[{id:1,day:dayKey(),time:'08:00',type:'kilo',v:60,text:''}];save();S=load();tab='bugun';render()");
+    const vb=$q("#view").textContent;
+    ok("eski 18 yaş altı veri: açılışta bilgi, Koç kapalı, sert fren, oruç başlatılamaz",vb.includes("18 yaş ve üzeri için")&&!ev("coachOn()")&&ev("risk().hard").includes("18 yaş altındasın")&&!$q('[data-hb="fastgo"]'),vb.slice(0,300));
     reset();ev("S.chat=[];S.settings.age=0");
   }
   { // Dalga 11 (7): yeni ilaç geçmiş günlerde kaçırılmış sayılmaz
@@ -2585,7 +2595,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
   { // Dalga 11 (9): onay metni gerçek veriyle ve politikayla aynı
     const doc=require("fs").readFileSync(path.join(__dirname,"../docs/gizlilik-politikasi.md"),"utf8"),sent=ev("CONSENT_SENT"),not=ev("CONSENT_NOT");
     ok("onay metni sürüm 2; eski sürüm onayı düşer",ev("CONSENT_V")===2&&ev("cleanSettings({consent:true,consentV:1}).consent")===false);
-    ok("uygulama içi onay metni ile politika §5 aynı gönderilen/gönderilmeyen listesini taşır",doc.includes("**Koç'a gönderilenler** (uygulama içindeki onay metniyle aynıdır): "+sent+".")&&doc.includes("**Koç'a gönderilmeyenler:** "+not)&&ev("consentHtml()").includes(sent)&&ev("consentHtml()").includes(not));
+    ok("uygulama içi onay metni ile politika §5 aynı gönderilen/gönderilmeyen listesini taşır",doc.includes("**Koç'a gönderilenler** (uygulama içindeki onay metniyle aynıdır): "+sent+".")&&doc.includes("**Koç'a ne zaman gider:** "+ev("CONSENT_WHEN"))&&ev("consentHtml()").includes(ev("CONSENT_WHEN"))&&doc.includes("**Koç'a gönderilmeyenler:** "+not)&&ev("consentHtml()").includes(sent)&&ev("consentHtml()").includes(not));
     reset();ev("S.settings.medOn=true;S.meds=[{id:1,n:'Ilac',d:'1 tablet',t:['08:00'],w:[1],on:true,k:10}];S.mealTpl=[];S.myFoods=[{n:'Kendi besinim',k:100,p:5}]");
     const ctx=ev("CoachLib.contextText(cData())"),cat=ev("cMenuCat().text");
     ok("metinde adı geçen her veri gerçekten bağlamda: doz, haftanın günleri, uyum, stok, bugünkü yemek, kendi besin adı",ctx.includes("1 tablet")&&ctx.includes("haftanın günleri")&&ctx.includes("son 7 gün")&&ctx.includes("stok")&&cat.includes("Kendi besinim")&&["doz","haftanın günleri","son 7 günün uyumu","stok","bugünkü kayıtların","kendi besin"].every(k=>sent.includes(k)));

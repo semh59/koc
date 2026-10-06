@@ -409,7 +409,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- veri ---------- */
 const DEF={
-  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",lastPlan:"",lastWeekly:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
+  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -451,8 +451,6 @@ function cleanSettings(raw,fast){
   if(o.act===0||o.act===1||o.act===2)d.act=o.act;
   if(typeof o.healthNote==="string")d.healthNote=o.healthNote.slice(0,500);
   if(o.consent===true&&o.consentV===CONSENT_V&&!(d.age>0&&d.age<18)){d.consent=true;d.consentV=CONSENT_V;if(dayOk(o.consentAt))d.consentAt=o.consentAt}
-  if(dayOk(o.lastPlan))d.lastPlan=o.lastPlan;
-  if(dayOk(o.lastWeekly))d.lastWeekly=o.lastWeekly;
   if(dayOk(o.lastPlateau))d.lastPlateau=o.lastPlateau;
   if(dayOk(o.lastBackup))d.lastBackup=o.lastBackup;
   if(o.autoBk===true)d.autoBk=true;
@@ -724,7 +722,8 @@ function viewBugun(){
     isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?row("adim","Adım sayarı aç","Telefonun sensörü sayar, hesap gerekmez.",[["adimac","Aç"],["adimdegil","Şimdi değil"]]):"",
     S.entries.length>=10&&(old==null||old>14)?row("cloud","Yedek zamanı",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Gönder"]]):""].filter(Boolean);
   const todoCard=todo.length?`<div class="card todo"><div class="lbl">Bugün yapılacaklar</div>${todo.join("")}</div>`:"";
-  return `${actions}${habitRow()}${rings}${macro}${macroNote}${micro}${sOn?stepCard():""}${todoCard}${gTodayCard()}${weight}<button class="lnk" data-ms="open">Vücut ölçüsü ekle</button><button class="coach" data-tab="koc">${esc(coach())} <b>Koç ›</b></button>${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
+  const minor=S.settings.age>0&&S.settings.age<18?`<div class="banner"><b>NeoWell 18 yaş ve üzeri için</b><p>Profilindeki yaş 18'in altında. Kalori açığı, oruç önerisi ve Koç kapalı. Beslenme ve kilo konusunda bir yetişkinle ve hekiminle ya da diyetisyeninle konuş. Yaş yanlışsa Ayarlar > Profil'den düzelt.</p></div>`:"";
+  return `${actions}${minor}${habitRow()}${rings}${macro}${macroNote}${micro}${sOn?stepCard():""}${todoCard}${gTodayCard()}${weight}<button class="lnk" data-ms="open">Vücut ölçüsü ekle</button><button class="coach" data-tab="koc">${esc(coach())} <b>Koç ›</b></button>${hasKey()?`<div class="btns">${cCommentBtn("plan")}</div>`:""}${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
 }
 
 /* PDF raporlar tek yerde; paylaşım işleyicileri belgede dinlediği için ekrandan bağımsız çalışır. */
@@ -756,6 +755,7 @@ function viewTrend(){
   const empty=`<div class="card empty"><b>İlk tartını ekle</b><p class="mut sm">Grafik ikinci tartıdan sonra çizilir. Su, yemek, spor ve adımların da burada haftalık tabloda görünür.</p><button class="btn" data-act="kilo">${Icons.svg("kilo")} Kilo ekle</button></div>`;
   return `${days.length?`<div class="seg" role="group" aria-label="Aralık"><button data-range="30" aria-pressed="${range==30}">30 gün</button><button data-range="90" aria-pressed="${range==90}">90 gün</button></div>
   <div class="card">${chart(range)}${stats}</div>`:empty}
+  ${hasKey()?`<div class="btns">${cCommentBtn("weekly")}</div>`:""}
   ${lossAsk()?`<div class="btns"><button class="btn ghost" data-c="why">Bu hafta neden kilo vermedim?</button></div>`:""}
   ${gEnergy()}
   ${measureCard()}
@@ -1373,7 +1373,7 @@ document.addEventListener("keydown",ev=>{
   if(ev.key==="Enter"&&ev.target.closest("#sheet")&&ev.target.tagName==="INPUT"){const b=$("#sheet [data-go]");if(b)b.click()}
 });
 document.addEventListener("click",ev=>{const b=ev.target.closest("[data-sr]");if(b){stepRange=+b.dataset.sr;render()}});
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="ayar-modul")render()});stepsSync();render();cPlateauCheck();cFlush();cAuto();abRun();if(Date.now()-lastSched>6*36e5||!exactOk)scheduleReminders().then(setNotif)}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="ayar-modul")render()});stepsSync();render();cPlateauCheck();abRun();if(Date.now()-lastSched>6*36e5||!exactOk)scheduleReminders().then(setNotif)}});
 
 document.querySelectorAll("[data-ic]").forEach(e=>e.innerHTML=Icons.svg(e.dataset.ic));
 render();
@@ -1382,7 +1382,7 @@ if(corruptNote)toast("Kayıtlı veri okunamadı. Eski hali ayrı bir kopyada sak
 quickIngest();
 scheduleReminders().then(setNotif);
 setInterval(gTick,1000);
-const keysP=keysInit().then(()=>{render();cAuto();cFlush()});
+const keysP=keysInit().then(render);
 abBoot();
 if(S.settings.stepsOn&&SC()){SC().start().catch(()=>{});stepsSync();motionBoot()}
 setInterval(stepsTick,STEP_POLL);
