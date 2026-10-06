@@ -1,0 +1,14 @@
+const fs=require("fs");
+const html=fs.readFileSync(__dirname+"/../www/index.html","utf8");
+let bad=0;const ok=(n,c)=>{console.log((c?"PASS ":"FAIL ")+n);if(!c)bad++};
+const m=html.match(/@media \(orientation:landscape\) and \(max-height:500px\)\{([\s\S]*?)\n\}/),c=m?m[1]:"";
+const px=re=>{const r=c.match(re);return r?+r[1]:NaN};
+ok("yatay kısa ekran için kompakt medya kuralı var",!!m);
+ok("yatayda alt sekme düğmesi 44 px (dokunma hedefi) ve dik 56 px'den küçük",px(/nav button\{[^}]*height:(\d+)px/)===44);
+ok("yatayda başlık en çok 44 px min yükseklik",px(/header\{[^}]*min-height:(\d+)px/)<=44);
+ok("yatayda sheet ekran yüksekliğini aşmaz ve kayar (max-height 100vh tabanlı, taban kuralda overflow:auto)",/#sheet\{max-height:calc\(100vh/.test(c)&&/#sheet\{[^}]*overflow:auto/.test(html));
+ok("yatayda Koç yazma alanı kompakt alt sekmenin hemen üstünde",px(/#composer\{[^}]*bottom:calc\((\d+)px/)>=44+4);
+ok("yan kenar boşlukları: --sal/--sar sekmede, gövdede, yazma alanında, rehberde",/--sal:/.test(html)&&/--sar:/.test(html)&&/body\{[^}]*padding:var\(--sat\) var\(--sar\) 0 var\(--sal\)/.test(html)&&/nav\{[^}]*var\(--sal\)/.test(html)&&/#composer\{[^}]*left:var\(--sal\)/.test(html)&&/#guide\{[^}]*var\(--sal\)/.test(html));
+ok("yön kilidi yok",!/screenOrientation/.test(fs.readFileSync(__dirname+"/../android/app/src/main/AndroidManifest.xml","utf8")));
+ok("klavye sezgisi: genişlik değişince (döndürme) taban sıfırlanır",/innerWidth!==lw\)\{lw=innerWidth;base=0\}/.test(html));
+if(bad){console.log(bad+" HATA");process.exit(1)}console.log("TAMAM");
