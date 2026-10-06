@@ -30,7 +30,7 @@ const BackupLib=(()=>{
   /* Yedek parolası kuralı (tüm yedek yolları): en az 8 karakter; yalnız rakam, tek karakter tekrarı ve bilinen kolay parolalar reddedilir. Hata yoksa "" döner. */
   const MINPW=8,EASY=["password","parola12","qwertyui","abcdefgh","sifre123","12345678","123456789"];
   const pwCheck=pw=>pw.length<MINPW?`Parola en az ${MINPW} karakter olmalı`
-    :/^\d+$/.test(pw)||/^(.)+$/.test(pw)||EASY.includes(pw.toLowerCase())?"Bu parola çok kolay tahmin edilir. Harf ve rakam karıştır ya da birkaç kelime yaz":"";
+    :/^\d+$/.test(pw)||/^(.)\1+$/.test(pw)||EASY.includes(pw.toLowerCase())?"Bu parola çok kolay tahmin edilir. Harf ve rakam karıştır ya da birkaç kelime yaz":"";
   return {encrypt,decrypt,pwCheck,MINPW,autoName,autoPrune,autoDue};
 })();
 if(typeof module!=="undefined")module.exports=BackupLib;

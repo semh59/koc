@@ -2573,7 +2573,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     reset();ev("S.settings.medOn=true;S.meds=[{id:1,n:'Ilac',d:'1 tablet',t:['08:00'],w:[1],on:true,k:10}];S.mealTpl=[];S.myFoods=[{n:'Kendi besinim',k:100,p:5}]");
     const ctx=ev("CoachLib.contextText(cData())"),cat=ev("cMenuCat().text");
     ok("metinde adı geçen her veri gerçekten bağlamda: doz, haftanın günleri, uyum, stok, bugünkü yemek, kendi besin adı",ctx.includes("1 tablet")&&ctx.includes("haftanın günleri")&&ctx.includes("son 7 gün")&&ctx.includes("stok")&&cat.includes("Kendi besinim")&&["doz","haftanın günleri","son 7 günün uyumu","stok","bugünkü kayıtların","kendi besin"].every(k=>sent.includes(k)));
-    ok("politika: Drive/otomatik yedekte parola zorunlu (en az 6), paylaş/kopyada isteğe bağlı; vücut ölçüleri ve tarifler tabloda",doc.includes("parola zorunlu, en az 6 karakter")&&doc.includes("vücut ölçüleri (bel, kalça")&&doc.includes("kendi tarifleri"));
+    ok("politika: tüm yedeklerde parola zorunlu (en az 8); vücut ölçüleri ve tarifler tabloda",doc.includes("parola zorunludur, en az 8 karakterdir")&&doc.includes("vücut ölçüleri (bel, kalça")&&doc.includes("kendi tarifleri"));
     reset();
   }
   { // Dalga 11 (12): karbonhidrat/yağ toplamında eksik öğün notu
