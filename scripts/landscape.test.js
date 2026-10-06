@@ -10,4 +10,7 @@ ok("yatayda sheet ekran yüksekliğini aşmaz ve kayar (max-height 100vh tabanl�
 ok("yatayda Koç yazma alanı kompakt alt sekmenin hemen üstünde",px(/#composer\{[^}]*bottom:calc\((\d+)px/)>=44+4);
 ok("yan kenar boşlukları: --sal/--sar sekmede, gövdede, yazma alanında, rehberde",/--sal:/.test(html)&&/--sar:/.test(html)&&/body\{[^}]*padding:var\(--sat\) var\(--sar\) 0 var\(--sal\)/.test(html)&&/nav\{[^}]*var\(--sal\)/.test(html)&&/#composer\{[^}]*left:var\(--sal\)/.test(html)&&/#guide\{[^}]*var\(--sal\)/.test(html));
 ok("klavye sezgisi: genişlik değişince (döndürme) taban sıfırlanır",/innerWidth!==lw\)\{lw=innerWidth;base=0\}/.test(html));
+ok("rehberli mod yatayda tam genişlik, 100dvh'ye sığar, iki sütun (hareket | sayaç ve düğmeler), sağ sütun kayar",/#guide\{[^}]*max-width:none[^}]*height:100dvh/.test(c)&&/\.gdbody\{[^}]*grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/.test(c)&&/\.gdB\{[^}]*overflow-y:auto/.test(c));
+ok("rehberli mod yatayda düğmeler ≥44 px, özet düğmeleri yapışkan alt şeritte, halka küçülür",px(/\.gdctl \.btn\{[^}]*min-height:(\d+)px/)>=44&&/\.gdfoot\{[^}]*position:sticky;bottom:0/.test(c)&&/\.gdring\{width:clamp\(/.test(c));
+ok("dik görünümde sütun sarmalayıcıları görünmez (display:contents), dik düzen değişmez",/\.gdbody,\.gdA,\.gdB\{display:contents\}/.test(html));
 if(bad){console.log(bad+" HATA");process.exit(1)}console.log("TAMAM");

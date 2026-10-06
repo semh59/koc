@@ -183,6 +183,7 @@ body.koc #toast{bottom:calc(150px + var(--sab))}
 .gdl{text-align:center;font-size:14px;font-weight:700;color:var(--mut)}.gdn{text-align:center;font-size:24px;margin:0;line-height:1.2}.gdc{text-align:center;color:var(--mut);font-size:15px;margin:2px 0 4px}
 .gdring{position:relative;width:min(44vw,180px);margin:2px auto;flex:none}.gdring svg{display:block;width:100%;transform:rotate(-90deg)}.gdring circle{fill:none;stroke-width:9}.gdring .tr{stroke:var(--soft)}.gdring .pg{stroke:var(--prim);stroke-linecap:round}.gdring.gdrs .pg{stroke:var(--su)}
 .gdtm{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}.gdtm b{font-size:44px;line-height:1}
+.gdbody,.gdA,.gdB{display:contents}.gdfoot{display:grid;gap:8px}.gdfoot>:only-child{margin-top:8px}
 .gdnx{display:flex;align-items:baseline;gap:8px;background:var(--bg);border-radius:12px;padding:10px 12px;margin:6px 0 0;flex:none}.gdnx b{flex:1;min-width:0;overflow-wrap:anywhere}
 .gdctl{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:8px;margin-top:8px;flex:none}.gdctl .btn{min-height:56px;padding:8px}.gdrem{text-align:center;margin:6px 0 0}#guide .hint{text-align:center;padding:4px 0 0}
 .fg-far{stroke:var(--mut);opacity:.75}.fg-body,.fg-near{stroke:var(--prim)}.fg-head{stroke:var(--prim);fill:var(--card);stroke-width:2.6}
@@ -299,7 +300,17 @@ input.in,select.in,.chip>button{min-height:44px}
   main{padding-bottom:calc(60px + var(--sab))}
   #composer{bottom:calc(50px + var(--sab));padding-top:2px;padding-bottom:4px}.cin{min-height:44px}.chiprow{margin-bottom:4px}
   #toast{bottom:calc(58px + var(--sab))}
-  #sheet{max-height:calc(100vh - 8px - var(--sat))}.plist{max-height:30vh}
+  #sheet{max-height:calc(100vh - 8px - var(--sat));max-height:calc(100dvh - 8px - var(--sat))}.plist{max-height:30vh}
+  /* Rehberli mod: tam genişlik, 100dvh'ye sığar; solda hareket, sağda sayaç ve düğmeler (sağ sütun kayar). */
+  #guide{max-width:none;margin:0;height:100vh;height:100dvh;padding-top:calc(2px + var(--sat));padding-bottom:calc(4px + var(--sab))}
+  .gdtop{min-height:44px}
+  .gdbody{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px 16px;flex:1;min-height:0}
+  .gdA,.gdB{display:flex;flex-direction:column;min-height:0;min-width:0}.gdB{overflow-y:auto;justify-content:safe center}
+  .gdfig{flex:1 1 0;min-height:60px;max-height:none;margin:4px 0}.gdn{font-size:20px}.gdc{font-size:14px}
+  .gdring{width:clamp(84px,32vh,112px)}.gdtm b{font-size:28px}
+  .gdnx{margin:4px 0 0;padding:6px 10px}.gdctl{margin-top:6px}.gdctl .btn{min-height:48px}
+  #guide .plist{max-height:none;overflow:visible}
+  .gdfoot>:only-child{margin-top:0}.gdfoot{grid-auto-flow:column;grid-auto-columns:1fr;position:sticky;bottom:0;background:var(--card);padding-top:6px}
 }
 </style>
 </head>
@@ -889,9 +900,9 @@ function goKilo(){
   toast(msg,e.id);
 }
 /* Dünkü kayıt kendi öğününü taşır; favori ve şablonda öğün yok, seçilen çip geçerli. */
-function addFoods(items,day,msg){
+function addFoods(items,day,msg,undo){
   const ids=items.map(s=>{const e=copyNutr(s,add("yemek",s.v,s.text,day));e.meal=LogLib.mealKey(s.meal)||(s.time?LogLib.mealOf(s):fmeal());return e.id});save();closeSheet();render();
-  toast(msg,()=>{S.entries=S.entries.filter(e=>!ids.includes(e.id));save();render()});
+  toast(msg,()=>{S.entries=S.entries.filter(e=>!ids.includes(e.id));if(undo)undo();save();render()});
 }
 function repeatYesterday(){
   const src=of("yemek",keyOff(-1));
