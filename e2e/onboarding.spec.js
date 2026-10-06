@@ -7,17 +7,19 @@ async function fill(page,{cm="178",kg="84",age="35"}={}){
 }
 
 test.describe("Onboarding",()=>{
-  // Yaş kapısı başka bir çalışmada yazılıyor (onboardui.js); bugün 17 yaş ikinci adıma geçiyor.
-  test.fixme("18 yaş kapısı: 17 reddedilir, 18 geçer",async({app,page})=>{
+  test("18 yaş kapısı: 17'de kurulum durur ve hiçbir şey kaydedilmez, 18 geçer",async({app,page})=>{
     await app.open();
     await expect(step(page)).toHaveText("Adım 1/3");
     await fill(page,{age:"17"});
     await page.click('[data-ob="next"]');
-    // Kabul: 17 yaşta ikinci adıma geçilmez, alanın altında hata görünür.
+    // Kabul: nazik ekran; geç, geri ve devam yok; profil yazılmaz.
+    await expect(page.locator("#view h2")).toHaveText("NeoWell 18 yaş ve üzeri için");
+    await expect(page.locator('[data-ob="skip"],[data-ob="next"],[data-ob="back"]')).toHaveCount(0);
+    const s=(await app.state())||{settings:{}};
+    expect(s.settings.age||0).toBe(0);expect(s.entries||[]).toEqual([]);
+    await page.click('[data-ob="fixage"]');
     await expect(step(page)).toHaveText("Adım 1/3");
-    await expect(page.locator("#oberr")).not.toBeEmpty();
-    await expect(page.locator("#obage")).toHaveAttribute("aria-invalid","true");
-    await page.fill("#obage","18");
+    await fill(page,{age:"18"});
     await page.click('[data-ob="next"]');
     await expect(step(page)).toHaveText("Adım 2/3");
   });
