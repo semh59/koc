@@ -1,3 +1,5 @@
 node_modules/
 /android/
 tools/besin/FoodData*/
+test-results/
+e2e-report/
