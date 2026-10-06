@@ -210,18 +210,40 @@ setTimeout(async()=>{
     ev("S.dbStep=0;S.plates=GPLATE_DEF.slice();tab='bugun';render()");
   }
   { // Koç ilk izlenimi (C7)
-    const q=s=>$q(s),k=()=>ev("viewKoc()");
+    const q=s=>$q(s),qa=s=>[...w.document.querySelectorAll(s)],k=()=>ev("viewKoc()");
     ev("S.chat=[];S.settings.consent=false;offline=null");
     ok("anahtar yokken tanıtım: ne yapar, veri nereye gider, çevrimdışı, Koç'suz çalışır; 'API' yok",k().includes("Koç ne yapar")&&k().includes("Verin nereye gider")&&k().includes("çevrimdışı çalışmaz")&&k().includes("onay verirsen")&&k().includes("Koç olmadan da uygulama tam çalışır")&&!/\bAPI\b/.test(k())&&!k().includes("Açık rızamı veriyorum"),k());
     ev("openSheet('x');cClick('guide',document.body)");
-    const names=ev("S.providers.filter(p=>GUIDE[p.id]).map(p=>p.name)");
-    ok("rehber listesi coach.js'teki sağlayıcıları sıralar",names.length===4&&names.every(n=>q("#sheet").textContent.includes(n))&&!/\bAPI\b/.test(q("#sheet").textContent.replace("API Keys","")),names);
-    ok("her sağlayıcının rehberi 3-4 adım, anahtar alanı ve kaydet düğmesi içerir",ev("S.providers.filter(p=>GUIDE[p.id]).every(p=>{cGuide(p.id);const s=document.querySelector('#sheet');const n=s.querySelectorAll('ol li').length;return n>=3&&n<=4&&!!s.querySelector('#gk[type=password]')&&!!s.querySelector('[data-c=\"gsave:'+p.id+'\"]')})"));
-    ev("cGuide('groq')");q("#gk").value="kısa";q('[data-c="gsave:groq"]').click();
-    ok("eksik anahtar kaydedilmez",ev("getKeys().groq")===undefined&&q("#toast").textContent.includes("eksik"));
-    q("#gk").value="gsk_ornekanahtar123";q('[data-c="gsave:groq"]').click();
-    ok("anahtar kaydedilir ve sağlayıcı açılır, tanıtım yerini onay bildirimine bırakır",ev("getKeys().groq")==="gsk_ornekanahtar123"&&ev("S.providers.find(p=>p.id==='groq').on")&&!k().includes("Koç ne yapar")&&k().includes("Açık rızamı veriyorum")&&!q("#sheet").classList.contains("on"));
-    ev("setKey('groq','');S.settings.consent=false");
+    const names=ev("S.providers.filter(p=>GUIDE[p.id]).map(p=>p.name)"),st=()=>q("#sheet").textContent;
+    ok("kurulum: anahtar alanı ve 4 sağlayıcı düğmesi; 'API' yok",names.length===4&&names.every(n=>st().includes(n))&&!!q("#sk[type=password]")&&qa('[data-c^="sp:"]').length===4&&!/\bAPI\b/.test(st()),names);
+    ok("her sağlayıcının rehberi 3-4 adım ve anahtara dönüş düğmesi içerir",ev("S.providers.filter(p=>GUIDE[p.id]).every(p=>{cGuide(p.id);const s=document.querySelector('#sheet');const n=s.querySelectorAll('ol li').length;return n>=3&&n<=4&&!!s.querySelector('[data-c=\"setup\"]')})"));
+    const calls=[];let resp=null;w.fetch=async(u,o)=>{calls.push({u,o});if(!resp)throw new TypeError("Failed to fetch");return resp};
+    const R=(status,body)=>({ok:status<300,status,json:async()=>JSON.parse(body),text:async()=>body});
+    const type=v=>{q("#sk").value=v;q("#sk").dispatchEvent(new w.Event("input",{bubbles:true}))};
+    ev("cSetup(true)");type("sk-ant-api03-ornek");
+    ok("Anthropic/OpenAI anahtarı tanınır, açık Türkçe açıklama; sağlayıcı seçilmez",st().includes("Anthropic (Claude) anahtarına benziyor")&&!q('[data-c="stest"]'));
+    type("kısa");q('[data-c="sp:groq"]').click();q('[data-c="stest"]').click();
+    ok("eksik anahtar: ağ çağrısı yok, kaydedilmez",calls.length===0&&ev("getKeys().groq")===undefined&&st().includes("eksik"));
+    type("gsk_ornekanahtar123");
+    ok("önekten sağlayıcı tahmini: gsk_ → Groq seçili, değiştirilebilir",q('[data-c="sp:groq"]').getAttribute("aria-pressed")==="true"&&st().includes("Groq anahtarı olarak tanındı"));
+    ev("S.settings.age=16");await ev("suFetch()");
+    ok("18 yaş altı: kurulum ağ çağrısı yapmaz",calls.length===0&&st().includes("18 yaş altında"));
+    ev("S.settings.age=0");resp=R(200,JSON.stringify({data:[{id:"whisper-large-v3"},{id:"llama-3.1-8b-instant"},{id:"llama-3.3-70b-versatile"}]}));
+    await ev("suFetch()");
+    ok("modeller getirilir: konuşma dışı atılır, Önerilen hazır seçili",calls[0].u==="https://api.groq.com/openai/v1/models"&&ev("su.model")==="llama-3.3-70b-versatile"&&st().includes("Önerilen")&&ev("su.models.length")===2);
+    q('[data-c="sadv"]').click();q("#smsel").value="llama-3.1-8b-instant";q("#smsel").dispatchEvent(new w.Event("change",{bubbles:true}));
+    ok("ileri: başka model seçilebilir",ev("su.model")==="llama-3.1-8b-instant"&&!!q("#smfree"));
+    resp=R(400,'{"error":{"message":"Please pass a valid API key"}}');await ev("suTest()");
+    ok("test hatası anlaşılır Türkçe (400 gövdesinden yanlış anahtar), kaydedilmez",st().includes("Anahtar kabul edilmedi")&&ev("getKeys().groq")===undefined&&!q('[data-c="ssave"]'));
+    resp=null;await ev("suTest()");
+    ok("ağ yok: ayrı mesaj ve 'Denemeden kaydet' seçeneği",st().includes("İnternet yok")&&!!q('[data-c="ssave"]'));
+    ev("S.settings.healthNote='gizli not'");calls.length=0;resp=R(200,JSON.stringify({choices:[{message:{content:"tamam"}}]}));await ev("suTest()");
+    ok("test isteği sağlık verisi taşımaz, yalnız sabit cümle",calls.length===1&&!calls[0].o.body.includes("gizli not")&&JSON.parse(calls[0].o.body).messages.length===1);
+    ok("başarılı test: anahtar ve seçilen model kaydedilir, sağlayıcı açılır, tanıtım yerini onay bildirimine bırakır",ev("getKeys().groq")==="gsk_ornekanahtar123"&&ev("S.providers.find(p=>p.id==='groq').model")==="llama-3.1-8b-instant"&&ev("S.providers.find(p=>p.id==='groq').on")&&!k().includes("Koç ne yapar")&&k().includes("Açık rızamı veriyorum")&&!q("#sheet").classList.contains("on"));
+    ok("kurulum onay vermez: consent kapalı kalır, coachOn yanlış",ev("S.settings.consent")===false&&ev("coachOn()")===false);
+    ev("pFail('groq',Object.assign(new Error('x'),{status:429,body:'insufficient_quota'}));offline='fail'");
+    ok("sohbet hatası nedeni gösterir (kota)",k().includes("Groq: Hesabının kotası"));
+    ev("delete pstat.groq;delete cool.groq;offline=null;S.providers.find(p=>p.id==='groq').model='llama-3.3-70b-versatile';S.settings.healthNote='';setKey('groq','');S.settings.consent=false");delete w.fetch;
   }
   ok("sayı ayrıştırma",ev("[num('83,7'),num('83.7'),num('1.234,5'),num('1.500',true),num('abc')]").slice(0,4).join()==="83.7,83.7,1234.5,1500"&&isNaN(ev("num('abc')")));
   ok("geçersiz spor süresi atılır",ev("cleanEntries([{type:'spor',day:'2026-01-01',v:1500},{type:'spor',day:'2026-01-01',v:30}]).out.length")===1);
@@ -233,6 +255,7 @@ setTimeout(async()=>{
   ev("goYukle()");
   ok("yedek anahtar adresini değiştiremez",ev("S.providers.find(p=>p.id==='nvidia').base")==="https://integrate.api.nvidia.com/v1",ev("S.providers.map(p=>p.base)"));
   ok("yedek onayı ve izni değiştiremez",ev("S.settings.consent")===false&&ev("S.providers.find(p=>p.id==='gemini').confirm")===true);
+  ok("kaldırılan eski hazır model yenisine geçer, kullanıcının seçtiği model ve özel sağlayıcı korunur",ev("JSON.stringify(cleanCoach({providers:[{id:'openrouter',name:'OpenRouter',base:'https://openrouter.ai/api/v1',model:'meta-llama/llama-3.3-70b-instruct:free',on:true,health:true},{id:'nvidia',name:'NVIDIA',base:'https://integrate.api.nvidia.com/v1',model:'benim/modelim',on:true,health:true},{id:'u7',name:'X',base:'https://x.example/v1',model:'gemini-2.0-flash',on:true,health:true}]}).providers.map(p=>p.model))")==='["google/gemma-4-31b-it:free","benim/modelim","gemini-2.0-flash"]');
   ev("setKey('groq','KEY-sirri-12345');S.settings.healthNote='gizli not'");
   ev("document.querySelector('#bkpw')||document.body.insertAdjacentHTML('beforeend','<input id=\"bkpw\">')");
   w.document.querySelector("#bkpw").value="parola123";
