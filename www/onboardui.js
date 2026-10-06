@@ -1,6 +1,6 @@
 "use strict";
 /* İlk açılış: 3 adım. Girdiler mevcut profil ve ayar alanlarına yazılır; taslak yalnızca bellekte durur. */
-const obFresh=()=>({step:0,kg:"",cm:"",age:"",sex:"",dir:"koru",goal:"",hd:false,hn:false,mods:[],err:"",bad:""});
+const obFresh=()=>({step:0,kg:"",cm:"",age:"",sex:"",dir:"koru",goal:"",hd:false,hn:false,mods:[],err:"",bad:"",minor:false});
 const ob=obFresh();
 const OB_MODS=[["med","İlaç hatırlatıcı","ilac"],["fast","Oruç takibi","fast"],["steps","Adım sayar","adim"],["bp","Tansiyon","heart"],["bs","Şeker","su"]];
 const OB_DIRS=[["ver","Kilo ver"],["koru","Koru"],["al","Kilo al"]];
@@ -16,6 +16,7 @@ function obParse(){
   const o={};
   for(const [k,lbl,lo,hi,int] of [["cm","Boy",...RANGES.heightCm],["kg","Kilo",20,400,false],["age","Yaş",...RANGES.age]]){
     const v=num(ob[k],int);
+    if(k==="age"&&v>0&&v<18)return {minor:true};
     if(isNaN(v)||v<lo||v>hi)return {err:`${lbl} ${lo} ile ${hi} arasında olmalı`,bad:k};
     o[k]=v;
   }
@@ -41,6 +42,8 @@ function obView(){
   const fld=(k,lbl,val,small,mode)=>`<div class="field"><label for="ob${k}">${lbl}${small?`<small>${small}</small>`:""}</label><input id="ob${k}" type="text" inputmode="${mode}" value="${esc(val)}" autocomplete="off"${bad(k)}></div>`;
   const seg=(attr,opts,sel)=>`<div class="seg2" role="group">${opts.map(([v,l])=>`<button data-ob="${attr}:${v}" aria-pressed="${sel===v}">${l}</button>`).join("")}</div>`;
   const err=`<div class="ferr" id="oberr" role="alert">${esc(ob.err)}</div>`;
+  /* 18 yaş altı: kurulum ilerlemez, taslak silinmiştir; geçme ve geri yolu yok, yalnız yaşı düzeltme. */
+  if(ob.minor)return `<h2>NeoWell 18 yaş ve üzeri için</h2><div class="card"><p>Büyüme çağında kalori ve kilo hedefleri farklıdır; bu uygulama onları hesaplamaz.</p><p>Beslenme, kilo ya da spor konusunda bir yetişkinle ve hekiminle ya da diyetisyeninle konuş.</p><p class="hint">Girdiğin bilgiler kaydedilmedi.</p></div><button class="btn ghost" data-ob="fixage">Yaşımı yanlış girdim</button>`;
   let body,next="Devam";
   if(st===0)body=`<h2>Seni tanıyalım</h2><p class="hint" style="margin:-6px 0 10px">Günlük kalori ve protein hedefini buna göre hesaplarız.</p><div class="card">
     ${fld("cm","Boy (cm)",ob.cm,"","numeric")}${fld("kg","Kilo (kg)",ob.kg,"","decimal")}${fld("age","Yaş",ob.age,"","numeric")}
@@ -78,12 +81,16 @@ document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-ob]");if(!el)return;
   const [a,v]=el.dataset.ob.split(":");
   obRead();
+  if(a==="fixage"){Object.assign(ob,obFresh());return render()}
+  if(ob.minor)return;
   if(a==="skip")return obDone();
   if(a==="back"){ob.step--;ob.err=ob.bad="";return render()}
   if(a==="sex"||a==="dir"){ob[a]=v;ob.err=ob.bad="";return render()}
   if(a==="mod"){ob.mods=ob.mods.includes(v)?ob.mods.filter(x=>x!==v):ob.mods.concat(v);return render()}
   if(ob.step===0){
-    const p=obParse();ob.err=p.err||"";ob.bad=p.bad||"";
+    const p=obParse();
+    if(p.minor){Object.assign(ob,obFresh(),{minor:true});return render()}
+    ob.err=p.err||"";ob.bad=p.bad||"";
     if(p.err){render();const f=$("#ob"+p.bad);if(f)f.focus();return}
     ob.step=1;return render();
   }
