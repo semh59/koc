@@ -26,7 +26,7 @@ const skipTo=pred=>`(()=>{for(let i=0;i<60&&!(${pred});i++)gdClick("skip");retur
       const states=[["hazirlan","gdStart('f:'+GuideLib.FLOWS[0].id)"],
         ["calis",skipTo('gd.st.ph[gd.st.i].k==="w"')],["dinlen",skipTo('gd.st.ph[gd.st.i].k==="r"')],
         ["duraklat","gdClick('pause')"],["devam","gdClick('resume')"]];
-      const check=async(name,sel,js,sc)=>{if(js)await b.eval(js);const r=await b.eval(probe(sel,sc||sel!=="#guide"));
+      const check=async(name,sel,js,sc)=>{if(js)await b.eval(js);if(sel==="#sheet")await b.eval("new Promise(r=>setTimeout(r,600))");const r=await b.eval(probe(sel,sc||sel!=="#guide"));
         if(shots)await b.shot(path.join(shots,`${name}-${tag}.png`));
         ok(`${tag} ${name}: tüm etkileşimli öğeler görünür, üstte ve ≥44 px`,!r.miss&&!r.bad.length,r);
         if(land&&sel==="#guide")ok(`${tag} ${name}: katman tam genişlik ve ekrana sığar`,r.box[2]===w&&r.box[3]<=h&&r.sw<=w,r)};
