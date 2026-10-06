@@ -824,7 +824,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     // ilaçlar ekranı
     ev("tab='ilac';render()");
     ok("ilaçlar ekranı: başlık, bugünün dozları, ilaç listesi, uyarı metni",q("#ttl").textContent==="İlaçlar"&&q("#view").textContent.includes("Test İlaç")&&q("#view").textContent.includes("08:00, 20:00 · her gün")&&q("#view").textContent.includes("doz önermez")&&q('nav [data-tab="daha"]').getAttribute("aria-current")==="page"&&!q('nav [data-tab="bugun"]').getAttribute("aria-current"));
-    ok("Koç bağlamı: ilaçlar adı, saati, son 7 gün uyumu ve uyarıyla gider",(c=>c.includes("İLAÇLAR")&&c.includes("Test İlaç")&&c.includes("08:00, 20:00")&&c.includes("son 7 gün:")&&c.includes("hekime"))(ev("CoachLib.contextText(cData())")));
+    ok("Koç bağlamı: ilaçlar adı, saati, son 7 gün uyumu ve uyarıyla gider",(c=>c.includes("İLAÇLAR")&&c.includes("Test İlaç")&&c.includes("08:00, 20:00")&&c.includes("doz sayıları son 7 gün")&&c.includes("hekime"))(ev("CoachLib.contextText(cData())")));
     ev("S.settings.medOn=false;render()");
     ok("ilaç kapalıyken alt menü aynı 5 sekme, Koç bağlamında ilaç yok",qa("nav button").map(b=>b.dataset.tab).join()==="bugun,salon,trend,koc,daha"&&!ev("CoachLib.contextText(cData())").includes("İLAÇLAR"));
     ev("S.settings.medOn=true;render()");

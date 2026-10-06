@@ -186,8 +186,8 @@ Sabah planı istenirse "notif" alanına {"morning":"...","afternoon":"...","even
     if(d.weekSets&&Object.keys(d.weekSets).length)L.push("BU HAFTA TAMAMLANAN SET (bölgeye göre): "+Object.keys(d.weekSets).map(k=>k+" "+d.weekSets[k]).join(", "));
     if(d.notes.length)L.push("SON NOTLAR: "+d.notes.join(" | "));
     if(d.meds&&d.meds.length){
-      L.push("İLAÇLAR (kullanıcının kendi girdiği hatırlatıcı kaydı; doz veya ilaç değişikliği önerme, ilaçla ilgili soruları hekime/eczacıya yönlendir):");
-      for(const m of d.meds)L.push(`${m.n}${m.d?" "+m.d:""} | saatler ${m.t.join(", ")}${m.w?" | haftanın günleri "+m.w.join(","):""} | son 7 gün: ${m.a?`${m.a.taken}/${m.a.total} alındı, ${m.a.missed} kaçırılan${m.a.late?`, ${m.a.late} bugün gecikti (gün bitene kadar eklenebilir, kaçırılan değil)`:""}, ${m.a.skipped} atlanan`:"doz yok"}${m.left!=null?` | stok ~${m.left} doz`:""}`);
+      L.push("İLAÇLAR (kullanıcının kendi girdiği hatırlatıcı kaydı; doz veya ilaç değişikliği önerme, ilaçla ilgili soruları hekime/eczacıya yönlendir; doz sayıları son 7 gün"+(d.meds.some(m=>m.a&&m.a.late)?"; 'bugün bekleyen' doz gün bitene kadar eklenebilir, kaçırılan değil":"")+"):");
+      for(const m of d.meds)L.push(`${m.n}${m.d?" "+m.d:""} | saatler ${m.t.join(", ")}${m.w?" | haftanın günleri "+m.w.join(","):""} | ${m.a?`${m.a.taken}/${m.a.total} alındı, ${m.a.missed} kaçırılan${m.a.late?`, ${m.a.late} bugün bekleyen`:""}${m.a.skipped?`, ${m.a.skipped} atlanan`:""}`:"doz yok"}${m.left!=null?` | stok ~${m.left} doz`:""}`);
     }
     return L.join("\n");
   }
