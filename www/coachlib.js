@@ -153,9 +153,13 @@ const CoachLib=(()=>{
     groq:["llama-3.3-70b-versatile","openai/gpt-oss-120b","llama-3.1-8b-instant"],
     nvidia:["google/gemma-4-31b-it","meta/llama-3.3-70b-instruct","mistralai/mistral-large-2-instruct","nvidia/nemotron-3-super-120b-a12b"],
     openrouter:["google/gemma-4-31b-it:free","nvidia/nemotron-3-super-120b-a12b:free"],
-    gemini:["gemini-3.5-flash-lite","gemini-3.1-flash-lite","gemini-3.5-flash"]
+    gemini:["gemini-3.5-flash-lite","gemini-3.1-flash-lite","gemini-3.5-flash"],
+    openai:["gpt-6-luna"],
+    anthropic:["claude-haiku-4-5","claude-haiku-4-5-20251001","claude-sonnet-5-5"]
   };
-  const NONCHAT=/embed|whisper|tts|guard|safety|reward|parse|rerank|retriev|clip|vision|vlm|image|video|audio|transcri|live|translate|detector|calibration|deplot|kosmos|fuyu|code|orpheus|omni|diffusion|moderation|vila|neva|cosmos/i;
+  /* Tercih listesi eskiyince ailenin ucuz ve hızlı üyesine düşülür. */
+  const FAMILY={gemini:/^gemini-[\d.]+-flash(-lite)?$/,openai:/^gpt-[\d.]+-luna$/,anthropic:/haiku|sonnet/};
+  const NONCHAT=/embed|whisper|tts|guard|safety|reward|parse|rerank|retriev|clip|vision|vlm|image|video|audio|transcri|live|translate|detector|calibration|deplot|kosmos|fuyu|code|orpheus|omni|diffusion|moderation|vila|neva|cosmos|dall-e|davinci|babbage|realtime|search|sora|computer/i;
   /* /models yanıtı: konuşma dışı modeller atılır; fiyat varsa (OpenRouter) ücretsizlik işaretlenir. Gemini kimliklerinde olası "models/" öneki kırpılır. */
   function parseModels(j){
     const out=[],seen=new Set();
@@ -171,7 +175,7 @@ const CoachLib=(()=>{
     const ids=new Set(list.map(m=>m.id));
     const hit=(MODEL_PREF[pid]||[]).find(x=>ids.has(x));if(hit)return hit;
     const f=list.find(m=>m.free===true&&!/reason|think/i.test(m.id));
-    return f?f.id:pid==="gemini"?((list.find(m=>/^gemini-[\d.]+-flash(-lite)?$/.test(m.id))||{}).id||null):null;
+    return f?f.id:FAMILY[pid]?((list.find(m=>FAMILY[pid].test(m.id))||{}).id||null):null;
   }
   /* Hata sınıfı: durum kodu tek başına yetmez (Gemini yanlış anahtara 400, kota ve hız limiti ikisi de 429, eksik model 400 ya da 404). */
   function errKind(status,body,name){
