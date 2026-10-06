@@ -33,4 +33,41 @@ test.describe("Koç kayıt kartı",()=>{
     await expect(page.locator("#view")).toContainText("Su içmeyi unutma.");
     expect(fake.chats().length).toBe(1);
   });
+
+  test("yeni sohbet eskisini geçmişe alır; model eski mesajları görmez; geçmişten açılıp devam edilir",async({app,page,fake})=>{
+    fake.st.reply=()=>JSON.stringify({reply:"Tamam."});
+    await open(app);await send(app,page,"Birinci sohbet mesajı");
+    await expect(page.locator("#view")).toContainText("Tamam.");
+    await page.click('[data-c="newchat"]');
+    await expect(page.locator(".ub")).toHaveCount(0);
+    await expect(page.locator('[data-c="chats"]')).toContainText("Geçmiş (1)");
+    await page.fill("#cmsg","İkinci sohbet mesajı");await page.click("#csend");
+    await expect(page.locator("#view")).toContainText("Tamam.");
+    const sent=JSON.stringify(fake.chats().at(-1).body.messages);
+    expect(sent).toContain("İkinci sohbet mesajı");expect(sent).not.toContain("Birinci sohbet mesajı");
+    await page.reload();await app.tab("koc");
+    await page.click('[data-c="chats"]');
+    await expect(page.locator("#sheet")).toContainText("Birinci sohbet mesajı");
+    await page.click('[data-c^="openchat:"]');
+    await expect(page.locator(".ub")).toHaveText("Birinci sohbet mesajı");
+    await expect(page.locator('[data-c="chats"]')).toContainText("Geçmiş (1)");
+  });
+  test("geçmiş sohbet silinir; Koç yanıt beklerken sohbet değişmez",async({app,page,fake})=>{
+    fake.st.reply=()=>JSON.stringify({reply:"Tamam."});
+    await open(app);await send(app,page,"Eski mesaj");
+    await expect(page.locator("#view")).toContainText("Tamam.");
+    await page.click('[data-c="newchat"]');
+    await page.click('[data-c="chats"]');
+    await page.click('[data-c^="delchat:"]');
+    await expect(page.locator('[data-c="chats"]')).toHaveCount(0);
+    expect((await app.state()).chats).toEqual([]);
+  });
+  test("yatay kısa ekranda Koç yazma alanı görünür, hızlı düğme sırası gizlenir",async({app,page,fake})=>{
+    await page.setViewportSize({width:800,height:360});
+    await open(app);await app.tab("koc");
+    await expect(page.locator("#cmsg")).toBeVisible();
+    await expect(page.locator("#composer .chiprow")).toBeHidden();
+    const [h,c]=await Promise.all([page.locator("header").boundingBox(),page.locator("#composer").boundingBox()]);
+    expect(c.y-(h.y+h.height)).toBeGreaterThan(150);
+  });
 });

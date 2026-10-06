@@ -10,7 +10,7 @@ const PV_CATS=[
   ["Sağlık ölçümleri (tansiyon, şeker)",()=>S.vitals.length,()=>{S.vitals=[]}],
   ["Tahlil",()=>S.labs.length,()=>{S.labs=[]}],
   ["Uyku, ruh hali ve oruç",()=>S.sleep.length+S.mood.length+S.fast.log.length+(S.fast.t0?1:0),()=>{S.sleep=[];S.mood=[];S.fast.log=[];S.fast.t0=null}],
-  ["Koç sohbeti",()=>S.chat.length,cClearChat],
+  ["Koç sohbeti",()=>S.chat.length+S.chats.length,cClearChat],
   ["Notlar",...pvE("not")],
   ["Vücut ölçüleri (bel, kalça…)",()=>S.measures.length,()=>{S.measures=[]}],
   ["Tariflerim",()=>S.recipes.length,()=>{S.recipes=[]}]

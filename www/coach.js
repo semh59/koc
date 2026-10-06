@@ -57,8 +57,19 @@ function cleanCoach(r){
   }
   /* Sonradan eklenen hazır sağlayıcılar eski kayda kapalı olarak eklenir. */
   if(provs.length)for(const d of defProviders())if(!provs.some(x=>x.id===d.id))provs.push(d);
+  const chat=cleanChat(r.chat,known),chats=[];
+  for(const x of (Array.isArray(r.chats)?r.chats:[]).slice(0,CHATS_MAX)){
+    if(!x||!Number.isInteger(x.id)||!Number.isFinite(x.t)||chats.some(c=>c.id===x.id))continue;
+    const msgs=cleanChat(x.msgs,known);
+    if(msgs.length)chats.push({id:x.id,t:x.t,title:typeof x.title==="string"?x.title.slice(0,60):"Sohbet",msgs});
+  }
+  const top=Math.max(...chat.map(m=>m.id),...chats.flatMap(c=>c.msgs.map(m=>m.id)),0);
+  return {providers:provs.length?provs:defProviders(),chat,chats,cid:Math.max(1,top+1,Number.isInteger(r.cid)?r.cid:1)};
+}
+const CHATS_MAX=20;
+function cleanChat(arr,known){
   const chat=[];
-  for(const m of (Array.isArray(r.chat)?r.chat:[]).slice(-150)){
+  for(const m of (Array.isArray(arr)?arr:[]).slice(-150)){
     if(!m||!Number.isInteger(m.id)||!["user","coach","sys"].includes(m.role)||!Number.isFinite(m.t))continue;
     const o={id:m.id,role:m.role,text:typeof m.text==="string"?m.text.slice(0,1500):"",t:m.t};
     if(m.pend===true)o.pend=true;
@@ -77,7 +88,7 @@ function cleanCoach(r){
     else if(c&&c.kind==="propose"&&Number.isFinite(c.kcal))o.card={kind:"propose",kcal:Math.round(c.kcal),why:String(c.why||"").slice(0,160),limited:c.limited===true,state:["pending","ok","no"].includes(c.state)?c.state:"pending"};
     chat.push(o);
   }
-  return {providers:provs.length?provs:defProviders(),chat,cid:Math.max(1,...chat.map(m=>m.id+1),Number.isInteger(r.cid)?r.cid:1)};
+  return chat;
 }
 function cPush(m){const o=Object.assign({id:S.cid++,t:Date.now()},m);S.chat.push(o);if(S.chat.length>150)S.chat.splice(0,S.chat.length-150);return o}
 
@@ -487,7 +498,26 @@ const CONSENT_WHEN="Yalnız sen bir düğmeye bastığında gönderilir (mesaj g
 const CONSENT_NOT="Tahlil, tansiyon, şeker, vücut ölçüleri, tarifler, oruç kayıtları, fotoğraf, konum ve yedek gönderilmez.";
 const consentHtml=()=>`<b>Koç ile veri paylaşımına açık rızan</b><ul style="margin:6px 0;padding-left:18px"><li><b>Ne gönderilir:</b> ${CONSENT_SENT}. ${CONSENT_NOT}</li><li><b>Ne zaman:</b> ${CONSENT_WHEN}</li><li><b>Kime:</b> seçtiğin sağlayıcıya (${esc(S.providers.filter(p=>p.on&&p.health).map(p=>p.name).join(", ")||"hiçbiri seçili değil")}), kendi anahtarınla. Sunucuları yurt dışındadır; bu bir yurt dışına aktarımdır.</li><li><b>Geri alma:</b> istediğin an Ayarlar > Gizlilik ve veri ya da Yapay zekâ koç bölümünden. Geri alınca yeni veri gitmez; önceden gönderilene sağlayıcının kendi politikası uygulanır.</li><li><b>Onay vermezsen</b> uygulama tam çalışır, yalnız Koç konuşmaz.</li></ul>${consentOk()?"":`<p><b>18 yaş altı için Koç veri paylaşımı kapalıdır.</b></p>`}`;
 /* Sohbeti siler, onaya dokunmaz. */
-function cClearChat(){S.chat=[];save()}
+function cClearChat(){S.chat=[];S.chats=[];save()}
+/* Ayrı sohbetler: açık sohbet geçmişe arşivlenir, yeni sohbet boş başlar; modele yalnız açık sohbet gider. */
+const chatTitle=a=>{const u=a.find(m=>m.role==="user");return (u?u.text:"Sohbet").slice(0,60)};
+function cArchive(){
+  if(!S.chat.some(m=>m.role==="user"))return;
+  S.chats.unshift({id:Date.now(),t:S.chat[S.chat.length-1].t,title:chatTitle(S.chat),msgs:S.chat});
+  S.chats.splice(CHATS_MAX);
+}
+function cSwitchOk(){if(busy||typing||S.chat.some(m=>m.pend)){toast("Koç yanıt verirken sohbet değişmez");return false}return true}
+function cNewChat(){if(!cSwitchOk())return;cArchive();S.chat=[];save();render()}
+function cOpenChat(id){
+  if(!cSwitchOk())return;
+  const x=S.chats.find(c=>c.id===id);if(!x)return;
+  S.chats=S.chats.filter(c=>c!==x);cArchive();S.chat=x.msgs;
+  S.cid=Math.max(S.cid,...x.msgs.map(m=>m.id+1));
+  save();closeSheet();render();cScroll();
+}
+function cChatList(){
+  openSheet(`<h3>Sohbet geçmişi</h3>${S.chats.length?S.chats.map(c=>`<div class="prow"><button class="lnk" style="flex:1;text-align:left" data-c="openchat:${c.id}"><b>${esc(c.title)}</b><span class="mut sm">${fd(dayKey(new Date(c.t)))}, ${c.msgs.filter(m=>m.role==="user").length} mesaj</span></button><button class="lnk" style="width:auto" data-c="delchat:${c.id}" aria-label="Sohbeti sil">Sil</button></div>`).join(""):`<p class="hint">Geçmiş sohbet yok. Yeni sohbet başlatınca eskisi burada saklanır.</p>`}<button class="btn ghost" data-g="closesheet">Kapat</button>`);
+}
 function cConsent(on){
   const s=S.settings;if(on&&!consentOk())return;
   Object.assign(s,{consent:on,consentV:on?CONSENT_V:0,consentAt:on?dayKey():""});save();render();
@@ -501,6 +531,7 @@ function viewKoc(){
     h+=`<div class="banner"><b>Koç şu an ulaşılamıyor</b>${x&&pstat[x.id].m?`<p>${esc(x.name)}: ${esc(pstat[x.id].m)}</p>`:""}<p>Su, kilo ve spor kaydı çalışıyor. Yemek tahmini bağlantı gelince yapılır.</p><button class="btn" data-c="retry">Yeniden dene</button></div>`;
   }
   if(!S.settings.consent&&!intro)h+=`<div class="banner info">${consentHtml()}${consentOk()?`<button class="btn" data-c="consent">Açık rızamı veriyorum</button>`:""}<button class="lnk" data-pv="open">Gizlilik ve veri</button></div>`;
+  if(S.chat.length||S.chats.length)h+=`<div class="chips">${S.chat.length?`<button class="chip" data-c="newchat">Yeni sohbet</button>`:""}${S.chats.length?`<button class="chip" data-c="chats">Geçmiş (${S.chats.length})</button>`:""}</div>`;
   if(!S.chat.length&&hasKey())h+=`<p class="hint">Bir şey yaz: "2 yumurta ve ekmek yedim", "83,7 çektim" ya da "bugün ne yapmalıyım?"</p>`;
   for(const m of S.chat){
     if(m.role==="user")h+=`<div class="ub">${esc(m.text)}</div>${m.pend?`<div class="pendl">Gönderilmedi${coachOn()&&!typing?`<button class="lnk" style="display:inline;width:auto;min-height:44px;margin-left:6px" data-c="retry">Şimdi gönder</button>`:""}</div>`:""}`;
@@ -759,6 +790,10 @@ function cClick(v,el){
     case "applyk":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card&&m.card.state==="pending"){if(kcalBlocked(m.card.kcal)){m.card.state="no";save();render();return toast(cCalc().block)}S.settings.kcal=m.card.kcal;m.card.state="ok";save();render();toast(`Kalori hedefi ${m.card.kcal} kcal oldu`)}return}
     case "nok":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card){m.card.state="no";save();render()}return}
     case "dismiss":{const b=el.closest(".cm");if(b){S.chat=S.chat.filter(x=>x.id!==+b.dataset.mid);save();render()}return}
+    case "newchat":return cNewChat();
+    case "chats":return cChatList();
+    case "openchat":return cOpenChat(+p1);
+    case "delchat":S.chats=S.chats.filter(c=>c.id!==+p1);save();render();return cChatList();
     case "clearchat":if(confirm("Sohbet geçmişi silinsin mi? Kayıtların silinmez.")){cClearChat();render()}return;
     default:return cProvClick(a,p1,p2);
   }
