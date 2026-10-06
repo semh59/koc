@@ -68,3 +68,22 @@ Tantuni dürüm	Hesap: lavaş yerine buğday tortilla 70 g, tantuni 100 g, domat
 Kaymak, bal ve ekmek	Hesap: ekmek 60 g, kaymak 30 g, bal 20 g (1 yemek kaşığı kaymak ~25 g).
 Simit ve beyaz peynir	Hesap: simit yerine USDA bagel (287 kcal, kızarmış) 120 g, USDA beyaz peynir 40 g.
 Kaymaklı ekmek kadayıfı	Hesap: ekmek kadayıfı tarifi 120 g, üstüne kaymak 30 g.
+Badem (kavrulmuş)	Hesap: USDA SR Legacy kuru kavrulmuş badem (tuzsuz) birebir; çiğ badem ayrı kayıttır. Yağda kavurma ve tuzlama değeri artırır.
+Fındık (kavrulmuş)	Hesap: USDA SR Legacy kuru kavrulmuş fındık (tuzsuz) birebir; çiğ fındık ayrı kayıttır.
+Kaju (kavrulmuş)	Hesap: USDA SR Legacy kuru kavrulmuş kaju (tuzsuz) birebir; çiğ kaju ayrı kayıttır.
+Antep fıstığı (kavrulmuş)	Hesap: USDA SR Legacy kuru kavrulmuş antep fıstığı (tuzsuz) birebir; çiğ fıstık ayrı kayıttır.
+Yer fıstığı (kavrulmuş, tuzsuz)	Hesap: USDA SR Legacy kuru kavrulmuş yer fıstığı (tuzsuz) birebir; tuzlusu ayrı kayıttır.
+Ay çekirdeği (kavrulmuş, içi)	Hesap: USDA SR Legacy kuru kavrulmuş ay çekirdeği içi (tuzsuz) birebir; kabuklu çekirdekte yenen kısım gramın yaklaşık yarısıdır.
+Kabak çekirdeği (kavrulmuş, içi)	Hesap: USDA SR Legacy kavrulmuş kabak çekirdeği içi (tuzsuz) birebir; kabuklu çekirdekte yenen kısım daha azdır.
+Fındık ezmesi (şekersiz)	Hesap: yalnız kavrulmuş fındık (USDA, 646 kcal) varsayıldı; tuz, yağ ilavesi ve şeker hesapta yok. Şekerli ürün (kakaolu krema) ayrı kayıttır.
+Labne	Vekil: labne yerine USDA tam yağlı süzme yoğurt 60 g ve USDA krem peynir 40 g karışımı. Labnenin kuru madde ve yağ oranı markaya göre değişir.
+Vişne suyu	Hesap: USDA çiğ vişne 60 g, şeker 20 g, su 130 g (meyve nektarı varsayımı, %30 meyve). Ticari nektarın meyve oranı ve şekeri markaya göre değişir; etiketi tercih edin.
+3'ü 1 arada kahve	Hesap: paket (18 g) = hazır kahve 2 g + şeker 8 g + krema vekili olarak USDA tam yağlı süt tozu 8 g; su 180 g. Gerçek krema bitkisel yağ içerir ve paket içeriği markaya göre değişir.
+Kuzu incik	Vekil: USDA kuzu but incik kısmı (but, yağlı ve etli, fırınlanmış, 225 kcal). Kemikli ağırlıkta kemik payı yoktur: etin yenen kısmı alınmalıdır.
+Paça çorbası	Hesap: USDA kuzu incik (paça yerine, 225 kcal) 100 g, un, süt, yumurta sarısı, sarımsak, sirke, tereyağı, su. Paçanın jelatini ve kemik suyu hesapta yok; yağ yere göre çok değişir.
+Beyti	Hesap: kuzu kıyma, lavaş yerine USDA pide ekmeği, yoğurt, domates sosu, tereyağı; fırın/ızgara verimi 0,8 varsayıldı. Sosun yağı ve et oranı yere göre değişir.
+Kemalpaşa tatlısı	Hesap: un, irmik, lor (peynir vekili), yumurta, şeker, su; şerbetin tamamının tatlıya girdiği varsayıldı (şerbet bir kısmı tabakta kalır, değer biraz yüksek olabilir).
+Kalburabastı	Hesap: un, irmik, tereyağı, yumurta, ceviz, şeker şerbeti; şerbetin tamamı tatlıya girdi varsayıldı, değer yüksek tarafta olabilir.
+Şöbiyet	Hesap: USDA phyllo hamuru (yufka vekili), krema, antep fıstığı, tereyağı, şeker şerbeti; kaymak yerine krema, şerbet payı yere göre değişir.
+Zerde	Hesap: pirinç, şeker, nişasta, kuru üzüm, su; safran ve şerbet fazlası hesapta yok. Su fazlası yere göre değişir.
+Tavuk göğsü tatlısı	Hesap: USDA fırınlanmış tavuk göğsü (lifli doku), süt, şeker, mısır nişastası, pirinç unu; tarif tereyağı ve tarçın hesapta yok. Eski tarifler kadar yoğun/süzme olabilir.
