@@ -44,7 +44,7 @@ const provNames=()=>defProviders().map(p=>p.name).join(", ");
 const pHeaders=(p,key)=>p.id==="anthropic"?{"x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"}:{Authorization:"Bearer "+key};
 /* Sağlayıcının kaldırdığı eski hazır modeller: kayıtta tam bu değer duruyorsa yenisine geçilir, kullanıcının seçtiği model korunur. */
 const DEAD_MODEL={nvidia:"meta/llama-3.3-70b-instruct",openrouter:"meta-llama/llama-3.3-70b-instruct:free",gemini:"gemini-2.0-flash"};
-let pstat={},cool={},busy=false,typing=false,offline=null,lastAuto=0;
+let pstat={},cool={},busy=false,typing=false,offline=null;
 
 /* ---- doğrulama ---- */
 function cleanCoach(r){
@@ -175,9 +175,9 @@ function pFail(id,e){
 }
 const usable=()=>{const k=getKeys();return S.providers.filter(p=>p.on&&p.health&&k[p.id]&&(!cool[p.id]||cool[p.id]<Date.now()))};
 const hasKey=()=>{const k=getKeys();return S.providers.some(p=>p.on&&p.health&&k[p.id])};
-async function cAsk(messages,maxTokens,auto){
+async function cAsk(messages,maxTokens){
   if(!coachOn())throw new Error("consent");
-  const keys=getKeys(),list=usable().filter(p=>!(auto&&p.confirm));
+  const keys=getKeys(),list=usable();
   if(!list.length)throw new Error(hasKey()?"fail":"none");
   let declined=false,tried=false;
   for(const p of list){
@@ -397,13 +397,7 @@ function cPlateauCheck(){
   st.lastPlateau=t;cPush({role:"coach",kind:"plateau",text:`Son ${Math.round(p.days/7)} haftadır kilon düşmüyor. Birlikte bakalım mı?`});save();render();
 }
 
-/* ---- otomatik mesajlar: sabah planı + haftalık rapor ---- */
-function weekKey(now=new Date()){
-  const d=new Date(now.getFullYear(),now.getMonth(),now.getDate(),20);
-  const back=d.getDay();d.setDate(d.getDate()-back); // en son pazar 20:00
-  if(d>now)d.setDate(d.getDate()-7);
-  return dayKey(d);
-}
+/* ---- günün ve haftanın yorumu: yalnız kullanıcı düğmeye basınca (sağlayıcıya otomatik gönderim yoktur) ---- */
 function weekSummary(endKey){
   const e=new Date(+endKey.slice(0,4),+endKey.slice(5,7)-1,+endKey.slice(8)),ks=[];
   for(let i=6;i>=0;i--)ks.push(dayKey(addDays(-i,e)));
@@ -412,35 +406,27 @@ function weekSummary(endKey){
   const logged=ks.filter(k=>S.entries.some(x=>x.day===k)).length,sp=sum("spor",ks[0],ks[6]);
   return {logged,n:ks.length,ws,avgKcal:kc.length?Math.round(kc.reduce((a,b)=>a+b,0)/kc.length):null,avgSu:su.length?Math.round(su.reduce((a,b)=>a+b,0)/su.length):null,sport:Math.round(sp),first:ws[0],last:ws[ws.length-1]};
 }
-async function cAuto(){
-  if(busy||!coachOn()||!usable().length||Date.now()-lastAuto<30*60000)return;
-  const now=new Date(),today=dayKey(now);
-  let job=null;
-  const wk=weekKey(now);
-  if(S.settings.lastWeekly!==wk&&weekSummary(wk).logged>=3)job="weekly";
-  else if(S.settings.lastPlan!==today&&now.getHours()>=5)job="plan";
-  if(!job)return;
-  lastAuto=Date.now();busy=true;
-  try{
-    let user;
-    if(job==="weekly"){
-      const s=weekSummary(wk);
-      user=`Geçen haftanın (${wk} günü biten 7 gün) raporunu yaz, 5-6 cümle. Uygulamanın hesapladığı özet: kayıt ${s.logged}/${s.n} gün, tartılar ${s.ws.map(x=>fmt(x)).join(", ")||"yok"}, ortalama kalori ${s.avgKcal||"veri yok"}, ortalama su ${s.avgSu||"veri yok"} ml, spor ${s.sport} dk. Hedefe uyumu değerlendir ve gelecek hafta için tek bir odak öner. Bu sayılar dışında rakam kullanma.`;
-    }else user="Bugünün sabah planını hazırla (3 kısa hedef). 'notif' alanını doldur.";
-    const r=await cAsk(cMessages(user),undefined,true);
-    const o=CoachLib.parse(r.text);
-    if(job==="weekly"){S.settings.lastWeekly=wk;cReply(Object.assign(o,{log:[]}),"weekly")}
-    else{
-      S.settings.lastPlan=today;cReply(Object.assign(o,{log:[]}),"plan");
-      if(o.notif){
-        const map={morning:1,afternoon:4,evening:6};let ch=false;
-        for(const k in map){const v=o.notif[k],rm=S.settings.reminders.find(x=>x.id===map[k]);if(rm&&typeof v==="string"&&v.trim().length>=5&&v.length<=110){rm.body=v.trim();ch=true}}
-        if(ch)scheduleReminders().then(setNotif);
-      }
-    }
-    save();
-  }catch(e){console.error("Otomatik mesaj üretilemedi:",e&&e.message)}
-  busy=false;render();
+/* Bugün alınmış yorum yeniden istenmez, sohbetteki yanıta gidilir. */
+const cmtToday=kind=>S.chat.find(m=>m.role==="coach"&&m.kind===kind&&dayKey(new Date(m.t))===dayKey());
+function cCommentBtn(kind){
+  const lbl=kind==="plan"?"bugünkü":"haftalık";
+  if(cmtToday(kind))return `<button class="btn ghost" data-c="cmt:${kind}">Koç'un ${lbl} yorumunu gör</button>`;
+  const why=!coachOn()?"Yorum için önce Koç'ta veri paylaşımını kabul et":!usable().length?"Yorum için Koç anahtarı gerekli (Ayarlar > Koç)":"";
+  return `<button class="btn ghost" data-c="cmt:${kind}"${why?' disabled aria-disabled="true"':""}>Koç'tan ${lbl} yorum iste</button>${why?`<p class="hint">${why}</p>`:""}`;
+}
+async function cComment(kind){
+  if(cmtToday(kind)){tab="koc";return render()}
+  if(busy)return;
+  if(!coachOn()){tab="koc";render();return toast("Önce Koç'ta veri paylaşımını kabul et")}
+  if(!usable().length)return toast("Koç için anahtar gerekli: Ayarlar > Koç");
+  const s=weekSummary(dayKey()),user=kind==="weekly"
+    ?`Son 7 günümün yorumunu yaz, 5-6 cümle. Uygulamanın hesapladığı özet: kayıt ${s.logged}/${s.n} gün, tartılar ${s.ws.map(x=>fmt(x)).join(", ")||"yok"}, ortalama kalori ${s.avgKcal||"veri yok"}, ortalama su ${s.avgSu||"veri yok"} ml, spor ${s.sport} dk. Hedefe uyumu değerlendir ve gelecek hafta için tek bir odak öner. Bu sayılar dışında rakam kullanma.`
+    :"Bugünkü kayıtlarıma kısaca yorum yap ve bugün için 3 kısa hedef öner.";
+  cPush({role:"user",text:kind==="weekly"?"Haftamı yorumlar mısın?":"Bugünümü yorumlar mısın?"});
+  tab="koc";busy=true;typing=true;render();
+  try{const r=await cAsk(cMessages(user));cReply(Object.assign(CoachLib.parse(r.text),{log:[]}),kind);offline=null}
+  catch(e){toast(e.message==="declined"?"Gönderim onaylanmadı":"Koç şu an ulaşılamıyor, sonra tekrar dene")}
+  finally{busy=false;typing=false;save();render()}
 }
 
 /* ---- ekran ---- */
@@ -486,26 +472,26 @@ function cCard(m){
   ${est?`<div class="mut sm" style="padding-top:6px">Toplam ~${Math.round(tot)} kcal</div>${c.state==="pending"?`<div class="chips" style="margin:8px 0 0">${LogLib.MEALS.map(([k,n])=>`<button class="chip" data-c="lml:${m.id}:${k}" aria-pressed="${ml===k}">${n}</button>`).join("")}</div>`:""}`:""}
   ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="ok:${m.id}">${est?"Günlüğe ekle":onlySp?"Egzersizi ekle":"Onayla"}</button><button class="btn ghost" data-c="no:${m.id}">Vazgeç</button></div>`:`<div class="mut sm">${c.state==="ok"?"Kaydedildi":"Vazgeçildi"}</div>${c.state==="ok"&&est&&!c.saved?`<div class="lbtns"><button class="btn ghost" data-c="savefood:${m.id}">Yemeği listeme kaydet</button></div>`:""}`}</div>`;
 }
-/* Onay metni tek yerde: Koç ekranı ve Gizlilik ve veri aynı metni gösterir. Değiştirirsen CONSENT_V'yi artır. */
+/* Onay metni tek yerde: Koç ekranı ve Gizlilik ve veri aynı metni gösterir. Gönderilen alanlar değişirse CONSENT_V'yi artır. */
 const consentOk=()=>!(S.settings.age>0&&S.settings.age<18);
 /* Yaş sonradan 18'in altına inerse (ayar, yedek) verilmiş onay da düşer; gönderim yolları coachOn'dan geçer. */
 const coachOn=()=>S.settings.consent&&consentOk();
 function cAgeGuard(){if(S.settings.consent&&!consentOk()){Object.assign(S.settings,{consent:false,consentV:0,consentAt:""});toast("18 yaş altında Koç veri paylaşımı kapatıldı")}}
-/* Tek metin kaynağı: uygulama içi onay ve docs/gizlilik-politikasi.md §5 aynı iki cümleyi taşır (app.test.js eşitliği sınar). Gönderim yolları değişirse ikisini birlikte güncelle ve CONSENT_V'yi artır. */
+/* Tek metin kaynağı: uygulama içi onay ve docs/gizlilik-politikasi.md §5 aynı iki cümleyi taşır (app.test.js eşitliği sınar). Değişirse ikisini birlikte güncelle; gönderilen alanlar değiştiyse CONSENT_V'yi artır. */
 const CONSENT_SENT="yazdığın mesajlar ve son 10 sohbet mesajı (Koç yanıtları dahil); profilin (boy, yaş, cinsiyet, hareket düzeyi); sağlık notun; hedeflerin ve hesaplanan değerler (trend kilo, tahmini harcama, protein aralığı); son 14 günün kilo, yemek (kcal ve protein), su, spor ve adım özeti (varsa uyku ve ruh hali); bugünkü kayıtların (yemek adları, su, tartı, spor ve not metinleri); son 3 antrenman (hareket adları, en iyi set) ve bu haftaki bölge başına set sayıları; son 7 günün en çok 3 notu; ilaç modülü açıksa ilaç adı, doz, saatler, haftanın günleri, son 7 günün uyumu ve stok; menü ya da program istersen yazdığın istek notu ve menü kataloğunda kendi besin, favori ve şablon adların (kalori ve protein değerleriyle)";
+const CONSENT_WHEN="Yalnız sen bir düğmeye bastığında gönderilir (mesaj gönder, yorum, menü ya da program iste); uygulama açılırken ya da arka planda kendiliğinden hiçbir şey gönderilmez.";
 const CONSENT_NOT="Tahlil, tansiyon, şeker, vücut ölçüleri, tarifler, oruç kayıtları, fotoğraf, konum ve yedek gönderilmez.";
-const consentHtml=()=>`<b>Koç ile veri paylaşımına açık rızan</b><ul style="margin:6px 0;padding-left:18px"><li><b>Ne gönderilir:</b> ${CONSENT_SENT}. ${CONSENT_NOT}</li><li><b>Kime:</b> seçtiğin sağlayıcıya (${esc(S.providers.filter(p=>p.on&&p.health).map(p=>p.name).join(", ")||"hiçbiri seçili değil")}), kendi anahtarınla. Sunucuları yurt dışındadır; bu bir yurt dışına aktarımdır.</li><li><b>Geri alma:</b> istediğin an Ayarlar > Gizlilik ve veri ya da Yapay zekâ koç bölümünden. Geri alınca yeni veri gitmez; önceden gönderilene sağlayıcının kendi politikası uygulanır.</li><li><b>Onay vermezsen</b> uygulama tam çalışır, yalnız Koç konuşmaz.</li></ul>${consentOk()?"":`<p><b>18 yaş altı için Koç veri paylaşımı kapalıdır.</b></p>`}`;
+const consentHtml=()=>`<b>Koç ile veri paylaşımına açık rızan</b><ul style="margin:6px 0;padding-left:18px"><li><b>Ne gönderilir:</b> ${CONSENT_SENT}. ${CONSENT_NOT}</li><li><b>Ne zaman:</b> ${CONSENT_WHEN}</li><li><b>Kime:</b> seçtiğin sağlayıcıya (${esc(S.providers.filter(p=>p.on&&p.health).map(p=>p.name).join(", ")||"hiçbiri seçili değil")}), kendi anahtarınla. Sunucuları yurt dışındadır; bu bir yurt dışına aktarımdır.</li><li><b>Geri alma:</b> istediğin an Ayarlar > Gizlilik ve veri ya da Yapay zekâ koç bölümünden. Geri alınca yeni veri gitmez; önceden gönderilene sağlayıcının kendi politikası uygulanır.</li><li><b>Onay vermezsen</b> uygulama tam çalışır, yalnız Koç konuşmaz.</li></ul>${consentOk()?"":`<p><b>18 yaş altı için Koç veri paylaşımı kapalıdır.</b></p>`}`;
 /* Sohbeti siler, onaya dokunmaz. */
-function cClearChat(){S.chat=[];S.settings.lastPlan="";save()}
+function cClearChat(){S.chat=[];save()}
 function cConsent(on){
   const s=S.settings;if(on&&!consentOk())return;
   Object.assign(s,{consent:on,consentV:on?CONSENT_V:0,consentAt:on?dayKey():""});save();render();
-  if(on){cFlush();cAuto()}
 }
 function viewKoc(){
   let h="";
   const intro=offline==="none"||(!hasKey()&&!S.chat.length);
-  if(intro)h+=`<div class="banner info"><b>Koç ne yapar?</b><p>Yazdıklarından yemek, su ve kilo kaydı önerir, günü ve haftayı yorumlar, hedefini ayarlamana yardım eder.</p><b>Verin nereye gider?</b><p>Koç yapay zekâ kullanır: internet ister, çevrimdışı çalışmaz. Yalnızca sen onay verirsen ve kendi hesabından alacağın bir anahtarla çalışır (ücretsiz seçenekler var). Onay verirsen profilin, kayıtların ve yazdıkların seçtiğin sağlayıcıya gider; sağlayıcının sunucuları yurt dışındadır. İstediğin an geri alırsın (Ayarlar > Gizlilik ve veri).</p><p><b>Koç olmadan da uygulama tam çalışır.</b></p><button class="btn" data-c="guide">Koçu etkinleştir, yaklaşık 2 dakika</button></div>`;
+  if(intro)h+=`<div class="banner info"><b>Koç ne yapar?</b><p>Yazdıklarından yemek, su ve kilo kaydı önerir, istersen günü ve haftayı yorumlar, hedefini ayarlamana yardım eder.</p><b>Verin nereye gider?</b><p>Koç yapay zekâ kullanır: internet ister, çevrimdışı çalışmaz. Yalnızca sen onay verirsen ve kendi hesabından alacağın bir anahtarla çalışır (ücretsiz seçenekler var). Onay verirsen profilin, kayıtların ve yazdıkların seçtiğin sağlayıcıya gider; sağlayıcının sunucuları yurt dışındadır. İstediğin an geri alırsın (Ayarlar > Gizlilik ve veri).</p><p><b>Koç olmadan da uygulama tam çalışır.</b></p><button class="btn" data-c="guide">Koçu etkinleştir, yaklaşık 2 dakika</button></div>`;
   else if(offline==="fail"){
     const x=S.providers.filter(p=>pstat[p.id]&&pstat[p.id].s!=="ok").sort((a,b)=>pstat[b.id].t-pstat[a.id].t)[0];
     h+=`<div class="banner"><b>Koç şu an ulaşılamıyor</b>${x&&pstat[x.id].m?`<p>${esc(x.name)}: ${esc(pstat[x.id].m)}</p>`:""}<p>Su, kilo ve spor kaydı çalışıyor. Yemek tahmini bağlantı gelince yapılır.</p><button class="btn" data-c="retry">Yeniden dene</button></div>`;
@@ -513,9 +499,9 @@ function viewKoc(){
   if(!S.settings.consent&&!intro)h+=`<div class="banner info">${consentHtml()}${consentOk()?`<button class="btn" data-c="consent">Açık rızamı veriyorum</button>`:""}<button class="lnk" data-pv="open">Gizlilik ve veri</button></div>`;
   if(!S.chat.length&&hasKey())h+=`<p class="hint">Bir şey yaz: "2 yumurta ve ekmek yedim", "83,7 çektim" ya da "bugün ne yapmalıyım?"</p>`;
   for(const m of S.chat){
-    if(m.role==="user")h+=`<div class="ub">${esc(m.text)}</div>${m.pend?`<div class="pendl">Bekliyor, bağlantı gelince gönderilir</div>`:""}`;
+    if(m.role==="user")h+=`<div class="ub">${esc(m.text)}</div>${m.pend?`<div class="pendl">Gönderilmedi${coachOn()&&!typing?`<button class="lnk" style="display:inline;width:auto;min-height:44px;margin-left:6px" data-c="retry">Şimdi gönder</button>`:""}</div>`:""}`;
     else if(m.role==="coach"){
-      const lab=m.kind==="plan"?`Sabah planı, ${cTime(m.t)}`:m.kind==="weekly"?"Haftalık rapor":cTime(m.t);
+      const lab=m.kind==="plan"?`Günün yorumu, ${cTime(m.t)}`:m.kind==="weekly"?`Haftanın yorumu, ${cTime(m.t)}`:cTime(m.t);
       h+=`<div class="cm" data-mid="${m.id}">${m.text?`<div class="mut sm">${lab}</div><p>${esc(m.text)}</p>`:""}${m.kind==="plateau"&&lossAsk()?`<div class="lbtns"><button class="btn" data-c="why">Bak</button></div>`:""}${cCard(m)}</div>`;
     }
   }
@@ -536,7 +522,7 @@ function pStatus(p){
   if(!p.health)return ["Sağlık verisi kapalı",""];
   if(!k)return ["Anahtar yok",""];
   if(s&&s.s==="ok")return ["Çalışıyor",`Son başarılı ${cTime(s.t)}, ${fmt(s.ms/1000,1)} sn`];
-  if(s&&s.s==="limit")return ["Limit doldu","Birazdan tekrar denenir"];
+  if(s&&s.s==="limit")return ["Limit doldu","1 dakika sonra yeniden denenebilir"];
   if(s&&s.s==="key")return ["Anahtar geçersiz",""];
   if(s&&s.s==="err")return ["Hata",s.m||""];
   return ["Hazır","Henüz denenmedi"];
@@ -705,6 +691,7 @@ function cClick(v,el){
     case "askfood":{const q=foodAskQ.trim();if(q){closeSheet();tab="koc";render();cSend(`${q} kaç kalori? Bir porsiyon için tahmin et.`)}return}
     case "send":{const i=$("#cmsg");const t=i.value;i.value="";return cSend(t)}
     case "retry":offline=null;cFlush();return render();
+    case "cmt":return cComment(p1);
     case "consent":return cConsent(true);
     case "revoke":return cConsent(false);
     case "guide":return p1?cGuide(p1):cSetup(true);
