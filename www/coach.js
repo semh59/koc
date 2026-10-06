@@ -29,7 +29,7 @@ async function keysInit(){
   if(lost)toast("Koç anahtarları bu telefonda okunamadı, yeniden gir");
 }
 const defProviders=()=>[
-  {id:"nvidia",name:"NVIDIA Build",base:"https://integrate.api.nvidia.com/v1",model:"google/gemma-4-31b-it",on:true,health:true,confirm:false},
+  {id:"nvidia",name:"NVIDIA Build",base:"https://integrate.api.nvidia.com/v1",model:"nvidia/nemotron-3-super-120b-a12b",on:true,health:true,confirm:false},
   {id:"groq",name:"Groq",base:"https://api.groq.com/openai/v1",model:"llama-3.3-70b-versatile",on:true,health:true,confirm:false},
   {id:"openrouter",name:"OpenRouter",base:"https://openrouter.ai/api/v1",model:"google/gemma-4-31b-it:free",on:true,health:true,confirm:false},
   {id:"gemini",name:"Google Gemini",base:"https://generativelanguage.googleapis.com/v1beta/openai",model:"gemini-3.5-flash-lite",on:false,health:false,confirm:true},
@@ -136,14 +136,18 @@ function cMessages(extraUser,extraSys,noHist){
 }
 
 /* ---- sağlayıcı zinciri ---- */
-async function callProvider(p,key,messages,maxTokens=700){
-  const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),40000);
+/* probe: kurulum denemesi. HTTP 200 ve geçerli yanıt gövdesi yeter; düşünen model sınırda metinsiz dönebilir (content null, reasoning_content dolu).
+   Sohbette metin boş ve sınır dolduysa (düşünme bütçeyi yedi) bir kez üç katı sınırla yeniden sorulur. */
+async function callProvider(p,key,messages,maxTokens=700,o={}){
+  const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),o.ms||40000);
   try{
     const ant=p.id==="anthropic",r=await fetch(p.base.replace(/\/+$/,"")+(ant?"/messages":"/chat/completions"),{method:"POST",signal:ctl.signal,headers:Object.assign({"Content-Type":"application/json"},pHeaders(p,key)),body:JSON.stringify(pBody(p,messages,maxTokens))});
     if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;try{e.body=(await r.text()).slice(0,600)}catch(x){}throw e}
-    const j=await r.json(),t=ant?(j&&Array.isArray(j.content)?j.content.filter(b=>b&&b.type==="text").map(b=>b.text).join(""):""):j&&j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;
-    if(typeof t!=="string"||!t.trim()){const e=new Error("Boş yanıt");e.kind="empty";throw e}
-    return t;
+    const j=await r.json(),c=j&&j.choices&&j.choices[0],t=ant?(j&&Array.isArray(j.content)?j.content.filter(b=>b&&b.type==="text").map(b=>b.text).join(""):""):c&&c.message&&c.message.content;
+    if(o.probe&&(ant?Array.isArray(j&&j.content):!!c))return "";
+    if(typeof t==="string"&&t.trim())return t;
+    if(!o.retried&&(ant?j&&j.stop_reason==="max_tokens":c&&c.finish_reason==="length")){clearTimeout(to);return callProvider(p,key,messages,maxTokens*3,Object.assign({},o,{retried:true}))}
+    const e=new Error("Boş yanıt");e.kind="empty";throw e;
   }finally{clearTimeout(to)}
 }
 const pModelsUrl=p=>p.base.replace(/\/+$/,"")+"/models"+(p.id==="anthropic"?"?limit=1000":"");
@@ -549,7 +553,7 @@ function cGuide(id){
 /* ---- kurulum: 1 anahtar (sağlayıcı önekten tahmin), 2 doğrula ve modelleri getir (Önerilen hazır seçili), 3 test et ve kaydet.
    Ağ çağrısı yalnız düğmeye basınca ve yalnız seçilen sağlayıcıya gider; giden yalnız anahtar ve sabit test cümlesi. Model listesi bellekte kalır, yedeğe girmez. */
 const PNOTE={nvidia:"Ücretsiz deneme kredisi",groq:"Ücretsiz, çok hızlı",openrouter:"Ücretsiz modeller var",gemini:"Ücretsiz katman, her gönderimde sorulur",openai:"Ücretli, ucuz model önerilir",anthropic:"Ücretli, ucuz model önerilir"};
-const suNew=()=>({k:"",id:null,models:null,rec:"",model:"",adv:false,msg:"",fail:"",busy:false});
+const suNew=()=>({k:"",id:null,models:null,rec:"",model:"",adv:false,msg:"",fail:"",ok:"",busy:false});
 let su=suNew();
 const suProv=()=>GUIDE[su.id]?S.providers.find(p=>p.id===su.id):null;
 function cSetup(fresh){
@@ -567,7 +571,7 @@ function suBody(){
   h+=`<button class="lnk" data-c="guide:${p.id}">${esc(p.name)} anahtarı nereden alınır?</button>${PAID.includes(p.id)?`<p class="hint">${esc(p.name)} ücretli bir servistir: kullandıkça ücret çıkabilir; kotayı sağlayıcı sitende sen belirlersin.</p>`:""}
   <div class="lbl">2. Modeli seç</div><p class="hint">Anahtarını ve bir deneme cümlesini sağlayıcıya göndeririz; sağlık verin gitmez.</p><button class="btn ghost" data-c="sfetch"${su.busy?" disabled":""}>Doğrula ve modelleri getir</button>`;
   if(su.models){
-    const m=su.models.find(x=>x.id===su.model),tag=[su.model===su.rec?"Önerilen":"",m&&m.free?"ücretsiz":""].filter(Boolean).join(", ");
+    const m=su.models.find(x=>x.id===su.model),tag=[su.model===su.rec?"Önerilen":"",m&&m.free?"ücretsiz":"",su.model===su.ok?"denendi":""].filter(Boolean).join(", ");
     h+=`<p style="margin:10px 0 4px;overflow-wrap:anywhere"><b>${esc(su.model)}</b>${tag?` <span class="tag">${tag}</span>`:""}</p>`;
     h+=su.adv?`<label class="lbl" for="smsel">Başka model</label><select class="in" id="smsel">${su.models.map(x=>`<option value="${esc(x.id)}"${x.id===su.model?" selected":""}>${esc(x.id)}${x.id===su.rec?" (önerilen)":x.free?" (ücretsiz)":""}</option>`).join("")}</select>
       <label class="lbl" for="smfree">Ya da model kimliğini yaz</label><input class="in" id="smfree" autocomplete="off" spellcheck="false" placeholder="ör. ${esc(p.model)}">`
@@ -587,14 +591,24 @@ function suCheck(){
   else return k;
   suRender();return null;
 }
+const probe=(p,k,model,ms)=>callProvider(Object.assign({},p,{model}),k,[{role:"user",content:"Sadece 'tamam' yaz."}],200,{ms,probe:true});
 async function suFetch(){
   const p=suProv(),k=p&&!su.busy&&suCheck();if(!k)return;
   su.busy=true;su.msg="Modeller getiriliyor…";su.fail="";suRender();
   try{
     const r=await fetch(pModelsUrl(p),{headers:pHeaders(p,k)});
     if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;try{e.body=await r.text()}catch(x){}throw e}
-    su.models=CoachLib.parseModels(await r.json());su.rec=CoachLib.pickModel(p.id,su.models)||p.model;su.model=su.rec;su.adv=false;
-    su.msg=su.models.length?`${su.models.length} model bulundu, önerilen seçildi. Test et ile anahtarı ve modeli dene.`:"Model listesi boş geldi; hazır model denenecek.";
+    su.models=CoachLib.parseModels(await r.json());su.adv=false;su.ok="";
+    /* Liste bazı sağlayıcılarda anahtarsız da gelir ve listedeki model hesapta çalışmayabilir: adaylar kısa sürede gerçek istekle denenir, ilk yanıt veren önerilir. */
+    const cands=CoachLib.candidates(p.id,su.models).slice(0,4),stop=["key","quota","net","limit"];let last=null;
+    if(!cands.length)cands.push(p.model);
+    for(const m of cands){
+      su.msg=`${m} deneniyor…`;suRender();
+      try{await probe(p,k,m,15000);su.ok=m;break}catch(e){last=errOf(e);if(stop.includes(last.kind))break}
+    }
+    su.rec=su.model=su.ok||cands[0];
+    if(su.ok)su.msg="Anahtar çalışıyor, önerilen model denendi ve yanıt verdi. Kaydedebilirsin.";
+    else{su.fail=last.kind;su.msg=last.text+(stop.includes(last.kind)?"":" Önerilen modeller yanıt vermedi; başka model seçip dene.")}
   }catch(e){su.models=null;su.msg=errOf(e).text}
   su.busy=false;suRender();
 }
@@ -602,15 +616,16 @@ function suSave(p,k,model){p.model=model;p.on=p.health=true;setKey(p.id,k);delet
 async function suTest(){
   const p=suProv(),k=p&&!su.busy&&suCheck();if(!k)return;
   const model=(su.model||p.model).trim().slice(0,100),t0=Date.now();
+  if(model===su.ok){suSave(p,k,model);return toast(`${p.name} çalışıyor, kaydedildi`)}
   su.busy=true;su.msg="Deneniyor…";su.fail="";suRender();
   try{
-    await callProvider(Object.assign({},p,{model}),k,[{role:"user",content:"Sadece 'tamam' yaz."}],200);
+    await probe(p,k,model);
     pstat[p.id]={s:"ok",t:Date.now(),ms:Date.now()-t0};su.busy=false;suSave(p,k,model);toast(`${p.name} çalışıyor, kaydedildi`);
   }catch(e){const x=errOf(e);su.busy=false;su.fail=x.kind;su.msg=x.text;suRender()}
 }
 document.addEventListener("input",ev=>{
   const t=ev.target;
-  if(t.id==="sk"){su.k=t.value;const g=CoachLib.keyProvider(su.k);if(GUIDE[g]&&g!==su.id){su.id=g;su.models=null}su.msg=su.fail="";suRender()}
+  if(t.id==="sk"){su.k=t.value;su.ok="";const g=CoachLib.keyProvider(su.k);if(GUIDE[g]&&g!==su.id){su.id=g;su.models=null}su.msg=su.fail="";suRender()}
   else if(t.id==="smfree"&&t.value.trim())su.model=t.value.trim();
 });
 document.addEventListener("change",ev=>{const t=ev.target;if(t.id==="smsel"){su.model=t.value;suRender()}else if(t.id==="pmsel")$("#pm").value=t.value});
@@ -652,7 +667,7 @@ async function cProvClick(a,p1,p2){
     case "ptest":{
       const p=pRead(p1);if(!p)return;const key=getKeys()[p1];if(!key)return toast("Önce anahtarı ekle");if(!consentOk())return toast("18 yaş altında Koç kapalı");
       toast("Deneniyor…");const t0=Date.now();
-      try{await callProvider(p,key,[{role:"user",content:"Sadece 'tamam' yaz."}],200);pstat[p1]={s:"ok",t:Date.now(),ms:Date.now()-t0};delete cool[p1];toast(`Çalışıyor, ${fmt((Date.now()-t0)/1000,1)} sn`)}
+      try{await probe(p,key,p.model);pstat[p1]={s:"ok",t:Date.now(),ms:Date.now()-t0};delete cool[p1];toast(`Çalışıyor, ${fmt((Date.now()-t0)/1000,1)} sn`)}
       catch(e){toast(pFail(p1,e))}
       render();return;
     }
@@ -681,7 +696,7 @@ function cClick(v,el){
     case "revoke":return cConsent(false);
     case "guide":return p1?cGuide(p1):cSetup(true);
     case "setup":return cSetup(!$("#sheet").classList.contains("on"));
-    case "sp":if(su.id!==p1){su.id=p1;su.models=null;su.msg=su.fail=""}return suRender();
+    case "sp":if(su.id!==p1){su.id=p1;su.models=null;su.msg=su.fail=su.ok=""}return suRender();
     case "sadv":su.adv=true;return suRender();
     case "sfetch":return suFetch();
     case "stest":return suTest();
