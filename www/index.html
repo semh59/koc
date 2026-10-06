@@ -1134,6 +1134,8 @@ async function scheduleReminders(){
     list.sort((a,b)=>a.schedule.at-b.schedule.at);if(list.length>MedLib.BUDGET)list.length=MedLib.BUDGET;
     const tk=await quickToken();if(tk)for(const n of list)if(n.extra&&(n.extra.act==="su"||n.extra.act==="med"))n.extra.tk=tk;
     if(list.length)await ln.schedule({notifications:list});
+    /* Bildirim eklentisi kilitli ekranı yakmaz: ilaç dozlarında (hatırlatma tekrarları hariç) ayrı alarm ekranı kısa süre uyandırır. */
+    const mw=window.Capacitor.Plugins.MedWake;if(mw)await mw.set({times:list.filter(n=>n.extra&&n.extra.act==="med"&&n.id<1e6).map(n=>n.schedule.at.getTime())}).catch(()=>{});
     return "ok";
   }catch(e){return "Bildirimler kurulamadı: "+(e&&e.message||e)}
 }
@@ -1388,7 +1390,7 @@ abBoot();
 if(S.settings.stepsOn&&SC()){SC().start().catch(()=>{});stepsSync();motionBoot()}
 setInterval(stepsTick,STEP_POLL);
 if(DH())DH().info().then(r=>{oem=String(r.manufacturer||"");render()},()=>{});
-try{const P=window.Capacitor&&window.Capacitor.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp","BarcodeScanner","StepCounter","Ocr","Motion","Speech","Widget","BackupFolder"].map(n=>n+"="+typeof P[n]).join(" "))}catch(e){}
+try{const P=window.Capacitor&&window.Capacitor.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp","BarcodeScanner","StepCounter","Ocr","Motion","Speech","Widget","BackupFolder","MedWake"].map(n=>n+"="+typeof P[n]).join(" "))}catch(e){}
 setInterval(()=>{if(dayKey()!==lastDay){lastDay=dayKey();logOff=0;render()}},60000);
 try{const ln=LN();if(ln&&ln.addListener)ln.addListener("localNotificationActionPerformed",notifTap)}catch(e){}
 function widgetOpen(){tab="bugun";logOff=0;closeSheet();render();window.scrollTo(0,0)}
