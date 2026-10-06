@@ -316,6 +316,48 @@
 ]
 ]
 },
+"#170158":{
+"id":170158,
+"d":"Nuts, almonds, dry roasted, without salt added",
+"l":10.9,
+"f":52.54,
+"c":21.01,
+"k":598.0,
+"p":20.96,
+"por":[
+[
+"1 cup whole kernels ",
+138.0
+],
+[
+"1 oz (22 whole kernels) ",
+28.35
+]
+]
+},
+"#170185":{
+"id":170185,
+"d":"Nuts, pistachio nuts, dry roasted, without salt added",
+"p":21.05,
+"l":10.3,
+"f":45.82,
+"c":28.28,
+"k":572.0,
+"por":[
+[
+"1 cup ",
+123.0
+],
+[
+"1 oz (49 kernels) ",
+28.35
+],
+[
+"1 kernel ",
+0.7
+]
+]
+},
 "#170295":{
 "id":170295,
 "d":"Fast foods, chicken fillet sandwich, plain with pickles",
@@ -362,6 +404,82 @@
 [
 "1 package ",
 116.0
+]
+]
+},
+"#170557":{
+"id":170557,
+"d":"Seeds, pumpkin and squash seed kernels, roasted, without salt",
+"p":29.84,
+"l":6.5,
+"f":49.05,
+"c":14.71,
+"k":574.0,
+"por":[
+[
+"1 cup ",
+118.0
+],
+[
+"1 oz ",
+28.35
+]
+]
+},
+"#170563":{
+"id":170563,
+"d":"Seeds, sunflower seed kernels, dry roasted, without salt",
+"l":11.1,
+"p":19.33,
+"f":49.8,
+"c":24.07,
+"k":582.0,
+"por":[
+[
+"1 cup ",
+128.0
+],
+[
+"1 oz ",
+28.35
+]
+]
+},
+"#170571":{
+"id":170571,
+"d":"Nuts, cashew nuts, dry roasted, without salt added",
+"f":46.35,
+"c":32.69,
+"k":574.0,
+"p":15.31,
+"l":3.0,
+"por":[
+[
+"1 cup, halves and whole ",
+137.0
+],
+[
+"1 tbsp ",
+8.6
+],
+[
+"1 oz ",
+28.35
+]
+]
+},
+"#170583":{
+"id":170583,
+"d":"Nuts, hazelnuts or filberts, dry roasted, without salt added",
+"l":9.4,
+"c":17.6,
+"k":646.0,
+"f":62.4,
+"p":15.03,
+"por":[
+[
+"1 oz ",
+28.35
 ]
 ]
 },
@@ -912,6 +1030,48 @@
 ]
 ]
 },
+"#173806":{
+"id":173806,
+"d":"Peanuts, all types, dry-roasted, without salt",
+"l":8.4,
+"p":24.35,
+"c":21.26,
+"k":587.0,
+"f":49.66,
+"por":[
+[
+"1 cup ",
+146.0
+],
+[
+"1 oz ",
+28.35
+],
+[
+"1 peanut ",
+1.0
+]
+]
+},
+"#173954":{
+"id":173954,
+"d":"Cherries, sour, red, raw",
+"l":1.6,
+"p":1.0,
+"f":0.3,
+"c":12.18,
+"k":50.0,
+"por":[
+[
+"1 cup, without pits ",
+155.0
+],
+[
+"1 cup, with pits, yields ",
+103.0
+]
+]
+},
 "#174032":{
 "id":174032,
 "d":"Beef, ground, 85% lean meat / 15% fat, patty, cooked, broiled",
@@ -943,6 +1103,25 @@
 [
 "3 cookie ",
 29.0
+]
+]
+},
+"#174315":{
+"id":174315,
+"d":"Lamb, leg, shank half, separable lean and fat, trimmed to 1/4\" fat, choice, raw",
+"p":18.58,
+"l":0.0,
+"f":13.49,
+"c":0.0,
+"k":201.0,
+"por":[
+[
+"1 oz ",
+28.35
+],
+[
+"1 lb ",
+453.6
 ]
 ]
 },
