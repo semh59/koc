@@ -558,6 +558,7 @@ function suCheck(){
   const k=su.k.trim();
   if(!consentOk())su.msg="18 yaş altında Koç kapalı.";
   else if(k.length<8||/\s/.test(k))su.msg="Anahtar eksik ya da yanlış yapıştırılmış görünüyor.";
+  else if(["openai","anthropic"].includes(CoachLib.keyProvider(k)))su.msg="Bu anahtar seçili sağlayıcıya ait değil, gönderilmedi.";
   else return k;
   suRender();return null;
 }
@@ -584,7 +585,8 @@ async function suTest(){
 }
 document.addEventListener("input",ev=>{
   const t=ev.target;
-  if(t.id==="sk"){su.k=t.value;const g=CoachLib.keyProvider(su.k);if(GUIDE[g]&&g!==su.id){su.id=g;su.models=null}su.msg=su.fail="";suRender()}
+  /* OpenAI/Anthropic anahtarı önceden seçilmiş sağlayıcıya gitmesin: seçim düşer, test düğmesi kalkar. */
+  if(t.id==="sk"){su.k=t.value;const g=CoachLib.keyProvider(su.k);if(g!==su.id&&(GUIDE[g]||g==="openai"||g==="anthropic")){su.id=GUIDE[g]?g:null;su.models=null}su.msg=su.fail="";suRender()}
   else if(t.id==="smfree"&&t.value.trim())su.model=t.value.trim();
 });
 document.addEventListener("change",ev=>{const t=ev.target;if(t.id==="smsel"){su.model=t.value;suRender()}else if(t.id==="pmsel")$("#pm").value=t.value});
@@ -624,14 +626,14 @@ async function cProvClick(a,p1,p2){
     }
     case "psave":{const p=pRead(p1);if(!p)return;closeSheet();render();return toast("Kaydedildi")}
     case "ptest":{
-      const p=pRead(p1);if(!p)return;const key=getKeys()[p1];if(!key)return toast("Önce anahtarı ekle");
+      const p=pRead(p1);if(!p)return;const key=getKeys()[p1];if(!key)return toast("Önce anahtarı ekle");if(!consentOk())return toast("18 yaş altında Koç kapalı");
       toast("Deneniyor…");const t0=Date.now();
       try{await callProvider(p,key,[{role:"user",content:"Sadece 'tamam' yaz."}],200);pstat[p1]={s:"ok",t:Date.now(),ms:Date.now()-t0};delete cool[p1];toast(`Çalışıyor, ${fmt((Date.now()-t0)/1000,1)} sn`)}
       catch(e){toast(pFail(p1,e))}
       render();return;
     }
     case "pmodels":{
-      const p=pRead(p1);if(!p)return;const key=getKeys()[p1];if(!key)return toast("Önce anahtarı ekle");
+      const p=pRead(p1);if(!p)return;const key=getKeys()[p1];if(!key)return toast("Önce anahtarı ekle");if(!consentOk())return toast("18 yaş altında Koç kapalı");
       try{
         const r=await fetch(p.base.replace(/\/+$/,"")+"/models",{headers:{Authorization:"Bearer "+key}});
         if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;try{e.body=await r.text()}catch(x){}throw e}

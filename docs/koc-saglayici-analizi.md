@@ -52,7 +52,7 @@ Sonuç: "Doğrula ve listele" tek çağrıyla ancak bazı sağlayıcılarda olur
 **Çevrimdışı ilke ve gizlilik.**
 - Uzak katalog ya da yeni bir sunucu yok. Ağ çağrısı yalnız kullanıcı düğmeye bastığında ve yalnız seçtiği sağlayıcıya gider.
 - Giden tek şey anahtar ve sabit test cümlesi.
-- 18 yaş altında düğmeler çalışmaz.
+- 18 yaş altında kurulum ve ileri sayfadaki test/model düğmeleri ağ çağrısı yapmaz.
 - Model listesi yalnız bellekte tutulur; kayda ve yedeğe girmez.
 - `coachOn`, CONSENT_V, `confirm` ve health zinciri değişmez: sağlık verisi yine yalnız onaydan sonra gider.
 
