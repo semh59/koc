@@ -12,8 +12,7 @@ async function launch(bin){
   let err="";proc.stderr.on("data",d=>{err+=d});proc.on("exit",c=>{err+=" exit "+c});
   let txt="";
   for(let i=0;i<300&&!/\n./.test(txt);i++){await new Promise(r=>setTimeout(r,100));try{txt=fs.readFileSync(pf,"utf8")}catch(e){}}
-  if(!/
-./.test(txt))throw new Error("Chrome başlamadı: "+bin+" "+err.slice(-600));
+  if(!/\n./.test(txt))throw new Error("Chrome başlamadı: "+bin+" "+err.slice(-600));
   const [port,pth]=txt.trim().split(/\r?\n/);
   const ws=new WebSocket(`ws://127.0.0.1:${port}${pth}`);
   await new Promise((r,j)=>{ws.onopen=r;ws.onerror=j});
