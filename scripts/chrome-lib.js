@@ -7,10 +7,13 @@ function find(){
 }
 async function launch(bin){
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),"koc-chrome-"));
-  const proc=cp.spawn(bin,["--headless=new","--disable-gpu","--no-sandbox","--hide-scrollbars","--remote-debugging-port=0","--user-data-dir="+dir,"about:blank"],{stdio:"ignore"});
+  const proc=cp.spawn(bin,["--headless=new","--disable-gpu","--no-sandbox","--hide-scrollbars","--remote-debugging-port=0","--user-data-dir="+dir,"about:blank"],{stdio:["ignore","ignore","pipe"]});
   const pf=path.join(dir,"DevToolsActivePort");
+  let err="";proc.stderr.on("data",d=>{err+=d});proc.on("exit",c=>{err+=" exit "+c});
   let txt="";
-  for(let i=0;i<100&&!/\n./.test(txt);i++){await new Promise(r=>setTimeout(r,100));try{txt=fs.readFileSync(pf,"utf8")}catch(e){}}
+  for(let i=0;i<300&&!/\n./.test(txt);i++){await new Promise(r=>setTimeout(r,100));try{txt=fs.readFileSync(pf,"utf8")}catch(e){}}
+  if(!/
+./.test(txt))throw new Error("Chrome başlamadı: "+bin+" "+err.slice(-600));
   const [port,pth]=txt.trim().split(/\r?\n/);
   const ws=new WebSocket(`ws://127.0.0.1:${port}${pth}`);
   await new Promise((r,j)=>{ws.onopen=r;ws.onerror=j});
