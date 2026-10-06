@@ -2545,9 +2545,9 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     const inp=w.document.querySelector("#ageIn");inp.value="16";inp.dispatchEvent(new w.Event("change",{bubbles:true}));
     ok("onay verildikten sonra yaş 16 yapılınca onay düşer",ev("S.settings.consent")===false&&ev("S.settings.consentV")===0);
     ev("S.settings.consent=true;S.settings.consentV=CONSENT_V"); // eski/dışarıdan gelen durum
-    ev("cSend('merhaba')");await ev("cFlush()");ev("progOpt={d:3,q:'Salon',m:45,l:'Başlangıç'}");await ev("cProgram(progOpt)");await ev("cMenu()");ev("lastAuto=0");await ev("cAuto()");
+    ev("cSend('merhaba')");await ev("cFlush()");ev("progOpt={d:3,q:'Salon',m:45,l:'Başlangıç'}");await ev("cProgram(progOpt)");await ev("cMenu()");await ev("cComment('plan')");await ev("cComment('weekly')");
     let t="none";try{await ev("cAsk([{role:'user',content:'x'}],10)")}catch(e){t=e.message}
-    ok("18 yaş altı: sohbet, program, menü, otomatik ve doğrudan cAsk istek göndermez",n===0&&t==="consent",[n,t]);
+    ok("18 yaş altı: sohbet, program, menü, yorum ve doğrudan cAsk istek göndermez",n===0&&t==="consent",[n,t]);
     ok("yedek/açılış temizleyicisi: yaş<18 ise onay geçersiz, 18+ ise korunur",ev("cleanSettings({consent:true,consentV:CONSENT_V,age:16}).consent")===false&&ev("cleanSettings({consent:true,consentV:CONSENT_V,age:30}).consent")===true);
     reset();ev("S.chat=[];S.settings.age=0");
   }
