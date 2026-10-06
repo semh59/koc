@@ -144,6 +144,50 @@ const CoachLib=(()=>{
     return {kcal:Math.round(v/10)*10,limited:false};
   }
 
+  /* ---- sağlayıcı kurulumu ---- */
+  /* Önekler belgeyle yalnız nvapi- için doğrulandı; arayüz tahmini değiştirilebilir gösterir. sk-ant-/sk-or- genel sk-'den önce. */
+  const KEY_PREFIX=[["sk-ant-","anthropic"],["sk-or-","openrouter"],["nvapi-","nvidia"],["gsk_","groq"],["AIza","gemini"],["sk-","openai"]];
+  const keyProvider=k=>{k=String(k||"").trim();const m=KEY_PREFIX.find(([p])=>k.startsWith(p));return m?m[1]:null};
+  /* Önerilen model canlı listeden seçilir: sıradaki ilk mevcut kimlik. Kodda sabit model yalnız son çare; sabit adlar zamanla kalkıyor. */
+  const MODEL_PREF={
+    groq:["llama-3.3-70b-versatile","openai/gpt-oss-120b","llama-3.1-8b-instant"],
+    nvidia:["google/gemma-4-31b-it","meta/llama-3.3-70b-instruct","mistralai/mistral-large-2-instruct","nvidia/nemotron-3-super-120b-a12b"],
+    openrouter:["google/gemma-4-31b-it:free","nvidia/nemotron-3-super-120b-a12b:free"],
+    gemini:["gemini-3.5-flash-lite","gemini-3.1-flash-lite","gemini-3.5-flash"]
+  };
+  const NONCHAT=/embed|whisper|tts|guard|safety|reward|parse|rerank|retriev|clip|vision|vlm|image|video|audio|transcri|live|translate|detector|calibration|deplot|kosmos|fuyu|code|orpheus|omni|diffusion|moderation|vila|neva|cosmos/i;
+  /* /models yanıtı: konuşma dışı modeller atılır; fiyat varsa (OpenRouter) ücretsizlik işaretlenir. Gemini kimliklerinde olası "models/" öneki kırpılır. */
+  function parseModels(j){
+    const out=[],seen=new Set();
+    for(const m of (j&&Array.isArray(j.data)?j.data:[])){
+      const id=m&&typeof m.id==="string"?m.id.replace(/^models\//,"").slice(0,100):"";
+      if(!id||seen.has(id)||NONCHAT.test(id))continue;
+      seen.add(id);const pr=m.pricing;
+      out.push({id,free:pr&&typeof pr==="object"?+pr.prompt===0&&+pr.completion===0:null});
+    }
+    return out.sort((a,b)=>a.id.localeCompare(b.id));
+  }
+  function pickModel(pid,list){
+    const ids=new Set(list.map(m=>m.id));
+    const hit=(MODEL_PREF[pid]||[]).find(x=>ids.has(x));if(hit)return hit;
+    const f=list.find(m=>m.free===true&&!/reason|think/i.test(m.id));
+    return f?f.id:pid==="gemini"?((list.find(m=>/^gemini-[\d.]+-flash(-lite)?$/.test(m.id))||{}).id||null):null;
+  }
+  /* Hata sınıfı: durum kodu tek başına yetmez (Gemini yanlış anahtara 400, kota ve hız limiti ikisi de 429, eksik model 400 ya da 404). */
+  function errKind(status,body,name){
+    const b=String(body||"");
+    if(name==="AbortError")return "time";
+    if(!status)return "net";
+    if(status===401||status===403||(status===400&&/api[ _-]?key|unauthori|credential/i.test(b)))return "key";
+    if(status===402||(status===429&&/quota|billing|credit|insufficient/i.test(b)))return "quota";
+    if(status===429)return "limit";
+    if(status===404||((status===400||status===422)&&/model/i.test(b)&&/not.?found|not exist|invalid|unknown|not supported|decommission|no endpoints/i.test(b)))return "model";
+    if(status>=500)return "down";
+    return "err";
+  }
+  const ERR_TXT={key:"Anahtar kabul edilmedi. Doğru sağlayıcıyı seçtiğinden ve anahtarı eksiksiz yapıştırdığından emin ol.",quota:"Hesabının kotası ya da bakiyesi bitmiş. Sağlayıcının sitesinde kullanımına bak.",limit:"Kısa süreli kullanım sınırı doldu, bir dakika sonra yeniden dene.",model:"Bu model bulunamadı ya da kaldırılmış. Önerilen modeli seç.",net:"İnternet yok ya da sağlayıcıya ulaşılamadı.",time:"Sağlayıcı zamanında yanıt vermedi, yeniden dene.",down:"Sağlayıcıda geçici bir sorun var, sonra yeniden dene.",empty:"Bağlantı çalışıyor ama model boş yanıt verdi. Önerilen modeli seç."};
+  const errText=(kind,status)=>ERR_TXT[kind]||`Beklenmeyen bir hata oldu${status?" (kod "+status+")":""}.`;
+
   const SYSTEM=`Sen "Koç"sun: tek bir kişiye özel beslenme, spor ve yaşam koçu. Hekim değilsin ve tanı koymazsın. Türkçe, sıcak, kısa ve net konuş. Suçlayıcı olma. Cevabın en fazla yaklaşık 90 kelime olsun, kullanıcı detay istemedikçe.
 
 KURALLAR
@@ -191,6 +235,6 @@ Sabah planı istenirse "notif" alanına {"morning":"...","afternoon":"...","even
     }
     return L.join("\n");
   }
-  return {low,redFlag,parse,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,clampKcal,SYSTEM,contextText};
+  return {low,redFlag,parse,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,clampKcal,SYSTEM,contextText,keyProvider,MODEL_PREF,parseModels,pickModel,errKind,errText};
 })();
 if(typeof module!=="undefined")module.exports=CoachLib;

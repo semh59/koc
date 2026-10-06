@@ -61,4 +61,15 @@ ok("katalog: ekipman ve seviye süzülür",c2.length>0&&c2.every(e=>e.q!=="Salon
   ok("shopList: ad İ/I duyarsız toplanır, gram ve adet toplamı, gramsız kalem porsiyonla, Türkçe sıralı",sl.map(x=>x.n+":"+x.t).join("|")==="Ayran:1,5 porsiyon|Süt:200 g|Yumurta:150 g · 3 adet",sl);
 }
 ok("kural 3 KISIT satırına (riskFlags) bağlı: kalori açığı, oruç, yüksek protein",/3\.[^\n]*"KISIT"[^\n]*oruç[^\n]*protein/.test(C.SYSTEM)&&C.contextText({profile:{},goals:{},calc:{block:"x",why:"İlaç kaydın var"},days:[],today:[],now:"",workouts:[],notes:[]}).includes("KISIT: İlaç kaydın var"));
+{ // sağlayıcı kurulumu
+  const kp=["nvapi-x","gsk_x","sk-or-v1-x","AIzaSyx","sk-ant-api03-x","sk-proj-x","sk-x","abc"].map(C.keyProvider).join();
+  ok("anahtar öneki sağlayıcıyı tahmin eder; sk-ant/sk-or genel sk'den önce",kp==="nvidia,groq,openrouter,gemini,anthropic,openai,openai,",kp);
+  const ms=C.parseModels({data:[{id:"whisper-large-v3"},{id:"llama-3.3-70b-versatile"},{id:"models/gemini-3.5-flash-lite"},{id:"nvidia/nv-embedqa-mistral-7b-v2"},{id:"x/y:free",pricing:{prompt:"0",completion:"0"}},{id:"x/z",pricing:{prompt:"0.0000002",completion:"0.0000005"}},{id:"x/y:free"},null,{id:5}]});
+  ok("model listesi: konuşma dışı modeller atılır, models/ öneki kırpılır, fiyat 0 ise ücretsiz",JSON.stringify(ms)==='[{"id":"gemini-3.5-flash-lite","free":null},{"id":"llama-3.3-70b-versatile","free":null},{"id":"x/y:free","free":true},{"id":"x/z","free":false}]',ms);
+  ok("öneri canlı listedeki ilk tercih; tercih yoksa ücretsiz düşünmeyen model, o da yoksa null",C.pickModel("groq",[{id:"llama-3.1-8b-instant"},{id:"llama-3.3-70b-versatile"}])==="llama-3.3-70b-versatile"&&C.pickModel("openrouter",[{id:"a/r1-reasoning:free",free:true},{id:"b/c:free",free:true},{id:"d",free:false}])==="b/c:free"&&C.pickModel("nvidia",[{id:"q/w"}])===null);
+  ok("Gemini'de tercih yoksa en yakın flash modeli",C.pickModel("gemini",[{id:"gemini-9-pro"},{id:"gemini-4.1-flash"}])==="gemini-4.1-flash");
+  const E=[[401,""],[400,'{"error":{"message":"Please pass a valid API key"}}'],[402,""],[429,'{"error":{"code":"insufficient_quota"}}'],[429,"Rate limit reached"],[404,""],[400,'{"error":{"message":"The model `x` does not exist"}}'],[503,""],[0,""],[418,""]].map(([s,b])=>C.errKind(s,b));
+  ok("hata sınıfı: anahtar (401, Gemini 400), kota (402, insufficient_quota), hız limiti, model (404, 400 gövde), sunucu, ağ, diğer",E.join()==="key,key,quota,quota,limit,model,model,down,net,err",E);
+  ok("zaman aşımı ayrı; her sınıfın Türkçe metni var, bilinmeyende kod yazılır",C.errKind(undefined,"","AbortError")==="time"&&["key","quota","limit","model","net","time","down","empty"].every(k=>C.errText(k).length>20&&!/HTTP/.test(C.errText(k)))&&C.errText("err",418).includes("418"));
+}
 process.exit(bad?1:0);

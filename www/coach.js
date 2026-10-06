@@ -29,11 +29,13 @@ async function keysInit(){
   if(lost)toast("Koç anahtarları bu telefonda okunamadı, yeniden gir");
 }
 const defProviders=()=>[
-  {id:"nvidia",name:"NVIDIA Build",base:"https://integrate.api.nvidia.com/v1",model:"meta/llama-3.3-70b-instruct",on:true,health:true,confirm:false},
+  {id:"nvidia",name:"NVIDIA Build",base:"https://integrate.api.nvidia.com/v1",model:"google/gemma-4-31b-it",on:true,health:true,confirm:false},
   {id:"groq",name:"Groq",base:"https://api.groq.com/openai/v1",model:"llama-3.3-70b-versatile",on:true,health:true,confirm:false},
-  {id:"openrouter",name:"OpenRouter",base:"https://openrouter.ai/api/v1",model:"meta-llama/llama-3.3-70b-instruct:free",on:true,health:true,confirm:false},
-  {id:"gemini",name:"Google Gemini",base:"https://generativelanguage.googleapis.com/v1beta/openai",model:"gemini-2.0-flash",on:false,health:false,confirm:true}
+  {id:"openrouter",name:"OpenRouter",base:"https://openrouter.ai/api/v1",model:"google/gemma-4-31b-it:free",on:true,health:true,confirm:false},
+  {id:"gemini",name:"Google Gemini",base:"https://generativelanguage.googleapis.com/v1beta/openai",model:"gemini-3.5-flash-lite",on:false,health:false,confirm:true}
 ];
+/* Sağlayıcının kaldırdığı eski hazır modeller: kayıtta tam bu değer duruyorsa yenisine geçilir, kullanıcının seçtiği model korunur. */
+const DEAD_MODEL={nvidia:"meta/llama-3.3-70b-instruct",openrouter:"meta-llama/llama-3.3-70b-instruct:free",gemini:"gemini-2.0-flash"};
 let pstat={},cool={},busy=false,typing=false,offline=null,lastAuto=0;
 
 /* ---- doğrulama ---- */
@@ -42,7 +44,8 @@ function cleanCoach(r){
   for(const p of (Array.isArray(r.providers)?r.providers:[])){
     if(!p||typeof p.id!=="string"||!/^[a-z0-9]{1,16}$/.test(p.id)||typeof p.name!=="string"||typeof p.base!=="string"||!/^https:\/\/[^\s]+$/.test(p.base)||typeof p.model!=="string")continue;
     if(provs.some(x=>x.id===p.id))continue;
-    provs.push({id:p.id,name:p.name.slice(0,40),base:p.base.slice(0,200),model:p.model.slice(0,100),on:p.on===true,health:p.health===true,confirm:p.confirm===true});
+    const model=DEAD_MODEL[p.id]===p.model?defProviders().find(d=>d.id===p.id).model:p.model.slice(0,100);
+    provs.push({id:p.id,name:p.name.slice(0,40),base:p.base.slice(0,200),model,on:p.on===true,health:p.health===true,confirm:p.confirm===true});
   }
   const chat=[];
   for(const m of (Array.isArray(r.chat)?r.chat:[]).slice(-150)){
@@ -126,12 +129,21 @@ function cMessages(extraUser,extraSys,noHist){
 async function callProvider(p,key,messages,maxTokens=700){
   const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),40000);
   try{
-    const r=await fetch(p.base.replace(/\/+$/,"")+"/chat/completions",{method:"POST",signal:ctl.signal,headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},body:JSON.stringify({model:p.model,messages,temperature:0.3,max_tokens:maxTokens})});
-    if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;throw e}
+    /* Gemini 3 düşünmeyi kapatamıyor; düşük çaba yanıt bütçesini düşünmeye harcatmaz. */
+    const body={model:p.model,messages,temperature:0.3,max_tokens:maxTokens};if(p.id==="gemini")body.reasoning_effort="low";
+    const r=await fetch(p.base.replace(/\/+$/,"")+"/chat/completions",{method:"POST",signal:ctl.signal,headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},body:JSON.stringify(body)});
+    if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;try{e.body=(await r.text()).slice(0,600)}catch(x){}throw e}
     const j=await r.json(),t=j&&j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;
-    if(typeof t!=="string"||!t.trim())throw new Error("Boş yanıt");
+    if(typeof t!=="string"||!t.trim()){const e=new Error("Boş yanıt");e.kind="empty";throw e}
     return t;
   }finally{clearTimeout(to)}
+}
+const errOf=e=>{const kind=(e&&e.kind)||CoachLib.errKind(e&&e.status,e&&e.body,e&&e.name);return {kind,text:CoachLib.errText(kind,e&&e.status)}};
+function pFail(id,e){
+  const {kind,text}=errOf(e);
+  if(kind==="limit")cool[id]=Date.now()+60000;else if(kind==="key"||kind==="quota")cool[id]=Date.now()+600000;
+  pstat[id]={s:kind==="limit"?"limit":kind==="key"?"key":"err",t:Date.now(),m:text};
+  return text;
 }
 const usable=()=>{const k=getKeys();return S.providers.filter(p=>p.on&&p.health&&k[p.id]&&(!cool[p.id]||cool[p.id]<Date.now()))};
 const hasKey=()=>{const k=getKeys();return S.providers.some(p=>p.on&&p.health&&k[p.id])};
@@ -146,12 +158,7 @@ async function cAsk(messages,maxTokens,auto){
     try{
       const text=await callProvider(p,keys[p.id],messages,maxTokens);
       pstat[p.id]={s:"ok",t:Date.now(),ms:Date.now()-t0};return {text,provider:p};
-    }catch(e){
-      const st=e&&e.status;
-      if(st===429){cool[p.id]=Date.now()+60000;pstat[p.id]={s:"limit",t:Date.now()}}
-      else if(st===401||st===403){cool[p.id]=Date.now()+600000;pstat[p.id]={s:"key",t:Date.now()}}
-      else pstat[p.id]={s:"err",t:Date.now(),m:e&&e.name==="AbortError"?"zaman aşımı":(e&&e.message)||"hata"};
-    }
+    }catch(e){pFail(p.id,e)}
   }
   throw new Error(declined&&!tried?"declined":"fail");
 }
@@ -458,7 +465,10 @@ function viewKoc(){
   let h="";
   const intro=offline==="none"||(!hasKey()&&!S.chat.length);
   if(intro)h+=`<div class="banner info"><b>Koç ne yapar?</b><p>Yazdıklarından yemek, su ve kilo kaydı önerir, günü ve haftayı yorumlar, hedefini ayarlamana yardım eder.</p><b>Verin nereye gider?</b><p>Koç yapay zekâ kullanır: internet ister, çevrimdışı çalışmaz. Yalnızca sen onay verirsen ve kendi ücretsiz hesabından alacağın bir anahtarla çalışır. Onay verirsen profilin, kayıtların ve yazdıkların seçtiğin sağlayıcıya gider; sağlayıcının sunucuları yurt dışındadır. İstediğin an geri alırsın (Ayarlar > Gizlilik ve veri).</p><p><b>Koç olmadan da uygulama tam çalışır.</b></p><button class="btn" data-c="guide">Koçu etkinleştir, yaklaşık 2 dakika</button></div>`;
-  else if(offline==="fail")h+=`<div class="banner"><b>Koç şu an ulaşılamıyor</b><p>Su, kilo ve spor kaydı çalışıyor. Yemek tahmini bağlantı gelince yapılır.</p><button class="btn" data-c="retry">Yeniden dene</button></div>`;
+  else if(offline==="fail"){
+    const x=S.providers.filter(p=>pstat[p.id]&&pstat[p.id].s!=="ok").sort((a,b)=>pstat[b.id].t-pstat[a.id].t)[0];
+    h+=`<div class="banner"><b>Koç şu an ulaşılamıyor</b>${x&&pstat[x.id].m?`<p>${esc(x.name)}: ${esc(pstat[x.id].m)}</p>`:""}<p>Su, kilo ve spor kaydı çalışıyor. Yemek tahmini bağlantı gelince yapılır.</p><button class="btn" data-c="retry">Yeniden dene</button></div>`;
+  }
   if(!S.settings.consent&&!intro)h+=`<div class="banner info">${consentHtml()}${consentOk()?`<button class="btn" data-c="consent">Açık rızamı veriyorum</button>`:""}<button class="lnk" data-pv="open">Gizlilik ve veri</button></div>`;
   if(!S.chat.length&&hasKey())h+=`<p class="hint">Bir şey yaz: "2 yumurta ve ekmek yedim", "83,7 çektim" ya da "bugün ne yapmalıyım?"</p>`;
   for(const m of S.chat){
@@ -492,7 +502,7 @@ function pStatus(p){
 }
 function viewProviders(){
   const rows=S.providers.map((p,i)=>{const [a,b]=pStatus(p);return `<button class="prow" data-c="prov:${p.id}"><span style="min-width:0"><b>${esc(p.name)}</b><span class="mut sm">${esc(p.model)}${b?", "+esc(b):""}</span></span><span class="tag">${a}</span></button>`}).join("");
-  return `<h2>Yapay zekâ koç</h2><div class="card"><p class="hint" style="padding:0 0 8px">Sırayla denenir. Limite takılırsa sıradaki devreye girer. Anahtarlar yalnızca bu telefonda durur, yedeğe dahil edilmez.</p>${rows}
+  return `<h2>Yapay zekâ koç</h2><div class="card"><button class="btn" data-c="setup">Anahtar ekle</button><p class="hint" style="padding:8px 0">Sırayla denenir. Limite takılırsa sıradaki devreye girer. Anahtarlar yalnızca bu telefonda durur, yedeğe dahil edilmez.</p>${rows}
   <div class="btns"><button class="btn ghost" data-c="addprov">Sağlayıcı ekle</button></div>
   <p class="hint">Veri paylaşımı: ${S.settings.consent?`kabul edildi (${fd(S.settings.consentAt)})`:"kabul edilmedi"}. ${S.settings.consent?`<button class="lnk" style="display:inline-block;width:auto" data-c="revoke">Geri al</button>`:""}</p>
   <div class="btns"><button class="btn danger" data-c="clearchat">Sohbeti temizle</button></div></div>`;
@@ -505,19 +515,86 @@ const GUIDE={
   gemini:{site:"aistudio.google.com/apikey",steps:["Tarayıcında aistudio.google.com adresini aç ve Google hesabınla giriş yap.","Anahtar sayfasına (Get API key) gir.","Yeni anahtar oluştur düğmesine bas.","Anahtarı kopyala ve aşağıya yapıştır. Ücretsiz katmanda istemler ürün geliştirmek için kullanılabilir, bu yüzden her göndermeden önce sorulur."]}
 };
 function cGuide(id){
-  const p=S.providers.find(x=>x.id===id),g=GUIDE[id];
-  if(!p||!g)return openSheet(`<h3>Koçu etkinleştir</h3><p class="hint" style="padding:0 0 8px">Bir sağlayıcıdan ücretsiz anahtar alırsın. Ücretsiz kullanım sınırları sağlayıcıya göre değişir.</p>${S.providers.filter(x=>GUIDE[x.id]).map(x=>`<button class="prow" data-c="guide:${x.id}"><span><b>${esc(x.name)}</b>${getKeys()[x.id]?`<span class="mut sm">Anahtar kayıtlı</span>`:""}</span><span class="tag">Rehber ›</span></button>`).join("")}`);
-  openSheet(`<h3>${esc(p.name)} anahtarı</h3><div class="mut sm" style="margin-bottom:6px">${esc(g.site)}</div><ol class="cues">${g.steps.map(t=>`<li>${esc(t)}</li>`).join("")}</ol>
-  <input class="in" id="gk" type="password" aria-label="${esc(p.name)} anahtarı" placeholder="Anahtarı yapıştır" autocomplete="off" spellcheck="false" style="font-size:14px">
-  <button class="btn" data-c="gsave:${id}">Kaydet</button><div class="btns"><button class="btn ghost" data-c="guide">‹ Sağlayıcılar</button></div>`);
+  const p=S.providers.find(x=>x.id===id),g=GUIDE[id];if(!p||!g)return cSetup(true);
+  su.id=id;
+  openSheet(`<h3>${esc(p.name)} anahtarı nasıl alınır?</h3><div class="mut sm" style="margin-bottom:6px">${esc(g.site)}</div><ol class="cues">${g.steps.map(t=>`<li>${esc(t)}</li>`).join("")}</ol>
+  <button class="btn" data-c="setup">‹ Anahtarı yapıştır</button>`);
 }
+/* ---- kurulum: 1 anahtar (sağlayıcı önekten tahmin), 2 doğrula ve modelleri getir (Önerilen hazır seçili), 3 test et ve kaydet.
+   Ağ çağrısı yalnız düğmeye basınca ve yalnız seçilen sağlayıcıya gider; giden yalnız anahtar ve sabit test cümlesi. Model listesi bellekte kalır, yedeğe girmez. */
+const PNOTE={nvidia:"Ücretsiz deneme kredisi",groq:"Ücretsiz, çok hızlı",openrouter:"Ücretsiz modeller var",gemini:"Ücretsiz katman, her gönderimde sorulur"};
+const suNew=()=>({k:"",id:null,models:null,rec:"",model:"",adv:false,msg:"",fail:"",busy:false});
+let su=suNew();
+const suProv=()=>GUIDE[su.id]?S.providers.find(p=>p.id===su.id):null;
+function cSetup(fresh){
+  if(fresh)su=suNew();
+  openSheet(`<h3>Koçu bağla</h3><label class="lbl" for="sk">1. Anahtarını yapıştır</label>
+  <input class="in" id="sk" type="password" value="${esc(su.k)}" placeholder="Anahtarı yapıştır" autocomplete="off" spellcheck="false">
+  <div id="sbody">${suBody()}</div>`);
+}
+function suBody(){
+  const g=CoachLib.keyProvider(su.k),p=suProv();
+  let h=g==="openai"||g==="anthropic"?`<p class="hint">Bu bir ${g==="openai"?"OpenAI":"Anthropic (Claude)"} anahtarına benziyor. Koç şimdilik aşağıdaki dört sağlayıcıyla çalışır; birinden ücretsiz anahtar alabilirsin.</p>`
+    :p&&g===su.id?`<p class="hint">${esc(p.name)} anahtarı olarak tanındı. Yanlışsa aşağıdan değiştir.</p>`
+    :su.k&&!p?`<p class="hint">Sağlayıcı tanınmadı. Anahtarı hangi siteden aldıysan onu seç.</p>`:`<p class="hint">Anahtarı hangi siteden aldın? Yoksa birini seç, nasıl alınacağını gösteririz.</p>`;
+  h+=S.providers.filter(x=>GUIDE[x.id]).map(x=>`<button class="prow" data-c="sp:${x.id}" aria-pressed="${su.id===x.id}"><span><b>${esc(x.name)}</b><span class="mut sm">${PNOTE[x.id]}</span></span><span class="tag">${su.id===x.id?"Seçili":"Seç"}</span></button>`).join("");
+  if(!p)return h;
+  h+=`<button class="lnk" data-c="guide:${p.id}">${esc(p.name)} anahtarı nereden alınır?</button>
+  <div class="lbl">2. Modeli seç</div><button class="btn ghost" data-c="sfetch"${su.busy?" disabled":""}>Doğrula ve modelleri getir</button>`;
+  if(su.models){
+    const m=su.models.find(x=>x.id===su.model),tag=[su.model===su.rec?"Önerilen":"",m&&m.free?"ücretsiz":""].filter(Boolean).join(", ");
+    h+=`<p style="margin:10px 0 4px;overflow-wrap:anywhere"><b>${esc(su.model)}</b>${tag?` <span class="tag">${tag}</span>`:""}</p>`;
+    h+=su.adv?`<label class="lbl" for="smsel">Başka model</label><select class="in" id="smsel">${su.models.map(x=>`<option value="${esc(x.id)}"${x.id===su.model?" selected":""}>${esc(x.id)}${x.id===su.rec?" (önerilen)":x.free?" (ücretsiz)":""}</option>`).join("")}</select>
+      <label class="lbl" for="smfree">Ya da model kimliğini yaz</label><input class="in" id="smfree" autocomplete="off" spellcheck="false" placeholder="ör. ${esc(p.model)}">`
+      :`<button class="lnk" data-c="sadv">Başka model seç</button>`;
+  }
+  h+=`<div class="lbl">3. Dene</div><button class="btn" data-c="stest"${su.busy?" disabled":""}>Test et ve kaydet</button>
+  <p class="hint" id="smsg" role="status">${esc(su.msg)}</p>${su.fail&&!["key","model","empty"].includes(su.fail)?`<button class="btn ghost" data-c="ssave">Denemeden kaydet</button>`:""}`;
+  return h;
+}
+function suRender(){const b=$("#sbody");if(b)b.innerHTML=suBody()}
+/* 18 yaş altında kurulum da ağ çağrısı yapmaz; consent zinciri ayrıca sağlık verisini korur. */
+function suCheck(){
+  const k=su.k.trim();
+  if(!consentOk())su.msg="18 yaş altında Koç kapalı.";
+  else if(k.length<8||/\s/.test(k))su.msg="Anahtar eksik ya da yanlış yapıştırılmış görünüyor.";
+  else return k;
+  suRender();return null;
+}
+async function suFetch(){
+  const p=suProv(),k=p&&!su.busy&&suCheck();if(!k)return;
+  su.busy=true;su.msg="Modeller getiriliyor…";su.fail="";suRender();
+  try{
+    const r=await fetch(p.base.replace(/\/+$/,"")+"/models",{headers:{Authorization:"Bearer "+k}});
+    if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;try{e.body=await r.text()}catch(x){}throw e}
+    su.models=CoachLib.parseModels(await r.json());su.rec=CoachLib.pickModel(p.id,su.models)||p.model;su.model=su.rec;su.adv=false;
+    su.msg=su.models.length?`${su.models.length} model bulundu, önerilen seçildi. Test et ile anahtarı ve modeli dene.`:"Model listesi boş geldi; hazır model denenecek.";
+  }catch(e){su.models=null;su.msg=errOf(e).text}
+  su.busy=false;suRender();
+}
+function suSave(p,k,model){p.model=model;p.on=p.health=true;setKey(p.id,k);delete cool[p.id];save();closeSheet();render()}
+async function suTest(){
+  const p=suProv(),k=p&&!su.busy&&suCheck();if(!k)return;
+  const model=(su.model||p.model).trim().slice(0,100),t0=Date.now();
+  su.busy=true;su.msg="Deneniyor…";su.fail="";suRender();
+  try{
+    await callProvider(Object.assign({},p,{model}),k,[{role:"user",content:"Sadece 'tamam' yaz."}],200);
+    pstat[p.id]={s:"ok",t:Date.now(),ms:Date.now()-t0};su.busy=false;suSave(p,k,model);toast(`${p.name} çalışıyor, kaydedildi`);
+  }catch(e){const x=errOf(e);su.busy=false;su.fail=x.kind;su.msg=x.text;suRender()}
+}
+document.addEventListener("input",ev=>{
+  const t=ev.target;
+  if(t.id==="sk"){su.k=t.value;const g=CoachLib.keyProvider(su.k);if(GUIDE[g]&&g!==su.id){su.id=g;su.models=null}su.msg=su.fail="";suRender()}
+  else if(t.id==="smfree"&&t.value.trim())su.model=t.value.trim();
+});
+document.addEventListener("change",ev=>{const t=ev.target;if(t.id==="smsel"){su.model=t.value;suRender()}else if(t.id==="pmsel")$("#pm").value=t.value});
 function cSheetProv(id){
   const p=S.providers.find(x=>x.id===id);if(!p)return;
   const k=getKeys()[id],builtin=defProviders().some(d=>d.id===id);
   const i=S.providers.indexOf(p);
   openSheet(`<h3>${esc(p.name)}</h3>
   <div class="lbl">Adres</div><input class="in" id="pb" value="${esc(p.base)}" autocomplete="off" spellcheck="false" style="font-size:14px">
-  <div class="lbl">Model</div><input class="in" id="pm" value="${esc(p.model)}" list="mlist" autocomplete="off" spellcheck="false" style="font-size:14px"><datalist id="mlist"></datalist>
+  <div class="lbl">Model</div><input class="in" id="pm" value="${esc(p.model)}" autocomplete="off" spellcheck="false" style="font-size:14px"><div id="pmlist"></div>
   <div class="lbl">Anahtar</div><input class="in" id="pk" type="password" placeholder="${k?"••••"+esc(k.slice(-4)):"yapıştır"}" autocomplete="off" spellcheck="false" style="font-size:14px">
   <label class="chkrow"><input type="checkbox" id="pon" ${p.on?"checked":""}> Bu sağlayıcıyı kullan</label>
   <label class="chkrow"><input type="checkbox" id="ph" ${p.health?"checked":""}> Sağlık verisi gönder</label>
@@ -549,18 +626,18 @@ async function cProvClick(a,p1,p2){
     case "ptest":{
       const p=pRead(p1);if(!p)return;const key=getKeys()[p1];if(!key)return toast("Önce anahtarı ekle");
       toast("Deneniyor…");const t0=Date.now();
-      try{await callProvider(p,key,[{role:"user",content:"Sadece 'tamam' yaz."}],8);pstat[p1]={s:"ok",t:Date.now(),ms:Date.now()-t0};delete cool[p1];toast(`Çalışıyor, ${fmt((Date.now()-t0)/1000,1)} sn`)}
-      catch(e){const st=e&&e.status;pstat[p1]={s:st===429?"limit":st===401||st===403?"key":"err",t:Date.now(),m:e&&e.message};toast(st===401||st===403?"Anahtar geçersiz görünüyor":st===404?"Model ya da adres bulunamadı":st===429?"Limit dolu, birazdan dene":"Bağlanılamadı: "+((e&&e.message)||"hata"))}
+      try{await callProvider(p,key,[{role:"user",content:"Sadece 'tamam' yaz."}],200);pstat[p1]={s:"ok",t:Date.now(),ms:Date.now()-t0};delete cool[p1];toast(`Çalışıyor, ${fmt((Date.now()-t0)/1000,1)} sn`)}
+      catch(e){toast(pFail(p1,e))}
       render();return;
     }
     case "pmodels":{
       const p=pRead(p1);if(!p)return;const key=getKeys()[p1];if(!key)return toast("Önce anahtarı ekle");
       try{
         const r=await fetch(p.base.replace(/\/+$/,"")+"/models",{headers:{Authorization:"Bearer "+key}});
-        if(!r.ok)throw new Error("HTTP "+r.status);
-        const j=await r.json(),ids=(j.data||[]).map(x=>x.id).filter(x=>typeof x==="string").slice(0,300);
-        $("#mlist").innerHTML=ids.map(x=>`<option value="${esc(x)}">`).join("");toast(`${ids.length} model getirildi, Model alanına dokunup seç`);
-      }catch(e){toast("Model listesi alınamadı: "+((e&&e.message)||"hata"))}
+        if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;try{e.body=await r.text()}catch(x){}throw e}
+        const ms=CoachLib.parseModels(await r.json()),rec=CoachLib.pickModel(p1,ms),box=$("#pmlist");
+        if(box)box.innerHTML=`<label class="lbl" for="pmsel">${ms.length} model bulundu</label><select class="in" id="pmsel">${ms.map(x=>`<option value="${esc(x.id)}"${x.id===p.model?" selected":""}>${esc(x.id)}${x.id===rec?" (önerilen)":x.free?" (ücretsiz)":""}</option>`).join("")}</select>`;
+      }catch(e){toast(errOf(e).text)}
       return;
     }
     case "pmove":{const i=S.providers.findIndex(x=>x.id===p1),j=i+(+p2);if(i<0||j<0||j>=S.providers.length)return;[S.providers[i],S.providers[j]]=[S.providers[j],S.providers[i]];save();render();return cSheetProv(p1)}
@@ -576,12 +653,13 @@ function cClick(v,el){
     case "retry":offline=null;cFlush();return render();
     case "consent":return cConsent(true);
     case "revoke":return cConsent(false);
-    case "guide":return cGuide(p1);
-    case "gsave":{
-      const p=S.providers.find(x=>x.id===p1),k=$("#gk").value.trim();
-      if(!p||k.length<8||/\s/.test(k))return toast("Anahtar eksik ya da yanlış yapıştırılmış görünüyor");
-      p.on=p.health=true;setKey(p1,k);save();closeSheet();render();return toast(`${p.name} anahtarı kaydedildi`);
-    }
+    case "guide":return p1?cGuide(p1):cSetup(true);
+    case "setup":return cSetup(!$("#sheet").classList.contains("on"));
+    case "sp":if(su.id!==p1){su.id=p1;su.models=null;su.msg=su.fail=""}return suRender();
+    case "sadv":su.adv=true;return suRender();
+    case "sfetch":return suFetch();
+    case "stest":return suTest();
+    case "ssave":{const p=suProv(),k=p&&suCheck();if(k){suSave(p,k,(su.model||p.model).slice(0,100));toast(`${p.name} anahtarı kaydedildi, denenmedi`)}return}
     case "why":return cWhy();
     case "prog":return cProgSheet();
     case "po":if(p1 in progOpt){progOpt[p1]=p1==="d"||p1==="m"?+p2:p2;cProgSheet()}return;
