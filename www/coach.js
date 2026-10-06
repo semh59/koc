@@ -253,11 +253,18 @@ function cApplyLog(id,el){
     const day=it.day==="yesterday"?keyOff(-1):dayKey(),y=it.type==="yemek";
     if(y&&day===dayKey()){foods.push(LogLib.copyNutr(it,{text:it.text||"Öğün",v:it.kcal,meal:ml}));continue}
     const e=y?LogLib.copyNutr(it,add("yemek",it.kcal,it.text||"Öğün",day)):it.type==="su"?add("su",it.ml,"",day):it.type==="kilo"?add("kilo",it.kg,"",day):it.type==="spor"?add("spor",it.min,it.name,day):add("not",null,it.text,day);
-    if(y)e.meal=ml;ids.push(e.id);
+    if(y)e.meal=ml;if(it.type==="spor"){const k=spKcal(it).k;if(k!=null)e.kcal=k}ids.push(e.id);
   }
   c.state="ok";const n=foods.length+ids.length,undo=()=>{S.entries=S.entries.filter(e=>!ids.includes(e.id));c.state="pending"};
   if(foods.length)return addFoods(foods,dayKey(),`${n} kayıt günlüğe eklendi`,undo);
   save();render();toast(`${n} kayıt eklendi`,()=>{undo();save();render()});
+}
+/* Egzersiz kalorisi uygulamanın MET hesabıyla (net, dinlenme hariç; hızlı spor kaydıyla aynı formül). Koç'un tahmini yarıdan fazla saparsa uyarılır.
+   Kilo yoksa Koç'un tahmini dakikada en çok 15 kcal ile sınırlanır. */
+function spKcal(it){
+  const app=Algo.netKcal(CoachLib.sportMet(it.name),motionKg(),it.min);
+  if(app!=null)return {k:app,off:it.kcal!=null&&Math.abs(it.kcal-app)>app*0.5};
+  return {k:it.kcal!=null?Math.min(it.kcal,it.min*15):null,off:false};
 }
 /* Kalori kutusundaki düzeltmeler karta yazılır (çıkarma ve ekleme öncesi). */
 function lReadK(c,el){
@@ -470,14 +477,14 @@ function cCard(m){
   const rows=c.items.map((it,i)=>{
     const lbl=it.type==="yemek"?esc(it.text||"Öğün"):it.type==="su"?"Su":it.type==="kilo"?"Tartı":it.type==="spor"?esc(it.name):"Not";
     const val=it.type==="yemek"?(c.state==="pending"?`<span class="num">~<input class="kin num" data-ck="${i}" inputmode="numeric" aria-label="${esc(it.text)} kcal" value="${it.kcal==null?"":Math.round(it.kcal)}" placeholder="kcal"> kcal</span>`:`<span class="num">${it.kcal==null?"":"~"+Math.round(it.kcal)+" kcal"}</span>`)
-      :it.type==="su"?`<span class="num">${it.ml} ml</span>`:it.type==="kilo"?`<span class="num">${fmt(it.kg)} kg</span>`:it.type==="spor"?`<span class="num">${it.min} dk</span>`:`<span class="mut sm">${esc(it.text.slice(0,40))}</span>`;
+      :it.type==="su"?`<span class="num">${it.ml} ml</span>`:it.type==="kilo"?`<span class="num">${fmt(it.kg)} kg</span>`:it.type==="spor"?`<span class="num">${it.min} dk${spKcal(it).k!=null?` · ~${spKcal(it).k} kcal`:""}</span>`:`<span class="mut sm">${esc(it.text.slice(0,40))}</span>`;
     const y=it.type==="yemek",mac=y?[it.g?it.g+" g":"",it.p!=null?`P ${Math.round(it.p)}`:"",it.c!=null?`K ${Math.round(it.c)}`:"",it.f!=null?`Y ${Math.round(it.f)}`:""].filter(Boolean).join(" · "):"";
-    return `<div class="lrow" style="flex-wrap:wrap"><div style="min-width:0;flex:1 1 150px"><span style="overflow-wrap:break-word">${lbl}</span>${mac?`<div class="mut sm">${mac}</div>`:""}${y&&CoachLib.macroOff(it)?`<div class="mut sm">Kalori makrolarla tutmuyor, kontrol et</div>`:""}${it.day==="yesterday"?`<div class="mut sm">Dün</div>`:""}</div><span style="display:flex;align-items:center;gap:6px;margin-left:auto">${val}${c.state==="pending"&&c.items.length>1?`<button class="chip" data-c="lrm:${m.id}:${i}" aria-label="${lbl} çıkar">×</button>`:""}</span></div>`;
+    return `<div class="lrow" style="flex-wrap:wrap"><div style="min-width:0;flex:1 1 150px"><span style="overflow-wrap:break-word">${lbl}</span>${mac?`<div class="mut sm">${mac}</div>`:""}${y&&CoachLib.macroOff(it)?`<div class="mut sm">Kalori makrolarla tutmuyor, kontrol et</div>`:""}${it.type==="spor"&&spKcal(it).off?`<div class="mut sm">Koç ~${it.kcal} kcal dedi; kilona göre hesap kullanılır</div>`:""}${it.day==="yesterday"?`<div class="mut sm">Dün</div>`:""}</div><span style="display:flex;align-items:center;gap:6px;margin-left:auto">${val}${c.state==="pending"&&c.items.length>1?`<button class="chip" data-c="lrm:${m.id}:${i}" aria-label="${lbl} çıkar">×</button>`:""}</span></div>`;
   }).join("");
-  const est=c.items.some(i=>i.type==="yemek"),ml=c.meal||(c.items.find(i=>i.meal)||{}).meal||LogLib.mealOf({time:cTime(Date.now())}),tot=c.items.reduce((a,i)=>a+(i.type==="yemek"&&i.kcal?i.kcal:0),0);
-  return `<div class="card lcard"><div class="lhead"><b>${est?"Öğüne ekle":"Kayıt önerisi"}</b>${est?`<span class="tahmin">Tahmin</span>`:""}</div>${rows}
+  const est=c.items.some(i=>i.type==="yemek"),onlySp=c.items.every(i=>i.type==="spor"),ml=c.meal||(c.items.find(i=>i.meal)||{}).meal||LogLib.mealOf({time:cTime(Date.now())}),tot=c.items.reduce((a,i)=>a+(i.type==="yemek"&&i.kcal?i.kcal:0),0);
+  return `<div class="card lcard"><div class="lhead"><b>${est?"Öğüne ekle":onlySp?"Egzersizi ekle":"Kayıt önerisi"}</b>${est?`<span class="tahmin">Tahmin</span>`:""}</div>${rows}
   ${est?`<div class="mut sm" style="padding-top:6px">Toplam ~${Math.round(tot)} kcal</div>${c.state==="pending"?`<div class="chips" style="margin:8px 0 0">${LogLib.MEALS.map(([k,n])=>`<button class="chip" data-c="lml:${m.id}:${k}" aria-pressed="${ml===k}">${n}</button>`).join("")}</div>`:""}`:""}
-  ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="ok:${m.id}">${est?"Günlüğe ekle":"Onayla"}</button><button class="btn ghost" data-c="no:${m.id}">Vazgeç</button></div>`:`<div class="mut sm">${c.state==="ok"?"Kaydedildi":"Vazgeçildi"}</div>${c.state==="ok"&&est&&!c.saved?`<div class="lbtns"><button class="btn ghost" data-c="savefood:${m.id}">Yemeği listeme kaydet</button></div>`:""}`}</div>`;
+  ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="ok:${m.id}">${est?"Günlüğe ekle":onlySp?"Egzersizi ekle":"Onayla"}</button><button class="btn ghost" data-c="no:${m.id}">Vazgeç</button></div>`:`<div class="mut sm">${c.state==="ok"?"Kaydedildi":"Vazgeçildi"}</div>${c.state==="ok"&&est&&!c.saved?`<div class="lbtns"><button class="btn ghost" data-c="savefood:${m.id}">Yemeği listeme kaydet</button></div>`:""}`}</div>`;
 }
 /* Onay metni tek yerde: Koç ekranı ve Gizlilik ve veri aynı metni gösterir. Değiştirirsen CONSENT_V'yi artır. */
 const consentOk=()=>!(S.settings.age>0&&S.settings.age<18);
