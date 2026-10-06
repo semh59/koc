@@ -43,6 +43,23 @@ Sonuç: "Doğrula ve listele" tek çağrıyla ancak bazı sağlayıcılarda olur
 
 **Düşünen (reasoning) modeller.** Gemini 3.x düşünmeyi kapatamıyor. OpenAI'ın güncel modelleri (gpt-6-luna gibi) düşünen modeller ve `max_tokens` bunlarda kullanılamıyor (`max_completion_tokens` gerekiyor). Bugünkü test isteği 8 jetonla gidiyor; düşünen modelde yanıt boş gelir ve test yanlışlıkla "çalışmıyor" der.
 
+## 2b. Gerçek NVIDIA anahtarıyla canlı deneme (2026-10-06, koordinatör)
+
+- `/models` yanlış anahtarla da 200 döner, 80 model listeler. Yanlış anahtar ancak sohbet isteğinde 403 "Authorization failed" ile anlaşılır.
+- **Listede olmak çalışmak demek değil:**
+  - google/gemma-4-31b-it 90-120 sn'de yanıt vermedi.
+  - mistralai/mistral-large-2-instruct 404 "Function …: Not found for account" döndü.
+  - meta/llama-3.3-70b-instruct listede yok; 410 end-of-life (2026-08-26).
+  - Uydurma model düz metin "404 page not found" döndü.
+- nvidia/nemotron-3-super-120b-a12b çalışıyor, ama düşünen model. Küçük sınırda `content: null` geliyor, `reasoning_content` dolu, `finish_reason: "length"`.
+
+**Kök çözüm (genel, tüm sağlayıcılar):**
+- "Doğrula" adımı adayları (tercih sırası, ücretsiz, aile) 15 sn sınırla gerçek kısa istekle sırayla dener. İlk yanıt veren "Önerilen (denendi)" olur.
+- Anahtar, kota, ağ ya da hız limiti hatasında denemeler durur.
+- 404, 410 ve "Function not found" "model bulunamadı ya da hesabında kullanılamıyor" sınıfına girer.
+- Deneme başarısı HTTP 200 ve geçerli yanıt gövdesidir; metinsiz yanıt da sayılır.
+- Sohbette metinsiz yanıt sınıra takılmışsa bir kez üç katı sınırla yeniden sorulur.
+
 ## 3. Önerilen akış (3 adım)
 
 1. **Anahtarı yapıştır.** Önekten sağlayıcı tahmin edilir ("Groq olarak tanındı · Değiştir"). Tanınmazsa 4 büyük sağlayıcı düğmesi çıkar. Her düğmenin altında tek satır not ve "Anahtarı nereden alırım?" rehberi var.
@@ -61,7 +78,7 @@ Sonuç: "Doğrula ve listele" tek çağrıyla ancak bazı sağlayıcılarda olur
 **Sağlayıcılar.**
 - **Kalsın:** Groq (hızlı, varsayılanı canlı), OpenRouter (ücretsiz `:free` modeller, fiyat listede), Gemini (ücretsiz katman; `confirm` onayı korunur), NVIDIA (ücretsiz deneme; listesi açık, doğrulama testle).
 - **Ölü varsayılanlar güncellensin:**
-  - NVIDIA: google/gemma-4-31b-it
+  - NVIDIA: nvidia/nemotron-3-super-120b-a12b
   - OpenRouter: google/gemma-4-31b-it:free
   - Gemini: gemini-3.5-flash-lite
 
