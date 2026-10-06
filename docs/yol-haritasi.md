@@ -2,6 +2,8 @@
 
 Kod durumu `9953416`. Kaynaklar: oneri-listesi, plan-6-ozellik, rekabet-ozellik, rekabet-arayuz, rekabet-egzersiz, yapilacaklar, adim-arastirma, akilli-gps-tasarim, fikirler, besin-arastirmasi, git log ve kod denetimi. Yapılmış özellikler listelenmez. Her madde tek yerde durur; E ve G bölümleri yalnızca kimlik verir.
 
+Dış değerlendirmenin 36 maddesi kanıtla doğrulandı ve öncelik sıralı Play yolu çıkarıldı: `dis-degerlendirme-dogrulama.md` (6 Ekim 2026).
+
 Emek: S ≤ yarım gün, M ≈ 1 gün, L > 1 gün. "Bağımlılık / karar" sütunu önce gelmesi gereken maddeyi ya da G'deki kararı gösterir.
 
 ## A) Telefonda doğrulama bekleyenler
