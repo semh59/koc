@@ -896,7 +896,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("S.meds=Array.from({length:20},(_,i)=>({id:i+1,n:'M'+i,t:['06:00','10:00','14:00','18:00','22:00','23:00'],on:true}));S.medLog=[]");
     await ev("scheduleReminders()");
     ok("çok ilaçta toplam alarm 440 ile sınırlı (Android 500 sınırı)",list.length===440,list.length);
-    ok("sınırlandırmada en yakın tarihliler korunur (kalan alarmlar yalnızca ilk 5 güne ait)",Math.max(...list.filter(n=>n.id>=1e6).map(n=>n.id%40))<=4&&list.filter(n=>n.id>=1e6).some(n=>n.id%40===0),Math.max(...list.filter(n=>n.id>=1e6).map(n=>n.id%40)));
+    ok("sınırlandırmada en yakın tarihliler korunur (kalan alarmlar en çok 5 ardışık güne ait)",(g=>Math.max(...g)-Math.min(...g)<=4)(list.filter(n=>n.id>=1e6).map(n=>n.id%40)),list.filter(n=>n.id>=1e6).map(n=>n.id%40).join());
     w.Capacitor.Plugins.LocalNotifications=lnOld;
     ev("S.meds=[{id:1,n:'Test İlaç',d:'1 tablet',t:['08:00','20:00'],on:true,k:10}];S.medLog=[]");
 
@@ -2289,6 +2289,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("Spor ekle: tür MET'iyle kcal (Koşu 30 dk, 80 kg: 7,3×80×0,5=292)",ev("S.entries.filter(e=>e.type==='spor').pop().kcal")===292);
   }
   { // D-Adım3: elle yürüyüş
+    const unclock=require('./clock').at(w,12); // gece yarısına yakın çalışınca yürüyüş gün sınırını aşıp adım farkı kaybolur
     const q=s=>$q(s),qa=s=>[...w.document.querySelectorAll(s)];
     ev("S=structuredClone(DEF);S.settings.obDone=true;S.settings.heightCm=170;S.settings.stepsOn=true;add('kilo',80);stepToday=null;stepsRead=false;closeSheet();tab='adim';render()");
     stepSteps=1000;await ev("stepsSync()");ev("render()");
@@ -2337,6 +2338,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("sensör geriye giderse ya da adım sayar kapalıysa (s0 yok) adım farkı yok",ev("walkSteps({t0:Date.now()-6e4,t1:Date.now(),s0:900,s1:100})")===null&&ev("walkSteps({t0:Date.now()-6e4,t1:Date.now(),s0:null,s1:100})")===null);
     ok("24 saatten eski ya da geleceğe ait yarım yürüyüş temizlikte atılır",ev("Algo.cleanWalk({t0:Date.now()-25*36e5},Date.now())")===null&&ev("Algo.cleanWalk({t0:Date.now()+1e7},Date.now())")===null&&ev("Algo.cleanWalk({t0:Date.now()-36e5,s0:-5,t1:5},Date.now())").s0===null);
     ev("S=structuredClone(DEF);S.settings.obDone=true;stepToday=null;tab='bugun';render()");
+    unclock();
   }
   { // D-Adım4: hareket kalorisini hedefe ekle
     const q=s=>$q(s),txt=()=>q("#view").textContent,wc=[];
