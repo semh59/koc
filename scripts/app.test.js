@@ -1651,6 +1651,27 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
   ev("cClick('savefood:'+S.chat.find(m=>m.card&&m.card.kind==='log').id,document.body)");
   ok("kaydedilen yemek listeye girer",ev("S.myFoods.some(m=>m.n==='ev yapımı kek'&&m.k===300)"));
   ev("S.myFoods=[]");
+  { // sohbetten öğüne ekle: kart, öğün seçici, satır çıkarma/düzeltme, tek düğme, tekrar engeli, Geri al
+    const q=s=>$q(s),card=()=>ev("S.chat.find(m=>m.card&&m.card.kind==='log')"),cid=()=>card().id,n0=ev("S.entries.length");
+    ev("S.chat=[];S.cid=1;tab='koc';cReply({reply:'Afiyet olsun',log:[{type:'yemek',text:'Menemen <b>x</b>',g:250,kcal:300,protein:15,carbs:10,fat:22,meal:'aks'},{type:'yemek',text:'Simit',g:100,kcal:900,protein:9,carbs:55,fat:4},{type:'yemek',text:'Çay',kcal:5}]});render()");
+    const v=()=>q("#view").innerHTML;
+    ok("kart: başlık 'Öğüne ekle', ad kaçışlı, gram ve makrolar, toplam, öğün çipi bloktan seçili, tek 'Günlüğe ekle'",v().includes("Öğüne ekle")&&v().includes("Menemen &lt;b&gt;x&lt;/b&gt;")&&v().includes("250 g · P 15 · K 10 · Y 22")&&v().includes("Toplam ~1205 kcal")&&q(`[data-c="lml:${cid()}:aks"]`).getAttribute("aria-pressed")==="true"&&q(`[data-c="ok:${cid()}"]`).textContent==="Günlüğe ekle");
+    ok("kalori makrolarla tutmayan satırda uyarı",v().includes("Kalori makrolarla tutmuyor"));
+    q(`[data-c="lml:${cid()}:ogl"]`).click();q('[data-ck="0"]').value="320";q(`[data-c="lrm:${cid()}:1"]`).click();
+    ok("öğün değişir, satır çıkarılır, çıkarmadan önceki kalori düzeltmesi korunur",card().card.meal==="ogl"&&card().card.items.length===2&&card().card.items[0].kcal===320);
+    q(`[data-c="ok:${cid()}"]`).click();
+    const added=ev("JSON.stringify(S.entries.slice(-2).map(e=>[e.type,e.text,e.v,e.p,e.c,e.f,e.meal,e.day===dayKey()]))");
+    ok("tek tıkla günlüğe: mevcut kayıt yapısı (v, p, c, f, meal), seçilen öğün",ev("S.entries.length")===n0+2&&added==='[["yemek","Menemen <b>x</b>",320,15,10,22,"ogl",true],["yemek","Çay",5,null,null,null,"ogl",true]]',added);
+    ev(`cClick('ok:${cid()}',document.body)`);
+    ok("aynı kart tekrar eklenemez (Kaydedildi durumu)",ev("S.entries.length")===n0+2&&card().card.state==="ok"&&!q(`[data-c="ok:${cid()}"]`));
+    q("#toast button").click();
+    ok("Geri al kayıtları siler ve kartı yeniden açar",ev("S.entries.length")===n0&&card().card.state==="pending");
+    ok("kart durumu ve öğün yedekten geri gelir",ev("JSON.stringify(cleanCoach(JSON.parse(JSON.stringify(S))).chat.find(m=>m.card&&m.card.kind==='log').card.meal)")==='"ogl"');
+    ev("S.chat=[];S.cid=1;cReply({reply:'Tahmin',food:{name:'1 dilim pizza',kcal:280,protein:12}});render()");
+    const fid=ev("S.chat.find(m=>m.card&&m.card.kind==='food').id");q(`[data-c="fooddiary:${fid}"]`).click();
+    ok("kalori sorusu kartı da tek tıkla günlüğe ekler, bir kez",ev("S.entries.length")===n0+1&&ev("S.entries[S.entries.length-1].text")==="1 dilim pizza"&&!q(`[data-c="fooddiary:${fid}"]`)&&q("#view").textContent.includes("Günlüğe eklendi"));
+    ev("S.entries=S.entries.slice(0,"+n0+");S.chat=[];tab='bugun';render()");
+  }
   ev("sheetYemek()");const fq3=w.document.querySelector("#fq");fq3.value="ev yapımı mantı";fq3.dispatchEvent(new w.Event("input",{bubbles:true}));
   ok("listede olmayan yemek için Koç'a sor çıkar",w.document.querySelector("#flist [data-c=askfood]")&&w.document.querySelector("#flist").innerHTML.includes("ev yapımı mantı"));
   ev("S.chat=[];cClick('askfood',document.body)");

@@ -24,7 +24,7 @@ ok("json değilse düz metin",C.parse("Sadece metin").reply==="Sadece metin");
 ok("bozuk json düz metne düşer",C.parse('{"reply":"x",').reply.length>0);
 const it=C.cleanItems([{type:"yemek",text:"yumurta",kcal:140,protein:"12"},{type:"yemek",kcal:99999},{type:"su",ml:"250"},{type:"su",ml:5},{type:"kilo",kg:"83,7"},{type:"kilo",kg:5},{type:"spor",min:30},{type:"x"},null,{type:"not",text:" "}]);
 ok("öğe doğrulama",it.length===4&&it[0].p===12&&it[2].kg===83.7&&it[3].name==="Spor",it);
-ok("en fazla 8",C.cleanItems(Array(20).fill({type:"su",ml:250})).length===8);
+ok("en fazla 12",C.cleanItems(Array(20).fill({type:"su",ml:250})).length===12);
 ok("kcal alt sınır",C.clampKcal(900,{tdee:2400,bmr:1800}).kcal===1800&&C.clampKcal(900,{tdee:2400,bmr:1800}).limited);
 ok("kcal geçerli",C.clampKcal(2000,{tdee:2400,bmr:1700}).kcal===2000&&C.clampKcal("abc")===null&&C.clampKcal(100)===null);
 const t=C.contextText({profile:{cm:175,age:34,sex:"m",act:1,note:""},goals:{kg:75,kcal:1800,water:2500,sport:150},calc:{trendKg:84.1,slope:-0.6,tdee:2420,source:"veri",target:2110,protein:[136,187]},days:[{d:"2026-10-01",kg:83.7,kcal:1240,p:80,su:1200,sport:0}],today:["yemek ~220 kcal"],now:"12:42",workouts:[],notes:[]});
@@ -75,5 +75,14 @@ ok("kural 3 KISIT satırına (riskFlags) bağlı: kalori açığı, oruç, yüks
   ok("NVIDIA yanıt şekilleri: hesapta yok (404 Function), emekli (410), düz metin 404 → model; 403 → anahtar",N.join()==="model,model,model,key",N);
   ok("adaylar: tercih sırası, sonra ücretsiz, sonra aile; listede olmayan tercih atlanır, emekli llama tercihte yok",JSON.stringify(C.candidates("nvidia",[{id:"google/gemma-4-31b-it"},{id:"nvidia/nemotron-3-super-120b-a12b"},{id:"meta/llama-3.3-70b-instruct"}]))==='["nvidia/nemotron-3-super-120b-a12b","google/gemma-4-31b-it"]'&&!C.MODEL_PREF.nvidia.includes("meta/llama-3.3-70b-instruct"));
   ok("zaman aşımı ayrı; her sınıfın Türkçe metni var, bilinmeyende kod yazılır",C.errKind(undefined,"","AbortError")==="time"&&["key","quota","limit","model","net","time","down","empty"].every(k=>C.errText(k).length>20&&!/HTTP/.test(C.errText(k)))&&C.errText("err",418).includes("418"));
+}
+{ // sohbetten öğüne ekle
+  const good=C.parse('{"reply":"Afiyet olsun","log":[{"type":"yemek","text":"Menemen","g":250,"kcal":300,"protein":15,"carbs":10,"fat":22,"meal":"kah"},{"type":"yemek","text":"Simit","g":100,"kcal":280,"protein":9,"carbs":55,"fat":4}]}');
+  const it=C.cleanItems(good.log);
+  ok("iyi yanıt: her yemek ayrı, gram/makro/öğün alınır, öğün yoksa boş",it.length===2&&it[0].g===250&&it[0].c===10&&it[0].f===22&&it[0].meal==="kah"&&it[1].meal===undefined,it);
+  ok("bozuk ya da yarım JSON: kart yok, düz metin kalır",C.parse('Afiyet olsun {"reply":"x","log":[{"type":"yemek"').log.length===0&&C.parse('Afiyet olsun {"reply":"x","log":[{"type":"yemek"').reply.startsWith("Afiyet olsun"));
+  const evil=C.cleanItems([{type:"yemek",text:"<img src=x onerror=alert(1)>",kcal:-50,g:-5,carbs:99999,fat:"abc",meal:"gece<script>"},{type:"yemek",text:"x".repeat(500),kcal:"250"},{type:"yemek",text:"Çorba",kcal:1e9},...Array(20).fill({type:"yemek",text:"elma",kcal:52})]);
+  ok("kötü niyetli/aşırı değer: negatif ve aşırı atılır, ad 120 karakter, öğün beyaz listede, en çok 12 satır",evil.length===12&&evil[0].kcal===null&&evil[0].g===undefined&&evil[0].c===undefined&&evil[0].f===undefined&&evil[0].meal===undefined&&evil[1].text.length===120&&evil[1].kcal===250&&evil[2].kcal===null);
+  ok("kalori-makro tutarlılığı: ±%25 dışında uyarı, makro eksikse uyarı yok",!C.macroOff({kcal:300,p:15,c:10,f:22})&&C.macroOff({kcal:900,p:15,c:10,f:22})&&!C.macroOff({kcal:900,p:15,c:null,f:22}));
 }
 process.exit(bad?1:0);

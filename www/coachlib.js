@@ -45,16 +45,18 @@ const CoachLib=(()=>{
   }
 
   const num=(x,lo,hi)=>{const v=typeof x==="string"?parseFloat(x.replace(",",".")):x;return Number.isFinite(v)&&v>=lo&&v<=hi?v:null};
-  /* Kayıt önerilerini doğrula. Geçersiz olanlar atılır, en fazla 8 kayıt. */
+  /* Kayıt önerilerini doğrula. Geçersiz olanlar atılır, en fazla 12 kayıt. Yemekte gram, karbonhidrat, yağ ve öğün isteğe bağlı. */
   function cleanItems(items){
     const out=[];
-    for(const it of (Array.isArray(items)?items:[]).slice(0,8)){
+    for(const it of (Array.isArray(items)?items:[]).slice(0,12)){
       if(!it||typeof it!=="object")continue;
       const day=it.day==="yesterday"?"yesterday":"today";
       if(it.type==="yemek"){
         const kcal=num(it.kcal,0,5000),text=String(it.text||"").trim().slice(0,120);
         if(!text&&kcal==null)continue;
-        out.push({type:"yemek",text,kcal,p:num(it.protein!=null?it.protein:it.p,0,300),day});
+        const o={type:"yemek",text,kcal,p:num(it.protein!=null?it.protein:it.p,0,300),day},g=num(it.g,1,5000),c=num(it.carbs!=null?it.carbs:it.c,0,2000),f=num(it.fat!=null?it.fat:it.f,0,1000);
+        if(g!=null)o.g=Math.round(g);if(c!=null)o.c=Math.round(c*10)/10;if(f!=null)o.f=Math.round(f*10)/10;if(MEAL_KEYS.includes(it.meal))o.meal=it.meal;
+        out.push(o);
       }else if(it.type==="su"){const ml=num(it.ml,50,2000);if(ml!=null)out.push({type:"su",ml:Math.round(ml),day})}
       else if(it.type==="kilo"){const kg=num(it.kg,20,400);if(kg!=null)out.push({type:"kilo",kg:Math.round(kg*10)/10,day})}
       else if(it.type==="spor"){const min=num(it.min,1,600);if(min!=null)out.push({type:"spor",min:Math.round(min),name:String(it.name||"Spor").trim().slice(0,40)||"Spor",day})}
@@ -62,6 +64,8 @@ const CoachLib=(()=>{
     }
     return out;
   }
+  /* Makrolar tam ve kalori 4p+4k+9y'den %25'ten fazla sapıyorsa tahmin tutarsız: kart uyarır. */
+  const macroOff=it=>it.kcal>0&&it.p!=null&&it.c!=null&&it.f!=null&&Math.abs(it.kcal-(4*it.p+4*it.c+9*it.f))>it.kcal*0.25;
   /* Kullanıcının sorduğu besin için modelin tahmini: bir porsiyonluk değerler. */
   function cleanFood(x){
     if(!x||typeof x!=="object")return null;
@@ -204,7 +208,7 @@ KURALLAR
 5. İlaç, doz, takviye tedavisi önerme.
 6. Yeme bozukluğu işareti görürsen kısıtlama önerme, yargılamadan bir uzmana yönlendir.
 7. Bilmediğin veya veride olmayan şeyi sor, tahmin yürütme.
-8. Kullanıcı bir şey yediğini, içtiğini, tartıldığını veya spor yaptığını yazarsa "log" listesine ekle. Kalori ve protein değerlerini makul bir tahmin olarak ver, kesinmiş gibi söyleme.
+8. Kullanıcı bir şey yediğini, içtiğini, tartıldığını veya spor yaptığını yazarsa "log" listesine ekle. Her yemek ayrı öğe; değerler tahmin, kesin deme.
 9. Kullanıcı bir yemeğin ya da besinin kalorisini sorarsa ve yediğini söylemiyorsa "log" kullanma; "food" alanına tek porsiyonluk makul bir tahmin yaz. Porsiyonu adda belirt (ör. "1 dilim pizza"). Tahmin olduğunu reply'da söyle.
 10. Kas, eklem ya da sırt ağrısında ve sakatlıkta tanı koyma, tedavi ya da egzersiz reçetesi verme: ağrıyı yapan hareketi ve antrenmanı bırakmasını, ağrı sürer ya da artarsa hekime veya fizyoterapiste başvurmasını söyle.
 11. İlaç ve takviye sorularında (doz, etkileşim, başlama, bırakma) yorum yapma, hekime ya da eczacıya yönlendir.
@@ -212,7 +216,7 @@ KURALLAR
 
 ÇIKTI: Yalnızca tek bir JSON nesnesi, başka hiçbir metin yok:
 {"reply":"kullanıcıya metin","log":[],"propose":null,"flag":null,"notif":null,"food":null}
-log öğeleri: {"type":"yemek","text":"2 haşlanmış yumurta","kcal":140,"protein":12} | {"type":"su","ml":250} | {"type":"kilo","kg":83.7} | {"type":"spor","min":30,"name":"Yürüyüş"} | {"type":"not","text":"..."}. Dünkü kayıt için "day":"yesterday" ekle.
+log öğeleri: {"type":"yemek","text":"yumurta","g":100,"kcal":140,"protein":12,"carbs":1,"fat":10,"meal":"kah"} (meal: kah/ogl/aks/atis) | {"type":"su","ml":250} | {"type":"kilo","kg":83.7} | {"type":"spor","min":30,"name":"Yürüyüş"} | {"type":"not","text":"..."}. Dünkü kayıt için "day":"yesterday" ekle.
 propose: {"kcal":1900,"why":"kısa neden"} ya da null.
 food: {"name":"1 dilim pizza","kcal":280,"protein":12} ya da null.
 Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex":["kimlik"]}]} yaz: yalnız KATALOG'daki kimlikler, gün başına 3-8 egzersiz.
@@ -241,6 +245,6 @@ Sabah planı istenirse "notif" alanına {"morning":"...","afternoon":"...","even
     }
     return L.join("\n");
   }
-  return {low,redFlag,parse,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,clampKcal,SYSTEM,contextText,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText};
+  return {low,redFlag,parse,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,clampKcal,SYSTEM,contextText,macroOff,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText};
 })();
 if(typeof module!=="undefined")module.exports=CoachLib;
