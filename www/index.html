@@ -722,7 +722,8 @@ function viewBugun(){
     isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?row("adim","Adım sayarı aç","Telefonun sensörü sayar, hesap gerekmez.",[["adimac","Aç"],["adimdegil","Şimdi değil"]]):"",
     S.entries.length>=10&&(old==null||old>14)?row("cloud","Yedek zamanı",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Gönder"]]):""].filter(Boolean);
   const todoCard=todo.length?`<div class="card todo"><div class="lbl">Bugün yapılacaklar</div>${todo.join("")}</div>`:"";
-  return `${actions}${habitRow()}${rings}${macro}${macroNote}${micro}${sOn?stepCard():""}${todoCard}${gTodayCard()}${weight}<button class="lnk" data-ms="open">Vücut ölçüsü ekle</button><button class="coach" data-tab="koc">${esc(coach())} <b>Koç ›</b></button>${hasKey()?`<div class="btns">${cCommentBtn("plan")}</div>`:""}${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
+  const minor=S.settings.age>0&&S.settings.age<18?`<div class="banner"><b>NeoWell 18 yaş ve üzeri için</b><p>Profilindeki yaş 18'in altında. Kalori açığı, oruç önerisi ve Koç kapalı. Beslenme ve kilo konusunda bir yetişkinle ve hekiminle ya da diyetisyeninle konuş. Yaş yanlışsa Ayarlar > Profil'den düzelt.</p></div>`:"";
+  return `${actions}${minor}${habitRow()}${rings}${macro}${macroNote}${micro}${sOn?stepCard():""}${todoCard}${gTodayCard()}${weight}<button class="lnk" data-ms="open">Vücut ölçüsü ekle</button><button class="coach" data-tab="koc">${esc(coach())} <b>Koç ›</b></button>${hasKey()?`<div class="btns">${cCommentBtn("plan")}</div>`:""}${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
 }
 
 /* PDF raporlar tek yerde; paylaşım işleyicileri belgede dinlediği için ekrandan bağımsız çalışır. */
