@@ -17,6 +17,10 @@ if (!x.includes("StepSnapshotReceiver")) {
 if (!x.includes("MotionReceiver")) {
   x = x.replace("</application>", '    <receiver android:name=".MotionReceiver" android:exported="false"><intent-filter><action android:name="android.intent.action.BOOT_COMPLETED"/><action android:name="android.intent.action.MY_PACKAGE_REPLACED"/></intent-filter></receiver>\n    <service android:name=".MotionGpsService" android:exported="false" android:foregroundServiceType="location"/>\n    </application>');
 }
+// İlaç dozunda kilitli ekranı uyandıran alarm alıcısı (bildirim eklentisi ekranı açmaz); açılışta ve güncellemede kayıtlı dozları yeniden kurar.
+if (!x.includes("MedWakeReceiver")) {
+  x = x.replace("</application>", '    <receiver android:name=".MedWakeReceiver" android:exported="false"><intent-filter><action android:name="android.intent.action.BOOT_COMPLETED"/><action android:name="android.intent.action.MY_PACKAGE_REPLACED"/></intent-filter></receiver>\n    </application>');
+}
 // Barkod tarayıcı modülü uygulama kurulurken indirilsin (Google ML Kit).
 if (!x.includes("com.google.mlkit.vision.DEPENDENCIES")) {
   x = x.replace("</application>", '    <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui"/>\n    </application>');
@@ -58,7 +62,7 @@ console.log("Simgeler ve açılış ekranı yerleştirildi.");
 
 // API anahtarı kasası: Keystore eklentisini kopyala, MainActivity'ye kaydet.
 const jdir="android/app/src/main/java/com/neowell/app";
-for(const f of ["KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin","QuickMath","QuickLogPlugin","MotionMath","MotionStore","MotionGpsService","MotionReceiver","MotionPlugin","NeoWidget","WidgetPlugin","WaterReceiver","SpeechPlugin","BackupFolderPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
+for(const f of ["MedWakeReceiver","MedWakePlugin","KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin","QuickMath","QuickLogPlugin","MotionMath","MotionStore","MotionGpsService","MotionReceiver","MotionPlugin","NeoWidget","WidgetPlugin","WaterReceiver","SpeechPlugin","BackupFolderPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
 fs.writeFileSync(`${jdir}/MainActivity.java`,`package com.neowell.app;
 
 import android.content.Intent;
@@ -78,6 +82,7 @@ public class MainActivity extends BridgeActivity {
         boolean quick = false;
         if (savedInstanceState == null) quick = QuickLogPlugin.handle(this, getIntent(), false);
         else getIntent().removeExtra(QuickLogPlugin.ACTION_KEY);
+        registerPlugin(MedWakePlugin.class);
         registerPlugin(KeyVaultPlugin.class);
         registerPlugin(DeviceHelpPlugin.class);
         registerPlugin(StepCounterPlugin.class);
