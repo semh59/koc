@@ -16,6 +16,7 @@ Durum: [ ] bekliyor, [~] yapıldı ama telefonda denenmedi, [x] telefonda denend
 - Diğer fikirler: `docs/fikirler.md`.
 
 ## Telefonda tek tek test edilecekler
+- [ ] **Yatay mod (yön kilidi yok, uygulama döner).** Telefonu yan çevir: Bugün, Salon ve canlı antrenman (set girişi, zamanlayıcı), Koç yazma alanı, bir alt sayfa (Yemek ekle) açıkken. Alt sekme ve başlık ince olmalı, sheet'in son düğmesine kaydırarak ulaşılmalı, çentik tarafında içerik kesilmemeli. Klavye açıkken yatayda yazma alanı klavyenin üstünde kalmalı; geri dik çevirince alt sekme geri gelmeli. Tablette (dik ve yatay) içerik ortada 520 px genişlikte durur, kenarlar boş kalır; bu beklenen davranıştır.
 - [ ] **API 36 / Capacitor 8 (B10, api36 dalı): telefonda bakılacaklar.** Önce şifreli yedek al; güncelleme aynı imzayla yerinde kurulmalı. Mümkünse Android 15 ya da 16 telefonda ve bir de eski (Android 8-12) telefonda bak:
   1. **Kenar boşlukları.** Uygulama artık durum çubuğu ve alt gezinme çubuğunun altına çizilir. Üst başlık saat/pil simgelerinin altında kalmamalı. Alt menü, Koç yazma alanı, alt sayfa (sheet), bildirim balonu (toast) ve rehberli mod hareket çubuğunun ya da üç tuşlu gezinmenin üstünde durmalı. Açılışta içerik bir kez aşağı-yukarı zıplamamalı. Klavye açılınca Koç yazma alanı klavyenin üstüne çıkmalı, kapanınca yerine dönmeli. Yatay çevirmede çentik tarafında içerik kesilmemeli.
   2. **Durum çubuğu simgeleri.** Ayarlar > Tema Açık, Koyu ve Sistem'de, telefon açık ve koyu temadayken saat ve pil simgeleri okunur olmalı (koyu zeminde açık, açık zeminde koyu).

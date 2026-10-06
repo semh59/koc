@@ -13,6 +13,7 @@
 :root{
   /* Kenar boşlukları: Capacitor SystemBars --safe-area-inset-* yazar; WebView 140 öncesinde env() Android'de yanlış döner. */
   --sat:var(--safe-area-inset-top,env(safe-area-inset-top,0px)); --sab:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px));
+  --sal:var(--safe-area-inset-left,env(safe-area-inset-left,0px)); --sar:var(--safe-area-inset-right,env(safe-area-inset-right,0px));
   --bg:#f2f4f3; --card:#ffffff; --ink:#10232b; --mut:#56666d; --line:#dfe5e2;
   --prim:#0f5c55; --prim-ink:#ffffff; --soft:#e7eeeb; --prim-soft:#d7ebe5; --field:#f4f6f5; --fbd:#7d898f;
   --su:#2a86bd; --kcal:#b8691a; --spor:#7d56c8; --warn:#b03a24;
@@ -52,7 +53,7 @@ body{
   background:var(--bg);color:var(--ink);
   font:var(--fs-1)/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
-  padding:var(--sat) 0 0;
+  padding:var(--sat) var(--sar) 0 var(--sal);
 }
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none;padding:0}
@@ -137,7 +138,7 @@ td.today,th.today{font-weight:700}
 .bar>i{display:block;height:100%;background:var(--spor);border-radius:99px}
 
 /* Koç */
-#composer{position:fixed;left:0;right:0;bottom:calc(68px + var(--sab));z-index:6;background:var(--bg);padding:6px 12px 8px;max-width:520px;margin:0 auto}
+#composer{position:fixed;left:var(--sal);right:var(--sar);bottom:calc(68px + var(--sab));z-index:6;background:var(--bg);padding:6px 12px 8px;max-width:520px;margin:0 auto}
 #composer[hidden]{display:none}body.kb nav,body.kb .chiprow{display:none}body.kb #composer{bottom:var(--kb,0px)}body.kb #sheet{bottom:var(--kb,0px);max-height:calc(var(--vh) - 8px);padding-bottom:18px}
 .chiprow{display:flex;gap:6px;margin-bottom:8px;overflow:hidden}.chiprow .chip{flex:1 1 auto;min-height:44px;padding:0 8px;font-size:13.5px;background:var(--card);box-shadow:var(--sh);border:1px solid var(--card-bd)}.chiprow .chip .i{color:var(--mut)}
 .cin{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);box-shadow:var(--sh);border-radius:26px;padding:0 4px 0 16px;min-height:52px}.cin:focus-within{border-color:var(--prim)}
@@ -175,7 +176,7 @@ body.koc #toast{bottom:calc(150px + var(--sab))}
 .livebar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 4px 10px}
 .livebar>div{flex:1;min-width:0}.livebar b{font-size:var(--fs-h3)}.livebar .mut{font-size:var(--fs-s)}.btn.fin{width:auto;flex:none;padding:11px 22px}
 .fig{width:100%;height:auto;display:block}
-#guide{position:fixed;inset:0;z-index:15;max-width:520px;margin:0 auto;background:var(--card);display:flex;flex-direction:column;padding:calc(6px + var(--sat)) 16px calc(10px + var(--sab));overflow-y:auto}#guide[hidden]{display:none}body.gdon{overflow:hidden}
+#guide{position:fixed;inset:0;z-index:15;max-width:520px;margin:0 auto;background:var(--card);display:flex;flex-direction:column;padding:calc(6px + var(--sat)) calc(16px + var(--sar)) calc(10px + var(--sab)) calc(16px + var(--sal));overflow-y:auto}#guide[hidden]{display:none}body.gdon{overflow:hidden}
 .gdtop{display:flex;align-items:center;gap:8px;min-height:44px}.gdtop b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gdx{width:44px;height:44px;font-size:22px;color:var(--mut);flex:none}
 .gdbar{height:6px;background:var(--soft);border-radius:3px;overflow:hidden;flex:none}.gdbar i{display:block;height:100%;width:0;background:var(--prim)}
 .gdfig{flex:1 1 140px;min-height:110px;max-height:240px;display:flex;justify-content:center;margin:8px 0 4px;background:var(--bg);border-radius:16px;overflow:hidden}.gdfig .fig{height:100%;width:auto;max-width:100%}
@@ -252,7 +253,7 @@ body.ob nav{display:none}body.ob main{padding-bottom:24px}
 .obp{display:grid;gap:6px;flex:1;padding:4px 4px 0}.obbar{display:flex;gap:6px}.obbar i{flex:1;height:4px;border-radius:2px;background:var(--line);transition:background var(--dur)}.obbar i.on{background:var(--prim)}
 
 /* Alt gezinme */
-nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:6px 8px calc(6px + var(--sab));z-index:5}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:6px calc(8px + var(--sar)) calc(6px + var(--sab)) calc(8px + var(--sal));z-index:5}
 nav .in{max-width:520px;margin:0 auto;display:flex;gap:4px}
 /* Sabit yükseklik: Koç yazma alanı menünün hemen üstüne oturur, büyük yazı tipinde de çakışmaz. */
 nav button{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:56px;font-size:12px;font-weight:600;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
@@ -290,6 +291,16 @@ input.in,select.in,.chip>button{min-height:44px}
 #toast span{flex:1}
 #toast button{font-weight:700;color:var(--tact);min-height:44px;margin:-10px -6px -10px 0;padding:0 10px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.btn:active,.chip:active,.act:active,.stepcard:active,.seg2 button:active{transform:none}}
+/* Yatay telefon (kısa ekran): başlık ve alt sekme küçülür, sheet ekrana sığar ve kayar; dik görünüm değişmez. */
+@media (orientation:landscape) and (max-height:500px){
+  header{padding:6px 20px 2px;min-height:44px}header h1{font-size:var(--fs-h2)}
+  nav{padding-top:2px;padding-bottom:calc(2px + var(--sab))}nav .in{gap:2px}
+  nav button{flex-direction:row;gap:2px;height:44px}nav button .ic{width:auto;padding:4px 6px}
+  main{padding-bottom:calc(60px + var(--sab))}
+  #composer{bottom:calc(50px + var(--sab));padding-top:2px;padding-bottom:4px}.cin{min-height:44px}.chiprow{margin-bottom:4px}
+  #toast{bottom:calc(58px + var(--sab))}
+  #sheet{max-height:calc(100vh - 8px - var(--sat))}.plist{max-height:30vh}
+}
 </style>
 </head>
 <body>
@@ -1374,8 +1385,8 @@ function backKey(){
 }
 $("#back").addEventListener("click",goBack);
 /* Klavye: ekran küçülse de küçülmese de (kenardan kenara) alt çubuk gizlenir, sabit alanlar --kb kadar yükselir, odaktaki alan görünür kalır. */
-{const vv=window.visualViewport;let base=0;
-  const kb=()=>{if(!vv)return;const h=vv.height;base=Math.max(base,innerHeight,h);const open=base-h>120,b=Math.max(0,innerHeight-h-vv.offsetTop),d=document.documentElement.style;
+{const vv=window.visualViewport;let base=0,lw=innerWidth;
+  const kb=()=>{if(!vv)return;const h=vv.height;if(innerWidth!==lw){lw=innerWidth;base=0}base=Math.max(base,innerHeight,h);const open=base-h>120,b=Math.max(0,innerHeight-h-vv.offsetTop),d=document.documentElement.style;
     document.body.classList.toggle("kb",open);d.setProperty("--kb",open?b+"px":"0px");d.setProperty("--vh",h+"px")};
   if(vv){kb();vv.addEventListener("resize",kb);vv.addEventListener("scroll",kb);addEventListener("orientationchange",()=>{base=0;kb()})}
   document.addEventListener("focusin",e=>{if(e.target.matches("input,textarea,select"))setTimeout(()=>e.target.scrollIntoView({block:"center"}),250)});
