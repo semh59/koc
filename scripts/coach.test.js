@@ -9,6 +9,8 @@ const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify
   ok("SYSTEM: programda uyarı; hamilelik, 18 yaş altı, yeme bozukluğu kuralı",has(R(12),"Program önerirken","hekime danış","Hamilelik","18 yaş altında","Yeme bozukluğu"));
 }
 ok("baş dönmesi",C.redFlag("Bu sabah başım döndü")==="check");
+ok("kayıt bildirimi: yedim, içtim, koştum, yaptım algılanır; soru algılanmaz",["Kahvaltıda 2 yumurta yedim","1 litre su içtim","yarım saat koştum","cross yaptım"].every(C.reported)&&!C.reported("Bugün ne yesem")&&!C.reported("Kaç kalori yakarım"));
+ok("JSON olmayan yanıt plain işaretlenir, geçerli JSON işaretlenmez",C.parse("Afiyet olsun").plain===true&&!C.parse('{"reply":"x"}').plain);
 ok("bayılma acil",C.redFlag("Bayılacak gibiyim")==="emergency");
 ok("göğüs ağrısı",C.redFlag("göğsümde sıkışma var, nefes darlığı")==="emergency");
 ok("büyük harf",C.redFlag("BAŞIM DÖNÜYOR")==="check");

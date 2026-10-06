@@ -129,7 +129,7 @@ function cMeds(t,now){
 }
 function cMessages(extraUser,extraSys,noHist){
   const sys=CoachLib.SYSTEM+(extraSys?"\n\nNOT: "+extraSys:"")+"\n\n"+CoachLib.contextText(cData());
-  const hist=noHist?[]:S.chat.filter(m=>m.role!=="sys"&&m.text).slice(-10).map(m=>({role:m.role==="user"?"user":"assistant",content:m.text.slice(0,300)}));
+  const hist=noHist?[]:S.chat.filter(m=>m.role!=="sys"&&m.text).slice(-10).map(m=>({role:m.role==="user"?"user":"assistant",content:m.role==="user"?m.text.slice(0,300):JSON.stringify({reply:m.text.slice(0,260),log:m.card&&m.card.kind==="log"?m.card.items.slice(0,2).map(i=>({type:i.type,text:i.text,name:i.name,kcal:i.kcal,min:i.min,ml:i.ml,kg:i.kg})):[]})}));
   const msgs=[{role:"system",content:sys}].concat(hist);
   if(extraUser)msgs.push({role:"user",content:extraUser});
   return msgs;
@@ -209,7 +209,11 @@ async function cFlush(){
   const fl=pend.map(m=>m.fl).find(Boolean);
   try{
     const r=await cAsk(cMessages(null,fl?"Kullanıcı bir belirti ya da yeme zorluğu bildirdi ve güvenlik kartı gösterildi. Kısa, ihtiyatlı yanıt ver, kalori kısıtlaması önerme.":""));
-    const o=CoachLib.parse(r.text);
+    let o=CoachLib.parse(r.text);
+    const said=pend[pend.length-1].text;
+    if(!fl&&(o.plain||(CoachLib.reported(said)&&!CoachLib.cleanItems(o.log).length&&!o.food&&!o.propose&&!o.program&&!o.menu))){
+      try{const r2=await cAsk(cMessages(null,"Önceki yanıt kurala uymadı. Yalnızca tek bir JSON nesnesi ver. Kullanıcı yediğini, içtiğini, tartıldığını ya da spor yaptığını yazdıysa bunu log listesine ekle (yemek: kcal ve makrolar, spor: min, name, kcal)."));const o2=CoachLib.parse(r2.text);if(!o2.plain&&CoachLib.cleanItems(o2.log).length)o=o2}catch(e2){}
+    }
     pend.forEach(m=>{m.pend=false});offline=null;
     cReply(o);
   }catch(e){
