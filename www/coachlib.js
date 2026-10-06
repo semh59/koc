@@ -29,6 +29,9 @@ const CoachLib=(()=>{
     }
     return -1;
   }
+  /* Kullanıcı yedi/içti/spor yaptı/tarttı dedi mi: model kayıt listesi döndürmediyse bir kez daha sorulur. */
+  const REPORT=/(yedim|yedik|içtim|ictim|ittim|yaptım|yaptim|koştum|kostum|yürüdüm|yurudum|çalıştım|calistim|tarttım|tarttim|kahvaltı yaptım|oynadım|oynadim|bisiklet|antrenman)/i;
+  const reported=t=>REPORT.test(String(t||""));
   function parse(text){
     let s=String(text==null?"":text).trim();
     s=s.replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();
@@ -41,7 +44,7 @@ const CoachLib=(()=>{
         }
       }catch(e){}
     }
-    return {reply:s.replace(/[{}]/g,"").slice(0,1500),log:[],propose:null,flag:null,food:null,program:null,menu:null};
+    return {reply:s.replace(/[{}]/g,"").slice(0,1500),log:[],propose:null,flag:null,food:null,program:null,menu:null,plain:true};
   }
 
   const num=(x,lo,hi)=>{const v=typeof x==="string"?parseFloat(x.replace(",",".")):x;return Number.isFinite(v)&&v>=lo&&v<=hi?v:null};
@@ -247,6 +250,6 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
     }
     return L.join("\n");
   }
-  return {low,redFlag,parse,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText};
+  return {low,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText};
 })();
 if(typeof module!=="undefined")module.exports=CoachLib;
