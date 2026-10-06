@@ -5,7 +5,8 @@ const html=fs.readFileSync(www("index.html"),"utf8").replace(/<script src="([^"]
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const errs=[];
 const dom=new JSDOM(html,{runScripts:"dangerously",pretendToBeVisual:true,url:"https://localhost/",
-  beforeParse(w){Object.assign(w,{structuredClone,TextEncoder,TextDecoder,__noSelfTest:true});Object.defineProperty(w,"crypto",{value:require("node:crypto").webcrypto});w.confirm=()=>true;w.scrollTo=()=>{};w.addEventListener("error",e=>errs.push(e.message))}
+  beforeParse(w){w.eval(`{const o=Date.parse("2026-10-06T22:00")-Date.now();Date=class extends Date{constructor(...a){super(...(a.length?a:[Date.now()]))}static now(){return super.now()+o}}}`); // en kötü durum: hafta içi, bugünün ilaç dozları vakti geçmiş ve kayıtsız (hafta sonu bağlam 200+ karakter kısa)
+  Object.assign(w,{structuredClone,TextEncoder,TextDecoder,__noSelfTest:true});Object.defineProperty(w,"crypto",{value:require("node:crypto").webcrypto});w.confirm=()=>true;w.scrollTo=()=>{};w.addEventListener("error",e=>errs.push(e.message))}
 });
 setTimeout(async()=>{
   const w=dom.window,ev=s=>w.eval(s),$q=s=>w.document.querySelector(s);
