@@ -52,6 +52,9 @@ const test=base.test.extend({
 function nativeShim(cfg){
   const P={};
   if(cfg.barcode)P.BarcodeScanner={isGoogleBarcodeScannerModuleAvailable:async()=>({available:true}),scan:async()=>({barcodes:[{rawValue:cfg.barcode}]})};
+  if(cfg.steps!=null)P.StepCounter={isAvailable:async()=>({available:true}),requestAccess:async()=>({granted:true}),start:async()=>({}),read:async()=>({steps:cfg.steps,snapAt:Date.now(),history:{}})};
+  /* Android geri tuşu: uygulamanın kaydettiği dinleyici window.__back ile tetiklenir; çıkış window.__exited. */
+  P.App={addListener:(ev,fn)=>{if(ev==="backButton")window.__back=fn;return {remove(){}}},exitApp:()=>{window.__exited=true}};
   window.Capacitor={isNativePlatform:()=>true,getPlatform:()=>"android",Plugins:P};
 }
 /* Etkileşimli öğeler görünür alanın içinde mi (yatay ve kısa ekran denetimi). */

@@ -188,6 +188,25 @@
 ]
 ]
 },
+"#168729":{
+"id":168729,
+"d":"Beef, top sirloin, steak, separable lean and fat, trimmed to 1/8\" fat, choice, cooked, broiled",
+"p":26.8,
+"f":15.75,
+"k":257.0,
+"l":0.0,
+"c":0.0,
+"por":[
+[
+"3 oz ",
+85.0
+],
+[
+"1 piece, cooked, excluding refuse (yield from 1 lb raw meat with refuse) ",
+306.0
+]
+]
+},
 "#168754":{
 "id":168754,
 "d":"Candies, milk chocolate, with almonds",
@@ -912,6 +931,21 @@
 ]
 ]
 },
+"#172941":{
+"id":172941,
+"d":"Turkey breast, sliced, prepackaged",
+"f":3.77,
+"c":2.2,
+"k":106.0,
+"p":14.81,
+"l":0.0,
+"por":[
+[
+"1 slice ",
+16.0
+]
+]
+},
 "#173147":{
 "id":173147,
 "d":"Snacks, pita chips, salted",
@@ -1030,6 +1064,56 @@
 ]
 ]
 },
+"#173617":{
+"id":173617,
+"d":"Chicken, broilers or fryers, leg, meat and skin, cooked, roasted",
+"l":0.0,
+"f":8.99,
+"c":0.0,
+"k":184.0,
+"p":24.03,
+"por":[
+[
+"3 oz ",
+85.0
+],
+[
+"1 leg, with skin (Sum of drumstick+thigh+back) ",
+258.0
+],
+[
+"1 thigh with skin ",
+133.0
+],
+[
+"1 drumstick with skin ",
+91.0
+],
+[
+"1 back with skin ",
+35.0
+]
+]
+},
+"#173694":{
+"id":173694,
+"d":"Fish, sea bass, mixed species, cooked, dry heat",
+"f":2.56,
+"c":0.0,
+"k":124.0,
+"p":23.63,
+"l":0.0,
+"por":[
+[
+"1 fillet ",
+101.0
+],
+[
+"3 oz ",
+85.0
+]
+]
+},
 "#173806":{
 "id":173806,
 "d":"Peanuts, all types, dry-roasted, without salt",
@@ -1091,6 +1175,25 @@
 ]
 ]
 },
+"#174033":{
+"id":174033,
+"d":"Beef, ground, 85% lean meat / 15% fat, patty, cooked, pan-broiled",
+"p":24.62,
+"k":232.0,
+"c":0.0,
+"l":0.0,
+"f":14.02,
+"por":[
+[
+"3 oz ",
+85.0
+],
+[
+"1 patty ( yield from 1/4 lb raw meat ) ",
+83.0
+]
+]
+},
 "#174088":{
 "id":174088,
 "d":"Cookies, sugar wafer, chocolate-covered",
@@ -1122,6 +1225,21 @@
 [
 "1 lb ",
 453.6
+]
+]
+},
+"#174648":{
+"id":174648,
+"d":"Cereals ready-to-eat, RALSTON Corn Flakes",
+"c":88.01,
+"f":0.91,
+"l":2.7,
+"p":5.9,
+"k":384.0,
+"por":[
+[
+"1 cup (1 NLEA serving) ",
+28.0
 ]
 ]
 },
@@ -1192,6 +1310,29 @@
 [
 "1 oz ",
 28.35
+]
+]
+},
+"#174940":{
+"id":174940,
+"d":"Cake, pound, commercially prepared, other than all butter, enriched",
+"l":1.0,
+"p":5.2,
+"f":17.9,
+"c":52.5,
+"k":389.0,
+"por":[
+[
+"1 piece (1/10 of 10.6 oz cake) ",
+30.0
+],
+[
+"1 piece (1/12 of 12 oz cake) ",
+28.0
+],
+[
+"1 snack cake (2.5 oz) ",
+71.0
 ]
 ]
 },
@@ -4273,6 +4414,25 @@
 ]
 ]
 },
+"grape leaves, raw":{
+"id":168575,
+"d":"Grape leaves, raw",
+"p":5.6,
+"l":11.0,
+"c":17.31,
+"k":93.0,
+"f":2.12,
+"por":[
+[
+"1 cup ",
+14.0
+],
+[
+"1 leaf ",
+3.0
+]
+]
+},
 "grapefruit, raw, pink and red":{
 "id":174675,
 "d":"Grapefruit, raw, pink and red, Florida",
@@ -4350,6 +4510,25 @@
 [
 "0.5 cup (4 fl oz) ",
 66.0
+]
+]
+},
+"jams and preserves":{
+"id":169641,
+"d":"Jams and preserves",
+"p":0.37,
+"f":0.07,
+"l":1.1,
+"c":68.86,
+"k":278.0,
+"por":[
+[
+"1 tbsp ",
+20.0
+],
+[
+"1 packet (0.5 oz) ",
+14.0
 ]
 ]
 },

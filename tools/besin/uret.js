@@ -1,4 +1,4 @@
-// www/foods.js dosyasını üretir: node tools/besin/uret.js [--kontrol]. Kaynaklar: genel.tsv, malzeme.tsv, tarif.txt, ek.tsv, ogun.txt, vekil.txt, vekil-ogun.txt, esad.tsv, vekil.tsv, mevcut.txt, usda-altkume.json, harici.json.
+// www/foods.js dosyasını üretir: node tools/besin/uret.js [--kontrol]. Kaynaklar: genel.tsv, malzeme.tsv, tarif.txt, ek.tsv, ogun.txt, vekil.txt, vekil-ogun.txt, esad.tsv, vekil.tsv, mevcut.txt, eski.tsv, eski.txt, usda-altkume.json, harici.json.
 const fs=require("fs"),path=require("path");
 const H=__dirname+"/",OUT=path.join(H,"../../www/foods.js");
 const rf=f=>fs.readFileSync(H+f,"utf8").replace(/\r/g,"");
@@ -16,7 +16,7 @@ for(const l of rd("genel.tsv")){
 }
 for(const l of rd("malzeme.tsv")){const[n,kw]=l.split("\t");if(!U[kw])hata("altkümede yok: "+kw);veri[n]=U[kw]}
 for(const l of rd("esad.tsv"))alt[l.split("\t")[0]]=l.split("\t")[1].trim();
-const mevcut=rf("mevcut.txt").replace(/\s+$/,"");
+let mevcut=rf("mevcut.txt").replace(/\s+$/,"");
 // Yalnız USDA ile doğrulanmış (1 işaretli) eski satırlar malzeme olabilir; elle girilmişler olamaz.
 for(const r of new Function("return ["+mevcut+"]")())if(r[6]===1&&!veri[r[0]])veri[r[0]]={k:r[1],p:r[2],c:r[3],f:r[4]};
 const ek=[];
@@ -47,6 +47,11 @@ const tarif=isle("tarif.txt"),ogun=isle("ogun.txt",true),vekil=isle("vekil.txt")
 const adlar=[...mevcut.matchAll(/^\s*\["([^"]+)"/gm)].map(m=>m[1]).concat(rows.map(r=>r[0]),tarif.map(r=>r[0]),ek.map(r=>r[0]),ogun.map(r=>r[0]),vekil.map(r=>r[0]),vekilO.map(r=>r[0]));
 const t=new Set();adlar.forEach(a=>{const k=a.toLowerCase();if(t.has(k))hata("yinelenen ad: "+a);t.add(k)});
 const satir=a=>"    ["+a.map(x=>q(x)).join(",")+"]";
+// İlk 106 satırın değerleri: eski.tsv (USDA birebir, 1) ve eski.txt (tarif/vekil hesabı, 0). Ad, sıra ve porsiyon mevcut.txt'te kalır. isle() veri'yi değiştirir, bu yüzden en son çağrılır.
+const E=new Map([...rd("eski.tsv").map(l=>{const[n,kw]=l.split("	"),u=U[kw];if(!u)hata("altkümede yok: "+kw);return[n,{k:u.k,p:u.p,c:u.c,f:u.f,s:1}]}),...isle("eski.txt").map(r=>[r[0],{k:r[1],p:r[2],c:r[3],f:r[4],s:0,r:r[7]}])]);
+mevcut=mevcut.split("\n").map(l=>{const m=l.match(/^\s*\["([^"]+)"/),e=m&&E.get(m[1]);if(!e)return l;E.delete(m[1]);
+  return satir([m[1],e.k,e.p,e.c,e.f,new Function("return "+l.trim().replace(/,$/,""))()[5],e.s,...(e.r?[e.r]:[])])+(l.trimEnd().endsWith(",")?",":"")}).join("\n");
+if(E.size)hata("eski: mevcut.txt'te yok: "+[...E.keys()]);
 const esad=Object.keys(alt).filter(n=>t.has(n.toLowerCase()));
 Object.keys(alt).forEach(n=>{if(!t.has(n.toLowerCase()))hata("eş ad için kayıt yok: "+n)});
 const body=mevcut+",\n    /* USDA SR Legacy genel besinler (değerler birebir) */\n"+rows.map(satir).join(",\n")+",\n    /* Türk ev yemekleri (tarif hesaplı) */\n"+tarif.map(satir).join(",\n")+",\n    /* Hazır ürün ve restoran (USDA SR Legacy, birebir) */\n"+ek.map(satir).join(",\n")+",\n    /* Öğün kayıtları (bileşen gramı x değer, ogun.txt) */\n"+ogun.map(satir).join(",\n")+",\n    /* Vekil ve bileşenden hesaplı yaygın Türk besinleri (vekil.txt; vekil nedeni vekil.tsv) */\n"+vekil.concat(vekilO).map(satir).join(",\n");

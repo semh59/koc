@@ -1,0 +1,21 @@
+# İlk 106 satırdan USDA SR Legacy kaydıyla birebir karşılanan besinler: ad<TAB>USDA anahtarı (#id ya da açıklama). uret.js bu satırların kcal/makro değerini kayıttan yazar ve 1 ile işaretler; ad, sıra ve porsiyonlar mevcut.txt'te kalır.
+Zeytin	olives, pickled, canned or bottled, green
+Reçel	jams and preserves
+Yulaf ezmesi (kuru)	cereals, oats, regular and quick, not fortified, dry
+Mısır gevreği	#174648
+Beyaz ekmek	bread, white, commercially prepared (includes soft bread crumbs)
+Tam buğday ekmeği	#172688
+Pizza	#173292
+Hamburger	#170694
+Humus	#172454
+Fırın tavuk but	#173617
+Pişmiş kıyma	#174033
+Izgara et (biftek)	#168729
+Izgara balık (levrek, çipura)	#173694
+Hindi salam	#172941
+Patates kızartması	#170698
+Kola	#174852
+Meyve suyu	apple juice, canned or bottled, unsweetened, without added ascorbic acid
+Kuru üzüm	raisins, dark, seedless
+Bisküvi (petibör)	#171867
+Kek (sade)	#174940

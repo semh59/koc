@@ -33,6 +33,31 @@ final class StepStore {
         return sm != null && sm.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) != null;
     }
 
+    private static SensorEventListener live;
+    private static volatile float liveCounter = -1;
+
+    /** Uygulama açıkken sensörü sürekli dinler. Tek seferlik kayıtta bazı telefonlar ilk olayı geciktirir ya da eski (toplu) değeri verir; açıkken adım sayısı donar. */
+    static synchronized void live(Context c, boolean on) {
+        SensorManager sm = (SensorManager) c.getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
+        Sensor sensor = sm == null ? null : sm.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+        if (sensor == null || on == (live != null)) return;
+        if (on) {
+            live = new SensorEventListener() {
+                public void onSensorChanged(SensorEvent e) {
+                    liveCounter = e.values[0];
+                }
+
+                public void onAccuracyChanged(Sensor s, int a) {}
+            };
+            // maxReportLatency 0: olaylar toplu bekletilmeden gelsin.
+            sm.registerListener(live, sensor, SensorManager.SENSOR_DELAY_NORMAL, 0, new Handler(Looper.getMainLooper()));
+        } else {
+            sm.unregisterListener(live);
+            live = null;
+            liveCounter = -1;
+        }
+    }
+
     /** Sayaçtan tek okuma yapar. closeFirst: gece alarmında önce biten günü kapat. Sensör yanıt vermezse steps null döner. */
     static void read(final Context c, final boolean closeFirst, final Callback cb) {
         final Context app = c.getApplicationContext();
@@ -40,6 +65,14 @@ final class StepStore {
         final Sensor sensor = sm == null ? null : sm.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
         if (sensor == null) {
             cb.done(null, new HashMap<String, Long>());
+            return;
+        }
+        float v = liveCounter;
+        if (v >= 0) {
+            synchronized (StepStore.class) {
+                if (live != null) sm.flush(live); // telefon yine de biriktirdiyse sonraki okumaya yetişsin
+            }
+            cb.done(apply(app, v, closeFirst), history(app));
             return;
         }
         final Handler h = new Handler(Looper.getMainLooper());

@@ -50,10 +50,25 @@ public class StepCounterPlugin extends Plugin {
         call.resolve(r);
     }
 
+    /** JS start'ı yalnız adım sayar açıkken çağırır; kapalıysa sensör canlı dinlenmez. */
+    private volatile boolean started;
+
     @PluginMethod
     public void start(PluginCall call) {
         StepSnapshotReceiver.schedule(getContext());
+        started = true;
+        if (granted()) StepStore.live(getContext(), true);
         call.resolve();
+    }
+
+    @Override
+    protected void handleOnResume() {
+        if (started && granted()) StepStore.live(getContext(), true);
+    }
+
+    @Override
+    protected void handleOnPause() {
+        StepStore.live(getContext(), false);
     }
 
     @PluginMethod
