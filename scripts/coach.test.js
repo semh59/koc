@@ -71,6 +71,9 @@ ok("kural 3 KISIT satırına (riskFlags) bağlı: kalori açığı, oruç, yüks
   ok("Gemini'de tercih yoksa en yakın flash modeli",C.pickModel("gemini",[{id:"gemini-9-pro"},{id:"gemini-4.1-flash"}])==="gemini-4.1-flash");
   const E=[[401,""],[400,'{"error":{"message":"Please pass a valid API key"}}'],[402,""],[429,'{"error":{"code":"insufficient_quota"}}'],[429,"Rate limit reached"],[404,""],[400,'{"error":{"message":"The model `x` does not exist"}}'],[503,""],[0,""],[418,""]].map(([s,b])=>C.errKind(s,b));
   ok("hata sınıfı: anahtar (401, Gemini 400), kota (402, insufficient_quota), hız limiti, model (404, 400 gövde), sunucu, ağ, diğer",E.join()==="key,key,quota,quota,limit,model,model,down,net,err",E);
+  const N=[[404,'{"detail":"Function \'abc\': Not found for account \'xyz\'"}'],[410,'{"detail":"end of life 2026-08-26"}'],[404,"404 page not found"],[403,'{"detail":"Authorization failed"}']].map(([s,b])=>C.errKind(s,b));
+  ok("NVIDIA yanıt şekilleri: hesapta yok (404 Function), emekli (410), düz metin 404 → model; 403 → anahtar",N.join()==="model,model,model,key",N);
+  ok("adaylar: tercih sırası, sonra ücretsiz, sonra aile; listede olmayan tercih atlanır, emekli llama tercihte yok",JSON.stringify(C.candidates("nvidia",[{id:"google/gemma-4-31b-it"},{id:"nvidia/nemotron-3-super-120b-a12b"},{id:"meta/llama-3.3-70b-instruct"}]))==='["nvidia/nemotron-3-super-120b-a12b","google/gemma-4-31b-it"]'&&!C.MODEL_PREF.nvidia.includes("meta/llama-3.3-70b-instruct"));
   ok("zaman aşımı ayrı; her sınıfın Türkçe metni var, bilinmeyende kod yazılır",C.errKind(undefined,"","AbortError")==="time"&&["key","quota","limit","model","net","time","down","empty"].every(k=>C.errText(k).length>20&&!/HTTP/.test(C.errText(k)))&&C.errText("err",418).includes("418"));
 }
 process.exit(bad?1:0);

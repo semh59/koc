@@ -151,7 +151,7 @@ const CoachLib=(()=>{
   /* Önerilen model canlı listeden seçilir: sıradaki ilk mevcut kimlik. Kodda sabit model yalnız son çare; sabit adlar zamanla kalkıyor. */
   const MODEL_PREF={
     groq:["llama-3.3-70b-versatile","openai/gpt-oss-120b","llama-3.1-8b-instant"],
-    nvidia:["google/gemma-4-31b-it","meta/llama-3.3-70b-instruct","mistralai/mistral-large-2-instruct","nvidia/nemotron-3-super-120b-a12b"],
+    nvidia:["nvidia/nemotron-3-super-120b-a12b","google/gemma-4-31b-it","moonshotai/kimi-k2.6","deepseek-ai/deepseek-v4.1-flash"],
     openrouter:["google/gemma-4-31b-it:free","nvidia/nemotron-3-super-120b-a12b:free"],
     gemini:["gemini-3.5-flash-lite","gemini-3.1-flash-lite","gemini-3.5-flash"],
     openai:["gpt-6-luna"],
@@ -171,12 +171,14 @@ const CoachLib=(()=>{
     }
     return out.sort((a,b)=>a.id.localeCompare(b.id));
   }
-  function pickModel(pid,list){
-    const ids=new Set(list.map(m=>m.id));
-    const hit=(MODEL_PREF[pid]||[]).find(x=>ids.has(x));if(hit)return hit;
-    const f=list.find(m=>m.free===true&&!/reason|think/i.test(m.id));
-    return f?f.id:FAMILY[pid]?((list.find(m=>FAMILY[pid].test(m.id))||{}).id||null):null;
+  /* Listede olmak kullanılabilir olmak demek değil (hesaba kapalı, emekli ya da yanıt vermeyen model); arayüz adayları sırayla dener. */
+  function candidates(pid,list){
+    const ids=new Set(list.map(m=>m.id)),out=(MODEL_PREF[pid]||[]).filter(x=>ids.has(x));
+    for(const m of list)if(m.free===true&&!/reason|think/i.test(m.id))out.push(m.id);
+    if(FAMILY[pid])for(const m of list)if(FAMILY[pid].test(m.id))out.push(m.id);
+    return [...new Set(out)];
   }
+  const pickModel=(pid,list)=>candidates(pid,list)[0]||null;
   /* Hata sınıfı: durum kodu tek başına yetmez (Gemini yanlış anahtara 400, kota ve hız limiti ikisi de 429, eksik model 400 ya da 404). */
   function errKind(status,body,name){
     const b=String(body||"");
@@ -185,11 +187,11 @@ const CoachLib=(()=>{
     if(status===401||status===403||(status===400&&/api[ _-]?key|unauthori|credential/i.test(b)))return "key";
     if(status===402||(status===429&&/quota|billing|credit|insufficient/i.test(b)))return "quota";
     if(status===429)return "limit";
-    if(status===404||((status===400||status===422)&&/model/i.test(b)&&/not.?found|not exist|invalid|unknown|not supported|decommission|no endpoints/i.test(b)))return "model";
+    if(status===404||status===410||((status===400||status===422)&&/model/i.test(b)&&/not.?found|not exist|invalid|unknown|not supported|decommission|no endpoints/i.test(b)))return "model";
     if(status>=500)return "down";
     return "err";
   }
-  const ERR_TXT={key:"Anahtar kabul edilmedi. Doğru sağlayıcıyı seçtiğinden ve anahtarı eksiksiz yapıştırdığından emin ol.",quota:"Hesabının kotası ya da bakiyesi bitmiş. Sağlayıcının sitesinde kullanımına bak.",limit:"Kısa süreli kullanım sınırı doldu, bir dakika sonra yeniden dene.",model:"Bu model bulunamadı ya da kaldırılmış. Önerilen modeli seç.",net:"İnternet yok ya da sağlayıcıya ulaşılamadı.",time:"Sağlayıcı zamanında yanıt vermedi, yeniden dene.",down:"Sağlayıcıda geçici bir sorun var, sonra yeniden dene.",empty:"Bağlantı çalışıyor ama model boş yanıt verdi. Önerilen modeli seç."};
+  const ERR_TXT={key:"Anahtar kabul edilmedi. Doğru sağlayıcıyı seçtiğinden ve anahtarı eksiksiz yapıştırdığından emin ol.",quota:"Hesabının kotası ya da bakiyesi bitmiş. Sağlayıcının sitesinde kullanımına bak.",limit:"Kısa süreli kullanım sınırı doldu, bir dakika sonra yeniden dene.",model:"Bu model bulunamadı ya da hesabında kullanılamıyor. Başka model seç.",net:"İnternet yok ya da sağlayıcıya ulaşılamadı.",time:"Model zamanında yanıt vermedi. Yeniden dene ya da başka model seç.",down:"Sağlayıcıda geçici bir sorun var, sonra yeniden dene.",empty:"Bağlantı çalışıyor ama model boş yanıt verdi. Önerilen modeli seç."};
   const errText=(kind,status)=>ERR_TXT[kind]||`Beklenmeyen bir hata oldu${status?" (kod "+status+")":""}.`;
 
   const SYSTEM=`Sen "Koç"sun: tek bir kişiye özel beslenme, spor ve yaşam koçu. Hekim değilsin ve tanı koymazsın. Türkçe, sıcak, kısa ve net konuş. Suçlayıcı olma. Cevabın en fazla yaklaşık 90 kelime olsun, kullanıcı detay istemedikçe.
@@ -239,6 +241,6 @@ Sabah planı istenirse "notif" alanına {"morning":"...","afternoon":"...","even
     }
     return L.join("\n");
   }
-  return {low,redFlag,parse,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,clampKcal,SYSTEM,contextText,keyProvider,MODEL_PREF,parseModels,pickModel,errKind,errText};
+  return {low,redFlag,parse,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,clampKcal,SYSTEM,contextText,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText};
 })();
 if(typeof module!=="undefined")module.exports=CoachLib;
