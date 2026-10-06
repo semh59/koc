@@ -83,6 +83,9 @@ ok("kural 3 KISIT satırına (riskFlags) bağlı: kalori açığı, oruç, yüks
   ok("bozuk ya da yarım JSON: kart yok, düz metin kalır",C.parse('Afiyet olsun {"reply":"x","log":[{"type":"yemek"').log.length===0&&C.parse('Afiyet olsun {"reply":"x","log":[{"type":"yemek"').reply.startsWith("Afiyet olsun"));
   const evil=C.cleanItems([{type:"yemek",text:"<img src=x onerror=alert(1)>",kcal:-50,g:-5,carbs:99999,fat:"abc",meal:"gece<script>"},{type:"yemek",text:"x".repeat(500),kcal:"250"},{type:"yemek",text:"Çorba",kcal:1e9},...Array(20).fill({type:"yemek",text:"elma",kcal:52})]);
   ok("kötü niyetli/aşırı değer: negatif ve aşırı atılır, ad 120 karakter, öğün beyaz listede, en çok 12 satır",evil.length===12&&evil[0].kcal===null&&evil[0].g===undefined&&evil[0].c===undefined&&evil[0].f===undefined&&evil[0].meal===undefined&&evil[1].text.length===120&&evil[1].kcal===250&&evil[2].kcal===null);
+  const sp=C.cleanItems([{type:"spor",min:30,name:"cross",kcal:"300"},{type:"spor",min:30,name:"koşu",kcal:-5},{type:"spor",min:700,name:"x"}]);
+  ok("egzersiz: kalori alınır, negatif atılır, süre en çok 600 dk",sp.length===2&&sp[0].kcal===300&&sp[1].kcal===undefined,sp);
+  ok("egzersiz MET: ad anahtar kelimeyle, bilinmeyen 4",C.sportMet("Yarım saat CROSS")===8&&C.sportMet("Koşu bandı")===8.3&&C.sportMet("Okçuluk")===4);
   ok("kalori-makro tutarlılığı: ±%25 dışında uyarı, makro eksikse uyarı yok",!C.macroOff({kcal:300,p:15,c:10,f:22})&&C.macroOff({kcal:900,p:15,c:10,f:22})&&!C.macroOff({kcal:900,p:15,c:null,f:22}));
 }
 process.exit(bad?1:0);

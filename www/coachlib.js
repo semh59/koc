@@ -59,11 +59,14 @@ const CoachLib=(()=>{
         out.push(o);
       }else if(it.type==="su"){const ml=num(it.ml,50,2000);if(ml!=null)out.push({type:"su",ml:Math.round(ml),day})}
       else if(it.type==="kilo"){const kg=num(it.kg,20,400);if(kg!=null)out.push({type:"kilo",kg:Math.round(kg*10)/10,day})}
-      else if(it.type==="spor"){const min=num(it.min,1,600);if(min!=null)out.push({type:"spor",min:Math.round(min),name:String(it.name||"Spor").trim().slice(0,40)||"Spor",day})}
+      else if(it.type==="spor"){const min=num(it.min,1,600),k=num(it.kcal,0,3000);if(min!=null){const o={type:"spor",min:Math.round(min),name:String(it.name||"Spor").trim().slice(0,40)||"Spor",day};if(k!=null)o.kcal=Math.round(k);out.push(o)}}
       else if(it.type==="not"){const text=String(it.text||"").trim().slice(0,300);if(text)out.push({type:"not",text,day})}
     }
     return out;
   }
+  /* Sohbetteki egzersiz adından MET (Compendium yaklaşık değerleri; hızlı kayıttaki SPORMET ile aynı temel değerler). Bilinmeyen ad "Diğer" 4. */
+  const SPORT_MET=[[/cross|hiit|tabata|bootcamp/,8],[/koş|kos|run|jog/,8.3],[/yürü|yuru|walk/,3.5],[/bisiklet|spinning|bike/,6.8],[/yüz|yuz|swim/,6],[/yoga|esneme|pilates/,2.5],[/ağırlık|agirlik|fitness|salon|kuvvet/,5],[/futbol|basketbol|voleybol|tenis|squash/,7],[/ip atla/,11],[/dans|zumba|aerobik/,5.5],[/merdiven|step/,8],[/kürek|kurek|row/,7]];
+  const sportMet=name=>{const t=low(name);const m=SPORT_MET.find(([re])=>re.test(t));return m?m[1]:4};
   /* Makrolar tam ve kalori 4p+4k+9y'den %25'ten fazla sapıyorsa tahmin tutarsız: kart uyarır. */
   const macroOff=it=>it.kcal>0&&it.p!=null&&it.c!=null&&it.f!=null&&Math.abs(it.kcal-(4*it.p+4*it.c+9*it.f))>it.kcal*0.25;
   /* Kullanıcının sorduğu besin için modelin tahmini: bir porsiyonluk değerler. */
@@ -208,7 +211,7 @@ KURALLAR
 5. İlaç, doz, takviye tedavisi önerme.
 6. Yeme bozukluğu işareti görürsen kısıtlama önerme, yargılamadan bir uzmana yönlendir.
 7. Bilmediğin veya veride olmayan şeyi sor, tahmin yürütme.
-8. Kullanıcı bir şey yediğini, içtiğini, tartıldığını veya spor yaptığını yazarsa "log" listesine ekle. Her yemek ayrı öğe; değerler tahmin, kesin deme.
+8. Kullanıcı bir şey yediğini, içtiğini, tartıldığını veya spor yaptığını yazarsa "log" listesine ekle. Her yemek ayrı; değerler tahmin, kesin deme.
 9. Kullanıcı bir yemeğin ya da besinin kalorisini sorarsa ve yediğini söylemiyorsa "log" kullanma; "food" alanına tek porsiyonluk makul bir tahmin yaz. Porsiyonu adda belirt (ör. "1 dilim pizza"). Tahmin olduğunu reply'da söyle.
 10. Kas, eklem ya da sırt ağrısında ve sakatlıkta tanı koyma, tedavi ya da egzersiz reçetesi verme: ağrıyı yapan hareketi ve antrenmanı bırakmasını, ağrı sürer ya da artarsa hekime veya fizyoterapiste başvurmasını söyle.
 11. İlaç ve takviye sorularında (doz, etkileşim, başlama, bırakma) yorum yapma, hekime ya da eczacıya yönlendir.
@@ -216,7 +219,7 @@ KURALLAR
 
 ÇIKTI: Yalnızca tek bir JSON nesnesi, başka hiçbir metin yok:
 {"reply":"kullanıcıya metin","log":[],"propose":null,"flag":null,"notif":null,"food":null}
-log öğeleri: {"type":"yemek","text":"yumurta","g":100,"kcal":140,"protein":12,"carbs":1,"fat":10,"meal":"kah"} (meal: kah/ogl/aks/atis) | {"type":"su","ml":250} | {"type":"kilo","kg":83.7} | {"type":"spor","min":30,"name":"Yürüyüş"} | {"type":"not","text":"..."}. Dünkü kayıt için "day":"yesterday" ekle.
+log öğeleri: {"type":"yemek","text":"pilav","g":100,"kcal":130,"protein":3,"carbs":28,"fat":1,"meal":"kah"} (meal kah/ogl/aks/atis) | {"type":"su","ml":250} | {"type":"kilo","kg":83.7} | {"type":"spor","min":30,"name":"Koşu","kcal":250} | {"type":"not","text":"..."}. Dünkü kayıt için "day":"yesterday" ekle.
 propose: {"kcal":1900,"why":"kısa neden"} ya da null.
 food: {"name":"1 dilim pizza","kcal":280,"protein":12} ya da null.
 Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex":["kimlik"]}]} yaz: yalnız KATALOG'daki kimlikler, gün başına 3-8 egzersiz.
@@ -245,6 +248,6 @@ Sabah planı istenirse "notif" alanına {"morning":"...","afternoon":"...","even
     }
     return L.join("\n");
   }
-  return {low,redFlag,parse,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,clampKcal,SYSTEM,contextText,macroOff,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText};
+  return {low,redFlag,parse,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText};
 })();
 if(typeof module!=="undefined")module.exports=CoachLib;

@@ -1670,7 +1670,19 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("S.chat=[];S.cid=1;cReply({reply:'Tahmin',food:{name:'1 dilim pizza',kcal:280,protein:12}});render()");
     const fid=ev("S.chat.find(m=>m.card&&m.card.kind==='food').id");q(`[data-c="fooddiary:${fid}"]`).click();
     ok("kalori sorusu kartı da tek tıkla günlüğe ekler, bir kez",ev("S.entries.length")===n0+1&&ev("S.entries[S.entries.length-1].text")==="1 dilim pizza"&&!q(`[data-c="fooddiary:${fid}"]`)&&q("#view").textContent.includes("Günlüğe eklendi"));
-    ev("S.entries=S.entries.slice(0,"+n0+");S.chat=[];tab='bugun';render()");
+    ev("S.entries=S.entries.slice(0,"+n0+");S.chat=[];render()");
+    // egzersiz: "yarım saat cross yaptım"
+    const sk=()=>ev("S.chat.find(m=>m.card&&m.card.kind==='log')");
+    ev("window.__keep=JSON.stringify(S.entries)");
+    ev("S.entries=S.entries.filter(e=>e.type!=='kilo');S.chat=[];S.cid=1;cReply({reply:'Harika',log:[{type:'spor',min:30,name:'Cross',kcal:900}]});render()");
+    ok("kilo yokken Koç'un egzersiz tahmini dakikada 15 kcal ile sınırlanır",q("#view").textContent.includes("30 dk · ~450 kcal"));
+    const nk=ev("S.entries.length");ev("add('kilo',80,'',dayKey());render()");
+    ok("egzersiz kartı: 'Egzersizi ekle', kilo ve MET ile kalori (cross 8 MET, 80 kg, 30 dk = net 280), Koç'un sapan tahmini için uyarı",q("#view").textContent.includes("Egzersizi ekle")&&q("#view").textContent.includes("30 dk · ~280 kcal")&&q("#view").textContent.includes("Koç ~900 kcal dedi")&&q(`[data-c="ok:${sk().id}"]`).textContent==="Egzersizi ekle");
+    q(`[data-c="ok:${sk().id}"]`).click();ev(`cClick('ok:${sk().id}',document.body)`);
+    const se=ev("JSON.stringify(S.entries.filter(e=>e.type==='spor').slice(-1).map(e=>[e.v,e.text,e.kcal,e.day===dayKey()]))");
+    ok("tek tıkla mevcut spor kaydına yazılır (süre, ad, kalori), bir kez; Bugün'de görünür",se==='[[30,"Cross",280,true]]'&&ev("S.entries.length")===nk+2&&ev("S.entries.filter(e=>e.type==='spor'&&e.text==='Cross').length")===1&&ev("viewBugun()").includes("Cross"),se);
+    ok("egzersiz kalorisi yedekten geri gelir",ev("cleanEntries(JSON.parse(JSON.stringify(S.entries))).out.some(e=>e.type==='spor'&&e.kcal===280)"));
+    ev("S.entries=JSON.parse(window.__keep);S.chat=[];tab='bugun';render()");
   }
   ev("sheetYemek()");const fq3=w.document.querySelector("#fq");fq3.value="ev yapımı mantı";fq3.dispatchEvent(new w.Event("input",{bubbles:true}));
   ok("listede olmayan yemek için Koç'a sor çıkar",w.document.querySelector("#flist [data-c=askfood]")&&w.document.querySelector("#flist").innerHTML.includes("ev yapımı mantı"));
