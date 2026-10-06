@@ -47,7 +47,7 @@ Bu bölümler kayıt ve görüntüleme içindir. Hedef aralıkları sen belirler
 
 KOÇ (İSTEĞE BAĞLI, YAPAY ZEKÂ)
 - Kendi API anahtarını girersen sohbet ve kayıt önerileri alırsın. İnternet ister.
-- Koç yalnız sen açık rıza verirsen çalışır. Rıza verirsen sohbetin, profilin ve son kayıtların seçtiğin sağlayıcıya (NVIDIA Build, Groq, OpenRouter, Google Gemini ya da kendi eklediğin servis) gider; sunucuları yurt dışındadır. Rızayı istediğin an geri alırsın; vermezsen uygulama tam çalışır.
+- Koç yalnız sen açık rıza verirsen çalışır. Rıza verirsen sohbetin, profilin ve son kayıtların seçtiğin sağlayıcıya (NVIDIA Build, Groq, OpenRouter, Google Gemini, OpenAI, Anthropic Claude ya da kendi eklediğin servis; OpenAI ve Anthropic ücretlidir) gider; sunucuları yurt dışındadır. Rızayı istediğin an geri alırsın; vermezsen uygulama tam çalışır.
 - 18 yaş altına veri gönderilmez.
 
 GİZLİLİK
@@ -98,7 +98,7 @@ These sections are for logging and viewing. You set your own target ranges or en
 
 COACH (OPTIONAL, AI)
 - Add your own API key to get chat and logging suggestions. Needs internet.
-- The Coach works only with your explicit consent. If you consent, your chat, profile and recent entries are sent to the provider you picked (NVIDIA Build, Groq, OpenRouter, Google Gemini or a service you add); their servers are outside Turkey. You can withdraw consent at any time; without it the app works fully.
+- The Coach works only with your explicit consent. If you consent, your chat, profile and recent entries are sent to the provider you picked (NVIDIA Build, Groq, OpenRouter, Google Gemini, OpenAI, Anthropic Claude or a service you add; OpenAI and Anthropic are paid); their servers are outside Turkey. You can withdraw consent at any time; without it the app works fully.
 - Nothing is sent for users under 18.
 
 PRIVACY

@@ -66,5 +66,9 @@ Sonuç: "Doğrula ve listele" tek çağrıyla ancak bazı sağlayıcılarda olur
   - Gemini: gemini-3.5-flash-lite
 
   Eski kayıtta model tam olarak eski varsayılansa yenisine geçilir; kullanıcının kendi seçtiği model korunur.
-- **Eklenmesi karar ister:** OpenAI (gpt-6-luna, 0,10 / 0,50 $) ve Anthropic (claude-sonnet-5-5, 2 / 10 $). İkisi de ücretli. Gizlilik politikası, mağaza metni ve veri güvenliği formu sağlayıcıları adıyla sayıyor. OpenAI için `max_completion_tokens`, Anthropic için ayrı başlıklar gerekiyor. Şimdilik bu anahtarlar tanınır ve kullanıcıya açık bir Türkçe açıklama gösterilir.
+- **Eklendi (Semih kararı, 2026-10-06):** OpenAI ve Anthropic Claude. İkisi de ücretli; kurulumda "kullandıkça ücret çıkabilir; kotayı sağlayıcı sitende sen belirlersin" yazar. İkisi de kapalı gelir (`on`/`health` kapalı), kurulum açar. Onay metnindeki "Kime" satırı açık sağlayıcıları adıyla sayar.
+  - **OpenAI:** api.openai.com/v1, `Authorization: Bearer`. Önerilen model gpt-6-luna (0,10 / 0,50 $ / M; Chat Completions destekli, düşünme çabası none-max). Güncel modeller `max_tokens` kabul etmez; `max_completion_tokens` (yanıt × 3) ve `reasoning_effort: "low"` gönderilir. `temperature` gönderilmez, çünkü belgede yok.
+  - **Anthropic:** yerel Messages API kullanılır (`/v1/messages`), OpenAI uyumlu katman kullanılmaz ("üretim için değil"). Başlıklar: `x-api-key`, `anthropic-version: 2023-06-01`, `anthropic-dangerous-direct-browser-access: true`. Bu son başlık olmadan tarayıcı ön kontrolü 400 dönüyor, başlıkla 200 (2026-10-06'da curl ile denendi; telefonda CapacitorHttp CORS'u zaten atlar). Model listesi `/v1/models?limit=1000` aynı başlıklarla.
+  - **Anthropic modeli:** Önerilen claude-haiku-4-5 (1 / 5 $; sıcaklık alır, düşünme kapalı). Liste Haiku içermezse claude-sonnet-5-5'e geçilir (2 / 10 $). Sonnet 5.x sıcaklık kabul etmez; ona `output_config.effort: "low"` ve 2000 jeton pay verilir. Haiku 4.5'in emekliliği "15 Ekim 2026'dan önce değil"; canlı liste bunu yakalar.
+  - **Anahtar tanıma:** `sk-ant-` Anthropic'e, `sk-proj-`/`sk-` OpenAI'ye gider. Başka sağlayıcı seçiliyken bu anahtarlar gönderilmez.
 - **Çıkarılacak yok.**

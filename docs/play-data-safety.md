@@ -2,7 +2,7 @@
 
 Kaynak: kod (`www/coach.js`, `www/index.html` barkod, `scripts/patch-android.js`), `docs/gizlilik-politikasi.md` bölüm 2 ve 5, `docs/play-izin-beyanlari.md`. Son gözden geçirme: 3 Ekim 2026. Hukukçu/hekim onayı gerektiren noktalar en altta.
 
-Ağ çağrıları (kodda tek tek doğrulandı, başka yok): (1) Koç: `www/coach.js` `fetch` ile NVIDIA Build, Groq, OpenRouter, Google Gemini ya da kullanıcının eklediği https servis; yalnız açık rızayla. (2) Open Food Facts: `www/index.html` barkod araması, yalnız barkod numarası. USDA FoodData Central çalışma anında çağrılmaz, veri uygulamaya gömülüdür. Reklam, analitik, kilit açma/hesap, çökme raporu SDK'sı yok.
+Ağ çağrıları (kodda tek tek doğrulandı, başka yok): (1) Koç: `www/coach.js` `fetch` ile NVIDIA Build, Groq, OpenRouter, Google Gemini, OpenAI, Anthropic Claude ya da kullanıcının eklediği https servis; sağlık verisi yalnız açık rızayla. Kurulumda (onaydan önce de) yalnız kullanıcının anahtarı ve sabit bir deneme cümlesi gider (model listesi, bağlantı denemesi). (2) Open Food Facts: `www/index.html` barkod araması, yalnız barkod numarası. USDA FoodData Central çalışma anında çağrılmaz, veri uygulamaya gömülüdür. Reklam, analitik, kilit açma/hesap, çökme raporu SDK'sı yok.
 
 ## Genel sorular
 | Soru | Cevap |
