@@ -141,6 +141,31 @@ jobs:
           gh release delete son-surum --yes --cleanup-tag || true
           gh release create son-surum neowell.apk neowell.aab --title "NeoWell (son sürüm)" --notes "Telefondan neowell.apk dosyasını indirip kur. neowell.aab Play Console yüklemesi içindir."
 
+  # Tarayıcıda uçtan uca kullanıcı senaryoları (e2e/). Derlemeden bağımsız; yayın adımı buna bağlı değil.
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Bağımlılıkları kur
+        run: npm ci
+      - name: Chromium kur
+        run: npx playwright install --with-deps chromium
+      - name: Uçtan uca testler
+        run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-rapor
+          path: |
+            e2e-report/
+            test-results/
+          retention-days: 14
+
   smoke:
     needs: build
     if: github.event_name == 'workflow_dispatch'
