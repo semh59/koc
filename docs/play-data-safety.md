@@ -26,7 +26,7 @@ Ağ çağrıları (kodda tek tek doğrulandı, başka yok): (1) Koç: `www/coach
 | Konum (yaklaşık/kesin) | Hayır | Hayır | n/a | n/a | Yalnız elle başlatılan yürüyüşte cihazda işlenir; yalnız adım uzunluğu saklanır, nokta/rota saklanmaz, hiçbir yere gönderilmez |
 | Fotoğraf ve video (kamera) | Hayır | Hayır | n/a | n/a | Etiket/tahlil fotoğrafı telefonda yazı tanımayla okunur, saklanmaz ve gönderilmez. Barkod görüntüsünü Google Play hizmetleri işler, NeoWell almaz |
 | Bildirimler | Hayır | Hayır | n/a | n/a | Yalnızca yerel hatırlatma; sunucu push yok |
-| Uygulama etkinliği, cihaz kimliği, finansal bilgi, kişiler, takvim, dosyalar | Hayır | Hayır | n/a | n/a | Dosya: yedek/PDF/CSV yalnız kullanıcının seçtiği yere yazılır |
+| Uygulama etkinliği, cihaz kimliği, finansal bilgi, kişiler, takvim, dosyalar | Hayır | Hayır | n/a | n/a | Dosya: yedek (her zaman parolayla şifreli, parola zorunlu) / PDF / CSV yalnız kullanıcının seçtiği yere yazılır |
 | Barkod araması (Open Food Facts) | Barkod numarası kişisel veri değil. Hizmet IP adresini görür | Bkz. karar 3 | Uygulama işlevselliği | Evet (kullanıcı okutursa) | |
 
 ## Güvenlik uygulamaları

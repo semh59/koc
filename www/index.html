@@ -1036,34 +1036,39 @@ function sheetNot(){openSheet(`<h3>Not ekle</h3><textarea class="in" id="fv" pla
 function goNot(){const t=$("#fv").value.trim();if(!t)return toast("Önce notunu yaz");const e=add("not",null,t,fday());closeSheet();render();toast("Not kaydedildi",e.id)}
 
 function sheetYedek(){
-  openSheet(`<h3>Yedekle veya geri yükle</h3><div class="lbl">Yedek metni. Kopyalayıp bir yere kaydet, geri yüklerken buraya yapıştır.</div><textarea class="in" id="bk" spellcheck="false">${esc(JSON.stringify(S))}</textarea>
-  <div class="lbl">Parola (isteğe bağlı). Yazarsan yedek şifrelenir ve Koç anahtarların da içine girer. Parolayı unutursan yedek açılmaz.</div><input class="in" id="bkpw" type="password" autocomplete="new-password">
+  openSheet(`<h3>Yedekle veya geri yükle</h3><div class="lbl">Yedek metni. Geri yüklemek için yedek metnini buraya yapıştır ya da "Dosyadan oku"yu kullan. Yedek alırken Kopyala'ya basınca metin burada çıkar.</div><textarea class="in" id="bk" spellcheck="false"></textarea>
+  <div class="lbl">Yedek parolası (zorunlu, en az ${BackupLib.MINPW} karakter). Yedek her zaman şifrelenir ve Koç anahtarların da içine girer. Parolayı unutursan yedeğini kimse açamaz, kurtarma yolu yoktur. Parolayı güvenli bir yere yaz. Geri yüklerken de aynı parola gerekir.</div>
+  <input class="in" id="bkpw" type="password" autocomplete="new-password" placeholder="Parola"><input class="in" id="bkpw2" type="password" autocomplete="new-password" placeholder="Yedek alırken parolayı tekrar yaz">
+  <div class="hint" id="bkw" role="alert"></div>
   <div class="two"><button class="btn ghost" data-go="kopyala">Kopyala</button><button class="btn ghost" data-go="${isNative()?"paylas":"indir"}">${isNative()?"Dosya olarak paylaş":"Dosya indir"}</button></div>
   <div class="btns"><label class="btn ghost" style="text-align:center">Dosyadan oku<input id="bkfile" type="file" accept=".json,application/json,text/plain" hidden></label><button class="btn" data-go="yukle">Bu metinden geri yükle</button></div>`);
 }
 function markBackup(){S.settings.lastBackup=dayKey();save()}
 async function backupText(){
-  const pw=$("#bkpw").value;
-  return pw?JSON.stringify(await BackupLib.encrypt({v:1,S,keys:getKeys()},pw)):$("#bk").value;
+  const pw=$("#bkpw").value,m2=$("#bkpw2"),bad=BackupLib.pwCheck(pw)||(m2&&m2.value!==pw?"Parolalar aynı değil":"");
+  if(bad){const w=$("#bkw");if(w)w.textContent=bad;toast(bad);return null}
+  return JSON.stringify(await BackupLib.encrypt({v:1,S,keys:getKeys()},pw));
 }
 async function shareBackup(){
   const P=window.Capacitor&&window.Capacitor.Plugins,fs=P&&P.Filesystem,sh=P&&P.Share;
   if(!fs||!sh)return toast("Paylaşım bu cihazda yok, Kopyala'yı kullan");
   try{
-    const f=await fs.writeFile({path:`neowell-yedek-${dayKey()}.json`,data:await backupText(),directory:"CACHE",encoding:"utf8"});
+    const txt=await backupText();if(!txt)return;
+    const f=await fs.writeFile({path:`neowell-yedek-${dayKey()}.json`,data:txt,directory:"CACHE",encoding:"utf8"});
     await sh.share({title:"NeoWell yedeği",files:[f.uri]});markBackup();
   }catch(e){if(!/cancel/i.test(e&&e.message||""))toast("Paylaşılamadı, Kopyala'yı kullan")}
 }
 async function goYukle(){
   let r,keysIn=null;try{r=JSON.parse($("#bk").value)}catch(e){return toast("Yedek metni okunamadı")}
-  if(r&&r.enc){
+  const enc=!!(r&&r.enc);
+  if(enc){
     const pw=$("#bkpw").value;if(!pw)return toast("Şifreli yedek: önce parolayı yaz");
     try{const p=await BackupLib.decrypt(r,pw);r=p.S;keysIn=p.keys}catch(e){return toast("Parola yanlış ya da yedek bozuk")}
   }
   if(!r||!Array.isArray(r.entries))return toast("Bu bir NeoWell yedeği değil");
   const {out,drop}=cleanEntries(r.entries);
   if(!out.length&&r.entries.length)return toast("Yedekte geçerli kayıt yok");
-  if(!confirm(`${out.length} kayıt yüklenecek${drop?`, ${drop} geçersiz kayıt atlanacak`:""}. Mevcut veriler değişecek. Devam edilsin mi?`))return;
+  if(!confirm(`${enc?"":"Bu yedek parolasız (şifresiz) bir dosya; eski sürümden kalmış olabilir. Yedek dosyasını başkasına gönderme, işin bitince sil. "}${out.length} kayıt yüklenecek${drop?`, ${drop} geçersiz kayıt atlanacak`:""}. Mevcut veriler değişecek. Devam edilsin mi?`))return;
   const prevS=S;
   lsDel("koc_v1_onceki");otherBytes=lsOther();
   S=Object.assign({settings:cleanSettings(r.settings,r.fast),entries:out,nextId:out.length+1,myFoods:cleanMyFoods(r.myFoods),labs:LabLib.cleanLabs(r.labs),vitals:VitalsLib.clean(r.vitals)},cleanHealthState(r),cleanGym(r),cleanCoach(r));
@@ -1310,9 +1315,9 @@ document.addEventListener("click",ev=>{
   }
   if(d.go){
     ({kilo:goKilo,yemek:goYemek,besin:goBesin,mysil:goMySil,tpl:goTpl,adim:goAdim,spor:goSpor,not:goNot,yukle:goYukle,saglik:()=>{S.settings.healthNote=$("#hn").value.trim().slice(0,500);save();closeSheet();render();toast("Kaydedildi")}}[d.go]||(()=>{}))();
-    if(d.go==="kopyala")backupText().then(v=>{(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast("Panoya kopyalandı"),()=>{const b=$("#bk");b.value=v;b.select();document.execCommand&&document.execCommand("copy");toast("Metni seçtim, kopyala")})});
+    if(d.go==="kopyala")backupText().then(v=>{if(!v)return;(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast("Panoya kopyalandı"),()=>{const b=$("#bk");b.value=v;b.select();document.execCommand&&document.execCommand("copy");toast("Metni seçtim, kopyala")})});
     if(d.go==="paylas")shareBackup();
-    if(d.go==="indir")backupText().then(v=>{try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([v],{type:"application/json"}));a.download=`neowell-yedek-${dayKey()}.json`;a.click();markBackup()}catch(e){toast("İndirme bu cihazda çalışmadı, Kopyala'yı kullan")}});
+    if(d.go==="indir")backupText().then(v=>{if(!v)return;try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([v],{type:"application/json"}));a.download=`neowell-yedek-${dayKey()}.json`;a.click();markBackup()}catch(e){toast("İndirme bu cihazda çalışmadı, Kopyala'yı kullan")}});
   }
 });
 $("#tundo").addEventListener("click",()=>{

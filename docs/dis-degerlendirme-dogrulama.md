@@ -44,7 +44,7 @@ Ciddiyet: **P** Play'i engeller · **Z** kullanıcıya zarar · **K** kalite · 
 **Kaçırılanlar:**
 - Kurulum 10-17 yaşı kabul ediyor (`index.html:418`), ama hedef kitle 18+ yazıyor (P/Z).
 - Debug imzalı eski kurulumlara herkes sahte "güncelleme" kurdurabilir (Z).
-- Paylaş/kopyala yedeği parolasız çıkabiliyor, yani sağlık verisi düz metin (Z).
+- ~~Paylaş/kopyala yedeği parolasız çıkabiliyor~~ Çözüldü: tüm yedekler parolalı, en az 8 karakter.
 - Mağaza varlıkları yok: öne çıkan grafik, ekran görüntüleri, IARC ve hedef kitle anketleri. Simge yalnız 192 px, mağaza 512 px istiyor (P).
 - Kurumsal hesap riski (#6).
 - `dagitim.md:43` "versionCode 1" diyor ama CI çalışma numarasını kullanıyor (k).
