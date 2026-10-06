@@ -65,8 +65,8 @@ function cleanCoach(r){
     if(["plan","weekly","plateau"].includes(m.kind))o.kind=m.kind;
     if(["check","ed"].includes(m.fl))o.fl=m.fl;
     const c=m.card;
-    if(c&&c.kind==="log"&&Array.isArray(c.items)){const items=CoachLib.cleanItems(c.items);if(items.length)o.card={kind:"log",items,state:["pending","ok","no"].includes(c.state)?c.state:"pending",saved:c.saved===true}}
-    else if(c&&c.kind==="food"){const f=CoachLib.cleanFood(c.f&&typeof c.f==="object"?{name:c.f.n,kcal:c.f.k,protein:c.f.p}:{name:c.n,kcal:c.k,protein:c.p});if(f)o.card={kind:"food",f,state:["pending","ok","no"].includes(c.state)?c.state:"pending"}}
+    if(c&&c.kind==="log"&&Array.isArray(c.items)){const items=CoachLib.cleanItems(c.items);if(items.length)o.card=Object.assign({kind:"log",items,state:["pending","ok","no"].includes(c.state)?c.state:"pending",saved:c.saved===true},CoachLib.MEAL_KEYS.includes(c.meal)?{meal:c.meal}:{})}
+    else if(c&&c.kind==="food"){const f=CoachLib.cleanFood(c.f&&typeof c.f==="object"?{name:c.f.n,kcal:c.f.k,protein:c.f.p}:{name:c.n,kcal:c.k,protein:c.p});if(f)o.card=Object.assign({kind:"food",f,state:["pending","ok","no"].includes(c.state)?c.state:"pending"},c.logged===true?{logged:true}:{})}
     else if(c&&c.kind==="safety"&&["emergency","check","mind","ed"].includes(c.level))o.card={kind:"safety",level:c.level};
     else if(c&&c.kind==="why"&&Array.isArray(c.items)){
       const items=c.items.filter(x=>x&&typeof x.k==="string"&&/^[a-z]{1,8}$/.test(x.k)&&typeof x.t==="string"&&x.t.trim()).slice(0,6).map(x=>({k:x.k,t:x.t.slice(0,160)}));
@@ -246,20 +246,23 @@ function myFoodAdd(n,kcal,p){
 }
 function cApplyLog(id,el){
   const m=S.chat.find(x=>x.id===id);if(!m||!m.card||m.card.kind!=="log"||m.card.state!=="pending")return;
-  const box=el.closest(".lcard");
-  m.card.items.forEach((it,i)=>{
-    if(it.type==="yemek"){const inp=box.querySelector(`[data-ck="${i}"]`);if(inp){const v=num(inp.value,true);it.kcal=isNaN(v)?null:Math.min(v,5000)}}
-  });
-  let n=0;
-  for(const it of m.card.items){
-    const day=it.day==="yesterday"?keyOff(-1):dayKey();
-    if(it.type==="yemek"){const e=add("yemek",it.kcal,it.text||"Öğün",day);if(it.p!=null)e.p=it.p;n++}
-    else if(it.type==="su"){add("su",it.ml,"",day);n++}
-    else if(it.type==="kilo"){add("kilo",it.kg,"",day);n++}
-    else if(it.type==="spor"){add("spor",it.min,it.name,day);n++}
-    else if(it.type==="not"){add("not",null,it.text,day);n++}
+  lReadK(m.card,el);
+  /* Bugünkü yemekler menüdeki "Bugüne ekle" yoluyla (addFoods: besin değerleri, öğün, Geri al); dünkü yemek ve diğer kayıtlar doğrudan. Geri al kartı yeniden açar. */
+  const c=m.card,ml=c.meal||(c.items.find(i=>i.meal)||{}).meal||LogLib.mealOf({time:cTime(Date.now())}),ids=[],foods=[];
+  for(const it of c.items){
+    const day=it.day==="yesterday"?keyOff(-1):dayKey(),y=it.type==="yemek";
+    if(y&&day===dayKey()){foods.push(LogLib.copyNutr(it,{text:it.text||"Öğün",v:it.kcal,meal:ml}));continue}
+    const e=y?LogLib.copyNutr(it,add("yemek",it.kcal,it.text||"Öğün",day)):it.type==="su"?add("su",it.ml,"",day):it.type==="kilo"?add("kilo",it.kg,"",day):it.type==="spor"?add("spor",it.min,it.name,day):add("not",null,it.text,day);
+    if(y)e.meal=ml;ids.push(e.id);
   }
-  m.card.state="ok";save();render();toast(`${n} kayıt eklendi`);
+  c.state="ok";const n=foods.length+ids.length,undo=()=>{S.entries=S.entries.filter(e=>!ids.includes(e.id));c.state="pending"};
+  if(foods.length)return addFoods(foods,dayKey(),`${n} kayıt günlüğe eklendi`,undo);
+  save();render();toast(`${n} kayıt eklendi`,()=>{undo();save();render()});
+}
+/* Kalori kutusundaki düzeltmeler karta yazılır (çıkarma ve ekleme öncesi). */
+function lReadK(c,el){
+  const box=el.closest(".lcard");if(!box)return;
+  c.items.forEach((it,i)=>{if(it.type==="yemek"){const inp=box.querySelector(`[data-ck="${i}"]`);if(inp){const v=num(inp.value,true);it.kcal=isNaN(v)||v<0?null:Math.min(v,5000)}}});
 }
 
 /* ---- "bu hafta neden kilo vermedim": yerel etmenler, isteğe bağlı Koç yorumu ---- */
@@ -461,17 +464,20 @@ function cCard(m){
   }
   if(c.kind==="food"){
     return `<div class="card lcard"><div class="lhead"><b>${esc(c.f.n)}</b><span class="tahmin">Tahmin</span></div><div class="mut sm">~${c.f.k} kcal${c.f.p!=null?`, protein ~${Math.round(c.f.p)} g`:""}</div>
-    ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="addfood:${m.id}">Listeme ekle</button><button class="btn ghost" data-c="nofood:${m.id}">Şimdi değil</button></div>`:`<div class="mut sm">${c.state==="ok"?"Besin listene eklendi":"Atlandı"}</div>`}</div>`;
+    ${c.logged?`<div class="mut sm">Günlüğe eklendi</div>`:`<div class="lbtns"><button class="btn" data-c="fooddiary:${m.id}">Günlüğe ekle</button></div>`}
+    ${c.state==="pending"?`<div class="lbtns"><button class="btn ghost" data-c="addfood:${m.id}">Listeme ekle</button><button class="btn ghost" data-c="nofood:${m.id}">Şimdi değil</button></div>`:`<div class="mut sm">${c.state==="ok"?"Besin listene eklendi":"Atlandı"}</div>`}</div>`;
   }
   const rows=c.items.map((it,i)=>{
     const lbl=it.type==="yemek"?esc(it.text||"Öğün"):it.type==="su"?"Su":it.type==="kilo"?"Tartı":it.type==="spor"?esc(it.name):"Not";
     const val=it.type==="yemek"?(c.state==="pending"?`<span class="num">~<input class="kin num" data-ck="${i}" inputmode="numeric" aria-label="${esc(it.text)} kcal" value="${it.kcal==null?"":Math.round(it.kcal)}" placeholder="kcal"> kcal</span>`:`<span class="num">${it.kcal==null?"":"~"+Math.round(it.kcal)+" kcal"}</span>`)
       :it.type==="su"?`<span class="num">${it.ml} ml</span>`:it.type==="kilo"?`<span class="num">${fmt(it.kg)} kg</span>`:it.type==="spor"?`<span class="num">${it.min} dk</span>`:`<span class="mut sm">${esc(it.text.slice(0,40))}</span>`;
-    return `<div class="lrow"><div>${lbl}${it.type==="yemek"&&it.p!=null?`<div class="mut sm">Protein ~${Math.round(it.p)} g</div>`:""}${it.day==="yesterday"?`<div class="mut sm">Dün</div>`:""}</div>${val}</div>`;
+    const y=it.type==="yemek",mac=y?[it.g?it.g+" g":"",it.p!=null?`P ${Math.round(it.p)}`:"",it.c!=null?`K ${Math.round(it.c)}`:"",it.f!=null?`Y ${Math.round(it.f)}`:""].filter(Boolean).join(" · "):"";
+    return `<div class="lrow" style="flex-wrap:wrap"><div style="min-width:0;flex:1 1 150px"><span style="overflow-wrap:break-word">${lbl}</span>${mac?`<div class="mut sm">${mac}</div>`:""}${y&&CoachLib.macroOff(it)?`<div class="mut sm">Kalori makrolarla tutmuyor, kontrol et</div>`:""}${it.day==="yesterday"?`<div class="mut sm">Dün</div>`:""}</div><span style="display:flex;align-items:center;gap:6px;margin-left:auto">${val}${c.state==="pending"&&c.items.length>1?`<button class="chip" data-c="lrm:${m.id}:${i}" aria-label="${lbl} çıkar">×</button>`:""}</span></div>`;
   }).join("");
-  const est=c.items.some(i=>i.type==="yemek");
-  return `<div class="card lcard"><div class="lhead"><b>Kayıt önerisi</b>${est?`<span class="tahmin">Tahmin</span>`:""}</div>${rows}
-  ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="ok:${m.id}">Onayla</button><button class="btn ghost" data-c="no:${m.id}">Vazgeç</button></div>`:`<div class="mut sm">${c.state==="ok"?"Kaydedildi":"Vazgeçildi"}</div>${c.state==="ok"&&est&&!c.saved?`<div class="lbtns"><button class="btn ghost" data-c="savefood:${m.id}">Yemeği listeme kaydet</button></div>`:""}`}</div>`;
+  const est=c.items.some(i=>i.type==="yemek"),ml=c.meal||(c.items.find(i=>i.meal)||{}).meal||LogLib.mealOf({time:cTime(Date.now())}),tot=c.items.reduce((a,i)=>a+(i.type==="yemek"&&i.kcal?i.kcal:0),0);
+  return `<div class="card lcard"><div class="lhead"><b>${est?"Öğüne ekle":"Kayıt önerisi"}</b>${est?`<span class="tahmin">Tahmin</span>`:""}</div>${rows}
+  ${est?`<div class="mut sm" style="padding-top:6px">Toplam ~${Math.round(tot)} kcal</div>${c.state==="pending"?`<div class="chips" style="margin:8px 0 0">${LogLib.MEALS.map(([k,n])=>`<button class="chip" data-c="lml:${m.id}:${k}" aria-pressed="${ml===k}">${n}</button>`).join("")}</div>`:""}`:""}
+  ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="ok:${m.id}">${est?"Günlüğe ekle":"Onayla"}</button><button class="btn ghost" data-c="no:${m.id}">Vazgeç</button></div>`:`<div class="mut sm">${c.state==="ok"?"Kaydedildi":"Vazgeçildi"}</div>${c.state==="ok"&&est&&!c.saved?`<div class="lbtns"><button class="btn ghost" data-c="savefood:${m.id}">Yemeği listeme kaydet</button></div>`:""}`}</div>`;
 }
 /* Onay metni tek yerde: Koç ekranı ve Gizlilik ve veri aynı metni gösterir. Değiştirirsen CONSENT_V'yi artır. */
 const consentOk=()=>!(S.settings.age>0&&S.settings.age<18);
@@ -735,6 +741,15 @@ function cClick(v,el){
     case "shopcopy":{const c=menuCard(+p1);if(!c)return;const t=cShopText(c);(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Liste panoya kopyalandı"),()=>toast("Kopyalanamadı, Paylaş'ı kullan"));return}
     case "shopshare":{const c=menuCard(+p1);if(c)shareFile(`neowell-alisveris-${dayKey()}.txt`,"Alışveriş listesi","text/plain",cShopText(c),true);return}
     case "ok":return cApplyLog(+p1,el);
+    case "lml":case "lrm":{
+      const m=S.chat.find(x=>x.id===+p1),c=m&&m.card;if(!c||c.kind!=="log"||c.state!=="pending")return;
+      if(a==="lml"){if(CoachLib.MEAL_KEYS.includes(p2))c.meal=p2}else{lReadK(c,el);c.items.splice(+p2,1)}
+      save();return render();
+    }
+    case "fooddiary":{
+      const m=S.chat.find(x=>x.id===+p1),c=m&&m.card;if(!c||c.kind!=="food"||c.logged)return;
+      c.logged=true;return addFoods([{text:c.f.n,v:c.f.k,p:c.f.p==null?undefined:c.f.p,meal:LogLib.mealOf({time:cTime(Date.now())})}],dayKey(),`${c.f.n} günlüğe eklendi`,()=>{c.logged=false});
+    }
     case "addfood":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card&&m.card.kind==="food"&&m.card.state==="pending"){if(myFoodAdd(m.card.f.n,m.card.f.k,m.card.f.p)){m.card.state="ok";save();render();toast("Besin listene eklendi")}else toast("Listen dolu (en fazla 200 besin)")}return}
     case "nofood":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card){m.card.state="no";save();render()}return}
     case "savefood":{
