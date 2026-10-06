@@ -24,17 +24,17 @@ Türk kahvesi (şekerli)	Vekil: USDA espresso (restoran) kaydı + 3 çay kaşı�
 Çay (2 kesme şekerli)	Hesap: USDA demli çay + 2 kesme şeker (6 g).
 Çay (3 kesme şekerli)	Hesap: USDA demli çay + 3 kesme şeker (9 g).
 Sucuk (pişmiş)	Çapraz kontrol: kuru sosis kayıtları 362-474 kcal (USDA yaz sosisi 362, kuru salam 407, CIQUAL kuru sosis 418, CoFID salam 438, CIQUAL baharatlı 474); değer bu aralıkta.
-Pekmez	Çapraz kontrol: USDA melas 290, CIQUAL 300, CoFID 266 kcal; değer bu aralıkta.
-Ayran	Çapraz kontrol: yarı yoğurt, yarı su hesabı yaklaşık 31 kcal (USDA tam yağlı yoğurt 61 kcal).
-Simit	Çapraz kontrol: USDA ve CoFID sade bagel 250-278 kcal; simit susam ve pekmez nedeniyle biraz yüksek olabilir.
-Tarhana çorbası	Çapraz kontrol: 25 g kuru tarhana, 230 g su ve 5 g tereyağı hesabı yaklaşık 55 kcal/100 g (Tarhana (kuru) kaydından).
-Beyaz peynir	Vekil: USDA feta (264 kcal); CoFID feta 250 kcal ile uyumlu. Türk beyaz peyniri markaya göre daha tuzlu ya da yağsız olabilir.
+Pekmez	Vekil: USDA melas (290 kcal). Aralık: CoFID 266, CIQUAL 300 kcal.
+Ayran	Hesap: yarı yoğurt (USDA tam yağlı), yarı su; tuz hariç. Su oranı yere göre değişir.
+Simit	Hesap: 93 g bagel (simit vekili, USDA) ve 7 g susam; sade bagel kayıtları USDA ve CoFID'de 250-278 kcal. Pekmez hesapta yok.
+Tarhana çorbası	Hesap: 25 g kuru tarhana (Tarhana (kuru) kaydı), 230 g su, 5 g tereyağı.
+Beyaz peynir	Vekil: USDA feta (265 kcal); CoFID feta 250 kcal ile uyumlu. Türk beyaz peyniri markaya göre daha tuzlu ya da yağsız olabilir.
 Kaşar peyniri	Vekil: Türk kaşarı yerine USDA provolone (356 kcal).
-Lor peyniri	Çapraz kontrol: CoFID quark 74, CoFID cottage 103, USDA ricotta (yarım yağsız) 138 kcal; değer bu aralıkta.
+Lor peyniri	Vekil: CoFID cottage peyniri (103 kcal). Aralık: CoFID quark 74, USDA ricotta (yarım yağsız) 138 kcal.
 Yufka benzeri hamur (phyllo)	Vekil: yufka yerine USDA phyllo (299 kcal); CoFID filo hamuru çiğ 278, pişmiş 363 kcal.
-Baklava	Çapraz kontrol: CoFID baklava 456 kcal; değer %5 düşük.
-Lokum	Çapraz kontrol: CoFID lokum 295 (cevizsiz) ile 348 (cevizli) kcal; değer bu aralıkta.
-Helva (tahin)	Çapraz kontrol: USDA tahin helvası 469 kcal; değer %8 yüksek, yağ ve şeker oranı markaya göre değişir.
+Baklava	Hesap: 30 g yufka (USDA phyllo), 25 g ceviz, 15 g tereyağı, 22 g şeker, 15 g şerbet suyu, %10 buharlaşma. Çapraz kontrol: CoFID baklava 456 kcal.
+Lokum	Hesap: sade lokum, 70 g şeker, 12 g nişasta, 18 g su (USDA). Çapraz kontrol: CoFID lokum 295 (cevizsiz) ile 348 (cevizli) kcal.
+Helva (tahin)	Hesap: 50 g tahin ve 50 g şeker (USDA). Markalı helvada yağ ve şeker oranı değişir.
 Et döner	Çapraz kontrol: CoFID döner eti 377 kcal (İngiltere, yağlı), USDA ızgara dana kıyma 254-270 kcal; değer orta yağlı ev/lokanta dönerine göre seçildi, çok yağlı dönerde yüksek olabilir.
 Çökelek	Vekil: çökelek yerine yarı yarıya CIQUAL kesilmiş süt peyniri (quark, %2-3 yağlı, 76 kcal) ve CoFID cottage peyniri (103 kcal). Çökelek yağsız ayrandan yapılır; tuz ve yağ oranı ürüne göre değişir.
 Tulum peyniri	Vekil: tulum yerine yarı yarıya CoFID feta (250 kcal) ve CIQUAL koyun pecorino (383 kcal). Tulum fetadan kuru ve yağlıdır; marka ve olgunlaşma süresi değeri değiştirir.
@@ -87,3 +87,33 @@ Kalburabastı	Hesap: un, irmik, tereyağı, yumurta, ceviz, şeker şerbeti; şe
 Şöbiyet	Hesap: USDA phyllo hamuru (yufka vekili), krema, antep fıstığı, tereyağı, şeker şerbeti; kaymak yerine krema, şerbet payı yere göre değişir.
 Zerde	Hesap: pirinç, şeker, nişasta, kuru üzüm, su; safran ve şerbet fazlası hesapta yok. Su fazlası yere göre değişir.
 Tavuk göğsü tatlısı	Hesap: USDA fırınlanmış tavuk göğsü (lifli doku), süt, şeker, mısır nişastası, pirinç unu; tarif tereyağı ve tarçın hesapta yok. Eski tarifler kadar yoğun/süzme olabilir.
+Menemen	Hesap: 100 g yumurta, 200 g domates, 60 g biber, 30 g soğan, 15 g yağ (USDA), %15 pişme kaybı. Yağ ve yumurta oranı yere göre çok değişir.
+Tost (kaşarlı)	Hesap: 90 g beyaz ekmek, 35 g kaşar (USDA provolone), 5 g tereyağı (USDA), %3 pişme kaybı. Kaşar oranı arttıkça değer yükselir.
+Gözleme (peynirli)	Hesap: 100 g un, 55 g su, 60 g beyaz peynir (USDA feta), 5 g maydanoz, 10 g yağ (USDA), %10 pişme kaybı.
+Su böreği (peynirli)	Hesap: 100 g un, 30 g yumurta, 80 g su, 60 g süt, 60 g beyaz peynir (USDA feta), 25 g tereyağı; haşlama suyunun emilimi tahmindir.
+Lahmacun	Vekil: tarif hesaplı lahmacun kaydıyla (Lahmacun (tarif hesaplı)) aynı değer; kıyma ve hamur oranı yere göre değişir.
+Mercimek çorbası	Hesap: 130 g kırmızı mercimek, 60 g soğan, 50 g havuç, 50 g patates, 20 g tereyağı, 900 g su (USDA), %10 buharlaşma.
+Ezogelin çorbası	Hesap: 80 g kırmızı mercimek, 35 g bulgur, 15 g pirinç, 50 g soğan, 20 g salça, 20 g tereyağı, 1000 g su (USDA), %10 buharlaşma.
+Domates çorbası	Hesap: 500 g domates, 25 g un, 25 g tereyağı, 100 g süt, 400 g su (USDA), %10 buharlaşma.
+Yayla çorbası	Hesap: 150 g yoğurt, 40 g pirinç, 10 g un, 25 g yumurta, 15 g tereyağı, 600 g su (USDA), %10 buharlaşma.
+Pirinç pilavı	Hesap: 185 g pirinç, 15 g tereyağı, 360 g su (USDA), %6 pişme kaybı.
+Bulgur pilavı	Hesap: 140 g bulgur, 40 g soğan, 10 g salça, 15 g yağ, 280 g su (USDA), %6 pişme kaybı.
+Mantı (haşlanmış)	Hesap: 100 g un, 15 g yumurta, 100 g su (hamur ve haşlama suyu emilimi), 45 g dana kıyma, 20 g soğan (USDA); yoğurt ve sos hariç.
+Kuru fasulye yemeği	Hesap: 200 g haşlanmış kuru fasulye, 40 g dana kuşbaşı, 40 g soğan, 15 g salça, 10 g tereyağı, 150 g su (USDA), %15 buharlaşma. Et oranı değişir.
+Nohut yemeği	Hesap: 200 g konserve nohut (süzülmüş), 40 g dana kuşbaşı, 40 g soğan, 15 g salça, 12 g tereyağı, 150 g su (USDA), %15 buharlaşma. Et oranı değişir.
+Tavuk döner	Vekil: derisiz fırında tavuk but (USDA); marine yağı ve deri hesapta yok.
+Adana kebap	Vekil: USDA ızgara dana kıyma (%20 yağlı), öğün kayıtlarındaki vekille aynı. Adana kuzu ve kuyruk yağlıdır, yağ oranı yere göre değişir.
+Izgara köfte	Hesap: 85 g ızgara dana kıyma (%15 yağlı), 8 g ekmek, 7 g soğan (USDA).
+İçli köfte	Hesap: 40 g bulgur, 10 g un, 30 g su, 35 g dana kıyma, 15 g soğan (USDA), 8 g emilen yağ, %15 kızartma kaybı.
+Etli sebze yemeği	Hesap: 80 g dana kuşbaşı, 100 g patates, 60 g havuç, 50 g soğan, 100 g domates, 12 g tereyağı, 200 g su (USDA), %15 buharlaşma. Et ve yağ oranı değişir.
+Karnıyarık	Hesap: 250 g patlıcan, 70 g dana kıyma (%20 yağlı), 40 g soğan, 60 g domates, 30 g biber, 40 g emilen yağ (kızartma), 60 g su (USDA), %15 buharlaşma.
+İmam bayıldı	Hesap: 250 g patlıcan, 100 g soğan, 100 g domates, 5 g sarımsak, 5 g maydanoz, 40 g zeytinyağı, 40 g su (USDA), %15 buharlaşma.
+Zeytinyağlı taze fasulye	Hesap: 250 g taze fasulye, 50 g soğan, 100 g domates, 25 g zeytinyağı, 150 g su (USDA), %15 buharlaşma. Yağ miktarı tarife göre değişir.
+Zeytinyağlı yaprak sarma	Hesap: 100 g pirinç, 60 g asma yaprağı, 80 g soğan, 35 g zeytinyağı, 8 g kuru üzüm, 8 g çam fıstığı, 5 g salça, 200 g su (USDA), %15 buharlaşma.
+Çoban salatası	Hesap: 100 g domates, 70 g salatalık, 15 g biber, 10 g soğan, 6 g zeytinyağı, 4 g limon suyu (USDA). Yağ miktarı değişir.
+Lavaş	Vekil: USDA beyaz pita ekmeği (275 kcal); lavaşın nem ve yağ oranı markaya göre değişir.
+Kefir	Vekil: USDA tam yağlı süt (61 kcal); USDA'da kefir yalnız markalı az yağlı kayıtla (43 kcal) var, tam yağlı kefir süte yakındır.
+Sütlaç	Hesap: 800 g süt, 70 g pirinç, 100 g şeker, 15 g nişasta, 200 g su (USDA), %15 buharlaşma.
+Kazandibi	Hesap: 800 g süt, 100 g şeker, 30 g nişasta, 25 g pirinç unu, 10 g tereyağı (USDA), %10 buharlaşma.
+Künefe	Hesap: kadayıf yerine 35 g USDA phyllo, 35 g dil peyniri (USDA mozzarella), 15 g tereyağı, 25 g şeker, 25 g şerbet suyu, %10 buharlaşma.
+Aşure	Hesap: 40 g arpa, 25 g haşlanmış fasulye, 25 g nohut, 20 g kuru üzüm, 20 g kuru kayısı, 12 g ceviz, 8 g fındık, 70 g şeker, 380 g su (USDA), %10 buharlaşma. Su miktarı tarife göre değişir.

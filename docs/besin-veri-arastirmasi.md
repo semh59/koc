@@ -311,7 +311,7 @@ Uygunluk puanı 1-5 arasıdır (5 = NeoWell'e APK içinde gömülebilir, ticari 
 - **Kaynak dosyalar (`tools/besin/`):** `genel.tsv` (Türkçe ad, USDA anahtarı, porsiyon, eş ad), `malzeme.tsv` (yalnız tarifte geçen USDA malzemeleri), `tarif.txt` (tarifler), `esad.tsv` (eski satırlar için eş adlar), `mevcut.txt` (ilk 106 kayıt, değişmedi), `usda-altkume.json` (kullanılan USDA kayıtları: fdc_id, açıklama, enerji, protein, karbonhidrat, yağ, lif, porsiyon ağırlıkları), `cikar.py` (USDA CSV'den alt küme çıkarır), `uret.js`.
 - **Genel besinler:** değerler SR Legacy'den birebir (kcal 1008, protein 1003, karbonhidrat 1005 "by difference", yağ 1004). Anahtar, en kısa eşleşen açıklamayı seçer; sonuç `usda-altkume.json` içindedir. Alkollü ve lif ağırlıklı (kakao, kepek, limon) kayıtlar Atwater testine uymadığı için genel listeye alınmadı.
 - **Tarifler:** her satırda çiğ malzeme gramı (ya da adında "haşlanmış/fırında" geçen pişmiş USDA kaydı), pişme verimi ve porsiyon vardır. 100 g değeri = malzeme USDA değerlerinin toplamı / pişmiş ağırlık. Verim tablosu ve yağ emilimi varsayımları `tarif.txt` başındadır; bunlar ölçüm değil belgelenmiş varsayımdır. Tuz ve baharat hesaba katılmadı (%1'in altında). `lo/hi`: eklenen yağ x0,6 ve x1,5 ile hesaplanan 100 g kcal değeri; yağ eklenmeyen yemekte aralık yoktur.
-- **Karbonhidrat:** tüm satırlarda USDA toplam karbonhidrat (lif dahil). İlk 106 satırdan yalnız `1` işaretliler USDA ile karşılaştırıldı; işaretsiz elle girilmiş satırlar doğrulanmamış tahmindir. Open Food Facts barkod değerleri etiket tanımıyla (lifsiz) gelir ve ayrı gösterilir.
+- **Karbonhidrat:** tüm satırlarda USDA toplam karbonhidrat (lif dahil). İlk 106 satırın tamamı belgelidir (bölüm G): `1` işaretliler USDA birebir, diğerleri tarif/vekil hesabı ya da çapraz kontrol notlu tahmindir. Open Food Facts barkod değerleri etiket tanımıyla (lifsiz) gelir ve ayrı gösterilir.
 - **Arama:** ç, ğ, ı, ö, ş, ü katlanır; eş adlar (potato, doner, hummus, feta, fileto vb.) ad eşleşmesinden sonra sıralanır.
 - **Vekil kuralı (4 Ekim 2026):** tam karşılığı olmayan yaygın Türk besini, vekil ya da bileşen hesabıyla ve geniş `lo/hi` aralığıyla eklenir; "USDA'da yok" tek başına eklememe nedeni değildir. Uydurma sayı yasaktır: her değerin dayanağı USDA vekili, CIQUAL/CoFID kaydı, tarif hesabı ya da tarif oranıdır ve `vekil.txt`/`harici.tsv` içinde yazılıdır. Arayüz "Tahmini değer." notunun ardından `vekil.tsv` nedenini gösterir ("Vekil: ..."; eski elle girilmiş satırlarda "Çapraz kontrol: ..." kaynak aralığı). Kaşar (provolone), beyaz peynir (feta) ve yufka (phyllo) vekilleri CoFID/CIQUAL kayıtlarıyla karşılaştırıldı; fark %8'in altında (feta 264 ve 250, filo 299 ve 278) ya da Türk ürününe daha yakın kayıt yok olduğundan değerler değişmedi, karşılaştırma notu eklendi.
 - **Kısa liste, eklenen (vekil.txt, 24 kayıt):** sucuklu, pastırmalı, kavurmalı ve kaşarlı sahanda yumurta; sucuklu kaşarlı tost; sucuk ekmek; sucuk (çiğ); pastırma; hellim; kuru tarhana; tahin pekmez; nar ekşisi; leblebi; protein bar (jenerik); şalgam suyu; boza; salep; Türk kahvesi (sade, az, orta, çok şekerli); çay (1, 2, 3 kesme şekerli). Eski listede zaten vardı, dayanağı yoktu (yalnız çapraz kontrol notu): sucuk (pişmiş), pekmez, ayran, simit, tarhana çorbası, beyaz peynir, lor, yufka, baklava, lokum, helva, et döner. Taranıp yeni kayıt gerekmeyenler: menemen, börek, gözleme, mantı, çiğ köfte, lahmacun, kuruyemiş karışımları, sütlaç, kazandibi, İskender, kumpir, balık ekmek, pestil. Bu turda eklenmeyen çökelek, tulum, pide peyniri, kokoreç, tantuni, midye dolma ve kaymak ikinci turda eklendi (aşağıda).
@@ -326,3 +326,69 @@ Uygunluk puanı 1-5 arasıdır (5 = NeoWell'e APK içinde gömülebilir, ticari 
 - **Restoran öğünleri:** hamburger, pizza dilimi, tavuk şerit, taco gibi kalemler USDA'nın markasız "Fast food" kayıtlarından birebir (`ek.tsv`, marka adlı kayıt alınmaz); menüler bunların toplamıdır. Döner, köfte, kebap ve pide için USDA karşılığı yoktur: ızgara dana kıyma (%15/%20 yağlı) ve tavuk (fırında) vekil alındı, lahmacun tarif hesaplıdır. Bunlarda ve tüm restoran menülerinde kcal aralığı sabit ±%30'dur (porsiyon ve yağ miktarı yere göre değişir; eski ev yemeği kuralıyla aynı).
 - **Hazır ürün kategorileri:** pretzel, granola bar çeşitleri, bisküvi, gofret, mısır cipsi, kuruyemiş karışımı vb. USDA SR Legacy genel (markasız) kayıtlarıdır. Protein bar, sucuk ve pekmez için markasız USDA karşılığı yoktur; vekil olarak ayrı bölümde (`vekil.txt`) eklendi.
 - **Değişmezlik:** ilk 513, 743, 767 ve 818 kaydın adı ve sırası `scripts/foods.test.js` içinde sha1 ile kilitlidir; yeni kayıtlar yalnız sona eklenir (`vekil.txt`, 744-767; `vekil.txt` sonu ve `vekil-ogun.txt`, 768-799).
+
+## G) İlk 106 satırın yeniden üretimi (6 Ekim 2026)
+
+TürKomp izni beklenmedi; ilk 106 satırdan USDA ile işaretli olmayan 61 satırın değerleri kendi hesabımızla yeniden üretildi (ad, sıra ve porsiyonlar sha1 kilidi nedeniyle aynı). Kaynaklar: `tools/besin/eski.tsv` (USDA SR Legacy kaydı birebir, `1` işareti, 20 satır), `tools/besin/eski.txt` (tarif hesabı ya da vekil, `Tahmini` + `Hesap:`/`Vekil:` notu ve lo/hi, 39 satır; nedenler `vekil.tsv`), bilinçli korunan 2 satır (Et döner, Sucuk (pişmiş): değer ve çapraz kontrol notu aynı). Dayanaksız sayı kalmadı. Hesap girdileri (gram, su, buharlaşma) kaynak değil varsayımdır, notta yazılıdır. Kullanıcıların günlük girişleri kendi kcal değerini sakladığı için geçmiş kayıtlar etkilenmez. `(!)` değer %15'ten fazla kaydı demektir. Mısır gevreği USDA kaydı markalıdır (RALSTON Corn Flakes; SR Legacy hazır tahılları markalıdır). Eski "USDA tahin helvası 469 kcal" notu SR Legacy'de kayıt bulunamadığı için kaldırıldı; helva artık tahin ve şeker hesabıdır.
+
+| # | Besin | Eski (kcal/p/k/y) | Yeni | Değişim | Dayanak |
+|---|---|---|---|---|---|
+| 4 | Menemen | 132/6.5/4/10 | 97/4.4/4.1/7.2 | -27% (!) | Hesap/vekil, aralık 58-136 |
+| 5 | Beyaz peynir | 264/17/1.5/21 | 265/14.2/3.9/21.5 | 0% | Hesap/vekil, aralık 225-305 |
+| 7 | Lor peyniri | 94/11/3.5/4 | 103/9.4/3.1/6 | +10% | Hesap/vekil, aralık 72-134 |
+| 8 | Zeytin | 146/1/4/14 | 145/1.03/3.84/15.32 | -1% | USDA |
+| 10 | Reçel | 250/0.4/65/0.1 | 278/0.37/68.86/0.07 | +11% | USDA |
+| 11 | Pekmez | 293/1/73/0.1 | 290/0/74.7/0.1 | -1% | Hesap/vekil, aralık 267-313 |
+| 15 | Yulaf ezmesi (kuru) | 389/17/66/7 | 379/13.15/67.7/6.52 | -3% | USDA |
+| 16 | Mısır gevreği | 375/7/84/0.9 | 384/5.9/88.01/0.91 | +2% | USDA |
+| 17 | Beyaz ekmek | 261/9/49/3.2 | 266/8.85/49.42/3.33 | +2% | USDA |
+| 18 | Tam buğday ekmeği | 244/10/43/3.5 | 252/12.45/42.71/3.5 | +3% | USDA |
+| 19 | Simit | 287/9/55/3.5 | 307/11.6/55/4.8 | +7% | Hesap/vekil, aralık 261-353 |
+| 20 | Lavaş | 300/8/50/7 | 275/9.1/55.7/1.2 | -8% | Hesap/vekil, aralık 234-316 |
+| 21 | Tost (kaşarlı) | 268/12/28/12 | 315/13.4/35.8/13 | +18% (!) | Hesap/vekil, aralık 236-394 |
+| 22 | Gözleme (peynirli) | 242/8/30/10 | 295/9.1/38/11.5 | +22% (!) | Hesap/vekil, aralık 221-369 |
+| 23 | Su böreği (peynirli) | 262/9/25/14 | 248/7.8/25.9/12.4 | -5% | Hesap/vekil, aralık 186-310 |
+| 24 | Lahmacun | 232/12/28/8 | 230/8.6/32.5/7 | -1% | Hesap/vekil, aralık 161-299 |
+| 25 | Pizza | 266/11/33/10 | 266/11.39/33.33/9.69 | 0% | USDA |
+| 26 | Hamburger | 251/13/25/11 | 263/13.3/29.57/10.18 | +5% | USDA |
+| 27 | Mercimek çorbası | 61/3.5/8.5/1.5 | 63/3.1/9.3/1.8 | +3% | Hesap/vekil, aralık 59-69 |
+| 28 | Ezogelin çorbası | 62/2.5/9/1.8 | 58/2.4/8.9/1.7 | -6% | Hesap/vekil, aralık 53-64 |
+| 29 | Domates çorbası | 50/1.2/8/1.5 | 44/1.1/4.6/2.6 | -12% | Hesap/vekil, aralık 37-53 |
+| 30 | Tarhana çorbası | 55/2.5/8/1.5 | 50/1.1/7.2/1.8 | -9% | Hesap/vekil, aralık 36-65 |
+| 31 | Yayla çorbası | 61/2.5/6/3 | 55/1.6/6.2/2.6 | -10% | Hesap/vekil, aralık 50-62 |
+| 32 | Pirinç pilavı | 150/2.8/28/3 | 148/2.5/28.1/2.5 | -1% | Hesap/vekil, aralık 142-156 |
+| 33 | Bulgur pilavı | 120/3.5/22/2 | 139/4/24.5/3.7 | +16% (!) | Hesap/vekil, aralık 104-174 |
+| 35 | Mantı (haşlanmış) | 170/7/22/6 | 175/7.4/28/3.3 | +3% | Hesap/vekil, aralık 131-219 |
+| 36 | Kuru fasulye yemeği | 112/6/13/4 | 114/7.6/14.6/3.1 | +2% | Hesap/vekil, aralık 108-122 |
+| 37 | Nohut yemeği | 140/7/18/4.5 | 118/6.2/13.2/4.8 | -16% (!) | Hesap/vekil, aralık 89-148 |
+| 40 | Humus | 178/8/14/10 | 177/4.86/20.12/8.59 | -1% | USDA |
+| 42 | Fırın tavuk but | 205/26/0/11 | 184/24.03/0/8.99 | -10% | USDA |
+| 43 | Tavuk döner | 190/24/1/10 | 179/24.8/0/8.2 | -6% | Hesap/vekil, aralık 134-224 |
+| 45 | Adana kebap | 247/17/2/19 | 270/25.8/0/17.8 | +9% | Hesap/vekil, aralık 189-351 |
+| 46 | Izgara köfte | 236/18/5/16 | 237/22.8/4.6/13.4 | 0% | Hesap/vekil, aralık 166-308 |
+| 47 | İçli köfte | 240/8/25/12 | 274/10.7/33.2/11.7 | +14% | Hesap/vekil, aralık 192-356 |
+| 48 | Izgara et (biftek) | 248/26/0/16 | 257/26.8/0/15.75 | +4% | USDA |
+| 49 | Pişmiş kıyma | 239/26/0/15 | 232/24.62/0/14.02 | -3% | USDA |
+| 50 | Izgara balık (levrek, çipura) | 138/22/0/5.5 | 124/23.63/0/2.56 | -10% | USDA |
+| 54 | Hindi salam | 108/16/2/4 | 106/14.81/2.2/3.77 | -2% | USDA |
+| 55 | Etli sebze yemeği | 97/7/6/5 | 70/4.2/6.2/3.2 | -28% (!) | Hesap/vekil, aralık 42-98 |
+| 56 | Karnıyarık | 133/6/7/9 | 132/3.3/4.7/11.5 | -1% | Hesap/vekil, aralık 106-163 |
+| 57 | İmam bayıldı | 110/1.5/8/8 | 104/1.1/6.4/8.8 | -5% | Hesap/vekil, aralık 76-136 |
+| 58 | Zeytinyağlı taze fasulye | 94/2/8/6 | 68/1.2/5.3/5.2 | -28% (!) | Hesap/vekil, aralık 41-95 |
+| 59 | Zeytinyağlı yaprak sarma | 188/3/25/8.5 | 198/3/24.9/10 | +5% | Hesap/vekil, aralık 174-225 |
+| 60 | Çoban salatası | 60/1/5/4 | 44/0.8/4.1/3.1 | -27% (!) | Hesap/vekil, aralık 26-62 |
+| 67 | Patates kızartması | 312/3.4/41/15 | 312/3.43/41.44/14.73 | 0% | USDA |
+| 71 | Ayran | 34/1.7/2.4/1.9 | 31/1.7/2.3/1.6 | -9% | Hesap/vekil, aralık 25-37 |
+| 72 | Kefir | 60/3.4/4.5/3.3 | 61/3.2/4.8/3.3 | +2% | Hesap/vekil, aralık 46-76 |
+| 73 | Kola | 42/0/10.6/0 | 42/0/10.36/0.25 | 0% | USDA |
+| 74 | Meyve suyu | 46/0.5/11/0.1 | 46/0.1/11.3/0.13 | 0% | USDA |
+| 90 | Kuru üzüm | 299/3/79/0.5 | 299/3.3/79.32/0.25 | 0% | USDA |
+| 95 | Baklava | 431/6/50/23 | 456/6.2/42.1/30.9 | +6% | Hesap/vekil, aralık 388-524 |
+| 96 | Sütlaç | 128/3.2/21/3.5 | 118/3/20.7/2.6 | -8% | Hesap/vekil, aralık 94-142 |
+| 97 | Kazandibi | 140/4/22/4 | 133/3.1/21.4/4 | -5% | Hesap/vekil, aralık 106-160 |
+| 98 | Künefe | 324/7/38/16 | 335/8.9/36.9/17.2 | +3% | Hesap/vekil, aralık 251-419 |
+| 99 | Aşure | 142/3/28/2 | 133/2.3/26.7/2.6 | -6% | Hesap/vekil, aralık 93-173 |
+| 100 | Helva (tahin) | 509/12/50/29 | 479/8.9/63.1/24 | -6% | Hesap/vekil, aralık 407-551 |
+| 101 | Lokum | 345/0.5/85/0.3 | 317/0/80.9/0 | -8% | Hesap/vekil, aralık 269-365 |
+| 103 | Bisküvi (petibör) | 436/7/75/12 | 406/7.05/70.54/10.58 | -7% | USDA |
+| 104 | Kek (sade) | 382/5/50/18 | 389/5.2/52.5/17.9 | +2% | USDA |

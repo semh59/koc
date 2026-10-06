@@ -18,6 +18,11 @@ ok("su intent'i: işlenen intent'in eylem alanı silinir",/in\.removeExtra\(ACTI
 const lay=rd("assets/android/res/layout/nw_widget.xml"),kc=lay.slice(lay.indexOf("nw_kcal"),lay.indexOf("/>",lay.indexOf("nw_kcal")));
 ok("widget: kalori satırı sondan kesilir, 'Kalan/Fazla' ve sayı başta",/ellipsize="end"/.test(kc)&&/"Kalan " \+ num\(left\) : "Fazla " \+ num\(-left\)\) \+ " kcal"/.test(rd("assets/android/NeoWidget.java")));
 ok("adım: snapAt yalnız gün gerçekten kapanınca yazılır",/boolean closed = closeFirst && StepMath\.closeDay\(/.test(rd("assets/android/StepStore.java"))&&/if \(closed\) e\.putLong\("snapAt"/.test(rd("assets/android/StepStore.java")));
+{
+  const ss=rd("assets/android/StepStore.java"),sp=rd("assets/android/StepCounterPlugin.java");
+  ok("adım: açıkken sensör bekletmesiz sürekli dinlenir, okuma canlı değeri tek yazıcı apply'dan geçirir",/registerListener\(live, sensor, SensorManager\.SENSOR_DELAY_NORMAL, 0,/.test(ss)&&/cb\.done\(apply\(app, v, closeFirst\)/.test(ss)&&/sm\.flush\(live\)/.test(ss));
+  ok("adım: canlı dinleme start ve onResume'da açılır, onPause'da kapanır",/started = true;\s*if \(granted\(\)\) StepStore\.live\(getContext\(\), true\)/.test(sp)&&/handleOnResume\(\) \{\s*if \(started && granted\(\)\) StepStore\.live/.test(sp)&&/handleOnPause\(\) \{\s*StepStore\.live\(getContext\(\), false\)/.test(sp));
+}
 const dh=rd("assets/android/DeviceHelpPlugin.java"),ka=dh.slice(dh.indexOf("public void keepAwake"));
 ok("ekran açık: keepAwake eklenti metodu, UI iş parçacığında bayrak ekler/kaldırır ve çağrıyı çözer",/@PluginMethod\s+public void keepAwake\(PluginCall call\)/.test(dh)&&/import android\.view\.WindowManager;/.test(dh)&&/runOnUiThread\(/.test(ka)&&/addFlags\(WindowManager\.LayoutParams\.FLAG_KEEP_SCREEN_ON\)/.test(ka)&&/clearFlags\(WindowManager\.LayoutParams\.FLAG_KEEP_SCREEN_ON\)/.test(ka)&&/call\.resolve\(\)/.test(ka)&&rd("scripts/patch-android.js").includes('"DeviceHelpPlugin"'));
 { // B5: otomatik yedek ve cihaz aktarımı kapalı

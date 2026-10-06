@@ -1167,8 +1167,14 @@ async function stepsSync(){
     if(stepSnapAt!==(+r.snapAt||0)){stepSnapAt=+r.snapAt||0;ch=true}
     for(const d in (r.history||{}))if(dayOk(d)&&setSteps(d,r.history[d]))ch=true;
     if(typeof r.steps==="number"){if(stepToday!==r.steps){stepToday=r.steps;ch=true}if(setSteps(dayKey(),r.steps))ch=true}
-    if(ch){save();if((tab==="bugun"||tab==="adim")&&!$("#sheet").classList.contains("on"))render();else widgetPush()}
+    if(ch){save();if((tab==="bugun"||tab==="adim")&&!$("#sheet").classList.contains("on")&&!document.activeElement?.matches("#view input,#view textarea"))render();else widgetPush()}
   }catch(e){}
+}
+/* Açıkken canlı adım: görünürken kısa aralıkla okunur; önceki okuma (sensör yanıtsızsa 4 sn sürer) bitmeden yenisi başlamaz. */
+const STEP_POLL=3000;let stepBusy=false;
+function stepsTick(){
+  if(document.hidden||stepBusy||(tab!=="bugun"&&tab!=="adim"))return;
+  stepBusy=true;return stepsSync().finally(()=>{stepBusy=false});
 }
 const manualSteps=()=>S.entries.filter(e=>e.type==="adim"&&e.text==="elle"&&e.day===dayKey()).reduce((s,e)=>s+e.v,0);
 const stepsShown=()=>stepToday==null?null:stepToday+manualSteps();
@@ -1379,7 +1385,7 @@ setInterval(gTick,1000);
 const keysP=keysInit().then(()=>{render();cAuto();cFlush()});
 abBoot();
 if(S.settings.stepsOn&&SC()){SC().start().catch(()=>{});stepsSync();motionBoot()}
-setInterval(()=>{if(!document.hidden&&tab==="bugun")stepsSync()},60000);
+setInterval(stepsTick,STEP_POLL);
 if(DH())DH().info().then(r=>{oem=String(r.manufacturer||"");render()},()=>{});
 try{const P=window.Capacitor&&window.Capacitor.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp","BarcodeScanner","StepCounter","Ocr","Motion","Speech","Widget","BackupFolder"].map(n=>n+"="+typeof P[n]).join(" "))}catch(e){}
 setInterval(()=>{if(dayKey()!==lastDay){lastDay=dayKey();logOff=0;render()}},60000);
