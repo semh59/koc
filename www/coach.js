@@ -192,12 +192,12 @@ function cHistLog(m){
 /* Son kapı: sağlayıcıya giden her gövde buradan geçer; sabit kural metni hariç hepsi maskelenir (idempotent). Yemek adları ad filtresinden muaf ("annem Salata"). */
 let piiInit=false;
 const gate=m=>{if(!piiInit){PiiLib.deny(FOODS.map(f=>f.n));piiInit=true}return PiiLib.maskMsgs(m,CoachLib.SYSTEM)};
-function cMessages(extraUser,extraSys,noHist){
+function cMessages(extraUser,extraSys,noHist,lean){
   gate([]);
   const map={},mk=s=>PiiLib.mask(s,map).text;
   /* Bağlam bölümleri soruya göre seçilir: sohbette son 3 kullanıcı mesajı (konu devamı), program/menüde istek metni; yorum isteklerinde soru yok = hepsi. */
   const q=noHist?extraUser:extraUser?undefined:S.chat.filter(m=>m.role==="user"&&m.text).slice(-3).map(m=>m.text).join(" ");
-  const sys=CoachLib.SYSTEM+mk((extraSys?"\n\nNOT: "+extraSys:"")+"\n\n"+CoachLib.contextText(cData(),q));
+  const sys=CoachLib.SYSTEM+mk((extraSys?"\n\nNOT: "+extraSys:"")+"\n\n"+CoachLib.contextText(cData(),q,lean));
   const hist=noHist?[]:S.chat.filter(m=>m.role!=="sys"&&m.text).slice(-HIST_N).map(m=>({role:m.role==="user"?"user":"assistant",content:m.role==="user"?mk(m.text).slice(0,300):JSON.stringify({reply:mk(m.text).slice(0,260),log:cHistLog(m).map(i=>({...i,text:i.text&&mk(i.text),name:i.name&&mk(i.name)}))})}));
   const msgs=[{role:"system",content:sys}].concat(hist);
   if(extraUser)msgs.push({role:"user",content:mk(extraUser)});
@@ -448,7 +448,7 @@ async function cWhyAsk(id){
 
 /* ---- Koç'tan program ---- */
 let progOpt={d:3,q:"Salon",m:45,l:"Başlangıç"};
-function cCatalog(o){const c=CoachLib.catalog(EXMERGED,o,EXLIB.map(e=>e.id));return {ids:c.map(e=>e.id),text:c.map(e=>`${e.id}|${e.n}|${e.r||e.g}`).join("\n")}}
+function cCatalog(o){const c=CoachLib.catalog(EXMERGED,o,EXLIB.map(e=>e.id));return {ids:c.map(e=>e.id),text:CoachLib.catalogText(c)}}
 function cProgSheet(){
   const o=progOpt,g=(k,vals,lbl=v=>v)=>`<div class="chips">${vals.map(v=>`<button class="chip" data-c="po:${k}:${v}" aria-pressed="${o[k]===v}">${lbl(v)}</button>`).join("")}</div>`;
   openSheet(`<h3>Koç'tan program iste</h3><div class="lbl">Haftada gün</div>${g("d",[2,3,4,5,6])}<div class="lbl">Ekipman</div>${g("q",["Salon","Ev tipi","Ağırlıksız"])}<div class="lbl">Seans süresi</div>${g("m",[30,45,60],v=>v+" dk")}<div class="lbl">Seviye</div>${g("l",["Başlangıç","Orta","İleri"])}
@@ -461,7 +461,7 @@ async function cProgram(o){
   const rk=risk();
   if(rk.ed||rk.pregnant)return toast((rk.ed?"Yeme düzeniyle ilgili işaret gördüm":"Hamilelik ya da emzirme işareti var")+"; program önermiyorum, hekimine danış");
   const {ids,text}=cCatalog(o);
-  const msgs=cMessages(`Haftada ${o.d} gün, seans ${o.m} dakika, ekipman ${o.q}, seviye ${o.l} için antrenman programı hazırla. "program" alanını doldur, reply'da kısaca anlat.`,"KATALOG (kimlik|ad|bölge):\n"+text,true),um=cPush({role:"user",text:`Program iste: haftada ${o.d} gün, ${o.m} dk, ${o.q}, ${o.l}`});
+  const msgs=cMessages(`Haftada ${o.d} gün, seans ${o.m} dakika, ekipman ${o.q}, seviye ${o.l} için antrenman programı hazırla. "program" alanını doldur, reply'da kısaca anlat.`,"KATALOG (bölge: kimlik|ad, ...):\n"+text,true,"prog"),um=cPush({role:"user",text:`Program iste: haftada ${o.d} gün, ${o.m} dk, ${o.q}, ${o.l}`});
   tab="koc";busy=true;typing=true;render();
   try{
     const r=await cAsk(msgs,900);
@@ -534,7 +534,7 @@ async function cMenu(){
   if(menuNoteStop(note))return;
   if(pl.why)return toast(pl.why);
   const {cat,text}=cMenuCat(),p=pl.protein;
-  const msgs=cMessages(`7 günlük menü hazırla. "menu" alanını doldur, reply'da en fazla 2 cümle yaz.`,`MENÜ İSTEĞİ. Hedef günlük ${pl.kcal} kcal (gün toplamı ±%10), ${p?`protein ${p[0]}-${p[1]} g/gün`:pl.pdoc?"protein hedefi hekimle belirlenmeli, yüksek proteinli menü kurma":"protein yeterli olsun"}. YALNIZ KATALOG kimliklerini kullan, listede olmayan besin ekleme. Günde 3-6 öğün, öğün anahtarı: kah, ogl, aks, atis. Katalogdaki kcal ve protein BİR porsiyon içindir; q porsiyon çarpanıdır (0.25-4).${note?`\nKullanıcının kısıt/alerji notu (uy): ${note}`:""}\nTıbbi diyet ya da hastalık menüsü yazma.${pl.block?` KISIT var: ${pl.block}; kalori açığı kurma.`:""}\nÇıktı JSON: {"reply":"...","menu":{"days":[{"n":"Pazartesi","meals":[{"m":"kah","i":[["kimlik",1]]}]}]}}\nKATALOG (kimlik|ad|kcal|protein):\n${text}`,true),um=cPush({role:"user",text:`Haftalık menü iste: günde ~${pl.kcal} kcal${note?`, not: ${note}`:""}`});
+  const msgs=cMessages(`7 günlük menü hazırla. "menu" alanını doldur, reply'da en fazla 2 cümle yaz.`,`MENÜ İSTEĞİ. Hedef günlük ${pl.kcal} kcal (gün toplamı ±%10), ${p?`protein ${p[0]}-${p[1]} g/gün`:pl.pdoc?"protein hedefi hekimle belirlenmeli, yüksek proteinli menü kurma":"protein yeterli olsun"}. YALNIZ KATALOG kimliklerini kullan, listede olmayan besin ekleme. Günde 3-6 öğün, öğün anahtarı: kah, ogl, aks, atis. Katalogdaki kcal ve protein BİR porsiyon içindir; q porsiyon çarpanıdır (0.25-4).${note?`\nKullanıcının kısıt/alerji notu (uy): ${note}`:""}\nTıbbi diyet ya da hastalık menüsü yazma.${pl.block?` KISIT var: ${pl.block}; kalori açığı kurma.`:""}\nÇıktı JSON: {"reply":"...","menu":{"days":[{"n":"Pazartesi","meals":[{"m":"kah","i":[["kimlik",1]]}]}]}}\nKATALOG (kimlik|ad|kcal|protein):\n${text}`,true,"menu"),um=cPush({role:"user",text:`Haftalık menü iste: günde ~${pl.kcal} kcal${note?`, not: ${note}`:""}`});
   tab="koc";busy=true;typing=true;render();
   try{
     const r=await cAsk(msgs,2400);
