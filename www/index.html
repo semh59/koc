@@ -784,6 +784,7 @@ function viewBugun(){
     storeMsg()?row("save",storeMsg()[0],storeMsg()[1],[["veriyedek","Yedek al"]]):"",
     abErr?row("cloud","Otomatik yedek alınamadı",abErr,[["abfix","Düzelt"]]):"",
     isNative()&&!exactOk&&st.medOn&&S.meds.length?row("clock","İlaç alarmı birkaç dakika gecikebilir","Tam saat alarm izni kapalı. İzin verirsen tam saatinde çalar.",[["tamalarm","İzin ver"]]):"",
+    isNative()&&!fsiOk&&st.medOn&&S.meds.length?row("clock","İlaç alarmı kilitli ekranı açmayabilir","Tam ekran bildirim izni kapalı. İzin verirsen alarm ekranı yakar.",[["tamekran","İzin ver"]]):"",
     isNative()&&oemXiaomi()&&!st.oemDone?row("bell","Hatırlatmalar için bir kez ayar gerekli","İki izin verince hatırlatmalar kaçmaz.",[["oem","Ayarla"]]):"",
     isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?row("adim","Adım sayarı aç","Telefonun sensörü sayar, hesap gerekmez.",[["adimac","Aç"],["adimdegil","Şimdi değil"]]):"",
     S.entries.length>=10&&(old==null||old>14)?row("cloud","Verilerini yedekle",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Yedekle"]]):""].filter(Boolean);
@@ -924,6 +925,7 @@ function goBack(){tab=UP(tab);via=null;render();window.scrollTo(0,0)}
 /* Uygulama sürümü (CI her derlemede 1.0.<numara> yapar); yalnız telefonda bilinir. */
 let appVer="";
 try{const a=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;if(a&&a.getInfo)a.getInfo().then(i=>{appVer=String(i.version||"").slice(0,20);if(tab==="ayar-hak")render()}).catch(()=>{})}catch(e){}
+const MW=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.MedWake;
 const WG=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Widget;
 let widgetLast="";
 /* null değerler bilinçli: Java tarafı anahtar varsa ama null ise "hedef yok"/adım gizli, anahtar yoksa "–" gösterir. */
@@ -1182,7 +1184,7 @@ async function goYukle(){
 
 /* ---------- bildirimler (yalnızca APK) ---------- */
 const WATER_REM=[2,3,4],BACKUP_REM=10,WEEKLY_REM=12;
-const SCHED_DAYS=30;let lastSched=0,exactOk=true;
+const SCHED_DAYS=30;let lastSched=0,exactOk=true,fsiOk=true;
 const LN=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.LocalNotifications;
 async function scheduleReminders(){
   const ln=LN();if(!ln||recovery)return "web";
@@ -1192,6 +1194,8 @@ async function scheduleReminders(){
     if(p.display!=="granted")return "denied";
     /* Android 14+ tam saat alarm iznini yeni kurulumda vermez; eklenti o zaman alarmı yaklaşık saate kurar, kullanıcıya söylenir. */
     try{const v=(await ln.checkExactNotificationSetting()).exact_alarm!=="denied";if(v!==exactOk){exactOk=v;if(tab==="bugun")render()}}catch(e){}
+    /* Tam ekran bildirim izni (Android 14+): kapalıysa ilaç alarmı kilitli ekranı açmaz; kullanıcıya söylenir. */
+    try{const w=MW();if(w){const v=(await w.fsi()).allowed!==false;if(v!==fsiOk){fsiOk=v;if(tab==="bugun")render()}}}catch(e){}
     try{
       const dl=await ln.getDeliveredNotifications(),t1=dayKey(),y=keyOff(-1),gone=[];
       for(const n of dl.notifications){
@@ -1408,6 +1412,7 @@ document.addEventListener("click",ev=>{
     else if(d.act==="veriyedek"){tab="ayar-veri";render();sheetYedek()}
     else if(d.act==="abfix"){tab="ayar-veri";render()}
     else if(d.act==="tamalarm")exactAsk();
+    else if(d.act==="tamekran"){const w=MW();if(w)w.fsiSettings().catch(()=>toast("Ayar ekranı açılamadı, telefon ayarlarında Tam ekran bildirimleri bul"))}
     else if(d.act==="drive")sheetDrive();
     else if(d.act==="bildirimtest")notifTest();
     else if(d.act==="barkod")barkodOku();
