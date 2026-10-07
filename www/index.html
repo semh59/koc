@@ -15,7 +15,7 @@
   --sat:var(--safe-area-inset-top,env(safe-area-inset-top,0px)); --sab:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px));
   --sal:var(--safe-area-inset-left,env(safe-area-inset-left,0px)); --sar:var(--safe-area-inset-right,env(safe-area-inset-right,0px));
   --bg:#f2f4f3; --card:#ffffff; --ink:#10232b; --mut:#56666d; --line:#dfe5e2;
-  --prim:#0f5c55; --prim-ink:#ffffff; --soft:#e7eeeb; --prim-soft:#d7ebe5; --field:#f4f6f5; --fbd:#7d898f;
+  --prim:#0f5c55; --prim-btn:#0f5c55; --prim-ink:#ffffff; --soft:#e7eeeb; --prim-soft:#d7ebe5; --field:#f4f6f5; --fbd:#7d898f;
   --su:#2a86bd; --kcal:#b8691a; --spor:#7d56c8; --warn:#b03a24;
   --spor-ink:#ffffff; --tbg:#10232b; --tfg:#eef2f0; --tact:#7cc4f0;
   --ban-bg:#fbeede; --ban-bd:#ecd0a8; --ban-ink:#4d2f07; --inf-bg:#e8f1f6; --inf-bd:#c3d9e6; --inf-ink:#14425e;
@@ -28,7 +28,7 @@
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
     --bg:#0c1416; --card:#152024; --ink:#e8f0ee; --mut:#92a4aa; --line:#26353b;
-    --prim:#4fc2a8; --prim-ink:#06211c; --soft:#1c2a2f; --prim-soft:#163a34; --field:#101a1d; --fbd:#6c7c82;
+    --prim:#4fc2a8; --prim-btn:#3fa890; --prim-ink:#06211c; --soft:#1c2a2f; --prim-soft:#163a34; --field:#101a1d; --fbd:#6c7c82;
     --su:#5bb4ea; --kcal:#f0a24f; --spor:#a98cec; --warn:#ef7a62;
     --spor-ink:#1a1030; --tbg:#e8f0ee; --tfg:#0e1618; --tact:#14557d;
     --ban-bg:#3a2a14; --ban-bd:#5b4322; --ban-ink:#f3dcb8; --inf-bg:#16303d; --inf-bd:#2a4b5d; --inf-ink:#d5e8f3;
@@ -40,7 +40,7 @@
 :root[data-theme="light"]{color-scheme:light}
 :root[data-theme="dark"]{color-scheme:dark;
     --bg:#0c1416; --card:#152024; --ink:#e8f0ee; --mut:#92a4aa; --line:#26353b;
-    --prim:#4fc2a8; --prim-ink:#06211c; --soft:#1c2a2f; --prim-soft:#163a34; --field:#101a1d; --fbd:#6c7c82;
+    --prim:#4fc2a8; --prim-btn:#3fa890; --prim-ink:#06211c; --soft:#1c2a2f; --prim-soft:#163a34; --field:#101a1d; --fbd:#6c7c82;
     --su:#5bb4ea; --kcal:#f0a24f; --spor:#a98cec; --warn:#ef7a62;
     --spor-ink:#1a1030; --tbg:#e8f0ee; --tfg:#0e1618; --tact:#14557d;
     --ban-bg:#3a2a14; --ban-bd:#5b4322; --ban-ink:#f3dcb8; --inf-bg:#16303d; --inf-bd:#2a4b5d; --inf-ink:#d5e8f3;
@@ -73,24 +73,24 @@ main{flex:1;padding:4px 16px calc(92px + var(--sab))}
 .i{width:1.25em;height:1.25em;vertical-align:-.25em;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 #back .i,#csend .i{width:24px;height:24px;vertical-align:middle}
 
-.stepcard .wv{color:var(--prim)}.stepcard .wv small{font-size:15px;font-weight:600}.stepcard .ws{text-align:right;max-width:60%}
+.stepcard .wv{color:var(--prim)}.stepcard .wv small{font-size:15px;font-weight:600}.stepcard .ws{text-align:right;max-width:60%;font-size:var(--fs-2);font-weight:600;color:var(--ink);line-height:1.3}
 
-.coach{display:block;width:100%;min-height:44px;margin:0 0 12px;padding:4px;text-align:left;color:var(--mut);font-size:var(--fs-2);line-height:1.45}.coach b{color:var(--prim);white-space:nowrap}
-.hrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:-4px 0 12px}.hrow .btn{min-height:44px;padding:8px 10px;font-size:var(--fs-2);background:var(--card);color:var(--ink);box-shadow:var(--sh);border:1px solid var(--card-bd)}.hrow .btn .i{color:var(--mut)}
+.coachc{padding:8px 16px}.coach{display:block;width:100%;min-height:44px;margin:0;padding:0;text-align:left;color:var(--mut);font-size:var(--fs-2);line-height:1.45}.coach b{color:var(--prim);white-space:nowrap}
+.hrow{display:flex;justify-content:flex-end;margin:-4px 0 12px}.hrow .chip{background:var(--card);color:var(--mut);box-shadow:var(--sh);border:1px solid var(--card-bd)}
 .todo .row{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)}.todo .row:first-of-type{border-top:0}.todo .row>span{flex:1;min-width:0;overflow-wrap:anywhere}.todo small.sm{display:block}
 
 .card{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:12px;border:1px solid var(--card-bd);box-shadow:var(--sh)}
-.rings{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center}
+.rings{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:6px;text-align:center;align-items:start}
 .stepcard{all:unset;box-sizing:border-box;display:block;width:100%;cursor:pointer;background:var(--card);border:1px solid var(--card-bd);box-shadow:var(--sh);border-radius:var(--r);padding:16px;margin:0 0 12px;transition:transform var(--dur) var(--ease)}.stepcard:active{transform:scale(.985)}.stepcard:focus-visible{outline:2px solid var(--prim)}.stepcard .row{display:flex;justify-content:space-between;align-items:baseline}.stepcard .big{font-size:28px;font-weight:700;letter-spacing:-.02em}
 .bars text{font-size:11px;fill:var(--mut)}
 .ring{position:relative}
-.ring svg{width:88px;height:88px;display:block;margin:0 auto}
+.ring{--rs:min(84px,22.5vw)}.ring.main{--rs:clamp(104px,31vw,132px)}.ring svg{width:var(--rs);height:var(--rs);display:block;margin:0 auto}
 .ring .rt{fill:none;stroke:var(--soft);stroke-width:7}
 .macro{font-size:var(--fs-s);color:var(--mut);margin:-4px 4px 12px;line-height:1.5}
 .about{display:flex;flex-direction:column;align-items:center;gap:4px;margin:24px 0 8px;font-size:17px}
 .about img{border-radius:22%;box-shadow:var(--sh)}
 .ring .rp{fill:none;stroke-width:7;stroke-linecap:round}
-.ring .rc{position:absolute;left:0;right:0;top:0;height:88px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:18px;line-height:1.1;letter-spacing:-.01em}.ring .rc small{display:block;font-size:11px;font-weight:600;color:var(--mut);letter-spacing:0}
+.ring .rc{position:absolute;left:0;right:0;top:0;height:var(--rs);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:18px;line-height:1.1;letter-spacing:-.01em}.ring .rc small{display:block;font-size:11px;font-weight:600;color:var(--mut);letter-spacing:0}.ring.main .rc{font-size:30px}.ring.main .rc small{font-size:var(--fs-cap)}.ring.main .rl{font-size:var(--fs-1)}.ring.done .rc{color:var(--prim)}.ring.done .rc small{max-width:52px;line-height:1.1}
 .ring .rl{font-weight:600;font-size:14px;margin-top:6px}
 .ring .rs{font-size:var(--fs-cap);color:var(--mut)}
 
@@ -116,7 +116,8 @@ h2{font-size:var(--fs-h2);margin:24px 4px 10px;font-weight:700;letter-spacing:-.
 .dnav button:disabled{opacity:.3;cursor:default}
 .del:active{background:var(--soft)}.log .del{margin:-6px -6px -6px 0}
 .log .gh{padding:12px 4px 4px;justify-content:space-between;font-size:var(--fs-cap);font-weight:600;color:var(--mut);border-bottom:0;text-transform:uppercase;letter-spacing:.04em}.log .gh b{font-weight:700}.log button.tx{text-align:left;min-height:44px;margin:-8px 0}.qrow{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}.qrow .btn{width:auto;flex:1 1 auto;margin:0!important;min-height:44px;padding:8px 14px;font-size:14px;border-radius:99px}.qrow .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}.qrow .btn.ghost .i{color:var(--prim)}
-.hint{color:var(--mut);font-size:var(--fs-s);line-height:1.5;padding:6px 4px 2px}
+.hint{color:var(--mut);font-size:var(--fs-s);line-height:1.5;padding:6px 4px 2px}.more summary{display:flex;align-items:center;min-height:44px;color:var(--prim);font-weight:600;cursor:pointer}
+.dd7{display:flex;justify-content:space-between}.dd{display:grid;justify-items:center;gap:4px}.dd i{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;border:2px solid var(--line);font-style:normal;font-weight:700;font-size:var(--fs-2)}.dd .ok{background:var(--prim);border-color:var(--prim);color:var(--prim-ink)}.dd .miss{border-color:var(--warn);color:var(--warn)}.dd .late,.dd .part{border-color:var(--mut);color:var(--mut)}.dd small{font-size:var(--fs-cap);color:var(--mut)}
 
 /* Trend */
 .seg{display:inline-flex;background:var(--soft);border-radius:999px;padding:3px;margin:2px 0 10px}
@@ -139,12 +140,12 @@ td.today,th.today{font-weight:700}
 
 /* Koç */
 #composer{position:fixed;left:var(--sal);right:var(--sar);bottom:calc(68px + var(--sab));z-index:6;background:var(--bg);padding:6px 12px 8px;max-width:520px;margin:0 auto}
-#composer[hidden]{display:none}body.kb nav,body.kb .chiprow{display:none}body.kb #composer{bottom:var(--kb,0px)}body.kb #sheet{bottom:var(--kb,0px);max-height:calc(var(--vh) - 8px);padding-bottom:18px}
+#composer[hidden]{display:none}body.kb nav,body.kb .chiprow{display:none}body.kb #composer{bottom:var(--kb,0px)}body.kb #sheet{bottom:var(--kb,0px);max-height:calc(var(--vh) - 8px);padding-bottom:18px}body.kb #sheet .plist{max-height:none;overflow:visible}
 .chiprow{display:flex;gap:6px;margin-bottom:8px;overflow:hidden}.chiprow .chip{flex:1 1 auto;min-height:44px;padding:0 8px;font-size:13.5px;background:var(--card);box-shadow:var(--sh);border:1px solid var(--card-bd)}.chiprow .chip .i{color:var(--mut)}
 .cin{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);box-shadow:var(--sh);border-radius:26px;padding:0 4px 0 16px;min-height:52px}.cin:focus-within{border-color:var(--prim)}
 .cin input{align-self:stretch;flex:1;min-width:0;border:0;outline:0;background:none;font-size:16px}
 #csend{width:44px;height:44px;border-radius:50%;background:var(--prim);color:var(--prim-ink);font-size:18px}
-body.koc main{padding-bottom:calc(200px + var(--sab))}
+body.koc main{padding-bottom:var(--cmp,calc(200px + var(--sab)))}.chips.cbar{position:sticky;top:var(--sat);z-index:4;background:var(--bg);padding:6px 0;margin:-6px 0 0}
 body.koc #toast{bottom:calc(150px + var(--sab))}
 .chat{display:flex;flex-direction:column;gap:12px}
 .ub{align-self:flex-end;max-width:84%;background:var(--prim);color:var(--prim-ink);border-radius:18px 18px 6px 18px;padding:10px 14px;overflow-wrap:anywhere;white-space:pre-wrap}
@@ -163,9 +164,9 @@ body.koc #toast{bottom:calc(150px + var(--sab))}
 .lrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
 .kin{width:72px;height:44px;text-align:right;border:1px solid var(--mut);border-radius:var(--r-xs);background:var(--field);padding:0 8px}
 .lbtns{display:flex;gap:8px;margin-top:10px}.lbtns .btn{padding:12px}
-.chkrow{display:flex;align-items:center;gap:10px;min-height:44px;font-size:15px}.chkrow input{width:22px;height:22px}
+.chkrow{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:48px;font-size:15px}.chkrow .nm{flex:1;min-width:0}.chkrow small{display:block;color:var(--mut);font-size:var(--fs-s)}
 /* Salon */
-.mut{color:var(--mut)}.sm{font-size:var(--fs-s);display:block;line-height:1.4}
+.bg2,.bgL,.bgR{display:contents}.mut{color:var(--mut)}.sm{font-size:var(--fs-s);display:block;line-height:1.4}
 .trow{display:flex;align-items:center;gap:6px;padding:6px 6px 6px 14px}
 .tmain{flex:1;text-align:left;display:grid;gap:1px;min-height:44px;padding:4px 0}
 .tmain .mut{font-size:var(--fs-s)}
@@ -217,7 +218,7 @@ body.koc #toast{bottom:calc(150px + var(--sab))}
 .ok.on{background:var(--spor);border-color:var(--spor);color:var(--spor-ink)}
 .lnk{display:block;width:100%;min-height:44px;color:var(--prim);font-weight:600;font-size:var(--fs-2);border-radius:var(--r-s)}.lnk:active{background:var(--soft)}.lnk.dng{color:var(--warn);margin-top:6px}
 .prow{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:56px;padding:8px 4px;border-top:1px solid var(--line);text-align:left;transition:background var(--dur)}.prow:active,.rrow:active{background:var(--soft)}button.prow .sm{margin-top:1px}
-.prow.off b,.prow.off .aic{color:var(--mut)}.prow.dng,.prow.dng .aic{color:var(--warn)}.aic{color:var(--prim)}.aic .i{width:24px;height:24px}.card>.prow:first-child{border-top:0}.prow b{display:block;font-weight:600}.plus{font-size:24px;color:var(--mut);width:44px;min-height:44px;text-align:center}
+.prow.off b,.prow.off .aic{color:var(--mut)}.prow.dng,.prow.dng .aic{color:var(--warn)}.aic{color:var(--prim)}.aic .i{width:24px;height:24px}.card>.prow:first-child{border-top:0}.prow b{display:block;font-weight:600}.plus{font-size:24px;color:var(--mut);width:44px;min-height:44px;text-align:center}.plus .i{width:22px;height:22px}
 .tag{font-size:var(--fs-s);font-weight:600;background:var(--prim-soft);border-radius:99px;padding:3px 10px;white-space:nowrap}
 .card:has(>.prow:first-child){padding-top:4px;padding-bottom:4px}
 .plist{max-height:42vh;overflow:auto;margin-bottom:8px}
@@ -244,7 +245,7 @@ body.koc #toast{bottom:calc(150px + var(--sab))}
 .sw input:checked+span::after{transform:translateX(18px)}
 .sw input:focus-visible+span{outline:2px solid var(--prim);outline-offset:2px}
 /* Düğme hiyerarşisi: .btn birincil (ekranda bir tane), .btn.ghost ikincil (tonlu), .btn.danger yıkıcı, .lnk metin düğmesi. */
-.btn{background:var(--prim);color:var(--prim-ink);border-radius:var(--r-s);padding:12px 18px;min-height:48px;font-weight:600;width:100%;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-align:center;transition:transform var(--dur) var(--ease),filter var(--dur)}
+.btn{background:var(--prim-btn);color:var(--prim-ink);border-radius:var(--r-s);padding:12px 18px;min-height:48px;font-weight:600;width:100%;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-align:center;transition:transform var(--dur) var(--ease),filter var(--dur)}
 .btn:active,.chip:active,.seg2 button:active{transform:scale(.97)}.btn:active{filter:brightness(.94)}.btn:disabled{opacity:.45;cursor:default;transform:none}
 .btn.ghost{background:var(--soft);color:var(--prim)}
 .btn.danger{background:transparent;color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 35%,var(--card))}
@@ -267,7 +268,7 @@ nav button[aria-current="page"]{color:var(--prim)}nav button[aria-current="page"
 #scrim.on{opacity:1;pointer-events:auto}
 #sheet{position:fixed;left:0;right:0;bottom:0;z-index:11;background:var(--card);border-radius:24px 24px 0 0;padding:10px 18px calc(18px + var(--sab));transform:translateY(105%);visibility:hidden;transition:transform .22s cubic-bezier(.2,.8,.2,1),visibility 0s .22s;max-width:520px;margin:0 auto;max-height:88vh;overflow:auto}
 #sheet.on{transform:none;visibility:visible;transition:transform .22s cubic-bezier(.2,.8,.2,1),visibility 0s}
-#sheet .grab{width:38px;height:4px;border-radius:9px;background:var(--line);margin:0 auto 12px}
+#sheet:focus,#sheet h3:focus{outline:none}.inl{display:flex;align-items:center;gap:12px}.inl .lbl{margin:0 0 10px}.inl select{flex:1;min-width:0}#sheet .grab{width:38px;height:4px;border-radius:9px;background:var(--line);margin:0 auto 12px}
 #sheet h3{margin:0 0 14px;font-size:20px;font-weight:700;letter-spacing:-.01em}
 /* Tek giriş alanı stili (arama kutuları dahil). nav içindeki .in kapsayıcıdır, bu yüzden yalnız form öğeleri. */
 input.in,select.in,textarea.in{width:100%;background:var(--field);border:1px solid var(--fbd);border-radius:var(--r-s);padding:12px 14px;font-size:var(--fs-1);margin-bottom:10px;transition:border-color var(--dur),box-shadow var(--dur)}
@@ -280,8 +281,8 @@ input.in[type=search]::-webkit-search-decoration{display:none}
 #sheet .two,#guide .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
 .chip{background:var(--soft);border-radius:99px;padding:8px 14px;min-height:44px;min-width:44px;font-size:14px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:background var(--dur),color var(--dur),transform var(--dur) var(--ease)}
-.chip[aria-pressed="true"]{background:var(--prim);color:var(--prim-ink)}
-.lbl{font-size:var(--fs-s);font-weight:600;color:var(--mut);margin:4px 2px 6px}
+.chip[aria-pressed="true"]{background:var(--prim);color:var(--prim-ink)}#fml{gap:6px}#fml .chip{padding:8px 10px;min-width:0}
+.lbl{display:block;font-size:var(--fs-s);font-weight:600;color:var(--mut);margin:4px 2px 6px}
 .kstep{display:flex;gap:8px;align-items:center;margin-bottom:10px}#sheet .kstep .in{flex:1;text-align:center;margin:0}.kstep .chip{min-width:64px;min-height:50px}
 .ferr{color:var(--warn);font-size:14px;margin:-4px 2px 10px}.ferr:empty{display:none}
 select.in{appearance:none;padding-right:40px;background:var(--field) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237b8a90' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center/20px}
@@ -299,8 +300,9 @@ input.in,select.in,.chip>button{min-height:44px}
   nav button{flex-direction:row;gap:2px;height:44px}nav button .ic{width:auto;padding:4px 6px}
   main{padding-bottom:calc(60px + var(--sab))}
   #composer{bottom:calc(50px + var(--sab));padding-top:2px;padding-bottom:4px}.cin{min-height:44px}.chiprow{margin-bottom:4px}
-  #composer .chiprow{display:none}body.koc main{padding-bottom:calc(112px + var(--sab))}body.koc #toast{bottom:calc(112px + var(--sab))}
+  #composer .chiprow{display:none}body.koc #toast{bottom:calc(112px + var(--sab))}
   #toast{bottom:calc(58px + var(--sab))}
+  body.bg #app{max-width:none}body.bg .bg2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 16px;align-items:start}body.bg .bgL,body.bg .bgR{display:block;min-width:0}body.bg .actions{max-width:calc(50% - 8px)}
   #sheet{max-height:calc(100vh - 8px - var(--sat));max-height:calc(100dvh - 8px - var(--sat))}.plist{max-height:30vh}
   /* Rehberli mod: tam genişlik, 100dvh'ye sığar; solda hareket, sağda sayaç ve düğmeler (sağ sütun kayar). */
   #guide{max-width:none;margin:0;height:100vh;height:100dvh;padding-top:calc(2px + var(--sat));padding-bottom:calc(4px + var(--sab))}
@@ -327,12 +329,12 @@ input.in,select.in,.chip>button{min-height:44px}
   <button data-tab="koc"><span class="ic" data-ic="koc"></span>Koç</button>
   <button data-tab="daha"><span class="ic" data-ic="daha"></span>Daha fazla</button>
 </div></nav>
-<div id="composer" hidden>
-  <div class="chiprow"><button class="chip" data-act="su"><span data-ic="su"></span> +250</button><button class="chip" data-act="kilo"><span data-ic="kilo"></span> Kilo</button><button class="chip" data-act="yemek"><span data-ic="yemek"></span> Yemek</button><button class="chip" data-tab="salon"><span data-ic="spor"></span> Spor</button></div>
+<div id="composer" hidden role="region" aria-label="Koça yaz">
+  <div class="chiprow"><button class="chip" data-act="su"><span data-ic="su"></span> +250</button><button class="chip" data-act="yemek"><span data-ic="yemek"></span> Yemek</button><button class="chip" data-act="kilo"><span data-ic="kilo"></span> Kilo</button><button class="chip" data-act="spor"><span data-ic="spor"></span> Spor</button></div>
   <div class="cin"><input id="cmsg" aria-label="Koça yaz" placeholder="Koça yaz" autocomplete="off" maxlength="600"><button id="csend" data-c="send" aria-label="Gönder" data-ic="send"></button></div>
 </div>
 <div id="scrim"></div>
-<div id="sheet" role="dialog" aria-modal="true"></div>
+<div id="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
 <div id="guide" role="dialog" aria-modal="true" aria-label="Rehberli antrenman" hidden></div>
 <div id="toast" role="status"><span id="tmsg"></span><button id="tundo" hidden>Geri al</button></div>
 
@@ -673,9 +675,10 @@ function coach(){
 }
 
 /* ---------- bileşenler ---------- */
-function ring(p,color,center,label,sub,unit){
-  const r=34,c=2*Math.PI*r,f=Math.min(Math.max(p,0),1);
-  return `<div class="ring"><svg viewBox="0 0 84 84" aria-hidden="true"><circle class="rt" cx="42" cy="42" r="${r}"/>${f>0?`<circle class="rp" cx="42" cy="42" r="${r}" stroke="${color}" stroke-dasharray="${(c*f).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 42 42)"/>`:""}</svg><div class="rc num">${center}<small>${unit}</small></div><div class="rl">${label}</div><div class="rs num">${sub}</div></div>`;
+/* Yuvarlak uçlu halka %93'te kapalı görünür: bitmeden dolu sanılmasın diye tamamlanmayan halka en çok %92 çizilir. */
+function ring(p,color,center,label,sub,unit,cls=""){
+  const r=34,c=2*Math.PI*r,f=p>=1?1:Math.min(Math.max(p,0),.92);
+  return `<div class="ring ${cls}"><svg viewBox="0 0 84 84" aria-hidden="true"><circle class="rt" cx="42" cy="42" r="${r}"/>${f>0?`<circle class="rp" cx="42" cy="42" r="${r}" style="stroke:${color}" stroke-dasharray="${(c*f).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 42 42)"/>`:""}</svg><div class="rc num">${center}<small>${unit}</small></div><div class="rl">${label}</div><div class="rs num">${sub}</div></div>`;
 }
 function trendSeries(N){
   const keys=[];for(let i=N-1;i>=0;i--)keys.push(keyOff(-i));
@@ -740,13 +743,13 @@ function viewBugun(){
   const kgl=kcalGoal(t),kcP=kgl>0?kc/kgl:0;
   const sOn=S.settings.stepsOn&&isNative();
   /* Halka ortası kalanı gösterir; yapılan / hedef altta birimle. */
-  const left=(v,g,u)=>v<g?[null,`${u} kaldı`]:["✓","tamam"];
+  const left=(v,g,u)=>v<g?[null,`${u} kaldı`]:["✓","Hedef tamam"];
   const [suC,suU]=left(su,sh,"L"),[spC,spU]=left(sw,st.sportWeek,"dk");
   const kcC=kgl>0?Math.round(Math.abs(kgl-kc)):Math.round(kc),kcU=kgl>0?(kc>kgl?"kcal fazla":"kcal kaldı"):"kcal";
   const rings=`<div class="card"><div class="rings">
-    ${ring(kcP,"var(--kcal)",kcC,"Kalori",kgl>0?`${Math.round(kc)} / ${kgl} kcal`:"hedef yok",kcU)}
-    ${ring(su/sh,"var(--su)",suC||fmt((sh-su)/1000,1),"Su",`${fmt(su/1000,1)} / ${fmt(sh/1000,1)} L`,suU)}
-    ${ring(sw/st.sportWeek,"var(--spor)",spC||Math.round(st.sportWeek-sw),"Spor · 7 gün",`${Math.round(sw)} / ${st.sportWeek} dk`,spU)}
+    ${ring(kcP,"var(--kcal)",kcC,"Kalori",kgl>0?`${Math.round(kc)} / ${kgl} kcal`:"hedef yok",kcU,"main")}
+    ${ring(su/sh,"var(--su)",suC||fmt((sh-su)/1000,1),"Su",`${fmt(su/1000,1)} / ${fmt(sh/1000,1)} L`,suU,suC?"done":"")}
+    ${ring(sw/st.sportWeek,"color-mix(in srgb,var(--spor) 80%,var(--card))",spC||Math.round(st.sportWeek-sw),"Spor · 7 gün",`${Math.round(sw)} / ${st.sportWeek} dk`,spU,spC?"done":"")}
   </div>${moveAdd(t)?`<p class="hint" style="padding:6px 0 0">Hedefe hareketten +${moveAdd(t)} kcal eklendi (kayıtlı antrenman ve yürüyüşün yarısı, tahmindir).</p>`:""}</div>`;
   const meals=S.entries.filter(e=>e.type==="yemek"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
   const pr=cur!=null?Algo.protein(riskInput(cur)):{};
@@ -783,16 +786,17 @@ function viewBugun(){
     isNative()&&!exactOk&&st.medOn&&S.meds.length?row("clock","İlaç alarmı birkaç dakika gecikebilir","Tam saat alarm izni kapalı. İzin verirsen tam saatinde çalar.",[["tamalarm","İzin ver"]]):"",
     isNative()&&oemXiaomi()&&!st.oemDone?row("bell","Hatırlatmalar için bir kez ayar gerekli","İki izin verince hatırlatmalar kaçmaz.",[["oem","Ayarla"]]):"",
     isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?row("adim","Adım sayarı aç","Telefonun sensörü sayar, hesap gerekmez.",[["adimac","Aç"],["adimdegil","Şimdi değil"]]):"",
-    S.entries.length>=10&&(old==null||old>14)?row("cloud","Yedek zamanı",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Gönder"]]):""].filter(Boolean);
+    S.entries.length>=10&&(old==null||old>14)?row("cloud","Verilerini yedekle",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Yedekle"]]):""].filter(Boolean);
   const todoCard=todo.length?`<div class="card todo"><div class="lbl">Bugün yapılacaklar</div>${todo.join("")}</div>`:"";
   const minor=S.settings.age>0&&S.settings.age<18?`<div class="banner"><b>NeoWell 18 yaş ve üzeri için</b><p>Profilindeki yaş 18'in altında. Kalori açığı, oruç önerisi ve Koç kapalı. Beslenme ve kilo konusunda bir yetişkinle ve hekiminle ya da diyetisyeninle konuş. Yaş yanlışsa Ayarlar > Profil'den düzelt.</p></div>`:"";
-  return `${actions}${minor}${habitRow()}${rings}${macro}${macroNote}${micro}${sOn?stepCard():""}${todoCard}${gTodayCard()}${weight}<button class="lnk" data-ms="open">Vücut ölçüsü ekle</button><button class="coach" data-tab="koc">${esc(coach())} <b>Koç ›</b></button>${hasKey()?`<div class="btns">${cCommentBtn("plan")}</div>`:""}${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div>`;
+  /* .bg2 dik ekranda görünmez; telefon yatayında sol sütun halkalar ve özet, sağ sütun yapılacaklar ve kayıtlar. */
+  return `${actions}<div class="bg2"><div class="bgL">${minor}${rings}${habitRow()}${macro}${macroNote}${micro}${sOn?stepCard():""}</div><div class="bgR">${todoCard}${gTodayCard()}${weight}<div class="card coachc"><button class="coach" data-tab="koc">${esc(coach())} <b>Koç ›</b></button></div>${hasKey()?`<div class="btns">${cCommentBtn("plan")}</div>`:""}${dnav}<div class="card">${log}${items.some(e=>e.type==="yemek")?`<button class="lnk" data-act="tplyeni">Bu günün yemeklerinden şablon yap</button>`:""}</div></div></div>`;
 }
 
 /* PDF raporlar tek yerde; paylaşım işleyicileri belgede dinlediği için ekrandan bağımsız çalışır. */
-function reportsCard(){
+function reportRows(){
   const st=S.settings,r=(a,ic,t,sub)=>navRow(a,ic,t,sub);
-  return `<h2>Raporlar</h2><div class="card">${r('data-wk="pdf"',"share","Son 7 gün raporu","Bugün dahil 7 gün, PDF")}${st.bpOn?r('data-vt="pdfmenu:t"',"heart","Tansiyon doktor raporu","Dönem seç, PDF"):""}${st.bsOn?r('data-vt="pdfmenu:s"',"su","Şeker doktor raporu","Dönem seç, PDF"):""}${LabLib.series(S.labs).length?r('data-lab="pdf"',"file","Tahlil raporu","Tüm sonuçlar, PDF"):""}</div>`;
+  return `${r('data-wk="pdf"',"share","Son 7 gün raporu","Bugün dahil 7 gün, PDF")}${st.bpOn?r('data-vt="pdfmenu:t"',"heart","Tansiyon doktor raporu","Dönem seç, PDF"):""}${st.bsOn?r('data-vt="pdfmenu:s"',"su","Şeker doktor raporu","Dönem seç, PDF"):""}${LabLib.series(S.labs).length?r('data-lab="pdf"',"file","Tahlil raporu","Tüm sonuçlar, PDF"):""}`;
 }
 function viewTrend(){
   const t=dayKey(),st=S.settings;
@@ -807,13 +811,13 @@ function viewTrend(){
     const eta=gi&&!gi.done&&!(gi.dir<0&&risk(cur).block)?ge.weeks:null;
     stats=`<div class="stats">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1].replace(/ (kg\/hafta|kg)$/," <small>$1</small>")}</div></div>`).join("")}</div>${eta?`<p class="hint" style="padding:8px 0 0">Son 3 haftanın eğimi sürerse ~${eta} hafta.</p>`:""}`;
   }
-  let rows="",hasWeek=false;
+  let rows="",hasWeek=false;const hasSteps=st.stepsOn||sum("adim",keyOff(-6),t)>0;
   for(let i=6;i>=0;i--){
     const d=addDays(-i),k=dayKey(d),w=weights(k,k)[k],su=sum("su",k,k),kc=sum("yemek",k,k),sp=sum("spor",k,k),as=sum("adim",k,k);
     if(w!=null||su||kc||sp||as)hasWeek=true;
-    rows+=`<tr><td class="${i==0?"today":""}">${GUNK[d.getDay()]} ${d.getDate()}</td><td class="num">${w!=null?fmt(w):"–"}</td><td class="num">${su?fmt(su/1000,1):"–"}</td><td class="num">${kc?Math.round(kc):"–"}</td><td class="num">${sp?Math.round(sp):"–"}</td><td class="num">${as?Math.round(as).toLocaleString("tr-TR"):"–"}</td></tr>`;
+    rows+=`<tr><td class="${i==0?"today":""}">${GUNK[d.getDay()]} ${d.getDate()}</td><td class="num">${w!=null?fmt(w):"–"}</td><td class="num">${su?fmt(su/1000,1):"–"}</td><td class="num">${kc?Math.round(kc):"–"}</td><td class="num">${sp?Math.round(sp):"–"}</td>${hasSteps?`<td class="num">${as?Math.round(as).toLocaleString("tr-TR"):"–"}</td>`:""}</tr>`;
   }
-  const sw=sum("spor",keyOff(-6),t),pct=Math.min(sw/st.sportWeek,1)*100;
+  const sw=sum("spor",keyOff(-6),t);
   const sd=new Set(S.entries.filter(e=>e.type==="spor"&&e.day>=keyOff(-6)).map(e=>e.day)).size;
   const empty=`<div class="card empty"><b>İlk tartını ekle</b><p class="mut sm">Grafik ikinci tartıdan sonra çizilir. Su, yemek, spor ve adımların da burada haftalık tabloda görünür.</p><button class="btn" data-act="kilo">${Icons.svg("kilo")} Kilo ekle</button></div>`;
   return `${days.length?`<div class="seg" role="group" aria-label="Aralık"><button data-range="30" aria-pressed="${range==30}">30 gün</button><button data-range="90" aria-pressed="${range==90}">90 gün</button></div>
@@ -822,11 +826,8 @@ function viewTrend(){
   ${lossAsk()?`<div class="btns"><button class="btn ghost" data-c="why">Bu hafta neden kilo vermedim?</button></div>`:""}
   ${gEnergy()}
   ${measureCard()}
-  ${hasWeek?`<h2>Son 7 gün</h2><div class="card"><table><thead><tr><th>Gün</th><th>Kilo</th><th>Su (L)</th><th>kcal</th><th>Spor (dk)</th><th>Adım</th></tr></thead><tbody>${rows}</tbody></table></div>`:""}
-  ${vTrendCards()}
-  <h2>Tahlil</h2>${labTrendCard()}
-  <h2>Spor, son 7 gün</h2><div class="card"><div class="num"><b>${Math.round(sw)}</b> / ${st.sportWeek} dk, ${sd} gün aktif</div><div class="bar"><i style="width:${pct.toFixed(0)}%"></i></div></div>
-  ${reportsCard()}`;
+  ${hasWeek?`<h2>Son 7 gün</h2><div class="card"><table><thead><tr><th>Gün</th><th>Kilo</th><th>Su (L)</th><th>kcal</th><th>Spor (dk)</th>${hasSteps?"<th>Adım</th>":""}</tr></thead><tbody>${rows}</tbody></table></div>`:""}
+  <h2>Daha fazla ölçüm</h2><div class="card">${vTrendCards()}${labTrendCard()}${navRow('data-tab="salon"',"spor","Haftalık spor",`${Math.round(sw)} / ${st.sportWeek} dk, ${sd} gün aktif`)}${reportRows()}</div>`;
 }
 
 let notifStatus="";
@@ -835,6 +836,8 @@ const segb=(attr,opts,sel)=>`<div class="seg2" role="group">${opts.map(([v,l])=>
 /* Kapalı modülün hatırlatması listede görünmez. */
 const remShown=r=>{const st=S.settings;return !((r.id===7||r.id===8)&&!st.bpOn)&&!(r.id===9&&!st.bsOn)&&!(r.id===11&&!st.fastOn)};
 /* Liste satırı: Daha fazla, Ayarlar, Salon ve Veri ekranlarının ortak satırı. */
+/* Onay satırı: etiket ve anahtar tek 48 px'lik dokunma alanı. */
+const swRow=(attrs,on,label,sub="")=>`<label class="chkrow"><span class="nm">${label}${sub?`<small>${sub}</small>`:""}</span><span class="sw"><input type="checkbox" ${attrs}${on?" checked":""}><span></span></span></label>`;
 const navRow=(attr,ic,t,sub,cls="")=>`<button class="prow${cls}" ${attr}><span class="aic">${Icons.svg(ic)}</span><span style="flex:1;min-width:0"><b>${t}</b>${sub?`<span class="mut sm">${sub}</span>`:""}</span><span class="plus" aria-hidden="true">›</span></button>`;
 const AYAR=[["profil","Profil ve hedefler","user"],["modul","Modüller","grid"],["hatir","Hatırlatmalar","bell"],["koc","Koç","koc"],["veri","Veri ve yedek","data"],["hak","Hakkında","info"]];
 /* Alt ekranın üst ekranı: başlıktaki ‹, Android ve tarayıcı geri tuşu buna döner. */
@@ -842,6 +845,8 @@ const PARENT={adim:"bugun",tahlil:"trend",tansiyon:"trend",seker:"trend",egz:"sa
 /* Bir alt ekran başka bir sekmeden açıldıysa (Bugün'den İlaç, Daha fazla'dan Adım) ‹ ve etkin sekme oraya döner; derin bağlantıda sabit üst ekran geçerli. */
 const UP=t=>via&&via.t===t?via.p:PARENT[t];
 const topTab=t=>{for(let p;(p=UP(t));)t=p;return t};
+/* Etkin sekme: İlaç, Adım ve Ayarlar hangi ekrandan açılırsa açılsın Daha fazla'da durur; ‹ ise açıldığı yere döner. */
+const navTab=()=>/^(ilac|adim|ayar)/.test(tab)?"daha":topTab(tab);
 const DAHA=[["data-tab=\"ilac\"","İlaçlar","ilac","medOn","İlaç saatleri ve bugünkü dozlar"],["data-tab=\"adim\"","Adım raporu","adim","stepsOn","Günlük adım ve yürüyüş"],["data-tab=\"tahlil\"","Tahlil takibi","file",0,"Sonuçlar ve değişim"],["data-tab=\"tansiyon\"","Tansiyon","heart","bpOn","Ev ölçümleri ve ortalama"],["data-tab=\"seker\"","Şeker","su","bsOn","Ölçümler ve ortalama"],["data-tab=\"egz\"","Egzersiz kütüphanesi","salon",0,"Hareketler, kaslar, ekipman"],["data-tab=\"ayar\"","Ayarlar","ayar",0,"Profil, modüller, hatırlatmalar, yedek"],["data-pv=\"open\"","Gizlilik ve veri","lock",0,"Verilerin nerede durduğu"],["data-tab=\"ayar-hak\"","Hakkında","info",0,"NeoWell ve tıbbi uyarı"]];
 function viewDaha(){
   const st=S.settings,ic=n=>`<span class="aic">${Icons.svg(n)}</span>`;
@@ -870,17 +875,14 @@ function viewAyar(){
     ${fld("glass","Bir bardak (ml)",st.glass,"Su düğmesinin eklediği miktar","numeric")}
     ${fld("sportWeek","Haftalık spor (dk)",st.sportWeek,"","numeric")}
     ${fld("stepGoal","Günlük adım",st.stepGoal,"Adım sayar açıksa","numeric")}
-    <label style="min-height:44px;display:flex;gap:8px;align-items:center;margin-top:8px"><input type="checkbox" data-mk ${st.moveKcalOn?"checked":""} style="width:22px;height:22px">Hareket kalorisini hedefe ekle</label>
+    ${swRow("data-mk",st.moveKcalOn,"Hareket kalorisini hedefe ekle")}
     <p class="hint">Açıkken günlük kalori hedefine, kayıtlı antrenman, yürüyüş ve koşuların tahmini enerjisinin %50'si eklenir. Adımlar sayılmaz: hareket düzeyin ve kilo trendin günlük adımı zaten içerir, bu yüzden yarısı eklenir; yine de tahmin hatalıdır ve fazla yemene yol açabilir. Hedefi yalnız artırır, azaltmaz. Kilo vermek istiyorsan kapalı bırakman daha güvenlidir.</p>
   </div>`;
   if(sub==="modul")return `${medSettingsHtml()}
   ${fastSettingsHtml()}
   ${isNative()&&SC()?`<h2>Adım sayar</h2><div class="card"><button class="btn ghost" data-act="${st.stepsOn?"adimkapat":"adimac"}">${st.stepsOn?"Adım sayarı kapat":"Adım sayarı aç"}</button></div>`:""}
   ${motionSettingsHtml()}
-  <h2>Salon</h2><div class="card"><label style="min-height:44px;display:flex;gap:8px;align-items:center"><input type="checkbox" data-aw ${st.awakeOn?"checked":""} style="width:22px;height:22px">Antrenmanda ekranı açık tut</label>
-  <label style="min-height:44px;display:flex;gap:8px;align-items:center"><input type="checkbox" data-rpe ${st.rpeOn?"checked":""} style="width:22px;height:22px">Zorluk (RPE) alanı</label>
-  <label style="min-height:44px;display:flex;gap:8px;align-items:center"><input type="checkbox" data-gdv ${st.gdVoice?"checked":""} style="width:22px;height:22px">Rehberli modda sesli komut</label>
-  <label style="min-height:44px;display:flex;gap:8px;align-items:center"><input type="checkbox" data-gdb ${st.gdVib?"checked":""} style="width:22px;height:22px">Rehberli modda titreşim</label><p class="hint">Sesli komut telefonun metin okuma (TTS) sesiyle çalışır; Türkçe ses yoksa telefonun varsayılan dili kullanılır, ses hiç yoksa sessiz devam eder. Müzik çalarken kısa süre kısılır.</p><p class="hint">Set satırına isteğe bağlı 6-10 zorluk alanı ekler (10 en zor). Yalnız kayıt içindir, önerileri ve hesapları değiştirmez.</p><p class="hint">Antrenman sürerken Salon açıkken ekran kararmaz. Başka sekmeye geçince, uygulamadan çıkınca ya da antrenman bitince normale döner.</p>${gGearHtml()}</div>
+  <h2>Salon</h2><div class="card">${swRow("data-aw",st.awakeOn,"Antrenmanda ekranı açık tut")}${swRow("data-rpe",st.rpeOn,"Zorluk (RPE) alanı")}${swRow("data-gdv",st.gdVoice,"Rehberli modda sesli komut")}${swRow("data-gdb",st.gdVib,"Rehberli modda titreşim")}<p class="hint">Sesli komut telefonun metin okuma (TTS) sesiyle çalışır; Türkçe ses yoksa telefonun varsayılan dili kullanılır, ses hiç yoksa sessiz devam eder. Müzik çalarken kısa süre kısılır.</p><p class="hint">Set satırına isteğe bağlı 6-10 zorluk alanı ekler (10 en zor). Yalnız kayıt içindir, önerileri ve hesapları değiştirmez.</p><p class="hint">Antrenman sürerken Salon açıkken ekran kararmaz. Başka sekmeye geçince, uygulamadan çıkınca ya da antrenman bitince normale döner.</p>${gGearHtml()}</div>
   ${vitalsSettingsHtml()}`;
   if(sub==="koc")return viewProviders();
   if(sub==="hatir"){
@@ -891,7 +893,7 @@ function viewAyar(){
   }
   if(sub==="veri")return `<button class="btn" data-act="drive">${Icons.svg("cloud")} Yedeği Drive'a gönder</button>
     <div class="card" style="margin-top:12px">${navRow('data-act="yedek"',"save","Yedekle veya geri yükle","Şifreli yedek dosyası oluştur ya da yükle")}${navRow('data-pv="csv"',"file","Tabloya aktar (CSV)","Excel ya da Sheets'te açılır")}${navRow('data-imp="open"',"salon","Antrenman geçmişini içe aktar","Başka bir uygulamadan dışa aktardığın dosya")}${navRow('data-pv="open"',"lock","Gizlilik ve veri","Verilerin nerede durduğu")}${navRow('data-act="sifirla"',"trash","Tüm verileri sil","Geri alınamaz","  dng")}</div>
-    <div class="card">${storeMsg()?`<p class="status" role="alert"><b>${storeMsg()[0]}.</b> ${storeMsg()[1]}</p>`:""}${loadNote?`<p class="status" role="status">${esc(loadNote)}</p>`:""}${COPIES.filter(([k])=>lsGet(k)!=null).map(([k,n])=>`<div class="row" style="display:flex;align-items:center;gap:8px;padding:6px 0"><span style="flex:1;min-width:0"><b>${n}</b><small class="mut sm" style="display:block">${fmt(lsGet(k).length*2/1e6)} MB</small></span><button class="chip" data-act="kopya:${k}">Dışa aktar</button><button class="chip" data-act="kopyasil:${k}">Sil</button></div>`).join("")}<p class="hint">Kullanılan alan: yaklaşık ${fmt(storeBytes/1e6)} MB (sınır telefona göre 5-10 MB).</p>
+    <div class="card">${storeMsg()?`<p class="status" role="alert"><b>${storeMsg()[0]}.</b> ${storeMsg()[1]}</p>`:""}${loadNote?`<p class="status" role="status">${esc(loadNote)}</p>`:""}${COPIES.filter(([k])=>lsGet(k)!=null).map(([k,n])=>`<div class="row" style="display:flex;align-items:center;gap:8px;padding:6px 0"><span style="flex:1;min-width:0"><b>${n}</b><small class="mut sm" style="display:block">${fmt(lsGet(k).length*2/1e6)} MB</small></span><button class="chip" data-act="kopya:${k}">Dışa aktar</button><button class="chip" data-act="kopyasil:${k}">Sil</button></div>`).join("")}<p class="hint">${storeMsg()?`Kullanılan alan: yaklaşık ${fmt(storeBytes/1e6)} MB, sınır telefona göre 5-10 MB.`:"Alan yeterli."}</p>
     <p class="hint">Veriler yalnızca bu telefonda durur. Google otomatik yedeğine ve telefondan telefona aktarıma bilerek dahil edilmez. Uygulamayı silersen ya da telefon değiştirirsen kaybolur; yeni telefona geçmeden önce yedek dosyanı al.</p></div>${abHtml()}`;
   return `<div class="about"><img src="logo.png" alt="NeoWell logosu" width="72" height="72"><b>NeoWell</b><span class="mut sm">Sağlığın yeni kaynağı</span><p class="hint" style="text-align:center">${MED_NOTE}</p></div><div class="card"><b>Besin verisi kaynakları</b><p class="hint">Genel besinlerin değerleri ABD Tarım Bakanlığı FoodData Central (SR Legacy) verisidir, CC0 kamu malı: fdc.nal.usda.gov. Türk ev yemekleri bu değerlerden tarifle hesaplanmış tahminlerdir. Sucuk, pastırma, hellim ve karşılaştırma değerlerinde Fransa ANSES Ciqual 2025 tablosu (Etalab Açık Lisans 2.0, ciqual.anses.fr) ile İngiltere McCance and Widdowson CoFID 2021 verisi (Public Health England, Open Government Licence v3.0, gov.uk) kullanıldı; her vekil kayıt kendi notunda belirtilir. Barkoddan gelen ürünler Open Food Facts verisini içerir, Open Database License (ODbL) ile sunulur: world.openfoodfacts.org. Tablo ve paket etiketi değerleri yaklaşık olup ±%20 sapabilir.</p></div>`;
 }
@@ -907,13 +909,13 @@ function render(){
   if(sb&&render.sb!==st){render.sb=st;sb.setStyle({style:st}).catch(()=>{})}
   document.body.classList.toggle("ob",onb);$("#back").hidden=onb||!UP(tab);
   if(onb){$("#ttl").innerHTML='<img class="brand" src="logo.svg" alt="" width="28" height="28">NeoWell';$("#streak").innerHTML="";$("#composer").hidden=true;v.innerHTML=recovery?recView():obView();widgetPush();return}
-  const ttl={bugun:`${fd(dayKey())}, ${GUN[new Date().getDay()]}`,koc:"Koç",salon:"Salon",trend:"Trend",daha:"Daha fazla",ayar:"Ayarlar",egz:"Egzersizler",adim:"Adım raporu",tahlil:"Tahlil takibi",tansiyon:"Tansiyon",seker:"Şeker",ilac:"İlaçlar",...Object.fromEntries(AYAR.map(([k,t])=>["ayar-"+k,t]))}[tab];
+  const ttl={bugun:`${fd(dayKey())}, ${GUN[new Date().getDay()]}`,koc:"Koç",salon:"Salon",trend:"Trend",daha:"Daha fazla",ayar:"Ayarlar",egz:"Egzersiz kütüphanesi",adim:"Adım raporu",tahlil:"Tahlil takibi",tansiyon:"Tansiyon",seker:"Şeker",ilac:"İlaçlar",...Object.fromEntries(AYAR.map(([k,t])=>["ayar-"+k,t]))}[tab];
   $("#ttl").textContent=ttl;
   const n=streak();$("#streak").innerHTML=n>0&&tab==="bugun"?`${Icons.svg("flame")}<b class="num">${n}</b> gün`:"";$("#streak").setAttribute("aria-label",n+" günlük seri");
   v.innerHTML=(saveFail&&tab!=="bugun"&&tab!=="ayar-veri"?`<div class="card todo" role="alert"><div class="row"><span>${Icons.svg("save")} <b>${storeMsg()[0]}</b><small class="mut sm">${storeMsg()[1]}</small></span><button class="chip" data-act="veriyedek">Yedek al</button></div></div>`:"")+(tab==="koc"?viewKoc():tab==="bugun"?viewBugun():tab==="salon"?viewSalon():tab==="trend"?viewTrend():tab==="adim"?viewAdim():tab==="tahlil"?viewTahlil():tab==="tansiyon"?viewTansiyon():tab==="seker"?viewSeker():tab==="egz"?viewEgz():tab==="ilac"?viewIlac():tab==="daha"?viewDaha():viewAyar());
-  document.body.classList.toggle("koc",tab==="koc");$("#composer").hidden=tab!=="koc";
+  document.body.classList.toggle("koc",tab==="koc");document.body.classList.toggle("bg",tab==="bugun");$("#composer").hidden=tab!=="koc";cmpSet();
   if(tab==="koc")cScroll();
-  document.querySelectorAll("nav button").forEach(b=>{if(b.dataset.tab===topTab(tab))b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
+  document.querySelectorAll("nav button").forEach(b=>{if(b.dataset.tab===navTab())b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
   /* Tarayıcıda alt ekran için bir geçmiş kaydı: geri tuşu popstate ile üst ekrana döner. */
   if(UP(tab)&&!history.state)history.pushState({sub:1},"");else if(!UP(tab)&&history.state)history.replaceState(null,"");
   widgetPush();
@@ -930,17 +932,34 @@ function widgetPush(){
 }
 
 /* ---------- alt sayfa ve bildirim ---------- */
-function openSheet(html){$("#toast").classList.remove("on");const s=$("#sheet");s.innerHTML=`<div class="grab"></div>${html}`;s.classList.add("on");$("#scrim").classList.add("on");const f=s.querySelector("[autofocus]");if(f)setTimeout(()=>f.focus(),220)}
-function closeSheet(){$("#sheet").classList.remove("on");$("#scrim").classList.remove("on")}
+/* Üst katman (sheet ya da rehber) açıkken arka plan inert: Tab, dokunma ve ekran okuyucu arkaya geçmez. */
+const topLayer=()=>$("#sheet").classList.contains("on")?$("#sheet"):$("#guide").hidden?null:$("#guide");
+function trap(){const o=topLayer();for(const e of document.body.children)if(e.tagName!=="SCRIPT")e.inert=!!o&&e!==o&&!e.matches("#scrim,#toast")}
+let sheetFrom=null;
+function openSheet(html){
+  $("#toast").classList.remove("on");const s=$("#sheet");
+  if(!s.classList.contains("on"))sheetFrom=document.activeElement;
+  s.innerHTML=`<div class="grab"></div>${html}`;
+  const h=s.querySelector("h3");
+  if(h){h.id="sht";h.tabIndex=-1;s.setAttribute("aria-labelledby","sht")}else{s.removeAttribute("aria-labelledby");s.setAttribute("aria-label","Pencere")}
+  s.classList.add("on");$("#scrim").classList.add("on");trap();
+  const f=s.querySelector("[autofocus]");if(f)setTimeout(()=>f.focus(),220);else(h||s).focus({preventScroll:true});
+}
+function closeSheet(){
+  const s=$("#sheet"),was=s.classList.contains("on"),f=sheetFrom;
+  s.classList.remove("on");$("#scrim").classList.remove("on");sheetFrom=null;trap();
+  if(was&&f&&f.isConnected)f.focus({preventScroll:true});
+}
 function toast(msg,undo){
   /* Kayıt başarısızken ardından gelen "+250 ml" gibi mesaj hatayı örtmesin. */
   if(saveFail&&!msg.includes("kaydedilemedi"))msg="Kaydedilemedi, depolama dolu. "+msg;
   $("#tmsg").textContent=msg;lastUndo=undo==null?null:undo;$("#tundo").hidden=lastUndo==null;
   $("#toast").classList.add("on");clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("#toast").classList.remove("on"),undo!=null?6000:3800);
 }
-function dayOptions(){
+function dayOptions(inl){
   let o="";for(let i=0;i<7;i++){const d=addDays(-i);o+=`<option value="${dayKey(d)}">${i==0?"Bugün":i==1?"Dün":GUN[d.getDay()]+" "+fd(dayKey(d))}</option>`}
-  return `<div class="lbl">Gün</div><select class="in" id="fday">${o}</select>`;
+  const sel=`<label class="lbl" for="fday">Gün</label><select class="in" id="fday">${o}</select>`;
+  return inl?`<div class="inl">${sel}</div>`:sel;
 }
 const fday=()=>($("#fday")||{}).value||dayKey();
 /* Hata, toast'ın kapattığı alanın yerine alanın hemen altında kalır. */
@@ -978,16 +997,17 @@ function repeatYesterday(){
 function favHtml(){
   recList=LogLib.recents(S.entries,dayKey());
   const fk=new Set(S.favFoods.map(f=>LogLib.key(f.text)));
-  const row=(x,i,a,b,star,lab)=>`<div class="prow"><button data-${a}="${i}" style="flex:1;text-align:left;min-height:56px"><b>${esc(x.text)}</b><span class="mut sm">${x.v!=null?Math.round(x.v)+" kcal":"kalori yok"}</span></button><button class="plus" data-${b}="${i}" aria-label="${lab}"${star==="★"&&b==="fva"?" disabled":""}>${star}</button></div>`;
+  const row=(x,i,a,b,star,lab)=>`<div class="prow"><button data-${a}="${i}" style="flex:1;text-align:left;min-height:56px;display:flex;align-items:center;gap:8px"><span style="flex:1;min-width:0"><b>${esc(x.text)}</b><span class="mut sm">${x.v!=null?Math.round(x.v)+" kcal":"kalori yok"}</span></span><span class="aic" aria-hidden="true">${Icons.svg("plus")}</span></button><button class="plus" data-${b}="${i}" aria-label="${lab}" title="${lab}"${star==="★"&&b==="fva"?" disabled":""}>${star}</button></div>`;
   const tp=S.mealTpl.length?`<div class="lbl">Şablonlar</div><div class="chips">${S.mealTpl.map((t,i)=>`<span class="chip" style="display:inline-flex;gap:4px;align-items:center;padding:0 2px 0 14px"><button data-tp="${i}">${esc(t.n)} · ${t.items.length}</button><button class="del" data-tpd="${i}" aria-label="Şablonu sil">✕</button></span>`).join("")}</div>`:"";
-  return recipeListHtml()+tp+(S.favFoods.length?`<div class="lbl">Favoriler</div>${S.favFoods.map((x,i)=>row(x,i,"fv","fvd","★","Favoriden çıkar")).join("")}`:"")+(recList.length?`<div class="lbl">Son yediklerin</div>${recList.map((x,i)=>row(x,i,"rc","fva",fk.has(LogLib.key(x.text))?"★":"☆","Favoriye al")).join("")}`:"");
+  return recipeListHtml()+tp+(S.favFoods.length?`<div class="lbl">Sık kullanılanlar</div>${S.favFoods.map((x,i)=>row(x,i,"fv","fvd","★","Sık kullanılanlardan çıkar")).join("")}`:"")+(recList.length?`<div class="lbl">Son yediklerin</div>${S.favFoods.length?"":`<div class="hint" style="padding:0 2px 4px">☆ ile sık kullanılanlara ekle, + ile bugüne ekle.</div>`}${recList.map((x,i)=>row(x,i,"rc","fva",fk.has(LogLib.key(x.text))?"★":"☆",fk.has(LogLib.key(x.text))?"Sık kullanılanlarda":"Sık kullanılanlara ekle")).join("")}`:"");
 }
-const mealChips=()=>{const d=LogLib.mealOf({time:`${pad(new Date().getHours())}:00`});return `<div class="lbl">Öğün</div><div class="chips" id="fml">${LogLib.MEALS.map(([k,n])=>`<button class="chip" data-ml="${k}" aria-pressed="${k===d}">${n}</button>`).join("")}</div>`};
+const mealChips=()=>{const d=LogLib.mealOf({time:`${pad(new Date().getHours())}:00`});return `<div class="lbl" id="fmll">Öğün</div><div class="chips" id="fml" role="group" aria-labelledby="fmll">${LogLib.MEALS.map(([k,n])=>`<button class="chip" data-ml="${k}" aria-pressed="${k===d}">${n}</button>`).join("")}</div>`};
 const fmeal=()=>{const b=document.querySelector("#fml [aria-pressed=true]");return b?b.dataset.ml:undefined};
+const ownOpen=()=>{$("#fown").hidden=false;const b=$('[data-act="kendin"]');if(b)b.remove()};
 function sheetYemek(){
   const dn=of("yemek",keyOff(-1)).length;
-  openSheet(`<h3>Yemek ekle</h3><input class="in" id="fq" type="search" enterkeyhint="search" aria-label="Besin ara" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off" autofocus><div id="flist" class="plist"></div><div class="qrow">${dn?`<button class="btn ghost" data-act="dunku">↺ Dünkünü tekrarla (${dn})</button>`:""}<button class="btn ghost" data-rp="new">Tarif oluştur</button>${isNative()&&BS()?`<button class="btn ghost" data-act="barkod">${Icons.svg("camera")} Barkod okut</button>`:""}${ocrBtn("etiket",Icons.svg("tag")+" Etiket oku")}</div><div id="frl" class="plist">${favHtml()}</div>
-  <div class="lbl">Ya da kendin yaz</div><input class="in" id="ft" placeholder="Ne yedin?" autocomplete="off"><input class="in num" id="fv" inputmode="numeric" placeholder="Kalori (isteğe bağlı)"><div class="ferr" id="yerr" role="alert"></div>${mealChips()}${dayOptions()}<button class="btn" data-go="yemek">Kaydet</button>`);
+  openSheet(`<h3>Yemek ekle</h3><input class="in" id="fq" type="search" enterkeyhint="search" aria-label="Besin ara" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off" autofocus><div id="flist" class="plist"></div>${mealChips()}${dayOptions(true)}<div class="qrow">${dn?`<button class="btn ghost" data-act="dunku">↺ Dünkünü tekrarla (${dn})</button>`:""}<button class="btn ghost" data-act="kendin">Kendin yaz</button>${isNative()&&BS()?`<button class="btn ghost" data-act="barkod">${Icons.svg("camera")} Barkod okut</button>`:""}${ocrBtn("etiket",Icons.svg("tag")+" Etiket oku")}</div>
+  <div id="fown" hidden><input class="in" id="ft" aria-label="Yemeğin adı" placeholder="Ne yedin?" autocomplete="off"><input class="in num" id="fv" aria-label="Kalori, isteğe bağlı" inputmode="numeric" placeholder="Kalori (isteğe bağlı)"><div class="ferr" id="yerr" role="alert"></div><button class="btn" data-go="yemek">Kaydet</button><button class="btn ghost" data-rp="new" style="margin-top:8px">Tarif oluştur</button></div><div id="frl" class="plist">${favHtml()}</div>`);
 }
 function sheetSu(){
   const L=S.entries.filter(e=>e.type==="su"&&e.day===keyOff(-logOff));
@@ -1017,7 +1037,7 @@ const foodListHtml=q=>{const L=allFoods(),ask=q.trim().length>=2?`<button class=
 function sheetPorsiyon(i,food){
   curFood=food||allFoods()[i];curPor=0;
   openSheet(`<h3>${esc(curFood.n)}</h3><div class="lbl">Porsiyon</div><div class="chips" id="fpc">${curFood.u.map((u,j)=>`<button class="chip" data-fp="${j}" aria-pressed="${j===0}">${esc(u[0])}</button>`).join("")}</div>
-  <div class="lbl">Kaç porsiyon</div><input class="in num" id="fqty" inputmode="decimal" value="1" autocomplete="off"><div class="ferr" id="berr" role="alert"></div>
+  <label class="lbl" for="fqty">Kaç porsiyon</label><input class="in num" id="fqty" inputmode="decimal" value="1" autocomplete="off"><div class="ferr" id="berr" role="alert"></div>
   <div class="stat" style="margin:8px 0"><div class="k">Tahmini değer</div><div class="v num" id="fprev"></div></div>
   <div class="mut sm" style="margin-bottom:8px">${curFood.hint||(curFood.src==="off"?"Kaynak: Open Food Facts (topluluk verisi, ODbL).":curFood.my?"Yapay zekâ ya da senin girdiğin tahmin.":curFood.o?"Öğün: bileşenlerin USDA ve tarif değerlerinden hesaplandı; porsiyon boyutu ve yağ miktarı yere göre değişir.":curFood.s?"Kaynak: USDA FoodData Central. Pişirme ve markaya göre değişebilir.":"Tahmini değer. Tarife ve markaya göre belirgin değişir.")}${curFood.v?" "+curFood.v:""}${curFood.lo!=null?RNOTE:""}</div>${mealChips()}${dayOptions()}<button class="btn" data-go="besin">Ekle</button>${curFood.rec?`<button class="lnk" data-rp="edit:${curFood.rec}">Tarifi düzenle</button>`:""}${curFood.my&&!curFood.hint?`<button class="lnk dng" data-go="mysil">Bu besini listemden sil</button>`:""}`);
   foodPreview();
@@ -1054,7 +1074,7 @@ async function barkodBul(raw){
   }catch(e){return toast("İnternete ulaşılamadı, barkod aranamadı")}
   const x=OffLib.parse(j);
   if(x.status==="none"||x.status==="bad"){
-    sheetYemek();toast(`${x.why}. Etiketteki değerleri elle yaz ya da Koç'a sor`);return;
+    sheetYemek();ownOpen();toast(`${x.why}. Etiketteki değerleri elle yaz ya da Koç'a sor`);return;
   }
   if(x.status==="ok"){
     myFoodPut(Object.assign({},x.food,{src:"off"}));save();
@@ -1280,6 +1300,10 @@ function viewAdim(){
   const extra=km!=null?`<div class="stat"><div class="k">Yaklaşık mesafe</div><div class="v num">${fmt(km,1)} km</div></div>${kg!=null?`<div class="stat"><div class="k">Yaklaşık enerji</div><div class="v num">${Math.round(0.5*kg*km)} kcal</div></div>`:""}`:"";
   const rows=all.slice(-7).reverse().map(d=>`<div class="row" style="display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)"><span>${d.k===dayKey()?"Bugün":GUNK[d.d.getDay()]+" "+fd(d.k)}</span><b class="num">${d.v?fm(d.v):"–"}</b></div>`).join("");
   const man=S.entries.filter(e=>e.type==="adim"&&e.text==="elle").sort((a,b)=>b.day.localeCompare(a.day)||b.id-a.id).map(e=>`<div class="row" style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-top:1px solid var(--line)"><span>${fd(e.day)}</span><b class="num">+${fm(e.v)}</b><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></div>`).join("");
+  /* Hiç adım yokken sayaç ve istatistik duvarı yerine tek cümle ve yürüyüş başlatma. */
+  if(!sl.n&&!today&&!S.walk)return `<div class="card empty"><b>Henüz adım kaydı yok</b><p class="mut sm">Telefonu yanında taşıdıkça adımların burada görünür.</p><button class="btn" data-w="start">Yürüyüş başlat</button></div>
+  ${motionCard()}
+  <div class="card"><div class="lbl">Elle eklenenler</div>${man||'<p class="hint">Elle eklediğin adım yok.</p>'}<button class="lnk" data-act="adimekle">Adım ekle (elle)</button></div>`;
   return `<div class="card" style="text-align:center">${ring(today/st.stepGoal,"var(--su)",fm(today),"Bugün",`/ ${fm(st.stepGoal)} adım`,"adım")}</div>
   ${walkCard()}
   <div class="card"><div class="lbl">Adım grafiği</div>${seg}${chartBody}</div>
@@ -1364,6 +1388,7 @@ document.addEventListener("click",ev=>{
     if(d.act==="su"){const e=add("su",S.settings.glass);render();const t=dayKey(),top=sum("su",t,t);if(top>=S.settings.waterMl&&top-S.settings.glass<S.settings.waterMl)scheduleReminders().then(setNotif);toast(`+${S.settings.glass} ml, bugün ${Math.round(top)} / ${S.settings.waterMl} ml`+(top-S.settings.glass<S.settings.waterMl&&top>=S.settings.waterMl?". Günlük hedef tamam":""),e.id)}
     else if(d.act==="kilo")sheetKilo();
     else if(d.act==="dunku")repeatYesterday();
+    else if(d.act==="kendin"){ownOpen();$("#ft").focus()}
     else if(d.act==="tplyeni")sheetTpl();
     else if(d.act==="yemek")sheetYemek();
     else if(d.act==="spor")sheetSpor();
@@ -1451,9 +1476,16 @@ document.addEventListener("input",ev=>{
   else if(id==="fqty")foodPreview();
 });
 document.addEventListener("keydown",ev=>{
-  if(ev.key==="Escape")closeSheet();
+  if(ev.key==="Escape"){if($("#sheet").classList.contains("on"))closeSheet();else if(!$("#guide").hidden)gdBack()}
+  if(ev.key==="Tab"){
+    const o=topLayer();
+    if(o){
+      const f=[...o.querySelectorAll("a[href],button,input,select,textarea,[tabindex]")].filter(e=>e.tabIndex>=0&&!e.disabled&&e.getClientRects().length),a=document.activeElement,i=f.indexOf(a);
+      if(f.length&&(!o.contains(a)||(ev.shiftKey?i<=0:i===f.length-1))){ev.preventDefault();f[ev.shiftKey?f.length-1:0].focus()}
+    }
+  }
   if(ev.key==="Enter"&&ev.target.id==="cmsg"){ev.preventDefault();const i=ev.target,t=i.value;i.value="";cSend(t);return}
-  if(ev.key==="Enter"&&ev.target.closest("#sheet")&&ev.target.tagName==="INPUT"){const b=$("#sheet [data-go]");if(b)b.click()}
+  if(ev.key==="Enter"&&ev.target.closest("#sheet")&&ev.target.tagName==="INPUT"&&ev.target.id!=="fq"){const b=$("#sheet [data-go]");if(b)b.click()}
 });
 document.addEventListener("click",ev=>{const b=ev.target.closest("[data-sr]");if(b){stepRange=+b.dataset.sr;render()}});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="ayar-modul")render()});stepsSync();render();cPlateauCheck();abRun();if(Date.now()-lastSched>6*36e5||!exactOk)scheduleReminders().then(setNotif)}});
@@ -1489,10 +1521,14 @@ function backKey(){
   return false;
 }
 $("#back").addEventListener("click",goBack);
+/* Koç sohbetinin alt boşluğu yazma alanının gerçek yüksekliğinden gelir: son mesaj alanın arkasında kalmaz (klavye, yatay ekran, büyük yazı tipi). */
+function cmpSet(){const c=$("#composer");if(c.hidden)return;document.documentElement.style.setProperty("--cmp",Math.ceil(innerHeight-c.getBoundingClientRect().top)+12+"px")}
+if(window.ResizeObserver)new ResizeObserver(cmpSet).observe($("#composer"));
+addEventListener("resize",cmpSet);
 /* Klavye: ekran küçülse de küçülmese de (kenardan kenara) alt çubuk gizlenir, sabit alanlar --kb kadar yükselir, odaktaki alan görünür kalır. */
 {const vv=window.visualViewport;let base=0,lw=innerWidth;
   const kb=()=>{if(!vv)return;const h=vv.height;if(innerWidth!==lw){lw=innerWidth;base=0}base=Math.max(base,innerHeight,h);const open=base-h>120,b=Math.max(0,innerHeight-h-vv.offsetTop),d=document.documentElement.style;
-    document.body.classList.toggle("kb",open);d.setProperty("--kb",open?b+"px":"0px");d.setProperty("--vh",h+"px")};
+    document.body.classList.toggle("kb",open);d.setProperty("--kb",open?b+"px":"0px");d.setProperty("--vh",h+"px");cmpSet()};
   if(vv){kb();vv.addEventListener("resize",kb);vv.addEventListener("scroll",kb);addEventListener("orientationchange",()=>{base=0;kb()})}
   document.addEventListener("focusin",e=>{if(e.target.matches("input,textarea,select"))setTimeout(()=>e.target.scrollIntoView({block:"center"}),250)});
 }

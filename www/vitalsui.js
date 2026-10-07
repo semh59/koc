@@ -27,19 +27,19 @@ function vToggle(kind){
 /* ---- Bugün ve Trend kartları ---- */
 function vLast(k){return S.vitals.filter(r=>r.k===k).sort((a,b)=>a.day<b.day?1:a.day>b.day?-1:a.time<b.time?1:a.time>b.time?-1:b.id-a.id)[0]}
 function vWhen(r){return (r.day===dayKey()?"bugün ":fd(r.day)+" ")+r.time}
-/* Bugün yapılacaklar: açık ve bugün henüz ölçülmemiş tür başına bir satır. */
+/* Bugün yapılacaklar: açık, bugün henüz ölçülmemiş ve hatırlatma saati gelmiş tür başına bir satır (hatırlatma kapalıysa varsayılan saat). */
 function vTodo(){
-  const st=S.settings,t=dayKey(),out=[];
-  for(const [on,k,ic,label,act,txt] of [[st.bpOn,"t","heart","Tansiyon","addbp",r=>`${r.sys}/${r.dia}`],[st.bsOn,"s","su","Şeker","addbs",r=>vFmt(r.g)]]){
-    const r=vLast(k);if(!on||(r&&r.day===t))continue;
+  const st=S.settings,t=dayKey(),out=[],hm=vNow(),due=ids=>{const rs=st.reminders.filter(r=>ids.includes(r.id)),on=rs.filter(r=>r.on);return (on.length?on:rs).map(r=>r.t).sort()[0]<=hm};
+  for(const [on,k,ic,label,act,txt,ids] of [[st.bpOn,"t","heart","Tansiyon","addbp",r=>`${r.sys}/${r.dia}`,[7,8]],[st.bsOn,"s","su","Şeker","addbs",r=>vFmt(r.g),[9]]]){
+    const r=vLast(k);if(!on||(r&&r.day===t)||!due(ids))continue;
     out.push(`<div class="row"><span>${Icons.svg(ic)} ${label} ölç<small class="mut sm num">${r?`son: ${txt(r)}, ${vWhen(r)}`:"ölçüm yok"}</small></span><button class="chip" data-vt="${act}">Ekle</button></div>`);
   }
   return out;
 }
 function vTrendCards(){
-  const st=S.settings,c=(tab,t,txt)=>`<button class="stepcard" data-tab="${tab}"><div class="row"><span class="mut">${t}</span><span class="mut sm">Aç ›</span></div><div class="row"><span class="mut sm">${txt}</span></div></button>`;
+  const st=S.settings,c=(tab,ic,t,txt)=>navRow(`data-tab="${tab}"`,ic,t,txt);
   const one=(k,none)=>{const r=vLast(k);return r?`son: ${k==="t"?r.sys+"/"+r.dia:vFmt(r.g)}, ${vWhen(r)}`:none};
-  return (st.bpOn?c("tansiyon",Icons.svg("heart")+" Tansiyon",one("t","Henüz ölçüm yok")):"")+(st.bsOn?c("seker",Icons.svg("su")+" Şeker",one("s","Henüz ölçüm yok")):"");
+  return (st.bpOn?c("tansiyon","heart","Tansiyon",one("t","Henüz ölçüm yok")):"")+(st.bsOn?c("seker","su","Şeker",one("s","Henüz ölçüm yok")):"");
 }
 function vMenu(){
   const st=S.settings,b=(a,t)=>`<button class="btn ghost" data-vt="${a}" style="margin-bottom:8px">${t}</button>`;

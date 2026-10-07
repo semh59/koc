@@ -38,7 +38,7 @@ setTimeout(async()=>{
     ok("modüller: seçilen açık, seçilmeyen kapalı; adım için izin penceresi açılmaz",s.medOn&&!s.fastOn&&!s.bpOn&&!s.bsOn&&!s.stepsOn&&!s.stepsAsked&&!s.consent);
     // sağlık işareti ve 18 yaş altı: kalori açığı önerilmez, hekim notu
     ev("S=structuredClone(DEF);render()");
-    fill("170","80","30");click('[data-ob="dir:ver"]');val("goal","70");q("#obhn").checked=true;click('[data-ob="next"]');click('[data-ob="next"]');
+    fill("170","80","30");click('[data-ob="dir:ver"]');val("goal","70");click('[data-ob="next"]');q("#obhn").checked=true;click('[data-ob="next"]');
     const mt=ev("(()=>{const q={kg:80,cm:170,age:30,sex:''};return Math.round(Algo.formulaTdee({...q,act:1})/10)*10})()");
     ok("sağlık işareti: açık önerilmez, bakım düzeyi ve hekim notu",v().includes("açığı önermiyorum")&&v().includes("hekim")&&v().includes(mt.toLocaleString("tr-TR")),v());
     click('[data-ob="next"]');
@@ -508,6 +508,7 @@ setTimeout(async()=>{
   {
     const doc=w.document,q=s=>doc.querySelector(s),qa=s=>[...doc.querySelectorAll(s)];
     const click=s=>q(s).click(),txt=()=>q("#sheet").textContent,toastT=()=>q("#toast").textContent;
+    const unclock=require('./clock').at(w,12); // Bugün'de ölçüm satırı hatırlatma saati gelince çıkar
     const pdfjs=await import("pdfjs-dist/legacy/build/pdf.mjs");
     const BAN=/hipertansiyon|hipoglisemi|hiperglisemi|anormal|tehlikeli|diyabet/i;
     ev("S.vitals=[];S.labs=[];S.entries=[];S.settings.bpOn=false;S.settings.bsOn=false;tab='bugun';render()");
@@ -657,6 +658,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
 
     // temizlik
     ev("S.vitals=[];S.labs=[];S.settings.bpOn=false;S.settings.bsOn=false;tab='bugun';render()");
+    unclock();
   }
   // ---- Haftalık rapor ----
   {
@@ -847,6 +849,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
   }
   // ---- İlaç hatırlatıcı ----
   {
+    const unclock=require('./clock').at(w,21); // Bugün'de doz satırı saati gelince çıkar: iki doz da (08:00, 20:00) gelmiş olsun
     const doc=w.document,q=s=>doc.querySelector(s),qa=s=>[...doc.querySelectorAll(s)];
     const click=s=>q(s).click(),toastT=()=>q("#toast").textContent,txt=()=>q("#sheet").textContent;
     const wait=ms=>new Promise(r=>setTimeout(r,ms));
@@ -908,7 +911,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("ilaç alarmı: Atla düğmesi dozu atlandı yazar, alındıyı ezmez",ev("(()=>{const sv=JSON.stringify([S.meds,S.medLog]),m=S.meds[0],s=m.t[1],t=Date.now();const r1=medIngest([{m:m.id,s,t,k:true}]).n;const r2=medIngest([{m:m.id,s,t,k:false}]).n;return r1===1&&r2===0&&MedLib.statusOf(S.medLog,m.id,MedLib.dayForTap(s,t),s)==='s'&&(([a,b])=>{S.meds=a;S.medLog=b;return true})(JSON.parse(sv))})()"));
     ev("S.meds[0].s=keyOff(-3);delete S.meds[0].ts"); // ilaç 3 gün önce eklenmiş gibi
     ev("S.medLog.push({id:99,m:1,day:keyOff(-1),slot:'08:00',st:'t'},{id:100,m:1,day:keyOff(-1),slot:'20:00',st:'s'})");ev("render()");
-    ok("uyum kutuları: son 7 gün yüzdesi ve doz sayısı, günlük döküm",q("#view").textContent.includes("Son 7 gün uyum")&&/%\d+/.test(q("#view").textContent)&&q("#view").textContent.includes("doz alındı")&&q("#view").textContent.includes("atlanan 1"),q("#view").textContent.slice(0,400));
+    ok("uyum kutuları: son 7 gün yüzdesi ve doz sayısı, günlük döküm",q("#view").textContent.includes("Son 7 gün uyum")&&/%\d+/.test(q("#view").textContent)&&q("#view").textContent.includes("doz alındı")&&qa(".dd7 .dd").length===7&&!q("#view").textContent.includes("kaçırılan"),q("#view").textContent.slice(0,400));
     ev("S.medLog=S.medLog.filter(x=>x.id!==99&&x.id!==100)");
     ev("S.meds[0].k=3");ev("render()");
     ok("stok azalınca uyarı",q("#view").textContent.includes("yaklaşık 3 doz kaldı"));
@@ -985,6 +988,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("bozuk ilaç ve kayıtlar yüklemede ayıklanır (silinmiş ilacın kaydı da)",ev("S.meds.length")===1&&ev("S.medLog.length")===1&&ev("S.medLog[0].m")===1,[ev("S.meds"),ev("S.medLog")]);
     ok("sıfırlama boş ilaç listesi başlatır",ev("DEF.meds.length")===0&&ev("DEF.medLog.length")===0&&ev("DEF.settings.medOn")===false);
     ev("S.meds=[];S.medLog=[];S.settings.medOn=false;tab='bugun';render()");
+    unclock();
   }
   {
     // hareket algılama (yürüyüş/koşu otomatik)
@@ -1070,7 +1074,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("kütüphane: ≥300 egzersiz, eski kimlikler ve adlar korunur, şekil eklenir",ev("EXMERGED.length")>=300&&ev("gEx('squat').n")==="Squat"&&ev("gEx('squat').tp")==="squat"&&ev("gEx('ohp').n")==="Omuz press"&&ev("gEx('curl').inc")===2);
     ok("salon ana ekranı kütüphane düğmesini gösterir",!!q('[data-g="lib"]'));
     click('[data-g="lib"]');
-    ok("kütüphane ekranı açılır: başlık, 40 satır, küçük şekiller, devamı düğmesi",ev("tab")==="egz"&&q("#ttl").textContent==="Egzersizler"&&qa("#gllist .exrow").length===40&&!!q(".exthumb svg")&&!!q('[data-g="lmore"]'),qa("#gllist .exrow").length);
+    ok("kütüphane ekranı açılır: başlık, 40 satır, küçük şekiller, devamı düğmesi",ev("tab")==="egz"&&q("#ttl").textContent==="Egzersiz kütüphanesi"&&qa("#gllist .exrow").length===40&&!!q(".exthumb svg")&&!!q('[data-g="lmore"]'),qa("#gllist .exrow").length);
     click('[data-g="lfilter"]');
     click('[data-g="lreg:Biseps"]');
     const nb=ev("EXMERGED.filter(e=>e.r==='Biseps').length");
@@ -1172,24 +1176,24 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
   }
   {
     // uyku, ruh hali, oruç
-    const doc=w.document,q=s=>doc.querySelector(s),click=s=>q(s).click();
+    const doc=w.document,q=s=>doc.querySelector(s),click=s=>q(s).click(),hb=a=>{click('[data-hb="more"]');click(`[data-hb="${a}"]`)};
     ev("S.sleep=[];S.mood=[];tab='bugun';render()");
-    click('[data-hb="sleep"]');q("#hbb").value="23:30";q("#hbw").value="07:00";q("#hbq").value="4";click('[data-hb="sleepgo"]');
-    ok("uyku: yatış-kalkış gece yarısını aşarak 450 dk, kalite kaydedilir, Bugün'de görünür",JSON.stringify(ev("S.sleep"))===JSON.stringify([{day:ev("dayKey()"),min:450,q:4}])&&q("#view").textContent.includes("7 sa 30 dk"),ev("S.sleep"));
-    click('[data-hb="sleep"]');q("#hbh").value="6,5";click('[data-hb="sleepgo"]');
+    hb("sleep");q("#hbb").value="23:30";q("#hbw").value="07:00";q("#hbq").value="4";click('[data-hb="sleepgo"]');
+    ok("uyku: yatış-kalkış gece yarısını aşarak 450 dk, kalite kaydedilir, Bugün'de görünür",JSON.stringify(ev("S.sleep"))===JSON.stringify([{day:ev("dayKey()"),min:450,q:4}])&&q("#toast").textContent.includes("7 sa 30 dk"),ev("S.sleep"));
+    hb("sleep");q("#hbh").value="6,5";click('[data-hb="sleepgo"]');
     ok("uyku: aynı gün yeniden giriş üzerine yazar (süre girişiyle)",ev("S.sleep.length")===1&&ev("S.sleep[0].min")===390);
-    click('[data-hb="sleep"]');q("#hbb").value="07:00";q("#hbw").value="07:00";click('[data-hb="sleepgo"]');
+    hb("sleep");q("#hbb").value="07:00";q("#hbw").value="07:00";click('[data-hb="sleepgo"]');
     ok("uyku: aynı saat girdisi reddedilir, kayıt değişmez",ev("S.sleep[0].min")===390&&q("#sheet").classList.contains("on"));
     ev("closeSheet()");
-    click('[data-hb="mood"]');q("#hbn").value="yorgun";click('[data-hb="mood:2"]');click('[data-hb="mood"]');click('[data-hb="mood:4"]');
-    ok("ruh hali: gün başına tek kayıt (son kazanır), not kaydedilir",ev("S.mood.length")===1&&ev("S.mood[0].v")===4&&!ev("S.mood[0].t")&&q("#view").textContent.includes("Ruh hali"),ev("S.mood"));
-    click('[data-hb="mood"]');q("#hbn").value="  iyi  ";click('[data-hb="mood:5"]');
+    hb("mood");q("#hbn").value="yorgun";click('[data-hb="mood:2"]');hb("mood");click('[data-hb="mood:4"]');
+    ok("ruh hali: gün başına tek kayıt (son kazanır), not kaydedilir",ev("S.mood.length")===1&&ev("S.mood[0].v")===4&&!ev("S.mood[0].t")&&!!q('[data-hb="more"]'),ev("S.mood"));
+    hb("mood");q("#hbn").value="  iyi  ";click('[data-hb="mood:5"]');
     ok("ruh hali: not kırpılır",ev("S.mood[0].t")==="iyi");
-    click('[data-hb="sleep"]');q("#hbh").value="8";click('[data-hb="sleepgo"]');
+    hb("sleep");q("#hbh").value="8";click('[data-hb="sleepgo"]');
     ok("uyku: aynı güne yeniden giriş 'Geri al' sunar, geri alınca eski kayıt döner",q("#tmsg").textContent.startsWith("Uyku güncellendi")&&!q("#tundo").hidden&&(click("#tundo"),ev("S.sleep[0].min")===390));
-    click('[data-hb="sleep"]');click('[data-hb^="sdel:"]');
+    hb("sleep");click('[data-hb^="sdel:"]');
     ok("uyku geçmişinden silinir, geri alınabilir",ev("S.sleep.length")===0&&(click("#tundo"),ev("S.sleep.length")===1));
-    click('[data-hb="mood"]');click('[data-hb^="mdel:"]');
+    hb("mood");click('[data-hb^="mdel:"]');
     ok("ruh hali geçmişinden silinir, geri alınabilir",ev("S.mood.length")===0&&(click("#tundo"),ev("S.mood[0].v")===5));
     ev("add('su',250)");const bk=ev("JSON.stringify(S)");ev("S.sleep=[];S.mood=[]");q("#bk")||ev("sheetYedek()");q("#bk").value=bk;await ev("goYukle()");
     ok("uyku ve ruh hali yedekten geri gelir",ev("S.sleep.length")===1&&ev("S.mood[0].v")===5);
@@ -1994,10 +1998,11 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
   ev("S.settings.kcal=0;cClick('applyk:'+cPush({role:'coach',text:'',card:{kind:'propose',kcal:1300,why:'',limited:false,state:'pending'}}).id)");
   ok("frenden önce kalmış bekleyen öneri uygulanmaz",ev("S.settings.kcal")===0&&ev("S.chat[S.chat.length-1].card.state")==="no");
   ev("S.entries=[];for(let i=0;i<10;i++)add('su',250)");ev("S.settings.lastBackup=''");
-  ok("yedek yoksa uyarı çıkar",ev("viewBugun()").includes("Yedek zamanı"));
+  ok("yedek yoksa uyarı çıkar",ev("viewBugun()").includes("Verilerini yedekle"));
   ev("markBackup()");
-  ok("yedek alınınca uyarı kalkar",!ev("viewBugun()").includes("Yedek zamanı")&&ev("cleanSettings({lastBackup:S.settings.lastBackup}).lastBackup")===ev("dayKey()"));
+  ok("yedek alınınca uyarı kalkar",!ev("viewBugun()").includes("Verilerini yedekle")&&ev("cleanSettings({lastBackup:S.settings.lastBackup}).lastBackup")===ev("dayKey()"));
   { // C1: Bugün sadeleştirme
+    const unclock=require('./clock').at(w,21); // doz ve ölçüm satırları saati gelince çıkar
     const st0=ev("JSON.stringify(S)");
     ev("S.entries=[];S.meds=[];S.medLog=[];S.vitals=[];S.workouts=S.workouts.filter(x=>x.t1);S.fast={plan:16,t0:null,log:[]};Object.assign(S.settings,{medOn:false,fastOn:false,bpOn:false,bsOn:false,stepsOn:false,stepsAsked:true,oemDone:true,waterMl:2500,kcal:1900,sportWeek:150,glass:250});oem='google';tab='bugun';logOff=0");
     ok("yapılacak iş yoksa 'Bugün yapılacaklar' kartı yok",!ev("viewBugun()").includes("Bugün yapılacaklar"));
@@ -2006,7 +2011,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("kayıt düğmeleri en üstte, sıra Su, Yemek, Kilo, Spor",v().startsWith('<div class="actions">')&&[...$q(".actions").querySelectorAll("button")].map(b=>b.dataset.act).join()==="su,yemek,kilo,spor,not");
     ok("halkalar birim ve kalanı yazar",(t=>t.includes("520kcal kaldı")&&t.includes("1380 / 1900 kcal")&&t.includes("1,5L kaldı")&&t.includes("1,0 / 2,5 L")&&t.includes("150dk kaldı")&&t.includes("0 / 150 dk")&&t.includes("Spor · 7 gün"))($q(".rings").textContent),$q(".rings").textContent);
     ev("add('yemek',700,'Fazla');add('su',1500);add('spor',150,'Yürüyüş');render()");
-    ok("hedef aşılınca 'kcal fazla', su ve spor 'tamam'",(t=>t.includes("180kcal fazla")&&(t.match(/✓tamam/g)||[]).length===2)($q(".rings").textContent),$q(".rings").textContent);
+    ok("hedef aşılınca 'kcal fazla', su ve spor 'tamam'",(t=>t.includes("180kcal fazla")&&(t.match(/✓Hedef tamam/g)||[]).length===2)($q(".rings").textContent),$q(".rings").textContent);
     ok("kilo kartı küçük: grafik yok, tek satır özet, Trend'e götürür",!v().includes('class="weight"')&&!!$q('#view .stepcard[data-tab="trend"]')&&!$q('#view .stepcard[data-tab="trend"] svg:not(.i)')&&$q('#view .stepcard[data-tab="trend"]').textContent.includes("86,0"));
     ok("Koç cümlesi Koç kısayolu",!!$q('#view button.coach[data-tab="koc"]'));
     ev("S.settings.medOn=true;S.meds=[{id:1,n:'İlaç A',t:['08:00','20:00'],on:true}];S.settings.fastOn=true;S.settings.bpOn=true;render()");
@@ -2015,6 +2020,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("S.settings.medOn=false;S.settings.fastOn=false;S.settings.bpOn=false;render()");
     ok("modüller kapanınca kart kalkar",!v().includes("Bugün yapılacaklar"));
     ev(`S=Object.assign(S,JSON.parse(${JSON.stringify(st0)}));render()`);
+    unclock();
   }
   { // ana ekran widget'ı
     const wc=[];w.Capacitor.Plugins.Widget={update:async d=>{wc.push(d)}};
@@ -2176,8 +2182,8 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     q('#view [data-tab="adim"]').click();
     ok("Daha fazla'dan Adım: başlık, Daha fazla etkin, ‹ Daha fazla'ya döner",q("#ttl").textContent==="Adım raporu"&&cur()==="daha"&&!q("#back").hidden);
     q("#back").click();const a1=ev("tab")==="daha";
-    ev("S.meds=[{id:1,n:'Test İlaç',d:'1 tablet',t:['23:58'],on:true,k:10}];S.medLog=[]");go("bugun");q('#view .todo [data-tab="ilac"]')&&q('#view .todo [data-tab="ilac"]').click();
-    ok("Bugün yapılacaklardan İlaç: Bugün etkin, ‹ Bugün'e döner (alt ekran açıldığı yerin altında)",ev("tab")==="ilac"&&cur()==="bugun"&&(q("#back").click(),ev("tab")==="bugun")&&a1);
+    ev("S.meds=[{id:1,n:'Test İlaç',d:'1 tablet',t:['23:58'],on:true,k:10}];S.medLog=[]");go("bugun");{const b=w.document.createElement("button");b.dataset.tab="ilac";w.document.body.append(b);b.click();b.remove()}
+    ok("Bugün'den açılan İlaç: Daha fazla etkin, ‹ Bugün'e döner (alt ekran açıldığı yerin altında)",ev("tab")==="ilac"&&cur()==="daha"&&(q("#back").click(),ev("tab")==="bugun")&&a1);
     go("ilac");const d1=cur();ev("backKey()");const d2=ev("tab");ev("backKey()");
     ok("derin bağlantı İlaç: Daha fazla etkin; Android geri Daha fazla'ya, sonra Bugün'e",d1==="daha"&&d2==="daha"&&ev("tab")==="bugun");
     go("trend");q('#view [data-tab="tansiyon"]').click();const t1=cur()==="trend";q("#back").click();
@@ -2208,9 +2214,9 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     const y=ev("dayKey().slice(0,4)");
     ok("tek tarih biçimi: Algo.fdate gün ay (yıl), ekranda bu yıl yılsız; eski yardımcılar ve gg.aa kalıpları yok",ev("Algo.fdate('2026-10-02')")==="2 Eki"&&ev("Algo.fdate('2026-01-09',true)")==="9 Oca 2026"&&ev(`fd('${y}-03-05')`)==="5 Mar"&&ev("fd('2019-12-31')")==="31 Ara 2019"&&!/\b(dm|gDate|vDayLbl|labDay)\(|slice\(8\)\+"\."|\.slice\(8\)\}\./.test(src)&&q("#view")&&ev("S.settings.lastBackup='2026-09-30';tab='ayar';render();document.querySelector('#view').textContent").includes("Son yedek "+ev("fd('2026-09-30')")));
     let back=true;
-    for(const [t,p,ttl] of [["adim","bugun","Adım raporu"],["tahlil","trend","Tahlil takibi"],["tansiyon","trend","Tansiyon"],["seker","trend","Şeker"],["egz","salon","Egzersizler"]]){
+    for(const [t,p,ttl,nv] of [["adim","bugun","Adım raporu","daha"],["tahlil","trend","Tahlil takibi"],["tansiyon","trend","Tansiyon"],["seker","trend","Şeker"],["egz","salon","Egzersiz kütüphanesi"]]){
       ev(`closeSheet();tab='${t}';render()`);
-      back=back&&!q("#back").hidden&&q("#ttl").textContent===ttl&&![...w.document.querySelectorAll("#view .btn")].some(b=>b.textContent.trim().startsWith("‹"))&&q(`nav [data-tab="${p}"]`).getAttribute("aria-current")==="page";
+      back=back&&!q("#back").hidden&&q("#ttl").textContent===ttl&&![...w.document.querySelectorAll("#view .btn")].some(b=>b.textContent.trim().startsWith("‹"))&&q(`nav [data-tab="${nv||p}"]`).getAttribute("aria-current")==="page";
       q("#back").click();back=back&&ev("tab")===p&&q("#back").hidden;
     }
     ok("alt ekranlarda başlıkta küçük ‹ (44 px, aria-label Geri): büyük geri düğmesi yok, üst ekrana döner",back&&q("#back").getAttribute("aria-label")==="Geri"&&/#back\{width:44px;height:44px/.test(html));
@@ -2249,7 +2255,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("favoriden ekleme seçili öğünü kullanır",ev("S.entries.find(e=>e.text==='Elma').meal")==="kah");
     ev("S.favFoods=[];S.entries=[];render()");
   }
-  { // Trend: boş durum, veriye göre eksen, değer balonu, tek Raporlar bölümü (C8)
+  { // Trend: boş durum, veriye göre eksen, değer balonu, tek "Daha fazla ölçüm" listesi (C8)
     const q=s=>$q(s),qa=s=>[...w.document.querySelectorAll(s)];
     ev("S=structuredClone(DEF);S.settings.obDone=true;S.settings.goalKg=0;closeSheet();tab='trend';render()");
     ok("trend boşken: tek boş durum kartı, kilo ekle düğmesi; grafik, aralık seçici ve boş tablo yok",q(".empty")&&q(".empty").textContent.includes("İlk tartını ekle")&&!q("svg.chart")&&!q("#view table")&&!q("[data-range]")&&!!q('.empty [data-act="kilo"]'));
@@ -2274,11 +2280,11 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     q("#view h2, #view .seg").dispatchEvent(new w.Event("pointerdown",{bubbles:true}));
     ok("grafik dışına dokununca balon kalkar",!q("svg.chart .tip"));
     // Raporlar
-    const rep=()=>qa("#view h2").filter(h=>h.textContent==="Raporlar").length;
+    const rep=()=>qa("#view h2").filter(h=>h.textContent==="Daha fazla ölçüm").length;
     ev("S.settings.bpOn=false;S.settings.bsOn=false;S.labs=[];render()");
-    ok("Raporlar: yalnız haftalık rapor (kapalı modül ve boş tahlil için satır yok)",rep()===1&&!!q('[data-wk="pdf"]')&&!q('[data-vt^="pdfmenu"]')&&!q('[data-lab="pdf"]'));
+    ok("Daha fazla ölçüm: yalnız haftalık rapor (kapalı modül ve boş tahlil için satır yok)",rep()===1&&!!q('[data-wk="pdf"]')&&!q('[data-vt^="pdfmenu"]')&&!q('[data-lab="pdf"]'));
     ev("S.settings.bpOn=true;S.settings.bsOn=true;S.labs=[{id:1,day:keyOff(0),n:'Glukoz',v:90,u:'mg/dL'}];render()");
-    ok("Raporlar: açık modüller ve tahlil verisi varsa hepsi aynı bölümde, 44 px satırlar",rep()===1&&!!q('[data-wk="pdf"]')&&!!q('[data-vt="pdfmenu:t"]')&&!!q('[data-vt="pdfmenu:s"]')&&!!q('[data-lab="pdf"]')&&/\.prow\{[^}]*min-height:56px/.test(html));
+    ok("Daha fazla ölçüm: açık modüller ve tahlil verisi varsa raporlar da aynı listede, 44 px satırlar",rep()===1&&!!q('[data-wk="pdf"]')&&!!q('[data-vt="pdfmenu:t"]')&&!!q('[data-vt="pdfmenu:s"]')&&!!q('[data-lab="pdf"]')&&/\.prow\{[^}]*min-height:56px/.test(html));
     ok("alt ekranlarda PDF düğmesi kalmadı (tansiyon, şeker, tahlil)",["tansiyon","seker","tahlil"].every(t=>{ev(`tab='${t}';render()`);return !q('#view [data-vt^="pdfmenu"]')&&!q('#view [data-lab="pdf"]')}));
     ev("S=structuredClone(DEF);S.settings.obDone=true;tab='bugun';render()");
   }
@@ -2345,7 +2351,8 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
   { // D-Sağ1: vücut ölçüleri
     const q=s=>$q(s),qa=s=>[...w.document.querySelectorAll(s)],txt=()=>q("#view").textContent;
     ev("S=structuredClone(DEF);S.settings.obDone=true;S.settings.heightCm=170;tab='bugun';render()");
-    ok("Bugün: kilo kartının yanında Ölçü ekle düğmesi",!!q('#view [data-ms="open"]'));
+    ev("tab='trend';render()");
+    ok("Trend: Vücut ölçüleri kartında Ölçü ekle düğmesi, Bugün'de yok",!!q('#view [data-ms="open"]')&&!ev("viewBugun()").includes('data-ms="open"'));
     const add=(k,v,day)=>{ev("closeSheet();sheetOlcu()");q(`[data-ms="k:${k}"]`).click();q("#fv").value=v;if(day)q("#fday").value=day;q('[data-ms="go"]').click()};
     ev("sheetOlcu()");
     ok("sayfa: 5 bölge çipi, ilki seçili; alan etiketli yer tutucu",qa('#mk .chip').length===5&&q('#mk .chip').getAttribute("aria-pressed")==="true"&&q("#fv").placeholder.includes("Santimetre"));
@@ -2664,12 +2671,12 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
   { // Dalga 12 (A): onboarding sert ve yumuşak işaret ayrı
     ev("S=structuredClone(DEF);Object.assign(ob,obFresh());render()");
     const q=s=>$q(s),val=(id,v)=>{q("#ob"+id).value=v},v=()=>q("#view").textContent;
-    val("cm","170");val("kg","80");val("age","30");q('[data-ob="dir:ver"]').click();val("goal","70");q("#obhd").checked=true;q('[data-ob="next"]').click();q('[data-ob="next"]').click();
+    val("cm","170");val("kg","80");val("age","30");q('[data-ob="dir:ver"]').click();val("goal","70");q('[data-ob="next"]').click();q("#obhd").checked=true;q('[data-ob="next"]').click();
     ok("onboarding hamilelik/yeme bozukluğu işareti: sert, onay düğmesi yok",v().includes("açığı önermiyorum")&&!q('[data-act="riskok"]'));
     q('[data-ob="next"]').click();
     ok("yazılan not riskFlags'ta sert sayılır",ev("risk().hard.length")>0);
     ev("S=structuredClone(DEF);Object.assign(ob,obFresh());render()");
-    val("cm","170");val("kg","80");val("age","30");q('[data-ob="dir:ver"]').click();val("goal","70");q("#obhn").checked=true;q('[data-ob="next"]').click();q('[data-ob="next"]').click();
+    val("cm","170");val("kg","80");val("age","30");q('[data-ob="dir:ver"]').click();val("goal","70");q('[data-ob="next"]').click();q("#obhn").checked=true;q('[data-ob="next"]').click();
     q('[data-act="riskok"]').click();
     ok("onboarding yumuşak işaret: 'Hekimime danıştım' çalışır, kalori açığı önerilir",ev("S.settings.riskClearedAt")===ev("dayKey()")&&!v().includes("açığı önermiyorum")&&v().includes("Adım 3/3"));
     q('[data-ob="next"]').click();

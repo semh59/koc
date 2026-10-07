@@ -8,9 +8,11 @@ function hbSet(key,val,msg){
   const prev=S[key],apply=v=>{S[key]=v;save();render();if(key==="fast")scheduleReminders().then(setNotif)};
   apply(val);toast(msg,()=>apply(prev));
 }
-function habitRow(){
+/* Uyku ve ruh hali ana ekranı kalabalıklaştırmasın: tek "Daha fazla" çipi, ayrıntı alt sayfada. */
+function habitRow(){return `<div class="hrow"><button class="chip" data-hb="more" aria-label="Uyku ve ruh hali kaydı">${Icons.svg("daha")} Daha fazla</button></div>`}
+function sheetHabit(){
   const t=dayKey(),sl=S.sleep.find(x=>x.day===t),mo=S.mood.find(x=>x.day===t);
-  return `<div class="hrow"><button class="btn ghost" data-hb="sleep">${Icons.svg("moon")} ${sl?hbDur(sl.min):"Uyku ekle"}</button><button class="btn ghost" data-hb="mood">${mo?MOODS[mo.v-1]+" Ruh hali":Icons.svg("smile")+" Ruh hali"}</button></div>`;
+  openSheet(`<h3>Uyku ve ruh hali</h3><div class="card" style="box-shadow:none;padding-top:4px;padding-bottom:4px">${navRow('data-hb="sleep"',"moon","Uyku",sl?hbDur(sl.min):"Bugünkü uykunu ekle")}${navRow('data-hb="mood"',"smile","Ruh hali",mo?MOODS[mo.v-1]:"Bugün nasıl hissediyorsun?")}</div>`);
 }
 /* Bugün yapılacaklar satırı: oruç açıksa sürüyor/başlat; plan ve geçmiş Ayarlar'da. Fren: sert engelde başlatılamaz (süren oruç bitirilebilir),
    yumuşakta "Hekimime danıştım" onayından sonra. */
@@ -23,7 +25,7 @@ function fastTodo(){
 }
 function fastInfo(){
   openSheet(`<h3>Oruç zamanlayıcısı</h3><p>Aralıklı oruç herkes için uygun değildir. Şu durumlarda yapma ya da önce hekimine danış: Hamilelik ya da emzirme, 18 yaş altı, yeme bozukluğu geçmişi, diyabet, insülin ya da şeker düşüren ilaç kullanımı, düşük kilo. Baş dönmesi, halsizlik ya da çarpıntı olursa orucu bitir ve hekimine danış.</p>
-  <p class="hint">${MED_NOTE}</p><label class="chkrow"><input type="checkbox" id="fic">Okudum; bu durumlar bende yok ya da hekimime danıştım</label><button class="btn" data-hb="fastinfo">Oruç zamanlayıcısını aç</button>`);
+  <p class="hint">${MED_NOTE}</p>${swRow('id="fic"',false,"Okudum; bu durumlar bende yok ya da hekimime danıştım")}<button class="btn" data-hb="fastinfo">Oruç zamanlayıcısını aç</button>`);
 }
 function fastGo(){
   const st=S.settings;
@@ -75,7 +77,8 @@ function moodSave(v){
 document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-hb]");if(!el)return;
   const a=el.dataset.hb;
-  if(a==="sleep")sheetUyku();
+  if(a==="more")sheetHabit();
+  else if(a==="sleep")sheetUyku();
   else if(a==="fasttoggle"){if(S.fast.t0)return toast("Önce orucu bitir");if(!S.settings.fastOn&&!S.settings.fastInfoOk)return fastInfo();S.settings.fastOn=!S.settings.fastOn;if(!S.settings.fastOn)S.settings.reminders.find(r=>r.id===11).on=false;save();render();scheduleReminders().then(setNotif)}
   else if(a.startsWith("plan:")){S.fast.plan=+a.slice(5);save();render()}
   else if(a==="fastgo")fastGo();

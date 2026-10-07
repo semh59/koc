@@ -40,7 +40,7 @@ test.describe("Koç kayıt kartı",()=>{
     await expect(page.locator("#view")).toContainText("Tamam.");
     await page.click('[data-c="newchat"]');
     await expect(page.locator(".ub")).toHaveCount(0);
-    await expect(page.locator('[data-c="chats"]')).toContainText("Geçmiş (1)");
+    await expect(page.locator('[data-c="chats"]')).toHaveText("Geçmiş");
     await page.fill("#cmsg","İkinci sohbet mesajı");await page.click("#csend");
     await expect(page.locator("#view")).toContainText("Tamam.");
     const sent=JSON.stringify(fake.chats().at(-1).body.messages);
@@ -50,7 +50,7 @@ test.describe("Koç kayıt kartı",()=>{
     await expect(page.locator("#sheet")).toContainText("Birinci sohbet mesajı");
     await page.click('[data-c^="openchat:"]');
     await expect(page.locator(".ub")).toHaveText("Birinci sohbet mesajı");
-    await expect(page.locator('[data-c="chats"]')).toContainText("Geçmiş (1)");
+    await expect(page.locator('[data-c="chats"]')).toHaveText("Geçmiş");
   });
   test("geçmiş sohbet silinir ve Geri al ile geri gelir; silme düğmesi sohbet başlığını taşır",async({app,page,fake})=>{
     fake.st.reply=()=>JSON.stringify({reply:"Tamam."});

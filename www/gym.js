@@ -316,13 +316,12 @@ function gLive(w){
     <div class="shead${rpe?" r":""}"><span>Set</span><span>Önceki</span>${tm?`<span>${kind==="c"?"Dakika":"Süre (sn)"}</span><span>Süre</span>`:`<span>${kind==="b"?"Ek kg":"kg"}</span><span>Tekrar</span>${rpe?"<span>RPE</span>":""}`}<span></span></div>${rows}
     <button class="lnk" data-g="addset:${ei}">Set ekle</button></div>`;
   }).join("");
-  return `<div class="livebar"><div><b>${esc(w.name)}</b><div class="mut num" id="gstat">${gClock(Date.now()-w.t0)} süre, ${Math.round(gWorkVol(w)).toLocaleString("tr-TR")} kg hacim</div></div><button class="btn fin" data-g="finish">Bitir</button></div>
+  return `<div class="livebar"><button class="chip" data-g="cancel" aria-label="Vazgeç, antrenmanı iptal et">${Icons.svg("back")} Vazgeç</button><div><b>${esc(w.name)}</b><div class="mut num" id="gstat">${gClock(Date.now()-w.t0)} süre, ${Math.round(gWorkVol(w)).toLocaleString("tr-TR")} kg hacim</div></div><button class="btn fin" data-g="finish">Bitir</button></div>
   ${gTimBar()}
   <div class="rest" id="grest"${restEnd>Date.now()?"":" hidden"}><div><span class="mut">Dinlenme</span><b class="num" id="gr">${restEnd>Date.now()?gClock(restEnd-Date.now()):""}</b></div><button data-g="rest:-15">−15</button><button data-g="rest:15">+15</button><button data-g="rest:0">Atla</button></div>
   ${cards||`<p class="hint">Aşağıdan hareket ekleyerek başla.</p>`}
   <button class="btn ghost" data-g="pick">Egzersiz ekle</button>
-  <p class="hint">${gPainNote}</p>
-  <button class="lnk dng" data-g="cancel">Antrenmanı iptal et</button>`;
+  <p class="hint">${gPainNote}</p>`;
 }
 /* Yerel pencere bayrağı (DeviceHelp.keepAwake): navigator.wakeLock'un Android WebView desteği belgelerde yalnız Chrome'dan çıkarım. */
 let gAwakeOn=false;
@@ -655,7 +654,7 @@ function gClick(v,el){
     case "mm":{
       const i=$("#mminfo");if(!i)return;
       document.querySelectorAll(".mmwrap .on").forEach(e=>e.classList.remove("on"));
-      document.querySelectorAll(".mmwrap [data-g]").forEach(e=>{if(e.dataset.g==="mm:"+p1)e.classList.add("on")});
+      document.querySelectorAll(".mmwrap [data-g]").forEach(e=>{const on=e.dataset.g==="mm:"+p1;if(on)e.classList.add("on");if(e.tagName==="BUTTON")e.setAttribute("aria-pressed",on)});
       i.textContent=MuscleMap.tx(p1,gWeekRegions()[p1]||0);return;
     }
     default:return typeof exClick==="function"&&exClick(a,p1,p2,el,w);
@@ -742,8 +741,7 @@ function gEnergy(){
   const cells=[["Tahmini harcama",`${Math.round(r.tdee/10)*10} kcal`]];
   if(sg)cells.push(["Önerilen hedef",`${sg.kcal} kcal`]);
   cells.push(["Protein aralığı",pr?`${pr[0]}–${pr[1]} g`:"Hekiminle belirle"]);
-  return `<h2>Enerji dengesi</h2><div class="card"><div class="stats">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1]}</div></div>`).join("")}</div>
-  <p class="hint" style="padding:8px 0 0">${Algo.PROTEIN_NOTE} ${src}${sg&&sg.limited?" Hedef güvenli alt sınırda tutuldu.":""}${sg&&sg.blocked?" Öneri bakım düzeyinde tutuldu.":""}</p>
-  ${sg&&sg.blocked?riskBox(risk(kg),"Kalori açığı önermiyorum"):""}
-  ${sg&&sg.kcal!==st.kcal?`<div class="btns"><button class="btn ghost" data-act="uygula:${sg.kcal}">Hedefi ${sg.kcal} kcal yap</button></div>`:""}</div>`;
+  return `<h2>Enerji dengesi</h2><div class="card">${sg&&sg.blocked?riskBox(risk(kg),"Kalori açığı önermiyorum"):""}<div class="stats">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1]}</div></div>`).join("")}</div>
+  ${sg&&sg.kcal!==st.kcal?`<div class="btns"><button class="btn ghost" data-act="uygula:${sg.kcal}">Hedefi ${sg.kcal} kcal yap</button></div>`:""}
+  <details class="more"><summary>Nasıl hesaplandı</summary><p class="hint" style="padding:0">${Algo.PROTEIN_NOTE} ${src}${sg&&sg.limited?" Hedef güvenli alt sınırda tutuldu.":""}${sg&&sg.blocked?" Öneri bakım düzeyinde tutuldu.":""}</p></details></div>`;
 }

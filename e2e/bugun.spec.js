@@ -8,6 +8,7 @@ test.describe("Bugün",()=>{
     await app.open({seed:state({kcal:2000})});
     await expect(ring(page,"Kalori").locator(".rc")).toContainText("2000");
     await page.click('.act[data-act="yemek"]');
+    await page.click('[data-act="kendin"]');
     await page.fill("#ft","Ev yemeği");await page.fill("#fv","650");
     await page.click('[data-go="yemek"]');
     // Kabul: halka ortası kalan kaloriyi, alt satır yapılan / hedefi gösterir.

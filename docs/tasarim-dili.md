@@ -19,6 +19,9 @@ Hedef sakin, kendinden emin, az süslü bir arayüz (Apple Sağlık, Oura, Hevy 
 - **Düğme.** Bir ekranda tek birincil düğme olur (`.btn`). İkincil düğme `.btn.ghost` (tonlu zemin, marka rengi metin), yıkıcı düğme `.btn.danger` (çerçeveli, uyarı rengi), metin düğmesi `.lnk`. Hepsinin yüksekliği en az 48 px, metni 600 kalınlıkta, basınca hafifçe küçülür.
 - **Giriş alanı.** Tek stil: `input.in`, `select.in`, `textarea.in`, ayarlar alanları ve set kutuları. Zemin `--field`, kenarlık `--fbd` (3:1), odakta marka renginde halka. Arama kutusu `type="search"` olur ve büyüteç ikonu stilden gelir. `.in` adı alt menünün kapsayıcısında da geçtiği için stil yalnız form öğelerine verilir.
 - **Çip ve rozet.** `.chip` hap biçimli, `--soft` zeminli, en az 44 px. Seçili çip `aria-pressed="true"` ile marka rengini alır. `.tag` küçük durum rozetidir (`--prim-soft`). `.seg` ve `.seg2` segment seçicilerdir.
+- **Onay satırı.** `swRow(attrs,on,etiket)` anahtar (`.sw`) ve etiketi tek 48 px satırda verir; çıplak onay kutusu kullanılmaz.
+- **Katman.** Sheet ve rehber açılınca arka plan `inert` olur, Tab katman içinde döner, Escape kapatır ve odak tetikleyiciye döner (`openSheet`, `trap`). Sheet başlığı `aria-labelledby` ile ada bağlanır.
+- **Halka.** Tamamlanmayan halka en çok %92 çizilir; hedef dolunca ✓ ve "Hedef tamam" yazılır.
 - **İkon.** Yalnız `www/icons.js` içindeki tek renkli çizgi ikonlar kullanılır, ekranda emoji kullanılmaz. Ruh hali yüzleri ve bildirim başlıkları istisnadır. İkon düğmesinde `aria-label` bulunur.
 - **Üst çubuk.** Ekran başlığı 24 px. Seri rozeti yalnız Bugün'de görünür. Onboarding'de küçük marka işareti çıkar.
 - **Alt menü.** Yüksekliği sabit 56 px. Etkin sekmenin ikonu hap zeminli olur, etiketler tek satırda kalır.
