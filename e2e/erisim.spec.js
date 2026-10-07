@@ -110,7 +110,10 @@ test.describe("Büyük yazı (%200) ve dar ekran (320 px)",()=>{
     expect(r.center).toBe(true);expect(r.pts.every(Boolean)).toBe(true);expect(r.gap).toBeGreaterThanOrEqual(-1);
   });
   test("menü büyük yazıda uzar, Koç yazma alanı menüyle çakışmaz",async({app,page})=>{
-    await app.open({seed:KOC});await scaleText(page,2);await app.tab("koc");await page.waitForTimeout(200);
+    await app.open({seed:KOC});await scaleText(page,2);
+    const tani=await page.evaluate(()=>{const nv=document.querySelector("nav"),bt=nv.querySelector('button[data-tab="koc"]').getBoundingClientRect(),n=nv.getBoundingClientRect(),el=document.elementFromPoint(bt.x+bt.width/2,bt.y+bt.height/2);return {ok:!!el&&nv.contains(el),vp:[innerWidth,innerHeight],btn:[bt.x,bt.y,bt.width,bt.height].map(Math.round),nav:[n.x,n.y,n.width,n.height].map(Math.round),pos:getComputedStyle(nv).position,z:getComputedStyle(nv).zIndex,vis:getComputedStyle(nv).visibility,docH:document.documentElement.scrollHeight,sy:scrollY,hit:el?el.tagName+"."+el.className+"@"+Math.round(el.getBoundingClientRect().y):null}});
+    expect(tani.ok,"TANI "+JSON.stringify(tani)).toBe(true);
+    await app.tab("koc");await page.waitForTimeout(200);
     const g=await page.evaluate(()=>[document.querySelector("#composer").getBoundingClientRect().bottom,document.querySelector("nav").getBoundingClientRect().top]);
     expect(g[0]).toBeLessThanOrEqual(g[1]+1);
   });
