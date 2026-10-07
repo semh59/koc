@@ -32,7 +32,7 @@ Hepsi yerel kalır, sunucu gerektirmez.
 ## Eski NeoWell projelerinden alınacak iyi özellikler (1 Ekim 2026 incelemesi)
 Eski projeler çalışan ürün değil, ama şu fikirler `koc` için uygun ve yerel kalır.
 - **Besin etiketi OCR (yapıldı):** Barkodu olmayan ya da veritabanında bulunmayan ürünün etiketini fotoğrafla, besin değerleri otomatik dolsun (ML Kit metin tanıma). Barkodun "bulunamadı" boşluğunu kapatır.
-- **Adet döngüsü takibi:** Yerel, gizli, bildirimle birlikte. (Karar bekliyor)
+- **Adet döngüsü takibi (yapıldı):** Yerel, gizli, bildirimle birlikte; varsayılan kapalı, Modüller'den açılır.
 - **Tansiyon ve glukoz günlüğü (yapıldı):** Yalnızca kayıt ve grafik, tanı ya da uyarı yok (tıbbi cihaz sınıflaması riskinden kaçınmak için).
 - **Seri rozetleri ve sağlık skoru:** Basit, yerel, abartısız.
 - **Kriz kaynakları ve yapay zekâ uyarı metni şablonları:** Koç'un güvenlik kartlarını güçlendirmek için eski projelerdeki hukuki metinlerden uyarlanabilir (`D:\proje\NeoWellAI\docs\legal`).
@@ -45,5 +45,4 @@ Eski projeler çalışan ürün değil, ama şu fikirler `koc` için uygun ve ye
 - Adım sayar (telefonun adım sensörü, hesap gerektirmez): geç alarm/açılışta gün atfı düzeltildi, Adım ayrıntı ekranı (7 gün grafiği).
 
 ## Karar
-- Adet döngüsü takibi karar bekliyor.
 - Health Connect telefon adımını daha doğru yapmaz (aynı sensör), yalnızca eksiksiz yapar. Mi Band/saat kullanımı netleşince ele alınacak.

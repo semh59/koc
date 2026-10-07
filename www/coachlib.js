@@ -303,6 +303,29 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
     }
     return L.join("\n");
   }
-  return {low,oneLine,pregnant,BROKEN,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText};
+  /* Yerel jeton sayacı: yalnız sayılar (gün > sağlayıcı|model > [istek, giriş, çıkış]); metin ve kimlik asla girmez. */
+  const USAGE_DAYS=30,USAGE_KEYS=12;
+  const usageOf=(j,ant)=>{
+    const u=j&&j.usage;if(!u||typeof u!=="object")return null;
+    const n=v=>Number.isFinite(v)&&v>0?Math.min(Math.round(v),1e7):0;
+    const i=ant?n(u.input_tokens)+n(u.cache_read_input_tokens)+n(u.cache_creation_input_tokens):n(u.prompt_tokens),o=ant?n(u.output_tokens):n(u.completion_tokens);
+    return i||o?{i,o}:null;
+  };
+  const dayShift=(day,k)=>{const d=new Date(day+"T12:00:00");d.setDate(d.getDate()+k);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+  function usageAdd(store,day,pm,u){
+    const s=store&&typeof store==="object"&&!Array.isArray(store)?store:{},old=dayShift(day,1-USAGE_DAYS),out={};
+    for(const d of Object.keys(s).sort().slice(-USAGE_DAYS*2))if(/^\d{4}-\d\d-\d\d$/.test(d)&&d>=old&&s[d]&&typeof s[d]==="object")out[d]=s[d];
+    const t=out[day]||(out[day]={}),k=String(pm).slice(0,60);
+    if(!t[k]&&Object.keys(t).length>=USAGE_KEYS)return out;
+    const r=Array.isArray(t[k])?t[k]:(t[k]=[0,0,0]);
+    r[0]=(+r[0]||0)+1;r[1]=(+r[1]||0)+u.i;r[2]=(+r[2]||0)+u.o;
+    return out;
+  }
+  function usageSum(store,day){
+    const old=dayShift(day,1-USAGE_DAYS);let n=0,tok=0;
+    if(store&&typeof store==="object")for(const d of Object.keys(store))if(d>=old&&store[d]&&typeof store[d]==="object")for(const r of Object.values(store[d]))if(Array.isArray(r)){n+=+r[0]||0;tok+=(+r[1]||0)+(+r[2]||0)}
+    return {n,tok};
+  }
+  return {usageOf,usageAdd,usageSum,low,oneLine,pregnant,BROKEN,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText};
 })();
 if(typeof module!=="undefined")module.exports=CoachLib;

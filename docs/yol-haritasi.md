@@ -135,7 +135,7 @@ Harici değerlendirmede bildirilen açık sağlık güvenliği boşlukları (3 E
 | # | Ad | Değer | Emek | Kaynak | Bağımlılık / karar |
 |---|---|---|---|---|---|
 | D-Sağ1 (yapıldı) | Bel çevresi ve vücut ölçüleri | Kilo sabitken ilerleme görünür. | S | oneri #14, fikirler | – |
-| D-Sağ2 | Adet döngüsü | Yerel, gizli ve bildirimli döngü takibi eklenir. | M | fikirler, rekabet-ozellik | G10 |
+| D-Sağ2 (yapıldı, telefonda denenmedi) | Adet döngüsü | Yerel, gizli ve bildirimli döngü takibi eklenir. Yapıldı: Modüller'den açılan Döngü ekranı (dönem kaydı, son 6 döngüden tahmin, takvim), varsayılan kapalı, Koç/bildirim/widget/CSV dışı, yedek ve kategori silmeye dahil, nötr "Hatırlatma" bildirimi (id 9200). Yumurtlama ve doğurgan pencere bilerek hesaplanmaz (korunma/gebelik aracı olmasın); hamilelik işaretinde tahmin yok. | M | fikirler, rekabet-ozellik | G10 |
 | D-Sağ3 | Tahlil okuyucuyu sağlamlaştırma | Gerçek laboratuvar PDF'leriyle ayrıştırıcı düzeltilir, taranmış PDF için OCR eklenir. | M | yapilacaklar, oneri | G4 |
 
 ### Koç ve yapay zekâ

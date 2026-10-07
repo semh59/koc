@@ -122,4 +122,13 @@ ok("kural 3 KISIT satırına (riskFlags) bağlı: kalori açığı, oruç, yüks
   ok("mind, emergency'den önce gelir",C.redFlag("göğsüm ağrıyor ve yaşamak istemiyorum")==="mind");
   ok("parse: propose dizi ya da metin gelirse reddedilir, nesne kabul",C.parse('{"reply":"x","propose":[{"kcal":1800}],"food":[1],"program":[],"menu":[]}').propose===null&&C.parse('{"reply":"x","propose":[{"kcal":1800}],"food":[1],"program":[],"menu":[]}').food===null&&C.parse('{"reply":"x","propose":{"kcal":1800}}').propose.kcal===1800);
 }
+{ // jeton sayacı
+  ok("usage: yoksa ya da sayı değilse sessiz (null)",C.usageOf({},false)===null&&C.usageOf({usage:{prompt_tokens:"x"}},false)===null&&C.usageOf(null,true)===null);
+  ok("usage: OpenAI uyumlu ve Anthropic (önbellek dahil) okunur",JSON.stringify(C.usageOf({usage:{prompt_tokens:10,completion_tokens:5}},false))==='{"i":10,"o":5}'&&JSON.stringify(C.usageOf({usage:{input_tokens:3,cache_read_input_tokens:7,output_tokens:2}},true))==='{"i":10,"o":2}');
+  let s=C.usageAdd(null,"2026-10-07","a|m",{i:10,o:5});s=C.usageAdd(s,"2026-10-07","a|m",{i:1,o:1});s=C.usageAdd(s,"2026-10-06","b|n",{i:100,o:0});
+  ok("usage: sayılar günlük toplanır",JSON.stringify(s["2026-10-07"]["a|m"])==="[2,11,6]"&&C.usageSum(s,"2026-10-07").n===3&&C.usageSum(s,"2026-10-07").tok===117);
+  s=C.usageAdd(s,"2026-11-20","a|m",{i:1,o:1});
+  ok("usage: 30 günden eski gün budanır, toplama girmez",!s["2026-10-07"]&&Object.keys(s).length===1&&C.usageSum({"2026-10-07":{"a|m":[1,5,5]}},"2026-11-20").n===0);
+  ok("usage: bozuk depo yutulur, gün başına anahtar sınırlı, yalnız sayı saklanır",C.usageSum("x","2026-10-07").n===0&&Object.keys(C.usageAdd(Array.from({length:30},(_,i)=>i).reduce((a,i)=>C.usageAdd(a,"2026-10-07","p|m"+i,{i:1,o:1}),null),"2026-10-07","z|z",{i:1,o:1})["2026-10-07"]).length===12&&!/[a-z]{4}/.test(JSON.stringify(Object.values(C.usageAdd(null,"2026-10-07","a|m",{i:1,o:1})["2026-10-07"]))));
+}
 process.exit(bad?1:0);

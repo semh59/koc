@@ -18,7 +18,7 @@ Hepsini kullanıcı kendisi girer ya da telefon sensörlerinden, kullanıcının
 | Kategori | İçerik |
 |---|---|
 | Profil | boy, yaş, cinsiyet (isteğe bağlı), hareket düzeyi, hedefler |
-| Sağlık verisi (özel nitelikli) | kilo, vücut ölçüleri (bel, kalça vb.), yemek ve su kayıtları, spor ve antrenman setleri, adım ve hareket, tahlil sonuçları, tansiyon ve şeker ölçümleri, ilaç adı-doz-saat-alım kaydı ve stok, uyku, ruh hali, oruç, kullanıcının yazdığı sağlık notu |
+| Sağlık verisi (özel nitelikli) | kilo, vücut ölçüleri (bel, kalça vb.), yemek ve su kayıtları, spor ve antrenman setleri, adım ve hareket, tahlil sonuçları, tansiyon ve şeker ölçümleri, ilaç adı-doz-saat-alım kaydı ve stok, uyku, ruh hali, oruç, isteğe bağlı döngü (dönem günleri, akış, belirti, kısa not) kaydı, kullanıcının yazdığı sağlık notu |
 | Kullanıcı içeriği | kendi tarifleri, besinleri, favorileri, öğün ve antrenman şablonları |
 | Notlar ve Koç sohbeti | kullanıcının yazdığı notlar, Koç ile mesajlar (açık sohbet ve geçmişe arşivlenmiş ayrı sohbetler; modele yalnız açık sohbet gider) |
 | Cihaz | bildirim izni durumu; yalnız elle başlattığın yürüyüşte, uygulama açıkken başlayan kısa konum ölçümü (iyi sinyalde yaklaşık 1 dakika, en çok 10 dakika; sürerken bildirim görünür; yalnız öğrenilen adım uzunluğu saklanır, konum noktası ve rota saklanmaz; arka planda konum istenmez); kamera (etiket ve tahlil fotoğrafı telefonda okunur, fotoğraf saklanmaz ve gönderilmez); ilaç alarmı saatinde ekranı birkaç saniye uyandıran ekran uyandırma (WAKE_LOCK) izni, hiçbir veri toplamaz ve göndermez |
@@ -49,6 +49,8 @@ Kullanıcının telefonundan internete çıkan tek veri akışları:
 **Kimlik maskeleme:** Koç sağlayıcısı IP adresini görür; kimlik bilgileri (ad, telefon, e-posta, TC kimlik no, IBAN, kart, adres, doğum tarihi, il/ilçe, kurum adı gibi) göndermeden önce telefonda maskelenir ve yanıt yine telefonda geri çevrilir. Maskeleme sağlayıcıya giden her isteğin tek çıkış noktasında yapılır; sabit kural metni dışındaki bütün içerik (profil, kayıtlar, sohbet geçmişi, menü/program isteği) süzülür. Filtre %100 garanti değildir (tam garanti yoktur). Yakalanmayanlar: serbest cümleyle anlatılan adres ya da tarif ("markete yakın mavi kapılı apartman" gibi), ad listesinde olmayan nadir adlar (listede olmayan bir ad "Ben/annem" gibi kalıp olmadan küçük harfle yazılırsa), tek başına yazılmış il adı, sıradan sözcükle aynı yazılan küçük harfli adlar, görsel ya da yalnızca bağlamdan tanınabilen bilgi. Sağlık notuna, ilaç adına ve besin adına yazdığın metin de aynı filtreden geçer ama aynı sınırlara tabidir. İstenirse Ayarlar > Gizlilik ve veri'deki "Koç'a giden metni önizle" anahtarıyla gönderimden önce giden tam metin görülür.
 
 **Koç'a gönderilmeyenler:** Tahlil, tansiyon, şeker, vücut ölçüleri, tarifler, oruç kayıtları, fotoğraf, konum ve yedek gönderilmez.
+
+**Döngü kaydı (isteğe bağlı, varsayılan kapalı):** Yalnız cihazda durur. Koç'a, bildirim metnine, widget'a ve CSV dışa aktarımına girmez; yalnız parolayla şifrelenen yedeğe dahildir ve Gizlilik ve veri ekranından silinebilir.
 
 Her sağlayıcı kendi gizlilik politikasından sorumludur; kullanıcı kendi hesabıyla ve kendi anahtarıyla bağlandığından o sağlayıcıyla ilişki kullanıcıdadır. [DOLDURULACAK: sağlayıcı politikalarına bağlantılar]
 

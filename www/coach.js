@@ -208,6 +208,19 @@ function cMessages(extraUser,extraSys,noHist){
 /* ---- sağlayıcı zinciri ---- */
 /* probe: kurulum denemesi. HTTP 200 ve geçerli yanıt gövdesi yeter; düşünen model sınırda metinsiz dönebilir (content null, reasoning_content dolu).
    Sohbette metin boş ve sınır dolduysa (düşünme bütçeyi yedi) bir kez üç katı sınırla yeniden sorulur. */
+const USAGE_KEY="koc_v1_kullanim";
+function trackUsage(p,j,ant){
+  try{
+    const u=CoachLib.usageOf(j,ant);if(!u)return;
+    let s=null;try{s=JSON.parse(lsGet(USAGE_KEY))}catch(e){}
+    lsSet(USAGE_KEY,JSON.stringify(CoachLib.usageAdd(s,dayKey(),p.id+"|"+p.model,u)));
+  }catch(e){}
+}
+function usageText(){
+  let s=null;try{s=JSON.parse(lsGet(USAGE_KEY))}catch(e){}
+  const {n,tok}=CoachLib.usageSum(s,dayKey());
+  return `Koç kullanımı (son 30 gün): ${n} istek, ~${tok.toLocaleString("tr-TR")} jeton`;
+}
 async function callProvider(p,key,messages,maxTokens=700,o={}){
   const ms=Math.min(o.ms||40000,o.until?o.until-Date.now():Infinity);
   if(ms<=0){const e=new Error("Süre doldu");e.kind="time";throw e}
@@ -215,7 +228,7 @@ async function callProvider(p,key,messages,maxTokens=700,o={}){
   try{
     const ant=p.id==="anthropic",r=await fetch(p.base.replace(/\/+$/,"")+(ant?"/messages":"/chat/completions"),{method:"POST",signal:ctl.signal,headers:Object.assign({"Content-Type":"application/json"},pHeaders(p,key)),body:JSON.stringify(pBody(p,gate(messages),maxTokens))});
     if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;try{e.body=(await r.text()).slice(0,600)}catch(x){}throw e}
-    const j=await r.json(),c=j&&j.choices&&j.choices[0],t=ant?(j&&Array.isArray(j.content)?j.content.filter(b=>b&&b.type==="text").map(b=>b.text).join(""):""):c&&c.message&&c.message.content;
+    const j=await r.json();trackUsage(p,j,ant);const c=j&&j.choices&&j.choices[0],t=ant?(j&&Array.isArray(j.content)?j.content.filter(b=>b&&b.type==="text").map(b=>b.text).join(""):""):c&&c.message&&c.message.content;
     if(o.probe&&(ant?Array.isArray(j&&j.content):!!c))return "";
     const has=typeof t==="string"&&!!t.trim(),cut=ant?j&&j.stop_reason==="max_tokens":c&&c.finish_reason==="length";
     if(has&&!(cut&&!o.retried&&CoachLib.parse(t).broken))return t;
