@@ -6,7 +6,7 @@ for(let i=1;i<=14;i++){const e=[3,4,9].includes(i),dd=String(i).padStart(2,"0");
 const meds=[{n:"Metformin",d:"500 mg",t:["08:00","20:00"],a:{taken:10,total:14,missed:4,late:0},left:12},{n:"D vitamini",t:["09:00"],a:{taken:6,total:7,missed:1},left:30}];
 const D=()=>({profile:{cm:175,age:34,sex:"m",act:1,note:"Hafif diyabet"},goals:{kg:75,kcal:1800,water:2500,sport:150},calc:{trendKg:84.1,slope:-0.6,tdee:2420,source:"veri",target:2110,protein:[136,187],block:"x",why:"İlaç kaydın var"},days:days.map(r=>({...r})),today:["yemek: 2 yumurta ~150 kcal","su 500 ml"],now:"12:42",
   workouts:["10-05 Üst vücut: Bench 60x8, Row 50x10, Press 30x10","10-03 Bacak: Squat 80x6, RDL 70x8","10-01 İtiş: Bench 62x6"],weekSets:{göğüs:9,sırt:8,bacak:6},notes:["Bugün çok yorgundum, az uyudum","Akşam stres vardı","İyi bir gün, yürüyüş yaptım"],meds});
-const SEC={"PROFİL":"PROFİL","SAĞLIK":"SAĞLIK NOTU","HEDEFLER":"HEDEFLER","HESAPLANAN":"HESAPLANAN","KISIT":"KISIT","14 GÜN":"SON 14 GÜN","BUGÜN":"BUGÜN","ANTRENMAN":"SON ANTRENMANLAR","SET":"BU HAFTA TAMAMLANAN SET","NOT":"SON NOTLAR","İLAÇ":"İLAÇLAR"};
+const SEC={"PROFİL":"PROFİL","SAĞLIK":"SAĞLIK NOTU","HEDEFLER":"HEDEFLER","HESAPLANAN":"HESAPLANAN","KISIT":"KISIT","14 GÜN":"SON 14 GÜN","BUGÜN":"BUGÜN","ANTRENMAN":"SON ANTRENMANLAR","SET":"BU HAFTA TAMAMLANAN SET","NOT":"SON NOTLAR","İLAÇ":"İLAÇLAR (kullanıcının"};
 const parts=t=>t.split(/\n(?=[A-ZÇĞİÖŞÜ ]{3,}[ :(])/);
 const has=(t,k)=>t.includes(SEC[k]);
 const full=C.contextText(D());
@@ -30,7 +30,14 @@ ok("ilaç adı geçmesi yeter (Metformin)",has(C.contextText(D(),"Metformin"),"�
 for(const q of [undefined,"","merhaba","ne yapayım?"])ok(`belirsiz (${JSON.stringify(q)}) -> hepsi`,Object.keys(SEC).every(k=>has(C.contextText(D(),q),k)));
 ok("belirsiz çıktı soru verilmeyenle aynı",C.contextText(D(),"merhaba")===full);
 ok("konu devamı: önceki ilaç mesajı + 'peki dozu?' ilaç bölümünü getirir",has(C.contextText(D(),["Metformin kullanıyorum","tamam","peki dozu?"].join("\n")),"İLAÇ"));
-ok("ilaç yoksa bölüm de yok (soruluyor olsa bile)",!has(C.contextText({...D(),meds:[]},"ilaç"),"İLAÇ"));
+ok("ilaç yoksa bölüm de yok (soruluyor olsa bile)",!has(C.contextText({...D(),meds:[]},"ilaç"),"İLAÇ")&&!C.contextText({...D(),meds:[]},"ilaç").includes("KULLANDIĞI İLAÇLAR"));
+{ // ilaç güvenliği: budamadan bağımsız her istekte tek satır ad+doz ve yönlendirme; ayrıntı (saat/uyum) yalnız ilgili soruda
+  const line=t=>t.split("\n").find(l=>l.startsWith("KULLANDIĞI İLAÇLAR"))||"";
+  const Q=[undefined,"bugün kaç ml su içtim","Antrenmanım nasıldı?","ruh halim nasıl","Haftalık menü hazırla, 7 gün","Haftada 3 gün, seans 45 dakika antrenman programı hazırla","Son 7 günümün yorumunu yaz","Bugünkü kayıtlarıma kısaca yorum yap"];
+  ok("ilaç satırı her soru türünde var: ad+doz, etkileşim/doz önerme, hekime/eczacıya yönlendir",Q.every(q=>{const l=line(C.contextText(D(),q));return l.includes("Metformin 500 mg")&&l.includes("D vitamini")&&/doz değişikliği önerme/.test(l)&&l.includes("hekime/eczacıya")}),Q.map(q=>line(C.contextText(D(),q))));
+  ok("ilaç satırı yalnız ad ve doz taşır (saat, uyum, stok yok)",!/08:00|20:00|alındı|stok|kaçırılan/.test(line(full)));
+  ok("su/menü sorusunda ilaç ayrıntısı yok ama sağlık notu ve KISIT var",(t=>!has(t,"İLAÇ")&&t.includes("SAĞLIK NOTU")&&t.includes("KISIT:"))(C.contextText({...D(),calc:{...D().calc,block:"x",why:"İlaç kaydın var"}},"Haftalık menü hazırla")));
+}
 
 { // boş gün birleştirme: hiçbir dolu gün kaybolmaz
   const t=C.contextText(D(),"x"),rows=t.split("\n").filter(l=>/^10-\d\d \|/.test(l)),d=D();

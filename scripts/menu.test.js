@@ -35,7 +35,7 @@ setTimeout(async()=>{
     const ctx=ev("CoachLib.contextText(cData())");
     ok("bağlam: ilaç en çok 8 satır, yemek en çok 12 satır ve ad 40 karakter, su tek satır, boş 'not:' satırı yok",(ctx.match(/\| saatler /g)||[]).length===8&&(ctx.match(/yemek: /g)||[]).length===11&&!ctx.includes("b".repeat(41))&&(ctx.match(/; su \d+ ml/g)||[]).length===1&&!/^BUGÜN:.*not: (;|\()/m.test(ctx)&&ctx.includes("not: "+"n".repeat(100))&&!ctx.includes("n".repeat(101)),ctx.length);
     ok("sohbet geçmişi son 10 mesaj, her biri en çok 300 karakter",ev("cMessages('x').length")===12&&ev("cMessages('x').slice(1,11).every(m=>m.role==='user'?m.content.length===300:JSON.parse(m.content).reply.length===260)"));
-    const size=()=>sent.messages.reduce((a,m)=>a+m.content.length,0),LIM={chat:11500,menu:11300,program:13000},got={};
+    const size=()=>sent.messages.reduce((a,m)=>a+m.content.length,0),LIM={chat:11800,menu:11300,program:13000},got={};
     sent=null;ev("cSend('merhaba')");await wait(50);got.chat=size();
     sent=null;ev("menuNote='n'.repeat(200)");await ev("cMenu()");got.menu=size();
     sent=null;ev("progOpt={d:6,q:'Salon',m:60,l:'İleri'}");await ev("cProgram(progOpt)");got.program=size();
