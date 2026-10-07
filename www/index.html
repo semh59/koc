@@ -145,7 +145,7 @@ td.today,th.today{font-weight:700}
 .cin{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);box-shadow:var(--sh);border-radius:26px;padding:0 4px 0 16px;min-height:52px}.cin:focus-within{border-color:var(--prim)}
 .cin input{align-self:stretch;flex:1;min-width:0;border:0;outline:0;background:none;font-size:16px}
 #csend{width:44px;height:44px;border-radius:50%;background:var(--prim);color:var(--prim-ink);font-size:18px}
-body.koc main{padding-bottom:var(--cmp,calc(200px + var(--sab)))}.chips.cbar{position:sticky;top:var(--sat);z-index:4;background:var(--bg);padding:6px 0;margin:-6px 0 0}
+body::before{content:"";position:fixed;top:0;left:0;right:0;height:var(--sat);background:var(--bg);z-index:5;pointer-events:none}body.koc main{padding-bottom:var(--cmp,calc(200px + var(--sab)))}.chips.cbar{position:sticky;top:var(--sat);z-index:4;background:var(--bg);padding:6px 0;margin:-6px 0 0}
 body.koc #toast{bottom:calc(150px + var(--sab))}
 .chat{display:flex;flex-direction:column;gap:12px}
 .ub{align-self:flex-end;max-width:84%;background:var(--prim);color:var(--prim-ink);border-radius:18px 18px 6px 18px;padding:10px 14px;overflow-wrap:anywhere;white-space:pre-wrap}
@@ -1345,9 +1345,10 @@ const DH=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugin
 const openDH=m=>{const p=DH();if(p)p[m]().then(r=>{if(r.opened==="none")toast("Ayar ekranı açılamadı, telefon ayarlarından NeoWell'i bul")},()=>toast("Ayar ekranı açılamadı"))};
 const oemXiaomi=()=>/xiaomi|redmi|poco/.test(oem);
 function sheetOem(){
-  openSheet(`<h3>Hatırlatmalar için bir kez ayar</h3><p class="hint" style="padding:0 0 8px">Xiaomi telefonlar, uygulamayı son uygulamalardan kaydırınca hatırlatmaları siler. Bunun için iki izin gerekir. Düğmeler doğrudan ilgili ekranı açar.</p>
+  openSheet(`<h3>Hatırlatmalar için bir kez ayar</h3><p class="hint" style="padding:0 0 8px">Xiaomi telefonlar, uygulamayı son uygulamalardan kaydırınca hatırlatmaları siler. Bunun için birkaç izin gerekir. Düğmeler doğrudan ilgili ekranı açar.</p>
   <div class="btns"><button class="btn ghost" data-act="oem1">1. Otomatik başlat: NeoWell'i aç</button><button class="btn ghost" data-act="oem2">2. Pil: Kısıtlama yok seç</button></div>
   <p class="hint">3. Son uygulamalar ekranında NeoWell kartını basılı tutup kilitle (asma kilit simgesi). Bu en sağlam yoldur.</p>
+  <p class="hint">4. İlaç alarmının kilitli ekranı açması için: Ayarlar > Uygulamalar > NeoWell > Diğer izinler bölümünde "Kilit ekranında göster" ve "Arka planda açılır pencere göster" izinlerini aç.</p>
   <div class="btns"><button class="btn" data-act="oemok">Yaptım</button></div>`);
 }
 async function notifTest(){

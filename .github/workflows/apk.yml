@@ -193,6 +193,7 @@ jobs:
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: neowell-release
+          retention-days: 1
           path: |
             neowell.apk
             neowell.aab
@@ -200,6 +201,7 @@ jobs:
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: neowell-smoke
+          retention-days: 1
           path: smoke/neowell.apk
 
   # Tarayıcıda uçtan uca kullanıcı senaryoları (e2e/). Derlemeden bağımsız; yayın adımı buna bağlı değil.
