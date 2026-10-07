@@ -30,12 +30,12 @@ function mChart(list){
 }
 function measureCard(){
   const addBtn=`<button class="btn ghost" data-ms="open">Ölçü ekle</button>`;
-  if(!S.measures.length)return `<h2>Vücut ölçüleri</h2><div class="card"><p class="hint" style="padding:0 0 8px">Kilo sabit kalsa da bel, kalça, göğüs, kol ve uyluk ölçülerin ilerlemeyi gösterebilir.</p>${addBtn}</div>`;
+  if(!S.measures.length)return `<h2>Vücut ölçüleri</h2><div class="card"><p class="flush hint">Kilo sabit kalsa da bel, kalça, göğüs, kol ve uyluk ölçülerin ilerlemeyi gösterebilir.</p>${addBtn}</div>`;
   const list=S.measures.filter(m=>m.k===msel),l=list[list.length-1],f=list[0],w=mLast("waist"),cm=S.settings.heightCm;
   const stats=l?`<div class="stats"><div class="stat"><div class="k">Son</div><div class="v num">${fmt(l.v)} cm</div></div>${list.length>1?`<div class="stat"><div class="k">${fd(f.day)}'den beri</div><div class="v num">${fmtS(l.v-f.v)} cm</div></div>`:""}</div>`:"";
-  const whtr=w&&cm>0?`<p class="hint" style="padding:8px 0 0">Bel/boy oranı: <b class="num">${fmt(Algo.whtr(w.v,cm),2)}</b> (bel ${fmt(w.v)} cm, boy ${cm} cm). Genel bilgi: bel çevresinin boyun yarısından küçük olması sık anılan bir referanstır; tek başına bir şey söylemez, tanı ya da yorum değildir. Sağlık kararların için hekimine danış.</p>`:"";
-  const rows=list.slice(-5).reverse().map(m=>`<div class="row" style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;border-top:1px solid var(--line)"><span>${fd(m.day)}</span><b class="num">${fmt(m.v)} cm</b><button class="del" data-ms="del:${m.day}" aria-label="${MNAME[msel]} ölçüsünü sil">✕</button></div>`).join("");
-  return `<h2>Vücut ölçüleri</h2><div class="card">${mChips("mt")}${list.length?mChart(list):`<p class="hint">${MNAME[msel]} için ölçü yok.</p>`}${stats}${whtr}<div style="margin-top:8px">${rows}</div>${addBtn}</div>`;
+  const whtr=w&&cm>0?`<p class="pt-2 hint">Bel/boy oranı: <b class="num">${fmt(Algo.whtr(w.v,cm),2)}</b> (bel ${fmt(w.v)} cm, boy ${cm} cm). Genel bilgi: bel çevresinin boyun yarısından küçük olması sık anılan bir referanstır; tek başına bir şey söylemez, tanı ya da yorum değildir. Sağlık kararların için hekimine danış.</p>`:"";
+  const rows=list.slice(-5).reverse().map(m=>`<div class="row"><span>${fd(m.day)}</span><b class="num">${fmt(m.v)} cm</b><button class="del" data-ms="del:${m.day}" aria-label="${MNAME[msel]} ölçüsünü sil">✕</button></div>`).join("");
+  return `<h2>Vücut ölçüleri</h2><div class="card">${mChips("mt")}${list.length?mChart(list):`<p class="hint">${MNAME[msel]} için ölçü yok.</p>`}${stats}${whtr}<div class="mt-2">${rows}</div>${addBtn}</div>`;
 }
 document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-ms]");if(!el)return;

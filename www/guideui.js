@@ -93,7 +93,7 @@ function gdFinish(natural){
 }
 function gdSumHtml(){
   const r=GuideLib.result(gd.st),n=r.reduce((s,x)=>s+x.sets.length,0);
-  const rows=r.map(x=>`<div class="prow"><span style="flex:1;min-width:0"><b>${esc(gdName(x.ex))}</b><span class="mut sm num">${x.sets.map(s=>s.reps?s.reps+" tekrar":s.sec+" sn").join(" · ")}</span></span>${gKind(x.ex)==="w"&&!gd.meta.warm?`<input class="in num" style="width:84px;margin:0" inputmode="decimal" data-gdkg="${x.ex}" value="${fkg(gdLastKg(x.ex))}" placeholder="kg" aria-label="${esc(gdName(x.ex))} ağırlık (kg)">`:""}</span></div>`).join("");
+  const rows=r.map(x=>`<div class="prow"><span class="grow"><b>${esc(gdName(x.ex))}</b><span class="mut sm num">${x.sets.map(s=>s.reps?s.reps+" tekrar":s.sec+" sn").join(" · ")}</span></span>${gKind(x.ex)==="w"&&!gd.meta.warm?`<input class="in num" style="width:84px;margin:0" inputmode="decimal" data-gdkg="${x.ex}" value="${fkg(gdLastKg(x.ex))}" placeholder="kg" aria-label="${esc(gdName(x.ex))} ağırlık (kg)">`:""}</span></div>`).join("");
   return `<div class="gdtop"><b>${esc(gd.meta.n)}</b></div>
   <h2 class="gdn" style="text-align:left;margin:8px 0">${GuideLib.over(gd.st)?"Akış bitti":"Akış durduruldu"}</h2>
   <div class="two"><div class="stat"><div class="k">Süre</div><div class="v num">${gClock(gd.t1-gd.st.t0)}</div></div><div class="stat"><div class="k">Tamamlanan</div><div class="v num">${n}/${GuideLib.works(gd.st)}</div></div></div>
@@ -127,9 +127,9 @@ function gdClose(){
   const f=guideFrom;guideFrom=null;gd=null;$("#guide").hidden=true;$("#guide").innerHTML="";document.body.classList.remove("gdon");trap();gAwake(true);
   if(f&&f.isConnected)f.focus({preventScroll:true});
 }
-function gdEnd(){if(GuideLib.over(gd.st)||confirm("Akış burada bitirilsin mi? Tamamlananları kaydedebilirsin."))gdFinish(false)}
+function gdEnd(){if(GuideLib.over(gd.st))return gdFinish(false);confirmSheet({title:"Akış burada bitirilsin mi?",body:"Akış burada bitirilsin mi? Tamamlananları kaydedebilirsin.",ok:"Bitir"}).then(ok=>{if(ok&&gd&&!gd.fin)gdFinish(false)})}
 /* Donanım geri tuşu: akış sürerken bitirme sorusu, özetteyken kapatır. */
-function gdBack(){if(!gd)return false;if(!gd.fin)gdEnd();else if(!GuideLib.result(gd.st).length||confirm("Tamamlananlar kaydedilmeden kapatılsın mı?"))gdClose();return true}
+function gdBack(){if(!gd)return false;if(!gd.fin)gdEnd();else if(!GuideLib.result(gd.st).length)gdClose();else confirmSheet({title:"Tamamlananlar kaydedilmeden kapatılsın mı?",ok:"Kapat",danger:true}).then(ok=>{if(ok&&gd)gdClose()});return true}
 function gdClick(a){
   const st=gd&&gd.st,now=Date.now();if(!st)return;
   switch(a){

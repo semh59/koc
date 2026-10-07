@@ -46,7 +46,8 @@ const Icons={
     play:"M7 5v14l11-7z",
     pause:"M8 5v14M16 5v14",
     undo:"M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3",
-    sparkle:"M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"
+    sparkle:"M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z",
+    x:"M6 6l12 12M18 6 6 18"
   },
   svg:n=>`<svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${Icons.P[n]}"/></svg>`
 };

@@ -61,7 +61,7 @@ const phTxt="Fotoğraflar yalnız bu telefonda, uygulamanın özel alanında dur
 function photoCard(){
   if(!phOk())return `<h2>İlerleme fotoğrafları</h2><div class="card"><p class="hint">Bu cihazda fotoğraf saklanamıyor.</p></div>`;
   const btns=`<div class="btns"><button class="btn ghost" data-ph="add"${PhotoLib.canAdd(phList.length)?"":" disabled"}>Fotoğraf ekle${phList.length?` (${phList.length}/${PhotoLib.MAX})`:""}</button>${phList.length>1?`<button class="btn ghost" data-ph="cmp">Karşılaştır</button>`:""}</div>`;
-  const grid=phList.length?`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px">${phList.map(p=>`<button class="lnk" style="padding:0;min-height:0" data-ph="view:${p.id}" aria-label="${phCap(p)} fotoğrafı"><img src="${p.thumb}" alt="" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;display:block"><span class="mut sm num" style="display:block;color:var(--mut);font-weight:400">${phCap(p)}</span></button>`).join("")}</div>`:`<p class="hint" style="padding:0 0 8px">Aynı ışıkta, aynı yerde çekilen fotoğraflar farkı gösterir. En çok ${PhotoLib.MAX} fotoğraf tutulur.</p>`;
+  const grid=phList.length?`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px">${phList.map(p=>`<button class="lnk" style="padding:0;min-height:0" data-ph="view:${p.id}" aria-label="${phCap(p)} fotoğrafı"><img src="${p.thumb}" alt="" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:var(--r-xs);display:block"><span class="mut sm num" style="display:block;color:var(--mut);font-weight:400">${phCap(p)}</span></button>`).join("")}</div>`:`<p class="flush hint">Aynı ışıkta, aynı yerde çekilen fotoğraflar farkı gösterir. En çok ${PhotoLib.MAX} fotoğraf tutulur.</p>`;
   return `<h2>İlerleme fotoğrafları</h2><div class="card">${grid}${btns}${phNote}</div>`;
 }
 function sheetFoto(){
@@ -70,7 +70,7 @@ function sheetFoto(){
   openSheet(`<h3>İlerleme fotoğrafı ekle</h3>${dayOptions()}
   <label class="lbl" for="phkg">Kilo etiketi (${wlab()}, isteğe bağlı)</label><input class="in num" id="phkg" inputmode="decimal" value="${last}" autocomplete="off">
   <div class="ferr" id="pherr" role="alert"></div>
-  <div class="two"><label class="btn" style="text-align:center">Fotoğraf çek<input type="file" accept="image/*" capture="environment" data-phf="1" hidden></label><label class="btn ghost" style="text-align:center">Galeriden seç<input type="file" accept="image/*" data-phf="1" hidden></label></div>
+  <div class="two"><label class="tc btn">Fotoğraf çek<input type="file" accept="image/*" capture="environment" data-phf="1" hidden></label><label class="tc btn ghost">Galeriden seç<input type="file" accept="image/*" data-phf="1" hidden></label></div>
   <p class="hint">Fotoğraf telefonda küçültülür (en uzun kenar ${PhotoLib.LONG} px). ${phTxt}</p>`);
 }
 async function phAdd(file){
@@ -86,12 +86,14 @@ async function phAdd(file){
 }
 async function sheetFotoView(id){
   const p=phList.find(x=>x.id===id);if(!p)return;
-  openSheet(`<h3>${phCap(p)}</h3><img id="phbig" alt="İlerleme fotoğrafı, ${phCap(p)}" style="width:100%;max-height:60vh;object-fit:contain;border-radius:8px"><div class="two" style="margin-top:10px"><button class="btn ghost" data-ph="cmp:${id}"${phList.length>1?"":" disabled"}>Karşılaştır</button><button class="btn danger" data-ph="del:${id}">Sil</button></div>`);
+  openSheet(`<h3>${phCap(p)}</h3><img id="phbig" alt="İlerleme fotoğrafı, ${phCap(p)}" style="width:100%;max-height:60vh;object-fit:contain;border-radius:var(--r-xs)"><div class="mt-3 two"><button class="btn ghost" data-ph="cmp:${id}"${phList.length>1?"":" disabled"}>Karşılaştır</button><button class="btn danger" data-ph="del:${id}">Sil</button></div>`);
   const u=await phUrl(id),im=$("#phbig");if(im&&u)im.src=u;
 }
 function phDelAsk(id){
   const p=phList.find(x=>x.id===id);if(!p)return;
-  if(!confirm(`${phCap(p)} fotoğrafı silinecek. Bu geri alınamaz. Silinsin mi?`))return;
+  confirmSheet({title:"Fotoğraf silinsin mi?",body:`${phCap(p)} fotoğrafı silinecek. Bu geri alınamaz. Silinsin mi?`,ok:"Sil",danger:true}).then(ok=>{if(ok)phDelDo(id)});
+}
+function phDelDo(id){
   phDel(id).then(()=>{phList=phList.filter(x=>x.id!==id);closeSheet();render();toast("Fotoğraf silindi")}).catch(()=>toast("Fotoğraf silinemedi"));
 }
 async function phCmp(){
@@ -107,9 +109,9 @@ function sheetFotoCmp(a){
   if(phList.length<2)return;
   const opt=sel=>phList.map(p=>`<option value="${p.id}"${p.id===sel?" selected":""}>${phCap(p)}</option>`).join(""),
     first=a||phList[0].id,last=phList[phList.length-1].id,b=last===first?phList[phList.length-2].id:last;
-  openSheet(`<h3>Karşılaştır</h3><div class="two"><div><label class="lbl" for="pha">Önce</label><select class="in" id="pha">${opt(first)}</select><img id="phia" alt="Önceki fotoğraf" style="width:100%;border-radius:8px;margin-top:6px"></div>
-  <div><label class="lbl" for="phb">Sonra</label><select class="in" id="phb">${opt(b)}</select><img id="phib" alt="Sonraki fotoğraf" style="width:100%;border-radius:8px;margin-top:6px"></div></div>
-  <p class="mut sm num" id="phgap" role="status" style="margin-top:8px"></p>`);
+  openSheet(`<h3>Karşılaştır</h3><div class="two"><div><label class="lbl" for="pha">Önce</label><select class="in" id="pha">${opt(first)}</select><img id="phia" alt="Önceki fotoğraf" class="w100 rxs mt-2"></div>
+  <div><label class="lbl" for="phb">Sonra</label><select class="in" id="phb">${opt(b)}</select><img id="phib" alt="Sonraki fotoğraf" class="w100 rxs mt-2"></div></div>
+  <p class="mt-2 mut sm num" id="phgap" role="status"></p>`);
   phCmp();
 }
 document.addEventListener("click",ev=>{

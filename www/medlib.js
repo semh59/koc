@@ -161,6 +161,53 @@ const MedLib=(()=>{
     const d=new Date(tapMs),tm=d.getHours()*60+d.getMinutes(),sm=+slot.slice(0,2)*60+ +slot.slice(3,5);
     return sm>tm?addDay(key(d),-1):key(d);
   }
-  return {sinceFor,doseOfId,MAXM,MAXT,BUDGET,cleanMeds,cleanLog,dosesOn,statusOf,mark,adherence,stockLeft,notifications,budget,dayForTap,revise,addDay,dayDiff,dayOk,timeOk,key};
+  /* Ekranı uyandıran alarm yalnız ana dozlarda: ana doz kimlikleri [1e6, 2e6), tekrarlar 2e6 ve üstü. */
+  const wakeTimes=list=>list.filter(n=>n.extra&&n.extra.act==="med"&&n.id>=1e6&&n.id<2e6).map(n=>+n.schedule.at);
+
+  /* MedWake tanı kaydını (MedWakeReceiver.java) sade Türkçe satırlara çevirir. Kayıt kişisel veri içermez. */
+  const hms=ms=>{const d=new Date(ms);return `${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())}`};
+  const dhm=ms=>{const d=new Date(ms);return `${p2(d.getDate())}.${p2(d.getMonth()+1)} ${p2(d.getHours())}:${p2(d.getMinutes())}`};
+  const span=ms=>{const a=Math.abs(ms),s=ms<0?"-":"+";return a<60000?`${s}${Math.round(a/1000)} sn`:`${s}${Math.round(a/60000)} dk`};
+  const CAUSE={APP:"uygulama alarmları kurdu",AFTER:"alarm sonrası yeniden kuruldu",BOOT:"telefon açıldı, alarmlar kuruldu",UPDATE:"uygulama güncellendi, alarmlar kuruldu",TIME:"saat değişti, alarmlar kuruldu",TZ:"saat dilimi değişti, alarmlar kuruldu",EXACT:"tam alarm izni değişti, alarmlar kuruldu"};
+  function wakeLine(e){
+    const ts=dhm(e.t)+":"+p2(new Date(e.t).getSeconds());
+    if(e.a!=="WAKE"&&e.a!=="NOW"){
+      const nx=(e.nx||[]).map(dhm).join(", ");
+      return `${ts} ${CAUSE[e.a]||e.a}: ${e.n} alarm${e.in!==e.n?` (gelen ${e.in} zaman)`:""}${nx?`, ilk: ${nx}`:""}`;
+    }
+    const out=e.a==="NOW"?[`${ts} şu anki durum`]:[`${ts} ${e.k==="T"?"test alarmı":"alarm"} çaldı${e.p?` (planlanan ${hms(e.p)}, ${span(e.t-e.p)})`:""}`,e.kl?"ekran kilitli":"kilit açık",e.ia===false?"ekran kapalıydı":"ekran açıktı"];
+    if(e.wl===false)out.push("ekran kilidi alınamadı");
+    if(e.fs==="ok")out.push("tam ekran bildirimi gönderildi");
+    else if(e.fs==="skip")out.push("tam ekran bildirimi gerekmedi");
+    else if(e.fs)out.push("tam ekran bildirimi gönderilemedi: "+String(e.fs).replace(/^err:/,""));
+    if(e.ne===false)out.push("bildirimler kapalı");
+    if(e.fsi===false)out.push("tam ekran izni yok");
+    if(e.ci!=null&&e.ci>=0&&e.ci<4)out.push(e.ci===0?"ekran kanalı engelli":"ekran kanalı düşük önemde");
+    if(e.bo===false)out.push("pil kısıtı var");
+    if(e.err)out.push("hata: "+e.err);
+    return out.join(", ");
+  }
+  /* Olası sorunlar: st anlık durum, items kayıtlar. to: açılacak ayar (MedWake.settings), autostart: Xiaomi otomatik başlat. */
+  function wakeIssues(st,items){
+    const out=[],add=(t,to,id)=>out.push({t,to,id}),low=(i,ad)=>i===0?`${ad} kanalı engelli.`:i>0&&i<4?`${ad} kanalı düşük önemde.`:"";
+    if(st.ne===false)add("Bildirimler kapalı: ilaç saatinde ne ses ne ekran gelir.","notif");
+    const lw=low(st.ci,"Ekran uyandırma");if(lw)add(lw+" Önemi en yükseğe çıkar, kilit ekranında göster ve yüzen bildirimi aç.","channel");
+    const lm=low(st.mi,"İlaç bildirimi");if(lm)add(lm+" Önemi en yükseğe çıkar, sesi aç.","channel","nw_med");
+    if(st.fsi===false)add("Tam ekran bildirim izni yok: alarm kilitli ekranı açamaz.","fsi");
+    if(st.bo===false)add("Pil kısıtı var: telefon uygulamayı arka planda durdurabilir, alarm geç gelebilir. Pil ayarını 'Kısıtlama yok' yap.","battery");
+    if(st.ex===false)add("Tam saat alarm izni yok: ilaç bildirimi ve ekran alarmı birkaç dakika gecikebilir.","exact");
+    const w=items.filter(e=>e.a==="WAKE"),arm=items.filter(e=>e.a!=="WAKE").pop();
+    /* Arada çalma kaydı olmadan sonraki kurulum ilk alarm zamanını 1 dk'dan fazla geçmişse o alarm çalmamıştır. */
+    const miss=items.filter((e,i)=>e.a!=="WAKE"&&e.nx&&e.nx[0]&&items[i+1]&&items[i+1].a!=="WAKE"&&items[i+1].t>e.nx[0]+60000).pop();
+    if(miss)add(`Planlanan ${dhm(miss.nx[0])} alarmı çalmadı: telefon uygulamayı arka planda engellemiş olabilir. Otomatik başlatmayı aç, pil kısıtını kaldır.`,"autostart");
+    if(arm&&arm.n===0)add("Kurulu ekran alarmı yok: ilaç saatleri telefona iletilmemiş. Uygulamayı güncelle, sonra İlaçlar ekranını bir kez aç.");
+    if(!w.length)add("Kayıtlarda çalan alarm yok: alarm hiç çalmadı. Xiaomi'de otomatik başlatmayı aç.","autostart");
+    const late=Math.max(0,...w.filter(e=>e.p).map(e=>e.t-e.p));
+    if(late>60000)add(`Alarm planlanandan geç çaldı (en çok ${span(late)}): pil kısıtı ya da otomatik başlatma kapalı olabilir.`,"autostart");
+    const bad=w.filter(e=>e.fs&&/^err/.test(e.fs)).pop();
+    if(bad)add("Tam ekran bildirimi gönderilemedi: "+bad.fs.replace(/^err:/,""));
+    return out;
+  }
+  return {wakeTimes,wakeLine,wakeIssues,sinceFor,doseOfId,MAXM,MAXT,BUDGET,cleanMeds,cleanLog,dosesOn,statusOf,mark,adherence,stockLeft,notifications,budget,dayForTap,revise,addDay,dayDiff,dayOk,timeOk,key};
 })();
 if(typeof module!=="undefined")module.exports=MedLib;

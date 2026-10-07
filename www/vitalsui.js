@@ -13,9 +13,9 @@ const vToMin=t=>+t.slice(0,2)*60+ +t.slice(3,5);
 
 /* ---- Ayarlar ---- */
 function vitalsSettingsHtml(){
-  const st=S.settings,seg=(on,key,label)=>`<button class="btn ghost" data-vt="${key}" style="margin-bottom:8px">${on?label+" takibini kapat":label+" takibini aç"}</button>`;
+  const st=S.settings,seg=(on,key,label)=>`<button class="mb-2 btn ghost" data-vt="${key}">${on?label+" takibini kapat":label+" takibini aç"}</button>`;
   return `<h2>Sağlık ölçümleri</h2><div class="card">
-    <p class="mut sm" style="margin:0 0 10px">Evde ölçtüğün tansiyon ve şekeri kaydet. Uygulama değerleri yorumlamaz; kaydeder, ortalamasını ve grafiğini gösterir. Veriler telefondan çıkmaz.</p>
+    <p class="m0 mb-3 mut sm">Evde ölçtüğün tansiyon ve şekeri kaydet. Uygulama değerleri yorumlamaz; kaydeder, ortalamasını ve grafiğini gösterir. Veriler telefondan çıkmaz.</p>
     ${seg(st.bpOn,"bptoggle","Tansiyon")}
     ${seg(st.bsOn,"bstoggle","Şeker")}
   </div>`;
@@ -45,7 +45,7 @@ function vTrendCards(){
   return (st.bpOn?c("tansiyon","heart","Tansiyon",one("t","Henüz ölçüm yok")):"")+(st.bsOn?c("seker","su","Şeker",one("s","Henüz ölçüm yok")):"");
 }
 function vMenu(){
-  const st=S.settings,b=(a,t)=>`<button class="btn ghost" data-vt="${a}" style="margin-bottom:8px">${t}</button>`;
+  const st=S.settings,b=(a,t)=>`<button class="mb-2 btn ghost" data-vt="${a}">${t}</button>`;
   openSheet(`<h3>Ölçüm</h3>${st.bpOn?b("addbp",Icons.svg("plus")+" Tansiyon ekle"):""}${st.bsOn?b("addbs",Icons.svg("plus")+" Şeker ekle"):""}${st.bpOn?b("go:tansiyon",Icons.svg("chart")+" Tansiyon raporu ve grafik"):""}${st.bsOn?b("go:seker",Icons.svg("chart")+" Şeker raporu ve grafik"):""}<button class="btn ghost" data-vt="close">Kapat</button>`);
 }
 
@@ -56,11 +56,11 @@ function sheetBp(){
   vConfirm="";vSes=new Date().getHours()<12?"sabah":"aksam";
   openSheet(`<h3>Tansiyon ekle</h3>
   <div class="lbl">Seans</div>${vChips("vses",VitalsLib.SES,vSes)}
-  <div class="lbl">1. ölçüm (büyük / küçük / nabız)</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">${vIn("bs1","120")}${vIn("bd1","80")}${vIn("bn1","nabız")}</div>
-  <div class="lbl">2. ölçüm (1-2 dakika sonra, isteğe bağlı)</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">${vIn("bs2","120")}${vIn("bd2","80")}${vIn("bn2","nabız")}</div>
+  <div class="lbl">1. ölçüm (büyük / küçük / nabız)</div><div class="g3 mb-2">${vIn("bs1","120")}${vIn("bd1","80")}${vIn("bn1","nabız")}</div>
+  <div class="lbl">2. ölçüm (1-2 dakika sonra, isteğe bağlı)</div><div class="g3 mb-2">${vIn("bs2","120")}${vIn("bd2","80")}${vIn("bn2","nabız")}</div>
   ${dayOptions()}<div class="lbl">Saat</div><input class="in" type="time" id="vtime" value="${vNow()}">
   <input class="in" id="vnot" placeholder="Not (isteğe bağlı)" maxlength="80" autocomplete="off">
-  <div class="mut sm" style="margin-bottom:8px">Ölçmeden önce 5 dakika otur, kol kalp hizasında olsun. Sabah ölçümü kahvaltı ve ilaçtan önce.</div>
+  <div class="mb-2 mut sm">Ölçmeden önce 5 dakika otur, kol kalp hizasında olsun. Sabah ölçümü kahvaltı ve ilaçtan önce.</div>
   <div class="hint" id="vwarn" role="alert"></div><button class="btn" data-vt="savebp">Kaydet</button>`);
 }
 function sheetBs(){
@@ -127,7 +127,7 @@ function vSvg(series,from,to,W,H,dec){
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Ölçüm grafiği" data-tip="${tip}"><rect x="8" y="8" width="${W-16}" height="${H-30}" fill="none" stroke="var(--line)"/>${body}${lab}<text x="8" y="${H-6}">${fd(from)}</text><text x="${W-8}" y="${H-6}" text-anchor="end">${fd(to)}</text><text x="12" y="20">${dec?hi.toFixed(dec).replace(".",","):Math.round(hi)}</text><text x="12" y="${H-26}">${dec?lo.toFixed(dec).replace(".",","):Math.round(lo)}</text></svg>`;
 }
 const vSeg=()=>`<div class="seg" role="group" aria-label="Aralık">${[7,14,30].map(n=>`<button data-vt="range:${n}" aria-pressed="${vRange===n}">${n} gün</button>`).join("")}</div>`;
-const vBtns=add=>`<button class="btn" data-vt="${add}" style="margin-bottom:12px">${Icons.svg("plus")} Ölçüm ekle</button>`;
+const vBtns=add=>`<button class="mb-3 btn" data-vt="${add}">${Icons.svg("plus")} Ölçüm ekle</button>`;
 const vDel=ids=>`<button class="chip" data-vt="del:${ids.join(",")}" aria-label="Ölçümü sil">✕</button>`;
 
 function viewTansiyon(){
@@ -138,12 +138,12 @@ function viewTansiyon(){
   const bpSeries=[{pts:pt(raw,"sys"),color:"var(--ink)",shape:"c",label:"Sistolik (büyük)",short:"Sistolik"},{pts:pt(raw,"dia"),color:"var(--su)",shape:"s",dash:true,below:true,label:"Diyastolik (küçük)",short:"Diyastolik"}];
   const avgTxt=a=>a?`${Math.round(a.sys)}/${Math.round(a.dia)}`:"–";
   const rows=ses.slice().reverse().map(s=>{
-    return `<div class="row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span style="flex:1">${fd(s.day)} ${s.time}<small class="mut"> ${VitalsLib.sesName(s.ses)}${s.n>1?`, ${s.n} ölçüm`:""}</small></span><b class="num">${Math.round(s.sys)}/${Math.round(s.dia)}</b><span class="mut sm">${s.nabiz?s.nabiz:""}</span>${vDel(s.raw.map(x=>x.id))}</div>`;
+    return `<div class="row"><span class="grow">${fd(s.day)} ${s.time}<small class="mut"> ${VitalsLib.sesName(s.ses)}${s.n>1?`, ${s.n} ölçüm`:""}</small></span><b class="num">${Math.round(s.sys)}/${Math.round(s.dia)}</b><span class="mut sm">${s.nabiz?s.nabiz:""}</span>${vDel(s.raw.map(x=>x.id))}</div>`;
   }).join("");
   return `${vBtns("addbp")}
   <div class="card"><div class="lbl">Ev ortalaması (son 7 gün)</div>
-    ${h.all?`<div class="sumv num" style="color:var(--ink)">${avgTxt(h.all)} <small>mmHg</small></div><div class="mut sm">${h.all.n} ölçüm, ${h.days} gün</div>${h.enough?"":`<div class="mut sm">Ortalama için en az 3 gün, tercihen 7 gün sabah ve akşam ölçüm gerekir.</div>`}
-    <div class="stats" style="margin-top:8px"><div class="stat"><div class="k">Sabah ortalaması</div><div class="v num">${avgTxt(h.sabah)}</div></div><div class="stat"><div class="k">Akşam ortalaması</div><div class="v num">${avgTxt(h.aksam)}</div></div></div>`:`<p class="mut">Henüz ölçüm yok. Günde 2 kez (sabah ve akşam), her seferinde 2 ölçüm, 3-7 gün ölçersen anlamlı bir ortalama çıkar.</p>`}
+    ${h.all?`<div class="ink sumv num">${avgTxt(h.all)} <small>mmHg</small></div><div class="mut sm">${h.all.n} ölçüm, ${h.days} gün</div>${h.enough?"":`<div class="mut sm">Ortalama için en az 3 gün, tercihen 7 gün sabah ve akşam ölçüm gerekir.</div>`}
+    <div class="mt-2 stats"><div class="stat"><div class="k">Sabah ortalaması</div><div class="v num">${avgTxt(h.sabah)}</div></div><div class="stat"><div class="k">Akşam ortalaması</div><div class="v num">${avgTxt(h.aksam)}</div></div></div>`:`<p class="mut">Henüz ölçüm yok. Günde 2 kez (sabah ve akşam), her seferinde 2 ölçüm, 3-7 gün ölçersen anlamlı bir ortalama çıkar.</p>`}
   </div>
   ${vSeg()}<div class="card">${vSvg(bpSeries,from,end,320,170)}${vLegend(bpSeries)}</div>
   <div class="card"><div class="lbl">Ölçümler (son ${vRange} gün)</div>${rows||`<p class="mut">Bu dönemde ölçüm yok.</p>`}</div>
@@ -155,10 +155,10 @@ function viewSeker(){
   const COL={acl:"var(--prim)",once:"var(--prim)",sonra:"var(--kcal)",yatis:"var(--su)",rast:"var(--mut)"};
   const SHP={acl:"c",once:"d",sonra:"t",yatis:"s",rast:"c"};
   const series=VitalsLib.CTX.map(([c])=>({pts:a.filter(r=>r.ctx===c).map(r=>({day:r.day,time:r.time,v:Units.g(r.g)})),color:COL[c],shape:SHP[c],label:VitalsLib.ctxName(c),short:"",line:false})).filter(s=>s.pts.length);
-  const rows=a.slice().reverse().map(r=>{return `<div class="row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span style="flex:1">${fd(r.day)} ${r.time}<small class="mut"> ${esc(VitalsLib.ctxName(r.ctx))}</small></span><b class="num">${dg(r.g)}</b>${vDel([r.id])}</div>`}).join("");
+  const rows=a.slice().reverse().map(r=>{return `<div class="row"><span class="grow">${fd(r.day)} ${r.time}<small class="mut"> ${esc(VitalsLib.ctxName(r.ctx))}</small></span><b class="num">${dg(r.g)}</b>${vDel([r.id])}</div>`}).join("");
   const labA1c=S.labs.filter(l=>l.k==="hba1c"&&l.v!=null).sort((x,y)=>x.day<y.day?1:-1)[0];
   return `${vBtns("addbs")}
-  <div class="card"><div class="lbl">Son ölçüm</div>${last?`<div class="sumv num" style="color:var(--ink)">${dg(last.g)} <small>${glab()}</small></div><div class="mut sm">${esc(VitalsLib.ctxName(last.ctx))}, ${vWhen(last)}</div>`:`<p class="mut">Henüz ölçüm yok.</p>`}</div>
+  <div class="card"><div class="lbl">Son ölçüm</div>${last?`<div class="ink sumv num">${dg(last.g)} <small>${glab()}</small></div><div class="mut sm">${esc(VitalsLib.ctxName(last.ctx))}, ${vWhen(last)}</div>`:`<p class="mut">Henüz ölçüm yok.</p>`}</div>
   ${vSeg()}${gs?`<div class="stats"><div class="stat"><div class="k">Ortalama</div><div class="v num">${vAvg(gs.avg)}</div></div><div class="stat"><div class="k">Ölçüm sayısı</div><div class="v num">${gs.n}</div></div><div class="stat"><div class="k">En düşük / en yüksek</div><div class="v num">${vMmol()?`${dg(gs.min)} / ${dg(gs.max)}`:`${gs.min} / ${gs.max}`}</div></div></div>
   <div class="card"><div class="lbl">Bağlama göre ortalama</div>${Object.entries(gs.byCtx).map(([c,x])=>`<div class="row" style="display:flex;justify-content:space-between;padding:6px 0"><span>${esc(VitalsLib.ctxName(c))}</span><b class="num">${vAvg(x.avg)} <small class="mut">(${x.n})</small></b></div>`).join("")}</div>`:""}
   <div class="card">${vSvg(series,from,end,320,150,vDec())}${vLegend(series)}</div>
@@ -169,7 +169,7 @@ function viewSeker(){
 
 /* ---- Doktor raporu ---- */
 function vPdfMenu(kind){
-  openSheet(`<h3>Doktor raporu</h3><p class="mut sm">Hangi dönemi rapora ekleyelim?</p>${[7,14,30,90].map(n=>`<button class="btn ghost" data-vt="pdf:${kind}:${n}" style="margin-bottom:8px">Son ${n} gün</button>`).join("")}<button class="btn ghost" data-vt="close">Vazgeç</button>`);
+  openSheet(`<h3>Doktor raporu</h3><p class="mut sm">Hangi dönemi rapora ekleyelim?</p>${[7,14,30,90].map(n=>`<button class="mb-2 btn ghost" data-vt="pdf:${kind}:${n}">Son ${n} gün</button>`).join("")}<button class="btn ghost" data-vt="close">Vazgeç</button>`);
 }
 function vReportInfo(kind,days){
   const end=dayKey(),from=keyOff(1-days),all=S.vitals,rows=VitalsLib.reportRows(all,kind,from,end,Units.gu());

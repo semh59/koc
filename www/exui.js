@@ -20,7 +20,7 @@ function exFiltered(){
 }
 function exListHtml(){
   const all=exFiltered(),list=all.slice(0,gLN);
-  return (gLQ||exFilterN()?`<p class="hint" style="padding:0 4px 6px">${all.length} sonuç</p>`:"")+list.map(e=>`<button class="prow exrow" data-g="exinfo:${e.id}"><span class="exthumb" aria-hidden="true">${e.tp?exFig(e,false):""}</span><span style="flex:1;min-width:0"><b>${esc(e.n)}</b><span class="mut sm">${e.r||e.g}${e.q?" · "+e.q.toLowerCase():""}${e.l?" · "+exLv(e.l):""}</span></span><span class="plus">›</span></button>`).join("")
+  return (gLQ||exFilterN()?`<p class="hint" style="padding:0 4px 6px">${all.length} sonuç</p>`:"")+list.map(e=>`<button class="prow exrow" data-g="exinfo:${e.id}"><span class="exthumb" aria-hidden="true">${e.tp?exFig(e,false):""}</span><span class="grow"><b>${esc(e.n)}</b><span class="mut sm">${e.r||e.g}${e.q?" · "+e.q.toLowerCase():""}${e.l?" · "+exLv(e.l):""}</span></span><span class="plus">›</span></button>`).join("")
     +(all.length>list.length?`<button class="lnk" data-g="lmore">Daha fazla göster</button>`:"")+(all.length?"":`<p class="hint">Eşleşen hareket yok. Başka bir ad dene ya da filtreleri temizle.</p>`);
 }
 const exChips=(arr,cur,act)=>arr.map(x=>`<button class="chip" data-g="${act}:${x}" aria-pressed="${x===cur}">${x}</button>`).join("");
@@ -49,7 +49,7 @@ const exRefreshChips=()=>{
 function exHistLine(e){
   const h=gHistory(e.id).slice(0,3);if(!h.length)return "";
   const t=gTimed(e.id);
-  return `<div class="mut sm" style="margin:8px 0">Son: ${h.map(x=>`${fd(x.w.day)} ${t?x.sets.map(s=>s.sec).join("/")+" sn":x.sets.map(s=>(s.kg?fkg(s.kg)+"×":"")+s.reps+gRpeTx(s)).join(", ")}`).join(" · ")}</div>`;
+  return `<div class="my-2 mut sm">Son: ${h.map(x=>`${fd(x.w.day)} ${t?x.sets.map(s=>s.sec).join("/")+" sn":x.sets.map(s=>(s.kg?fkg(s.kg)+"×":"")+s.reps+gRpeTx(s)).join(", ")}`).join(" · ")}</div>`;
 }
 /* Tüm geçmiş grafikleri: seans başına bir nokta, x ekseni gerçek tarihe orantılı. Isınma ve işaretsiz setler gHistory'de zaten dışarıda. */
 const EXMET={e:["Tahmini 1TM","kg"],t:["En ağır set","kg"],v:["Hacim","kg"]};
@@ -97,7 +97,7 @@ function exSheet(id){
   ${d||photos?`<div class="exvis">${d?`<div class="exfig">${FigLib.svg(d,{anim:true,label:e.n})}</div>`:""}${photos}</div>`:""}
   ${cues?`<ul class="cues">${cues}</ul>`:""}
   <div class="mut sm">Kayıt türü: ${EXKIND[e.k||"w"]}</div>${exHistLine(e)}${exCharts(id)}
-  <div class="btns" style="margin-top:12px"><button class="btn" data-g="exadd:${id}">${inW?"Antrenmanda ekli":"Antrenmana ekle"}</button><button class="btn ghost" data-g="closesheet">Kapat</button></div>`);
+  <div class="mt-3 btns"><button class="btn" data-g="exadd:${id}">${inW?"Antrenmanda ekli":"Antrenmana ekle"}</button><button class="btn ghost" data-g="closesheet">Kapat</button></div>`);
 }
 function gSheetHistSimple(exId,h){
   const ex=gEx(exId),t=gTimed(exId);

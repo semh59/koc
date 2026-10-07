@@ -29,8 +29,11 @@ const test=base.test.extend({
     const app={
       page,
       /* seed: localStorage'a yazılacak durum (yalnız boşsa, yeniden yüklemede korunur); native: Capacitor eklentileri sahte. */
+      /* dialogs: uygulamanın onay penceresi (confirmSheet) tarayıcı confirm()'üne yönlenir; mesaj app.dialogs'a düşer, onDialog yanıtlar.
+         dialogs:false gerçek onay penceresini açar. */
       async open({seed,keys,native,time=NOW,dialogs=true}={}){
         await page.clock.install({time});
+        if(dialogs)await page.addInitScript(()=>{window.__confirmAuto=m=>window.confirm(m)});
         await page.addInitScript(([s,k])=>{try{if(s&&localStorage.getItem("koc_v1")==null)localStorage.setItem("koc_v1",JSON.stringify(s));if(k&&localStorage.getItem("koc_keys")==null)localStorage.setItem("koc_keys",JSON.stringify(k))}catch(e){}},[seed||null,keys||null]);
         if(native)await page.addInitScript(nativeShim,native);
         if(dialogs)page.on("dialog",d=>{app.dialogs.push(d.message());(app.onDialog?app.onDialog(d):d.accept()).catch(()=>{})});
