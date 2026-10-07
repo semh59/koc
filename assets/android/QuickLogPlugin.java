@@ -70,7 +70,8 @@ public class QuickLogPlugin extends Plugin {
         }
         SharedPreferences.Editor e = p.edit().putString("q", QuickMath.append(p.getString("q", ""), key, System.currentTimeMillis()));
         if (sig != null) e.putString("seen", QuickMath.remember(seen, sig));
-        e.apply();
+        // Kuyruk yazısı dayanıklı olmalı: kapalı uygulamada alıcı süreci hemen sonlanabilir, apply() asenkron yazmayı kaçırır.
+        e.commit();
         if (v > 0) NeoWidget.bump(c, v);
         if (id != Integer.MIN_VALUE) {
             NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
