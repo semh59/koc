@@ -97,4 +97,16 @@ test.describe("Günlük",()=>{
     await page.click('[data-mset$=":aks"]');
     await expect(page.locator(".log .gh").first()).toContainText("Akşam");
   });
+
+  test("çay su ilerlemesini değiştirmez ve Diğer içecekler satırında görünür; su değiştirir",async({app,page})=>{
+    await app.open({seed:state()});
+    await page.click('[data-dk="open"]');
+    await expect(page.locator("#sheet")).toContainText("Su hedefine yalnız su sayılır.");
+    await page.click('[data-dr="cay"]');await page.fill("#fv","200");
+    await page.click('[data-dk="go"]');
+    await expect(ring(page,"Su").locator(".rs")).toHaveText("0,0 / 2,5 L");
+    await expect(page.locator(".log")).toContainText("Diğer içecekler: 200 ml, 1 kez");
+    await page.click('.act[data-act="su"]');
+    await expect(ring(page,"Su").locator(".rs")).toHaveText("0,3 / 2,5 L");
+  });
 });

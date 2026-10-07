@@ -255,7 +255,7 @@ body.ob nav{display:none}body.ob main{padding-bottom:24px}
 .obp{display:grid;gap:6px;flex:1;padding:4px 4px 0}.obbar{display:flex;gap:6px}.obbar i{flex:1;height:4px;border-radius:2px;background:var(--line);transition:background var(--dur)}.obbar i.on{background:var(--prim)}
 
 /* Alt gezinme */
-nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:6px calc(8px + var(--sar)) calc(6px + var(--sab)) calc(8px + var(--sal));z-index:5}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:6px calc(8px + var(--sar)) calc(6px + var(--sab)) calc(8px + var(--sal));z-index:7;isolation:isolate}
 nav .in{max-width:520px;margin:0 auto;display:flex;gap:4px}
 /* Sabit yükseklik: Koç yazma alanı menünün hemen üstüne oturur, büyük yazı tipinde de çakışmaz. */
 nav button{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:56px;font-size:12px;font-weight:600;color:var(--mut);text-align:center;overflow-wrap:anywhere;line-height:1.2}
@@ -651,7 +651,7 @@ function add(type,v,text,day){
   S.entries.push(e);save();return e;
 }
 const of=(type,day)=>S.entries.filter(e=>e.type===type&&e.day===day);
-const sum=(type,a,b)=>S.entries.filter(e=>e.type===type&&e.day>=a&&e.day<=b).reduce((s,e)=>s+(e.v||0),0);
+const sum=(type,a,b)=>S.entries.filter(e=>(type==="su"?WeeklyLib.isWater(e):e.type===type)&&e.day>=a&&e.day<=b).reduce((s,e)=>s+(e.v||0),0);
 /* Hareket kalorisi ayarı açıksa o günün kalori hedefine eklenen kısım; kapalıysa 0. Ring, widget ve toast tek yerden okur. */
 const moveAdd=day=>{
   if(!(S.settings.moveKcalOn&&S.settings.kcal>0))return 0;
@@ -808,7 +808,7 @@ function viewBugun(){
   const li=(e,tx)=>`<li><span class="t num">${e.time}</span><span class="ic">${Icons.svg(e.type)}</span>${tx}<span class="vl num">${vtxt(e)}</span><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></li>`;
   const dl=LogLib.dayLog(items);
   const suTxt=dl.suMl<1000?`${Math.round(dl.suMl)} ml`:`${fmt(dl.suMl/1000,1)} L`;
-  const log=items.length?`<ul class="log">${dl.groups.map(g=>`<li class="gh"><b>${g.n}</b><span class="num">${Math.round(g.kcal)} kcal</span></li>`+g.items.map(e=>li(e,`<button class="tx" data-meal="${e.id}" aria-label="${esc(ttx(e))}, öğünü değiştir">${ttx(e)}</button>`)).join("")).join("")}${dl.su.length?`<li><span class="t num">${dl.su[dl.su.length-1].time}</span><span class="ic">${Icons.svg("su")}</span><button class="tx" data-suall="1">Su: ${suTxt}, ${dl.su.length} kez</button><span class="vl" aria-hidden="true">›</span></li>`:""}${dl.rest.sort((a,b)=>b.id-a.id).map(e=>li(e,`<span class="tx">${ttx(e)}</span>`)).join("")}</ul>`:`<p class="hint">${logOff===0?"Bugün henüz bir şey eklemedin. Bir bardak suyla başlayabilirsin.":"Bu güne ait bir şey yok."}</p>`;
+  const log=items.length?`<ul class="log">${dl.groups.map(g=>`<li class="gh"><b>${g.n}</b><span class="num">${Math.round(g.kcal)} kcal</span></li>`+g.items.map(e=>li(e,`<button class="tx" data-meal="${e.id}" aria-label="${esc(ttx(e))}, öğünü değiştir">${ttx(e)}</button>`)).join("")).join("")}${dl.su.length?`<li><span class="t num">${dl.su[dl.su.length-1].time}</span><span class="ic">${Icons.svg("su")}</span><button class="tx" data-suall="1">Su: ${suTxt}, ${dl.su.length} kez</button><span class="vl" aria-hidden="true">›</span></li>`:""}${dl.dr.length?`<li><span class="t num">${dl.dr[dl.dr.length-1].time}</span><span class="ic">${Icons.svg("su")}</span><button class="tx" data-suall="1">Diğer içecekler: ${Math.round(dl.drMl)} ml, ${dl.dr.length} kez</button><span class="vl" aria-hidden="true">›</span></li>`:""}${dl.rest.sort((a,b)=>b.id-a.id).map(e=>li(e,`<span class="tx">${ttx(e)}</span>`)).join("")}</ul>`:`<p class="hint">${logOff===0?"Bugün henüz bir şey eklemedin. Bir bardak suyla başlayabilirsin.":"Bu güne ait bir şey yok."}</p>`;
   const lname=logOff===0?"Bugün":logOff===1?"Dün":fd(lk);
   const dnav=`<div class="dnav"><button data-lo="1" aria-label="Önceki gün">‹</button><h2>${lname}</h2><button data-lo="-1" aria-label="Sonraki gün"${logOff===0?" disabled":""}>›</button></div>`;
   const lb=st.lastBackup,old=lb?Algo.dayNum(t)-Algo.dayNum(lb):null;

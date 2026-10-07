@@ -60,7 +60,7 @@
 **Eksikler ve öneri**
 - Widget/bildirim çift sayım testi (MIUI): **yüksek**, **S**.
 - Spor yapılan güne hedef ekleme: **düşük**, **S**.
-- İçecek türü (çay/kahve): **düşük**, **S**; hedefi karıştırma riski var.
+- İçecek türü (çay/kahve): yapıldı; su hedefine yalnız su ve sade maden suyu sayılır, diğerleri ayrı "Diğer içecekler" satırında, uyarısız.
 - Bilerek yapılmaması: tıbbi "ideal su miktarı" iddiası, yarış/sosyal özellik.
 
 ## 4. Kilo ve vücut ölçüsü takibi

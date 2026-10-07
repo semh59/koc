@@ -88,6 +88,16 @@ ok("takma adlar iki teste birden ait değil",dup.length===0,dup);
 
 // PDF yaz-oku: elle yazılmış metin PDF'i gerçek pdf.js ile oku
 const {textPdf}=require("./pdfmaker.js");
+// "Bu ne?" bilgisi: her kalemde dolu, yorumsuz, kısa; yalnız sözlükteki kalemlerde
+const BAN=/yuksek|dusuk|normal|risk|hastalik|tani|tanisi|tanilama|belirti|gosterir ki|tedavi|oneri|yorum/;
+for(const d of L.DICT){
+  ok("bilgi dolu: "+d.k,!!(d.n&&d.c&&d.e),d);
+  ok("bilgi yasak sözcük yok: "+d.k,!BAN.test(L.fold(d.c+" "+d.e)),d.e);
+  ok("bilgi en çok 160 karakter: "+d.k,d.e.length<=160&&d.c.length<=40,d.e.length);
+}
+ok("alias ile içe aktarılan kalemde bilgi var",L.info(L.parseLine("Total Kolesterol 190 mg/dL < 200").k)?.c==="Yağ profili");
+ok("PDF/OCR alias (Açlık kan şekeri) bilgi var",!!L.info(L.parseLine("Açlık Kan Şekeri 98 mg/dL 70-100").k));
+ok("tanınmayan kalemde bilgi yok",L.info(L.parseLine("Bilinmeyen Test 5 mg/dL 1-9").k)===undefined&&L.info(L.keyFor("Bilinmeyen Test"))===undefined);
 (async()=>{
   const lib=await import("pdfjs-dist/legacy/build/pdf.mjs");
   const data=textPdf([

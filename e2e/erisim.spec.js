@@ -100,6 +100,15 @@ test.describe("Büyük yazı (%200) ve dar ekran (320 px)",()=>{
     for(const t of SCREENS){await app.go(t);await page.waitForTimeout(100);expect(await bad(),t).toEqual([])}
     for(const a of SHEETS){await openSheet(app,page,a);expect(await bad(),"sheet "+a).toEqual([]);await app.closeSheet()}
   });
+  test("Bugün en altta, büyük yazıda hiçbir içerik menüyle kesişmez",async({app,page})=>{
+    await app.open({seed:KOC});await scaleText(page,2);await page.waitForTimeout(200);
+    await page.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));await page.waitForTimeout(200);
+    const r=await page.evaluate(()=>{const n=document.querySelector("nav").getBoundingClientRect(),hit=(x,y)=>document.elementFromPoint(x,y)?.closest("nav")!==null;
+      const pts=[...document.querySelectorAll("nav button")].map(b=>{const q=b.getBoundingClientRect();return hit(q.left+q.width/2,q.top+q.height/2)});
+      const last=[...document.querySelectorAll("#app button,#app .card")].pop().getBoundingClientRect().bottom;
+      return {pts,gap:n.top-last,center:hit(n.left+n.width/2,n.top+n.height/2)}});
+    expect(r.center).toBe(true);expect(r.pts.every(Boolean)).toBe(true);expect(r.gap).toBeGreaterThanOrEqual(-1);
+  });
   test("menü büyük yazıda uzar, Koç yazma alanı menüyle çakışmaz",async({app,page})=>{
     await app.open({seed:KOC});await scaleText(page,2);await app.tab("koc");await page.waitForTimeout(200);
     const g=await page.evaluate(()=>[document.querySelector("#composer").getBoundingClientRect().bottom,document.querySelector("nav").getBoundingClientRect().top]);

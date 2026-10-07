@@ -6,54 +6,55 @@ const LabLib=(()=>{
   /* Harf harfe eşler: uzunluk değişmez, böylece katlanmış metindeki konum özgün metinde de geçerlidir. */
   const fold=s=>Array.from(String(s)).map(c=>MAP[c]||c.toLowerCase()).join("");
 
-  /* [anahtar, görünen ad, takma adlar (katlanmış)] */
+  /* [anahtar, görünen ad, takma adlar (katlanmış), kategori, ne olduğu (yalnız tanım; yorum yok)] */
   const DICT=[
-    ["glukoz","Glukoz",["glukoz (aclik)","glukoz","glikoz","glucose","aclik kan sekeri","kan sekeri","aks","aclik glukoz","fasting glucose"]],
-    ["hba1c","HbA1c",["hemoglobin a1c","hemoglobin a1c (hba1c)","hba1c","hb a1c","a1c","glikozile hemoglobin","glikolize hemoglobin","glycated hemoglobin","glycohemoglobin"]],
-    ["insulin","İnsülin",["insulin","insulin (aclik)","aclik insulin"]],
-    ["kolesterol","Total kolesterol",["total kolesterol","kolesterol (total)","kolesterol total","kolesterol","cholesterol","total cholesterol"]],
-    ["ldl","LDL kolesterol",["kolesterol ldl","ldl kolesterol","ldl-kolesterol","ldl (direkt)","ldl cholesterol","ldl-c","ldl"]],
-    ["hdl","HDL kolesterol",["kolesterol hdl","hdl kolesterol","hdl-kolesterol","hdl cholesterol","hdl-c","hdl"]],
-    ["vldl","VLDL kolesterol",["vldl kolesterol","vldl-kolesterol","vldl"]],
-    ["trigliserid","Trigliserid",["trigliserid","trigliserit","trigliseridler","triglycerides","triglyceride","tg"]],
-    ["tsh","TSH",["tsh","tiroid uyarici hormon","thyroid stimulating hormone"]],
-    ["ft4","Serbest T4",["serbest t4","sT4","ft4","free t4","t4 serbest","t4 (serbest)"].map(fold)],
-    ["ft3","Serbest T3",["serbest t3","ft3","free t3","t3 serbest","t3 (serbest)"]],
-    ["b12","Vitamin B12",["vitamin b12","vitamin b-12","vit b12","vit. b12","b12 vitamini","b12","cobalamin"]],
-    ["d3","D vitamini (25-OH)",["25-oh vitamin d","25 oh vitamin d","25(oh) vitamin d","25-hidroksi vitamin d","25-oh d vitamini","25 hidroksi vitamin d","vitamin d total","vitamin d3","vitamin d","d vitamini","d vit"]],
-    ["folat","Folat",["folik asit","folat","folate"]],
-    ["ferritin","Ferritin",["ferritin"]],
-    ["demir","Demir",["serum demiri","demir (serum)","demir","iron"]],
-    ["tdbk","Demir bağlama kapasitesi",["total demir baglama kapasitesi","demir baglama kapasitesi","demir baglama","tdbk","tibc","dbk"]],
-    ["hgb","Hemoglobin",["hemoglobin","hgb","hb"]],
-    ["hct","Hematokrit",["hematokrit","hct"]],
-    ["wbc","Lökosit",["lokosit","wbc","beyaz kure","beyaz kan hucresi"]],
-    ["rbc","Eritrosit",["eritrosit","rbc","kirmizi kure"]],
-    ["plt","Trombosit",["trombosit","plt","platelet"]],
-    ["mcv","MCV",["mcv"]],
-    ["kreatinin","Kreatinin",["kreatinin","creatinine"]],
-    ["ure","Üre",["kan ure azotu","ure","bun","urea"]],
-    ["alt","ALT",["alt (sgpt)","alt","sgpt","alanin aminotransferaz","alanine aminotransferase"]],
-    ["ast","AST",["ast (sgot)","ast","sgot","aspartat aminotransferaz","aspartate aminotransferase"]],
-    ["ggt","GGT",["gama gt","gama glutamil transferaz","ggt","gamma gt"]],
-    ["alp","ALP",["alkalen fosfataz","alkalin fosfataz","alp"]],
-    ["bil_t","Bilirubin (total)",["bilirubin total","bilirubin (total)","total bilirubin","bilirubin t"]],
-    ["bil_d","Bilirubin (direkt)",["bilirubin direkt","bilirubin (direkt)","direkt bilirubin","bilirubin d"]],
-    ["urikasit","Ürik asit",["urik asit","uric acid"]],
-    ["sodyum","Sodyum",["sodyum","sodium","na"]],
-    ["potasyum","Potasyum",["potasyum","potassium","k"]],
-    ["kalsiyum","Kalsiyum",["kalsiyum","calcium","ca"]],
-    ["magnezyum","Magnezyum",["magnezyum","magnesium","mg"]],
-    ["fosfor","Fosfor",["fosfor","phosphorus","inorganik fosfor"]],
-    ["klor","Klor",["klor","chloride"]],
-    ["crp","CRP",["c reaktif protein","c-reaktif protein","crp","c reactive protein"]],
-    ["sedim","Sedimantasyon",["sedimantasyon","sedim","esr"]],
-    ["albumin","Albümin",["albumin"]],
-    ["tprotein","Total protein",["total protein","protein total","protein (total)"]],
-    ["psa","PSA (total)",["total psa","psa total","psa"]],
-    ["kortizol","Kortizol",["kortizol","cortisol"]]
-  ].map(([k,n,a])=>({k,n,a:Array.from(new Set(a.map(fold))).sort((x,y)=>y.length-x.length)}));
+    ["glukoz","Glukoz",["glukoz (aclik)","glukoz","glikoz","glucose","aclik kan sekeri","kan sekeri","aks","aclik glukoz","fasting glucose"],"Şeker","Kandaki şeker (glukoz) miktarının ölçümü."],
+    ["hba1c","HbA1c",["hemoglobin a1c","hemoglobin a1c (hba1c)","hba1c","hb a1c","a1c","glikozile hemoglobin","glikolize hemoglobin","glycated hemoglobin","glycohemoglobin"],"Şeker","Kırmızı kan hücrelerine bağlanmış şeker (glukoz) oranının ölçümü."],
+    ["insulin","İnsülin",["insulin","insulin (aclik)","aclik insulin"],"Hormon","Pankreasın salgıladığı, kandaki şekerle ilgili insülin hormonunun ölçümü."],
+    ["kolesterol","Total kolesterol",["total kolesterol","kolesterol (total)","kolesterol total","kolesterol","cholesterol","total cholesterol"],"Yağ profili","Kanda dolaşan toplam yağ (lipit) maddesinin ölçümü."],
+    ["ldl","LDL kolesterol",["kolesterol ldl","ldl kolesterol","ldl-kolesterol","ldl (direkt)","ldl cholesterol","ldl-c","ldl"],"Yağ profili","Kandaki yağ (lipit) taşıyan LDL parçacıklarındaki kolesterolün ölçümü."],
+    ["hdl","HDL kolesterol",["kolesterol hdl","hdl kolesterol","hdl-kolesterol","hdl cholesterol","hdl-c","hdl"],"Yağ profili","Kandaki yağ (lipit) taşıyan HDL parçacıklarındaki kolesterolün ölçümü."],
+    ["vldl","VLDL kolesterol",["vldl kolesterol","vldl-kolesterol","vldl"],"Yağ profili","Kandaki yağ (lipit) taşıyan VLDL parçacıklarındaki kolesterolün ölçümü."],
+    ["trigliserid","Trigliserid",["trigliserid","trigliserit","trigliseridler","triglycerides","triglyceride","tg"],"Yağ profili","Kanda dolaşan bir yağ (lipit) türü olan trigliserit miktarının ölçümü."],
+    ["tsh","TSH",["tsh","tiroid uyarici hormon","thyroid stimulating hormone"],"Tiroit","Tiroit uyarıcı hormonun ölçümü."],
+    ["ft4","Serbest T4",["serbest t4","sT4","ft4","free t4","t4 serbest","t4 (serbest)"].map(fold),"Tiroit","Kanda serbest dolaşan tiroit hormonu T4'ün ölçümü."],
+    ["ft3","Serbest T3",["serbest t3","ft3","free t3","t3 serbest","t3 (serbest)"],"Tiroit","Kanda serbest dolaşan tiroit hormonu T3'ün ölçümü."],
+    ["b12","Vitamin B12",["vitamin b12","vitamin b-12","vit b12","vit. b12","b12 vitamini","b12","cobalamin"],"Vitamin ve mineral","Kandaki B12 vitamininin (kobalamin) ölçümü."],
+    ["d3","D vitamini (25-OH)",["25-oh vitamin d","25 oh vitamin d","25(oh) vitamin d","25-hidroksi vitamin d","25-oh d vitamini","25 hidroksi vitamin d","vitamin d total","vitamin d3","vitamin d","d vitamini","d vit"],"Vitamin ve mineral","Kandaki D vitamininin dolaşımdaki biçiminin (25-OH) ölçümü."],
+    ["folat","Folat",["folik asit","folat","folate"],"Vitamin ve mineral","Kandaki folat (B9 vitamini, folik asit) miktarının ölçümü."],
+    ["ferritin","Ferritin",["ferritin"],"Demir","Vücudun depoladığı demirle ilişkili ferritin proteininin ölçümü."],
+    ["demir","Demir",["serum demiri","demir (serum)","demir","iron"],"Demir","Kandaki demir miktarının ölçümü."],
+    ["tdbk","Demir bağlama kapasitesi",["total demir baglama kapasitesi","demir baglama kapasitesi","demir baglama","tdbk","tibc","dbk"],"Demir","Kandaki proteinlerin bağlayabildiği toplam demir miktarının ölçümü."],
+    ["hgb","Hemoglobin",["hemoglobin","hgb","hb"],"Tam kan sayımı","Kırmızı kan hücrelerindeki oksijen taşıyan hemoglobin proteininin ölçümü."],
+    ["hct","Hematokrit",["hematokrit","hct"],"Tam kan sayımı","Kan hacminin kırmızı hücrelerin oluşturduğu yüzdesinin ölçümü."],
+    ["wbc","Lökosit",["lokosit","wbc","beyaz kure","beyaz kan hucresi"],"Tam kan sayımı","Kandaki beyaz kan hücresi (lökosit) sayısının ölçümü."],
+    ["rbc","Eritrosit",["eritrosit","rbc","kirmizi kure"],"Tam kan sayımı","Kandaki kırmızı kan hücresi (eritrosit) sayısının ölçümü."],
+    ["plt","Trombosit",["trombosit","plt","platelet"],"Tam kan sayımı","Kandaki trombosit (kan pulcuğu) sayısının ölçümü."],
+    ["mcv","MCV",["mcv"],"Tam kan sayımı","Kırmızı kan hücrelerinin ortalama hacminin ölçümü."],
+    ["kreatinin","Kreatinin",["kreatinin","creatinine"],"Böbrek","Kanda bulunan kreatinin adlı atık maddenin ölçümü."],
+    ["ure","Üre",["kan ure azotu","ure","bun","urea"],"Böbrek","Kanda bulunan üre (kan üre azotu) adlı atık maddenin ölçümü."],
+    ["alt","ALT",["alt (sgpt)","alt","sgpt","alanin aminotransferaz","alanine aminotransferase"],"Karaciğer","Başta karaciğerde bulunan ALT enziminin kandaki ölçümü."],
+    ["ast","AST",["ast (sgot)","ast","sgot","aspartat aminotransferaz","aspartate aminotransferase"],"Karaciğer","Karaciğer ve kasta bulunan AST enziminin kandaki ölçümü."],
+    ["ggt","GGT",["gama gt","gama glutamil transferaz","ggt","gamma gt"],"Karaciğer","Karaciğer ve safra yollarında bulunan GGT enziminin kandaki ölçümü."],
+    ["alp","ALP",["alkalen fosfataz","alkalin fosfataz","alp"],"Karaciğer","Karaciğer ve kemikte bulunan alkalen fosfataz enziminin kandaki ölçümü."],
+    ["bil_t","Bilirubin (total)",["bilirubin total","bilirubin (total)","total bilirubin","bilirubin t"],"Karaciğer","Kandaki toplam bilirubin (kırmızı hücre yıkımından oluşan sarı madde) ölçümü."],
+    ["bil_d","Bilirubin (direkt)",["bilirubin direkt","bilirubin (direkt)","direkt bilirubin","bilirubin d"],"Karaciğer","Kandaki direkt (konjuge) bilirubin ölçümü."],
+    ["urikasit","Ürik asit",["urik asit","uric acid"],"Böbrek","Kanda bulunan ürik asit adlı atık maddenin ölçümü."],
+    ["sodyum","Sodyum",["sodyum","sodium","na"],"Elektrolit","Kandaki sodyum (tuz mineralinin bir bileşeni) miktarının ölçümü."],
+    ["potasyum","Potasyum",["potasyum","potassium","k"],"Elektrolit","Kandaki potasyum mineralinin miktarının ölçümü."],
+    ["kalsiyum","Kalsiyum",["kalsiyum","calcium","ca"],"Vitamin ve mineral","Kandaki kalsiyum mineralinin miktarının ölçümü."],
+    ["magnezyum","Magnezyum",["magnezyum","magnesium","mg"],"Vitamin ve mineral","Kandaki magnezyum mineralinin miktarının ölçümü."],
+    ["fosfor","Fosfor",["fosfor","phosphorus","inorganik fosfor"],"Vitamin ve mineral","Kandaki fosfor mineralinin miktarının ölçümü."],
+    ["klor","Klor",["klor","chloride"],"Elektrolit","Kandaki klor (klorür) miktarının ölçümü."],
+    ["crp","CRP",["c reaktif protein","c-reaktif protein","crp","c reactive protein"],"İltihap göstergesi","Karaciğerin ürettiği C-reaktif proteinin kandaki ölçümü."],
+    ["sedim","Sedimantasyon",["sedimantasyon","sedim","esr"],"İltihap göstergesi","Kırmızı kan hücrelerinin bir saatte tüpün dibine çökme hızının ölçümü."],
+    ["albumin","Albümin",["albumin"],"Protein","Kandaki başlıca protein olan albüminin ölçümü."],
+    ["tprotein","Total protein",["total protein","protein total","protein (total)"],"Protein","Kandaki toplam protein miktarının ölçümü."],
+    ["psa","PSA (total)",["total psa","psa total","psa"],"Prostat","Prostat bezinin ürettiği PSA proteininin kandaki toplam ölçümü."],
+    ["kortizol","Kortizol",["kortizol","cortisol"],"Hormon","Böbreküstü bezinin salgıladığı kortizol hormonunun ölçümü."]
+  ].map(([k,n,a,c,e])=>({k,n,c,e,a:Array.from(new Set(a.map(fold))).sort((x,y)=>y.length-x.length)}));
   const ALIASES=DICT.flatMap(d=>d.a.map(a=>({a,d}))).sort((x,y)=>y.a.length-x.a.length);
+  const info=k=>DICT.find(d=>d.k===k);
   const isL=c=>/[a-z0-9]/.test(c||"");
 
   /* Hasta ve belge bilgisi satırları: sonuç sayılmaz, hiçbir zaman saklanmaz. */
@@ -368,6 +369,6 @@ const LabLib=(()=>{
     return groupLines(L.map(l=>({str:l.t,x:l.x*sc,y:-(l.y+l.h/2)*sc,w:l.w*sc})));
   }
 
-  return {ocrToLines,RW,RH,paginate,drawPage,geom,rangeText,keyFor,slug,fold,DICT,toNum,groupLines,parseDate,parseRange,parseLine,parseLines,extract,cleanLabs,flag,series,buildPdf,dayOk};
+  return {ocrToLines,RW,RH,paginate,drawPage,geom,rangeText,keyFor,slug,fold,DICT,info,toNum,groupLines,parseDate,parseRange,parseLine,parseLines,extract,cleanLabs,flag,series,buildPdf,dayOk};
 })();
 if(typeof module!=="undefined")module.exports=LabLib;

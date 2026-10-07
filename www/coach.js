@@ -159,11 +159,11 @@ function cData(){
   const st=S.settings,w=weights(),d=[];
   for(let i=13;i>=0;i--){
     const k=keyOff(-i),ents=S.entries.filter(e=>e.day===k);
-    d.push({d:k.slice(5),kg:w[k],kcal:Math.round(ents.filter(e=>e.type==="yemek").reduce((s,e)=>s+(e.v||0),0)),p:Math.round(ents.filter(e=>e.type==="yemek").reduce((s,e)=>s+(e.p||0),0)),su:Math.round(ents.filter(e=>e.type==="su").reduce((s,e)=>s+e.v,0)),sport:Math.round(ents.filter(e=>e.type==="spor").reduce((s,e)=>s+e.v,0)),ad:Math.round(ents.filter(e=>e.type==="adim").reduce((s,e)=>s+e.v,0)),sl:(S.sleep.find(x=>x.day===k)||{}).min,mo:(S.mood.find(x=>x.day===k)||{}).v});
+    d.push({d:k.slice(5),kg:w[k],kcal:Math.round(ents.filter(e=>e.type==="yemek").reduce((s,e)=>s+(e.v||0),0)),p:Math.round(ents.filter(e=>e.type==="yemek").reduce((s,e)=>s+(e.p||0),0)),su:Math.round(ents.filter(WeeklyLib.isWater).reduce((s,e)=>s+e.v,0)),sport:Math.round(ents.filter(e=>e.type==="spor").reduce((s,e)=>s+e.v,0)),ad:Math.round(ents.filter(e=>e.type==="adim").reduce((s,e)=>s+e.v,0)),sl:(S.sleep.find(x=>x.day===k)||{}).min,mo:(S.mood.find(x=>x.day===k)||{}).v});
   }
   const t=dayKey(),now=new Date();
   /* Bağlam boyutu için üst sınırlar (en kötü durum menu.test.js'te ölçülür): yemek 12 satır/ad 40, spor 5, not 3, su tek toplam. */
-  const ent=S.entries.filter(e=>e.day===t),lastOf=(type,n)=>ent.filter(e=>e.type===type).slice(-n),suMl=Math.round(ent.filter(e=>e.type==="su").reduce((a,e)=>a+e.v,0));
+  const ent=S.entries.filter(e=>e.day===t),lastOf=(type,n)=>ent.filter(e=>e.type===type).slice(-n),suMl=Math.round(ent.filter(WeeklyLib.isWater).reduce((a,e)=>a+e.v,0));
   const today=[...lastOf("yemek",12).map(e=>`yemek: ${(e.text||"öğün").slice(0,40)}${e.v?" ~"+Math.round(e.v)+" kcal":""}${e.p?", "+Math.round(e.p)+" g protein":""}`),...(suMl?[`su ${suMl} ml`]:[]),...lastOf("kilo",1).map(e=>`tartı ${fmt(e.v)} kg`),...lastOf("spor",5).map(e=>`spor ${(e.text||"").slice(0,30)} ${Math.round(e.v)} dk`),...lastOf("not",3).map(e=>`not: ${e.text.slice(0,100)}`)];
   const workouts=S.workouts.filter(x=>x.t1!=null).sort((a,b)=>b.t0-a.t0).slice(0,3).map(x=>`${x.day.slice(5)} ${x.name}: ${x.ex.map(cWorkoutEx).filter(Boolean).join(", ")}`.slice(0,300));
   const from=keyOff(-7),notes=S.entries.filter(e=>e.type==="not"&&e.day>=from).slice(-3).map(e=>e.text.slice(0,100));

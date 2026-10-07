@@ -12,7 +12,9 @@ const WeeklyLib=(()=>{
   const UN=typeof Units!=="undefined"?Units:require("./unitlib.js");
   const AL=()=>typeof Algo!=="undefined"?Algo:require("./algo.js");
   const dmy=k=>AL().fdate(k,true);
-  const sumOf=(es,t,k)=>es.filter(e=>e.type===t&&e.day===k).reduce((s,e)=>s+(e.v||0),0);
+  /* Su hedefine yalnız su ve sade maden suyu sayılır; tür alanı olmayan eski kayıt su. Çay, kahve, gazlı, süt, diğer ayrı tutulur. */
+  const isWater=e=>e.type==="su"&&(!e.dr||e.dr==="su"||e.dr==="maden");
+  const sumOf=(es,t,k)=>es.filter(e=>(t==="su"?isWater(e):e.type===t)&&e.day===k).reduce((s,e)=>s+(e.v||0),0);
   const mean=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
 
   /* endDay "YYYY-MM-DD", days: pencere (7). S: durum. */
@@ -94,6 +96,6 @@ const WeeklyLib=(()=>{
     }
     ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText("NeoWell",RM,RH-45);
   }
-  return {build,drawPage,RW,RH};
+  return {build,drawPage,RW,RH,isWater};
 })();
 if(typeof module!=="undefined")module.exports=WeeklyLib;

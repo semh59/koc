@@ -55,10 +55,14 @@ const U=require("../www/unitlib.js"),V=require("../www/vitalslib.js"),C=require(
     const w=dom.window,ev=s=>w.eval(s);
     ev("S.settings.obDone=true;S.settings.heightCm=178;S.settings.age=35");
     ev("add('su',250,'','"+ev("dayKey()")+"');add('su',200,'');S.entries[S.entries.length-1].dr='cay';save()");
-    ok("içecek türü: yalnız bilinen tür saklanır (su türsüz), geçersiz atılır, su hedefine hepsi sayılır",ev("(()=>{const r=buildState({entries:[{id:1,day:dayKey(),type:'su',v:200,dr:'cay'},{id:2,day:dayKey(),type:'su',v:100,dr:'su'},{id:3,day:dayKey(),type:'su',v:50,dr:'zehir'}]}).S.entries;return r.map(e=>e.dr||'-').join()})()")==="cay,-,-"&&ev("sum('su',dayKey(),dayKey())")===450);
+    ok("içecek türü: yalnız bilinen tür saklanır (su türsüz), geçersiz atılır, maden korunur",ev("(()=>{const r=buildState({entries:[{id:1,day:dayKey(),type:'su',v:200,dr:'cay'},{id:2,day:dayKey(),type:'su',v:100,dr:'su'},{id:3,day:dayKey(),type:'su',v:50,dr:'zehir'}]}).S.entries;return r.map(e=>e.dr||'-').join()})()")==="cay,-,-");
+    ok("su toplamı türe göre: su ve maden sayılır; çay, kahve, gazlı, süt, diğer ve önceki sürümün su dışı kaydı sayılmaz; türsüz eski kayıt su",ev("(()=>{const d=dayKey(),E=(v,dr)=>({day:d,type:'su',v,dr});S.entries=[E(100),E(10,'su'),E(1000,'maden'),E(2,'cay'),E(3,'kahve'),E(4,'gazli'),E(5,'sut'),E(6,'diger')];return sum('su',d,d)})()")===1110);
+    ev("S.entries=[];add('su',250,'',dayKey());add('su',200,'');S.entries[S.entries.length-1].dr='cay';save()");
+    ok("Koç bağlamı yalnız su ml'sini alır (çay 200 ml katılmaz); bildirim susturma yalnız suyla; günlükte ayrı satır",(()=>{const c=JSON.stringify(ev("cData()")),d=ev("LogLib.dayLog(S.entries)");return /su 250 ml/.test(c)&&!/su 450 ml/.test(c)&&d.suMl===250&&d.drMl===200&&ev("(()=>{S.settings.waterMl=400;const t=dayKey();return sum('su',t,t)>=S.settings.waterMl})()")===false&&ev("(()=>{S.settings.waterMl=250;const t=dayKey();return sum('su',t,t)>=S.settings.waterMl})()")===true})());
+    ev("S.settings.waterMl=2500");
     ev("sheetIcecek()");w.document.querySelector('[data-dr="kahve"]').click();w.document.querySelector("#fv").value="300";w.document.querySelector('[data-dk="go"]').click();
     const k=ev("S.entries[S.entries.length-1]");
-    ok("içecek ekle: tür etiketi ve miktar kaydolur, su toplamına girer, geçmiş listesinde görünür",k.type==="su"&&k.v===300&&k.dr==="kahve"&&ev("sum('su',dayKey(),dayKey())")===750&&(ev("sheetSu()"),w.document.querySelector("#sheet").textContent.includes("Kahve")));
+    ok("içecek ekle: tür etiketi ve miktar kaydolur, su toplamına girmez, Diğer içecekler satırında ve geçmişte görünür",k.type==="su"&&k.v===300&&k.dr==="kahve"&&ev("sum('su',dayKey(),dayKey())")===250&&/Diğer içecekler: 500 ml/.test(w.document.querySelector("#view").textContent)&&(ev("sheetSu()"),w.document.querySelector("#sheet").textContent.includes("Kahve")));
     ev("closeSheet()");
     ev("S.settings.wUnit='lb';S.settings.gUnit='mmol';add('kilo',84.1,'',dayKey());render();tab='bugun';render()");
     ok("lb ayarı: Bugün kartı lb gösterir, depolama kg kalır",w.document.querySelector("#view").textContent.includes("185,4")&&ev("S.entries.find(e=>e.type==='kilo').v")===84.1);
