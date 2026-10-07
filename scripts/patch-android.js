@@ -127,13 +127,7 @@ public class MainActivity extends BridgeActivity {
     }
 
     @Override
-    protected void onNewIntent(Intent in) {
-        medWake(in);
-        super.onNewIntent(in);
-    }
-
-    @Override
-    protected void onPause() {
+    public void onPause() {
         if (lockShown) {
             lockShown = false;
             if (Build.VERSION.SDK_INT >= 27) {
@@ -177,6 +171,7 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     protected void onNewIntent(Intent intent) {
+        medWake(intent);
         if (QuickLogPlugin.handle(this, intent, false)) {
             moveTaskToBack(true);
             return;
