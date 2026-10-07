@@ -15,7 +15,7 @@ setTimeout(async()=>{
     const doc=w.document,q=s=>doc.querySelector(s),sh=()=>q("#sheet").textContent,wait=ms=>new Promise(r=>setTimeout(r,ms)),click=s=>q(s).click();
     let sent=null,reply={reply:"Menün hazır",menu:null},fetched=0;
     w.fetch=async(u,o)=>{fetched++;sent=JSON.parse(o.body);return {ok:true,json:async()=>({choices:[{message:{content:JSON.stringify(reply)}}]})}};
-    const base=`S=structuredClone(DEF);S.settings.obDone=true;Object.assign(S.settings,{kcal:2000,heightCm:175,age:30,goalKg:0,healthNote:''});S.providers.forEach(p=>p.on=p.health=true);setKey('nvidia','K1');S.settings.consent=true;S.settings.consentV=CONSENT_V;tab='koc';render()`;
+    const base=`S=structuredClone(DEF);S.settings.obDone=true;Object.assign(S.settings,{kcal:2000,heightCm:175,age:30,goalKg:0,healthNote:''});S.providers.forEach(p=>p.on=p.health=true);setKey('nvidia','K1');S.settings.consent=true;S.settings.consentP="gemini,groq,nvidia,openrouter,openai,anthropic";S.settings.consentV=CONSENT_V;tab='koc';render()`;
     ev(base.replace("S.settings.consent=true;","S.settings.consent=false;").replace("setKey('nvidia','K1');","KEYS={};"));
     ok("izin yokken menü düğmesi gri ve nedeni yazılı",q('[data-c="menu"]').disabled&&q("#view").textContent.includes("veri paylaşımını kabul et"));
     ev(base.replace("setKey('nvidia','K1');","KEYS={};"));

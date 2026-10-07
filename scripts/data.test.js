@@ -5,7 +5,7 @@ const www=f=>path.join(__dirname,"../www",f);
 const html=fs.readFileSync(www("index.html"),"utf8").replace(/<script src="([^"]+)"><\/script>/g,(_,f)=>"<script>"+fs.readFileSync(www(f),"utf8")+"</script>");
 const open=(seed,o={})=>new Promise(res=>{
   const dom=new JSDOM(html,{runScripts:"dangerously",url:"https://localhost/",beforeParse(w){
-    Object.assign(w,{structuredClone,TextEncoder,TextDecoder,__noSelfTest:true});w.scrollTo=()=>{};w.confirm=()=>o.confirm!==false;
+    Object.assign(w,{structuredClone,TextEncoder,TextDecoder,__noSelfTest:true});Object.defineProperty(w,"crypto",{value:require("node:crypto").webcrypto});w.scrollTo=()=>{};w.confirm=()=>o.confirm!==false;
     if(o.vault)w.Capacitor={Plugins:{KeyVault:o.vault}};
     for(const k in seed)w.localStorage.setItem(k,seed[k]);
     if(o.quota){
@@ -20,6 +20,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
 (async()=>{
   // ---- bozuk kayıt: kurtarma ekranı, save kilitli ----
   let w=await open({koc_v1:'{"entries":[{"id":1,'});
+  const yukle=require("./bkhelp.js")(()=>w);
   let ev=s=>w.eval(s),q=s=>w.document.querySelector(s),ls=k=>w.localStorage.getItem(k);
   ok("bozuk JSON: 'Kayıtların okunamadı' ekranı, ham veri yerinde durur",q("#view").textContent.includes("Kayıtların okunamadı")&&ls("koc_v1")==='{"entries":[{"id":1,');
   ev("S.settings.kcal=2000");ev("save()");
@@ -90,8 +91,8 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
   // ---- geri yükleme: güvenlik kopyası ----
   w=await open({koc_v1:JSON.stringify({entries:[E("2026-09-01","kilo",80)],settings:{obDone:true}})});ev=s=>w.eval(s);
   ev("sheetYedek()");w.document.querySelector("#bk").value=JSON.stringify({entries:[E("2026-09-05","kilo",70),E("2026-09-06","kilo",69)],settings:{obDone:true}});
-  await ev("goYukle()");
-  ok("düz (eski) yedek hâlâ yüklenir; önceki veri güvenlik kopyasında",ev("S.entries.length")===2&&JSON.parse(w.localStorage.getItem("koc_v1_onceki")).entries[0].v===80);
+  await yukle();
+  ok("parolalı yedek yüklenir; önceki veri güvenlik kopyasında",ev("S.entries.length")===2&&JSON.parse(w.localStorage.getItem("koc_v1_onceki")).entries[0].v===80);
   ok("geri yüklemede kopya alınınca 7 günlük koruma başlar (copyAt bugün)",ev("S.settings.copyAt")===ev("dayKey()"));
   ev("sheetPrivacy();pvDelete(1)");
   ok("kategori silinince güvenlik kopyası da silinir",w.localStorage.getItem("koc_v1_onceki")===null);

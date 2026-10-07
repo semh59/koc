@@ -53,8 +53,6 @@ const PAID=["openai","anthropic"];
 const provNames=()=>defProviders().map(p=>p.name).join(", ");
 /* Anthropic yerel Messages API: x-api-key + sürüm başlığı; WebView'da CORS ön kontrolü yalnız direct-browser başlığıyla geçer. */
 const pHeaders=(p,key)=>p.id==="anthropic"?{"x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"}:{Authorization:"Bearer "+key};
-/* Sağlayıcının kaldırdığı eski hazır modeller: kayıtta tam bu değer duruyorsa yenisine geçilir, kullanıcının seçtiği model korunur. */
-const DEAD_MODEL={nvidia:"meta/llama-3.3-70b-instruct",openrouter:"meta-llama/llama-3.3-70b-instruct:free",gemini:"gemini-2.0-flash"};
 let pstat={},cool={},busy=false,typing=false,offline=null;
 
 /* ---- doğrulama ---- */
@@ -63,7 +61,7 @@ function cleanCoach(r){
   for(const p of (Array.isArray(r.providers)?r.providers:[])){
     if(!p||typeof p.id!=="string"||!/^[a-z0-9]{1,16}$/.test(p.id)||p.id in Object.prototype||typeof p.name!=="string"||typeof p.base!=="string"||!/^https:\/\/[^\s]+$/.test(p.base)||typeof p.model!=="string")continue;
     if(provs.some(x=>x.id===p.id))continue;
-    const def=defProviders().find(d=>d.id===p.id),model=DEAD_MODEL[p.id]===p.model?def.model:p.model.slice(0,100);
+    const def=defProviders().find(d=>d.id===p.id),model=p.model.slice(0,100);
     /* Hazır sağlayıcının adresi ana makine beyaz listesidir: yedek ya da bozuk kayıt anahtarı başka sunucuya yönlendiremez. */
     provs.push({id:p.id,name:p.name.slice(0,40),base:def?def.base:p.base.slice(0,200),model,on:p.on===true,health:p.health===true,confirm:p.confirm===true});
   }
@@ -554,10 +552,9 @@ function cCard(m){
 /* Onay metni tek yerde: Koç ekranı ve Gizlilik ve veri aynı metni gösterir. Gönderilen alanlar değişirse CONSENT_V'yi artır. */
 const consentOk=()=>S.settings.age>=18;
 const ageMsg=()=>S.settings.age>0?"18 yaş altında Koç kapalı":"Koç için önce yaşını gir (Ayarlar > Profil)";
-/* Rıza, verinin gideceği sağlayıcı kümesine bağlıdır: anahtarı olan ve açık bir sağlayıcı rıza anındaki kümede değilse (ücretli ya da özel sağlayıcı sonradan açıldı) yeniden onay istenir. consentP yoksa eski rıza dört eski hazır sağlayıcıyı kapsar. */
-const LEGACY_P="gemini,groq,nvidia,openrouter";
+/* Rıza, verinin gideceği sağlayıcı kümesine bağlıdır: anahtarı olan ve açık bir sağlayıcı rıza anındaki kümede değilse (ücretli ya da özel sağlayıcı sonradan açıldı) yeniden onay istenir. consentP yoksa yeniden onay istenir. */
 const provSet=()=>S.providers.filter(p=>p.on&&p.health).map(p=>p.id).sort().join(",");
-const provOk=()=>{const c=(S.settings.consentP==null?LEGACY_P:S.settings.consentP).split(","),k=getKeys();return S.providers.every(p=>!(p.on&&p.health&&k[p.id])||c.includes(p.id))};
+const provOk=()=>{const c=(S.settings.consentP||"").split(","),k=getKeys();return S.providers.every(p=>!(p.on&&p.health&&k[p.id])||c.includes(p.id))};
 /* Yaş sonradan 18'in altına inerse (ayar, yedek) verilmiş onay da düşer; gönderim yolları coachOn'dan geçer. */
 const coachOn=()=>S.settings.consent&&consentOk()&&provOk();
 function cAgeGuard(){if(S.settings.consent&&!consentOk()){Object.assign(S.settings,{consent:false,consentV:0,consentAt:""});toast(S.settings.age>0?"18 yaş altında Koç veri paylaşımı kapatıldı":"Yaş girilmediği için Koç veri paylaşımı kapatıldı")}}

@@ -2,7 +2,7 @@
 const {test,expect,state}=require("./fixtures");
 
 const LOG=JSON.stringify({reply:"Not aldım.",log:[{type:"yemek",text:"2 yumurta",kcal:150,protein:12,carbs:1,fat:10,meal:"kah"}]});
-const open=app=>app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06"}),keys:{groq:"gsk_test"}});
+const open=app=>app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter"}),keys:{groq:"gsk_test"}});
 const send=async(app,page,t)=>{await app.tab("koc");await page.fill("#cmsg",t);await page.click("#csend")};
 
 test.describe("Koç kayıt kartı",()=>{
@@ -162,7 +162,7 @@ test.describe("Koç güvenilirlik",()=>{
   });
   test("hazır sağlayıcının adresi kayıtta değiştirilmiş olsa da kodlu adrese gider",async({app,page,fake})=>{
     const groq={id:"groq",name:"Groq",base:"https://evil.example/v1",model:"llama-3.3-70b-versatile",on:true,health:true,confirm:false};
-    await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06"},{providers:[groq]}),keys:{groq:"gsk_test"}});
+    await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter"},{providers:[groq]}),keys:{groq:"gsk_test"}});
     await send(app,page,"Selam");
     await expect(view(page)).toContainText("Merhaba, buradayım.");
     expect(fake.chats().length).toBe(1);
@@ -187,7 +187,7 @@ test.describe("Koç güvenilirlik",()=>{
     expect(fake.chats().length).toBe(0);
   });
   test("yaş girilmemişse Koç açılmaz ve yaş girmeye yönlendirir",async({app,page,fake})=>{
-    await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",age:0}),keys:{groq:"gsk_test"}});
+    await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter",age:0}),keys:{groq:"gsk_test"}});
     await app.tab("koc");
     await expect(view(page)).toContainText("önce yaşını gir");
     await expect(page.locator('[data-c="consent"]')).toHaveCount(0);
@@ -196,7 +196,7 @@ test.describe("Koç güvenilirlik",()=>{
   test("Gemini onayı bir gönderimde yalnız bir kez sorulur (yeniden sorma dahil)",async({app,page,fake})=>{
     let n=0;fake.st.reply=()=>++n===1?"düz":JSON.stringify({reply:"Tamam.",log:[]});
     const gm={id:"gemini",name:"Google Gemini",base:"https://generativelanguage.googleapis.com/v1beta/openai",model:"gemini-3.5-flash-lite",on:true,health:true,confirm:true};
-    await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06"},{providers:[gm]}),keys:{gemini:"AIzaTest"}});
+    await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter"},{providers:[gm]}),keys:{gemini:"AIzaTest"}});
     await send(app,page,"Selam");
     await expect(view(page)).toContainText("Tamam.");
     expect(n).toBe(2);

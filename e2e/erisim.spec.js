@@ -38,7 +38,7 @@ test.describe("Erişilebilirlik ve düzen",()=>{
 
   test("Koç boş durumu: üç örnek, dokununca mesaj gider",async({app,page,fake})=>{
     fake.st.reply=()=>JSON.stringify({reply:"Tamam."});
-    await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06"}),keys:{groq:"gsk_test"}});
+    await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter"}),keys:{groq:"gsk_test"}});
     await app.tab("koc");
     await expect(page.locator('[data-c^="ask:"]')).toHaveCount(3);
     await page.click('[data-c="ask:1"]');
@@ -56,7 +56,7 @@ test.describe("Yatay telefon",()=>{
   });
   test("Koç: son mesaj yazma alanının arkasında kalmaz, üst çubuk sabit",async({app,page,fake})=>{
     fake.st.reply=()=>JSON.stringify({reply:"Tamam, not aldım. ".repeat(6)});
-    await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06"}),keys:{groq:"gsk_test"}});
+    await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter"}),keys:{groq:"gsk_test"}});
     await app.tab("koc");
     for(let i=0;i<3;i++){await page.fill("#cmsg","Mesaj "+i);await page.click("#csend");await expect(page.locator(".cm").nth(i)).toBeVisible()}
     await page.waitForTimeout(300);
