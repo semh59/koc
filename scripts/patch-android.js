@@ -4,7 +4,7 @@ const p = "android/app/src/main/AndroidManifest.xml";
 let x = fs.readFileSync(p, "utf8");
 // USE_EXACT_ALARM yok: Play onu yalnız alarm/takvim uygulamalarına veriyor. İzin kapalıysa eklenti alarmı yaklaşık saate kurar, arayüz söyler.
 // ACCESS_BACKGROUND_LOCATION yok: konum servisi yalnız uygulama görünürken elle başlatılan yürüyüşte açılır, "kullanırken" izni yeter.
-for (const perm of ["POST_NOTIFICATIONS", "RECEIVE_BOOT_COMPLETED", "VIBRATE", "SCHEDULE_EXACT_ALARM", "CAMERA", "ACTIVITY_RECOGNITION", "ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "FOREGROUND_SERVICE", "FOREGROUND_SERVICE_LOCATION"]) {
+for (const perm of ["POST_NOTIFICATIONS", "RECEIVE_BOOT_COMPLETED", "VIBRATE", "SCHEDULE_EXACT_ALARM", "USE_FULL_SCREEN_INTENT", "CAMERA", "ACTIVITY_RECOGNITION", "ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "FOREGROUND_SERVICE", "FOREGROUND_SERVICE_LOCATION"]) {
   if (!x.includes(`android.permission.${perm}`)) {
     x = x.replace("</manifest>", `    <uses-permission android:name="android.permission.${perm}" />\n</manifest>`);
   }
@@ -80,6 +80,7 @@ import android.media.AudioAttributes;
 import android.media.RingtoneManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.WindowManager;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
@@ -102,8 +103,47 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(BackupFolderPlugin.class);
         super.onCreate(savedInstanceState);
         diag(getIntent());
+        medWake(getIntent());
         medChannel();
         if (quick) moveTaskToBack(true);
+    }
+
+    // İlaç dozunda tam ekran bildirimle açılınca uygulama kilit ekranının üstünde görünür ve ekranı yakar; ekran kapanınca (onPause) bayraklar kalkar,
+    // böylece sağlık verisi sonradan kilit ekranında açık kalmaz.
+    private boolean lockShown;
+
+    private void medWake(Intent in) {
+        if (in == null || !in.getBooleanExtra("nw_medwake", false)) return;
+        in.removeExtra("nw_medwake");
+        lockShown = true;
+        if (Build.VERSION.SDK_INT >= 27) {
+            setShowWhenLocked(true);
+            setTurnScreenOn(true);
+        } else {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        }
+        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (nm != null) nm.cancel(MedWakeReceiver.NID);
+    }
+
+    @Override
+    protected void onNewIntent(Intent in) {
+        medWake(in);
+        super.onNewIntent(in);
+    }
+
+    @Override
+    protected void onPause() {
+        if (lockShown) {
+            lockShown = false;
+            if (Build.VERSION.SDK_INT >= 27) {
+                setShowWhenLocked(false);
+                setTurnScreenOn(false);
+            } else {
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+            }
+        }
+        super.onPause();
     }
 
     // Yalnız CI smoke testi tetikler (am start --ez nw_diag true). Release derlemede konsol logcata yazmaz; eklentilerin yüklendiği ve

@@ -12,7 +12,7 @@ function medSettingsHtml(){
   return `<h2>İlaç hatırlatıcı</h2><div class="card">
     <p class="mut sm" style="margin:0 0 10px">İlaçlarını ve saatlerini gir, zamanı gelince bildirim al. Bildirimdeki "Aldım" düğmesiyle uygulamayı açmadan kaydet. Uygulama doz önermez ve ilaç etkileşimlerini denetlemez: doktorunun ve eczacının söylediği gibi kullan.</p>
     <button class="btn ghost" data-md="toggle" style="margin-bottom:8px">${st.medOn?"İlaç hatırlatıcıyı kapat":"İlaç hatırlatıcıyı aç"}</button>
-    ${st.medOn?`${swRow('data-md="shown"',st.medShowName,"İlaç adı bildirimde görünsün (kilit ekranında da)")}<button class="btn ghost" data-tab="ilac">${Icons.svg("ilac")} İlaçlarımı düzenle</button>`:""}
+    ${st.medOn?`${swRow('data-md="shown"',st.medShowName,"İlaç adı bildirimde görünsün (kilit ekranında da)")}<button class="btn ghost" data-tab="ilac">${Icons.svg("ilac")} İlaçlarımı düzenle</button>${isNative()?`<button class="btn ghost" data-md="locktest" style="margin-top:8px">Kilitli ekran testi</button><p class="hint" style="padding:6px 0 0">Düğmeye bas, telefonu kilitle ve ekranı kapat. 15 saniye sonra ekran yanıp ilaç ekranı açılmalı. Açılmazsa telefon ayarlarından uygulamaya kilit ekranında gösterme ve tam ekran bildirim izni ver.</p>`:""}`:""}
   </div>`;
 }
 function medToggle(){
@@ -147,6 +147,7 @@ document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-md]");if(!el)return;
   const [a,...r]=el.dataset.md.split(":");
   if(a==="toggle")medToggle();
+  else if(a==="locktest"){const w=MW();if(!w)return toast("Yalnızca telefondaki uygulamada çalışır");w.test().then(()=>toast("15 saniye sonra alarm çalacak: telefonu kilitle")).catch(()=>toast("Test kurulamadı"))}
   else if(a==="shown"){S.settings.medShowName=el.checked;save();medResched()}
   else if(a==="new")medOpen(0);
   else if(a==="edit")medOpen(+r[0]);

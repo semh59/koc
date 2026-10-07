@@ -1,11 +1,16 @@
 package com.neowell.app;
 
 import android.app.AlarmManager;
+import android.app.KeyguardManager;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.PowerManager;
 
 /** İlaç dozunda kilitli ekranı yakar: bildirimle aynı anda kısa süre ekranı açan ayrı alarm. Bildirim eklentisi ekranı uyandırmaz. */
@@ -27,8 +32,41 @@ public class MedWakeReceiver extends BroadcastReceiver {
             if (pm == null) return;
             PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "neowell:medwake");
             wl.acquire(8000);
+            KeyguardManager km = (KeyguardManager) c.getSystemService(Context.KEYGUARD_SERVICE);
+            // Kilitliyken ya da ekran kapalıyken tam ekran bildirim: üreticiler (Xiaomi) yalnız wake lock'a güvenmez, alarm uygulamaları bunu kullanır.
+            if ((km != null && km.isKeyguardLocked()) || !pm.isInteractive()) fullScreen(c);
         } catch (Exception ignored) {
         }
+    }
+
+    static final int NID = 7150;
+    private static final String CH = "nw_medwake";
+
+    /** Sessiz, kısa ömürlü bildirim: asıl ses ve düğmeler eklentinin ilaç bildiriminde; bu yalnız MainActivity'yi kilit ekranı üstünde açar. */
+    @SuppressWarnings("deprecation")
+    private static void fullScreen(Context c) {
+        NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (nm == null) return;
+        if (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel(CH) == null) {
+            NotificationChannel ch = new NotificationChannel(CH, "İlaç alarmı ekranı", NotificationManager.IMPORTANCE_HIGH);
+            ch.setSound(null, null);
+            ch.enableVibration(false);
+            ch.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            nm.createNotificationChannel(ch);
+        }
+        Intent open = new Intent(c, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP).putExtra("nw_medwake", true);
+        PendingIntent pi = PendingIntent.getActivity(c, NID, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(c, CH) : new Notification.Builder(c).setPriority(Notification.PRIORITY_MAX);
+        b.setSmallIcon(c.getApplicationInfo().icon).setContentTitle("İlaç zamanı").setContentText("İlaçlarını görmek için dokun")
+            .setCategory(Notification.CATEGORY_ALARM).setVisibility(Notification.VISIBILITY_PUBLIC).setAutoCancel(true)
+            .setContentIntent(pi).setFullScreenIntent(pi, true);
+        if (Build.VERSION.SDK_INT >= 26) b.setTimeoutAfter(30000);
+        nm.notify(NID, b.build());
+    }
+
+    /** Ayarlar'daki 'Kilitli ekran testi': gerçek doz alarmlarına dokunmadan ayrı kodla ms sonra aynı yolu çalıştırır. */
+    static void test(Context c, long ms) {
+        Alarms.set(c, System.currentTimeMillis() + ms, pi(c, MAX, PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
     private static PendingIntent pi(Context c, int n, int flags) {
