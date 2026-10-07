@@ -207,8 +207,9 @@ if(!g.includes("abiFilters")){
 }
 // Play aynı versionCode'la ikinci yüklemeyi reddeder: CI çalışma numarası her derlemede artar.
 g=fs.readFileSync(bg,"utf8");
-if(process.env.GITHUB_RUN_NUMBER&&!g.includes("versionCode "+process.env.GITHUB_RUN_NUMBER)){
-  g=g.replace(/versionCode \d+/,"versionCode "+process.env.GITHUB_RUN_NUMBER);
+if(process.env.GITHUB_RUN_NUMBER&&!g.includes('versionName "1.0.'+process.env.GITHUB_RUN_NUMBER+'"')){
+  // Kullanıcıya görünen sürüm de her derlemede değişsin (Ayarlar > Hakkında).
+  g=g.replace(/versionCode \d+/,"versionCode "+process.env.GITHUB_RUN_NUMBER).replace(/versionName "[^"]*"/,'versionName "1.0.'+process.env.GITHUB_RUN_NUMBER+'"');
   fs.writeFileSync(bg,g);
 }
 // Barkod Google'ın tarayıcı ekranıyla (scan) okunur; eklentinin gömülü barkod motoru (startScan, readBarcodesFromImage) çağrılmadığı için paketlenmez.
