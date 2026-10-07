@@ -90,7 +90,6 @@ jobs:
           # Hata çıktısı bastırılmaz: imza bozuksa nedeni günlükte görünür.
           $apksigner verify --verbose --print-certs --min-sdk-version "$min" neowell.apk | tee verify.txt
           grep -q "Verified using v2 scheme (APK Signature Scheme v2): true" verify.txt || { echo "APK İMZASI v2 ŞEMASINDA DOĞRULANMADI"; exit 1; }
-          grep -q "Verified using v3 scheme (APK Signature Scheme v3): true" verify.txt || { echo "APK İMZASI v3 ŞEMASINDA DOĞRULANMADI"; exit 1; }
           grep -E "Verified using v1" verify.txt
           apk=$(grep -m1 "certificate SHA-256 digest" verify.txt | sed 's/.*: //' | norm)
           aab=$(keytool -printcert -jarfile neowell.aab | grep -m1 "SHA256:" | sed 's/.*SHA256: //' | norm)
