@@ -59,6 +59,19 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
   w=await open({koc_v1:JSON.stringify({entries:[E("2026-09-01","kilo",80)],settings:{obDone:true}}),koc_v1_onceki:big,koc_v1_bozuk:big},{quota:900000});ev=s=>w.eval(s);
   ev("S.entries.push(...Array.from({length:3000},(_,i)=>({id:i+10,day:'2026-09-01',time:'08:00',type:'not',v:null,text:'n'.repeat(60)})));save()");
   ok("depo dolunca önce güvenlik kopyası silinir, kayıt yazılır, kullanıcı verisine dokunulmaz",ev("saveFail")===false&&JSON.parse(w.localStorage.getItem("koc_v1")).entries.length===3001&&w.localStorage.getItem("koc_v1_onceki")===null&&w.localStorage.getItem("koc_v1_bozuk")!==null);
+  {
+    const seed=at=>open({koc_v1:JSON.stringify({entries:[E("2026-09-01","kilo",80)],settings:{obDone:true,copyAt:at}}),koc_v1_onceki:big},{quota:600000});
+    const fill="S.entries.push(...Array.from({length:3000},(_,i)=>({id:i+10,day:'2026-09-01',time:'08:00',type:'not',v:null,text:'n'.repeat(60)})))";
+    w=await seed("2026-09-01");ev=s=>w.eval(s);ev("S.settings.copyAt=dayKey()");
+    ev(fill+";markBackup(true)");
+    ok("otomatik yedek (kota dolu, kopya 7 günden genç): güvenlik kopyası silinmez, kayıt sonra yazılır",w.localStorage.getItem("koc_v1_onceki")!==null&&JSON.parse(w.localStorage.getItem("koc_v1")).entries.length===1);
+    ev("save()");
+    ok("kullanıcı verisi için gerçek kota gerekince kopya yine gider",w.localStorage.getItem("koc_v1_onceki")===null&&JSON.parse(w.localStorage.getItem("koc_v1")).entries.length===3001);
+    w=await seed("");ev=s=>w.eval(s);ev("S.settings.copyAt=keyOff(-7)");ev(fill+";markBackup(true)");
+    ok("7 gün geçince otomatik yedek de kopyayı silebilir",w.localStorage.getItem("koc_v1_onceki")===null&&JSON.parse(w.localStorage.getItem("koc_v1")).entries.length===3001);
+    w=await seed("");ev=s=>w.eval(s);ev("S.settings.copyAt=dayKey()");ev("sheetPrivacy();document.body.insertAdjacentHTML('beforeend','<button id=gd data-act=kopyagordum></button>')");w.document.querySelector("#gd").click();ev(fill+";markBackup(true)");
+    ok("'Gördüm' onayından sonra koruma kalkar",ev("S.settings.copyAt")===""&&w.localStorage.getItem("koc_v1_onceki")===null);
+  }
   w=await open({koc_v1_onceki:"y".repeat(2e6)});ev=s=>w.eval(s);
   ok("kopyalar boyut uyarısına dahil",ev("storeBytes")>4e6&&ev("storeMsg()")!==null,ev("storeBytes"));
   w=await open({});ev=s=>w.eval(s);
@@ -79,6 +92,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
   ev("sheetYedek()");w.document.querySelector("#bk").value=JSON.stringify({entries:[E("2026-09-05","kilo",70),E("2026-09-06","kilo",69)],settings:{obDone:true}});
   await ev("goYukle()");
   ok("düz (eski) yedek hâlâ yüklenir; önceki veri güvenlik kopyasında",ev("S.entries.length")===2&&JSON.parse(w.localStorage.getItem("koc_v1_onceki")).entries[0].v===80);
+  ok("geri yüklemede kopya alınınca 7 günlük koruma başlar (copyAt bugün)",ev("S.settings.copyAt")===ev("dayKey()"));
   ev("sheetPrivacy();pvDelete(1)");
   ok("kategori silinince güvenlik kopyası da silinir",w.localStorage.getItem("koc_v1_onceki")===null);
 

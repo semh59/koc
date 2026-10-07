@@ -100,11 +100,37 @@ async function labLoadPdf(){
   lib.GlobalWorkerOptions.workerSrc=new URL("vendor/pdfjs/pdf.worker.min.js",document.baseURI).href;
   return lib;
 }
+let labCancel=false;
+/* Taranmış PDF: sayfa sayfa tuvale çizilip yalnız yerel ML Kit'e verilir (en çok 6 sayfa, bellek için sırayla). */
+const labOcr=()=>{
+  const P=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Ocr;
+  return P?{
+    cancelled:()=>labCancel||!document.getElementById("labprog"),
+    progress:(i,n)=>{const e=document.getElementById("labprog");if(e)e.textContent=`Sayfa ${i}/${n} okunuyor`},
+    recognize:b=>P.recognize({image:b}),
+    async render(pg){
+      const vp=pg.getViewport({scale:2}),c=document.createElement("canvas");c.width=Math.ceil(vp.width);c.height=Math.ceil(vp.height);
+      const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);
+      await pg.render({canvasContext:x,viewport:vp}).promise;
+      const b=c.toDataURL("image/jpeg",0.9).split(",")[1];c.width=c.height=0;return b;
+    }
+  }:null;
+};
 async function labRead(data,password){
   toast("PDF okunuyor…");
   let ex;
-  try{ex=await LabLib.extract(await labLoadPdf(),data.slice(),password)}catch(e){return toast("PDF okunamadı")}
+  const ocr=labOcr();labCancel=false;
+  try{
+    const lib=await labLoadPdf(),ex1=await LabLib.extract(lib,data.slice(),password);
+    ex=ex1;
+    if(ex1.scanned&&ocr){
+      openSheet(`<h3>Taranmış PDF</h3><p class="mut sm">Yazı telefonda okunur, hiçbir yere gönderilmez. En çok ilk 6 sayfa okunur.</p><p id="labprog" role="status">Hazırlanıyor…</p><button class="btn ghost" data-lab="cancel">Vazgeç</button>`);
+      ex=await LabLib.extract(lib,data.slice(),password,ocr);
+      closeSheet();
+    }
+  }catch(e){closeSheet();return toast("PDF okunamadı")}
   document.getElementById("toast").classList.remove("on");
+  if(ex.cancelled)return toast("Okuma iptal edildi");
   if(ex.need==="password"){
     labKeep=data;
     return openSheet(`<h3>Korumalı PDF</h3><p class="mut sm">${ex.wrong?"Parola yanlış. ":""}Laboratuvarın verdiği PDF parolasını yaz. Parola saklanmaz.</p><input class="in" id="labpw" type="password" autocomplete="off" autofocus><button class="btn" data-lab="pw">Aç</button><button class="btn ghost" data-lab="close" style="margin-top:8px">Vazgeç</button>`);
@@ -115,6 +141,7 @@ async function labRead(data,password){
   const parsed=LabLib.parseLines(ex.lines,dayKey());
   if(!parsed.rows.length)return openSheet(`<h3>Sonuç bulunamadı</h3><p class="mut">PDF'te tanıyabildiğim bir sonuç satırı yok. Rapor düzeni farklı olabilir. Değerleri elle ekleyebilirsin.</p><button class="btn" data-lab="add">${Icons.svg("plus")} Elle ekle</button><button class="btn ghost" data-lab="close" style="margin-top:8px">Kapat</button>`);
   labReview(parsed,false);
+  if(ex.limited)toast(`Taranmış PDF: yalnız ilk ${ex.limited.read} sayfa okundu (toplam ${ex.limited.total})`);
 }
 async function labFile(f){
   if(!f)return;
@@ -161,6 +188,7 @@ document.addEventListener("click",ev=>{
   const [a,arg]=el.dataset.lab.split(/:(.*)/s);
   if(a==="open")labDetail(arg);
   else if(a==="close")closeSheet();
+  else if(a==="cancel"){labCancel=true;closeSheet()}
   else if(a==="add")labReview({date:"",rows:[]},true);
   else if(a==="addrow"){labCollect();labRows.push({n:"",v:undefined});labRender();const e=document.getElementById("ln"+(labRows.length-1));if(e)e.focus()}
   else if(a==="save")labSave();

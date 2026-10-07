@@ -14,16 +14,7 @@ test.describe("Yemek ekle",()=>{
       await expect(page.locator('#flist [data-c="askfood"]')).toContainText(`"${q}" için Koç'a sor`);
     });
 
-  test("arama 'kasarli tost': tam ad ilk iki sonuçta",async({app,page})=>{
-    await openYemek(app,page);
-    await page.fill("#fq","kasarli tost");
-    const top2=await results(page).evaluateAll(b=>b.slice(0,2).map(x=>x.textContent));
-    expect(top2).toContain("Kaşarlı tost");
-  });
-
-  // fixme çünkü: arama sıralaması (www/foods.js) tam ad eşleşmesini ("Kaşarlı tost") sözcük içeren adların ("Sucuklu kaşarlı tost") arkasına koyuyor.
-  // Ürün kararı: sıralama kuralı değişirse bu test fixme'den çıkarılır; üstteki test şimdiki davranışı (ilk iki sonuç) korur.
-  test.fixme("arama 'kasarli tost': tam ad eşleşmesi ilk sırada",async({app,page})=>{
+  test("arama 'kasarli tost': tam ad eşleşmesi ilk sırada",async({app,page})=>{
     await openYemek(app,page);
     await page.fill("#fq","kasarli tost");
     await expect(results(page).first()).toHaveText("Kaşarlı tost");
