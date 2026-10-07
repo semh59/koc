@@ -262,3 +262,18 @@ test.describe("Koç kimlik maskeleme",()=>{
     await page.reload();expect(await page.evaluate("S.settings.piiPrev")).toBe(true);
   });
 });
+
+test.describe("Koç bağlam bölümleri soruya göre gider",()=>{
+  const sys=fake=>fake.chats().at(-1).body.messages[0].content;
+  const openMed=app=>app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter",medOn:true},{meds:[{id:1,n:"Metformin",t:["08:00"],on:true}]}),keys:{groq:"gsk_test"}});
+  test("ilaç sorusu ilaç bölümünü gönderir, su sorusu göndermez; güvenlik bölümleri her ikisinde var",async({app,page,fake})=>{
+    fake.st.reply=()=>JSON.stringify({reply:"Tamam.",log:[]});
+    await openMed(app);
+    await send(app,page,"Bugün kaç ml su içtim");
+    await expect(page.locator("#view")).toContainText("Tamam.");
+    expect(sys(fake)).not.toContain("İLAÇLAR");expect(sys(fake)).toContain("HESAPLANAN");expect(sys(fake)).toContain("SON 14 GÜN");
+    await page.fill("#cmsg","İlacımı unuttum ne yapayım");await page.click("#csend");
+    await expect.poll(()=>fake.chats().length).toBe(2);
+    expect(sys(fake)).toContain("İLAÇLAR");expect(sys(fake)).toContain("Metformin");expect(sys(fake)).toContain("HESAPLANAN");
+  });
+});
