@@ -1,4 +1,5 @@
 const LogLib=(()=>{
+  const WL=typeof WeeklyLib!=="undefined"?WeeklyLib:require("./weeklylib.js");
   const MAX={p:500,c:2000,f:1000,fb:500,sg:2000,na:100000},NUTR=Object.keys(MAX);
   const copyNutr=(src,dst)=>{for(const k of NUTR)if(Number.isFinite(src[k])&&src[k]>=0&&src[k]<=MAX[k])dst[k]=src[k];return dst};
   const key=s=>s.trim().replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
@@ -81,9 +82,9 @@ const LogLib=(()=>{
   const mealOf=e=>{const h=+String(e.time).slice(0,2);return mealKey(e.meal)||(h>=5&&h<11?"kah":h>=11&&h<16?"ogl":h>=16&&h<21?"aks":"atis")};
   /* Günlük: öğün grupları (saat sırasıyla, alt toplam kcal), tek satıra inen su, kalanlar. */
   function dayLog(items){
-    const meals=items.filter(e=>e.type==="yemek"),su=items.filter(e=>e.type==="su");
+    const meals=items.filter(e=>e.type==="yemek"),su=items.filter(WL.isWater),dr=items.filter(e=>e.type==="su"&&!WL.isWater(e));
     const groups=MEALS.map(([k,n])=>{const L=meals.filter(e=>mealOf(e)===k).sort((a,b)=>a.time.localeCompare(b.time)||a.id-b.id);return {k,n,items:L,kcal:L.reduce((s,e)=>s+(e.v||0),0)}}).filter(g=>g.items.length);
-    return {groups,su,suMl:su.reduce((s,e)=>s+(e.v||0),0),rest:items.filter(e=>e.type!=="yemek"&&e.type!=="su")};
+    return {groups,su,dr,suMl:su.reduce((s,e)=>s+(e.v||0),0),drMl:dr.reduce((s,e)=>s+(e.v||0),0),rest:items.filter(e=>e.type!=="yemek"&&e.type!=="su")};
   }
   const stalled=(snapAt,now,yest,prev7)=>(snapAt>0&&now-snapAt>26*36e5)||(yest===0&&prev7>1000);
   return {PER100,RLBL,cleanRecipes,recipeCalc,recipeNote,recipeFood,MEALS,mealKey,mealOf,dayLog,stalled,NUTR,MAX,copyNutr,key,cleanFav,cleanTpl,recents};

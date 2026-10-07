@@ -35,15 +35,15 @@ test.describe("Birimler",()=>{
 });
 
 test.describe("İçecek türü",()=>{
-  test("çay eklenir, su hedefine sayılır, geçmişte türüyle görünür; hızlı +250 su kalır",async({app,page})=>{
+  test("çay eklenir, su hedefine sayılmaz, geçmişte türüyle görünür; hızlı +250 su kalır",async({app,page})=>{
     await app.open({seed:state()});
     await page.click('[data-act="su"]');
     await page.click('[data-dk="open"]');
     await page.click('[data-dr="cay"]');await page.fill("#fv","200");await page.click('[data-dk="go"]');
-    await expect(app.toast).toContainText("Çay 200 ml eklendi, bugün 450 / 2500 ml");
+    await expect(app.toast).toContainText("Çay 200 ml kaydedildi, su hedefine sayılmaz");
     const su=(await app.state()).entries.filter(e=>e.type==="su");
     expect(su.map(e=>[e.v,e.dr])).toEqual([[250,undefined],[200,"cay"]]);
-    await page.click('[data-suall="1"]');
+    await page.locator('[data-suall="1"]').first().click();
     await expect(page.locator("#sheet")).toContainText("200 ml · Çay");
   });
 });

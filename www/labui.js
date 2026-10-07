@@ -14,20 +14,24 @@ function labSvg(s,W,H){
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(s.n)} grafiği" style="width:100%;display:block">${bd}<rect x="8" y="8" width="${W-16}" height="${H-28}" fill="none" stroke="var(--line)"/>${line}${dots}<text x="8" y="${H-6}" style="font-size:10px;fill:var(--mut)">${fd(first)}</text>${s.pts.length>1?`<text x="${W-8}" y="${H-6}" text-anchor="end" style="font-size:10px;fill:var(--mut)">${fd(last)}</text>`:""}</svg>`;
 }
 const labFlagTxt=f=>f==="high"?"▲ Raporda yazan aralığın üstünde":f==="low"?"▼ Raporda yazan aralığın altında":"";
-const labSid=s=>s.id;
+/* "Bu ne?": yalnız sözlükteki kalemlerde, yalnız tanım; yorum yok. */
+const labInfoBox=(k,id,hid)=>{const d=LabLib.info(k);return d?`<div id="${id}" class="sm" ${hid?"hidden":""} style="padding:8px 2px"><b>${esc(d.n)}</b> · ${esc(d.c)}<br>${esc(d.e)}</div>`:""};
+const labInfoBtn=(k,i)=>LabLib.info(k)?`<button class="chip" data-lab="info:${i}" aria-expanded="false" aria-controls="li${i}" style="min-height:44px;min-width:44px;margin:0 0 8px">Bu ne?</button>`:"";
 
 function viewTahlil(){
   const list=LabLib.series(S.labs),txt=S.labs.filter(r=>r.t);
-  const cards=list.map(s=>{
+  let nInfo=0;
+  const cards=list.map((s,i)=>{
     const last=s.pts[s.pts.length-1],f=LabLib.flag(last),rt=LabLib.rangeText(last);
-    return `<button class="stepcard" data-lab="open:${esc(s.id)}" aria-label="${esc(s.n)} ayrıntısı"><div class="row"><b>${esc(s.n)}</b><span class="mut sm">${fd(last.day)}</span></div><div class="row"><span class="big num">${last.q||""}${labFmt(last.v)} <small class="mut">${esc(s.u)}</small></span><span class="mut sm">${rt?"Raporda: "+esc(rt):""}</span></div>${f?`<div class="sm" style="font-weight:700">${labFlagTxt(f)}</div>`:""}${s.pts.length>1?`<div style="margin-top:6px">${labSvg(s,300,58)}</div>`:""}</button>`;
+    if(LabLib.info(s.k))nInfo++;
+    return `<button class="stepcard" data-lab="open:${esc(s.id)}" aria-label="${esc(s.n)} ayrıntısı"><div class="row"><b>${esc(s.n)}</b><span class="mut sm">${fd(last.day)}</span></div><div class="row"><span class="big num">${last.q||""}${labFmt(last.v)} <small class="mut">${esc(s.u)}</small></span><span class="mut sm">${rt?"Raporda: "+esc(rt):""}</span></div>${f?`<div class="sm" style="font-weight:700">${labFlagTxt(f)}</div>`:""}${s.pts.length>1?`<div style="margin-top:6px">${labSvg(s,300,58)}</div>`:""}</button>${labInfoBtn(s.k,i)}${labInfoBox(s.k,"li"+i,1)}`;
   }).join("");
   const nTxt=txt.length?`<p class="hint">${txt.length} yazılı sonuç (ör. Negatif) kayıtlı. Bunlar grafikte gösterilmez, PDF'e eklenmez.</p>`:"";
   return `<div class="card"><div class="lbl">Tahlil sonuçları</div>
     <p class="mut sm" style="margin:0 0 10px">PDF'ten okut ya da elle ekle. Veriler yalnızca bu telefonda kalır. Raporda yazan aralık olduğu gibi gösterilir; uygulama yorum yapmaz. Bu değerleri hekiminle değerlendir.</p>
     <div class="btns" style="display:grid;gap:8px"><label class="btn" style="text-align:center">${Icons.svg("file")} PDF'ten oku<input id="labfile" type="file" accept="application/pdf,.pdf" hidden></label>
     ${ocrBtn("tahlil",Icons.svg("camera")+" Fotoğraftan oku")}<button class="btn ghost" data-lab="add">${Icons.svg("plus")} Elle ekle</button></div></div>
-  ${cards||`<div class="card"><p class="mut">Henüz tahlil sonucu yok. İlk PDF'ini okutarak başla.</p></div>`}${nTxt}
+  ${cards||`<div class="card"><p class="mut">Henüz tahlil sonucu yok. İlk PDF'ini okutarak başla.</p></div>`}${nTxt}${nInfo?`<p class="hint">"Bu ne?" bilgileri yalnızca testin ne olduğunu anlatır. Bu bilgi tanı veya yorum değildir.</p>`:""}
   ${S.labs.length?`<button class="btn danger" data-lab="delall" style="margin-top:8px">Tüm tahlil kayıtlarını sil</button>`:""}`;
 }
 function labTrendCard(){
@@ -40,7 +44,7 @@ function labDetail(id){
   if(!s){closeSheet();return render()}
   const last=s.pts[s.pts.length-1],f=LabLib.flag(last);
   const rows=[...s.pts].reverse().map(p=>{const pf=LabLib.flag(p),rt=LabLib.rangeText(p);return `<div class="row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span style="flex:1">${fd(p.day)}</span><b class="num">${p.q||""}${labFmt(p.v)}</b><span class="mut sm" style="min-width:64px;text-align:right">${rt?esc(rt):""}</span><span aria-hidden="true">${pf==="high"?"▲":pf==="low"?"▼":""}</span><button class="chip" data-lab="del:${p.id}" aria-label="${fd(p.day)} sonucunu sil">✕</button></div>`}).join("");
-  openSheet(`<h3>${esc(s.n)}</h3><div class="mut sm">${esc(s.u)}${f?" · "+labFlagTxt(f):""}</div><div style="margin:10px 0">${s.pts.length>1?labSvg(s,320,150):`<p class="hint">Grafik için aynı testten en az iki sonuç gerekir.</p>`}</div>
+  openSheet(`<h3>${esc(s.n)}</h3><div class="mut sm">${esc(s.u)}${f?" · "+labFlagTxt(f):""}</div>${labInfoBox(s.k,"lid",0)}<div style="margin:10px 0">${s.pts.length>1?labSvg(s,320,150):`<p class="hint">Grafik için aynı testten en az iki sonuç gerekir.</p>`}</div>
   <div class="mut sm">Gölgeli bölge raporda yazan aralıktır.</div><div style="max-height:34vh;overflow:auto">${rows}</div><button class="btn ghost" data-lab="close" style="margin-top:10px">Kapat</button>`);
 }
 
@@ -187,6 +191,7 @@ document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-lab]");if(!el)return;
   const [a,arg]=el.dataset.lab.split(/:(.*)/s);
   if(a==="open")labDetail(arg);
+  else if(a==="info"){const b=document.getElementById("li"+arg),on=b.hidden;b.hidden=!on;el.setAttribute("aria-expanded",on)}
   else if(a==="close")closeSheet();
   else if(a==="cancel"){labCancel=true;closeSheet()}
   else if(a==="add")labReview({date:"",rows:[]},true);
