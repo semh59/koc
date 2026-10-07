@@ -85,7 +85,7 @@ jobs:
           bt=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)
           apksigner=${bt}apksigner
           ${bt}aapt2 dump badging neowell.apk > badging0.txt || { echo "aapt2 çalışmadı"; exit 1; }
-          min=$(grep -oE "sdkVersion:'[0-9]+'" badging0.txt | grep -oE "[0-9]+" | head -1 || true)
+          min=$(grep -oE "minSdkVersion:'[0-9]+'" badging0.txt | grep -oE "[0-9]+" | head -1 || true)
           echo "minSdk=${min:-okunamadı}"; [ -n "$min" ] || { echo "minSdk okunamadı; badging başı:"; head -5 badging0.txt; exit 1; }
           # Hata çıktısı bastırılmaz: imza bozuksa nedeni günlükte görünür.
           $apksigner verify --verbose --print-certs --min-sdk-version "$min" neowell.apk | tee verify.txt
@@ -120,7 +120,7 @@ jobs:
           [ -z "$bad" ] || { echo "BEKLENMEYEN DIŞA AÇIK BİLEŞEN (yalnız MainActivity ve NeoWidget olmalı):"; echo "$bad"; exit 1; }
           grep -qE "(^|\.)MainActivity$" exported.txt && grep -qE "(^|\.)NeoWidget$" exported.txt || { echo "MainActivity ya da NeoWidget dışa açık görünmüyor, denetim ayrıştırması bozulmuş olabilir"; exit 1; }
           $aapt2 dump badging neowell.apk > badging.txt
-          min=$(grep -oE "sdkVersion:'[0-9]+'" badging.txt | grep -oE "[0-9]+" | head -1 || true)
+          min=$(grep -oE "minSdkVersion:'[0-9]+'" badging.txt | grep -oE "[0-9]+" | head -1 || true)
           vc=$(grep -oE "versionCode='[0-9]+'" badging.txt | grep -oE "[0-9]+")
           echo "minSdk=$min versionCode=$vc"
           [ "$min" -ge 24 ] && [ "$min" -le 26 ] || { echo "minSdk beklenen aralıkta (24-26) değil: $min"; exit 1; }
