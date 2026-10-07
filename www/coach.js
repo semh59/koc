@@ -191,7 +191,9 @@ function cHistLog(m){
 /* Modele yalnız maskelenmiş metin gider; etiket tablosu dizinin .pii alanında kalır, yanıt cAsk'ta yerelde geri çevrilir. */
 function cMessages(extraUser,extraSys,noHist){
   const map={},mk=s=>PiiLib.mask(s,map).text;
-  const sys=CoachLib.SYSTEM+mk((extraSys?"\n\nNOT: "+extraSys:"")+"\n\n"+CoachLib.contextText(cData()));
+  /* Bağlam bölümleri soruya göre seçilir: sohbette son 3 kullanıcı mesajı (konu devamı), program/menüde istek metni; yorum isteklerinde soru yok = hepsi. */
+  const q=noHist?extraUser:extraUser?undefined:S.chat.filter(m=>m.role==="user"&&m.text).slice(-3).map(m=>m.text).join(" ");
+  const sys=CoachLib.SYSTEM+mk((extraSys?"\n\nNOT: "+extraSys:"")+"\n\n"+CoachLib.contextText(cData(),q));
   const hist=noHist?[]:S.chat.filter(m=>m.role!=="sys"&&m.text).slice(-HIST_N).map(m=>({role:m.role==="user"?"user":"assistant",content:m.role==="user"?mk(m.text).slice(0,300):JSON.stringify({reply:mk(m.text).slice(0,260),log:cHistLog(m).map(i=>({...i,text:i.text&&mk(i.text),name:i.name&&mk(i.name)}))})}));
   const msgs=[{role:"system",content:sys}].concat(hist);
   if(extraUser)msgs.push({role:"user",content:mk(extraUser)});
@@ -220,12 +222,14 @@ async function callProvider(p,key,messages,maxTokens=700,o={}){
 const pModelsUrl=p=>p.base.replace(/\/+$/,"")+"/models"+(p.id==="anthropic"?"?limit=1000":"");
 /* İstek gövdesi sağlayıcıya göre. Düşünen modellerde düşünme jetonu yanıt sınırından yer; düşük çaba ve pay verilir.
    OpenAI güncel modelleri max_tokens kabul etmez. Anthropic: sistem metni ayrı alan, ilk mesaj kullanıcı; Haiku 4.5 sıcaklık alır, Sonnet/Opus 5.x almaz (çaba alır). */
+/* Sabit kural metni önbelleğe alınır (değişken bağlamdan ayrı blok); eşik altında önbellek zararsızdır. */
+const cacheSys=sys=>sys.startsWith(CoachLib.SYSTEM)&&sys.length>CoachLib.SYSTEM.length?[{type:"text",text:CoachLib.SYSTEM,cache_control:{type:"ephemeral"}},{type:"text",text:sys.slice(CoachLib.SYSTEM.length)}]:sys;
 function pBody(p,messages,maxTokens){
   if(p.id==="openai")return {model:p.model,messages,max_completion_tokens:maxTokens*3,reasoning_effort:"low"};
   if(p.id==="anthropic"){
     const sys=messages.filter(m=>m.role==="system").map(m=>m.content).join("\n\n"),ms=messages.filter(m=>m.role!=="system");
     while(ms.length&&ms[0].role!=="user")ms.shift();
-    const b={model:p.model,max_tokens:maxTokens,messages:ms.length?ms:[{role:"user",content:"Merhaba"}]};if(sys)b.system=sys;
+    const b={model:p.model,max_tokens:maxTokens,messages:ms.length?ms:[{role:"user",content:"Merhaba"}]};if(sys)b.system=cacheSys(sys);
     if(/haiku/.test(p.model))b.temperature=0.3;else{b.output_config={effort:"low"};b.max_tokens=maxTokens+2000}
     return b;
   }

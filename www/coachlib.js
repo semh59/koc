@@ -242,10 +242,10 @@ const CoachLib=(()=>{
   const ERR_TXT={key:"Anahtar kabul edilmedi. Doğru sağlayıcıyı seçtiğinden ve anahtarı eksiksiz yapıştırdığından emin ol.",quota:"Hesabının kotası ya da bakiyesi bitmiş. Sağlayıcının sitesinde kullanımına bak.",limit:"Kısa süreli kullanım sınırı doldu, bir dakika sonra yeniden dene.",model:"Bu model bulunamadı ya da hesabında kullanılamıyor. Başka model seç.",net:"İnternet yok ya da sağlayıcıya ulaşılamadı.",time:"Model zamanında yanıt vermedi. Yeniden dene ya da başka model seç.",down:"Sağlayıcıda geçici bir sorun var, sonra yeniden dene.",empty:"Bağlantı çalışıyor ama model boş yanıt verdi. Önerilen modeli seç."};
   const errText=(kind,status)=>ERR_TXT[kind]||`Beklenmeyen bir hata oldu${status?" (kod "+status+")":""}.`;
 
-  const SYSTEM=`Sen "Koç"sun: tek bir kişiye özel beslenme, spor ve yaşam koçu. Hekim değilsin ve tanı koymazsın. Türkçe, sıcak, kısa ve net konuş. Suçlayıcı olma. Cevabın en fazla yaklaşık 90 kelime olsun, kullanıcı detay istemedikçe.
+  const SYSTEM=`Sen "Koç"sun: tek bir kişiye özel beslenme, spor ve yaşam koçu. Hekim değilsin ve tanı koymazsın. Türkçe, sıcak, kısa ve net konuş, suçlama. Cevap en fazla yaklaşık 90 kelime, kullanıcı detay istemedikçe.
 
 KURALLAR
-1. Sayıları yalnızca "HESAPLANAN" ve "SON 14 GÜN" bölümlerinden al. Kilo, harcama, hız gibi sayıları kendin hesaplama veya uydurma. Sadece yemek için kalori ve protein tahmini yapabilirsin.
+1. Sayıları yalnızca "HESAPLANAN" ve "SON 14 GÜN" bölümlerinden al. Kilo, harcama, hız gibi sayıları kendin hesaplama ya da uydurma; yalnız yemek için kalori ve protein tahmin edebilirsin.
 2. Kalori hedefini kendin değiştirme. Değişiklik gerekirse "propose" alanında öner, kullanıcı onaylar.
 3. Çok düşük kalori veya hızlı kilo kaybı önerme. Hamilelik, emzirme, 18 yaş altı, yeme bozukluğu geçmişi, ciddi hastalık veya ilaç kullanımı varsa kalori açığı önerme, hekime yönlendir. "KISIT" satırı uygulamanın güvenlik frenidir: varken kalori açığı, oruç ya da yüksek protein önerme.
 4. Baş dönmesi, bayılma, göğüs ağrısı, nefes darlığı, çarpıntı gibi belirtilerde önce hekime başvurmasını söyle. Acil belirtilerde 112. "flag" alanına "safety" yaz.
@@ -253,7 +253,7 @@ KURALLAR
 6. Yeme bozukluğu işareti görürsen kısıtlama önerme, yargılamadan bir uzmana yönlendir.
 7. Bilmediğin veya veride olmayan şeyi sor, tahmin yürütme.
 8. Kullanıcı bir şey yediğini, içtiğini, tartıldığını veya spor yaptığını yazarsa "log" listesine ekle. Her yemek ayrı; değerler tahmin, kesin deme.
-9. Kullanıcı bir yemeğin ya da besinin kalorisini sorarsa ve yediğini söylemiyorsa "log" kullanma; "food" alanına tek porsiyonluk makul bir tahmin yaz. Porsiyonu adda belirt (ör. "1 dilim pizza"). Tahmin olduğunu reply'da söyle.
+9. Yemeğin kalorisi soruluyor ve yenmediyse "log" kullanma; "food" alanına tek porsiyonluk tahmin yaz, porsiyonu adda belirt (ör. "1 dilim pizza"), reply'da tahmin olduğunu söyle.
 10. Kas, eklem ya da sırt ağrısında ve sakatlıkta tanı koyma, tedavi ya da egzersiz reçetesi verme: ağrıyı yapan hareketi ve antrenmanı bırakmasını, ağrı sürer ya da artarsa hekime veya fizyoterapiste başvurmasını söyle.
 11. İlaç ve takviye sorularında (doz, etkileşim, başlama, bırakma) yorum yapma, hekime ya da eczacıya yönlendir.
 12. Program önerirken reply'da "ağrın, sakatlığın ya da sağlık sorunun varsa başlamadan hekime danış" uyarısını kısaca ver. Hamilelik veya emzirmede, yakın zamanda ameliyatta ya da ciddi hastalıkta önce hekime yönlendir. 18 yaş altında ağır yük ve kalori açığı içeren program önerme, ailesi ve hekimiyle planlamasını söyle. Yeme bozukluğu işaretinde kalori yakmak için spor önerme.
@@ -268,23 +268,35 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
   /* Kesin yaş kimliğe yaklaşır; modele 5 yıllık aralık gider (Koç 18+ için açık). Enerji hesabı yerelde kesin yaşla yapılır. */
   const ageBand=a=>{const l=a-a%5;return Math.max(l,18)+"-"+(l+4)};
   const f1=x=>x==null?"–":String(Math.round(x*10)/10).replace(".",",");
-  /* Bağlam metni. d: uygulamanın hesapladığı veri. */
-  function contextText(d){
-    const L=[];
+  /* Bağlam metni. d: uygulamanın hesapladığı veri; q: soru metni. Güvenlik/doğruluk bölümleri hep gider; ilaç, antrenman ve not
+     bölümleri yalnız soruda ilgili anahtar kelime varsa. Soru ne ilgili ne bilinen başka bir konuya (su, yemek, kilo...) değiyorsa (belirsiz) hepsi gider. */
+  const K={
+    med:/ilaç|ilac|doz|(^|[^a-zçğıöşü])hap|tablet|hatırlat|eczane|eczacı|ağrı ?kesici|vitamin|takviye|reçete|kapsül|şurup|antibiyotik|insülin|tansiyon/,
+    spor:/spor|antrenman|egzersiz|set|setler|program|salon|kas|kaslar|koş|yürü|ağırlık|tekrar|bench|squat|hareket|kardiyo|cardio|pilates|yüz|bisiklet/,
+    diger:/(^|[^a-zçğıöşü])su(yu|ya|da|dan)?([^a-zçğıöşü]|$)|içtim|yemek|yedim|kalori|kcal|kilo|protein|karbonhidrat|öğün|kahvaltı|diyet|menü|tarif|tartı/,
+    not:/(^|[^a-zçğıöşü])not|ruh|uyku|uyu|stres|yazdım|yorgun|moral|mutlu|kaygı/
+  };
+  function contextText(d,q){
+    const ql=low(q),medHit=!!(d.meds||[]).some(m=>ql.includes(low(m.n).slice(0,30))&&m.n),hit={med:K.med.test(ql)||medHit,spor:K.spor.test(ql),not:K.not.test(ql)};
+    const all=!hit.med&&!hit.spor&&!hit.not&&!K.diger.test(ql),L=[];
     L.push("PROFİL: "+[d.profile.cm?d.profile.cm+" cm":null,d.profile.age?ageBand(d.profile.age)+" yaş":null,d.profile.sex==="m"?"erkek":d.profile.sex==="f"?"kadın":null,d.profile.act!=null?"hareket düzeyi "+["az","orta","çok"][d.profile.act]:null].filter(Boolean).join(", ")||"girilmemiş");
     if(d.profile.note)L.push("SAĞLIK NOTU (kullanıcı yazdı): "+oneLine(d.profile.note,500));
     L.push(`HEDEFLER: kilo ${d.goals.kg||"yok"}, kalori ${d.goals.kcal||"yok"}, su ${d.goals.water} ml, spor ${d.goals.sport} dk/hafta`);
     const c=d.calc;
     L.push(`HESAPLANAN: trend kilo ${f1(c.trendKg)} kg, hız ${c.slope==null?"yetersiz veri":f1(c.slope)+" kg/hafta"}, tahmini harcama ${c.tdee?Math.round(c.tdee/10)*10+" kcal ("+c.source+")":"hesaplanamadı"}, önerilen hedef ${c.target||"–"} kcal, protein aralığı ${c.protein?c.protein[0]+"-"+c.protein[1]+" g":c.proteinDoc?"hekimle belirlenmeli (yüksek protein önerme)":"–"}`);
     if(c.block)L.push("KISIT: "+c.why+". Kalori açığı ve oruç önerme, hekime yönlendir.");
-    const hs=d.days.some(r=>r.sl),hm=d.days.some(r=>r.mo);
+    const hs=d.days.some(r=>r.sl),hm=d.days.some(r=>r.mo),cells=r=>[r.kg,r.kcal,r.p,r.su,r.sport,r.ad,r.sl,r.mo],empty=[];
     L.push("SON 14 GÜN (gün | kilo | kcal | protein g | su ml | spor dk | adım"+(hs?" | uyku sa":"")+(hm?" | ruh hali 1-5":"")+"):");
-    for(const r of d.days)L.push(`${r.d} | ${f1(r.kg)} | ${r.kcal||"–"} | ${r.p||"–"} | ${r.su||"–"} | ${r.sport||"–"} | ${r.ad||"–"}`+(hs?` | ${r.sl?f1(r.sl/60):"–"}`:"")+(hm?` | ${r.mo||"–"}`:""));
+    for(const r of d.days){
+      if(cells(r).every(v=>!v)){empty.push(+r.d.slice(-2));continue}
+      L.push(`${r.d} | ${f1(r.kg)} | ${r.kcal||"–"} | ${r.p||"–"} | ${r.su||"–"} | ${r.sport||"–"} | ${r.ad||"–"}`+(hs?` | ${r.sl?f1(r.sl/60):"–"}`:"")+(hm?` | ${r.mo||"–"}`:""));
+    }
+    if(empty.length)L.push("boş günler (ayın günü, hiç veri yok): "+empty.join(", "));
     L.push("BUGÜN: "+(d.today.length?d.today.map(x=>oneLine(x,160)).join("; "):"kayıt yok")+` (saat ${d.now})`);
-    if(d.workouts.length)L.push("SON ANTRENMANLAR: "+d.workouts.map(x=>oneLine(x,300)).join(" | "));
-    if(d.weekSets&&Object.keys(d.weekSets).length)L.push("BU HAFTA TAMAMLANAN SET (bölgeye göre): "+Object.keys(d.weekSets).map(k=>k+" "+d.weekSets[k]).join(", "));
-    if(d.notes.length)L.push("SON NOTLAR: "+d.notes.map(x=>oneLine(x,100)).join(" | "));
-    if(d.meds&&d.meds.length){
+    if((all||hit.spor)&&d.workouts.length)L.push("SON ANTRENMANLAR: "+d.workouts.map(x=>oneLine(x,300)).join(" | "));
+    if((all||hit.spor)&&d.weekSets&&Object.keys(d.weekSets).length)L.push("BU HAFTA TAMAMLANAN SET (bölgeye göre): "+Object.keys(d.weekSets).map(k=>k+" "+d.weekSets[k]).join(", "));
+    if((all||hit.not)&&d.notes.length)L.push("SON NOTLAR: "+d.notes.map(x=>oneLine(x,100)).join(" | "));
+    if((all||hit.med)&&d.meds&&d.meds.length){
       L.push("İLAÇLAR (kullanıcının kendi girdiği hatırlatıcı kaydı; doz veya ilaç değişikliği önerme, ilaçla ilgili soruları hekime/eczacıya yönlendir; doz sayıları son 7 gün"+(d.meds.some(m=>m.a&&m.a.late)?"; 'bugün bekleyen' doz gün bitene kadar eklenebilir, kaçırılan değil":"")+"):");
       for(const m of d.meds)L.push(`${oneLine(m.n,30)}${m.d?" "+oneLine(m.d,20):""} | saatler ${m.t.join(", ")}${m.w?" | haftanın günleri "+m.w.join(","):""} | ${m.a?`${m.a.taken}/${m.a.total} alındı, ${m.a.missed} kaçırılan${m.a.late?`, ${m.a.late} bugün bekleyen`:""}${m.a.skipped?`, ${m.a.skipped} atlanan`:""}`:"doz yok"}${m.left!=null?` | stok ~${m.left} doz`:""}`);
     }
