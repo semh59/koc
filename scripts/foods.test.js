@@ -32,6 +32,7 @@ ok("aynı kelimelerden oluşan iki öğün kaydı yok (farklı kcal ile karışm
 ok("öğün kayıtlarında marka adı yok",!og.concat(FOODS.slice(513)).some(f=>/mcdonald|burger king|kfc|domino|pizza hut|papa john|starbucks|big mac|clif|snickers|nutella/i.test(f.n)));
 ok("her öğün kategorisi var: kahvaltı, çorba, ızgara, atıştırma, döner, lahmacun, hamburger, pizza",["kahvaltı","çorba","Izgara","Karışık kuruyemiş","Döner","Lahmacun","Hamburger","Pizza"].every(a=>og.some(f=>f.n.includes(a))));
 ok("restoran öğünü aralıklı (±%30), ev yemeği bileşeni aralığını taşır",["Döner dürüm (dana)","Hamburger menü (tek köfte, orta patates, kola)"].every(n=>{const f=og.find(x=>x.n===n);return f&&f.lo<f.k&&f.k<f.hi})&&og.find(f=>f.n==="Kuru fasulye, pilav ve turşu").lo!=null);
+ok("aramada tam ad eşleşmesi, adı içeren uzun adlardan önce gelir",FOODS[foodSearch("kasarli tost")[0]].n==="Kaşarlı tost");
 ok("aramada öğün, aynı eşleşmedeki ham besinden sonra gelir",!FOODS[foodSearch("muz")[0]].o&&!FOODS[foodSearch("tavuk")[0]].o&&FOODS[foodSearch("kahvalti",3)[0]].o);
 ok("hazır ürün kategorileri (USDA, öğün değil): pretzel, granola bar, bisküvi, gofret, mısır cipsi",["Pretzel","Çikolata parçacıklı granola bar","Marie bisküvi","Çikolata kaplı gofret","Mısır cipsi"].every(n=>FOODS.some(f=>f.n.startsWith(n)&&f.s&&!f.o)));
 ok("hesaplı tarif sayısı",FOODS.filter(f=>!f.s).length>=150,FOODS.filter(f=>!f.s).length);

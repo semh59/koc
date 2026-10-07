@@ -2665,6 +2665,18 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("boy ve tartı yokken de hamilelik KISIT satırı gider",ctx().includes("KISIT: Sağlık notunda hamilelik"));
     ev("S.settings.healthNote='';S.chat=[{id:1,t:1,role:'user',text:'x',fl:'ed'}]");
     ok("sohbet ed bayrağı KISIT ve menü engeli",ctx().includes("Yeme düzeniyle")&&!!ev("cMenuPlan().why"));
+    { // sohbet freni: tüm kod yolları tek risk()'ten geçer; kullanıcı kaldıramaz
+      const gates=()=>ev("(()=>{const c=cCalc();S.chat=S.chat.filter(m=>!(m.card&&m.card.kind==='propose'));cReply({reply:'x',propose:{kcal:Math.round(c.tdee-300)}});const pr=S.chat.some(m=>m.card&&m.card.kind==='propose');return [pr,!!cMenuPlan().why,!!(risk().ed||risk().pregnant),!!risk().block,kcalBlocked(c.tdee-300,c)]})()")
+      const brake=(chat,cr)=>ev(`${prof}S.chat=${chat};S.cid=5;S.settings.chatRisk='${cr}'`);
+      const view=()=>{ev("tab='ayar-profil';render()");return $q("#view")};
+      brake("[{id:1,t:1,role:'user',text:'x',fl:'ed'}]","ed");
+      ok("fren varken öneri kartı, menü, program, oruç ve kalori hedefi kapalı; Profil'de açıklama var, Kaldır düğmesi yok",String(gates())==="false,true,true,true,true"&&view().textContent.includes("Sohbetten bir sağlık işareti algılandı")&&!$q('[data-act="riskclr"]'),gates());
+      brake("[{id:1,t:1,role:'coach',text:'',card:{kind:'safety',level:'ed'}}]","");
+      ok("güvenlik kartı (ed) de kalıcı frenler",String(gates())==="false,true,true,true,true"&&(view(),!$q('[data-act="riskclr"]')));
+      brake("[]","preg");
+      ok("hamilelik işareti: fren ve açıklama, Kaldır yok",String(gates())==="false,false,true,true,true"&&view().textContent.includes("Sohbetten bir sağlık işareti algılandı")&&!$q('[data-act="riskclr"]'),gates());
+      ok("sohbet silinse de (chatRisk) fren kalır",(ev("S.chat=[]"),String(gates())==="false,false,true,true,true"));
+    }
     ok("cleanSettings riskClearedAt: geçerli gün korunur, bozuk ve eksik boş",ev("cleanSettings({riskClearedAt:'2026-09-01'}).riskClearedAt")==="2026-09-01"&&ev("cleanSettings({riskClearedAt:'dün'}).riskClearedAt")===""&&ev("cleanSettings({}).riskClearedAt")==="");
     reset();
   }

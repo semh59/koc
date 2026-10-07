@@ -417,7 +417,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- veri ---------- */
 const DEF={
-  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,chatRisk:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
+  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,chatRisk:"",copyAt:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -458,6 +458,7 @@ function cleanSettings(raw){
   if(o.consent===true&&o.consentV===CONSENT_V&&!(d.age>0&&d.age<18)){d.consent=true;d.consentV=CONSENT_V;if(dayOk(o.consentAt))d.consentAt=o.consentAt}
   if(d.consent&&typeof o.consentP==="string")d.consentP=o.consentP.slice(0,200);
   if(/^(ed|preg|ed,preg)$/.test(o.chatRisk))d.chatRisk=o.chatRisk;
+  if(dayOk(o.copyAt))d.copyAt=o.copyAt;
   if(dayOk(o.lastPlateau))d.lastPlateau=o.lastPlateau;
   if(dayOk(o.lastBackup))d.lastBackup=o.lastBackup;
   if(o.autoBk===true)d.autoBk=true;
@@ -574,7 +575,9 @@ let saveFail=false,otherBytes=lsOther(),storeBytes=otherBytes+JSON.stringify(S).
 /* Yazılamazsa değişiklik bellekte kalır: her seferinde söylenir, Bugün ve Ayarlar'da kalıcı uyarı çıkar, yedek ekranı bellekteki hali alır. */
 const ARC_MAX=1.5e6; // arşiv sohbetlerinin JSON karakter sınırı: 20 sohbet x 150 mesaj x 1500 karakter ~9,8 MB'a çıkabilir
 let lastJ="";
-function save(){
+/* Geri yüklemeden önceki güvenlik kopyası, kullanıcı gördüm diyene ya da 7 gün geçene kadar korunur; otomatik yedek gibi küçük yazımlar (save(true)) onu silerek yer açmaz. */
+const copyHeld=()=>!!S.settings.copyAt&&(Date.parse(dayKey())-Date.parse(S.settings.copyAt))/864e5<7&&lsGet("koc_v1_onceki")!=null;
+function save(soft){
   if(recovery)return false;
   let j=JSON.stringify(S);
   if(j.length>STORE_WARN/2&&S.chats.length){
@@ -584,6 +587,7 @@ function save(){
   storeBytes=otherBytes+j.length*2;
   try{localStorage.setItem("koc_v1",j);saveFail=false}
   catch(e){
+    if(soft&&copyHeld())return false;
     /* Dolu depoda önce yedek kopyaları (geri yükleme öncesi, okunamayan kayıt) gider, kullanıcı verisi değil. */
     let ok=false;
     for(const k of ["koc_v1_onceki","koc_v1_bozuk"])if(!ok&&lsGet(k)!=null){lsDel(k);try{localStorage.setItem("koc_v1",j);ok=true}catch(e2){}}
@@ -625,10 +629,12 @@ const moveAdd=day=>{
 };
 const kcalGoal=day=>S.settings.kcal>0?S.settings.kcal+moveAdd(day):0;
 /* Güvenlik freninin girdisi tek yerde; kg verilmezse son trend kilo. */
+/* Sohbet işareti (yeme bozukluğu): sohbetteki bayrak ya da güvenlik kartı kalıcı fren sayılır; kullanıcı kaldıramaz. */
+const chatEd=()=>S.chat.some(m=>m.fl==="ed"||(m.card&&m.card.kind==="safety"&&m.card.level==="ed"));
 function riskInput(kg){
   const st=S.settings,from=keyOff(-89),w=weights(),ks=Object.keys(w).sort(),n=k=>S.vitals.filter(v=>v.k===k&&v.day>=from).length;
   return {age:st.age,sex:st.sex,cm:st.heightCm,kg:kg!=null?kg:ks.length?Algo.trend(w)[ks[ks.length-1]]:0,goalKg:st.goalKg,healthNote:st.healthNote+((st.chatRisk||"").includes("preg")?" hamilelik":""),meds:S.meds.length,glucoseCount90d:n("s"),bpCount90d:n("t"),
-    edFlag:(st.chatRisk||"").includes("ed")||S.chat.some(m=>m.fl==="ed"||(m.card&&m.card.kind==="safety"&&m.card.level==="ed")),clearedAt:st.riskClearedAt,today:dayKey()};
+    edFlag:(st.chatRisk||"").includes("ed")||chatEd(),clearedAt:st.riskClearedAt,today:dayKey()};
 }
 function risk(kg){return Algo.riskFlags(riskInput(kg))}
 /* Elle yazılan kalori hedefinin reddedilme nedeni ("" ise uygun): öneri yolundaki fren ve cinsiyete göre taban elle girişte de geçerli. */
@@ -868,7 +874,7 @@ function viewAyar(){
     <div class="lbl" style="margin-top:10px">Cinsiyet (isteğe bağlı)</div>${segb("sex",[["m","Erkek"],["f","Kadın"],["","Belirtmem"]],st.sex)}
     <div class="lbl" style="margin-top:10px">Günlük hareket düzeyi</div>${segb("actl",[["0","Az"],["1","Orta"],["2","Çok"]],String(st.act))}
     <div class="btns"><button class="btn ghost" data-act="saglik">Sağlık notların${st.healthNote?" (var)":""}</button></div>
-    <p class="hint">Hamilelik, yeme bozukluğu geçmişi, hastalık ya da ilaç varsa buraya yaz. Öneriler bunlara göre ihtiyatlı olmalı, hekim kontrolü gerekebilir.</p></div>
+    <p class="hint">Hamilelik, yeme bozukluğu geçmişi, hastalık ya da ilaç varsa buraya yaz. Öneriler bunlara göre ihtiyatlı olmalı, hekim kontrolü gerekebilir.</p>${st.chatRisk||chatEd()?`<div class="row"><span>Sohbetten bir sağlık işareti algılandı: kalori açığı, oruç ve program önerileri kapalı. Bu işareti uygulamadan kaldıramazsın; sağlık durumunu bir hekimle konuşmanı öneririz.</span></div>`:""}</div>
   <h2>Hedefler</h2><div class="card">
     ${fld("goalKg","Hedef kilo (kg)",st.goalKg?String(st.goalKg).replace(".",","):"","Boş bırakırsan kapalı")}
     ${fld("kcal","Günlük kalori (kcal)",st.kcal||"","Boş bırakırsan kapalı","numeric")}
@@ -894,7 +900,7 @@ function viewAyar(){
   }
   if(sub==="veri")return `<button class="btn" data-act="drive">${Icons.svg("cloud")} Yedeği Drive'a gönder</button>
     <div class="card" style="margin-top:12px">${navRow('data-act="yedek"',"save","Yedekle veya geri yükle","Şifreli yedek dosyası oluştur ya da yükle")}${navRow('data-pv="csv"',"file","Tabloya aktar (CSV)","Excel ya da Sheets'te açılır")}${navRow('data-imp="open"',"salon","Antrenman geçmişini içe aktar","Başka bir uygulamadan dışa aktardığın dosya")}${navRow('data-pv="open"',"lock","Gizlilik ve veri","Verilerin nerede durduğu")}${navRow('data-act="sifirla"',"trash","Tüm verileri sil","Geri alınamaz","  dng")}</div>
-    <div class="card">${storeMsg()?`<p class="status" role="alert"><b>${storeMsg()[0]}.</b> ${storeMsg()[1]}</p>`:""}${loadNote?`<p class="status" role="status">${esc(loadNote)}</p>`:""}${COPIES.filter(([k])=>lsGet(k)!=null).map(([k,n])=>`<div class="row" style="display:flex;align-items:center;gap:8px;padding:6px 0"><span style="flex:1;min-width:0"><b>${n}</b><small class="mut sm" style="display:block">${fmt(lsGet(k).length*2/1e6)} MB</small></span><button class="chip" data-act="kopya:${k}">Dışa aktar</button><button class="chip" data-act="kopyasil:${k}">Sil</button></div>`).join("")}<p class="hint">${storeMsg()?`Kullanılan alan: yaklaşık ${fmt(storeBytes/1e6)} MB, sınır telefona göre 5-10 MB.`:"Alan yeterli."}</p>
+    <div class="card">${storeMsg()?`<p class="status" role="alert"><b>${storeMsg()[0]}.</b> ${storeMsg()[1]}</p>`:""}${loadNote?`<p class="status" role="status">${esc(loadNote)}</p>`:""}${COPIES.filter(([k])=>lsGet(k)!=null).map(([k,n])=>`<div class="row" style="display:flex;align-items:center;gap:8px;padding:6px 0"><span style="flex:1;min-width:0"><b>${n}</b><small class="mut sm" style="display:block">${fmt(lsGet(k).length*2/1e6)} MB</small></span>${k==="koc_v1_onceki"&&copyHeld()?`<button class="chip" data-act="kopyagordum">Gördüm</button>`:""}<button class="chip" data-act="kopya:${k}">Dışa aktar</button><button class="chip" data-act="kopyasil:${k}">Sil</button></div>`).join("")}<p class="hint">${storeMsg()?`Kullanılan alan: yaklaşık ${fmt(storeBytes/1e6)} MB, sınır telefona göre 5-10 MB.`:"Alan yeterli."}</p>
     <p class="hint">Veriler yalnızca bu telefonda durur. Google otomatik yedeğine ve telefondan telefona aktarıma bilerek dahil edilmez. Uygulamayı silersen ya da telefon değiştirirsen kaybolur; yeni telefona geçmeden önce yedek dosyanı al.</p></div>${abHtml()}`;
   return `<div class="about"><img src="logo.png" alt="NeoWell logosu" width="72" height="72"><b>NeoWell</b><span class="mut sm">Sağlığın yeni kaynağı</span>${appVer?`<span class="mut sm">Sürüm ${esc(appVer)}</span>`:""}<p class="hint" style="text-align:center">${MED_NOTE}</p></div><div class="card"><b>Besin verisi kaynakları</b><p class="hint">Genel besinlerin değerleri ABD Tarım Bakanlığı FoodData Central (SR Legacy) verisidir, CC0 kamu malı: fdc.nal.usda.gov. Türk ev yemekleri bu değerlerden tarifle hesaplanmış tahminlerdir. Sucuk, pastırma, hellim ve karşılaştırma değerlerinde Fransa ANSES Ciqual 2025 tablosu (Etalab Açık Lisans 2.0, ciqual.anses.fr) ile İngiltere McCance and Widdowson CoFID 2021 verisi (Public Health England, Open Government Licence v3.0, gov.uk) kullanıldı; her vekil kayıt kendi notunda belirtilir. Barkoddan gelen ürünler Open Food Facts verisini içerir, Open Database License (ODbL) ile sunulur: world.openfoodfacts.org. Tablo ve paket etiketi değerleri yaklaşık olup ±%20 sapabilir.</p></div>`;
 }
@@ -1135,7 +1141,7 @@ function sheetYedek(){
   <div class="two"><button class="btn ghost" data-go="kopyala">Kopyala</button><button class="btn ghost" data-go="${isNative()?"paylas":"indir"}">${isNative()?"Dosya olarak paylaş":"Dosya indir"}</button></div>
   <div class="btns"><label class="btn ghost" style="text-align:center">Dosyadan oku<input id="bkfile" type="file" accept=".json,application/json,text/plain" hidden></label><button class="btn" data-go="yukle">Bu metinden geri yükle</button></div>`);
 }
-function markBackup(){S.settings.lastBackup=dayKey();save()}
+function markBackup(soft){S.settings.lastBackup=dayKey();save(soft)}
 async function backupText(){
   const pw=$("#bkpw").value,m2=$("#bkpw2"),bad=BackupLib.pwCheck(pw)||(m2&&m2.value!==pw?"Parolalar aynı değil":"");
   if(bad){const w=$("#bkw");if(w)w.textContent=bad;toast(bad);return null}
@@ -1177,6 +1183,7 @@ async function goYukle(){
   const pj=JSON.stringify(prevS);let copy=false;
   if(storeBytes+pj.length*2<=STORE_WARN)try{localStorage.setItem("koc_v1_onceki",pj);copy=true}catch(e){}
   if(!copy)lsDel("koc_v1_onceki");
+  S.settings.copyAt=copy?dayKey():"";save(true);
   otherBytes=lsOther();storeBytes=otherBytes+lastJ.length*2;
   logOff=0;closeSheet();render();scheduleReminders().then(setNotif);
   toast((drop?`Yedek yüklendi, ${drop} geçersiz kayıt atlandı`:"Yedek yüklendi")+(b.lost.length?`; okunamayan alanlar varsayılana döndü (${b.lost.join(", ")})`:"")+(copy?"":". Eski verin için güvenlik kopyası alınamadı (depolama dolu)"));
@@ -1408,6 +1415,7 @@ document.addEventListener("click",ev=>{
       recovery=null;S=structuredClone(DEF);save();render();scheduleReminders().then(setNotif);
     }
     else if(d.act.startsWith("kopya:")&&COPIES.some(c=>c[0]===d.act.slice(6)))shareFile(`neowell-kopya-${dayKey()}.json`,"Güvenlik kopyası","application/json",lsGet(d.act.slice(6)),true);
+    else if(d.act==="kopyagordum"){S.settings.copyAt="";save();render()}
     else if(d.act.startsWith("kopyasil:")&&COPIES.some(c=>c[0]===d.act.slice(9))){lsDel(d.act.slice(9));otherBytes=lsOther();render()}
     else if(d.act==="veriyedek"){tab="ayar-veri";render();sheetYedek()}
     else if(d.act==="abfix"){tab="ayar-veri";render()}

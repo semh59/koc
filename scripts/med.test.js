@@ -137,6 +137,10 @@ ok("sinceFor: yeni saat bugünden, vakti geçmiş saat yarından, eski saat koru
   const re=M.cleanMeds([M.revise(M.cleanMeds([M.revise(base,{...base,on:false},"2026-09-10")])[0],{...base,on:true},"2026-09-15")])[0];
   ok("kapalı dönem boşluğu: açılınca kapalı günler sayılmaz, önceki ve sonraki sayılır",[["2026-09-09",2],["2026-09-12",0],["2026-09-15",2]].every(([d,n])=>M.dosesOn([re],d).length===n)&&JSON.stringify(M.cleanMeds([re])[0])===JSON.stringify(re));
 }
+{
+  const hs=n=>M.cleanMeds([med({h:Array.from({length:n},(_,i)=>({u:`2026-08-${String(i+1).padStart(2,"0")}`,t:["08:00"],on:true}))})])[0].h;
+  ok("program geçmişi en çok 24 sürüm; fazlada en eski atılır",hs(24).length===24&&hs(26).length===24&&hs(26)[0].u==="2026-08-03"&&hs(26)[23].u==="2026-08-26");
+}
 // yorum ve tanı dili yok
 const src=require("fs").readFileSync(require("path").join(__dirname,"../www/medlib.js"),"utf8").replace(/\/\*[\s\S]*?\*\//g,"");
 ok("doz önerisi/yorum dili kullanılmaz",!/öner|tavsiye|etkileşim|yan etki|aşırı doz|tehlikeli/i.test(src));

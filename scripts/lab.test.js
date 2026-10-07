@@ -109,12 +109,27 @@ const {textPdf}=require("./pdfmaker.js");
   const bd=await L.extract(lib,new Uint8Array([1,2,3,4]));
   ok("PDF olmayan dosya hata mesajı verir",!!bd.error);
 
+  // Taranmış PDF: metin katmansız sayfalar sahte yerel OCR'a verilir
+  const scan=textPdf([[["Sayfa",40]]]),page=n=>({lines:[{t:"Glukoz",x:10,y:100*n,w:60,h:10},{t:"98",x:100,y:100*n,w:20,h:10},{t:"mg/dL",x:140,y:100*n,w:40,h:10},{t:"70 - 100",x:200,y:100*n,w:50,h:10}]});
+  const mk=(o={})=>{const log={rec:0,prog:[]};return {log,ocr:{render:async pg=>"B64",recognize:async()=>{log.rec++;if(o.fail)throw new Error("x");return o.res||page(1)},progress:(i,n)=>log.prog.push(i+"/"+n),cancelled:()=>o.cancel&&o.cancel(log)}}};
+  let m=mk(),so=await L.extract(lib,scan.slice(),undefined,m.ocr),sr=L.parseLines(so.lines,"2026-10-01");
+  ok("metin katmansız PDF sayfa görüntüsüyle OCR'a gider ve ayrıştırılır",m.log.rec===1&&sr.rows.length===1&&sr.rows[0].k==="glukoz"&&sr.rows[0].v===98,[m.log,so]);
+  ok("OCR eklentisi yoksa taranmış mesajı kalır",(await L.extract(lib,scan.slice())).scanned===true);
+  m=mk({cancel:l=>l.rec>=1});so=await L.extract(lib,scan.slice(),undefined,m.ocr);
+  ok("iptal edilince okuma durur",so.cancelled===true&&!so.lines);
+  m=mk({fail:1});so=await L.extract(lib,scan.slice(),undefined,m.ocr);
+  ok("OCR hatası açık mesaj verir",/okunamadı/.test(so.error||""),so);
+  m=mk({res:{lines:[{t:"Sayfa",x:1,y:1,w:5,h:10}]}});
+  ok("OCR rakam bulamazsa taranmış mesajı kalır",(await L.extract(lib,scan.slice(),undefined,m.ocr)).scanned===true);
+  ok("metin katmanlı PDF'te OCR çağrılmaz",await(async()=>{const k=mk();await L.extract(lib,textPdf([[["Glukoz",40],["98",200],["mg/dL",260],["70 - 100",340]]]),undefined,k.ocr);return k.log.rec===0})());
+
   // Dışa aktarma PDF'i: pdf.js ile tekrar aç
   const jpg=Buffer.from("/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=","base64");
   const pdf=L.buildPdf([{data:new Uint8Array(jpg),w:1,h:1},{data:new Uint8Array(jpg),w:1,h:1},{data:new Uint8Array(jpg),w:1,h:1}]);
   const doc=await lib.getDocument({data:pdf.slice(),verbosity:0}).promise;
   const pg=await doc.getPage(1),vp=pg.getViewport({scale:1});
   ok("üretilen PDF 3 sayfa ve A4 boyutunda açılır",doc.numPages===3&&Math.round(vp.width)===595&&Math.round(vp.height)===842,[doc.numPages,vp.width,vp.height]);
+  ok("çok sayfalı taranmış PDF'te yalnız ilk 6 sayfa okunur, sınır bildirilir",await(async()=>{const k=mk(),pg=()=>({data:new Uint8Array(jpg),w:1,h:1}),r=await L.extract(lib,L.buildPdf(Array.from({length:7},pg)),undefined,k.ocr);return k.log.rec===6&&k.log.prog.join()==="1/6,2/6,3/6,4/6,5/6,6/6"&&r.limited&&r.limited.read===6&&r.limited.total===7})());
   const s=Buffer.from(pdf).toString("latin1"),sx=+/startxref\n(\d+)/.exec(s)[1];
   ok("xref konumu doğru (ikili veriyle bile)",s.slice(sx,sx+4)==="xref");
   ok("kayıtlı nesne konumları doğru",(()=>{const m=s.slice(sx).split("\n").slice(3,3+9);return m.every((l,i)=>s.slice(+l.slice(0,10)).startsWith(`${i+1} 0 obj`))})());

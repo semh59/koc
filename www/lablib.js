@@ -195,8 +195,10 @@ const LabLib=(()=>{
     return {date:parseDate(lines,todayKey),rows};
   }
 
-  /* pdf.js ile metni okur. lib: pdfjs-dist; data: Uint8Array. Parola gerekirse {need:"password"} döner. */
-  async function extract(lib,data,password){
+  const OCR_PAGES=6;
+  /* pdf.js ile metni okur. lib: pdfjs-dist; data: Uint8Array. Parola gerekirse {need:"password"} döner.
+     ocr (isteğe bağlı): metin katmanı yoksa sayfaları görüntü olarak okur: {render(page)->base64, recognize(base64)->ML Kit sonucu, progress(i,n), cancelled()}. */
+  async function extract(lib,data,password,ocr){
     let doc;
     try{
       doc=await lib.getDocument({data,password,isEvalSupported:false,useSystemFonts:false,verbosity:0}).promise;
@@ -209,9 +211,23 @@ const LabLib=(()=>{
       const pg=await doc.getPage(p),tc=await pg.getTextContent();
       lines.push(...groupLines(tc.items.map(i=>({str:i.str,x:i.transform[4],y:i.transform[5],w:i.width}))));
     }
-    await doc.destroy();
-    if(!lines.some(l=>/\d/.test(l)))return {scanned:true,lines:[]};
-    return {lines};
+    const total=doc.numPages;
+    try{
+      if(lines.some(l=>/\d/.test(l)))return {lines};
+      if(!ocr)return {scanned:true,lines:[]};
+      const out=[],n=Math.min(total,OCR_PAGES);
+      for(let p=1;p<=n;p++){
+        if(ocr.cancelled&&ocr.cancelled())return {cancelled:true};
+        if(ocr.progress)ocr.progress(p,n);
+        const pg=await doc.getPage(p);
+        try{out.push(...ocrToLines(await ocr.recognize(await ocr.render(pg))))}
+        catch(e){return {error:"Taranmış PDF'in yazısı okunamadı, fotoğraftan okumayı dene"}}
+        pg.cleanup();
+      }
+      if(ocr.cancelled&&ocr.cancelled())return {cancelled:true};
+      if(!out.some(l=>/\d/.test(l)))return {scanned:true,lines:[]};
+      return {lines:out,limited:total>n?{read:n,total}:null};
+    }finally{await doc.destroy()}
   }
 
   const dayOk=d=>typeof d==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&!isNaN(Date.parse(d));

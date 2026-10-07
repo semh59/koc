@@ -110,7 +110,7 @@ async function abRun(){
     const name=BackupLib.autoName(dayKey()),r=await bf.write({name,data:JSON.stringify(await BackupLib.encrypt({v:1,S,keys:getKeys()},pw))});
     const old=BackupLib.autoPrune(r.names||[],name);
     if(old.length)await bf.remove({names:old}).catch(()=>{});
-    st.lastAutoBk=dayKey();markBackup();
+    st.lastAutoBk=dayKey();markBackup(true);
   }catch(e){
     abErr=e.message==="parola"?"Yedek parolası bu telefonda bulunamadı.":"Klasöre yazılamadı. Klasör silinmiş ya da izni kaldırılmış olabilir.";
     toast("Otomatik yedek alınamadı. Ayarlar > Veri ve yedek'ten yeniden kurabilir ya da kapatabilirsin");
