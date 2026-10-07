@@ -255,6 +255,7 @@ jobs:
       - name: Releases sayfasına yükle (telefondan kolay indirme)
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
           notes="Telefondan neowell.apk dosyasını indirip kur. neowell.aab Play Console yüklemesi içindir."
           if gh release view son-surum > /dev/null 2>&1; then
