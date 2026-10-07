@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.PowerManager;
 
 /** İlaç dozunda kilitli ekranı yakar: bildirimle aynı anda kısa süre ekranı açan ayrı alarm. Bildirim eklentisi ekranı uyandırmaz. */
@@ -18,7 +17,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
     public void onReceive(Context c, Intent i) {
         String a = i.getAction();
         if (WAKE.equals(a)) wake(c);
-        else if (Intent.ACTION_BOOT_COMPLETED.equals(a) || Intent.ACTION_MY_PACKAGE_REPLACED.equals(a)) arm(c, load(c));
+        else if (Intent.ACTION_BOOT_COMPLETED.equals(a) || Intent.ACTION_MY_PACKAGE_REPLACED.equals(a) || AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED.equals(a)) arm(c, load(c));
     }
 
     @SuppressWarnings("deprecation")
@@ -59,19 +58,12 @@ public class MedWakeReceiver extends BroadcastReceiver {
         long now = System.currentTimeMillis();
         long[] t = java.util.Arrays.copyOf(times, times.length);
         java.util.Arrays.sort(t);
-        boolean exact = true;
-        if (Build.VERSION.SDK_INT >= 31) exact = am.canScheduleExactAlarms();
         StringBuilder keep = new StringBuilder();
         int n = 0;
         for (long at : t) {
             if (at <= now + 2000 || n >= MAX) continue;
             PendingIntent p = pi(c, n, PendingIntent.FLAG_UPDATE_CURRENT);
-            try {
-                if (exact) am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, p);
-                else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, p);
-            } catch (SecurityException e) {
-                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, p);
-            }
+            Alarms.set(c, at, p);
             if (keep.length() > 0) keep.append(',');
             keep.append(at);
             n++;

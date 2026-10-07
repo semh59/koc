@@ -57,4 +57,6 @@ ok("weekWhy: çöp girdi hata atmaz, kalori etmeni yine çıkar",I.weekWhy(null)
 const BAN=/metabolizma|yavaşla|tanı|hastal|suç|başarısız|tembel|yapmadın|yemedin|kötü|hata/i;
 const all=[...I.weekWhy({days,goalKcal:1800,goalWater:2500,weights:flat,today:T}),...I.weekWhy({days:[],weights:W([-10,-1],()=>80),today:T}),...I.weekWhy({days,today:T,weights:W([-9,0],o=>o?79:80)})];
 ok("weekWhy metinleri: suçlayıcı/tıbbi ifade yok, her biri ≤160 karakter",all.every(x=>!BAN.test(x.t)&&x.t.length<=160),all.filter(x=>BAN.test(x.t)||x.t.length>160));
+{const d1=Array.from({length:22},(_,i)=>day(i===16?2000:300,1500,9000)),t=(I.weekWhy({days:d1,goalKcal:1800,weights:{},today:T}).find(x=>x.k==="kcal")||{}).t;
+ok("weekWhy: tek tam kayıtlı gün ortalama sayılmaz, en az gün sayısı yazılır",/yalnız 1 gün var, ortalama için en az 3 gün/.test(t)&&!/ortalama \d+ kcal/.test(t),t);}
 process.exit(bad?1:0);

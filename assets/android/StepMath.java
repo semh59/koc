@@ -9,6 +9,8 @@ final class StepMath {
         float base = 0, carry = 0, last = -1;
         /** Son okuma günün son dakikalarında (SAMPLE_MINUTES sonrası) yapıldı: gün toplamı bilinir. */
         boolean sampled = false;
+        /** Son okumadan bu yana telefon yeniden başladı (sayaç sıfırlandı), sayaç son değeri aşmış olsa da. */
+        boolean rebooted = false;
     }
 
     /** 23:58 örnekleme alarmı. Gece alarmı Doze'da gecikse de bu okumaya kadarki adımlar biten güne, sonrası yeni güne yazılır. */
@@ -18,12 +20,13 @@ final class StepMath {
         return Math.max(0L, Math.round((double) (s.carry + counter - s.base)));
     }
 
-    /** Telefon yeniden başladıysa sayaç sıfırlanır: o ana kadarki adımlar carry'ye alınır. */
+    /** Telefon yeniden başladıysa sayaç sıfırlanır: o ana kadarki adımlar carry'ye alınır. Sayaç son değerin altına indiyse ya da yeniden başlama ayrıca bilindiyse (rebooted). */
     private static void handleReboot(State s, float counter) {
-        if (s.last >= 0 && counter < s.last) {
+        if (s.last >= 0 && (counter < s.last || s.rebooted)) {
             s.carry += Math.max(0, s.last - s.base);
             s.base = 0;
         }
+        s.rebooted = false;
     }
 
     /** Geç alarmda gece yarısından sonraki adımlar eski güne yazılır; kapatmazsak son okumadan sonraki akşam adımları hiçbir güne yazılmaz.
@@ -44,12 +47,17 @@ final class StepMath {
         return true;
     }
 
-    /** Yeni okumayı işler ve bugünkü adım sayısını döndürür. Gün değiştiyse ve gece alarmı kaçtıysa, son okumaya kadarki adımlar eski güne yazılır; son okuma 23:58 örneğiyse sonrası yeni güne sayılır. */
+    /** Yeni okumayı işler ve bugünkü adım sayısını döndürür. Gün değiştiyse ve gece alarmı kaçtıysa, son okumaya kadarki adımlar eski güne yazılır; son okuma 23:58 örneğiyse sonrası yeni güne sayılır.
+     *  Örnek yoksa ve okuma gece 06:00'ya kadarsa, son okumadan bu yana gelen adımlar da eski güne yazılır (closeDay ile aynı kural); daha geç okumada o aralığın günü bilinemez, tahmin edilmez ve yeni gün sayaçtan başlar. */
     static long update(State s, String today, float counter, int minutesSinceMidnight, Map<String, Long> history) {
         if (!s.day.equals(today)) {
             if (!s.day.isEmpty()) {
-                handleReboot(s, s.last);
-                history.put(s.day, Math.max(0L, Math.round((double) (s.carry + s.last - s.base))));
+                if (!s.sampled && minutesSinceMidnight <= MAX_LATE_MINUTES) {
+                    handleReboot(s, counter);
+                    history.put(s.day, total(s, counter));
+                } else {
+                    history.put(s.day, total(s, s.last));
+                }
             }
             s.day = today;
             s.carry = 0;
@@ -62,6 +70,7 @@ final class StepMath {
         } else {
             handleReboot(s, counter);
         }
+        s.rebooted = false;
         s.last = counter;
         s.sampled = minutesSinceMidnight >= SAMPLE_MINUTES;
         return total(s, counter);

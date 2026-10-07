@@ -24,4 +24,6 @@ ok("boş veri: satır sayısı 0, yalnız başlık",C.files({entries:[],workouts
 {const W=[{id:1,day:"2026-10-01",t0:5,t1:9,name:"A",ex:[{id:"a",ss:2,sets:[{kg:40,reps:12,done:true,t:"d"},{kg:40,reps:5,done:true,t:"f"}]},{id:"b",ss:2,sets:[{kg:10,reps:5,done:true}]}]}];
 const g2=C.files({entries:[],workouts:W,vitals:[],sleep:[],mood:[],fast:{log:[]},meds:[],medLog:[]},{exName:x=>x.toUpperCase()}).find(f=>f.key==="antrenman").build().split("\r\n").slice(1,-1);
 ok("antrenman CSV: set türü (drop, başarısızlık) ve süperset grup numarası",g2.join("|")==="2026-10-01;A;A;1;40;12;;;;drop;2|2026-10-01;A;A;2;40;5;;;;başarısızlık;2|2026-10-01;A;B;1;10;5;;;;;2",g2);}
+{const f=C.files({entries:[],workouts:[],vitals:[],sleep:[],mood:[],fast:{log:[]},meds:[],medLog:[],measures:[{day:"2026-10-01",k:"waist",v:80},{day:"2026-10-01",k:"neck",v:40}]},{}).find(x=>x.key==="kayitlar").build();
+ok("bilinmeyen ölçü anahtarı 'ölçü_undefined' üretmez, bilinen yazılır",!f.includes("undefined")&&f.includes("ölçü_bel"),f);}
 process.exit(bad?1:0);

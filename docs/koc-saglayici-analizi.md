@@ -1,5 +1,7 @@
 # Koç sağlayıcı ve model seçimi: analiz (2026-10-06)
 
+> **Tarihsel not (7 Ekim 2026):** "Bugünkü durum" 6 Ekim koduna aittir. Sonradan kurulum akışı yeniden yapıldı (Koçu bağla: anahtarı yapıştır, "Doğrula ve modelleri getir", "Test et ve kaydet"), varsayılan modeller güncellendi, OpenAI ve Anthropic Claude eklendi (6 hazır sağlayıcı). Güncel varsayılanlar `www/coach.js` `defProviders()` içindedir; aşağıdaki tablo ve "anahtar doğrulanmıyor" cümleleri artık geçerli değildir.
+
 ## 1. Bugünkü durum (koddan)
 
 | Sağlayıcı | Adres (`/chat/completions` üstü) | Kimlik | Varsayılan model | Canlı mı? | health / confirm |
@@ -12,7 +14,7 @@
 **Ana bulgu:** 4 hazır modelden 3'ü artık yok. Rehberi izleyip anahtarını kaydeden kullanıcı modeli hiç görmüyor, Koç da yalnız "şu an ulaşılamıyor" diyor. Model adları kodda sabit yazılı olduğu için bu yine bozulacak.
 
 Akış iki yoldan gidiyor:
-- **Rehber yolu:** Koç > "Koçu etkinleştir" > sağlayıcı listesi > 4 adımlık anahtar alma rehberi > anahtarı yapıştır > Kaydet. Anahtar doğrulanmıyor, model sorulmuyor, deneme isteği atılmıyor. Kayıt sadece 8 karakterden uzun mu ve boşluk var mı diye bakıyor.
+- **Rehber yolu:** Koç > "Koçu etkinleştir" > sağlayıcı listesi > 4 adımlık anahtar alma rehberi > anahtarı yapıştır > Kaydet. Anahtar doğrulanmıyor, model sorulmuyor, deneme isteği atılmıyor. (6 Ekim durumu) Kayıt sadece 8 karakterden uzun mu ve boşluk var mı diye bakıyor.
 - **Ayarlar > Yapay zekâ koç > sağlayıcı:** Adres, Model, Anahtar ve iki onay kutusu tek ekranda. Model boş bir metin kutusu. "Modelleri getir" gizli bir datalist dolduruyor; kullanıcı kutuya dokunana kadar listeyi görmüyor. Listede konuşma dışı modeller de var: Groq'ta whisper, tts ve guard; NVIDIA'da embed, parse ve reward. OpenRouter'da 464 model var ve en çok 300'ü gösteriliyor. Öneri ya da fiyat bilgisi yok.
 
 **Hata mesajları:** 401/403 için "Anahtar geçersiz görünüyor", 404 için "Model ya da adres bulunamadı", 429 için "Limit dolu". Bunların dışında çıplak kod çıkıyor: "Bağlanılamadı: HTTP 400" ya da "Model listesi alınamadı: HTTP 401". Gemini yanlış anahtara 401 değil **400** ("Please pass a valid API key") döndüğü için kullanıcı "HTTP 400" görüyor. Kota biten hesap (429 `insufficient_quota`) ile kısa süreli hız limiti aynı mesajı alıyor. OpenRouter kredisi bitince gelen 402 tanınmıyor. Sohbette her hata "Koç şu an ulaşılamıyor" oluyor.

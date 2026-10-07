@@ -40,4 +40,4 @@ printf neowell-upload | gh secret set RELEASE_KEY_ALIAS -R semh59/koc
 - 16 KB sayfa: ML Kit yazı tanıma 16.0.1 ve barkod 17.3.0 16 KB destekli (Ağustos 2024 sürüm notu); CI her derlemede doğrular.
 
 ## Play
-Play App Signing açık olmalı; ilk AAB yüklemesi `neowell-upload`'ı upload key yapar. Her yeni yüklemede `versionCode` artmalı (şu an Capacitor şablonundaki 1).
+Play App Signing açık olmalı; ilk AAB yüklemesi `neowell-upload`'ı upload key yapar. Her yeni yüklemede `versionCode` artmalı: `scripts/patch-android.js` CI'da `GITHUB_RUN_NUMBER` (çalışma numarası) değerini `versionCode` yapar, yani her derlemede kendiliğinden artar. Yerel derlemede (GITHUB_RUN_NUMBER yok) Capacitor şablonundaki 1 kalır; Play'e yalnız CI çıktısı yüklenir. `versionName`'e kod dokunmaz, şablon değeri kalır.

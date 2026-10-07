@@ -42,4 +42,9 @@ ok("böbrek notu: aralık yok, hekimle belirle",(p=>!p.range&&p.doc)(P({healthNo
 ok("yaş 70 + ilaç: aralık yok; yaş 70 temiz: aralık var",(p=>!p.range&&p.doc)(P({age:70,meds:1,clearedAt:T}))&&!!P({age:70}).range);
 ok("sert engel (18 yaş altı): protein yükseltme yok",(p=>!p.range&&p.doc)(P({age:16})));
 ok("kilo yoksa aralık da yönlendirme de yok",(p=>!p.range&&!p.doc)(P({kg:0})));
+for(const x of ["bebek bekliyorum","hamileyim","Hamileyim","HAMILEYIM","gebeyim","doğum yapacağım","dogum yapacagim","yemek yemeyi bırakıyorum","yemek yemeyi birakiyorum","kusuyorum","aç kalıyorum","ac kaliyorum"])
+  ok("sert (genişletilmiş kalıp): "+x,R({healthNote:x,clearedAt:T}).hard.length>0,R({healthNote:x}));
+for(const x of ["hamile değilim","hamile degilim","HAMILE DEGILIM","bebek beklemiyorum","doğum yapmayacağım","yemeyi bırakmıyorum","aç kalmıyorum","kusmuyorum","geberiyorum"])
+  ok("sert değil (olumsuzlama/benzer sözcük): "+x,R({healthNote:x}).hard.length===0,R({healthNote:x}).hard);
+ok("ASCII yazım: bobrek hastaligi böbrek anahtarı",R({healthNote:"bobrek hastaligim var"}).kidney);
 process.exit(bad?1:0);

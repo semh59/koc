@@ -1,8 +1,8 @@
 # Google Play mağaza metni
 
-Kaynak: kod (`www/`, `assets/android/`), `docs/gizlilik-politikasi.md`, `docs/play-izin-beyanlari.md`. Sayılar 3 Ekim 2026 koduna göre: 743 besin kaydı (`www/foods.js`), 324 egzersiz (`www/exlib.js`), 5 hazır program. Sayı değişirse bu dosya ve README güncellenir.
+Kaynak: kod (`www/`, `assets/android/`), `docs/gizlilik-politikasi.md`, `docs/play-izin-beyanlari.md`. Sayılar 7 Ekim 2026 koduna göre: 818 besin kaydı (`www/foods.js`; metinde güvenli alt sınır "700'den fazla" yazılı, kayıt eklendikçe metin bozulmaz), 324 egzersiz (`www/exlib.js`), 5 hazır program. Sayı değişirse bu dosya ve README güncellenir.
 
-Yazım kuralı: tıbbi iddia yok ("tedavi", "teşhis", "garanti", "kilo verdirir" geçmez), "çevrimdışı" yalnız çekirdek özellikler için, Koç ve barkod internet ister.
+Yazım kuralı: tedavi, tanı ya da hekim yerine geçme iddiası yok. "Tedavi", "tanı", "hekim yerine" gibi sözcükler yalnız olumsuz ya da sınırlayıcı kullanımda ("tanı koymaz", "tedavi önermez", "hekim yerine geçmez") serbest; "teşhis", "iyileştirir", "garanti", "kilo verdirir" hiç geçmez (aynı kural: `docs/play-data-safety.md`), "çevrimdışı" yalnız çekirdek özellikler için, Koç ve barkod internet ister.
 
 ## Türkçe
 
@@ -41,14 +41,14 @@ SPOR
 SAĞLIK KAYITLARI
 - Tahlil sonuçlarını kaydet ve değişimi izle (kâğıttan fotoğrafla okuma telefonda yapılır)
 - Ev tansiyonu ve kan şekeri ölçümlerini kaydet, ortalamalarını gör
-- İlaç saatleri, alım kaydı ve stok takibi
+- İlaç saatleri, alım kaydı ve stok takibi; ilaç alarmı dozda telefon kilitliyken ekranı birkaç saniye yakar
 - Hatırlatmalar: su, tartı, ilaç, oruç ve yedek
-Bu bölümler kayıt ve görüntüleme içindir. Hedef aralıkları sen belirlersin ya da hekiminin verdiği değeri girersin.
+Bu bölümler kayıt ve görüntüleme içindir. NeoWell bu değerleri yorumlamaz, hedef ya da eşik karşılaştırması yapmaz; raporlarını hekimine götürebilirsin.
 
 KOÇ (İSTEĞE BAĞLI, YAPAY ZEKÂ)
-- Kendi API anahtarını girersen sohbet ve kayıt önerileri alırsın. İnternet ister.
+- Kendi API anahtarını girersen sohbet ve kayıt önerileri alırsın; konuları ayrı sohbetlerde tutarsın. İnternet ister.
 - Koç yalnız sen açık rıza verirsen çalışır. Rıza verirsen, yalnız sen bir düğmeye bastığında (mesaj, yorum, menü ya da program isteği) sohbetin, profilin ve son kayıtların seçtiğin sağlayıcıya (NVIDIA Build, Groq, OpenRouter, Google Gemini, OpenAI, Anthropic Claude ya da kendi eklediğin servis; OpenAI ve Anthropic ücretlidir) gider; kendiliğinden ya da arka planda hiçbir şey gönderilmez. Sunucuları yurt dışındadır. Rızayı istediğin an geri alırsın; vermezsen uygulama tam çalışır.
-- NeoWell 18 yaş ve üzeri içindir; kurulumda 18 yaş altı kabul edilmez.
+- NeoWell 18 yaş ve üzeri içindir; kurulumda 18 yaş altı kabul edilmez, yaş girilmeden Koç açılmaz.
 
 GİZLİLİK
 - Hesap, kendi sunucumuz, reklam ve analitik yok.
@@ -92,14 +92,14 @@ WORKOUTS
 HEALTH RECORDS
 - Log lab results and track changes (reading from a paper photo happens on the phone)
 - Log home blood pressure and blood glucose and see averages
-- Medication times, intake log and stock
+- Medication times, intake log and stock; the medication alarm briefly lights up the screen when the phone is locked
 - Reminders: water, weigh-in, medication, fasting and backup
-These sections are for logging and viewing. You set your own target ranges or enter the values your doctor gave you.
+These sections are for logging and viewing. NeoWell does not interpret these values or compare them with targets or thresholds; you can take the reports to your doctor.
 
 COACH (OPTIONAL, AI)
-- Add your own API key to get chat and logging suggestions. Needs internet.
+- Add your own API key to get chat and logging suggestions; keep topics in separate chats. Needs internet.
 - The Coach works only with your explicit consent. If you consent, only when you tap a button (send a message, ask for a comment, menu or program) your chat, profile and recent entries are sent to the provider you picked (NVIDIA Build, Groq, OpenRouter, Google Gemini, OpenAI, Anthropic Claude or a service you add; OpenAI and Anthropic are paid); nothing is sent automatically or in the background. Their servers are outside Turkey. You can withdraw consent at any time; without it the app works fully.
-- NeoWell is for adults (18+); setup does not accept ages under 18.
+- NeoWell is for adults (18+); setup does not accept ages under 18, and the Coach stays off until an age is entered.
 
 PRIVACY
 - No account, no servers of our own, no ads, no analytics.

@@ -19,6 +19,9 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 /** Fotoğraftaki yazıyı telefonda okur (ML Kit, ücretsiz, internetsiz). Her satırın metni ve konumu döner. */
 @CapacitorPlugin(name = "Ocr")
 public class OcrPlugin extends Plugin {
+    /** Uzun kenar bu değeri aşarsa 2'nin kuvvetiyle küçültülerek çözülür: tam çözünürlüklü fotoğraf belleği taşırır. Satır konumları dönen w/h'ye göredir. */
+    private static final int MAX_SIDE = 2560;
+
     @PluginMethod
     public void recognize(final PluginCall call) {
         String b64 = call.getString("image");
@@ -26,8 +29,15 @@ public class OcrPlugin extends Plugin {
         final Bitmap bm;
         try {
             byte[] d = Base64.decode(b64, Base64.DEFAULT);
-            bm = BitmapFactory.decodeByteArray(d, 0, d.length);
-        } catch (Exception e) { call.reject("Görüntü çözülemedi"); return; }
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+            BitmapFactory.decodeByteArray(d, 0, d.length, o);
+            int side = Math.max(o.outWidth, o.outHeight), k = 1;
+            while (side / k > MAX_SIDE) k *= 2;
+            o.inJustDecodeBounds = false;
+            o.inSampleSize = k;
+            bm = BitmapFactory.decodeByteArray(d, 0, d.length, o);
+        } catch (Exception | OutOfMemoryError e) { call.reject("Görüntü çözülemedi"); return; }
         if (bm == null) { call.reject("Görüntü çözülemedi"); return; }
         final TextRecognizer rec = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
         rec.process(InputImage.fromBitmap(bm, 0))

@@ -15,7 +15,10 @@ const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify
   ok("otomatik yedek: elle yedekler ve eski 'neowell-yedek-' adlı dosyalar (aynı gün dahil) hiç budanmaz",JSON.stringify(B.autoPrune(["neowell-yedek-2026-08-01.json","neowell-yedek-2026-10-02.json","neowell-oto-2026-09-11.json","neowell-oto-2026-09-18.json","neowell-oto-2026-09-25.json","neowell-oto-2026-10-02.json","neowell-yedek-2026-09-04.json"],"neowell-oto-2026-10-02.json"))===JSON.stringify([]));
   ok("otomatik yedek: saat geri alınınca az önce yazılan (en eski adlı) dosya silinmez, en yeni 3 diğeriyle 4 kalır",JSON.stringify(B.autoPrune(["neowell-oto-2026-09-11.json","neowell-oto-2026-09-18.json","neowell-oto-2026-09-25.json","neowell-oto-2026-10-02.json","neowell-oto-2026-09-01.json"],"neowell-oto-2026-09-01.json"))===JSON.stringify(["neowell-oto-2026-09-11.json"]));
   ok("otomatik yedek: 7 gün dolunca ya da hiç yokken zamanı gelir",B.autoDue("","2026-10-02")&&B.autoDue("2026-09-25","2026-10-02")&&!B.autoDue("2026-09-26","2026-10-02")&&!B.autoDue("2026-10-02","2026-10-02")&&B.autoDue("2026-10-05","2026-10-02"));
-  ok("parola kuralı: boş, kısa, yalnız rakam, tekrar ve kolay parola reddedilir",["","abc","1234567","12345678","aaaaaaaa","PASSWORD"].every(p=>B.pwCheck(p)!==""));
-  ok("parola kuralı: 8+ karakterli karışık parola kabul edilir",B.pwCheck("parola123")===""&&B.pwCheck("mavi bulut 7")==="");
+  ok("parola kuralı: boş, kısa, yalnız rakam, tekrar ve kolay parola reddedilir",["","abc","1234567","12345678","aaaaaaaaaa","PASSWORD","abcdefgh1","Parola123","password1234","Parola123!","Neowell2026","1234567890"].every(p=>B.pwCheck(p)!==""));
+  ok("parola kuralı: 10+ karakterli karışık parola kabul edilir",B.pwCheck("mavi bulut 7")===""&&B.pwCheck("kedi-masa-1905")===""&&B.MINPW===10);
+  ok("yeni yedek 600 bin tur yazar",e.iter===600000);
+  const nc=require("node:crypto"),old=async(iter,pw)=>{const salt=nc.randomBytes(16),iv=nc.randomBytes(12),k=nc.pbkdf2Sync(pw,salt,iter,32,"sha256"),c=nc.createCipheriv("aes-256-gcm",k,iv),ct=Buffer.concat([c.update(JSON.stringify(obj)),c.final(),c.getAuthTag()]);return {neowell:1,enc:"aes-gcm-pbkdf2",iter,salt:salt.toString("base64"),iv:iv.toString("base64"),data:ct.toString("base64")}};
+  ok("eski yedekler (100 bin ve 250 bin tur) ve 6 karakterli eski parola hâlâ açılır",JSON.stringify(await B.decrypt(await old(250000,"abc123"),"abc123"))===JSON.stringify(obj)&&JSON.stringify(await B.decrypt(await old(100000,"parola"),"parola"))===JSON.stringify(obj));
   process.exit(bad?1:0);
 })();

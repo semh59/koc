@@ -1,6 +1,6 @@
 "use strict";
 /* İlk açılış: 3 adım. Girdiler mevcut profil ve ayar alanlarına yazılır; taslak yalnızca bellekte durur. */
-const obFresh=()=>({step:0,kg:"",cm:"",age:"",sex:"",dir:"koru",goal:"",hd:false,hn:false,mods:[],err:"",bad:"",minor:false});
+const obFresh=()=>({step:0,kg:"",cm:"",age:"",sex:"",dir:"koru",goal:"",hd:false,hn:false,mods:[],err:"",bad:"",minor:false,kgOk:""});
 const ob=obFresh();
 const OB_MODS=[["med","İlaç hatırlatıcı","ilac"],["fast","Oruç takibi","fast"],["steps","Adım sayar","adim"],["bp","Tansiyon","heart"],["bs","Şeker","su"]];
 const OB_DIRS=[["ver","Kilo ver"],["koru","Koru"],["al","Kilo al"]];
@@ -17,7 +17,7 @@ function obParse(){
   for(const [k,lbl,lo,hi,int] of [["cm","Boy",...RANGES.heightCm],["kg","Kilo",20,400,false],["age","Yaş",...RANGES.age]]){
     const v=num(ob[k],int);
     if(k==="age"&&v>0&&v<18)return {minor:true};
-    if(isNaN(v)||v<lo||v>hi)return {err:`${lbl} ${lo} ile ${hi} arasında olmalı`,bad:k};
+    if(isNaN(v)||v<lo||v>hi)return {err:`${lbl} ${lo} ile ${hi} arasında${int?" tam sayı":""} olmalı`,bad:k};
     o[k]=v;
   }
   o.goal=0;
@@ -33,7 +33,7 @@ function obParse(){
 const OB_HD="İlk kurulumda işaretlendi: hamilelik, emzirme ya da yeme bozukluğu geçmişi",OB_HN="İlk kurulumda işaretlendi: hekim kontrolü ya da düzenli ilaç";
 const obNote=()=>[S.settings.healthNote,ob.hd&&OB_HD,ob.hn&&OB_HN].filter(Boolean).join(". ").slice(0,500);
 function obPlan(p){
-  const q={kg:p.kg,cm:p.cm,age:p.age,sex:ob.sex},inp={...riskInput(p.kg),age:p.age,cm:p.cm,goalKg:p.goal,healthNote:obNote()};
+  const q={kg:p.kg,cm:p.cm,age:p.age,sex:ob.sex},inp={...riskInput(p.kg),age:p.age,sex:ob.sex,cm:p.cm,goalKg:p.goal,healthNote:obNote()};
   const t=Algo.suggestTarget({...inp,tdee:Algo.formulaTdee({...q,act:S.settings.act}),bmr:Algo.bmrMifflin(q)});
   return {kcal:t.kcal,note:t.note,protein:Algo.protein(inp).range,risk:Algo.riskFlags(inp)};
 }
@@ -92,6 +92,7 @@ document.addEventListener("click",ev=>{
     if(p.minor){Object.assign(ob,obFresh(),{minor:true});return render()}
     ob.err=p.err||"";ob.bad=p.bad||"";
     if(p.err){render();const f=$("#ob"+p.bad);if(f)f.focus();return}
+    if(Algo.lbSuspect(p.kg,p.cm)&&ob.kgOk!==ob.kg){ob.kgOk=ob.kg;ob.err=`${fmt(p.kg)} kg çok yüksek görünüyor. Libre (lb) yazmış olabilirsin: ${fmt(p.kg)} lb ≈ ${fmt(p.kg*0.45359237)} kg. Doğruysa Devam'a bir kez daha dokun.`;ob.bad="kg";render();$("#obkg").focus();return}
     ob.step=1;return render();
   }
   if(ob.step===1){ob.step=2;return render()}

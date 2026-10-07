@@ -1,6 +1,7 @@
 # 6 özellik uygulama planı (2026-10-02)
 
 Kaynak: mevcut kod (www/, assets/android/, scripts/). "VARSAYIM" işaretli maddeler uygulamadan önce doğrulanacak.
+**Tarihsel not (7 Ekim 2026):** Bu plan 2 Ekim'deki kodu anlatır. Sonradan otomatik Koç gönderimi (`cAuto`, otomatik günlük plan ve haftalık rapor) kaldırıldı; Koç yalnız kullanıcı düğmeye bastığında gönderir (`scripts/oto.test.js` kilitler). Aşağıdaki `cAuto` ifadeleri güncel davranış değildir.
 Kurallar: en kısa doğru çözüm, yorum yalnız "neden", her kabul koşuluna bir test. Commit başına `npm test` yeşil.
 
 ---

@@ -15,7 +15,7 @@ const CsvLib=(()=>{
     const day=x=>x.day,time=x=>x.time||"";
     return [
       ["kayitlar","Kayıtlar (yemek, su, kilo, ölçü, spor, adım, not)",["tarih","saat","tür","değer","birim","açıklama","protein_g","karbonhidrat_g","yağ_g","lif_g","şeker_g","sodyum_mg"],
-        by([...S.entries,...(S.measures||[]).map(m=>({day:m.day,time:"",type:"ölçü_"+MN[m.k],v:m.v}))],day,time).map(e=>[e.day,e.time,e.type==="adim"?"adım":e.type,e.type==="not"?null:e.v,e.type.startsWith("ölçü")?"cm":UNIT[e.type],e.text,e.p,e.c,e.f,e.fb,e.sg,e.na])],
+        by([...S.entries,...(S.measures||[]).filter(m=>MN[m.k]).map(m=>({day:m.day,time:"",type:"ölçü_"+MN[m.k],v:m.v}))],day,time).map(e=>[e.day,e.time,e.type==="adim"?"adım":e.type,e.type==="not"?null:e.v,e.type.startsWith("ölçü")?"cm":UNIT[e.type],e.text,e.p,e.c,e.f,e.fb,e.sg,e.na])],
       ["antrenman","Antrenman setleri",["tarih","antrenman","egzersiz","set","kg","tekrar","süre_sn","rpe","ısınma","set_türü","süperset"],
         by(S.workouts,day,x=>x.t0).flatMap(w=>w.ex.flatMap(x=>x.sets.map((s,i)=>s.done&&[w.day,w.name,h.exName(x.id),i+1,s.kg,s.reps,s.sec,s.rpe,s.w?"evet":"",s.t==="d"?"drop":s.t==="f"?"başarısızlık":"",x.ss]).filter(Boolean)))],
       ["saglik","Sağlık ölçümleri (tansiyon, şeker)",["tarih","saat","tür","sistolik","diyastolik","nabız","şeker_mgdl","ölçüm_zamanı","not"],

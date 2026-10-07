@@ -109,4 +109,27 @@ ok("ısınma setleri hesaba girmez (en son, önceki ve tek başına)",A.nextTarg
   ok("exerciseKcal: kcal'siz spor da aralık sayılır (aynı çıkışı kaplar)",A.exerciseKcal([sp("18:00",60)],[mv("17:40",10,80)])===0);
   ok("moveBonus: %50, tamsayı, 800 üst sınır, asla negatif/NaN",A.moveBonus(301)===151&&A.moveBonus(5000)===800&&A.moveBonus(0)===0&&A.moveBonus(-50)===0&&A.moveBonus(NaN)===0&&A.moveBonus(200,1)===200);
 }
+{ // Denetim düzeltmeleri
+  const T0="2026-12-01";
+  ok("bayat tartı: son tartı 7 günden eskiyse eğim, lossKnown, isLosing ve goalEta yok",A.slopePerWeek(w,21,4,7,T0)===null&&!A.lossKnown(w,T0)&&!A.isLosing(w,T0)&&A.goalEta(w,70,T0).slope===null&&A.goalEta(w,70,T0).weeks===null);
+  ok("taze tartı (son tartıdan 6 gün sonra) eğim verir",A.slopePerWeek(w,21,4,7,"2026-10-05")!=null&&A.isLosing(w,"2026-10-05"));
+  A.setClock(()=>T0);const stale=A.isLosing(w)||A.slopePerWeek(w)!==null;A.setClock(null);
+  ok("saat verilince tarihsiz çağrı da (Koç) bayatı görür; saat yoksa eskisi gibi",!stale&&A.isLosing(w));
+  const wi={},ii={};for(let i=0;i<29;i++){wi[day(i)]=88-0.05*i;ii[day(i)]=1800}ii[day(28)]=5000;
+  const pr={kg:86.6,cm:175,age:34,sex:"m",act:1};
+  ok("adaptiveTdee: bugünün yarım kaydı sayılmaz",near(A.adaptiveTdee({weights:wi,intake:ii,profile:pr,today:day(28)}).est,2185,15)&&Math.abs(A.adaptiveTdee({weights:wi,intake:ii,profile:pr}).est-2185)>50);
+  for(const [k,t,e] of [[700,0,false],[800,0,true],[999,2000,false],[1000,2000,true]])ok(`fullKcal ${k}/${t}`,A.fullKcal(k,t)===e);
+  const P0={goalKg:0,kg:80};
+  for(const [kcal,o,empty] of [[2000,{age:16},false],[1100,{sex:"f"},false],[1250,{sex:"f"},true],[1400,{sex:"m"},false],[1500,{sex:"m"},true],[1600,{sex:"m",bmr:1700},false],
+    [2000,{block:"İlaç kaydın var",tdee:2300},false],[2300,{block:"İlaç kaydın var",tdee:2300},true],[2000,{tdee:2300},true]])
+    ok(`manualKcal ${kcal} ${JSON.stringify(o)}`,(A.manualKcal({kcal,...o})==="")===empty,A.manualKcal({kcal,...o}));
+  ok("suggestTarget: taban erkekte 1500, kadında %75 tdee",A.suggestTarget({tdee:1700,kg:84,goalKg:75,bmr:1000,sex:"m"}).kcal===1500&&A.suggestTarget({tdee:1700,kg:84,goalKg:75,bmr:1000,sex:"f"}).kcal===1280);
+  for(const [kg,cm,e] of [[180,0,true],[150,0,false],[180,175,true],[90,175,false],[120,175,false]])ok(`lbSuspect ${kg}/${cm}`,A.lbSuspect(kg,cm)===e);
+  const w9=A.moveSummary({kind:"w",min:30,steps:5100,cm:180,kg:80});
+  ok("hızlı yürüyüş (>8 km/sa) koşu MET tablosuna geçer, 7'de kırpılmaz",w9.kmh>8&&w9.met>8.3);
+  const D1="2026-10-01",D2="2026-10-02",s2=(o)=>({day:D1,time:"21:00",v:30,kcal:100,text:"Yürüyüş",...o}),m1={day:D1,k:"w",t0:"08:00",min:30,kcal:80};
+  ok("geçmişe girilmiş (bt) yürüyüş aynı türdeki otomatik hareketle çift sayılmaz; farklı tür ya da bt yoksa sayılır",A.exerciseKcal([s2({bt:true})],[m1],D1)===100&&A.exerciseKcal([s2({bt:true,text:"Ağırlık"})],[m1],D1)===180&&A.exerciseKcal([s2()],[m1],D1)===180);
+  const night={day:D2,time:"00:20",v:30,kcal:90,text:"Yürüyüş"},mn={day:D1,k:"w",t0:"23:50",min:30,kcal:90};
+  ok("gece yarısını aşan egzersiz (otomatik başlangıç gününde, elle bitiş gününde) bir kez sayılır",A.exerciseKcal([night],[mn],D1)===0&&A.exerciseKcal([night],[mn],D2)===90);
+}
 process.exit(bad?1:0);

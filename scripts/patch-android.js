@@ -10,8 +10,11 @@ for (const perm of ["POST_NOTIFICATIONS", "RECEIVE_BOOT_COMPLETED", "VIBRATE", "
   }
 }
 // Adım sayacı: gece yarısı ve açılışta sayacı kaydeden alıcı.
+// Güncelleme ve saat/tarih/saat dilimi değişiminde gece alarmları (7001, 7003) silinir ya da kayar: yeniden kurulur, widget tazelenir.
+// Tam alarm izni verilince ya da alınınca alarm türü (tam/yaklaşık) yeniden seçilir.
 if (!x.includes("StepSnapshotReceiver")) {
-  x = x.replace("</application>", '    <receiver android:name=".StepSnapshotReceiver" android:exported="false"><intent-filter><action android:name="android.intent.action.BOOT_COMPLETED"/></intent-filter></receiver>\n    </application>');
+  const acts = ["android.intent.action.BOOT_COMPLETED", "android.intent.action.MY_PACKAGE_REPLACED", "android.intent.action.TIME_SET", "android.intent.action.TIMEZONE_CHANGED", "android.intent.action.DATE_CHANGED", "android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED"];
+  x = x.replace("</application>", `    <receiver android:name=".StepSnapshotReceiver" android:exported="false"><intent-filter>${acts.map(a => `<action android:name="${a}"/>`).join("")}</intent-filter></receiver>\n    </application>`);
 }
 // Otomatik yürüyüş/koşu algılama için etkinlik geçişi alıcısı; elle yürüyüşteki kısa GPS penceresi için konum türünde ön plan servisi.
 if (!x.includes("MotionReceiver")) {
@@ -19,7 +22,7 @@ if (!x.includes("MotionReceiver")) {
 }
 // İlaç dozunda kilitli ekranı uyandıran alarm alıcısı (bildirim eklentisi ekranı açmaz); açılışta ve güncellemede kayıtlı dozları yeniden kurar.
 if (!x.includes("MedWakeReceiver")) {
-  x = x.replace("</application>", '    <receiver android:name=".MedWakeReceiver" android:exported="false"><intent-filter><action android:name="android.intent.action.BOOT_COMPLETED"/><action android:name="android.intent.action.MY_PACKAGE_REPLACED"/></intent-filter></receiver>\n    </application>');
+  x = x.replace("</application>", '    <receiver android:name=".MedWakeReceiver" android:exported="false"><intent-filter><action android:name="android.intent.action.BOOT_COMPLETED"/><action android:name="android.intent.action.MY_PACKAGE_REPLACED"/><action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED"/></intent-filter></receiver>\n    </application>');
 }
 // Barkod tarayıcı modülü uygulama kurulurken indirilsin (Google ML Kit).
 if (!x.includes("com.google.mlkit.vision.DEPENDENCIES")) {
@@ -61,11 +64,16 @@ if(!sx.includes("windowSplashScreenBackground")){
 console.log("Simgeler ve açılış ekranı yerleştirildi.");
 
 // API anahtarı kasası: Keystore eklentisini kopyala, MainActivity'ye kaydet.
+// KeyVault sözleşmesi: anahtar geçersizleştiyse ya da yoksa decrypt (ve reset olmadan encrypt) reject koduyla "KEY_INVALIDATED" döner; eski veri çözülemez.
+// Yeni anahtar için encrypt({text, reset:true}) ya da resetKey() çağrılır.
 const jdir="android/app/src/main/java/com/neowell/app";
-for(const f of ["MedWakeReceiver","MedWakePlugin","KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin","QuickMath","QuickLogPlugin","MotionMath","MotionStore","MotionGpsService","MotionReceiver","MotionPlugin","NeoWidget","WidgetPlugin","WaterReceiver","SpeechPlugin","BackupFolderPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
+for(const f of ["Alarms","MedWakeReceiver","MedWakePlugin","KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin","QuickMath","QuickLogPlugin","MotionMath","MotionStore","MotionGpsService","MotionReceiver","MotionPlugin","NeoWidget","WidgetPlugin","WaterReceiver","SpeechPlugin","BackupFolderPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
 fs.writeFileSync(`${jdir}/MainActivity.java`,`package com.neowell.app;
 
 import android.content.Intent;
+import android.util.Log;
+import com.getcapacitor.PluginHandle;
+import com.getcapacitor.PluginMethod;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.media.AudioAttributes;
@@ -93,8 +101,24 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(SpeechPlugin.class);
         registerPlugin(BackupFolderPlugin.class);
         super.onCreate(savedInstanceState);
+        diag(getIntent());
         medChannel();
         if (quick) moveTaskToBack(true);
+    }
+
+    // Yalnız CI smoke testi tetikler (am start --ez nw_diag true). Release derlemede konsol logcata yazmaz; eklentilerin yüklendiği ve
+    // @PluginMethod yöntemlerinin küçültmeden (R8) sağ çıktığı buradan doğrulanır. Yalnız eklenti adı ve yöntem sayısı loglanır.
+    private void diag(Intent in) {
+        if (in == null || !in.getBooleanExtra("nw_diag", false)) return;
+        StringBuilder sb = new StringBuilder();
+        for (String n : new String[] {"LocalNotifications", "Share", "Filesystem", "App", "BarcodeScanner", "MedWake", "KeyVault", "DeviceHelp", "StepCounter", "Ocr", "QuickLog", "Motion", "Widget", "Speech", "BackupFolder"}) {
+            PluginHandle h = getBridge() == null ? null : getBridge().getPlugin(n);
+            int k = 0;
+            if (h != null && h.getInstance() != null)
+                for (java.lang.reflect.Method m : h.getInstance().getClass().getDeclaredMethods()) if (m.isAnnotationPresent(PluginMethod.class)) k++;
+            sb.append(n).append('=').append(k).append(' ');
+        }
+        Log.i("NW-DIAG", sb.toString().trim());
     }
 
     // İlaç hatırlatıcısı alarm gibi çalar: alarm sesi kanalı, yüksek önem, titreşim. Sessiz modda da çalması kullanıcının telefon ayarına bağlıdır.

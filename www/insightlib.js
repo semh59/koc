@@ -5,6 +5,7 @@ const InsightLib=(()=>{
   const f1=x=>String(Math.round(x*10)/10).replace(".",",");
   const sgn=x=>(x>0?"+":x<0?"-":"")+f1(Math.abs(x));
   const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
+  const AL=()=>typeof Algo!=="undefined"?Algo:require("./algo.js");
   /* Tek yönlü t kritik değeri (z=1,8 ≈ %96,4; Cornish-Fisher düzeltmesi, df≥6'da tablodan sapma <0,01). */
   const tq=df=>{const z=1.8;return z+(z**3+z)/(4*df)+(5*z**5+16*z**3+3*z)/(96*df*df)};
   /* Pencere bugüne göre: tartmayı bırakan birinin eski düz serisi plato sayılmasın. */
@@ -55,9 +56,10 @@ const InsightLib=(()=>{
     d=d&&typeof d==="object"?d:{};
     const days=Array.isArray(d.days)?d.days.map(x=>x&&typeof x==="object"?x:{}):[];
     const wk=days.slice(-8,-1),prev=days.slice(-22,-8),n=x=>Number.isFinite(x)?x:0,out=[];
-    const full=wk.map(x=>n(x.kcal)).filter(x=>x>=800),miss=wk.length-full.length;
+    const A=AL(),full=wk.map(x=>n(x.kcal)).filter(x=>A.fullKcal(x)),miss=wk.length-full.length;
     let t;
     if(!full.length)t="Kalori: son 7 günde tam kayıtlı gün yok, kalorinin etkisi değerlendirilemiyor.";
+    else if(full.length<A.MIN_AVG_DAYS)t=`Kalori: tam kayıtlı yalnız ${full.length} gün var, ortalama için en az ${A.MIN_AVG_DAYS} gün gerekir; kalorinin etkisi değerlendirilemiyor.`;
     else{
       const a=Math.round(avg(full));
       t=d.goalKcal>0?`Kalori: tam kayıtlı ${full.length} günde ortalama ${a} kcal, hedefin ${Math.round(d.goalKcal)} kcal.`:`Kalori: hedef yok; tam kayıtlı ${full.length} günde ortalama ${a} kcal.`;

@@ -226,7 +226,7 @@ setTimeout(async()=>{
     const calls=[];let resp=null;w.fetch=async(u,o)=>{calls.push({u,o});if(!resp)throw new TypeError("Failed to fetch");return typeof resp==="function"?resp(u,o):resp};
     const R=(status,body)=>({ok:status<300,status,json:async()=>JSON.parse(body),text:async()=>body});
     const type=v=>{q("#sk").value=v;q("#sk").dispatchEvent(new w.Event("input",{bubbles:true}))};
-    ev("cSetup(true)");type("sk-proj-ornek12345");
+    ev("S.settings.age=30;cSetup(true)");type("sk-proj-ornek12345");
     ok("sk-proj- OpenAI olarak tanınır; ücretli notu ve 'sağlık verin gitmez' cümlesi görünür",ev("su.id")==="openai"&&st().includes("kullandıkça ücret çıkabilir; kotayı sağlayıcı sitende sen belirlersin")&&st().includes("Anahtarını ve bir deneme cümlesini sağlayıcıya göndeririz; sağlık verin gitmez"));
     q('[data-c="sp:groq"]').click();type("sk-ant-api03-ornek");
     ok("sk-ant- Anthropic olarak tanınır (önce Groq seçiliyken de)",ev("su.id")==="anthropic"&&!!q('[data-c="stest"]'));
@@ -238,12 +238,14 @@ setTimeout(async()=>{
     ok("önekten sağlayıcı tahmini: gsk_ → Groq seçili, değiştirilebilir",q('[data-c="sp:groq"]').getAttribute("aria-pressed")==="true"&&st().includes("Groq anahtarı olarak tanındı"));
     ev("S.settings.age=16");await ev("suFetch()");
     ok("18 yaş altı: kurulum ağ çağrısı yapmaz",calls.length===0&&st().includes("18 yaş altında"));
+    ev("S.settings.age=0");await ev("suFetch()");
+    ok("yaş girilmemiş: kurulum ağ çağrısı yapmaz, yaş girmeye yönlendirir",calls.length===0&&st().includes("yaşını gir"));
     ev("setKey('groq','gsk_x12345678');cSheetProv('groq')");await ev("cProvClick('ptest','groq')");await ev("cProvClick('pmodels','groq')");
     ok("18 yaş altı: ileri sayfadaki test ve model listesi de ağ çağrısı yapmaz",calls.length===0);
     ev("setKey('groq','');cSetup(true)");type("gsk_ornekanahtar123");
     /* Gerçek NVIDIA/Groq yanıt şekilleri: zaman aşımı, hesapta olmayan model (404 Function), düşünen modelde content null + reasoning_content. */
     const chatBy=f=>(u,o)=>u.endsWith("/models")?R(200,JSON.stringify({data:[{id:"whisper-large-v3"},{id:"llama-3.1-8b-instant"},{id:"llama-3.3-70b-versatile"},{id:"openai/gpt-oss-120b"}]})):f(JSON.parse(o.body).model);
-    ev("S.settings.age=0");resp=chatBy(m=>{if(m==="llama-3.3-70b-versatile")throw Object.assign(new Error("x"),{name:"AbortError"});if(m==="openai/gpt-oss-120b")return R(404,'{"detail":"Function f: Not found for account a"}');return R(200,JSON.stringify({choices:[{message:{content:null,reasoning_content:"düşünüyor"},finish_reason:"length"}]}))});
+    ev("S.settings.age=30");resp=chatBy(m=>{if(m==="llama-3.3-70b-versatile")throw Object.assign(new Error("x"),{name:"AbortError"});if(m==="openai/gpt-oss-120b")return R(404,'{"detail":"Function f: Not found for account a"}');return R(200,JSON.stringify({choices:[{message:{content:null,reasoning_content:"düşünüyor"},finish_reason:"length"}]}))});
     await ev("suFetch()");
     ok("modeller getirilir, konuşma dışı atılır; yanıt vermeyen ve hesapta olmayan aday atlanır, ilk çalışan önerilir",calls[0].u==="https://api.groq.com/openai/v1/models"&&calls.length===4&&ev("su.models.length")===3&&ev("su.model")==="llama-3.1-8b-instant"&&ev("su.ok")==="llama-3.1-8b-instant"&&st().includes("denendi")&&st().includes("Anahtar çalışıyor"));
     ok("deneme isteği 15 sn sınırlı ve düşünen modele yer bırakır (200 jeton)",JSON.parse(calls[1].o.body).max_tokens===200);
@@ -275,6 +277,8 @@ setTimeout(async()=>{
     ev("setKey('anthropic','');Object.assign(S.providers.find(p=>p.id==='anthropic'),{on:false,health:false});delete pstat.anthropic");
     ev("delete pstat.groq;delete cool.groq;offline=null;S.providers.find(p=>p.id==='groq').model='llama-3.3-70b-versatile';S.settings.healthNote='';setKey('groq','');S.settings.consent=false");delete w.fetch;
   }
+  for(const [s,int,e] of [["-30",true,NaN],["1,5",true,NaN],["17,9",true,NaN],["1e3",true,NaN],["1e3",false,NaN],["12abc3",false,NaN],["1.5.2",false,NaN],["30 dk",true,30],["83,7 kg",false,83.7],["1.500",true,1500],["1.234.567",true,1234567],[".5",false,0.5]])
+    ok(`num(${JSON.stringify(s)},${int})`,Object.is(ev(`num(${JSON.stringify(s)},${int})`),e)||ev(`num(${JSON.stringify(s)},${int})`)===e);
   ok("sayı ayrıştırma",ev("[num('83,7'),num('83.7'),num('1.234,5'),num('1.500',true),num('abc')]").slice(0,4).join()==="83.7,83.7,1234.5,1500"&&isNaN(ev("num('abc')")));
   ok("geçersiz spor süresi atılır",ev("cleanEntries([{type:'spor',day:'2026-01-01',v:1500},{type:'spor',day:'2026-01-01',v:30}]).out.length")===1);
   ok("bildirim metni korunur",ev("cleanSettings({reminders:[{id:1,t:'09:00',on:true,body:'Bugün su içmeyi unutma'}]}).reminders[0].body")==="Bugün su içmeyi unutma");
@@ -285,6 +289,17 @@ setTimeout(async()=>{
   ev("goYukle()");
   ok("yedek anahtar adresini değiştiremez",ev("S.providers.find(p=>p.id==='nvidia').base")==="https://integrate.api.nvidia.com/v1",ev("S.providers.map(p=>p.base)"));
   ok("yedek onayı ve izni değiştiremez",ev("S.settings.consent")===false&&ev("S.providers.find(p=>p.id==='gemini').confirm")===true);
+  ok("yedek anahtarsız hazır sağlayıcının adresini de değiştiremez (anahtar sonradan yapıştırılınca yanlış sunucuya gitmez)",ev("S.providers.every(p=>p.base===defProviders().find(d=>d.id===p.id).base)"),ev("S.providers.map(p=>p.base)"));
+  ok("özel sağlayıcının adresi serbest; Object.prototype adlı kimlik atılır",ev("(()=>{const r=cleanCoach({providers:[{id:'u9',name:'X',base:'https://x.example/v1',model:'m',on:true,health:true},{id:'constructor',name:'Y',base:'https://y.example/v1',model:'m',on:true,health:true}]});return r.providers.find(p=>p.id==='u9').base==='https://x.example/v1'&&!r.providers.some(p=>p.id==='constructor')})()"));
+  ev("Object.assign(S.settings,{age:30,consent:true,consentV:CONSENT_V,consentP:null});S.providers.forEach(p=>{p.on=p.health=p.id==='nvidia'});setKey('nvidia','K1');setKey('openai','')");
+  ok("rıza: yaş girilmemişse Koç açılmaz, girilince açılır",ev("(S.settings.age=0,coachOn())")===false&&ev("(S.settings.age=30,coachOn())")===true);
+  ev("(()=>{const o=S.providers.find(p=>p.id==='openai');o.on=o.health=true;setKey('openai','sk-x')})()");
+  ok("rıza: rıza anında kümede olmayan ücretli sağlayıcıya anahtar girilince yeniden onay gerekir",ev("coachOn()")===false);
+  ev("cConsent(true)");
+  ok("yeniden onay: sağlayıcı kümesi kaydedilir ve Koç açılır",ev("coachOn()")===true&&ev("S.settings.consentP").includes("openai"));
+  ev("(()=>{const o=S.providers.find(p=>p.id==='openai');o.on=o.health=false;setKey('openai','');Object.assign(S.settings,{consent:false,consentP:null,age:0})})()");
+  ok("arşiv: toplam mesaj sınırı aşılınca eski sohbetler atılır, en yeni kalır",ev("(()=>{const c=i=>({id:i,t:i,title:'t'+i,msgs:Array.from({length:150},(_,j)=>({id:j+1,role:'user',text:'x',t:1}))});const r=trimChats([1,2,3,4,5,6].map(c));return r.length===4&&r[0].id===1})()"));
+  ok("geçmiş: yalnız uygulanan kart makro ve öğünle gider; bekleyen ve reddedilen boş",ev("(()=>{const m=st=>({card:{kind:'log',state:st,items:[{type:'yemek',text:'a',kcal:100,p:5,c:10,f:2,meal:'kah'}]}});const a=cHistLog(m('ok'))[0];return a.p===5&&a.c===10&&a.f===2&&a.meal==='kah'&&cHistLog(m('no')).length===0&&cHistLog(m('pending')).length===0})()"));
   ok("eski kayda yeni hazır sağlayıcılar (OpenAI, Anthropic) kapalı eklenir, mevcutlar aynen kalır",ev("JSON.stringify(cleanCoach({providers:[{id:'groq',name:'Groq',base:'https://api.groq.com/openai/v1',model:'m',on:true,health:true}]}).providers.map(p=>[p.id,p.model,p.on,p.health]))")==='[["groq","m",true,true],["nvidia","nvidia/nemotron-3-super-120b-a12b",true,true],["openrouter","google/gemma-4-31b-it:free",true,true],["gemini","gemini-3.5-flash-lite",false,false],["openai","gpt-6-luna",false,false],["anthropic","claude-haiku-4-5",false,false]]');
   ok("sağlayıcı adları tek kaynaktan: gizlilik ekranı, politika, veri güvenliği ve mağaza metni hepsini sayar",(()=>{const n=ev("defProviders().map(p=>p.name)"),rd=f=>require("fs").readFileSync(path.join(__dirname,"../docs/"+f),"utf8");ev("sheetPrivacy()");const pv=$q("#sheet").textContent;ev("closeSheet()");return n.length===6&&n.every(x=>pv.includes(x)&&["gizlilik-politikasi.md","play-data-safety.md","magaza-metni.md"].every(f=>rd(f).includes(x)))})());
   ok("kaldırılan eski hazır model yenisine geçer, kullanıcının seçtiği model ve özel sağlayıcı korunur",ev("JSON.stringify(cleanCoach({providers:[{id:'openrouter',name:'OpenRouter',base:'https://openrouter.ai/api/v1',model:'meta-llama/llama-3.3-70b-instruct:free',on:true,health:true},{id:'nvidia',name:'NVIDIA',base:'https://integrate.api.nvidia.com/v1',model:'benim/modelim',on:true,health:true},{id:'u7',name:'X',base:'https://x.example/v1',model:'gemini-2.0-flash',on:true,health:true}]}).providers.slice(0,3).map(p=>p.model))")==='["google/gemma-4-31b-it:free","benim/modelim","gemini-2.0-flash"]');
@@ -292,11 +307,11 @@ setTimeout(async()=>{
   ev("document.querySelector('#bkpw')||document.body.insertAdjacentHTML('beforeend','<input id=\"bkpw\">')");
   ev("document.querySelector('#bkpw2')||document.body.insertAdjacentHTML('beforeend','<input id=\"bkpw2\"><div id=\"bkw\"></div>')");
   const pw1=w.document.querySelector("#bkpw"),pw2=w.document.querySelector("#bkpw2");
-  for(const [a,b,msg,n] of [["","","en az 8","parolasız"],["abc","abc","en az 8","kısa"],["12345678","12345678","kolay","yalnız rakam"],["Password","Password","kolay","bilinen kolay"],["parola123","parola124","aynı değil","uyuşmayan"]]){
+  for(const [a,b,msg,n] of [["","","en az 10","parolasız"],["abc","abc","en az 10","kısa"],["abcdefgh1","abcdefgh1","en az 10","9 karakter"],["1234567890","1234567890","kolay","yalnız rakam"],["Password123!","Password123!","kolay","yaygın parola + rakam"],["mavi-bulut-77","mavi-bulut-78","aynı değil","uyuşmayan"]]){
     pw1.value=a;pw2.value=b;
     ok(`parolasız/zayıf yedek reddedilir: ${n}`,await ev("backupText()")===null&&w.document.querySelector("#bkw").textContent.includes(msg),w.document.querySelector("#bkw").textContent);
   }
-  w.document.querySelector("#bkw").remove();pw1.value="parola123";pw2.value="parola123";
+  w.document.querySelector("#bkw").remove();pw1.value="mavi-bulut-77";pw2.value="mavi-bulut-77";
   w.backupP=ev("backupText()");
   const enc=await w.backupP;{
     ok("şifreli yedek düz metin içermez",!enc.includes("gizli not")&&!enc.includes("KEY-sirri-12345")&&JSON.parse(enc).enc==="aes-gcm-pbkdf2");
@@ -304,7 +319,7 @@ setTimeout(async()=>{
     w.document.querySelector("#bk").value=enc;w.document.querySelector("#bkpw").value="yanlis";
     await ev("goYukle()");
     ok("yanlış parola geri yüklemez",ev("S.settings.healthNote")===""&&ev("getKeys().groq")===undefined);
-    w.document.querySelector("#bkpw").value="parola123";
+    w.document.querySelector("#bkpw").value="mavi-bulut-77";
     await ev("goYukle()");
     ok("doğru parola veri ve anahtarı geri getirir",ev("S.settings.healthNote")==="gizli not"&&ev("getKeys().groq")==="KEY-sirri-12345",[ev("S.settings.healthNote"),ev("getKeys().groq"),ev("document.querySelector('#toast').textContent")]);
   // ---- Tahlil takibi ----
@@ -661,7 +676,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     q('[data-wk="pdf"]').click();await new Promise(r=>setTimeout(r,150));
     const pb=Buffer.from(saved.data,"base64"),pd=await pdfjs.getDocument({data:new Uint8Array(pb),verbosity:0}).promise;
     ok("haftalık rapor: geçerli tek sayfa PDF, dosya adı, paylaşım",/^neowell-haftalik-\d{4}-\d{2}-\d{2}\.pdf$/.test(saved.path)&&pb.slice(0,5).toString()==="%PDF-"&&pd.numPages===1&&shared.files[0]==="file:///cache/h.pdf",[saved.path,pd.numPages]);
-    ok("rapor içeriği: kilo, su, kalori, spor ve (takip açıksa) tansiyon",drawn.includes("NeoWell · Haftalık rapor")&&drawn.some(t=>t.includes("81,9"))&&drawn.some(t=>/günlük ortalama 2,0 L/.test(t))&&drawn.some(t=>/1900 kcal/.test(t))&&drawn.some(t=>/toplam 45 dk/.test(t))&&drawn.some(t=>/128\/82 mmHg/.test(t)),drawn);
+    ok("rapor içeriği: kilo, su, kalori, spor ve (takip açıksa) tansiyon",drawn.includes("NeoWell · Son 7 gün raporu")&&drawn.some(t=>t.includes("81,9"))&&drawn.some(t=>/günlük ortalama 2,0 L/.test(t))&&drawn.some(t=>/1 gün kayıt var; ortalama için en az 3/.test(t))&&drawn.some(t=>/toplam 45 dk/.test(t))&&drawn.some(t=>/128\/82 mmHg/.test(t)),drawn);
     ev("S.entries=[];S.vitals=[];S.settings.bpOn=false;tab='bugun';render()");
   }
   // ---- Bildirimden hızlı su, haftalık yedek hatırlatması, Drive'a gönder ----
@@ -754,22 +769,22 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     click('[data-act="drive"]');await new Promise(r=>setTimeout(r,30));
     ok("yedek ekranı: parola alanları, hesap bağlama gerekmediği belirtilir",!!q("#bkp1")&&!!q("#bkp2")&&q("#sheet").textContent.includes("Hesap bağlamak gerekmez")&&!q("#bkrem"));
     q("#bkp1").value="abc";q("#bkp2").value="abc";click('[data-bk="send"]');await new Promise(r=>setTimeout(r,30));
-    ok("kısa parola reddedilir",saved===null&&q("#bkw").textContent.includes("en az 8"));
-    q("#bkp1").value="parola123";q("#bkp2").value="parola124";click('[data-bk="send"]');await new Promise(r=>setTimeout(r,30));
+    ok("kısa parola reddedilir",saved===null&&q("#bkw").textContent.includes("en az 10"));
+    q("#bkp1").value="mavi-bulut-77";q("#bkp2").value="mavi-bulut-78";click('[data-bk="send"]');await new Promise(r=>setTimeout(r,30));
     ok("parolalar uyuşmazsa gönderilmez",saved===null&&q("#bkw").textContent.includes("aynı değil"));
-    q("#bkp2").value="parola123";click('[data-bk="send"]');await new Promise(r=>setTimeout(r,800));
+    q("#bkp2").value="mavi-bulut-77";click('[data-bk="send"]');await new Promise(r=>setTimeout(r,800));
     ok("şifreli yedek paylaşılır: dosya adı, düz metin yok, paylaşım",saved&&/^neowell-yedek-\d{4}-\d{2}-\d{2}\.json$/.test(saved.path)&&JSON.parse(saved.data).enc==="aes-gcm-pbkdf2"&&!saved.data.includes("gizli sağlık notu")&&shared.files[0]==="file:///cache/y.json",saved&&saved.data.slice(0,120));
     ok("paylaşım sonrası son yedek tarihi bugün olur, bildirim metni",ev("S.settings.lastBackup")===ev("dayKey()")&&toastT().includes("Drive"));
     // geri yüklenebilir mi (gidiş dönüş)
     doc.body.insertAdjacentHTML("beforeend",'<textarea id="bk2"></textarea>');
     ev("S.settings.healthNote=''");
     const encJ=saved.data;
-    ev("sheetYedek()");q("#bk").value=encJ;q("#bkpw").value="parola123";await ev("goYukle()");
+    ev("sheetYedek()");q("#bk").value=encJ;q("#bkpw").value="mavi-bulut-77";await ev("goYukle()");
     ok("gönderilen yedek aynı parolayla geri yüklenir",ev("S.settings.healthNote")==="gizli sağlık notu");
     // iptal
     shareErr=new Error("Share canceled");saved=null;ev("S.settings.lastBackup=''");
     ev("sheetDrive()");await new Promise(r=>setTimeout(r,30));
-    q("#bkp1").value="parola123";q("#bkp2").value="parola123";click('[data-bk="send"]');await new Promise(r=>setTimeout(r,800));
+    q("#bkp1").value="mavi-bulut-77";q("#bkp2").value="mavi-bulut-77";click('[data-bk="send"]');await new Promise(r=>setTimeout(r,800));
     ok("paylaşım iptal edilirse yedek yapıldı sayılmaz",ev("S.settings.lastBackup")===""&&!toastT().includes("paylaşıldı"));
     shareErr=null;
 
@@ -778,8 +793,8 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("vaultOn=true");
     ev("sheetDrive()");await new Promise(r=>setTimeout(r,30));
     ok("kasa varken 'parolayı sakla' kutusu işaretli gelir",!!q("#bkrem")&&q("#bkrem").checked);
-    q("#bkp1").value="parola123";q("#bkp2").value="parola123";click('[data-bk="send"]');await new Promise(r=>setTimeout(r,800));
-    ok("parola kasayla şifreli saklanır, düz metin saklanmaz",!!ev("localStorage.getItem('koc_bkpw_enc')")&&!ev("localStorage.getItem('koc_bkpw_enc')").includes("parola123")&&ev("localStorage.getItem('koc_bkpw_enc')").startsWith("ENC:"));
+    q("#bkp1").value="mavi-bulut-77";q("#bkp2").value="mavi-bulut-77";click('[data-bk="send"]');await new Promise(r=>setTimeout(r,800));
+    ok("parola kasayla şifreli saklanır, düz metin saklanmaz",!!ev("localStorage.getItem('koc_bkpw_enc')")&&!ev("localStorage.getItem('koc_bkpw_enc')").includes("mavi-bulut-77")&&ev("localStorage.getItem('koc_bkpw_enc')").startsWith("ENC:"));
     saved=null;ev("sheetDrive()");await new Promise(r=>setTimeout(r,30));
     ok("saklı parolayla tek dokunuşla gönderme: parola alanı yok",!q("#bkp1")&&!!q('[data-bk="send"]')&&q("#sheet").textContent.includes("saklı"));
     click('[data-bk="send"]');await new Promise(r=>setTimeout(r,800));
@@ -800,14 +815,14 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     click('[data-ab="toggle"]');await new Promise(r=>setTimeout(r,30));
     ok("otomatik yedek: açınca parola istenir, kutu henüz işaretlenmez",!!q("#abp1")&&!!q("#abp2")&&ev("S.settings.autoBk")===false&&q("#sheet").textContent.includes("parolayla aç"));
     q("#abp1").value="abc";q("#abp2").value="abc";click('[data-ab="pick"]');await new Promise(r=>setTimeout(r,30));
-    ok("otomatik yedek: kısa parola reddedilir, klasör sorulmaz",q("#abw").textContent.includes("en az 8")&&!bfLog.includes("pick"));
+    ok("otomatik yedek: kısa parola reddedilir, klasör sorulmaz",q("#abw").textContent.includes("en az 10")&&!bfLog.includes("pick"));
     const old=["2026-08-01","2026-08-08","2026-08-15","2026-08-22","2026-08-29"].map(d=>`neowell-oto-${d}.json`);old.forEach(n=>{files[n]="{}"});files["baska.txt"]="x";
     const manual=["2026-07-01","2026-08-02","2026-08-09",ev("dayKey()")].map(d=>`neowell-yedek-${d}.json`);manual.forEach(n=>{files[n]="elle "+n});
     ev("S.settings.lastBackup='';S.settings.healthNote='oto yedek notu'");
-    q("#abp1").value="parola123";q("#abp2").value="parola123";click('[data-ab="pick"]');await new Promise(r=>setTimeout(r,1200));
+    q("#abp1").value="mavi-bulut-77";q("#abp2").value="mavi-bulut-77";click('[data-ab="pick"]');await new Promise(r=>setTimeout(r,1200));
     const today=`neowell-oto-${ev("dayKey()")}.json`,env=files[today]&&JSON.parse(files[today]);
     ok("otomatik yedek: klasör seçilince açılır, parola kasada saklanır, bugünkü şifreli dosya yazılır",ev("S.settings.autoBk")===true&&ev("localStorage.getItem('koc_bkpw_enc')").startsWith("ENC:")&&env&&env.enc==="aes-gcm-pbkdf2"&&!files[today].includes("oto yedek notu"));
-    ok("otomatik yedek: aynı parolayla geri yüklenebilir biçim (S ve anahtarlar)",(await ev("BackupLib.decrypt")(env,"parola123")).S.settings.healthNote==="oto yedek notu");
+    ok("otomatik yedek: aynı parolayla geri yüklenebilir biçim (S ve anahtarlar)",(await ev("BackupLib.decrypt")(env,"mavi-bulut-77")).S.settings.healthNote==="oto yedek notu");
     ok("otomatik yedek: ayrı önekle en yeni 4 otomatik yedek kalır; elle yedeklere (aynı günün elle yedeği ve eski 'neowell-yedek-' adlılar dahil) ve başka dosyaya dokunulmaz",Object.keys(files).filter(n=>n.startsWith("neowell-oto-")).sort().join()===[...old.slice(2),today].join()&&manual.every(n=>files[n]==="elle "+n)&&files["baska.txt"]==="x");
     ok("otomatik yedek: son otomatik yedek ve son yedek bugün, ekranda klasör adı",ev("S.settings.lastAutoBk")===ev("dayKey()")&&ev("S.settings.lastBackup")===ev("dayKey()")&&q("#view").textContent.includes("Klasör: NeoWell")&&q('[data-ab="toggle"]').checked);
     bfLog.length=0;await ev("abRun()");
@@ -1224,14 +1239,13 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("tab='ayar-modul';render()");click('[data-hb^="fdel:"]');await wait(30);
     ok("oruç geçmişinden (Ayarlar) silinir, geri alınabilir",ev("S.fast.log.length")===1&&(click("#tundo"),ev("S.fast.log.length")===2));
     ev("S.fast.t0=Date.now()-36e5;render()");click('[data-hb="fasttoggle"]');
-    ok("oruç ayarı göçü: oruç hatırlatıcısı açık eski veri oruçu açık getirir",ev("cleanSettings({reminders:[{id:11,t:'20:00',on:true}]}).fastOn")===true);
     ok("oruç sürerken zamanlayıcı kapatılamaz",ev("S.settings.fastOn")===true&&q("#tmsg").textContent.includes("Önce orucu bitir"));
     ev("S.fast.t0=null;S.settings.reminders.find(r=>r.id===11).on=true;tab='ayar-modul';render()");click('[data-hb="fasttoggle"]');
     ok("oruç kapanınca oruç hatırlatıcısı kapanır ve Ayarlar listesinden kalkar",ev("S.settings.fastOn")===false&&ev("S.settings.reminders.find(r=>r.id===11).on")===false&&!shown().includes(11));
     click('[data-hb="fasttoggle"]');
     ok("oruç açılınca hatırlatıcı Hatırlatmalar ekranında görünür",(ev("tab='ayar-hatir';render()"),!!q('[data-rt="11"]')));
     ev("S.fast.t0=null;tab='bugun';render()");
-    ok("oruç ayarı göçü: eski veride oruç geçmişi/sürmesi varsa açık, yoksa ve açıkça kapalıysa kapalı",ev("cleanSettings({},{plan:16,t0:Date.now()-36e5,log:[]}).fastOn")===true&&ev("cleanSettings({},{plan:16,t0:null,log:[{t0:1e12,t1:1e12+6e7}]}).fastOn")===true&&ev("cleanSettings({}).fastOn")===false&&ev("cleanSettings({fastOn:false},{plan:16,t0:Date.now(),log:[]}).fastOn")===false&&ev("cleanSettings({fastOn:true}).fastOn")===true);
+    ok("oruç ayarı: yalnız açıkça true ise açık (eski veriden türetilmez)",ev("cleanSettings({reminders:[{id:11,t:'20:00',on:true}]}).fastOn")===false&&ev("cleanSettings({}).fastOn")===false&&ev("cleanSettings({fastOn:false}).fastOn")===false&&ev("cleanSettings({fastOn:true}).fastOn")===true);
     ok("hatırlatıcı 11 varsayılan kapalı, eski veride de kapalı, kimliği 89 altında",ev("cleanSettings({}).reminders.find(r=>r.id===11).on")===false&&ev("cleanSettings({reminders:[{id:1,t:'09:00',on:true}]}).reminders.find(r=>r.id===11).on")===false&&ev("S.settings.reminders.every(r=>r.id<=89)"));
     ev("S.settings.reminders.find(r=>r.id===11).on=false");sc.length=0;await ev("scheduleReminders()");
     ok("hatırlatıcı 11 kapalıyken 1100 serisi kurulmaz",!sc[0].some(n=>n.id>=1100&&n.id<=1129));
@@ -1521,7 +1535,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("neden kartı consent yokken yerel çıkar, fetch yok, Koç'a yorumlat görünmez",ev("tab")==="koc"&&wc&&wc.card.items[0].t.includes("hedefin 1800 kcal")&&fetched===0&&!q('[data-c^="whyai"]'),[wc,fetched]);
     await ev(`cWhyAsk(${wc.id})`);
     ok("Koç'a yorumlat consent yokken çağrı yapmaz",fetched===0&&!ev(`S.chat.find(m=>m.id===${wc.id}).card.asked`));
-    ev("S.settings.consent=true;render()");
+    ev("S.settings.consent=true;S.settings.age=30;render()");
     q(`[data-c="whyai:${wc.id}"]`).click();await wait(30);
     ok("Koç'a yorumlat consent ve sağlayıcı varken bir kez çağırır, yanıt sohbete düşer, düğme kalkar",fetched===1&&ev("S.chat[S.chat.length-1].text")==="Yorum"&&!q('[data-c^="whyai"]')&&!q("#view").textContent.includes("gönderilmedi")&&q("#view").textContent.includes("Koç'a gönderildi"),fetched);
     const cc=JSON.parse(ev("JSON.stringify(cleanCoach(JSON.parse(JSON.stringify(S))))"));
@@ -1548,7 +1562,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("program sayfası: seçimler işaretlenir",q('[data-c="po:d:2"]').getAttribute("aria-pressed")==="true"&&q('[data-c="po:q:Ev tipi"]').getAttribute("aria-pressed")==="true"&&ev("progOpt.q")==="Ev tipi");
     let f1=fetched;q('[data-c="progask"]').click();await wait(20);
     ok("program isteği consent yokken çağrı yapmaz",fetched===f1&&!ev("S.chat.length"));
-    ev("S.settings.consent=true;progOpt={d:3,q:'Salon',m:45,l:'Başlangıç'}");
+    ev("S.settings.consent=true;S.settings.age=30;progOpt={d:3,q:'Salon',m:45,l:'Başlangıç'}");
     reply={reply:"Program hazır",log:[],program:{name:"3 gün",days:[{n:"A",ex:["squat","bench","row"]},{n:"B",ex:["squat","uydurma"]},{n:"C",ex:["legpress","pulldown"]}]}};
     let sent;w.fetch=async(u,o)=>{fetched++;sent=JSON.parse(o.body);return {ok:true,json:async()=>({choices:[{message:{content:JSON.stringify(reply)}}]})}};
     await ev("cProgram(progOpt)");
@@ -1573,7 +1587,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     const r12=JSON.parse(ev("JSON.stringify(cleanSettings({reminders:[{id:1,t:'09:00',on:true}]}).reminders.find(r=>r.id===12))"));
     ok("hatırlatıcı 12 eski veride de var: Pazar 20:30, açık",r12&&r12.on===true&&r12.dow===0&&r12.t==="20:30");
     const b12=x=>ev(`cleanSettings({reminders:[{id:12,t:'20:30',on:true,body:${JSON.stringify(x)}}]}).reminders.find(r=>r.id===12).body`);
-    ok("haftalık bildirim: eski 'özet hazır' metni yeni metne döner, kullanıcının metni korunur",b12("Haftanın özeti hazır, bakmak için dokun.")==="Haftanı birlikte inceleyelim, bakmak için dokun."&&b12("Pazar kontrolü")==="Pazar kontrolü");
+    ok("haftalık bildirim: kullanıcının metni korunur",b12("Pazar kontrolü")==="Pazar kontrolü");
     const lnO=w.Capacitor.Plugins.LocalNotifications,sc=[],rmv=[];
     w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),getDeliveredNotifications:async()=>({notifications:[]}),removeDeliveredNotifications:async()=>{},registerActionTypes:async()=>{},cancel:async()=>{},schedule:async o=>{sc.push(...o.notifications)}};
     await ev("scheduleReminders()");
@@ -1582,7 +1596,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("S.settings.reminders.find(r=>r.id===12).on=false");sc.length=0;await ev("scheduleReminders()");
     ok("hatırlatıcı 12 kapatılınca kurulmaz",sc.length>0&&!sc.some(n=>n.id>=1200&&n.id<=1229));
     ev("for(let i=0;i<10;i++)S.entries.push({id:9000+i,day:dayKey(),time:'00:00',type:'not',v:null,text:'x'});S.settings.lastBackup=''");sc.length=0;await ev("scheduleReminders()");
-    ok("yedek hatırlatması Veri ve yedek'i açacak extra taşır; eski varsayılan metin yenisine döner",sc.some(n=>n.id>=1000&&n.id<1030&&n.extra&&n.extra.act==="open"&&n.extra.tab==="ayar-veri")&&ev("cleanSettings({reminders:[{id:10,t:'20:00',on:true,body:\"Yedeği Drive'a göndermek için Ayarlar > Yedeği Drive'a gönder.\"}]}).reminders.find(r=>r.id===10).body")==="Yedeği Drive'a göndermek için dokun.");
+    ok("yedek hatırlatması Veri ve yedek'i açacak extra taşır",sc.some(n=>n.id>=1000&&n.id<1030&&n.extra&&n.extra.act==="open"&&n.extra.tab==="ayar-veri"));
     ev("S.entries=S.entries.filter(e=>e.id<9000)");
     ev("S.settings.reminders.find(r=>r.id===12).on=true");w.Capacitor.Plugins.LocalNotifications=lnO;
     const tap=(a,x)=>ev(`notifTap(${JSON.stringify({actionId:a,notification:{extra:x}})});tab`);
@@ -1616,7 +1630,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("kota hatası: diğer sekmelerde de kalıcı uyarı",$q("#view").textContent.includes("Son değişiklik kaydedilemedi"));
     ev("tab='bugun';render()");
     $q('.todo [data-act="veriyedek"]').click();
-    ok("kota hatası: Yedek al Veri ve yedek'e gider, yedek ekranı bellekteki (kaydedilemeyen) hali içerir",ev("tab")==="ayar-veri"&&(()=>{$q("#bkpw").value="parola123";$q("#bkpw2").value="parola123";return true})()&&(await (await ev("BackupLib.decrypt"))(JSON.parse(await ev("backupText()")),"parola123")).S.entries.filter(e=>e.type==="su").length===2);
+    ok("kota hatası: Yedek al Veri ve yedek'e gider, yedek ekranı bellekteki (kaydedilemeyen) hali içerir",ev("tab")==="ayar-veri"&&(()=>{$q("#bkpw").value="mavi-bulut-77";$q("#bkpw2").value="mavi-bulut-77";return true})()&&(await (await ev("BackupLib.decrypt"))(JSON.parse(await ev("backupText()")),"mavi-bulut-77")).S.entries.filter(e=>e.type==="su").length===2);
     ev("closeSheet()");SP.setItem=set0;
     ev("save();render()");
     ok("kota açılınca kayıt yazılır, uyarı kalkar",!v().includes("kaydedilemedi")&&JSON.parse(w.localStorage.getItem("koc_v1")).entries.length===2);
@@ -1990,7 +2004,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("add('su',1000);add('yemek',1380,'Öğün');add('kilo',86,'');add('kilo',87,'',keyOff(-3));render()");
     const v=()=>ev("viewBugun()"),at=s=>v().indexOf(s);
     ok("kayıt düğmeleri en üstte, sıra Su, Yemek, Kilo, Spor",v().startsWith('<div class="actions">')&&[...$q(".actions").querySelectorAll("button")].map(b=>b.dataset.act).join()==="su,yemek,kilo,spor,not");
-    ok("halkalar birim ve kalanı yazar",(t=>t.includes("520kcal kaldı")&&t.includes("1380 / 1900 kcal")&&t.includes("1,5L kaldı")&&t.includes("1,0 / 2,5 L")&&t.includes("150dk kaldı")&&t.includes("0 / 150 dk")&&t.includes("Spor · hafta"))($q(".rings").textContent),$q(".rings").textContent);
+    ok("halkalar birim ve kalanı yazar",(t=>t.includes("520kcal kaldı")&&t.includes("1380 / 1900 kcal")&&t.includes("1,5L kaldı")&&t.includes("1,0 / 2,5 L")&&t.includes("150dk kaldı")&&t.includes("0 / 150 dk")&&t.includes("Spor · 7 gün"))($q(".rings").textContent),$q(".rings").textContent);
     ev("add('yemek',700,'Fazla');add('su',1500);add('spor',150,'Yürüyüş');render()");
     ok("hedef aşılınca 'kcal fazla', su ve spor 'tamam'",(t=>t.includes("180kcal fazla")&&(t.match(/✓tamam/g)||[]).length===2)($q(".rings").textContent),$q(".rings").textContent);
     ok("kilo kartı küçük: grafik yok, tek satır özet, Trend'e götürür",!v().includes('class="weight"')&&!!$q('#view .stepcard[data-tab="trend"]')&&!$q('#view .stepcard[data-tab="trend"] svg:not(.i)')&&$q('#view .stepcard[data-tab="trend"]').textContent.includes("86,0"));
@@ -2551,7 +2565,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     await load(big(150));
     ok("geri yükleme: yer varken yeni veri yazılır, sığmayan güvenlik kopyası atlanır",ev("S.entries.length")===150&&ls.getItem("koc_v1_onceki")===null&&!ev("saveFail"),[a,b,Q]);
     SP.setItem=set0;ev("S.entries=[];save()");await load(big(5));
-    ok("geri yükleme: sığınca güvenlik kopyası yazılır; depolama ölçüsü kopya ve bozuk kopyayı saymaz",ls.getItem("koc_v1_onceki")!==null&&(ls.setItem("koc_v1_bozuk","y".repeat(1e5)),ev("lsOther()"))<1e4);
+    ok("geri yükleme: sığınca güvenlik kopyası yazılır; depolama ölçüsü kopya ve bozuk kopyayı sayar",ls.getItem("koc_v1_onceki")!==null&&(ls.setItem("koc_v1_bozuk","y".repeat(1e5)),ev("lsOther()"))>=2e5);
     ls.removeItem("koc_v1_bozuk");w.confirm=()=>true;reset();
   }
   { // Dalga 11 (5): Koç besin kartı yeniden yüklemede kalır
@@ -2599,7 +2613,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     reset();ev("S.settings.medOn=true;S.meds=[{id:1,n:'Ilac',d:'1 tablet',t:['08:00'],w:[1],on:true,k:10}];S.mealTpl=[];S.myFoods=[{n:'Kendi besinim',k:100,p:5}]");
     const ctx=ev("CoachLib.contextText(cData())"),cat=ev("cMenuCat().text");
     ok("metinde adı geçen her veri gerçekten bağlamda: doz, haftanın günleri, uyum, stok, bugünkü yemek, kendi besin adı",ctx.includes("1 tablet")&&ctx.includes("haftanın günleri")&&ctx.includes("son 7 gün")&&ctx.includes("stok")&&cat.includes("Kendi besinim")&&["doz","haftanın günleri","son 7 günün uyumu","stok","bugünkü kayıtların","kendi besin"].every(k=>sent.includes(k)));
-    ok("politika: tüm yedeklerde parola zorunlu (en az 8); vücut ölçüleri ve tarifler tabloda",doc.includes("parola zorunludur, en az 8 karakterdir")&&doc.includes("vücut ölçüleri (bel, kalça")&&doc.includes("kendi tarifleri"));
+    ok("politika: tüm yedeklerde parola zorunlu (en az 10); vücut ölçüleri ve tarifler tabloda",doc.includes("parola zorunludur, en az 10 karakterdir")&&doc.includes("vücut ölçüleri (bel, kalça")&&doc.includes("kendi tarifleri"));
     reset();
   }
   { // Dalga 11 (12): karbonhidrat/yağ toplamında eksik öğün notu

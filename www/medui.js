@@ -108,6 +108,7 @@ function medSave(){
   const today=dayKey();
   if(c!=null){o.s=today;o.e=MedLib.addDay(o.s,c-1)}else{if(d.s||!d.id)o.s=d.s||today;if(d.e)o.e=d.e}
   const ts=MedLib.sinceFor(d.t0,times,d.ts,today,medNowHM());if(ts)o.ts=ts;
+  MedLib.revise(S.meds.find(m=>m.id===o.id),o,today);
   const before=S.meds.slice();
   if(!o.id){for(let i=1;i<=999;i++)if(!S.meds.some(m=>m.id===i)){o.id=i;break}}
   const others=S.meds.filter(m=>m.id!==o.id);

@@ -31,7 +31,7 @@ public class NeoWidget extends AppWidgetProvider {
     }
 
     static synchronized void push(Context c, String json) {
-        prefs(c).edit().putString("d", json).commit();
+        prefs(c).edit().putString("d", json).apply();
         refresh(c);
     }
 
@@ -52,7 +52,7 @@ public class NeoWidget extends AppWidgetProvider {
         } catch (JSONException e) {
             return;
         }
-        prefs(c).edit().putString("d", o.toString()).commit();
+        prefs(c).edit().putString("d", o.toString()).apply();
         refresh(c);
     }
 
@@ -64,7 +64,7 @@ public class NeoWidget extends AppWidgetProvider {
         } catch (JSONException e) {
             return;
         }
-        prefs(c).edit().putString("d", o.toString()).commit();
+        prefs(c).edit().putString("d", o.toString()).apply();
     }
 
     static void refresh(Context c) {
@@ -123,9 +123,12 @@ public class NeoWidget extends AppWidgetProvider {
         final PendingResult pr = goAsync();
         StepStore.read(app, false, new StepStore.Callback() {
             public void done(Long steps, Map<String, Long> history) {
-                if (steps != null) setSteps(app, steps);
-                refresh(app);
-                pr.finish();
+                try {
+                    if (steps != null) setSteps(app, steps);
+                    refresh(app);
+                } finally {
+                    pr.finish();
+                }
             }
         });
     }

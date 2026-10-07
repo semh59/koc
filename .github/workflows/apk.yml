@@ -12,21 +12,24 @@ env:
   # Release (Play upload) anahtarının sertifika parmak izi; gizli değişken başka bir anahtarla değiştirilirse CI durur.
   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
 
+# main'de iptal yok: yayın adımı yarıda kesilmesin. Dal ve PR'larda yeni push eskisini iptal eder.
 concurrency:
   group: apk-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
+          cache: npm
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           distribution: temurin
           java-version: 21
@@ -79,9 +82,15 @@ jobs:
       - name: Release imzası beklenen anahtar mı
         run: |
           norm() { tr -d ': ' | tr 'A-F' 'a-f'; }
-          apksigner=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)apksigner
-          $apksigner verify neowell.apk 2>/dev/null
-          apk=$($apksigner verify --print-certs neowell.apk | grep -m1 "certificate SHA-256 digest" | sed 's/.*: //' | norm)
+          bt=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)
+          apksigner=${bt}apksigner
+          min=$(${bt}aapt2 dump badging neowell.apk | grep -oE "^sdkVersion:'[0-9]+'" | grep -oE "[0-9]+")
+          # Hata çıktısı bastırılmaz: imza bozuksa nedeni günlükte görünür.
+          $apksigner verify --verbose --print-certs --min-sdk-version "$min" neowell.apk | tee verify.txt
+          grep -q "Verified using v2 scheme (APK Signature Scheme v2): true" verify.txt || { echo "APK İMZASI v2 ŞEMASINDA DOĞRULANMADI"; exit 1; }
+          grep -q "Verified using v3 scheme (APK Signature Scheme v3): true" verify.txt || { echo "APK İMZASI v3 ŞEMASINDA DOĞRULANMADI"; exit 1; }
+          grep -E "Verified using v1" verify.txt
+          apk=$(grep -m1 "certificate SHA-256 digest" verify.txt | sed 's/.*: //' | norm)
           aab=$(keytool -printcert -jarfile neowell.aab | grep -m1 "SHA256:" | sed 's/.*SHA256: //' | norm)
           dbg=$(keytool -list -keystore signing/bilinen-debug-yalniz-smoke.keystore -storepass android | grep -i "SHA-256" | sed 's/.*: //' | norm)
           echo "APK: $apk"; echo "AAB: $aab"; echo "Beklenen: $RELEASE_SHA256"; echo "Debug: $dbg"
@@ -89,65 +98,102 @@ jobs:
           [ "$apk" = "$RELEASE_SHA256" ] && [ "$aab" = "$RELEASE_SHA256" ] || { echo "RELEASE İMZA ANAHTARI UYUŞMUYOR"; exit 1; }
 
       - name: APK içeriği denetimi
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          aapt2=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)aapt2
+          bt=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)
+          aapt2=${bt}aapt2
           $aapt2 dump xmltree neowell.apk --file AndroidManifest.xml > manifest.txt
-          grep -E "allowBackup|dataExtractionRules|fullBackupContent" manifest.txt
+          grep -E "allowBackup|dataExtractionRules|fullBackupContent|usesCleartextTraffic" manifest.txt
           if grep -q "debuggable" manifest.txt; then echo "RELEASE APK DEBUGGABLE"; exit 1; fi
           grep -qE "allowBackup[^=]*=(false|0x0)" manifest.txt || { echo "OTOMATİK YEDEK AÇIK"; exit 1; }
-          grep -oE "android\.permission\.[A-Z_]+" manifest.txt | sort -u
+          if grep "usesCleartextTraffic" manifest.txt | grep -qE "=true|0xffffffff"; then echo "DÜZ METİN (HTTP) TRAFİĞİ AÇIK"; exit 1; fi
+          grep -oE "android\.permission\.[A-Z_]+" manifest.txt | sort -u | tee apk-perms.txt
           if grep -qE "USE_EXACT_ALARM|FLASHLIGHT|ACCESS_BACKGROUND_LOCATION" manifest.txt; then echo "PLAY'E UYGUN OLMAYAN İZİN VAR"; exit 1; fi
           grep -q "android.permission.FOREGROUND_SERVICE_LOCATION" manifest.txt || { echo "KONUM SERVİSİ İZNİ YOK"; exit 1; }
+          # Dışa açık bileşenler: yalnız MainActivity ve widget (sistem APPWIDGET_UPDATE gönderir) ve izinle korunan androidx profileinstaller alıcısı.
+          awk '/^ *E: (activity|activity-alias|receiver|service|provider)( |$)/ {if (n != "" && e) print n; n=""; e=0; c=1; next} /^ *E: / {c=0} c && /android:name\(/ {match($0, /="[^"]*"/); n=substr($0, RSTART+2, RLENGTH-3)} c && /android:exported\(/ && (/=true/ || /0xffffffff/) {e=1} END {if (n != "" && e) print n}' manifest.txt | sort -u > exported.txt
+          echo "Dışa açık bileşenler:"; cat exported.txt
+          bad=$(grep -vE '(^|\.)(MainActivity|NeoWidget)$|^androidx\.profileinstaller\.ProfileInstallReceiver$' exported.txt || true)
+          [ -z "$bad" ] || { echo "BEKLENMEYEN DIŞA AÇIK BİLEŞEN (yalnız MainActivity ve NeoWidget olmalı):"; echo "$bad"; exit 1; }
+          grep -qE "(^|\.)MainActivity$" exported.txt && grep -qE "(^|\.)NeoWidget$" exported.txt || { echo "MainActivity ya da NeoWidget dışa açık görünmüyor, denetim ayrıştırması bozulmuş olabilir"; exit 1; }
+          $aapt2 dump badging neowell.apk > badging.txt
+          min=$(grep -oE "^sdkVersion:'[0-9]+'" badging.txt | grep -oE "[0-9]+")
+          vc=$(grep -oE "versionCode='[0-9]+'" badging.txt | grep -oE "[0-9]+")
+          echo "minSdk=$min versionCode=$vc"
+          [ "$min" -ge 24 ] && [ "$min" -le 26 ] || { echo "minSdk beklenen aralıkta (24-26) değil: $min"; exit 1; }
+          [ "$vc" = "$GITHUB_RUN_NUMBER" ] || { echo "versionCode çalışma numarasına eşit değil ($vc, $GITHUB_RUN_NUMBER)"; exit 1; }
+          mkdir -p prev
+          if gh release download son-surum -p neowell.apk -D prev; then
+            pvc=$($aapt2 dump badging prev/neowell.apk | grep -oE "versionCode='[0-9]+'" | grep -oE "[0-9]+")
+            echo "Önceki sürümün versionCode: $pvc"
+            [ "$vc" -gt "$pvc" ] || { echo "versionCode öncekinden büyük değil ($vc <= $pvc): Play yüklemeyi reddeder"; exit 1; }
+          else
+            echo "Önceki release indirilemedi (ilk yayın olabilir): versionCode karşılaştırması atlandı"
+          fi
           ls -l neowell.apk
           unzip -lv neowell.apk | awk 'NR>3 && length($7)==8 && $7 ~ /^[0-9a-f]+$/ {split($8,p,"/"); k=(p[1]=="lib"||p[1]=="assets")?p[1]"/"p[2]:p[1]; s[k]+=$3} END {for (k in s) printf "%8.2f MB  %s\n", s[k]/1e6, k}' | sort -rn | head -12
           unzip -l neowell.apk > apk-list.txt
           if grep -qE "lib/x86/|libbarhopper" apk-list.txt; then echo "APK KÜÇÜLTMESİ UYGULANMADI"; exit 1; fi
 
+      - name: AAB içeriği denetimi
+        run: |
+          unzip -l neowell.aab > aab-list.txt
+          if grep -qE "base/lib/x86/|libbarhopper" aab-list.txt; then echo "AAB KÜÇÜLTMESİ UYGULANMADI (lib/x86 ya da libbarhopper var)"; exit 1; fi
+          grep -q "base/lib/arm64-v8a/" aab-list.txt || { echo "AAB'DE arm64-v8a KİTAPLIĞI YOK"; exit 1; }
+          # AAB manifest'i protobuf; izin adları düz metin olarak okunur. APK ile aynı küme olmalı.
+          unzip -p neowell.aab base/manifest/AndroidManifest.xml | grep -aoE "android\.permission\.[A-Z_]+" | sort -u > aab-perms.txt
+          echo "AAB izinleri:"; cat aab-perms.txt
+          if grep -qE "USE_EXACT_ALARM|FLASHLIGHT|ACCESS_BACKGROUND_LOCATION" aab-perms.txt; then echo "AAB'DE PLAY'E UYGUN OLMAYAN İZİN VAR"; exit 1; fi
+          diff apk-perms.txt aab-perms.txt || { echo "APK VE AAB İZİN LİSTELERİ FARKLI (yukarıda - APK, + AAB)"; exit 1; }
+
       - name: Hedef API 36 ve 16 KB sayfa hizası
         run: |
+          # Play, 16 KB sayfalı cihazlar için hem ZIP içi hizayı (sıkıştırılmamış .so dosyaları) hem her LOAD bölümünün 2^14 hizasını ister.
+          # Önce tüm denetimler çalışır ve özet yazılır, sonra nedenleriyle birlikte kırmızı olur.
           bt=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)
+          fail=""
           for f in neowell.apk smoke/neowell.apk; do
-            ${bt}aapt2 dump badging $f | grep -q "targetSdkVersion:'36'" || { echo "$f HEDEF API 36 DEĞİL"; exit 1; }
-            ${bt}zipalign -c -P 16 -v 4 $f > zipalign.txt || { grep -v "(OK" zipalign.txt | tail -20; echo "$f 16 KB ZIP HİZASI YOK"; exit 1; }
+            ${bt}aapt2 dump badging $f | grep -q "targetSdkVersion:'36'" || fail="$fail\n$f: hedef API 36 değil"
+            if ! ${bt}zipalign -c -P 16 -v 4 $f > zipalign.txt; then
+              grep -v "(OK" zipalign.txt | tail -20
+              fail="$fail\n$f: zipalign -P 16 başarısız (ZIP içindeki .so dosyaları 16 KB sınırında hizalı değil)"
+            fi
           done
-          # Play'in 16 KB şartı 64 bit kitaplıklar için: her LOAD bölümü en az 2^14 hizalı olmalı.
           so=$RUNNER_TEMP/so
-          unzip -qo neowell.apk 'lib/arm64-v8a/*' 'lib/x86_64/*' -d $so
-          bad=0
-          for f in $(find $so -name '*.so'); do
-            a=$(readelf -lW "$f" | awk '$1=="LOAD"{print $NF}' | sort -u)
-            echo ${f#$so/} $a
-            for x in $a; do [ $((x)) -ge 16384 ] || bad=1; done
+          mkdir -p $so/apk $so/aab
+          unzip -qo neowell.apk 'lib/arm64-v8a/*' 'lib/x86_64/*' -d $so/apk
+          unzip -qo neowell.aab 'base/lib/arm64-v8a/*' 'base/lib/x86_64/*' -d $so/aab
+          printf "%-5s %-55s %s\n" KAYNAK KİTAPLIK LOAD-HİZALARI
+          for src in apk aab; do
+            for f in $(find $so/$src -name '*.so' | sort); do
+              a=$(readelf -lW "$f" | awk '$1=="LOAD"{print $NF}' | sort -u | tr '\n' ' ')
+              printf "%-5s %-55s %s\n" $src ${f#$so/$src/} "$a"
+              for x in $a; do [ $((x)) -ge 16384 ] || { fail="$fail\n$src ${f#$so/$src/}: LOAD hizası $x < 16384"; break; }; done
+            done
           done
-          [ $bad = 0 ] || { echo "16 KB HİZALI OLMAYAN YEREL KİTAPLIK VAR"; exit 1; }
+          [ -z "$fail" ] || { echo "---- 16 KB / HEDEF API DENETİMİ BAŞARISIZ ----"; printf "$fail\n"; exit 1; }
+          echo "16 KB hizası ve hedef API 36 tamam"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: neowell-release
           path: |
             neowell.apk
             neowell.aab
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: neowell-smoke
           path: smoke/neowell.apk
-
-      - name: Releases sayfasına yükle (telefondan kolay indirme)
-        if: github.ref == 'refs/heads/main'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release delete son-surum --yes --cleanup-tag || true
-          gh release create son-surum neowell.apk neowell.aab --title "NeoWell (son sürüm)" --notes "Telefondan neowell.apk dosyasını indirip kur. neowell.aab Play Console yüklemesi içindir."
 
   # Tarayıcıda uçtan uca kullanıcı senaryoları (e2e/). Derlemeden bağımsız; yayın adımı buna bağlı değil.
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
           cache: npm
@@ -157,7 +203,7 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Uçtan uca testler
         run: npm run test:e2e
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: failure()
         with:
           name: e2e-rapor
@@ -166,17 +212,17 @@ jobs:
             test-results/
           retention-days: 14
 
+  # main'e her push'ta da koşar (emülatör ~8 dk).
   smoke:
     needs: build
-    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: neowell-smoke
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: neowell-release
           path: release
@@ -186,9 +232,35 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
       - name: Emülatörde aç ve kontrol et
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         with:
           api-level: 36
           target: google_apis
           arch: x86_64
           script: bash scripts/smoke.sh && bash scripts/smoke-release.sh
+
+  # Yalnız build, e2e ve smoke geçince. Yeni dosyalar önce yüklenir (--clobber aynı adlı eskinin yerine geçer), eski sürüm hiç silinmez:
+  # iş yarıda kesilse bile indirilebilir bir sürüm kalır.
+  release:
+    needs: [build, e2e, smoke]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: neowell-release
+          path: release
+      - name: Releases sayfasına yükle (telefondan kolay indirme)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes="Telefondan neowell.apk dosyasını indirip kur. neowell.aab Play Console yüklemesi içindir."
+          if gh release view son-surum > /dev/null 2>&1; then
+            gh release upload son-surum release/neowell.apk release/neowell.aab --clobber
+            gh release edit son-surum --title "NeoWell (son sürüm)" --notes "$notes"
+            # Etiket yeni derlemenin işlemini göstersin.
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/son-surum" -f sha="$GITHUB_SHA" -F force=true
+          else
+            gh release create son-surum release/neowell.apk release/neowell.aab --title "NeoWell (son sürüm)" --notes "$notes" --target "$GITHUB_SHA"
+          fi

@@ -77,6 +77,25 @@ public class StepMathTest {
         h.remove("g1");
         ok("örnekten sonra telefon yeniden başladı: eski gün örnekte, yeni gün sıfırlanan sayaçtan",
             StepMath.closeDay(e, "e2", 40, 10, h) && h.get("g1") == 500 && StepMath.update(e, "e2", 40, 10, h) == 40, h.get("g1"));
+        // Örnek yokken gün döndü, ilk okuma gece 03:00: son okumadan beri gelen adımlar eski güne yazılır
+        StepMath.State m1 = new StepMath.State();
+        StepMath.update(m1, "m1", 1000, 720, h);
+        StepMath.update(m1, "m1", 1600, 1080, h);
+        long m1t = StepMath.update(m1, "m2", 1900, 180, h);
+        ok("örneksiz gün dönüşü, 03:00 okuması: aradaki adımlar eski güne", h.get("m1") == 900 && m1t == 0, h.get("m1"));
+        // Aynı durumda ilk okuma 09:00: aralığın günü bilinemez, tahmin edilmez; eski gün son okumada kalır, yeni gün sayaçtan başlar
+        StepMath.State m2 = new StepMath.State();
+        StepMath.update(m2, "m3", 1000, 720, h);
+        StepMath.update(m2, "m3", 1600, 1080, h);
+        long m2t = StepMath.update(m2, "m4", 1900, 540, h);
+        ok("örneksiz gün dönüşü, 09:00 okuması: eski gün son okumada, yeni gün 0", h.get("m3") == 600 && m2t == 0, h.get("m3"));
+        // Sayaç yeniden başlama sonrası son değeri aşmış olsa da rebooted ile adımlar kaybolmaz
+        StepMath.State rb = new StepMath.State();
+        StepMath.update(rb, "r1", 500, 720, h);
+        StepMath.update(rb, "r1", 800, 720, h);
+        rb.rebooted = true;
+        ok("yeniden başlama bilindiyse sayaç son değeri aşsa da toplam 300 + 900", StepMath.update(rb, "r1", 900, 720, h) == 1200, rb.carry);
+        ok("rebooted bayrağı tüketilir", !rb.rebooted && StepMath.update(rb, "r1", 950, 720, h) == 1250, 0);
         System.exit(bad == 0 ? 0 : 1);
     }
 

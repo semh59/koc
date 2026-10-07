@@ -21,7 +21,8 @@ test.describe("Yemek ekle",()=>{
     expect(top2).toContain("Kaşarlı tost");
   });
 
-  // Ürün kararı / besin çalışması: tam ad eşleşmesi ("Kaşarlı tost") ön ekli addan ("Sucuklu kaşarlı tost") sonra geliyor.
+  // fixme çünkü: arama sıralaması (www/foods.js) tam ad eşleşmesini ("Kaşarlı tost") sözcük içeren adların ("Sucuklu kaşarlı tost") arkasına koyuyor.
+  // Ürün kararı: sıralama kuralı değişirse bu test fixme'den çıkarılır; üstteki test şimdiki davranışı (ilk iki sonuç) korur.
   test.fixme("arama 'kasarli tost': tam ad eşleşmesi ilk sırada",async({app,page})=>{
     await openYemek(app,page);
     await page.fill("#fq","kasarli tost");
