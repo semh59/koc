@@ -55,8 +55,8 @@ const drawn=[];const ctx=new Proxy({},{get:(t,k)=>k==="measureText"?()=>({width:
 W.drawPage(ctx,d,{today:"2026-10-01"});
 ok("çizim: başlık, özet satırları, tablo başlıkları ve günler, uyarı notu",drawn.includes("NeoWell · Son 7 gün raporu")&&drawn.includes("Kilo")&&drawn.includes("Spor (dk)")&&drawn.includes("Çar 30")&&drawn.some(t=>/Tıbbi yorum içermez/.test(t))&&drawn.some(t=>t.includes("1 Eki 2026")),drawn.slice(0,12));
 ok("çizim: tablo değerleri (1.800+300 kcal tek gün toplamı 2100)",drawn.includes("2100")&&drawn.includes("9.000")&&drawn.includes("81,9"));
-W.drawPage(ctx,empty,{today:"2026-10-01"});
-ok("boş hafta çizimi çökmez",true);
+const n0=drawn.length;W.drawPage(ctx,empty,{today:"2026-10-01"});const d2=drawn.slice(n0);
+ok("boş hafta çizimi çökmez, başlık ve altlık çizilir",d2.some(t=>/Son \d+ gün raporu/.test(t))&&d2.includes("NeoWell"),d2);
 ok("yorum ve tanı dili yok",!/hipertansiyon|diyabet|hipoglisemi|anormal|tehlikeli|iyi gidiyor|kötü|başarılı|yetersiz|fazla|az yedin/i.test(drawn.join(" ")+JSON.stringify(d.summary)));
 { // C13: haftalık PDF grafikleri
   const T=(day,sys,dia)=>({id:1,k:"t",day,time:"08:00",sys,dia,ses:"sabah"});

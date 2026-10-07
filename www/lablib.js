@@ -70,7 +70,7 @@ const LabLib=(()=>{
     let v;
     if(c&&d)v=s.lastIndexOf(",")>s.lastIndexOf(".")?s.replace(/\./g,"").replace(",","."):s.replace(/,/g,"");
     else if(c)v=s.replace(",",".");
-    else if(d)v=/^\d{1,3}(\.\d{3})+$/.test(s)?s.replace(/\./g,""):s;
+    else if(d)v=/^[1-9]\d{0,2}(\.\d{3})+$/.test(s)&&!/^\d+\.0(?!00$)\d\d$/.test(s)?s.replace(/\./g,""):s;
     else v=s;
     const n=Number(v);return Number.isFinite(n)?n:null;
   }
@@ -230,7 +230,7 @@ const LabLib=(()=>{
     }finally{await doc.destroy()}
   }
 
-  const dayOk=d=>typeof d==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&!isNaN(Date.parse(d));
+  const dayOk=d=>typeof d==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&new Date(d+"T00:00Z").toJSON()?.slice(0,10)===d;
   const fin=x=>typeof x==="number"&&Number.isFinite(x);
   /* Saklanan satırları doğrular; geçersizleri atar. */
   function cleanLabs(arr){

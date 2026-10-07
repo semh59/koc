@@ -7,6 +7,7 @@ Bunlar bitmeden Play'e yayın yapılamaz ya da reddedilir. Ayrıntı ve kaynakla
 - [ ] **Gizlilik politikası URL'si:** `docs/gizlilik-politikasi.md` önce aşağıdaki "Doldurulacaklar" ile tamamlanır, hukukçuya gösterilir (`docs/hukukcuya-sorular.md`), sonra herkese açık bir adreste yayınlanır; Play Console'a ve Data safety formuna bu adres yazılır.
 - [ ] **Hesap türü ve test koşulu (G3):** 13 Kasım 2023'ten sonra açılan kişisel hesapta yayın öncesi en az 12 test kullanıcısı ve kesintisiz 14 gün kapalı test gerekir; "tıbbi" sağlık beyanı kurumsal hesap isteyebilir (D-U-N-S). Testçileri erken bul.
 - [ ] **Ön plan servisi (konum) videosu:** `docs/play-izin-beyanlari.md` sonundaki adımlarla kısa ekran videosu çek, Play'in ön plan servisi beyanına bağlantı olarak ekle.
+- [ ] **Tam ekran bildirim (`USE_FULL_SCREEN_INTENT`) beyanı:** Play Console > Uygulama içeriği > Tam ekran bildirimleri; çekirdek işlev ilaç alarmı (metin ve gerekçe `docs/play-izin-beyanlari.md`). Ret gelirse: `scripts/patch-android.js` izin listesinden `USE_FULL_SCREEN_INTENT` çıkarılır ve `MedWakeReceiver.fullScreen` içindeki `setFullScreenIntent` kalkar; ilaç alarmı yine normal yüksek öncelikli, alarm sesli bildirimle çalar, yalnız ekranın kendiliğinden uyanması zayıflar (telefon üreticisine göre).
 - [ ] **Sağlık (Health apps) beyanı:** Play Console > Uygulama içeriği > Sağlık; metinler `docs/play-data-safety.md` "Sağlık uygulaması beyanı" bölümünde. Data safety formu da aynı belgeden doldurulur (Koç paylaşımı = Evet, Google SDK telemetrisi için "Cihaz veya diğer kimlikler" kararı hukukçuya).
 - [ ] **IARC derecelendirme anketi** ve **hedef kitle** (yalnız 18+, Aile programı dışı, çocuklara yönelik değil) anketleri.
 - [ ] **512 px mağaza simgesi ve öne çıkan grafik:** kaynak `assets/logo.png` (1024 px) var, 512 x 512 PNG üretilmedi (`www/logo.png` 192 px, yetmez). Öne çıkan grafik (1024 x 500) yok.
@@ -17,7 +18,7 @@ Bunlar bitmeden Play'e yayın yapılamaz ya da reddedilir. Ayrıntı ve kaynakla
 ## Doldurulacaklar (gizlilik politikası, Semih için kontrol listesi)
 `docs/gizlilik-politikasi.md` içinde 10 gerçek `[DOLDURULACAK]` alanı var (11. örnek, politikanın ilk uyarısındaki açıklama cümlesidir; doldurulmaz) ve İngilizce kısımda aynı bilgiler için `[TO BE FILLED]` yer alır. Hiçbiri uydurulmaz; bilgi sende ya da hukukçuda. Doldururken Türkçe ve İngilizce bölümü aynı bilgiyle güncelle.
 - [ ] **Yayın tarihi** (başlık altı, "Son güncelleme"): politikayı yayınladığın gün. Sen.
-- [ ] **Uygulama sürümü** (aynı satır): Play'e yüklenen sürüm (Play Console'da görünen sürüm adı; derleme numarası CI çalışma numarasıdır; uygulamada sürüm gösterilmiyor, doğrulanmadı). Sen.
+- [ ] **Uygulama sürümü** (aynı satır): Play'e yüklenen sürüm (Play Console'da görünen sürüm adı; derleme numarası CI çalışma numarasıdır; uygulamada Ayarlar > Hakkında'da `1.0.<numara>` olarak görünür, aynı numara versionCode'dur (`scripts/patch-android.js`)). Sen.
 - [ ] **Veri sorumlusu adı / unvanı** (§1): şahıs adın ya da şirket unvanı; hesap türüne (G3) ve hukukçunun 1. sorusuna bağlı. Sen ve hukukçu. İngilizce kısımda "Controller".
 - [ ] **Adres** (§1): tebligat alabileceğin adres. Sen. İngilizce kısımda aynı.
 - [ ] **İletişim e-postası** (§1): kullanıcıların yazacağı adres; Play mağaza sayfasında da görünür, ayrı bir adres önerilir. Sen.
@@ -39,15 +40,18 @@ Bunlar bitmeden Play'e yayın yapılamaz ya da reddedilir. Ayrıntı ve kaynakla
 - [~] Ana ekran widget'ı (kalan kalori, su, adım, "+250"): yapıldı, CI derlemesi ve telefonda deneme bekliyor (test maddeleri aşağıda).
 - [ ] Health Connect (Mi Band/saat kullanımı netleşince).
 - [~] Öğün şablonları, favoriler, son yenilenler, elle adım, "sayım durdu" uyarısı yapıldı (telefon test maddeleri aşağıda).
-- [~] Koç: ayrı sohbetler (Yeni sohbet, Geçmiş), kayıt kartı güvenilirliği (yemek ve egzersiz kartı), OpenAI ve Anthropic Claude sağlayıcıları, 18 yaş altında kapalı, otomatik gönderim kaldırıldı (yalnız düğmeyle). Yapıldı; telefon testleri aşağıda.
+- [~] Koç: ayrı sohbetler (Yeni sohbet, Geçmiş: sohbet arşivi, depolama kotası dolmasın diye eskiler atılır), yeme düzeni/hamilelik freni kalıcı (yeni sohbet ya da silme kaldırmaz), kayıt kartı güvenilirliği (yemek ve egzersiz kartı), OpenAI ve Anthropic Claude sağlayıcıları, 18 yaş altında kapalı, otomatik gönderim kaldırıldı (yalnız düğmeyle). Yapıldı; telefon testleri aşağıda.
 - [~] İlaç alarmı kilitli ekranı uyandırır (MedWake, 6 Ekim): doz saatlerinde ayrı alarm ekranı birkaç saniye yakar. Yapıldı; telefon testi aşağıda.
 - [~] Yedek parolası zorunlu (tüm yedek yolları), otomatik yedek klasörü, 18 yaş kapısı (kurulum 18 altını kabul etmez). Yapıldı; telefon testleri aşağıda.
-- Diğer fikirler: `docs/fikirler.md`.
+- [~] İlaç geçmişi: her ilaç için son 24 program sürümü saklanır (`www/medlib.js` MAXH). Yapıldı, telefonda denenmedi.
+- [~] Yatay mod: yön kilidi yok, yatay iki sütun düzeni ve Koç alanı yapıldı; telefon testi aşağıda.
+- [~] Eski göç kodları silindi (DEAD_MODEL, LEGACY_P, obDone eski kolu, parolasız yedek geri yükleme). DEAD_MODEL ve LEGACY_P kodda yok (grep).
+- Diğer fikirler: `docs/fikirler.md`. Adet döngüsü ve Health Connect karar bekliyor.
 
 ## Telefonda tek tek test edilecekler
 - [ ] **Yatay mod (yön kilidi yok, uygulama döner).** Telefonu yan çevir: Bugün, Salon ve canlı antrenman (set girişi, zamanlayıcı), Koç yazma alanı, bir alt sayfa (Yemek ekle) açıkken. Alt sekme ve başlık ince olmalı, sheet'in son düğmesine kaydırarak ulaşılmalı, çentik tarafında içerik kesilmemeli. Klavye açıkken yatayda yazma alanı klavyenin üstünde kalmalı; geri dik çevirince alt sekme geri gelmeli. Tablette (dik ve yatay) içerik ortada 520 px genişlikte durur, kenarlar boş kalır; bu beklenen davranıştır.
 - [~] **Yatay rehberli mod (Salon > Rehberli başlat).** Yatayda katman 520 px sütunda kalıp alt düğmeleri ekran dışına taşıyordu; düzeltildi (tam genişlik, solda hareket, sağda sayaç ve Geri/Duraklat/Geç, headless Chrome'da 800x360 ve 640x360 ölçüldü). Telefonu yan çevirip "5 dk ısınma" aç: hazırlan, çalış, dinlen, duraklat ve bitti ekranında sayaç ve üç düğme kesilmeden görünmeli, arkada sayfa ya da alt sekme görünmemeli, kamera çentiği olan kenarda içerik kesilmemeli; Bitti ekranında Kaydet/Kapat altta sabit kalmalı. Dik görünüm eskisi gibi olmalı.
-- [ ] **API 36 / Capacitor 8 (B10, api36 dalı): telefonda bakılacaklar.** Önce şifreli yedek al; güncelleme aynı imzayla yerinde kurulmalı. Mümkünse Android 15 ya da 16 telefonda ve bir de eski (Android 8-12) telefonda bak:
+- [ ] **API 36 / Capacitor 8 (B10, main'de: Capacitor 8.5, targetSdk 36): telefonda bakılacaklar.** Önce şifreli yedek al; güncelleme aynı imzayla yerinde kurulmalı. Mümkünse Android 15 ya da 16 telefonda ve bir de eski (Android 8-12) telefonda bak:
   1. **Kenar boşlukları.** Uygulama artık durum çubuğu ve alt gezinme çubuğunun altına çizilir. Üst başlık saat/pil simgelerinin altında kalmamalı. Alt menü, Koç yazma alanı, alt sayfa (sheet), bildirim balonu (toast) ve rehberli mod hareket çubuğunun ya da üç tuşlu gezinmenin üstünde durmalı. Açılışta içerik bir kez aşağı-yukarı zıplamamalı. Klavye açılınca Koç yazma alanı klavyenin üstüne çıkmalı, kapanınca yerine dönmeli. Yatay çevirmede çentik tarafında içerik kesilmemeli.
   2. **Durum çubuğu simgeleri.** Ayarlar > Tema Açık, Koyu ve Sistem'de, telefon açık ve koyu temadayken saat ve pil simgeleri okunur olmalı (koyu zeminde açık, açık zeminde koyu).
   3. **Geri tuşu.** Android 16'da geri hareketi önizlemesi açık. Alt sayfadan, rehberli moddan ve alt ekrandan (Adım raporu, Tahlil vb.) geri hareketi bir üst seviyeye dönmeli; ana sekmede uygulamadan çıkmalı. Kenardan kaydırırken ana ekran önizlemesi yalnız ana sekmede görünmeli.

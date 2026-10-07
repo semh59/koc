@@ -440,7 +440,7 @@ const ZEROOK=["goalKg","kcal","heightCm","age",...Object.keys(VR)];
 const {copyNutr,NUTR}=LogLib;
 const NLBL={p:"protein",c:"karbonhidrat",f:"yağ",fb:"lif",sg:"şeker",na:"sodyum"},NUNIT=k=>k==="na"?"mg":"g";
 const TYPES=["su","kilo","yemek","spor","not","adim"];
-const dayOk=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s);
+const dayOk=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&new Date(s+"T00:00Z").toJSON()?.slice(0,10)===s;
 const timeOk=s=>typeof s==="string"&&/^([01]\d|2[0-3]):[0-5]\d$/.test(s);
 /* Koç onay metni değiştiğinde artırılır: eski sürümle verilmiş onay geçersiz sayılır ve yeniden sorulur. */
 const CONSENT_V=2;
@@ -927,6 +927,9 @@ function render(){
   if(UP(tab)&&!history.state)history.pushState({sub:1},"");else if(!UP(tab)&&history.state)history.replaceState(null,"");
   widgetPush();
 }
+/* Sayfada odaktaki ya da doldurulmuş (varsayılandan farklı) bir form alanı varken kendiliğinden yenileme onu silmesin. */
+const viewBusy=()=>!!document.activeElement?.matches("#view input,#view textarea")||[...document.querySelectorAll("#view input:not([type=checkbox]):not([type=radio]),#view textarea")].some(e=>e.value!==e.defaultValue);
+const renderSoft=()=>{if(viewBusy())widgetPush();else render()};
 function goBack(){tab=UP(tab);via=null;render();window.scrollTo(0,0)}
 /* Uygulama sürümü (CI her derlemede 1.0.<numara> yapar); yalnız telefonda bilinir. */
 let appVer="";
@@ -1164,7 +1167,8 @@ async function goYukle(){
   if(!r||!Array.isArray(r.entries))return toast("Bu bir NeoWell yedeği değil");
   const b=buildState(r),drop=b.drop,out=b.S.entries;
   if(!out.length&&r.entries.length)return toast("Yedekte geçerli kayıt yok");
-  if(!confirm(`${out.length} kayıt yüklenecek${drop?`, ${drop} geçersiz kayıt atlanacak`:""}. Mevcut veriler değişecek. Devam edilsin mi?`))return;
+  const pj=JSON.stringify(S),canCopy=otherBytes+JSON.stringify(b.S).length*2+pj.length*2<=STORE_WARN;
+  if(!confirm(`${out.length} kayıt yüklenecek${drop?`, ${drop} geçersiz kayıt atlanacak`:""}. Mevcut veriler değişecek.${canCopy?"":" Depolama dolu olduğundan eski verin için güvenlik kopyası ALINAMAYACAK; geri dönüş olmaz, önce yedek al."} Devam edilsin mi?`))return;
   const prevS=S;
   S=b.S;
   /* Yedek, anahtarın gideceği adresi, onay ayarını ve veri paylaşım iznini değiştirememeli. Otomatik yedek klasörü bu telefona ait. */
@@ -1175,10 +1179,10 @@ async function goYukle(){
     if(!def&&keys[p.id]&&cur)p.base=cur.base;
     if(def)p.confirm=def.confirm;
   }
-  if(keysIn&&typeof keysIn==="object")for(const id in keysIn)if(typeof keysIn[id]==="string"&&S.providers.some(p=>p.id===id))setKey(id,keysIn[id]);
   if(!save()){S=prevS;saveFail=false;return toast("Yedek yüklenemedi, depolama dolu")}
+  if(keysIn&&typeof keysIn==="object")for(const id in keysIn)if(typeof keysIn[id]==="string"&&S.providers.some(p=>p.id===id))try{await setKey(id,keysIn[id])}catch(e){toast("Bir anahtar kasaya yazılamadı")}
   /* Güvenlik kopyası eski veriyi saklar, depoyu ikiye katlar: yalnız uyarı sınırının altında kalırsa alınır. */
-  const pj=JSON.stringify(prevS);let copy=false;
+  let copy=false;
   if(storeBytes+pj.length*2<=STORE_WARN)try{localStorage.setItem("koc_v1_onceki",pj);copy=true}catch(e){}
   if(!copy)lsDel("koc_v1_onceki");
   S.settings.copyAt=copy?dayKey():"";save(true);
@@ -1272,7 +1276,7 @@ async function stepsSync(){
     if(stepSnapAt!==(+r.snapAt||0)){stepSnapAt=+r.snapAt||0;ch=true}
     for(const d in (r.history||{}))if(dayOk(d)&&setSteps(d,r.history[d]))ch=true;
     if(typeof r.steps==="number"){if(stepToday!==r.steps){stepToday=r.steps;ch=true}if(setSteps(dayKey(),r.steps))ch=true}
-    if(ch){save();if((tab==="bugun"||tab==="adim")&&!$("#sheet").classList.contains("on")&&!document.activeElement?.matches("#view input,#view textarea"))render();else widgetPush()}
+    if(ch){save();if((tab==="bugun"||tab==="adim")&&!$("#sheet").classList.contains("on")&&!viewBusy())render();else widgetPush()}
   }catch(e){}
 }
 /* Açıkken canlı adım: görünürken kısa aralıkla okunur; önceki okuma (sensör yanıtsızsa 4 sn sürer) bitmeden yenisi başlamaz. */
@@ -1502,7 +1506,7 @@ document.addEventListener("keydown",ev=>{
   if(ev.key==="Enter"&&ev.target.closest("#sheet")&&ev.target.tagName==="INPUT"&&ev.target.id!=="fq"){const b=$("#sheet [data-go]");if(b)b.click()}
 });
 document.addEventListener("click",ev=>{const b=ev.target.closest("[data-sr]");if(b){stepRange=+b.dataset.sr;render()}});
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="ayar-modul")render()});stepsSync();render();cPlateauCheck();abRun();if(Date.now()-lastSched>6*36e5||!exactOk)scheduleReminders().then(setNotif)}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="ayar-modul")render()});stepsSync();renderSoft();cPlateauCheck();abRun();if(Date.now()-lastSched>6*36e5||!exactOk)scheduleReminders().then(setNotif)}});
 
 document.querySelectorAll("[data-ic]").forEach(e=>e.innerHTML=Icons.svg(e.dataset.ic));
 render();
@@ -1517,7 +1521,7 @@ if(S.settings.stepsOn&&SC()){SC().start().catch(()=>{});stepsSync();motionBoot()
 setInterval(stepsTick,STEP_POLL);
 if(DH())DH().info().then(r=>{oem=String(r.manufacturer||"");render()},()=>{});
 try{const P=window.Capacitor&&window.Capacitor.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp","BarcodeScanner","StepCounter","Ocr","Motion","Speech","Widget","BackupFolder","MedWake"].map(n=>n+"="+typeof P[n]).join(" "))}catch(e){}
-setInterval(()=>{if(dayKey()!==lastDay){lastDay=dayKey();logOff=0;render()}},60000);
+setInterval(()=>{if(dayKey()!==lastDay&&!viewBusy()){lastDay=dayKey();logOff=0;render()}},60000);
 try{const ln=LN();if(ln&&ln.addListener)ln.addListener("localNotificationActionPerformed",notifTap)}catch(e){}
 function widgetOpen(){tab="bugun";logOff=0;closeSheet();render();window.scrollTo(0,0)}
 try{const wg=WG();if(wg&&wg.addListener)wg.addListener("open",widgetOpen)}catch(e){}

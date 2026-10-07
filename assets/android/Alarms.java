@@ -17,4 +17,10 @@ final class Alarms {
             am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
         }
     }
+
+    /** Tam saat gerekmeyen alarm (hareket kontrol noktası): Play tam alarmı yalnız ilaç hatırlatması gibi çekirdek işlev için kabul eder. */
+    static void setInexact(Context c, long at, PendingIntent pi) {
+        AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
+        if (am != null) am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+    }
 }

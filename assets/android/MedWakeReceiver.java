@@ -21,8 +21,12 @@ public class MedWakeReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context c, Intent i) {
         String a = i.getAction();
-        if (WAKE.equals(a)) wake(c);
-        else if (Intent.ACTION_BOOT_COMPLETED.equals(a) || Intent.ACTION_MY_PACKAGE_REPLACED.equals(a) || AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED.equals(a)) arm(c, load(c));
+        if (WAKE.equals(a)) {
+            wake(c);
+            // 40'ı aşan dozlar sıra bekler: biri çalınca pencere kayar, sıradaki doz kurulur.
+            arm(c, load(c));
+        } else if (Intent.ACTION_BOOT_COMPLETED.equals(a) || Intent.ACTION_MY_PACKAGE_REPLACED.equals(a) || Intent.ACTION_TIME_CHANGED.equals(a) || Intent.ACTION_TIMEZONE_CHANGED.equals(a)
+            || AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED.equals(a)) arm(c, load(c));
     }
 
     @SuppressWarnings("deprecation")
@@ -54,7 +58,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
             ch.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
             nm.createNotificationChannel(ch);
         }
-        Intent open = new Intent(c, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP).putExtra("nw_medwake", true);
+        Intent open = new Intent(c, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP).putExtra("nw_medwake", true).putExtra("nw_tk", QuickLogPlugin.secret(c));
         PendingIntent pi = PendingIntent.getActivity(c, NID, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(c, CH) : new Notification.Builder(c).setPriority(Notification.PRIORITY_MAX);
         b.setSmallIcon(c.getApplicationInfo().icon).setContentTitle("İlaç zamanı").setContentText("İlaçlarını görmek için dokun")
@@ -85,7 +89,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
         return t;
     }
 
-    /** Önceki alarmları siler, gelecekteki en yakın MAX dozu kurar ve yeniden başlatma için saklar. */
+    /** Önceki alarmları siler, gelecekteki en yakın MAX dozu kurar; gelecekteki tüm dozları (kurulmayanlar dahil) açılışta ve çalan alarmda yeniden kurmak için saklar. */
     static void arm(Context c, long[] times) {
         AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
@@ -99,12 +103,13 @@ public class MedWakeReceiver extends BroadcastReceiver {
         StringBuilder keep = new StringBuilder();
         int n = 0;
         for (long at : t) {
-            if (at <= now + 2000 || n >= MAX) continue;
-            PendingIntent p = pi(c, n, PendingIntent.FLAG_UPDATE_CURRENT);
-            Alarms.set(c, at, p);
+            if (at <= now + 2000) continue;
+            if (n < MAX) {
+                Alarms.set(c, at, pi(c, n, PendingIntent.FLAG_UPDATE_CURRENT));
+                n++;
+            }
             if (keep.length() > 0) keep.append(',');
             keep.append(at);
-            n++;
         }
         SharedPreferences.Editor ed = c.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit();
         ed.putString(KEY, keep.toString()).apply();

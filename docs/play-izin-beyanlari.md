@@ -36,7 +36,7 @@ Video (kısa): Adım ekranı > Yürüyüş başlat > "Yürüyüşte konum" açı
 ## Açık risk
 - Konum türü ön plan servisinin hazır kullanım durumları (konum paylaşımı, navigasyon) birebir uymayabilir; "kullanıcının başlattığı yürüyüş takibi" olarak elle yazılmalı. Servis artık yalnız kullanıcı eylemiyle ve uygulama görünürken başlıyor, arka plandan başlatılmıyor. Ret gelirse seçenek: GPS penceresini tümden kaldırmak (yalnız boy tahmini; konum izinleri ve `FOREGROUND_SERVICE_LOCATION` da kalkar).
 - `SCHEDULE_EXACT_ALARM` izni Android 14'te yedekten geri yüklenen kurulumda da kapalı gelir. Uyarı satırı bu durumu da kapsıyor.
-- `WAKE_LOCK` ile ekran açmak (`SCREEN_BRIGHT_WAKE_LOCK`, `ACQUIRE_CAUSES_WAKEUP`) Android'de kullanımdan kalkmış (deprecated) bir kalıptır; çalışır, ama Play ya da yeni Android sürümleri kısıtlarsa alternatif tam ekran bildirim niyetidir (`USE_FULL_SCREEN_INTENT` ek izin ve beyan gerektirir, doğrulanmadı).
+- İlaç dozunda ekranı uyandırma iki parçadır: kısa `WAKE_LOCK` (`SCREEN_BRIGHT_WAKE_LOCK`, `ACQUIRE_CAUSES_WAKEUP`, deprecated ama çalışır) ve kilitli ya da ekran kapalıyken tam ekran bildirim (`USE_FULL_SCREEN_INTENT`). Bu izin Play'de ayrı beyan ister (Uygulama içeriği > Tam ekran bildirimleri; çekirdek işlev: ilaç alarmı) ve Android 14+'ta alarm/arama dışı uygulamalara varsayılan kapalıdır; kullanıcı Ayarlar'dan verir, uygulama durumu gösterir. Beyan reddedilirse: izin ve `setFullScreenIntent` çağrısı kaldırılır, ilaç alarmı yine yüksek öncelikli alarm sesli bildirimle çalar, yalnız kilitli ekranın kendiliğinden yanması zayıflar. Doğrulanmadı, ilk gönderimde görülecek.
 
 ## Kaynaklar
 - Exact alarm politikası: https://support.google.com/googleplay/android-developer/answer/13161072

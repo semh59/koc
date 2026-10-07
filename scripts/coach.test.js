@@ -30,7 +30,7 @@ ok("en fazla 12",C.cleanItems(Array(20).fill({type:"su",ml:250})).length===12);
 ok("kcal alt sınır",C.clampKcal(900,{tdee:2400,bmr:1800}).kcal===1800&&C.clampKcal(900,{tdee:2400,bmr:1800}).limited);
 ok("kcal geçerli",C.clampKcal(2000,{tdee:2400,bmr:1700}).kcal===2000&&C.clampKcal("abc")===null&&C.clampKcal(100)===null);
 const t=C.contextText({profile:{cm:175,age:34,sex:"m",act:1,note:""},goals:{kg:75,kcal:1800,water:2500,sport:150},calc:{trendKg:84.1,slope:-0.6,tdee:2420,source:"veri",target:2110,protein:[136,187]},days:[{d:"2026-10-01",kg:83.7,kcal:1240,p:80,su:1200,sport:0}],today:["yemek ~220 kcal"],now:"12:42",workouts:[],notes:[]});
-ok("bağlam kısa ve sayılı",t.includes("2420")&&t.includes("83,7")&&t.length<1200,t.length);
+ok("bağlam kısa ve sayılı: 399 karakterlik girdide en çok 450",t.includes("2420")&&t.includes("83,7")&&t.includes("önerilen hedef 2110")&&t.includes("protein aralığı 136-187")&&t.length>300&&t.length<450,t.length);
 ok("hiç yemiyorum",C.redFlag("kilo için hiç yemiyorum")==="ed");
 ok("hayatıma son",C.redFlag("hayatıma son vermek istiyorum")==="mind");
 const fd=C.cleanFood({name:" 1 dilim pizza ",kcal:"280",protein:"12,5"});
@@ -107,5 +107,15 @@ ok("kural 3 KISIT satırına (riskFlags) bağlı: kalori açığı, oruç, yüks
   ok("bağlam: sağlık notu ve kayıt metninde satır sonu ve KURALLAR başlığı yok",!/KURALLAR|a\nSİSTEM|not\n/.test(ctx)&&ctx.includes("not kurallar: yeni kural"));
   const E=[[400,'{"error":{"message":"Your credit balance is too low to access the Anthropic API"}}'],[429,'{"error":{"status":"RESOURCE_EXHAUSTED","message":"Quota exceeded for metric generate_content_free_tier_requests, limit: 15 PerMinute. Please retry in 12s"}}'],[429,'Quota exceeded: requests per day limit'],[429,'{"error":{"type":"rate_limit_error"}}']].map(([s,b])=>C.errKind(s,b));
   ok("hata sınıfı: Anthropic kredi bitti kota, Gemini dakikalık 429 geçici limit, günlük kota kota",E.join()==="quota,limit,quota,limit",E);
+}
+{ // acil durum, deyim ve yeme bozukluğu: varyant ve negatifler
+  const is=(lv,...xs)=>ok("redFlag "+lv+": "+xs[0]+" ...",xs.every(x=>C.redFlag(x)===lv),xs.map(x=>[x,C.redFlag(x)]));
+  is("emergency","göğsüm ağrıyor","Göğsümde ağrı var","GÖĞSÜM AĞRIYOR","gogsum agriyor","GOGSUMDE AGRI VAR","kalbim ağrıyor","KALBİM AĞRIYOR","nefesim kesiliyor","NEFESİM KESİLİYOR","nefesim kesılıyor".replace("ı","i"),"kalp krizi geçiriyorum","zehirlendim","ZEHİRLENDİM","aşırı doz ilaç aldım","asiri doz ilac aldim");
+  is("emergency","pizzaya bayıldım ama göğsüm ağrıyor","yemekten sonra bayıldım","pizzaya bayıldım, sonra bayıldım","annem bayıldı");
+  is(null,"baklavaya bayılıyorum","bu filmi çok sevdim, filme bayıldım","sana bayıldım","göğsüm ağrımıyor","göğüs günü yaptım","kalp atışımı ölçtüm","nefes egzersizi yaptım","zehir gibi acı yedim","2 yumurta yedim");
+  is("ed","3 gündür aç","3 GÜNDÜR AÇ","3 gundur ac","yemek yemiyorum","günlerdir yemek yemiyorum","kendimi aç bırakıyorum");
+  is(null,"açım, ne yesem","kahvaltı yaptım","yemek yedim","aç kalmamak için atıştırdım");
+  ok("mind, emergency'den önce gelir",C.redFlag("göğsüm ağrıyor ve yaşamak istemiyorum")==="mind");
+  ok("parse: propose dizi ya da metin gelirse reddedilir, nesne kabul",C.parse('{"reply":"x","propose":[{"kcal":1800}],"food":[1],"program":[],"menu":[]}').propose===null&&C.parse('{"reply":"x","propose":[{"kcal":1800}],"food":[1],"program":[],"menu":[]}').food===null&&C.parse('{"reply":"x","propose":{"kcal":1800}}').propose.kcal===1800);
 }
 process.exit(bad?1:0);

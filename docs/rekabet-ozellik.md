@@ -18,7 +18,7 @@ Aşağıdaki her özellik, aksi yazmadıkça **K** durumundadır.
 
 | Alan | NeoWell'de olan | Sınır / not |
 |---|---|---|
-| Yemek, kalori, makro | Yerleşik besin listesinde yaklaşık 106 besin var (`www/foods.js`). 45 kadarı USDA ile karşılaştırılıp "Kaynak: USDA" etiketi aldı, Türk yemeklerinin değerleri "tahmini" diye işaretli. Porsiyon seçimi, "Kendi besinlerim", favoriler, son yenilenler, öğün şablonları ve "Dünkünü tekrarla" var. | Veritabanı çok küçük: TürKomp ~645 besin içeriyor, MFP 14 milyondan fazla kayıt iddia ediyor. Malzemeden tarif hesaplayıcı yok. |
+| Yemek, kalori, makro | Yerleşik besin listesinde yaklaşık 818 besin var (`www/foods.js`; `scripts/foods.test.js` ilk 818 kaydı kilitler). USDA SR Legacy satırları "Kaynak: USDA" etiketli, tarif hesaplı Türk yemekleri aralıkla ve "tahmini" diye işaretli. Porsiyon seçimi, "Kendi besinlerim", favoriler, son yenilenler, öğün şablonları ve "Dünkünü tekrarla" var. | Veritabanı hâlâ küçük: MFP 14 milyondan fazla kayıt iddia ediyor, markalı ürün kapsamı yok. "Kendi tarifim" malzemeden tarif hesaplıyor; Koç'tan haftalık menü ve alışveriş listesi var. |
 | Mikro besin | Lif, şeker ve sodyum. | Kısmi. Cronometer ücretsiz katmanda 84 besin öğesi izliyor. |
 | Barkod | ML Kit ile okuma ve Open Food Facts araması (Türkiye etiketli 11.464 ürün). Okunan değerler tutarlılık denetiminden geçiyor. **T** | İnternet gerektirir. Bulunamayan ürünlerde etiket okuma ya da elle giriş yedek yol. |
 | Etiket OCR | ML Kit ile cihaz içinde besin tablosu okuma. Tuz değerinden sodyum hesaplanıyor. | Doğruluğu gerçek paketlerle henüz ölçülmedi. |
@@ -30,12 +30,12 @@ Aşağıdaki her özellik, aksi yazmadıkça **K** durumundadır.
 | İlaç | Program (saat, gün, kür süresi), alarm kanalı, kalıcı bildirim, bildirimden "Aldım" ve "Atla", 10 ve 20 dakika sonra tekrar, uyum yüzdesi, stok uyarısı, haftalık rapora ilaç uyumu. | Etkileşim denetimi yok (doğru bir karar, aşağıda). |
 | Tansiyon ve şeker | İki ölçümlü seans, şeker için bağlam (açlık/tokluk vb.), hedef aralığı, grafik, hatırlatma, doktor raporu PDF'i. Uç değer bugün tarihliyse 112 kutusu gösteriliyor. | Yalnızca kayıt, tanı koymuyor. |
 | Tahlil | PDF'ten okuma (pdf.js) ve fotoğraftan okuma (OCR), onay ekranı, test başına grafik, PDF dışa aktarma. | Gerçek laboratuvar PDF'leriyle sağlamlaştırılmadı. Taranmış PDF desteği sınırlı. |
-| Oruç, uyku, ruh hali | Oruç planı, bitiş bildirimi ve hekim notu. Uyku süresi kaydı, ruh hali (emoji ve not). | Uyku elle giriliyor, sensör yok. Adet döngüsü takibi yok. |
+| Oruç, uyku, ruh hali | Oruç planı, bitiş bildirimi ve hekim notu. Uyku süresi kaydı, ruh hali (emoji ve not). | Uyku elle giriliyor, sensör yok. Adet döngüsü takibi yok (karar bekliyor). |
 | Su ve widget | Su hedefi, hatırlatmalar (hedef dolunca susuyor), bildirimden ve widget'tan "+250 ml". Ana ekran widget'ında kalan kalori, su ve adım görünüyor. | |
-| Yedek | Parolalı şifreli yedek dosyası, paylaşım menüsüyle Drive'a gönderme (hesap bağlamadan), dosyadan geri yükleme, Pazar hatırlatması. | Otomatik bulut eşitleme yok, cihazlar arası senkron yok. |
+| Yedek | Parolalı şifreli yedek dosyası (parola zorunlu), paylaşım menüsüyle Drive'a gönderme (hesap bağlamadan), dosyadan geri yükleme, Pazar hatırlatması; otomatik yedek: seçilen klasöre, son yedek 7 günden eskiyse (`www/backupui.js`). | Bulut eşitleme ve cihazlar arası senkron yok. |
 | Raporlar | Haftalık rapor PDF'i (yorumsuz), Pazar akşamı haftalık özet bildirimi, tahlil PDF'i, tansiyon/şeker doktor raporu. | |
-| Gizlilik ve model | Hesap yok, reklam yok, abonelik yok. Veriler telefonda kalıyor. | İnternet izni var: barkod ve Koç için gerekiyor. Uygulama yalnızca Android'de ve yalnızca Türkçe. Dağıtım GitHub Releases'ten APK ile yapılıyor, Play Store'da yok. |
-| Olmayanlar | Health Connect, giyilebilir cihaz, tarif ve menü planı, alışveriş listesi, fotoğraftan yemek tanıma (iptal edildi), sosyal özellikler, diyetisyen, bel ve vücut ölçüleri, adet döngüsü, iOS, web. | |
+| Gizlilik ve model | Hesap yok, reklam yok, abonelik yok. Veriler telefonda kalıyor. | İnternet izni var: barkod ve Koç için gerekiyor. Uygulama yalnızca Android'de ve yalnızca Türkçe. Dağıtım GitHub Releases'ten APK ile yapılıyor, Play Store'da yok (yayın engelleri `docs/yapilacaklar.md` başında). Sürüm Ayarlar > Hakkında'da görünür (1.0.<derleme numarası>). |
+| Olmayanlar | Health Connect (karar bekliyor), giyilebilir cihaz, fotoğraftan yemek tanıma (iptal edildi), sosyal özellikler, diyetisyen, adet döngüsü (karar bekliyor), iOS, web. Eskiden eksikti, artık kodda var: tarif, Koç'tan haftalık menü, alışveriş listesi, bel ve vücut ölçüleri. | |
 
 ## 2. Rakip özetleri
 
@@ -72,14 +72,14 @@ Rakip sütunlarında hücre değerlerinin çoğu İK kaynaklardan geliyor.
 |---|---|---|---|---|---|---|---|---|---|
 | Ücretsiz ve reklamsız çekirdek | ✔ | ✘ | ✔ | ✘ (ücretli) | ✘ | ✘ (reklam) | ✘ | ✔ | ✔ |
 | Hesapsız, veri cihazda | ✔ | ✘ | ✘ | ✘ | ✘ | ✘ | ✘ | ✘ | ✘ (Samsung hesabı?) |
-| Türk yemeği veritabanı derinliği | ✘ (~106 besin) | ~ (çok ama tutarsız) | ✘ | ✘ | ~ | ~ | ✔ | — | ? |
+| Türk yemeği veritabanı derinliği | ~ (~818 besin, tarifli) | ~ (çok ama tutarsız) | ✘ | ✘ | ~ | ~ | ✔ | — | ? |
 | Barkod | ✔ T | ✔ (ücretli) | ✔ | ✔ | ✔ | ✔ | ✔ | — | ? |
 | Etiket OCR | ✔ K | ? | ~ | ✔ | ? | ? | ? | — | ? |
 | Fotoğraftan yemek tanıma | ✘ (iptal) | ✔ (ücretli) | ~ (Gold) | ? | ✔ | ✔ | ✔ | — | ? |
 | Mikro besin | ~ (lif, şeker, sodyum) | ~ | ✔ (84) | ✔ | ~ (PRO) | ~ | ~ (Premium) | — | ~ |
 | Uyarlanabilir harcama | ✔ K | ✘ | ✘ | ✔ | ✘ | ✘ | ✘ | — | ✘ |
 | Yapay zekâ koç / asistan | ✔ K (kendi anahtarı) | ✔ (Premium+) | ~ | ✘ | ✔ | ✔ (Premium) | ~ (insan diyetisyen) | ✔ (Pro) | ? |
-| Tarif ve menü planı | ✘ | ✔ | ~ | ✘ | ✔ | ✔ | ✔ | — | ✘ |
+| Tarif ve menü planı | ~ K (Kendi tarifim, Koç menüsü, alışveriş listesi) | ✔ | ~ | ✘ | ✔ | ✔ | ✔ | — | ✘ |
 | Adım (telefon sensörü) | ✔ K | ~ (entegrasyonla) | ~ | ~ | ~ | ~ | ✔ | ✘ | ✔ |
 | Saat ve bant entegrasyonu | ✘ | ✔ | ✔ | ✔ | ✔ | ✔ | ? | ✔ | ✔ |
 | Otomatik yürüyüş/koşu algılama | ✔ K | ✘ | ✘ | ✘ | ✘ | ✘ | ? | ✘ | ✔ |
@@ -92,7 +92,7 @@ Rakip sütunlarında hücre değerlerinin çoğu İK kaynaklardan geliyor.
 | Uyku ve ruh hali | ~ K (elle) | ✘ | ~ | ✘ | ✘ | ✘ | ✘ | ✘ | ✔ (uyku, sensörle) |
 | Widget ve bildirimden kayıt | ✔ K | ✔ | ? | ✔ | ? | ? | ? | ✔ | ✔ |
 | Sosyal / topluluk | ✘ | ✔ | ~ | ✘ | ✘ | ✔ | ~ | ✔ | ~ |
-| Cihazlar arası eşitleme | ✘ (elle yedek) | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ |
+| Cihazlar arası eşitleme | ✘ (şifreli yedek, otomatik klasöre) | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ |
 | iOS ve Play Store'da olmak | ✘ (yalnızca APK) | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ~ (Samsung odaklı) |
 
 ## 4. b) NeoWell'in gerçekten iyi olduğu yerler
@@ -117,12 +117,12 @@ Rakip sütunlarında hücre değerlerinin çoğu İK kaynaklardan geliyor.
 ## 5. c) NeoWell'in geride olduğu yerler (önem sırasıyla)
 
 1. **Dağıtım ve platform.** Play Store'da yok, yalnızca APK. iOS yok, yalnızca Türkçe. Kullanıcı uygulamayı bulamıyor ve güvenmiyor; bu her eksikten büyük. Play'e çıkmak sağlık uygulaması beyanı ve gizlilik politikası gerektiriyor (Play Console Help).
-2. **Türk yemeği veritabanı derinliği.** Yaklaşık 106 besin var. Diyetkolik'te markalı ürünler ve binlerce kayıt var, MFP'de kalabalık ama tutarsız veri var. Kullanıcının günde birkaç kez "bulamadım" demesi uygulamayı bıraktırır. Türk yemeklerinin değerleri tahmini ve tarife göre ±%20-40 değişiyor (`docs/besin-arastirmasi.md`).
+2. **Türk yemeği veritabanı derinliği.** Yaklaşık 818 besin var; açık artık sayıdan çok markalı ürün ve kapsam. Diyetkolik'te markalı ürünler ve binlerce kayıt var, MFP'de kalabalık ama tutarsız veri var. Kullanıcının günde birkaç kez "bulamadım" demesi uygulamayı bıraktırır. Türk yemeklerinin değerleri tahmini ve tarife göre ±%20-40 değişiyor (`docs/besin-arastirmasi.md`).
 3. **Veri tutarlılığı ve doğrulama.** Neredeyse tüm özellikler telefonda denenmedi (K durumunda). Adım, ilaç alarmı, widget ve Xiaomi pil davranışında bir hata, güveni hemen bitirir.
 4. **Giyilebilir cihaz ve Health Connect yok.** Saat ya da bant kullananların adım, uyku ve nabız verisi gelmiyor. Google Fit kapanınca Health Connect bu verinin tek kapısı olacak.
-5. **Tarif ve menü planı yok.** Malzemeden tarif hesaplama da yok. Yazio, Diyetkolik ve FatSecret bunun için para alıyor.
+5. **Tarif ve menü planı sınırlı.** Tarif hesaplama, Koç'tan haftalık menü ve alışveriş listesi var (telefonda denenmedi); hazır tarif kütüphanesi yok. Yazio, Diyetkolik ve FatSecret bunun için para alıyor.
 6. **Fotoğraftan kayıt yok.** Rakiplerde hızla standart hale geliyor (Yazio, Diyetkolik, Lose It).
-7. **Cihazlar arası eşitleme yok.** Yedek elle alınıyor. Telefon değişince ya da kaybolunca risk var.
+7. **Cihazlar arası eşitleme yok.** Otomatik yedek klasöre yazılıyor, senkron yok. Telefon değişince ya da kaybolunca risk var.
 8. **Koç'un kurulumu zor.** API anahtarı almak sıradan kullanıcıya göre değil.
 9. **Sosyal ve topluluk yok.** Önemi düşük; NeoWell'in gizlilik vaadiyle çelişir (aşağıya bakın).
 10. **Egzersiz görselleri çizgi-adam.** Video gösterimin gerisinde.

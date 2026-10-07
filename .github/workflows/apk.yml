@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   # Release (Play upload) anahtarının sertifika parmak izi; gizli değişken başka bir anahtarla değiştirilirse CI durur.
@@ -125,12 +125,26 @@ jobs:
           [ "$min" -ge 24 ] && [ "$min" -le 26 ] || { echo "minSdk beklenen aralıkta (24-26) değil: $min"; exit 1; }
           [ "$vc" = "$GITHUB_RUN_NUMBER" ] || { echo "versionCode çalışma numarasına eşit değil ($vc, $GITHUB_RUN_NUMBER)"; exit 1; }
           mkdir -p prev
-          if gh release download son-surum -p neowell.apk -D prev; then
+          # Release gerçekten yoksa (404) ilk yayındır, karşılaştırma atlanır; ağ ya da API hatası atlanmaz: 3 kez denenir, sonra derleme durur.
+          state=""
+          for t in 1 2 3; do
+            if err=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/son-surum" --jq .tag_name 2>&1); then state=var; break; fi
+            case "$err" in *"HTTP 404"*) state=yok; break;; esac
+            echo "Release sorgusu başarısız ($t/3): $err"; sleep $((t * 10))
+          done
+          [ -n "$state" ] || { echo "ÖNCEKİ RELEASE SORGULANAMADI (ağ ya da API hatası): versionCode karşılaştırması atlanamaz"; exit 1; }
+          if [ "$state" = var ]; then
+            got=""
+            for t in 1 2 3; do
+              if gh release download son-surum -p neowell.apk -D prev --clobber; then got=1; break; fi
+              echo "Önceki APK indirilemedi ($t/3)"; sleep $((t * 10))
+            done
+            [ -n "$got" ] || { echo "ÖNCEKİ SÜRÜM İNDİRİLEMEDİ: versionCode karşılaştırması atlanamaz"; exit 1; }
             pvc=$($aapt2 dump badging prev/neowell.apk | grep -oE "versionCode='[0-9]+'" | grep -oE "[0-9]+")
             echo "Önceki sürümün versionCode: $pvc"
             [ "$vc" -gt "$pvc" ] || { echo "versionCode öncekinden büyük değil ($vc <= $pvc): Play yüklemeyi reddeder"; exit 1; }
           else
-            echo "Önceki release indirilemedi (ilk yayın olabilir): versionCode karşılaştırması atlandı"
+            echo "Önceki release yok (ilk yayın): versionCode karşılaştırması atlandı"
           fi
           ls -l neowell.apk
           unzip -lv neowell.apk | awk 'NR>3 && length($7)==8 && $7 ~ /^[0-9a-f]+$/ {split($8,p,"/"); k=(p[1]=="lib"||p[1]=="assets")?p[1]"/"p[2]:p[1]; s[k]+=$3} END {for (k in s) printf "%8.2f MB  %s\n", s[k]/1e6, k}' | sort -rn | head -12
@@ -245,6 +259,8 @@ jobs:
   release:
     needs: [build, e2e, smoke]
     if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

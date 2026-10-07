@@ -23,4 +23,5 @@ ok("endFast: 72 saati aşan oruç silinmez, tavanda kırpılır",e.capped&&e.fas
 e=H.endFast(F(1e12),1e12+16*H1);
 ok("endFast: normal oruç olduğu gibi yazılır",!e.capped&&e.min===960&&e.fast.log[0].t1===1e12+16*H1,e);
 ok("endFast: 1 dakikadan kısa, gelecekte başlayan ve geri alınmış saatte kayıt yazılmaz, oruç kapanır",[H.endFast(F(1e12),1e12+59e3),H.endFast(F(1e12+H1),1e12),H.endFast(F(1e12,[{t0:1,t1:2}]),1e12-5)].map(r=>[r.fast.t0,r.min,r.fast.log.length].join()).join("|")===",0,0|,0,0|,0,1");
+ok("alışkanlık günü: 2026-02-31 reddedilir",H.cleanMood([{day:"2026-02-31",v:3},{day:"2026-02-28",v:4}]).map(x=>x.day).join()==="2026-02-28");
 if(bad){console.log(bad+" test başarısız");process.exit(1)}

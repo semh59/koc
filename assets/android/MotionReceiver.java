@@ -38,7 +38,7 @@ public class MotionReceiver extends BroadcastReceiver {
 
     /** Açık aralık sürerken her ~2,5 dk adım sayacından kontrol noktası alınır: ritim düşüşü (yorulma) ve değişimi mesafe ve kaloriye böyle yansır. */
     private static void scheduleTick(Context c) {
-        Alarms.set(c, System.currentTimeMillis() + TICK_MS, tickIntent(c));
+        Alarms.setInexact(c, System.currentTimeMillis() + TICK_MS, tickIntent(c));
     }
 
     static void cancelTick(Context c) {

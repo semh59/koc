@@ -140,4 +140,7 @@ const {textPdf}=require("./pdfmaker.js");
   ok("gömülü pdf.js testte kullanılanla aynı sürüm",v.equals(n)&&w.equals(nw));
   ok("pdf.js sürümü CVE-2024-4367 düzeltmesinden yeni",(()=>{const [a,b,c]=lib.version.split(".").map(Number);return a>4||(a===4&&(b>2||(b===2&&c>=67)))})(),lib.version);
   console.log(bad?"\n"+bad+" HATA":"\nTüm lab testleri geçti");process.exit(bad?1:0);
+// toNum: başı 0 ya da tek noktadan sonra 0 gelen üç haneli ondalıktır, binlik değil; geçersiz takvim günü reddedilir
+for(const [s,v] of [["0.850",0.85],["1.050",1.05],["0.005",0.005],["1.500",1500],["12.034.567",12034567],["250.000",250000]])ok("toNum ondalık/binlik: "+s,L.toNum(s)===v,L.toNum(s));
+ok("dayOk: 2026-02-31 ve 2026-13-01 reddedilir, 2024-02-29 kabul",!L.dayOk("2026-02-31")&&!L.dayOk("2026-13-01")&&L.dayOk("2024-02-29")&&!L.dayOk("2026-02-29"));
 })().catch(e=>{console.log("FAIL beklenmeyen hata",e);process.exit(1)});

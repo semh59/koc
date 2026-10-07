@@ -12,7 +12,7 @@ Kurallar: en kısa doğru çözüm, yorum yalnız "neden", her kabul koşuluna b
 |---|---|---|
 | Hızlı yemek | `repeatYesterday()` (index.html:674), "Sık yediklerin" çipleri (sheetYemek, sıklığa göre 6 metin), `S.myFoods` (200, barkod/OFF/Koç) | Dünkünü kopyala **makroları kaybediyor** (`add("yemek",e.v,e.text)` p/c/f taşımaz); çipler yalnız metin+kcal'i forma doldurur, tek dokunuşla eklemez; favori/şablon yok |
 | Adım | `setSteps` günün **ilk** `adim` kaydını sensör değeriyle ezer; `sum("adim")` bir günün tüm adim kayıtlarını toplar (viewAdim, viewTrend, WeeklyLib, cData) | Elle ekleme, "sayım durdu" uyarısı |
-| Koç | `cAsk` sağlayıcı filtresi `on&&health&&key`; **consent kontrolü yalnız `cFlush` ve `cAuto`'da**. `cAuto` haftalık Koç mesajı (Pazar 20:00 sonrası açılışta) | "Neden" analizi, plato, program, haftalık bildirim |
+| Koç | `cAsk` sağlayıcı filtresi `on&&health&&key`; **consent kontrolü yalnız `cFlush`'ta** (2 Ekim durumu; `cAuto` sonradan silindi, otomatik Koç mesajı yok) | "Neden" analizi, plato, program, haftalık bildirim |
 | Salon | `Algo.nextTarget` çift ilerleme (sabit 8-12), öneri satırı ve yeni sete ön doldurma, `gPRs` (yalnız bitiş özetinde), 90 sn dinlenme sayacı (uygulama içi, titreşim), süreli set bildirimi 9001 | Plaka/ısınma hesaplayıcı, set anında rekor bildirimi, egzersiz başına tekrar aralığı |
 | Mikro besin | OFF isteği `nutriments` nesnesini tam alır (`OffLib.FIELDS`), ama `OffLib.parse` yalnız k/p/c/f çıkarır; `cleanMyFoods` ve `cleanEntries` yalnız p/c/f tutar; FOODS tablosunda lif/şeker/sodyum yok; LabelLib yalnız k/p/c/f okur | Lif, şeker, sodyum (tuz) alanları uçtan uca |
 | Sağlık verisi | Uyku/ruh hali/oruç hiç yok. Health Connect yok | Hepsi |
@@ -214,8 +214,8 @@ Yeni: `www/habitlib.js`, `www/habitui.js` (oruç kartı, uyku/ruh hali sayfalar�
 2. Kart altında "Koç'a yorumlat" düğmesi: yalnızca `consent` ve `usable().length` ise; etmenler "NOT" bloğu olarak gönderilir, modelden yalnız bu sayılarla 4-5 cümle istenir.
 3. **Plato**: kilo verme hedefi varken (`goalKg < trend-0,5`, `lossBlock` boş) son 21 günde ≥6 tartı, ≥14 gün yayılım, OLS eğimi |eğim| < 0,1 kg/hafta **ve** eğimin %95 güven aralığı ±0,25 kg/hafta içinde ise, 14 günde en fazla bir kez Koç sohbetine yerel soru düşer: "Son 3 haftadır trendin düz. Birlikte bakalım mı?" + "Bak" (1. maddeyi açar). AI çağrısı kullanıcı dokunmadan yapılmaz.
 4. **Koç'tan program**: Salon'da "Koç'tan program iste" → sayfa: haftada gün (2-6), ekipman (Salon / Ev tipi / Ağırlıksız), seans süresi (30/45/60), seviye. Koç yalnız verilen katalogdaki kimliklerle program döndürür; sohbette "program" kartı gün gün listeler; "Şablon olarak ekle" tek dokunuşla her günü `S.templates`'e ekler (mevcut şablon modeli `{id,name,ex:[ids]}`).
-5. **Haftalık özet bildirimi**: Pazar 20:30 (Ayarlar'dan kapatılabilir) "Haftalık özetin hazır". Dokununca Koç sekmesi (consent varsa; mevcut `cAuto` haftalık mesajı üretir), yoksa Trend açılır.
-6. Koç erişimi değişmez: AI çağrıları yalnız `cAsk` üzerinden (sağlayıcı `on&&health&&key`), her yeni akış `S.settings.consent`'i **kendisi** kontrol eder (cAsk kontrol etmez). Kullanıcı başlatmadan yapılan çağrılar `auto=true` geçer (onaylı sağlayıcıda `confirm()` açılmaz).
+5. **Haftalık özet bildirimi**: Pazar 20:30 (Ayarlar'dan kapatılabilir) "Haftalık özetin hazır". Dokununca Koç sekmesi (consent varsa; mesaj kendiliğinden üretilmez, kullanıcı düğmeye basar), yoksa Trend açılır.
+6. Koç erişimi değişmez: AI çağrıları yalnız `cAsk` üzerinden (sağlayıcı `on&&health&&key`), her yeni akış `S.settings.consent`'i **kendisi** kontrol eder (cAsk kontrol etmez). Kullanıcı başlatmadan AI çağrısı yapılmaz (otomatik gönderim kaldırıldı).
 
 ### Veri modeli
 - `S.settings.lastPlateau` (dayOk), `weeklyNotifOn` yerine hatırlatıcı: `DEF.settings.reminders`'a `{id:12,t:"20:30",on:true,dow:0,name:"Haftalık özet (Pazar)",title:"📊 Haftalık özet",body:"Haftanın özeti hazır, bakmak için dokun."}` → kimlik 1200-1229, mevcut `dow` desteği kullanılır.
@@ -224,7 +224,7 @@ Yeni: `www/habitlib.js`, `www/habitui.js` (oruç kartı, uyku/ruh hali sayfalar�
 - Program JSON'u kartta tutulur, `m.text`'e yazılmaz (geçmiş son 10 mesajı yeniden gönderir; bağlam şişmez).
 
 ### Dosyalar
-Yeni: `www/insightlib.js` (`weekWhy(data)`, `plateau(weights,today)`, `noiseSd(weights)`), `scripts/insight.test.js`. Değişen: `www/coach.js` (çip, `cWhy()`, `cPlateauCheck()` ayrı çağrı (açılışta ve `visibilitychange`'te; `cAuto`'nun consent/sağlayıcı/30 dk korumasından **önce ve bağımsız**, çünkü yerel çalışır), `cProgram(opts)`, kart çizimi ve tıklamalar), `www/coachlib.js` (parse, cleanProgram, SYSTEM'e program kuralı tek satır), `www/gym.js` (Salon düğmesi), `www/index.html` (Trend düğmesi, DEF, cleanSettings, bildirim dokunma dinleyicisi, script sırası), `package.json`.
+Yeni: `www/insightlib.js` (`weekWhy(data)`, `plateau(weights,today)`, `noiseSd(weights)`), `scripts/insight.test.js`. Değişen: `www/coach.js` (çip, `cWhy()`, `cPlateauCheck()` ayrı çağrı (açılışta ve `visibilitychange`'te; yerel çalışır, AI çağrısı yapmaz), `cProgram(opts)`, kart çizimi ve tıklamalar), `www/coachlib.js` (parse, cleanProgram, SYSTEM'e program kuralı tek satır), `www/gym.js` (Salon düğmesi), `www/index.html` (Trend düğmesi, DEF, cleanSettings, bildirim dokunma dinleyicisi, script sırası), `package.json`.
 
 ### Bağlam boyutu (program)
 - Katalog yalnız program isteğinde, `extraSys` olarak: seçilen ekipmana uyan, `k==="w"||k==="b"` egzersizlerden bölge başına en fazla 4 (önce eski 16 klasik + seviye uyumlu), toplam ≤60 satır, satır `id|ad|bölge` (~25 karakter → ~1,5 KB).
