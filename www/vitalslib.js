@@ -12,6 +12,7 @@ const VitalsLib=(()=>{
   const fin=x=>typeof x==="number"&&Number.isFinite(x);
   const inr=(x,[a,b])=>fin(x)&&x>=a&&x<=b;
   const r1=x=>Math.round(x*10)/10;
+  const UN=typeof Units!=="undefined"?Units:require("./unitlib.js");
   const dayN=k=>Date.UTC(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10))/864e5;
 
   /* Tek ölçümü doğrular; geçerliyse temiz satırı, değilse {err} döner. */
@@ -82,11 +83,11 @@ const VitalsLib=(()=>{
   /* Uç değer kutusu: yalnızca bugün tarihli kayıtlarda. */
   const crisis=(r,today)=>r.day===today&&(r.k==="t"?(r.sys>=180||r.dia>=120):(r.g<54||r.g>400));
   /* "Emin misin" soru: yalnızca aynı türdeki (şekerde aynı bağlamdaki) en son ölçümle karşılaştırılır. */
-  function needsConfirm(rows,n){
+  function needsConfirm(rows,n,gu){
     const prev=rows.filter(r=>r.k===n.k&&(n.k==="t"||r.ctx===n.ctx)).sort((a,b)=>a.day<b.day?1:a.day>b.day?-1:a.time<b.time?1:a.time>b.time?-1:b.id-a.id)[0];
     if(!prev)return null;
     if(n.k==="t")return Math.abs(n.sys-prev.sys)>60?`Son sistolik ölçümün ${prev.sys} idi, şimdi ${n.sys}.`:null;
-    return Math.abs(n.g-prev.g)>150?`Aynı bağlamdaki son ölçümün ${prev.g} idi, şimdi ${n.g}.`:null;
+    return Math.abs(n.g-prev.g)>150?`Aynı bağlamdaki son ölçümün ${UN.fg(prev.g,gu)} idi, şimdi ${UN.fg(n.g,gu)}.`:null;
   }
 
   /* ---- Doktor raporu PDF'i ---- */
@@ -94,13 +95,13 @@ const VitalsLib=(()=>{
   const fmtD=k=>(typeof Algo!=="undefined"?Algo:require("./algo.js")).fdate(k,true);
   const num=x=>String(r1(x)).replace(".",",");
   /* Tablo satırları: her ham ölçüm bir satır. */
-  function reportRows(rows,kind,from,to){
+  function reportRows(rows,kind,from,to,gu){
     const a=rows.filter(r=>r.k===kind&&r.day>=from&&r.day<=to).sort((x,y)=>x.day<y.day?-1:x.day>y.day?1:x.time<y.time?-1:x.time>y.time?1:x.id-y.id);
     const nth=new Map();
     return a.map(r=>{
       let ctx,val;
       if(kind==="t"){const key=r.sid?r.sid+r.day:null,i=!key?0:r.i?r.i:(nth.set(key,(nth.get(key)||0)+1),nth.get(key));ctx=sesName(r.ses)+(i?`, ${i}. ölçüm`:"");val=`${r.sys}/${r.dia} mmHg`+(r.nabiz?`  nabız ${r.nabiz}`:"")}
-      else{ctx=ctxName(r.ctx);val=`${num(r.g)} mg/dL`}
+      else{ctx=ctxName(r.ctx);val=`${UN.fg(r.g,gu)} ${UN.gl(gu)}`}
       return {d:fmtD(r.day),t:r.time,c:ctx,v:val,not:r.not||""};
     });
   }
@@ -121,7 +122,7 @@ const VitalsLib=(()=>{
     else ctx.arc(x,y,r,0,Math.PI*2);
     ctx.fill();
   }
-  function drawChart(ctx,x,y,w,h,series,from,to){
+  function drawChart(ctx,x,y,w,h,series,from,to,dec){
     const f=dayN(from),t=dayN(to),span=Math.max(1,t-f);
     const vs=series.flatMap(s=>s.pts.map(p=>p.v));if(!vs.length)return;
     let lo=Math.min(...vs),hi=Math.max(...vs);if(hi===lo){hi+=1;lo-=1}const pad=(hi-lo)*.12;lo-=pad;hi+=pad;
@@ -140,7 +141,7 @@ const VitalsLib=(()=>{
       if(s.short&&s.pts.length){const p=s.pts[s.pts.length-1],tw=ctx.measureText(s.short).width;ctx.fillStyle="#10232b";ctx.font="bold 22px sans-serif";ctx.fillText(s.short,Math.min(X(p.day),x+w-tw-4),Y(p.v)+(s.below?34:-14));ctx.font="22px sans-serif"}
     }
     ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText(fmtD(from),x,y+h+30);const e=fmtD(to);ctx.fillText(e,x+w-ctx.measureText(e).width,y+h+30);
-    ctx.fillText(`${Math.round(lo)} – ${Math.round(hi)}`,x+w+12,y+h);
+    const ax=v=>dec?v.toFixed(dec).replace(".",","):Math.round(v);ctx.fillText(`${ax(lo)} – ${ax(hi)}`,x+w+12,y+h);
   }
   /* info: {kind,title,period,summary:[[etiket,değer]],rows (reportRows),chart:{series,from,to},page,total,today} */
   function drawPage(ctx,items,info){
@@ -155,7 +156,7 @@ const VitalsLib=(()=>{
       ctx.fillStyle="#10232b";ctx.font="28px sans-serif";
       for(const [k,v] of info.summary){ctx.fillStyle="#62737a";ctx.fillText(k,RM,y+30);ctx.fillStyle="#10232b";ctx.font="bold 28px sans-serif";ctx.fillText(v,RM+420,y+30);ctx.font="28px sans-serif";y+=38}
       y+=20;
-      if(info.chart)drawChart(ctx,RM,y,RW-2*RM-110,CHART-80,info.chart.series,info.chart.from,info.chart.to);
+      if(info.chart)drawChart(ctx,RM,y,RW-2*RM-110,CHART-80,info.chart.series,info.chart.from,info.chart.to,info.chart.dec);
       y+=CHART;
     }
     ctx.font="bold 24px sans-serif";ctx.fillStyle="#62737a";

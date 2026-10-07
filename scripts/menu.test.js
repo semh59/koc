@@ -17,11 +17,11 @@ setTimeout(async()=>{
     w.fetch=async(u,o)=>{fetched++;sent=JSON.parse(o.body);return {ok:true,json:async()=>({choices:[{message:{content:JSON.stringify(reply)}}]})}};
     const base=`S=structuredClone(DEF);S.settings.obDone=true;Object.assign(S.settings,{kcal:2000,heightCm:175,age:30,goalKg:0,healthNote:''});S.providers.forEach(p=>p.on=p.health=true);setKey('nvidia','K1');S.settings.consent=true;S.settings.consentP="gemini,groq,nvidia,openrouter,openai,anthropic";S.settings.consentV=CONSENT_V;tab='koc';render()`;
     ev(base.replace("S.settings.consent=true;","S.settings.consent=false;").replace("setKey('nvidia','K1');","KEYS={};"));
-    ok("izin yokken menü düğmesi gri ve nedeni yazılı",q('[data-c="menu"]').disabled&&q("#view").textContent.includes("veri paylaşımını kabul et"));
+    ok("izin yokken Koç menüsü nedeni yazılı, düğme cihazda oluşturmaya açık",!q('[data-c="menu"]').disabled&&q('[data-c="menu"]').textContent.includes("cihazda")&&q("#view").textContent.includes("veri paylaşımını kabul et"));
     ev(base.replace("setKey('nvidia','K1');","KEYS={};"));
-    ok("anahtar yokken menü düğmesi gri, neden: anahtar yok",q('[data-c="menu"]').disabled&&q("#view").textContent.includes("Koç anahtarı gerekli"));
+    ok("anahtar yokken Koç menüsü nedeni: anahtar yok, düğme açık",!q('[data-c="menu"]').disabled&&q("#view").textContent.includes("Koç anahtarı gerekli"));
     ev(base);
-    ok("izin ve anahtar varken menü düğmesi açık, neden yazısı yok",!q('[data-c="menu"]').disabled&&!q("#view").textContent.includes("Menü için"));
+    ok("izin ve anahtar varken menü düğmesi Koç menüsü, neden yazısı yok",!q('[data-c="menu"]').disabled&&!q("#view").textContent.includes("Koç menüsü için"));
     // en kötü durum: 30 besin (60 karakter ad), 20 favori, 20 şablon, 14 dolu gün, uzun sağlık notu ve sohbet geçmişi
     ev(`S.myFoods=Array.from({length:30},(_,i)=>({n:'Besin '+i+' '+'a'.repeat(50),k:200+i,p:5,c:20,f:5,...(i%3?{u:[['1 adet (50 g)',50]]}:{})}));S.favFoods=Array.from({length:20},(_,i)=>({text:'Favori '+i+'|'+'b'.repeat(80),v:300,p:10}));S.mealTpl=Array.from({length:20},(_,i)=>({id:i+1,n:'Şablon '+i,items:[{text:'x',v:100,p:3},{text:'y',v:200,p:4}]}));S.recipes=[{id:1,n:'GizliTarifAdi',s:2,items:[{n:'GizliMalzeme',g:100,k:100}]}];S.settings.healthNote='x'.repeat(300);for(let i=0;i<14;i++){const k=keyOff(-i);add('kilo',80,'',k);for(let j=0;j<4;j++){const e=add('yemek',650,'öğün',k);e.p=35}add('su',2500,'',k);add('spor',45,'Yürüyüş',k);add('adim',12345,'',k);add('not',null,'n'.repeat(100),k);S.sleep.push({day:k,min:450});S.mood.push({day:k,v:4})}S.chat=[{id:1,role:'user',text:'z'.repeat(600),t:1},{id:2,role:'coach',text:'y'.repeat(1500),t:2}];S.cid=3`);
     const cc=ev("(()=>{const c=cMenuCat();return {n:c.text.split('\\n').length,first:c.text.split('\\n')[0],ids:Object.keys(c.cat),text:c.text}})()");
@@ -118,6 +118,18 @@ setTimeout(async()=>{
     ok("kısıt notunda sağlık uyarısı işareti varsa istek gitmez",fetched===f2&&q("#toast").textContent.includes("sağlık uyarısı"));
     ev(base.replace("S.settings.consent=true;","S.settings.consent=false;")+";S.chat=[]");ev("menuNote=''");await ev("cMenu()");
     ok("izin yokken cMenu çağrı yapmaz",fetched===f2);
+    // Anahtarsız yerel menü: ağ yok, anahtar yok; fren Koç menüsüyle aynı cMenuPlan'dan
+    const f3=fetched,noKey=base.replace("setKey('nvidia','K1');","KEYS={};").replace("S.settings.consent=true;","S.settings.consent=false;");
+    ev(noKey+";S.chat=[]");ev("menuNote='fıstık alerjisi'");ev("cMenuLocal()");
+    const lm=ev("S.chat.find(m=>m.card&&m.card.kind==='menu')");
+    ok("anahtar ve izin yokken yerel menü kartı çıkar, ağ çağrısı yok, kısıt uygulanır",!!lm&&lm.card.days.length===7&&fetched===f3&&!JSON.stringify(lm.card).includes("ıstık"));
+    ev("menuNote='';S.chat=[]");ev("S.chat=[{id:1,role:'user',text:'x',t:1,fl:'ed'}]");ev("cMenuLocal()");
+    ok("yeme düzeni işaretinde yerel menü de yok",!ev("S.chat.some(m=>m.card&&m.card.kind==='menu')")&&fetched===f3);
+    ev(noKey+";S.chat=[];S.settings.healthNote='tansiyon';S.settings.kcal=1500;for(let i=1;i<=7;i++)add('kilo',70,'',keyOff(-i))");ev("cMenuLocal()");
+    const hk=ev("S.chat.find(m=>m.card&&m.card.kind==='menu')");
+    ok("fren varken yerel menü yalnız bakım düzeyinde",!!hk&&hk.card.kcal>1500&&hk.card.days.every(d=>!d.off));
+    ev(noKey+";S.chat=[];S.settings.healthNote='tansiyon';S.settings.kcal=1500;S.entries=[]");ev("cMenuLocal()");
+    ok("fren var, bakım bilinmiyorsa yerel menü yok",!ev("S.chat.some(m=>m.card&&m.card.kind==='menu')"));
     ev("S=structuredClone(DEF);S.settings.obDone=true;closeSheet();tab='bugun';render()");
   }
   ok("sayfa hatasız çalıştı",errs.length===0,errs);

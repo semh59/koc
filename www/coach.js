@@ -506,15 +506,32 @@ function cMenuSheet(){
   openSheet(`<h3>Haftalık menü öner</h3>${pl.why?`<p class="mut">${esc(pl.why)}</p>`:`<p class="mut sm">Hedef: günde ~${pl.kcal} kcal${pl.protein?`, protein ${pl.protein[0]}-${pl.protein[1]} g`:pl.pdoc?", protein hedefini hekiminle belirle":""}. ${Algo.PROTEIN_NOTE}${pl.held?` ${esc(pl.block)}; menü bakım düzeyinde hazırlanır, hekimine danış.`:""}</p>`}
   <label class="lbl" for="mnote">Kısıt ya da alerji (isteğe bağlı)</label><textarea class="in" id="mnote" maxlength="200" placeholder="Örneğin: fıstık alerjisi, domuz eti yemem">${esc(menuNote)}</textarea>
   <p class="hint">Koç yalnız Benim besinlerim, favorilerin, şablonların ve yerleşik listeden seçer. Tıbbi diyet ya da hastalık menüsü değildir; hastalığın varsa diyetisyenine danış. Yazdığın not, profilin ve kayıtlarınla birlikte sağlayıcıya gönderilir.</p>
-  <button class="btn" data-c="menuask"${pl.why?" disabled":""}>İste</button>`);
+  <div class="two"><button class="btn" data-c="menuask"${pl.why||!coachReady()?" disabled":""}>Koç'tan iste</button><button class="btn ghost" data-c="menulocal"${pl.why?" disabled":""}>Cihazda oluştur</button></div>
+  <p class="hint">Cihazda oluştur: anahtar ve izin gerekmez, hiçbir şey gönderilmez. Notta yalnız fıstık, fındık, ceviz, badem, süt, yumurta, gluten, balık ve vejetaryen tanınır; içerikleri yine de kendin kontrol et.</p>`);
+}
+const coachReady=()=>S.settings.consent&&usable().length>0;
+/* Not hamilelik ya da sağlık uyarısı içeriyorsa menü hazırlanmaz (Koç'tan istek ve cihazda oluşturma ortak). */
+function menuNoteStop(note){
+  const nf=cNoteCheck(note);
+  if(nf){save();render();toast(nf==="preg"?"Notunda hamilelik ya da emzirme işareti var, menü hazırlamıyorum; hekimine ya da diyetisyenine danış":"Notunda sağlık uyarısı işareti var, menü hazırlamıyorum; hekimine danış")}
+  return !!nf;
+}
+/* Anahtarsız menü: kurallı, cihazda; plan (fren, bakım düzeyi) Koç menüsüyle aynı cMenuPlan. */
+function cMenuLocal(){
+  const pl=cMenuPlan(),note=CoachLib.oneLine(menuNote,200);
+  if(menuNoteStop(note))return;
+  if(pl.why)return toast(pl.why);
+  const r=MenuLocal.make({kcal:pl.kcal,protein:pl.protein,note}),mn=r&&CoachLib.cleanMenu({days:r.days},null,pl.kcal);
+  if(!mn)return toast("Kısıtlarına uyan yeterince yemek bulamadım, notu sadeleştir");
+  tab="koc";cPush({role:"coach",text:"",card:Object.assign({kind:"menu",chk:[]},mn)});save();render();
+  toast(r.unk?"Notundaki kısıtı tanımadım, menüye uygulanmadı":"Menü cihazda hazırlandı");
 }
 async function cMenu(){
   if(busy)return;
   if(!coachOn()){tab="koc";render();return toast("Önce Koç'ta veri paylaşımını kabul et")}
   if(!usable().length)return toast("Koç için anahtar gerekli: Ayarlar > Koç");
   const pl=cMenuPlan(),note=CoachLib.oneLine(menuNote,200);
-  const nf=cNoteCheck(note);
-  if(nf){save();render();return toast(nf==="preg"?"Notunda hamilelik ya da emzirme işareti var, menü hazırlamıyorum; hekimine ya da diyetisyenine danış":"Notunda sağlık uyarısı işareti var, menü hazırlamıyorum; hekimine danış")}
+  if(menuNoteStop(note))return;
   if(pl.why)return toast(pl.why);
   const {cat,text}=cMenuCat(),p=pl.protein;
   const msgs=cMessages(`7 günlük menü hazırla. "menu" alanını doldur, reply'da en fazla 2 cümle yaz.`,`MENÜ İSTEĞİ. Hedef günlük ${pl.kcal} kcal (gün toplamı ±%10), ${p?`protein ${p[0]}-${p[1]} g/gün`:pl.pdoc?"protein hedefi hekimle belirlenmeli, yüksek proteinli menü kurma":"protein yeterli olsun"}. YALNIZ KATALOG kimliklerini kullan, listede olmayan besin ekleme. Günde 3-6 öğün, öğün anahtarı: kah, ogl, aks, atis. Katalogdaki kcal ve protein BİR porsiyon içindir; q porsiyon çarpanıdır (0.25-4).${note?`\nKullanıcının kısıt/alerji notu (uy): ${note}`:""}\nTıbbi diyet ya da hastalık menüsü yazma.${pl.block?` KISIT var: ${pl.block}; kalori açığı kurma.`:""}\nÇıktı JSON: {"reply":"...","menu":{"days":[{"n":"Pazartesi","meals":[{"m":"kah","i":[["kimlik",1]]}]}]}}\nKATALOG (kimlik|ad|kcal|protein):\n${text}`,true),um=cPush({role:"user",text:`Haftalık menü iste: günde ~${pl.kcal} kcal${note?`, not: ${note}`:""}`});
@@ -613,7 +630,7 @@ function cCard(m){
   const rows=c.items.map((it,i)=>{
     const lbl=it.type==="yemek"?esc(it.text||"Öğün"):it.type==="su"?"Su":it.type==="kilo"?"Tartı":it.type==="spor"?esc(it.name):"Not";
     const val=it.type==="yemek"?(c.state==="pending"?`<span class="num">~<input class="kin num" data-ck="${i}" inputmode="numeric" aria-label="${esc(it.text)} kcal" value="${it.kcal==null?"":Math.round(it.kcal)}" placeholder="kcal"> kcal</span>`:`<span class="num">${it.kcal==null?"":"~"+Math.round(it.kcal)+" kcal"}</span>`)
-      :it.type==="su"?`<span class="num">${it.ml} ml</span>`:it.type==="kilo"?`<span class="num">${fmt(it.kg)} kg</span>`:it.type==="spor"?`<span class="num">${it.min} dk${spKcal(it).k!=null?` · ~${spKcal(it).k} kcal`:""}</span>`:`<span class="mut sm">${esc(it.text.slice(0,40))}</span>`;
+      :it.type==="su"?`<span class="num">${it.ml} ml</span>`:it.type==="kilo"?`<span class="num">${dw(it.kg)} ${wlab()}</span>`:it.type==="spor"?`<span class="num">${it.min} dk${spKcal(it).k!=null?` · ~${spKcal(it).k} kcal`:""}</span>`:`<span class="mut sm">${esc(it.text.slice(0,40))}</span>`;
     const y=it.type==="yemek",mac=y?[it.g?it.g+" g":"",it.p!=null?`P ${Math.round(it.p)}`:"",it.c!=null?`K ${Math.round(it.c)}`:"",it.f!=null?`Y ${Math.round(it.f)}`:""].filter(Boolean).join(" · "):"";
     return `<div class="lrow" style="flex-wrap:wrap"><div style="min-width:0;flex:1 1 150px"><span style="overflow-wrap:break-word">${lbl}</span>${mac?`<div class="mut sm">${mac}</div>`:""}${y&&CoachLib.macroOff(it)?`<div class="mut sm">Kalori makrolarla tutmuyor, kontrol et</div>`:""}${it.type==="spor"&&spKcal(it).off?`<div class="mut sm">Koç ~${it.kcal} kcal dedi; kilona göre hesap kullanılır</div>`:""}${it.day==="yesterday"?`<div class="mut sm">Dün</div>`:""}</div><span style="display:flex;align-items:center;gap:6px;margin-left:auto">${val}${c.state==="pending"&&c.items.length>1?`<button class="chip" data-c="lrm:${m.id}:${i}" aria-label="${lbl} çıkar">×</button>`:""}</span></div>`;
   }).join("");
@@ -685,8 +702,8 @@ function viewKoc(){
   if(typing)h+=`<div class="cm"><div class="mut sm">Koç yazıyor</div><p class="dots">• • •</p></div>`;
   else if(lossAsk())h+=`<div class="chips"><button class="chip" data-c="why">Bu hafta neden kilo vermedim?</button></div>`;
   if(!typing){
-    const why=!S.settings.consent?"Menü için önce yukarıdaki veri paylaşımını kabul et":!usable().length?"Menü için Koç anahtarı gerekli (Ayarlar > Koç)":"";
-    h+=`<div class="chips"><button class="chip" data-c="menu"${why?' disabled aria-disabled="true"':""}>Haftalık menü öner</button></div>${why?`<p class="hint">${why}</p>`:""}`;
+    const why=!S.settings.consent?"Koç menüsü için önce yukarıdaki veri paylaşımını kabul et":!usable().length?"Koç menüsü için Koç anahtarı gerekli (Ayarlar > Koç)":"";
+    h+=`<div class="chips"><button class="chip" data-c="menu">${why?"Menü oluştur (cihazda)":"Haftalık menü öner"}</button></div>${why?`<p class="hint">${why}. Cihazda oluşturma anahtarsız çalışır, hiçbir şey gönderilmez.</p>`:""}`;
   }
   return `<div class="chat">${h}</div>`;
 }
@@ -890,6 +907,7 @@ function cClick(v,el){
     }
     case "whyai":return cWhyAsk(+p1);
     case "menu":return cMenuSheet();
+    case "menulocal":{menuNote=($("#mnote").value||"").replace(/\s+/g," ").trim().slice(0,200);closeSheet();return cMenuLocal()}
     case "menuask":{menuNote=($("#mnote").value||"").replace(/\s+/g," ").trim().slice(0,200);closeSheet();return cMenu()}
     case "menuadd":{
       const c=menuCard(+p1),d=c&&c.days[+p2];if(!d)return;

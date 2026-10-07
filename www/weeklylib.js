@@ -9,6 +9,7 @@ const WeeklyLib=(()=>{
   const key=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
   const fmt=(x,d)=>Number(x).toFixed(d==null?1:d).replace(".",",");
   const fmtS=x=>(x>0?"+":x<0?"−":"")+fmt(Math.abs(x));
+  const UN=typeof Units!=="undefined"?Units:require("./unitlib.js");
   const AL=()=>typeof Algo!=="undefined"?Algo:require("./algo.js");
   const dmy=k=>AL().fdate(k,true);
   const sumOf=(es,t,k)=>es.filter(e=>e.type===t&&e.day===k).reduce((s,e)=>s+(e.v||0),0);
@@ -23,10 +24,10 @@ const WeeklyLib=(()=>{
       const kg=es.filter(e=>e.type==="kilo"&&e.day===k).map(e=>e.v).pop();
       rows.push({day:k,label:`${GUNK[dt.getDay()]} ${dt.getDate()}`,kilo:kg==null?null:kg,su:sumOf(es,"su",k),kcal:sumOf(es,"yemek",k),spor:sumOf(es,"spor",k),adim:sumOf(es,"adim",k)});
     }
-    const from=rows[0].day,summary=[["Dönem",`${dmy(from)} - ${dmy(endDay)}`]];
+    const from=rows[0].day,wu=st.wUnit==="lb"?"lb":"kg",gu=st.gUnit==="mmol"?"mmol":"mgdl",kw=x=>fmt(UN.w(x,wu)),summary=[["Dönem",`${dmy(from)} - ${dmy(endDay)}`]];
     const ks=rows.filter(r=>r.kilo!=null);
-    if(ks.length>=2)summary.push(["Kilo",`${fmt(ks[0].kilo)} → ${fmt(ks[ks.length-1].kilo)} kg (${fmtS(ks[ks.length-1].kilo-ks[0].kilo)})`]);
-    else if(ks.length===1)summary.push(["Kilo",`${fmt(ks[0].kilo)} kg (tek ölçüm)`]);
+    if(ks.length>=2)summary.push(["Kilo",`${kw(ks[0].kilo)} → ${kw(ks[ks.length-1].kilo)} ${wu} (${fmtS(UN.w(ks[ks.length-1].kilo-ks[0].kilo,wu))})`]);
+    else if(ks.length===1)summary.push(["Kilo",`${kw(ks[0].kilo)} ${wu} (tek ölçüm)`]);
     else summary.push(["Kilo","son 7 günde tartı kaydı yok"]);
     const A=AL(),any=rows.filter(r=>r.kcal>0),kc=any.filter(r=>A.fullKcal(r.kcal));
     summary.push(["Kalori",!any.length?"yemek kaydı yok":kc.length>=A.MIN_AVG_DAYS
@@ -40,20 +41,20 @@ const WeeklyLib=(()=>{
     if(ad.length)summary.push(["Adım",`günlük ortalama ${Math.round(mean(ad.map(r=>r.adim))).toLocaleString("tr-TR")} (hedef ${st.stepGoal.toLocaleString("tr-TR")}), ${ad.length} gün`]);
     const vit=S.vitals||[];
     if(st.bpOn){const h=VL.homeAvg(vit,endDay,days);if(h.all)summary.push(["Tansiyon",`ortalama ${Math.round(h.all.sys)}/${Math.round(h.all.dia)} mmHg (${h.all.n} ölçüm, ${h.days} gün)`])}
-    if(st.bsOn){const g=VL.gStats(vit,from,endDay,st);if(g)summary.push(["Şeker",`ortalama ${Math.round(g.avg)} mg/dL (${g.n} ölçüm)`])}
+    if(st.bsOn){const g=VL.gStats(vit,from,endDay,st);if(g)summary.push(["Şeker",`ortalama ${gu==="mmol"?UN.fg(g.avg,gu):Math.round(g.avg)} ${UN.gl(gu)} (${g.n} ölçüm)`])}
     if(st.medOn&&S.meds&&S.meds.length){
       const a=ML.adherence(S.meds,S.medLog||[],from,endDay,endDay,nowTime||"23:59");
       if(a.total)summary.push(["İlaç uyumu",`%${a.pct} (${a.taken} / ${a.total} doz alındı${a.missed?`, ${a.missed} kaçırılan`:""}${a.late?`, ${a.late} bugün bekliyor`:""}${a.skipped?`, ${a.skipped} atlanan`:""})`]);
     }
     /* Grafikler yalnız en az iki günlük veri varsa çıkar. Renkler uygulamadaki ile aynı: kilo prim, sistolik ink, diyastolik su. */
-    const charts=[],kp=rows.filter(r=>r.kilo!=null).map(r=>({day:r.day,v:r.kilo}));
-    if(kp.length>=2)charts.push({title:"Kilo (kg)",series:[{pts:kp,color:"#0f5c55",shape:"c",vals:true,fmt:v=>fmt(v)}],from,to:endDay});
+    const charts=[],kp=rows.filter(r=>r.kilo!=null).map(r=>({day:r.day,v:UN.w(r.kilo,wu)}));
+    if(kp.length>=2)charts.push({title:`Kilo (${wu})`,series:[{pts:kp,color:"#0f5c55",shape:"c",vals:true,fmt:v=>fmt(v)}],from,to:endDay});
     if(st.bpOn){
       const byDay={};for(const r of vit)if(r.k==="t"&&r.day>=from&&r.day<=endDay)(byDay[r.day]=byDay[r.day]||[]).push(r);
       const ds=Object.keys(byDay).sort(),avg=f=>ds.map(k=>({day:k,v:mean(byDay[k].map(r=>r[f]))}));
       if(ds.length>=2)charts.push({title:"Tansiyon (mmHg), günlük ortalama",series:[{pts:avg("sys"),color:"#10232b",shape:"c",short:"Sistolik"},{pts:avg("dia"),color:"#2a86bd",shape:"s",dash:true,short:"Diyastolik",below:true}],from,to:endDay});
     }
-    return {rows,summary,charts,from,end:endDay};
+    return {rows,summary,charts,from,end:endDay,wu};
   }
 
   function drawPage(ctx,data,info){
@@ -69,13 +70,13 @@ const WeeklyLib=(()=>{
       ctx.fillStyle="#10232b";ctx.font="bold 28px sans-serif";ctx.fillText(v,RM+230,y+30);y+=44;
     }
     y+=30;
-    const cols=[["Gün",RM],["Kilo (kg)",RM+210],["Su (L)",RM+420],["Kalori",RM+620],["Spor (dk)",RM+820],["Adım",RM+1020]];
+    const cols=[["Gün",RM],[`Kilo (${data.wu||"kg"})`,RM+210],["Su (L)",RM+420],["Kalori",RM+620],["Spor (dk)",RM+820],["Adım",RM+1020]];
     ctx.fillStyle="#62737a";ctx.font="bold 26px sans-serif";cols.forEach(([t,x])=>ctx.fillText(t,x,y+30));
     ctx.strokeStyle="#9fb4ad";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(RM,y+44);ctx.lineTo(RW-RM,y+44);ctx.stroke();
     y+=ROW;
     ctx.font="28px sans-serif";
     for(const r of data.rows){
-      const c=[r.label,r.kilo!=null?fmt(r.kilo):"–",r.su?fmt(r.su/1000):"–",r.kcal?String(Math.round(r.kcal)):"–",r.spor?String(Math.round(r.spor)):"–",r.adim?Math.round(r.adim).toLocaleString("tr-TR"):"–"];
+      const c=[r.label,r.kilo!=null?fmt(UN.w(r.kilo,data.wu)):"–",r.su?fmt(r.su/1000):"–",r.kcal?String(Math.round(r.kcal)):"–",r.spor?String(Math.round(r.spor)):"–",r.adim?Math.round(r.adim).toLocaleString("tr-TR"):"–"];
       ctx.fillStyle="#10232b";c.forEach((t,i)=>ctx.fillText(t,cols[i][1],y+32));
       ctx.strokeStyle="#e3ebe8";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(RM,y+ROW-4);ctx.lineTo(RW-RM,y+ROW-4);ctx.stroke();
       y+=ROW;

@@ -2132,7 +2132,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     const cnt=()=>ev("JSON.stringify([S.entries.length,S.workouts.length,S.moves.length,S.meds.length+S.medLog.length,S.vitals.length,S.labs.length,S.sleep.length+S.mood.length+S.fast.log.length+(S.fast.t0?1:0),S.chat.length])");
     const del=i=>{q(`[data-pv="del:${i}"]`).click()};
     seed();const all=cnt();
-    ok("liste: 13 kategori, her biri kayıt sayısıyla ve Sil düğmesiyle; yedek hatırlatması",qa('[data-pv^="del:"]').length===13&&sh().includes("Yemek ve su kayıtları")&&sh().includes("2 kayıt")&&sh().includes("Önce yedek al")&&sh().includes("Koç sohbeti"));
+    ok("liste: 14 kategori, her biri kayıt sayısıyla ve Sil düğmesiyle; yedek hatırlatması",qa('[data-pv^="del:"]').length===14&&sh().includes("Yemek ve su kayıtları")&&sh().includes("2 kayıt")&&sh().includes("Önce yedek al")&&sh().includes("Koç sohbeti"));
     ev("window.confirm=()=>false");del(0);
     ok("onay verilmezse hiçbir şey silinmez",cnt()===all);
     let msg="";w.confirm=m=>{msg=m;return true};
