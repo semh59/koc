@@ -51,6 +51,11 @@ ok("cleanProgram: hepsi geçersizse ya da çöp girdide null, hata yok",C.cleanP
 ok("cleanProgram: en fazla 8 egzersiz, tekrar eden kimlik tekilleşir, ad varsayılanı",C.cleanProgram({days:[{ex:["squat","squat","bench"]}]},K).days[0].ex.length===2&&C.cleanProgram({days:[{ex:["squat","bench"]}]},K).name==="Koç programı");
 ok("parse program anahtarını döndürür",C.parse('{"reply":"ok","program":{"name":"P","days":[]}}').program.name==="P"&&C.parse('{"reply":"ok"}').program===null&&C.parse("düz").program===null);
 const EX=require("../www/exlib.js"),cat=o=>C.catalog(EX,o,["squat","bench","pullup","crunch"]);
+{ const l=cat({q:"Salon",l:"İleri"}),t=C.catalogText(l),ids=t.split("\n").flatMap(r=>r.split(": ").slice(1).join(": ").split(", ").map(x=>x.split("|")[0])),old=l.map(e=>`${e.id}|${e.n}|${e.r}`).join("\n");
+  ok("katalog metni: her egzersiz bir kez, bölge başlığı altında, eskisinden kısa",ids.length===l.length&&new Set(ids).size===l.length&&l.every(e=>ids.includes(e.id))&&t.split("\n").every(r=>/^[^|:]+: \S+\|/.test(r))&&t.length<old.length-200,[t.length,old.length]);
+  const e2=C.catalog(EX,{q:"Ev tipi",l:"Başlangıç"},[]),t2=C.catalogText(e2);
+  ok("katalog metni: ekipman/seviye süzgeci cleanProgram kimlikleriyle aynı (Ev tipi/Başlangıç)",e2.every(e=>t2.includes(e.id+"|"))&&!t2.split("\n").some(r=>/\|(Salon)/.test(r))&&e2.every(e=>e.q!=="Salon"&&e.l==="Başlangıç"));
+}
 const c1=cat({q:"Salon",l:"İleri"}),reg={};c1.forEach(e=>reg[e.r]=(reg[e.r]||0)+1);
 ok("katalog: en fazla 60 satır, bölge başına 4, yalnız w/b, klasikler önce",c1.length<=60&&Object.values(reg).every(n=>n<=4)&&c1.every(e=>e.k==="w"||e.k==="b")&&c1[0].id==="squat",[c1.length,reg]);
 const c2=cat({q:"Ev tipi",l:"Başlangıç"});

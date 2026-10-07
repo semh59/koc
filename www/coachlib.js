@@ -179,6 +179,12 @@ const CoachLib=(()=>{
     }
     return out;
   }
+  /* Katalog metni: bölge başlığı altında "kimlik|ad" (bölge her satırda tekrarlanmaz). */
+  function catalogText(list){
+    const g=new Map();
+    for(const e of list){const r=e.r||e.g;if(!g.has(r))g.set(r,[]);g.get(r).push(e.id+"|"+e.n)}
+    return [...g].map(([r,a])=>r+": "+a.join(", ")).join("\n");
+  }
   /* Model kalori hedefi önerirse güvenli alt sınıra çek. */
   function clampKcal(k,{tdee,bmr}={}){
     const v=num(k,800,5000);if(v==null)return null;
@@ -268,6 +274,7 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
   /* Kesin yaş kimliğe yaklaşır; modele 5 yıllık aralık gider (Koç 18+ için açık). Enerji hesabı yerelde kesin yaşla yapılır. */
   const ageBand=a=>{const l=a-a%5;return Math.max(l,18)+"-"+(l+4)};
   const f1=x=>x==null?"–":String(Math.round(x*10)/10).replace(".",",");
+  /* lean: "prog" (program isteği) ya da "menu" (menü isteği) kısa bağlam: 14 gün tablosu, BUGÜN, notlar ve ilaç ayrıntısı gitmez; profil, sağlık notu, hedef, KISIT ve ilaç adları kalır. */
   /* Bağlam metni. d: uygulamanın hesapladığı veri; q: soru metni. Güvenlik/doğruluk bölümleri hep gider; ilaç, antrenman ve not
      bölümleri yalnız soruda ilgili anahtar kelime varsa. Soru ne ilgili ne bilinen başka bir konuya (su, yemek, kilo...) değiyorsa (belirsiz) hepsi gider. */
   const K={
@@ -276,7 +283,7 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
     diger:/(^|[^a-zçğıöşü])su(yu|ya|da|dan)?([^a-zçğıöşü]|$)|içtim|yemek|yedim|kalori|kcal|kilo|protein|karbonhidrat|öğün|kahvaltı|diyet|menü|tarif|tartı/,
     not:/(^|[^a-zçğıöşü])not|ruh|uyku|uyu|stres|yazdım|yorgun|moral|mutlu|kaygı/
   };
-  function contextText(d,q){
+  function contextText(d,q,lean){
     const ql=low(q),medHit=!!(d.meds||[]).some(m=>ql.includes(low(m.n).slice(0,30))&&m.n),hit={med:K.med.test(ql)||medHit,spor:K.spor.test(ql),not:K.not.test(ql)};
     const all=!hit.med&&!hit.spor&&!hit.not&&!K.diger.test(ql),L=[];
     L.push("PROFİL: "+[d.profile.cm?d.profile.cm+" cm":null,d.profile.age?ageBand(d.profile.age)+" yaş":null,d.profile.sex==="m"?"erkek":d.profile.sex==="f"?"kadın":null,d.profile.act!=null?"hareket düzeyi "+["az","orta","çok"][d.profile.act]:null].filter(Boolean).join(", ")||"girilmemiş");
@@ -285,6 +292,7 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
     const c=d.calc;
     L.push(`HESAPLANAN: trend kilo ${f1(c.trendKg)} kg, hız ${c.slope==null?"yetersiz veri":f1(c.slope)+" kg/hafta"}, tahmini harcama ${c.tdee?Math.round(c.tdee/10)*10+" kcal ("+c.source+")":"hesaplanamadı"}, önerilen hedef ${c.target||"–"} kcal, protein aralığı ${c.protein?c.protein[0]+"-"+c.protein[1]+" g":c.proteinDoc?"hekimle belirlenmeli (yüksek protein önerme)":"–"}`);
     if(c.block)L.push("KISIT: "+c.why+". Kalori açığı ve oruç önerme, hekime yönlendir.");
+    if(!lean){
     const hs=d.days.some(r=>r.sl),hm=d.days.some(r=>r.mo),cells=r=>[r.kg,r.kcal,r.p,r.su,r.sport,r.ad,r.sl,r.mo],empty=[];
     L.push("SON 14 GÜN (gün | kilo | kcal | protein g | su ml | spor dk | adım"+(hs?" | uyku sa":"")+(hm?" | ruh hali 1-5":"")+"):");
     for(const r of d.days){
@@ -293,11 +301,13 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
     }
     if(empty.length)L.push("boş günler (ayın günü, hiç veri yok): "+empty.join(", "));
     L.push("BUGÜN: "+(d.today.length?d.today.map(x=>oneLine(x,160)).join("; "):"kayıt yok")+` (saat ${d.now})`);
+    }
     if(d.meds&&d.meds.length)L.push("KULLANDIĞI İLAÇLAR (yalnız ad ve doz; etkileşim/doz değişikliği önerme, hekime/eczacıya yönlendir): "+d.meds.map(m=>oneLine(m.n,24)+(m.d?" "+oneLine(m.d,12):"")).join(", "));
-    if((all||hit.spor)&&d.workouts.length)L.push("SON ANTRENMANLAR: "+d.workouts.map(x=>oneLine(x,300)).join(" | "));
-    if((all||hit.spor)&&d.weekSets&&Object.keys(d.weekSets).length)L.push("BU HAFTA TAMAMLANAN SET (bölgeye göre): "+Object.keys(d.weekSets).map(k=>k+" "+d.weekSets[k]).join(", "));
-    if((all||hit.not)&&d.notes.length)L.push("SON NOTLAR: "+d.notes.map(x=>oneLine(x,100)).join(" | "));
-    if((all||hit.med)&&d.meds&&d.meds.length){
+    const wk=lean==="prog"||(!lean&&(all||hit.spor));
+    if(wk&&d.workouts.length)L.push("SON ANTRENMANLAR: "+d.workouts.map(x=>oneLine(x,300)).join(" | "));
+    if(wk&&d.weekSets&&Object.keys(d.weekSets).length)L.push("BU HAFTA TAMAMLANAN SET (bölgeye göre): "+Object.keys(d.weekSets).map(k=>k+" "+d.weekSets[k]).join(", "));
+    if(!lean&&(all||hit.not)&&d.notes.length)L.push("SON NOTLAR: "+d.notes.map(x=>oneLine(x,100)).join(" | "));
+    if(!lean&&(all||hit.med)&&d.meds&&d.meds.length){
       L.push("İLAÇLAR (kullanıcının kendi girdiği hatırlatıcı kaydı; doz veya ilaç değişikliği önerme, ilaçla ilgili soruları hekime/eczacıya yönlendir; doz sayıları son 7 gün"+(d.meds.some(m=>m.a&&m.a.late)?"; 'bugün bekleyen' doz gün bitene kadar eklenebilir, kaçırılan değil":"")+"):");
       for(const m of d.meds)L.push(`${oneLine(m.n,30)}${m.d?" "+oneLine(m.d,20):""} | saatler ${m.t.join(", ")}${m.w?" | haftanın günleri "+m.w.join(","):""} | ${m.a?`${m.a.taken}/${m.a.total} alındı, ${m.a.missed} kaçırılan${m.a.late?`, ${m.a.late} bugün bekleyen`:""}${m.a.skipped?`, ${m.a.skipped} atlanan`:""}`:"doz yok"}${m.left!=null?` | stok ~${m.left} doz`:""}`);
     }
@@ -326,6 +336,6 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
     if(store&&typeof store==="object")for(const d of Object.keys(store))if(d>=old&&store[d]&&typeof store[d]==="object")for(const r of Object.values(store[d]))if(Array.isArray(r)){n+=+r[0]||0;tok+=(+r[1]||0)+(+r[2]||0)}
     return {n,tok};
   }
-  return {usageOf,usageAdd,usageSum,low,oneLine,pregnant,BROKEN,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText};
+  return {usageOf,usageAdd,usageSum,low,oneLine,pregnant,BROKEN,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,catalogText,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText};
 })();
 if(typeof module!=="undefined")module.exports=CoachLib;

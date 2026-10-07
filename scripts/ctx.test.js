@@ -48,4 +48,16 @@ ok("ilaç yoksa bölüm de yok (soruluyor olsa bile)",!has(C.contextText({...D()
   ok("yalnız kilosu olan gün boş sayılmaz; tüm günler boşsa tablo çökmez",/10-02 \| 80/.test(one)&&/boş günler[^\n]*1, 3/.test(one)&&C.contextText({...D(),days:[{d:"10-01"}]},"x").includes("boş günler"));
 }
 { const a=C.contextText(D(),"x");ok("boş gün birleştirme bağlamı kısaltır",a.length<full.length+1&&a.split("\n").filter(l=>/^10-\d\d \|/.test(l)).length===11)}
+{ // program ve menü isteğinde kısa bağlam; sohbet bağlamı aynı kalır
+  const d={...D(),calc:{...D().calc,block:"x",why:"İlaç kaydın var"}},chat=C.contextText(d,"Bugünü yorumla"),req="Haftada 3 gün, seans 45 dakika, ekipman Salon, seviye Orta için antrenman programı hazırla.";
+  const prog=C.contextText(d,req,"prog"),menu=C.contextText(d,"7 günlük menü hazırla.","menu");
+  for(const [n,t] of [["program",prog],["menü",menu]]){
+    ok(n+": 14 gün tablosu, BUGÜN, notlar, ilaç ayrıntısı yok",!/SON 14 GÜN|BUGÜN:|SON NOTLAR|İLAÇLAR \(kullanıcının|saatler 08:00|^10-\d\d \|/m.test(t),t);
+    ok(n+": profil, sağlık notu, hedef, hesaplanan, KISIT ve ilaç satırı var",["PROFİL: 175 cm, 30-34 yaş","SAĞLIK NOTU","HEDEFLER","HESAPLANAN","KISIT:","KULLANDIĞI İLAÇLAR (yalnız ad ve doz","Metformin 500 mg"].every(k=>t.includes(k)),t);
+  }
+  ok("program: son antrenmanlar var; menü: yok",prog.includes("SON ANTRENMANLAR")&&!menu.includes("SON ANTRENMANLAR")&&!menu.includes("TAMAMLANAN SET"));
+  ok("sohbet bağlamı değişmedi (14 gün ve BUGÜN gider)",chat.includes("SON 14 GÜN")&&chat.includes("BUGÜN:")&&chat===C.contextText(d,"Bugünü yorumla",undefined));
+  console.log(`ÖLÇÜM bağlam: sohbet ${chat.length}, program ${prog.length}, menü ${menu.length}`);
+  ok("kısa bağlam sohbetin en çok yarısı kadar",prog.length<chat.length/2&&menu.length<chat.length/2,[prog.length,menu.length,chat.length]);
+}
 console.log(bad?`\n${bad} başarısız`:"\nTamam");process.exit(bad?1:0);

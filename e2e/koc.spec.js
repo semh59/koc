@@ -274,6 +274,21 @@ test.describe("Koç kimlik maskeleme",()=>{
     const all={sohbet:await sysOf(async()=>{await page.fill("#cmsg","Bugün kaç ml su içtim");await page.click("#csend")}),yorum:await sysOf(()=>page.evaluate("cComment('weekly')")),program:await sysOf(()=>page.evaluate("cProgram({d:3,m:45,q:'Salon',l:'Orta'})")),menü:await sysOf(()=>page.evaluate("cMenu()"))};
     for(const [k,t] of Object.entries(all)){expect(t,k).toContain("KULLANDIĞI İLAÇLAR (yalnız ad ve doz");expect(t,k).toContain("Metformin 500 mg");expect(t,k).toContain("KISIT:");if(k!=="yorum")expect(t,k).not.toContain("saatler 08:00")}
   });
+  test("program isteği kısa bağlamla gider: 14 gün tablosu yok, katalog kimlikleri var, program kartı çıkar",async({app,page,fake})=>{
+    fake.st.reply=()=>JSON.stringify({reply:"Program hazır.",log:[],program:{name:"3 gün",days:[{n:"A",ex:["squat","bench","row"]},{n:"B",ex:["squat","ohp","pulldown"]},{n:"C",ex:["legpress","incdb","curl"]}]}});
+    await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter",healthNote:"Sağ dizim ağrıyor",medOn:true},{entries:[...[0,1,2,3,4,5,6].map(i=>entry("kilo",80-i/10,"",{d:-i}))],meds:[{id:1,n:"Metformin",d:"500 mg",t:["08:00"],on:true}]}),keys:{groq:"gsk_test"}});
+    await app.tab("koc");
+    const k=fake.chats().length;
+    await page.evaluate("cProgram({d:3,m:45,q:'Salon',l:'Başlangıç'})");
+    await expect.poll(()=>fake.chats().length).toBeGreaterThan(k);
+    const b=fake.chats().at(-1).body,t=b.messages[0].content,ctx=t.slice(t.indexOf("PROFİL:"));
+    expect(ctx).not.toMatch(/SON 14 GÜN|BUGÜN:|SON NOTLAR/);
+    expect(ctx).toContain("SAĞLIK NOTU");expect(ctx).toContain("Metformin 500 mg");
+    expect(t).toMatch(/KATALOG \(bölge: kimlik\|ad, \.\.\.\):\n/);expect(t).toContain("squat|Squat");expect(t).toContain("bench|");
+    expect(b.max_tokens).toBe(900);
+    await expect(page.locator("#view")).toContainText("Program hazır");
+    expect(await page.evaluate("S.chat.some(m=>m.card&&m.card.kind==='program'&&m.card.days.length===3)")).toBe(true);
+  });
   test("Gizlilik ve veri: anahtar varsayılan kapalı, açılınca kalıcı",async({app,page})=>{
     await openPrev(app,false);
     await page.evaluate("sheetPrivacy()");

@@ -3,7 +3,7 @@ const {test,expect,state}=require("./fixtures");
 
 const open=app=>app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter"}),keys:{groq:"gsk_test"}});
 /* İsteğin sistem mesajındaki KATALOG satırlarından kimlikler (model yalnız bunları kullanabilir). */
-const catalog=b=>{const t=b.messages.map(m=>m.content).join("\n"),i=t.indexOf("KATALOG");return t.slice(i).split("\n").slice(1).map(l=>l.split("|")).filter(p=>p.length>=3&&/^[a-z0-9_]+$/.test(p[0]))};
+const catalog=b=>{const t=b.messages.map(m=>m.content).join("\n"),i=t.indexOf("KATALOG");return t.slice(i).split("\n").slice(1).flatMap(l=>/^[^|:]+: /.test(l)?l.replace(/^[^|:]+: /,"").split(", "):[l]).map(l=>l.split("|")).filter(p=>p.length>=2&&/^[a-z0-9_]+$/.test(p[0]))};
 const DAYS=["Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi","Pazar"];
 
 test.describe("Koç menü kartı",()=>{
