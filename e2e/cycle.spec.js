@@ -34,6 +34,11 @@ test.describe("Döngü takibi",()=>{
     await expect(app.view).toContainText("Yaklaşık 5 Eki – 9 Eki");
     await expect(app.view).toContainText("tıbbi tavsiye değildir");
     await expect(page.locator(".cyd.cyt").first()).toBeVisible();
+    await expect(app.view).toContainText("Pencere 16 Eki – 22 Eki");
+    await expect(app.view).toContainText("Tahmini yumurtlama: 21 Eki");
+    await expect(page.locator(".cyd.cyo .vh")).toContainText("tahmini yumurtlama günü");
+    await expect(page.locator(".cyd.cyf")).toHaveCount(6);
+    await expect(app.view).toContainText("Tahmindir. Doğum kontrolü veya gebelik planlaması için güvenilir değildir; hekimine danış.");
     const rows=page.locator('[data-cy^="del:"]');
     await expect(rows).toHaveCount(3);
     await expect(rows.first()).toHaveAttribute("aria-label",/tarihli kaydı sil/);
@@ -61,6 +66,18 @@ test.describe("Döngü takibi",()=>{
     await app.go("dongu");
     await expect(app.view).toContainText("tahmin gösterilmiyor");
     await expect(app.view).not.toContainText("Yaklaşık");
+    await expect(app.view).not.toContainText("yumurtlama");
+    await expect(app.view).not.toContainText("Pencere");
+    await expect(page.locator(".cyd.cyo,.cyd.cyf")).toHaveCount(0);
+  });
+
+  test("düzensiz döngüde pencere yok, uyarı var",async({app,page})=>{
+    const cycle=[{id:1,s:"2026-05-01"},{id:2,s:"2026-05-22"},{id:3,s:"2026-07-01"},{id:4,s:"2026-07-25"},{id:5,s:"2026-09-09"}];
+    await app.open({seed:state({cycleOn:true},{cycle})});
+    await app.go("dongu");
+    await expect(app.view).toContainText("Düzensiz döngüde tahmin güvenilmez");
+    await expect(app.view).not.toContainText("Pencere");
+    await expect(page.locator(".cyd.cyo,.cyd.cyf")).toHaveCount(0);
   });
 
   test("yatay mod: ekran ve ekleme penceresi taşmaz",async({app,page})=>{

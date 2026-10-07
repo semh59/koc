@@ -38,7 +38,15 @@ const chain=lens=>{let d="2025-01-01";const r=[{s:d}];for(const l of lens){d=add
   ok("düzensiz döngü işaretlenir, aralık genişler",ir.irregular&&C.diff(ir.to,ir.from)>C.diff(p.to,p.from),ir);
   ok("yalnız son 6 döngü sayılır",C.lengths(chain([40,40,40,28,28,28,28,28,28])).join()==="28,28,28,28,28,28");
   ok("atlanmış kayıt (60 günden uzun) ortalamayı bozmaz",C.predict(chain([28,28,100,28])).mean===28);
-  ok("yumurtlama ya da doğurgan pencere API'si yok",["fertile","ovulation","ovul","fertil"].every(k=>!Object.keys(C).some(x=>x.toLowerCase().includes(k))));
+  const f=C.fertile(p,last);
+  ok("yumurtlama sonraki başlangıçtan 14 gün önce, pencere -5/+1 gün",f.ov===add(last,28-14)&&f.from===add(f.ov,-5)&&f.to===add(f.ov,1),f);
+  ok("sapmalı ama düzenli (28 ± 2): sonraki başlangıç ortalamadan",C.fertile(C.predict(chain([26,30,26,30])),chain([26,30,26,30]).pop().s).ov===add(chain([26,30,26,30]).pop().s,14));
+  const g=C.fertile(p,T);
+  ok("pencere bugünden önce kalıyorsa sonraki döngüye kayar, geçmiş tarih yok",f.to<T&&g.to>=T&&C.diff(g.ov,f.ov)%28===0&&C.diff(g.from,T)<28,g);
+  ok("pencere bugün ya da sonrasındaysa kaymaz",C.fertile(p,f.to).ov===f.ov&&C.fertile(p,f.from).ov===f.ov);
+  ok("az veri: yumurtlama ve pencere yok",C.fertile(C.predict([]))===null&&C.fertile(C.predict(starts("2026-08-01","2026-08-29")))===null&&C.fertile(null)===null);
+  ok("düzensiz döngü: tarih verilmez, yalnız irregular",JSON.stringify(C.fertile(ir))==='{"irregular":true}');
+  ok("5 yıldan eski kayıtlarla yumurtlama yok",C.fertile(C.predict(C.clean(starts("2020-01-01","2020-01-29","2020-02-26"),T)))===null);
   ok("dönem günü: açık son kayıt ve 14 günden yeni ise sayılır",C.dayOfPeriod([{s:"2026-10-04"}],T)===3&&C.dayOfPeriod([{s:"2026-10-04",e:"2026-10-05"}],T)===null&&C.dayOfPeriod([{s:"2026-09-01"}],T)===null);
   ok("hatırlatma günü: aralıktan 2 gün önce, geçmişse ya da pencere dışıysa yok",(()=>{const pp={ok:true,from:"2026-10-20"};return C.remindDay(pp,T,30)==="2026-10-18"&&C.remindDay({ok:true,from:"2026-10-07"},T,30)===null&&C.remindDay({ok:true,from:"2026-12-20"},T,30)===null&&C.remindDay({ok:false},T,30)===null})());
 }
@@ -62,12 +70,13 @@ const seed=()=>ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.cycl
   seed();ev("cConsent(true)");
   const msgs=JSON.stringify(ev("cMessages('merhaba')")),ctx=ev("CoachLib.contextText(cData())");
   ok("Koç bağlamında ve cMessages gövdesinde döngü verisi yok",![msgs,ctx].some(t=>t.includes(SECRET)||/döngü|cycle|dönem/i.test(t)||t.includes("2026-07-29")),msgs.slice(0,300));
-  ok("widget ve CSV dışa aktarımına girmez",!JSON.stringify(ev("CsvLib.files(S,{exName:()=>'x',vctx:()=>'x'}).map(f=>f.build())")).includes(SECRET));
+  ok("Koç bağlamında yumurtlama ve doğurgan pencere yok",![msgs,ctx].some(t=>/yumurtlama|doğurgan|fertil|ovul/i.test(t)));
+  ok("widget ve CSV dışa aktarımına girmez",!/yumurtlama|doğurgan/i.test(JSON.stringify(ev("CsvLib.files(S,{exName:()=>'x',vctx:()=>'x'}).map(f=>f.build())")))&&!JSON.stringify(ev("CsvLib.files(S,{exName:()=>'x',vctx:()=>'x'}).map(f=>f.build())")).includes(SECRET));
 }
 { // bildirim
   seed();
   const n=ev("cycNotif()");
-  ok("bildirim kurulur ve metni nötr (konu ya da veri yok)",n&&n.title==="Hatırlatma"&&!/adet|döngü|dönem|regl|cycle|period/i.test(JSON.stringify([n.title,n.body]))&&n.schedule.at.getHours()===9,n);
+  ok("bildirim kurulur ve metni nötr (konu ya da veri yok)",n&&n.title==="Hatırlatma"&&!/adet|döngü|dönem|regl|cycle|period|yumurt|doğurgan|fertil|ovul/i.test(JSON.stringify([n.title,n.body]))&&n.schedule.at.getHours()===9,n);
   ev("S.settings.cycleRem=false");ok("hatırlatma kapalıysa bildirim yok",ev("cycNotif()")===null);
   ev("S.settings.cycleRem=true;S.settings.cycleOn=false");ok("döngü kapalıysa bildirim yok",ev("cycNotif()")===null);
   ev("S.settings.cycleOn=true;S.settings.healthNote='hamileyim'");ok("hamilelik işaretinde bildirim yok",ev("cycNotif()")===null);

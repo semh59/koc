@@ -1,6 +1,6 @@
 "use strict";
 /* Döngü kaydı: doğrulama, temizlik ve tahmin (DOM yok). Veri yalnız cihazda kalır; Koç'a, bildirim gövdesine ve widget'a girmez.
-   Tahmin yalnız geçmiş dönem başlangıçlarının ortalamasıdır. Yumurtlama ya da doğurgan pencere hesaplanmaz: korunma ya da gebelik aracı değildir. */
+   Tahmin geçmiş dönem başlangıçlarının ortalamasıdır; yumurtlama ve doğurgan pencere yalnız bilgi amaçlı takvim yöntemidir, korunma ya da gebelik aracı değildir. */
 const CycleLib=(()=>{
   const FLOW=[["h","Hafif"],["o","Orta"],["y","Yoğun"]],SYM=[["k","Kramp"],["b","Baş ağrısı"],["r","Ruh hali"]];
   const MAXROWS=80,MAXLEN=14,KEEP_DAYS=5*366,NID=9200,LEAD=2;
@@ -55,6 +55,15 @@ const CycleLib=(()=>{
     const w=Math.max(2,Math.ceil(sd)),st=rows.map(r=>r.s).sort().pop(),m=Math.round(mean);
     return {ok:true,n:L.length,mean:Math.round(mean*10)/10,sd:Math.round(sd*10)/10,from:addDays(st,m-w),to:addDays(st,m+w),irregular:sd>=5||Math.max(...L)-Math.min(...L)>=10};
   }
+  /* Takvim yöntemi: yumurtlama sonraki başlangıçtan 14 gün önce, pencere yumurtlamadan 5 gün önce - 1 gün sonra.
+     Tahmin yoksa null; düzensiz döngüde {irregular:true} (tarih verilmez). */
+  function fertile(p,today){
+    if(!p||!p.ok)return null;
+    if(p.irregular)return {irregular:true};
+    let ov=addDays(p.from,diff(p.to,p.from)/2-14);
+    while(addDays(ov,1)<today)ov=addDays(ov,Math.round(p.mean));
+    return {ov,from:addDays(ov,-5),to:addDays(ov,1)};
+  }
   /* Bu dönemin kaçıncı günü: bitişi girilmemiş son kayıt ve 14 günden yeni ise; yoksa null. */
   function dayOfPeriod(rows,today){
     const r=rows.length?rows[rows.length-1]:null;
@@ -67,6 +76,6 @@ const CycleLib=(()=>{
     const d=addDays(p.from,-LEAD);
     return d>=today&&diff(d,today)<win?d:null;
   }
-  return {FLOW,SYM,MAXROWS,MAXLEN,NID,LEAD,dayOk,dayN,addDays,diff,check,clean,overlap,lengths,predict,dayOfPeriod,remindDay};
+  return {FLOW,SYM,MAXROWS,MAXLEN,NID,LEAD,dayOk,dayN,addDays,diff,check,clean,overlap,lengths,predict,fertile,dayOfPeriod,remindDay};
 })();
 if(typeof module!=="undefined")module.exports=CycleLib;

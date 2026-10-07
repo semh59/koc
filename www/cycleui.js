@@ -29,25 +29,27 @@ function cycNotif(){
 }
 
 /* ---- Takvim: dolu kutu dönem günü, kesikli çerçeve tahmin aralığı (renge ek olarak biçim) ---- */
-function cycCal(p,today){
+function cycCal(p,f,today){
   const ym=cycMonth||today.slice(0,7),y=+ym.slice(0,4),m=+ym.slice(5,7),first=`${ym}-01`,n=new Date(y,m,0).getDate();
   const lead=(new Date(y,m-1,1).getDay()+6)%7;
   const isP=k=>S.cycle.some(r=>k>=r.s&&k<=(r.e||CycleLib.addDays(r.s,Math.min(CycleLib.MAXLEN-1,Math.max(0,CycleLib.diff(today,r.s))))));
   let cells="<span></span>".repeat(lead);
   for(let d=1;d<=n;d++){
-    const k=`${ym}-${String(d).padStart(2,"0")}`,pd=isP(k),pr=p&&k>=p.from&&k<=p.to;
-    cells+=`<span class="cyd${pd?" cyp":""}${pr?" cyt":""}${k===today?" cyn":""}">${pd||pr||k===today?`<span class="vh">${d} ${cycMonths[m-1]}${pd?", dönem günü":""}${pr?", tahmini aralık":""}${k===today?", bugün":""}</span>`:""}<span aria-hidden="true">${d}</span></span>`;
+    const k=`${ym}-${String(d).padStart(2,"0")}`,pd=isP(k),pr=p&&k>=p.from&&k<=p.to,fw=f&&f.ov&&k>=f.from&&k<=f.to,fo=fw&&k===f.ov;
+    cells+=`<span class="cyd${pd?" cyp":""}${pr?" cyt":""}${fo?" cyo":fw?" cyf":""}${k===today?" cyn":""}">${pd||pr||fw||k===today?`<span class="vh">${d} ${cycMonths[m-1]}${pd?", dönem günü":""}${pr?", tahmini aralık":""}${fo?", tahmini yumurtlama günü":fw?", tahmini doğurgan pencere":""}${k===today?", bugün":""}</span>`:""}<span aria-hidden="true">${d}</span></span>`;
   }
   return `<div class="card"><div class="cyh"><button class="chip" data-cy="mon:-1" aria-label="Önceki ay">‹</button><b role="status" aria-live="polite">${cycMonths[m-1]} ${y}</b><button class="chip" data-cy="mon:1" aria-label="Sonraki ay">›</button></div>
     <div class="cyg" role="group" aria-label="${cycMonths[m-1]} ${y} takvimi">${["Pzt","Sal","Çar","Per","Cum","Cmt","Paz"].map(s=>`<span class="cyw" aria-hidden="true">${s}</span>`).join("")}${cells}</div>
-    <div class="legend"><span><i class="cyk cyp"></i>Dönem günü</span>${p?`<span><i class="cyk cyt"></i>Tahmini aralık</span>`:""}</div></div>`;
+    <div class="legend"><span><i class="cyk cyp"></i>Dönem günü</span>${p?`<span><i class="cyk cyt"></i>Tahmini aralık</span>`:""}${f&&f.ov?`<span><b aria-hidden="true">○</b> Doğurgan pencere</span><span><b aria-hidden="true">◆</b> Yumurtlama</span>`:""}</div></div>`;
 }
 
 /* ---- Ekran ---- */
+const cycFertNote="Tahmindir. Doğum kontrolü veya gebelik planlaması için güvenilir değildir; hekimine danış.";
+const cycFertile=f=>`<div class="card"><div class="lbl">Tahmini yumurtlama ve doğurgan pencere</div>${f.irregular?`<p class="mut" role="note">Düzensiz döngüde tahmin güvenilmez.</p>`:`<div class="sumv num" style="color:var(--ink)">Pencere ${fd(f.from)} – ${fd(f.to)}</div><div class="mut sm">Tahmini yumurtlama: ${fd(f.ov)}. Takvim yöntemine göre: yumurtlama sonraki dönemden yaklaşık 14 gün önce, pencere yumurtlamadan 5 gün önce - 1 gün sonra.</div>`}<div class="mut sm" role="note" style="margin-top:6px">${cycFertNote}</div></div>`;
 function viewDongu(){
   const st=S.settings,today=dayKey();
   if(!st.cycleOn)return `<div class="card"><p>Döngü takibi kapalı.</p><button class="btn" data-cy="toggle">Döngü takibini aç</button></div><p class="hint">Veriler yalnız telefonda durur. ${cycNote}</p>`;
-  const preg=risk().pregnant,p=preg?{ok:false}:CycleLib.predict(S.cycle),dn=CycleLib.dayOfPeriod(S.cycle,today),lastRow=S.cycle[S.cycle.length-1];
+  const preg=risk().pregnant,p=preg?{ok:false}:CycleLib.predict(S.cycle),f=CycleLib.fertile(p,today),dn=CycleLib.dayOfPeriod(S.cycle,today),lastRow=S.cycle[S.cycle.length-1];
   let pred;
   if(preg)pred=`<p class="mut">Sağlık notunda hamilelik ya da emzirme geçtiği için tahmin gösterilmiyor. Sorularını hekimine danış. Kayıtların durur.</p>`;
   else if(!p.ok)pred=`<p class="mut">Yeterli veri yok. Tahmin için en az 3 dönem başlangıcı kaydet.</p>`;
@@ -62,7 +64,8 @@ function viewDongu(){
   return `<button class="btn" data-cy="add" style="margin-bottom:12px">${Icons.svg("plus")} Dönem ekle</button>
   <div class="card"><div class="lbl">Bu dönem</div>${dn?`<div class="sumv num" style="color:var(--ink)">${dn}. gün</div><button class="chip" data-cy="end">Bugün bitti</button>`:`<p class="mut">${lastRow?`Açık dönem yok. Son başlangıç: ${fd(lastRow.s)}.`:"Henüz kayıt yok."}</p>`}</div>
   <div class="card"><div class="lbl">Tahmini sonraki dönem</div>${pred}<div class="mut sm" style="margin-top:6px">${cycNote}</div></div>
-  ${cycCal(p.ok?p:null,today)}
+  ${p.ok?cycFertile(f):""}
+  ${cycCal(p.ok?p:null,f,today)}
   <div class="card"><div class="lbl">Geçmiş</div>${rows||`<p class="mut">Henüz kayıt yok.</p>`}</div>
   <p class="hint">Veriler yalnız telefonda durur; Koç'a, bildirim metnine ve widget'a girmez. Silmek için Gizlilik ve veri'yi kullan.</p>`;
 }
