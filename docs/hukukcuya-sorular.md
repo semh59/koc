@@ -20,3 +20,6 @@ Uygulama 18 yaş ve üzeri içindir. Kurulumda yaş kullanıcının beyanıyla a
 
 ## 5. Tıbbi cihaz sınıfı
 Uygulama tansiyon ve şeker ölçümlerini, tahlil sonuçlarını ve ilaç saatlerini yalnız kayıt olarak tutar; yorum, hedef ya da eşik karşılaştırması yapmaz, tanı koymaz, tedavi önermez ve bunu uygulamada ve mağaza metninde yazar. İki nokta tartışmalı olabilir: (1) bugün tarihli çok uç tansiyon (180/120 ve üstü) ya da şeker (54 altı, 400 üstü) kaydında "cihazı kontrol et, belirtin varsa ya da değer doğruysa 112'yi ara" uyarısı çıkar; (2) kayıtlar "doktor raporu" adıyla PDF olarak dışa aktarılır ("yorumlanmamıştır" notuyla). Bu özellikler uygulamayı tıbbi cihaz yazılımı (Tıbbi Cihaz Yönetmeliği, MDR) ya da Play'in "tıbbi/klinik" uygulama sınıfı yapar mı? Hangi ifadeler ya da ad değişikliği riski azaltır?
+
+## Döngü verisi
+Döngü verisi cihazda kaldığı için ayrı bir beyan gerekir mi?
