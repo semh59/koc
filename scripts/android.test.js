@@ -125,4 +125,5 @@ ok("hareket: status öğrenilmiş adım ölçeğini (fw/fr) JS'e verir, elle yü
   ok("e2e: CI'da bir yeniden deneme, yerelde yok; npm test tüm test dosyalarını çalıştırıp toplu sonuç verir",/retries:CI\?1:0/.test(rd("e2e/playwright.config.js"))&&JSON.parse(rd("package.json")).scripts.test==="node scripts/run-tests.js"&&/failed\.push\(f\)/.test(rd("scripts/run-tests.js"))&&/readdirSync\(dir\)\.filter\(f => f\.endsWith\("\.test\.js"\)\)/.test(rd("scripts/run-tests.js")));
   ok("smoke: sabit bekleme yerine zaman aşımlı koşul döngüsü ve adım başlıkları; açılış beklemesi 'sleep 10' döngüsü değil",/until_ok\(\) \{/.test(sh)&&(sh.match(/^step "/gm)||[]).length>=8&&(sh.match(/sleep (\d+)/g)||[]).every(s=>+s.slice(6)<=3)&&/until_ok\(\) \{/.test(sr));
 }
+ok("sürüm: CI her derlemede versionName 1.0.<numara> yapar, Hakkında ekranı App.getInfo ile gösterir",/versionName "1\.0\./.test(patch)&&/replace\(\/versionName/.test(patch)&&/App;if\(a&&a\.getInfo\)a\.getInfo\(\)/.test(rd("www/index.html"))&&rd("www/index.html").includes("Sürüm ${esc(appVer)}"));
 process.exit(bad?1:0);
