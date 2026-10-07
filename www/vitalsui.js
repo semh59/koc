@@ -73,7 +73,7 @@ const vGet=id=>{const e=document.getElementById(id);return e?e.value:""};
 function vWarn(msg){const e=document.getElementById("vwarn");if(e)e.textContent=msg}
 function vFinish(rows,msg){
   const day=rows[0].day,backup=S.vitals.slice();
-  S.vitals=S.vitals.concat(rows.map((r,i)=>({...r,id:vNextId()+i})));
+  S.vitals=S.vitals.concat(rows.map((r,i)=>({...r,sid:r.sid||VitalsLib.newSid(),id:vNextId()+i})));
   if(!save()){S.vitals=backup;return toast("Kaydedilemedi, depolama dolu")}
   const ids=S.vitals.slice(-rows.length).map(r=>r.id);
   closeSheet();render();
@@ -83,7 +83,7 @@ function vFinish(rows,msg){
   toast(msg,()=>{S.vitals=S.vitals.filter(r=>!ids.includes(r.id));save();render()});
 }
 function vSaveBp(){
-  const day=vGet("fday"),time=vGet("vtime"),not=vGet("vnot"),sid=Math.random().toString(36).slice(2,10).replace(/[^a-z0-9]/g,"a");
+  const day=vGet("fday"),time=vGet("vtime"),not=vGet("vnot"),sid=VitalsLib.newSid();
   const rd=n=>({sys:vN(vGet("bs"+n)),dia:vN(vGet("bd"+n)),nabiz:vN(vGet("bn"+n)),has:["bs","bd","bn"].some(p=>vGet(p+n).trim()!=="")});
   const a=rd(1),b=rd(2),rows=[];
   if(!a.has||a.sys==null||a.dia==null)return toast("1. ölçümün büyük ve küçük tansiyonunu yaz");

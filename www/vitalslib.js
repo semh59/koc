@@ -20,13 +20,13 @@ const VitalsLib=(()=>{
     if(!dayOk(x.day)||!timeOk(x.time))return {err:"tarih"};
     const o={day:x.day,time:x.time,k:x.k};
     if(typeof x.not==="string"&&x.not.trim())o.not=x.not.trim().slice(0,80);
+    if(typeof x.sid==="string"&&/^[a-z0-9]{1,12}$/.test(x.sid))o.sid=x.sid;
     if(x.k==="t"){
       if(!inr(x.sys,LIM.sys)||!inr(x.dia,LIM.dia))return {err:"Sistolik 50-300, diyastolik 30-200 arasında olmalı"};
       if(x.sys<=x.dia)return {err:"Sistolik (büyük tansiyon) diyastolikten büyük olmalı"};
       o.sys=Math.round(x.sys);o.dia=Math.round(x.dia);
       if(x.nabiz!=null&&x.nabiz!==""){if(!inr(x.nabiz,LIM.pulse))return {err:"Nabız 25-250 arasında olmalı"};o.nabiz=Math.round(x.nabiz)}
       o.ses=SES.some(s=>s[0]===x.ses)?x.ses:"diger";
-      if(typeof x.sid==="string"&&/^[a-z0-9]{1,12}$/.test(x.sid))o.sid=x.sid;
       if(x.i===1||x.i===2)o.i=x.i;
     }else{
       if(!inr(x.g,LIM.g))return {err:"Şeker 20-800 mg/dL arasında olmalı"};
@@ -34,7 +34,9 @@ const VitalsLib=(()=>{
     }
     return {row:o};
   }
-  /* Saklanan listeyi temizler: geçersizleri ve yinelenenleri atar, kimlikleri yeniden verir. */
+  /* Elle girilen her ölçüm kendi kimliğini alır: aynı dakikadaki aynı değerler iki gerçek ölçümdür, temizlikte birleşmez. */
+  const newSid=()=>Math.random().toString(36).slice(2,10).replace(/[^a-z0-9]/g,"a");
+  /* Saklanan listeyi temizler: geçersizleri ve yinelenenleri (aynı sid, sid yoksa aynı imza) atar, kimlikleri yeniden verir. */
   function clean(arr){
     const out=[],seen=new Set();let id=1;
     for(const x of (Array.isArray(arr)?arr:[]).slice(-5000)){
@@ -167,6 +169,6 @@ const VitalsLib=(()=>{
     }
     ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText(`NeoWell · sayfa ${info.page}/${info.total}`,RM,RH-45);
   }
-  return {CTX,SES,ctxName,sesName,LIM,check,clean,sessions,homeAvg,gStats,crisis,needsConfirm,reportRows,paginate,drawPage,drawChart,RW,RH,dayN,num};
+  return {newSid,CTX,SES,ctxName,sesName,LIM,check,clean,sessions,homeAvg,gStats,crisis,needsConfirm,reportRows,paginate,drawPage,drawChart,RW,RH,dayN,num};
 })();
 if(typeof module!=="undefined")module.exports=VitalsLib;
