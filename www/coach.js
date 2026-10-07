@@ -2,6 +2,8 @@
 /* Koç: durum, sağlayıcı zinciri, sohbet ekranı ve ayarlar. coachlib.js ve algo.js'e dayanır. */
 /* API anahtarları: bellekte KEYS; telefonda Keystore kasası (KeyVault) ile şifreli, kasa yoksa (tarayıcı) düz metin. */
 const KEYS_LS="koc_keys",KEYS_ENC="koc_keys_enc";
+/* Modele giden sohbet geçmişi mesaj sayısı; rıza metni (CONSENT_SENT) aynı sabitten üretilir. */
+const HIST_N=10;
 let KEYS={},vaultOn=false;
 const KV=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.KeyVault;
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
@@ -11,11 +13,24 @@ const getKeys=()=>KEYS;
 const keysStored=()=>!!(lsGet(KEYS_ENC)||lsGet(KEYS_LS));
 const VAULT_WARN="Anahtarlar bu telefonda şifrelenemedi, düz saklanır";
 /* Telefonda kasa çalışmazsa düz metne kullanıcı izniyle düşülür; izin yoksa anahtar yalnız bu oturumda bellekte kalır. */
-let plainOk=lsGet("koc_keys_plain")==="1",plainNo=false,vaultWarned=false;
+let plainOk=lsGet("koc_keys_plain")==="1",plainNo=false,vaultWarned=false,locked=false;
+/* KeyVaultPlugin sözleşmesi: yalnız "KEY_INVALIDATED" kalıcı olarak geçersiz Keystore anahtarıdır; başka hata geçicidir, şifreli kayıt silinmez. */
+const invalid=e=>!!e&&e.code==="KEY_INVALIDATED";
+const VAULT_RETRY="Koç anahtarları şu an okunamadı, kayıtları silinmedi. Biraz sonra uygulamayı yeniden açıp tekrar dene";
 const plainHas=()=>{try{return Object.keys(JSON.parse(lsGet(KEYS_LS)||"{}")).length>0}catch(e){return false}};
 async function persistKeys(){
   const j=JSON.stringify(KEYS);
-  if(KV()){try{lsSet(KEYS_ENC,(await KV().encrypt({text:j})).data);lsDel(KEYS_LS);vaultOn=true;return}catch(e){vaultOn=false}}
+  if(locked){
+    /* Şifreli kayıt geçici hatayla okunamadı: üstüne yazmadan önce yeniden okunur; olmazsa eski anahtarlar korunur, yazılmaz. */
+    try{KEYS={...JSON.parse((await KV().decrypt({data:lsGet(KEYS_ENC)})).text),...KEYS};locked=false}catch(e){if(invalid(e)){locked=false}else return void toast(VAULT_RETRY)}
+  }
+  if(KV()){
+    try{
+      let r;
+      try{r=await KV().encrypt({text:j})}catch(e){if(!invalid(e))throw e;r=await KV().encrypt({text:j,reset:true})}
+      lsSet(KEYS_ENC,r.data);lsDel(KEYS_LS);vaultOn=true;return;
+    }catch(e){vaultOn=false}
+  }
   if(KV()&&Object.keys(KEYS).length){
     if(!plainOk&&!plainHas()){
       if(plainNo||!confirm(VAULT_WARN+". Tamam: düz saklansın. İptal: anahtar yalnız bu oturumda kalır, uygulamayı kapatınca yeniden girersin."))return void(plainNo=true);
@@ -30,8 +45,14 @@ async function keysInit(){
   const readPlain=()=>{try{KEYS=JSON.parse(lsGet(KEYS_LS))||{}}catch(e){KEYS={}}};
   if(!kv){readPlain();return}
   try{
-    if(enc){try{KEYS=JSON.parse((await kv.decrypt({data:enc})).text)||{}}catch(e){KEYS={};lost=true;lsDel(KEYS_ENC)}}
-    else readPlain();
+    if(enc){
+      try{KEYS=JSON.parse((await kv.decrypt({data:enc})).text)||{}}
+      catch(e){
+        KEYS={};
+        if(!invalid(e)){locked=true;console.log("NW-VAULT fail");return void toast(VAULT_RETRY)}
+        lost=true;lsDel(KEYS_ENC);try{await kv.resetKey()}catch(x){}
+      }
+    }else readPlain();
     vaultOn=true;await persistKeys();
     if(vaultOn&&(await kv.decrypt({data:lsGet(KEYS_ENC)})).text!==JSON.stringify(KEYS)){vaultOn=false;lsSet(KEYS_LS,JSON.stringify(KEYS))}
   }catch(e){vaultOn=false;if(!Object.keys(KEYS).length)readPlain();lsSet(KEYS_LS,JSON.stringify(KEYS))}
@@ -78,14 +99,16 @@ function cleanCoach(r){
 }
 const CHATS_MAX=20,ARCH_MSGS=600,ARCH_CHARS=250000;
 /* Arşiv depolama kotasını doldurmasın: en yeni sohbetler kalır, toplam mesaj ve boyut sınırı aşılınca eskiler atılır (en yeni her zaman kalır). */
-function trimChats(list){
+function trimChats(list,warn){
   let n=0,ch=0;const out=[];
   for(const c of list){
     n+=c.msgs.length;ch+=JSON.stringify(c.msgs).length;
     if(out.length&&(n>ARCH_MSGS||ch>ARCH_CHARS))break;
     out.push(c);
   }
-  return out.slice(0,CHATS_MAX);
+  const kept=out.slice(0,CHATS_MAX);
+  if(warn&&kept.length<list.length)toast("Arşiv sınırı doldu, en eski sohbet silindi");
+  return kept;
 }
 function cleanChat(arr,known){
   const chat=[];
@@ -110,6 +133,8 @@ function cleanChat(arr,known){
   }
   return chat;
 }
+/* Düğmeyle istenen menü, program ve yorum isteği başarısız olursa kullanıcı mesajı yanıtsız kalmaz: geri alınır, bekleyen sohbet gibi yeniden gönderilmez. */
+const cDrop=m=>{S.chat=S.chat.filter(x=>x!==m)};
 function cPush(m){const o=Object.assign({id:S.cid++,t:Date.now()},m);S.chat.push(o);if(S.chat.length>150)S.chat.splice(0,S.chat.length-150);return o}
 
 /* ---- bağlam ---- */
@@ -165,7 +190,7 @@ function cHistLog(m){
 }
 function cMessages(extraUser,extraSys,noHist){
   const sys=CoachLib.SYSTEM+(extraSys?"\n\nNOT: "+extraSys:"")+"\n\n"+CoachLib.contextText(cData());
-  const hist=noHist?[]:S.chat.filter(m=>m.role!=="sys"&&m.text).slice(-10).map(m=>({role:m.role==="user"?"user":"assistant",content:m.role==="user"?m.text.slice(0,300):JSON.stringify({reply:m.text.slice(0,260),log:cHistLog(m)})}));
+  const hist=noHist?[]:S.chat.filter(m=>m.role!=="sys"&&m.text).slice(-HIST_N).map(m=>({role:m.role==="user"?"user":"assistant",content:m.role==="user"?m.text.slice(0,300):JSON.stringify({reply:m.text.slice(0,260),log:cHistLog(m)})}));
   const msgs=[{role:"system",content:sys}].concat(hist);
   if(extraUser)msgs.push({role:"user",content:extraUser});
   return msgs;
@@ -208,7 +233,7 @@ function pBody(p,messages,maxTokens){
 const errOf=e=>{const kind=(e&&e.kind)||CoachLib.errKind(e&&e.status,e&&e.body,e&&e.name);return {kind,text:CoachLib.errText(kind,e&&e.status)}};
 function pFail(id,e){
   const {kind,text}=errOf(e);
-  if(kind==="limit")cool[id]=Date.now()+60000;else if(kind==="time")cool[id]=Date.now()+30000;else if(kind==="key"||kind==="quota")cool[id]=Date.now()+600000;
+  if(kind==="limit")cool[id]=Date.now()+60000;else if(kind==="time")cool[id]=Date.now()+30000;else if(kind==="key"||kind==="quota")cool[id]=Date.now()+600000;else if(kind==="model")cool[id]=Date.now()+120000;else if(kind==="down"||kind==="net"||kind==="empty")cool[id]=Date.now()+10000;
   pstat[id]={s:kind==="limit"?"limit":kind==="key"?"key":"err",t:Date.now(),m:text};
   return text;
 }
@@ -261,11 +286,12 @@ function cSend(text){
 const riskMerge=(a,b)=>[...new Set(((a||"")+","+(b||"")).split(",").filter(Boolean))].sort().join(",");
 function cRisk(k){S.settings.chatRisk=riskMerge(S.settings.chatRisk,k)}
 /* Sağlık notu kaydında ağır işaret (kendine zarar, acil belirti) varsa sohbette güvenlik kartı gösterilir. */
-function cNoteCheck(){
-  const f=CoachLib.redFlag(S.settings.healthNote);
+function cNoteCheck(t=S.settings.healthNote){
+  const f=CoachLib.redFlag(t),preg=CoachLib.pregnant(t);
   if(f==="mind"||f==="emergency"){cPush({role:"coach",text:"",card:{kind:"safety",level:f}});toast("Notunda bir sağlık uyarısı işareti var, Koç sekmesine bak")}
   if(f==="ed")cRisk("ed");
-  if(CoachLib.pregnant(S.settings.healthNote))cRisk("preg");
+  if(preg)cRisk("preg");
+  return f||(preg?"preg":null);
 }
 async function cFlush(){
   if(busy)return;
@@ -276,7 +302,7 @@ async function cFlush(){
   try{
     const r=await cAsk(cMessages(null,fl?"Kullanıcı bir belirti ya da yeme zorluğu bildirdi ve güvenlik kartı gösterildi. Kısa, ihtiyatlı yanıt ver, kalori kısıtlaması önerme.":""),undefined,ask);
     let o=CoachLib.parse(r.text);
-    const said=pend[pend.length-1].text,act=x=>CoachLib.cleanItems(x.log).length||x.food||x.propose||x.program||x.menu;
+    const said=pend[pend.length-1].text,act=x=>CoachLib.cleanItems(x.log).length||x.food||x.propose;
     /* Tek yeniden sorma: doğru JSON her zaman kabul edilir; ikisi de bozuksa eksiksiz görünen ilk yanıt (ya da "yanıt eksik" iletisi) gösterilir. */
     if(!fl&&(o.plain||(CoachLib.reported(said)&&!act(o)))&&ask.until-Date.now()>8000){
       try{
@@ -389,14 +415,14 @@ async function cProgram(o){
   const rk=risk();
   if(rk.ed||rk.pregnant)return toast((rk.ed?"Yeme düzeniyle ilgili işaret gördüm":"Hamilelik ya da emzirme işareti var")+"; program önermiyorum, hekimine danış");
   const {ids,text}=cCatalog(o);
-  cPush({role:"user",text:`Program iste: haftada ${o.d} gün, ${o.m} dk, ${o.q}, ${o.l}`});
+  const msgs=cMessages(`Haftada ${o.d} gün, seans ${o.m} dakika, ekipman ${o.q}, seviye ${o.l} için antrenman programı hazırla. "program" alanını doldur, reply'da kısaca anlat.`,"KATALOG (kimlik|ad|bölge):\n"+text,true),um=cPush({role:"user",text:`Program iste: haftada ${o.d} gün, ${o.m} dk, ${o.q}, ${o.l}`});
   tab="koc";busy=true;typing=true;render();
   try{
-    const r=await cAsk(cMessages(`Haftada ${o.d} gün, seans ${o.m} dakika, ekipman ${o.q}, seviye ${o.l} için antrenman programı hazırla. "program" alanını doldur, reply'da kısaca anlat.`,"KATALOG (kimlik|ad|bölge):\n"+text),900);
+    const r=await cAsk(msgs,900);
     const p=CoachLib.parse(r.text),pg=CoachLib.cleanProgram(p.program,ids,o.d);offline=null;
     if(pg)cPush({role:"coach",text:p.reply,card:Object.assign({kind:"program",state:"pending"},pg)});
-    else toast("Program okunamadı, tekrar dene");
-  }catch(e){toast(e.message==="declined"?"Gönderim onaylanmadı":"Koç şu an ulaşılamıyor, sonra tekrar dene")}
+    else{cDrop(um);toast("Program okunamadı, tekrar dene")}
+  }catch(e){cDrop(um);toast(e.message==="declined"?"Gönderim onaylanmadı":"Koç şu an ulaşılamıyor, sonra tekrar dene")}
   finally{busy=false;typing=false;save();render()}
 }
 
@@ -441,17 +467,18 @@ async function cMenu(){
   if(!coachOn()){tab="koc";render();return toast("Önce Koç'ta veri paylaşımını kabul et")}
   if(!usable().length)return toast("Koç için anahtar gerekli: Ayarlar > Koç");
   const pl=cMenuPlan(),note=CoachLib.oneLine(menuNote,200);
+  const nf=cNoteCheck(note);
+  if(nf){save();render();return toast(nf==="preg"?"Notunda hamilelik ya da emzirme işareti var, menü hazırlamıyorum; hekimine ya da diyetisyenine danış":"Notunda sağlık uyarısı işareti var, menü hazırlamıyorum; hekimine danış")}
   if(pl.why)return toast(pl.why);
-  if(CoachLib.redFlag(note))return toast("Notunda sağlık uyarısı işareti var, menü hazırlamıyorum; hekimine danış");
   const {cat,text}=cMenuCat(),p=pl.protein;
-  cPush({role:"user",text:`Haftalık menü iste: günde ~${pl.kcal} kcal${note?`, not: ${note}`:""}`});
+  const msgs=cMessages(`7 günlük menü hazırla. "menu" alanını doldur, reply'da en fazla 2 cümle yaz.`,`MENÜ İSTEĞİ. Hedef günlük ${pl.kcal} kcal (gün toplamı ±%10), ${p?`protein ${p[0]}-${p[1]} g/gün`:pl.pdoc?"protein hedefi hekimle belirlenmeli, yüksek proteinli menü kurma":"protein yeterli olsun"}. YALNIZ KATALOG kimliklerini kullan, listede olmayan besin ekleme. Günde 3-6 öğün, öğün anahtarı: kah, ogl, aks, atis. Katalogdaki kcal ve protein BİR porsiyon içindir; q porsiyon çarpanıdır (0.25-4).${note?`\nKullanıcının kısıt/alerji notu (uy): ${note}`:""}\nTıbbi diyet ya da hastalık menüsü yazma.${pl.block?` KISIT var: ${pl.block}; kalori açığı kurma.`:""}\nÇıktı JSON: {"reply":"...","menu":{"days":[{"n":"Pazartesi","meals":[{"m":"kah","i":[["kimlik",1]]}]}]}}\nKATALOG (kimlik|ad|kcal|protein):\n${text}`,true),um=cPush({role:"user",text:`Haftalık menü iste: günde ~${pl.kcal} kcal${note?`, not: ${note}`:""}`});
   tab="koc";busy=true;typing=true;render();
   try{
-    const r=await cAsk(cMessages(`7 günlük menü hazırla. "menu" alanını doldur, reply'da en fazla 2 cümle yaz.`,`MENÜ İSTEĞİ. Hedef günlük ${pl.kcal} kcal (gün toplamı ±%10), ${p?`protein ${p[0]}-${p[1]} g/gün`:pl.pdoc?"protein hedefi hekimle belirlenmeli, yüksek proteinli menü kurma":"protein yeterli olsun"}. YALNIZ KATALOG kimliklerini kullan, listede olmayan besin ekleme. Günde 3-6 öğün, öğün anahtarı: kah, ogl, aks, atis. Katalogdaki kcal ve protein BİR porsiyon içindir; q porsiyon çarpanıdır (0.25-4).${note?`\nKullanıcının kısıt/alerji notu (uy): ${note}`:""}\nTıbbi diyet ya da hastalık menüsü yazma.${pl.block?` KISIT var: ${pl.block}; kalori açığı kurma.`:""}\nÇıktı JSON: {"reply":"...","menu":{"days":[{"n":"Pazartesi","meals":[{"m":"kah","i":[["kimlik",1]]}]}]}}\nKATALOG (kimlik|ad|kcal|protein):\n${text}`,true),2400);
+    const r=await cAsk(msgs,2400);
     const o=CoachLib.parse(r.text),mn=CoachLib.cleanMenu(o.menu,cat,pl.kcal);offline=null;
     if(mn)cPush({role:"coach",text:o.reply,card:Object.assign({kind:"menu",chk:[]},mn)});
-    else toast("Menü okunamadı, tekrar dene");
-  }catch(e){toast(e.message==="declined"?"Gönderim onaylanmadı":"Koç şu an ulaşılamıyor, sonra tekrar dene")}
+    else{cDrop(um);toast("Menü okunamadı, tekrar dene")}
+  }catch(e){cDrop(um);toast(e.message==="declined"?"Gönderim onaylanmadı":"Koç şu an ulaşılamıyor, sonra tekrar dene")}
   finally{busy=false;typing=false;save();render()}
 }
 const menuCard=id=>{const m=S.chat.find(x=>x.id===id);return m&&m.card&&m.card.kind==="menu"?m.card:null};
@@ -499,10 +526,10 @@ async function cComment(kind){
   const s=weekSummary(dayKey()),user=kind==="weekly"
     ?`Son 7 günümün yorumunu yaz, 5-6 cümle. Uygulamanın hesapladığı özet: kayıt ${s.logged}/${s.n} gün, tartılar ${s.ws.map(x=>fmt(x)).join(", ")||"yok"}, ortalama kalori ${s.avgKcal||"veri yok"}, ortalama su ${s.avgSu||"veri yok"} ml, spor ${s.sport} dk. Hedefe uyumu değerlendir ve gelecek hafta için tek bir odak öner. Bu sayılar dışında rakam kullanma.`
     :"Bugünkü kayıtlarıma kısaca yorum yap ve bugün için 3 kısa hedef öner.";
-  cPush({role:"user",text:kind==="weekly"?"Haftamı yorumlar mısın?":"Bugünümü yorumlar mısın?"});
+  const msgs=cMessages(user),um=cPush({role:"user",text:kind==="weekly"?"Haftamı yorumlar mısın?":"Bugünümü yorumlar mısın?"});
   tab="koc";busy=true;typing=true;render();
-  try{const r=await cAsk(cMessages(user));cReply(Object.assign(CoachLib.parse(r.text),{log:[]}),kind);offline=null}
-  catch(e){toast(e.message==="declined"?"Gönderim onaylanmadı":"Koç şu an ulaşılamıyor, sonra tekrar dene")}
+  try{const r=await cAsk(msgs);cReply(Object.assign(CoachLib.parse(r.text),{log:[]}),kind);offline=null}
+  catch(e){cDrop(um);toast(e.message==="declined"?"Gönderim onaylanmadı":"Koç şu an ulaşılamıyor, sonra tekrar dene")}
   finally{busy=false;typing=false;save();render()}
 }
 
@@ -559,18 +586,19 @@ const provOk=()=>{const c=(S.settings.consentP||"").split(","),k=getKeys();retur
 const coachOn=()=>S.settings.consent&&consentOk()&&provOk();
 function cAgeGuard(){if(S.settings.consent&&!consentOk()){Object.assign(S.settings,{consent:false,consentV:0,consentAt:""});toast(S.settings.age>0?"18 yaş altında Koç veri paylaşımı kapatıldı":"Yaş girilmediği için Koç veri paylaşımı kapatıldı")}}
 /* Tek metin kaynağı: uygulama içi onay ve docs/gizlilik-politikasi.md §5 aynı iki cümleyi taşır (app.test.js eşitliği sınar). Değişirse ikisini birlikte güncelle; gönderilen alanlar değiştiyse CONSENT_V'yi artır. */
-const CONSENT_SENT="yazdığın mesajlar ve son 10 sohbet mesajı (Koç yanıtları dahil); profilin (boy, yaş, cinsiyet, hareket düzeyi); sağlık notun; hedeflerin ve hesaplanan değerler (trend kilo, tahmini harcama, protein aralığı); son 14 günün kilo, yemek (kcal ve protein), su, spor ve adım özeti (varsa uyku ve ruh hali); bugünkü kayıtların (yemek adları, su, tartı, spor ve not metinleri); son 3 antrenman (hareket adları, en iyi set) ve bu haftaki bölge başına set sayıları; son 7 günün en çok 3 notu; ilaç modülü açıksa ilaç adı, doz, saatler, haftanın günleri, son 7 günün uyumu ve stok; menü ya da program istersen yazdığın istek notu ve menü kataloğunda kendi besin, favori ve şablon adların (kalori ve protein değerleriyle)";
+const CONSENT_SENT=`yazdığın mesajlar ve son ${HIST_N} sohbet mesajı (Koç yanıtları dahil); profilin (boy, yaş, cinsiyet, hareket düzeyi); sağlık notun; hedeflerin ve hesaplanan değerler (trend kilo, tahmini harcama, protein aralığı); son 14 günün kilo, yemek (kcal ve protein), su, spor ve adım özeti (varsa uyku ve ruh hali); bugünkü kayıtların (yemek adları, su, tartı, spor ve not metinleri); son 3 antrenman (hareket adları, en iyi set) ve bu haftaki bölge başına set sayıları; son 7 günün en çok 3 notu; ilaç modülü açıksa ilaç adı, doz, saatler, haftanın günleri, son 7 günün uyumu ve stok; menü ya da program istersen yazdığın istek notu ve menü kataloğunda kendi besin, favori ve şablon adların (kalori ve protein değerleriyle)`;
 const CONSENT_WHEN="Yalnız sen bir düğmeye bastığında gönderilir (mesaj gönder, yorum, menü ya da program iste); uygulama açılırken ya da arka planda kendiliğinden hiçbir şey gönderilmez.";
 const CONSENT_NOT="Tahlil, tansiyon, şeker, vücut ölçüleri, tarifler, oruç kayıtları, fotoğraf, konum ve yedek gönderilmez.";
 const consentHtml=()=>`<b>Koç ile veri paylaşımına açık rızan</b><ul style="margin:6px 0;padding-left:18px"><li><b>Ne gönderilir:</b> ${CONSENT_SENT}. ${CONSENT_NOT}</li><li><b>Ne zaman:</b> ${CONSENT_WHEN}</li><li><b>Kime:</b> seçtiğin sağlayıcıya (${esc(S.providers.filter(p=>p.on&&p.health).map(p=>p.name).join(", ")||"hiçbiri seçili değil")}), kendi anahtarınla. Sunucuları yurt dışındadır; bu bir yurt dışına aktarımdır.</li><li><b>Geri alma:</b> istediğin an Ayarlar > Gizlilik ve veri ya da Yapay zekâ koç bölümünden. Geri alınca yeni veri gitmez; önceden gönderilene sağlayıcının kendi politikası uygulanır.</li><li><b>Onay vermezsen</b> uygulama tam çalışır, yalnız Koç konuşmaz.</li></ul>${S.settings.consent&&consentOk()&&!provOk()?`<p><b>Sağlayıcı listen değişti.</b> Onayını verdiğinde bu sağlayıcılar yoktu; devam için yeniden onay ver.</p>`:""}${S.providers.some(p=>p.on&&p.health&&isCustom(p))?`<p><b>Özel sağlayıcı:</b> kendi eklediğin sunucuya (${esc(S.providers.filter(p=>p.on&&p.health&&isCustom(p)).map(p=>hostOf(p)).join(", "))}) verilerin ve anahtarın doğrudan gider; yalnız güvendiğin bir servis kullan.</p>`:""}${consentOk()?"":S.settings.age>0?`<p><b>18 yaş altı için Koç veri paylaşımı kapalıdır.</b></p>`:`<p><b>Koç için önce yaşını gir</b> (Ayarlar > Profil ve hedefler). Yaş bilinmeden Koç açılmaz.</p>`}`;
 /* Sohbeti siler, onaya dokunmaz. */
-function cClearChat(){S.chat=[];S.chats=[];save()}
+function cClearChat(){if(!cSwitchOk())return false;S.chat=[];S.chats=[];save();return true}
 /* Ayrı sohbetler: açık sohbet geçmişe arşivlenir, yeni sohbet boş başlar; modele yalnız açık sohbet gider. */
 const chatTitle=a=>{const u=a.find(m=>m.role==="user");return (u?u.text:"Sohbet").slice(0,60)};
 function cArchive(){
-  if(!S.chat.some(m=>m.role==="user"))return;
-  S.chats.unshift({id:Date.now(),t:S.chat[S.chat.length-1].t,title:chatTitle(S.chat),msgs:S.chat});
-  S.chats=trimChats(S.chats);
+  if(!S.chat.some(m=>m.role==="user"||(m.card&&m.card.kind==="safety")))return;
+  let id=Date.now();while(S.chats.some(c=>c.id===id))id++;
+  S.chats.unshift({id,t:S.chat[S.chat.length-1].t,title:chatTitle(S.chat),msgs:S.chat});
+  S.chats=trimChats(S.chats,true);
 }
 function cSwitchOk(){if(busy||typing||S.chat.some(m=>m.pend)){toast("Koç yanıt verirken sohbet değişmez");return false}return true}
 function cNewChat(){if(!cSwitchOk())return;cArchive();S.chat=[];save();render()}
@@ -752,7 +780,7 @@ function pRead(id){
   if(!/^https:\/\/[^\s]+$/.test(base)){toast("Adres https:// ile başlamalı");return null}
   if(!model){toast("Model adı yaz");return null}
   p.base=base.slice(0,200);p.model=model.slice(0,100);p.on=$("#pon").checked;p.health=$("#ph").checked;
-  const key=$("#pk").value.trim();if(key)setKey(id,key);
+  const key=$("#pk").value.trim();if(key){setKey(id,key);delete cool[id]}
   save();return p;
 }
 async function cProvClick(a,p1,p2){
@@ -865,9 +893,9 @@ function cClick(v,el){
     case "delchat":{
       const i=S.chats.findIndex(c=>c.id===+p1);if(i<0)return;
       const [x]=S.chats.splice(i,1);save();render();cChatList();
-      return toast("Sohbet silindi",()=>{if(!S.chats.some(c=>c.id===x.id)){S.chats.splice(Math.min(i,S.chats.length),0,x);S.chats=trimChats(S.chats);save();render();cChatList()}});
+      return toast("Sohbet silindi",()=>{if(!S.chats.some(c=>c.id===x.id)){S.chats.splice(Math.min(i,S.chats.length),0,x);S.chats=trimChats(S.chats,true);save();render();cChatList()}});
     }
-    case "clearchat":if(confirm("Sohbet geçmişi silinsin mi? Kayıtların silinmez.")){cClearChat();render()}return;
+    case "clearchat":if(cSwitchOk()&&confirm("Sohbet geçmişi silinsin mi? Kayıtların silinmez.")){cClearChat();render()}return;
     default:return cProvClick(a,p1,p2);
   }
 }

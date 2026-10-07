@@ -156,10 +156,13 @@ document.addEventListener("click",ev=>{
   else if(a==="del"){
     const id=medDraft&&medDraft.id,m=S.meds.find(x=>x.id===id);if(!m)return;
     if(!confirm(`${m.n} silinecek. İlacın kayıtları da silinir. Devam edilsin mi?`))return;
-    const bm=S.meds.slice(),bl=S.medLog.slice();
+    const dl=S.medLog.filter(x=>x.m===id);
     S.meds=S.meds.filter(x=>x.id!==id);S.medLog=MedLib.cleanLog(S.medLog,S.meds);save();
     closeSheet();medDraft=null;render();medResched();
-    toast("İlaç silindi",()=>{S.meds=bm;S.medLog=bl;save();render();medResched()});
+    toast("İlaç silindi",()=>{
+      if(S.meds.some(x=>x.id===id))return toast("Geri alınamadı: bu numarayı yeni bir ilaç aldı");
+      S.meds=MedLib.cleanMeds(S.meds.concat([m]).sort((a,b)=>a.id-b.id));S.medLog=MedLib.cleanLog(S.medLog.concat(dl),S.meds);save();render();medResched();
+    });
   }
   else if(a==="addtime"){medCollect();if(medDraft.t.length<MedLib.MAXT){medDraft.t.push("");medRender()}}
   else if(a==="rmtime"){medCollect();medDraft.t.splice(+r[0],1);medRender()}

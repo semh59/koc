@@ -20,9 +20,9 @@ if (!x.includes("StepSnapshotReceiver")) {
 if (!x.includes("MotionReceiver")) {
   x = x.replace("</application>", '    <receiver android:name=".MotionReceiver" android:exported="false"><intent-filter><action android:name="android.intent.action.BOOT_COMPLETED"/><action android:name="android.intent.action.MY_PACKAGE_REPLACED"/></intent-filter></receiver>\n    <service android:name=".MotionGpsService" android:exported="false" android:foregroundServiceType="location"/>\n    </application>');
 }
-// İlaç dozunda kilitli ekranı uyandıran alarm alıcısı (bildirim eklentisi ekranı açmaz); açılışta ve güncellemede kayıtlı dozları yeniden kurar.
+// İlaç dozunda kilitli ekranı uyandıran alarm alıcısı (bildirim eklentisi ekranı açmaz); açılışta, güncellemede ve saat/saat dilimi değişiminde kayıtlı dozları yeniden kurar.
 if (!x.includes("MedWakeReceiver")) {
-  x = x.replace("</application>", '    <receiver android:name=".MedWakeReceiver" android:exported="false"><intent-filter><action android:name="android.intent.action.BOOT_COMPLETED"/><action android:name="android.intent.action.MY_PACKAGE_REPLACED"/><action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED"/></intent-filter></receiver>\n    </application>');
+  x = x.replace("</application>", '    <receiver android:name=".MedWakeReceiver" android:exported="false"><intent-filter><action android:name="android.intent.action.BOOT_COMPLETED"/><action android:name="android.intent.action.MY_PACKAGE_REPLACED"/><action android:name="android.intent.action.TIME_SET"/><action android:name="android.intent.action.TIMEZONE_CHANGED"/><action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED"/></intent-filter></receiver>\n    </application>');
 }
 // Barkod tarayıcı modülü uygulama kurulurken indirilsin (Google ML Kit).
 if (!x.includes("com.google.mlkit.vision.DEPENDENCIES")) {
@@ -114,7 +114,11 @@ public class MainActivity extends BridgeActivity {
 
     private void medWake(Intent in) {
         if (in == null || !in.getBooleanExtra("nw_medwake", false)) return;
+        // MainActivity exported: yalnız MedWakeReceiver'ın kendi PendingIntent'inin taşıdığı gizli anahtarla kilit ekranı üstünde açılır.
+        boolean signed = QuickMath.same(in.getStringExtra("nw_tk"), QuickLogPlugin.secret(this));
         in.removeExtra("nw_medwake");
+        in.removeExtra("nw_tk");
+        if (!signed) return;
         lockShown = true;
         if (Build.VERSION.SDK_INT >= 27) {
             setShowWhenLocked(true);

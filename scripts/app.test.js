@@ -2,7 +2,7 @@ const {JSDOM}=require("jsdom"),fs=require("fs"),path=require("path");let bad=0,t
 const www=f=>path.join(__dirname,"../www",f);
 const html=fs.readFileSync(www("index.html"),"utf8").replace(/<script src="([^"]+)"><\/script>/g,(_,f)=>"<script>"+fs.readFileSync(www(f),"utf8")+"</script>");
 const ok=(n,c,x)=>{total++;console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
-const MIN_TESTS=856,errs=[]; // son satıra ulaşılmadan çıkış (zamanlama kayması) başarı sayılmasın
+const MIN_TESTS=865,errs=[]; // son satıra ulaşılmadan çıkış (zamanlama kayması) başarı sayılmasın
 const dom=new JSDOM(html,{runScripts:"dangerously",pretendToBeVisual:true,url:"https://localhost/",
   beforeParse(w){Object.assign(w,{structuredClone,TextEncoder,TextDecoder,__noSelfTest:true});Object.defineProperty(w,"crypto",{value:require("node:crypto").webcrypto});w.confirm=()=>true;w.scrollTo=()=>{};w.addEventListener("error",e=>errs.push(e.message))}
 });
@@ -325,6 +325,22 @@ setTimeout(async()=>{
     w.document.querySelector("#bkpw").value="mavi-bulut-77";
     await ev("goYukle()");
     ok("doğru parola veri ve anahtarı geri getirir",ev("S.settings.healthNote")==="gizli not"&&ev("getKeys().groq")==="KEY-sirri-12345",[ev("S.settings.healthNote"),ev("getKeys().groq"),ev("document.querySelector('#toast').textContent")]);
+    { // kayıt yazılamazsa anahtarlar kasaya yazılmaz ve veri geri alınır
+      ev("setKey('groq','');S.settings.healthNote='eski'");w.document.querySelector("#bk").value=enc;ev("recovery={}");
+      await ev("goYukle()");const k=ev("getKeys().groq"),h=ev("S.settings.healthNote");ev("recovery=null");
+      ok("geri yükleme: kayıt başarısızsa anahtar yazılmaz, eski veri kalır",k===undefined&&h==="eski",[k,h]);
+      // depolama doluysa güvenlik kopyası alınamayacağı onaydan ÖNCE söylenir
+      const oc=w.confirm;let cm="";w.confirm=m=>(cm=m,false);const ob=ev("otherBytes");ev("otherBytes=4e6");
+      await ev("goYukle()");ev("otherBytes="+ob);w.confirm=oc;
+      ok("geri yükleme onayı: güvenlik kopyası alınamayacaksa önceden söyler",/güvenlik kopyası ALINAMAYACAK/.test(cm),cm);
+    }
+  { // otomatik yenileme (görünürlük, gün değişimi) doldurulmuş form alanını silmez
+    ev("S.settings.obDone=true;tab='bugun';closeSheet();render()");const v=w.document.querySelector("#view");
+    v.insertAdjacentHTML("beforeend",'<input id="zz" class="in">');w.document.querySelector("#zz").value="yazdım";w.document.activeElement.blur();
+    ev("renderSoft()");const kept=!!w.document.querySelector("#zz")&&w.document.querySelector("#zz").value==="yazdım";
+    w.document.querySelector("#zz").value=w.document.querySelector("#zz").defaultValue;ev("renderSoft()");
+    ok("renderSoft: dolu alan korunur, boşsa yenilenir",kept&&!w.document.querySelector("#zz"),kept);
+  }
   // ---- Tahlil takibi ----
   {
     const {textPdf}=require("./pdfmaker.js");
@@ -738,6 +754,12 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("geçersiz kayıtlar (sınır dışı, gelecek, bozuk) atılır, geçerli biri eklenir",ev("S.entries.length")===3&&ev("S.entries[2].v")===300,ev("S.entries"));
     pending=[];await ev("quickIngest()");
     ok("boş liste: değişiklik yok",ev("S.entries.length")===3);
+    { // kayıt yazılamazsa (kurtarma modu) kuyruk kaybolmaz, sonra yeniden denenir
+      ev("S.entries=[]");pending=[{v:250,t:Date.now()-1000}];ev("recovery={}");await ev("quickIngest()");
+      const held=ev("S.entries.length");ev("recovery=null");pending=[];await ev("quickIngest()");
+      ok("hızlı kayıt: kayıt başarısızsa bellek geri alınır, sonraki denemede eklenir",held===0&&ev("S.entries.length")===1&&ev("S.entries[0].v")===250,[held,ev("S.entries")]);
+      await ev("quickIngest()");ok("hızlı kayıt: yeniden denenen öğe bir kez eklenir",ev("S.entries.length")===1);
+    }
     ev("S.entries=[]");pending=[{v:250,t:Date.now()-1000}];
     const lnH=[];w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),cancel:async()=>{},registerActionTypes:async()=>{},schedule:async o=>{lnH.push(...o.notifications)}};
     ev("S.settings.waterMl=500;add('su',250,'')");
@@ -931,8 +953,10 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("tekrar açılır",ev("S.meds[0].on")===true);
     click('[data-md="edit:1"]');click('[data-md="del"]');
     ok("silinince ilaç ve kayıtları gider, geri al getirir",ev("S.meds.length")===0&&ev("S.medLog.length")===0);
+    ev("S.meds.push({id:2,n:'Diğer',t:['09:00'],on:true,k:10});MedLib.mark(S,2,dayKey(),'09:00','t','09:00')");
     click("#tundo");
-    ok("geri al ilacı ve kayıtlarını getirir",ev("S.meds.length")===1&&ev("S.medLog.length")===1);
+    ok("geri al ilacı ve kayıtlarını getirir; araya giren başka ilacın doz kaydı ve stoku bozulmaz",ev("S.meds.length")===2&&ev("S.medLog.length")===2&&ev("S.meds.find(m=>m.id===2).k")===9&&ev("S.medLog.some(x=>x.m===2&&x.st==='t')"));
+    ev("S.meds=S.meds.filter(m=>m.id===1);S.medLog=S.medLog.filter(x=>x.m===1)");
 
     // kür
     click('[data-md="new"]');q("#mn").value="Kür";q("#mc").value="3";click('[data-md="save"]');
@@ -1482,6 +1506,18 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev(`S.entries=S.entries.filter(e=>e.type!=='spor');S.workouts=[${Tk(21,"B",nowT,null,Ex("squat","[{kg:60,reps:5,done:true},{kg:70,reps:5,done:false}]"))}];gFinish()`);
     w.confirm=()=>true;
     ok("İptal: antrenman açık kalır, işaretsiz set silinmez",ev("S.workouts[0].t1")==null&&ev("S.workouts[0].ex[0].sets.length")===2);
+    ok("İptal ve kaydedilmedi yollarında çalışan süre sayacı durmaz; kayıtta durur",(()=>{
+      ev("gTim={ei:0,si:0,phase:'work'}");const a=ev("!!gTim");
+      ev(`S.workouts=[${Tk(25,"E",nowT,null,Ex("squat","[{kg:null,reps:null,done:false}]"))}];gFinish()`);const b=ev("!!gTim");
+      w.confirm=()=>false;ev(`S.workouts=[${Tk(26,"F",nowT,null,Ex("squat","[{kg:60,reps:5,done:true},{kg:70,reps:5,done:false}]"))}];gFinish()`);w.confirm=()=>true;const c=ev("!!gTim");
+      ev(`S.workouts=[${Tk(27,"G",nowT,null,Ex("squat","[{kg:60,reps:5,done:true}]"))}];gFinish()`);const d=ev("!!gTim");ev("closeSheet()");
+      return a&&b&&c&&!d})());
+    { // gece yarısını aşan antrenman: spor kaydı bitiş günü ve bitiş saatiyle tutarlı
+      const t0=new Date();t0.setDate(t0.getDate()-1);t0.setHours(23,40,0,0);
+      ev(`S.entries=S.entries.filter(e=>e.type!=='spor');S.workouts=[{id:28,day:dayKey(new Date(${t0.getTime()})),t0:${t0.getTime()},t1:null,name:'Gece',tpl:null,ex:[${Ex("squat","[{kg:60,reps:5,done:true}]")}]}];gFinish()`);
+      ok("gece yarısını aşan antrenman: spor kaydının günü bitiş günüdür",ev("S.entries.find(e=>e.type==='spor').day")===ev("dayKey()")&&ev("S.entries.find(e=>e.type==='spor').time")===ev("(()=>{const d=new Date(S.workouts[0].t1);return pad(d.getHours())+':'+pad(d.getMinutes())})()"));
+      ev("closeSheet()");
+    }
     ev(`S.workouts=[${Tk(22,"C",nowT,null,Ex("squat","[{kg:null,reps:null,done:false}]"))}];gFinish()`);
     ok("değerli set yoksa kaydedilmez, antrenman silinmez, toast neden söyler",ev("S.workouts.length")===1&&ev("S.workouts[0].t1")===null&&toastT().startsWith("Kaydedilmedi"),toastT());
     ev(`S.workouts=[${Tk(23,"D",nowT,null,Ex("squat","[{kg:20,reps:10,done:false,w:true}]"))}];gFinish()`);

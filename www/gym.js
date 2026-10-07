@@ -519,7 +519,6 @@ function gStart(tplId){
 }
 function gFinish(){
   const w=gActive();if(!w)return;
-  gTimStop();
   const open=w.ex.reduce((s,x)=>s+x.sets.filter(t=>!t.done&&gSetOk(t)).length,0);
   if(open){
     if(!confirm(`${open} set işaretlenmemiş. Tamamlandı sayılıp kaydedilsin mi?
@@ -527,6 +526,7 @@ Tamam: sayılır, İptal: antrenmana dön`))return;
     for(const x of w.ex)for(const t of x.sets)if(gSetOk(t))t.done=true;
   }
   if(!w.ex.some(x=>x.sets.some(t=>t.done&&gSetOk(t))))return toast(w.ex.length?"Kaydedilmedi: değeri girilmiş set yok. Tekrar ya da süre gir, ✓ koy; vazgeçtiysen Antrenmanı iptal et":"Kaydedilmedi: antrenmanda egzersiz yok. Egzersiz ekle ya da Antrenmanı iptal et");
+  gTimStop();
   for(const x of w.ex)x.sets=x.sets.filter(s=>s.done);
   w.ex=w.ex.filter(x=>x.sets.length);
   w.t1=Date.now();
@@ -535,7 +535,7 @@ Tamam: sayılır, İptal: antrenmana dön`))return;
 }
 /* Biten antrenmanın spor dakikası ve kalori tahmini (bitiş ve rehberli kayıt). */
 function gLogSpor(w,kind){
-  const e=add("spor",gDur(w),`${kind}, ${w.name}`,w.day);e.wid=w.id;
+  const e=add("spor",gDur(w),`${kind}, ${w.name}`,dayKey(new Date(w.t1||Date.now())));e.wid=w.id; // saat bitiş saatidir: gün de bitiş günü olmalı
   const kc=Algo.gymKcal({min:gDur(w),sets:gWorkSets(w),kg:motionKg()});if(kc)e.kcal=kc;
 }
 function gRestore(w,entries){

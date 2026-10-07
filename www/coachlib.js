@@ -11,13 +11,20 @@ const CoachLib=(()=>{
     ["check",/baş(ım)? dön|başım dönüyor|çarpıntı|gözüm(ün önü)? karar|gözlerim karar|titreme|aşırı halsiz|çok halsiz/]
   ];
   /* "baklavaya bayılıyorum" deyimdir; "bayıldım/bayılıyorum" yalnız yiyecek ya da sevgi bağlamı yoksa acil sayılır. */
-  const FAINT=/bayıl(?:ıyorum|ıyoruz|ırım|dım)/,LOVE=/yemek|yemeğ|baklava|pizza|çikolata|tatl|börek|kebap|dondurma|makarna|kahve|lezzet|müzik|film|dizi|şarkı|kitap|seni|sana|ona |sevgi|aşk|harika|güzel/;
-  const idiom=t=>LOVE.test(t)||/[a-zçğıöşü]{3,}(?:ya|ye)\s+bayıl/.test(t);
+  const FAINT=/bayıl(?:ıyorum|ıyoruz|ırım|dım)/;
+  /* Deyim yalnız sevilen şeyin hemen ardından gelen "bayıl" sözüdür ve metinden çıkarılır; kalan metinde gerçek bayılma ya da başka belirti aranır. */
+  const IDIOM=/(?:yemek\w*|yemeğ\w*|baklava\w*|pizza\w*|çikolata\w*|tatlı\w*|börek\w*|kebap\w*|dondurma\w*|makarna\w*|kahve\w*|lezzet\w*|müzi[kğ]\w*|film\w*|dizi\w*|şarkı\w*|kitab\w*|kitap\w*|seni|sana|ona|buna|harika|güzel|muhteşem|[a-zçğıöşü]{3,}(?:ya|ye))\s+(?:çok\s+|gerçekten\s+)?bayıl\S*/g;
+  const fold=s=>s.replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ı/g,"i").replace(/ö/g,"o").replace(/ş/g,"s").replace(/ü/g,"u");
+  /* Türkçe harfsiz yazımı da yakalayan desenler (metin fold'lanmış); büyük harf low() ile gelir. */
+  const FOLDED={
+    emergency:/gog(?:u|)s\w*\s+(?:\w+\s+)?(?:agri(?!mi)|sikis)|kal(?:b\w*|p)\s+(?:\w+\s+)?agri(?!mi)|nefes\w*\s+(?:\w+\s+)?kesil|kalp kriz|zehirlen(?:d|iyor|mis)|asiri\s+doz|overdo|fazla\s+(?:ilac|hap)\s+(?:ic|al)|(?:ilac|hap)\w*\s+fazla\s+(?:ic|al)/,
+    ed:/(?:\d+\s*gundur|gunlerdir|haftalardir|gunlerce)\s+(?:hic\s+)?(?:ac\b|bir sey yem|yemek yem)|hic\s*bir sey yemiyorum|yemek yemiyorum|kendimi ac birak|yemeyi reddet/
+  };
   function redFlag(text){
-    const t=low(text);
+    const t=low(text).replace(IDIOM,""),f=fold(t);
     for(const [lv,re] of FLAGS){
-      if(re.test(t))return lv;
-      if(lv==="emergency"&&FAINT.test(t)&&!idiom(t))return lv;
+      if(re.test(t)||(FOLDED[lv]&&FOLDED[lv].test(f)))return lv;
+      if(lv==="emergency"&&FAINT.test(t))return lv;
     }
     return null;
   }
@@ -52,6 +59,7 @@ const CoachLib=(()=>{
     if(!m)return null;
     try{return JSON.parse('"'+m[1]+'"').trim()}catch(e){return null}
   }
+  const obj=x=>x&&typeof x==="object"&&!Array.isArray(x)?x:null;
   function parse(text){
     let s=String(text==null?"":text).trim();
     s=s.replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();
@@ -61,7 +69,7 @@ const CoachLib=(()=>{
       try{
         const o=JSON.parse(s.slice(a,b+1));
         if(o&&typeof o==="object"&&typeof o.reply==="string"){
-          return {reply:o.reply.trim().slice(0,1500),log:Array.isArray(o.log)?o.log:[],propose:o.propose&&typeof o.propose==="object"?o.propose:null,flag:typeof o.flag==="string"?o.flag:null,food:o.food&&typeof o.food==="object"?o.food:null,program:o.program&&typeof o.program==="object"?o.program:null,menu:o.menu&&typeof o.menu==="object"?o.menu:null};
+          return {reply:o.reply.trim().slice(0,1500),log:Array.isArray(o.log)?o.log:[],propose:obj(o.propose),flag:typeof o.flag==="string"?o.flag:null,food:obj(o.food),program:obj(o.program),menu:obj(o.menu)};
         }
       }catch(e){}
       a=b;

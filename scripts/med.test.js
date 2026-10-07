@@ -144,4 +144,5 @@ ok("sinceFor: yeni saat bugünden, vakti geçmiş saat yarından, eski saat koru
 // yorum ve tanı dili yok
 const src=require("fs").readFileSync(require("path").join(__dirname,"../www/medlib.js"),"utf8").replace(/\/\*[\s\S]*?\*\//g,"");
 ok("doz önerisi/yorum dili kullanılmaz",!/öner|tavsiye|etkileşim|yan etki|aşırı doz|tehlikeli/i.test(src));
+ok("dayOk: geçersiz takvim günü reddedilir",!M.dayOk("2026-02-31")&&!M.dayOk("2026-04-31")&&M.dayOk("2026-02-28"));
 console.log(bad?"\n"+bad+" HATA":"\nTüm ilaç testleri geçti");process.exit(bad?1:0);

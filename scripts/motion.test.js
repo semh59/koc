@@ -26,4 +26,5 @@ const tt=M.totals([{min:20,km:2,steps:2000,kcal:100},{min:10,km:1,steps:1000,kca
 ok("toplam: kalorisiz kayıt kaloriye eklenmez",tt.min===30&&tt.km===3&&tt.steps===3000&&tt.kcal===100&&tt.kcalN===1);
 const src=require("fs").readFileSync(require("path").join(__dirname,"../www/motionlib.js"),"utf8");
 ok("rota ve koordinat alanı yok",!/lat|lon|coord|route/i.test(src.replace(/\/\*[\s\S]*?\*\//g,"")));
+ok("hareket günü: 2026-02-31 reddedilir",M.clean([{day:"2026-02-31",t0:"08:00",min:20,k:"w",steps:2400,km:2,kmh:5,kcal:null,gps:false}]).length===0&&M.clean([{day:"2026-02-28",t0:"08:00",min:20,k:"w",steps:2400,km:2,kmh:5,kcal:null,gps:false}]).length===1);
 console.log(bad?"\n"+bad+" HATA":"\nTüm hareket testleri geçti");process.exit(bad?1:0);

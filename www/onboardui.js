@@ -72,7 +72,7 @@ function obFinish(){
   const st=S.settings,pl=obPlan(p),mods=ob.mods;
   Object.assign(st,{heightCm:p.cm,age:p.age,sex:ob.sex,goalKg:p.goal,medOn:mods.includes("med"),fastOn:mods.includes("fast"),bpOn:mods.includes("bp"),bsOn:mods.includes("bs")});
   if(pl.kcal>=RANGES.kcal[0]&&pl.kcal<=RANGES.kcal[1])st.kcal=pl.kcal;
-  if(ob.hd||ob.hn)st.healthNote=obNote();
+  if(ob.hd||ob.hn){st.healthNote=obNote();cNoteCheck()}
   if(!mods.includes("steps"))st.stepsAsked=true;
   add("kilo",p.kg);
   obDone();scheduleReminders().then(setNotif);

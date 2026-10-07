@@ -1,6 +1,6 @@
 const HabitLib=(()=>{
   const PLANS=[14,16,18,20],H72=72*36e5;
-  const dayOk=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s);
+  const dayOk=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&new Date(s+"T00:00Z").toJSON()?.slice(0,10)===s;
   const int=(v,lo,hi)=>Number.isInteger(v)&&v>=lo&&v<=hi;
   const arr=a=>Array.isArray(a)?a:[];
   const perDay=(a,ok)=>{const m=new Map();for(const x of arr(a)){if(x&&dayOk(x.day)){const y=ok(x);if(y)m.set(y.day,y)}}return [...m.values()].sort((a,b)=>a.day<b.day?-1:1).slice(-400)};

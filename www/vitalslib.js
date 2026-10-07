@@ -7,7 +7,7 @@ const VitalsLib=(()=>{
   const ctxName=c=>(CTX.find(x=>x[0]===c)||[0,"Rastgele"])[1];
   const sesName=c=>(SES.find(x=>x[0]===c)||[0,"Diğer"])[1];
   const LIM={sys:[50,300],dia:[30,200],pulse:[25,250],g:[20,800]};
-  const dayOk=d=>typeof d==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&!isNaN(Date.parse(d));
+  const dayOk=d=>typeof d==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&new Date(d+"T00:00Z").toJSON()?.slice(0,10)===d;
   const timeOk=s=>typeof s==="string"&&/^([01]\d|2[0-3]):[0-5]\d$/.test(s);
   const fin=x=>typeof x==="number"&&Number.isFinite(x);
   const inr=(x,[a,b])=>fin(x)&&x>=a&&x<=b;
@@ -37,9 +37,9 @@ const VitalsLib=(()=>{
   /* Saklanan listeyi temizler: geçersizleri ve yinelenenleri atar, kimlikleri yeniden verir. */
   function clean(arr){
     const out=[],seen=new Set();let id=1;
-    for(const x of (Array.isArray(arr)?arr:[]).slice(0,5000)){
+    for(const x of (Array.isArray(arr)?arr:[]).slice(-5000)){
       const c=check(x);if(!c.row)continue;
-      const o=c.row,sig=[o.k,o.day,o.time,o.sys,o.dia,o.g,o.ctx,o.sid,o.i,o.ses,o.nabiz].join("|");
+      const o=c.row,sig=[o.k,o.day,o.time,o.sys,o.dia,o.g,o.ctx,o.sid,o.i,o.ses,o.nabiz,o.not].join("|");
       if(seen.has(sig))continue;seen.add(sig);
       out.push(Object.assign({id:id++},o));
     }

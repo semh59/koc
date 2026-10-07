@@ -91,10 +91,14 @@ const items=rr.slice(0,6),info={kind:"t",title:"NeoWell · Tansiyon raporu",peri
 V.drawPage(ctx,items,info);
 ok("rapor çizimi: başlık, özet, tablo ve uyarı notu",drawn.includes("NeoWell · Tansiyon raporu")&&drawn.includes("7 gün ev ortalaması")&&drawn.some(t=>/Bu değerleri hekiminle değerlendir\./.test(t))&&drawn.includes("Sabah, 1. ölçüm"),drawn);
 ok("rapor çizimi: aralık/işaret ifadesi çıkmaz",!drawn.some(t=>/aralığ|▲|▼/.test(t)));
-V.drawPage(ctx,[],{...info,chart:null,page:2,total:2});
-ok("boş sayfa ve grafiksiz çizim çökmez",true);
+const n0=drawn.length;V.drawPage(ctx,[],{...info,chart:null,page:2,total:2});const d2=drawn.slice(n0);
+ok("boş sayfa ve grafiksiz çizim çökmez, yalnız tablo başlığı ve sayfa altlığı çizilir",d2.includes("Tarih")&&d2.includes("NeoWell · sayfa 2/2")&&!d2.includes(info.title),d2);
 
 // yasak kelimeler (tanı/yorum dili) hiçbir metinde geçmez
 const src=require("fs").readFileSync(require("path").join(__dirname,"../www/vitalslib.js"),"utf8")+drawn.join(" ");
 ok("tanı dili kullanılmaz",!/hipertansiyon|diyabet|hipoglisemi|hiperglisemi|anormal|tehlikeli|hasta(lık)?\b/i.test(src.replace(/\/\*[\s\S]*?\*\//g,"")),src.match(/hipertansiyon|diyabet|hipoglisemi|anormal|tehlikeli/i));
+ok("tarih: 2026-02-31 reddedilir",!!V.check(T({day:"2026-02-31"})).err&&!!V.check(G({day:"2026-04-31"})).err&&!!V.check(G({day:"2026-02-28"})).row);
+{const big=Array.from({length:5100},(_,i)=>G({g:100,day:"2026-01-01",time:"08:00",not:"n"+i})),c=V.clean(big);
+ok("clean: 5000 sınırında en yeni kayıtlar kalır",c.length===5000&&c[c.length-1].not==="n5099"&&c[0].not==="n100",[c.length,c[0].not]);}
+ok("clean: sid'siz, notu farklı iki ölçüm tekilleştirmede yutulmaz",V.clean([T({not:"a"}),T({not:"b"})]).length===2);
 console.log(bad?"\n"+bad+" HATA":"\nTüm tansiyon/şeker testleri geçti");process.exit(bad?1:0);

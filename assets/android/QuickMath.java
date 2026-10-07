@@ -11,7 +11,7 @@ final class QuickMath {
     static final int MAX = 200;
     private static final Pattern EXTRA = Pattern.compile("\"extra\"\\s*:\\s*\\{([^}]*)\\}");
     private static final Pattern V = Pattern.compile("\"v\"\\s*:\\s*(\\d{1,5})(?![\\d.])");
-    private static final Pattern M = Pattern.compile("\"m\"\\s*:\\s*(\\d{1,3})(?![\\d.])");
+    private static final Pattern M = Pattern.compile("\"m\"\\s*:\\s*(\\d{1,5})(?![\\d.])");
     private static final Pattern S = Pattern.compile("\"s\"\\s*:\\s*\"([01]\\d|2[0-3]):([0-5]\\d)\"");
     private static final Pattern AT = Pattern.compile("\"at\"\\s*:\\s*(\\d{10,15})(?![\\d.])");
     private static final Pattern TK = Pattern.compile("\"tk\"\\s*:\\s*\"([0-9a-f]{32})\"");
@@ -33,7 +33,7 @@ final class QuickMath {
         return v >= 1 && v <= 1500 ? v : 0;
     }
 
-    /** İlaç bildirimi: "extra" içindeki ilaç kimliği (1-999) ve doz saatinden "m12_0800" anahtarı. Eksik ya da bozuksa null. */
+    /** İlaç bildirimi: "extra" içindeki ilaç kimliği (1-999) ve doz saatinden "m12_0800" anahtarı. Eksik, bozuk ya da kimlik aralık dışıysa null (çağıran loglar). */
     static String medKey(String json) {
         return medKey(json, false);
     }
@@ -62,7 +62,12 @@ final class QuickMath {
         String e = extra(json);
         if (e == null || secret == null) return false;
         Matcher m = TK.matcher(e);
-        return m.find() && MessageDigest.isEqual(m.group(1).getBytes(), secret.getBytes());
+        return m.find() && same(m.group(1), secret);
+    }
+
+    /** Sabit sürede karşılaştırma; ikisi de doluysa. */
+    static boolean same(String a, String b) {
+        return a != null && b != null && MessageDigest.isEqual(a.getBytes(), b.getBytes());
     }
 
     static boolean seen(String list, String sig) {

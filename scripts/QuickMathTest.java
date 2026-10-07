@@ -23,6 +23,8 @@ public class QuickMathTest {
         ok("ilaç: alan sırası önemli değil", "m5_2330".equals(QuickMath.medKey("{\"extra\":{\"s\":\"23:30\",\"act\":\"med\",\"m\":5}}")));
         ok("ilaç: eksik alan null", QuickMath.medKey("{\"extra\":{\"m\":12}}") == null && QuickMath.medKey("{\"extra\":{\"s\":\"08:00\"}}") == null && QuickMath.medKey(null) == null && QuickMath.medKey("{}") == null);
         ok("ilaç: bozuk saat ve sınır dışı kimlik null", QuickMath.medKey("{\"extra\":{\"m\":1,\"s\":\"25:00\"}}") == null && QuickMath.medKey("{\"extra\":{\"m\":1,\"s\":\"8:00\"}}") == null && QuickMath.medKey("{\"extra\":{\"m\":0,\"s\":\"08:00\"}}") == null && QuickMath.medKey("{\"extra\":{\"m\":1000,\"s\":\"08:00\"}}") == null);
+        ok("ilaç: kimlik 999 geçerli, 1000 ve 5 haneli kimlik aralık dışı (null)", "m999_0800".equals(QuickMath.medKey("{\"extra\":{\"m\":999,\"s\":\"08:00\"}}")) && QuickMath.medKey("{\"extra\":{\"m\":1000,\"s\":\"08:00\"}}") == null && QuickMath.medKey("{\"extra\":{\"m\":12345,\"s\":\"08:00\"}}") == null);
+        ok("karşılaştırma: aynı dizgi eşit, farklı ya da null değil", QuickMath.same("ab", "ab") && !QuickMath.same("ab", "ac") && !QuickMath.same(null, "ab") && !QuickMath.same("ab", null) && !QuickMath.same(null, null));
         ok("ilaç: su bildirimi ilaç anahtarı üretmez", QuickMath.medKey("{\"extra\":{\"act\":\"su\",\"v\":250}}") == null);
 
         ok("ilaç: atla anahtarı k ile başlar", "k12_0800".equals(QuickMath.medKey("{\"extra\":{\"act\":\"med\",\"m\":12,\"s\":\"08:00\"}}", true)));

@@ -5,7 +5,7 @@ const MotionLib=(()=>{
   const dayOf=ms=>{const d=new Date(ms);return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`};
   const hmOf=ms=>{const d=new Date(ms);return `${p2(d.getHours())}:${p2(d.getMinutes())}`};
   const num=(v,lo,hi)=>typeof v==="number"&&isFinite(v)&&v>=lo&&v<=hi;
-  const dayOk=d=>typeof d==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(d);
+  const dayOk=d=>typeof d==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&new Date(d+"T00:00Z").toJSON()?.slice(0,10)===d;
   const timeOk=t=>typeof t==="string"&&/^([01]\d|2[0-3]):[0-5]\d$/.test(t);
 
   /* Yerel taraftan gelen kayıt → saklanan kayıt. Geçersizse null. */

@@ -4,6 +4,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.util.Log;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -52,13 +53,18 @@ public class QuickLogPlugin extends Plugin {
         }
         String act = in.getStringExtra(ACTION_KEY), obj = in.getStringExtra(OBJ_KEY), key = null;
         int v = 0;
+        boolean med = "med".equals(act) || "medskip".equals(act);
         if ("su".equals(act)) {
             v = QuickMath.amount(obj);
             if (v > 0) key = String.valueOf(v);
-        } else if ("med".equals(act) || "medskip".equals(act)) {
+        } else if (med) {
             key = QuickMath.medKey(obj, "medskip".equals(act));
         }
-        if (key == null || (!widget && !QuickMath.signed(obj, secret(c)))) return false;
+        if (key == null) {
+            if (med && (widget || QuickMath.signed(obj, secret(c)))) Log.w("NW-QUICK", "İlaç kaydı atlandı: kimlik 1-999 dışında ya da saat bozuk");
+            return false;
+        }
+        if (!widget && !QuickMath.signed(obj, secret(c))) return false;
         int id = in.getIntExtra(ID_KEY, Integer.MIN_VALUE);
         SharedPreferences p = prefs(c);
         // Bildirim intent'ini sistem yeniden teslim edebilir (süreç ölümü, MIUI); aynı planlanmış bildirim iki kez yazılmaz.
