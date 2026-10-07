@@ -466,7 +466,7 @@ function cleanSettings(raw){
   if(dayOk(o.riskClearedAt))d.riskClearedAt=o.riskClearedAt;
   if(o.oemDone===true)d.oemDone=true;
   /* Bayrak eklenmeden önceki yedek ve kayıtlar mevcut kullanıcıdır, onboarding görmez. */
-  if(o.obDone===true||(!("obDone" in o)&&Object.keys(o).length))d.obDone=true;
+  if(o.obDone===true)d.obDone=true;
   if(o.stepsOn===true)d.stepsOn=true;
   if(o.bpOn===true)d.bpOn=true;
   if(o.bsOn===true)d.bsOn=true;
@@ -1158,15 +1158,13 @@ async function shareBackup(){
 }
 async function goYukle(){
   let r,keysIn=null;try{r=JSON.parse($("#bk").value)}catch(e){return toast("Yedek metni okunamadı")}
-  const enc=!!(r&&r.enc);
-  if(enc){
-    const pw=$("#bkpw").value;if(!pw)return toast("Şifreli yedek: önce parolayı yaz");
-    try{const p=await BackupLib.decrypt(r,pw);r=p.S;keysIn=p.keys}catch(e){return toast("Parola yanlış ya da yedek bozuk")}
-  }
+  if(!(r&&r.enc))return toast("Yalnız parolalı yedek geri yüklenir");
+  const pw=$("#bkpw").value;if(!pw)return toast("Şifreli yedek: önce parolayı yaz");
+  try{const p=await BackupLib.decrypt(r,pw);r=p.S;keysIn=p.keys}catch(e){return toast("Parola yanlış ya da yedek bozuk")}
   if(!r||!Array.isArray(r.entries))return toast("Bu bir NeoWell yedeği değil");
   const b=buildState(r),drop=b.drop,out=b.S.entries;
   if(!out.length&&r.entries.length)return toast("Yedekte geçerli kayıt yok");
-  if(!confirm(`${enc?"":"Bu yedek parolasız (şifresiz) bir dosya; eski sürümden kalmış olabilir. Yedek dosyasını başkasına gönderme, işin bitince sil. "}${out.length} kayıt yüklenecek${drop?`, ${drop} geçersiz kayıt atlanacak`:""}. Mevcut veriler değişecek. Devam edilsin mi?`))return;
+  if(!confirm(`${out.length} kayıt yüklenecek${drop?`, ${drop} geçersiz kayıt atlanacak`:""}. Mevcut veriler değişecek. Devam edilsin mi?`))return;
   const prevS=S;
   S=b.S;
   /* Yedek, anahtarın gideceği adresi, onay ayarını ve veri paylaşım iznini değiştirememeli. Otomatik yedek klasörü bu telefona ait. */
