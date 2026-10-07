@@ -1,5 +1,20 @@
 "use strict";
 const {test,expect,state}=require("./fixtures");
+const AxeBuilder=require("@axe-core/playwright").default;
+
+const KOC=state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter",medOn:true,bpOn:true,bsOn:true,fastOn:true,stepsOn:true},{meds:[{id:1,n:"A",t:["09:00"],on:true}]});
+const SCREENS=["bugun","koc","salon","trend","daha","ayar","ayar-profil","ayar-modul","ayar-veri","egz","adim","tahlil","tansiyon","seker","ilac"];
+const SHEETS=['.act[data-act="yemek"]','.act[data-act="kilo"]','[data-hb="more"]'];
+/* Android yazı ölçeği WebView'da yalnız metni büyütür: piksel font-size bildirimleri ve --fs-* değişkenleri ikiye katlanır. */
+const scaleText=(page,k)=>page.evaluate(k=>{
+  const m=v=>v.replace(/([\d.]+)px/,(a,b)=>b*k+"px");
+  const walk=rs=>{for(const r of rs){if(r.cssRules&&!r.style)walk(r.cssRules);else if(r.style&&/^[\d.]+px$/.test(r.style.fontSize))r.style.fontSize=m(r.style.fontSize)}};
+  for(const s of document.styleSheets)walk(s.cssRules);
+  const de=document.documentElement,cs=getComputedStyle(de);
+  for(const p of ["cap","s","2","1","h3","h2","h1"])de.style.setProperty("--fs-"+p,m(cs.getPropertyValue("--fs-"+p).trim()));
+},k);
+const axe=async page=>(await new AxeBuilder({page}).withTags(["wcag2a","wcag2aa","wcag21aa"]).analyze()).violations.map(v=>v.id+": "+v.nodes.slice(0,3).map(n=>n.target.join(" ")).join("; "));
+const openSheet=async(app,page,a)=>{await app.go("bugun");await page.click(a);await expect(page.locator("#sheet.on")).toBeVisible()};
 
 test.describe("Erişilebilirlik ve düzen",()=>{
   test("sheet: odak içeride döner, arka plan inert, adı var, Escape odağı tetikleyiciye döndürür",async({app,page})=>{
@@ -43,6 +58,52 @@ test.describe("Erişilebilirlik ve düzen",()=>{
     await expect(page.locator('[data-c^="ask:"]')).toHaveCount(3);
     await page.click('[data-c="ask:1"]');
     await expect(page.locator(".ub")).toHaveText("Bugün ne yapmalıyım?");
+  });
+});
+
+test.describe("Otomatik denetim (axe, WCAG 2.1 AA)",()=>{
+  for(const theme of ["light","dark"])test(`ana ekranlar ve sheet'ler, ${theme} tema: ihlal yok`,async({app,page})=>{
+    await app.open({seed:{...KOC,settings:{...KOC.settings,theme}}});
+    for(const t of SCREENS){await app.go(t);await page.waitForTimeout(100);expect(await axe(page),t).toEqual([])}
+    for(const a of SHEETS){await openSheet(app,page,a);expect(await axe(page),"sheet "+a).toEqual([]);await app.closeSheet()}
+  });
+  test("toast role=status, hata alanları role=alert, hareket azaltma geçişleri kapatır",async({app,page})=>{
+    await app.open({seed:KOC});
+    await expect(page.locator("#toast")).toHaveAttribute("role","status");
+    await openSheet(app,page,SHEETS[0]);
+    for(const sel of ["#berr","#bkw"])if(await page.locator(sel).count())await expect(page.locator(sel)).toHaveAttribute("role","alert");
+    await app.closeSheet();
+    expect(await page.evaluate(()=>[...document.querySelectorAll("button,.card,.chip")].every(e=>parseFloat(getComputedStyle(e).transitionDuration)===0))).toBe(true);
+  });
+  test("dokunma hedefi 44 px: tüm ekranlarda ve sheet'lerde düğme, alan, anahtar",async({app,page})=>{
+    await app.open({seed:KOC});
+    const small=()=>page.evaluate(()=>{const o=[];let n=0;for(const e of document.querySelectorAll("button,a[href],input:not([type=hidden]):not([type=file]),select,textarea,[role=button],[role=tab],summary")){
+      const r=e.getBoundingClientRect();if(!r.width||getComputedStyle(e).visibility==="hidden"||e.closest("[hidden],[inert]"))continue;n++;
+      const b=e.matches("input[type=checkbox],input[type=radio]")?(e.closest("label,.chkrow")||e).getBoundingClientRect():r;
+      if(b.height<43.5||b.width<43.5)o.push((e.getAttribute("aria-label")||e.textContent||e.id||e.className).trim().slice(0,25)+" "+Math.round(b.width)+"x"+Math.round(b.height))}return {o,n}});
+    for(const t of SCREENS){await app.go(t);await page.waitForTimeout(100);const r=await small();expect(r.n,t).toBeGreaterThan(3);expect(r.o,t).toEqual([])}
+    for(const a of SHEETS){await openSheet(app,page,a);expect((await small()).o,"sheet "+a).toEqual([]);await app.closeSheet()}
+  });
+});
+
+test.describe("Büyük yazı (%200) ve dar ekran (320 px)",()=>{
+  test.use({viewport:{width:320,height:640}});
+  test("yatay kaydırma yok, metin kırpılmıyor, öğe ekran dışına taşmıyor",async({app,page})=>{
+    await app.open({seed:KOC});
+    await scaleText(page,2);
+    const bad=()=>page.evaluate(()=>{const o=[];if(document.documentElement.scrollWidth>innerWidth)o.push("sayfa yatay kayıyor");
+      for(const e of document.querySelectorAll("body *")){const c=getComputedStyle(e);if(c.display==="none"||e.closest("svg,.chiprow,[hidden]")||!e.getClientRects().length)continue;
+        const r=e.getBoundingClientRect(),id=e.tagName+"."+e.className+" "+(e.textContent||"").trim().slice(0,20);
+        if(r.width&&r.right>innerWidth+1)o.push("taşar: "+id);
+        if(c.overflowY==="hidden"&&e.scrollHeight>e.clientHeight+2&&e.clientHeight)o.push("dikey kırpılır: "+id);
+        if(c.overflowX==="hidden"&&e.scrollWidth>e.clientWidth+2&&e.clientWidth)o.push("yatay kırpılır: "+id)}return [...new Set(o)]});
+    for(const t of SCREENS){await app.go(t);await page.waitForTimeout(100);expect(await bad(),t).toEqual([])}
+    for(const a of SHEETS){await openSheet(app,page,a);expect(await bad(),"sheet "+a).toEqual([]);await app.closeSheet()}
+  });
+  test("menü büyük yazıda uzar, Koç yazma alanı menüyle çakışmaz",async({app,page})=>{
+    await app.open({seed:KOC});await scaleText(page,2);await app.tab("koc");await page.waitForTimeout(200);
+    const g=await page.evaluate(()=>[document.querySelector("#composer").getBoundingClientRect().bottom,document.querySelector("nav").getBoundingClientRect().top]);
+    expect(g[0]).toBeLessThanOrEqual(g[1]+1);
   });
 });
 

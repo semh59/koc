@@ -39,7 +39,7 @@
 
 **Eksikler ve öneri**
 - Telefon testi (hızlı set, ekran açık kalma, rekor): **yüksek**, **S**.
-- Gerçek kardiyo kaydı (süre/mesafe/tempo, ayrı tür): **orta**, **M**.
+- Gerçek kardiyo kaydı (süre/mesafe/tempo, ayrı tür): **orta**, **M**. Yapıldı (Trend > Kardiyo).
 - Antrenman verisi localStorage sınırı riski (`docs/rekabet-egzersiz.md:165`): **orta**, **M**.
 - Bilerek yapılmaması: sosyal akış/takip, Wear OS (kapsam), bulut hesabı.
 
@@ -80,6 +80,6 @@
 
 **Eksikler ve öneri**
 - Health Connect'ten kilo okuma (adımla birlikte yapılırsa ek maliyet küçük): **orta**, **M**.
-- Yerel ilerleme fotoğrafı: **orta**, **M**; mahrem veri, Koç'a ve buluta hiç gitmemeli.
-- lb/in birimi: **düşük** (Türkiye odaklı), **S**.
+- Yerel ilerleme fotoğrafı: **orta**, **M**; yapıldı (Trend > İlerleme fotoğrafları); mahrem veri, Koç'a ve buluta hiç gitmemeli.
+- lb/in birimi: **düşük** (Türkiye odaklı), **S**. lb yapıldı (Ayarlar > Profil); in yok.
 - Bilerek yapılmaması: sensörsüz yağ oranı tahmini (yanıltıcı), "ideal kilo" hükmü, agresif hedefler (mevcut BMI 18,5 freni korunmalı, `algo.js:112`).

@@ -51,7 +51,7 @@ Tarih: 7 Ekim 2026. Yalnız araştırma; kod değişmedi. "Doğrulanamadı" = g�
 ## 4. Arayüz, erişilebilirlik, onboarding
 - **Kalite olarak en iyi:** Tarafsız sıralama bulunamadı. Google kendi uygulamasının TalkBack desteğini yayımlıyor ([Google](https://support.google.com/fitbit/answer/14237214)); ölçüt: 48dp dokunma hedefi, anlamlı etiketler. Perfect Gym Go WCAG 2.2 AA uyguluyor ([örnek](https://help.perfectgym.com/hc/en-001/articles/39873851788689-WCAG-2-2-AA-in-Perfect-Gym-Go-How-It-Works)).
 - **En çok tercih edilen:** MyFitnessPal, YAZIO (sayılar bölüm 1'de); ilk dakikada kişisel kalori hedefi veriyorlar (`docs/rekabet-arayuz.md:136`, kendi önceki analizimiz).
-- **NeoWell:** Açık/koyu/sistem teması, `prefers-reduced-motion`, `color-scheme` (`www/index.html`); kodda yaklaşık 92 `aria-label`; kurulum sihirbazı (`www/onboardui.js`, 18 yaş kontrolü); SVG ikon geçişi yapıldı (C5). TalkBack ile gerçek cihaz testi ve büyük yazı testi belgelerde bulunamadı. Yalnız Türkçe (`docs/yol-haritasi.md:195`).
+- **NeoWell:** Açık/koyu/sistem teması, `prefers-reduced-motion`, `color-scheme` (`www/index.html`); kodda yaklaşık 92 `aria-label`; kurulum sihirbazı (`www/onboardui.js`, 18 yaş kontrolü); SVG ikon geçişi yapıldı (C5). Otomatik erişilebilirlik denetimi var (`e2e/erisim.spec.js`: axe WCAG 2.1 AA açık/koyu, 44 px hedef, %200 yazı ve 320 px taşma yok; alt menü büyük yazıda uzar). TalkBack ile gerçek cihaz testi ve büyük yazı testi `yapilacaklar.md`'de bekliyor. Yalnız Türkçe (`docs/yol-haritasi.md:195`).
 
 | Özellik | En iyi | En çok tercih edilen | NeoWell |
 |---|---|---|---|
@@ -61,7 +61,7 @@ Tarih: 7 Ekim 2026. Yalnız araştırma; kod değişmedi. "Doğrulanamadı" = g�
 | Hareket azaltma / büyük yazı | Doğrulanmadı | Doğrulanmadı | Kısmen (hareket azaltma var) |
 | Çok dil | Hepsi | Hepsi | Yok |
 
-- **Eksik/öneri:** TalkBack + %200 yazı testi ve düzeltme: orta, M. 48dp hedef taraması: orta, S. İngilizce: düşük (önce Türkiye). **Yapılmamalı:** sosyal akış, rozet/oyunlaştırma.
+- **Eksik/öneri:** TalkBack + %200 yazı: kod tarafı yapıldı, cihaz testi bekliyor. 44 px hedef taraması e2e'de. İngilizce: düşük (önce Türkiye). **Yapılmamalı:** sosyal akış, rozet/oyunlaştırma.
 
 ## 5. Fiyat, iş modeli, Türkiye pazarı
 - **Kalite olarak en iyi (değer):** Cal AI 9,99 dolar/ay veya 29,99 dolar/yıl ([eesel](https://www.eesel.ai/en/blog/cal-ai-pricing)); MyFitnessPal Premium 79,99 dolar/yıl, Premium+ 99,99 dolar/yıl (ikincil kaynak: [nutrola](https://nutrola.app/en/blog/is-myfitnesspal-still-good-2026) / [fitbudd](https://content.fitbudd.com/post/myfitnesspal-app-cost)); Google Health Premium 9,99 dolar/ay ([sensai](https://www.sensai.fit/blog/google-health-premium-fitbit-ai-coach-2026)); Whoop 199-359 dolar/yıl donanımla. Ücretsiz ve yerel: OpenNutriTracker, Chompass.

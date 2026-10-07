@@ -84,4 +84,20 @@ public class DeviceHelpPlugin extends Plugin {
             call.resolve();
         });
     }
+
+    /** İlerleme fotoğrafı ekranı açıkken ekran görüntüsü ve son uygulamalar önizlemesi kapanır (FLAG_SECURE). */
+    @PluginMethod
+    public void secure(PluginCall call) {
+        final boolean on = Boolean.TRUE.equals(call.getBoolean("on", false));
+        final Activity a = getActivity();
+        if (a == null) {
+            call.reject("etkinlik yok");
+            return;
+        }
+        a.runOnUiThread(() -> {
+            if (on) a.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+            else a.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+            call.resolve();
+        });
+    }
 }

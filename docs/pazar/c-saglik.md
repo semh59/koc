@@ -32,7 +32,7 @@ Yöntem notu: Google Play sayfaları araçla okunamadı; indirme sayıları ikin
 | Doz / karbonhidrat hesabı | var (mySugr) | doğrulanamadı | yok (bilerek) |
 | mmol/L | var | doğrulanamadı | yok (TR'de mg/dL) |
 
-- **Eksikler ve öneri:** Telefon testi, alarm sınırı ölçümü. Yüksek, S. Health Connect'ten tansiyon/şeker/kilo okuma. Orta, M. mmol/L. Düşük, S. Yapılmayacak: doz/insülin önerisi, "kontrol altında" gibi yorum, GMI/HbA1c tahmini, cihaz ekranından ML Kit okuma (7 segment zayıf, plan "sonra" diyor).
+- **Eksikler ve öneri:** Telefon testi, alarm sınırı ölçümü. Yüksek, S. Health Connect'ten tansiyon/şeker/kilo okuma. Orta, M. mmol/L (yapıldı, Ayarlar > Profil). Düşük, S. Yapılmayacak: doz/insülin önerisi, "kontrol altında" gibi yorum, GMI/HbA1c tahmini, cihaz ekranından ML Kit okuma (7 segment zayıf, plan "sonra" diyor).
 
 ## 3. Tahlil takibi ve okuma (PDF/OCR)
 - **Kalite olarak en iyi:** Tüketici tarafında bağımsız kaynakla belirlenmiş bir "en iyi" bulunamadı. Wizey: PDF/fotoğrafı yapay zekâyla açıklıyor, 500+ test, ilk analiz ücretsiz (sonrası ücret yapısı doğrulanamadı); 51 bin+ kullanıcı, 700 bin+ analiz (firma iddiası). Veri işleme yeri doğrulanamadı. Kaynak: [App Store](https://apps.apple.com/us/app/-/id6744994210), [AlternativeTo](https://alternativeto.net/software/wizey/about).
@@ -78,7 +78,7 @@ Yöntem notu: Google Play sayfaları araçla okunamadı; indirme sayıları ikin
 | Korelasyon (uyku-ruh-ilaç) | var (Bearable) | doğrulanamadı | kısmen (uyku özeti) |
 | Akıllı alarm | var (Sleep Cycle) | var | yok |
 
-- **Eksikler ve öneri:** Health Connect'ten uyku okuma (saat/bant kullananları kazandırır). Orta, M. Uyku-ruh hali-spor/yemek birlikte görülme özeti, tanısız dil. Düşük, M. Yapılmayacak: depresyon/uyku bozukluğu skoru, anksiyete taraması (tıbbi cihaz alanı), ruh hali notunu Koç'a göndermek.
+- **Eksikler ve öneri:** Health Connect'ten uyku okuma (saat/bant kullananları kazandırır). Orta, M. Uyku-ruh hali-spor/yemek birlikte görülme özeti, tanısız dil: YAPILDI (Trend > Bağlantılar, `www/baglantilib.js`; uyku ↔ ertesi gün ruh hali, adım ↔ ruh hali, kalori ↔ kilo trendi; en az 14 çift gün; Koç'a gitmez). Yapılmayacak: depresyon/uyku bozukluğu skoru, anksiyete taraması (tıbbi cihaz alanı), ruh hali notunu Koç'a göndermek.
 
 ## Mevzuat ve politika notu (ortak)
 - **Play:** Sağlık uygulaması beyanı zorunlu; tıbbi cihaz değilse "tıbbi cihaz değildir, tanı koymaz, hekime danışın" türü uyarı gerekir; sağlık verisi için gizlilik politikası şart ([Play Health Content](https://support.google.com/googleplay/android-developer/answer/16679511?hl=en)). Mevcut taslaklar: docs/play-data-safety.md, play-izin-beyanlari.md.

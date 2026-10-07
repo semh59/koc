@@ -25,6 +25,10 @@ ok("adım: snapAt yalnız gün gerçekten kapanınca yazılır",/boolean closed 
 }
 const dh=rd("assets/android/DeviceHelpPlugin.java"),ka=dh.slice(dh.indexOf("public void keepAwake"));
 ok("ekran açık: keepAwake eklenti metodu, UI iş parçacığında bayrak ekler/kaldırır ve çağrıyı çözer",/@PluginMethod\s+public void keepAwake\(PluginCall call\)/.test(dh)&&/import android\.view\.WindowManager;/.test(dh)&&/runOnUiThread\(/.test(ka)&&/addFlags\(WindowManager\.LayoutParams\.FLAG_KEEP_SCREEN_ON\)/.test(ka)&&/clearFlags\(WindowManager\.LayoutParams\.FLAG_KEEP_SCREEN_ON\)/.test(ka)&&/call\.resolve\(\)/.test(ka)&&rd("scripts/patch-android.js").includes('"DeviceHelpPlugin"'));
+{ // ilerleme fotoğrafı ekranı: FLAG_SECURE (ekran görüntüsü kilidi), UI iş parçacığında ekler/kaldırır
+  const sc=dh.slice(dh.indexOf("public void secure"),dh.indexOf("public void secure")+700);
+  ok("fotoğraf ekranı: secure eklenti metodu FLAG_SECURE'u UI iş parçacığında ekler/kaldırır ve çağrıyı çözer",/@PluginMethod\s+public void secure\(PluginCall call\)/.test(dh)&&/runOnUiThread\(/.test(sc)&&/addFlags\(WindowManager\.LayoutParams\.FLAG_SECURE\)/.test(sc)&&/clearFlags\(WindowManager\.LayoutParams\.FLAG_SECURE\)/.test(sc)&&/call\.resolve\(\)/.test(sc));
+}
 { // B5: otomatik yedek ve cihaz aktarımı kapalı
   const dr=rd("assets/android/res/xml/nw_data_rules.xml"),fb=rd("assets/android/res/xml/nw_backup_rules.xml"),doms=["root","file","database","sharedpref","external"];
   const sec=t=>dr.slice(dr.indexOf(`<${t}>`),dr.indexOf(`</${t}>`)),all=(s,d)=>d.every(x=>s.includes(`<exclude domain="${x}" path="."/>`))&&!/<include/.test(s);

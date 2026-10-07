@@ -90,4 +90,6 @@ Metin değişirse uygulama içinde duyurulur; Koç onay metni değişirse (sür�
 
 **Children:** NeoWell is for adults (18+) and is not directed at children. Setup does not continue when an age under 18 is entered and nothing is saved. For an existing profile under 18, Coach data sharing, calorie deficits and fasting suggestions stay off. The Coach is also off while no age is entered. Age is self-declared and not verified.
 
+**Progress photos and units:** progress photos you add stay in the app's private storage on your phone only (never sent to the Coach or any server, no share option, excluded from backups, deleted with the "Progress photos" category or "Delete all data"); on Android the screen blocks screenshots while the photo section is open. The kg/lb and mg/dL / mmol/L settings only change display and entry; records are stored in kg and mg/dL.
+
 **Medical:** NeoWell is not a medical device, does not diagnose or recommend treatment.

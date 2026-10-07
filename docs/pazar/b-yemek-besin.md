@@ -10,7 +10,7 @@ Yöntem notu: Google Play sayfaları ve istatistik siteleri (chrome-stats, AppBr
 | Özellik | En iyi | En çok tercih edilen | NeoWell |
 |---|---|---|---|
 | Doğrulanmış veri ve mikro besin | Cronometer | MFP (kısmen, kullanıcı girişli) | Kısmen (USDA ~45 besin, kalan tahmin) |
-| Kilo trendine göre adaptif hedef | MacroFactor | Yok/kısmen | Yok (Trend ekranı var, otomatik hedef güncelleme doğrulanmadı) |
+| Kilo trendine göre adaptif hedef | MacroFactor | Yok/kısmen | Kısmen (Trend ekranında haftalık hedef ÖNERİSİ, kullanıcı onaylar; otomatik uygulama yok) |
 | Öğün şablonu, favori | Hepsi | Var | Var |
 | Türk yemekleri | Diyetkolik (iddia) | Diyetkolik | Var (818 kayıt, ±%20-40 belirsizlik) |
 
@@ -39,10 +39,10 @@ Yöntem notu: Google Play sayfaları ve istatistik siteleri (chrome-stats, AppBr
 |---|---|---|---|
 | Hazır tarif kütüphanesi | Mealime / Yemek.com | Doğrulanamadı | Yok |
 | Kendi tarifini makroyla kaydetme | Cronometer, MFP | MFP | Var |
-| Otomatik haftalık menü | Eat This Much | Doğrulanamadı | Kısmen (Koç anahtarı gerekir) |
+| Otomatik haftalık menü | Eat This Much | Doğrulanamadı | Var (cihazda kurallı, anahtarsız; Koç menüsü ayrıca) |
 | Alışveriş listesi | Mealime | Doğrulanamadı | Var (menüden) |
 
-- **Eksikler ve öneri:** (a) Koçsuz menü: yerel kuralla (hedef kcal/makro, kullanıcının şablonlarından) menü üretmek, Orta, M; anahtarsız çalıştığı için erişimi artırır. (b) Elle yazılan tarife kendi alışveriş listesi eklemek, Düşük, S. Yapılmamalı: telifli tarif metni kopyalamak; yüzlerce tarif içeriği (kapsam dışı, içerik şirketi işi).
+- **Eksikler ve öneri:** (a) Koçsuz menü: yapıldı (www/menulocal.js; kullanıcının şablonlarından değil, yerleşik hazır öğünlerden). (b) Elle yazılan tarife kendi alışveriş listesi eklemek, Düşük, S. Yapılmamalı: telifli tarif metni kopyalamak; yüzlerce tarif içeriği (kapsam dışı, içerik şirketi işi).
 
 ## 4. Aralıklı oruç takibi
 - **Kalite olarak en iyi:** Zero (en iyi ücretsiz katman, araştırma ilişkisi) ve Simple (davranış koçluğu, beslenme günlüğü); Fastic Avrupa'da güçlü ([Fortune](https://fortune.com/article/best-intermittent-fasting-apps), [Nutrola karşılaştırma](https://nutrola.app/en/blog/simple-vs-zero-vs-fastic-fasting-apps-2026)). Zero, Simple, Fastic ücretsiz katmanlı, gelişmiş içerik abonelik.
