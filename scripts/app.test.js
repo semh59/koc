@@ -2567,6 +2567,16 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("CSV: tarifler dosyası malzeme başına satır",(()=>{const f=ev("pvCsv()").find(x=>x.key==="tarifler");return f&&f.n===1&&f.build().includes("Mercimek köftesi;4;Mercimek;200;119;9")})());
     ok("gizlilik: kategori listesinde Tariflerim, silinince tarifler gider, besinler kalır",ev("PV_CATS.find(c=>c[0]==='Tariflerim')[1]()")===1&&(ev("pvDelete(PV_CATS.findIndex(c=>c[0]==='Tariflerim'))"),ev("S.recipes.length")===0&&ev("S.myFoods.length")===1));
     ok("Koç bağlamına tarif gitmez",(ev("S.recipes=[{id:1,n:'GizliTarifAdi',s:1,items:[{n:'GizliMalzeme',g:5,k:5}]}]"),!JSON.stringify(ev("cMessages('merhaba')")).includes("Gizli")));
+    { // kimlik maskeleme: modele ham ad, telefon, TC, e-posta gitmez; yanıt yerelde geri çevrilir
+      reset();await ev("setKey('nvidia','K1')");
+      ev("Object.assign(S.settings,{age:34,consent:true,consentV:CONSENT_V,consentP:'gemini,groq,nvidia,openrouter',healthNote:'Dr. Kerim Ozan 0541 222 33 44 verdi, TC 12345678901'});S.chat=[{id:1,role:'user',text:'Eşim Ayşe, mail ayse@posta.com',t:1}];S.entries=[{id:2,day:dayKey(),time:'09:00',type:'not',v:0,text:'Ahmet Yılmaz aradı'}]");
+      const bodies=[];w.fetch=async(u,o)=>{bodies.push(o.body);return {ok:true,json:async()=>({choices:[{message:{content:'{"reply":"[AD1] selam","log":[]}'}}]})}};
+      const r=await ev("cAsk(cMessages('Ben Mehmet, 0532 123 45 67'),50)");
+      ok("Koç isteği: ham ad, telefon, TC, e-posta gövdede yok",bodies.length===1&&!/Ahmet|Kerim|Ayşe|Mehmet|0532|0541|12345678901|posta\.com/.test(bodies[0])&&/\[TELEFON\d\]/.test(bodies[0]),bodies[0]&&bodies[0].slice(0,300));
+      ok("yanıttaki etiket yerelde geri çevrilir, maskeleme bildirimi görünür",r.text.includes("selam")&&!r.text.includes("[AD")&&$q("#tmsg").textContent.includes("parça maskelendi"),[r.text,$q("#tmsg").textContent]);
+      ok("yaş modele aralık gider, yerel hesap kesin yaşı kullanır",ev("cData().profile.age")===34&&JSON.stringify(ev("cMessages('x')")).includes("30-34 yaş")&&!/[^-\d]34 yaş/.test(JSON.stringify(ev("cMessages('x')"))));
+      ev("S.settings.healthNote=''");
+    }
     ev("S=structuredClone(DEF);S.settings.obDone=true;closeSheet();tab='bugun';render()");
   }
   { // D-Bes3: yemeklerde aralık

@@ -265,11 +265,13 @@ propose: {"kcal":1900,"why":"kısa neden"} ya da null.
 food: {"name":"1 dilim pizza","kcal":280,"protein":12} ya da null.
 Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex":["kimlik"]}]} yaz: yalnız KATALOG'daki kimlikler, gün başına 3-8 egzersiz.`;
 
+  /* Kesin yaş kimliğe yaklaşır; modele 5 yıllık aralık gider (Koç 18+ için açık). Enerji hesabı yerelde kesin yaşla yapılır. */
+  const ageBand=a=>{const l=a-a%5;return Math.max(l,18)+"-"+(l+4)};
   const f1=x=>x==null?"–":String(Math.round(x*10)/10).replace(".",",");
   /* Bağlam metni. d: uygulamanın hesapladığı veri. */
   function contextText(d){
     const L=[];
-    L.push("PROFİL: "+[d.profile.cm?d.profile.cm+" cm":null,d.profile.age?d.profile.age+" yaş":null,d.profile.sex==="m"?"erkek":d.profile.sex==="f"?"kadın":null,d.profile.act!=null?"hareket düzeyi "+["az","orta","çok"][d.profile.act]:null].filter(Boolean).join(", ")||"girilmemiş");
+    L.push("PROFİL: "+[d.profile.cm?d.profile.cm+" cm":null,d.profile.age?ageBand(d.profile.age)+" yaş":null,d.profile.sex==="m"?"erkek":d.profile.sex==="f"?"kadın":null,d.profile.act!=null?"hareket düzeyi "+["az","orta","çok"][d.profile.act]:null].filter(Boolean).join(", ")||"girilmemiş");
     if(d.profile.note)L.push("SAĞLIK NOTU (kullanıcı yazdı): "+oneLine(d.profile.note,500));
     L.push(`HEDEFLER: kilo ${d.goals.kg||"yok"}, kalori ${d.goals.kcal||"yok"}, su ${d.goals.water} ml, spor ${d.goals.sport} dk/hafta`);
     const c=d.calc;

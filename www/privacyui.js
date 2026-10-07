@@ -35,6 +35,8 @@ function sheetPrivacy(){
     <li><b>Google barkod tarayıcı</b> (Play hizmetleri): görüntü telefonda işlenir, NeoWell görüntüyü almaz. Google, kendi koşullarına göre kullanım ve tanılama bilgisi toplayabilir.</li>
     <li><b>Google Drive</b>: yalnızca sen yedeği paylaşım ekranından Drive'a gönderirsen. Yedek parolayla şifrelenir.</li>
   </ul>
+  <p class="mut sm">Koç sağlayıcısı IP adresini görür; kimlik bilgileri (ad, telefon, e-posta, TC, adres gibi) göndermeden önce telefonda maskelenir; filtre %100 garanti değildir.</p>
+  ${swRow('data-pv="prev"',st.piiPrev,"Koç'a giden metni önizle","Açıkken her gönderimden önce giden tam metni görür, Gönder ya da İptal dersin.")}
   <div class="lbl">Verilerini sil</div>
   <p class="mut sm">Kategori başına silinir, geri alınamaz. <button class="lnk" style="display:inline;width:auto;min-height:44px" data-act="yedek">Önce yedek al</button></p>
   ${PV_CATS.map(([name,n],i)=>`<div class="row" style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)"><span style="flex:1;min-width:0"><b>${name}</b><small class="mut sm" style="display:block">${n()} kayıt</small></span><button class="chip" data-pv="del:${i}" ${n()?"":"disabled"} aria-label="${name} sil">Sil</button></div>`).join("")}
@@ -56,6 +58,7 @@ document.addEventListener("click",ev=>{
   if(a==="open")sheetPrivacy();
   else if(a==="close")closeSheet();
   else if(a==="del")pvDelete(+arg);
+  else if(a==="prev"){S.settings.piiPrev=el.checked;save()}
   else if(a==="csv")sheetCsv();
   else if(a==="csvsh"){const f=pvCsv()[+arg];shareFile(`neowell-${f.key}-${dayKey()}.csv`,f.label,"text/csv",f.build(),true)}
   else if(a==="consent"||a==="revoke"){cConsent(a==="consent");sheetPrivacy()}
