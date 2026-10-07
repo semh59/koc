@@ -70,7 +70,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
 
     /** Ayarlar'daki 'Kilitli ekran testi': gerçek doz alarmlarına dokunmadan ayrı kodla ms sonra aynı yolu çalıştırır. */
     static void test(Context c, long ms) {
-        Alarms.set(c, System.currentTimeMillis() + ms, pi(c, MAX, PendingIntent.FLAG_UPDATE_CURRENT));
+        Alarms.setClock(c, System.currentTimeMillis() + ms, pi(c, MAX, PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
     private static PendingIntent pi(Context c, int n, int flags) {
@@ -105,7 +105,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
         for (long at : t) {
             if (at <= now + 2000) continue;
             if (n < MAX) {
-                Alarms.set(c, at, pi(c, n, PendingIntent.FLAG_UPDATE_CURRENT));
+                Alarms.setClock(c, at, pi(c, n, PendingIntent.FLAG_UPDATE_CURRENT));
                 n++;
             }
             if (keep.length() > 0) keep.append(',');
