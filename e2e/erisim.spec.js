@@ -5,13 +5,16 @@ const AxeBuilder=require("@axe-core/playwright").default;
 const KOC=state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter",medOn:true,bpOn:true,bsOn:true,fastOn:true,stepsOn:true},{meds:[{id:1,n:"A",t:["09:00"],on:true}]});
 const SCREENS=["bugun","koc","salon","trend","daha","ayar","ayar-profil","ayar-modul","ayar-veri","egz","adim","tahlil","tansiyon","seker","ilac"];
 const SHEETS=['.act[data-act="yemek"]','.act[data-act="kilo"]','[data-hb="more"]'];
-/* Android yazı ölçeği WebView'da yalnız metni büyütür: piksel font-size bildirimleri ve --fs-* değişkenleri ikiye katlanır. */
+/* Android yazı ölçeği WebView'da yalnız metni büyütür: piksel font-size bildirimleri ve tüm --fs-* değişkenleri ikiye katlanır.
+   min()/clamp() içindeki üst sınırlar (alt menü etiketi, halka rakamı, SVG ekseni) bilinçli tasarım sınırıdır, katlanmaz. */
 const scaleText=(page,k)=>page.evaluate(k=>{
   const m=v=>v.replace(/([\d.]+)px/,(a,b)=>b*k+"px");
   const walk=rs=>{for(const r of rs){if(r.cssRules&&!r.style)walk(r.cssRules);else if(r.style&&/^[\d.]+px$/.test(r.style.fontSize))r.style.fontSize=m(r.style.fontSize)}};
   for(const s of document.styleSheets)walk(s.cssRules);
-  const de=document.documentElement,cs=getComputedStyle(de);
-  for(const p of ["cap","s","2","1","h3","h2","h1"])de.style.setProperty("--fs-"+p,m(cs.getPropertyValue("--fs-"+p).trim()));
+  const de=document.documentElement,cs=getComputedStyle(de),names=new Set();
+  for(const s of document.styleSheets)for(const r of s.cssRules)if(r.style)for(const p of r.style)if(p.startsWith("--fs-"))names.add(p);
+  for(const p of names)de.style.setProperty(p,m(cs.getPropertyValue(p).trim()));
+  if(Math.abs(parseFloat(getComputedStyle(document.body).fontSize)-16*k)>.5)throw new Error("gövde yazısı ölçeklenmedi");
 },k);
 const axe=async page=>(await new AxeBuilder({page}).withTags(["wcag2a","wcag2aa","wcag21aa"]).analyze()).violations.map(v=>v.id+": "+v.nodes.slice(0,3).map(n=>n.target.join(" ")).join("; "));
 const openSheet=async(app,page,a)=>{await app.go("bugun");await page.click(a);await expect(page.locator("#sheet.on")).toBeVisible()};
@@ -44,6 +47,26 @@ test.describe("Erişilebilirlik ve düzen",()=>{
     expect(await small(".chkrow .sw input,.chkrow")).toBe(0);
     await app.go("ayar-profil");
     expect(await small(".chkrow .sw input,.chkrow")).toBe(0);
+  });
+
+  test("onay penceresi: odak İptal'de ve içeride döner, Escape iptal eder, yıkıcı düğme danger, onay işi yapar",async({app,page})=>{
+    await app.open({seed:state({},{entries:[{day:"2026-10-06",time:"09:00",type:"su",v:250,text:""}]}),dialogs:false});
+    await app.go("ayar-veri");
+    const cfm=page.locator("#cfm");
+    await page.click('[data-act="sifirla"]');
+    await expect(cfm).toBeVisible();await expect(cfm).toHaveAttribute("role","alertdialog");
+    await expect(page.locator("#cfmt")).toHaveText("Tüm veriler silinsin mi?");
+    expect(await page.evaluate(()=>document.activeElement.dataset.cf)).toBe("0");
+    await expect(page.locator('#cfm [data-cf="1"]')).toHaveClass(/\bdanger\b/);
+    await expect(page.locator("#app")).toHaveJSProperty("inert",true);
+    for(let i=0;i<6;i++){await page.keyboard.press("Tab");expect(await page.evaluate(()=>!!document.activeElement.closest("#cfm"))).toBe(true)}
+    expect(await axe(page)).toEqual([]);
+    await page.keyboard.press("Escape");
+    await expect(cfm).toBeHidden();
+    expect((await app.state()).entries.length).toBe(1);
+    await page.click('[data-act="sifirla"]');await page.click('#cfm [data-cf="1"]');
+    await expect(cfm).toBeHidden();await expect(app.toast).toHaveText("Tüm veriler silindi");
+    expect((await app.state()).entries.length).toBe(0);
   });
 
   test("veri yokken kas çiplerinde sıfır sayacı yok",async({app,page})=>{
@@ -108,6 +131,25 @@ test.describe("Büyük yazı (%200) ve dar ekran (320 px)",()=>{
       const last=[...document.querySelectorAll("#app button,#app .card")].pop().getBoundingClientRect().bottom;
       return {pts,gap:n.top-last,center:hit(n.left+n.width/2,n.top+n.height/2)}});
     expect(r.center).toBe(true);expect(r.pts.every(Boolean)).toBe(true);expect(r.gap).toBeGreaterThanOrEqual(-1);
+  });
+  test("alt menü etiketleri harf ortasından bölünmez, düğmeye sığar; halka rakamları halkanın içinde; yapılacaklar metni sütuna dönmez",async({app,page})=>{
+    await app.open({seed:KOC});await scaleText(page,2);await page.waitForTimeout(200);
+    const r=await page.evaluate(()=>{
+      const o=[],rng=document.createRange();
+      for(const b of document.querySelectorAll("nav button")){
+        const t=[...b.childNodes].find(n=>n.nodeType===3&&n.textContent.trim());rng.selectNodeContents(t);const w=rng.getBoundingClientRect().width;
+        if(w>b.clientWidth+1)o.push("taşar: "+t.textContent.trim());
+        let i=0;for(const word of t.textContent.trim().split(/\s+/)){const s=t.textContent.indexOf(word,i);i=s+word.length;rng.setStart(t,s);rng.setEnd(t,i);
+          if(new Set([...rng.getClientRects()].map(q=>Math.round(q.top))).size>1)o.push("bölünür: "+word)}
+      }
+      for(const g of document.querySelectorAll(".ring")){const sv=g.querySelector("svg").getBoundingClientRect(),rc=g.querySelector(".rc");rng.selectNodeContents(rc);const q=rng.getBoundingClientRect();
+        if(q.left<sv.left-1||q.right>sv.right+1||q.top<sv.top-1||q.bottom>sv.bottom+1)o.push("halka taşar: "+rc.textContent.trim())}
+      for(const s of document.querySelectorAll(".todo .row>span"))if(s.getBoundingClientRect().width<100)o.push("dar sütun: "+s.textContent.trim().slice(0,20));
+      return {o,fs:parseFloat(getComputedStyle(document.querySelector("nav button")).fontSize)}});
+    expect(r.o).toEqual([]);
+    expect(r.fs).toBeGreaterThanOrEqual(12);
+    await app.go("koc");await page.waitForTimeout(150);
+    expect(await page.evaluate(()=>[...document.querySelectorAll(".chiprow .chip")].filter(c=>c.scrollWidth>c.clientWidth+1).map(c=>c.textContent.trim()))).toEqual([]);
   });
   test("menü büyük yazıda uzar, Koç yazma alanı menüyle çakışmaz",async({app,page})=>{
     await app.open({seed:KOC});await scaleText(page,2);

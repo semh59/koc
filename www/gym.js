@@ -157,7 +157,7 @@ function gSuggest(exId){
   return r;
 }
 function gGearHtml(){
-  return `<div class="lbl" style="margin-top:8px">Dambıl adımı</div><div class="chips">${[0,1,2,2.5].map(v=>`<button class="chip" data-g="gdb:${v}" aria-pressed="${S.dbStep===v}">${v?fkg(v)+" kg":"Varsayılan"}</button>`).join("")}</div>
+  return `<div class="mt-2 lbl">Dambıl adımı</div><div class="chips">${[0,1,2,2.5].map(v=>`<button class="chip" data-g="gdb:${v}" aria-pressed="${S.dbStep===v}">${v?fkg(v)+" kg":"Varsayılan"}</button>`).join("")}</div>
   <div class="lbl">Eldeki plakalar (kg)</div><div class="chips">${GPLATE_ALL.map(v=>`<button class="chip" data-g="gpl:${v}" aria-pressed="${S.plates.includes(v)}">${fkg(v)}</button>`).join("")}</div>
   <p class="hint">Ağırlık önerileri ve plaka hesabı eldeki dambıl adımına ve plakalara yuvarlanır. Bar ağırlığı plaka hesabı sayfasında ayarlanır.</p>`;
 }
@@ -238,8 +238,8 @@ function gHome(){
   const note=gWeekNote(gWeekRegions(),done.length>0).map(l=>`<p class="hint">${l}</p>`).join("");
   const rec=gHistHtml(done);
   return `<button class="btn" data-g="start:">${Icons.svg("plus")} Boş antrenman başlat</button>
-  <div class="card" style="margin-top:12px">${navRow('data-g="gdpick"',"clock","Rehberli antrenman","Esneme, ısınma ve Tabata; sesli komutla")}${navRow('data-g="lib"',"book","Egzersiz kütüphanesi","Hareketleri ara, incele, antrenmana ekle")}${navRow('data-c="prog"',"koc","Koç'tan program iste","Hedefine ve ekipmanına göre")}</div>
-  <h2>Şablonlarım</h2>${tpl||`<div class="card empty"><p class="hint">Sık yaptığın antrenmanı şablon olarak kaydet, tek dokunuşla başlat.</p></div>`}<button class="btn ghost" data-g="tedit:">${Icons.svg("plus")} Yeni şablon</button>
+  <div class="mt-3 card">${navRow('data-g="gdpick"',"clock","Rehberli antrenman","Esneme, ısınma ve Tabata; sesli komutla")}${navRow('data-g="lib"',"book","Egzersiz kütüphanesi","Hareketleri ara, incele, antrenmana ekle")}${navRow('data-c="prog"',"koc","Koç'tan program iste","Hedefine ve ekipmanına göre")}</div>
+  <h2>Şablonlarım</h2>${tpl||`${emptyCard("salon","","Sık yaptığın antrenmanı şablon olarak kaydet, tek dokunuşla başlat.")}`}<button class="btn ghost" data-g="tedit:">${Icons.svg("plus")} Yeni şablon</button>
   ${gPgHtml()}
   ${bars}${note?`<div class="card" id="wknote">${note}</div>`:""}
   <h2>Antrenman geçmişi</h2><div class="card">${rec||`<p class="hint">Bitirdiğin antrenmanlar burada listelenir.</p>`}</div>`;
@@ -248,7 +248,7 @@ function gHome(){
 function gTodayCard(){
   const a=gActive(),d=S.workouts.filter(w=>gDone(w)&&w.day===dayKey()).sort((x,y)=>y.t0-x.t0);
   if(!a&&!d.length)return "";
-  const row=(w,k,l)=>`<button class="rrow" data-g="${k}"><span class="tx" style="min-width:0;overflow-wrap:anywhere"><b>${esc(w.name)}</b><span class="mut sm">${esc(gNames(w,4))||"Egzersiz yok"}</span><span class="mut sm num">${l}</span></span>${k==="start:"?`<span class="tag">Devam et</span>`:""}</button>`;
+  const row=(w,k,l)=>`<button class="rrow" data-g="${k}"><span class="grow tx"><b>${esc(w.name)}</b><span class="mut sm">${esc(gNames(w,4))||"Egzersiz yok"}</span><span class="mut sm num">${l}</span></span>${k==="start:"?`<span class="tag">Devam et</span>`:""}</button>`;
   const ws=a?a.ex.reduce((s,x)=>s+x.sets.filter(t=>!t.w).length,0):0;
   return `<div class="card">${a?row(a,"start:",`Devam ediyor, ${a.ex.length} egzersiz, ${a.ex.reduce((s,x)=>s+x.sets.filter(t=>t.done&&gSetOk(t)).length,0)}/${ws} set işaretli`):""}${d.map(w=>row(w,"sum:"+w.id,gStats(w))).join("")}</div>`;
 }
@@ -256,7 +256,7 @@ function gHistHtml(done){
   const rows=done.slice(0,gHistMax);let ym="";
   return rows.map(x=>{
     const h=x.day.slice(0,7)===ym?"":`<div class="lbl">${AY[+x.day.slice(5,7)-1]} ${x.day.slice(0,4)}</div>`;ym=x.day.slice(0,7);
-    return `${h}<button class="rrow" data-g="sum:${x.id}"><span class="num mut">${fd(x.day)}</span><span class="tx" style="min-width:0;overflow-wrap:anywhere"><b>${esc(x.name)}</b><span class="mut sm">${esc(gNames(x,3))}</span><span class="mut sm num">${gStats(x)}</span></span></button>`;
+    return `${h}<button class="rrow" data-g="sum:${x.id}"><span class="num mut">${fd(x.day)}</span><span class="grow tx"><b>${esc(x.name)}</b><span class="mut sm">${esc(gNames(x,3))}</span><span class="mut sm num">${gStats(x)}</span></span></button>`;
   }).join("")+(done.length>rows.length?`<button class="lnk" data-g="histmore">Daha fazla göster (${done.length-rows.length})</button>`:"");
 }
 /* Sıradaki set: antrenmanın ilk işaretsiz seti. Satırı vurgulanır, ± paneli onun altında açılır. */
@@ -275,7 +275,7 @@ function gTplPreview(id){
     const tg=s.sec!=null?(k==="c"?`${Math.round(s.sec/60)} dk`:`${s.sec} sn`):s.reps?`${s.kg?fkg(s.kg)+" kg × ":""}${s.reps}${hi>s.reps?"–"+hi:""} tekrar`:"hedef yok, antrenmanda girersin";
     return `<div class="prow"><span><b>${esc(gEx(x.id).n)}</b><span class="mut sm">${x.sets.length} set · ${tg}</span></span></div>`;
   };
-  openSheet(`<h3>${esc(t.name)}</h3><div class="plist">${tmp.ex.map(row).join("")||`<p class="hint">Bu şablonda egzersiz yok. Başlatınca egzersizi sen eklersin.</p>`}</div><button class="btn" data-g="startgo:${id}">Başlat</button>${t.ex.length?`<button class="btn ghost" data-g="gdgo:t:${id}" style="margin-top:8px">Rehberli başlat</button>`:""}<button class="btn ghost" data-g="closesheet" style="margin-top:8px">Vazgeç</button>`);
+  openSheet(`<h3>${esc(t.name)}</h3><div class="plist">${tmp.ex.map(row).join("")||`<p class="hint">Bu şablonda egzersiz yok. Başlatınca egzersizi sen eklersin.</p>`}</div><button class="btn" data-g="startgo:${id}">Başlat</button>${t.ex.length?`<button class="mt-2 btn ghost" data-g="gdgo:t:${id}">Rehberli başlat</button>`:""}<button class="mt-2 btn ghost" data-g="closesheet">Vazgeç</button>`);
 }
 /* Boş kg ya da tekrarla ✓: önceki seansın değeri önerilir, yoksa net uyarı; sessizce 0 yazılmaz. */
 function gEmptySet(w,ei,si,kgIn,repsIn,kind){
@@ -283,7 +283,7 @@ function gEmptySet(w,ei,si,kgIn,repsIn,kind){
   const need=[!repsIn&&"tekrar",!kgIn&&kind==="w"&&"kg"].filter(Boolean);
   if(!need.length)return false;
   if(!ps||(need.includes("tekrar")&&!ps.reps)||(need.includes("kg")&&ps.kg==null)){toast(need.includes("tekrar")?"Önce tekrar sayısını yaz":"Ağırlığı yaz, ağırlıksızsa 0 yaz");return true}
-  openSheet(`<h3>Set boş</h3><p>${need.join(" ve ")} girilmedi. Önceki seansta bu set: <b class="num">${ps.kg?fkg(ps.kg)+" kg × ":""}${ps.reps} tekrar</b>.</p><button class="btn" data-g="fillok:${ei}:${si}">Bu değerle tamamla</button><button class="btn ghost" data-g="closesheet" style="margin-top:8px">Kendim yazayım</button>`);
+  openSheet(`<h3>Set boş</h3><p>${need.join(" ve ")} girilmedi. Önceki seansta bu set: <b class="num">${ps.kg?fkg(ps.kg)+" kg × ":""}${ps.reps} tekrar</b>.</p><button class="btn" data-g="fillok:${ei}:${si}">Bu değerle tamamla</button><button class="mt-2 btn ghost" data-g="closesheet">Kendim yazayım</button>`);
   return true;
 }
 /* Panel: kg ve tekrar için ± (adım egzersizin inc'i) ve önceki seanstaki aynı sıradaki setle tek dokunuşla doldurma. */
@@ -366,7 +366,7 @@ function gSheetPick(te){
 function gNewRead(){const n=$("#gnn"),t=$("#gntp");if(n)gNewS.n=n.value;if(t)gNewS.tp=t.value}
 function gNewHtml(){
   const ch=(f,vals,lbl)=>`<div class="chips">${vals.map(v=>`<button class="chip" data-g="nf:${f}:${v}" aria-pressed="${gNewS[f]===v}">${lbl(v)}</button>`).join("")}</div>`;
-  return `<div class="card" style="margin-top:8px"><input class="in" id="gnn" placeholder="Egzersiz adı" maxlength="60" value="${esc(gNewS.n)}">
+  return `<div class="mt-2 card"><input class="in" id="gnn" placeholder="Egzersiz adı" maxlength="60" value="${esc(gNewS.n)}">
   <div class="lbl">Tür</div>${ch("k",Object.keys(GNEWK),v=>GNEWK[v])}<div class="lbl">Bölge</div>${ch("r",EXREG,v=>v)}<div class="lbl">Ekipman</div>${ch("q",GNEWQ,v=>v)}
   <div class="lbl">Hareket şekli (figür)</div><select class="in" id="gntp" aria-label="Hareket şekli"><option value="">Figür yok</option>${Object.keys(GFIG).map(k=>`<option value="${k}"${k===gNewS.tp?" selected":""}>${GFIG[k]}</option>`).join("")}</select>
   <button class="btn" data-g="mkex">Oluştur ve ekle</button></div>`;
@@ -407,8 +407,8 @@ function gSheetSummary(id){
   ${gWorkVol(w)>0?`<div class="sumv num">${Math.round(gWorkVol(w)).toLocaleString("tr-TR")} <small>kg hacim</small></div>`:gTimedSec(w)>0?`<div class="sumv num">${gSecTx(gTimedSec(w))} <small>toplam süre</small></div>`:""}
   <div class="two"><div class="stat"><div class="k">Set</div><div class="v num">${gWorkSets(w)}</div></div><div class="stat"><div class="k">Egzersiz</div><div class="v num">${w.ex.length}</div></div></div>
   ${prs.length?`<div class="pr"><b>${prs.length} yeni rekor</b>${prs.map(p=>`<div>${esc(p.ex.n)}, ${fkg(p.kg)||0} kg × ${p.reps}<div class="mut sm">Tahmini 1TM ${Math.round(p.e1)} kg, önceki ${Math.round(p.prev)} kg</div></div>`).join("")}</div>`:""}
-  ${(k=>k?`<div class="mut sm" style="margin-top:8px">Tahmini ~${k} kcal (dinlenme hariç, tahmindir)</div>`:"")((S.entries.find(e=>e.wid===w.id)||{}).kcal)}
-  <div class="mut sm" style="margin:8px 0">${Object.keys(sets).map(g=>`${g} ${sets[g]}`).join(", ")}</div>
+  ${(k=>k?`<div class="mt-2 mut sm">Tahmini ~${k} kcal (dinlenme hariç, tahmindir)</div>`:"")((S.entries.find(e=>e.wid===w.id)||{}).kcal)}
+  <div class="my-2 mut sm">${Object.keys(sets).map(g=>`${g} ${sets[g]}`).join(", ")}</div>
   ${gSsGroups(w).map(g=>`<div class="mut sm">Süperset: ${esc(g.map(x=>gEx(x.id).n).join(" + "))}</div>`).join("")}${gDrops(w)?`<div class="mut sm">${gDrops(w)} drop set (hacme girer, rekor hesabına girmez)</div>`:""}
   <div class="btns">${w.tpl==null?`<button class="btn ghost" data-g="savetpl:${w.id}">Şablon olarak kaydet</button>`:S.templates.some(t=>t.id===w.tpl)?`<button class="btn ghost" data-g="tplupd:${w.id}">Şablonu bu seansa göre güncelle</button>`:""}<button class="btn ghost" data-g="closesheet">Kapat</button><button class="btn danger" data-g="delw:${w.id}">Antrenmanı sil</button></div>`);
 }
@@ -429,9 +429,9 @@ function gPgSheet(id){
   const p=PrgLib.PROGRAMS.find(x=>x.id===id);if(!p)return;
   if(p.d[0]<p.d[1])gPgD=Math.max(p.d[0],Math.min(p.d[1],gPgD||gPgF.d||p.d[0]));else gPgD=p.d[0];
   const ds=PrgLib.days(p,gPgD);
-  openSheet(`<h3>${p.n}</h3><div class="mut sm">${gPgMeta(p)}</div><p class="hint" style="padding:6px 0">${p.about}</p>
+  openSheet(`<h3>${p.n}</h3><div class="mut sm">${gPgMeta(p)}</div><p class="pv-2 hint">${p.about}</p>
   ${p.d[0]<p.d[1]?`<div class="lbl">Gün sayısı</div><div class="chips">${Array.from({length:p.d[1]-p.d[0]+1},(_,i)=>p.d[0]+i).map(n=>`<button class="chip" data-g="pgd:${p.id}:${n}" aria-pressed="${n===gPgD}">${n}</button>`).join("")}</div>`:""}
-  ${ds.map(d=>`<div class="lbl">${d.n}</div><div style="margin-bottom:8px">${d.ex.map(r=>{const t=PrgLib.tg(r);return `${esc(gEx(r[0]).n)} <span class="mut num" style="white-space:nowrap">${t.sets}×${t.sec?t.sec+" sn":gRepsTx(t)}</span>`}).join(", ")}</div>`).join("")}
+  ${ds.map(d=>`<div class="lbl">${d.n}</div><div class="mb-2">${d.ex.map(r=>{const t=PrgLib.tg(r);return `${esc(gEx(r[0]).n)} <span class="nw mut num">${t.sets}×${t.sec?t.sec+" sn":gRepsTx(t)}</span>`}).join(", ")}</div>`).join("")}
   <p class="hint">${gPgNote}</p>
   <div class="lbl">Rehberli başlat</div><div class="chips">${ds.map((d,i)=>`<button class="chip" data-g="gdgo:p:${p.id}-${i}">${d.n}</button>`).join("")}</div>
   <div class="btns"><button class="btn" data-g="pgadd:${p.id}">Şablonlarıma ekle</button><button class="btn ghost" data-g="closesheet">Kapat</button></div>`);
@@ -479,7 +479,7 @@ function gTeSheet(){
   }).join("");
   openSheet(`<h3>${gTe.id?"Şablonu düzenle":"Yeni şablon"}</h3><div class="lbl">Ad</div><input class="in" id="gten" maxlength="60" value="${esc(gTe.name)}" placeholder="Örn. İtiş günü">
   ${rows||`<p class="hint">Hareket ekleyerek başla.</p>`}
-  <button class="btn ghost" data-g="teadd" style="margin-bottom:8px">+ Egzersiz ekle</button>
+  <button class="mb-2 btn ghost" data-g="teadd">+ Egzersiz ekle</button>
   <div class="btns"><button class="btn" data-g="tesave">Kaydet</button><button class="btn ghost" data-g="closesheet">Vazgeç</button></div>`);
 }
 /* Yeniden çizimden önce yazılanlar taslağa alınır. Geçersiz alan eski değeri korur. */
@@ -520,11 +520,14 @@ function gStart(tplId){
 function gFinish(){
   const w=gActive();if(!w)return;
   const open=w.ex.reduce((s,x)=>s+x.sets.filter(t=>!t.done&&gSetOk(t)).length,0);
-  if(open){
-    if(!confirm(`${open} set işaretlenmemiş. Tamamlandı sayılıp kaydedilsin mi?
-Tamam: sayılır, İptal: antrenmana dön`))return;
+  if(open)return void confirmSheet({title:"Antrenman bitirilsin mi?",body:`${open} set işaretlenmemiş. Tamamlandı sayılıp kaydedilsin mi?`,ok:"Sayılsın, bitir",no:"Antrenmana dön"}).then(ok=>{
+    if(!ok||gActive()!==w)return;
     for(const x of w.ex)for(const t of x.sets)if(gSetOk(t))t.done=true;
-  }
+    gFinishSave(w);
+  });
+  gFinishSave(w);
+}
+function gFinishSave(w){
   if(!w.ex.some(x=>x.sets.some(t=>t.done&&gSetOk(t))))return toast(w.ex.length?"Kaydedilmedi: değeri girilmiş set yok. Tekrar ya da süre gir, ✓ koy; vazgeçtiysen Antrenmanı iptal et":"Kaydedilmedi: antrenmanda egzersiz yok. Egzersiz ekle ya da Antrenmanı iptal et");
   gTimStop();
   for(const x of w.ex)x.sets=x.sets.filter(s=>s.done);
@@ -646,10 +649,9 @@ function gClick(v,el){
     }
     case "rest":{const d=+p1;gRestSet(d&&Math.max(Date.now(),restEnd)+d*1000);gTick();return}
     case "finish":return gFinish();
-    case "cancel":{
-      if(!confirm("Bu antrenman kaydedilmeden silinsin mi?"))return;
-      gTimStop();S.workouts=S.workouts.filter(x=>x!==w);save();gRestSet(0);render();return;
-    }
+    case "cancel":return void confirmSheet({title:"Bu antrenman kaydedilmeden silinsin mi?",ok:"Sil",danger:true}).then(ok=>{
+      if(!ok)return;gTimStop();S.workouts=S.workouts.filter(x=>x!==w);save();gRestSet(0);render();
+    });
     case "hist":return gSheetHist(p1);
     case "mm":{
       const i=$("#mminfo");if(!i)return;
@@ -669,8 +671,9 @@ function gClick(v,el){
     }
     case "tdel":{
       const t=S.templates.find(x=>x.id===+p1);if(!t)return;
-      if(!confirm(`"${t.name}" şablonu silinsin mi?`))return;
-      S.templates=S.templates.filter(x=>x!==t);save();render();toast("Şablon silindi",()=>{S.templates.push(t);save();render()});return;
+      return void confirmSheet({title:`"${t.name}" şablonu silinsin mi?`,ok:"Sil",danger:true}).then(ok=>{
+        if(ok){S.templates=S.templates.filter(x=>x!==t);save();render();toast("Şablon silindi",()=>{S.templates.push(t);save();render()})}
+      });
     }
     case "pgf":gPgF[p1]=p1==="d"?+p2:p2;return render();
     case "pg":gPgD=0;return gPgSheet(p1);
@@ -730,7 +733,7 @@ function gEnergy(){
   const st=S.settings,wAll=weights(),days=Object.keys(wAll).sort();
   if(!days.length)return "";
   const kg=Algo.trend(wAll)[days[days.length-1]];
-  if(!(st.heightCm>0&&st.age>0))return `<h2>Enerji dengesi</h2><div class="card"><p class="hint" style="padding:0 0 8px">Harcamanı ve kalori hedefini hesaplamak için boy ve yaş gerekli.</p><button class="btn ghost" data-act="profil">Profili doldur</button></div>`;
+  if(!(st.heightCm>0&&st.age>0))return `<h2>Enerji dengesi</h2><div class="card"><p class="flush hint">Harcamanı ve kalori hedefini hesaplamak için boy ve yaş gerekli.</p><button class="btn ghost" data-act="profil">Profili doldur</button></div>`;
   const profile={kg,cm:st.heightCm,age:st.age,sex:st.sex||"",act:st.act};
   const intake={};for(const e of S.entries)if(e.type==="yemek"&&e.v)intake[e.day]=(intake[e.day]||0)+e.v;
   const r=Algo.adaptiveTdee({weights:wAll,intake,profile});
@@ -743,5 +746,5 @@ function gEnergy(){
   cells.push(["Protein aralığı",pr?`${pr[0]}–${pr[1]} g`:"Hekiminle belirle"]);
   return `<h2>Enerji dengesi</h2><div class="card">${sg&&sg.blocked?riskBox(risk(kg),"Kalori açığı önermiyorum"):""}<div class="stats">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1]}</div></div>`).join("")}</div>
   ${sg&&sg.kcal!==st.kcal?`<div class="btns"><button class="btn ghost" data-act="uygula:${sg.kcal}">Hedefi ${sg.kcal} kcal yap</button></div>`:""}
-  <details class="more"><summary>Nasıl hesaplandı</summary><p class="hint" style="padding:0">${Algo.PROTEIN_NOTE} ${src}${sg&&sg.limited?" Hedef güvenli alt sınırda tutuldu.":""}${sg&&sg.blocked?" Öneri bakım düzeyinde tutuldu.":""}</p></details></div>`;
+  <details class="acc"><summary>Nasıl hesaplandı</summary><p class="p0 hint">${Algo.PROTEIN_NOTE} ${src}${sg&&sg.limited?" Hedef güvenli alt sınırda tutuldu.":""}${sg&&sg.blocked?" Öneri bakım düzeyinde tutuldu.":""}</p></details></div>`;
 }

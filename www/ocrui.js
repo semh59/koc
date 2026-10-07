@@ -5,12 +5,12 @@ const ocrPlugin=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor
 let ocrKind="",etiketOk=false;
 
 function ocrBtn(kind,label,cls){
-  return ocrPlugin()?`<button class="btn ${cls||"ghost"}" data-ocr="choose:${kind}" style="margin-bottom:8px">${label}</button>`:"";
+  return ocrPlugin()?`<button class="mb-2 btn ${cls||"ghost"}" data-ocr="choose:${kind}">${label}</button>`:"";
 }
 function ocrChoose(kind){
   const tip=kind==="etiket"?"Etiketteki besin değerleri tablosunu düz tut, iyi ışıkta çek. Tablo çerçeveyi doldursun, parlama olmasın.":"Raporu düz bir zemine koy, sayfanın tamamı ve yazılar net görünsün. Çok sayfa varsa her sayfayı ayrı oku.";
   openSheet(`<h3>${kind==="etiket"?"Etiket oku":"Tahlil fotoğrafı"}</h3><p class="mut sm">${tip} Yazı telefonda okunur, fotoğraf hiçbir yere gönderilmez.</p>
-  <button class="btn" data-ocr="cam:${kind}" style="margin-bottom:8px">${Icons.svg("camera")} Fotoğraf çek</button><button class="btn ghost" data-ocr="gal:${kind}">${Icons.svg("image")} Galeriden seç</button><button class="btn ghost" data-ocr="close" style="margin-top:8px">Vazgeç</button>`);
+  <button class="mb-2 btn" data-ocr="cam:${kind}">${Icons.svg("camera")} Fotoğraf çek</button><button class="btn ghost" data-ocr="gal:${kind}">${Icons.svg("image")} Galeriden seç</button><button class="mt-2 btn ghost" data-ocr="close">Vazgeç</button>`);
 }
 /* Dokunma işleyicisinin içinde eşzamanlı çağrılmalı (tarayıcı kullanıcı hareketi ister). */
 function ocrPick(capture,kind){
@@ -51,10 +51,10 @@ function etiketReview(r){
   const f=r.food,miss=[["k","kalori"],["p","protein"],["c","karbonhidrat"],["f","yağ"]].filter(([k])=>f[k]==null).map(x=>x[1]);
   const inp=(id,v,ph)=>`<input class="in num" id="${id}" value="${etFmt(v)}" placeholder="${ph}" inputmode="decimal" autocomplete="off">`;
   openSheet(`<h3>Etiketten okunan</h3><input class="in" id="en" placeholder="Ürünün adı (zorunlu)" autocomplete="off" autofocus>
-  <div class="mut sm" style="margin-bottom:8px">100 g başına değerler. ${miss.length?`Okunamayan: ${miss.join(", ")}. Etiketten bakıp yaz.`:"Etiketle karşılaştırıp kontrol et."}</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><div class="lbl">Kalori (kcal)</div>${inp("ek",f.k,"kcal")}</div><div><div class="lbl">Protein (g)</div>${inp("ep",f.p,"g")}</div><div><div class="lbl">Karbonhidrat (g)</div>${inp("ec",f.c,"g")}</div><div><div class="lbl">Yağ (g)</div>${inp("ef",f.f,"g")}</div></div>
+  <div class="mb-2 mut sm">100 g başına değerler. ${miss.length?`Okunamayan: ${miss.join(", ")}. Etiketten bakıp yaz.`:"Etiketle karşılaştırıp kontrol et."}</div>
+  <div class="g2"><div><div class="lbl">Kalori (kcal)</div>${inp("ek",f.k,"kcal")}</div><div><div class="lbl">Protein (g)</div>${inp("ep",f.p,"g")}</div><div><div class="lbl">Karbonhidrat (g)</div>${inp("ec",f.c,"g")}</div><div><div class="lbl">Yağ (g)</div>${inp("ef",f.f,"g")}</div></div>
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px">${ETX.map(([k,n,u])=>`<div><div class="lbl">${n}</div>${inp("e"+k,f[k],u)}</div>`).join("")}</div>
-  <div class="hint" id="ewarn" role="alert"></div><button class="btn" data-ocr="esave">Kaydet ve ekle</button><button class="btn ghost" data-ocr="close" style="margin-top:8px">Vazgeç</button>`);
+  <div class="hint" id="ewarn" role="alert"></div><button class="btn" data-ocr="esave">Kaydet ve ekle</button><button class="mt-2 btn ghost" data-ocr="close">Vazgeç</button>`);
 }
 function etiketSave(){
   const g=id=>{const e=document.getElementById(id);return e?e.value.trim():""},n=g("en").slice(0,60);

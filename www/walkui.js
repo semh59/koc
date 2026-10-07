@@ -39,9 +39,9 @@ function walkPrev(){
 function walkSheet(){
   const w=S.walk;if(!w)return;
   openSheet(`<h3>${WKIND[wKind][0]} kaydı</h3><div class="mut sm">${MotionLib.hmOf(w.t0)} - ${MotionLib.hmOf(w.t1)}</div>
-  <div class="chips" id="wk" style="margin-top:8px">${Object.keys(WKIND).map(k=>`<button class="chip" data-w="k:${k}" aria-pressed="${k===wKind}">${WKIND[k][0]}</button>`).join("")}</div>
+  <div class="mt-2 chips" id="wk">${Object.keys(WKIND).map(k=>`<button class="chip" data-w="k:${k}" aria-pressed="${k===wKind}">${WKIND[k][0]}</button>`).join("")}</div>
   <div class="lbl">Süre (dakika)</div><input class="in num" id="wmin" inputmode="numeric" value="${wMin()}" oninput="walkPrev()">
-  <div class="sumv num" id="wprev" style="font-size:20px"></div>
+  <div class="t-h2 sumv num" id="wprev"></div>
   <p class="hint" style="padding:4px 0 8px">Mesafe ve kalori tahmindir. Süreyi unuttuysan düzelt. Adımlar günlük sayaca zaten dahildir, ikinci kez eklenmez.</p>
   <div class="btns"><button class="btn" data-w="save">Kaydet</button><button class="btn ghost" data-w="close">Sonra</button><button class="btn danger" data-w="drop">Kaydetmeden at</button></div>`);
   walkPrev();
@@ -57,7 +57,7 @@ function walkSave(){
 }
 function walkCard(){
   const w=S.walk;
-  if(!w)return `<div class="card"><div class="lbl">Yürüyüş, koşu, bisiklet</div><p class="mut sm" style="margin:0 0 8px">Tek bir çıkışın süresini, mesafesini ve kalorisini ölç. Adım sayar açıksa adım farkından hesaplanır.</p><button class="btn" data-w="start">Yürüyüş başlat</button></div>`;
+  if(!w)return `<div class="card"><div class="lbl">Yürüyüş, koşu, bisiklet</div><p class="m0 mb-2 mut sm">Tek bir çıkışın süresini, mesafesini ve kalorisini ölç. Adım sayar açıksa adım farkından hesaplanır.</p><button class="btn" data-w="start">Yürüyüş başlat</button></div>`;
   if(w.t1)return `<div class="card"><div class="lbl">Durdu, kaydedilmedi</div><div class="sumv num">${wClock(wMs())}</div><div class="btns"><button class="btn" data-w="sheet">Kaydet</button><button class="btn danger" data-w="drop">Kaydetmeden at</button></div></div>`;
   return `<div class="card"><div class="lbl">Sürüyor, ${MotionLib.hmOf(w.t0)}'de başladı</div><div class="sumv num" id="wclock" role="timer">${wClock(wMs())}</div><div class="btns"><button class="btn" data-w="stop">Bitir</button><button class="btn ghost" data-w="drop">Vazgeç</button></div></div>`;
 }
@@ -70,6 +70,6 @@ document.addEventListener("click",ev=>{
   else if(a==="sheet")motionStatus().then(walkSheet);
   else if(a==="save")walkSave();
   else if(a==="close")closeSheet();
-  else if(a==="drop"){if(confirm("Bu yürüyüş kaydedilmeden silinsin mi?")){S.walk=null;save();walkGpsOff();closeSheet();render()}}
+  else if(a==="drop")confirmSheet({title:"Bu yürüyüş kaydedilmeden silinsin mi?",ok:"Sil",danger:true}).then(ok=>{if(ok){S.walk=null;save();walkGpsOff();closeSheet();render()}});
   else if(a==="k"){wKind=p;document.querySelectorAll("#wk .chip").forEach(c=>c.setAttribute("aria-pressed",c===el));document.querySelector("#sheet h3").textContent=`${WKIND[p][0]} kaydı`;walkPrev()}
 });

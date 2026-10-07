@@ -33,7 +33,7 @@ async function persistKeys(){
   }
   if(KV()&&Object.keys(KEYS).length){
     if(!plainOk&&!plainHas()){
-      if(plainNo||!confirm(VAULT_WARN+". Tamam: düz saklansın. İptal: anahtar yalnız bu oturumda kalır, uygulamayı kapatınca yeniden girersin."))return void(plainNo=true);
+      if(plainNo||!await confirmSheet({title:"Anahtar düz saklansın mı?",body:VAULT_WARN+". Düz saklarsan uygulama kapanınca da kalır. Vazgeçersen anahtar yalnız bu oturumda kalır, uygulamayı kapatınca yeniden girersin.",ok:"Düz sakla",no:"Yalnız bu oturum"}))return void(plainNo=true);
       plainOk=true;lsSet("koc_keys_plain","1");
     }else if(!vaultWarned){vaultWarned=true;toast(VAULT_WARN)}
   }
@@ -279,7 +279,7 @@ async function sendOk(p,conf,msgs){
   if(conf.prev===false)return false;
   if(!need)return true;
   if(conf[p.id]===undefined){
-    conf[p.id]=confirm(warn+" Göndermeyi onaylıyor musun?");
+    conf[p.id]=await confirmSheet({title:"Gönderilsin mi?",body:warn+" Göndermeyi onaylıyor musun?",ok:"Gönder"});
     if(conf[p.id]&&cust)custAsked.add(k);
   }
   return conf[p.id];
@@ -287,7 +287,7 @@ async function sendOk(p,conf,msgs){
 function cPreview(msgs,p,warn){
   return new Promise(res=>{
     const n=Object.keys(msgs.pii||{}).length;
-    openSheet(`<h3>Koç'a giden metin</h3><p class="mut sm">${esc(p.name)} sağlayıcısına tam olarak aşağıdaki metin gider.${n?` Kimlik bilgisi gibi duran ${n} parça maskelendi.`:""}</p>${warn?`<div class="banner"><p style="margin:0">${esc(warn)}</p></div>`:""}<pre style="white-space:pre-wrap;word-break:break-word;max-height:45vh;overflow:auto;font-size:12px;margin:8px 0" tabindex="0">${esc(msgs.map(m=>`[${m.role==="user"?"sen":m.role==="system"?"sistem":"koç"}]\n${m.content}`).join("\n\n"))}</pre><div class="two"><button class="btn" data-c="pvok">Gönder</button><button class="btn ghost" data-c="pvno">İptal</button></div>`);
+    openSheet(`<h3>Koç'a giden metin</h3><p class="mut sm">${esc(p.name)} sağlayıcısına tam olarak aşağıdaki metin gider.${n?` Kimlik bilgisi gibi duran ${n} parça maskelendi.`:""}</p>${warn?`<div class="banner"><p class="m0">${esc(warn)}</p></div>`:""}<pre style="white-space:pre-wrap;word-break:break-word;max-height:45vh;overflow:auto;font-size:12px;margin:8px 0" tabindex="0">${esc(msgs.map(m=>`[${m.role==="user"?"sen":m.role==="system"?"sistem":"koç"}]\n${m.content}`).join("\n\n"))}</pre><div class="two"><button class="btn" data-c="pvok">Gönder</button><button class="btn ghost" data-c="pvno">İptal</button></div>`);
     sheetEnd=res;
   });
 }
@@ -553,7 +553,7 @@ function cShop(id){
   const c=menuCard(id);if(!c)return;
   const L=CoachLib.shopList(c),ch=new Set(c.chk);
   openSheet(`<h3>Alışveriş listesi</h3><p class="mut sm">Menüden bu telefonda hesaplandı, hiçbir yere gönderilmedi. Miktarlar menüdeki porsiyonlara göredir.</p>${L.map((x,i)=>`<button class="prow" data-c="shopchk:${id}:${i}" aria-pressed="${ch.has(x.n)}"><span><b${ch.has(x.n)?' style="text-decoration:line-through"':""}>${esc(x.n)}</b><span class="mut sm">${esc(x.t)}</span></span><span class="plus" aria-hidden="true">${ch.has(x.n)?Icons.svg("check"):""}</span></button>`).join("")}
-  <div class="two" style="margin-top:10px"><button class="btn ghost" data-c="shopcopy:${id}">Kopyala</button><button class="btn ghost" data-c="shopshare:${id}">Paylaş</button></div>`);
+  <div class="mt-3 two"><button class="btn ghost" data-c="shopcopy:${id}">Kopyala</button><button class="btn ghost" data-c="shopshare:${id}">Paylaş</button></div>`);
 }
 
 /* Plato sorusu yereldir: consent ve sağlayıcıdan bağımsız, AI çağrısı yapmaz; kullanıcı "Bak"a dokunursa yerel kart açılır. */
@@ -613,7 +613,7 @@ function cCard(m){
   if(c.kind==="program")return `<div class="card lcard"><b>${esc(c.name)}</b>${c.days.map(d=>`<div class="lrow"><div><b>${esc(d.n)}</b><div class="mut sm">${esc(d.ex.map(i=>gEx(i).n).join(", "))}</div></div></div>`).join("")}
     ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="progadd:${m.id}">Şablon olarak ekle</button></div>`:`<div class="mut sm">${c.days.length} şablon Salon'a eklendi</div>`}<p class="hint">${gPgNote}</p></div>`;
   if(c.kind==="menu")return `<div class="card lcard"><div class="lhead"><b>Haftalık menü</b><span class="tahmin">Tahmin</span></div><div class="mut sm">Hedef ${c.kcal?"~"+c.kcal+" kcal/gün":"belirtilmedi"}. Tıbbi diyet ya da hastalık menüsü değildir.</div>
-    ${c.days.map((d,di)=>`<div style="padding:8px 0;border-top:1px solid var(--line)"><div class="lhead"><b>${esc(d.n)}</b><span class="num">~${d.k} kcal</span></div>${d.off?`<div class="mut sm">Hedefin %15'inden fazla sapıyor</div>`:""}${d.meals.map(b=>`<div class="mut sm"><b>${mealLbl(b.m)}:</b> ${esc(b.items.map(i=>i.n+qTxt(i.q)).join(", "))}</div>`).join("")}
+    ${c.days.map((d,di)=>`<div class="sep"><div class="lhead"><b>${esc(d.n)}</b><span class="num">~${d.k} kcal</span></div>${d.off?`<div class="mut sm">Hedefin %15'inden fazla sapıyor</div>`:""}${d.meals.map(b=>`<div class="mut sm"><b>${mealLbl(b.m)}:</b> ${esc(b.items.map(i=>i.n+qTxt(i.q)).join(", "))}</div>`).join("")}
     <div class="lbtns"><button class="chip" data-c="menuadd:${m.id}:${di}">Bugüne ekle</button><button class="chip" data-c="menutpl:${m.id}:${di}">Şablon yap</button></div></div>`).join("")}
     <div class="lbtns"><button class="btn" data-c="shop:${m.id}">Alışveriş listesi</button></div></div>`;
   if(c.kind==="why")return `<div class="card lcard"><b>Son 7 gün</b>${c.items.map(x=>`<p class="sm">${esc(x.t)}</p>`).join("")}<div class="mut sm">${c.asked?"Telefonda hesaplandı; yorum için Koç'a gönderildi.":"Telefonda hesaplandı, hiçbir yere gönderilmedi."}</div>
@@ -691,7 +691,7 @@ function viewKoc(){
   }
   if(!coachOn()&&!intro)h+=`<div class="banner info">${consentHtml()}${consentOk()?`<button class="btn" data-c="consent">Açık rızamı veriyorum</button>`:""}<button class="lnk" data-pv="open">Gizlilik ve veri</button></div>`;
   if(S.chat.length||S.chats.length)h+=`<div class="chips cbar">${S.chat.length?`<button class="chip" data-c="newchat">Yeni sohbet</button>`:""}${S.chats.length?`<button class="chip" data-c="chats">Geçmiş</button>`:""}</div>`;
-  if(!S.chat.length&&hasKey())h+=`<div class="card coachc empty"><b>Bugün neyle başlayalım?</b><p class="mut sm">Yediğini, içtiğini ya da tartını yaz; kaydederim. İstersen günü yorumlarım.</p><div class="chips" style="justify-content:center;margin:12px 0 0">${CASK.map((x,i)=>`<button class="chip" data-c="ask:${i}">${x[0]}</button>`).join("")}</div></div>`;
+  if(!S.chat.length&&hasKey())h+=`<div class="card coachc empty"><b>Bugün neyle başlayalım?</b><p class="mut sm">Yediğini, içtiğini ya da tartını yaz; kaydederim. İstersen günü yorumlarım.</p><div class="chips">${CASK.map((x,i)=>`<button class="chip" data-c="ask:${i}">${x[0]}</button>`).join("")}</div></div>`;
   for(const m of S.chat){
     if(m.role==="user")h+=`<div class="ub">${esc(m.text)}</div>${m.pend?`<div class="pendl">Gönderilmedi${coachOn()&&!typing?`<button class="lnk" style="display:inline;width:auto;min-height:44px;margin-left:6px" data-c="retry">Şimdi gönder</button>`:""}</div>`:""}`;
     else if(m.role==="coach"){
@@ -723,9 +723,9 @@ function pStatus(p){
 }
 function viewProviders(){
   const rows=S.providers.map((p,i)=>{const [a,b]=pStatus(p);return `<button class="prow" data-c="prov:${p.id}"><span style="min-width:0"><b>${esc(p.name)}</b><span class="mut sm">${esc(p.model)}${b?", "+esc(b):""}</span></span><span class="tag">${a}</span></button>`}).join("");
-  return `<h2>Yapay zekâ koç</h2><div class="card"><button class="btn" data-c="setup">Anahtar ekle</button><p class="hint" style="padding:8px 0">Sırayla denenir. Limite takılırsa sıradaki devreye girer. Anahtarlar bu telefonda şifreli durur; yalnız parolalı yedeğe şifreli girer, düz hiçbir yere yazılmaz.</p>${rows}
+  return `<h2>Yapay zekâ koç</h2><div class="card"><button class="btn" data-c="setup">Anahtar ekle</button><p class="pv-2 hint">Sırayla denenir. Limite takılırsa sıradaki devreye girer. Anahtarlar bu telefonda şifreli durur; yalnız parolalı yedeğe şifreli girer, düz hiçbir yere yazılmaz.</p>${rows}
   <div class="btns"><button class="btn ghost" data-c="addprov">Sağlayıcı ekle</button></div>
-  <p class="hint">Veri paylaşımı: ${S.settings.consent?`kabul edildi (${fd(S.settings.consentAt)})`:"kabul edilmedi"}. ${S.settings.consent?`<button class="lnk" style="display:inline-block;width:auto" data-c="revoke">Geri al</button>`:""}</p>
+  <p class="hint">Veri paylaşımı: ${S.settings.consent?`kabul edildi (${fd(S.settings.consentAt)})`:"kabul edilmedi"}. ${S.settings.consent?`<button class="wa ib lnk" data-c="revoke">Geri al</button>`:""}</p>
   <div class="btns"><button class="btn danger" data-c="clearchat">Sohbeti temizle</button></div></div>`;
 }
 /* Adresler yalnız yaygın bilinen anahtar sayfaları; panel düğme adları değişebilir. */
@@ -827,14 +827,14 @@ function cSheetProv(id){
   const k=getKeys()[id],builtin=defProviders().some(d=>d.id===id);
   const i=S.providers.indexOf(p);
   openSheet(`<h3>${esc(p.name)}</h3>
-  <div class="lbl">Adres</div><input class="in" id="pb" value="${esc(p.base)}" autocomplete="off" spellcheck="false" style="font-size:14px"${builtin?" readonly":""}>
-  <div class="lbl">Model</div><input class="in" id="pm" value="${esc(p.model)}" autocomplete="off" spellcheck="false" style="font-size:14px"><div id="pmlist"></div>
-  <div class="lbl">Anahtar</div><input class="in" id="pk" type="password" placeholder="${k?"••••"+esc(k.slice(-4)):"yapıştır"}" autocomplete="off" spellcheck="false" style="font-size:14px">
+  <div class="lbl">Adres</div><input class="url in" id="pb" value="${esc(p.base)}" autocomplete="off" spellcheck="false"${builtin?" readonly":""}>
+  <div class="lbl">Model</div><input class="url in" id="pm" value="${esc(p.model)}" autocomplete="off" spellcheck="false"><div id="pmlist"></div>
+  <div class="lbl">Anahtar</div><input class="url in" id="pk" type="password" placeholder="${k?"••••"+esc(k.slice(-4)):"yapıştır"}" autocomplete="off" spellcheck="false">
   ${swRow('id="pon"',p.on,"Bu sağlayıcıyı kullan")}
   ${swRow('id="ph"',p.health,"Sağlık verisi gönder")}
   <div class="mut sm" style="margin:2px 0 10px">${p.confirm?"Bu sağlayıcıda ücretsiz katman istemleri ürün geliştirmek için kullanabilir. Açarsan her göndermeden önce onay istenir.":"Kapalıysa bu sağlayıcıya hiçbir şey gönderilmez."}</div>
   <div class="two"><button class="btn ghost" data-c="ptest:${id}">Bağlantıyı test et</button><button class="btn ghost" data-c="pmodels:${id}">Modelleri getir</button></div>
-  <div class="two" style="margin-top:8px"><button class="btn ghost" data-c="pmove:${id}:-1"${i===0?" disabled":""}>Yukarı taşı</button><button class="btn ghost" data-c="pmove:${id}:1"${i===S.providers.length-1?" disabled":""}>Aşağı taşı</button></div>
+  <div class="mt-2 two"><button class="btn ghost" data-c="pmove:${id}:-1"${i===0?" disabled":""}>Yukarı taşı</button><button class="btn ghost" data-c="pmove:${id}:1"${i===S.providers.length-1?" disabled":""}>Aşağı taşı</button></div>
   <div class="btns"><button class="btn" data-c="psave:${id}">Kaydet</button>${k?`<button class="btn danger" data-c="pkeydel:${id}">Anahtarı sil</button>`:""}${builtin?"":`<button class="btn danger" data-c="pdel:${id}">Sağlayıcıyı kaldır</button>`}</div>`);
 }
 function pRead(id){
@@ -850,7 +850,7 @@ async function cProvClick(a,p1,p2){
   switch(a){
     case "prov":return cSheetProv(p1);
     case "addprov":
-      return openSheet(`<h3>Sağlayıcı ekle</h3><div class="lbl">OpenAI uyumlu bir servis (adres /chat/completions'ın bir üstü olmalı)</div><p class="hint">Dikkat: eklediğin sunucuya sağlık verilerin ve anahtarın gider. Yalnız güvendiğin bir servis ekle.</p><input class="in" id="an" placeholder="Ad" maxlength="40"><input class="in" id="ab" placeholder="https://.../v1" style="font-size:14px"><input class="in" id="am" placeholder="Model adı" style="font-size:14px"><button class="btn" data-c="mkprov">Ekle</button>`);
+      return openSheet(`<h3>Sağlayıcı ekle</h3><div class="lbl">OpenAI uyumlu bir servis (adres /chat/completions'ın bir üstü olmalı)</div><p class="hint">Dikkat: eklediğin sunucuya sağlık verilerin ve anahtarın gider. Yalnız güvendiğin bir servis ekle.</p><input class="in" id="an" placeholder="Ad" maxlength="40"><input class="url in" id="ab" placeholder="https://.../v1"><input class="url in" id="am" placeholder="Model adı"><button class="btn" data-c="mkprov">Ekle</button>`);
     case "mkprov":{
       const n=$("#an").value.trim(),b=$("#ab").value.trim(),m=$("#am").value.trim();
       if(!n||!m||!/^https:\/\/[^\s]+$/.test(b))return toast("Ad, https adres ve model gerekli");
@@ -912,8 +912,9 @@ function cClick(v,el){
     case "menuadd":{
       const c=menuCard(+p1),d=c&&c.days[+p2];if(!d)return;
       const bl=menuBlock(),why=d.off?`Bu günün toplamı ${d.k} kcal, hedefin (${c.kcal}) %15'inden fazla sapıyor.`:bl&&c.kcal&&d.k<c.kcal-50?`Kalori açığı önerilmiyor (${bl}); bu gün hedefin altında (${d.k} kcal).`:"";
-      if(why&&!confirm(why+" Yine de bugüne eklensin mi?"))return;
-      const it=menuEntries(d);return addFoods(it,dayKey(),`${d.n}: ${it.length} yemek bugüne eklendi`);
+      const go=()=>{const it=menuEntries(d);addFoods(it,dayKey(),`${d.n}: ${it.length} yemek bugüne eklendi`)};
+      if(why)return void confirmSheet({title:"Bugüne eklensin mi?",body:why+" Yine de bugüne eklensin mi?",ok:"Ekle"}).then(ok=>{if(ok)go()});
+      return go();
     }
     case "menutpl":{
       const c=menuCard(+p1),d=c&&c.days[+p2];if(!d)return;
@@ -960,7 +961,7 @@ function cClick(v,el){
       const [x]=S.chats.splice(i,1);save();render();cChatList();
       return toast("Sohbet silindi",()=>{if(!S.chats.some(c=>c.id===x.id)){S.chats.splice(Math.min(i,S.chats.length),0,x);S.chats=trimChats(S.chats,true);save();render();cChatList()}});
     }
-    case "clearchat":if(cSwitchOk()&&confirm("Sohbet geçmişi silinsin mi? Kayıtların silinmez.")){cClearChat();render()}return;
+    case "clearchat":if(cSwitchOk())confirmSheet({title:"Sohbet geçmişi silinsin mi?",body:"Kayıtların silinmez.",ok:"Sil",danger:true}).then(ok=>{if(ok){cClearChat();render()}});return;
     default:return cProvClick(a,p1,p2);
   }
 }

@@ -1,10 +1,15 @@
 package com.neowell.app;
 
+import android.app.AlarmManager;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.util.Log;
+import com.capacitorjs.plugins.localnotifications.NotificationStorage;
+import com.capacitorjs.plugins.localnotifications.TimedNotificationPublisher;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -37,6 +42,16 @@ public class QuickLogPlugin extends Plugin {
         s = sb.toString();
         p.edit().putString("tk", s).apply();
         return s;
+    }
+
+    /** Bildirim eklentisinin zamanlanmış alarmını (istek kodu = bildirim kimliği) ve kayıtlı kopyasını siler; kopya kalırsa açılışta yeniden kurulur. */
+    private static void cancelPending(Context c, int id) {
+        AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
+        if (am != null) {
+            PendingIntent pi = PendingIntent.getBroadcast(c, id, new Intent(c, TimedNotificationPublisher.class), Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_MUTABLE : 0);
+            if (pi != null) am.cancel(pi);
+        }
+        new NotificationStorage(c).deleteNotification(Integer.toString(id));
     }
 
     /**
@@ -81,10 +96,13 @@ public class QuickLogPlugin extends Plugin {
         if (v > 0) NeoWidget.bump(c, v);
         if (id != Integer.MIN_VALUE) {
             NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
-            if (nm != null) {
-                nm.cancel(id);
-                // İlaç: ana bildirim ve tekrar hatırlatmaları aynı dozun kardeşidir (kimlik + 1.000.000 × sıra); hepsi kalkar.
-                if (id >= 1000000) for (int k = 0; k < 3; k++) nm.cancel(1000000 + (id - 1000000) % 1000000 + 1000000 * k);
+            // İlaç: ana bildirim ve tekrar hatırlatmaları aynı dozun kardeşidir (kimlik + 1.000.000 × sıra, sıra 0-2).
+            // Uygulama kapalıyken JS yeniden planlayamaz: bekleyen tekrar alarmları ve kayıtlı kopyaları burada iptal edilir.
+            int base = id % 1000000, count = med ? 3 : 1;
+            for (int k = 0; k < count; k++) {
+                int sid = med ? base + 1000000 * k : id;
+                if (nm != null) nm.cancel(sid);
+                if (med) cancelPending(c, sid);
             }
         }
         in.removeExtra(ACTION_KEY);

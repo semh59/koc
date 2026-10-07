@@ -47,19 +47,19 @@ function obView(){
   let body,next="Devam";
   if(st===0)body=`<h2>Seni tanıyalım</h2><p class="hint" style="margin:-6px 0 10px">Günlük kalori ve protein hedefini buna göre hesaplarız.</p><div class="card">
     ${fld("cm","Boy (cm)",ob.cm,"","numeric")}${fld("kg","Kilo (kg)",ob.kg,"","decimal")}${fld("age","Yaş",ob.age,"","numeric")}
-    <div class="lbl" style="margin-top:10px">Cinsiyet (isteğe bağlı)</div>${seg("sex",[["m","Erkek"],["f","Kadın"],["","Belirtmem"]],ob.sex)}
-    <div class="lbl" style="margin-top:10px">Hedefin</div>${seg("dir",OB_DIRS,ob.dir)}
+    <div class="mt-3 lbl">Cinsiyet (isteğe bağlı)</div>${seg("sex",[["m","Erkek"],["f","Kadın"],["","Belirtmem"]],ob.sex)}
+    <div class="mt-3 lbl">Hedefin</div>${seg("dir",OB_DIRS,ob.dir)}
     ${ob.dir!=="koru"?fld("goal","Hedef kilo (kg)",ob.goal,"","decimal"):""}</div>${err}`;
-  else if(st===1)body=`<h2>Hangileri açık olsun?</h2><div class="card"><p class="hint" style="padding:0 0 8px">Kapalı olanlar ekranında görünmez. İstediğini sonra Ayarlar'dan açarsın.</p>
+  else if(st===1)body=`<h2>Hangileri açık olsun?</h2><div class="card"><p class="flush hint">Kapalı olanlar ekranında görünmez. İstediğini sonra Ayarlar'dan açarsın.</p>
     <div class="chips">${OB_MODS.map(([k,l,ic])=>`<button class="chip" data-ob="mod:${k}" aria-pressed="${ob.mods.includes(k)}">${Icons.svg(ic)} ${l}</button>`).join("")}</div>
-    ${ob.mods.includes("steps")?`<p class="hint" style="padding:0">Adım sayar için telefon izni, Bugün ekranındaki "Adım sayarı aç" satırından istenir.</p>`:""}</div>
-    <div class="card"><details class="more"${ob.hd||ob.hn?" open":""}><summary>Sağlık notu ekle</summary><p class="hint" style="padding:0 0 4px">Önerilerin sana göre ihtiyatlı olması için. Hamilelik, yeme bozukluğu geçmişi, hekim kontrolü ya da ilaç varsa işaretle.</p>
+    ${ob.mods.includes("steps")?`<p class="p0 hint">Adım sayar için telefon izni, Bugün ekranındaki "Adım sayarı aç" satırından istenir.</p>`:""}</div>
+    <div class="card"><details class="acc"${ob.hd||ob.hn?" open":""}><summary>Sağlık notu ekle</summary><p class="hint" style="padding:0 0 4px">Önerilerin sana göre ihtiyatlı olması için. Hamilelik, yeme bozukluğu geçmişi, hekim kontrolü ya da ilaç varsa işaretle.</p>
     ${swRow('id="obhd"',ob.hd,"Hamileyim, emziriyorum ya da yeme bozukluğu geçmişim var")}${swRow('id="obhn"',ob.hn,"Hekim kontrolündeyim ya da düzenli ilaç kullanıyorum")}</details></div>`;
   else{
     const p=obParse(),pl=obPlan(p);next="Başla";
-    body=`<h2>Günlük hedefin</h2><div class="card"><div class="lbl">Kalori</div><div class="sumv num" style="color:var(--prim)">${pl.kcal.toLocaleString("tr-TR")} <small>kcal</small></div>
-    <div class="lbl">Protein</div><div class="num" style="font-size:22px;font-weight:700">${pl.protein?`${pl.protein[0]}–${pl.protein[1]} <small class="mut">g</small>`:"Hekiminle belirle"}</div><p class="hint" style="padding:0">${Algo.PROTEIN_NOTE}</p>
-    <p class="hint">Verilerin yalnızca telefonunda durur. Koç'u açarsan, yalnızca onayınla, seçtiğin yapay zekâ sağlayıcısına (yurt dışı) gider. Koç olmadan da uygulama tam çalışır. ${MED_NOTE} <button class="lnk" style="display:inline-block;width:auto" data-pv="open">Gizlilik ve veri</button></p>
+    body=`<h2>Günlük hedefin</h2><div class="card"><div class="lbl">Kalori</div><div class="pc sumv num">${pl.kcal.toLocaleString("tr-TR")} <small>kcal</small></div>
+    <div class="lbl">Protein</div><div class="t-h1 b7 num">${pl.protein?`${pl.protein[0]}–${pl.protein[1]} <small class="mut">g</small>`:"Hekiminle belirle"}</div><p class="p0 hint">${Algo.PROTEIN_NOTE}</p>
+    <p class="hint">Verilerin yalnızca telefonunda durur. Koç'u açarsan, yalnızca onayınla, seçtiğin yapay zekâ sağlayıcısına (yurt dışı) gider. Koç olmadan da uygulama tam çalışır. ${MED_NOTE} <button class="wa ib lnk" data-pv="open">Gizlilik ve veri</button></p>
     ${pl.risk.block?riskBox(pl.risk,"Kalori açığı önermiyorum")+(p.goal>p.kg?"":`<p class="hint">Yukarıdaki değer kilonu koruma düzeyidir.</p>`):`<p class="hint">${pl.note==="Kilo verme"?"Yavaş ve güvenli kilo verme hızına göre":pl.note==="Kilo alma"?"Yavaş kilo alma hızına göre":"Kilonu koruma düzeyine göre"} hesaplandı. Kayıt girdikçe gerçek verine göre güncellenir. Tahmindir, tıbbi tavsiye değildir.</p>`}</div>`;
   }
   const dots=`<div class="obp" role="status"><span class="mut sm">Adım ${st+1}/3</span><span class="obbar" aria-hidden="true">${[0,1,2].map(i=>`<i${i<=st?' class="on"':""}></i>`).join("")}</span></div>`;

@@ -141,6 +141,26 @@ ok("sinceFor: yeni saat bugünden, vakti geçmiş saat yarından, eski saat koru
   const hs=n=>M.cleanMeds([med({h:Array.from({length:n},(_,i)=>({u:`2026-08-${String(i+1).padStart(2,"0")}`,t:["08:00"],on:true}))})])[0].h;
   ok("program geçmişi en çok 24 sürüm; fazlada en eski atılır",hs(24).length===24&&hs(26).length===24&&hs(26)[0].u==="2026-08-03"&&hs(26)[23].u==="2026-08-26");
 }
+// ekran uyandırma: yalnız ana dozlar; tanı kaydı satırları ve olası sorunlar
+{
+  const L=M.notifications([med({t:["08:00"]})],[],new Date(2026,9,7,6,0),2,true).map(n=>({id:n.id,extra:n.extra,schedule:{at:n.at}}));
+  const W=M.wakeTimes(L.concat([{id:7149,extra:{},schedule:{at:new Date()}},{id:101,schedule:{at:new Date()}}]));
+  ok("wakeTimes: ana doz kimlikleri [1e6,2e6), tekrarlar (>=2e6) ve başka bildirimler alınmaz",L.length===6&&W.length===2&&W.every(t=>new Date(t).getHours()===8&&new Date(t).getMinutes()===0),W);
+  const T=(h,m,s)=>new Date(2026,9,7,h,m,s).getTime();
+  const wk={t:T(14,2,3),a:"WAKE",p:T(14,2,0),kl:true,ia:false,wl:true,fs:"ok",ne:true,fsi:true,ci:4,mi:4,bo:true,ex:true};
+  ok("wakeLine: çalan alarm saat, planlanan, gecikme, kilit, ekran ve tam ekran sonucu",M.wakeLine(wk)==="07.10 14:02:03 alarm çaldı (planlanan 14:02:00, +3 sn), ekran kilitli, ekran kapalıydı, tam ekran bildirimi gönderildi",M.wakeLine(wk));
+  const l2=M.wakeLine({...wk,k:"T",p:T(13,58,0),kl:false,ia:true,fs:"skip",ci:2,bo:false,fsi:false});
+  ok("wakeLine: test alarmı, dakika gecikme, kilit açık, düşük kanal, izin ve pil sorunları",/test alarmı çaldı \(planlanan 13:58:00, \+4 dk\), kilit açık, ekran açıktı, tam ekran bildirimi gerekmedi, tam ekran izni yok, ekran kanalı düşük önemde, pil kısıtı var/.test(l2),l2);
+  ok("wakeLine: tam ekran hatası ve kurulum kaydı",/gönderilemedi: SecurityException: x/.test(M.wakeLine({...wk,fs:"err:SecurityException: x"}))&&M.wakeLine({t:T(9,0,0),a:"APP",in:3,n:3,nx:[T(14,0,0)]})==="07.10 09:00:00 uygulama alarmları kurdu: 3 alarm, ilk: 07.10 14:00"&&/BOOT|telefon açıldı/.test(M.wakeLine({t:T(9,0,0),a:"BOOT",in:0,n:0,nx:[]})));
+  const ok0={ne:true,fsi:true,ci:4,mi:4,bo:true,ex:true},to=(st,it)=>M.wakeIssues(st,it).map(i=>i.to||"-").join();
+  ok("wakeIssues: her şey yolunda ve alarm çalmışsa sorun yok",M.wakeIssues(ok0,[wk]).length===0);
+  ok("wakeIssues: kapalı bildirim, engelli/düşük kanal, tam ekran, pil, tam alarm her biri ilgili ayara",to({ne:false,ci:0,mi:2,fsi:false,bo:false,ex:false},[wk])==="notif,channel,channel,fsi,battery,exact"&&M.wakeIssues({...ok0,mi:2},[wk])[0].id==="nw_med");
+  ok("wakeIssues: kanal henüz yoksa (-1) sorun sayılmaz",M.wakeIssues({...ok0,ci:-1,mi:-1},[wk]).length===0);
+  ok("wakeIssues: kayıt yoksa 'alarm hiç çalmadı' otomatik başlatmaya; kurulan 0 ise ayrı uyarı",to(ok0,[])==="autostart"&&/hiç çalmadı/.test(M.wakeIssues(ok0,[])[0].t)&&/Kurulu ekran alarmı yok/.test(M.wakeIssues(ok0,[{a:"APP",in:0,n:0}])[0].t));
+  const armAt=(t,nx)=>({t,a:"APP",in:1,n:1,nx:[nx]});
+  ok("wakeIssues: ilk alarm zamanı geçtiği halde arada çalma kaydı yoksa 'çalmadı'; zamanı gelmeden yeniden kurulum ya da arada çalma sorun değil",/Planlanan 07\.10 14:00 alarmı çalmadı/.test(M.wakeIssues(ok0,[wk,armAt(T(9,0,0),T(14,0,0)),armAt(T(18,0,0),T(20,0,0))]).map(i=>i.t).join())&&M.wakeIssues(ok0,[wk,armAt(T(9,0,0),T(14,0,0)),armAt(T(13,0,0),T(14,0,0))]).length===0&&M.wakeIssues(ok0,[armAt(T(9,0,0),T(14,0,0)),{...wk,t:T(14,0,1),p:T(14,0,0)},armAt(T(18,0,0),T(20,0,0))]).length===0);
+  ok("wakeIssues: 1 dk'dan geç çalma ve tam ekran hatası bildirilir",/geç çaldı \(en çok \+5 dk\)/.test(M.wakeIssues(ok0,[{...wk,t:wk.p+300000}])[0].t)&&/gönderilemedi/.test(M.wakeIssues(ok0,[{...wk,fs:"err:X"}]).pop().t));
+}
 // yorum ve tanı dili yok
 const src=require("fs").readFileSync(require("path").join(__dirname,"../www/medlib.js"),"utf8").replace(/\/\*[\s\S]*?\*\//g,"");
 ok("doz önerisi/yorum dili kullanılmaz",!/öner|tavsiye|etkileşim|yan etki|aşırı doz|tehlikeli/i.test(src));

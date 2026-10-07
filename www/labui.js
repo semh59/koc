@@ -11,12 +11,12 @@ function labSvg(s,W,H){
   const line=g.pts.length>1?`<polyline points="${g.pts.map(q=>q.x.toFixed(1)+","+q.y.toFixed(1)).join(" ")}" fill="none" stroke="var(--prim)" stroke-width="2.2" stroke-linejoin="round"/>`:"";
   const dots=g.pts.map(q=>`<circle cx="${q.x.toFixed(1)}" cy="${q.y.toFixed(1)}" r="4.2" fill="var(--prim)"/>`).join("");
   const first=s.pts[0].day,last=s.pts[s.pts.length-1].day;
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(s.n)} grafiği" style="width:100%;display:block">${bd}<rect x="8" y="8" width="${W-16}" height="${H-28}" fill="none" stroke="var(--line)"/>${line}${dots}<text x="8" y="${H-6}" style="font-size:10px;fill:var(--mut)">${fd(first)}</text>${s.pts.length>1?`<text x="${W-8}" y="${H-6}" text-anchor="end" style="font-size:10px;fill:var(--mut)">${fd(last)}</text>`:""}</svg>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(s.n)} grafiği" class="lsv">${bd}<rect x="8" y="8" width="${W-16}" height="${H-28}" fill="none" stroke="var(--line)"/>${line}${dots}<text x="8" y="${H-6}">${fd(first)}</text>${s.pts.length>1?`<text x="${W-8}" y="${H-6}" text-anchor="end">${fd(last)}</text>`:""}</svg>`;
 }
 const labFlagTxt=f=>f==="high"?"▲ Raporda yazan aralığın üstünde":f==="low"?"▼ Raporda yazan aralığın altında":"";
 /* "Bu ne?": yalnız sözlükteki kalemlerde, yalnız tanım; yorum yok. */
-const labInfoBox=(k,id,hid)=>{const d=LabLib.info(k);return d?`<div id="${id}" class="sm" ${hid?"hidden":""} style="padding:8px 2px"><b>${esc(d.n)}</b> · ${esc(d.c)}<br>${esc(d.e)}</div>`:""};
-const labInfoBtn=(k,i)=>LabLib.info(k)?`<button class="chip" data-lab="info:${i}" aria-expanded="false" aria-controls="li${i}" style="min-height:44px;min-width:44px;margin:0 0 8px">Bu ne?</button>`:"";
+const labInfoBox=(k,id,hid)=>{const d=LabLib.info(k);return d?`<div id="${id}" class="helpx sm" ${hid?"hidden":""}><b>${esc(d.n)}</b> · ${esc(d.c)}<br>${esc(d.e)}</div>`:""};
+const labInfoBtn=(k,i)=>LabLib.info(k)?`<button class="mb-2 chip" data-lab="info:${i}" aria-expanded="false" aria-controls="li${i}">Bu ne?</button>`:"";
 
 function viewTahlil(){
   const list=LabLib.series(S.labs),txt=S.labs.filter(r=>r.t);
@@ -24,15 +24,15 @@ function viewTahlil(){
   const cards=list.map((s,i)=>{
     const last=s.pts[s.pts.length-1],f=LabLib.flag(last),rt=LabLib.rangeText(last);
     if(LabLib.info(s.k))nInfo++;
-    return `<button class="stepcard" data-lab="open:${esc(s.id)}" aria-label="${esc(s.n)} ayrıntısı"><div class="row"><b>${esc(s.n)}</b><span class="mut sm">${fd(last.day)}</span></div><div class="row"><span class="big num">${last.q||""}${labFmt(last.v)} <small class="mut">${esc(s.u)}</small></span><span class="mut sm">${rt?"Raporda: "+esc(rt):""}</span></div>${f?`<div class="sm" style="font-weight:700">${labFlagTxt(f)}</div>`:""}${s.pts.length>1?`<div style="margin-top:6px">${labSvg(s,300,58)}</div>`:""}</button>${labInfoBtn(s.k,i)}${labInfoBox(s.k,"li"+i,1)}`;
+    return `<button class="stepcard" data-lab="open:${esc(s.id)}" aria-label="${esc(s.n)} ayrıntısı"><div class="scr"><b>${esc(s.n)}</b><span class="mut sm">${fd(last.day)}</span></div><div class="scr"><span class="big num">${last.q||""}${labFmt(last.v)} <small class="mut">${esc(s.u)}</small></span><span class="mut sm">${rt?"Raporda: "+esc(rt):""}</span></div>${f?`<div class="b7 sm">${labFlagTxt(f)}</div>`:""}${s.pts.length>1?`<div class="mt-2">${labSvg(s,300,58)}</div>`:""}</button>${labInfoBtn(s.k,i)}${labInfoBox(s.k,"li"+i,1)}`;
   }).join("");
   const nTxt=txt.length?`<p class="hint">${txt.length} yazılı sonuç (ör. Negatif) kayıtlı. Bunlar grafikte gösterilmez, PDF'e eklenmez.</p>`:"";
   return `<div class="card"><div class="lbl">Tahlil sonuçları</div>
-    <p class="mut sm" style="margin:0 0 10px">PDF'ten okut ya da elle ekle. Veriler yalnızca bu telefonda kalır. Raporda yazan aralık olduğu gibi gösterilir; uygulama yorum yapmaz. Bu değerleri hekiminle değerlendir.</p>
-    <div class="btns" style="display:grid;gap:8px"><label class="btn" style="text-align:center">${Icons.svg("file")} PDF'ten oku<input id="labfile" type="file" accept="application/pdf,.pdf" hidden></label>
+    <p class="m0 mb-3 mut sm">PDF'ten okut ya da elle ekle. Veriler yalnızca bu telefonda kalır. Raporda yazan aralık olduğu gibi gösterilir; uygulama yorum yapmaz. Bu değerleri hekiminle değerlendir.</p>
+    <div class="btns" style="display:grid;gap:8px"><label class="tc btn">${Icons.svg("file")} PDF'ten oku<input id="labfile" type="file" accept="application/pdf,.pdf" hidden></label>
     ${ocrBtn("tahlil",Icons.svg("camera")+" Fotoğraftan oku")}<button class="btn ghost" data-lab="add">${Icons.svg("plus")} Elle ekle</button></div></div>
-  ${cards||`<div class="card"><p class="mut">Henüz tahlil sonucu yok. İlk PDF'ini okutarak başla.</p></div>`}${nTxt}${nInfo?`<p class="hint">"Bu ne?" bilgileri yalnızca testin ne olduğunu anlatır. Bu bilgi tanı veya yorum değildir.</p>`:""}
-  ${S.labs.length?`<button class="btn danger" data-lab="delall" style="margin-top:8px">Tüm tahlil kayıtlarını sil</button>`:""}`;
+  ${cards||`${emptyCard("file","Henüz tahlil sonucu yok","İlk PDF'ini okutarak başla.")}`}${nTxt}${nInfo?`<p class="hint">"Bu ne?" bilgileri yalnızca testin ne olduğunu anlatır. Bu bilgi tanı veya yorum değildir.</p>`:""}
+  ${S.labs.length?`<button class="mt-2 btn danger" data-lab="delall">Tüm tahlil kayıtlarını sil</button>`:""}`;
 }
 function labTrendCard(){
   const n=LabLib.series(S.labs).length,d=S.labs.length?S.labs.map(r=>r.day).sort().pop():"";
@@ -43,23 +43,23 @@ function labDetail(id){
   const s=LabLib.series(S.labs).find(x=>x.id===id);
   if(!s){closeSheet();return render()}
   const last=s.pts[s.pts.length-1],f=LabLib.flag(last);
-  const rows=[...s.pts].reverse().map(p=>{const pf=LabLib.flag(p),rt=LabLib.rangeText(p);return `<div class="row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span style="flex:1">${fd(p.day)}</span><b class="num">${p.q||""}${labFmt(p.v)}</b><span class="mut sm" style="min-width:64px;text-align:right">${rt?esc(rt):""}</span><span aria-hidden="true">${pf==="high"?"▲":pf==="low"?"▼":""}</span><button class="chip" data-lab="del:${p.id}" aria-label="${fd(p.day)} sonucunu sil">✕</button></div>`}).join("");
+  const rows=[...s.pts].reverse().map(p=>{const pf=LabLib.flag(p),rt=LabLib.rangeText(p);return `<div class="row"><span class="grow">${fd(p.day)}</span><b class="num">${p.q||""}${labFmt(p.v)}</b><span class="mut sm" style="min-width:64px;text-align:right">${rt?esc(rt):""}</span><span aria-hidden="true">${pf==="high"?"▲":pf==="low"?"▼":""}</span><button class="chip" data-lab="del:${p.id}" aria-label="${fd(p.day)} sonucunu sil">✕</button></div>`}).join("");
   openSheet(`<h3>${esc(s.n)}</h3><div class="mut sm">${esc(s.u)}${f?" · "+labFlagTxt(f):""}</div>${labInfoBox(s.k,"lid",0)}<div style="margin:10px 0">${s.pts.length>1?labSvg(s,320,150):`<p class="hint">Grafik için aynı testten en az iki sonuç gerekir.</p>`}</div>
-  <div class="mut sm">Gölgeli bölge raporda yazan aralıktır.</div><div style="max-height:34vh;overflow:auto">${rows}</div><button class="btn ghost" data-lab="close" style="margin-top:10px">Kapat</button>`);
+  <div class="mut sm">Gölgeli bölge raporda yazan aralıktır.</div><div style="max-height:34vh;overflow:auto">${rows}</div><button class="mt-3 btn ghost" data-lab="close">Kapat</button>`);
 }
 
 function labRowHtml(r,i){
   const inp=(id,v,ph,cls,mode)=>`<input class="in ${cls||""}" id="${id}${i}" value="${esc(v==null?"":v)}" placeholder="${ph}" ${mode?`inputmode="${mode}"`:""} autocomplete="off" style="margin:0;padding:9px 10px;font-size:16px;min-width:0">`;
   return `<div class="card" style="padding:10px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">${inp("ln",r.n,"Test adı","","")}<label class="sw" aria-label="Satırı kaydet"><input type="checkbox" id="lc${i}" ${r.off?"":"checked"}><span></span></label></div>
-  <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:6px">${inp("lv",(r.q||"")+(r.v==null?"":labFmt(r.v)),"Değer","num","decimal")}${inp("lu",r.u,"Birim","")}${inp("ll",r.lo==null?"":labFmt(r.lo),"Alt","num","decimal")}${inp("lh",r.hi==null?"":labFmt(r.hi),"Üst","num","decimal")}</div>${r.guess?`<div class="mut sm" style="margin-top:4px">Emin değilim: satırı kontrol et.</div>`:""}</div>`;
+  <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:6px">${inp("lv",(r.q||"")+(r.v==null?"":labFmt(r.v)),"Değer","num","decimal")}${inp("lu",r.u,"Birim","")}${inp("ll",r.lo==null?"":labFmt(r.lo),"Alt","num","decimal")}${inp("lh",r.hi==null?"":labFmt(r.hi),"Üst","num","decimal")}</div>${r.guess?`<div class="mt-1 mut sm">Emin değilim: satırı kontrol et.</div>`:""}</div>`;
 }
 function labRender(){
   const dl=`<datalist id="labnames">${LabLib.DICT.map(d=>`<option value="${esc(d.n)}">`).join("")}</datalist>`;
   openSheet(`<h3>${labManual?"Tahlil ekle":"Okunan sonuçlar"}</h3>
   <div class="lbl">Numune tarihi${labDate?"":" (bulunamadı, seç)"}</div><input class="in" type="date" id="ld" value="${labDate}" max="${dayKey()}">
-  <div class="mut sm" style="margin-bottom:8px">${labManual?"":"Kaydetmeden önce her satırı PDF'inle karşılaştır. Yanlış satırın işaretini kaldır ya da düzelt."}</div>
+  <div class="mb-2 mut sm">${labManual?"":"Kaydetmeden önce her satırı PDF'inle karşılaştır. Yanlış satırın işaretini kaldır ya da düzelt."}</div>
   <div style="max-height:46vh;overflow:auto">${labRows.map(labRowHtml).join("")}</div>${dl}
-  <div class="lbtns"><button class="btn ghost" data-lab="addrow">＋ Satır</button><button class="btn" data-lab="save">Kaydet</button></div><button class="btn ghost" data-lab="close" style="margin-top:8px">Vazgeç</button>`);
+  <div class="lbtns"><button class="btn ghost" data-lab="addrow">＋ Satır</button><button class="btn" data-lab="save">Kaydet</button></div><button class="mt-2 btn ghost" data-lab="close">Vazgeç</button>`);
   document.querySelectorAll('[id^="ln"]').forEach(e=>e.setAttribute("list","labnames"));
 }
 /* Ekrandaki düzenlemeleri labRows'a toplar (yeniden çizmeden önce kaybolmasın). */
@@ -137,13 +137,13 @@ async function labRead(data,password){
   if(ex.cancelled)return toast("Okuma iptal edildi");
   if(ex.need==="password"){
     labKeep=data;
-    return openSheet(`<h3>Korumalı PDF</h3><p class="mut sm">${ex.wrong?"Parola yanlış. ":""}Laboratuvarın verdiği PDF parolasını yaz. Parola saklanmaz.</p><input class="in" id="labpw" type="password" autocomplete="off" autofocus><button class="btn" data-lab="pw">Aç</button><button class="btn ghost" data-lab="close" style="margin-top:8px">Vazgeç</button>`);
+    return openSheet(`<h3>Korumalı PDF</h3><p class="mut sm">${ex.wrong?"Parola yanlış. ":""}Laboratuvarın verdiği PDF parolasını yaz. Parola saklanmaz.</p><input class="in" id="labpw" type="password" autocomplete="off" autofocus><button class="btn" data-lab="pw">Aç</button><button class="mt-2 btn ghost" data-lab="close">Vazgeç</button>`);
   }
   labKeep=null;
   if(ex.error)return toast(ex.error);
-  if(ex.scanned)return openSheet(`<h3>Metin bulunamadı</h3><p class="mut">Bu PDF bir görüntü (taranmış ya da fotoğraf) olduğu için içindeki yazıyı okuyamıyorum. Değerleri elle ekleyebilirsin.</p><button class="btn" data-lab="add">${Icons.svg("plus")} Elle ekle</button><button class="btn ghost" data-lab="close" style="margin-top:8px">Kapat</button>`);
+  if(ex.scanned)return openSheet(`<h3>Metin bulunamadı</h3><p class="mut">Bu PDF bir görüntü (taranmış ya da fotoğraf) olduğu için içindeki yazıyı okuyamıyorum. Değerleri elle ekleyebilirsin.</p><button class="btn" data-lab="add">${Icons.svg("plus")} Elle ekle</button><button class="mt-2 btn ghost" data-lab="close">Kapat</button>`);
   const parsed=LabLib.parseLines(ex.lines,dayKey());
-  if(!parsed.rows.length)return openSheet(`<h3>Sonuç bulunamadı</h3><p class="mut">PDF'te tanıyabildiğim bir sonuç satırı yok. Rapor düzeni farklı olabilir. Değerleri elle ekleyebilirsin.</p><button class="btn" data-lab="add">${Icons.svg("plus")} Elle ekle</button><button class="btn ghost" data-lab="close" style="margin-top:8px">Kapat</button>`);
+  if(!parsed.rows.length)return openSheet(`<h3>Sonuç bulunamadı</h3><p class="mut">PDF'te tanıyabildiğim bir sonuç satırı yok. Rapor düzeni farklı olabilir. Değerleri elle ekleyebilirsin.</p><button class="btn" data-lab="add">${Icons.svg("plus")} Elle ekle</button><button class="mt-2 btn ghost" data-lab="close">Kapat</button>`);
   labReview(parsed,false);
   if(ex.limited)toast(`Taranmış PDF: yalnız ilk ${ex.limited.read} sayfa okundu (toplam ${ex.limited.total})`);
 }
@@ -207,7 +207,7 @@ document.addEventListener("click",ev=>{
     render();
     toast("Sonuç silindi",()=>{S.labs=backup;save();render()});
   }
-  else if(a==="delall"){if(confirm("Tüm tahlil kayıtları silinecek. Bu geri alınamaz. Devam edilsin mi?")){S.labs=[];save();render();toast("Tahlil kayıtları silindi")}}
+  else if(a==="delall")confirmSheet({title:"Tüm tahlil kayıtları silinsin mi?",body:"Tüm tahlil kayıtları silinecek. Bu geri alınamaz. Devam edilsin mi?",ok:"Hepsini sil",danger:true}).then(ok=>{if(ok){S.labs=[];save();render();toast("Tahlil kayıtları silindi")}});
 });
 
 /* Cihazda bir kez: tuval, JPEG, PDF üretimi ve gömülü pdf.js (işçi dahil) çalışıyor mu? Sonuç konsola yazılır, smoke testi okur. */

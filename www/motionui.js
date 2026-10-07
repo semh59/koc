@@ -20,9 +20,9 @@ function motionSettingsHtml(){
   const st=S.settings,p=motionPerm||{};
   const gps=p.fine?"Konum izni var: elle başlattığın yürüyüşte GPS kısa süre açılır.":"Konum izni yok: mesafe boyuna göre tahmin edilir.";
   return `<h2>Hareket algılama</h2><div class="card">
-    <p class="mut sm" style="margin:0 0 10px">Yürüyüş ve koşuyu kendisi algılar, süre, mesafe, hız ve kaloriyi (boy ve kilona göre) Adım ekranında listeler. Konum yalnız elle başlattığın yürüyüşlerde kullanılır: ölçüm uygulama açıkken başlar, sürdüğü kısa süre bildirim görünür. Arka planda konum kullanılmaz. Rota ve konum noktası kaydedilmez, her şey telefonda kalır.</p>
-    <button class="btn ghost" data-mo="toggle" style="margin-bottom:8px">${st.motionOn?"Hareket algılamayı kapat":"Hareket algılamayı aç"}</button>
-    ${st.motionOn?`<p class="mut sm" style="margin:0 0 8px">${gps}</p>${p.fine?"":`<button class="btn ghost" data-mo="perm">Yürüyüşte konumu kullan</button>`}`:""}
+    <p class="m0 mb-3 mut sm">Yürüyüş ve koşuyu kendisi algılar, süre, mesafe, hız ve kaloriyi (boy ve kilona göre) Adım ekranında listeler. Konum yalnız elle başlattığın yürüyüşlerde kullanılır: ölçüm uygulama açıkken başlar, sürdüğü kısa süre bildirim görünür. Arka planda konum kullanılmaz. Rota ve konum noktası kaydedilmez, her şey telefonda kalır.</p>
+    <button class="mb-2 btn ghost" data-mo="toggle">${st.motionOn?"Hareket algılamayı kapat":"Hareket algılamayı aç"}</button>
+    ${st.motionOn?`<p class="m0 mb-2 mut sm">${gps}</p>${p.fine?"":`<button class="btn ghost" data-mo="perm">Yürüyüşte konumu kullan</button>`}`:""}
   </div>`;
 }
 
@@ -71,11 +71,11 @@ async function motionBoot(){
 /* Adım ekranı kartı: son 2 gün. */
 function motionCard(){
   if(!S.settings.motionOn)return "";
-  const t=dayKey(),y=keyOff(-1),row=m=>`<div class="row" style="display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span><b>${m.t0}</b> ${m.k==="r"?"Koşu":"Yürüyüş"} <small class="mut">${m.min} dk</small></span><span class="num" style="text-align:right">${fmt(m.km,1)} km · ${fmt(m.kmh,1)} km/s${m.kcal!=null?` · ${m.kcal} kcal`:""}</span></div>`;
+  const t=dayKey(),y=keyOff(-1),row=m=>`<div class="row" style="display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span><b>${m.t0}</b> ${m.k==="r"?"Koşu":"Yürüyüş"} <small class="mut">${m.min} dk</small></span><span class="ta-r num">${fmt(m.km,1)} km · ${fmt(m.kmh,1)} km/s${m.kcal!=null?` · ${m.kcal} kcal`:""}</span></div>`;
   const tl=S.moves.filter(m=>m.day===t),yl=S.moves.filter(m=>m.day===y),tt=MotionLib.totals(tl);
   const body=tl.length||yl.length?`${tl.length?`<div class="mut sm" style="margin-bottom:4px">Bugün ${tt.min} dk, ${fmt(tt.km,1)} km${tt.kcalN?`, ${tt.kcal} kcal`:""}</div>${tl.slice().reverse().map(row).join("")}`:`<p class="mut sm" style="margin:0 0 6px">Bugün henüz algılanan yürüyüş ya da koşu yok.</p>`}${yl.length?`<div class="mut sm" style="margin:10px 0 4px">Dün</div>${yl.slice().reverse().map(row).join("")}`:""}`
-    :`<p class="mut sm" style="margin:0">Henüz algılanan yürüyüş ya da koşu yok. En az 3 dakikalık, kesintisiz yürüyüşler listelenir.</p>`;
-  return `<div class="card"><div class="lbl">Hareketler</div>${body}<p class="hint" style="padding:8px 0 0">Algılama 1-2 dakika gecikebilir, süre ve mesafe yaklaşıktır.${S.settings.heightCm>0?"":" Mesafe için Ayarlar'dan boyunu gir."}</p></div>`;
+    :`<p class="m0 mut sm">Henüz algılanan yürüyüş ya da koşu yok. En az 3 dakikalık, kesintisiz yürüyüşler listelenir.</p>`;
+  return `<div class="card"><div class="lbl">Hareketler</div>${body}<p class="pt-2 hint">Algılama 1-2 dakika gecikebilir, süre ve mesafe yaklaşıktır.${S.settings.heightCm>0?"":" Mesafe için Ayarlar'dan boyunu gir."}</p></div>`;
 }
 
 /* Elle yürüyüşte GPS: adım uzunluğunu öğrenmenin tek yolu. Ritim adım sayacından gelir, öğrenilen ölçeği otomatik aralıklar ve elle yürüyüş mesafesi kullanır;
@@ -98,8 +98,8 @@ async function walkGpsAsk(){
   if(tab==="ayar-modul")render();
 }
 function motionDisclose(){
-  openSheet(`<h3>Yürüyüşte konum</h3><p class="hint" style="padding:0 0 8px">Hareket algılama açıkken NeoWell, adım uzunluğunu öğrenmek için <b>yalnız senin başlattığın yürüyüşte</b> GPS'i kısa süre açar: iyi sinyalde yaklaşık 1 dakika, en çok 10 dakika. Ölçüm sürerken bildirim görünür, ekranı kapatsan da bu süre içinde sürer. Öğrenilen adım uzunluğu yürüyüşlerinin (otomatik algılanan ve elle kaydedilen) mesafesini düzeltir.</p>
-  <p class="hint" style="padding:0 0 8px">Arka planda konum istenmez. Konum noktası ve rota saklanmaz, telefondan çıkmaz, reklam için kullanılmaz. İzin vermezsen mesafe boyuna göre tahmin edilir.</p>
+  openSheet(`<h3>Yürüyüşte konum</h3><p class="flush hint">Hareket algılama açıkken NeoWell, adım uzunluğunu öğrenmek için <b>yalnız senin başlattığın yürüyüşte</b> GPS'i kısa süre açar: iyi sinyalde yaklaşık 1 dakika, en çok 10 dakika. Ölçüm sürerken bildirim görünür, ekranı kapatsan da bu süre içinde sürer. Öğrenilen adım uzunluğu yürüyüşlerinin (otomatik algılanan ve elle kaydedilen) mesafesini düzeltir.</p>
+  <p class="flush hint">Arka planda konum istenmez. Konum noktası ve rota saklanmaz, telefondan çıkmaz, reklam için kullanılmaz. İzin vermezsen mesafe boyuna göre tahmin edilir.</p>
   <div class="btns"><button class="btn" data-mo="gps">İzin ver</button><button class="btn ghost" data-mo="nogps">Konumsuz devam</button></div>`);
 }
 

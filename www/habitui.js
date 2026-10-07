@@ -2,7 +2,7 @@
 /* Oruç zamanlayıcısı, uyku ve ruh hali kayıtları. index.html'deki S, save, toast, openSheet, closeSheet, dayOptions, fday, dayKey, esc, num, render ile çalışır. */
 const MOODS=["😞","😕","😐","🙂","😄"];
 const hbDur=m=>`${Math.floor(m/60)} sa ${m%60} dk`;
-const hbRow=(txt,act)=>`<div class="row" style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-top:1px solid var(--line)"><span>${txt}</span><button class="del" data-hb="${act}" aria-label="Kaydı sil">✕</button></div>`;
+const hbRow=(txt,act)=>`<div class="row"><span>${txt}</span><button class="del" data-hb="${act}" aria-label="Kaydı sil">✕</button></div>`;
 /* Uyku, ruh hali ve oruç değişiklikleri tek "Geri al" ile önceki duruma döner (silme ve aynı güne yeniden giriş dahil). */
 function hbSet(key,val,msg){
   const prev=S[key],apply=v=>{S[key]=v;save();render();if(key==="fast")scheduleReminders().then(setNotif)};
@@ -32,16 +32,15 @@ function fastGo(){
   if(risk().block)return render();
   if(!st.fastInfoOk)return fastInfo();
   if(S.fast.plan>=18&&!st.fastLongOk){
-    if(!confirm(`${S.fast.plan} saatlik oruç uzun bir plandır. Hekiminle konuştuysan devam et. Başlatılsın mı?`))return;
-    st.fastLongOk=true;
+    return void confirmSheet({title:"Uzun oruç başlatılsın mı?",body:`${S.fast.plan} saatlik oruç uzun bir plandır. Hekiminle konuştuysan devam et. Başlatılsın mı?`,ok:"Başlat"}).then(ok=>{if(ok){st.fastLongOk=true;fastGo()}});
   }
   fastSet(Date.now(),"Oruç başladı");
 }
 function fastSettingsHtml(){
   const f=S.fast,on=S.settings.fastOn,last=f.log.slice(-7).reverse().map(x=>hbRow(`${fd(dayKey(new Date(x.t1)))} ${hbDur(Math.round((x.t1-x.t0)/6e4))}`,"fdel:"+x.t0)).join("");
   return `<h2>Oruç zamanlayıcısı</h2><div class="card"><button class="btn ghost" data-hb="fasttoggle">${on?"Oruç zamanlayıcısını kapat":"Oruç zamanlayıcısını aç"}</button>
-  ${on?`<div class="lbl" style="margin-top:10px">Plan (oruç:yeme saati)</div><div class="chiprow">${HabitLib.PLANS.map(p=>`<button class="chip" data-hb="plan:${p}" aria-pressed="${f.plan===p}"${p>=18&&risk().hard.length?" disabled":""}>${p}:${24-p}</button>`).join("")}</div>`:""}
-  ${last?`<div class="mut sm" style="margin-top:8px">Son oruçlar</div>${last}`:""}</div>`;
+  ${on?`<div class="mt-3 lbl">Plan (oruç:yeme saati)</div><div class="chiprow">${HabitLib.PLANS.map(p=>`<button class="chip" data-hb="plan:${p}" aria-pressed="${f.plan===p}"${p>=18&&risk().hard.length?" disabled":""}>${p}:${24-p}</button>`).join("")}</div>`:""}
+  ${last?`<div class="mt-2 mut sm">Son oruçlar</div>${last}`:""}</div>`;
 }
 function fastSet(t0,msg){
   S.fast.t0=t0;save();render();scheduleReminders().then(setNotif);toast(msg);
@@ -67,7 +66,7 @@ function sleepSave(){
   closeSheet();hbSet("sleep",HabitLib.cleanSleep(S.sleep.filter(x=>x.day!==day).concat({day,min,q})),`Uyku ${old?"güncellendi":"kaydedildi"}: ${hbDur(min)}`);
 }
 function sheetMood(){
-  openSheet(`<h3>Ruh halin</h3>${dayOptions()}<div class="chiprow">${MOODS.map((e,i)=>`<button class="chip" data-hb="mood:${i+1}" aria-label="Ruh hali ${i+1} / 5" style="font-size:24px">${e}</button>`).join("")}</div>
+  openSheet(`<h3>Ruh halin</h3>${dayOptions()}<div class="chiprow">${MOODS.map((e,i)=>`<button class="t-h1 chip" data-hb="mood:${i+1}" aria-label="Ruh hali ${i+1} / 5">${e}</button>`).join("")}</div>
   <input class="in" id="hbn" maxlength="100" placeholder="Kısa not (isteğe bağlı)" autocomplete="off">${S.mood.slice().reverse().map(x=>hbRow(`${fd(x.day)} ${MOODS[x.v-1]}${x.t?" "+esc(x.t):""}`,"mdel:"+x.day)).join("")}`);
 }
 function moodSave(v){
