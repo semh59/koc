@@ -101,4 +101,11 @@ ok("tarih: 2026-02-31 reddedilir",!!V.check(T({day:"2026-02-31"})).err&&!!V.chec
 {const big=Array.from({length:5100},(_,i)=>G({g:100,day:"2026-01-01",time:"08:00",not:"n"+i})),c=V.clean(big);
 ok("clean: 5000 sınırında en yeni kayıtlar kalır",c.length===5000&&c[c.length-1].not==="n5099"&&c[0].not==="n100",[c.length,c[0].not]);}
 ok("clean: sid'siz, notu farklı iki ölçüm tekilleştirmede yutulmaz",V.clean([T({not:"a"}),T({not:"b"})]).length===2);
+// aynı dakikada elle girilen aynı değer: her giriş kendi sid'ini alır, geri yükleme/açılış temizliği ikisini de korur
+{const s1=V.newSid(),s2=V.newSid(),man=[G({g:100,sid:s1}),G({g:100,sid:s2}),T({sid:V.newSid()}),T({sid:V.newSid()})];
+const back=V.clean(JSON.parse(JSON.stringify(V.clean(man))));
+ok("elle girilen aynı dakikadaki iki özdeş ölçüm (şeker ve tansiyon) yedek/açılış temizliğinde iki kayıt kalır",s1!==s2&&back.length===4&&back.filter(r=>r.k==="s").length===2,back);
+ok("aynı sid ve aynı imza (yedek birleştirme çift sayımı) tek kayıt olur",V.clean([G({g:100,sid:"ab"}),G({g:100,sid:"ab"})]).length===1);
+ok("eski sid'siz kayıtlar bozulmaz, sid'siz birebir kopya tek kalır",V.clean([G({g:90}),G({g:90}),G({g:91})]).length===2&&V.clean([G({g:90})])[0].sid===undefined);
+ok("şekerde de güvenli sid saklanır, bozuk sid atılır",V.check(G({sid:"x1"})).row.sid==="x1"&&V.check(G({sid:"A B"})).row.sid===undefined);}
 console.log(bad?"\n"+bad+" HATA":"\nTüm tansiyon/şeker testleri geçti");process.exit(bad?1:0);

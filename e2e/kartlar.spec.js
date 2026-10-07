@@ -1,0 +1,101 @@
+"use strict";
+const {test,expect,state}=require("./fixtures");
+
+const open=app=>app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter"}),keys:{groq:"gsk_test"}});
+/* İsteğin sistem mesajındaki KATALOG satırlarından kimlikler (model yalnız bunları kullanabilir). */
+const catalog=b=>{const t=b.messages.map(m=>m.content).join("\n"),i=t.indexOf("KATALOG");return t.slice(i).split("\n").slice(1).map(l=>l.split("|")).filter(p=>p.length>=3&&/^[a-z0-9_]+$/.test(p[0]))};
+const DAYS=["Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi","Pazar"];
+
+test.describe("Koç menü kartı",()=>{
+  /* Kalem sayısı ve porsiyon, gün toplamı hedefe (2200) yakın kalacak biçimde seçilir; her gün aynı üç öğün. */
+  const menuReply=b=>{
+    const c=catalog(b).filter(p=>+p[2]>=50&&+p[2]<=400);let sum=0;const pick=[];
+    for(const p of c){if(sum>=700)break;pick.push(p);sum+=+p[2]}
+    const q=Math.round(2200/sum*4)/4,meals=["kah","ogl","aks"].map((m,j)=>({m,i:pick.filter((_,k)=>k%3===j).map(p=>[p[0],q])}));
+    return JSON.stringify({reply:"Menün hazır.",menu:{days:DAYS.map(n=>({n,meals}))}});
+  };
+  test("menü isteği kart çıkarır; Bugüne ekle, Şablon yap ve Alışveriş listesi çalışır",async({app,page,fake})=>{
+    fake.st.reply=menuReply;
+    await open(app);await app.tab("koc");
+    await page.click('[data-c="menu"]');
+    await page.fill("#mnote","fıstık alerjisi");
+    await page.click('[data-c="menuask"]');
+    const card=page.locator(".cm .lcard").filter({hasText:"Haftalık menü"});
+    await expect(card).toBeVisible();
+    await expect(card.locator(".lhead b")).toHaveText(["Haftalık menü",...DAYS]);
+    expect(fake.chats().length).toBe(1);
+    expect(JSON.stringify(fake.chats()[0].body)).toContain("fıstık alerjisi");
+    const mc=(await app.state()).chat.find(m=>m.card&&m.card.kind==="menu").card;
+    expect(mc.days.every(d=>!d.off)).toBe(true);
+    const items=mc.days[0].meals.flatMap(b=>b.items.map(i=>({text:i.n+(i.q===1?"":" × "+String(i.q).replace(".",",")),v:i.k,meal:b.m})));
+
+    // Bugüne ekle: seçilen günün tüm kalemleri bugünkü yemek kaydı olur
+    await card.locator('[data-c^="menuadd:"]').first().click();
+    await expect(app.toast).toContainText(`Pazartesi: ${items.length} yemek bugüne eklendi`);
+    const ys=(await app.state()).entries.filter(e=>e.type==="yemek");
+    expect(ys.map(e=>[e.text,e.v,e.meal]).sort()).toEqual(items.map(i=>[i.text,i.v,i.meal]).sort());
+    expect(ys.every(e=>e.day==="2026-10-06")).toBe(true);
+
+    // Şablon yap
+    await card.locator('[data-c^="menutpl:"]').nth(1).click();
+    await expect(app.toast).toContainText("Şablon kaydedildi");
+    const tp=(await app.state()).mealTpl;
+    expect(tp.map(t=>t.n)).toEqual(["Menü: Salı"]);expect(tp[0].items.length).toBe(items.length);
+
+    // Alışveriş listesi: aynı besinler toplanır, işaretleme kalıcıdır, Paylaş dosya verir
+    await card.locator('[data-c^="shop:"]').click();
+    const rows=page.locator("#sheet .prow");
+    const names=new Set(items.map(i=>i.text.split(" × ")[0]));
+    await expect(rows).toHaveCount(names.size);
+    await expect(rows.first()).toHaveAttribute("aria-pressed","false");
+    await rows.first().click();
+    await expect(rows.first()).toHaveAttribute("aria-pressed","true");
+    expect((await app.state()).chat.find(m=>m.card&&m.card.kind==="menu").card.chk.length).toBe(1);
+    const dl=page.waitForEvent("download");
+    await page.click('#sheet [data-c^="shopshare:"]');
+    expect((await dl).suggestedFilename()).toBe("neowell-alisveris-2026-10-06.txt");
+  });
+  test("kalori hedefinden çok sapan gün için Bugüne ekle onay ister; vazgeçilirse kayıt eklenmez",async({app,page,fake})=>{
+    fake.st.reply=b=>{const p=catalog(b).filter(x=>+x[2]>=50)[0];return JSON.stringify({reply:"x",menu:{days:[{n:"Pazartesi",meals:["kah","ogl","aks"].map(m=>({m,i:[[p[0],0.25]]}))}]}})};
+    await open(app);await app.tab("koc");
+    await page.click('[data-c="menu"]');await page.click('[data-c="menuask"]');
+    const card=page.locator(".cm .lcard").filter({hasText:"Haftalık menü"});
+    await expect(card).toContainText("Hedefin %15'inden fazla sapıyor");
+    app.onDialog=d=>d.dismiss();
+    await card.locator('[data-c^="menuadd:"]').click();
+    await expect.poll(()=>app.dialogs.length).toBe(1);
+    expect(app.dialogs[0]).toContain("%15'inden fazla sapıyor");
+    expect((await app.state()).entries.filter(e=>e.type==="yemek")).toEqual([]);
+  });
+});
+
+test.describe("Koç program kartı",()=>{
+  test("program isteği kart çıkarır; kaydedince gün sayısı kadar şablon Salon'a eklenir",async({app,page,fake})=>{
+    fake.st.reply=b=>{
+      const ids=catalog(b).map(p=>p[0]);
+      /* İlk gün geçersiz kimlikle tek egzersize düşer (atılır), 5 geçerli gün istenen 4 günle sınırlanır. */
+      const day=(n,i)=>({n,ex:[ids[i],ids[i+1]]});
+      return JSON.stringify({reply:"Programın hazır.",program:{name:"Test programı",days:[{n:"X",ex:[ids[0],"yok_boyle_id"]},day("A",0),day("B",2),day("C",4),day("D",6),day("E",8)]}});
+    };
+    await open(app);await app.tab("salon");
+    await page.click('[data-c="prog"]');
+    await page.click('[data-c="po:d:4"]');
+    await expect(page.locator('[data-c="po:d:4"]')).toHaveAttribute("aria-pressed","true");
+    await page.click('[data-c="po:q:Ev tipi"]');
+    await page.click('[data-c="progask"]');
+    const card=page.locator(".cm .lcard").filter({hasText:"Test programı"});
+    await expect(card).toBeVisible();
+    expect(JSON.stringify(fake.chats()[0].body)).toContain("Haftada 4 gün, seans 45 dakika, ekipman Ev tipi");
+    await expect(card.locator(".lrow b")).toHaveText(["A","B","C","D"]);
+    expect((await app.state()).templates).toEqual([]);
+    await card.locator('[data-c^="progadd:"]').click();
+    await expect(app.toast).toHaveText("4 şablon eklendi");
+    await expect(card).toContainText("4 şablon Salon'a eklendi");
+    await expect(card.locator('[data-c^="progadd:"]')).toHaveCount(0);
+    const t=(await app.state()).templates;
+    expect(t.map(x=>x.name)).toEqual(["A","B","C","D"].map(n=>`Test programı – ${n}`));
+    expect(t.every(x=>x.ex.length===2)).toBe(true);
+    await app.tab("salon");
+    await expect(page.locator(".trow")).toHaveCount(4);
+  });
+});
