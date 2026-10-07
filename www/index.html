@@ -315,6 +315,10 @@ input.in,select.in,.chip>button{min-height:44px}
   #guide .plist{max-height:none;overflow:visible}
   .gdfoot>:only-child{margin-top:0}.gdfoot{grid-auto-flow:column;grid-auto-columns:1fr;position:sticky;bottom:0;background:var(--card);padding-top:6px}
 }
+.cyh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.cyg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}.cyw{font-size:var(--fs-s);color:var(--mut)}
+.cyd{display:flex;align-items:center;justify-content:center;min-height:36px;border-radius:var(--r-xs);border:2px solid transparent;position:relative}.cyd.cyp{background:var(--prim);color:var(--prim-ink);font-weight:700}.cyd.cyt{border-style:dashed;border-color:var(--prim)}.cyd.cyn{text-decoration:underline;font-weight:700}
+.cyk{display:inline-block;width:14px;height:14px;border-radius:4px;border:2px solid transparent;margin-right:6px;vertical-align:-2px}.cyk.cyp{background:var(--prim)}.cyk.cyt{border:2px dashed var(--prim)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 </head>
 <body>
@@ -357,6 +361,7 @@ input.in,select.in,.chip>button{min-height:44px}
 <script src="labellib.js"></script>
 <script src="vitalslib.js"></script>
 <script src="medlib.js"></script>
+<script src="cyclelib.js"></script>
 <script src="motionlib.js"></script>
 <script src="weeklylib.js"></script>
 <script src="loglib.js"></script>
@@ -381,6 +386,7 @@ input.in,select.in,.chip>button{min-height:44px}
 <script src="importlib.js"></script>
 <script src="importui.js"></script>
 <script src="privacyui.js"></script>
+<script src="cycleui.js"></script>
 <script src="onboardui.js"></script>
 <script>
 "use strict";
@@ -418,7 +424,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- veri ---------- */
 const DEF={
-  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,piiPrev:false,chatRisk:"",copyAt:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
+  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,piiPrev:false,chatRisk:"",copyAt:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,cycleOn:false,cycleRem:false,fastOn:false,medShowName:true,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -432,7 +438,7 @@ const DEF={
     {id:11,t:"20:00",on:false,name:"Oruç başlangıcı",title:"⏳ Oruç başlangıcı",body:"Oruç penceren başlıyor, istersen Bugün'den başlat."},
     {id:12,t:"20:30",on:true,dow:0,name:"Haftalık özet (Pazar)",title:"📊 Haftalık özet",body:"Haftanı birlikte inceleyelim, bakmak için dokun."}
   ]},
-  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,dbStep:0,plates:GPLATE_DEF.slice(),exCfg:{},providers:defProviders(),chat:[],chats:[],cid:1,myFoods:[],recipes:[],favFoods:[],mealTpl:[],fast:{plan:16,t0:null,log:[]},sleep:[],mood:[],labs:[],vitals:[],meds:[],medLog:[],moves:[],measures:[],walk:null
+  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,dbStep:0,plates:GPLATE_DEF.slice(),exCfg:{},providers:defProviders(),chat:[],chats:[],cid:1,myFoods:[],recipes:[],favFoods:[],mealTpl:[],fast:{plan:16,t0:null,log:[]},sleep:[],mood:[],labs:[],vitals:[],meds:[],medLog:[],moves:[],measures:[],walk:null,cycle:[]
 };
 const VR={bpSysHi:[80,300,true],bpDiaHi:[40,200,true],bpSysLo:[50,300,true],bpDiaLo:[30,200,true],gFastLo:[20,600,true],gFastHi:[20,600,true],gPostLo:[20,600,true],gPostHi:[20,600,true]};
 const RANGES={...VR,goalKg:[20,400,false],kcal:[800,8000,true],waterMl:[500,10000,true],glass:[50,1500,true],sportWeek:[10,3000,true],stepGoal:[1000,100000,true],heightCm:[100,250,true],age:[10,100,true]};
@@ -473,6 +479,7 @@ function cleanSettings(raw){
   if(o.bpOn===true)d.bpOn=true;
   if(o.bsOn===true)d.bsOn=true;
   if(o.medOn===true)d.medOn=true;
+  if(o.cycleOn===true){d.cycleOn=true;if(o.cycleRem===true)d.cycleRem=true}
   if(o.fastOn===true)d.fastOn=true;
   if(o.motionOn===true)d.motionOn=true;
   if(o.fastInfoOk===true)d.fastInfoOk=true;
@@ -546,7 +553,7 @@ function buildState(r){
   const parts=[["ayarlar",()=>({settings:cleanSettings(r.settings)})],
     ["kayıtlar",()=>{const c=cleanEntries(r.entries);DROPS.n+=c.drop;return {entries:c.out,nextId:c.next}}],
     ["besinler",()=>({myFoods:cleanMyFoods(r.myFoods)})],["tahliller",()=>({labs:LabLib.cleanLabs(r.labs)})],["ölçümler",()=>({vitals:VitalsLib.clean(r.vitals)})],
-    ["sağlık",()=>cleanHealthState(r)],["antrenman",()=>cleanGym(r)],["Koç",()=>cleanCoach(r)]];
+    ["sağlık",()=>cleanHealthState(r)],["döngü",()=>({cycle:CycleLib.clean(r.cycle,dayKey())})],["antrenman",()=>cleanGym(r)],["Koç",()=>cleanCoach(r)]];
   const st=structuredClone(DEF);
   for(const [k,fn] of parts)try{Object.assign(st,fn())}catch(e){LOST.push(k)}
   const wids=new Set(st.workouts.map(w=>w.id));
@@ -850,13 +857,13 @@ const swRow=(attrs,on,label,sub="")=>`<label class="chkrow"><span class="nm">${l
 const navRow=(attr,ic,t,sub,cls="")=>`<button class="prow${cls}" ${attr}><span class="aic">${Icons.svg(ic)}</span><span style="flex:1;min-width:0"><b>${t}</b>${sub?`<span class="mut sm">${sub}</span>`:""}</span><span class="plus" aria-hidden="true">›</span></button>`;
 const AYAR=[["profil","Profil ve hedefler","user"],["modul","Modüller","grid"],["hatir","Hatırlatmalar","bell"],["koc","Koç","koc"],["veri","Veri ve yedek","data"],["hak","Hakkında","info"]];
 /* Alt ekranın üst ekranı: başlıktaki ‹, Android ve tarayıcı geri tuşu buna döner. */
-const PARENT={adim:"bugun",tahlil:"trend",tansiyon:"trend",seker:"trend",egz:"salon",ilac:"daha",ayar:"daha",...Object.fromEntries(AYAR.map(([k])=>["ayar-"+k,"ayar"]))};
+const PARENT={adim:"bugun",tahlil:"trend",tansiyon:"trend",seker:"trend",egz:"salon",ilac:"daha",dongu:"daha",ayar:"daha",...Object.fromEntries(AYAR.map(([k])=>["ayar-"+k,"ayar"]))};
 /* Bir alt ekran başka bir sekmeden açıldıysa (Bugün'den İlaç, Daha fazla'dan Adım) ‹ ve etkin sekme oraya döner; derin bağlantıda sabit üst ekran geçerli. */
 const UP=t=>via&&via.t===t?via.p:PARENT[t];
 const topTab=t=>{for(let p;(p=UP(t));)t=p;return t};
 /* Etkin sekme: İlaç, Adım ve Ayarlar hangi ekrandan açılırsa açılsın Daha fazla'da durur; ‹ ise açıldığı yere döner. */
 const navTab=()=>/^(ilac|adim|ayar)/.test(tab)?"daha":topTab(tab);
-const DAHA=[["data-tab=\"ilac\"","İlaçlar","ilac","medOn","İlaç saatleri ve bugünkü dozlar"],["data-tab=\"adim\"","Adım raporu","adim","stepsOn","Günlük adım ve yürüyüş"],["data-tab=\"tahlil\"","Tahlil takibi","file",0,"Sonuçlar ve değişim"],["data-tab=\"tansiyon\"","Tansiyon","heart","bpOn","Ev ölçümleri ve ortalama"],["data-tab=\"seker\"","Şeker","su","bsOn","Ölçümler ve ortalama"],["data-tab=\"egz\"","Egzersiz kütüphanesi","salon",0,"Hareketler, kaslar, ekipman"],["data-tab=\"ayar\"","Ayarlar","ayar",0,"Profil, modüller, hatırlatmalar, yedek"],["data-pv=\"open\"","Gizlilik ve veri","lock",0,"Verilerin nerede durduğu"],["data-tab=\"ayar-hak\"","Hakkında","info",0,"NeoWell ve tıbbi uyarı"]];
+const DAHA=[["data-tab=\"ilac\"","İlaçlar","ilac","medOn","İlaç saatleri ve bugünkü dozlar"],["data-tab=\"adim\"","Adım raporu","adim","stepsOn","Günlük adım ve yürüyüş"],["data-tab=\"tahlil\"","Tahlil takibi","file",0,"Sonuçlar ve değişim"],["data-tab=\"tansiyon\"","Tansiyon","heart","bpOn","Ev ölçümleri ve ortalama"],["data-tab=\"seker\"","Şeker","su","bsOn","Ölçümler ve ortalama"],["data-tab=\"dongu\"","Döngü","moon","cycleOn","Dönem günleri ve tahmin"],["data-tab=\"egz\"","Egzersiz kütüphanesi","salon",0,"Hareketler, kaslar, ekipman"],["data-tab=\"ayar\"","Ayarlar","ayar",0,"Profil, modüller, hatırlatmalar, yedek"],["data-pv=\"open\"","Gizlilik ve veri","lock",0,"Verilerin nerede durduğu"],["data-tab=\"ayar-hak\"","Hakkında","info",0,"NeoWell ve tıbbi uyarı"]];
 function viewDaha(){
   const st=S.settings,ic=n=>`<span class="aic">${Icons.svg(n)}</span>`;
   return `<div class="card">${DAHA.map(([a,t,i,k,sub])=>k&&!st[k]?`<button class="prow off" data-tab="ayar-modul" aria-label="${t}, kapalı. Ayarlar, Modüller'den aç">${ic(i)}<span style="flex:1"><b>${t}</b><span class="mut sm">Kapalı: Ayarlar &gt; Modüller'den aç</span></span><span class="plus" style="font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center" aria-hidden="true">Aç</span></button>`:navRow(a,i,t,sub)).join("")}</div>`;
@@ -864,7 +871,7 @@ function viewDaha(){
 function viewAyar(){
   const st=S.settings,sub=tab.slice(5);
   if(!sub){
-    const on=[st.medOn&&"İlaç",st.fastOn&&"Oruç",st.stepsOn&&"Adım",st.bpOn&&"Tansiyon",st.bsOn&&"Şeker"].filter(Boolean);
+    const on=[st.medOn&&"İlaç",st.fastOn&&"Oruç",st.stepsOn&&"Adım",st.bpOn&&"Tansiyon",st.bsOn&&"Şeker",st.cycleOn&&"Döngü"].filter(Boolean);
     const d={profil:[st.heightCm&&st.heightCm+" cm",st.age&&st.age+" yaş",st.goalKg&&"hedef "+fmt(st.goalKg)+" kg"].filter(Boolean).join(" · ")||"Boy, yaş ve hedefler",
       modul:on.length?on.join(", ")+" açık":"Hepsi kapalı",hatir:st.reminders.filter(r=>r.on&&remShown(r)).length+" hatırlatma açık",
       koc:keysStored()?"Anahtar kayıtlı":"Anahtar yok",veri:storeMsg()?storeMsg()[0]:st.lastBackup?"Son yedek "+fd(st.lastBackup):"Henüz yedek dosyası yok",hak:"NeoWell ve tıbbi uyarı"};
@@ -892,7 +899,8 @@ function viewAyar(){
   ${isNative()&&SC()?`<h2>Adım sayar</h2><div class="card"><button class="btn ghost" data-act="${st.stepsOn?"adimkapat":"adimac"}">${st.stepsOn?"Adım sayarı kapat":"Adım sayarı aç"}</button></div>`:""}
   ${motionSettingsHtml()}
   <h2>Salon</h2><div class="card">${swRow("data-aw",st.awakeOn,"Antrenmanda ekranı açık tut")}${swRow("data-rpe",st.rpeOn,"Zorluk (RPE) alanı")}${swRow("data-gdv",st.gdVoice,"Rehberli modda sesli komut")}${swRow("data-gdb",st.gdVib,"Rehberli modda titreşim")}<p class="hint">Sesli komut telefonun metin okuma (TTS) sesiyle çalışır; Türkçe ses yoksa telefonun varsayılan dili kullanılır, ses hiç yoksa sessiz devam eder. Müzik çalarken kısa süre kısılır.</p><p class="hint">Set satırına isteğe bağlı 6-10 zorluk alanı ekler (10 en zor). Yalnız kayıt içindir, önerileri ve hesapları değiştirmez.</p><p class="hint">Antrenman sürerken Salon açıkken ekran kararmaz. Başka sekmeye geçince, uygulamadan çıkınca ya da antrenman bitince normale döner.</p>${gGearHtml()}</div>
-  ${vitalsSettingsHtml()}`;
+  ${vitalsSettingsHtml()}
+  ${cycSettingsHtml()}`;
   if(sub==="koc")return viewProviders();
   if(sub==="hatir"){
     const nf={web:"Bildirimler yalnızca telefondaki uygulamada çalışır.",ok:"Hatırlatmalar açık.",denied:"Bildirim izni kapalı. Telefon ayarlarından Koç için bildirimleri aç.","":""}[notifStatus]||notifStatus;
@@ -918,10 +926,10 @@ function render(){
   if(sb&&render.sb!==st){render.sb=st;sb.setStyle({style:st}).catch(()=>{})}
   document.body.classList.toggle("ob",onb);$("#back").hidden=onb||!UP(tab);
   if(onb){$("#ttl").innerHTML='<img class="brand" src="logo.svg" alt="" width="28" height="28">NeoWell';$("#streak").innerHTML="";$("#composer").hidden=true;v.innerHTML=recovery?recView():obView();widgetPush();return}
-  const ttl={bugun:`${fd(dayKey())}, ${GUN[new Date().getDay()]}`,koc:"Koç",salon:"Salon",trend:"Trend",daha:"Daha fazla",ayar:"Ayarlar",egz:"Egzersiz kütüphanesi",adim:"Adım raporu",tahlil:"Tahlil takibi",tansiyon:"Tansiyon",seker:"Şeker",ilac:"İlaçlar",...Object.fromEntries(AYAR.map(([k,t])=>["ayar-"+k,t]))}[tab];
+  const ttl={bugun:`${fd(dayKey())}, ${GUN[new Date().getDay()]}`,koc:"Koç",salon:"Salon",trend:"Trend",daha:"Daha fazla",ayar:"Ayarlar",egz:"Egzersiz kütüphanesi",adim:"Adım raporu",tahlil:"Tahlil takibi",tansiyon:"Tansiyon",seker:"Şeker",ilac:"İlaçlar",dongu:"Döngü",...Object.fromEntries(AYAR.map(([k,t])=>["ayar-"+k,t]))}[tab];
   $("#ttl").textContent=ttl;
   const n=streak();$("#streak").innerHTML=n>0&&tab==="bugun"?`${Icons.svg("flame")}<b class="num">${n}</b> gün`:"";$("#streak").setAttribute("aria-label",n+" günlük seri");
-  v.innerHTML=(saveFail&&tab!=="bugun"&&tab!=="ayar-veri"?`<div class="card todo" role="alert"><div class="row"><span>${Icons.svg("save")} <b>${storeMsg()[0]}</b><small class="mut sm">${storeMsg()[1]}</small></span><button class="chip" data-act="veriyedek">Yedek al</button></div></div>`:"")+(tab==="koc"?viewKoc():tab==="bugun"?viewBugun():tab==="salon"?viewSalon():tab==="trend"?viewTrend():tab==="adim"?viewAdim():tab==="tahlil"?viewTahlil():tab==="tansiyon"?viewTansiyon():tab==="seker"?viewSeker():tab==="egz"?viewEgz():tab==="ilac"?viewIlac():tab==="daha"?viewDaha():viewAyar());
+  v.innerHTML=(saveFail&&tab!=="bugun"&&tab!=="ayar-veri"?`<div class="card todo" role="alert"><div class="row"><span>${Icons.svg("save")} <b>${storeMsg()[0]}</b><small class="mut sm">${storeMsg()[1]}</small></span><button class="chip" data-act="veriyedek">Yedek al</button></div></div>`:"")+(tab==="koc"?viewKoc():tab==="bugun"?viewBugun():tab==="salon"?viewSalon():tab==="trend"?viewTrend():tab==="adim"?viewAdim():tab==="tahlil"?viewTahlil():tab==="tansiyon"?viewTansiyon():tab==="seker"?viewSeker():tab==="egz"?viewEgz():tab==="ilac"?viewIlac():tab==="dongu"?viewDongu():tab==="daha"?viewDaha():viewAyar());
   document.body.classList.toggle("koc",tab==="koc");document.body.classList.toggle("bg",tab==="bugun");$("#composer").hidden=tab!=="koc";cmpSet();
   if(tab==="koc")cScroll();
   document.querySelectorAll("nav button").forEach(b=>{if(b.dataset.tab===navTab())b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
@@ -1213,6 +1221,7 @@ async function scheduleReminders(){
       const dl=await ln.getDeliveredNotifications(),t1=dayKey(),y=keyOff(-1),gone=[];
       for(const n of dl.notifications){
         if(n.id===9100&&!S.fast.t0)gone.push({id:9100});
+        if(n.id===CycleLib.NID&&!cycNotif())gone.push({id:n.id});
         if(n.id<1000000)continue;
         const d=MedLib.doseOfId(S.meds,n.id);
         if(!d||MedLib.statusOf(S.medLog,d.m.id,t1,d.slot)||MedLib.statusOf(S.medLog,d.m.id,y,d.slot))gone.push({id:n.id});
@@ -1239,6 +1248,7 @@ async function scheduleReminders(){
     if(S.settings.medOn){
       for(const n of MedLib.notifications(S.meds,S.medLog,new Date(),SCHED_DAYS,S.settings.medShowName!==false))list.push({id:n.id,title:n.title,body:n.body,schedule:{at:n.at,allowWhileIdle:true},actionTypeId:n.actionTypeId,extra:n.extra,channelId:n.channelId,ongoing:n.ongoing});
     }
+    const cn=cycNotif();if(cn)list.push(cn);
     if(S.fast.t0&&!fastBlock){const at=new Date(S.fast.t0+S.fast.plan*36e5);if(at.getTime()>now+5000)list.push({id:9100,title:"⏳ Oruç",body:"Oruç süren doldu. İstediğinde bitirebilirsin.",schedule:{at,allowWhileIdle:true}})}
     // Android uygulama başına eşzamanlı alarm sınırı (500): en yakın tarihliler korunur, uzaktakiler uygulama açılınca yeniden kurulur.
     list.sort((a,b)=>a.schedule.at-b.schedule.at);if(list.length>MedLib.BUDGET)list.length=MedLib.BUDGET;
@@ -1253,7 +1263,7 @@ async function scheduleReminders(){
 function notifTap(e){
   const x=e&&e.notification&&e.notification.extra;
   if(!e||e.actionId!=="tap"||!x||(x.act!=="open"&&x.act!=="med"))return;
-  tab=x.act==="med"||x.tab==="ilac"?(S.settings.medOn?"ilac":"daha"):x.tab==="koc"&&S.settings.consent?"koc":x.tab==="ayar-veri"?x.tab:"trend";via=null;closeSheet();render();window.scrollTo(0,0);
+  tab=x.act==="med"||x.tab==="ilac"?(S.settings.medOn?"ilac":"daha"):x.tab==="koc"&&S.settings.consent?"koc":x.tab==="dongu"&&S.settings.cycleOn?"dongu":x.tab==="ayar-veri"?x.tab:"trend";via=null;closeSheet();render();window.scrollTo(0,0);
 }
 function setNotif(s){notifStatus=s;if(tab==="ayar-hatir")render()}
 /* İzin verilince önceki yaklaşık alarmlar kendiliğinden tam saate dönmez; yeniden kurulur. */
@@ -1445,7 +1455,7 @@ document.addEventListener("click",ev=>{
     else if(d.act==="saglik")openSheet(`<h3>Sağlık notların</h3><div class="lbl">Hamilelik, hastalık, ilaç, yeme bozukluğu geçmişi gibi koçun bilmesi gerekenler.</div><textarea class="in" id="hn" maxlength="500" autofocus>${esc(S.settings.healthNote)}</textarea><button class="btn" data-go="saglik">Kaydet</button>`);
     else if(d.act==="riskok"){S.settings.riskClearedAt=dayKey();save();render();toast("Onaylandı, 30 gün geçerli")}
     else if(d.act.startsWith("uygula:")){S.settings.kcal=+d.act.slice(7);save();render();toast(`Kalori hedefi ${S.settings.kcal} kcal oldu`)}
-    else if(d.act==="sifirla"){if(confirm("Tüm kayıtlar, güvenlik kopyası ve kayıtlı Koç anahtarları silinecek. Bu geri alınamaz. Devam edilsin mi?")){["koc_v1","koc_v1_onceki","koc_v1_bozuk",KEYS_LS,KEYS_ENC].forEach(lsDel);KEYS={};S=structuredClone(DEF);save();logOff=0;render();scheduleReminders().then(setNotif);toast("Tüm veriler silindi")}}
+    else if(d.act==="sifirla"){if(confirm("Tüm kayıtlar, güvenlik kopyası ve kayıtlı Koç anahtarları silinecek. Bu geri alınamaz. Devam edilsin mi?")){["koc_v1","koc_v1_onceki","koc_v1_bozuk","koc_v1_kullanim",KEYS_LS,KEYS_ENC].forEach(lsDel);KEYS={};S=structuredClone(DEF);save();logOff=0;render();scheduleReminders().then(setNotif);toast("Tüm veriler silindi")}}
     return;
   }
   if(d.go){

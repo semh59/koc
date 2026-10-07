@@ -15,7 +15,7 @@ public class StepSnapshotReceiver extends BroadcastReceiver {
         t.set(Calendar.HOUR_OF_DAY, 0);
         t.set(Calendar.MINUTE, 0);
         t.set(Calendar.SECOND, 20);
-        Alarms.set(c, t.getTimeInMillis(), pi(c, 7001));
+        Alarms.setInexact(c, t.getTimeInMillis(), pi(c, 7001));
         // Gece alarmı Doze'da gecikirse akşam adımları için gün toplamı bu örnekten alınır (StepMath.SAMPLE_MINUTES).
         Calendar s = Calendar.getInstance();
         s.set(Calendar.HOUR_OF_DAY, 23);
@@ -23,7 +23,7 @@ public class StepSnapshotReceiver extends BroadcastReceiver {
         s.set(Calendar.SECOND, 0);
         s.set(Calendar.MILLISECOND, 0);
         if (s.getTimeInMillis() <= System.currentTimeMillis()) s.add(Calendar.DAY_OF_YEAR, 1);
-        Alarms.set(c, s.getTimeInMillis(), pi(c, 7003));
+        Alarms.setInexact(c, s.getTimeInMillis(), pi(c, 7003));
     }
 
     private static PendingIntent pi(Context c, int code) {

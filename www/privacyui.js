@@ -36,6 +36,7 @@ function sheetPrivacy(){
     <li><b>Google Drive</b>: yalnızca sen yedeği paylaşım ekranından Drive'a gönderirsen. Yedek parolayla şifrelenir.</li>
   </ul>
   <p class="mut sm">Koç sağlayıcısı IP adresini görür; kimlik bilgileri (ad, telefon, e-posta, TC, adres gibi) göndermeden önce telefonda maskelenir; filtre %100 garanti değildir (tam garanti yok): serbest cümleyle anlatılan adres ve listede olmayan nadir adlar yakalanmayabilir.</p>
+  <p class="mut sm">${usageText()}. Yalnız sayılar bu telefonda tutulur, hiçbir yere gönderilmez.</p>
   ${swRow('data-pv="prev"',st.piiPrev,"Koç'a giden metni önizle","Açıkken her gönderimden önce giden tam metni görür, Gönder ya da İptal dersin.")}
   <div class="lbl">Verilerini sil</div>
   <p class="mut sm">Kategori başına silinir, geri alınamaz. <button class="lnk" style="display:inline;width:auto;min-height:44px" data-act="yedek">Önce yedek al</button></p>
