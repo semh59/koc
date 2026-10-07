@@ -154,6 +154,8 @@ adb shell "$SU_AT"
 until_ok 20 qn_is 1
 [ "$(qn)" = "1" ] || { echo "İMZALI SU KAYDI YAZILMADI"; exit 1; }
 front
+until_ok 45 qn_is 0
+[ "$(qn)" = "0" ] || { echo "SU KAYDI UYGULAMAYA ALINMADI"; exit 1; }
 adb shell "$SU_AT"
 sleep 3
 [ "$(qn)" = "0" ] || { echo "YENİDEN TESLİM EDİLEN BİLDİRİM SUYU İKİNCİ KEZ YAZILDI"; exit 1; }
