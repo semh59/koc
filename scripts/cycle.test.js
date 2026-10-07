@@ -99,4 +99,17 @@ const seed=()=>ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.cycl
   ev("document.querySelector('[data-act=\"sifirla\"]').click()");
   ok("Tüm verileri sil koc_v1_kullanim anahtarını temizler",ev("localStorage.getItem('koc_v1_kullanim')")===null);
 }
-process.exit(bad?1:0);
+(async()=>{ // Gizlilik > Döngü kayıtları: yalnız kayıtlar gider, ayar kalır, bekleyen döngü bildirimi iptal edilir
+  seed();
+  const log={cancel:[],sched:[]},old=w.Capacitor;
+  w.Capacitor={isNativePlatform:()=>true,Plugins:{LocalNotifications:{checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),getPending:async()=>({notifications:[{id:9200}]}),getDeliveredNotifications:async()=>({notifications:[]}),cancel:async o=>{log.cancel.push(...o.notifications.map(n=>n.id))},schedule:async o=>{log.sched.push(...o.notifications.map(n=>n.id))}}}};
+  await ev("scheduleReminders()");
+  ok("silmeden önce döngü bildirimi kurulur",log.sched.includes(9200),log.sched);
+  log.cancel.length=0;log.sched.length=0;
+  ev("pvDelete(PV_CATS.findIndex(c=>c[0]==='Döngü kayıtları'))");
+  await new Promise(r=>setTimeout(r,100));
+  ok("kategori silince S.cycle boş, cycleOn ve cycleRem değişmez",ev("S.cycle.length")===0&&ev("S.settings.cycleOn")===true&&ev("S.settings.cycleRem")===true);
+  ok("bekleyen döngü bildirimi iptal edilir ve yeniden kurulmaz",log.cancel.includes(9200)&&!log.sched.includes(9200),log);
+  w.Capacitor=old;
+  process.exit(bad?1:0);
+})();
