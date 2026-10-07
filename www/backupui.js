@@ -17,7 +17,7 @@ async function sheetDrive(){
   <p class="mut sm" style="margin:0 0 10px">Verilerin parolayla şifrelenir. Paylaşım ekranında Google Drive'ı (ya da istediğin yeri) seç. Hesap bağlamak gerekmez.${lb?` Son yedek: ${fd(lb)}.`:""}</p>
   ${rem?`<p>Parola bu telefonda saklı.</p><button class="btn" data-bk="send">Şimdi gönder</button><button class="btn ghost" data-bk="forget" style="margin-top:8px">Parolayı unut</button>`
   :`<input class="in" id="bkp1" type="password" placeholder="Parola (en az ${BackupLib.MINPW} karakter)" autocomplete="new-password"><input class="in" id="bkp2" type="password" placeholder="Parolayı tekrar yaz" autocomplete="new-password">
-  ${native?`<label style="min-height:44px;display:flex;gap:8px;align-items:center;margin-bottom:10px"><input type="checkbox" id="bkrem" checked style="width:22px;height:22px">Parolayı bu telefonda sakla (Keystore ile şifreli)</label>`:""}
+  ${native?swRow('id="bkrem"',true,"Parolayı bu telefonda sakla (Keystore ile şifreli)"):""}
   <div class="hint" id="bkw" role="alert"></div><button class="btn" data-bk="send">Şifrele ve gönder</button>`}
   <p class="hint">Parolayı unutursan yedeğini kimse açamaz, kurtarma yolu yoktur. Parolayı güvenli bir yere yaz. Geri yüklemek için: Ayarlar > Veri ve yedek > Yedekle veya geri yükle > Dosyadan oku (dosyayı Drive'dan seçebilirsin).</p>
   <button class="btn ghost" data-bk="close" style="margin-top:8px">Vazgeç</button>`);
@@ -63,7 +63,7 @@ let abErr="",abName="",abBusy=false;
 function abHtml(){
   if(!BF())return "";
   const st=S.settings;
-  return `<div class="card"><label style="min-height:44px;display:flex;gap:8px;align-items:center"><input type="checkbox" data-ab="toggle" ${st.autoBk?"checked":""} style="width:22px;height:22px"><b>Otomatik yedek</b></label>
+  return `<div class="card">${swRow('data-ab="toggle"',st.autoBk,"<b>Otomatik yedek</b>")}
   <p class="hint">${st.autoBk?`Klasör: ${esc(abName||"seçili")}. ${st.lastAutoBk?`Son otomatik yedek: ${fd(st.lastAutoBk)}.`:"İlk yedek birazdan yazılır."} `:"Seçtiğin klasöre haftada bir şifreli yedek yazar, en son 4 otomatik yedeği tutar. "}Arka planda çalışmaz: uygulamayı en az haftada bir açtığında yedek alınır.</p>
   ${abErr?`<p class="status" role="alert"><b>Otomatik yedek alınamadı.</b> ${esc(abErr)}</p><div class="btns"><button class="btn ghost" data-ab="setup">Klasörü yeniden seç</button><button class="btn ghost" data-ab="off">Otomatik yedeği kapat</button></div>`:""}</div>`;
 }

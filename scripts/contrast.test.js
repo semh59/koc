@@ -11,7 +11,7 @@ const hex=(t,v)=>v[0]==="#"?v:t[v];
 const PAIRS=[
  ["ink","bg",4.5,"gövde metni"],["ink","card",4.5,"kart metni"],["mut","bg",4.5,"gri metin (sayfa)"],["mut","card",4.5,"gri metin (kart)"],
  ["mut","soft",4.5,"pasif segment / gri metin soft üstünde"],["prim","card",4.5,"bağlantı ve düğme metni"],["prim","bg",4.5,"birincil metin sayfada"],
- ["prim-ink","prim",4.5,"birincil düğme"],["prim","prim-ink",4.5,"kilo kartı düğmesi"],["warn","card",4.5,"uyarı metni (kart)"],["warn","bg",4.5,"uyarı metni (sayfa)"],
+ ["prim-ink","prim",4.5,"birincil düğme"],["prim-ink","prim-btn",4.5,"birincil düğme zemini"],["prim-btn","card",3,"düğme kartta"],["prim","prim-ink",4.5,"kilo kartı düğmesi"],["warn","card",4.5,"uyarı metni (kart)"],["warn","bg",4.5,"uyarı metni (sayfa)"],
  ["spor","card",4.5,"spor vurgu metni"],["spor","bg",4.5,"spor vurgu metni (sayfa)"],["spor-ink","spor",4.5,"seçili spor düğmesi"],
  ["tact","tbg",4.5,"toast 'Geri al' düğmesi"],["tfg","tbg",4.5,"toast metni"],
  ["su","card",3,"su grafiği"],["kcal","card",3,"kalori halkası ve hedef çizgisi"],["prim","card",3,"grafik çizgisi"],["spor","card",3,"spor grafiği"],["warn","card",3,"uyarı grafiği"],

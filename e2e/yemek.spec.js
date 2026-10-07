@@ -52,6 +52,7 @@ test.describe("Yemek ekle",()=>{
 
   test("kendin yaz: adsız ve kalorisiz reddedilir, adla kaydedilir",async({app,page})=>{
     await openYemek(app,page);
+    await page.click('[data-act="kendin"]');
     await page.click('[data-go="yemek"]');
     await expect(page.locator("#yerr")).toHaveText("Yemeğin adını ya da kalorisini yaz");
     await page.fill("#fv","25000");await page.click('[data-go="yemek"]');
@@ -73,7 +74,7 @@ test.describe("Yemek ekle",()=>{
     // Son yediklerinden favoriye al, favoriden tek dokunuşla ekle.
     await page.click('.act[data-act="yemek"]');
     await page.locator('#frl [data-fva]').first().click();
-    await expect(page.locator('#frl .lbl',{hasText:"Favoriler"})).toBeVisible();
+    await expect(page.locator('#frl .lbl',{hasText:"Sık kullanılanlar"})).toBeVisible();
     await page.locator('#frl [data-fv="0"]').click();
     await expect(app.toast).toContainText("eklendi");
     // Bugünün yemeklerinden şablon, şablondan ekleme.
@@ -89,6 +90,7 @@ test.describe("Yemek ekle",()=>{
 
   test("tarif: malzemelerden porsiyon kalorisi, aramada çıkar, günlüğe eklenir",async({app,page})=>{
     await openYemek(app,page);
+    await page.click('[data-act="kendin"]');
     await page.click('[data-rp="new"]');
     await page.click('[data-rp="save"]');
     await expect(page.locator("#rerr")).toHaveText("Tarife bir ad yaz");

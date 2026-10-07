@@ -49,12 +49,12 @@ function obView(){
     ${fld("cm","Boy (cm)",ob.cm,"","numeric")}${fld("kg","Kilo (kg)",ob.kg,"","decimal")}${fld("age","Yaş",ob.age,"","numeric")}
     <div class="lbl" style="margin-top:10px">Cinsiyet (isteğe bağlı)</div>${seg("sex",[["m","Erkek"],["f","Kadın"],["","Belirtmem"]],ob.sex)}
     <div class="lbl" style="margin-top:10px">Hedefin</div>${seg("dir",OB_DIRS,ob.dir)}
-    ${ob.dir!=="koru"?fld("goal","Hedef kilo (kg)",ob.goal,"","decimal"):""}
-    <label class="chkrow" style="margin-top:6px"><input type="checkbox" id="obhd" ${ob.hd?"checked":""}>Hamileyim, emziriyorum ya da yeme bozukluğu geçmişim var</label>
-    <label class="chkrow"><input type="checkbox" id="obhn" ${ob.hn?"checked":""}>Hekim kontrolündeyim ya da düzenli ilaç kullanıyorum</label></div>${err}`;
+    ${ob.dir!=="koru"?fld("goal","Hedef kilo (kg)",ob.goal,"","decimal"):""}</div>${err}`;
   else if(st===1)body=`<h2>Hangileri açık olsun?</h2><div class="card"><p class="hint" style="padding:0 0 8px">Kapalı olanlar ekranında görünmez. İstediğini sonra Ayarlar'dan açarsın.</p>
     <div class="chips">${OB_MODS.map(([k,l,ic])=>`<button class="chip" data-ob="mod:${k}" aria-pressed="${ob.mods.includes(k)}">${Icons.svg(ic)} ${l}</button>`).join("")}</div>
-    ${ob.mods.includes("steps")?`<p class="hint" style="padding:0">Adım sayar için telefon izni, Bugün ekranındaki "Adım sayarı aç" satırından istenir.</p>`:""}</div>`;
+    ${ob.mods.includes("steps")?`<p class="hint" style="padding:0">Adım sayar için telefon izni, Bugün ekranındaki "Adım sayarı aç" satırından istenir.</p>`:""}</div>
+    <div class="card"><details class="more"${ob.hd||ob.hn?" open":""}><summary>Sağlık notu ekle</summary><p class="hint" style="padding:0 0 4px">Önerilerin sana göre ihtiyatlı olması için. Hamilelik, yeme bozukluğu geçmişi, hekim kontrolü ya da ilaç varsa işaretle.</p>
+    ${swRow('id="obhd"',ob.hd,"Hamileyim, emziriyorum ya da yeme bozukluğu geçmişim var")}${swRow('id="obhn"',ob.hn,"Hekim kontrolündeyim ya da düzenli ilaç kullanıyorum")}</details></div>`;
   else{
     const p=obParse(),pl=obPlan(p);next="Başla";
     body=`<h2>Günlük hedefin</h2><div class="card"><div class="lbl">Kalori</div><div class="sumv num" style="color:var(--prim)">${pl.kcal.toLocaleString("tr-TR")} <small>kcal</small></div>

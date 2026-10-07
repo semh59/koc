@@ -1,7 +1,7 @@
 "use strict";
 /* Rehberli antrenman ekranı: #guide tam ekran katmanı, render()'dan bağımsız (görünüm yeniden çizilince kaybolmasın).
    guidelib.js (motor), gym.js/exui.js (gEx, gTimed, gRestSec, gAddEx, gNotify, exDef) ile çalışır. */
-let gd=null;
+let gd=null,guideFrom=null;
 const GD_NID=9003; // 9001 süreli set, 9002 dinlenme ile aynı anda kurulu olabilir
 const SPK=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Speech;
 const gdOn=()=>!!gd&&!gd.fin;
@@ -30,9 +30,9 @@ function gdStart(v){
   if(!steps.length)return toast("Şablonda egzersiz yok");
   closeSheet();
   gd={st:GuideLib.start(steps,Date.now()),meta,cd:-1,fin:false};
-  $("#guide").hidden=false;document.body.classList.add("gdon");
+  guideFrom=document.activeElement;$("#guide").hidden=false;document.body.classList.add("gdon");trap();
   clearInterval(gdTick.iv);gdTick.iv=setInterval(gdTick,250);
-  gdEnter();gAwake(true);
+  gdEnter();gAwake(true);const x=$("#guide .gdx");if(x)x.focus();
 }
 function gdEnter(){
   const st=gd.st;
@@ -75,7 +75,7 @@ function gdRender(){
   const lbl=p.k==="w"?(p.n>1?`Set ${p.r}/${p.n}`:"Çalış"):st.i?"Dinlen, sıradaki":"Hazırlan, ilk hareket";
   const k=st.ph.slice(0,ws[0]+1).filter(x=>x.k==="w").length,paused=st.pause!=null,rest=p.k==="r";
   const ring=`<div class="gdring${rest?" gdrs":""}"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="tr" cx="60" cy="60" r="52"/><circle class="pg" id="gdpg" cx="60" cy="60" r="52" stroke-dasharray="${GD_C.toFixed(1)}" stroke-dashoffset="0"/></svg>
-    <div class="gdtm">${p.reps?`<b class="num">${p.reps}</b><span class="mut sm">tekrar</span>`:`<b class="num" id="gdt" role="timer"></b><span class="mut sm">${paused?"duraklatıldı":rest?"dinlenme":"saniye"}</span>`}</div></div>`;
+    <div class="gdtm">${p.reps?`<b class="num">${p.reps}</b><span class="mut sm">tekrar</span>`:`<b class="num" id="gdt" role="timer"></b><span class="mut sm">${paused?"duraklatıldı":rest?(st.i?"dinlenme":"hazırlık"):"saniye"}</span>`}</div></div>`;
   el.innerHTML=`<div class="gdtop"><button class="gdx" data-gd="end" aria-label="Akışı bitir">✕</button><b>${esc(gd.meta.n)}</b><span class="num mut sm">${k}/${GuideLib.works(st)}</span></div>
   <div class="gdbar" aria-hidden="true"><i id="gdbar"></i></div>
   <div class="gdbody"><div class="gdA"><div class="gdfig">${fig}</div>
@@ -124,7 +124,8 @@ function gdSave(){
 function gdClose(){
   clearInterval(gdTick.iv);gNotifyCancel(GD_NID);
   if(SPK())SPK().stop().catch(()=>{});
-  gd=null;$("#guide").hidden=true;$("#guide").innerHTML="";document.body.classList.remove("gdon");gAwake(true);
+  const f=guideFrom;guideFrom=null;gd=null;$("#guide").hidden=true;$("#guide").innerHTML="";document.body.classList.remove("gdon");trap();gAwake(true);
+  if(f&&f.isConnected)f.focus({preventScroll:true});
 }
 function gdEnd(){if(GuideLib.over(gd.st)||confirm("Akış burada bitirilsin mi? Tamamlananları kaydedebilirsin."))gdFinish(false)}
 /* Donanım geri tuşu: akış sürerken bitirme sorusu, özetteyken kapatır. */

@@ -30,21 +30,23 @@ const MuscleMap=(()=>{
   const lvl=n=>n<=0?0:n<5?1:n<LO?2:n<=HI?3:4;
   const LEG=["Set yok","1-4 set","5-9 set","10-20 set (kılavuz aralığı)","21 ve üstü"];
   const tx=(name,n)=>!(n>0)?`${name}: bu hafta set yok`:`${name}: ${n} set, haftalık ${LO}-${HI} kılavuz aralığının ${n<LO?"altında":n>HI?"üstünde":"içinde"}`;
+  /* Düğmenin görünen metni ("Göğüs 12") erişilebilir adın başında durur. */
+  const lab=(name,n)=>n>0?`${name} ${n} set, haftalık ${LO}-${HI} kılavuz aralığının ${n<LO?"altında":n>HI?"üstünde":"içinde"}`:`${name}, bu hafta set yok`;
   const mir=s=>`<g transform="translate(100 0) scale(-1 1)">${s}</g>`;
   function fig(v,regs,x){
     const parts=R.filter(r=>r[1]===v).map(([name,,s,m,p])=>{
       const n=regs[name]||0;
-      return `<g class="mmr l${lvl(n)}" data-g="mm:${name}" role="button" tabindex="0" aria-label="${tx(name,n)}">${s}${m?mir(s):""}</g>`;
+      return `<g class="mmr l${lvl(n)}" data-g="mm:${name}">${s}${m?mir(s):""}</g>`;
     }).join("");
     const nums=R.filter(r=>r[1]===v&&regs[r[0]]>0).map(([name,,,,p])=>`<text class="mmt" x="${p[0]}" y="${p[1]+2.5}">${regs[name]}</text>`).join("");
     return `<g transform="translate(${x} 0)"><g class="mmb">${BODY}${mir(BODY_MIR)}${v==="b"?'<path d="M44 24h12l2 8H42z"/>':""}</g>${parts}${nums}<text class="mmf" x="50" y="207">${v==="f"?"Ön":"Arka"}</text></g>`;
   }
-  /* Şema bölgeleri parmak için küçük (44 px altı); aynı seçim 44 px'lik düğme sırasından da yapılır. regs: gWeekRegions çıktısı. Şemada olmayan bölge ("Tüm vücut", bölgesiz eski egzersiz) düğme/metin olarak ayrıca yazılır. */
+  /* Şema yalnız görsel (aria-hidden, odaklanmaz): bölgeler parmak için küçük, asıl kontrol 44 px'lik düğme sırası. regs: gWeekRegions çıktısı. Şemada olmayan bölge ("Tüm vücut", bölgesiz eski egzersiz) düğme/metin olarak ayrıca yazılır. */
   function html(regs){
     const named=new Set(R.map(r=>r[0])),total=Object.values(regs).reduce((a,b)=>a+b,0),extra=Object.keys(regs).filter(k=>!named.has(k)&&regs[k]>0);
-    const svg=`<svg viewBox="0 0 220 212" role="group" aria-label="Haftalık kas haritası, ön ve arka görünüm">${fig("f",regs,0)}${fig("b",regs,120)}</svg>`;
+    const svg=`<svg viewBox="0 0 220 212" aria-hidden="true">${fig("f",regs,0)}${fig("b",regs,120)}</svg>`;
     return `<div class="mmwrap">${svg}<p class="mmi" id="mminfo" aria-live="polite">${total>0?"Bir bölgeye dokunarak set sayısını gör.":"Bu hafta set yok."}</p>
-    <div class="chips mmp">${[...REGIONS,...extra].map(k=>`<button class="chip" data-g="mm:${k}">${named.has(k)?k:k==="Tüm vücut"?k:"Bölgesiz ("+k+")"} ${regs[k]||0}</button>`).join("")}</div>
+    <div class="chips mmp">${[...REGIONS,...extra].map(k=>`<button class="chip" data-g="mm:${k}" aria-pressed="false" aria-label="${lab(named.has(k)||k==="Tüm vücut"?k:"Bölgesiz ("+k+")",regs[k]||0)}">${named.has(k)?k:k==="Tüm vücut"?k:"Bölgesiz ("+k+")"}${regs[k]>0?" "+regs[k]:""}</button>`).join("")}</div>
     <div class="mmleg" aria-label="Renk açıklaması">${LEG.map((t,i)=>`<span><i class="l${i}"></i>${t}</span>`).join("")}</div></div>`;
   }
   return {html,lvl,tx,REGIONS};

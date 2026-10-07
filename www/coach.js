@@ -585,12 +585,14 @@ function cOpenChat(id){
   save();closeSheet();render();cScroll();
 }
 function cChatList(){
-  openSheet(`<h3>Sohbet geçmişi</h3>${S.chats.length?S.chats.map(c=>`<div class="prow"><button class="lnk" style="flex:1;text-align:left" data-c="openchat:${c.id}"><b>${esc(c.title)}</b><span class="mut sm">${fd(dayKey(new Date(c.t)))}, ${c.msgs.filter(m=>m.role==="user").length} mesaj</span></button><button class="lnk" style="width:auto" data-c="delchat:${c.id}" aria-label="Sohbeti sil: ${esc(c.title)}">Sil</button></div>`).join(""):`<p class="hint">Geçmiş sohbet yok. Yeni sohbet başlatınca eskisi burada saklanır.</p>`}<button class="btn ghost" data-g="closesheet">Kapat</button>`);
+  openSheet(`<h3>Sohbet geçmişi</h3>${S.chats.length?S.chats.map(c=>`<div class="prow"><button class="lnk" style="flex:1;text-align:left" data-c="openchat:${c.id}"><b>${esc(c.title)}</b><span class="mut sm">${fd(dayKey(new Date(c.t)))}, ${cTime(c.t)}</span></button><button class="lnk" style="width:44px" data-c="delchat:${c.id}" aria-label="Sohbeti sil: ${esc(c.title)}">Sil</button></div>`).join(""):`<p class="hint">Geçmiş sohbet yok. Yeni sohbet başlatınca eskisi burada saklanır.</p>`}<button class="btn ghost" data-g="closesheet">Kapat</button>`);
 }
 function cConsent(on){
   const s=S.settings;if(on&&!consentOk())return;
   Object.assign(s,{consent:on,consentV:on?CONSENT_V:0,consentAt:on?dayKey():"",consentP:on?provSet():null});save();render();
 }
+/* Boş sohbet örnekleri: [etiket, mesaj, true ise yalnız yazma alanına konur]. */
+const CASK=[["Kahvaltıda ne yedin?","Kahvaltıda ",true],["Bugün ne yapmalıyım?","Bugün ne yapmalıyım?"],["Bu hafta nasıldı?","Bu hafta nasıldı?"]];
 function viewKoc(){
   let h="";
   const intro=offline==="none"||(!hasKey()&&!S.chat.length);
@@ -600,8 +602,8 @@ function viewKoc(){
     h+=`<div class="banner"><b>Koç şu an ulaşılamıyor</b>${x&&pstat[x.id].m?`<p>${esc(x.name)}: ${esc(pstat[x.id].m)}</p>`:""}<p>Su, kilo ve spor kaydı çalışıyor. Yemek tahmini bağlantı gelince yapılır.</p><button class="btn" data-c="retry">Yeniden dene</button></div>`;
   }
   if(!coachOn()&&!intro)h+=`<div class="banner info">${consentHtml()}${consentOk()?`<button class="btn" data-c="consent">Açık rızamı veriyorum</button>`:""}<button class="lnk" data-pv="open">Gizlilik ve veri</button></div>`;
-  if(S.chat.length||S.chats.length)h+=`<div class="chips">${S.chat.length?`<button class="chip" data-c="newchat">Yeni sohbet</button>`:""}${S.chats.length?`<button class="chip" data-c="chats">Geçmiş (${S.chats.length})</button>`:""}</div>`;
-  if(!S.chat.length&&hasKey())h+=`<p class="hint">Bir şey yaz: "2 yumurta ve ekmek yedim", "83,7 çektim" ya da "bugün ne yapmalıyım?"</p>`;
+  if(S.chat.length||S.chats.length)h+=`<div class="chips cbar">${S.chat.length?`<button class="chip" data-c="newchat">Yeni sohbet</button>`:""}${S.chats.length?`<button class="chip" data-c="chats">Geçmiş</button>`:""}</div>`;
+  if(!S.chat.length&&hasKey())h+=`<div class="card coachc empty"><b>Bugün neyle başlayalım?</b><p class="mut sm">Yediğini, içtiğini ya da tartını yaz; kaydederim. İstersen günü yorumlarım.</p><div class="chips" style="justify-content:center;margin:12px 0 0">${CASK.map((x,i)=>`<button class="chip" data-c="ask:${i}">${x[0]}</button>`).join("")}</div></div>`;
   for(const m of S.chat){
     if(m.role==="user")h+=`<div class="ub">${esc(m.text)}</div>${m.pend?`<div class="pendl">Gönderilmedi${coachOn()&&!typing?`<button class="lnk" style="display:inline;width:auto;min-height:44px;margin-left:6px" data-c="retry">Şimdi gönder</button>`:""}</div>`:""}`;
     else if(m.role==="coach"){
@@ -740,8 +742,8 @@ function cSheetProv(id){
   <div class="lbl">Adres</div><input class="in" id="pb" value="${esc(p.base)}" autocomplete="off" spellcheck="false" style="font-size:14px"${builtin?" readonly":""}>
   <div class="lbl">Model</div><input class="in" id="pm" value="${esc(p.model)}" autocomplete="off" spellcheck="false" style="font-size:14px"><div id="pmlist"></div>
   <div class="lbl">Anahtar</div><input class="in" id="pk" type="password" placeholder="${k?"••••"+esc(k.slice(-4)):"yapıştır"}" autocomplete="off" spellcheck="false" style="font-size:14px">
-  <label class="chkrow"><input type="checkbox" id="pon" ${p.on?"checked":""}> Bu sağlayıcıyı kullan</label>
-  <label class="chkrow"><input type="checkbox" id="ph" ${p.health?"checked":""}> Sağlık verisi gönder</label>
+  ${swRow('id="pon"',p.on,"Bu sağlayıcıyı kullan")}
+  ${swRow('id="ph"',p.health,"Sağlık verisi gönder")}
   <div class="mut sm" style="margin:2px 0 10px">${p.confirm?"Bu sağlayıcıda ücretsiz katman istemleri ürün geliştirmek için kullanabilir. Açarsan her göndermeden önce onay istenir.":"Kapalıysa bu sağlayıcıya hiçbir şey gönderilmez."}</div>
   <div class="two"><button class="btn ghost" data-c="ptest:${id}">Bağlantıyı test et</button><button class="btn ghost" data-c="pmodels:${id}">Modelleri getir</button></div>
   <div class="two" style="margin-top:8px"><button class="btn ghost" data-c="pmove:${id}:-1"${i===0?" disabled":""}>Yukarı taşı</button><button class="btn ghost" data-c="pmove:${id}:1"${i===S.providers.length-1?" disabled":""}>Aşağı taşı</button></div>
@@ -859,6 +861,7 @@ function cClick(v,el){
     case "applyk":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card&&m.card.state==="pending"){if(kcalBlocked(m.card.kcal)){m.card.state="no";save();render();return toast(cCalc().block)}S.settings.kcal=m.card.kcal;m.card.state="ok";save();render();toast(`Kalori hedefi ${m.card.kcal} kcal oldu`)}return}
     case "nok":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card){m.card.state="no";save();render()}return}
     case "dismiss":{const b=el.closest(".cm");if(b){S.chat=S.chat.filter(x=>x.id!==+b.dataset.mid);save();render()}return}
+    case "ask":{const x=CASK[+p1];if(!x)return;if(x[2]){const i=$("#cmsg");i.value=x[1];i.focus()}else cSend(x[1]);return}
     case "newchat":return cNewChat();
     case "chats":return cChatList();
     case "openchat":return cOpenChat(+p1);

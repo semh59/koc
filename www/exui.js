@@ -20,10 +20,12 @@ function exFiltered(){
 }
 function exListHtml(){
   const all=exFiltered(),list=all.slice(0,gLN);
-  return (gLQ||exFilterN()?`<p class="hint" style="padding:0 4px 6px">${all.length} sonuç</p>`:"")+list.map(e=>`<button class="prow exrow" data-g="exinfo:${e.id}"><span class="exthumb" aria-hidden="true">${e.tp?exFig(e,false):""}</span><span style="flex:1;min-width:0"><b>${esc(e.n)}</b><span class="mut sm">${e.r||e.g}${e.q?" · "+e.q.toLowerCase():""}${e.l?" · "+e.l.toLowerCase():""}</span></span><span class="plus">›</span></button>`).join("")
+  return (gLQ||exFilterN()?`<p class="hint" style="padding:0 4px 6px">${all.length} sonuç</p>`:"")+list.map(e=>`<button class="prow exrow" data-g="exinfo:${e.id}"><span class="exthumb" aria-hidden="true">${e.tp?exFig(e,false):""}</span><span style="flex:1;min-width:0"><b>${esc(e.n)}</b><span class="mut sm">${e.r||e.g}${e.q?" · "+e.q.toLowerCase():""}${e.l?" · "+exLv(e.l):""}</span></span><span class="plus">›</span></button>`).join("")
     +(all.length>list.length?`<button class="lnk" data-g="lmore">Daha fazla göster</button>`:"")+(all.length?"":`<p class="hint">Eşleşen hareket yok. Başka bir ad dene ya da filtreleri temizle.</p>`);
 }
 const exChips=(arr,cur,act)=>arr.map(x=>`<button class="chip" data-g="${act}:${x}" aria-pressed="${x===cur}">${x}</button>`).join("");
+/* Düzey tek başına bağlamsız okunur ("başlangıç"): seviye olduğu yazılır. */
+const exLv=l=>l==="Başlangıç"?"başlangıç seviyesi":l.toLowerCase()+" seviye";
 function viewEgz(){
   return `<div class="srch"><input class="in" id="glq" type="search" enterkeyhint="search" aria-label="Egzersiz ara" placeholder="Egzersiz ara" autocomplete="off" value="${esc(gLQ)}"><span id="glfb">${exFilterBtn()}</span></div>
   <div id="gllist" class="card exlist">${exListHtml()}</div>
@@ -91,7 +93,7 @@ function exSheet(id){
   const photos=e.im>0?`<span class="exph" aria-hidden="true"><img src="ex/${e.id}/0.webp" alt="" loading="lazy">${e.im>1?`<img class="b" src="ex/${e.id}/1.webp" alt="" loading="lazy">`:""}</span>`:"";
   const cues=(EXCUE[e.tp]||[]).map(c=>`<li>${esc(c)}</li>`).join("");
   const w=gActive(),inW=w&&w.ex.some(x=>x.id===id);
-  openSheet(`<h3>${esc(e.n)}</h3><div class="mut sm">${e.r||e.g}${e.q?" · "+e.q:""}${e.l?" · "+e.l:""}${e.c?" · "+EXCAT[e.c]:""}</div>
+  openSheet(`<h3>${esc(e.n)}</h3><div class="mut sm">${e.r||e.g}${e.q?" · "+e.q:""}${e.l?" · "+exLv(e.l):""}${e.c?" · "+EXCAT[e.c]:""}</div>
   ${d||photos?`<div class="exvis">${d?`<div class="exfig">${FigLib.svg(d,{anim:true,label:e.n})}</div>`:""}${photos}</div>`:""}
   ${cues?`<ul class="cues">${cues}</ul>`:""}
   <div class="mut sm">Kayıt türü: ${EXKIND[e.k||"w"]}</div>${exHistLine(e)}${exCharts(id)}
