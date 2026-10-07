@@ -362,6 +362,7 @@ input.in,select.in,.chip>button{min-height:44px}
 <script src="loglib.js"></script>
 <script src="habitlib.js"></script>
 <script src="insightlib.js"></script>
+<script src="piilib.js"></script>
 <script src="coachlib.js"></script>
 <script src="coach.js"></script>
 <script src="recipeui.js"></script>
@@ -417,7 +418,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- veri ---------- */
 const DEF={
-  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,chatRisk:"",copyAt:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
+  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,piiPrev:false,chatRisk:"",copyAt:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -467,6 +468,7 @@ function cleanSettings(raw){
   if(o.oemDone===true)d.oemDone=true;
   /* Bayrak eklenmeden önceki yedek ve kayıtlar mevcut kullanıcıdır, onboarding görmez. */
   if(o.obDone===true)d.obDone=true;
+  if(o.piiPrev===true)d.piiPrev=true;
   if(o.stepsOn===true)d.stepsOn=true;
   if(o.bpOn===true)d.bpOn=true;
   if(o.bsOn===true)d.bsOn=true;
@@ -949,9 +951,11 @@ function widgetPush(){
 /* Üst katman (sheet ya da rehber) açıkken arka plan inert: Tab, dokunma ve ekran okuyucu arkaya geçmez. */
 const topLayer=()=>$("#sheet").classList.contains("on")?$("#sheet"):$("#guide").hidden?null:$("#guide");
 function trap(){const o=topLayer();for(const e of document.body.children)if(e.tagName!=="SCRIPT")e.inert=!!o&&e!==o&&!e.matches("#scrim,#toast")}
-let sheetFrom=null;
+/* sheetEnd: sheet bir seçim beklerken kapanır ya da başka sheet ile değişirse çağrılır (Koç önizlemesi İptal sayılır). */
+let sheetFrom=null,sheetEnd=null;
+const sheetDone=ok=>{const e=sheetEnd;sheetEnd=null;if(e)e(ok)};
 function openSheet(html){
-  $("#toast").classList.remove("on");const s=$("#sheet");
+  sheetDone(false);$("#toast").classList.remove("on");const s=$("#sheet");
   if(!s.classList.contains("on"))sheetFrom=document.activeElement;
   s.innerHTML=`<div class="grab"></div>${html}`;
   const h=s.querySelector("h3");
@@ -960,7 +964,7 @@ function openSheet(html){
   const f=s.querySelector("[autofocus]");if(f)setTimeout(()=>f.focus(),220);else(h||s).focus({preventScroll:true});
 }
 function closeSheet(){
-  const s=$("#sheet"),was=s.classList.contains("on"),f=sheetFrom;
+  sheetDone(false);const s=$("#sheet"),was=s.classList.contains("on"),f=sheetFrom;
   s.classList.remove("on");$("#scrim").classList.remove("on");sheetFrom=null;trap();
   if(was&&f&&f.isConnected)f.focus({preventScroll:true});
 }

@@ -210,3 +210,55 @@ test.describe("Koç güvenilirlik",()=>{
     await expect(page.locator(".pendl")).toHaveCount(0);
   });
 });
+
+test.describe("Koç kimlik maskeleme",()=>{
+  const openPrev=(app,on=true)=>app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter",piiPrev:on}),keys:{groq:"gsk_test"}});
+  const MSG="Ben Ahmet, tel 0532 123 45 67, a.b@posta.com";
+  test("önizleme kapalıyken pencere çıkmaz; giden gövdede kimlik yok, yanıt yerelde geri çevrilir",async({app,page,fake})=>{
+    fake.st.reply=()=>JSON.stringify({reply:"Selam [AD1]."});
+    await openPrev(app,false);await send(app,page,MSG);
+    await expect(page.locator("#view")).toContainText("Selam Ahmet.");
+    await expect(page.locator(".ub").first()).toContainText("0532 123 45 67");
+    const body=JSON.stringify(fake.chats()[0].body);
+    expect(body).not.toMatch(/Ahmet|0532|posta\.com/);expect(body).toContain("[TELEFON1]");
+    await expect(page.locator("#toast")).toContainText("maskelendi");
+  });
+  test("önizleme açıkken tam giden metin gösterilir, Gönder'e kadar istek gitmez",async({app,page,fake})=>{
+    fake.st.reply=()=>JSON.stringify({reply:"Selam [AD1]."});
+    await openPrev(app);await send(app,page,MSG);
+    await expect(page.locator("#sheet")).toContainText("Koç'a giden metin");
+    await expect(page.locator("#sheet pre")).toContainText("[AD1]");
+    await expect(page.locator("#sheet pre")).not.toContainText("0532");
+    expect(fake.chats().length).toBe(0);
+    await page.click('[data-c="pvok"]');
+    await expect(page.locator("#view")).toContainText("Selam Ahmet.");
+    expect(fake.chats().length).toBe(1);expect(app.dialogs.length).toBe(0);
+  });
+  test("önizlemede İptal göndermez, mesaj telefonda kalır",async({app,page,fake})=>{
+    await openPrev(app);await send(app,page,MSG);
+    await page.click('[data-c="pvno"]');
+    await expect(page.locator("#sheet")).not.toHaveClass(/on/);
+    await expect(page.locator(".pendl")).toHaveCount(0);
+    await expect(page.locator(".ub")).toContainText("Ahmet");
+    expect(fake.chats().length).toBe(0);
+  });
+  test("Gemini onayı önizleme penceresine katılır: tek pencere, ayrı confirm yok",async({app,page,fake})=>{
+    fake.st.reply=()=>JSON.stringify({reply:"Tamam."});
+    await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter",piiPrev:true},{providers:[{id:"gemini",name:"Google Gemini",base:"https://generativelanguage.googleapis.com/v1beta/openai",model:"gemini-3.5-flash-lite",on:true,health:true,confirm:true}]}),keys:{gemini:"AIzaTest"}});
+    await send(app,page,"Merhaba");
+    await expect(page.locator("#sheet")).toContainText("ücretsiz katmanında");
+    await page.click('[data-c="pvok"]');
+    await expect(page.locator("#view")).toContainText("Tamam.");
+    expect(app.dialogs.length).toBe(0);
+  });
+  test("Gizlilik ve veri: anahtar varsayılan kapalı, açılınca kalıcı",async({app,page})=>{
+    await openPrev(app,false);
+    await page.evaluate("sheetPrivacy()");
+    const sw=page.locator('#sheet [data-pv="prev"]');
+    await expect(sw).not.toBeChecked();
+    await expect(page.locator("#sheet")).toContainText("%100 garanti değildir");
+    await sw.check();
+    expect(await page.evaluate("S.settings.piiPrev")).toBe(true);
+    await page.reload();expect(await page.evaluate("S.settings.piiPrev")).toBe(true);
+  });
+});

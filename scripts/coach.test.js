@@ -31,6 +31,10 @@ ok("kcal alt sınır",C.clampKcal(900,{tdee:2400,bmr:1800}).kcal===1800&&C.clamp
 ok("kcal geçerli",C.clampKcal(2000,{tdee:2400,bmr:1700}).kcal===2000&&C.clampKcal("abc")===null&&C.clampKcal(100)===null);
 const t=C.contextText({profile:{cm:175,age:34,sex:"m",act:1,note:""},goals:{kg:75,kcal:1800,water:2500,sport:150},calc:{trendKg:84.1,slope:-0.6,tdee:2420,source:"veri",target:2110,protein:[136,187]},days:[{d:"2026-10-01",kg:83.7,kcal:1240,p:80,su:1200,sport:0}],today:["yemek ~220 kcal"],now:"12:42",workouts:[],notes:[]});
 ok("bağlam kısa ve sayılı: 399 karakterlik girdide en çok 450",t.includes("2420")&&t.includes("83,7")&&t.includes("önerilen hedef 2110")&&t.includes("protein aralığı 136-187")&&t.length>300&&t.length<450,t.length);
+{ // yaş modele 5 yıllık aralık olarak gider, 18 altına inmez
+  const age=a=>C.contextText({profile:{age:a},goals:{},calc:{},days:[],today:[],now:"",workouts:[],notes:[]}).split("\n")[0];
+  ok("bağlam: yaş 5'lik aralık (34 -> 30-34, 35 -> 35-39, 18 -> 18-19), kesin yaş yok",age(34)==="PROFİL: 30-34 yaş"&&age(35)==="PROFİL: 35-39 yaş"&&age(18)==="PROFİL: 18-19 yaş"&&!/(^|[^-\d])34 yaş/.test(t),t.split("\n")[0]);
+}
 ok("hiç yemiyorum",C.redFlag("kilo için hiç yemiyorum")==="ed");
 ok("hayatıma son",C.redFlag("hayatıma son vermek istiyorum")==="mind");
 const fd=C.cleanFood({name:" 1 dilim pizza ",kcal:"280",protein:"12,5"});

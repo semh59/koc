@@ -188,11 +188,14 @@ function cHistLog(m){
   const c=m.card;
   return c&&c.kind==="log"&&c.state==="ok"?c.items.slice(0,4).map(i=>({type:i.type,text:i.text,name:i.name,kcal:i.kcal,p:i.p,c:i.c,f:i.f,meal:i.meal||c.meal,min:i.min,ml:i.ml,kg:i.kg})):[];
 }
+/* Modele yalnız maskelenmiş metin gider; etiket tablosu dizinin .pii alanında kalır, yanıt cAsk'ta yerelde geri çevrilir. */
 function cMessages(extraUser,extraSys,noHist){
-  const sys=CoachLib.SYSTEM+(extraSys?"\n\nNOT: "+extraSys:"")+"\n\n"+CoachLib.contextText(cData());
-  const hist=noHist?[]:S.chat.filter(m=>m.role!=="sys"&&m.text).slice(-HIST_N).map(m=>({role:m.role==="user"?"user":"assistant",content:m.role==="user"?m.text.slice(0,300):JSON.stringify({reply:m.text.slice(0,260),log:cHistLog(m)})}));
+  const map={},mk=s=>PiiLib.mask(s,map).text;
+  const sys=CoachLib.SYSTEM+mk((extraSys?"\n\nNOT: "+extraSys:"")+"\n\n"+CoachLib.contextText(cData()));
+  const hist=noHist?[]:S.chat.filter(m=>m.role!=="sys"&&m.text).slice(-HIST_N).map(m=>({role:m.role==="user"?"user":"assistant",content:m.role==="user"?mk(m.text).slice(0,300):JSON.stringify({reply:mk(m.text).slice(0,260),log:cHistLog(m).map(i=>({...i,text:i.text&&mk(i.text),name:i.name&&mk(i.name)}))})}));
   const msgs=[{role:"system",content:sys}].concat(hist);
-  if(extraUser)msgs.push({role:"user",content:extraUser});
+  if(extraUser)msgs.push({role:"user",content:mk(extraUser)});
+  msgs.pii=map;
   return msgs;
 }
 
@@ -244,14 +247,34 @@ const BUDGET=60000,custAsked=new Set();
 const isCustom=p=>!defProviders().some(d=>d.id===p.id);
 const hostOf=p=>{try{return new URL(p.base).host}catch(e){return p.base}};
 /* Ücretsiz katman (Gemini) her gönderimde, özel sağlayıcı oturumda bir kez sorar; aynı gönderimin yeniden sorması tekrar sormaz (conf). */
-function sendOk(p,conf){
-  const cust=isCustom(p),k=p.id+"|"+p.base;
-  if(!p.confirm&&!(cust&&!custAsked.has(k)))return true;
+/* Önizleme açıksa ilk gönderimde tek pencere hem giden metni hem bu uyarıyı gösterir; onay ikisini birden verir (conf.prev). */
+async function sendOk(p,conf,msgs){
+  const cust=isCustom(p),k=p.id+"|"+p.base,need=p.confirm||(cust&&!custAsked.has(k));
+  const warn=need?(cust?`${p.name} senin eklediğin özel bir sağlayıcı (${hostOf(p)}). Sağlık verilerin ve anahtarın bu sunucuya gider; güvenmediğin bir adrese gönderme.`:`${p.name} ücretsiz katmanında istemler ürün geliştirmek için kullanılabilir. Sunucuları yurt dışında olan bu sağlayıcıya sağlık verileri gider.`):"";
+  if(conf.prev===undefined&&S.settings.piiPrev){
+    conf.prev=await cPreview(msgs,p,warn);
+    if(conf.prev&&need){conf[p.id]=true;if(cust)custAsked.add(k)}
+  }
+  if(conf.prev===false)return false;
+  if(!need)return true;
   if(conf[p.id]===undefined){
-    conf[p.id]=confirm(cust?`${p.name} senin eklediğin özel bir sağlayıcı (${hostOf(p)}). Sağlık verilerin ve anahtarın bu sunucuya gider; güvenmediğin bir adrese gönderme. Göndermeyi onaylıyor musun?`:`${p.name} ücretsiz katmanında istemler ürün geliştirmek için kullanılabilir. Sunucuları yurt dışında olan bu sağlayıcıya sağlık verilerini göndermeyi onaylıyor musun?`);
+    conf[p.id]=confirm(warn+" Göndermeyi onaylıyor musun?");
     if(conf[p.id]&&cust)custAsked.add(k);
   }
   return conf[p.id];
+}
+function cPreview(msgs,p,warn){
+  return new Promise(res=>{
+    const n=Object.keys(msgs.pii||{}).length;
+    openSheet(`<h3>Koç'a giden metin</h3><p class="mut sm">${esc(p.name)} sağlayıcısına tam olarak aşağıdaki metin gider.${n?` Kimlik bilgisi gibi duran ${n} parça maskelendi.`:""}</p>${warn?`<div class="banner"><p style="margin:0">${esc(warn)}</p></div>`:""}<pre style="white-space:pre-wrap;word-break:break-word;max-height:45vh;overflow:auto;font-size:12px;margin:8px 0" tabindex="0">${esc(msgs.map(m=>`[${m.role==="user"?"sen":m.role==="system"?"sistem":"koç"}]\n${m.content}`).join("\n\n"))}</pre><div class="two"><button class="btn" data-c="pvok">Gönder</button><button class="btn ghost" data-c="pvno">İptal</button></div>`);
+    sheetEnd=res;
+  });
+}
+const piiTold=new Set();
+function piiToast(msgs){
+  const nw=Object.values(msgs.pii||{}).filter(v=>!piiTold.has(v.toLowerCase()));
+  nw.forEach(v=>piiTold.add(v.toLowerCase()));
+  if(nw.length)toast(`Kimlik bilgisi gibi duran ${nw.length} parça maskelendi`);
 }
 async function cAsk(messages,maxTokens,o={}){
   if(!coachOn())throw new Error("consent");
@@ -260,10 +283,11 @@ async function cAsk(messages,maxTokens,o={}){
   let declined=false,tried=false;
   for(const p of list){
     if(Date.now()>=until)break;
-    if(!sendOk(p,conf)){declined=true;continue}
+    if(!await sendOk(p,conf,messages)){declined=true;continue}
+    piiToast(messages);
     tried=true;const t0=Date.now();
     try{
-      const text=await callProvider(p,keys[p.id],messages,maxTokens,{until});
+      const text=PiiLib.unmask(await callProvider(p,keys[p.id],messages,maxTokens,{until}),messages.pii);
       pstat[p.id]={s:"ok",t:Date.now(),ms:Date.now()-t0};return {text,provider:p};
     }catch(e){pFail(p.id,e)}
   }
@@ -586,7 +610,7 @@ const provOk=()=>{const c=(S.settings.consentP||"").split(","),k=getKeys();retur
 const coachOn=()=>S.settings.consent&&consentOk()&&provOk();
 function cAgeGuard(){if(S.settings.consent&&!consentOk()){Object.assign(S.settings,{consent:false,consentV:0,consentAt:""});toast(S.settings.age>0?"18 yaş altında Koç veri paylaşımı kapatıldı":"Yaş girilmediği için Koç veri paylaşımı kapatıldı")}}
 /* Tek metin kaynağı: uygulama içi onay ve docs/gizlilik-politikasi.md §5 aynı iki cümleyi taşır (app.test.js eşitliği sınar). Değişirse ikisini birlikte güncelle; gönderilen alanlar değiştiyse CONSENT_V'yi artır. */
-const CONSENT_SENT=`yazdığın mesajlar ve son ${HIST_N} sohbet mesajı (Koç yanıtları dahil); profilin (boy, yaş, cinsiyet, hareket düzeyi); sağlık notun; hedeflerin ve hesaplanan değerler (trend kilo, tahmini harcama, protein aralığı); son 14 günün kilo, yemek (kcal ve protein), su, spor ve adım özeti (varsa uyku ve ruh hali); bugünkü kayıtların (yemek adları, su, tartı, spor ve not metinleri); son 3 antrenman (hareket adları, en iyi set) ve bu haftaki bölge başına set sayıları; son 7 günün en çok 3 notu; ilaç modülü açıksa ilaç adı, doz, saatler, haftanın günleri, son 7 günün uyumu ve stok; menü ya da program istersen yazdığın istek notu ve menü kataloğunda kendi besin, favori ve şablon adların (kalori ve protein değerleriyle)`;
+const CONSENT_SENT=`yazdığın mesajlar ve son ${HIST_N} sohbet mesajı (Koç yanıtları dahil); profilin (boy, 5 yıllık yaş aralığı, cinsiyet, hareket düzeyi); sağlık notun; hedeflerin ve hesaplanan değerler (trend kilo, tahmini harcama, protein aralığı); son 14 günün kilo, yemek (kcal ve protein), su, spor ve adım özeti (varsa uyku ve ruh hali); bugünkü kayıtların (yemek adları, su, tartı, spor ve not metinleri); son 3 antrenman (hareket adları, en iyi set) ve bu haftaki bölge başına set sayıları; son 7 günün en çok 3 notu; ilaç modülü açıksa ilaç adı, doz, saatler, haftanın günleri, son 7 günün uyumu ve stok; menü ya da program istersen yazdığın istek notu ve menü kataloğunda kendi besin, favori ve şablon adların (kalori ve protein değerleriyle)`;
 const CONSENT_WHEN="Yalnız sen bir düğmeye bastığında gönderilir (mesaj gönder, yorum, menü ya da program iste); uygulama açılırken ya da arka planda kendiliğinden hiçbir şey gönderilmez.";
 const CONSENT_NOT="Tahlil, tansiyon, şeker, vücut ölçüleri, tarifler, oruç kayıtları, fotoğraf, konum ve yedek gönderilmez.";
 const consentHtml=()=>`<b>Koç ile veri paylaşımına açık rızan</b><ul style="margin:6px 0;padding-left:18px"><li><b>Ne gönderilir:</b> ${CONSENT_SENT}. ${CONSENT_NOT}</li><li><b>Ne zaman:</b> ${CONSENT_WHEN}</li><li><b>Kime:</b> seçtiğin sağlayıcıya (${esc(S.providers.filter(p=>p.on&&p.health).map(p=>p.name).join(", ")||"hiçbiri seçili değil")}), kendi anahtarınla. Sunucuları yurt dışındadır; bu bir yurt dışına aktarımdır.</li><li><b>Geri alma:</b> istediğin an Ayarlar > Gizlilik ve veri ya da Yapay zekâ koç bölümünden. Geri alınca yeni veri gitmez; önceden gönderilene sağlayıcının kendi politikası uygulanır.</li><li><b>Onay vermezsen</b> uygulama tam çalışır, yalnız Koç konuşmaz.</li></ul>${S.settings.consent&&consentOk()&&!provOk()?`<p><b>Sağlayıcı listen değişti.</b> Onayını verdiğinde bu sağlayıcılar yoktu; devam için yeniden onay ver.</p>`:""}${S.providers.some(p=>p.on&&p.health&&isCustom(p))?`<p><b>Özel sağlayıcı:</b> kendi eklediğin sunucuya (${esc(S.providers.filter(p=>p.on&&p.health&&isCustom(p)).map(p=>hostOf(p)).join(", "))}) verilerin ve anahtarın doğrudan gider; yalnız güvendiğin bir servis kullan.</p>`:""}${consentOk()?"":S.settings.age>0?`<p><b>18 yaş altı için Koç veri paylaşımı kapalıdır.</b></p>`:`<p><b>Koç için önce yaşını gir</b> (Ayarlar > Profil ve hedefler). Yaş bilinmeden Koç açılmaz.</p>`}`;
@@ -822,6 +846,7 @@ function cClick(v,el){
     case "askfood":{const q=foodAskQ.trim();if(q){closeSheet();tab="koc";render();cSend(`${q} kaç kalori? Bir porsiyon için tahmin et.`)}return}
     case "send":{const i=$("#cmsg");const t=i.value;i.value="";return cSend(t)}
     case "retry":offline=null;cFlush();return render();
+    case "pvok":case "pvno":{const e=sheetEnd;sheetEnd=null;closeSheet();if(e)e(a==="pvok");return}
     case "cmt":return cComment(p1);
     case "consent":return cConsent(true);
     case "revoke":return cConsent(false);
