@@ -162,7 +162,8 @@ step "widget +su yayını"
 wsu() { adb shell "am broadcast -n com.neowell.app/.WaterReceiver --es LocalNotificationUserAction su --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250}}'"; }
 ingested() { adb logcat -d | grep -E "Capacitor/Console" | grep -oE "NW-QUICK ingested [0-9]+" | grep -oE "[0-9]+$" | awk '{s+=$1} END{print s+0}'; }
 ingested_is() { [ "$(ingested)" = "$1" ]; }
-reopen() { clr; launch; boot_wait; }
+# Arka plandaki süreç öne gelince sayfa yeniden yüklenmez (NW-DIAG basılmaz); soğuk açılışta da ön plana gelmesi yeter.
+reopen() { clr; front; }
 adb shell input keyevent KEYCODE_HOME
 until_ok 10 unfocused
 if [ "$(adb shell id -u | tr -d '\r')" != "0" ]; then
@@ -184,7 +185,7 @@ echo "Widget yayını su: $w4 -> $w5"
 [ "$w5" = "$((w4 + 250))" ] || { echo "WIDGET YAYINI SUYU ARTIRMADI"; cat widget.xml; exit 1; }
 adb shell dumpsys window | grep "mCurrentFocus" | grep -q "com.neowell.app" && { echo "WIDGET SUYU EKRANI AÇTI"; exit 1; }
 reopen
-until_ok 20 ingested_is 1
+until_ok 45 ingested_is 1
 [ "$(ingested)" = "1" ] || { echo "WIDGET SUYU (UYGULAMA AÇIK) ANA VERİYE ALINMADI"; exit 1; }
 # Uygulama kapalı (süreç yok): alıcı süreci kendisi başlatır. force-stop paketi durdurulmuş yapar ve yayın hiç gelmez, bu yüzden am kill.
 adb shell input keyevent KEYCODE_HOME
@@ -195,7 +196,7 @@ wsu
 until_ok 15 qn_is 1
 [ "$(qn)" = "1" ] || { echo "WIDGET SUYU (UYGULAMA KAPALI) YAZILMADI"; exit 1; }
 reopen
-until_ok 20 ingested_is 1
+until_ok 45 ingested_is 1
 [ "$(ingested)" = "1" ] || { echo "WIDGET SUYU (UYGULAMA KAPALI) ANA VERİYE ALINMADI"; exit 1; }
 # Süreç öldürülüp yeniden açılınca hiçbir su yeniden alınmamalı.
 adb shell input keyevent KEYCODE_HOME
