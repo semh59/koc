@@ -334,7 +334,7 @@ input.in,select.in,.chip>button{min-height:44px}
   <button data-tab="daha"><span class="ic" data-ic="daha"></span>Daha fazla</button>
 </div></nav>
 <script>/* Büyük yazıda menü etiketleri sarılıp menü uzar; sabit konumlu parçalar --nx kadar yukarı kayar. */
-{const n=document.querySelector("nav .in");if(window.ResizeObserver)new ResizeObserver(()=>document.documentElement.style.setProperty("--nx",Math.max(0,n.offsetHeight-parseFloat(getComputedStyle(n.firstElementChild).minHeight))+"px")).observe(n)}</script>
+{const n=document.querySelector("nav .in");if(window.ResizeObserver)new ResizeObserver(()=>document.documentElement.style.setProperty("--nx",Math.max(0,n.getBoundingClientRect().height-parseFloat(getComputedStyle(n.firstElementChild).minHeight))+"px")).observe(n)}</script>
 <div id="composer" hidden role="region" aria-label="Koça yaz">
   <div class="chiprow"><button class="chip" data-act="su"><span data-ic="su"></span> +250</button><button class="chip" data-act="yemek"><span data-ic="yemek"></span> Yemek</button><button class="chip" data-act="kilo"><span data-ic="kilo"></span> Kilo</button><button class="chip" data-act="spor"><span data-ic="spor"></span> Spor</button></div>
   <div class="cin"><input id="cmsg" aria-label="Koça yaz" placeholder="Koça yaz" autocomplete="off" maxlength="600"><button id="csend" data-c="send" aria-label="Gönder" data-ic="send"></button></div>

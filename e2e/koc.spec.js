@@ -270,7 +270,7 @@ test.describe("Koç kimlik maskeleme",()=>{
     fake.st.reply=()=>JSON.stringify({reply:"Tamam.",log:[]});
     await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter",medOn:true},{entries:[...[0,1,2,3,4,5,6].map(i=>entry("kilo",80-i/10,"",{d:-i}))],meds:[{id:1,n:"Metformin",d:"500 mg",t:["08:00"],on:true}]}),keys:{groq:"gsk_test"}});
     await app.tab("koc");
-    const sysOf=async run=>{const k=fake.chats().length;await run();await expect.poll(()=>fake.chats().length).toBeGreaterThan(k);return fake.chats().at(-1).body.messages[0].content};
+    const sysOf=async run=>{await expect.poll(()=>page.evaluate("!busy")).toBe(true);const k=fake.chats().length;await run();await expect.poll(()=>fake.chats().length).toBeGreaterThan(k);return fake.chats().at(-1).body.messages[0].content};
     const all={sohbet:await sysOf(async()=>{await page.fill("#cmsg","Bugün kaç ml su içtim");await page.click("#csend")}),yorum:await sysOf(()=>page.evaluate("cComment('weekly')")),program:await sysOf(()=>page.evaluate("cProgram({d:3,m:45,q:'Salon',l:'Orta'})")),menü:await sysOf(()=>page.evaluate("cMenu()"))};
     for(const [k,t] of Object.entries(all)){expect(t,k).toContain("KULLANDIĞI İLAÇLAR (yalnız ad ve doz");expect(t,k).toContain("Metformin 500 mg");expect(t,k).toContain("KISIT:");if(k!=="yorum")expect(t,k).not.toContain("saatler 08:00")}
   });
