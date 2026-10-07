@@ -1,5 +1,5 @@
 "use strict";
-const {test,expect,state}=require("./fixtures");
+const {test,expect,state,entry}=require("./fixtures");
 
 const LOG=JSON.stringify({reply:"Not aldım.",log:[{type:"yemek",text:"2 yumurta",kcal:150,protein:12,carbs:1,fat:10,meal:"kah"}]});
 const open=app=>app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter"}),keys:{groq:"gsk_test"}});
@@ -251,6 +251,29 @@ test.describe("Koç kimlik maskeleme",()=>{
     await expect(page.locator("#view")).toContainText("Tamam.");
     expect(app.dialogs.length).toBe(0);
   });
+  test("son kapı: sohbet, yeniden sorma, yorum, program, menü ve doğrudan çağrıda giden gövdede ham kimlik yok",async({app,page,fake})=>{
+    const RAW=/0532|123 45 67|a\.b@posta|12345678901|Ahmet|TR33/;
+    let n=0;fake.st.reply=()=>++n===1?"düz yanıt":JSON.stringify({reply:"Selam [AD1].",log:[]});
+    await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter",healthNote:"Tel 0532 123 45 67, TC 12345678901"},{entries:[entry("not",0,"Ahmet aradı a.b@posta.com"),...[0,1,2,3,4,5,6].map(i=>entry("kilo",80-i/10,"",{d:-i}))]}),keys:{groq:"gsk_test"}});
+    await app.tab("koc");
+    const paths={};
+    const hit=async(name,run)=>{const k=fake.st.log.length;await run();await expect.poll(()=>fake.st.log.length).toBeGreaterThan(k);paths[name]=fake.st.log.slice(k).filter(x=>x.method==="POST").map(x=>JSON.stringify(x.body));expect(paths[name].length,name).toBeGreaterThan(0);paths[name].forEach(b=>expect(b,name).not.toMatch(RAW))};
+    await hit("sohbet+yeniden sorma",async()=>{await page.fill("#cmsg","Ben Ahmet, 0532 123 45 67, TC 12345678901, IBAN TR33 0006 1005 1978 6457 8413 26");await page.click("#csend");await expect(page.locator("#view")).toContainText("Selam Ahmet")});
+    expect(paths["sohbet+yeniden sorma"].length).toBe(2);
+    await hit("yorum",()=>page.evaluate("cComment('daily')"));
+    await hit("program",()=>page.evaluate("cProgram({d:3,m:45,q:'Salon',l:'Orta'})"));
+    await hit("menü",()=>page.evaluate("menuNote='Ahmet için, a.b@posta.com';cMenu()"));
+    await hit("doğrudan çağrı (probe/test)",()=>page.evaluate("callProvider(S.providers.find(p=>p.id==='groq'),'gsk_test',[{role:'system',content:'kural Ahmet 0532 123 45 67'},{role:'user',content:'Ahmet a.b@posta.com 12345678901 TR33 0006 1005 1978 6457 8413 26'}],50)"));
+    console.log("giden gövde yolları:",Object.entries(paths).map(([k,v])=>k+"="+v.length).join(", "));
+  });
+  test("ilaç kaydı olan kullanıcıda her istekte ad ve doz satırı gider (sohbet, menü, program, yorum)",async({app,page,fake})=>{
+    fake.st.reply=()=>JSON.stringify({reply:"Tamam.",log:[]});
+    await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter",medOn:true},{entries:[...[0,1,2,3,4,5,6].map(i=>entry("kilo",80-i/10,"",{d:-i}))],meds:[{id:1,n:"Metformin",d:"500 mg",t:["08:00"],on:true}]}),keys:{groq:"gsk_test"}});
+    await app.tab("koc");
+    const sysOf=async run=>{const k=fake.chats().length;await run();await expect.poll(()=>fake.chats().length).toBeGreaterThan(k);return fake.chats().at(-1).body.messages[0].content};
+    const all={sohbet:await sysOf(async()=>{await page.fill("#cmsg","Bugün kaç ml su içtim");await page.click("#csend")}),yorum:await sysOf(()=>page.evaluate("cComment('weekly')")),program:await sysOf(()=>page.evaluate("cProgram({d:3,m:45,q:'Salon',l:'Orta'})")),menü:await sysOf(()=>page.evaluate("cMenu()"))};
+    for(const [k,t] of Object.entries(all)){expect(t,k).toContain("KULLANDIĞI İLAÇLAR (yalnız ad ve doz");expect(t,k).toContain("Metformin 500 mg");expect(t,k).toContain("KISIT:");if(k!=="yorum")expect(t,k).not.toContain("saatler 08:00")}
+  });
   test("Gizlilik ve veri: anahtar varsayılan kapalı, açılınca kalıcı",async({app,page})=>{
     await openPrev(app,false);
     await page.evaluate("sheetPrivacy()");
@@ -271,7 +294,7 @@ test.describe("Koç bağlam bölümleri soruya göre gider",()=>{
     await openMed(app);
     await send(app,page,"Bugün kaç ml su içtim");
     await expect(page.locator("#view")).toContainText("Tamam.");
-    expect(sys(fake)).not.toContain("İLAÇLAR");expect(sys(fake)).toContain("HESAPLANAN");expect(sys(fake)).toContain("SON 14 GÜN");
+    expect(sys(fake)).not.toContain("İLAÇLAR (kullanıcının");expect(sys(fake)).toContain("HESAPLANAN");expect(sys(fake)).toContain("SON 14 GÜN");
     await page.fill("#cmsg","İlacımı unuttum ne yapayım");await page.click("#csend");
     await expect.poll(()=>fake.chats().length).toBe(2);
     expect(sys(fake)).toContain("İLAÇLAR");expect(sys(fake)).toContain("Metformin");expect(sys(fake)).toContain("HESAPLANAN");

@@ -293,6 +293,7 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
     }
     if(empty.length)L.push("boş günler (ayın günü, hiç veri yok): "+empty.join(", "));
     L.push("BUGÜN: "+(d.today.length?d.today.map(x=>oneLine(x,160)).join("; "):"kayıt yok")+` (saat ${d.now})`);
+    if(d.meds&&d.meds.length)L.push("KULLANDIĞI İLAÇLAR (yalnız ad ve doz; etkileşim/doz değişikliği önerme, hekime/eczacıya yönlendir): "+d.meds.map(m=>oneLine(m.n,24)+(m.d?" "+oneLine(m.d,12):"")).join(", "));
     if((all||hit.spor)&&d.workouts.length)L.push("SON ANTRENMANLAR: "+d.workouts.map(x=>oneLine(x,300)).join(" | "));
     if((all||hit.spor)&&d.weekSets&&Object.keys(d.weekSets).length)L.push("BU HAFTA TAMAMLANAN SET (bölgeye göre): "+Object.keys(d.weekSets).map(k=>k+" "+d.weekSets[k]).join(", "));
     if((all||hit.not)&&d.notes.length)L.push("SON NOTLAR: "+d.notes.map(x=>oneLine(x,100)).join(" | "));

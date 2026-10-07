@@ -189,7 +189,11 @@ function cHistLog(m){
   return c&&c.kind==="log"&&c.state==="ok"?c.items.slice(0,4).map(i=>({type:i.type,text:i.text,name:i.name,kcal:i.kcal,p:i.p,c:i.c,f:i.f,meal:i.meal||c.meal,min:i.min,ml:i.ml,kg:i.kg})):[];
 }
 /* Modele yalnız maskelenmiş metin gider; etiket tablosu dizinin .pii alanında kalır, yanıt cAsk'ta yerelde geri çevrilir. */
+/* Son kapı: sağlayıcıya giden her gövde buradan geçer; sabit kural metni hariç hepsi maskelenir (idempotent). Yemek adları ad filtresinden muaf ("annem Salata"). */
+let piiInit=false;
+const gate=m=>{if(!piiInit){PiiLib.deny(FOODS.map(f=>f.n));piiInit=true}return PiiLib.maskMsgs(m,CoachLib.SYSTEM)};
 function cMessages(extraUser,extraSys,noHist){
+  gate([]);
   const map={},mk=s=>PiiLib.mask(s,map).text;
   /* Bağlam bölümleri soruya göre seçilir: sohbette son 3 kullanıcı mesajı (konu devamı), program/menüde istek metni; yorum isteklerinde soru yok = hepsi. */
   const q=noHist?extraUser:extraUser?undefined:S.chat.filter(m=>m.role==="user"&&m.text).slice(-3).map(m=>m.text).join(" ");
@@ -209,7 +213,7 @@ async function callProvider(p,key,messages,maxTokens=700,o={}){
   if(ms<=0){const e=new Error("Süre doldu");e.kind="time";throw e}
   const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),ms);
   try{
-    const ant=p.id==="anthropic",r=await fetch(p.base.replace(/\/+$/,"")+(ant?"/messages":"/chat/completions"),{method:"POST",signal:ctl.signal,headers:Object.assign({"Content-Type":"application/json"},pHeaders(p,key)),body:JSON.stringify(pBody(p,messages,maxTokens))});
+    const ant=p.id==="anthropic",r=await fetch(p.base.replace(/\/+$/,"")+(ant?"/messages":"/chat/completions"),{method:"POST",signal:ctl.signal,headers:Object.assign({"Content-Type":"application/json"},pHeaders(p,key)),body:JSON.stringify(pBody(p,gate(messages),maxTokens))});
     if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;try{e.body=(await r.text()).slice(0,600)}catch(x){}throw e}
     const j=await r.json(),c=j&&j.choices&&j.choices[0],t=ant?(j&&Array.isArray(j.content)?j.content.filter(b=>b&&b.type==="text").map(b=>b.text).join(""):""):c&&c.message&&c.message.content;
     if(o.probe&&(ant?Array.isArray(j&&j.content):!!c))return "";
@@ -282,6 +286,7 @@ function piiToast(msgs){
 }
 async function cAsk(messages,maxTokens,o={}){
   if(!coachOn())throw new Error("consent");
+  messages=gate(messages);
   const keys=getKeys(),list=usable(),until=o.until||Date.now()+BUDGET,conf=o.conf||{};
   if(!list.length)throw new Error(hasKey()?"fail":"none");
   let declined=false,tried=false;
