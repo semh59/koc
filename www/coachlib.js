@@ -5,17 +5,27 @@ const CoachLib=(()=>{
 
   /* Uygulama tarafı güvenlik taraması: model yanıtından bağımsız çalışır. */
   const FLAGS=[
-    ["mind",/intihar|kendime zarar|kendimi öldür|ölmek istiyorum|yaşamak istemiyorum|kendimi kes|hayatıma son|ölsem iyi/],
-    ["emergency",/bayıl|göğüs(üm)? ağr|göğsüm sıkış|nefes darl|nefes alam|nefesim daral|felç|kan kus|kanlı kus|kolum uyuş|konuşam[ıi]yor|yüzüm kay/],
+    ["mind",/intihar|kendime zarar|kendimi öldür|ölmek istiyorum|yaşamak istemiyorum|kendimi kes|hayatıma son|ölsem iyi|canıma kıy|kendimi as(?:mak|ıcam|acağım)|kendimi yok et|yaşamak istemiyor/],
+    ["emergency",/bayılacak|bayılma|bayıldı(?!m)|göğüs(üm)? ağr|göğsüm sıkış|nefes darl|nefes alam|nefesim daral|felç|kan kus|kanlı kus|kolum uyuş|konuşam[ıi]yor|yüzüm kay/],
     ["ed",/yedikten sonra kus|kusmaya çalış|kusuyorum|tıkınıyorum|tıkınma|laksatif|yemek yemekten kork|günlerce aç|hiçbir şey yemiyorum|hiç yemiyorum|kilo vermek için kus|yemeyi bırak/],
     ["check",/baş(ım)? dön|başım dönüyor|çarpıntı|gözüm(ün önü)? karar|gözlerim karar|titreme|aşırı halsiz|çok halsiz/]
   ];
+  /* "baklavaya bayılıyorum" deyimdir; "bayıldım/bayılıyorum" yalnız yiyecek ya da sevgi bağlamı yoksa acil sayılır. */
+  const FAINT=/bayıl(?:ıyorum|ıyoruz|ırım|dım)/,LOVE=/yemek|yemeğ|baklava|pizza|çikolata|tatl|börek|kebap|dondurma|makarna|kahve|lezzet|müzik|film|dizi|şarkı|kitap|seni|sana|ona |sevgi|aşk|harika|güzel/;
+  const idiom=t=>LOVE.test(t)||/[a-zçğıöşü]{3,}(?:ya|ye)\s+bayıl/.test(t);
   function redFlag(text){
     const t=low(text);
-    for(const [lv,re] of FLAGS)if(re.test(t))return lv;
+    for(const [lv,re] of FLAGS){
+      if(re.test(t))return lv;
+      if(lv==="emergency"&&FAINT.test(t)&&!idiom(t))return lv;
+    }
     return null;
   }
-
+  const PREG=/hamileyim|hamile kal|hamilelik|gebeyim|gebe kal|emziriyorum|bebek bekliyorum/;
+  const pregnant=t=>PREG.test(low(t));
+  /* Satır sonu ve bölüm başlıkları etkisizleştirilir: kullanıcı metni sistem istemine veri olarak girer, talimat olarak değil. */
+  const HEAD=/KURALLAR|ÇIKTI|KISIT|HESAPLANAN|PROFİL|HEDEFLER|BUGÜN|İLAÇLAR|KATALOG|SON \d+ GÜN|SON ANTRENMANLAR|SON NOTLAR|SAĞLIK NOTU|MENÜ İSTEĞİ|NOT(?=\s*:)/g;
+  const oneLine=(x,n)=>String(x==null?"":x).replace(/[\r\n\u2028\u2029\t]+/g," ").replace(HEAD,m=>low(m)).replace(/\s+/g," ").trim().slice(0,n);
   /* Model çıktısını toleranslı ayrıştır. */
   /* İlk "{" ile dengelenen "}"; JSON'dan sonra gelen metindeki "}" ayrıştırmayı bozmasın. */
   function end(s,a){
@@ -30,37 +40,52 @@ const CoachLib=(()=>{
     return -1;
   }
   /* Kullanıcı yedi/içti/spor yaptı/tarttı dedi mi: model kayıt listesi döndürmediyse bir kez daha sorulur. */
-  const REPORT=/(yedim|yedik|içtim|ictim|ittim|yaptım|yaptim|koştum|kostum|yürüdüm|yurudum|çalıştım|calistim|tarttım|tarttim|kahvaltı yaptım|oynadım|oynadim|bisiklet|antrenman)/i;
-  const reported=t=>REPORT.test(String(t||""));
+  /* \b Türkçe harflerde çalışmaz; sözcük sınırı için harf olmayan komşu aranır. */
+  const QUESTION=/\?|(?<!\p{L})(?:nasıl|ne yesem|ne yemeli|ne yapmalı|olmalı|kaç|hangi|neden|niçin|m[ıiuü](?:yim|yız|sın)?)(?!\p{L})/u;
+  const REPORT=/yedim|yedik|yiyorum|yiyoruz|içtim|ictim|içiyorum|atıştırdım|atıştırıyorum|koştum|kostum|yürüdüm|yurudum|tarttım|tarttim|oynadım|oynadim|yüzdüm|bisiklete bindim|\d\s*(?:kg|kilo)\b|\d[\d.,]*\s*çektim|(?:spor|antrenman|egzersiz|idman|cross|yoga|pilates|kahvaltı|yemek|ağırlık|salon) (?:yaptım|yaptim|çalıştım)|(?:bacak|kol|sırt|göğüs|omuz|karın) (?:günü )?(?:yaptım|çalıştım)/;
+  const reported=t=>{t=low(t);return !QUESTION.test(t)&&REPORT.test(t)};
+  const BROKEN="Yanıt eksik geldi, lütfen tekrar dene.";
+  /* Kırpılmış JSON'dan yalnız kapanmış reply alanı çıkarılır; çıkmazsa ham metin sızmaz. */
+  const ob=(s,i)=>s.indexOf("{",i);
+  function partialReply(s){
+    const m=/"reply"\s*:\s*"((?:[^"\\]|\\.)*)"/.exec(s);
+    if(!m)return null;
+    try{return JSON.parse('"'+m[1]+'"').trim()}catch(e){return null}
+  }
   function parse(text){
     let s=String(text==null?"":text).trim();
     s=s.replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();
-    const a=s.indexOf("{"),b=a<0?-1:end(s,a);
-    if(b>a){
+    for(let a=ob(s,0);a>=0;a=ob(s,a+1)){
+      const b=end(s,a);
+      if(b<0)break;
       try{
         const o=JSON.parse(s.slice(a,b+1));
         if(o&&typeof o==="object"&&typeof o.reply==="string"){
           return {reply:o.reply.trim().slice(0,1500),log:Array.isArray(o.log)?o.log:[],propose:o.propose&&typeof o.propose==="object"?o.propose:null,flag:typeof o.flag==="string"?o.flag:null,food:o.food&&typeof o.food==="object"?o.food:null,program:o.program&&typeof o.program==="object"?o.program:null,menu:o.menu&&typeof o.menu==="object"?o.menu:null};
         }
       }catch(e){}
+      a=b;
     }
-    return {reply:s.replace(/[{}]/g,"").slice(0,1500),log:[],propose:null,flag:null,food:null,program:null,menu:null,plain:true};
+    const none={log:[],propose:null,flag:null,food:null,program:null,menu:null,plain:true};
+    if(/"reply"\s*:/.test(s)||ob(s,0)===0)return {...none,reply:partialReply(s)||BROKEN,broken:true};
+    return {...none,reply:s.replace(/[{}]/g,"").slice(0,1500)};
   }
 
   const num=(x,lo,hi)=>{const v=typeof x==="string"?parseFloat(x.replace(",",".")):x;return Number.isFinite(v)&&v>=lo&&v<=hi?v:null};
   /* Kayıt önerilerini doğrula. Geçersiz olanlar atılır, en fazla 12 kayıt. Yemekte gram, karbonhidrat, yağ ve öğün isteğe bağlı. */
   function cleanItems(items){
-    const out=[];
+    const out=[];let kc=0,sum=0;
     for(const it of (Array.isArray(items)?items:[]).slice(0,12)){
       if(!it||typeof it!=="object")continue;
       const day=it.day==="yesterday"?"yesterday":"today";
       if(it.type==="yemek"){
         const kcal=num(it.kcal,0,5000),text=String(it.text||"").trim().slice(0,120);
-        if(!text&&kcal==null)continue;
+        if(!text&&kcal==null||kc+(kcal||0)>6000)continue;
+        kc+=kcal||0;
         const o={type:"yemek",text,kcal,p:num(it.protein!=null?it.protein:it.p,0,300),day},g=num(it.g,1,5000),c=num(it.carbs!=null?it.carbs:it.c,0,2000),f=num(it.fat!=null?it.fat:it.f,0,1000);
         if(g!=null)o.g=Math.round(g);if(c!=null)o.c=Math.round(c*10)/10;if(f!=null)o.f=Math.round(f*10)/10;if(MEAL_KEYS.includes(it.meal))o.meal=it.meal;
         out.push(o);
-      }else if(it.type==="su"){const ml=num(it.ml,50,2000);if(ml!=null)out.push({type:"su",ml:Math.round(ml),day})}
+      }else if(it.type==="su"){const ml=num(it.ml,50,2000);if(ml!=null&&sum+ml<=5000){sum+=ml;out.push({type:"su",ml:Math.round(ml),day})}}
       else if(it.type==="kilo"){const kg=num(it.kg,20,400);if(kg!=null)out.push({type:"kilo",kg:Math.round(kg*10)/10,day})}
       else if(it.type==="spor"){const min=num(it.min,1,600),k=num(it.kcal,0,3000);if(min!=null){const o={type:"spor",min:Math.round(min),name:String(it.name||"Spor").trim().slice(0,40)||"Spor",day};if(k!=null)o.kcal=Math.round(k);out.push(o)}}
       else if(it.type==="not"){const text=String(it.text||"").trim().slice(0,300);if(text)out.push({type:"not",text,day})}
@@ -109,7 +134,7 @@ const CoachLib=(()=>{
           if(items.length>=8)break;
           let it=null;
           if(cat){
-            const [id,q0]=Array.isArray(x)?x:[x&&x.id,x&&x.q],c=typeof id==="string"?cat[id]:null;
+            const [id,q0]=Array.isArray(x)?x:[x&&x.id,x&&x.q],c=typeof id==="string"&&Object.hasOwn(cat,id)?cat[id]:null;
             if(!c)continue;
             const qv=typeof q0==='string'?parseFloat(q0.replace(',','.')):q0,q=Number.isFinite(qv)?Math.round(Math.min(4,Math.max(0.25,qv))*4)/4:1,sc=v=>v==null?null:r1(v*q);
             it={n:c.n,q,k:Math.round(c.k*q),p:sc(c.p),c:sc(c.c),f:sc(c.f),g:c.g?Math.round(c.g*q):null,a:c.a?r1(c.a*q):null};
@@ -139,7 +164,7 @@ const CoachLib=(()=>{
   const LV=["Başlangıç","Orta","İleri"],EQ={"Salon":["Salon","Ev tipi","Ağırlıksız"],"Ev tipi":["Ev tipi","Ağırlıksız"],"Ağırlıksız":["Ağırlıksız"]};
   /* Program kataloğu yalnız program isteğinde gider: bağlam küçük kalsın diye bölge başına 4, en fazla 60 egzersiz; önce klasikler ve seçilen seviye. */
   function catalog(list,o,prio){
-    const eq=EQ[o.q]||EQ.Salon,lv=Math.max(0,LV.indexOf(o.l)),pr=new Set(prio),rank=e=>(pr.has(e.id)?0:2)+(e.l===o.l?0:1),n={},out=[];
+    const eq=Object.hasOwn(EQ,o.q)?EQ[o.q]:EQ.Salon,lv=Math.max(0,LV.indexOf(o.l)),pr=new Set(prio),rank=e=>(pr.has(e.id)?0:2)+(e.l===o.l?0:1),n={},out=[];
     for(const e of list.filter(e=>(e.k==="w"||e.k==="b")&&eq.includes(e.q)&&LV.indexOf(e.l)<=lv).sort((a,b)=>rank(a)-rank(b))){
       const r=e.r||e.g;n[r]=(n[r]||0)+1;
       if(n[r]<=4&&out.length<60)out.push(e);
@@ -195,8 +220,13 @@ const CoachLib=(()=>{
     if(name==="AbortError")return "time";
     if(!status)return "net";
     if(status===401||status===403||(status===400&&/api[ _-]?key|unauthori|credential/i.test(b)))return "key";
-    if(status===402||(status===429&&/quota|billing|credit|insufficient/i.test(b)))return "quota";
-    if(status===429)return "limit";
+    /* Gemini ve OpenAI hem dakikalık hız sınırını hem kotayı 429 ile döner: gün/bakiye sözcüğü kota, dakikalık sözcük geçici limit. */
+    if(status===402||(status===400&&/credit balance|billing|insufficient/i.test(b)))return "quota";
+    if(status===429){
+      if(/per ?day|daily|billing|credit|insufficient/i.test(b))return "quota";
+      if(/per ?minute|retry in|retrydelay|rate.?limit|too many/i.test(b))return "limit";
+      return /quota/i.test(b)?"quota":"limit";
+    }
     if(status===404||status===410||((status===400||status===422)&&/model/i.test(b)&&/not.?found|not exist|invalid|unknown|not supported|decommission|no endpoints/i.test(b)))return "model";
     if(status>=500)return "down";
     return "err";
@@ -232,7 +262,7 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
   function contextText(d){
     const L=[];
     L.push("PROFİL: "+[d.profile.cm?d.profile.cm+" cm":null,d.profile.age?d.profile.age+" yaş":null,d.profile.sex==="m"?"erkek":d.profile.sex==="f"?"kadın":null,d.profile.act!=null?"hareket düzeyi "+["az","orta","çok"][d.profile.act]:null].filter(Boolean).join(", ")||"girilmemiş");
-    if(d.profile.note)L.push("SAĞLIK NOTU (kullanıcı yazdı): "+d.profile.note);
+    if(d.profile.note)L.push("SAĞLIK NOTU (kullanıcı yazdı): "+oneLine(d.profile.note,500));
     L.push(`HEDEFLER: kilo ${d.goals.kg||"yok"}, kalori ${d.goals.kcal||"yok"}, su ${d.goals.water} ml, spor ${d.goals.sport} dk/hafta`);
     const c=d.calc;
     L.push(`HESAPLANAN: trend kilo ${f1(c.trendKg)} kg, hız ${c.slope==null?"yetersiz veri":f1(c.slope)+" kg/hafta"}, tahmini harcama ${c.tdee?Math.round(c.tdee/10)*10+" kcal ("+c.source+")":"hesaplanamadı"}, önerilen hedef ${c.target||"–"} kcal, protein aralığı ${c.protein?c.protein[0]+"-"+c.protein[1]+" g":c.proteinDoc?"hekimle belirlenmeli (yüksek protein önerme)":"–"}`);
@@ -240,16 +270,16 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
     const hs=d.days.some(r=>r.sl),hm=d.days.some(r=>r.mo);
     L.push("SON 14 GÜN (gün | kilo | kcal | protein g | su ml | spor dk | adım"+(hs?" | uyku sa":"")+(hm?" | ruh hali 1-5":"")+"):");
     for(const r of d.days)L.push(`${r.d} | ${f1(r.kg)} | ${r.kcal||"–"} | ${r.p||"–"} | ${r.su||"–"} | ${r.sport||"–"} | ${r.ad||"–"}`+(hs?` | ${r.sl?f1(r.sl/60):"–"}`:"")+(hm?` | ${r.mo||"–"}`:""));
-    L.push("BUGÜN: "+(d.today.length?d.today.join("; "):"kayıt yok")+` (saat ${d.now})`);
-    if(d.workouts.length)L.push("SON ANTRENMANLAR: "+d.workouts.join(" | "));
+    L.push("BUGÜN: "+(d.today.length?d.today.map(x=>oneLine(x,160)).join("; "):"kayıt yok")+` (saat ${d.now})`);
+    if(d.workouts.length)L.push("SON ANTRENMANLAR: "+d.workouts.map(x=>oneLine(x,300)).join(" | "));
     if(d.weekSets&&Object.keys(d.weekSets).length)L.push("BU HAFTA TAMAMLANAN SET (bölgeye göre): "+Object.keys(d.weekSets).map(k=>k+" "+d.weekSets[k]).join(", "));
-    if(d.notes.length)L.push("SON NOTLAR: "+d.notes.join(" | "));
+    if(d.notes.length)L.push("SON NOTLAR: "+d.notes.map(x=>oneLine(x,100)).join(" | "));
     if(d.meds&&d.meds.length){
       L.push("İLAÇLAR (kullanıcının kendi girdiği hatırlatıcı kaydı; doz veya ilaç değişikliği önerme, ilaçla ilgili soruları hekime/eczacıya yönlendir; doz sayıları son 7 gün"+(d.meds.some(m=>m.a&&m.a.late)?"; 'bugün bekleyen' doz gün bitene kadar eklenebilir, kaçırılan değil":"")+"):");
-      for(const m of d.meds)L.push(`${m.n}${m.d?" "+m.d:""} | saatler ${m.t.join(", ")}${m.w?" | haftanın günleri "+m.w.join(","):""} | ${m.a?`${m.a.taken}/${m.a.total} alındı, ${m.a.missed} kaçırılan${m.a.late?`, ${m.a.late} bugün bekleyen`:""}${m.a.skipped?`, ${m.a.skipped} atlanan`:""}`:"doz yok"}${m.left!=null?` | stok ~${m.left} doz`:""}`);
+      for(const m of d.meds)L.push(`${oneLine(m.n,30)}${m.d?" "+oneLine(m.d,20):""} | saatler ${m.t.join(", ")}${m.w?" | haftanın günleri "+m.w.join(","):""} | ${m.a?`${m.a.taken}/${m.a.total} alındı, ${m.a.missed} kaçırılan${m.a.late?`, ${m.a.late} bugün bekleyen`:""}${m.a.skipped?`, ${m.a.skipped} atlanan`:""}`:"doz yok"}${m.left!=null?` | stok ~${m.left} doz`:""}`);
     }
     return L.join("\n");
   }
-  return {low,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText};
+  return {low,oneLine,pregnant,BROKEN,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText};
 })();
 if(typeof module!=="undefined")module.exports=CoachLib;

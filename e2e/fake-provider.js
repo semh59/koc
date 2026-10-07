@@ -2,7 +2,7 @@
 /* Sahte yapay zekâ sağlayıcısı (Node http). Tarayıcıdaki sağlayıcı adresleri page.route ile buraya yönlenir;
    gelen her istek kaydedilir. Davranış testten değiştirilir: model listesi, model başına hata, sohbet yanıtı. */
 const http=require("http");
-const HOSTS=["integrate.api.nvidia.com","api.groq.com","openrouter.ai","generativelanguage.googleapis.com","api.openai.com","api.anthropic.com"];
+const HOSTS=["integrate.api.nvidia.com","api.groq.com","openrouter.ai","generativelanguage.googleapis.com","api.openai.com","api.anthropic.com","custom.example"];
 const CORS={"access-control-allow-origin":"*","access-control-allow-headers":"*","access-control-allow-methods":"GET,POST,OPTIONS"};
 const json=(r,code,o)=>{r.writeHead(code,{"content-type":"application/json",...CORS});r.end(JSON.stringify(o))};
 const DEF_MODELS={
@@ -14,7 +14,7 @@ const DEF_MODELS={
   "api.anthropic.com":["claude-haiku-4-5","claude-sonnet-5-5"]
 };
 async function startFake(){
-  const st={log:[],models:{...DEF_MODELS},behave:{},reply:()=>JSON.stringify({reply:"Merhaba, buradayım."}),badKeys:[]};
+  const st={log:[],models:{...DEF_MODELS},behave:{},reply:()=>JSON.stringify({reply:"Merhaba, buradayım."}),badKeys:[],delay:0,finish:()=>"stop"};
   const srv=http.createServer((q,r)=>{
     let body="";q.on("data",d=>body+=d);q.on("end",()=>{
       const [,host,...rest]=q.url.split("/"),path="/"+rest.join("/");
@@ -33,13 +33,17 @@ async function startFake(){
       if(how==="plain404"){r.writeHead(404,{"content-type":"text/plain",...CORS});return r.end("404 page not found")}
       if(how==="410")return json(r,410,{error:{message:`The model ${model} has reached its end of life`}});
       if(how==="403")return json(r,403,{error:{message:"Authorization failed"}});
-      const probe=b&&Array.isArray(b.messages)&&b.messages.length===1&&/Sadece 'tamam' yaz/.test(b.messages[0].content);
-      const text=probe?"tamam":st.reply(b);
-      if(host==="api.anthropic.com")return json(r,200,{type:"message",content:[{type:"text",text}],stop_reason:"end_turn"});
-      if(how==="think")return json(r,200,{choices:[{message:{role:"assistant",content:null,reasoning_content:"Kullanıcı tamam yazmamı istiyor."},finish_reason:"length"}]});
-      json(r,200,{choices:[{message:{role:"assistant",content:text},finish_reason:"stop"}]});
+      if(st.delay&&!(b&&Array.isArray(b.messages)&&b.messages.length===1))return setTimeout(()=>answer(r,host,b,how),st.delay);
+      answer(r,host,b,how);
     });
   });
+  function answer(r,host,b,how){
+    const probe=b&&Array.isArray(b.messages)&&b.messages.length===1&&/Sadece 'tamam' yaz/.test(b.messages[0].content);
+    const text=probe?"tamam":st.reply(b);
+    if(host==="api.anthropic.com")return json(r,200,{type:"message",content:[{type:"text",text}],stop_reason:"end_turn"});
+    if(how==="think")return json(r,200,{choices:[{message:{role:"assistant",content:null,reasoning_content:"Kullanıcı tamam yazmamı istiyor."},finish_reason:"length"}]});
+    json(r,200,{choices:[{message:{role:"assistant",content:text},finish_reason:st.finish(b)}]});
+  }
   await new Promise(ok=>srv.listen(0,"127.0.0.1",ok));
   const url=`http://127.0.0.1:${srv.address().port}`;
   return {

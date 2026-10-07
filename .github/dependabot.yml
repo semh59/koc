@@ -1,0 +1,7 @@
+version: 2
+updates:
+  # Eylem sürümleri tam SHA'ya sabit; Dependabot SHA ve sürüm yorumunu birlikte günceller.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"

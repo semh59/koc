@@ -9,9 +9,19 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 const lsDel=k=>{try{localStorage.removeItem(k)}catch(e){}};
 const getKeys=()=>KEYS;
 const keysStored=()=>!!(lsGet(KEYS_ENC)||lsGet(KEYS_LS));
+const VAULT_WARN="Anahtarlar bu telefonda şifrelenemedi, düz saklanır";
+/* Telefonda kasa çalışmazsa düz metne kullanıcı izniyle düşülür; izin yoksa anahtar yalnız bu oturumda bellekte kalır. */
+let plainOk=lsGet("koc_keys_plain")==="1",plainNo=false,vaultWarned=false;
+const plainHas=()=>{try{return Object.keys(JSON.parse(lsGet(KEYS_LS)||"{}")).length>0}catch(e){return false}};
 async function persistKeys(){
   const j=JSON.stringify(KEYS);
-  if(vaultOn){try{lsSet(KEYS_ENC,(await KV().encrypt({text:j})).data);lsDel(KEYS_LS);return}catch(e){vaultOn=false}}
+  if(KV()){try{lsSet(KEYS_ENC,(await KV().encrypt({text:j})).data);lsDel(KEYS_LS);vaultOn=true;return}catch(e){vaultOn=false}}
+  if(KV()&&Object.keys(KEYS).length){
+    if(!plainOk&&!plainHas()){
+      if(plainNo||!confirm(VAULT_WARN+". Tamam: düz saklansın. İptal: anahtar yalnız bu oturumda kalır, uygulamayı kapatınca yeniden girersin."))return void(plainNo=true);
+      plainOk=true;lsSet("koc_keys_plain","1");
+    }else if(!vaultWarned){vaultWarned=true;toast(VAULT_WARN)}
+  }
   lsSet(KEYS_LS,j);
 }
 function setKey(id,k){if(k)KEYS[id]=k;else delete KEYS[id];return persistKeys()}
@@ -26,7 +36,8 @@ async function keysInit(){
     if(vaultOn&&(await kv.decrypt({data:lsGet(KEYS_ENC)})).text!==JSON.stringify(KEYS)){vaultOn=false;lsSet(KEYS_LS,JSON.stringify(KEYS))}
   }catch(e){vaultOn=false;if(!Object.keys(KEYS).length)readPlain();lsSet(KEYS_LS,JSON.stringify(KEYS))}
   console.log("NW-VAULT "+(vaultOn?"ok":"fail"));
-  if(lost)toast("Koç anahtarları bu telefonda okunamadı, yeniden gir");
+  if(lost)toast("Koç anahtarları bu telefonda okunamadı (kasa anahtarı geçersiz olmuş olabilir), yeniden gir");
+  else if(kv&&!vaultOn&&Object.keys(KEYS).length){vaultWarned=true;toast(VAULT_WARN)}
 }
 const defProviders=()=>[
   {id:"nvidia",name:"NVIDIA Build",base:"https://integrate.api.nvidia.com/v1",model:"nvidia/nemotron-3-super-120b-a12b",on:true,health:true,confirm:false},
@@ -50,10 +61,11 @@ let pstat={},cool={},busy=false,typing=false,offline=null;
 function cleanCoach(r){
   const provs=[],known=EXMERGED.map(e=>e.id).concat((Array.isArray(r.customEx)?r.customEx:[]).map(e=>e&&e.id).filter(i=>typeof i==="string"&&/^c\d+$/.test(i)));
   for(const p of (Array.isArray(r.providers)?r.providers:[])){
-    if(!p||typeof p.id!=="string"||!/^[a-z0-9]{1,16}$/.test(p.id)||typeof p.name!=="string"||typeof p.base!=="string"||!/^https:\/\/[^\s]+$/.test(p.base)||typeof p.model!=="string")continue;
+    if(!p||typeof p.id!=="string"||!/^[a-z0-9]{1,16}$/.test(p.id)||p.id in Object.prototype||typeof p.name!=="string"||typeof p.base!=="string"||!/^https:\/\/[^\s]+$/.test(p.base)||typeof p.model!=="string")continue;
     if(provs.some(x=>x.id===p.id))continue;
-    const model=DEAD_MODEL[p.id]===p.model?defProviders().find(d=>d.id===p.id).model:p.model.slice(0,100);
-    provs.push({id:p.id,name:p.name.slice(0,40),base:p.base.slice(0,200),model,on:p.on===true,health:p.health===true,confirm:p.confirm===true});
+    const def=defProviders().find(d=>d.id===p.id),model=DEAD_MODEL[p.id]===p.model?def.model:p.model.slice(0,100);
+    /* Hazır sağlayıcının adresi ana makine beyaz listesidir: yedek ya da bozuk kayıt anahtarı başka sunucuya yönlendiremez. */
+    provs.push({id:p.id,name:p.name.slice(0,40),base:def?def.base:p.base.slice(0,200),model,on:p.on===true,health:p.health===true,confirm:p.confirm===true});
   }
   /* Sonradan eklenen hazır sağlayıcılar eski kayda kapalı olarak eklenir. */
   if(provs.length)for(const d of defProviders())if(!provs.some(x=>x.id===d.id))provs.push(d);
@@ -64,9 +76,19 @@ function cleanCoach(r){
     if(msgs.length)chats.push({id:x.id,t:x.t,title:typeof x.title==="string"?x.title.slice(0,60):"Sohbet",msgs});
   }
   const top=Math.max(...chat.map(m=>m.id),...chats.flatMap(c=>c.msgs.map(m=>m.id)),0);
-  return {providers:provs.length?provs:defProviders(),chat,chats,cid:Math.max(1,top+1,Number.isInteger(r.cid)?r.cid:1)};
+  return {providers:provs.length?provs:defProviders(),chat,chats:trimChats(chats),cid:Math.max(1,top+1,Number.isInteger(r.cid)?r.cid:1)};
 }
-const CHATS_MAX=20;
+const CHATS_MAX=20,ARCH_MSGS=600,ARCH_CHARS=250000;
+/* Arşiv depolama kotasını doldurmasın: en yeni sohbetler kalır, toplam mesaj ve boyut sınırı aşılınca eskiler atılır (en yeni her zaman kalır). */
+function trimChats(list){
+  let n=0,ch=0;const out=[];
+  for(const c of list){
+    n+=c.msgs.length;ch+=JSON.stringify(c.msgs).length;
+    if(out.length&&(n>ARCH_MSGS||ch>ARCH_CHARS))break;
+    out.push(c);
+  }
+  return out.slice(0,CHATS_MAX);
+}
 function cleanChat(arr,known){
   const chat=[];
   for(const m of (Array.isArray(arr)?arr:[]).slice(-150)){
@@ -138,9 +160,14 @@ function cMeds(t,now){
   const nt=`${pad(now.getHours())}:${pad(now.getMinutes())}`,f=keyOff(-6);
   return S.meds.filter(m=>m.on).slice(0,8).map(m=>{const a=MedLib.adherence([m],S.medLog,f,t,t,nt),left=MedLib.stockLeft(m);return {n:m.n.slice(0,30),d:m.d&&m.d.slice(0,20),t:m.t,w:m.w,a:a.total||a.late?a:null,left}});
 }
+/* Geçmişe yalnız uygulanan kayıt kartı girer (reddedilen ya da bekleyen "yapıldı" gibi görünmesin); makro ve öğünle birlikte. */
+function cHistLog(m){
+  const c=m.card;
+  return c&&c.kind==="log"&&c.state==="ok"?c.items.slice(0,4).map(i=>({type:i.type,text:i.text,name:i.name,kcal:i.kcal,p:i.p,c:i.c,f:i.f,meal:i.meal||c.meal,min:i.min,ml:i.ml,kg:i.kg})):[];
+}
 function cMessages(extraUser,extraSys,noHist){
   const sys=CoachLib.SYSTEM+(extraSys?"\n\nNOT: "+extraSys:"")+"\n\n"+CoachLib.contextText(cData());
-  const hist=noHist?[]:S.chat.filter(m=>m.role!=="sys"&&m.text).slice(-10).map(m=>({role:m.role==="user"?"user":"assistant",content:m.role==="user"?m.text.slice(0,300):JSON.stringify({reply:m.text.slice(0,260),log:m.card&&m.card.kind==="log"?m.card.items.slice(0,2).map(i=>({type:i.type,text:i.text,name:i.name,kcal:i.kcal,min:i.min,ml:i.ml,kg:i.kg})):[]})}));
+  const hist=noHist?[]:S.chat.filter(m=>m.role!=="sys"&&m.text).slice(-10).map(m=>({role:m.role==="user"?"user":"assistant",content:m.role==="user"?m.text.slice(0,300):JSON.stringify({reply:m.text.slice(0,260),log:cHistLog(m)})}));
   const msgs=[{role:"system",content:sys}].concat(hist);
   if(extraUser)msgs.push({role:"user",content:extraUser});
   return msgs;
@@ -150,14 +177,17 @@ function cMessages(extraUser,extraSys,noHist){
 /* probe: kurulum denemesi. HTTP 200 ve geçerli yanıt gövdesi yeter; düşünen model sınırda metinsiz dönebilir (content null, reasoning_content dolu).
    Sohbette metin boş ve sınır dolduysa (düşünme bütçeyi yedi) bir kez üç katı sınırla yeniden sorulur. */
 async function callProvider(p,key,messages,maxTokens=700,o={}){
-  const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),o.ms||40000);
+  const ms=Math.min(o.ms||40000,o.until?o.until-Date.now():Infinity);
+  if(ms<=0){const e=new Error("Süre doldu");e.kind="time";throw e}
+  const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),ms);
   try{
     const ant=p.id==="anthropic",r=await fetch(p.base.replace(/\/+$/,"")+(ant?"/messages":"/chat/completions"),{method:"POST",signal:ctl.signal,headers:Object.assign({"Content-Type":"application/json"},pHeaders(p,key)),body:JSON.stringify(pBody(p,messages,maxTokens))});
     if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;try{e.body=(await r.text()).slice(0,600)}catch(x){}throw e}
     const j=await r.json(),c=j&&j.choices&&j.choices[0],t=ant?(j&&Array.isArray(j.content)?j.content.filter(b=>b&&b.type==="text").map(b=>b.text).join(""):""):c&&c.message&&c.message.content;
     if(o.probe&&(ant?Array.isArray(j&&j.content):!!c))return "";
-    if(typeof t==="string"&&t.trim())return t;
-    if(!o.retried&&(ant?j&&j.stop_reason==="max_tokens":c&&c.finish_reason==="length")){clearTimeout(to);return callProvider(p,key,messages,maxTokens*3,Object.assign({},o,{retried:true}))}
+    const has=typeof t==="string"&&!!t.trim(),cut=ant?j&&j.stop_reason==="max_tokens":c&&c.finish_reason==="length";
+    if(has&&!(cut&&!o.retried&&CoachLib.parse(t).broken))return t;
+    if(!o.retried&&cut){clearTimeout(to);try{return await callProvider(p,key,messages,maxTokens*3,Object.assign({},o,{retried:true}))}catch(e){if(has)return t;throw e}}
     const e=new Error("Boş yanıt");e.kind="empty";throw e;
   }finally{clearTimeout(to)}
 }
@@ -180,22 +210,37 @@ function pBody(p,messages,maxTokens){
 const errOf=e=>{const kind=(e&&e.kind)||CoachLib.errKind(e&&e.status,e&&e.body,e&&e.name);return {kind,text:CoachLib.errText(kind,e&&e.status)}};
 function pFail(id,e){
   const {kind,text}=errOf(e);
-  if(kind==="limit")cool[id]=Date.now()+60000;else if(kind==="key"||kind==="quota")cool[id]=Date.now()+600000;
+  if(kind==="limit")cool[id]=Date.now()+60000;else if(kind==="time")cool[id]=Date.now()+30000;else if(kind==="key"||kind==="quota")cool[id]=Date.now()+600000;
   pstat[id]={s:kind==="limit"?"limit":kind==="key"?"key":"err",t:Date.now(),m:text};
   return text;
 }
 const usable=()=>{const k=getKeys();return S.providers.filter(p=>p.on&&p.health&&k[p.id]&&(!cool[p.id]||cool[p.id]<Date.now()))};
 const hasKey=()=>{const k=getKeys();return S.providers.some(p=>p.on&&p.health&&k[p.id])};
-async function cAsk(messages,maxTokens){
+/* İstek başına toplam süre bütçesi: zincir, uzunluk yeniden denemesi ve yeniden sorma bu süreyi paylaşır. */
+const BUDGET=60000,custAsked=new Set();
+const isCustom=p=>!defProviders().some(d=>d.id===p.id);
+const hostOf=p=>{try{return new URL(p.base).host}catch(e){return p.base}};
+/* Ücretsiz katman (Gemini) her gönderimde, özel sağlayıcı oturumda bir kez sorar; aynı gönderimin yeniden sorması tekrar sormaz (conf). */
+function sendOk(p,conf){
+  const cust=isCustom(p),k=p.id+"|"+p.base;
+  if(!p.confirm&&!(cust&&!custAsked.has(k)))return true;
+  if(conf[p.id]===undefined){
+    conf[p.id]=confirm(cust?`${p.name} senin eklediğin özel bir sağlayıcı (${hostOf(p)}). Sağlık verilerin ve anahtarın bu sunucuya gider; güvenmediğin bir adrese gönderme. Göndermeyi onaylıyor musun?`:`${p.name} ücretsiz katmanında istemler ürün geliştirmek için kullanılabilir. Sunucuları yurt dışında olan bu sağlayıcıya sağlık verilerini göndermeyi onaylıyor musun?`);
+    if(conf[p.id]&&cust)custAsked.add(k);
+  }
+  return conf[p.id];
+}
+async function cAsk(messages,maxTokens,o={}){
   if(!coachOn())throw new Error("consent");
-  const keys=getKeys(),list=usable();
+  const keys=getKeys(),list=usable(),until=o.until||Date.now()+BUDGET,conf=o.conf||{};
   if(!list.length)throw new Error(hasKey()?"fail":"none");
   let declined=false,tried=false;
   for(const p of list){
-    if(p.confirm&&!confirm(`${p.name} ücretsiz katmanında istemler ürün geliştirmek için kullanılabilir. Sunucuları yurt dışında olan bu sağlayıcıya sağlık verilerini göndermeyi onaylıyor musun?`)){declined=true;continue}
+    if(Date.now()>=until)break;
+    if(!sendOk(p,conf)){declined=true;continue}
     tried=true;const t0=Date.now();
     try{
-      const text=await callProvider(p,keys[p.id],messages,maxTokens);
+      const text=await callProvider(p,keys[p.id],messages,maxTokens,{until});
       pstat[p.id]={s:"ok",t:Date.now(),ms:Date.now()-t0};return {text,provider:p};
     }catch(e){pFail(p.id,e)}
   }
@@ -206,24 +251,40 @@ async function cAsk(messages,maxTokens){
 function cSend(text){
   text=String(text||"").trim().slice(0,600);if(!text)return;
   const fl=CoachLib.redFlag(text),m=cPush({role:"user",text,pend:true});
+  if(fl==="ed")cRisk("ed");
+  if(CoachLib.pregnant(text))cRisk("preg");
   if(fl){
     cPush({role:"coach",text:"",card:{kind:"safety",level:fl}});
     if(fl==="emergency"||fl==="mind")m.pend=false;else m.fl=fl;
   }
   save();render();cFlush();
 }
+/* Sohbette görülen yeme düzeni ya da hamilelik işareti kalıcı frendir: yeni sohbet ya da silme kaldırmaz (riskInput okur). */
+const riskMerge=(a,b)=>[...new Set(((a||"")+","+(b||"")).split(",").filter(Boolean))].sort().join(",");
+function cRisk(k){S.settings.chatRisk=riskMerge(S.settings.chatRisk,k)}
+/* Sağlık notu kaydında ağır işaret (kendine zarar, acil belirti) varsa sohbette güvenlik kartı gösterilir. */
+function cNoteCheck(){
+  const f=CoachLib.redFlag(S.settings.healthNote);
+  if(f==="mind"||f==="emergency"){cPush({role:"coach",text:"",card:{kind:"safety",level:f}});toast("Notunda bir sağlık uyarısı işareti var, Koç sekmesine bak")}
+  if(f==="ed")cRisk("ed");
+  if(CoachLib.pregnant(S.settings.healthNote))cRisk("preg");
+}
 async function cFlush(){
   if(busy)return;
   const pend=S.chat.filter(m=>m.role==="user"&&m.pend);if(!pend.length)return;
   if(!coachOn()){render();return}
   busy=true;typing=true;render();
-  const fl=pend.map(m=>m.fl).find(Boolean);
+  const fl=pend.map(m=>m.fl).find(Boolean),ask={until:Date.now()+BUDGET,conf:{}};
   try{
-    const r=await cAsk(cMessages(null,fl?"Kullanıcı bir belirti ya da yeme zorluğu bildirdi ve güvenlik kartı gösterildi. Kısa, ihtiyatlı yanıt ver, kalori kısıtlaması önerme.":""));
+    const r=await cAsk(cMessages(null,fl?"Kullanıcı bir belirti ya da yeme zorluğu bildirdi ve güvenlik kartı gösterildi. Kısa, ihtiyatlı yanıt ver, kalori kısıtlaması önerme.":""),undefined,ask);
     let o=CoachLib.parse(r.text);
-    const said=pend[pend.length-1].text;
-    if(!fl&&(o.plain||(CoachLib.reported(said)&&!CoachLib.cleanItems(o.log).length&&!o.food&&!o.propose&&!o.program&&!o.menu))){
-      try{const r2=await cAsk(cMessages(null,"Önceki yanıt kurala uymadı. Yalnızca tek bir JSON nesnesi ver. Kullanıcı yediğini, içtiğini, tartıldığını ya da spor yaptığını yazdıysa bunu log listesine ekle (yemek: kcal ve makrolar, spor: min, name, kcal)."));const o2=CoachLib.parse(r2.text);if(!o2.plain&&CoachLib.cleanItems(o2.log).length)o=o2}catch(e2){}
+    const said=pend[pend.length-1].text,act=x=>CoachLib.cleanItems(x.log).length||x.food||x.propose||x.program||x.menu;
+    /* Tek yeniden sorma: doğru JSON her zaman kabul edilir; ikisi de bozuksa eksiksiz görünen ilk yanıt (ya da "yanıt eksik" iletisi) gösterilir. */
+    if(!fl&&(o.plain||(CoachLib.reported(said)&&!act(o)))&&ask.until-Date.now()>8000){
+      try{
+        const r2=await cAsk(cMessages(null,"Önceki yanıt kurala uymadı. Yalnızca tek bir JSON nesnesi ver. Kullanıcı yediğini, içtiğini, tartıldığını ya da spor yaptığını yazdıysa bunu log listesine ekle (yemek: kcal ve makrolar, spor: min, name, kcal)."),undefined,ask),o2=CoachLib.parse(r2.text);
+        if(o2.plain?o.broken&&!o2.broken:o.plain||act(o2))o=o2;
+      }catch(e2){}
     }
     pend.forEach(m=>{m.pend=false});offline=null;
     cReply(o);
@@ -232,6 +293,7 @@ async function cFlush(){
     else offline=e.message==="none"?"none":"fail";
   }
   busy=false;typing=false;save();render();
+  if(!offline&&S.chat.some(m=>m.role==="user"&&m.pend))cFlush();
 }
 /* Fren varken bakımın altındaki ya da bakımı bilinmeyen hedef açık olabilir; öneri de uygulama da durur. */
 const kcalBlocked=(k,c=cCalc())=>!!c.block&&!(c.tdee&&k>=c.tdee-50);
@@ -326,6 +388,8 @@ async function cProgram(o){
   if(busy)return;
   if(!coachOn()){tab="koc";render();return toast("Önce Koç'ta veri paylaşımını kabul et")}
   if(!usable().length)return toast("Koç için anahtar gerekli: Ayarlar > Koç");
+  const rk=risk();
+  if(rk.ed||rk.pregnant)return toast((rk.ed?"Yeme düzeniyle ilgili işaret gördüm":"Hamilelik ya da emzirme işareti var")+"; program önermiyorum, hekimine danış");
   const {ids,text}=cCatalog(o);
   cPush({role:"user",text:`Program iste: haftada ${o.d} gün, ${o.m} dk, ${o.q}, ${o.l}`});
   tab="koc";busy=true;typing=true;render();
@@ -342,7 +406,7 @@ async function cProgram(o){
 let menuNote="";
 /* Katalog: önce benim besinlerim, favoriler, şablonlar, kalan yer yerleşik listeden (kategorilere yayılmış). Toplam en çok 60 satır. */
 function cMenuCat(){
-  const cat={},lines=[],clean=t=>String(t).replace(/[|\r\n]+/g," ").trim().slice(0,30),nn=v=>v==null?null:v;
+  const cat={},lines=[],clean=t=>CoachLib.oneLine(String(t).replace(/[|]/g," "),30),nn=v=>v==null?null:v;
   const add=(id,n,k,p,c,f,g,a)=>{cat[id]={n:clean(n),k,p,c,f,g,a};lines.push(`${id}|${cat[id].n}${g?" "+g+" g":""}|${Math.round(k)}|${p==null?"?":Math.round(p)}`)};
   const per=(id,f,g)=>{const x=v=>v==null?null:v*g/100,m=f.u&&f.u[0][0].match(/^(\d+(?:[.,]\d+)?)\s*adet/);add(id,f.n,f.k*g/100,x(f.p),x(f.c),x(f.f),Math.round(g),m?+m[1].replace(",","."):null)};
   S.myFoods.slice(0,20).forEach((f,i)=>f.u?per("m"+i,f,f.u[0][1]):add("m"+i,f.n,f.k,nn(f.p),nn(f.c),nn(f.f),null,null));
@@ -378,7 +442,7 @@ async function cMenu(){
   if(busy)return;
   if(!coachOn()){tab="koc";render();return toast("Önce Koç'ta veri paylaşımını kabul et")}
   if(!usable().length)return toast("Koç için anahtar gerekli: Ayarlar > Koç");
-  const pl=cMenuPlan(),note=menuNote;
+  const pl=cMenuPlan(),note=CoachLib.oneLine(menuNote,200);
   if(pl.why)return toast(pl.why);
   if(CoachLib.redFlag(note))return toast("Notunda sağlık uyarısı işareti var, menü hazırlamıyorum; hekimine danış");
   const {cat,text}=cMenuCat(),p=pl.protein;
@@ -417,7 +481,7 @@ function weekSummary(endKey){
   const e=new Date(+endKey.slice(0,4),+endKey.slice(5,7)-1,+endKey.slice(8)),ks=[];
   for(let i=6;i>=0;i--)ks.push(dayKey(addDays(-i,e)));
   const w=weights(),ws=ks.filter(k=>w[k]!=null).map(k=>w[k]);
-  const kc=ks.map(k=>sum("yemek",k,k)).filter(x=>x>=800),su=ks.map(k=>sum("su",k,k)).filter(x=>x>0);
+  const td=cCalc().tdee,kc0=ks.map(k=>sum("yemek",k,k)).filter(x=>Algo.fullKcal(x,td)),kc=kc0.length>=Algo.MIN_AVG_DAYS?kc0:[],su=ks.map(k=>sum("su",k,k)).filter(x=>x>0);
   const logged=ks.filter(k=>S.entries.some(x=>x.day===k)).length,sp=sum("spor",ks[0],ks[6]);
   return {logged,n:ks.length,ws,avgKcal:kc.length?Math.round(kc.reduce((a,b)=>a+b,0)/kc.length):null,avgSu:su.length?Math.round(su.reduce((a,b)=>a+b,0)/su.length):null,sport:Math.round(sp),first:ws[0],last:ws[ws.length-1]};
 }
@@ -488,15 +552,20 @@ function cCard(m){
   ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="ok:${m.id}">${est?"Günlüğe ekle":onlySp?"Egzersizi ekle":"Onayla"}</button><button class="btn ghost" data-c="no:${m.id}">Vazgeç</button></div>`:`<div class="mut sm">${c.state==="ok"?"Kaydedildi":"Vazgeçildi"}</div>${c.state==="ok"&&est&&!c.saved?`<div class="lbtns"><button class="btn ghost" data-c="savefood:${m.id}">Yemeği listeme kaydet</button></div>`:""}`}</div>`;
 }
 /* Onay metni tek yerde: Koç ekranı ve Gizlilik ve veri aynı metni gösterir. Gönderilen alanlar değişirse CONSENT_V'yi artır. */
-const consentOk=()=>!(S.settings.age>0&&S.settings.age<18);
+const consentOk=()=>S.settings.age>=18;
+const ageMsg=()=>S.settings.age>0?"18 yaş altında Koç kapalı":"Koç için önce yaşını gir (Ayarlar > Profil)";
+/* Rıza, verinin gideceği sağlayıcı kümesine bağlıdır: anahtarı olan ve açık bir sağlayıcı rıza anındaki kümede değilse (ücretli ya da özel sağlayıcı sonradan açıldı) yeniden onay istenir. consentP yoksa eski rıza dört eski hazır sağlayıcıyı kapsar. */
+const LEGACY_P="gemini,groq,nvidia,openrouter";
+const provSet=()=>S.providers.filter(p=>p.on&&p.health).map(p=>p.id).sort().join(",");
+const provOk=()=>{const c=(S.settings.consentP==null?LEGACY_P:S.settings.consentP).split(","),k=getKeys();return S.providers.every(p=>!(p.on&&p.health&&k[p.id])||c.includes(p.id))};
 /* Yaş sonradan 18'in altına inerse (ayar, yedek) verilmiş onay da düşer; gönderim yolları coachOn'dan geçer. */
-const coachOn=()=>S.settings.consent&&consentOk();
-function cAgeGuard(){if(S.settings.consent&&!consentOk()){Object.assign(S.settings,{consent:false,consentV:0,consentAt:""});toast("18 yaş altında Koç veri paylaşımı kapatıldı")}}
+const coachOn=()=>S.settings.consent&&consentOk()&&provOk();
+function cAgeGuard(){if(S.settings.consent&&!consentOk()){Object.assign(S.settings,{consent:false,consentV:0,consentAt:""});toast(S.settings.age>0?"18 yaş altında Koç veri paylaşımı kapatıldı":"Yaş girilmediği için Koç veri paylaşımı kapatıldı")}}
 /* Tek metin kaynağı: uygulama içi onay ve docs/gizlilik-politikasi.md §5 aynı iki cümleyi taşır (app.test.js eşitliği sınar). Değişirse ikisini birlikte güncelle; gönderilen alanlar değiştiyse CONSENT_V'yi artır. */
 const CONSENT_SENT="yazdığın mesajlar ve son 10 sohbet mesajı (Koç yanıtları dahil); profilin (boy, yaş, cinsiyet, hareket düzeyi); sağlık notun; hedeflerin ve hesaplanan değerler (trend kilo, tahmini harcama, protein aralığı); son 14 günün kilo, yemek (kcal ve protein), su, spor ve adım özeti (varsa uyku ve ruh hali); bugünkü kayıtların (yemek adları, su, tartı, spor ve not metinleri); son 3 antrenman (hareket adları, en iyi set) ve bu haftaki bölge başına set sayıları; son 7 günün en çok 3 notu; ilaç modülü açıksa ilaç adı, doz, saatler, haftanın günleri, son 7 günün uyumu ve stok; menü ya da program istersen yazdığın istek notu ve menü kataloğunda kendi besin, favori ve şablon adların (kalori ve protein değerleriyle)";
 const CONSENT_WHEN="Yalnız sen bir düğmeye bastığında gönderilir (mesaj gönder, yorum, menü ya da program iste); uygulama açılırken ya da arka planda kendiliğinden hiçbir şey gönderilmez.";
 const CONSENT_NOT="Tahlil, tansiyon, şeker, vücut ölçüleri, tarifler, oruç kayıtları, fotoğraf, konum ve yedek gönderilmez.";
-const consentHtml=()=>`<b>Koç ile veri paylaşımına açık rızan</b><ul style="margin:6px 0;padding-left:18px"><li><b>Ne gönderilir:</b> ${CONSENT_SENT}. ${CONSENT_NOT}</li><li><b>Ne zaman:</b> ${CONSENT_WHEN}</li><li><b>Kime:</b> seçtiğin sağlayıcıya (${esc(S.providers.filter(p=>p.on&&p.health).map(p=>p.name).join(", ")||"hiçbiri seçili değil")}), kendi anahtarınla. Sunucuları yurt dışındadır; bu bir yurt dışına aktarımdır.</li><li><b>Geri alma:</b> istediğin an Ayarlar > Gizlilik ve veri ya da Yapay zekâ koç bölümünden. Geri alınca yeni veri gitmez; önceden gönderilene sağlayıcının kendi politikası uygulanır.</li><li><b>Onay vermezsen</b> uygulama tam çalışır, yalnız Koç konuşmaz.</li></ul>${consentOk()?"":`<p><b>18 yaş altı için Koç veri paylaşımı kapalıdır.</b></p>`}`;
+const consentHtml=()=>`<b>Koç ile veri paylaşımına açık rızan</b><ul style="margin:6px 0;padding-left:18px"><li><b>Ne gönderilir:</b> ${CONSENT_SENT}. ${CONSENT_NOT}</li><li><b>Ne zaman:</b> ${CONSENT_WHEN}</li><li><b>Kime:</b> seçtiğin sağlayıcıya (${esc(S.providers.filter(p=>p.on&&p.health).map(p=>p.name).join(", ")||"hiçbiri seçili değil")}), kendi anahtarınla. Sunucuları yurt dışındadır; bu bir yurt dışına aktarımdır.</li><li><b>Geri alma:</b> istediğin an Ayarlar > Gizlilik ve veri ya da Yapay zekâ koç bölümünden. Geri alınca yeni veri gitmez; önceden gönderilene sağlayıcının kendi politikası uygulanır.</li><li><b>Onay vermezsen</b> uygulama tam çalışır, yalnız Koç konuşmaz.</li></ul>${S.settings.consent&&consentOk()&&!provOk()?`<p><b>Sağlayıcı listen değişti.</b> Onayını verdiğinde bu sağlayıcılar yoktu; devam için yeniden onay ver.</p>`:""}${S.providers.some(p=>p.on&&p.health&&isCustom(p))?`<p><b>Özel sağlayıcı:</b> kendi eklediğin sunucuya (${esc(S.providers.filter(p=>p.on&&p.health&&isCustom(p)).map(p=>hostOf(p)).join(", "))}) verilerin ve anahtarın doğrudan gider; yalnız güvendiğin bir servis kullan.</p>`:""}${consentOk()?"":S.settings.age>0?`<p><b>18 yaş altı için Koç veri paylaşımı kapalıdır.</b></p>`:`<p><b>Koç için önce yaşını gir</b> (Ayarlar > Profil ve hedefler). Yaş bilinmeden Koç açılmaz.</p>`}`;
 /* Sohbeti siler, onaya dokunmaz. */
 function cClearChat(){S.chat=[];S.chats=[];save()}
 /* Ayrı sohbetler: açık sohbet geçmişe arşivlenir, yeni sohbet boş başlar; modele yalnız açık sohbet gider. */
@@ -504,7 +573,7 @@ const chatTitle=a=>{const u=a.find(m=>m.role==="user");return (u?u.text:"Sohbet"
 function cArchive(){
   if(!S.chat.some(m=>m.role==="user"))return;
   S.chats.unshift({id:Date.now(),t:S.chat[S.chat.length-1].t,title:chatTitle(S.chat),msgs:S.chat});
-  S.chats.splice(CHATS_MAX);
+  S.chats=trimChats(S.chats);
 }
 function cSwitchOk(){if(busy||typing||S.chat.some(m=>m.pend)){toast("Koç yanıt verirken sohbet değişmez");return false}return true}
 function cNewChat(){if(!cSwitchOk())return;cArchive();S.chat=[];save();render()}
@@ -516,11 +585,11 @@ function cOpenChat(id){
   save();closeSheet();render();cScroll();
 }
 function cChatList(){
-  openSheet(`<h3>Sohbet geçmişi</h3>${S.chats.length?S.chats.map(c=>`<div class="prow"><button class="lnk" style="flex:1;text-align:left" data-c="openchat:${c.id}"><b>${esc(c.title)}</b><span class="mut sm">${fd(dayKey(new Date(c.t)))}, ${c.msgs.filter(m=>m.role==="user").length} mesaj</span></button><button class="lnk" style="width:auto" data-c="delchat:${c.id}" aria-label="Sohbeti sil">Sil</button></div>`).join(""):`<p class="hint">Geçmiş sohbet yok. Yeni sohbet başlatınca eskisi burada saklanır.</p>`}<button class="btn ghost" data-g="closesheet">Kapat</button>`);
+  openSheet(`<h3>Sohbet geçmişi</h3>${S.chats.length?S.chats.map(c=>`<div class="prow"><button class="lnk" style="flex:1;text-align:left" data-c="openchat:${c.id}"><b>${esc(c.title)}</b><span class="mut sm">${fd(dayKey(new Date(c.t)))}, ${c.msgs.filter(m=>m.role==="user").length} mesaj</span></button><button class="lnk" style="width:auto" data-c="delchat:${c.id}" aria-label="Sohbeti sil: ${esc(c.title)}">Sil</button></div>`).join(""):`<p class="hint">Geçmiş sohbet yok. Yeni sohbet başlatınca eskisi burada saklanır.</p>`}<button class="btn ghost" data-g="closesheet">Kapat</button>`);
 }
 function cConsent(on){
   const s=S.settings;if(on&&!consentOk())return;
-  Object.assign(s,{consent:on,consentV:on?CONSENT_V:0,consentAt:on?dayKey():""});save();render();
+  Object.assign(s,{consent:on,consentV:on?CONSENT_V:0,consentAt:on?dayKey():"",consentP:on?provSet():null});save();render();
 }
 function viewKoc(){
   let h="";
@@ -530,7 +599,7 @@ function viewKoc(){
     const x=S.providers.filter(p=>pstat[p.id]&&pstat[p.id].s!=="ok").sort((a,b)=>pstat[b.id].t-pstat[a.id].t)[0];
     h+=`<div class="banner"><b>Koç şu an ulaşılamıyor</b>${x&&pstat[x.id].m?`<p>${esc(x.name)}: ${esc(pstat[x.id].m)}</p>`:""}<p>Su, kilo ve spor kaydı çalışıyor. Yemek tahmini bağlantı gelince yapılır.</p><button class="btn" data-c="retry">Yeniden dene</button></div>`;
   }
-  if(!S.settings.consent&&!intro)h+=`<div class="banner info">${consentHtml()}${consentOk()?`<button class="btn" data-c="consent">Açık rızamı veriyorum</button>`:""}<button class="lnk" data-pv="open">Gizlilik ve veri</button></div>`;
+  if(!coachOn()&&!intro)h+=`<div class="banner info">${consentHtml()}${consentOk()?`<button class="btn" data-c="consent">Açık rızamı veriyorum</button>`:""}<button class="lnk" data-pv="open">Gizlilik ve veri</button></div>`;
   if(S.chat.length||S.chats.length)h+=`<div class="chips">${S.chat.length?`<button class="chip" data-c="newchat">Yeni sohbet</button>`:""}${S.chats.length?`<button class="chip" data-c="chats">Geçmiş (${S.chats.length})</button>`:""}</div>`;
   if(!S.chat.length&&hasKey())h+=`<p class="hint">Bir şey yaz: "2 yumurta ve ekmek yedim", "83,7 çektim" ya da "bugün ne yapmalıyım?"</p>`;
   for(const m of S.chat){
@@ -564,7 +633,7 @@ function pStatus(p){
 }
 function viewProviders(){
   const rows=S.providers.map((p,i)=>{const [a,b]=pStatus(p);return `<button class="prow" data-c="prov:${p.id}"><span style="min-width:0"><b>${esc(p.name)}</b><span class="mut sm">${esc(p.model)}${b?", "+esc(b):""}</span></span><span class="tag">${a}</span></button>`}).join("");
-  return `<h2>Yapay zekâ koç</h2><div class="card"><button class="btn" data-c="setup">Anahtar ekle</button><p class="hint" style="padding:8px 0">Sırayla denenir. Limite takılırsa sıradaki devreye girer. Anahtarlar yalnızca bu telefonda durur, yedeğe dahil edilmez.</p>${rows}
+  return `<h2>Yapay zekâ koç</h2><div class="card"><button class="btn" data-c="setup">Anahtar ekle</button><p class="hint" style="padding:8px 0">Sırayla denenir. Limite takılırsa sıradaki devreye girer. Anahtarlar bu telefonda şifreli durur; yalnız parolalı yedeğe şifreli girer, düz hiçbir yere yazılmaz.</p>${rows}
   <div class="btns"><button class="btn ghost" data-c="addprov">Sağlayıcı ekle</button></div>
   <p class="hint">Veri paylaşımı: ${S.settings.consent?`kabul edildi (${fd(S.settings.consentAt)})`:"kabul edilmedi"}. ${S.settings.consent?`<button class="lnk" style="display:inline-block;width:auto" data-c="revoke">Geri al</button>`:""}</p>
   <div class="btns"><button class="btn danger" data-c="clearchat">Sohbeti temizle</button></div></div>`;
@@ -619,7 +688,7 @@ function suRender(){const b=$("#sbody");if(b)b.innerHTML=suBody()}
 /* 18 yaş altında kurulum da ağ çağrısı yapmaz; consent zinciri ayrıca sağlık verisini korur. */
 function suCheck(){
   const k=su.k.trim();
-  if(!consentOk())su.msg="18 yaş altında Koç kapalı.";
+  if(!consentOk())su.msg=ageMsg()+".";
   else if(k.length<8||/\s/.test(k))su.msg="Anahtar eksik ya da yanlış yapıştırılmış görünüyor.";
   else if(PAID.includes(CoachLib.keyProvider(k))&&CoachLib.keyProvider(k)!==su.id)su.msg="Bu anahtar seçili sağlayıcıya ait değil, gönderilmedi.";
   else return k;
@@ -646,7 +715,7 @@ async function suFetch(){
   }catch(e){su.models=null;su.msg=errOf(e).text}
   su.busy=false;suRender();
 }
-function suSave(p,k,model){p.model=model;p.on=p.health=true;setKey(p.id,k);delete cool[p.id];save();closeSheet();render()}
+function suSave(p,k,model){p.model=model;p.on=p.health=true;setKey(p.id,k);delete cool[p.id];save();closeSheet();render();if(S.settings.consent&&!provOk())toast("Yeni sağlayıcı için Koç ekranında veri paylaşımını yeniden onayla")}
 async function suTest(){
   const p=suProv(),k=p&&!su.busy&&suCheck();if(!k)return;
   const model=(su.model||p.model).trim().slice(0,100),t0=Date.now();
@@ -668,7 +737,7 @@ function cSheetProv(id){
   const k=getKeys()[id],builtin=defProviders().some(d=>d.id===id);
   const i=S.providers.indexOf(p);
   openSheet(`<h3>${esc(p.name)}</h3>
-  <div class="lbl">Adres</div><input class="in" id="pb" value="${esc(p.base)}" autocomplete="off" spellcheck="false" style="font-size:14px">
+  <div class="lbl">Adres</div><input class="in" id="pb" value="${esc(p.base)}" autocomplete="off" spellcheck="false" style="font-size:14px"${builtin?" readonly":""}>
   <div class="lbl">Model</div><input class="in" id="pm" value="${esc(p.model)}" autocomplete="off" spellcheck="false" style="font-size:14px"><div id="pmlist"></div>
   <div class="lbl">Anahtar</div><input class="in" id="pk" type="password" placeholder="${k?"••••"+esc(k.slice(-4)):"yapıştır"}" autocomplete="off" spellcheck="false" style="font-size:14px">
   <label class="chkrow"><input type="checkbox" id="pon" ${p.on?"checked":""}> Bu sağlayıcıyı kullan</label>
@@ -680,7 +749,7 @@ function cSheetProv(id){
 }
 function pRead(id){
   const p=S.providers.find(x=>x.id===id);
-  const base=$("#pb").value.trim(),model=$("#pm").value.trim();
+  const def=defProviders().find(d=>d.id===id),base=def?def.base:$("#pb").value.trim(),model=$("#pm").value.trim();
   if(!/^https:\/\/[^\s]+$/.test(base)){toast("Adres https:// ile başlamalı");return null}
   if(!model){toast("Model adı yaz");return null}
   p.base=base.slice(0,200);p.model=model.slice(0,100);p.on=$("#pon").checked;p.health=$("#ph").checked;
@@ -691,7 +760,7 @@ async function cProvClick(a,p1,p2){
   switch(a){
     case "prov":return cSheetProv(p1);
     case "addprov":
-      return openSheet(`<h3>Sağlayıcı ekle</h3><div class="lbl">OpenAI uyumlu bir servis (adres /chat/completions'ın bir üstü olmalı)</div><input class="in" id="an" placeholder="Ad" maxlength="40"><input class="in" id="ab" placeholder="https://.../v1" style="font-size:14px"><input class="in" id="am" placeholder="Model adı" style="font-size:14px"><button class="btn" data-c="mkprov">Ekle</button>`);
+      return openSheet(`<h3>Sağlayıcı ekle</h3><div class="lbl">OpenAI uyumlu bir servis (adres /chat/completions'ın bir üstü olmalı)</div><p class="hint">Dikkat: eklediğin sunucuya sağlık verilerin ve anahtarın gider. Yalnız güvendiğin bir servis ekle.</p><input class="in" id="an" placeholder="Ad" maxlength="40"><input class="in" id="ab" placeholder="https://.../v1" style="font-size:14px"><input class="in" id="am" placeholder="Model adı" style="font-size:14px"><button class="btn" data-c="mkprov">Ekle</button>`);
     case "mkprov":{
       const n=$("#an").value.trim(),b=$("#ab").value.trim(),m=$("#am").value.trim();
       if(!n||!m||!/^https:\/\/[^\s]+$/.test(b))return toast("Ad, https adres ve model gerekli");
@@ -699,14 +768,14 @@ async function cProvClick(a,p1,p2){
     }
     case "psave":{const p=pRead(p1);if(!p)return;closeSheet();render();return toast("Kaydedildi")}
     case "ptest":{
-      const p=pRead(p1);if(!p)return;const key=getKeys()[p1];if(!key)return toast("Önce anahtarı ekle");if(!consentOk())return toast("18 yaş altında Koç kapalı");
+      const p=pRead(p1);if(!p)return;const key=getKeys()[p1];if(!key)return toast("Önce anahtarı ekle");if(!consentOk())return toast(ageMsg());
       toast("Deneniyor…");const t0=Date.now();
       try{await probe(p,key,p.model);pstat[p1]={s:"ok",t:Date.now(),ms:Date.now()-t0};delete cool[p1];toast(`Çalışıyor, ${fmt((Date.now()-t0)/1000,1)} sn`)}
       catch(e){toast(pFail(p1,e))}
       render();return;
     }
     case "pmodels":{
-      const p=pRead(p1);if(!p)return;const key=getKeys()[p1];if(!key)return toast("Önce anahtarı ekle");if(!consentOk())return toast("18 yaş altında Koç kapalı");
+      const p=pRead(p1);if(!p)return;const key=getKeys()[p1];if(!key)return toast("Önce anahtarı ekle");if(!consentOk())return toast(ageMsg());
       try{
         const r=await fetch(pModelsUrl(p),{headers:pHeaders(p,key)});
         if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;try{e.body=await r.text()}catch(x){}throw e}
@@ -793,7 +862,11 @@ function cClick(v,el){
     case "newchat":return cNewChat();
     case "chats":return cChatList();
     case "openchat":return cOpenChat(+p1);
-    case "delchat":S.chats=S.chats.filter(c=>c.id!==+p1);save();render();return cChatList();
+    case "delchat":{
+      const i=S.chats.findIndex(c=>c.id===+p1);if(i<0)return;
+      const [x]=S.chats.splice(i,1);save();render();cChatList();
+      return toast("Sohbet silindi",()=>{if(!S.chats.some(c=>c.id===x.id)){S.chats.splice(Math.min(i,S.chats.length),0,x);S.chats=trimChats(S.chats);save();render();cChatList()}});
+    }
     case "clearchat":if(confirm("Sohbet geçmişi silinsin mi? Kayıtların silinmez.")){cClearChat();render()}return;
     default:return cProvClick(a,p1,p2);
   }

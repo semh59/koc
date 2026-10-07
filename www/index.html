@@ -387,19 +387,24 @@ const pad=n=>String(n).padStart(2,"0");
 const dayKey=(d=new Date())=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const addDays=(n,from=new Date())=>new Date(from.getFullYear(),from.getMonth(),from.getDate()+n);
 const keyOff=n=>dayKey(addDays(n));
+Algo.setClock(dayKey);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=(x,d=1)=>Number(x).toFixed(d).replace(".",",");
 const fmtS=(x,d=1)=>(x>0.049?"+":x<-0.049?"−":"")+fmt(Math.abs(x),d);
+/* Tüm metin bir sayı (+ isteğe bağlı birim) olmalı; "-30", "1e3", "12abc3", "1.5.2" sessizce başka sayıya dönmez, NaN olur.
+   Son ayırıcı ondalıktır, öncekiler binliktir ("1.234,5"); int'te tek ayırıcı + 3 hane binliktir ("1.500"), ondalıklı sayı ("1,5") yuvarlanmaz, NaN olur. */
 const num=(s,int)=>{
-  const m=String(s==null?"":s).match(/\d[\d.,]*/);if(!m)return NaN;
-  let t=m[0].replace(/[.,]+$/,"");
-  const last=Math.max(t.lastIndexOf(","),t.lastIndexOf("."));
-  if(last>=0){
-    const tail=t.length-last-1,both=t.includes(",")&&t.includes("."),n=(t.match(/[.,]/g)||[]).length;
-    const thousands=int?tail===3:(!both&&n>1);
-    t=thousands?t.replace(/[.,]/g,""):t.slice(0,last).replace(/[.,]/g,"")+"."+t.slice(last+1);
+  const m=String(s==null?"":s).trim().match(/^(\d[\d.,]*|[.,]\d+)\s*[^\d\s.,+\-]*\.?$/);if(!m)return NaN;
+  const t=m[1].replace(/[.,]+$/,""),seps=t.match(/[.,]/g)||[],last=Math.max(t.lastIndexOf(","),t.lastIndexOf(".")),grp=/^\d{1,3}([.,]\d{3})*$/;
+  let v;
+  if(!seps.length)v=+t;
+  else{
+    const head=t.slice(0,last),tail=t.slice(last+1);
+    if(seps.length>1&&new Set(seps).size===1)v=grp.test(t)?+t.replace(/[.,]/g,""):NaN;
+    else if(seps.length===1&&int&&tail.length===3&&/^\d{1,3}$/.test(head))v=+(head+tail);
+    else v=grp.test(head)||/^\d*$/.test(head)?+((head.replace(/[.,]/g,"")||"0")+"."+tail):NaN;
   }
-  const v=parseFloat(t);return isNaN(v)?NaN:(int?Math.round(v):v);
+  return isNaN(v)||(int&&!Number.isInteger(v))?NaN:v;
 };
 const AY=["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
 const GUN=["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
@@ -410,7 +415,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- veri ---------- */
 const DEF={
-  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
+  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,chatRisk:"",lastPlateau:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,fastOn:false,medShowName:true,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -435,13 +440,10 @@ const NLBL={p:"protein",c:"karbonhidrat",f:"yağ",fb:"lif",sg:"şeker",na:"sodyu
 const TYPES=["su","kilo","yemek","spor","not","adim"];
 const dayOk=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s);
 const timeOk=s=>typeof s==="string"&&/^([01]\d|2[0-3]):[0-5]\d$/.test(s);
-let corruptNote=false;
-/* Eski varsayılan metinler (özet üretilmese de "hazır" diyen, eski menü yolunu gösteren) değiştirilmemişse yeni varsayılan geçerli olsun. */
 /* Koç onay metni değiştiğinde artırılır: eski sürümle verilmiş onay geçersiz sayılır ve yeniden sorulur. */
 const CONSENT_V=2;
 const MED_NOTE="NeoWell tıbbi cihaz değildir, tanı koymaz ve tedavi önermez; hekim yerine geçmez. Sağlık kararların için hekimine danış.";
-const OLD_BODIES=["Haftanın özeti hazır, bakmak için dokun.","Yedeği Drive'a göndermek için Ayarlar > Yedeği Drive'a gönder."];
-function cleanSettings(raw,fast){
+function cleanSettings(raw){
   const d=structuredClone(DEF.settings),o=raw&&typeof raw==="object"?raw:{};
   for(const k in RANGES){
     const [lo,hi,int]=RANGES[k],v=o[k];
@@ -452,6 +454,8 @@ function cleanSettings(raw,fast){
   if(o.act===0||o.act===1||o.act===2)d.act=o.act;
   if(typeof o.healthNote==="string")d.healthNote=o.healthNote.slice(0,500);
   if(o.consent===true&&o.consentV===CONSENT_V&&!(d.age>0&&d.age<18)){d.consent=true;d.consentV=CONSENT_V;if(dayOk(o.consentAt))d.consentAt=o.consentAt}
+  if(d.consent&&typeof o.consentP==="string")d.consentP=o.consentP.slice(0,200);
+  if(/^(ed|preg|ed,preg)$/.test(o.chatRisk))d.chatRisk=o.chatRisk;
   if(dayOk(o.lastPlateau))d.lastPlateau=o.lastPlateau;
   if(dayOk(o.lastBackup))d.lastBackup=o.lastBackup;
   if(o.autoBk===true)d.autoBk=true;
@@ -464,8 +468,7 @@ function cleanSettings(raw,fast){
   if(o.bpOn===true)d.bpOn=true;
   if(o.bsOn===true)d.bsOn=true;
   if(o.medOn===true)d.medOn=true;
-  /* Oruç ayarı yokken oruç kullanmış eski veri, oruç satırını kaybetmesin. */
-  if(o.fastOn===true||(!("fastOn" in o)&&((f=>f.t0||f.log.length)(HabitLib.cleanFast(fast))||(Array.isArray(o.reminders)&&o.reminders.some(x=>x&&x.id===11&&x.on===true)))))d.fastOn=true;
+  if(o.fastOn===true)d.fastOn=true;
   if(o.motionOn===true)d.motionOn=true;
   if(o.fastInfoOk===true)d.fastInfoOk=true;
   if(o.fastLongOk===true)d.fastLongOk=true;
@@ -481,11 +484,21 @@ function cleanSettings(raw,fast){
   if(dayOk(o.stepsFrom))d.stepsFrom=o.stepsFrom;
   if(Array.isArray(o.reminders))for(const r of d.reminders){
     const x=o.reminders.find(y=>y&&y.id===r.id);
-    if(x){if(timeOk(x.t))r.t=x.t;if(typeof x.on==="boolean")r.on=x.on;if(typeof x.body==="string"&&x.body.trim().length>=5&&x.body.length<=110&&!OLD_BODIES.includes(x.body))r.body=x.body.trim()}
+    if(x){if(timeOk(x.t))r.t=x.t;if(typeof x.on==="boolean")r.on=x.on;if(typeof x.body==="string"&&x.body.trim().length>=5&&x.body.length<=110)r.body=x.body.trim()}
   }
   return d;
 }
-function cleanHealthState(r){const meds=MedLib.cleanMeds(r&&r.meds);return {meds,medLog:MedLib.cleanLog(r&&r.medLog,meds),moves:MotionLib.clean(r&&r.moves),measures:Algo.cleanMeasures(r&&r.measures),walk:Algo.cleanWalk(r&&r.walk,Date.now()),favFoods:LogLib.cleanFav(r&&r.favFoods),recipes:LogLib.cleanRecipes(r&&r.recipes),mealTpl:LogLib.cleanTpl(r&&r.mealTpl),fast:HabitLib.cleanFast(r&&r.fast),sleep:HabitLib.cleanSleep(r&&r.sleep),mood:HabitLib.cleanMood(r&&r.mood)}}
+let LOST=[];
+/* Alan alan yalıtılır: biri bozuksa yalnız o alan varsayılana döner, kalan veri korunur. */
+function cleanHealthState(r){
+  r=r||{};const o={},f=(k,fn)=>{try{o[k]=fn()}catch(e){LOST.push(k)}};
+  f("meds",()=>MedLib.cleanMeds(r.meds));
+  if(o.meds)f("medLog",()=>MedLib.cleanLog(r.medLog,o.meds));
+  f("moves",()=>MotionLib.clean(r.moves));f("measures",()=>Algo.cleanMeasures(r.measures));f("walk",()=>Algo.cleanWalk(r.walk,Date.now()));
+  f("favFoods",()=>LogLib.cleanFav(r.favFoods));f("recipes",()=>LogLib.cleanRecipes(r.recipes));f("mealTpl",()=>LogLib.cleanTpl(r.mealTpl));
+  f("fast",()=>HabitLib.cleanFast(r.fast));f("sleep",()=>HabitLib.cleanSleep(r.sleep));f("mood",()=>HabitLib.cleanMood(r.mood));
+  return o;
+}
 function cleanMyFoods(arr){
   const out=[],seen=new Set();
   for(const x of (Array.isArray(arr)?arr:[]).slice(0,200)){
@@ -502,7 +515,7 @@ function cleanMyFoods(arr){
   return out;
 }
 function cleanEntries(arr){
-  const out=[];let drop=0;
+  const out=[],seen=new Set();let drop=0,max=0;
   for(const e of arr){
     if(!e||typeof e!=="object"||!TYPES.includes(e.type)||!dayOk(e.day)){drop++;continue}
     const v=e.v==null?null:Number(e.v);
@@ -510,42 +523,81 @@ function cleanEntries(arr){
       (e.type==="kilo"&&!(v>=20&&v<=400))||(e.type==="su"&&!(v>0&&v<=10000))||
       (e.type==="spor"&&!(v>0&&v<=600))||(e.type==="adim"&&!(v>0&&v<=200000))||(e.type==="yemek"&&v!=null&&!(v>=0&&v<=20000));
     if(bad){drop++;continue}
-    const ne={id:0,day:e.day,time:timeOk(e.time)?e.time:"00:00",type:e.type,v:e.type==="not"?null:v,text:typeof e.text==="string"?e.text.slice(0,500):""};
+    const id=Number.isInteger(e.id)&&e.id>0&&!seen.has(e.id)?e.id:0;
+    if(id){seen.add(id);max=Math.max(max,id)}
+    const ne={id,day:e.day,time:timeOk(e.time)?e.time:"00:00",type:e.type,v:e.type==="not"?null:v,text:typeof e.text==="string"?e.text.slice(0,500):""};
     if(Number.isInteger(e.wid))ne.wid=e.wid;
-    if(e.type==="spor"){if(Number.isInteger(e.kcal)&&e.kcal>=0&&e.kcal<=5000)ne.kcal=e.kcal;if(typeof e.km==="number"&&e.km>=0&&e.km<=100)ne.km=Math.round(e.km*100)/100}
+    if(e.type==="spor"){if(e.bt===true)ne.bt=true;if(Number.isInteger(e.kcal)&&e.kcal>=0&&e.kcal<=5000)ne.kcal=e.kcal;if(typeof e.km==="number"&&e.km>=0&&e.km<=100)ne.km=Math.round(e.km*100)/100}
     if(e.type==="yemek"){copyNutr(e,ne);if(LogLib.mealKey(e.meal))ne.meal=e.meal;if(ne.v!=null&&Number.isInteger(e.lo)&&Number.isInteger(e.hi)&&e.lo>=0&&e.lo<=ne.v&&ne.v<=e.hi&&e.hi<=20000){ne.lo=e.lo;ne.hi=e.hi}}
     out.push(ne);
   }
-  out.forEach((e,i)=>e.id=i+1);
-  return {out,drop};
+  for(const e of out)if(!e.id)e.id=++max;
+  return {out,drop,next:max+1};
 }
+/* Yedek ve açılış aynı temizliği kullanır. Atılan öğe sayısı DROPS.n'de, okunamayıp varsayılana dönen alanlar LOST'ta toplanır. */
+const DROPS={n:0};
+function buildState(r){
+  DROPS.n=0;LOST=[];
+  const parts=[["ayarlar",()=>({settings:cleanSettings(r.settings)})],
+    ["kayıtlar",()=>{const c=cleanEntries(r.entries);DROPS.n+=c.drop;return {entries:c.out,nextId:c.next}}],
+    ["besinler",()=>({myFoods:cleanMyFoods(r.myFoods)})],["tahliller",()=>({labs:LabLib.cleanLabs(r.labs)})],["ölçümler",()=>({vitals:VitalsLib.clean(r.vitals)})],
+    ["sağlık",()=>cleanHealthState(r)],["antrenman",()=>cleanGym(r)],["Koç",()=>cleanCoach(r)]];
+  const st=structuredClone(DEF);
+  for(const [k,fn] of parts)try{Object.assign(st,fn())}catch(e){LOST.push(k)}
+  const wids=new Set(st.workouts.map(w=>w.id));
+  for(const e of st.entries)if(e.wid!=null&&!wids.has(e.wid))delete e.wid;
+  return {S:st,drop:DROPS.n,lost:[...new Set(LOST)]};
+}
+/* Okunamayan kayıt silinmez: save() kilitlenir, kullanıcı ham veriyi dışa aktarır ya da bilerek boş başlar. */
+let recovery=null,loadNote="";
+function rawCopy(raw){try{localStorage.setItem("koc_v1_bozuk",raw);return true}catch(e){return false}}
 let S=load();
 function load(){
-  let raw=null;
+  let raw=null,r=null;recovery=null;
   try{raw=localStorage.getItem("koc_v1")}catch(e){}
   if(raw==null)return structuredClone(DEF);
-  try{
-    const r=JSON.parse(raw);
-    if(r&&Array.isArray(r.entries)){
-      const {out}=cleanEntries(r.entries);
-      return Object.assign({settings:cleanSettings(r.settings,r.fast),entries:out,nextId:out.length+1,myFoods:cleanMyFoods(r.myFoods),labs:LabLib.cleanLabs(r.labs),vitals:VitalsLib.clean(r.vitals)},cleanHealthState(r),cleanGym(r),cleanCoach(r));
-    }
-  }catch(e){}
-  try{localStorage.setItem("koc_v1_bozuk",raw)}catch(e){}
-  corruptNote=true;
-  return structuredClone(DEF);
+  try{r=JSON.parse(raw)}catch(e){}
+  if(!r||!Array.isArray(r.entries)){recovery={raw};return structuredClone(DEF)}
+  const b=buildState(r);
+  if(b.drop||b.lost.length){
+    const kept=rawCopy(raw);
+    loadNote=[b.drop?`${b.drop} geçersiz kayıt atıldı`:"",b.lost.length?`okunamayan alanlar varsayılana döndü (${b.lost.join(", ")})`:""].filter(Boolean).join("; ")+(kept?". Eski hali ayrı bir kopyada, Ayarlar > Veri ve yedek'ten alınabilir.":". Eski hali saklanamadı (depolama dolu).");
+  }
+  return b.S;
 }
 /* localStorage tarayıcıya göre 5-10 MB; JS dizesi UTF-16 olduğu için karakter başına 2 bayt sayılır. Yedek öncesi kopya gibi diğer anahtarlar da aynı kotadan yer. */
 const STORE_WARN=3.5e6;
-const lsOther=()=>{let n=0;try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!["koc_v1","koc_v1_onceki","koc_v1_bozuk"].includes(k))n+=(k.length+(localStorage.getItem(k)||"").length)*2}}catch(e){}return n};
+const lsOther=()=>{let n=0;try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k!=="koc_v1")n+=(k.length+(localStorage.getItem(k)||"").length)*2}}catch(e){}return n};
 let saveFail=false,otherBytes=lsOther(),storeBytes=otherBytes+JSON.stringify(S).length*2;
 /* Yazılamazsa değişiklik bellekte kalır: her seferinde söylenir, Bugün ve Ayarlar'da kalıcı uyarı çıkar, yedek ekranı bellekteki hali alır. */
+const ARC_MAX=1.5e6; // arşiv sohbetlerinin JSON karakter sınırı: 20 sohbet x 150 mesaj x 1500 karakter ~9,8 MB'a çıkabilir
+let lastJ="";
 function save(){
-  const j=JSON.stringify(S);storeBytes=otherBytes+j.length*2;
+  if(recovery)return false;
+  let j=JSON.stringify(S);
+  if(j.length>STORE_WARN/2&&S.chats.length){
+    let n=0;while(S.chats.length&&JSON.stringify(S.chats).length>ARC_MAX){S.chats.pop();n++}
+    if(n){j=JSON.stringify(S);toast(`Depolama için en eski ${n} arşiv sohbeti silindi`)}
+  }
+  storeBytes=otherBytes+j.length*2;
   try{localStorage.setItem("koc_v1",j);saveFail=false}
-  catch(e){saveFail=true;toast("Son değişiklik kaydedilemedi: depolama dolu. Uygulamayı kapatmadan yedek al.");return false}
-  fastWatch();return true;
+  catch(e){
+    /* Dolu depoda önce yedek kopyaları (geri yükleme öncesi, okunamayan kayıt) gider, kullanıcı verisi değil. */
+    let ok=false;
+    for(const k of ["koc_v1_onceki","koc_v1_bozuk"])if(!ok&&lsGet(k)!=null){lsDel(k);try{localStorage.setItem("koc_v1",j);ok=true}catch(e2){}}
+    otherBytes=lsOther();storeBytes=otherBytes+j.length*2;
+    if(!ok){saveFail=true;toast("Son değişiklik kaydedilemedi: depolama dolu. Uygulamayı kapatmadan yedek al.");return false}
+    saveFail=false;toast("Depolama doluydu: eski güvenlik kopyaları silindi");
+  }
+  lastJ=j;fastWatch();return true;
 }
+/* Başka sekme (yalnız web) kaydettiyse onun durumu alınır; yoksa bu sekme sonraki kayıtta onu eski veriyle ezerdi. */
+addEventListener("storage",ev=>{
+  if(recovery||ev.storageArea!==localStorage||ev.key!=="koc_v1"||!ev.newValue||ev.newValue===lastJ)return;
+  let r=null;try{r=JSON.parse(ev.newValue)}catch(e){}
+  if(!r||!Array.isArray(r.entries))return;
+  S=buildState(r).S;lastJ=ev.newValue;logOff=0;render();toast("Başka bir sekmedeki değişiklik alındı");
+});
 /* Oruç freni not, ilaç, ölçüm, sohbet işareti ya da onayla değişince oruç bildirimleri hangi ekrandan olursa olsun yeniden kurulur. */
 let fastBlk=null;
 function fastWatch(){const b=!!(S.settings.fastOn&&risk().block);if(fastBlk!=null&&b!==fastBlk)scheduleReminders().then(setNotif);fastBlk=b}
@@ -558,20 +610,30 @@ function add(type,v,text,day){
   const n=new Date();
   if(!day)logOff=0;
   const e={id:S.nextId++,day:day||dayKey(n),time:`${pad(n.getHours())}:${pad(n.getMinutes())}`,type,v:v==null?null:v,text:text||""};
+  if(type==="spor"&&day&&day!==dayKey(n))e.bt=true; // geçmiş güne girildi: saat kayıt anıdır, egzersiz aralığı bilinmez (Algo.exerciseKcal)
   S.entries.push(e);save();return e;
 }
 const of=(type,day)=>S.entries.filter(e=>e.type===type&&e.day===day);
 const sum=(type,a,b)=>S.entries.filter(e=>e.type===type&&e.day>=a&&e.day<=b).reduce((s,e)=>s+(e.v||0),0);
 /* Hareket kalorisi ayarı açıksa o günün kalori hedefine eklenen kısım; kapalıysa 0. Ring, widget ve toast tek yerden okur. */
-const moveAdd=day=>S.settings.moveKcalOn&&S.settings.kcal>0?Algo.moveBonus(Algo.exerciseKcal(of("spor",day),S.moves.filter(m=>m.day===day))):0;
+const moveAdd=day=>{
+  if(!(S.settings.moveKcalOn&&S.settings.kcal>0))return 0;
+  const dn=Algo.dayNum(day),near=x=>Math.abs(Algo.dayNum(x.day)-dn)<=1; // gece yarısını aşan egzersiz komşu günde de durur
+  return Algo.moveBonus(Algo.exerciseKcal(S.entries.filter(e=>e.type==="spor"&&near(e)),S.moves.filter(near),day));
+};
 const kcalGoal=day=>S.settings.kcal>0?S.settings.kcal+moveAdd(day):0;
 /* Güvenlik freninin girdisi tek yerde; kg verilmezse son trend kilo. */
 function riskInput(kg){
   const st=S.settings,from=keyOff(-89),w=weights(),ks=Object.keys(w).sort(),n=k=>S.vitals.filter(v=>v.k===k&&v.day>=from).length;
-  return {age:st.age,cm:st.heightCm,kg:kg!=null?kg:ks.length?Algo.trend(w)[ks[ks.length-1]]:0,goalKg:st.goalKg,healthNote:st.healthNote,meds:S.meds.length,glucoseCount90d:n("s"),bpCount90d:n("t"),
-    edFlag:S.chat.some(m=>m.fl==="ed"||(m.card&&m.card.kind==="safety"&&m.card.level==="ed")),clearedAt:st.riskClearedAt,today:dayKey()};
+  return {age:st.age,sex:st.sex,cm:st.heightCm,kg:kg!=null?kg:ks.length?Algo.trend(w)[ks[ks.length-1]]:0,goalKg:st.goalKg,healthNote:st.healthNote+((st.chatRisk||"").includes("preg")?" hamilelik":""),meds:S.meds.length,glucoseCount90d:n("s"),bpCount90d:n("t"),
+    edFlag:(st.chatRisk||"").includes("ed")||S.chat.some(m=>m.fl==="ed"||(m.card&&m.card.kind==="safety"&&m.card.level==="ed")),clearedAt:st.riskClearedAt,today:dayKey()};
 }
 function risk(kg){return Algo.riskFlags(riskInput(kg))}
+/* Elle yazılan kalori hedefinin reddedilme nedeni ("" ise uygun): öneri yolundaki fren ve cinsiyete göre taban elle girişte de geçerli. */
+function kcalWhy(v){
+  const st=S.settings,w=weights(),ks=Object.keys(w).sort(),kg=ks.length?w[ks[ks.length-1]]:0,p={kg,cm:st.heightCm,age:st.age,sex:st.sex,act:st.act},ok=kg>0&&p.cm>0&&p.age>0;
+  return Algo.manualKcal({kcal:v,sex:st.sex,age:st.age,bmr:ok?Algo.bmrMifflin(p):0,tdee:ok?Algo.formulaTdee(p):0,block:risk(kg||null).block});
+}
 /* Fren açıklaması: sert engelde yalnız açıklama, yumuşakta 30 günlük "Hekimime danıştım" onayı. */
 const riskBox=(r,title)=>r.block?`<div class="banner"><b>${title}</b><p>${esc((r.hard.length?r.hard:r.soft).join(". "))}. ${r.hard.length?"Hekimine ya da diyetisyenine danış. Bilgi yanlışsa Profil > Sağlık notların'dan düzelt.":"Önce hekimine danış; konuştuysan 30 gün için devam edebilirsin."}</p>${r.hard.length?"":`<button class="btn ghost" data-act="riskok">Hekimime danıştım, devam</button>`}</div>`:"";
 function weights(a="0000",b="9999"){const m={};for(const e of S.entries)if(e.type==="kilo"&&e.day>=a&&e.day<=b)m[e.day]=e.v;return m}
@@ -684,7 +746,7 @@ function viewBugun(){
   const rings=`<div class="card"><div class="rings">
     ${ring(kcP,"var(--kcal)",kcC,"Kalori",kgl>0?`${Math.round(kc)} / ${kgl} kcal`:"hedef yok",kcU)}
     ${ring(su/sh,"var(--su)",suC||fmt((sh-su)/1000,1),"Su",`${fmt(su/1000,1)} / ${fmt(sh/1000,1)} L`,suU)}
-    ${ring(sw/st.sportWeek,"var(--spor)",spC||Math.round(st.sportWeek-sw),"Spor · hafta",`${Math.round(sw)} / ${st.sportWeek} dk`,spU)}
+    ${ring(sw/st.sportWeek,"var(--spor)",spC||Math.round(st.sportWeek-sw),"Spor · 7 gün",`${Math.round(sw)} / ${st.sportWeek} dk`,spU)}
   </div>${moveAdd(t)?`<p class="hint" style="padding:6px 0 0">Hedefe hareketten +${moveAdd(t)} kcal eklendi (kayıtlı antrenman ve yürüyüşün yarısı, tahmindir).</p>`:""}</div>`;
   const meals=S.entries.filter(e=>e.type==="yemek"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
   const pr=cur!=null?Algo.protein(riskInput(cur)):{};
@@ -730,7 +792,7 @@ function viewBugun(){
 /* PDF raporlar tek yerde; paylaşım işleyicileri belgede dinlediği için ekrandan bağımsız çalışır. */
 function reportsCard(){
   const st=S.settings,r=(a,ic,t,sub)=>navRow(a,ic,t,sub);
-  return `<h2>Raporlar</h2><div class="card">${r('data-wk="pdf"',"share","Haftalık rapor","Son 7 gün, PDF")}${st.bpOn?r('data-vt="pdfmenu:t"',"heart","Tansiyon doktor raporu","Dönem seç, PDF"):""}${st.bsOn?r('data-vt="pdfmenu:s"',"su","Şeker doktor raporu","Dönem seç, PDF"):""}${LabLib.series(S.labs).length?r('data-lab="pdf"',"file","Tahlil raporu","Tüm sonuçlar, PDF"):""}</div>`;
+  return `<h2>Raporlar</h2><div class="card">${r('data-wk="pdf"',"share","Son 7 gün raporu","Bugün dahil 7 gün, PDF")}${st.bpOn?r('data-vt="pdfmenu:t"',"heart","Tansiyon doktor raporu","Dönem seç, PDF"):""}${st.bsOn?r('data-vt="pdfmenu:s"',"su","Şeker doktor raporu","Dönem seç, PDF"):""}${LabLib.series(S.labs).length?r('data-lab="pdf"',"file","Tahlil raporu","Tüm sonuçlar, PDF"):""}</div>`;
 }
 function viewTrend(){
   const t=dayKey(),st=S.settings;
@@ -763,7 +825,7 @@ function viewTrend(){
   ${hasWeek?`<h2>Son 7 gün</h2><div class="card"><table><thead><tr><th>Gün</th><th>Kilo</th><th>Su (L)</th><th>kcal</th><th>Spor (dk)</th><th>Adım</th></tr></thead><tbody>${rows}</tbody></table></div>`:""}
   ${vTrendCards()}
   <h2>Tahlil</h2>${labTrendCard()}
-  <h2>Haftalık spor</h2><div class="card"><div class="num"><b>${Math.round(sw)}</b> / ${st.sportWeek} dk, ${sd} gün aktif</div><div class="bar"><i style="width:${pct.toFixed(0)}%"></i></div></div>
+  <h2>Spor, son 7 gün</h2><div class="card"><div class="num"><b>${Math.round(sw)}</b> / ${st.sportWeek} dk, ${sd} gün aktif</div><div class="bar"><i style="width:${pct.toFixed(0)}%"></i></div></div>
   ${reportsCard()}`;
 }
 
@@ -829,20 +891,22 @@ function viewAyar(){
   }
   if(sub==="veri")return `<button class="btn" data-act="drive">${Icons.svg("cloud")} Yedeği Drive'a gönder</button>
     <div class="card" style="margin-top:12px">${navRow('data-act="yedek"',"save","Yedekle veya geri yükle","Şifreli yedek dosyası oluştur ya da yükle")}${navRow('data-pv="csv"',"file","Tabloya aktar (CSV)","Excel ya da Sheets'te açılır")}${navRow('data-imp="open"',"salon","Antrenman geçmişini içe aktar","Başka bir uygulamadan dışa aktardığın dosya")}${navRow('data-pv="open"',"lock","Gizlilik ve veri","Verilerin nerede durduğu")}${navRow('data-act="sifirla"',"trash","Tüm verileri sil","Geri alınamaz","  dng")}</div>
-    <div class="card">${storeMsg()?`<p class="status" role="alert"><b>${storeMsg()[0]}.</b> ${storeMsg()[1]}</p>`:""}<p class="hint">Kullanılan alan: yaklaşık ${fmt(storeBytes/1e6)} MB (sınır telefona göre 5-10 MB).</p>
+    <div class="card">${storeMsg()?`<p class="status" role="alert"><b>${storeMsg()[0]}.</b> ${storeMsg()[1]}</p>`:""}${loadNote?`<p class="status" role="status">${esc(loadNote)}</p>`:""}${COPIES.filter(([k])=>lsGet(k)!=null).map(([k,n])=>`<div class="row" style="display:flex;align-items:center;gap:8px;padding:6px 0"><span style="flex:1;min-width:0"><b>${n}</b><small class="mut sm" style="display:block">${fmt(lsGet(k).length*2/1e6)} MB</small></span><button class="chip" data-act="kopya:${k}">Dışa aktar</button><button class="chip" data-act="kopyasil:${k}">Sil</button></div>`).join("")}<p class="hint">Kullanılan alan: yaklaşık ${fmt(storeBytes/1e6)} MB (sınır telefona göre 5-10 MB).</p>
     <p class="hint">Veriler yalnızca bu telefonda durur. Google otomatik yedeğine ve telefondan telefona aktarıma bilerek dahil edilmez. Uygulamayı silersen ya da telefon değiştirirsen kaybolur; yeni telefona geçmeden önce yedek dosyanı al.</p></div>${abHtml()}`;
   return `<div class="about"><img src="logo.png" alt="NeoWell logosu" width="72" height="72"><b>NeoWell</b><span class="mut sm">Sağlığın yeni kaynağı</span><p class="hint" style="text-align:center">${MED_NOTE}</p></div><div class="card"><b>Besin verisi kaynakları</b><p class="hint">Genel besinlerin değerleri ABD Tarım Bakanlığı FoodData Central (SR Legacy) verisidir, CC0 kamu malı: fdc.nal.usda.gov. Türk ev yemekleri bu değerlerden tarifle hesaplanmış tahminlerdir. Sucuk, pastırma, hellim ve karşılaştırma değerlerinde Fransa ANSES Ciqual 2025 tablosu (Etalab Açık Lisans 2.0, ciqual.anses.fr) ile İngiltere McCance and Widdowson CoFID 2021 verisi (Public Health England, Open Government Licence v3.0, gov.uk) kullanıldı; her vekil kayıt kendi notunda belirtilir. Barkoddan gelen ürünler Open Food Facts verisini içerir, Open Database License (ODbL) ile sunulur: world.openfoodfacts.org. Tablo ve paket etiketi değerleri yaklaşık olup ±%20 sapabilir.</p></div>`;
 }
 
+const COPIES=[["koc_v1_bozuk","Okunamayan eski kayıt kopyası"],["koc_v1_onceki","Geri yüklemeden önceki güvenlik kopyası"]];
+const recView=()=>`<div class="card todo" role="alert"><h3>Kayıtların okunamadı</h3><p class="hint">Telefondaki kayıt bozuk görünüyor. Hiçbir şey silinmedi ve yeni kayıt yazılmıyor. Önce ham veriyi dışa aktar; sonra yeniden dene ya da boş başla.</p><div class="btns"><button class="btn" data-act="recexp">Ham veriyi dışa aktar</button><button class="btn ghost" data-act="rectry">Yeniden dene</button><button class="btn ghost" data-act="recnew">Boş başla</button></div></div>`;
 function render(){
-  const v=$("#view"),onb=obNeeded();
+  const v=$("#view"),onb=obNeeded()||!!recovery;
   const de=document.documentElement;if(S.settings.theme)de.dataset.theme=S.settings.theme;else delete de.dataset.theme;
   $('meta[name="theme-color"]').content=getComputedStyle(de).getPropertyValue("--bg").trim();
   // Android 15+ durum çubuğu saydam: simge rengi sistemin değil uygulamanın temasına uymalı.
   const sb=window.Capacitor?.Plugins?.SystemBars,st={dark:"DARK",light:"LIGHT"}[S.settings.theme]||"DEFAULT";
   if(sb&&render.sb!==st){render.sb=st;sb.setStyle({style:st}).catch(()=>{})}
   document.body.classList.toggle("ob",onb);$("#back").hidden=onb||!UP(tab);
-  if(onb){$("#ttl").innerHTML='<img class="brand" src="logo.svg" alt="" width="28" height="28">NeoWell';$("#streak").innerHTML="";$("#composer").hidden=true;v.innerHTML=obView();widgetPush();return}
+  if(onb){$("#ttl").innerHTML='<img class="brand" src="logo.svg" alt="" width="28" height="28">NeoWell';$("#streak").innerHTML="";$("#composer").hidden=true;v.innerHTML=recovery?recView():obView();widgetPush();return}
   const ttl={bugun:`${fd(dayKey())}, ${GUN[new Date().getDay()]}`,koc:"Koç",salon:"Salon",trend:"Trend",daha:"Daha fazla",ayar:"Ayarlar",egz:"Egzersizler",adim:"Adım raporu",tahlil:"Tahlil takibi",tansiyon:"Tansiyon",seker:"Şeker",ilac:"İlaçlar",...Object.fromEntries(AYAR.map(([k,t])=>["ayar-"+k,t]))}[tab];
   $("#ttl").textContent=ttl;
   const n=streak();$("#streak").innerHTML=n>0&&tab==="bugun"?`${Icons.svg("flame")}<b class="num">${n}</b> gün`:"";$("#streak").setAttribute("aria-label",n+" günlük seri");
@@ -894,7 +958,8 @@ function goKilo(){
   /* Seçim telefonda kaybolursa "86,0" sonuna yazılan "85" 86,085 olur; tartı 2 haneden fazla ondalık vermez. */
   if(!(v>=20&&v<=400)||/[.,]\d{3}/.test(raw))return ferr("kerr","Kiloyu kg olarak yaz, örneğin 84,3");
   const day=fday(),m=weights(),ds=Object.keys(m).filter(k=>k<day).sort(),prev=ds.length?m[ds[ds.length-1]]:null;
-  if(prev!=null&&Math.round(Math.abs(v-prev)*10)>=30&&kiloOk!==v){kiloOk=v;$("#kerr").textContent="";$("#kwarn").innerHTML=`<div class="banner"><b>${fmtS(v-prev)} kg fark var</b><p>Son tartın ${fmt(prev)} kg idi. Yanlış yazmış olabilir misin?</p><button class="btn" data-go="kilo">Yine de kaydet</button></div>`;return}
+  const lb=prev==null&&Algo.lbSuspect(v,S.settings.heightCm);
+  if((lb||prev!=null&&Math.round(Math.abs(v-prev)*10)>=30)&&kiloOk!==v){kiloOk=v;$("#kerr").textContent="";$("#kwarn").innerHTML=`<div class="banner"><b>${lb?`${fmt(v)} kg çok yüksek görünüyor`:`${fmtS(v-prev)} kg fark var`}</b><p>${lb?`Libre (lb) yazmış olabilirsin: ${fmt(v)} lb ≈ ${fmt(v*0.45359237)} kg. Doğruysa devam et.`:`Son tartın ${fmt(prev)} kg idi. Yanlış yazmış olabilir misin?`}</p><button class="btn" data-go="kilo">Yine de kaydet</button></div>`;return}
   const e=add("kilo",v,"",day);closeSheet();render();
   let msg=`${fmt(v)} kg kaydedildi`;
   if(prev!=null)msg+=`, öncekine göre ${fmtS(v-prev)} kg`;
@@ -1013,6 +1078,7 @@ function goBesin(){
 }
 function goYemek(){
   const text=$("#ft").value.trim(),kc=num($("#fv").value,true);
+  if($("#fv").value.trim()&&isNaN(kc))return ferr("yerr","Kaloriyi tam sayı olarak yaz, örneğin 250");
   if(!text&&isNaN(kc))return ferr("yerr","Yemeğin adını ya da kalorisini yaz");
   if(!isNaN(kc)&&kc>20000)return ferr("yerr","Kalori çok yüksek görünüyor, kontrol et");
   const e=add("yemek",isNaN(kc)?null:kc,text,fday());e.meal=fmeal();save();closeSheet();render();
@@ -1067,24 +1133,28 @@ async function goYukle(){
     try{const p=await BackupLib.decrypt(r,pw);r=p.S;keysIn=p.keys}catch(e){return toast("Parola yanlış ya da yedek bozuk")}
   }
   if(!r||!Array.isArray(r.entries))return toast("Bu bir NeoWell yedeği değil");
-  const {out,drop}=cleanEntries(r.entries);
+  const b=buildState(r),drop=b.drop,out=b.S.entries;
   if(!out.length&&r.entries.length)return toast("Yedekte geçerli kayıt yok");
   if(!confirm(`${enc?"":"Bu yedek parolasız (şifresiz) bir dosya; eski sürümden kalmış olabilir. Yedek dosyasını başkasına gönderme, işin bitince sil. "}${out.length} kayıt yüklenecek${drop?`, ${drop} geçersiz kayıt atlanacak`:""}. Mevcut veriler değişecek. Devam edilsin mi?`))return;
   const prevS=S;
-  lsDel("koc_v1_onceki");otherBytes=lsOther();
-  S=Object.assign({settings:cleanSettings(r.settings,r.fast),entries:out,nextId:out.length+1,myFoods:cleanMyFoods(r.myFoods),labs:LabLib.cleanLabs(r.labs),vitals:VitalsLib.clean(r.vitals)},cleanHealthState(r),cleanGym(r),cleanCoach(r));
+  S=b.S;
   /* Yedek, anahtarın gideceği adresi, onay ayarını ve veri paylaşım iznini değiştirememeli. Otomatik yedek klasörü bu telefona ait. */
-  Object.assign(S.settings,{consent:prevS.settings.consent,consentV:prevS.settings.consentV,consentAt:prevS.settings.consentAt,lastBackup:dayKey(),autoBk:prevS.settings.autoBk,lastAutoBk:prevS.settings.lastAutoBk});cAgeGuard();
+  Object.assign(S.settings,{consent:prevS.settings.consent,consentV:prevS.settings.consentV,consentAt:prevS.settings.consentAt,consentP:prevS.settings.consentP,chatRisk:riskMerge(prevS.settings.chatRisk,S.settings.chatRisk),lastBackup:dayKey(),autoBk:prevS.settings.autoBk,lastAutoBk:prevS.settings.lastAutoBk});cAgeGuard();
   const keys=getKeys();
   for(const p of S.providers){
     const cur=prevS.providers.find(x=>x.id===p.id),def=defProviders().find(x=>x.id===p.id);
-    if(keys[p.id]&&cur)p.base=cur.base;
+    if(!def&&keys[p.id]&&cur)p.base=cur.base;
     if(def)p.confirm=def.confirm;
   }
   if(keysIn&&typeof keysIn==="object")for(const id in keysIn)if(typeof keysIn[id]==="string"&&S.providers.some(p=>p.id===id))setKey(id,keysIn[id]);
-  if(!save()){S=prevS;return toast("Yedek yüklenemedi, depolama dolu")}
-  lsSet("koc_v1_onceki",JSON.stringify(prevS)); // yeni veriden sonra: sığmazsa kopyasız devam
-  logOff=0;closeSheet();render();scheduleReminders().then(setNotif);toast(drop?`Yedek yüklendi, ${drop} geçersiz kayıt atlandı`:"Yedek yüklendi");
+  if(!save()){S=prevS;saveFail=false;return toast("Yedek yüklenemedi, depolama dolu")}
+  /* Güvenlik kopyası eski veriyi saklar, depoyu ikiye katlar: yalnız uyarı sınırının altında kalırsa alınır. */
+  const pj=JSON.stringify(prevS);let copy=false;
+  if(storeBytes+pj.length*2<=STORE_WARN)try{localStorage.setItem("koc_v1_onceki",pj);copy=true}catch(e){}
+  if(!copy)lsDel("koc_v1_onceki");
+  otherBytes=lsOther();storeBytes=otherBytes+lastJ.length*2;
+  logOff=0;closeSheet();render();scheduleReminders().then(setNotif);
+  toast((drop?`Yedek yüklendi, ${drop} geçersiz kayıt atlandı`:"Yedek yüklendi")+(b.lost.length?`; okunamayan alanlar varsayılana döndü (${b.lost.join(", ")})`:"")+(copy?"":". Eski verin için güvenlik kopyası alınamadı (depolama dolu)"));
 }
 
 /* ---------- bildirimler (yalnızca APK) ---------- */
@@ -1092,7 +1162,7 @@ const WATER_REM=[2,3,4],BACKUP_REM=10,WEEKLY_REM=12;
 const SCHED_DAYS=30;let lastSched=0,exactOk=true;
 const LN=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.LocalNotifications;
 async function scheduleReminders(){
-  const ln=LN();if(!ln)return "web";
+  const ln=LN();if(!ln||recovery)return "web";
   try{
     let p=await ln.checkPermissions();
     if(p.display!=="granted")p=await ln.requestPermissions();
@@ -1299,6 +1369,14 @@ document.addEventListener("click",ev=>{
     else if(d.act==="spor")sheetSpor();
     else if(d.act==="not")sheetNot();
     else if(d.act==="yedek")sheetYedek();
+    else if(d.act==="recexp")shareFile(`neowell-ham-kayit-${dayKey()}.json`,"Okunamayan kayıt","application/json",recovery.raw,true);
+    else if(d.act==="rectry"){const s=load();if(recovery)return toast("Kayıt hâlâ okunamıyor");S=s;render();scheduleReminders().then(setNotif)}
+    else if(d.act==="recnew"){
+      if(!rawCopy(recovery.raw)&&!confirm("Ham kopya depolama dolu olduğu için saklanamıyor. Dışa aktarmadıysan bu veri kaybolur. Yine de boş başlansın mı?"))return;
+      recovery=null;S=structuredClone(DEF);save();render();scheduleReminders().then(setNotif);
+    }
+    else if(d.act.startsWith("kopya:")&&COPIES.some(c=>c[0]===d.act.slice(6)))shareFile(`neowell-kopya-${dayKey()}.json`,"Güvenlik kopyası","application/json",lsGet(d.act.slice(6)),true);
+    else if(d.act.startsWith("kopyasil:")&&COPIES.some(c=>c[0]===d.act.slice(9))){lsDel(d.act.slice(9));otherBytes=lsOther();render()}
     else if(d.act==="veriyedek"){tab="ayar-veri";render();sheetYedek()}
     else if(d.act==="abfix"){tab="ayar-veri";render()}
     else if(d.act==="tamalarm")exactAsk();
@@ -1323,7 +1401,7 @@ document.addEventListener("click",ev=>{
     return;
   }
   if(d.go){
-    ({kilo:goKilo,yemek:goYemek,besin:goBesin,mysil:goMySil,tpl:goTpl,adim:goAdim,spor:goSpor,not:goNot,yukle:goYukle,saglik:()=>{S.settings.healthNote=$("#hn").value.trim().slice(0,500);save();closeSheet();render();toast("Kaydedildi")}}[d.go]||(()=>{}))();
+    ({kilo:goKilo,yemek:goYemek,besin:goBesin,mysil:goMySil,tpl:goTpl,adim:goAdim,spor:goSpor,not:goNot,yukle:goYukle,saglik:()=>{S.settings.healthNote=$("#hn").value.trim().slice(0,500);cNoteCheck();save();closeSheet();render();toast("Kaydedildi")}}[d.go]||(()=>{}))();
     if(d.go==="kopyala")backupText().then(v=>{if(!v)return;(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast("Panoya kopyalandı"),()=>{const b=$("#bk");b.value=v;b.select();document.execCommand&&document.execCommand("copy");toast("Metni seçtim, kopyala")})});
     if(d.go==="paylas")shareBackup();
     if(d.go==="indir")backupText().then(v=>{if(!v)return;try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([v],{type:"application/json"}));a.download=`neowell-yedek-${dayKey()}.json`;a.click();markBackup()}catch(e){toast("İndirme bu cihazda çalışmadı, Kopyala'yı kullan")}});
@@ -1354,7 +1432,9 @@ document.addEventListener("change",ev=>{
     const show=x=>x?String(x).replace(".",","):"";
     if(raw===""&&ZEROOK.includes(k)){st[k]=0;save();t.value="";toast(`${SETLBL[k]} kapatıldı`);return}
     const v=num(raw,int);
-    if(isNaN(v)||v<lo||v>hi){t.value=show(st[k]);toast(`${SETLBL[k]} ${String(lo).replace(".",",")} ile ${String(hi).replace(".",",")} arasında olmalı`);return}
+    if(isNaN(v)||v<lo||v>hi){t.value=show(st[k]);toast(`${SETLBL[k]} ${String(lo).replace(".",",")} ile ${String(hi).replace(".",",")} arasında${int?" tam sayı":""} olmalı`);return}
+    const why=k==="kcal"?kcalWhy(v):"";
+    if(why){t.value=show(st[k]);toast(why);return}
     st[k]=v;if(k==="age")cAgeGuard();save();t.value=show(v);return;
   }
   if(t.dataset.rt||t.dataset.ro){
@@ -1381,7 +1461,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){quickInge
 document.querySelectorAll("[data-ic]").forEach(e=>e.innerHTML=Icons.svg(e.dataset.ic));
 render();
 cPlateauCheck();
-if(corruptNote)toast("Kayıtlı veri okunamadı. Eski hali ayrı bir kopyada saklandı.");
+if(loadNote)toast(loadNote);
 quickIngest();
 scheduleReminders().then(setNotif);
 setInterval(gTick,1000);

@@ -34,7 +34,7 @@ public class QuickLogPlugin extends Plugin {
         StringBuilder sb = new StringBuilder();
         for (byte x : b) sb.append(Character.forDigit((x >> 4) & 15, 16)).append(Character.forDigit(x & 15, 16));
         s = sb.toString();
-        p.edit().putString("tk", s).commit();
+        p.edit().putString("tk", s).apply();
         return s;
     }
 
@@ -70,7 +70,7 @@ public class QuickLogPlugin extends Plugin {
         }
         SharedPreferences.Editor e = p.edit().putString("q", QuickMath.append(p.getString("q", ""), key, System.currentTimeMillis()));
         if (sig != null) e.putString("seen", QuickMath.remember(seen, sig));
-        e.commit();
+        e.apply();
         if (v > 0) NeoWidget.bump(c, v);
         if (id != Integer.MIN_VALUE) {
             NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -103,17 +103,22 @@ public class QuickLogPlugin extends Plugin {
         JSArray items = new JSArray();
         List<String[]> list = QuickMath.parse(takeAll(getContext()));
         for (String[] x : list) {
-            JSObject o = new JSObject();
-            if (x[0].charAt(0) == 'm' || x[0].charAt(0) == 'k') {
-                int us = x[0].indexOf('_');
-                o.put("m", Integer.parseInt(x[0].substring(1, us)));
-                o.put("s", x[0].substring(us + 1, us + 3) + ":" + x[0].substring(us + 3));
-                o.put("k", x[0].charAt(0) == 'k');
-            } else {
-                o.put("v", Integer.parseInt(x[0]));
+            // Kuyruk takeAll'da zaten silindi: bozuk bir kayıt yalnız kendini atar, diğerleri kaybolmaz.
+            try {
+                JSObject o = new JSObject();
+                if (x[0].charAt(0) == 'm' || x[0].charAt(0) == 'k') {
+                    int us = x[0].indexOf('_');
+                    o.put("m", Integer.parseInt(x[0].substring(1, us)));
+                    o.put("s", x[0].substring(us + 1, us + 3) + ":" + x[0].substring(us + 3));
+                    o.put("k", x[0].charAt(0) == 'k');
+                } else {
+                    o.put("v", Integer.parseInt(x[0]));
+                }
+                o.put("t", Long.parseLong(x[1]));
+                items.put(o);
+            } catch (RuntimeException e) {
+                // bozuk kayıt atlanır
             }
-            o.put("t", Long.parseLong(x[1]));
-            items.put(o);
         }
         JSObject r = new JSObject();
         r.put("items", items);

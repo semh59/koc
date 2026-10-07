@@ -102,8 +102,8 @@ ok("kış/yaz saati günü: saat hâlâ doğru (2026-03-29 geçişi)",(l=>l.leng
 const T=(y,mo,d,h,mi)=>new Date(y,mo-1,d,h,mi).getTime();
 ok("düğme: aynı gün (08:00 dozu 08:05'te)",M.dayForTap("08:00",T(2026,9,10,8,5))==="2026-09-10");
 ok("düğme: gece yarısını aşan geç basış önceki günün dozudur (23:30 dozu 00:10'da)",M.dayForTap("23:30",T(2026,9,11,0,10))==="2026-09-10");
-ok("düğme: erken basış aynı gün (20:00 dozuna 19:00'da basıldı)",M.dayForTap("20:00",T(2026,9,10,19,0))==="2026-09-10");
-ok("düğme: 6 saat sınırı (22:00 dozu; sabah 3 ve 5'te basış önceki günün, 16:00 sınırda aynı gün, 15:59 önceki gün)",M.dayForTap("22:00",T(2026,9,11,3,0))==="2026-09-10"&&M.dayForTap("22:00",T(2026,9,11,5,0))==="2026-09-10"&&M.dayForTap("22:00",T(2026,9,11,16,0))==="2026-09-11"&&M.dayForTap("22:00",T(2026,9,11,15,59))==="2026-09-10");
+ok("düğme: bildirim doz saatinde çıkar; 15:00 dozuna sabah 08:00 basışı dünün, 16:00 basışı bugünün",M.dayForTap("15:00",T(2026,9,10,8,0))==="2026-09-09"&&M.dayForTap("15:00",T(2026,9,10,16,0))==="2026-09-10"&&M.dayForTap("20:00",T(2026,9,10,19,0))==="2026-09-09");
+ok("düğme: 22:00 dozu; gece ve ertesi gün 21:59'a kadar basış dünün, 22:00'de bugünün",M.dayForTap("22:00",T(2026,9,11,3,0))==="2026-09-10"&&M.dayForTap("22:00",T(2026,9,11,21,59))==="2026-09-10"&&M.dayForTap("22:00",T(2026,9,11,22,0))==="2026-09-11");
 
 // başlangıç: ilaç ve saat başına since; eski kayıt eskisi gibi
 const sd=M.cleanMeds([med({s:"2026-09-10",t:["08:00","20:00"],ts:{"20:00":"2026-09-12","09:00":"2026-09-01","08:00":"bozuk"}})])[0];
@@ -117,6 +117,25 @@ ok("sinceFor: yeni saat bugünden, vakti geçmiş saat yarından, eski saat koru
   ok("bildirim: başlangıçtan önceki saat için kurulmaz",M.notifications(m,[],new Date(2026,8,10,6,0),2,true).every(n=>!(n.extra.s==="08:00"&&new Date(n.extra.at).getDate()===10)));
   const old=[med({t:["08:00"]})];
   ok("eski kayıt (s ve ts yok) geçmiş günleri eskisi gibi sayar",M.adherence(old,[],"2026-09-01","2026-09-10","2026-09-10","23:59").total===9);
+}
+// geçmiş değişmez: kapatma, saat silme, gün değişimi eski dozları silmez
+{
+  const base=M.cleanMeds([med({s:"2026-09-01",t:["08:00","20:00"]})])[0],D="2026-09-10";
+  const run=(n,chg,before,after)=>{
+    const m=M.cleanMeds([M.revise(base,{...base,...chg},D)])[0],cnt=d=>M.dosesOn([m],d).length;
+    ok(`geçmiş sabit: ${n}`,cnt("2026-09-09")===before&&cnt(D)===after,[cnt("2026-09-09"),cnt(D)]);
+  };
+  run("ilaç kapatıldı",{on:false},2,0);
+  run("20:00 saati silindi",{t:["08:00"]},2,1);
+  run("saat değişti",{t:["09:00","21:00"]},2,2);
+  run("haftanın günü değişti (yalnız cumartesi)",{w:[6]},2,0);
+  const off=M.cleanMeds([M.revise(base,{...base,on:false},D)])[0],a=M.adherence([off],[],"2026-09-05","2026-09-12","2026-09-12","23:59");
+  ok("kapatılan ilacın geçmiş dozları uyum paydasında kalır (5 gün × 2)",a.total===10&&a.missed===10,a);
+  ok("kapalı ilaç için bildirim yok",M.notifications([off],[],new Date(2026,8,12,9,0),3,true).length===0);
+  const twice=M.revise(M.cleanMeds([M.revise(base,{...base,on:false},D)])[0],{...base,t:["08:00"],on:false},D);
+  ok("aynı gün ikinci değişiklikte ilk sürüm korunur; değişmeyen kayıtta geçmiş yok",twice.h.length===1&&twice.h[0].t.length===2&&M.revise(base,{...base,n:"Yeni ad"},D).h===undefined);
+  const re=M.cleanMeds([M.revise(M.cleanMeds([M.revise(base,{...base,on:false},"2026-09-10")])[0],{...base,on:true},"2026-09-15")])[0];
+  ok("kapalı dönem boşluğu: açılınca kapalı günler sayılmaz, önceki ve sonraki sayılır",[["2026-09-09",2],["2026-09-12",0],["2026-09-15",2]].every(([d,n])=>M.dosesOn([re],d).length===n)&&JSON.stringify(M.cleanMeds([re])[0])===JSON.stringify(re));
 }
 // yorum ve tanı dili yok
 const src=require("fs").readFileSync(require("path").join(__dirname,"../www/medlib.js"),"utf8").replace(/\/\*[\s\S]*?\*\//g,"");

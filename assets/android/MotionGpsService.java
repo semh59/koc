@@ -98,7 +98,9 @@ public class MotionGpsService extends Service implements LocationListener {
             tFirst = now;
             StepStore.read(this, false, new StepStore.Callback() {
                 public void done(Long steps, Map<String, Long> history) {
+                    // Sayaç okunamadıysa pencere hiç kapanmazdı: güvenle kapatılır (finish, stepsStart < 0 ile servisi durdurur).
                     if (steps != null) stepsStart = steps;
+                    else finish();
                 }
             });
         }

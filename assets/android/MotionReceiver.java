@@ -38,8 +38,7 @@ public class MotionReceiver extends BroadcastReceiver {
 
     /** Açık aralık sürerken her ~2,5 dk adım sayacından kontrol noktası alınır: ritim düşüşü (yorulma) ve değişimi mesafe ve kaloriye böyle yansır. */
     private static void scheduleTick(Context c) {
-        AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
-        if (am != null) am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + TICK_MS, tickIntent(c));
+        Alarms.set(c, System.currentTimeMillis() + TICK_MS, tickIntent(c));
     }
 
     static void cancelTick(Context c) {
@@ -50,6 +49,8 @@ public class MotionReceiver extends BroadcastReceiver {
     private static void tick(Context c, long steps) {
         if (!MotionStore.isOpen(c)) return;
         long now = StepStore.sampledAt();
+        closeDeferred(c, steps);
+        if (!MotionStore.isOpen(c)) return;
         // Gece sayaç sıfırlanır ve kayıt 4 saati aşamaz: gün dönünce ya da 3 saatte bir aralık bu noktada kapatılıp yeniden açılır.
         // Geçersiz 3 saatlik parça çıkış olayının kaçtığını gösterir: yeniden açılmaz, alarm durur.
         boolean newDay = MotionStore.dayOf(now) != MotionStore.dayOf(MotionStore.lastActivityAt(c));
@@ -62,6 +63,34 @@ public class MotionReceiver extends BroadcastReceiver {
         }
         MotionStore.addCp(c, now, steps);
         scheduleTick(c);
+    }
+
+    /** Okunamayan çıkış olayı: aralık açık kaldı, kapanış zamanı şimdiki başarılı okumayla uygulanır. */
+    private static void closeDeferred(Context c, long steps) {
+        long t = MotionStore.takeDeferredClose(c);
+        if (t > 0 && MotionStore.isOpen(c)) {
+            cancelTick(c);
+            MotionStore.close(c, t, steps);
+        }
+    }
+
+    private static boolean foot(int type) {
+        return type == DetectedActivity.WALKING || type == DetectedActivity.RUNNING;
+    }
+
+    private static int modeOf(int type) {
+        return type == DetectedActivity.RUNNING ? MotionMath.RUN : MotionMath.WALK;
+    }
+
+    /** Olay açık aralığı kapatır: aynı türde çıkış ya da başka türe giriş. */
+    private static boolean closes(Context c, int type, boolean enter) {
+        boolean same = foot(type) && modeOf(type) == MotionStore.openMode(c);
+        return MotionStore.isOpen(c) && (!enter && same || enter && !same);
+    }
+
+    private static long eventTime(ActivityTransitionEvent e, long nowWall, long nowEl) {
+        long delay = Math.max(0, (nowEl - e.getElapsedRealTimeNanos()) / 1000000L);
+        return delay <= MAX_DELAY_MS ? nowWall - delay : nowWall;
     }
 
     /** Geçiş kaydı: yürüme ve koşma giriş/çıkış, diğer türlerde yalnızca giriş (açık aralığı kapatmak için). */
@@ -115,7 +144,17 @@ public class MotionReceiver extends BroadcastReceiver {
         StepStore.read(app, false, new StepStore.Callback() {
             public void done(Long steps, Map<String, Long> history) {
                 try {
-                    if (steps != null) for (ActivityTransitionEvent e : ev) handle(app, e, steps, StepStore.sampledAt(), nowWall, nowEl);
+                    if (steps != null) {
+                        closeDeferred(app, steps);
+                        for (ActivityTransitionEvent e : ev) handle(app, e, steps, StepStore.sampledAt(), nowWall, nowEl);
+                    } else {
+                        for (ActivityTransitionEvent e : ev) {
+                            if (closes(app, e.getActivityType(), e.getTransitionType() == ActivityTransition.ACTIVITY_TRANSITION_ENTER)) {
+                                MotionStore.deferClose(app, eventTime(e, nowWall, nowEl));
+                                break;
+                            }
+                        }
+                    }
                 } finally {
                     pr.finish();
                 }
@@ -124,25 +163,23 @@ public class MotionReceiver extends BroadcastReceiver {
     }
 
     private static void handle(Context c, ActivityTransitionEvent e, long steps, long at, long nowWall, long nowEl) {
-        long delay = Math.max(0, (nowEl - e.getElapsedRealTimeNanos()) / 1000000L);
-        long t = delay <= MAX_DELAY_MS ? nowWall - delay : nowWall;
+        long t = eventTime(e, nowWall, nowEl);
         // Sayaç okuması 4 sn'ye kadar sürer; olay ile okuma gece yarısının iki yanındaysa zaman sayacın gününe çekilir.
         TimeZone z = TimeZone.getDefault();
         t = MotionMath.onCounterDay(t, z.getOffset(t), at, z.getOffset(at));
         int type = e.getActivityType();
         boolean enter = e.getTransitionType() == ActivityTransition.ACTIVITY_TRANSITION_ENTER;
-        boolean foot = type == DetectedActivity.WALKING || type == DetectedActivity.RUNNING;
-        int mode = type == DetectedActivity.RUNNING ? MotionMath.RUN : MotionMath.WALK;
+        int mode = modeOf(type);
         // Kontrol noktası 30 dk'dır gelmediyse çıkış olayı ya da alarm kaçmıştır: eski aralık atılıp yenisi açılır.
         if (MotionStore.isOpen(c) && nowWall - MotionStore.lastActivityAt(c) > STALE_MS) {
             cancelTick(c);
             MotionStore.discard(c);
         }
-        if (MotionStore.isOpen(c) && (!enter && foot && mode == MotionStore.openMode(c) || enter && !(foot && mode == MotionStore.openMode(c)))) {
+        if (closes(c, type, enter)) {
             cancelTick(c);
             MotionStore.close(c, t, steps);
         }
-        if (enter && foot && !MotionStore.isOpen(c)) {
+        if (enter && foot(type) && !MotionStore.isOpen(c)) {
             MotionStore.open(c, mode, t, steps);
             scheduleTick(c);
         }

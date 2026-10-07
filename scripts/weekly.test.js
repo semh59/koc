@@ -17,13 +17,18 @@ ok("7 satır, eskiden yeniye, gün etiketleri",d.rows.length===7&&d.rows[0].day=
 ok("dönem başlığı",sm["Dönem"]==="24 Eyl 2026 - 30 Eyl 2026");
 ok("kilo: ilk ve son ölçüm, fark işaretli (eksi gerçek eksi işareti)",sm["Kilo"]==="82,4 → 81,9 kg (−0,5)",sm["Kilo"]);
 ok("pencere dışı kayıtlar dahil edilmez (10 Eylül)",!JSON.stringify(sm).includes("99")&&!JSON.stringify(d.rows).includes("5000"));
-ok("kalori: yalnızca kayıtlı günlerin ortalaması, hedef yan yana",sm["Kalori"]==="günlük ortalama 1900 kcal (hedef 2000), 2 gün kayıt",sm["Kalori"]);
+ok("kalori: yalnızca kayıtlı günlerin ortalaması, hedef yan yana",sm["Kalori"]==="2 gün kayıt var; ortalama için en az 3 tam kayıtlı (800 kcal üstü) gün gerekir",sm["Kalori"]);
+{const k=en=>Object.fromEntries(W.build({...S,entries:en},end,7).summary)["Kalori"],Y=(d,v)=>E("yemek",d,v);
+ ok("kalori ortalaması: 3 tam gün yazılır; 800 altı gün katılmaz ve belirtilir; tek 700 günü ortalama sayılmaz",
+  k([Y("2026-09-25",2100),Y("2026-09-26",1700),Y("2026-09-27",1900)])==="günlük ortalama 1900 kcal (hedef 2000), 3 tam kayıtlı gün"&&
+  k([Y("2026-09-25",2100),Y("2026-09-26",1700),Y("2026-09-27",1900),Y("2026-09-28",700)])==="günlük ortalama 1900 kcal (hedef 2000), 3 tam kayıtlı gün; 1 gün 800 kcal altında, ortalamaya katılmadı"&&
+  k([Y("2026-09-28",700)])==="1 gün kayıt var; ortalama için en az 3 tam kayıtlı (800 kcal üstü) gün gerekir");}
 ok("su: gün toplamları ortalaması",sm["Su"]==="günlük ortalama 2,1 L (hedef 2,5 L), 2 gün kayıt",sm["Su"]);
 ok("spor: toplam ve gün sayısı",sm["Spor"]==="toplam 105 dk (haftalık hedef 150 dk), 2 gün",sm["Spor"]);
 ok("adım satırı yalnızca veri varsa",sm["Adım"]&&sm["Adım"].includes("8.000")&&sm["Adım"].includes("2 gün"),sm["Adım"]);
 ok("hedef yoksa kalori satırında hedef yazılmaz",(x=>!x["Kalori"].includes("hedef"))(Object.fromEntries(W.build({...S,settings:settings({kcal:0})},end,7).summary)));
 const empty=W.build({settings:settings({}),entries:[],vitals:[]},end,7),se=Object.fromEntries(empty.summary);
-ok("boş haftada çökmez, satırlar 'kayıt yok' der",se["Kilo"]==="bu hafta tartı kaydı yok"&&se["Kalori"]==="yemek kaydı yok"&&se["Su"]==="su kaydı yok"&&se["Spor"]==="spor kaydı yok"&&!se["Adım"]&&empty.rows.every(r=>r.kilo==null&&!r.su));
+ok("boş haftada çökmez, satırlar 'kayıt yok' der",se["Kilo"]==="son 7 günde tartı kaydı yok"&&se["Kalori"]==="yemek kaydı yok"&&se["Su"]==="su kaydı yok"&&se["Spor"]==="spor kaydı yok"&&!se["Adım"]&&empty.rows.every(r=>r.kilo==null&&!r.su));
 ok("tek tartı: 'tek ölçüm'",Object.fromEntries(W.build({...S,entries:[E("kilo","2026-09-28",80)]},end,7).summary)["Kilo"]==="80 kg (tek ölçüm)"||Object.fromEntries(W.build({...S,entries:[E("kilo","2026-09-28",80)]},end,7).summary)["Kilo"]==="80,0 kg (tek ölçüm)");
 ok("aynı gün iki tartıda sonuncusu alınır",W.build({...S,entries:[E("kilo","2026-09-30",81),E("kilo","2026-09-30",80.5)]},end,7).rows[6].kilo===80.5);
 ok("ay sonunu aşan pencere doğru günleri üretir",W.build(S,"2026-03-03",7).rows[0].day==="2026-02-25"&&W.build(S,"2026-01-02",7).rows[0].day==="2025-12-27");
@@ -48,7 +53,7 @@ ok("bugünün vakti gelmemiş dozu sayılmaz (saat 12:00)",Object.fromEntries(W.
 // çizim
 const drawn=[];const ctx=new Proxy({},{get:(t,k)=>k==="measureText"?()=>({width:100}):k==="fillText"?s=>drawn.push(s):()=>{},set:()=>true});
 W.drawPage(ctx,d,{today:"2026-10-01"});
-ok("çizim: başlık, özet satırları, tablo başlıkları ve günler, uyarı notu",drawn.includes("NeoWell · Haftalık rapor")&&drawn.includes("Kilo")&&drawn.includes("Spor (dk)")&&drawn.includes("Çar 30")&&drawn.some(t=>/Tıbbi yorum içermez/.test(t))&&drawn.some(t=>t.includes("1 Eki 2026")),drawn.slice(0,12));
+ok("çizim: başlık, özet satırları, tablo başlıkları ve günler, uyarı notu",drawn.includes("NeoWell · Son 7 gün raporu")&&drawn.includes("Kilo")&&drawn.includes("Spor (dk)")&&drawn.includes("Çar 30")&&drawn.some(t=>/Tıbbi yorum içermez/.test(t))&&drawn.some(t=>t.includes("1 Eki 2026")),drawn.slice(0,12));
 ok("çizim: tablo değerleri (1.800+300 kcal tek gün toplamı 2100)",drawn.includes("2100")&&drawn.includes("9.000")&&drawn.includes("81,9"));
 W.drawPage(ctx,empty,{today:"2026-10-01"});
 ok("boş hafta çizimi çökmez",true);

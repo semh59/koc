@@ -9,7 +9,7 @@ module.exports=defineConfig({
   testMatch:/.*\.spec\.js$/,
   fullyParallel:true,
   forbidOnly:CI,
-  retries:0,
+  retries:CI?1:0,
   workers:CI?2:4,
   timeout:45000,
   expect:{timeout:5000},

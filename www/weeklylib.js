@@ -1,5 +1,5 @@
 "use strict";
-/* Haftalık özet raporu: kayıtlardan sayıları derler ve tek sayfalık PDF görüntüsünü çizer (DOM yok).
+/* Son 7 gün özet raporu (bugün dahil kayan pencere, takvim haftası değil): kayıtlardan sayıları derler ve tek sayfalık PDF görüntüsünü çizer (DOM yok).
    Yalnızca kullanıcının girdiği kayıtları ve kendi hedeflerini yan yana koyar; yorum yapmaz. */
 const WeeklyLib=(()=>{
   const VL=typeof VitalsLib!=="undefined"?VitalsLib:require("./vitalslib.js"),ML=typeof MedLib!=="undefined"?MedLib:require("./medlib.js");
@@ -9,7 +9,8 @@ const WeeklyLib=(()=>{
   const key=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
   const fmt=(x,d)=>Number(x).toFixed(d==null?1:d).replace(".",",");
   const fmtS=x=>(x>0?"+":x<0?"−":"")+fmt(Math.abs(x));
-  const dmy=k=>(typeof Algo!=="undefined"?Algo:require("./algo.js")).fdate(k,true);
+  const AL=()=>typeof Algo!=="undefined"?Algo:require("./algo.js");
+  const dmy=k=>AL().fdate(k,true);
   const sumOf=(es,t,k)=>es.filter(e=>e.type===t&&e.day===k).reduce((s,e)=>s+(e.v||0),0);
   const mean=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
 
@@ -26,9 +27,11 @@ const WeeklyLib=(()=>{
     const ks=rows.filter(r=>r.kilo!=null);
     if(ks.length>=2)summary.push(["Kilo",`${fmt(ks[0].kilo)} → ${fmt(ks[ks.length-1].kilo)} kg (${fmtS(ks[ks.length-1].kilo-ks[0].kilo)})`]);
     else if(ks.length===1)summary.push(["Kilo",`${fmt(ks[0].kilo)} kg (tek ölçüm)`]);
-    else summary.push(["Kilo","bu hafta tartı kaydı yok"]);
-    const kc=rows.filter(r=>r.kcal>0);
-    summary.push(["Kalori",kc.length?`günlük ortalama ${Math.round(mean(kc.map(r=>r.kcal)))} kcal${st.kcal>0?` (hedef ${st.kcal})`:""}, ${kc.length} gün kayıt`:"yemek kaydı yok"]);
+    else summary.push(["Kilo","son 7 günde tartı kaydı yok"]);
+    const A=AL(),any=rows.filter(r=>r.kcal>0),kc=any.filter(r=>A.fullKcal(r.kcal));
+    summary.push(["Kalori",!any.length?"yemek kaydı yok":kc.length>=A.MIN_AVG_DAYS
+      ?`günlük ortalama ${Math.round(mean(kc.map(r=>r.kcal)))} kcal${st.kcal>0?` (hedef ${st.kcal})`:""}, ${kc.length} tam kayıtlı gün${any.length>kc.length?`; ${any.length-kc.length} gün 800 kcal altında, ortalamaya katılmadı`:""}`
+      :`${any.length} gün kayıt var; ortalama için en az ${A.MIN_AVG_DAYS} tam kayıtlı (800 kcal üstü) gün gerekir`]);
     const su=rows.filter(r=>r.su>0);
     summary.push(["Su",su.length?`günlük ortalama ${fmt(mean(su.map(r=>r.su))/1000)} L (hedef ${fmt(st.waterMl/1000)} L), ${su.length} gün kayıt`:"su kaydı yok"]);
     const sp=rows.filter(r=>r.spor>0),spT=sp.reduce((s,r)=>s+r.spor,0);
@@ -56,7 +59,7 @@ const WeeklyLib=(()=>{
   function drawPage(ctx,data,info){
     ctx.fillStyle="#ffffff";ctx.fillRect(0,0,RW,RH);ctx.textBaseline="alphabetic";
     let y=RM;
-    ctx.fillStyle="#10232b";ctx.font="bold 50px sans-serif";ctx.fillText("NeoWell · Haftalık rapor",RM,y+50);
+    ctx.fillStyle="#10232b";ctx.font="bold 50px sans-serif";ctx.fillText(`NeoWell · Son ${data.rows.length} gün raporu`,RM,y+50);
     ctx.fillStyle="#62737a";ctx.font="24px sans-serif";
     ctx.fillText(`Oluşturulma: ${dmy(info.today)}`,RM,y+92);
     ctx.fillText("Kullanıcının kendi kayıtlarından derlenmiştir. Tıbbi yorum içermez, tanı ve tedavi yerine geçmez.",RM,y+126);

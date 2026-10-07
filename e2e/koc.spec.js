@@ -52,15 +52,29 @@ test.describe("Koç kayıt kartı",()=>{
     await expect(page.locator(".ub")).toHaveText("Birinci sohbet mesajı");
     await expect(page.locator('[data-c="chats"]')).toContainText("Geçmiş (1)");
   });
-  test("geçmiş sohbet silinir; Koç yanıt beklerken sohbet değişmez",async({app,page,fake})=>{
+  test("geçmiş sohbet silinir ve Geri al ile geri gelir; silme düğmesi sohbet başlığını taşır",async({app,page,fake})=>{
     fake.st.reply=()=>JSON.stringify({reply:"Tamam."});
     await open(app);await send(app,page,"Eski mesaj");
     await expect(page.locator("#view")).toContainText("Tamam.");
     await page.click('[data-c="newchat"]');
     await page.click('[data-c="chats"]');
+    await expect(page.locator('[data-c^="delchat:"]')).toHaveAttribute("aria-label","Sohbeti sil: Eski mesaj");
     await page.click('[data-c^="delchat:"]');
-    await expect(page.locator('[data-c="chats"]')).toHaveCount(0);
+    await expect(app.toast).toHaveText("Sohbet silindi");
     expect((await app.state()).chats).toEqual([]);
+    await page.click("#tundo");
+    await expect(page.locator('[data-c^="delchat:"]')).toHaveCount(1);
+    expect((await app.state()).chats.length).toBe(1);
+  });
+  test("Koç yanıt beklerken sohbet değişmez, yanıt gelince değişir",async({app,page,fake})=>{
+    fake.st.reply=()=>JSON.stringify({reply:"Tamam."});fake.st.delay=800;
+    await open(app);await send(app,page,"Bekleyen mesaj");
+    await page.click('[data-c="newchat"]');
+    await expect(app.toast).toContainText("sohbet değişmez");
+    await expect(page.locator(".ub")).toHaveText("Bekleyen mesaj");
+    await expect(page.locator("#view")).toContainText("Tamam.");
+    await page.click('[data-c="newchat"]');
+    await expect(page.locator(".ub")).toHaveCount(0);
   });
   test("yatay kısa ekranda Koç yazma alanı görünür, hızlı düğme sırası gizlenir",async({app,page,fake})=>{
     await page.setViewportSize({width:800,height:360});
@@ -69,5 +83,130 @@ test.describe("Koç kayıt kartı",()=>{
     await expect(page.locator("#composer .chiprow")).toBeHidden();
     const [h,c]=await Promise.all([page.locator("header").boundingBox(),page.locator("#composer").boundingBox()]);
     expect(c.y-(h.y+h.height)).toBeGreaterThan(150);
+  });
+});
+
+test.describe("Koç güvenilirlik",()=>{
+  const view=page=>page.locator("#view");
+  test("kırpık JSON ham sızmaz; bir kez yeniden sorulur, ikisi de kırpıksa kapanmış reply gösterilir",async({app,page,fake})=>{
+    fake.st.reply=()=>'{"reply":"Güzel bir gün.","log":[{"type":"su","ml":2';
+    await open(app);await send(app,page,"Selam");
+    await expect(view(page)).toContainText("Güzel bir gün.");
+    await expect(view(page)).not.toContainText('"log"');
+    expect(fake.chats().length).toBe(2);
+  });
+  test("reply çıkarılamayan kırpık yanıtta genel 'yanıt eksik' iletisi gösterilir",async({app,page,fake})=>{
+    fake.st.reply=()=>'{"log":[{"type":"su","ml":2';
+    await open(app);await send(app,page,"Selam");
+    await expect(view(page)).toContainText("Yanıt eksik geldi");
+    await expect(view(page)).not.toContainText('"type"');
+  });
+  test("uzunluk sınırında kırpılan JSON bir kez daha, daha büyük sınırla denenir",async({app,page,fake})=>{
+    let n=0;fake.st.reply=()=>++n===1?'{"reply":"Yarım kal':'{"reply":"Tam yanıt.","log":[]}';fake.st.finish=()=>n===1?"length":"stop";
+    await open(app);await send(app,page,"Selam");
+    await expect(view(page)).toContainText("Tam yanıt.");
+    expect(fake.chats().length).toBe(2);
+    expect(fake.chats()[1].body.max_tokens).toBe(fake.chats()[0].body.max_tokens*3);
+  });
+  test("çift JSON: reply'lı ilk nesne kullanılır, ek istek gitmez",async({app,page,fake})=>{
+    fake.st.reply=()=>'{"reply":"Birinci","log":[]}{"reply":"İkinci","log":[]}';
+    await open(app);await send(app,page,"Selam");
+    await expect(view(page)).toContainText("Birinci");
+    await expect(view(page)).not.toContainText("İkinci");
+    expect(fake.chats().length).toBe(1);
+  });
+  test("yeniden sormada da düz yanıt gelirse tek yeniden sorma yapılır, yanıt kaybolmaz",async({app,page,fake})=>{
+    fake.st.reply=()=>"Afiyet olsun, güzel öğün.";
+    await open(app);await send(app,page,"Kahvaltıda 2 yumurta yedim");
+    await expect(view(page)).toContainText("Afiyet olsun");
+    expect(fake.chats().length).toBe(2);
+    await expect(page.locator(".pendl")).toHaveCount(0);
+  });
+  test("yeniden sormada doğru JSON gelirse kayıt olmasa da kabul edilir",async({app,page,fake})=>{
+    let n=0;fake.st.reply=()=>++n===1?"düz metin":JSON.stringify({reply:"Düzgün yanıt.",log:[]});
+    await open(app);await send(app,page,"Selam");
+    await expect(view(page)).toContainText("Düzgün yanıt.");
+    expect(n).toBe(2);
+  });
+  test("'constructor' ve 'toString' menü kimlikleri kalem sayılmaz",async({app,page,fake})=>{
+    const meal=m=>({m,i:[["constructor",1],["toString",1]]});
+    fake.st.reply=()=>JSON.stringify({reply:"Menü",menu:{days:[{n:"Pzt",meals:[meal("kah"),meal("ogl"),meal("aks")]}]}});
+    await open(app);await app.tab("koc");
+    await page.click('[data-c="menu"]');await page.click('[data-c="menuask"]');
+    await expect(app.toast).toContainText("Menü okunamadı");
+    await expect(page.locator(".lcard")).toHaveCount(0);
+  });
+  test("sohbette görülen yeme düzeni işareti kalıcı frendir: yeni sohbette de kalori önerisi çıkmaz",async({app,page,fake})=>{
+    fake.st.reply=()=>JSON.stringify({reply:"Tamam.",propose:{kcal:1500,why:"x"}});
+    await open(app);await send(app,page,"yedikten sonra kusuyorum");
+    await expect(view(page)).toContainText("Tamam.");
+    expect((await app.state()).settings.chatRisk).toContain("ed");
+    await page.click('[data-c="newchat"]');
+    await page.fill("#cmsg","kilo vermek istiyorum");await page.click("#csend");
+    await expect(view(page)).toContainText("Tamam.");
+    await expect(page.locator('[data-c^="applyk"]')).toHaveCount(0);
+    expect(fake.chats().length).toBe(2);
+  });
+  test("hamilelik ifadesi kalıcı fren olur",async({app,page,fake})=>{
+    await open(app);await send(app,page,"hamileyim, ne yapmalıyım");
+    await expect(view(page)).toContainText("Merhaba, buradayım.");
+    expect((await app.state()).settings.chatRisk).toContain("preg");
+  });
+  test("deyimsel 'bayılıyorum' modele gider, gerçek bayılma acil kartı açar ve gitmez",async({app,page,fake})=>{
+    await open(app);await send(app,page,"baklavaya bayılıyorum");
+    await expect(view(page)).toContainText("Merhaba, buradayım.");
+    expect(fake.chats().length).toBe(1);
+    await page.fill("#cmsg","bayılacak gibiyim");await page.click("#csend");
+    await expect(page.locator(".scard")).toContainText("Hemen yardım al");
+    expect(fake.chats().length).toBe(1);
+  });
+  test("hazır sağlayıcının adresi kayıtta değiştirilmiş olsa da kodlu adrese gider",async({app,page,fake})=>{
+    const groq={id:"groq",name:"Groq",base:"https://evil.example/v1",model:"llama-3.3-70b-versatile",on:true,health:true,confirm:false};
+    await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06"},{providers:[groq]}),keys:{groq:"gsk_test"}});
+    await send(app,page,"Selam");
+    await expect(view(page)).toContainText("Merhaba, buradayım.");
+    expect(fake.chats().length).toBe(1);
+    expect((await app.state()).providers.find(p=>p.id==="groq").base).toBe("https://api.groq.com/openai/v1");
+  });
+  test("özel sağlayıcı: kullanıcının adresi kullanılır, veri gitmeden önce açık uyarı çıkar",async({app,page,fake})=>{
+    const u1={id:"u1",name:"Benimki",base:"https://custom.example/v1",model:"m",on:true,health:true,confirm:false};
+    await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"u1"},{providers:[u1]}),keys:{u1:"k1"}});
+    await send(app,page,"Selam");
+    await expect(view(page)).toContainText("Merhaba, buradayım.");
+    expect(fake.chats().length).toBe(1);
+    expect(fake.chats()[0].host).toBe("custom.example");
+    expect(app.dialogs.join(" ")).toContain("özel bir sağlayıcı (custom.example)");
+  });
+  test("rıza anında olmayan ücretli sağlayıcıya anahtar girilince Koç yeniden onay ister, veri gitmez",async({app,page,fake})=>{
+    const oa={id:"openai",name:"OpenAI",base:"https://api.openai.com/v1",model:"gpt-6-luna",on:true,health:true,confirm:false};
+    await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"groq,nvidia,openrouter"},{providers:[oa]}),keys:{openai:"sk-x"}});
+    await app.tab("koc");
+    await expect(page.locator('[data-c="consent"]')).toBeVisible();
+    await expect(view(page)).toContainText("Sağlayıcı listen değişti");
+    await page.fill("#cmsg","Selam");await page.click("#csend");
+    expect(fake.chats().length).toBe(0);
+  });
+  test("yaş girilmemişse Koç açılmaz ve yaş girmeye yönlendirir",async({app,page,fake})=>{
+    await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",age:0}),keys:{groq:"gsk_test"}});
+    await app.tab("koc");
+    await expect(view(page)).toContainText("önce yaşını gir");
+    await expect(page.locator('[data-c="consent"]')).toHaveCount(0);
+    expect(fake.chats().length).toBe(0);
+  });
+  test("Gemini onayı bir gönderimde yalnız bir kez sorulur (yeniden sorma dahil)",async({app,page,fake})=>{
+    let n=0;fake.st.reply=()=>++n===1?"düz":JSON.stringify({reply:"Tamam.",log:[]});
+    const gm={id:"gemini",name:"Google Gemini",base:"https://generativelanguage.googleapis.com/v1beta/openai",model:"gemini-3.5-flash-lite",on:true,health:true,confirm:true};
+    await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06"},{providers:[gm]}),keys:{gemini:"AIzaTest"}});
+    await send(app,page,"Selam");
+    await expect(view(page)).toContainText("Tamam.");
+    expect(n).toBe(2);
+    expect(app.dialogs.length).toBe(1);
+  });
+  test("yanıt beklerken yazılan ikinci mesaj kendiliğinden gönderilir",async({app,page,fake})=>{
+    fake.st.delay=400;
+    await open(app);await send(app,page,"Birinci");
+    await page.fill("#cmsg","İkinci");await page.click("#csend");
+    await expect.poll(()=>fake.chats().length).toBe(2);
+    await expect(page.locator(".pendl")).toHaveCount(0);
   });
 });

@@ -27,10 +27,14 @@ const ImportLib=(()=>{
     if(any||f!==""||row.length)end();
     return rows;
   }
+  /* İki ayırıcı da varsa sonuncusu ondalıktır ("1.234,5" TR, "1,234.5" EN); tek ayırıcı tekrarlıysa binliktir; tek virgül ondalıktır. */
   const num=v=>{
     if(v==null)return null;let s=String(v).trim();if(!s)return null;
-    if(s.includes(",")&&s.includes("."))s=s.replace(/,/g,"");else s=s.replace(",",".");
-    const x=Number(s);return Number.isFinite(x)?x:null;
+    const c=s.lastIndexOf(","),d=s.lastIndexOf(".");
+    if(c>=0&&d>=0)s=c>d?s.replace(/\./g,"").replace(",","."):s.replace(/,/g,"");
+    else if(c>=0)s=s.indexOf(",")===c?s.replace(",","."):s.replace(/,/g,"");
+    else if(s.indexOf(".")!==d)s=s.replace(/\./g,"");
+    return /^-?(\d+\.?\d*|\.\d+)$/.test(s)?Number(s):null;
   };
   const MON={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
   /* Yerel saat: antrenman günü uygulamanın dayKey'iyle aynı şekilde yerel takvimden alınır. */
@@ -203,6 +207,6 @@ const ImportLib=(()=>{
     const keep=p.workouts.slice().sort((a,b)=>b.t0-a.t0).slice(0,n),used=new Set(keep.flatMap(w=>w.ex.map(x=>x.id)));
     return Object.assign({},p,{workouts:keep.sort((a,b)=>a.id-b.id),newEx:p.newEx.filter(e=>used.has(e.id))});
   }
-  return {parse,read,stamp,duration,matcher,plan,bytes,fit,cut,MAP,norm,MAX_NEW};
+  return {parse,read,num,stamp,duration,matcher,plan,bytes,fit,cut,MAP,norm,MAX_NEW};
 })();
 if(typeof module!=="undefined")module.exports=ImportLib;

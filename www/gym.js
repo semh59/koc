@@ -93,15 +93,15 @@ function cleanGym(r){
     if(Object.keys(o).length)out.exCfg[id]=o;
   }
   for(const w of (Array.isArray(r.workouts)?r.workouts:[])){
-    if(!w||!idOk(w.id)||!dayOk(w.day)||!Number.isFinite(w.t0))continue;
+    if(!w||!idOk(w.id)||!dayOk(w.day)||!Number.isFinite(w.t0)){DROPS.n++;continue}
     const ex=[];
     for(const x of (Array.isArray(w.ex)?w.ex:[])){
-      if(!x||typeof x.id!=="string"||!known.has(x.id))continue;
+      if(!x||typeof x.id!=="string"||!known.has(x.id)){DROPS.n++;continue}
       const sets=[];
       for(const s of (Array.isArray(x.sets)?x.sets:[])){
-        if(!s)continue;
+        if(!s){DROPS.n++;continue}
         const kg=s.kg==null?null:Number(s.kg),reps=s.reps==null?null:Number(s.reps),sec=s.sec==null?null:Number(s.sec);
-        if((kg!=null&&!(kg>=0&&kg<=1000))||(reps!=null&&!(reps>=0&&reps<=200))||(sec!=null&&!(sec>=0&&sec<=7200)))continue;
+        if((kg!=null&&!(kg>=0&&kg<=1000))||(reps!=null&&!(reps>=0&&reps<=200))||(sec!=null&&!(sec>=0&&sec<=7200))){DROPS.n++;continue}
         const o=sec==null?{kg,reps,done:s.done===true}:{kg,reps,sec:Math.round(sec),done:s.done===true};
         if(s.w===true)o.w=true;else if(s.t==="d"||s.t==="f")o.t=s.t;
         if(typeof s.rpe==="number"&&s.rpe>=6&&s.rpe<=10&&s.rpe*2===Math.round(s.rpe*2))o.rpe=s.rpe;

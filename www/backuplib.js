@@ -1,7 +1,7 @@
 "use strict";
 /* Parola korumalı yedek: PBKDF2 (SHA-256) ile anahtar türetir, AES-GCM ile şifreler. */
 const BackupLib=(()=>{
-  const ITER=250000,te=new TextEncoder(),td=new TextDecoder();
+  const ITER=600000,te=new TextEncoder(),td=new TextDecoder();
   const b64=u=>{let s="";u.forEach(c=>{s+=String.fromCharCode(c)});return btoa(s)};
   const unb64=t=>Uint8Array.from(atob(t),c=>c.charCodeAt(0));
   async function derive(pw,salt,iter){
@@ -27,10 +27,11 @@ const BackupLib=(()=>{
   const autoName=day=>`neowell-oto-${day}.json`;
   const autoPrune=(names,cur)=>names.filter(n=>NAME.test(n)&&n!==cur).sort().slice(0,-(KEEP-1));
   const autoDue=(last,today)=>{const d=(Date.parse(today)-Date.parse(last))/864e5;return !(d>=0&&d<7)}; // saat geri alınıp son tarih ileride kalırsa da yedeklenir
-  /* Yedek parolası kuralı (tüm yedek yolları): en az 8 karakter; yalnız rakam, tek karakter tekrarı ve bilinen kolay parolalar reddedilir. Hata yoksa "" döner. */
-  const MINPW=8,EASY=["password","parola12","qwertyui","abcdefgh","sifre123","12345678","123456789"];
+  /* Yedek parolası kuralı (yalnız yeni parola girilen yollar; saklı eski parolalar ve geri yükleme denetlenmez): en az 10 karakter; yalnız rakam, tek karakter tekrarı
+     ve sonundaki rakam/işaret atılınca yaygın parola kalanlar reddedilir. Hata yoksa "" döner. */
+  const MINPW=10,COMMON=["password","parola","sifre","qwerty","qwertyuiop","abcdefgh","abcdefghij","neowell","iloveyou","welcome","admin","letmein","istanbul","ankara","galatasaray","fenerbahce","besiktas","trabzonspor","merhaba","bismillah"];
   const pwCheck=pw=>pw.length<MINPW?`Parola en az ${MINPW} karakter olmalı`
-    :/^\d+$/.test(pw)||/^(.)\1+$/.test(pw)||EASY.includes(pw.toLowerCase())?"Bu parola çok kolay tahmin edilir. Harf ve rakam karıştır ya da birkaç kelime yaz":"";
+    :/^\d+$/.test(pw)||/^(.)\1+$/.test(pw)||COMMON.includes(pw.toLowerCase().replace(/[\d\W_]+$/,""))?"Bu parola çok kolay tahmin edilir. Harf ve rakam karıştır ya da birkaç kelime yaz":"";
   return {encrypt,decrypt,pwCheck,MINPW,autoName,autoPrune,autoDue};
 })();
 if(typeof module!=="undefined")module.exports=BackupLib;

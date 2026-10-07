@@ -1,5 +1,6 @@
 package com.neowell.app;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
@@ -25,7 +26,9 @@ public class DeviceHelpPlugin extends Plugin {
     private boolean start(Intent i) {
         try {
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            getActivity().startActivity(i);
+            Activity a = getActivity();
+            if (a != null) a.startActivity(i);
+            else getContext().startActivity(i);
             return true;
         } catch (Exception e) {
             return false;
@@ -42,7 +45,8 @@ public class DeviceHelpPlugin extends Plugin {
     @PluginMethod
     public void openAutostart(PluginCall call) {
         Intent i = new Intent().setComponent(new ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"));
-        if (start(i)) {
+        // Bileşen adı HyperOS'ta doğrulanmadı: eylem adı ikinci deneme, o da yoksa uygulama ayrıntıları ekranı.
+        if (start(i) || start(new Intent("miui.intent.action.OP_AUTO_START").addCategory(Intent.CATEGORY_DEFAULT))) {
             JSObject r = new JSObject();
             r.put("opened", "autostart");
             call.resolve(r);
@@ -69,9 +73,14 @@ public class DeviceHelpPlugin extends Plugin {
     @PluginMethod
     public void keepAwake(PluginCall call) {
         final boolean on = Boolean.TRUE.equals(call.getBoolean("on", false));
-        getActivity().runOnUiThread(() -> {
-            if (on) getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-            else getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        final Activity a = getActivity();
+        if (a == null) {
+            call.reject("etkinlik yok");
+            return;
+        }
+        a.runOnUiThread(() -> {
+            if (on) a.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            else a.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             call.resolve();
         });
     }

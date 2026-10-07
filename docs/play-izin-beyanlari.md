@@ -1,6 +1,6 @@
 # Play izin beyanları
 
-Son gözden geçirme: 3 Ekim 2026. Kaynak: `scripts/patch-android.js`, eklenti manifestleri ve son APK'nın birleşik manifesti. CI her derlemede APK'nın izin listesini yazdırır. `USE_EXACT_ALARM`, `FLASHLIGHT` ya da `ACCESS_BACKGROUND_LOCATION` görürse, ya da `FOREGROUND_SERVICE_LOCATION` yoksa durur.
+Son gözden geçirme: 7 Ekim 2026. Kaynak: `scripts/patch-android.js`, eklenti manifestleri ve son APK'nın birleşik manifesti. CI her derlemede APK'nın izin listesini yazdırır. `USE_EXACT_ALARM`, `FLASHLIGHT` ya da `ACCESS_BACKGROUND_LOCATION` görürse, ya da `FOREGROUND_SERVICE_LOCATION` yoksa durur.
 
 ## Kaldırılan izinler
 | İzin | Neden kaldırıldı |
@@ -14,9 +14,9 @@ Son gözden geçirme: 3 Ekim 2026. Kaynak: `scripts/patch-android.js`, eklenti m
 |---|---|---|---|
 | `INTERNET`, `ACCESS_NETWORK_STATE` | Koç (kullanıcının kendi API anahtarıyla dil modeli), Open Food Facts barkod araması. `ACCESS_NETWORK_STATE` Google Play hizmetleri kitaplığından geliyor. | Sistem penceresi yok (normal izin). | Beyan gerekmez. Veri güvenliği formunda Koç'a giden veri yazılmalı: kaynak `docs/gizlilik-politikasi.md` bölüm 5. |
 | `POST_NOTIFICATIONS` | Su, tartı, ilaç, oruç ve yedek hatırlatmaları. | Android 13+ sistem penceresi, ilk hatırlatma kurulurken. Ayarlar > Hatırlatmalar durumu gösterir. | Beyan gerekmez. |
-| `SCHEDULE_EXACT_ALARM` | İlaç alarmı ve hatırlatmaların tam saatinde çalması. | Android 13+ yeni kurulumda izin verilmiş gelmez. İzin yoksa eklenti alarmı yaklaşık saate kurar (çökme yok). Bugün > yapılacaklar listesinde (ilaç varsa) ve Ayarlar > Hatırlatmalar'da uyarı çıkar. "İzin ver" düğmesi sistem ekranını açar, dönünce hatırlatmalar yeniden kurulur. | Beyan formu yok. Kullanıcı izni sistem ekranından verir. |
+| `SCHEDULE_EXACT_ALARM` | İlaç alarmı ve hatırlatmaların tam saatinde çalması. | Android 14+ yeni kurulumda izin verilmiş gelmez (Android 12 ve 13'te izin kurulumda verilir; kaynak: developer.android.com/about/versions/14/changes/schedule-exact-alarms). İzin yoksa eklenti alarmı yaklaşık saate kurar (çökme yok). Bugün > yapılacaklar listesinde (ilaç varsa) ve Ayarlar > Hatırlatmalar'da uyarı çıkar. "İzin ver" düğmesi sistem ekranını açar, dönünce hatırlatmalar yeniden kurulur. | Beyan formu yok. Kullanıcı izni sistem ekranından verir. |
 | `RECEIVE_BOOT_COMPLETED` | Telefon yeniden açılınca alarmları, adım anlık görüntüsünü ve hareket algılamayı yeniden kurmak. | Sistem penceresi yok. | Beyan gerekmez. |
-| `WAKE_LOCK` | Bildirim eklentisi ve Play hizmetleri, alarm teslimi sırasında. | Sistem penceresi yok. | Beyan gerekmez. |
+| `WAKE_LOCK` | Bildirim eklentisi ve Play hizmetleri alarm teslimi sırasında; ayrıca `MedWakeReceiver`: ilaç dozunda kilitli ekranı yaklaşık 8 saniye yakan ekran uyandırma kilidi (kayıtlı doz saatlerinde ayrı alarm kurar, telefon açılışında ve güncellemede yeniden kurulur). İzin bildirim eklentisinin manifestinden birleşir, `patch-android.js` ayrıca eklemez. Veri toplamaz ve göndermez. | Sistem penceresi yok. Xiaomi'de "Kilit ekranında göster" kapalıysa ekran yanmayabilir. | Beyan gerekmez. |
 | `VIBRATE` | Dinlenme süresi bitti titreşimi, rekor titreşimi, ilaç alarm kanalı. | Sistem penceresi yok. | Beyan gerekmez. |
 | `CAMERA` | Besin etiketi ve tahlil fotoğrafı (ML Kit yazı tanıma, telefonda). Fotoğraf alanı kamerayı açtığında Capacitor izni sorar. | Fotoğraf çekmek istendiğinde sistem penceresi. | Beyan gerekmez. |
 | `ACTIVITY_RECOGNITION` | Adım sayar ve yürüyüş/koşu algılama. | "Adım sayarı aç" ya da "Hareket algılamayı aç" sırasında sistem penceresi. Hareket algılama yalnız bu izni ister. | Beyan gerekmez. Sağlık uygulaması beyanında adım/aktivite verisi yazılmalı. |
@@ -35,6 +35,7 @@ Video (kısa): Adım ekranı > Yürüyüş başlat > "Yürüyüşte konum" açı
 ## Açık risk
 - Konum türü ön plan servisinin hazır kullanım durumları (konum paylaşımı, navigasyon) birebir uymayabilir; "kullanıcının başlattığı yürüyüş takibi" olarak elle yazılmalı. Servis artık yalnız kullanıcı eylemiyle ve uygulama görünürken başlıyor, arka plandan başlatılmıyor. Ret gelirse seçenek: GPS penceresini tümden kaldırmak (yalnız boy tahmini; konum izinleri ve `FOREGROUND_SERVICE_LOCATION` da kalkar).
 - `SCHEDULE_EXACT_ALARM` izni Android 14'te yedekten geri yüklenen kurulumda da kapalı gelir. Uyarı satırı bu durumu da kapsıyor.
+- `WAKE_LOCK` ile ekran açmak (`SCREEN_BRIGHT_WAKE_LOCK`, `ACQUIRE_CAUSES_WAKEUP`) Android'de kullanımdan kalkmış (deprecated) bir kalıptır; çalışır, ama Play ya da yeni Android sürümleri kısıtlarsa alternatif tam ekran bildirim niyetidir (`USE_FULL_SCREEN_INTENT` ek izin ve beyan gerektirir, doğrulanmadı).
 
 ## Kaynaklar
 - Exact alarm politikası: https://support.google.com/googleplay/android-developer/answer/13161072

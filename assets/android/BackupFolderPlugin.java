@@ -17,8 +17,10 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  * Otomatik yedek klasörü: kullanıcı Storage Access Framework ile bir klasör seçer, kalıcı izin yalnız o klasöre alınır.
@@ -27,6 +29,8 @@ import java.nio.charset.StandardCharsets;
 @CapacitorPlugin(name = "BackupFolder")
 public class BackupFolderPlugin extends Plugin {
     private static final String NAME_RE = "neowell-oto-\\d{4}-\\d{2}-\\d{2}\\.json";
+    /** Yeni yedek önce bu adla yazılır ve doğrulanır; kalan eski geçici dosya sonraki yazmada silinir. */
+    private static final String TMP = "neowell-oto-yeni.json";
     private static final int FLAGS = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
 
     private SharedPreferences prefs() {
@@ -85,9 +89,13 @@ public class BackupFolderPlugin extends Plugin {
         String old = prefs().getString("tree", null);
         if (old != null && !old.equals(u.toString())) release(Uri.parse(old));
         prefs().edit().putString("tree", u.toString()).apply();
-        JSObject r = new JSObject();
-        r.put("name", folderName(u));
-        call.resolve(r);
+        // @ActivityCallback ana iş parçacığında çalışır: klasör adı sorgusu (ContentResolver) arka planda yapılır.
+        final Uri chosen = u;
+        getBridge().execute(() -> {
+            JSObject r = new JSObject();
+            r.put("name", folderName(chosen));
+            call.resolve(r);
+        });
     }
 
     /** Yalnız bu klasörün kalıcı izni bırakılır; uygulamanın başka kalıcı izinleri varsa onlara dokunulmaz. */
@@ -115,7 +123,7 @@ public class BackupFolderPlugin extends Plugin {
         try (Cursor c = getContext().getContentResolver().query(kids, cols, null, null, null)) {
             while (c != null && c.moveToNext()) {
                 String n = c.getString(1);
-                if (n != null && n.matches(NAME_RE)) out.put(n, DocumentsContract.buildDocumentUriUsingTree(t, c.getString(0)));
+                if (n != null && (n.matches(NAME_RE) || n.equals(TMP))) out.put(n, DocumentsContract.buildDocumentUriUsingTree(t, c.getString(0)));
             }
         }
         return out;
@@ -136,17 +144,30 @@ public class BackupFolderPlugin extends Plugin {
         }
         try {
             ContentResolver cr = getContext().getContentResolver();
-            Uri dir = DocumentsContract.buildDocumentUriUsingTree(t, DocumentsContract.getTreeDocumentId(t)), doc = list(t).get(name);
-            if (doc == null) doc = create(cr, dir, name);
+            Uri dir = DocumentsContract.buildDocumentUriUsingTree(t, DocumentsContract.getTreeDocumentId(t));
+            java.util.Map<String, Uri> have = list(t);
+            if (have.get(TMP) != null) DocumentsContract.deleteDocument(cr, have.get(TMP));
+            // Yeni dosya önce geçici adla yazılıp doğrulanır, eskisi ancak ondan sonra silinir: yazma yarıda kalırsa (disk dolu, bağlantı) mevcut yedek korunur.
+            // Yeni dosyada "w" yeter (kısaltılacak eski bayt yok), "wt" desteklemeyen sağlayıcılar da çalışır.
+            Uri tmp = create(cr, dir, TMP);
             try {
-                put(cr, doc, "wt", data);
+                put(cr, tmp, "w", data);
+                if (!same(cr, tmp, data)) throw new IllegalStateException("doğrulanamadı");
             } catch (Exception e) {
-                // "wt" desteklemeyen sağlayıcı: "w" var olan dosyayı kısaltmayabilir (sonda eski baytlar kalır, yedek açılmaz); dosya silinip yeniden oluşturulur.
-                DocumentsContract.deleteDocument(cr, doc);
+                try {
+                    DocumentsContract.deleteDocument(cr, tmp);
+                } catch (Exception ignored) {
+                    // kalan geçici dosya sonraki yazmada silinir
+                }
+                throw e;
+            }
+            if (have.get(name) != null) DocumentsContract.deleteDocument(cr, have.get(name));
+            if (DocumentsContract.renameDocument(cr, tmp, name) == null) {
                 put(cr, create(cr, dir, name), "w", data);
+                DocumentsContract.deleteDocument(cr, tmp);
             }
             JSArray names = new JSArray();
-            for (String n : list(t).keySet()) names.put(n);
+            for (String n : list(t).keySet()) if (n.matches(NAME_RE)) names.put(n);
             JSObject r = new JSObject();
             r.put("names", names);
             call.resolve(r);
@@ -165,6 +186,16 @@ public class BackupFolderPlugin extends Plugin {
         try (OutputStream os = cr.openOutputStream(doc, mode)) {
             if (os == null) throw new IllegalStateException("açılamadı");
             os.write(data.getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+    private static boolean same(ContentResolver cr, Uri doc, String data) throws Exception {
+        byte[] want = data.getBytes(StandardCharsets.UTF_8), got = new byte[want.length + 1];
+        try (InputStream in = cr.openInputStream(doc)) {
+            if (in == null) return false;
+            int n = 0, k;
+            while (n < got.length && (k = in.read(got, n, got.length - n)) > 0) n += k;
+            return n == want.length && Arrays.equals(Arrays.copyOf(got, n), want);
         }
     }
 

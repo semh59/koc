@@ -53,4 +53,6 @@ ok("tablo: her kimlik kütüphanede var",Object.entries(I.MAP).every(([k,id])=>l
  ok("Hevy: dropset -> t:d, failure -> t:f, superset_id -> aynı ss (tek kalan ss atılır)",q.ex[0].sets[1].t==="d"&&q.ex[1].sets[0].t==="f"&&q.ex[0].ss>0&&q.ex[0].ss===q.ex[1].ss&&q.ex[2].ss===undefined,q);
  const sd=I.plan(I.read('Date,Workout Name,Exercise Name,Set Order,Weight,Reps\n2024-03-15 18:30,A,Squat (Barbell),1,50,5\n2024-03-15 18:30,A,Squat (Barbell),D,40,8\n2024-03-15 18:30,A,Squat (Barbell),F,40,3\n').workouts,ctx()).workouts[0].ex[0].sets;
  ok("Strong: Set Order D ve F set türü olur, atlanmaz",sd.length===3&&sd[1].t==="d"&&sd[2].t==="f");}
+for(const [s,e] of [["1.234,5",1234.5],["1,234.5",1234.5],["62,5",62.5],["62.5",62.5],["1.234.567",1234567],["1,234,567",1234567],["-5",-5],["",null],["abc",null],["1e3",null],["1.2.3x",null]])
+  ok(`ImportLib.num(${JSON.stringify(s)})`,I.num(s)===e,I.num(s));
 process.exit(bad?1:0);

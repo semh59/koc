@@ -8,6 +8,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -101,11 +102,13 @@ final class StepStore {
         h.postDelayed(timeout, 4000);
     }
 
-    private static long sampledAt;
+    /** Okuma iş parçacığına özel: canlı değer eklenti iş parçacığında, sensör olayı ana iş parçacığında işlenir; ortak statik başka okumanın anını gösterebilirdi. */
+    private static final ThreadLocal<Long> sampledAt = new ThreadLocal<>();
 
-    /** Son okumanın gün anahtarını belirleyen an. Okuma ana iş parçacığında ve geri çağrıdan hemen önce olduğu için geri çağrı kendi okumasının anını görür. */
-    static synchronized long sampledAt() {
-        return sampledAt;
+    /** Geri çağrının kendi okumasının günü belirleyen anı (geri çağrı okumayla aynı iş parçacığında, hemen ardından çalışır). */
+    static long sampledAt() {
+        Long t = sampledAt.get();
+        return t != null ? t : System.currentTimeMillis();
     }
 
     private static synchronized long apply(Context c, float counter, boolean closeFirst) {
@@ -116,10 +119,13 @@ final class StepStore {
         s.carry = sp.getFloat("carry", 0);
         s.last = sp.getFloat("last", -1);
         s.sampled = sp.getBoolean("sampled", false);
+        // elapsedRealtime yalnız yeniden başlatmada sıfırlanır (saat ayarından etkilenmez): küçüldüyse sayaç sıfırlanmıştır.
+        long el = SystemClock.elapsedRealtime();
+        s.rebooted = el < sp.getLong("el", 0L);
         Map<String, Long> hist = new HashMap<>();
         // Gün anahtarı, dakika ve geri çağrıya verilen an tek örnekten: gece yarısında ayrı ayrı alınırsa adım dünün, zaman bugünün olur.
         long at = System.currentTimeMillis();
-        sampledAt = at;
+        sampledAt.set(at);
         String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date(at));
         java.util.Calendar now = java.util.Calendar.getInstance();
         now.setTimeInMillis(at);
@@ -127,7 +133,7 @@ final class StepStore {
         boolean closed = closeFirst && StepMath.closeDay(s, today, counter, minutes, hist);
         long steps = StepMath.update(s, today, counter, minutes, hist);
         SharedPreferences.Editor e = sp.edit();
-        e.putString("day", s.day).putFloat("base", s.base).putFloat("carry", s.carry).putFloat("last", s.last).putBoolean("sampled", s.sampled);
+        e.putString("day", s.day).putFloat("base", s.base).putFloat("carry", s.carry).putFloat("last", s.last).putBoolean("sampled", s.sampled).putLong("el", el);
         for (Map.Entry<String, Long> x : hist.entrySet()) e.putLong("h_" + x.getKey(), x.getValue());
         if (closed) e.putLong("snapAt", at);
         e.apply();

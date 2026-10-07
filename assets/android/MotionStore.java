@@ -50,7 +50,7 @@ final class MotionStore {
     /** Açık aralık: tür (MotionMath.WALK/RUN), başlangıç zamanı, başlangıçtaki günlük adım. */
     static synchronized void open(Context c, int mode, long t0, long steps0) {
         p(c).edit().putInt("bMode", mode).putLong("bT0", t0).putLong("bS0", steps0).putFloat("bSpeed", -1)
-            .remove("bCp").remove("bLastT").remove("bLastS").apply();
+            .remove("bCp").remove("bLastT").remove("bLastS").remove("bCloseAt").apply();
     }
 
     /** Kontrol noktası ekler; zaman ilerlemiyor ya da adım geri gidiyorsa eklemez. */
@@ -91,7 +91,19 @@ final class MotionStore {
     }
 
     static synchronized void discard(Context c) {
-        p(c).edit().remove("bT0").apply();
+        p(c).edit().remove("bT0").remove("bCloseAt").apply();
+    }
+
+    /** Çıkış olayı geldi ama adım sayacı okunamadı: aralık açık kalır, kapanış zamanı sonraki başarılı okumada uygulanır (ilk olay geçerli). */
+    static synchronized void deferClose(Context c, long t) {
+        if (p(c).getLong("bCloseAt", 0) == 0) p(c).edit().putLong("bCloseAt", t).apply();
+    }
+
+    /** Ertelenen kapanış zamanı, yoksa 0; okununca silinir. */
+    static synchronized long takeDeferredClose(Context c) {
+        long t = p(c).getLong("bCloseAt", 0);
+        if (t != 0) p(c).edit().remove("bCloseAt").apply();
+        return t;
     }
 
     /** Açık aralığı kapatır, gün sınırında bölünmüş geçerli parçalarını bekleyenlere ekler; eklenen parça sayısını döndürür. */
@@ -100,7 +112,7 @@ final class MotionStore {
         long t0 = sp.getLong("bT0", 0), s0 = sp.getLong("bS0", 0);
         int mode = sp.getInt("bMode", 0);
         double speed = sp.getFloat("bSpeed", -1);
-        sp.edit().remove("bT0").apply();
+        sp.edit().remove("bT0").remove("bCloseAt").apply();
         if (t0 <= 0 || t1 <= t0) return 0;
         long[] ts = new long[160], ss = new long[160];
         int n = 0;
