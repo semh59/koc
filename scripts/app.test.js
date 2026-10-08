@@ -2406,7 +2406,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     // adım
     ev(`S.settings.stepsOn=true;S.entries=[];for(let i=0;i<14;i++)S.entries.push({id:i+1,day:keyOff(-i),time:"20:00",type:"adim",v:i%2?4000:9000,text:""});S.settings.stepGoal=8000;tab='adim';render()`);
     const labs=qa("#view svg.bars text").map(t=>t.textContent).filter(t=>t!=="✓");
-    ok("adım grafiği: 14 çubuğun hepsi Pzt/Sal/Çar/Per/Cum/Cmt/Paz biçiminde, tek harf ya da Cu/Ct/Pz/Pt yok",labs.length===14&&labs.every(t=>["Pzt","Sal","Çar","Per","Cum","Cmt","Paz"].includes(t))&&new Set(labs).size===7);
+    ok("adım grafiği: 14 günde etiketler üst üste binmez (en çok 3 tarih etiketi), 7 günde hepsi Pzt/Sal/Çar/Per/Cum/Cmt/Paz",labs.length>=1&&labs.length<=3&&labs.every(t=>!/^(Pzt|Sal|Çar|Per|Cum|Cmt|Paz)$/.test(t))&&(ev(`stepRange=7;render()`),qa("#view svg.bars text").map(t=>t.textContent).filter(t=>t!=="✓").length===7&&(ev(`stepRange=14;render()`),true)));
     ok("adım grafiği: hedefe ulaşan günler renge ek olarak ✓ ile işaretli, tek renk",qa("#view svg.bars text").filter(t=>t.textContent==="✓").length===7&&new Set(qa("#view svg.bars rect").map(r=>r.getAttribute("fill"))).size===1&&q("#view").textContent.includes("✓ ve koyu çubuk"));
     ok("adım grafiği etiketleri viewBox içinde (kenarda kesilmez)",qa("#view svg.bars text").every(t=>+t.getAttribute("x")>=10&&+t.getAttribute("x")<=310));
     ev("S=structuredClone(DEF);S.settings.obDone=true;tab='bugun';render()");

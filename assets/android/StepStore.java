@@ -70,10 +70,20 @@ final class StepStore {
         }
         float v = liveCounter;
         if (v >= 0) {
+            boolean flushed;
             synchronized (StepStore.class) {
-                if (live != null) sm.flush(live); // telefon yine de biriktirdiyse sonraki okumaya yetişsin
+                flushed = live != null && sm.flush(live);
             }
-            cb.done(apply(app, v, closeFirst), history(app));
+            // Telefon adımları donanım kuyruğunda biriktirir; boşaltma isteğinin yanıtı kısa süre sonra gelir, eski değeri göstermek yerine beklenir (okuma eklenti iş parçacığında).
+            for (int k = 0; flushed && k < 8 && liveCounter == v; k++) {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException x) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+            cb.done(apply(app, liveCounter, closeFirst), history(app));
             return;
         }
         final Handler h = new Handler(Looper.getMainLooper());
