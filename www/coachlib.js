@@ -160,14 +160,29 @@ const CoachLib=(()=>{
     }
     return days.length?{kcal:target,days}:null;
   }
-  /* Alışveriş listesi: aynı besin adı toplanır; gram ve adet bilinenden, bilinmeyen kalem porsiyon sayısıyla. */
-  function shopList(menu){
-    const m=new Map();
-    for(const d of menu.days)for(const b of d.meals)for(const i of b.items){
-      const k=low(i.n),x=m.get(k)||{n:i.n,g:0,a:0,q:0};
-      x.g+=i.g||0;x.a+=i.a||0;x.q+=i.q;m.set(k,x);
-    }
-    return [...m.values()].map(x=>({n:x.n,g:Math.round(x.g),a:r1(x.a),q:x.q,t:[x.g?Math.round(x.g)+" g":"",x.a?String(r1(x.a)).replace(".",",")+" adet":""].filter(Boolean).join(" · ")||String(x.q).replace(".",",")+" porsiyon"})).sort((a,b)=>a.n.localeCompare(b.n,"tr"));
+  /* Ürün adı: pişirme sözcüğü ve parantez atılır, "X pilavı" X olur; yumurtanın her pişmiş hali "Yumurta". */
+  const asc=s=>low(s).replace(/ı/g,"i").replace(/ğ/g,"g").replace(/ş/g,"s").replace(/ç/g,"c").replace(/ö/g,"o").replace(/ü/g,"u");
+  function product(n){
+    let s=n.replace(/\s*\([^)]*\)/g,"").replace(/^(haşlanmış|sahanda|çırpılmış|ızgara|Izgara|fırında|fırın|kızarmış)\s+/i,"").replace(/^(\S+) pilavı$/i,"$1").trim()||n;
+    if(/yumurta/.test(asc(s))&&!/omlet|menemen/.test(asc(s)))s="Yumurta";
+    return s.charAt(0).toLocaleUpperCase("tr")+s.slice(1);
+  }
+  const SHOP_CAT=[["Baklagil",/mercimek|nohut|kuru fasulye|barbunya|humus|pilaki|falafel/],["Et, tavuk, balık",/\bet\b|kiyma|kofte|tavuk|hindi|somon|levrek|balik|\bton\b|karides|kuzu|dana|sucuk|kebab/],
+    ["Süt ürünleri ve yumurta",/sut|yogurt|peynir|ayran|kefir|kasar|\blor\b|tereyag|kaymak|yumurta|cacik|haydari|omlet|menemen/],["Sebze",/domates|salatalik|biber|marul|roka|ispanak|brokoli|havuc|sogan|sarimsak|patlican|kabak|lahana|fasulye|bezelye|mantar|patates|maydanoz|dereotu|tursu|salata|bamya|turlu|kereviz/],
+    ["Meyve",/elma|muz|portakal|mandalina|armut|kivi|cilek|seftali|uzum|\bnar\b|kayisi|erik|ananas|greyfurt|limon|hurma|incir|meyve/],["Kuruyemiş",/badem|ceviz|findik|fistik|kaju|kuruyemis/],
+    ["Tahıl ve ekmek",/ekmek|bulgur|pirinc|makarna|spagetti|yulaf|\bun\b|kraker|lavas|tost|simit|musli|granola|kinoa|eriste|pilav/]];
+  const shopCat=n=>(SHOP_CAT.find(c=>c[1].test(asc(n)))||["Diğer"])[0],CATS=SHOP_CAT.map(c=>c[0]).concat("Diğer");
+  /* Alışveriş listesi: gramı bilinen yemek, bileşenlerine (parts(ad) → [[ad, pişmiş 100 g başına çiğ gram]]) en çok üç kat bölünür, aynı ürün toplanır.
+     Gram ve adet bilinenden, bilinmeyen kalem porsiyon sayısıyla; bölmeden gelen 5 g altı ürün (tuz, baharat) yazılmaz.
+     Sıra kategori, sonra ad; arayüzdeki gruplu liste ve işaret dizini bu sırayı kullanır. */
+  function shopList(menu,parts=()=>null){
+    const m=new Map(),put=(n,g,a,q,sp,dep)=>{
+      const ps=g>0&&dep<3&&parts(n);
+      if(ps&&ps.length){for(const [x,pg] of ps)put(x,pg*g/100,0,q,true,dep+1);return}
+      const p=product(n),k=low(p),x=m.get(k)||{n:p,g:0,a:0,q:0,sp:true};x.g+=g||0;x.a+=a||0;x.q+=q;x.sp=x.sp&&sp;m.set(k,x);
+    };
+    for(const d of menu.days)for(const b of d.meals)for(const i of b.items)put(i.n,i.g,i.a,i.q,false,0);
+    return [...m.values()].filter(x=>!x.sp||x.g>=5).map(x=>({n:x.n,c:shopCat(x.n),g:Math.round(x.g),a:r1(x.a),q:x.q,t:[x.g?Math.round(x.g)+" g":"",x.a?String(r1(x.a)).replace(".",",")+" adet":""].filter(Boolean).join(" · ")||String(x.q).replace(".",",")+" porsiyon"})).sort((a,b)=>CATS.indexOf(a.c)-CATS.indexOf(b.c)||a.n.localeCompare(b.n,"tr"));
   }
   const LV=["Başlangıç","Orta","İleri"],EQ={"Salon":["Salon","Ev tipi","Ağırlıksız"],"Ev tipi":["Ev tipi","Ağırlıksız"],"Ağırlıksız":["Ağırlıksız"]};
   /* Program kataloğu yalnız program isteğinde gider: bağlam küçük kalsın diye bölge başına 4, en fazla 60 egzersiz; önce klasikler ve seçilen seviye. */

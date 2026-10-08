@@ -9,7 +9,7 @@ function goalSug(){
 }
 function goalCard(){
   const g=goalSug();if(!g)return "";
-  return `<div class="banner info"><b>Kalori hedefini ayarlayalım mı?</b><p>Kilon haftada ${fmtS(g.slope,2)} kg değişiyor, hedef hızın ${fmtS(g.rate,2)} kg. Günlük hedefi ${S.settings.kcal} kcal yerine ${g.kcal} kcal (${g.delta>0?"+":"−"}${Math.abs(g.delta)}) yapmayı öneriyorum. Sen onaylamadan değişmez.</p>
+  return `<div class="card gsug"><h3 class="m0">Kalori hedefini ayarlayalım mı?</h3><p class="hint">Kilon haftada ${fmtS(g.slope,2)} kg değişiyor, hedef hızın ${fmtS(g.rate,2)} kg. Günlük hedefi ${S.settings.kcal} kcal yerine ${g.kcal} kcal (${g.delta>0?"+":"−"}${Math.abs(g.delta)}) yapmayı öneriyorum. Sen onaylamadan değişmez.</p>
   <div class="two"><button class="btn" data-gs="ok">Uygula</button><button class="btn ghost" data-gs="no">Şimdi değil</button></div></div>`;
 }
 document.addEventListener("click",ev=>{

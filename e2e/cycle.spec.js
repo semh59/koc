@@ -11,8 +11,8 @@ test.describe("Döngü takibi",()=>{
   test("kapalı gelir, Modüller'den açılır; dönem ekle, tahmin, sil ve Geri al; kapatınca ekran kapanır",async({app,page})=>{
     await app.open({seed:state()});
     await app.go("daha");
-    await expect(page.locator(".prow.off",{hasText:"Döngü"})).toBeVisible();
-    await app.go("ayar-modul");
+    await expect(page.locator('#view [data-tab="dongu"]')).toHaveCount(0);
+    await page.click('#view [data-tab="ayar-modul"]');
     await page.click('[data-cy="toggle"]');
     expect((await app.state()).settings.cycleOn).toBe(true);
     await app.go("dongu");
@@ -31,10 +31,10 @@ test.describe("Döngü takibi",()=>{
     await app.closeSheet();
     await expect(app.view).toContainText("Yeterli veri yok");
     await addPeriod(page,"2026-09-09");
-    await expect(app.view).toContainText("Yaklaşık 5 Eki – 9 Eki");
+    await expect(app.view).toContainText("5–9 Eki");
     await expect(app.view).toContainText("tıbbi tavsiye değildir");
     await expect(page.locator(".cyd.cyt").first()).toBeVisible();
-    await expect(app.view).toContainText("Pencere 16 Eki – 22 Eki");
+    await expect(app.view).toContainText("16–22 Eki");
     await expect(app.view).toContainText("Tahmini yumurtlama: 21 Eki");
     await expect(page.locator(".cyd.cyo .vh")).toContainText("tahmini yumurtlama günü");
     await expect(page.locator(".cyd.cyf")).toHaveCount(6);
@@ -54,9 +54,9 @@ test.describe("Döngü takibi",()=>{
     expect((await app.state()).settings.cycleOn).toBe(false);
     await app.go("dongu");
     await expect(app.view).toContainText("Döngü takibi kapalı");
-    await expect(app.view).not.toContainText("Yaklaşık");
+    await expect(page.locator(".cypr")).toHaveCount(0);
     await app.go("daha");
-    await expect(page.locator(".prow.off",{hasText:"Döngü"})).toBeVisible();
+    await expect(page.locator('#view [data-tab="dongu"]')).toHaveCount(0);
     expect((await app.state()).cycle.length).toBe(3);
   });
 
@@ -65,9 +65,9 @@ test.describe("Döngü takibi",()=>{
     await app.open({seed:state({cycleOn:true,healthNote:"hamileyim"},{cycle})});
     await app.go("dongu");
     await expect(app.view).toContainText("tahmin gösterilmiyor");
-    await expect(app.view).not.toContainText("Yaklaşık");
+    await expect(page.locator(".cypr")).toHaveCount(0);
     await expect(app.view).not.toContainText("yumurtlama");
-    await expect(app.view).not.toContainText("Pencere");
+    await expect(page.locator(".cyfw")).toHaveCount(0);
     await expect(page.locator(".cyd.cyo,.cyd.cyf")).toHaveCount(0);
   });
 
@@ -76,7 +76,7 @@ test.describe("Döngü takibi",()=>{
     await app.open({seed:state({cycleOn:true},{cycle})});
     await app.go("dongu");
     await expect(app.view).toContainText("Düzensiz döngüde tahmin güvenilmez");
-    await expect(app.view).not.toContainText("Pencere");
+    await expect(page.locator(".cyfw")).toHaveCount(0);
     await expect(page.locator(".cyd.cyo,.cyd.cyf")).toHaveCount(0);
   });
 

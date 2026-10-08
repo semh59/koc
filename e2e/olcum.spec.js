@@ -31,8 +31,8 @@ test.describe("Tahlil",()=>{
     await expect(app.toast).toHaveText("1 sonuç kaydedildi");
     await addLab("Glukoz","130","mg/dL","70","100");
     await addLab("Demir","20","µg/dL","50","170");
-    const g=page.locator(".stepcard",{hasText:"Glukoz"}),d=page.locator(".stepcard",{hasText:"Demir"});
-    await expect(g).toContainText("130");await expect(g).toContainText("▲ Raporda yazan aralığın üstünde");await expect(g).toContainText("Raporda: 70");
+    const g=page.locator(".labc",{hasText:"Glukoz"}),d=page.locator(".labc",{hasText:"Demir"});
+    await expect(g).toContainText("130");await expect(g).toContainText("▲ Raporda yazan aralığın üstünde");await expect(g).toContainText("Rapor aralığı: 70");
     await expect(d).toContainText("▼ Raporda yazan aralığın altında");
     // aynı gün aynı değer ikinci kez eklenmez
     await addLab("Demir","20","µg/dL","50","170");
@@ -40,7 +40,7 @@ test.describe("Tahlil",()=>{
     expect((await app.state()).labs.length).toBe(3);
 
     // ayrıntı: iki sonuç, yalnız yüksek olanda işaret; yüksek olan silinince kart önceki (aralık içi) değeri gösterir
-    await g.click();
+    await g.locator(".labo").click();
     const rows=page.locator("#sheet .row");
     await expect(rows).toHaveCount(2);
     await expect(rows.first()).toContainText("▲");await expect(rows.last()).not.toContainText("▲");

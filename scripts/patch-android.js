@@ -119,6 +119,8 @@ public class MainActivity extends BridgeActivity {
         in.removeExtra("nw_medwake");
         in.removeExtra("nw_tk");
         if (!signed) return;
+        // JS açılışta ve öne gelişte MedWake.wakeLaunched ile okur ve tam ekran ilaç alarm ekranını açar.
+        MedWakePlugin.markWake();
         lockShown = true;
         if (Build.VERSION.SDK_INT >= 27) {
             setShowWhenLocked(true);

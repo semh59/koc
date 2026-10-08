@@ -52,7 +52,7 @@ test.describe("Kardiyo",()=>{
   test("koşu kaydı: tempo, kcal, haftalık özet; hatalı hız reddedilir; çift kayıt uyarısı; silme ve Geri al",async({app,page})=>{
     await app.open({seed:state({},{entries:[entry("kilo",80)]})});
     await app.tab("trend");
-    await page.click('[data-ckg="open"]');
+    await page.click('[data-tsec="har"]');await page.click('[data-ckg="open"]');
     await page.fill("#fv","30");await page.fill("#ckm","20");await page.click('[data-ckg="go"]');
     await expect(page.locator("#cerr")).toContainText("olağan dışı");
     await page.fill("#ckm","5");await page.fill("#cnote","sabah koşusu");await page.fill("#ctm","09:30");await page.click('[data-ckg="go"]');

@@ -4,7 +4,7 @@ const AxeBuilder=require("@axe-core/playwright").default;
 
 const KOC=state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter",medOn:true,bpOn:true,bsOn:true,fastOn:true,stepsOn:true},{meds:[{id:1,n:"A",t:["09:00"],on:true}]});
 const SCREENS=["bugun","koc","salon","trend","daha","ayar","ayar-profil","ayar-modul","ayar-veri","egz","adim","tahlil","tansiyon","seker","ilac"];
-const SHEETS=['.act[data-act="yemek"]','.act[data-act="kilo"]','[data-hb="more"]'];
+const SHEETS=['.act[data-act="yemek"]','.act[data-act="kilo"]','#view [data-hb="mood"]'];
 /* Android yazı ölçeği WebView'da yalnız metni büyütür: piksel font-size bildirimleri ve tüm --fs-* değişkenleri ikiye katlanır.
    min()/clamp() içindeki üst sınırlar (alt menü etiketi, halka rakamı, SVG ekseni) bilinçli tasarım sınırıdır, katlanmaz. */
 const scaleText=(page,k)=>page.evaluate(k=>{
@@ -41,6 +41,7 @@ test.describe("Erişilebilirlik ve düzen",()=>{
     await app.open({seed:state()});
     await app.tab("salon");
     const small=async sel=>page.evaluate(s=>[...document.querySelectorAll(s)].map(e=>e.getBoundingClientRect()).filter(r=>r.height<43.5||r.width<43.5).length,sel);
+    await page.click("#mmacc summary");
     expect(await small(".mmp .chip")).toBe(0);
     expect(await small(".mmwrap [role=button],.mmwrap [tabindex]")).toBe(0);
     await app.go("ayar-modul");await expect(page.locator(".chkrow").first()).toBeVisible();
@@ -142,9 +143,10 @@ test.describe("Büyük yazı (%200) ve dar ekran (320 px)",()=>{
         let i=0;for(const word of t.textContent.trim().split(/\s+/)){const s=t.textContent.indexOf(word,i);i=s+word.length;rng.setStart(t,s);rng.setEnd(t,i);
           if(new Set([...rng.getClientRects()].map(q=>Math.round(q.top))).size>1)o.push("bölünür: "+word)}
       }
-      for(const g of document.querySelectorAll(".ring")){const sv=g.querySelector("svg").getBoundingClientRect(),rc=g.querySelector(".rc");rng.selectNodeContents(rc);const q=rng.getBoundingClientRect();
+      for(const g of document.querySelectorAll(".ring:not(.mini)")){const sv=g.querySelector("svg").getBoundingClientRect(),rc=g.querySelector(".rc");rng.selectNodeContents(rc);const q=rng.getBoundingClientRect();
         if(q.left<sv.left-1||q.right>sv.right+1||q.top<sv.top-1||q.bottom>sv.bottom+1)o.push("halka taşar: "+rc.textContent.trim())}
       for(const s of document.querySelectorAll(".todo .row>span"))if(s.getBoundingClientRect().width<100)o.push("dar sütun: "+s.textContent.trim().slice(0,20));
+      const tops=[...document.querySelectorAll("nav button .ic")].map(i=>Math.round(i.getBoundingClientRect().top));if(new Set(tops).size>1)o.push("ikon hizası: "+tops.join());
       return {o,fs:parseFloat(getComputedStyle(document.querySelector("nav button")).fontSize)}});
     expect(r.o).toEqual([]);
     expect(r.fs).toBeGreaterThanOrEqual(12);

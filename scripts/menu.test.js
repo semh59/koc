@@ -62,31 +62,31 @@ setTimeout(async()=>{
     ok("kalem değerleri porsiyon çarpanıyla: Yumurtam ×2 = 140 kcal, 100 g, 2 adet; bulgur ×1 = 340; gün toplamı doğru",d0.meals[0].items[0].k===140&&d0.meals[0].items[0].g===100&&d0.meals[0].items[0].a===2&&d0.meals[0].items[1].k===340&&d0.k===d0.meals.reduce((a,b)=>a+b.items.reduce((t,i)=>t+i.k,0),0)&&d0.meals[2].items[1].q===0.25,d0);
     ok("gün toplamı hedefin ±%15'i dışındaysa işaretlenir (off) ve kartta yazar",d0.off===true&&q(`[data-mid="${mc.id}"]`).textContent.includes("Hedefin %15'inden fazla sapıyor"));
     ok("±%15 sınırı: 1920 kcal / hedef 1900 işaretsiz; 500×3=1500 / hedef 2000 işaretli",ev("CoachLib.cleanMenu({days:[{meals:[{m:'kah',i:[['a',1]]},{m:'ogl',i:[['a',1]]},{m:'aks',i:[['a',1]]}]}]},{a:{n:'A',k:640}},1900).days[0].off")===false&&ev("CoachLib.cleanMenu({days:[{meals:[{m:'kah',i:[['a',1]]},{m:'ogl',i:[['a',1]]},{m:'aks',i:[['a',1]]}]}]},{a:{n:'A',k:500}},2000).days[0].off")===true);
-    ok("menü kartı: tahmin etiketi, tıbbi diyet notu, gün başına Bugüne ekle, Alışveriş listesi",q(`[data-mid="${mc.id}"]`).textContent.includes("Tıbbi diyet ya da hastalık menüsü değildir")&&!!q(`[data-mid="${mc.id}"] .tahmin`)&&doc.querySelectorAll(`[data-c^="menuadd:${mc.id}"]`).length===3&&!!q(`[data-c="shop:${mc.id}"]`));
+    ok("menü kartı: tahmin etiketi, tıbbi diyet notu, gün başına Bugüne ekle, Alışveriş listesi",q(`[data-mid="${mc.id}"]`).textContent.includes("Tıbbi diyet ya da hastalık menüsü değildir")&&!!q(`[data-mid="${mc.id}"] .tahmin`)&&doc.querySelectorAll(`[data-c^="menuday:${mc.id}"]`).length===3&&!!q(`[data-c="shop:${mc.id}"]`));
     const rt=JSON.parse(ev("JSON.stringify(cleanCoach(JSON.parse(JSON.stringify(S))))")).chat.find(m=>m.card&&m.card.kind==="menu");
     ok("menü kartı yeniden yüklemede kalır (kimliksiz doğrulama)",rt&&rt.card.days.length===3&&rt.card.days[0].k===d0.k&&rt.card.days[0].off===true&&rt.card.kcal===2000&&Array.isArray(rt.card.chk));
     const gr=JSON.parse(ev(`JSON.stringify(cleanCoach({chat:[{id:1,role:'coach',text:'a',t:1,card:{kind:'menu',days:'x'}},{id:2,role:'coach',text:'b',t:1,card:{kind:'menu',kcal:99999,chk:[1,'a'],days:[{n:'G',meals:[{m:'zz',items:[{n:'A',q:1,k:100},{n:'',k:5},{n:'B',k:-1}]},{m:'ogl',items:[{n:'A',k:50}]},{m:'aks',items:[{n:'C',k:70,p:'x',g:5}]}]}]}},{id:3,role:'coach',text:'c',t:1}]}))`));
     ok("temizleyici: çöp kart atılır diğer mesajlar kalır; geçersiz kalem, öğün anahtarı, hedef ve işaret çöpü ayıklanır; eski yedekte menü kartı yok",gr.chat.length===3&&!gr.chat[0].card&&gr.chat[1].card.kcal===null&&gr.chat[1].card.chk.join()==="a"&&gr.chat[1].card.days[0].meals[0].m==="atis"&&gr.chat[1].card.days[0].meals[0].items.length===1&&gr.chat[1].card.days[0].meals[2].items[0].p===null&&ev("cleanCoach({}).chat.length")===0,gr);
     // günlüğe ve şablona
     ev("S.entries=[];S.mealTpl=[];S.nextId=1");
-    click(`[data-c="menuadd:${mc.id}:0"]`);
+    click(`[data-c="menuday:${mc.id}:0"]`);click(`[data-c="menuadd:${mc.id}:0"]`);
     const ents=ev("S.entries.filter(e=>e.type==='yemek').map(e=>[e.meal,e.v,e.text])");
     ok("Bugüne ekle: günün yemekleri entry.meal ile (kah/ogl/aks), porsiyon çarpanı metinde, değerler kopyalanır",ents.length===5&&ents.filter(e=>e[0]==="kah").length===2&&ents.filter(e=>e[0]==="ogl").length===1&&ents.filter(e=>e[0]==="aks").length===2&&ents[0][2]==="Yumurtam × 2"&&ents[0][1]===140&&ev("S.entries[0].p")===12&&ev("S.entries[0].day")===ev("dayKey()"),ents);
     ev("lastUndo()");
     ok("Geri al: eklenen yemekler gider",ev("S.entries.filter(e=>e.type==='yemek').length")===0);
     { // hedeften %15'ten fazla sapan gün ve kalori açığı engeli onay ister
       let msg="";w.confirm=m=>{msg=m;return false};const card=ev("S.chat.find(m=>m.card&&m.card.kind==='menu').card"),n=()=>ev("S.entries.filter(e=>e.type==='yemek').length");
-      click(`[data-c="menuadd:${mc.id}:0"]`);
+      click(`[data-c="menuday:${mc.id}:0"]`);click(`[data-c="menuadd:${mc.id}:0"]`);
       ok("sapan gün (off) onaysız eklenmez, onay metni %15'i söyler",n()===0&&msg.includes("%15"),msg);
-      msg="";ev("S.chat.find(m=>m.card&&m.card.kind==='menu').card.days[1].off=false");click(`[data-c="menuadd:${mc.id}:1"]`);
+      msg="";ev("S.chat.find(m=>m.card&&m.card.kind==='menu').card.days[1].off=false");click(`[data-c="menuday:${mc.id}:1"]`);click(`[data-c="menuadd:${mc.id}:1"]`);
       ok("hedefe yakın gün onay sormadan eklenir",msg===""&&n()>0);ev("lastUndo()");
       ev("S.settings.healthNote='tansiyon'");ev(`{const c=S.chat.find(m=>m.card&&m.card.kind==='menu').card;c.days[1].off=false;c.days[1].k=c.kcal-100}`);msg="";
-      click(`[data-c="menuadd:${mc.id}:1"]`);
+      click(`[data-c="menuday:${mc.id}:1"]`);click(`[data-c="menuadd:${mc.id}:1"]`);
       ok("kalori açığı engelinde hedefin altındaki gün onaysız eklenmez",n()===0&&msg.includes("Kalori açığı önerilmiyor"),msg);
       ev("S.settings.healthNote=''");w.confirm=()=>true;ev("S.entries=[]");
     }
     ev("{const c=S.chat.find(m=>m.card&&m.card.kind==='menu').card,L=Array.from({length:8},(_,i)=>({n:'K'+i,q:1,k:10,p:null,c:null,f:null,g:null,a:null}));c.days[0].meals[0].items=L;c.days[0].meals[1].items=L.slice()}");
-    click(`[data-c="menutpl:${mc.id}:0"]`);
+    click(`[data-c="menuday:${mc.id}:0"]`);click(`[data-c="menutpl:${mc.id}:0"]`);
     ok("Şablon yap: ad 'Menü: gün', en çok 15 yemek, uyarı",ev("S.mealTpl.length")===1&&ev("S.mealTpl[0].n")==="Menü: Pazartesi"&&ev("S.mealTpl[0].items.length")===15&&q("#toast").textContent.includes("ilk 15"));
     ev("lastUndo()");ok("şablon geri alınır",ev("S.mealTpl.length")===0);
     // alışveriş listesi

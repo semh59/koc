@@ -27,6 +27,8 @@ const MuscleMap=(()=>{
   const BODY='<circle cx="50" cy="13" r="10"/><path d="M41 92h18l3 8H38z"/><ellipse cx="12" cy="108" rx="4" ry="5"/><ellipse cx="43" cy="194" rx="6" ry="3"/>';
   const BODY_MIR='<ellipse cx="12" cy="108" rx="4" ry="5"/><ellipse cx="43" cy="194" rx="6" ry="3"/>';
   const REGIONS=[...new Set(R.map(r=>r[0]))];
+  /* Düğmeler bölge grubuna göre; şemada olmayan bölgeler (Tüm vücut, bölgesiz) "Diğer"de. */
+  const GROUPS=[["Üst gövde",["Göğüs","Sırt","Omuz","Trapez","Boyun"]],["Kollar",["Biseps","Triseps","Ön kol"]],["Gövde",["Karın","Bel"]],["Bacaklar",["Ön bacak","Arka bacak","İç-dış bacak","Kalça","Baldır"]],["Diğer",[]]];
   const lvl=n=>n<=0?0:n<5?1:n<LO?2:n<=HI?3:4;
   const LEG=["Set yok","1-4 set","5-9 set","10-20 set (kılavuz aralığı)","21 ve üstü"];
   const tx=(name,n)=>!(n>0)?`${name}: bu hafta set yok`:`${name}: ${n} set, haftalık ${LO}-${HI} kılavuz aralığının ${n<LO?"altında":n>HI?"üstünde":"içinde"}`;
@@ -46,7 +48,7 @@ const MuscleMap=(()=>{
     const named=new Set(R.map(r=>r[0])),total=Object.values(regs).reduce((a,b)=>a+b,0),extra=Object.keys(regs).filter(k=>!named.has(k)&&regs[k]>0);
     const svg=`<svg viewBox="0 0 220 212" aria-hidden="true">${fig("f",regs,0)}${fig("b",regs,120)}</svg>`;
     return `<div class="mmwrap">${svg}<p class="mmi" id="mminfo" aria-live="polite">${total>0?"Bir bölgeye dokunarak set sayısını gör.":"Bu hafta set yok."}</p>
-    <div class="chips mmp">${[...REGIONS,...extra].map(k=>`<button class="chip" data-g="mm:${k}" aria-pressed="false" aria-label="${lab(named.has(k)||k==="Tüm vücut"?k:"Bölgesiz ("+k+")",regs[k]||0)}">${named.has(k)?k:k==="Tüm vücut"?k:"Bölgesiz ("+k+")"}${regs[k]>0?" "+regs[k]:""}</button>`).join("")}</div>
+    <div class="mmp">${GROUPS.map(([g,L])=>[g,g==="Diğer"?extra:L]).filter(([,L])=>L.length).map(([g,L])=>`<div class="mmg" role="group" aria-label="${g}"><div class="lbl">${g}</div><div class="chips">${L.map(k=>`<button class="chip" data-g="mm:${k}" aria-pressed="false" aria-label="${lab(named.has(k)||k==="Tüm vücut"?k:"Bölgesiz ("+k+")",regs[k]||0)}">${named.has(k)?k:k==="Tüm vücut"?k:"Bölgesiz ("+k+")"}${regs[k]>0?" "+regs[k]:""}</button>`).join("")}</div></div>`).join("")}</div>
     <div class="mmleg" aria-label="Renk açıklaması">${LEG.map((t,i)=>`<span><i class="l${i}"></i>${t}</span>`).join("")}</div></div>`;
   }
   return {html,lvl,tx,REGIONS};

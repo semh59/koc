@@ -19,11 +19,8 @@ function motionSettingsHtml(){
   if(!isNative()||!MO()||!S.settings.stepsOn)return "";
   const st=S.settings,p=motionPerm||{};
   const gps=p.fine?"Konum izni var: elle başlattığın yürüyüşte GPS kısa süre açılır.":"Konum izni yok: mesafe boyuna göre tahmin edilir.";
-  return `<h2>Hareket algılama</h2><div class="card">
-    <p class="m0 mb-3 mut sm">Yürüyüş ve koşuyu kendisi algılar, süre, mesafe, hız ve kaloriyi (boy ve kilona göre) Adım ekranında listeler. Konum yalnız elle başlattığın yürüyüşlerde kullanılır: ölçüm uygulama açıkken başlar, sürdüğü kısa süre bildirim görünür. Arka planda konum kullanılmaz. Rota ve konum noktası kaydedilmez, her şey telefonda kalır.</p>
-    <button class="mb-2 btn ghost" data-mo="toggle">${st.motionOn?"Hareket algılamayı kapat":"Hareket algılamayı aç"}</button>
-    ${st.motionOn?`<p class="m0 mb-2 mut sm">${gps}</p>${p.fine?"":`<button class="btn ghost" data-mo="perm">Yürüyüşte konumu kullan</button>`}`:""}
-  </div>`;
+  return modRow('data-mo="toggle"',st.motionOn,"Hareket algılama","Yürüyüş ve koşuyu kendisi algılar.","hlpmo","Yürüyüş ve koşuyu kendisi algılar, süre, mesafe, hız ve kaloriyi (boy ve kilona göre) Adım ekranında listeler. Konum yalnız elle başlattığın yürüyüşlerde kullanılır: ölçüm uygulama açıkken başlar, sürdüğü kısa süre bildirim görünür. Arka planda konum kullanılmaz. Rota ve konum noktası kaydedilmez, her şey telefonda kalır.",
+    `<p class="m0 mb-2 mut sm">${gps}</p>${p.fine?"":`<button class="btn ghost" data-mo="perm">Yürüyüşte konumu kullan</button>`}`);
 }
 
 async function motionToggle(){

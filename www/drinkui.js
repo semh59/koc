@@ -5,9 +5,9 @@ const DRINKS=[["su","Su"],["maden","Maden suyu (sade)"],["cay","Çay"],["kahve",
 const drinkName=c=>(DRINKS.find(d=>d[0]===c)||DRINKS[0])[1];
 const drinkOk=c=>c!=="su"&&DRINKS.some(d=>d[0]===c);
 function sheetIcecek(){
-  openSheet(`<h3>İçecek ekle</h3><div class="chips" id="dr" role="group" aria-label="İçecek türü">${DRINKS.map(([c,n],i)=>`<button class="chip" data-dr="${c}" aria-pressed="${i===0}">${n}</button>`).join("")}</div>
-  <input class="in num" id="fv" inputmode="numeric" aria-label="Miktar (ml)" value="${S.settings.glass}" autocomplete="off" onfocus="this.select()"><div class="ferr" id="derr" role="alert"></div>${dayOptions()}
-  <p class="hint">Su hedefine yalnız su sayılır.</p><button class="btn" data-dk="go">Kaydet</button>`);
+  openSheet(`<h3>İçecek ekle</h3><div class="lbl" id="drl">İçecek</div><div class="chips" id="dr" role="group" aria-labelledby="drl">${DRINKS.map(([c,n],i)=>`<button class="chip" data-dr="${c}" aria-pressed="${i===0}">${n}</button>`).join("")}</div>
+  <label class="lbl" for="fv">Miktar (ml)</label><div class="chips" role="group" aria-label="Hazır miktar">${[150,200,250,330,500].map(v=>`<button class="chip num" data-dq="${v}">${v}</button>`).join("")}</div><input class="in num" id="fv" inputmode="numeric" value="${S.settings.glass}" autocomplete="off" onfocus="this.select()"><div class="ferr" id="derr" role="alert"></div>${dayOptions()}
+  <p class="hint">Su hedefine yalnız su ve sade maden suyu sayılır.</p><button class="btn" data-dk="go">Kaydet</button>`);
 }
 function goIcecek(){
   const ml=num($("#fv").value,true);
@@ -20,6 +20,7 @@ function goIcecek(){
   toast(WeeklyLib.isWater(e)?`${drinkName(c)} ${ml} ml eklendi, bugün ${Math.round(top)} / ${goal} ml`:`${drinkName(c)} ${ml} ml kaydedildi, su hedefine sayılmaz`,e.id);
 }
 document.addEventListener("click",ev=>{
+  const q=ev.target.closest("[data-dq]");if(q){$("#fv").value=q.dataset.dq;return}
   const el=ev.target.closest("[data-dr],[data-dk]");if(!el)return;
   if(el.dataset.dk==="open")sheetIcecek();
   else if(el.dataset.dk==="go")goIcecek();
