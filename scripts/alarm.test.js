@@ -1,4 +1,4 @@
-// Tam ekran ilaç alarm ekranı: saf mantık (AlarmLib) ve jsdom'da açılış, işaretleme, gizlilik, erteleme, test modu.
+// Tam ekran ilaç alarm ekranı: saf mantık (AlarmLib) ve jsdom'da açılış, işaretleme, gizlilik, erteleme.
 const {JSDOM}=require("jsdom"),fs=require("fs"),path=require("path"),A=require("../www/alarmlib.js"),M=require("../www/medlib.js");
 let bad=0,total=0;const ok=(n,c,x)=>{total++;console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 process.on("unhandledRejection",e=>{console.log("FAIL beklenmeyen hata",e);process.exit(1)});
@@ -19,35 +19,32 @@ process.on("unhandledRejection",e=>{console.log("FAIL beklenmeyen hata",e);proce
   ok("view: doz yoksa 'Tüm dozlar alındı.'",A.view([],true).lead==="Tüm dozlar alındı.");
   ok("allDone: tüm satırlar işaretliyse",A.allDone([{st:"t"},{st:"s"}])&&!A.allDone([{st:"t"},{}]));
 }
-{ // erteleme ve test
+{ // erteleme
   const t=Date.UTC(2026,9,7,6,0),n=A.snoozeNote([{n:"Aspirin"}],false,A.snoozeAt(t));
   ok("erteleme: 10 dk sonra, tek seferlik ilaç kanalı bildirimi, düğmesiz, ad gizliyse ad yok",A.snoozeAt(t)-t===600000&&n.id===7148&&+n.schedule.at===t+600000&&n.channelId==="nw_med"&&!n.actionTypeId&&n.body==="İlaç saatin geldi."&&n.extra.act==="med");
   ok("erteleme: ad açıkken bekleyen ilaç adları",A.snoozeNote([{n:"A"},{n:"B"}],true,t).body==="A, B");
-  const ti=A.testItems([],new Date(2026,9,7,9,5)),tm=A.testItems([{id:3,n:"X",d:"5 mg",on:true}],new Date(2026,9,7,9,5));
-  ok("test dozu: ilaç yoksa 'Örnek ilaç 500 mg', varsa ilk açık ilaç; saat şimdi, kimlik 0",ti[0].n==="Örnek ilaç"&&ti[0].d==="500 mg"&&ti[0].slot==="09:05"&&ti[0].m===0&&tm[0].n==="X");
-  ok("isTest: süre içinde test, sonra ya da kayıt yoksa değil",A.isTest({to:100},50)&&!A.isTest({to:100},150)&&!A.isTest(null,1));
 }
 
-// jsdom: soğuk açılışta uyandırma bayrağı, işaretleme, gizlilik, erteleme, test modu
+// jsdom: alarmOpen() ile açılış, işaretleme, gizlilik, erteleme
 const www=f=>path.join(__dirname,"../www",f),p2=n=>String(n).padStart(2,"0"),hm=d=>p2(d.getHours())+":"+p2(d.getMinutes());
 const html=fs.readFileSync(www("index.html"),"utf8").replace(/<script src="([^"]+)"><\/script>/g,(_,f)=>"<script>"+fs.readFileSync(www(f),"utf8")+"</script>");
 const now=new Date(),slot=hm(new Date(now-600000)),later=hm(new Date(+now+7200000));
 const seed={settings:{obDone:true,heightCm:178,age:35,sex:"m",goalKg:78,kcal:2200,stepsAsked:true,medOn:true},entries:[],meds:[{id:1,n:"Aspirin",d:"100 mg",t:[slot],on:true},{id:2,n:"Gece",t:[later],on:true}]};
-const calls=[],errs=[];let wake=true,appState=null;
-const rec=(p,defs)=>new Proxy({},{get:(_,k)=>k==="then"?undefined:k==="addListener"?(ev,fn)=>{if(ev==="appStateChange")appState=fn;return {remove(){}}}:async a=>{calls.push([p+"."+k,a]);const v=defs[k];return typeof v==="function"?v(a):v||{}}});
+const calls=[],errs=[];
+const rec=(p,defs)=>new Proxy({},{get:(_,k)=>k==="then"?undefined:k==="addListener"?()=>({remove(){}}):async a=>{calls.push([p+"."+k,a]);const v=defs[k];return typeof v==="function"?v(a):v||{}}});
 const dom=new JSDOM(html,{runScripts:"dangerously",pretendToBeVisual:true,url:"https://localhost/",beforeParse(w){
   Object.assign(w,{structuredClone,TextEncoder,TextDecoder,__noSelfTest:true});Object.defineProperty(w,"crypto",{value:require("node:crypto").webcrypto});w.scrollTo=()=>{};w.addEventListener("error",e=>errs.push(e.message));
   w.localStorage.setItem("koc_v1",JSON.stringify(seed));
   w.Capacitor={isNativePlatform:()=>true,getPlatform:()=>"android",Plugins:{
-    MedWake:rec("MW",{wakeLaunched:()=>{const r={launched:wake};wake=false;return r},fsi:{allowed:true}}),
+    MedWake:rec("MW",{fsi:{allowed:true}}),
     LocalNotifications:rec("LN",{checkPermissions:{display:"granted"},checkExactNotificationSetting:{exact_alarm:"granted"},getDeliveredNotifications:{notifications:[]},getPending:{notifications:[{id:2001000},{id:7148}]}}),
     App:rec("App",{})}};
 }});
 const w=dom.window,$=s=>w.document.querySelector(s),ev=s=>w.eval(s),sleep=ms=>new Promise(r=>setTimeout(r,ms)),txt=()=>$("#alarm").textContent,n=k=>calls.filter(c=>c[0]===k);
 const inert=()=>[...w.document.body.children].some(e=>e.contains($("#view"))&&e.inert===true),click=s=>$(s).dispatchEvent(new w.MouseEvent("click",{bubbles:true}));
 setTimeout(async()=>{
-  ok("sayfa hatasız açılır",errs.length===0,errs);
-  ok("soğuk açılış: uyandırma bayrağıyla alarm ekranı açık, alertdialog, vadesi gelen doz var, sonraki doz yok",$("#alarm")&&!$("#alarm").hidden&&$("#alarm").getAttribute("role")==="alertdialog"&&txt().includes("Aspirin")&&txt().includes("100 mg")&&txt().includes(slot)&&!txt().includes("Gece"),txt&&$("#alarm")&&txt());
+  ok("sayfa hatasız açılır",errs.length===0,errs);ev("alarmOpen()");
+  ok("alarmOpen(): alarm ekranı açık, alertdialog, vadesi gelen doz var, sonraki doz yok",$("#alarm")&&!$("#alarm").hidden&&$("#alarm").getAttribute("role")==="alertdialog"&&txt().includes("Aspirin")&&txt().includes("100 mg")&&txt().includes(slot)&&!txt().includes("Gece"),txt&&$("#alarm")&&txt());
   ok("katman: arka plan inert, odak başlıkta, saat görünür",inert()&&w.document.activeElement.id==="alt"&&/^\d\d:\d\d$/.test($("#alarm .alclk").textContent));
   const c0=n("LN.cancel").length,s0=n("LN.schedule").length;
   click('#alarm [data-al="t:0"]');await sleep(50);
@@ -56,7 +53,7 @@ setTimeout(async()=>{
   const last=n("LN.schedule").slice(s0).pop(),sch=last?last[1].notifications:[];
   ok("Aldım: bildirimler yeniden kurulur, bekleyen tekrarlar iptal edilir (erteleme kimliği korunur), alınan doz yeniden kurulmaz",n("LN.cancel").length>c0&&n("LN.cancel").slice(c0).some(c=>c[1].notifications.some(x=>x.id===2001000)&&!c[1].notifications.some(x=>x.id===7148))&&!sch.some(x=>x.extra&&x.extra.m===1&&+x.schedule.at<=+now+3600000),sch.map(x=>x.id));
   await sleep(1700);
-  ok("hepsi bitince 1,5 sn sonra kapanır ve kilit ekranı bayrağı kalkar (release)",$("#alarm").hidden&&n("MW.release").length===1&&!inert());
+  ok("hepsi bitince 1,5 sn sonra kapanır",$("#alarm").hidden&&!inert());
   // gizlilik
   ev("S.medLog=[];S.settings.medShowName=false;alarmOpen()");
   ok("medShowName=false: ad ve doz görünmez, 'İlaç saatin geldi.' ve '1 doz'",!$("#alarm").hidden&&!/Aspirin|100 mg/.test($("#alarm").innerHTML)&&txt().includes("İlaç saatin geldi.")&&txt().includes("1 doz"),txt());
@@ -64,17 +61,7 @@ setTimeout(async()=>{
   const t0=Date.now();click('#alarm [data-al="snooze"]');await sleep(50);
   const sn=n("LN.schedule").pop()[1].notifications[0],mz=n("MW.snooze").pop();
   ok("ertele: 10 dk sonra tek seferlik bildirim (ad gizli) ve ekran alarmı, doz işaretlenmez, ekran kapanır",sn.id===7148&&Math.abs(+new Date(sn.schedule.at)-t0-600000)<5000&&sn.body==="İlaç saatin geldi."&&mz&&mz[1].at===+new Date(sn.schedule.at)&&ev("S.medLog.length")===0&&$("#alarm").hidden);
-  // test modu
-  const before=w.localStorage.getItem("koc_v1"),cBefore=n("LN.cancel").length;
-  ev("S.settings.medShowName=true");w.localStorage.setItem("nw_alarm_test",JSON.stringify({to:Date.now()+60000}));wake=true;appState({isActive:true});await sleep(50);
-  ok("test modu: Ayarlar testinden gelen uyandırma test ekranı açar",!$("#alarm").hidden&&txt().includes("(test)")&&txt().includes("Aspirin")&&w.localStorage.getItem("nw_alarm_test")==null);
-  click('#alarm [data-al="t:0"]');await sleep(50);
-  ok("test modu: Aldım yalnız 'Test' gösterir, gerçek kayıt ve bildirimler değişmez",txt().includes("Test")&&ev("S.medLog.length")===0&&w.localStorage.getItem("koc_v1")===before&&n("LN.cancel").length===cBefore);
-  await sleep(1700);
-  ok("test modu: sonra kendiliğinden kapanır",$("#alarm").hidden);
-  wake=false;appState({isActive:true});await sleep(30);
-  ok("bayrak yoksa öne gelişte alarm açılmaz",$("#alarm").hidden);
-  ev("alarmOpen()");w.document.dispatchEvent(new w.KeyboardEvent("keydown",{key:"Escape",bubbles:true}));
+  ev("S.settings.medShowName=true;alarmOpen()");w.document.dispatchEvent(new w.KeyboardEvent("keydown",{key:"Escape",bubbles:true}));
   ok("Escape ve geri tuşu alarm ekranını kapatır (doz işaretlenmez)",$("#alarm").hidden&&ev("S.medLog.length")===0&&(ev("alarmOpen()"),ev("backKey()"))===true&&$("#alarm").hidden);
   ev("S.medLog=[{id:1,m:1,day:dayKey(new Date(Date.now()-600000)),slot:'"+slot+"',st:'t'}];alarmOpen()");
   ok("vadesi gelmiş doz yoksa 'Tüm dozlar alındı' gösterip kapanır",!$("#alarm").hidden&&txt().includes("Tüm dozlar alındı"));

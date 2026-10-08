@@ -1,5 +1,5 @@
 "use strict";
-/* Tam ekran ilaç alarm ekranının saf mantığı (DOM yok): gösterilecek dozlar, gizlilik metni, erteleme bildirimi, test modu. */
+/* Tam ekran ilaç alarm ekranının saf mantığı (DOM yok): gösterilecek dozlar, gizlilik metni, erteleme bildirimi. */
 const AlarmLib=(()=>{
   const M=typeof MedLib!=="undefined"?MedLib:require("./medlib.js");
   const BEFORE=3*3600000,AHEAD=5*60000,SNOOZE_MIN=10,SNOOZE_NID=7148;
@@ -17,11 +17,6 @@ const AlarmLib=(()=>{
     }
     return out.sort((a,b)=>a.at-b.at||a.m-b.m);
   }
-  /* Ayarlar'daki testler: gerçek kayda dokunmayan örnek doz (ilk açık ilaç ya da "Örnek ilaç 500 mg"), saat şimdi. */
-  function testItems(meds,now){
-    const m=meds.find(x=>x.on);
-    return [{m:0,n:m?m.n:"Örnek ilaç",d:m?m.d||"":"500 mg",day:M.key(now),slot:hm(now),at:now.getTime(),test:true}];
-  }
   /* Ekran metni: ad gizliyse (medShowName false) ad ve doz yok, yalnız sayı. */
   function view(items,showName){
     const n=items.length;
@@ -38,8 +33,6 @@ const AlarmLib=(()=>{
     return {id:SNOOZE_NID,title:"💊 İlaç zamanı",body,schedule:{at:new Date(at),allowWhileIdle:true},channelId:"nw_med",extra:{act:"med"},autoCancel:true};
   }
   const allDone=items=>items.every(i=>i.st);
-  /* Test kaydı {to}: test düğmesine basılınca yazılır; uyandırma bu süre içindeyse ekran test modunda açılır. */
-  const isTest=(rec,now)=>!!rec&&typeof rec.to==="number"&&now<=rec.to;
-  return {due,testItems,view,snoozeAt,snoozeNote,allDone,isTest,hm,BEFORE,AHEAD,SNOOZE_MIN,SNOOZE_NID};
+  return {due,view,snoozeAt,snoozeNote,allDone,hm,BEFORE,AHEAD,SNOOZE_MIN,SNOOZE_NID};
 })();
 if(typeof module!=="undefined")module.exports=AlarmLib;

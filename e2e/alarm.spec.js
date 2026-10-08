@@ -1,14 +1,14 @@
 "use strict";
-/* Tam ekran ilaç alarm ekranı: ekran uyandırma bayrağıyla açılış, Aldım, gizlilik, büyük yazı ve dar ekran (sahte MedWake ve LocalNotifications). */
+/* Tam ekran ilaç alarm ekranı: alarmOpen() ile açılış, Aldım, gizlilik, büyük yazı ve dar ekran (sahte MedWake ve LocalNotifications). */
 const {test,expect,state,offscreen}=require("./fixtures");
 const path=require("path");
 
 function plugins(){
-  window.__calls=[];let wake=true;
+  window.__calls=[];
   const rec=(p,defs)=>new Proxy({},{get:(_,k)=>k==="then"?undefined:k==="addListener"?()=>({remove(){}}):async a=>{window.__calls.push([p+"."+k,a]);const v=defs[k];return typeof v==="function"?v():v||{}}});
   let C;
   Object.defineProperty(window,"Capacitor",{configurable:true,get:()=>C,set:v=>{C=v;
-    v.Plugins.MedWake=rec("MedWake",{fsi:{allowed:true},wakeLaunched:()=>{const r={launched:wake};wake=false;return r}});
+    v.Plugins.MedWake=rec("MedWake",{fsi:{allowed:true}});
     v.Plugins.LocalNotifications=rec("LN",{checkPermissions:{display:"granted"},getPending:{notifications:[]},getDeliveredNotifications:{notifications:[]},checkExactNotificationSetting:{exact_alarm:"granted"}});
   }});
 }
@@ -22,9 +22,10 @@ const scaleText=(page,k)=>page.evaluate(k=>{
   for(const p of names)de.style.setProperty(p,m(cs.getPropertyValue(p).trim()));
 },k);
 
-test("uyandırma bayrağıyla açılışta alarm ekranı: vadesi gelen dozlar, Aldım kaydeder ve tekrarları yeniden kurar",async({app,page})=>{
+test("alarmOpen ile açılan alarm ekranı: vadesi gelen dozlar, Aldım kaydeder ve tekrarları yeniden kurar",async({app,page})=>{
   await page.addInitScript(plugins);
   await app.open({seed:state({medOn:true},MEDS),native:{}});
+  await page.evaluate("alarmOpen()");
   const al=page.getByRole("alertdialog",{name:"İlaç zamanı"});
   await expect(al).toBeVisible();
   await expect(al).toContainText("10:00");
@@ -38,12 +39,12 @@ test("uyandırma bayrağıyla açılışta alarm ekranı: vadesi gelen dozlar, A
   await expect.poll(()=>page.evaluate(()=>window.__calls.some(c=>c[0]==="LN.cancel"||c[0]==="LN.schedule"))).toBe(true);
   await al.getByRole("button",{name:"D vitamini 09:30: atla"}).click();
   await expect(al).toBeHidden({timeout:3000});
-  await expect.poll(()=>page.evaluate(()=>window.__calls.some(c=>c[0]==="MedWake.release"))).toBe(true);
 });
 
 test("ad gizliyse alarm ekranında ilaç adı ve doz yok",async({app,page})=>{
   await page.addInitScript(plugins);
   await app.open({seed:state({medOn:true,medShowName:false},MEDS),native:{}});
+  await page.evaluate("alarmOpen()");
   const al=page.getByRole("alertdialog");
   await expect(al).toContainText("İlaç saatin geldi.");
   await expect(al).toContainText("2 doz");
@@ -56,6 +57,7 @@ test("ad gizliyse alarm ekranında ilaç adı ve doz yok",async({app,page})=>{
 for(const k of [1,2])test(`alarm ekranı yazı %${k*100}: taşma yok, dokunma hedefleri ≥ 56 px`,async({app,page},ti)=>{
   await page.addInitScript(plugins);
   await app.open({seed:state({medOn:true},MEDS),native:{}});
+  await page.evaluate("alarmOpen()");
   await expect(page.locator("#alarm")).toBeVisible();
   if(k>1){await scaleText(page,k);await page.waitForTimeout(100)}
   expect(await offscreen(page,"#alarm")).toEqual([]);
@@ -74,6 +76,7 @@ test("alarm ekranı yatay ve koyu temada: taşma yok, düğmeler erişilebilir, 
   await page.emulateMedia({colorScheme:"dark"});
   await page.setViewportSize({width:ti.project.use.viewport.height,height:ti.project.use.viewport.width});
   await app.open({seed:state({medOn:true},MEDS),native:{}});
+  await page.evaluate("alarmOpen()");
   await expect(page.locator("#alarm")).toBeVisible();
   expect(await offscreen(page,"#alarm")).toEqual([]);
   expect(await page.evaluate(()=>{const a=document.querySelector("#alarm");return a.scrollWidth<=a.clientWidth})).toBe(true);

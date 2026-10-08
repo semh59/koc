@@ -1,6 +1,5 @@
 package com.neowell.app;
 
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -9,7 +8,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
-import android.view.WindowManager;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PluginCall;
@@ -125,48 +123,7 @@ public class MedWakePlugin extends Plugin {
         call.resolve();
     }
 
-    // MainActivity imzalı uyandırma intent'iyle açılınca zamanı yazar; JS açılışta ve öne gelişte bir kez okur, alarm ekranını açar.
-    private static long wakeAt;
-    static final long WAKE_TTL = 90000;
     static final int SNOOZE_RC = 7141;
-
-    static synchronized void markWake() {
-        wakeAt = System.currentTimeMillis();
-    }
-
-    /** Okuma bayrağı siler: iki kez okunmaz, 90 sn'den eski uyandırma sayılmaz. */
-    static synchronized boolean takeWake(long now) {
-        long at = wakeAt;
-        wakeAt = 0;
-        return at > 0 && now >= at && now - at <= WAKE_TTL;
-    }
-
-    @PluginMethod
-    public void wakeLaunched(PluginCall call) {
-        JSObject r = new JSObject();
-        r.put("launched", takeWake(System.currentTimeMillis()));
-        call.resolve(r);
-    }
-
-    /** Alarm ekranı kapanınca kilit ekranı üstünde gösterme bayrakları kalkar; kilit yeniden görünür. */
-    @PluginMethod
-    @SuppressWarnings("deprecation")
-    public void release(PluginCall call) {
-        final Activity a = getActivity();
-        if (a == null) {
-            call.resolve();
-            return;
-        }
-        a.runOnUiThread(() -> {
-            if (Build.VERSION.SDK_INT >= 27) {
-                a.setShowWhenLocked(false);
-                a.setTurnScreenOn(false);
-            } else {
-                a.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-            }
-            call.resolve();
-        });
-    }
 
     /** Erteleme: at (ms) zamanında doz alarmlarından ayrı kodla ekranı yeniden uyandırır (en çok 1 saat ileri); at verilmezse ya da geçmişse iptal eder. */
     @PluginMethod
