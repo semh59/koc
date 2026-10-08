@@ -6,6 +6,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -131,7 +132,9 @@ final class StepStore {
         s.sampled = sp.getBoolean("sampled", false);
         // elapsedRealtime yalnız yeniden başlatmada sıfırlanır (saat ayarından etkilenmez): küçüldüyse sayaç sıfırlanmıştır.
         long el = SystemClock.elapsedRealtime();
-        s.rebooted = el < sp.getLong("el", 0L);
+        int boot = Build.VERSION.SDK_INT >= 24 ? android.provider.Settings.Global.getInt(c.getContentResolver(), android.provider.Settings.Global.BOOT_COUNT, -1) : -1, lastBoot = sp.getInt("boot", -1);
+        s.bootKnown = boot >= 0 && lastBoot >= 0;
+        s.rebooted = el < sp.getLong("el", 0L) || (s.bootKnown && boot != lastBoot);
         Map<String, Long> hist = new HashMap<>();
         // Gün anahtarı, dakika ve geri çağrıya verilen an tek örnekten: gece yarısında ayrı ayrı alınırsa adım dünün, zaman bugünün olur.
         long at = System.currentTimeMillis();
@@ -140,17 +143,15 @@ final class StepStore {
         java.util.Calendar now = java.util.Calendar.getInstance();
         now.setTimeInMillis(at);
         int minutes = now.get(java.util.Calendar.HOUR_OF_DAY) * 60 + now.get(java.util.Calendar.MINUTE);
-        long prevAt = sp.getLong("at", 0L), before = s.day.equals(today) && s.last >= 0 ? StepMath.total(s, s.last) : -1;
         boolean closed = closeFirst && StepMath.closeDay(s, today, counter, minutes, hist);
         long steps = StepMath.update(s, today, counter, minutes, hist);
-        if (before >= 0 && prevAt > 0 && !StepMath.plausible(before, steps, at - prevAt)) return before; // bayat/hatalı okuma: durum değişmez, sonraki okuma devam eder
-        if (steps > StepMath.MAX_DAY) { // bozulmuş sayaç durumu: bugün bu okumadan yeniden sayılır
+        if (steps > StepMath.MAX_DAY) { // eski sürümlerden kalan bozuk durum: bugün bu okumadan yeniden sayılır
             s.carry = 0;
             s.base = counter;
             steps = 0;
         }
         SharedPreferences.Editor e = sp.edit();
-        e.putString("day", s.day).putFloat("base", s.base).putFloat("carry", s.carry).putFloat("last", s.last).putBoolean("sampled", s.sampled).putLong("el", el).putLong("at", at);
+        e.putString("day", s.day).putFloat("base", s.base).putFloat("carry", s.carry).putFloat("last", s.last).putBoolean("sampled", s.sampled).putLong("el", el).putInt("boot", boot);
         for (Map.Entry<String, Long> x : hist.entrySet()) e.putLong("h_" + x.getKey(), x.getValue());
         if (closed) e.putLong("snapAt", at);
         e.apply();

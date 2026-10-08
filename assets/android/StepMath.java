@@ -11,6 +11,8 @@ final class StepMath {
         boolean sampled = false;
         /** Son okumadan bu yana telefon yeniden başladı (sayaç sıfırlandı), sayaç son değeri aşmış olsa da. */
         boolean rebooted = false;
+        /** Telefonun açılış sayısı bilinir (önceki okumada da kaydedilmişti): yeniden başlama bundan kesin anlaşılır, sayacın düşmesi tek başına yeniden başlama sayılmaz. */
+        boolean bootKnown = false;
     }
 
     /** 23:58 örnekleme alarmı. Gece alarmı Doze'da gecikse de bu okumaya kadarki adımlar biten güne, sonrası yeni güne yazılır. */
@@ -19,18 +21,18 @@ final class StepMath {
     /** Bir günde bu kadar adım gerçekçi değil: üstü bozuk sayaç durumudur. */
     static final long MAX_DAY = 60000;
 
-    /** Okumalar arası artış gerçekçi mi: saniyede en çok 4 adım (koşu) ve 300 adım pay. Tek bir bayat sensör değeri sayacı "geri gitti" sanıp tüm açılıştan beri adımı bugüne ekleyebilir. */
-    static boolean plausible(long before, long after, long dtMs) {
-        return after - before <= 4 * Math.max(0L, dtMs) / 1000 + 300;
-    }
-
     static long total(State s, float counter) {
         return Math.max(0L, Math.round((double) (s.carry + counter - s.base)));
     }
 
+    /** Açılış sayısı değişmediyse sayaç düşemez: düşük değer bayat/sırasız bir okumadır, adım yok sayılır. Yoksa sonraki doğru okuma tüm açılışdan beri adımı bugüne eklerdi. */
+    private static float stable(State s, float counter) {
+        return s.bootKnown && !s.rebooted && s.last >= 0 && counter < s.last ? s.last : counter;
+    }
+
     /** Telefon yeniden başladıysa sayaç sıfırlanır: o ana kadarki adımlar carry'ye alınır. Sayaç son değerin altına indiyse ya da yeniden başlama ayrıca bilindiyse (rebooted). */
     private static void handleReboot(State s, float counter) {
-        if (s.last >= 0 && (counter < s.last || s.rebooted)) {
+        if (s.last >= 0 && (s.rebooted || (!s.bootKnown && counter < s.last))) {
             s.carry += Math.max(0, s.last - s.base);
             s.base = 0;
         }
@@ -43,6 +45,7 @@ final class StepMath {
 
     /** Gece alarmı: biten günü şimdiki okumayla kapatır ve kapattıysa true döner. */
     static boolean closeDay(State s, String today, float counter, int minutesSinceMidnight, Map<String, Long> history) {
+        counter = stable(s, counter);
         if (s.day.isEmpty() || s.day.equals(today)) return false;
         if (s.sampled) {
             update(s, today, counter, minutesSinceMidnight, history);
@@ -58,6 +61,7 @@ final class StepMath {
     /** Yeni okumayı işler ve bugünkü adım sayısını döndürür. Gün değiştiyse ve gece alarmı kaçtıysa, son okumaya kadarki adımlar eski güne yazılır; son okuma 23:58 örneğiyse sonrası yeni güne sayılır.
      *  Örnek yoksa ve okuma gece 06:00'ya kadarsa, son okumadan bu yana gelen adımlar da eski güne yazılır (closeDay ile aynı kural); daha geç okumada o aralığın günü bilinemez, tahmin edilmez ve yeni gün sayaçtan başlar. */
     static long update(State s, String today, float counter, int minutesSinceMidnight, Map<String, Long> history) {
+        counter = stable(s, counter);
         if (!s.day.equals(today)) {
             if (!s.day.isEmpty()) {
                 if (!s.sampled && minutesSinceMidnight <= MAX_LATE_MINUTES) {
