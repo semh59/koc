@@ -108,7 +108,7 @@ public class MainActivity extends BridgeActivity {
         if (quick) moveTaskToBack(true);
     }
 
-    // İlaç dozunda tam ekran bildirimle açılınca uygulama kilit ekranının üstünde görünür ve ekranı yakar; ekran kapanınca (onPause) bayraklar kalkar,
+    // İlaç dozunda tam ekran bildirimle açılınca uygulama kilit ekranının üstünde görünür ve ekranı yakar; ekran kapanınca ya da uygulama arkaya gidince (onStop; onPause ekran yanarken de gelip bayrakları erken siler) bayraklar kalkar,
     // böylece sağlık verisi sonradan kilit ekranında açık kalmaz.
     private boolean lockShown;
 
@@ -133,7 +133,7 @@ public class MainActivity extends BridgeActivity {
     }
 
     @Override
-    public void onPause() {
+    public void onStop() {
         if (lockShown) {
             lockShown = false;
             if (Build.VERSION.SDK_INT >= 27) {
@@ -143,7 +143,7 @@ public class MainActivity extends BridgeActivity {
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
             }
         }
-        super.onPause();
+        super.onStop();
     }
 
     // Yalnız CI smoke testi tetikler (am start --ez nw_diag true). Release derlemede konsol logcata yazmaz; eklentilerin yüklendiği ve
