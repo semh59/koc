@@ -83,7 +83,6 @@ import android.media.AudioAttributes;
 import android.media.RingtoneManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.WindowManager;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
@@ -106,47 +105,8 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(BackupFolderPlugin.class);
         super.onCreate(savedInstanceState);
         diag(getIntent());
-        medWake(getIntent());
         medChannel();
         if (quick) moveTaskToBack(true);
-    }
-
-    // İlaç dozunda tam ekran bildirimle açılınca uygulama kilit ekranının üstünde görünür ve ekranı yakar; ekran kapanınca ya da uygulama arkaya gidince (onStop; onPause ekran yanarken de gelip bayrakları erken siler) bayraklar kalkar,
-    // böylece sağlık verisi sonradan kilit ekranında açık kalmaz.
-    private boolean lockShown;
-
-    private void medWake(Intent in) {
-        if (in == null || !in.getBooleanExtra("nw_medwake", false)) return;
-        // MainActivity exported: yalnız MedWakeReceiver'ın kendi PendingIntent'inin taşıdığı gizli anahtarla kilit ekranı üstünde açılır.
-        boolean signed = QuickMath.same(in.getStringExtra("nw_tk"), QuickLogPlugin.secret(this));
-        in.removeExtra("nw_medwake");
-        in.removeExtra("nw_tk");
-        if (!signed) return;
-        // JS açılışta ve öne gelişte MedWake.wakeLaunched ile okur ve tam ekran ilaç alarm ekranını açar.
-        MedWakePlugin.markWake();
-        lockShown = true;
-        if (Build.VERSION.SDK_INT >= 27) {
-            setShowWhenLocked(true);
-            setTurnScreenOn(true);
-        } else {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-        }
-        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        if (nm != null) nm.cancel(MedWakeReceiver.NID);
-    }
-
-    @Override
-    public void onStop() {
-        if (lockShown) {
-            lockShown = false;
-            if (Build.VERSION.SDK_INT >= 27) {
-                setShowWhenLocked(false);
-                setTurnScreenOn(false);
-            } else {
-                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-            }
-        }
-        super.onStop();
     }
 
     // Yalnız CI smoke testi tetikler (am start --ez nw_diag true). Release derlemede konsol logcata yazmaz; eklentilerin yüklendiği ve
@@ -180,7 +140,6 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     protected void onNewIntent(Intent intent) {
-        medWake(intent);
         if (QuickLogPlugin.handle(this, intent, false)) {
             moveTaskToBack(true);
             return;
