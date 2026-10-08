@@ -69,8 +69,11 @@ async function motionBoot(){
 function motionCard(){
   if(!S.settings.motionOn)return "";
   const t=dayKey(),y=keyOff(-1),row=m=>`<div class="row" style="display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span><b>${m.t0}</b> ${m.k==="r"?"Koşu":"Yürüyüş"} <small class="mut">${m.min} dk</small></span><span class="ta-r num">${fmt(m.km,1)} km · ${fmt(m.kmh,1)} km/s${m.kcal!=null?` · ${m.kcal} kcal`:""}</span></div>`;
-  const tl=S.moves.filter(m=>m.day===t),yl=S.moves.filter(m=>m.day===y),tt=MotionLib.totals(tl);
-  const body=tl.length||yl.length?`${tl.length?`<div class="mut sm" style="margin-bottom:4px">Bugün ${tt.min} dk, ${fmt(tt.km,1)} km${tt.kcalN?`, ${tt.kcal} kcal`:""}</div>${tl.slice().reverse().map(row).join("")}`:`<p class="mut sm" style="margin:0 0 6px">Bugün henüz algılanan yürüyüş ya da koşu yok.</p>`}${yl.length?`<div class="mut sm" style="margin:10px 0 4px">Dün</div>${yl.slice().reverse().map(row).join("")}`:""}`
+  const tl=S.moves.filter(m=>m.day===t),yl=S.moves.filter(m=>m.day===y);
+  const sum=l=>{const x=MotionLib.totals(l);return `${x.min} dk, ${fmt(x.km,1)} km${x.kcalN?`, ${x.kcal} kcal`:""}`};
+  /* Gün toplamı görünür, tek tek hareketler dokununca açılır. */
+  const grp=(ad,l)=>`<details class="acc"><summary><b class="grow">${ad}</b><span class="num mut">${sum(l)}</span></summary>${l.slice().reverse().map(row).join("")}</details>`;
+  const body=tl.length||yl.length?`${tl.length?grp("Bugün",tl):`<p class="mut sm" style="margin:0 0 6px">Bugün henüz algılanan yürüyüş ya da koşu yok.</p>`}${yl.length?grp("Dün",yl):""}`
     :`<p class="m0 mut sm">Henüz algılanan yürüyüş ya da koşu yok. En az 3 dakikalık, kesintisiz yürüyüşler listelenir.</p>`;
   return `<div class="card"><div class="lbl">Hareketler</div>${body}<p class="pt-2 hint">Algılama 1-2 dakika gecikebilir, süre ve mesafe yaklaşıktır.${S.settings.heightCm>0?"":" Mesafe için Ayarlar'dan boyunu gir."}</p></div>`;
 }
