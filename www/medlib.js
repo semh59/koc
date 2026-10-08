@@ -194,6 +194,8 @@ const MedLib=(()=>{
     const lw=low(st.ci,"Ekran uyandırma");if(lw)add(lw+" Önemi en yükseğe çıkar, kilit ekranında göster ve yüzen bildirimi aç.","channel");
     const lm=low(st.mi,"İlaç bildirimi");if(lm)add(lm+" Önemi en yükseğe çıkar, sesi aç.","channel","nw_med");
     if(st.fsi===false)add("Tam ekran bildirim izni yok: alarm kilitli ekranı açamaz.","fsi");
+    if(st.xl>0)add("Xiaomi: 'Kilit ekranında göster' izni kapalı. Uygulama izinlerinde aç, yoksa alarm ekranı açılmaz.","miui");
+    if(st.xp>0)add("Xiaomi: 'Arka planda açılan pencereler' izni kapalı. Uygulama izinlerinde aç, yoksa kilitli telefonda alarm ekranı açılmaz.","miui");
     if(st.bo===false)add("Pil kısıtı var: telefon uygulamayı arka planda durdurabilir, alarm geç gelebilir. Pil ayarını 'Kısıtlama yok' yap.","battery");
     if(st.ex===false)add("Tam saat alarm izni yok: ilaç bildirimi ve ekran alarmı birkaç dakika gecikebilir.","exact");
     const w=items.filter(e=>e.a==="WAKE"),arm=items.filter(e=>e.a!=="WAKE").pop();

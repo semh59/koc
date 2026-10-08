@@ -197,10 +197,29 @@ public class MedWakeReceiver extends BroadcastReceiver {
                 }
             }
             if (am != null) put(e, "ex", Build.VERSION.SDK_INT < 31 || am.canScheduleExactAlarms());
+            if (isXiaomi()) {
+                put(e, "xl", miuiOp(c, 10020));
+                put(e, "xp", miuiOp(c, 10021));
+            }
         } catch (Exception x) {
             put(e, "err", String.valueOf(x));
         }
         return e;
+    }
+
+    static boolean isXiaomi() {
+        String m = Build.MANUFACTURER == null ? "" : Build.MANUFACTURER.toLowerCase(java.util.Locale.ROOT);
+        return m.contains("xiaomi") || m.contains("redmi") || m.contains("poco");
+    }
+
+    /** MIUI/HyperOS özel izinleri (10020 kilit ekranında göster, 10021 arka planda pencere aç): 0 izinli, 1+ kapalı, -1 okunamadı. */
+    private static int miuiOp(Context c, int op) {
+        try {
+            Object ops = c.getSystemService(Context.APP_OPS_SERVICE);
+            return (Integer) ops.getClass().getMethod("checkOpNoThrow", int.class, int.class, String.class).invoke(ops, op, android.os.Process.myUid(), c.getPackageName());
+        } catch (Exception x) {
+            return -1;
+        }
     }
 
     private static void put(JSONObject o, String k, Object v) {

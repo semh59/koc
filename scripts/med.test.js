@@ -154,6 +154,7 @@ ok("sinceFor: yeni saat bugünden, vakti geçmiş saat yarından, eski saat koru
   ok("wakeLine: tam ekran hatası ve kurulum kaydı",/gönderilemedi: SecurityException: x/.test(M.wakeLine({...wk,fs:"err:SecurityException: x"}))&&M.wakeLine({t:T(9,0,0),a:"APP",in:3,n:3,nx:[T(14,0,0)]})==="07.10 09:00:00 uygulama alarmları kurdu: 3 alarm, ilk: 07.10 14:00"&&/BOOT|telefon açıldı/.test(M.wakeLine({t:T(9,0,0),a:"BOOT",in:0,n:0,nx:[]})));
   const ok0={ne:true,fsi:true,ci:4,mi:4,bo:true,ex:true},to=(st,it)=>M.wakeIssues(st,it).map(i=>i.to||"-").join();
   ok("wakeIssues: her şey yolunda ve alarm çalmışsa sorun yok",M.wakeIssues(ok0,[wk]).length===0);
+  ok("wakeIssues: Xiaomi kilit ekranı ve arka plan pencere izinleri kapalıysa miui ayarına yönlendirir; -1 (okunamadı) sorun sayılmaz",to({...ok0,xl:1,xp:1},[wk])==="miui,miui"&&M.wakeIssues({...ok0,xl:-1,xp:-1},[wk]).length===0&&M.wakeIssues({...ok0,xl:0,xp:0},[wk]).length===0);
   ok("wakeIssues: kapalı bildirim, engelli/düşük kanal, tam ekran, pil, tam alarm her biri ilgili ayara",to({ne:false,ci:0,mi:2,fsi:false,bo:false,ex:false},[wk])==="notif,channel,channel,fsi,battery,exact"&&M.wakeIssues({...ok0,mi:2},[wk])[0].id==="nw_med");
   ok("wakeIssues: kanal henüz yoksa (-1) sorun sayılmaz",M.wakeIssues({...ok0,ci:-1,mi:-1},[wk]).length===0);
   ok("wakeIssues: kayıt yoksa 'alarm hiç çalmadı' otomatik başlatmaya; kurulan 0 ise ayrı uyarı",to(ok0,[])==="autostart"&&/hiç çalmadı/.test(M.wakeIssues(ok0,[])[0].t)&&/Kurulu ekran alarmı yok/.test(M.wakeIssues(ok0,[{a:"APP",in:0,n:0}])[0].t));
