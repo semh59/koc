@@ -92,6 +92,8 @@ public class MedWakePlugin extends Plugin {
             i = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, pkg);
         } else if ("fsi".equals(to)) {
             i = fsiIntent();
+        } else if ("miui".equals(to)) {
+            i = new Intent("miui.intent.action.APP_PERM_EDITOR").setClassName("com.miui.securitycenter", "com.miui.permcenter.permissions.PermissionsEditorActivity").putExtra("extra_pkgname", pkgName);
         }
         if ((i != null && open(i)) || open(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, pkg))) call.resolve();
         else call.reject("ayar açılamadı");
