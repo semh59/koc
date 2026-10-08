@@ -1800,6 +1800,9 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
   }
   ok("adım kayıtları gün listesinde ve seride görünmez",!ev("viewBugun()").includes("class=\"del\"")&&ev("streak()")===0);
   ok("yedek temizliği adım kaydını korur",ev("cleanEntries(S.entries).out.filter(e=>e.type==='adim').length")===2);
+  ev("window.__se=[S.entries,S.settings.stepsFrom];S.settings.stepsFrom='2000-01-01';S.entries=[{id:1,day:dayKey(),time:'00:00',type:'adim',v:82000,text:''}]");
+  ok("sayaç sıfırlanınca bugünkü şişmiş adım kaydı 0'a düzelir, kayıt yoksa 0 için yeni kayıt açılmaz",ev("setSteps(dayKey(),0)")===true&&ev("S.entries[0].v")===0&&ev("S.entries=[],setSteps(dayKey(),0)")===false&&ev("S.entries.length")===0);
+  ev("[S.entries,S.settings.stepsFrom]=window.__se");
   ok("imkânsız adım değeri atılır",ev("cleanEntries([{type:'adim',day:'2026-01-01',v:999999}]).out.length")===0&&ev("setSteps('2026-01-01',0)")===false);
   ok("Trend tablosunda adım sütunu var",ev("viewTrend()").includes("<th>Adım</th>"));
   ok("Bugün'de adım kartı rapora götürür",ev("viewBugun()").includes('data-tab="adim"')&&!ev("viewBugun()").includes("r4"));
