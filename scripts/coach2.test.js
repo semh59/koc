@@ -85,6 +85,10 @@ setTimeout(async()=>{
     ok("arşiv kimlikleri aynı milisaniyede çakışmaz",ev("new Set(S.chats.map(c=>c.id)).size")===2);
     ev("S.chats=[];globalThis.__t='';for(let i=0;i<21;i++){cPush({role:'user',text:'s'+i});S.chat.forEach(m=>m.pend=false);cNewChat()}");
     ok("arşiv sınırı aşılınca en eski sohbet atılır ve kullanıcı uyarılır",ev("S.chats.length")===20&&/Arşiv sınırı/.test(ev("__t")),ev("__t"));
+    reset();ev("busy=false;typing=false;cPush({role:'user',text:'gönderilemeyen',pend:true})");
+    ok("gönderilememiş (Gönderilmedi) mesaj Yeni sohbeti engellemez, arşive bekleyen bayrağı olmadan girer",ev("S.chat.some(m=>m.pend)")===true&&(ev("cNewChat()"),ev("S.chat.length")===0&&ev("S.chats.length")===1&&!ev("S.chats[0].msgs.some(m=>m.pend)")));
+    reset();ev("cPush({role:'user',text:'x'});busy=true");ev("cNewChat()");
+    ok("Koç gerçekten yanıt verirken (busy) sohbet değişmez",ev("S.chat.length")===1);ev("busy=false");
   }
   { // cApplyLog yolları
     reset();ev("add('kilo',80,'',dayKey())");

@@ -84,7 +84,7 @@ setTimeout(async()=>{
     ev("for(const x of gActive().ex)for(const s of x.sets){s.kg=50;s.reps=8;s.done=true}gActive().ex[0].sets[0].t='d';gFinish()");
     ok("özet ve geçmiş: süperset ve drop set yazar",/Süperset: [^+]+ \+ /.test(sh())&&sh().includes("1 drop set")&&ev("gStats(S.workouts[0])").includes("1 süperset")&&ev("gStats(S.workouts[0])").includes("1 drop set"),sh());
     const wid=ev("S.workouts[0].id");
-    ev(`closeSheet();prompt=()=>"Ş";gClick('savetpl:${wid}',null);closeSheet()`);
+    ev(`closeSheet();gClick('savetpl:${wid}',null);$("#gtn").value="Ş";gClick('savetplgo:${wid}',null);closeSheet()`);
     const tpl=JSON.parse(ev("JSON.stringify(S.templates[0])"));
     ok("şablona süperset kaydedilir (tg.ss), cleanGym korur",(v=>v.length===2&&v[0]>0&&v[0]===v[1])(Object.values(tpl.tg||{}).map(a=>a.ss))&&JSON.stringify(cg(ev("JSON.stringify(S)")).templates[0].tg)===JSON.stringify(tpl.tg),tpl);
     ev("gStart(S.templates[0].id)");

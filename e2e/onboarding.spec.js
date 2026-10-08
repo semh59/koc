@@ -9,6 +9,11 @@ async function fill(page,{cm="178",kg="84",age="35"}={}){
 test.describe("Onboarding",()=>{
   test("18 yaş kapısı: 17'de kurulum durur ve hiçbir şey kaydedilmez, 18 geçer",async({app,page})=>{
     await app.open();
+    // Karşılama: tek birincil eylem Başla, adım sayacı yok.
+    await expect(page.locator("#view h2")).toHaveText("NeoWell'e hoş geldin");
+    await expect(page.locator("#view .btn")).toHaveText(["Başla"]);
+    await expect(page.locator(".obp")).toHaveCount(0);
+    await page.click('[data-ob="next"]');
     await expect(step(page)).toHaveText("Adım 1/3");
     await fill(page,{age:"17"});
     await page.click('[data-ob="next"]');
@@ -25,7 +30,7 @@ test.describe("Onboarding",()=>{
   });
 
   test("profil ve hedef kaydedilir, ilerleme çubuğu adımı izler",async({app,page})=>{
-    await app.open();
+    await app.open();await page.click('[data-ob="next"]');
     const on=page.locator(".obbar i.on");
     await expect(on).toHaveCount(1);
     await fill(page);

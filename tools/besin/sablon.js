@@ -11,7 +11,7 @@ const FOODS=(()=>{
 /*SATIRLAR*/
   ];
   /*ALT*/
-  return R.map(([n,k,p,c,f,u,s,r,o])=>Object.assign({n,k,p,c,f,u,s:s===1},r?{lo:r[0],hi:r[1]}:{},ALT[n]?{a:ALT[n]}:{},VEK[n]?{v:VEK[n]}:{},o?{o:true}:{}));
+  return R.map(([n,k,p,c,f,u,s,r,o])=>Object.assign({n,k,p,c,f,u,s:s===1},r?{lo:r[0],hi:r[1]}:{},ALT[n]?{a:ALT[n]}:{},VEK[n]?{v:VEK[n]}:{},o?{o:true}:{},PARCA[n]?{parts:PARCA[n]}:{}));
 })();
 
 /* Koç menü kataloğu yalnız yemek odaklı ilk satırlardan örneklenir; ham besin ve tarif satırları isteği şişirmesin. */
@@ -19,7 +19,7 @@ const FOOD_CORE=/*CORE*/;
 const foodLow=s=>" "+String(s||"").replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase().replace(/ı/g,"i").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ö/g,"o").replace(/ş/g,"s").replace(/ü/g,"u").replace(/[^\p{L}\p{N}]+/gu," ").trim()+" ";
 /* Her tuşta yüzlerce adı yeniden çevirmemek için besin adları önbellekte. */
 const foodKeys=new Map(),foodKey=s=>{let v=foodKeys.get(s);if(v==null)foodKeys.set(s,v=foodLow(s));return v};
-/* Ada ve eş adlara göre ara (ç/ğ/ı/ö/ş/ü duyarsız). Sıra: tam kelime (iyelik ekiyle: pilavı, peyniri), kelime başı, ad içi, sırasız kelimeler, eş ad.
+/* Ada ve eş adlara göre ara (ç/ğ/ı/ö/ş/ü duyarsız). Sıra: tam ad, tam kelime (iyelik ekiyle: pilavı, peyniri), kelime başı, ad içi, sırasız kelimeler, eş ad.
    En fazla `max` sonuç, FOODS indeksi döner. */
 function foodSearch(q,max=8,list=FOODS){
   const t=foodLow(q).trim();if(!t)return [];
@@ -27,7 +27,7 @@ function foodSearch(q,max=8,list=FOODS){
   list.forEach((f,i)=>{
     const n=foodKey(f.n),al=f.a?foodKey(f.a):"";
     const r=whole.test(n)?0:n.includes(" "+t)?1:n.includes(t)?2:ws.every(w=>n.includes(w))?3:ws.every(w=>n.includes(w)||al.includes(w))?4:-1;
-    if(r>=0)hit.push({i,rank:r-(f.my?1:0)+(f.o?1:0)}); // kendi besinlerim öne geçer; öğün kayıtları aynı eşleşmede ham besinden sonra gelir
+    if(r>=0)hit.push({i,rank:r-(n===" "+t+" "?1:0)-(f.my?1:0)+(f.o?1:0)}); // kendi besinlerim öne geçer; öğün kayıtları aynı eşleşmede ham besinden sonra gelir
   });
   return hit.sort((a,b)=>a.rank-b.rank||a.i-b.i).slice(0,max).map(h=>h.i);
 }

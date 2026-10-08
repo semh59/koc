@@ -20,9 +20,11 @@ test.describe("Koç menü kartı",()=>{
     await page.click('[data-c="menu"]');
     await page.fill("#mnote","fıstık alerjisi");
     await page.click('[data-c="menuask"]');
-    const card=page.locator(".cm .lcard").filter({hasText:"Haftalık menü"});
+    const card=page.locator("[data-mid] .lcard").filter({hasText:"Haftalık menü"});
     await expect(card).toBeVisible();
     await expect(card.locator(".lhead b")).toHaveText(["Haftalık menü",...DAYS]);
+    // Yalnız bugünün günü (Salı) açık gelir
+    await expect(card.locator("details.mday[open] summary b")).toHaveText(["Salı"]);
     expect(fake.chats().length).toBe(1);
     expect(JSON.stringify(fake.chats()[0].body)).toContain("fıstık alerjisi");
     const mc=(await app.state()).chat.find(m=>m.card&&m.card.kind==="menu").card;
@@ -30,14 +32,17 @@ test.describe("Koç menü kartı",()=>{
     const items=mc.days[0].meals.flatMap(b=>b.items.map(i=>({text:i.n+(i.q===1?"":" × "+String(i.q).replace(".",",")),v:i.k,meal:b.m})));
 
     // Bugüne ekle: seçilen günün tüm kalemleri bugünkü yemek kaydı olur
-    await card.locator('[data-c^="menuadd:"]').first().click();
+    await card.locator("details.mday summary").first().click();
+    await card.locator('[data-c^="menuday:"]').first().click();
+    await page.click('#sheet [data-c^="menuadd:"]');
     await expect(app.toast).toContainText(`Pazartesi: ${items.length} yemek bugüne eklendi`);
     const ys=(await app.state()).entries.filter(e=>e.type==="yemek");
     expect(ys.map(e=>[e.text,e.v,e.meal]).sort()).toEqual(items.map(i=>[i.text,i.v,i.meal]).sort());
     expect(ys.every(e=>e.day==="2026-10-06")).toBe(true);
 
     // Şablon yap
-    await card.locator('[data-c^="menutpl:"]').nth(1).click();
+    await card.locator('[data-c^="menuday:"]').nth(1).click();
+    await page.click('#sheet [data-c^="menutpl:"]');
     await expect(app.toast).toContainText("Şablon kaydedildi");
     const tp=(await app.state()).mealTpl;
     expect(tp.map(t=>t.n)).toEqual(["Menü: Salı"]);expect(tp[0].items.length).toBe(items.length);
@@ -45,8 +50,10 @@ test.describe("Koç menü kartı",()=>{
     // Alışveriş listesi: aynı besinler toplanır, işaretleme kalıcıdır, Paylaş dosya verir
     await card.locator('[data-c^="shop:"]').click();
     const rows=page.locator("#sheet .prow");
-    const names=new Set(items.map(i=>i.text.split(" × ")[0]));
-    await expect(rows).toHaveCount(names.size);
+    // Yemekler ürünlere bölünür ve kategoriye göre gruplanır
+    const shop=await page.evaluate(()=>shopOf(S.chat.find(m=>m.card&&m.card.kind==="menu").card).map(x=>x.c));
+    await expect(rows).toHaveCount(shop.length);
+    await expect(page.locator("#sheet .grp")).toHaveCount(new Set(shop).size);
     await expect(rows.first()).toHaveAttribute("aria-pressed","false");
     await rows.first().click();
     await expect(rows.first()).toHaveAttribute("aria-pressed","true");
@@ -59,10 +66,11 @@ test.describe("Koç menü kartı",()=>{
     fake.st.reply=b=>{const p=catalog(b).filter(x=>+x[2]>=50)[0];return JSON.stringify({reply:"x",menu:{days:[{n:"Pazartesi",meals:["kah","ogl","aks"].map(m=>({m,i:[[p[0],0.25]]}))}]}})};
     await open(app);await app.tab("koc");
     await page.click('[data-c="menu"]');await page.click('[data-c="menuask"]');
-    const card=page.locator(".cm .lcard").filter({hasText:"Haftalık menü"});
+    const card=page.locator("[data-mid] .lcard").filter({hasText:"Haftalık menü"});
     await expect(card).toContainText("Hedefin %15'inden fazla sapıyor");
     app.onDialog=d=>d.dismiss();
-    await card.locator('[data-c^="menuadd:"]').click();
+    await card.locator('[data-c^="menuday:"]').click();
+    await page.click('#sheet [data-c^="menuadd:"]');
     await expect.poll(()=>app.dialogs.length).toBe(1);
     expect(app.dialogs[0]).toContain("%15'inden fazla sapıyor");
     expect((await app.state()).entries.filter(e=>e.type==="yemek")).toEqual([]);
@@ -83,7 +91,7 @@ test.describe("Koç program kartı",()=>{
     await expect(page.locator('[data-c="po:d:4"]')).toHaveAttribute("aria-pressed","true");
     await page.click('[data-c="po:q:Ev tipi"]');
     await page.click('[data-c="progask"]');
-    const card=page.locator(".cm .lcard").filter({hasText:"Test programı"});
+    const card=page.locator("[data-mid] .lcard").filter({hasText:"Test programı"});
     await expect(card).toBeVisible();
     expect(JSON.stringify(fake.chats()[0].body)).toContain("Haftada 4 gün, seans 45 dakika, ekipman Ev tipi");
     await expect(card.locator(".lrow b")).toHaveText(["A","B","C","D"]);

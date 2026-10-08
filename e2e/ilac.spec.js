@@ -20,6 +20,7 @@ test("alarm kayıtları: olası sorunlar ilgili ayarı açar, satırlar Türkçe
   await page.addInitScript(plugins,LOG);
   await app.open({seed:state({medOn:true}),native:{}});
   await app.go("ayar-modul");
+  await page.locator("summary",{hasText:"Bildirim sorun giderme"}).click();
   await page.getByRole("button",{name:"Alarm kayıtları"}).click();
   await expect(app.sheet).toContainText("Ekran uyandırma kanalı düşük önemde");
   await expect(app.sheet).toContainText("Pil kısıtı var");
@@ -47,6 +48,7 @@ test("gerçek doz testi: ilaç kanalında 7149 bildirimi ve ekran alarmı aynı 
   await page.addInitScript(plugins,LOG);
   await app.open({seed:state({medOn:true}),native:{}});
   await app.go("ayar-modul");
+  await page.locator("summary",{hasText:"Bildirim sorun giderme"}).click();
   await page.getByRole("button",{name:"Gerçek doz testi (1 dk)"}).click();
   await expect(app.toast).toContainText("telefonu kilitle");
   const c=await page.evaluate(()=>({n:window.__calls.filter(c=>c[0]==="LN.schedule").map(c=>c[1].notifications).flat().find(n=>n.id===7149),w:window.__calls.find(c=>c[0]==="MedWake.test")[1]}));

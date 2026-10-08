@@ -86,9 +86,9 @@ const seed=()=>ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.cycl
 { // ekran ve silme
   seed();ev("S.settings.healthNote='';tab='dongu';render()");
   const v=()=>ev("document.querySelector('#view').textContent");
-  ok("ekran: tahmin, not ve takvim görünür",/Yaklaşık/.test(v())&&/tıbbi tavsiye değildir/.test(v())&&ev("document.querySelectorAll('.cyd').length")===31);
+  ok("ekran: tahmin, not ve takvim görünür",ev("!!document.querySelector('.cypr')")&&/tıbbi tavsiye değildir/.test(v())&&ev("document.querySelectorAll('.cyd').length")===31);
   ev("S.settings.healthNote='hamileyim';render()");
-  ok("hamilelik işaretinde tahmin yok, nötr bilgi var",!/Yaklaşık/.test(v())&&/hamilelik/.test(v()));
+  ok("hamilelik işaretinde tahmin yok, nötr bilgi var",!ev("!!document.querySelector('.cypr')")&&/hamilelik/.test(v()));
   ev("S.settings.healthNote='';S.settings.cycleOn=false;render()");
   ok("kapalıyken ekran kapalı bilgisi gösterir, kayıt listesi yok",/kapalı/.test(v())&&!/Geçmiş/.test(v()));
   ev("S.settings.cycleOn=true");

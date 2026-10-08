@@ -25,6 +25,8 @@ for(const l of rd("ek.tsv")){
   veri[n]=u;ek.push([n,u.k,u.p,u.c,u.f,por(p),1,0,...(o==="1"?[1]:[])]);if(e)alt[n]=e.trim();
 }
 const rng={};// tarif malzemesinin az/bol yağlı kcal değeri öğüne taşınır
+// Tarif ve öğün bileşenleri (ad, pişmiş 100 g başına çiğ gram): alışveriş listesi yemeği ürünlere böler.
+const PARCA={};
 const isle=(dosya,ogun)=>rd(dosya).map(l=>{
   const[n,y,p,m,e,sp]=l.split(" | ").map(s=>s.trim()),yv=VERIM[y]??parseFloat(y);
   if(!(yv>0))hata("verim: "+n);
@@ -40,6 +42,7 @@ const isle=(dosya,ogun)=>rd(dosya).map(l=>{
   if(b.k>900)hata(n+": kcal>900");
   const g=Math.round(b.w),u=ogun?[[p+" ("+g+" g)",g]]:por(p),r=lo<k&&k<hi?[lo,hi]:0;
   veri[n]={k:b.k,p:b.p,c:b.c,f:b.f};if(r)rng[n]=r;
+  PARCA[n]=ing.filter(([a])=>a!=="Su").map(([a,x])=>[a,r1(x*100/b.w)]);
   if(e&&e!=="-")alt[n]=e;
   return [n,k,r1(b.p),r1(b.c),r1(b.f),u,0,...(ogun?[r,1]:r?[r]:[])];
 });
@@ -56,7 +59,7 @@ const esad=Object.keys(alt).filter(n=>t.has(n.toLowerCase()));
 Object.keys(alt).forEach(n=>{if(!t.has(n.toLowerCase()))hata("eş ad için kayıt yok: "+n)});
 const body=mevcut+",\n    /* USDA SR Legacy genel besinler (değerler birebir) */\n"+rows.map(satir).join(",\n")+",\n    /* Türk ev yemekleri (tarif hesaplı) */\n"+tarif.map(satir).join(",\n")+",\n    /* Hazır ürün ve restoran (USDA SR Legacy, birebir) */\n"+ek.map(satir).join(",\n")+",\n    /* Öğün kayıtları (bileşen gramı x değer, ogun.txt) */\n"+ogun.map(satir).join(",\n")+",\n    /* Vekil ve bileşenden hesaplı yaygın Türk besinleri (vekil.txt; vekil nedeni vekil.tsv) */\n"+vekil.concat(vekilO).map(satir).join(",\n");
 const VEK=Object.fromEntries(rd("vekil.tsv").map(l=>l.split("\t")));Object.keys(VEK).forEach(n=>{if(!t.has(n.toLowerCase()))hata("vekil notu için kayıt yok: "+n)});
-const altS="const ALT="+q(Object.fromEntries(esad.map(n=>[n,alt[n]])))+";const VEK="+q(VEK)+";";
+const altS="const ALT="+q(Object.fromEntries(esad.map(n=>[n,alt[n]])))+";const VEK="+q(VEK)+";const PARCA="+q(PARCA)+";";
 const out=rf("sablon.js").replace("/*SATIRLAR*/",()=>body).replace("/*CORE*/",()=>(mevcut.match(/^\s*\["/gm)||[]).length).replace("/*ALT*/",()=>"  "+altS);
 if(process.argv[2]==="--kontrol"){if(fs.readFileSync(OUT,"utf8").replace(/\r/g,"")!==out){console.error("www/foods.js üretilen çıktıyla uyuşmuyor: node tools/besin/uret.js");process.exit(1)}process.exit(0)}
 fs.writeFileSync(OUT,out);console.log(adlar.length+" kayıt ("+rows.length+" USDA, "+tarif.length+" tarif, "+(vekil.length+vekilO.length)+" vekil, "+ek.length+" hazır, "+ogun.length+" öğün), "+Buffer.byteLength(out)+" bayt");

@@ -56,12 +56,12 @@ async function phUrl(id){
   if(!b)return "";
   const u=URL.createObjectURL(b);phUrls.push(u);return u;
 }
-const phCap=p=>`${fd(p.day)}${p.kg!=null?" · "+dw(p.kg)+" "+wlab():""}`;
-const phTxt="Fotoğraflar yalnız bu telefonda, uygulamanın özel alanında durur. Koç'a, bir sunucuya ya da paylaşım ekranına gitmez. Otomatik ve şifreli yedeğe girmez (boyut): telefon değiştirirsen ya da uygulamayı silersen kaybolur. Bu ekran açıkken Android ekran görüntüsü almayı engeller.",phNote=`<p class="hint">${phTxt}</p>`;
+const phCap=p=>`${fd(p.day)}${p.kg!=null?" · "+dw(p.kg)+" "+wlab():""}`,phKg=p=>p.kg!=null?dw(p.kg)+" "+wlab():"";
+const phTxt="Fotoğraflar yalnız bu telefonda, uygulamanın özel alanında durur. Koç'a, bir sunucuya ya da paylaşım ekranına gitmez. Otomatik ve şifreli yedeğe girmez (boyut): telefon değiştirirsen ya da uygulamayı silersen kaybolur. Bu ekran açıkken Android ekran görüntüsü almayı engeller.",phNote=`<details class="acc"><summary>Gizlilik</summary><p class="m0 hint">${phTxt}</p></details>`;
 function photoCard(){
   if(!phOk())return `<h2>İlerleme fotoğrafları</h2><div class="card"><p class="hint">Bu cihazda fotoğraf saklanamıyor.</p></div>`;
   const btns=`<div class="btns"><button class="btn ghost" data-ph="add"${PhotoLib.canAdd(phList.length)?"":" disabled"}>Fotoğraf ekle${phList.length?` (${phList.length}/${PhotoLib.MAX})`:""}</button>${phList.length>1?`<button class="btn ghost" data-ph="cmp">Karşılaştır</button>`:""}</div>`;
-  const grid=phList.length?`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px">${phList.map(p=>`<button class="lnk" style="padding:0;min-height:0" data-ph="view:${p.id}" aria-label="${phCap(p)} fotoğrafı"><img src="${p.thumb}" alt="" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:var(--r-xs);display:block"><span class="mut sm num" style="display:block;color:var(--mut);font-weight:400">${phCap(p)}</span></button>`).join("")}</div>`:`<p class="flush hint">Aynı ışıkta, aynı yerde çekilen fotoğraflar farkı gösterir. En çok ${PhotoLib.MAX} fotoğraf tutulur.</p>`;
+  const grid=phList.length?`<div class="phg">${phList.map(p=>`<button class="lnk" data-ph="view:${p.id}" aria-label="${phCap(p)} fotoğrafı"><img src="${p.thumb}" alt=""><span class="db sm num">${fd(p.day)}</span>${p.kg!=null?`<small class="db mut num">${phKg(p)}</small>`:""}</button>`).join("")}</div>`:`<p class="flush hint">Aynı ışıkta, aynı yerde çekilen fotoğraflar farkı gösterir. En çok ${PhotoLib.MAX} fotoğraf tutulur.</p>`;
   return `<h2>İlerleme fotoğrafları</h2><div class="card">${grid}${btns}${phNote}</div>`;
 }
 function sheetFoto(){
@@ -86,7 +86,7 @@ async function phAdd(file){
 }
 async function sheetFotoView(id){
   const p=phList.find(x=>x.id===id);if(!p)return;
-  openSheet(`<h3>${phCap(p)}</h3><img id="phbig" alt="İlerleme fotoğrafı, ${phCap(p)}" style="width:100%;max-height:60vh;object-fit:contain;border-radius:var(--r-xs)"><div class="mt-3 two"><button class="btn ghost" data-ph="cmp:${id}"${phList.length>1?"":" disabled"}>Karşılaştır</button><button class="btn danger" data-ph="del:${id}">Sil</button></div>`);
+  openSheet(`<h3>${phCap(p)}</h3><img id="phbig" class="phbig" alt="İlerleme fotoğrafı, ${phCap(p)}"><div class="mt-3 two"><button class="btn ghost" data-ph="cmp:${id}"${phList.length>1?"":" disabled"}>Karşılaştır</button><button class="btn danger" data-ph="del:${id}">Sil</button></div>`);
   const u=await phUrl(id),im=$("#phbig");if(im&&u)im.src=u;
 }
 function phDelAsk(id){
@@ -101,16 +101,16 @@ async function phCmp(){
   phRevoke();
   const [ua,ub]=await Promise.all([phUrl(a.id),phUrl(b.id)]);
   const ia=$("#phia"),ib=$("#phib");if(!ia||!ib)return;
-  ia.src=ua;ib.src=ub;
+  ia.src=ua;ib.src=ub;$("#phka").textContent=phKg(a);$("#phkb").textContent=phKg(b);
   const g=PhotoLib.gap(a,b);
   $("#phgap").textContent=`${Math.abs(g.days)} gün arayla${g.kg!=null?`, ${dwS(g.kg)} ${wlab()}`:""}`;
 }
 function sheetFotoCmp(a){
   if(phList.length<2)return;
-  const opt=sel=>phList.map(p=>`<option value="${p.id}"${p.id===sel?" selected":""}>${phCap(p)}</option>`).join(""),
+  const opt=sel=>phList.map(p=>`<option value="${p.id}"${p.id===sel?" selected":""}>${fd(p.day)}</option>`).join(""),
     first=a||phList[0].id,last=phList[phList.length-1].id,b=last===first?phList[phList.length-2].id:last;
-  openSheet(`<h3>Karşılaştır</h3><div class="two"><div><label class="lbl" for="pha">Önce</label><select class="in" id="pha">${opt(first)}</select><img id="phia" alt="Önceki fotoğraf" class="w100 rxs mt-2"></div>
-  <div><label class="lbl" for="phb">Sonra</label><select class="in" id="phb">${opt(b)}</select><img id="phib" alt="Sonraki fotoğraf" class="w100 rxs mt-2"></div></div>
+  openSheet(`<h3>Karşılaştır</h3><div class="two"><div><label class="lbl" for="pha">Önce</label><select class="in" id="pha">${opt(first)}</select><img id="phia" alt="Önceki fotoğraf" class="w100 rxs mt-2"><div class="mut num" id="phka"></div></div>
+  <div><label class="lbl" for="phb">Sonra</label><select class="in" id="phb">${opt(b)}</select><img id="phib" alt="Sonraki fotoğraf" class="w100 rxs mt-2"><div class="mut num" id="phkb"></div></div></div>
   <p class="mt-2 mut sm num" id="phgap" role="status"></p>`);
   phCmp();
 }

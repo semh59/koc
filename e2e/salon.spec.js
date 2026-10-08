@@ -40,6 +40,7 @@ test.describe("Salon",()=>{
   test("hazır program seçimi şablonlara eklenir ve başlatılır",async({app,page})=>{
     await app.open({seed:state()});
     await app.tab("salon");
+    await page.click("#pgacc summary");
     await page.click('[data-g="pgf:d:3"]');
     await page.click('[data-g="pg:gym3"]');
     await expect(page.locator("#sheet h3")).toHaveText("Salon tüm vücut");

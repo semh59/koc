@@ -228,21 +228,27 @@ function viewSalon(){
   return w?gLive(w):gHome();
 }
 function gHome(){
-  const done=S.workouts.filter(gDone).sort((a,b)=>b.t0-a.t0);
+  const done=S.workouts.filter(gDone).sort((a,b)=>b.t0-a.t0),from=Date.now()-7*864e5,wk7=done.filter(w=>w.t0>=from),last=done[0];
+  const vol=wk7.reduce((s,w)=>s+gWorkVol(w),0),sets=wk7.reduce((s,w)=>s+gWorkSets(w),0);
+  /* Özet: haftalık sayı ve son antrenman; tek birincil eylem. */
+  const sum=`<div class="card"><div class="stats"><div class="stat"><div class="k">Bu hafta</div><div class="v num">${wk7.length} <small>antrenman</small></div></div><div class="stat"><div class="k">Hacim</div><div class="v num">${Math.round(vol).toLocaleString("tr-TR")} <small>kg</small></div></div><div class="stat"><div class="k">Set</div><div class="v num">${sets}</div></div></div>
+  <p class="mut sm">${last?`Son antrenman: ${esc(last.name)}, ${fd(last.day)}`:"Henüz antrenman yok. İlk antrenmanını başlat ya da bir şablon seç."}</p><button class="mt-2 btn" data-g="start:">${Icons.svg("play")} Antrenmanı başlat</button></div>`;
   const tpl=S.templates.map(t=>{
-    const last=done.find(w=>w.tpl===t.id);
-    return `<div class="card trow"><button class="tmain" data-g="start:${t.id}"><b>${esc(t.name)}</b><span class="mut">${esc(t.ex.map(i=>gEx(i).n).join(", ")||"Egzersiz yok")}</span><span class="mut">${last?"Son: "+fd(last.day):"Henüz yapılmadı"}</span></button><button class="del" data-g="tedit:${t.id}" aria-label="Şablonu düzenle">${Icons.svg("not")}</button><button class="del" data-g="tdel:${t.id}" aria-label="Şablonu sil">✕</button></div>`;
+    const lt=done.find(w=>w.tpl===t.id);
+    return `<div class="card trow"><button class="tmain" data-g="start:${t.id}"><b>${esc(t.name)}</b><span class="mut tex">${esc(t.ex.map(i=>gEx(i).n).join(", ")||"Egzersiz yok")}</span><span class="mut">${lt?"Son: "+fd(lt.day):"Yeni"}</span></button><span class="tact"><button class="del" data-g="tedit:${t.id}" aria-label="${esc(t.name)} şablonunu düzenle">${Icons.svg("not")}</button><button class="del" data-g="tdel:${t.id}" aria-label="${esc(t.name)} şablonunu sil">${Icons.svg("trash")}</button></span></div>`;
   }).join("");
+  const prs=done.slice(0,20).flatMap(w=>gPRs(w).map(p=>({...p,day:w.day}))).slice(0,3);
+  const rec=done.length?`<h2>Rekorlar</h2><div class="card">${prs.map(p=>`<div class="row"><span class="grow"><b>${esc(p.ex.n)}</b><span class="mut sm num">${fkg(p.kg)||0} kg × ${p.reps} · tahmini 1TM ${Math.round(p.e1)} kg</span></span><span class="tag">${fd(p.day)}</span></div>`).join("")||`<p class="m0 hint">Bir harekette önceki en iyi setini geçince rekor burada görünür.</p>`}</div>`:"";
   const wk=gWeekRegions(),rk=Object.keys(wk).sort((a,b)=>wk[b]-wk[a]),mx=Math.max(14,...Object.values(wk));
-  const bars=`<h2>Bu hafta, bölgeye göre set</h2><div class="card">${MuscleMap.html(wk)}${rk.map(g=>`<div class="gbar"><span>${g}</span><span class="bar"><i style="width:${(wk[g]/mx*100).toFixed(0)}%"></i></span><span class="num">${wk[g]}</span></div>`).join("")}<p class="hint">Bölge başına haftada 10 ile 20 set çoğu kişi için makul bir aralıktır.</p></div>`;
-  const note=gWeekNote(gWeekRegions(),done.length>0).map(l=>`<p class="hint">${l}</p>`).join("");
-  const rec=gHistHtml(done);
-  return `<button class="btn" data-g="start:">${Icons.svg("plus")} Boş antrenman başlat</button>
+  const note=gWeekNote(wk,done.length>0).map(l=>`<p class="hint">${l}</p>`).join("");
+  const bars=`<h2>Bu hafta, bölgeye göre set</h2><div class="card">${rk.map(g=>`<div class="gbar"><span>${g}</span><span class="bar"><i style="width:${(wk[g]/mx*100).toFixed(0)}%"></i></span><span class="num">${wk[g]}</span></div>`).join("")||`<p class="m0 hint">Bu hafta set yok.</p>`}${note?`<div id="wknote">${note}</div>`:""}
+  <details class="acc" id="mmacc"><summary>Kas haritası</summary>${MuscleMap.html(wk)}<p class="hint">Bölge başına haftada 10 ile 20 set çoğu kişi için makul bir aralıktır.</p></details></div>`;
+  return `${sum}
+  <h2>Şablonlarım</h2>${tpl?`<div class="hscroll">${tpl}</div>`:emptyCard("salon","","Sık yaptığın antrenmanı şablon olarak kaydet, tek dokunuşla başlat.")}<button class="btn ghost" data-g="tedit:">${Icons.svg("plus")} Yeni şablon</button>
+  ${rec}${bars}
   <div class="mt-3 card">${navRow('data-g="gdpick"',"clock","Rehberli antrenman","Esneme, ısınma ve Tabata; sesli komutla")}${navRow('data-g="lib"',"book","Egzersiz kütüphanesi","Hareketleri ara, incele, antrenmana ekle")}${navRow('data-c="prog"',"koc","Koç'tan program iste","Hedefine ve ekipmanına göre")}</div>
-  <h2>Şablonlarım</h2>${tpl||`${emptyCard("salon","","Sık yaptığın antrenmanı şablon olarak kaydet, tek dokunuşla başlat.")}`}<button class="btn ghost" data-g="tedit:">${Icons.svg("plus")} Yeni şablon</button>
   ${gPgHtml()}
-  ${bars}${note?`<div class="card" id="wknote">${note}</div>`:""}
-  <h2>Antrenman geçmişi</h2><div class="card">${rec||`<p class="hint">Bitirdiğin antrenmanlar burada listelenir.</p>`}</div>`;
+  <h2>Antrenman geçmişi</h2><div class="card">${gHistHtml(done)||`<p class="m0 hint">Bitirdiğin antrenmanlar burada listelenir.</p>`}</div>`;
 }
 /* Bugün ekranı: bitmemiş antrenman yalnız Salon'da görünüyordu, bitenler de yalnız Salon'da. */
 function gTodayCard(){
@@ -318,7 +324,7 @@ function gLive(w){
   }).join("");
   return `<div class="livebar"><button class="chip" data-g="cancel" aria-label="Vazgeç, antrenmanı iptal et">${Icons.svg("back")} Vazgeç</button><div><b>${esc(w.name)}</b><div class="mut num" id="gstat">${gClock(Date.now()-w.t0)} süre, ${Math.round(gWorkVol(w)).toLocaleString("tr-TR")} kg hacim</div></div><button class="btn fin" data-g="finish">Bitir</button></div>
   ${gTimBar()}
-  <div class="rest" id="grest"${restEnd>Date.now()?"":" hidden"}><div><span class="mut">Dinlenme</span><b class="num" id="gr">${restEnd>Date.now()?gClock(restEnd-Date.now()):""}</b></div><button data-g="rest:-15">−15</button><button data-g="rest:15">+15</button><button data-g="rest:0">Atla</button></div>
+  <div class="rest" id="grest" role="timer" aria-label="Dinlenme"${restEnd>Date.now()?"":" hidden"}><div><span class="mut sm">Dinlenme</span><b class="num" id="gr">${restEnd>Date.now()?gClock(restEnd-Date.now()):""}</b></div><button data-g="rest:-15" aria-label="15 saniye azalt">−15</button><button data-g="rest:15" aria-label="15 saniye ekle">+15</button><button class="rsk" data-g="rest:0">Atla</button></div>
   ${cards||`<p class="hint">Aşağıdan hareket ekleyerek başla.</p>`}
   <button class="btn ghost" data-g="pick">Egzersiz ekle</button>
   <p class="hint">${gPainNote}</p>`;
@@ -421,9 +427,9 @@ const gPgNote="Genel bilgidir, kişisel antrenman ya da tıbbi tavsiye değildir
 function gPgHtml(){
   const chips=(k,vals,lbl)=>`<div class="chips">${vals.map(v=>`<button class="chip" data-g="pgf:${k}:${v}" aria-pressed="${gPgF[k]===v}">${lbl(v)}</button>`).join("")}</div>`;
   const list=PrgLib.PROGRAMS.filter(gPgMatch);
-  return `<h2>Hazır programlar</h2><div class="card"><div class="lbl">Haftada gün</div>${chips("d",[0,3,4,5,6],v=>v||"Hepsi")}<div class="lbl">Seviye</div>${chips("lv",["","Başlangıç","Orta"],v=>v||"Hepsi")}
+  return `<div class="card"><details class="acc" id="pgacc"${gPgF.d||gPgF.lv?" open":""}><summary>Hazır programlar</summary><div class="lbl">Haftada gün</div>${chips("d",[0,3,4,5,6],v=>v||"Hepsi")}<div class="lbl">Seviye</div>${chips("lv",["","Başlangıç","Orta"],v=>v||"Hepsi")}
   ${list.map(p=>`<button class="rrow" data-g="pg:${p.id}"><span class="tx"><b>${p.n}</b><span class="mut sm">${gPgMeta(p)}</span></span><span class="plus">›</span></button>`).join("")||`<p class="hint">Bu seçime uyan program yok.</p>`}
-  <p class="hint">${gPgNote}</p></div>`;
+  <p class="hint">${gPgNote}</p></details></div>`;
 }
 function gPgSheet(id){
   const p=PrgLib.PROGRAMS.find(x=>x.id===id);if(!p)return;
@@ -663,7 +669,11 @@ function gClick(v,el){
     case "sum":return gSheetSummary(+p1);
     case "savetpl":{
       const x=S.workouts.find(y=>y.id===+p1);if(!x)return;
-      const name=(prompt("Şablon adı",x.name)||"").trim();if(!name)return;
+      return openSheet(`<h3>Şablon olarak kaydet</h3><label class="lbl" for="gtn">Şablon adı</label><input class="in" id="gtn" maxlength="60" autocomplete="off" value="${esc(x.name)}" autofocus onfocus="this.select()"><div class="ferr" id="gterr" role="alert"></div><button class="btn" data-g="savetplgo:${x.id}">Kaydet</button>`);
+    }
+    case "savetplgo":{
+      const x=S.workouts.find(y=>y.id===+p1),name=($("#gtn")||{value:""}).value.trim();if(!x)return;
+      if(!name)return ferr("gterr","Şablona bir ad yaz");
       const t={id:S.gid++,name:name.slice(0,60),ex:x.ex.map(e=>e.id)},tg={};
       for(const e of x.ex)if(e.ss)tg[e.id]={ss:e.ss};
       if(Object.keys(tg).length)t.tg=tg;

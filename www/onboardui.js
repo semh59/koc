@@ -1,6 +1,6 @@
 "use strict";
-/* İlk açılış: 3 adım. Girdiler mevcut profil ve ayar alanlarına yazılır; taslak yalnızca bellekte durur. */
-const obFresh=()=>({step:0,kg:"",cm:"",age:"",sex:"",dir:"koru",goal:"",hd:false,hn:false,mods:[],err:"",bad:"",minor:false,kgOk:""});
+/* İlk açılış: karşılama (adım -1) ve 3 adım. Girdiler mevcut profil ve ayar alanlarına yazılır; taslak yalnızca bellekte durur. */
+const obFresh=()=>({step:-1,kg:"",cm:"",age:"",sex:"",dir:"koru",goal:"",hd:false,hn:false,mods:[],err:"",bad:"",minor:false,kgOk:""});
 const ob=obFresh();
 const OB_MODS=[["med","İlaç hatırlatıcı","ilac"],["fast","Oruç takibi","fast"],["steps","Adım sayar","adim"],["bp","Tansiyon","heart"],["bs","Şeker","su"]];
 const OB_DIRS=[["ver","Kilo ver"],["koru","Koru"],["al","Kilo al"]];
@@ -39,17 +39,20 @@ function obPlan(p){
 }
 function obView(){
   const st=ob.step,bad=k=>ob.bad===k?` aria-invalid="true" aria-describedby="oberr"`:"";
-  const fld=(k,lbl,val,small,mode)=>`<div class="field"><label for="ob${k}">${lbl}${small?`<small>${small}</small>`:""}</label><input id="ob${k}" type="text" inputmode="${mode}" value="${esc(val)}" autocomplete="off"${bad(k)}></div>`;
-  const seg=(attr,opts,sel)=>`<div class="seg2" role="group">${opts.map(([v,l])=>`<button data-ob="${attr}:${v}" aria-pressed="${sel===v}">${l}</button>`).join("")}</div>`;
   const err=`<div class="ferr" id="oberr" role="alert">${esc(ob.err)}</div>`;
+  /* Hata metni hatalı alanın hemen altında, kartın içinde. */
+  const fld=(k,lbl,val,small,mode)=>`<div class="field"><label for="ob${k}">${lbl}${small?`<small>${small}</small>`:""}</label><input id="ob${k}" type="text" inputmode="${mode}" value="${esc(val)}" autocomplete="off"${bad(k)}></div>${ob.bad===k?err:""}`;
+  const seg=(attr,opts,sel)=>`<div class="seg2" role="group">${opts.map(([v,l])=>`<button data-ob="${attr}:${v}" aria-pressed="${sel===v}">${l}</button>`).join("")}</div>`;
+  if(st<0&&!ob.minor)return `<div class="about"><img src="logo.svg" alt="" width="96" height="96"><h2 class="m0">NeoWell'e hoş geldin</h2><p class="tc mut m0">Yemek, su, hareket ve sağlık ölçümlerini tek yerde tut; hedefini sana göre hesaplayalım.</p></div>
+  <p class="tc hint">Verilerin yalnızca bu telefonda durur.</p><button class="btn" data-ob="next">Başla</button><button class="mt-2 lnk" data-ob="skip">Şimdilik geç</button>`;
   /* 18 yaş altı: kurulum ilerlemez, taslak silinmiştir; geçme ve geri yolu yok, yalnız yaşı düzeltme. */
   if(ob.minor)return `<h2>NeoWell 18 yaş ve üzeri için</h2><div class="card"><p>Büyüme çağında kalori ve kilo hedefleri farklıdır; bu uygulama onları hesaplamaz.</p><p>Beslenme, kilo ya da spor konusunda bir yetişkinle ve hekiminle ya da diyetisyeninle konuş.</p><p class="hint">Girdiğin bilgiler kaydedilmedi.</p></div><button class="btn ghost" data-ob="fixage">Yaşımı yanlış girdim</button>`;
   let body,next="Devam";
-  if(st===0)body=`<h2>Seni tanıyalım</h2><p class="hint" style="margin:-6px 0 10px">Günlük kalori ve protein hedefini buna göre hesaplarız.</p><div class="card">
+  if(st===0)body=`<h2>Seni tanıyalım</h2><p class="m0 mb-2 hint">Günlük kalori ve protein hedefini buna göre hesaplarız.</p><div class="card">
     ${fld("cm","Boy (cm)",ob.cm,"","numeric")}${fld("kg","Kilo (kg)",ob.kg,"","decimal")}${fld("age","Yaş",ob.age,"","numeric")}
     <div class="mt-3 lbl">Cinsiyet (isteğe bağlı)</div>${seg("sex",[["m","Erkek"],["f","Kadın"],["","Belirtmem"]],ob.sex)}
     <div class="mt-3 lbl">Hedefin</div>${seg("dir",OB_DIRS,ob.dir)}
-    ${ob.dir!=="koru"?fld("goal","Hedef kilo (kg)",ob.goal,"","decimal"):""}</div>${err}`;
+    ${ob.dir!=="koru"?fld("goal","Hedef kilo (kg)",ob.goal,"","decimal"):""}${ob.bad?"":err}</div>`;
   else if(st===1)body=`<h2>Hangileri açık olsun?</h2><div class="card"><p class="flush hint">Kapalı olanlar ekranında görünmez. İstediğini sonra Ayarlar'dan açarsın.</p>
     <div class="chips">${OB_MODS.map(([k,l,ic])=>`<button class="chip" data-ob="mod:${k}" aria-pressed="${ob.mods.includes(k)}">${Icons.svg(ic)} ${l}</button>`).join("")}</div>
     ${ob.mods.includes("steps")?`<p class="p0 hint">Adım sayar için telefon izni, Bugün ekranındaki "Adım sayarı aç" satırından istenir.</p>`:""}</div>
@@ -63,7 +66,7 @@ function obView(){
     ${pl.risk.block?riskBox(pl.risk,"Kalori açığı önermiyorum")+(p.goal>p.kg?"":`<p class="hint">Yukarıdaki değer kilonu koruma düzeyidir.</p>`):`<p class="hint">${pl.note==="Kilo verme"?"Yavaş ve güvenli kilo verme hızına göre":pl.note==="Kilo alma"?"Yavaş kilo alma hızına göre":"Kilonu koruma düzeyine göre"} hesaplandı. Kayıt girdikçe gerçek verine göre güncellenir. Tahmindir, tıbbi tavsiye değildir.</p>`}</div>`;
   }
   const dots=`<div class="obp" role="status"><span class="mut sm">Adım ${st+1}/3</span><span class="obbar" aria-hidden="true">${[0,1,2].map(i=>`<i${i<=st?' class="on"':""}></i>`).join("")}</span></div>`;
-  return `<div class="row" style="display:flex;justify-content:space-between;align-items:center;gap:16px">${dots}<button class="lnk" style="width:auto;padding:0 8px" data-ob="skip">Şimdilik geç</button></div>${body}
+  return `<div class="row">${dots}<button class="lnk wa" data-ob="skip">Şimdilik geç</button></div>${body}
   <div class="two" style="display:grid;grid-template-columns:${st?"1fr 2fr":"1fr"};gap:10px">${st?`<button class="btn ghost" data-ob="back">Geri</button>`:""}<button class="btn" data-ob="next">${next}</button></div>`;
 }
 function obDone(){Object.assign(ob,obFresh());S.settings.obDone=true;tab="bugun";logOff=0;save();render();window.scrollTo(0,0)}
@@ -81,9 +84,10 @@ document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-ob]");if(!el)return;
   const [a,v]=el.dataset.ob.split(":");
   obRead();
-  if(a==="fixage"){Object.assign(ob,obFresh());return render()}
+  if(a==="fixage"){Object.assign(ob,obFresh(),{step:0});return render()}
   if(ob.minor)return;
   if(a==="skip")return obDone();
+  if(ob.step<0){ob.step=0;return render()}
   if(a==="back"){ob.step--;ob.err=ob.bad="";return render()}
   if(a==="sex"||a==="dir"){ob[a]=v;ob.err=ob.bad="";return render()}
   if(a==="mod"){ob.mods=ob.mods.includes(v)?ob.mods.filter(x=>x!==v):ob.mods.concat(v);return render()}

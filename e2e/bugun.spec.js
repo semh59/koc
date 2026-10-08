@@ -45,7 +45,7 @@ test.describe("Bugün",()=>{
 
   test("adım: sensör kartı ve elle adım ekleme",async({app,page})=>{
     await app.open({seed:state({stepsOn:true,stepGoal:8000}),native:{steps:4321}});
-    const card=page.locator('.stepcard[data-tab="adim"]');
+    const card=page.locator('#view .rbtn[data-tab="adim"]');
     await expect(card).toContainText("4.321");
     await card.click();
     await expect(page.locator("#ttl")).toHaveText("Adım raporu");
@@ -101,7 +101,7 @@ test.describe("Günlük",()=>{
   test("çay su ilerlemesini değiştirmez ve Diğer içecekler satırında görünür; su değiştirir",async({app,page})=>{
     await app.open({seed:state()});
     await page.click('[data-dk="open"]');
-    await expect(page.locator("#sheet")).toContainText("Su hedefine yalnız su sayılır.");
+    await expect(page.locator("#sheet")).toContainText("Su hedefine yalnız su ve sade maden suyu sayılır.");
     await page.click('[data-dr="cay"]');await page.fill("#fv","200");
     await page.click('[data-dk="go"]');
     await expect(ring(page,"Su").locator(".rs")).toHaveText("0,0 / 2,5 L");

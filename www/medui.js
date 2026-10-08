@@ -9,11 +9,8 @@ const medResched=()=>scheduleReminders().then(setNotif);
 /* ---- Ayarlar ---- */
 function medSettingsHtml(){
   const st=S.settings;
-  return `<h2>İlaç hatırlatıcı</h2><div class="card">
-    <p class="m0 mb-3 mut sm">İlaçlarını ve saatlerini gir, zamanı gelince bildirim al. Bildirimdeki "Aldım" düğmesiyle uygulamayı açmadan kaydet. Uygulama doz önermez ve ilaç etkileşimlerini denetlemez: doktorunun ve eczacının söylediği gibi kullan.</p>
-    <button class="mb-2 btn ghost" data-md="toggle">${st.medOn?"İlaç hatırlatıcıyı kapat":"İlaç hatırlatıcıyı aç"}</button>
-    ${st.medOn?`${swRow('data-md="shown"',st.medShowName,"İlaç adı bildirimde görünsün (kilit ekranında da)")}<button class="btn ghost" data-tab="ilac">${Icons.svg("ilac")} İlaçlarımı düzenle</button>${isNative()?`<button class="mt-2 btn ghost" data-md="locktest">Kilitli ekran testi</button><p class="pt-2 hint">Düğmeye bas, telefonu kilitle ve ekranı kapat. 15 saniye sonra ekran yanıp ilaç ekranı açılmalı. Açılmazsa telefon ayarlarından uygulamaya kilit ekranında gösterme ve tam ekran bildirim izni ver.</p><button class="mt-2 btn ghost" data-md="realtest">Gerçek doz testi (1 dk)</button><button class="mt-2 btn ghost" data-md="wakelog">Alarm kayıtları</button>`:""}`:""}
-  </div>`;
+  return modRow('data-md="toggle"',st.medOn,"İlaç hatırlatıcı","Saati gelince bildirim, tek dokunuşla kayıt.","hlpmd",`İlaçlarını ve saatlerini gir, zamanı gelince bildirim al. Bildirimdeki "Aldım" düğmesiyle uygulamayı açmadan kaydet. Uygulama doz önermez ve ilaç etkileşimlerini denetlemez: doktorunun ve eczacının söylediği gibi kullan.`,
+    `${swRow('data-md="shown"',st.medShowName,"İlaç adı bildirimde görünsün (kilit ekranında da)")}<button class="btn ghost" data-tab="ilac">${Icons.svg("ilac")} İlaçlarımı düzenle</button>${isNative()?`<details class="acc mt-2"><summary>Bildirim sorun giderme</summary><p class="m0 hint">Kilitli ekran testinde düğmeye bas, telefonu kilitle ve ekranı kapat. 15 saniye sonra ekran yanıp ilaç ekranı açılmalı. Açılmazsa telefon ayarlarından uygulamaya kilit ekranında gösterme ve tam ekran bildirim izni ver.</p><div class="btns"><button class="btn ghost" data-md="locktest">Kilitli ekran testi</button><button class="btn ghost" data-md="realtest">Gerçek doz testi (1 dk)</button><button class="btn ghost" data-md="wakelog">Alarm kayıtları</button></div></details>`:""}`);
 }
 function medToggle(){
   const st=S.settings;st.medOn=!st.medOn;save();render();medResched();
@@ -54,7 +51,7 @@ function medRows(day){
     const tail=st==="t"?`<span class="b7 num">✓ ${r&&r.at?r.at:""}</span><button class="chip" data-md="clear:${m.id}:${slot}" aria-label="${esc(m.n)} kaydını geri al">${Icons.svg("undo")}</button>`
       :st==="s"?`<span class="mut">Atlandı</span><button class="chip" data-md="clear:${m.id}:${slot}" aria-label="${esc(m.n)} kaydını geri al">${Icons.svg("undo")}</button>`
       :`<button class="b7 chip" data-md="take:${m.id}:${slot}">${Icons.svg("check")} Aldım</button><button class="chip" data-md="skip:${m.id}:${slot}">Atla</button>`;
-    return `<div class="wrap row"><span class="num" style="min-width:48px">${slot}</span><span style="flex:1 1 120px;min-width:0">${esc(m.n)}${m.d?`<small class="mut"> ${esc(m.d)}</small>`:""}${late?`<small class="db mut">Gecikti</small>`:""}</span><span style="display:flex;align-items:center;gap:8px;margin-left:auto">${tail}</span></div>`;
+    return `<div class="wrap row mdose"><span class="grow"><b>${esc(m.n)}</b><small class="db mut num">${slot}${m.d?" · "+esc(m.d):""}${late?" · Gecikti":""}</small></span><span class="mda">${tail}</span></div>`;
   }).join("");
 }
 /* Bugün yapılacaklar: yalnız saati gelmiş, alınmamış ve atlanmamış dozlar; sonrakiler İlaçlar ekranında. İşaretlenen doz toast'tan ya da İlaçlar ekranından geri alınır. */
@@ -62,7 +59,7 @@ function medTodo(){
   if(!S.settings.medOn)return [];
   if(!S.meds.length)return [`<div class="row"><span>${Icons.svg("ilac")} Henüz ilaç eklemedin</span><button class="chip" data-md="new">${Icons.svg("plus")} Ekle</button></div>`];
   const t=dayKey(),now=medNowHM();
-  const rows=MedLib.dosesOn(S.meds,t).filter(({m,slot})=>slot<=now&&!MedLib.statusOf(S.medLog,m.id,t,slot)).map(({m,slot})=>`<div class="row"><span>${Icons.svg("ilac")} ${esc(m.n)}<small class="mut sm"><span class="num">${slot}</span>${[esc(m.d),slot<=now?"Gecikti":""].filter(Boolean).map(x=>" · "+x).join("")}</small></span><button class="b7 chip" data-md="take:${m.id}:${slot}">${Icons.svg("check")} Aldım</button><button class="chip" data-md="skip:${m.id}:${slot}">Atla</button></div>`);
+  const rows=MedLib.dosesOn(S.meds,t).filter(({m,slot})=>slot<=now&&!MedLib.statusOf(S.medLog,m.id,t,slot)).map(({m,slot})=>`<div class="row"><b class="num tm">${slot}</b><span>${esc(m.n)}<small class="mut sm">${[esc(m.d),"Gecikti"].filter(Boolean).join(" · ")}</small></span><div class="acts"><button class="b7 chip" data-md="take:${m.id}:${slot}">${Icons.svg("check")} Aldım</button><button class="chip" data-md="skip:${m.id}:${slot}">Atla</button></div></div>`);
   return rows;
 }
 
@@ -74,18 +71,18 @@ function medWhen(m){
 }
 function viewIlac(){
   const t=dayKey(),nowT=medNowHM(),a7=MedLib.adherence(S.meds,S.medLog,keyOff(-6),t,t,nowT),a30=MedLib.adherence(S.meds,S.medLog,keyOff(-29),t,t,nowT);
-  const pct=a=>a.pct==null?"–":"%"+a.pct,cnt=a=>a.total?`${a.taken} / ${a.total} doz alındı`:"doz yok";
-  const low=S.meds.filter(m=>m.on&&MedLib.stockLeft(m)!=null&&MedLib.stockLeft(m)<=5).map(m=>`<div class="pv-1 mut sm">${esc(m.n)}: yaklaşık ${MedLib.stockLeft(m)} doz kaldı. Yenisini almayı unutma.</div>`).join("");
-  /* Gün başına bir nokta: ✓ hepsi alındı, ✕ kaçırıldı, ! bugün bekleyen, • atlanan var; renk tek başına anlam taşımaz. */
+  const pct=a=>a.pct==null?"–":"%"+a.pct,cnt=a=>a.total?`${a.total} dozdan ${a.taken} alındı`:"doz yok";
+  const low=S.meds.filter(m=>m.on&&MedLib.stockLeft(m)!=null&&MedLib.stockLeft(m)<=5).map(m=>`<div class="row"><span class="grow"><b>${esc(m.n)}</b><small class="db mut">Yaklaşık ${MedLib.stockLeft(m)} doz kaldı. Yenisini almayı unutma.</small></span></div>`).join("");
+  /* Gün başına bir nokta: ✓ hepsi alındı, – kaçırıldı (kırmızısız), ! bugün bekleyen, • atlanan var; renk tek başına anlam taşımaz. */
   const days=[];for(let i=6;i>=0;i--){const k=keyOff(-i),a=MedLib.adherence(S.meds,S.medLog,k,k,t,nowT);
-    const c=a.missed?["miss","✕","kaçırıldı"]:a.late?["late","!","bekliyor"]:a.total&&a.taken===a.total?["ok","✓","hepsi alındı"]:a.total?["part","•","bazıları atlandı"]:["none","","doz yok"];
+    const c=a.missed?["miss","–","kaçırıldı"]:a.late?["late","!","bekliyor"]:a.total&&a.taken===a.total?["ok","✓","hepsi alındı"]:a.total?["part","•","bazıları atlandı"]:["none","","doz yok"];
     days.push({on:a.total||a.late,h:`<span class="dd" role="img" aria-label="${GUNK[addDays(-i).getDay()]} ${fd(k)}: ${c[2]}"><i class="${c[0]}" aria-hidden="true">${c[1]}</i><small aria-hidden="true">${GUNK[addDays(-i).getDay()]}</small></span>`})}
-  const list=S.meds.map(m=>`<div class="row"><span class="grow"><b>${esc(m.n)}</b>${m.d?` <small class="mut">${esc(m.d)}</small>`:""}${m.on?"":` <small class="mut">(kapalı)</small>`}<div class="mut sm">${esc(medWhen(m))}${m.k!=null?` · stok ${m.k}`:""}</div></span><button class="chip" data-md="edit:${m.id}">Düzenle</button></div>`).join("");
-  return `<div class="card"><div class="lbl">Bugün</div>${S.meds.length?medRows(t):`<p class="m0 mut sm">Henüz ilaç eklemedin.</p>`}</div>
+  const list=S.meds.map(m=>`<div class="row"><span class="grow"><b>${esc(m.n)}</b>${m.d?` <small class="mut">${esc(m.d)}</small>`:""}${m.on?"":` <small class="mut">(kapalı)</small>`}<div class="mut sm">${esc(medWhen(m))}${m.k!=null?` · Stok: ${String(m.k).replace(".",",")} adet`:""}</div></span><button class="chip" data-md="edit:${m.id}">Düzenle</button></div>`).join("");
+  return `${S.meds.length?`<div class="card"><div class="lbl">Bugün</div>${medRows(t)}</div>`:""}
   ${low?`<div class="card"><div class="lbl">Stok</div>${low}</div>`:""}
-  ${a30.total?`<div class="stats"><div class="stat"><div class="k">Son 7 gün uyum</div><div class="v num">${pct(a7)}</div><div class="mut sm">${cnt(a7)}</div></div><div class="stat"><div class="k">Son 30 gün uyum</div><div class="v num">${pct(a30)}</div><div class="mut sm">${cnt(a30)}</div></div></div>`:""}
+  ${a30.total?`<div class="card"><div class="lbl">Uyum</div><div class="stats"><div class="stat"><div class="k">Son 7 gün</div><div class="v num">${pct(a7)}</div><div class="mut sm">${cnt(a7)}</div></div><div class="stat"><div class="k">Son 30 gün</div><div class="v num">${pct(a30)}</div><div class="mut sm">${cnt(a30)}</div></div></div></div>`:""}
   ${days.some(d=>d.on)?`<div class="card"><div class="lbl">Son 7 gün</div><div class="dd7">${days.map(d=>d.h).join("")}</div></div>`:""}
-  <div class="card"><div class="lbl">İlaçlarım</div>${list||`<p class="m0 mut sm">Liste boş.</p>`}<button class="mt-3 btn" data-md="new">${Icons.svg("plus")} İlaç ekle</button></div>
+  ${list?`<div class="card"><div class="lbl">İlaçlarım</div>${list}<button class="mt-3 btn" data-md="new">${Icons.svg("plus")} İlaç ekle</button></div>`:emptyCard("ilac","Henüz ilaç eklemedin","İlk ilacını ekle; zamanı gelince hatırlatırız.",`<button class="btn" data-md="new">${Icons.svg("plus")} İlaç ekle</button>`)}
   <p class="hint">Uygulama doz önermez, ilaç etkileşimlerini denetlemez, tıbbi yorum yapmaz. Kayıt yalnızca senin hatırlatıcın ve günlüğündür. İlaçlarını doktorunun ve eczacının söylediği gibi kullan.</p>`;
 }
 
@@ -100,17 +97,17 @@ function medCollect(){
 function medRender(){
   const d=medDraft;
   openSheet(`<h3>${d.id?"İlacı düzenle":"İlaç ekle"}</h3>
-  <input class="in" id="mn" placeholder="İlaç adı" maxlength="40" value="${esc(d.n)}" autocomplete="off">
-  <input class="in" id="md" placeholder="Doz (örn. 1 tablet, 10 mg)" maxlength="30" value="${esc(d.d)}" autocomplete="off">
+  <label class="lbl" for="mn">İlaç adı</label><input class="in" id="mn" maxlength="40" value="${esc(d.n)}" autocomplete="off">
+  <label class="lbl" for="md">Doz (isteğe bağlı)</label><input class="in" id="md" placeholder="örn. 1 tablet, 10 mg" maxlength="30" value="${esc(d.d)}" autocomplete="off">
   <div class="lbl">Saatler (günde en çok ${MedLib.MAXT})</div>
-  ${d.t.map((v,i)=>`<div style="display:flex;gap:8px;align-items:center"><input class="grow in" type="time" id="mt${i}" value="${esc(v)}">${d.t.length>1?`<button class="chip" data-md="rmtime:${i}" aria-label="Saati kaldır">✕</button>`:""}</div>`).join("")}
+  ${d.t.map((v,i)=>`<div class="dl"><input class="grow in" type="time" id="mt${i}" value="${esc(v)}" aria-label="${i+1}. saat">${d.t.length>1?`<button class="del" data-md="rmtime:${i}" aria-label="${i+1}. saati kaldır">${Icons.svg("x")}</button>`:""}</div>`).join("")}
   ${d.t.length<MedLib.MAXT?`<button class="mb-3 chip" data-md="addtime">＋ Saat ekle</button>`:""}
-  <div class="lbl">Günler</div><div class="chips">${[1,2,3,4,5,6,0].map(w=>`<button class="chip" data-md="wd:${w}" aria-pressed="${d.w.includes(w)}">${medDays[w]}</button>`).join("")}</div>
-  <div class="lbl">Kaç gün kullanılacak? (boş bırakırsan sürekli)</div><input class="in num" id="mc" inputmode="numeric" placeholder="örn. 7" value="${esc(d.mc)}">
+  <div class="lbl">Günler</div><div class="chips days">${[1,2,3,4,5,6,0].map(w=>`<button class="chip" data-md="wd:${w}" aria-pressed="${d.w.includes(w)}">${medDays[w]}</button>`).join("")}</div>
+  <label class="lbl" for="mc">Kaç gün kullanılacak? (boş bırakırsan sürekli)</label><input class="in num" id="mc" inputmode="numeric" placeholder="örn. 7" value="${esc(d.mc)}">
   <div class="lbl">Stok takibi (isteğe bağlı)</div>
-  <div class="g2"><input class="in num" id="mk" inputmode="decimal" placeholder="Kutuda kaç adet" value="${esc(d.k)}"><input class="in num" id="mp" inputmode="decimal" placeholder="Her seferde kaç adet" value="${esc(d.p)}"></div>
+  <div class="g2"><label class="labf"><span>Kutudaki adet</span><input class="in num" id="mk" inputmode="decimal" placeholder="örn. 30" value="${esc(d.k)}"></label><label class="labf"><span>Doz başına adet</span><input class="in num" id="mp" inputmode="decimal" placeholder="örn. 1" value="${esc(d.p)}"></label></div>
   ${d.id?swRow('id="mon"',d.on,"Hatırlatma açık"):""}
-  <div class="hint" id="mwarn" role="alert"></div>
+  <div class="ferr" id="mwarn" role="alert"></div>
   <button class="btn" data-md="save">Kaydet</button>${d.id?`<button class="mt-2 btn danger" data-md="del">Sil</button>`:""}<button class="mt-2 btn ghost" data-md="close">Vazgeç</button>`);
 }
 function medOpen(id){
