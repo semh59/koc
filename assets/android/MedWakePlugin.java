@@ -36,6 +36,8 @@ public class MedWakePlugin extends Plugin {
             call.reject("times");
             return;
         }
+        JSArray doses = call.getArray("doses");
+        MedWakeReceiver.saveDoses(getContext(), doses == null ? new JSArray() : doses);
         MedWakeReceiver.arm(getContext(), t, "APP");
         call.resolve();
     }
@@ -169,8 +171,12 @@ public class MedWakePlugin extends Plugin {
     /** Erteleme: at (ms) zamanında doz alarmlarından ayrı kodla ekranı yeniden uyandırır (en çok 1 saat ileri); at verilmezse ya da geçmişse iptal eder. */
     @PluginMethod
     public void snooze(PluginCall call) {
-        Context c = getContext();
-        long at = call.getData().optLong("at", 0), now = System.currentTimeMillis();
+        snoozeAt(getContext(), call.getData().optLong("at", 0));
+        call.resolve();
+    }
+
+    static void snoozeAt(Context c, long at) {
+        long now = System.currentTimeMillis();
         Intent i = new Intent(c, MedWakeReceiver.class).setAction("com.neowell.app.MED_WAKE");
         PendingIntent pi = PendingIntent.getBroadcast(c, SNOOZE_RC, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         if (at <= now) {
@@ -179,6 +185,5 @@ public class MedWakePlugin extends Plugin {
         } else {
             Alarms.setClock(c, Math.min(at, now + 3600000), pi);
         }
-        call.resolve();
     }
 }

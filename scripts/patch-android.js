@@ -21,6 +21,9 @@ if (!x.includes("MotionReceiver")) {
   x = x.replace("</application>", '    <receiver android:name=".MotionReceiver" android:exported="false"><intent-filter><action android:name="android.intent.action.BOOT_COMPLETED"/><action android:name="android.intent.action.MY_PACKAGE_REPLACED"/></intent-filter></receiver>\n    <service android:name=".MotionGpsService" android:exported="false" android:foregroundServiceType="location"/>\n    </application>');
 }
 // İlaç dozunda kilitli ekranı uyandıran alarm alıcısı (bildirim eklentisi ekranı açmaz); açılışta, güncellemede ve saat/saat dilimi değişiminde kayıtlı dozları yeniden kurar.
+if (!x.includes("AlarmActivity")) {
+  x = x.replace("</application>", '    <activity android:name=".AlarmActivity" android:exported="false" android:showWhenLocked="true" android:turnScreenOn="true" android:launchMode="singleTask" android:taskAffinity="" android:excludeFromRecents="true" android:theme="@android:style/Theme.Material.Light.NoActionBar"/>\n    </application>');
+}
 if (!x.includes("MedWakeReceiver")) {
   x = x.replace("</application>", '    <receiver android:name=".MedWakeReceiver" android:exported="false"><intent-filter><action android:name="android.intent.action.BOOT_COMPLETED"/><action android:name="android.intent.action.MY_PACKAGE_REPLACED"/><action android:name="android.intent.action.TIME_SET"/><action android:name="android.intent.action.TIMEZONE_CHANGED"/><action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED"/></intent-filter></receiver>\n    </application>');
 }
@@ -67,7 +70,7 @@ console.log("Simgeler ve açılış ekranı yerleştirildi.");
 // KeyVault sözleşmesi: anahtar geçersizleştiyse ya da yoksa decrypt (ve reset olmadan encrypt) reject koduyla "KEY_INVALIDATED" döner; eski veri çözülemez.
 // Yeni anahtar için encrypt({text, reset:true}) ya da resetKey() çağrılır.
 const jdir="android/app/src/main/java/com/neowell/app";
-for(const f of ["Alarms","MedWakeReceiver","MedWakePlugin","KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin","QuickMath","QuickLogPlugin","MotionMath","MotionStore","MotionGpsService","MotionReceiver","MotionPlugin","NeoWidget","WidgetPlugin","WaterReceiver","SpeechPlugin","BackupFolderPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
+for(const f of ["Alarms","AlarmActivity","MedWakeReceiver","MedWakePlugin","KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin","QuickMath","QuickLogPlugin","MotionMath","MotionStore","MotionGpsService","MotionReceiver","MotionPlugin","NeoWidget","WidgetPlugin","WaterReceiver","SpeechPlugin","BackupFolderPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
 fs.writeFileSync(`${jdir}/MainActivity.java`,`package com.neowell.app;
 
 import android.content.Intent;
