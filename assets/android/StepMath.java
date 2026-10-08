@@ -16,7 +16,15 @@ final class StepMath {
     /** 23:58 örnekleme alarmı. Gece alarmı Doze'da gecikse de bu okumaya kadarki adımlar biten güne, sonrası yeni güne yazılır. */
     static final int SAMPLE_MINUTES = 23 * 60 + 58;
 
-    private static long total(State s, float counter) {
+    /** Bir günde bu kadar adım gerçekçi değil: üstü bozuk sayaç durumudur. */
+    static final long MAX_DAY = 60000;
+
+    /** Okumalar arası artış gerçekçi mi: saniyede en çok 4 adım (koşu) ve 300 adım pay. Tek bir bayat sensör değeri sayacı "geri gitti" sanıp tüm açılıştan beri adımı bugüne ekleyebilir. */
+    static boolean plausible(long before, long after, long dtMs) {
+        return after - before <= 4 * Math.max(0L, dtMs) / 1000 + 300;
+    }
+
+    static long total(State s, float counter) {
         return Math.max(0L, Math.round((double) (s.carry + counter - s.base)));
     }
 

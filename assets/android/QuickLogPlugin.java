@@ -54,13 +54,13 @@ public class QuickLogPlugin extends Plugin {
         new NotificationStorage(c).deleteNotification(Integer.toString(id));
     }
 
-    /** İlaç: ana bildirim ve tekrar hatırlatmaları aynı dozun kardeşidir (kimlik + 1.000.000 × sıra, sıra 0-2).
+    /** İlaç: ana bildirim ve tekrar hatırlatmaları aynı dozun kardeşidir (ana kimlik 1.000.000-1.999.999; tekrarlar kimlik + 1.000.000 × sıra, sıra 1-2).
      *  Uygulama kapalıyken JS yeniden planlayamaz: bekleyen tekrar alarmları ve kayıtlı kopyaları burada iptal edilir. */
     private static void cancelSiblings(Context c, int id, boolean med) {
         NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
         int base = id % 1000000, count = med ? 3 : 1;
         for (int k = 0; k < count; k++) {
-            int sid = med ? base + 1000000 * k : id;
+            int sid = med ? base + 1000000 * (k + 1) : id;
             if (nm != null) nm.cancel(sid);
             if (med) cancelPending(c, sid);
         }

@@ -14,6 +14,9 @@ public class StepMathTest {
     public static void main(String[] a) {
         StepMath.State s = new StepMath.State();
         Map<String, Long> h = new HashMap<>();
+        ok("makul artış: 10 dk'da 1200 adım kabul", StepMath.plausible(3000, 4200, 600000), 0);
+        ok("sıçrama: 5 sn'de 75.000 adım reddedilir (bayat okuma açılıştan beri toplamı ekler)", !StepMath.plausible(3000, 78000, 5000), 0);
+        ok("uzun aralık: 8 saatte 20.000 adım kabul", StepMath.plausible(2000, 22000, 8 * 3600000L), 0);
         ok("ilk okuma 0 adım", StepMath.update(s, "d1", 1000, 720, h) == 0, s.base);
         ok("aynı gün artış", StepMath.update(s, "d1", 1350, 720, h) == 350, 0);
         ok("telefon yeniden başlayınca adımlar kaybolmaz", StepMath.update(s, "d1", 120, 720, h) == 470, s.carry);
