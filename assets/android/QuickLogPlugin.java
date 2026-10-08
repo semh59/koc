@@ -54,6 +54,26 @@ public class QuickLogPlugin extends Plugin {
         new NotificationStorage(c).deleteNotification(Integer.toString(id));
     }
 
+    /** İlaç: ana bildirim ve tekrar hatırlatmaları aynı dozun kardeşidir (kimlik + 1.000.000 × sıra, sıra 0-2).
+     *  Uygulama kapalıyken JS yeniden planlayamaz: bekleyen tekrar alarmları ve kayıtlı kopyaları burada iptal edilir. */
+    private static void cancelSiblings(Context c, int id, boolean med) {
+        NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
+        int base = id % 1000000, count = med ? 3 : 1;
+        for (int k = 0; k < count; k++) {
+            int sid = med ? base + 1000000 * k : id;
+            if (nm != null) nm.cancel(sid);
+            if (med) cancelPending(c, sid);
+        }
+    }
+
+    /** Alarm ekranından ilaç kaydı ("m12_0800" alındı, "k12_0800" atlandı): bildirim düğmeleriyle aynı kuyruğa yazılır, uygulama açılınca alınır. */
+    static synchronized void recordMed(Context c, String key, int id) {
+        SharedPreferences p = prefs(c);
+        p.edit().putString("q", QuickMath.append(p.getString("q", ""), key, System.currentTimeMillis())).commit();
+        cancelSiblings(c, id, true);
+        MedWakeReceiver.drop(c, key);
+    }
+
     /**
      * MainActivity ve WaterReceiver'dan çağrılır. Düğme "su" ya da "med" ise kaydı saklar, bildirimi kaldırır ve true döner.
      * MainActivity exported olduğu için her uygulama aynı ek alanlarla onu açabilir; o yoldan (widget=false) kayıt yalnız
@@ -94,17 +114,8 @@ public class QuickLogPlugin extends Plugin {
         // Kuyruk yazısı dayanıklı olmalı: kapalı uygulamada alıcı süreci hemen sonlanabilir, apply() asenkron yazmayı kaçırır.
         e.commit();
         if (v > 0) NeoWidget.bump(c, v);
-        if (id != Integer.MIN_VALUE) {
-            NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
-            // İlaç: ana bildirim ve tekrar hatırlatmaları aynı dozun kardeşidir (kimlik + 1.000.000 × sıra, sıra 0-2).
-            // Uygulama kapalıyken JS yeniden planlayamaz: bekleyen tekrar alarmları ve kayıtlı kopyaları burada iptal edilir.
-            int base = id % 1000000, count = med ? 3 : 1;
-            for (int k = 0; k < count; k++) {
-                int sid = med ? base + 1000000 * k : id;
-                if (nm != null) nm.cancel(sid);
-                if (med) cancelPending(c, sid);
-            }
-        }
+        if (id != Integer.MIN_VALUE) cancelSiblings(c, id, med);
+        if (med) MedWakeReceiver.drop(c, key);
         in.removeExtra(ACTION_KEY);
         return true;
     }

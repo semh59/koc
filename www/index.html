@@ -1427,7 +1427,7 @@ async function scheduleReminders(){
     const tk=await quickToken();if(tk)for(const n of list)if(n.extra&&(n.extra.act==="su"||n.extra.act==="med"))n.extra.tk=tk;
     if(list.length)await ln.schedule({notifications:list});
     /* Bildirim eklentisi kilitli ekranı yakmaz: ilaç dozlarında (hatırlatma tekrarları hariç) ayrı alarm ekranı kısa süre uyandırır. */
-    const mw=window.Capacitor.Plugins.MedWake;if(mw)await mw.set({times:MedLib.wakeTimes(list)}).catch(()=>{});
+    const mw=window.Capacitor.Plugins.MedWake;if(mw)await mw.set({times:MedLib.wakeTimes(list),doses:MedLib.wakeDoses(list)}).catch(()=>{});
     return "ok";
   }catch(e){return "Bildirimler kurulamadı: "+(e&&e.message||e)}
 }

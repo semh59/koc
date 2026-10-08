@@ -19,7 +19,7 @@ import org.json.JSONObject;
 /** İlaç dozunda kilitli ekranı yakar: bildirimle aynı anda kısa süre ekranı açan ayrı alarm. Bildirim eklentisi ekranı uyandırmaz. */
 public class MedWakeReceiver extends BroadcastReceiver {
     static final int BASE = 7100, MAX = 40, LOG_MAX = 20;
-    private static final String PREFS = "nw_medwake", KEY = "times", LOG = "log", TEST = "test", WAKE = "com.neowell.app.MED_WAKE";
+    private static final String PREFS = "nw_medwake", KEY = "times", DOSES = "doses", LOG = "log", TEST = "test", WAKE = "com.neowell.app.MED_WAKE";
 
     @Override
     public void onReceive(Context c, Intent i) {
@@ -99,7 +99,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
             NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
             if (nm == null) return "err:NotificationManager yok";
             channel(c);
-            Intent open = new Intent(c, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP).putExtra("nw_medwake", true).putExtra("nw_tk", QuickLogPlugin.secret(c));
+            Intent open = new Intent(c, AlarmActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             PendingIntent pi = PendingIntent.getActivity(c, NID, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(c, CH) : new Notification.Builder(c).setPriority(Notification.PRIORITY_MAX);
             b.setSmallIcon(c.getApplicationInfo().icon).setContentTitle("İlaç zamanı").setContentText("İlaçlarını görmek için dokun")
@@ -251,6 +251,55 @@ public class MedWakeReceiver extends BroadcastReceiver {
         } catch (JSONException x) {
             return new JSONArray();
         }
+    }
+
+    /** JS'nin verdiği doz ayrıntıları (zaman at, bildirim kimliği nid, ilaç kimliği m, saat s, gösterilecek metin b); alarm ekranı bunlardan çizilir. */
+    static void saveDoses(Context c, JSONArray in) {
+        JSONArray out = new JSONArray();
+        for (int k = 0; k < in.length() && out.length() < 200; k++) {
+            JSONObject d = in.optJSONObject(k), o = new JSONObject();
+            if (d == null || d.optLong("at") <= 0 || d.optInt("nid") <= 0) continue;
+            put(o, "at", d.optLong("at"));
+            put(o, "nid", d.optInt("nid"));
+            put(o, "m", d.optInt("m"));
+            put(o, "s", d.optString("s"));
+            put(o, "b", d.optString("b"));
+            out.put(o);
+        }
+        c.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(DOSES, out.toString()).commit();
+    }
+
+    static JSONArray doses(Context c) {
+        try {
+            return new JSONArray(c.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(DOSES, "[]"));
+        } catch (JSONException x) {
+            return new JSONArray();
+        }
+    }
+
+    /** Kaydı yazılan dozu (anahtar "m12_0800" / "k12_0800") vadesi gelmiş listeden çıkarır; alarm ekranı onu bir daha göstermez. */
+    static synchronized void drop(Context c, String key) {
+        int us = key.indexOf('_');
+        if (us < 2 || key.length() != us + 5) return;
+        try {
+            int m = Integer.parseInt(key.substring(1, us));
+            String s = key.substring(us + 1, us + 3) + ":" + key.substring(us + 3);
+            long now = System.currentTimeMillis();
+            JSONArray a = doses(c), out = new JSONArray();
+            for (int k = 0; k < a.length(); k++) {
+                JSONObject d = a.optJSONObject(k);
+                if (d != null && !(d.optInt("m") == m && s.equals(d.optString("s")) && d.optLong("at") <= now + 5000)) out.put(d);
+            }
+            c.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(DOSES, out.toString()).commit();
+        } catch (NumberFormatException e) {
+            // bozuk anahtar atlanır
+        }
+    }
+
+    /** Ayarlar'daki test alarmı son 2 dk içinde mi çaldı. */
+    static boolean testActive(Context c, long now) {
+        long t = c.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getLong(TEST, 0);
+        return t > 0 && t <= now + 5000 && now - t <= 120000;
     }
 
     static void clearLog(Context c) {

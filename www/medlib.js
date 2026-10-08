@@ -162,7 +162,10 @@ const MedLib=(()=>{
     return sm>tm?addDay(key(d),-1):key(d);
   }
   /* Ekranı uyandıran alarm yalnız ana dozlarda: ana doz kimlikleri [1e6, 2e6), tekrarlar 2e6 ve üstü. */
-  const wakeTimes=list=>list.filter(n=>n.extra&&n.extra.act==="med"&&n.id>=1e6&&n.id<2e6).map(n=>+n.schedule.at);
+  const wakeMain=list=>list.filter(n=>n.extra&&n.extra.act==="med"&&n.id>=1e6&&n.id<2e6);
+  const wakeTimes=list=>wakeMain(list).map(n=>+n.schedule.at);
+  /* Yerel alarm ekranının çizdiği doz ayrıntıları: b bildirim metnidir (ilaç adı gizliyse genel cümle). */
+  const wakeDoses=list=>wakeMain(list).map(n=>({at:+n.schedule.at,nid:n.id,m:n.extra.m,s:n.extra.s,b:n.body}));
 
   /* MedWake tanı kaydını (MedWakeReceiver.java) sade Türkçe satırlara çevirir. Kayıt kişisel veri içermez. */
   const hms=ms=>{const d=new Date(ms);return `${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())}`};
@@ -210,6 +213,6 @@ const MedLib=(()=>{
     if(bad)add("Tam ekran bildirimi gönderilemedi: "+bad.fs.replace(/^err:/,""));
     return out;
   }
-  return {wakeTimes,wakeLine,wakeIssues,sinceFor,doseOfId,MAXM,MAXT,BUDGET,cleanMeds,cleanLog,dosesOn,statusOf,mark,adherence,stockLeft,notifications,budget,dayForTap,revise,addDay,dayDiff,dayOk,timeOk,key};
+  return {wakeTimes,wakeDoses,wakeLine,wakeIssues,sinceFor,doseOfId,MAXM,MAXT,BUDGET,cleanMeds,cleanLog,dosesOn,statusOf,mark,adherence,stockLeft,notifications,budget,dayForTap,revise,addDay,dayDiff,dayOk,timeOk,key};
 })();
 if(typeof module!=="undefined")module.exports=MedLib;
