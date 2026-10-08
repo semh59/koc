@@ -151,15 +151,22 @@ ok("sürüm: CI her derlemede versionName 1.0.<numara> yapar, Hakkında ekranı 
   ok("ekran: wake lock 20 sn, tam ekran bildirimi her seferinde uyarır, kilit güvenlik nedeniyle kaldırılmaz (requestDismissKeyguard yok)",/wl\.acquire\(20000\)/.test(mw)&&/setOnlyAlertOnce\(false\)/.test(mw)&&/setPriority\(Notification\.PRIORITY_MAX\)/.test(mw)&&!/requestDismissKeyguard/.test(mw+patch));
   ok("gerçek doz testi: ilaç kanalında 7149 düğmesiz bildirim ve ekran alarmı aynı ms; yeniden kurulumda iptal edilmez",/MED_TEST_NID=7149/.test(mu)&&/id:MED_TEST_NID,title:"💊 İlaç zamanı",body:"Test",schedule:\{at:new Date\(at\)/.test(mu)&&/channelId:"nw_med"/.test(mu)&&!/id:MED_TEST_NID[^\]]*actionTypeId/.test(mu)&&/w\.test\(\{at\}\)/.test(mu)&&/n\.id!==MED_TEST_NID/.test(ix));
 }
-{const ql=fs.readFileSync("assets/android/QuickLogPlugin.java","utf8");ok("ilaç Aldım/Atla: ana bildirim ve 2 tekrar için bekleyen eklenti alarmı (TimedNotificationPublisher, istek kodu = kimlik) ve kayıtlı kopya iptal edilir; kimlik 1.000.000 × sıra",/cancelPending\(Context c, int id\)/.test(ql)&&/new Intent\(c, TimedNotificationPublisher\.class\)/.test(ql)&&/getBroadcast\(c, id,/.test(ql)&&/am\.cancel\(pi\)/.test(ql)&&/deleteNotification\(Integer\.toString\(id\)\)/.test(ql)&&/base = id % 1000000, count = med \? 3 : 1/.test(ql)&&/sid = med \? base \+ 1000000 \* k : id/.test(ql)&&/if \(med\) cancelPending\(c, sid\)/.test(ql));}
+{const ql=fs.readFileSync("assets/android/QuickLogPlugin.java","utf8");ok("ilaç Aldım/Atla: ana bildirim ve 2 tekrar için bekleyen eklenti alarmı (TimedNotificationPublisher, istek kodu = kimlik) ve kayıtlı kopya iptal edilir; kimlik 1.000.000 × sıra",/cancelPending\(Context c, int id\)/.test(ql)&&/new Intent\(c, TimedNotificationPublisher\.class\)/.test(ql)&&/getBroadcast\(c, id,/.test(ql)&&/am\.cancel\(pi\)/.test(ql)&&/deleteNotification\(Integer\.toString\(id\)\)/.test(ql)&&/base = id % 1000000, count = med \? 3 : 1/.test(ql)&&/sid = med \? base \+ 1000000 \* \(k \+ 1\) : id/.test(ql)&&/if \(med\) cancelPending\(c, sid\)/.test(ql));}
 { // tam ekran ilaç alarm ekranı: imzalı uyandırma bayrağı, tek okuma, 90 sn, kilit bayrağını kaldırma, erteleme alarmı
   const mp=rd("assets/android/MedWakePlugin.java");
   ok("alarm ekranı: erteleme ayrı istek kodu (7141, doz 7100-7139 ve test 7140 dışında) ve alarm saati, en çok 1 saat, at yoksa iptal",/SNOOZE_RC = 7141/.test(mp)&&/setAction\("com\.neowell\.app\.MED_WAKE"\)/.test(mp)&&rd("assets/android/MedWakeReceiver.java").includes('WAKE = "com.neowell.app.MED_WAKE"')&&/Alarms\.setClock\(c, Math\.min\(at, now \+ 3600000\), pi\)/.test(mp)&&/if \(at <= now\) \{[^}]*am\.cancel\(pi\)/.test(mp));
 }
-process.exit(bad?1:0);
 {
   const A=f=>rd("assets/android/"+f),aa=A("AlarmActivity.java"),mw=A("MedWakeReceiver.java"),ql=A("QuickLogPlugin.java"),pa=rd("scripts/patch-android.js");
   ok("alarm ekranı: ayrı AlarmActivity, kilit üstü ve ekran açma bayrakları manifestte sabit; bildirim tam ekran niyeti ona gider",/<activity android:name="\.AlarmActivity"[^>]*android:showWhenLocked="true"[^>]*android:turnScreenOn="true"/.test(pa)&&/android:exported="false"[^>]*android:showWhenLocked/.test(pa)&&/new Intent\(c, AlarmActivity\.class\)/.test(mw));
   ok("alarm ekranı: Aldım/Atla uygulamayı açmadan bildirim düğmeleriyle aynı kuyruğa yazar ve kardeş bildirimleri iptal eder; ekran kapanınca kapanır",/QuickLogPlugin\.recordMed\(this, key\(d, skip\)/.test(aa)&&/static synchronized void recordMed[\s\S]*putString\("q"[\s\S]*cancelSiblings\(c, id, true\)/.test(ql)&&/protected void onStop\(\) \{[\s\S]*finish\(\)/.test(aa));
   ok("alarm ekranı: yazılan doz listeden düşer (bildirim düğmesi de), yalnız son 30 dk içindeki vadesi gelmiş dozlar gösterilir",/MedWakeReceiver\.drop\(c, key\)/.test(ql)&&(ql.match(/MedWakeReceiver\.drop\(c, key\)/g)||[]).length===2&&/d\.optLong\("at"\) >= now - WINDOW/.test(aa));
 }
+{
+  const M=require("../www/medlib.js"),ns=M.notifications([{id:7,n:"X",d:"",t:["08:00","20:00"],on:true,w:[0,1,2,3,4,5,6]}],[],new Date(2026,9,8,7,0),3,true);
+  const fam=id=>[0,1,2].map(k=>(id%1000000)+1000000*(k+1)).sort((x,y)=>x-y).join();
+  const byDose={};for(const n of ns){const k=(n.id%1000000);(byDose[k]=byDose[k]||[]).push(n.id)}
+  ok("ilaç iptali: Java'daki kardeş kimlik formülü ana bildirim ve her iki tekrarın gerçek kimlikleriyle birebir aynı",Object.keys(byDose).length>=2&&Object.values(byDose).every(ids=>ids.length===3&&ids.slice().sort((x,y)=>x-y).join()===fam(ids[0])));
+}
+ok("adım: tek hatalı okuma bugünü şişiremez: gerçekçi olmayan artış reddedilir, 60.000 üstü bozuk durum sıfırlanır",/static boolean plausible\(long before, long after, long dtMs\)/.test(rd("assets/android/StepMath.java"))&&/!StepMath\.plausible\(before, steps, at - prevAt\)\) return before/.test(rd("assets/android/StepStore.java"))&&/steps > StepMath\.MAX_DAY/.test(rd("assets/android/StepStore.java"))&&rd("scripts/StepMathTest.java").includes("sıçrama: 5 sn"));
+process.exit(bad?1:0);

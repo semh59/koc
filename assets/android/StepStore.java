@@ -140,10 +140,17 @@ final class StepStore {
         java.util.Calendar now = java.util.Calendar.getInstance();
         now.setTimeInMillis(at);
         int minutes = now.get(java.util.Calendar.HOUR_OF_DAY) * 60 + now.get(java.util.Calendar.MINUTE);
+        long prevAt = sp.getLong("at", 0L), before = s.day.equals(today) && s.last >= 0 ? StepMath.total(s, s.last) : -1;
         boolean closed = closeFirst && StepMath.closeDay(s, today, counter, minutes, hist);
         long steps = StepMath.update(s, today, counter, minutes, hist);
+        if (before >= 0 && prevAt > 0 && !StepMath.plausible(before, steps, at - prevAt)) return before; // bayat/hatalı okuma: durum değişmez, sonraki okuma devam eder
+        if (steps > StepMath.MAX_DAY) { // bozulmuş sayaç durumu: bugün bu okumadan yeniden sayılır
+            s.carry = 0;
+            s.base = counter;
+            steps = 0;
+        }
         SharedPreferences.Editor e = sp.edit();
-        e.putString("day", s.day).putFloat("base", s.base).putFloat("carry", s.carry).putFloat("last", s.last).putBoolean("sampled", s.sampled).putLong("el", el);
+        e.putString("day", s.day).putFloat("base", s.base).putFloat("carry", s.carry).putFloat("last", s.last).putBoolean("sampled", s.sampled).putLong("el", el).putLong("at", at);
         for (Map.Entry<String, Long> x : hist.entrySet()) e.putLong("h_" + x.getKey(), x.getValue());
         if (closed) e.putLong("snapAt", at);
         e.apply();
