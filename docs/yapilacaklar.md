@@ -10,8 +10,8 @@ Bunlar bitmeden Play'e yayın yapılamaz ya da reddedilir. Ayrıntı ve kaynakla
 - [ ] **Tam ekran bildirim (`USE_FULL_SCREEN_INTENT`) beyanı:** Play Console > Uygulama içeriği > Tam ekran bildirimleri; çekirdek işlev ilaç alarmı (metin ve gerekçe `docs/play-izin-beyanlari.md`). Ret gelirse: `scripts/patch-android.js` izin listesinden `USE_FULL_SCREEN_INTENT` çıkarılır ve `MedWakeReceiver.fullScreen` içindeki `setFullScreenIntent` kalkar; ilaç alarmı yine normal yüksek öncelikli, alarm sesli bildirimle çalar, yalnız ekranın kendiliğinden uyanması zayıflar (telefon üreticisine göre).
 - [ ] **Sağlık (Health apps) beyanı:** Play Console > Uygulama içeriği > Sağlık; metinler `docs/play-data-safety.md` "Sağlık uygulaması beyanı" bölümünde. Data safety formu da aynı belgeden doldurulur (Koç paylaşımı = Evet, Google SDK telemetrisi için "Cihaz veya diğer kimlikler" kararı hukukçuya).
 - [ ] **IARC derecelendirme anketi** ve **hedef kitle** (yalnız 18+, Aile programı dışı, çocuklara yönelik değil) anketleri.
-- [ ] **512 px mağaza simgesi ve öne çıkan grafik:** kaynak `assets/logo.png` (1024 px) var, 512 x 512 PNG üretilmedi (`www/logo.png` 192 px, yetmez). Öne çıkan grafik (1024 x 500) yok.
-- [ ] **Telefon ekran görüntüleri** (en az 2, tercihen 4-8): mağaza metnindeki özellikleri gösteren; yok.
+- [x] **512 px mağaza simgesi ve öne çıkan grafik:** kaynak `assets/logo.png` (1024 px) var, 512 x 512 PNG üretilmedi (`www/logo.png` 192 px, yetmez). Öne çıkan grafik (1024 x 500) yok.
+- [x] **Telefon ekran görüntüleri** (en az 2, tercihen 4-8): mağaza metnindeki özellikleri gösteren; yok.
 - [~] **16 KB sayfa hizası ve hedef API 36:** CI her derlemede denetliyor (`apk.yml` "Hedef API 36 ve 16 KB sayfa hizası"), tutmazsa derleme durur; Play'e yükleyince uyarı çıkmamalı (ilk AAB yüklemesinde bak).
 - [ ] **Play App Signing ve upload key:** aşağıdaki "Play Console (hesap açılınca, G3)" maddesi.
 
