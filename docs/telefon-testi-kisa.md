@@ -1,0 +1,34 @@
+# Kısa telefon testi (öncelik sırasıyla, yaklaşık 40 dk)
+
+Uzun liste `docs/yapilacaklar.md` içinde kalır. Bu liste yalnız en riskli ve geri dönüşü zor şeyleri kapsar. Her madde: ne yapılır, ne görülmeli. Sorun varsa maddenin numarasını ve ekran görüntüsünü gönder.
+
+Önce: Hakkında bölümünde sürüm numarası son yayınla aynı olmalı.
+
+## A. Veri kaybı riski (önce bunlar)
+1. **Yedek.** Ayarlar > Yedekle > parolalı yedek al, dosya telefon dışında bir yerde (Drive ya da bilgisayar) dursun. Aynı dosyayla Dosyadan oku ile geri yükleme çalışmalı.
+2. **Güncelleme verisi.** Yeni sürüm kurulunca kilo, yemek, ilaç ve antrenman kayıtların yerinde olmalı.
+
+## B. İlaç alarmı (en çok şikâyet edilen)
+3. Gerçek bir ilaç saati kur, ekranı kilitle. Ekran yanmalı ve alarm ekranı kilidin üstünde gelmeli.
+4. Alarm ekranında Aldım de, 25 dakika bekle. Tekrar alarm ya da bildirim gelmemeli.
+5. Bir ilaç saatinde alarm ekranında "10 dk sonra hatırlat" de. 10 dakika sonra ekran yeniden gelmeli.
+6. İlaç adı gizli ayarındayken alarm ekranında "İlaç saatin geldi." yazmalı, ad ve doz görünmemeli.
+7. Ayarlar > İlaç > Alarm kayıtları: "Olası sorunlar" boş ya da yalnız anlamlı bir uyarı içermeli.
+
+## C. Adım ve hareket
+8. Adım sayısı makul olmalı (günün gerçeğine yakın). Gün içinde birden sıçramamalı. 100 adım yürü, sayı yaklaşık 100 artmalı (birkaç sn gecikme normal).
+9. Gece yarısını geçince dünün adımı doğru güne yazılmalı, bugün 0'dan başlamalı.
+10. Hareketler kartı: "Bugün" ve "Dün" satırlarında toplam görünmeli, dokununca ayrıntılar açılmalı.
+
+## D. Yeni arayüz
+11. Ayarlar > Yazı tipi boyutunu en büyüğe al. Bugün, Salon, Koç ve Ayarlar'da taşma ya da üst üste binme olmamalı. Sonra eski haline getir.
+12. Koyu tema: kartlar okunur, durum çubuğu simgeleri (saat, pil) görünür.
+13. Koç'ta "Yeni sohbet": yanıt beklenmiyorken çalışmalı. Sohbet arşive gitmeli.
+14. Yemek ekle: arama, "Kendin yaz" ile kendi yemeğini yazma (adı ve kaloriyi yazarken harfler doğru alana gitmeli), Kaydet.
+
+## E. Bildirim ve widget
+15. Su bildirimindeki "+250 ml" ekran açmadan kayıt yazmalı. Widget'taki "+su" aynı şekilde.
+16. Pazar 20:30 haftalık özet bildirimi geliyor mu (bir hafta içinde bakılır).
+
+## Görüntü gönderme
+Sorun görünce: ekran görüntüsü + hangi madde numarası + (ilaç alarmıysa) Alarm kayıtları ekranı.

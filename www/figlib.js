@@ -52,7 +52,6 @@ const FigLib=(()=>{
     return J;
   }
 
-  const movePt=(P,d)=>[P[0]+d[0],P[1]+d[1]];
   function shift(J,dx,dy){
     const m=p=>[p[0]+dx,p[1]+dy];
     J.hip=m(J.hip);J.neck=m(J.neck);J.head=m(J.head);
