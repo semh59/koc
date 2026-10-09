@@ -64,27 +64,8 @@ function viewGecmis(){
 
 /* ---- Gün ekranı ---- */
 const hgRow=(ic,l,v)=>`<div class="row"><span>${Icons.svg(ic)} ${l}</span><b class="num">${v}</b></div>`;
-function hgOther(k){
-  const o=[],f=(...a)=>a.filter(x=>x!=null&&x!=="").join(" ");
-  const wo=S.workouts.filter(w=>w.t1!=null&&w.day===k).sort((a,b)=>a.t0-b.t0);
-  const ad=S.entries.filter(e=>e.type==="adim"&&e.day===k).reduce((s,e)=>s+(e.v||0),0);
-  const sl=S.sleep.find(x=>x.day===k),mo=S.mood.find(x=>x.day===k);
-  const vt=S.vitals.filter(x=>x.day===k).sort((a,b)=>a.time<b.time?-1:1);
-  const pl=S.pulse.filter(x=>x.day===k),hr=S.hr.find(x=>x.day===k);
-  const fa=S.fast.log.filter(x=>dayKey(new Date(x.t1))===k);
-  const ml=S.medLog.filter(x=>x.day===k),ms=S.measures.filter(x=>x.day===k);
-  const names={waist:"Bel",hip:"Kalça",chest:"Göğüs",arm:"Kol",thigh:"Uyluk"};
-  if(ad)o.push(hgRow("adim","Adım",Math.round(ad).toLocaleString("tr-TR")));
-  if(sl)o.push(hgRow("moon","Uyku",hbDur(sl.min)));
-  if(mo)o.push(hgRow("smile","Ruh hali",`${MOODS[mo.v-1]} ${MOODN[mo.v-1]}`));
-  for(const x of vt)o.push(hgRow("heart",f(x.time,x.k==="t"?"Tansiyon":"Şeker"),x.k==="t"?`${x.sys}/${x.dia}${x.nabiz?` · nabız ${x.nabiz}`:""}`:`${Units.fg(x.g)} ${Units.gl()}`));
-  for(const x of pl)o.push(hgRow("heart",`${x.time} Nabız (kamera)`,`${x.bpm}`));
-  if(hr)o.push(hgRow("heart","Nabız (saat), ortalama",`${hr.a}${hr.m?` · en düşük ${hr.m}`:""}`));
-  for(const x of fa)o.push(hgRow("moon","Oruç",hbDur(Math.round((x.t1-x.t0)/6e4))));
-  if(ml.length){const t=ml.filter(x=>x.st==="t").length,s=ml.length-t;o.push(hgRow("ilac","İlaç",`${t} alındı${s?`, ${s} atlandı`:""}`))}
-  for(const x of ms)o.push(hgRow("kilo",`Ölçü: ${names[x.k]||x.k}`,`${fmt(x.v)} cm`));
-  const wr=wo.map(w=>`<button class="rrow" data-g="sum:${w.id}"><span class="grow tx"><b>${esc(w.name)}</b><span class="mut sm">${esc(gNames(w,4))}</span><span class="mut sm num">${gStats(w)}</span></span></button>`).join("");
-  return {rows:o.join(""),wo:wr};
+function hgOther(k){ // satırları veri modülleri üretir (Data.dayRows, Data.dayWork)
+  return {rows:Data.dayRows.slice().sort((a,b)=>a[0]-b[0]).map(([,f])=>f(k)).join(""),wo:Data.dayWork.map(f=>f(k)).join("")};
 }
 function viewGun(){
   const k=keyOff(-logOff),today=logOff===0;
@@ -93,7 +74,7 @@ function viewGun(){
   const name=`${today?"Bugün, ":logOff===1?"Dün, ":""}${fd(k)}, ${hgGun(k)}`;
   const addBar=`<div class="qa"><button class="chip" data-hg="add:yemek">${Icons.svg("yemek")} Yemek</button><button class="chip" data-hg="add:su">${Icons.svg("su")} +${S.settings.glass} ml</button><button class="chip" data-hg="add:kilo">${Icons.svg("kilo")} Kilo</button><button class="chip" data-hg="add:spor">${Icons.svg("spor")} Spor</button><button class="chip" data-hg="add:not">${Icons.svg("not")} Not</button></div>`;
   const empty=!items.length&&!oth.rows&&!oth.wo;
-  const tiles=!empty?`<div class="stats hgs"><div class="stat"><div class="k">Kalori</div><div class="v num">${Math.round(kcal).toLocaleString("tr-TR")}</div></div><div class="stat"><div class="k">Su</div><div class="v num">${dl.suMl<1000?Math.round(dl.suMl)+" ml":fmt(dl.suMl/1000,1)+" L"}</div></div><div class="stat"><div class="k">Spor</div><div class="v num">${Math.round(S.entries.filter(e=>e.type==="spor"&&e.day===k).reduce((s,e)=>s+(e.v||0),0))} dk</div></div></div>`:"";
+  const tiles=!empty?`<div class="stats hgs"><div class="stat"><div class="k">Kalori</div><div class="v num">${Math.round(kcal).toLocaleString("tr-TR")}</div></div><div class="stat"><div class="k">Su</div><div class="v num">${dl.suMl<1000?Math.round(dl.suMl)+" ml":fmt(dl.suMl/1000,1)+" L"}</div></div><div class="stat"><div class="k">Spor</div><div class="v num">${Math.round(Kayit.where(e=>e.type==="spor"&&e.day===k).reduce((s,e)=>s+(e.v||0),0))} dk</div></div></div>`:"";
   const FOC={kcal:["Kalori",k=>sum("yemek",k,k),"var(--kcal)",kcalGoal(dayKey()),"kcal",Math.round],su:["Su",k=>sum("su",k,k),"var(--su)",S.settings.waterMl,"L",x=>fmt(x/1000,1)],spor:["Spor",k=>sum("spor",k,k),"var(--spor)",sportDay(),"dk",Math.round]}[hg.focus];
   const focus=FOC?`<div class="card">${miniBars(14,FOC[1],FOC[2],FOC[3],FOC[0]+" · son 14 gün",FOC[4],FOC[5])}<button class="lnk" data-tab="gecmis">Tüm geçmiş ve takvim</button></div>`:"";
   return `${focus}<div class="card">${dayNav("lo",name,today)}${tiles}${addBar}</div>

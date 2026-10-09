@@ -1,22 +1,6 @@
 "use strict";
 /* Kategori başına sayı ve silme. Kendi besinleri, favoriler ve şablonlar kullanıcının hazırladığı içeriktir, yalnız "Tüm verileri sil" ile gider. */
-const pvE=(...t)=>[()=>S.entries.filter(e=>t.includes(e.type)).length,()=>{S.entries=S.entries.filter(e=>!t.includes(e.type))}];
-const PV_CATS=[
-  ["Yemek ve su kayıtları",...pvE("yemek","su")],
-  ["Kilo",...pvE("kilo")],
-  ["Spor ve antrenman",()=>S.workouts.length+S.entries.filter(e=>e.type==="spor"&&e.wid==null).length,()=>{S.workouts=[];S.entries=S.entries.filter(e=>e.type!=="spor")}],
-  ["Adım ve hareket",()=>S.moves.length+S.entries.filter(e=>e.type==="adim").length,()=>{S.moves=[];S.walk=null;S.settings.stepsFrom=keyOff(1);S.entries=S.entries.filter(e=>e.type!=="adim")}],
-  ["İlaç",()=>S.meds.length+S.medLog.length,()=>{S.meds=[];S.medLog=[]}],
-  ["Sağlık ölçümleri (tansiyon, şeker)",()=>S.vitals.length,()=>{S.vitals=[]}],
-  ["Tahlil",()=>S.labs.length,()=>{S.labs=[]}],
-  ["Uyku, ruh hali ve oruç",()=>S.sleep.length+S.mood.length+S.fast.log.length+(S.fast.t0?1:0),()=>{S.sleep=[];S.mood=[];S.fast.log=[];S.fast.t0=null;S.settings.hcFrom=keyOff(1)}],
-  ["Koç sohbeti",()=>S.chat.length+S.chats.length,cClearChat],
-  ["Notlar",...pvE("not")],
-  ["Vücut ölçüleri (bel, kalça…)",()=>S.measures.length,()=>{S.measures=[]}],
-  ["İlerleme fotoğrafları",()=>phList.length,()=>{phClear()}],
-  ["Tariflerim",()=>S.recipes.length,()=>{S.recipes=[]}],
-  ["Nabız (kamera, saat)",()=>S.pulse.length+S.hr.length,()=>{S.pulse=[];S.hr=[];S.settings.hcFrom=keyOff(1)}]
-];
+const PV_CATS=Data.privacy; // satırları veri modülleri (modules/*.js) ekler
 function pvDelete(i){
   const [name,n,del]=PV_CATS[i],lb=S.settings.lastBackup;
   if(!n())return;

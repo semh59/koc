@@ -252,7 +252,7 @@ function gHome(){
 }
 /* Antrenman kaydı olmayan sporlar (hızlı kayıt, Koç'tan eklenen bisiklet, yürüyüş vb.): son 20 kayıt, en yeni üstte. */
 function gQuickHtml(){
-  const l=S.entries.filter(e=>e.type==="spor"&&!e.wid).sort((a,b)=>b.day.localeCompare(a.day)||b.id-a.id).slice(0,20);
+  const l=Kayit.where(e=>e.type==="spor"&&!e.wid).sort((a,b)=>b.day.localeCompare(a.day)||b.id-a.id).slice(0,20);
   if(!l.length)return "";
   return `<h2>Diğer sporlar</h2><div class="card">${l.map(e=>`<div class="row"><span class="num mut">${fd(e.day)}</span><span class="grow tx"><b>${esc(e.text||"Spor")}</b></span><span class="num">${e.v} dk${e.kcal!=null?` · ${e.kcal} kcal`:""}</span></div>`).join("")}</div>`;
 }
@@ -421,7 +421,7 @@ function gSheetSummary(id){
   ${gWorkVol(w)>0?`<div class="sumv num">${Math.round(gWorkVol(w)).toLocaleString("tr-TR")} <small>kg hacim</small></div>`:gTimedSec(w)>0?`<div class="sumv num">${gSecTx(gTimedSec(w))} <small>toplam süre</small></div>`:""}
   <div class="two"><div class="stat"><div class="k">Set</div><div class="v num">${gWorkSets(w)}</div></div><div class="stat"><div class="k">Egzersiz</div><div class="v num">${w.ex.length}</div></div></div>
   ${prs.length?`<div class="pr"><b>${prs.length} yeni rekor</b>${prs.map(p=>`<div>${esc(p.ex.n)}, ${fkg(p.kg)||0} kg × ${p.reps}<div class="mut sm">Tahmini 1TM ${Math.round(p.e1)} kg, önceki ${Math.round(p.prev)} kg</div></div>`).join("")}</div>`:""}
-  ${(k=>k?`<div class="mt-2 mut sm">Tahmini ~${k} kcal (dinlenme hariç, tahmindir)</div>`:"")((S.entries.find(e=>e.wid===w.id)||{}).kcal)}
+  ${(k=>k?`<div class="mt-2 mut sm">Tahmini ~${k} kcal (dinlenme hariç, tahmindir)</div>`:"")((Kayit.find(e=>e.wid===w.id)||{}).kcal)}
   <div class="my-2 mut sm">${Object.keys(sets).map(g=>`${g} ${sets[g]}`).join(", ")}</div>
   ${gSsGroups(w).map(g=>`<div class="mut sm">Süperset: ${esc(g.map(x=>gEx(x.id).n).join(" + "))}</div>`).join("")}${gDrops(w)?`<div class="mut sm">${gDrops(w)} drop set (hacme girer, rekor hesabına girmez)</div>`:""}
   <div class="btns">${w.tpl==null?`<button class="btn ghost" data-g="savetpl:${w.id}">Şablon olarak kaydet</button>`:S.templates.some(t=>t.id===w.tpl)?`<button class="btn ghost" data-g="tplupd:${w.id}">Şablonu bu seansa göre güncelle</button>`:""}<button class="btn ghost" data-g="closesheet">Kapat</button><button class="btn danger" data-g="delw:${w.id}">Antrenmanı sil</button></div>`);
@@ -568,8 +568,7 @@ function gLogSpor(w,kind){
   const kc=Algo.gymKcal({min:gDur(w),sets:gWorkSets(w),kg:motionKg()});if(kc)e.kcal=kc;
 }
 function gRestore(w,entries){
-  S.workouts.push(w);for(const e of entries)S.entries.push(e);
-  S.entries.sort((a,b)=>a.id-b.id);save();render();
+  S.workouts.push(w);Kayit.restore(entries);save();render();
 }
 function gClick(v,el){
   const [a,p1,p2]=v.split(":"),w=gActive();
@@ -733,8 +732,7 @@ function gClick(v,el){
     }
     case "delw":{
       const x=S.workouts.find(y=>y.id===+p1);if(!x)return;
-      const ents=S.entries.filter(e=>e.wid===x.id);
-      S.workouts=S.workouts.filter(y=>y!==x);S.entries=S.entries.filter(e=>e.wid!==x.id);save();closeSheet();render();
+      S.workouts=S.workouts.filter(y=>y!==x);const ents=Kayit.remove(e=>e.wid===x.id);save();closeSheet();render();
       toast("Antrenman silindi",()=>gRestore(x,ents));return;
     }
   }
@@ -767,7 +765,7 @@ function gEnergy(){
   const kg=Algo.trend(wAll)[days[days.length-1]];
   if(!(st.heightCm>0&&st.age>0))return `<h2>Enerji dengesi</h2><div class="card"><p class="flush hint">Harcamanı ve kalori hedefini hesaplamak için boy ve yaş gerekli.</p><button class="btn ghost" data-act="profil">Profili doldur</button></div>`;
   const profile={kg,cm:st.heightCm,age:st.age,sex:st.sex||"",act:st.act};
-  const intake={};for(const e of S.entries)if(e.type==="yemek"&&e.v)intake[e.day]=(intake[e.day]||0)+e.v;
+  const intake=Kayit.byDay("yemek");
   const r=Algo.adaptiveTdee({weights:wAll,intake,profile});
   if(!r.tdee)return "";
   const bmr=Algo.bmrMifflin(profile),sg=Algo.suggestTarget({...riskInput(kg),tdee:r.tdee,bmr});

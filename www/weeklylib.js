@@ -17,10 +17,10 @@ const WeeklyLib=(()=>{
   const sumOf=(es,t,k)=>es.filter(e=>(t==="su"?isWater(e):e.type===t)&&e.day===k).reduce((s,e)=>s+(e.v||0),0);
   const mean=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
 
-  /* endDay "YYYY-MM-DD", days: pencere (7). S: durum. */
-  function build(S,endDay,days,nowTime){
+  /* endDay "YYYY-MM-DD", days: pencere (7). D: {settings, entries, vitals, meds, medLog}. */
+  function build(D,endDay,days,nowTime){
     days=days||7;
-    const [y,m,d]=endDay.split("-").map(Number),end=new Date(y,m-1,d),st=S.settings,es=S.entries,rows=[];
+    const [y,m,d]=endDay.split("-").map(Number),end=new Date(y,m-1,d),st=D.settings,es=D.entries,rows=[];
     for(let i=days-1;i>=0;i--){
       const dt=new Date(end.getFullYear(),end.getMonth(),end.getDate()-i),k=key(dt);
       const kg=es.filter(e=>e.type==="kilo"&&e.day===k).map(e=>e.v).pop();
@@ -41,11 +41,11 @@ const WeeklyLib=(()=>{
     summary.push(["Spor",sp.length?`toplam ${Math.round(spT)} dk (haftalık hedef ${st.sportWeek} dk), ${sp.length} gün`:"spor kaydı yok"]);
     const ad=rows.filter(r=>r.adim>0);
     if(ad.length)summary.push(["Adım",`günlük ortalama ${Math.round(mean(ad.map(r=>r.adim))).toLocaleString("tr-TR")} (hedef ${st.stepGoal.toLocaleString("tr-TR")}), ${ad.length} gün`]);
-    const vit=S.vitals||[];
+    const vit=D.vitals||[];
     if(st.bpOn){const h=VL.homeAvg(vit,endDay,days);if(h.all)summary.push(["Tansiyon",`ortalama ${Math.round(h.all.sys)}/${Math.round(h.all.dia)} mmHg (${h.all.n} ölçüm, ${h.days} gün)`])}
     if(st.bsOn){const g=VL.gStats(vit,from,endDay,st);if(g)summary.push(["Şeker",`ortalama ${gu==="mmol"?UN.fg(g.avg,gu):Math.round(g.avg)} ${UN.gl(gu)} (${g.n} ölçüm)`])}
-    if(st.medOn&&S.meds&&S.meds.length){
-      const a=ML.adherence(S.meds,S.medLog||[],from,endDay,endDay,nowTime||"23:59");
+    if(st.medOn&&D.meds&&D.meds.length){
+      const a=ML.adherence(D.meds,D.medLog||[],from,endDay,endDay,nowTime||"23:59");
       if(a.total)summary.push(["İlaç uyumu",`%${a.pct} (${a.taken} / ${a.total} doz alındı${a.missed?`, ${a.missed} kaçırılan`:""}${a.late?`, ${a.late} bugün bekliyor`:""}${a.skipped?`, ${a.skipped} atlanan`:""})`]);
     }
     /* Grafikler yalnız en az iki günlük veri varsa çıkar. Renkler uygulamadaki ile aynı: kilo prim, sistolik ink, diyastolik su. */

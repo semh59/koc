@@ -139,7 +139,7 @@ function cleanChat(arr,known){
 const cDrop=m=>{S.chat=S.chat.filter(x=>x!==m)};
 /* Koç'a saatten (Health Connect) otomatik gelen adım ve uyku gitmez: rıza metni yalnız senin girdiğin ve telefonun sensörüyle sayılan adımı ve varsa uykuyu söyler. */
 const cStep=e=>e.hc>0?(e.ph||0):(e.v||0);
-const cSleep=k=>{const x=S.sleep.find(y=>y.day===k);return x&&x.src!=="hc"?x.min:undefined};
+const cSleep=k=>{const x=Aliskanlik.sleep().find(y=>y.day===k);return x&&x.src!=="hc"?x.min:undefined};
 function cPush(m){const o=Object.assign({id:S.cid++,t:Date.now()},m);S.chat.push(o);if(S.chat.length>150)S.chat.splice(0,S.chat.length-150);return o}
 
 /* ---- bağlam ---- */
@@ -153,7 +153,7 @@ function cCalc(){
   const pt=Algo.protein(riskInput(out.trendKg));out.protein=pt.range;out.proteinDoc=pt.doc;
   if(st.heightCm>0&&st.age>0){
     const profile={kg:out.trendKg,cm:st.heightCm,age:st.age,sex:st.sex||"",act:st.act};
-    const intake={};for(const e of S.entries)if(e.type==="yemek"&&e.v)intake[e.day]=(intake[e.day]||0)+e.v;
+    const intake={};for(const e of Kayit.all())if(e.type==="yemek"&&e.v)intake[e.day]=(intake[e.day]||0)+e.v;
     const r=Algo.adaptiveTdee({weights:w,intake,profile});out.tdee=r.tdee;out.source=r.source;
     out.bmr=Algo.bmrMifflin(profile);
     const sg=Algo.suggestTarget({...riskInput(out.trendKg),tdee:r.tdee,bmr:out.bmr});out.target=sg?sg.kcal:null;
@@ -163,15 +163,15 @@ function cCalc(){
 function cData(){
   const st=S.settings,w=weights(),d=[];
   for(let i=13;i>=0;i--){
-    const k=keyOff(-i),ents=S.entries.filter(e=>e.day===k);
-    d.push({d:k.slice(5),kg:w[k],kcal:Math.round(ents.filter(e=>e.type==="yemek").reduce((s,e)=>s+(e.v||0),0)),p:Math.round(ents.filter(e=>e.type==="yemek").reduce((s,e)=>s+(e.p||0),0)),su:Math.round(ents.filter(WeeklyLib.isWater).reduce((s,e)=>s+e.v,0)),sport:Math.round(ents.filter(e=>e.type==="spor").reduce((s,e)=>s+e.v,0)),ad:Math.round(ents.filter(e=>e.type==="adim").reduce((s,e)=>s+cStep(e),0)),sl:cSleep(k),mo:(S.mood.find(x=>x.day===k)||{}).v});
+    const k=keyOff(-i),ents=Kayit.all().filter(e=>e.day===k);
+    d.push({d:k.slice(5),kg:w[k],kcal:Math.round(ents.filter(e=>e.type==="yemek").reduce((s,e)=>s+(e.v||0),0)),p:Math.round(ents.filter(e=>e.type==="yemek").reduce((s,e)=>s+(e.p||0),0)),su:Math.round(ents.filter(WeeklyLib.isWater).reduce((s,e)=>s+e.v,0)),sport:Math.round(ents.filter(e=>e.type==="spor").reduce((s,e)=>s+e.v,0)),ad:Math.round(ents.filter(e=>e.type==="adim").reduce((s,e)=>s+cStep(e),0)),sl:cSleep(k),mo:(Aliskanlik.mood().find(x=>x.day===k)||{}).v});
   }
   const t=dayKey(),now=new Date();
   /* Bağlam boyutu için üst sınırlar (en kötü durum menu.test.js'te ölçülür): yemek 12 satır/ad 40, spor 5, not 3, su tek toplam. */
-  const ent=S.entries.filter(e=>e.day===t),lastOf=(type,n)=>ent.filter(e=>e.type===type).slice(-n),suMl=Math.round(ent.filter(WeeklyLib.isWater).reduce((a,e)=>a+e.v,0));
+  const ent=Kayit.all().filter(e=>e.day===t),lastOf=(type,n)=>ent.filter(e=>e.type===type).slice(-n),suMl=Math.round(ent.filter(WeeklyLib.isWater).reduce((a,e)=>a+e.v,0));
   const today=[...lastOf("yemek",12).map(e=>`yemek: ${(e.text||"öğün").slice(0,40)}${e.v?" ~"+Math.round(e.v)+" kcal":""}${e.p?", "+Math.round(e.p)+" g protein":""}`),...(suMl?[`su ${suMl} ml`]:[]),...lastOf("kilo",1).map(e=>`tartı ${fmt(e.v)} kg`),...lastOf("spor",5).map(e=>`spor ${(e.text||"").slice(0,30)} ${Math.round(e.v)} dk`),...lastOf("not",3).map(e=>`not: ${e.text.slice(0,100)}`)];
-  const workouts=S.workouts.filter(x=>x.t1!=null).sort((a,b)=>b.t0-a.t0).slice(0,3).map(x=>`${x.day.slice(5)} ${x.name}: ${x.ex.map(cWorkoutEx).filter(Boolean).join(", ")}`.slice(0,300));
-  const from=keyOff(-7),notes=S.entries.filter(e=>e.type==="not"&&e.day>=from).slice(-3).map(e=>e.text.slice(0,100));
+  const workouts=Salon.workouts().filter(x=>x.t1!=null).sort((a,b)=>b.t0-a.t0).slice(0,3).map(x=>`${x.day.slice(5)} ${x.name}: ${x.ex.map(cWorkoutEx).filter(Boolean).join(", ")}`.slice(0,300));
+  const from=keyOff(-7),notes=Kayit.all().filter(e=>e.type==="not"&&e.day>=from).slice(-3).map(e=>e.text.slice(0,100));
   return {profile:{cm:st.heightCm,age:st.age,sex:st.sex,act:st.act,note:st.healthNote},goals:{kg:st.goalKg,kcal:st.kcal,water:st.waterMl,sport:st.sportWeek},calc:cCalc(),days:d,today,now:`${pad(now.getHours())}:${pad(now.getMinutes())}`,workouts,notes,meds:cMeds(t,now),weekSets:gWeekRegions()};
 }
 /* Antrenman satırı: ağırlıklıda en iyi set, vücut ağırlığında tekrar, süreli/kardiyoda süre. */
@@ -184,9 +184,9 @@ function cWorkoutEx(e){
   return k==="b"&&!s.kg?`${n} ${ok.length}x${s.reps}`:`${n} ${fmt(s.kg||0,s.kg%1?1:0)}x${s.reps}`;
 }
 function cMeds(t,now){
-  if(!S.settings.medOn||!S.meds.length)return [];
+  if(!S.settings.medOn||!Ilac.meds().length)return [];
   const nt=`${pad(now.getHours())}:${pad(now.getMinutes())}`,f=keyOff(-6);
-  return S.meds.filter(m=>m.on).slice(0,8).map(m=>{const a=MedLib.adherence([m],S.medLog,f,t,t,nt),left=MedLib.stockLeft(m);return {n:m.n.slice(0,30),d:m.d&&m.d.slice(0,20),t:m.t,w:m.w,a:a.total||a.late?a:null,left}});
+  return Ilac.meds().filter(m=>m.on).slice(0,8).map(m=>{const a=MedLib.adherence([m],Ilac.log(),f,t,t,nt),left=MedLib.stockLeft(m);return {n:m.n.slice(0,30),d:m.d&&m.d.slice(0,20),t:m.t,w:m.w,a:a.total||a.late?a:null,left}});
 }
 /* Geçmişe yalnız uygulanan kayıt kartı girer (reddedilen ya da bekleyen "yapıldı" gibi görünmesin); makro ve öğünle birlikte. */
 function cHistLog(m){
@@ -388,8 +388,8 @@ function cReply(o,kind){
 }
 /* Kendi besinlerim: yapay zekâ tahmini ya da kaydedilen yemek, tek porsiyonluk değerle aranabilir listeye girer. */
 function myFoodPut(f){
-  const i=S.myFoods.findIndex(x=>(f.b&&x.b===f.b)||tr(x.n)===tr(f.n));
-  if(i>=0)S.myFoods[i]=f;else if(S.myFoods.length<200)S.myFoods.unshift(f);else return false;
+  const i=Besin.my().findIndex(x=>(f.b&&x.b===f.b)||tr(x.n)===tr(f.n));
+  if(i>=0)Besin.my()[i]=f;else if(Besin.my().length<200)Besin.my().unshift(f);else return false;
   return true;
 }
 function myFoodAdd(n,kcal,p){
@@ -407,7 +407,7 @@ function cApplyLog(id,el){
     const e=y?LogLib.copyNutr(it,add("yemek",it.kcal,it.text||"Öğün",day)):it.type==="su"?add("su",it.ml,"",day):it.type==="kilo"?add("kilo",it.kg,"",day):it.type==="spor"?add("spor",it.min,it.name,day):add("not",null,it.text,day);
     if(y)e.meal=ml;if(it.type==="spor"){const k=spKcal(it).k;if(k!=null)e.kcal=k}ids.push(e.id);
   }
-  c.state="ok";const n=foods.length+ids.length,undo=()=>{S.entries=S.entries.filter(e=>!ids.includes(e.id));c.state="pending"};
+  c.state="ok";const n=foods.length+ids.length,undo=()=>{Kayit.remove(e=>ids.includes(e.id));c.state="pending"};
   if(foods.length)return addFoods(foods,dayKey(),`${n} kayıt günlüğe eklendi`,undo);
   save();render();toast(`${n} kayıt eklendi`,()=>{undo();save();render()});
 }
@@ -435,7 +435,7 @@ function lossAsk(){
 function cWhy(){
   if(!lossAsk())return;
   const days=[];
-  for(let i=21;i>=0;i--){const k=keyOff(-i);days.push({kcal:sum("yemek",k,k),su:sum("su",k,k),ad:S.entries.filter(e=>e.type==="adim"&&e.day===k).reduce((n,e)=>n+cStep(e),0),sl:cSleep(k)})}
+  for(let i=21;i>=0;i--){const k=keyOff(-i);days.push({kcal:sum("yemek",k,k),su:sum("su",k,k),ad:Kayit.all().filter(e=>e.type==="adim"&&e.day===k).reduce((n,e)=>n+cStep(e),0),sl:cSleep(k)})}
   const items=InsightLib.weekWhy({days,goalKcal:S.settings.kcal,goalWater:S.settings.waterMl,weights:weights(),today:dayKey()});
   cPush({role:"user",text:"Bu hafta neden kilo vermedim?"});cPush({role:"coach",text:"",card:{kind:"why",items}});
   tab="koc";save();render();
@@ -484,9 +484,9 @@ function cMenuCat(){
   const cat={},lines=[],clean=t=>CoachLib.oneLine(String(t).replace(/[|]/g," "),30),nn=v=>v==null?null:v;
   const add=(id,n,k,p,c,f,g,a)=>{cat[id]={n:clean(n),k,p,c,f,g,a};lines.push(`${id}|${cat[id].n}${g?" "+g+" g":""}|${Math.round(k)}|${p==null?"?":Math.round(p)}`)};
   const per=(id,f,g)=>{const x=v=>v==null?null:v*g/100,m=f.u&&f.u[0][0].match(/^(\d+(?:[.,]\d+)?)\s*adet/);add(id,f.n,f.k*g/100,x(f.p),x(f.c),x(f.f),Math.round(g),m?+m[1].replace(",","."):null)};
-  S.myFoods.slice(0,20).forEach((f,i)=>f.u?per("m"+i,f,f.u[0][1]):add("m"+i,f.n,f.k,nn(f.p),nn(f.c),nn(f.f),null,null));
-  S.favFoods.slice(0,10).forEach((x,i)=>{if(x.v!=null)add("f"+i,x.text,x.v,nn(x.p),nn(x.c),nn(x.f),null,null)});
-  S.mealTpl.slice(0,8).forEach((t,i)=>{if(t.items.every(x=>x.v!=null))add("t"+i,"Şablon: "+t.n,t.items.reduce((a,x)=>a+x.v,0),t.items.every(x=>x.p!=null)?t.items.reduce((a,x)=>a+x.p,0):null,null,null,null,null)});
+  Besin.my().slice(0,20).forEach((f,i)=>f.u?per("m"+i,f,f.u[0][1]):add("m"+i,f.n,f.k,nn(f.p),nn(f.c),nn(f.f),null,null));
+  Besin.fav().slice(0,10).forEach((x,i)=>{if(x.v!=null)add("f"+i,x.text,x.v,nn(x.p),nn(x.c),nn(x.f),null,null)});
+  Besin.tpl().slice(0,8).forEach((t,i)=>{if(t.items.every(x=>x.v!=null))add("t"+i,"Şablon: "+t.n,t.items.reduce((a,x)=>a+x.v,0),t.items.every(x=>x.p!=null)?t.items.reduce((a,x)=>a+x.p,0):null,null,null,null,null)});
   const ok=FOODS.slice(0,FOOD_CORE).map((f,i)=>i).filter(i=>FOODS[i].k<450&&!["Şeker","Kola","Meyve suyu"].includes(FOODS[i].n)),n=Math.min(Math.max(0,60-lines.length),ok.length);
   for(let j=0;j<n;j++){const i=ok[Math.floor(j*ok.length/n)];per("b"+i,FOODS[i],FOODS[i].u[0][1])}
   return {cat,text:lines.join("\n")};
@@ -580,7 +580,7 @@ function weekSummary(endKey){
   for(let i=6;i>=0;i--)ks.push(dayKey(addDays(-i,e)));
   const w=weights(),ws=ks.filter(k=>w[k]!=null).map(k=>w[k]);
   const td=cCalc().tdee,kc0=ks.map(k=>sum("yemek",k,k)).filter(x=>Algo.fullKcal(x,td)),kc=kc0.length>=Algo.MIN_AVG_DAYS?kc0:[],su=ks.map(k=>sum("su",k,k)).filter(x=>x>0);
-  const logged=ks.filter(k=>S.entries.some(x=>x.day===k)).length,sp=sum("spor",ks[0],ks[6]);
+  const logged=ks.filter(k=>Kayit.all().some(x=>x.day===k)).length,sp=sum("spor",ks[0],ks[6]);
   return {logged,n:ks.length,ws,avgKcal:kc.length?Math.round(kc.reduce((a,b)=>a+b,0)/kc.length):null,avgSu:su.length?Math.round(su.reduce((a,b)=>a+b,0)/su.length):null,sport:Math.round(sp),first:ws[0],last:ws[ws.length-1]};
 }
 /* Bugün alınmış yorum yeniden istenmez, sohbetteki yanıta gidilir. */
@@ -953,10 +953,10 @@ function cClick(v,el){
     case "hx":{const x=document.getElementById(p1),on=!!x&&x.hidden;if(x){x.hidden=!on;el.setAttribute("aria-expanded",on)}return}
     case "menutpl":{closeSheet();
       const c=menuCard(+p1),d=c&&c.days[+p2];if(!d)return;
-      if(S.mealTpl.length>=20)return toast("En fazla 20 şablon");
-      const all=menuEntries(d),id=Math.max(0,...S.mealTpl.map(t=>t.id))+1;
-      S.mealTpl=LogLib.cleanTpl([...S.mealTpl,{id,n:("Menü: "+d.n).slice(0,40),items:all.slice(0,15).map(x=>LogLib.copyNutr(x,{text:x.text,v:x.v}))}]);save();
-      return toast(`Şablon kaydedildi${all.length>15?" (ilk 15 yemek)":""}`,()=>{S.mealTpl=S.mealTpl.filter(t=>t.id!==id);save()});
+      if(Besin.tpl().length>=20)return toast("En fazla 20 şablon");
+      const all=menuEntries(d),id=Math.max(0,...Besin.tpl().map(t=>t.id))+1;
+      Besin.addTpl({id,n:("Menü: "+d.n).slice(0,40),items:all.slice(0,15).map(x=>LogLib.copyNutr(x,{text:x.text,v:x.v}))});save();
+      return toast(`Şablon kaydedildi${all.length>15?" (ilk 15 yemek)":""}`,()=>{Besin.removeTpl(id);save()});
     }
     case "shop":return cShop(+p1);
     case "shopchk":{

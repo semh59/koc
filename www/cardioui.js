@@ -7,9 +7,9 @@ const ckRow=e=>{
   const k=CardioLib.kind(e.ck),p=CardioLib.pace(e.ck,e.v,e.km),bits=[`${Math.round(e.v)} dk`,e.km?`${ckKm(e.km)} km`:"",p,e.kcal?`~${e.kcal} kcal`:""].filter(Boolean);
   return `<div class="row"><span class="grow"><b>${k[1]}</b> <small class="mut">${fd(e.day)}${e.bt?"":" "+e.time}</small><span class="db mut sm num">${bits.join(" · ")}</span>${e.cn?`<span class="db mut sm">${esc(e.cn)}</span>`:""}</span><button class="del" data-ckd="${e.id}" aria-label="${k[1]} ${fd(e.day)} kaydını sil">✕</button></div>`;
 };
-const ckList=()=>S.entries.filter(CardioLib.isCardio).sort((a,b)=>b.day.localeCompare(a.day)||b.time.localeCompare(a.time)||b.id-a.id);
+const ckList=()=>Kayit.where(CardioLib.isCardio).sort((a,b)=>b.day.localeCompare(a.day)||b.time.localeCompare(a.time)||b.id-a.id);
 function cardioCard(){
-  const all=ckList(),w=CardioLib.week(S.entries,keyOff(-6),dayKey()),addBtn=`<button class="btn ghost" data-ckg="open">Kardiyo ekle</button>`;
+  const all=ckList(),w=CardioLib.week(Kayit.all(),keyOff(-6),dayKey()),addBtn=`<button class="btn ghost" data-ckg="open">Kardiyo ekle</button>`;
   if(!all.length)return `<h2>Kardiyo</h2><div class="card"><p class="flush hint">Koşu, yürüyüş, bisiklet, yüzme ve eliptiği süre, mesafe ve tempoyla ayrı kaydet. Salon antrenmanından ayrıdır; süre haftalık spor dakikana da girer.</p>${addBtn}</div>`;
   const by=CardioLib.KINDS.filter(k=>w.by[k[0]]).map(([c,n])=>{const b=w.by[c];return `<div class="row"><span>${n} <small class="mut">(${b.n})</small></span><b class="num">${Math.round(b.min)} dk${b.km?` · ${fmt(b.km,1)} km`:""}</b></div>`}).join("");
   return `<h2>Kardiyo</h2><div class="card"><div class="lbl">Son 7 gün</div>${w.tot.n?`<div class="stats"><div class="stat"><div class="k">Kayıt</div><div class="v num">${w.tot.n}</div></div><div class="stat"><div class="k">Süre</div><div class="v num">${Math.round(w.tot.min)} <small>dk</small></div></div>${w.tot.km?`<div class="stat"><div class="k">Mesafe</div><div class="v num">${fmt(w.tot.km,1)} <small>km</small></div></div>`:""}${w.tot.kcal?`<div class="stat"><div class="k">Tahmini enerji</div><div class="v num">~${w.tot.kcal} <small>kcal</small></div></div>`:""}</div>${by}`:`<p class="hint">Bu hafta kardiyo kaydı yok.</p>`}
@@ -32,7 +32,7 @@ function goKardiyo(){
   if(c.err)return ferr("cerr",c.err);
   const n=new Date(),today=day===dayKey(n);
   if(today&&timeOk(tm)&&tm>`${pad(n.getHours())}:${pad(n.getMinutes())}`)return ferr("cerr","Bitiş saati gelecekte olamaz");
-  const dup=S.entries.find(x=>x.type==="spor"&&x.day===day&&x.text.startsWith(c.name));
+  const dup=Kayit.find(x=>x.type==="spor"&&x.day===day&&x.text.startsWith(c.name));
   if(dup)return confirmSheet({title:"Yine de eklensin mi?",body:`Bu gün için ${c.name} kaydı var (${Math.round(dup.v)} dk). Aynı antrenmanı ikinci kez eklersen iki kez sayılır. Yine de eklensin mi?`,ok:"Ekle"}).then(ok=>{if(ok)ckSave(c,min,day,tm,note,today)});
   ckSave(c,min,day,tm,note,today);
 }
@@ -51,11 +51,11 @@ function sheetKardiyoAll(){
 document.addEventListener("click",ev=>{
   const d=ev.target.closest("[data-ckd]");
   if(d){
-    const id=+d.dataset.ckd,rm=S.entries.find(x=>x.id===id);if(!rm)return;
+    const id=+d.dataset.ckd,rm=Kayit.find(x=>x.id===id);if(!rm)return;
     const inSheet=!!d.closest("#sheet");
-    S.entries=S.entries.filter(x=>x.id!==id);save();render();
+    Kayit.remove(x=>x.id===id);save();render();
     if(inSheet)ckList().length?sheetKardiyoAll():closeSheet();
-    toast("Kayıt silindi",()=>{S.entries.push(rm);S.entries.sort((a,b)=>a.id-b.id);save();render()});return;
+    toast("Kayıt silindi",()=>{Kayit.restore([rm]);save();render()});return;
   }
   const k=ev.target.closest("[data-ckk]");
   if(k){ckSel=k.dataset.ckk;document.querySelectorAll("#ck .chip").forEach(c=>c.setAttribute("aria-pressed",c===k));return}

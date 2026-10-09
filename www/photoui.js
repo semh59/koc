@@ -128,3 +128,4 @@ document.addEventListener("change",ev=>{
   else if(t.id==="pha"||t.id==="phb")phCmp();
 });
 document.addEventListener("nw:boot",phLoad); // ana betik (render, S) çalıştıktan sonra
+Data.privacy.push(["İlerleme fotoğrafları",()=>phList.length,()=>{phClear()},11]);
