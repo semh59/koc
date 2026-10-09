@@ -5,3 +5,8 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+  # npm paketleri (Capacitor ve araçlar): güvenlik ve sürüm güncellemeleri için aylık PR.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "monthly"
