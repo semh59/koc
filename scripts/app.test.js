@@ -745,7 +745,9 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
 
     // hızlı kayıt: yerel taraf biriktirir, JS ana veriye ekler
     let pending=[];
-    w.Capacitor.Plugins.QuickLog={take:async()=>{const r={items:pending};pending=[];return r}};
+    /* Yerel taraf: take kayıtları "yolda" tutar, ack(upto) kalıcı yazıldıktan sonra siler (üst üste alışta yolda olanlar yeniden gelir). */
+    let inflight=[],acked=[];
+    w.Capacitor.Plugins.QuickLog={take:async()=>{inflight=inflight.concat(pending);pending=[];return {items:inflight.slice()}},ack:async({upto})=>{acked.push(upto);inflight=inflight.filter(i=>i&&Number.isFinite(i.t)&&i.t>upto) /* yerel taraf bozuk kaydı atar */}};
     const tms=(y,m,d,h,mi)=>new Date(y,m-1,d,h,mi).getTime();
     ev("S.entries=[];S.settings.waterMl=2500");
     pending=[{v:250,t:tms(2026,9,30,23,50)},{v:250,t:Date.now()-60000}];
@@ -764,11 +766,25 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
       const held=ev("S.entries.length");ev("recovery=null");pending=[];await ev("quickIngest()");
       ok("hızlı kayıt: kayıt başarısızsa bellek geri alınır, sonraki denemede eklenir",held===0&&ev("S.entries.length")===1&&ev("S.entries[0].v")===250,[held,ev("S.entries")]);
       await ev("quickIngest()");ok("hızlı kayıt: yeniden denenen öğe bir kez eklenir",ev("S.entries.length")===1);
+      await new Promise(r=>setTimeout(r,20));
+      ok("yazma başarısızken ack gönderilmez (kayıt yerelde yolda kalır), yazılınca ack gider ve yolda kalan boşalır",inflight.length===0&&acked.length>0);
+      /* süreç alma ile yazma arasında öldü: kayıt yolda kaldı, yeni açılışta yeniden gelir; aynı bildirim iki kez eklenmez */
+      ev("S.entries=[]");const tq=Date.now()-5000;inflight=[{v:250,t:tq}];await ev("quickIngest()");await new Promise(r=>setTimeout(r,20));
+      inflight=[{v:250,t:tq}];await ev("quickIngest()");await new Promise(r=>setTimeout(r,20));
+      ok("yolda kalan su kaydı yeniden gelince bir kez eklenir (qt ile tekrar engellenir), ack ile boşalır",ev("S.entries.length")===1&&ev("S.entries[0].qt")===tq&&inflight.length===0,[ev("S.entries.length"),inflight]);
+      ev("S.entries=[]");
     }
     ev("S.entries=[]");pending=[{v:250,t:Date.now()-1000}];
     const lnH=[];w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),cancel:async()=>{},registerActionTypes:async()=>{},schedule:async o=>{lnH.push(...o.notifications)}};
     ev("S.settings.waterMl=500;add('su',250,'')");
     await ev("quickIngest()");await new Promise(r=>setTimeout(r,50));
+    { // paylaşım için önbelleğe yazılan neowell-* dosyaları silinir, başka dosyalara dokunulmaz
+      const del=[],old=w.Capacitor.Plugins.Filesystem;
+      w.Capacitor.Plugins.Filesystem={readdir:async()=>({files:[{name:"neowell-yedek-2026-10-01.json"},{name:"neowell-tahlil-2026-10-01.pdf"},{name:"baska.txt"},{name:"neowell-x.exe"}]}),deleteFile:async o=>{del.push(o.path+"@"+o.directory)}};
+      await ev("cacheClean()");
+      ok("önbellek temizliği: yalnız neowell-* yedek/rapor dosyaları silinir",del.join()==="neowell-yedek-2026-10-01.json@CACHE,neowell-tahlil-2026-10-01.pdf@CACHE",del);
+      w.Capacitor.Plugins.Filesystem=old;
+    }
     ok("hızlı kayıt hedefi tamamlarsa bildirimler yeniden kurulur, bugünün su alarmı yok",lnH.length>0&&![200,300,400].some(i=>lnH.some(n=>n.id===i)),lnH.length);
     w.Capacitor.Plugins.LocalNotifications=lnOld;ev("S.settings.waterMl=2500");
     { // bildirim düğmesi anahtarı: güncellemeden kalan anahtarsız bekleyenler açılışta iptal edilip anahtarla yeniden kurulur
@@ -1162,7 +1178,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ok("kayıt turu: süre alanı korunur",R.workouts[0].ex[0].sets[0].sec===30&&R.workouts[0].ex[2].sets[0].sec===1500&&R.workouts[0].ex.length===4);
     const old={workouts:[{id:5,day:"2026-09-01",t0:1,t1:2,name:"Eski",tpl:null,ex:[{id:"squat",note:"",sets:[{kg:100,reps:5,done:true}]},{id:"bench",note:"n",sets:[{kg:60,reps:8,done:true}]},{id:"silinmis_x",note:"",sets:[{kg:1,reps:1,done:true}]}]}],templates:[{id:6,name:"T",ex:["squat","row","bilinmeyen"]}],customEx:[{id:"c7",n:"Benim",g:"Kol"},{id:"c8",n:"Kötü",g:"Yok"}],gid:9};
     const O=JSON.parse(ev("JSON.stringify(cleanGym("+JSON.stringify(old)+"))"));
-    ok("eski kayıt kaybolmaz: eski kimlikler, şablon, eski gruplu özel egzersiz",O.workouts.length===1&&O.workouts[0].ex.length===2&&O.workouts[0].ex[0].sets[0].kg===100&&O.workouts[0].ex[0].sets[0].sec===undefined&&O.templates[0].ex.join()==="squat,row"&&O.customEx.length===1&&O.customEx[0].g==="Kol",O);
+    ok("eski kayıt kaybolmaz: kütüphanede olmayan kimlik atılmaz (Silinmiş egzersiz), bozuk kimlik atılır; şablon, eski gruplu özel egzersiz",O.workouts.length===1&&O.workouts[0].ex.length===3&&O.workouts[0].ex[2].id==="silinmis_x"&&ev("gEx('silinmis_x').n")==="Silinmiş egzersiz"&&ev("cleanGym({workouts:[{id:1,day:'2026-09-01',t0:1,ex:[{id:'x y',sets:[]},{id:'a'.repeat(100),sets:[]}]}]}).workouts[0].ex.length")===0&&O.workouts[0].ex[0].sets[0].kg===100&&O.workouts[0].ex[0].sets[0].sec===undefined&&O.templates[0].ex.join()==="squat,row"&&O.customEx.length===1&&O.customEx[0].g==="Kol",O);
     ok("tüm kütüphane kimlikleri kayıtlarda geçerli",ev("EXMERGED.every(e=>cleanGym({workouts:[{id:1,day:'2026-09-01',t0:1,ex:[{id:e.id,sets:[{kg:1,reps:1,done:true}]}]}]}).workouts[0].ex.length===1)"));
     ev("S.workouts[0].t1=Date.now();render()");
     ok("haftalık set sayısı süreli setleri de sayar (Karın)",ev("gWeekRegions()['Karın']")>=2,ev("gWeekRegions()"));

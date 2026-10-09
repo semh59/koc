@@ -176,10 +176,17 @@ function labBuildReport(){
   return LabLib.buildPdf(jp);
 }
 /* Dosyayı paylaşım ekranına verir (telefonda), tarayıcıda indirir. data: utf8 true ise metin, değilse base64. */
+/* Paylaşım için önbelleğe yazılan dosyalar (yedek, rapor, CSV) paylaşım bitince de kalmasın: hedef uygulama dosyayı geç okuyabileceği için hemen değil,
+   bir sonraki yazımdan önce ve her açılışta silinir. Şifreli de olsa yedek dosyası telefonda gereksiz durmaz. */
+async function cacheClean(){
+  const fs=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Filesystem;if(!fs)return;
+  try{const r=await fs.readdir({path:"",directory:"CACHE"});for(const f of r.files||[]){const n=f.name||f;if(/^neowell-.+\.(json|pdf|csv|txt|zip)$/.test(n))await fs.deleteFile({path:n,directory:"CACHE"}).catch(()=>{})}}catch(e){}
+}
+document.addEventListener("nw:boot",cacheClean);
 async function shareFile(name,title,mime,data,utf8){
   const P=window.Capacitor&&window.Capacitor.Plugins,fs=P&&P.Filesystem,sh=P&&P.Share;
   if(fs&&sh){
-    try{const f=await fs.writeFile(utf8?{path:name,data,directory:"CACHE",encoding:"utf8"}:{path:name,data,directory:"CACHE"});await sh.share({title,files:[f.uri]})}
+    try{await cacheClean();const f=await fs.writeFile(utf8?{path:name,data,directory:"CACHE",encoding:"utf8"}:{path:name,data,directory:"CACHE"});await sh.share({title,files:[f.uri]})}
     catch(e){if(!/cancel/i.test(e&&e.message||""))toast("Paylaşılamadı")}
     return;
   }

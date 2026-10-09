@@ -162,7 +162,13 @@ public class BackupFolderPlugin extends Plugin {
                 throw e;
             }
             if (have.get(name) != null) DocumentsContract.deleteDocument(cr, have.get(name));
-            if (DocumentsContract.renameDocument(cr, tmp, name) == null) {
+            Uri renamed = null;
+            try {
+                renamed = DocumentsContract.renameDocument(cr, tmp, name);
+            } catch (Exception e) {
+                // Eski dosya silindi, yeniden adlandırma hata verdi: aşağıdaki yedek yol yeni içeriği yine yazar, günün yedeği kaybolmaz.
+            }
+            if (renamed == null) {
                 put(cr, create(cr, dir, name), "w", data);
                 DocumentsContract.deleteDocument(cr, tmp);
             }

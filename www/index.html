@@ -657,6 +657,7 @@ function cleanEntries(arr){
     const id=Number.isInteger(e.id)&&e.id>0&&!seen.has(e.id)?e.id:0;
     if(id){seen.add(id);max=Math.max(max,id)}
     const ne={id,day:e.day,time:timeOk(e.time)?e.time:"00:00",type:e.type,v:e.type==="not"?null:v,text:typeof e.text==="string"?e.text.slice(0,500):""};
+    if(Number.isFinite(e.qt)&&e.qt>0)ne.qt=e.qt; // bildirimden gelen su kaydının zamanı: aynı kayıt ikinci kez alınmasın
     if(Number.isInteger(e.wid))ne.wid=e.wid;
     if(e.type==="spor"){if(e.bt===true)ne.bt=true;if(Number.isInteger(e.kcal)&&e.kcal>=0&&e.kcal<=5000)ne.kcal=e.kcal;if(typeof e.km==="number"&&e.km>=0&&e.km<=100)ne.km=Math.round(e.km*100)/100}
     if(e.type==="adim"){for(const k of ["ph","hc"])if(Number.isFinite(e[k])&&e[k]>=0&&e[k]<=200000)ne[k]=e[k]}

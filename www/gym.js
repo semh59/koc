@@ -96,7 +96,7 @@ function cleanGym(r){
     if(!w||!idOk(w.id)||!dayOk(w.day)||!Number.isFinite(w.t0)){DROPS.n++;continue}
     const ex=[];
     for(const x of (Array.isArray(w.ex)?w.ex:[])){
-      if(!x||typeof x.id!=="string"||!known.has(x.id)){DROPS.n++;continue}
+      if(!x||typeof x.id!=="string"||!/^[\w.-]{1,80}$/.test(x.id)){DROPS.n++;continue} // kütüphanede olmayan kimlik atılmaz: geçmiş "Silinmiş egzersiz" olarak durur
       const sets=[];
       for(const s of (Array.isArray(x.sets)?x.sets:[])){
         if(!s){DROPS.n++;continue}
