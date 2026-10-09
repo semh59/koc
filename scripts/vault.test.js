@@ -24,13 +24,17 @@ const open=(seed,v)=>new Promise(res=>{
   w=await open(seed,vault());
   ok("yeniden açılışta şifreli anahtarlar okunur",w.eval("getKeys().groq")==="SIRRI-1"&&w.eval("getKeys().nvidia")==="SIRRI-2");
   let reset=0;w=await open(seed,{encrypt:vault().encrypt,resetKey:async()=>{reset++},decrypt:async()=>{throw Object.assign(new Error("decrypt: KEY_INVALIDATED"),{code:"KEY_INVALIDATED"})}});
-  ok("kasa anahtarı geçersizleştiyse (KEY_INVALIDATED) kayıt silinir, resetKey çağrılır, temiz başlar",reset===1&&Object.keys(w.eval("getKeys()")).length===0&&w.localStorage.getItem("koc_keys")!==null&&!/SIRRI/.test(w.localStorage.getItem("koc_keys")));
+  ok("kasa anahtarı geçersizleştiyse (KEY_INVALIDATED) kayıt silinir, resetKey çağrılır, temiz başlar",reset===1&&Object.keys(w.eval("getKeys()")).length===0&&!/SIRRI/.test(String(w.localStorage.getItem("koc_keys"))));
   w=await open(seed,{encrypt:vault().encrypt,decrypt:async()=>{throw new Error("decrypt: geçici")}});
   ok("geçici decrypt hatasında şifreli kayıt silinmez, düz metne de yazılmaz",w.localStorage.getItem("koc_keys_enc")===seed.koc_keys_enc&&w.localStorage.getItem("koc_keys")===null);
   await w.eval("setKey('openai','YENI')");
   ok("kilitliyken yeni anahtar şifreli kaydı ezmez",w.localStorage.getItem("koc_keys_enc")===seed.koc_keys_enc&&w.localStorage.getItem("koc_keys")===null);
   w=await open({koc_keys:JSON.stringify({groq:"SIRRI-3"})},vault(true));
   ok("kasa bozuksa anahtar kaybolmaz",w.eval("getKeys().groq")==="SIRRI-3"&&w.localStorage.getItem("koc_keys")!==null);
+  w=await open({koc_keys:JSON.stringify({groq:"SIRRI-5"})},{encrypt:vault().encrypt,decrypt:async()=>{throw new Error("decrypt: geri okuma")}});
+  ok("kasaya yazıldı ama geri okuma hata verdi: kullanıcıya sorulmadan düz metin yazılmaz, anahtar bellekte kalır",w.localStorage.getItem("koc_keys")===null&&!Object.keys(w.localStorage).some(k=>k!=="koc_keys_enc"&&String(w.localStorage.getItem(k)).includes("SIRRI-5"))&&w.eval("getKeys().groq")==="SIRRI-5");
+  w=await open({koc_keys:JSON.stringify({groq:"SIRRI-6"}),koc_keys_plain:"1"},{encrypt:vault().encrypt,decrypt:async()=>{throw new Error("decrypt: geri okuma")}});
+  ok("kullanıcı düz saklamayı daha önce onayladıysa geri okuma hatasında düz kopya korunur",w.localStorage.getItem("koc_keys")!==null&&w.eval("getKeys().groq")==="SIRRI-6");
   w=await open({koc_keys:JSON.stringify({groq:"SIRRI-4"})},null);
   ok("kasa yoksa (tarayıcı) düz metin çalışır",w.eval("getKeys().groq")==="SIRRI-4");
   process.exit(bad?1:0);

@@ -39,6 +39,8 @@ async function persistKeys(){
   }
   lsSet(KEYS_LS,j);
 }
+/* Düz kopya yalnız kullanıcı düz saklamayı onayladıysa ya da düz kopya zaten varsa yazılır; kasa doğrulaması başarısızsa anahtar bu oturumda bellekte kalır. */
+const plainSave=()=>{if(plainOk||plainHas())lsSet(KEYS_LS,JSON.stringify(KEYS))};
 function setKey(id,k){if(k)KEYS[id]=k;else delete KEYS[id];return persistKeys()}
 async function keysInit(){
   const kv=KV(),enc=lsGet(KEYS_ENC);let lost=false;
@@ -54,8 +56,8 @@ async function keysInit(){
       }
     }else readPlain();
     vaultOn=true;await persistKeys();
-    if(vaultOn&&(await kv.decrypt({data:lsGet(KEYS_ENC)})).text!==JSON.stringify(KEYS)){vaultOn=false;lsSet(KEYS_LS,JSON.stringify(KEYS))}
-  }catch(e){vaultOn=false;if(!Object.keys(KEYS).length)readPlain();lsSet(KEYS_LS,JSON.stringify(KEYS))}
+    if(vaultOn&&(await kv.decrypt({data:lsGet(KEYS_ENC)})).text!==JSON.stringify(KEYS)){vaultOn=false;plainSave()}
+  }catch(e){vaultOn=false;if(!Object.keys(KEYS).length)readPlain();plainSave()}
   console.log("NW-VAULT "+(vaultOn?"ok":"fail"));
   if(lost)toast("Koç anahtarları bu telefonda okunamadı (kasa anahtarı geçersiz olmuş olabilir), yeniden gir");
   else if(kv&&!vaultOn&&Object.keys(KEYS).length){vaultWarned=true;toast(VAULT_WARN)}
