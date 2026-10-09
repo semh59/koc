@@ -49,11 +49,11 @@ function plResult(r){
 }
 async function plStart(){
   plStop();
-  let stream;
-  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:320},height:{ideal:240},frameRate:{ideal:30}},audio:false})}
+  let stream,tr,pick;
+  try{pick=await PulseLib.pickTorchCamera(navigator.mediaDevices,{width:{ideal:320},height:{ideal:240},frameRate:{ideal:30}});stream=pick.stream;tr=pick.track}
   catch(e){plSheet();return toast("Kamera izni verilmedi. Telefon ayarlarından aç")}
-  const tr=stream.getVideoTracks()[0];let torch=false;
-  try{const c=tr.getCapabilities&&tr.getCapabilities();if(c&&c.torch){await tr.applyConstraints({advanced:[{torch:true}]});torch=true}}catch(e){}
+  let torch=false;
+  try{if(!pick.noTorch){await tr.applyConstraints({advanced:[{torch:true}]});torch=true}}catch(e){}
   const video=document.createElement("video");video.muted=true;video.playsInline=true;video.srcObject=stream;
   try{await video.play()}catch(e){stream.getTracks().forEach(t=>t.stop());plSheet();return toast("Kamera açılamadı")}
   const cv=document.createElement("canvas");cv.width=cv.height=16;
@@ -84,7 +84,7 @@ async function plStart(){
     me.raf=video.requestVideoFrameCallback?video.requestVideoFrameCallback(tick):requestAnimationFrame(tick);
   };
   me.raf=video.requestVideoFrameCallback?video.requestVideoFrameCallback(tick):requestAnimationFrame(tick);
-  if(!torch)toast("Flaş açılamadı; parmağını parlak bir ışığa karşı kameraya koy");
+  if(!torch)toast(`Flaş açılamadı (${pick.tried} kamera denendi); parmağını parlak bir ışığa karşı kameraya koy`);
 }
 function plSave(){
   if(!plRes)return;

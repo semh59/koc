@@ -48,4 +48,21 @@ ok("kayıt temizliği: bozuk ve aralık dışı atılır, yinelenen birleşir, s
 ok("500'ü aşan nabız kaydı kaybolmaz",P.clean(Array.from({length:700},(_,i)=>({day:"2026-01-01",time:`${String(i%24).padStart(2,"0")}:${String(Math.floor(i/24)%60).padStart(2,"0")}`,bpm:60+i%100}))).length===700);
 const h=P.cleanHr([{day:"2026-10-08",a:64.6,m:50},{day:"2026-10-08",a:66,m:51},{day:"2026-10-09",a:400},{day:"2026-10-07",a:70,m:5},{day:"x",a:60}]);
 ok("saat nabzı: günde bir kayıt (sonuncu), bozuk atılır, en düşük geçersizse alınmaz",h.length===2&&h[0].day==="2026-10-07"&&h[0].m===undefined&&h[1].a===66&&h[1].m===51,h);
-console.log(bad?"Başarısız: "+bad:"Tüm nabız testleri geçti");process.exit(bad?1:0);
+/* Flaş seçici: birden fazla arka kamerada flaş yalnız birindedir. */
+(async()=>{
+  const mk=(id,torch,label)=>({id,label,open:0,stopped:0,
+    stream(){const me=this,tr={getCapabilities:()=>torch?{torch:true}:{},getSettings:()=>({deviceId:id}),stop(){me.stopped++}};me.open++;return {getVideoTracks:()=>[tr],getTracks:()=>[tr]}}});
+  const rig=cams=>({getUserMedia:async c=>{const ex=c.video.deviceId&&c.video.deviceId.exact,cam=ex?cams.find(x=>x.id===ex):cams[0];if(!cam)throw new Error("yok");return cam.stream()},
+    enumerateDevices:async()=>cams.map(c=>({kind:"videoinput",deviceId:c.id,label:c.label}))});
+  {const cams=[mk("w",false,"camera2 0, facing back"),mk("f",false,"camera2 1, facing front"),mk("u",false,"camera2 2, facing back"),mk("m",true,"camera2 3, facing back")];
+   const r=await P.pickTorchCamera(rig(cams),{});
+   ok("flaş seçici: varsayılan kamerada flaş yoksa flaşlı arka kamera bulunur, ön kamera denenmez",r.track.getSettings().deviceId==="m"&&!r.noTorch&&r.tried===3&&cams[1].open===0,[r.tried,cams[1].open]);
+   ok("flaş seçici: flaşsız akışlar kapatılır",cams[0].stopped===1&&cams[2].stopped===1);}
+  {const cams=[mk("w",true,"camera2 0, facing back"),mk("m",true,"camera2 3, facing back")];
+   const r=await P.pickTorchCamera(rig(cams),{});
+   ok("flaş seçici: varsayılan kamerada flaş varsa başka kamera açılmaz",r.track.getSettings().deviceId==="w"&&r.tried===1&&cams[1].open===0);}
+  {const cams=[mk("w",false,"camera2 0, facing back"),mk("u",false,"camera2 2, facing back")];
+   const r=await P.pickTorchCamera(rig(cams),{});
+   ok("flaş seçici: hiçbirinde flaş yoksa varsayılan kamera açık döner, noTorch işaretli",r.noTorch===true&&r.tried===2&&!!r.stream);}
+  console.log(bad?"Başarısız: "+bad:"Tüm nabız testleri geçti");process.exit(bad?1:0);
+})();
