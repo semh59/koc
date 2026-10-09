@@ -1,7 +1,6 @@
 "use strict";
 /* Saat verisi kartı, Nabız penceresi (başlangıç, ölçüm, sonuç, hata) ve uygulama kilidi ekranı: erişilebilirlik (axe), dokunma hedefi ve %200 yazıda taşma. */
 const {test,expect,state}=require("./fixtures");
-const AxeBuilder=require("@axe-core/playwright").default;
 
 const SEED=state({hcOn:true,stepsOn:true,lockOn:false},{pulse:[{day:"2026-10-05",time:"07:30",bpm:64},{day:"2026-10-06",time:"08:10",bpm:71}],hr:[{day:"2026-10-05",a:66,m:50}],entries:[{id:1,day:"2026-10-05",time:"00:00",type:"adim",v:5200,text:""}],nextId:2});
 /* Sahte Health, AppLock ve kamera: kamera akışı yok, ölçüm ekranı "parmağını koy" durumunda kalır. */
@@ -16,21 +15,7 @@ const shim=cfg=>{
   window.Capacitor={isNativePlatform:()=>true,getPlatform:()=>"android",Plugins:P};
   navigator.mediaDevices.getUserMedia=async()=>{throw new Error("kamera yok")};
 };
-const axe=async page=>(await new AxeBuilder({page}).withTags(["wcag2a","wcag2aa","wcag21aa"]).analyze()).violations.map(v=>v.id+": "+v.nodes.slice(0,3).map(n=>n.target.join(" ")).join("; "));
-const small=page=>page.evaluate(()=>{const o=[];for(const e of document.querySelectorAll("button,a[href],input:not([type=hidden]):not([type=file]),select,textarea,[role=button]")){
-  const r=e.getBoundingClientRect();if(!r.width||getComputedStyle(e).visibility==="hidden"||e.closest("[hidden],[inert]"))continue;
-  const b=e.matches("input[type=checkbox],input[type=radio]")?(e.closest("label,.chkrow")||e).getBoundingClientRect():r;
-  if(b.height<43.5||b.width<43.5)o.push((e.getAttribute("aria-label")||e.textContent||e.id).trim().slice(0,25)+" "+Math.round(b.width)+"x"+Math.round(b.height))}return o});
-const scaleText=(page,k)=>page.evaluate(k=>{const m=v=>v.replace(/([\d.]+)px/,(a,b)=>b*k+"px");
-  const walk=rs=>{for(const r of rs){if(r.cssRules&&!r.style)walk(r.cssRules);else if(r.style&&/^[\d.]+px$/.test(r.style.fontSize))r.style.fontSize=m(r.style.fontSize)}};
-  for(const s of document.styleSheets)walk(s.cssRules);
-  const de=document.documentElement,cs=getComputedStyle(de),names=new Set();
-  for(const s of document.styleSheets)for(const r of s.cssRules)if(r.style)for(const p of r.style)if(p.startsWith("--fs-"))names.add(p);
-  for(const p of names)de.style.setProperty(p,m(cs.getPropertyValue(p).trim()))},k);
-const overflow=page=>page.evaluate(()=>{const o=[];if(document.documentElement.scrollWidth>innerWidth)o.push("sayfa yatay kayıyor");
-  for(const e of document.querySelectorAll("#sheet *,#view *,#lock *")){const c=getComputedStyle(e);if(c.display==="none"||e.closest("svg,.chiprow,[hidden]")||!e.getClientRects().length)continue;
-    const r=e.getBoundingClientRect();if(r.width&&r.right>innerWidth+1)o.push("taşar: "+e.tagName+"."+e.className+" "+(e.textContent||"").trim().slice(0,20))}return [...new Set(o)]});
-
+const {axe,small,scaleText,overflow}=require("./a11y");
 const show={
   hcIzinli:async(app,page)=>{await app.go("adim");await page.waitForTimeout(250)},
   nabizBaslangic:async(app,page)=>{await page.evaluate(()=>plSheet());await expect(page.locator("#sheet.on")).toBeVisible()},

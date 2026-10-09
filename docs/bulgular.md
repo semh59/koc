@@ -83,7 +83,7 @@ Bakılanlar: 26 Java dosyasının tamamı en az bir kez satır satır okundu (bu
 
 | No | Ciddiyet | Yer | Bulgu | Durum |
 |---|---|---|---|---|
-| 14-1 | Y | Bugün, geçmiş | Geçmiş tek gün gösteriliyor, 365 günle sınırlı, bulunması zor; takvim ve tüm zaman görünümü yok. | Açık |
+| 14-1 | Y | Bugün, geçmiş | Geçmiş tek gün gösteriliyor, 365 günle sınırlı, bulunması zor; takvim ve tüm zaman görünümü yok. | Düzeltildi: Geçmiş ekranı (takvim, aylar, ara), Gün ekranı, 365 gün sınırı kalktı, Trend'e 1 yıl ve Tümü (uzun aralıkta haftalık/aylık çubuk). Testler: `history.test.js`, `app.test.js`, `e2e/gecmis.spec.js` (3 yıllık veri, 360/412 px, koyu tema, %200 yazı). Telefonda dene. |
 | 14-2 | Y | depolama | Tek `localStorage` anahtarı, ~5 MB kota; 3+ yılda sınıra yaklaşır. | Açık |
 | 14-3 | Y | `www/gym.js` `gTodayCard` | Bitirilmeyen antrenman (t1 boş) günler sonra da "Devam ediyor" diye Bugün'de kalıyordu; bitirilince süre 600 dk üst sınırına yapışıp sahte spor kaydı yazardı. | Düzeltildi: dünden kalan kart "bitirilmedi" der, Bitir (süre sorulur) ya da Sil sunar. Test: `app.test.js`. Telefonda dene. |
 | 14-4 | Y | `pulselib.js`, `pulseui.js` | Kamerayla nabız ölçümü telefonda başarısız (neden bulunmadı). | Açık |
