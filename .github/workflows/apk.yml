@@ -283,11 +283,16 @@ jobs:
           # GitHub yayın tarihi ilk yayında kalır; güncel sürüm ve derleme zamanı başlıkta ve notta görünsün.
           title="NeoWell 1.0.${{ github.run_number }} ($(date -u +'%d.%m.%Y %H:%M') UTC)"
           notes="Sürüm 1.0.${{ github.run_number }}, derleme $(date -u +'%d.%m.%Y %H:%M') UTC, commit ${GITHUB_SHA::7}. Telefondan neowell.apk dosyasını indirip kur. neowell.aab Play Console yüklemesi içindir."
-          if gh release view son-surum > /dev/null 2>&1; then
-            gh release upload son-surum release/neowell.apk release/neowell.aab --clobber
-            gh release edit son-surum --title "$title" --notes "$notes"
-            # Etiket yeni derlemenin işlemini göstersin.
-            gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/son-surum" -f sha="$GITHUB_SHA" -F force=true
-          else
-            gh release create son-surum release/neowell.apk release/neowell.aab --title "$title" --notes "$notes" --target "$GITHUB_SHA"
-          fi
+          publish() {
+            if gh release view son-surum > /dev/null 2>&1; then
+              gh release upload son-surum release/neowell.apk release/neowell.aab --clobber &&
+              gh release edit son-surum --title "$title" --notes "$notes" &&
+              # Etiket yeni derlemenin işlemini göstersin.
+              gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/son-surum" -f sha="$GITHUB_SHA" -F force=true
+            else
+              gh release create son-surum release/neowell.apk release/neowell.aab --title "$title" --notes "$notes" --target "$GITHUB_SHA"
+            fi
+          }
+          # Ağ ya da API'nin geçici 403/5xx hatası derlemeyi boşa çıkarmasın: 3 deneme.
+          for i in 1 2 3; do publish && exit 0; echo "yükleme denemesi $i başarısız"; sleep 15; done
+          exit 1
