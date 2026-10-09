@@ -13,7 +13,7 @@ Salon tarafının tamamı telefonda denenmedi. `docs/yapilacaklar.md` içinde sa
 
 | Alan | Gerçek durum | Kanıt |
 |---|---|---|
-| Kütüphane | 324 egzersiz. 16 bölge (Göğüs 38, Karın 34, Omuz 31, Sırt 31, Ön bacak 30 ...). Tür: güç 257, esneme 41, pliyometrik 15, kardiyo 11. Ekipman: Salon 125, Ev tipi 106, Ağırlıksız 93. Seviye: başlangıç 246, orta 69, ileri 9. | `www/exlib.js` |
+| Kütüphane | 324 egzersiz. 16 bölge (Göğüs 38, Karın 34, Omuz 31, Sırt 31, Ön bacak 30 ...). Tür: güç 257, esneme 41, pliyometrik 15, kardiyo 11. Ekipman: Salon 125, Ev tipi 106, Ağırlıksız 93. Seviye: başlangıç 246, orta 69, ileri 9. | `www/modules/salon/exlib.js` |
 | Kayıt türü | Ağırlık×tekrar 208, vücut ağırlığı (ek kg) 50, süreli tutuş 45, kardiyo dakika 12, aralıklı tur 9. | `exlib.js` alan `k` |
 | Görsel | Her egzersizde animasyonlu SVG çizgi-adam. Fotoğraf (2 kare, free-exercise-db, kamu malı) 322 egzersizde. Toplam görsel boyutu 8,6 MB. | `figlib.js`, `www/ex/` |
 | Animasyon çeşitliliği | 48 hareket şablonu (commit mesajı 49 diyor, kodda 48). Bir şablon ortalama 6 egzersizde kullanılıyor, `curl` şablonu 29 egzersizde, `hinge` 19, `squat` 18. Aynı şablondaki varyantlar küçük açı farkıyla birbirine benziyor. | `figtpl.js` |

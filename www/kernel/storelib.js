@@ -115,6 +115,7 @@ const Store=(()=>{
     if(S.mode!=="idb")return false;
     S.rev++;
     for(const [i,v] of Object.entries(map)){cache["m:"+i]=v;pending.set("m:"+i,{v,rev:S.rev})}
+    for(const i of S.ids||[])if(!ids.includes(i)){delete cache["m:"+i];pending.set("m:"+i,null)} // artık olmayan parça (boşalan ay) silinir
     S.ids=ids;S.sharded=true;
     const meta=JSON.stringify({v:2,rev:S.rev,ids});cache[META]=meta;pending.set(META,{v:meta,rev:S.rev});
     flush();return !S.failed;

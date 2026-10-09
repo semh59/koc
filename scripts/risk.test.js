@@ -1,4 +1,4 @@
-const A=require("../www/algo.js");let bad=0;
+const A=require("../www/kernel/algo.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const T="2026-10-03",base={age:35,cm:175,kg:90,goalKg:80,healthNote:"",meds:0,glucoseCount90d:0,bpCount90d:0,edFlag:false,clearedAt:"",today:T};
 const R=o=>A.riskFlags({...base,...o});

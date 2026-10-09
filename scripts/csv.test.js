@@ -1,4 +1,4 @@
-const C=require("../www/csvlib.js");let bad=0;
+const C=require("../www/modules/veri/csvlib.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const out=C.csv(["a","b"],[["x",80.5],["y",1500.25]]);
 ok("BOM, ; ayırıcı, CRLF, ondalık virgül, binlik ayırıcı yok",out==="﻿a;b\r\nx;80,5\r\ny;1500,25\r\n",out);

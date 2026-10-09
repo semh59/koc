@@ -43,7 +43,7 @@ Bunlar bitmeden Play'e yayın yapılamaz ya da reddedilir. Ayrıntı ve kaynakla
 - [~] Koç: ayrı sohbetler (Yeni sohbet, Geçmiş: sohbet arşivi, depolama kotası dolmasın diye eskiler atılır), yeme düzeni/hamilelik freni kalıcı (yeni sohbet ya da silme kaldırmaz), kayıt kartı güvenilirliği (yemek ve egzersiz kartı), OpenAI ve Anthropic Claude sağlayıcıları, 18 yaş altında kapalı, otomatik gönderim kaldırıldı (yalnız düğmeyle). Yapıldı; telefon testleri aşağıda.
 - [~] İlaç alarmı kilitli ekranı uyandırır (MedWake, 6 Ekim): doz saatlerinde ayrı alarm ekranı birkaç saniye yakar. Yapıldı; telefon testi aşağıda.
 - [~] Yedek parolası zorunlu (tüm yedek yolları), otomatik yedek klasörü, 18 yaş kapısı (kurulum 18 altını kabul etmez). Yapıldı; telefon testleri aşağıda.
-- [~] İlaç geçmişi: her ilaç için son 24 program sürümü saklanır (`www/medlib.js` MAXH). Yapıldı, telefonda denenmedi.
+- [~] İlaç geçmişi: her ilaç için son 24 program sürümü saklanır (`www/modules/ilac/medlib.js` MAXH). Yapıldı, telefonda denenmedi.
 - [~] Yatay mod: yön kilidi yok, yatay iki sütun düzeni ve Koç alanı yapıldı; telefon testi aşağıda.
 - [~] Eski göç kodları silindi (DEAD_MODEL, LEGACY_P, obDone eski kolu, parolasız yedek geri yükleme). DEAD_MODEL ve LEGACY_P kodda yok (grep).
 - Diğer fikirler: `docs/fikirler.md`. Adet döngüsü ve Health Connect karar bekliyor.

@@ -2347,7 +2347,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev("S.settings.medOn=false;tab='bugun';render()");
   }
   { // Tutarlılık paketi (C12)
-    const q=s=>$q(s),src=["index.html","algo.js","gym.js","exui.js","labui.js","vitalsui.js","habitui.js","medui.js","privacyui.js","backupui.js","coach.js","lablib.js","vitalslib.js","weeklylib.js"].map(f=>fs.readFileSync(www(f),"utf8")).join("\n");
+    const q=s=>$q(s),src=["index.html","kernel/algo.js","modules/salon/gym.js","modules/salon/exui.js","modules/tahlil/labui.js","modules/tansiyon/vitalsui.js","modules/aliskanlik/habitui.js","modules/ilac/medui.js","modules/veri/privacyui.js","modules/veri/backupui.js","modules/koc/coach.js","modules/tahlil/lablib.js","modules/tansiyon/vitalslib.js","modules/analiz/weeklylib.js"].map(f=>fs.readFileSync(www(f),"utf8")).join("\n");
     const y=ev("dayKey().slice(0,4)");
     ok("tek tarih biçimi: Algo.fdate gün ay (yıl), ekranda bu yıl yılsız; eski yardımcılar ve gg.aa kalıpları yok",ev("Algo.fdate('2026-10-02')")==="2 Eki"&&ev("Algo.fdate('2026-01-09',true)")==="9 Oca 2026"&&ev(`fd('${y}-03-05')`)==="5 Mar"&&ev("fd('2019-12-31')")==="31 Ara 2019"&&!/\b(dm|gDate|vDayLbl|labDay)\(|slice\(8\)\+"\."|\.slice\(8\)\}\./.test(src)&&q("#view")&&ev("S.settings.lastBackup='2026-09-30';tab='ayar';render();document.querySelector('#view').textContent").includes("Son yedek "+ev("fd('2026-09-30')")));
     let back=true;
@@ -2456,7 +2456,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     // boş set
     const bw=ev("EXMERGED.find(e=>e.k==='b').id");
     ev(`S.workouts=[{id:5,day:keyOff(-3),t0:1000,t1:2000,name:"Eski",tpl:null,ex:[{id:'squat',note:'',sets:[{kg:100,reps:8,done:true}]}]}];S.gid=10;gStart(null);gAddEx(gActive(),'squat');gAddEx(gActive(),'curl');gAddEx(gActive(),'${bw}');const a=gActive();a.ex[0].sets[0].kg=null;a.ex[0].sets[0].reps=null;a.ex[1].sets[0].kg=null;a.ex[1].sets[0].reps=null;a.ex[2].sets[0].kg=null;a.ex[2].sets[0].reps=null;render()`);
-    ok("tekrar kutusunun ipucu 'tekrar' (kısaltma yok)",q('[data-gi="reps:0:0"]').getAttribute("placeholder")==="tekrar"&&!/placeholder="tek"/.test(fs.readFileSync(www("gym.js"),"utf8")));
+    ok("tekrar kutusunun ipucu 'tekrar' (kısaltma yok)",q('[data-gi="reps:0:0"]').getAttribute("placeholder")==="tekrar"&&!/placeholder="tek"/.test(fs.readFileSync(www("modules/salon/gym.js"),"utf8")));
     q('[data-g="done:0:0"]').click();
     ok("boş set ✓ (önceki seans var): sessizce kaydetmez, önceki değerle onay sorar",ev("gActive().ex[0].sets[0].done")===false&&q("#sheet").textContent.includes("Önceki seansta")&&q("#sheet").textContent.includes("100 kg × 8 tekrar"),q("#sheet").textContent);
     q('[data-g="closesheet"]').click();

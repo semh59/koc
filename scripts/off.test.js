@@ -1,4 +1,4 @@
-const O=require("../www/offlib.js");let bad=0;
+const O=require("../www/modules/besin/offlib.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const prod=(o)=>({status:1,product:Object.assign({code:"8690526010113",product_name:"Crax sticks",brands:"Eti,Crax",serving_quantity:"",product_quantity:40,nutriments:{"energy-kcal_100g":440,proteins_100g:8.5,carbohydrates_100g:70,fat_100g:13}},o)});
 // gerçek Eti ürünleri (Open Food Facts, 2026-10-01)

@@ -2,7 +2,7 @@
 /* Besin etiketi fotoğrafından okunan satırlardan 100 g başına kalori ve makroları çıkarır (DOM yok).
    Okunan sayılar OffLib ile aynı tutarlılık denetiminden geçer. */
 const LabelLib=(()=>{
-  const LL=typeof LabLib!=="undefined"?LabLib:require("./lablib.js"),OL=typeof OffLib!=="undefined"?OffLib:require("./offlib.js");
+  const LL=typeof LabLib!=="undefined"?LabLib:require("../tahlil/lablib.js"),OL=typeof OffLib!=="undefined"?OffLib:require("./offlib.js");
   const fold=s=>LL.fold(s);
   const NUM="(?:[<>]\\s*)?(\\d+(?:[.,]\\d+)?)";
   const toN=s=>{const v=Number(String(s).replace(",","."));return Number.isFinite(v)?v:null};

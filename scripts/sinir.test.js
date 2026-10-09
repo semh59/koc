@@ -1,17 +1,17 @@
-/* Modül sınırı: bir S alanına yalnız sahibi modülün dosyaları (ve main/ çekirdeği) doğrudan dokunur.
-   Mevcut ihlaller scripts/sinir-taban.json'da; yeni ihlal ya da silinmemiş eski ihlal testi düşürür (taban yalnız küçülür).
-   Tabanı yeniden yazmak: node scripts/sinir.test.js --yaz */
+/* Modül sınırı: bir S alanına yalnız sahibi modülün klasöründeki dosyalar (www/modules/<modül>/) ve çekirdek (main/, kernel/) doğrudan dokunur.
+   Başka dosyalar o veriyi modülün API'sinden alır (Kayit, Ilac, ...). Yeni ihlal testi düşürür.
+   İstisna listesi scripts/sinir-taban.json (boş olmalı); yeniden yazmak: node scripts/sinir.test.js --yaz */
 const fs=require("fs"),path=require("path");
-const www=path.join(__dirname,"../www"),Modules=require(path.join(www,"modules.js"));
-const files=[...fs.readdirSync(www).filter(f=>f.endsWith(".js")&&!["modules.js"].includes(f)),...fs.readdirSync(path.join(www,"main")).map(f=>"main/"+f),...fs.readdirSync(path.join(www,"modules")).map(f=>"modules/"+f)];
+const www=path.join(__dirname,"../www"),Modules=require(path.join(www,"kernel/modules.js"));
+const files=require("./html").listJs();
 const strip=s=>s.replace(/\/\*[\s\S]*?\*\//g,"").replace(/(^|[^:\\])\/\/[^\n]*/g,"$1");
-const keyOwner={};for(const [id,m] of Object.entries(Modules))for(const k of m.keys)keyOwner[k]={id,owners:[...m.owners,"modules/"+id+".js"]};
+const keyOwner={};for(const [id,m] of Object.entries(Modules))for(const k of m.keys)keyOwner[k]={id,owners:m.owners||[]};
 const viol={};
 for(const f of files){
-  if(f.startsWith("main/")||/^(storelib|kernel)\.js$/.test(f))continue;
+  if(f.startsWith("main/")||f.startsWith("kernel/"))continue;
   const s=strip(fs.readFileSync(path.join(www,f),"utf8"));
   for(const m of s.matchAll(/\bS\.([a-zA-Z_]\w*)/g)){
-    const o=keyOwner[m[1]];if(!o||o.owners.includes(f))continue;
+    const o=keyOwner[m[1]];if(!o||f.startsWith("modules/"+o.id+"/")||o.owners.includes(f))continue;
     (viol[m[1]]??=new Set()).add(f);
   }
 }
@@ -27,6 +27,6 @@ for(const k of new Set([...Object.keys(now),...Object.keys(base)])){
 }
 ok("modül sınırı: yeni ihlal yok (S alanına sahibi olmayan dosya dokunmuyor)",!add.length,add);
 ok("modül sınırı: giderilen ihlal tabandan silinmiş (node scripts/sinir.test.js --yaz)",!gone.length,gone);
-ok("her S alanı bir modüle ait",["settings"].concat(Object.keys(keyOwner)).length>=33-1);
+ok("her modülün klasörü var",Object.keys(Modules).every(id=>fs.existsSync(path.join(www,"modules",id,"index.js"))));
 console.log("kalan ihlal:",Object.values(now).reduce((a,v)=>a+v.length,0));
 if(bad)process.exit(1);

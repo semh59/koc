@@ -108,7 +108,7 @@ function labSave(){
 
 async function labLoadPdf(){
   if(window.__labPdfLib)return window.__labPdfLib;
-  const lib=await import("./vendor/pdfjs/pdf.min.js");
+  const lib=await import("../../vendor/pdfjs/pdf.min.js");
   lib.GlobalWorkerOptions.workerSrc=new URL("vendor/pdfjs/pdf.worker.min.js",document.baseURI).href;
   return lib;
 }

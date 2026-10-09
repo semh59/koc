@@ -1,4 +1,4 @@
-const I=require("../www/insightlib.js");let bad=0;
+const I=require("../www/modules/koc/insightlib.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const T="2026-10-02",key=o=>new Date(Date.UTC(2026,9,2+o)).toISOString().slice(0,10);
 const W=(offs,f)=>Object.fromEntries(offs.map((o,i)=>[key(o),Math.round(f(o,i)*10)/10]));

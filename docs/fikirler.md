@@ -21,7 +21,7 @@ Hepsi yerel kalır, sunucu gerektirmez.
 | Health Connect'ten adım, uyku ve kilo okuma | Yüksek | Orta/yüksek | Elle girişi azaltır, harcama tahminini iyileştirir. Karar bekliyor; proje Capacitor 8.5'te |
 | Otomatik yedek (yapıldı: seçilen klasöre, 7 günde bir; Drive hesabı bağlanmaz) | Orta | Orta | Parolalı yedeğin düzenli olarak Drive'a gitmesi. Telefon kaybında veri kurtarır |
 | Haftalık menü ve alışveriş listesi (yapıldı: Koç sekmesi) | Orta | Orta | Koç, "Benim besinlerim" ve hedef kaloriye göre menü önerir |
-| Bel çevresi ve ölçü takibi (yapıldı: `www/measureui.js`) | Orta | Düşük | Kilo sabitken ilerlemeyi gösterir |
+| Bel çevresi ve ölçü takibi (yapıldı: `www/modules/olcu/measureui.js`) | Orta | Düşük | Kilo sabitken ilerlemeyi gösterir |
 | Aralıklı oruç zamanlayıcı | Düşük/orta | Düşük | Yemek penceresi ve geri sayım. Yeme bozukluğu riski nedeniyle dikkatli ve isteğe bağlı olmalı |
 
 ## Seçim notları

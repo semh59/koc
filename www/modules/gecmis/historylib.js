@@ -51,5 +51,5 @@ const HistoryLib=(()=>{
 })();
 if(typeof module!=="undefined"){
   module.exports=HistoryLib;
-  if(typeof Data==="undefined"){globalThis.Data=require("./kernel.js").Data;for(const m of ["kayit","salon","tansiyon","aliskanlik","ilac","nabiz","olcu"])require("./modules/"+m+".js")} // Node testleri
+  if(typeof Data==="undefined"){globalThis.Data=require("../../kernel/kernel.js").Data;for(const m of ["kayit","salon","tansiyon","aliskanlik","ilac","nabiz","olcu"])require("../"+m+"/index.js")} // Node testleri
 }

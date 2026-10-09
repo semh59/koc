@@ -2,7 +2,7 @@
 const {JSDOM}=require("jsdom"),fs=require("fs"),path=require("path");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const www=f=>path.join(__dirname,"../www",f);
-const C=require("../www/cyclelib.js"),T="2026-10-06";
+const C=require("../www/modules/dongu/cyclelib.js"),T="2026-10-06";
 const add=(k,n)=>C.addDays(k,n);
 const starts=(...ds)=>ds.map(s=>({s}));
 const chain=lens=>{let d="2025-01-01";const r=[{s:d}];for(const l of lens){d=add(d,l);r.push({s:d})}return C.clean(r,T)};

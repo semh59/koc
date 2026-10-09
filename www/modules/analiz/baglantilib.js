@@ -6,7 +6,7 @@ const BaglantiLib=(()=>{
   const avg=a=>a.reduce((s,x)=>s+x,0)/a.length;
   const f1=x=>x.toFixed(1).replace(".",",");
   const median=a=>{const s=a.slice().sort((x,y)=>x-y);return (s[(s.length-1)>>1]+s[s.length>>1])/2};
-  const AL=()=>typeof Algo!=="undefined"?Algo:require("./algo.js");
+  const AL=()=>typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
   const WIN=60,MIN_PAIRS=14;
   /* pairs [x,y]: x>cut üst grup. İki grupta da en az g çift yoksa null. */
   function split(pairs,cut,g=4){

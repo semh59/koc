@@ -2,15 +2,15 @@
 /* Son 7 gün özet raporu (bugün dahil kayan pencere, takvim haftası değil): kayıtlardan sayıları derler ve tek sayfalık PDF görüntüsünü çizer (DOM yok).
    Yalnızca kullanıcının girdiği kayıtları ve kendi hedeflerini yan yana koyar; yorum yapmaz. */
 const WeeklyLib=(()=>{
-  const VL=typeof VitalsLib!=="undefined"?VitalsLib:require("./vitalslib.js"),ML=typeof MedLib!=="undefined"?MedLib:require("./medlib.js");
+  const VL=typeof VitalsLib!=="undefined"?VitalsLib:require("../tansiyon/vitalslib.js"),ML=typeof MedLib!=="undefined"?MedLib:require("../ilac/medlib.js");
   const GUNK=["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"];
   const RW=1240,RH=1754,RM=70,ROW=52;
   const p2=n=>String(n).padStart(2,"0");
   const key=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
   const fmt=(x,d)=>Number(x).toFixed(d==null?1:d).replace(".",",");
   const fmtS=x=>(x>0?"+":x<0?"−":"")+fmt(Math.abs(x));
-  const UN=typeof Units!=="undefined"?Units:require("./unitlib.js");
-  const AL=()=>typeof Algo!=="undefined"?Algo:require("./algo.js");
+  const UN=typeof Units!=="undefined"?Units:require("../../kernel/unitlib.js");
+  const AL=()=>typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
   const dmy=k=>AL().fdate(k,true);
   /* Su hedefine yalnız su ve sade maden suyu sayılır; tür alanı olmayan eski kayıt su. Çay, kahve, gazlı, süt, diğer ayrı tutulur. */
   const isWater=e=>e.type==="su"&&(!e.dr||e.dr==="su"||e.dr==="maden");

@@ -12,7 +12,7 @@ const VitalsLib=(()=>{
   const fin=x=>typeof x==="number"&&Number.isFinite(x);
   const inr=(x,[a,b])=>fin(x)&&x>=a&&x<=b;
   const r1=x=>Math.round(x*10)/10;
-  const UN=typeof Units!=="undefined"?Units:require("./unitlib.js");
+  const UN=typeof Units!=="undefined"?Units:require("../../kernel/unitlib.js");
   const dayN=k=>Date.UTC(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10))/864e5;
 
   /* Tek ölçümü doğrular; geçerliyse temiz satırı, değilse {err} döner. */
@@ -92,7 +92,7 @@ const VitalsLib=(()=>{
 
   /* ---- Doktor raporu PDF'i ---- */
   const RW=1240,RH=1754,RM=70,ROW=44,FOOT=80;
-  const fmtD=k=>(typeof Algo!=="undefined"?Algo:require("./algo.js")).fdate(k,true);
+  const fmtD=k=>(typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js")).fdate(k,true);
   const num=x=>String(r1(x)).replace(".",",");
   /* Tablo satırları: her ham ölçüm bir satır. */
   function reportRows(rows,kind,from,to,gu){

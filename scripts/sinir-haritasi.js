@@ -1,7 +1,7 @@
 /* Aşama 0: hangi dosya hangi veri alanına (S.*) ve hangi dosyanın adlarına dokunuyor. docs/sinir-haritasi.md üretir. */
 const fs=require("fs"),path=require("path");
 const www=path.join(__dirname,"../www");
-const files=[...fs.readdirSync(www).filter(f=>f.endsWith(".js")).map(f=>f),...fs.readdirSync(path.join(www,"main")).map(f=>"main/"+f)];
+const files=require("./html").listJs();
 const strip=s=>s.replace(/\/\*[\s\S]*?\*\//g,"").replace(/(^|[^:\\])\/\/[^\n]*/g,"$1");
 const src=Object.fromEntries(files.map(f=>[f,strip(fs.readFileSync(path.join(www,f),"utf8"))]));
 const defs=Object.create(null);

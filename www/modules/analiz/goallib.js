@@ -1,7 +1,7 @@
 "use strict";
 /* Kilo trendine göre haftalık kalori hedefi önerisi. Yalnız öner; uygulamayı kullanıcı onaylar (goalui.js). */
 const GoalLib=(()=>{
-  const A=typeof Algo!=="undefined"?Algo:require("./algo.js");
+  const A=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
   const TOL=0.15,MAX_STEP=250,QUIET=7,WIN=14;
   /* o: w {gün:kg}, kcal (mevcut hedef), tdee, bmr, ri (Algo.riskFlags girdisi: kg, goalKg, age, sex...), intake {gün:kcal}, today, at (son karar günü).
      Hız sapması |trend − hedef hız| < 0,15 kg/hafta ise sessiz. Önceki 14 günde hedefe uyulmamışsa (ortalama ±%15 dışı) sapma hedeften değil uyumdan gelir: sessiz. */

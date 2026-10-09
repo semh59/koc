@@ -1,5 +1,5 @@
 /* Kamerayla nabız: sentetik ışık dalgasından atım sayısı, belirsiz ölçümde sayı vermeme, kayıt temizliği. */
-const P=require("../www/pulselib.js");let bad=0;
+const P=require("../www/modules/nabiz/pulselib.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 function rng(seed){let s=seed>>>0||1;return ()=>{s^=s<<13;s>>>=0;s^=s>>>17;s^=s<<5;s>>>=0;return s/4294967296}}
 const gauss=r=>Math.sqrt(-2*Math.log(r()||1e-9))*Math.cos(2*Math.PI*r());

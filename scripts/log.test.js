@@ -1,4 +1,4 @@
-const L=require("../www/loglib.js");let bad=0;
+const L=require("../www/modules/kayit/loglib.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 ok("copyNutr yalnız sayısal makroları taşır",JSON.stringify(L.copyNutr({p:5,c:null,f:0,text:"x"},{}))==='{"p":5,"f":0}');
 ok("copyNutr: öğün başı sodyum 100.000 mg sınırına kadar korunur (100 g başı 40.000 sınırı ayrı)",L.copyNutr({na:60000},{}).na===60000&&L.copyNutr({na:100001},{}).na===undefined);

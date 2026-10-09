@@ -1,4 +1,4 @@
-const C=require("../www/coachlib.js");let bad=0;
+const C=require("../www/modules/koc/coachlib.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 { // B7: güvenlik kuralları; eski 3-6 aynen kalır
   const S=C.SYSTEM;
@@ -50,7 +50,7 @@ ok("cleanProgram: istenen gün sayısından fazlası kesilir, geçersiz istek 6'
 ok("cleanProgram: hepsi geçersizse ya da çöp girdide null, hata yok",C.cleanProgram({days:[day(["x","y"])]},K)===null&&C.cleanProgram("x",K)===null&&C.cleanProgram({days:"x"},K)===null&&C.cleanProgram({days:[null,{ex:[1,{}]}]},K)===null&&C.cleanProgram(null)===null);
 ok("cleanProgram: en fazla 8 egzersiz, tekrar eden kimlik tekilleşir, ad varsayılanı",C.cleanProgram({days:[{ex:["squat","squat","bench"]}]},K).days[0].ex.length===2&&C.cleanProgram({days:[{ex:["squat","bench"]}]},K).name==="Koç programı");
 ok("parse program anahtarını döndürür",C.parse('{"reply":"ok","program":{"name":"P","days":[]}}').program.name==="P"&&C.parse('{"reply":"ok"}').program===null&&C.parse("düz").program===null);
-const EX=require("../www/exlib.js"),cat=o=>C.catalog(EX,o,["squat","bench","pullup","crunch"]);
+const EX=require("../www/modules/salon/exlib.js"),cat=o=>C.catalog(EX,o,["squat","bench","pullup","crunch"]);
 { const l=cat({q:"Salon",l:"İleri"}),t=C.catalogText(l),ids=t.split("\n").flatMap(r=>r.split(": ").slice(1).join(": ").split(", ").map(x=>x.split("|")[0])),old=l.map(e=>`${e.id}|${e.n}|${e.r}`).join("\n");
   ok("katalog metni: her egzersiz bir kez, bölge başlığı altında, eskisinden kısa",ids.length===l.length&&new Set(ids).size===l.length&&l.every(e=>ids.includes(e.id))&&t.split("\n").every(r=>/^[^|:]+: \S+\|/.test(r))&&t.length<old.length-200,[t.length,old.length]);
   const e2=C.catalog(EX,{q:"Ev tipi",l:"Başlangıç"},[]),t2=C.catalogText(e2);

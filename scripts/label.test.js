@@ -1,4 +1,4 @@
-const LB=require("../www/labellib.js"),L=require("../www/lablib.js");let bad=0;
+const LB=require("../www/modules/besin/labellib.js"),L=require("../www/modules/tahlil/lablib.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const P=l=>LB.parse(l).food;
 const eq=(a,b)=>["k","p","c","f"].every(x=>Math.abs((a[x]??-1)-(b[x]??-1))<0.6);

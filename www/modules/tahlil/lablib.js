@@ -303,7 +303,7 @@ const LabLib=(()=>{
   /* ---- PDF raporu: tuval bağlamı dışarıdan verilir, böylece DOM olmadan da denenir ---- */
   const RW=1240,RH=1754,RM=70,BLOCK=250,HEAD=190,FOOT=80;
   const fmtN=v=>{const s=Number(v.toFixed(2));return String(s).replace(".",",")};
-  const fmtD=k=>(typeof Algo!=="undefined"?Algo:require("./algo.js")).fdate(k,true);
+  const fmtD=k=>(typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js")).fdate(k,true);
   const rangeText=r=>r.lo!=null&&r.hi!=null?`${fmtN(r.lo)} – ${fmtN(r.hi)}`:r.hi!=null?`< ${fmtN(r.hi)}`:r.lo!=null?`> ${fmtN(r.lo)}`:"";
   /* Sayfalara böl: ilk sayfada başlık için yer ayrılır. */
   function paginate(list){

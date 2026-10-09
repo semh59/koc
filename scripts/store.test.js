@@ -1,7 +1,7 @@
 /* Depo: IndexedDB (sahte) + localStorage aynası, sıra numarası, açılışta yeni olanın seçilmesi, yazma hatası. */
 globalThis.BroadcastChannel=undefined;
 let bad=0;const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
-const path=require.resolve("../www/storelib.js");
+const path=require.resolve("../www/kernel/storelib.js");
 function mkLs(init={},limit=Infinity){const m=new Map(Object.entries(init));return {getItem:k=>m.has(k)?m.get(k):null,setItem:(k,v)=>{if([...m].reduce((s,[a,b])=>s+(a===k?0:a.length+b.length),0)+k.length+v.length>limit)throw new Error("quota");m.set(k,String(v))},removeItem:k=>{m.delete(k)},m}}
 /* Sahte IndexedDB: veri nesnesi (disk) test dışından verilir; her işlem ayrı tick'te tamamlanır. */
 function mkIdb(disk,o={}){
