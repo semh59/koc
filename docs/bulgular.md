@@ -31,3 +31,16 @@ Bakılanlar: HTML üretimi ve kaçış, dışa açık bileşenler, WebView ayarl
 | 2-7 | Bilgi | bağımlılık | `npm audit --omit=dev`: 0 açık. Geliştirme aracında (`@capacitor/cli` > `uuid`) 3 orta bulgu var, uygulamaya girmiyor. | Bilgi, Dependabot izliyor. |
 | 2-8 | D | yedek paylaşımı | Paylaşılan şifreli yedek dosyası uygulama önbelleğinde kalıyor (şifreli, sistem temizler). | Açık, düşük. |
 | 2-9 | Karar | sağlık verisi | Veri telefonda düz metin (uygulama alanında). Android dosya tabanlı şifrelemesi kilitliyken korur, uygulama kilidi girişi korur. Ek şifreleme önerilmiyor. | Karar verildi: yapılmayacak. |
+
+## Faz 3: Gizlilik, KVKK ve yasal
+
+Bakılanlar: ağ çağrıları, Koç'a giden veri, onay metni ve politika eşleşmesi, Play formları, yeni özellikler (Health Connect, kamerayla nabız).
+
+| No | Ciddiyet | Yer | Bulgu | Durum |
+|---|---|---|---|---|
+| 3-1 | Bilgi | ağ | Uygulama yalnız iki yere bağlanır: Koç sağlayıcıları (onayla, kullanıcı anahtarıyla) ve Open Food Facts (yalnız barkod numarası). Başka `fetch`, izleme ya da analiz kütüphanesi yok. | Doğrulandı. |
+| 3-2 | Y | `docs/gizlilik-politikasi.md`, `docs/play-izin-beyanlari.md`, `docs/play-data-safety.md` | Kamerayla nabız, Health Connect okuma (adım, uyku, nabız) ve nabız verisi politika ve Play belgelerinde yoktu. | Düzeltildi: üçü de güncellendi (nabız Koç'a gönderilmez, görüntü saklanmaz, yalnız okuma). |
+| 3-3 | O | `www/coach.js` `CONSENT_NOT`, politika §5 | "Gönderilmeyenler" listesinde nabız yoktu. | Düzeltildi: iki metin birlikte güncellendi, eşleşme testi geçiyor. Gönderilenler listesi genişlemediği için rıza sürümü artırılmadı. |
+| 3-4 | O | Koç bağlamı | Saatten otomatik gelen adım ve uyku, Koç'a giden "son 14 gün özeti"ne girer (elle girilenle aynı kategori, rıza metni "adım ve varsa uyku" diyor). Nabız girmez. | Bilgi. Avukat sorusuna eklenecek: otomatik gelen sağlık verisinin rızası ayrı mı olmalı. |
+| 3-5 | Karar | hukuk | Politika metni değişti (nabız, Health Connect). Yayına çıkılacaksa avukata yeniden gösterilmeli. Şu an yalnız kendi telefonun olduğundan bekliyor. | Karar (yayın kararına bağlı). |
+| 3-6 | Karar | Play | Health Connect kullanımı için Play Console'da Sağlık Bağlantısı beyanı gerekir (yayına çıkılırsa). | Karar (yayın kararına bağlı). |
