@@ -17,6 +17,7 @@ for(const m of src.matchAll(/(?:async\s+)?function\s+([\w$]+)\s*\(/g)){
 for(const m of src.matchAll(/const\s+([\w$]+)\s*=\s*(?:async\s*)?(?:\([^)]*\)|[\w$]+)\s*=>([^\n]*)/g)){fns[m[1]]=fns[m[1]]||m[2];top=top.replace(m[0],"")}
 /* Dokunma ve klavye dinleyicileri kullanıcı eylemidir; geri kalan her şey (açılış, visibilitychange, zamanlayıcılar, bildirim/widget dinleyicileri) kök sayılır. */
 for(const m of [...top.matchAll(/addEventListener\("(click|keydown|input|change)"/g)].reverse())top=top.slice(0,m.index)+top.slice(close(top,m.index+16,"(",")")+1);
+for(const m of [...top.matchAll(/^on(?:Pre)?\("[^"]+",/gm)].reverse())top=top.slice(0,m.index)+top.slice(close(top,m.index+m[0].indexOf("("),"(",")")+1); // Act kayıtları: yalnız kullanıcı tıklamasıyla çalışır, tıklama dinleyicisi gibi
 const net=Object.keys(fns).filter(k=>/\bfetch\(|\bcallProvider\(/.test(fns[k]));
 const ids=s=>new Set(s.match(/[A-Za-z_$][\w$]*/g)||[]);
 const seen=new Set(),q=[...ids(top)].filter(k=>k in fns);

@@ -35,49 +35,7 @@ document.addEventListener("click",ev=>{
   if(d.tp!==undefined){const t=S.mealTpl[+d.tp];if(t)addFoods(t.items,fday(),`${t.n}: ${t.items.length} yemek eklendi`);return}
   if(d.tpd!==undefined){const t=S.mealTpl[+d.tpd];confirmSheet({title:"Şablon silinsin mi?",ok:"Sil",danger:true}).then(ok=>{const i=S.mealTpl.indexOf(t);if(ok&&i>=0){S.mealTpl.splice(i,1);save();const l=$("#frl");if(l)l.innerHTML=favHtml()}});return}
   if(d.fvd!==undefined){S.favFoods.splice(+d.fvd,1);save();$("#frl").innerHTML=favHtml();return}
-  if(d.act){
-    if(d.act==="su"){const e=add("su",S.settings.glass);render();const t=dayKey(),top=sum("su",t,t);if(top>=S.settings.waterMl&&top-S.settings.glass<S.settings.waterMl)scheduleReminders().then(setNotif);toast(`+${S.settings.glass} ml, bugün ${Math.round(top)} / ${S.settings.waterMl} ml`+(top-S.settings.glass<S.settings.waterMl&&top>=S.settings.waterMl?". Günlük hedef tamam":""),e.id)}
-    else if(d.act==="kilo")sheetKilo();
-    else if(d.act==="dunku")repeatYesterday();
-    else if(d.act==="kendin"){ownOpen();$("#ft").focus()}
-    else if(d.act==="tplyeni")sheetTpl();
-    else if(d.act==="yemek")sheetYemek();
-    else if(d.act==="spor")sheetSpor();
-    else if(d.act==="not")sheetNot();
-    else if(d.act==="yedek")sheetYedek();
-    else if(d.act==="recexp")shareFile(`neowell-ham-kayit-${dayKey()}.json`,"Okunamayan kayıt","application/json",recovery.raw,true);
-    else if(d.act==="rectry"){const s=load();if(recovery)return toast("Kayıt hâlâ okunamıyor");S=s;render();scheduleReminders().then(setNotif)}
-    else if(d.act==="recnew"){
-      const fresh=()=>{recovery=null;S=structuredClone(DEF);save();render();scheduleReminders().then(setNotif)};
-      if(rawCopy(recovery.raw))fresh();else confirmSheet({title:"Boş başlansın mı?",body:"Ham kopya depolama dolu olduğu için saklanamıyor. Dışa aktarmadıysan bu veri kaybolur. Yine de boş başlansın mı?",ok:"Boş başla",danger:true}).then(ok=>{if(ok&&recovery)fresh()});
-    }
-    else if(d.act.startsWith("kopya:")&&COPIES.some(c=>c[0]===d.act.slice(6)))shareFile(`neowell-kopya-${dayKey()}.json`,"Güvenlik kopyası","application/json",Store.get(d.act.slice(6)),true);
-    else if(d.act==="kopyagordum"){S.settings.copyAt="";save();render()}
-    else if(d.act.startsWith("kopyasil:")&&COPIES.some(c=>c[0]===d.act.slice(9))){Store.del(d.act.slice(9));otherBytes=lsOther();render()}
-    else if(d.act==="veriyedek"){tab="ayar-veri";render();sheetYedek()}
-    else if(d.act==="abfix"){tab="ayar-veri";render()}
-    else if(d.act==="tamalarm")exactAsk();
-    else if(d.act==="tamekran"){const w=MW();if(w)w.fsiSettings().catch(()=>toast("Ayar ekranı açılamadı, telefon ayarlarında Tam ekran bildirimleri bul"))}
-    else if(d.act==="drive")sheetDrive();
-    else if(d.act==="bildirimtest")notifTest();
-    else if(d.act==="barkod")barkodOku();
-    else if(d.act==="adimac")stepsOpen();
-    else if(d.act==="adimekle")sheetAdim();
-    else if(d.act==="walkgo"){tab="adim";render();window.scrollTo(0,0)}
-    else if(d.act==="adimdegil"){S.settings.stepsAsked=true;save();render()}
-    else if(d.act==="adimkapat"){S.settings.stepsOn=false;save();motionStopAll();render();toast("Adım sayar kapatıldı. Eski adım kayıtların durur")}
-    else if(d.act==="oem")sheetOem();
-    else if(d.act==="oem1"||d.act==="oem2")openDH(d.act==="oem1"?"openAutostart":"openBattery");
-    else if(d.act==="adimduz"){if(oemXiaomi())sheetOem();else openDH("openBattery")}
-    else if(d.act==="adimgizle"){S.settings.stepWarnDay=dayKey();save();render()}
-    else if(d.act==="oemok"){S.settings.oemDone=true;save();closeSheet();render();toast("Tamam, hatırlatmaları şimdi dene")}
-    else if(d.act==="profil"){tab="ayar-profil";render();window.scrollTo(0,0)}
-    else if(d.act==="saglik")openSheet(`<h3>Sağlık notların</h3><div class="lbl">Hamilelik, hastalık, ilaç, yeme bozukluğu geçmişi gibi koçun bilmesi gerekenler.</div><textarea class="in" id="hn" maxlength="500" autofocus>${esc(S.settings.healthNote)}</textarea><button class="btn" data-go="saglik">Kaydet</button>`);
-    else if(d.act==="riskok"){S.settings.riskClearedAt=dayKey();save();render();toast("Onaylandı, 30 gün geçerli")}
-    else if(d.act.startsWith("uygula:")){S.settings.kcal=+d.act.slice(7);save();render();toast(`Kalori hedefi ${S.settings.kcal} kcal oldu`)}
-    else if(d.act==="sifirla")confirmSheet({title:"Tüm veriler silinsin mi?",body:"Tüm kayıtlar, güvenlik kopyası ve kayıtlı Koç anahtarları silinecek. Bu geri alınamaz. Devam edilsin mi?",ok:"Hepsini sil",danger:true}).then(ok=>{if(ok){["koc_v1","koc_v1_onceki","koc_v1_bozuk","koc_v1_catisma"].forEach(Store.del);["koc_v1_kullanim",KEYS_LS,KEYS_ENC].forEach(lsDel);KEYS={};S=structuredClone(DEF);phClear();save();logOff=0;render();scheduleReminders().then(setNotif);toast("Tüm veriler silindi")}})
-    return;
-  }
+  if(d.act)return Act.run(d.act);
   if(d.go){
     ({kilo:goKilo,yemek:goYemek,besin:goBesin,mysil:goMySil,tpl:goTpl,adim:goAdim,spor:goSpor,not:goNot,yukle:goYukle,saglik:()=>{S.settings.healthNote=$("#hn").value.trim().slice(0,500);cNoteCheck();save();closeSheet();render();toast("Kaydedildi")}}[d.go]||(()=>{}))();
     if(d.go==="kopyala")backupText().then(v=>{if(!v)return;(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast("Panoya kopyalandı"),()=>{const b=$("#bk");b.value=v;b.select();document.execCommand&&document.execCommand("copy");toast("Metni seçtim, kopyala")})});
