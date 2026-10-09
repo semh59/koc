@@ -132,4 +132,8 @@ ok("ısınma setleri hesaba girmez (en son, önceki ve tek başına)",A.nextTarg
   const night={day:D2,time:"00:20",v:30,kcal:90,text:"Yürüyüş"},mn={day:D1,k:"w",t0:"23:50",min:30,kcal:90};
   ok("gece yarısını aşan egzersiz (otomatik başlangıç gününde, elle bitiş gününde) bir kez sayılır",A.exerciseKcal([night],[mn],D1)===0&&A.exerciseKcal([night],[mn],D2)===90);
 }
+{
+  const T=(j,w)=>A.actFromTriage(j,w);
+  ok("hareket düzeyi triyajı: oturarak + az yürüyüş = Az; ayakta ya da 5-9 bin = Orta; fiziksel iş + 10 bin+ = Çok",T(0,0)===0&&T(0,1)===0&&T(1,0)===0&&T(1,1)===1&&T(0,2)===1&&T(2,0)===1&&T(2,1)===1&&T(1,2)===1&&T(2,2)===2);
+}
 process.exit(bad?1:0);

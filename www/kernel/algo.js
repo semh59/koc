@@ -49,6 +49,9 @@ const Algo=(()=>{
     return 10*kg+6.25*cm-5*age+(sex==="m"?5:sex==="f"?-161:-78);
   }
   const ACT=[1.3,1.45,1.6];
+  /* Hareket düzeyi triyajı: iş (0 oturarak, 1 ayakta, 2 fiziksel) + günlük yürüyüş (0 <5 bin adım, 1 5-9 bin, 2 10 bin+) -> 0 Az, 1 Orta, 2 Çok.
+     Planlı antrenman sayılmaz (Salon ve spor kaydı ayrıca eklenir); aynı hareket iki kez sayılmasın. */
+  const actFromTriage=(job,walk)=>{const t=job+walk;return t<=1?0:t<=3?1:2};
   function formulaTdee(p){return bmrMifflin(p)*(ACT[p.act==null?1:p.act]||1.45)}
 
   /* "Tam kayıtlı gün" tek tanım (haftalık rapor, Koç analizi, harcama tahmini): en az 800 kcal, formül harcaması biliniyorsa yarısından da fazla.
@@ -288,6 +291,6 @@ const Algo=(()=>{
     }
     return r;
   }
-  return {KCAL_PER_KG,dayNum,fdate,trend,slopePerWeek,setClock,fullKcal,MIN_AVG_DAYS,kcalFloor,manualKcal,lbSuspect,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,riskFlags,lossBlock,etaWeeks,isLosing,lossKnown,goalEta,protein,PROTEIN_NOTE,exerciseKcal,moveBonus,moveSummary,cleanWalk,netKcal,gymKcal,MEASURES,cleanMeasures,whtr,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
+  return {KCAL_PER_KG,actFromTriage,dayNum,fdate,trend,slopePerWeek,setClock,fullKcal,MIN_AVG_DAYS,kcalFloor,manualKcal,lbSuspect,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,riskFlags,lossBlock,etaWeeks,isLosing,lossKnown,goalEta,protein,PROTEIN_NOTE,exerciseKcal,moveBonus,moveSummary,cleanWalk,netKcal,gymKcal,MEASURES,cleanMeasures,whtr,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
 })();
 if(typeof module!=="undefined")module.exports=Algo;
