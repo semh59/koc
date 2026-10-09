@@ -2076,6 +2076,13 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
   ok("barkod: tarayıcı okuyunca ürün bulunur",ev("S.myFoods.length")===1&&w.scanOpts.formats.includes("EAN_13"));
   ev("sheetFood()");
   ok("Yemek ekle'de barkod düğmesi görünür",w.document.querySelector("#sheet [data-act=barcode]")!==null);
+  { // the tip of the day follows the local calendar day, not the UTC day
+    ev("S.entries=[];add('weight',80,'');add('water',S.settings.waterMl,'');add('exercise',30,'Yürüyüş')");
+    const tipAt=h=>{const back=require('./clock').at(w,h),t=ev("dailyTip()");back();return t};
+    const t1=tipAt(1),t23=tipAt(23);
+    ok("tip of the day: the same quote at 01:00 and 23:00 of one local day",t1===t23&&ev("QUOTES").includes(t1),[t1,t23]);
+    ev("S.entries=[]");
+  }
   { // lif, şeker, sodyum
     const T=w.document.querySelector.bind(w.document),day=ev("dayKey()");
     w.fetch=async()=>({ok:true,json:async()=>offJ({"energy-kcal_100g":440,proteins_100g:8.5,carbohydrates_100g:70,fat_100g:13,fiber_100g:4,sugars_100g:20,sodium_100g:0.4})});
