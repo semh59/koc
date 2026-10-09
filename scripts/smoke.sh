@@ -196,7 +196,7 @@ appkill
 stopped || die "SÜREÇ ÖLDÜRÜLEMEDİ, kapalı uygulama testi yapılamadı"
 wsu
 until_ok 15 qn_is 1
-[ "$(qn)" = "1" ] || { echo "WIDGET SUYU (UYGULAMA KAPALI) YAZILMADI"; exit 1; }
+[ "$(qn)" = "1" ] || { echo "WIDGET SUYU (UYGULAMA KAPALI) YAZILMADI qn=$(qn)"; adb shell run-as com.neowell.app cat shared_prefs/nw_quick.xml; adb shell pidof com.neowell.app; exit 1; }
 reopen
 until_ok 45 ingested_is 1
 [ "$(ingested)" = "1" ] || { echo "WIDGET SUYU (UYGULAMA KAPALI) ANA VERİYE ALINMADI"; exit 1; }
