@@ -42,5 +42,7 @@ Uzun liste `docs/yapilacaklar.md` içinde kalır. Bu liste yalnız en riskli ve 
 24. Aylar sekmesi: ay ay özet; Ara sekmesi: "tavuk" yaz, geçmiş günlerdeki yemekler listelenmeli, dokununca o güne gitmeli.
 25. Trend > 1 yıl ve Tümü: grafik açılmalı, uzun aralıkta çubuklar haftalık/aylık ortalama olmalı.
 26. Dünkü bitmemiş antrenman Bugün'de "bitirilmedi" demeli; **Bitir ve kaydet** süre sormalı, **Sil** silmeli.
+27. Güncellemeden sonra ilk açılış: tüm eski kayıtların (yemek, su, kilo, antrenman, ilaç) yerinde olduğunu kontrol et. Güncellemeden önce Ayarlar > Veri ve yedek'ten yedek al. Uygulama kilidi açıksa açılışta önce kilit ekranı gelmeli (içerik görünmeden).
+28. Yeni kayıt ekle, uygulamayı son uygulamalardan kapat, yeniden aç: kayıt duruyor mu.
 ## Görüntü gönderme
 Sorun görünce: ekran görüntüsü + hangi madde numarası + (ilaç alarmıysa) Alarm kayıtları ekranı.
