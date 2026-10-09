@@ -11,17 +11,17 @@ const shard=async(page,id)=>JSON.parse((await idbRec(page,"m:"+id)).v);
 const entriesOf=page=>page.evaluate(()=>new Promise((res,rej)=>{const r=indexedDB.open("neowell",1);r.onsuccess=()=>{const st=r.result.transaction("kv").objectStore("kv"),q=st.getAll(IDBKeyRange.bound("m:log/","m:log/￿"));q.onsuccess=()=>res(q.result.flatMap(x=>JSON.parse(x.v).entries));q.onerror=()=>rej(q.error)};r.onerror=()=>rej(r.error)}));
 const reopen=async(page)=>{await page.reload();await expect(page.locator("#view")).not.toBeEmpty()};
 
-test("eski kullanıcı: tek metin kayıt modül parçalarına taşınır, ilk oturumda eski metin yedek kalır, sonraki açılışta silinir, kayıp yok",async({app,page})=>{
+test("a state written in localStorage mode becomes shards on the first IndexedDB run; the localStorage text is deleted once they are durable, nothing is lost",async({app,page})=>{
   await seedOnce(page,SEED);await app.open({});
   await page.evaluate(()=>Store.whenIdle());
   const meta=JSON.parse((await idbRec(page,"m:meta")).v);
   expect(meta.v).toBe(2);expect(meta.ids).toEqual(expect.arrayContaining(["settings","log","gym","meds","pulse","coach"]));
   expect((await entriesOf(page)).map(e=>e.text)).toContain("Eski yemek");
-  expect(await idbRec(page,"nw_state")).not.toBeNull(); // ilk oturumda eski metin yedek
+  await expect.poll(()=>page.evaluate(()=>localStorage.getItem("nw_state"))).toBeNull();
+  expect(await idbRec(page,"nw_state")).toBeNull();
   await reopen(page);await page.evaluate(()=>Store.whenIdle());
   expect((await app.state()).entries).toHaveLength(2);
-  expect(await idbRec(page,"nw_state")).toBeNull();
-  expect(await page.evaluate(()=>[localStorage.getItem("nw_state"),Store.sharded])).toEqual([null,true]);
+  expect(await page.evaluate(()=>Store.sharded)).toBe(true);
 });
 test("yalnız değişen parça yazılır: su eklenince kayıt parçası güncellenir, diğerleri aynı kalır",async({app,page})=>{
   await seedOnce(page,SEED);await app.open({});await reopen(page);

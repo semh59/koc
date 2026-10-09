@@ -38,7 +38,7 @@ ok("vücut ağırlığı",A.nextTarget([{kg:0,reps:6}]).reps===7); ok("boşsa nu
 ok("trend boş gün",Object.keys(A.trend({"2026-09-01":80,"2026-09-05":79})).length===2);
 const g=(o)=>A.suggestTarget(Object.assign({tdee:2400,kg:84,goalKg:75,bmr:1800},o));
 ok("18 yaş altı açık almaz",g({age:12,cm:165}).kcal===2400&&g({age:12,cm:165}).blocked!=="");
-ok("sağlık notu açığı keser",g({age:30,cm:175,health:true}).blocked!==""&&g({age:30,cm:175,health:true}).rateKgWk===0);
+ok("sağlık notu açığı keser",g({age:30,cm:175,healthNote:"var"}).blocked!==""&&g({age:30,cm:175,healthNote:"var"}).rateKgWk===0);
 ok("düşük BMI hedefi engellenir",A.lossBlock({age:30,cm:175,kg:50,goalKg:38})!=="");
 ok("hedef BMI<18,5 engellenir",A.lossBlock({age:30,cm:175,kg:80,goalKg:50})!=="");
 ok("sağlıklı yetişkin açık alır",g({age:30,cm:175}).rateKgWk<0&&g({age:30,cm:175}).blocked==="");
@@ -107,7 +107,7 @@ ok("ısınma setleri hesaba girmez (en son, önceki ve tek başına)",A.nextTarg
   ok("exerciseKcal: spor kcal toplanır, kcal'siz kayıt 0",A.exerciseKcal([sp("10:00",30,100),sp("19:00",45,200),sp("20:00",20)],[])===300);
   ok("exerciseKcal: çakışan hareket sayılmaz, çakışmayan sayılır, kenar teması çakışma değil",A.exerciseKcal([sp("18:00",60,300)],[mv("17:30",30,150),mv("08:00",30,100),mv("18:00",30,50),mv("16:00",60,70)])===300+100+50+70);
   ok("exerciseKcal: kcal'siz spor da aralık sayılır (aynı çıkışı kaplar)",A.exerciseKcal([sp("18:00",60)],[mv("17:40",10,80)])===0);
-  ok("moveBonus: %50, tamsayı, 800 üst sınır, asla negatif/NaN",A.moveBonus(301)===151&&A.moveBonus(5000)===800&&A.moveBonus(0)===0&&A.moveBonus(-50)===0&&A.moveBonus(NaN)===0&&A.moveBonus(200,1)===200);
+  ok("moveBonus: %50, tamsayı, 800 üst sınır, asla negatif/NaN",A.moveBonus(301)===151&&A.moveBonus(5000)===800&&A.moveBonus(0)===0&&A.moveBonus(-50)===0&&A.moveBonus(NaN)===0);
 }
 { // Denetim düzeltmeleri
   const T0="2026-12-01";

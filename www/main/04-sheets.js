@@ -1,8 +1,8 @@
-/* ---------- alt sayfa ve bildirim ---------- */
-/* Üst katman (sheet ya da rehber) açıkken arka plan inert: Tab, dokunma ve ekran okuyucu arkaya geçmez. */
+/* ---------- sheets and dialogs ---------- */
+/* While a top layer (sheet or guide) is open the background is inert: Tab, touch and the screen reader do not reach behind it. */
 const topLayer=()=>$("#alarm")&&!$("#alarm").hidden?$("#alarm"):!$("#cfm").hidden?$("#cfm"):$("#sheet").classList.contains("on")?$("#sheet"):$("#guide").hidden?null:$("#guide");
 function trap(){const o=topLayer();for(const e of document.body.children)if(e.tagName!=="SCRIPT")e.inert=!!o&&e!==o&&!e.matches("#scrim,#toast")}
-/* sheetEnd: sheet bir seçim beklerken kapanır ya da başka sheet ile değişirse çağrılır (Koç önizlemesi İptal sayılır). */
+/* sheetEnd: called when a sheet that waits for a choice closes or is replaced by another sheet (a Coach preview then counts as Cancel). */
 let sheetFrom=null,sheetEnd=null;
 const sheetDone=ok=>{const e=sheetEnd;sheetEnd=null;if(e)e(ok)};
 function openSheet(html){
@@ -19,9 +19,9 @@ function closeSheet(){
   s.classList.remove("on");$("#scrim").classList.remove("on");sheetFrom=null;trap();
   if(was&&f&&f.isConnected)f.focus({preventScroll:true});
 }
-/* Onay penceresi (tarayıcının yerel onay kutusu yerine): Promise<boolean>, odak İptal'de, Escape ve geri tuşu iptal eder.
-   Testte window.__confirmAuto ya da yerel olmayan bir window.confirm saplaması varsa pencere açılmaz; yanıt eşzamanlı verilir
-   (.then geri çağrısı aynı adımda çalışır) ve saplamaya eski tam metin gider. */
+/* Confirmation dialog (instead of the browser's native one): Promise<boolean>, focus on Cancel, Escape and the back key cancel.
+   In tests, window.__confirmAuto or a non-native window.confirm stub opens no dialog; the answer is given synchronously
+   (the .then callback runs in the same step) and the stub receives the plain text. */
 let cfmDone=null;
 function confirmSheet({title,body="",ok="Tamam",no="İptal",danger=false}){
   const msg=body||title,c=window.confirm;
@@ -36,38 +36,38 @@ function confirmSheet({title,body="",ok="Tamam",no="İptal",danger=false}){
   return new Promise(res=>{cfmDone=v=>{cfmDone=null;d.hidden=true;trap();if(from&&from.isConnected)from.focus({preventScroll:true});res(v)}});
 }
 function toast(msg,undo){
-  /* Kayıt başarısızken ardından gelen "+250 ml" gibi mesaj hatayı örtmesin. */
+  /* While saving fails, a following message such as "+250 ml" must not cover the error. */
   if(saveFail&&!msg.includes("kaydedilemedi"))msg="Kaydedilemedi, depolama dolu. "+msg;
   $("#tmsg").textContent=msg;lastUndo=undo==null?null:undo;$("#tundo").hidden=lastUndo==null;
   $("#toast").classList.add("on");clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("#toast").classList.remove("on"),undo!=null?6000:3800);
 }
 function dayOptions(inl){
   let o="";for(let i=0;i<7;i++){const d=addDays(-i);o+=`<option value="${dayKey(d)}">${i==0?"Bugün":i==1?"Dün":WEEKDAYS[d.getDay()]+" "+fd(dayKey(d))}</option>`}
-  if(tab==="day"&&logOff>=7){const k=keyOff(-logOff);o=`<option value="${k}" selected>${fd(k)}</option>`+o} // Gün ekranından eski bir güne ekleme
+  if(tab==="day"&&logOff>=7){const k=keyOff(-logOff);o=`<option value="${k}" selected>${fd(k)}</option>`+o} // adding to an older day from the Day screen
   const sel=`<label class="lbl" for="fday">Gün</label><select class="in" id="fday">${o}</select>`;
   return inl?`<div class="inl">${sel}</div>`:sel;
 }
 const fday=()=>($("#fday")||{}).value||dayKey();
-/* Hata, toast'ın kapattığı alanın yerine alanın hemen altında kalır. */
+/* The error stays right under the field, in place of what the toast would hide. */
 const ferr=(id,msg)=>{$("#"+id).textContent=msg};
-/* Boş durum: ikon, başlık, tek cümle, en çok bir eylem. */
-/* Gün/ay gezgini: data-<attr>="1" geri, "-1" ileri; ileri yoksa kapalı. */
+/* Day/month navigator: data-<attr>="1" back, "-1" forward; forward is disabled when there is none. */
 const dayNav=(attr,label,last,unit="gün")=>`<div class="dnav"><button data-${attr}="1" aria-label="Önceki ${unit}">${Icons.svg("back")}</button><h2 aria-live="polite">${label}</h2><button data-${attr}="-1" aria-label="Sonraki ${unit}"${last?" disabled":""}>${Icons.svg("chev")}</button></div>`;
-/* Katlanır bölüm yeniden çizimde açık kalır: <details ${keepOpen(ad)}>. toggle kabarmaz, yakalama evresinde dinlenir. */
+/* A collapsible section stays open across redraws: <details ${keepOpen(name)}>. toggle does not bubble, so it is listened for in the capture phase. */
 const OPEN=new Set(),keepOpen=k=>`data-keep="${k}"${OPEN.has(k)?" open":""}`;
 document.addEventListener("toggle",e=>{const k=e.target.dataset&&e.target.dataset.keep;if(k)e.target.open?OPEN.add(k):OPEN.delete(k)},true);
+/* Empty state: icon, title, one sentence, at most one action. */
 const emptyCard=(ic,title,text,btn="")=>`<div class="card empty">${Icons.svg(ic)}${title?`<b>${title}</b>`:""}<p class="mut sm">${text}</p>${btn}</div>`;
 
 let weightOk=null;
 function sheetWeight(){
   const m=weights(),ds=Object.keys(m).sort(),last=ds.length?dw(m[ds[ds.length-1]]):"";
-  /* Son tartı yazılı gelir; odakta ve ilk dokunuşta seçilir ki yazılan sayı eskisine eklenmesin. */
+  /* The last weigh-in comes prefilled; it is selected on focus and on the first tap so the typed number is not appended to the old one. */
   weightOk=null;openSheet(`<h3>Kilo ekle</h3><div class="kstep"><button class="chip" data-kd="-1" aria-label="0,1 ${wlab()} azalt">−0,1</button><input class="in num" id="fv" inputmode="decimal" placeholder="${wlab()==="lb"?"185,4":"84,3"}" value="${last}" autocomplete="off" autofocus onfocus="this.select()" onclick="if(!this.dataset.s){this.dataset.s=1;this.select()}"><button class="chip" data-kd="1" aria-label="0,1 ${wlab()} artır">+0,1</button></div><div class="ferr" id="kerr" role="alert"></div>${dayOptions()}<div id="kwarn" role="alert"></div><button class="btn" data-go="weight">Kaydet</button>`);
 }
 function weightStep(d){const f=$("#fv"),v=num(f.value),k=Units.wIn(v);if(k>=20&&k<=400)f.value=fmt(Math.round(v*10+d)/10)}
 function goWeight(){
   const raw=$("#fv").value,v=Units.wIn(num(raw));
-  /* Seçim telefonda kaybolursa "86,0" sonuna yazılan "85" 86,085 olur; tartı 2 haneden fazla ondalık vermez. */
+  /* If the selection is lost on the phone, "85" typed after "86,0" becomes 86.085; a scale gives at most 2 decimals. */
   if(!(v>=20&&v<=400)||/[.,]\d{3}/.test(raw))return ferr("kerr",`Kiloyu ${wlab()} olarak yaz, örneğin ${wlab()==="lb"?"185,4":"84,3"}`);
   const day=fday(),m=weights(),ds=Object.keys(m).filter(k=>k<day).sort(),prev=ds.length?m[ds[ds.length-1]]:null;
   const lb=prev==null&&wlab()==="kg"&&Algo.lbSuspect(v,S.settings.heightCm);
@@ -77,7 +77,7 @@ function goWeight(){
   if(prev!=null)msg+=`, öncekine göre ${dwS(v-prev)} ${wlab()}`;
   toast(msg,e.id);
 }
-/* Dünkü kayıt kendi öğününü taşır; favori ve şablonda öğün yok, seçilen çip geçerli. */
+/* Yesterday's entry carries its own meal; favourites and templates have none, so the selected chip applies. */
 function addFoods(items,day,msg,undo){
   const ids=items.map(s=>{const e=copyNutr(s,add("food",s.v,s.text,day));e.meal=LogLib.mealKey(s.meal)||(s.time?LogLib.mealOf(s):fmeal());return e.id});save();closeSheet();render();
   toast(msg,()=>{S.entries=S.entries.filter(e=>!ids.includes(e.id));if(undo)undo();save();render()});
@@ -117,7 +117,7 @@ function sheetTpl(){
   openSheet(`<h3>Öğün şablonu</h3><div class="lbl">Şablona girecek yemekler</div>${tplSrc.map((e,i)=>`<label class="prow"><span><b>${esc(e.text||"Öğün")}</b><span class="mut sm">${e.v?Math.round(e.v)+" kcal":""}</span></span><input type="checkbox" id="tc${i}" checked></label>`).join("")}<input class="in" id="tpn" placeholder="Şablon adı, örneğin Kahvaltım" maxlength="40" autocomplete="off" autofocus><button class="btn" data-go="tpl">Kaydet</button>`);
 }
 function goTpl(){
-  const items=tplSrc.filter((e,i)=>$("#tc"+i).checked).map(e=>copyNutr(e,{text:e.text||"Öğün",v:e.v})),n=$("#tpn").value.trim();
+  const items=tplSrc.filter((_,i)=>$("#tc"+i).checked).map(e=>copyNutr(e,{text:e.text||"Öğün",v:e.v})),n=$("#tpn").value.trim();
   if(!items.length)return toast("En az bir yemek seç");
   if(!n)return toast("Şablona bir ad yaz");
   if(items.length>15)return toast("Bir şablonda en fazla 15 yemek olur");
@@ -135,7 +135,7 @@ function sheetPortion(i,food){
   <details class="acc mb-2"><summary>Kaynak ve hesap</summary><p class="m0 mut sm">${curFood.hint||(curFood.src==="off"?"Kaynak: Open Food Facts (topluluk verisi, ODbL).":curFood.my?"Yapay zekâ ya da senin girdiğin tahmin.":curFood.o?"Öğün: bileşenlerin USDA ve tarif değerlerinden hesaplandı; porsiyon boyutu ve yağ miktarı yere göre değişir.":curFood.s?"Kaynak: USDA FoodData Central. Pişirme ve markaya göre değişebilir.":"Tahmini değer. Tarife ve markaya göre belirgin değişir.")}${curFood.v?" "+curFood.v:""}${curFood.lo!=null?RNOTE:""}</p></details>${mealChips()}${dayOptions()}<button class="btn" data-go="nutrition">Ekle</button>${curFood.rec?`<button class="lnk" data-rp="edit:${curFood.rec}">Tarifi düzenle</button>`:""}${curFood.my&&!curFood.hint?`<button class="lnk dng" data-go="mydel">Bu besini listemden sil</button>`:""}`);
   foodPreview();
 }
-/* Besin değer bloğu (besin ayrıntısı ve tarif): büyük kalori, protein/karbonhidrat/yağ ızgarası, kalanlar küçük satır. Eksik değer yazılmaz. */
+/* Nutrition value block (food detail and recipe): big calories, a protein/carbohydrate/fat grid, the rest as a small line. A missing value is not written. */
 const nutrBlock=x=>`<div class="nkc"><b class="num">${Math.round(x.k)}</b> kcal</div>${x.lo!=null?`<p class="m0 mut sm num">Aralık ~${Math.round(x.lo)}-${Math.round(x.hi)} kcal; ortalama kaydedilir</p>`:""}${(m=>m.length?`<div class="ngrid">${m.map(k=>`<div><b class="num">${fmt(x[k])} g</b><span>${NLBL[k]}</span></div>`).join("")}</div>`:"")(["p","c","f"].filter(k=>x[k]!=null))}${(m=>m.length?`<p class="m0 mut sm num">${m.map(k=>`${NLBL[k]} ${fmt(x[k])} ${NUNIT(k)}`).join(" · ")}</p>`:"")(["fb","sg","na"].filter(k=>x[k]!=null))}`;
 const RNOTE=" Aralık, tarif farkını (yağ, hamur) yansıtan bir tahmindir, ölçüm değildir. Ekle düğmesi ortalamayı kaydeder.";
 function foodCalc(){
@@ -146,7 +146,7 @@ function foodPreview(){
   const x=foodCalc();
   if(x.g)$("#fprev").innerHTML=nutrBlock(x);else $("#fprev").textContent="Miktarı 0,1 ile 20 arasında yaz";
 }
-const BS=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.BarcodeScanner;
+const BS=()=>plugin("BarcodeScanner");
 async function barcodeRead(){
   const bs=BS();if(!bs)return toast("Barkod okuma yalnızca telefondaki uygulamada çalışır");
   try{
@@ -159,23 +159,22 @@ async function barcodeRead(){
 async function barcodeFind(raw){
   const code=String(raw).replace(/\D/g,"");
   if(code.length<8||code.length>14)return toast("Bu bir ürün barkodu değil");
-  const L=allFoods(),li=L.findIndex(f=>f.b===code);
+  const li=allFoods().findIndex(f=>f.b===code);
   if(li>=0)return sheetPortion(li);
   toast("Ürün aranıyor…");
   let j;
   try{
     const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=${OffLib.FIELDS}`,{headers:{"User-Agent":"NeoWell/1.0 (kisisel kullanim)"}});
     j=await r.json();
-  }catch(e){return toast("İnternete ulaşılamadı, barkod aranamadı")}
+  }catch{return toast("İnternete ulaşılamadı, barkod aranamadı")}
   const x=OffLib.parse(j);
   if(x.status==="none"||x.status==="bad"){
     sheetFood();ownOpen();toast(`${x.why}. Etiketteki değerleri elle yaz ya da Koç'a sor`);return;
   }
-  if(x.status==="ok"){
-    myFoodPut(Object.assign({},x.food,{src:"off"}));save();
-    return sheetPortion(S.myFoods.findIndex(m=>m.b===code));
-  }
-  sheetPortion(0,Object.assign({},x.food,{my:true,src:"off",hint:"Kaynak: Open Food Facts. Bazı besin değerleri eksik olduğu için listene kaydedilmedi."}));
+  const food=Object.assign({},x.food,{src:"off"});
+  if(x.status==="ok"&&myFoodPut(food)){save();return sheetPortion(S.myFoods.findIndex(m=>m.b===code))}
+  const why=x.status==="ok"?"Besin listen dolu (en çok 200) olduğu için listene kaydedilmedi.":"Bazı besin değerleri eksik olduğu için listene kaydedilmedi.";
+  sheetPortion(0,Object.assign(food,{my:true,hint:"Kaynak: Open Food Facts. "+why}));
 }
 function goMyDelete(){
   S.myFoods=S.myFoods.filter(m=>tr(m.n)!==tr(curFood.n));save();closeSheet();render();toast("Besin listenden silindi");
@@ -232,7 +231,7 @@ async function backupText(){
   return JSON.stringify(await BackupLib.encrypt({v:1,S,keys:getKeys()},pw));
 }
 async function shareBackup(){
-  const P=window.Capacitor&&window.Capacitor.Plugins,fs=P&&P.Filesystem,sh=P&&P.Share;
+  const fs=plugin("Filesystem"),sh=plugin("Share");
   if(!fs||!sh)return toast("Paylaşım bu cihazda yok, Kopyala'yı kullan");
   try{
     const txt=await backupText();if(!txt)return;
@@ -241,10 +240,10 @@ async function shareBackup(){
   }catch(e){if(!/cancel/i.test(e&&e.message||""))toast("Paylaşılamadı, Kopyala'yı kullan")}
 }
 async function goRestore(){
-  let r,keysIn=null;try{r=JSON.parse($("#bk").value)}catch(e){return toast("Yedek metni okunamadı")}
+  let r,keysIn=null;try{r=JSON.parse($("#bk").value)}catch{return toast("Yedek metni okunamadı")}
   if(!(r&&r.enc))return toast("Yalnız parolalı yedek geri yüklenir");
   const pw=$("#bkpw").value;if(!pw)return toast("Şifreli yedek: önce parolayı yaz");
-  try{const p=await BackupLib.decrypt(r,pw);r=p.S;keysIn=p.keys}catch(e){return toast("Parola yanlış ya da yedek bozuk")}
+  try{const p=await BackupLib.decrypt(r,pw);r=p.S;keysIn=p.keys}catch{return toast("Parola yanlış ya da yedek bozuk")}
   if(!r||!Array.isArray(r.entries))return toast("Bu bir NeoWell yedeği değil");
   const b=buildState(r),drop=b.drop,out=b.S.entries;
   if(!out.length&&r.entries.length)return toast("Yedekte geçerli kayıt yok");
@@ -252,7 +251,7 @@ async function goRestore(){
   if(!await confirmSheet({title:"Yedek yüklensin mi?",ok:"Yükle",danger:true,body:`${out.length} kayıt yüklenecek${drop?`, ${drop} geçersiz kayıt atlanacak`:""}. Mevcut veriler değişecek.${canCopy?"":" Depolama dolu olduğundan eski verin için güvenlik kopyası ALINAMAYACAK; geri dönüş olmaz, önce yedek al."} Devam edilsin mi?`}))return;
   const prevS=S;
   S=b.S;
-  /* Yedek, anahtarın gideceği adresi, onay ayarını ve veri paylaşım iznini değiştirememeli. Otomatik yedek klasörü bu telefona ait. */
+  /* A backup must not change where the key goes, the consent setting or the data-sharing permission. The automatic backup folder belongs to this phone. */
   Object.assign(S.settings,{consent:prevS.settings.consent,consentV:prevS.settings.consentV,consentAt:prevS.settings.consentAt,consentP:prevS.settings.consentP,chatRisk:riskMerge(prevS.settings.chatRisk,S.settings.chatRisk),lastBackup:dayKey(),autoBk:prevS.settings.autoBk,lastAutoBk:prevS.settings.lastAutoBk});cAgeGuard();
   const keys=getKeys();
   for(const p of S.providers){
@@ -261,8 +260,8 @@ async function goRestore(){
     if(def)p.confirm=def.confirm;
   }
   if(!save()){S=prevS;saveFail=false;return toast("Yedek yüklenemedi, depolama dolu")}
-  if(keysIn&&typeof keysIn==="object")for(const id in keysIn)if(typeof keysIn[id]==="string"&&S.providers.some(p=>p.id===id))try{await setKey(id,keysIn[id])}catch(e){toast("Bir anahtar kasaya yazılamadı")}
-  /* Güvenlik kopyası eski veriyi saklar, depoyu ikiye katlar: yalnız uyarı sınırının altında kalırsa alınır. */
+  if(keysIn&&typeof keysIn==="object")for(const id in keysIn)if(typeof keysIn[id]==="string"&&S.providers.some(p=>p.id===id))try{await setKey(id,keysIn[id])}catch{toast("Bir anahtar kasaya yazılamadı")}
+  /* The safety copy keeps the old data and doubles the store: it is taken only if the total stays under the warning limit. */
   let copy=false;
   if(storeBytes+pj.length*2<=STORE_WARN)copy=Store.set("nw_state_previous",pj);
   if(!copy)Store.del("nw_state_previous");

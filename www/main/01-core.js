@@ -1,5 +1,5 @@
 "use strict";
-/* ---------- yardımcılar ---------- */
+/* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);
 const pad=n=>String(n).padStart(2,"0");
 const dayKey=(d=new Date())=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
@@ -9,11 +9,12 @@ Algo.setClock(dayKey);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=(x,d=1)=>Number(x).toFixed(d).replace(".",",");
 const fmtS=(x,d=1)=>(x>0.049?"+":x<-0.049?"−":"")+fmt(Math.abs(x),d);
-/* Birim ayarı (kg/lb, mg/dL ya da mmol/L) yalnız giriş ve gösterimi dönüştürür; kayıt, hesap ve Koç kg ile mg/dL'de kalır. */
+const fint=x=>Math.round(x).toLocaleString("tr-TR");
+/* Units only convert input and display; storage, calculations and the Coach stay in kg and mg/dL. */
 Units.src(()=>S.settings);
 const {fw:dw,fwS:dwS,fg:dg}=Units,wlab=()=>Units.wu(),glab=()=>Units.gl();
-/* Tüm metin bir sayı (+ isteğe bağlı birim) olmalı; "-30", "1e3", "12abc3", "1.5.2" sessizce başka sayıya dönmez, NaN olur.
-   Son ayırıcı ondalıktır, öncekiler binliktir ("1.234,5"); int'te tek ayırıcı + 3 hane binliktir ("1.500"), ondalıklı sayı ("1,5") yuvarlanmaz, NaN olur. */
+/* The whole text must be one number (+ optional unit); "-30", "1e3", "12abc3", "1.5.2" give NaN instead of silently becoming another number.
+   The last separator is the decimal one and earlier ones are thousands ("1.234,5"); with int, a single separator + 3 digits is thousands ("1.500") and a fraction ("1,5") is NaN, not rounded. */
 const num=(s,int)=>{
   const m=String(s==null?"":s).trim().match(/^(\d[\d.,]*|[.,]\d+)\s*[^\d\s.,+\-]*\.?$/);if(!m)return NaN;
   const t=m[1].replace(/[.,]+$/,""),seps=t.match(/[.,]/g)||[],last=Math.max(t.lastIndexOf(","),t.lastIndexOf(".")),grp=/^\d{1,3}([.,]\d{3})*$/;
@@ -30,11 +31,11 @@ const num=(s,int)=>{
 const MONTHS=["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
 const WEEKDAYS=["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
 const WEEKDAYS_SHORT=["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"];
-/* Ekran tarihi: bu yılsa yılsız. */
+/* Display date: the year is left out for the current year. */
 const fd=k=>Algo.fdate(k,k.slice(0,4)!==dayKey().slice(0,4));
 const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
-/* ---------- veri ---------- */
+/* ---------- data ---------- */
 const DEF={
   settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,piiPrev:false,chatRisk:"",copyAt:"",lastPlateau:"",goalSugAt:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:false,lockOn:false,hcOn:false,hcFrom:"",cycleOn:false,cycleRem:false,fastOn:false,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
@@ -61,9 +62,10 @@ const NLBL={p:"protein",c:"karbonhidrat",f:"yağ",fb:"lif",sg:"şeker",na:"sodyu
 const TYPES=["water","weight","food","exercise","note","steps"];
 const dayOk=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&new Date(s+"T00:00Z").toJSON()?.slice(0,10)===s;
 const timeOk=s=>typeof s==="string"&&/^([01]\d|2[0-3]):[0-5]\d$/.test(s);
-/* Koç onay metni değiştiğinde artırılır: eski sürümle verilmiş onay geçersiz sayılır ve yeniden sorulur. */
+/* Bumped when the Coach consent text changes: a consent given for an older text is void and asked again. */
 const CONSENT_V=2;
 const MED_NOTE="NeoWell tıbbi cihaz değildir, tanı koymaz ve tedavi önermez; hekim yerine geçmez. Sağlık kararların için hekimine danış.";
+const DAY_KEYS=["copyAt","lastPlateau","goalSugAt","lastBackup","lastAutoBk","riskClearedAt","hcFrom","stepWarnDay","stepsFrom"];
 function cleanSettings(raw){
   const d=structuredClone(DEF.settings),o=raw&&typeof raw==="object"?raw:{};
   for(const k in RANGES){
@@ -71,47 +73,18 @@ function cleanSettings(raw){
     if(ZEROOK.includes(k)&&v===0){d[k]=0;continue}
     if(typeof v==="number"&&isFinite(v)&&v>=lo&&v<=hi)d[k]=int?Math.round(v):v;
   }
+  for(const k in d)if(typeof d[k]==="boolean"&&typeof o[k]==="boolean")d[k]=o[k];
+  for(const k of DAY_KEYS)if(dayOk(o[k]))d[k]=o[k];
   if(o.sex==="m"||o.sex==="f")d.sex=o.sex;
   if(o.act===0||o.act===1||o.act===2)d.act=o.act;
   if(typeof o.healthNote==="string")d.healthNote=o.healthNote.slice(0,500);
-  if(o.consent===true&&o.consentV===CONSENT_V&&!(d.age>0&&d.age<18)){d.consent=true;d.consentV=CONSENT_V;if(dayOk(o.consentAt))d.consentAt=o.consentAt}
-  if(d.consent&&typeof o.consentP==="string")d.consentP=o.consentP.slice(0,200);
+  d.consent=o.consent===true&&o.consentV===CONSENT_V&&!(d.age>0&&d.age<18);
+  if(d.consent){d.consentV=CONSENT_V;if(dayOk(o.consentAt))d.consentAt=o.consentAt;if(typeof o.consentP==="string")d.consentP=o.consentP.slice(0,200)}
+  if(!d.cycleOn)d.cycleRem=false;
   if(/^(ed|preg|ed,preg)$/.test(o.chatRisk))d.chatRisk=o.chatRisk;
-  if(dayOk(o.copyAt))d.copyAt=o.copyAt;
-  if(dayOk(o.lastPlateau))d.lastPlateau=o.lastPlateau;
-  if(dayOk(o.goalSugAt))d.goalSugAt=o.goalSugAt;
-  if(dayOk(o.lastBackup))d.lastBackup=o.lastBackup;
-  if(o.autoBk===true)d.autoBk=true;
-  if(dayOk(o.lastAutoBk))d.lastAutoBk=o.lastAutoBk;
-  if(dayOk(o.riskClearedAt))d.riskClearedAt=o.riskClearedAt;
-  if(o.oemDone===true)d.oemDone=true;
-  /* Bayrak eklenmeden önceki yedek ve kayıtlar mevcut kullanıcıdır, onboarding görmez. */
-  if(o.obDone===true)d.obDone=true;
-  if(o.piiPrev===true)d.piiPrev=true;
-  if(o.stepsOn===true)d.stepsOn=true;
-  if(o.bpOn===true)d.bpOn=true;
-  if(o.bsOn===true)d.bsOn=true;
-  if(o.medOn===true)d.medOn=true;
-  if(o.cycleOn===true){d.cycleOn=true;if(o.cycleRem===true)d.cycleRem=true}
-  if(o.fastOn===true)d.fastOn=true;
-  if(o.motionOn===true)d.motionOn=true;
-  if(o.fastInfoOk===true)d.fastInfoOk=true;
-  if(o.fastLongOk===true)d.fastLongOk=true;
-  if(o.moveKcalOn===true)d.moveKcalOn=true;
-  if(o.lockOn===true)d.lockOn=true;
-  if(o.hcOn===true)d.hcOn=true;
-  if(dayOk(o.hcFrom))d.hcFrom=o.hcFrom;
-  if(o.medShowName===true)d.medShowName=true; // varsayılan gizli: ilaç adı kilit ekranında yalnız kullanıcı açarsa görünür
-  if(o.awakeOn===false)d.awakeOn=false;
-  if(o.gdVoice===false)d.gdVoice=false;
-  if(o.gdVib===false)d.gdVib=false;
-  if(o.rpeOn===true)d.rpeOn=true;
   if(o.theme==="light"||o.theme==="dark")d.theme=o.theme;
   if(o.wUnit==="lb")d.wUnit="lb";
   if(o.gUnit==="mmol")d.gUnit="mmol";
-  if(o.stepsAsked===true)d.stepsAsked=true;
-  if(dayOk(o.stepWarnDay))d.stepWarnDay=o.stepWarnDay;
-  if(dayOk(o.stepsFrom))d.stepsFrom=o.stepsFrom;
   if(Array.isArray(o.reminders))for(const r of d.reminders){
     const x=o.reminders.find(y=>y&&y.id===r.id);
     if(x){if(timeOk(x.t))r.t=x.t;if(typeof x.on==="boolean")r.on=x.on;if(typeof x.body==="string"&&x.body.trim().length>=5&&x.body.length<=110)r.body=x.body.trim()}
@@ -119,9 +92,9 @@ function cleanSettings(raw){
   return d;
 }
 let LOST=[];
-/* Alan alan yalıtılır: biri bozuksa yalnız o alan varsayılana döner, kalan veri korunur. */
+/* Isolated field by field: a broken one falls back to its default, the rest is kept. */
 function cleanHealthState(r){
-  r=r||{};const o={},f=(k,fn)=>{try{o[k]=fn()}catch(e){LOST.push(k)}};
+  r=r||{};const o={},f=(k,fn)=>{try{o[k]=fn()}catch{LOST.push(k)}};
   f("pulse",()=>PulseLib.clean(r.pulse));f("hr",()=>PulseLib.cleanHr(r.hr));
   f("meds",()=>MedLib.cleanMeds(r.meds));
   if(o.meds)f("medLog",()=>MedLib.cleanLog(r.medLog,o.meds));
@@ -130,16 +103,17 @@ function cleanHealthState(r){
   f("fast",()=>HabitLib.cleanFast(r.fast));f("sleep",()=>HabitLib.cleanSleep(r.sleep));f("mood",()=>HabitLib.cleanMood(r.mood));
   return o;
 }
+const MYFOODS_MAX=200; // myFoodPut refuses beyond this, so the cap never drops an accepted food
 function cleanMyFoods(arr){
   const out=[],seen=new Set();
-  for(const x of (Array.isArray(arr)?arr:[]).slice(0,200)){
+  for(const x of (Array.isArray(arr)?arr:[]).slice(0,MYFOODS_MAX)){
     if(!x||typeof x.n!=="string"||!x.n.trim()||!(x.k>=0&&x.k<=5000))continue;
     const n=x.n.trim().slice(0,60),key=tr(n);if(seen.has(key))continue;seen.add(key);
     const f={n,k:Math.round(x.k*10)/10};
     for(const m of NUTR)if(Number.isFinite(x[m])&&x[m]>=0&&x[m]<=LogLib.PER100[m])f[m]=x[m];
     if(typeof x.b==="string"&&/^\d{8,14}$/.test(x.b))f.b=x.b;
     if(x.src==="off")f.src="off";
-    if(x.por===true)f.por=true; // Koç kartından: değerler 1 porsiyon başına, gramı bilinmiyor
+    if(x.por===true)f.por=true; // from a Coach card: values are per 1 portion, grams unknown
     if(Array.isArray(x.u)){const u=x.u.filter(q=>Array.isArray(q)&&typeof q[0]==="string"&&q[1]>0&&q[1]<=5000).slice(0,4).map(q=>[q[0].slice(0,40),q[1]]);if(u.length)f.u=u}
     out.push(f);
   }
@@ -157,7 +131,7 @@ function cleanEntries(arr){
     const id=Number.isInteger(e.id)&&e.id>0&&!seen.has(e.id)?e.id:0;
     if(id){seen.add(id);max=Math.max(max,id)}
     const ne={id,day:e.day,time:timeOk(e.time)?e.time:"00:00",type:e.type,v:e.type==="note"?null:v,text:typeof e.text==="string"?e.text.slice(0,500):""};
-    if(Number.isFinite(e.qt)&&e.qt>0)ne.qt=e.qt; // bildirimden gelen su kaydının zamanı: aynı kayıt ikinci kez alınmasın
+    if(Number.isFinite(e.qt)&&e.qt>0)ne.qt=e.qt; // time of a water entry that came from a notification, so the same one is not taken twice
     if(Number.isInteger(e.wid))ne.wid=e.wid;
     if(e.type==="exercise"){if(e.bt===true)ne.bt=true;if(Number.isInteger(e.kcal)&&e.kcal>=0&&e.kcal<=5000)ne.kcal=e.kcal;if(typeof e.km==="number"&&e.km>=0&&e.km<=100)ne.km=Math.round(e.km*100)/100}
     if(e.type==="steps"){for(const k of ["ph","hc"])if(Number.isFinite(e[k])&&e[k]>=0&&e[k]<=200000)ne[k]=e[k]}
@@ -169,7 +143,7 @@ function cleanEntries(arr){
   for(const e of out)if(!e.id)e.id=++max;
   return {out,drop,next:max+1};
 }
-/* Yedek ve açılış aynı temizliği kullanır. Atılan öğe sayısı DROPS.n'de, okunamayıp varsayılana dönen alanlar LOST'ta toplanır. */
+/* Backup restore and boot use the same cleaning. The number of dropped items is counted in DROPS.n, fields that were unreadable and reset to defaults are collected in LOST. */
 const DROPS={n:0};
 function buildState(r){
   DROPS.n=0;LOST=[];
@@ -178,15 +152,15 @@ function buildState(r){
     ["besinler",()=>({myFoods:cleanMyFoods(r.myFoods)})],["tahliller",()=>({labs:LabLib.cleanLabs(r.labs)})],["ölçümler",()=>({vitals:VitalsLib.clean(r.vitals)})],
     ["sağlık",()=>cleanHealthState(r)],["döngü",()=>({cycle:CycleLib.clean(r.cycle,dayKey())})],["antrenman",()=>cleanGym(r)],["Koç",()=>cleanCoach(r)]];
   const st=structuredClone(DEF);
-  for(const [k,fn] of parts)try{Object.assign(st,fn())}catch(e){LOST.push(k)}
+  for(const [k,fn] of parts)try{Object.assign(st,fn())}catch{LOST.push(k)}
   const wids=new Set(st.workouts.map(w=>w.id));
   for(const e of st.entries)if(e.wid!=null&&!wids.has(e.wid))delete e.wid;
   return {S:st,drop:DROPS.n,lost:[...new Set(LOST)]};
 }
-/* Okunamayan kayıt silinmez: save() kilitlenir, kullanıcı ham veriyi dışa aktarır ya da bilerek boş başlar. */
+/* An unreadable record is never deleted: save() locks, and the user exports the raw data or deliberately starts empty. */
 let recovery=null,loadNote="";
 const rawCopy=raw=>Store.set("nw_state_corrupt",raw);
-/* Parçalı depo: S modül başına ayrı metne bölünür (Shards, modules.js); kayıtta yalnız değişen parça yazılır. */
+/* Sharded store: S is split into one text per module (Shards, modules.js); a save writes only the shards that changed. */
 const shardOf=st=>{
   const m={},used=new Set();
   const put=(id,o)=>{m[id]=JSON.stringify(o)};
@@ -195,8 +169,8 @@ const shardOf=st=>{
     for(const k of keys){
       used.add(k);
       if(Chunks[k]&&Array.isArray(st[k])){
-        const by={};for(const e of st[k])(by[Chunks[k](e)]??=[]).push(e);
-        base[k]=[];for(const [c,list] of Object.entries(by))put(id+"/"+c,{[k]:list});
+        base[k]=[];
+        for(const [c,list] of Object.entries(Object.groupBy(st[k],Chunks[k])))put(id+"/"+c,{[k]:list});
       }else base[k]=st[k];
     }
     put(id,base);
@@ -205,7 +179,7 @@ const shardOf=st=>{
   if(rest.length)put("other",Object.fromEntries(rest.map(k=>[k,st[k]])));
   return m;
 };
-/* Parçaları birleştirir; ay parçalarındaki diziler birleşir ve kimliğe göre sıralanır (kayıt sırası bozulmaz). */
+/* Joins the shards; arrays held in month shards are concatenated and sorted by id (entry order is preserved). */
 const assemble=m=>{
   const r={};
   for(const j of Object.values(m))for(const [k,v] of Object.entries(JSON.parse(j))){
@@ -219,12 +193,12 @@ let S=load();
 function load(){
   let r=null,raw;recovery=null;
   if(Store.sharded){
-    const m=Store.getShards();lastShard={...m};
-    try{if(Store.shardError)throw 0;r=assemble(m);raw=JSON.stringify(r)}catch(e){recovery={raw:Object.values(m).join("\n")||"parçalı depo okunamadı"};return structuredClone(DEF)}
+    const m=Store.getShards();lastShard=m;
+    try{if(Store.shardError)throw 0;r=assemble(m);raw=JSON.stringify(r)}catch{recovery={raw:Object.values(m).join("\n")||"parçalı depo okunamadı"};return structuredClone(DEF)}
   }else{
     raw=Store.get("nw_state");
     if(raw==null)return structuredClone(DEF);
-    try{r=JSON.parse(raw)}catch(e){}
+    try{r=JSON.parse(raw)}catch{}
   }
   if(!r||!Array.isArray(r.entries)){recovery={raw};return structuredClone(DEF)}
   const b=buildState(r);
@@ -234,27 +208,25 @@ function load(){
   }
   return b.S;
 }
-/* localStorage tarayıcıya göre 5-10 MB; JS dizesi UTF-16 olduğu için karakter başına 2 bayt sayılır. Yedek öncesi kopya gibi diğer anahtarlar da aynı kotadan yer. */
-const STORE_WARN=Store.mode==="idb"?200e6:3.5e6; // IndexedDB kotası diskle sınırlı; 3,5 MB yalnız localStorage kipinde geçerli
-const lsOther=()=>{let n=0;try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k!=="nw_state")n+=(k.length+(localStorage.getItem(k)||"").length)*2}}catch(e){}return n};
+/* localStorage holds 5-10 MB depending on the browser; a JS string is UTF-16, so a character counts as 2 bytes. Other keys such as the pre-restore copy use the same quota. */
+const STORE_WARN=Store.mode==="idb"?200e6:3.5e6; // the IndexedDB quota is bound by disk; 3.5 MB applies to localStorage mode only
+const lsOther=()=>{let n=0;try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k!=="nw_state")n+=(k.length+(localStorage.getItem(k)||"").length)*2}}catch{}return n};
 let saveFail=false,otherBytes=lsOther(),storeBytes=otherBytes+JSON.stringify(S).length*2;
-/* Yazılamazsa değişiklik bellekte kalır: her seferinde söylenir, Bugün ve Ayarlar'da kalıcı uyarı çıkar, yedek ekranı bellekteki hali alır. */
-const ARC_MAX=1.5e6; // arşiv sohbetlerinin JSON karakter sınırı: 20 sohbet x 150 mesaj x 1500 karakter ~9,8 MB'a çıkabilir
+const ARC_MAX=1.5e6; // JSON character cap of archived chats: 20 chats x 150 messages x 1500 characters could reach ~9.8 MB
 let lastJ="";
-/* Geri yüklemeden önceki güvenlik kopyası, kullanıcı gördüm diyene ya da 7 gün geçene kadar korunur; otomatik yedek gibi küçük yazımlar (save(true)) onu silerek yer açmaz. */
+/* The pre-restore safety copy is kept until the user says they saw it or 7 days pass; small writes such as the automatic backup (save(true)) never delete it to make room. */
 const copyHeld=()=>!!S.settings.copyAt&&(Date.parse(dayKey())-Date.parse(S.settings.copyAt))/864e5<7&&Store.get("nw_state_previous")!=null;
-/* Kilit ekranı ilk boyamadan önce gerekir (lockui.js); büyük kayıt metnini ayrıştırmamak için küçük bir bayrak tutulur. */
+/* The lock screen is needed before the first paint (lockui.js); a small flag avoids parsing the big state text. */
 let lockSeen=null;
-function lockFlag(){const v=S.settings.lockOn===true?"1":"0";if(v!==lockSeen){lockSeen=v;try{localStorage.setItem("nw_lockon",v)}catch(e){}}}
+function lockFlag(){const v=S.settings.lockOn===true?"1":"0";if(v!==lockSeen){lockSeen=v;try{localStorage.setItem("nw_lockon",v)}catch{}}}
 lockFlag();
-Store.onState(f=>{saveFail=f;if(f)toast("Son değişiklik kaydedilemedi. Uygulamayı kapatmadan yedek al.");else if(typeof render==="function")render()});
-/* Yalnız değişen parçalar tek işlemde yazılır. İlk yazımda (eski tek metinden ya da temiz kurulumdan) hepsi yazılır; eski tek metin bu oturumda yedek kalır, sonraki açılışta silinir. */
+/* A failed write keeps the change in memory: it is announced every time, Today and Settings show a permanent warning, the backup screen takes the in-memory state. */
+Store.onState(f=>{saveFail=f;if(f)toast("Son değişiklik kaydedilemedi. Uygulamayı kapatmadan yedek al.");else render()});
+/* Only the changed shards are written, in one transaction (all of them on the first write). A shard that emptied is dropped from the store as well. */
 function saveShards(m){
-  const ids=Object.keys(m),first=!Store.sharded,ch={};
-  for(const i of ids)if(first||m[i]!==lastShard[i])ch[i]=m[i];
-  if(!first&&!Object.keys(ch).length&&ids.length===(Store.ids||[]).length)return true;
-  if(first){const back=assemble(m),src=JSON.parse(JSON.stringify(S));if(Object.keys(src).some(k=>JSON.stringify(back[k])!==JSON.stringify(src[k])))return false}
-  const ok=Store.putShards(ch,ids);lastShard=Object.fromEntries(ids.map(i=>[i,i in ch?ch[i]:lastShard[i]]));return ok; // boşalan parça kaydı da düşer
+  const ids=Object.keys(m),ch=Object.fromEntries(ids.filter(i=>m[i]!==lastShard[i]).map(i=>[i,m[i]]));
+  if(!Object.keys(ch).length&&ids.length===(Store.ids||[]).length)return;
+  Store.putShards(ch,ids);lastShard=m;
 }
 function save(soft){
   if(recovery)return false;
@@ -268,83 +240,84 @@ function save(soft){
   }
   storeBytes=otherBytes+len*2;
   lockFlag();
-  if(idb){
-    if(saveShards(m)===false&&!Store.sharded){j=JSON.stringify(S);Store.set("nw_state",j);lastJ=j} // parça doğrulaması tutmazsa eski tek metin düzeni sürer
-    fastWatch();return !saveFail} // yazım başarısızlığı Store.onState ile saveFail'e yansır
+  if(idb){saveShards(m);fastWatch();return !saveFail} // a failed write reaches saveFail through Store.onState
   try{localStorage.setItem("nw_state",j);saveFail=false}
-  catch(e){
+  catch{
     if(soft&&copyHeld())return false;
-    /* Dolu depoda önce yedek kopyaları (geri yükleme öncesi, okunamayan kayıt) gider, kullanıcı verisi değil. */
+    /* When storage is full the safety copies (pre-restore, unreadable record) go first, not the user's data. */
     let ok=false;
-    for(const k of ["nw_state_previous","nw_state_corrupt"])if(!ok&&Store.get(k)!=null){Store.del(k);try{localStorage.setItem("nw_state",j);ok=true}catch(e2){}}
+    for(const k of ["nw_state_previous","nw_state_corrupt"])if(!ok&&Store.get(k)!=null){Store.del(k);try{localStorage.setItem("nw_state",j);ok=true}catch{}}
     otherBytes=lsOther();storeBytes=otherBytes+j.length*2;
     if(!ok){saveFail=true;toast("Son değişiklik kaydedilemedi: depolama dolu. Uygulamayı kapatmadan yedek al.");return false}
     saveFail=false;toast("Depolama doluydu: eski güvenlik kopyaları silindi");
   }
   lastJ=j;fastWatch();return true;
 }
-/* Açılışta: eski tek metinden parçalı düzene geçilir (tek işlemde); geçiş önceki oturumda olduysa eski tek metin silinir (silinen veri yedek kopyada kalmasın). */
+/* At boot in IndexedDB mode: a state written in localStorage mode (no shards yet) is saved as shards, and the localStorage text is deleted once they are durable. */
 document.addEventListener("nw:boot",()=>{
   if(Store.mode!=="idb"||recovery)return;
   if(!Store.sharded)save();
-  else if(Store.get("nw_state")!=null)Store.del("nw_state");
+  if(Store.get("nw_state")!=null)Store.whenIdle().then(()=>{if(!Store.failed)Store.del("nw_state")});
 });
-/* Başka sekme (yalnız web) kaydettiyse onun durumu alınır; yoksa bu sekme sonraki kayıtta onu eski veriyle ezerdi. */
+/* Another tab (web only) saved: take its state, or this tab would overwrite it with stale data on its next save. `synced` records what was taken before the redraw. */
+function adoptExternal(r,synced){
+  if(recovery||!r||!Array.isArray(r.entries))return;
+  S=buildState(r).S;synced();logOff=0;render();toast("Başka bir sekmedeki değişiklik alındı");
+}
 addEventListener("storage",ev=>{
-  if(recovery||Store.mode==="idb"||ev.storageArea!==localStorage||ev.key!=="nw_state"||!ev.newValue||ev.newValue===lastJ)return;
-  let r=null;try{r=JSON.parse(ev.newValue)}catch(e){}
-  if(!r||!Array.isArray(r.entries))return;
-  S=buildState(r).S;lastJ=ev.newValue;logOff=0;render();toast("Başka bir sekmedeki değişiklik alındı");
+  if(Store.mode==="idb"||ev.storageArea!==localStorage||ev.key!=="nw_state"||!ev.newValue||ev.newValue===lastJ)return;
+  let r=null;try{r=JSON.parse(ev.newValue)}catch{}
+  adoptExternal(r,()=>{lastJ=ev.newValue});
 });
-/* IndexedDB kipinde başka sekme (yalnız web) kaydettiyse sıra numarasıyla haberleşilir. */
 Store.onExternal(x=>{
-  if(recovery)return;let r=null;try{r=typeof x==="string"?JSON.parse(x):assemble(x)}catch(e){}
-  if(!r||!Array.isArray(r.entries))return;
-  S=buildState(r).S;if(typeof x==="string")lastJ=x;else lastShard={...x};logOff=0;render();toast("Başka bir sekmedeki değişiklik alındı");
+  let r=null;try{r=assemble(x)}catch{}
+  adoptExternal(r,()=>{lastShard=x});
 });
-/* Oruç freni not, ilaç, ölçüm, sohbet işareti ya da onayla değişince oruç bildirimleri hangi ekrandan olursa olsun yeniden kurulur. */
+/* When the fasting brake changes (note, medication, measurement, chat flag or confirmation) the fasting notifications are rescheduled whatever screen is open. */
 let fastBlk=null;
 function fastWatch(){const b=!!(S.settings.fastOn&&risk().block);if(fastBlk!=null&&b!==fastBlk)scheduleReminders().then(setNotif);fastBlk=b}
 const storeMsg=()=>saveFail?["Son değişiklik kaydedilemedi","Depolama dolu; değişiklik yalnız açık uygulamada duruyor. Kapatmadan yedek al, sonra Koç sohbetini temizle ya da eski kayıtları sil."]
   :storeBytes>STORE_WARN?["Depolama dolmak üzere",`${fmt(storeBytes/1e6)} MB kullanılıyor. Yedek al, sonra Koç sohbetini temizle ya da eski kayıtları sil.`]:null;
-const isNative=()=>!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
-try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+const isNative=()=>!!window.Capacitor?.isNativePlatform?.();
+const plugin=name=>window.Capacitor?.Plugins?.[name];
+navigator.storage?.persist?.()?.catch(()=>{});
 
 function add(type,v,text,day){
   const n=new Date();
   if(!day)logOff=0;
   const e={id:S.nextId++,day:day||dayKey(n),time:`${pad(n.getHours())}:${pad(n.getMinutes())}`,type,v:v==null?null:v,text:text||""};
-  if(type==="exercise"&&day&&day!==dayKey(n))e.bt=true; // geçmiş güne girildi: saat kayıt anıdır, egzersiz aralığı bilinmez (Algo.exerciseKcal)
+  if(type==="exercise"&&day&&day!==dayKey(n))e.bt=true; // logged for a past day: the time is the logging moment, the exercise span is unknown (Algo.exerciseKcal)
   S.entries.push(e);save();return e;
 }
 const of=(type,day)=>S.entries.filter(e=>e.type===type&&e.day===day);
-const sum=(type,a,b)=>S.entries.filter(e=>(type==="water"?WeeklyLib.isWater(e):e.type===type)&&e.day>=a&&e.day<=b).reduce((s,e)=>s+(e.v||0),0);
-/* Hareket kalorisi ayarı açıksa o günün kalori hedefine eklenen kısım; kapalıysa 0. Ring, widget ve toast tek yerden okur. */
+const inType=(type,e)=>type==="water"?WeeklyLib.isWater(e):e.type===type;
+const sum=(type,a,b)=>S.entries.filter(e=>inType(type,e)&&e.day>=a&&e.day<=b).reduce((s,e)=>s+(e.v||0),0);
+/* Per-day totals of one entry type in a single pass; returns a day -> total lookup. Chart loops use it instead of a sum() scan per day. */
+const dayTotal=type=>{const m=new Map();for(const e of S.entries)if(inType(type,e))m.set(e.day,(m.get(e.day)||0)+(e.v||0));return k=>m.get(k)||0};
+/* The part added to that day's calorie target when the movement-calories setting is on, else 0. The ring, widget and toast all read it here. */
 const moveAdd=day=>{
   if(!(S.settings.moveKcalOn&&S.settings.kcal>0))return 0;
-  const dn=Algo.dayNum(day),near=x=>Math.abs(Algo.dayNum(x.day)-dn)<=1; // gece yarısını aşan egzersiz komşu günde de durur
+  const dn=Algo.dayNum(day),near=x=>Math.abs(Algo.dayNum(x.day)-dn)<=1; // an exercise past midnight is stored on the neighbouring day too
   return Algo.moveBonus(Algo.exerciseKcal(S.entries.filter(e=>e.type==="exercise"&&near(e)),S.moves.filter(near),day));
 };
 const kcalGoal=day=>S.settings.kcal>0?S.settings.kcal+moveAdd(day):0;
-/* Güvenlik freninin girdisi tek yerde; kg verilmezse son trend kilo. */
-/* Sohbet işareti (yeme bozukluğu): sohbetteki bayrak ya da güvenlik kartı kalıcı fren sayılır; kullanıcı kaldıramaz. */
+/* Chat flag (eating disorder): a flag in the chat or a safety card is a permanent brake the user cannot lift. */
 const chatEd=()=>S.chat.some(m=>m.fl==="ed"||(m.card&&m.card.kind==="safety"&&m.card.level==="ed"));
+/* The safety brake's input in one place; without kg the latest trend weight is used. */
 function riskInput(kg){
   const st=S.settings,from=keyOff(-89),w=weights(),ks=Object.keys(w).sort(),n=k=>S.vitals.filter(v=>v.k===k&&v.day>=from).length;
   return {age:st.age,sex:st.sex,cm:st.heightCm,kg:kg!=null?kg:ks.length?Algo.trend(w)[ks[ks.length-1]]:0,goalKg:st.goalKg,healthNote:st.healthNote+((st.chatRisk||"").includes("preg")?" hamilelik":""),meds:S.meds.length,glucoseCount90d:n("s"),bpCount90d:n("t"),
     edFlag:(st.chatRisk||"").includes("ed")||chatEd(),clearedAt:st.riskClearedAt,today:dayKey()};
 }
 function risk(kg){return Algo.riskFlags(riskInput(kg))}
-/* Elle yazılan kalori hedefinin reddedilme nedeni ("" ise uygun): öneri yolundaki fren ve cinsiyete göre taban elle girişte de geçerli. */
+/* Why a hand-typed calorie target is rejected ("" when fine): the brake of the suggestion path and the sex-based floor apply to manual entry too. */
 function kcalWhy(v){
   const st=S.settings,w=weights(),ks=Object.keys(w).sort(),kg=ks.length?w[ks[ks.length-1]]:0,p={kg,cm:st.heightCm,age:st.age,sex:st.sex,act:st.act},ok=kg>0&&p.cm>0&&p.age>0;
   return Algo.manualKcal({kcal:v,sex:st.sex,age:st.age,bmr:ok?Algo.bmrMifflin(p):0,tdee:ok?Algo.formulaTdee(p):0,block:risk(kg||null).block});
 }
-/* Fren açıklaması: sert engelde yalnız açıklama, yumuşakta 30 günlük "Hekimime danıştım" onayı. */
+/* Brake explanation: a hard block only explains, a soft one offers the 30-day "Hekimime danıştım" confirmation. */
 const riskBox=(r,title)=>r.block?`<div class="banner"><b>${title}</b><p>${esc((r.hard.length?r.hard:r.soft).join(". "))}. ${r.hard.length?"Hekimine ya da diyetisyenine danış. Bilgi yanlışsa Profil > Sağlık notların'dan düzelt.":"Önce hekimine danış; konuştuysan 30 gün için devam edebilirsin."}</p>${r.hard.length?"":`<button class="btn ghost" data-act="riskok">Hekimime danıştım, devam</button>`}</div>`:"";
 function weights(a="0000",b="9999"){const m={};for(const e of S.entries)if(e.type==="weight"&&e.day>=a&&e.day<=b)m[e.day]=e.v;return m}
-const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
-const vals=m=>Object.values(m);
 function streak(){
   const ds=new Set(S.entries.filter(e=>e.type!=="steps").map(e=>e.day));let d=new Date();
   if(!ds.has(dayKey(d)))d=addDays(-1);

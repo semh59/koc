@@ -1,6 +1,6 @@
 "use strict";
-/* Veri sahipliği: her S alanını hangi modül yönetir ve hangi dosyalar doğrudan dokunabilir (sahip dosyalar).
-   Başka dosyalar o veriyi modülün sözleşmesinden alır; scripts/sinir.test.js sınırı denetler. main/* çekirdektir, her alana dokunabilir. */
+/* Data ownership: which module manages each S field and which files may touch it directly (the owner files).
+   Other files get that data through the module's contract; scripts/sinir.test.js checks the boundary. main/* is the core and may touch every field. */
 const Modules={
   log:{keys:["entries","nextId"]},
   nutrition:{keys:["myFoods","favFoods","mealTpl","recipes"]},
@@ -15,8 +15,8 @@ const Modules={
   motion:{keys:["walk","moves"]},
   coach:{keys:["chat","chats","cid","providers"]}
 };
-/* Depo parçaları: modül başına bir kayıt; ayarlar çekirdeğin parçasıdır. Hiçbir parçada olmayan alan "diger" parçasına gider (veri sessizce düşmez). */
-/* Çok büyüyen diziler ay ay ayrı parçaya bölünür (parça kimliği "<modül>/<ay>"): bir kayıt eklemek yalnız o ayın parçasını yazar. */
+/* Store shards: one record per module; settings belong to the core. A field in no shard goes to the "other" shard (data is never dropped silently).
+   Fast-growing arrays are split into one shard per month (shard id "<module>/<month>"): adding an entry writes only that month's shard. */
 const Chunks={entries:e=>String(e&&e.day||"").slice(0,7)||"x"};
 const Shards={settings:["settings"],...Object.fromEntries(Object.entries(Modules).map(([id,m])=>[id,m.keys]))};
 if(typeof module!=="undefined")module.exports=Modules;
