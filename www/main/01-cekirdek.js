@@ -189,12 +189,31 @@ const rawCopy=raw=>Store.set("koc_v1_bozuk",raw);
 /* Parçalı depo: S modül başına ayrı metne bölünür (Shards, modules.js); kayıtta yalnız değişen parça yazılır. */
 const shardOf=st=>{
   const m={},used=new Set();
-  for(const [id,keys] of Object.entries(Shards)){m[id]=JSON.stringify(Object.fromEntries(keys.map(k=>[k,st[k]])));keys.forEach(k=>used.add(k))}
+  const put=(id,o)=>{m[id]=JSON.stringify(o)};
+  for(const [id,keys] of Object.entries(Shards)){
+    const base={};
+    for(const k of keys){
+      used.add(k);
+      if(Chunks[k]&&Array.isArray(st[k])){
+        const by={};for(const e of st[k])(by[Chunks[k](e)]??=[]).push(e);
+        base[k]=[];for(const [c,list] of Object.entries(by))put(id+"/"+c,{[k]:list});
+      }else base[k]=st[k];
+    }
+    put(id,base);
+  }
   const rest=Object.keys(st).filter(k=>!used.has(k));
-  if(rest.length)m.diger=JSON.stringify(Object.fromEntries(rest.map(k=>[k,st[k]])));
+  if(rest.length)put("diger",Object.fromEntries(rest.map(k=>[k,st[k]])));
   return m;
 };
-const assemble=m=>Object.assign({},...Object.values(m).map(j=>JSON.parse(j)));
+/* Parçaları birleştirir; ay parçalarındaki diziler birleşir ve kimliğe göre sıralanır (kayıt sırası bozulmaz). */
+const assemble=m=>{
+  const r={};
+  for(const j of Object.values(m))for(const [k,v] of Object.entries(JSON.parse(j))){
+    if(Chunks[k]&&Array.isArray(v)&&Array.isArray(r[k]))r[k]=r[k].concat(v);else r[k]=v;
+  }
+  for(const k of Object.keys(Chunks))if(Array.isArray(r[k]))r[k].sort((a,b)=>(a.id||0)-(b.id||0));
+  return r;
+};
 let lastShard={};
 let S=load();
 function load(){
@@ -235,7 +254,7 @@ function saveShards(m){
   for(const i of ids)if(first||m[i]!==lastShard[i])ch[i]=m[i];
   if(!first&&!Object.keys(ch).length&&ids.length===(Store.ids||[]).length)return true;
   if(first){const back=assemble(m),src=JSON.parse(JSON.stringify(S));if(Object.keys(src).some(k=>JSON.stringify(back[k])!==JSON.stringify(src[k])))return false}
-  const ok=Store.putShards(ch,ids);lastShard={...lastShard,...ch};return ok;
+  const ok=Store.putShards(ch,ids);lastShard=Object.fromEntries(ids.map(i=>[i,i in ch?ch[i]:lastShard[i]]));return ok; // boşalan parça kaydı da düşer
 }
 function save(soft){
   if(recovery)return false;

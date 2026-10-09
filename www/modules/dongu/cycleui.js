@@ -113,4 +113,3 @@ document.addEventListener("click",ev=>{
   else if(a==="end"){const r=S.cycle[S.cycle.length-1],t=dayKey(),c=r&&CycleLib.check({...r,e:t},t);if(c&&c.row)cycPut(S.cycle.map(x=>x===r?{...c.row,id:r.id}:x),"Dönem bitirildi");else toast("Bitiş kaydedilemedi")}
   else if(a==="del"){const prev=S.cycle;S.cycle=prev.filter(r=>r.id!==+arg);save();render();cycResched();toast("Kayıt silindi",()=>{S.cycle=prev;save();render();cycResched()})}
 });
-Data.privacy.push(["Döngü kayıtları",()=>S.cycle.length,()=>{S.cycle=[]}]);

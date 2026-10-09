@@ -1,5 +1,5 @@
 // Tam ekran ilaç alarm ekranı: saf mantık (AlarmLib) ve jsdom'da açılış, işaretleme, gizlilik, erteleme.
-const {JSDOM}=require("jsdom"),fs=require("fs"),path=require("path"),A=require("../www/alarmlib.js"),M=require("../www/medlib.js");
+const {JSDOM}=require("jsdom"),fs=require("fs"),path=require("path"),A=require("../www/modules/ilac/alarmlib.js"),M=require("../www/modules/ilac/medlib.js");
 let bad=0,total=0;const ok=(n,c,x)=>{total++;console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 process.on("unhandledRejection",e=>{console.log("FAIL beklenmeyen hata",e);process.exit(1)});
 

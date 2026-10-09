@@ -1,4 +1,4 @@
-const H=require("../www/historylib.js");let bad=0;
+const H=require("../www/modules/gecmis/historylib.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const dk=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 const E=(type,day,v,text="",o={})=>({id:1,day,time:"12:00",type,v,text,...o});

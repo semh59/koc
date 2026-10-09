@@ -1,7 +1,7 @@
 const fs=require("fs"),path=require("path"),vm=require("vm");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
-const EXDB=vm.runInNewContext(fs.readFileSync(path.join(__dirname,"../www/exlib.js"),"utf8")+";EXDB"),by=Object.fromEntries(EXDB.map(e=>[e.id,e]));
-const {PROGRAMS:P,tg,days,toTpl}=require("../www/programs.js");
+const EXDB=vm.runInNewContext(fs.readFileSync(path.join(__dirname,"../www/modules/salon/exlib.js"),"utf8")+";EXDB"),by=Object.fromEntries(EXDB.map(e=>[e.id,e]));
+const {PROGRAMS:P,tg,days,toTpl}=require("../www/modules/salon/programs.js");
 const LEG=["Ön bacak","Arka bacak","Kalça","Baldır","İç-dış bacak"],PUSH=["Göğüs","Omuz","Triseps"],PULL=["Sırt","Biseps","Trapez","Bel"];
 const rows=p=>p.days.flatMap(d=>d.ex);
 ok("en az 5 program, kimlikler benzersiz",P.length>=5&&new Set(P.map(p=>p.id)).size===P.length);

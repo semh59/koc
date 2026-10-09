@@ -1,5 +1,5 @@
 const LogLib=(()=>{
-  const WL=typeof WeeklyLib!=="undefined"?WeeklyLib:require("./weeklylib.js");
+  const WL=typeof WeeklyLib!=="undefined"?WeeklyLib:require("../analiz/weeklylib.js");
   const MAX={p:500,c:2000,f:1000,fb:500,sg:2000,na:100000},NUTR=Object.keys(MAX);
   const copyNutr=(src,dst)=>{for(const k of NUTR)if(Number.isFinite(src[k])&&src[k]>=0&&src[k]<=MAX[k])dst[k]=src[k];return dst};
   const key=s=>s.trim().replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();

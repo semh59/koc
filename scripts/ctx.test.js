@@ -1,4 +1,4 @@
-const C=require("../www/coachlib.js");let bad=0;
+const C=require("../www/modules/koc/coachlib.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const days=[];
 for(let i=1;i<=14;i++){const e=[3,4,9].includes(i),dd=String(i).padStart(2,"0");

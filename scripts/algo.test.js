@@ -1,4 +1,4 @@
-const A=require("../www/algo.js");let bad=0;
+const A=require("../www/kernel/algo.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+x));if(!c)bad++};
 const near=(a,b,e)=>Math.abs(a-b)<=e;
 const day=(i)=>new Date(Date.UTC(2026,8,1+i)).toISOString().slice(0,10);

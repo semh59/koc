@@ -5,7 +5,7 @@ const InsightLib=(()=>{
   const f1=x=>String(Math.round(x*10)/10).replace(".",",");
   const sgn=x=>(x>0?"+":x<0?"-":"")+f1(Math.abs(x));
   const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
-  const AL=()=>typeof Algo!=="undefined"?Algo:require("./algo.js");
+  const AL=()=>typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
   /* Tek yönlü t kritik değeri (z=1,8 ≈ %96,4; Cornish-Fisher düzeltmesi, df≥6'da tablodan sapma <0,01). */
   const tq=df=>{const z=1.8;return z+(z**3+z)/(4*df)+(5*z**5+16*z**3+3*z)/(96*df*df)};
   /* Pencere bugüne göre: tartmayı bırakan birinin eski düz serisi plato sayılmasın. */

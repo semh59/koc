@@ -1,4 +1,4 @@
-const H=require("../www/habitlib.js");let bad=0;
+const H=require("../www/modules/aliskanlik/habitlib.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 ok("sleepMin: 23:30-07:00 = 450 dk, gündüz uykusu da hesaplanır",H.sleepMin("23:30","07:00")===450&&H.sleepMin("01:00","08:30")===450);
 ok("sleepMin: aynı saat, 1 saatten kısa, 18 saatten uzun ve bozuk girdi reddedilir",[H.sleepMin("07:00","07:00"),H.sleepMin("07:00","07:30"),H.sleepMin("06:00","01:00"),H.sleepMin("25:00","07:00"),H.sleepMin(null,undefined)].every(x=>x===null));

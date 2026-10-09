@@ -2,7 +2,7 @@
 const {JSDOM}=require("jsdom"),fs=require("fs"),path=require("path");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const www=f=>path.join(__dirname,"../www",f);
-const U=require("../www/unitlib.js"),V=require("../www/vitalslib.js"),C=require("../www/cardiolib.js"),P=require("../www/photolib.js"),Csv=require("../www/csvlib.js");
+const U=require("../www/kernel/unitlib.js"),V=require("../www/modules/tansiyon/vitalslib.js"),C=require("../www/modules/salon/cardiolib.js"),P=require("../www/modules/veri/photolib.js"),Csv=require("../www/modules/veri/csvlib.js");
 
 { // dönüşüm
   ok("kg: değişmez",U.w(84.3,"kg")===84.3&&U.wIn(84.3,"kg")===84.3);
@@ -35,7 +35,7 @@ const U=require("../www/unitlib.js"),V=require("../www/vitalslib.js"),C=require(
   ok("kardiyo: olağan dışı hız yazım hatası sayılır (koşu 40 km/sa), makul hız geçer",!!c("kos",30,20).err&&!c("kos",30,5).err&&!!c("yur",60,12).err&&!c("bis",60,30).err);
   ok("tempo: koşu dk/km, yüzme dk/100 m, bisiklet km/sa; mesafe yoksa yok",C.pace("kos",30,5)==="6:00 dk/km"&&C.pace("yuz",30,1.5)==="2:00 dk/100 m"&&C.pace("bis",60,25.5)==="25,5 km/sa"&&C.pace("kos",30,0)===null);
   ok("MET: mesafe yoksa tür değeri, hızla Algo.moveSummary ile aynı Compendium noktaları",C.met("kos",null)===8.3&&C.met("yur",null)===3.5&&Math.abs(C.met("kos",9.7)-9.8)<1e-9&&Math.abs(C.met("yur",4.8)-3.5)<1e-9&&C.met("eli",null)===5);
-  const A=require("../www/algo.js");
+  const A=require("../www/kernel/algo.js");
   ok("kcal: mevcut netKcal ile (MET-1)×kg×saat",A.netKcal(C.met("kos",10),80,30)===Math.round((C.met("kos",10)-1)*80*0.5));
   const e=(ck,day,v,km,kcal)=>({type:"spor",ck,day,v,km,kcal,text:"x"});
   const w=C.week([e("kos","2026-10-06",30,5,300),e("kos","2026-10-05",20,3,200),e("bis","2026-10-01",60,20,400),{type:"spor",day:"2026-10-06",v:40,text:"Ağırlık"}],"2026-10-02","2026-10-08");

@@ -81,7 +81,7 @@ Sıra önerisi: **0 → A → B → C → D → E**. A ve B hemen yapılabilir v
 
 ## Durum (2026-10-09)
 - **A tamam**: ana betik `www/main/` altında 7 dosya, CSS `www/app.css`, `index.html` ~120 satır.
-- **B tamam**: `www/kernel.js` eylem kaydı (`Act`) ve veri kaydı (`Data`); `data-act` dağıtıcısı 38 kayıtlı eylem.
+- **B tamam**: `www/kernel/kernel.js` eylem kaydı (`Act`) ve veri kaydı (`Data`); `data-act` dağıtıcısı 38 kayıtlı eylem.
 - **C tamam**: `www/modules/*.js` (11 veri modülü); gizlilik, CSV, geçmiş, Koç ve haftalık rapor modül API'sinden okur. Sınır testi `scripts/sinir.test.js` (ihlal tabanı boş; sahibi olmayan dosya `S.<alan>`'a dokunursa CI düşer). Kalan bilinçli istisna: `settings` (ayarlar çekirdeğin), `main/*` (çekirdek).
 - **D tamam (telefonda doğrulanacak)**: IndexedDB'de modül başına parça (`m:<modül>` + `m:meta`), tek işlemde yazım, yalnız değişen parça yazılır. Eski tek metin ilk oturumda yedek kalır, sonraki açılışta silinir (silinen veri yedekte kalmasın). localStorage aynası parçalı düzende yazılmaz.
-- **E kalan**: dosyaları `modules/` altına taşıma (ui/lib dosyaları), `entries` için ay bazlı alt parça, kullanılmayan globallerin silinmesi.
+- **E tamam**: ui/lib dosyaları `www/modules/<modül>/` altında, çekirdek `www/kernel/`; kayıtlar ay ay alt parça (`m:kayit/<ay>`). Kalan: yok (Play kararları yayın kararına bağlı).

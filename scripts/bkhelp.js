@@ -1,5 +1,5 @@
 // Testlerde geri yükleme yalnız parolalı yedeği kabul eder: #bk düz yedekse test parolasıyla şifrelenip goYukle çağrılır.
-const B=require("../www/backuplib.js"),PW="mavi-bulut-77";
+const B=require("../www/modules/veri/backuplib.js"),PW="mavi-bulut-77";
 module.exports=getW=>async()=>{
   const w=getW(),d=w.document,bk=d.querySelector("#bk");let r;
   try{r=JSON.parse(bk.value)}catch(e){return w.eval("goYukle()")}

@@ -11,7 +11,7 @@ const CsvLib=(()=>{
   /* h.exName(id): egzersiz adı, h.vctx(r): ölçüm bağlamı (açlık, sabah...). */
   function files(S,h){
     const day=x=>x.day,time=x=>x.time||"",st=S.settings||{},wu=st.wUnit==="lb"?"lb":"kg",gu=st.gUnit==="mmol"?"mmol":"mgdl",
-      conv=typeof Units!=="undefined"?Units:require("./unitlib.js");
+      conv=typeof Units!=="undefined"?Units:require("../../kernel/unitlib.js");
     const ctx={S,by,day,time,conv,wu,gu,h,iso};
     return Data.csv.slice().sort((x,y)=>x[4]-y[4]).map(([key,label,head,rows])=>[key,label,head(ctx),rows(ctx)]).map(([key,label,head,rows])=>({key,label,n:rows.length,build:()=>csv(head,rows)}));
   }
@@ -19,5 +19,5 @@ const CsvLib=(()=>{
 })();
 if(typeof module!=="undefined"){
   module.exports=CsvLib;
-  if(typeof Data==="undefined"){globalThis.Data=require("./kernel.js").Data;for(const m of ["kayit","salon","tansiyon","besin","aliskanlik","ilac","nabiz","olcu"])require("./modules/"+m+".js")} // Node testleri: veri modülleri CSV satırlarını kendileri ekler
+  if(typeof Data==="undefined"){globalThis.Data=require("../../kernel/kernel.js").Data;for(const m of ["kayit","salon","tansiyon","besin","aliskanlik","ilac","nabiz","olcu"])require("../"+m+"/index.js")} // Node testleri: veri modülleri CSV satırlarını kendileri ekler
 }

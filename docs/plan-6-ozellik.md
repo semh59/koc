@@ -84,10 +84,10 @@ Sıra (bağımlılık ve risk): **4 → 1a → 5 → 3 → 2 → 1b (widget) →
 - Plaka envanteri sabit: [25,20,15,10,5,2.5,1.25] (ayar yok, gereksiz).
 
 ### Dosyalar
-- `www/algo.js`: `plates(total,bar,inv)` → `{side:[...],made}` açgözlü; `warmup(target,bar)` → `[{kg,reps}]`. `nextTarget` zaten `lo/hi` alıyor, değişmez.
-- `www/gym.js`: `gSuggest` `S.exCfg[exId]` okur; "done" dalında rekor kontrolü (`gPRs` mantığından tek egzersizlik yardımcı `gIsPR(w,exId)` çıkarılır, `gPRs` onu kullanır); menüye "Plaka ve ısınma", "Tekrar aralığı".
+- `www/kernel/algo.js`: `plates(total,bar,inv)` → `{side:[...],made}` açgözlü; `warmup(target,bar)` → `[{kg,reps}]`. `nextTarget` zaten `lo/hi` alıyor, değişmez.
+- `www/modules/salon/gym.js`: `gSuggest` `S.exCfg[exId]` okur; "done" dalında rekor kontrolü (`gPRs` mantığından tek egzersizlik yardımcı `gIsPR(w,exId)` çıkarılır, `gPRs` onu kullanır); menüye "Plaka ve ısınma", "Tekrar aralığı".
 - `gLive`'daki "Önceki" sütunu `prev.sets[si]` ile sıra eşler; ısınma setleri başa eklenince kayar. Önceki değer yalnız çalışma setleri sırasıyla eşlenmeli (ısınma satırında "ısınma" etiketi).
-- `www/exui.js` (alt sayfa HTML'i burada daha uygun, gym.js zaten 376 satır).
+- `www/modules/salon/exui.js` (alt sayfa HTML'i burada daha uygun, gym.js zaten 376 satır).
 - Plaka sayfası gösterimi: `pr` alanı **figür çizim aksesuarı**dır (build_exlib.py, `"pr":"bar@sh"` halter çizer). Halter göstergesi olarak `e.pr` "bar" ile başlıyorsa sayfa doğrudan "halter" modunda açılır, diğer k="w" egzersizlerde de menüden açılabilir. VARSAYIM: 54 "bar" kaydının hepsi gerçek halter; değilse yalnız varsayılan mod etkilenir, hesap bozulmaz.
 
 ### Testler
@@ -112,7 +112,7 @@ Sıra (bağımlılık ve risk): **4 → 1a → 5 → 3 → 2 → 1b (widget) →
 
 ### Veri modeli
 - Ortak sabit `NUTR=["p","c","f"]` (5. işte genişler) ve `copyNutr(src,dst)`; `repeatYesterday`, son yenilenler, favori, şablon hepsi bunu kullanır.
-- `S.favFoods=[{text,v,p?,c?,f?}]` (≤20), `S.mealTpl=[{id,n,items:[{text,v,…NUTR}]}]` (≤20 şablon, ≤15 kalem). Temizleyici yeni saf `www/loglib.js` (`cleanFav`, `cleanTpl`, `recents(entries,today)`), `cleanHealthState`'e eklenir. Şablon kimliği yerel sayaç değil `Math.max(0,...ids)+1`.
+- `S.favFoods=[{text,v,p?,c?,f?}]` (≤20), `S.mealTpl=[{id,n,items:[{text,v,…NUTR}]}]` (≤20 şablon, ≤15 kalem). Temizleyici yeni saf `www/modules/kayit/loglib.js` (`cleanFav`, `cleanTpl`, `recents(entries,today)`), `cleanHealthState`'e eklenir. Şablon kimliği yerel sayaç değil `Math.max(0,...ids)+1`.
 - Elle adım: `{type:"adim",text:"elle",v}` ayrı kayıt. `cleanEntries` text'i zaten korur, **değişiklik gerekmez**. `setSteps` arama koşulu `x.type==="adim"&&x.day===day&&x.text!=="elle"` olur. Sonuç: tüm `sum("adim")` kullanıcıları elle ekleneni kendiliğinden toplar.
 - **Gösterilen bugünkü adım:** `stepCard()` ve `viewAdim` halkası bellekteki sensör değeri `stepToday`'i okur, `sum("adim")`'ı değil. Bu yüzden ikisi de `stepToday + bugünün elle toplamı` gösterecek (tek yardımcı `stepsShown()`); aksi halde elle ekleme Trend/rapor/Koç'ta görünür ama Bugün kartında görünmez. Widget'ın yerelde tazelenen adımı elle eklenenleri içermez (kabul, uygulama açılınca düzelir).
 - **Kural (ZOR NOKTALAR'da tekrar):** günün otomatik adımı için **tek** `adim` kaydı olur; ikinci otomatik kaynak ayrı kayıt olarak yazılmaz (her yerde toplanıp çift sayılır).
@@ -120,7 +120,7 @@ Sıra (bağımlılık ve risk): **4 → 1a → 5 → 3 → 2 → 1b (widget) →
 - Java: `StepStore.apply` `closeFirst` true iken `snapAt=System.currentTimeMillis()` yazar; `StepCounterPlugin.read` `snapAt` döndürür (yoksa 0, yeni kurulumda uyarı çıkmaz: 0 ise yalnız (b) koşulu).
 
 ### Dosyalar
-- Yeni: `www/loglib.js`, `scripts/log.test.js`.
+- Yeni: `www/modules/kayit/loglib.js`, `scripts/log.test.js`.
 - `www/index.html`: `repeatYesterday`, `sheetYemek` (son yenilenler/favori/şablon bölümleri; eski "Sık yediklerin" çipleri ve `favList`/`data-fav` kaldırılır (önce `app.test.js`'te bunlara bakan test var mı grep'le), yerine `data-rc`/`data-fv`/`data-tp`), `setSteps`, `viewAdim` (elle ekleme düğmesi + liste), `viewBugun` (uyarı kartı), `DEF`, `cleanSettings`, `cleanHealthState`, script sırası.
 - `assets/android/StepStore.java`, `StepCounterPlugin.java` (+3 satır).
 - `package.json` test listesine `log.test.js`.
@@ -159,7 +159,7 @@ Vitamin/mineral (mikro besin) **kapsam dışı**: OFF'ta Türk ürünlerinde ner
 - FOODS'a değer eklemek bu işte **yok** (veri işi; isteğe bağlı sonraki iş, USDA SR Legacy'den).
 
 ### Dosyalar
-`www/offlib.js`, `www/labellib.js` (ROWS'a fb/sg/na; "doymuş" gibi SKIPF mantığı şeker için gerekmez), `www/ocrui.js` (etiket sonucunu kaydederken yeni alanlar), `www/index.html` (cleanEntries, cleanMyFoods, porsiyon, Bugün satırı), `www/coachlib.js` değişmez (bağlama eklenmez; bağlam boyutu korunur).
+`www/modules/besin/offlib.js`, `www/modules/besin/labellib.js` (ROWS'a fb/sg/na; "doymuş" gibi SKIPF mantığı şeker için gerekmez), `www/modules/besin/ocrui.js` (etiket sonucunu kaydederken yeni alanlar), `www/index.html` (cleanEntries, cleanMyFoods, porsiyon, Bugün satırı), `www/modules/koc/coachlib.js` değişmez (bağlama eklenmez; bağlam boyutu korunur).
 
 ### Testler
 - `off.test.js`: tuzdan sodyum hesaplanır; sodyum varsa tuz yok sayılır; şeker > karbonhidrat ise şeker atılır, ürün "ok" kalır; lif yokken önceki tüm testler aynen geçer.
@@ -184,12 +184,12 @@ Vitamin/mineral (mikro besin) **kapsam dışı**: OFF'ta Türk ürünlerinde ner
 
 ### Veri modeli
 - `S.fast={plan:16,t0:null|ms,log:[{t0,t1}]}` (log ≤200, t1>t0, süre ≤72 sa). `S.sleep=[{day,min,q?,src?}]` (min 60-1080, q 1-5, src yalnız "hc"; ≤400). `S.mood=[{day,v,t?}]` (v 1-5, ≤400). Hepsi `cleanHealthState`'e, `DEF`'e boş varsayılan.
-- Yeni saf `www/habitlib.js`: `cleanFast`, `cleanSleep`, `cleanMood`, `sleepMin(bed,wake)`, `fastState(fast,now)` → `{elapsed,left,done}`.
+- Yeni saf `www/modules/aliskanlik/habitlib.js`: `cleanFast`, `cleanSleep`, `cleanMood`, `sleepMin(bed,wake)`, `fastState(fast,now)` → `{elapsed,left,done}`.
 - Hatırlatıcı: `DEF.settings.reminders`'a `{id:11,t:"20:00",on:false,name:"Oruç başlangıcı",…}`. `cleanSettings` DEF'teki kimliklerle eşleştirdiği için eski veride kendiliğinden kapalı görünür.
 - Oruç bitiş bildirimi kimliği **9100**, `scheduleReminders` içinde `S.fast.t0` varsa durumdan yeniden kurulur (ayrı yerde kurulmaz, aşağıya bkz.). Başlat/Bitir sonrası `scheduleReminders().then(setNotif)`.
 
 ### Dosyalar
-Yeni: `www/habitlib.js`, `www/habitui.js` (oruç kartı, uyku/ruh hali sayfaları, olaylar `data-hb`), `scripts/habit.test.js`. Değişen: `www/index.html` (DEF, cleanHealthState, viewBugun'a kart, scheduleReminders'a 9100, script sırası), `www/coach.js` (`cData` satırına uyku/ruh), `www/coachlib.js` (`contextText` sütun başlığı koşullu), `package.json`.
+Yeni: `www/modules/aliskanlik/habitlib.js`, `www/modules/aliskanlik/habitui.js` (oruç kartı, uyku/ruh hali sayfaları, olaylar `data-hb`), `scripts/habit.test.js`. Değişen: `www/index.html` (DEF, cleanHealthState, viewBugun'a kart, scheduleReminders'a 9100, script sırası), `www/modules/koc/coach.js` (`cData` satırına uyku/ruh), `www/modules/koc/coachlib.js` (`contextText` sütun başlığı koşullu), `package.json`.
 
 ### Testler
 - `habit.test.js`: 23:30→07:00 = 450 dk; aynı saat girdisi reddedilir; `fastState` 16:8'de 10 sa sonra left=6 sa, 17 sa sonra done; temizleyici gün başına son kaydı tutar, aralık dışını atar.
@@ -224,7 +224,7 @@ Yeni: `www/habitlib.js`, `www/habitui.js` (oruç kartı, uyku/ruh hali sayfalar�
 - Program JSON'u kartta tutulur, `m.text`'e yazılmaz (geçmiş son 10 mesajı yeniden gönderir; bağlam şişmez).
 
 ### Dosyalar
-Yeni: `www/insightlib.js` (`weekWhy(data)`, `plateau(weights,today)`, `noiseSd(weights)`), `scripts/insight.test.js`. Değişen: `www/coach.js` (çip, `cWhy()`, `cPlateauCheck()` ayrı çağrı (açılışta ve `visibilitychange`'te; yerel çalışır, AI çağrısı yapmaz), `cProgram(opts)`, kart çizimi ve tıklamalar), `www/coachlib.js` (parse, cleanProgram, SYSTEM'e program kuralı tek satır), `www/gym.js` (Salon düğmesi), `www/index.html` (Trend düğmesi, DEF, cleanSettings, bildirim dokunma dinleyicisi, script sırası), `package.json`.
+Yeni: `www/modules/koc/insightlib.js` (`weekWhy(data)`, `plateau(weights,today)`, `noiseSd(weights)`), `scripts/insight.test.js`. Değişen: `www/modules/koc/coach.js` (çip, `cWhy()`, `cPlateauCheck()` ayrı çağrı (açılışta ve `visibilitychange`'te; yerel çalışır, AI çağrısı yapmaz), `cProgram(opts)`, kart çizimi ve tıklamalar), `www/modules/koc/coachlib.js` (parse, cleanProgram, SYSTEM'e program kuralı tek satır), `www/modules/salon/gym.js` (Salon düğmesi), `www/index.html` (Trend düğmesi, DEF, cleanSettings, bildirim dokunma dinleyicisi, script sırası), `package.json`.
 
 ### Bağlam boyutu (program)
 - Katalog yalnız program isteğinde, `extraSys` olarak: seçilen ekipmana uyan, `k==="w"||k==="b"` egzersizlerden bölge başına en fazla 4 (önce eski 16 klasik + seviye uyumlu), toplam ≤60 satır, satır `id|ad|bölge` (~25 karakter → ~1,5 KB).
@@ -306,7 +306,7 @@ Doğrulanacaklar (developer.android.com "Health Connect get started" ve npm'den;
 - Yeni saf `www/hclib.js`: `mergeSteps(entry,{ph,hc},src)`, `sleepFromSessions(list)`, `cleanHr`.
 
 ### Dosyalar
-Yeni: `assets/android/HealthPlugin.java` (ya da keşif kararına göre .kt), `www/hclib.js`, `www/hcui.js`, `scripts/hc.test.js`. Değişen: `scripts/patch-android.js` (izinler, queries, intent filtreleri/activity-alias, bağımlılık, gerekirse minSdk/compileSdk/Kotlin, kopya listesi, `registerPlugin`), `www/index.html` (`setSteps`, `cleanEntries` ph/hc, NW-DIAG'a `Health`), `.github/workflows/apk.yml` (Kotlin gerekirse derleme adımı değişmez; saf Java mantığı yoksa javac satırı aynı), `scripts/smoke.sh` (eklenti döngüsüne `Health`; emülatörde HC yok → yalnız eklentinin yüklendiği ve "kullanılamaz" durumunun hatasız döndüğü).
+Yeni: `assets/android/HealthPlugin.java` (ya da keşif kararına göre .kt), `www/hclib.js`, `www/modules/nabiz/hcui.js`, `scripts/hc.test.js`. Değişen: `scripts/patch-android.js` (izinler, queries, intent filtreleri/activity-alias, bağımlılık, gerekirse minSdk/compileSdk/Kotlin, kopya listesi, `registerPlugin`), `www/index.html` (`setSteps`, `cleanEntries` ph/hc, NW-DIAG'a `Health`), `.github/workflows/apk.yml` (Kotlin gerekirse derleme adımı değişmez; saf Java mantığı yoksa javac satırı aynı), `scripts/smoke.sh` (eklenti döngüsüne `Health`; emülatörde HC yok → yalnız eklentinin yüklendiği ve "kullanılamaz" durumunun hatasız döndüğü).
 
 ### Testler
 - `hc.test.js`: auto → max; phone → ph; hc → hc; ph yok eski kayıt → v korunur; gece yarısını aşan uyku oturumu kalkış gününe; aynı gün iki oturum toplanır, uyanık evreler düşülür.

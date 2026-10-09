@@ -1,4 +1,4 @@
-const W=require("../www/weeklylib.js");let bad=0;
+const W=require("../www/modules/analiz/weeklylib.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const settings=(o)=>({kcal:2000,waterMl:2500,sportWeek:150,stepGoal:8000,bpOn:false,bsOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,...o});
 const E=(type,day,v)=>({type,day,v,text:"",id:1,time:"08:00"});

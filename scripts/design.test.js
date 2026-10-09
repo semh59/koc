@@ -3,7 +3,7 @@ const fs=require("fs"),path=require("path");
 const www=path.join(__dirname,"..","www");
 const html=require("./html").full();
 const css=fs.readFileSync(path.join(www,"app.css"),"utf8");
-const src=Object.fromEntries(["index.html",...fs.readdirSync(www).filter(f=>f.endsWith(".js"))].map(f=>[f,fs.readFileSync(path.join(www,f),"utf8")]));src["index.html"]=html;
+const src=Object.fromEntries(["index.html",...require("./html").listJs()].map(f=>[f,fs.readFileSync(path.join(www,f),"utf8")]));src["index.html"]=html;
 const all=Object.values(src).join("\n");
 let bad=0;const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const block=re=>Object.fromEntries([...(html.match(re)||[,""])[1].matchAll(/--([\w-]+):\s*([^;]+);/g)].map(m=>[m[1],m[2].trim()]));

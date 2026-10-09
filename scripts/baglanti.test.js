@@ -1,4 +1,4 @@
-const B=require("../www/baglantilib.js");let bad=0;
+const B=require("../www/modules/analiz/baglantilib.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const T="2026-10-06",key=o=>new Date(Date.UTC(2026,9,6+o)).toISOString().slice(0,10);
 const offs=n=>Array.from({length:n},(_,i)=>-i-1);

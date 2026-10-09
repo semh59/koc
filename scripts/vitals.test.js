@@ -1,4 +1,4 @@
-const V=require("../www/vitalslib.js");let bad=0;
+const V=require("../www/modules/tansiyon/vitalslib.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const T=(o)=>({k:"t",day:"2026-09-10",time:"08:00",sys:120,dia:80,ses:"sabah",...o});
 const G=(o)=>({k:"s",day:"2026-09-10",time:"08:00",g:95,ctx:"acl",...o});
@@ -95,7 +95,7 @@ const n0=drawn.length;V.drawPage(ctx,[],{...info,chart:null,page:2,total:2});con
 ok("boş sayfa ve grafiksiz çizim çökmez, yalnız tablo başlığı ve sayfa altlığı çizilir",d2.includes("Tarih")&&d2.includes("NeoWell · sayfa 2/2")&&!d2.includes(info.title),d2);
 
 // yasak kelimeler (tanı/yorum dili) hiçbir metinde geçmez
-const src=require("fs").readFileSync(require("path").join(__dirname,"../www/vitalslib.js"),"utf8")+drawn.join(" ");
+const src=require("fs").readFileSync(require("path").join(__dirname,"../www/modules/tansiyon/vitalslib.js"),"utf8")+drawn.join(" ");
 ok("tanı dili kullanılmaz",!/hipertansiyon|diyabet|hipoglisemi|hiperglisemi|anormal|tehlikeli|hasta(lık)?\b/i.test(src.replace(/\/\*[\s\S]*?\*\//g,"")),src.match(/hipertansiyon|diyabet|hipoglisemi|anormal|tehlikeli/i));
 ok("tarih: 2026-02-31 reddedilir",!!V.check(T({day:"2026-02-31"})).err&&!!V.check(G({day:"2026-04-31"})).err&&!!V.check(G({day:"2026-02-28"})).row);
 {const big=Array.from({length:5100},(_,i)=>G({g:100,day:"2026-01-01",time:"08:00",not:"n"+i})),c=V.clean(big);

@@ -1,4 +1,4 @@
-const {FOODS,foodSearch}=require("../www/foods.js");let bad=0;
+const {FOODS,foodSearch}=require("../www/modules/besin/foods.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const off=FOODS.filter(f=>{const a=4*f.p+4*f.c+9*f.f;return Math.abs(f.k-a)>Math.max(15,0.25*Math.max(f.k,a))}).map(f=>`${f.n}: ${f.k} ≠ ${Math.round(4*f.p+4*f.c+9*f.f)}`);
 ok("kalori, makrolarla tutarlı (Atwater ±%25)",off.length===0,off);
@@ -10,7 +10,7 @@ ok("USDA ile doğrulanmış besin sayısı",FOODS.filter(f=>f.s).length>=250,FOO
 ok("ton balığı protein değeri gerçekçi",FOODS.find(f=>f.n.startsWith("Ton")).p<22);
 ok("en az 500 besin",FOODS.length>=500,FOODS.length);
 ok("ilk 106 kayıt adı ve sırası değişmedi (kullanıcı kayıtları ada bağlı)",require("crypto").createHash("sha1").update(FOODS.slice(0,106).map(f=>f.n).join("|")).digest("hex")==="9bef746b28129de499d279621f64728db5d6a117");
-ok("www/foods.js tools/besin/uret.js çıktısıyla aynı",(()=>{try{require("child_process").execFileSync("node",["tools/besin/uret.js","--kontrol"],{stdio:"pipe"});return true}catch(e){return String(e.stderr)}})());
+ok("www/modules/besin/foods.js tools/besin/uret.js çıktısıyla aynı",(()=>{try{require("child_process").execFileSync("node",["tools/besin/uret.js","--kontrol"],{stdio:"pipe"});return true}catch(e){return String(e.stderr)}})());
 ok("ilk 513 kayıt adı ve sırası değişmedi (yedekler ve kullanıcı kayıtları ada bağlı)",require("crypto").createHash("sha1").update(FOODS.slice(0,513).map(f=>f.n).join("|")).digest("hex")==="326eb38e7b4b91bdb11135b61d7b3ff3813e4b0c");
 ok("ilk 743 kayıt adı ve sırası değişmedi (yeni vekil kayıtları yalnız sona eklenir)",require("crypto").createHash("sha1").update(FOODS.slice(0,743).map(f=>f.n).join("|")).digest("hex")==="1fd8080242daa3fce5dd1f3d5017e7c501bc2104");
 ok("ilk 767 kayıt adı ve sırası değişmedi (ikinci tur vekil kayıtları yalnız sona eklenir)",require("crypto").createHash("sha1").update(FOODS.slice(0,767).map(f=>f.n).join("|")).digest("hex")==="6d6c306cede41e26bbbea18581e928e481223958");

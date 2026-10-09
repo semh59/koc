@@ -1,6 +1,6 @@
 # Koç sağlayıcı ve model seçimi: analiz (2026-10-06)
 
-> **Tarihsel not (7 Ekim 2026):** "Bugünkü durum" 6 Ekim koduna aittir. Sonradan kurulum akışı yeniden yapıldı (Koçu bağla: anahtarı yapıştır, "Doğrula ve modelleri getir", "Test et ve kaydet"), varsayılan modeller güncellendi, OpenAI ve Anthropic Claude eklendi (6 hazır sağlayıcı). Güncel varsayılanlar `www/coach.js` `defProviders()` içindedir; aşağıdaki tablo ve "anahtar doğrulanmıyor" cümleleri artık geçerli değildir.
+> **Tarihsel not (7 Ekim 2026):** "Bugünkü durum" 6 Ekim koduna aittir. Sonradan kurulum akışı yeniden yapıldı (Koçu bağla: anahtarı yapıştır, "Doğrula ve modelleri getir", "Test et ve kaydet"), varsayılan modeller güncellendi, OpenAI ve Anthropic Claude eklendi (6 hazır sağlayıcı). Güncel varsayılanlar `www/modules/koc/coach.js` `defProviders()` içindedir; aşağıdaki tablo ve "anahtar doğrulanmıyor" cümleleri artık geçerli değildir.
 
 ## 1. Bugünkü durum (koddan)
 

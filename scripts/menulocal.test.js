@@ -1,5 +1,5 @@
 /* Anahtarsız yerel menü: kalori sapması, tekrar sınırı, şema (cleanMenu), kısıtlar, özellik testi. */
-const M=require("../www/menulocal.js"),C=require("../www/coachlib.js"),{FOODS}=require("../www/foods.js");let bad=0;
+const M=require("../www/modules/besin/menulocal.js"),C=require("../www/modules/koc/coachlib.js"),{FOODS}=require("../www/modules/besin/foods.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 let sd=7;const rng=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};
 const dayK=d=>d.meals.reduce((s,b)=>s+b.items.reduce((t,i)=>t+i.k,0),0),dayP=d=>d.meals.reduce((s,b)=>s+b.items.reduce((t,i)=>t+i.p,0),0);
