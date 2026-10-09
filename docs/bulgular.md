@@ -44,3 +44,26 @@ Bakılanlar: ağ çağrıları, Koç'a giden veri, onay metni ve politika eşle�
 | 3-4 | O | Koç bağlamı | Saatten otomatik gelen adım ve uyku, Koç'a giden "son 14 gün özeti"ne girer (elle girilenle aynı kategori, rıza metni "adım ve varsa uyku" diyor). Nabız girmez. | Bilgi. Avukat sorusuna eklenecek: otomatik gelen sağlık verisinin rızası ayrı mı olmalı. |
 | 3-5 | Karar | hukuk | Politika metni değişti (nabız, Health Connect). Yayına çıkılacaksa avukata yeniden gösterilmeli. Şu an yalnız kendi telefonun olduğundan bekliyor. | Karar (yayın kararına bağlı). |
 | 3-6 | Karar | Play | Health Connect kullanımı için Play Console'da Sağlık Bağlantısı beyanı gerekir (yayına çıkılırsa). | Karar (yayın kararına bağlı). |
+
+## Faz 4: Sağlık doğruluğu ve ürün güvenliği
+
+Bakılanlar: `algo.js` formüllerinin tamamı, risk işaretleri, kalori tabanları, protein, 1TM ve ilerleme, döngü tahmini, vurgusuz dil (yorum, eşik, etiket), kriz kutusu.
+
+| No | Ciddiyet | Yer | Bulgu | Durum |
+|---|---|---|---|---|
+| 4-1 | Bilgi | `algo.js` | Mifflin-St Jeor katsayıları, cinsiyet belirtilmeyende −78, uyarlanabilir harcama işareti (alım − eğim × 7700), %70-130 sınırı, kilo verme hızı (%0,5/hafta, en çok 0,75 kg), %25 açık sınırı, protein (BMI 30+ ayarlı ağırlık, üst 200 g), Epley 1TM, MET tabloları ve adım uzunluğu modeli kontrol edildi: hata yok. | Doğrulandı. |
+| 4-2 | Bilgi | `riskFlags` | 31 örnek cümleyle sınandı (hamilelik, emzirme, yeme bozukluğu, böbrek, olumsuz kalıplar "değilim", "yok", "emzirmiyorum"). Olumsuzlar doğru ayrışıyor. Hata yönü hep güvenli taraf: "eşim hamile" bile engel sayar. | Doğrulandı. |
+| 4-3 | Bilgi | tansiyon, şeker, tahlil, nabız, uyku | Yorum, eşik, etiket ve renk yok. Tek sabit eşik: bugün girilen tansiyon ≥180/120 ya da şeker <54 / >400 için "112'yi ara" penceresi. Bu bilinçli bir güvenlik kararı. | Doğrulandı. |
+| 4-4 | Bilgi | döngü | Takvim yöntemi (yumurtlama sonraki başlangıçtan 14 gün önce), düzensizde tarih verilmiyor, her ekranda "gebelik/korunma aracı değildir" notu var. | Doğrulandı. |
+| 4-5 | D | `ACT` çarpanları | Hareket düzeyi çarpanları 1,3 / 1,45 / 1,6: yaygın tablolardan (1,375 / 1,55 / 1,725) biraz düşük. Hedefler muhafazakâr çıkar; 28 gün veri olunca gerçek harcamadan öğrenilir. | Bilgi, değişiklik gerekmez. |
+
+## Faz 5: Android yerel katman
+
+Bakılanlar: 26 Java dosyasının tamamı en az bir kez satır satır okundu (bu inceleme ve önceki oturumlar): alarm, kilit, kasa, yedek klasörü, GPS, Health Connect, adım, hareket, widget, hızlı kayıt, OCR, ses.
+
+| No | Ciddiyet | Yer | Bulgu | Durum |
+|---|---|---|---|---|
+| 5-1 | O | `NeoWidget.setSteps` | Widget'ın kendi yenilemesi telefon sensörünü okuyup uygulamanın gönderdiği adımı eziyordu. Saat adımı (Health Connect) ve elle eklenen adım açıkken widget uygulamadan düşük gösterebilirdi; uygulama aynı sayıyı tekrar göndermediği için düzelmezdi. | Düzeltildi: bugünkü gönderilmiş değer ile sensör değerinin büyüğü alınır. Test: `android.test.js`. |
+| 5-2 | D | `BackupFolderPlugin.write` | Aynı günün eski otomatik yedeği, yeni dosya yeniden adlandırılmadan önce silinir. Yeniden adlandırma hata verirse o günün yedeği geçici adla kalır ve ertesi yazmada silinir. Kullanıcıya "otomatik yedek alınamadı" gösterilir. | Açık, çok düşük olasılık. |
+| 5-3 | Bilgi | derleme | Java yerelde derlenemiyor (SDK yok), derleme CI'da. Health Connect çağrıları belgelere göre yazıldı ve CI'da derlendi. | Bilgi. |
+| 5-4 | Bilgi | izinler | Hareket algılama yalnız fiziksel aktivite iznini ister; konum yalnız elle yürüyüşte, ön planda. Arka plan konumu yok. | Doğrulandı. |
