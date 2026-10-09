@@ -24,7 +24,7 @@ const scaleText=(page,k)=>page.evaluate(k=>{
 
 test("alarmOpen ile açılan alarm ekranı: vadesi gelen dozlar, Aldım kaydeder ve tekrarları yeniden kurar",async({app,page})=>{
   await page.addInitScript(plugins);
-  await app.open({seed:state({medOn:true},MEDS),native:{}});
+  await app.open({seed:state({medOn:true,medShowName:true},MEDS),native:{}});
   await page.evaluate("alarmOpen()");
   const al=page.getByRole("alertdialog",{name:"İlaç zamanı"});
   await expect(al).toBeVisible();
@@ -56,7 +56,7 @@ test("ad gizliyse alarm ekranında ilaç adı ve doz yok",async({app,page})=>{
 
 for(const k of [1,2])test(`alarm ekranı yazı %${k*100}: taşma yok, dokunma hedefleri ≥ 56 px`,async({app,page},ti)=>{
   await page.addInitScript(plugins);
-  await app.open({seed:state({medOn:true},MEDS),native:{}});
+  await app.open({seed:state({medOn:true,medShowName:true},MEDS),native:{}});
   await page.evaluate("alarmOpen()");
   await expect(page.locator("#alarm")).toBeVisible();
   if(k>1){await scaleText(page,k);await page.waitForTimeout(100)}
@@ -75,7 +75,7 @@ test("alarm ekranı yatay ve koyu temada: taşma yok, düğmeler erişilebilir, 
   await page.addInitScript(plugins);
   await page.emulateMedia({colorScheme:"dark"});
   await page.setViewportSize({width:ti.project.use.viewport.height,height:ti.project.use.viewport.width});
-  await app.open({seed:state({medOn:true},MEDS),native:{}});
+  await app.open({seed:state({medOn:true,medShowName:true},MEDS),native:{}});
   await page.evaluate("alarmOpen()");
   await expect(page.locator("#alarm")).toBeVisible();
   expect(await offscreen(page,"#alarm")).toEqual([]);
