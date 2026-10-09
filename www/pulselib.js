@@ -47,10 +47,12 @@ const PulseLib=(()=>{
     if(!Array.isArray(samples)||samples.length<60)return {ok:false,reason:"short"};
     const t0=samples[0].t,use=samples.filter(s=>s.t-t0>=SKIP_MS);
     if(use.length<60||use[use.length-1].t-use[0].t<MIN_MS-SKIP_MS)return {ok:false,reason:"short"};
-    if(!finger(mean(use.map(s=>s.r)),mean(use.map(s=>s.g))))return {ok:false,reason:"finger"};
+    const mr=mean(use.map(s=>s.r)),mg=mean(use.map(s=>s.g)),dg={fps:Math.round(use.length/((use[use.length-1].t-use[0].t)/1000)),r:Math.round(mr),g:Math.round(mg)};
+    const fail=(reason,more)=>({ok:false,reason,dg:{...dg,...more}});
+    if(!finger(mr,mg))return fail("finger");
     const x=band(resample(use)),n=x.length;
-    const sd=Math.sqrt(mean(x.map(v=>v*v)));
-    if(!(sd>0.05))return {ok:false,reason:"flat"};
+    const sd=Math.sqrt(mean(x.map(v=>v*v)));dg.sd=+sd.toFixed(2);
+    if(!(sd>0.05))return fail("flat");
     const minD=Math.floor(HZ*60/LIM[1]),cand=[];
     for(let i=3;i<n-3;i++){let top=true;for(let k=1;k<=3;k++)if(x[i]<=x[i-k]||x[i]<x[i+k]){top=false;break}if(top&&x[i]>0)cand.push(i)}
     cand.sort((a,b)=>x[b]-x[a]);
@@ -60,15 +62,18 @@ const PulseLib=(()=>{
     const pos=pk.map(i=>{const d=x[i-1]-2*x[i]+x[i+1];return i+(d?0.5*(x[i-1]-x[i+1])/d:0)});
     const ibi=[];for(let i=1;i<pos.length;i++)ibi.push((pos[i]-pos[i-1])/HZ);
     const ok0=ibi.filter(v=>v>=60/LIM[1]&&v<=60/LIM[0]);
-    if(ok0.length<10)return {ok:false,reason:"noisy"};
+    dg.pk=pk.length;dg.ibi=ok0.length;
+    if(ok0.length<10)return fail("noisy");
     const m=med(ok0),kept=ok0.filter(v=>Math.abs(v-m)<=0.25*m);
-    if(kept.length<10||kept.length<0.6*ibi.length)return {ok:false,reason:"noisy"};
+    if(kept.length<10||kept.length<0.6*ibi.length)return fail("noisy");
     const sdI=Math.sqrt(mean(kept.map(v=>(v-mean(kept))**2)));
-    if(sdI/mean(kept)>0.15)return {ok:false,reason:"noisy"};
+    dg.cv=+(sdI/mean(kept)).toFixed(2);
+    if(sdI/mean(kept)>0.15)return fail("noisy");
     const bpm=60/mean(kept),ac=autocorr(x);
-    if(!ac||ac.power<0.3||Math.abs(ac.bpm-bpm)/bpm>0.12)return {ok:false,reason:"noisy"};
+    if(ac)dg.ac=+ac.power.toFixed(2);
+    if(!ac||ac.power<0.3||Math.abs(ac.bpm-bpm)/bpm>0.12)return fail("noisy");
     const r=Math.round(bpm);
-    return r>=LIM[0]&&r<=LIM[1]?{ok:true,bpm:r,n:kept.length+1}:{ok:false,reason:"noisy"};
+    return r>=LIM[0]&&r<=LIM[1]?{ok:true,bpm:r,n:kept.length+1}:fail("noisy");
   }
 
   /* Kamera ölçümleri: {day,time,bpm}; geçersizi atar, tarih sırasına koyar, en son 500'ü tutar, kimlik verir. */
