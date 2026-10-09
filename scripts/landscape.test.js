@@ -1,5 +1,5 @@
 const fs=require("fs");
-const html=fs.readFileSync(__dirname+"/../www/index.html","utf8");
+const html=require("./html").full();
 let bad=0;const ok=(n,c)=>{console.log((c?"PASS ":"FAIL ")+n);if(!c)bad++};
 const m=html.match(/@media \(orientation:landscape\) and \(max-height:500px\)\{([\s\S]*?)\n\}/),c=m?m[1]:"";
 const px=re=>{const r=c.match(re);return r?+r[1]:NaN};

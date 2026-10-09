@@ -2,9 +2,9 @@
 const {JSDOM}=require("jsdom"),fs=require("fs"),path=require("path");
 const www=f=>path.join(__dirname,"../www",f);
 let bad=0;const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
-const index=fs.readFileSync(www("index.html"),"utf8");
+const index=require("./html").full();
 const files=[...index.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m=>m[1]).filter(f=>!f.startsWith("vendor/"));
-const src=(files.map(f=>fs.readFileSync(www(f),"utf8")).join("\n")+"\n"+[...index.matchAll(/<script(?: type="text\/x-main" id="mainjs")?>([\s\S]*?)<\/script>/g)].map(m=>m[1]).join("\n"))
+const src=(files.map(f=>fs.readFileSync(www(f),"utf8")).join("\n")+"\n"+fs.readdirSync(www("main")).sort().map(f=>fs.readFileSync(www("main/"+f),"utf8")).join("")+"\n"+[...index.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]).filter(t=>!t.includes("Store.init()")).join("\n"))
   .replace(/(^|[\s;{}),])\/\*[\s\S]*?\*\//g,"$1").replace(/(^|[\s;{}])\/\/[^\n]*/g,"$1"); // yorumdaki adlar çağrı sayılmasın
 
 // ---- statik: çağrı grafiği ----
@@ -33,7 +33,7 @@ const state={settings:{consent:true,consentV:2,consentAt:key(0),consentP:"gemini
   providers:[{id:"groq",name:"Groq",base:"https://api.groq.com/openai/v1",model:"llama-3.1-8b-instant",on:true,health:true,confirm:false}],
   entries:[1,2,3,4,5,8,9,10].map((d,i)=>({id:i+1,day:key(d),time:"09:00",type:"su",v:500,text:""})),nextId:9,
   chat:[{id:1,role:"user",text:"merhaba",t:Date.now()-6e4,pend:true}],cid:2};
-const html=index.replace(/<script src="([^"]+)"><\/script>/g,(_,f)=>"<script>"+fs.readFileSync(www(f),"utf8")+"</script>");
+const html=require("./html").inline(index);
 const calls=[];
 const dom=new JSDOM(html,{runScripts:"dangerously",pretendToBeVisual:true,url:"https://localhost/",beforeParse(w){
   Object.assign(w,{structuredClone,TextEncoder,TextDecoder,__noSelfTest:true});Object.defineProperty(w,"crypto",{value:require("node:crypto").webcrypto});

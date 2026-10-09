@@ -49,7 +49,7 @@ const U=require("../www/unitlib.js"),V=require("../www/vitalslib.js"),C=require(
   ok("sıra tarih ve eklenme zamanına göre; fark gün ve kg",l.map(p=>p.t).join()==="9,1,2"&&P.gap({day:"2026-09-01",kg:90},{day:"2026-10-01",kg:87.5}).days===30&&P.gap({day:"2026-09-01",kg:90},{day:"2026-10-01",kg:87.5}).kg===-2.5&&P.gap({day:"2026-09-01"},{day:"2026-10-01",kg:1}).kg===null);
 }
 { // arayüz (jsdom)
-  const html=fs.readFileSync(www("index.html"),"utf8").replace(/<script src="([^"]+)"><\/script>/g,(_,f)=>"<script>"+fs.readFileSync(www(f),"utf8")+"</script>");
+  const html=require("./html").build();
   const dom=new JSDOM(html,{runScripts:"dangerously",pretendToBeVisual:true,url:"https://localhost/",beforeParse(w){Object.assign(w,{structuredClone,TextEncoder,TextDecoder,__noSelfTest:true});w.confirm=()=>true;w.scrollTo=()=>{};w.ResizeObserver=class{observe(){}disconnect(){}}}});
   setTimeout(()=>{
     const w=dom.window,ev=s=>w.eval(s);

@@ -1,9 +1,9 @@
 // Tasarım sistemi kuralları (docs/tasarim-dili.md): tip ölçeği, yarıçap, onay penceresi, başlık sırası, koyu tema, satır içi stil.
 const fs=require("fs"),path=require("path");
 const www=path.join(__dirname,"..","www");
-const html=fs.readFileSync(path.join(www,"index.html"),"utf8");
+const html=require("./html").full();
 const css=html.match(/<style>([\s\S]*?)<\/style>/)[1];
-const src=Object.fromEntries(["index.html",...fs.readdirSync(www).filter(f=>f.endsWith(".js"))].map(f=>[f,fs.readFileSync(path.join(www,f),"utf8")]));
+const src=Object.fromEntries(["index.html",...fs.readdirSync(www).filter(f=>f.endsWith(".js"))].map(f=>[f,fs.readFileSync(path.join(www,f),"utf8")]));src["index.html"]=html;
 const all=Object.values(src).join("\n");
 let bad=0;const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const block=re=>Object.fromEntries([...(html.match(re)||[,""])[1].matchAll(/--([\w-]+):\s*([^;]+);/g)].map(m=>[m[1],m[2].trim()]));

@@ -27,7 +27,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL beklenmeyen hata",e);proce
 
 // jsdom: alarmOpen() ile açılış, işaretleme, gizlilik, erteleme
 const www=f=>path.join(__dirname,"../www",f),p2=n=>String(n).padStart(2,"0"),hm=d=>p2(d.getHours())+":"+p2(d.getMinutes());
-const html=fs.readFileSync(www("index.html"),"utf8").replace(/<script src="([^"]+)"><\/script>/g,(_,f)=>"<script>"+fs.readFileSync(www(f),"utf8")+"</script>");
+const html=require("./html").build();
 const now=new Date(),slot=hm(new Date(now-600000)),later=hm(new Date(+now+7200000));
 const seed={settings:{obDone:true,heightCm:178,age:35,sex:"m",goalKg:78,kcal:2200,stepsAsked:true,medOn:true},entries:[],meds:[{id:1,n:"Aspirin",d:"100 mg",t:[slot],on:true},{id:2,n:"Gece",t:[later],on:true}]};
 const calls=[],errs=[];
