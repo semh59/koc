@@ -137,6 +137,9 @@ function cleanChat(arr,known){
 }
 /* Düğmeyle istenen menü, program ve yorum isteği başarısız olursa kullanıcı mesajı yanıtsız kalmaz: geri alınır, bekleyen sohbet gibi yeniden gönderilmez. */
 const cDrop=m=>{S.chat=S.chat.filter(x=>x!==m)};
+/* Koç'a saatten (Health Connect) otomatik gelen adım ve uyku gitmez: rıza metni yalnız senin girdiğin ve telefonun sensörüyle sayılan adımı ve varsa uykuyu söyler. */
+const cStep=e=>e.hc>0?(e.ph||0):(e.v||0);
+const cSleep=k=>{const x=S.sleep.find(y=>y.day===k);return x&&x.src!=="hc"?x.min:undefined};
 function cPush(m){const o=Object.assign({id:S.cid++,t:Date.now()},m);S.chat.push(o);if(S.chat.length>150)S.chat.splice(0,S.chat.length-150);return o}
 
 /* ---- bağlam ---- */
@@ -161,7 +164,7 @@ function cData(){
   const st=S.settings,w=weights(),d=[];
   for(let i=13;i>=0;i--){
     const k=keyOff(-i),ents=S.entries.filter(e=>e.day===k);
-    d.push({d:k.slice(5),kg:w[k],kcal:Math.round(ents.filter(e=>e.type==="yemek").reduce((s,e)=>s+(e.v||0),0)),p:Math.round(ents.filter(e=>e.type==="yemek").reduce((s,e)=>s+(e.p||0),0)),su:Math.round(ents.filter(WeeklyLib.isWater).reduce((s,e)=>s+e.v,0)),sport:Math.round(ents.filter(e=>e.type==="spor").reduce((s,e)=>s+e.v,0)),ad:Math.round(ents.filter(e=>e.type==="adim").reduce((s,e)=>s+e.v,0)),sl:(S.sleep.find(x=>x.day===k)||{}).min,mo:(S.mood.find(x=>x.day===k)||{}).v});
+    d.push({d:k.slice(5),kg:w[k],kcal:Math.round(ents.filter(e=>e.type==="yemek").reduce((s,e)=>s+(e.v||0),0)),p:Math.round(ents.filter(e=>e.type==="yemek").reduce((s,e)=>s+(e.p||0),0)),su:Math.round(ents.filter(WeeklyLib.isWater).reduce((s,e)=>s+e.v,0)),sport:Math.round(ents.filter(e=>e.type==="spor").reduce((s,e)=>s+e.v,0)),ad:Math.round(ents.filter(e=>e.type==="adim").reduce((s,e)=>s+cStep(e),0)),sl:cSleep(k),mo:(S.mood.find(x=>x.day===k)||{}).v});
   }
   const t=dayKey(),now=new Date();
   /* Bağlam boyutu için üst sınırlar (en kötü durum menu.test.js'te ölçülür): yemek 12 satır/ad 40, spor 5, not 3, su tek toplam. */
@@ -432,7 +435,7 @@ function lossAsk(){
 function cWhy(){
   if(!lossAsk())return;
   const days=[];
-  for(let i=21;i>=0;i--){const k=keyOff(-i);days.push({kcal:sum("yemek",k,k),su:sum("su",k,k),ad:sum("adim",k,k),sl:(S.sleep.find(x=>x.day===k)||{}).min})}
+  for(let i=21;i>=0;i--){const k=keyOff(-i);days.push({kcal:sum("yemek",k,k),su:sum("su",k,k),ad:S.entries.filter(e=>e.type==="adim"&&e.day===k).reduce((n,e)=>n+cStep(e),0),sl:cSleep(k)})}
   const items=InsightLib.weekWhy({days,goalKcal:S.settings.kcal,goalWater:S.settings.waterMl,weights:weights(),today:dayKey()});
   cPush({role:"user",text:"Bu hafta neden kilo vermedim?"});cPush({role:"coach",text:"",card:{kind:"why",items}});
   tab="koc";save();render();
@@ -667,7 +670,7 @@ function cAgeGuard(){if(S.settings.consent&&!consentOk()){Object.assign(S.settin
 /* Tek metin kaynağı: uygulama içi onay ve docs/gizlilik-politikasi.md §5 aynı iki cümleyi taşır (app.test.js eşitliği sınar). Değişirse ikisini birlikte güncelle; gönderilen alanlar değiştiyse CONSENT_V'yi artır. */
 const CONSENT_SENT=`yazdığın mesajlar ve son ${HIST_N} sohbet mesajı (Koç yanıtları dahil); profilin (boy, 5 yıllık yaş aralığı, cinsiyet, hareket düzeyi); sağlık notun; hedeflerin ve hesaplanan değerler (trend kilo, tahmini harcama, protein aralığı); son 14 günün kilo, yemek (kcal ve protein), su, spor ve adım özeti (varsa uyku ve ruh hali); bugünkü kayıtların (yemek adları, su, tartı, spor ve not metinleri); son 3 antrenman (hareket adları, en iyi set) ve bu haftaki bölge başına set sayıları; son 7 günün en çok 3 notu; ilaç modülü açıksa ilaç adı, doz, saatler, haftanın günleri, son 7 günün uyumu ve stok; menü ya da program istersen yazdığın istek notu ve menü kataloğunda kendi besin, favori ve şablon adların (kalori ve protein değerleriyle)`;
 const CONSENT_WHEN="Yalnız sen bir düğmeye bastığında gönderilir (mesaj gönder, yorum, menü ya da program iste); uygulama açılırken ya da arka planda kendiliğinden hiçbir şey gönderilmez.";
-const CONSENT_NOT="Tahlil, tansiyon, şeker, nabız, bel ve kalça gibi vücut ölçüleri, tarifler, oruç kayıtları, fotoğraf, konum ve yedek gönderilmez.";
+const CONSENT_NOT="Tahlil, tansiyon, şeker, nabız, saatten (Health Connect) gelen adım ve uyku, bel ve kalça gibi vücut ölçüleri, tarifler, oruç kayıtları, fotoğraf, konum ve yedek gönderilmez.";
 const consentBody=()=>`<b>Koç ile veri paylaşımına açık rızan</b><ul class="cul"><li><b>Ne gönderilir:</b> ${CONSENT_SENT}. ${CONSENT_NOT}</li><li><b>Ne zaman:</b> ${CONSENT_WHEN}</li><li><b>Kime:</b> seçtiğin sağlayıcıya (${esc(S.providers.filter(p=>p.on&&p.health).map(p=>p.name).join(", ")||"hiçbiri seçili değil")}), kendi anahtarınla. Sunucuları yurt dışındadır; bu bir yurt dışına aktarımdır.</li><li><b>Geri alma:</b> istediğin an Ayarlar > Gizlilik ve veri ya da Yapay zekâ koç bölümünden. Geri alınca yeni veri gitmez; önceden gönderilene sağlayıcının kendi politikası uygulanır.</li><li><b>Onay vermezsen</b> uygulama tam çalışır, yalnız Koç konuşmaz.</li></ul>`;
 /* Durum uyarıları onay kartında her zaman görünür, ayrıntı akordeonu kapalı olsa da. */
 const consentWarn=()=>`${S.settings.consent&&consentOk()&&!provOk()?`<p><b>Sağlayıcı listen değişti.</b> Onayını verdiğinde bu sağlayıcılar yoktu; devam için yeniden onay ver.</p>`:""}${S.providers.some(p=>p.on&&p.health&&isCustom(p))?`<p><b>Özel sağlayıcı:</b> kendi eklediğin sunucuya (${esc(S.providers.filter(p=>p.on&&p.health&&isCustom(p)).map(p=>hostOf(p)).join(", "))}) verilerin ve anahtarın doğrudan gider; yalnız güvendiğin bir servis kullan.</p>`:""}${consentOk()?"":S.settings.age>0?`<p><b>18 yaş altı için Koç veri paylaşımı kapalıdır.</b></p>`:`<p><b>Koç için önce yaşını gir</b> (Ayarlar > Profil ve hedefler). Yaş bilinmeden Koç açılmaz.</p>`}`;

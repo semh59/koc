@@ -1587,6 +1587,14 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     click('[data-range="0"]');
     ok("Trend Tümü: ilk kayıttan bugüne (aylık çubuk), grafik 790+ gün, NaN yok",ev("range")===0&&q("#view").innerHTML.includes("aylık ortalamalar")&&q("#view").innerHTML.includes("Son")&&!/NaN|undefined/.test(q("#view").textContent)&&q(".chart").getAttribute("data-tip").includes("95"));
     ev("range=30;tab='bugun';render()");
+    { // Koç bağlamı: saatten (Health Connect) gelen adım ve uyku gitmez, telefon sensörü ve elle girilen gider
+      const k=ev("keyOff(-1)");
+      ev(`S.entries=[{id:S.nextId++,day:"${k}",time:"00:00",type:"adim",v:9000,ph:3000,hc:9000,text:""},{id:S.nextId++,day:"${k}",time:"10:00",type:"adim",v:500,text:"elle"}];S.sleep=[{day:"${k}",min:420,src:"hc"}]`);
+      const d=JSON.parse(ev("JSON.stringify(cData())")),row=(Array.isArray(d)?d:d.days||[]).find(x=>x&&x.ad!=null&&String(k).endsWith(x.d))||{};
+      ok("Koç bağlamı: saat adımı (9000) ve saat uykusu gitmez; telefon sensörü (3000) + elle (500) gider",row.ad===3500&&row.sl===undefined,row);
+      ev("S.entries=[];S.sleep=[{day:'"+k+"',min:400}]");
+      ok("Koç bağlamı: elle girilen uyku gider",(r=>r&&r.sl===400)((JSON.parse(ev("JSON.stringify(cData())")).days||JSON.parse(ev("JSON.stringify(cData())"))).find(x=>x&&String(k).endsWith(x.d))));
+    }
     // Halkalar bugünü gösterir; tıklayınca Gün ekranı, son 14 gün ve takvim
     ev(`S.workouts=[];S.entries=[{id:S.nextId++,day:keyOff(-1),time:"20:00",type:"spor",v:45,text:"Cross bike"},{id:S.nextId++,day:dayKey(),time:"08:00",type:"spor",v:20,text:"Yürüyüş"}];S.settings.sportWeek=150;logOff=0;tab="bugun";render()`);
     ok("Spor halkası yalnız bugünü sayar (dünkü 45 dk yok), günlük pay 21 dk",q(".rings").textContent.includes("20 / 21 dk")&&!q(".rings").textContent.includes("65"));
