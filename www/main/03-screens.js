@@ -1,5 +1,5 @@
-/* ---------- ekranlar ---------- */
-/* Dokunma/sürükleme: en yakın noktanın değeri balonda. data-tip: [[x,y,metin]...] (viewBox birimi). */
+/* ---------- screens ---------- */
+/* Touch/drag: the nearest point's value in a bubble. data-tip: [[x,y,text]...] (viewBox units). */
 function chartTip(svg,cx){
   const P=JSON.parse(svg.dataset.tip),[,,W]=svg.getAttribute("viewBox").split(" ").map(Number),r=svg.getBoundingClientRect(),x=(cx-r.left)*W/(r.width||W);
   const b=P.reduce((m,p)=>Math.abs(p[0]-x)<Math.abs(m[0]-x)?p:m);
@@ -12,7 +12,7 @@ for(const t of ["pointerdown","pointermove"])document.addEventListener(t,ev=>{
   if(s&&(t==="pointerdown"||ev.buttons||ev.pointerType==="mouse"))chartTip(s,ev.clientX);
   else if(t==="pointerdown")document.querySelectorAll(".tip").forEach(n=>n.remove());
 });
-/* Bir günün kayıt listesi (öğün grupları, su özeti, diğer kayıtlar): Bugün ve Gün ekranı ortak kullanır. */
+/* One day's entry list (meal groups, water summary, other entries): shared by Today and the Day screen. */
 function dayLogHtml(lk){
   const items=S.entries.filter(e=>e.day===lk&&e.type!=="steps");
   const vtxt=e=>e.type==="weight"?`${dw(e.v)} ${wlab()}`:e.type==="food"?(e.v?e.lo!=null?`~${Math.round(e.v)} kcal<small class="db mut sm">${e.lo}-${e.hi}</small>`:`${Math.round(e.v)} kcal`:""):e.type==="exercise"?`${Math.round(e.v)} dk`:"";
@@ -23,16 +23,16 @@ function dayLogHtml(lk){
   const log=items.length?`<ul class="log">${dl.groups.map(g=>`<li class="gh"><b>${g.n}</b><span class="num">${Math.round(g.kcal)} kcal</span></li>`+g.items.map(e=>li(e,`<button class="tx" data-meal="${e.id}" aria-label="${esc(ttx(e))}, öğünü değiştir">${ttx(e)}</button>`)).join("")).join("")}${dl.water.length?`<li class="row"><span class="t num">${dl.water[dl.water.length-1].time}</span><span class="ic">${Icons.svg("water")}</span><button class="tx" data-suall="1">Su: ${waterTxt}, ${dl.water.length} kez</button><span class="vl" aria-hidden="true">›</span></li>`:""}${dl.dr.length?`<li class="row"><span class="t num">${dl.dr[dl.dr.length-1].time}</span><span class="ic">${Icons.svg("water")}</span><button class="tx" data-suall="1">Diğer içecekler: ${Math.round(dl.drMl)} ml, ${dl.dr.length} kez</button><span class="vl" aria-hidden="true">›</span></li>`:""}${dl.rest.sort((a,b)=>b.id-a.id).map(e=>li(e,`<span class="tx">${ttx(e)}</span>`)).join("")}</ul>`:`<div class="empty">${Icons.svg(lk===dayKey()?"water":"note")}<p class="mut">${lk===dayKey()?"Bugün henüz bir şey eklemedin. Bir bardak suyla başlayabilirsin.":"Bu güne ait bir şey yok."}</p></div>`;
   return {items,log};
 }
-/* Spor halkası günlüktür: haftalık hedefin (varsayılan 150 dk) günlük payı. Haftalık toplam Trend ve Salon'da. */
+/* The sport ring is daily: the day's share of the weekly goal (default 150 min). The weekly total is in Trend and Gym. */
 const sportDay=()=>Math.max(1,Math.round(S.settings.sportWeek/7));
-/* Halka bir düğmedir: Bugün'ün ayrıntısı ve son 14 günün grafiği Gün ekranında, takvim oradan. */
+/* A ring is a button: today's detail and the last 14 days' chart are on the Day screen, the calendar from there. */
 const rb=(k,ad,inner)=>`<button class="rbtn" data-hg="focus:${k}" aria-label="${ad}, ayrıntı ve geçmiş">${inner}</button>`;
 function viewToday(){
   const t=dayKey(),st=S.settings;
   const wAll=weights(),days=Object.keys(wAll).sort();
   const cur=days.length?wAll[days[days.length-1]]:null,prev=days.length>1?wAll[days[days.length-2]]:null;
   const curDay=days[days.length-1];
-  /* Kilo kartı Trend kısayolu: tek satır özet, grafik ve ayrıntı Trend'de. */
+  /* The weight card is a shortcut to Trend: a one-line summary, chart and detail live in Trend. */
   let weight;
   if(cur==null){
     weight=`<button class="stepcard" data-act="weight"><div class="scr"><span class="mut">${Icons.svg("weight")} Kilo</span><span class="mut sm">Ekle ›</span></div><div class="mut sm">İlk tartını ekle; ilerlemen buradan başlar.</div></button>`;
@@ -44,7 +44,7 @@ function viewToday(){
   const water=sum("water",t,t),sh=st.waterMl,kc=sum("food",t,t),sw=sum("exercise",t,t),sg=sportDay();
   const kgl=kcalGoal(t),kcP=kgl>0?kc/kgl:0;
   const sOn=S.settings.stepsOn&&isNative();
-  /* Halka ortası kalanı gösterir; yapılan / hedef altta birimle. */
+  /* The ring centre shows what is left; done / goal below with the unit. */
   const left=(v,g,u)=>v<g?[null,`${u} kaldı`]:["✓","Hedef tamam"];
   const [waterC,waterU]=left(water,sh,"L"),[spC,spU]=left(sw,sg,"dk");
   const kcC=kgl>0?Math.round(Math.abs(kgl-kc)):Math.round(kc),kcU=kgl>0?(kc>kgl?"kcal fazla":"kcal kaldı"):"kcal";
@@ -55,7 +55,7 @@ function viewToday(){
   const nc=meals.filter(e=>e.c!=null).length,nf=meals.filter(e=>e.f!=null).length;
   const macroNote=macro&&meals.some(e=>e.c!=null||e.f!=null)&&(nc<meals.length||nf<meals.length)?`<div class="mut sm macro">Karbonhidrat ${nc}/${meals.length}, yağ ${nf}/${meals.length} öğünde veri var; toplam eksik olabilir.</div>`:"";
   const micro=mi.length?`<div class="macro num">${mi.join(" · ")} <span class="mut sm">öğünde veri var</span></div>`:"";
-  /* Özet kartı: büyük kalori halkası ve kalan; su, spor ve adım küçük halkalarda; makrolar altında. */
+  /* Summary card: big calorie ring and the remainder; water, sport and steps in small rings; macros below. */
   const rings=`<div class="card"><div class="rings">
     ${rb("kcal","Kalori",ring(kcP,"var(--kcal)",kcC,"Kalori",kgl>0?`${Math.round(kc)} / ${kgl} kcal`:"hedef yok",kcU,"main"))}
     <div class="rmini">${rb("water","Su",ring(water/sh,"var(--water)",waterC||fmt((sh-water)/1000,1),"Su",`${fmt(water/1000,1)} / ${fmt(sh/1000,1)} L`,waterU,"mini"+(waterC?" done":"")))}
@@ -72,7 +72,7 @@ function viewToday(){
   const lb=st.lastBackup,old=lb?Algo.dayNum(t)-Algo.dayNum(lb):null;
   const a7=(a,b)=>sum("steps",keyOff(a),keyOff(b));
   const row=(ic,b,sub,btns)=>`<div class="row"><span>${Icons.svg(ic)} ${b}<small class="mut sm">${sub}</small></span><div class="acts">${btns.map(([a,l])=>`<button class="chip" data-act="${a}">${l}</button>`).join("")}</div></div>`;
-  /* Ayrı kartlar yerine tek liste: yalnız açık modülün bugün bekleyen işi; boşsa kart yok. */
+  /* One list instead of separate cards: only pending jobs of enabled modules; no card when empty. */
   const todo=[storeMsg()?row("save",storeMsg()[0],storeMsg()[1],[["databackup","Yedek al"]]):"",
     abErr?row("cloud","Otomatik yedek alınamadı",abErr,[["abfix","Düzelt"]]):"",
     ...medTodo(),...fastTodo(),...vTodo(),
@@ -83,14 +83,14 @@ function viewToday(){
     isNative()&&oemXiaomi()&&!st.oemDone?row("bell","Hatırlatmalar için bir kez ayar gerekli","İki izin verince hatırlatmalar kaçmaz.",[["oem","Ayarla"]]):"",
     isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?row("steps","Adım sayarı aç","Telefonun sensörü sayar, hesap gerekmez.",[["stepsopen","Aç"],["stepsno","Şimdi değil"]]):"",
     S.entries.length>=10&&(old==null||old>14)?row("cloud","Verilerini yedekle",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Yedekle"]]):""].filter(Boolean);
-  /* İlk 3 iş görünür (veri kaybı uyarısı hep önde); kalanı katlanır, günlüğü aşağı itmez. */
+  /* The first 3 jobs are visible (a data-loss warning is always first); the rest folds so it does not push the log down. */
   const todoCard=todo.length?`<div class="card todo"><h2 class="grp">Bugün yapılacaklar</h2>${todo.slice(0,3).join("")}${todo.length>3?`<details class="acc" ${keepOpen("todo")}><summary>${todo.length-3} iş daha</summary>${todo.slice(3).join("")}</details>`:""}</div>`:"";
   const minor=S.settings.age>0&&S.settings.age<18?`<div class="banner"><b>NeoWell 18 yaş ve üzeri için</b><p>Profilindeki yaş 18'in altında. Kalori açığı, oruç önerisi ve Koç kapalı. Beslenme ve kilo konusunda bir yetişkinle ve hekiminle ya da diyetisyeninle konuş. Yaş yanlışsa Ayarlar > Profil'den düzelt.</p></div>`:"";
-  /* .bg2 dik ekranda görünmez; telefon yatayında sol sütun halkalar ve özet, sağ sütun yapılacaklar ve kayıtlar. */
-  return `<div class="bg2"><div class="bgL">${minor}${rings}${actions}${habitRow()}</div><div class="bgR">${todoCard}${gTodayCard()}${weight}<div class="card coachc"><button class="coach" data-tab="coach">${esc(coach())} <b>Koç ›</b></button></div>${hasKey()?`<div class="btns">${cCommentBtn("plan")}</div>`:""}<div class="card">${dnav}${log}${items.some(e=>e.type==="food")?`<button class="lnk" data-act="tplnew">Bu günün yemeklerinden şablon yap</button>`:""}<button class="lnk" data-tab="history">Geçmiş ve takvim</button></div></div></div>`;
+  /* .bg2 has no effect in portrait; in landscape the left column holds rings and summary, the right one jobs and entries. */
+  return `<div class="bg2"><div class="bgL">${minor}${rings}${actions}${habitRow()}</div><div class="bgR">${todoCard}${gTodayCard()}${weight}<div class="card coachc"><button class="coach" data-tab="coach">${esc(dailyTip())} <b>Koç ›</b></button></div>${hasKey()?`<div class="btns">${cCommentBtn("plan")}</div>`:""}<div class="card">${dnav}${log}${items.some(e=>e.type==="food")?`<button class="lnk" data-act="tplnew">Bu günün yemeklerinden şablon yap</button>`:""}<button class="lnk" data-tab="history">Geçmiş ve takvim</button></div></div></div>`;
 }
 
-/* PDF raporlar tek yerde; paylaşım işleyicileri belgede dinlediği için ekrandan bağımsız çalışır. */
+/* PDF reports in one place; the share handlers listen on the document, so they work from any screen. */
 function reportRows(){
   const st=S.settings,r=(a,ic,t,sub)=>navRow(a,ic,t,sub);
   return `${r('data-wk="pdf"',"share","Son 7 gün raporu","Bugün dahil 7 gün, PDF")}${st.bpOn?r('data-vt="pdfmenu:t"',"heart","Tansiyon doktor raporu","Dönem seç, PDF"):""}${st.bsOn?r('data-vt="pdfmenu:s"',"water","Şeker doktor raporu","Dönem seç, PDF"):""}${LabLib.series(S.labs).length?r('data-lab="pdf"',"file","Tahlil raporu","Tüm sonuçlar, PDF"):""}`;
@@ -108,20 +108,21 @@ function viewTrend(){
     const eta=gi&&!gi.done&&!(gi.dir<0&&risk(cur).block)?ge.weeks:null;
     stats=`<div class="stats kp">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1].replace(/ ((?:kg|lb)\/hafta|kg|lb)$/," <small>$1</small>")}</div></div>`).join("")}</div>${eta?`<p class="pt-2 hint">Son 3 haftanın eğimi sürerse ~${eta} hafta.</p>`:""}`;
   }
+  const waterOf=dayTotal("water"),foodOf=dayTotal("food"),sportOf=dayTotal("exercise"),stepsOf=dayTotal("steps"),wkW=weights(keyOff(-6),t);
   let rows="",hasWeek=false;const hasSteps=st.stepsOn||sum("steps",keyOff(-6),t)>0;
   for(let i=6;i>=0;i--){
-    const d=addDays(-i),k=dayKey(d),w=weights(k,k)[k],water=sum("water",k,k),kc=sum("food",k,k),sp=sum("exercise",k,k),as=sum("steps",k,k);
+    const d=addDays(-i),k=dayKey(d),w=wkW[k],water=waterOf(k),kc=foodOf(k),sp=sportOf(k),as=stepsOf(k);
     if(w!=null||water||kc||sp||as)hasWeek=true;
-    rows+=`<tr><td class="${i==0?"today":""}">${WEEKDAYS_SHORT[d.getDay()]} ${d.getDate()}</td><td class="num">${w!=null?dw(w):"–"}</td><td class="num">${water?fmt(water/1000,1):"–"}</td><td class="num">${kc?Math.round(kc):"–"}</td><td class="num">${sp?Math.round(sp):"–"}</td>${hasSteps?`<td class="num">${as?Math.round(as).toLocaleString("tr-TR"):"–"}</td>`:""}</tr>`;
+    rows+=`<tr><td class="${i==0?"today":""}">${WEEKDAYS_SHORT[d.getDay()]} ${d.getDate()}</td><td class="num">${w!=null?dw(w):"–"}</td><td class="num">${water?fmt(water/1000,1):"–"}</td><td class="num">${kc?Math.round(kc):"–"}</td><td class="num">${sp?Math.round(sp):"–"}</td>${hasSteps?`<td class="num">${as?fint(as):"–"}</td>`:""}</tr>`;
   }
   const sw=sum("exercise",keyOff(-6),t);
   const sd=new Set(S.entries.filter(e=>e.type==="exercise"&&e.day>=keyOff(-6)).map(e=>e.day)).size;
   const empty=`${emptyCard("weight","İlk tartını ekle","Grafik ikinci tartıdan sonra çizilir. Su, yemek, spor ve adımların da burada haftalık tabloda görünür.",`<button class="btn" data-act="weight">${Icons.svg("weight")} Kilo ekle</button>`)}`;
-  /* Hiyerarşi: dönem seçici ve kilo grafiği üstte, özet altında; ayrıntı sekmelerde (hepsi DOM'da, yalnız seçili görünür). */
-  const N=days.length?(range===0?trendAll():range):30,day=k=>sum("food",k,k),bag=linksCard();
+  /* Hierarchy: range picker and weight chart on top, summary below; detail in tabs (all in the DOM, only the selected one visible). */
+  const N=days.length?(range===0?trendAll():range):30,bag=linksCard();
   const tabs=[["weight","Kilo",`${measureCard()}${photoCard()}${hasWeek?`<h2>Son 7 gün</h2><div class="card"><table><thead><tr><th>Gün</th><th>Kilo</th><th>Su (L)</th><th>kcal</th><th>Spor (dk)</th>${hasSteps?"<th>Adım</th>":""}</tr></thead><tbody>${rows}</tbody></table></div>`:""}`],
-    ["nutrition","Beslenme",`<div class="card">${miniBars(N,day,"var(--kcal)",kcalGoal(t),"Kalori","kcal")}${miniBars(N,k=>sum("water",k,k),"var(--water)",st.waterMl,"Su","L",x=>fmt(x/1000,1))}</div>${gEnergy()}`],
-    ["motion","Hareket",`<div class="card">${miniBars(N,k=>sum("exercise",k,k),"var(--exercise)",0,"Spor","dk")}${hasSteps?miniBars(N,k=>sum("steps",k,k),"var(--prim)",st.stepGoal,"Adım","adım",x=>Math.round(x).toLocaleString("tr-TR")):""}</div>${cardioCard()}`],
+    ["nutrition","Beslenme",`<div class="card">${miniBars(N,foodOf,"var(--kcal)",kcalGoal(t),"Kalori","kcal")}${miniBars(N,waterOf,"var(--water)",st.waterMl,"Su","L",x=>fmt(x/1000,1))}</div>${gEnergy()}`],
+    ["motion","Hareket",`<div class="card">${miniBars(N,sportOf,"var(--exercise)",0,"Spor","dk")}${hasSteps?miniBars(N,stepsOf,"var(--prim)",st.stepGoal,"Adım","adım",fint):""}</div>${cardioCard()}`],
     ...bag?[["bag","Bağlantılar",bag]]:[]];
   if(!tabs.some(x=>x[0]===tSec))tSec="weight";
   const sub=h=>h.replace(/<h2>(.*?)<\/h2>/g,'<h3 class="grp">$1</h3>');
@@ -137,30 +138,30 @@ function viewTrend(){
 let notifStatus="";
 const fld=(id,label,val,small,mode)=>`<div class="field"><label for="${id}">${label}${small?`<small>${small}</small>`:""}</label><input id="${id}" type="text" inputmode="${mode||"decimal"}" value="${val}" data-set="${id}"></div>`;
 const segb=(attr,opts,sel)=>`<div class="seg2" role="group">${opts.map(([v,l])=>`<button data-${attr}="${v}" aria-pressed="${sel===v}">${l}</button>`).join("")}</div>`;
-/* Kapalı modülün hatırlatması listede görünmez. */
+/* A reminder of a disabled module is not listed. */
 const remShown=r=>{const st=S.settings;return !((r.id===7||r.id===8)&&!st.bpOn)&&!(r.id===9&&!st.bsOn)&&!(r.id===11&&!st.fastOn)};
-/* Liste satırı: Daha fazla, Ayarlar, Salon ve Veri ekranlarının ortak satırı. */
-/* Onay satırı: etiket ve anahtar tek 48 px'lik dokunma alanı. */
+/* Checkbox row: label and switch form one 48 px touch target. */
 const swRow=(attrs,on,label,sub="")=>`<label class="chkrow"><span class="nm">${label}${sub?`<small>${sub}</small>`:""}</span><span class="sw"><input type="checkbox" ${attrs}${on?" checked":""}><span></span></span></label>`;
+/* List row: shared by the More, Settings, Gym and Data screens. */
 const navRow=(attr,ic,t,sub,cls="")=>`<button class="prow${cls}" ${attr}><span class="aic">${Icons.svg(ic)}</span><span class="grow"><b>${t}</b>${sub?`<span class="mut sm">${sub}</span>`:""}</span><span class="plus" aria-hidden="true">›</span></button>`;
-/* Ayrıntı (ⓘ): düğme kartın içinde, açıklama hemen altında açılır. swHelp anahtar satırının yanına koyar. */
+/* Detail (ⓘ): the button sits inside the card, the explanation opens right below it. swHelp puts it beside a switch row. */
 const helpBtn=(id,name)=>`<button class="help" data-help="${id}" aria-expanded="false" aria-controls="${id}" aria-label="${name}: ayrıntı">${Icons.svg("info")}</button>`;
 const helpBox=(id,html)=>`<div class="helpx" id="${id}" hidden>${html}</div>`;
 const swHelp=(attrs,on,label,sub,id,help)=>`<div class="row">${swRow(attrs,on,label,sub)}${helpBtn(id,label)}</div>${helpBox(id,help)}`;
-/* Modül satırı: anahtar, tek cümle, ⓘ ayrıntı; açıkken ek ayarları altında. Anahtar durumu yalnız ayardan gelir:
-   açma bir onay penceresi ya da izin bekleyebilir, bu yüzden tarayıcının kendi işaretlemesi iptal edilir ve render çizer. */
+/* Module row: switch, one sentence, ⓘ detail; extra settings below when on. The switch state comes only from the setting:
+   turning on may wait for a confirmation or a permission, so the browser's own toggling is cancelled and render draws it. */
 const modRow=(attrs,on,name,line,id,help,extra="")=>swHelp(attrs+" data-mod",on,name,line,id,help)+(on&&extra?`<div class="pv-2">${extra}</div>`:"");
 document.addEventListener("click",ev=>{if(ev.target.matches?.("input[data-mod]"))ev.preventDefault()},true);
 document.addEventListener("click",ev=>{const b=ev.target.closest("[data-help]"),x=b&&document.getElementById(b.dataset.help);if(x){x.hidden=!x.hidden;b.setAttribute("aria-expanded",!x.hidden)}});
 const SETTINGS_TABS=[["profile","Profil ve hedefler","user"],["reminders","Hatırlatmalar","bell"],["coach","Koç","coach"],["modules","Modüller","grid"],["data","Veri ve yedek","data"],["about","Hakkında","info"]];
-/* Alt ekranın üst ekranı: başlıktaki ‹, Android ve tarayıcı geri tuşu buna döner. */
+/* Parent of a sub-screen: the ‹ in the header and the Android and browser back keys return to it. */
 const PARENT={steps:"today",labs:"trend",bp:"trend",glucose:"trend",exlib:"gym",meds:"more",cycle:"more",history:"more",day:"history",settings:"more",...Object.fromEntries(SETTINGS_TABS.map(([k])=>["settings-"+k,"settings"]))};
-/* Bir alt ekran başka bir sekmeden açıldıysa (Bugün'den İlaç, Daha fazla'dan Adım) ‹ ve etkin sekme oraya döner; derin bağlantıda sabit üst ekran geçerli. */
+/* A sub-screen opened from another tab (Meds from Today, Steps from More) returns to and highlights that tab; for a deep link the fixed parent applies. */
 const UP=t=>via&&via.t===t?via.p:PARENT[t];
 const topTab=t=>{for(let p;(p=UP(t));)t=p;return t};
-/* Etkin sekme: İlaç, Adım ve Ayarlar hangi ekrandan açılırsa açılsın Daha fazla'da durur; ‹ ise açıldığı yere döner. */
+/* Active tab: Meds, Steps and Settings stay under More whichever screen opened them; ‹ still returns to where they were opened from. */
 const navTab=()=>/^(meds|steps|settings|history|day)/.test(tab)?"more":topTab(tab);
-/* Daha fazla: gruplu liste. Satırın dördüncü alanı ayar adıdır; kapalı modül listede görünmez, Modüller satırından açılır. */
+/* More: a grouped list. A row's fourth field is the setting name; a disabled module is not listed and is enabled from the Modules row. */
 const MORE_GROUPS=[["Geçmiş",[['data-tab="history"',"Geçmiş ve takvim","trend",0,"Her günün kaydı, aylık özet, arama"]]],["Sağlık takibi",[['data-tab="meds"',"İlaçlar","meds","medOn","İlaç saatleri ve bugünkü dozlar"],['data-tab="bp"',"Tansiyon","heart","bpOn","Ev ölçümleri ve ortalama"],['data-tab="glucose"',"Şeker","water","bsOn","Ölçümler ve ortalama"],['data-tab="labs"',"Tahlil takibi","file",0,"Sonuçlar ve değişim"],['data-tab="cycle"',"Döngü","moon","cycleOn","Dönem günleri ve tahmin"],['data-hb="more"',"Uyku ve ruh hali","smile",0,"Bugünkü uykun ve nasıl hissettiğin"]]],
   ["Beslenme ve hareket",[['data-tab="steps"',"Adım raporu","steps","stepsOn","Günlük adım ve yürüyüş"],['data-pl="open"',"Nabız","heart",0,"Kamerayla ölç, saatten günlük nabız"],['data-tab="exlib"',"Egzersiz kütüphanesi","gym",0,"Hareketler, kaslar, ekipman"],['data-ckg="open"',"Kardiyo","exercise",0,"Koşu, yürüyüş, bisiklet ve yüzme ekle"],['data-ms="open"',"Vücut ölçüleri","weight",0,"Bel, kalça, göğüs, kol ve uyluk"],['data-ph="add"',"İlerleme fotoğrafı","camera","ph","Yalnız bu telefonda saklanır"]]],
   ["Veri",[['data-tab="settings-data"',"Uygulama kilidi","lock",0,"Açılışta telefonun ekran kilidini iste"],['data-tab="settings-data"',"Veri ve yedek","data",0,"Yedek, tabloya aktarma, silme"],['data-pv="open"',"Gizlilik ve veri","lock",0,"Veriler nerede durur, Koç'a ne gider"]]],
@@ -224,14 +225,14 @@ function viewSettings(){
   <div class="card"><details class="acc"><summary>Besin verisi kaynakları ve lisanslar</summary><p class="hint">Genel besinlerin değerleri ABD Tarım Bakanlığı FoodData Central (SR Legacy) verisidir, CC0 kamu malı: fdc.nal.usda.gov. Türk ev yemekleri bu değerlerden tarifle hesaplanmış tahminlerdir. Sucuk, pastırma, hellim ve karşılaştırma değerlerinde Fransa ANSES Ciqual 2025 tablosu (Etalab Açık Lisans 2.0, ciqual.anses.fr) ile İngiltere McCance and Widdowson CoFID 2021 verisi (Public Health England, Open Government Licence v3.0, gov.uk) kullanıldı; her vekil kayıt kendi notunda belirtilir. Barkoddan gelen ürünler Open Food Facts verisini içerir, Open Database License (ODbL) ile sunulur: world.openfoodfacts.org. Tablo ve paket etiketi değerleri yaklaşık olup ±%20 sapabilir.</p></details></div>`;
 }
 
-const COPIES=[["nw_state_corrupt","Okunamayan eski kayıt kopyası"],["nw_state_previous","Geri yüklemeden önceki güvenlik kopyası"],["nw_state_conflict","Çakışan eski kayıt kopyası (iki depodan eski olanı)"]];
+const COPIES=[["nw_state_corrupt","Okunamayan eski kayıt kopyası"],["nw_state_previous","Geri yüklemeden önceki güvenlik kopyası"]];
 const recView=()=>`<div class="card todo" role="alert"><h3>Kayıtların okunamadı</h3><p class="hint">Telefondaki kayıt bozuk görünüyor. Hiçbir şey silinmedi ve yeni kayıt yazılmıyor. Önce ham veriyi dışa aktar; sonra yeniden dene ya da boş başla.</p><div class="btns"><button class="btn" data-act="recexp">Ham veriyi dışa aktar</button><button class="btn ghost" data-act="rectry">Yeniden dene</button><button class="btn ghost" data-act="recnew">Boş başla</button></div></div>`;
 function render(){
   const v=$("#view"),onb=obNeeded()||!!recovery;
   const de=document.documentElement;if(S.settings.theme)de.dataset.theme=S.settings.theme;else delete de.dataset.theme;
   $('meta[name="theme-color"]').content=getComputedStyle(de).getPropertyValue("--bg").trim();
-  // Android 15+ durum çubuğu saydam: simge rengi sistemin değil uygulamanın temasına uymalı.
-  const sb=window.Capacitor?.Plugins?.SystemBars,st={dark:"DARK",light:"LIGHT"}[S.settings.theme]||"DEFAULT";
+  // Android 15+ status bar is transparent: the icon colour must follow the app theme, not the system's.
+  const sb=plugin("SystemBars"),st={dark:"DARK",light:"LIGHT"}[S.settings.theme]||"DEFAULT";
   if(sb&&render.sb!==st){render.sb=st;sb.setStyle({style:st}).catch(()=>{})}
   document.body.classList.toggle("ob",onb);$("#back").hidden=onb||!UP(tab);
   if(onb){$("#ttl").innerHTML='<img class="brand" src="logo.svg" alt="" width="28" height="28">NeoWell';$("#streak").innerHTML="";$("#composer").hidden=true;v.innerHTML=recovery?recView():obView();widgetPush();return}
@@ -243,25 +244,25 @@ function render(){
   if(tab==="coach")cScroll();
   phGuard();
   document.querySelectorAll("nav button").forEach(b=>{if(b.dataset.tab===navTab())b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
-  /* Tarayıcıda alt ekran için bir geçmiş kaydı: geri tuşu popstate ile üst ekrana döner. */
+  /* In the browser a sub-screen gets one history entry: the back key returns to the parent through popstate. */
   if(UP(tab)&&!history.state)history.pushState({sub:1},"");else if(!UP(tab)&&history.state)history.replaceState(null,"");
   widgetPush();
 }
-/* Sayfada odaktaki ya da doldurulmuş (varsayılandan farklı) bir form alanı varken kendiliğinden yenileme onu silmesin. */
+/* An automatic refresh must not wipe a form field that has focus or was filled in (differs from its default). */
 const viewBusy=()=>!!document.activeElement?.matches("#view input,#view textarea")||[...document.querySelectorAll("#view input:not([type=checkbox]):not([type=radio]),#view textarea")].some(e=>e.value!==e.defaultValue);
 const renderSoft=()=>{if(viewBusy())widgetPush();else render()};
 function goBack(){tab=UP(tab);via=null;render();window.scrollTo(0,0)}
-/* Uygulama sürümü (CI her derlemede 1.0.<numara> yapar); yalnız telefonda bilinir. */
+/* App version (CI sets 1.0.<number> on every build); known only on the phone. */
 let appVer="",appBuild="";
-try{const a=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;if(a&&a.getInfo)a.getInfo().then(i=>{appVer=String(i.version||"").slice(0,20);appBuild=String(i.build||"").slice(0,20);if(tab==="settings-about")render()}).catch(()=>{})}catch(e){}
-const MW=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.MedWake;
-const WG=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Widget;
+plugin("App")?.getInfo?.().then(i=>{appVer=String(i.version||"").slice(0,20);appBuild=String(i.build||"").slice(0,20);if(tab==="settings-about")render()},()=>{});
+const MW=()=>plugin("MedWake");
+const WG=()=>plugin("Widget");
 let widgetLast="";
-/* null değerler bilinçli: Java tarafı anahtar varsa ama null ise "hedef yok"/adım gizli, anahtar yoksa "–" gösterir. */
+/* The null values are intentional: the Java side shows "no goal" / hides steps when the key exists but is null, and "–" when the key is missing. */
 function widgetPush(){
   if(!WG())return;
   const t=dayKey(),st=S.settings,d={day:t,water:sum("water",t,t),waterGoal:st.waterMl,glass:st.glass,kcalLeft:st.kcal>0?Math.round(kcalGoal(t)-sum("food",t,t)):null,steps:st.stepsOn||st.hcOn?stepsShown():null};
   const j=JSON.stringify(d);if(j===widgetLast)return;
-  widgetLast=j;try{WG().update(d).catch(()=>{})}catch(e){}
+  widgetLast=j;try{WG().update(d).catch(()=>{})}catch{}
 }
 

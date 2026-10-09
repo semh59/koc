@@ -1,6 +1,6 @@
-/* Tasarım token'ları: kurallar docs/tasarim-dili.md'de. Renkler 6 haneli hex olmalı (contrast.test.js okur). */
+/* Design tokens: the rules are in docs/tasarim-dili.md. Colours must be 6-digit hex (contrast.test.js reads them). */
 :root{
-  /* Kenar boşlukları: Capacitor SystemBars --safe-area-inset-* yazar; WebView 140 öncesinde env() Android'de yanlış döner. */
+  /* Insets: Capacitor SystemBars writes --safe-area-inset-*; before WebView 140 env() returns wrong values on Android. */
   --sat:var(--safe-area-inset-top,env(safe-area-inset-top,0px)); --sab:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px));
   --sal:var(--safe-area-inset-left,env(safe-area-inset-left,0px)); --sar:var(--safe-area-inset-right,env(safe-area-inset-right,0px));
   --bg:#f2f4f3; --card:#ffffff; --ink:#10232b; --mut:#56666d; --line:#dfe5e2;
@@ -11,9 +11,9 @@
   --forecast-bg:#fbe9d2; --forecast-ink:#6b3f08; --ok:#2b7a3b; --info:#1f5f86; --info-ink:#ffffff; --knob:#ffffff;
   --scrim:rgb(6 14 17/.5);
   --sh-1:0 1px 2px rgb(16 35 43/.06),0 2px 8px rgb(16 35 43/.04); --sh-2:0 6px 24px rgb(16 35 43/.18); --card-bd:transparent;
-  /* Yarıçap: 8/12/16/24 ve hap; daire için 50%. */
+  /* Radius: 8/12/16/24 and pill; 50% for circles. */
   --r-xs:8px; --r-s:12px; --r:16px; --r-xl:24px; --r-pill:999px;
-  /* Tip ölçeği: yalnız bu basamaklar; 12 altı yasak (scripts/design.test.js). */
+  /* Type scale: only these steps; below 12 is forbidden (scripts/design.test.js). */
   --fs-cap:12px; --fs-s:13px; --fs-2:15px; --fs-1:16px; --fs-h3:18px; --fs-h2:20px; --fs-h1:24px; --fs-num:34px; --fs-svg:14px;
   --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px;
   --ring-w:7px; --nav-h:56px; --toast-b:calc(var(--nav-h) + 28px + var(--nx,0px) + var(--sab));
@@ -31,7 +31,7 @@
     --sh-1:none; --sh-2:0 0 0 1px var(--line); --card-bd:#22313a;
   }
 }
-/* Ayarlar'da Açık/Koyu seçilince sistemden bağımsız; Sistem'de öznitelik yok, üstteki medya sorgusu geçerli. */
+/* Choosing Light/Dark in Settings overrides the system; with System there is no attribute and the media query above applies. */
 :root[data-theme="light"]{color-scheme:light}
 :root[data-theme="dark"]{color-scheme:dark;
     --bg:#0c1416; --card:#152024; --ink:#e8f0ee; --mut:#92a4aa; --line:#26353b;
@@ -72,17 +72,16 @@ main{flex:1;padding:4px 16px calc(92px + var(--nx,0px) + var(--sab))}
 .stepcard .wv{color:var(--prim)}.stepcard .wv small{font-size:var(--fs-2);font-weight:600}.stepcard .ws{text-align:right;max-width:60%;font-size:var(--fs-2);font-weight:600;color:var(--ink);line-height:1.3}
 
 .coachc{padding:8px 16px}.coach{display:block;width:100%;min-height:44px;margin:0;padding:0;text-align:left;color:var(--mut);font-size:var(--fs-2);line-height:1.45}.coach b{color:var(--prim);white-space:nowrap}
-/* Büyük yazıda metin harf harf sütuna dönmez: metin en az ~10 harf genişlikte kalır, eylem gerekirse alt satıra iner.
-   İlaç satırında saat solda sabit sütundur; ilk 3 iş görünür, kalanı "iş daha" altında açılır. */
+/* With large text the copy does not collapse into a one-letter column: it keeps at least ~10 letters of width and the action wraps below if needed.
+   In a medication row the time is a fixed column on the left; the first 3 jobs are visible, the rest opens under "N more". */
 .todo .row{gap:var(--sp-2);flex-wrap:wrap}.todo>.grp{margin:0 0 var(--sp-1)}.todo .grp+.row{border-top:0}.todo .row>span{flex:1 1 10em;min-width:0;overflow-wrap:break-word}.todo .row>span+:is(.chip,button,.acts){margin-left:auto}.todo .acts{display:flex;gap:var(--sp-2)}.todo small.sm{display:block}
 .todo .tm{flex:none;min-width:3.2em;font-weight:600}.todo .acc{border-top:1px solid var(--line)}.todo .acc>summary{min-height:48px}
 
 .card{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:12px;border:1px solid var(--card-bd);box-shadow:var(--sh-1)}
 .stepcard{all:unset;box-sizing:border-box;display:block;width:100%;cursor:pointer;background:var(--card);border:1px solid var(--card-bd);box-shadow:var(--sh-1);border-radius:var(--r);padding:16px;margin:0 0 12px;transition:transform var(--dur) var(--ease)}.stepcard:active{transform:scale(.985)}.stepcard:focus-visible{outline:2px solid var(--prim)}.stepcard .scr{display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-2)}.stepcard .big{font-size:var(--fs-h1);font-weight:700;letter-spacing:-.02em}
-/* SVG metinleri viewBox biriminde (340 genişlik): --fs-svg 14 birim 360 px ekranda ≈12 px; büyük yazıda 16 birimde durur, eksen etiketi grafikten taşmaz. */
+/* SVG text is in viewBox units (340 wide): --fs-svg 14 units ≈ 12 px on a 360 px screen; with large text it stops at 16 units so axis labels do not overflow the chart. */
 .bars text,.chart text,.lsv text{font-size:min(var(--fs-svg),16px);fill:var(--mut)}
-.ring{position:relative}
-.ring{--rs:min(84px,22.5vw)}.ring.main{--rs:clamp(104px,31vw,132px)}.ring svg{width:var(--rs);height:var(--rs);display:block;margin:0 auto}
+.ring{position:relative;--rs:min(84px,22.5vw)}.ring.main{--rs:clamp(104px,31vw,132px)}.ring svg{width:var(--rs);height:var(--rs);display:block;margin:0 auto}
 .ring .rt{fill:none;stroke:var(--soft);stroke-width:var(--ring-w)}
 .macro{font-size:var(--fs-s);color:var(--mut);margin:var(--sp-2) 0 0;line-height:1.5}
 .about{display:flex;flex-direction:column;align-items:center;gap:var(--sp-1);margin:var(--sp-5) 0 var(--sp-2);font-size:var(--fs-h3)}
@@ -92,10 +91,10 @@ main{flex:1;padding:4px 16px calc(92px + var(--nx,0px) + var(--sab))}
 .ring .rl{font-weight:600;font-size:var(--fs-2);margin-top:6px}
 .ring .rs{font-size:var(--fs-cap);color:var(--mut)}
 
-/* Bugün: tek birincil eylem (Yemek ekle), altında eşit ağırlıkta ikincil hızlı kayıtlar; büyük yazıda çipler alt satıra sarılır. */
+/* Today: one primary action (add food), equal-weight secondary quick logs below; with large text the chips wrap to the next line. */
 .actions{display:grid;gap:var(--sp-2);margin-bottom:var(--sp-3)}
 .qa{display:flex;flex-wrap:wrap;gap:var(--sp-2)}.qa .chip{flex:1 1 auto;background:var(--card);border:1px solid var(--card-bd);box-shadow:var(--sh-1)}.qa .chip .i{color:var(--prim)}
-/* Özet: solda kalori halkası, sağda küçük halkalar (su, spor, adım); dar ekranda ya da büyük yazıda küçükler alta iner. */
+/* Summary: calorie ring on the left, small rings (water, sport, steps) on the right; on a narrow screen or with large text the small ones drop below. */
 .rings{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-3) var(--sp-4)}.rings>.ring.main{flex:none;text-align:center}
 .rmini{flex:1 1 9em;min-width:0;display:grid;gap:var(--sp-2)}
 .ring.mini{--rs:44px;display:grid;grid-template-columns:var(--rs) minmax(0,1fr);column-gap:var(--sp-3);align-items:center;text-align:left}
@@ -114,7 +113,7 @@ h2{font-size:var(--fs-h2);margin:var(--sp-5) var(--sp-1) var(--sp-3);font-weight
 .log .tx{flex:1;min-width:0}
 .log .vl{color:var(--mut);font-size:var(--fs-s);white-space:nowrap}
 .del{width:44px;height:44px;margin:-8px 0;border-radius:50%;color:var(--mut);font-size:var(--fs-h3);flex:none}
-/* Gün/ay gezgini: ‹ başlık ›, iki 44 px ikon düğmesi; başlık ortada ve değişince okunur. */
+/* Day/month navigator: ‹ title ›, two 44 px icon buttons; the title sits in the centre and is announced when it changes. */
 .dnav{display:flex;align-items:center;gap:var(--sp-2);margin:0 0 var(--sp-2)}
 .dnav h2{flex:1;text-align:center;margin:0;font-size:var(--fs-h3)}
 .dnav button{display:flex;align-items:center;justify-content:center;width:44px;height:44px;flex:none;border-radius:50%;color:var(--prim);background:var(--soft)}.dnav button .i{width:22px;height:22px}
@@ -127,7 +126,7 @@ h2{font-size:var(--fs-h2);margin:var(--sp-5) var(--sp-1) var(--sp-3);font-weight
 /* Trend */
 .seg{display:inline-flex;background:var(--soft);border-radius:var(--r-pill);padding:3px;margin:2px 0 10px}
 .seg button{min-height:44px;padding:var(--sp-2) var(--sp-4);border-radius:var(--r-pill);font-size:var(--fs-2);font-weight:600;color:var(--mut);transition:background var(--dur),color var(--dur)}
-/* Trend sekmeleri: segment görünümü, tam genişlik; büyük yazıda düğmeler alt satıra sarılır. */
+/* Trend tabs: segmented look, full width; with large text the buttons wrap. */
 .seg.tabs{display:flex;flex-wrap:wrap;width:100%;margin:var(--sp-3) 0;border-radius:var(--r)}.seg.tabs button{flex:1 1 auto;padding:var(--sp-2) var(--sp-3);border-radius:var(--r-s)}
 .kp .stat{background:var(--soft);border-radius:var(--r-s);padding:var(--sp-2) var(--sp-3)}.kp .stat .v{font-size:var(--fs-h3)}
 .bars{touch-action:pan-y}.bars .tip text{fill:var(--ink)}.bgl{list-style:none;margin:0;padding:0}
@@ -147,10 +146,10 @@ td.today,th.today{font-weight:700}
 .bar{height:8px;border-radius:var(--r-pill);background:var(--soft);overflow:hidden;margin:8px 0 4px}
 .bar>i{display:block;height:100%;background:var(--exercise);border-radius:var(--r-pill)}
 
-/* Koç */
+/* Coach */
 #composer{position:fixed;left:var(--sal);right:var(--sar);bottom:calc(68px + var(--nx,0px) + var(--sab));z-index:6;background:var(--bg);padding:6px 12px 8px;max-width:520px;margin:0 auto}
 #composer[hidden]{display:none}body.kb nav,body.kb .chiprow{display:none}body.kb #composer{bottom:var(--kb,0px)}body.kb #sheet{bottom:var(--kb,0px);max-height:calc(var(--vh) - 8px);padding-bottom:18px}body.kb #sheet .plist{max-height:none;overflow:visible}
-/* Büyük yazıda çipler küçülüp üst üste binmez: içerik genişliğinde kalır, satır yana kayar. */
+/* With large text the chips neither shrink nor overlap: they keep their content width and the row scrolls sideways. */
 .chiprow{display:flex;gap:6px;margin-bottom:var(--sp-2);overflow-x:auto;scrollbar-width:none}.chiprow::-webkit-scrollbar{display:none}.chiprow .chip{flex:1 0 auto;min-height:44px;padding:0 var(--sp-2);font-size:var(--fs-s);white-space:nowrap;background:var(--card);box-shadow:var(--sh-1);border:1px solid var(--card-bd)}.chiprow .chip .i{color:var(--mut)}
 .cin{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);box-shadow:var(--sh-1);border-radius:var(--r-xl);padding:0 var(--sp-1) 0 var(--sp-4);min-height:52px}.cin:focus-within{border-color:var(--prim)}
 .cin input{align-self:stretch;flex:1;min-width:0;border:0;outline:0;background:none;font-size:16px}
@@ -180,7 +179,7 @@ body.coach{--toast-b:var(--cmp,calc(200px + var(--sab)))}
 .kin{width:72px;min-height:44px;text-align:right;border:1px solid var(--fbd);border-radius:var(--r-xs);background:var(--field);padding:0 8px}
 .lbtns{display:flex;gap:8px;margin-top:10px}.lbtns .btn{padding:12px}
 .chkrow{justify-content:space-between;font-size:var(--fs-2)}.chkrow .nm{flex:1;min-width:0}.chkrow small{display:block;color:var(--mut);font-size:var(--fs-s)}
-/* Salon */
+/* Gym */
 .bg2,.bgL,.bgR{display:contents}.mut{color:var(--mut)}.sm{font-size:var(--fs-s);display:block;line-height:1.4}
 .trow{gap:6px;padding:6px 6px 6px 14px;border-top:0}.hscroll{display:flex;gap:var(--sp-3);overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 var(--sp-4);margin:0 calc(-1*var(--sp-4)) var(--sp-3);padding:2px var(--sp-4) var(--sp-1);scrollbar-width:none}.hscroll::-webkit-scrollbar{display:none}.hscroll>.trow{flex:0 0 min(80%,264px);scroll-snap-align:start;margin:0;flex-direction:column;align-items:stretch;padding:var(--sp-2) var(--sp-2) var(--sp-1) var(--sp-4)}.trow .tex{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.tact{display:flex;justify-content:flex-end;margin-top:auto}
 .tmain{flex:1;text-align:left;display:grid;gap:1px;min-height:44px;padding:4px 0}
@@ -190,7 +189,7 @@ body.coach{--toast-b:var(--cmp,calc(200px + var(--sab)))}
 .gbar{display:grid;grid-template-columns:92px 1fr 28px;gap:10px;align-items:center;font-size:var(--fs-s);margin:6px 0}
 .gbar .bar{margin:0}
 .livebar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--sp-2) var(--sp-3);margin:2px 4px 10px}
-.livebar>div{flex:1 1 8em;min-width:0}.livebar b{overflow-wrap:break-word}.livebar b{font-size:var(--fs-h3)}.livebar .mut{font-size:var(--fs-s)}.btn.fin{width:auto;flex:none;padding:11px 22px}
+.livebar>div{flex:1 1 8em;min-width:0}.livebar b{overflow-wrap:break-word;font-size:var(--fs-h3)}.livebar .mut{font-size:var(--fs-s)}.btn.fin{width:auto;flex:none;padding:11px 22px}
 .fig{width:100%;height:auto;display:block}
 #guide{position:fixed;inset:0;z-index:15;max-width:520px;margin:0 auto;background:var(--card);display:flex;flex-direction:column;padding:calc(6px + var(--sat)) calc(16px + var(--sar)) calc(10px + var(--sab)) calc(16px + var(--sal));overflow-y:auto}#guide[hidden]{display:none}body.gdon{overflow:hidden}
 .gdtop{display:flex;align-items:center;gap:8px;min-height:44px}.gdtop b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gdx{width:44px;height:44px;font-size:var(--fs-h1);color:var(--mut);flex:none}
@@ -213,7 +212,7 @@ body.coach{--toast-b:var(--cmp,calc(200px + var(--sab)))}
 .cues{margin:var(--sp-2) 0 var(--sp-3);padding-left:20px;font-size:var(--fs-2)}.cues li{margin:3px 0}
 .tgo{font-size:var(--fs-h3);color:var(--prim)}.rest.tim{background:color-mix(in srgb,var(--prim) 14%,var(--card));border-color:color-mix(in srgb,var(--prim) 40%,var(--line))}
 .rest{display:flex;align-items:center;gap:6px;background:var(--prim-soft);border:1px solid color-mix(in srgb,var(--prim) 35%,var(--line));border-radius:var(--r);padding:var(--sp-2) 10px;margin-bottom:10px}
-/* Dinlenme sayacı alt menünün hemen üstünde sabit; görünürken sayfa ve toast onun kadar yükselir. */
+/* The rest timer is fixed just above the bottom menu; while it is visible the page and the toast rise by its height. */
 #grest{position:fixed;left:calc(var(--sp-3) + var(--sal));right:calc(var(--sp-3) + var(--sar));bottom:calc(68px + var(--nx,0px) + var(--sab));z-index:6;max-width:496px;margin:0 auto;box-shadow:var(--sh-2)}body:has(#grest:not([hidden])){--toast-b:calc(var(--nav-h) + 112px + var(--nx,0px) + var(--sab))}body:has(#grest:not([hidden])) main{padding-bottom:calc(172px + var(--nx,0px) + var(--sab))}.rest .rsk{background:var(--prim-btn);color:var(--prim-ink);padding:0 var(--sp-4)}
 .rest[hidden]{display:none}.rest{flex-wrap:wrap}.rest>div{flex:1 1 6em;display:grid;min-width:0}.rest b{font-size:min(var(--fs-num),max(24px,8vw));font-weight:700;line-height:1.1}
 .rest button{min-width:44px;min-height:44px;border-radius:var(--r-s);background:var(--card);font-weight:700;font-size:var(--fs-2);padding:0 10px}
@@ -221,7 +220,7 @@ body.coach{--toast-b:var(--cmp,calc(200px + var(--sab)))}
 .exn{flex:1;text-align:left;display:grid;min-height:44px;align-content:center}.exn b{font-size:var(--fs-h3);overflow-wrap:break-word}.exn .mut{font-size:var(--fs-s)}
 .sug{font-size:var(--fs-s);color:var(--prim);margin:0 4px 6px}.note{font-size:var(--fs-s);color:var(--mut);margin:0 4px 6px;font-style:italic}
 .shead,.srow{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(52px,70px) minmax(52px,70px) 44px;gap:var(--sp-2);align-items:center}.srow .sp{font-size:min(var(--fs-s),max(12px,3.6vw));overflow-wrap:anywhere}
-/* Sütun başlıkları dar sütunlara sığmalı: büyük yazıda ≈3,3vw'de durur. */
+/* Column headings must fit the narrow columns: with large text they stop at ≈3.3vw. */
 .shead{font-size:min(var(--fs-cap),max(12px,3.3vw));color:var(--mut);padding:0 4px 4px;text-align:center}.shead span:nth-child(2){text-align:left}
 .srow{padding:3px 4px;border-radius:var(--r-s);margin-bottom:4px}.shead.r,.srow.r{grid-template-columns:22px minmax(0,1fr) 56px 56px 50px 44px;gap:6px}.srow.r .sp{font-size:var(--fs-cap);white-space:nowrap;letter-spacing:-.02em}
 .srow.nx{outline:2px solid color-mix(in srgb,var(--prim) 60%,var(--line));outline-offset:-1px}
@@ -236,11 +235,11 @@ body.coach{--toast-b:var(--cmp,calc(200px + var(--sab)))}
 .ok.on{background:var(--exercise);border-color:var(--exercise);color:var(--exercise-ink)}
 .lnk{display:block;width:100%;min-height:44px;color:var(--prim);font-weight:600;font-size:var(--fs-2);border-radius:var(--r-s)}.lnk:active{background:var(--soft)}.lnk.dng{color:var(--warn);margin-top:6px}
 .prow{justify-content:space-between;transition:background var(--dur-1)}.prow:active,.rrow:active{background:var(--soft)}button.prow .sm{margin-top:1px}
-.prow.off b,.prow.off .aic{color:var(--mut)}.prow.dng,.prow.dng .aic{color:var(--warn)}.aic{color:var(--prim)}.aic .i{width:24px;height:24px}.card>.prow:first-child{border-top:0}.prow b{display:block;font-weight:600}.plus{font-size:var(--fs-h1);color:var(--mut);width:44px;min-height:44px;text-align:center}.plus .i{width:22px;height:22px}
-.tag{display:inline-block;font-size:var(--fs-s);font-weight:600;background:var(--prim-soft);color:var(--ink);border-radius:var(--r-pill);padding:2px 10px;white-space:nowrap}.tag.warn{background:var(--ban-bg);color:var(--ban-ink)}
+.prow.dng,.prow.dng .aic{color:var(--warn)}.aic{color:var(--prim)}.aic .i{width:24px;height:24px}.card>.prow:first-child{border-top:0}.prow b{display:block;font-weight:600}.plus{font-size:var(--fs-h1);color:var(--mut);width:44px;min-height:44px;text-align:center}.plus .i{width:22px;height:22px}
+.tag{display:inline-block;font-size:var(--fs-s);font-weight:600;background:var(--prim-soft);color:var(--ink);border-radius:var(--r-pill);padding:2px 10px;white-space:nowrap}
 .card:has(>.prow:first-child){padding-top:4px;padding-bottom:4px}
 .plist{max-height:42vh;overflow:auto;margin-bottom:8px}
-/* Besin değer bloğu: nutrBlock. */
+/* Nutrition value block: nutrBlock. */
 .nkc{font-size:var(--fs-h3);font-weight:600;color:var(--mut)}.nkc b{font-size:var(--fs-num);font-weight:700;color:var(--ink);letter-spacing:-.02em;line-height:1.1}
 .ngrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-2);margin:var(--sp-3) 0 var(--sp-2)}.ngrid>div{background:var(--soft);border-radius:var(--r-s);padding:var(--sp-2);text-align:center;min-width:0}.ngrid b{display:block;font-size:min(var(--fs-h3),max(13px,4.8vw));white-space:nowrap}.ngrid span{display:block;font-size:var(--fs-cap);color:var(--mut);text-transform:capitalize;overflow-wrap:anywhere}
 .sumv{font-size:var(--fs-num);font-weight:700;letter-spacing:-.02em;color:var(--exercise);line-height:1.1;margin:var(--sp-2) 0}.sumv small{font-size:var(--fs-h3);font-weight:600;color:var(--mut)}
@@ -248,7 +247,7 @@ body.coach{--toast-b:var(--cmp,calc(200px + var(--sab)))}
 .seg2{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 4px}
 .seg2 button{min-height:44px;background:var(--soft);border-radius:var(--r-s);font-weight:600;font-size:var(--fs-2);transition:background var(--dur),color var(--dur)}
 .seg2 button[aria-pressed="true"]{background:var(--prim);color:var(--prim-ink);border-color:var(--prim)}
-/* Ayarlar */
+/* Settings */
 .field{justify-content:space-between}
 .field label{flex:1}
 .field small{display:block;color:var(--mut);font-size:var(--fs-s)}
@@ -262,7 +261,7 @@ body.coach{--toast-b:var(--cmp,calc(200px + var(--sab)))}
 .sw input:checked+span{background:var(--prim)}
 .sw input:checked+span::after{transform:translateX(18px)}
 .sw input:focus-visible+span{outline:2px solid var(--prim);outline-offset:2px}
-/* Düğme hiyerarşisi: .btn birincil (ekranda bir tane), .btn.ghost ikincil (tonlu), .btn.danger yıkıcı, .lnk metin düğmesi. */
+/* Button hierarchy: .btn primary (one per screen), .btn.ghost secondary (tinted), .btn.danger destructive, .lnk text button. */
 .btn{background:var(--prim-btn);color:var(--prim-ink);border-radius:var(--r-s);padding:12px 18px;min-height:48px;font-weight:600;width:100%;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-align:center;transition:transform var(--dur) var(--ease),filter var(--dur)}
 .btn:active,.chip:active,.seg2 button:active{transform:scale(.97)}.btn:active{filter:brightness(.94)}.btn:disabled{opacity:.45;cursor:default;transform:none}
 .btn.ghost{background:var(--soft);color:var(--prim)}
@@ -272,17 +271,17 @@ body.ob nav{display:none}body.ob main{padding-bottom:24px}
 .status{font-size:var(--fs-s);color:var(--mut);padding:2px 2px 8px}
 .obp{display:grid;gap:6px;flex:1;padding:4px 4px 0}.obbar{display:flex;gap:6px}.obbar i{flex:1;height:4px;border-radius:var(--r-pill);background:var(--line);transition:background var(--dur)}.obbar i.on{background:var(--prim)}
 
-/* Alt gezinme */
+/* Bottom navigation */
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:6px calc(8px + var(--sar)) calc(6px + var(--sab)) calc(8px + var(--sal));z-index:7;isolation:isolate}
 nav .in{max-width:520px;margin:0 auto;display:flex;gap:4px}
-/* En az --nav-h; büyük yazıda etiket iki satıra sarılır (harf ortasından bölünmez), menü uzar ve --nx sabit parçaları yukarı iter.
-   Etiket, beş sekmeye sığacak kadar (≈4vw) büyür; daha büyük yazıda tek kelime düğmeden taşmasın diye sınırlıdır. */
+/* At least --nav-h; with large text a label wraps to two lines (never mid-word), the menu grows and --nx pushes the fixed parts up.
+   The label grows to fit five tabs (≈4vw); with still larger text it is capped so a single word does not overflow its button. */
 nav button{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:var(--sp-1);gap:2px;min-height:var(--nav-h);font-size:min(var(--fs-cap),max(12px,4vw));font-weight:600;color:var(--mut);text-align:center;overflow-wrap:normal;word-break:keep-all;hyphens:none;line-height:1.2}
 nav button .ic{display:flex;justify-content:center;width:min(56px,100%);padding:var(--sp-1) 0;border-radius:var(--r-pill);transition:background var(--dur)}
 nav button .ic .i{width:24px;height:24px}
 nav button[aria-current="page"]{color:var(--prim)}nav button[aria-current="page"] .ic{background:var(--prim-soft)}
 
-/* Alt sayfa */
+/* Bottom sheet */
 #scrim{position:fixed;inset:0;background:var(--scrim);opacity:0;pointer-events:none;transition:opacity var(--dur);z-index:10}
 #scrim.on{opacity:1;pointer-events:auto}
 #sheet{position:fixed;left:0;right:0;bottom:0;z-index:11;background:var(--card);border-radius:var(--r-xl) var(--r-xl) 0 0;padding:10px 18px calc(18px + var(--sab));transform:translateY(105%);visibility:hidden;transition:transform var(--dur-sheet) var(--ease),visibility 0s var(--dur-sheet);box-shadow:var(--sh-2);max-width:520px;margin:0 auto;max-height:88vh;overflow:auto}
@@ -290,7 +289,7 @@ nav button[aria-current="page"]{color:var(--prim)}nav button[aria-current="page"
 #sheet:focus,#sheet h3:focus{outline:none}.inl{display:flex;align-items:center;gap:12px}.inl .lbl{margin:0 0 10px}.inl select{flex:1;min-width:0}#sheet .grab{width:38px;height:4px;border-radius:var(--r-pill);background:var(--line);margin:0 auto 12px}
 #sheet h3{margin:0 0 14px;padding-right:44px;font-size:var(--fs-h3);font-weight:700;letter-spacing:-.01em}
 .shx{position:absolute;top:var(--sp-2);right:var(--sp-2);width:44px;height:44px;border-radius:50%;color:var(--mut);display:flex;align-items:center;justify-content:center}.shx:active{background:var(--soft)}.shx .i{width:24px;height:24px}
-/* Tek giriş alanı stili (arama kutuları dahil). nav içindeki .in kapsayıcıdır, bu yüzden yalnız form öğeleri. */
+/* One input style (search boxes included). The .in inside nav is a container, hence form elements only. */
 input.in,select.in,textarea.in{width:100%;background:var(--field);border:1px solid var(--fbd);border-radius:var(--r-s);padding:12px 14px;font-size:var(--fs-1);margin-bottom:10px;transition:border-color var(--dur),box-shadow var(--dur)}
 #sheet input.in,#sheet select.in{font-size:var(--fs-h3)}
 input.in:focus,select.in:focus,textarea.in:focus,.field input:focus,.rem input:focus,.sin:focus,.kin:focus{outline:none;border-color:var(--prim);box-shadow:0 0 0 3px color-mix(in srgb,var(--prim) 22%,transparent)}
@@ -308,13 +307,13 @@ input.in[type=search]::-webkit-search-decoration{display:none}
 select.in{appearance:none;padding-right:40px;background:var(--field) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237b8a90' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center/20px}
 input.in,select.in,.chip>button{min-height:44px}
 
-/* Toast menünün (ve Koç'ta yazma alanının) hemen üstünde: konum yalnız --toast-b'den gelir. */
+/* The toast sits right above the menu (and above the composer in Coach): its position comes from --toast-b only. */
 #toast{position:fixed;left:var(--sp-4);right:var(--sp-4);bottom:var(--toast-b);max-width:488px;margin:0 auto;background:var(--tbg);color:var(--tfg);border-radius:var(--r-s);box-shadow:var(--sh-2);padding:var(--sp-3) 14px;display:flex;align-items:center;gap:var(--sp-3);z-index:20;transform:translateY(30px);opacity:0;pointer-events:none;transition:transform var(--dur) var(--ease),opacity var(--dur);font-size:var(--fs-2)}
 #toast.on{transform:none;opacity:1;pointer-events:auto}
 #toast span{flex:1}
 #toast button{font-weight:700;color:var(--tact);min-height:48px;margin:-12px -6px -12px 0;padding:0 var(--sp-3)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.btn:active,.chip:active,.stepcard:active,.seg2 button:active{transform:none}}
-/* Yatay telefon (kısa ekran): başlık ve alt sekme küçülür, sheet ekrana sığar ve kayar; dik görünüm değişmez. */
+/* Landscape phone (short screen): header and bottom tabs shrink, the sheet fits the screen and scrolls; portrait is unchanged. */
 @media (orientation:landscape) and (max-height:500px){
   header{padding:6px 20px 2px;min-height:44px}header h1{font-size:var(--fs-h2)}
   nav{padding-top:2px;padding-bottom:calc(2px + var(--sab))}nav .in{gap:2px}
@@ -324,7 +323,7 @@ input.in,select.in,.chip>button{min-height:44px}
   #composer .chiprow{display:none}
   body.bg #app{max-width:none}body.bg .bg2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 16px;align-items:start}body.bg .bgL,body.bg .bgR{display:block;min-width:0}
   #sheet{max-height:calc(100vh - 8px - var(--sat));max-height:calc(100dvh - 8px - var(--sat))}.plist{max-height:30vh}
-  /* Rehberli mod: tam genişlik, 100dvh'ye sığar; solda hareket, sağda sayaç ve düğmeler (sağ sütun kayar). */
+  /* Guided mode: full width, fits 100dvh; movement on the left, timer and buttons on the right (the right column scrolls). */
   #guide{max-width:none;margin:0;height:100vh;height:100dvh;padding-top:calc(2px + var(--sat));padding-bottom:calc(4px + var(--sab))}
   .gdtop{min-height:44px}
   .gdbody{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px 16px;flex:1;min-height:0}
@@ -343,7 +342,7 @@ input.in,select.in,.chip>button{min-height:44px}
 .hgd:not(.hge):not(:disabled){background:var(--soft);box-shadow:inset 0 0 0 2px var(--card)}.hgk{display:inline-flex}.hgk.food{color:var(--kcal)}.hgk.water{color:var(--water)}.hgk.exercise{color:var(--exercise)}.hgk.weight{color:var(--prim)}.hgs{grid-template-columns:repeat(3,1fr)}
 .hgsel{display:flex;gap:var(--sp-2);flex:1;justify-content:center}.hgsel .in{width:auto;min-height:44px;margin:0}.hgs .stat .v{font-size:var(--fs-h3)}
 .cyk{display:inline-block;width:14px;height:14px;border-radius:var(--r-xs);border:2px solid transparent;margin-right:6px;vertical-align:-2px}.cyk.cyp{background:var(--prim)}.cyk.cyt{border:2px dashed var(--prim)}
-/* Sağlık ekranları: ruh hali, tahlil kartı ve aralık şeridi, kalıcı alan etiketi, ilaç dozu, döngü, fotoğraf ızgarası */
+/* Health screens: mood, lab card and range strip, persistent field label, medication dose, cycle, photo grid */
 .ell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .moods{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,3.2em),1fr));gap:6px;margin:0 0 var(--sp-3)}
 .moods .chip{flex-direction:column;gap:2px;min-width:0;padding:var(--sp-1) 2px;border-radius:var(--r-s)}.moods small{font-size:var(--fs-cap);line-height:1.2;text-align:center}
@@ -359,27 +358,27 @@ input.in,select.in,.chip>button{min-height:44px}
 .phg{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-2);margin-bottom:var(--sp-2)}.phg .lnk{display:block;padding:0;min-height:0;text-align:left;color:var(--ink);font-weight:400}
 .phg img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:var(--r-xs);display:block}.phbig{width:100%;max-height:60vh;object-fit:contain;border-radius:var(--r-xs)}
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-/* ---------- Ortak bileşenler (docs/tasarim-dili.md) ---------- */
-/* Satır: tek tanım. .prow gezinme, .rrow rapor, .lrow etiket-değer, .chkrow anahtar, .rem hatırlatma, .trow şablon, .field ayar alanı birer değiştiricidir. */
+/* ---------- Shared components (docs/tasarim-dili.md) ---------- */
+/* Row: one definition. .prow navigation, .rrow report, .lrow label-value, .chkrow switch, .rem reminder, .trow template and .field settings field are modifiers. */
 .row,.prow,.rrow,.lrow,.chkrow,.rem,.trow,.field{display:flex;align-items:center;gap:var(--sp-3);min-height:56px;padding:var(--sp-2) var(--sp-1);border-top:1px solid var(--line);text-align:left}
 button:is(.row,.prow,.rrow){width:100%}
 :is(.row,.prow,.rrow,.lrow,.chkrow,.rem,.field):first-child{border-top:0}
 .row>:where(.grow,span:first-child:not(:only-child)){flex:1;min-width:0;overflow-wrap:break-word}
 .grp,.log .gh{font-size:var(--fs-cap);font-weight:600;color:var(--mut);letter-spacing:.04em;text-transform:uppercase}
 .grp{margin:var(--sp-5) var(--sp-1) var(--sp-2)}
-/* Boş durum: ikon, tek cümle, tek eylem. */
+/* Empty state: icon, one sentence, one action. */
 .empty{display:grid;justify-items:center;gap:var(--sp-2);text-align:center;padding:var(--sp-5) var(--sp-4)}
 .empty>.i{width:48px;height:48px;color:var(--mut);stroke-width:1.5}.empty p{margin:0}.empty .btn{width:auto;margin-top:var(--sp-2)}.empty .chips{justify-content:center;margin:var(--sp-2) 0 0}
-/* Ayrıntı düğmesi (ⓘ): kartın içinde, açıklama hemen altında açılır. */
+/* Detail button (ⓘ): inside the card, the explanation opens right below. */
 .help{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;border-radius:50%;color:var(--mut);flex:none}.help:active{background:var(--soft)}.help[aria-expanded="true"]{color:var(--prim)}
 .row>.chkrow{flex:1;min-width:0;padding:0;min-height:48px}
 .helpx{font-size:var(--fs-s);color:var(--ink);background:var(--soft);border-radius:var(--r-s);padding:var(--sp-2) var(--sp-3);margin:0 0 var(--sp-2)}
-/* Akordeon: details/summary; klavye ve ekran okuyucu yerel davranışı kullanır. */
+/* Accordion: details/summary; the keyboard and screen reader use the native behaviour. */
 .acc>summary{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);min-height:48px;color:var(--prim);font-weight:600;cursor:pointer;list-style:none}
 .acc>summary::-webkit-details-marker{display:none}
 .acc>summary::after{content:"";flex:none;width:8px;height:8px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);transition:transform var(--dur)}
 .acc[open]>summary::after{transform:rotate(-135deg)}
-/* Onay penceresi: confirmSheet. Sheet'in ve rehberin üstünde ayrı katman. */
+/* Confirmation dialog: confirmSheet. A separate layer above the sheet and the guide. */
 #cfm{position:fixed;inset:0;z-index:30;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center}#cfm[hidden]{display:none}
 #lock{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-3);padding:var(--sp-5);text-align:center}#lock[hidden]{display:none}#lock .btn{width:100%;max-width:320px}html.locked body>*:not(#lock){visibility:hidden}
 #alarm{position:fixed;inset:0;z-index:40;background:var(--bg);overflow-y:auto;padding:calc(var(--sp-5) + var(--sat)) calc(var(--sp-4) + var(--sar)) calc(var(--sp-4) + var(--sab)) calc(var(--sp-4) + var(--sal))}#alarm[hidden]{display:none}body.alon{overflow:hidden}#alarm .alw{max-width:520px;min-height:100%;margin:0 auto;display:flex;flex-direction:column;gap:var(--sp-4)}#alarm .alclk{font-size:min(calc(var(--fs-num) * 2),22vw);font-weight:700;line-height:1;text-align:center}#alarm h2{margin:0;text-align:center;font-size:var(--fs-h1)}#alarm h2:focus{outline:none}#alarm .allead{margin:0;text-align:center;color:var(--mut);font-size:var(--fs-1);overflow-wrap:anywhere}#alarm .card{margin:0}#alarm .row{gap:var(--sp-2) var(--sp-3)}#alarm .row>.grow{flex:1 1 10em;min-width:0;overflow-wrap:anywhere}#alarm .alact{display:flex;gap:var(--sp-2);flex:1 1 14em}#alarm .alact .btn{min-height:56px;flex:1 1 auto;width:auto}#alarm .alst{display:inline-flex;align-items:center;gap:var(--sp-1);color:var(--ok)}#alarm .albar{margin-top:auto;display:grid;gap:var(--sp-2)}#alarm .albar .btn,#alarm .albar .lnk{min-height:56px}
@@ -387,9 +386,9 @@ button:is(.row,.prow,.rrow){width:100%}
 #cfm h3{margin:0 0 var(--sp-2);font-size:var(--fs-h3)}#cfm h3:focus{outline:none}#cfm p{margin:0 0 var(--sp-4);color:var(--mut);font-size:var(--fs-2);line-height:1.5;white-space:pre-line}
 .cfbtns{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,120px),1fr));gap:var(--sp-2)}
 @keyframes cfup{from{transform:translateY(100%)}}
-/* Yardımcılar: yalnız boşluk ölçeği. */
+/* Helpers: spacing scale only. */
 .m0{margin:0}.mt-1{margin-top:var(--sp-1)}.mt-2{margin-top:var(--sp-2)}.mt-3{margin-top:var(--sp-3)}.mb-2{margin-bottom:var(--sp-2)}.mb-3{margin-bottom:var(--sp-3)}.my-2{margin:var(--sp-2) 0}
 .p0{padding:0}.flush{padding:0 0 var(--sp-2)}.grow{flex:1;min-width:0}.db{display:block}.tc{text-align:center}.ta-r{text-align:right}.b7{font-weight:700}.ink{color:var(--ink)}.pc{color:var(--prim)}.wa{width:auto}
-.pt-2{padding:var(--sp-2) 0 0}.sep{padding:var(--sp-2) 0;border-top:1px solid var(--line)}.pv-1{padding:var(--sp-1) 0}.pv-2{padding:var(--sp-2) 0}.my-1{margin:var(--sp-1) 0}.nw{white-space:nowrap}.w100{width:100%}.ib{display:inline-block}.rxs{border-radius:var(--r-xs)}
+.pt-2{padding:var(--sp-2) 0 0}.pv-1{padding:var(--sp-1) 0}.pv-2{padding:var(--sp-2) 0}.nw{white-space:nowrap}.w100{width:100%}.ib{display:inline-block}.rxs{border-radius:var(--r-xs)}
 .t-h1{font-size:var(--fs-h1)}.t-h2{font-size:var(--fs-h2)}.row.wrap{flex-wrap:wrap}#sheet input.in.url,input.in.url{font-size:var(--fs-2);overflow-wrap:anywhere}.lsv{width:100%;display:block}
 .dl{display:flex;align-items:center;gap:var(--sp-2)}.g2{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2)}.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--sp-2)}

@@ -1,47 +1,49 @@
 "use strict";
-/* Saf hesap fonksiyonları (DOM yok). Tarayıcıda global Algo, Node'da module.exports. */
+/* Pure calculations (no DOM). Global Algo in the browser, module.exports in Node. */
 const Algo=(()=>{
   const KCAL_PER_KG=7700;
   const AY3=["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
-  /* Uygulamanın tek tarih biçimi: "2 Eki", yıl istenirse "2 Eki 2026". CSV ISO kalır. */
+  /* The app's only display date format: "2 Eki", with year "2 Eki 2026". CSV stays ISO. */
   const fdate=(k,yr)=>`${+k.slice(8,10)} ${AY3[+k.slice(5,7)-1]}${yr?" "+k.slice(0,4):""}`;
   const dayNum=k=>Math.round(Date.UTC(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10))/864e5);
   const roundTo=(x,step)=>Math.round(x/step)*step;
+  const ISO_DAY=/^\d{4}-\d{2}-\d{2}$/;
 
-  /* Kilo trendi: zaman duyarlı üstel ortalama (Hacker's Diet tarzı). Boş günler ağırlığı büyütür. */
-  function trend(w,alpha=0.1){
+  /* Weight trend: time-aware exponential average (Hacker's Diet style); a gap gives the next weigh-in more weight. */
+  const TREND_ALPHA=0.1;
+  function trend(w){
     const ks=Object.keys(w).sort(),out={};let t=null,prev=null;
     for(const k of ks){
       const d=dayNum(k);
       if(t===null)t=w[k];
-      else{const a=1-Math.pow(1-alpha,d-prev);t+=a*(w[k]-t)}
+      else{const a=1-Math.pow(1-TREND_ALPHA,d-prev);t+=a*(w[k]-t)}
       prev=d;out[k]=t;
     }
     return out;
   }
-  /* En küçük kareler doğrusu (ham tartılar). EWMA gecikmeli olduğu için hız hesabında kullanılmaz. */
+  /* Least-squares line through raw weigh-ins; the EWMA lags, so it is not used for rates. */
   function ols(pts){
     const n=pts.length,mx=pts.reduce((s,p)=>s+p[0],0)/n,my=pts.reduce((s,p)=>s+p[1],0)/n;
     let sxy=0,sxx=0;for(const [x,y] of pts){sxy+=(x-mx)*(y-my);sxx+=(x-mx)*(x-mx)}
     return sxx?{m:sxy/sxx,b:my-sxy/sxx*mx}:null;
   }
-  /* Bugünü tarayıcı verir (setClock); Koç tarihsiz çağırdığı için varsayılan gerekir. Saat yoksa pencere son tartıda biter (saf çağrı). */
+  /* The browser supplies today (setClock) because the Coach calls without a date; without a clock the window ends at the last weigh-in (pure call). */
   let clock=null;
   const setClock=f=>{clock=f};
-  /* today verilirse son tartı 7 günden eskiyse bayat: aylar önceki eğim bugünü anlatmaz (InsightLib.plateau ile aynı kural). */
+  /* With today given, a last weigh-in older than 7 days is stale: a slope from months ago says nothing about now (same rule as InsightLib.plateau). */
   function windowPts(w,days,today){
     const ks=Object.keys(w).sort();if(ks.length<2)return [];
     const last=dayNum(ks[ks.length-1]);
     if(today&&dayNum(today)-last>7)return [];
     return ks.filter(k=>last-dayNum(k)<days).map(k=>[dayNum(k),w[k]]);
   }
-  /* Son `days` gün için kg/hafta. Varsayılan: en az 4 tartı ve 7 gün aralık. */
+  /* kg/week over the last `days` days; by default needs at least 4 weigh-ins spanning 7 days. */
   function slopePerWeek(w,days=21,minPts=4,minSpan=7,today=clock&&clock()){
     const pts=windowPts(w,days,today);
     if(pts.length<minPts||pts[pts.length-1][0]-pts[0][0]<minSpan)return null;
     const f=ols(pts);return f?7*f.m:null;
   }
-  /* Haftada bir tartılan da ölçülebilsin diye 28 gün, en az 3 tartı ve 14 gün yayılım; yetersizse null (lossKnown false). */
+  /* 28 days, 3 weigh-ins spanning 14 days, so weekly weighers qualify; null when too little data (lossKnown false). */
   const lossSlope=(w,today)=>slopePerWeek(w,28,3,14,today);
   const lossKnown=(w,today)=>lossSlope(w,today)!=null;
   function isLosing(w,today){const s=lossSlope(w,today);return s!=null&&s<-0.2}
@@ -49,32 +51,33 @@ const Algo=(()=>{
     return 10*kg+6.25*cm-5*age+(sex==="m"?5:sex==="f"?-161:-78);
   }
   const ACT=[1.3,1.45,1.6];
-  /* Hareket düzeyi triyajı: iş (0 oturarak, 1 ayakta, 2 fiziksel) + günlük yürüyüş (0 <5 bin adım, 1 5-9 bin, 2 10 bin+) -> 0 Az, 1 Orta, 2 Çok.
-     Planlı antrenman sayılmaz (Salon ve spor kaydı ayrıca eklenir); aynı hareket iki kez sayılmasın. */
+  /* Activity triage: job (0 seated, 1 on feet, 2 physical) + daily walking (0 <5k steps, 1 5-9k, 2 10k+) -> 0 low, 1 medium, 2 high.
+     Planned workouts are not counted (gym and exercise entries are added separately) so nothing is counted twice. */
   const actFromTriage=(job,walk)=>{const t=job+walk;return t<=1?0:t<=3?1:2};
   function formulaTdee(p){return bmrMifflin(p)*(ACT[p.act==null?1:p.act]||1.45)}
 
-  /* "Tam kayıtlı gün" tek tanım (haftalık rapor, Koç analizi, harcama tahmini): en az 800 kcal, formül harcaması biliniyorsa yarısından da fazla.
-     Eksik girilmiş gün ortalamayı düşürür. */
+  /* The one definition of a fully logged day (weekly report, Coach analysis, expenditure estimate): at least 800 kcal, and more than half the formula
+     expenditure when known. A half-logged day would drag averages down. */
   const fullKcal=(kcal,tdee)=>kcal>=Math.max(800,tdee>0?tdee*0.5:0);
-  /* Kalori "ortalaması" yazılabilmesi için en az tam kayıtlı gün; tek günlük 700 kcal ortalama değildir. */
+  /* Fully logged days needed before a calorie "average" is shown; one 700 kcal day is not an average. */
   const MIN_AVG_DAYS=3;
-  /* Uyarlanabilir harcama: ortalama alım − (trend değişimi × 7700 / gün).
-     intake: {gün: kcal}; yalnızca tam kayıtlı günler sayılır, bugün yarım olduğundan hiçbir zaman. */
-  function adaptiveTdee({weights,intake,profile,window=28,today=clock&&clock()}){
+  /* Adaptive expenditure: average intake - (trend change x 7700 / days).
+     intake: {day: kcal}; only fully logged days count, never today because it is incomplete. */
+  const TDEE_WINDOW=28;
+  function adaptiveTdee({weights,intake,profile,today=clock&&clock()}){
     const f=profile&&profile.cm&&profile.age?formulaTdee(profile):null;
     const t=trend(weights),ks=Object.keys(t).sort();
     if(!ks.length)return {tdee:f,source:f?"formül":null,confidence:0,formula:f,est:null};
     const lastDay=dayNum(ks[ks.length-1]);
-    const inWin=k=>lastDay-dayNum(k)<window&&lastDay-dayNum(k)>=0;
+    const inWin=k=>lastDay-dayNum(k)<TDEE_WINDOW&&lastDay-dayNum(k)>=0;
     const days=Object.keys(intake).filter(k=>inWin(k)&&fullKcal(intake[k],f)&&!(today&&k>=today));
-    const pts=windowPts(weights,window);
+    const pts=windowPts(weights,TDEE_WINDOW);
     let est=null,conf=0;
     if(days.length>=10&&pts.length>=4){
       const span=pts[pts.length-1][0]-pts[0][0],fit=ols(pts);
       if(span>=10&&fit){
         const avgIn=days.reduce((s,k)=>s+intake[k],0)/days.length;
-        est=avgIn-fit.m*KCAL_PER_KG; // m: kg/gün
+        est=avgIn-fit.m*KCAL_PER_KG; // m: kg/day
         conf=Math.min(1,days.length/21);
         if(f)est=Math.min(f*1.3,Math.max(f*0.7,est));
       }
@@ -84,16 +87,18 @@ const Algo=(()=>{
     return {tdee,source:conf>=0.99?"veri":"veri+formül",confidence:conf,formula:f,est};
   }
 
-  /* Trend ekranının tek hızı ve tek tahmini: son 21 günün eğimi (kg/hafta) sürerse hedefe kaç hafta; yön ters, hız ~0, hedef yok ya da hedefte ise weeks null. */
+  /* The Trend screen's single rate and single estimate: weeks to the goal if the last 21 days' slope (kg/week) continues; weeks is null when the direction
+     is wrong, the rate is ~0, there is no goal or it is reached. */
   function goalEta(w,goalKg,today){
     const ks=Object.keys(w).sort(),slope=slopePerWeek(w,21,4,7,today);
     if(!ks.length)return {slope:null,weeks:null};
     const wk=etaWeeks(trend(w)[ks[ks.length-1]],goalKg,slope);
     return {slope,weeks:wk>0?wk:null};
   }
-  /* Güvenlik freni (kalori açığı, oruç, yüksek protein) tek kaynak. hard onayla kalkmaz; soft "Hekimime danıştım" (clearedAt) günü dahil 30 gün kalkar.
-     Anahtar, Türkçe olumsuzlamada ("hamile değilim", "emzirmiyorum", "kusmadım", "böbrek sorunum yok") sayılmaz; not doluysa yine soft kalır.
-     Metin ASCII'ye indirilir (ı→i, ğ→g...), kalıplar ASCII yazılır: "degilim", "HAMILEYIM" gibi aksansız yazım da aynı sonucu verir. */
+  /* Safety brake (calorie deficit, fasting, high protein): the single source. A hard block cannot be confirmed away; a soft one is lifted for 30 days
+     (including the day itself) by "Hekimime danıştım" (clearedAt).
+     A keyword does not count when negated in Turkish ("hamile değilim", "emzirmiyorum", "kusmadım", "böbrek sorunum yok"); a non-empty note still stays soft.
+     Text is folded to ASCII (ı->i, ğ->g...) and the patterns are written in ASCII, so "degilim" or "HAMILEYIM" without accents give the same result. */
   const low=s=>String(s||"").replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase().replace(/ı/g,"i").replace(/ğ/g,"g").replace(/ş/g,"s").replace(/ç/g,"c").replace(/ö/g,"o").replace(/ü/g,"u");
   const ED=/yeme bozuklu|anoreksi|bulimi|tikinma|yemeyi birak|ac kal(?=iyor)|kus(?=ma|uyor|tur|ar|tu)/g,PREG=/hamile|gebe(?!r)|emzir|lohusa|bebek bekl(?=iyor|eyen)|bebegim olacak|dogum yapaca|anne adayi/g,KIDNEY=/bobrek|diyaliz|karaciger|siroz/g,
     CHRONIC=/diyabet|seker hasta|insulin|bobrek|diyaliz|karaciger|siroz|kalp|tiroid|guatr|epilep|kanser|kemoterapi|tansiyon/g;
@@ -105,7 +110,7 @@ const Algo=(()=>{
     }
     return false;
   }
-  const dateOk=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&!isNaN(dayNum(s));
+  const dateOk=s=>typeof s==="string"&&ISO_DAY.test(s)&&!isNaN(dayNum(s));
   function riskFlags({age,cm,kg,goalKg,healthNote,meds,glucoseCount90d,bpCount90d,edFlag,clearedAt,today}){
     const t=low(healthNote).trim(),bmi=x=>x>0&&cm>0?x/Math.pow(cm/100,2):null,n=Array.isArray(meds)?meds.length:meds>0?meds:0;
     const ed=!!edFlag||said(t,ED),pregnant=said(t,PREG),hard=[],soft=[];
@@ -121,13 +126,13 @@ const Algo=(()=>{
     const d=dateOk(clearedAt)&&dateOk(today)?dayNum(today)-dayNum(clearedAt):-1,cleared=d>=0&&d<30;
     return {hard,soft,cleared,kidney:said(t,KIDNEY),pregnant,ed,meds:n,block:hard[0]||(!cleared&&soft[0])||""};
   }
-  /* Kalori açığının güvenli olmadığı durumun nedeni, yoksa "". Eski çağrılar health:boolean geçer. */
-  const lossBlock=o=>riskFlags({...o,healthNote:o.healthNote!=null?o.healthNote:o.health?"var":""}).block;
+  /* Why a calorie deficit is unsafe, or "". */
+  const lossBlock=o=>riskFlags(o).block;
 
-  /* Güvenli günlük alt sınır: erkek 1500, diğerleri (kadın, belirtmeyen) 1200; BMR bunun üstündeyse BMR. */
+  /* Safe daily floor: 1500 for men, 1200 for everyone else (women, unspecified); the BMR when it is higher. */
   const kcalFloor=(sex,bmr)=>Math.max(sex==="m"?1500:1200,bmr||0);
-  /* Elle girilen günlük hedefin reddedilme nedeni, uygunsa "". 18 yaş altı hiç; sert engel ya da onaysız yumuşak engelde bakım düzeyinin altı
-     (tdee biliniyorsa); her durumda cinsiyete göre tabanın altı. */
+  /* Why a hand-entered daily target is rejected, or "". Never for under 18; below maintenance (when tdee is known) under a hard block or an unconfirmed
+     soft one; below the sex-based floor always. */
   function manualKcal({kcal,sex,bmr,tdee,age,block}){
     if(age>0&&age<18)return "18 yaş altına kalori hedefi belirlenmez";
     const keep=Math.round(tdee/10)*10;
@@ -135,9 +140,9 @@ const Algo=(()=>{
     const fl=Math.round(kcalFloor(sex,bmr)/10)*10;
     return kcal<fl?`Günlük hedef en az ${fl} kcal olabilir; daha düşüğü için hekimine danış`:"";
   }
-  /* İlk tartıda libre/kg karışıklığı: boy biliniyorsa BMI 45 üstü, yoksa 160 kg üstü şüphelidir. */
+  /* Pound/kilogram mix-up on the first weigh-in: suspicious above BMI 45 when the height is known, above 160 kg otherwise. */
   const lbSuspect=(kg,cm)=>cm>0?kg/Math.pow(cm/100,2)>=45:kg>=160;
-  /* Hedef önerisi. Kullanıcı onaylamadan uygulanmaz. o: riskFlags girdisi + tdee, bmr, sex. */
+  /* Target suggestion, never applied without the user's confirmation. o: riskFlags input + tdee, bmr, sex. */
   function suggestTarget(o){
     const {tdee,kg,goalKg,bmr}=o;
     if(!tdee||!kg)return null;
@@ -162,8 +167,8 @@ const Algo=(()=>{
     if(Math.abs(slope)<0.05||Math.sign(slope)!==Math.sign(d))return null;
     const w=d/slope;return w>104?null:Math.ceil(w);
   }
-  /* Adım istatistiği. vals: eskiden yeniye günlük toplamlar. Ortalama yalnız kayıtlı (>0) günlerden; seri: hedefi art arda geçen gün,
-     bugün henüz hedefin altındaysa seri bozulmuş sayılmaz, dünden geriye sayılır. */
+  /* Step statistics. vals: daily totals, oldest first. The average uses logged (>0) days only; the streak is consecutive days at or above the goal,
+     and a today still below the goal does not break it (counting starts from yesterday). */
   function stepStats(vals,goal){
     const rec=vals.filter(v=>v>0);
     let best=-1;vals.forEach((v,i)=>{if(v>0&&(best<0||v>vals[best]))best=i});
@@ -171,26 +176,26 @@ const Algo=(()=>{
     let streak=0;while(i>=0&&vals[i]>=goal){streak++;i--}
     return {n:rec.length,avg:rec.length?rec.reduce((a,b)=>a+b,0)/rec.length:0,best,hit:vals.filter(v=>v>=goal).length,streak};
   }
-  /* Vücut ölçüleri (cm): geçersizi atar, aynı gün+bölgede sonuncuyu tutar, en yeni 20.000. Girdiyi değiştirmez. */
-  const MEASURES=["waist","hip","chest","arm","thigh"];
+  /* Body measurements (cm): drops invalid ones, keeps the last per day+site, newest 20,000. Does not mutate the input. */
+  const MEASURES=["waist","hip","chest","arm","thigh"],MEASURES_MAX=20000;
   function cleanMeasures(raw){
     const m=new Map();
     for(const x of Array.isArray(raw)?raw:[])
-      if(x&&MEASURES.includes(x.k)&&typeof x.day==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(x.day)&&typeof x.v==="number"&&x.v>=20&&x.v<=250)m.set(x.day+x.k,{day:x.day,k:x.k,v:Math.round(x.v*10)/10});
-    return [...m.values()].sort((a,b)=>a.day<b.day?-1:a.day>b.day?1:0).slice(-20000);
+      if(x&&MEASURES.includes(x.k)&&typeof x.day==="string"&&ISO_DAY.test(x.day)&&typeof x.v==="number"&&x.v>=20&&x.v<=250)m.set(x.day+x.k,{day:x.day,k:x.k,v:Math.round(x.v*10)/10});
+    return [...m.values()].sort((a,b)=>a.day<b.day?-1:a.day>b.day?1:0).slice(-MEASURES_MAX);
   }
   const whtr=(waist,cm)=>waist>0&&cm>0?waist/cm:null;
-  /* Net aktivite enerjisi (dinlenme hariç): (MET−1)×kg×saat. MotionMath.kcal ile aynı tanım; BMR zaten TDEE'de. kg yoksa ya da süre 0 ise null. */
+  /* Net activity energy (resting excluded): (MET-1) x kg x hours. Same definition as MotionMath.kcal; the BMR is already in the TDEE. Null without kg or with 0 minutes. */
   const netKcal=(met,kg,min)=>kg>0&&min>0?Math.round(Math.max(0,met-1)*kg*min/60):null;
-  /* Ağırlık antrenmanı: yoğunluk set/dk. Unutulan seans şişmesin diye süre en çok set×4 dk sayılır; MET 3,5 / 5 / 6. */
+  /* Weight training: intensity in sets/min. Duration counts at most sets x 4 min so a forgotten session does not inflate; MET 3.5 / 5 / 6. */
   function gymKcal({min,sets,kg}){
     if(!(sets>0&&min>0))return null;
     const eff=Math.min(min,sets*4),rate=sets/eff;
     return netKcal(rate<0.3?3.5:rate<0.4?5:6,kg,eff);
   }
-  /* Elle hareket (yürüyüş w / koşu r / bisiklet b): mesafe MotionMath'in adım uzunluğu modelinden: boy önseli × GPS ile öğrenilmiş kişisel ölçek f
-     (MotionPlugin.status fw/fr; 0,7-1,3 dışı ya da yoksa 1),
-     MET Compendium tablosundan hızla; bisiklette adım anlamsız, mesafe yok. Ritim 40-220 adım/dk dışındaysa adım güvenilmez sayılır. */
+  /* Manual movement (walk w / run r / bike b): distance from MotionMath's stride model: height prior x the personal scale f learned from GPS
+     (MotionPlugin.status fw/fr; 1 when absent or outside 0.7-1.3); MET from the Compendium table by speed. Steps mean nothing on a bike, so no distance.
+     A cadence outside 40-220 steps/min makes the step count untrustworthy. */
   const interp=(x,y,v)=>{if(v<=x[0])return y[0];for(let i=1;i<x.length;i++)if(v<=x[i])return y[i-1]+(y[i]-y[i-1])*(v-x[i-1])/(x[i]-x[i-1]);return y[y.length-1]};
   const WK=[3.2,4,4.8,5.6,6.4,7.2,8],WM=[2.8,3,3.5,4.3,5,7,8.3],RK=[8,9.7,11.3,12.9,14.5,16.1],RM=[8.3,9.8,11,11.8,12.8,14.5];
   function moveSummary({kind,min,steps,cm,kg,f}){
@@ -202,17 +207,17 @@ const Algo=(()=>{
     const met=kind==="b"?6.8:kind==="r"?(kmh?interp(RK,RM,kmh):9.8):(kmh?kmh>8?interp(RK,RM,kmh):interp(WK,WM,kmh):3.5);
     return {km:km==null?null:Math.round(km*100)/100,kmh,met,kcal:netKcal(met,kg,min)};
   }
-  /* Yarım kalan yürüyüş: başlangıç geçerli ve 24 saatten yeni değilse korunur. */
+  /* An unfinished walk is kept if its start is valid and under 24 hours old. */
   function cleanWalk(raw,now){
     const n=(v,lo,hi)=>typeof v==="number"&&isFinite(v)&&v>=lo&&v<=hi;
     if(!raw||!n(raw.t0,1,now+6e4)||now-raw.t0>864e5)return null;
     return {t0:raw.t0,s0:n(raw.s0,0,2e5)?raw.s0:null,t1:n(raw.t1,raw.t0+1,now+6e4)?raw.t1:null,s1:n(raw.s1,0,2e5)?raw.s1:null};
   }
-  /* Bir günün kayıtlı hareket enerjisi (net kcal), adım dahil değil: hareket düzeyi çarpanı günlük adımı zaten içerir.
-     spor: {day, time: bitiş "SS:DD", v: dk, kcal, text, bt}; moves: {day, k, t0: başlangıç, min, kcal}. Spor aralığı [bitiş−süre, bitiş]; aynı aralığa düşen otomatik hareket
-     aynı çıkıştır, ikinci kez sayılmaz. Aralıklar mutlak dakikayla karşılaştırılır, çünkü gece yarısını aşan yürüyüşün otomatik kaydı başlangıç gününde, elle kaydı bitiş gününde durur:
-     spor ve moves komşu günleri de içerebilir, yalnız `day` günündekiler toplanır. bt (geçmiş güne girilmiş) kayıtta saat kayıt anıdır, aralık bilinmez:
-     o gün adı aynı türle (Yürüyüş/Koşu) başlayan otomatik hareket sayılmaz. */
+  /* Recorded movement energy of one day (net kcal), steps excluded: the activity-level multiplier already contains daily steps.
+     exercise: {day, time: end "HH:MM", v: min, kcal, text, bt}; moves: {day, k, t0: start, min, kcal}. An exercise spans [end - duration, end]; an automatic move
+     inside the same span is the same outing and is not counted twice. Spans are compared in absolute minutes because a walk past midnight is stored on its
+     start day when automatic and on its end day when manual: both lists may hold neighbouring days, only those on `day` are summed. For a bt entry (logged
+     for a past day) the time is the logging moment and the span is unknown: automatic moves of the same kind (Yürüyüş/Koşu) that day are skipped. */
   function exerciseKcal(exercise,moves,day){
     const at=(d,t)=>dayNum(d||day||"1970-01-01")*1440+ +t.slice(0,2)*60+ +t.slice(3),own=x=>!day||!x.day||x.day===day;
     const iv=exercise.filter(s=>s.v>0&&!s.bt).map(s=>{const e=at(s.day,s.time);return [e-s.v,e]});
@@ -225,10 +230,10 @@ const Algo=(()=>{
     }
     return k;
   }
-  /* Hedefe eklenecek kısım: yakılanın yarısı (tahmin hatalı, TDEE'de zaten ortalama hareket var), en çok 800, asla negatif: hedefi yalnız artırır. */
-  const moveBonus=(kcal,pct=0.5)=>kcal>0?Math.min(800,Math.round(kcal*pct)):0;
-  /* Protein 1,6-2,2 g/kg: BMI≥30'da ayarlı ağırlık (BMI 25 ağırlığı + fazlanın %25'i), boy yoksa üst 2,0 g/kg, her durumda üst 200 g.
-     Böbrek/karaciğer anahtarı, sert engel ya da 65+ yaşta ilaç/yumuşak engel varsa aralık yok: hekimle belirlenir. o: riskFlags girdisi. */
+  /* Added to the target: half of what was burned (estimates are rough and the TDEE already holds average movement), at most 800, never negative, so it only raises the target. */
+  const moveBonus=kcal=>kcal>0?Math.min(800,Math.round(kcal*0.5)):0;
+  /* Protein 1.6-2.2 g/kg: at BMI>=30 on an adjusted weight (the BMI 25 weight + 25% of the excess), 2.0 g/kg upper bound without a height, 200 g at most.
+     No range with a kidney/liver keyword, a hard block, or at 65+ with medication or a soft block: the doctor sets it. o: riskFlags input. */
   const PROTEIN_NOTE="Böbrek ya da karaciğer sorunun varsa hekimine danış.";
   function protein(o){
     if(!(o.kg>0))return {range:null,doc:false};
@@ -239,7 +244,7 @@ const Algo=(()=>{
     return {range:[Math.min(Math.round(1.6*b),Math.round(0.8*hi)),hi],doc:false};
   }
 
-  /* Salon */
+  /* Gym */
   function est1RM(kg,reps){
     if(!(reps>0)||reps>20)return 0;
     if(!(kg>0))return 0;
@@ -247,8 +252,8 @@ const Algo=(()=>{
   }
   function volume(sets){return sets.reduce((s,x)=>s+(x.done!==false&&!x.w&&x.reps>0?(x.kg||0)*x.reps:0),0)}
   const PLATES=[25,20,15,10,5,2.5,1.25];
-  /* Bir tarafa en az plaka; tam tutmazsa made hedefin altındaki en yakın yapılabilir ağırlık. inv büyükten küçüğe sıralı.
-     Düzenlenmiş plaka setinde ([15,10] gibi) açgözlü yöntem 20'yi yapamaz, bu yüzden 0,25 kg birimlerinde küçük bir DP. */
+  /* Fewest plates per side; when the target is not exact, made is the nearest achievable weight below it. inv is sorted largest first.
+     With a custom plate set (such as [15,10]) the greedy method cannot make 20, hence a small DP in 0.25 kg units. */
   function plates(total,bar=20,inv=PLATES){
     const rest=(total-bar)/2,side=[];
     if(!(rest>=0))return {side,made:bar};
@@ -258,7 +263,7 @@ const Algo=(()=>{
     for(let r=u;r>0;){const p=inv.find(x=>U(x)<=r&&best[r-U(x)]===best[r]-1);side.push(p);r-=U(p)}
     return {side,made:bar+2*side.reduce((a,b)=>a+b,0)};
   }
-  /* Boş bar × 10, sonra hedefin %40/60/80'i; yapılabilir plakaya yuvarlanır, bar altı ve tekrar eden atılır. */
+  /* Empty bar x 10, then 40/60/80% of the target, rounded to achievable plates; sets below the bar and duplicates are dropped. */
   function warmup(target,bar=20,inv=PLATES){
     const out=[];
     for(const [f,reps] of [[0,10],[0.4,5],[0.6,3],[0.8,1]]){
@@ -269,9 +274,9 @@ const Algo=(()=>{
     }
     return out;
   }
-  /* Çift ilerleme: tüm setler üst tekrara çıkınca ağırlık artır, değilse aynı ağırlıkta +1 tekrar.
-     prev: önceki seansların setleri (yeniden eskiye). Aynı ağırlıkta üst üste 2 seans alt tekrarın altında kalınırsa %10 düşürme önerilir;
-     son 3 seansta tahmini 1TM artmadıysa deload notu eklenir (yalnız ağırlık artırılmıyorsa). Isınma setleri hiçbir hesaba girmez. */
+  /* Double progression: raise the weight once all sets reach the upper reps, otherwise +1 rep at the same weight.
+     prev: sets of earlier sessions, newest first. Two sessions in a row below the lower reps at the same weight suggest a 10% drop;
+     a deload note is added when the estimated 1RM did not improve over the last 3 sessions (only when the weight is not being raised). Warm-up sets never count. */
   function nextTarget(sets,{lo=8,hi=12,inc=2.5,prev=[]}={}){
     const work=a=>a.filter(x=>x.reps>0&&!x.w),top=a=>{const kg=Math.max(...a.map(x=>x.kg||0));return {kg,min:Math.min(...a.filter(x=>(x.kg||0)===kg).map(x=>x.reps))}};
     const s=work(sets);if(!s.length)return null;

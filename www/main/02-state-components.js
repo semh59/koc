@@ -1,4 +1,4 @@
-/* ---------- arayüz durumu ---------- */
+/* ---------- UI state ---------- */
 let tab="today",via=null,range=30,toastTimer=null,lastUndo=null,logOff=0,recList=[],lastDay=dayKey();
 function goalInfo(cur,first){
   const g=S.settings.goalKg;if(!(g>0))return null;
@@ -15,28 +15,28 @@ const QUOTES=[
   "Su iç, yürü, uyu. Temeller işe yarar.",
   "Bugün yaptığın 20 dakika, yapmadığın 60 dakikadan iyidir."
 ];
-function coach(){
+function dailyTip(){
   const t=dayKey(),h=new Date().getHours();
   const sh=S.settings.waterMl,water=sum("water",t,t);
   if(!Object.keys(weights(t,t)).length&&h<12)return "Sabah tartısını gir. Tuvaletten sonra, kahvaltıdan önce en tutarlısı.";
   const exp=sh*Math.min(Math.max((h-8)/14,0),1);
   if(water<exp-250)return `Su biraz geride: ${Math.round(water)} ml içtin, şu an ${Math.round(exp)} ml civarı olmalı.`;
   if(!of("exercise",t).length&&h>=17)return "Bugün hareket yok. 20 dakikalık tempolu yürüyüş de sayılır.";
-  return QUOTES[Math.floor(Date.now()/864e5)%QUOTES.length];
+  return QUOTES[Algo.dayNum(t)%QUOTES.length];
 }
 
-/* ---------- bileşenler ---------- */
-/* Yuvarlak uçlu halka %93'te kapalı görünür: bitmeden dolu sanılmasın diye tamamlanmayan halka en çok %92 çizilir. */
+/* ---------- components ---------- */
+/* A round-capped ring looks closed at 93%: an incomplete ring is drawn at 92% at most so it is not mistaken for full. */
 function ring(p,color,center,label,sub,unit,cls=""){
   const r=34,c=2*Math.PI*r,f=p>=1?1:Math.min(Math.max(p,0),.92);
   return `<div class="ring ${cls}"><svg viewBox="0 0 84 84" aria-hidden="true"><circle class="rt" cx="42" cy="42" r="${r}"/>${f>0?`<circle class="rp" cx="42" cy="42" r="${r}" style="stroke:${color}" stroke-dasharray="${(c*f).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 42 42)"/>`:""}</svg><div class="rc num">${center}<small>${unit}</small></div><div class="rl">${label}</div><div class="rs num">${sub}</div></div>`;
 }
-/* Tümü: ilk kayıttan bugüne gün sayısı (en az 30). */
-const trendAll=()=>{const e=S.entries.reduce((m,x)=>x.day<m?x.day:m,dayKey());return Math.max(30,Math.round((new Date(+dayKey().slice(0,4),+dayKey().slice(5,7)-1,+dayKey().slice(8,10))-new Date(+e.slice(0,4),+e.slice(5,7)-1,+e.slice(8,10)))/864e5)+1)};
+/* "All": days from the first entry to today (at least 30). */
+const trendAll=()=>Math.max(30,Algo.dayNum(dayKey())-Algo.dayNum(S.entries.reduce((m,x)=>x.day<m?x.day:m,dayKey()))+1);
 function trendSeries(N){
   const keys=[];for(let i=N-1;i>=0;i--)keys.push(keyOff(-i));
   const w=weights(keys[0],keys[N-1]);
-  const tr=Algo.trend(weights("0000",keys[N-1])); // aralıktan önceki geçmişle birlikte üstel ortalama
+  const tr=Algo.trend(weights("0000",keys[N-1])); // the exponential average includes the history before the range
   const pts=[],ma=[];
   keys.forEach((k,i)=>{
     if(w[k]!=null){pts.push({i,v:w[k],k});ma.push({i,v:tr[k],k})}
@@ -49,7 +49,7 @@ function chart(N){
   const W=340,H=180,pl=52,pr=10,pt=10,pb=24;
   let lo=Math.min(...pts.map(p=>p.v)),hi=Math.max(...pts.map(p=>p.v));
   const g=S.settings.goalKg;
-  /* Eksen yalnız veriye göre: uzak hedef eğimi ezmesin, kenarda okla gösterilir. */
+  /* The axis follows the data only: a far goal must not flatten the slope, it is shown at the edge with an arrow. */
   const pay=Math.max((hi-lo)*.15,.4);lo-=pay;hi+=pay;if(hi-lo<2){const m=(hi+lo)/2;lo=m-1;hi=m+1}
   const X=i=>pl+(W-pl-pr)*(N<=1?0:i/(N-1)),Y=v=>pt+(H-pt-pb)*(1-(v-lo)/(hi-lo));
   let grid="";
@@ -64,8 +64,8 @@ function chart(N){
   <div class="legend"><span><i style="background:var(--prim)"></i>Trend çizgisi</span><span><i style="background:var(--mut);opacity:.6"></i>Günlük tartı</span>${goal?`<span><i style="background:var(--kcal)"></i>Hedef</span>`:""}</div>`;
 }
 
-/* Trend küçük çubuk grafiği: son N gün, kesik çizgi günlük hedef; dokununca değer balonu (chartTip). */
-/* 120 günden uzun aralıkta çubuklar haftalık (400+ günde aylık) ortalamadır: günlük çubuk piksel altına düşer. */
+/* Small bar chart for Trend: the last N days, dashed line = daily goal; touching shows a value bubble (chartTip). */
+/* Beyond 120 days the bars are weekly averages (monthly beyond 400): a daily bar would be thinner than a pixel. */
 function miniBars(N,val,color,goal,name,unit,f=Math.round){
   const W=340,H=110,pt=6,pb=22,keys=[];for(let i=N-1;i>=0;i--)keys.push(keyOff(-i));
   const v=keys.map(val),has=v.filter(x=>x>0);

@@ -26,9 +26,8 @@ ok("onay bugün: yumuşak kalkar",cl(T).cleared&&!cl(T).block&&cl(T).soft.length
 ok("onay 29 gün önce geçerli, 30 gün önce değil",cl("2026-09-04").cleared&&!cl("2026-09-03").cleared);
 ok("gelecek tarihli, bozuk ya da boş onay geçersiz",!cl("2026-10-10").cleared&&!cl("2026-13-40x").cleared&&!cl("").cleared&&!cl(undefined).cleared&&!cl(5).cleared);
 ok("onay sert engeli kaldırmaz",(r=>r.cleared&&r.block===r.hard[0])(R({age:16,meds:1,clearedAt:T})));
-// geriye uyum: eski lossBlock çağrıları
-ok("eski lossBlock: health:true engeller, boş profil engellemez",A.lossBlock({age:30,cm:175,kg:80,goalKg:70,health:true})!==""&&A.lossBlock({age:30,cm:175,kg:80,goalKg:70})==="");
-ok("eski lossBlock: yaş 16 ve düşük hedef BMI",A.lossBlock({age:16,cm:170,kg:80,goalKg:70})!==""&&A.lossBlock({age:30,cm:175,kg:80,goalKg:50})!=="");
+ok("lossBlock: sağlık notu engeller, boş profil engellemez",A.lossBlock({age:30,cm:175,kg:80,goalKg:70,healthNote:"var"})!==""&&A.lossBlock({age:30,cm:175,kg:80,goalKg:70})==="");
+ok("lossBlock: yaş 16 ve düşük hedef BMI",A.lossBlock({age:16,cm:170,kg:80,goalKg:70})!==""&&A.lossBlock({age:30,cm:175,kg:80,goalKg:50})!=="");
 ok("lossBlock yeni alanları kullanır (ilaç, ölçüm, ed)",A.lossBlock({...base,meds:1})!==""&&A.lossBlock({...base,bpCount90d:1})!==""&&A.lossBlock({...base,edFlag:true})!=="");
 ok("böbrek/karaciğer/diyaliz anahtarı kidney",R({healthNote:"böbrek yetmezliği"}).kidney&&R({healthNote:"diyalize giriyorum"}).kidney&&R({healthNote:"Karaciğer yağlanması"}).kidney);
 // protein: ayarlı ağırlık, üst sınırlar, hekim yönlendirmesi

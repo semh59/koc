@@ -1,5 +1,5 @@
 "use strict";
-/* Çekirdek: data-act eylem kaydı. Her modül kendi eylemini kaydeder; dağıtıcı hiçbir modülü tanımaz. */
+/* Core: the data-act action registry. Each module registers its own actions; the dispatcher knows no module. */
 const Act=(()=>{
   const exact=new Map(),pre=[];
   return {
@@ -8,7 +8,7 @@ const Act=(()=>{
     run:a=>{const f=exact.get(a);if(f)return void f(a);const p=pre.find(([x])=>a.startsWith(x));if(p)p[1](a)}
   };
 })();
-/* Veri modülleri kendi hook'larını buraya kaydeder; tüketiciler (gizlilik, CSV, geçmiş, Koç) modül alanlarını bilmez, yalnız listeyi gezer. */
-const Data={privacy:[],csv:[],csvEntries:[],hist:[],histSearch:[],dayRows:[],dayWork:[]}; // privacy satırı: [ad, say, sil, sıra]
+/* Data modules register their hooks here; consumers (privacy, CSV, history, Coach) know no module fields and only walk the lists. */
+const Data={privacy:[],csv:[],csvEntries:[],hist:[],histSearch:[],dayRows:[],dayWork:[]}; // privacy row: [label, count, clear, order]
 if(typeof document!=="undefined")document.addEventListener("nw:boot",()=>Data.privacy.sort((a,b)=>(a[3]??99)-(b[3]??99)));
 if(typeof module!=="undefined")module.exports={Act,Data};

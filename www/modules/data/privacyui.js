@@ -7,7 +7,7 @@ function pvDelete(i){
   confirmSheet({title:`${name} silinsin mi?`,body:`${name}: ${n()} kayıt silinecek. Bu geri alınamaz. Son yedek: ${lb?fd(lb):"yok"}. Önce yedek almanı öneririz. Silinsin mi?`,ok:"Sil",danger:true}).then(ok=>{if(ok)pvDeleteDo(name,del)});
 }
 function pvDeleteDo(name,del){
-  if(del()===false)return;Store.del("nw_state_previous");Store.del("nw_state_corrupt");Store.del("nw_state_conflict");otherBytes=lsOther();save();render();scheduleReminders().then(setNotif);sheetPrivacy();toast(`${name} silindi`);
+  if(del()===false)return;Store.del("nw_state_previous");Store.del("nw_state_corrupt");otherBytes=lsOther();save();render();scheduleReminders().then(setNotif);sheetPrivacy();toast(`${name} silindi`);
 }
 /* Gizlilik ve veri: verinin nerede durduğu, internete çıkan hizmetler ve Koç açık rızası. Sheet olduğu için onboarding'den de açılır. */
 function sheetPrivacy(){

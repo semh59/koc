@@ -1,4 +1,4 @@
-/* ---------- olaylar ---------- */
+/* ---------- events ---------- */
 document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-rc],[data-fv],[data-fva],[data-fvd],[data-tp],[data-tpd],[data-sp],[data-lo],[data-kd],[data-g],[data-sex],[data-actl],[data-thm],[data-c],[data-food],[data-fp],[data-ml],[data-meal],[data-mset],[data-suall]");
   if(ev.target.id==="scrim")return closeSheet();
@@ -37,10 +37,10 @@ document.addEventListener("click",ev=>{
   if(d.fvd!==undefined){S.favFoods.splice(+d.fvd,1);save();$("#frl").innerHTML=favHtml();return}
   if(d.act)return Act.run(d.act);
   if(d.go){
-    ({weight:goWeight,food:goFood,nutrition:goNutrition,mydel:goMyDelete,tpl:goTpl,steps:goSteps,exercise:goExercise,note:goNote,restore:goRestore,health:()=>{S.settings.healthNote=$("#hn").value.trim().slice(0,500);cNoteCheck();save();closeSheet();render();toast("Kaydedildi")}}[d.go]||(()=>{}))();
+    ({weight:goWeight,food:goFood,nutrition:goNutrition,mydel:goMyDelete,tpl:goTpl,steps:goSteps,exercise:goExercise,note:goNote,restore:goRestore,health:()=>{S.settings.healthNote=$("#hn").value.trim().slice(0,500);cNoteCheck();save();closeSheet();render();toast("Kaydedildi")}})[d.go]?.();
     if(d.go==="copy")backupText().then(v=>{if(!v)return;(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast("Panoya kopyalandı"),()=>{const b=$("#bk");b.value=v;b.select();document.execCommand&&document.execCommand("copy");toast("Metni seçtim, kopyala")})});
     if(d.go==="share")shareBackup();
-    if(d.go==="download")backupText().then(v=>{if(!v)return;try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([v],{type:"application/json"}));a.download=`neowell-yedek-${dayKey()}.json`;a.click();markBackup()}catch(e){toast("İndirme bu cihazda çalışmadı, Kopyala'yı kullan")}});
+    if(d.go==="download")backupText().then(v=>{if(!v)return;try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([v],{type:"application/json"}));a.download=`neowell-yedek-${dayKey()}.json`;a.click();markBackup()}catch{toast("İndirme bu cihazda çalışmadı, Kopyala'yı kullan")}});
   }
 });
 $("#tundo").addEventListener("click",()=>{
@@ -49,6 +49,7 @@ $("#tundo").addEventListener("click",()=>{
   else if(u!=null){S.entries=S.entries.filter(e=>e.id!==u);save();render()}
   $("#toast").classList.remove("on");
 });
+const TOGGLES={mk:"moveKcalOn",rpe:"rpeOn",gdv:"gdVoice",gdb:"gdVib",aw:"awakeOn"}; // data-<key> checkbox -> boolean setting
 document.addEventListener("change",ev=>{
   const t=ev.target;
   if(t.id==="bkfile"){
@@ -58,11 +59,8 @@ document.addEventListener("change",ev=>{
     return;
   }
   if(t.dataset.gi){gInput(t);return}
-  if(t.dataset.mk!==undefined){S.settings.moveKcalOn=t.checked;save();return}
-  if(t.dataset.rpe!==undefined){S.settings.rpeOn=t.checked;save();return}
-  if(t.dataset.gdv!==undefined){S.settings.gdVoice=t.checked;save();return}
-  if(t.dataset.gdb!==undefined){S.settings.gdVib=t.checked;save();return}
-  if(t.dataset.aw!==undefined){S.settings.awakeOn=t.checked;save();gAwake();return}
+  const tg=Object.keys(TOGGLES).find(k=>t.dataset[k]!==undefined);
+  if(tg){S.settings[TOGGLES[tg]]=t.checked;save();if(tg==="aw")gAwake();return}
   if(t.dataset.set){
     const k=t.dataset.set,st=S.settings,[lo,hi,int]=RANGES[k],raw=t.value.trim();
     const wk=k==="goalKg",show=x=>x?(wk?dw(x).replace(/,0$/,""):String(x).replace(".",",")):"";
@@ -101,7 +99,7 @@ document.addEventListener("keydown",ev=>{
 document.addEventListener("click",ev=>{const b=ev.target.closest("[data-sr]");if(b){stepRange=+b.dataset.sr;render()}});
 $("#sheet").addEventListener("click",ev=>{if(ev.target.closest("[data-shx]"))closeSheet()});
 $("#cfm").addEventListener("click",ev=>{if(!cfmDone)return;const b=ev.target.closest("[data-cf]");if(b)cfmDone(b.dataset.cf==="1");else if(ev.target.id==="cfm")cfmDone(false)});
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="settings-modules")render()});stepsSync();renderSoft();cPlateauCheck();abRun();if(Date.now()-lastSched>6*36e5||!exactOk)scheduleReminders().then(setNotif)}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="settings-modules")render()});stepsSync();renderSoft();cPlateauCheck();abRun();if(Date.now()-lastSched>RESCHEDULE_MS||!exactOk)scheduleReminders().then(setNotif)}});
 
 document.querySelectorAll("[data-ic]").forEach(e=>e.innerHTML=Icons.svg(e.dataset.ic));
 render();
@@ -115,16 +113,14 @@ abBoot();
 if(S.settings.stepsOn&&SC()){SC().start().catch(()=>{});stepsSync();motionBoot()}
 setInterval(stepsTick,STEP_POLL);
 if(DH())DH().info().then(r=>{oem=String(r.manufacturer||"");render()},()=>{});
-try{const P=window.Capacitor&&window.Capacitor.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp","BarcodeScanner","StepCounter","Ocr","Motion","Speech","Widget","BackupFolder","MedWake","Health"].map(n=>n+"="+typeof P[n]).join(" "))}catch(e){}
+try{const P=window.Capacitor?.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp","BarcodeScanner","StepCounter","Ocr","Motion","Speech","Widget","BackupFolder","MedWake","Health"].map(n=>n+"="+typeof P[n]).join(" "))}catch{}
 setInterval(()=>{if(dayKey()!==lastDay&&!viewBusy()){lastDay=dayKey();logOff=0;render()}},60000);
-try{const ln=LN();if(ln&&ln.addListener)ln.addListener("localNotificationActionPerformed",notifTap)}catch(e){}
+LN()?.addListener?.("localNotificationActionPerformed",notifTap);
 function widgetOpen(){tab="today";logOff=0;closeSheet();render();window.scrollTo(0,0)}
-try{const wg=WG();if(wg&&wg.addListener)wg.addListener("open",widgetOpen)}catch(e){}
-try{
-  const AP=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;
-  if(AP&&AP.addListener)AP.addListener("backButton",()=>{if(!backKey())AP.exitApp&&AP.exitApp()});
-}catch(e){}
-/* Android geri tuşu: sayfa, onboarding adımı, alt ekran, Bugün sırasıyla; false dönerse uygulamadan çıkılır. */
+WG()?.addListener?.("open",widgetOpen);
+const AP=plugin("App");
+AP?.addListener?.("backButton",()=>{if(!backKey())AP.exitApp?.()});
+/* Android back key: sheet, onboarding step, sub-screen, Today in that order; false exits the app. */
 function backKey(){
   if(lockUp())return true;
   if(alarmBack())return true;
@@ -137,11 +133,11 @@ function backKey(){
   return false;
 }
 $("#back").addEventListener("click",goBack);
-/* Koç sohbetinin alt boşluğu yazma alanının gerçek yüksekliğinden gelir: son mesaj alanın arkasında kalmaz (klavye, yatay ekran, büyük yazı tipi). */
+/* The Coach chat's bottom padding comes from the composer's real height, so the last message never hides behind it (keyboard, landscape, large font). */
 function cmpSet(){const c=$("#composer");if(c.hidden)return;document.documentElement.style.setProperty("--cmp",Math.ceil(innerHeight-c.getBoundingClientRect().top)+12+"px")}
 if(window.ResizeObserver)new ResizeObserver(cmpSet).observe($("#composer"));
 addEventListener("resize",cmpSet);
-/* Klavye: ekran küçülse de küçülmese de (kenardan kenara) alt çubuk gizlenir, sabit alanlar --kb kadar yükselir, odaktaki alan görünür kalır. */
+/* Keyboard: whether or not the screen shrinks (edge to edge) the bottom bar is hidden, fixed areas rise by --kb, and the focused field stays visible. */
 {const vv=window.visualViewport;let base=0,lw=innerWidth;
   const kb=()=>{if(!vv)return;const h=vv.height;if(innerWidth!==lw){lw=innerWidth;base=0}base=Math.max(base,innerHeight,h);const open=base-h>120,b=Math.max(0,innerHeight-h-vv.offsetTop),d=document.documentElement.style;
     document.body.classList.toggle("kb",open);d.setProperty("--kb",open?b+"px":"0px");d.setProperty("--vh",h+"px");cmpSet()};

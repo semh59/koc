@@ -22,7 +22,7 @@
   <button data-tab="coach"><span class="ic" data-ic="coach"></span>Koç</button>
   <button data-tab="more"><span class="ic" data-ic="more"></span>Daha fazla</button>
 </div></nav>
-<script>/* Büyük yazıda menü etiketleri sarılıp menü uzar; sabit konumlu parçalar --nx kadar yukarı kayar. */
+<script>/* With large text the menu labels wrap and the menu grows; fixed-position parts move up by --nx. */
 {const n=document.querySelector("nav .in");if(window.ResizeObserver)new ResizeObserver(()=>document.documentElement.style.setProperty("--nx",Math.max(0,n.getBoundingClientRect().height-parseFloat(getComputedStyle(n.firstElementChild).minHeight))+"px")).observe(n)}</script>
 <div id="composer" hidden role="region" aria-label="Koça yaz">
   <div class="chiprow"><button class="chip" data-act="water"><span data-ic="water"></span> +250</button><button class="chip" data-act="food"><span data-ic="food"></span> Yemek</button><button class="chip" data-act="weight"><span data-ic="weight"></span> Kilo</button><button class="chip" data-act="exercise"><span data-ic="exercise"></span> Spor</button></div>
@@ -123,12 +123,12 @@
 <script type="text/x-main" data-src="main/06-events.js"></script>
 <script type="text/x-main" data-src="main/07-actions.js"></script>
 <script>
-/* Ana betik, depo (IndexedDB) okunduktan sonra çalışır: S ve load() eşzamanlı kalır, erken kayıt varsayılanla gerçek veriyi ezemez. */
+/* The main script runs after the store (IndexedDB) has been read: S and load() stay synchronous, and an early save cannot overwrite real data with defaults. */
 (function(){
   const parts=[...document.querySelectorAll('script[type="text/x-main"]')];
   const text=e=>e.textContent||fetch(e.dataset.src).then(r=>{if(!r.ok)throw 0;return r.text()});
-  const go=t=>{const s=document.createElement("script");s.textContent=t.join("");document.body.appendChild(s);document.documentElement.dataset.boot=1;document.dispatchEvent(new Event("nw:boot"))}; // nw:boot: S ve render hazır, DOMContentLoaded yerine
-  const run=()=>{const t=parts.map(text);t.some(x=>x&&x.then)?Promise.all(t).then(go):go(t)}; // parçalar gömülüyse (testler) eşzamanlı
+  const go=t=>{const s=document.createElement("script");s.textContent=t.join("");document.body.appendChild(s);document.documentElement.dataset.boot=1;document.dispatchEvent(new Event("nw:boot"))}; // nw:boot: S and render are ready; used instead of DOMContentLoaded
+  const run=()=>{const t=parts.map(text);t.some(x=>x&&x.then)?Promise.all(t).then(go):go(t)}; // parts embedded in the page (tests) run synchronously
   const p=Store.init();
   if(p&&p.then)p.then(run);else run();
 })();
