@@ -5,7 +5,7 @@ const LOCK_GRACE=30000;
 const AL=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.AppLock;
 let lockHiddenAt=0,lockBusy=false;
 /* İlk boyamadan önce: kilit açıksa içerik gizli başlar (ayar sayfa durumu yüklenmeden ham kayıttan okunur). */
-try{if(JSON.parse(localStorage.getItem("koc_v1")).settings.lockOn===true)document.documentElement.classList.add("locked")}catch(e){}
+try{const f=localStorage.getItem("nw_lockon");if(f==="1"||(f==null&&JSON.parse(localStorage.getItem("koc_v1")).settings.lockOn===true))document.documentElement.classList.add("locked")}catch(e){} // nw_lockon save() ile güncellenir; yoksa (eski sürümden) ham kayıttan
 const lockUp=()=>document.documentElement.classList.contains("locked");
 const lockSecure=on=>{const a=AL();if(a)a.setSecure({on}).catch(()=>{})};
 
@@ -55,4 +55,4 @@ document.addEventListener("visibilitychange",()=>{
   if(document.hidden){lockHiddenAt=Date.now();if(S.settings.lockOn)lockSecure(true)}
   else if(S.settings.lockOn&&lockHiddenAt&&Date.now()-lockHiddenAt>=LOCK_GRACE)lockShow();
 });
-document.addEventListener("DOMContentLoaded",()=>{if(S.settings.lockOn&&AL())lockShow();else document.documentElement.classList.remove("locked")});
+document.addEventListener("nw:boot",()=>{if(S.settings.lockOn&&AL())lockShow();else document.documentElement.classList.remove("locked")});

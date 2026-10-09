@@ -4,7 +4,7 @@ const www=f=>path.join(__dirname,"../www",f);
 let bad=0;const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const index=fs.readFileSync(www("index.html"),"utf8");
 const files=[...index.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m=>m[1]).filter(f=>!f.startsWith("vendor/"));
-const src=(files.map(f=>fs.readFileSync(www(f),"utf8")).join("\n")+"\n"+[...index.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]).join("\n"))
+const src=(files.map(f=>fs.readFileSync(www(f),"utf8")).join("\n")+"\n"+[...index.matchAll(/<script(?: type="text\/x-main" id="mainjs")?>([\s\S]*?)<\/script>/g)].map(m=>m[1]).join("\n"))
   .replace(/(^|[\s;{}),])\/\*[\s\S]*?\*\//g,"$1").replace(/(^|[\s;{}])\/\/[^\n]*/g,"$1"); // yorumdaki adlar çağrı sayılmasın
 
 // ---- statik: çağrı grafiği ----

@@ -127,4 +127,4 @@ document.addEventListener("change",ev=>{
   if(t.dataset&&t.dataset.phf){const f=t.files&&t.files[0];t.value="";if(f)phAdd(f)}
   else if(t.id==="pha"||t.id==="phb")phCmp();
 });
-document.addEventListener("DOMContentLoaded",phLoad); // ana betik (render, S) çalıştıktan sonra
+document.addEventListener("nw:boot",phLoad); // ana betik (render, S) çalıştıktan sonra

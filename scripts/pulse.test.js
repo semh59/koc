@@ -32,6 +32,13 @@ let acc=0;
 for(let s=1;s<=30;s++){const rn=rng(s*7),o=[];let t=0,v=210;while(t<30000){v+=gauss(rn)*0.6;o.push({t,r:v,g:60});t+=33}if(P.analyze(o).ok)acc++}
 ok("rastgele gürültü ve yürüyen taban sayı üretmez (30 denemede 0)",acc===0,acc);
 const two=sig({bpm:70,seed:3}).map((s,i,a)=>({...s,r:s.r+1.5*Math.sin(2*Math.PI*(a[i].t/1000)*(120/60))}));
+/* Telefonda görülen durum: ~17 kare/sn'de özilinti yarım periyodu (2T) seçip doğru ölçümü reddediyordu. */
+for(const sd of [3,15,25])ok(`17 kare/sn, 86 atım/dk (özilinti oktav hatası yok, tohum ${sd})`,(a=>a.ok&&Math.abs(a.bpm-86)<=3)(P.analyze(sig({bpm:86,fps:17,noise:0.6,amp:1.2,hrv:0.03,seed:sd}))));
+/* Atım aralıkları çok oynuyorsa (±%45) düzenli sayılmaz, sayı verilmez. */
+function beats(jit,seed){const rn=rng(seed),o=[],T=[];let x=500,t=0;while(x<30000){T.push(x);x+=700*(1+(rn()-0.5)*2*jit)}
+  while(t<30000){let v=0;for(const tb of T){const d=(t-tb)/1000;if(Math.abs(d)<0.6)v+=Math.exp(-d*d/(2*0.07*0.07))}o.push({t:Math.round(t),r:210+1.5*v+0.2*gauss(rn),g:60});t+=33}return o}
+ok("düzenli atım (±%10 oynama) okunur, çok düzensiz (±%45) reddedilir",P.analyze(beats(0.1,9)).ok&&P.analyze(beats(0.45,9)).reason==="noisy");
+ok("başarısız ve başarılı sonuçta teknik ayrıntı (fps, r, g, sd, pk) döner",(a=>a.dg&&a.dg.fps>0&&a.dg.r>0&&"sd" in a.dg&&"pk" in a.dg)(P.analyze(beats(0.45,9)))&&!!P.analyze(beats(0.1,9)).dg);
 ok("iki farklı ritim üst üste ise (hareket, çift kaynak) sayı vermez ya da doğruyu verir",(a=>!a.ok||Math.abs(a.bpm-70)<=3||Math.abs(a.bpm-120)<=3)(P.analyze(two)));
 const half=sig({bpm:72,seed:2}).map((s,i,a)=>i>a.length/2&&i%7<3?{...s,r:s.r+40}:s);
 ok("yarı yolda parmak kayarsa yanlış sayı verilmez",(a=>!a.ok||Math.abs(a.bpm-72)<=3)(P.analyze(half)));

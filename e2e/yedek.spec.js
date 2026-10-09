@@ -60,7 +60,7 @@ test("şifreli yedek: al, tüm verileri sil, parolasız ve yanlış parolayla re
   expect(st.entries.map(e=>e.text).sort()).toEqual(["","Gizli sağlık notum"]);
   expect(st.entries.find(e=>e.type==="kilo").v).toBe(81.5);
   expect(await page.evaluate("getKeys().groq")).toBe("gsk_test");
-  const prev=await page.evaluate(()=>JSON.parse(localStorage.getItem("koc_v1_onceki")));
+  const prev=await page.evaluate(()=>JSON.parse(Store.get("koc_v1_onceki")));
   expect(prev.entries.map(e=>e.text)).toEqual(["Sonradan yazılan"]);
   expect(st.settings.copyAt).toBe("2026-10-06");
   await app.go("ayar-veri");

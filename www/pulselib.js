@@ -31,16 +31,22 @@ const PulseLib=(()=>{
     const pd=[0];for(const v of d)pd.push(pd[pd.length-1]+v);
     return d.map((v,i)=>{const a=Math.max(0,i-2),b=Math.min(n,i+3);return (pd[b]-pd[a])/(b-a)});
   }
-  /* Özilinti: en güçlü periyot (40-200 atım/dk aralığı) ve gücü. */
+  /* Özilinti: 40-200 atım/dk aralığında en güçlü tepe; ama en kısa periyodun gücü ona yakınsa (en az %85) o alınır:
+     gerçek periyot T iken 2T de güçlü çıkar ve yarım atım sayısı (oktav hatası) dönerdi. */
   function autocorr(x){
-    const n=x.length,m=mean(x);let best=0,bl=0;
+    const n=x.length,m=mean(x),lo=Math.floor(HZ*60/LIM[1]),hi=Math.ceil(HZ*60/LIM[0]);
     const v0=x.reduce((s,a)=>s+(a-m)*(a-m),0);if(!v0)return null;
-    for(let lag=Math.floor(HZ*60/LIM[1]);lag<=Math.ceil(HZ*60/LIM[0]);lag++){
+    const c=[];let best=0;
+    for(let lag=lo-1;lag<=hi+1;lag++){
       let s=0;for(let i=0;i+lag<n;i++)s+=(x[i]-m)*(x[i+lag]-m);
-      s/=v0*(n-lag)/n;
-      if(s>best){best=s;bl=lag}
+      s/=v0*(n-lag)/n;c.push(s);if(lag>=lo&&lag<=hi&&s>best)best=s;
     }
-    return bl?{bpm:60*HZ/bl,power:best}:null;
+    if(!(best>0))return null;
+    for(let lag=lo;lag<=hi;lag++){
+      const s=c[lag-lo+1];
+      if(s>=0.85*best&&s>=c[lag-lo]&&s>=c[lag-lo+2])return {bpm:60*HZ/lag,power:s};
+    }
+    return null;
   }
   /* samples: [{t ms, r, g}] parmak kesintisiz üzerindeyken toplanan kareler. Sonuç {ok,bpm,n} ya da {ok:false,reason}. */
   function analyze(samples){
@@ -70,10 +76,13 @@ const PulseLib=(()=>{
     dg.cv=+(sdI/mean(kept)).toFixed(2);
     if(sdI/mean(kept)>0.15)return fail("noisy");
     const bpm=60/mean(kept),ac=autocorr(x);
-    if(ac)dg.ac=+ac.power.toFixed(2);
-    if(!ac||ac.power<0.3||Math.abs(ac.bpm-bpm)/bpm>0.12)return fail("noisy");
+    if(ac){dg.ac=+ac.power.toFixed(2);dg.acb=Math.round(ac.bpm)}
+    /* Atımlar çok düzenliyse (telefonda ~17 kare/sn'de özilinti gücü 0,2'ye düşebiliyor) güç eşiği 0,15'e iner; özilinti yine atım sayısıyla uyuşmalı. */
+    const reg=sdI/mean(kept)<=0.10&&kept.length>=20&&kept.length>=0.85*ibi.length;
+    const agree=!!ac&&Math.abs(ac.bpm-bpm)/bpm<=0.12;
+    if(!agree||ac.power<(reg?0.15:0.3))return fail("noisy");
     const r=Math.round(bpm);
-    return r>=LIM[0]&&r<=LIM[1]?{ok:true,bpm:r,n:kept.length+1}:fail("noisy");
+    return r>=LIM[0]&&r<=LIM[1]?{ok:true,bpm:r,n:kept.length+1,dg}:fail("noisy");
   }
 
   /* Kamera ölçümleri: {day,time,bpm}; geçersizi atar, tarih sırasına koyar, en son 20.000'ü tutar, kimlik verir. */

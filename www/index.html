@@ -431,6 +431,7 @@ button:is(.row,.prow,.rrow){width:100%}
 <div id="toast" role="status"><span id="tmsg"></span><button id="tundo" hidden>Geri al</button></div>
 
 <script src="icons.js"></script>
+<script src="storelib.js"></script>
 <script src="algo.js"></script>
 <script src="unitlib.js"></script>
 <script src="foods.js"></script>
@@ -496,7 +497,7 @@ button:is(.row,.prow,.rrow){width:100%}
 <script src="cycleui.js"></script>
 <script src="goalui.js"></script>
 <script src="onboardui.js"></script>
-<script>
+<script type="text/x-main" id="mainjs">
 "use strict";
 /* ---------- yardımcılar ---------- */
 const $=s=>document.querySelector(s);
@@ -683,11 +684,11 @@ function buildState(r){
 }
 /* Okunamayan kayıt silinmez: save() kilitlenir, kullanıcı ham veriyi dışa aktarır ya da bilerek boş başlar. */
 let recovery=null,loadNote="";
-function rawCopy(raw){try{localStorage.setItem("koc_v1_bozuk",raw);return true}catch(e){return false}}
+const rawCopy=raw=>Store.set("koc_v1_bozuk",raw);
 let S=load();
 function load(){
-  let raw=null,r=null;recovery=null;
-  try{raw=localStorage.getItem("koc_v1")}catch(e){}
+  let r=null;recovery=null;
+  const raw=Store.get("koc_v1");
   if(raw==null)return structuredClone(DEF);
   try{r=JSON.parse(raw)}catch(e){}
   if(!r||!Array.isArray(r.entries)){recovery={raw};return structuredClone(DEF)}
@@ -699,14 +700,19 @@ function load(){
   return b.S;
 }
 /* localStorage tarayıcıya göre 5-10 MB; JS dizesi UTF-16 olduğu için karakter başına 2 bayt sayılır. Yedek öncesi kopya gibi diğer anahtarlar da aynı kotadan yer. */
-const STORE_WARN=3.5e6;
+const STORE_WARN=Store.mode==="idb"?200e6:3.5e6; // IndexedDB kotası diskle sınırlı; 3,5 MB yalnız localStorage kipinde geçerli
 const lsOther=()=>{let n=0;try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k!=="koc_v1")n+=(k.length+(localStorage.getItem(k)||"").length)*2}}catch(e){}return n};
 let saveFail=false,otherBytes=lsOther(),storeBytes=otherBytes+JSON.stringify(S).length*2;
 /* Yazılamazsa değişiklik bellekte kalır: her seferinde söylenir, Bugün ve Ayarlar'da kalıcı uyarı çıkar, yedek ekranı bellekteki hali alır. */
 const ARC_MAX=1.5e6; // arşiv sohbetlerinin JSON karakter sınırı: 20 sohbet x 150 mesaj x 1500 karakter ~9,8 MB'a çıkabilir
 let lastJ="";
 /* Geri yüklemeden önceki güvenlik kopyası, kullanıcı gördüm diyene ya da 7 gün geçene kadar korunur; otomatik yedek gibi küçük yazımlar (save(true)) onu silerek yer açmaz. */
-const copyHeld=()=>!!S.settings.copyAt&&(Date.parse(dayKey())-Date.parse(S.settings.copyAt))/864e5<7&&lsGet("koc_v1_onceki")!=null;
+const copyHeld=()=>!!S.settings.copyAt&&(Date.parse(dayKey())-Date.parse(S.settings.copyAt))/864e5<7&&Store.get("koc_v1_onceki")!=null;
+/* Kilit ekranı ilk boyamadan önce gerekir (lockui.js); büyük kayıt metnini ayrıştırmamak için küçük bir bayrak tutulur. */
+let lockSeen=null;
+function lockFlag(){const v=S.settings.lockOn===true?"1":"0";if(v!==lockSeen){lockSeen=v;try{localStorage.setItem("nw_lockon",v)}catch(e){}}}
+lockFlag();
+Store.onState(f=>{saveFail=f;if(f)toast("Son değişiklik kaydedilemedi. Uygulamayı kapatmadan yedek al.");else if(typeof render==="function")render()});
 function save(soft){
   if(recovery)return false;
   let j=JSON.stringify(S);
@@ -715,12 +721,14 @@ function save(soft){
     if(n){j=JSON.stringify(S);toast(`Depolama için en eski ${n} arşiv sohbeti silindi`)}
   }
   storeBytes=otherBytes+j.length*2;
+  lockFlag();
+  if(Store.mode==="idb"){Store.set("koc_v1",j);lastJ=j;fastWatch();return !saveFail} // yazım başarısızlığı Store.onState ile saveFail'e yansır
   try{localStorage.setItem("koc_v1",j);saveFail=false}
   catch(e){
     if(soft&&copyHeld())return false;
     /* Dolu depoda önce yedek kopyaları (geri yükleme öncesi, okunamayan kayıt) gider, kullanıcı verisi değil. */
     let ok=false;
-    for(const k of ["koc_v1_onceki","koc_v1_bozuk"])if(!ok&&lsGet(k)!=null){lsDel(k);try{localStorage.setItem("koc_v1",j);ok=true}catch(e2){}}
+    for(const k of ["koc_v1_onceki","koc_v1_bozuk"])if(!ok&&Store.get(k)!=null){Store.del(k);try{localStorage.setItem("koc_v1",j);ok=true}catch(e2){}}
     otherBytes=lsOther();storeBytes=otherBytes+j.length*2;
     if(!ok){saveFail=true;toast("Son değişiklik kaydedilemedi: depolama dolu. Uygulamayı kapatmadan yedek al.");return false}
     saveFail=false;toast("Depolama doluydu: eski güvenlik kopyaları silindi");
@@ -729,10 +737,16 @@ function save(soft){
 }
 /* Başka sekme (yalnız web) kaydettiyse onun durumu alınır; yoksa bu sekme sonraki kayıtta onu eski veriyle ezerdi. */
 addEventListener("storage",ev=>{
-  if(recovery||ev.storageArea!==localStorage||ev.key!=="koc_v1"||!ev.newValue||ev.newValue===lastJ)return;
+  if(recovery||Store.mode==="idb"||ev.storageArea!==localStorage||ev.key!=="koc_v1"||!ev.newValue||ev.newValue===lastJ)return;
   let r=null;try{r=JSON.parse(ev.newValue)}catch(e){}
   if(!r||!Array.isArray(r.entries))return;
   S=buildState(r).S;lastJ=ev.newValue;logOff=0;render();toast("Başka bir sekmedeki değişiklik alındı");
+});
+/* IndexedDB kipinde başka sekme (yalnız web) kaydettiyse sıra numarasıyla haberleşilir. */
+Store.onExternal(raw=>{
+  if(recovery)return;let r=null;try{r=JSON.parse(raw)}catch(e){}
+  if(!r||!Array.isArray(r.entries))return;
+  S=buildState(r).S;lastJ=raw;logOff=0;render();toast("Başka bir sekmedeki değişiklik alındı");
 });
 /* Oruç freni not, ilaç, ölçüm, sohbet işareti ya da onayla değişince oruç bildirimleri hangi ekrandan olursa olsun yeniden kurulur. */
 let fastBlk=null;
@@ -1080,7 +1094,7 @@ function viewAyar(){
   if(sub==="veri")return `<div class="card">${swRow('data-lk="toggle"',st.lockOn,"Uygulama kilidi","Açarken ve 30 saniyeden uzun aradan dönünce telefonun ekran kilidi (parmak izi, yüz, PIN, desen) sorulur")}</div>
     <button class="mt-3 btn" data-act="drive">${Icons.svg("cloud")} Yedeği Drive'a gönder</button>
     <div class="mt-3 card">${navRow('data-act="yedek"',"save","Yedekle veya geri yükle","Şifreli yedek dosyası oluştur ya da yükle")}${navRow('data-pv="csv"',"file","Tabloya aktar (CSV)","Excel ya da Sheets'te açılır")}${navRow('data-imp="open"',"salon","Antrenman geçmişini içe aktar","Başka bir uygulamadan dışa aktardığın dosya")}${navRow('data-pv="open"',"lock","Gizlilik ve veri","Verilerin nerede durduğu")}${navRow('data-act="sifirla"',"trash","Tüm verileri sil","Geri alınamaz","  dng")}</div>
-    <div class="card">${storeMsg()?`<p class="status" role="alert"><b>${storeMsg()[0]}.</b> ${storeMsg()[1]}</p>`:""}${loadNote?`<p class="status" role="status">${esc(loadNote)}</p>`:""}${COPIES.filter(([k])=>lsGet(k)!=null).map(([k,n])=>`<div class="row"><span class="grow"><b>${n}</b><small class="db mut sm">${fmt(lsGet(k).length*2/1e6)} MB</small></span>${k==="koc_v1_onceki"&&copyHeld()?`<button class="chip" data-act="kopyagordum">Gördüm</button>`:""}<button class="chip" data-act="kopya:${k}">Dışa aktar</button><button class="chip" data-act="kopyasil:${k}">Sil</button></div>`).join("")}<p class="hint">${storeMsg()?`Kullanılan alan: yaklaşık ${fmt(storeBytes/1e6)} MB, sınır telefona göre 5-10 MB.`:"Alan yeterli."}</p>
+    <div class="card">${storeMsg()?`<p class="status" role="alert"><b>${storeMsg()[0]}.</b> ${storeMsg()[1]}</p>`:""}${loadNote?`<p class="status" role="status">${esc(loadNote)}</p>`:""}${COPIES.filter(([k])=>Store.get(k)!=null).map(([k,n])=>`<div class="row"><span class="grow"><b>${n}</b><small class="db mut sm">${fmt(Store.get(k).length*2/1e6)} MB</small></span>${k==="koc_v1_onceki"&&copyHeld()?`<button class="chip" data-act="kopyagordum">Gördüm</button>`:""}<button class="chip" data-act="kopya:${k}">Dışa aktar</button><button class="chip" data-act="kopyasil:${k}">Sil</button></div>`).join("")}<p class="hint">${storeMsg()?`Kullanılan alan: yaklaşık ${fmt(storeBytes/1e6)} MB, sınır telefona göre 5-10 MB.`:"Alan yeterli."}</p>
     <p class="hint">Veriler yalnızca bu telefonda durur. Google otomatik yedeğine ve telefondan telefona aktarıma bilerek dahil edilmez. Uygulamayı silersen ya da telefon değiştirirsen kaybolur; yeni telefona geçmeden önce yedek dosyanı al.</p></div>${abHtml()}`;
   return `<div class="about"><img src="logo.png" alt="NeoWell logosu" width="72" height="72"><b>NeoWell</b><span class="mut sm">Sağlığın yeni kaynağı</span></div>
   <div class="card"><div class="lrow"><span>Sürüm</span><b class="num">${appVer?esc(appVer):"Tarayıcı"}</b></div>${appBuild?`<div class="lrow"><span>Derleme</span><b class="num">${esc(appBuild)}</b></div>`:""}</div>
@@ -1089,7 +1103,7 @@ function viewAyar(){
   <div class="card"><details class="acc"><summary>Besin verisi kaynakları ve lisanslar</summary><p class="hint">Genel besinlerin değerleri ABD Tarım Bakanlığı FoodData Central (SR Legacy) verisidir, CC0 kamu malı: fdc.nal.usda.gov. Türk ev yemekleri bu değerlerden tarifle hesaplanmış tahminlerdir. Sucuk, pastırma, hellim ve karşılaştırma değerlerinde Fransa ANSES Ciqual 2025 tablosu (Etalab Açık Lisans 2.0, ciqual.anses.fr) ile İngiltere McCance and Widdowson CoFID 2021 verisi (Public Health England, Open Government Licence v3.0, gov.uk) kullanıldı; her vekil kayıt kendi notunda belirtilir. Barkoddan gelen ürünler Open Food Facts verisini içerir, Open Database License (ODbL) ile sunulur: world.openfoodfacts.org. Tablo ve paket etiketi değerleri yaklaşık olup ±%20 sapabilir.</p></details></div>`;
 }
 
-const COPIES=[["koc_v1_bozuk","Okunamayan eski kayıt kopyası"],["koc_v1_onceki","Geri yüklemeden önceki güvenlik kopyası"]];
+const COPIES=[["koc_v1_bozuk","Okunamayan eski kayıt kopyası"],["koc_v1_onceki","Geri yüklemeden önceki güvenlik kopyası"],["koc_v1_catisma","Çakışan eski kayıt kopyası (iki depodan eski olanı)"]];
 const recView=()=>`<div class="card todo" role="alert"><h3>Kayıtların okunamadı</h3><p class="hint">Telefondaki kayıt bozuk görünüyor. Hiçbir şey silinmedi ve yeni kayıt yazılmıyor. Önce ham veriyi dışa aktar; sonra yeniden dene ya da boş başla.</p><div class="btns"><button class="btn" data-act="recexp">Ham veriyi dışa aktar</button><button class="btn ghost" data-act="rectry">Yeniden dene</button><button class="btn ghost" data-act="recnew">Boş başla</button></div></div>`;
 function render(){
   const v=$("#view"),onb=obNeeded()||!!recovery;
@@ -1396,8 +1410,8 @@ async function goYukle(){
   if(keysIn&&typeof keysIn==="object")for(const id in keysIn)if(typeof keysIn[id]==="string"&&S.providers.some(p=>p.id===id))try{await setKey(id,keysIn[id])}catch(e){toast("Bir anahtar kasaya yazılamadı")}
   /* Güvenlik kopyası eski veriyi saklar, depoyu ikiye katlar: yalnız uyarı sınırının altında kalırsa alınır. */
   let copy=false;
-  if(storeBytes+pj.length*2<=STORE_WARN)try{localStorage.setItem("koc_v1_onceki",pj);copy=true}catch(e){}
-  if(!copy)lsDel("koc_v1_onceki");
+  if(storeBytes+pj.length*2<=STORE_WARN)copy=Store.set("koc_v1_onceki",pj);
+  if(!copy)Store.del("koc_v1_onceki");
   S.settings.copyAt=copy?dayKey():"";save(true);
   otherBytes=lsOther();storeBytes=otherBytes+lastJ.length*2;
   logOff=0;closeSheet();render();scheduleReminders().then(setNotif);
@@ -1647,9 +1661,9 @@ document.addEventListener("click",ev=>{
       const fresh=()=>{recovery=null;S=structuredClone(DEF);save();render();scheduleReminders().then(setNotif)};
       if(rawCopy(recovery.raw))fresh();else confirmSheet({title:"Boş başlansın mı?",body:"Ham kopya depolama dolu olduğu için saklanamıyor. Dışa aktarmadıysan bu veri kaybolur. Yine de boş başlansın mı?",ok:"Boş başla",danger:true}).then(ok=>{if(ok&&recovery)fresh()});
     }
-    else if(d.act.startsWith("kopya:")&&COPIES.some(c=>c[0]===d.act.slice(6)))shareFile(`neowell-kopya-${dayKey()}.json`,"Güvenlik kopyası","application/json",lsGet(d.act.slice(6)),true);
+    else if(d.act.startsWith("kopya:")&&COPIES.some(c=>c[0]===d.act.slice(6)))shareFile(`neowell-kopya-${dayKey()}.json`,"Güvenlik kopyası","application/json",Store.get(d.act.slice(6)),true);
     else if(d.act==="kopyagordum"){S.settings.copyAt="";save();render()}
-    else if(d.act.startsWith("kopyasil:")&&COPIES.some(c=>c[0]===d.act.slice(9))){lsDel(d.act.slice(9));otherBytes=lsOther();render()}
+    else if(d.act.startsWith("kopyasil:")&&COPIES.some(c=>c[0]===d.act.slice(9))){Store.del(d.act.slice(9));otherBytes=lsOther();render()}
     else if(d.act==="veriyedek"){tab="ayar-veri";render();sheetYedek()}
     else if(d.act==="abfix"){tab="ayar-veri";render()}
     else if(d.act==="tamalarm")exactAsk();
@@ -1671,7 +1685,7 @@ document.addEventListener("click",ev=>{
     else if(d.act==="saglik")openSheet(`<h3>Sağlık notların</h3><div class="lbl">Hamilelik, hastalık, ilaç, yeme bozukluğu geçmişi gibi koçun bilmesi gerekenler.</div><textarea class="in" id="hn" maxlength="500" autofocus>${esc(S.settings.healthNote)}</textarea><button class="btn" data-go="saglik">Kaydet</button>`);
     else if(d.act==="riskok"){S.settings.riskClearedAt=dayKey();save();render();toast("Onaylandı, 30 gün geçerli")}
     else if(d.act.startsWith("uygula:")){S.settings.kcal=+d.act.slice(7);save();render();toast(`Kalori hedefi ${S.settings.kcal} kcal oldu`)}
-    else if(d.act==="sifirla")confirmSheet({title:"Tüm veriler silinsin mi?",body:"Tüm kayıtlar, güvenlik kopyası ve kayıtlı Koç anahtarları silinecek. Bu geri alınamaz. Devam edilsin mi?",ok:"Hepsini sil",danger:true}).then(ok=>{if(ok){["koc_v1","koc_v1_onceki","koc_v1_bozuk","koc_v1_kullanim",KEYS_LS,KEYS_ENC].forEach(lsDel);KEYS={};S=structuredClone(DEF);phClear();save();logOff=0;render();scheduleReminders().then(setNotif);toast("Tüm veriler silindi")}})
+    else if(d.act==="sifirla")confirmSheet({title:"Tüm veriler silinsin mi?",body:"Tüm kayıtlar, güvenlik kopyası ve kayıtlı Koç anahtarları silinecek. Bu geri alınamaz. Devam edilsin mi?",ok:"Hepsini sil",danger:true}).then(ok=>{if(ok){["koc_v1","koc_v1_onceki","koc_v1_bozuk","koc_v1_catisma"].forEach(Store.del);["koc_v1_kullanim",KEYS_LS,KEYS_ENC].forEach(lsDel);KEYS={};S=structuredClone(DEF);phClear();save();logOff=0;render();scheduleReminders().then(setNotif);toast("Tüm veriler silindi")}})
     return;
   }
   if(d.go){
@@ -1787,6 +1801,14 @@ addEventListener("resize",cmpSet);
   document.addEventListener("focusin",e=>{if(e.target.matches("input,textarea,select"))setTimeout(()=>e.target.scrollIntoView({block:"center"}),250)});
 }
 addEventListener("popstate",()=>{if(cfmDone)cfmDone(false);else if($("#sheet").classList.contains("on"))closeSheet();else if(UP(tab))goBack()});
+</script>
+<script>
+/* Ana betik, depo (IndexedDB) okunduktan sonra çalışır: S ve load() eşzamanlı kalır, erken kayıt varsayılanla gerçek veriyi ezemez. */
+(function(){
+  const run=()=>{const t=document.createElement("script");t.textContent=document.getElementById("mainjs").textContent;document.body.appendChild(t);document.dispatchEvent(new Event("nw:boot"))}; // nw:boot: S ve render hazır, DOMContentLoaded yerine
+  const p=Store.init();
+  if(p&&p.then)p.then(run);else run();
+})();
 </script>
 </body>
 </html>
