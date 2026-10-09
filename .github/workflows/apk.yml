@@ -112,6 +112,7 @@ jobs:
           grep -oE "android\.permission\.[A-Z_]+" manifest.txt | sort -u | tee apk-perms.txt
           if grep -qE "USE_EXACT_ALARM|FLASHLIGHT|ACCESS_BACKGROUND_LOCATION" manifest.txt; then echo "PLAY'E UYGUN OLMAYAN İZİN VAR"; exit 1; fi
           grep -q "android.permission.FOREGROUND_SERVICE_LOCATION" manifest.txt || { echo "KONUM SERVİSİ İZNİ YOK"; exit 1; }
+          grep -q "android.permission.USE_BIOMETRIC" manifest.txt || { echo "USE_BIOMETRIC İZNİ YOK (uygulama kilidi çöker)"; exit 1; }
           # Dışa açık bileşenler: yalnız MainActivity ve widget (sistem APPWIDGET_UPDATE gönderir) ve izinle korunan androidx profileinstaller alıcısı ve yalnız sistemin tutabildiği START_VIEW_PERMISSION_USAGE iznine bağlı Health Connect izin ekranı takma adı.
           awk '/^ *E: (activity|activity-alias|receiver|service|provider)( |$)/ {if (n != "" && e) print n; n=""; e=0; c=1; next} /^ *E: / {c=0} c && /android:name\(/ {match($0, /="[^"]*"/); n=substr($0, RSTART+2, RLENGTH-3)} c && /android:exported\(/ && (/=true/ || /0xffffffff/) {e=1} END {if (n != "" && e) print n}' manifest.txt | sort -u > exported.txt
           echo "Dışa açık bileşenler:"; cat exported.txt
