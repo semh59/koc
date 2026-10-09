@@ -6,7 +6,7 @@ function find(){
   return c.find(p=>p&&fs.existsSync(p))||null;
 }
 async function launch(bin){
-  const dir=fs.mkdtempSync(path.join(os.tmpdir(),"koc-chrome-"));
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),"nw-chrome-"));
   const proc=cp.spawn(bin,["--headless=new","--disable-gpu","--no-sandbox","--hide-scrollbars","--remote-debugging-port=0","--user-data-dir="+dir,"about:blank"],{stdio:["ignore","ignore","pipe"]});
   const pf=path.join(dir,"DevToolsActivePort");
   let err="";proc.stderr.on("data",d=>{err+=d});proc.on("exit",c=>{err+=" exit "+c});

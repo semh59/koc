@@ -1,4 +1,4 @@
-const C=require("../www/modules/veri/csvlib.js");let bad=0;
+const C=require("../www/modules/data/csvlib.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const out=C.csv(["a","b"],[["x",80.5],["y",1500.25]]);
 ok("BOM, ; ayırıcı, CRLF, ondalık virgül, binlik ayırıcı yok",out==="﻿a;b\r\nx;80,5\r\ny;1500,25\r\n",out);
@@ -6,9 +6,9 @@ ok("formül enjeksiyonu: = + - @ sekme CR ile başlayan metne ' konur",["=HYPERL
 ok("sayıya dokunulmaz: negatif sayı ' almaz; normal metin değişmez",C.cell(-5)==="-5"&&C.cell("ekmek")==="ekmek"&&C.cell("a=b")==="a=b");
 ok("; \" ve satır sonu içeren hücre tırnaklanır, tırnak ikilenir",C.cell("a;b")==='"a;b"'&&C.cell('x"y')==='"x""y"'&&C.cell("a\nb")==='"a\nb"'&&C.cell("=A;B")==='"\'=A;B"');
 ok("boş, null ve NaN boş hücre",[C.cell(null),C.cell(undefined),C.cell(NaN),C.cell("")].every(x=>x===""));
-const S={entries:[{id:2,day:"2026-10-02",time:"09:00",type:"kilo",v:80.5,text:""},{id:1,day:"2026-10-01",time:"20:00",type:"yemek",v:300,text:"=cmd|' /C calc'!A0",p:12.5,c:30,f:5},{id:3,day:"2026-10-02",time:"08:00",type:"not",v:null,text:"uyku;kötü"},{id:4,day:"2026-10-02",time:"10:00",type:"adim",v:4000,text:""}],
+const S={entries:[{id:2,day:"2026-10-02",time:"09:00",type:"weight",v:80.5,text:""},{id:1,day:"2026-10-01",time:"20:00",type:"food",v:300,text:"=cmd|' /C calc'!A0",p:12.5,c:30,f:5},{id:3,day:"2026-10-02",time:"08:00",type:"note",v:null,text:"uyku;kötü"},{id:4,day:"2026-10-02",time:"10:00",type:"steps",v:4000,text:""}],
   workouts:[{id:1,day:"2026-10-01",t0:5,t1:9,name:"A",ex:[{id:"squat",sets:[{kg:20,reps:10,done:true,w:true},{kg:60,reps:8,done:true,rpe:8.5},{kg:60,reps:8,done:false}]},{id:"plank",sets:[{kg:null,reps:null,sec:45,done:true}]}]}],
-  vitals:[{k:"t",day:"2026-10-01",time:"08:00",sys:120,dia:80,nabiz:70,ses:"sabah"},{k:"s",day:"2026-10-01",time:"07:00",g:95.5,ctx:"acl",not:"-düşük"}],
+  vitals:[{k:"t",day:"2026-10-01",time:"08:00",sys:120,dia:80,pulse:70,session:"morning"},{k:"s",day:"2026-10-01",time:"07:00",g:95.5,ctx:"fasting",note:"-düşük"}],
   sleep:[{day:"2026-10-01",min:450,q:4}],mood:[{day:"2026-10-01",v:4}],fast:{plan:16,t0:null,log:[{t0:new Date(2026,9,1,20,0).getTime(),t1:new Date(2026,9,2,12,30).getTime()}]},
   meds:[{id:1,n:"Vitamin D",d:"1000 IU",t:["09:00"]}],medLog:[{m:1,day:"2026-10-01",slot:"09:00",st:"t",at:"09:10"},{m:1,day:"2026-10-02",slot:"09:00",st:"s"}]};
 const F=C.files(S,{exName:id=>({squat:"Squat",plank:"Plank"}[id]),vctx:r=>r.k==="t"?"Sabah":"Açlık"});

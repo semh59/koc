@@ -1,5 +1,5 @@
 /* Anahtarsız yerel menü: kalori sapması, tekrar sınırı, şema (cleanMenu), kısıtlar, özellik testi. */
-const M=require("../www/modules/besin/menulocal.js"),C=require("../www/modules/koc/coachlib.js"),{FOODS}=require("../www/modules/besin/foods.js");let bad=0;
+const M=require("../www/modules/nutrition/menulocal.js"),C=require("../www/modules/coach/coachlib.js"),{FOODS}=require("../www/modules/nutrition/foods.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 let sd=7;const rng=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};
 const dayK=d=>d.meals.reduce((s,b)=>s+b.items.reduce((t,i)=>t+i.k,0),0),dayP=d=>d.meals.reduce((s,b)=>s+b.items.reduce((t,i)=>t+i.p,0),0);
@@ -8,7 +8,7 @@ const maxRep=m=>Math.max(...Object.values(names(m).reduce((o,n)=>(o[n]=(o[n]||0)
 
 ok("havuzdaki her yemek besin veritabanında var",[...Object.values(M.MAIN).flat(),...M.FRUIT,...M.LIGHT].every(n=>FOODS.some(f=>f.n===n)));
 { const m=M.make({kcal:2000,protein:[100,140],rng}),c=C.cleanMenu({days:m.days},null,2000);
-  ok("cleanMenu kabul eder: 7 gün, günde 4 öğün, hiçbiri off değil",c&&c.days.length===7&&c.days.every(d=>d.meals.length===4&&!d.off&&d.meals.map(b=>b.m).join()==="kah,ogl,aks,atis"),c&&c.days.map(d=>d.off));
+  ok("cleanMenu kabul eder: 7 gün, günde 4 öğün, hiçbiri off değil",c&&c.days.length===7&&c.days.every(d=>d.meals.length===4&&!d.off&&d.meals.map(b=>b.m).join()==="breakfast,lunch,dinner,snack"),c&&c.days.map(d=>d.off));
   ok("her gün hedefin ±%7'si içinde",m.days.every(d=>Math.abs(dayK(d)-2000)<=140),m.days.map(dayK));
   ok("protein hedef aralığına yakın (her gün ≥ alt sınırın %85'i)",m.days.every(d=>dayP(d)>=85),m.days.map(dayP));
   ok("aynı yemek haftada en çok 2 kez",maxRep(m)<=2);

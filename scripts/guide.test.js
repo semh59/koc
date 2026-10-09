@@ -1,8 +1,8 @@
 // D-Ant15: rehberli mod akış motoru (saf mantık).
-const G=require("../www/modules/salon/guidelib.js"),EXDB=require("../www/modules/salon/exlib.js"),fs=require("fs"),path=require("path");let bad=0;
+const G=require("../www/modules/gym/guidelib.js"),EXDB=require("../www/modules/gym/exlib.js"),fs=require("fs"),path=require("path");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const load=(f,name)=>{const m=new module.constructor();m._compile(fs.readFileSync(path.join(__dirname,"../www",f),"utf8")+`;module.exports=${name}`,f);return m.exports};
-const FigTpl=load("modules/salon/figtpl.js","FigTpl"),EXCUE=load("modules/salon/excues.js","EXCUE");
+const FigTpl=load("modules/gym/figtpl.js","FigTpl"),EXCUE=load("modules/gym/excues.js","EXCUE");
 const T0=1e6,P=G.PREP*1000;
 
 { // evreler ve zaman

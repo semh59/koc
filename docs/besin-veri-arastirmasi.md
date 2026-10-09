@@ -75,7 +75,7 @@ Uygunluk puanı 1-5 arasıdır (5 = NeoWell'e APK içinde gömülebilir, ticari 
 | **USDA FNDDS 2021-23** | ABD'de tüketilen yemekler ve **porsiyon ağırlıkları** (Ekim 2024). JSON 3,7 MB zip [O] | CC0 | **3** | Amerikan yemekleri. Porsiyon gramajları ("1 cup" = x g) için faydalı |
 | **USDA Branded** | ABD markalı ürünleri, 3 GB [O] | CC0 [Ö] | **1** | Türkiye ürünü yok |
 | **Open Food Facts** | Dünyada 4 milyondan fazla ürün. Parquet yaklaşık 8 GB, JSONL açılınca 43 GB [Ö: Hugging Face]. Türkiye: 11.464 ürün (1 Ekim 2026 ölçümü, bugün sayfa 503 verdi) | Veri tabanı **ODbL**, tek kayıtlar DbCL, görseller CC-BY-SA. Uygulama arayüzünde tıklanabilir atıf zorunlu. Türetilmiş veri tabanı herkese açık kullanılırsa ODbL ile paylaşılmalı [Ö: OFF veri sayfası ve kullanım şartları] | **3** (çevrimiçi barkod için 5) | Veri kalitesi değişken (A4). APK'ya gömülen alt küme "türetilmiş veri tabanı" sayılır. Emek orta |
-| **TürKomp** (TAGEM ve TÜBİTAK MAM; veri girişini Gıda ve Yem Kontrol Merkez Araştırma Enstitüsü, Bursa koordine ediyor) | 500'den fazla gıda, 100 bileşen, yaklaşık 63.000 veri [Ö: TÜBİTAK MAM]. Türk analiz verisi | "İzinsiz kopyalama ve dağıtım yasak". Bilgisayar programında ticari kullanım için **sözleşme ve yıllık ücret** gerekiyor [Ö: arama özeti; sayfa otomatik erişimde açılmadı] | **2** (izin alınırsa 5) | **Mevcut risk:** `www/modules/besin/foods.js` başlığında "TürKomp ve USDA'dan derlenmiş" yazıyor. Hangi değerlerin TürKomp'tan geldiği belirlenmeli: ya izin alınmalı ya o değerler USDA ya da tarif hesabıyla değiştirilmeli. Ücretsiz olmasa da uygulama ücretsiz ve reklamsız olduğundan izin istenebilir |
+| **TürKomp** (TAGEM ve TÜBİTAK MAM; veri girişini Gıda ve Yem Kontrol Merkez Araştırma Enstitüsü, Bursa koordine ediyor) | 500'den fazla gıda, 100 bileşen, yaklaşık 63.000 veri [Ö: TÜBİTAK MAM]. Türk analiz verisi | "İzinsiz kopyalama ve dağıtım yasak". Bilgisayar programında ticari kullanım için **sözleşme ve yıllık ücret** gerekiyor [Ö: arama özeti; sayfa otomatik erişimde açılmadı] | **2** (izin alınırsa 5) | **Mevcut risk:** `www/modules/nutrition/foods.js` başlığında "TürKomp ve USDA'dan derlenmiş" yazıyor. Hangi değerlerin TürKomp'tan geldiği belirlenmeli: ya izin alınmalı ya o değerler USDA ya da tarif hesabıyla değiştirilmeli. Ücretsiz olmasa da uygulama ücretsiz ve reklamsız olduğundan izin istenebilir |
 | **CIQUAL** (Fransa, ANSES) | 2025 sürümünde 3.484 besin, 2020 sürümünde 3.185 besin ve 67 bileşen. Excel ve XML [Ö] | **Etalab Açık Lisans 2.0** (CC-BY uyumlu), atıf yeterli [Ö] | **4** | Akdeniz besinleri ve bazı yemekler var. Emek orta (Fransızca adlar) |
 | **UK CoFID 2021** | Yaklaşık 3.000-3.300 besin ve tarif [Ö] | **Open Government Licence v3**, atıf zorunlu [Ö] | **4** | İngiliz yemekleri. Pişmiş yemek kayıtları var |
 | **Kanada CNF 2015** | 5.690 besin, 152'ye kadar bileşen. CSV [Ö] | **Open Government Licence – Canada**, atıf zorunlu [Ö] | **3** | Büyük kısmı USDA kökenli, katkısı az |
@@ -171,7 +171,7 @@ Uygunluk puanı 1-5 arasıdır (5 = NeoWell'e APK içinde gömülebilir, ticari 
 ## D) NeoWell için somut öneri
 
 ### D1. Mevcut durum (kod okunarak)
-- **`www/modules/besin/foods.js`:** 106 satır, 9,4 KB, satır başına yaklaşık 89 bayt. Satır yapısı: `[ad, kcal, p, c, f, [[porsiyon, gram]…], usdaBayrağı]`.
+- **`www/modules/nutrition/foods.js`:** 106 satır, 9,4 KB, satır başına yaklaşık 89 bayt. Satır yapısı: `[ad, kcal, p, c, f, [[porsiyon, gram]…], usdaBayrağı]`.
 - **Eksik alanlar:** **lif, şeker ve sodyum alanı yok.** `lo`/`hi` saklanmıyor, yemek sınıfına (s/y) göre sabit bir yayılımla hesaplanıyor.
 - **`foodSearch`:** Yalnızca İ/I harflerini katlıyor. "sut" yazınca "süt" bulunmuyor, "yogurt" yazınca "yoğurt" bulunmuyor. Eş anlamlı ad alanı yok (ör. "köfte"/"ızgara köfte", "cacık"/"tzatziki", "tavuk göğsü"/"tavuk fileto").
 
@@ -306,7 +306,7 @@ Uygunluk puanı 1-5 arasıdır (5 = NeoWell'e APK içinde gömülebilir, ticari 
 
 ## F) Uygulama (3 Ekim 2026)
 
-`www/modules/besin/foods.js` elle değil `node tools/besin/uret.js` ile üretilir; `scripts/foods.test.js` üretilen çıktıyla dosyanın aynı olduğunu denetler.
+`www/modules/nutrition/foods.js` elle değil `node tools/besin/uret.js` ile üretilir; `scripts/foods.test.js` üretilen çıktıyla dosyanın aynı olduğunu denetler.
 
 - **Kaynak dosyalar (`tools/besin/`):** `genel.tsv` (Türkçe ad, USDA anahtarı, porsiyon, eş ad), `malzeme.tsv` (yalnız tarifte geçen USDA malzemeleri), `tarif.txt` (tarifler), `esad.tsv` (eski satırlar için eş adlar), `mevcut.txt` (ilk 106 kayıt, değişmedi), `usda-altkume.json` (kullanılan USDA kayıtları: fdc_id, açıklama, enerji, protein, karbonhidrat, yağ, lif, porsiyon ağırlıkları), `cikar.py` (USDA CSV'den alt küme çıkarır), `uret.js`.
 - **Genel besinler:** değerler SR Legacy'den birebir (kcal 1008, protein 1003, karbonhidrat 1005 "by difference", yağ 1004). Anahtar, en kısa eşleşen açıklamayı seçer; sonuç `usda-altkume.json` içindedir. Alkollü ve lif ağırlıklı (kakao, kepek, limon) kayıtlar Atwater testine uymadığı için genel listeye alınmadı.

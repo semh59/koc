@@ -109,7 +109,7 @@ public class NeoWidget extends AppWidgetProvider {
         v.setOnClickPendingIntent(R.id.nw_root, PendingIntent.getActivity(c, 7201, open, flags));
         // Activity açan intent'i sistem yeniden teslim edebildiği için (çift su) yayın: ekran açılmaz, kaydı QuickLogPlugin.handle yazar.
         Intent add = new Intent(c, WaterReceiver.class)
-            .putExtra("LocalNotificationUserAction", "su")
+            .putExtra("LocalNotificationUserAction", "water")
             .putExtra("LocalNotficationObject", "{\"extra\":{\"act\":\"su\",\"v\":" + glass + "}}");
         v.setOnClickPendingIntent(R.id.nw_add, PendingIntent.getBroadcast(c, 7202, add, flags));
         return v;

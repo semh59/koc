@@ -1,6 +1,6 @@
-const I=require("../www/modules/salon/importlib.js"),fs=require("fs");let bad=0;
+const I=require("../www/modules/gym/importlib.js"),fs=require("fs");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
-const EXDB=new Function(fs.readFileSync(__dirname+"/../www/modules/salon/exlib.js","utf8")+";return EXDB")();
+const EXDB=new Function(fs.readFileSync(__dirname+"/../www/modules/gym/exlib.js","utf8")+";return EXDB")();
 const lib=EXDB.map(e=>({id:e.id,n:e.n,k:e.k||"w"}));
 const find=I.matcher(lib);
 const ctx=(o={})=>Object.assign({find,existing:[],gid:10},o);

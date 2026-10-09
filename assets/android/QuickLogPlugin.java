@@ -75,7 +75,7 @@ public class QuickLogPlugin extends Plugin {
     }
 
     /**
-     * MainActivity ve WaterReceiver'dan çağrılır. Düğme "su" ya da "med" ise kaydı saklar, bildirimi kaldırır ve true döner.
+     * MainActivity ve WaterReceiver'dan çağrılır. Düğme "water" ya da "med" ise kaydı saklar, bildirimi kaldırır ve true döner.
      * MainActivity exported olduğu için her uygulama aynı ek alanlarla onu açabilir; o yoldan (widget=false) kayıt yalnız
      * gizli anahtarı taşıyan bildirimden yazılır. Widget alıcısı exported=false, yalnız uygulamanın PendingIntent'i ulaşır.
      */
@@ -89,7 +89,7 @@ public class QuickLogPlugin extends Plugin {
         String act = in.getStringExtra(ACTION_KEY), obj = in.getStringExtra(OBJ_KEY), key = null;
         int v = 0;
         boolean med = "med".equals(act) || "medskip".equals(act);
-        if ("su".equals(act)) {
+        if ("water".equals(act)) {
             v = QuickMath.amount(obj);
             if (v > 0) key = String.valueOf(v);
         } else if (med) {

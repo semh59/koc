@@ -30,4 +30,35 @@ Use the best tool that makes the code shorter or the complexity class lower, not
 - `node scripts/sinir.test.js` enforces module data boundaries; `node scripts/paths.test.js` checks file paths.
 
 ## Final vocabulary table
-(maintained by the vocabulary pass)
+Applied everywhere (persisted data, ids, globals, files, `data-*` values, tests). New terms are added here by whoever introduces them.
+
+| Turkish | English | Where it lives |
+|---|---|---|
+| yemek / su / kilo / spor / not / adim | food / water / weight / exercise / note / steps | entry `type`, tab and icon ids, `data-go`/`data-act`, history kinds, CSS `.hgk.*`, `--water`, `--exercise` |
+| kahvalti / ogle / aksam / atistirma (kah/ogl/aks/atis) | breakfast / lunch / dinner / snack | entry `meal`, menu `m`, Coach prompt |
+| maden / cay / kahve / gazli / sut / diger | mineral / tea / coffee / soda / milk / other | water entry `dr` |
+| acl / once / sonra / yatis / rast | fasting / before / after / bedtime / random | vitals `ctx` |
+| sabah / aksam, `ses` (seans) | morning / evening, `session` | vitals `session` |
+| nabiz, not (vitals/cycle field) | pulse, note | vitals and cycle fields |
+| kos / yur / bis / yuz / eli | run / walk / bike / swim / elliptical | cardio `ck` |
+| h / o / y, k / b / r | light / medium / heavy, cramp / headache / mood | cycle `flow`, `sym` |
+| ver / koru / al | lose / keep / gain | onboarding `dir` |
+| elle | manual | steps entry marker (`text`) |
+| kayit / besin / salon / ilac / aliskanlik / nabiz / tansiyon / tahlil / olcu / dongu / hareket / koc / gecmis / analiz / veri | log / nutrition / gym / meds / habits / pulse / vitals / labs / measures / cycle / motion / coach / history / insights / data | module ids, `www/modules/*`, shard ids (`m:log/2026-10`) |
+| Kayit / Besin / Salon / Ilac / Aliskanlik / Nabiz / Tansiyon / Tahlil / Koc | Log / Nutrition / Gym / Meds / Habits / Pulse / Vitals / Labs / Coach | module registry globals |
+| tansiyon, seker (screens) | bp, glucose | tab ids `bp`, `glucose` (module stays `vitals`) |
+| bugun / daha / ayar / profil / hatir / modul / hak / veri | today / more / settings / profile / reminders / modules / about / data | tab ids (`settings-profile`, `settings-data`, ...) |
+| egz, bes, har, gun | exlib, nutrition, motion, day | tab and section ids |
+| ayar (shard), diger (shard) | settings, other | storage shards |
+| koc_v1, koc_v1_bozuk / _onceki / _catisma / _kullanim, koc_keys, koc_bkpw_enc | nw_state, nw_state_corrupt / _previous / _conflict / _usage, nw_keys, nw_bkpw_enc | localStorage / IndexedDB keys |
+| yedek / veriyedek / kopya / kopyagordum / kopyasil | backup / databackup / copy / copyseen / copydel | action ids |
+| adimac / adimekle / adimduz / adimgizle / adimkapat / adimdegil | stepsopen / stepsadd / stepsfix / stepshide / stepsoff / stepsno | action ids |
+| dunku / kendin / tplyeni / barkod / bildirimtest / tamalarm / tamekran / sifirla / paylas / indir / yukle / kopyala / mysil | yesterday / own / tplnew / barcode / notiftest / fullalarm / fullscreen / reset / share / download / restore / copy / mydel | action and `data-go` ids |
+| etiket / tarif / tahmin / icecek / uyku / oruc / ruh | label / recipe / forecast / drink / sleep / fast / mood | ids, classes, hist kinds |
+| ekran / bildirim / sohbet / hafta / porsiyon / kardiyo / foto | screen / notification / chat / week / portion / cardio / photo | identifier parts (`sheetPhoto`, `goCardio`) |
+| baglanti | links | `www/modules/insights/linkslib.js`, `LinksLib` |
+| `01-cekirdek` ... `07-eylemler` | `01-core`, `02-state-components`, `03-screens`, `04-sheets`, `05-notifications`, `06-events`, `07-actions` | `www/main/` |
+| saat-matrisi / saat-preload, `SAAT_SAHTE` | clock-matrix / clock-preload, `FAKE_CLOCK` | `scripts/` |
+
+Deliberately kept Turkish (product text, not code): UI strings, CSV column headers and CSV ids (`kayitlar`, `saglik`, `uyku`, ...), exported file names (`neowell-yedek-*`, `neowell-tahlil-*`), the Coach context text sent to the model, lab and food name tables, PII word lists, regexes that match Turkish user text, the `Salon` / `Ev tipi` / `Ağırlıksız` equipment values, and `data-gun` / `data-wun` (glucose-unit / weight-unit switches, English abbreviations).
+

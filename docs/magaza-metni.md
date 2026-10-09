@@ -1,6 +1,6 @@
 # Google Play mağaza metni
 
-Kaynak: kod (`www/`, `assets/android/`), `docs/gizlilik-politikasi.md`, `docs/play-izin-beyanlari.md`. Sayılar 7 Ekim 2026 koduna göre: 818 besin kaydı (`www/modules/besin/foods.js`; metinde güvenli alt sınır "700'den fazla" yazılı, kayıt eklendikçe metin bozulmaz), 324 egzersiz (`www/modules/salon/exlib.js`), 5 hazır program. Sayı değişirse bu dosya ve README güncellenir.
+Kaynak: kod (`www/`, `assets/android/`), `docs/gizlilik-politikasi.md`, `docs/play-izin-beyanlari.md`. Sayılar 7 Ekim 2026 koduna göre: 818 besin kaydı (`www/modules/nutrition/foods.js`; metinde güvenli alt sınır "700'den fazla" yazılı, kayıt eklendikçe metin bozulmaz), 324 egzersiz (`www/modules/gym/exlib.js`), 5 hazır program. Sayı değişirse bu dosya ve README güncellenir.
 
 Yazım kuralı: tedavi, tanı ya da hekim yerine geçme iddiası yok. "Tedavi", "tanı", "hekim yerine" gibi sözcükler yalnız olumsuz ya da sınırlayıcı kullanımda ("tanı koymaz", "tedavi önermez", "hekim yerine geçmez") serbest; "teşhis", "iyileştirir", "garanti", "kilo verdirir" hiç geçmez (aynı kural: `docs/play-data-safety.md`), "çevrimdışı" yalnız çekirdek özellikler için, Koç ve barkod internet ister.
 

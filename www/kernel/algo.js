@@ -213,11 +213,11 @@ const Algo=(()=>{
      aynı çıkıştır, ikinci kez sayılmaz. Aralıklar mutlak dakikayla karşılaştırılır, çünkü gece yarısını aşan yürüyüşün otomatik kaydı başlangıç gününde, elle kaydı bitiş gününde durur:
      spor ve moves komşu günleri de içerebilir, yalnız `day` günündekiler toplanır. bt (geçmiş güne girilmiş) kayıtta saat kayıt anıdır, aralık bilinmez:
      o gün adı aynı türle (Yürüyüş/Koşu) başlayan otomatik hareket sayılmaz. */
-  function exerciseKcal(spor,moves,day){
+  function exerciseKcal(exercise,moves,day){
     const at=(d,t)=>dayNum(d||day||"1970-01-01")*1440+ +t.slice(0,2)*60+ +t.slice(3),own=x=>!day||!x.day||x.day===day;
-    const iv=spor.filter(s=>s.v>0&&!s.bt).map(s=>{const e=at(s.day,s.time);return [e-s.v,e]});
-    const kinds=new Set(spor.filter(s=>s.bt&&own(s)).map(s=>/^Yürüyüş/.test(s.text)?"w":/^Koşu/.test(s.text)?"r":""));
-    let k=spor.reduce((a,s)=>a+(own(s)&&s.kcal>0?s.kcal:0),0);
+    const iv=exercise.filter(s=>s.v>0&&!s.bt).map(s=>{const e=at(s.day,s.time);return [e-s.v,e]});
+    const kinds=new Set(exercise.filter(s=>s.bt&&own(s)).map(s=>/^Yürüyüş/.test(s.text)?"w":/^Koşu/.test(s.text)?"r":""));
+    let k=exercise.reduce((a,s)=>a+(own(s)&&s.kcal>0?s.kcal:0),0);
     for(const m of moves){
       if(!own(m)||!(m.kcal>0)||kinds.has(m.k))continue;
       const a=at(m.day,m.t0),b=a+m.min;

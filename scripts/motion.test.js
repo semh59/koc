@@ -1,4 +1,4 @@
-const M=require("../www/modules/hareket/motionlib.js");let bad=0;
+const M=require("../www/modules/motion/motionlib.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const now=new Date(2026,8,10,12,0,0).getTime(),t0=new Date(2026,8,10,7,40,0).getTime();
 const it=(o)=>({t0,t1:t0+22*60000,k:"w",steps:2400,km:2.1,kmh:5.7,kcal:110,gps:true,...o});
@@ -24,7 +24,7 @@ const big=Array.from({length:500},(_,i)=>({day:"2026-01-"+String(1+i%28).padStar
 ok("temizlik: 400'ü aşan hareket kaybolmaz",M.clean(big).length>400);
 const tt=M.totals([{min:20,km:2,steps:2000,kcal:100},{min:10,km:1,steps:1000,kcal:null}]);
 ok("toplam: kalorisiz kayıt kaloriye eklenmez",tt.min===30&&tt.km===3&&tt.steps===3000&&tt.kcal===100&&tt.kcalN===1);
-const src=require("fs").readFileSync(require("path").join(__dirname,"../www/modules/hareket/motionlib.js"),"utf8");
+const src=require("fs").readFileSync(require("path").join(__dirname,"../www/modules/motion/motionlib.js"),"utf8");
 ok("rota ve koordinat alanı yok",!/lat|lon|coord|route/i.test(src.replace(/\/\*[\s\S]*?\*\//g,"")));
 ok("hareket günü: 2026-02-31 reddedilir",M.clean([{day:"2026-02-31",t0:"08:00",min:20,k:"w",steps:2400,km:2,kmh:5,kcal:null,gps:false}]).length===0&&M.clean([{day:"2026-02-28",t0:"08:00",min:20,k:"w",steps:2400,km:2,kmh:5,kcal:null,gps:false}]).length===1);
 console.log(bad?"\n"+bad+" HATA":"\nTüm hareket testleri geçti");process.exit(bad?1:0);

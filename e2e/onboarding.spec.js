@@ -34,7 +34,7 @@ test.describe("Onboarding",()=>{
     const on=page.locator(".obbar i.on");
     await expect(on).toHaveCount(1);
     await fill(page);
-    await page.click('[data-ob="dir:ver"]');
+    await page.click('[data-ob="dir:lose"]');
     await page.fill("#obgoal","90"); // şimdiki kilodan yüksek: reddedilir
     await page.click('[data-ob="next"]');
     await expect(page.locator("#oberr")).toContainText("düşük olmalı");
@@ -56,7 +56,7 @@ test.describe("Onboarding",()=>{
     const s=await app.state();
     expect(s.settings).toMatchObject({heightCm:178,age:35,goalKg:76,bpOn:true,obDone:true});
     expect(s.settings.kcal).toBeGreaterThanOrEqual(1200);
-    expect(s.entries.filter(e=>e.type==="kilo").map(e=>e.v)).toEqual([84]);
+    expect(s.entries.filter(e=>e.type==="weight").map(e=>e.v)).toEqual([84]);
   });
 
   test("hareket düzeyi triyajı: iki soru cevaplanınca düzey ayara yazılır, hedef kalori buna göre değişir",async({app,page})=>{

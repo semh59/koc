@@ -12,12 +12,12 @@ const PAIRS=[
  ["ink","bg",4.5,"gövde metni"],["ink","card",4.5,"kart metni"],["mut","bg",4.5,"gri metin (sayfa)"],["mut","card",4.5,"gri metin (kart)"],
  ["mut","soft",4.5,"pasif segment / gri metin soft üstünde"],["prim","card",4.5,"bağlantı ve düğme metni"],["prim","bg",4.5,"birincil metin sayfada"],
  ["prim-ink","prim",4.5,"birincil düğme"],["prim-ink","prim-btn",4.5,"birincil düğme zemini"],["prim-btn","card",3,"düğme kartta"],["prim","prim-ink",4.5,"kilo kartı düğmesi"],["warn","card",4.5,"uyarı metni (kart)"],["warn","bg",4.5,"uyarı metni (sayfa)"],
- ["spor","card",4.5,"spor vurgu metni"],["spor","bg",4.5,"spor vurgu metni (sayfa)"],["spor-ink","spor",4.5,"seçili spor düğmesi"],
+ ["exercise","card",4.5,"spor vurgu metni"],["exercise","bg",4.5,"spor vurgu metni (sayfa)"],["exercise-ink","exercise",4.5,"seçili spor düğmesi"],
  ["tact","tbg",4.5,"toast 'Geri al' düğmesi"],["tfg","tbg",4.5,"toast metni"],
- ["su","card",3,"su grafiği"],["kcal","card",3,"kalori halkası ve hedef çizgisi"],["prim","card",3,"grafik çizgisi"],["spor","card",3,"spor grafiği"],["warn","card",3,"uyarı grafiği"],
+ ["water","card",3,"su grafiği"],["kcal","card",3,"kalori halkası ve hedef çizgisi"],["prim","card",3,"grafik çizgisi"],["exercise","card",3,"spor grafiği"],["warn","card",3,"uyarı grafiği"],
  ["mut","card",3,"giriş kenarlığı ve soluk çizgiler"],
  ["prim","soft",4.5,"ikincil (tonlu) düğme metni"],["prim","prim-soft",3,"etkin sekme ikonu"],["ink","field",4.5,"giriş alanı metni"],["mut","field",4.5,"giriş alanı yer tutucusu"],["fbd","card",3,"giriş kenarlığı (kartta)"],["fbd","bg",3,"giriş kenarlığı (sayfada)"],["ink","card",4.5,"seri sayısı"],
- ["ban-ink","ban-bg",4.5,"uyarı kutusu"],["inf-ink","inf-bg",4.5,"bilgi kutusu"],["ink","inf-bg",4.5,"bilgi kartı"],["tah-ink","tah-bg",4.5,"tahmin rozeti"],["info-ink","info",4.5,"mavi düğme"],["ok","card",4.5,"başarı metni (kart)"],["ok","bg",4.5,"başarı metni (sayfa)"],
+ ["ban-ink","ban-bg",4.5,"uyarı kutusu"],["inf-ink","inf-bg",4.5,"bilgi kutusu"],["ink","inf-bg",4.5,"bilgi kartı"],["forecast-ink","forecast-bg",4.5,"tahmin rozeti"],["info-ink","info",4.5,"mavi düğme"],["ok","card",4.5,"başarı metni (kart)"],["ok","bg",4.5,"başarı metni (sayfa)"],
 ];
 for(const [name,t] of [["açık",light],["koyu",dark]]){
   for(const [f,b,min,d] of PAIRS){
@@ -28,5 +28,5 @@ for(const [name,t] of [["açık",light],["koyu",dark]]){
 const forced=vars(html.match(/:root\[data-theme="dark"\]\{([^}]*)\}/)[1]),mediaDark=vars(html.match(/prefers-color-scheme:dark\)\{\s*:root:not\(\[data-theme="light"\]\)\{([^}]*)\}/)[1]);
 const ovr=re=>[...html.matchAll(re)].map(m=>m[1]+m[2]);
 ok("Koyu seçimi (data-theme=dark) sistem koyusuyla aynı renkler: değişkenler ve banner/bilgi kartı",JSON.stringify(forced)===JSON.stringify(mediaDark)&&Object.keys(forced).length>=16&&JSON.stringify(ovr(/:root:not\(\[data-theme="light"\]\) (\.[\w.]+)(\{[^}]*\})/g))===JSON.stringify(ovr(/:root\[data-theme="dark"\] (\.[\w.]+)(\{[^}]*\})/g))&&/:root\[data-theme="dark"\]\{color-scheme:dark/.test(html)&&/:root\[data-theme="light"\]\{color-scheme:light\}/.test(html));
-ok("index.html'de toast ve seçili spor düğmesi tema değişkenlerini kullanır",/#toast button\{[^}]*color:var\(--tact\)/.test(html)&&/#toast\{[^}]*background:var\(--tbg\);color:var\(--tfg\)/.test(html)&&/\.ok\.on\{[^}]*color:var\(--spor-ink\)/.test(html));
+ok("index.html'de toast ve seçili spor düğmesi tema değişkenlerini kullanır",/#toast button\{[^}]*color:var\(--tact\)/.test(html)&&/#toast\{[^}]*background:var\(--tbg\);color:var\(--tfg\)/.test(html)&&/\.ok\.on\{[^}]*color:var\(--exercise-ink\)/.test(html));
 if(bad){console.log(bad+" HATA");process.exit(1)}console.log("TAMAM");

@@ -83,5 +83,5 @@ test("alarm ekranı yatay ve koyu temada: taşma yok, düğmeler erişilebilir, 
   if(process.env.ALARM_SHOTS)await page.screenshot({path:path.join(process.env.ALARM_SHOTS,`alarm-${ti.project.name}-yatay-koyu.png`)});
   await page.getByRole("button",{name:"Uygulamayı aç"}).click();
   await expect(page.locator("#alarm")).toBeHidden();
-  await expect(page.locator('nav button[data-tab="bugun"]')).toHaveAttribute("aria-current",/page|true/);
+  await expect(page.locator('nav button[data-tab="today"]')).toHaveAttribute("aria-current",/page|true/);
 });

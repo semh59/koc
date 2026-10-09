@@ -1,4 +1,4 @@
-const L=require("../www/modules/tahlil/lablib.js"),fs=require("fs"),path=require("path");let bad=0;
+const L=require("../www/modules/labs/lablib.js"),fs=require("fs"),path=require("path");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const P=l=>L.parseLine(l);
 

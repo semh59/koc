@@ -1,10 +1,10 @@
-const C=require("../www/modules/koc/coachlib.js");let bad=0;
+const C=require("../www/modules/coach/coachlib.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const days=[];
 for(let i=1;i<=14;i++){const e=[3,4,9].includes(i),dd=String(i).padStart(2,"0");
-  days.push(e?{d:"10-"+dd}:{d:"10-"+dd,kg:84.2-i/10,kcal:1700+i*10,p:110+i,su:1800,sport:i%3?30:0,ad:6000+i*100,sl:420,mo:3});}
+  days.push(e?{d:"10-"+dd}:{d:"10-"+dd,kg:84.2-i/10,kcal:1700+i*10,p:110+i,water:1800,sport:i%3?30:0,ad:6000+i*100,sl:420,mo:3});}
 const meds=[{n:"Metformin",d:"500 mg",t:["08:00","20:00"],a:{taken:10,total:14,missed:4,late:0},left:12},{n:"D vitamini",t:["09:00"],a:{taken:6,total:7,missed:1},left:30}];
-const D=()=>({profile:{cm:175,age:34,sex:"m",act:1,note:"Hafif diyabet"},goals:{kg:75,kcal:1800,water:2500,sport:150},calc:{trendKg:84.1,slope:-0.6,tdee:2420,source:"veri",target:2110,protein:[136,187],block:"x",why:"İlaç kaydın var"},days:days.map(r=>({...r})),today:["yemek: 2 yumurta ~150 kcal","su 500 ml"],now:"12:42",
+const D=()=>({profile:{cm:175,age:34,sex:"m",act:1,note:"Hafif diyabet"},goals:{kg:75,kcal:1800,water:2500,sport:150},calc:{trendKg:84.1,slope:-0.6,tdee:2420,source:"data",target:2110,protein:[136,187],block:"x",why:"İlaç kaydın var"},days:days.map(r=>({...r})),today:["yemek: 2 yumurta ~150 kcal","su 500 ml"],now:"12:42",
   workouts:["10-05 Üst vücut: Bench 60x8, Row 50x10, Press 30x10","10-03 Bacak: Squat 80x6, RDL 70x8","10-01 İtiş: Bench 62x6"],weekSets:{göğüs:9,sırt:8,bacak:6},notes:["Bugün çok yorgundum, az uyudum","Akşam stres vardı","İyi bir gün, yürüyüş yaptım"],meds});
 const SEC={"PROFİL":"PROFİL","SAĞLIK":"SAĞLIK NOTU","HEDEFLER":"HEDEFLER","HESAPLANAN":"HESAPLANAN","KISIT":"KISIT","14 GÜN":"SON 14 GÜN","BUGÜN":"BUGÜN","ANTRENMAN":"SON ANTRENMANLAR","SET":"BU HAFTA TAMAMLANAN SET","NOT":"SON NOTLAR","İLAÇ":"İLAÇLAR (kullanıcının"};
 const parts=t=>t.split(/\n(?=[A-ZÇĞİÖŞÜ ]{3,}[ :(])/);

@@ -15,15 +15,15 @@ setTimeout(async()=>{
     Speech:{speak:async o=>{said.push(o.text)},stop:async()=>{stops.push(1)}},
     DeviceHelp:{keepAwake:async o=>{awk.push(o.on)}},
     LocalNotifications:{checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),getPending:async()=>({notifications:pend}),getDeliveredNotifications:async()=>({notifications:[]}),removeDeliveredNotifications:async()=>{},registerActionTypes:async()=>{},cancel:async o=>{ln.push(["c",o.notifications.map(n=>n.id)])},schedule:async o=>{ln.push(["s",o.notifications])}}}};
-  ev("S=structuredClone(DEF);S.settings.obDone=true;S.gid=50;tab='salon';render()");
+  ev("S=structuredClone(DEF);S.settings.obDone=true;S.gid=50;tab='gym';render()");
 
   { // ayarlar
     ok("ayarlar: sesli komut ve titreşim varsayılan açık, eski yedekte (alan yok) açık, kapalı korunur",ev("DEF.settings.gdVoice&&DEF.settings.gdVib")&&ev("cleanSettings({kcal:1800}).gdVoice&&cleanSettings({kcal:1800}).gdVib")&&ev("cleanSettings({gdVoice:false,gdVib:false}).gdVoice")===false&&ev("cleanSettings({gdVoice:false,gdVib:false}).gdVib")===false);
-    ev("tab='ayar-modul';render()");const v=q("[data-gdv]"),b=q("[data-gdb]");
+    ev("tab='settings-modules';render()");const v=q("[data-gdv]"),b=q("[data-gdb]");
     ok("Ayarlar > Salon: 'Rehberli modda sesli komut' ve titreşim anahtarı",v&&b&&v.checked&&b.checked&&v.closest("label").textContent.includes("Rehberli modda sesli komut"));
     v.checked=false;v.dispatchEvent(new w.Event("change",{bubbles:true}));
     ok("anahtar kapatılınca ayara yazılır",ev("S.settings.gdVoice")===false);
-    ev("S.settings.gdVoice=true;tab='salon';render()");
+    ev("S.settings.gdVoice=true;tab='gym';render()");
   }
   { // giriş noktaları
     ev(`S.templates=[{id:1,name:'Ev',ex:['plank','pushup'],tg:{plank:{sets:2,sec:30},pushup:{sets:2,reps:8}}}];render()`);
@@ -37,7 +37,7 @@ setTimeout(async()=>{
     ev("closeSheet()");
   }
   { // ekran, ekran açık, bildirim, ses
-    ev("tab='bugun';render()");awk.length=0;said.length=0;ln.length=0;
+    ev("tab='today';render()");awk.length=0;said.length=0;ln.length=0;
     ev("gdStart('f:tabata4')");await wait(20);
     ok("tam ekran katman açılır, görünüm yeniden çizilince kalır",!q("#guide").hidden&&(ev("render()"),!q("#guide").hidden)&&q("#guide").getAttribute("aria-modal")==="true");
     ok("ekran: animasyonlu figür, ad, form ipucu, halka, sonraki önizleme, ilerleme, kalan süre",!!q("#guide svg.fig animate")&&gt().includes("Açılıp kapanma sıçraması")&&gt().includes(ev("EXCUE.jack[0]"))&&!!q("#gdpg")&&q(".gdnx").textContent.includes("Dağcı")&&!!q("#gdbar")&&q("#gdrem").textContent.includes("8 adım"));
@@ -82,7 +82,7 @@ setTimeout(async()=>{
     ok("ısınma/esneme hacme, haftalık sete ve spor dakikasına girmez",ev("gWorkVol(S.workouts[0])")===0&&ev("gWorkSets(S.workouts[0])")===0&&ev("JSON.stringify(gWeekRegions())")===vol0&&ev("S.entries.length")===0);
     fin("f:tabata4");click('[data-gd="save"]');
     const t=ev("S.workouts[1]");
-    ok("Tabata kaydı: aralıklı setler süreli, done, sec 20; spor dakikası eklenir",t.ex.length===4&&t.ex.every(x=>x.sets.length===2&&x.sets.every(s=>s.done&&s.sec===20&&!s.w))&&ev("S.entries.filter(x=>x.wid===S.workouts[1].id&&x.type==='spor').length")===1);
+    ok("Tabata kaydı: aralıklı setler süreli, done, sec 20; spor dakikası eklenir",t.ex.length===4&&t.ex.every(x=>x.sets.length===2&&x.sets.every(s=>s.done&&s.sec===20&&!s.w))&&ev("S.entries.filter(x=>x.wid===S.workouts[1].id&&x.type==='exercise').length")===1);
     // ağırlıklı şablon: kg öneriden (62,5) değil önceki gerçek setten (60), kullanıcı düzeltebilir
     ev(`S.workouts.push({id:3,day:'2026-09-01',t0:1000,t1:2000,name:'Eski',tpl:null,ex:[{id:'squat',note:'',sets:[{kg:60,reps:12,done:true}]}]});S.templates=[{id:7,name:'Bacak',ex:['squat'],tg:{squat:{sets:2,reps:12}}}]`);
     fin("t:7");

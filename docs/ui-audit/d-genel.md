@@ -8,7 +8,7 @@
 6. Geri bildirim: 22 yerde yerel tarayıcı confirm(); toast alt menü ve içeriğe biniyor.
 7. %200 yazıda alt menü etiketleri harf ortasından kırılıyor, halka sayıları taşıyor.
 8. Sıra: Daha fazla + Ayarlar IA, Bugün, onboarding, ortak bileşenler, Koç ilk kullanım.
-Yöntem: Playwright/Chrome 155, 360x800 ve 412x915, açık/koyu, ~350 görüntü (scratchpad). %200 yazı, JS ile font-size x2 simülasyonu (Android textZoom'a yakın, birebir değil). Kaynak: www/index.html, www/modules/veri/onboardui.js, docs/tasarim-dili.md. Eski rekabet-arayuz.md bulgularının çoğu (emoji ikon, tema seçici, büyük geri düğmesi) giderilmiş; tekrarlanmadı.
+Yöntem: Playwright/Chrome 155, 360x800 ve 412x915, açık/koyu, ~350 görüntü (scratchpad). %200 yazı, JS ile font-size x2 simülasyonu (Android textZoom'a yakın, birebir değil). Kaynak: www/index.html, www/modules/data/onboardui.js, docs/tasarim-dili.md. Eski rekabet-arayuz.md bulgularının çoğu (emoji ikon, tema seçici, büyük geri düğmesi) giderilmiş; tekrarlanmadı.
 
 ## Bulgular (ekran/dosya | sorun | kanıt | öneri | öncelik)
 1. Daha fazla (index.html:891 DAHA) | 10 satır tek kart, gruplama yok: takip (ilaç, tansiyon, şeker, döngü, tahlil) ile sistem (Ayarlar, Gizlilik, Hakkında) aynı düzeyde; kapalı modül satırları da listede | s-daha | 3 grup: "Takip" (yalnız açık modüller + "Modül ekle"), "Keşfet" (Egzersiz kütüphanesi, Raporlar), "Uygulama" (Ayarlar, Gizlilik, Hakkında); .grp başlığı 12/600 --mut, grup arası 24 | Y

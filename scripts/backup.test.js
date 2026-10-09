@@ -1,4 +1,4 @@
-const B=require("../www/modules/veri/backuplib.js");let bad=0;
+const B=require("../www/modules/data/backuplib.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 (async()=>{
   const obj={S:{entries:[{v:1}],note:"çğş 🙂"},keys:{groq:"K"}};

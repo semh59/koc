@@ -12,7 +12,7 @@ setTimeout(async()=>{
   w.HTMLElement.prototype.scrollIntoView=function(){};
 
   const q=$q,click=s=>q(s).click(),sh=()=>q("#sheet").textContent;
-  ev("S=structuredClone(DEF);S.settings.obDone=true;tab='ayar-veri';render()");
+  ev("S=structuredClone(DEF);S.settings.obDone=true;tab='settings-data';render()");
   ok("Veri ve yedek: içe aktarma düğmesi",!!q('[data-imp="open"]'));
   { // D-Ant4
     const F='Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,Notes,Workout Notes,RPE\n2024-03-15 18:30:00,A,1h 5m,Bench Press (Barbell),1,135,5,0,0,,,\n2024-03-15 18:30:00,A,1h 5m,Zarp Zurp,1,50,12,0,0,,,\n';
@@ -98,7 +98,7 @@ setTimeout(async()=>{
   }
   { // D-Ant9
     const M=ev("MuscleMap");
-    ev("S.workouts=[];S.customEx=[];tab='salon';render()");
+    ev("S.workouts=[];S.customEx=[];tab='gym';render()");
     ok("veri yokken şema gri (tüm bölgeler l0) ve 'Bu hafta set yok'",q("#mminfo").textContent==="Bu hafta set yok."&&q(".mmwrap").querySelectorAll(".mmr").length>=15&&q(".mmwrap").querySelectorAll(".mmr:not(.l0)").length===0&&q(".mmwrap").querySelectorAll(".mmt").length===0);
     ok("kademe sınırları: 0, 1-4, 5-9, 10-20, 21+",[0,1,4,5,9,10,20,21].map(n=>ev(`MuscleMap.lvl(${n})`)).join()==="0,1,1,2,2,3,3,4");
     ok("15 şema bölgesi + Tüm vücut = 16 bölge adı",ev("MuscleMap.REGIONS.length")===15&&ev("MuscleMap.REGIONS.every(r=>EXREG.includes(r))")&&EXREGOK());
@@ -117,10 +117,10 @@ setTimeout(async()=>{
     L("Ön bacak").dispatchEvent(new w.MouseEvent("click",{bubbles:true}));
     ok("setsiz bölge: bu hafta set yok",q("#mminfo").textContent==="Ön bacak: bu hafta set yok");
     ok("şemada olmayan bölge (Tüm vücut) düğme olarak ve bölgeler listesinde",q('[data-g="mm:Tüm vücut"]').textContent.includes("1")&&q("#view").textContent.includes("Sırt"));
-    ev("S.workouts=[];S.customEx=[];S.templates=[];tab='bugun';render();closeSheet()");
+    ev("S.workouts=[];S.customEx=[];S.templates=[];tab='today';render();closeSheet()");
   }
   { // Dokunma hedefi ve klavye
-    ev("S=structuredClone(DEF);S.settings.obDone=true;tab='salon';render()");
+    ev("S=structuredClone(DEF);S.settings.obDone=true;tab='gym';render()");
     const pills=[...q(".mmp").querySelectorAll("button.chip")];
     ok("şema bölgeleri için 44 px'lik düğme sırası: 15 bölge, .chip en az 44 px",pills.length>=15&&/\.chip\{[^}]*min-height:44px/.test(html),pills.length);
     pills.find(b=>b.dataset.g==="mm:Biseps").click();

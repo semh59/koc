@@ -1,4 +1,4 @@
-const M=require("../www/modules/ilac/medlib.js");let bad=0;
+const M=require("../www/modules/meds/medlib.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const med=(o)=>({id:1,n:"Ilac A",t:["08:00","20:00"],on:true,...o});
 
@@ -163,7 +163,7 @@ ok("sinceFor: yeni saat bugünden, vakti geçmiş saat yarından, eski saat koru
   ok("wakeIssues: 1 dk'dan geç çalma ve tam ekran hatası bildirilir",/geç çaldı \(en çok \+5 dk\)/.test(M.wakeIssues(ok0,[{...wk,t:wk.p+300000}])[0].t)&&/gönderilemedi/.test(M.wakeIssues(ok0,[{...wk,fs:"err:X"}]).pop().t));
 }
 // yorum ve tanı dili yok
-const src=require("fs").readFileSync(require("path").join(__dirname,"../www/modules/ilac/medlib.js"),"utf8").replace(/\/\*[\s\S]*?\*\//g,"");
+const src=require("fs").readFileSync(require("path").join(__dirname,"../www/modules/meds/medlib.js"),"utf8").replace(/\/\*[\s\S]*?\*\//g,"");
 ok("doz önerisi/yorum dili kullanılmaz",!/öner|tavsiye|etkileşim|yan etki|aşırı doz|tehlikeli/i.test(src));
 ok("dayOk: geçersiz takvim günü reddedilir",!M.dayOk("2026-02-31")&&!M.dayOk("2026-04-31")&&M.dayOk("2026-02-28"));
 console.log(bad?"\n"+bad+" HATA":"\nTüm ilaç testleri geçti");process.exit(bad?1:0);

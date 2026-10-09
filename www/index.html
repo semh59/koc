@@ -16,16 +16,16 @@
   <main id="view"></main>
 </div>
 <nav aria-label="Ana menü"><div class="in">
-  <button data-tab="bugun"><span class="ic" data-ic="bugun"></span>Bugün</button>
-  <button data-tab="salon"><span class="ic" data-ic="salon"></span>Salon</button>
+  <button data-tab="today"><span class="ic" data-ic="today"></span>Bugün</button>
+  <button data-tab="gym"><span class="ic" data-ic="gym"></span>Salon</button>
   <button data-tab="trend"><span class="ic" data-ic="trend"></span>Trend</button>
-  <button data-tab="koc"><span class="ic" data-ic="koc"></span>Koç</button>
-  <button data-tab="daha"><span class="ic" data-ic="daha"></span>Daha fazla</button>
+  <button data-tab="coach"><span class="ic" data-ic="coach"></span>Koç</button>
+  <button data-tab="more"><span class="ic" data-ic="more"></span>Daha fazla</button>
 </div></nav>
 <script>/* Büyük yazıda menü etiketleri sarılıp menü uzar; sabit konumlu parçalar --nx kadar yukarı kayar. */
 {const n=document.querySelector("nav .in");if(window.ResizeObserver)new ResizeObserver(()=>document.documentElement.style.setProperty("--nx",Math.max(0,n.getBoundingClientRect().height-parseFloat(getComputedStyle(n.firstElementChild).minHeight))+"px")).observe(n)}</script>
 <div id="composer" hidden role="region" aria-label="Koça yaz">
-  <div class="chiprow"><button class="chip" data-act="su"><span data-ic="su"></span> +250</button><button class="chip" data-act="yemek"><span data-ic="yemek"></span> Yemek</button><button class="chip" data-act="kilo"><span data-ic="kilo"></span> Kilo</button><button class="chip" data-act="spor"><span data-ic="spor"></span> Spor</button></div>
+  <div class="chiprow"><button class="chip" data-act="water"><span data-ic="water"></span> +250</button><button class="chip" data-act="food"><span data-ic="food"></span> Yemek</button><button class="chip" data-act="weight"><span data-ic="weight"></span> Kilo</button><button class="chip" data-act="exercise"><span data-ic="exercise"></span> Spor</button></div>
   <div class="cin"><input id="cmsg" aria-label="Koça yaz" placeholder="Koça yaz" autocomplete="off" maxlength="600"><button id="csend" data-c="send" aria-label="Gönder" data-ic="send"></button></div>
 </div>
 <div id="scrim"></div>
@@ -40,88 +40,88 @@
 <script src="kernel/modules.js"></script>
 <script src="kernel/algo.js"></script>
 <script src="kernel/unitlib.js"></script>
-<script src="modules/besin/foods.js"></script>
-<script src="modules/besin/offlib.js"></script>
-<script src="modules/salon/exlib.js"></script>
-<script src="modules/salon/figlib.js"></script>
-<script src="modules/salon/figtpl.js"></script>
-<script src="modules/salon/excues.js"></script>
-<script src="modules/salon/programs.js"></script>
-<script src="modules/salon/musclemap.js"></script>
-<script src="modules/salon/gym.js"></script>
-<script src="modules/salon/exui.js"></script>
-<script src="modules/salon/guidelib.js"></script>
-<script src="modules/salon/guideui.js"></script>
-<script src="modules/veri/backuplib.js"></script>
-<script src="modules/tahlil/lablib.js"></script>
-<script src="modules/besin/labellib.js"></script>
-<script src="modules/tansiyon/vitalslib.js"></script>
-<script src="modules/nabiz/pulselib.js"></script>
-<script src="modules/ilac/medlib.js"></script>
-<script src="modules/dongu/cyclelib.js"></script>
-<script src="modules/hareket/motionlib.js"></script>
-<script src="modules/analiz/weeklylib.js"></script>
-<script src="modules/kayit/loglib.js"></script>
-<script src="modules/aliskanlik/habitlib.js"></script>
-<script src="modules/koc/insightlib.js"></script>
+<script src="modules/nutrition/foods.js"></script>
+<script src="modules/nutrition/offlib.js"></script>
+<script src="modules/gym/exlib.js"></script>
+<script src="modules/gym/figlib.js"></script>
+<script src="modules/gym/figtpl.js"></script>
+<script src="modules/gym/excues.js"></script>
+<script src="modules/gym/programs.js"></script>
+<script src="modules/gym/musclemap.js"></script>
+<script src="modules/gym/gym.js"></script>
+<script src="modules/gym/exui.js"></script>
+<script src="modules/gym/guidelib.js"></script>
+<script src="modules/gym/guideui.js"></script>
+<script src="modules/data/backuplib.js"></script>
+<script src="modules/labs/lablib.js"></script>
+<script src="modules/nutrition/labellib.js"></script>
+<script src="modules/vitals/vitalslib.js"></script>
+<script src="modules/pulse/pulselib.js"></script>
+<script src="modules/meds/medlib.js"></script>
+<script src="modules/cycle/cyclelib.js"></script>
+<script src="modules/motion/motionlib.js"></script>
+<script src="modules/insights/weeklylib.js"></script>
+<script src="modules/log/loglib.js"></script>
+<script src="modules/habits/habitlib.js"></script>
+<script src="modules/coach/insightlib.js"></script>
 <script src="kernel/piilib.js"></script>
-<script src="modules/koc/coachlib.js"></script>
-<script src="modules/besin/menulocal.js"></script>
-<script src="modules/analiz/goallib.js"></script>
-<script src="modules/koc/coach.js"></script>
-<script src="modules/besin/recipeui.js"></script>
-<script src="modules/tahlil/labui.js"></script>
-<script src="modules/besin/ocrui.js"></script>
-<script src="modules/tansiyon/vitalsui.js"></script>
-<script src="modules/analiz/weeklyui.js"></script>
-<script src="modules/kayit/quickui.js"></script>
-<script src="modules/ilac/medui.js"></script>
-<script src="modules/ilac/alarmlib.js"></script>
-<script src="modules/ilac/alarmui.js"></script>
-<script src="modules/veri/lockui.js"></script>
-<script src="modules/aliskanlik/habitui.js"></script>
-<script src="modules/analiz/baglantilib.js"></script>
-<script src="modules/analiz/baglantiui.js"></script>
-<script src="modules/hareket/motionui.js"></script>
-<script src="modules/olcu/measureui.js"></script>
-<script src="modules/hareket/walkui.js"></script>
-<script src="modules/gecmis/historylib.js"></script>
-<script src="modules/gecmis/historyui.js"></script>
-<script src="modules/nabiz/hcui.js"></script>
-<script src="modules/nabiz/pulseui.js"></script>
-<script src="modules/veri/backupui.js"></script>
-<script src="modules/veri/csvlib.js"></script>
-<script src="modules/salon/importlib.js"></script>
-<script src="modules/salon/importui.js"></script>
-<script src="modules/kayit/index.js"></script>
-<script src="modules/salon/index.js"></script>
-<script src="modules/hareket/index.js"></script>
-<script src="modules/ilac/index.js"></script>
-<script src="modules/tansiyon/index.js"></script>
-<script src="modules/tahlil/index.js"></script>
-<script src="modules/aliskanlik/index.js"></script>
-<script src="modules/koc/index.js"></script>
-<script src="modules/olcu/index.js"></script>
-<script src="modules/besin/index.js"></script>
-<script src="modules/nabiz/index.js"></script>
-<script src="modules/dongu/index.js"></script>
-<script src="modules/veri/privacyui.js"></script>
+<script src="modules/coach/coachlib.js"></script>
+<script src="modules/nutrition/menulocal.js"></script>
+<script src="modules/insights/goallib.js"></script>
+<script src="modules/coach/coach.js"></script>
+<script src="modules/nutrition/recipeui.js"></script>
+<script src="modules/labs/labui.js"></script>
+<script src="modules/nutrition/ocrui.js"></script>
+<script src="modules/vitals/vitalsui.js"></script>
+<script src="modules/insights/weeklyui.js"></script>
+<script src="modules/log/quickui.js"></script>
+<script src="modules/meds/medui.js"></script>
+<script src="modules/meds/alarmlib.js"></script>
+<script src="modules/meds/alarmui.js"></script>
+<script src="modules/data/lockui.js"></script>
+<script src="modules/habits/habitui.js"></script>
+<script src="modules/insights/linkslib.js"></script>
+<script src="modules/insights/linksui.js"></script>
+<script src="modules/motion/motionui.js"></script>
+<script src="modules/measures/measureui.js"></script>
+<script src="modules/motion/walkui.js"></script>
+<script src="modules/history/historylib.js"></script>
+<script src="modules/history/historyui.js"></script>
+<script src="modules/pulse/hcui.js"></script>
+<script src="modules/pulse/pulseui.js"></script>
+<script src="modules/data/backupui.js"></script>
+<script src="modules/data/csvlib.js"></script>
+<script src="modules/gym/importlib.js"></script>
+<script src="modules/gym/importui.js"></script>
+<script src="modules/log/index.js"></script>
+<script src="modules/gym/index.js"></script>
+<script src="modules/motion/index.js"></script>
+<script src="modules/meds/index.js"></script>
+<script src="modules/vitals/index.js"></script>
+<script src="modules/labs/index.js"></script>
+<script src="modules/habits/index.js"></script>
+<script src="modules/coach/index.js"></script>
+<script src="modules/measures/index.js"></script>
+<script src="modules/nutrition/index.js"></script>
+<script src="modules/pulse/index.js"></script>
+<script src="modules/cycle/index.js"></script>
+<script src="modules/data/privacyui.js"></script>
 <script src="kernel/unitui.js"></script>
-<script src="modules/kayit/drinkui.js"></script>
-<script src="modules/salon/cardiolib.js"></script>
-<script src="modules/salon/cardioui.js"></script>
-<script src="modules/veri/photolib.js"></script>
-<script src="modules/veri/photoui.js"></script>
-<script src="modules/dongu/cycleui.js"></script>
-<script src="modules/analiz/goalui.js"></script>
-<script src="modules/veri/onboardui.js"></script>
-<script type="text/x-main" data-src="main/01-cekirdek.js"></script>
-<script type="text/x-main" data-src="main/02-durum-bilesen.js"></script>
-<script type="text/x-main" data-src="main/03-ekranlar.js"></script>
-<script type="text/x-main" data-src="main/04-altsayfa.js"></script>
-<script type="text/x-main" data-src="main/05-bildirim.js"></script>
-<script type="text/x-main" data-src="main/06-olaylar.js"></script>
-<script type="text/x-main" data-src="main/07-eylemler.js"></script>
+<script src="modules/log/drinkui.js"></script>
+<script src="modules/gym/cardiolib.js"></script>
+<script src="modules/gym/cardioui.js"></script>
+<script src="modules/data/photolib.js"></script>
+<script src="modules/data/photoui.js"></script>
+<script src="modules/cycle/cycleui.js"></script>
+<script src="modules/insights/goalui.js"></script>
+<script src="modules/data/onboardui.js"></script>
+<script type="text/x-main" data-src="main/01-core.js"></script>
+<script type="text/x-main" data-src="main/02-state-components.js"></script>
+<script type="text/x-main" data-src="main/03-screens.js"></script>
+<script type="text/x-main" data-src="main/04-sheets.js"></script>
+<script type="text/x-main" data-src="main/05-notifications.js"></script>
+<script type="text/x-main" data-src="main/06-events.js"></script>
+<script type="text/x-main" data-src="main/07-actions.js"></script>
 <script>
 /* Ana betik, depo (IndexedDB) okunduktan sonra çalışır: S ve load() eşzamanlı kalır, erken kayıt varsayılanla gerçek veriyi ezemez. */
 (function(){

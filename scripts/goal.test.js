@@ -1,5 +1,5 @@
 /* Kilo trendine göre kalori hedefi önerisi: hız, sınır, fren, susturma, yetersiz veri. */
-const G=require("../www/modules/analiz/goallib.js"),A=require("../www/kernel/algo.js");let bad=0;
+const G=require("../www/modules/insights/goallib.js"),A=require("../www/kernel/algo.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const T="2026-10-06",day=n=>{const d=new Date(Date.UTC(2026,9,6)+n*864e5);return d.toISOString().slice(0,10)};
 /* haftalık eğim sl (kg/hafta), son 21 günde her 3 günde bir tartı */

@@ -2,7 +2,7 @@
 const {JSDOM}=require("jsdom"),fs=require("fs"),path=require("path");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const www=f=>path.join(__dirname,"../www",f);
-const C=require("../www/modules/dongu/cyclelib.js"),T="2026-10-06";
+const C=require("../www/modules/cycle/cyclelib.js"),T="2026-10-06";
 const add=(k,n)=>C.addDays(k,n);
 const starts=(...ds)=>ds.map(s=>({s}));
 const chain=lens=>{let d="2025-01-01";const r=[{s:d}];for(const l of lens){d=add(d,l);r.push({s:d})}return C.clean(r,T)};
@@ -14,8 +14,8 @@ const chain=lens=>{let d="2025-01-01";const r=[{s:d}];for(const l of lens){d=add
   ok("bozuk tarih reddedilir",!!e({s:"2026-13-40"})&&!!e({s:"x"})&&!!e(null)&&!!e({s:"2026-02-30"}));
   ok("bitiş başlangıçtan önce, gelecek ya da 14 günden uzun reddedilir",!!e({s:"2026-09-10",e:"2026-09-09"})&&!!e({s:"2026-10-05",e:"2026-10-07"})&&!!e({s:"2026-09-01",e:"2026-09-15"})&&!!g({s:"2026-09-01",e:"2026-09-14"}));
   ok("5 yıldan eski reddedilir",!!e({s:"2021-01-01"})&&!!g({s:"2021-12-01"}));
-  const r=g({s:"2026-09-10",flow:"y",sym:["k","zz","k","r"],not:"  "+"a".repeat(200)});
-  ok("akış ve belirti yalnız bilinen etiket, not 80 karakter, boş not atılır",r.flow==="y"&&r.sym.join()==="k,r"&&r.not.length===80&&g({s:T,not:" "}).not===undefined&&g({s:T,flow:"x"}).flow===undefined);
+  const r=g({s:"2026-09-10",flow:"heavy",sym:["cramp","zz","cramp","mood"],note:"  "+"a".repeat(200)});
+  ok("akış ve belirti yalnız bilinen etiket, not 80 karakter, boş not atılır",r.flow==="heavy"&&r.sym.join()==="cramp,mood"&&r.note.length===80&&g({s:T,note:" "}).note===undefined&&g({s:T,flow:"x"}).flow===undefined);
 }
 { // temizlik
   const c=C.clean([{s:"2026-09-10",e:"2026-09-14"},{s:"2026-09-12"},{s:"2026-08-12"},{s:"2026-09-14"},{s:"2027-01-01"},null,"x",{s:"2026-09-20"}],T);
@@ -56,7 +56,7 @@ const dom=new JSDOM(html,{runScripts:"dangerously",pretendToBeVisual:true,url:"h
 const w=dom.window,ev=s=>w.eval(s);
 ev("toast=()=>{}");
 const SECRET="GIZLIDONGUNOTU";
-const seed=()=>ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.cycleOn=true;S.settings.cycleRem=true;S.settings.age=30;S.cycle=CycleLib.clean([{s:'2026-07-01',e:'2026-07-05',flow:'y',sym:['k'],not:'${SECRET}'},{s:'2026-07-29'},{s:'2026-08-26'},{s:'2026-09-23',not:'${SECRET}'}],'2026-10-06')`);
+const seed=()=>ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.cycleOn=true;S.settings.cycleRem=true;S.settings.age=30;S.cycle=CycleLib.clean([{s:'2026-07-01',e:'2026-07-05',flow:'heavy',sym:['cramp'],note:'${SECRET}'},{s:'2026-07-29'},{s:'2026-08-26'},{s:'2026-09-23',note:'${SECRET}'}],'2026-10-06')`);
 { // yedek turu
   seed();
   const b=ev("buildState(JSON.parse(JSON.stringify(S)))");
@@ -84,7 +84,7 @@ const seed=()=>ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.cycl
   ok("kimlik aralığı: hatırlatma (id*100+gün), oruç 9100, rehber 9001-9003 ve ilaç (>=1e6) ile çakışmaz",!used.has(C.NID)&&![9001,9002,9003,9100].includes(C.NID)&&C.NID<1e6&&ev("Math.max(...S.settings.reminders.map(r=>r.id))")<90);
 }
 { // ekran ve silme
-  seed();ev("S.settings.healthNote='';tab='dongu';render()");
+  seed();ev("S.settings.healthNote='';tab='cycle';render()");
   const v=()=>ev("document.querySelector('#view').textContent");
   ok("ekran: tahmin, not ve takvim görünür",ev("!!document.querySelector('.cypr')")&&/tıbbi tavsiye değildir/.test(v())&&ev("document.querySelectorAll('.cyd').length")===31);
   ev("S.settings.healthNote='hamileyim';render()");
@@ -95,9 +95,9 @@ const seed=()=>ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.cycl
   ok("Gizlilik kategori listesinde, silince yalnız döngü gider",ev("PV_CATS.some(c=>c[0]==='Döngü kayıtları')")&&(ev("pvDelete(PV_CATS.findIndex(c=>c[0]==='Döngü kayıtları'))"),ev("S.cycle.length")===0));
 }
 { // Tüm verileri sil: Koç jeton sayacı da gider
-  ev("localStorage.setItem('koc_v1_kullanim','{\"x\":1}');tab='ayar-veri';render()");
-  ev("document.querySelector('[data-act=\"sifirla\"]').click()");
-  ok("Tüm verileri sil koc_v1_kullanim anahtarını temizler",ev("localStorage.getItem('koc_v1_kullanim')")===null);
+  ev("localStorage.setItem('nw_state_usage','{\"x\":1}');tab='settings-data';render()");
+  ev("document.querySelector('[data-act=\"reset\"]').click()");
+  ok("Tüm verileri sil nw_state_usage anahtarını temizler",ev("localStorage.getItem('nw_state_usage')")===null);
 }
 (async()=>{ // Gizlilik > Döngü kayıtları: yalnız kayıtlar gider, ayar kalır, bekleyen döngü bildirimi iptal edilir
   seed();
