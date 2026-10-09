@@ -22,7 +22,7 @@ echo "NW-DIAG: $diag"
 adb logcat -d -b crash | grep -qE "Process: $P|>>> $P <<<" && { adb logcat -d -b crash; die "RELEASE UYGULAMA ÇÖKTÜ"; }
 [ -n "$(adb shell pidof $P)" ] || die "RELEASE UYGULAMA AÇILMADI"
 # Her eklentinin en az bir @PluginMethod'u görünmeli (=0: sınıf yüklenmedi ya da yöntemleri küçültmede silindi).
-for p in LocalNotifications Share Filesystem App BarcodeScanner MedWake AppLock KeyVault DeviceHelp StepCounter Ocr QuickLog Motion Widget Speech BackupFolder; do
+for p in LocalNotifications Share Filesystem App BarcodeScanner MedWake AppLock KeyVault DeviceHelp StepCounter Ocr QuickLog Motion Widget Speech BackupFolder Health; do
   echo "$diag" | grep -qE "(^|[ :])$p=[1-9]" || die "RELEASE: EKLENTİ YOK YA DA YÖNTEMLERİ SİLİNMİŞ: $p"
 done
 step "JS köprüsü yan etkileri"
