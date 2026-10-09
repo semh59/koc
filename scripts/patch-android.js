@@ -4,7 +4,7 @@ const p = "android/app/src/main/AndroidManifest.xml";
 let x = fs.readFileSync(p, "utf8");
 // USE_EXACT_ALARM yok: Play onu yalnız alarm/takvim uygulamalarına veriyor. İzin kapalıysa eklenti alarmı yaklaşık saate kurar, arayüz söyler.
 // ACCESS_BACKGROUND_LOCATION yok: konum servisi yalnız uygulama görünürken elle başlatılan yürüyüşte açılır, "kullanırken" izni yeter.
-for (const perm of ["POST_NOTIFICATIONS", "RECEIVE_BOOT_COMPLETED", "VIBRATE", "SCHEDULE_EXACT_ALARM", "USE_FULL_SCREEN_INTENT", "CAMERA", "ACTIVITY_RECOGNITION", "ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "FOREGROUND_SERVICE", "FOREGROUND_SERVICE_LOCATION"]) {
+for (const perm of ["POST_NOTIFICATIONS", "RECEIVE_BOOT_COMPLETED", "VIBRATE", "SCHEDULE_EXACT_ALARM", "USE_FULL_SCREEN_INTENT", "CAMERA", "ACTIVITY_RECOGNITION", "ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "FOREGROUND_SERVICE", "FOREGROUND_SERVICE_LOCATION", "health.READ_STEPS"]) {
   if (!x.includes(`android.permission.${perm}`)) {
     x = x.replace("</manifest>", `    <uses-permission android:name="android.permission.${perm}" />\n</manifest>`);
   }
@@ -26,6 +26,10 @@ if (!x.includes("AlarmActivity")) {
 }
 if (!x.includes("MedWakeReceiver")) {
   x = x.replace("</application>", '    <receiver android:name=".MedWakeReceiver" android:exported="false"><intent-filter><action android:name="android.intent.action.BOOT_COMPLETED"/><action android:name="android.intent.action.MY_PACKAGE_REPLACED"/><action android:name="android.intent.action.TIME_SET"/><action android:name="android.intent.action.TIMEZONE_CHANGED"/><action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED"/></intent-filter></receiver>\n    </application>');
+}
+// Health Connect (Android 14+): izin kullanım ekranı bildirilmezse sistem okuma izni vermez.
+if (!x.includes("HEALTH_PERMISSIONS")) {
+  x = x.replace("</application>", '    <activity-alias android:name=".HealthPermissionUsage" android:targetActivity=".MainActivity" android:exported="true" android:permission="android.permission.START_VIEW_PERMISSION_USAGE"><intent-filter><action android:name="android.intent.action.VIEW_PERMISSION_USAGE"/><category android:name="android.intent.category.HEALTH_PERMISSIONS"/></intent-filter></activity-alias>\n    </application>');
 }
 // Barkod tarayıcı modülü uygulama kurulurken indirilsin (Google ML Kit).
 if (!x.includes("com.google.mlkit.vision.DEPENDENCIES")) {
@@ -70,7 +74,7 @@ console.log("Simgeler ve açılış ekranı yerleştirildi.");
 // KeyVault sözleşmesi: anahtar geçersizleştiyse ya da yoksa decrypt (ve reset olmadan encrypt) reject koduyla "KEY_INVALIDATED" döner; eski veri çözülemez.
 // Yeni anahtar için encrypt({text, reset:true}) ya da resetKey() çağrılır.
 const jdir="android/app/src/main/java/com/neowell/app";
-for(const f of ["Alarms","AlarmActivity","AppLockPlugin","MedWakeReceiver","MedWakePlugin","KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin","QuickMath","QuickLogPlugin","MotionMath","MotionStore","MotionGpsService","MotionReceiver","MotionPlugin","NeoWidget","WidgetPlugin","WaterReceiver","SpeechPlugin","BackupFolderPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
+for(const f of ["Alarms","AlarmActivity","AppLockPlugin","MedWakeReceiver","MedWakePlugin","KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin","QuickMath","QuickLogPlugin","MotionMath","MotionStore","MotionGpsService","MotionReceiver","MotionPlugin","NeoWidget","WidgetPlugin","WaterReceiver","SpeechPlugin","BackupFolderPlugin","HealthPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
 fs.writeFileSync(`${jdir}/MainActivity.java`,`package com.neowell.app;
 
 import android.content.Intent;
@@ -93,6 +97,7 @@ public class MainActivity extends BridgeActivity {
         boolean quick = false;
         if (savedInstanceState == null) quick = QuickLogPlugin.handle(this, getIntent(), false);
         else getIntent().removeExtra(QuickLogPlugin.ACTION_KEY);
+        registerPlugin(HealthPlugin.class);
         registerPlugin(MedWakePlugin.class);
         registerPlugin(AppLockPlugin.class);
         registerPlugin(KeyVaultPlugin.class);
@@ -115,7 +120,7 @@ public class MainActivity extends BridgeActivity {
     private void diag(Intent in) {
         if (in == null || !in.getBooleanExtra("nw_diag", false)) return;
         StringBuilder sb = new StringBuilder();
-        for (String n : new String[] {"LocalNotifications", "Share", "Filesystem", "App", "BarcodeScanner", "MedWake", "AppLock", "KeyVault", "DeviceHelp", "StepCounter", "Ocr", "QuickLog", "Motion", "Widget", "Speech", "BackupFolder"}) {
+        for (String n : new String[] {"LocalNotifications", "Share", "Filesystem", "App", "BarcodeScanner", "MedWake", "AppLock", "KeyVault", "DeviceHelp", "StepCounter", "Ocr", "QuickLog", "Motion", "Widget", "Speech", "BackupFolder", "Health"}) {
             PluginHandle h = getBridge() == null ? null : getBridge().getPlugin(n);
             int k = 0;
             if (h != null && h.getInstance() != null)

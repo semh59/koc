@@ -472,6 +472,7 @@ button:is(.row,.prow,.rrow){width:100%}
 <script src="motionui.js"></script>
 <script src="measureui.js"></script>
 <script src="walkui.js"></script>
+<script src="hcui.js"></script>
 <script src="backupui.js"></script>
 <script src="csvlib.js"></script>
 <script src="importlib.js"></script>
@@ -525,7 +526,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- veri ---------- */
 const DEF={
-  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,piiPrev:false,chatRisk:"",copyAt:"",lastPlateau:"",goalSugAt:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:false,lockOn:false,cycleOn:false,cycleRem:false,fastOn:false,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
+  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,piiPrev:false,chatRisk:"",copyAt:"",lastPlateau:"",goalSugAt:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:false,lockOn:false,hcOn:false,cycleOn:false,cycleRem:false,fastOn:false,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -588,6 +589,7 @@ function cleanSettings(raw){
   if(o.fastLongOk===true)d.fastLongOk=true;
   if(o.moveKcalOn===true)d.moveKcalOn=true;
   if(o.lockOn===true)d.lockOn=true;
+  if(o.hcOn===true)d.hcOn=true;
   if(o.medShowName===true)d.medShowName=true; // varsayılan gizli: ilaç adı kilit ekranında yalnız kullanıcı açarsa görünür
   if(o.awakeOn===false)d.awakeOn=false;
   if(o.gdVoice===false)d.gdVoice=false;
@@ -645,6 +647,7 @@ function cleanEntries(arr){
     const ne={id,day:e.day,time:timeOk(e.time)?e.time:"00:00",type:e.type,v:e.type==="not"?null:v,text:typeof e.text==="string"?e.text.slice(0,500):""};
     if(Number.isInteger(e.wid))ne.wid=e.wid;
     if(e.type==="spor"){if(e.bt===true)ne.bt=true;if(Number.isInteger(e.kcal)&&e.kcal>=0&&e.kcal<=5000)ne.kcal=e.kcal;if(typeof e.km==="number"&&e.km>=0&&e.km<=100)ne.km=Math.round(e.km*100)/100}
+    if(e.type==="adim"){for(const k of ["ph","hc"])if(Number.isFinite(e[k])&&e[k]>=0&&e[k]<=200000)ne[k]=e[k]}
     if(e.type==="su"&&drinkOk(e.dr))ne.dr=e.dr;
     if(e.type==="spor"&&CardioLib.kind(e.ck)){ne.ck=e.ck;if(typeof e.cn==="string"&&e.cn.trim())ne.cn=e.cn.trim().slice(0,80)}
     if(e.type==="yemek"){copyNutr(e,ne);if(LogLib.mealKey(e.meal))ne.meal=e.meal;if(ne.v!=null&&Number.isInteger(e.lo)&&Number.isInteger(e.hi)&&e.lo>=0&&e.lo<=ne.v&&ne.v<=e.hi&&e.hi<=20000){ne.lo=e.lo;ne.hi=e.hi}}
@@ -1456,12 +1459,22 @@ let stepToday=null,stepSnapAt=0,stepsRead=false;
 function setSteps(day,v){
   if(!(v>=0&&v<=200000)||day<S.settings.stepsFrom)return false; // silinen adımlar sensör geçmişinden geri yazılmaz
   const e=S.entries.find(x=>x.type==="adim"&&x.day===day&&x.text!=="elle");
-  if(e){if(e.v===v)return false;e.v=v} // 0 da geçerli: sayaç sıfırlanınca eski şişmiş kayıt düzelir
-  else if(v>0)S.entries.push({id:S.nextId++,day,time:"00:00",type:"adim",v,text:""});
+  if(e){const m=Math.max(v,e.hc||0);if(e.v===m&&(e.ph===v||!e.hc))return false;e.ph=v;e.v=m} // 0 da geçerli: sayaç sıfırlanınca eski şişmiş kayıt düzelir
+  else if(v>0)S.entries.push({id:S.nextId++,day,time:"00:00",type:"adim",v,ph:v,text:""});
+  else return false;
+  return true;
+}
+/* Health Connect (saat) günlük adımı: gün değeri telefon (ph) ile saatin (hc) büyüğüdür, asla toplamı değil. Eski kayıtta ph yoksa v telefon değeridir. */
+function setHc(day,v){
+  if(!(v>=0&&v<=200000)||day<S.settings.stepsFrom)return false;
+  const e=S.entries.find(x=>x.type==="adim"&&x.day===day&&x.text!=="elle");
+  if(e){if(e.hc===v)return false;const ph=e.ph!=null?e.ph:e.v;e.ph=ph;e.hc=v;e.v=Math.max(ph,v)}
+  else if(v>0)S.entries.push({id:S.nextId++,day,time:"00:00",type:"adim",v,ph:0,hc:v,text:""});
   else return false;
   return true;
 }
 async function stepsSync(){
+  hcSync();
   if(!S.settings.stepsOn||!SC())return;
   try{
     const r=await SC().read();let ch=!stepsRead;stepsRead=true;
@@ -1478,7 +1491,7 @@ function stepsTick(){
   stepBusy=true;return stepsSync().finally(()=>{stepBusy=false});
 }
 const manualSteps=()=>S.entries.filter(e=>e.type==="adim"&&e.text==="elle"&&e.day===dayKey()).reduce((s,e)=>s+e.v,0);
-const stepsShown=()=>stepToday==null?null:stepToday+manualSteps();
+const stepsShown=()=>{const t=Math.max(stepToday==null?-1:stepToday,hcToday==null?-1:hcToday);return t<0?null:t+manualSteps()};
 function sheetAdim(){openSheet(`<h3>Adım ekle (elle)</h3><p class="flush hint">Telefonu taşımadığın adımlar için. Sensör değerine eklenir.</p><input class="in num" id="fv" inputmode="numeric" placeholder="Adım sayısı" autofocus>${dayOptions()}<button class="btn" data-go="adim">Ekle</button>`)}
 function goAdim(){
   const n=num($("#fv").value,true);
@@ -1486,7 +1499,7 @@ function goAdim(){
   const e=add("adim",n,"elle",fday());closeSheet();render();toast(`${Math.round(n).toLocaleString("tr-TR")} adım eklendi`,e.id);
 }
 function stepCard(){
-  const g=S.settings.stepGoal,v=Math.round(stepsShown()||0),n=stepToday==null?null:v,f=x=>x.toLocaleString("tr-TR"),ok=n!=null&&n>=g;
+  const g=S.settings.stepGoal,v=Math.round(stepsShown()||0),n=stepsShown()==null?null:v,f=x=>x.toLocaleString("tr-TR"),ok=n!=null&&n>=g;
   return `<button class="rbtn" data-tab="adim" aria-label="Adım raporunu aç">${ring(v/g,"var(--prim)",n==null?"–":ok?"✓":f(g-n),"Adım",`${n==null?"–":f(n)} / ${f(g)}`,ok?"Hedef tamam":n==null?"":"adım kaldı","mini"+(ok?" done":""))}</button>`;
 }
 let stepRange=14;
@@ -1494,7 +1507,7 @@ function viewAdim(){
   const st=S.settings,fm=x=>Math.round(x).toLocaleString("tr-TR"),L=120;
   const all=[];for(let i=L-1;i>=0;i--){const k=keyOff(-i);all.push({k,v:sum("adim",k,k),d:addDays(-i)})}
   const N=stepRange||new Date().getDate(),days=all.slice(-N),vals=days.map(d=>d.v);
-  const today=stepToday==null?all[L-1].v:stepsShown(),max=Math.max(st.stepGoal,...vals,1);
+  const today=stepsShown()==null?all[L-1].v:stepsShown(),max=Math.max(st.stepGoal,...vals,1);
   const g=st.stepGoal,sr=Algo.stepStats(vals,g),s7=Algo.stepStats(all.slice(-7).map(d=>d.v),g),s30=Algo.stepStats(all.slice(-30).map(d=>d.v),g),sl=Algo.stepStats(all.map(d=>d.v),g);
   const best=sr.best>=0?days[sr.best]:null;
   const W=320,H=130,pl=12,gap=N>14?2:6,bw=Math.min(16,(W-2*pl-gap*(N-1))/N),step=N>1?(W-2*pl-bw)/(N-1):0,Y=v=>H-18-(H-30)*(v/max);
@@ -1510,7 +1523,7 @@ function viewAdim(){
   const man=S.entries.filter(e=>e.type==="adim"&&e.text==="elle").sort((a,b)=>b.day.localeCompare(a.day)||b.id-a.id).map(e=>`<div class="row"><span>${fd(e.day)}</span><b class="num">+${fm(e.v)}</b><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></div>`).join("");
   /* Hiç adım yokken sayaç ve istatistik duvarı yerine tek cümle ve yürüyüş başlatma. */
   if(!sl.n&&!today&&!S.walk)return `${emptyCard("adim","Henüz adım kaydı yok","Telefonu yanında taşıdıkça adımların burada görünür.",`<button class="btn" data-w="start">Yürüyüş başlat</button>`)}
-  ${motionCard()}
+  ${hcCard()}${motionCard()}
   <div class="card"><div class="lbl">Elle eklenenler</div>${man||'<p class="hint">Elle eklediğin adım yok.</p>'}<button class="lnk" data-act="adimekle">Adım ekle (elle)</button></div>`;
   return `<div class="tc card">${ring(today/st.stepGoal,"var(--su)",fm(today),"Bugün",`/ ${fm(st.stepGoal)} adım`,"adım")}</div>
   ${walkCard()}
@@ -1518,6 +1531,7 @@ function viewAdim(){
   <div class="stats"><div class="stat"><div class="k">7 gün ortalaması</div><div class="v num">${s7.n?fm(s7.avg):"–"}</div></div><div class="stat"><div class="k">30 gün ortalaması</div><div class="v num">${s30.n?fm(s30.avg):"–"}</div></div><div class="stat"><div class="k">En iyi gün</div><div class="v num">${best?fm(best.v):"–"}</div>${best?`<div class="mut sm">${fd(best.k)}</div>`:""}</div><div class="stat"><div class="k">Hedef serisi</div><div class="v num">${sl.streak} gün</div></div><div class="stat"><div class="k">Hedefe ulaşılan gün</div><div class="v num">${sr.hit} / ${N}</div></div>${extra}</div>
   ${motionCard()}
   <div class="card"><div class="lbl">Günler</div>${rows}</div>
+  ${hcCard()}
   <div class="card"><div class="lbl">Elle eklenenler</div>${man||'<p class="hint">Elle eklediğin adım yok.</p>'}<button class="lnk" data-act="adimekle">Adım ekle (elle)</button></div>
   ${km==null?`<p class="hint">Mesafe için Ayarlar'dan boyunu gir.</p>`:""}
   <p class="hint">Kaynak: telefonun adım sensörü. Yalnızca telefonu taşıdığın adımlar sayılır. Çok yavaş yürüyüşte az sayabilir, genelde sapma %5-10 civarıdır. ${S.settings.moveKcalOn?"Enerji ve mesafe yaklaşıktır. Adımlar kalori hedefine eklenmez; Profil'deki ayar açık olduğundan yalnız kayıtlı antrenman ve hareketler eklenir.":"Enerji ve mesafe yaklaşıktır ve günlük kalori hedefine eklenmez: harcama tahmini zaten gerçek kilo değişimine dayanır."} Ortalamalar yalnız adım kaydı olan günlerden hesaplanır.</p>`;
@@ -1715,7 +1729,7 @@ abBoot();
 if(S.settings.stepsOn&&SC()){SC().start().catch(()=>{});stepsSync();motionBoot()}
 setInterval(stepsTick,STEP_POLL);
 if(DH())DH().info().then(r=>{oem=String(r.manufacturer||"");render()},()=>{});
-try{const P=window.Capacitor&&window.Capacitor.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp","BarcodeScanner","StepCounter","Ocr","Motion","Speech","Widget","BackupFolder","MedWake"].map(n=>n+"="+typeof P[n]).join(" "))}catch(e){}
+try{const P=window.Capacitor&&window.Capacitor.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp","BarcodeScanner","StepCounter","Ocr","Motion","Speech","Widget","BackupFolder","MedWake","Health"].map(n=>n+"="+typeof P[n]).join(" "))}catch(e){}
 setInterval(()=>{if(dayKey()!==lastDay&&!viewBusy()){lastDay=dayKey();logOff=0;render()}},60000);
 try{const ln=LN();if(ln&&ln.addListener)ln.addListener("localNotificationActionPerformed",notifTap)}catch(e){}
 function widgetOpen(){tab="bugun";logOff=0;closeSheet();render();window.scrollTo(0,0)}
