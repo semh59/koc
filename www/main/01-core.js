@@ -169,8 +169,8 @@ const shardOf=st=>{
     for(const k of keys){
       used.add(k);
       if(Chunks[k]&&Array.isArray(st[k])){
-        base[k]=[];
-        for(const [c,list] of Object.entries(Object.groupBy(st[k],Chunks[k])))put(id+"/"+c,{[k]:list});
+        const by={};for(const e of st[k])(by[Chunks[k](e)]??=[]).push(e);
+        base[k]=[];for(const [c,list] of Object.entries(by))put(id+"/"+c,{[k]:list});
       }else base[k]=st[k];
     }
     put(id,base);
@@ -253,10 +253,10 @@ function save(soft){
   }
   lastJ=j;fastWatch();return true;
 }
-/* At boot in IndexedDB mode: a state written in localStorage mode (no shards yet) is saved as shards, and the localStorage text is deleted once they are durable. */
+/* First boot in IndexedDB mode: a state written in localStorage mode (no shards yet) is saved as shards, and the localStorage text is deleted once they are durable. */
 document.addEventListener("nw:boot",()=>{
-  if(Store.mode!=="idb"||recovery)return;
-  if(!Store.sharded)save();
+  if(Store.mode!=="idb"||recovery||Store.sharded)return;
+  save();
   if(Store.get("nw_state")!=null)Store.whenIdle().then(()=>{if(!Store.failed)Store.del("nw_state")});
 });
 /* Another tab (web only) saved: take its state, or this tab would overwrite it with stale data on its next save. `synced` records what was taken before the redraw. */
