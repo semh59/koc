@@ -18,10 +18,10 @@ Hepsini kullanıcı kendisi girer ya da telefon sensörlerinden, kullanıcının
 | Kategori | İçerik |
 |---|---|
 | Profil | boy, yaş, cinsiyet (isteğe bağlı), hareket düzeyi, hedefler |
-| Sağlık verisi (özel nitelikli) | kilo, vücut ölçüleri (bel, kalça vb.), yemek ve su kayıtları, spor ve antrenman setleri, adım ve hareket, tahlil sonuçları, tansiyon ve şeker ölçümleri, ilaç adı-doz-saat-alım kaydı ve stok, uyku, ruh hali, oruç, isteğe bağlı döngü (dönem günleri, akış, belirti, kısa not) kaydı, kullanıcının yazdığı sağlık notu |
+| Sağlık verisi (özel nitelikli) | kilo, vücut ölçüleri (bel, kalça vb.), yemek ve su kayıtları, spor ve antrenman setleri, adım ve hareket, tahlil sonuçları, tansiyon ve şeker ölçümleri, nabız (kamerayla ölçtüğün ya da saatinden gelen), ilaç adı-doz-saat-alım kaydı ve stok, uyku, ruh hali, oruç, isteğe bağlı döngü (dönem günleri, akış, belirti, kısa not) kaydı, kullanıcının yazdığı sağlık notu |
 | Kullanıcı içeriği | kendi tarifleri, besinleri, favorileri, öğün ve antrenman şablonları |
 | Notlar ve Koç sohbeti | kullanıcının yazdığı notlar, Koç ile mesajlar (açık sohbet ve geçmişe arşivlenmiş ayrı sohbetler; modele yalnız açık sohbet gider) |
-| Cihaz | bildirim izni durumu; yalnız elle başlattığın yürüyüşte, uygulama açıkken başlayan kısa konum ölçümü (iyi sinyalde yaklaşık 1 dakika, en çok 10 dakika; sürerken bildirim görünür; yalnız öğrenilen adım uzunluğu saklanır, konum noktası ve rota saklanmaz; arka planda konum istenmez); kamera (etiket ve tahlil fotoğrafı telefonda okunur, fotoğraf saklanmaz ve gönderilmez); ilaç alarmı saatinde ekranı birkaç saniye uyandıran ekran uyandırma (WAKE_LOCK) izni, hiçbir veri toplamaz ve göndermez |
+| Cihaz | bildirim izni durumu; yalnız elle başlattığın yürüyüşte, uygulama açıkken başlayan kısa konum ölçümü (iyi sinyalde yaklaşık 1 dakika, en çok 10 dakika; sürerken bildirim görünür; yalnız öğrenilen adım uzunluğu saklanır, konum noktası ve rota saklanmaz; arka planda konum istenmez); kamera ve flaş (etiket ve tahlil fotoğrafı ile parmakla nabız ölçümü telefonda işlenir; görüntü saklanmaz ve gönderilmez, nabız ölçümünde yalnız atım sayısı kaydedilir); Health Connect (isteğe bağlı: saatinin adım, uyku ve nabız verisi Samsung Health gibi uygulamalar üzerinden okunur; NeoWell Health Connect'e hiçbir şey yazmaz); ilaç alarmı saatinde ekranı birkaç saniye uyandıran ekran uyandırma (WAKE_LOCK) izni, hiçbir veri toplamaz ve göndermez |
 | Koç anahtarı | kullanıcının kendi API anahtarı; yalnız telefonda, Android Keystore ile şifreli saklanır, yedeğe yalnız yedek parolayla şifrelenmiş olarak girer |
 
 ## 3. İşleme amaçları
@@ -48,7 +48,7 @@ Kullanıcının telefonundan internete çıkan tek veri akışları:
 
 **Kimlik maskeleme:** Koç sağlayıcısı IP adresini görür; kimlik bilgileri (ad, telefon, e-posta, TC kimlik no, IBAN, kart, adres, doğum tarihi, il/ilçe, kurum adı gibi) göndermeden önce telefonda maskelenir ve yanıt yine telefonda geri çevrilir. Maskeleme sağlayıcıya giden her isteğin tek çıkış noktasında yapılır; sabit kural metni dışındaki bütün içerik (profil, kayıtlar, sohbet geçmişi, menü/program isteği) süzülür. Filtre %100 garanti değildir (tam garanti yoktur). Yakalanmayanlar: serbest cümleyle anlatılan adres ya da tarif ("markete yakın mavi kapılı apartman" gibi), ad listesinde olmayan nadir adlar (listede olmayan bir ad "Ben/annem" gibi kalıp olmadan küçük harfle yazılırsa), tek başına yazılmış il adı, sıradan sözcükle aynı yazılan küçük harfli adlar, görsel ya da yalnızca bağlamdan tanınabilen bilgi. Sağlık notuna, ilaç adına ve besin adına yazdığın metin de aynı filtreden geçer ama aynı sınırlara tabidir. İstenirse Ayarlar > Gizlilik ve veri'deki "Koç'a giden metni önizle" anahtarıyla gönderimden önce giden tam metin görülür.
 
-**Koç'a gönderilmeyenler:** Tahlil, tansiyon, şeker, bel ve kalça gibi vücut ölçüleri, tarifler, oruç kayıtları, fotoğraf, konum ve yedek gönderilmez. (Boy, profilin parçası olarak yukarıdaki listede gönderilir.)
+**Koç'a gönderilmeyenler:** Tahlil, tansiyon, şeker, nabız, bel ve kalça gibi vücut ölçüleri, tarifler, oruç kayıtları, fotoğraf, konum ve yedek gönderilmez. (Boy, profilin parçası olarak yukarıdaki listede gönderilir.)
 
 **İlerleme fotoğrafları:** Eklediğin ilerleme fotoğrafları yalnız telefondaki uygulamanın özel alanında durur; Koç'a ya da herhangi bir sunucuya gönderilmez, paylaşma seçeneği yoktur, **yedeğe girmez** (telefon değiştirirsen fotoğraflar yeni telefona taşınmaz) ve "İlerleme fotoğrafları" kategorisiyle ya da "Tüm verileri sil" ile silinir.
 
@@ -93,5 +93,7 @@ Metin değişirse uygulama içinde duyurulur; Koç onay metni değişirse (sür�
 **Children:** NeoWell is for adults (18+) and is not directed at children. Setup does not continue when an age under 18 is entered and nothing is saved. For an existing profile under 18, Coach data sharing, calorie deficits and fasting suggestions stay off. The Coach is also off while no age is entered. Age is self-declared and not verified.
 
 **Progress photos and units:** progress photos you add stay in the app's private storage on your phone only (never sent to the Coach or any server, no share option, excluded from backups, deleted with the "Progress photos" category or "Delete all data"); on Android the screen blocks screenshots while the photo section is open. The kg/lb and mg/dL / mmol/L settings only change display and entry; records are stored in kg and mg/dL.
+
+**Watch data and pulse:** optionally NeoWell reads steps, sleep and heart rate from Health Connect (for example from a smartwatch via Samsung Health); it only reads and never writes. The camera pulse measurement uses the camera and flash on your finger; the image is not stored or sent, only the beats-per-minute number is saved on the phone. Pulse is not sent to the Coach or any server. The pulse measurement is not a medical measurement.
 
 **Medical:** NeoWell is not a medical device, does not diagnose or recommend treatment.

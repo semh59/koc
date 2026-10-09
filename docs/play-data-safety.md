@@ -19,6 +19,7 @@ Ağ çağrıları (kodda tek tek doğrulandı, başka yok): (1) Koç: `www/coach
 | Play veri türü | Toplanıyor | Paylaşılıyor | Amaç | İsteğe bağlı mı | Not |
 |---|---|---|---|---|---|
 | Sağlık bilgisi (kilo, yemek/kalori, su, adım, uyku, ruh hali, ilaç adı-doz-saat ve uyum, sağlık notu, isteğe bağlı döngü kaydı) | Evet | Evet (Koç sağlayıcısı) | Uygulama işlevselliği (kullanıcının istediği Koç sohbeti) | Evet, açık rıza; verilmezse hiçbir şey gitmez | Tahlil, tansiyon, şeker, vücut ölçüsü, tarif, oruç Koç'a GİTMEZ. Döngü kaydı (varsayılan kapalı) yalnız cihazda durur: Koç'a, widget'a, bildirim metnine ve CSV'ye gitmez, yalnız parolalı yedekte bulunur; Gizlilik ve veri'den silinir |
+| Sağlık bilgisi: nabız (kamera ölçümü ve Health Connect'ten saat verisi) | Evet (yalnız telefonda) | Hayır: Koç'a ve hiçbir sunucuya gönderilmez | Uygulama işlevselliği | Hayır (isteğe bağlı özellik) | Silme: Ayarlar > Gizlilik ve veri > Nabız |
 | Fitness bilgisi (antrenman: son 3 antrenman, hareket adları, set sayıları, spor özeti) | Evet | Evet (Koç sağlayıcısı) | Uygulama işlevselliği | Evet | Aynı rıza |
 | Kişisel bilgi: yaş, cinsiyet, boy (profil) | Evet | Evet (Koç sağlayıcısı) | Uygulama işlevselliği | Evet | Play'de "Diğer bilgiler"/ilgili tür altında; boy ve yaş sağlık/fitness altında da beyan edilebilir |
 | Mesajlar: diğer uygulama içi mesajlar (Koç sohbeti ve not metinleri) | Evet | Evet (Koç sağlayıcısı) | Uygulama işlevselliği | Evet | Son 10 mesaj + yazılan istek |
