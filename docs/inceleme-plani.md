@@ -94,6 +94,12 @@ Boyut: web tarafı 64 JS dosyası + index.html (~10 bin uzun satır), Java 26 do
 - Eksik özellik ve öncelik: `docs/rekabet-*.md` ile kıyas, gerçek kullanımdan çıkan sürtünme (senin notların).
 - Kaldırılacak/sadeleşecek şeyler (karmaşıklık yükü), varsayılan ayarların doğruluğu.
 
+### Faz 14. Telefon bulguları, geçmiş ve depolama (kullanıcı notlarından, öncelikli)
+- **Geçmiş:** Veri sonsuza kadar tutuluyor ama Bugün tek gün gösteriyor, geriye en çok 365 gün gidiyor (`logOff` sınırı), takvim/arama/tüm zaman görünümü yok. Hedef: 3+ yıl kullanıcı her günü görebilsin.
+- **Depolama mimarisi:** Tüm kayıt tek `localStorage` JSON'u (kota ~5 MB, uyarı 3,5 MB, her kayıtta tamamı yeniden yazılır). IndexedDB'ye geçiş, yedekli ve doğrulamalı.
+- **Dünkü egzersiz hâlâ ana ekranda:** Bugün sekmesinde geçmiş günün antrenman kartı/kaydı kalıyor (telefonda görüldü). Neden bulunacak: Salon kartı, `logOff`, gün dönüşü.
+- **Kamerayla nabız ölçülemedi (telefonda):** Parmak algılama eşiği, flaş (torch) açılması, WebView kamera izni, kare hızı, sonuç reddi nedeni ayrı ayrı ayıklanacak. Ret nedeni ekranda daha açık gösterilecek; gerekirse gerçek kayıtlarla eşik ayarı.
+
 ## Çalışma biçimi
 - Her faz ayrı oturumda ya da yarım gün işi; faz başına sonuç raporu 10 satırı geçmez, ayrıntı `docs/bulgular.md`'de.
 - Büyük okuma işi (faz 2, 5, 10) alt ajanla paralel yapılabilir; haftalık limit nedeniyle şu an kod okumayı ben yaparım. Ajan şartı sende.
