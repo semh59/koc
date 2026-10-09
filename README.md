@@ -81,7 +81,7 @@ Depoya (`main` dalına) her değişiklik yüklediğinde (örneğin GitHub'da `ww
 npm ci
 npm test              # birim ve arayüz testleri (jsdom); CI'da her derlemede çalışır
 npm run test:e2e      # Playwright ile tarayıcıda uçtan uca senaryolar (ilk seferde: npx playwright install chromium)
-npm run test:saat     # testleri farklı sahte saat ve saat dilimleriyle yeniden çalıştırır
+npm run test:clock     # testleri farklı sahte saat ve saat dilimleriyle yeniden çalıştırır
 ```
 
 CI (`.github/workflows/apk.yml`) önce `npm test` ve adım sayacı Java testlerini çalıştırır, sonra Android projesini oluşturup APK ve AAB derler, imzayı, manifest izinlerini, hedef API 36'yı ve 16 KB hizasını denetler. Elle çalıştırmada (Run workflow) emülatörde açılış denemesi (smoke) de koşar. Ayrıntı: [docs/dagitim.md](docs/dagitim.md).

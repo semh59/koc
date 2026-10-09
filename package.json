@@ -20,7 +20,7 @@
     "pdfjs-dist": "6.4.299"
   },
   "scripts": {
-    "test:saat": "node scripts/saat-matrisi.js",
+    "test:clock": "node scripts/clock-matrix.js",
     "test": "node scripts/run-tests.js",
     "test:e2e": "playwright test -c e2e/playwright.config.js"
   }

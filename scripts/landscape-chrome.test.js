@@ -25,7 +25,7 @@ const skipTo=pred=>`(()=>{for(let i=0;i<60&&!(${pred});i++)gdClick("skip");retur
       const land=h<=500,tag=`${w}x${h}`;
       await b.open(url,w,h);
       await b.eval(`window.confirm=()=>true;S=structuredClone(DEF);S.settings.obDone=true;S.gid=50;const wk=EXMERGED.find(e=>(e.k||"w")==="w");
-        S.templates=[{id:1,name:"Ev antrenmanı uzun bir ad deneme",ex:["plank","pushup",wk.id],tg:{plank:{sets:2,sec:30},pushup:{sets:2,reps:8}}}];tab="salon";render();1`);
+        S.templates=[{id:1,name:"Ev antrenmanı uzun bir ad deneme",ex:["plank","pushup",wk.id],tg:{plank:{sets:2,sec:30},pushup:{sets:2,reps:8}}}];tab="gym";render();1`);
       const states=[["hazirlan","gdStart('f:'+GuideLib.FLOWS[0].id)"],
         ["calis",skipTo('gd.st.ph[gd.st.i].k==="w"')],["dinlen",skipTo('gd.st.ph[gd.st.i].k==="r"')],
         ["duraklat","gdClick('pause')"],["devam","gdClick('resume')"]];

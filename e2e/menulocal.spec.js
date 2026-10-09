@@ -3,7 +3,7 @@ const {test,expect,state,entry}=require("./fixtures");
 
 test.describe("Anahtarsız yerel menü",()=>{
   test("anahtar ve izin yok: cihazda menü -> Bugüne ekle -> Alışveriş listesi; ağ isteği yok",async({app,page,fake})=>{
-    await app.open({seed:state({kcal:2200})});await app.tab("koc");
+    await app.open({seed:state({kcal:2200})});await app.tab("coach");
     await expect(page.locator('[data-c="menu"]')).toHaveText("Menü oluştur (cihazda)");
     await page.click('[data-c="menu"]');
     await expect(page.locator('#sheet [data-c="menuask"]')).toBeDisabled();
@@ -19,7 +19,7 @@ test.describe("Anahtarsız yerel menü",()=>{
     await card.locator('[data-c^="menuday:"]').first().click();
     await page.click('#sheet [data-c^="menuadd:"]');
     await expect(app.toast).toContainText(`${items.length} yemek bugüne eklendi`);
-    expect((await app.state()).entries.filter(e=>e.type==="yemek").length).toBe(items.length);
+    expect((await app.state()).entries.filter(e=>e.type==="food").length).toBe(items.length);
     await card.locator('[data-c^="shop:"]').click();
     await expect(page.locator("#sheet .prow").first()).toBeVisible();
     expect(fake.chats().length).toBe(0);
@@ -28,7 +28,7 @@ test.describe("Anahtarsız yerel menü",()=>{
 
 test.describe("Kilo trendine göre hedef önerisi",()=>{
   /* 21 gün sabit 80 kg, 14 gün 2200 kcal: hedef 75 kg (haftada ~-0,4) ama kilo düşmüyor. */
-  const seed=(o={})=>state({kcal:2200,goalKg:75,...o},{entries:[...[0,3,6,9,12,15,18,21].map(d=>entry("kilo",80,"",{d:-d,time:"07:00"})),...Array.from({length:14},(_,i)=>entry("yemek",2200,"gün",{d:-(i+1),time:"13:00"}))]});
+  const seed=(o={})=>state({kcal:2200,goalKg:75,...o},{entries:[...[0,3,6,9,12,15,18,21].map(d=>entry("weight",80,"",{d:-d,time:"07:00"})),...Array.from({length:14},(_,i)=>entry("food",2200,"gün",{d:-(i+1),time:"13:00"}))]});
   test("öneri kartı çıkar, Şimdi değil 7 gün susturur ve kalıcıdır",async({app,page})=>{
     await app.open({seed:seed()});await app.tab("trend");
     const card=page.locator("#view .card").filter({hasText:"Kalori hedefini ayarlayalım mı?"});

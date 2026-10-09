@@ -22,7 +22,7 @@ const net=Object.keys(fns).filter(k=>/\bfetch\(|\bcallProvider\(/.test(fns[k]));
 const ids=s=>new Set(s.match(/[A-Za-z_$][\w$]*/g)||[]);
 const seen=new Set(),q=[...ids(top)].filter(k=>k in fns);
 while(q.length){const k=q.pop();if(seen.has(k))continue;seen.add(k);for(const x of ids(fns[k]))if(x in fns&&!seen.has(x))q.push(x)}
-ok("ağ isteği atan fonksiyonlar bulundu (Koç, kurulum, barkod)",["callProvider","suFetch","barkodBul"].every(k=>net.includes(k)),net);
+ok("ağ isteği atan fonksiyonlar bulundu (Koç, kurulum, barkod)",["callProvider","suFetch","barcodeFind"].every(k=>net.includes(k)),net);
 ok("açılış, visibilitychange, zamanlayıcı ve bildirim yollarından ağ isteğine ulaşılmaz",!net.some(k=>seen.has(k))&&!["cAsk","cFlush","cSend","cComment"].some(k=>seen.has(k)),net.filter(k=>seen.has(k)));
 ok("kök tarama gerçekten çalışır: açılış render, visibilitychange ve bildirim dokunuşunu görür",["render","cPlateauCheck","notifTap","scheduleReminders"].every(k=>seen.has(k)));
 ok("otomatik Koç yolu ve bayrakları kodda yok",!/\b(cAuto|lastAuto|lastPlan|lastWeekly)\b/.test(src));
@@ -32,14 +32,14 @@ ok("cAsk yalnız kullanıcı eylemi fonksiyonlarından çağrılır",Object.keys
 const t=new Date(),key=d=>{const x=new Date(t);x.setDate(x.getDate()-d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}-${String(x.getDate()).padStart(2,"0")}`};
 const state={settings:{consent:true,consentV:2,consentAt:key(0),consentP:"gemini,groq,nvidia,openrouter",age:30,obDone:true,lastPlan:"",lastWeekly:""},
   providers:[{id:"groq",name:"Groq",base:"https://api.groq.com/openai/v1",model:"llama-3.1-8b-instant",on:true,health:true,confirm:false}],
-  entries:[1,2,3,4,5,8,9,10].map((d,i)=>({id:i+1,day:key(d),time:"09:00",type:"su",v:500,text:""})),nextId:9,
+  entries:[1,2,3,4,5,8,9,10].map((d,i)=>({id:i+1,day:key(d),time:"09:00",type:"water",v:500,text:""})),nextId:9,
   chat:[{id:1,role:"user",text:"merhaba",t:Date.now()-6e4,pend:true}],cid:2};
 const html=require("./html").inline(index);
 const calls=[];
 const dom=new JSDOM(html,{runScripts:"dangerously",pretendToBeVisual:true,url:"https://localhost/",beforeParse(w){
   Object.assign(w,{structuredClone,TextEncoder,TextDecoder,__noSelfTest:true});Object.defineProperty(w,"crypto",{value:require("node:crypto").webcrypto});
   w.confirm=()=>true;w.scrollTo=()=>{};
-  w.localStorage.setItem("koc_v1",JSON.stringify(state));w.localStorage.setItem("koc_keys",JSON.stringify({groq:"gsk_ornek12345"}));
+  w.localStorage.setItem("nw_state",JSON.stringify(state));w.localStorage.setItem("nw_keys",JSON.stringify({groq:"gsk_ornek12345"}));
   w.fetch=async(u,o)=>{calls.push(u);return {ok:true,status:200,json:async()=>({choices:[{message:{content:'{"reply":"Güzel gün","log":[]}'}}]})}};
 }});
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
@@ -51,16 +51,16 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
   ok("eski otomatik bayraklar yüklemede atılır",!("lastPlan" in ev("S.settings"))&&!("lastWeekly" in ev("S.settings")));
   ok("Bugün'de 'Koç'tan bugünkü yorum iste' düğmesi",!!q('[data-c="cmt:plan"]')&&q('[data-c="cmt:plan"]').textContent.includes("yorum iste"));
   q('[data-c="cmt:plan"]').click();await wait(100);
-  ok("düğmeye basınca tek istek, yanıt sohbette günün yorumu olarak",calls.length===1&&ev("S.chat.filter(m=>m.kind==='plan').length")===1&&ev("tab")==="koc",calls);
-  ev("tab='bugun';render()");
-  ok("bugün alınmış yorum önbellekte: düğme 'gör' olur, basınca istek atılmaz",q('[data-c="cmt:plan"]').textContent.includes("yorumunu gör")&&(q('[data-c="cmt:plan"]').click(),calls.length===1)&&ev("tab")==="koc");
+  ok("düğmeye basınca tek istek, yanıt sohbette günün yorumu olarak",calls.length===1&&ev("S.chat.filter(m=>m.kind==='plan').length")===1&&ev("tab")==="coach",calls);
+  ev("tab='today';render()");
+  ok("bugün alınmış yorum önbellekte: düğme 'gör' olur, basınca istek atılmaz",q('[data-c="cmt:plan"]').textContent.includes("yorumunu gör")&&(q('[data-c="cmt:plan"]').click(),calls.length===1)&&ev("tab")==="coach");
   ok("bekleyen mesaj kendiliğinden gitmez, 'Şimdi gönder' düğmesi görünür",ev("S.chat[0].pend")===true&&!!q('[data-c="retry"]'));
   q('[data-c="retry"]').click();await wait(100);
   ok("'Şimdi gönder' ile bekleyen mesaj gider",calls.length===2&&ev("S.chat[0].pend")!==true,calls);
   ev("tab='trend';render()");q('[data-c="cmt:weekly"]').click();await wait(100);
   const sent=JSON.parse(ev("JSON.stringify(S.chat.filter(m=>m.kind==='weekly').length)"));
   ok("Trend'de haftalık yorum düğmesi: basınca tek istek",calls.length===3&&sent===1,calls);
-  ev("S.settings.consent=false;S.chat=[];tab='bugun';render()");
+  ev("S.settings.consent=false;S.chat=[];tab='today';render()");
   ok("onay yokken düğme pasif ve nedeni yazar",q('[data-c="cmt:plan"]').disabled&&q("#view").textContent.includes("veri paylaşımını kabul et"));
   console.log(bad?`${bad} FAIL`:"oto: hepsi geçti");process.exit(bad?1:0);
 })();

@@ -4,7 +4,7 @@
    eski sürüme dönülürse ya da IndexedDB açılamazsa veri orada durur. Her yazıma sıra numarası (rev) verilir, açılışta ikisinden yeni olan alınır.
    IndexedDB yoksa (jsdom, bazı gizli pencereler) her şey eskisi gibi senkron localStorage'dır. */
 const Store=(()=>{
-  const META="m:meta",MAIN="koc_v1",REV="koc_v1_rev",SUM="koc_v1_sum",CONF="koc_v1_catisma",COPY=["koc_v1_onceki","koc_v1_bozuk"],ALL=[MAIN,...COPY,CONF,META];
+  const META="m:meta",MAIN="nw_state",REV="nw_state_rev",SUM="nw_state_sum",CONF="nw_state_conflict",COPY=["nw_state_previous","nw_state_corrupt"],ALL=[MAIN,...COPY,CONF,META];
   const ls={
     get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},
     set:(k,v)=>{try{localStorage.setItem(k,v);return true}catch(e){return false}},

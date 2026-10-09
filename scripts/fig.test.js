@@ -1,4 +1,4 @@
-const F=require("../www/modules/salon/figlib.js"),T=require("../www/modules/salon/figtpl.js"),X=require("../www/modules/salon/exlib.js");
+const F=require("../www/modules/gym/figlib.js"),T=require("../www/modules/gym/figtpl.js"),X=require("../www/modules/gym/exlib.js");
 let bad=0;const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const B=F.B,d=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]),near=(a,b,t)=>Math.abs(a-b)<=t;
 const names=Object.keys(T);

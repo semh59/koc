@@ -1,5 +1,5 @@
 // Tam ekran ilaç alarm ekranı: saf mantık (AlarmLib) ve jsdom'da açılış, işaretleme, gizlilik, erteleme.
-const {JSDOM}=require("jsdom"),fs=require("fs"),path=require("path"),A=require("../www/modules/ilac/alarmlib.js"),M=require("../www/modules/ilac/medlib.js");
+const {JSDOM}=require("jsdom"),fs=require("fs"),path=require("path"),A=require("../www/modules/meds/alarmlib.js"),M=require("../www/modules/meds/medlib.js");
 let bad=0,total=0;const ok=(n,c,x)=>{total++;console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 process.on("unhandledRejection",e=>{console.log("FAIL beklenmeyen hata",e);process.exit(1)});
 
@@ -34,7 +34,7 @@ const calls=[],errs=[];
 const rec=(p,defs)=>new Proxy({},{get:(_,k)=>k==="then"?undefined:k==="addListener"?()=>({remove(){}}):async a=>{calls.push([p+"."+k,a]);const v=defs[k];return typeof v==="function"?v(a):v||{}}});
 const dom=new JSDOM(html,{runScripts:"dangerously",pretendToBeVisual:true,url:"https://localhost/",beforeParse(w){
   Object.assign(w,{structuredClone,TextEncoder,TextDecoder,__noSelfTest:true});Object.defineProperty(w,"crypto",{value:require("node:crypto").webcrypto});w.scrollTo=()=>{};w.addEventListener("error",e=>errs.push(e.message));
-  w.localStorage.setItem("koc_v1",JSON.stringify(seed));
+  w.localStorage.setItem("nw_state",JSON.stringify(seed));
   w.Capacitor={isNativePlatform:()=>true,getPlatform:()=>"android",Plugins:{
     MedWake:rec("MW",{fsi:{allowed:true}}),
     LocalNotifications:rec("LN",{checkPermissions:{display:"granted"},checkExactNotificationSetting:{exact_alarm:"granted"},getDeliveredNotifications:{notifications:[]},getPending:{notifications:[{id:2001000},{id:7148}]}}),
@@ -48,7 +48,7 @@ setTimeout(async()=>{
   ok("katman: arka plan inert, odak başlıkta, saat görünür",inert()&&w.document.activeElement.id==="alt"&&/^\d\d:\d\d$/.test($("#alarm .alclk").textContent));
   const c0=n("LN.cancel").length,s0=n("LN.schedule").length;
   click('#alarm [data-al="t:0"]');await sleep(50);
-  const log=ev("JSON.stringify(S.medLog)"),saved=JSON.parse(w.localStorage.getItem("koc_v1"));
+  const log=ev("JSON.stringify(S.medLog)"),saved=JSON.parse(w.localStorage.getItem("nw_state"));
   ok("Aldım: doz alındı olarak kaydedilir ve saklanır, satır 'Alındı'",/"m":1/.test(log)&&/"st":"t"/.test(log)&&saved.medLog.some(x=>x.m===1&&x.slot===slot&&x.st==="t")&&txt().includes("Alındı"),log);
   const last=n("LN.schedule").slice(s0).pop(),sch=last?last[1].notifications:[];
   ok("Aldım: bildirimler yeniden kurulur, bekleyen tekrarlar iptal edilir (erteleme kimliği korunur), alınan doz yeniden kurulmaz",n("LN.cancel").length>c0&&n("LN.cancel").slice(c0).some(c=>c[1].notifications.some(x=>x.id===2001000)&&!c[1].notifications.some(x=>x.id===7148))&&!sch.some(x=>x.extra&&x.extra.m===1&&+x.schedule.at<=+now+3600000),sch.map(x=>x.id));
@@ -66,12 +66,12 @@ setTimeout(async()=>{
   ev("S.medLog=[{id:1,m:1,day:dayKey(new Date(Date.now()-600000)),slot:'"+slot+"',st:'t'}];alarmOpen()");
   ok("vadesi gelmiş doz yoksa 'Tüm dozlar alındı' gösterip kapanır",!$("#alarm").hidden&&txt().includes("Tüm dozlar alındı"));
   await sleep(1700);ok("…ve 1,5 sn sonra kapanır",$("#alarm").hidden);
-  ev("S.medLog=[];tab='ilac';notifTap({actionId:'tap',notification:{id:1001000,extra:{act:'med',m:1,s:'"+slot+"'}}})");await sleep(30);
+  ev("S.medLog=[];tab='meds';notifTap({actionId:'tap',notification:{id:1001000,extra:{act:'med',m:1,s:'"+slot+"'}}})");await sleep(30);
   ok("ilaç bildirimine dokununca alarm ekranı açılır",!$("#alarm").hidden&&txt().includes("Aspirin"));
   click('#alarm [data-al="t:0"]');await sleep(30);
   ok("canlı bölge kalıcı ve işaretlemeyi duyurur",$("#allive").getAttribute("aria-live")==="polite"&&$("#allive").textContent==="Aspirin alındı");
   ev("S.medLog=[]");ev("alarmOpen()");click('#alarm [data-al="open"]');
-  ok("Uygulamayı aç: alarm kapanır, ana sayfa (Bugün) açılır",$("#alarm").hidden&&ev("tab")==="bugun");
+  ok("Uygulamayı aç: alarm kapanır, ana sayfa (Bugün) açılır",$("#alarm").hidden&&ev("tab")==="today");
   ev("S.medLog=[{id:1,m:1,day:dayKey(new Date(Date.now()-600000)),slot:'"+slot+"',st:'t'}];notifTap({actionId:'tap',notification:{id:1001000,extra:{act:'med'}}})");await sleep(30);
   ok("geç dokunuşta vadesi gelen doz yoksa alarm ekranı açılmaz",$("#alarm").hidden);
   console.log(`${total} test, ${bad} hata`);process.exit(bad||total<20?1:0);

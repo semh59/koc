@@ -15,7 +15,7 @@ function open(seed,fake){
         request:async()=>{calls.push("request");fake.granted=fake.grantOnRequest===true;return {}},
         manage:async()=>{calls.push("manage")},
         steps:async o=>{calls.push("steps:"+o.days.length);return {days:fake.days(o.days)}}}}};
-      if(seed)w.localStorage.setItem("koc_v1",JSON.stringify(seed));
+      if(seed)w.localStorage.setItem("nw_state",JSON.stringify(seed));
     }});
     setTimeout(()=>r({w:dom.window,calls}),200);
   });
@@ -24,20 +24,20 @@ function open(seed,fake){
   let {w}=await open({entries:[],settings:{}}),ev=s=>w.eval(s);
   const d=ev("dayKey()");
   ev(`setSteps("${d}",100)`);ev(`setHc("${d}",500)`);
-  let e=ev(`JSON.stringify(S.entries.find(x=>x.type==="adim"))`);e=JSON.parse(e);
+  let e=ev(`JSON.stringify(S.entries.find(x=>x.type==="steps"))`);e=JSON.parse(e);
   ok("saat telefondan büyükse gün değeri saatin; toplanmaz (100 + 500 değil 500)",e.v===500&&e.ph===100&&e.hc===500,e);
   ev(`setSteps("${d}",700)`);
-  ok("telefon saatten büyükse telefonun değeri",ev(`S.entries.find(x=>x.type==="adim").v`)===700);
+  ok("telefon saatten büyükse telefonun değeri",ev(`S.entries.find(x=>x.type==="steps").v`)===700);
   ev(`setSteps("${d}",0)`);
-  ok("telefon sayacı sıfırlanınca (sensör sıfırı) saatin değeri kalır",ev(`S.entries.find(x=>x.type==="adim").v`)===500);
+  ok("telefon sayacı sıfırlanınca (sensör sıfırı) saatin değeri kalır",ev(`S.entries.find(x=>x.type==="steps").v`)===500);
   ev(`setHc("${d}",200)`);
-  ok("saatin değeri düşerse gün değeri de düşer (kaynak düzeltmesi)",ev(`S.entries.find(x=>x.type==="adim").v`)===200);
+  ok("saatin değeri düşerse gün değeri de düşer (kaynak düzeltmesi)",ev(`S.entries.find(x=>x.type==="steps").v`)===200);
   ok("aynı değer ikinci kez yazılınca değişiklik yok",ev(`setHc("${d}",200)`)===false&&ev(`setSteps("${d}",0)`)===false);
 
   ({w}=await open({entries:[],settings:{}}));ev=s=>w.eval(s);
-  ev(`S.entries.push({id:S.nextId++,day:"${d}",time:"00:00",type:"adim",v:300,text:""})`);
+  ev(`S.entries.push({id:S.nextId++,day:"${d}",time:"00:00",type:"steps",v:300,text:""})`);
   ev(`setHc("${d}",100)`);
-  e=JSON.parse(ev(`JSON.stringify(S.entries.find(x=>x.type==="adim"))`));
+  e=JSON.parse(ev(`JSON.stringify(S.entries.find(x=>x.type==="steps"))`));
   ok("eski kayıtta ph yoksa v telefon değeri sayılır (300, saat 100 küçük)",e.v===300&&e.ph===300&&e.hc===100,e);
   ev(`S.entries=[]`);
   ok("saat sıfırsa ve kayıt yoksa kayıt açılmaz",ev(`setHc("${d}",0)`)===false&&ev(`S.entries.length`)===0);
@@ -46,7 +46,7 @@ function open(seed,fake){
   ok("bugünkü gösterim telefon ve saatin büyüğü; elle eklenen üstüne",ev(`stepsShown()`)===400);
   ev(`stepToday=900`);ok("telefon büyükse telefon",ev(`stepsShown()`)===900);
   ev(`stepToday=null;hcToday=null`);ok("ikisi de yoksa null",ev(`stepsShown()`)===null);
-  const cl=ev(`JSON.stringify(cleanEntries([{id:1,day:"${d}",time:"00:00",type:"adim",v:500,ph:100,hc:500,text:""},{id:2,day:"${d}",time:"00:00",type:"adim",v:5,ph:-3,hc:"x",text:""}]).out)`);
+  const cl=ev(`JSON.stringify(cleanEntries([{id:1,day:"${d}",time:"00:00",type:"steps",v:500,ph:100,hc:500,text:""},{id:2,day:"${d}",time:"00:00",type:"steps",v:5,ph:-3,hc:"x",text:""}]).out)`);
   const co=JSON.parse(cl);
   ok("yedekten okurken ph ve hc korunur, bozuk değer atılır",co[0].ph===100&&co[0].hc===500&&co[1].ph===undefined&&co[1].hc===undefined,co);
 
@@ -56,8 +56,8 @@ function open(seed,fake){
   let o=await open({entries:[],settings:{hcOn:true}},fake);w=o.w;ev=s=>w.eval(s);
   await ev(`hcSync(true)`);
   ok("açıkken 8 günlük adım okunur",o.calls.includes("steps:8"),o.calls);
-  ok("bugünün saat değeri gösterime girer, geçmiş gün kaydedilir",ev(`hcToday`)===4321&&ev(`S.entries.filter(x=>x.type==="adim").length`)===2,ev(`JSON.stringify(S.entries)`));
-  ok("yalnız bugünü değil, saat kaydı olan günleri de yazar",ev(`S.entries.some(x=>x.type==="adim"&&x.day===keyOff(-2)&&x.v===900)`));
+  ok("bugünün saat değeri gösterime girer, geçmiş gün kaydedilir",ev(`hcToday`)===4321&&ev(`S.entries.filter(x=>x.type==="steps").length`)===2,ev(`JSON.stringify(S.entries)`));
+  ok("yalnız bugünü değil, saat kaydı olan günleri de yazar",ev(`S.entries.some(x=>x.type==="steps"&&x.day===keyOff(-2)&&x.v===900)`));
   const n=o.calls.length;await ev(`hcSync()`);
   ok("60 sn içinde yeniden okumaz",o.calls.length===n);
 
@@ -70,12 +70,12 @@ function open(seed,fake){
   ok("izin yokken okuma yapılmaz",!o.calls.some(c=>c.startsWith("steps")),o.calls);
 
   o=await open({entries:[],settings:{}},{granted:false,grantOnRequest:true,days});w=o.w;ev=s=>w.eval(s);
-  ev(`tab="adim";S.entries.push({id:S.nextId++,day:dayKey(),time:"00:00",type:"adim",v:10,text:""});render()`);await sleep(50);
+  ev(`tab="steps";S.entries.push({id:S.nextId++,day:dayKey(),time:"00:00",type:"steps",v:10,text:""});render()`);await sleep(50);
   const t=w.document.querySelector("[data-hc=toggle]");t.checked=true;t.dispatchEvent(new w.Event("change",{bubbles:true}));await sleep(100);
   ok("anahtar açılınca izin istenir, verilince ayar açık kalır ve okunur",o.calls.includes("request")&&ev(`S.settings.hcOn`)===true&&o.calls.includes("steps:8"),o.calls);
 
   o=await open({entries:[],settings:{}},{available:false,granted:false,days});w=o.w;ev=s=>w.eval(s);
-  ev(`tab="adim";S.entries.push({id:S.nextId++,day:dayKey(),time:"00:00",type:"adim",v:10,text:""});render()`);await sleep(80);
+  ev(`tab="steps";S.entries.push({id:S.nextId++,day:dayKey(),time:"00:00",type:"steps",v:10,text:""});render()`);await sleep(80);
   ok("Health Connect yoksa (Android 13 altı) anahtar yerine açıklama gösterilir",!w.document.querySelector("[data-hc=toggle]")&&/Android 14/.test(w.document.body.textContent),0);
 
   o=await open({entries:[],settings:{hcOn:true}},{granted:true,days});w=o.w;ev=s=>w.eval(s);

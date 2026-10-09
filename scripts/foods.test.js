@@ -1,4 +1,4 @@
-const {FOODS,foodSearch}=require("../www/modules/besin/foods.js");let bad=0;
+const {FOODS,foodSearch}=require("../www/modules/nutrition/foods.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const off=FOODS.filter(f=>{const a=4*f.p+4*f.c+9*f.f;return Math.abs(f.k-a)>Math.max(15,0.25*Math.max(f.k,a))}).map(f=>`${f.n}: ${f.k} ≠ ${Math.round(4*f.p+4*f.c+9*f.f)}`);
 ok("kalori, makrolarla tutarlı (Atwater ±%25)",off.length===0,off);
@@ -10,7 +10,7 @@ ok("USDA ile doğrulanmış besin sayısı",FOODS.filter(f=>f.s).length>=250,FOO
 ok("ton balığı protein değeri gerçekçi",FOODS.find(f=>f.n.startsWith("Ton")).p<22);
 ok("en az 500 besin",FOODS.length>=500,FOODS.length);
 ok("ilk 106 kayıt adı ve sırası değişmedi (kullanıcı kayıtları ada bağlı)",require("crypto").createHash("sha1").update(FOODS.slice(0,106).map(f=>f.n).join("|")).digest("hex")==="9bef746b28129de499d279621f64728db5d6a117");
-ok("www/modules/besin/foods.js tools/besin/uret.js çıktısıyla aynı",(()=>{try{require("child_process").execFileSync("node",["tools/besin/uret.js","--kontrol"],{stdio:"pipe"});return true}catch(e){return String(e.stderr)}})());
+ok("www/modules/nutrition/foods.js tools/besin/uret.js çıktısıyla aynı",(()=>{try{require("child_process").execFileSync("node",["tools/besin/uret.js","--kontrol"],{stdio:"pipe"});return true}catch(e){return String(e.stderr)}})());
 ok("ilk 513 kayıt adı ve sırası değişmedi (yedekler ve kullanıcı kayıtları ada bağlı)",require("crypto").createHash("sha1").update(FOODS.slice(0,513).map(f=>f.n).join("|")).digest("hex")==="326eb38e7b4b91bdb11135b61d7b3ff3813e4b0c");
 ok("ilk 743 kayıt adı ve sırası değişmedi (yeni vekil kayıtları yalnız sona eklenir)",require("crypto").createHash("sha1").update(FOODS.slice(0,743).map(f=>f.n).join("|")).digest("hex")==="1fd8080242daa3fce5dd1f3d5017e7c501bc2104");
 ok("ilk 767 kayıt adı ve sırası değişmedi (ikinci tur vekil kayıtları yalnız sona eklenir)",require("crypto").createHash("sha1").update(FOODS.slice(0,767).map(f=>f.n).join("|")).digest("hex")==="6d6c306cede41e26bbbea18581e928e481223958");
@@ -39,14 +39,14 @@ ok("hesaplı tarif sayısı",FOODS.filter(f=>!f.s).length>=150,FOODS.filter(f=>!
 ok("aramada büyük İ/I",FOODS[foodSearch("IZGARA")[0]].n.startsWith("Izgara")&&foodSearch("İncir").length>0);
 ok("kelime başı önce gelir",FOODS[foodSearch("pilav")[0]].n==="Pirinç pilavı"||FOODS[foodSearch("pilav")[0]].n.toLowerCase().includes("pilav"));
 ok("boş arama boş döner",foodSearch("  ").length===0&&foodSearch("xyzqq").length===0);
-const old=FOODS.slice(0,106),tr=FOODS.slice(106).filter(f=>f.lo!=null),KORU=["Et döner","Sucuk (pişmiş)"];
+const old=FOODS.slice(0,106),tr=FOODS.slice(106).filter(f=>f.lo!=null),KEEP=["Et döner","Sucuk (pişmiş)"];
 ok("eski ev yemeği aralığı: çorba, kuru fasulye, mantı, börek, pilav, köfte aralıklı",["Mercimek çorbası","Kuru fasulye yemeği","Mantı (haşlanmış)","Su böreği (peynirli)","Pirinç pilavı","Izgara köfte"].every(n=>{const f=FOODS.find(x=>x.n===n);return f&&f.lo!=null&&f.hi!=null}));
 ok("ilk 106 satırın tamamının dayanağı var: USDA işareti ya da vekil/hesap/çapraz kontrol notu",old.every(f=>f.s||f.v),old.filter(f=>!(f.s||f.v)).map(f=>f.n));
-ok("ilk 106 satırda USDA işaretsizler (bilinçli Et döner ve Sucuk hariç) hesaplı: aralıklı ve notlu; USDA'lı satırlar aralıksız",old.every(f=>f.s?f.lo===undefined:KORU.includes(f.n)||(f.lo<f.k&&f.k<f.hi&&/^(Hesap|Vekil): /.test(f.v))),old.filter(f=>f.s?f.lo!==undefined:!KORU.includes(f.n)&&!(f.lo<f.k&&f.k<f.hi&&/^(Hesap|Vekil): /.test(f.v))).map(f=>f.n));
+ok("ilk 106 satırda USDA işaretsizler (bilinçli Et döner ve Sucuk hariç) hesaplı: aralıklı ve notlu; USDA'lı satırlar aralıksız",old.every(f=>f.s?f.lo===undefined:KEEP.includes(f.n)||(f.lo<f.k&&f.k<f.hi&&/^(Hesap|Vekil): /.test(f.v))),old.filter(f=>f.s?f.lo!==undefined:!KEEP.includes(f.n)&&!(f.lo<f.k&&f.k<f.hi&&/^(Hesap|Vekil): /.test(f.v))).map(f=>f.n));
 ok("ilk 106 satırda USDA işaretsizlerin makrodan hesaplanan kcal sapması en çok %10",old.filter(f=>!f.s).every(f=>Math.abs(f.k-(4*f.p+4*f.c+9*f.f))<=Math.max(3,0.1*f.k)),old.filter(f=>!f.s&&Math.abs(f.k-(4*f.p+4*f.c+9*f.f))>Math.max(3,0.1*f.k)).map(f=>f.n));
 ok("tarif aralığı: en az 100 yemekte, ortalama aralığın içinde ve makul genişlikte, USDA işaretsiz",tr.length>=100&&tr.every(f=>f.lo<f.k&&f.k<f.hi&&f.hi/f.k<1.7&&f.lo/f.k>0.5&&!f.s),tr.filter(f=>!(f.lo<f.k&&f.k<f.hi&&f.hi/f.k<1.7&&f.lo/f.k>0.5)).map(f=>[f.n,f.lo,f.k,f.hi]));
 const top=q=>foodSearch(q,5).map(i=>FOODS[i].n);
-ok("aramada ç/ğ/ı/ö/ş/ü duyarsız: sut, yogurt, cacik, sogan, kofte, serbet, uzum",["sut:Süt (tam yağlı)","yogurt:Yoğurt (tam yağlı)","cacik:Cacık","sogan:Soğan","kofte:Izgara köfte","uzum:Üzüm","simit:Simit"].every(x=>{const[q,n]=x.split(":");return top(q).includes(n)}),["sut","yogurt","cacik","sogan","kofte","uzum"].map(top));
+ok("aramada ç/ğ/ı/ö/ş/ü duyarsız: sut, yogurt, cacik, sogan, kofte, serbet, uzum",["sut:Süt (tam yağlı)","yogurt:Yoğurt (tam yağlı)","cacik:Cacık","sogan:Soğan","kofte:Izgara köfte","uzum:Üzüm","simit:Simit"].every(x=>{const[q,n]=x.split(":");return top(q).includes(n)}),["milk","yogurt","cacik","sogan","kofte","uzum"].map(top));
 ok("eş anlamlı: potato→patates, doner→döner, hummus→humus, feta→beyaz peynir, fileto→tavuk göğsü",[["potato","Haşlanmış patates"],["doner","Et döner"],["hummus","Humus"],["feta","Beyaz peynir"],["fileto","Izgara tavuk göğsü"]].every(([q,n])=>top(q).includes(n)),["potato","doner","hummus","feta","fileto"].map(top));
 ok("tam kelime (iyelik ekiyle) kelime başından önce: peynir, yumurta, ekmek, pilav",top("peynir")[0]==="Beyaz peynir"&&top("peynir").includes("Kaşar peyniri")&&top("yumurta")[0]==="Haşlanmış yumurta"&&top("ekmek")[0]==="Beyaz ekmek"&&top("pilav")[0]==="Pirinç pilavı",["peynir","yumurta","ekmek","pilav"].map(top));
 ok("kelime sırası ve fazla boşluk önemsiz",top("doner tavuk")[0]==="Tavuk döner"&&top("corba mercimek")[0]==="Mercimek çorbası"&&top("tavuk  döner")[0]==="Tavuk döner",[top("doner tavuk"),top("tavuk  döner")]);

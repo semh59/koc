@@ -38,7 +38,7 @@ Neden bu sınır: FDA'nın 6 Ocak 2026 genel sağlık (wellness) rehberi, elle g
 Bluetooth cihaz bağlantısı, Health Connect'ten otomatik aktarım, insülin/ilaç dozu, karbonhidrat sayımı, CGM verisi, mmol/L, cihaz ekranı fotoğrafından okuma (ML Kit 7 segment ekranlarda zayıf, sonra deneriz).
 
 ## Aşamalar
-1. **Çekirdek + testler:** `www/modules/tansiyon/vitalslib.js` (doğrulama, ortalama, aralık, süre filtreleri, temizleme). Tablo tabanlı testler.
+1. **Çekirdek + testler:** `www/modules/vitals/vitalslib.js` (doğrulama, ortalama, aralık, süre filtreleri, temizleme). Tablo tabanlı testler.
 2. **Arayüz:** Ayarlar anahtarları, Bugün hızlı düğmeleri, giriş ekranları, görünüm ve grafikler, acil durum kutusu, silme/geri al.
 3. **Hatırlatmalar.**
 4. **Doktor raporu PDF.**

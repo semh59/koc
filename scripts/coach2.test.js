@@ -8,7 +8,7 @@ const w=dom.window,ev=s=>w.eval(s),wait=ms=>new Promise(r=>setTimeout(r,ms));
 const reply=o=>({ok:true,status:200,json:async()=>({choices:[{message:{content:JSON.stringify(o)},finish_reason:"stop"}]})});
 const fail=s=>({ok:false,status:s,text:async()=>"",json:async()=>({})});
 let urls=[];const fetchWith=f=>{urls=[];w.fetch=async(u,o)=>{urls.push(u);return f(u,o,urls.length)}};
-const reset=()=>ev(`closeSheet();S=structuredClone(DEF);S.settings.obDone=true;S.settings.age=30;S.settings.heightCm=175;tab='koc';cool={};pstat={};offline=null;busy=false;typing=false;
+const reset=()=>ev(`closeSheet();S=structuredClone(DEF);S.settings.obDone=true;S.settings.age=30;S.settings.heightCm=175;tab='coach';cool={};pstat={};offline=null;busy=false;typing=false;
   KEYS={nvidia:'k1',groq:'k2'};S.providers.forEach(p=>{p.on=p.health=p.id==='nvidia'||p.id==='groq';p.confirm=false});cConsent(true);render()`);
 setTimeout(async()=>{
   const chatRisk=()=>ev("S.settings.chatRisk"),cards=k=>ev(`S.chat.filter(m=>m.card&&m.card.kind==='${k}').length`);
@@ -23,7 +23,7 @@ setTimeout(async()=>{
     ok("cNoteCheck: acil belirti notu sohbete güvenlik kartı ekler",ev("S.chat.some(m=>m.card&&m.card.kind==='safety'&&m.card.level==='emergency')"));
     reset();ev("S.settings.healthNote='iyi durumdayım';cNoteCheck()");
     ok("cNoteCheck: temiz not risk ve kart üretmez",chatRisk()===""&&cards("safety")===0);
-    ok("sağlık notu kaydı cNoteCheck'i çağırır",/saglik:\(\)=>\{S\.settings\.healthNote=[^}]*cNoteCheck\(\)/.test(require("./html").full()));
+    ok("sağlık notu kaydı cNoteCheck'i çağırır",/health:\(\)=>\{S\.settings\.healthNote=[^}]*cNoteCheck\(\)/.test(require("./html").full()));
   }
   { // menü notu hamilelik ve yeme bozukluğu
     reset();let n=0;fetchWith(()=>{n++;return reply({reply:"x"})});
@@ -91,24 +91,24 @@ setTimeout(async()=>{
     ok("Koç gerçekten yanıt verirken (busy) sohbet değişmez",ev("S.chat.length")===1);ev("busy=false");
   }
   { // cApplyLog yolları
-    reset();ev("add('kilo',80,'',dayKey())");
+    reset();ev("add('weight',80,'',dayKey())");
     const card=items=>{ev(`S.chat=[];cPush({role:'coach',text:'x',card:{kind:'log',state:'pending',items:${JSON.stringify(items)}}})`);return ev("S.chat[0].id")};
     const el=ev("(()=>{const b=document.createElement('div');b.className='lcard';b.innerHTML='<input data-ck=\"0\" value=\"\">';document.body.appendChild(b);return b.firstChild})()");
     const apply=(id,e)=>{w.__el=e;ev(`cApplyLog(${id},__el)`)};
-    let id=card([{type:"yemek",text:"dünkü pilav",kcal:300,day:"yesterday"}]);apply(id,el);
-    ok("cApplyLog: dünkü yemek dün gününe yazılır, bugüne değil",ev("S.entries.filter(e=>e.type==='yemek'&&e.day===keyOff(-1)).length")===1&&ev("S.entries.filter(e=>e.type==='yemek'&&e.day===dayKey()).length")===0);
+    let id=card([{type:"food",text:"dünkü pilav",kcal:300,day:"yesterday"}]);apply(id,el);
+    ok("cApplyLog: dünkü yemek dün gününe yazılır, bugüne değil",ev("S.entries.filter(e=>e.type==='food'&&e.day===keyOff(-1)).length")===1&&ev("S.entries.filter(e=>e.type==='food'&&e.day===dayKey()).length")===0);
     ok("cApplyLog: kart ok olur",ev("S.chat[0].card.state")==="ok");
     ev("__u()");ev("S.entries.length");
-    ok("cApplyLog: Geri al kaydı siler ve kartı yeniden açar",ev("S.entries.filter(e=>e.type==='yemek').length")===0&&ev("S.chat[0].card.state")==="pending");
-    ev("S.entries=S.entries.filter(e=>e.type==='kilo')");
-    id=card([{type:"yemek",text:"çorba",kcal:200}]);apply(id,el);
+    ok("cApplyLog: Geri al kaydı siler ve kartı yeniden açar",ev("S.entries.filter(e=>e.type==='food').length")===0&&ev("S.chat[0].card.state")==="pending");
+    ev("S.entries=S.entries.filter(e=>e.type==='weight')");
+    id=card([{type:"food",text:"çorba",kcal:200}]);apply(id,el);
     ok("cApplyLog: kalori kutusu boşaltılırsa kcal null kaydedilir, 5000 üstü kırpılır",ev("S.chat[0].card.items[0].kcal")===null);
-    ev("S.entries=S.entries.filter(e=>e.type==='kilo')");
-    id=card([{type:"spor",min:30,name:"Koşu",kcal:5000}]);apply(id,el);
-    const sp=ev("S.entries.find(e=>e.type==='spor')");
+    ev("S.entries=S.entries.filter(e=>e.type==='weight')");
+    id=card([{type:"exercise",min:30,name:"Koşu",kcal:5000}]);apply(id,el);
+    const sp=ev("S.entries.find(e=>e.type==='exercise')");
     ok("cApplyLog: Koç'un abartılı spor kalorisi uygulamanın MET hesabıyla değiştirilir",sp&&sp.kcal>0&&sp.kcal<500&&ev("spKcal({name:'Koşu',min:30,kcal:5000}).off")===true,sp);
     ev("__u()");
-    ok("cApplyLog: spor kaydı geri alınır",ev("S.entries.filter(e=>e.type==='spor').length")===0&&ev("S.chat[0].card.state")==="pending");
+    ok("cApplyLog: spor kaydı geri alınır",ev("S.entries.filter(e=>e.type==='exercise').length")===0&&ev("S.chat[0].card.state")==="pending");
   }
   console.log(bad?`${bad} başarısız`:"Koç davranış testleri geçti");
   process.exit(bad?1:0);
