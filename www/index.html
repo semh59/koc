@@ -1460,10 +1460,12 @@ async function exactAsk(){
 const SC=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.StepCounter;
 /* stepsRead: açılıştaki ilk sensör okuması bitmeden dünkü adım henüz yazılmamış olabilir, "sayım durdu" kartı yanlış çıkmasın. */
 let stepToday=null,stepSnapAt=0,stepsRead=false;
+/* Günün adımı 0'a inince kayıt silinir: kayıtlarda sıfır adım geçersizdir, yeniden açılışta "geçersiz kayıt atıldı" uyarısı verirdi. */
+function stepZero(e){if(!(e.v>0))S.entries.splice(S.entries.indexOf(e),1)}
 function setSteps(day,v){
   if(!(v>=0&&v<=200000)||day<S.settings.stepsFrom)return false; // silinen adımlar sensör geçmişinden geri yazılmaz
   const e=S.entries.find(x=>x.type==="adim"&&x.day===day&&x.text!=="elle");
-  if(e){const m=Math.max(v,e.hc||0);if(e.v===m&&(e.ph===v||!e.hc))return false;e.ph=v;e.v=m} // 0 da geçerli: sayaç sıfırlanınca eski şişmiş kayıt düzelir
+  if(e){const m=Math.max(v,e.hc||0);if(e.v===m&&(e.ph===v||!e.hc))return false;e.ph=v;e.v=m;stepZero(e)} // 0 da geçerli: sayaç sıfırlanınca eski şişmiş kayıt düzelir
   else if(v>0)S.entries.push({id:S.nextId++,day,time:"00:00",type:"adim",v,ph:v,text:""});
   else return false;
   return true;
@@ -1472,7 +1474,7 @@ function setSteps(day,v){
 function setHc(day,v){
   if(!(v>=0&&v<=200000)||day<S.settings.stepsFrom)return false;
   const e=S.entries.find(x=>x.type==="adim"&&x.day===day&&x.text!=="elle");
-  if(e){if(e.hc===v)return false;const ph=e.ph!=null?e.ph:e.v;e.ph=ph;e.hc=v;e.v=Math.max(ph,v)}
+  if(e){if(e.hc===v)return false;const ph=e.ph!=null?e.ph:e.v;e.ph=ph;e.hc=v;e.v=Math.max(ph,v);stepZero(e)}
   else if(v>0)S.entries.push({id:S.nextId++,day,time:"00:00",type:"adim",v,ph:0,hc:v,text:""});
   else return false;
   return true;

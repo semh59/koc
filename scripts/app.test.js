@@ -1801,7 +1801,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
   ok("adım kayıtları gün listesinde ve seride görünmez",!ev("viewBugun()").includes("class=\"del\"")&&ev("streak()")===0);
   ok("yedek temizliği adım kaydını korur",ev("cleanEntries(S.entries).out.filter(e=>e.type==='adim').length")===2);
   ev("window.__se=[S.entries,S.settings.stepsFrom];S.settings.stepsFrom='2000-01-01';S.entries=[{id:1,day:dayKey(),time:'00:00',type:'adim',v:82000,text:''}]");
-  ok("sayaç sıfırlanınca bugünkü şişmiş adım kaydı 0'a düzelir, kayıt yoksa 0 için yeni kayıt açılmaz",ev("setSteps(dayKey(),0)")===true&&ev("S.entries[0].v")===0&&ev("S.entries=[],setSteps(dayKey(),0)")===false&&ev("S.entries.length")===0);
+  ok("sayaç sıfırlanınca bugünkü şişmiş adım kaydı kalkar (0 adım kaydı geçersizdir: yeniden açılışta uyarı vermemeli), kayıt yoksa 0 için yeni kayıt açılmaz",ev("setSteps(dayKey(),0)")===true&&ev("S.entries.some(e=>e.type==='adim')")===false&&ev("buildState(JSON.parse(JSON.stringify(S))).drop")===0&&ev("S.entries=[],setSteps(dayKey(),0)")===false&&ev("S.entries.length")===0);
   ev("[S.entries,S.settings.stepsFrom]=window.__se");
   ev("window.__mv=[S.moves,S.settings.motionOn];S.settings.motionOn=true;S.moves=[{day:dayKey(),t0:'11:56',min:5,km:0.2,kmh:2.3,kcal:20,k:'w'},{day:dayKey(),t0:'12:29',min:6,km:0.3,kmh:2.8,kcal:26,k:'w'}]");
   const mh=(()=>{const d=w.document.createElement("div");d.innerHTML=ev("motionCard()");return d})();
