@@ -80,7 +80,7 @@ let pstat={},cool={},busy=false,typing=false,offline=null;
 
 /* ---- doğrulama ---- */
 function cleanCoach(r){
-  const provs=[],known=EXMERGED.map(e=>e.id).concat((Array.isArray(r.customEx)?r.customEx:[]).map(e=>e&&e.id).filter(i=>typeof i==="string"&&/^c\d+$/.test(i)));
+  const provs=[],known=EXDB.map(e=>e.id).concat((Array.isArray(r.customEx)?r.customEx:[]).map(e=>e&&e.id).filter(i=>typeof i==="string"&&/^c\d+$/.test(i)));
   for(const p of (Array.isArray(r.providers)?r.providers:[])){
     if(!p||typeof p.id!=="string"||!/^[a-z0-9]{1,16}$/.test(p.id)||p.id in Object.prototype||typeof p.name!=="string"||typeof p.base!=="string"||!/^https:\/\/[^\s]+$/.test(p.base)||typeof p.model!=="string")continue;
     if(provs.some(x=>x.id===p.id))continue;
@@ -453,7 +453,7 @@ async function cWhyAsk(id){
 
 /* ---- Koç'tan program ---- */
 let progOpt={d:3,q:"Salon",m:45,l:"Başlangıç"};
-function cCatalog(o){const c=CoachLib.catalog(EXMERGED,o,EXLIB.map(e=>e.id));return {ids:c.map(e=>e.id),text:CoachLib.catalogText(c)}}
+function cCatalog(o){const c=CoachLib.catalog(EXDB,o,CORE_EX);return {ids:c.map(e=>e.id),text:CoachLib.catalogText(c)}}
 function cProgSheet(){
   const o=progOpt,g=(k,vals,lbl=v=>v)=>`<div class="chips">${vals.map(v=>`<button class="chip" data-c="po:${k}:${v}" aria-pressed="${o[k]===v}">${lbl(v)}</button>`).join("")}</div>`;
   openSheet(`<h3>Koç'tan program iste</h3><div class="lbl">Haftada gün</div>${g("d",[2,3,4,5,6])}<div class="lbl">Ekipman</div>${g("q",["Salon","Ev tipi","Ağırlıksız"])}<div class="lbl">Seans süresi</div>${g("m",[30,45,60],v=>v+" dk")}<div class="lbl">Seviye</div>${g("l",["Başlangıç","Orta","İleri"])}

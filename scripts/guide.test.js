@@ -50,7 +50,7 @@ const T0=1e6,P=G.PREP*1000;
   const F=G.FLOWS,by=id=>F.find(f=>f.id===id),ex=id=>EXDB.find(e=>e.id===id);
   ok("en az 3 akış: 5 dk ısınma, 10 dk esneme, 4 dk Tabata",F.length>=3&&by("isinma5")&&by("esneme10")&&by("tabata4"));
   const all=F.flatMap(f=>f.steps.map(s=>s.ex)),miss=all.filter(id=>!ex(id));
-  ok("akış egzersizleri kütüphanede var (EXMERGED, uygulamada da denetlenir)",!miss.length,miss);
+  ok("akış egzersizleri kütüphanede var (EXDB, uygulamada da denetlenir)",!miss.length,miss);
   ok("akış egzersizleri süreli ya da aralıklı tür (kayıtta tekrar boş kalmaz)",all.every(id=>"ti".includes(ex(id).k)),all.filter(id=>!"ti".includes(ex(id).k)));
   ok("akış egzersizlerinin figürü ve form ipucu var",all.every(id=>FigTpl[ex(id).tp]&&FigTpl[ex(id).tp].frames&&EXCUE[ex(id).tp]&&EXCUE[ex(id).tp].length));
   const min=id=>G.total(G.phases(by(id).steps))/60;

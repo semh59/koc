@@ -29,7 +29,7 @@ setTimeout(async()=>{
     ev(`S.templates=[{id:1,name:'Ev',ex:['plank','pushup'],tg:{plank:{sets:2,sec:30},pushup:{sets:2,reps:8}}}];render()`);
     click('[data-g="gdpick"]');
     ok("Salon ana ekranı: Rehberli başlat, ≥3 hazır akış ve şablonlar, genel bilgi/ağrı/hekim notu",["5 dk ısınma","10 dk tüm vücut esneme","4 dk Tabata"].every(t=>sh().includes(t))&&sh().includes("Ev")&&sh().includes("fizyoterapiste")&&sh().includes("Genel bilgidir"));
-    ok("akış egzersizlerinin hepsi EXMERGED'de",ev("GuideLib.FLOWS.every(f=>f.steps.every(s=>EXMERGED.some(e=>e.id===s.ex)))"));
+    ok("akış egzersizlerinin hepsi EXDB'de",ev("GuideLib.FLOWS.every(f=>f.steps.every(s=>EXDB.some(e=>e.id===s.ex)))"));
     ev("closeSheet();gTplPreview(1)");
     ok("şablon önizlemesinde Rehberli başlat",!!q('#sheet [data-g="gdgo:t:1"]'));
     ev("closeSheet();gPgSheet('home3')");

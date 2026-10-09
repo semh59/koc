@@ -43,7 +43,8 @@ ok("CSV enjeksiyonu: =HYPERLINK adı yalnız kısaltılmış metin olarak kalır
  const t0=Date.now(),R=I.read(big(5000)),P=I.plan(R.workouts,ctx());
  ok("5000 satır: 2 sn altında ayrıştırılır ve planlanır",Date.now()-t0<2000&&P.stats.sets===5000&&P.stats.workouts===500,[Date.now()-t0,P.stats]);
  const cut=I.cut(P,100);
- ok("sığmayan geçmişte kısmi içe aktarım: en yeni N antrenman, yalnız kullanılan yeni egzersizler",I.fit(P,I.bytes(P)/5)>80&&I.fit(P,I.bytes(P)/5)<120&&cut.workouts.length===100&&cut.workouts.every(w=>w.t0>=P.workouts[400].t0),I.fit(P,I.bytes(P)/5));}
+ ok("sığmayan geçmişte kısmi içe aktarım: en yeni N antrenman, yalnız kullanılan yeni egzersizler",I.fit(P,I.bytes(P)/5)>80&&I.fit(P,I.bytes(P)/5)<120&&cut.workouts.length===100&&cut.workouts.every(w=>w.t0>=P.workouts[400].t0),I.fit(P,I.bytes(P)/5));
+ ok("partial import: the stats follow the kept workouts, not the full plan",cut.stats.workouts===100&&cut.stats.sets===1000&&cut.stats.created===cut.newEx.length&&cut.stats.from>=P.stats.from&&cut.stats.to===P.stats.to,cut.stats);}
 ok("yeni egzersiz sınırı: aşan egzersizler alınmaz ve adları bildirilir",(q=>q.newEx.length===I.MAX_NEW&&q.stats.over.length===5)(I.plan(I.read("Date,Workout Name,Exercise Name,Set Order,Weight,Reps\n"+Array.from({length:105},(_,i)=>`2024-03-15 18:30,A,Zz${i},1,5,5`).join("\n")+"\n").workouts,ctx({find:()=>null}))));
 ok("tablo: her kimlik kütüphanede var",Object.entries(I.MAP).every(([k,id])=>lib.some(e=>e.id===id)),Object.entries(I.MAP).filter(([k,id])=>!lib.some(e=>e.id===id)));
 {const hv='title,start_time,end_time,exercise_title,superset_id,set_index,set_type,weight_kg,reps\n'
