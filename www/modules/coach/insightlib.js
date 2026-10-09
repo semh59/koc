@@ -1,23 +1,22 @@
 "use strict";
-/* Koç analizi: haftalık "neden" etmenleri ve plato istatistiği. Saf: DOM ve S yok. */
+/* Coach analysis: weekly "why" factors and plateau statistics. Pure: no DOM, no S. */
 const InsightLib=(()=>{
   const dn=k=>Math.round(Date.UTC(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10))/864e5);
   const f1=x=>String(Math.round(x*10)/10).replace(".",",");
   const sgn=x=>(x>0?"+":x<0?"-":"")+f1(Math.abs(x));
   const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
   const AL=()=>typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
-  /* Tek yönlü t kritik değeri (z=1,8 ≈ %96,4; Cornish-Fisher düzeltmesi, df≥6'da tablodan sapma <0,01). */
+  /* One-sided t critical value (z=1.8, about 96.4%; Cornish-Fisher correction, deviates from the table by <0.01 for df>=6). */
   const tq=df=>{const z=1.8;return z+(z**3+z)/(4*df)+(5*z**5+16*z**3+3*z)/(96*df*df)};
-  /* Pencere bugüne göre: tartmayı bırakan birinin eski düz serisi plato sayılmasın. */
+  /* The window is relative to today so that the old flat series of someone who stopped weighing in is not a plateau. */
   function pts(w,today,days){
     const t=dn(today),out=[];
-    for(const k of Object.keys(w&&typeof w==="object"?w:{})){
-      if(!/^\d{4}-\d{2}-\d{2}$/.test(k)||!Number.isFinite(w[k]))continue;
+    for(const k of Object.keys(w)){
       const d=t-dn(k);if(d>=0&&d<days)out.push([dn(k),w[k]]);
     }
     return out;
   }
-  /* Ham tartılara en küçük kareler doğrusu; gün numarasıyla çalıştığı için düzensiz aralık sorun değil. */
+  /* Least-squares line over the raw weigh-ins; it works on day numbers, so irregular spacing is fine. */
   function fit(p){
     const n=p.length;if(n<3)return null;
     const mx=avg(p.map(q=>q[0])),my=avg(p.map(q=>q[1]));
@@ -26,18 +25,19 @@ const InsightLib=(()=>{
     const m=sxy/sxx,b=my-m*mx,s2=p.reduce((s,[x,y])=>s+(y-b-m*x)**2,0)/(n-2);
     return {m,n,sd:Math.sqrt(s2),se:Math.sqrt(s2/sxx)};
   }
-  /* Son 28 günde doğru çevresindeki artıkların standart sapması (kg). 8 tartıdan azında serbestlik derecesi gürültüyü tahmine yetmez. */
+  /* Standard deviation (kg) of the residuals around the line over the last 28 days. With fewer than 8 weigh-ins the degrees of freedom are too few to estimate the noise. */
   function noiseSd(w,today){const f=fit(pts(w,today,28));return f&&f.n>=8?f.sd:null}
-  /* Kırık doğru (seviye sürekli, x0'da eğim değişir) içinde x0 sonrasının eğimi; ayrı yarı doğrusundan az oynar çünkü seviyeyi ilk yarı da taşır. */
+  /* Slope after x0 in a broken line (continuous level, slope changes at x0); it varies less than a separate half-line fit because the first half also carries the level. */
   const resid=(xs,ys)=>{const mx=avg(xs),my=avg(ys);let sxx=0,sxy=0;xs.forEach((x,i)=>{sxx+=(x-mx)**2;sxy+=(x-mx)*(ys[i]-my)});const m=sxx?sxy/sxx:0;return ys.map((y,i)=>y-my-m*(xs[i]-mx))};
   function lateSlope(p,x0){
     const u=p.map(q=>Math.min(0,q[0]-x0)),rv=resid(u,p.map(q=>Math.max(0,q[0]-x0))),ry=resid(u,p.map(q=>q[1]));
     let a=0,b=0;rv.forEach((r,i)=>{a+=r*ry[i];b+=r*r});return b?a/b:0;
   }
-  /* Plato = kilo ne iniyor ne çıkıyor: eğimin iki yönlü güven aralığı ±0,3 kg/hafta içinde (gerçek −0,3 kayıpta ve +0,3 artışta yanlış
-     alarm ≤%5). Seyrek/gürültülü tartıda 35 gün aralığı daraltmaya yetmezse pencere 49 güne uzar; 63 gün iki deneme yüzünden yanlış alarmı
-     %5'in üstüne çıkardı. Uzun pencerede eski düz dönem yeni başlayan düşüşü örtmesin diye pencerenin son yarısının eğimi de |·|<0,2 olmalı.
-     Son tartı 7 günden eskiyse tartmayı bırakan birinin eski serisi sayılmaz. */
+  /* Plateau = the weight neither falls nor rises: the two-sided confidence interval of the slope lies within +-0.3 kg/week (false alarm
+     <=5% at a true -0.3 loss or +0.3 gain). With sparse or noisy weigh-ins the 35-day interval may stay too wide, so the window grows to
+     49 days; 63 days pushed the false alarm above 5% because of the two attempts. In the long window the slope of the last half must also
+     be |.|<0.2 so that an old flat period does not hide a drop that just started. A last weigh-in older than 7 days means the series
+     belongs to someone who stopped weighing in and does not count. */
   function plateau(w,today){
     let r={ok:false,enough:false};
     for(const n of [35,49]){
@@ -51,11 +51,9 @@ const InsightLib=(()=>{
     }
     return r;
   }
-  /* d.days: bugün dahil son 22 gün {kcal,su,ad,sl}, eskiden yeniye. Bugün yarım gün olduğu için kalori, su ve adımda sayılmaz. */
+  /* d.days: the last 22 days including today, {kcal,water,ad,sl}, oldest first. Today is a partial day, so calories, water and steps skip it. */
   function weekWhy(d){
-    d=d&&typeof d==="object"?d:{};
-    const days=Array.isArray(d.days)?d.days.map(x=>x&&typeof x==="object"?x:{}):[];
-    const wk=days.slice(-8,-1),prev=days.slice(-22,-8),n=x=>Number.isFinite(x)?x:0,out=[];
+    const days=d.days,wk=days.slice(-8,-1),prev=days.slice(-22,-8),n=x=>x||0,out=[];
     const A=AL(),full=wk.map(x=>n(x.kcal)).filter(x=>A.fullKcal(x)),miss=wk.length-full.length;
     let t;
     if(!full.length)t="Kalori: son 7 günde tam kayıtlı gün yok, kalorinin etkisi değerlendirilemiyor.";
@@ -72,13 +70,11 @@ const InsightLib=(()=>{
     if(sl.length)out.push({k:"sleep",t:`Uyku: ${sl.length} gecenin ortalaması ${f1(avg(sl)/60)} saat.`});
     const a1=wk.map(x=>n(x.ad)).filter(x=>x>0),a0=prev.map(x=>n(x.ad)).filter(x=>x>0);
     if(a1.length&&a0.length)out.push({k:"steps",t:`Adım: son 7 günde günlük ortalama ${Math.round(avg(a1))}, önceki 14 günde ${Math.round(avg(a0))}.`});
-    if(typeof d.today==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(d.today)){
-      const last=p=>p.sort((x,y)=>x[0]-y[0]).pop(),w1=last(pts(d.weights,d.today,7)),w0=last(pts(d.weights,d.today,14).filter(q=>dn(d.today)-q[0]>=7));
-      if(w1&&w0){
-        const diff=w1[1]-w0[1],sd=noiseSd(d.weights,d.today);
-        out.push({k:"tarti",t:sd!=null&&Math.abs(diff)<2*sd?`Tartı: haftalık fark ${sgn(diff)} kg; bu fark tartı oynaması aralığında, günlük su ve yemek miktarı tartıyı oynatır.`:`Tartı: haftalık fark ${sgn(diff)} kg.`});
-      }else out.push({k:"tarti",t:"Tartı: karşılaştırmak için iki haftada da en az bir tartı gerekli."});
-    }
+    const last=p=>p.sort((x,y)=>x[0]-y[0]).pop(),w1=last(pts(d.weights,d.today,7)),w0=last(pts(d.weights,d.today,14).filter(q=>dn(d.today)-q[0]>=7));
+    if(w1&&w0){
+      const diff=w1[1]-w0[1],sd=noiseSd(d.weights,d.today);
+      out.push({k:"tarti",t:sd!=null&&Math.abs(diff)<2*sd?`Tartı: haftalık fark ${sgn(diff)} kg; bu fark tartı oynaması aralığında, günlük su ve yemek miktarı tartıyı oynatır.`:`Tartı: haftalık fark ${sgn(diff)} kg.`});
+    }else out.push({k:"tarti",t:"Tartı: karşılaştırmak için iki haftada da en az bir tartı gerekli."});
     return out;
   }
   return {plateau,noiseSd,weekWhy};

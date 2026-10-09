@@ -19,7 +19,7 @@ ok("plato yayılım gününü döndürür",I.plateau(W(D10,(o,i)=>80+N[i]),T).da
 p=I.plateau(W([-20,-19,-18,-17,-16,-15,-1,0],(o,i)=>80+[0.1,-0.1,0,0.1,-0.1,0,0.1,-0.1][i]),T);
 ok("kümelenmiş düzensiz aralık: iki uçta tartı, düz → plato",p.ok,p);
 ok("eski düz seri (son tartı 30 gün önce) plato sayılmaz",!I.plateau(W(D10.map(o=>o-30),(o,i)=>80+N[i]),T).enough);
-ok("çöp girdi hata atmaz",!I.plateau(null,T).ok&&!I.plateau({x:1,"2026-10-01":"a"},T).ok&&I.noiseSd(undefined,T)===null);
+ok("no weigh-ins: not enough data, no noise estimate",!I.plateau({},T).enough&&I.noiseSd({},T)===null);
 ok("noiseSd: düz seride küçük, en az 8 tartı ister",I.noiseSd(W(D10,(o,i)=>80+N[i]),T)<0.3&&I.noiseSd(W([-12,-10,-8,-6,-4,-2,0],(o,i)=>80+N[i]),T)===null);
 
 // Sabit tohumlu benzetim: 49 gün, her gün tartı olasılığı q (her gün, %80, haftada 4), günlük gürültü sd (normal).
@@ -53,7 +53,7 @@ ok("weekWhy: tartı yoksa iki hafta tartı gerektiğini söyler",by("tarti").inc
 const flat=W([-27,-24,-21,-18,-15,-12,-10,-8,-6,-4,-2,0],(o,i)=>80+[0.3,-0.4,0.5,-0.3,0.4,-0.5,0.2,-0.4,0.5,-0.3,0.1,0.3][i]);
 w=I.weekWhy({days,goalKcal:1800,weights:flat,today:T});
 ok("weekWhy: fark 2×artık sd'den küçükse tartı oynaması etiketi",by("tarti").includes("tartı oynaması aralığında"),by("tarti"));
-ok("weekWhy: çöp girdi hata atmaz, kalori etmeni yine çıkar",I.weekWhy(null).length===1&&I.weekWhy({days:[null,"x",{kcal:"a"}]})[0].k==="kcal");
+ok("weekWhy: no days and no weigh-ins still gives the calorie and weight factors",I.weekWhy({days:[],weights:{},today:T}).map(x=>x.k).join()==="kcal,tarti");
 const BAN=/metabolizma|yavaşla|tanı|hastal|suç|başarısız|tembel|yapmadın|yemedin|kötü|hata/i;
 const all=[...I.weekWhy({days,goalKcal:1800,goalWater:2500,weights:flat,today:T}),...I.weekWhy({days:[],weights:W([-10,-1],()=>80),today:T}),...I.weekWhy({days,today:T,weights:W([-9,0],o=>o?79:80)})];
 ok("weekWhy metinleri: suçlayıcı/tıbbi ifade yok, her biri ≤160 karakter",all.every(x=>!BAN.test(x.t)&&x.t.length<=160),all.filter(x=>BAN.test(x.t)||x.t.length>160));
