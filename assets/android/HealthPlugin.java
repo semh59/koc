@@ -86,34 +86,38 @@ public class HealthPlugin extends Plugin {
             return;
         }
         final int n = in.length();
-        final JSObject out = new JSObject();
-        final int[] left = { n };
-        final boolean[] failed = { false };
+        final String[] day = new String[n];
+        final Instant[] from = new Instant[n], to = new Instant[n];
         ZoneId z = ZoneId.systemDefault();
         Instant now = Instant.now();
+        // Önce hepsi doğrulanır: yarıda reddedilen çağrıya sonradan gelen yanıtlar yazılmasın.
         for (int k = 0; k < n; k++) {
-            final String day;
-            Instant a, b;
             try {
-                day = in.getString(k);
-                LocalDate d = LocalDate.parse(day);
-                a = d.atStartOfDay(z).toInstant();
-                b = d.plusDays(1).atStartOfDay(z).toInstant();
+                day[k] = in.getString(k);
+                LocalDate d = LocalDate.parse(day[k]);
+                from[k] = d.atStartOfDay(z).toInstant();
+                Instant end = d.plusDays(1).atStartOfDay(z).toInstant();
+                to[k] = end.isAfter(now) ? now : end;
             } catch (JSONException | RuntimeException e) {
                 call.reject("geçersiz gün");
                 return;
             }
-            if (b.isAfter(now)) b = now;
-            if (!b.isAfter(a)) {
-                finish(call, out, left, failed, day, null);
+        }
+        final JSObject out = new JSObject();
+        final int[] left = { n };
+        final boolean[] failed = { false };
+        for (int k = 0; k < n; k++) {
+            final String dk = day[k];
+            if (!to[k].isAfter(from[k])) {
+                finish(call, out, left, failed, dk, null);
                 continue;
             }
-            AggregateRecordsRequest<Long> req = new AggregateRecordsRequest.Builder<Long>(new TimeInstantRangeFilter.Builder().setStartTime(a).setEndTime(b).build())
+            AggregateRecordsRequest<Long> req = new AggregateRecordsRequest.Builder<Long>(new TimeInstantRangeFilter.Builder().setStartTime(from[k]).setEndTime(to[k]).build())
                 .addAggregationType(StepsRecord.STEPS_COUNT_TOTAL).build();
             m.aggregate(req, io, new OutcomeReceiver<AggregateRecordsResponse<Long>, HealthConnectException>() {
                 @Override
                 public void onResult(AggregateRecordsResponse<Long> res) {
-                    finish(call, out, left, failed, day, res.get(StepsRecord.STEPS_COUNT_TOTAL));
+                    finish(call, out, left, failed, dk, res.get(StepsRecord.STEPS_COUNT_TOTAL));
                 }
 
                 @Override
@@ -121,7 +125,7 @@ public class HealthPlugin extends Plugin {
                     synchronized (left) {
                         failed[0] = true;
                     }
-                    finish(call, out, left, failed, day, null);
+                    finish(call, out, left, failed, dk, null);
                 }
             });
         }

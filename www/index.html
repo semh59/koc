@@ -1104,7 +1104,7 @@ let widgetLast="";
 /* null değerler bilinçli: Java tarafı anahtar varsa ama null ise "hedef yok"/adım gizli, anahtar yoksa "–" gösterir. */
 function widgetPush(){
   if(!WG())return;
-  const t=dayKey(),st=S.settings,d={day:t,water:sum("su",t,t),waterGoal:st.waterMl,glass:st.glass,kcalLeft:st.kcal>0?Math.round(kcalGoal(t)-sum("yemek",t,t)):null,steps:st.stepsOn?stepsShown():null};
+  const t=dayKey(),st=S.settings,d={day:t,water:sum("su",t,t),waterGoal:st.waterMl,glass:st.glass,kcalLeft:st.kcal>0?Math.round(kcalGoal(t)-sum("yemek",t,t)):null,steps:st.stepsOn||st.hcOn?stepsShown():null};
   const j=JSON.stringify(d);if(j===widgetLast)return;
   widgetLast=j;try{WG().update(d).catch(()=>{})}catch(e){}
 }
@@ -1491,7 +1491,7 @@ function stepsTick(){
   stepBusy=true;return stepsSync().finally(()=>{stepBusy=false});
 }
 const manualSteps=()=>S.entries.filter(e=>e.type==="adim"&&e.text==="elle"&&e.day===dayKey()).reduce((s,e)=>s+e.v,0);
-const stepsShown=()=>{const t=Math.max(stepToday==null?-1:stepToday,hcToday==null?-1:hcToday);return t<0?null:t+manualSteps()};
+const stepsShown=()=>{const hn=hcNow(),t=Math.max(stepToday==null?-1:stepToday,hn==null?-1:hn);return t<0?null:t+manualSteps()};
 function sheetAdim(){openSheet(`<h3>Adım ekle (elle)</h3><p class="flush hint">Telefonu taşımadığın adımlar için. Sensör değerine eklenir.</p><input class="in num" id="fv" inputmode="numeric" placeholder="Adım sayısı" autofocus>${dayOptions()}<button class="btn" data-go="adim">Ekle</button>`)}
 function goAdim(){
   const n=num($("#fv").value,true);

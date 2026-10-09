@@ -41,7 +41,7 @@ function open(seed,fake){
   ev(`S.entries=[]`);
   ok("saat sıfırsa ve kayıt yoksa kayıt açılmaz",ev(`setHc("${d}",0)`)===false&&ev(`S.entries.length`)===0);
   ok("saatsiz kullanımda kayıt hc taşımaz (eski davranış)",(ev(`setSteps("${d}",50)`),JSON.parse(ev(`JSON.stringify(S.entries[0])`)).hc===undefined));
-  ev(`stepToday=100;hcToday=400`);
+  ev(`stepToday=100;hcToday=400;hcDay=dayKey()`);
   ok("bugünkü gösterim telefon ve saatin büyüğü; elle eklenen üstüne",ev(`stepsShown()`)===400);
   ev(`stepToday=900`);ok("telefon büyükse telefon",ev(`stepsShown()`)===900);
   ev(`stepToday=null;hcToday=null`);ok("ikisi de yoksa null",ev(`stepsShown()`)===null);
@@ -76,6 +76,18 @@ function open(seed,fake){
   o=await open({entries:[],settings:{}},{available:false,granted:false,days});w=o.w;ev=s=>w.eval(s);
   ev(`tab="adim";S.entries.push({id:S.nextId++,day:dayKey(),time:"00:00",type:"adim",v:10,text:""});render()`);await sleep(80);
   ok("Health Connect yoksa (Android 13 altı) anahtar yerine açıklama gösterilir",!w.document.querySelector("[data-hc=toggle]")&&/Android 14/.test(w.document.body.textContent),0);
+
+  o=await open({entries:[],settings:{hcOn:true}},{granted:true,days});w=o.w;ev=s=>w.eval(s);
+  await ev(`hcSync(true)`);ev(`hcDay="2000-01-01"`);
+  ok("gece yarısından sonra dünün saat değeri bugün sayılmaz",ev(`hcNow()`)===null&&ev(`stepsShown()`)===null);
+  const fk={granted:true,days};o=await open({entries:[],settings:{hcOn:true}},fk);w=o.w;ev=s=>w.eval(s);
+  await ev(`hcSync(true)`);ok("izinliyken değer var",ev(`hcNow()`)===4321);
+  fk.granted=false;await ev(`hcSync(true)`);
+  ok("izin geri alınırsa saat değeri gösterimden kalkar",ev(`hcNow()`)===null);
+  fk.granted=true;await ev(`hcSync()`);
+  ok("izin yokken 5 sn'den sık denenmez, 60 sn beklemez",ev(`hcNow()`)===null);
+  ev(`hcAt=0`);await ev(`hcSync()`);
+  ok("izin geri gelince okuma sürer",ev(`hcNow()`)===4321);
 
   const hp=fs.readFileSync(path.join(__dirname,"../assets/android/HealthPlugin.java"),"utf8"),pa=fs.readFileSync(path.join(__dirname,"patch-android.js"),"utf8");
   ok("Android: yalnız okuma izni (yazma yok), izin kullanım ekranı bildirilir, eklenti kopyalanır ve kaydedilir",/android\.permission\.health\.READ_STEPS/.test(hp)&&!/WRITE_/.test(hp+pa)&&/"health\.READ_STEPS"/.test(pa)&&/HEALTH_PERMISSIONS/.test(pa)&&/"HealthPlugin"\]\)fs\.copyFileSync/.test(pa)&&/registerPlugin\(HealthPlugin\.class\)/.test(pa));
