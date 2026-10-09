@@ -3,8 +3,7 @@
 function goalSug(){
   const st=S.settings,w=weights();
   if(!(st.kcal>0)||!Object.keys(w).length)return null;
-  const c=cCalc(),intake={};
-  for(const e of S.entries)if(e.type==="yemek"&&e.v)intake[e.day]=(intake[e.day]||0)+e.v;
+  const c=cCalc(),intake=Kayit.byDay("yemek");
   return GoalLib.suggest({w,kcal:st.kcal,tdee:c.tdee,bmr:c.bmr,ri:riskInput(c.trendKg),intake,today:dayKey(),at:st.goalSugAt});
 }
 function goalCard(){

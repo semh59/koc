@@ -152,7 +152,7 @@ function viewSeker(){
   const SHP={acl:"c",once:"d",sonra:"t",yatis:"s",rast:"c"};
   const series=VitalsLib.CTX.map(([c])=>({pts:a.filter(r=>r.ctx===c).map(r=>({day:r.day,time:r.time,v:Units.g(r.g)})),color:COL[c],shape:SHP[c],label:VitalsLib.ctxName(c),short:"",line:false})).filter(s=>s.pts.length);
   const rows=a.slice().reverse().map(r=>`<div class="row"><span class="grow"><b class="num">${dg(r.g)}</b><span class="mut"> ${glab()}</span><small class="db mut num">${fd(r.day)} ${r.time} · ${esc(VitalsLib.ctxName(r.ctx))}</small></span>${vDel([r.id])}</div>`);
-  const labA1c=S.labs.filter(l=>l.k==="hba1c"&&l.v!=null).sort((x,y)=>x.day<y.day?1:-1)[0];
+  const labA1c=Tahlil.latest("hba1c");
   return `${vBtns("addbs")}
   ${last?`<div class="card"><div class="lbl">Son ölçüm</div><div class="ink sumv num">${dg(last.g)} <small>${glab()}</small></div><div class="mut sm">${esc(VitalsLib.ctxName(last.ctx))}, ${vWhen(last)}</div></div>`:emptyCard("su","Henüz ölçüm yok","İlk şeker ölçümünü ekle; ortalama ve grafik burada görünür.")}
   ${vSeg()}${gs?`<div class="stats"><div class="stat"><div class="k">Ortalama</div><div class="v num">${vAvg(gs.avg)}</div></div><div class="stat"><div class="k">Ölçüm sayısı</div><div class="v num">${gs.n}</div></div><div class="stat"><div class="k">En düşük / en yüksek</div><div class="v num">${vMmol()?`${dg(gs.min)} / ${dg(gs.max)}`:`${gs.min} / ${gs.max}`}</div></div></div>

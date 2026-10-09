@@ -36,7 +36,7 @@ async function hcSync(force){
 /* Uyku (yatakta geçen süre, uyanılan güne) ve günlük nabız. Elle girilen uyku kaydı saatinkini ezmez; silinen günler (hcFrom öncesi) geri yazılmaz. */
 function hcApplyDaily(q,days){
   const from=S.settings.hcFrom||"",sl=(q&&q.sleep)||{},ha=(q&&q.hrAvg)||{},hm=(q&&q.hrMin)||{};
-  let sleep=S.sleep.slice(),hr=S.hr.slice(),ch=false;
+  let sleep=Aliskanlik.sleep().slice(),hr=Nabiz.hr().slice(),ch=false;
   for(const d of days){
     if(from&&d<from)continue;
     const m=sl[d];
@@ -50,7 +50,7 @@ function hcApplyDaily(q,days){
       if(!o||o.a!==ra||o.m!==rm){hr=hr.filter(x=>x.day!==d).concat({day:d,a:ra,m:rm});ch=true}
     }
   }
-  if(ch){S.sleep=HabitLib.cleanSleep(sleep);S.hr=PulseLib.cleanHr(hr)}
+  if(ch){Aliskanlik.setSleep(sleep);Nabiz.setHr(hr)}
   return ch;
 }
 /* Adım raporunun alt kartı: açma anahtarı, izin durumu ve bugünkü saat değeri. */

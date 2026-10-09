@@ -119,7 +119,7 @@ function gdSave(){
   }
   S.workouts.push(w);
   if(!gd.meta.warm)gLogSpor(w,"Rehberli");
-  save();gdClose();render();toast("Antrenman kaydedildi",()=>{S.workouts=S.workouts.filter(x=>x!==w);S.entries=S.entries.filter(e=>e.wid!==w.id);save();render()});
+  save();gdClose();render();toast("Antrenman kaydedildi",()=>{S.workouts=S.workouts.filter(x=>x!==w);Kayit.remove(e=>e.wid===w.id);save();render()});
 }
 function gdClose(){
   clearInterval(gdTick.iv);gNotifyCancel(GD_NID);

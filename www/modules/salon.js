@@ -1,0 +1,16 @@
+"use strict";
+Data.privacy.push(["Spor ve antrenman",()=>S.workouts.length+Kayit.where(e=>e.type==="spor"&&e.wid==null).length,()=>{S.workouts=[];Kayit.drop("spor")},2]);
+Data.csv.push(["antrenman","Antrenman setleri",({gu})=>["tarih","antrenman","egzersiz","set","kg","tekrar","süre_sn","rpe","ısınma","set_türü","süperset"],({S,by,day,time,conv,wu,gu,h,iso})=>by(S.workouts,day,x=>x.t0).flatMap(w=>w.ex.flatMap(x=>x.sets.map((s,i)=>s.done&&[w.day,w.name,h.exName(x.id),i+1,s.kg,s.reps,s.sec,s.rpe,s.w?"evet":"",s.t==="d"?"drop":s.t==="f"?"başarısızlık":"",x.ss]).filter(Boolean))),1]);
+Data.hist.push((S,{add})=>{for(const w of S.workouts||[])if(w.t1!=null)add(w.day,"wo",1)});
+Data.histSearch.push((S,{n,norm,out,wname})=>{
+  for(const w of S.workouts||[]){
+    if(w.t1==null)continue;
+    if(norm(w.name+" "+(wname?wname(w):"")).includes(n))out.push({day:w.day,time:"",type:"wo",text:w.name,id:w.id});
+  }
+});
+Data.dayWork.push(k=>S.workouts.filter(w=>w.t1!=null&&w.day===k).sort((a,b)=>a.t0-b.t0).map(w=>`<button class="rrow" data-g="sum:${w.id}"><span class="grow tx"><b>${esc(w.name)}</b><span class="mut sm">${esc(gNames(w,4))}</span><span class="mut sm num">${gStats(w)}</span></span></button>`).join(""));
+const Salon={
+  workouts:()=>S.workouts,gid:()=>S.gid,
+  addImported:p=>{S.customEx.push(...p.newEx);S.workouts.push(...p.workouts);S.gid=p.gid},
+  removeImported:(ids,cx)=>{S.workouts=S.workouts.filter(w=>!ids.has(w.id));S.customEx=S.customEx.filter(e=>!cx.has(e.id))}
+};

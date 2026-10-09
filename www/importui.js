@@ -3,7 +3,7 @@
 let impSt=null;
 function impPlan(){
   const all=gExAll().map(e=>({id:e.id,n:e.n,k:e.k||"w"}));
-  const p=ImportLib.plan(impSt.raw.workouts,{find:ImportLib.matcher(all),existing:S.workouts,gid:S.gid});
+  const p=ImportLib.plan(impSt.raw.workouts,{find:ImportLib.matcher(all),existing:Salon.workouts(),gid:Salon.gid()});
   const budget=STORE_WARN-storeBytes,need=ImportLib.bytes(p);
   p.fitN=need>budget?ImportLib.fit(p,budget):null;
   return impSt.keep!=null&&p.fitN!=null?ImportLib.cut(p,Math.min(impSt.keep,p.fitN)):p;
@@ -15,7 +15,7 @@ function impText(text,name){
 }
 function impSheet(){
   const s=impSt,p=impSt.p=impPlan(),t=p.stats,cut=impSt.keep!=null&&p.fitN!=null;
-  const full=cut?ImportLib.plan(s.raw.workouts,{find:ImportLib.matcher(gExAll().map(e=>({id:e.id,n:e.n,k:e.k||"w"}))),existing:S.workouts,gid:S.gid}).stats.workouts:t.workouts;
+  const full=cut?ImportLib.plan(s.raw.workouts,{find:ImportLib.matcher(gExAll().map(e=>({id:e.id,n:e.n,k:e.k||"w"}))),existing:Salon.workouts(),gid:Salon.gid()}).stats.workouts:t.workouts;
   const lines=[
     `Egzersiz: ${t.matched} kütüphanede eşleşti, ${t.created} yeni (kendi egzersizin olarak eklenir).`,
     t.dup?`${t.dup} antrenman zaten kayıtlı, atlanır.`:"",
@@ -33,9 +33,9 @@ function impSheet(){
 function impGo(){
   const p=impSt.p;if(!p||!p.workouts.length)return;
   const ids=new Set(p.workouts.map(w=>w.id)),cx=new Set(p.newEx.map(e=>e.id));
-  S.customEx.push(...p.newEx);S.workouts.push(...p.workouts);S.gid=p.gid;impSt=null;
+  Salon.addImported(p);impSt=null;
   save();closeSheet();render();
-  toast(`${ids.size} antrenman içe aktarıldı`,()=>{S.workouts=S.workouts.filter(w=>!ids.has(w.id));S.customEx=S.customEx.filter(e=>!cx.has(e.id));save();render()});
+  toast(`${ids.size} antrenman içe aktarıldı`,()=>{Salon.removeImported(ids,cx);save();render()});
 }
 function impPick(){
   const i=document.createElement("input");i.type="file";i.accept=".csv,text/csv,text/plain,application/csv,application/vnd.ms-excel";i.hidden=true;

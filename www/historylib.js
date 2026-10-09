@@ -1,29 +1,11 @@
 "use strict";
 /* Geçmiş: gün gün özet dizini, ay özeti ve arama (DOM yok). Veriyi değiştirmez; hiçbir kaydı kırpmaz. */
 const HistoryLib=(()=>{
-  const isWater=e=>e.type==="su"&&(!e.dr||e.dr==="su"||e.dr==="maden");
   const norm=s=>String(s==null?"":s).toLocaleLowerCase("tr").replace(/ı/g,"i").replace(/ş/g,"s").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ö/g,"o").replace(/ü/g,"u");
-  const arr=a=>Array.isArray(a)?a:[];
   /* Gün -> {yemek,kcal,su,spor,kilo,adim,not,wo,uyku,ruh,tans,seker,nabiz,hr,ilac,oruc,olcu}. Tek geçiş. dk: ms -> gün anahtarı. */
   function index(S,dk){
     const m=new Map(),get=d=>{let o=m.get(d);if(!o)m.set(d,o={});return o},add=(d,k,v)=>{const o=get(d);o[k]=(o[k]||0)+v};
-    for(const e of arr(S.entries)){
-      if(e.type==="yemek"){add(e.day,"yemek",1);if(e.v>0)add(e.day,"kcal",e.v)}
-      else if(e.type==="su"){if(isWater(e))add(e.day,"su",e.v||0);else add(e.day,"icecek",1)}
-      else if(e.type==="spor")add(e.day,"spor",e.v||0);
-      else if(e.type==="kilo")get(e.day).kilo=e.v;
-      else if(e.type==="adim")add(e.day,"adim",e.v||0);
-      else if(e.type==="not")add(e.day,"not",1);
-    }
-    for(const w of arr(S.workouts))if(w.t1!=null)add(w.day,"wo",1);
-    for(const x of arr(S.sleep))get(x.day).uyku=x.min;
-    for(const x of arr(S.mood))get(x.day).ruh=x.v;
-    for(const x of arr(S.vitals))add(x.day,x.k==="t"?"tans":"seker",1);
-    for(const x of arr(S.pulse))add(x.day,"nabiz",1);
-    for(const x of arr(S.hr))get(x.day).hr=x.a;
-    for(const x of arr(S.medLog))if(x.st==="t")add(x.day,"ilac",1);
-    for(const x of arr(S.measures))add(x.day,"olcu",1);
-    if(S.fast)for(const f of arr(S.fast.log))add(dk(new Date(f.t1)),"oruc",1);
+    const ctx={add,get,dk};for(const f of Data.hist)f(S,ctx);
     return m;
   }
   const MARKS=[["yemek","yemek"],["su","su"],["spor","spor"],["kilo","kilo"]];
@@ -59,15 +41,7 @@ const HistoryLib=(()=>{
   function search(S,q,max=300,wname){
     const n=norm(q).trim();if(n.length<2)return {items:[],total:0,days:0};
     const out=[];
-    for(const e of arr(S.entries)){
-      if(e.type!=="yemek"&&e.type!=="not"&&e.type!=="spor")continue;
-      if(norm(e.text).includes(n))out.push({day:e.day,time:e.time,type:e.type,text:e.text||"",v:e.v,id:e.id});
-    }
-    for(const w of arr(S.workouts)){
-      if(w.t1==null)continue;
-      const t=norm(w.name+" "+(wname?wname(w):""));
-      if(t.includes(n))out.push({day:w.day,time:"",type:"wo",text:w.name,id:w.id});
-    }
+    const ctx={n,norm,out,wname};for(const f of Data.histSearch)f(S,ctx);
     out.sort((a,b)=>a.day<b.day?1:a.day>b.day?-1:(b.time||"").localeCompare(a.time||""));
     return {items:out.slice(0,max),total:out.length,days:new Set(out.map(x=>x.day)).size};
   }
@@ -75,4 +49,7 @@ const HistoryLib=(()=>{
   function span(idx){let a=null,b=null;for(const d of idx.keys()){if(a==null||d<a)a=d;if(b==null||d>b)b=d}return {first:a,last:b}}
   return {index,marks,month,months,search,span,norm};
 })();
-if(typeof module!=="undefined")module.exports=HistoryLib;
+if(typeof module!=="undefined"){
+  module.exports=HistoryLib;
+  if(typeof Data==="undefined"){globalThis.Data=require("./kernel.js").Data;for(const m of ["kayit","salon","tansiyon","aliskanlik","ilac","nabiz","olcu"])require("./modules/"+m+".js")} // Node testleri
+}

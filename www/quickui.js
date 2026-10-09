@@ -15,14 +15,14 @@ async function quickIngest(){
   const water=all.filter(i=>Number.isFinite(i.v)&&i.v>=1&&i.v<=1500&&!done.has(i.t)),meds=all.filter(i=>Number.isInteger(i.m)&&typeof i.s==="string");
   const ack=async()=>{if(upto&&q.ack)try{await Store.whenIdle();if(!Store.failed)await q.ack({upto})}catch(e){}};
   if(!water.length&&!meds.length)return ack();
-  const n0=S.entries.length,id0=S.nextId,log0=S.medLog,k0=S.meds.map(m=>m.k);
+  const n0=S.entries.length,id0=S.nextId,med0=Ilac.snapshot();
   for(const i of water){
     const d=new Date(i.t);
     S.entries.push({id:S.nextId++,day:dayKey(d),time:`${pad(d.getHours())}:${pad(d.getMinutes())}`,type:"su",v:Math.round(i.v),text:"",qt:i.t});
   }
   const md=meds.length?medIngest(meds):{n:0,names:[]};
   if(!save()){
-    S.entries.length=n0;S.nextId=id0;S.medLog=log0;S.meds.forEach((m,i)=>{if(m.k!=null)m.k=k0[i]});
+    S.entries.length=n0;S.nextId=id0;Ilac.rollback(med0);
     return;
   }
   ack();
