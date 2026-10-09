@@ -1,9 +1,10 @@
 "use strict";
-/* Ana kayıt deposu. IndexedDB varsa asıl depo odur (kota diskle sınırlı); localStorage'a her kayıtta aynı metin kopya yazılır:
+/* Ana kayıt deposu. İki düzen vardır: eski tek metin (koc_v1) ve modül başına parça (m:<modül> kayıtları + m:meta). Parçalı düzene geçilince asıl depo parçalardır;
+   eski tek metin (IndexedDB ve localStorage'da) dokunulmadan yedek olarak kalır. Aşağıdaki açıklama tek metin düzeni içindir. IndexedDB varsa asıl depo odur (kota diskle sınırlı); localStorage'a her kayıtta aynı metin kopya yazılır:
    eski sürüme dönülürse ya da IndexedDB açılamazsa veri orada durur. Her yazıma sıra numarası (rev) verilir, açılışta ikisinden yeni olan alınır.
    IndexedDB yoksa (jsdom, bazı gizli pencereler) her şey eskisi gibi senkron localStorage'dır. */
 const Store=(()=>{
-  const MAIN="koc_v1",REV="koc_v1_rev",SUM="koc_v1_sum",CONF="koc_v1_catisma",COPY=["koc_v1_onceki","koc_v1_bozuk"],ALL=[MAIN,...COPY,CONF];
+  const META="m:meta",MAIN="koc_v1",REV="koc_v1_rev",SUM="koc_v1_sum",CONF="koc_v1_catisma",COPY=["koc_v1_onceki","koc_v1_bozuk"],ALL=[MAIN,...COPY,CONF,META];
   const ls={
     get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},
     set:(k,v)=>{try{localStorage.setItem(k,v);return true}catch(e){return false}},
@@ -11,7 +12,8 @@ const Store=(()=>{
   };
   /* Metnin değişip değişmediğini anlamak için hızlı özet (güvenlik değil): FNV-1a. */
   const sum=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)+":"+s.length};
-  const S={mode:"ls",failed:false,rev:0};
+  const S={mode:"ls",failed:false,rev:0,sharded:false};
+  const isMod=k=>k.startsWith("m:");
   let db=null,cache={},pending=new Map(),busy=false,idleCbs=[],stateCb=null,extCb=null,chan=null,mirrorOff=false;
   const tabId=Math.random().toString(36).slice(2);
 
@@ -24,9 +26,9 @@ const Store=(()=>{
       r.onsuccess=()=>fin(res,r.result);r.onerror=()=>fin(rej,r.error);r.onblocked=()=>fin(rej,new Error("engelli"));
     }catch(e){fin(rej,e)}
   });
-  const readAll=()=>new Promise((res,rej)=>{
+  const readAll=(extra=[])=>new Promise((res,rej)=>{
     const out={},tx=db.transaction("kv","readonly"),st=tx.objectStore("kv");
-    for(const k of ALL){const q=st.get(k);q.onsuccess=()=>{if(q.result&&typeof q.result.v==="string")out[k]=q.result}}
+    for(const k of [...ALL,...extra]){const q=st.get(k);q.onsuccess=()=>{if(q.result&&typeof q.result.v==="string")out[k]=q.result}}
     tx.oncomplete=()=>res(out);tx.onerror=tx.onabort=()=>rej(tx.error);
   });
   const setFailed=f=>{if(S.failed!==f){S.failed=f;if(stateCb)stateCb(f)}};
@@ -41,7 +43,7 @@ const Store=(()=>{
       const st=tx.objectStore("kv");
       for(const [k,rec] of batch)rec===null?st.delete(k):st.put(rec,k);
     }catch(e){return failBatch(batch)}
-    tx.oncomplete=()=>{busy=false;setFailed(false);if(chan&&batch.some(([k])=>k===MAIN))try{chan.postMessage({rev:S.rev,id:tabId})}catch(e){}flush()};
+    tx.oncomplete=()=>{busy=false;setFailed(false);if(chan&&batch.some(([k])=>k===MAIN||k===META))try{chan.postMessage({rev:S.rev,id:tabId})}catch(e){}flush()};
     tx.onabort=tx.onerror=()=>failBatch(batch);
   }
   /* Yazılamadı: kayıt kaybolmaz, bellekte durur; sonraki kayıtta yeniden denenir. Aradan yenisi geldiyse eskisi atılır. */
@@ -60,9 +62,16 @@ const Store=(()=>{
     return open().then(async d=>{
       db=d;
       const recs=await readAll();
+      if(recs[META]){ // parçalı düzen: asıl depo m:<modül> kayıtlarıdır, eski tek metne ve localStorage aynasına bakılmaz
+        S.sharded=true;
+        try{const m=JSON.parse(recs[META].v);Object.assign(recs,await readAll(m.ids.map(i=>"m:"+i)));S.rev=m.rev||0;S.ids=m.ids}
+        catch(e){S.shardError=true;S.ids=[]}
+        for(const k of Object.keys(recs))if(isMod(k))cache[k]=recs[k].v;
+      }
       const lsRaw=ls.get(MAIN),lsRev=+ls.get(REV)||0,idb=recs[MAIN];
       let main=null,rev=0,fromLs=false;
-      if(idb&&(lsRaw==null||lsRaw===idb.v)){main=idb.v;rev=Math.max(idb.rev||0,lsRev)}
+      if(S.sharded){if(recs[MAIN])cache[MAIN]=recs[MAIN].v}
+      else if(idb&&(lsRaw==null||lsRaw===idb.v)){main=idb.v;rev=Math.max(idb.rev||0,lsRev)}
       else if(!idb&&lsRaw!=null){main=lsRaw;rev=lsRev+1;fromLs=true}
       else if(idb){
         /* İkisi farklı: localStorage'a başka biri yazdıysa (eski sürüm) ya da IndexedDB yazılamamışsa localStorage yeni sayılır. */
@@ -71,26 +80,44 @@ const Store=(()=>{
         else{main=idb.v;rev=idb.rev||0}
       }
       if(main!=null)cache[MAIN]=main;
-      S.rev=rev;
+      if(!S.sharded)S.rev=rev;
       for(const k of COPY){
         if(recs[k])cache[k]=recs[k].v;
         else{const v=ls.get(k);if(v!=null){cache[k]=v;pending.set(k,{v,rev:0})}} // eski kopyalar localStorage kotasından çıkar
       }
       if(recs[CONF]&&cache[CONF]==null)cache[CONF]=recs[CONF].v;
       if(fromLs)pending.set(MAIN,{v:main,rev});
-      if(main!=null)ls.get(MAIN)===main?(ls.set(REV,String(rev)),ls.set(SUM,sum(main))):mirror(main,rev); // ayna her açılışta asıl depoyla eşitlenir (eski sürüme dönüş güvenli)
+      if(!S.sharded&&main!=null)ls.get(MAIN)===main?(ls.set(REV,String(rev)),ls.set(SUM,sum(main))):mirror(main,rev); // ayna her açılışta asıl depoyla eşitlenir (eski sürüme dönüş güvenli)
       S.mode="idb";
       flush();
       if(typeof BroadcastChannel!=="undefined"){
         chan=new BroadcastChannel("neowell_store");
         chan.onmessage=async ev=>{
           if(!ev.data||ev.data.id===tabId||!(ev.data.rev>S.rev))return;
-          try{const r=await readAll();if(r[MAIN]&&r[MAIN].rev>S.rev&&r[MAIN].v!==cache[MAIN]){cache[MAIN]=r[MAIN].v;S.rev=r[MAIN].rev;if(extCb)extCb(r[MAIN].v)}}catch(e){}
+          try{
+            if(S.sharded){
+              const m=await readAll([META]);if(!m[META])return;const mt=JSON.parse(m[META].v);if(!(mt.rev>S.rev))return;
+              const r=await readAll(mt.ids.map(i=>"m:"+i));
+              for(const i of mt.ids)if(r["m:"+i])cache["m:"+i]=r["m:"+i].v;
+              S.rev=mt.rev;S.ids=mt.ids;if(extCb)extCb(S.getShards());return;
+            }
+            const r=await readAll();if(r[MAIN]&&r[MAIN].rev>S.rev&&r[MAIN].v!==cache[MAIN]){cache[MAIN]=r[MAIN].v;S.rev=r[MAIN].rev;if(extCb)extCb(r[MAIN].v)}
+          }catch(e){}
         };
       }
       /* Taşıma doğrulandıktan sonra eski localStorage kopyaları (güvenlik/bozuk) silinir; ana anahtar ayna olarak kalır. */
       S.whenIdle().then(()=>{if(!S.failed)for(const k of COPY)if(cache[k]!=null)ls.del(k)});
     }).catch(()=>{db=null;S.mode="ls";cache={}});
+  };
+  /* Parçalı düzen: {modül: metin}. putShards tek işlemde (ya hepsi ya hiçbiri) yalnız verilen parçaları yazar ve m:meta'yı günceller. */
+  S.getShards=()=>{const o={};for(const i of S.ids||[]){const v=cache["m:"+i];if(v!=null)o[i]=v}return o};
+  S.putShards=(map,ids)=>{
+    if(S.mode!=="idb")return false;
+    S.rev++;
+    for(const [i,v] of Object.entries(map)){cache["m:"+i]=v;pending.set("m:"+i,{v,rev:S.rev})}
+    S.ids=ids;S.sharded=true;
+    const meta=JSON.stringify({v:2,rev:S.rev,ids});cache[META]=meta;pending.set(META,{v:meta,rev:S.rev});
+    flush();return !S.failed;
   };
   S.get=k=>S.mode==="idb"&&ALL.includes(k)?(cache[k]!==undefined?cache[k]:null):ls.get(k);
   S.set=(k,v)=>{

@@ -67,6 +67,25 @@ async function boot({ls={},disk=new Map(),lsLimit,idb={}}={}){
   {const b=await boot();b.St.set("koc_v1",J(1));b.St.set("koc_v1_onceki","k");await b.St.whenIdle();b.St.del("koc_v1");b.St.del("koc_v1_onceki");await b.St.whenIdle();
    ok("silme: IndexedDB ve localStorage aynası temizlenir",!b.disk.has("koc_v1")&&!b.disk.has("koc_v1_onceki")&&b.ls.getItem("koc_v1")===null&&b.ls.getItem("koc_v1_rev")===null&&b.St.get("koc_v1")===null);}
 
+  /* parçalı düzen */
+  {const b=await boot({ls:{koc_v1:J("eski")}});await b.St.whenIdle();
+   const ok1=b.St.putShards({a:"{\"x\":1}",b:"{\"y\":2}"},["a","b"]);await b.St.whenIdle();
+   ok("parçalı: tek işlemde parçalar ve m:meta yazılır, sıra numarası artar",ok1===true&&b.St.sharded&&b.disk.get("m:a").v==="{\"x\":1}"&&b.disk.get("m:b").rev===b.disk.get("m:meta").rev&&JSON.parse(b.disk.get("m:meta").v).ids.join()==="a,b");
+   ok("parçalı: eski tek metin ilk oturumda yedek kalır",b.disk.get("koc_v1").v===J("eski"));
+   const r=await boot({disk:b.disk,ls:Object.fromEntries(b.ls.m)});
+   ok("parçalı: yeniden açılışta parçalar okunur, localStorage aynasındaki eski metne bakılmaz",r.St.sharded&&r.St.getShards().a==="{\"x\":1}"&&r.St.get("koc_v1")===J("eski")&&r.St.rev===b.St.rev);
+   r.St.putShards({b:"{\"y\":3}"},["a","b"]);await r.St.whenIdle();
+   ok("parçalı: yalnız verilen parça yazılır, ötekinin sıra numarası değişmez",r.disk.get("m:b").v==="{\"y\":3}"&&r.disk.get("m:a").rev===b.disk.get("m:a").rev);}
+  {const b=await boot();b.St.putShards({a:"{}"},["a"]);b.idb.failWrites=true;b.St.putShards({a:"{\"z\":1}"},["a"]);await b.St.whenIdle();
+   ok("parçalı: yazılamayan parça bellekte kalır, başarısız bildirilir",b.St.failed&&b.St.getShards().a==="{\"z\":1}");
+   b.idb.failWrites=false;b.St.putShards({a:"{\"z\":2}"},["a"]);await b.St.whenIdle();
+   ok("parçalı: sonraki yazımda düzelir, son hal diskte",!b.St.failed&&b.disk.get("m:a").v==="{\"z\":2}");}
+  {const disk=new Map([["m:meta",{v:JSON.stringify({v:2,rev:4,ids:["a","b"]}),rev:4}],["m:a",{v:"{}",rev:4}]]); // b parçası kayıp
+   const b=await boot({disk});
+   ok("parçalı: kayıp parça varsa eldeki parçalar yine okunur (uygulama tamamlar), hata bayrağı yok",b.St.sharded&&!b.St.shardError&&b.St.getShards().a==="{}"&&b.St.getShards().b===undefined);}
+  {const disk=new Map([["m:meta",{v:"{bozuk",rev:4}]]);const b=await boot({disk,ls:{koc_v1:J("stale")}});
+   ok("parçalı: m:meta okunamazsa eski localStorage metnine DÜŞÜLMEZ, hata bayrağı kalkar",b.St.sharded&&b.St.shardError&&b.St.get("koc_v1")===null);}
+
   /* localStorage kipi (IndexedDB yok): eski davranış */
   {delete require.cache[path];globalThis.localStorage=mkLs({koc_v1:"z"});delete globalThis.indexedDB;const St=require(path);const r=St.init();
    ok("IndexedDB yoksa senkron localStorage",r===undefined&&St.mode==="ls"&&St.get("koc_v1")==="z"&&St.set("koc_v1_onceki","q")&&globalThis.localStorage.getItem("koc_v1_onceki")==="q");}

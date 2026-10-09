@@ -15,4 +15,6 @@ const Modules={
   hareket:{keys:["walk","moves"],owners:["motionui.js","walkui.js"]},
   koc:{keys:["chat","chats","cid","providers"],owners:["coach.js"]}
 };
+/* Depo parçaları: modül başına bir kayıt; ayarlar çekirdeğin parçasıdır. Hiçbir parçada olmayan alan "diger" parçasına gider (veri sessizce düşmez). */
+const Shards={ayar:["settings"],...Object.fromEntries(Object.entries(Modules).map(([id,m])=>[id,m.keys]))};
 if(typeof module!=="undefined")module.exports=Modules;

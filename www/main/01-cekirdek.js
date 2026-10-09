@@ -186,12 +186,27 @@ function buildState(r){
 /* Okunamayan kayıt silinmez: save() kilitlenir, kullanıcı ham veriyi dışa aktarır ya da bilerek boş başlar. */
 let recovery=null,loadNote="";
 const rawCopy=raw=>Store.set("koc_v1_bozuk",raw);
+/* Parçalı depo: S modül başına ayrı metne bölünür (Shards, modules.js); kayıtta yalnız değişen parça yazılır. */
+const shardOf=st=>{
+  const m={},used=new Set();
+  for(const [id,keys] of Object.entries(Shards)){m[id]=JSON.stringify(Object.fromEntries(keys.map(k=>[k,st[k]])));keys.forEach(k=>used.add(k))}
+  const rest=Object.keys(st).filter(k=>!used.has(k));
+  if(rest.length)m.diger=JSON.stringify(Object.fromEntries(rest.map(k=>[k,st[k]])));
+  return m;
+};
+const assemble=m=>Object.assign({},...Object.values(m).map(j=>JSON.parse(j)));
+let lastShard={};
 let S=load();
 function load(){
-  let r=null;recovery=null;
-  const raw=Store.get("koc_v1");
-  if(raw==null)return structuredClone(DEF);
-  try{r=JSON.parse(raw)}catch(e){}
+  let r=null,raw;recovery=null;
+  if(Store.sharded){
+    const m=Store.getShards();lastShard={...m};
+    try{if(Store.shardError)throw 0;r=assemble(m);raw=JSON.stringify(r)}catch(e){recovery={raw:Object.values(m).join("\n")||"parçalı depo okunamadı"};return structuredClone(DEF)}
+  }else{
+    raw=Store.get("koc_v1");
+    if(raw==null)return structuredClone(DEF);
+    try{r=JSON.parse(raw)}catch(e){}
+  }
   if(!r||!Array.isArray(r.entries)){recovery={raw};return structuredClone(DEF)}
   const b=buildState(r);
   if(b.drop||b.lost.length){
@@ -214,16 +229,29 @@ let lockSeen=null;
 function lockFlag(){const v=S.settings.lockOn===true?"1":"0";if(v!==lockSeen){lockSeen=v;try{localStorage.setItem("nw_lockon",v)}catch(e){}}}
 lockFlag();
 Store.onState(f=>{saveFail=f;if(f)toast("Son değişiklik kaydedilemedi. Uygulamayı kapatmadan yedek al.");else if(typeof render==="function")render()});
+/* Yalnız değişen parçalar tek işlemde yazılır. İlk yazımda (eski tek metinden ya da temiz kurulumdan) hepsi yazılır; eski tek metin bu oturumda yedek kalır, sonraki açılışta silinir. */
+function saveShards(m){
+  const ids=Object.keys(m),first=!Store.sharded,ch={};
+  for(const i of ids)if(first||m[i]!==lastShard[i])ch[i]=m[i];
+  if(!first&&!Object.keys(ch).length&&ids.length===(Store.ids||[]).length)return true;
+  if(first){const back=assemble(m),src=JSON.parse(JSON.stringify(S));if(Object.keys(src).some(k=>JSON.stringify(back[k])!==JSON.stringify(src[k])))return false}
+  const ok=Store.putShards(ch,ids);lastShard={...lastShard,...ch};return ok;
+}
 function save(soft){
   if(recovery)return false;
-  let j=JSON.stringify(S);
-  if(j.length>STORE_WARN/2&&S.chats.length){
+  const idb=Store.mode==="idb";
+  let j=null,m=null,len;
+  const meas=()=>{if(idb){m=shardOf(S);len=Object.values(m).reduce((a,x)=>a+x.length,0)}else{j=JSON.stringify(S);len=j.length}};
+  meas();
+  if(len>STORE_WARN/2&&S.chats.length){
     let n=0;while(S.chats.length&&JSON.stringify(S.chats).length>ARC_MAX){S.chats.pop();n++}
-    if(n){j=JSON.stringify(S);toast(`Depolama için en eski ${n} arşiv sohbeti silindi`)}
+    if(n){meas();toast(`Depolama için en eski ${n} arşiv sohbeti silindi`)}
   }
-  storeBytes=otherBytes+j.length*2;
+  storeBytes=otherBytes+len*2;
   lockFlag();
-  if(Store.mode==="idb"){Store.set("koc_v1",j);lastJ=j;fastWatch();return !saveFail} // yazım başarısızlığı Store.onState ile saveFail'e yansır
+  if(idb){
+    if(saveShards(m)===false&&!Store.sharded){j=JSON.stringify(S);Store.set("koc_v1",j);lastJ=j} // parça doğrulaması tutmazsa eski tek metin düzeni sürer
+    fastWatch();return !saveFail} // yazım başarısızlığı Store.onState ile saveFail'e yansır
   try{localStorage.setItem("koc_v1",j);saveFail=false}
   catch(e){
     if(soft&&copyHeld())return false;
@@ -236,6 +264,12 @@ function save(soft){
   }
   lastJ=j;fastWatch();return true;
 }
+/* Açılışta: eski tek metinden parçalı düzene geçilir (tek işlemde); geçiş önceki oturumda olduysa eski tek metin silinir (silinen veri yedek kopyada kalmasın). */
+document.addEventListener("nw:boot",()=>{
+  if(Store.mode!=="idb"||recovery)return;
+  if(!Store.sharded)save();
+  else if(Store.get("koc_v1")!=null)Store.del("koc_v1");
+});
 /* Başka sekme (yalnız web) kaydettiyse onun durumu alınır; yoksa bu sekme sonraki kayıtta onu eski veriyle ezerdi. */
 addEventListener("storage",ev=>{
   if(recovery||Store.mode==="idb"||ev.storageArea!==localStorage||ev.key!=="koc_v1"||!ev.newValue||ev.newValue===lastJ)return;
@@ -244,10 +278,10 @@ addEventListener("storage",ev=>{
   S=buildState(r).S;lastJ=ev.newValue;logOff=0;render();toast("Başka bir sekmedeki değişiklik alındı");
 });
 /* IndexedDB kipinde başka sekme (yalnız web) kaydettiyse sıra numarasıyla haberleşilir. */
-Store.onExternal(raw=>{
-  if(recovery)return;let r=null;try{r=JSON.parse(raw)}catch(e){}
+Store.onExternal(x=>{
+  if(recovery)return;let r=null;try{r=typeof x==="string"?JSON.parse(x):assemble(x)}catch(e){}
   if(!r||!Array.isArray(r.entries))return;
-  S=buildState(r).S;lastJ=raw;logOff=0;render();toast("Başka bir sekmedeki değişiklik alındı");
+  S=buildState(r).S;if(typeof x==="string")lastJ=x;else lastShard={...x};logOff=0;render();toast("Başka bir sekmedeki değişiklik alındı");
 });
 /* Oruç freni not, ilaç, ölçüm, sohbet işareti ya da onayla değişince oruç bildirimleri hangi ekrandan olursa olsun yeniden kurulur. */
 let fastBlk=null;
