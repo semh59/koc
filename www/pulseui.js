@@ -28,9 +28,12 @@ function plSheet(){
   ${list?`<div class="lbl">Kamera ölçümlerin</div>${list}`:""}${plStats()}
   ${!S.hr.length&&!S.settings.hcOn?`<p class="hint">Saatinin nabzı için Adım raporunda <b>Saat verilerini al</b>'ı aç.</p>`:""}`);
 }
-function plScreen(msg,pct){
-  openSheet(`<h3>Nabız ölçülüyor</h3><div class="tc"><div class="big num" id="plmsg" role="status">${msg}</div><div class="bar" aria-hidden="true"><i id="plbar" style="width:${pct}%"></i></div></div><button class="lnk" data-pl="cancel">Vazgeç</button>`);
+const PL_WAIT="Parmağını kameraya ve flaşa koy",PL_GO="Ölçülüyor, kıpırdama";
+/* Geri sayım role=timer (ekran okuyucu her saniye okumaz), yönerge role=status (yalnız değişince okunur). */
+function plScreen(hint,pct){
+  openSheet(`<h3>Nabız ölçülüyor</h3><div class="tc"><div class="big num" id="plmsg" role="timer" aria-live="off">${PL_SEC} sn</div><p class="hint" id="plhint" role="status">${hint}</p><div class="bar" aria-hidden="true"><i id="plbar" style="width:${pct}%"></i></div></div><button class="lnk" data-pl="cancel">Vazgeç</button>`);
 }
+const plSet=(id,txt)=>{const e=document.getElementById(id);if(e&&e.textContent!==txt)e.textContent=txt};
 function plResult(r){
   plStop();
   if(r.ok){
@@ -55,7 +58,7 @@ async function plStart(){
   const cv=document.createElement("canvas");cv.width=cv.height=16;
   const ctx=cv.getContext("2d",{willReadFrequently:true});
   pl={stream,video,cv,ctx,raf:0,samples:[],t0:0,torch};
-  plScreen("Parmağını kameraya ve flaşa koy",0);
+  plScreen(PL_WAIT,0);
   const me=pl;
   const tick=()=>{
     if(pl!==me)return;
@@ -68,13 +71,13 @@ async function plStart(){
         if(!me.t0)me.t0=t;
         me.samples.push({t,r,g});
         const el=t-me.t0,pct=Math.min(100,Math.round(el/(PL_SEC*10)));
-        const m=$("#plmsg"),b=$("#plbar");
-        if(m)m.textContent=`${Math.max(0,PL_SEC-Math.floor(el/1000))} sn`;
+        const b=$("#plbar");
+        plSet("plmsg",`${Math.max(0,PL_SEC-Math.floor(el/1000))} sn`);plSet("plhint",PL_GO);
         if(b)b.style.width=pct+"%";
         if(el>=PL_SEC*1000)return plResult(PulseLib.analyze(me.samples));
       }else if(me.t0){ // parmak kalktı: kesintisiz kayıt gerekir, baştan
         me.t0=0;me.samples=[];
-        const m=$("#plmsg"),b=$("#plbar");if(m)m.textContent="Parmağını kameraya ve flaşa koy";if(b)b.style.width="0%";
+        const b=$("#plbar");plSet("plmsg",PL_SEC+" sn");plSet("plhint",PL_WAIT);if(b)b.style.width="0%";
       }
     }catch(e){}
     me.raf=video.requestVideoFrameCallback?video.requestVideoFrameCallback(tick):requestAnimationFrame(tick);

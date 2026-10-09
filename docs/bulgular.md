@@ -67,3 +67,14 @@ Bakılanlar: 26 Java dosyasının tamamı en az bir kez satır satır okundu (bu
 | 5-2 | D | `BackupFolderPlugin.write` | Aynı günün eski otomatik yedeği, yeni dosya yeniden adlandırılmadan önce silinir. Yeniden adlandırma hata verirse o günün yedeği geçici adla kalır ve ertesi yazmada silinir. Kullanıcıya "otomatik yedek alınamadı" gösterilir. | Açık, çok düşük olasılık. |
 | 5-3 | Bilgi | derleme | Java yerelde derlenemiyor (SDK yok), derleme CI'da. Health Connect çağrıları belgelere göre yazıldı ve CI'da derlendi. | Bilgi. |
 | 5-4 | Bilgi | izinler | Hareket algılama yalnız fiziksel aktivite iznini ister; konum yalnız elle yürüyüşte, ön planda. Arka plan konumu yok. | Doğrulandı. |
+
+## Faz 6-9: Koç, arayüz, dayanıklılık, test kalitesi
+
+| No | Ciddiyet | Yer | Bulgu | Durum |
+|---|---|---|---|---|
+| 6-1 | Bilgi | Koç | İstem, sağlayıcı zinciri, eylem kartı onayı, maliyet gözden geçirildi: hata yok. | Doğrulandı. |
+| 7-1 | O | `www/pulseui.js` | Ölçüm geri sayımı ekran okuyucuda her saniye okunuyordu. | Düzeltildi: `role=timer`, yönerge yalnız değişince. |
+| 7-2 | Bilgi | yeni ekranlar | Yeni e2e dosyası (`e2e/yeni-ekranlar.spec.js`): nabız, saat kartı, uyku; 28 test geçiyor. ASCII-Türkçe (aksansız) metin taraması temiz. | Doğrulandı. |
+| 8-1 | Bilgi | performans | Büyük veriyle ölçüm: sorun yok. | Doğrulandı. |
+| 9-1 | Bilgi | testler | Mutasyon taramasıyla test boşlukları arandı; sınır değer testleri eklendi (`scripts/sinir.test.js`). `pulselib` eşikleri (CV 0,15, özilinti gücü 0,3, tutulan atım oranı) için ayrı ret testi hâlâ yok. | Açık, düşük. |
+| 9-2 | O | `www/pulselib.js` | Sentetik tarama (600 sinyal, 45-109 atım/dk, gürültü genliğe yakın veya büyük): kabul edilenlerin ~%8'i 5-9 atım/dk sapıyor. Gürültüsüz/hafif gürültüde sapma yok. Gerçek parmak verisi ölçülmeden eşik sıkılaştırılmadı. | Açık: telefonda ölçümü bilinen bir nabızla (saat) karşılaştır; sapma >5 çıkarsa eşik sıkılaşır. |
