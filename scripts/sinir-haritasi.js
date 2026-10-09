@@ -1,0 +1,22 @@
+/* Aşama 0: hangi dosya hangi veri alanına (S.*) ve hangi dosyanın adlarına dokunuyor. docs/sinir-haritasi.md üretir. */
+const fs=require("fs"),path=require("path");
+const www=path.join(__dirname,"../www");
+const files=[...fs.readdirSync(www).filter(f=>f.endsWith(".js")).map(f=>f),...fs.readdirSync(path.join(www,"main")).map(f=>"main/"+f)];
+const strip=s=>s.replace(/\/\*[\s\S]*?\*\//g,"").replace(/(^|[^:\\])\/\/[^\n]*/g,"$1");
+const src=Object.fromEntries(files.map(f=>[f,strip(fs.readFileSync(path.join(www,f),"utf8"))]));
+const defs=Object.create(null);
+for(const [f,s] of Object.entries(src))for(const m of s.matchAll(/^(?:async\s+)?(?:function\s*\*?\s*|const\s+|let\s+|var\s+)([A-Za-z_$][\w$]*)/gm))(defs[m[1]]??=new Set()).add(f);
+const fields=Object.create(null);
+for(const [f,s] of Object.entries(src))for(const m of s.matchAll(/\bS\.([a-zA-Z_]\w*)/g))(fields[m[1]]??={})[f]=(fields[m[1]][f]||0)+1;
+const own=Object.fromEntries(files.map(f=>[f,new Set()]));
+for(const [n,fs_] of Object.entries(defs))for(const f of fs_)own[f].add(n);
+let out="# Sınır haritası (otomatik: node scripts/sinir-haritasi.js)\n\n## Veri alanı -> dokunan dosyalar\n| S alanı | dosya sayısı | dosyalar |\n|---|---|---|\n";
+for(const [k,v] of Object.entries(fields).sort((a,b)=>Object.keys(b[1]).length-Object.keys(a[1]).length))out+=`| ${k} | ${Object.keys(v).length} | ${Object.keys(v).join(", ")} |\n`;
+out+="\n## Dosya -> başka dosyalardan kullandığı adlar (sayı)\n| dosya | dışa bağımlı ad | tanımladığı ad |\n|---|---|---|\n";
+for(const f of files){
+  const used=new Set(),words=new Set(src[f].match(/[A-Za-z_$][\w$]*/g));
+  for(const w of words)if(defs[w]&&!defs[w].has(f))used.add(w);
+  out+=`| ${f} | ${used.size} | ${own[f].size} |\n`;
+}
+fs.writeFileSync(path.join(__dirname,"../docs/sinir-haritasi.md"),out);
+console.log(out.split("\n").slice(0,40).join("\n"));

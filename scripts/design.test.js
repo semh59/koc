@@ -2,7 +2,7 @@
 const fs=require("fs"),path=require("path");
 const www=path.join(__dirname,"..","www");
 const html=require("./html").full();
-const css=html.match(/<style>([\s\S]*?)<\/style>/)[1];
+const css=fs.readFileSync(path.join(www,"app.css"),"utf8");
 const src=Object.fromEntries(["index.html",...fs.readdirSync(www).filter(f=>f.endsWith(".js"))].map(f=>[f,fs.readFileSync(path.join(www,f),"utf8")]));src["index.html"]=html;
 const all=Object.values(src).join("\n");
 let bad=0;const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
