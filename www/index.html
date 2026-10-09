@@ -444,6 +444,7 @@ button:is(.row,.prow,.rrow){width:100%}
 <script src="lablib.js"></script>
 <script src="labellib.js"></script>
 <script src="vitalslib.js"></script>
+<script src="pulselib.js"></script>
 <script src="medlib.js"></script>
 <script src="cyclelib.js"></script>
 <script src="motionlib.js"></script>
@@ -473,6 +474,7 @@ button:is(.row,.prow,.rrow){width:100%}
 <script src="measureui.js"></script>
 <script src="walkui.js"></script>
 <script src="hcui.js"></script>
+<script src="pulseui.js"></script>
 <script src="backupui.js"></script>
 <script src="csvlib.js"></script>
 <script src="importlib.js"></script>
@@ -526,7 +528,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- veri ---------- */
 const DEF={
-  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,piiPrev:false,chatRisk:"",copyAt:"",lastPlateau:"",goalSugAt:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:false,lockOn:false,hcOn:false,cycleOn:false,cycleRem:false,fastOn:false,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
+  settings:{goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,piiPrev:false,chatRisk:"",copyAt:"",lastPlateau:"",goalSugAt:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:false,lockOn:false,hcOn:false,hcFrom:"",cycleOn:false,cycleRem:false,fastOn:false,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -540,7 +542,7 @@ const DEF={
     {id:11,t:"20:00",on:false,name:"Oruç başlangıcı",title:"⏳ Oruç başlangıcı",body:"Oruç penceren başlıyor, istersen Bugün'den başlat."},
     {id:12,t:"20:30",on:true,dow:0,name:"Haftalık özet (Pazar)",title:"📊 Haftalık özet",body:"Haftanı birlikte inceleyelim, bakmak için dokun."}
   ]},
-  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,dbStep:0,plates:GPLATE_DEF.slice(),exCfg:{},providers:defProviders(),chat:[],chats:[],cid:1,myFoods:[],recipes:[],favFoods:[],mealTpl:[],fast:{plan:16,t0:null,log:[]},sleep:[],mood:[],labs:[],vitals:[],meds:[],medLog:[],moves:[],measures:[],walk:null,cycle:[]
+  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,dbStep:0,plates:GPLATE_DEF.slice(),exCfg:{},providers:defProviders(),chat:[],chats:[],cid:1,myFoods:[],recipes:[],favFoods:[],mealTpl:[],fast:{plan:16,t0:null,log:[]},sleep:[],mood:[],labs:[],vitals:[],pulse:[],hr:[],meds:[],medLog:[],moves:[],measures:[],walk:null,cycle:[]
 };
 const VR={bpSysHi:[80,300,true],bpDiaHi:[40,200,true],bpSysLo:[50,300,true],bpDiaLo:[30,200,true],gFastLo:[20,600,true],gFastHi:[20,600,true],gPostLo:[20,600,true],gPostHi:[20,600,true]};
 const RANGES={...VR,goalKg:[20,400,false],kcal:[800,8000,true],waterMl:[500,10000,true],glass:[50,1500,true],sportWeek:[10,3000,true],stepGoal:[1000,100000,true],heightCm:[100,250,true],age:[10,100,true]};
@@ -590,6 +592,7 @@ function cleanSettings(raw){
   if(o.moveKcalOn===true)d.moveKcalOn=true;
   if(o.lockOn===true)d.lockOn=true;
   if(o.hcOn===true)d.hcOn=true;
+  if(dayOk(o.hcFrom))d.hcFrom=o.hcFrom;
   if(o.medShowName===true)d.medShowName=true; // varsayılan gizli: ilaç adı kilit ekranında yalnız kullanıcı açarsa görünür
   if(o.awakeOn===false)d.awakeOn=false;
   if(o.gdVoice===false)d.gdVoice=false;
@@ -611,6 +614,7 @@ let LOST=[];
 /* Alan alan yalıtılır: biri bozuksa yalnız o alan varsayılana döner, kalan veri korunur. */
 function cleanHealthState(r){
   r=r||{};const o={},f=(k,fn)=>{try{o[k]=fn()}catch(e){LOST.push(k)}};
+  f("pulse",()=>PulseLib.clean(r.pulse));f("hr",()=>PulseLib.cleanHr(r.hr));
   f("meds",()=>MedLib.cleanMeds(r.meds));
   if(o.meds)f("medLog",()=>MedLib.cleanLog(r.medLog,o.meds));
   f("moves",()=>MotionLib.clean(r.moves));f("measures",()=>Algo.cleanMeasures(r.measures));f("walk",()=>Algo.cleanWalk(r.walk,Date.now()));
@@ -1007,7 +1011,7 @@ const topTab=t=>{for(let p;(p=UP(t));)t=p;return t};
 const navTab=()=>/^(ilac|adim|ayar)/.test(tab)?"daha":topTab(tab);
 /* Daha fazla: gruplu liste. Satırın dördüncü alanı ayar adıdır; kapalı modül listede görünmez, Modüller satırından açılır. */
 const DAHA=[["Sağlık takibi",[['data-tab="ilac"',"İlaçlar","ilac","medOn","İlaç saatleri ve bugünkü dozlar"],['data-tab="tansiyon"',"Tansiyon","heart","bpOn","Ev ölçümleri ve ortalama"],['data-tab="seker"',"Şeker","su","bsOn","Ölçümler ve ortalama"],['data-tab="tahlil"',"Tahlil takibi","file",0,"Sonuçlar ve değişim"],['data-tab="dongu"',"Döngü","moon","cycleOn","Dönem günleri ve tahmin"],['data-hb="more"',"Uyku ve ruh hali","smile",0,"Bugünkü uykun ve nasıl hissettiğin"]]],
-  ["Beslenme ve hareket",[['data-tab="adim"',"Adım raporu","adim","stepsOn","Günlük adım ve yürüyüş"],['data-tab="egz"',"Egzersiz kütüphanesi","salon",0,"Hareketler, kaslar, ekipman"],['data-ckg="open"',"Kardiyo","spor",0,"Koşu, yürüyüş, bisiklet ve yüzme ekle"],['data-ms="open"',"Vücut ölçüleri","kilo",0,"Bel, kalça, göğüs, kol ve uyluk"],['data-ph="add"',"İlerleme fotoğrafı","camera","ph","Yalnız bu telefonda saklanır"]]],
+  ["Beslenme ve hareket",[['data-tab="adim"',"Adım raporu","adim","stepsOn","Günlük adım ve yürüyüş"],['data-pl="open"',"Nabız","heart",0,"Kamerayla ölç, saatten günlük nabız"],['data-tab="egz"',"Egzersiz kütüphanesi","salon",0,"Hareketler, kaslar, ekipman"],['data-ckg="open"',"Kardiyo","spor",0,"Koşu, yürüyüş, bisiklet ve yüzme ekle"],['data-ms="open"',"Vücut ölçüleri","kilo",0,"Bel, kalça, göğüs, kol ve uyluk"],['data-ph="add"',"İlerleme fotoğrafı","camera","ph","Yalnız bu telefonda saklanır"]]],
   ["Veri",[['data-tab="ayar-veri"',"Veri ve yedek","data",0,"Yedek, tabloya aktarma, silme"],['data-pv="open"',"Gizlilik ve veri","lock",0,"Veriler nerede durur, Koç'a ne gider"]]],
   ["Uygulama",[['data-tab="ayar"',"Ayarlar","ayar",0,"Profil, hatırlatmalar, Koç, görünüm"],['data-tab="ayar-modul"',"Modüller","grid",0,"Takipleri aç ya da kapat"],['data-tab="ayar-hak"',"Hakkında","info",0,"Sürüm, kaynaklar ve tıbbi uyarı"]]]];
 function viewDaha(){
@@ -1126,7 +1130,7 @@ function openSheet(html){
   const f=s.querySelector("[autofocus]");if(f)setTimeout(()=>{const a=document.activeElement;if(f.isConnected&&!(a&&a!==f&&s.contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)))f.focus()},220);else(h||s).focus({preventScroll:true});
 }
 function closeSheet(){
-  sheetDone(false);const s=$("#sheet"),was=s.classList.contains("on"),f=sheetFrom;
+  plStop();sheetDone(false);const s=$("#sheet"),was=s.classList.contains("on"),f=sheetFrom;
   s.classList.remove("on");$("#scrim").classList.remove("on");sheetFrom=null;trap();
   if(was&&f&&f.isConnected)f.focus({preventScroll:true});
 }

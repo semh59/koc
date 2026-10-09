@@ -13,7 +13,7 @@ const S={entries:[{id:2,day:"2026-10-02",time:"09:00",type:"kilo",v:80.5,text:""
   meds:[{id:1,n:"Vitamin D",d:"1000 IU",t:["09:00"]}],medLog:[{m:1,day:"2026-10-01",slot:"09:00",st:"t",at:"09:10"},{m:1,day:"2026-10-02",slot:"09:00",st:"s"}]};
 const F=C.files(S,{exName:id=>({squat:"Squat",plank:"Plank"}[id]),vctx:r=>r.k==="t"?"Sabah":"Açlık"});
 const g=k=>F.find(f=>f.key===k).build().split("\r\n").slice(0,-1);
-ok("8 ayrı dosya: kayıtlar, antrenman, sağlık, tarifler, uyku, ruh hali, oruç, ilaç; satır sayıları",F.map(f=>f.key+f.n).join()==="kayitlar4,antrenman3,saglik2,tarifler0,uyku1,ruh1,oruc1,ilac2",F.map(f=>f.key+f.n));
+ok("9 ayrı dosya: kayıtlar, antrenman, sağlık, tarifler, uyku, ruh hali, oruç, ilaç, nabız; satır sayıları",F.map(f=>f.key+f.n).join()==="kayitlar4,antrenman3,saglik2,tarifler0,uyku1,ruh1,oruc1,ilac2,nabiz0",F.map(f=>f.key+f.n));
 ok("kayıtlar: tarihe-saate göre sıralı, birim, makrolar, adım türü, not değersiz, metin enjeksiyonu engelli",g("kayitlar").slice(1).join("|")==="2026-10-01;20:00;yemek;300;kcal;'=cmd|' /C calc'!A0;12,5;30;5;;;|2026-10-02;08:00;not;;;\"uyku;kötü\";;;;;;|2026-10-02;09:00;kilo;80,5;kg;;;;;;;|2026-10-02;10:00;adım;4000;adım;;;;;;;",g("kayitlar"));
 ok("antrenman: yalnız tamamlanan setler, set sıra numarası, ısınma ve rpe, süreli sette süre",g("antrenman").slice(1).join("|")==="2026-10-01;A;Squat;1;20;10;;;evet;;|2026-10-01;A;Squat;2;60;8;;8,5;;;|2026-10-01;A;Plank;1;;;45;;;;",g("antrenman"));
 ok("sağlık: tansiyon ve şeker, bağlam, '-' ile başlayan not korunur",g("saglik").slice(1).join("|")==="2026-10-01;07:00;şeker;;;;95,5;Açlık;'-düşük|2026-10-01;08:00;tansiyon;120;80;70;;Sabah;",g("saglik"));

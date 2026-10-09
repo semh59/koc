@@ -27,7 +27,9 @@ const CsvLib=(()=>{
       ["ruh","Ruh hali",["tarih","ruh_hali_1_5","not"],S.mood.map(r=>[r.day,r.v,r.t])],
       ["oruc","Oruç",["başlangıç","bitiş","süre_saat"],S.fast.log.map(r=>[iso(r.t0),iso(r.t1),(r.t1-r.t0)/36e5])],
       ["ilac","İlaç alımı",["tarih","saat","ilaç","doz","durum","alım_saati"],
-        by(S.medLog,day,x=>x.slot).map(r=>{const m=S.meds.find(x=>x.id===r.m)||{};return [r.day,r.slot,m.n,m.d,r.st==="t"?"alındı":"atlandı",r.at]})]
+        by(S.medLog,day,x=>x.slot).map(r=>{const m=S.meds.find(x=>x.id===r.m)||{};return [r.day,r.slot,m.n,m.d,r.st==="t"?"alındı":"atlandı",r.at]})],
+      ["nabiz","Nabız (kamera ölçümü ve saatten günlük)",["tarih","saat","kaynak","nabız","günün_en_düşüğü"],
+        [...(S.pulse||[]).map(r=>[r.day,r.time,"kamera",r.bpm,""]),...(S.hr||[]).map(r=>[r.day,"","saat (ortalama)",r.a,r.m])].sort((a,b)=>a[0]<b[0]?-1:a[0]>b[0]?1:String(a[1])<String(b[1])?-1:1)]
     ].map(([key,label,head,rows])=>({key,label,n:rows.length,build:()=>csv(head,rows)}));
   }
   return {cell,csv,files};

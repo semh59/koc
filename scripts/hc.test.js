@@ -10,7 +10,8 @@ function open(seed,fake){
     const dom=new JSDOM(html,{runScripts:"dangerously",url:"https://localhost/",beforeParse(w){
       Object.assign(w,{structuredClone,TextEncoder,TextDecoder});w.scrollTo=()=>{};
       if(fake)w.Capacitor={isNativePlatform:()=>true,Plugins:{Health:{
-        status:async()=>({available:fake.available!==false,granted:fake.granted}),
+        status:async()=>({available:fake.available!==false,granted:fake.granted,sleep:fake.granted&&!fake.noSleep,hr:fake.granted&&!fake.noHr}),
+        daily:async o=>{calls.push("daily:"+o.days.length);return fake.daily?fake.daily(o.days):{sleep:{},hrAvg:{},hrMin:{}}},
         request:async()=>{calls.push("request");fake.granted=fake.grantOnRequest===true;return {}},
         manage:async()=>{calls.push("manage")},
         steps:async o=>{calls.push("steps:"+o.days.length);return {days:fake.days(o.days)}}}}};
@@ -89,8 +90,42 @@ function open(seed,fake){
   ev(`hcAt=0`);await ev(`hcSync()`);
   ok("izin geri gelince okuma sürer",ev(`hcNow()`)===4321);
 
+  // uyku ve nabız
+  const dl=ds=>({sleep:{[ds[0]]:431,[ds[1]]:30,[ds[2]]:455},hrAvg:{[ds[0]]:68,[ds[1]]:70},hrMin:{[ds[0]]:51}});
+  o=await open({entries:[],settings:{hcOn:true},sleep:[{day:new Date(Date.now()-2*864e5).toLocaleDateString("sv"),min:300,q:4}]},{granted:true,days,daily:dl});w=o.w;ev=s=>w.eval(s);
+  await ev(`hcSync(true)`);
+  const d0=ev(`keyOff(0)`),d2=ev(`keyOff(-2)`);
+  ok("saatten uyku yazılır (src hc), 60 dakikadan kısası atlanır",ev(`S.sleep.find(x=>x.day==="${d0}").min`)===431&&ev(`S.sleep.find(x=>x.day==="${d0}").src`)==="hc"&&!ev(`S.sleep.some(x=>x.day===keyOff(-1))`),ev(`JSON.stringify(S.sleep)`));
+  ok("elle girilen uyku kaydı saatinkini ezmez",ev(`S.sleep.find(x=>x.day==="${d2}").min`)===300&&ev(`S.sleep.find(x=>x.day==="${d2}").src`)===undefined);
+  ok("günlük nabız: ortalama ve en düşük kaydedilir, en düşük yoksa boş",ev(`S.hr.find(x=>x.day==="${d0}").a`)===68&&ev(`S.hr.find(x=>x.day==="${d0}").m`)===51&&ev(`S.hr.find(x=>x.day===keyOff(-1)).m`)===undefined);
+  ev(`S.sleep=[];S.hr=[];S.settings.hcFrom=keyOff(1);hcAt=0`);await ev(`hcSync(true)`);
+  ok("silinen veri (hcFrom) saatten geri yazılmaz",ev(`S.sleep.length`)===0&&ev(`S.hr.length`)===0);
+  o=await open({entries:[],settings:{hcOn:true}},{granted:true,noSleep:true,noHr:true,days,daily:dl});w=o.w;ev=s=>w.eval(s);
+  await ev(`hcSync(true)`);
+  ok("uyku ve nabız izni yoksa günlük veri istenmez, adım yine okunur",!o.calls.some(c=>c.startsWith("daily"))&&o.calls.includes("steps:8"),o.calls);
+  ev(`S.sleep=HabitLib.cleanSleep([{day:keyOff(-3),min:400,src:"hc"}]);hcApplyDaily({sleep:{[keyOff(-3)]:410}},[keyOff(-3)])`);
+  ok("saatin uykusu değişirse güncellenir",ev(`S.sleep[0].min`)===410);
+  // kamera ölçümü kaydı ve silme
+  ev(`plRes={bpm:71};plSave()`);
+  ok("kamera ölçümü kaydedilir (gün, saat, atım)",ev(`S.pulse.length`)===1&&ev(`S.pulse[0].bpm`)===71&&/^\d\d:\d\d$/.test(ev(`S.pulse[0].time`)),ev(`JSON.stringify(S.pulse)`));
+  Object.defineProperty(w.navigator,"mediaDevices",{value:{getUserMedia:async()=>{throw new Error("izin yok")}},configurable:true});
+  ev(`plSheet()`);
+  ok("Nabız ekranı kamera ölçümlerini ve saatten gelen günlük nabzı listeler",/71/.test(w.document.querySelector("#sheet").textContent)&&/Kamerayla ölç/.test(w.document.querySelector("#sheet").textContent));
+  await ev(`plStart()`);
+  ok("kamera izni verilmezse ölçüm başlamaz, Nabız ekranına dönülür ve kamera kapalı kalır",ev(`pl`)===null&&/Kamerayla ölç/.test(w.document.querySelector("#sheet").textContent));
+  w.document.querySelector('[data-pl^="del:"]').click();
+  ok("kamera ölçümü silinir",ev(`S.pulse.length`)===0);
+  const bs=ev(`JSON.stringify(buildState({entries:[],settings:{},pulse:[{day:"2026-10-01",time:"07:30",bpm:64}],hr:[{day:"2026-10-01",a:62,m:48}]}).S)`);
+  const bo=JSON.parse(bs);
+  ok("yedekten dönünce nabız ve saat nabzı korunur",bo.pulse.length===1&&bo.pulse[0].bpm===64&&bo.hr[0].a===62&&bo.hr[0].m===48,[bo.pulse,bo.hr]);
+  ev(`S.pulse=PulseLib.clean([{day:"2026-10-01",time:"07:30",bpm:64}]);S.hr=PulseLib.cleanHr([{day:"2026-10-01",a:62}])`);
+  const pc=ev(`PV_CATS.find(c=>/Nabız/.test(c[0]))`);
+  ok("gizlilik: Nabız kategorisi sayılır ve silince saatten geri gelmez",pc&&ev(`PV_CATS.find(c=>/Nabız/.test(c[0]))[1]()`)===2&&(ev(`PV_CATS.find(c=>/Nabız/.test(c[0]))[2]()`),ev(`S.pulse.length+S.hr.length`)===0&&ev(`S.settings.hcFrom`)===ev(`keyOff(1)`)));
+  const csv=ev(`JSON.stringify(CsvLib.files(Object.assign({},S,{pulse:[{day:"2026-10-01",time:"07:30",bpm:64}],hr:[{day:"2026-10-01",a:62,m:48}]}),{exName:()=>"",vctx:()=>""}).find(f=>f.key==="nabiz").n)`);
+  ok("tabloya aktarma: nabız dosyası kamera ve saat satırlarını içerir",csv==="2");
+
   const hp=fs.readFileSync(path.join(__dirname,"../assets/android/HealthPlugin.java"),"utf8"),pa=fs.readFileSync(path.join(__dirname,"patch-android.js"),"utf8");
-  ok("Android: yalnız okuma izni (yazma yok), izin kullanım ekranı bildirilir, eklenti kopyalanır ve kaydedilir",/android\.permission\.health\.READ_STEPS/.test(hp)&&!/WRITE_/.test(hp+pa)&&/"health\.READ_STEPS"/.test(pa)&&/HEALTH_PERMISSIONS/.test(pa)&&/"HealthPlugin"\]\)fs\.copyFileSync/.test(pa)&&/registerPlugin\(HealthPlugin\.class\)/.test(pa));
+  ok("Android: yalnız okuma izni (yazma yok), izin kullanım ekranı bildirilir, eklenti kopyalanır ve kaydedilir",/android\.permission\.health\.READ_STEPS/.test(hp)&&!/WRITE_/.test(hp+pa)&&/"health\.READ_STEPS", "health\.READ_SLEEP", "health\.READ_HEART_RATE"/.test(pa)&&/READ_SLEEP/.test(hp)&&/READ_HEART_RATE/.test(hp)&&/BPM_AVG/.test(hp)&&/HEALTH_PERMISSIONS/.test(pa)&&/"HealthPlugin"\]\)fs\.copyFileSync/.test(pa)&&/registerPlugin\(HealthPlugin\.class\)/.test(pa));
   ok("Android: sürüm 34 altında yönetici alınmaz, günler sınırlı ve geçersiz gün reddedilir",/SDK_INT >= 34/.test(hp)&&/in\.length\(\) > 40/.test(hp)&&/geçersiz gün/.test(hp));
   console.log(bad?"Başarısız: "+bad:"Tüm saat adımı testleri geçti");process.exit(bad?1:0);
 })();

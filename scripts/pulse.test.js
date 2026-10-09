@@ -1,0 +1,44 @@
+/* Kamerayla nabız: sentetik ışık dalgasından atım sayısı, belirsiz ölçümde sayı vermeme, kayıt temizliği. */
+const P=require("../www/pulselib.js");let bad=0;
+const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
+function rng(seed){let s=seed>>>0||1;return ()=>{s^=s<<13;s>>>=0;s^=s>>>17;s^=s<<5;s>>>=0;return s/4294967296}}
+const gauss=r=>Math.sqrt(-2*Math.log(r()||1e-9))*Math.cos(2*Math.PI*r());
+/* Gerçekçi dalga: atım aralığı biraz oynar (HRV), ikinci harmonik, ışık kayması, kare zamanı sapması, gürültü. */
+function sig({bpm=72,sec=30,amp=1.5,noise=0.3,drift=true,seed=1,r=210,g=60,fps=30,hrv=0.04}){
+  const rn=rng(seed),out=[];let phase=0,t=0;
+  while(t<sec*1000){
+    const f=bpm/60*(1+hrv*Math.sin(t/1000*0.6283)+hrv*0.5*gauss(rn)*0.2);
+    phase+=f/fps;
+    const w=-Math.cos(2*Math.PI*phase)-0.3*Math.cos(4*Math.PI*phase+0.6);
+    out.push({t:Math.round(t),r:r+amp*w+noise*gauss(rn)+(drift?3*Math.sin(t/1000*0.15):0),g});
+    t+=1000/fps+(rn()-0.5)*8;
+  }
+  return out;
+}
+for(const b of [48,60,72,90,110,140,170]){
+  const a=P.analyze(sig({bpm:b,seed:b}));
+  ok(`${b} atım/dk: sonuç ±2 içinde`,a.ok&&Math.abs(a.bpm-b)<=2,a);
+}
+ok("zayıf sinyal (genlik 0,6, gürültü 0,3) yine doğru okunur",(a=>a.ok&&Math.abs(a.bpm-80)<=2)(P.analyze(sig({bpm:80,amp:0.6,seed:5}))));
+ok("20 fps kamerada da okunur",(a=>a.ok&&Math.abs(a.bpm-66)<=2)(P.analyze(sig({bpm:66,fps:20,seed:6}))));
+let wrong=0,total=0;
+for(let s=1;s<=40;s++){const a=P.analyze(sig({bpm:50+(s*7)%120,seed:s*13,noise:0.35}));total++;if(a.ok&&Math.abs(a.bpm-(50+(s*7)%120))>3)wrong++}
+ok("40 farklı ölçümde yanlış sayı verilmez (okunursa ±3 içinde)",wrong===0,wrong+"/"+total);
+
+ok("parmak yoksa (kırmızı düşük) ölçüm reddedilir",P.analyze(sig({r:40,g:38})).reason==="finger");
+ok("dalga yoksa (sabit parlaklık) reddedilir",!P.analyze(sig({amp:0,noise:0,drift:false})).ok);
+ok("çok kısa kayıt reddedilir",P.analyze(sig({sec:8})).reason==="short");
+let acc=0;
+for(let s=1;s<=30;s++){const rn=rng(s*7),o=[];let t=0,v=210;while(t<30000){v+=gauss(rn)*0.6;o.push({t,r:v,g:60});t+=33}if(P.analyze(o).ok)acc++}
+ok("rastgele gürültü ve yürüyen taban sayı üretmez (30 denemede 0)",acc===0,acc);
+const two=sig({bpm:70,seed:3}).map((s,i,a)=>({...s,r:s.r+1.5*Math.sin(2*Math.PI*(a[i].t/1000)*(120/60))}));
+ok("iki farklı ritim üst üste ise (hareket, çift kaynak) sayı vermez ya da doğruyu verir",(a=>!a.ok||Math.abs(a.bpm-70)<=3||Math.abs(a.bpm-120)<=3)(P.analyze(two)));
+const half=sig({bpm:72,seed:2}).map((s,i,a)=>i>a.length/2&&i%7<3?{...s,r:s.r+40}:s);
+ok("yarı yolda parmak kayarsa yanlış sayı verilmez",(a=>!a.ok||Math.abs(a.bpm-72)<=3)(P.analyze(half)));
+
+const c=P.clean([{day:"2026-10-09",time:"08:10",bpm:72.4},{day:"2026-10-09",time:"08:10",bpm:72},{day:"2026-10-08",time:"23:59",bpm:60},{day:"2026-13-01",time:"08:10",bpm:70},{day:"2026-10-09",time:"25:00",bpm:70},{day:"2026-10-09",time:"09:00",bpm:300},{day:"2026-10-09",time:"09:01",bpm:30},null,{day:"2026-10-09",time:"09:02",bpm:"x"}]);
+ok("kayıt temizliği: bozuk ve aralık dışı atılır, yinelenen birleşir, sıralı ve kimlikli",c.length===2&&c[0].day==="2026-10-08"&&c[1].bpm===72&&c[0].id===1&&c[1].id===2,c);
+ok("kayıt listesi 500 ile sınırlı",P.clean(Array.from({length:700},(_,i)=>({day:"2026-01-01",time:`${String(i%24).padStart(2,"0")}:${String(Math.floor(i/24)%60).padStart(2,"0")}`,bpm:60+i%100}))).length<=500);
+const h=P.cleanHr([{day:"2026-10-08",a:64.6,m:50},{day:"2026-10-08",a:66,m:51},{day:"2026-10-09",a:400},{day:"2026-10-07",a:70,m:5},{day:"x",a:60}]);
+ok("saat nabzı: günde bir kayıt (sonuncu), bozuk atılır, en düşük geçersizse alınmaz",h.length===2&&h[0].day==="2026-10-07"&&h[0].m===undefined&&h[1].a===66&&h[1].m===51,h);
+console.log(bad?"Başarısız: "+bad:"Tüm nabız testleri geçti");process.exit(bad?1:0);

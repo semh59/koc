@@ -30,5 +30,11 @@ Uzun liste `docs/yapilacaklar.md` içinde kalır. Bu liste yalnız en riskli ve 
 15. Su bildirimindeki "+250 ml" ekran açmadan kayıt yazmalı. Widget'taki "+su" aynı şekilde.
 16. Pazar 20:30 haftalık özet bildirimi geliyor mu (bir hafta içinde bakılır).
 
+## F. Saat ve nabız (Samsung telefon, Galaxy Watch)
+17. Adım raporu > **Saat verilerini al**: aç, Health Connect izin penceresinde adım, uyku ve nabzı ver. Pencere açılmazsa "Health Connect ayarlarını aç" ile ver.
+18. Kartta "Health Connect bugün: N adım" görünmeli. Bugün ekranındaki adım, telefon ile saatin büyüğü olmalı (toplamı değil).
+19. Bugün'deki Uyku karosunda dünkü gecenin süresi çıkmalı (Samsung Health'teki yatakta geçen süreye yakın). Elle girdiğin uyku varsa o kalmalı.
+20. Daha fazla > **Nabız**: "Kamerayla ölç" de, parmağı arka kamera ve flaşın üstüne koy. Flaş yanmalı, 30 sn sonra atım sayısı çıkmalı; saatteki ya da Samsung Health'teki nabızla yakın olmalı (birkaç atım sapma normal). Parmağı kaldırınca sayaç sıfırlanmalı, ölçüm net değilse sayı vermemeli.
+21. Ölçümü kaydet, listede görünmeli; ✕ ile silinmeli.
 ## Görüntü gönderme
 Sorun görünce: ekran görüntüsü + hangi madde numarası + (ilaç alarmıysa) Alarm kayıtları ekranı.

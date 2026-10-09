@@ -9,12 +9,13 @@ const PV_CATS=[
   ["İlaç",()=>S.meds.length+S.medLog.length,()=>{S.meds=[];S.medLog=[]}],
   ["Sağlık ölçümleri (tansiyon, şeker)",()=>S.vitals.length,()=>{S.vitals=[]}],
   ["Tahlil",()=>S.labs.length,()=>{S.labs=[]}],
-  ["Uyku, ruh hali ve oruç",()=>S.sleep.length+S.mood.length+S.fast.log.length+(S.fast.t0?1:0),()=>{S.sleep=[];S.mood=[];S.fast.log=[];S.fast.t0=null}],
+  ["Uyku, ruh hali ve oruç",()=>S.sleep.length+S.mood.length+S.fast.log.length+(S.fast.t0?1:0),()=>{S.sleep=[];S.mood=[];S.fast.log=[];S.fast.t0=null;S.settings.hcFrom=keyOff(1)}],
   ["Koç sohbeti",()=>S.chat.length+S.chats.length,cClearChat],
   ["Notlar",...pvE("not")],
   ["Vücut ölçüleri (bel, kalça…)",()=>S.measures.length,()=>{S.measures=[]}],
   ["İlerleme fotoğrafları",()=>phList.length,()=>{phClear()}],
-  ["Tariflerim",()=>S.recipes.length,()=>{S.recipes=[]}]
+  ["Tariflerim",()=>S.recipes.length,()=>{S.recipes=[]}],
+  ["Nabız (kamera, saat)",()=>S.pulse.length+S.hr.length,()=>{S.pulse=[];S.hr=[];S.settings.hcFrom=keyOff(1)}]
 ];
 function pvDelete(i){
   const [name,n,del]=PV_CATS[i],lb=S.settings.lastBackup;
