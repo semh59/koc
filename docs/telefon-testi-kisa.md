@@ -44,5 +44,7 @@ Uzun liste `docs/yapilacaklar.md` içinde kalır. Bu liste yalnız en riskli ve 
 26. Dünkü bitmemiş antrenman Bugün'de "bitirilmedi" demeli; **Bitir ve kaydet** süre sormalı, **Sil** silmeli.
 27. Güncellemeden sonra ilk açılış: tüm eski kayıtların (yemek, su, kilo, antrenman, ilaç) yerinde olduğunu kontrol et. Güncellemeden önce Ayarlar > Veri ve yedek'ten yedek al. Uygulama kilidi açıksa açılışta önce kilit ekranı gelmeli (içerik görünmeden).
 28. Yeni kayıt ekle, uygulamayı son uygulamalardan kapat, yeniden aç: kayıt duruyor mu.
+29. Bugün'deki Kalori, Su ve Spor halkaları yalnız bugünü göstermeli (Spor: bugünkü dakika / günlük pay 21 dk). Halkaya dokununca Gün ekranı açılmalı: son 14 gün grafiği, bugünün kayıtları, "Tüm geçmiş ve takvim" bağlantısı.
+30. Daha fazla > **Uygulama kilidi** satırı: açılınca Veri ve yedek ekranının en üstünde kilit anahtarı çıkmalı; açınca uygulama açılışta telefonun ekran kilidini sormalı.
 ## Görüntü gönderme
 Sorun görünce: ekran görüntüsü + hangi madde numarası + (ilaç alarmıysa) Alarm kayıtları ekranı.

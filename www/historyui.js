@@ -1,7 +1,7 @@
 "use strict";
 /* Geçmiş: ay takvimi, aylık özet, arama ve gün ekranı. Veri HistoryLib'den; kayıt ekleme ve silme Bugün ekranındaki akışlarla aynı.
    S, tab, logOff, render, save, add, keyOff, dayKey, fd, fmt, esc, dayNav, emptyCard, dayLogHtml, dw, wlab, Icons, Units, AY, GUN index.html'dedir. */
-let hg={seg:"tak",ym:null,q:""};
+let hg={seg:"tak",ym:null,q:"",focus:null};
 const hgPad=n=>String(n).padStart(2,"0");
 const hgGun=k=>GUN[new Date(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10)).getDay()];
 const hgIndex=()=>HistoryLib.index(S,dayKey); // tek geçiş; 3 yıllık veride birkaç ms
@@ -94,8 +94,10 @@ function viewGun(){
   const name=`${today?"Bugün, ":logOff===1?"Dün, ":""}${fd(k)}, ${hgGun(k)}`;
   const addBar=`<div class="qa"><button class="chip" data-hg="add:yemek">${Icons.svg("yemek")} Yemek</button><button class="chip" data-hg="add:su">${Icons.svg("su")} +${S.settings.glass} ml</button><button class="chip" data-hg="add:kilo">${Icons.svg("kilo")} Kilo</button><button class="chip" data-hg="add:spor">${Icons.svg("spor")} Spor</button><button class="chip" data-hg="add:not">${Icons.svg("not")} Not</button></div>`;
   const empty=!items.length&&!oth.rows&&!oth.wo;
-  const sum=!empty?`<div class="stats hgs"><div class="stat"><div class="k">Kalori</div><div class="v num">${Math.round(kcal).toLocaleString("tr-TR")}</div></div><div class="stat"><div class="k">Su</div><div class="v num">${dl.suMl<1000?Math.round(dl.suMl)+" ml":fmt(dl.suMl/1000,1)+" L"}</div></div><div class="stat"><div class="k">Spor</div><div class="v num">${Math.round(S.entries.filter(e=>e.type==="spor"&&e.day===k).reduce((s,e)=>s+(e.v||0),0))} dk</div></div></div>`:"";
-  return `<div class="card">${dayNav("lo",name,today)}${sum}${addBar}</div>
+  const tiles=!empty?`<div class="stats hgs"><div class="stat"><div class="k">Kalori</div><div class="v num">${Math.round(kcal).toLocaleString("tr-TR")}</div></div><div class="stat"><div class="k">Su</div><div class="v num">${dl.suMl<1000?Math.round(dl.suMl)+" ml":fmt(dl.suMl/1000,1)+" L"}</div></div><div class="stat"><div class="k">Spor</div><div class="v num">${Math.round(S.entries.filter(e=>e.type==="spor"&&e.day===k).reduce((s,e)=>s+(e.v||0),0))} dk</div></div></div>`:"";
+  const FOC={kcal:["Kalori",k=>sum("yemek",k,k),"var(--kcal)",kcalGoal(dayKey()),"kcal",Math.round],su:["Su",k=>sum("su",k,k),"var(--su)",S.settings.waterMl,"L",x=>fmt(x/1000,1)],spor:["Spor",k=>sum("spor",k,k),"var(--spor)",sportDay(),"dk",Math.round]}[hg.focus];
+  const focus=FOC?`<div class="card">${miniBars(14,FOC[1],FOC[2],FOC[3],FOC[0]+" · son 14 gün",FOC[4],FOC[5])}<button class="lnk" data-tab="gecmis">Tüm geçmiş ve takvim</button></div>`:"";
+  return `${focus}<div class="card">${dayNav("lo",name,today)}${tiles}${addBar}</div>
     ${empty?emptyCard("not","Bu güne ait kayıt yok","Yukarıdan ekleyebilirsin; unuttuğun bir günü de tamamlayabilirsin."):`<div class="card">${log}</div>`}
     ${oth.wo?`<h2>Antrenman</h2><div class="card">${oth.wo}</div>`:""}${oth.rows?`<h2>Diğer kayıtlar</h2><div class="card">${oth.rows}</div>`:""}
     <button class="lnk" data-tab="gecmis">Takvime dön</button>`;
@@ -103,11 +105,12 @@ function viewGun(){
 
 /* Gün ekranında geriye en eski kayıt gününe kadar gidilir (en az dün). */
 const hgOldest=()=>{const f=HistoryLib.span(hgIndex()).first;return Math.max(1,f?hgDaysAgo(f):0)};
-function hgGoDay(k){logOff=Math.max(0,hgDaysAgo(k));hg.ym=k.slice(0,7);tab="gun";render();window.scrollTo(0,0)}
+function hgGoDay(k){hg.focus=null;logOff=Math.max(0,hgDaysAgo(k));hg.ym=k.slice(0,7);tab="gun";render();window.scrollTo(0,0)}
 document.addEventListener("click",ev=>{
   const b=ev.target.closest&&ev.target.closest("[data-hg]");if(!b||b.disabled)return;
   const [a,p]=b.dataset.hg.split(/:(.*)/s);
   if(a==="seg"){hg.seg=p;render();return}
+  if(a==="focus"){hg.focus=p;logOff=0;tab="gun";render();window.scrollTo(0,0);return}
   if(a==="mon"){const ym=hg.ym||dayKey().slice(0,7),d=new Date(+ym.slice(0,4),+ym.slice(5,7)-1+ +p,1),n=`${d.getFullYear()}-${hgPad(d.getMonth()+1)}`;if(n<=dayKey().slice(0,7)){hg.ym=n;render()}return}
   if(a==="now"){hg.ym=dayKey().slice(0,7);render();return}
   if(a==="ym"){hg.ym=p;hg.seg="tak";render();window.scrollTo(0,0);return}

@@ -907,6 +907,10 @@ function dayLogHtml(lk){
   const log=items.length?`<ul class="log">${dl.groups.map(g=>`<li class="gh"><b>${g.n}</b><span class="num">${Math.round(g.kcal)} kcal</span></li>`+g.items.map(e=>li(e,`<button class="tx" data-meal="${e.id}" aria-label="${esc(ttx(e))}, öğünü değiştir">${ttx(e)}</button>`)).join("")).join("")}${dl.su.length?`<li class="row"><span class="t num">${dl.su[dl.su.length-1].time}</span><span class="ic">${Icons.svg("su")}</span><button class="tx" data-suall="1">Su: ${suTxt}, ${dl.su.length} kez</button><span class="vl" aria-hidden="true">›</span></li>`:""}${dl.dr.length?`<li class="row"><span class="t num">${dl.dr[dl.dr.length-1].time}</span><span class="ic">${Icons.svg("su")}</span><button class="tx" data-suall="1">Diğer içecekler: ${Math.round(dl.drMl)} ml, ${dl.dr.length} kez</button><span class="vl" aria-hidden="true">›</span></li>`:""}${dl.rest.sort((a,b)=>b.id-a.id).map(e=>li(e,`<span class="tx">${ttx(e)}</span>`)).join("")}</ul>`:`<div class="empty">${Icons.svg(lk===dayKey()?"su":"not")}<p class="mut">${lk===dayKey()?"Bugün henüz bir şey eklemedin. Bir bardak suyla başlayabilirsin.":"Bu güne ait bir şey yok."}</p></div>`;
   return {items,log};
 }
+/* Spor halkası günlüktür: haftalık hedefin (varsayılan 150 dk) günlük payı. Haftalık toplam Trend ve Salon'da. */
+const sportDay=()=>Math.max(1,Math.round(S.settings.sportWeek/7));
+/* Halka bir düğmedir: Bugün'ün ayrıntısı ve son 14 günün grafiği Gün ekranında, takvim oradan. */
+const rb=(k,ad,inner)=>`<button class="rbtn" data-hg="focus:${k}" aria-label="${ad}, ayrıntı ve geçmiş">${inner}</button>`;
 function viewBugun(){
   const t=dayKey(),st=S.settings;
   const wAll=weights(),days=Object.keys(wAll).sort();
@@ -921,12 +925,12 @@ function viewBugun(){
     const bits=[sl!=null?`${dwS(sl,2)} ${wlab()}/hafta`:prev!=null?`öncekine göre ${dwS(cur-prev)} ${wlab()}`:"",gi?(gi.done?"Hedefe ulaştın":`hedefe ${dw(gi.left)} ${wlab()}`):""].filter(Boolean);
     weight=`<button class="stepcard" data-tab="trend" aria-label="Kilo grafiğini Trend'de aç"><div class="scr"><span class="mut">${Icons.svg("kilo")} ${curDay===t?"Bugünkü tartı":"Son tartı, "+fd(curDay)}</span><span class="mut sm">Trend ›</span></div><div class="scr"><span class="big num wv">${dw(cur)} <small>${wlab()}</small></span><span class="mut sm num ws">${bits.join(" · ")}</span></div></button>`;
   }
-  const su=sum("su",t,t),sh=st.waterMl,kc=sum("yemek",t,t),sw=sum("spor",keyOff(-6),t);
+  const su=sum("su",t,t),sh=st.waterMl,kc=sum("yemek",t,t),sw=sum("spor",t,t),sg=sportDay();
   const kgl=kcalGoal(t),kcP=kgl>0?kc/kgl:0;
   const sOn=S.settings.stepsOn&&isNative();
   /* Halka ortası kalanı gösterir; yapılan / hedef altta birimle. */
   const left=(v,g,u)=>v<g?[null,`${u} kaldı`]:["✓","Hedef tamam"];
-  const [suC,suU]=left(su,sh,"L"),[spC,spU]=left(sw,st.sportWeek,"dk");
+  const [suC,suU]=left(su,sh,"L"),[spC,spU]=left(sw,sg,"dk");
   const kcC=kgl>0?Math.round(Math.abs(kgl-kc)):Math.round(kc),kcU=kgl>0?(kc>kgl?"kcal fazla":"kcal kaldı"):"kcal";
   const meals=S.entries.filter(e=>e.type==="yemek"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
   const pr=cur!=null?Algo.protein(riskInput(cur)):{};
@@ -937,9 +941,9 @@ function viewBugun(){
   const micro=mi.length?`<div class="macro num">${mi.join(" · ")} <span class="mut sm">öğünde veri var</span></div>`:"";
   /* Özet kartı: büyük kalori halkası ve kalan; su, spor ve adım küçük halkalarda; makrolar altında. */
   const rings=`<div class="card"><div class="rings">
-    ${ring(kcP,"var(--kcal)",kcC,"Kalori",kgl>0?`${Math.round(kc)} / ${kgl} kcal`:"hedef yok",kcU,"main")}
-    <div class="rmini">${ring(su/sh,"var(--su)",suC||fmt((sh-su)/1000,1),"Su",`${fmt(su/1000,1)} / ${fmt(sh/1000,1)} L`,suU,"mini"+(suC?" done":""))}
-    ${ring(sw/st.sportWeek,"color-mix(in srgb,var(--spor) 80%,var(--card))",spC||Math.round(st.sportWeek-sw),"Spor · 7 gün",`${Math.round(sw)} / ${st.sportWeek} dk`,spU,"mini"+(spC?" done":""))}${sOn?stepCard():""}</div>
+    ${rb("kcal","Kalori",ring(kcP,"var(--kcal)",kcC,"Kalori",kgl>0?`${Math.round(kc)} / ${kgl} kcal`:"hedef yok",kcU,"main"))}
+    <div class="rmini">${rb("su","Su",ring(su/sh,"var(--su)",suC||fmt((sh-su)/1000,1),"Su",`${fmt(su/1000,1)} / ${fmt(sh/1000,1)} L`,suU,"mini"+(suC?" done":"")))}
+    ${rb("spor","Spor",ring(sw/sg,"color-mix(in srgb,var(--spor) 80%,var(--card))",spC||Math.round(sg-sw),"Spor",`${Math.round(sw)} / ${sg} dk`,spU,"mini"+(spC?" done":"")))}${sOn?stepCard():""}</div>
   </div>${macro}${macroNote}${micro}${moveAdd(t)?`<p class="pt-2 hint">Hedefe hareketten +${moveAdd(t)} kcal eklendi (kayıtlı antrenman ve yürüyüşün yarısı, tahmindir).</p>`:""}</div>`;
   const actions=`<div class="actions"><button class="btn act" data-act="yemek">${Icons.svg("plus")} Yemek ekle</button><div class="qa">
     <button class="chip act" data-act="su" aria-label="${st.glass} ml su ekle">${Icons.svg("su")} +${st.glass} ml</button><button class="chip" data-dk="open">${Icons.svg("su")} Başka içecek</button>
@@ -1043,7 +1047,7 @@ const navTab=()=>/^(ilac|adim|ayar|gecmis|gun)/.test(tab)?"daha":topTab(tab);
 /* Daha fazla: gruplu liste. Satırın dördüncü alanı ayar adıdır; kapalı modül listede görünmez, Modüller satırından açılır. */
 const DAHA=[["Geçmiş",[['data-tab="gecmis"',"Geçmiş ve takvim","trend",0,"Her günün kaydı, aylık özet, arama"]]],["Sağlık takibi",[['data-tab="ilac"',"İlaçlar","ilac","medOn","İlaç saatleri ve bugünkü dozlar"],['data-tab="tansiyon"',"Tansiyon","heart","bpOn","Ev ölçümleri ve ortalama"],['data-tab="seker"',"Şeker","su","bsOn","Ölçümler ve ortalama"],['data-tab="tahlil"',"Tahlil takibi","file",0,"Sonuçlar ve değişim"],['data-tab="dongu"',"Döngü","moon","cycleOn","Dönem günleri ve tahmin"],['data-hb="more"',"Uyku ve ruh hali","smile",0,"Bugünkü uykun ve nasıl hissettiğin"]]],
   ["Beslenme ve hareket",[['data-tab="adim"',"Adım raporu","adim","stepsOn","Günlük adım ve yürüyüş"],['data-pl="open"',"Nabız","heart",0,"Kamerayla ölç, saatten günlük nabız"],['data-tab="egz"',"Egzersiz kütüphanesi","salon",0,"Hareketler, kaslar, ekipman"],['data-ckg="open"',"Kardiyo","spor",0,"Koşu, yürüyüş, bisiklet ve yüzme ekle"],['data-ms="open"',"Vücut ölçüleri","kilo",0,"Bel, kalça, göğüs, kol ve uyluk"],['data-ph="add"',"İlerleme fotoğrafı","camera","ph","Yalnız bu telefonda saklanır"]]],
-  ["Veri",[['data-tab="ayar-veri"',"Veri ve yedek","data",0,"Yedek, tabloya aktarma, silme"],['data-pv="open"',"Gizlilik ve veri","lock",0,"Veriler nerede durur, Koç'a ne gider"]]],
+  ["Veri",[['data-tab="ayar-veri"',"Uygulama kilidi","lock",0,"Açılışta telefonun ekran kilidini iste"],['data-tab="ayar-veri"',"Veri ve yedek","data",0,"Yedek, tabloya aktarma, silme"],['data-pv="open"',"Gizlilik ve veri","lock",0,"Veriler nerede durur, Koç'a ne gider"]]],
   ["Uygulama",[['data-tab="ayar"',"Ayarlar","ayar",0,"Profil, hatırlatmalar, Koç, görünüm"],['data-tab="ayar-modul"',"Modüller","grid",0,"Takipleri aç ya da kapat"],['data-tab="ayar-hak"',"Hakkında","info",0,"Sürüm, kaynaklar ve tıbbi uyarı"]]]];
 function viewDaha(){
   const st=S.settings,on=k=>!k||(k==="ph"?phOk():st[k]);
