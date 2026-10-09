@@ -248,7 +248,13 @@ function gHome(){
   ${rec}${bars}
   <div class="mt-3 card">${navRow('data-g="gdpick"',"clock","Rehberli antrenman","Esneme, ısınma ve Tabata; sesli komutla")}${navRow('data-g="lib"',"book","Egzersiz kütüphanesi","Hareketleri ara, incele, antrenmana ekle")}${navRow('data-c="prog"',"koc","Koç'tan program iste","Hedefine ve ekipmanına göre")}</div>
   ${gPgHtml()}
-  <h2>Antrenman geçmişi</h2><div class="card">${gHistHtml(done)||`<p class="m0 hint">Bitirdiğin antrenmanlar burada listelenir.</p>`}</div>`;
+  <h2>Antrenman geçmişi</h2><div class="card">${gHistHtml(done)||`<p class="m0 hint">Bitirdiğin antrenmanlar burada listelenir.</p>`}</div>${gQuickHtml()}`;
+}
+/* Antrenman kaydı olmayan sporlar (hızlı kayıt, Koç'tan eklenen bisiklet, yürüyüş vb.): son 20 kayıt, en yeni üstte. */
+function gQuickHtml(){
+  const l=S.entries.filter(e=>e.type==="spor"&&!e.wid).sort((a,b)=>b.day.localeCompare(a.day)||b.id-a.id).slice(0,20);
+  if(!l.length)return "";
+  return `<h2>Diğer sporlar</h2><div class="card">${l.map(e=>`<div class="row"><span class="num mut">${fd(e.day)}</span><span class="grow tx"><b>${esc(e.text||"Spor")}</b></span><span class="num">${e.v} dk${e.kcal!=null?` · ${e.kcal} kcal`:""}</span></div>`).join("")}</div>`;
 }
 /* Bugün ekranı: bitmemiş antrenman yalnız Salon'da görünüyordu, bitenler de yalnız Salon'da. */
 function gTodayCard(){

@@ -637,7 +637,7 @@ function cCard(m){
     ${c.state==="pending"?`<div class="lbtns"><button class="btn ghost" data-c="addfood:${m.id}">Listeme ekle</button><button class="btn ghost" data-c="nofood:${m.id}">Şimdi değil</button></div>`:`<p class="mut sm">${c.state==="ok"?"Besin listene eklendi":"Atlandı"}</p>`}</div>`;
   }
   const rows=c.items.map((it,i)=>{
-    const lbl=it.type==="yemek"?esc(it.text||"Öğün"):it.type==="su"?"Su":it.type==="kilo"?"Tartı":it.type==="spor"?esc(it.name):"Not";
+    const lbl=(it.type==="yemek"?esc(it.text||"Öğün"):it.type==="su"?"Su":it.type==="kilo"?"Tartı":it.type==="spor"?esc(it.name):"Not")+(it.day==="yesterday"?" · dün":"");
     const val=it.type==="yemek"?(c.state==="pending"?`<span class="num">~<input class="kin num" data-ck="${i}" inputmode="numeric" aria-label="${esc(it.text)} kcal" value="${it.kcal==null?"":Math.round(it.kcal)}" placeholder="kcal"> kcal</span>`:`<span class="num">${it.kcal==null?"":"~"+Math.round(it.kcal)+" kcal"}</span>`)
       :it.type==="su"?`<span class="num">${it.ml} ml</span>`:it.type==="kilo"?`<span class="num">${dw(it.kg)} ${wlab()}</span>`:it.type==="spor"?`<span class="num">${it.min} dk${spKcal(it).k!=null?` · ~${spKcal(it).k} kcal`:""}</span>`:`<span class="mut sm">${esc(it.text.slice(0,40))}</span>`;
     const y=it.type==="yemek",mac=y?[it.g?it.g+" g":"",it.p!=null?`P ${Math.round(it.p)}`:"",it.c!=null?`K ${Math.round(it.c)}`:"",it.f!=null?`Y ${Math.round(it.f)}`:""].filter(Boolean).join(" · "):"";
