@@ -2,7 +2,7 @@
 const {JSDOM}=require("jsdom"),fs=require("fs"),path=require("path");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const www=f=>path.join(__dirname,"../www",f);
-const html=fs.readFileSync(www("index.html"),"utf8").replace(/<script src="([^"]+)"><\/script>/g,(_,f)=>"<script>"+fs.readFileSync(www(f),"utf8")+"</script>");
+const html=require("./html").build();
 const dom=new JSDOM(html,{runScripts:"dangerously",pretendToBeVisual:true,url:"https://localhost/",beforeParse(w){Object.assign(w,{structuredClone,TextEncoder,TextDecoder});w.scrollTo=()=>{};w.confirm=()=>true}});
 const w=dom.window,ev=s=>w.eval(s),wait=ms=>new Promise(r=>setTimeout(r,ms));
 const reply=o=>({ok:true,status:200,json:async()=>({choices:[{message:{content:JSON.stringify(o)},finish_reason:"stop"}]})});
@@ -23,7 +23,7 @@ setTimeout(async()=>{
     ok("cNoteCheck: acil belirti notu sohbete güvenlik kartı ekler",ev("S.chat.some(m=>m.card&&m.card.kind==='safety'&&m.card.level==='emergency')"));
     reset();ev("S.settings.healthNote='iyi durumdayım';cNoteCheck()");
     ok("cNoteCheck: temiz not risk ve kart üretmez",chatRisk()===""&&cards("safety")===0);
-    ok("sağlık notu kaydı cNoteCheck'i çağırır",/saglik:\(\)=>\{S\.settings\.healthNote=[^}]*cNoteCheck\(\)/.test(fs.readFileSync(www("index.html"),"utf8")));
+    ok("sağlık notu kaydı cNoteCheck'i çağırır",/saglik:\(\)=>\{S\.settings\.healthNote=[^}]*cNoteCheck\(\)/.test(require("./html").full()));
   }
   { // menü notu hamilelik ve yeme bozukluğu
     reset();let n=0;fetchWith(()=>{n++;return reply({reply:"x"})});

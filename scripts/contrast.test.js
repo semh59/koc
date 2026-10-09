@@ -1,5 +1,5 @@
 const fs=require("fs");
-const html=fs.readFileSync(__dirname+"/../www/index.html","utf8");
+const html=require("./html").full();
 let bad=0;const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+(typeof x==="string"?x:JSON.stringify(x))));if(!c)bad++};
 const vars=s=>Object.fromEntries([...s.matchAll(/--([\w-]+):\s*(#[0-9a-fA-F]{6})/g)].map(m=>[m[1],m[2]]));
 const light=vars(html.match(/:root\{([^}]*)\}/)[1]);

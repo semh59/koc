@@ -4,7 +4,10 @@
 const path=require("path"),fs=require("fs"),L=require("./chrome-lib");
 const bin=L.find();
 if(!bin){console.log("ATLANDI: Chrome bulunamadı");process.exit(0)}
-const url=require("url").pathToFileURL(path.join(__dirname,"../www/index.html")).href;
+/* file:// altında fetch çalışmaz: ana betik parçaları gömülü kopya açılır */
+const tmpHtml=path.join(__dirname,"../www/.lc-test.html");fs.writeFileSync(tmpHtml,require("./html").build().replace(/<script src="vendor[^>]*><\/script>/g,m=>m));
+process.on("exit",()=>{try{fs.unlinkSync(tmpHtml)}catch(e){}});
+const url=require("url").pathToFileURL(tmpHtml).href;
 const shots=process.env.SHOTS;if(shots)fs.mkdirSync(shots,{recursive:true});
 let bad=0;const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 /* Öğenin merkez noktasında öğenin kendisi (ya da çocuğu) üstte olmalı: kesilme, taşma ve başka katmanın altında kalma hepsini yakalar. */

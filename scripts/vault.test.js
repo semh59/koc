@@ -2,7 +2,7 @@
 const {JSDOM}=require("jsdom"),fs=require("fs"),path=require("path");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const www=f=>path.join(__dirname,"../www",f);
-const html=fs.readFileSync(www("index.html"),"utf8").replace(/<script src="([^"]+)"><\/script>/g,(_,f)=>"<script>"+fs.readFileSync(www(f),"utf8")+"</script>");
+const html=require("./html").build();
 const vault=(broken)=>({encrypt:async({text})=>{if(broken)throw new Error("keystore");return {data:Buffer.from("ENC:"+text).toString("base64")}},
   decrypt:async({data})=>{const t=Buffer.from(data,"base64").toString();if(broken||!t.startsWith("ENC:"))throw new Error("bad");return {text:t.slice(4)}}});
 const open=(seed,v)=>new Promise(res=>{

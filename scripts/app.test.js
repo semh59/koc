@@ -1,6 +1,6 @@
 const {JSDOM}=require("jsdom"),fs=require("fs"),path=require("path");let bad=0,total=0;process.on("unhandledRejection",e=>{console.log("FAIL beklenmeyen hata",e);process.exit(1)});
 const www=f=>path.join(__dirname,"../www",f);
-const html=fs.readFileSync(www("index.html"),"utf8").replace(/<script src="([^"]+)"><\/script>/g,(_,f)=>"<script>"+fs.readFileSync(www(f),"utf8")+"</script>");
+const html=require("./html").build();
 const ok=(n,c,x)=>{total++;console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const MIN_TESTS=865,errs=[]; // son satıra ulaşılmadan çıkış (zamanlama kayması) başarı sayılmasın
 const dom=new JSDOM(html,{runScripts:"dangerously",pretendToBeVisual:true,url:"https://localhost/",
@@ -367,7 +367,7 @@ setTimeout(async()=>{
     const file=d=>({size:d.length,arrayBuffer:async()=>d.buffer.slice(d.byteOffset,d.byteOffset+d.length)});
     ev("S.labs=[];S.entries=[]");
     ok("Trend'de tahlil kartı var",ev("viewTrend()").includes("Tahlil takibi")&&ev("viewTrend()").includes('data-tab="tahlil"'));
-    ok("açılışta pdf.js yüklenmez (yalnızca tahlil açılınca)",!html.includes('<script src="vendor')&&!/<script src="[^"]*pdf/.test(fs.readFileSync(www("index.html"),"utf8")));
+    ok("açılışta pdf.js yüklenmez (yalnızca tahlil açılınca)",!html.includes('<script src="vendor')&&!/<script src="[^"]*pdf/.test(require("./html").full()));
     ev("tab='tahlil';render()");
     ok("boş tahlil ekranı: okut ve elle ekle düğmeleri",!!q("#labfile")&&!!q('[data-lab="add"]')&&!q('[data-lab="pdf"]')&&q("#ttl").textContent==="Tahlil takibi"&&q('nav [data-tab="trend"]').getAttribute("aria-current")==="page");
 

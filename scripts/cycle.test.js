@@ -51,7 +51,7 @@ const chain=lens=>{let d="2025-01-01";const r=[{s:d}];for(const l of lens){d=add
   ok("hatırlatma günü: aralıktan 2 gün önce, geçmişse ya da pencere dışıysa yok",(()=>{const pp={ok:true,from:"2026-10-20"};return C.remindDay(pp,T,30)==="2026-10-18"&&C.remindDay({ok:true,from:"2026-10-07"},T,30)===null&&C.remindDay({ok:true,from:"2026-12-20"},T,30)===null&&C.remindDay({ok:false},T,30)===null})());
 }
 
-const html=fs.readFileSync(www("index.html"),"utf8").replace(/<script src="([^"]+)"><\/script>/g,(_,f)=>"<script>"+fs.readFileSync(www(f),"utf8")+"</script>");
+const html=require("./html").build();
 const dom=new JSDOM(html,{runScripts:"dangerously",pretendToBeVisual:true,url:"https://localhost/",beforeParse(w){Object.assign(w,{structuredClone,TextEncoder,TextDecoder});w.scrollTo=()=>{};w.confirm=()=>true}});
 const w=dom.window,ev=s=>w.eval(s);
 ev("toast=()=>{}");
