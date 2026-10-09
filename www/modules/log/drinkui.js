@@ -1,6 +1,6 @@
 "use strict";
-/* İçecek türü: kayıt type "su" + etiket (dr). Su hedefine yalnız su ve sade maden suyu sayılır (WeeklyLib.isWater); diğerleri ayrı "Diğer içecekler" satırında görünür, uyarı ya da skor üretmez.
-   Bildirim ve widget'taki hızlı +su türsüz kayıttır (su). index.html'deki S, add, save, num, ferr, fday, dayOptions, openSheet, closeSheet, render, toast ile çalışır. */
+/* Drink kind: a "water" entry plus a label (dr). Only plain water and unsweetened mineral water count toward the water goal (WeeklyLib.isWater); other drinks show in a separate "Diğer içecekler" row and raise no warning or score.
+   The quick +water from notifications and widgets is an entry without dr. Uses S, add, save, num, ferr, fday, dayOptions, openSheet, closeSheet, render, toast from the main shell. */
 const DRINKS=[["water","Su"],["mineral","Maden suyu (sade)"],["tea","Çay"],["coffee","Kahve"],["soda","Gazlı içecek"],["milk","Süt"],["other","Diğer"]];
 const drinkName=c=>(DRINKS.find(d=>d[0]===c)||DRINKS[0])[1];
 const drinkOk=c=>c!=="water"&&DRINKS.some(d=>d[0]===c);
@@ -15,9 +15,9 @@ function goDrink(){
   const c=$("#dr [aria-pressed=true]").dataset.dr,e=add("water",ml,"",fday());
   if(drinkOk(c))e.dr=c;
   save();closeSheet();render();
-  const t=dayKey(),top=sum("water",t,t),goal=S.settings.waterMl;
-  if(WeeklyLib.isWater(e)&&top>=goal&&top-ml<goal)scheduleReminders().then(setNotif);
-  toast(WeeklyLib.isWater(e)?`${drinkName(c)} ${ml} ml eklendi, bugün ${Math.round(top)} / ${goal} ml`:`${drinkName(c)} ${ml} ml kaydedildi, su hedefine sayılmaz`,e.id);
+  const t=dayKey(),total=sum("water",t,t),goal=S.settings.waterMl,counts=WeeklyLib.isWater(e);
+  if(counts&&total>=goal&&total-ml<goal)scheduleReminders().then(setNotif);
+  toast(counts?`${drinkName(c)} ${ml} ml eklendi, bugün ${Math.round(total)} / ${goal} ml`:`${drinkName(c)} ${ml} ml kaydedildi, su hedefine sayılmaz`,e.id);
 }
 document.addEventListener("click",ev=>{
   const q=ev.target.closest("[data-dq]");if(q){$("#fv").value=q.dataset.dq;return}

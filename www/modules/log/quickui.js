@@ -1,19 +1,18 @@
 "use strict";
-/* Bildirim düğmelerinden ("+250 ml", "Aldım") gelen kayıtlar: yerel taraf uygulama kapalıyken biriktirir, burada ana veriye eklenir. */
-const QL=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.QuickLog;
-/* Yerel taraf su/ilaç düğmesini yalnız bu anahtarı taşıyan bildirimden kaydeder (başka uygulama sahte kayıt yazdıramasın). Eklenti yoksa null. */
-async function quickToken(){const q=QL();try{return q&&q.getToken&&(await q.getToken()).tk||null}catch(e){return null}}
-/* take() kayıtları yerelde "yolda" tutar; kalıcı yazıldıktan sonra ack ile silinir. Yazma başarısızsa ya da süreç yazmadan ölürse
-   kayıtlar sonraki açılışta yeniden gelir; su kaydı qt (bildirim zamanı) taşıdığından aynı kayıt ikinci kez eklenmez. */
+/* Entries from notification buttons ("+250 ml", "Aldım"): the native side collects them while the app is closed, and they are added to the main data here. */
+/* The native side records a water/medication button only from a notification carrying this token (so another app cannot write fake entries). null without the plugin. */
+async function quickToken(){const q=plugin("QuickLog");try{return q?.getToken&&(await q.getToken()).tk||null}catch{return null}}
+/* take() keeps the entries "in flight" natively until they are persisted and acked. If the write fails or the process dies first,
+   they come back on the next launch; a water entry carries qt (the notification time), so it is never added twice. */
 async function quickIngest(){
-  const q=QL();if(!q)return;
-  let r;try{r=await q.take()}catch(e){return}
-  const raw=(r&&r.items)||[],upto=raw.reduce((m,i)=>i&&Number.isFinite(i.t)?Math.max(m,i.t):m,0);
+  const q=plugin("QuickLog");if(!q)return;
+  let r;try{r=await q.take()}catch{return}
+  const raw=r?.items||[],upto=raw.reduce((m,i)=>i&&Number.isFinite(i.t)?Math.max(m,i.t):m,0);
   const now=Date.now(),okT=i=>i&&Number.isFinite(i.t)&&i.t>0&&i.t<=now+6e4;
   const done=new Set(S.entries.filter(e=>e.qt).map(e=>e.qt));
   const all=raw.filter(okT);
   const water=all.filter(i=>Number.isFinite(i.v)&&i.v>=1&&i.v<=1500&&!done.has(i.t)),meds=all.filter(i=>Number.isInteger(i.m)&&typeof i.s==="string");
-  const ack=async()=>{if(upto&&q.ack)try{await Store.whenIdle();if(!Store.failed)await q.ack({upto})}catch(e){}};
+  const ack=async()=>{if(upto&&q.ack)try{await Store.whenIdle();if(!Store.failed)await q.ack({upto})}catch{}};
   if(!water.length&&!meds.length)return ack();
   const n0=S.entries.length,id0=S.nextId,med0=Meds.snapshot();
   for(const i of water){
