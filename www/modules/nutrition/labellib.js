@@ -1,18 +1,16 @@
 "use strict";
-/* Besin etiketi fotoğrafından okunan satırlardan 100 g başına kalori ve makroları çıkarır (DOM yok).
-   Okunan sayılar OffLib ile aynı tutarlılık denetiminden geçer. */
+/* Extracts per-100 g calories and macros from the lines read off a nutrition label photo (no DOM).
+   The numbers go through the same consistency check as OffLib. */
 const LabelLib=(()=>{
-  const LL=typeof LabLib!=="undefined"?LabLib:require("../labs/lablib.js"),OL=typeof OffLib!=="undefined"?OffLib:require("./offlib.js");
-  const fold=s=>LL.fold(s);
+  const {fold}=typeof LabLib!=="undefined"?LabLib:require("../labs/lablib.js"),OL=typeof OffLib!=="undefined"?OffLib:require("./offlib.js");
   const NUM="(?:[<>]\\s*)?(\\d+(?:[.,]\\d+)?)";
-  const toN=s=>{const v=Number(String(s).replace(",","."));return Number.isFinite(v)?v:null};
-  /* Satırdaki "<sayı> <birim>" çiftleri. */
+  const toN=s=>Number(s.replace(",","."));
+  // All "<number> <unit>" pairs in a line.
   function pairs(line,unit){
-    const re=new RegExp(NUM+"\\s*"+unit+"(?![a-zA-Z])","gi"),out=[];let m;
-    while((m=re.exec(line)))out.push(toN(m[1]));
-    return out.filter(x=>x!=null);
+    const re=new RegExp(NUM+"\\s*"+unit+"(?![a-zA-Z])","gi");
+    return [...line.matchAll(re)].map(m=>toN(m[1]));
   }
-  /* Üst başlıkta "100 g" mı "porsiyon" mu önce geliyor? 0 = 100 g ilk sütun, 1 = ikinci sütun. */
+  // Which comes first in a header line, "100 g" or "portion"? 0 = the 100 g column is first, 1 = the second.
   function col100(lines){
     for(const l of lines){
       const f=fold(l),a=f.search(/100\s*(g|ml)\b/),b=f.search(/porsiyon|serving|portion|dilim|adet/);
@@ -20,8 +18,8 @@ const LabelLib=(()=>{
     }
     return 0;
   }
-  /* [alan, satır başı, [birim, çarpan] seçenekleri, birimsiz sayının çarpanı]. Lif, şeker ve sodyumda birim zorunlu:
-     içindekiler satırındaki "%12" ya da ambalajdaki "%30 daha az şeker" sayı sayılmasın. */
+  /* [field, row-start pattern, [unit, multiplier] options, multiplier for a bare number]. Fibre, sugar and sodium require a unit,
+     so a "%12" in the ingredients line or a "%30 less sugar" on the package is not taken as a number. */
   const ROWS=[
     ["k",/^(enerji|energy|kalori|energie)\b/],
     ["f",/^(toplam\s+)?(yag|yaglar|fat)\b/,[["g",1]],1],
@@ -33,13 +31,14 @@ const LabelLib=(()=>{
     ["na",/^(sodyum|sodium)\b/,[["mg",1],["g",1000]],null]
   ];
   const SKIP={f:/doymus|saturated|trans|tekli|coklu|mono|poli/,sg:/alkol|poliol|polyol/};
-  /* "Karbonhidrat 12 g, bunun şekere 4 g": alt kalem ayrı satır okunur, yoksa iki sütunlu etikette şeker değeri karbonhidrat sanılır. */
+  // "Karbonhidrat 12 g, bunun şekere 4 g": the sub-item is read as its own line, otherwise on a two-column label the sugar value would be taken as carbs.
   const SUB=/\s*[,;(]?\s*\b(?:bunun|bunlardan|of which)\s+/i;
   const split=l=>{const m=SUB.exec(l);return m?[l.slice(0,m.index),l.slice(m.index+m[0].length)].filter(Boolean):[l]};
-  function pick(arr,i){return arr.length?(arr[i]!=null?arr[i]:arr[0]):null}
-  /* lines: gruplanmış satır metinleri. Döner {food:{k,p,c,f}, found:[...], note}. */
+  const pick=(arr,i)=>arr.length?arr[i]??arr[0]:null;
+  const numbers=s=>[...s.matchAll(new RegExp(NUM,"g"))].map(m=>toN(m[1]));
+  // lines: grouped line texts. Returns {food:{k,p,c,f,fb,sg,na}}; fields not found are undefined.
   function parse(lines){
-    const ci=col100(lines),res={},found=[];
+    const ci=col100(lines),res={};
     for(const raw of lines.flatMap(split)){
       const f=fold(raw).replace(/^[\s\-–•*:]+/,"");
       for(const [key,re,units,bare] of ROWS){
@@ -48,23 +47,23 @@ const LabelLib=(()=>{
         if(key==="k"){
           const kc=pairs(raw,"kcal"),kj=pairs(raw,"kj");
           v=kc.length?pick(kc,ci):kj.length?pick(kj,ci)/4.184:null;
-          if(v==null){// "Enerji (kcal) 440" gibi birim başlıkta
-            const ns=[...raw.replace(/^\D*/,"").matchAll(new RegExp(NUM,"g"))].map(x=>toN(x[1])),n=pick(ns,ci);
+          if(v==null){// unit in the heading: "Enerji (kcal) 440"
+            const n=pick(numbers(raw.replace(/^\D*/,"")),ci);
             if(n!=null)v=/kj/i.test(raw)&&!/kcal/i.test(raw)?n/4.184:n;
           }
         }else{
           for(const [u,mul] of units){const g=pick(pairs(raw,u),ci);if(g!=null){v=g*mul;break}}
-          if(v==null&&bare!=null){// "Protein 8,5" gibi birimsiz sayı; "(%1,5)" gibi yüzde sayılmaz
-            const rest=raw.replace(/%\s*\d+(?:[.,]\d+)?/g,"").replace(/^\D*/,""),n=pick([...rest.matchAll(new RegExp(NUM,"g"))].map(x=>toN(x[1])),ci);
+          if(v==null&&bare!=null){// bare number, "Protein 8,5"; a percentage like "(%1,5)" is not a value
+            const n=pick(numbers(raw.replace(/%\s*\d+(?:[.,]\d+)?/g,"").replace(/^\D*/,"")),ci);
             if(n!=null)v=n*bare;
           }
         }
-        if(v!=null){res[key]=Math.round(v*10)/10;found.push(key)}
+        if(v!=null)res[key]=Math.round(v*10)/10;
       }
     }
-    return {food:{k:res.k,p:res.p,c:res.c,f:res.f,fb:res.fb,sg:res.sg,na:res.na},found,col:ci};
+    return {food:{k:res.k,p:res.p,c:res.c,f:res.f,fb:res.fb,sg:res.sg,na:res.na}};
   }
-  /* OffLib tutarlılık denetimi: {status:ok|partial|bad|none, why}. */
+  // OffLib consistency check: {status:ok|partial|bad|none, why}.
   function check(name,food){
     const nut={};
     if(food.k!=null)nut["energy-kcal_100g"]=food.k;
@@ -76,6 +75,6 @@ const LabelLib=(()=>{
     if(food.na!=null)nut.sodium_100g=food.na/1000;
     return OL.parse({status:1,product:{product_name:name||"Etiketten ürün",nutriments:nut}});
   }
-  return {parse,check,col100};
+  return {parse,check};
 })();
 if(typeof module!=="undefined")module.exports=LabelLib;

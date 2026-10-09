@@ -1,4 +1,4 @@
-const {FOODS,foodSearch}=require("../www/modules/nutrition/foods.js");let bad=0;
+const {FOODS,foodSearch,foldTr}=require("../www/modules/nutrition/foods.js");let bad=0;
 const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const off=FOODS.filter(f=>{const a=4*f.p+4*f.c+9*f.f;return Math.abs(f.k-a)>Math.max(15,0.25*Math.max(f.k,a))}).map(f=>`${f.n}: ${f.k} ≠ ${Math.round(4*f.p+4*f.c+9*f.f)}`);
 ok("kalori, makrolarla tutarlı (Atwater ±%25)",off.length===0,off);
@@ -10,7 +10,8 @@ ok("USDA ile doğrulanmış besin sayısı",FOODS.filter(f=>f.s).length>=250,FOO
 ok("ton balığı protein değeri gerçekçi",FOODS.find(f=>f.n.startsWith("Ton")).p<22);
 ok("en az 500 besin",FOODS.length>=500,FOODS.length);
 ok("ilk 106 kayıt adı ve sırası değişmedi (kullanıcı kayıtları ada bağlı)",require("crypto").createHash("sha1").update(FOODS.slice(0,106).map(f=>f.n).join("|")).digest("hex")==="9bef746b28129de499d279621f64728db5d6a117");
-ok("www/modules/nutrition/foods.js tools/besin/uret.js çıktısıyla aynı",(()=>{try{require("child_process").execFileSync("node",["tools/besin/uret.js","--kontrol"],{stdio:"pipe"});return true}catch(e){return String(e.stderr)}})());
+{const drift=(()=>{try{require("child_process").execFileSync("node",["tools/besin/uret.js","--kontrol"],{stdio:"pipe"});return ""}catch(e){return String(e.stderr)||"uret.js hata verdi"}})();
+ok("www/modules/nutrition/foods.js tools/besin/uret.js çıktısıyla aynı",drift==="",drift)}
 ok("ilk 513 kayıt adı ve sırası değişmedi (yedekler ve kullanıcı kayıtları ada bağlı)",require("crypto").createHash("sha1").update(FOODS.slice(0,513).map(f=>f.n).join("|")).digest("hex")==="326eb38e7b4b91bdb11135b61d7b3ff3813e4b0c");
 ok("ilk 743 kayıt adı ve sırası değişmedi (yeni vekil kayıtları yalnız sona eklenir)",require("crypto").createHash("sha1").update(FOODS.slice(0,743).map(f=>f.n).join("|")).digest("hex")==="1fd8080242daa3fce5dd1f3d5017e7c501bc2104");
 ok("ilk 767 kayıt adı ve sırası değişmedi (ikinci tur vekil kayıtları yalnız sona eklenir)",require("crypto").createHash("sha1").update(FOODS.slice(0,767).map(f=>f.n).join("|")).digest("hex")==="6d6c306cede41e26bbbea18581e928e481223958");
@@ -38,6 +39,7 @@ ok("hazır ürün kategorileri (USDA, öğün değil): pretzel, granola bar, bis
 ok("hesaplı tarif sayısı",FOODS.filter(f=>!f.s).length>=150,FOODS.filter(f=>!f.s).length);
 ok("aramada büyük İ/I",FOODS[foodSearch("IZGARA")[0]].n.startsWith("Izgara")&&foodSearch("İncir").length>0);
 ok("kelime başı önce gelir",FOODS[foodSearch("pilav")[0]].n==="Pirinç pilavı"||FOODS[foodSearch("pilav")[0]].n.toLowerCase().includes("pilav"));
+ok("foldTr: büyük/küçük harf ve aksan duyarsız (İ, I, ı, ş, ğ, ç, ö, ü, é)",foldTr("İSTANBUL Iğdır ŞEKER Çay Öğün Ürün Café")==="istanbul igdir seker cay ogun urun cafe");
 ok("boş arama boş döner",foodSearch("  ").length===0&&foodSearch("xyzqq").length===0);
 const old=FOODS.slice(0,106),tr=FOODS.slice(106).filter(f=>f.lo!=null),KEEP=["Et döner","Sucuk (pişmiş)"];
 ok("eski ev yemeği aralığı: çorba, kuru fasulye, mantı, börek, pilav, köfte aralıklı",["Mercimek çorbası","Kuru fasulye yemeği","Mantı (haşlanmış)","Su böreği (peynirli)","Pirinç pilavı","Izgara köfte"].every(n=>{const f=FOODS.find(x=>x.n===n);return f&&f.lo!=null&&f.hi!=null}));

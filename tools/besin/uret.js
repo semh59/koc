@@ -1,6 +1,6 @@
-// www/foods.js dosyasını üretir: node tools/besin/uret.js [--kontrol]. Kaynaklar: genel.tsv, malzeme.tsv, tarif.txt, ek.tsv, ogun.txt, vekil.txt, vekil-ogun.txt, esad.tsv, vekil.tsv, mevcut.txt, eski.tsv, eski.txt, usda-altkume.json, harici.json.
+// Generates www/modules/nutrition/foods.js: node tools/besin/uret.js [--kontrol]. Sources: genel.tsv, malzeme.tsv, tarif.txt, ek.tsv, ogun.txt, vekil.txt, vekil-ogun.txt, esad.tsv, vekil.tsv, mevcut.txt, eski.tsv, eski.txt, usda-altkume.json, harici.json.
 const fs=require("fs"),path=require("path");
-const H=__dirname+"/",OUT=path.join(H,"../../www/foods.js");
+const H=__dirname+"/",OUT=path.join(H,"../../www/modules/nutrition/foods.js");
 const rf=f=>fs.readFileSync(H+f,"utf8").replace(/\r/g,"");
 const rd=f=>rf(f).split("\n").filter(l=>l.trim()&&!l.startsWith("#"));
 const U={...JSON.parse(rd("usda-altkume.json").join("")),...JSON.parse(rd("harici.json").join(""))};
@@ -61,5 +61,5 @@ const body=mevcut+",\n    /* USDA SR Legacy genel besinler (değerler birebir) *
 const VEK=Object.fromEntries(rd("vekil.tsv").map(l=>l.split("\t")));Object.keys(VEK).forEach(n=>{if(!t.has(n.toLowerCase()))hata("vekil notu için kayıt yok: "+n)});
 const altS="const ALT="+q(Object.fromEntries(esad.map(n=>[n,alt[n]])))+";const VEK="+q(VEK)+";const PARCA="+q(PARCA)+";";
 const out=rf("sablon.js").replace("/*SATIRLAR*/",()=>body).replace("/*CORE*/",()=>(mevcut.match(/^\s*\["/gm)||[]).length).replace("/*ALT*/",()=>"  "+altS);
-if(process.argv[2]==="--kontrol"){if(fs.readFileSync(OUT,"utf8").replace(/\r/g,"")!==out){console.error("www/foods.js üretilen çıktıyla uyuşmuyor: node tools/besin/uret.js");process.exit(1)}process.exit(0)}
+if(process.argv[2]==="--kontrol"){if(fs.readFileSync(OUT,"utf8").replace(/\r/g,"")!==out){console.error("foods.js üretilen çıktıyla uyuşmuyor: node tools/besin/uret.js");process.exit(1)}process.exit(0)}
 fs.writeFileSync(OUT,out);console.log(adlar.length+" kayıt ("+rows.length+" USDA, "+tarif.length+" tarif, "+(vekil.length+vekilO.length)+" vekil, "+ek.length+" hazır, "+ogun.length+" öğün), "+Buffer.byteLength(out)+" bayt");

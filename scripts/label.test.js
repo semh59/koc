@@ -17,7 +17,7 @@ const cases=[
 ];
 for(const [n,lines,exp] of cases)ok("etiket: "+n,eq(P(lines),exp),P(lines));
 ok("eksik satır boş kalır, uydurulmaz",(r=>r.p===undefined&&r.k===440)(P(["Enerji 440 kcal","Yağ 13 g","Karbonhidrat 70 g"])));
-ok("alakasız metin hiçbir şey çıkarmaz",LB.parse(["Üretici: ABC Gıda","İçindekiler: un, şeker, tuz","Son tüketim 12.2027"]).found.length===0);
+ok("alakasız metin hiçbir şey çıkarmaz",Object.values(LB.parse(["Üretici: ABC Gıda","İçindekiler: un, şeker, tuz","Son tüketim 12.2027"]).food).every(v=>v===undefined));
 
 // lif, şeker, sodyum
 const X=l=>P(["Enerji 100 kcal",...l]);
