@@ -38,7 +38,7 @@ ok("yarı yolda parmak kayarsa yanlış sayı verilmez",(a=>!a.ok||Math.abs(a.bp
 
 const c=P.clean([{day:"2026-10-09",time:"08:10",bpm:72.4},{day:"2026-10-09",time:"08:10",bpm:72},{day:"2026-10-08",time:"23:59",bpm:60},{day:"2026-13-01",time:"08:10",bpm:70},{day:"2026-10-09",time:"25:00",bpm:70},{day:"2026-10-09",time:"09:00",bpm:300},{day:"2026-10-09",time:"09:01",bpm:30},null,{day:"2026-10-09",time:"09:02",bpm:"x"}]);
 ok("kayıt temizliği: bozuk ve aralık dışı atılır, yinelenen birleşir, sıralı ve kimlikli",c.length===2&&c[0].day==="2026-10-08"&&c[1].bpm===72&&c[0].id===1&&c[1].id===2,c);
-ok("kayıt listesi 500 ile sınırlı",P.clean(Array.from({length:700},(_,i)=>({day:"2026-01-01",time:`${String(i%24).padStart(2,"0")}:${String(Math.floor(i/24)%60).padStart(2,"0")}`,bpm:60+i%100}))).length<=500);
+ok("500'ü aşan nabız kaydı kaybolmaz",P.clean(Array.from({length:700},(_,i)=>({day:"2026-01-01",time:`${String(i%24).padStart(2,"0")}:${String(Math.floor(i/24)%60).padStart(2,"0")}`,bpm:60+i%100}))).length===700);
 const h=P.cleanHr([{day:"2026-10-08",a:64.6,m:50},{day:"2026-10-08",a:66,m:51},{day:"2026-10-09",a:400},{day:"2026-10-07",a:70,m:5},{day:"x",a:60}]);
 ok("saat nabzı: günde bir kayıt (sonuncu), bozuk atılır, en düşük geçersizse alınmaz",h.length===2&&h[0].day==="2026-10-07"&&h[0].m===undefined&&h[1].a===66&&h[1].m===51,h);
 console.log(bad?"Başarısız: "+bad:"Tüm nabız testleri geçti");process.exit(bad?1:0);

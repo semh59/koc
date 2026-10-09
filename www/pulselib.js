@@ -76,7 +76,7 @@ const PulseLib=(()=>{
     return r>=LIM[0]&&r<=LIM[1]?{ok:true,bpm:r,n:kept.length+1}:fail("noisy");
   }
 
-  /* Kamera ölçümleri: {day,time,bpm}; geçersizi atar, tarih sırasına koyar, en son 500'ü tutar, kimlik verir. */
+  /* Kamera ölçümleri: {day,time,bpm}; geçersizi atar, tarih sırasına koyar, en son 20.000'ü tutar, kimlik verir. */
   function clean(arr){
     const out=[],seen=new Set();
     for(const x of Array.isArray(arr)?arr:[]){
@@ -85,7 +85,7 @@ const PulseLib=(()=>{
       out.push({day:x.day,time:x.time,bpm});
     }
     out.sort((a,b)=>a.day<b.day?-1:a.day>b.day?1:a.time<b.time?-1:a.time>b.time?1:0);
-    return out.slice(-500).map((x,i)=>({id:i+1,...x}));
+    return out.slice(-20000).map((x,i)=>({id:i+1,...x}));
   }
   /* Saatten günlük nabız: {day,a ortalama,m en düşük}; günde bir kayıt, en son 400 gün. */
   function cleanHr(arr){
@@ -95,7 +95,7 @@ const PulseLib=(()=>{
       const o={day:x.day,a:Math.round(x.a)};if(ok(x.m))o.m=Math.round(x.m);
       m.set(x.day,o);
     }
-    return [...m.values()].sort((a,b)=>a.day<b.day?-1:1).slice(-400);
+    return [...m.values()].sort((a,b)=>a.day<b.day?-1:1).slice(-20000);
   }
   return {LIM,HZ,finger,analyze,clean,cleanHr};
 })();

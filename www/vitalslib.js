@@ -40,7 +40,7 @@ const VitalsLib=(()=>{
   /* Saklanan listeyi temizler: geçersizleri ve yinelenenleri (aynı sid, sid yoksa aynı imza) atar, kimlikleri yeniden verir. */
   function clean(arr){
     const out=[],seen=new Set();let id=1;
-    for(const x of (Array.isArray(arr)?arr:[]).slice(-5000)){
+    for(const x of (Array.isArray(arr)?arr:[]).slice(-50000)){
       const c=check(x);if(!c.row)continue;
       const o=c.row,sig=[o.k,o.day,o.time,o.sys,o.dia,o.g,o.ctx,o.sid,o.i,o.ses,o.nabiz,o.not].join("|");
       if(seen.has(sig))continue;seen.add(sig);
