@@ -1,0 +1,33 @@
+# Code conventions
+
+These rules apply to every file under `www/`, `assets/android/`, `scripts/`, `e2e/` and `.github/`. Product documentation in `docs/*.md` stays Turkish.
+
+## Language
+- **Code is English**: identifiers, comments, commit messages, test titles, file and folder names, persisted data keys and enum values, event names, `data-*` attribute values, CSS class names.
+- **The product UI is Turkish**: every string a user can read (labels, toasts, sheets, notifications, error messages, generated PDF/CSV text, Coach consent text, privacy policy text) stays Turkish with full diacritics. Do not change UI wording while renaming code.
+- Text sent to the AI Coach (system prompt, context blocks) is product text and stays Turkish.
+- Tests may assert Turkish UI strings; the surrounding test code and titles are English.
+
+## Vocabulary (Turkish stem -> English)
+Persisted entry types: `yemek`->`food`, `su`->`water`, `kilo`->`weight`, `spor`->`exercise`, `not`->`note`, `adim`->`steps`. Meal slots: `kahvalti`->`breakfast`, `ogle`->`lunch`, `aksam`->`dinner`, `atistirma`->`snack`.
+Modules: `kayit`->`log`, `besin`->`nutrition`, `salon`->`gym`, `ilac`->`meds`, `aliskanlik`->`habits`, `nabiz`->`pulse`, `tansiyon`->`vitals`, `tahlil`->`labs`, `olcu`->`measures`, `dongu`->`cycle`, `hareket`->`motion`, `koc`->`coach`, `gecmis`->`history`, `analiz`->`insights`, `veri`->`data`.
+Everything else: use the plain English word (`ekran`->`screen`, `bildirim`->`notification`, `yedek`->`backup`, `ayar`->`settings`, `gizlilik`->`privacy`, `sohbet`->`chat`, `tarif`->`recipe`, `hafta`->`week`, `gun`->`day`, `bugun`->`today`). The final table lives at the bottom of this file and is extended by whoever introduces a new term.
+
+## No legacy, no speculation
+- There are no users and no stored data to preserve: do not keep migration, fallback, compatibility or "just in case" paths for data shapes or behaviors that no longer exist.
+- Delete dead code (unreferenced functions, unused parameters, unreachable branches, unused CSS), speculative generality (single-implementation interfaces, options nobody passes), defensive code for impossible states, and imaginary code (references to files, globals, DOM ids, APIs or features that do not exist).
+- Comments explain only non-obvious *why*. No restating comments, no task IDs, no history, no TODOs.
+- Prove before deleting: `grep` every symbol across `www/`, `index.html`, `scripts/`, `e2e/`, `assets/`; run the tests.
+
+## Techniques
+Use the best tool that makes the code shorter or the complexity class lower, not newer syntax for its own sake:
+- Index with `Map`/`Set` instead of repeated `filter`/`find` in loops; sort once and binary-search sorted-by-day arrays; single-pass reductions; `Object.groupBy`/`Map.groupBy`, `toSorted`, `structuredClone`, `Array.fromAsync`, `AbortController`, `Intl` formatters, optional chaining, private class fields where state needs encapsulation.
+- Keep heavy work off the main thread only when measured (Web Worker); batch IndexedDB writes in one transaction; avoid re-stringifying large objects.
+- Pure logic stays DOM-free and unit-testable; UI files stay thin.
+
+## Verification
+- `npm test` (unit, jsdom) and `CI=1 E2E_PORT=44xx npx playwright test -c e2e/playwright.config.js --output=$TEMP/pwN` (e2e) must pass before every commit.
+- `node scripts/sinir.test.js` enforces module data boundaries; `node scripts/paths.test.js` checks file paths.
+
+## Final vocabulary table
+(maintained by the vocabulary pass)
