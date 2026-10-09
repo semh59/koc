@@ -46,7 +46,7 @@ const test=base.test.extend({
       view:page.locator("#view"),sheet:page.locator("#sheet.on"),toast:page.locator("#toast.on #tmsg"),
       async tab(name){await page.locator(`nav button[data-tab="${name}"]`).click()},
       async go(t){await page.waitForSelector("html[data-boot]",{state:"attached"});await page.evaluate(t=>{const b=document.createElement("button");b.dataset.tab=t;document.body.append(b);b.click();b.remove()},t)},
-      state:()=>page.evaluate(async()=>{await Store.whenIdle();return JSON.parse(Store.get("koc_v1"))}), // asıl depo IndexedDB: bekleyen yazım bitince okunur
+      state:()=>page.evaluate(async()=>{await Store.whenIdle();return Store.sharded?assemble(Store.getShards()):JSON.parse(Store.get("koc_v1"))}), // asıl depo IndexedDB: bekleyen yazım bitince okunur
       async closeSheet(){await page.keyboard.press("Escape");await expect(page.locator("#sheet")).not.toHaveClass(/\bon\b/)}
     };
     await use(app);

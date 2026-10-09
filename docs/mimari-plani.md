@@ -78,3 +78,10 @@ Sıra önerisi: **0 → A → B → C → D → E**. A ve B hemen yapılabilir v
 - Hız artışı vermez (şimdi de hızlı). Kazanç: değişikliğin etkisini küçük tutmak, yeni özellik eklemeyi ve hatayı bulmayı kolaylaştırmak, ve veri büyürken yazma maliyeti.
 - Maliyet büyük: yüzlerce dosya taşınır. Bu yüzden her aşama ayrı sürüm, her aşamada tam test.
 - Karar noktaları (sana kalan): (1) D'den sonra localStorage aynası ve eski sürüme dönüş kalkar mı (dönüşü kapatır, kod sadeleşir), (2) modül sınırları ve adları (yukarıdaki liste önerimdir), (3) hız: aşama aşama mı, yoksa A-B'yi hemen mi.
+
+## Durum (2026-10-09)
+- **A tamam**: ana betik `www/main/` altında 7 dosya, CSS `www/app.css`, `index.html` ~120 satır.
+- **B tamam**: `www/kernel.js` eylem kaydı (`Act`) ve veri kaydı (`Data`); `data-act` dağıtıcısı 38 kayıtlı eylem.
+- **C tamam**: `www/modules/*.js` (11 veri modülü); gizlilik, CSV, geçmiş, Koç ve haftalık rapor modül API'sinden okur. Sınır testi `scripts/sinir.test.js` (ihlal tabanı boş; sahibi olmayan dosya `S.<alan>`'a dokunursa CI düşer). Kalan bilinçli istisna: `settings` (ayarlar çekirdeğin), `main/*` (çekirdek).
+- **D tamam (telefonda doğrulanacak)**: IndexedDB'de modül başına parça (`m:<modül>` + `m:meta`), tek işlemde yazım, yalnız değişen parça yazılır. Eski tek metin ilk oturumda yedek kalır, sonraki açılışta silinir (silinen veri yedekte kalmasın). localStorage aynası parçalı düzende yazılmaz.
+- **E kalan**: dosyaları `modules/` altına taşıma (ui/lib dosyaları), `entries` için ay bazlı alt parça, kullanılmayan globallerin silinmesi.
