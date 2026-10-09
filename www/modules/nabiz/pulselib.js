@@ -110,6 +110,33 @@ const PulseLib=(()=>{
     }
     return [...m.values()].sort((a,b)=>a.day<b.day?-1:1).slice(-20000);
   }
-  return {LIM,HZ,finger,analyze,clean,cleanHr};
+  /* Flaşı olan arka kamerayı bulur. Birden fazla arka kamerası olan telefonlarda (Samsung: geniş, ultra geniş, tele) varsayılan
+     arka kamerada flaş olmayabilir; flaş yalnız ana kamerada vardır. md: navigator.mediaDevices; base: video kısıtları.
+     {stream, track, tried, noTorch}: noTorch=true ise hiçbir kamerada flaş yetisi görünmedi (varsayılan kamera açık döner). */
+  async function pickTorchCamera(md,base){
+    const has=t=>{try{const c=t.getCapabilities&&t.getCapabilities();return !!(c&&c.torch)}catch(e){return false}};
+    const open=extra=>md.getUserMedia({video:{...base,...extra},audio:false});
+    const stop=s=>s.getTracks().forEach(t=>{try{t.stop()}catch(e){}});
+    const wait=ms=>new Promise(r=>setTimeout(r,ms));
+    let stream=await open({facingMode:{ideal:"environment"}}),track=stream.getVideoTracks()[0],tried=1;
+    if(!has(track))await wait(250); // bazı cihazlar yetiyi akış başladıktan biraz sonra bildirir
+    if(has(track))return {stream,track,tried};
+    const cur=track.getSettings&&track.getSettings().deviceId;
+    let devs=[];
+    try{devs=(await md.enumerateDevices()).filter(d=>d.kind==="videoinput"&&d.deviceId&&d.deviceId!==cur&&!/front|user/i.test(d.label||""))}catch(e){}
+    stop(stream); // aynı anda tek kamera açılabilir
+    for(const d of devs.slice(0,6)){
+      tried++;
+      try{
+        const s=await open({deviceId:{exact:d.deviceId}}),t=s.getVideoTracks()[0];
+        if(!has(t))await wait(250);
+        if(has(t))return {stream:s,track:t,tried};
+        stop(s);
+      }catch(e){}
+    }
+    stream=await open({facingMode:{ideal:"environment"}});
+    return {stream,track:stream.getVideoTracks()[0],tried,noTorch:true};
+  }
+  return {LIM,HZ,finger,analyze,clean,cleanHr,pickTorchCamera};
 })();
 if(typeof module!=="undefined")module.exports=PulseLib;
