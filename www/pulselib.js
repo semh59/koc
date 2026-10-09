@@ -44,7 +44,10 @@ const PulseLib=(()=>{
     if(!(best>0))return null;
     for(let lag=lo;lag<=hi;lag++){
       const s=c[lag-lo+1];
-      if(s>=0.85*best&&s>=c[lag-lo]&&s>=c[lag-lo+2])return {bpm:60*HZ/lag,power:s};
+      if(s>=0.85*best&&s>=c[lag-lo]&&s>=c[lag-lo+2]){
+        const d=c[lag-lo]-2*s+c[lag-lo+2],l=lag+(d?0.5*(c[lag-lo]-c[lag-lo+2])/d:0); // parabolla kesirli örnek: 30 Hz'de tam örnek ±%2,4 sapma verirdi
+        return {bpm:60*HZ/l,power:s};
+      }
     }
     return null;
   }
@@ -75,13 +78,14 @@ const PulseLib=(()=>{
     const sdI=Math.sqrt(mean(kept.map(v=>(v-mean(kept))**2)));
     dg.cv=+(sdI/mean(kept)).toFixed(2);
     if(sdI/mean(kept)>0.15)return fail("noisy");
-    const bpm=60/mean(kept),ac=autocorr(x);
+    const pk0=60/mean(kept),ac=autocorr(x);
     if(ac){dg.ac=+ac.power.toFixed(2);dg.acb=Math.round(ac.bpm)}
     /* Atımlar çok düzenliyse (telefonda ~17 kare/sn'de özilinti gücü 0,2'ye düşebiliyor) güç eşiği 0,15'e iner; özilinti yine atım sayısıyla uyuşmalı. */
     const reg=sdI/mean(kept)<=0.10&&kept.length>=20&&kept.length>=0.85*ibi.length;
-    const agree=!!ac&&Math.abs(ac.bpm-bpm)/bpm<=0.12;
+    const agree=!!ac&&Math.abs(ac.bpm-pk0)/pk0<=0.12;
     if(!agree||ac.power<(reg?0.15:0.3))return fail("noisy");
-    const r=Math.round(bpm);
+    /* Sayı özilintiden: atım noktası ortalaması gürültü tepelerinden yukarı sapıyordu (sentetik denemede özilinti 7 kat az sapma verdi); tepe sayımı yalnız düzen denetimi. */
+    const r=Math.round(ac.bpm);
     return r>=LIM[0]&&r<=LIM[1]?{ok:true,bpm:r,n:kept.length+1,dg}:fail("noisy");
   }
 

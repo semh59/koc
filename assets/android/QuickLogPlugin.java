@@ -120,11 +120,31 @@ public class QuickLogPlugin extends Plugin {
         return true;
     }
 
+    /** Alınan kayıtlar "inflight"ta kalır, JS kalıcı yazdıktan sonra ack ile silinir: alma ile yazma arasında süreç ölürse kayıt kaybolmaz. */
     private static synchronized String takeAll(Context c) {
         SharedPreferences p = prefs(c);
-        String s = p.getString("q", "");
-        if (!s.isEmpty()) p.edit().remove("q").commit();
+        String q = p.getString("q", ""), inf = p.getString("inflight", ""), s = inf + q;
+        if (!q.isEmpty()) p.edit().remove("q").putString("inflight", s).commit();
         return s;
+    }
+
+    /** upto (ms) ve öncesi kayıtları kalıcı yazıldı sayıp siler; sonrası (başka bir alışın kayıtları) kalır. */
+    @PluginMethod
+    public synchronized void ack(PluginCall call) {
+        long upto = call.getLong("upto", 0L);
+        SharedPreferences p = prefs(getContext());
+        String left = "";
+        for (String[] x : QuickMath.parse(p.getString("inflight", ""))) {
+            try {
+                long t = Long.parseLong(x[1]);
+                if (t > upto) left = QuickMath.append(left, x[0], t);
+            } catch (RuntimeException e) {
+                // bozuk kayıt atılır
+            }
+        }
+        if (left.isEmpty()) p.edit().remove("inflight").commit();
+        else p.edit().putString("inflight", left).commit();
+        call.resolve();
     }
 
     @PluginMethod
@@ -139,7 +159,7 @@ public class QuickLogPlugin extends Plugin {
         JSArray items = new JSArray();
         List<String[]> list = QuickMath.parse(takeAll(getContext()));
         for (String[] x : list) {
-            // Kuyruk takeAll'da zaten silindi: bozuk bir kayıt yalnız kendini atar, diğerleri kaybolmaz.
+            // Bozuk bir kayıt yalnız kendini atar, diğerleri kaybolmaz.
             try {
                 JSObject o = new JSObject();
                 if (x[0].charAt(0) == 'm' || x[0].charAt(0) == 'k') {

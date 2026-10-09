@@ -37,7 +37,7 @@ async function bkSend(){
   const P=window.Capacitor&&window.Capacitor.Plugins,fs=P&&P.Filesystem,sh=P&&P.Share,name=`neowell-yedek-${dayKey()}.json`;
   if(fs&&sh){
     try{
-      const f=await fs.writeFile({path:name,data:text,directory:"CACHE",encoding:"utf8"});
+      await cacheClean();const f=await fs.writeFile({path:name,data:text,directory:"CACHE",encoding:"utf8"});
       await sh.share({title:"NeoWell yedeği",files:[f.uri]});
     }catch(e){if(!/cancel/i.test(e&&e.message||""))toast("Paylaşılamadı");return}
   }else{
