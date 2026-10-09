@@ -59,6 +59,21 @@ test.describe("Onboarding",()=>{
     expect(s.entries.filter(e=>e.type==="kilo").map(e=>e.v)).toEqual([84]);
   });
 
+  test("hareket düzeyi triyajı: iki soru cevaplanınca düzey ayara yazılır, hedef kalori buna göre değişir",async({app,page})=>{
+    await app.open();await page.click('[data-ob="next"]');
+    await fill(page);
+    await page.click('[data-ob="job:0"]');await page.click('[data-ob="walk:0"]');
+    await page.click('[data-ob="next"]');await page.click('[data-ob="next"]');
+    const az=+(await page.locator(".sumv").innerText()).replace(/\D/g,"");
+    await page.click('[data-ob="back"]');await page.click('[data-ob="back"]');
+    await page.click('[data-ob="job:2"]');await page.click('[data-ob="walk:2"]');
+    await page.click('[data-ob="next"]');await page.click('[data-ob="next"]');
+    const cok=+(await page.locator(".sumv").innerText()).replace(/\D/g,"");
+    expect(cok).toBeGreaterThan(az);
+    await page.click('[data-ob="next"]');
+    expect((await app.state()).settings.act).toBe(2);
+  });
+
   test("Şimdilik geç: profil boş kalır, bir daha sorulmaz",async({app,page})=>{
     await app.open();
     await page.click('[data-ob="skip"]');

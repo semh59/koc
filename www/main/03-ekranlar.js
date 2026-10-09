@@ -186,6 +186,7 @@ function viewAyar(){
     ${fld("age","Yaş",st.age||"","","numeric")}
     <div class="mt-3 lbl">Cinsiyet (isteğe bağlı)</div>${segb("sex",[["m","Erkek"],["f","Kadın"],["","Belirtmem"]],st.sex)}
     <div class="mt-3 lbl">Günlük hareket düzeyi</div>${segb("actl",[["0","Az"],["1","Orta"],["2","Çok"]],String(st.act))}
+    <p class="hint">Az: çoğunlukla oturarak, günde 5 bin adımdan az. Orta: ayakta çalışıyor ya da 5-9 bin adım atıyorsun. Çok: fiziksel iş ya da 10 bin+ adım. Planlı antrenmanı sayma, onu ayrıca kaydedersin.</p>
     ${unitsHtml()}
     <div class="row"><button class="btn ghost grow" data-act="saglik">Sağlık notların${st.healthNote?" (var)":""}</button>${helpBtn("hlpsn","Sağlık notların")}</div>
     ${helpBox("hlpsn","Hamilelik, yeme bozukluğu geçmişi, hastalık ya da ilaç varsa buraya yaz. Öneriler bunlara göre ihtiyatlı olmalı, hekim kontrolü gerekebilir.")}${st.chatRisk||chatEd()?`<div class="row"><span>Sohbetten bir sağlık işareti algılandı: kalori açığı, oruç ve program önerileri kapalı. Bu işareti uygulamadan kaldıramazsın; sağlık durumunu bir hekimle konuşmanı öneririz.</span></div>`:""}</div>

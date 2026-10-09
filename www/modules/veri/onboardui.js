@@ -1,6 +1,6 @@
 "use strict";
 /* İlk açılış: karşılama (adım -1) ve 3 adım. Girdiler mevcut profil ve ayar alanlarına yazılır; taslak yalnızca bellekte durur. */
-const obFresh=()=>({step:-1,kg:"",cm:"",age:"",sex:"",dir:"koru",goal:"",hd:false,hn:false,mods:[],err:"",bad:"",minor:false,kgOk:""});
+const obFresh=()=>({step:-1,kg:"",cm:"",age:"",sex:"",dir:"koru",goal:"",hd:false,hn:false,mods:[],err:"",bad:"",minor:false,kgOk:"",job:"",walk:""});
 const ob=obFresh();
 const OB_MODS=[["med","İlaç hatırlatıcı","ilac"],["fast","Oruç takibi","fast"],["steps","Adım sayar","adim"],["bp","Tansiyon","heart"],["bs","Şeker","su"]];
 const OB_DIRS=[["ver","Kilo ver"],["koru","Koru"],["al","Kilo al"]];
@@ -32,9 +32,11 @@ function obParse(){
 /* İşaretler sağlık notuna yazılır; ilki riskFlags'ta sert (hamilelik), ikincisi yumuşak sayılır. */
 const OB_HD="İlk kurulumda işaretlendi: hamilelik, emzirme ya da yeme bozukluğu geçmişi",OB_HN="İlk kurulumda işaretlendi: hekim kontrolü ya da düzenli ilaç";
 const obNote=()=>[S.settings.healthNote,ob.hd&&OB_HD,ob.hn&&OB_HN].filter(Boolean).join(". ").slice(0,500);
+/* İki soru da cevaplandıysa triyajdan, yoksa mevcut ayardan. */
+const obAct=()=>ob.job!==""&&ob.walk!==""?Algo.actFromTriage(+ob.job,+ob.walk):S.settings.act;
 function obPlan(p){
   const q={kg:p.kg,cm:p.cm,age:p.age,sex:ob.sex},inp={...riskInput(p.kg),age:p.age,sex:ob.sex,cm:p.cm,goalKg:p.goal,healthNote:obNote()};
-  const t=Algo.suggestTarget({...inp,tdee:Algo.formulaTdee({...q,act:S.settings.act}),bmr:Algo.bmrMifflin(q)});
+  const t=Algo.suggestTarget({...inp,tdee:Algo.formulaTdee({...q,act:obAct()}),bmr:Algo.bmrMifflin(q)});
   return {kcal:t.kcal,note:t.note,protein:Algo.protein(inp).range,risk:Algo.riskFlags(inp)};
 }
 function obView(){
@@ -52,7 +54,10 @@ function obView(){
     ${fld("cm","Boy (cm)",ob.cm,"","numeric")}${fld("kg","Kilo (kg)",ob.kg,"","decimal")}${fld("age","Yaş",ob.age,"","numeric")}
     <div class="mt-3 lbl">Cinsiyet (isteğe bağlı)</div>${seg("sex",[["m","Erkek"],["f","Kadın"],["","Belirtmem"]],ob.sex)}
     <div class="mt-3 lbl">Hedefin</div>${seg("dir",OB_DIRS,ob.dir)}
-    ${ob.dir!=="koru"?fld("goal","Hedef kilo (kg)",ob.goal,"","decimal"):""}${ob.bad?"":err}</div>`;
+    ${ob.dir!=="koru"?fld("goal","Hedef kilo (kg)",ob.goal,"","decimal"):""}
+    <div class="mt-3 lbl">Gününü nasıl geçiriyorsun?</div>${seg("job",[["0","Oturarak"],["1","Ayakta"],["2","Fiziksel iş"]],ob.job)}
+    <div class="mt-3 lbl">Günlük yürüyüşün</div>${seg("walk",[["0","5 bin adımdan az"],["1","5-9 bin"],["2","10 bin+"]],ob.walk)}
+    <p class="hint">Planlı antrenmanı sayma, onu ayrıca kaydedersin. Kalori hedefin buna göre başlar; birkaç hafta kayıttan sonra gerçek harcamandan düzelir.</p>${ob.bad?"":err}</div>`;
   else if(st===1)body=`<h2>Hangileri açık olsun?</h2><div class="card"><p class="flush hint">Kapalı olanlar ekranında görünmez. İstediğini sonra Ayarlar'dan açarsın.</p>
     <div class="chips">${OB_MODS.map(([k,l,ic])=>`<button class="chip" data-ob="mod:${k}" aria-pressed="${ob.mods.includes(k)}">${Icons.svg(ic)} ${l}</button>`).join("")}</div>
     ${ob.mods.includes("steps")?`<p class="p0 hint">Adım sayar için telefon izni, Bugün ekranındaki "Adım sayarı aç" satırından istenir.</p>`:""}</div>
@@ -73,6 +78,7 @@ function obDone(){Object.assign(ob,obFresh());S.settings.obDone=true;tab="bugun"
 function obFinish(){
   const p=obParse();if(p.err)return;
   const st=S.settings,pl=obPlan(p),mods=ob.mods;
+  if(ob.job!==""&&ob.walk!=="")st.act=obAct();
   Object.assign(st,{heightCm:p.cm,age:p.age,sex:ob.sex,goalKg:p.goal,medOn:mods.includes("med"),fastOn:mods.includes("fast"),bpOn:mods.includes("bp"),bsOn:mods.includes("bs")});
   if(pl.kcal>=RANGES.kcal[0]&&pl.kcal<=RANGES.kcal[1])st.kcal=pl.kcal;
   if(ob.hd||ob.hn){st.healthNote=obNote();cNoteCheck()}
@@ -89,7 +95,7 @@ document.addEventListener("click",ev=>{
   if(a==="skip")return obDone();
   if(ob.step<0){ob.step=0;return render()}
   if(a==="back"){ob.step--;ob.err=ob.bad="";return render()}
-  if(a==="sex"||a==="dir"){ob[a]=v;ob.err=ob.bad="";return render()}
+  if(a==="sex"||a==="dir"||a==="job"||a==="walk"){ob[a]=v;ob.err=ob.bad="";return render()}
   if(a==="mod"){ob.mods=ob.mods.includes(v)?ob.mods.filter(x=>x!==v):ob.mods.concat(v);return render()}
   if(ob.step===0){
     const p=obParse();
