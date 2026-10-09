@@ -47,7 +47,6 @@ function hgMonths(){
     return `${h}<button class="rrow" data-hg="ym:${s.ym}"><span class="grow tx"><b>${AY[+s.ym.slice(5,7)-1]}</b><span class="mut sm num">${bits}</span></span></button>`;
   }).join("");
 }
-const HG_TYPE={yemek:"yemek",not:"not",spor:"spor",wo:"salon"};
 function hgResults(){
   const q=hg.q.trim();
   if(HistoryLib.norm(q).trim().length<2)return `<p class="hint">En az 2 harf yaz. Yemek, not, spor ve antrenman adlarında arar.</p>`;
