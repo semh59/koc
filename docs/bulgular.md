@@ -78,3 +78,12 @@ Bakılanlar: 26 Java dosyasının tamamı en az bir kez satır satır okundu (bu
 | 8-1 | Bilgi | performans | Büyük veriyle ölçüm: sorun yok. | Doğrulandı. |
 | 9-1 | Bilgi | testler | Mutasyon taramasıyla test boşlukları arandı; sınır değer testleri eklendi (`scripts/sinir.test.js`). `pulselib` eşikleri (CV 0,15, özilinti gücü 0,3, tutulan atım oranı) için ayrı ret testi hâlâ yok. | Açık, düşük. |
 | 9-2 | O | `www/pulselib.js` | Sentetik tarama (600 sinyal, 45-109 atım/dk, gürültü genliğe yakın veya büyük): kabul edilenlerin ~%8'i 5-9 atım/dk sapıyor. Gürültüsüz/hafif gürültüde sapma yok. Gerçek parmak verisi ölçülmeden eşik sıkılaştırılmadı. | Açık: telefonda ölçümü bilinen bir nabızla (saat) karşılaştır; sapma >5 çıkarsa eşik sıkılaşır. |
+
+## Faz 14: Telefon bulguları (kullanıcıdan)
+
+| No | Ciddiyet | Yer | Bulgu | Durum |
+|---|---|---|---|---|
+| 14-1 | Y | Bugün, geçmiş | Geçmiş tek gün gösteriliyor, 365 günle sınırlı, bulunması zor; takvim ve tüm zaman görünümü yok. | Açık |
+| 14-2 | Y | depolama | Tek `localStorage` anahtarı, ~5 MB kota; 3+ yılda sınıra yaklaşır. | Açık |
+| 14-3 | Y | Bugün | Dünkü egzersiz ana ekranda kalıyor (telefonda görüldü, neden bulunmadı). | Açık |
+| 14-4 | Y | `pulselib.js`, `pulseui.js` | Kamerayla nabız ölçümü telefonda başarısız (neden bulunmadı). | Açık |
