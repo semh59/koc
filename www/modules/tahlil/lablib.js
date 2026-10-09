@@ -200,9 +200,9 @@ const LabLib=(()=>{
   /* pdf.js ile metni okur. lib: pdfjs-dist; data: Uint8Array. Parola gerekirse {need:"password"} döner.
      ocr (isteğe bağlı): metin katmanı yoksa sayfaları görüntü olarak okur: {render(page)->base64, recognize(base64)->ML Kit sonucu, progress(i,n), cancelled()}. */
   async function extract(lib,data,password,ocr){
-    let doc;
+    let doc,task;
     try{
-      doc=await lib.getDocument({data,password,isEvalSupported:false,useSystemFonts:false,verbosity:0}).promise;
+      task=lib.getDocument({data,password,isEvalSupported:false,useSystemFonts:false,verbosity:0});doc=await task.promise;
     }catch(e){
       if(e&&e.name==="PasswordException")return {need:"password",wrong:e.code===2};
       return {error:"Bu dosya PDF olarak açılamadı"};
@@ -228,7 +228,7 @@ const LabLib=(()=>{
       if(ocr.cancelled&&ocr.cancelled())return {cancelled:true};
       if(!out.some(l=>/\d/.test(l)))return {scanned:true,lines:[]};
       return {lines:out,limited:total>n?{read:n,total}:null};
-    }finally{await doc.destroy()}
+    }finally{await task.destroy()} // pdf.js 5+ kapatmayı yükleme görevinden yapar
   }
 
   const dayOk=d=>typeof d==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&new Date(d+"T00:00Z").toJSON()?.slice(0,10)===d;
