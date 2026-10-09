@@ -36,5 +36,11 @@ Uzun liste `docs/yapilacaklar.md` içinde kalır. Bu liste yalnız en riskli ve 
 19. Bugün'deki Uyku karosunda dünkü gecenin süresi çıkmalı (Samsung Health'teki yatakta geçen süreye yakın). Elle girdiğin uyku varsa o kalmalı.
 20. Daha fazla > **Nabız**: "Kamerayla ölç" de, parmağı arka kamera ve flaşın üstüne koy. Flaş yanmalı, 30 sn sonra atım sayısı çıkmalı; saatteki ya da Samsung Health'teki nabızla yakın olmalı (birkaç atım sapma normal). Parmağı kaldırınca sayaç sıfırlanmalı, ölçüm net değilse sayı vermemeli.
 21. Ölçümü kaydet, listede görünmeli; ✕ ile silinmeli.
+## G. Geçmiş
+22. Daha fazla > **Geçmiş ve takvim** (ya da Bugün'ün en altındaki bağlantı): bu ayın takvimi açılmalı; kayıtlı günlerde simgeler (yemek, su, spor, kilo) görünmeli. Ay ve yıl seçilebilmeli, ‹ › ile aylar gezilmeli.
+23. Bir güne dokun: o günün yemek, su, spor, antrenman, adım, uyku, tansiyon, nabız kayıtları görünmeli. ‹ › ile günler arası gidilmeli. "+ml", Yemek, Kilo, Spor, Not o güne yazmalı (dünden eski bir günde de).
+24. Aylar sekmesi: ay ay özet; Ara sekmesi: "tavuk" yaz, geçmiş günlerdeki yemekler listelenmeli, dokununca o güne gitmeli.
+25. Trend > 1 yıl ve Tümü: grafik açılmalı, uzun aralıkta çubuklar haftalık/aylık ortalama olmalı.
+26. Dünkü bitmemiş antrenman Bugün'de "bitirilmedi" demeli; **Bitir ve kaydet** süre sormalı, **Sil** silmeli.
 ## Görüntü gönderme
 Sorun görünce: ekran görüntüsü + hangi madde numarası + (ilaç alarmıysa) Alarm kayıtları ekranı.
