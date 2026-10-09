@@ -2451,7 +2451,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     const back=JSON.parse(ev("JSON.stringify(S)"));
     ok("yedek: S.measures yedekte, geri yüklemede korunur; eski yedekte (alan yok) boş dizi",ev(`Algo.cleanMeasures(${JSON.stringify(back.measures)}).length`)===3&&ev("cleanHealthState({}).measures.length")===0&&ev("cleanHealthState({measures:'x'}).measures.length")===0);
     const many=JSON.stringify(Array.from({length:450},(_,i)=>({day:new Date(Date.UTC(2024,0,1+i)).toISOString().slice(0,10),k:"waist",v:80})));
-    ok("temizleyici: en çok 400 (en yeni), girdi dizisini değiştirmez",ev(`(()=>{const a=${many};const r=Algo.cleanMeasures(a);return r.length===400&&a.length===450&&r[399].day===a[449].day})()`));
+    ok("temizleyici: eski sınırı (400) aşan ölçü kaybolmaz, girdi dizisini değiştirmez",ev(`(()=>{const a=${many};const r=Algo.cleanMeasures(a);return r.length===450&&a.length===450&&r[449].day===a[449].day&&r[0].day===a[0].day})()`));
     ok("CSV: kayitlar dosyasında ölçü satırı (tür ölçü_bel, birim cm, ondalık virgül), yeni dosya yok",(()=>{const f=ev("pvCsv()");return f.length===9&&f[0].build().includes("ölçü_bel;87;cm")&&f[0].build().includes("ölçü_kalça;101;cm")})());
     ok("Koç bağlamına ölçü girmez",!/ölçü|measure|87|101|bel/i.test(JSON.stringify(ev("cData()")).replace(/belirt|belki/gi,"")));
     ev("sheetPrivacy()");

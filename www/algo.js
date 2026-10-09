@@ -168,13 +168,13 @@ const Algo=(()=>{
     let streak=0;while(i>=0&&vals[i]>=goal){streak++;i--}
     return {n:rec.length,avg:rec.length?rec.reduce((a,b)=>a+b,0)/rec.length:0,best,hit:vals.filter(v=>v>=goal).length,streak};
   }
-  /* Vücut ölçüleri (cm): geçersizi atar, aynı gün+bölgede sonuncuyu tutar, en yeni 400. Girdiyi değiştirmez. */
+  /* Vücut ölçüleri (cm): geçersizi atar, aynı gün+bölgede sonuncuyu tutar, en yeni 20.000. Girdiyi değiştirmez. */
   const MEASURES=["waist","hip","chest","arm","thigh"];
   function cleanMeasures(raw){
     const m=new Map();
     for(const x of Array.isArray(raw)?raw:[])
       if(x&&MEASURES.includes(x.k)&&typeof x.day==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(x.day)&&typeof x.v==="number"&&x.v>=20&&x.v<=250)m.set(x.day+x.k,{day:x.day,k:x.k,v:Math.round(x.v*10)/10});
-    return [...m.values()].sort((a,b)=>a.day<b.day?-1:a.day>b.day?1:0).slice(-400);
+    return [...m.values()].sort((a,b)=>a.day<b.day?-1:a.day>b.day?1:0).slice(-20000);
   }
   const whtr=(waist,cm)=>waist>0&&cm>0?waist/cm:null;
   /* Net aktivite enerjisi (dinlenme hariç): (MET−1)×kg×saat. MotionMath.kcal ile aynı tanım; BMR zaten TDEE'de. kg yoksa ya da süre 0 ise null. */

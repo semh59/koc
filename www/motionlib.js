@@ -1,7 +1,7 @@
 "use strict";
 /* Otomatik algılanan yürüyüş/koşu aralıkları: doğrulama ve özet (DOM yok). Aralıkları yerel taraf hesaplar, burada yalnızca saklanır. */
 const MotionLib=(()=>{
-  const MAX=400,p2=n=>String(n).padStart(2,"0");
+  const MAX=20000,p2=n=>String(n).padStart(2,"0");
   const dayOf=ms=>{const d=new Date(ms);return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`};
   const hmOf=ms=>{const d=new Date(ms);return `${p2(d.getHours())}:${p2(d.getMinutes())}`};
   const num=(v,lo,hi)=>typeof v==="number"&&isFinite(v)&&v>=lo&&v<=hi;

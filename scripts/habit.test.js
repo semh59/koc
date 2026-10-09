@@ -10,10 +10,10 @@ ok("fastState 16:8: 17 saat sonra bitti, kalan 0",s.left===0&&s.done&&s.elapsed=
 ok("fastState: oruç yoksa, bozuk planda null; gelecekteki başlangıç 0 geçer",H.fastState({plan:16,t0:null},1)===null&&H.fastState({plan:7,t0:5},9)===null&&H.fastState(f,1e12-5*H1).elapsed===0);
 let r=H.cleanFast({plan:18,t0:5,log:[{t0:1,t1:2},{t0:5,t1:5},{t0:5,t1:4},{t0:0,t1:73*H1},{t0:"a",t1:9},null,{t0:10,t1:20,x:1}]});
 ok("cleanFast: geçersiz ve 72 saati aşan kayıtları atar, plan ve t0 korunur",JSON.stringify(r)==='{"plan":18,"t0":5,"log":[{"t0":1,"t1":2},{"t0":10,"t1":20}]}',r);
-ok("cleanFast: çöp girdide varsayılan döner, log en çok 200",JSON.stringify(H.cleanFast("x"))==='{"plan":16,"t0":null,"log":[]}'&&JSON.stringify(H.cleanFast({plan:99,t0:-1,log:5}))==='{"plan":16,"t0":null,"log":[]}'&&H.cleanFast({log:Array.from({length:250},(_,i)=>({t0:i,t1:i+1}))}).log.length===200);
+ok("cleanFast: çöp girdide varsayılan döner, log eski 200 sınırını aşınca kaybolmaz",JSON.stringify(H.cleanFast("x"))==='{"plan":16,"t0":null,"log":[]}'&&JSON.stringify(H.cleanFast({plan:99,t0:-1,log:5}))==='{"plan":16,"t0":null,"log":[]}'&&H.cleanFast({log:Array.from({length:250},(_,i)=>({t0:i,t1:i+1}))}).log.length===250);
 r=H.cleanSleep([{day:"2026-10-01",min:400,q:3},{day:"2026-10-01",min:450,q:9,src:"hc"},{day:"2026-10-02",min:30},{day:"2026-10-03",min:"x"},{day:"bozuk",min:400},null,{day:"2026-09-30",min:1080.4,q:1,src:"x"}]);
 ok("cleanSleep: gün başına son kayıt, aralık dışı atılır, q ve src doğrulanır, güne göre sıralı",JSON.stringify(r)==='[{"day":"2026-09-30","min":1080,"q":1},{"day":"2026-10-01","min":450,"src":"hc"}]',r);
-ok("cleanSleep: çöp girdide boş, en çok 400",H.cleanSleep(7).length===0&&H.cleanSleep(Array.from({length:500},(_,i)=>({day:new Date(Date.UTC(2020,0,1+i)).toISOString().slice(0,10),min:400}))).length===400);
+ok("cleanSleep: çöp girdide boş, 400 günü aşan uyku kaybolmaz",H.cleanSleep(7).length===0&&H.cleanSleep(Array.from({length:500},(_,i)=>({day:new Date(Date.UTC(2020,0,1+i)).toISOString().slice(0,10),min:400}))).length===500);
 r=H.cleanMood([{day:"2026-10-01",v:2,t:"  eh "},{day:"2026-10-01",v:4},{day:"2026-10-02",v:6},{day:"2026-10-03",v:3,t:"x".repeat(150)},{day:"2026-10-04",v:2.5}]);
 ok("cleanMood: gün başına son kayıt, aralık dışı atılır, not 100 karaktere kesilir",JSON.stringify(r.map(x=>[x.day,x.v,x.t&&x.t.length]))==='[["2026-10-01",4,null],["2026-10-03",3,100]]',r);
 ok("cleanMood: çöp girdide boş",H.cleanMood(null).length===0&&H.cleanMood([1,"a",{}]).length===0);

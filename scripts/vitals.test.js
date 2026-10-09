@@ -21,7 +21,7 @@ ok("değerler yuvarlanır (şeker 1 ondalık, tansiyon tam sayı)",chk(G({g:95.4
 const cl=V.clean([T({}),T({}),T({sys:999}),null,"x",G({}),G({g:130,ctx:"sonra"}),T({sid:"a1"}),T({sid:"a1",sys:124,time:"08:02"})]);
 ok("clean: yinelenen ve geçersiz atılır, kimlikler 1..n",cl.length===5&&cl.map(r=>r.id).join()==="1,2,3,4,5",cl);
 ok("clean: dizi olmayan girdi boş döner",V.clean(null).length===0&&V.clean("x").length===0&&V.clean({}).length===0);
-ok("clean: 5000 satırla sınırlı",V.clean(Array.from({length:6000},(_,i)=>G({g:50+(i%700),time:`${String(i%24).padStart(2,"0")}:${String(i%60).padStart(2,"0")}`,day:`2026-0${1+(i%9)}-1${i%9}`,ctx:V.CTX[i%5][0]}))).length<=5000);
+ok("clean: 5000'i aşan ölçüm kaybolmaz",V.clean(Array.from({length:6000},(_,i)=>G({g:50+(i%700),time:`${String(i%24).padStart(2,"0")}:${String(i%60).padStart(2,"0")}`,day:`2026-0${1+(i%9)}-1${i%9}`,ctx:V.CTX[i%5][0]}))).length>5000);
 ok("clean: kendi çıktısı tekrar temizlenince değişmez",JSON.stringify(V.clean(cl))===JSON.stringify(cl));
 
 // aynı seansta iki özdeş ölçüm (128/82 iki kez) açılışta temizlenince kaybolmamalı
@@ -99,7 +99,7 @@ const src=require("fs").readFileSync(require("path").join(__dirname,"../www/vita
 ok("tanı dili kullanılmaz",!/hipertansiyon|diyabet|hipoglisemi|hiperglisemi|anormal|tehlikeli|hasta(lık)?\b/i.test(src.replace(/\/\*[\s\S]*?\*\//g,"")),src.match(/hipertansiyon|diyabet|hipoglisemi|anormal|tehlikeli/i));
 ok("tarih: 2026-02-31 reddedilir",!!V.check(T({day:"2026-02-31"})).err&&!!V.check(G({day:"2026-04-31"})).err&&!!V.check(G({day:"2026-02-28"})).row);
 {const big=Array.from({length:5100},(_,i)=>G({g:100,day:"2026-01-01",time:"08:00",not:"n"+i})),c=V.clean(big);
-ok("clean: 5000 sınırında en yeni kayıtlar kalır",c.length===5000&&c[c.length-1].not==="n5099"&&c[0].not==="n100",[c.length,c[0].not]);}
+ok("clean: 5000'i aşınca en eski kayıt da kalır",c.length===5100&&c[c.length-1].not==="n5099"&&c[0].not==="n0",[c.length,c[0].not]);}
 ok("clean: sid'siz, notu farklı iki ölçüm tekilleştirmede yutulmaz",V.clean([T({not:"a"}),T({not:"b"})]).length===2);
 // aynı dakikada elle girilen aynı değer: her giriş kendi sid'ini alır, geri yükleme/açılış temizliği ikisini de korur
 {const s1=V.newSid(),s2=V.newSid(),man=[G({g:100,sid:s1}),G({g:100,sid:s2}),T({sid:V.newSid()}),T({sid:V.newSid()})];

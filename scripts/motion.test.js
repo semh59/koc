@@ -21,7 +21,7 @@ const c=M.clean([...moves,{day:"2026-9-1",t0:"07:00",min:5,k:"w",steps:500,km:1,
 ok("temizlik: bozuk gün/saat atılır, kopya elenir",c.length===3,c);
 ok("temizlik: dizi değilse boş",M.clean(null).length===0&&M.clean({}).length===0&&M.clean("x").length===0);
 const big=Array.from({length:500},(_,i)=>({day:"2026-01-"+String(1+i%28).padStart(2,"0"),t0:String(Math.floor(i/28)%24).padStart(2,"0")+":"+String(i%60).padStart(2,"0"),min:10,k:i%2?"w":"r",steps:1000,km:1,kmh:5}));
-ok("temizlik: en çok 400, en yeniler kalır",M.clean(big).length<=400);
+ok("temizlik: 400'ü aşan hareket kaybolmaz",M.clean(big).length>400);
 const tt=M.totals([{min:20,km:2,steps:2000,kcal:100},{min:10,km:1,steps:1000,kcal:null}]);
 ok("toplam: kalorisiz kayıt kaloriye eklenmez",tt.min===30&&tt.km===3&&tt.steps===3000&&tt.kcal===100&&tt.kcalN===1);
 const src=require("fs").readFileSync(require("path").join(__dirname,"../www/motionlib.js"),"utf8");

@@ -3,10 +3,10 @@ const HabitLib=(()=>{
   const dayOk=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&new Date(s+"T00:00Z").toJSON()?.slice(0,10)===s;
   const int=(v,lo,hi)=>Number.isInteger(v)&&v>=lo&&v<=hi;
   const arr=a=>Array.isArray(a)?a:[];
-  const perDay=(a,ok)=>{const m=new Map();for(const x of arr(a)){if(x&&dayOk(x.day)){const y=ok(x);if(y)m.set(y.day,y)}}return [...m.values()].sort((a,b)=>a.day<b.day?-1:1).slice(-400)};
+  const perDay=(a,ok)=>{const m=new Map();for(const x of arr(a)){if(x&&dayOk(x.day)){const y=ok(x);if(y)m.set(y.day,y)}}return [...m.values()].sort((a,b)=>a.day<b.day?-1:1).slice(-20000)};
   function cleanFast(r){
     r=r&&typeof r==="object"?r:{};
-    const log=arr(r.log).filter(x=>x&&Number.isFinite(x.t0)&&Number.isFinite(x.t1)&&x.t1>x.t0&&x.t1-x.t0<=H72).map(x=>({t0:x.t0,t1:x.t1})).slice(-200);
+    const log=arr(r.log).filter(x=>x&&Number.isFinite(x.t0)&&Number.isFinite(x.t1)&&x.t1>x.t0&&x.t1-x.t0<=H72).map(x=>({t0:x.t0,t1:x.t1})).slice(-5000);
     return {plan:PLANS.includes(r.plan)?r.plan:16,t0:Number.isFinite(r.t0)&&r.t0>0?r.t0:null,log};
   }
   const cleanSleep=a=>perDay(a,x=>{
