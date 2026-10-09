@@ -70,7 +70,7 @@ console.log("Simgeler ve açılış ekranı yerleştirildi.");
 // KeyVault sözleşmesi: anahtar geçersizleştiyse ya da yoksa decrypt (ve reset olmadan encrypt) reject koduyla "KEY_INVALIDATED" döner; eski veri çözülemez.
 // Yeni anahtar için encrypt({text, reset:true}) ya da resetKey() çağrılır.
 const jdir="android/app/src/main/java/com/neowell/app";
-for(const f of ["Alarms","AlarmActivity","MedWakeReceiver","MedWakePlugin","KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin","QuickMath","QuickLogPlugin","MotionMath","MotionStore","MotionGpsService","MotionReceiver","MotionPlugin","NeoWidget","WidgetPlugin","WaterReceiver","SpeechPlugin","BackupFolderPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
+for(const f of ["Alarms","AlarmActivity","AppLockPlugin","MedWakeReceiver","MedWakePlugin","KeyVaultPlugin","DeviceHelpPlugin","StepCounterPlugin","StepStore","StepMath","StepSnapshotReceiver","OcrPlugin","QuickMath","QuickLogPlugin","MotionMath","MotionStore","MotionGpsService","MotionReceiver","MotionPlugin","NeoWidget","WidgetPlugin","WaterReceiver","SpeechPlugin","BackupFolderPlugin"])fs.copyFileSync(`assets/android/${f}.java`,`${jdir}/${f}.java`);
 fs.writeFileSync(`${jdir}/MainActivity.java`,`package com.neowell.app;
 
 import android.content.Intent;
@@ -94,6 +94,7 @@ public class MainActivity extends BridgeActivity {
         if (savedInstanceState == null) quick = QuickLogPlugin.handle(this, getIntent(), false);
         else getIntent().removeExtra(QuickLogPlugin.ACTION_KEY);
         registerPlugin(MedWakePlugin.class);
+        registerPlugin(AppLockPlugin.class);
         registerPlugin(KeyVaultPlugin.class);
         registerPlugin(DeviceHelpPlugin.class);
         registerPlugin(StepCounterPlugin.class);
@@ -114,7 +115,7 @@ public class MainActivity extends BridgeActivity {
     private void diag(Intent in) {
         if (in == null || !in.getBooleanExtra("nw_diag", false)) return;
         StringBuilder sb = new StringBuilder();
-        for (String n : new String[] {"LocalNotifications", "Share", "Filesystem", "App", "BarcodeScanner", "MedWake", "KeyVault", "DeviceHelp", "StepCounter", "Ocr", "QuickLog", "Motion", "Widget", "Speech", "BackupFolder"}) {
+        for (String n : new String[] {"LocalNotifications", "Share", "Filesystem", "App", "BarcodeScanner", "MedWake", "AppLock", "KeyVault", "DeviceHelp", "StepCounter", "Ocr", "QuickLog", "Motion", "Widget", "Speech", "BackupFolder"}) {
             PluginHandle h = getBridge() == null ? null : getBridge().getPlugin(n);
             int k = 0;
             if (h != null && h.getInstance() != null)
