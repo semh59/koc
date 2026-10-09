@@ -13,7 +13,7 @@ function alarmEl(){
   }
   return d;
 }
-const alarmShowName=()=>S.settings.medShowName!==false;
+const alarmShowName=()=>S.settings.medShowName===true;
 
 function alarmDraw(){
   const a=alarm,v=AlarmLib.view(a.items,alarmShowName()),done=AlarmLib.allDone(a.items);

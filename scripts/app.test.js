@@ -1811,6 +1811,7 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
   const qh=ev("gQuickHtml()");
   ok("salon: antrenmana bağlı olmayan spor (Koç'tan eklenen bisiklet) 'Diğer sporlar' listesinde, antrenman kaydı (wid) listede yok",/Cross bisiklet/.test(qh)&&/45 dk · 300 kcal/.test(qh)&&!/Salon, Üst/.test(qh)&&ev("S.entries=[],gQuickHtml()")==="");
   ev("S.entries=window.__qe");
+  ok("ilaç adı bildirimde varsayılan gizli; kullanıcı açtıysa tercih korunur, bildirim metni ona göre",ev("buildState({}).S.settings.medShowName")===false&&ev("buildState({settings:{medShowName:true}}).S.settings.medShowName")===true&&ev("buildState({settings:{medShowName:false}}).S.settings.medShowName")===false);
   ok("imkânsız adım değeri atılır",ev("cleanEntries([{type:'adim',day:'2026-01-01',v:999999}]).out.length")===0&&ev("setSteps('2026-01-01',0)")===false);
   ok("Trend tablosunda adım sütunu var",ev("viewTrend()").includes("<th>Adım</th>"));
   ok("Bugün'de adım kartı rapora götürür",ev("viewBugun()").includes('data-tab="adim"')&&!ev("viewBugun()").includes("r4"));

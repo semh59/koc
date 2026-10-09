@@ -43,7 +43,7 @@ const dom=new JSDOM(html,{runScripts:"dangerously",pretendToBeVisual:true,url:"h
 const w=dom.window,$=s=>w.document.querySelector(s),ev=s=>w.eval(s),sleep=ms=>new Promise(r=>setTimeout(r,ms)),txt=()=>$("#alarm").textContent,n=k=>calls.filter(c=>c[0]===k);
 const inert=()=>[...w.document.body.children].some(e=>e.contains($("#view"))&&e.inert===true),click=s=>$(s).dispatchEvent(new w.MouseEvent("click",{bubbles:true}));
 setTimeout(async()=>{
-  ok("sayfa hatasız açılır",errs.length===0,errs);ev("alarmOpen()");
+  ok("sayfa hatasız açılır",errs.length===0,errs);ev("S.settings.medShowName=true;alarmOpen()");
   ok("alarmOpen(): alarm ekranı açık, alertdialog, vadesi gelen doz var, sonraki doz yok",$("#alarm")&&!$("#alarm").hidden&&$("#alarm").getAttribute("role")==="alertdialog"&&txt().includes("Aspirin")&&txt().includes("100 mg")&&txt().includes(slot)&&!txt().includes("Gece"),txt&&$("#alarm")&&txt());
   ok("katman: arka plan inert, odak başlıkta, saat görünür",inert()&&w.document.activeElement.id==="alt"&&/^\d\d:\d\d$/.test($("#alarm .alclk").textContent));
   const c0=n("LN.cancel").length,s0=n("LN.schedule").length;
