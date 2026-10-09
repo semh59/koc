@@ -1,14 +1,12 @@
 "use strict";
-/* Rehberli antrenman ekranı: #guide tam ekran katmanı, render()'dan bağımsız (görünüm yeniden çizilince kaybolmasın).
-   guidelib.js (motor), gym.js/exui.js (gEx, gTimed, gRestSec, gAddEx, gNotify, exDef) ile çalışır. */
+/* Guided-workout screen: the full-screen #guide layer, independent of render() so it survives a view redraw. Engine in guidelib.js. */
 let gd=null,guideFrom=null;
-const GD_NID=9003; // 9001 süreli set, 9002 dinlenme ile aynı anda kurulu olabilir
-const SPK=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Speech;
+const GD_NID=9003; // 9001 (timed set) and 9002 (rest) can be armed at the same time
 const gdOn=()=>!!gd&&!gd.fin;
 const gdName=id=>gEx(id).n;
-/* Android WebView'de speechSynthesis ses çıkarmıyor (rekabet-egzersiz #12); yalnız yerel eklenti. Ses yoksa sessiz geçer. */
-function gdSay(t){if(t&&S.settings.gdVoice&&SPK())SPK().speak({text:t}).catch(()=>{})}
-function gdVib(p){if(S.settings.gdVib)try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+/* speechSynthesis makes no sound in the Android WebView, so only the native plugin speaks. Without it the flow stays silent. */
+function gdSay(t){const sp=plugin("Speech");if(t&&S.settings.gdVoice&&sp)sp.speak({text:t}).catch(()=>{})}
+function gdVib(p){if(S.settings.gdVib)gVib(p)}
 const gdDur=steps=>Math.max(1,Math.round(GuideLib.total(GuideLib.phases(steps))/60));
 
 function gdPick(){
@@ -19,9 +17,9 @@ function gdPick(){
   ${tpl?`<div class="lbl">Şablonlarım</div><div class="plist">${tpl}</div>`:""}
   <p class="hint">${gPgNote}</p><button class="btn ghost" data-g="closesheet">Kapat</button>`);
 }
-// "Şablon olarak kaydet" şablonunda set/süre yok: editördeki gibi türün varsayılanı.
+// A template saved from a workout has no set/duration target: use the kind's default, as the editor does.
 const gdTplSteps=t=>GuideLib.fromTpl({ex:t.ex,tg:Object.fromEntries(t.ex.map(i=>[i,Object.assign(gTgDef(i),t.tg&&t.tg[i])]))},gTimed,gRestSec);
-/* v: "f:akış", "t:şablon", "p:program-günSırası". */
+/* v: "f:flow", "t:template", "p:program-dayIndex". */
 function gdStart(v){
   const [k,id]=[v.slice(0,1),v.slice(2)];let steps,meta;
   if(k==="f"){const f=GuideLib.FLOWS.find(x=>x.id===id);if(!f)return;steps=f.steps;meta={n:f.n,warm:!!f.warm}}
@@ -42,7 +40,7 @@ function gdEnter(){
   if(st.i)gdVib(p.k==="w"?[300]:[150,100,150]);
   gdSched();gdRender();
 }
-/* Ekran kapalıyken JS durabilir: evre bitişi yerel bildirimle de duyurulur, her evrede yeniden kurulur. */
+/* JS can stall while the screen is off: the phase end is also announced by a local notification, re-armed on every phase. */
 function gdSched(){
   const st=gd.st,nx=st.ph[st.i+1];
   if(gd.fin||st.pause!=null||st.end==null)return gNotifyCancel(GD_NID);
@@ -70,7 +68,8 @@ function gdUpd(){
 function gdRender(){
   const el=$("#guide");if(!gd)return;
   if(gd.fin)return void(el.innerHTML=gdSumHtml());
-  const st=gd.st,p=st.ph[st.i],ws=st.ph.map((x,i)=>i).filter(i=>i>=st.i&&st.ph[i].k==="w");
+  const st=gd.st,p=st.ph[st.i],ws=[];
+  for(let i=st.i;i<st.ph.length&&ws.length<2;i++)if(st.ph[i].k==="w")ws.push(i);
   const cur=st.ph[ws[0]],nx=st.ph[ws[1]],e=cur&&gEx(cur.ex),fig=e&&e.tp?exFig(e,true):"",cue=e&&(EXCUE[e.tp]||[])[0];
   const lbl=p.k==="w"?(p.n>1?`Set ${p.r}/${p.n}`:"Çalış"):st.i?"Dinlen, sıradaki":"Hazırlan, ilk hareket";
   const k=st.ph.slice(0,ws[0]+1).filter(x=>x.k==="w").length,paused=st.pause!=null,rest=p.k==="r";
@@ -101,21 +100,21 @@ function gdSumHtml(){
   ${n?`<p class="hint">${gd.meta.warm?"Isınma seti olarak kaydedilir: hacme, haftalık set sayısına ve spor dakikasına girmez.":"Salon geçmişine süresiyle ve spor dakikasına eklenir. Ağırlıklı harekette kullandığın ağırlığı yaz (önceki seanstaki dolu gelir)."}</p>`:""}
   <div class="gdfoot">${n?`<button class="btn" data-gd="save">Antrenman olarak kaydet</button>`:""}<button class="btn ghost" data-gd="close">${n?"Kaydetmeden kapat":"Kapat"}</button></div>`;
 }
-/* Ağırlık öneriden değil önceki seansın gerçek setinden: öneri bir hedeftir, kaydedilirse yapılmamış artış ve sahte rekor üretir. */
+/* The weight comes from the previous session's real set, not the suggestion: a suggestion is a target, and saving it would create an increase that was never lifted and a fake record. */
 const gdLastKg=id=>{const h=gHistory(id)[0];return h?Math.max(...gWork(h.sets).map(s=>s.kg||0)):""};
-/* Yalnız kullanıcı onaylayınca: gAddEx ile set yapısı (tür, set sayısı) kurulur, tamamlananlar done:true ve sec dolu. */
+/* Only on user confirmation: gAddEx builds the set structure (kind, set count); completed sets get done:true and sec. */
 function gdSave(){
   const r=GuideLib.result(gd.st);if(!r.length)return;
   const kg={};
   for(const el of document.querySelectorAll("#guide [data-gdkg]")){
-    const v=num(el.value);if(el.value.trim()===""||isNaN(v)||v<0||v>1000)return toast("Ağırlığı 0-1000 kg arasında yaz, ağırlıksızsa 0 yaz");
+    const v=num(el.value);if(el.value.trim()===""||isNaN(v)||v<0||v>KG_MAX)return toast("Ağırlığı 0-1000 kg arasında yaz, ağırlıksızsa 0 yaz");
     kg[el.dataset.gdkg]=v;
   }
   const w={id:S.gid++,day:dayKey(new Date(gd.st.t0)),t0:gd.st.t0,t1:gd.t1,name:gd.meta.n.slice(0,60),tpl:gd.meta.tpl||null,ex:[]};
   for(const x of r){
     gAddEx(w,x.ex,{sets:x.sets.length});
     const y=w.ex[w.ex.length-1];
-    y.sets=y.sets.map((s,i)=>Object.assign({kg:x.ex in kg?kg[x.ex]:s.kg,reps:x.sets[i].reps||s.reps,sec:Math.min(7200,x.sets[i].sec),done:true},gd.meta.warm?{w:true}:{}));
+    y.sets=y.sets.map((s,i)=>Object.assign({kg:x.ex in kg?kg[x.ex]:s.kg,reps:x.sets[i].reps||s.reps,sec:Math.min(SEC_MAX,x.sets[i].sec),done:true},gd.meta.warm?{w:true}:{}));
   }
   S.workouts.push(w);
   if(!gd.meta.warm)gLogExercise(w,"Rehberli");
@@ -123,12 +122,12 @@ function gdSave(){
 }
 function gdClose(){
   clearInterval(gdTick.iv);gNotifyCancel(GD_NID);
-  if(SPK())SPK().stop().catch(()=>{});
+  plugin("Speech")?.stop().catch(()=>{});
   const f=guideFrom;guideFrom=null;gd=null;$("#guide").hidden=true;$("#guide").innerHTML="";document.body.classList.remove("gdon");trap();gAwake(true);
   if(f&&f.isConnected)f.focus({preventScroll:true});
 }
 function gdEnd(){if(GuideLib.over(gd.st))return gdFinish(false);confirmSheet({title:"Akış burada bitirilsin mi?",body:"Akış burada bitirilsin mi? Tamamlananları kaydedebilirsin.",ok:"Bitir"}).then(ok=>{if(ok&&gd&&!gd.fin)gdFinish(false)})}
-/* Donanım geri tuşu: akış sürerken bitirme sorusu, özetteyken kapatır. */
+/* Hardware back key: asks to end while the flow runs, closes on the summary. */
 function gdBack(){if(!gd)return false;if(!gd.fin)gdEnd();else if(!GuideLib.result(gd.st).length)gdClose();else confirmSheet({title:"Tamamlananlar kaydedilmeden kapatılsın mı?",ok:"Kapat",danger:true}).then(ok=>{if(ok&&gd)gdClose()});return true}
 function gdClick(a){
   const st=gd&&gd.st,now=Date.now();if(!st)return;

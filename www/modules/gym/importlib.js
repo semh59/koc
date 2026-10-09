@@ -1,11 +1,11 @@
 "use strict";
-/* Strong ve Hevy CSV içe aktarma (DOM yok, S'ye dokunmaz). read: metin -> ham antrenmanlar; plan: ham antrenmanlar + kütüphane eşleyici -> cleanGym'den geçecek biçimde antrenman ve yeni egzersizler.
-   Dosyadaki hiçbir metin HTML ya da formül olarak yorumlanmaz: ad ve not yalnız kontrol karakterinden arındırılıp kısaltılır, arayüz esc() ile yazar. */
+/* Strong and Hevy CSV import (no DOM, never touches S). read: text -> raw workouts; plan: raw workouts + library matcher -> workouts and new exercises in the shape cleanGym accepts.
+   No text from the file is interpreted as HTML or a formula: names and notes only lose control characters and get truncated, and the UI writes them through esc(). */
 const ImportLib=(()=>{
   const LB=0.45359237,MAX_NEW=100,MAX_ROWS=200000,KG_MAX=1000,REPS_MAX=200,SEC_MAX=7200;
   const clean=(s,n)=>String(s==null?"":s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g,"").trim().slice(0,n);
   const hnorm=h=>String(h).toLowerCase().replace(/[^a-z0-9]/g,"");
-  /* Ayırıcı ilk kayıttan, tırnak dışındaki sayıma göre. Tırnak kapanmazsa dosya bozuktur. */
+  /* The delimiter is the most frequent one outside quotes in the first record. An unclosed quote means a corrupt file. */
   function parse(text){
     text=text.replace(/^﻿/,"");
     if(text.slice(0,4096).includes("\0"))throw new Error("Dosya metin değil");
@@ -27,7 +27,7 @@ const ImportLib=(()=>{
     if(any||f!==""||row.length)end();
     return rows;
   }
-  /* İki ayırıcı da varsa sonuncusu ondalıktır ("1.234,5" TR, "1,234.5" EN); tek ayırıcı tekrarlıysa binliktir; tek virgül ondalıktır. */
+  /* With both separators the last one is the decimal ("1.234,5" TR, "1,234.5" EN); a repeated single separator is a thousands mark; a single comma is a decimal. */
   const num=v=>{
     if(v==null)return null;let s=String(v).trim();if(!s)return null;
     const c=s.lastIndexOf(","),d=s.lastIndexOf(".");
@@ -37,7 +37,7 @@ const ImportLib=(()=>{
     return /^-?(\d+\.?\d*|\.\d+)$/.test(s)?Number(s):null;
   };
   const MON={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
-  /* Yerel saat: antrenman günü uygulamanın dayKey'iyle aynı şekilde yerel takvimden alınır. */
+  /* Local time: the workout day comes from the local calendar, like the app's dayKey. */
   function stamp(s){
     s=String(s||"").trim();let m,y,mo,d,H=0,M=0,S=0;
     if((m=/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?/.exec(s))){y=+m[1];mo=+m[2]-1;d=+m[3];H=+(m[4]||0);M=+m[5]||0;S=+m[6]||0}
@@ -48,7 +48,7 @@ const ImportLib=(()=>{
     const p=n=>String(n).padStart(2,"0");
     return {t:t.getTime(),day:`${y}-${p(mo+1)}-${p(d)}`};
   }
-  /* "1h 5m", "45m", "1h 5m 30s", "01:05:00" ya da yalnız saniye. */
+  /* "1h 5m", "45m", "1h 5m 30s", "01:05:00" or plain seconds. */
   function duration(s){
     s=String(s||"").trim();if(!s)return null;
     if(/^\d+$/.test(s))return +s*1000;
@@ -59,7 +59,7 @@ const ImportLib=(()=>{
   }
   const idx=head=>{const m={};head.forEach((h,i)=>{const k=hnorm(h);if(!(k in m))m[k]=i});return m};
   const col=(m,...ks)=>{for(const k of ks)if(k in m)return m[k];return -1};
-  /* Ham antrenman: {day,t0,t1,name,ex:[{name,note,sets:[{kg,reps,sec,dist,w,rpe}]}]}. unit yalnız Strong'da ve başlıkta yazmıyorsa sorulur. */
+  /* Raw workout: {day,t0,t1,name,ex:[{name,note,sets:[{kg,reps,sec,dist,w,rpe}]}]}. unit is asked only for Strong files whose header has no unit. */
   function read(text,{unit="kg"}={}){
     const rows=parse(text);
     if(rows.length<2)throw new Error("Dosyada başlık ve veri satırı yok");
@@ -104,7 +104,7 @@ const ImportLib=(()=>{
     return {format:hevy?"Hevy":"Strong",unit:u,unitAsk,workouts,skipped};
   }
 
-  /* Kısa, kasıtlı kaba tablo: Strong/Hevy'nin en yaygın adları (normalize, ekipman ekli) -> kütüphane kimliği. Eksiği "kendi egzersizi" olur. */
+  /* A short, deliberately rough table: the most common Strong/Hevy names (normalized, equipment attached) -> library id. A miss becomes a custom exercise. */
   const MAP={};
   for(const [id,names] of Object.entries({
     bench:"bench press barbell|bench press",dbbench:"bench press dumbbell|dumbbell bench press",incbench:"incline bench press barbell|incline bench press",incdb:"incline bench press dumbbell|incline dumbbell press",
@@ -139,7 +139,7 @@ const ImportLib=(()=>{
   }))for(const n of names.split("|"))MAP[n]=id;
   const norm=s=>String(s).replace(/İ/g,"i").toLowerCase().replace(/[^\p{L}\p{N}]+/gu," ").trim();
   const base=s=>norm(String(s).replace(/\([^)]*\)/g,"").split(" - ")[0]);
-  /* all: [{id,n,k}] kütüphane ve kendi egzersizleri. Sıra: tablo (tam ad), ad (tam), tablo (ekipmansız), ad (ekipmansız). */
+  /* all: [{id,n,k}] library and custom exercises. Order: table (full name), name (full), table (without equipment), name (without equipment). */
   function matcher(all){
     const ids=new Map(all.map(e=>[e.id,e])),full=new Map(),bs=new Map();
     for(const e of all){const f=norm(e.n),b=base(e.n);if(!full.has(f))full.set(f,e);if(!bs.has(b))bs.set(b,e)}
@@ -150,11 +150,12 @@ const ImportLib=(()=>{
   }
 
   const KEY=(w,ids)=>`${w.day}|${Math.floor(w.t0/60000)}|${ids.slice().sort().join(",")}`;
-  const iso=d=>d.slice(0,10);
-  /* ctx: {find, existing:[antrenman], gid}. Sayaç gid'den ilerler; çağıran S.gid'i plan.gid yapar. */
+  const summary=(workouts,newEx)=>({workouts:workouts.length,sets:workouts.reduce((a,w)=>a+w.ex.reduce((b,x)=>b+x.sets.length,0),0),created:newEx.length,
+    from:workouts.reduce((a,w)=>a&&a<w.day?a:w.day,""),to:workouts.reduce((a,w)=>w.day>a?w.day:a,"")});
+  /* ctx: {find, existing:[workout], gid}. The counter advances from gid; the caller sets S.gid to plan.gid. */
   function plan(raw,{find,existing,gid}){
     const have=new Set(existing.map(w=>KEY(w,w.ex.map(x=>x.id)))),newEx=[],local=new Map(),out=[],matched=new Set();
-    let dup=0,skippedSets=0,over=new Set(),sets=0;
+    let dup=0,skippedSets=0;const over=new Set();
     const resolve=x=>{
       const hit=find(x.name);if(hit){matched.add(hit.id);return {id:hit.id,k:hit.k||"w"}}
       const f=norm(x.name);let e=local.get(f);
@@ -167,10 +168,10 @@ const ImportLib=(()=>{
       return e;
     };
     for(const w of raw){
-      const ex=[];
+      const ex=[],ssOf=[];
       for(const x of w.ex){
         const e=resolve(x);if(!e){skippedSets+=x.sets.length;continue}
-        const timed="tic".includes(e.k),sets_=[];
+        const timed="tic".includes(e.k),kept=[];
         for(const s of x.sets){
           const kg=s.kg==null?0:s.kg;let o=null;
           if(timed){const sec=Math.round(s.sec);if(sec>=1&&sec<=SEC_MAX)o={kg:null,reps:null,sec,done:true}}
@@ -179,34 +180,32 @@ const ImportLib=(()=>{
           if(s.w&&!timed)o.w=true;
           if(s.rpe&&!timed&&!s.w)o.rpe=s.rpe;
           if(s.t&&!timed&&!s.w)o.t=s.t;
-          sets_.push(o);
+          kept.push(o);
         }
-        if(sets_.length)ex.push({id:e.id,note:x.note,sets:sets_,_ss:x.ss});
+        if(kept.length){ex.push({id:e.id,note:x.note,sets:kept});ssOf.push(x.ss)}
       }
-      const gr=new Map();for(const x of ex)if(x._ss)gr.set(x._ss,(gr.get(x._ss)||0)+1);
-      const nums=[...gr.keys()];for(const x of ex){if(x._ss&&gr.get(x._ss)>1)x.ss=nums.indexOf(x._ss)+1;delete x._ss}
+      const gr=new Map();for(const s of ssOf)if(s)gr.set(s,(gr.get(s)||0)+1);
+      const nums=[...gr.keys()];ex.forEach((x,i)=>{if(ssOf[i]&&gr.get(ssOf[i])>1)x.ss=nums.indexOf(ssOf[i])+1});
       if(!ex.length)continue;
       const k=KEY(w,ex.map(x=>x.id));
       if(have.has(k)){dup++;continue}
       have.add(k);
       out.push({id:gid++,day:w.day,t0:w.t0,t1:w.t1,name:w.name,tpl:null,ex});
-      sets+=ex.reduce((a,x)=>a+x.sets.length,0);
     }
-    return {workouts:out,newEx,gid,stats:{workouts:out.length,sets,dup,skippedSets,over:[...over],matched:matched.size,created:newEx.length,
-      from:out.length?out.reduce((a,w)=>w.day<a?w.day:a,out[0].day):"",to:out.length?out.reduce((a,w)=>w.day>a?w.day:a,out[0].day):""}};
+    return {workouts:out,newEx,gid,stats:{...summary(out,newEx),dup,skippedSets,over:[...over],matched:matched.size}};
   }
   const bytes=p=>(JSON.stringify(p.workouts).length+JSON.stringify(p.newEx).length)*2;
-  /* Bütçeye sığan en yeni antrenman sayısı. */
+  /* How many of the newest workouts fit the byte budget. */
   function fit(p,budget){
     let b=JSON.stringify(p.newEx).length*2,n=0;
     for(const w of p.workouts.slice().sort((x,y)=>y.t0-x.t0)){b+=JSON.stringify(w).length*2;if(b>budget)break;n++}
     return n;
   }
-  /* En yeni n antrenmanı tutar, yalnız onların kullandığı yeni egzersizleri bırakır. */
+  /* Keeps the newest n workouts and only the new exercises they use; the stats follow the kept set. */
   function cut(p,n){
-    const keep=p.workouts.slice().sort((a,b)=>b.t0-a.t0).slice(0,n),used=new Set(keep.flatMap(w=>w.ex.map(x=>x.id)));
-    return Object.assign({},p,{workouts:keep.sort((a,b)=>a.id-b.id),newEx:p.newEx.filter(e=>used.has(e.id))});
+    const keep=p.workouts.slice().sort((a,b)=>b.t0-a.t0).slice(0,n),used=new Set(keep.flatMap(w=>w.ex.map(x=>x.id))),newEx=p.newEx.filter(e=>used.has(e.id));
+    return {...p,workouts:keep.sort((a,b)=>a.id-b.id),newEx,stats:{...p.stats,...summary(keep,newEx)}};
   }
-  return {parse,read,num,stamp,duration,matcher,plan,bytes,fit,cut,MAP,norm,MAX_NEW};
+  return {read,num,matcher,plan,bytes,fit,cut,MAP,MAX_NEW};
 })();
 if(typeof module!=="undefined")module.exports=ImportLib;

@@ -1,7 +1,7 @@
 "use strict";
-/* Çizgi-adam hareket motoru (DOM yok): iskelet, ileri kinematik, iki kemikli IK, ritim şablonları ve SVG üretimi.
-   Açılar derece, "aşağıdan" ölçülür: 0 aşağı, +90 ileri (sağa), 180 yukarı. Gövde açısı "yukarıdan" (+ ileri eğilme).
-   Dirsek bükülmesi = önkol − üst kol ≥ 0, diz bükülmesi = uyluk − kaval ≥ 0. */
+/* Stick-figure motion engine (no DOM): skeleton, forward kinematics, two-bone IK, looping templates and SVG output.
+   Angles are degrees measured from straight down: 0 down, +90 forward (right), 180 up. The torso angle is measured from straight up (+ leans forward).
+   Elbow flexion = forearm - upper arm >= 0, knee flexion = thigh - shin >= 0. */
 const FigLib=(()=>{
   const B={torso:36,neck:3,head:7,ua:17,fa:16,th:24,sh:24,ft:9,shw:8,hpw:5};
   const FLOOR=136,X0=80,W=160,H=150;
@@ -17,7 +17,7 @@ const FigLib=(()=>{
     return q;
   };
 
-  /* İki kemikli IK: kök r, hedef t, uzunluklar a,b. Dönen: eklem noktası. bend +1/-1 bükülme yönü (kök→hedef vektörünün soluna/sağına). */
+  /* Two-bone IK: root r, target t, lengths a,b. Returns the joint point and the reachable end. bend +1/-1 is the bend side (left/right of the root->target vector). */
   function ik2(r,t,a,b,bend){
     let dx=t[0]-r[0],dy=t[1]-r[1],d=Math.hypot(dx,dy);
     const max=a+b-0.01,min=Math.abs(a-b)+0.01;
@@ -28,7 +28,7 @@ const FigLib=(()=>{
     return {joint:j,end:e};
   }
 
-  /* Bir pozun eklemleri (sahne koordinatları). view: "s" yan, "f" ön. */
+  /* Joints of a pose in scene coordinates. view: "s" side, "f" front. */
   function joints(pose,view,fix){
     const p=full(pose),fr=view==="f";
     const hip=[0,0],neck=upv(p.t,B.torso),head=add(neck,upv(p.hd,B.neck+B.head));
@@ -59,8 +59,8 @@ const FigLib=(()=>{
   }
   const pick=(J,name)=>({ankle:J.limbs.nL[2],toe:J.limbs.nL[3],hip:J.hip,wrist:J.limbs.nA[2],knee:J.limbs.nL[1],neck:J.neck}[name]);
 
-  /* Yerleştirme: fix.x=[eklem,x göreli], fix.y=["floor"] en alt nokta zemine | ["hip",yükseklik] kalça sabit | ["wrist",yükseklik] el sabit (asılma).
-     Sonra pose.hand/foot hedefleri varsa kol/bacak IK ile o noktaya uzanır (hedef: [x göreli, zeminden yükseklik]). */
+  /* Placement: fix.x=[joint, relative x], fix.y=["floor"] lowest point on the floor | ["hip",height] hip fixed | ["wrist",height] hand fixed (hanging).
+     Then, if pose.hand/foot targets exist, the arm/leg reaches them by IK (target: [relative x, height above the floor]). */
   function place(J,fix){
     fix=fix||{};const fx=fix.x||[J.view==="f"?"hip":"ankle",0],fy=fix.y||["floor"];
     let dy=0;
@@ -91,7 +91,7 @@ const FigLib=(()=>{
     }
   }
 
-  /* Şablon: frames = anahtar pozlar (döngü A→B→...→A). o: poz üzerine yazılan değerler. */
+  /* Template: frames = key poses (loop A->B->...->A). o: values overriding the pose. */
   const ease=t=>t*t*(3-2*t);
   function lerpPose(a,b,t){
     const o={};
@@ -101,7 +101,7 @@ const FigLib=(()=>{
     if(a.foot&&b.foot)o.foot=[a.foot[0]+(b.foot[0]-a.foot[0])*t,a.foot[1]+(b.foot[1]-a.foot[1])*t];
     return o;
   }
-  /* Döngüdeki n örnek (0..1) pozları; ping-pong, easing. */
+  /* n+1 samples of the loop (0..1), ping-pong with easing. */
   function sample(def,n){
     const fr=def.frames.map(f=>full(Object.assign({},f,def.o||{},f.o||{})));
     const path=fr.length===2?[fr[0],fr[1],fr[0]]:fr.concat(fr.slice(0,-1).reverse());
@@ -113,7 +113,7 @@ const FigLib=(()=>{
     return out;
   }
 
-  /* Bir kare için çizilecek parçalar: {k:"line"|"circle"|"rect", ...}. Zemin ve sabit aksesuarlar dahil. */
+  /* Parts to draw for one frame: {k:"line"|"circle"|"rect", ...}, floor and fixed props included. */
   function props(J,def){
     const pr=def.prop,out=[];if(!pr)return out;
     const wr=J.limbs.nA[2],wl=J.limbs.fA[2],sh=J.neck;
@@ -134,7 +134,7 @@ const FigLib=(()=>{
     return out;
   }
 
-  /* Sabit sahne: zemin çizgisi, sıra/bar/kutu (gövdeden bağımsız ya da kalçaya göre). */
+  /* Fixed scene: floor line, bench/bar/box (independent of the body or relative to the hip). */
   function scene(def,J){
     const out=[{k:"line",c:"floor",w:1.4,pts:[[8,FLOOR+2],[W-8,FLOOR+2]]}];
     const sc=def.scene;if(!sc)return out;
@@ -146,7 +146,7 @@ const FigLib=(()=>{
       const top=FLOOR-hipH+3;
       out.push({k:"line",c:"prop",w:5,pts:[[X0-22,top],[X0+4,top]]},{k:"line",c:"prop",w:5,pts:[[X0+4,top],[X0+34,top-26]]},{k:"line",c:"prop",w:2,pts:[[X0-18,top],[X0-18,FLOOR+2]]},{k:"line",c:"prop",w:2,pts:[[X0+12,top-6],[X0+12,FLOOR+2]]});
     }else if(sc==="pullbar"){
-      const y=FLOOR-(def.fix.y[1]||0)+0;
+      const y=FLOOR-(def.fix.y[1]||0);
       out.push({k:"line",c:"prop",w:2.6,pts:[[X0-26,y-1],[X0+26,y-1]]},{k:"line",c:"prop",w:1.4,pts:[[X0-26,y-1],[X0-26,10]]},{k:"line",c:"prop",w:1.4,pts:[[X0+26,y-1],[X0+26,10]]});
     }else if(sc==="dipbar"){
       const y=FLOOR-(def.fix.y[1]||0);
@@ -161,7 +161,7 @@ const FigLib=(()=>{
     return out;
   }
 
-  /* Bir kare: parça listesi (uzak uzuvlar önce). */
+  /* One frame: part list (far limbs first). */
   function frame(def,pose){
     const J=joints(pose,def.view||"s",def.fix);
     const L=J.limbs,out=scene(def,J);
@@ -177,18 +177,18 @@ const FigLib=(()=>{
   }
 
   const f1=x=>(Math.round(x*10)/10);
-  /* SVG: anim=true ise SMIL ile döngü (yalnızca ayrıntı ekranı), değilse tek poz (liste küçük resmi). */
-  function svg(def,opt){
-    opt=opt||{};const dur=opt.dur||2.6,N=opt.anim===false?0:14;
+  /* SVG: with anim, a SMIL loop (detail sheet only); otherwise a single pose (list thumbnail). */
+  function svg(def,{anim=true,label="Egzersiz"}={}){
+    const dur=2.6,N=anim?14:0;
     const poses=N?sample(def,N):[full(Object.assign({},def.frames[0],def.o||{}))];
     const fs=poses.map(p=>frame(def,p).parts);
-    let h=`<svg class="fig" viewBox="0 0 ${W} ${H}" role="img" aria-label="${opt.label||"Egzersiz"}">`;
+    let h=`<svg class="fig" viewBox="0 0 ${W} ${H}" role="img" aria-label="${label}">`;
     const n0=fs[0].length;
     for(let i=0;i<n0;i++){
       const p0=fs[0][i];
       if(p0.k==="line"){
-        const vals=fs.map(f=>"M"+f[i].pts.map(q=>f1(q[0])+" "+f1(q[1])).join("L")).join(";");
-        h+=`<path class="fg-${p0.c}" stroke-width="${p0.w}" fill="none" stroke-linecap="round" stroke-linejoin="round" d="${vals.split(";")[0]}">${N?`<animate attributeName="d" dur="${dur}s" repeatCount="indefinite" values="${vals}"/>`:""}</path>`;
+        const ds=fs.map(f=>"M"+f[i].pts.map(q=>f1(q[0])+" "+f1(q[1])).join("L"));
+        h+=`<path class="fg-${p0.c}" stroke-width="${p0.w}" fill="none" stroke-linecap="round" stroke-linejoin="round" d="${ds[0]}">${N?`<animate attributeName="d" dur="${dur}s" repeatCount="indefinite" values="${ds.join(";")}"/>`:""}</path>`;
       }else if(p0.k==="circle"){
         const cx=fs.map(f=>f1(f[i].p[0])).join(";"),cy=fs.map(f=>f1(f[i].p[1])).join(";");
         h+=`<circle class="fg-${p0.c}" r="${p0.r}" cx="${f1(p0.p[0])}" cy="${f1(p0.p[1])}">${N?`<animate attributeName="cx" dur="${dur}s" repeatCount="indefinite" values="${cx}"/><animate attributeName="cy" dur="${dur}s" repeatCount="indefinite" values="${cy}"/>`:""}</circle>`;
@@ -199,6 +199,6 @@ const FigLib=(()=>{
     return h+"</svg>";
   }
 
-  return {B,FLOOR,X0,W,H,KEYS,full,joints,frame,sample,svg,ik2,lerpPose};
+  return {B,FLOOR,W,H,KEYS,full,frame,sample,svg};
 })();
 if(typeof module!=="undefined")module.exports=FigLib;

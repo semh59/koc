@@ -1,8 +1,8 @@
 "use strict";
-/* Rehberli antrenman akış motoru (saf). Adım: {ex, sec | reps, rest, n}. Evreler çalışma (w) ve dinlenme (r).
-   Süre bitiş anından hesaplanır: arka planda geç gelen tick birden çok evreyi önceki bitişe ekleyerek geçer, kaymaz. */
+/* Guided-workout flow engine (pure). Step: {ex, sec | reps, rest, n}. Phases are work (w) and rest (r).
+   Time is computed from the end instant: a tick that arrives late in the background steps through several phases, each starting at the previous end, so nothing drifts. */
 const GuideLib=(()=>{
-  const TEMPO=3,PREP=5; // tekrarlı harekette tekrar başına kılavuz saniyesi; ilk hareketten önce hazırlık
+  const TEMPO=3,PREP=5; // guide seconds per rep for a rep-based move; preparation before the first move
   function phases(steps){
     const out=[{k:"r",sec:PREP}];
     for(const s of steps)for(let r=1;r<=(s.n||1);r++){
@@ -13,7 +13,7 @@ const GuideLib=(()=>{
     return out;
   }
   const over=st=>st.i>=st.ph.length;
-  // Tekrarlı evrede bitiş yok: "Bitti" dokunuşunu bekler.
+  // A rep-based phase has no end: it waits for the "Bitti" tap.
   function enter(st,i,at){st.i=i;st.at=at;const p=st.ph[i];st.end=p&&!p.reps?at+p.sec*1000:null}
   function start(steps,now){const st={ph:phases(steps),done:{},pause:null,t0:now};enter(st,0,now);return st}
   function tick(st,now){
@@ -24,7 +24,7 @@ const GuideLib=(()=>{
     }
     return moved;
   }
-  /* Bitti: çalışma evresinde geçen süre kaydedilir; Geç: kaydedilmeden sonraki evreye. */
+  /* Bitti records the time spent in the work phase; Geç moves on without recording. */
   function finish(st,now){
     if(over(st)||st.pause!=null)return false;
     if(st.ph[st.i].k==="w")st.done[st.i]=Math.max(1,Math.round((now-st.at)/1000));
@@ -52,18 +52,18 @@ const GuideLib=(()=>{
   const stepsLeft=st=>st.ph.slice(st.i).filter(p=>p.k==="w").length;
   const nextWork=st=>st.ph.slice(st.i+1).find(p=>p.k==="w")||null;
   const works=st=>st.ph.filter(p=>p.k==="w").length;
-  /* Tamamlanan çalışma evreleri, egzersiz sırasıyla: {ex, sets:[{sec, reps?}]}. */
+  /* Completed work phases in exercise order: {ex, sets:[{sec, reps?}]}. */
   function result(st){
-    const out=[];
+    const byEx=new Map();
     st.ph.forEach((p,i)=>{
       if(p.k!=="w"||st.done[i]==null)return;
-      let x=out.find(o=>o.ex===p.ex);if(!x)out.push(x={ex:p.ex,sets:[]});
+      let x=byEx.get(p.ex);if(!x)byEx.set(p.ex,x={ex:p.ex,sets:[]});
       x.sets.push(p.reps?{sec:st.done[i],reps:p.reps}:{sec:st.done[i]});
     });
-    return out;
+    return [...byEx.values()];
   }
 
-  /* Hazır akışlar: genel kalıplar, kişisel program değil. */
+  /* Ready-made flows: general patterns, not a personal program. */
   const rounds=(ids,k,sec,rest)=>Array.from({length:k},(_,i)=>({ex:ids[i%ids.length],sec,rest,n:1}));
   const tabata=ids=>rounds(ids,8,20,10);
   const hiit=(ids,k=8)=>rounds(ids,k,40,20);
@@ -76,7 +76,7 @@ const GuideLib=(()=>{
     {id:"tabata4",n:"4 dk Tabata, ekipmansız",about:"8 tur: 20 saniye yüksek tempo, 10 saniye dinlenme.",steps:tabata(["jumpingjack","climber","skipping","scissorjump"])},
     {id:"hiit8",n:"8 dk HIIT 40/20, ekipmansız",about:"8 tur: 40 saniye çalışma, 20 saniye dinlenme.",steps:hiit(["climber","jumpingjack","splitjump","buttkick"])}
   ];
-  /* Şablon (gym.js biçimi) → adımlar. timed(id): süreli mi; rest(id): set arası saniye. */
+  /* Template (gym.js shape) -> steps. timed(id): is it timed; rest(id): seconds between sets. */
   function fromTpl(t,timed,rest){
     return t.ex.map(id=>{
       const g=t.tg&&t.tg[id]||{},n=Math.min(10,g.sets||3);
@@ -84,11 +84,11 @@ const GuideLib=(()=>{
     });
   }
 
-  /* Sesli komut metinleri tek yerde: kısa, Türkçe. 20 karakterden kısa metni yerel taraf süren cümlenin arkasına ekler, uzun cümle öncekini keser. */
+  /* Voice command texts in one place: short, Turkish. The native side queues a text under 20 characters behind the sentence being spoken, while a longer one cuts the previous. */
   const amount=p=>p.reps?`${p.reps} tekrar`:`${p.sec} saniye`;
   const SAY={next:(n,p)=>`Sıradaki: ${n}, ${amount(p)}`,nextShort:n=>`Sıradaki: ${n}`,go:"3, 2, 1, başla",rest:"Dinlen",start:(n,p)=>`${n}, ${amount(p)}. Başla`,end:"Bitti. Tebrikler",pause:"Duraklatıldı"};
-  const SHORT_REST=10; // saniye; geri sayım son 3 sn'de, daha kısa dinlenmede uzun cümle ona yetişmez
-  /* Evreye girişte söylenecek metin. cd: önceki dinlenmede geri sayım söylendi, tekrar "başla" denmez. */
+  const SHORT_REST=10; // seconds; the countdown is spoken in the last 3 s, and on a shorter rest the long sentence would not finish before it
+  /* Text spoken when a phase starts. cd: the countdown was already spoken during the previous rest, so "başla" is not repeated. */
   function cue(st,name,cd){
     if(over(st))return SAY.end;
     const p=st.ph[st.i];

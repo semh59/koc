@@ -1,5 +1,5 @@
 "use strict";
-/* Şablon başına kısa form ipuçları (genel, tıbbi tavsiye değil). Egzersiz ayrıntısında gösterilir. */
+/* Short form cues per template (general, not medical advice), shown in the exercise detail. */
 const EXCUE={
   squat:["Ayaklar omuz genişliğinde, dizler ayak uçları doğrultusunda.","Topuklar yerde, göğüs dik; kalçayı geriye ve aşağıya oturt."],
   hinge:["Dizler hafif bükük, kalçayı geriye it; ağırlığı bacaklara yakın tut.","Sırtı düz tut, hareketi kalçadan yap."],

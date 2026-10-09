@@ -1,6 +1,5 @@
 "use strict";
-/* Ayrı kardiyo kaydı: Trend kartı, ekleme sayfası, geçmiş. Salon ekranına dokunmaz. Kayıt sıradan spor kaydıdır (CardioLib), silme genel data-del ile.
-   index.html'deki S, add, save, num, ferr, fday, dayOptions, openSheet, closeSheet, render, toast, fd, dayKey, keyOff, pad, timeOk, motionKg, Algo ile çalışır. */
+/* Standalone cardio entry: Trend card, add sheet, history. Does not touch the Gym screen. An entry is an ordinary exercise entry (CardioLib). */
 let ckSel="run";
 const ckKm=km=>String(km).replace(".",",");
 const ckRow=e=>{

@@ -1,6 +1,6 @@
 "use strict";
-/* Çevrimdışı hazır programlar: yalnız exlib.js kimlikleri. Satır: [kimlik, set, "tekrar" ya da "tekrar alt-üst" ya da "45s" (saniye)].
-   Genel bilgidir, kişisel antrenman programı değildir. */
+/* Offline ready-made programs, using exlib.js ids only. Row: [id, sets, "reps" or "low-high" reps or "45s" (seconds)].
+   General information, not a personal training program. */
 const PrgLib=(()=>{
   const PROGRAMS=[
     {id:"home3",n:"Evde tüm vücut, ekipmansız",q:"Ağırlıksız",lv:"Başlangıç",d:[3,3],about:"Alet gerekmez. Haftada 3 gün, arada en az bir gün dinlen.",days:[
@@ -29,7 +29,7 @@ const PrgLib=(()=>{
       {n:"Çekiş B",ex:[["closepulldown",4,"8-10"],["seatedrow",4,"8-10"],["straightarm",3,"12-15"],["cablerear",3,"12-15"],["cablecurl",3,"10-12"]]},
       {n:"Bacak B",ex:[["hacksquat",4,"8-10"],["hipthrust",3,"8-10"],["legext",3,"12-15"],["seatedcurl",3,"10-12"],["seatedcalf",4,"12-15"],["plank",3,"45s"]]}]}
   ];
-  /* Satırdan şablon hedefi (gym.js tg biçimi). */
+  /* Template target from a row (the gym.js tg shape). */
   const tg=([,sets,r])=>{
     if(r.endsWith("s"))return {sets,sec:parseInt(r)};
     const [lo,hi]=r.split("-").map(Number);return hi?{sets,reps:lo,hi}:{sets,reps:lo};
