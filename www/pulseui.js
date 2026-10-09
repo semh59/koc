@@ -43,7 +43,8 @@ function plResult(r){
     <p class="hint">Sağlık cihazı değildir; sonuç sapabilir. Yorum yapılmaz.</p>`);
   }else{
     const why=r.reason==="finger"?"Parmağın kameraya ve flaşa tam oturmadı.":r.reason==="short"?"Ölçüm kesildi.":"Ölçüm net değil; parmağını sabit tut, hafif bastır.";
-    openSheet(`<h3>Nabız</h3><p class="hint" role="alert">${why} Sayı verilmedi.</p><button class="btn" data-pl="start">Tekrar dene</button><button class="lnk" data-pl="back">Geri</button>`);
+    const dg=r.dg?`<p class="hint sm" aria-label="Teknik ayrıntı">Teknik: ${r.reason} · ${Object.entries(r.dg).map(([k,v])=>k+" "+v).join(" · ")}</p>`:"";
+    openSheet(`<h3>Nabız</h3><p class="hint" role="alert">${why} Sayı verilmedi.</p>${dg}<button class="btn" data-pl="start">Tekrar dene</button><button class="lnk" data-pl="back">Geri</button>`);
   }
 }
 async function plStart(){
