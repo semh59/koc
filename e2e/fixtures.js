@@ -37,6 +37,7 @@ const test=base.test.extend({
         await page.addInitScript(([s,k])=>{try{if(s&&localStorage.getItem("koc_v1")==null)localStorage.setItem("koc_v1",JSON.stringify(s));if(k&&localStorage.getItem("koc_keys")==null)localStorage.setItem("koc_keys",JSON.stringify(k))}catch(e){}},[seed||null,keys||null]);
         if(native)await page.addInitScript(nativeShim,native);
         if(dialogs)page.on("dialog",d=>{app.dialogs.push(d.message());(app.onDialog?app.onDialog(d):d.accept()).catch(()=>{})});
+        const reload=page.reload.bind(page);page.reload=async o=>{const r=await reload(o);await page.waitForSelector("html[data-boot]",{state:"attached"});return r}; // ana betik parçaları yüklenince hazır
         await page.goto("/index.html");
         await expect(page.locator("#view")).not.toBeEmpty();
         return app;
@@ -44,7 +45,7 @@ const test=base.test.extend({
       dialogs:[],onDialog:null,
       view:page.locator("#view"),sheet:page.locator("#sheet.on"),toast:page.locator("#toast.on #tmsg"),
       async tab(name){await page.locator(`nav button[data-tab="${name}"]`).click()},
-      async go(t){await page.evaluate(t=>{const b=document.createElement("button");b.dataset.tab=t;document.body.append(b);b.click();b.remove()},t)},
+      async go(t){await page.waitForSelector("html[data-boot]",{state:"attached"});await page.evaluate(t=>{const b=document.createElement("button");b.dataset.tab=t;document.body.append(b);b.click();b.remove()},t)},
       state:()=>page.evaluate(async()=>{await Store.whenIdle();return JSON.parse(Store.get("koc_v1"))}), // asıl depo IndexedDB: bekleyen yazım bitince okunur
       async closeSheet(){await page.keyboard.press("Escape");await expect(page.locator("#sheet")).not.toHaveClass(/\bon\b/)}
     };
