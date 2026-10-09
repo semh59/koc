@@ -1,27 +1,27 @@
 "use strict";
-/* Koç: durum, sağlayıcı zinciri, sohbet ekranı ve ayarlar. coachlib.js ve algo.js'e dayanır. */
-/* API anahtarları: bellekte KEYS; telefonda Keystore kasası (KeyVault) ile şifreli, kasa yoksa (tarayıcı) düz metin. */
+/* Coach: state, provider chain, chat screen and settings. Depends on coachlib.js and algo.js. */
+/* API keys: kept in memory in KEYS; on the phone they are encrypted with the Keystore vault (KeyVault), in a browser without a vault they are plain text. */
 const KEYS_LS="nw_keys",KEYS_ENC="nw_keys_enc";
-/* Modele giden sohbet geçmişi mesaj sayısı; rıza metni (CONSENT_SENT) aynı sabitten üretilir. */
+/* Number of chat messages sent to the model; the consent text (CONSENT_SENT) is built from the same constant. */
 const HIST_N=10;
 let KEYS={},vaultOn=false;
-const KV=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.KeyVault;
+const KV=()=>plugin("KeyVault");
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 const lsDel=k=>{try{localStorage.removeItem(k)}catch(e){}};
 const getKeys=()=>KEYS;
 const keysStored=()=>!!(lsGet(KEYS_ENC)||lsGet(KEYS_LS));
 const VAULT_WARN="Anahtarlar bu telefonda şifrelenemedi, düz saklanır";
-/* Telefonda kasa çalışmazsa düz metne kullanıcı izniyle düşülür; izin yoksa anahtar yalnız bu oturumda bellekte kalır. */
+/* If the vault fails on the phone, plain text is used only with the user's permission; without it the key stays in memory for this session only. */
 let plainOk=lsGet("nw_keys_plain")==="1",plainNo=false,vaultWarned=false,locked=false;
-/* KeyVaultPlugin sözleşmesi: yalnız "KEY_INVALIDATED" kalıcı olarak geçersiz Keystore anahtarıdır; başka hata geçicidir, şifreli kayıt silinmez. */
+/* KeyVaultPlugin contract: only "KEY_INVALIDATED" is a permanently invalid Keystore key; any other error is temporary and the encrypted record is kept. */
 const invalid=e=>!!e&&e.code==="KEY_INVALIDATED";
 const VAULT_RETRY="Koç anahtarları şu an okunamadı, kayıtları silinmedi. Biraz sonra uygulamayı yeniden açıp tekrar dene";
 const plainHas=()=>{try{return Object.keys(JSON.parse(lsGet(KEYS_LS)||"{}")).length>0}catch(e){return false}};
 async function persistKeys(){
   const j=JSON.stringify(KEYS);
   if(locked){
-    /* Şifreli kayıt geçici hatayla okunamadı: üstüne yazmadan önce yeniden okunur; olmazsa eski anahtarlar korunur, yazılmaz. */
+    /* The encrypted record could not be read because of a temporary error: it is re-read before being overwritten; if that fails the old keys are kept and nothing is written. */
     try{KEYS={...JSON.parse((await KV().decrypt({data:lsGet(KEYS_ENC)})).text),...KEYS};locked=false}catch(e){if(invalid(e)){locked=false}else return void toast(VAULT_RETRY)}
   }
   if(KV()){
@@ -39,7 +39,7 @@ async function persistKeys(){
   }
   lsSet(KEYS_LS,j);
 }
-/* Düz kopya yalnız kullanıcı düz saklamayı onayladıysa ya da düz kopya zaten varsa yazılır; kasa doğrulaması başarısızsa anahtar bu oturumda bellekte kalır. */
+/* A plain copy is written only if the user agreed to plain storage or one already exists; if vault verification fails the key stays in memory for this session. */
 const plainSave=()=>{if(plainOk||plainHas())lsSet(KEYS_LS,JSON.stringify(KEYS))};
 function setKey(id,k){if(k)KEYS[id]=k;else delete KEYS[id];return persistKeys()}
 async function keysInit(){
@@ -62,34 +62,34 @@ async function keysInit(){
   if(lost)toast("Koç anahtarları bu telefonda okunamadı (kasa anahtarı geçersiz olmuş olabilir), yeniden gir");
   else if(kv&&!vaultOn&&Object.keys(KEYS).length){vaultWarned=true;toast(VAULT_WARN)}
 }
-const defProviders=()=>[
-  {id:"nvidia",name:"NVIDIA Build",base:"https://integrate.api.nvidia.com/v1",model:"nvidia/nemotron-3-super-120b-a12b",on:true,health:true,confirm:false},
-  {id:"groq",name:"Groq",base:"https://api.groq.com/openai/v1",model:"llama-3.3-70b-versatile",on:true,health:true,confirm:false},
-  {id:"openrouter",name:"OpenRouter",base:"https://openrouter.ai/api/v1",model:"google/gemma-4-31b-it:free",on:true,health:true,confirm:false},
-  {id:"gemini",name:"Google Gemini",base:"https://generativelanguage.googleapis.com/v1beta/openai",model:"gemini-3.5-flash-lite",on:false,health:false,confirm:true},
-  {id:"openai",name:"OpenAI",base:"https://api.openai.com/v1",model:"gpt-6-luna",on:false,health:false,confirm:false},
-  {id:"anthropic",name:"Anthropic Claude",base:"https://api.anthropic.com/v1",model:"claude-haiku-4-5",on:false,health:false,confirm:false}
+/* [id, name, base, on and health by default, asks before every send]; the default model is the first preference in CoachLib.MODEL_PREF. */
+const BUILTIN=[
+  ["nvidia","NVIDIA Build","https://integrate.api.nvidia.com/v1",true,false],
+  ["groq","Groq","https://api.groq.com/openai/v1",true,false],
+  ["openrouter","OpenRouter","https://openrouter.ai/api/v1",true,false],
+  ["gemini","Google Gemini","https://generativelanguage.googleapis.com/v1beta/openai",false,true],
+  ["openai","OpenAI","https://api.openai.com/v1",false,false],
+  ["anthropic","Anthropic Claude","https://api.anthropic.com/v1",false,false]
 ];
-/* Ücretli hazır sağlayıcılar: kurulumda ücret notu gösterilir. */
+const defProviders=()=>BUILTIN.map(([id,name,base,on,confirm])=>({id,name,base,model:CoachLib.MODEL_PREF[id][0],on,health:on,confirm}));
+/* Paid built-in providers: setup shows a cost note. */
 const PAID=["openai","anthropic"];
-/* Sağlayıcı adları tek kaynaktan: gizlilik ekranı ve belgeler (app.test.js) bu listeyi kullanır. */
+/* Provider names from one source: the privacy screen and the docs (app.test.js) use this list. */
 const provNames=()=>defProviders().map(p=>p.name).join(", ");
-/* Anthropic yerel Messages API: x-api-key + sürüm başlığı; WebView'da CORS ön kontrolü yalnız direct-browser başlığıyla geçer. */
+/* Anthropic native Messages API: x-api-key plus the version header; in a WebView the CORS preflight passes only with the direct-browser header. */
 const pHeaders=(p,key)=>p.id==="anthropic"?{"x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"}:{Authorization:"Bearer "+key};
 let pstat={},cool={},busy=false,typing=false,offline=null;
 
-/* ---- doğrulama ---- */
+/* ---- validation ---- */
 function cleanCoach(r){
-  const provs=[],known=EXDB.map(e=>e.id).concat((Array.isArray(r.customEx)?r.customEx:[]).map(e=>e&&e.id).filter(i=>typeof i==="string"&&/^c\d+$/.test(i)));
+  const provs=[],defs=defProviders(),known=EXDB.map(e=>e.id).concat((Array.isArray(r.customEx)?r.customEx:[]).map(e=>e&&e.id).filter(i=>typeof i==="string"&&/^c\d+$/.test(i)));
   for(const p of (Array.isArray(r.providers)?r.providers:[])){
     if(!p||typeof p.id!=="string"||!/^[a-z0-9]{1,16}$/.test(p.id)||p.id in Object.prototype||typeof p.name!=="string"||typeof p.base!=="string"||!/^https:\/\/[^\s]+$/.test(p.base)||typeof p.model!=="string")continue;
     if(provs.some(x=>x.id===p.id))continue;
-    const def=defProviders().find(d=>d.id===p.id),model=p.model.slice(0,100);
-    /* Hazır sağlayıcının adresi ana makine beyaz listesidir: yedek ya da bozuk kayıt anahtarı başka sunucuya yönlendiremez. */
+    const def=defs.find(d=>d.id===p.id),model=p.model.slice(0,100);
+    /* The address of a built-in provider is the host allowlist: a backup or damaged record cannot send the key to another server. */
     provs.push({id:p.id,name:p.name.slice(0,40),base:def?def.base:p.base.slice(0,200),model,on:p.on===true,health:p.health===true,confirm:p.confirm===true});
   }
-  /* Sonradan eklenen hazır sağlayıcılar eski kayda kapalı olarak eklenir. */
-  if(provs.length)for(const d of defProviders())if(!provs.some(x=>x.id===d.id))provs.push(d);
   const chat=cleanChat(r.chat,known),chats=[];
   for(const x of (Array.isArray(r.chats)?r.chats:[]).slice(0,CHATS_MAX)){
     if(!x||!Number.isInteger(x.id)||!Number.isFinite(x.t)||chats.some(c=>c.id===x.id))continue;
@@ -97,10 +97,10 @@ function cleanCoach(r){
     if(msgs.length)chats.push({id:x.id,t:x.t,title:typeof x.title==="string"?x.title.slice(0,60):"Sohbet",msgs});
   }
   const top=Math.max(...chat.map(m=>m.id),...chats.flatMap(c=>c.msgs.map(m=>m.id)),0);
-  return {providers:provs.length?provs:defProviders(),chat,chats:trimChats(chats),cid:Math.max(1,top+1,Number.isInteger(r.cid)?r.cid:1)};
+  return {providers:provs.length?provs:defs,chat,chats:trimChats(chats),cid:Math.max(1,top+1,Number.isInteger(r.cid)?r.cid:1)};
 }
-const CHATS_MAX=20,ARCH_MSGS=600,ARCH_CHARS=250000;
-/* Arşiv depolama kotasını doldurmasın: en yeni sohbetler kalır, toplam mesaj ve boyut sınırı aşılınca eskiler atılır (en yeni her zaman kalır). */
+const CHATS_MAX=20,ARCH_MSGS=600,ARCH_CHARS=250000,CHAT_MAX=150;
+/* The archive must not fill the storage quota: the newest chats stay and older ones are dropped once the total message or size limit is exceeded (the newest always stays). */
 function trimChats(list,warn){
   let n=0,ch=0;const out=[];
   for(const c of list){
@@ -114,15 +114,15 @@ function trimChats(list,warn){
 }
 function cleanChat(arr,known){
   const chat=[];
-  for(const m of (Array.isArray(arr)?arr:[]).slice(-150)){
+  for(const m of (Array.isArray(arr)?arr:[]).slice(-CHAT_MAX)){
     if(!m||!Number.isInteger(m.id)||!["user","coach","sys"].includes(m.role)||!Number.isFinite(m.t))continue;
-    const o={id:m.id,role:m.role,text:typeof m.text==="string"?m.text.slice(0,1500):"",t:m.t};
+    const o={id:m.id,role:m.role,text:typeof m.text==="string"?m.text.slice(0,CoachLib.REPLY_MAX):"",t:m.t};
     if(m.pend===true)o.pend=true;
     if(["plan","weekly","plateau"].includes(m.kind))o.kind=m.kind;
     if(["check","ed"].includes(m.fl))o.fl=m.fl;
-    const c=m.card;
-    if(c&&c.kind==="log"&&Array.isArray(c.items)){const items=CoachLib.cleanItems(c.items);if(items.length)o.card=Object.assign({kind:"log",items,state:["pending","ok","no"].includes(c.state)?c.state:"pending",saved:c.saved===true},CoachLib.MEAL_KEYS.includes(c.meal)?{meal:c.meal}:{})}
-    else if(c&&c.kind==="food"){const f=CoachLib.cleanFood(c.f&&typeof c.f==="object"?{name:c.f.n,kcal:c.f.k,protein:c.f.p}:{name:c.n,kcal:c.k,protein:c.p});if(f)o.card=Object.assign({kind:"food",f,state:["pending","ok","no"].includes(c.state)?c.state:"pending"},c.logged===true?{logged:true}:{})}
+    const c=m.card,state=["pending","ok","no"].includes(c&&c.state)?c.state:"pending";
+    if(c&&c.kind==="log"&&Array.isArray(c.items)){const items=CoachLib.cleanItems(c.items);if(items.length)o.card=Object.assign({kind:"log",items,state,saved:c.saved===true},CoachLib.MEAL_KEYS.includes(c.meal)?{meal:c.meal}:{})}
+    else if(c&&c.kind==="food"){const f=CoachLib.cleanFood({name:c.f?.n,kcal:c.f?.k,protein:c.f?.p});if(f)o.card=Object.assign({kind:"food",f,state},c.logged===true?{logged:true}:{})}
     else if(c&&c.kind==="safety"&&["emergency","check","mind","ed"].includes(c.level))o.card={kind:"safety",level:c.level};
     else if(c&&c.kind==="why"&&Array.isArray(c.items)){
       const items=c.items.filter(x=>x&&typeof x.k==="string"&&/^[a-z]{1,8}$/.test(x.k)&&typeof x.t==="string"&&x.t.trim()).slice(0,6).map(x=>({k:x.k,t:x.t.slice(0,160)}));
@@ -130,26 +130,30 @@ function cleanChat(arr,known){
     }
     else if(c&&c.kind==="program"){const pg=CoachLib.cleanProgram(c,known);if(pg)o.card=Object.assign({kind:"program",state:c.state==="ok"?"ok":"pending"},pg)}
     else if(c&&c.kind==="menu"){const mn=CoachLib.cleanMenu({days:c.days},null,c.kcal);if(mn)o.card=Object.assign({kind:"menu",chk:(Array.isArray(c.chk)?c.chk:[]).filter(x=>typeof x==="string").map(x=>x.slice(0,60)).slice(0,100)},mn)}
-    else if(c&&c.kind==="propose"&&Number.isFinite(c.kcal))o.card={kind:"propose",kcal:Math.round(c.kcal),why:String(c.why||"").slice(0,160),limited:c.limited===true,state:["pending","ok","no"].includes(c.state)?c.state:"pending"};
+    else if(c&&c.kind==="propose"&&Number.isFinite(c.kcal))o.card={kind:"propose",kcal:Math.round(c.kcal),why:String(c.why||"").slice(0,160),limited:c.limited===true,state};
     chat.push(o);
   }
   return chat;
 }
-/* Düğmeyle istenen menü, program ve yorum isteği başarısız olursa kullanıcı mesajı yanıtsız kalmaz: geri alınır, bekleyen sohbet gibi yeniden gönderilmez. */
+/* If a button-requested menu, program or comment fails, the user message is taken back instead of staying unanswered, and it is not resent like a pending chat message. */
 const cDrop=m=>{S.chat=S.chat.filter(x=>x!==m)};
-/* Koç'a saatten (Health Connect) otomatik gelen adım ve uyku gitmez: rıza metni yalnız senin girdiğin ve telefonun sensörüyle sayılan adımı ve varsa uykuyu söyler. */
+/* Steps and sleep that arrive automatically from the watch (Health Connect) are not sent to the Coach: the consent text promises only steps the user entered or the phone sensor counted, and sleep when present. */
 const cStep=e=>e.hc>0?(e.ph||0):(e.v||0);
-const cSleep=k=>{const x=Habits.sleep().find(y=>y.day===k);return x&&x.src!=="hc"?x.min:undefined};
-function cPush(m){const o=Object.assign({id:S.cid++,t:Date.now()},m);S.chat.push(o);if(S.chat.length>150)S.chat.splice(0,S.chat.length-150);return o}
+/* day -> sleep minutes of the first record, undefined when that record came from Health Connect. */
+const cSleepOf=()=>{const m=new Map();for(const x of Habits.sleep())if(!m.has(x.day))m.set(x.day,x.src!=="hc"?x.min:undefined);return k=>m.get(k)};
+/* day -> total of val(entry) for one entry type, in a single pass (dayTotal covers plain e.v totals). */
+const cDayMap=(type,val)=>{const m=new Map();for(const e of Log.all())if(e.type===type)m.set(e.day,(m.get(e.day)||0)+val(e));return k=>m.get(k)||0};
+function cPush(m){const o=Object.assign({id:S.cid++,t:Date.now()},m);S.chat.push(o);if(S.chat.length>CHAT_MAX)S.chat.splice(0,S.chat.length-CHAT_MAX);return o}
 
-/* ---- bağlam ---- */
+/* ---- context ---- */
 function cCalc(){
   const st=S.settings,w=weights(),days=Object.keys(w).sort();
   const out={trendKg:null,slope:null,tdee:null,source:"",target:null,protein:null,bmr:null,block:""};
-  /* Fren boy, yaş ve tartıdan bağımsız: hamilelik ya da ed işareti tartısız da bağlama gider. */
-  const rk=risk(days.length?Algo.trend(w)[days[days.length-1]]:0);out.block=rk.block;out.why=[...rk.hard,...(rk.cleared?[]:rk.soft)].join("; ");
+  const trendKg=days.length?Algo.trend(w)[days[days.length-1]]:null;
+  /* The brake does not depend on height, age or weigh-ins: a pregnancy or ed flag reaches the context even without a weigh-in. */
+  const rk=risk(trendKg??0);out.block=rk.block;out.why=[...rk.hard,...(rk.cleared?[]:rk.soft)].join("; ");
   if(!days.length)return out;
-  out.trendKg=Algo.trend(w)[days[days.length-1]];out.slope=Algo.slopePerWeek(w);
+  out.trendKg=trendKg;out.slope=Algo.slopePerWeek(w);
   const pt=Algo.protein(riskInput(out.trendKg));out.protein=pt.range;out.proteinDoc=pt.doc;
   if(st.heightCm>0&&st.age>0){
     const profile={kg:out.trendKg,cm:st.heightCm,age:st.age,sex:st.sex||"",act:st.act};
@@ -162,19 +166,21 @@ function cCalc(){
 }
 function cData(){
   const st=S.settings,w=weights(),d=[];
+  const kcalOf=dayTotal("food"),waterOf=dayTotal("water"),sportOf=dayTotal("exercise"),proteinOf=cDayMap("food",e=>e.p||0),stepsOf=cDayMap("steps",cStep),sleepOf=cSleepOf(),mood=new Map();
+  for(const x of Habits.mood())if(!mood.has(x.day))mood.set(x.day,x.v);
   for(let i=13;i>=0;i--){
-    const k=keyOff(-i),ents=Log.all().filter(e=>e.day===k);
-    d.push({d:k.slice(5),kg:w[k],kcal:Math.round(ents.filter(e=>e.type==="food").reduce((s,e)=>s+(e.v||0),0)),p:Math.round(ents.filter(e=>e.type==="food").reduce((s,e)=>s+(e.p||0),0)),water:Math.round(ents.filter(WeeklyLib.isWater).reduce((s,e)=>s+e.v,0)),sport:Math.round(ents.filter(e=>e.type==="exercise").reduce((s,e)=>s+e.v,0)),ad:Math.round(ents.filter(e=>e.type==="steps").reduce((s,e)=>s+cStep(e),0)),sl:cSleep(k),mo:(Habits.mood().find(x=>x.day===k)||{}).v});
+    const k=keyOff(-i);
+    d.push({d:k.slice(5),kg:w[k],kcal:Math.round(kcalOf(k)),p:Math.round(proteinOf(k)),water:Math.round(waterOf(k)),sport:Math.round(sportOf(k)),ad:Math.round(stepsOf(k)),sl:sleepOf(k),mo:mood.get(k)});
   }
   const t=dayKey(),now=new Date();
-  /* Bağlam boyutu için üst sınırlar (en kötü durum menu.test.js'te ölçülür): yemek 12 satır/ad 40, spor 5, not 3, su tek toplam. */
-  const ent=Log.all().filter(e=>e.day===t),lastOf=(type,n)=>ent.filter(e=>e.type===type).slice(-n),waterTotal=Math.round(ent.filter(WeeklyLib.isWater).reduce((a,e)=>a+e.v,0));
+  /* Upper bounds on the context size (the worst case is measured in menu.test.js): food 12 lines of 40 characters, exercise 5, notes 3, water one total. */
+  const ent=Log.all().filter(e=>e.day===t),lastOf=(type,n)=>ent.filter(e=>e.type===type).slice(-n),waterTotal=Math.round(waterOf(t));
   const today=[...lastOf("food",12).map(e=>`yemek: ${(e.text||"öğün").slice(0,40)}${e.v?" ~"+Math.round(e.v)+" kcal":""}${e.p?", "+Math.round(e.p)+" g protein":""}`),...(waterTotal?[`su ${waterTotal} ml`]:[]),...lastOf("weight",1).map(e=>`tartı ${fmt(e.v)} kg`),...lastOf("exercise",5).map(e=>`spor ${(e.text||"").slice(0,30)} ${Math.round(e.v)} dk`),...lastOf("note",3).map(e=>`not: ${e.text.slice(0,100)}`)];
   const workouts=Gym.workouts().filter(x=>x.t1!=null).sort((a,b)=>b.t0-a.t0).slice(0,3).map(x=>`${x.day.slice(5)} ${x.name}: ${x.ex.map(cWorkoutEx).filter(Boolean).join(", ")}`.slice(0,300));
   const from=keyOff(-7),notes=Log.all().filter(e=>e.type==="note"&&e.day>=from).slice(-3).map(e=>e.text.slice(0,100));
   return {profile:{cm:st.heightCm,age:st.age,sex:st.sex,act:st.act,note:st.healthNote},goals:{kg:st.goalKg,kcal:st.kcal,water:st.waterMl,sport:st.sportWeek},calc:cCalc(),days:d,today,now:`${pad(now.getHours())}:${pad(now.getMinutes())}`,workouts,notes,meds:cMeds(t,now),weekSets:gWeekRegions()};
 }
-/* Antrenman satırı: ağırlıklıda en iyi set, vücut ağırlığında tekrar, süreli/kardiyoda süre. */
+/* Workout line: the best set for weighted lifts, reps for bodyweight, duration for timed work and cardio. */
 function cWorkoutEx(e){
   const ok=e.sets.filter(q=>q.done&&gSetOk(q));if(!ok.length)return "";
   const n=gEx(e.id).n,k=gKind(e.id);
@@ -188,19 +194,19 @@ function cMeds(t,now){
   const nt=`${pad(now.getHours())}:${pad(now.getMinutes())}`,f=keyOff(-6);
   return Meds.meds().filter(m=>m.on).slice(0,8).map(m=>{const a=MedLib.adherence([m],Meds.log(),f,t,t,nt),left=MedLib.stockLeft(m);return {n:m.n.slice(0,30),d:m.d&&m.d.slice(0,20),t:m.t,w:m.w,a:a.total||a.late?a:null,left}});
 }
-/* Geçmişe yalnız uygulanan kayıt kartı girer (reddedilen ya da bekleyen "yapıldı" gibi görünmesin); makro ve öğünle birlikte. */
+/* Only an applied log card enters the history (a rejected or pending one must not look "done"), with macros and meal. */
 function cHistLog(m){
   const c=m.card;
   return c&&c.kind==="log"&&c.state==="ok"?c.items.slice(0,4).map(i=>({type:i.type,text:i.text,name:i.name,kcal:i.kcal,p:i.p,c:i.c,f:i.f,meal:i.meal||c.meal,min:i.min,ml:i.ml,kg:i.kg})):[];
 }
-/* Modele yalnız maskelenmiş metin gider; etiket tablosu dizinin .pii alanında kalır, yanıt cAsk'ta yerelde geri çevrilir. */
-/* Son kapı: sağlayıcıya giden her gövde buradan geçer; sabit kural metni hariç hepsi maskelenir (idempotent). Yemek adları ad filtresinden muaf ("annem Salata"). */
+/* Only masked text goes to the model; the tag table stays in the array's .pii field and the reply is unmasked locally in cAsk.
+   Last gate: every body sent to a provider passes here; everything except the fixed rules text is masked (idempotent). Food names are exempt from the name filter ("annem Salata"). */
 let piiInit=false;
 const gate=m=>{if(!piiInit){PiiLib.deny(FOODS.map(f=>f.n));piiInit=true}return PiiLib.maskMsgs(m,CoachLib.SYSTEM)};
 function cMessages(extraUser,extraSys,noHist,lean){
   gate([]);
   const map={},mk=s=>PiiLib.mask(s,map).text;
-  /* Bağlam bölümleri soruya göre seçilir: sohbette son 3 kullanıcı mesajı (konu devamı), program/menüde istek metni; yorum isteklerinde soru yok = hepsi. */
+  /* Context sections are chosen by the question: in a chat the last 3 user messages (topic continuity), in a program or menu request the request text; a comment request has no question, so everything goes. */
   const q=noHist?extraUser:extraUser?undefined:S.chat.filter(m=>m.role==="user"&&m.text).slice(-3).map(m=>m.text).join(" ");
   const sys=CoachLib.SYSTEM+mk((extraSys?"\n\nNOT: "+extraSys:"")+"\n\n"+CoachLib.contextText(cData(),q,lean));
   const hist=noHist?[]:S.chat.filter(m=>m.role!=="sys"&&m.text).slice(-HIST_N).map(m=>({role:m.role==="user"?"user":"assistant",content:m.role==="user"?mk(m.text).slice(0,300):JSON.stringify({reply:mk(m.text).slice(0,260),log:cHistLog(m).map(i=>({...i,text:i.text&&mk(i.text),name:i.name&&mk(i.name)}))})}));
@@ -210,29 +216,27 @@ function cMessages(extraUser,extraSys,noHist,lean){
   return msgs;
 }
 
-/* ---- sağlayıcı zinciri ---- */
-/* probe: kurulum denemesi. HTTP 200 ve geçerli yanıt gövdesi yeter; düşünen model sınırda metinsiz dönebilir (content null, reasoning_content dolu).
-   Sohbette metin boş ve sınır dolduysa (düşünme bütçeyi yedi) bir kez üç katı sınırla yeniden sorulur. */
+/* ---- provider chain ---- */
 const USAGE_KEY="nw_state_usage";
+const usageStore=()=>{try{return JSON.parse(lsGet(USAGE_KEY))}catch(e){return null}};
 function trackUsage(p,j,ant){
-  try{
-    const u=CoachLib.usageOf(j,ant);if(!u)return;
-    let s=null;try{s=JSON.parse(lsGet(USAGE_KEY))}catch(e){}
-    lsSet(USAGE_KEY,JSON.stringify(CoachLib.usageAdd(s,dayKey(),p.id+"|"+p.model,u)));
-  }catch(e){}
+  const u=CoachLib.usageOf(j,ant);
+  if(u)lsSet(USAGE_KEY,JSON.stringify(CoachLib.usageAdd(usageStore(),dayKey(),p.id+"|"+p.model,u)));
 }
 function usageText(){
-  let s=null;try{s=JSON.parse(lsGet(USAGE_KEY))}catch(e){}
-  const {n,tok}=CoachLib.usageSum(s,dayKey());
-  return `Koç kullanımı (son 30 gün): ${n} istek, ~${tok.toLocaleString("tr-TR")} jeton`;
+  const {n,tok}=CoachLib.usageSum(usageStore(),dayKey());
+  return `Koç kullanımı (son 30 gün): ${n} istek, ~${fint(tok)} jeton`;
 }
+const httpError=async r=>{const e=new Error("HTTP "+r.status);e.status=r.status;try{e.body=(await r.text()).slice(0,600)}catch(x){}return e};
+/* o.probe: setup check. HTTP 200 with a valid body is enough; a thinking model may return without text at the limit (content null, reasoning_content set).
+   In a chat, if the text is empty and the limit was hit (thinking ate the budget), it is asked once more with three times the limit. */
 async function callProvider(p,key,messages,maxTokens=700,o={}){
   const ms=Math.min(o.ms||40000,o.until?o.until-Date.now():Infinity);
   if(ms<=0){const e=new Error("Süre doldu");e.kind="time";throw e}
   const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),ms);
   try{
-    const ant=p.id==="anthropic",r=await fetch(p.base.replace(/\/+$/,"")+(ant?"/messages":"/chat/completions"),{method:"POST",signal:ctl.signal,headers:Object.assign({"Content-Type":"application/json"},pHeaders(p,key)),body:JSON.stringify(pBody(p,gate(messages),maxTokens))});
-    if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;try{e.body=(await r.text()).slice(0,600)}catch(x){}throw e}
+    const ant=p.id==="anthropic",r=await fetch(p.base.replace(/\/+$/,"")+(ant?"/messages":"/chat/completions"),{method:"POST",signal:ctl.signal,headers:{"Content-Type":"application/json",...pHeaders(p,key)},body:JSON.stringify(pBody(p,gate(messages),maxTokens))});
+    if(!r.ok)throw await httpError(r);
     const j=await r.json();trackUsage(p,j,ant);const c=j&&j.choices&&j.choices[0],t=ant?(j&&Array.isArray(j.content)?j.content.filter(b=>b&&b.type==="text").map(b=>b.text).join(""):""):c&&c.message&&c.message.content;
     if(o.probe&&(ant?Array.isArray(j&&j.content):!!c))return "";
     const has=typeof t==="string"&&!!t.trim(),cut=ant?j&&j.stop_reason==="max_tokens":c&&c.finish_reason==="length";
@@ -241,10 +245,19 @@ async function callProvider(p,key,messages,maxTokens=700,o={}){
     const e=new Error("Boş yanıt");e.kind="empty";throw e;
   }finally{clearTimeout(to)}
 }
-const pModelsUrl=p=>p.base.replace(/\/+$/,"")+"/models"+(p.id==="anthropic"?"?limit=1000":"");
-/* İstek gövdesi sağlayıcıya göre. Düşünen modellerde düşünme jetonu yanıt sınırından yer; düşük çaba ve pay verilir.
-   OpenAI güncel modelleri max_tokens kabul etmez. Anthropic: sistem metni ayrı alan, ilk mesaj kullanıcı; Haiku 4.5 sıcaklık alır, Sonnet/Opus 5.x almaz (çaba alır). */
-/* Sabit kural metni önbelleğe alınır (değişken bağlamdan ayrı blok); eşik altında önbellek zararsızdır. */
+const MODELS_MS=15000;
+/* The model list can hang like any request: it gets its own timeout so the setup sheet never stays busy. */
+async function fetchModels(p,key){
+  const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),MODELS_MS);
+  try{
+    const r=await fetch(p.base.replace(/\/+$/,"")+"/models"+(p.id==="anthropic"?"?limit=1000":""),{headers:pHeaders(p,key),signal:ctl.signal});
+    if(!r.ok)throw await httpError(r);
+    return CoachLib.parseModels(await r.json());
+  }finally{clearTimeout(to)}
+}
+/* Request body per provider. With thinking models the thinking tokens eat from the reply limit, so low effort and extra room are given.
+   Current OpenAI models do not accept max_tokens. Anthropic: the system text is a separate field and the first message must be the user's; Haiku 4.5 takes temperature, Sonnet/Opus 5.x do not (they take effort). */
+/* The fixed rules text is cached (a block separate from the variable context); below the size threshold caching is harmless. */
 const cacheSys=sys=>sys.startsWith(CoachLib.SYSTEM)&&sys.length>CoachLib.SYSTEM.length?[{type:"text",text:CoachLib.SYSTEM,cache_control:{type:"ephemeral"}},{type:"text",text:sys.slice(CoachLib.SYSTEM.length)}]:sys;
 function pBody(p,messages,maxTokens){
   if(p.id==="openai")return {model:p.model,messages,max_completion_tokens:maxTokens*3,reasoning_effort:"low"};
@@ -256,24 +269,26 @@ function pBody(p,messages,maxTokens){
     return b;
   }
   const b={model:p.model,messages,temperature:0.3,max_tokens:maxTokens};
-  if(p.id==="gemini")b.reasoning_effort="low"; // Gemini 3 düşünmeyi kapatamıyor
+  if(p.id==="gemini")b.reasoning_effort="low"; // Gemini 3 cannot turn thinking off
   return b;
 }
 const errOf=e=>{const kind=(e&&e.kind)||CoachLib.errKind(e&&e.status,e&&e.body,e&&e.name);return {kind,text:CoachLib.errText(kind,e&&e.status)}};
+const COOL_MS={limit:60000,time:30000,key:600000,quota:600000,model:120000,down:10000,net:10000,empty:10000};
 function pFail(id,e){
   const {kind,text}=errOf(e);
-  if(kind==="limit")cool[id]=Date.now()+60000;else if(kind==="time")cool[id]=Date.now()+30000;else if(kind==="key"||kind==="quota")cool[id]=Date.now()+600000;else if(kind==="model")cool[id]=Date.now()+120000;else if(kind==="down"||kind==="net"||kind==="empty")cool[id]=Date.now()+10000;
+  if(COOL_MS[kind])cool[id]=Date.now()+COOL_MS[kind];
   pstat[id]={s:kind==="limit"?"limit":kind==="key"?"key":"err",t:Date.now(),m:text};
   return text;
 }
-const usable=()=>{const k=getKeys();return S.providers.filter(p=>p.on&&p.health&&k[p.id]&&(!cool[p.id]||cool[p.id]<Date.now()))};
-const hasKey=()=>{const k=getKeys();return S.providers.some(p=>p.on&&p.health&&k[p.id])};
-/* İstek başına toplam süre bütçesi: zincir, uzunluk yeniden denemesi ve yeniden sorma bu süreyi paylaşır. */
+const keyed=()=>S.providers.filter(p=>p.on&&p.health&&getKeys()[p.id]);
+const usable=()=>keyed().filter(p=>!(cool[p.id]>=Date.now()));
+const hasKey=()=>keyed().length>0;
+/* Total time budget per request: the chain, the length retry and the re-ask share it. */
 const BUDGET=60000,custAsked=new Set();
 const isCustom=p=>!defProviders().some(d=>d.id===p.id);
 const hostOf=p=>{try{return new URL(p.base).host}catch(e){return p.base}};
-/* Ücretsiz katman (Gemini) her gönderimde, özel sağlayıcı oturumda bir kez sorar; aynı gönderimin yeniden sorması tekrar sormaz (conf). */
-/* Önizleme açıksa ilk gönderimde tek pencere hem giden metni hem bu uyarıyı gösterir; onay ikisini birden verir (conf.prev). */
+/* The free tier (Gemini) asks on every send, a custom provider once per session; a re-ask of the same send does not ask again (conf).
+   With the preview on, the first send shows the outgoing text and this warning in one window, and one approval covers both (conf.prev). */
 async function sendOk(p,conf,msgs){
   const cust=isCustom(p),k=p.id+"|"+p.base,need=p.confirm||(cust&&!custAsked.has(k));
   const warn=need?(cust?`${p.name} senin eklediğin özel bir sağlayıcı (${hostOf(p)}). Sağlık verilerin ve anahtarın bu sunucuya gider; güvenmediğin bir adrese gönderme.`:`${p.name} ücretsiz katmanında istemler ürün geliştirmek için kullanılabilir. Sunucuları yurt dışında olan bu sağlayıcıya sağlık verileri gider.`):"";
@@ -292,7 +307,7 @@ async function sendOk(p,conf,msgs){
 function cPreview(msgs,p,warn){
   return new Promise(res=>{
     const n=Object.keys(msgs.pii||{}).length;
-    openSheet(`<h3>Koç'a giden metin</h3><p class="mut sm">${esc(p.name)} sağlayıcısına tam olarak aşağıdaki metin gider.${n?` Kimlik bilgisi gibi duran ${n} parça maskelendi.`:""}</p>${warn?`<div class="banner"><p class="m0">${esc(warn)}</p></div>`:""}<pre style="white-space:pre-wrap;word-break:break-word;max-height:45vh;overflow:auto;font-size:12px;margin:8px 0" tabindex="0">${esc(msgs.map(m=>`[${m.role==="user"?"sen":m.role==="system"?"sistem":"koç"}]\n${m.content}`).join("\n\n"))}</pre><div class="two"><button class="btn" data-c="pvok">Gönder</button><button class="btn ghost" data-c="pvno">İptal</button></div>`);
+    openSheet(`<h3>Koç'a giden metin</h3><p class="mut sm">${esc(p.name)} sağlayıcısına tam olarak aşağıdaki metin gider.${n?` Kimlik bilgisi gibi duran ${n} parça maskelendi.`:""}</p>${warn?`<div class="banner"><p class="m0">${esc(warn)}</p></div>`:""}<pre style="white-space:pre-wrap;word-break:break-word;max-height:45vh;overflow:auto;font-size:12px;margin:8px 0" tabindex="0" role="region" aria-label="Giden metin">${esc(msgs.map(m=>`[${m.role==="user"?"sen":m.role==="system"?"sistem":"koç"}]\n${m.content}`).join("\n\n"))}</pre><div class="two"><button class="btn" data-c="pvok">Gönder</button><button class="btn ghost" data-c="pvno">İptal</button></div>`);
     sheetEnd=res;
   });
 }
@@ -321,7 +336,7 @@ async function cAsk(messages,maxTokens,o={}){
   throw new Error(declined&&!tried?"declined":"fail");
 }
 
-/* ---- sohbet akışı ---- */
+/* ---- chat flow ---- */
 function cSend(text){
   text=String(text||"").trim().slice(0,600);if(!text)return;
   const fl=CoachLib.redFlag(text),m=cPush({role:"user",text,pend:true});
@@ -333,10 +348,10 @@ function cSend(text){
   }
   save();render();cFlush();
 }
-/* Sohbette görülen yeme düzeni ya da hamilelik işareti kalıcı frendir: yeni sohbet ya da silme kaldırmaz (riskInput okur). */
+/* An eating-disorder or pregnancy sign seen in a chat is a permanent brake: a new chat or a deletion does not lift it (riskInput reads it). */
 const riskMerge=(a,b)=>[...new Set(((a||"")+","+(b||"")).split(",").filter(Boolean))].sort().join(",");
 function cRisk(k){S.settings.chatRisk=riskMerge(S.settings.chatRisk,k)}
-/* Sağlık notu kaydında ağır işaret (kendine zarar, acil belirti) varsa sohbette güvenlik kartı gösterilir. */
+/* If the health note holds a severe sign (self-harm, emergency symptom), a safety card is shown in the chat. */
 function cNoteCheck(t=S.settings.healthNote){
   const f=CoachLib.redFlag(t),preg=CoachLib.pregnant(t);
   if(f==="mind"||f==="emergency"){cPush({role:"coach",text:"",card:{kind:"safety",level:f}});toast("Notunda bir sağlık uyarısı işareti var, Koç sekmesine bak")}
@@ -354,7 +369,7 @@ async function cFlush(){
     const r=await cAsk(cMessages(null,fl?"Kullanıcı bir belirti ya da yeme zorluğu bildirdi ve güvenlik kartı gösterildi. Kısa, ihtiyatlı yanıt ver, kalori kısıtlaması önerme.":""),undefined,ask);
     let o=CoachLib.parse(r.text);
     const said=pend[pend.length-1].text,act=x=>CoachLib.cleanItems(x.log).length||x.food||x.propose;
-    /* Tek yeniden sorma: doğru JSON her zaman kabul edilir; ikisi de bozuksa eksiksiz görünen ilk yanıt (ya da "yanıt eksik" iletisi) gösterilir. */
+    /* A single re-ask: a correct JSON is always accepted; if both are broken, the first reply that looks complete (or the "reply incomplete" message) is shown. */
     if(!fl&&(o.plain||(CoachLib.reported(said)&&!act(o)))&&ask.until-Date.now()>8000){
       try{
         const r2=await cAsk(cMessages(null,"Önceki yanıt kurala uymadı. Yalnızca tek bir JSON nesnesi ver. Kullanıcı yediğini, içtiğini, tartıldığını ya da spor yaptığını yazdıysa bunu log listesine ekle (food: kcal ve makrolar, exercise: min, name, kcal)."),undefined,ask),o2=CoachLib.parse(r2.text);
@@ -370,7 +385,7 @@ async function cFlush(){
   busy=false;typing=false;save();render();
   if(!offline&&S.chat.some(m=>m.role==="user"&&m.pend))cFlush();
 }
-/* Fren varken bakımın altındaki ya da bakımı bilinmeyen hedef açık olabilir; öneri de uygulama da durur. */
+/* While the brake is on, a target below maintenance (or with unknown maintenance) is blocked: both the proposal and applying it stop. */
 const kcalBlocked=(k,c=cCalc())=>!!c.block&&!(c.tdee&&k>=c.tdee-50);
 function cReply(o,kind){
   const items=CoachLib.cleanItems(o.log),msg={role:"coach",text:o.reply||"Tamam."};
@@ -386,12 +401,14 @@ function cReply(o,kind){
     if(cl&&cl.kcal!==S.settings.kcal)cPush({role:"coach",text:"",card:{kind:"propose",kcal:cl.kcal,why:String(o.propose.why||"").slice(0,160),limited:cl.limited,state:"pending"}});
   }
 }
-/* Kendi besinlerim: yapay zekâ tahmini ya da kaydedilen yemek, tek porsiyonluk değerle aranabilir listeye girer. */
+/* My foods: an AI estimate or a saved meal enters the searchable list with its one-portion values. */
 function myFoodPut(f){
   const i=Nutrition.my().findIndex(x=>(f.b&&x.b===f.b)||tr(x.n)===tr(f.n));
-  if(i>=0)Nutrition.my()[i]=f;else if(Nutrition.my().length<200)Nutrition.my().unshift(f);else return false;
+  if(i>=0)Nutrition.my()[i]=f;else if(Nutrition.my().length<MYFOODS_MAX)Nutrition.my().unshift(f);else return false;
   return true;
 }
+const mealNow=()=>LogLib.mealOf({time:cTime(Date.now())});
+const cardMeal=c=>c.meal||(c.items.find(i=>i.meal)||{}).meal||mealNow();
 function myFoodAdd(n,kcal,p){
   const f={n:n.slice(0,60),k:Math.round(kcal),por:true};if(p!=null&&p>=0)f.p=Math.round(p*10)/10;
   return myFoodPut(f);
@@ -399,8 +416,8 @@ function myFoodAdd(n,kcal,p){
 function cApplyLog(id,el){
   const m=S.chat.find(x=>x.id===id);if(!m||!m.card||m.card.kind!=="log"||m.card.state!=="pending")return;
   lReadK(m.card,el);
-  /* Bugünkü yemekler menüdeki "Bugüne ekle" yoluyla (addFoods: besin değerleri, öğün, Geri al); dünkü yemek ve diğer kayıtlar doğrudan. Geri al kartı yeniden açar. */
-  const c=m.card,ml=c.meal||(c.items.find(i=>i.meal)||{}).meal||LogLib.mealOf({time:cTime(Date.now())}),ids=[],foods=[];
+  /* Today's foods go through the menu's "add to today" path (addFoods: nutrition values, meal, Undo); yesterday's food and other records are added directly. Undo reopens the card. */
+  const c=m.card,ml=cardMeal(c),ids=[],foods=[];
   for(const it of c.items){
     const day=it.day==="yesterday"?keyOff(-1):dayKey(),y=it.type==="food";
     if(y&&day===dayKey()){foods.push(LogLib.copyNutr(it,{text:it.text||"Öğün",v:it.kcal,meal:ml}));continue}
@@ -411,21 +428,21 @@ function cApplyLog(id,el){
   if(foods.length)return addFoods(foods,dayKey(),`${n} kayıt günlüğe eklendi`,undo);
   save();render();toast(`${n} kayıt eklendi`,()=>{undo();save();render()});
 }
-/* Egzersiz kalorisi uygulamanın MET hesabıyla (net, dinlenme hariç; hızlı spor kaydıyla aynı formül). Koç'un tahmini yarıdan fazla saparsa uyarılır.
-   Kilo yoksa Koç'un tahmini dakikada en çok 15 kcal ile sınırlanır. */
+/* Exercise calories use the app's MET calculation (net of resting, the same formula as the quick exercise log). A Coach estimate more than half off triggers a warning.
+   Without a weight, the Coach estimate is capped at 15 kcal per minute. */
 function spKcal(it){
   const app=Algo.netKcal(CoachLib.sportMet(it.name),motionKg(),it.min);
   if(app!=null)return {k:app,off:it.kcal!=null&&Math.abs(it.kcal-app)>app*0.5};
   return {k:it.kcal!=null?Math.min(it.kcal,it.min*15):null,off:false};
 }
-/* Kalori kutusundaki düzeltmeler karta yazılır (çıkarma ve ekleme öncesi). */
+/* Corrections typed in the calorie boxes are written to the card (before removing an item or adding the card). */
 function lReadK(c,el){
   const box=el.closest(".lcard");if(!box)return;
   c.items.forEach((it,i)=>{if(it.type==="food"){const inp=box.querySelector(`[data-ck="${i}"]`);if(inp){const v=num(inp.value,true);it.kcal=isNaN(v)||v<0?null:Math.min(v,5000)}}});
 }
 
-/* ---- "bu hafta neden kilo vermedim": yerel etmenler, isteğe bağlı Koç yorumu ---- */
-/* Soru ve plato yalnız kilo verme hedefi olan, son 28 günde yeterli tartıda (en az 3, 14 gün yayılım) kilo vermeyen, kalori açığı engeli (yaş, düşük kilo, sağlık notu, yeme bozukluğu işareti) olmayan kullanıcıya. */
+/* ---- "why did I not lose weight this week": local factors, optional Coach comment ---- */
+/* The question and the plateau go only to a user who has a weight-loss goal, is not losing weight with enough weigh-ins in the last 28 days (at least 3, spread over 14 days) and has no calorie-deficit block (age, low weight, health note, eating-disorder sign). */
 function lossAsk(){
   const st=S.settings,w=weights(),days=Object.keys(w).sort();
   if(!(st.goalKg>0)||!days.length)return false;
@@ -434,8 +451,8 @@ function lossAsk(){
 }
 function cWhy(){
   if(!lossAsk())return;
-  const days=[];
-  for(let i=21;i>=0;i--){const k=keyOff(-i);days.push({kcal:sum("food",k,k),water:sum("water",k,k),ad:Log.all().filter(e=>e.type==="steps"&&e.day===k).reduce((n,e)=>n+cStep(e),0),sl:cSleep(k)})}
+  const kcalOf=dayTotal("food"),waterOf=dayTotal("water"),stepsOf=cDayMap("steps",cStep),sleepOf=cSleepOf(),days=[];
+  for(let i=21;i>=0;i--){const k=keyOff(-i);days.push({kcal:kcalOf(k),water:waterOf(k),ad:stepsOf(k),sl:sleepOf(k)})}
   const items=InsightLib.weekWhy({days,goalKcal:S.settings.kcal,goalWater:S.settings.waterMl,weights:weights(),today:dayKey()});
   cPush({role:"user",text:"Bu hafta neden kilo vermedim?"});cPush({role:"coach",text:"",card:{kind:"why",items}});
   tab="coach";save();render();
@@ -443,15 +460,14 @@ function cWhy(){
 async function cWhyAsk(id){
   const m=S.chat.find(x=>x.id===id);
   if(busy||!m||!m.card||m.card.kind!=="why"||m.card.asked||!coachOn()||!usable().length)return;
-  m.card.asked=true;busy=true;typing=true;render();
-  try{
+  m.card.asked=true;
+  return cRun(async()=>{
     const r=await cAsk(cMessages("Bu sorumu yalnız NOT'taki etmenlerle 4-5 cümlede yorumla. Bu sayılar dışında rakam kullanma, suçlama, tıbbi yorum yapma.","Uygulamanın son 7 gün için yerel hesabı:\n"+m.card.items.map(x=>"- "+x.t).join("\n")));
-    cReply(Object.assign(CoachLib.parse(r.text),{log:[]}));offline=null;
-  }catch(e){m.card.asked=false;toast(e.message==="declined"?"Gönderim onaylanmadı":CNET)}
-  finally{busy=false;typing=false;save();render()}
+    cReply(Object.assign(CoachLib.parse(r.text),{log:[]}));
+  },()=>{m.card.asked=false});
 }
 
-/* ---- Koç'tan program ---- */
+/* ---- program from the Coach ---- */
 let progOpt={d:3,q:"Salon",m:45,l:"Başlangıç"};
 function cCatalog(o){const c=CoachLib.catalog(EXDB,o,CORE_EX);return {ids:c.map(e=>e.id),text:CoachLib.catalogText(c)}}
 function cProgSheet(){
@@ -460,44 +476,40 @@ function cProgSheet(){
   <p class="hint">Koç yalnız kütüphanedeki egzersizlerden seçer. İstek, profil ve kayıtlarınla birlikte sağlayıcıya gönderilir.</p><button class="btn" data-c="progask">İste</button>`);
 }
 async function cProgram(o){
-  if(busy)return;
-  if(!coachOn()){tab="coach";render();return toast("Önce Koç'ta veri paylaşımını kabul et")}
-  if(!usable().length)return toast("Koç için anahtar gerekli: Ayarlar > Koç");
+  if(busy||coachBlocked())return;
   const rk=risk();
   if(rk.ed||rk.pregnant)return toast((rk.ed?"Yeme düzeniyle ilgili işaret gördüm":"Hamilelik ya da emzirme işareti var")+"; program önermiyorum, hekimine danış");
   const {ids,text}=cCatalog(o);
   const msgs=cMessages(`Haftada ${o.d} gün, seans ${o.m} dakika, ekipman ${o.q}, seviye ${o.l} için antrenman programı hazırla. "program" alanını doldur, reply'da kısaca anlat.`,"KATALOG (bölge: kimlik|ad, ...):\n"+text,true,"prog"),um=cPush({role:"user",text:`Program iste: haftada ${o.d} gün, ${o.m} dk, ${o.q}, ${o.l}`});
-  tab="coach";busy=true;typing=true;render();
-  try{
+  return cRun(async()=>{
     const r=await cAsk(msgs,900);
-    const p=CoachLib.parse(r.text),pg=CoachLib.cleanProgram(p.program,ids,o.d);offline=null;
+    const p=CoachLib.parse(r.text),pg=CoachLib.cleanProgram(p.program,ids,o.d);
     if(pg)cPush({role:"coach",text:p.reply,card:Object.assign({kind:"program",state:"pending"},pg)});
     else{cDrop(um);toast("Program okunamadı, tekrar dene")}
-  }catch(e){cDrop(um);toast(e.message==="declined"?"Gönderim onaylanmadı":CNET)}
-  finally{busy=false;typing=false;save();render()}
+  },()=>cDrop(um));
 }
 
-/* ---- Koç'tan haftalık menü ---- */
+/* ---- weekly menu from the Coach ---- */
 let menuNote="";
-/* Katalog: önce benim besinlerim, favoriler, şablonlar, kalan yer yerleşik listeden (kategorilere yayılmış). Toplam en çok 60 satır. */
+const MENU_CAT_MAX=60,MENU_CAT_MY=20,MENU_CAT_FAV=10,MENU_CAT_TPL=8;
+/* Catalog: my foods first, then favorites, templates, and the remaining room from the built-in list (spread over the categories). At most 60 lines in total. */
 function cMenuCat(){
   const cat={},lines=[],clean=t=>CoachLib.oneLine(String(t).replace(/[|]/g," "),30),nn=v=>v==null?null:v;
   const add=(id,n,k,p,c,f,g,a)=>{cat[id]={n:clean(n),k,p,c,f,g,a};lines.push(`${id}|${cat[id].n}${g?" "+g+" g":""}|${Math.round(k)}|${p==null?"?":Math.round(p)}`)};
   const per=(id,f,g)=>{const x=v=>v==null?null:v*g/100,m=f.u&&f.u[0][0].match(/^(\d+(?:[.,]\d+)?)\s*adet/);add(id,f.n,f.k*g/100,x(f.p),x(f.c),x(f.f),Math.round(g),m?+m[1].replace(",","."):null)};
-  Nutrition.my().slice(0,20).forEach((f,i)=>f.u?per("m"+i,f,f.u[0][1]):add("m"+i,f.n,f.k,nn(f.p),nn(f.c),nn(f.f),null,null));
-  Nutrition.fav().slice(0,10).forEach((x,i)=>{if(x.v!=null)add("f"+i,x.text,x.v,nn(x.p),nn(x.c),nn(x.f),null,null)});
-  Nutrition.tpl().slice(0,8).forEach((t,i)=>{if(t.items.every(x=>x.v!=null))add("t"+i,"Şablon: "+t.n,t.items.reduce((a,x)=>a+x.v,0),t.items.every(x=>x.p!=null)?t.items.reduce((a,x)=>a+x.p,0):null,null,null,null,null)});
-  const ok=FOODS.slice(0,FOOD_CORE).map((f,i)=>i).filter(i=>FOODS[i].k<450&&!["Şeker","Kola","Meyve suyu"].includes(FOODS[i].n)),n=Math.min(Math.max(0,60-lines.length),ok.length);
+  Nutrition.my().slice(0,MENU_CAT_MY).forEach((f,i)=>f.u?per("m"+i,f,f.u[0][1]):add("m"+i,f.n,f.k,nn(f.p),nn(f.c),nn(f.f),null,null));
+  Nutrition.fav().slice(0,MENU_CAT_FAV).forEach((x,i)=>{if(x.v!=null)add("f"+i,x.text,x.v,nn(x.p),nn(x.c),nn(x.f),null,null)});
+  Nutrition.tpl().slice(0,MENU_CAT_TPL).forEach((t,i)=>{if(t.items.every(x=>x.v!=null))add("t"+i,"Şablon: "+t.n,t.items.reduce((a,x)=>a+x.v,0),t.items.every(x=>x.p!=null)?t.items.reduce((a,x)=>a+x.p,0):null,null,null,null,null)});
+  const ok=[...FOODS.slice(0,FOOD_CORE).keys()].filter(i=>FOODS[i].k<450&&!["Şeker","Kola","Meyve suyu"].includes(FOODS[i].n)),n=Math.min(Math.max(0,MENU_CAT_MAX-lines.length),ok.length);
   for(let j=0;j<n;j++){const i=ok[Math.floor(j*ok.length/n)];per("b"+i,FOODS[i],FOODS[i].u[0][1])}
   return {cat,text:lines.join("\n")};
 }
-/* Hedef: kalori açığı engeli varsa ve hedef bakımın altındaysa bakım düzeyi (cReply'daki kuralın aynısı); yeme düzeni işareti ya da bakım hesaplanamıyorsa menü yok. */
-const menuBlock=(c=cCalc())=>c.block;
+/* Target: with a calorie-deficit block and a target below maintenance, maintenance is used (the rule of cReply); with an eating-disorder sign or unknown maintenance there is no menu. */
 function cMenuPlan(){
   const st=S.settings,c=cCalc(),goal=st.kcal>0?st.kcal:c.target;
   if(!(goal>0))return {why:"Önce Ayarlar > Profil ve hedefler'den günlük kalori hedefi belirle"};
   if(risk(c.trendKg).ed)return {why:"Yeme düzeniyle ilgili işaret gördüm; kısıtlayıcı menü önermiyorum, bir uzmana danış"};
-  const block=menuBlock(c);
+  const block=c.block;
   let kcal=goal,held=false;
   if(block){
     if(!c.tdee)return {why:block+". Menü hedefi hesaplanamadı; hekimine ya da diyetisyene danış"};
@@ -514,16 +526,29 @@ function cMenuSheet(){
   <div class="two"><button class="btn" data-c="menuask"${pl.why||!coachReady()?" disabled":""}>Koç'tan iste</button><button class="btn ghost" data-c="menulocal"${pl.why?" disabled":""}>Cihazda oluştur</button></div>
   <p class="hint">Cihazda oluştur: anahtar ve izin gerekmez, hiçbir şey gönderilmez. Notta yalnız fıstık, fındık, ceviz, badem, süt, yumurta, gluten, balık ve vejetaryen tanınır; içerikleri yine de kendin kontrol et.</p>`);
 }
-/* Bağlantı hatası tek cümle; sağlayıcı ayrıntısı yalnız Koç ekranındaki ⓘ içinde. */
+/* A connection error is one sentence; provider detail only inside the ⓘ on the Coach screen. */
 const CNET="Koç'a şu an ulaşılamıyor. Bağlantını kontrol et.";
 const coachReady=()=>S.settings.consent&&usable().length>0;
-/* Not hamilelik ya da sağlık uyarısı içeriyorsa menü hazırlanmaz (Koç'tan istek ve cihazda oluşturma ortak). */
+/* A button-requested Coach job: refuse when consent or a key is missing. Returns true when blocked. */
+function coachBlocked(){
+  if(!coachOn()){tab="coach";render();toast("Önce Koç'ta veri paylaşımını kabul et");return true}
+  if(!usable().length){toast("Koç için anahtar gerekli: Ayarlar > Koç");return true}
+  return false;
+}
+/* Runs a button-requested Coach job with the busy flags; when it fails, undo() takes back the optimistic user message or card state. */
+async function cRun(job,undo){
+  tab="coach";busy=typing=true;render();
+  try{await job();offline=null}
+  catch(e){undo();toast(e.message==="declined"?"Gönderim onaylanmadı":CNET)}
+  finally{busy=typing=false;save();render()}
+}
+/* If the note holds a pregnancy or health sign, no menu is made (shared by the Coach request and on-device creation). */
 function menuNoteStop(note){
   const nf=cNoteCheck(note);
   if(nf){save();render();toast(nf==="preg"?"Notunda hamilelik ya da emzirme işareti var, menü hazırlamıyorum; hekimine ya da diyetisyenine danış":"Notunda sağlık uyarısı işareti var, menü hazırlamıyorum; hekimine danış")}
   return !!nf;
 }
-/* Anahtarsız menü: kurallı, cihazda; plan (fren, bakım düzeyi) Koç menüsüyle aynı cMenuPlan. */
+/* Key-free menu: rule-based, on the device; the plan (brake, maintenance level) is the same cMenuPlan as the Coach menu. */
 function cMenuLocal(){
   const pl=cMenuPlan(),note=CoachLib.oneLine(menuNote,200);
   if(menuNoteStop(note))return;
@@ -534,28 +559,24 @@ function cMenuLocal(){
   toast(r.unk?"Notundaki kısıtı tanımadım, menüye uygulanmadı":"Menü cihazda hazırlandı");
 }
 async function cMenu(){
-  if(busy)return;
-  if(!coachOn()){tab="coach";render();return toast("Önce Koç'ta veri paylaşımını kabul et")}
-  if(!usable().length)return toast("Koç için anahtar gerekli: Ayarlar > Koç");
+  if(busy||coachBlocked())return;
   const pl=cMenuPlan(),note=CoachLib.oneLine(menuNote,200);
   if(menuNoteStop(note))return;
   if(pl.why)return toast(pl.why);
   const {cat,text}=cMenuCat(),p=pl.protein;
   const msgs=cMessages(`7 günlük menü hazırla. "menu" alanını doldur, reply'da en fazla 2 cümle yaz.`,`MENÜ İSTEĞİ. Hedef günlük ${pl.kcal} kcal (gün toplamı ±%10), ${p?`protein ${p[0]}-${p[1]} g/gün`:pl.pdoc?"protein hedefi hekimle belirlenmeli, yüksek proteinli menü kurma":"protein yeterli olsun"}. YALNIZ KATALOG kimliklerini kullan, listede olmayan besin ekleme. Günde 3-6 öğün, öğün anahtarı: kah, ogl, aks, atis. Katalogdaki kcal ve protein BİR porsiyon içindir; q porsiyon çarpanıdır (0.25-4).${note?`\nKullanıcının kısıt/alerji notu (uy): ${note}`:""}\nTıbbi diyet ya da hastalık menüsü yazma.${pl.block?` KISIT var: ${pl.block}; kalori açığı kurma.`:""}\nÇıktı JSON: {"reply":"...","menu":{"days":[{"n":"Pazartesi","meals":[{"m":"breakfast","i":[["kimlik",1]]}]}]}}\nKATALOG (kimlik|ad|kcal|protein):\n${text}`,true,"menu"),um=cPush({role:"user",text:`Haftalık menü iste: günde ~${pl.kcal} kcal${note?`, not: ${note}`:""}`});
-  tab="coach";busy=true;typing=true;render();
-  try{
+  return cRun(async()=>{
     const r=await cAsk(msgs,2400);
-    const o=CoachLib.parse(r.text),mn=CoachLib.cleanMenu(o.menu,cat,pl.kcal);offline=null;
+    const o=CoachLib.parse(r.text),mn=CoachLib.cleanMenu(o.menu,cat,pl.kcal);
     if(mn)cPush({role:"coach",text:o.reply,card:Object.assign({kind:"menu",chk:[]},mn)});
     else{cDrop(um);toast("Menü okunamadı, tekrar dene")}
-  }catch(e){cDrop(um);toast(e.message==="declined"?"Gönderim onaylanmadı":CNET)}
-  finally{busy=false;typing=false;save();render()}
+  },()=>cDrop(um));
 }
 const menuCard=id=>{const m=S.chat.find(x=>x.id===id);return m&&m.card&&m.card.kind==="menu"?m.card:null};
 const mealLbl=k=>(LogLib.MEALS.find(x=>x[0]===k)||[0,"Öğün"])[1];
 const qTxt=q=>q===1?"":" × "+String(q).replace(".",",");
 function menuEntries(d){return d.meals.flatMap(b=>b.items.map(i=>LogLib.copyNutr(i,{text:i.n+qTxt(i.q),v:i.k,meal:b.m})))}
-/* Yemekler besin listesindeki tarif ve öğün bileşenlerine bölünür (FOODS[].parts). */
+/* Dishes are split into the recipe and meal parts of the food list (FOODS[].parts). */
 let foodParts=null;
 const shopOf=c=>{if(!foodParts)foodParts=new Map(FOODS.filter(f=>f.parts).map(f=>[f.n,f.parts]));return CoachLib.shopList(c,n=>foodParts.get(n))};
 function cShopText(c){const ch=new Set(c.chk);let g="";return "Alışveriş listesi"+shopOf(c).map(x=>`${x.c!==g?`\n\n${g=x.c}`:""}\n${ch.has(x.n)?"[x]":"[ ]"} ${x.n}: ${x.t}`).join("")}
@@ -566,7 +587,7 @@ function cShop(id){
   <div class="mt-3 two"><button class="btn ghost" data-c="shopcopy:${id}">Kopyala</button><button class="btn ghost" data-c="shopshare:${id}">Paylaş</button></div>`);
 }
 
-/* Plato sorusu yereldir: consent ve sağlayıcıdan bağımsız, AI çağrısı yapmaz; kullanıcı "Bak"a dokunursa yerel kart açılır. */
+/* The plateau question is local: independent of consent and providers, it makes no AI call; "Bak" opens the local card. */
 function cPlateauCheck(){
   const st=S.settings,t=dayKey();
   if((st.lastPlateau&&Algo.dayNum(t)-Algo.dayNum(st.lastPlateau)<14)||!lossAsk())return;
@@ -574,16 +595,15 @@ function cPlateauCheck(){
   st.lastPlateau=t;cPush({role:"coach",kind:"plateau",text:`Son ${Math.round(p.days/7)} haftadır kilon düşmüyor. Birlikte bakalım mı?`});save();render();
 }
 
-/* ---- günün ve haftanın yorumu: yalnız kullanıcı düğmeye basınca (sağlayıcıya otomatik gönderim yoktur) ---- */
-function weekSummary(endKey){
-  const e=new Date(+endKey.slice(0,4),+endKey.slice(5,7)-1,+endKey.slice(8)),ks=[];
-  for(let i=6;i>=0;i--)ks.push(dayKey(addDays(-i,e)));
-  const w=weights(),ws=ks.filter(k=>w[k]!=null).map(k=>w[k]);
-  const td=cCalc().tdee,kc0=ks.map(k=>sum("food",k,k)).filter(x=>Algo.fullKcal(x,td)),kc=kc0.length>=Algo.MIN_AVG_DAYS?kc0:[],su=ks.map(k=>sum("water",k,k)).filter(x=>x>0);
-  const logged=ks.filter(k=>Log.all().some(x=>x.day===k)).length,sp=sum("exercise",ks[0],ks[6]);
+/* ---- comment on the day and the week: only when the user presses the button (nothing is sent to a provider automatically) ---- */
+function weekSummary(){
+  const ks=Array.from({length:7},(_,i)=>keyOff(i-6)),w=weights(),ws=ks.filter(k=>w[k]!=null).map(k=>w[k]);
+  const td=cCalc().tdee,kcalOf=dayTotal("food"),waterOf=dayTotal("water"),sportOf=dayTotal("exercise");
+  const kc0=ks.map(kcalOf).filter(x=>Algo.fullKcal(x,td)),kc=kc0.length>=Algo.MIN_AVG_DAYS?kc0:[],su=ks.map(waterOf).filter(x=>x>0);
+  const loggedDays=new Set(Log.all().map(x=>x.day)),logged=ks.filter(k=>loggedDays.has(k)).length,sp=ks.reduce((a,k)=>a+sportOf(k),0);
   return {logged,n:ks.length,ws,avgKcal:kc.length?Math.round(kc.reduce((a,b)=>a+b,0)/kc.length):null,avgWater:su.length?Math.round(su.reduce((a,b)=>a+b,0)/su.length):null,sport:Math.round(sp),first:ws[0],last:ws[ws.length-1]};
 }
-/* Bugün alınmış yorum yeniden istenmez, sohbetteki yanıta gidilir. */
+/* A comment already received today is not requested again; the chat reply is shown instead. */
 const cmtToday=kind=>S.chat.find(m=>m.role==="coach"&&m.kind===kind&&dayKey(new Date(m.t))===dayKey());
 function cCommentBtn(kind){
   const lbl=kind==="plan"?"bugünkü":"haftalık";
@@ -593,20 +613,15 @@ function cCommentBtn(kind){
 }
 async function cComment(kind){
   if(cmtToday(kind)){tab="coach";return render()}
-  if(busy)return;
-  if(!coachOn()){tab="coach";render();return toast("Önce Koç'ta veri paylaşımını kabul et")}
-  if(!usable().length)return toast("Koç için anahtar gerekli: Ayarlar > Koç");
-  const s=weekSummary(dayKey()),user=kind==="weekly"
+  if(busy||coachBlocked())return;
+  const s=weekSummary(),user=kind==="weekly"
     ?`Son 7 günümün yorumunu yaz, 5-6 cümle. Uygulamanın hesapladığı özet: kayıt ${s.logged}/${s.n} gün, tartılar ${s.ws.map(x=>fmt(x)).join(", ")||"yok"}, ortalama kalori ${s.avgKcal||"veri yok"}, ortalama su ${s.avgWater||"veri yok"} ml, spor ${s.sport} dk. Hedefe uyumu değerlendir ve gelecek hafta için tek bir odak öner. Bu sayılar dışında rakam kullanma.`
     :"Bugünkü kayıtlarıma kısaca yorum yap ve bugün için 3 kısa hedef öner.";
   const msgs=cMessages(user),um=cPush({role:"user",text:kind==="weekly"?"Haftamı yorumlar mısın?":"Bugünümü yorumlar mısın?"});
-  tab="coach";busy=true;typing=true;render();
-  try{const r=await cAsk(msgs);cReply(Object.assign(CoachLib.parse(r.text),{log:[]}),kind);offline=null}
-  catch(e){cDrop(um);toast(e.message==="declined"?"Gönderim onaylanmadı":CNET)}
-  finally{busy=false;typing=false;save();render()}
+  return cRun(async()=>{const r=await cAsk(msgs);cReply(Object.assign(CoachLib.parse(r.text),{log:[]}),kind)},()=>cDrop(um));
 }
 
-/* ---- ekran ---- */
+/* ---- screen ---- */
 function cTime(t){const d=new Date(t);return `${pad(d.getHours())}:${pad(d.getMinutes())}`}
 function cSafety(level){
   const T={
@@ -623,7 +638,7 @@ function cCard(m){
   if(c.kind==="program")return `<div class="card lcard"><div class="lhead"><b>${esc(c.name)}</b><span class="tag">${c.days.length} gün</span></div>${c.days.map(d=>`<div class="lrow"><span class="grow"><b>${esc(d.n)}</b><span class="mut sm">${esc(d.ex.map(i=>gEx(i).n).join(", "))}</span></span></div>`).join("")}
     ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="progadd:${m.id}">Şablon olarak ekle</button></div>`:`<p class="mut sm">${c.days.length} şablon Salon'a eklendi</p>`}<p class="hint">${gPgNote}</p></div>`;
   if(c.kind==="menu"){
-    /* Yalnız bugünün günü (adı eşleşmezse ilk gün) açık gelir; gün başına tek eylem, seçenekler ayrı pencerede. */
+    /* Only today's day (the first day if no name matches) starts open; one action per day, the options are in a separate sheet. */
     const td=WEEKDAYS[new Date().getDay()],open=Math.max(0,c.days.findIndex(d=>d.n===td));
     return `<div class="card lcard"><div class="lhead"><b>Haftalık menü</b><span class="forecast">Tahmin</span></div><p class="mut sm">Hedef ${c.kcal?"~"+c.kcal+" kcal/gün":"belirtilmedi"}. Tıbbi diyet ya da hastalık menüsü değildir.</p>
     ${c.days.map((d,di)=>`<details class="acc mday"${di===open?" open":""}><summary class="lhead"><b class="grow">${esc(d.n)}</b><span class="num mut">~${d.k} kcal</span></summary>${d.off?`<p class="mut sm">Hedefin %15'inden fazla sapıyor</p>`:""}${d.meals.map(b=>`<div class="lrow"><span class="grow"><b>${mealLbl(b.m)}</b><span class="mut sm">${esc(b.items.map(i=>i.n+(i.q===1?"":` (${String(i.q).replace(".",",")} porsiyon)`)).join(", "))}</span></span><span class="num mut sm nw">~${b.items.reduce((s,i)=>s+i.k,0)} kcal</span></div>`).join("")}
@@ -648,36 +663,36 @@ function cCard(m){
     const y=it.type==="food",mac=y?[it.g?it.g+" g":"",it.p!=null?`P ${Math.round(it.p)}`:"",it.c!=null?`K ${Math.round(it.c)}`:"",it.f!=null?`Y ${Math.round(it.f)}`:""].filter(Boolean).join(" · "):"";
     return `<div class="lrow"><span class="grow"><b>${lbl}</b>${mac?`<span class="mut sm">${mac}</span>`:""}${y&&CoachLib.macroOff(it)?`<span class="mut sm">Kalori makrolarla tutmuyor, kontrol et</span>`:""}${it.type==="exercise"&&spKcal(it).off?`<span class="mut sm">Koç ~${it.kcal} kcal dedi; kilona göre hesap kullanılır</span>`:""}${it.day==="yesterday"?`<span class="mut sm">Dün</span>`:""}</span><span class="lval">${val}${c.state==="pending"&&c.items.length>1?`<button class="del" data-c="lrm:${m.id}:${i}" aria-label="${lbl} çıkar">✕</button>`:""}</span></div>`;
   }).join("");
-  const est=c.items.some(i=>i.type==="food"),onlySp=c.items.every(i=>i.type==="exercise"),ml=c.meal||(c.items.find(i=>i.meal)||{}).meal||LogLib.mealOf({time:cTime(Date.now())}),tot=c.items.reduce((a,i)=>a+(i.type==="food"&&i.kcal?i.kcal:0),0);
+  const est=c.items.some(i=>i.type==="food"),onlySp=c.items.every(i=>i.type==="exercise"),ml=cardMeal(c),tot=c.items.reduce((a,i)=>a+(i.type==="food"&&i.kcal?i.kcal:0),0);
   return `<div class="card lcard"><div class="lhead"><b>${est?"Öğüne ekle":onlySp?"Egzersizi ekle":"Kayıt önerisi"}</b>${est?`<span class="forecast">Tahmin</span>`:""}</div>${rows}
   ${est?`<p class="mt-2 mut sm num">Toplam ~${Math.round(tot)} kcal</p>${c.state==="pending"?`<div class="mt-2 chips" role="group" aria-label="Öğün">${LogLib.MEALS.map(([k,n])=>`<button class="chip" data-c="lml:${m.id}:${k}" aria-pressed="${ml===k}">${n}</button>`).join("")}</div>`:""}`:""}
   ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="ok:${m.id}">${est?"Günlüğe ekle":onlySp?"Egzersizi ekle":"Onayla"}</button><button class="btn ghost" data-c="no:${m.id}">Vazgeç</button></div>`:`<p class="mut sm">${c.state==="ok"?"Kaydedildi":"Vazgeçildi"}</p>${c.state==="ok"&&est&&!c.saved?`<div class="lbtns"><button class="btn ghost" data-c="savefood:${m.id}">Yemeği listeme kaydet</button></div>`:""}`}</div>`;
 }
-/* Menü günü seçenekleri: bugüne ekle ya da öğün şablonu yap (kartta gün başına tek düğme). */
+/* Menu day options: add to today or make a meal template (one button per day on the card). */
 function cMenuDay(id,di){
   const c=menuCard(id),d=c&&c.days[di];if(!d)return;
   openSheet(`<h3>${esc(d.n)}</h3><p class="mut sm num">~${d.k} kcal, ${d.meals.length} öğün</p><div class="plist">${navRow(`data-c="menuadd:${id}:${di}"`,"plus","Bugüne ekle","Bu günün yemekleri bugünkü günlüğe eklenir")}${navRow(`data-c="menutpl:${id}:${di}"`,"note","Öğün şablonu yap","Yemek eklerken tek dokunuşla eklersin")}</div>`);
 }
-/* Onay metni tek yerde: Koç ekranı ve Gizlilik ve veri aynı metni gösterir. Gönderilen alanlar değişirse CONSENT_V'yi artır. */
+/* The consent text lives in one place: the Coach screen and Privacy and data show the same text. If the fields sent change, raise CONSENT_V. */
 const consentOk=()=>S.settings.age>=18;
 const ageMsg=()=>S.settings.age>0?"18 yaş altında Koç kapalı":"Koç için önce yaşını gir (Ayarlar > Profil)";
-/* Rıza, verinin gideceği sağlayıcı kümesine bağlıdır: anahtarı olan ve açık bir sağlayıcı rıza anındaki kümede değilse (ücretli ya da özel sağlayıcı sonradan açıldı) yeniden onay istenir. consentP yoksa yeniden onay istenir. */
+/* Consent depends on the set of providers the data will go to: if a keyed, enabled provider was not in the set at consent time (a paid or custom provider was enabled later), consent is asked again. Without consentP it is asked again too. */
 const provSet=()=>S.providers.filter(p=>p.on&&p.health).map(p=>p.id).sort().join(",");
-const provOk=()=>{const c=(S.settings.consentP||"").split(","),k=getKeys();return S.providers.every(p=>!(p.on&&p.health&&k[p.id])||c.includes(p.id))};
-/* Yaş sonradan 18'in altına inerse (ayar, yedek) verilmiş onay da düşer; gönderim yolları coachOn'dan geçer. */
+const provOk=()=>{const c=(S.settings.consentP||"").split(",");return keyed().every(p=>c.includes(p.id))};
+/* If the age later drops below 18 (settings, backup), the given consent lapses too; every send path goes through coachOn. */
 const coachOn=()=>S.settings.consent&&consentOk()&&provOk();
 function cAgeGuard(){if(S.settings.consent&&!consentOk()){Object.assign(S.settings,{consent:false,consentV:0,consentAt:""});toast(S.settings.age>0?"18 yaş altında Koç veri paylaşımı kapatıldı":"Yaş girilmediği için Koç veri paylaşımı kapatıldı")}}
-/* Tek metin kaynağı: uygulama içi onay ve docs/gizlilik-politikasi.md §5 aynı iki cümleyi taşır (app.test.js eşitliği sınar). Değişirse ikisini birlikte güncelle; gönderilen alanlar değiştiyse CONSENT_V'yi artır. */
+/* One text source: the in-app consent and docs/gizlilik-politikasi.md section 5 carry the same two sentences (app.test.js checks they match). Update both together; if the fields sent changed, raise CONSENT_V. */
 const CONSENT_SENT=`yazdığın mesajlar ve son ${HIST_N} sohbet mesajı (Koç yanıtları dahil); profilin (boy, 5 yıllık yaş aralığı, cinsiyet, hareket düzeyi); sağlık notun; hedeflerin ve hesaplanan değerler (trend kilo, tahmini harcama, protein aralığı); son 14 günün kilo, yemek (kcal ve protein), su, spor ve adım özeti (varsa uyku ve ruh hali); bugünkü kayıtların (yemek adları, su, tartı, spor ve not metinleri); son 3 antrenman (hareket adları, en iyi set) ve bu haftaki bölge başına set sayıları; son 7 günün en çok 3 notu; ilaç modülü açıksa ilaç adı, doz, saatler, haftanın günleri, son 7 günün uyumu ve stok; menü ya da program istersen yazdığın istek notu ve menü kataloğunda kendi besin, favori ve şablon adların (kalori ve protein değerleriyle)`;
 const CONSENT_WHEN="Yalnız sen bir düğmeye bastığında gönderilir (mesaj gönder, yorum, menü ya da program iste); uygulama açılırken ya da arka planda kendiliğinden hiçbir şey gönderilmez.";
 const CONSENT_NOT="Tahlil, tansiyon, şeker, nabız, saatten (Health Connect) gelen adım ve uyku, bel ve kalça gibi vücut ölçüleri, tarifler, oruç kayıtları, fotoğraf, konum ve yedek gönderilmez.";
 const consentBody=()=>`<b>Koç ile veri paylaşımına açık rızan</b><ul class="cul"><li><b>Ne gönderilir:</b> ${CONSENT_SENT}. ${CONSENT_NOT}</li><li><b>Ne zaman:</b> ${CONSENT_WHEN}</li><li><b>Kime:</b> seçtiğin sağlayıcıya (${esc(S.providers.filter(p=>p.on&&p.health).map(p=>p.name).join(", ")||"hiçbiri seçili değil")}), kendi anahtarınla. Sunucuları yurt dışındadır; bu bir yurt dışına aktarımdır.</li><li><b>Geri alma:</b> istediğin an Ayarlar > Gizlilik ve veri ya da Yapay zekâ koç bölümünden. Geri alınca yeni veri gitmez; önceden gönderilene sağlayıcının kendi politikası uygulanır.</li><li><b>Onay vermezsen</b> uygulama tam çalışır, yalnız Koç konuşmaz.</li></ul>`;
-/* Durum uyarıları onay kartında her zaman görünür, ayrıntı akordeonu kapalı olsa da. */
+/* Status warnings are always visible on the consent card, even when the details accordion is closed. */
 const consentWarn=()=>`${S.settings.consent&&consentOk()&&!provOk()?`<p><b>Sağlayıcı listen değişti.</b> Onayını verdiğinde bu sağlayıcılar yoktu; devam için yeniden onay ver.</p>`:""}${S.providers.some(p=>p.on&&p.health&&isCustom(p))?`<p><b>Özel sağlayıcı:</b> kendi eklediğin sunucuya (${esc(S.providers.filter(p=>p.on&&p.health&&isCustom(p)).map(p=>hostOf(p)).join(", "))}) verilerin ve anahtarın doğrudan gider; yalnız güvendiğin bir servis kullan.</p>`:""}${consentOk()?"":S.settings.age>0?`<p><b>18 yaş altı için Koç veri paylaşımı kapalıdır.</b></p>`:`<p><b>Koç için önce yaşını gir</b> (Ayarlar > Profil ve hedefler). Yaş bilinmeden Koç açılmaz.</p>`}`;
 const consentHtml=()=>consentBody()+consentWarn();
-/* Sohbeti siler, onaya dokunmaz. */
+/* Deletes the chat and leaves the consent alone. */
 function cClearChat(){if(!cSwitchOk())return false;S.chat=[];S.chats=[];save();return true}
-/* Ayrı sohbetler: açık sohbet geçmişe arşivlenir, yeni sohbet boş başlar; modele yalnız açık sohbet gider. */
+/* Separate chats: the open chat is archived to the history and a new one starts empty; only the open chat goes to the model. */
 const chatTitle=a=>{const u=a.find(m=>m.role==="user");return (u?u.text:"Sohbet").slice(0,60)};
 function cArchive(){
   if(!S.chat.some(m=>m.role==="user"||(m.card&&m.card.kind==="safety")))return;
@@ -702,7 +717,7 @@ function cConsent(on){
   const s=S.settings;if(on&&!consentOk())return;
   Object.assign(s,{consent:on,consentV:on?CONSENT_V:0,consentAt:on?dayKey():"",consentP:on?provSet():null});save();render();
 }
-/* Boş sohbet örnekleri: [etiket, mesaj, true ise yalnız yazma alanına konur]. */
+/* Empty-chat examples: [label, message, true if it only fills the input box]. */
 const CASK=[["Kahvaltıda ne yedin?","Kahvaltıda ",true],["Bugün ne yapmalıyım?","Bugün ne yapmalıyım?"],["Bu hafta nasıldı?","Bu hafta nasıldı?"]];
 function viewCoach(){
   let h="";
@@ -718,7 +733,7 @@ function viewCoach(){
   <details class="acc"><summary>Detaylar</summary><div class="sm">${consentBody()}</div></details>${consentOk()?`<button class="btn" data-c="consent">Açık rızamı veriyorum</button>`:""}<button class="lnk" data-pv="open">Gizlilik ve veri</button></div>`;
   if(S.chat.length||S.chats.length)h+=`<div class="chips cbar">${S.chat.length?`<button class="chip" data-c="newchat">Yeni sohbet</button>`:""}${S.chats.length?`<button class="chip" data-c="chats">Geçmiş</button>`:""}</div>`;
   if(!S.chat.length&&hasKey()&&coachOn())h+=`<div class="card empty">${Icons.svg("coach")}<b>Bugün neyle başlayalım?</b><p class="mut sm">Yediğini, içtiğini ya da tartını yaz; kaydederim. İstersen günü yorumlarım.</p><div class="chips">${CASK.map((x,i)=>`<button class="chip" data-c="ask:${i}">${x[0]}</button>`).join("")}</div></div>`;
-  /* Balon yalnız metin taşır; kart balonun dışında, tam genişlikte tek yüzeydir. */
+  /* The bubble carries only text; the card is a separate full-width surface outside the bubble. */
   for(const m of S.chat){
     if(m.role==="user")h+=`<div class="ub">${esc(m.text)}</div>${m.pend?`<div class="pendl">Gönderilmedi${coachOn()&&!typing&&offline!=="fail"?`<button class="lnk wa ib" data-c="retry">Şimdi gönder</button>`:""}</div>`:""}`;
     else if(m.role==="coach"){
@@ -736,7 +751,7 @@ function viewCoach(){
 }
 function cScroll(){if(tab==="coach")setTimeout(()=>window.scrollTo(0,document.body.scrollHeight),30)}
 
-/* ---- ayarlar: sağlayıcılar ---- */
+/* ---- settings: providers ---- */
 function pStatus(p){
   const k=getKeys()[p.id],s=pstat[p.id];
   if(!p.on)return ["Kapalı",""];
@@ -748,7 +763,7 @@ function pStatus(p){
   if(s&&s.s==="err")return ["Hata",s.m||""];
   return ["Hazır",""];
 }
-/* Kullanıcıya sağlayıcı adı ve durumu görünür; model kimliği yalnız sağlayıcı sayfasının Gelişmiş bölümünde. */
+/* The user sees the provider name and status; the model id only in the Advanced section of the provider sheet. */
 function viewProviders(){
   const k=getKeys(),on=S.providers.filter(p=>p.on&&p.health&&k[p.id]),ready=on.length>0;
   const rows=S.providers.map(p=>{const [a,b]=pStatus(p);return `<button class="prow" data-c="prov:${p.id}"><span class="grow"><b>${esc(p.name)}</b>${b?`<span class="mut sm">${esc(b)}</span>`:""}</span><span class="tag">${a}</span></button>`}).join("");
@@ -759,7 +774,7 @@ function viewProviders(){
   <details class="acc"><summary>Gelişmiş</summary><p class="m0 hint">Kendi OpenAI uyumlu servisini ekleyebilirsin. Sağlık verilerin ve anahtarın o sunucuya gider.</p><div class="btns"><button class="btn ghost" data-c="addprov">Sağlayıcı ekle</button></div></details></div>
   <h2 class="grp">Sohbet</h2><div class="card"><button class="btn danger" data-c="clearchat">Sohbeti temizle</button></div>`;
 }
-/* Adresler yalnız yaygın bilinen anahtar sayfaları; panel düğme adları değişebilir. */
+/* The addresses are only well-known key pages; panel button names may change. */
 const GUIDE={
   nvidia:{site:"build.nvidia.com",steps:["Tarayıcında build.nvidia.com adresini aç, hesap oluştur ya da giriş yap.","Bir model sayfası aç (örneğin llama).","Sayfadaki anahtar oluşturma düğmesine bas. Düğme adı değişebilir, geliştirici panelinden anahtar oluştur.","Çıkan anahtarı kopyala ve aşağıya yapıştır."]},
   groq:{site:"console.groq.com/keys",steps:["Tarayıcında console.groq.com adresini aç, hesap oluştur ya da giriş yap.","Menüden anahtarlar bölümüne (API Keys) gir.","Anahtar oluştur düğmesine (Create API Key) bas, bir ad ver.","Anahtarı kopyala, bir daha gösterilmeyebilir. Aşağıya yapıştır."]},
@@ -774,8 +789,8 @@ function cGuide(id){
   openSheet(`<h3>${esc(p.name)} anahtarı nasıl alınır?</h3><div class="mut sm" style="margin-bottom:6px">${esc(g.site)}</div><ol class="cues">${g.steps.map(t=>`<li>${esc(t)}</li>`).join("")}</ol>
   <button class="btn" data-c="setup">‹ Anahtarı yapıştır</button>`);
 }
-/* ---- kurulum: 1 anahtar (sağlayıcı önekten tahmin), 2 doğrula ve modelleri getir (Önerilen hazır seçili), 3 test et ve kaydet.
-   Ağ çağrısı yalnız düğmeye basınca ve yalnız seçilen sağlayıcıya gider; giden yalnız anahtar ve sabit test cümlesi. Model listesi bellekte kalır, yedeğe girmez. */
+/* ---- setup: 1 key (provider guessed from the prefix), 2 verify and fetch the models (the recommended one preselected), 3 test and save.
+   Network calls happen only on a button press and only to the chosen provider; only the key and a fixed test sentence go out. The model list stays in memory and does not enter the backup. */
 const PNOTE={nvidia:"Ücretsiz deneme kredisi",groq:"Ücretsiz, çok hızlı",openrouter:"Ücretsiz modeller var",gemini:"Ücretsiz katman, her gönderimde sorulur",openai:"Ücretli, ucuz model önerilir",anthropic:"Ücretli, ucuz model önerilir"};
 const suNew=()=>({k:"",id:null,models:null,rec:"",model:"",adv:false,msg:"",fail:"",ok:"",busy:false});
 let su=suNew();
@@ -807,7 +822,7 @@ function suBody(){
   return h;
 }
 function suRender(){const b=$("#sbody");if(b)b.innerHTML=suBody()}
-/* 18 yaş altında kurulum da ağ çağrısı yapmaz; consent zinciri ayrıca sağlık verisini korur. */
+/* Under 18, setup makes no network call either; the consent chain protects health data separately. */
 function suCheck(){
   const k=su.k.trim();
   if(!consentOk())su.msg=ageMsg()+".";
@@ -821,10 +836,8 @@ async function suFetch(){
   const p=suProv(),k=p&&!su.busy&&suCheck();if(!k)return;
   su.busy=true;su.msg="Modeller getiriliyor…";su.fail="";suRender();
   try{
-    const r=await fetch(pModelsUrl(p),{headers:pHeaders(p,k)});
-    if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;try{e.body=await r.text()}catch(x){}throw e}
-    su.models=CoachLib.parseModels(await r.json());su.adv=false;su.ok="";
-    /* Liste bazı sağlayıcılarda anahtarsız da gelir ve listedeki model hesapta çalışmayabilir: adaylar kısa sürede gerçek istekle denenir, ilk yanıt veren önerilir. */
+    su.models=await fetchModels(p,k);su.adv=false;su.ok="";
+    /* Some providers return the list without a key, and a listed model may not work on the account: candidates are tried with a real request in a short time and the first that answers is recommended. */
     const cands=CoachLib.candidates(p.id,su.models).slice(0,4),stop=["key","quota","net","limit"];let last=null;
     if(!cands.length)cands.push(p.model);
     for(const m of cands){
@@ -900,9 +913,7 @@ async function cProvClick(a,p1,p2){
     case "pmodels":{
       const p=pRead(p1);if(!p)return;const key=getKeys()[p1];if(!key)return toast("Önce anahtarı ekle");if(!consentOk())return toast(ageMsg());
       try{
-        const r=await fetch(pModelsUrl(p),{headers:pHeaders(p,key)});
-        if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;try{e.body=await r.text()}catch(x){}throw e}
-        const ms=CoachLib.parseModels(await r.json()),rec=CoachLib.pickModel(p1,ms),box=$("#pmlist");
+        const ms=await fetchModels(p,key),rec=CoachLib.pickModel(p1,ms),box=$("#pmlist");
         if(box)box.innerHTML=`<label class="lbl" for="pmsel">${ms.length} model bulundu</label><select class="in" id="pmsel">${ms.map(x=>`<option value="${esc(x.id)}"${x.id===p.model?" selected":""}>${esc(x.id)}${x.id===rec?" (önerilen)":x.free?" (ücretsiz)":""}</option>`).join("")}</select>`;
       }catch(e){toast(errOf(e).text)}
       return;
@@ -918,7 +929,7 @@ function cClick(v,el){
     case "askfood":{const q=foodAskQ.trim();if(q){closeSheet();tab="coach";render();cSend(`${q} kaç kalori? Bir porsiyon için tahmin et.`)}return}
     case "send":{const i=$("#cmsg");const t=i.value;i.value="";return cSend(t)}
     case "retry":offline=null;cFlush();return render();
-    case "pvok":case "pvno":{const e=sheetEnd;sheetEnd=null;closeSheet();if(e)e(a==="pvok");return}
+    case "pvok":case "pvno":sheetDone(a==="pvok");return closeSheet();
     case "cmt":return cComment(p1);
     case "consent":return cConsent(true);
     case "revoke":return cConsent(false);
@@ -944,7 +955,7 @@ function cClick(v,el){
     case "menuask":{menuNote=($("#mnote").value||"").replace(/\s+/g," ").trim().slice(0,200);closeSheet();return cMenu()}
     case "menuadd":{
       const c=menuCard(+p1),d=c&&c.days[+p2];if(!d)return;
-      const bl=menuBlock(),why=d.off?`Bu günün toplamı ${d.k} kcal, hedefin (${c.kcal}) %15'inden fazla sapıyor.`:bl&&c.kcal&&d.k<c.kcal-50?`Kalori açığı önerilmiyor (${bl}); bu gün hedefin altında (${d.k} kcal).`:"";
+      const bl=cCalc().block,why=d.off?`Bu günün toplamı ${d.k} kcal, hedefin (${c.kcal}) %15'inden fazla sapıyor.`:bl&&c.kcal&&d.k<c.kcal-50?`Kalori açığı önerilmiyor (${bl}); bu gün hedefin altında (${d.k} kcal).`:"";
       const go=()=>{const it=menuEntries(d);addFoods(it,dayKey(),`${d.n}: ${it.length} yemek bugüne eklendi`)};
       if(why)return void confirmSheet({title:"Bugüne eklensin mi?",body:why+" Yine de bugüne eklensin mi?",ok:"Ekle"}).then(ok=>{if(ok)go()});
       return go();
@@ -974,9 +985,9 @@ function cClick(v,el){
     }
     case "fooddiary":{
       const m=S.chat.find(x=>x.id===+p1),c=m&&m.card;if(!c||c.kind!=="food"||c.logged)return;
-      c.logged=true;return addFoods([{text:c.f.n,v:c.f.k,p:c.f.p==null?undefined:c.f.p,meal:LogLib.mealOf({time:cTime(Date.now())})}],dayKey(),`${c.f.n} günlüğe eklendi`,()=>{c.logged=false});
+      c.logged=true;return addFoods([{text:c.f.n,v:c.f.k,p:c.f.p==null?undefined:c.f.p,meal:mealNow()}],dayKey(),`${c.f.n} günlüğe eklendi`,()=>{c.logged=false});
     }
-    case "addfood":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card&&m.card.kind==="food"&&m.card.state==="pending"){if(myFoodAdd(m.card.f.n,m.card.f.k,m.card.f.p)){m.card.state="ok";save();render();toast("Besin listene eklendi")}else toast("Listen dolu (en fazla 200 besin)")}return}
+    case "addfood":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card&&m.card.kind==="food"&&m.card.state==="pending"){if(myFoodAdd(m.card.f.n,m.card.f.k,m.card.f.p)){m.card.state="ok";save();render();toast("Besin listene eklendi")}else toast(`Listen dolu (en fazla ${MYFOODS_MAX} besin)`)}return}
     case "nofood":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card){m.card.state="no";save();render()}return}
     case "savefood":{
       const m=S.chat.find(x=>x.id===+p1);if(!m||!m.card||m.card.kind!=="log"||m.card.saved)return;

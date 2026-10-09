@@ -22,7 +22,7 @@ const net=Object.keys(fns).filter(k=>/\bfetch\(|\bcallProvider\(/.test(fns[k]));
 const ids=s=>new Set(s.match(/[A-Za-z_$][\w$]*/g)||[]);
 const seen=new Set(),q=[...ids(top)].filter(k=>k in fns);
 while(q.length){const k=q.pop();if(seen.has(k))continue;seen.add(k);for(const x of ids(fns[k]))if(x in fns&&!seen.has(x))q.push(x)}
-ok("ağ isteği atan fonksiyonlar bulundu (Koç, kurulum, barkod)",["callProvider","suFetch","barcodeFind"].every(k=>net.includes(k)),net);
+ok("ağ isteği atan fonksiyonlar bulundu (Koç, kurulum, barkod)",["callProvider","fetchModels","barcodeFind"].every(k=>net.includes(k)),net);
 ok("açılış, visibilitychange, zamanlayıcı ve bildirim yollarından ağ isteğine ulaşılmaz",!net.some(k=>seen.has(k))&&!["cAsk","cFlush","cSend","cComment"].some(k=>seen.has(k)),net.filter(k=>seen.has(k)));
 ok("kök tarama gerçekten çalışır: açılış render, visibilitychange ve bildirim dokunuşunu görür",["render","cPlateauCheck","notifTap","scheduleReminders"].every(k=>seen.has(k)));
 ok("otomatik Koç yolu ve bayrakları kodda yok",!/\b(cAuto|lastAuto|lastPlan|lastWeekly)\b/.test(src));

@@ -110,6 +110,20 @@ setTimeout(async()=>{
     ev("__u()");
     ok("cApplyLog: spor kaydı geri alınır",ev("S.entries.filter(e=>e.type==='exercise').length")===0&&ev("S.chat[0].card.state")==="pending");
   }
+  { // context rows are per-day totals
+    reset();
+    ev(`const y=keyOff(-1);S.entries=[{id:1,day:y,time:'08:00',type:'food',v:300,p:20,text:'a'},{id:2,day:y,time:'12:00',type:'food',v:200,p:5,text:'b'},{id:3,day:y,time:'09:00',type:'water',v:250,text:''},{id:4,day:y,time:'09:00',type:'exercise',v:30,text:'x'},{id:5,day:y,time:'10:00',type:'steps',v:9000,hc:1,ph:4000,text:''},{id:6,day:keyOff(-2),time:'08:00',type:'food',v:111,text:'c'}];S.mood=[{day:y,v:4},{day:y,v:2}]`);
+    const row=ev("cData().days.find(r=>r.d===keyOff(-1).slice(5))");
+    ok("cData: a day row sums food, protein, water, exercise and phone steps (watch steps excluded); the first mood of the day wins",row.kcal===500&&row.p===25&&row.water===250&&row.sport===30&&row.ad===4000&&row.mo===4,row);
+    ok("cData: another day's entries stay in their own row",ev("cData().days.find(r=>r.d===keyOff(-2).slice(5)).kcal")===111);
+  }
+  { // the model list request has its own timeout
+    reset();const st=w.setTimeout;w.setTimeout=(f,ms,...a)=>st(f,ms===15000?5:ms,...a);
+    fetchWith((u,o)=>new Promise((_,rej)=>o.signal.addEventListener("abort",()=>rej(Object.assign(new Error("aborted"),{name:"AbortError"})))));
+    const r=await ev("fetchModels(S.providers[0],'k').then(()=>'ok',e=>errOf(e).kind)");
+    w.setTimeout=st;
+    ok("fetchModels: a model list request that never answers is aborted and classified as a timeout",r==="time",r);
+  }
   console.log(bad?`${bad} başarısız`:"Koç davranış testleri geçti");
   process.exit(bad?1:0);
 },300);
