@@ -83,6 +83,7 @@ public class AppLockPlugin extends Plugin {
     private void prompt(Activity a, final PluginCall call, String title) {
         if (pending != null) pending.cancel();
         pending = new CancellationSignal();
+        try {
         BiometricPrompt p = new BiometricPrompt.Builder(a).setTitle(title)
             .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG | BiometricManager.Authenticators.DEVICE_CREDENTIAL).build();
         p.authenticate(pending, a.getMainExecutor(), new BiometricPrompt.AuthenticationCallback() {
@@ -104,6 +105,13 @@ public class AppLockPlugin extends Plugin {
                 call.resolve(r);
             }
         });
+        } catch (RuntimeException e) {
+            // İzin ya da sistem hatası (örn. SecurityException): uygulama çökmesin, doğrulama başarısız sayılsın.
+            JSObject r = new JSObject();
+            r.put("ok", false);
+            r.put("code", -1);
+            call.resolve(r);
+        }
     }
 
     /** Son uygulamalar önizlemesi ve ekran görüntüsü kapanır: kilit açıkken içerik arka planda görünmez. */
