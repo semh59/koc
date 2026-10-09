@@ -1534,6 +1534,11 @@ ok("ortalama uyarısı: 3 günden az",v.includes("en az 3 gün"));
     ev(`S.workouts=[${Tk(23,"D",nowT,null,Ex("squat","[{kg:20,reps:10,done:false,w:true}]"))}];gFinish()`);
     ok("ısınma seti işaretsiz değerli sayılmaz: antrenman kaydedilmez",ev("S.workouts[0].t1")===null);
     ev("S.workouts=[];tab='bugun';render()");
+    // dünden kalan bitmemiş antrenman: kart "bitirilmedi" der, süre sorulur, 10 saatlik sahte kayıt yazılmaz
+    ev(`S.entries=S.entries.filter(e=>e.type!=='spor');S.workouts=[${Tk(40,"D",nowT-30*3600000,null,Ex("squat","[{kg:60,reps:5,done:true},{kg:60,reps:5,done:false}]"),"keyOff(-1)")}];tab='bugun';render()`);
+    ok("dünden kalan antrenman: Devam ediyor değil, bitirilmedi + Bitir/Sil",!q("#view").textContent.includes("Devam ediyor")&&q("#view").textContent.includes("bitirilmedi")&&!!q('[data-g="stalefin"]')&&!!q('.card [data-g="cancel"]'));
+    click('[data-g="stalefin"]');ev("$('#gsd').value='45'");click('[data-g="stalego"]');
+    ok("dünden kalan: sorulan süre kaydedilir (45 dk), kart kalkar",ev("S.workouts[0].t1-S.workouts[0].t0")===45*60000&&ev("S.entries.find(e=>e.wid===40).v")===45&&!q('[data-g="stalefin"]'));
     ok("antrenman yoksa Bugün kartı görünmez",!q('[data-g="start:"]')&&!q("#view").textContent.includes("Devam ediyor"));
     // süreli: 0 kg yok; 5 egzersiz: ilk 4 + "+1"
     ev(`S.workouts=[${Tk(24,"Süreli",nowT-1000,nowT,Ex("superman","[{kg:null,reps:null,sec:90,done:true}]")+","+Ex("squat","[{kg:20,reps:10,done:true,w:true}]")+","+Ex("bench","[{kg:50,reps:5,done:true}]")+","+Ex("row","[{kg:40,reps:5,done:true}]")+","+Ex("curl","[{kg:10,reps:5,done:true}]")+","+Ex("crunch","[{kg:0,reps:5,done:true}]"))}];tab='bugun';render()`);

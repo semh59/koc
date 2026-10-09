@@ -262,7 +262,9 @@ function gTodayCard(){
   if(!a&&!d.length)return "";
   const row=(w,k,l)=>`<button class="rrow" data-g="${k}"><span class="grow tx"><b>${esc(w.name)}</b><span class="mut sm">${esc(gNames(w,4))||"Egzersiz yok"}</span><span class="mut sm num">${l}</span></span>${k==="start:"?`<span class="tag">Devam et</span>`:""}</button>`;
   const ws=a?a.ex.reduce((s,x)=>s+x.sets.filter(t=>!t.w).length,0):0;
-  return `<div class="card">${a?row(a,"start:",`Devam ediyor, ${a.ex.length} egzersiz, ${a.ex.reduce((s,x)=>s+x.sets.filter(t=>t.done&&gSetOk(t)).length,0)}/${ws} set işaretli`):""}${d.map(w=>row(w,"sum:"+w.id,gStats(w))).join("")}</div>`;
+  const old=a&&a.day!==dayKey(); // dünden kalan: bitirilmedi, süresi bilinmez
+  const stale=old?`<div class="btns"><button class="btn ghost" data-g="stalefin">Bitir ve kaydet</button><button class="btn ghost" data-g="cancel">Sil</button></div>`:"";
+  return `<div class="card">${a?row(a,"start:",old?`${fd(a.day)} başladı, bitirilmedi, ${a.ex.length} egzersiz`:`Devam ediyor, ${a.ex.length} egzersiz, ${a.ex.reduce((s,x)=>s+x.sets.filter(t=>t.done&&gSetOk(t)).length,0)}/${ws} set işaretli`)+stale:""}${d.map(w=>row(w,"sum:"+w.id,gStats(w))).join("")}</div>`;
 }
 function gHistHtml(done){
   const rows=done.slice(0,gHistMax);let ym="";
@@ -539,12 +541,24 @@ function gFinish(){
   });
   gFinishSave(w);
 }
-function gFinishSave(w){
+/* Dünden kalan antrenmanın gerçek süresi bilinmez: şimdiki zamanı bitiş saymak 10 saatlik sahte kayıt yazar, süre kullanıcıdan sorulur. */
+function gStaleAsk(){
+  const w=gActive();if(!w)return;
+  const open=w.ex.reduce((s,x)=>s+x.sets.filter(t=>!t.done&&gSetOk(t)).length,0);
+  openSheet(`<h3>Antrenman kaç dakika sürdü?</h3><p class="hint">${fd(w.day)} başlayan antrenman bitirilmemişti.${open?` ${open} işaretlenmemiş set tamamlandı sayılır.`:""}</p><label class="lbl" for="gsd">Süre (dk)</label><input class="in" id="gsd" inputmode="numeric" value="60"><button class="btn" data-g="stalego">Bitir ve kaydet</button>`);
+}
+function gStaleGo(){
+  const w=gActive(),m=Math.round(+($("#gsd")||{}).value);if(!w)return;
+  if(!(m>=1&&m<=600))return toast("Süreyi 1-600 dakika arası yaz");
+  for(const x of w.ex)for(const t of x.sets)if(gSetOk(t))t.done=true;
+  closeSheet();gFinishSave(w,w.t0+m*60000);
+}
+function gFinishSave(w,end){
   if(!w.ex.some(x=>x.sets.some(t=>t.done&&gSetOk(t))))return toast(w.ex.length?"Kaydedilmedi: değeri girilmiş set yok. Tekrar ya da süre gir, ✓ koy; vazgeçtiysen Antrenmanı iptal et":"Kaydedilmedi: antrenmanda egzersiz yok. Egzersiz ekle ya da Antrenmanı iptal et");
   gTimStop();
   for(const x of w.ex)x.sets=x.sets.filter(s=>s.done);
   w.ex=w.ex.filter(x=>x.sets.length);
-  w.t1=Date.now();
+  w.t1=end||Date.now();
   gLogSpor(w,"Ağırlık");
   save();gRestSet(0);render();gSheetSummary(w.id);
 }
@@ -661,6 +675,8 @@ function gClick(v,el){
     }
     case "rest":{const d=+p1;gRestSet(d&&Math.max(Date.now(),restEnd)+d*1000);gTick();return}
     case "finish":return gFinish();
+    case "stalefin":return gStaleAsk();
+    case "stalego":return gStaleGo();
     case "cancel":return void confirmSheet({title:"Bu antrenman kaydedilmeden silinsin mi?",ok:"Sil",danger:true}).then(ok=>{
       if(!ok)return;gTimStop();S.workouts=S.workouts.filter(x=>x!==w);save();gRestSet(0);render();
     });
