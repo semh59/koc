@@ -150,8 +150,11 @@ public class MedWakeReceiver extends BroadcastReceiver {
         StringBuilder keep = new StringBuilder();
         JSONArray first = new JSONArray();
         int n = 0;
+        long prev = 0;
         for (long at : t) {
-            if (at <= now + 2000) continue;
+            // Aynı dakikada iki ilaç aynı zamanı verir: tek alarm yeter (alarm ekranı ikisini de listeler), yoksa 40'lık sınır boşa gider.
+            if (at <= now + 2000 || at == prev) continue;
+            prev = at;
             if (n < MAX) {
                 Alarms.setClock(c, at, pi(c, n, PendingIntent.FLAG_UPDATE_CURRENT));
                 if (first.length() < 3) first.put(at);
