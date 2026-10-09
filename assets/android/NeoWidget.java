@@ -59,8 +59,11 @@ public class NeoWidget extends AppWidgetProvider {
     private static synchronized void setSteps(Context c, long steps) {
         JSONObject o = load(c);
         try {
-            o.put("steps", steps);
-            o.put("sday", StepStore.today());
+            // Uygulamanın bugün gönderdiği değer saat adımını ve elle eklenenleri de içerir; yalnız telefon sensörü okuması onu düşürmesin.
+            String today = StepStore.today();
+            long pushed = today.equals(o.optString("sday", o.optString("day"))) && !o.isNull("steps") ? o.optLong("steps") : 0;
+            o.put("steps", Math.max(steps, pushed));
+            o.put("sday", today);
         } catch (JSONException e) {
             return;
         }
