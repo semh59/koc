@@ -4,7 +4,7 @@
 | Anahtar | Nerede | Ne imzalar |
 |---|---|---|
 | `neowell-upload` (RSA 4096, PKCS12, 10000 gün) | Repo dışında: `D:\PROJECT\koc-release-key\neowell-upload.jks`, parolalar yanındaki `ANAHTAR-BILGISI.txt`; CI'da gizli değişkenler | Yayınlanan APK ve AAB. Play'de upload key. |
-| `signing/bilinen-debug-yalniz-smoke.keystore` (parola `android`, depoda açık) | Depo | Yalnız CI içi smoke derlemesi. Yayınlanmaz. |
+| `signing/known-debug-smoke-only.keystore` (parola `android`, depoda açık) | Depo | Yalnız CI içi smoke derlemesi. Yayınlanmaz. |
 
 Release sertifikası SHA-256: `89:A6:ED:7D:72:F2:75:25:FC:74:A3:52:3F:99:86:8E:89:0B:5A:3F:0C:70:DE:2A:84:5E:A5:42:62:F1:43:EE` (apk.yml'de `RELEASE_SHA256`).
 

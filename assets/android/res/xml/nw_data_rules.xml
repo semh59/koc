@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Android 12+: bazı üreticilerde allowBackup="false" telefondan telefona aktarımı durdurmaz; iki yolda da her alan dışarıda. -->
+<!-- Android 12+: on some vendors allowBackup="false" does not stop the phone-to-phone transfer; both paths exclude every domain. -->
 <data-extraction-rules>
     <cloud-backup>
         <exclude domain="root" path="."/>

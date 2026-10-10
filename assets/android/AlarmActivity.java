@@ -22,8 +22,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * İlaç alarmı ekranı. Kilit üstünde gösterme bayrakları manifestte sabit olduğu için sistem kilit kararını açılışta doğru verir;
- * MainActivity'nin bayrağı sonradan koyması mevcut örnekte çok geç kalıyordu. Kayıt uygulamayı açmadan bildirim düğmeleriyle aynı kuyruğa yazılır.
+ * Medication alarm screen. The show-when-locked and turn-screen-on flags are declared in the manifest so the system decides about the keyguard at launch
+ * (setting them later from MainActivity came too late for an existing instance). Doses are recorded without opening the app, into the queue the notification buttons use.
  */
 public class AlarmActivity extends Activity {
     private static final int TEAL = 0xFF0F5E55, INK = 0xFF16252B, SOFT = 0xFFE3EFEC;
@@ -32,15 +32,9 @@ public class AlarmActivity extends Activity {
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
-        if (Build.VERSION.SDK_INT >= 27) {
-            setShowWhenLocked(true);
-            setTurnScreenOn(true);
-        } else {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-        }
+        if (Build.VERSION.SDK_INT < 27) getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        if (nm != null) nm.cancel(MedWakeReceiver.NID);
+        getSystemService(NotificationManager.class).cancel(MedWakeReceiver.NID);
         draw();
     }
 
@@ -51,7 +45,7 @@ public class AlarmActivity extends Activity {
         draw();
     }
 
-    /** Ekran kapanınca ya da başka uygulamaya geçilince kapanır: kilit üstünde açık kalmaz, hatırlatmalar bildirimle sürer. */
+    /** Closes when the screen turns off or another app comes up, so it never lingers over the lock screen; reminders continue as notifications. */
     @Override
     protected void onStop() {
         super.onStop();
@@ -64,7 +58,7 @@ public class AlarmActivity extends Activity {
         JSONArray a = MedWakeReceiver.doses(this);
         for (int k = 0; k < a.length(); k++) {
             JSONObject d = a.optJSONObject(k);
-            if (d != null && d.optLong("at") <= now + 5000 && d.optLong("at") >= now - WINDOW) out.add(d);
+            if (d != null && d.optLong("at") <= now + MedWakeReceiver.EARLY_MS && d.optLong("at") >= now - WINDOW) out.add(d);
         }
         return out;
     }

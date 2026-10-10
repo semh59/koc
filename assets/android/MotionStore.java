@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
 
-/** Hareket algılama durumu (SharedPreferences): model, profil, açık aralık, bekleyen aralıklar. Mantık MotionMath'te. */
+/** Motion detection state (SharedPreferences): model, profile, open interval, pending intervals. The logic is in MotionMath. */
 final class MotionStore {
-    private static final int MAX_PENDING = 100;
+    private static final int MAX_PENDING = 100, MAX_CHECKPOINTS = 150;
     private static final long MAX_BOUT_MS = 4L * 3600 * 1000;
 
     private static SharedPreferences p(Context c) {
@@ -47,28 +47,22 @@ final class MotionStore {
         p(c).edit().putString("model", m.enc()).apply();
     }
 
-    /** Açık aralık: tür (MotionMath.WALK/RUN), başlangıç zamanı, başlangıçtaki günlük adım. */
+    /** Open interval: mode (MotionMath.WALK/RUN), start time, the daily step count at the start. */
     static synchronized void open(Context c, int mode, long t0, long steps0) {
         p(c).edit().putInt("bMode", mode).putLong("bT0", t0).putLong("bS0", steps0).putFloat("bSpeed", -1)
             .remove("bCp").remove("bLastT").remove("bLastS").remove("bCloseAt").apply();
     }
 
-    /** Kontrol noktası ekler; zaman ilerlemiyor ya da adım geri gidiyorsa eklemez. */
+    /** Adds a checkpoint; skipped when time does not advance or the steps go backwards. */
     static synchronized void addCp(Context c, long t, long s) {
         SharedPreferences sp = p(c);
         long pt = sp.getLong("bLastT", sp.getLong("bT0", 0)), ps = sp.getLong("bLastS", sp.getLong("bS0", 0));
         if (t <= pt || s < ps) return;
-        String all = sp.getString("bCp", "") + t + ":" + s + ";";
-        String[] parts = all.split(";");
-        if (parts.length > 150) {
-            StringBuilder sb = new StringBuilder();
-            for (int i = parts.length - 150; i < parts.length; i++) sb.append(parts[i]).append(';');
-            all = sb.toString();
-        }
+        String all = QuickMath.tail(sp.getString("bCp", "") + t + ":" + s + ";", MAX_CHECKPOINTS);
         sp.edit().putString("bCp", all).putLong("bLastT", t).putLong("bLastS", s).apply();
     }
 
-    /** Açık aralıkta son hareket: son kontrol noktası, yoksa açılış zamanı. */
+    /** Last movement of the open interval: the last checkpoint, else the start time. */
     static synchronized long lastActivityAt(Context c) {
         SharedPreferences sp = p(c);
         return Math.max(sp.getLong("bT0", 0), sp.getLong("bLastT", 0));
@@ -94,19 +88,19 @@ final class MotionStore {
         p(c).edit().remove("bT0").remove("bCloseAt").apply();
     }
 
-    /** Çıkış olayı geldi ama adım sayacı okunamadı: aralık açık kalır, kapanış zamanı sonraki başarılı okumada uygulanır (ilk olay geçerli). */
+    /** An exit event arrived but the step counter could not be read: the interval stays open and the close time is applied by the next successful read (the first event wins). */
     static synchronized void deferClose(Context c, long t) {
         if (p(c).getLong("bCloseAt", 0) == 0) p(c).edit().putLong("bCloseAt", t).apply();
     }
 
-    /** Ertelenen kapanış zamanı, yoksa 0; okununca silinir. */
+    /** The deferred close time, or 0; removed once read. */
     static synchronized long takeDeferredClose(Context c) {
         long t = p(c).getLong("bCloseAt", 0);
         if (t != 0) p(c).edit().remove("bCloseAt").apply();
         return t;
     }
 
-    /** Açık aralığı kapatır, gün sınırında bölünmüş geçerli parçalarını bekleyenlere ekler; eklenen parça sayısını döndürür. */
+    /** Closes the open interval, appends its valid parts (split at day boundaries) to the pending list and returns how many parts were added. */
     static synchronized int close(Context c, long t1, long steps1) {
         SharedPreferences sp = p(c);
         long t0 = sp.getLong("bT0", 0), s0 = sp.getLong("bS0", 0);
@@ -114,13 +108,13 @@ final class MotionStore {
         double speed = sp.getFloat("bSpeed", -1);
         sp.edit().remove("bT0").remove("bCloseAt").apply();
         if (t0 <= 0 || t1 <= t0) return 0;
-        long[] ts = new long[160], ss = new long[160];
+        long[] ts = new long[MAX_CHECKPOINTS + 2], ss = new long[MAX_CHECKPOINTS + 2];
         int n = 0;
         ts[n] = t0;
         ss[n++] = s0;
         for (String part : sp.getString("bCp", "").split(";")) {
             String[] f = part.split(":");
-            if (f.length != 2 || n >= 158) continue;
+            if (f.length != 2 || n > MAX_CHECKPOINTS) continue;
             try {
                 long t = Long.parseLong(f[0]), st = Long.parseLong(f[1]);
                 if (t > ts[n - 1] && t < t1) {
@@ -128,7 +122,7 @@ final class MotionStore {
                     ss[n++] = st;
                 }
             } catch (NumberFormatException e) {
-                // bozuk kontrol noktası atlanır
+                // malformed checkpoint: skipped
             }
         }
         ts[n] = t1;
@@ -144,18 +138,11 @@ final class MotionStore {
             added++;
         }
         if (added == 0) return 0;
-        String all = sp.getString("pend", "") + rec;
-        String[] parts = all.split(";");
-        if (parts.length > MAX_PENDING) {
-            StringBuilder sb = new StringBuilder();
-            for (int i = parts.length - MAX_PENDING; i < parts.length; i++) sb.append(parts[i]).append(';');
-            all = sb.toString();
-        }
-        sp.edit().putString("pend", all).commit();
+        sp.edit().putString("pend", QuickMath.tail(sp.getString("pend", "") + rec, MAX_PENDING)).commit();
         return added;
     }
 
-    /** Bekleyen aralıklar: {t0, t1, tür, adım, km×100, km/s×10, kcal, gps}. Bozuk parçalar atlanır. */
+    /** Pending intervals: {t0, t1, mode, steps, km x 100, km/h x 10, kcal, gps}. Malformed parts are skipped. */
     static synchronized List<String[]> takePending(Context c) {
         String s = p(c).getString("pend", "");
         if (!s.isEmpty()) p(c).edit().remove("pend").commit();

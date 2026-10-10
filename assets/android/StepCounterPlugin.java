@@ -12,12 +12,15 @@ import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
 import java.util.Map;
 
-/** Telefonun adım sensörünü okur (Google hesabı ya da Health Connect gerekmez). */
+/** Reads the phone's step sensor (no Google account or Health Connect needed). */
 @CapacitorPlugin(
     name = "StepCounter",
     permissions = { @Permission(strings = { Manifest.permission.ACTIVITY_RECOGNITION }, alias = "activity") }
 )
 public class StepCounterPlugin extends Plugin {
+    /** JS calls start only while step counting is on; otherwise the sensor is not listened to live. */
+    private volatile boolean started;
+
     private boolean granted() {
         return Build.VERSION.SDK_INT < 29 || getPermissionState("activity") == PermissionState.GRANTED;
     }
@@ -50,9 +53,6 @@ public class StepCounterPlugin extends Plugin {
         call.resolve(r);
     }
 
-    /** JS start'ı yalnız adım sayar açıkken çağırır; kapalıysa sensör canlı dinlenmez. */
-    private volatile boolean started;
-
     @PluginMethod
     public void start(PluginCall call) {
         StepSnapshotReceiver.schedule(getContext());
@@ -74,18 +74,16 @@ public class StepCounterPlugin extends Plugin {
     @PluginMethod
     public void read(final PluginCall call) {
         if (!granted()) {
-            call.reject("izin yok");
+            call.reject("no permission");
             return;
         }
-        StepStore.read(getContext(), false, new StepStore.Callback() {
-            public void done(Long steps, Map<String, Long> history) {
-                JSObject r = new JSObject(), h = new JSObject();
-                for (Map.Entry<String, Long> e : history.entrySet()) h.put(e.getKey(), e.getValue());
-                if (steps != null) r.put("steps", steps);
-                r.put("history", h);
-                r.put("snapAt", StepStore.snapAt(getContext()));
-                call.resolve(r);
-            }
+        StepStore.read(getContext(), false, (steps, history) -> {
+            JSObject r = new JSObject(), h = new JSObject();
+            for (Map.Entry<String, Long> e : history.entrySet()) h.put(e.getKey(), e.getValue());
+            if (steps != null) r.put("steps", steps);
+            r.put("history", h);
+            r.put("snapAt", StepStore.snapAt(getContext()));
+            call.resolve(r);
         });
     }
 }

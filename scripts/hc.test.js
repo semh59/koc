@@ -125,7 +125,7 @@ function open(seed,fake){
   ok("tabloya aktarma: nabız dosyası kamera ve saat satırlarını içerir",csv==="2");
 
   const hp=fs.readFileSync(path.join(__dirname,"../assets/android/HealthPlugin.java"),"utf8"),pa=fs.readFileSync(path.join(__dirname,"patch-android.js"),"utf8");
-  ok("Android: yalnız okuma izni (yazma yok), izin kullanım ekranı bildirilir, eklenti kopyalanır ve kaydedilir",/android\.permission\.health\.READ_STEPS/.test(hp)&&!/WRITE_/.test(hp+pa)&&/"health\.READ_STEPS", "health\.READ_SLEEP", "health\.READ_HEART_RATE"/.test(pa)&&/READ_SLEEP/.test(hp)&&/READ_HEART_RATE/.test(hp)&&/BPM_AVG/.test(hp)&&/HEALTH_PERMISSIONS/.test(pa)&&/"HealthPlugin"\]\)fs\.copyFileSync/.test(pa)&&/registerPlugin\(HealthPlugin\.class\)/.test(pa));
-  ok("Android: sürüm 34 altında yönetici alınmaz, günler sınırlı ve geçersiz gün reddedilir",/SDK_INT >= 34/.test(hp)&&/in\.length\(\) > 40/.test(hp)&&/geçersiz gün/.test(hp));
+  ok("Android: yalnız okuma izni (yazma yok), izin kullanım ekranı bildirilir, eklenti kopyalanır ve kaydedilir",/android\.permission\.health\.READ_STEPS/.test(hp)&&!/WRITE_/.test(hp+pa)&&/"health\.READ_STEPS", "health\.READ_SLEEP", "health\.READ_HEART_RATE"/.test(pa)&&/READ_SLEEP/.test(hp)&&/READ_HEART_RATE/.test(hp)&&/BPM_AVG/.test(hp)&&/HEALTH_PERMISSIONS/.test(pa)&&/"HealthPlugin"/.test(pa)&&/registerPlugin\(HealthPlugin\.class\)/.test(fs.readFileSync(path.join(__dirname,"../assets/android/MainActivity.java"),"utf8")));
+  ok("Android: sürüm 34 altında yönetici alınmaz, günler sınırlı ve geçersiz gün reddedilir",/SDK_INT >= 34/.test(hp)&&/MAX_DAYS = 40/.test(hp)&&/in\.length\(\) > MAX_DAYS/.test(hp)&&/LocalDate\.parse\(in\.getString\(k\)\)/.test(hp)&&/days == null\) \{\s*call\.reject/.test(hp));
   console.log(bad?"Başarısız: "+bad:"Tüm saat adımı testleri geçti");process.exit(bad?1:0);
 })();

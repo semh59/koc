@@ -6,9 +6,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** Bildirim düğmelerinden hızlı kayıt (su, ilaç): saf mantık (Android'e bağımlı değil, test edilebilir). */
+/** Quick log from notification buttons (water, medication): pure logic (no Android dependency, unit-testable). */
 final class QuickMath {
     static final int MAX = 200;
+    private static final int MAX_SEEN = 50, MAX_WATER_ML = 1500, MAX_MED_ID = 999;
     private static final Pattern EXTRA = Pattern.compile("\"extra\"\\s*:\\s*\\{([^}]*)\\}");
     private static final Pattern V = Pattern.compile("\"v\"\\s*:\\s*(\\d{1,5})(?![\\d.])");
     private static final Pattern M = Pattern.compile("\"m\"\\s*:\\s*(\\d{1,5})(?![\\d.])");
@@ -23,33 +24,28 @@ final class QuickMath {
         return m.find() ? m.group(1) : null;
     }
 
-    /** Bildirimin "extra" alanındaki su miktarı (ml). Yoksa ya da 1-1500 dışındaysa 0. */
+    /** Water amount (ml) in the notification's "extra". 0 when absent or outside 1-1500. */
     static int amount(String json) {
         String e = extra(json);
         if (e == null) return 0;
         Matcher m = V.matcher(e);
         if (!m.find()) return 0;
         int v = Integer.parseInt(m.group(1));
-        return v >= 1 && v <= 1500 ? v : 0;
+        return v >= 1 && v <= MAX_WATER_ML ? v : 0;
     }
 
-    /** İlaç bildirimi: "extra" içindeki ilaç kimliği (1-999) ve doz saatinden "m12_0800" anahtarı. Eksik, bozuk ya da kimlik aralık dışıysa null (çağıran loglar). */
-    static String medKey(String json) {
-        return medKey(json, false);
-    }
-
-    /** skip true ise "k12_0800" (atlandı), değilse "m12_0800" (alındı). */
+    /** Medication key such as "m12_0800" from the medication id (1-999) and the dose time in "extra"; "k12_0800" when skip is true (skipped), "m..." when taken. Null when missing, malformed or the id is out of range (the caller logs). */
     static String medKey(String json, boolean skip) {
         String e = extra(json);
         if (e == null) return null;
         Matcher m = M.matcher(e), s = S.matcher(e);
         if (!m.find() || !s.find()) return null;
         int id = Integer.parseInt(m.group(1));
-        if (id < 1 || id > 999) return null;
+        if (id < 1 || id > MAX_MED_ID) return null;
         return (skip ? "k" : "m") + id + "_" + s.group(1) + s.group(2);
     }
 
-    /** Bildirimin planlandığı an (ms, "extra.at"): her bildirim oluşumunda farklı, yeniden teslim edilen intent'te aynı. Yoksa null. */
+    /** The time (ms, "extra.at") the notification was scheduled for: different for every notification instance, the same in a redelivered intent. Null when absent. */
     static String token(String json) {
         String e = extra(json);
         if (e == null) return null;
@@ -57,7 +53,7 @@ final class QuickMath {
         return m.find() ? m.group(1) : null;
     }
 
-    /** Bildirimi uygulama mı kurdu: "extra.tk" uygulamanın gizli anahtarıyla aynı mı. */
+    /** Whether the app itself posted the notification: "extra.tk" equals the app's secret. */
     static boolean signed(String json, String secret) {
         String e = extra(json);
         if (e == null || secret == null) return false;
@@ -65,7 +61,7 @@ final class QuickMath {
         return m.find() && same(m.group(1), secret);
     }
 
-    /** Sabit sürede karşılaştırma; ikisi de doluysa. */
+    /** Constant-time comparison; both must be non-null. */
     static boolean same(String a, String b) {
         return a != null && b != null && MessageDigest.isEqual(a.getBytes(), b.getBytes());
     }
@@ -74,17 +70,18 @@ final class QuickMath {
         return (";" + list).contains(";" + sig + ";");
     }
 
-    /** İşlenen bildirim imzalarına ekler, son 50'yi tutar. */
+    /** Adds to the processed notification signatures, keeping the last 50. */
     static String remember(String list, String sig) {
-        return tail(list + sig + ";", 50);
+        return tail(list + sig + ";", MAX_SEEN);
     }
 
-    /** Bekleyen kayıtlara "anahtar,zaman;" ekler, en çok MAX kayıt tutar (en eskiler atılır). */
+    /** Appends "key,time;" to the pending records, keeping at most MAX (the oldest are dropped). */
     static String append(String pending, String key, long t) {
         return tail((pending == null ? "" : pending) + key + "," + t + ";", MAX);
     }
 
-    private static String tail(String joined, int max) {
+    /** The last max records of a ";"-separated list (also used by MotionStore). */
+    static String tail(String joined, int max) {
         String[] p = joined.split(";");
         int from = Math.max(0, p.length - max);
         StringBuilder sb = new StringBuilder();
@@ -92,7 +89,7 @@ final class QuickMath {
         return sb.toString();
     }
 
-    /** Bekleyen kayıtları {anahtar, zaman} olarak ayrıştırır. Bozuk ve sınır dışı parçalar atlanır. */
+    /** Parses the pending records into {key, time}. Malformed and out-of-range parts are skipped. */
     static List<String[]> parse(String pending) {
         List<String[]> out = new ArrayList<>();
         if (pending == null) return out;
@@ -104,11 +101,11 @@ final class QuickMath {
                 if (t <= 0) continue;
                 if (f[0].charAt(0) != 'm' && f[0].charAt(0) != 'k') {
                     int v = Integer.parseInt(f[0]);
-                    if (v < 1 || v > 1500) continue;
+                    if (v < 1 || v > MAX_WATER_ML) continue;
                 }
                 out.add(new String[] {f[0], f[1]});
             } catch (NumberFormatException e) {
-                // bozuk parça atlanır
+                // malformed part: skipped
             }
         }
         return out;

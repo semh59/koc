@@ -5,9 +5,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import java.util.Calendar;
-import java.util.Map;
 
-/** Her gece yarısı, 23:58'de ve telefon açılışında sayacı kaydeder; açılış, güncelleme, saat/tarih/saat dilimi değişimi ve tam alarm izni değişiminde alarmları yeniden kurar. */
+/** Records the counter after midnight, at 23:58 and at boot; sets the alarms again after boot, app update and clock, date or time-zone changes. */
 public class StepSnapshotReceiver extends BroadcastReceiver {
     static void schedule(Context c) {
         Calendar t = Calendar.getInstance();
@@ -16,7 +15,7 @@ public class StepSnapshotReceiver extends BroadcastReceiver {
         t.set(Calendar.MINUTE, 0);
         t.set(Calendar.SECOND, 20);
         Alarms.setInexact(c, t.getTimeInMillis(), pi(c, 7001));
-        // Gece alarmı Doze'da gecikirse akşam adımları için gün toplamı bu örnekten alınır (StepMath.SAMPLE_MINUTES).
+        // If Doze delays the night alarm, the evening steps take the day total from this sample (StepMath.SAMPLE_MINUTES).
         Calendar s = Calendar.getInstance();
         s.set(Calendar.HOUR_OF_DAY, 23);
         s.set(Calendar.MINUTE, 58);
@@ -33,23 +32,21 @@ public class StepSnapshotReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(final Context c, Intent i) {
         schedule(c);
-        // Alarmın kendi intent'inin eylemi yoktur. Diğer eylemlerde (güncelleme, saat/tarih değişimi, izin) gün kapatılmaz; yalnız widget tazelenir.
+        // The alarm's own intent has no action. On other actions (update, clock or date change) the day is not closed; only the widget is refreshed.
         String a = i.getAction();
         if (a != null && !Intent.ACTION_BOOT_COMPLETED.equals(a)) {
             NeoWidget.refresh(c);
             return;
         }
-        // Açılışta sayaç sıfırlanmıştır, gün kapatması yalnızca alarmda yapılır. 23:58 alarmı aynı günde kapatma yapmaz (closeDay false);
-        // gece yarısından sonraya kaydıysa gece alarmı gibi davranır.
+        // At boot the counter has been reset and days are closed only by the alarm. The 23:58 alarm closes nothing on the same day (closeDay returns false);
+        // if it slipped past midnight it acts like the night alarm.
         final PendingResult pr = goAsync();
-        StepStore.read(c, a == null, new StepStore.Callback() {
-            public void done(Long steps, Map<String, Long> history) {
-                try {
-                    // Gece yarısı widget dünkü su/kaloriyi bugünmüş gibi göstermesin (updatePeriodMillis 30 dk ve MIUI'de gecikir).
-                    NeoWidget.refresh(c);
-                } finally {
-                    pr.finish();
-                }
+        StepStore.read(c, a == null, (steps, history) -> {
+            try {
+                // At midnight the widget must not show yesterday's water and calories as today's (updatePeriodMillis is 30 minutes and runs late on MIUI).
+                NeoWidget.refresh(c);
+            } finally {
+                pr.finish();
             }
         });
     }

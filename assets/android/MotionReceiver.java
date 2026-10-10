@@ -1,6 +1,5 @@
 package com.neowell.app;
 
-import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -13,19 +12,20 @@ import com.google.android.gms.location.ActivityTransitionEvent;
 import com.google.android.gms.location.ActivityTransitionRequest;
 import com.google.android.gms.location.ActivityTransitionResult;
 import com.google.android.gms.location.DetectedActivity;
+import com.google.android.gms.tasks.Task;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.TimeZone;
 
-/** Etkinlik tanıma geçişleri (yürüme/koşma başladı-bitti): aralığı açar/kapatır. GPS açmaz: arka planda konum kullanılmaz. Açılışta kaydı yeniler. */
+/** Activity-recognition transitions (walking/running started or ended): opens and closes the interval. It never starts GPS, since no location is used in the background. Re-registers after boot. */
 public class MotionReceiver extends BroadcastReceiver {
-    static final String ACTION = "com.neowell.app.MOTION", TICK = "com.neowell.app.MOTION_TICK";
+    private static final String ACTION = "com.neowell.app.MOTION", TICK = "com.neowell.app.MOTION_TICK";
     private static final long TICK_MS = 150000, ROLL_MS = 3L * 3600 * 1000, STALE_MS = 30L * 60000;
-    /** Geçiş bildirimi bu kadar gecikmeden geldiyse olay zamanı kullanılır, daha geçse adım sayacıyla tutarlı olması için şimdiki zaman. */
+    /** A transition notification that arrives with at most this delay uses the event time; a later one uses the current time so it stays consistent with the step counter. */
     private static final long MAX_DELAY_MS = 90000;
 
-    static PendingIntent intent(Context c) {
+    /** Activity recognition fills the result into the intent, so the PendingIntent must be mutable from Android 12. */
+    private static PendingIntent intent(Context c) {
         Intent i = new Intent(c, MotionReceiver.class).setAction(ACTION);
         int fl = PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_MUTABLE : 0);
         return PendingIntent.getBroadcast(c, 7001, i, fl);
@@ -36,14 +36,13 @@ public class MotionReceiver extends BroadcastReceiver {
         return PendingIntent.getBroadcast(c, 7002, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
-    /** Açık aralık sürerken her ~2,5 dk adım sayacından kontrol noktası alınır: ritim düşüşü (yorulma) ve değişimi mesafe ve kaloriye böyle yansır. */
+    /** While an interval is open, a checkpoint is taken from the step counter every ~2.5 minutes: a drop in cadence (fatigue) or a change of pace shows in the distance and calories that way. */
     private static void scheduleTick(Context c) {
         Alarms.setInexact(c, System.currentTimeMillis() + TICK_MS, tickIntent(c));
     }
 
     static void cancelTick(Context c) {
-        AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
-        if (am != null) am.cancel(tickIntent(c));
+        Alarms.manager(c).cancel(tickIntent(c));
     }
 
     private static void tick(Context c, long steps) {
@@ -51,8 +50,8 @@ public class MotionReceiver extends BroadcastReceiver {
         long now = StepStore.sampledAt();
         closeDeferred(c, steps);
         if (!MotionStore.isOpen(c)) return;
-        // Gece sayaç sıfırlanır ve kayıt 4 saati aşamaz: gün dönünce ya da 3 saatte bir aralık bu noktada kapatılıp yeniden açılır.
-        // Geçersiz 3 saatlik parça çıkış olayının kaçtığını gösterir: yeniden açılmaz, alarm durur.
+        // The counter resets at night and a record cannot exceed 4 hours: at a day change, and every 3 hours, the interval is closed here and reopened.
+        // A 3-hour part that turns out invalid means the exit event was missed: it is not reopened and the alarm stops.
         boolean newDay = MotionStore.dayOf(now) != MotionStore.dayOf(MotionStore.lastActivityAt(c));
         if (newDay || now - MotionStore.openedAt(c) >= ROLL_MS) {
             int mode = MotionStore.openMode(c);
@@ -65,7 +64,7 @@ public class MotionReceiver extends BroadcastReceiver {
         scheduleTick(c);
     }
 
-    /** Okunamayan çıkış olayı: aralık açık kaldı, kapanış zamanı şimdiki başarılı okumayla uygulanır. */
+    /** An exit event whose counter read failed: the interval stayed open, and the close time is applied with the current successful read. */
     private static void closeDeferred(Context c, long steps) {
         long t = MotionStore.takeDeferredClose(c);
         if (t > 0 && MotionStore.isOpen(c)) {
@@ -82,7 +81,7 @@ public class MotionReceiver extends BroadcastReceiver {
         return type == DetectedActivity.RUNNING ? MotionMath.RUN : MotionMath.WALK;
     }
 
-    /** Olay açık aralığı kapatır: aynı türde çıkış ya da başka türe giriş. */
+    /** Whether the event closes the open interval: an exit of the same type or an entry of another type. */
     private static boolean closes(Context c, int type, boolean enter) {
         boolean same = foot(type) && modeOf(type) == MotionStore.openMode(c);
         return MotionStore.isOpen(c) && (!enter && same || enter && !same);
@@ -93,8 +92,8 @@ public class MotionReceiver extends BroadcastReceiver {
         return delay <= MAX_DELAY_MS ? nowWall - delay : nowWall;
     }
 
-    /** Geçiş kaydı: yürüme ve koşma giriş/çıkış, diğer türlerde yalnızca giriş (açık aralığı kapatmak için). */
-    static com.google.android.gms.tasks.Task<Void> register(Context c) {
+    /** Transition registration: enter and exit for walking and running, only enter for the other types (to close an open interval). */
+    static Task<Void> register(Context c) {
         List<ActivityTransition> l = new ArrayList<>();
         int[] foot = {DetectedActivity.WALKING, DetectedActivity.RUNNING};
         int[] other = {DetectedActivity.STILL, DetectedActivity.IN_VEHICLE, DetectedActivity.ON_BICYCLE};
@@ -114,22 +113,21 @@ public class MotionReceiver extends BroadcastReceiver {
     public void onReceive(final Context c, Intent in) {
         String a = in.getAction();
         if (Intent.ACTION_BOOT_COMPLETED.equals(a) || Intent.ACTION_MY_PACKAGE_REPLACED.equals(a)) {
-            // Yeniden başlatmada adım sayacı sıfırlanır, güncellemede alarmlar silinir: açık aralık güvenilmez, atılır.
+            // The step counter resets at boot and an update deletes the alarms: an open interval is not trustworthy and is dropped.
             MotionStore.discard(c);
             if (MotionStore.enabled(c)) register(c);
             return;
         }
+        final Context app = c.getApplicationContext();
         if (TICK.equals(a)) {
             if (!MotionStore.enabled(c) || !MotionStore.isOpen(c)) return;
             final PendingResult tr = goAsync();
-            StepStore.read(c.getApplicationContext(), false, new StepStore.Callback() {
-                public void done(Long steps, Map<String, Long> history) {
-                    try {
-                        if (steps != null) tick(c.getApplicationContext(), steps);
-                        else scheduleTick(c.getApplicationContext());
-                    } finally {
-                        tr.finish();
-                    }
+            StepStore.read(app, false, (steps, history) -> {
+                try {
+                    if (steps != null) tick(app, steps);
+                    else scheduleTick(app);
+                } finally {
+                    tr.finish();
                 }
             });
             return;
@@ -140,37 +138,34 @@ public class MotionReceiver extends BroadcastReceiver {
         final List<ActivityTransitionEvent> ev = r.getTransitionEvents();
         final long nowWall = System.currentTimeMillis(), nowEl = SystemClock.elapsedRealtimeNanos();
         final PendingResult pr = goAsync();
-        final Context app = c.getApplicationContext();
-        StepStore.read(app, false, new StepStore.Callback() {
-            public void done(Long steps, Map<String, Long> history) {
-                try {
-                    if (steps != null) {
-                        closeDeferred(app, steps);
-                        for (ActivityTransitionEvent e : ev) handle(app, e, steps, StepStore.sampledAt(), nowWall, nowEl);
-                    } else {
-                        for (ActivityTransitionEvent e : ev) {
-                            if (closes(app, e.getActivityType(), e.getTransitionType() == ActivityTransition.ACTIVITY_TRANSITION_ENTER)) {
-                                MotionStore.deferClose(app, eventTime(e, nowWall, nowEl));
-                                break;
-                            }
+        StepStore.read(app, false, (steps, history) -> {
+            try {
+                if (steps != null) {
+                    closeDeferred(app, steps);
+                    for (ActivityTransitionEvent e : ev) handle(app, e, steps, StepStore.sampledAt(), nowWall, nowEl);
+                } else {
+                    for (ActivityTransitionEvent e : ev) {
+                        if (closes(app, e.getActivityType(), e.getTransitionType() == ActivityTransition.ACTIVITY_TRANSITION_ENTER)) {
+                            MotionStore.deferClose(app, eventTime(e, nowWall, nowEl));
+                            break;
                         }
                     }
-                } finally {
-                    pr.finish();
                 }
+            } finally {
+                pr.finish();
             }
         });
     }
 
     private static void handle(Context c, ActivityTransitionEvent e, long steps, long at, long nowWall, long nowEl) {
         long t = eventTime(e, nowWall, nowEl);
-        // Sayaç okuması 4 sn'ye kadar sürer; olay ile okuma gece yarısının iki yanındaysa zaman sayacın gününe çekilir.
+        // The counter read takes up to 4 s; if the event and the read lie on either side of midnight, the time is moved to the counter's day.
         TimeZone z = TimeZone.getDefault();
         t = MotionMath.onCounterDay(t, z.getOffset(t), at, z.getOffset(at));
         int type = e.getActivityType();
         boolean enter = e.getTransitionType() == ActivityTransition.ACTIVITY_TRANSITION_ENTER;
         int mode = modeOf(type);
-        // Kontrol noktası 30 dk'dır gelmediyse çıkış olayı ya da alarm kaçmıştır: eski aralık atılıp yenisi açılır.
+        // No checkpoint for 30 minutes means an exit event or the alarm was missed: the old interval is dropped and a new one opened.
         if (MotionStore.isOpen(c) && nowWall - MotionStore.lastActivityAt(c) > STALE_MS) {
             cancelTick(c);
             MotionStore.discard(c);
@@ -184,5 +179,4 @@ public class MotionReceiver extends BroadcastReceiver {
             scheduleTick(c);
         }
     }
-
 }

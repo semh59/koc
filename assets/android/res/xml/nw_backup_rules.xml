@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Android 11 ve altı: allowBackup="false" yanında ikinci kilit. -->
+<!-- Android 11 and older: a second lock next to allowBackup="false". -->
 <full-backup-content>
     <exclude domain="root" path="."/>
     <exclude domain="file" path="."/>

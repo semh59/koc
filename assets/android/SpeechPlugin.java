@@ -14,19 +14,18 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import java.util.Locale;
 
-/** Rehberli mod sesli komutu. Android WebView'de speechSynthesis ses çıkarmıyor; yerel TextToSpeech kullanılır.
- *  Motor ya da ses yoksa hata verilmez, spoken:false döner ve uygulama sessiz devam eder. */
+/** Voice prompts for guided mode. speechSynthesis makes no sound in the Android WebView, so the native TextToSpeech is used.
+ *  If the engine or voice is missing there is no error: spoken:false is returned and the app continues silently. */
 @CapacitorPlugin(name = "Speech")
 public class SpeechPlugin extends Plugin {
     private static final AudioAttributes ATTRS = new AudioAttributes.Builder()
         .setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
         .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
         .build();
-    /** guidelib.js komut metinleri bu sınırın altında tutulur (guide.test.js). */
+    /** The command texts of guidelib.js stay below this length (guide.test.js). */
     private static final int SHORT = 20;
     private TextToSpeech tts;
     private volatile boolean ready;
-    private volatile boolean turkish;
     private volatile String lastId = "";
     private int seq;
     private AudioManager am;
@@ -35,12 +34,12 @@ public class SpeechPlugin extends Plugin {
 
     @Override
     public void load() {
-        am = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
-        // onInit asenkron gelir; motor bağlanamazsa kurucunun içinde ERROR ile çağrılabilir, o yolda tts alanına dokunulmaz.
+        am = getContext().getSystemService(AudioManager.class);
+        // onInit is asynchronous; if the engine cannot bind it can be called inside the constructor with ERROR, and the tts field is not touched on that path.
         tts = new TextToSpeech(getContext(), status -> {
             if (status != TextToSpeech.SUCCESS || tts == null) return;
             Locale tr = Locale.forLanguageTag("tr-TR");
-            if (tts.isLanguageAvailable(tr) >= TextToSpeech.LANG_AVAILABLE) turkish = tts.setLanguage(tr) >= TextToSpeech.LANG_AVAILABLE;
+            if (tts.isLanguageAvailable(tr) >= TextToSpeech.LANG_AVAILABLE) tts.setLanguage(tr);
             tts.setAudioAttributes(ATTRS);
             tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
                 @Override public void onStart(String id) {}
@@ -52,13 +51,12 @@ public class SpeechPlugin extends Plugin {
         });
     }
 
-    /** Sırayla gelen komutlarda yalnız son söz bitince odak bırakılır; araya giren eski söz müziği erken açmasın. */
+    /** With queued commands, focus is abandoned only when the last utterance ends; an interrupted older one must not bring the music back early. */
     private void release(String id) {
         if (lastId.equals(id)) abandonFocus();
     }
 
     private void requestFocus() {
-        if (am == null) return;
         if (Build.VERSION.SDK_INT >= 26) {
             if (focusReq == null) focusReq = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
                 .setAudioAttributes(ATTRS).setOnAudioFocusChangeListener(focusListener).build();
@@ -69,7 +67,6 @@ public class SpeechPlugin extends Plugin {
     }
 
     private void abandonFocus() {
-        if (am == null) return;
         if (Build.VERSION.SDK_INT >= 26) {
             if (focusReq != null) am.abandonAudioFocusRequest((AudioFocusRequest) focusReq);
         } else {
@@ -86,7 +83,7 @@ public class SpeechPlugin extends Plugin {
             String id = "nw" + (++seq);
             lastId = id;
             requestFocus();
-            // Kısa komut ("3, 2, 1, başla", "Duraklatıldı") süren cümlenin arkasına eklenir, onu kesmez; yeni evre cümlesi (Geç/Geri) eskimiş cümleyi keser.
+            // A short command ("3, 2, 1, başla", "Duraklatıldı") is queued behind the sentence being spoken and does not cut it; a new phase sentence (Next/Back) cuts the outdated one.
             int mode = text.length() <= SHORT ? TextToSpeech.QUEUE_ADD : TextToSpeech.QUEUE_FLUSH;
             ok = tts.speak(text, mode, null, id) == TextToSpeech.SUCCESS;
             if (!ok) abandonFocus();
@@ -100,14 +97,6 @@ public class SpeechPlugin extends Plugin {
         if (ready) tts.stop();
         abandonFocus();
         call.resolve();
-    }
-
-    @PluginMethod
-    public void isAvailable(PluginCall call) {
-        JSObject r = new JSObject();
-        r.put("available", ready);
-        r.put("turkish", turkish);
-        call.resolve(r);
     }
 
     @Override

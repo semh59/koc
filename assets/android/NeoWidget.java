@@ -10,11 +10,10 @@ import android.content.SharedPreferences;
 import android.view.View;
 import android.widget.RemoteViews;
 import java.util.Locale;
-import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/** Ana ekran widget'ı: uygulamanın gönderdiği özeti (SharedPreferences "nw_widget") gösterir. */
+/** Home-screen widget: shows the summary the app pushed (SharedPreferences "nw_widget"). */
 public class NeoWidget extends AppWidgetProvider {
     static final String OPEN = "nw_widget_open";
 
@@ -35,7 +34,7 @@ public class NeoWidget extends AppWidgetProvider {
         refresh(c);
     }
 
-    /** Bildirim/widget "+su" düğmesi: uygulama açılmadan önce de widget'taki su artsın. */
+    /** Notification or widget "+water" button: the widget's water goes up even before the app is opened. */
     static synchronized void bump(Context c, int v) {
         JSONObject o = load(c);
         String today = StepStore.today();
@@ -43,7 +42,7 @@ public class NeoWidget extends AppWidgetProvider {
             if (today.equals(o.optString("day"))) {
                 o.put("water", o.optInt("water") + v);
             } else {
-                // Yeni gün: uygulama bugün hiç açılmadıysa bugünkü su yalnız bu bekleyen kayıtlardır; kalori bilinmez.
+                // New day: if the app was not opened today, today's water is only these pending records, and the calories are unknown.
                 o.put("sday", o.optString("sday", o.optString("day")));
                 o.put("day", today);
                 o.put("water", v);
@@ -59,7 +58,7 @@ public class NeoWidget extends AppWidgetProvider {
     private static synchronized void setSteps(Context c, long steps) {
         JSONObject o = load(c);
         try {
-            // Uygulamanın bugün gönderdiği değer saat adımını ve elle eklenenleri de içerir; yalnız telefon sensörü okuması onu düşürmesin.
+            // The value the app pushed today also includes watch steps and manual entries; a phone sensor reading alone must not lower it.
             String today = StepStore.today();
             long pushed = today.equals(o.optString("sday", o.optString("day"))) && !o.isNull("steps") ? o.optLong("steps") : 0;
             o.put("steps", Math.max(steps, pushed));
@@ -73,7 +72,7 @@ public class NeoWidget extends AppWidgetProvider {
     static void refresh(Context c) {
         AppWidgetManager m = AppWidgetManager.getInstance(c);
         int[] ids = m.getAppWidgetIds(new ComponentName(c, NeoWidget.class));
-        if (ids != null && ids.length > 0) m.updateAppWidget(ids, views(c, load(c)));
+        if (ids.length > 0) m.updateAppWidget(ids, views(c, load(c)));
     }
 
     private static String num(long n) {
@@ -93,7 +92,7 @@ public class NeoWidget extends AppWidgetProvider {
         else if (o.isNull("kcalLeft")) kcal = "hedef yok";
         else {
             int left = o.optInt("kcalLeft");
-            // Dar widget'ta sondan kesilir: anlamı taşıyan sözcük ve sayı başta, birim sonda.
+            // The narrow widget cuts off at the end: the meaningful word and number come first, the unit last.
             kcal = (left >= 0 ? "Kalan " + num(left) : "Fazla " + num(-left)) + " kcal";
         }
         v.setTextViewText(R.id.nw_kcal, kcal);
@@ -107,10 +106,10 @@ public class NeoWidget extends AppWidgetProvider {
         int flags = PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT;
         Intent open = new Intent(c, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).putExtra(OPEN, true);
         v.setOnClickPendingIntent(R.id.nw_root, PendingIntent.getActivity(c, 7201, open, flags));
-        // Activity açan intent'i sistem yeniden teslim edebildiği için (çift su) yayın: ekran açılmaz, kaydı QuickLogPlugin.handle yazar.
+        // The system can redeliver an activity intent (double water), so this is a broadcast: no screen opens and QuickLogPlugin.handle writes the record.
         Intent add = new Intent(c, WaterReceiver.class)
-            .putExtra("LocalNotificationUserAction", "water")
-            .putExtra("LocalNotficationObject", "{\"extra\":{\"act\":\"su\",\"v\":" + glass + "}}");
+            .putExtra(QuickLogPlugin.ACTION_KEY, "water")
+            .putExtra(QuickLogPlugin.OBJ_KEY, "{\"extra\":{\"v\":" + glass + "}}");
         v.setOnClickPendingIntent(R.id.nw_add, PendingIntent.getBroadcast(c, 7202, add, flags));
         return v;
     }
@@ -124,14 +123,12 @@ public class NeoWidget extends AppWidgetProvider {
             return;
         }
         final PendingResult pr = goAsync();
-        StepStore.read(app, false, new StepStore.Callback() {
-            public void done(Long steps, Map<String, Long> history) {
-                try {
-                    if (steps != null) setSteps(app, steps);
-                    refresh(app);
-                } finally {
-                    pr.finish();
-                }
+        StepStore.read(app, false, (steps, history) -> {
+            try {
+                if (steps != null) setSteps(app, steps);
+                refresh(app);
+            } finally {
+                pr.finish();
             }
         });
     }

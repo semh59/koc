@@ -97,6 +97,48 @@ Sequential code-quality program. One row per file that was read completely, line
 | www/modules/data/privacyui.js | 58 | agent 7 | comments translated; no other change |
 | www/modules/data/onboardui.js | 113 | agent 7 | comments translated; `fint` |
 | www/modules/data/shareui.js | 30 | agent 7 | new: `shareFile` (now returns whether the file was handed over), `sharePdf`, `cacheClean`, `canvasPdf` moved here from labs/labui.js; the file is loaded by index.html before the report modules |
+| assets/android/MainActivity.java | 79 | agent 8 | new: was a template string inside patch-android.js, now a real source file (javac-checkable, tests read it); comments in English; `Notification.VISIBILITY_PUBLIC` instead of `1`; no `nm == null` check |
+| assets/android/WindowFlags.java | 44 | agent 8 | new: shared UI-thread window-flag helper replacing three copies (keepAwake, secure, setSecure); bug: app lock and the photo screen both toggled FLAG_SECURE, so closing the photo screen cleared the lock's flag; now FLAG_SECURE stays on while either owner holds it |
+| assets/android/Alarms.java | 40 | agent 8 | comments in English; `Alarms.manager`; removed null checks; `set` private (no outside caller); softened the claim that alarm-clock alarms need no exact-alarm permission |
+| assets/android/AlarmActivity.java | 170 | agent 8 | comments in English; API 27+ setters removed (manifest attributes already do it), only the < 27 flags remain; early tolerance is `MedWakeReceiver.EARLY_MS` |
+| assets/android/AppLockPlugin.java | 122 | agent 8 | comments and rejects in English; named BiometricPrompt error codes; one `none()` helper; setSecure goes through `WindowFlags`; fixed the misindented try block |
+| assets/android/DeviceHelpPlugin.java | 78 | agent 8 | comments in English; `opened()` helper for the repeated result objects; `toLowerCase(Locale.ROOT)` (Turkish default locale would break the manufacturer match); keepAwake/secure delegate to `WindowFlags` |
+| assets/android/BackupFolderPlugin.java | 229 | agent 8 | comments, rejects and exception texts in English (`canceled` kept: JS matches it); inline `java.util.Map` imports; write/rename ordering and fallback unchanged (pinned by tests) |
+| assets/android/HealthPlugin.java | 231 | agent 8 | one `days()` validator and one `Join` accumulator replace two copies of each; one `aggregate()` helper replaces three anonymous receivers; executor shut down in `handleOnDestroy`; rejects in English; behavior of results unchanged (steps keep zero days, sleep and heart rate skip zero) |
+| assets/android/KeyVaultPlugin.java | 111 | agent 8 | comments in English; `keyStore()` helper; named IV length, tag size and transformation |
+| assets/android/MedWakePlugin.java | 142 | agent 8 | comments and rejects in English; named test and snooze limits; null checks removed |
+| assets/android/MedWakeReceiver.java | 301 | agent 8 | comments in English; removed the old-channel cleanup (no installs to migrate; the bumped id `nw_medwake2` stays with its reason) and the dead `SDK_INT >= 24` check; named `EARLY_MS`, `WAKE_MS`, test window, notification timeout, dose cap; shared `prefs()`/`json()` helpers; no null checks on system services |
+| assets/android/MotionGpsService.java | 168 | agent 8 | comments in English; named fix counts and thresholds; shared `stopUpdates()`; lambdas for the step callbacks; documented why the empty LocationListener methods stay (abstract before Android 11) |
+| assets/android/MotionMath.java | 211 | agent 8 | removed the 30-field legacy model decoder (its test too); named `MIN_CADENCE`/`MAX_CADENCE`/scale bounds, `plausibleSpeed` shared by `bout` and `path`; comments in English |
+| assets/android/MotionPlugin.java | 132 | agent 8 | comments in English; lambdas for the Play-services listeners; `afterActivity` reuses `status`; user-visible rejects stay Turkish (motionui shows them) |
+| assets/android/MotionReceiver.java | 182 | agent 8 | comments in English; `Alarms.manager` for cancel; lambdas for the step callbacks; private `intent()`; documented why the transition PendingIntent is mutable |
+| assets/android/MotionStore.java | 156 | agent 8 | comments in English; checkpoint and pending trimming use `QuickMath.tail` (three copies of the same loop); one `MAX_CHECKPOINTS` replaces 150/158/160 |
+| assets/android/NeoWidget.java | 135 | agent 8 | comments in English; extras use the `QuickLogPlugin` constants; dropped the `act` field nobody reads from the widget payload; null checks removed |
+| assets/android/OcrPlugin.java | 69 | agent 8 | comments and rejects in English; the bitmap is recycled after recognition (was held until GC) |
+| assets/android/QuickLogPlugin.java | 180 | agent 8 | comments in English; `cancelPending` now uses FLAG_NO_CREATE (it created a PendingIntent just to cancel it); `OBJ_KEY` shared; log text in English |
+| assets/android/QuickMath.java | 113 | agent 8 | comments in English; removed the one-argument `medKey` overload (only tests used it); named water, medication and seen-list limits; `tail` shared with `MotionStore` |
+| assets/android/SpeechPlugin.java | 107 | agent 8 | removed `isAvailable` and the `turkish` flag (no JS caller); comments in English; no null checks on `AudioManager` |
+| assets/android/StepCounterPlugin.java | 89 | agent 8 | comments in English; `started` field moved to the top; lambda for the read callback |
+| assets/android/StepMath.java | 90 | agent 8 | comments in English; behavior unchanged (Java test passes) |
+| assets/android/StepSnapshotReceiver.java | 53 | agent 8 | comments in English; manifest filter no longer lists the exact-alarm permission change (all step alarms are inexact); lambda for the callback |
+| assets/android/StepStore.java | 182 | agent 8 | bug: `read()` slept up to 400 ms on the main thread waiting for a flush answer that is delivered on the main looper (it could never arrive); the wait now runs only off the main thread; removed the dead `SDK_INT >= 24` check; one `day(at)` formatter; named wait and timeout constants; comments in English |
+| assets/android/WaterReceiver.java | 13 | agent 8 | comment in English |
+| assets/android/WidgetPlugin.java | 26 | agent 8 | comments in English |
+| assets/android/res/xml/nw_backup_rules.xml | 9 | agent 8 | comment in English |
+| assets/android/res/xml/nw_data_rules.xml | 26 | agent 8 | comment in English |
+| assets/android/res/xml/nw_widget_info.xml | 8 | agent 8 | read, no change |
+| assets/android/res/layout/nw_widget.xml | 62 | agent 8 | `paddingStart/End` instead of left/right |
+| assets/android/res/drawable/nw_widget_bg.xml | 5 | agent 8 | read, no change |
+| assets/android/res/values/ic_launcher_background.xml | 4 | agent 8 | read, no change (used by the adaptive icons and the splash theme) |
+| assets/android/res/mipmap-anydpi-v26/ic_launcher.xml | 6 | agent 8 | read, no change |
+| assets/android/res/mipmap-anydpi-v26/ic_launcher_round.xml | 6 | agent 8 | read, no change |
+| scripts/patch-android.js | 129 | agent 8 | rewritten: `addToApp`/`patchGradle` helpers, manifest snippets built with a `filter()` helper, one `javaFiles` list; MainActivity moved to its own file; KeyVault contract comment removed (lives in the class); comments, errors and logs in English; step receiver no longer listens to the exact-alarm permission change; debug keystore renamed `signing/known-debug-smoke-only.keystore`; verified by running it twice on the Capacitor 8 template (second run changes nothing) |
+| .github/workflows/apk.yml | 299 | agent 8 | comments, step names and failure messages in English (release notes stay Turkish: they are read on the phone); `master` trigger removed (no such branch); artifact `e2e-report`; `state=exists/none`; keystore path renamed; workflow name `APK derle` kept (README and docs name it) |
+| .github/dependabot.yml | 12 | agent 8 | comments in English |
+| package.json | 27 | agent 8 | read, no change: every dependency is used (`@capacitor/app` by App.getInfo, `jsdom` and `pdfjs-dist` by tests, `@axe-core/playwright` by e2e) |
+| capacitor.config.json | 16 | agent 8 | read, no change: CapacitorHttp is needed for the Coach and Open Food Facts requests |
+| .gitignore | 5 | agent 8 | read, no change |
+| .gitattributes | 2 | agent 8 | read, no change |
 
 ## Notes
 
@@ -122,3 +164,8 @@ Sequential code-quality program. One row per file that was read completely, line
 - Agent 7: the main shell's manual backup share/download (`04-sheets.js`, `06-events.js`) goes through `exportBackup` -> `shareFile`.
 - Agent 7: not used on purpose: `toSorted`, `toReversed`, `Object.groupBy` (no WebView version floor). Test titles in several scripts are still Turkish (not renamed).
 - Agent 7: page size 1240x1754 is still declared in lablib, vitalslib and weeklylib; `canvasPdf` uses the LabLib value.
+- Agent 8: `scripts/smoke.sh` still sent `LocalNotificationUserAction su` after the vocabulary pass renamed the action id to `water` (Java, JS action types and widget already use `water`), so every positive water step of the emulator smoke test would have failed; fixed in smoke.sh (7 lines) and in `android.test.js`. Not run here: needs the CI emulator.
+- Agent 8: no Gradle or Android SDK is available locally. The Java was type-checked with javac 21 against `android.jar` (API 36) and hand-written stubs of Capacitor, Play services and ML Kit (0 errors), and the three pure-logic Java tests pass. Real behavior (alarms, Health Connect, biometric prompt, FLAG_SECURE, widget, GPS service) and the Gradle build can only be verified by the CI build and on a phone.
+- Agent 8: `dataBinding true` in the Gradle patch is kept: nothing in this repo uses data binding, but it was added together with the barcode plugin and only a CI build can show whether it can go. `WAKE_LOCK` is not declared by `patch-android.js` on purpose (merged from the local-notifications manifest, documented in `docs/play-izin-beyanlari.md`).
+- Agent 8: `MotionReceiver.onReceive` registers the activity transitions at boot without a try/catch; the Play-services call reports failures through the returned Task, so this was left. PNG resources (splash, launcher icons) are present and referenced by the manifest, theme and adaptive icons; they are binary and were not read line by line.
+- Agent 8: the old `nw_medwake` notification channel is no longer deleted at start (it only exists on the developer's own phone and is harmless clutter). Android restores old settings when a deleted channel is recreated under the same id, which is why the current id stays `nw_medwake2`.

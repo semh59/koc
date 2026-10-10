@@ -7,7 +7,7 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
-/** Uygulama özetini ana ekran widget'ına gönderir; widget'a dokunulduğunu JS'e bildirir. */
+/** Sends the app summary to the home-screen widget and tells JS when the widget was tapped. */
 @CapacitorPlugin(name = "Widget")
 public class WidgetPlugin extends Plugin {
     @PluginMethod
@@ -16,7 +16,7 @@ public class WidgetPlugin extends Plugin {
         call.resolve();
     }
 
-    // Soğuk açılışta da çağrılır (BridgeActivity.load), JS dinleyicisi henüz yoksa olay saklanır.
+    // Also called on a cold start (BridgeActivity.load); the event is retained when the JS listener does not exist yet.
     @Override
     protected void handleOnNewIntent(Intent intent) {
         if (intent == null || !intent.getBooleanExtra(NeoWidget.OPEN, false)) return;
