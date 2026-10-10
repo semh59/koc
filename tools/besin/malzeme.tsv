@@ -1,4 +1,4 @@
-# Yalnız tarifte kullanılan, genel.tsv'de olmayan malzemeler: ad<TAB>USDA SR Legacy anahtarı. Tarifte genel.tsv adları da kullanılır.
+# Ingredients used only in recipes and absent from genel.tsv: name<TAB>USDA SR Legacy key. Recipes may also use genel.tsv names.
 Zeytinyağı	oil, olive, salad or cooking
 Tereyağı	butter, salted
 Domates	tomatoes, red, ripe, raw, year round average

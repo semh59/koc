@@ -1,4 +1,4 @@
-# ad	not (arayüzde "Tahmini değer." notundan sonra gösterilir). "Vekil:" tam karşılığı olmayan kaynak, "Çapraz kontrol:" elle girilmiş eski değerin kaynak aralığıyla karşılaştırması.
+# name	note (shown in the UI after "Tahmini değer."). "Vekil:" = a source that is not an exact match, "Çapraz kontrol:" = a hand-entered old value compared with the source range.
 Sucuklu yumurta	Vekil: sucuk yerine CIQUAL kuru sosis (418 kcal); yumurta USDA sahanda yumurta. Kızartmada %25 su kaybı varsayıldı.
 Pastırmalı yumurta	Vekil: pastırma yerine CIQUAL kuru sığır eti (Grisons, 207 kcal). Çemen ve yağ hesapta yok, aralık geniş.
 Kavurmalı yumurta	Vekil: kavurma yerine tarifle hesaplanmış kuzu kavurma (333 kcal); yumurta USDA sahanda yumurta.

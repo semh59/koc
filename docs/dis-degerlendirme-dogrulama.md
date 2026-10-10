@@ -27,7 +27,7 @@ Ciddiyet: **P** Play'i engeller · **Z** kullanıcıya zarar · **K** kalite · 
 | 15 | ESKİ | 818 kayıttan 394'ünde aralık var; 186'sında %30'dan, 100'ünde %80'den geniş. Asıl sorun aynı yemeğin iki satırı: Lahmacun 162-302 ve 225-236. | K | #4 ile birleştir |
 | 16 | YANLIŞ | Kaynak bulundu: 132, ilk elle girilen satırdan (`e5226d8`, `mevcut.txt:5`). Tarif hesabı 110 (`tarif.txt:185`). | K | #4 ile kalkar |
 | 17 | ESKİ | 75 vekil satırı (`vekil.txt` 70 + `vekil-ogun.txt` 5) | k | – |
-| 18 | YANLIŞ | Kaynak dosyalar indirildi: USDA 329/329 kayıt birebir; CIQUAL 2025 + CoFID 2021 `harici.py` ile yeniden üretildi, 12/12 aynı; `uret.js --kontrol` geçti | k | Yaklaşık 30 ad ↔ açıklama eşlemesine elle bak |
+| 18 | YANLIŞ | Kaynak dosyalar indirildi: USDA 329/329 kayıt birebir; CIQUAL 2025 + CoFID 2021 `harici.py` ile yeniden üretildi, 12/12 aynı; `uret.js --check` geçti | k | Yaklaşık 30 ad ↔ açıklama eşlemesine elle bak |
 | 19 | DOĞRU | `FOODS` = ad, kcal, P, K, Y. Lif, şeker, sodyum yalnız etiket ve barkodda (`index.html:422`). | K | USDA'dan eklenebilir |
 | 20 | YANLIŞ | 43 dosyanın hepsi testte çalışıyor. Sayılan 11 dosyada fonksiyon kapsamı %86-100, bayt kapsamı yaklaşık %72-100. JSDOM betikleri gömdüğü için kapsama aracı dosya adını göremiyordu. | k | – |
 | 21 | DOĞRU | 130 KB: 32 KB CSS + tek betikte 93 KB; 9 test bu dosyayı okuyor | K | CSS ayrılabilir (M) |

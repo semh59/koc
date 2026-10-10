@@ -296,7 +296,7 @@ const LabLib=(()=>{
   function keyFor(name){const h=findAlias(String(name).trim());return h?h.d.k:slug(name)}
 
   /* ---- PDF report: the canvas context is passed in, so it can be tried without a DOM ---- */
-  const RW=1240,RH=1754,RM=70,BLOCK=250,HEAD=190,FOOT=80;
+  const {w:RW,h:RH,m:RM}=ALGO.PAGE,BLOCK=250,HEAD=190,FOOT=80;
   const dayN=ALGO.dayNum,fmtD=k=>ALGO.fdate(k,true);
   const fmtN=v=>String(Number(v.toFixed(2))).replace(".",",");
   const rangeText=r=>r.lo!=null&&r.hi!=null?`${fmtN(r.lo)} – ${fmtN(r.hi)}`:r.hi!=null?`< ${fmtN(r.hi)}`:r.lo!=null?`> ${fmtN(r.lo)}`:"";

@@ -1,16 +1,16 @@
 "use strict";
-/* Gerçek yerleşim: başsız Chrome'da yatay kısa ekranda rehberli mod ve sheet'lerin tüm etkileşimli öğeleri görünür ve dokunulabilir mi.
-   SHOTS=klasör verilirse her durumun ekran görüntüsünü yazar. Chrome yoksa atlanır (CI'da google-chrome var). */
+/* Real layout: in headless Chrome on a short landscape screen, every interactive element of the guided mode and the sheets must be visible and touchable.
+   SHOTS=<folder> writes a screenshot of every state. Skipped without Chrome (CI has google-chrome). */
 const path=require("path"),fs=require("fs"),L=require("./chrome-lib");
+const {ok,finish}=require("./ok");
 const bin=L.find();
-if(!bin){console.log("ATLANDI: Chrome bulunamadı");process.exit(0)}
-/* file:// altında fetch çalışmaz: ana betik parçaları gömülü kopya açılır */
-const tmpHtml=path.join(__dirname,"../www/.lc-test.html");fs.writeFileSync(tmpHtml,require("./html").build().replace(/<script src="vendor[^>]*><\/script>/g,m=>m));
+if(!bin){console.log("SKIPPED: Chrome not found");process.exit(0)}
+/* fetch does not work under file://, so the page is opened as a copy with the main script parts inlined. */
+const tmpHtml=path.join(__dirname,"../www/.lc-test.html");fs.writeFileSync(tmpHtml,require("./html").build());
 process.on("exit",()=>{try{fs.unlinkSync(tmpHtml)}catch(e){}});
 const url=require("url").pathToFileURL(tmpHtml).href;
 const shots=process.env.SHOTS;if(shots)fs.mkdirSync(shots,{recursive:true});
-let bad=0;const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
-/* Öğenin merkez noktasında öğenin kendisi (ya da çocuğu) üstte olmalı: kesilme, taşma ve başka katmanın altında kalma hepsini yakalar. */
+/* The element's center must hit the element itself (or a child): clipping, overflow and being covered by another layer are all caught. */
 const probe=(root,scroll)=>`(()=>{const r=document.querySelector(${JSON.stringify(root)});if(!r)return {miss:1};const vw=innerWidth,vh=innerHeight,out=[];
   for(const e of r.querySelectorAll("button,input,a,[data-gd],[data-g],[data-act],select")){let b=e.getBoundingClientRect();if(!b.width&&!b.height)continue;${scroll?'e.scrollIntoView({block:"nearest"});b=e.getBoundingClientRect();':''}
     const cx=b.left+b.width/2,cy=b.top+b.height/2,t=document.elementFromPoint(Math.min(vw-1,Math.max(0,cx)),Math.min(vh-1,Math.max(0,cy)));
@@ -26,24 +26,28 @@ const skipTo=pred=>`(()=>{for(let i=0;i<60&&!(${pred});i++)gdClick("skip");retur
       await b.open(url,w,h);
       await b.eval(`window.confirm=()=>true;S=structuredClone(DEF);S.settings.obDone=true;S.gid=50;const wk=EXDB.find(e=>(e.k||"w")==="w");
         S.templates=[{id:1,name:"Ev antrenmanı uzun bir ad deneme",ex:["plank","pushup",wk.id],tg:{plank:{sets:2,sec:30},pushup:{sets:2,reps:8}}}];tab="gym";render();1`);
-      const states=[["hazirlan","gdStart('f:'+GuideLib.FLOWS[0].id)"],
-        ["calis",skipTo('gd.st.ph[gd.st.i].k==="w"')],["dinlen",skipTo('gd.st.ph[gd.st.i].k==="r"')],
-        ["duraklat","gdClick('pause')"],["devam","gdClick('resume')"]];
-      const check=async(name,sel,js,sc)=>{if(js)await b.eval(js);if(sel==="#sheet")await b.eval("new Promise(r=>setTimeout(r,600))");const r=await b.eval(probe(sel,sc||sel!=="#guide"));
+      const states=[["prepare","gdStart('f:'+GuideLib.FLOWS[0].id)"],
+        ["work",skipTo('gd.st.ph[gd.st.i].k==="w"')],["rest",skipTo('gd.st.ph[gd.st.i].k==="r"')],
+        ["pause","gdClick('pause')"],["resume","gdClick('resume')"]];
+      const check=async(name,sel,js,sc)=>{
+        if(js)await b.eval(js);
+        if(sel==="#sheet")await b.waitFor("document.getAnimations().length===0");
+        const r=await b.eval(probe(sel,sc||sel!=="#guide"));
         if(shots)await b.shot(path.join(shots,`${name}-${tag}.png`));
-        ok(`${tag} ${name}: tüm etkileşimli öğeler görünür, üstte ve ≥44 px`,!r.miss&&!r.bad.length,r);
-        if(land&&sel==="#guide")ok(`${tag} ${name}: katman tam genişlik ve ekrana sığar`,r.box[2]===w&&r.box[3]<=h&&r.sw<=w,r)};
-      for(const [n,js] of states)await check("rehber-"+n,"#guide",js);
+        ok(`${tag} ${name}: every interactive element is visible, on top and at least 44 px`,!r.miss&&!r.bad.length,r);
+        if(land&&sel==="#guide")ok(`${tag} ${name}: the layer is full width and fits the screen`,r.box[2]===w&&r.box[3]<=h&&r.sw<=w,r);
+      };
+      for(const [n,js] of states)await check("guide-"+n,"#guide",js);
       await b.eval("gdClick('end')");
-      await check("rehber-ozet-bos","#guide");
+      await check("guide-summary-empty","#guide");
       await b.eval("gdClose();gdStart('t:1')");
-      await check("rehber-sablon","#guide");
-      await b.eval(skipTo('gd.st.ph[gd.st.i].reps'));await check("rehber-tekrarli","#guide");
+      await check("guide-template","#guide");
+      await b.eval(skipTo('gd.st.ph[gd.st.i].reps'));await check("guide-reps","#guide");
       await b.eval("for(let i=0;i<12;i++){const p=gd.st.ph[gd.st.i];if(p)gdClick(p.k==='w'&&p.reps?'done':'skip')}");
-      await check("rehber-ozet","#guide",0,1);
+      await check("guide-summary","#guide",0,1);
       await b.eval("gdClose();gdPick()");
-      await check("rehber-secim-sheet","#sheet");
+      await check("guide-pick-sheet","#sheet");
     }
   }finally{b.close()}
-  if(bad){console.log(bad+" HATA");process.exit(1)}console.log("TAMAM");process.exit(0);
+  finish();
 })().catch(e=>{console.error(e);process.exit(1)});

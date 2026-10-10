@@ -1,28 +1,28 @@
-# İlk 106 satırdan USDA'da birebir karşılığı olmayanlar: tarif.txt biçimi (ad | yöntem | - | malzeme | - | sapma). Ad mevcut.txt'teki adla aynıdır; uret.js yalnız kcal/makro ve [lo, hi] değerini yazar, porsiyonlar mevcut.txt'te kalır. Tek malzemeli 100 g satırlar vekildir. Nedenler vekil.tsv'de.
-Menemen | yemek | - | Yumurta (çiğ) 100;Domates 200;Yeşil biber (çiğ) 60;Soğan 30;Ayçiçek yağı 15 | - | ~40
+# Foods among the first 106 rows with no verbatim USDA match: tarif.txt format (name | method | - | ingredients | - | spread). The name equals the one in mevcut.txt; uret.js writes only kcal/macros and [lo, hi], portions stay in mevcut.txt. One-ingredient 100 g rows are proxies. Reasons are in vekil.tsv.
+Menemen | stew | - | Yumurta (çiğ) 100;Domates 200;Yeşil biber (çiğ) 60;Soğan 30;Ayçiçek yağı 15 | - | ~40
 Tost (kaşarlı) | 0.97 | - | Ekmek (beyaz) 90;Kaşar 35;Tereyağı 5 | - | ~25
 Gözleme (peynirli) | 0.9 | - | Buğday unu 100;Su 55;Beyaz peynir 60;Maydanoz 5;Ayçiçek yağı 10 | - | ~25
-Su böreği (peynirli) | hamur | - | Buğday unu 100;Yumurta (çiğ) 30;Su 80;Süt 60;Beyaz peynir 60;Tereyağı 25 | - | ~25
+Su böreği (peynirli) | dough | - | Buğday unu 100;Yumurta (çiğ) 30;Su 80;Süt 60;Beyaz peynir 60;Tereyağı 25 | - | ~25
 Lahmacun | 1 | - | Lahmacun (tarif hesaplı) 100 | - | ~30
-Mercimek çorbası | corba | - | Kırmızı mercimek (çiğ) 130;Soğan 60;Havuç 50;Patates (çiğ) 50;Tereyağı 20;Su 900 | -
-Ezogelin çorbası | corba | - | Kırmızı mercimek (çiğ) 80;Bulgur (çiğ) 35;Pirinç (çiğ) 15;Soğan 50;Domates salçası 20;Tereyağı 20;Su 1000 | -
-Domates çorbası | corba | - | Domates 500;Buğday unu 25;Tereyağı 25;Süt 100;Su 400 | -
+Mercimek çorbası | soup | - | Kırmızı mercimek (çiğ) 130;Soğan 60;Havuç 50;Patates (çiğ) 50;Tereyağı 20;Su 900 | -
+Ezogelin çorbası | soup | - | Kırmızı mercimek (çiğ) 80;Bulgur (çiğ) 35;Pirinç (çiğ) 15;Soğan 50;Domates salçası 20;Tereyağı 20;Su 1000 | -
+Domates çorbası | soup | - | Domates 500;Buğday unu 25;Tereyağı 25;Süt 100;Su 400 | -
 Tarhana çorbası | 1 | - | Tarhana (kuru) 25;Su 230;Tereyağı 5 | -
-Yayla çorbası | corba | - | Yoğurt 150;Pirinç (çiğ) 40;Buğday unu 10;Yumurta (çiğ) 25;Tereyağı 15;Su 600 | -
-Pirinç pilavı | pilav | - | Pirinç (çiğ) 185;Tereyağı 15;Su 360 | -
-Bulgur pilavı | pilav | - | Bulgur (çiğ) 140;Soğan 40;Domates salçası 10;Ayçiçek yağı 15;Su 280 | - | ~25
+Yayla çorbası | soup | - | Yoğurt 150;Pirinç (çiğ) 40;Buğday unu 10;Yumurta (çiğ) 25;Tereyağı 15;Su 600 | -
+Pirinç pilavı | pilaf | - | Pirinç (çiğ) 185;Tereyağı 15;Su 360 | -
+Bulgur pilavı | pilaf | - | Bulgur (çiğ) 140;Soğan 40;Domates salçası 10;Ayçiçek yağı 15;Su 280 | - | ~25
 Mantı (haşlanmış) | 1 | - | Buğday unu 100;Yumurta (çiğ) 15;Su 100;Dana kıyma (çiğ) 45;Soğan 20 | - | ~25
-Kuru fasulye yemeği | yemek | - | Kuru fasulye (haşlanmış) 200;Dana kuşbaşı (çiğ) 40;Soğan 40;Domates salçası 15;Tereyağı 10;Su 150 | -
-Nohut yemeği | yemek | - | Nohut (konserve) 200;Dana kuşbaşı (çiğ) 40;Soğan 40;Domates salçası 15;Tereyağı 12;Su 150 | - | ~25
+Kuru fasulye yemeği | stew | - | Kuru fasulye (haşlanmış) 200;Dana kuşbaşı (çiğ) 40;Soğan 40;Domates salçası 15;Tereyağı 10;Su 150 | -
+Nohut yemeği | stew | - | Nohut (konserve) 200;Dana kuşbaşı (çiğ) 40;Soğan 40;Domates salçası 15;Tereyağı 12;Su 150 | - | ~25
 Tavuk döner | 1 | - | Tavuk but (derisiz, fırında) 100 | - | ~25
 Adana kebap | 1 | - | Dana kıyma (ızgara, %20 yağlı) 100 | - | ~30
 Izgara köfte | 1 | - | Dana kıyma (ızgara, %15 yağlı) 85;Ekmek (beyaz) 8;Soğan 7 | - | ~30
-İçli köfte | kizart | - | Bulgur (çiğ) 40;Buğday unu 10;Su 30;Dana kıyma (çiğ) 35;Soğan 15;Ayçiçek yağı 8 | - | ~30
-Etli sebze yemeği | yemek | - | Dana kuşbaşı (çiğ) 80;Patates (çiğ) 100;Havuç 60;Soğan 50;Domates 100;Tereyağı 12;Su 200 | - | ~40
-Karnıyarık | yemek | - | Patlıcan 250;Dana kıyma (çiğ, %20 yağlı) 70;Soğan 40;Domates 60;Yeşil biber (çiğ) 30;Ayçiçek yağı 40;Su 60 | -
-İmam bayıldı | yemek | - | Patlıcan 250;Soğan 100;Domates 100;Sarımsak 5;Zeytinyağı 40;Maydanoz 5;Su 40 | -
-Zeytinyağlı taze fasulye | yemek | - | Taze fasulye (çiğ) 250;Soğan 50;Domates 100;Zeytinyağı 25;Su 150 | - | ~40
-Zeytinyağlı yaprak sarma | yemek | - | Pirinç (çiğ) 100;Asma yaprağı (çiğ) 60;Soğan 80;Zeytinyağı 35;Kuru üzüm 8;Çam fıstığı 8;Domates salçası 5;Su 200 | -
+İçli köfte | fry | - | Bulgur (çiğ) 40;Buğday unu 10;Su 30;Dana kıyma (çiğ) 35;Soğan 15;Ayçiçek yağı 8 | - | ~30
+Etli sebze yemeği | stew | - | Dana kuşbaşı (çiğ) 80;Patates (çiğ) 100;Havuç 60;Soğan 50;Domates 100;Tereyağı 12;Su 200 | - | ~40
+Karnıyarık | stew | - | Patlıcan 250;Dana kıyma (çiğ, %20 yağlı) 70;Soğan 40;Domates 60;Yeşil biber (çiğ) 30;Ayçiçek yağı 40;Su 60 | -
+İmam bayıldı | stew | - | Patlıcan 250;Soğan 100;Domates 100;Sarımsak 5;Zeytinyağı 40;Maydanoz 5;Su 40 | -
+Zeytinyağlı taze fasulye | stew | - | Taze fasulye (çiğ) 250;Soğan 50;Domates 100;Zeytinyağı 25;Su 150 | - | ~40
+Zeytinyağlı yaprak sarma | stew | - | Pirinç (çiğ) 100;Asma yaprağı (çiğ) 60;Soğan 80;Zeytinyağı 35;Kuru üzüm 8;Çam fıstığı 8;Domates salçası 5;Su 200 | -
 Çoban salatası | 1 | - | Domates 100;Salatalık 70;Yeşil biber (çiğ) 15;Soğan 10;Zeytinyağı 6;Limon suyu 4 | - | ~40
 Beyaz peynir | 1 | - | Beyaz peynir 100 | - | ~15
 Lor peyniri | 1 | - | Cottage peyniri (CoFID vekili) 100 | - | ~30
@@ -31,10 +31,10 @@ Simit | 1 | - | Simit (bagel vekili) 93;Susam 7 | - | ~15
 Pekmez | 1 | - | Pekmez (melas vekili) 100 | - | ~8
 Ayran | 1 | - | Yoğurt 50;Su 50 | - | ~20
 Kefir | 1 | - | Süt 100 | - | ~25
-Baklava | tatli | - | Yufka benzeri hamur (phyllo) 30;Ceviz 25;Tereyağı 15;Şeker 22;Su 15 | - | ~15
-Sütlaç | yemek | - | Süt 800;Pirinç (çiğ) 70;Şeker 100;Mısır nişastası 15;Su 200 | - | ~20
-Kazandibi | tatli | - | Süt 800;Şeker 100;Mısır nişastası 30;Pirinç unu 25;Tereyağı 10 | - | ~20
-Künefe | tatli | - | Yufka benzeri hamur (phyllo) 35;Dil peyniri 35;Tereyağı 15;Şeker 25;Su 25 | - | ~25
+Baklava | dessert | - | Yufka benzeri hamur (phyllo) 30;Ceviz 25;Tereyağı 15;Şeker 22;Su 15 | - | ~15
+Sütlaç | stew | - | Süt 800;Pirinç (çiğ) 70;Şeker 100;Mısır nişastası 15;Su 200 | - | ~20
+Kazandibi | dessert | - | Süt 800;Şeker 100;Mısır nişastası 30;Pirinç unu 25;Tereyağı 10 | - | ~20
+Künefe | dessert | - | Yufka benzeri hamur (phyllo) 35;Dil peyniri 35;Tereyağı 15;Şeker 25;Su 25 | - | ~25
 Aşure | 0.9 | - | İnci arpa (çiğ) 40;Kuru fasulye (haşlanmış) 25;Nohut (konserve) 25;Kuru üzüm 20;Kuru kayısı 20;Ceviz 12;Fındık 8;Şeker 70;Su 380 | - | ~30
 Helva (tahin) | 1 | - | Tahin 50;Şeker 50 | - | ~15
 Lokum | 1 | - | Şeker 70;Mısır nişastası 12;Su 18 | - | ~15

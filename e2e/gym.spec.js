@@ -1,7 +1,7 @@
 "use strict";
 const {test,expect,state,day,NOW}=require("./fixtures");
 
-/* Üç gün önce bitmiş bir bench seansı: öneri, "önceki" sütunu ve grafik için. */
+/* A bench session finished three days ago: for the suggestion, the "previous" column and the chart. */
 const past={id:1,day:day(-3),t0:NOW.getTime()-3*864e5,t1:NOW.getTime()-3*864e5+40*60e3,name:"Antrenman",tpl:null,ex:[{id:"bench",sets:[{kg:55,reps:8,done:true},{kg:55,reps:8,done:true}]}]};
 async function addEx(page,q,id){
   await page.fill("#gq",q);
@@ -9,8 +9,8 @@ async function addEx(page,q,id){
   await expect(page.locator(`#glist [data-g="addex:${id}"] .tag`)).toHaveText("Eklendi");
 }
 
-test.describe("Salon",()=>{
-  test("şablon oluştur, düzenle ve sil",async({app,page})=>{
+test.describe("Gym",()=>{
+  test("create, edit and delete a template",async({app,page})=>{
     await app.open({seed:state()});
     await app.tab("gym");
     await page.click('[data-g="tedit:"]');
@@ -25,7 +25,7 @@ test.describe("Salon",()=>{
     await page.fill('[data-te="sets:0"]',"4");
     await page.click('[data-g="tesave"]');
     await expect(app.toast).toHaveText("Şablon kaydedildi");
-    // Kabul: şablon listede, hedef set sayısı korunur, silme Geri al ile döner.
+    // Acceptance: the template is listed, the target set count is kept, deletion comes back with Undo.
     const row=page.locator(".trow",{hasText:"İtiş günü"});
     await expect(row).toContainText("Bench press, Squat");
     await row.locator('[data-g^="start:"]').click();
@@ -37,7 +37,7 @@ test.describe("Salon",()=>{
     await expect(page.locator(".trow",{hasText:"İtiş günü"})).toHaveCount(1);
   });
 
-  test("hazır program seçimi şablonlara eklenir ve başlatılır",async({app,page})=>{
+  test("a ready-made program is added to templates and started",async({app,page})=>{
     await app.open({seed:state()});
     await app.tab("gym");
     await page.click("#pgacc summary");
@@ -55,7 +55,7 @@ test.describe("Salon",()=>{
     expect(await page.locator(".card.ex").count()).toBeGreaterThanOrEqual(2);
   });
 
-  test("antrenman: set tamamla, dinlenme sayacı, süperset, işaretlenmemiş set onayı, geçmiş ve grafik",async({app,page})=>{
+  test("workout: complete a set, rest timer, superset, unticked-set confirmation, history and chart",async({app,page})=>{
     await app.open({seed:state({},{workouts:[past]})});
     await app.tab("gym");
     await page.click('[data-g="start:"]');
@@ -71,7 +71,7 @@ test.describe("Salon",()=>{
     await bench.locator('[data-g="done:0:0"]').click();
     await expect(bench.locator('[data-g="done:0:0"]')).toHaveClass(/\bon\b/);
     await expect(app.toast).toContainText("Yeni rekor: Bench press, 60 kg × 8");
-    // Dinlenme sayacı görünür, saat ilerleyince azalır, +15 ve Atla çalışır.
+    // The rest timer is visible, counts down as the clock advances, and +15 and Skip work.
     const rest=page.locator("#grest");
     await expect(rest).toBeVisible();
     const t0=await page.locator("#gr").textContent();
@@ -80,24 +80,24 @@ test.describe("Salon",()=>{
     await page.click('[data-g="rest:15"]');
     await page.click('[data-g="rest:0"]');
     await expect(rest).toBeHidden();
-    // Boş tekrarla ✓: sessizce 0 yazılmaz, önceki seansın değeri önerilir.
+    // Tick with empty reps: 0 is not written silently, the previous session's value is offered.
     await page.fill('[data-gi="reps:0:1"]',"");
     await bench.locator('[data-g="done:0:1"]').click();
     await expect(app.sheet.locator("h3")).toHaveText("Set boş");
     await page.click('[data-g="fillok:0:1"]');
     await expect(bench.locator('[data-g="done:0:1"]')).toHaveClass(/\bon\b/);
     await page.click('[data-g="rest:0"]');
-    // Süperset: squat'ı bench ile grupla.
+    // Superset: group squat with bench.
     await page.locator('[data-g="menu:1"]').click();
     await page.click('[data-g="ssl:1"]');
     await expect(page.locator(".card.ex.ssg")).toHaveCount(2);
     await expect(page.locator(".card.ex").nth(1)).toContainText("Süperset 2/2");
-    // Hareket geçmişi ve grafik.
+    // Exercise history and chart.
     await bench.locator(".exn").click();
     await expect(page.locator("#sheet")).toContainText("Tahmini 1TM");
     await expect(page.locator("#xch")).toContainText("Grafik için en az iki seans gerekir");
     await page.click('#sheet [data-g="closesheet"]');
-    // Değeri girilmiş ama işaretlenmemiş set: Bitir önce sorar; İptal antrenmanda bırakır.
+    // A set with values but not ticked: Finish asks first; Cancel keeps the workout open.
     await bench.locator('[data-g="addset:0"]').click();
     await page.fill('[data-gi="kg:1:0"]',"80");await page.fill('[data-gi="reps:1:0"]',"5");
     await page.locator('.card.ex').nth(1).locator('[data-g="done:1:0"]').click();
@@ -107,7 +107,7 @@ test.describe("Salon",()=>{
     expect(app.dialogs.at(-1)).toMatch(/set işaretlenmemiş/);
     await expect(page.locator(".livebar")).toBeVisible();
     await page.click('[data-g="finish"]');
-    // Kabul: özet açılır, set sayısı ve süperset görünür; geçmişte ve Bugün'de spor kaydı olur.
+    // Acceptance: the summary opens showing set count and superset; history and Today get a sport entry.
     await expect(page.locator("#sheet")).toContainText("kg hacim");
     await expect(page.locator("#sheet")).toContainText("Süperset: Bench press + Squat");
     await page.click('#sheet [data-g="closesheet"]');
@@ -116,7 +116,7 @@ test.describe("Salon",()=>{
     await expect(page.locator(".log")).toContainText("Ağırlık, Antrenman");
   });
 
-  test("antrenman iptali onay ister",async({app,page})=>{
+  test("cancelling a workout asks for confirmation",async({app,page})=>{
     await app.open({seed:state()});
     await app.tab("gym");
     await page.click('[data-g="start:"]');

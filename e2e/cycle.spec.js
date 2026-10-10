@@ -7,8 +7,8 @@ const addPeriod=async(page,s,e)=>{
   await page.click('[data-cy="save"]');
 };
 
-test.describe("Döngü takibi",()=>{
-  test("kapalı gelir, Modüller'den açılır; dönem ekle, tahmin, sil ve Geri al; kapatınca ekran kapanır",async({app,page})=>{
+test.describe("Cycle tracking",()=>{
+  test("off by default, enabled from Modules; add period, forecast, delete and Undo; turning off closes the screen",async({app,page})=>{
     await app.open({seed:state()});
     await app.go("more");
     await expect(page.locator('#view [data-tab="cycle"]')).toHaveCount(0);
@@ -48,7 +48,7 @@ test.describe("Döngü takibi",()=>{
     await page.click("#tundo");
     await expect(rows).toHaveCount(3);
     expect((await app.state()).cycle.length).toBe(3);
-    // kapat: ekran kapanır, kayıtlar durur
+    // turn off: the screen closes, the records stay
     await app.go("settings-modules");
     await page.click('[data-cy="toggle"]');
     expect((await app.state()).settings.cycleOn).toBe(false);
@@ -60,7 +60,7 @@ test.describe("Döngü takibi",()=>{
     expect((await app.state()).cycle.length).toBe(3);
   });
 
-  test("hamilelik işaretinde tahmin yerine nötr bilgi",async({app,page})=>{
+  test("a pregnancy note shows neutral info instead of a forecast",async({app,page})=>{
     const cycle=[{id:1,s:"2026-07-15"},{id:2,s:"2026-08-12"},{id:3,s:"2026-09-09"}];
     await app.open({seed:state({cycleOn:true,healthNote:"hamileyim"},{cycle})});
     await app.go("cycle");
@@ -71,7 +71,7 @@ test.describe("Döngü takibi",()=>{
     await expect(page.locator(".cyd.cyo,.cyd.cyf")).toHaveCount(0);
   });
 
-  test("düzensiz döngüde pencere yok, uyarı var",async({app,page})=>{
+  test("an irregular cycle shows a warning and no fertile window",async({app,page})=>{
     const cycle=[{id:1,s:"2026-05-01"},{id:2,s:"2026-05-22"},{id:3,s:"2026-07-01"},{id:4,s:"2026-07-25"},{id:5,s:"2026-09-09"}];
     await app.open({seed:state({cycleOn:true},{cycle})});
     await app.go("cycle");
@@ -80,7 +80,7 @@ test.describe("Döngü takibi",()=>{
     await expect(page.locator(".cyd.cyo,.cyd.cyf")).toHaveCount(0);
   });
 
-  test("yatay mod: ekran ve ekleme penceresi taşmaz",async({app,page})=>{
+  test("landscape: the screen and the add sheet do not overflow",async({app,page})=>{
     const cycle=[{id:1,s:"2026-07-15"},{id:2,s:"2026-08-12"},{id:3,s:"2026-09-09"}];
     await app.open({seed:state({cycleOn:true},{cycle})});
     const v=page.viewportSize();await page.setViewportSize({width:v.height,height:v.width});
@@ -90,10 +90,10 @@ test.describe("Döngü takibi",()=>{
       expect(o.sw,what).toBeLessThanOrEqual(o.w);
       expect(await offscreen(page),what).toEqual([]);
     };
-    await check("yatay Döngü");
+    await check("landscape Cycle");
     const small=await page.evaluate(()=>[...document.querySelectorAll("#view button")].filter(b=>b.getBoundingClientRect().height<44).map(b=>b.textContent.trim()||b.getAttribute("aria-label")));
     expect(small).toEqual([]);
     await page.click('[data-cy="add"]');
-    await check("yatay Dönem ekle");
+    await check("landscape Add period");
   });
 });

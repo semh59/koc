@@ -1,82 +1,82 @@
-# Tam karşılığı olmayan yaygın Türk besinleri: vekil ya da bileşenden hesap; her satırın nedeni vekil.tsv'dedir. Biçim tarif.txt ile aynı: ad | yöntem | porsiyonlar | malzemeler | eş adlar | ~N (±N% kcal aralığı)
-# Aralık ~N: bu besinlerin tek bir USDA kaydı yoktur; vekil kayıtlar arası fark ve ev/ürün değişkenliği yüzünden geniş tutulur (en çok ±45).
-# Verim: sucuk ve pastırma kızartmada ~%25 su kaybeder (varsayım): verim = 1 - 0,25 x sucuk (pastırma) gramı / su dahil girdi gramı. Kurutulan tarhana: kuru madde (un %88, yoğurt %12, domates %5,5; USDA su değerleriyle) %10 nemle kuruyunca 2000 g girdinin ~1080 g'ı kalır (0,54).
-# --- Yumurtalı ve sucuklu ---
+# Common Turkish foods with no exact match: a proxy or a computation from components; the reason for each row is in vekil.tsv. Same format as tarif.txt: name | method | portions | ingredients | aliases | ~N (+-N% kcal range)
+# Range ~N: these foods have no single USDA record; the range is wide because of the spread between proxy records and home or product variability (at most +-45).
+# Yield: sucuk and pastırma lose about 25% water when fried (assumption): yield = 1 - 0.25 x sucuk (pastırma) grams / input grams including water. Dried tarhana: the dry matter (flour 88%, yogurt 12%, tomato 5.5%; with USDA water values) dried to 10% moisture leaves about 1080 g of 2000 g input (0.54).
+# --- Egg and sucuk dishes ---
 Sucuklu yumurta | 0.91 | 1 porsiyon (129 g)=129 | Sahanda yumurta 92;Sucuk (kuru sosis vekili) 50 | sucuklu sahanda yumurta sucuk yumurta | ~30
 Pastırmalı yumurta | 0.92 | 1 porsiyon (126 g)=126 | Sahanda yumurta 92;Pastırma (kuru sığır vekili) 40;Tereyağı 5 | pastirmali sahanda yumurta | ~30
-Kavurmalı yumurta | cig | 1 porsiyon (142 g)=142 | Sahanda yumurta 92;Kuzu kavurma 50 | kavurmali sahanda yumurta | ~30
-Kaşarlı sahanda yumurta | cig | 1 porsiyon (122 g)=122 | Sahanda yumurta 92;Kaşar 30 | peynirli sahanda yumurta | ~25
+Kavurmalı yumurta | raw | 1 porsiyon (142 g)=142 | Sahanda yumurta 92;Kuzu kavurma 50 | kavurmali sahanda yumurta | ~30
+Kaşarlı sahanda yumurta | raw | 1 porsiyon (122 g)=122 | Sahanda yumurta 92;Kaşar 30 | peynirli sahanda yumurta | ~25
 Sucuklu kaşarlı tost | 0.94 | 1 adet (118 g)=118 | Ekmek (beyaz) 60;Kaşar 30;Sucuk (kuru sosis vekili) 30;Tereyağı 5 | sucuklu tost | ~30
 Sucuk ekmek (yarım somun) | 0.91 | 1 adet (146 g)=146 | Ekmek (beyaz) 100;Sucuk (kuru sosis vekili) 60 | sucuklu sandviç sucuk ekmek | ~30
-# --- Şarküteri ve peynir ---
-Sucuk (çiğ) | cig | 5 dilim (50 g)=50 | Sucuk (kuru sosis vekili) 100 | sucuk dilim | ~25
-Pastırma | cig | 3 dilim (30 g)=30 | Pastırma (kuru sığır vekili) 100 | pastirma | ~25
-Hellim peyniri | cig | 1 dilim (40 g)=40 | Hellim (CoFID) 100 | halloumi hellim | ~15
-# --- Tarhana, tatlandırıcı ve atıştırmalık ---
+# --- Deli meats and cheese ---
+Sucuk (çiğ) | raw | 5 dilim (50 g)=50 | Sucuk (kuru sosis vekili) 100 | sucuk dilim | ~25
+Pastırma | raw | 3 dilim (30 g)=30 | Pastırma (kuru sığır vekili) 100 | pastirma | ~25
+Hellim peyniri | raw | 1 dilim (40 g)=40 | Hellim (CoFID) 100 | halloumi hellim | ~15
+# --- Tarhana, sweeteners and snacks ---
 Tarhana (kuru) | 0.54 | 4 yemek kaşığı (35 g)=35 | Buğday unu 1000;Yoğurt 500;Domates 500 | kuru tarhana | ~25
-Tahin pekmez | cig | 1 yemek kaşığı (20 g)=20 | Tahin 50;Pekmez (melas vekili) 50 | tahin pekmez | ~15
+Tahin pekmez | raw | 1 yemek kaşığı (20 g)=20 | Tahin 50;Pekmez (melas vekili) 50 | tahin pekmez | ~15
 Nar ekşisi | 0.25 | 1 yemek kaşığı (15 g)=15 | Nar suyu 100 | pomegranate molasses | ~35
-Leblebi (kavrulmuş) | cig | 1 avuç (30 g)=30 | Nohut (çiğ) 100 | kavrulmuş nohut roasted chickpea | ~15
-Protein bar (jenerik, whey ve yulaf) | cig | 1 bar (60 g)=60 | Protein tozu (peynir altı suyu) 36;Fıstık ezmesi 14;Yulaf (çiğ) 20;Bal 14;Bitter çikolata 16 | protein bar protein barı | ~30
-# --- İçecekler ---
-Şalgam suyu | cig | 1 bardak (200 g)=200 | Havuç 30;Şalgam (kök) 20;Su 150 | salgam | ~45
-Boza | cig | 1 bardak (200 g)=200 | Darı (çiğ) 15;Şeker 10;Su 75 | boza | ~30
-Salep | cig | 1 bardak (205 g)=205 | Süt 190;Mısır nişastası 5;Şeker 10 | sahlep sıcak salep | ~25
-Türk kahvesi (sade) | cig | 1 fincan (70 g)=70 | Espresso 70 | turk kahvesi sade | ~45
-Türk kahvesi (az şekerli) | cig | 1 fincan (74 g)=74 | Espresso 70;Şeker 4 | turk kahvesi az şekerli | ~30
-Türk kahvesi (orta şekerli) | cig | 1 fincan (78 g)=78 | Espresso 70;Şeker 8 | turk kahvesi orta şekerli | ~30
-Türk kahvesi (şekerli) | cig | 1 fincan (83 g)=83 | Espresso 70;Şeker 13 | turk kahvesi şekerli | ~30
-Çay (1 kesme şekerli) | cig | 1 çay bardağı (103 g)=103 | Çay (şekersiz) 100;Şeker 3 | seker cay | ~30
-Çay (2 kesme şekerli) | cig | 1 çay bardağı (106 g)=106 | Çay (şekersiz) 100;Şeker 6 | seker cay | ~30
-Çay (3 kesme şekerli) | cig | 1 çay bardağı (109 g)=109 | Çay (şekersiz) 100;Şeker 9 | seker cay | ~30
-# --- Süt ürünleri, şarküteri ve kahvaltılık (ikinci tur) ---
-Çökelek | cig | 3 yemek kaşığı (50 g)=50 | Quark (CIQUAL vekili) 50;Cottage peyniri (CoFID vekili) 50 | lor çökelek süzme peynir | ~35
-Tulum peyniri | cig | 1 dilim (30 g)=30 | Feta (CoFID vekili) 50;Pecorino (CIQUAL vekili) 50 | tulum | ~25
-Pide peyniri | cig | 1 dilim (30 g)=30 | Dil peyniri 50;Kaşar 50 | taze kaşar | ~25
-Kaymak | cig | 1 yemek kaşığı (25 g)=25 | Clotted cream (CoFID vekili) 50;Krema 50 | süt kaymağı | ~30
-Salam (dana, pişmiş) | cig | 3 dilim (30 g)=30 | Salam (dana, pişmiş vekili) 100 | salam | ~25
-# --- Sakatat, sokak lezzeti ve ızgara ---
+Leblebi (kavrulmuş) | raw | 1 avuç (30 g)=30 | Nohut (çiğ) 100 | kavrulmuş nohut roasted chickpea | ~15
+Protein bar (jenerik, whey ve yulaf) | raw | 1 bar (60 g)=60 | Protein tozu (peynir altı suyu) 36;Fıstık ezmesi 14;Yulaf (çiğ) 20;Bal 14;Bitter çikolata 16 | protein bar protein barı | ~30
+# --- Drinks ---
+Şalgam suyu | raw | 1 bardak (200 g)=200 | Havuç 30;Şalgam (kök) 20;Su 150 | salgam | ~45
+Boza | raw | 1 bardak (200 g)=200 | Darı (çiğ) 15;Şeker 10;Su 75 | boza | ~30
+Salep | raw | 1 bardak (205 g)=205 | Süt 190;Mısır nişastası 5;Şeker 10 | sahlep sıcak salep | ~25
+Türk kahvesi (sade) | raw | 1 fincan (70 g)=70 | Espresso 70 | turk kahvesi sade | ~45
+Türk kahvesi (az şekerli) | raw | 1 fincan (74 g)=74 | Espresso 70;Şeker 4 | turk kahvesi az şekerli | ~30
+Türk kahvesi (orta şekerli) | raw | 1 fincan (78 g)=78 | Espresso 70;Şeker 8 | turk kahvesi orta şekerli | ~30
+Türk kahvesi (şekerli) | raw | 1 fincan (83 g)=83 | Espresso 70;Şeker 13 | turk kahvesi şekerli | ~30
+Çay (1 kesme şekerli) | raw | 1 çay bardağı (103 g)=103 | Çay (şekersiz) 100;Şeker 3 | seker cay | ~30
+Çay (2 kesme şekerli) | raw | 1 çay bardağı (106 g)=106 | Çay (şekersiz) 100;Şeker 6 | seker cay | ~30
+Çay (3 kesme şekerli) | raw | 1 çay bardağı (109 g)=109 | Çay (şekersiz) 100;Şeker 9 | seker cay | ~30
+# --- Dairy, deli and breakfast items (second round) ---
+Çökelek | raw | 3 yemek kaşığı (50 g)=50 | Quark (CIQUAL vekili) 50;Cottage peyniri (CoFID vekili) 50 | lor çökelek süzme peynir | ~35
+Tulum peyniri | raw | 1 dilim (30 g)=30 | Feta (CoFID vekili) 50;Pecorino (CIQUAL vekili) 50 | tulum | ~25
+Pide peyniri | raw | 1 dilim (30 g)=30 | Dil peyniri 50;Kaşar 50 | taze kaşar | ~25
+Kaymak | raw | 1 yemek kaşığı (25 g)=25 | Clotted cream (CoFID vekili) 50;Krema 50 | süt kaymağı | ~30
+Salam (dana, pişmiş) | raw | 3 dilim (30 g)=30 | Salam (dana, pişmiş vekili) 100 | salam | ~25
+# --- Offal, street food and grill ---
 Kokoreç | 0.75 | 1 porsiyon (100 g)=100 | İşkembe (CoFID vekili) 40;Kuzu ciğeri (CoFID vekili) 20;Kuzu kıyma (çiğ) 40 | kokorec | ~40
 Tantuni | 0.72 | 1 porsiyon (100 g)=100 | Dana kuşbaşı (çiğ) 100;Domates 10;Ayçiçek yağı 10 | tantuni eti | ~35
-Ciğer şiş (kuzu) | cig | 1 porsiyon (120 g)=120 | Kuzu ciğeri (CoFID vekili) 100;Soğan 20 | ciğer kebabı | ~25
-Midye dolma | cig | 4 adet (100 g)=100;1 adet (25 g)=25;10 adet (250 g)=250 | Midye (haşlanmış) 25;Beyaz pirinç (haşlanmış) 55;Soğan 15;Zeytinyağı 5 | stuffed mussels | ~25
-Etli yaprak sarma | yemek | 5 adet (150 g)=150 | Pirinç (çiğ) 100;Dana kıyma (çiğ) 100;Soğan 80;Domates salçası 15;Zeytinyağı 25;Su 300 | sarma | ~30
-Çiğ börek (kıymalı) | kizart | 1 adet (120 g)=120 | Buğday unu 300;Su 130;Yumurta (çiğ) 50;Dana kıyma (çiğ, %20 yağlı) 150;Soğan 60;Ayçiçek yağı 65 | çibörek | ~30
-# --- Meze ve hamur işi ---
-Şakşuka | yemek | 1 porsiyon (150 g)=150 | Patlıcan 300;Ayçiçek yağı 45;Yeşil biber (çiğ) 80;Domates 250;Sarımsak 6;Zeytinyağı 20 | saksuka | ~30
-Muhammara | cig | 3 yemek kaşığı (60 g)=60 | Ceviz 40;Kırmızı biber (çiğ) 60;Domates salçası 20;Galeta unu 20;Zeytinyağı 20;Nar ekşisi 5 | antep ezmesi | ~30
-Etli ekmek | firin | 1 adet (220 g)=220 | Buğday unu 150;Su 90;Kuzu kıyma (çiğ) 100;Soğan 60;Domates 60;Yeşil biber (çiğ) 30;Tereyağı 10 | konya etli ekmek | ~30
-Kuşbaşılı pide | hamur | 1 adet (260 g)=260 | Buğday unu 400;Su 240;Dana kuşbaşı (çiğ) 200;Soğan 80;Domates 100;Yeşil biber (çiğ) 60;Tereyağı 30 | kuşbaşılı | ~30
-Sucuklu pide | hamur | 1 adet (250 g)=250 | Buğday unu 400;Su 240;Sucuk (kuru sosis vekili) 200;Kaşar 60;Tereyağı 20 | sucuklu kaşarlı pide | ~30
-Sade poğaça | hamur | 1 adet (60 g)=60 | Buğday unu 500;Yoğurt 100;Ayçiçek yağı 100;Yumurta (çiğ) 100;Su 200 | poğaça | ~25
-Patatesli poğaça | hamur | 1 adet (70 g)=70 | Buğday unu 500;Yoğurt 100;Ayçiçek yağı 100;Yumurta (çiğ) 100;Patates (çiğ) 250;Soğan 30;Zeytinyağı 10;Su 150 | poğaça | ~30
-Zeytinli poğaça | hamur | 1 adet (65 g)=65 | Buğday unu 500;Yoğurt 100;Ayçiçek yağı 100;Yumurta (çiğ) 100;Siyah zeytin 150;Su 200 | poğaça | ~30
-Kıymalı poğaça | hamur | 1 adet (75 g)=75 | Buğday unu 500;Yoğurt 100;Ayçiçek yağı 100;Yumurta (çiğ) 100;Dana kıyma (çiğ) 150;Soğan 50;Su 150 | poğaça | ~30
-# --- Çorba, tatlı ve içecek ---
-İşkembe çorbası | corba | 1 kase (250 g)=250 | İşkembe (CoFID vekili) 80;Süt 100;Buğday unu 15;Tereyağı 25;Yumurta sarısı 15;Sarımsak 5;Sirke 10;Su 800 | iskembe | ~40
-Tel kadayıf | tatli | 1 dilim (60 g)=60 | Buğday unu 200;Su 150;Tereyağı 100;Şeker 200;Su 200;Ceviz 100 | cevizli tel kadayıf | ~30
-Güllaç | cig | 1 porsiyon (200 g)=200 | Süt 220;Şeker 25;Mısır nişastası 18;Ceviz 20 | gullac | ~30
-Hoşaf (kuru meyve kompostosu) | cig | 1 su bardağı (200 g)=200 | Kuru kayısı 40;Kuru üzüm 15;Şeker 30;Su 400 | komposto hosaf | ~30
-Limonlu şerbet (içecek) | cig | 1 bardak (200 g)=200 | Şeker 120;Limon suyu 60;Su 800 | serbet | ~25
-Meyve dondurması (sorbe) | cig | 1 top (60 g)=60 | Sorbe (CIQUAL vekili) 100 | sorbe sorbet | ~25
-Kaymaklı dondurma (Maraş tipi) | cig | 1 top (70 g)=70 | Dondurma (CIQUAL vekili) 85;Kaymak 15 | maraş dondurması | ~30
-# --- Üçüncü tur: kuruyemiş ayrımı, sakatat/et, tatlı, içecek ve süt ürünü ---
-Badem (kavrulmuş) | cig | 1 avuç (30 g)=30 | Badem (kavrulmuş, USDA) 100 | kavrulmuş badem roasted almond | ~10
-Fındık (kavrulmuş) | cig | 1 avuç (30 g)=30 | Fındık (kavrulmuş, USDA) 100 | kavrulmuş fındık roasted hazelnut | ~10
-Kaju (kavrulmuş) | cig | 1 avuç (30 g)=30 | Kaju (kavrulmuş, USDA) 100 | kavrulmuş kaju roasted cashew | ~10
-Antep fıstığı (kavrulmuş) | cig | 1 avuç (30 g)=30 | Antep fıstığı (kavrulmuş, USDA) 100 | kavrulmuş fıstık roasted pistachio | ~10
-Yer fıstığı (kavrulmuş, tuzsuz) | cig | 1 avuç (30 g)=30 | Yer fıstığı (kavrulmuş, tuzsuz, USDA) 100 | kavrulmuş yer fıstığı roasted peanut | ~10
-Ay çekirdeği (kavrulmuş, içi) | cig | 1 avuç (30 g)=30 | Ay çekirdeği (kavrulmuş, USDA) 100 | kavrulmuş çekirdek | ~10
-Kabak çekirdeği (kavrulmuş, içi) | cig | 1 avuç (30 g)=30 | Kabak çekirdeği (kavrulmuş, USDA) 100 | kavrulmuş kabak çekirdeği | ~10
-Fındık ezmesi (şekersiz) | cig | 1 yemek kaşığı (16 g)=16 | Fındık (kavrulmuş, USDA) 100 | hazelnut butter saf fındık ezmesi | ~10
-Labne | cig | 2 yemek kaşığı (40 g)=40 | Süzme yoğurt (tam yağlı) 60;Krem peynir 40 | labne peyniri | ~30
-Vişne suyu | cig | 1 bardak (200 g)=200 | Vişne (çiğ) 60;Şeker 20;Su 130 | vişne nektarı | ~35
-3'ü 1 arada kahve | cig | 1 bardak (198 g)=198 | Hazır kahve (toz) 2;Şeker 8;Süt tozu (tam yağlı) 8;Su 180 | hazır kahve paket nescafe 3ü 1 arada | ~25
-Kuzu incik | cig | 1 porsiyon (200 g)=200 | Kuzu incik (pişmiş) 100 | kuzu incik fırın | ~25
-Paça çorbası | corba | 1 kase (250 g)=250 | Kuzu incik (pişmiş) 100;Buğday unu 15;Süt 100;Yumurta sarısı 17;Sarımsak 8;Sirke 10;Tereyağı 15;Su 700 | kelle paça | ~35
+Ciğer şiş (kuzu) | raw | 1 porsiyon (120 g)=120 | Kuzu ciğeri (CoFID vekili) 100;Soğan 20 | ciğer kebabı | ~25
+Midye dolma | raw | 4 adet (100 g)=100;1 adet (25 g)=25;10 adet (250 g)=250 | Midye (haşlanmış) 25;Beyaz pirinç (haşlanmış) 55;Soğan 15;Zeytinyağı 5 | stuffed mussels | ~25
+Etli yaprak sarma | stew | 5 adet (150 g)=150 | Pirinç (çiğ) 100;Dana kıyma (çiğ) 100;Soğan 80;Domates salçası 15;Zeytinyağı 25;Su 300 | sarma | ~30
+Çiğ börek (kıymalı) | fry | 1 adet (120 g)=120 | Buğday unu 300;Su 130;Yumurta (çiğ) 50;Dana kıyma (çiğ, %20 yağlı) 150;Soğan 60;Ayçiçek yağı 65 | çibörek | ~30
+# --- Meze and pastry ---
+Şakşuka | stew | 1 porsiyon (150 g)=150 | Patlıcan 300;Ayçiçek yağı 45;Yeşil biber (çiğ) 80;Domates 250;Sarımsak 6;Zeytinyağı 20 | saksuka | ~30
+Muhammara | raw | 3 yemek kaşığı (60 g)=60 | Ceviz 40;Kırmızı biber (çiğ) 60;Domates salçası 20;Galeta unu 20;Zeytinyağı 20;Nar ekşisi 5 | antep ezmesi | ~30
+Etli ekmek | bake | 1 adet (220 g)=220 | Buğday unu 150;Su 90;Kuzu kıyma (çiğ) 100;Soğan 60;Domates 60;Yeşil biber (çiğ) 30;Tereyağı 10 | konya etli ekmek | ~30
+Kuşbaşılı pide | dough | 1 adet (260 g)=260 | Buğday unu 400;Su 240;Dana kuşbaşı (çiğ) 200;Soğan 80;Domates 100;Yeşil biber (çiğ) 60;Tereyağı 30 | kuşbaşılı | ~30
+Sucuklu pide | dough | 1 adet (250 g)=250 | Buğday unu 400;Su 240;Sucuk (kuru sosis vekili) 200;Kaşar 60;Tereyağı 20 | sucuklu kaşarlı pide | ~30
+Sade poğaça | dough | 1 adet (60 g)=60 | Buğday unu 500;Yoğurt 100;Ayçiçek yağı 100;Yumurta (çiğ) 100;Su 200 | poğaça | ~25
+Patatesli poğaça | dough | 1 adet (70 g)=70 | Buğday unu 500;Yoğurt 100;Ayçiçek yağı 100;Yumurta (çiğ) 100;Patates (çiğ) 250;Soğan 30;Zeytinyağı 10;Su 150 | poğaça | ~30
+Zeytinli poğaça | dough | 1 adet (65 g)=65 | Buğday unu 500;Yoğurt 100;Ayçiçek yağı 100;Yumurta (çiğ) 100;Siyah zeytin 150;Su 200 | poğaça | ~30
+Kıymalı poğaça | dough | 1 adet (75 g)=75 | Buğday unu 500;Yoğurt 100;Ayçiçek yağı 100;Yumurta (çiğ) 100;Dana kıyma (çiğ) 150;Soğan 50;Su 150 | poğaça | ~30
+# --- Soup, dessert and drinks ---
+İşkembe çorbası | soup | 1 kase (250 g)=250 | İşkembe (CoFID vekili) 80;Süt 100;Buğday unu 15;Tereyağı 25;Yumurta sarısı 15;Sarımsak 5;Sirke 10;Su 800 | iskembe | ~40
+Tel kadayıf | dessert | 1 dilim (60 g)=60 | Buğday unu 200;Su 150;Tereyağı 100;Şeker 200;Su 200;Ceviz 100 | cevizli tel kadayıf | ~30
+Güllaç | raw | 1 porsiyon (200 g)=200 | Süt 220;Şeker 25;Mısır nişastası 18;Ceviz 20 | gullac | ~30
+Hoşaf (kuru meyve kompostosu) | raw | 1 su bardağı (200 g)=200 | Kuru kayısı 40;Kuru üzüm 15;Şeker 30;Su 400 | komposto hosaf | ~30
+Limonlu şerbet (içecek) | raw | 1 bardak (200 g)=200 | Şeker 120;Limon suyu 60;Su 800 | serbet | ~25
+Meyve dondurması (sorbe) | raw | 1 top (60 g)=60 | Sorbe (CIQUAL vekili) 100 | sorbe sorbet | ~25
+Kaymaklı dondurma (Maraş tipi) | raw | 1 top (70 g)=70 | Dondurma (CIQUAL vekili) 85;Kaymak 15 | maraş dondurması | ~30
+# --- Third round: nut split, offal/meat, dessert, drink and dairy ---
+Badem (kavrulmuş) | raw | 1 avuç (30 g)=30 | Badem (kavrulmuş, USDA) 100 | kavrulmuş badem roasted almond | ~10
+Fındık (kavrulmuş) | raw | 1 avuç (30 g)=30 | Fındık (kavrulmuş, USDA) 100 | kavrulmuş fındık roasted hazelnut | ~10
+Kaju (kavrulmuş) | raw | 1 avuç (30 g)=30 | Kaju (kavrulmuş, USDA) 100 | kavrulmuş kaju roasted cashew | ~10
+Antep fıstığı (kavrulmuş) | raw | 1 avuç (30 g)=30 | Antep fıstığı (kavrulmuş, USDA) 100 | kavrulmuş fıstık roasted pistachio | ~10
+Yer fıstığı (kavrulmuş, tuzsuz) | raw | 1 avuç (30 g)=30 | Yer fıstığı (kavrulmuş, tuzsuz, USDA) 100 | kavrulmuş yer fıstığı roasted peanut | ~10
+Ay çekirdeği (kavrulmuş, içi) | raw | 1 avuç (30 g)=30 | Ay çekirdeği (kavrulmuş, USDA) 100 | kavrulmuş çekirdek | ~10
+Kabak çekirdeği (kavrulmuş, içi) | raw | 1 avuç (30 g)=30 | Kabak çekirdeği (kavrulmuş, USDA) 100 | kavrulmuş kabak çekirdeği | ~10
+Fındık ezmesi (şekersiz) | raw | 1 yemek kaşığı (16 g)=16 | Fındık (kavrulmuş, USDA) 100 | hazelnut butter saf fındık ezmesi | ~10
+Labne | raw | 2 yemek kaşığı (40 g)=40 | Süzme yoğurt (tam yağlı) 60;Krem peynir 40 | labne peyniri | ~30
+Vişne suyu | raw | 1 bardak (200 g)=200 | Vişne (çiğ) 60;Şeker 20;Su 130 | vişne nektarı | ~35
+3'ü 1 arada kahve | raw | 1 bardak (198 g)=198 | Hazır kahve (toz) 2;Şeker 8;Süt tozu (tam yağlı) 8;Su 180 | hazır kahve paket nescafe 3ü 1 arada | ~25
+Kuzu incik | raw | 1 porsiyon (200 g)=200 | Kuzu incik (pişmiş) 100 | kuzu incik fırın | ~25
+Paça çorbası | soup | 1 kase (250 g)=250 | Kuzu incik (pişmiş) 100;Buğday unu 15;Süt 100;Yumurta sarısı 17;Sarımsak 8;Sirke 10;Tereyağı 15;Su 700 | kelle paça | ~35
 Beyti | 0.8 | 1 porsiyon (250 g)=250 | Kuzu kıyma (çiğ) 150;Pide ekmeği 60;Yoğurt 80;Domates 80;Yeşil biber (çiğ) 20;Tereyağı 15 | beyti sarma | ~30
-Kemalpaşa tatlısı | tatli | 3 adet (180 g)=180 | Buğday unu 100;İrmik 30;Lor 100;Yumurta (çiğ) 50;Şeker 200;Su 400 | kemalpasa | ~30
-Kalburabastı | tatli | 2 adet (80 g)=80 | Buğday unu 200;İrmik 100;Tereyağı 100;Yumurta (çiğ) 50;Ceviz 60;Şeker 250;Su 300 | kalburabasti | ~30
-Şöbiyet | tatli | 1 dilim (80 g)=80 | Yufka benzeri hamur (phyllo) 200;Krema 150;Antep fıstığı 80;Tereyağı 80;Şeker 250;Su 250 | sobiyet | ~30
-Zerde | tatli | 1 kase (150 g)=150 | Pirinç (çiğ) 60;Şeker 200;Mısır nişastası 15;Kuru üzüm 15;Su 800 | zerde tatlısı | ~30
-Tavuk göğsü tatlısı | tatli | 1 kase (150 g)=150 | Tavuk göğsü (fırında) 100;Süt 1000;Şeker 150;Mısır nişastası 40;Pirinç unu 20 | tavuk gogsu | ~30
+Kemalpaşa tatlısı | dessert | 3 adet (180 g)=180 | Buğday unu 100;İrmik 30;Lor 100;Yumurta (çiğ) 50;Şeker 200;Su 400 | kemalpasa | ~30
+Kalburabastı | dessert | 2 adet (80 g)=80 | Buğday unu 200;İrmik 100;Tereyağı 100;Yumurta (çiğ) 50;Ceviz 60;Şeker 250;Su 300 | kalburabasti | ~30
+Şöbiyet | dessert | 1 dilim (80 g)=80 | Yufka benzeri hamur (phyllo) 200;Krema 150;Antep fıstığı 80;Tereyağı 80;Şeker 250;Su 250 | sobiyet | ~30
+Zerde | dessert | 1 kase (150 g)=150 | Pirinç (çiğ) 60;Şeker 200;Mısır nişastası 15;Kuru üzüm 15;Su 800 | zerde tatlısı | ~30
+Tavuk göğsü tatlısı | dessert | 1 kase (150 g)=150 | Tavuk göğsü (fırında) 100;Süt 1000;Şeker 150;Mısır nişastası 40;Pirinç unu 20 | tavuk gogsu | ~30

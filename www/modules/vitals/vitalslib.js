@@ -107,7 +107,7 @@ const VitalsLib=(()=>{
   }
 
   /* ---- Doctor report PDF ---- */
-  const RW=1240,RH=1754,RM=70,ROW=44,FOOT=80,HEAD1=330,CHART=360;
+  const {w:RW,h:RH,m:RM}=ALGO.PAGE,ROW=44,FOOT=80,HEAD1=330,CHART=360;
   /* Table rows: one row per raw reading. A pressure reading of a session shows its measurement number (i). */
   function reportRows(rows,kind,from,to,gu){
     return rows.filter(r=>r.k===kind&&r.day>=from&&r.day<=to).sort(cmpAt).map(r=>{

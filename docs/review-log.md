@@ -139,6 +139,20 @@ Sequential code-quality program. One row per file that was read completely, line
 | capacitor.config.json | 16 | agent 8 | read, no change: CapacitorHttp is needed for the Coach and Open Food Facts requests |
 | .gitignore | 5 | agent 8 | read, no change |
 | .gitattributes | 2 | agent 8 | read, no change |
+| scripts/ok.js, scripts/html.js, scripts/canvas.js, scripts/chrome-lib.js | 4 files | agent 9 | new shared test helpers: `ok`/`finish`, jsdom `boot`/`until`/`flush`/`fakeVault`, a recording fake 2D canvas, Chrome launch helpers; they replaced per-file copies of the same code |
+| scripts/*.test.js (50 files) | about 14,000 | agent 9 | titles, comments and messages in English; shared helpers used; fixed sleeps replaced by `boot`/`until`/`flush`; dead and legacy-absence tests deleted (autosend, foods hash-locks); `app.test.js` lost its MIN_TESTS guard, 3 copied canvas proxies, an implicit global and two weak assertions; `oto.test.js` renamed `autosend.test.js` |
+| scripts/run-tests.js | 28 | agent 9 | rewritten: 4-way parallel run with ordered output (100 s to 24 s), syntax-checks patch-android.js first |
+| scripts/sinir.test.js, scripts/sinir-haritasi.js, docs/sinir-haritasi.md | 3 files | agent 9 | baseline JSON deleted, map regenerated from the sources; names stay Turkish (see Notes) |
+| scripts/clock*.js, bkhelp.js, pdfmaker.js, smoke.sh, smoke-release.sh | 7 files | agent 9 | comments and messages in English; smoke payloads use the `water` act; android.test.js assertions follow the new strings |
+| scripts/MotionMathTest.java, QuickMathTest.java, StepMathTest.java, make-icons.py | 4 files | agent 9 | titles, comments and docstrings in English (Java not compiled here; CI does) |
+| scripts/figpreview.js | 40 | agent 9 | deleted: no reference, its Python consumer does not exist |
+| scripts/exlib-src.txt, build_exlib.py | 2 files | agent 9 | read; Turkish region and level names are data and stay |
+| e2e/*.js (25 files) | 2,227 | agent 9 | all titles and comments in English; `CONSENT` and `medPlugins` moved to fixtures; `a11y.js` now holds the only axe, target-size and scaling helpers; 14 `waitForTimeout` calls replaced by `app.settled()` (called by `app.go`); dead `hcIzinli` step and console.log removed; projects renamed phone-360 / phone-412; 274 tests pass |
+| tools/besin/uret.js, *.tsv, *.txt, cikar.py, harici.py | 20 files | agent 9 | identifiers, messages and comments in English; `--kontrol` became `--check`; method keys renamed (raw, soup, stew, pilaf, bake, fry, dough, dessert); new `asis.tsv` keeps proxy ingredients (quark, feta, clotted cream, tripe) out of the shopping list for Çökelek, Lor peyniri, Tulum peyniri, Kaymak, Kokoreç |
+| tools/usda-karsilastir.py | 56 | agent 9 | deleted: one-off, pointed at a path that no longer exists, its output file was never read |
+| store/uret.js | 60 | agent 9 | English; its seed data still used pre-rename entry types and storage keys (screenshots were empty), now current; fixed waits; unused constant removed; three screenshots regenerated |
+| signing/known-debug-smoke-only.keystore | binary | agent 9 | confirmed: the debug keystore the CI smoke job compares against |
+| README.md | 91 | agent 9 | read; Turkish prose for the owner, no stale references |
 
 ## Notes
 
@@ -169,3 +183,8 @@ Sequential code-quality program. One row per file that was read completely, line
 - Agent 8: `dataBinding true` in the Gradle patch is kept: nothing in this repo uses data binding, but it was added together with the barcode plugin and only a CI build can show whether it can go. `WAKE_LOCK` is not declared by `patch-android.js` on purpose (merged from the local-notifications manifest, documented in `docs/play-izin-beyanlari.md`).
 - Agent 8: `MotionReceiver.onReceive` registers the activity transitions at boot without a try/catch; the Play-services call reports failures through the returned Task, so this was left. PNG resources (splash, launcher icons) are present and referenced by the manifest, theme and adaptive icons; they are binary and were not read line by line.
 - Agent 8: the old `nw_medwake` notification channel is no longer deleted at start (it only exists on the developer's own phone and is harmless clutter). Android restores old settings when a deleted channel is recreated under the same id, which is why the current id stays `nw_medwake2`.
+- Agent 9: Turkish file names stay because commands and docs reference them: `scripts/sinir.test.js`, `scripts/sinir-haritasi.js`, `tools/besin/*`, `store/uret.js` and the Turkish store image names. Renaming is a separate, mechanical task.
+- Agent 9: the foods hash-locks in `foods.test.js` were removed (they froze row order for a cache that no longer exists); the drift test now runs `uret.js --check`.
+- Agent 9: the shopping-list proxy item names are fixed in the generator (`asis.tsv`); `PARCA` of those five dishes is gone, so the dish itself is the shopping item.
+- Agent 9: the A4 page constants (1240 x 1754, margin 70) live once in `Algo.PAGE`; lablib, vitalslib and weeklylib read them.
+- Agent 9: `app.test.js` still has one oddly nested block around lines 323-347 (works; reindenting 1,400 lines was not worth the diff).

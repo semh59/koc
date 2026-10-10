@@ -3,13 +3,13 @@ const {test,expect,state,entry}=require("./fixtures");
 const {readFile}=require("fs/promises");
 
 const PW="Kuzey-Yildiz-2026";
-test("şifreli yedek: al, tüm verileri sil, parolasız ve yanlış parolayla reddedilir, doğru parolayla güvenlik kopyasıyla geri yüklenir",async({app,page})=>{
+test("encrypted backup: create, wipe all data, rejected without or with a wrong password, restored with the right one plus a safety copy",async({app,page})=>{
   test.setTimeout(90000);
   await app.open({seed:state({},{entries:[entry("note",null,"Gizli sağlık notum"),entry("weight",81.5)]}),keys:{groq:"gsk_test"}});
   const toastIs=m=>expect(app.toast).toHaveText(m);
   const bk=async()=>{await app.go("settings-data");await page.click('[data-act="backup"]')};
 
-  // Yedek alma: kısa/uyuşmayan parola reddedilir, geçerli parolayla şifreli dosya iner
+  // Backup: a short or mismatched password is rejected, a valid one downloads an encrypted file
   await bk();
   await page.fill("#bkpw","kisa");await page.fill("#bkpw2","kisa");
   await page.click('[data-go="download"]');
@@ -24,7 +24,7 @@ test("şifreli yedek: al, tüm verileri sil, parolasız ve yanlış parolayla re
   expect(JSON.parse(text).enc).toBe("aes-gcm-pbkdf2");
   expect(text).not.toMatch(/Gizli sağlık|gsk_test|81\.5/);
 
-  // Tüm verileri sil; sonradan yazılan not geri yüklemeden önceki güvenlik kopyasına girmeli
+  // Wipe everything; a note written afterwards must end up in the pre-restore safety copy
   await app.closeSheet();
   await app.go("settings-data");await page.click('[data-act="reset"]');
   await toastIs("Tüm veriler silindi");
@@ -32,7 +32,7 @@ test("şifreli yedek: al, tüm verileri sil, parolasız ve yanlış parolayla re
   expect(await page.evaluate("getKeys().groq")).toBeUndefined();
   await page.evaluate("add('note',null,'Sonradan yazılan',dayKey());save()");
 
-  // Parolasız, yanlış parolalı ve düz metin geri yükleme verilere dokunmaz
+  // Restoring with no password, a wrong password or plain text leaves the data untouched
   await bk();
   await page.fill("#bk",text);
   await page.click('[data-go="restore"]');
@@ -44,9 +44,9 @@ test("şifreli yedek: al, tüm verileri sil, parolasız ve yanlış parolayla re
   await page.click('[data-go="restore"]');
   await toastIs("Yalnız parolalı yedek geri yüklenir");
   expect((await app.state()).entries.map(e=>e.text)).toEqual(["Sonradan yazılan"]);
-  expect(app.dialogs.length).toBe(1); // yalnız sıfırlama onayı
+  expect(app.dialogs.length).toBe(1); // only the reset confirmation
 
-  // Onay penceresinde vazgeçilirse değişmez; doğru parola ve onayla geri yüklenir
+  // Declining the confirmation changes nothing; the right password plus confirmation restores
   await page.fill("#bk",text);
   app.onDialog=d=>d.dismiss();
   await page.click('[data-go="restore"]');

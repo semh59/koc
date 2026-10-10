@@ -1,4 +1,4 @@
-/* Testler için elle yazılmış, metin içeren küçük PDF üretir (Helvetica, WinAnsi). */
+/* Builds a tiny hand-written text PDF for tests (Helvetica, WinAnsi). */
 function textPdf(lines){
   const esc=s=>s.replace(/[\\()]/g,"\\$&").replace(/ö/g,"\\366").replace(/Ö/g,"\\326").replace(/ü/g,"\\374").replace(/ç/g,"\\347");
   let y=780,ops="BT /F1 10 Tf\n";

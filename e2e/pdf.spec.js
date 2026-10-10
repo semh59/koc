@@ -1,9 +1,9 @@
 "use strict";
-/* pdf.js (www/vendor/pdfjs) gerçek Chromium'da ve web worker ile çalışır: tahlil PDF'i okunur, dışa aktarma raporu yeniden açılır. */
+/* pdf.js (www/vendor/pdfjs) runs in real Chromium with a web worker: a lab PDF is read, and an exported report reopens. */
 const {test,expect}=require("./fixtures");
 const {textPdf}=require("../scripts/pdfmaker.js");
 
-test("tahlil PDF'i tarayıcıda pdf.js ve worker ile okunur, satırlar ve tarih çıkar",async({app,page})=>{
+test("a lab PDF is read in the browser by pdf.js and its worker; rows and date come out",async({app,page})=>{
   await app.open({});
   const data=Array.from(textPdf([
     [["Numune Alim Tarihi: 12.09.2026",40]],

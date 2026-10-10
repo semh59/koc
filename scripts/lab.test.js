@@ -1,8 +1,8 @@
-const L=require("../www/modules/labs/lablib.js"),fs=require("fs"),path=require("path");let bad=0;
-const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
+const {ok,finish}=require("./ok");
+const L=require("../www/modules/labs/lablib.js"),fs=require("fs"),path=require("path");
 const P=l=>L.parseLine(l);
 
-// Satır biçimleri: [satır, k, v, u, lo, hi]
+// Line formats: [line, key, value, unit, low, high]
 const table=[
   ["Glukoz (Açlık)  98  mg/dL  70 - 100","glukoz",98,"mg/dL",70,100],
   ["Glukoz 5,4 mmol/L 3,9-5,6","glukoz",5.4,"mmol/L",3.9,5.6],
@@ -36,73 +36,67 @@ const table=[
 ];
 for(const [line,k,v,u,lo,hi] of table){
   const r=P(line);
-  ok("satır: "+line,r&&r.k===k&&r.v===v&&r.u===u&&r.lo===lo&&r.hi===hi,r);
+  ok("line: "+line,r&&r.k===k&&r.v===v&&r.u===u&&r.lo===lo&&r.hi===hi,r);
 }
-ok("< niteleyicisi korunur",P("Glukoz < 20 mg/dL 70-100").q==="<");
-ok("bilinmeyen ad birim ve aralıkla kabul edilir, tahmin işareti yok",(r=>r&&!r.guess&&r.n==="Anti-HBs")(P("Anti-HBs 12,5 mIU/mL 0 - 10")));
-ok("bilinmeyen ad birim/aralık eksikse tahmin işaretlenir",P("Akreditasyon No: 123 ISO 15189").guess===true);
-ok("bilinmeyen ad birim ve aralık olmadan reddedilir",P("Kontrol Sayısı 12")===null);
-ok("nitel sonuç: bilinen ad olmayınca atlanır",P("HIV Negatif")===null);
+ok("the < qualifier is kept",P("Glukoz < 20 mg/dL 70-100").q==="<");
+ok("an unknown name with unit and range is accepted without the guess flag",(r=>r&&!r.guess&&r.n==="Anti-HBs")(P("Anti-HBs 12,5 mIU/mL 0 - 10")));
+ok("an unknown name missing unit or range is flagged as a guess",P("Akreditasyon No: 123 ISO 15189").guess===true);
+ok("an unknown name without unit and range is rejected",P("Kontrol Sayısı 12")===null);
+ok("qualitative result: skipped unless the name is known",P("HIV Negatif")===null);
 ok("a qualitative word instead of a value is not a result",P("CRP Negatif")===null&&P("Glukoz Normal")===null);
 ok("alias: \"Serum Demiri\" is iron",(r=>r&&r.k==="demir"&&r.n==="Demir")(P("Serum Demiri 45 ug/dL 50-170")));
 ok("optNum: blank is undefined, text is null, numbers parse",L.optNum("  ")===undefined&&L.optNum(null)===undefined&&L.optNum("abc")===null&&L.optNum("1,5")===1.5);
 ok("fmtN: two decimals at most, decimal comma",L.fmtN(5.4)==="5,4"&&L.fmtN(5.456)==="5,46"&&L.fmtN(6)==="6");
 
-// Hasta ve belge satırları sonuç sayılmaz
+// Patient and document lines are not results
 for(const l of ["Hasta Adı Soyadı: Ali Veli","T.C. Kimlik No: 12345678901","Protokol No 1234567","Doğum Tarihi 12.03.1985","Sayfa 1 / 3","Numune Tarihi: 12.09.2026 08:14","Telefon: 0212 555 44 33","Dr. Ayşe Yılmaz Uzm. 12345","Barkod No 8690526010113","Rapor Onay: 12.09.2026 15:00","Kolesterol düzeyi yüksektir, 3 ay sonra tekrar","Test Adı Sonuç Birim Referans Aralığı","12.09.2026 14:32"])
-  ok("sonuç değil: "+l,P(l)===null,P(l));
+  ok("not a result: "+l,P(l)===null,P(l));
 
-// Sayılar
 const nums=[["1,5",1.5],["1.5",1.5],["1.234,5",1234.5],["1,234.5",1234.5],["250.000",250000],["0,27",0.27],["12",12],["3.2",3.2]];
-for(const [s,v] of nums)ok("sayı "+s,L.toNum(s)===v,L.toNum(s));
-ok("sayı olmayan null",L.toNum("abc")===null&&L.toNum("")===null);
+for(const [s,v] of nums)ok("number "+s,L.toNum(s)===v,L.toNum(s));
+ok("non-numbers give null",L.toNum("abc")===null&&L.toNum("")===null);
 
-// Tarih
 const today="2026-10-01";
-ok("numune tarihi önceliklidir",L.parseDate(["Rapor Tarihi: 14.09.2026","Numune Alım Tarihi: 12.09.2026"],today)==="2026-09-12");
-ok("tarih gg/aa/yyyy ve yyyy-aa-gg",L.parseDate(["Numune: 3/9/2026"],today)==="2026-09-03"&&L.parseDate(["Örnek Tarihi 2026-08-30"],today)==="2026-08-30");
-ok("yalnızca rapor tarihi varsa o kullanılır",L.parseDate(["Rapor Tarihi: 14.09.2026"],today)==="2026-09-14");
-ok("gelecek ve geçersiz tarih reddedilir",L.parseDate(["Numune Tarihi: 12.12.2026"],today)===null&&L.parseDate(["Numune Tarihi: 31.02.2026"],today)===null);
-ok("doğum tarihi tarih sayılmaz",L.parseDate(["Doğum Tarihi 12.03.1985"],today)===null);
+ok("the sample date takes priority",L.parseDate(["Rapor Tarihi: 14.09.2026","Numune Alım Tarihi: 12.09.2026"],today)==="2026-09-12");
+ok("dates in dd/mm/yyyy and yyyy-mm-dd",L.parseDate(["Numune: 3/9/2026"],today)==="2026-09-03"&&L.parseDate(["Örnek Tarihi 2026-08-30"],today)==="2026-08-30");
+ok("with only a report date, it is used",L.parseDate(["Rapor Tarihi: 14.09.2026"],today)==="2026-09-14");
+ok("future and invalid dates are rejected",L.parseDate(["Numune Tarihi: 12.12.2026"],today)===null&&L.parseDate(["Numune Tarihi: 31.02.2026"],today)===null);
+ok("a birth date is not a date",L.parseDate(["Doğum Tarihi 12.03.1985"],today)===null);
 
-// Satır gruplama
 const it=(str,x,y,w)=>({str,x,y,w});
 const g=L.groupLines([it("98",200,700,10),it("Glukoz",50,700.8,30),it("mg/dL",260,700,25),it("70 - 100",330,699.5,40),it("TSH",50,680,15),it("2,1",200,680,12)]);
-ok("satır gruplama: sütunlar ayrılır, yükseklik toleransı",g.length===2&&g[0]==="Glukoz  98  mg/dL  70 - 100"&&g[1]==="TSH  2,1",g);
-ok("gruplanan satır ayrıştırılır",P(g[0]).v===98&&P(g[0]).hi===100);
-ok("bitişik parçalar birleşir",L.groupLines([it("Glu",50,10,10),it("koz",60,10,10)])[0]==="Glukoz");
+ok("line grouping: columns are separated, with a height tolerance",g.length===2&&g[0]==="Glukoz  98  mg/dL  70 - 100"&&g[1]==="TSH  2,1",g);
+ok("a grouped line parses",P(g[0]).v===98&&P(g[0]).hi===100);
+ok("adjacent fragments are joined",L.groupLines([it("Glu",50,10,10),it("koz",60,10,10)])[0]==="Glukoz");
 
-// cleanLabs
 const base={day:"2026-09-12",n:"Glukoz",k:"glukoz",v:98,u:"mg/dL",lo:70,hi:100};
 const cl=L.cleanLabs([base,{...base},{...base,day:"bozuk"},{...base,v:NaN},{...base,n:""},{...base,v:1e9},{...base,v:105,lo:"x"},{day:"2026-09-12",n:"HIV",t:"Negatif"},null,{...base,v:99,q:"="}]);
 ok("cleanLabs: invalid, duplicate and value-less rows are dropped",cl.length===3&&cl.map(x=>x.v).join()==="98,105,99",cl);
 ok("cleanLabs: a broken range is dropped and ids are renumbered",cl[1].lo===undefined&&cl.map(x=>x.id).join()==="1,2,3");
-ok("cleanLabs: dizi olmayan girdi boş döner",L.cleanLabs(null).length===0&&L.cleanLabs("x").length===0);
-ok("cleanLabs: 5000 satırla sınırlı",L.cleanLabs(Array.from({length:6000},(_,i)=>({...base,v:i}))).length===5000);
+ok("cleanLabs: non-array input returns empty",L.cleanLabs(null).length===0&&L.cleanLabs("x").length===0);
+ok("cleanLabs: limited to 5000 rows",L.cleanLabs(Array.from({length:6000},(_,i)=>({...base,v:i}))).length===5000);
 ok("cleanLabs: over the cap the newest rows are kept",(c=>c[0].v===1000&&c[4999].v===5999)(L.cleanLabs(Array.from({length:6000},(_,i)=>({...base,v:i})))));
 
-// flag ve seri
-ok("aralık dışı yalnızca laboratuvar aralığıyla",L.flag({v:60,lo:70,hi:100})==="low"&&L.flag({v:130,lo:70,hi:100})==="high"&&L.flag({v:80,lo:70,hi:100})===null&&L.flag({v:80})===null);
+ok("out of range only against the lab's own range",L.flag({v:60,lo:70,hi:100})==="low"&&L.flag({v:130,lo:70,hi:100})==="high"&&L.flag({v:80,lo:70,hi:100})===null&&L.flag({v:80})===null);
 const ser=L.series(L.cleanLabs([{...base,day:"2026-09-12"},{...base,day:"2026-03-01",v:90},{...base,day:"2026-06-01",v:5.4,u:"mmol/L"}]));
-ok("birim değişirse ayrı seri, tarih sırası",ser.length===2&&ser.find(s=>s.u==="mg/dL").pts.map(p=>p.v).join()==="90,98"&&ser.find(s=>s.u==="mmol/L").pts.length===1,ser);
+ok("a unit change gives a separate series, in date order",ser.length===2&&ser.find(s=>s.u==="mg/dL").pts.map(p=>p.v).join()==="90,98"&&ser.find(s=>s.u==="mmol/L").pts.length===1,ser);
 
-// Sözlük çakışması olmaz
 const seen=new Map();let dup=[];
 for(const d of L.DICT)for(const a of d.a){if(seen.has(a)&&seen.get(a)!==d.k)dup.push(a);seen.set(a,d.k)}
-ok("takma adlar iki teste birden ait değil",dup.length===0,dup);
+ok("aliases do not belong to two tests at once",dup.length===0,dup);
 
-// PDF yaz-oku: elle yazılmış metin PDF'i gerçek pdf.js ile oku
+// PDF round trip: a hand-written text PDF read with the real pdf.js
 const {textPdf}=require("./pdfmaker.js");
-// "Bu ne?" bilgisi: her kalemde dolu, yorumsuz, kısa; yalnız sözlükteki kalemlerde
+// "What is this" info: filled, interpretation-free and short for every dictionary item, absent for others
 const BAN=/yuksek|dusuk|normal|risk|hastalik|tani|tanisi|tanilama|belirti|gosterir ki|tedavi|oneri|yorum/;
 for(const d of L.DICT){
-  ok("bilgi dolu: "+d.k,!!(d.n&&d.c&&d.e),d);
-  ok("bilgi yasak sözcük yok: "+d.k,!BAN.test(L.fold(d.c+" "+d.e)),d.e);
-  ok("bilgi en çok 160 karakter: "+d.k,d.e.length<=160&&d.c.length<=40,d.e.length);
+  ok("info filled: "+d.k,!!(d.n&&d.c&&d.e),d);
+  ok("info has no forbidden word: "+d.k,!BAN.test(L.fold(d.c+" "+d.e)),d.e);
+  ok("info within 160 characters: "+d.k,d.e.length<=160&&d.c.length<=40,d.e.length);
 }
-ok("alias ile içe aktarılan kalemde bilgi var",L.info(L.parseLine("Total Kolesterol 190 mg/dL < 200").k)?.c==="Yağ profili");
-ok("PDF/OCR alias (Açlık kan şekeri) bilgi var",!!L.info(L.parseLine("Açlık Kan Şekeri 98 mg/dL 70-100").k));
-ok("tanınmayan kalemde bilgi yok",L.info(L.parseLine("Bilinmeyen Test 5 mg/dL 1-9").k)===undefined&&L.info(L.keyFor("Bilinmeyen Test"))===undefined);
+ok("an alias-imported item has info",L.info(L.parseLine("Total Kolesterol 190 mg/dL < 200").k)?.c==="Yağ profili");
+ok("PDF/OCR alias (Açlık kan şekeri) has info",!!L.info(L.parseLine("Açlık Kan Şekeri 98 mg/dL 70-100").k));
+ok("an unrecognised item has no info",L.info(L.parseLine("Bilinmeyen Test 5 mg/dL 1-9").k)===undefined&&L.info(L.keyFor("Bilinmeyen Test"))===undefined);
 (async()=>{
   const lib=await import("pdfjs-dist/legacy/build/pdf.mjs");
   const data=textPdf([
@@ -115,47 +109,47 @@ ok("tanınmayan kalemde bilgi yok",L.info(L.parseLine("Bilinmeyen Test 5 mg/dL 1
   ]);
   const ex=await L.extract(lib,data);
   const r=L.parseLines(ex.lines,"2026-10-01");
-  ok("gerçek pdf.js ile satırlar okunur",ex.lines&&ex.lines.length>=9,ex);
-  ok("PDF'ten tarih ve 4 sonuç çıkar",r.date==="2026-09-12"&&r.rows.map(x=>x.k).join()==="glukoz,wbc,hba1c,ldl",r);
-  ok("PDF'ten değer, birim ve aralık doğru",r.rows[0].v===98&&r.rows[0].u==="mg/dL"&&r.rows[0].hi===100&&r.rows[1].v===7.2&&r.rows[3].hi===100,r.rows);
-  ok("hasta bilgileri hiçbir satıra girmez",!JSON.stringify(r.rows).match(/Ali|Veli|12345678901|7654321/));
+  ok("lines are read with the real pdf.js",ex.lines&&ex.lines.length>=9,ex);
+  ok("the date and 4 results come out of the PDF",r.date==="2026-09-12"&&r.rows.map(x=>x.k).join()==="glukoz,wbc,hba1c,ldl",r);
+  ok("value, unit and range from the PDF are correct",r.rows[0].v===98&&r.rows[0].u==="mg/dL"&&r.rows[0].hi===100&&r.rows[1].v===7.2&&r.rows[3].hi===100,r.rows);
+  ok("patient details never enter any row",!JSON.stringify(r.rows).match(/Ali|Veli|12345678901|7654321/));
   const sc=await L.extract(lib,textPdf([[["Sayfa",40]]]));
-  ok("rakamsız (taranmış) PDF anlaşılır işaretlenir",sc.scanned===true);
+  ok("a PDF without digits (scanned) is flagged clearly",sc.scanned===true);
   const bd=await L.extract(lib,new Uint8Array([1,2,3,4]));
-  ok("PDF olmayan dosya hata mesajı verir",!!bd.error);
+  ok("a non-PDF file gives an error message",!!bd.error);
 
-  // Taranmış PDF: metin katmansız sayfalar sahte yerel OCR'a verilir
+  // Scanned PDF: pages without a text layer go to a fake local OCR
   const scan=textPdf([[["Sayfa",40]]]),page=n=>({lines:[{t:"Glukoz",x:10,y:100*n,w:60,h:10},{t:"98",x:100,y:100*n,w:20,h:10},{t:"mg/dL",x:140,y:100*n,w:40,h:10},{t:"70 - 100",x:200,y:100*n,w:50,h:10}]});
   const mk=(o={})=>{const log={rec:0,prog:[]};return {log,ocr:{render:async pg=>"B64",recognize:async()=>{log.rec++;if(o.fail)throw new Error("x");return o.res||page(1)},progress:(i,n)=>log.prog.push(i+"/"+n),cancelled:()=>o.cancel&&o.cancel(log)}}};
   let m=mk(),so=await L.extract(lib,scan.slice(),undefined,m.ocr),sr=L.parseLines(so.lines,"2026-10-01");
-  ok("metin katmansız PDF sayfa görüntüsüyle OCR'a gider ve ayrıştırılır",m.log.rec===1&&sr.rows.length===1&&sr.rows[0].k==="glukoz"&&sr.rows[0].v===98,[m.log,so]);
-  ok("OCR eklentisi yoksa taranmış mesajı kalır",(await L.extract(lib,scan.slice())).scanned===true);
+  ok("a PDF without a text layer goes to OCR as page images and is parsed",m.log.rec===1&&sr.rows.length===1&&sr.rows[0].k==="glukoz"&&sr.rows[0].v===98,[m.log,so]);
+  ok("without the OCR plugin the scanned message stays",(await L.extract(lib,scan.slice())).scanned===true);
   m=mk({cancel:l=>l.rec>=1});so=await L.extract(lib,scan.slice(),undefined,m.ocr);
-  ok("iptal edilince okuma durur",so.cancelled===true&&!so.lines);
+  ok("reading stops when cancelled",so.cancelled===true&&!so.lines);
   m=mk({fail:1});so=await L.extract(lib,scan.slice(),undefined,m.ocr);
-  ok("OCR hatası açık mesaj verir",/okunamadı/.test(so.error||""),so);
+  ok("an OCR failure gives a clear message",/okunamadı/.test(so.error||""),so);
   m=mk({res:{lines:[{t:"Sayfa",x:1,y:1,w:5,h:10}]}});
-  ok("OCR rakam bulamazsa taranmış mesajı kalır",(await L.extract(lib,scan.slice(),undefined,m.ocr)).scanned===true);
-  ok("metin katmanlı PDF'te OCR çağrılmaz",await(async()=>{const k=mk();await L.extract(lib,textPdf([[["Glukoz",40],["98",200],["mg/dL",260],["70 - 100",340]]]),undefined,k.ocr);return k.log.rec===0})());
+  ok("if OCR finds no digits the scanned message stays",(await L.extract(lib,scan.slice(),undefined,m.ocr)).scanned===true);
+  ok("OCR is not called for a PDF with a text layer",await(async()=>{const k=mk();await L.extract(lib,textPdf([[["Glukoz",40],["98",200],["mg/dL",260],["70 - 100",340]]]),undefined,k.ocr);return k.log.rec===0})());
 
-  // Dışa aktarma PDF'i: pdf.js ile tekrar aç
+  // Export PDF: reopened with pdf.js
   const jpg=Buffer.from("/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=","base64");
   const pdf=L.buildPdf([{data:new Uint8Array(jpg),w:1,h:1},{data:new Uint8Array(jpg),w:1,h:1},{data:new Uint8Array(jpg),w:1,h:1}]);
   const doc=await lib.getDocument({data:pdf.slice(),verbosity:0}).promise;
   const pg=await doc.getPage(1),vp=pg.getViewport({scale:1});
-  ok("üretilen PDF 3 sayfa ve A4 boyutunda açılır",doc.numPages===3&&Math.round(vp.width)===595&&Math.round(vp.height)===842,[doc.numPages,vp.width,vp.height]);
-  ok("çok sayfalı taranmış PDF'te yalnız ilk 6 sayfa okunur, sınır bildirilir",await(async()=>{const k=mk(),pg=()=>({data:new Uint8Array(jpg),w:1,h:1}),r=await L.extract(lib,L.buildPdf(Array.from({length:7},pg)),undefined,k.ocr);return k.log.rec===6&&k.log.prog.join()==="1/6,2/6,3/6,4/6,5/6,6/6"&&r.limited&&r.limited.read===6&&r.limited.total===7})());
+  ok("the generated PDF opens with 3 pages at A4 size",doc.numPages===3&&Math.round(vp.width)===595&&Math.round(vp.height)===842,[doc.numPages,vp.width,vp.height]);
+  ok("for a multi-page scanned PDF only the first 6 pages are read and the limit is reported",await(async()=>{const k=mk(),pg=()=>({data:new Uint8Array(jpg),w:1,h:1}),r=await L.extract(lib,L.buildPdf(Array.from({length:7},pg)),undefined,k.ocr);return k.log.rec===6&&k.log.prog.join()==="1/6,2/6,3/6,4/6,5/6,6/6"&&r.limited&&r.limited.read===6&&r.limited.total===7})());
   const s=Buffer.from(pdf).toString("latin1"),sx=+/startxref\n(\d+)/.exec(s)[1];
-  ok("xref konumu doğru (ikili veriyle bile)",s.slice(sx,sx+4)==="xref");
-  ok("kayıtlı nesne konumları doğru",(()=>{const m=s.slice(sx).split("\n").slice(3,3+9);return m.every((l,i)=>s.slice(+l.slice(0,10)).startsWith(`${i+1} 0 obj`))})());
+  ok("the xref offset is correct (even with binary data)",s.slice(sx,sx+4)==="xref");
+  ok("the recorded object offsets are correct",(()=>{const m=s.slice(sx).split("\n").slice(3,3+9);return m.every((l,i)=>s.slice(+l.slice(0,10)).startsWith(`${i+1} 0 obj`))})());
 
-  // vendor kopyası node_modules ile birebir aynı
+  // The vendored pdf.js is byte-identical to the node_modules copy
   const v=fs.readFileSync(path.join(__dirname,"../www/vendor/pdfjs/pdf.min.js")),n=fs.readFileSync(path.join(__dirname,"../node_modules/pdfjs-dist/legacy/build/pdf.min.mjs"));
   const w=fs.readFileSync(path.join(__dirname,"../www/vendor/pdfjs/pdf.worker.min.js")),nw=fs.readFileSync(path.join(__dirname,"../node_modules/pdfjs-dist/legacy/build/pdf.worker.min.mjs"));
-  ok("gömülü pdf.js testte kullanılanla aynı sürüm",v.equals(n)&&w.equals(nw));
-  ok("pdf.js sürümü CVE-2024-4367 düzeltmesinden yeni",(()=>{const [a,b,c]=lib.version.split(".").map(Number);return a>4||(a===4&&(b>2||(b===2&&c>=67)))})(),lib.version);
-// toNum: başı 0 ya da tek noktadan sonra 0 gelen üç haneli ondalıktır, binlik değil; geçersiz takvim günü reddedilir
-for(const [s,v] of [["0.850",0.85],["1.050",1.05],["0.005",0.005],["1.500",1500],["12.034.567",12034567],["250.000",250000]])ok("toNum ondalık/binlik: "+s,L.toNum(s)===v,L.toNum(s));
+  ok("the bundled pdf.js is the same version used in the test",v.equals(n)&&w.equals(nw));
+  ok("the pdf.js version is newer than the CVE-2024-4367 fix",(()=>{const [a,b,c]=lib.version.split(".").map(Number);return a>4||(a===4&&(b>2||(b===2&&c>=67)))})(),lib.version);
+// toNum: a leading 0 or 0 after a single dot makes three digits a decimal, not thousands
+for(const [s,v] of [["0.850",0.85],["1.050",1.05],["0.005",0.005],["1.500",1500],["12.034.567",12034567],["250.000",250000]])ok("toNum decimal/thousands: "+s,L.toNum(s)===v,L.toNum(s));
   ok("a text PDF over the page cap reports the pages left out",await(async()=>{const fake=n=>({getDocument:()=>({promise:Promise.resolve({numPages:n,getPage:async()=>({getTextContent:async()=>({items:[{str:"Glukoz 98 mg/dL",transform:[1,0,0,1,40,700],width:50}]})})}),destroy:async()=>{}})}),r=await L.extract(fake(31),new Uint8Array()),r2=await L.extract(fake(30),new Uint8Array());return r.lines.length===30&&r.limited.read===30&&r.limited.total===31&&!r2.limited})());
-  console.log(bad?"\n"+bad+" HATA":"\nTüm lab testleri geçti");process.exit(bad?1:0);
-})().catch(e=>{console.log("FAIL beklenmeyen hata",e);process.exit(1)});
+  finish();
+})().catch(e=>{console.log("FAIL unexpected error",e);process.exit(1)});

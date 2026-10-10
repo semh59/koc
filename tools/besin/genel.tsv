@@ -1,4 +1,4 @@
-# ad<TAB>USDA SR Legacy anahtarı (virgülle, hepsi açıklamada geçmeli; en kısa açıklama seçilir; #id sabitler)<TAB>porsiyonlar (etiket=gram, ml için "=200ml")<TAB>eş adlar
+# name<TAB>USDA SR Legacy key (comma separated, all must appear in the description; the shortest description wins; #id pins)<TAB>portions (label=grams, "=200ml" for ml)<TAB>aliases
 Soğan	onions, raw	1 orta (110 g)=110;1 yemek kaşığı doğranmış (10 g)=10	onion
 Sarımsak	garlic, raw	1 diş (3 g)=3	garlic
 Patlıcan	eggplant, raw	1 orta (250 g)=250	eggplant aubergine

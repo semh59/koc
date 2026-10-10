@@ -1,5 +1,5 @@
 "use strict";
-/* Başsız Chrome'u CDP ile sürer (ek bağımlılık yok). Chrome yoksa find() null döner, testler atlanır. */
+/* Drives headless Chrome over CDP (no extra dependency). find() returns null without Chrome, and the tests skip. */
 const fs=require("fs"),os=require("os"),path=require("path"),cp=require("child_process");
 function find(){
   const c=[process.env.CHROME_BIN,"C:/Program Files/Google/Chrome/Application/chrome.exe","C:/Program Files (x86)/Google/Chrome/Application/chrome.exe","C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe","/usr/bin/google-chrome","/usr/bin/google-chrome-stable","/usr/bin/chromium","/usr/bin/chromium-browser"];
@@ -12,7 +12,7 @@ async function launch(bin){
   let err="";proc.stderr.on("data",d=>{err+=d});proc.on("exit",c=>{err+=" exit "+c});
   let txt="";
   for(let i=0;i<300&&!/\n./.test(txt);i++){await new Promise(r=>setTimeout(r,100));try{txt=fs.readFileSync(pf,"utf8")}catch(e){}}
-  if(!/\n./.test(txt))throw new Error("Chrome başlamadı: "+bin+" "+err.slice(-600));
+  if(!/\n./.test(txt))throw new Error("Chrome did not start: "+bin+" "+err.slice(-600));
   const [port,pth]=txt.trim().split(/\r?\n/);
   const ws=new WebSocket(`ws://127.0.0.1:${port}${pth}`);
   await new Promise((r,j)=>{ws.onopen=r;ws.onerror=j});
@@ -26,12 +26,18 @@ async function launch(bin){
   return {
     async open(url,w,h){
       await cmd("Emulation.setDeviceMetricsOverride",{width:w,height:h,deviceScaleFactor:1,mobile:true});
-      await cmd("Page.navigate",{url});await new Promise(r=>setTimeout(r,1500));
+      await cmd("Page.navigate",{url:"about:blank"});
+      await cmd("Page.navigate",{url});
+      await this.waitFor("document.documentElement.dataset.boot=='1'");
     },
     async eval(expr){
       const r=await cmd("Runtime.evaluate",{expression:expr,returnByValue:true,awaitPromise:true});
       if(r.exceptionDetails)throw new Error(r.exceptionDetails.exception&&r.exceptionDetails.exception.description||r.exceptionDetails.text);
       return r.result.value;
+    },
+    async waitFor(expr,ms=10000){
+      for(const end=Date.now()+ms;Date.now()<end;await new Promise(r=>setTimeout(r,20)))if(await this.eval("Boolean("+expr+")"))return;
+      throw new Error("waitFor timed out: "+expr);
     },
     async shot(file){fs.writeFileSync(file,Buffer.from((await cmd("Page.captureScreenshot",{format:"png"})).data,"base64"))},
     close(){try{ws.close()}catch(e){}proc.kill();setTimeout(()=>{try{fs.rmSync(dir,{recursive:true,force:true,maxRetries:5})}catch(e){}},500)}

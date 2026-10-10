@@ -1,6 +1,6 @@
 /* Store: fake IndexedDB, shard transaction and revision, retry after a failed write, localStorage fallback. */
+const {ok,finish}=require("./ok");
 globalThis.BroadcastChannel=undefined;
-let bad=0;const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
 const path=require.resolve("../www/kernel/storelib.js");
 function mkLs(init={}){const m=new Map(Object.entries(init));return {getItem:k=>m.has(k)?m.get(k):null,setItem:(k,v)=>{m.set(k,String(v))},removeItem:k=>{m.delete(k)},m}}
 /* Fake IndexedDB: the data (disk) is supplied by the test; every transaction completes in its own tick. */
@@ -59,5 +59,5 @@ async function boot({ls={},disk=new Map(),idb={}}={}){
    ok("IndexedDB that cannot be opened falls back to localStorage mode: reads and writes",b.St.mode==="ls"&&b.St.get("nw_state")==="ls"&&b.St.set("nw_state","new")===true&&b.ls.getItem("nw_state")==="new");}
   {delete require.cache[path];globalThis.localStorage=mkLs({nw_state:"z"});delete globalThis.indexedDB;const St=require(path);const res=St.init();
    ok("without IndexedDB it is synchronous localStorage",res===undefined&&St.mode==="ls"&&St.get("nw_state")==="z"&&St.set("nw_state_previous","q")&&globalThis.localStorage.getItem("nw_state_previous")==="q");}
-  console.log(bad?bad+" failed":"All store tests passed");process.exit(bad?1:0);
+  finish();
 })();

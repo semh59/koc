@@ -1,8 +1,8 @@
 "use strict";
 const {test,expect,state,entry}=require("./fixtures");
 
-test.describe("Anahtarsız yerel menü",()=>{
-  test("anahtar ve izin yok: cihazda menü -> Bugüne ekle -> Alışveriş listesi; ağ isteği yok",async({app,page,fake})=>{
+test.describe("Local menu without a key",()=>{
+  test("no key and no consent: on-device menu -> Add to today -> Shopping list; no network request",async({app,page,fake})=>{
     await app.open({seed:state({kcal:2200})});await app.tab("coach");
     await expect(page.locator('[data-c="menu"]')).toHaveText("Menü oluştur (cihazda)");
     await page.click('[data-c="menu"]');
@@ -26,10 +26,10 @@ test.describe("Anahtarsız yerel menü",()=>{
   });
 });
 
-test.describe("Kilo trendine göre hedef önerisi",()=>{
-  /* 21 gün sabit 80 kg, 14 gün 2200 kcal: hedef 75 kg (haftada ~-0,4) ama kilo düşmüyor. */
-  const seed=(o={})=>state({kcal:2200,goalKg:75,...o},{entries:[...[0,3,6,9,12,15,18,21].map(d=>entry("weight",80,"",{d:-d,time:"07:00"})),...Array.from({length:14},(_,i)=>entry("food",2200,"gün",{d:-(i+1),time:"13:00"}))]});
-  test("öneri kartı çıkar, Şimdi değil 7 gün susturur ve kalıcıdır",async({app,page})=>{
+test.describe("Goal suggestion from the weight trend",()=>{
+  /* 21 days at a steady 80 kg, 14 days at 2200 kcal: goal 75 kg (about -0.4 per week) but weight is not falling. */
+  const seed=(o={})=>state({kcal:2200,goalKg:75,...o},{entries:[...[0,3,6,9,12,15,18,21].map(d=>entry("weight",80,"",{d:-d,time:"07:00"})),...Array.from({length:14},(_,i)=>entry("food",2200,"day",{d:-(i+1),time:"13:00"}))]});
+  test("the suggestion card appears; Not now silences it for 7 days and persists",async({app,page})=>{
     await app.open({seed:seed()});await app.tab("trend");
     const card=page.locator("#view .card").filter({hasText:"Kalori hedefini ayarlayalım mı?"});
     await expect(card).toContainText("2200 kcal yerine 1950 kcal");
@@ -38,14 +38,14 @@ test.describe("Kilo trendine göre hedef önerisi",()=>{
     const st=(await app.state()).settings;expect(st.kcal).toBe(2200);expect(st.goalSugAt).toBe("2026-10-06");
     await page.reload();await app.tab("trend");await expect(card).toHaveCount(0);
   });
-  test("Uygula hedefi değiştirir; onay olmadan değişmez",async({app,page})=>{
+  test("Apply changes the goal; nothing changes without it",async({app,page})=>{
     await app.open({seed:seed()});await app.tab("trend");
     expect((await app.state()).settings.kcal).toBe(2200);
     await page.click('[data-gs="ok"]');
     await expect(app.toast).toContainText("1950");
     const st=(await app.state()).settings;expect(st.kcal).toBe(1950);expect(st.goalSugAt).toBe("2026-10-06");
   });
-  test("yeme düzeni işareti varsa kart yok",async({app,page})=>{
+  test("no card when an eating-disorder signal exists",async({app,page})=>{
     await app.open({seed:seed({healthNote:"yeme bozukluğum var"})});await app.tab("trend");
     await expect(page.locator("#view")).toContainText("Kilo");
     await expect(page.locator('[data-gs]')).toHaveCount(0);
