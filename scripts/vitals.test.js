@@ -33,9 +33,9 @@ ok("i yalnızca 1 ya da 2 olabilir",V.check(T({i:3})).row.i===undefined&&V.check
 
 // seanslar ve ev ortalaması
 const rows=V.clean([
-  T({day:"2026-09-10",time:"07:30",sys:130,dia:84,pulse:70,sid:"s1"}),T({day:"2026-09-10",time:"07:32",sys:134,dia:86,pulse:72,sid:"s1"}),
-  T({day:"2026-09-10",time:"20:00",sys:140,dia:90,session:"evening",sid:"s2"}),T({day:"2026-09-10",time:"20:02",sys:138,dia:88,session:"evening",sid:"s2"}),
-  T({day:"2026-09-09",time:"07:30",sys:120,dia:80,sid:"s3"}),T({day:"2026-09-09",time:"07:32",sys:124,dia:82,sid:"s3"}),
+  T({day:"2026-09-10",time:"07:30",sys:130,dia:84,pulse:70,sid:"s1",i:1}),T({day:"2026-09-10",time:"07:32",sys:134,dia:86,pulse:72,sid:"s1",i:2}),
+  T({day:"2026-09-10",time:"20:00",sys:140,dia:90,session:"evening",sid:"s2",i:1}),T({day:"2026-09-10",time:"20:02",sys:138,dia:88,session:"evening",sid:"s2",i:2}),
+  T({day:"2026-09-09",time:"07:30",sys:120,dia:80,sid:"s3",i:1}),T({day:"2026-09-09",time:"07:32",sys:124,dia:82,sid:"s3",i:2}),
   T({day:"2026-09-08",time:"08:00",sys:110,dia:70}),
   T({day:"2026-09-01",time:"08:00",sys:170,dia:100}),
   G({})
@@ -51,6 +51,10 @@ ok("ev ortalaması: 3 günden az günde yetersiz",V.homeAvg(rows,"2026-09-09",7)
 ok("ev ortalaması: pencere sınırı (tam 7 gün)",V.homeAvg(rows,"2026-09-08",7).all.n===1&&V.homeAvg(rows,"2026-09-07",7).all.n===1&&V.homeAvg(rows,"2026-09-07",7).all.sys===170&&V.homeAvg(rows,"2026-08-20",7).all===null);
 ok("ev ortalaması: veri yoksa null, çökmez",V.homeAvg([],"2026-09-10",7).all===null&&V.homeAvg([],"2026-09-10",7).days===0);
 
+ok("check: error codes for a bad kind, a bad date and a glucose out of range",V.check(null).err==="kind"&&V.check(T({day:"x"})).err==="date"&&V.check(G({g:10})).err==="glucose"&&/^Sistolik 50-300, diyastolik 30-200/.test(V.check(T({sys:5})).err)&&/^Nabız 25-250/.test(V.check(T({pulse:5})).err));
+ok("latest and cmpAt: newest by day, time, then id; empty list gives undefined",(r=>V.latest(r).id===4&&V.latest([])===undefined&&r.slice().reverse().sort(V.cmpAt).map(x=>x.id).join()==="1,2,3,4")([{id:1,day:"2026-09-09",time:"23:00"},{id:2,day:"2026-09-10",time:"08:00"},{id:3,day:"2026-09-10",time:"09:00"},{id:4,day:"2026-09-10",time:"09:00"}]));
+ok("reportRows: a sid row without i is not numbered",(r=>r[0].c==="Sabah")(V.reportRows([T({id:1,sid:"q"})],"t","2026-09-01","2026-09-30")));
+ok("newSid always passes the sid check",Array.from({length:200},()=>V.newSid()).every(s=>V.check(T({sid:s})).row.sid===s));
 // yorum yok: eşik, işaret ve ön ayar API'si kaldırıldı
 ok("eşik/işaret/ön ayar işlevleri yok",["flagBp","flagG","rangeG","bpBand","BP_PRESET","G_PRESET"].every(k=>!(k in V)));
 

@@ -10,7 +10,7 @@ const S={entries:[{id:2,day:"2026-10-02",time:"09:00",type:"weight",v:80.5,text:
   workouts:[{id:1,day:"2026-10-01",t0:5,t1:9,name:"A",ex:[{id:"squat",sets:[{kg:20,reps:10,done:true,w:true},{kg:60,reps:8,done:true,rpe:8.5},{kg:60,reps:8,done:false}]},{id:"plank",sets:[{kg:null,reps:null,sec:45,done:true}]}]}],
   vitals:[{k:"t",day:"2026-10-01",time:"08:00",sys:120,dia:80,pulse:70,session:"morning"},{k:"s",day:"2026-10-01",time:"07:00",g:95.5,ctx:"fasting",note:"-düşük"}],
   sleep:[{day:"2026-10-01",min:450,q:4}],mood:[{day:"2026-10-01",v:4}],fast:{plan:16,t0:null,log:[{t0:new Date(2026,9,1,20,0).getTime(),t1:new Date(2026,9,2,12,30).getTime()}]},
-  meds:[{id:1,n:"Vitamin D",d:"1000 IU",t:["09:00"]}],medLog:[{m:1,day:"2026-10-01",slot:"09:00",st:"t",at:"09:10"},{m:1,day:"2026-10-02",slot:"09:00",st:"s"}]};
+  meds:[{id:1,n:"Vitamin D",d:"1000 IU",t:["09:00"]}],medLog:[{m:1,day:"2026-10-01",slot:"09:00",st:"t",at:"09:10"},{m:1,day:"2026-10-02",slot:"09:00",st:"s"}],measures:[]};
 const F=C.files(S,{exName:id=>({squat:"Squat",plank:"Plank"}[id]),vctx:r=>r.k==="t"?"Sabah":"Açlık"});
 const g=k=>F.find(f=>f.key===k).build().split("\r\n").slice(0,-1);
 ok("9 ayrı dosya: kayıtlar, antrenman, sağlık, tarifler, uyku, ruh hali, oruç, ilaç, nabız; satır sayıları",F.map(f=>f.key+f.n).join()==="kayitlar4,antrenman3,saglik2,tarifler0,uyku1,ruh1,oruc1,ilac2,nabiz0",F.map(f=>f.key+f.n));
@@ -20,10 +20,10 @@ ok("sağlık: tansiyon ve şeker, bağlam, '-' ile başlayan not korunur",g("sag
 ok("uyku saat ondalık virgülle; ruh hali; oruç ISO yerel saat ve süre; ilaç adı, doz, durum",g("uyku")[1]==="2026-10-01;450;7,5;4"&&g("ruh")[1]==="2026-10-01;4;"&&g("oruc")[1]==="2026-10-01T20:00;2026-10-02T12:30;16,5"&&g("ilac").slice(1).join("|")==="2026-10-01;09:00;Vitamin D;1000 IU;alındı;09:10|2026-10-02;09:00;Vitamin D;1000 IU;atlandı;");
 {const t=C.files(Object.assign({},S,{recipes:[{n:"Köfte",s:4,items:[{n:"Kıyma",g:250,k:239,p:26},{n:"Bulgur",g:50.5,k:342}]}]}),{exName:x=>x,vctx:()=>""}).find(f=>f.key==="tarifler").build().split("\r\n");
 ok("tarifler: malzeme başına satır, ondalık virgül, olmayan değer boş",t.length===4&&t[1]==="Köfte;4;Kıyma;250;239;26;;;;;"&&t[2]==="Köfte;4;Bulgur;50,5;342;;;;;;",t);}
-ok("boş veri: satır sayısı 0, yalnız başlık",C.files({entries:[],workouts:[],vitals:[],sleep:[],mood:[],fast:{log:[]},meds:[],medLog:[]},{}).every(f=>f.n===0&&f.build().split("\r\n").length===2));
+ok("boş veri: satır sayısı 0, yalnız başlık",C.files({entries:[],workouts:[],vitals:[],sleep:[],mood:[],fast:{log:[]},meds:[],medLog:[],measures:[]},{}).every(f=>f.n===0&&f.build().split("\r\n").length===2));
 {const W=[{id:1,day:"2026-10-01",t0:5,t1:9,name:"A",ex:[{id:"a",ss:2,sets:[{kg:40,reps:12,done:true,t:"d"},{kg:40,reps:5,done:true,t:"f"}]},{id:"b",ss:2,sets:[{kg:10,reps:5,done:true}]}]}];
-const g2=C.files({entries:[],workouts:W,vitals:[],sleep:[],mood:[],fast:{log:[]},meds:[],medLog:[]},{exName:x=>x.toUpperCase()}).find(f=>f.key==="antrenman").build().split("\r\n").slice(1,-1);
+const g2=C.files({entries:[],workouts:W,vitals:[],sleep:[],mood:[],fast:{log:[]},meds:[],medLog:[],measures:[]},{exName:x=>x.toUpperCase()}).find(f=>f.key==="antrenman").build().split("\r\n").slice(1,-1);
 ok("antrenman CSV: set türü (drop, başarısızlık) ve süperset grup numarası",g2.join("|")==="2026-10-01;A;A;1;40;12;;;;drop;2|2026-10-01;A;A;2;40;5;;;;başarısızlık;2|2026-10-01;A;B;1;10;5;;;;;2",g2);}
-{const f=C.files({entries:[],workouts:[],vitals:[],sleep:[],mood:[],fast:{log:[]},meds:[],medLog:[],measures:[{day:"2026-10-01",k:"waist",v:80},{day:"2026-10-01",k:"neck",v:40}]},{}).find(x=>x.key==="kayitlar").build();
-ok("bilinmeyen ölçü anahtarı 'ölçü_undefined' üretmez, bilinen yazılır",!f.includes("undefined")&&f.includes("ölçü_bel"),f);}
+{const f=C.files({entries:[],workouts:[],vitals:[],sleep:[],mood:[],fast:{log:[]},meds:[],medLog:[],measures:[{day:"2026-10-01",k:"waist",v:80},{day:"2026-10-01",k:"chest",v:100}]},{}).find(x=>x.key==="kayitlar").build();
+ok("measure rows carry the lowercase Turkish region name",f.includes("ölçü_bel")&&f.includes("ölçü_göğüs")&&!f.includes("undefined"),f);}
 process.exit(bad?1:0);

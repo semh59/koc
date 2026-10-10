@@ -1,12 +1,12 @@
 "use strict";
-/* Tahlil PDF'inden satır çıkarma, sonuç ayrıştırma, doğrulama ve PDF üretimi (DOM yok).
-   Tıbbi yorum yapmaz; yalnızca yazılı değerleri ve laboratuvarın kendi referans aralığını taşır. */
+/* Lab result import (PDF text and OCR lines), parsing, validation and PDF report (no DOM).
+   It makes no medical comment: it only carries the written values and the lab's own reference range. */
 const LabLib=(()=>{
   const MAP={"İ":"i","I":"i","ı":"i","Ç":"c","ç":"c","Ğ":"g","ğ":"g","Ö":"o","ö":"o","Ş":"s","ş":"s","Ü":"u","ü":"u","µ":"u","μ":"u"};
-  /* Harf harfe eşler: uzunluk değişmez, böylece katlanmış metindeki konum özgün metinde de geçerlidir. */
+  /* Maps character by character: the length never changes, so a position in the folded text is valid in the original text too. */
   const fold=s=>Array.from(String(s)).map(c=>MAP[c]||c.toLowerCase()).join("");
 
-  /* [anahtar, görünen ad, takma adlar (katlanmış), kategori, ne olduğu (yalnız tanım; yorum yok)] */
+  /* [key, display name, aliases (folded below), category, what it is (a definition only, no comment)] */
   const DICT=[
     ["glukoz","Glukoz",["glukoz (aclik)","glukoz","glikoz","glucose","aclik kan sekeri","kan sekeri","aks","aclik glukoz","fasting glucose"],"Şeker","Kandaki şeker (glukoz) miktarının ölçümü."],
     ["hba1c","HbA1c",["hemoglobin a1c","hemoglobin a1c (hba1c)","hba1c","hb a1c","a1c","glikozile hemoglobin","glikolize hemoglobin","glycated hemoglobin","glycohemoglobin"],"Şeker","Kırmızı kan hücrelerine bağlanmış şeker (glukoz) oranının ölçümü."],
@@ -17,13 +17,13 @@ const LabLib=(()=>{
     ["vldl","VLDL kolesterol",["vldl kolesterol","vldl-kolesterol","vldl"],"Yağ profili","Kandaki yağ (lipit) taşıyan VLDL parçacıklarındaki kolesterolün ölçümü."],
     ["trigliserid","Trigliserid",["trigliserid","trigliserit","trigliseridler","triglycerides","triglyceride","tg"],"Yağ profili","Kanda dolaşan bir yağ (lipit) türü olan trigliserit miktarının ölçümü."],
     ["tsh","TSH",["tsh","tiroid uyarici hormon","thyroid stimulating hormone"],"Tiroit","Tiroit uyarıcı hormonun ölçümü."],
-    ["ft4","Serbest T4",["serbest t4","sT4","ft4","free t4","t4 serbest","t4 (serbest)"].map(fold),"Tiroit","Kanda serbest dolaşan tiroit hormonu T4'ün ölçümü."],
+    ["ft4","Serbest T4",["serbest t4","st4","ft4","free t4","t4 serbest","t4 (serbest)"],"Tiroit","Kanda serbest dolaşan tiroit hormonu T4'ün ölçümü."],
     ["ft3","Serbest T3",["serbest t3","ft3","free t3","t3 serbest","t3 (serbest)"],"Tiroit","Kanda serbest dolaşan tiroit hormonu T3'ün ölçümü."],
     ["b12","Vitamin B12",["vitamin b12","vitamin b-12","vit b12","vit. b12","b12 vitamini","b12","cobalamin"],"Vitamin ve mineral","Kandaki B12 vitamininin (kobalamin) ölçümü."],
     ["d3","D vitamini (25-OH)",["25-oh vitamin d","25 oh vitamin d","25(oh) vitamin d","25-hidroksi vitamin d","25-oh d vitamini","25 hidroksi vitamin d","vitamin d total","vitamin d3","vitamin d","d vitamini","d vit"],"Vitamin ve mineral","Kandaki D vitamininin dolaşımdaki biçiminin (25-OH) ölçümü."],
     ["folat","Folat",["folik asit","folat","folate"],"Vitamin ve mineral","Kandaki folat (B9 vitamini, folik asit) miktarının ölçümü."],
     ["ferritin","Ferritin",["ferritin"],"Demir","Vücudun depoladığı demirle ilişkili ferritin proteininin ölçümü."],
-    ["demir","Demir",["serum demiri","demir (serum)","demir","iron"],"Demir","Kandaki demir miktarının ölçümü."],
+    ["demir","Demir",["demiri","demir (serum)","demir","iron"],"Demir","Kandaki demir miktarının ölçümü."],
     ["tdbk","Demir bağlama kapasitesi",["total demir baglama kapasitesi","demir baglama kapasitesi","demir baglama","tdbk","tibc","dbk"],"Demir","Kandaki proteinlerin bağlayabildiği toplam demir miktarının ölçümü."],
     ["hgb","Hemoglobin",["hemoglobin","hgb","hb"],"Tam kan sayımı","Kırmızı kan hücrelerindeki oksijen taşıyan hemoglobin proteininin ölçümü."],
     ["hct","Hematokrit",["hematokrit","hct"],"Tam kan sayımı","Kan hacminin kırmızı hücrelerin oluşturduğu yüzdesinin ölçümü."],
@@ -57,13 +57,18 @@ const LabLib=(()=>{
   const info=k=>DICT.find(d=>d.k===k);
   const isL=c=>/[a-z0-9]/.test(c||"");
 
-  /* Hasta ve belge bilgisi satırları: sonuç sayılmaz, hiçbir zaman saklanmaz. */
+  /* Patient and document lines: never a result, never stored. */
   const SKIP=/(^|[^a-z])(tc|t\.c|kimlik|protokol|dogum|hasta|adi|soyad|telefon|tel|gsm|adres|barkod|sayfa|page|doktor|dr|uzm|prof|dop|yas|cinsiyet|kurum|hastane|laboratuvar|laboratuar|numune|ornek|rapor|onay|tarih|sigorta|sgk|talep|istem|e-posta|mail|web|www|fax|faks|imza)([^a-z]|$)/;
   const FLAGS=new Set(["h","l","*","h*","l*","yuksek","dusuk","high","low","(h)","(l)","↑","↓","h↑","l↓","h/","l/"]);
 
-  const UNIT=/^(?:[a-zA-Zµμ%°\/^·x×*][a-zA-Z0-9µμ%°\/^·×*³⁹¹²\-\.]*|10[\^*]?[0-9³⁶⁹]\/[a-zA-Zµμ]+|x10[\^*]?[0-9³⁶⁹]\/[a-zA-Zµμ]+)$/;
+  const UNIT=/^(?:[a-zA-Zµμ%°\/^·×*][a-zA-Z0-9µμ%°\/^·×*³⁹¹²\-\.]*|10[\^*]?[0-9³⁶⁹]\/[a-zA-Zµμ]+)$/;
   const isNumTok=t=>/^[<>]?=?\d[\d.,]*$/.test(t);
+  const CMP=/^[<>]=?$/,HAS_LETTER=/[A-Za-zÇĞİÖŞÜçğıöşü]/,HAS_WORD=/[A-Za-zÇĞİÖŞÜçğıöşü]{2}/,TAIL_TOK=/^\(?[A-Za-zÇĞİÖŞÜçğıöşü0-9.\-]{1,10}\)?:?$/;
+  const slug=n=>fold(n).replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"").slice(0,30)||"x";
+  const VALUE_MAX=1e7,LINE_MAX=200,PDF_PAGES_MAX=30,OCR_PAGES=6,LABS_MAX=5000;
+  const ROW_TOL=2.5,COLUMN_GAP=6,WORD_GAP=0.4;
 
+  /* Reads one number written in Turkish or English style ("1.234,5", "1,234.5", "0,27"); null when the text is not exactly a number. */
   function toNum(s){
     s=String(s).trim();
     if(!/^\d[\d.,]*$/.test(s))return null;
@@ -76,12 +81,15 @@ const LabLib=(()=>{
     const n=Number(v);return Number.isFinite(n)?n:null;
   }
 
-  /* pdf.js metin parçalarını (str,x,y,w) satırlara çevirir: aynı yükseklikteki parçalar soldan sağa dizilir, geniş boşluklar sütun ayracı olur. */
+  /* Blank text means "not entered" (undefined); anything else must be a number (toNum, null when it is not). */
+  const optNum=s=>{const t=String(s==null?"":s).trim();return t===""?undefined:toNum(t)};
+
+  /* Turns pdf.js text pieces (str,x,y,w) into lines: pieces at the same height are ordered left to right, wide gaps become column separators. */
   function groupLines(items){
-    const its=items.filter(i=>i&&typeof i.str==="string"&&i.str.trim()!=="").slice().sort((a,b)=>b.y-a.y||a.x-b.x);
+    const its=items.filter(i=>i&&typeof i.str==="string"&&i.str.trim()!=="").sort((a,b)=>b.y-a.y||a.x-b.x);
     const rows=[];
     for(const it of its){
-      const r=rows.find(r=>Math.abs(r.y-it.y)<=2.5);
+      const r=rows.find(r=>Math.abs(r.y-it.y)<=ROW_TOL);
       if(r)r.items.push(it);else rows.push({y:it.y,items:[it]});
     }
     rows.sort((a,b)=>b.y-a.y);
@@ -89,24 +97,24 @@ const LabLib=(()=>{
       r.items.sort((a,b)=>a.x-b.x);
       let s="",end=null;
       for(const it of r.items){
-        if(end!==null){const gap=it.x-end;s+=gap>6?"  ":gap>0.4?" ":""}
+        if(end!==null){const gap=it.x-end;s+=gap>COLUMN_GAP?"  ":gap>WORD_GAP?" ":""}
         s+=it.str.trim();end=it.x+(it.w||0);
       }
       return s.replace(/[ \t]+$/,"");
     }).filter(Boolean);
   }
 
-  /* Gevşek tarih okuma: gg.aa.yyyy, gg/aa/yyyy, gg-aa-yyyy, yyyy-aa-gg. */
+  /* Loose date reading: dd.mm.yyyy, dd/mm/yyyy, dd-mm-yyyy, yyyy-mm-dd. */
   function dateIn(s){
-    let m=s.match(/(\d{1,2})[./-](\d{1,2})[./-](20\d{2}|19\d{2})/),y,mo,d;
+    let m=s.match(/(\d{1,2})[./-](\d{1,2})[./-]((?:19|20)\d{2})/),y,mo,d;
     if(m){d=+m[1];mo=+m[2];y=+m[3]}
-    else if((m=s.match(/(20\d{2}|19\d{2})-(\d{1,2})-(\d{1,2})/))){y=+m[1];mo=+m[2];d=+m[3]}
+    else if((m=s.match(/((?:19|20)\d{2})-(\d{1,2})-(\d{1,2})/))){y=+m[1];mo=+m[2];d=+m[3]}
     else return null;
     const dt=new Date(y,mo-1,d);
     if(dt.getFullYear()!==y||dt.getMonth()!==mo-1||dt.getDate()!==d||y<1990)return null;
     return `${y}-${String(mo).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
   }
-  /* Numune tarihi önceliklidir, sonra kabul/rapor/onay. Gelecekteki tarih kabul edilmez. */
+  /* The sample date comes first, then the admission / report / approval date. A future date is not accepted. */
   function parseDate(lines,todayKey){
     const tiers=[/numune|ornek|alim|toplama|kan\s*alma/,/kabul/,/rapor|onay|sonuc|tarih/];
     for(const re of tiers)for(const l of lines){
@@ -116,7 +124,7 @@ const LabLib=(()=>{
     return null;
   }
 
-  /* Referans aralığı: "70 - 100", "0,27-4,2", "< 200", "> 40", "Min: 3 Max: 5". */
+  /* Reference range: "70 - 100", "0,27-4,2", "< 200", "> 40". */
   function parseRange(rest){
     let m=rest.match(/(\d[\d.,]*)\s*[-–—]\s*(\d[\d.,]*)/);
     if(m){const lo=toNum(m[1]),hi=toNum(m[2]);if(lo!=null&&hi!=null&&lo<=hi)return {lo,hi}}
@@ -125,66 +133,60 @@ const LabLib=(()=>{
     return {};
   }
 
+  /* The test at the start of a line (after leading blanks and a sample prefix such as "Serum"): {d: dictionary entry, end: its end offset in `line`}. */
   function findAlias(line){
-    let f=fold(line).replace(/^\s+/,"");
-    const off=line.length-line.replace(/^\s+/,"").length;
-    f=f.replace(/^(serum|plazma|plasma|tam kan)\s+/,m=>{return " ".repeat(m.length)});
+    const lead=line.length-line.trimStart().length,f0=fold(line).slice(lead);
+    const skip=f0.match(/^(serum|plazma|plasma|tam kan)\s+/)?.[0].length||0,f=f0.slice(skip);
     for(const {a,d} of ALIASES){
-      if(!f.trimStart().startsWith(a))continue;
-      const st=f.length-f.trimStart().length,end=st+a.length;
-      if(isL(f[end]))continue;
-      return {d,end:end+off};
+      if(!f.startsWith(a)||isL(f[a.length]))continue;
+      return {d,end:lead+skip+a.length};
     }
     return null;
   }
 
-  /* Tek satırı sonuca çevirir; sonuç değilse null. */
+  /* Turns one line into a result; null when it is not a result. */
   function parseLine(line){
     const raw=String(line).replace(/\t/g," ").trim();
-    if(raw.length<3||raw.length>200)return null;
+    if(raw.length<3||raw.length>LINE_MAX)return null;
     if(SKIP.test(fold(raw)))return null;
-    if(!/[A-Za-zÇĞİÖŞÜçğıöşü]/.test(raw))return null;
+    if(!HAS_LETTER.test(raw))return null;
     const hit=findAlias(raw);
-    let name,key=null,rest,toks,nTail=0;
+    let name,key=null,toks,nTail=0;
     if(hit){
-      key=hit.d.k;name=hit.d.n;rest=raw.slice(hit.end).trim();
-      // addan sonra değerden önce "(Açlık)" gibi en çok 3 sözcük atlanır
-      toks=rest.split(/\s+/);
-      let i=0;while(i<toks.length&&i<3&&!isNumTok(toks[i])&&!/^[<>]=?$/.test(toks[i]))i++;
-      const tail=toks.slice(0,i).every(t=>/^\(?[A-Za-zÇĞİÖŞÜçğıöşü0-9.\-]{1,10}\)?:?$/.test(t))&&i<=2;
-      if(i>=toks.length||i>=3||!tail){
-        const t=toks.join(" ").replace(/\s+/g," ");
-        const ql=/^(negatif|pozitif|normal|saptanmadi|saptandi|izlenmedi|gorulmedi|reaktif|non-?reaktif|reaktif degil)\b/.exec(fold(t));
-        return ql?{k:key,n:name,t:ql[0][0].toUpperCase()+ql[0].slice(1)}:null;
-      }
+      key=hit.d.k;name=hit.d.n;
+      // up to 2 words such as "(Açlık)" between the name and the value are skipped
+      toks=raw.slice(hit.end).trim().split(/\s+/);
+      let i=0;while(i<toks.length&&i<3&&!isNumTok(toks[i])&&!CMP.test(toks[i]))i++;
+      const tail=i<=2&&toks.slice(0,i).every(t=>TAIL_TOK.test(t));
+      if(i>=toks.length||!tail)return null;
       toks=toks.slice(i);nTail=i;
     }else{
       const all=raw.split(/\s+/);
-      let i=1;while(i<all.length&&!(isNumTok(all[i])||(/^[<>]=?$/.test(all[i])&&isNumTok(all[i+1]||""))))i++;
+      let i=1;while(i<all.length&&!(isNumTok(all[i])||(CMP.test(all[i])&&isNumTok(all[i+1]||""))))i++;
       if(i>=all.length||i>6)return null;
       name=all.slice(0,i).join(" ").replace(/[:\-–]+$/,"").trim();
-      if(name.length<2||name.length>50||!/[A-Za-zÇĞİÖŞÜçğıöşü]{2}/.test(name)||/^\d/.test(name))return null;
+      if(name.length<2||name.length>50||!HAS_WORD.test(name)||/^\d/.test(name))return null;
       toks=all.slice(i);
     }
     let q="";
-    if(/^[<>]=?$/.test(toks[0])){q=toks[0][0];toks=toks.slice(1)}
+    if(CMP.test(toks[0])){q=toks[0][0];toks=toks.slice(1)}
     let first=toks[0]||"";
     if(/^[<>]=?\d/.test(first)){q=first[0];first=first.replace(/^[<>]=?/,"")}
     const v=toNum(first);
-    if(v==null||Math.abs(v)>1e7)return null;
+    if(v==null||v>VALUE_MAX)return null;
     let r=toks.slice(1);
     while(r.length&&FLAGS.has(fold(r[0])))r=r.slice(1);
     let u="";
     if(r.length&&!isNumTok(r[0])&&!/^[<>]/.test(r[0])&&UNIT.test(r[0])&&!FLAGS.has(fold(r[0]))){u=r[0];r=r.slice(1)}
-    // "10^3 / µL" gibi bölünmüş birimleri toparla
+    // joins split units such as "10^3 / µL"
     if(/^(?:x|×)?10(?:\^|\*)?\d?$/.test(u)&&r[0]&&/^\/?[a-zA-Zµμ]+/.test(r[0])){u+=r[0];r=r.slice(1)}
     const rest2=r.join(" ");
     const rng=parseRange(rest2);
     const hasR=rng.lo!=null||rng.hi!=null;
-    if(!key&&!u&&!hasR)return null; // bilinmeyen adda birim ya da aralık yoksa sonuç sayılmaz
+    if(!key&&!u&&!hasR)return null; // an unknown name without a unit or range is not a result
     if(key&&nTail>0&&!u&&!hasR)return null;
     if(u.length>20)u=u.slice(0,20);
-    const o={k:key||fold(name).replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"").slice(0,30)||"x",n:name.slice(0,60),v};
+    const o={k:key||slug(name),n:name.slice(0,60),v};
     if(q)o.q=q;if(u)o.u=u;if(rng.lo!=null)o.lo=rng.lo;if(rng.hi!=null)o.hi=rng.hi;
     if(!key&&!(u&&hasR))o.guess=true;
     return o;
@@ -196,9 +198,9 @@ const LabLib=(()=>{
     return {date:parseDate(lines,todayKey),rows};
   }
 
-  const OCR_PAGES=6;
-  /* pdf.js ile metni okur. lib: pdfjs-dist; data: Uint8Array. Parola gerekirse {need:"password"} döner.
-     ocr (isteğe bağlı): metin katmanı yoksa sayfaları görüntü olarak okur: {render(page)->base64, recognize(base64)->ML Kit sonucu, progress(i,n), cancelled()}. */
+  /* Reads the text with pdf.js. lib: pdfjs-dist; data: Uint8Array. A password-protected file returns {need:"password"}.
+     ocr (optional): when there is no text layer the pages are read as images: {render(page)->base64, recognize(base64)->ML Kit result, progress(i,n), cancelled()}.
+     `limited` ({read,total}) is set when pages were left out. */
   async function extract(lib,data,password,ocr){
     let doc,task;
     try{
@@ -207,63 +209,58 @@ const LabLib=(()=>{
       if(e&&e.name==="PasswordException")return {need:"password",wrong:e.code===2};
       return {error:"Bu dosya PDF olarak açılamadı"};
     }
-    const lines=[];let n=Math.min(doc.numPages,30);
-    for(let p=1;p<=n;p++){
-      const pg=await doc.getPage(p),tc=await pg.getTextContent();
-      lines.push(...groupLines(tc.items.map(i=>({str:i.str,x:i.transform[4],y:i.transform[5],w:i.width}))));
-    }
-    const total=doc.numPages;
+    const total=doc.numPages,clip=n=>total>n?{read:n,total}:null;
     try{
-      if(lines.some(l=>/\d/.test(l)))return {lines};
-      if(!ocr)return {scanned:true,lines:[]};
-      const out=[],n=Math.min(total,OCR_PAGES);
+      const lines=[],n=Math.min(total,PDF_PAGES_MAX);
       for(let p=1;p<=n;p++){
-        if(ocr.cancelled&&ocr.cancelled())return {cancelled:true};
-        if(ocr.progress)ocr.progress(p,n);
+        const pg=await doc.getPage(p),tc=await pg.getTextContent();
+        lines.push(...groupLines(tc.items.map(i=>({str:i.str,x:i.transform[4],y:i.transform[5],w:i.width}))));
+      }
+      if(lines.some(l=>/\d/.test(l)))return n<total?{lines,limited:clip(n)}:{lines};
+      if(!ocr)return {scanned:true,lines:[]};
+      const out=[],m=Math.min(total,OCR_PAGES);
+      for(let p=1;p<=m;p++){
+        if(ocr.cancelled?.())return {cancelled:true};
+        ocr.progress?.(p,m);
         const pg=await doc.getPage(p);
         try{out.push(...ocrToLines(await ocr.recognize(await ocr.render(pg))))}
         catch(e){return {error:"Taranmış PDF'in yazısı okunamadı, fotoğraftan okumayı dene"}}
         pg.cleanup();
       }
-      if(ocr.cancelled&&ocr.cancelled())return {cancelled:true};
+      if(ocr.cancelled?.())return {cancelled:true};
       if(!out.some(l=>/\d/.test(l)))return {scanned:true,lines:[]};
-      return {lines:out,limited:total>n?{read:n,total}:null};
-    }finally{await task.destroy()} // pdf.js 5+ kapatmayı yükleme görevinden yapar
+      return {lines:out,limited:clip(m)};
+    }finally{await task.destroy()} // pdf.js 5+ closes through the loading task
   }
 
   const dayOk=d=>typeof d==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&new Date(d+"T00:00Z").toJSON()?.slice(0,10)===d;
   const fin=x=>typeof x==="number"&&Number.isFinite(x);
-  /* Saklanan satırları doğrular; geçersizleri atar. */
+  /* Validates stored rows and drops invalid ones; over the cap the newest rows are kept. */
   function cleanLabs(arr){
     const out=[],seen=new Set();let id=1;
-    for(const x of (Array.isArray(arr)?arr:[]).slice(0,5000)){
-      if(!x||!dayOk(x.day)||typeof x.n!=="string"||!x.n.trim())continue;
-      const hasV=fin(x.v)&&Math.abs(x.v)<=1e7,hasT=typeof x.t==="string"&&x.t.trim();
-      if(!hasV&&!hasT)continue;
-      const o={id:0,day:x.day,k:typeof x.k==="string"&&/^[a-z0-9_]{1,30}$/.test(x.k)?x.k:fold(x.n).replace(/[^a-z0-9]+/g,"_").slice(0,30)||"x",n:x.n.trim().slice(0,60)};
-      if(hasV)o.v=x.v;else o.t=x.t.trim().slice(0,30);
+    for(const x of (Array.isArray(arr)?arr:[]).slice(-LABS_MAX)){
+      if(!x||!dayOk(x.day)||typeof x.n!=="string"||!x.n.trim()||!fin(x.v)||x.v<0||x.v>VALUE_MAX)continue;
+      const o={id:0,day:x.day,k:typeof x.k==="string"&&/^[a-z0-9_]{1,30}$/.test(x.k)?x.k:slug(x.n),n:x.n.trim().slice(0,60),v:x.v};
       if(x.q==="<"||x.q===">")o.q=x.q;
       if(typeof x.u==="string"&&x.u.trim())o.u=x.u.trim().slice(0,20);
       if(fin(x.lo))o.lo=x.lo;if(fin(x.hi))o.hi=x.hi;
-      const sig=[o.k,o.day,o.u||"",o.v,o.t].join("|");if(seen.has(sig))continue;seen.add(sig);
+      const sig=[o.k,o.day,o.u||"",o.v].join("|");if(seen.has(sig))continue;seen.add(sig);
       o.id=id++;out.push(o);
     }
     return out;
   }
 
-  /* Aralık dışı mı? Yalnızca laboratuvarın yazdığı aralıkla karşılaştırır. "low"/"high"/null. */
+  /* Outside the range? Compares only with the range the lab wrote. "low" / "high" / null. */
   function flag(r){
-    if(!fin(r.v))return null;
     if(r.lo!=null&&r.v<r.lo)return "low";
     if(r.hi!=null&&r.v>r.hi)return "high";
     return null;
   }
 
-  /* Her (test, birim) için ayrı seri: birim değişirse aynı grafikte karıştırılmaz. */
+  /* One series per (test, unit): a changed unit never mixes into the same chart. */
   function series(labs){
     const m=new Map();
     for(const r of labs){
-      if(!fin(r.v))continue;
       const id=r.k+"|"+(r.u||"");
       if(!m.has(id))m.set(id,{id,k:r.k,n:r.n,u:r.u||"",pts:[]});
       m.get(id).pts.push(r);
@@ -272,7 +269,7 @@ const LabLib=(()=>{
     return [...m.values()].sort((a,b)=>a.n.localeCompare(b.n,"tr"));
   }
 
-  /* Minimal PDF: her sayfa tam boy bir JPEG. Türkçe karakterler tuvalde çizildiği için yazı tipi sorunu olmaz. */
+  /* Minimal PDF: every page is one full-size JPEG. Turkish characters are drawn on the canvas, so there is no font problem. */
   function buildPdf(pages){
     const enc=new TextEncoder(),parts=[],offs=[];let len=0;
     const push=b=>{const u=typeof b==="string"?enc.encode(b):b;parts.push(u);len+=u.length};
@@ -295,24 +292,22 @@ const LabLib=(()=>{
     return out;
   }
 
-
-  const slug=n=>fold(n).replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"").slice(0,30)||"x";
-  /* Ad değiştirilince anahtar yeniden bulunur: sözlükteyse sözlük anahtarı, değilse ad kökü. */
+  /* When the name is edited the key is found again: the dictionary key if the name is in the dictionary, otherwise a slug of the name. */
   function keyFor(name){const h=findAlias(String(name).trim());return h?h.d.k:slug(name)}
 
-  /* ---- PDF raporu: tuval bağlamı dışarıdan verilir, böylece DOM olmadan da denenir ---- */
+  /* ---- PDF report: the canvas context is passed in, so it can be tried without a DOM ---- */
   const RW=1240,RH=1754,RM=70,BLOCK=250,HEAD=190,FOOT=80;
-  const fmtN=v=>{const s=Number(v.toFixed(2));return String(s).replace(".",",")};
-  const fmtD=k=>(typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js")).fdate(k,true);
+  const ALGO=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
+  const dayN=ALGO.dayNum,fmtD=k=>ALGO.fdate(k,true);
+  const fmtN=v=>String(Number(v.toFixed(2))).replace(".",",");
   const rangeText=r=>r.lo!=null&&r.hi!=null?`${fmtN(r.lo)} – ${fmtN(r.hi)}`:r.hi!=null?`< ${fmtN(r.hi)}`:r.lo!=null?`> ${fmtN(r.lo)}`:"";
-  /* Sayfalara böl: ilk sayfada başlık için yer ayrılır. */
+  /* Splits into pages: the first page keeps room for the title. */
   function paginate(list){
     const pages=[];let cur=[],cap=Math.floor((RH-RM-HEAD-FOOT)/BLOCK);
     for(const s of list){if(cur.length>=cap){pages.push(cur);cur=[];cap=Math.floor((RH-RM-FOOT-RM)/BLOCK)}cur.push(s)}
     pages.push(cur);return pages;
   }
-  const dayN=k=>Date.UTC(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10))/864e5;
-  /* Seri için çizim koordinatları: x tarihe, y değere orantılı; referans bandı son aralıklı satırdan. */
+  /* Drawing coordinates of a series: x is proportional to the date, y to the value; the reference band comes from the last row that has a range. */
   function geom(s,x0,y0,w,h){
     const pts=s.pts,last=[...pts].reverse().find(p=>p.lo!=null||p.hi!=null)||{};
     let lo=Math.min(...pts.map(p=>p.v)),hi=Math.max(...pts.map(p=>p.v));
@@ -361,7 +356,7 @@ const LabLib=(()=>{
   }
 
 
-  /* ML Kit satırlarını (t,x,y,w,h; y aşağı doğru artar) tablo satırlarına çevirir. Ölçek satır yüksekliğine göre normalleştirilir. */
+  /* Turns ML Kit lines (t,x,y,w,h; y grows downward) into table lines. The scale is normalised by the median line height. */
   function ocrToLines(res){
     const L=(res&&res.lines||[]).filter(l=>l&&typeof l.t==="string"&&l.h>0);
     if(!L.length)return [];
@@ -369,6 +364,6 @@ const LabLib=(()=>{
     return groupLines(L.map(l=>({str:l.t,x:l.x*sc,y:-(l.y+l.h/2)*sc,w:l.w*sc})));
   }
 
-  return {ocrToLines,RW,RH,paginate,drawPage,geom,rangeText,keyFor,slug,fold,DICT,info,toNum,groupLines,parseDate,parseRange,parseLine,parseLines,extract,cleanLabs,flag,series,buildPdf,dayOk};
+  return {ocrToLines,RW,RH,paginate,drawPage,geom,rangeText,keyFor,fold,DICT,info,toNum,optNum,fmtN,groupLines,parseDate,parseLine,parseLines,extract,cleanLabs,flag,series,buildPdf,dayOk};
 })();
 if(typeof module!=="undefined")module.exports=LabLib;

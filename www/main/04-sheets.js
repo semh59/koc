@@ -172,7 +172,7 @@ async function barcodeFind(raw){
     sheetFood();ownOpen();toast(`${x.why}. Etiketteki değerleri elle yaz ya da Koç'a sor`);return;
   }
   const food=Object.assign({},x.food,{src:"off"});
-  if(x.status==="ok"&&myFoodPut(food)){save();return sheetPortion(S.myFoods.findIndex(m=>m.b===code))}
+  if(x.status==="ok"&&Nutrition.putMy(food)){save();return sheetPortion(S.myFoods.findIndex(m=>m.b===code))}
   const why=x.status==="ok"?"Besin listen dolu (en çok 200) olduğu için listene kaydedilmedi.":"Bazı besin değerleri eksik olduğu için listene kaydedilmedi.";
   sheetPortion(0,Object.assign(food,{my:true,hint:"Kaynak: Open Food Facts. "+why}));
 }

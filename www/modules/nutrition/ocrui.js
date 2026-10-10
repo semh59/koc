@@ -1,6 +1,6 @@
 "use strict";
 /* Photo text reading UI: nutrition label and lab report. Reading runs on the phone (ML Kit); the photo is sent nowhere.
-   Works with S, save, toast, openSheet, closeSheet, esc, dayKey, sheetPortion, myFoodPut, MYFOODS_MAX from the main shell. */
+   Works with S, save, toast, openSheet, closeSheet, esc, dayKey, sheetPortion, Nutrition, MYFOODS_MAX from the main shell. */
 let labelWarned=false;
 
 const ocrBtn=(kind,label)=>plugin("Ocr")?`<button class="mb-2 btn ghost" data-ocr="choose:${kind}">${label}</button>`:"";
@@ -76,7 +76,7 @@ function labelSave(){
   if(!(f.k>=0&&f.k<=KCAL_MAX))return toast("Kalori 100 g için 0-900 olmalı");
   const food={n:name,u:[["100 g",100]]};
   for(const [k] of LABEL_FIELDS)if(f[k]!=null)food[k]=Math.round(f[k]*10)/10;
-  if(!myFoodPut(food))return toast(`Besin listesi dolu (en çok ${MYFOODS_MAX})`);
+  if(!Nutrition.putMy(food))return toast(`Besin listesi dolu (en çok ${MYFOODS_MAX})`);
   save();
   const i=S.myFoods.findIndex(m=>m.n===name);
   closeSheet();sheetPortion(i);

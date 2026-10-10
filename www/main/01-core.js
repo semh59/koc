@@ -103,7 +103,7 @@ function cleanHealthState(r){
   f("fast",()=>HabitLib.cleanFast(r.fast));f("sleep",()=>HabitLib.cleanSleep(r.sleep));f("mood",()=>HabitLib.cleanMood(r.mood));
   return o;
 }
-const MYFOODS_MAX=200; // myFoodPut refuses beyond this, so the cap never drops an accepted food
+const MYFOODS_MAX=200; // Nutrition.putMy refuses beyond this, so the cap never drops an accepted food
 function cleanMyFoods(arr){
   const out=[],seen=new Set();
   for(const x of (Array.isArray(arr)?arr:[]).slice(0,MYFOODS_MAX)){
