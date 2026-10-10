@@ -126,7 +126,7 @@ function medOpen(id){
 function medSave(){
   medCollect();const d=medDraft,warn=m=>{const e=document.getElementById("mwarn");if(e)e.textContent=m};
   if(!d.n.trim())return warn("İlacın adını yaz");
-  const times=[...new Set(d.t.filter(MedLib.timeOk))];
+  const times=[...new Set(d.t.filter(timeOk))];
   if(!times.length||times.length!==d.t.filter(x=>x!=="").length)return warn("Saatleri doldur (boş ya da yinelenen saat var)");
   if(!d.w.length)return warn("En az bir gün seç");
   const k=LabLib.optNum(d.k),p=LabLib.optNum(d.p),c=LabLib.optNum(d.mc);
@@ -159,7 +159,7 @@ function medIngest(items){
   const names=[];
   for(const i of items){
     const m=S.meds.find(x=>x.id===i.m);
-    if(!m||!MedLib.timeOk(i.s)||!m.t.includes(i.s))continue;
+    if(!m||!timeOk(i.s)||!m.t.includes(i.s))continue;
     const day=MedLib.dayForTap(i.s,i.t);
     if(MedLib.statusOf(S.medLog,m.id,day,i.s))continue;
     if(MedLib.mark(S,m.id,day,i.s,i.k?"s":"t",MedLib.hm(new Date(i.t))))names.push(`${m.n} (${i.s})`);

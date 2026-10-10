@@ -10,7 +10,7 @@ function open(lockOn,plugin){
     const dom=new JSDOM(html,{runScripts:"dangerously",url:"https://localhost/",beforeParse(w){
       Object.assign(w,{structuredClone,TextEncoder,TextDecoder});w.scrollTo=()=>{};
       if(plugin)w.Capacitor={isNativePlatform:()=>true,Plugins:{AppLock:{status:async()=>({secure:res.secure}),authenticate:async o=>{calls.push("auth:"+o.title);return res.auth},setSecure:async o=>{calls.push("secure:"+o.on)}}}};
-      if(lockOn)w.localStorage.setItem("nw_state",JSON.stringify({entries:[],settings:{lockOn:true}}));
+      if(lockOn){w.localStorage.setItem("nw_lockon","1");w.localStorage.setItem("nw_state",JSON.stringify({entries:[],settings:{lockOn:true}}))}
     }});
     setTimeout(()=>r({w:dom.window,calls,res}),200);
   });

@@ -7,7 +7,9 @@ const Algo=(()=>{
   const fdate=(k,yr)=>`${+k.slice(8,10)} ${AY3[+k.slice(5,7)-1]}${yr?" "+k.slice(0,4):""}`;
   const dayNum=k=>Math.round(Date.UTC(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10))/864e5);
   const roundTo=(x,step)=>Math.round(x/step)*step;
-  const ISO_DAY=/^\d{4}-\d{2}-\d{2}$/;
+  /* The one validator pair for stored days (strict: rejects 2026-02-31) and HH:MM times. */
+  const dayOk=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&new Date(s+"T00:00Z").toJSON()?.slice(0,10)===s;
+  const timeOk=s=>typeof s==="string"&&/^([01]\d|2[0-3]):[0-5]\d$/.test(s);
 
   /* Weight trend: time-aware exponential average (Hacker's Diet style); a gap gives the next weigh-in more weight. */
   const TREND_ALPHA=0.1;
@@ -110,7 +112,6 @@ const Algo=(()=>{
     }
     return false;
   }
-  const dateOk=s=>typeof s==="string"&&ISO_DAY.test(s)&&!isNaN(dayNum(s));
   function riskFlags({age,cm,kg,goalKg,healthNote,meds,glucoseCount90d,bpCount90d,edFlag,clearedAt,today}){
     const t=low(healthNote).trim(),bmi=x=>x>0&&cm>0?x/Math.pow(cm/100,2):null,n=Array.isArray(meds)?meds.length:meds>0?meds:0;
     const ed=!!edFlag||said(t,ED),pregnant=said(t,PREG),hard=[],soft=[];
@@ -123,7 +124,7 @@ const Algo=(()=>{
     if(n)soft.push("İlaç kaydın var");
     if(glucoseCount90d>0)soft.push("Son 90 günde şeker ölçümün var");
     if(bpCount90d>0)soft.push("Son 90 günde tansiyon ölçümün var");
-    const d=dateOk(clearedAt)&&dateOk(today)?dayNum(today)-dayNum(clearedAt):-1,cleared=d>=0&&d<30;
+    const d=dayOk(clearedAt)&&dayOk(today)?dayNum(today)-dayNum(clearedAt):-1,cleared=d>=0&&d<30;
     return {hard,soft,cleared,kidney:said(t,KIDNEY),pregnant,ed,meds:n,block:hard[0]||(!cleared&&soft[0])||""};
   }
   /* Why a calorie deficit is unsafe, or "". */
@@ -181,7 +182,7 @@ const Algo=(()=>{
   function cleanMeasures(raw){
     const m=new Map();
     for(const x of Array.isArray(raw)?raw:[])
-      if(x&&MEASURES.includes(x.k)&&typeof x.day==="string"&&ISO_DAY.test(x.day)&&typeof x.v==="number"&&x.v>=20&&x.v<=250)m.set(x.day+x.k,{day:x.day,k:x.k,v:Math.round(x.v*10)/10});
+      if(x&&MEASURES.includes(x.k)&&dayOk(x.day)&&typeof x.v==="number"&&x.v>=20&&x.v<=250)m.set(x.day+x.k,{day:x.day,k:x.k,v:Math.round(x.v*10)/10});
     return [...m.values()].sort((a,b)=>a.day<b.day?-1:a.day>b.day?1:0).slice(-MEASURES_MAX);
   }
   const whtr=(waist,cm)=>waist>0&&cm>0?waist/cm:null;
@@ -296,6 +297,6 @@ const Algo=(()=>{
     }
     return r;
   }
-  return {KCAL_PER_KG,actFromTriage,dayNum,fdate,trend,slopePerWeek,setClock,fullKcal,MIN_AVG_DAYS,kcalFloor,manualKcal,lbSuspect,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,riskFlags,lossBlock,etaWeeks,isLosing,lossKnown,goalEta,protein,PROTEIN_NOTE,exerciseKcal,moveBonus,moveSummary,cleanWalk,netKcal,gymKcal,MEASURES,cleanMeasures,whtr,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
+  return {dayOk,timeOk,KCAL_PER_KG,actFromTriage,dayNum,fdate,trend,slopePerWeek,setClock,fullKcal,MIN_AVG_DAYS,kcalFloor,manualKcal,lbSuspect,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,riskFlags,lossBlock,etaWeeks,lossSlope,isLosing,lossKnown,goalEta,protein,PROTEIN_NOTE,exerciseKcal,moveBonus,moveSummary,cleanWalk,netKcal,gymKcal,MEASURES,cleanMeasures,whtr,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
 })();
 if(typeof module!=="undefined")module.exports=Algo;

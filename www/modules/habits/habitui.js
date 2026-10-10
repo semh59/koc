@@ -1,24 +1,25 @@
 "use strict";
-/* Oruç zamanlayıcısı, uyku ve ruh hali kayıtları. index.html'deki S, save, toast, openSheet, closeSheet, dayOptions, fday, dayKey, esc, num, render ile çalışır. */
+/* Fast timer, sleep and mood records. */
 const MOODS=["😞","😕","😐","🙂","😄"],MOODN=["Çok kötü","Kötü","Orta","İyi","Çok iyi"];
+const HB_SHOWN=7,FAST_REMINDER=11,LONG_PLAN=18;
 const hbDur=m=>`${Math.floor(m/60)} sa ${m%60} dk`;
 const hbRow=(txt,act,sub="")=>`<div class="row"><span class="grow">${txt}${sub?`<small class="db mut ell">${sub}</small>`:""}</span><button class="del" data-hb="${act}" aria-label="Kaydı sil">${Icons.svg("x")}</button></div>`;
-/* Geçmiş: son 7 kayıt açık, kalanı katlanır. */
-const hbHist=rows=>rows.length?`<div class="grp">Geçmiş</div>${rows.slice(0,7).join("")}${rows.length>7?`<details class="acc"><summary>Daha fazla göster (${rows.length-7})</summary>${rows.slice(7).join("")}</details>`:""}`:"";
+/* History: the newest HB_SHOWN records are open, the rest fold away. */
+const hbHist=rows=>rows.length?`<div class="grp">Geçmiş</div>${rows.slice(0,HB_SHOWN).join("")}${rows.length>HB_SHOWN?`<details class="acc"><summary>Daha fazla göster (${rows.length-HB_SHOWN})</summary>${rows.slice(HB_SHOWN).join("")}</details>`:""}`:"";
 let hbMood=0;
-/* Uyku, ruh hali ve oruç değişiklikleri tek "Geri al" ile önceki duruma döner (silme ve aynı güne yeniden giriş dahil). */
+/* Sleep, mood and fast changes (deletes and re-entry for the same day included) are undone with one "Geri al". */
 function hbSet(key,val,msg){
   const prev=S[key],apply=v=>{S[key]=v;save();render();if(key==="fast")scheduleReminders().then(setNotif)};
   apply(val);toast(msg,()=>apply(prev));
 }
-/* Uyku ve ruh hali: iki eşit karo, bugünkü değer karonun içinde; büyük yazıda tek sütuna iner. */
+/* Sleep and mood: two equal tiles with today's value inside; with large text they stack in one column. */
 function habitRow(){
   const t=dayKey(),sl=S.sleep.find(x=>x.day===t),mo=S.mood.find(x=>x.day===t);
   const tile=(a,ic,name,val)=>`<button class="hbt" data-hb="${a}">${Icons.svg(ic)}<span class="grow"><b>${name}</b><span class="db mut sm num">${val}</span></span></button>`;
   return `<div class="hrow">${tile("sleep","moon","Uyku",sl?hbDur(sl.min):"Ekle")}${tile("mood","smile","Ruh hali",mo?MOODN[mo.v-1]:"Ekle")}</div>`;
 }
-/* Bugün yapılacaklar satırı: oruç açıksa sürüyor/başlat; plan ve geçmiş Ayarlar'da. Fren: sert engelde başlatılamaz (süren oruç bitirilebilir),
-   yumuşakta "Hekimime danıştım" onayından sonra. */
+/* Today row: shows the running fast or the start button when fasting is on; plan and history are in Settings. Brake: a hard risk flag blocks starting (a running fast can still be ended),
+   a soft one only after "Hekimime danıştım". */
 function fastTodo(){
   const f=S.fast,st=S.settings;if(!st.fastOn)return [];
   const s=HabitLib.fastState(f,Date.now()),r=risk(),hard=r.hard.length;
@@ -34,16 +35,25 @@ function fastGo(){
   const st=S.settings;
   if(risk().block)return render();
   if(!st.fastInfoOk)return fastInfo();
-  if(S.fast.plan>=18&&!st.fastLongOk){
-    return void confirmSheet({title:"Uzun oruç başlatılsın mı?",body:`${S.fast.plan} saatlik oruç uzun bir plandır. Hekiminle konuştuysan devam et. Başlatılsın mı?`,ok:"Başlat"}).then(ok=>{if(ok){st.fastLongOk=true;fastGo()}});
+  if(S.fast.plan>=LONG_PLAN&&!st.fastLongOk){
+    confirmSheet({title:"Uzun oruç başlatılsın mı?",body:`${S.fast.plan} saatlik oruç uzun bir plandır. Hekiminle konuştuysan devam et. Başlatılsın mı?`,ok:"Başlat"}).then(ok=>{if(ok){st.fastLongOk=true;fastGo()}});
+    return;
   }
   fastSet(Date.now(),"Oruç başladı");
 }
 function fastSettingsHtml(){
-  const f=S.fast,on=S.settings.fastOn,last=f.log.slice(-7).reverse().map(x=>hbRow(`${fd(dayKey(new Date(x.t1)))} ${hbDur(Math.round((x.t1-x.t0)/6e4))}`,"fdel:"+x.t0)).join("");
+  const f=S.fast,on=S.settings.fastOn,last=f.log.slice(-HB_SHOWN).reverse().map(x=>hbRow(`${fd(dayKey(new Date(x.t1)))} ${hbDur(Math.round((x.t1-x.t0)/6e4))}`,"fdel:"+x.t0)).join("");
   return modRow('data-hb="fasttoggle"',on,"Oruç zamanlayıcısı","Aralıklı oruç süreni tutar.","hlpfs","Planı burada seçersin; orucu Bugün ekranından başlatıp bitirirsin. İlk açılışta kimlerin oruç tutmaması gerektiği gösterilir. Uzun planlar sağlık işaretinde kapanır.",
-    `<div class="lbl">Plan (oruç:yeme saati)</div><div class="chiprow">${HabitLib.PLANS.map(p=>`<button class="chip" data-hb="plan:${p}" aria-pressed="${f.plan===p}"${p>=18&&risk().hard.length?" disabled":""}>${p}:${24-p}</button>`).join("")}</div>`)
+    `<div class="lbl">Plan (oruç:yeme saati)</div><div class="chiprow">${HabitLib.PLANS.map(p=>`<button class="chip" data-hb="plan:${p}" aria-pressed="${f.plan===p}"${p>=LONG_PLAN&&risk().hard.length?" disabled":""}>${p}:${24-p}</button>`).join("")}</div>`)
   +(last?`<div class="mt-2 mut sm">Son oruçlar</div>${last}`:"");
+}
+function fastToggle(){
+  const st=S.settings;
+  if(S.fast.t0)return toast("Önce orucu bitir");
+  if(!st.fastOn&&!st.fastInfoOk)return fastInfo();
+  st.fastOn=!st.fastOn;
+  if(!st.fastOn)st.reminders.find(r=>r.id===FAST_REMINDER).on=false;
+  save();render();scheduleReminders().then(setNotif);
 }
 function fastSet(t0,msg){
   S.fast.t0=t0;save();render();scheduleReminders().then(setNotif);toast(msg);
@@ -64,11 +74,11 @@ function sheetSleep(){
 function sleepSave(){
   const b=$("#hbb").value,w=$("#hbw").value,h=num($("#hbh").value);
   const min=b&&w?HabitLib.sleepMin(b,w):isNaN(h)?null:Math.round(h*60);
-  if(!(min>=60&&min<=1080))return ferr("hberr","Süreyi kontrol et: 1 ile 18 saat arası olmalı");
+  if(!(min>=HabitLib.SLEEP_LIM[0]&&min<=HabitLib.SLEEP_LIM[1]))return ferr("hberr","Süreyi kontrol et: 1 ile 18 saat arası olmalı");
   const day=fday(),old=S.sleep.some(x=>x.day===day),q=+$("#hbq").value;
   closeSheet();hbSet("sleep",HabitLib.cleanSleep(S.sleep.filter(x=>x.day!==day).concat({day,min,q})),`Uyku ${old?"güncellendi":"kaydedildi"}: ${hbDur(min)}`);
 }
-/* Yüz seçilir, not isteğe bağlı, kayıt "Kaydet" ile. Seçili günün kaydı varsa yüz ve not dolu gelir (sonradan not eklenebilir). */
+/* A face is picked, the note is optional, saving is with "Kaydet". If the chosen day already has a record, the face and note come filled in (a note can be added later). */
 function moodFill(){
   const mo=S.mood.find(x=>x.day===fday()),n=$("#hbn");hbMood=mo?mo.v:0;
   document.querySelectorAll('[data-hb^="mood:"]').forEach(b=>b.setAttribute("aria-pressed",+b.dataset.hb.slice(5)===hbMood));
@@ -76,7 +86,7 @@ function moodFill(){
 }
 function sheetMood(){
   openSheet(`<h3>Ruh halin</h3>${dayOptions()}<div class="lbl" id="hbml">Nasıl hissediyorsun?</div><div class="moods" role="group" aria-labelledby="hbml">${MOODS.map((e,i)=>`<button class="chip" data-hb="mood:${i+1}" aria-pressed="false"><span class="t-h2" aria-hidden="true">${e}</span><small>${MOODN[i]}</small></button>`).join("")}</div>
-  <label class="lbl" for="hbn">Kısa not (isteğe bağlı)</label><input class="in" id="hbn" maxlength="100" placeholder="örn. Yoğun bir gündü" autocomplete="off">
+  <label class="lbl" for="hbn">Kısa not (isteğe bağlı)</label><input class="in" id="hbn" maxlength="${HabitLib.NOTE_MAX}" placeholder="örn. Yoğun bir gündü" autocomplete="off">
   <div class="ferr" id="hberr" role="alert"></div><button class="btn" data-hb="moodgo">Kaydet</button>${hbHist(S.mood.slice().reverse().map(x=>hbRow(`<span aria-hidden="true">${MOODS[x.v-1]}</span> ${MOODN[x.v-1]}`,"mdel:"+x.day,fd(x.day)+(x.t?" · "+esc(x.t):""))))}`);
   moodFill();
 }
@@ -89,7 +99,7 @@ document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-hb]");if(!el)return;
   const a=el.dataset.hb;
   if(a==="sleep")sheetSleep();
-  else if(a==="fasttoggle"){if(S.fast.t0)return toast("Önce orucu bitir");if(!S.settings.fastOn&&!S.settings.fastInfoOk)return fastInfo();S.settings.fastOn=!S.settings.fastOn;if(!S.settings.fastOn)S.settings.reminders.find(r=>r.id===11).on=false;save();render();scheduleReminders().then(setNotif)}
+  else if(a==="fasttoggle")fastToggle();
   else if(a.startsWith("plan:")){S.fast.plan=+a.slice(5);save();render()}
   else if(a==="fastgo")fastGo();
   else if(a==="fastinfo"){if(!$("#fic").checked)return toast("Önce kutuyu işaretle");Object.assign(S.settings,{fastInfoOk:true,fastOn:true});save();closeSheet();render();scheduleReminders().then(setNotif)}

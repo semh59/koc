@@ -1,15 +1,23 @@
 "use strict";
-/* Yedeği paylaşım ekranıyla (Google Drive dahil) gönderme: hesap bağlamak gerekmez, veriler parolayla şifrelenir.
-   Parola isteğe bağlı olarak yalnızca bu telefonun Keystore kasasıyla şifreli saklanır. */
+/* Sending the backup through the share sheet (Google Drive included): no account to link, the data is encrypted with a password.
+   The password can optionally be stored, encrypted with this phone's Keystore vault only. */
 const BKPW_LS="nw_bkpw_enc";
+const BF=()=>plugin("BackupFolder");
+/* The one backup payload: settings and data plus the API keys, encrypted with the password into a JSON string. */
+const backupJson=async pw=>JSON.stringify(await BackupLib.encrypt({S,keys:getKeys()},pw));
 async function bkRemembered(){
   const kv=KV(),e=lsGet(BKPW_LS);
   if(!kv||!e)return null;
-  try{return (await kv.decrypt({data:e})).text||null}catch(x){return null}
+  try{return (await kv.decrypt({data:e})).text||null}catch{return null}
 }
 async function bkRemember(pw){
   const kv=KV();if(!kv||!vaultOn)return false;
-  try{lsSet(BKPW_LS,(await kv.encrypt({text:pw})).data);return true}catch(x){return false}
+  try{lsSet(BKPW_LS,(await kv.encrypt({text:pw})).data);return true}catch{return false}
+}
+/* A new password from two fields: the password and, when it is unusable, the warning to show. */
+function bkNewPw(first,again){
+  const pw=$("#"+first).value;
+  return {pw,bad:BackupLib.pwCheck(pw)||(pw!==$("#"+again).value?"Parolalar aynı değil":"")};
 }
 async function sheetDrive(){
   const rem=await bkRemembered(),native=!!KV()&&vaultOn,lb=S.settings.lastBackup;
@@ -23,27 +31,16 @@ async function sheetDrive(){
   <button class="mt-2 btn ghost" data-bk="close">Vazgeç</button>`);
 }
 async function bkSend(){
-  const warn=m=>{const e=document.getElementById("bkw");if(e)e.textContent=m};
   let pw=await bkRemembered(),fresh=false;
   if(pw==null){
-    pw=document.getElementById("bkp1").value;
-    const bad=BackupLib.pwCheck(pw);if(bad)return warn(bad);
-    if(pw!==document.getElementById("bkp2").value)return warn("Parolalar aynı değil");
-    fresh=true;
+    const n=bkNewPw("bkp1","bkp2");if(n.bad)return ferr("bkw",n.bad);
+    pw=n.pw;fresh=true;
   }
   let text;
-  try{text=JSON.stringify(await BackupLib.encrypt({v:1,S,keys:getKeys()},pw))}catch(e){return toast("Yedek hazırlanamadı")}
-  const rem=fresh&&document.getElementById("bkrem")&&document.getElementById("bkrem").checked;
-  const P=window.Capacitor&&window.Capacitor.Plugins,fs=P&&P.Filesystem,sh=P&&P.Share,name=`neowell-yedek-${dayKey()}.json`;
-  if(fs&&sh){
-    try{
-      await cacheClean();const f=await fs.writeFile({path:name,data:text,directory:"CACHE",encoding:"utf8"});
-      await sh.share({title:"NeoWell yedeği",files:[f.uri]});
-    }catch(e){if(!/cancel/i.test(e&&e.message||""))toast("Paylaşılamadı");return}
-  }else{
-    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:"application/json"}));a.download=name;document.body.appendChild(a);a.click();a.remove();
-  }
-  if(rem)await bkRemember(pw);
+  try{text=await backupJson(pw)}catch(e){return toast("Yedek hazırlanamadı")}
+  const remember=fresh&&$("#bkrem")?.checked;
+  if(!await shareFile(BackupLib.manualName(dayKey()),"NeoWell yedeği","application/json",text,true))return;
+  if(remember)await bkRemember(pw);
   markBackup();closeSheet();render();scheduleReminders().then(setNotif);
   toast("Yedek paylaşıldı. Drive'da dosyanın göründüğünü kontrol et");
 }
@@ -55,10 +52,9 @@ document.addEventListener("click",ev=>{
   else if(a==="close")closeSheet();
 });
 
-/* Otomatik yedek: uygulama açılınca ve sekmeye dönünce, son otomatik yedek 7 günden eskiyse seçilen klasöre aynı şifreli biçimde yazar.
-   Arka plan işi yok: veri WebView'da, yerel taraf okuyamaz. Parola, Drive yedeğindeki gibi Keystore ile şifreli saklanır;
-   anahtar yalnız Keystore'da olsaydı telefon kaybolunca yedek açılamazdı, parola yeni telefonda da açar. */
-const BF=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.BackupFolder;
+/* Automatic backup: when the app opens or the tab returns and the last automatic backup is older than 7 days, the same encrypted format is written to the chosen folder.
+   There is no background job: the data lives in the WebView and the native side cannot read it. The password is stored Keystore-encrypted, as for the Drive backup;
+   a key that lived only in the Keystore would make the backup unreadable after losing the phone, while the password also opens it on a new phone. */
 let abErr="",abName="",abBusy=false;
 function abHtml(){
   if(!BF())return "";
@@ -77,16 +73,14 @@ async function abSetup(){
   <div class="hint" id="abw" role="alert"></div><button class="btn" data-ab="pick">Klasör seç ve aç</button><button class="mt-2 btn ghost" data-bk="close">Vazgeç</button>`);
 }
 async function abPick(){
-  const warn=m=>{const e=document.getElementById("abw");if(e)e.textContent=m},p1=document.getElementById("abp1");
   let pw=null;
-  if(p1){
-    pw=p1.value;
-    const bad=BackupLib.pwCheck(pw);if(bad)return warn(bad);
-    if(pw!==document.getElementById("abp2").value)return warn("Parolalar aynı değil");
+  if($("#abp1")){
+    const n=bkNewPw("abp1","abp2");if(n.bad)return ferr("abw",n.bad);
+    pw=n.pw;
   }
   let r;
-  try{r=await BF().pick()}catch(e){return warn(/cancel/i.test(e&&e.message||"")?"Klasör seçilmedi":"Klasör izni alınamadı")}
-  if(pw!=null&&!await bkRemember(pw))return warn("Parola bu telefonda saklanamadı");
+  try{r=await BF().pick()}catch(e){return ferr("abw",/cancel/i.test(e?.message||"")?"Klasör seçilmedi":"Klasör izni alınamadı")}
+  if(pw!=null&&!await bkRemember(pw))return ferr("abw","Parola bu telefonda saklanamadı");
   Object.assign(S.settings,{autoBk:true,lastAutoBk:""});abName=r.name||"";abErr="";save();closeSheet();render();
   toast("Otomatik yedek açık");abRun();
 }
@@ -106,13 +100,13 @@ async function abRun(){
   try{
     await keysP;
     const pw=await bkRemembered();
-    if(!pw)throw new Error("parola");
-    const name=BackupLib.autoName(dayKey()),r=await bf.write({name,data:JSON.stringify(await BackupLib.encrypt({v:1,S,keys:getKeys()},pw))});
+    if(!pw)throw new Error("no-password");
+    const name=BackupLib.autoName(dayKey()),r=await bf.write({name,data:await backupJson(pw)});
     const old=BackupLib.autoPrune(r.names||[],name);
     if(old.length)await bf.remove({names:old}).catch(()=>{});
     st.lastAutoBk=dayKey();markBackup(true);
   }catch(e){
-    abErr=e.message==="parola"?"Yedek parolası bu telefonda bulunamadı.":"Klasöre yazılamadı. Klasör silinmiş ya da izni kaldırılmış olabilir.";
+    abErr=e.message==="no-password"?"Yedek parolası bu telefonda bulunamadı.":"Klasöre yazılamadı. Klasör silinmiş ya da izni kaldırılmış olabilir.";
     toast("Otomatik yedek alınamadı. Ayarlar > Veri ve yedek'ten yeniden kurabilir ya da kapatabilirsin");
   }
   abBusy=false;render();

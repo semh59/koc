@@ -233,7 +233,7 @@ const LabLib=(()=>{
     }finally{await task.destroy()} // pdf.js 5+ closes through the loading task
   }
 
-  const dayOk=d=>typeof d==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&new Date(d+"T00:00Z").toJSON()?.slice(0,10)===d;
+  const ALGO=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js"),{dayOk}=ALGO;
   const fin=x=>typeof x==="number"&&Number.isFinite(x);
   /* Validates stored rows and drops invalid ones; over the cap the newest rows are kept. */
   function cleanLabs(arr){
@@ -297,7 +297,6 @@ const LabLib=(()=>{
 
   /* ---- PDF report: the canvas context is passed in, so it can be tried without a DOM ---- */
   const RW=1240,RH=1754,RM=70,BLOCK=250,HEAD=190,FOOT=80;
-  const ALGO=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
   const dayN=ALGO.dayNum,fmtD=k=>ALGO.fdate(k,true);
   const fmtN=v=>String(Number(v.toFixed(2))).replace(".",",");
   const rangeText=r=>r.lo!=null&&r.hi!=null?`${fmtN(r.lo)} – ${fmtN(r.hi)}`:r.hi!=null?`< ${fmtN(r.hi)}`:r.lo!=null?`> ${fmtN(r.lo)}`:"";
@@ -364,6 +363,6 @@ const LabLib=(()=>{
     return groupLines(L.map(l=>({str:l.t,x:l.x*sc,y:-(l.y+l.h/2)*sc,w:l.w*sc})));
   }
 
-  return {ocrToLines,RW,RH,paginate,drawPage,geom,rangeText,keyFor,fold,DICT,info,toNum,optNum,fmtN,groupLines,parseDate,parseLine,parseLines,extract,cleanLabs,flag,series,buildPdf,dayOk};
+  return {ocrToLines,RW,RH,paginate,drawPage,geom,rangeText,keyFor,fold,DICT,info,toNum,optNum,fmtN,groupLines,parseDate,parseLine,parseLines,extract,cleanLabs,flag,series,buildPdf};
 })();
 if(typeof module!=="undefined")module.exports=LabLib;

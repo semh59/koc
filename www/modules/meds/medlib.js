@@ -4,8 +4,7 @@
 const MedLib=(()=>{
   const MAXM=20,MAXT=6,MAXLOG=50000,BUDGET=440,MAXH=24,MAXID=999,STOCK_MAX=99999,LEAD_MS=5000,NID_BASE=1e6,NID_DAYS=40;
   const TITLE="💊 İlaç zamanı",GENERIC_BODY="İlaç saatin geldi.";
-  const dayOk=d=>typeof d==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&new Date(d+"T00:00Z").toJSON()?.slice(0,10)===d;
-  const timeOk=t=>typeof t==="string"&&/^([01]\d|2[0-3]):[0-5]\d$/.test(t);
+  const {dayOk,timeOk}=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
   const p2=n=>String(n).padStart(2,"0");
   const hm=d=>p2(d.getHours())+":"+p2(d.getMinutes());
   const key=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;

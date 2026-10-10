@@ -1,6 +1,6 @@
 "use strict";
-/* Kategori başına sayı ve silme. Kendi besinleri, favoriler ve şablonlar kullanıcının hazırladığı içeriktir, yalnız "Tüm verileri sil" ile gider. */
-const PV_CATS=Data.privacy; // satırları veri modülleri (modules/*.js) ekler
+/* Count and delete per category. The user's own foods, favourites and templates are content they prepared and go only with "Tüm verileri sil". */
+const PV_CATS=Data.privacy; // the data modules add the rows
 function pvDelete(i){
   const [name,n,del]=PV_CATS[i],lb=S.settings.lastBackup;
   if(!n())return;
@@ -9,7 +9,7 @@ function pvDelete(i){
 function pvDeleteDo(name,del){
   if(del()===false)return;Store.del("nw_state_previous");Store.del("nw_state_corrupt");otherBytes=lsOther();save();render();scheduleReminders().then(setNotif);sheetPrivacy();toast(`${name} silindi`);
 }
-/* Gizlilik ve veri: verinin nerede durduğu, internete çıkan hizmetler ve Koç açık rızası. Sheet olduğu için onboarding'den de açılır. */
+/* Privacy and data: where the data lives, which services reach the internet, and the Coach consent. It is a sheet, so onboarding can open it too. */
 function sheetPrivacy(){
   const st=S.settings;
   const pt=(ic,t,s)=>`<div class="row"><div class="aic">${Icons.svg(ic)}</div><span class="grow"><b>${t}</b><small class="db mut sm">${s}</small></span></div>`;
@@ -38,7 +38,7 @@ function sheetPrivacy(){
   <p class="hint">Kendi besinlerin, favorilerin, öğün şablonların ve antrenman şablonların bu listede yoktur; yalnız Ayarlar > Veri ve yedek > Tüm verileri sil ile gider.</p>
   <button class="mt-2 btn ghost" data-pv="close">Kapat</button>`);
 }
-/* Her tablo ayrı paylaşılır: zincirleme paylaşım ekranı ikinci dosyada açılmayabilir. */
+/* Each table is shared on its own: a chained share sheet may not open for the second file. */
 const pvCsv=()=>CsvLib.files(S,{exName:id=>gEx(id).n,vctx:r=>r.k==="t"?VitalsLib.sessionName(r.session):VitalsLib.ctxName(r.ctx)});
 function sheetCsv(){
   openSheet(`<h3>Tabloya aktar (CSV)</h3><p class="mut sm">Excel ve Google Sheets'te açılır. Dosya şifresizdir, paylaştığın yere gider; yedek yerine geçmez.</p>

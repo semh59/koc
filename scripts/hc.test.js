@@ -106,7 +106,7 @@ function open(seed,fake){
   ev(`S.sleep=HabitLib.cleanSleep([{day:keyOff(-3),min:400,src:"hc"}]);hcApplyDaily({sleep:{[keyOff(-3)]:410}},[keyOff(-3)])`);
   ok("saatin uykusu değişirse güncellenir",ev(`S.sleep[0].min`)===410);
   // kamera ölçümü kaydı ve silme
-  ev(`plRes={bpm:71};plSave()`);
+  ev(`plBpm=71;plSave()`);
   ok("kamera ölçümü kaydedilir (gün, saat, atım)",ev(`S.pulse.length`)===1&&ev(`S.pulse[0].bpm`)===71&&/^\d\d:\d\d$/.test(ev(`S.pulse[0].time`)),ev(`JSON.stringify(S.pulse)`));
   Object.defineProperty(w.navigator,"mediaDevices",{value:{getUserMedia:async()=>{throw new Error("izin yok")}},configurable:true});
   ev(`plSheet()`);

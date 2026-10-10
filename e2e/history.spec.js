@@ -21,7 +21,7 @@ const seed=theme=>{const d=threeYears();return state({theme,stepsOn:false},{entr
 for(const theme of ["","dark"]){
   test(`Geçmiş ekranları (${theme||"açık"}): axe, dokunma hedefi, taşma`,async({app,page})=>{
     await app.open({seed:seed(theme)});
-    for(const [steps,git] of [["takvim",async()=>{await app.go("history")}],["aylar",async()=>{await page.locator('[data-hg="seg:ay"]').click()}],["ara",async()=>{await page.locator('[data-hg="seg:ara"]').click();await page.fill("#hgq","mercimek")}],["gün",async()=>{await page.locator('[data-hg="seg:tak"]').click();await page.locator('[data-hg^="day:2026-10-05"]').click()}]]){
+    for(const [steps,git] of [["takvim",async()=>{await app.go("history")}],["aylar",async()=>{await page.locator('[data-hg="seg:months"]').click()}],["ara",async()=>{await page.locator('[data-hg="seg:search"]').click();await page.fill("#hgq","mercimek")}],["gün",async()=>{await page.locator('[data-hg="seg:cal"]').click();await page.locator('[data-hg^="day:2026-10-05"]').click()}]]){
       await git();await page.waitForTimeout(150);
       expect(await axe(page),steps+" axe").toEqual([]);
       expect(await small(page),steps+" dokunma hedefi").toEqual([]);
@@ -42,14 +42,14 @@ test("Geçmiş: 3 yıl öncesine takvimden gidilir, oradaki kayıt görünür; a
   await expect(page.locator("#view")).toContainText("Tavuk pilav");
   await expect(page.locator("#ttl")).toContainText("Gün");
   await app.go("history");
-  await page.locator('[data-hg="seg:ara"]').click();await page.fill("#hgq","MERCİMEK");
+  await page.locator('[data-hg="seg:search"]').click();await page.fill("#hgq","MERCİMEK");
   await expect(page.locator("#hgres")).toContainText("1 kayıt");
   await page.locator('#hgres [data-hg^="day:"]').click();
   await expect(page.locator("#view")).toContainText("Mercimek çorbası");
 });
 test("Geçmiş: 3 yıllık veriyle takvim, aylar ve Trend Tümü çizimi hızlı",async({app,page})=>{
   await app.open({seed:seed("")});
-  const ms=await page.evaluate(()=>{const t=performance.now();tab="history";render();hg.seg="ay";render();hg.seg="tak";render();tab="day";logOff=500;render();return performance.now()-t});
+  const ms=await page.evaluate(()=>{const t=performance.now();tab="history";render();hg.seg="months";render();hg.seg="cal";render();tab="day";logOff=500;render();return performance.now()-t});
   expect(ms,"takvim+aylar+gün çizimi (ms)").toBeLessThan(1500);
   const tr=await page.evaluate(()=>{const t=performance.now();range=0;tab="trend";render();return performance.now()-t});
   expect(tr,"Trend Tümü çizimi (ms)").toBeLessThan(1500);
@@ -61,5 +61,5 @@ test("Geçmiş: Bugün ve Daha fazla'dan girilir, gün ekranından geri tuşu ta
   await page.locator('#view [data-tab="history"]').click();
   await page.locator('[data-hg^="day:2026-10-05"]').click();
   await page.locator("#back").click();
-  await expect(page.locator('[data-hg="seg:tak"]')).toHaveAttribute("aria-pressed","true");
+  await expect(page.locator('[data-hg="seg:cal"]')).toHaveAttribute("aria-pressed","true");
 });

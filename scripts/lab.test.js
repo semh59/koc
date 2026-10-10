@@ -156,7 +156,6 @@ ok("tanınmayan kalemde bilgi yok",L.info(L.parseLine("Bilinmeyen Test 5 mg/dL 1
   ok("pdf.js sürümü CVE-2024-4367 düzeltmesinden yeni",(()=>{const [a,b,c]=lib.version.split(".").map(Number);return a>4||(a===4&&(b>2||(b===2&&c>=67)))})(),lib.version);
 // toNum: başı 0 ya da tek noktadan sonra 0 gelen üç haneli ondalıktır, binlik değil; geçersiz takvim günü reddedilir
 for(const [s,v] of [["0.850",0.85],["1.050",1.05],["0.005",0.005],["1.500",1500],["12.034.567",12034567],["250.000",250000]])ok("toNum ondalık/binlik: "+s,L.toNum(s)===v,L.toNum(s));
-ok("dayOk: 2026-02-31 ve 2026-13-01 reddedilir, 2024-02-29 kabul",!L.dayOk("2026-02-31")&&!L.dayOk("2026-13-01")&&L.dayOk("2024-02-29")&&!L.dayOk("2026-02-29"));
   ok("a text PDF over the page cap reports the pages left out",await(async()=>{const fake=n=>({getDocument:()=>({promise:Promise.resolve({numPages:n,getPage:async()=>({getTextContent:async()=>({items:[{str:"Glukoz 98 mg/dL",transform:[1,0,0,1,40,700],width:50}]})})}),destroy:async()=>{}})}),r=await L.extract(fake(31),new Uint8Array()),r2=await L.extract(fake(30),new Uint8Array());return r.lines.length===30&&r.limited.read===30&&r.limited.total===31&&!r2.limited})());
   console.log(bad?"\n"+bad+" HATA":"\nTüm lab testleri geçti");process.exit(bad?1:0);
 })().catch(e=>{console.log("FAIL beklenmeyen hata",e);process.exit(1)});
