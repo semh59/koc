@@ -2,7 +2,7 @@
 
 Kod durumu `b247735`. Her madde repo, git geçmişi, CI ve resmi kaynakla kontrol edildi, sayılar bugün yeniden ölçüldü. Ölçüm betikleri depoya eklenmedi.
 
-**Güncelleme (7 Ekim 2026):** Bu belge 6 Ekim anının görüntüsüdür; bulgular silinmedi, değişenler "7 Ekim:" notuyla işaretlendi. Değişenler: otomatik Koç gönderimi (`cAuto`) kaldırıldı (#3, #34), kurulum 18 yaş altını kabul etmiyor, yedek parolası zorunlu, `dagitim.md` versionCode düzeltildi, yol haritası 4, 9 ve 10 yapıldı. Hâlâ geçerli olanlar: Play hesabı ve testçiler, politika boş alanları, hukukçu soruları, telefon testleri.
+**Güncelleme (7 Ekim 2026):** Bu belge 6 Ekim anının görüntüsüdür; bulgular silinmedi, değişenler "7 Ekim:" notuyla işaretlendi. Değişenler: otomatik Koç gönderimi (`cAuto`) kaldırıldı (#3, #34), kurulum 18 yaş altını kabul etmiyor, yedek parolası zorunlu, `distribution.md` versionCode düzeltildi, yol haritası 4, 9 ve 10 yapıldı. Hâlâ geçerli olanlar: Play hesabı ve testçiler, politika boş alanları, hukukçu soruları, telefon testleri.
 
 **Sonuç (6 Ekim):** 20 DOĞRU, 5 KISMEN, 3 ESKİ (yalnız sayı değişmiş), 3 YANLIŞ, 1 DOĞRULANAMADI. G bölümündeki 4 düzeltmeden 2'si kararlarımızı etkiliyor (#34, #36).
 
@@ -10,13 +10,13 @@ Ciddiyet: **P** Play'i engeller · **Z** kullanıcıya zarar · **K** kalite · 
 
 | # | Durum | Kanıt | C | Aksiyon |
 |---|---|---|---|---|
-| 1 | DOĞRU | `gizlilik-politikasi.md` Türkçe bölümünde 11 boş alan (5-11, 33, 49, 57, 60, 69; satır numaraları sonradan kaydı). **7 Ekim:** güncel dökümü ve her alan için kimden ne bilgi gerektiği `docs/yapilacaklar.md` > "Doldurulacaklar" listesinde | P | Semih ve hukukçu doldurur |
+| 1 | DOĞRU | `privacy-policy.md` Türkçe bölümünde 11 boş alan (5-11, 33, 49, 57, 60, 69; satır numaraları sonradan kaydı). **7 Ekim:** güncel dökümü ve her alan için kimden ne bilgi gerektiği `docs/todo.md` > "Doldurulacaklar" listesinde | P | Semih ve hukukçu doldurur |
 | 2 | DOĞRU | §4:32 Koç aktarımını yalnız açık rızaya dayandırıyor. m.9 (7499 s.K., 1.6.2024) sırası: önce yeterlilik kararı, sonra uygun güvence (standart sözleşme + 5 iş günü içinde Kurul'a bildirim, BCR, taahhütname). Açık rıza yalnız arızi aktarımda geçerli. Günlük otomatik gönderimin (#3) arızi sayılması zor görünüyor. | P | Hukukçu soruları aşağıda |
 | 3 | DOĞRU | Giden alanlar `coachlib.js` `contextText`: profil, sağlık notu, 14 gün özeti, notlar, ilaç adı/doz/uyum. Liste onay metniyle aynı (`coach.js:478`, testle sınanıyor). **Açık nokta:** `cAuto` (`coach.js:401`) uygulama her açıldığında (`index.html:1354`, `1363`) günde bir plan, haftada bir rapor gönderiyor. Politika §5 bunu yazıyor, uygulama içi onay metni yazmıyor. **7 Ekim: ÇÖZÜLDÜ.** Otomatik gönderim kodda yok (`dc5edf8`; `scripts/oto.test.js` kilitliyor): Koç yalnız kullanıcı bir düğmeye bastığında gönderir; onay metni ve politika bunu söylüyor, ikisinin eşitliğini `app.test.js` sınıyor. | P | ~~Otomatik gönderimi kaldır~~ yapıldı |
 | 4 | DOĞRU | İlk 106 satır: 45 işaretli (USDA'yla yeniden karşılaştırıldı, 45/45 tutuyor), 61 işaretsiz. İlk sürümün başlığı "TürKomp ve USDA'dan derlenmiş" diyordu (`e5226d8`); `f06e0fa` yalnız bu cümleyi sildi, değerler aynı kaldı. 61 satırın yaklaşık 28'inin doğrudan USDA karşılığı var (kola, kuru üzüm, ekmek, peynir vb.), kalanı tarif hesabı istiyor. Tarif ikizi olan yalnız 3 satır. | P (lisans) | Yeniden hesapla ya da TürKomp'tan izin iste (G13) |
-| 5 | DOĞRU | Eski APK'lar herkesin bildiği debug anahtarıyla imzalı (`dagitim.md:11`). Yedekle geri yükleme denenmedi. | Z | Telefonda yedek, kaldır, kur, geri yükle |
+| 5 | DOĞRU | Eski APK'lar herkesin bildiği debug anahtarıyla imzalı (`distribution.md:11`). Yedekle geri yükleme denenmedi. | Z | Telefonda yedek, kaldır, kur, geri yükle |
 | 6 | DOĞRU | 13.11.2023 sonrası açılan kişisel hesapta 12 testçi ve kesintisiz 14 gün ([14151465](https://support.google.com/googleplay/android-developer/answer/14151465)). Ek risk: "Medical" sağlık uygulamaları kurumsal hesap istiyor ([13634885](https://support.google.com/googleplay/android-developer/answer/13634885)). | P | G3 kararı, testçileri erken bul |
-| 7 | KISMEN | FGS beyan metni ve video adımları hazır (`play-izin-beyanlari.md:28-31`), sağlık beyanı taslağı da var (`play-data-safety.md`). Video ve Play hesabı yok. | P | Semih videoyu çeker |
+| 7 | KISMEN | FGS beyan metni ve video adımları hazır (`play-permission-declarations.md:28-31`), sağlık beyanı taslağı da var (`play-data-safety.md`). Video ve Play hesabı yok. | P | Semih videoyu çeker |
 | 8 | DOĞRU | 4 açık karar (`play-data-safety.md` "karar vermesi gerekenler"): Koç paylaşım mı, m.6/m.9 metni, Open Food Facts IP adresi, tıbbi beyan | P | Hukukçu ve hekim paketine |
 | 9 | ESKİ | Bugün: 79 `[ ]`, 40 `[~]`, 2 `[x]`, 1 iptal (6 Ekim). 7 Ekim: 102 `[ ]`, 43 `[~]`, 2 `[x]`, 1 iptal (yeni Play ve Doldurulacaklar listeleri dahil) | k | – |
 | 10 | KISMEN | Telefonda geri tuşu Capacitor `backButton`'a bağlı (`index.html:1375`); `popstate` yalnız tarayıcı yedeği. Smoke API 36 emülatörde kurma ve açmayı kanıtlıyor (koşu 128). | K | Telefonda dene |
@@ -34,7 +34,7 @@ Ciddiyet: **P** Play'i engeller · **Z** kullanıcıya zarar · **K** kalite · 
 | 22 | KISMEN | 1804 şablon yeri, 143'ünde `esc()`. Tüm kullanıcı alanlarına `"'><b>` yükü kondu, 13 sekme ve sekme başına 80'e kadar düğme tarandı: **0 enjeksiyon**. Koç metni kaçışlı. Tahlildeki `q` alanı kaçışsız ama `cleanLabs` onu yalnız `<`/`>` bırakıyor, ulaşılamıyor. | k | Ek savunma: `esc(q)` |
 | 23 | DOĞRU | Planda (D-Adım1-2, G1) | özellik | G1 |
 | 24 | KISMEN | Tarihli sonuç listesi var (`labui.js`), değişim sütunu yok | özellik | Sütun ekle (S) |
-| 25-28 | DOĞRU | Plan kütüphanesi, ilerleme fotoğrafı, iOS ve çok dil yok; minSdk 24; fotoğraf, ses ve topluluk bilinçli kararla yok (`yol-haritasi.md` F) | özellik | Karar |
+| 25-28 | DOĞRU | Plan kütüphanesi, ilerleme fotoğrafı, iOS ve çok dil yok; minSdk 24; fotoğraf, ses ve topluluk bilinçli kararla yok (`roadmap.md` F) | özellik | Karar |
 | 29 | DOĞRU | 30.9.2026 yalnız BR/ID/SG/TH, 2027'de dünya geneli. 20 cihazlık sınırlı hesap ve ileri kurulum akışı var ([kaynak](https://developer.android.com/developer-verification)). | P (2027) | Play yolu doğrulamayı zaten kapsıyor |
 | 30 | DOĞRU | Sağlayıcı akışı başka ajanda yeniden tasarlanıyor (`a9df691`) | ürün | Not alındı |
 | 31 | KISMEN | Repoda yerel model izi yok. 388 kcal doğru (301 kcal × 129 g). Kural tabanlı yazıyla kayıt yok. | ürün | Karar |
@@ -49,7 +49,7 @@ Ciddiyet: **P** Play'i engeller · **Z** kullanıcıya zarar · **K** kalite · 
 - ~~Paylaş/kopyala yedeği parolasız çıkabiliyor~~ Çözüldü: tüm yedekler parolalı, en az 10 karakter.
 - Mağaza varlıkları yok: öne çıkan grafik, ekran görüntüleri, IARC ve hedef kitle anketleri. Simge yalnız 192 px, mağaza 512 px istiyor (P).
 - Kurumsal hesap riski (#6).
-- ~~`dagitim.md:43` "versionCode 1" diyor ama CI çalışma numarasını kullanıyor (k).~~ **7 Ekim: düzeltildi** (`dagitim.md` Play bölümü).
+- ~~`distribution.md:43` "versionCode 1" diyor ama CI çalışma numarasını kullanıyor (k).~~ **7 Ekim: düzeltildi** (`distribution.md` Play bölümü).
 
 **Zaten çözülmüş:** 16 KB hizası ve API 36 CI'da denetleniyor; otomatik yedek kapalı; tam alarm, arka plan konumu ve fener izinleri kaldırıldı; depolama izni yok; hesap olmadığı için silme şartı yok; Xiaomi çözümü kodda (telefon testi bekliyor).
 
@@ -60,7 +60,7 @@ Ciddiyet: **P** Play'i engeller · **Z** kullanıcıya zarar · **K** kalite · 
 4. Play Data safety'de Koç "paylaşım" mı? Open Food Facts'e giden IP adresi beyan edilmeli mi?
 5. 18 yaş altına ne yapılmalı?
 
-Risk yönü: otomatik gönderim kaldırılırsa hem m.9 hem Play açısından durum iyileşir. **7 Ekim:** kaldırıldı. Güncel, sadeleştirilmiş soru listesi (5 soru): `docs/hukukcuya-sorular.md`.
+Risk yönü: otomatik gönderim kaldırılırsa hem m.9 hem Play açısından durum iyileşir. **7 Ekim:** kaldırıldı. Güncel, sadeleştirilmiş soru listesi (5 soru): `docs/legal-questions.md`.
 
 ## Yol haritası (öncelik sırasıyla)
 Sahip: C = Claude, S = Semih, H = hukukçu, D = hekim. Emek: S ≤ yarım gün, M ≈ 1 gün, L > 1 gün. ★ = Claude hemen yapabilir, karar gerekmez.
@@ -75,10 +75,10 @@ Sahip: C = Claude, S = Semih, H = hukukçu, D = hekim. Emek: S ≤ yarım gün, 
 | 6 | Mağaza görselleri (512 px simge, grafik, ekran görüntüleri) | C+S | M | sonnet | – |
 | 7 | FGS videosu, sağlık, Data safety ve IARC formları | S | S | – | 1, 3 |
 | 8 | Debug imzasından geçiş: duyuru metni ve telefon denemesi | C+S | S | sonnet | – |
-| 9 | ~~Yedek parolası zorunlu~~ **yapıldı (7 Ekim)**: tüm yedek yollarında parola (şu an en az 10 karakter, `BackupLib.MINPW`); telefon denemesi `yapilacaklar.md`'de | C | S | sonnet | – |
+| 9 | ~~Yedek parolası zorunlu~~ **yapıldı (7 Ekim)**: tüm yedek yollarında parola (şu an en az 10 karakter, `BackupLib.MINPW`); telefon denemesi `todo.md`'de | C | S | sonnet | – |
 | 10 | ~~18 yaş altı kuralı~~ **yapıldı (7 Ekim)**: kurulum 18 altını kabul etmiyor; hukukçu görüşü (yaş beyanı yeterli mi) açık | D+S→C | S | sonnet | 3 |
 | 11 | Telefon testleri: Xiaomi alarmı, geri tuşu, Drive, imza geçişi, adım ve GPS | S | M | – | 8 |
-| 12 | ★ `esc(q)`, ~~`dagitim.md` versionCode düzeltmesi~~ (yapıldı, 7 Ekim), USDA eşleme denetimi (`esc(q)` ve eşleme denetimi doğrulanmadı) | C | S | sonnet | – |
+| 12 | ★ `esc(q)`, ~~`distribution.md` versionCode düzeltmesi~~ (yapıldı, 7 Ekim), USDA eşleme denetimi (`esc(q)` ve eşleme denetimi doğrulanmadı) | C | S | sonnet | – |
 | 13 | ★ Tahlil değişim sütunu | C | S | sonnet | – |
 | 14 | CSS'i ayırmak | C | M | sonnet | diğer ajanlar bitince |
 | 15 | Lif, şeker, sodyum; yazıyla kayıt; Health Connect | C | M-L | opus | karar, G1 |

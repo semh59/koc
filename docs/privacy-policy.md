@@ -1,6 +1,6 @@
 # NeoWell Gizlilik Politikası ve KVKK Aydınlatma Metni
 
-> **Bu metin hukuki danışmanlık değildir.** Uygulamanın gerçek davranışından (kod ve izin listesi) çıkarılmış bir taslaktır. Yayınlamadan önce bir hukukçuya gösterilmesi önerilir (açık karar: G7, `docs/yol-haritasi.md`). Köşeli parantezli `[DOLDURULACAK: ...]` alanları yayın öncesi **mutlaka** doldurulmalıdır; hiçbiri uydurulmamıştır. Her alanın kimden hangi bilgiyle doldurulacağı: `docs/yapilacaklar.md` > "Doldurulacaklar".
+> **Bu metin hukuki danışmanlık değildir.** Uygulamanın gerçek davranışından (kod ve izin listesi) çıkarılmış bir taslaktır. Yayınlamadan önce bir hukukçuya gösterilmesi önerilir (açık karar: G7, `docs/roadmap.md`). Köşeli parantezli `[DOLDURULACAK: ...]` alanları yayın öncesi **mutlaka** doldurulmalıdır; hiçbiri uydurulmamıştır. Her alanın kimden hangi bilgiyle doldurulacağı: `docs/todo.md` > "Doldurulacaklar".
 
 Son güncelleme: [DOLDURULACAK: yayın tarihi] · Uygulama sürümü: [DOLDURULACAK]
 

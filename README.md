@@ -23,7 +23,7 @@ NeoWell tıbbi cihaz değildir, tanı koymaz ve tedavi önermez; hekim yerine ge
 3. Açılan boş depoda **uploading an existing file** bağlantısına tıkla. Bu klasörün **içindekileri** sürükle: `www`, `scripts`, `assets`, `tools`, `docs`, `e2e`, `signing`, `.github`, `package.json`, `package-lock.json`, `capacitor.config.json`, `.gitignore`, `.gitattributes`. `node_modules`, `android` ve `test-results` klasörlerini yükleme. Klasörün kendisini değil, içindekileri yükle. Depo mutlaka **Private** kalmalı. **Commit changes** de.
    - `.github` gizli klasör olduğu için dosya yöneticisinde görünmeyebilir. Mac'te Cmd+Shift+. ile, Windows'ta Görünüm > Gizli öğeler ile göster. Telefondan yüklüyorsan bunu bilgisayardan yapmak daha rahat.
    - `tools` ve `docs` da gerekli: testler besin listesini ve belge metinlerini bunlarla karşılaştırır, eksikse derleme durur.
-4. **Release imza anahtarını** GitHub'a gizli değişken olarak ekle: derleme bu anahtar yoksa bilerek durur (herkesçe bilinen debug anahtarıyla imzalı APK yayınlanmasın diye). Hangi dört değişken ve nasıl ekleneceği: [docs/dagitim.md](docs/dagitim.md). Anahtar depoda değil, senin yedeğinde durur; `signing` klasöründe yalnız CI içi deneme için herkesçe bilinen bir debug anahtarı vardır, güncelleme imzası değildir.
+4. **Release imza anahtarını** GitHub'a gizli değişken olarak ekle: derleme bu anahtar yoksa bilerek durur (herkesçe bilinen debug anahtarıyla imzalı APK yayınlanmasın diye). Hangi dört değişken ve nasıl ekleneceği: [docs/distribution.md](docs/distribution.md). Anahtar depoda değil, senin yedeğinde durur; `signing` klasöründe yalnız CI içi deneme için herkesçe bilinen bir debug anahtarı vardır, güncelleme imzası değildir.
 5. Depoda **Actions** sekmesine geç. "APK derle" çalışmaya başlamış olmalı. Başlamadıysa soldan **APK derle**, sonra **Run workflow** de. Testler, derleme ve denetimler dahil birkaç dakika sürer; yanında yeşil tik çıkınca bitmiştir.
 6. Telefonunun tarayıcısında deponun ana sayfasına git, sağdaki **Releases** bölümünden **NeoWell (son sürüm)** e gir ve `neowell.apk` dosyasını indir. (Depo Private olduğu için GitHub'a giriş yapman istenir.) `neowell.aab` dosyası Google Play yüklemesi içindir, telefona kurulmaz.
 7. İndirilen dosyaya dokun. Android "bilinmeyen kaynaklardan yükleme" izni isteyecek, bu uygulama için izin ver ve kur. Google Play Protect "uygulama taranmadı" uyarısı gösterirse **Yine de yükle** de, uygulamayı sen derledin.
@@ -56,7 +56,7 @@ Notlar:
 
 ## Güncelleme
 
-Depoya (`main` dalına) her değişiklik yüklediğinde (örneğin GitHub'da `www/index.html` dosyasını düzenleyip kaydettiğinde) APK kendiliğinden yeniden derlenir. Her derleme aynı release anahtarıyla imzalandığı için yeni APK'yı eskisinin üstüne kurabilirsin, veriler silinmez. Yine de güncellemeden önce Ayarlar'dan yedek al. İmza ve yayın akışı: [docs/dagitim.md](docs/dagitim.md).
+Depoya (`main` dalına) her değişiklik yüklediğinde (örneğin GitHub'da `www/index.html` dosyasını düzenleyip kaydettiğinde) APK kendiliğinden yeniden derlenir. Her derleme aynı release anahtarıyla imzalandığı için yeni APK'yı eskisinin üstüne kurabilirsin, veriler silinmez. Yine de güncellemeden önce Ayarlar'dan yedek al. İmza ve yayın akışı: [docs/distribution.md](docs/distribution.md).
 
 **Önemli:** Release imzasından (Ekim 2026) önce kurduğun sürüm debug anahtarıyla imzalıdır, Android yenisini üstüne kurmaz. Bir kereliğine yedek al, eski uygulamayı sil, yenisini kur, yedeği geri yükle.
 
@@ -73,7 +73,7 @@ Depoya (`main` dalına) her değişiklik yüklediğinde (örneğin GitHub'da `ww
 - Nabız (Daha fazla > Nabız): parmağı arka kameraya ve flaşa koyup 30 saniyede ölçer. Sağlık cihazı değildir; sayıyı yorumlamaz, ölçüm net değilse sayı vermez. Görüntü saklanmaz, yalnız atım sayısı kaydedilir.
 - Uygulama adı ve paket adı NeoWell (`com.neowell.app`) olarak değişti. Eski "Koç" uygulaması ayrı bir uygulama sayılır: önce eskisinden yedek al, NeoWell'i kur, yedeği geri yükle, sonra eskisini sil. (Yapay zekâ sohbet sekmesinin adı Koç olarak kaldı.)
 - APK ve Play'e yüklenecek AAB release (Play upload) anahtarıyla imzalıdır; anahtar depoda değil, GitHub gizli değişkenlerinde ve sahibinin yedeğindedir.
-- Gizlilik politikası taslağı: [docs/gizlilik-politikasi.md](docs/gizlilik-politikasi.md). Yayın öncesi doldurulacak alanlar ve bekleyen işler: [docs/yapilacaklar.md](docs/yapilacaklar.md).
+- Gizlilik politikası taslağı: [docs/privacy-policy.md](docs/privacy-policy.md). Yayın öncesi doldurulacak alanlar ve bekleyen işler: [docs/todo.md](docs/todo.md).
 
 ## Geliştirme ve testler
 
@@ -84,7 +84,7 @@ npm run test:e2e      # Playwright ile tarayıcıda uçtan uca senaryolar (ilk s
 npm run test:clock     # testleri farklı sahte saat ve saat dilimleriyle yeniden çalıştırır
 ```
 
-CI (`.github/workflows/apk.yml`) önce `npm test` ve adım sayacı Java testlerini çalıştırır, sonra Android projesini oluşturup APK ve AAB derler, imzayı, manifest izinlerini, hedef API 36'yı ve 16 KB hizasını denetler. Elle çalıştırmada (Run workflow) emülatörde açılış denemesi (smoke) de koşar. Ayrıntı: [docs/dagitim.md](docs/dagitim.md).
+CI (`.github/workflows/apk.yml`) önce `npm test` ve adım sayacı Java testlerini çalıştırır, sonra Android projesini oluşturup APK ve AAB derler, imzayı, manifest izinlerini, hedef API 36'yı ve 16 KB hizasını denetler. Elle çalıştırmada (Run workflow) emülatörde açılış denemesi (smoke) de koşar. Ayrıntı: [docs/distribution.md](docs/distribution.md).
 
 ## Bilgisayarda hızlı deneme
 

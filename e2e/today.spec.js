@@ -1,5 +1,5 @@
 "use strict";
-const {test,expect,state,entry}=require("./fixtures");
+const {test,expect,state,entry,day}=require("./fixtures");
 
 const ring=(page,label)=>page.locator(".ring",{has:page.locator(".rl",{hasText:label})});
 
@@ -15,6 +15,19 @@ test.describe("Today",()=>{
     await expect(app.toast).toHaveText("Kaydedildi. Bugün 650 / 2000 kcal");
     await expect(ring(page,"Kalori").locator(".rc")).toContainText("1350");
     await expect(ring(page,"Kalori").locator(".rs")).toHaveText("650 / 2000 kcal");
+  });
+
+  test("More tab opens the sleep and mood summary with the watch source",async({app,page})=>{
+    await app.open({seed:state({},{sleep:[{day:day(-1),min:420,src:"hc"},{day:day(0),min:480,q:4}],mood:[{day:day(0),v:4,t:"Güzel"}]})});
+    await app.go("more");
+    await page.click('#view [data-hb="more"]');
+    const sheet=page.locator("#sheet.on");
+    await expect(sheet).toContainText("Son 2 gecenin ortalaması");
+    await expect(sheet).toContainText("7 sa 30 dk");
+    await expect(sheet).toContainText("Saatten (Health Connect)");
+    await expect(sheet).toContainText("Güzel");
+    await sheet.locator('[data-hb="sleep"]').click();
+    await expect(page.locator("#sheet.on h3")).toHaveText("Uyku");
   });
 
   test("add water: ring and daily total, Undo",async({app,page})=>{

@@ -71,6 +71,15 @@ function sheetSleep(){
   <label class="lbl" for="hbq">Uyku kalitesi (isteğe bağlı)</label><select class="in" id="hbq"><option value="">Seçilmedi</option>${MOODN.map((l,i)=>`<option value="${i+1}">${i+1} · ${l}</option>`).join("")}</select>
   <div class="ferr" id="hberr" role="alert"></div><button class="btn" data-hb="sleepgo">Kaydet</button>${hbHist(S.sleep.slice().reverse().map(x=>hbRow(`<b class="num">${hbDur(x.min)}</b>`,"sdel:"+x.day,`${fd(x.day)}${x.q?` · Kalite: ${MOODN[x.q-1].toLowerCase()}`:""}`)))}`);
 }
+/* More tab entry: weekly summary of the newest 7 sleep and mood records with the Health Connect source marked, and shortcuts to add either. */
+function sheetSleepMood(){
+  const sl=S.sleep.slice(-7),mo=S.mood.slice(-7),avg=a=>a.reduce((t,x)=>t+x,0)/a.length;
+  const sq=sl.filter(x=>x.q);
+  const sum=sl.length?`<div class="row"><span class="grow">Son ${sl.length} gecenin ortalaması<small class="db mut">${sq.length?`Ortalama kalite: ${MOODN[Math.round(avg(sq.map(x=>x.q)))-1].toLowerCase()}`:"Kalite girilmedi"}</small></span><b class="num">${hbDur(Math.round(avg(sl.map(x=>x.min))))}</b></div>`:`<p class="mut">Henüz uyku kaydı yok. Saatten alabilir ya da elle ekleyebilirsin.</p>`;
+  const nights=sl.slice().reverse().map(x=>`<div class="row"><span class="grow">${fd(x.day)}${x.src==="hc"?`<small class="db mut">Saatten (Health Connect)</small>`:x.q?`<small class="db mut">Kalite: ${MOODN[x.q-1].toLowerCase()}</small>`:""}</span><b class="num">${hbDur(x.min)}</b></div>`).join("");
+  const moods=mo.length?`<div class="grp">Ruh hali</div>${mo.slice().reverse().map(x=>`<div class="row"><span class="grow"><span aria-hidden="true">${MOODS[x.v-1]}</span> ${MOODN[x.v-1]}<small class="db mut ell">${fd(x.day)}${x.t?" · "+esc(x.t):""}</small></span></div>`).join("")}`:"";
+  openSheet(`<h3>Uyku ve ruh hali</h3>${sum}${nights?`<div class="grp">Geceler</div>${nights}`:""}${moods}<div class="hrow mt-2"><button class="btn" data-hb="sleep">Uyku ekle</button><button class="btn" data-hb="mood">Ruh hali ekle</button></div>`);
+}
 function sleepSave(){
   const b=$("#hbb").value,w=$("#hbw").value,h=num($("#hbh").value);
   const min=b&&w?HabitLib.sleepMin(b,w):isNaN(h)?null:Math.round(h*60);
@@ -98,7 +107,8 @@ function moodSave(v){
 document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-hb]");if(!el)return;
   const a=el.dataset.hb;
-  if(a==="sleep")sheetSleep();
+  if(a==="more")sheetSleepMood();
+  else if(a==="sleep")sheetSleep();
   else if(a==="fasttoggle")fastToggle();
   else if(a.startsWith("plan:")){S.fast.plan=+a.slice(5);save();render()}
   else if(a==="fastgo")fastGo();

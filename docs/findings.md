@@ -1,6 +1,6 @@
 # İnceleme bulguları
 
-Plan: `docs/inceleme-plani.md`. Ciddiyet: K kritik, Y yüksek, O orta, D düşük. Durum: Düzeltildi, Açık, Karar (senin kararın), Bilgi.
+Plan: `docs/review-plan.md`. Ciddiyet: K kritik, Y yüksek, O orta, D düşük. Durum: Düzeltildi, Açık, Karar (senin kararın), Bilgi.
 
 ## Faz 1: Veri bütünlüğü ve kayıp
 
@@ -39,7 +39,7 @@ Bakılanlar: ağ çağrıları, Koç'a giden veri, onay metni ve politika eşle�
 | No | Ciddiyet | Yer | Bulgu | Durum |
 |---|---|---|---|---|
 | 3-1 | Bilgi | ağ | Uygulama yalnız iki yere bağlanır: Koç sağlayıcıları (onayla, kullanıcı anahtarıyla) ve Open Food Facts (yalnız barkod numarası). Başka `fetch`, izleme ya da analiz kütüphanesi yok. | Doğrulandı. |
-| 3-2 | Y | `docs/gizlilik-politikasi.md`, `docs/play-izin-beyanlari.md`, `docs/play-data-safety.md` | Kamerayla nabız, Health Connect okuma (adım, uyku, nabız) ve nabız verisi politika ve Play belgelerinde yoktu. | Düzeltildi: üçü de güncellendi (nabız Koç'a gönderilmez, görüntü saklanmaz, yalnız okuma). |
+| 3-2 | Y | `docs/privacy-policy.md`, `docs/play-permission-declarations.md`, `docs/play-data-safety.md` | Kamerayla nabız, Health Connect okuma (adım, uyku, nabız) ve nabız verisi politika ve Play belgelerinde yoktu. | Düzeltildi: üçü de güncellendi (nabız Koç'a gönderilmez, görüntü saklanmaz, yalnız okuma). |
 | 3-3 | O | `www/modules/coach/coach.js` `CONSENT_NOT`, politika §5 | "Gönderilmeyenler" listesinde nabız yoktu. | Düzeltildi: iki metin birlikte güncellendi, eşleşme testi geçiyor. Gönderilenler listesi genişlemediği için rıza sürümü artırılmadı. |
 | 3-4 | O | Koç bağlamı | Saatten otomatik gelen adım ve uyku, Koç'a giden "son 14 gün özeti"ne girer (elle girilenle aynı kategori, rıza metni "adım ve varsa uyku" diyor). Nabız girmez. | Düzeltildi: saatten (Health Connect) gelen adım ve uyku Koç bağlamına girmiyor (telefon sensörü ve elle girilenler giriyor); onay metni ve politika buna göre güncellendi. Test: `app.test.js`. |
 | 3-5 | Karar | hukuk | Politika metni değişti (nabız, Health Connect). Yayına çıkılacaksa avukata yeniden gösterilmeli. Şu an yalnız kendi telefonun olduğundan bekliyor. | Karar (yayın kararına bağlı). |
@@ -96,11 +96,11 @@ Bakılanlar: 26 Java dosyasının tamamı en az bir kez satır satır okundu (bu
 | No | Ciddiyet | Yer | Bulgu | Durum |
 |---|---|---|---|---|
 | 10-1 | Bilgi | `www/` | Kullanılmayan üst düzey işlev ve sabit taraması (64 dosya + index.html): tek aday vardı (yeni `HG_TYPE`), silindi. | Düzeltildi. |
-| 10-2 | O | `www/index.html` | Ana betik tek parçaydı (180 KB). | Düzeltildi: `index.html` ~120 satır; ana betik `www/main/` altında 7 dosya, CSS ayrı, veri modülleri `www/modules/<modül>/`, çekirdek `www/kernel/`. Modül sınırı CI'da denetlenir, depo modül başına parçalı (`docs/mimari-plani.md`). |
+| 10-2 | O | `www/index.html` | Ana betik tek parçaydı (180 KB). | Düzeltildi: `index.html` ~120 satır; ana betik `www/main/` altında 7 dosya, CSS ayrı, veri modülleri `www/modules/<modül>/`, çekirdek `www/kernel/`. Modül sınırı CI'da denetlenir, depo modül başına parçalı (`docs/architecture-plan.md`). |
 | 10-3 | D | bağımlılıklar | Yalnız yama farkı: Capacitor 8.5.2 → 8.5.3, local-notifications 8.2.1 → 8.3.1, Playwright 1.63 → 1.64. jsdom 24 → 30 ve pdfjs-dist 4 → 6 büyük sürüm (yalnız test/ayrı), acele yok. Dependabot izliyor. | Bilgi. |
 | 11-1 | Y | CI | Emülatörde ekran kilidi tanımlı olmadığı için uygulama kilidi doğrulama penceresi hiç açılmıyordu; `USE_BIOMETRIC` eksikliği çökmeye yol açtı (bulgu 14-7). | Düzeltildi: CI APK manifestinde `USE_BIOMETRIC` yoksa derleme durur. |
 | 11-2 | O | CI smoke | Su ve widget adımları arada bir (yaklaşık 3 derlemede 1) emülatörde zamanlamaya takılıyor; yeniden çalıştırınca geçiyor. Başarısızlıkta kuyruk içeriği artık loga yazılıyor. | Düzeltildi (izleniyor): su/widget adımı yeniden çalıştırmada geçiyor (kod yolu aynı); başarısızlıkta kuyruk içeriği ve süreç durumu loga yazılıyor. Ayrıca "Releases'e yükle" adımı geçici GitHub 403 hatasında (236. derleme) 3 deneme yapıyor. |
 | 11-3 | Karar | imza | APK, depodaki sabit anahtarla imzalı (kendi telefonun için yeterli). Play'e çıkılırsa gerçek yükleme anahtarı ve yedeği gerekir. | Karar (yayın kararına bağlı). |
-| 12-1 | D | `docs/` | minSdk anlatımı: güncel değer 24 (dagitim.md, yapilacaklar.md); `plan-6-ozellik.md` içindeki "mevcut 23" tarihi plan notu. | Bilgi, değişiklik gerekmez. |
-| 12-2 | O | `docs/telefon-testi-kisa.md` | Güncel: A-G bölümleri, madde 1-30. | Güncel. |
+| 12-1 | D | `docs/` | minSdk anlatımı: güncel değer 24 (distribution.md, todo.md); `plan-6-features.md` içindeki "mevcut 23" tarihi plan notu. | Bilgi, değişiklik gerekmez. |
+| 12-2 | O | `docs/phone-test-short.md` | Güncel: A-G bölümleri, madde 1-30. | Güncel. |
 | 13-1 | Bilgi | ürün | Geçmiş, takvim, arama, uzun aralıkta Trend, günlük halkalar bu turda yapıldı. Kalan başlıca eksikler: kamerayla nabız doğruluğunun telefonda doğrulanması, Health Connect verilerinin telefonda doğrulanması, Play yayın kararı (avukat, Sağlık Bağlantısı beyanı). | Açık (telefon + karar). |

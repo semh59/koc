@@ -4,7 +4,7 @@
 #   raw 1.0 (salad, meze, puree) | soup 0.90 | stew 0.85 (covered pot) | pilaf 0.94 | bake 0.80 | fry 0.85 | dough 0.88 | dessert 0.90
 # Fat absorption: the fat taken up while frying (not what stays on the surface) is written as a separate ingredient: pan frying 15-18 g fat per 100 g vegetable or dough, 12-14 g per 100 g meatballs, 8-10 g per 100 g floured fish.
 # Range: fat ingredients (olive oil, butter, sunflower oil, margarine) are x0.6 in the low-fat variant and x1.5 in the high-fat one; the 100 g kcal becomes lo/hi.
-# Spices, salt and pepper are not counted (under 1% kcal effect). Proxy USDA records: yufka = "Phyllo dough", beyaz peynir = feta, kaşar = provolone, lor = ricotta (part skim); the CoFID/CIQUAL comparison is in section F of docs/besin-veri-arastirmasi.md.
+# Spices, salt and pepper are not counted (under 1% kcal effect). Proxy USDA records: yufka = "Phyllo dough", beyaz peynir = feta, kaşar = provolone, lor = ricotta (part skim); the CoFID/CIQUAL comparison is in section F of docs/nutrition-data-research.md.
 Şehriye çorbası | soup | 1 kase (250 g)=250 | Makarna (çiğ) 60;Tereyağı 15;Domates salçası 20;Su 1000
 Terbiyeli tavuk çorbası | soup | 1 kase (250 g)=250 | Tavuk göğsü (çiğ) 150;Buğday unu 20;Yumurta sarısı 34;Limon suyu 15;Tereyağı 20;Su 1200
 Düğün çorbası | soup | 1 kase (250 g)=250 | Dana kuşbaşı (çiğ) 200;Buğday unu 30;Tereyağı 30;Yumurta sarısı 34;Yoğurt 100;Limon suyu 15;Su 1500

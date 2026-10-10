@@ -1,6 +1,6 @@
 # Kısa telefon testi (öncelik sırasıyla, yaklaşık 40 dk)
 
-Uzun liste `docs/yapilacaklar.md` içinde kalır. Bu liste yalnız en riskli ve geri dönüşü zor şeyleri kapsar. Her madde: ne yapılır, ne görülmeli. Sorun varsa maddenin numarasını ve ekran görüntüsünü gönder.
+Uzun liste `docs/todo.md` içinde kalır. Bu liste yalnız en riskli ve geri dönüşü zor şeyleri kapsar. Her madde: ne yapılır, ne görülmeli. Sorun varsa maddenin numarasını ve ekran görüntüsünü gönder.
 
 Önce: Hakkında bölümünde sürüm numarası son yayınla aynı olmalı.
 

@@ -309,7 +309,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   ok("archive: over the total message cap old chats are dropped, the newest stays",ev("(()=>{const c=i=>({id:i,t:i,title:'t'+i,msgs:Array.from({length:150},(_,j)=>({id:j+1,role:'user',text:'x',t:1}))});const r=trimChats([1,2,3,4,5,6].map(c));return r.length===4&&r[0].id===1})()"));
   ok("history: only an applied card goes with macros and meal; pending and rejected are empty",ev("(()=>{const m=st=>({card:{kind:'log',state:st,items:[{type:'food',text:'a',kcal:100,p:5,c:10,f:2,meal:'breakfast'}]}});const a=cHistLog(m('ok'))[0];return a.p===5&&a.c===10&&a.f===2&&a.meal==='breakfast'&&cHistLog(m('no')).length===0&&cHistLog(m('pending')).length===0})()"));
   ok("a stored provider list is kept as it is (no built-in is added back)",ev("JSON.stringify(cleanCoach({providers:[{id:'groq',name:'Groq',base:'https://api.groq.com/openai/v1',model:'m',on:true,health:true}]}).providers.map(p=>[p.id,p.model,p.on,p.health]))")==='[["groq","m",true,true]]');
-  ok("provider names from one source: the privacy screen, policy, data safety and store text all list them",(()=>{const n=ev("defProviders().map(p=>p.name)"),rd=f=>require("fs").readFileSync(path.join(__dirname,"../docs/"+f),"utf8");ev("sheetPrivacy()");const pv=$q("#sheet").textContent;ev("closeSheet()");return n.length===6&&n.every(x=>pv.includes(x)&&["gizlilik-politikasi.md","play-data-safety.md","magaza-metni.md"].every(f=>rd(f).includes(x)))})());
+  ok("provider names from one source: the privacy screen, policy, data safety and store text all list them",(()=>{const n=ev("defProviders().map(p=>p.name)"),rd=f=>require("fs").readFileSync(path.join(__dirname,"../docs/"+f),"utf8");ev("sheetPrivacy()");const pv=$q("#sheet").textContent;ev("closeSheet()");return n.length===6&&n.every(x=>pv.includes(x)&&["privacy-policy.md","play-data-safety.md","store-listing.md"].every(f=>rd(f).includes(x)))})());
   ev("setKey('groq','KEY-sirri-12345');S.settings.healthNote='gizli not'");
   ev("document.querySelector('#bkpw')||document.body.insertAdjacentHTML('beforeend','<input id=\"bkpw\">')");
   ev("document.querySelector('#bkpw2')||document.body.insertAdjacentHTML('beforeend','<input id=\"bkpw2\"><div id=\"bkw\"></div>')");
@@ -2777,7 +2777,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     reset();
   }
   { // the consent text matches the real data and the policy
-    const doc=require("fs").readFileSync(path.join(__dirname,"../docs/gizlilik-politikasi.md"),"utf8"),sent=ev("CONSENT_SENT"),note=ev("CONSENT_NOT");
+    const doc=require("fs").readFileSync(path.join(__dirname,"../docs/privacy-policy.md"),"utf8"),sent=ev("CONSENT_SENT"),note=ev("CONSENT_NOT");
     ok("consent text version 2; consent of an old version lapses",ev("CONSENT_V")===2&&ev("cleanSettings({consent:true,consentV:1}).consent")===false);
     ok("the in-app consent text and policy section 5 carry the same sent/not-sent list",doc.includes("**Koç'a gönderilenler** (uygulama içindeki onay metniyle aynıdır): "+sent+".")&&doc.includes("**Koç'a ne zaman gider:** "+ev("CONSENT_WHEN"))&&ev("consentHtml()").includes(ev("CONSENT_WHEN"))&&doc.includes("**Koç'a gönderilmeyenler:** "+note)&&ev("consentHtml()").includes(sent)&&ev("consentHtml()").includes(note));
     reset();ev("S.settings.medOn=true;S.meds=[{id:1,n:'Ilac',d:'1 tablet',t:['08:00'],w:[1],on:true,k:10}];S.mealTpl=[];S.myFoods=[{n:'Kendi besinim',k:100,p:5}]");

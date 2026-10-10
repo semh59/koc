@@ -9,7 +9,7 @@ Tarih: 2 Ekim 2026. Kod durumu: `9953416`.
 
 ## 1. NeoWell'in gerçek egzersiz envanteri (koddan)
 
-Salon tarafının tamamı telefonda denenmedi. `docs/yapilacaklar.md` içinde salonla ilgili maddelerin hepsi `[ ]` (satır 39, 40, 46, 55, 56); hareket algılama `[~]` (satır 34). Kütüphane, animasyon ve zamanlayıcı için test maddesi bile yok.
+Salon tarafının tamamı telefonda denenmedi. `docs/todo.md` içinde salonla ilgili maddelerin hepsi `[ ]` (satır 39, 40, 46, 55, 56); hareket algılama `[~]` (satır 34). Kütüphane, animasyon ve zamanlayıcı için test maddesi bile yok.
 
 | Alan | Gerçek durum | Kanıt |
 |---|---|---|
@@ -34,7 +34,7 @@ Salon tarafının tamamı telefonda denenmedi. `docs/yapilacaklar.md` içinde sa
 | Antrenman kalorisi | Yok. Bitirilen antrenman yalnız dakika olarak "spor" kaydı olur. Kalori yalnız algılanan yürüyüş/koşuda. | `gym.js:300` |
 | Süperset, drop set, RPE/RIR | Yok. Set türü olarak yalnız ısınma var. Not egzersiz başına (set başına değil). | `gym.js:59-63` |
 | İçe/dışa aktarma | CSV yok. Tüm veri (antrenmanlar dahil) JSON yedek metni ve şifreli Drive yedeğiyle taşınır. Veri WebView localStorage'da. | `index.html:420, 820` |
-| Saat, giyilebilir | Yok. Health Connect bekliyor. | `yapilacaklar.md:14` |
+| Saat, giyilebilir | Yok. Health Connect bekliyor. | `todo.md:14` |
 | Sosyal | Yok (bilinçli: hesapsız). | |
 
 **Dokunuş sayısı:** Rakiplerde ölçülmedi (elle kullanım gerekir). NeoWell'de koddan: şablondan başlatma 1, önceden dolu set 1 (✓), değeri değişen set 2 giriş + ✓, "Set ekle" 1 dokunuş; süperset yok.
@@ -109,7 +109,7 @@ Apple Fitness+, Caliverse ve Mynet için güvenilir veri bulunamadı, tabloya al
 5. **Salon, beslenme ve sağlık tek uygulamada**: Antrenman günü kaloriyle, kilo trendiyle ve Koç'la aynı yerde.
 6. **Koç'tan program**: Ücretsiz sağlayıcıyla yapay zekâ programı. **Uyarı:** internet, kullanıcının kendi API anahtarı ve veri paylaşım onayı gerekir; "çevrimdışı Koç" denemez.
 
-Hepsi telefonda denenmedi. Pazarlamadan önce `yapilacaklar.md` 39, 40, 46, 55, 56 ve kütüphane/zamanlayıcı testleri yapılmalı.
+Hepsi telefonda denenmedi. Pazarlamadan önce `todo.md` 39, 40, 46, 55, 56 ve kütüphane/zamanlayıcı testleri yapılmalı.
 
 ## 5. c) Geride olduğumuz yerler (önem sırasıyla)
 
@@ -159,7 +159,7 @@ Değer 1-5, emek S/M/L.
 | 13 | **Isınma/esneme akışları** (5-10 dk, 41 esneme egzersizinden) | 3 | S | Gymshark, NTC mobilite | Rehberli mod (12) ya da süreli şablon | Ağrı/tedavi iddiası olmamalı |
 | 14 | **Kendi egzersizi: tür, bölge, ekipman, figür şablonu seçimi** | 3 | S | Hevy ücretsizde 7 ile sınırlı (İK) | `cleanGym` | — |
 | 15 | **Hızlı set girişi** (kg/tekrar ± düğmesi, ✓ sonrası sıradaki sete odak) | 3 | S | Strong ve Hevy'nin hızı övülüyor (İK) | Set zaten ~1 dokunuş; kazanç değer değiştirmede | Düşük |
-| 16 | **Video yerine animasyon yeterli mi** | — | — | Animasyon ve 2 karelik foto, kayıt sırasında hatırlatma için çoğu kullanıcıya yeter; NTC/Fitify tarzı takip edilen video akışı için yetmez | — | Video üretimi önceki kararla reddedildi (`rekabet-ozellik.md:162`) |
+| 16 | **Video yerine animasyon yeterli mi** | — | — | Animasyon ve 2 karelik foto, kayıt sırasında hatırlatma için çoğu kullanıcıya yeter; NTC/Fitify tarzı takip edilen video akışı için yetmez | — | Video üretimi önceki kararla reddedildi (`competition-features.md:162`) |
 | 17 | *Ek:* **Yerel haftalık antrenman notu** ("bu hafta göğüs 6 set, aralığın altında"), yapay zekâsız | 3 | S | Boostcamp haftalık rapor (İK) | `gWeekRegions` | — |
 | 18 | *Ek:* **Ev ekipmanı profili** (eldeki dambıl/plaka ağırlıkları) → öneri ve plaka bu ağırlıklara yuvarlanır | 3 | S | TR'de ev kullanıcısı yaygın (Leap) | `Algo.plates` envanter parametresi zaten var | — |
 | 19 | *Ek:* **Antrenman verisini localStorage'dan dosyaya/SQLite'a taşıma** | 3 | M | Uzun geçmişte localStorage 5-10 MB sınırı veri kaybı riski | Yedek yapısı | Göç hatası |
