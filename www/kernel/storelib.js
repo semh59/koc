@@ -10,8 +10,7 @@ const Store=(()=>{
     del:k=>{try{localStorage.removeItem(k)}catch{}}
   };
   const S={mode:"ls",failed:false,rev:0,sharded:false};
-  let db=null,cache={},pending=new Map(),busy=false,idleCbs=[],stateCb=null,extCb=null,chan=null;
-  const tabId=Math.random().toString(36).slice(2);
+  let db=null,cache={},pending=new Map(),busy=false,idleCbs=[],stateCb=null;
 
   const open=()=>new Promise((res,rej)=>{
     let done=false;const fin=(f,v)=>{if(!done){done=true;f(v)}};
@@ -39,7 +38,7 @@ const Store=(()=>{
       const st=tx.objectStore("kv");
       for(const [k,rec] of batch)rec===null?st.delete(k):st.put(rec,k);
     }catch{return failBatch(batch)}
-    tx.oncomplete=()=>{busy=false;setFailed(false);if(chan&&batch.some(([k])=>k===META))try{chan.postMessage({rev:S.rev,id:tabId})}catch{}flush()};
+    tx.oncomplete=()=>{busy=false;setFailed(false);flush()};
     tx.onabort=tx.onerror=()=>failBatch(batch);
   }
   /* Not written: nothing is lost, the batch stays pending for the next write; a newer value queued meanwhile wins. */
@@ -61,19 +60,6 @@ const Store=(()=>{
       }
       for(const k in recs)cache[k]=recs[k].v;
       S.mode="idb";
-      if(typeof BroadcastChannel!=="undefined"){
-        chan=new BroadcastChannel("neowell_store");
-        chan.onmessage=async ev=>{
-          if(!ev.data||ev.data.id===tabId||!(ev.data.rev>S.rev))return;
-          try{
-            const m=await readAll([META]);if(!m[META])return;
-            const mt=JSON.parse(m[META].v);if(!(mt.rev>S.rev))return;
-            const r=await readAll(mt.ids.map(i=>"m:"+i));
-            for(const i of mt.ids)if(r["m:"+i])cache["m:"+i]=r["m:"+i].v;
-            S.rev=mt.rev;S.ids=mt.ids;if(extCb)extCb(S.getShards());
-          }catch{}
-        };
-      }
     }).catch(()=>{db=null;S.mode="ls";cache={}});
   };
   /* {shard id: text}. putShards writes only the given shards plus m:meta in one transaction (all or nothing). */
@@ -99,7 +85,6 @@ const Store=(()=>{
   /* Resolves once pending writes are done (tests, before exit). */
   S.whenIdle=()=>new Promise(r=>{idleCbs.push(r);idle()});
   S.onState=f=>{stateCb=f};
-  S.onExternal=f=>{extCb=f};
   return S;
 })();
 if(typeof module!=="undefined")module.exports=Store;

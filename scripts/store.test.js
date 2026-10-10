@@ -1,6 +1,5 @@
 /* Store: fake IndexedDB, shard transaction and revision, retry after a failed write, localStorage fallback. */
 const {ok,finish}=require("./ok");
-globalThis.BroadcastChannel=undefined;
 const path=require.resolve("../www/kernel/storelib.js");
 function mkLs(init={}){const m=new Map(Object.entries(init));return {getItem:k=>m.has(k)?m.get(k):null,setItem:(k,v)=>{m.set(k,String(v))},removeItem:k=>{m.delete(k)},m}}
 /* Fake IndexedDB: the data (disk) is supplied by the test; every transaction completes in its own tick. */

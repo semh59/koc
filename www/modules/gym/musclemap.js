@@ -54,4 +54,3 @@ const MuscleMap=(()=>{
   }
   return {html,lvl,tx,REGIONS,LO};
 })();
-if(typeof module!=="undefined")module.exports=MuscleMap;

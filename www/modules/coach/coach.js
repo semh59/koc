@@ -978,15 +978,13 @@ function cClick(v,el){
       c.logged=true;return addFoods([{text:c.f.n,v:c.f.k,p:c.f.p==null?undefined:c.f.p,meal:mealNow()}],dayKey(),`${c.f.n} günlüğe eklendi`,()=>{c.logged=false});
     }
     case "addfood":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card&&m.card.kind==="food"&&m.card.state==="pending"){if(Nutrition.addMy(m.card.f.n,m.card.f.k,m.card.f.p)){m.card.state="ok";save();render();toast("Besin listene eklendi")}else toast(`Listen dolu (en fazla ${MYFOODS_MAX} besin)`)}return}
-    case "nofood":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card){m.card.state="no";save();render()}return}
+    case "no":case "nok":case "nofood":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card){m.card.state="no";save();render()}return}
     case "savefood":{
       const m=S.chat.find(x=>x.id===+p1);if(!m||!m.card||m.card.kind!=="log"||m.card.saved)return;
       let n=0;for(const it of m.card.items)if(it.type==="food"&&it.text&&it.kcal!=null&&Nutrition.addMy(it.text,it.kcal,it.p))n++;
       m.card.saved=true;save();render();toast(n?`${n} besin listene eklendi`:"Eklenecek besin yok");return;
     }
-    case "no":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card){m.card.state="no";save();render()}return}
     case "applyk":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card&&m.card.state==="pending"){if(kcalBlocked(m.card.kcal)){m.card.state="no";save();render();return toast(cCalc().block)}S.settings.kcal=m.card.kcal;m.card.state="ok";save();render();toast(`Kalori hedefi ${m.card.kcal} kcal oldu`)}return}
-    case "nok":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card){m.card.state="no";save();render()}return}
     case "dismiss":{const b=el.closest("[data-mid]");if(b){S.chat=S.chat.filter(x=>x.id!==+b.dataset.mid);save();render()}return}
     case "ask":{const x=CASK[+p1];if(!x)return;if(x[2]){const i=$("#cmsg");i.value=x[1];i.focus()}else cSend(x[1]);return}
     case "newchat":return cNewChat();

@@ -28,11 +28,13 @@ const LinksLib=(()=>{
       if(r)out.push({id:"steps",n:r.n,text:`Adımının ortancanın (${Math.round(med).toLocaleString("tr-TR")}) üstünde olduğu günlerde ${moodTxt(r.hi,r.lo,"altında olduğu günlerde")}`});
     }
     /* Weekly blocks: the week's average calories vs the weight-trend change in that week (at least 4 fully logged days, a weigh-in at either end). */
-    const tr=A.trend(d.weights||{}),wk=Object.keys(tr).sort(),at=n=>{let v=null;for(const k of wk){if(dn(k)<=n)v=tr[k];else break}return v};
+    const tr=A.trend(d.weights||{}),wk=Object.keys(tr).sort(),num=wk.map(dn);
+    /* Number of weigh-ins on or before day n (binary search: the weeks below ask 16 times over years of weigh-ins). */
+    const upTo=n=>{let lo=0,hi=num.length;while(lo<hi){const m=(lo+hi)>>1;if(num[m]<=n)lo=m+1;else hi=m}return lo},at=n=>{const i=upTo(n);return i?tr[wk[i-1]]:null};
     const kp=[];
     for(let e=t;e-6>=from;e-=7){
       const ks=[];for(let i=e-6;i<=e;i++){const v=(d.kcal||{})[dk(i)];if(v!=null&&A.fullKcal(v))ks.push(v)}
-      const a=at(e-7),b=at(e);if(ks.length>=4&&a!=null&&b!=null&&wk.some(k=>dn(k)>e-7&&dn(k)<=e))kp.push([avg(ks),b-a]);
+      const a=at(e-7),b=at(e);if(ks.length>=4&&a!=null&&b!=null&&upTo(e)>upTo(e-7))kp.push([avg(ks),b-a]);
     }
     if(kp.length>=4){
       const med=median(kp.map(p=>p[0]));r=split(kp,med,2);
