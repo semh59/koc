@@ -237,10 +237,10 @@ function gHome(){
   <details class="acc" id="mmacc"><summary>Kas haritası</summary>${MuscleMap.html(wk)}<p class="hint">Bölge başına haftada 10 ile 20 set çoğu kişi için makul bir aralıktır.</p></details></div>`;
   return `${sum}
   <h2>Şablonlarım</h2>${tpl?`<div class="hscroll">${tpl}</div>`:emptyCard("gym","","Sık yaptığın antrenmanı şablon olarak kaydet, tek dokunuşla başlat.")}<button class="btn ghost" data-g="tedit:">${Icons.svg("plus")} Yeni şablon</button>
-  ${rec}${bars}
   <div class="mt-3 card">${navRow('data-g="gdpick"',"clock","Rehberli antrenman","Esneme, ısınma ve Tabata; sesli komutla")}${navRow('data-g="lib"',"book","Egzersiz kütüphanesi","Hareketleri ara, incele, antrenmana ekle")}${navRow('data-c="prog"',"coach","Rehber'den program iste","Hedefine ve ekipmanına göre")}</div>
+  <details class="acc more"><summary>Rekorlar ve haftalık dağılım</summary>${rec}${bars}</details>
   ${gPgHtml()}
-  <h2>Antrenman geçmişi</h2><div class="card">${gHistHtml(done)||`<p class="m0 hint">Bitirdiğin antrenmanlar burada listelenir.</p>`}</div>${gQuickHtml()}`;
+  <details class="acc more"><summary>Antrenman geçmişi</summary><div class="card">${gHistHtml(done)||`<p class="m0 hint">Bitirdiğin antrenmanlar burada listelenir.</p>`}</div>${gQuickHtml()}</details>`;
 }
 /* Sports without a workout record (quick log, a bike ride or walk added by the Coach, ...): the last 20 entries, newest first. */
 function gQuickHtml(){
