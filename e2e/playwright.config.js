@@ -1,7 +1,7 @@
 "use strict";
 const {defineConfig}=require("@playwright/test");
 const CI=!!process.env.CI,port=+process.env.E2E_PORT||4173;
-/* Yerelde kurulu Chrome (indirme yok); CI'da `npx playwright install chromium` ile gelen Chromium. */
+/* Locally installed Chrome (no download); on CI the Chromium from `npx playwright install chromium`. */
 const channel=process.env.E2E_CHANNEL??(CI?undefined:"chrome");
 const phone=(name,width,height)=>({name,use:{viewport:{width,height},isMobile:true,hasTouch:true}});
 module.exports=defineConfig({
@@ -25,6 +25,6 @@ module.exports=defineConfig({
     trace:"retain-on-failure",
     screenshot:"only-on-failure"
   },
-  projects:[phone("telefon-360",360,640),phone("telefon-412",412,915)],
+  projects:[phone("phone-360",360,640),phone("phone-412",412,915)],
   webServer:{command:"node e2e/serve.js",url:`http://127.0.0.1:${port}/index.html`,reuseExistingServer:!CI,cwd:require("path").join(__dirname,".."),env:{E2E_PORT:String(port)}}
 });

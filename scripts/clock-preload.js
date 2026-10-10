@@ -1,4 +1,4 @@
-// Saat matrisi: FAKE_CLOCK (yerel ISO, ör. 2026-12-31T23:55:00) ile hem Node hem jsdom penceresinin Date'ini kaydırır; saat akmaya devam eder.
+/* Clock matrix preload: FAKE_CLOCK (local ISO, e.g. 2026-12-31T23:55:00) shifts Date in Node and in every jsdom window; the clock keeps ticking. */
 const s = process.env.FAKE_CLOCK;
 if (s) {
   const offset = new Date(s).getTime() - Date.now();

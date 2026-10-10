@@ -1,5 +1,5 @@
 "use strict";
-/* www/ için statik sunucu (Playwright webServer). Önbellek kapalı: her test dosyanın son halini alır. */
+/* Static server for www/ (Playwright webServer). Cache off: every test gets the latest file. */
 const http=require("http"),fs=require("fs"),path=require("path");
 const root=path.join(__dirname,"..","www"),port=+process.env.E2E_PORT||4173;
 const MIME={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".css":"text/css",".json":"application/json",".png":"image/png",".svg":"image/svg+xml",".webp":"image/webp",".jpg":"image/jpeg",".mjs":"text/javascript; charset=utf-8",".wasm":"application/wasm",".woff2":"font/woff2"};

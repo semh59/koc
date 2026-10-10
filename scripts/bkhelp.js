@@ -1,4 +1,4 @@
-// Testlerde geri yükleme yalnız parolalı yedeği kabul eder: #bk düz yedekse test parolasıyla şifrelenip goRestore çağrılır.
+/* Restore accepts only password-protected backups: a plain backup in #bk is encrypted with the test password before goRestore runs. */
 const B=require("../www/modules/data/backuplib.js"),PW="mavi-bulut-77";
 module.exports=getW=>async()=>{
   const w=getW(),d=w.document,bk=d.querySelector("#bk");let r;

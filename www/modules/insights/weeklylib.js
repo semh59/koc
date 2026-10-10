@@ -4,13 +4,12 @@
 const WeeklyLib=(()=>{
   const VL=typeof VitalsLib!=="undefined"?VitalsLib:require("../vitals/vitalslib.js"),ML=typeof MedLib!=="undefined"?MedLib:require("../meds/medlib.js");
   const WEEKDAYS_SHORT=["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"];
-  const RW=1240,RH=1754,RM=70,ROW=52;
   const p2=n=>String(n).padStart(2,"0");
   const key=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
   const fmt=(x,d)=>Number(x).toFixed(d==null?1:d).replace(".",",");
   const fmtS=x=>(x>0?"+":x<0?"−":"")+fmt(Math.abs(x));
   const UN=typeof Units!=="undefined"?Units:require("../../kernel/unitlib.js");
-  const A=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
+  const A=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js"),{w:RW,h:RH,m:RM}=A.PAGE,ROW=52;
   const dmy=k=>A.fdate(k,true);
   /* Only plain water and mineral water count toward the water goal (a plain entry has no dr); tea, coffee, soda, milk and other drinks are kept apart. */
   const isWater=e=>e.type==="water"&&(!e.dr||e.dr==="water"||e.dr==="mineral");

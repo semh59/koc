@@ -1,4 +1,4 @@
-# Hazır ürün ve restoran kayıtları, USDA SR Legacy'den birebir (marka adlı kayıt alınmaz): ad<TAB>USDA anahtarı (#id)<TAB>porsiyonlar<TAB>eş adlar<TAB>öğün (1 = Öğün etiketi)
+# Packaged products and restaurant items, verbatim from USDA SR Legacy (no brand-name records): name<TAB>USDA key (#id)<TAB>portions<TAB>aliases<TAB>meal (1 = Öğün label)
 Hamburger, tek köfteli, soslu (restoran)	#170694	1 adet (97 g)=97	hamburger	1
 Cheeseburger, tek köfteli (restoran)	#170691	1 adet (127 g)=127	cheeseburger	1
 Cheeseburger, çift köfteli (restoran)	#173319	1 adet (155 g)=155	cheeseburger	1

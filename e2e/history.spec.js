@@ -1,10 +1,10 @@
 "use strict";
-/* Geçmiş: takvim, aylar, ara, gün ekranı; 3 yıllık veriyle erişilebilirlik (axe), dokunma hedefi, taşma ve çizim süresi. */
+/* History: calendar, months, search, day screen; with 3 years of data: accessibility (axe), touch targets, overflow and render time. */
 const {test,expect,state}=require("./fixtures");
 const {axe,small,scaleText,overflow}=require("./a11y");
 
 const iso=(y,m,d)=>`${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-/* 2023-10-07 → 2026-10-06 (bugün), her gün birkaç kayıt. */
+/* 2023-10-07 to 2026-10-06 (today), a few entries per day. */
 function threeYears(){
   const entries=[],now=Date.UTC(2026,9,6);let id=1;
   for(let i=0;i<1095;i++){
@@ -19,22 +19,22 @@ function threeYears(){
 const seed=theme=>{const d=threeYears();return state({theme,stepsOn:false},{entries:d.entries,nextId:d.nextId})};
 
 for(const theme of ["","dark"]){
-  test(`Geçmiş ekranları (${theme||"açık"}): axe, dokunma hedefi, taşma`,async({app,page})=>{
+  test(`History screens (${theme||"light"}): axe, touch targets, overflow`,async({app,page})=>{
     await app.open({seed:seed(theme)});
-    for(const [steps,git] of [["takvim",async()=>{await app.go("history")}],["aylar",async()=>{await page.locator('[data-hg="seg:months"]').click()}],["ara",async()=>{await page.locator('[data-hg="seg:search"]').click();await page.fill("#hgq","mercimek")}],["gün",async()=>{await page.locator('[data-hg="seg:cal"]').click();await page.locator('[data-hg^="day:2026-10-05"]').click()}]]){
-      await git();await page.waitForTimeout(150);
-      expect(await axe(page),steps+" axe").toEqual([]);
-      expect(await small(page),steps+" dokunma hedefi").toEqual([]);
-      expect(await overflow(page),steps+" taşma").toEqual([]);
+    for(const [name,show] of [["calendar",async()=>{await app.go("history")}],["months",async()=>{await page.locator('[data-hg="seg:months"]').click()}],["search",async()=>{await page.locator('[data-hg="seg:search"]').click();await page.fill("#hgq","mercimek")}],["day",async()=>{await page.locator('[data-hg="seg:cal"]').click();await page.locator('[data-hg^="day:2026-10-05"]').click()}]]){
+      await show();await app.settled();
+      expect(await axe(page),name+" axe").toEqual([]);
+      expect(await small(page),name+" touch target").toEqual([]);
+      expect(await overflow(page),name+" overflow").toEqual([]);
     }
   });
 }
-test("Geçmiş: büyük yazıda taşma yok (takvim ve gün)",async({app,page})=>{
+test("History: no overflow with large text (calendar and day)",async({app,page})=>{
   await app.open({seed:seed("")});
   await app.go("history");await scaleText(page,2);expect(await overflow(page)).toEqual([]);
   await page.locator('[data-hg^="day:2026-10-05"]').click();expect(await overflow(page)).toEqual([]);
 });
-test("Geçmiş: 3 yıl öncesine takvimden gidilir, oradaki kayıt görünür; arama 2 yıl önceki yemeği bulur ve güne götürür",async({app,page})=>{
+test("History: the calendar reaches 3 years back and shows the entry there; search finds a food from 2 years ago and opens its day",async({app,page})=>{
   await app.open({seed:seed("")});
   await app.go("history");
   await page.selectOption("#hgy","2023");await page.selectOption("#hgm","11");
@@ -47,14 +47,14 @@ test("Geçmiş: 3 yıl öncesine takvimden gidilir, oradaki kayıt görünür; a
   await page.locator('#hgres [data-hg^="day:"]').click();
   await expect(page.locator("#view")).toContainText("Mercimek çorbası");
 });
-test("Geçmiş: 3 yıllık veriyle takvim, aylar ve Trend Tümü çizimi hızlı",async({app,page})=>{
+test("History: calendar, months and Trend All render fast with 3 years of data",async({app,page})=>{
   await app.open({seed:seed("")});
   const ms=await page.evaluate(()=>{const t=performance.now();tab="history";render();hg.seg="months";render();hg.seg="cal";render();tab="day";logOff=500;render();return performance.now()-t});
-  expect(ms,"takvim+aylar+gün çizimi (ms)").toBeLessThan(1500);
+  expect(ms,"calendar+months+day render (ms)").toBeLessThan(1500);
   const tr=await page.evaluate(()=>{const t=performance.now();range=0;tab="trend";render();return performance.now()-t});
-  expect(tr,"Trend Tümü çizimi (ms)").toBeLessThan(1500);
+  expect(tr,"Trend All render (ms)").toBeLessThan(1500);
 });
-test("Geçmiş: Bugün ve Daha fazla'dan girilir, gün ekranından geri tuşu takvime döner",async({app,page})=>{
+test("History: reachable from Today and More; Back from the day screen returns to the calendar",async({app,page})=>{
   await app.open({seed:seed("")});
   await expect(page.locator('#view [data-tab="history"]').first()).toBeVisible();
   await app.go("more");await expect(page.locator('#view [data-tab="history"]')).toBeVisible();

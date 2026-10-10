@@ -1,8 +1,8 @@
 "use strict";
 const {test,expect,state,entry}=require("./fixtures");
 
-test.describe("Birimler",()=>{
-  test("lb ve mmol/L seçilir; giriş ve gösterim dönüşür, depolama kg ve mg/dL kalır",async({app,page})=>{
+test.describe("Units",()=>{
+  test("lb and mmol/L can be chosen; input and display convert while storage stays kg and mg/dL",async({app,page})=>{
     await app.open({seed:state({bsOn:true},{entries:[entry("weight",84.1,"",{d:-1})]})});
     await app.go("settings-profile");
     await page.click('[data-wun="lb"]');await page.click('[data-gun="mmol"]');
@@ -34,8 +34,8 @@ test.describe("Birimler",()=>{
   });
 });
 
-test.describe("İçecek türü",()=>{
-  test("çay eklenir, su hedefine sayılmaz, geçmişte türüyle görünür; hızlı +250 su kalır",async({app,page})=>{
+test.describe("Drink type",()=>{
+  test("tea is added, does not count toward the water goal and shows with its type in history; quick +250 water remains",async({app,page})=>{
     await app.open({seed:state()});
     await page.click('[data-act="water"]');
     await page.click('[data-dk="open"]');
@@ -48,8 +48,8 @@ test.describe("İçecek türü",()=>{
   });
 });
 
-test.describe("Kardiyo",()=>{
-  test("koşu kaydı: tempo, kcal, haftalık özet; hatalı hız reddedilir; çift kayıt uyarısı; silme ve Geri al",async({app,page})=>{
+test.describe("Cardio",()=>{
+  test("run entry: pace, kcal, weekly summary; an impossible speed is rejected; duplicate warning; delete and Undo",async({app,page})=>{
     await app.open({seed:state({},{entries:[entry("weight",80)]})});
     await app.tab("trend");
     await page.click('[data-tsec="motion"]');await page.click('[data-ckg="open"]');
@@ -75,11 +75,11 @@ test.describe("Kardiyo",()=>{
   });
 });
 
-/* 2000x1000 PNG üretir (sayfada çizilir). */
+/* Produces a 2000x1000 PNG (drawn in the page). */
 const png=page=>page.evaluate(()=>{const c=document.createElement("canvas");c.width=2000;c.height=1000;const x=c.getContext("2d");x.fillStyle="#08c";x.fillRect(0,0,2000,1000);return c.toDataURL("image/png").split(",")[1]});
 
-test.describe("İlerleme fotoğrafı",()=>{
-  test("ekle (900 px JPEG), etiket, karşılaştır, sil (onay), yedeğe girmez, gizlilikten silinir",async({app,page})=>{
+test.describe("Progress photo",()=>{
+  test("add (900 px JPEG), label, compare, delete (confirmation), not in backup, deleted from Privacy",async({app,page})=>{
     await app.open({seed:state({},{entries:[entry("weight",84.3)]})});
     await app.tab("trend");
     await expect(app.view).toContainText("İlerleme fotoğrafları");
@@ -98,14 +98,14 @@ test.describe("İlerleme fotoğrafı",()=>{
     await expect(page.locator('[data-ph^="view:"]')).toHaveCount(2);
     const dim=await page.evaluate(async()=>{const u=await phUrl(phList[0].id),i=new Image();i.src=u;await i.decode();return [i.naturalWidth,i.naturalHeight,phList[0].kg,phList[1].kg]});
     expect(dim).toEqual([900,450,84.3,null]);
-    // koç/yedek/localStorage'a girmez
+    // stays out of Coach, backup and localStorage
     const ls=await page.evaluate(()=>JSON.stringify(localStorage));
     expect(ls).not.toContain("data:image");expect(ls).not.toContain("thumb");
-    // karşılaştır
+    // compare
     await page.click('[data-ph="cmp"]');
     await expect(page.locator("#phgap")).toContainText("gün arayla");
     await app.closeSheet();
-    // sil: onay reddedilirse kalır, kabul edilirse gider
+    // delete: declining the confirmation keeps it, accepting removes it
     await page.locator('[data-ph^="view:"]').first().click();
     app.onDialog=d=>d.dismiss();
     await page.click('[data-ph^="del:"]');
@@ -115,19 +115,19 @@ test.describe("İlerleme fotoğrafı",()=>{
     await page.click('[data-ph^="del:"]');
     await expect(app.toast).toHaveText("Fotoğraf silindi");
     expect(await page.evaluate(()=>phList.length)).toBe(1);
-    // yeniden yüklemede kalıcı
+    // persists across reload
     await page.reload();
     await expect(page.locator("#view")).not.toBeEmpty();
     await app.tab("trend");
     await expect(page.locator('[data-ph^="view:"]')).toHaveCount(1);
-    // gizlilikten sil
+    // delete from Privacy
     await app.go("settings-data");await page.click('[data-pv="open"]');
     await page.locator('[aria-label="İlerleme fotoğrafları sil"]').click();
     await expect(app.toast).toContainText("İlerleme fotoğrafları silindi");
     expect(await page.evaluate(async()=>{const db=await phDb();return phReq(db.transaction("m").objectStore("m").count())})).toBe(0);
   });
 
-  test("en çok 24 fotoğraf; Tüm verileri sil fotoğrafları da siler",async({app,page})=>{
+  test("at most 24 photos; Delete all data deletes the photos too",async({app,page})=>{
     await app.open({seed:state()});
     await app.tab("trend");
     await page.evaluate(async()=>{for(let i=0;i<24;i++)await phPut({id:"x"+i,day:"2026-10-0"+(1+i%6),t:i,kg:null,thumb:"data:image/gif;base64,R0lGODlhAQABAAAAACw="},new Blob(["a"]));await phLoad()});
@@ -142,7 +142,7 @@ test.describe("İlerleme fotoğrafı",()=>{
     expect(await page.evaluate(()=>phList.length)).toBe(0);
   });
 
-  test("Android ekran görüntüsü kilidi: fotoğraf varken Trend'de açılır, başka sekmede kalkar",async({app,page})=>{
+  test("Android screenshot lock: on in Trend while photos exist, off on another tab",async({app,page})=>{
     await app.open({seed:state(),native:{}});
     await page.evaluate(()=>{window.__sec=[];window.Capacitor.Plugins.DeviceHelp={secure:async o=>{window.__sec.push(o.on)}}});
     await app.tab("trend");

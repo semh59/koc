@@ -1,11 +1,7 @@
-/* Enjeksiyon taraması: kullanıcı metni olabilecek her alana HTML yükü yazılır, tüm sekmeler ve pencereler çizilir; çizilen DOM'da yük kalmamalı (img, svg onload, on* öznitelikleri). */
-const {JSDOM}=require("jsdom"),fs=require("fs"),path=require("path");let bad=0;
-const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify(x)));if(!c)bad++};
-const www=f=>path.join(__dirname,"../www",f);
-const html=require("./html").build();
-const dom=new JSDOM(html,{runScripts:"dangerously",pretendToBeVisual:true,url:"https://localhost/",beforeParse(w){Object.assign(w,{structuredClone,TextEncoder,TextDecoder,__noSelfTest:true});w.scrollTo=()=>{};w.confirm=()=>true;w.Element.prototype.scrollIntoView=function(){}}});
-setTimeout(()=>{
-  const w=dom.window,ev=s=>w.eval(s);
+/* Injection scan: an HTML payload is written into every field that can hold user text, all tabs and sheets are rendered, and no payload may survive in the rendered DOM (img, svg onload, on* attributes). */
+const {ok,finish}=require("./ok");
+require("./html").boot().then(w=>{
+  const ev=s=>w.eval(s);
   const found=JSON.parse(ev(`(()=>{
     const P='<img src=x onerror=alert(1)><svg onload=1>"<b>',d=dayKey();
     S=structuredClone(DEF);S.settings.obDone=true;
@@ -27,10 +23,10 @@ setTimeout(()=>{
       if(el.querySelector('img[src="x"],svg[onload],[onerror],[onload]'))found.push(where);
       for(const e of el.querySelectorAll("*"))for(const a of e.attributes)if(/^on/i.test(a.name)&&!(a.name==="onfocus"&&a.value==="this.select()")&&!(a.name==="onclick"&&a.value==="if(!this.dataset.s){this.dataset.s=1;this.select()}")){found.push(where+" "+a.name);break}}};
     const tabs=["today","gym","trend","coach","more","settings","settings-about","settings-reminders","settings-modules","settings-data","steps","labs","bp","glucose","exlib","meds"];
-    for(const t of tabs){try{tab=t;render();scan("sekme:"+t)}catch(e){found.push("hata "+t+": "+e.message)}}
-    for(const s of ["sheetSteps","sheetBp","sheetBs","sheetCsv","sheetCycle","sheetCardio","sheetCardioAll","sheetWeight","sheetMeal","sheetMood","sheetNote","sheetMeasures","sheetPrivacy","sheetExercise","sheetWater","sheetRecipe","sheetTpl","sheetSleep","sheetBackup","sheetFood","sheetDrink"]){try{tab="today";render();eval(s+"()");scan("pencere:"+s)}catch(e){found.push("hata "+s+": "+e.message)}closeSheet()}
+    for(const t of tabs){try{tab=t;render();scan("tab:"+t)}catch(e){found.push("error "+t+": "+e.message)}}
+    for(const s of ["sheetSteps","sheetBp","sheetBs","sheetCsv","sheetCycle","sheetCardio","sheetCardioAll","sheetWeight","sheetMeal","sheetMood","sheetNote","sheetMeasures","sheetPrivacy","sheetExercise","sheetWater","sheetRecipe","sheetTpl","sheetSleep","sheetBackup","sheetFood","sheetDrink"]){try{tab="today";render();eval(s+"()");scan("sheet:"+s)}catch(e){found.push("error "+s+": "+e.message)}closeSheet()}
     return JSON.stringify([...new Set(found)]);
   })()`));
-  ok("HTML yükü hiçbir sekmede ve pencerede çalışabilir öğe üretmez",found.length===0,found);
-  console.log(bad?"Başarısız: "+bad:"Tüm enjeksiyon testleri geçti");process.exit(bad?1:0);
-},400);
+  ok("the HTML payload produces no executable element in any tab or sheet",found.length===0,found);
+  finish();
+});

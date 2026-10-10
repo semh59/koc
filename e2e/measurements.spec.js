@@ -8,8 +8,8 @@ const bp=async(page,pairs,time="09:30")=>{
   await page.click('[data-vt="savebp"]');
 };
 
-test.describe("Tahlil",()=>{
-  test("değer ekle, aralık dışı işareti, geçersiz giriş ve silme (Geri al dahil)",async({app,page})=>{
+test.describe("Lab results",()=>{
+  test("add a value, out-of-range flag, invalid input and deletion (Undo included)",async({app,page})=>{
     await app.open({seed:state()});
     await app.go("labs");
     await expect(app.view).toContainText("Henüz tahlil sonucu yok");
@@ -19,7 +19,7 @@ test.describe("Tahlil",()=>{
       await fill(page,[["ln0",n],["lv0",v],["lu0",u],["ll0",lo],["lh0",hi]]);
       await page.click('[data-lab="save"]');
     };
-    // geçersiz: ad var, değer sayı değil
+    // invalid: name present, value not a number
     await page.click('[data-lab="add"]');
     await fill(page,[["ln0","Glukoz"],["lv0","abc"]]);
     await page.click('[data-lab="save"]');
@@ -34,12 +34,12 @@ test.describe("Tahlil",()=>{
     const g=page.locator(".labc",{hasText:"Glukoz"}),d=page.locator(".labc",{hasText:"Demir"});
     await expect(g).toContainText("130");await expect(g).toContainText("▲ Raporda yazan aralığın üstünde");await expect(g).toContainText("Rapor aralığı: 70");
     await expect(d).toContainText("▼ Raporda yazan aralığın altında");
-    // aynı gün aynı değer ikinci kez eklenmez
+    // the same value on the same day is not added twice
     await addLab("Demir","20","µg/dL","50","170");
     await expect(app.toast).toContainText("zaten kayıtlıydı");
     expect((await app.state()).labs.length).toBe(3);
 
-    // ayrıntı: iki sonuç, yalnız yüksek olanda işaret; yüksek olan silinince kart önceki (aralık içi) değeri gösterir
+    // detail: two results, only the high one flagged; after deleting the high one the card shows the earlier (in-range) value
     await g.locator(".labo").click();
     const rows=page.locator("#sheet .row");
     await expect(rows).toHaveCount(2);
@@ -59,8 +59,8 @@ test.describe("Tahlil",()=>{
   });
 });
 
-test.describe("Tansiyon ve şeker",()=>{
-  test("tansiyon: ölçüm ekle, aynı dakikada iki ölçüm iki kayıt kalır (yeniden açılışta da), özet ve silme",async({app,page})=>{
+test.describe("Blood pressure and glucose",()=>{
+  test("blood pressure: add readings, two readings in the same minute stay two records (also after reopening), summary and deletion",async({app,page})=>{
     await app.open({seed:state({bpOn:true})});
     await app.go("bp");
     await expect(app.view).toContainText("Henüz ölçüm yok");
@@ -77,21 +77,21 @@ test.describe("Tansiyon ve şeker",()=>{
     expect((await app.state()).vitals.length).toBe(2);
     await expect(rows).toHaveCount(2);
 
-    // iki ölçümlü seans tek satır, ortalaması alınır; özet tüm ham ölçümlerden
+    // a two-reading session is one row and averaged; the summary uses all raw readings
     await bp(page,[["bs1",130],["bd1",84],["bs2",134],["bd2",86]],"20:00");
     await expect(app.toast).toHaveText("Kaydedildi: 132/85 (ortalama)");
     await expect(rows).toHaveCount(3);
     await expect(rows.first()).toContainText("132/85");await expect(rows.first()).toContainText("2 ölçüm");
     await expect(app.view).toContainText("4 ölçüm, 1 gün");
-    await expect(app.view).toContainText("126/83"); // sistolik (120+120+130+134)/4, diyastolik (80+80+84+86)/4=82,5
+    await expect(app.view).toContainText("126/83"); // systolic (120+120+130+134)/4, diastolic (80+80+84+86)/4=82.5
 
-    // geçersiz giriş kaydedilmez
+    // invalid input is not saved
     await page.click('[data-vt="addbp"]');await fill(page,[["bs1",80],["bd1",90]]);await page.click('[data-vt="savebp"]');
     await expect(app.toast).toContainText("Sistolik (büyük tansiyon) diyastolikten büyük olmalı");
     await app.closeSheet();
     expect((await app.state()).vitals.length).toBe(4);
 
-    // silme: seansın tüm ham ölçümleri gider, Geri al döndürür
+    // deletion: all raw readings of the session go, Undo restores them
     await rows.first().locator('[data-vt^="del:"]').click();
     await expect(rows).toHaveCount(2);
     expect((await app.state()).vitals.length).toBe(2);
@@ -103,7 +103,7 @@ test.describe("Tansiyon ve şeker",()=>{
     await expect(app.view).toContainText("Bu dönemde ölçüm yok");
     expect((await app.state()).vitals).toEqual([]);
   });
-  test("şeker: aynı dakikada aynı değer iki kayıt kalır, yeniden açılışta birleşmez",async({app,page})=>{
+  test("glucose: the same value in the same minute stays two records and does not merge on reopening",async({app,page})=>{
     await app.open({seed:state({bsOn:true})});
     await app.go("glucose");
     for(let i=0;i<2;i++){

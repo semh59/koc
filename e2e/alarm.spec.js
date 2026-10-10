@@ -1,28 +1,10 @@
 "use strict";
-/* Tam ekran ilaç alarm ekranı: alarmOpen() ile açılış, Aldım, gizlilik, büyük yazı ve dar ekran (sahte MedWake ve LocalNotifications). */
-const {test,expect,state,offscreen}=require("./fixtures");
+/* Full-screen medication alarm: opening via alarmOpen(), Taken, privacy, large text and narrow screen (fake MedWake and LocalNotifications). */
+const {test,expect,state,offscreen,medPlugins:plugins}=require("./fixtures");
 const path=require("path");
-
-function plugins(){
-  window.__calls=[];
-  const rec=(p,defs)=>new Proxy({},{get:(_,k)=>k==="then"?undefined:k==="addListener"?()=>({remove(){}}):async a=>{window.__calls.push([p+"."+k,a]);const v=defs[k];return typeof v==="function"?v():v||{}}});
-  let C;
-  Object.defineProperty(window,"Capacitor",{configurable:true,get:()=>C,set:v=>{C=v;
-    v.Plugins.MedWake=rec("MedWake",{fsi:{allowed:true}});
-    v.Plugins.LocalNotifications=rec("LN",{checkPermissions:{display:"granted"},getPending:{notifications:[]},getDeliveredNotifications:{notifications:[]},checkExactNotificationSetting:{exact_alarm:"granted"}});
-  }});
-}
+const {scaleText}=require("./a11y");
 const MEDS={meds:[{id:1,n:"Metformin uzun salımlı",d:"1000 mg, yemekle",t:["09:55"],on:true},{id:2,n:"D vitamini",d:"1 damla",t:["09:30"],on:true},{id:3,n:"Akşam",t:["21:00"],on:true}]};
-const scaleText=(page,k)=>page.evaluate(k=>{
-  const m=v=>v.replace(/([\d.]+)px/,(a,b)=>b*k+"px");
-  const walk=rs=>{for(const r of rs){if(r.cssRules&&!r.style)walk(r.cssRules);else if(r.style&&/^[\d.]+px$/.test(r.style.fontSize))r.style.fontSize=m(r.style.fontSize)}};
-  for(const s of document.styleSheets)walk(s.cssRules);
-  const de=document.documentElement,cs=getComputedStyle(de),names=new Set();
-  for(const s of document.styleSheets)for(const r of s.cssRules)if(r.style)for(const p of r.style)if(p.startsWith("--fs-"))names.add(p);
-  for(const p of names)de.style.setProperty(p,m(cs.getPropertyValue(p).trim()));
-},k);
-
-test("alarmOpen ile açılan alarm ekranı: vadesi gelen dozlar, Aldım kaydeder ve tekrarları yeniden kurar",async({app,page})=>{
+test("alarm screen opened by alarmOpen: due doses, Taken records and reschedules the repeats",async({app,page})=>{
   await page.addInitScript(plugins);
   await app.open({seed:state({medOn:true,medShowName:true},MEDS),native:{}});
   await page.evaluate("alarmOpen()");
@@ -41,7 +23,7 @@ test("alarmOpen ile açılan alarm ekranı: vadesi gelen dozlar, Aldım kaydeder
   await expect(al).toBeHidden({timeout:3000});
 });
 
-test("ad gizliyse alarm ekranında ilaç adı ve doz yok",async({app,page})=>{
+test("with names hidden the alarm screen shows no medication name or dose",async({app,page})=>{
   await page.addInitScript(plugins);
   await app.open({seed:state({medOn:true,medShowName:false},MEDS),native:{}});
   await page.evaluate("alarmOpen()");
@@ -54,12 +36,12 @@ test("ad gizliyse alarm ekranında ilaç adı ve doz yok",async({app,page})=>{
   expect((await app.state()).medLog.length).toBe(2);
 });
 
-for(const k of [1,2])test(`alarm ekranı yazı %${k*100}: taşma yok, dokunma hedefleri ≥ 56 px`,async({app,page},ti)=>{
+for(const k of [1,2])test(`alarm screen at ${k*100}% text: no overflow, touch targets >= 56 px`,async({app,page},ti)=>{
   await page.addInitScript(plugins);
   await app.open({seed:state({medOn:true,medShowName:true},MEDS),native:{}});
   await page.evaluate("alarmOpen()");
   await expect(page.locator("#alarm")).toBeVisible();
-  if(k>1){await scaleText(page,k);await page.waitForTimeout(100)}
+  if(k>1){await scaleText(page,k);await app.settled()}
   expect(await offscreen(page,"#alarm")).toEqual([]);
   const m=await page.evaluate(()=>{const a=document.querySelector("#alarm");return {sw:a.scrollWidth,cw:a.clientWidth,low:[...a.querySelectorAll("button")].filter(b=>b.getBoundingClientRect().height<56).map(b=>b.textContent.trim())}});
   expect(m.sw).toBeLessThanOrEqual(m.cw);
@@ -71,7 +53,7 @@ for(const k of [1,2])test(`alarm ekranı yazı %${k*100}: taşma yok, dokunma he
   }
 });
 
-test("alarm ekranı yatay ve koyu temada: taşma yok, düğmeler erişilebilir, Uygulamayı aç Bugün'e döner",async({app,page},ti)=>{
+test("alarm screen in landscape and dark theme: no overflow, buttons reachable, Open app returns to Today",async({app,page},ti)=>{
   await page.addInitScript(plugins);
   await page.emulateMedia({colorScheme:"dark"});
   await page.setViewportSize({width:ti.project.use.viewport.height,height:ti.project.use.viewport.width});

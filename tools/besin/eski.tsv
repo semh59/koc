@@ -1,4 +1,4 @@
-# İlk 106 satırdan USDA SR Legacy kaydıyla birebir karşılanan besinler: ad<TAB>USDA anahtarı (#id ya da açıklama). uret.js bu satırların kcal/makro değerini kayıttan yazar ve 1 ile işaretler; ad, sıra ve porsiyonlar mevcut.txt'te kalır.
+# Foods among the first 106 rows that match a USDA SR Legacy record verbatim: name<TAB>USDA key (#id or description). uret.js writes their kcal/macros from the record and marks them 1; name, order and portions stay in mevcut.txt.
 Zeytin	olives, pickled, canned or bottled, green
 Reçel	jams and preserves
 Yulaf ezmesi (kuru)	cereals, oats, regular and quick, not fortified, dry

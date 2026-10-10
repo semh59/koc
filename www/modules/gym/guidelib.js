@@ -69,10 +69,10 @@ const GuideLib=(()=>{
   const hiit=(ids,k=8)=>rounds(ids,k,40,20);
   const stretch=(ids,rest=8)=>ids.map(ex=>({ex,sec:30,rest,n:1}));
   const FLOWS=[
-    {id:"isinma5",n:"5 dk ısınma",about:"Hafif kardiyo ve eklem hareketleri; antrenman öncesi.",warm:true,steps:[
+    {id:"warmup5",n:"5 dk ısınma",about:"Hafif kardiyo ve eklem hareketleri; antrenman öncesi.",warm:true,steps:[
       {ex:"jumpingjack",sec:40,rest:5},{ex:"armcircles",sec:30,rest:5},{ex:"shouldercircles",sec:30,rest:5},{ex:"torsotwist",sec:30,rest:5},
       {ex:"windmills",sec:30,rest:5},{ex:"skipping",sec:30,rest:5},{ex:"buttkick",sec:30,rest:5},{ex:"wgstretch",sec:30,rest:5},{ex:"inchworm",sec:30,rest:0}]},
-    {id:"esneme10",n:"10 dk tüm vücut esneme",about:"Hareket başına 30 saniye, boyundan baldıra.",warm:true,steps:stretch(["chinchest","sideneck","shoulderstretch","tristretch","chestshoulder","upperback","torsotwist","catstretch","childpose","hipflexor","quadstretch","hamstretch","kneechest","seatedglute","calfstretch","groiners"])},
+    {id:"stretch10",n:"10 dk tüm vücut esneme",about:"Hareket başına 30 saniye, boyundan baldıra.",warm:true,steps:stretch(["chinchest","sideneck","shoulderstretch","tristretch","chestshoulder","upperback","torsotwist","catstretch","childpose","hipflexor","quadstretch","hamstretch","kneechest","seatedglute","calfstretch","groiners"])},
     {id:"tabata4",n:"4 dk Tabata, ekipmansız",about:"8 tur: 20 saniye yüksek tempo, 10 saniye dinlenme.",steps:tabata(["jumpingjack","climber","skipping","scissorjump"])},
     {id:"hiit8",n:"8 dk HIIT 40/20, ekipmansız",about:"8 tur: 40 saniye çalışma, 20 saniye dinlenme.",steps:hiit(["climber","jumpingjack","splitjump","buttkick"])}
   ];

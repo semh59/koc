@@ -4,28 +4,28 @@ const {test,expect,state,entry}=require("./fixtures");
 const results=page=>page.locator('#flist [data-food] b');
 async function openFood(app,page,seed=state()){await app.open({seed});await page.click('.act[data-act="food"]');await expect(page.locator("#fq")).toBeVisible()}
 
-test.describe("Yemek ekle",()=>{
+test.describe("Add food",()=>{
   for(const [q,first] of [["milk","Süt (tam yağlı)"],["sucuk","Sucuk (pişmiş)"],["doner","döner"]])
-    test(`arama '${q}': ilk sonuç ${first}`,async({app,page})=>{
+    test(`search '${q}': first result ${first}`,async({app,page})=>{
       await openFood(app,page);
       await page.fill("#fq",q);
-      // Kabul: Türkçe karakter yazmadan aranır, en ilgili besin en üstte.
+      // Acceptance: searchable without typing Turkish characters, the most relevant food on top.
       await expect(results(page).first()).toContainText(first,{ignoreCase:true});
       await expect(page.locator('#flist [data-c="askfood"]')).toContainText(`"${q}" için Koç'a sor`);
     });
 
-  test("arama 'kasarli tost': tam ad eşleşmesi ilk sırada",async({app,page})=>{
+  test("search 'kasarli tost': the exact name match comes first",async({app,page})=>{
     await openFood(app,page);
     await page.fill("#fq","kasarli tost");
     await expect(results(page).first()).toHaveText("Kaşarlı tost");
   });
 
-  test("porsiyon ve öğün seçimiyle kayıt, besin değerleri",async({app,page})=>{
+  test("logging with a portion and meal choice, nutrient values",async({app,page})=>{
     await openFood(app,page,state({kcal:2000}));
     await page.fill("#fq","mercimek corbasi");
     await page.locator("#flist [data-food]").first().click();
     await expect(page.locator("#sheet h3")).toHaveText("Mercimek çorbası");
-    await page.click('[data-fp="1"]'); // 1 kepçe (150 g)
+    await page.click('[data-fp="1"]'); // 1 ladle (150 g)
     await page.fill("#fqty","2");
     await expect(page.locator("#fprev")).toContainText("protein");
     await page.fill("#fqty","50");
@@ -34,14 +34,14 @@ test.describe("Yemek ekle",()=>{
     await page.click('[data-ml="lunch"]');
     await page.click('[data-go="nutrition"]');
     await expect(app.toast).toContainText("Kaydedildi. Bugün");
-    // Kabul: öğün başlığı altında, porsiyon metniyle ve protein dahil kaydedilir.
+    // Acceptance: saved under the meal heading, with the portion text and protein.
     await expect(page.locator(".log .gh").first()).toContainText("Öğle");
     await expect(page.locator(".log")).toContainText("Mercimek çorbası, 2 × 1 kepçe (150 g)");
     const e=(await app.state()).entries.find(x=>x.type==="food");
     expect(e.meal).toBe("lunch");expect(e.p).toBeGreaterThan(0);expect(e.v).toBeGreaterThan(100);
   });
 
-  test("kendin yaz: adsız ve kalorisiz reddedilir, adla kaydedilir",async({app,page})=>{
+  test("write your own: rejected without a name and calories, saved with a name",async({app,page})=>{
     await openFood(app,page);
     await page.click('[data-act="own"]');
     await page.click('[data-go="food"]');
@@ -54,7 +54,7 @@ test.describe("Yemek ekle",()=>{
     await expect(page.locator(".log")).toContainText("420 kcal");
   });
 
-  test("hızlı düğmeler: dünkünü tekrarla, favori, son yenen, şablon",async({app,page})=>{
+  test("quick buttons: repeat yesterday, favorite, recent, template",async({app,page})=>{
     const y=[entry("food",350,"Yulaf lapası",{d:-1,x:{meal:"breakfast"}}),entry("food",120,"Muz",{d:-1,x:{meal:"breakfast"}})];
     await openFood(app,page,state({},{entries:y}));
     await page.click('[data-act="yesterday"]');
@@ -62,13 +62,13 @@ test.describe("Yemek ekle",()=>{
     await expect(page.locator(".log")).toContainText("Yulaf lapası");
     await page.click("#tundo");
     await expect(page.locator(".log li",{hasText:"Yulaf"})).toHaveCount(0);
-    // Son yediklerinden favoriye al, favoriden tek dokunuşla ekle.
+    // Favorite a recent food, then add it from favorites with one tap.
     await page.click('.act[data-act="food"]');
     await page.locator('#frl [data-fva]').first().click();
     await expect(page.locator('#frl .lbl',{hasText:"Sık kullanılanlar"})).toBeVisible();
     await page.locator('#frl [data-fv="0"]').click();
     await expect(app.toast).toContainText("eklendi");
-    // Bugünün yemeklerinden şablon, şablondan ekleme.
+    // Template from today's meals, then add from the template.
     await page.click('[data-act="tplnew"]');
     await page.fill("#tpn","Kahvaltım");await page.click('[data-go="tpl"]');
     await expect(app.toast).toHaveText('"Kahvaltım" şablonu kaydedildi');
@@ -79,7 +79,7 @@ test.describe("Yemek ekle",()=>{
     expect([s.favFoods.length,s.mealTpl.length]).toEqual([1,1]);
   });
 
-  test("tarif: malzemelerden porsiyon kalorisi, aramada çıkar, günlüğe eklenir",async({app,page})=>{
+  test("recipe: per-serving calories from ingredients, shows in search, added to the log",async({app,page})=>{
     await openFood(app,page);
     await page.click('[data-act="own"]');
     await page.click('[data-rp="new"]');
@@ -100,7 +100,7 @@ test.describe("Yemek ekle",()=>{
   });
 });
 
-test.describe("Barkod (sahte tarayıcı, Open Food Facts yanıtı sahte)",()=>{
+test.describe("Barcode (fake scanner, fake Open Food Facts reply)",()=>{
   const CODE="8690000000017";
   const product={status:1,product:{code:CODE,product_name:"Tam Buğday Kraker",brands:"Örnek",serving_quantity:30,product_quantity:200,nutriments:{"energy-kcal_100g":420,proteins_100g:11,carbohydrates_100g:62,fat_100g:14,fiber_100g:8}}};
   async function scan(app,page,body,status=200){
@@ -109,7 +109,7 @@ test.describe("Barkod (sahte tarayıcı, Open Food Facts yanıtı sahte)",()=>{
     await page.click('.act[data-act="food"]');
     await page.click('[data-act="barcode"]');
   }
-  test("bulunan ürün listeye kaydedilir, porsiyonla eklenir, aramada 'Benim ürünüm'",async({app,page})=>{
+  test("a found product is saved to the list, added by portion and shown as 'Benim ürünüm' in search",async({app,page})=>{
     await scan(app,page,product);
     await expect(page.locator("#sheet h3")).toHaveText("Tam Buğday Kraker (Örnek)");
     await expect(page.locator("#fpc .chip").first()).toHaveText("1 porsiyon (30 g)");
@@ -120,18 +120,18 @@ test.describe("Barkod (sahte tarayıcı, Open Food Facts yanıtı sahte)",()=>{
     await page.click('.act[data-act="food"]');
     await page.fill("#fq","kraker");
     await expect(page.locator("#flist [data-food]").first()).toContainText("Benim ürünüm, 100 g: 420 kcal");
-    // Kendi besinini listeden silme.
+    // Deleting your own food from the list.
     await page.locator("#flist [data-food]").first().click();
     await page.click('[data-go="mydel"]');
     await expect(app.toast).toHaveText("Besin listenden silindi");
     expect((await app.state()).myFoods).toEqual([]);
   });
-  test("ürün yoksa elle girişe döner",async({app,page})=>{
+  test("a missing product falls back to manual entry",async({app,page})=>{
     await scan(app,page,{status:0});
     await expect(app.toast).toContainText("Ürün bulunamadı");
     await expect(page.locator("#ft")).toBeVisible();
   });
-  test("internet yoksa Türkçe hata",async({app,page,errs})=>{
+  test("no internet shows the Turkish error",async({app,page,errs})=>{
     errs.allow(/Failed to load resource|ERR_INTERNET_DISCONNECTED|ERR_FAILED/);
     await scan(app,page,null);
     await expect(app.toast).toHaveText("İnternete ulaşılamadı, barkod aranamadı");

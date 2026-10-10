@@ -1,7 +1,7 @@
 # Besin verisi araştırması (1 Ekim 2026)
 
 ## Ölçüm: mevcut listemiz USDA ile karşılaştırıldı
-USDA FoodData Central SR Legacy (CC0, kamu malı) veri setiyle 60 eşleşebilen besin karşılaştırıldı (`tools/usda-karsilastir.py`).
+USDA FoodData Central SR Legacy (CC0, kamu malı) veri setiyle 60 eşleşebilen besin karşılaştırıldı.
 - Tek malzemeli besinlerde (meyve, sebze, yumurta, süt, kuruyemiş, yağ, bal) sapma yok denecek kadar az (medyan %0,3).
 - 10 besinde %15'ten fazla sapma vardı. Üç gerçek hata düzeltildi: ton balığı (113 → 86 kcal, protein 26 → 19,4 g), yeşil salata (19 → 15), haşlanmış mısır (111 → 96).
 - Kalan sapmalar tarif farkından: patates kızartması (restoran 312 / fırın 158), bulgur pilavı (yağlı), kuru fasulye yemeği (sulu), lor (Türk lor peyniri yağsız), zeytin (salamura ve yağlı), humus.

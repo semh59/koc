@@ -1,6 +1,6 @@
 "use strict";
-/* Sahte yapay zekâ sağlayıcısı (Node http). Tarayıcıdaki sağlayıcı adresleri page.route ile buraya yönlenir;
-   gelen her istek kaydedilir. Davranış testten değiştirilir: model listesi, model başına hata, sohbet yanıtı. */
+/* Fake AI provider (Node http). The browser's provider URLs are routed here with page.route;
+   every request is logged. A test changes the behaviour: model list, per-model error, chat reply. */
 const http=require("http");
 const HOSTS=["integrate.api.nvidia.com","api.groq.com","openrouter.ai","generativelanguage.googleapis.com","api.openai.com","api.anthropic.com","custom.example"];
 const CORS={"access-control-allow-origin":"*","access-control-allow-headers":"*","access-control-allow-methods":"GET,POST,OPTIONS"};
@@ -28,7 +28,7 @@ async function startFake(){
         return json(r,200,{data:ids.map(id=>host==="openrouter.ai"?{id,pricing:{prompt:"0",completion:"0"}}:{id})});
       }
       const model=b&&b.model,how=st.behave[model]||"ok";
-      if(how==="hang")return; // yanıt yok: uygulamanın zaman aşımı devreye girer
+      if(how==="hang")return; // no reply: the app's timeout kicks in
       if(how==="404fn")return json(r,404,{status:404,title:"Not Found",detail:`Function '${model}': Not found for account`});
       if(how==="plain404"){r.writeHead(404,{"content-type":"text/plain",...CORS});return r.end("404 page not found")}
       if(how==="410")return json(r,410,{error:{message:`The model ${model} has reached its end of life`}});

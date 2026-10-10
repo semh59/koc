@@ -1,13 +1,13 @@
-"""NeoWell işareti (halka + yaprak) tek geometriden SVG ve PNG simgeler üretir.
-Çalıştır: python scripts/make-icons.py  (Pillow gerekir). Çıktılar depoya girer; patch-android.js res/ klasörünü kopyalar."""
+"""Generates SVG and PNG icons of the NeoWell mark (ring + leaf) from a single geometry.
+Run: python scripts/make-icons.py  (requires Pillow). Outputs are committed; patch-android.js copies the res/ folder."""
 import math, os
 from PIL import Image, ImageDraw
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 BG, RING, LEAF = "#0F5C55", "#FFFFFF", "#8FE3CF"
-# Birim daire içinde (yarıçap 1): halkanın orta çizgisi, kalınlığı ve sağ üstteki açıklık.
+# In the unit circle (radius 1): ring centerline, thickness and the gap at the top right.
 R, W, A0, A1 = 0.80, 0.26, -10, 280
-P1, P2, H = (-0.40, 0.40), (0.46, -0.46), 0.23  # yaprak uçları ve yarı genişlik
+P1, P2, H = (-0.40, 0.40), (0.46, -0.46), 0.23  # leaf tips and half width
 
 
 def vesica():
@@ -47,7 +47,7 @@ def svg_mark(s, ox, oy, ring=RING, leaf=LEAF):
 def draw_mark(img, s, ox, oy, ring=RING, leaf=LEAF):
     d = ImageDraw.Draw(img)
     r, w = s * R, s * W
-    # Pillow'un kalın arc'ı uçlarda çentik bırakıyor; halka, yol boyunca daire basılarak çizilir (uçlar kendiliğinden yuvarlak).
+    # Pillow's thick arc leaves notches at the ends; the ring is drawn by stamping circles along the path (ends come out round).
     n = max(64, int(r * math.radians(A1 - A0)))
     for i in range(n + 1):
         a = math.radians(A0 + (A1 - A0) * i / n)
@@ -57,7 +57,7 @@ def draw_mark(img, s, ox, oy, ring=RING, leaf=LEAF):
 
 
 def render(size, bg_shape, mark_frac, ring=RING, leaf=LEAF, bg=BG):
-    """bg_shape: None (saydam), 'square', 'round', 'circle'. mark_frac: işaret çapının kenara oranı."""
+    """bg_shape: None (transparent), 'square', 'round', 'circle'. mark_frac: mark diameter as a fraction of the side."""
     k = 4
     S = size * k
     img = Image.new("RGBA", (S, S), (0, 0, 0, 0))
@@ -79,21 +79,21 @@ def save(img, *parts):
 
 
 def main():
-    # Uygulama içi işaret: yuvarlak köşeli kare, temadan bağımsız.
+    # In-app mark: rounded square, independent of the theme.
     svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="NeoWell">'
            f'<rect width="100" height="100" rx="22" fill="{BG}"/>{svg_mark(30, 50, 50)}</svg>\n')
     open(os.path.join(ROOT, "www", "logo.svg"), "w", encoding="utf8").write(svg)
     save(render(192, "round", 0.62), "www", "logo.png")
     save(render(1024, "round", 0.62), "assets", "logo.png")
     res = ["assets", "android", "res"]
-    # Uyarlanabilir simge 108 dp; işaret güvenli bölgede (orta 66 dp) kalsın diye kenarın %50'si.
+    # Adaptive icon is 108 dp; the mark is 50% of the side so it stays in the safe zone (middle 66 dp).
     for q, m in {"mdpi": 1, "hdpi": 1.5, "xhdpi": 2, "xxhdpi": 3, "xxxhdpi": 4}.items():
         fg = round(108 * m)
         save(render(fg, None, 0.50), *res, f"mipmap-{q}", "ic_launcher_foreground.png")
         save(render(fg, None, 0.50, RING, RING), *res, f"mipmap-{q}", "ic_launcher_monochrome.png")
         save(render(round(48 * m), "round", 0.62).convert("RGBA"), *res, f"mipmap-{q}", "ic_launcher.png")
         save(render(round(48 * m), "circle", 0.58), *res, f"mipmap-{q}", "ic_launcher_round.png")
-    # Açılış ekranı (Android 11 ve altı tam ekran; 12+ sistem ekranı renk ve simgeyi temadan alır).
+    # Splash screen (full screen on Android 11 and below; on 12+ the system screen takes color and icon from the theme).
     sp = {"mdpi": (320, 480), "hdpi": (480, 800), "xhdpi": (720, 1280), "xxhdpi": (960, 1600), "xxxhdpi": (1280, 1920)}
     for q, (w, h) in sp.items():
         for o, (ww, hh) in (("port", (w, h)), ("land", (h, w))):
