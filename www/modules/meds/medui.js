@@ -24,7 +24,7 @@ async function medRealTest(){
   const w=MW(),ln=LN();if(!w||!ln)return toast("Yalnızca telefondaki uygulamada çalışır");
   const at=Date.now()+60000;
   try{
-    await ln.schedule({notifications:[{id:MED_TEST_NID,title:MedLib.TITLE,body:"Test",schedule:{at:new Date(at),allowWhileIdle:true},channelId:"nw_med",ongoing:true,autoCancel:true}]});
+    await lnSchedule(ln,[{id:MED_TEST_NID,title:MedLib.TITLE,body:"Test",schedule:{at:new Date(at),allowWhileIdle:true},channelId:"nw_med",ongoing:true,autoCancel:true}]);
     await w.test({at});
     toast("1 dakika sonra test alarmı çalacak: telefonu kilitle, ekranı kapat ve bekle");
   }catch(e){toast("Test kurulamadı")}

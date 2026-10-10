@@ -74,7 +74,7 @@ async function alarmSnooze(){
   const a=alarm;if(!a)return;
   const at=AlarmLib.snoozeAt(Date.now()),ln=LN(),w=MW(),items=a.items.filter(i=>!i.st);
   try{
-    if(ln)await ln.schedule({notifications:[AlarmLib.snoozeNote(items,alarmShowName(),at)]});
+    if(ln)await lnSchedule(ln,[AlarmLib.snoozeNote(items,alarmShowName(),at)]);
     if(w?.snooze)await w.snooze({at});
     alarmClose();toast("10 dakika sonra yeniden hatırlatacağım");
   }catch(e){a.say="Erteleme kurulamadı";alarmDraw()}

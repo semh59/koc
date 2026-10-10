@@ -618,9 +618,10 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("no interpretation labels appear on the blood pressure and sugar screens (normal/high/prediabetes/diabetes/hypertension)",!/normal|yüksek|prediyabet|diyabet|hipertansiyon/i.test(sv.replace(/En düşük \/ en yüksek/g,"")+v.replace(/En düşük \/ en yüksek/g,"")),[sv,v].map(x=>x.match(/normal|yüksek|prediyabet|diyabet|hipertansiyon/i)));
 
     // reminder setup
-    const sched=[];const lnOld=w.Capacitor.Plugins.LocalNotifications;
-    w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),cancel:async()=>{},schedule:async o=>{sched.push(...o.notifications.map(n=>n.id))}};
+    const sched=[],exact=[];let perm="granted";const lnOld=w.Capacitor.Plugins.LocalNotifications;
+    w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),checkExactNotificationSetting:async()=>({exact_alarm:perm}),getPending:async()=>({notifications:[]}),cancel:async()=>{},schedule:async o=>{sched.push(...o.notifications.map(n=>n.id));exact.push(...o.notifications.map(n=>n.isExactNotification))}};
     await ev("scheduleReminders()");
+    ok("alarms are exact while the permission is granted, and inexact (no settings screen from the plugin) while it is denied",exact.length>0&&exact.every(Boolean)&&(perm="denied",exact.length=0,await ev("scheduleReminders()"),exact.length>0&&exact.every(x=>x===false)),exact.length);perm="granted";sched.length=0;await ev("scheduleReminders()");
     ok("blood pressure/sugar reminders are off by default: not scheduled",!sched.some(i=>i>=700&&i<1000));
     ev("S.settings.reminders.find(r=>r.id===7).on=true;S.settings.reminders.find(r=>r.id===9).on=true");
     sched.length=0;await ev("scheduleReminders()");
@@ -701,7 +702,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     const click=s=>q(s).click(),toastT=()=>q("#toast").textContent;
     const lnOld=w.Capacitor.Plugins.LocalNotifications;
     let types=null,list=[];
-    w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),cancel:async()=>{},registerActionTypes:async o=>{types=o.types},schedule:async o=>{list=o.notifications}};
+    w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),getPending:async()=>({notifications:[]}),cancel:async()=>{},registerActionTypes:async o=>{types=o.types},schedule:async o=>{list=o.notifications}};
     ev("S.entries=[];S.vitals=[];S.settings.lastBackup='';S.settings.glass=250;S.settings.bpOn=false;S.settings.bsOn=false");
 
     // notification button definition
@@ -765,7 +766,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
       ev("S.entries=[]");
     }
     ev("S.entries=[]");pending=[{v:250,t:Date.now()-1000}];
-    const lnH=[];w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),cancel:async()=>{},registerActionTypes:async()=>{},schedule:async o=>{lnH.push(...o.notifications)}};
+    const lnH=[];w.Capacitor.Plugins.LocalNotifications={checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),cancel:async()=>{},registerActionTypes:async()=>{},schedule:async o=>{lnH.push(...o.notifications)}};
     ev("S.settings.waterMl=500;add('water',250,'')");
     await ev("quickIngest()");await flush();
     { // neowell-* files written to the cache for sharing are deleted, other files are untouched
@@ -780,7 +781,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     { // notification button key: pending ones without a key left from an update are cancelled at startup and rescheduled with the key
       const TK="0123456789abcdef0123456789abcdef",can=[],out=[],keep=ev("JSON.stringify({o:S.settings.medOn,m:S.meds,l:S.medLog,e:S.entries})");
       w.Capacitor.Plugins.QuickLog.getToken=async()=>({tk:TK});
-      w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[{id:200,extra:{act:"water",v:250,at:1}},{id:1001001,extra:{act:"med",m:1,s:"08:00",at:1}}]}),cancel:async o=>{can.push(...o.notifications.map(n=>n.id))},registerActionTypes:async()=>{},schedule:async o=>{out.push(...o.notifications)}};
+      w.Capacitor.Plugins.LocalNotifications={checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[{id:200,extra:{act:"water",v:250,at:1}},{id:1001001,extra:{act:"med",m:1,s:"08:00",at:1}}]}),cancel:async o=>{can.push(...o.notifications.map(n=>n.id))},registerActionTypes:async()=>{},schedule:async o=>{out.push(...o.notifications)}};
       ev("S.entries=[];S.settings.medOn=true;S.meds=[{id:1,n:'A',t:['08:00'],on:true}];S.medLog=[]");
       await ev("scheduleReminders()");
       const btn=out.filter(n=>n.extra&&(n.extra.act==="water"||n.extra.act==="med"));
@@ -976,7 +977,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
 
     // notification setup
     const lnOld=w.Capacitor.Plugins.LocalNotifications;let types=null,list=[];
-    w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),cancel:async()=>{},registerActionTypes:async o=>{types=o.types},schedule:async o=>{list=o.notifications}};
+    w.Capacitor.Plugins.LocalNotifications={checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),cancel:async()=>{},registerActionTypes:async o=>{types=o.types},schedule:async o=>{list=o.notifications}};
     ev("S.medLog=[]");
     await ev("scheduleReminders()");
     const medN=()=>list.filter(n=>n.id>=1e6);
@@ -1000,7 +1001,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     // Aldım from the notification
     let pend=[];const sch=[];
     w.Capacitor.Plugins.QuickLog={take:async()=>{const r={items:pend};pend=[];return r}};
-    w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),cancel:async()=>{},registerActionTypes:async()=>{},schedule:async o=>{sch.push(...o.notifications)}};
+    w.Capacitor.Plugins.LocalNotifications={checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),cancel:async()=>{},registerActionTypes:async()=>{},schedule:async o=>{sch.push(...o.notifications)}};
     const tapT=Date.now()-60000;
     pend=[{m:1,s:"08:00",t:tapT}];
     await ev("quickIngest()");await flush();
@@ -1259,7 +1260,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("S.mood=[];render()");
     // fasting
     const lnO=w.Capacitor.Plugins.LocalNotifications,sc=[],rmv=[];
-    w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[{id:9100}]}),getDeliveredNotifications:async()=>({notifications:[{id:9100}]}),removeDeliveredNotifications:async o=>{rmv.push(...o.notifications.map(n=>n.id))},registerActionTypes:async()=>{},cancel:async()=>{},schedule:async o=>{sc.push(o.notifications)}};
+    w.Capacitor.Plugins.LocalNotifications={checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[{id:9100}]}),getDeliveredNotifications:async()=>({notifications:[{id:9100}]}),removeDeliveredNotifications:async o=>{rmv.push(...o.notifications.map(n=>n.id))},registerActionTypes:async()=>{},cancel:async()=>{},schedule:async o=>{sc.push(o.notifications)}};
     ev("S.fast={plan:16,t0:null,log:[]};S.settings.fastOn=false;S.settings.age=0;S.settings.healthNote='';tab='today';render()");
     ok("with fasting off there is no fasting row on Today",!q('[data-hb="fastgo"]')&&!q("#view").textContent.includes("Oruç"));
     ev("tab='settings-modules';render()");click('[data-hb="fasttoggle"]');
@@ -1704,7 +1705,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     const b12=x=>ev(`cleanSettings({reminders:[{id:12,t:'20:30',on:true,body:${JSON.stringify(x)}}]}).reminders.find(r=>r.id===12).body`);
     ok("weekly notification: the user's text is kept",b12("Pazar kontrolü")==="Pazar kontrolü");
     const lnO=w.Capacitor.Plugins.LocalNotifications,sc=[],rmv=[];
-    w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),getDeliveredNotifications:async()=>({notifications:[]}),removeDeliveredNotifications:async()=>{},registerActionTypes:async()=>{},cancel:async()=>{},schedule:async o=>{sc.push(...o.notifications)}};
+    w.Capacitor.Plugins.LocalNotifications={checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),getDeliveredNotifications:async()=>({notifications:[]}),removeDeliveredNotifications:async()=>{},registerActionTypes:async()=>{},cancel:async()=>{},schedule:async o=>{sc.push(...o.notifications)}};
     await ev("scheduleReminders()");
     const n12=sc.filter(n=>n.id>=1200&&n.id<=1229);
     ok("reminder 12 is scheduled for Sunday 20:30 and carries extra.act==='open'; water reminders keep their own extra",n12.length>=4&&n12.every(n=>n.schedule.at.getDay()===0&&n.schedule.at.getHours()===20&&n.schedule.at.getMinutes()===30&&n.extra.act==="open")&&sc.filter(n=>n.id>=200&&n.id<500).every(n=>n.extra.act==="water"),n12.length);
@@ -2023,7 +2024,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   ev("S.entries=[]");ev("sheetFood()");
   ok("with no meal yesterday there is no button",w.document.querySelector('[data-act="yesterday"]')===null);
   let cancelled=[],sched1=[];const lnOld=w.Capacitor.Plugins.LocalNotifications;
-  w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),cancel:async o=>{cancelled=o.notifications.map(n=>n.id)},schedule:async o=>{sched1=o.notifications.map(n=>n.id)}};
+  w.Capacitor.Plugins.LocalNotifications={checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),cancel:async o=>{cancelled=o.notifications.map(n=>n.id)},schedule:async o=>{sched1=o.notifications.map(n=>n.id)}};
   await ev("scheduleReminders()");
   ok("water reminders are scheduled before the water goal is met",sched1.includes(201)&&sched1.includes(301));
   ev("S.entries=[];add('water',S.settings.waterMl-S.settings.glass,'')");sched1=[];
