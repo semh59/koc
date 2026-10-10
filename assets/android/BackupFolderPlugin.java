@@ -21,15 +21,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
- * Otomatik yedek klasörü: kullanıcı Storage Access Framework ile bir klasör seçer, kalıcı izin yalnız o klasöre alınır.
- * Klasör adresi yalnız burada saklanır, JS'e verilmez ve loglanmaz. Yalnız otomatik yedek adındaki (neowell-oto-) dosyalar yazılır ve silinir; elle yedeklere dokunulmaz.
+ * Automatic backup folder: the user picks a folder with the Storage Access Framework and only that folder gets a persistent grant.
+ * The folder address stays in this class: it is never given to JS or written to the system journal. Only files named like automatic backups (neowell-oto-) are written and deleted; manual backups are never touched.
  */
 @CapacitorPlugin(name = "BackupFolder")
 public class BackupFolderPlugin extends Plugin {
     private static final String NAME_RE = "neowell-oto-\\d{4}-\\d{2}-\\d{2}\\.json";
-    /** Yeni yedek önce bu adla yazılır ve doğrulanır; kalan eski geçici dosya sonraki yazmada silinir. */
+    /** A new backup is written under this name and verified first; a leftover temporary file is deleted by the next write. */
     private static final String TMP = "neowell-oto-yeni.json";
     private static final int FLAGS = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
 
@@ -37,7 +39,7 @@ public class BackupFolderPlugin extends Plugin {
         return getContext().getSharedPreferences("nw_backup", Context.MODE_PRIVATE);
     }
 
-    /** Kayıtlı ve yazma izni hâlâ geçerli klasör, yoksa null (klasör silinmiş ya da izin kaldırılmış). */
+    /** The saved folder if its write grant is still valid, otherwise null (folder deleted or grant revoked). */
     private Uri tree() {
         String s = prefs().getString("tree", null);
         if (s == null) return null;
@@ -52,7 +54,7 @@ public class BackupFolderPlugin extends Plugin {
         try (Cursor c = getContext().getContentResolver().query(doc, new String[] { DocumentsContract.Document.COLUMN_DISPLAY_NAME }, null, null, null)) {
             if (c != null && c.moveToFirst()) return c.getString(0);
         } catch (Exception e) {
-            // klasör erişilemez: ad boş döner, yazma denemesi hatayı gösterir
+            // folder unreachable: the name stays empty and the next write reports the failure
         }
         return "";
     }
@@ -83,13 +85,13 @@ public class BackupFolderPlugin extends Plugin {
         try {
             cr.takePersistableUriPermission(u, FLAGS);
         } catch (SecurityException e) {
-            call.reject("izin alınamadı");
+            call.reject("permission denied");
             return;
         }
         String old = prefs().getString("tree", null);
         if (old != null && !old.equals(u.toString())) release(Uri.parse(old));
         prefs().edit().putString("tree", u.toString()).apply();
-        // @ActivityCallback ana iş parçacığında çalışır: klasör adı sorgusu (ContentResolver) arka planda yapılır.
+        // @ActivityCallback runs on the main thread: the folder name query (ContentResolver) goes to a background thread.
         final Uri chosen = u;
         getBridge().execute(() -> {
             JSObject r = new JSObject();
@@ -98,12 +100,12 @@ public class BackupFolderPlugin extends Plugin {
         });
     }
 
-    /** Yalnız bu klasörün kalıcı izni bırakılır; uygulamanın başka kalıcı izinleri varsa onlara dokunulmaz. */
+    /** Releases the persistent grant of this folder only; other persistent grants of the app stay. */
     private void release(Uri u) {
         try {
             getContext().getContentResolver().releasePersistableUriPermission(u, FLAGS);
         } catch (SecurityException e) {
-            // izin zaten yok
+            // the grant is already gone
         }
     }
 
@@ -115,9 +117,9 @@ public class BackupFolderPlugin extends Plugin {
         call.resolve();
     }
 
-    /** Klasördeki yedek adlı dosyalar: ad → belge adresi. */
-    private java.util.Map<String, Uri> list(Uri t) {
-        java.util.Map<String, Uri> out = new java.util.TreeMap<>();
+    /** Backup-named files in the folder: name to document address. */
+    private Map<String, Uri> list(Uri t) {
+        Map<String, Uri> out = new TreeMap<>();
         Uri kids = DocumentsContract.buildChildDocumentsUriUsingTree(t, DocumentsContract.getTreeDocumentId(t));
         String[] cols = { DocumentsContract.Document.COLUMN_DOCUMENT_ID, DocumentsContract.Document.COLUMN_DISPLAY_NAME };
         try (Cursor c = getContext().getContentResolver().query(kids, cols, null, null, null)) {
@@ -129,35 +131,35 @@ public class BackupFolderPlugin extends Plugin {
         return out;
     }
 
-    /** Yedeği yazar (aynı adlı dosya varsa üzerine), klasördeki yedek adlarını döndürür. */
+    /** Writes the backup (replacing a file of the same name) and returns the backup names in the folder. */
     @PluginMethod
     public void write(PluginCall call) {
         String name = call.getString("name", ""), data = call.getString("data", "");
         Uri t = tree();
         if (t == null) {
-            call.reject("klasör yok");
+            call.reject("no folder");
             return;
         }
         if (!name.matches(NAME_RE) || data.isEmpty()) {
-            call.reject("geçersiz");
+            call.reject("invalid");
             return;
         }
         try {
             ContentResolver cr = getContext().getContentResolver();
             Uri dir = DocumentsContract.buildDocumentUriUsingTree(t, DocumentsContract.getTreeDocumentId(t));
-            java.util.Map<String, Uri> have = list(t);
+            Map<String, Uri> have = list(t);
             if (have.get(TMP) != null) DocumentsContract.deleteDocument(cr, have.get(TMP));
-            // Yeni dosya önce geçici adla yazılıp doğrulanır, eskisi ancak ondan sonra silinir: yazma yarıda kalırsa (disk dolu, bağlantı) mevcut yedek korunur.
-            // Yeni dosyada "w" yeter (kısaltılacak eski bayt yok), "wt" desteklemeyen sağlayıcılar da çalışır.
+            // The new file is written under a temporary name and verified before the old one is deleted: if the write stops halfway (disk full, connection), the existing backup survives.
+            // Plain "w" is enough for a new file (there are no old bytes to cut off) and also works with providers that lack the cutting mode.
             Uri tmp = create(cr, dir, TMP);
             try {
                 put(cr, tmp, "w", data);
-                if (!same(cr, tmp, data)) throw new IllegalStateException("doğrulanamadı");
+                if (!same(cr, tmp, data)) throw new IllegalStateException("verification failed");
             } catch (Exception e) {
                 try {
                     DocumentsContract.deleteDocument(cr, tmp);
                 } catch (Exception ignored) {
-                    // kalan geçici dosya sonraki yazmada silinir
+                    // a leftover temporary file is deleted by the next write
                 }
                 throw e;
             }
@@ -166,7 +168,7 @@ public class BackupFolderPlugin extends Plugin {
             try {
                 renamed = DocumentsContract.renameDocument(cr, tmp, name);
             } catch (Exception e) {
-                // Eski dosya silindi, yeniden adlandırma hata verdi: aşağıdaki yedek yol yeni içeriği yine yazar, günün yedeği kaybolmaz.
+                // The old file is gone and the rename failed: the fallback below still writes the new content, so the day's backup is not lost.
             }
             if (renamed == null) {
                 put(cr, create(cr, dir, name), "w", data);
@@ -178,19 +180,19 @@ public class BackupFolderPlugin extends Plugin {
             r.put("names", names);
             call.resolve(r);
         } catch (Exception e) {
-            call.reject("yazılamadı");
+            call.reject("write failed");
         }
     }
 
     private static Uri create(ContentResolver cr, Uri dir, String name) throws Exception {
         Uri doc = DocumentsContract.createDocument(cr, dir, "application/json", name);
-        if (doc == null) throw new IllegalStateException("oluşturulamadı");
+        if (doc == null) throw new IllegalStateException("create failed");
         return doc;
     }
 
     private static void put(ContentResolver cr, Uri doc, String mode, String data) throws Exception {
         try (OutputStream os = cr.openOutputStream(doc, mode)) {
-            if (os == null) throw new IllegalStateException("açılamadı");
+            if (os == null) throw new IllegalStateException("open failed");
             os.write(data.getBytes(StandardCharsets.UTF_8));
         }
     }
@@ -209,11 +211,11 @@ public class BackupFolderPlugin extends Plugin {
     public void remove(PluginCall call) {
         Uri t = tree();
         if (t == null) {
-            call.reject("klasör yok");
+            call.reject("no folder");
             return;
         }
         try {
-            java.util.Map<String, Uri> have = list(t);
+            Map<String, Uri> have = list(t);
             JSArray names = call.getArray("names", new JSArray());
             for (int i = 0; i < names.length(); i++) {
                 Uri doc = have.get(names.getString(i));
@@ -221,7 +223,7 @@ public class BackupFolderPlugin extends Plugin {
             }
             call.resolve();
         } catch (Exception e) {
-            call.reject("silinemedi");
+            call.reject("delete failed");
         }
     }
 }

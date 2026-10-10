@@ -17,20 +17,20 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import java.security.SecureRandom;
-import java.util.List;
 
-/** Bildirim düğmeleri ("+250 ml", "Aldım"): kayıt uygulama açılmadan SharedPreferences'a yazılır, uygulama bir sonraki açılışta alır. */
+/** Notification buttons ("+250 ml", "Aldım"): the record is written to SharedPreferences without opening the app, and the app picks it up at its next start. */
 @CapacitorPlugin(name = "QuickLog")
 public class QuickLogPlugin extends Plugin {
+    // Extra names written by the local-notifications plugin (the second one is spelled that way in the plugin).
     static final String ACTION_KEY = "LocalNotificationUserAction";
+    static final String OBJ_KEY = "LocalNotficationObject";
     private static final String ID_KEY = "LocalNotificationId";
-    private static final String OBJ_KEY = "LocalNotficationObject";
 
     private static SharedPreferences prefs(Context c) {
         return c.getSharedPreferences("nw_quick", Context.MODE_PRIVATE);
     }
 
-    /** Bildirimlere konan gizli anahtar (128 bit, ilk istekte üretilir). Kayıt yalnız bu anahtarı taşıyan bildirimden yazılır. */
+    /** Secret placed in the app's own notifications (128 bits, created on first request). A record is written only from a notification that carries it. */
     static synchronized String secret(Context c) {
         SharedPreferences p = prefs(c);
         String s = p.getString("tk", null);
@@ -44,29 +44,27 @@ public class QuickLogPlugin extends Plugin {
         return s;
     }
 
-    /** Bildirim eklentisinin zamanlanmış alarmını (istek kodu = bildirim kimliği) ve kayıtlı kopyasını siler; kopya kalırsa açılışta yeniden kurulur. */
+    /** Cancels the notification plugin's scheduled alarm (request code = notification id) and its stored copy; a leftover copy would be rescheduled at the next start. */
     private static void cancelPending(Context c, int id) {
-        AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
-        if (am != null) {
-            PendingIntent pi = PendingIntent.getBroadcast(c, id, new Intent(c, TimedNotificationPublisher.class), Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_MUTABLE : 0);
-            if (pi != null) am.cancel(pi);
-        }
+        AlarmManager am = Alarms.manager(c);
+        PendingIntent pi = PendingIntent.getBroadcast(c, id, new Intent(c, TimedNotificationPublisher.class), PendingIntent.FLAG_NO_CREATE | (Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_MUTABLE : 0));
+        if (pi != null) am.cancel(pi);
         new NotificationStorage(c).deleteNotification(Integer.toString(id));
     }
 
-    /** İlaç: ana bildirim ve tekrar hatırlatmaları aynı dozun kardeşidir (ana kimlik 1.000.000-1.999.999; tekrarlar kimlik + 1.000.000 × sıra, sıra 1-2).
-     *  Uygulama kapalıyken JS yeniden planlayamaz: bekleyen tekrar alarmları ve kayıtlı kopyaları burada iptal edilir. */
+    /** Medication: the main notification and its repeat reminders belong to the same dose (main id 1,000,000-1,999,999; repeats are id + 1,000,000 x n, n = 1-2).
+     *  JS cannot reschedule while the app is closed, so the pending repeat alarms and their stored copies are cancelled here. */
     private static void cancelSiblings(Context c, int id, boolean med) {
-        NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager nm = c.getSystemService(NotificationManager.class);
         int base = id % 1000000, count = med ? 3 : 1;
         for (int k = 0; k < count; k++) {
             int sid = med ? base + 1000000 * (k + 1) : id;
-            if (nm != null) nm.cancel(sid);
+            nm.cancel(sid);
             if (med) cancelPending(c, sid);
         }
     }
 
-    /** Alarm ekranından ilaç kaydı ("m12_0800" alındı, "k12_0800" atlandı): bildirim düğmeleriyle aynı kuyruğa yazılır, uygulama açılınca alınır. */
+    /** Medication record from the alarm screen ("m12_0800" taken, "k12_0800" skipped): written to the same queue as the notification buttons and picked up when the app opens. */
     static synchronized void recordMed(Context c, String key, int id) {
         SharedPreferences p = prefs(c);
         p.edit().putString("q", QuickMath.append(p.getString("q", ""), key, System.currentTimeMillis())).commit();
@@ -75,13 +73,13 @@ public class QuickLogPlugin extends Plugin {
     }
 
     /**
-     * MainActivity ve WaterReceiver'dan çağrılır. Düğme "water" ya da "med" ise kaydı saklar, bildirimi kaldırır ve true döner.
-     * MainActivity exported olduğu için her uygulama aynı ek alanlarla onu açabilir; o yoldan (widget=false) kayıt yalnız
-     * gizli anahtarı taşıyan bildirimden yazılır. Widget alıcısı exported=false, yalnız uygulamanın PendingIntent'i ulaşır.
+     * Called by MainActivity and WaterReceiver. If the button is "water" or "med", stores the record, removes the notification and returns true.
+     * MainActivity is exported, so any app can open it with the same extras; on that path (widget=false) a record is written only
+     * from a notification that carries the secret. The widget receiver is exported=false, only the app's own PendingIntent reaches it.
      */
     static synchronized boolean handle(Context c, Intent in, boolean widget) {
         if (in == null) return false;
-        // Son uygulamalardan açılışta sistem ilk intent'i (ek alanlarıyla) yeniden verir; kayıt ilk seferde yazıldı.
+        // Launching from recents makes the system hand over the first intent (with its extras) again; the record was written the first time.
         if ((in.getFlags() & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0) {
             in.removeExtra(ACTION_KEY);
             return false;
@@ -96,14 +94,14 @@ public class QuickLogPlugin extends Plugin {
             key = QuickMath.medKey(obj, "medskip".equals(act));
         }
         if (key == null) {
-            if (med && (widget || QuickMath.signed(obj, secret(c)))) Log.w("NW-QUICK", "İlaç kaydı atlandı: kimlik 1-999 dışında ya da saat bozuk");
+            if (med && (widget || QuickMath.signed(obj, secret(c)))) Log.w("NW-QUICK", "medication record skipped: id outside 1-999 or malformed time");
             return false;
         }
         if (!widget && !QuickMath.signed(obj, secret(c))) return false;
         int id = in.getIntExtra(ID_KEY, Integer.MIN_VALUE);
         SharedPreferences p = prefs(c);
-        // Bildirim intent'ini sistem yeniden teslim edebilir (süreç ölümü, MIUI); aynı planlanmış bildirim iki kez yazılmaz.
-        // Meşru ikinci dokunuş olamaz: bildirim ilk dokunuşta kaldırılır, her yeni bildirimin "at"ı farklıdır.
+        // The system can redeliver a notification intent (process death, MIUI); the same scheduled notification must not be recorded twice.
+        // A legitimate second tap is impossible: the notification is removed on the first tap and every new notification has a different "at".
         String tok = QuickMath.token(obj), sig = tok == null ? null : id + "@" + tok, seen = p.getString("seen", "");
         if (sig != null && QuickMath.seen(seen, sig)) {
             in.removeExtra(ACTION_KEY);
@@ -111,7 +109,7 @@ public class QuickLogPlugin extends Plugin {
         }
         SharedPreferences.Editor e = p.edit().putString("q", QuickMath.append(p.getString("q", ""), key, System.currentTimeMillis()));
         if (sig != null) e.putString("seen", QuickMath.remember(seen, sig));
-        // Kuyruk yazısı dayanıklı olmalı: kapalı uygulamada alıcı süreci hemen sonlanabilir, apply() asenkron yazmayı kaçırır.
+        // The queue write must be durable: with the app closed the receiver process can end at once and apply() would lose the asynchronous write.
         e.commit();
         if (v > 0) NeoWidget.bump(c, v);
         if (id != Integer.MIN_VALUE) cancelSiblings(c, id, med);
@@ -120,7 +118,7 @@ public class QuickLogPlugin extends Plugin {
         return true;
     }
 
-    /** Alınan kayıtlar "inflight"ta kalır, JS kalıcı yazdıktan sonra ack ile silinir: alma ile yazma arasında süreç ölürse kayıt kaybolmaz. */
+    /** Taken records stay in "inflight" until JS acknowledges them with ack after persisting: if the process dies between taking and writing, the record is not lost. */
     private static synchronized String takeAll(Context c) {
         SharedPreferences p = prefs(c);
         String q = p.getString("q", ""), inf = p.getString("inflight", ""), s = inf + q;
@@ -128,7 +126,7 @@ public class QuickLogPlugin extends Plugin {
         return s;
     }
 
-    /** upto (ms) ve öncesi kayıtları kalıcı yazıldı sayıp siler; sonrası (başka bir alışın kayıtları) kalır. */
+    /** Treats records up to and including upto (ms) as persisted and deletes them; later ones (from another take) stay. */
     @PluginMethod
     public synchronized void ack(PluginCall call) {
         long upto = call.getLong("upto", 0L);
@@ -139,7 +137,7 @@ public class QuickLogPlugin extends Plugin {
                 long t = Long.parseLong(x[1]);
                 if (t > upto) left = QuickMath.append(left, x[0], t);
             } catch (RuntimeException e) {
-                // bozuk kayıt atılır
+                // malformed record: dropped
             }
         }
         if (left.isEmpty()) p.edit().remove("inflight").commit();
@@ -157,9 +155,8 @@ public class QuickLogPlugin extends Plugin {
     @PluginMethod
     public void take(PluginCall call) {
         JSArray items = new JSArray();
-        List<String[]> list = QuickMath.parse(takeAll(getContext()));
-        for (String[] x : list) {
-            // Bozuk bir kayıt yalnız kendini atar, diğerleri kaybolmaz.
+        for (String[] x : QuickMath.parse(takeAll(getContext()))) {
+            // A malformed record drops only itself, the others are kept.
             try {
                 JSObject o = new JSObject();
                 if (x[0].charAt(0) == 'm' || x[0].charAt(0) == 'k') {
@@ -173,7 +170,7 @@ public class QuickLogPlugin extends Plugin {
                 o.put("t", Long.parseLong(x[1]));
                 items.put(o);
             } catch (RuntimeException e) {
-                // bozuk kayıt atlanır
+                // malformed record: skipped
             }
         }
         JSObject r = new JSObject();

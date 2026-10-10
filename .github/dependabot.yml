@@ -1,11 +1,11 @@
 version: 2
 updates:
-  # Eylem sürümleri tam SHA'ya sabit; Dependabot SHA ve sürüm yorumunu birlikte günceller.
+  # Action versions are pinned to a full SHA; Dependabot updates the SHA and the version comment together.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "monthly"
-  # npm paketleri (Capacitor ve araçlar): güvenlik ve sürüm güncellemeleri için aylık PR.
+  # npm packages (Capacitor and tools): monthly PR for security and version updates.
   - package-ecosystem: "npm"
     directory: "/"
     schedule:

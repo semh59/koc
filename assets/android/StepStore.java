@@ -6,42 +6,50 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.provider.Settings;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-/** Adım sensörünü okur, durumu SharedPreferences'ta tutar. Mantık StepMath'te. */
+/** Reads the step sensor and keeps the state in SharedPreferences. The logic is in StepMath. */
 final class StepStore {
     interface Callback {
         void done(Long steps, Map<String, Long> history);
     }
 
+    private static final int FLUSH_WAIT_TRIES = 8;
+    private static final long FLUSH_WAIT_MS = 50, READ_TIMEOUT_MS = 4000;
+
     private static SharedPreferences prefs(Context c) {
         return c.getSharedPreferences("nw_steps", Context.MODE_PRIVATE);
     }
 
+    private static String day(long at) {
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date(at));
+    }
+
     static String today() {
-        return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
+        return day(System.currentTimeMillis());
     }
 
     static boolean available(Context c) {
-        SensorManager sm = (SensorManager) c.getSystemService(Context.SENSOR_SERVICE);
-        return sm != null && sm.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) != null;
+        SensorManager sm = c.getSystemService(SensorManager.class);
+        return sm.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) != null;
     }
 
     private static SensorEventListener live;
     private static volatile float liveCounter = -1;
 
-    /** Uygulama açıkken sensörü sürekli dinler. Tek seferlik kayıtta bazı telefonlar ilk olayı geciktirir ya da eski (toplu) değeri verir; açıkken adım sayısı donar. */
+    /** Listens to the sensor continuously while the app is open. With a one-shot registration some phones delay the first event or deliver an old (batched) value, and the step count freezes while the app is open. */
     static synchronized void live(Context c, boolean on) {
-        SensorManager sm = (SensorManager) c.getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
-        Sensor sensor = sm == null ? null : sm.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+        SensorManager sm = c.getApplicationContext().getSystemService(SensorManager.class);
+        Sensor sensor = sm.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
         if (sensor == null || on == (live != null)) return;
         if (on) {
             live = new SensorEventListener() {
@@ -51,7 +59,7 @@ final class StepStore {
 
                 public void onAccuracyChanged(Sensor s, int a) {}
             };
-            // maxReportLatency 0: olaylar toplu bekletilmeden gelsin.
+            // maxReportLatency 0: events arrive without batching delay.
             sm.registerListener(live, sensor, SensorManager.SENSOR_DELAY_NORMAL, 0, new Handler(Looper.getMainLooper()));
         } else {
             sm.unregisterListener(live);
@@ -60,11 +68,11 @@ final class StepStore {
         }
     }
 
-    /** Sayaçtan tek okuma yapar. closeFirst: gece alarmında önce biten günü kapat. Sensör yanıt vermezse steps null döner. */
+    /** Takes one reading from the counter. closeFirst: at the night alarm, close the finished day first. steps is null when the sensor does not answer. */
     static void read(final Context c, final boolean closeFirst, final Callback cb) {
         final Context app = c.getApplicationContext();
-        final SensorManager sm = (SensorManager) app.getSystemService(Context.SENSOR_SERVICE);
-        final Sensor sensor = sm == null ? null : sm.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+        final SensorManager sm = app.getSystemService(SensorManager.class);
+        final Sensor sensor = sm.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
         if (sensor == null) {
             cb.done(null, new HashMap<String, Long>());
             return;
@@ -75,10 +83,12 @@ final class StepStore {
             synchronized (StepStore.class) {
                 flushed = live != null && sm.flush(live);
             }
-            // Telefon adımları donanım kuyruğunda biriktirir; boşaltma isteğinin yanıtı kısa süre sonra gelir, eski değeri göstermek yerine beklenir (okuma eklenti iş parçacığında).
-            for (int k = 0; flushed && k < 8 && liveCounter == v; k++) {
+            // The phone batches steps in a hardware queue; the answer to the flush request arrives shortly, so wait for it instead of showing the old value.
+            // Only off the main thread: sensor events are delivered on the main looper, so waiting there could never see the new value.
+            boolean main = Looper.myLooper() == Looper.getMainLooper();
+            for (int k = 0; flushed && !main && k < FLUSH_WAIT_TRIES && liveCounter == v; k++) {
                 try {
-                    Thread.sleep(50);
+                    Thread.sleep(FLUSH_WAIT_MS);
                 } catch (InterruptedException x) {
                     Thread.currentThread().interrupt();
                     break;
@@ -90,13 +100,11 @@ final class StepStore {
         final Handler h = new Handler(Looper.getMainLooper());
         final boolean[] finished = {false};
         final SensorEventListener[] ref = new SensorEventListener[1];
-        final Runnable timeout = new Runnable() {
-            public void run() {
-                if (finished[0]) return;
-                finished[0] = true;
-                sm.unregisterListener(ref[0]);
-                cb.done(null, history(app));
-            }
+        final Runnable timeout = () -> {
+            if (finished[0]) return;
+            finished[0] = true;
+            sm.unregisterListener(ref[0]);
+            cb.done(null, history(app));
         };
         ref[0] = new SensorEventListener() {
             public void onSensorChanged(SensorEvent e) {
@@ -110,13 +118,13 @@ final class StepStore {
             public void onAccuracyChanged(Sensor s, int a) {}
         };
         sm.registerListener(ref[0], sensor, SensorManager.SENSOR_DELAY_NORMAL, h);
-        h.postDelayed(timeout, 4000);
+        h.postDelayed(timeout, READ_TIMEOUT_MS);
     }
 
-    /** Okuma iş parçacığına özel: canlı değer eklenti iş parçacığında, sensör olayı ana iş parçacığında işlenir; ortak statik başka okumanın anını gösterebilirdi. */
+    /** Per reading thread: the live value is handled on the plugin thread and the sensor event on the main thread, so a shared static could hold another reading's time. */
     private static final ThreadLocal<Long> sampledAt = new ThreadLocal<>();
 
-    /** Geri çağrının kendi okumasının günü belirleyen anı (geri çağrı okumayla aynı iş parçacığında, hemen ardından çalışır). */
+    /** The moment that fixed the day of the callback's own reading (the callback runs right after the reading, on the same thread). */
     static long sampledAt() {
         Long t = sampledAt.get();
         return t != null ? t : System.currentTimeMillis();
@@ -130,22 +138,22 @@ final class StepStore {
         s.carry = sp.getFloat("carry", 0);
         s.last = sp.getFloat("last", -1);
         s.sampled = sp.getBoolean("sampled", false);
-        // elapsedRealtime yalnız yeniden başlatmada sıfırlanır (saat ayarından etkilenmez): küçüldüyse sayaç sıfırlanmıştır.
+        // elapsedRealtime resets only at boot (a clock change does not affect it): if it shrank, the counter was reset.
         long el = SystemClock.elapsedRealtime();
-        int boot = Build.VERSION.SDK_INT >= 24 ? android.provider.Settings.Global.getInt(c.getContentResolver(), android.provider.Settings.Global.BOOT_COUNT, -1) : -1, lastBoot = sp.getInt("boot", -1);
+        int boot = Settings.Global.getInt(c.getContentResolver(), Settings.Global.BOOT_COUNT, -1), lastBoot = sp.getInt("boot", -1);
         s.bootKnown = boot >= 0 && lastBoot >= 0;
         s.rebooted = el < sp.getLong("el", 0L) || (s.bootKnown && boot != lastBoot);
         Map<String, Long> hist = new HashMap<>();
-        // Gün anahtarı, dakika ve geri çağrıya verilen an tek örnekten: gece yarısında ayrı ayrı alınırsa adım dünün, zaman bugünün olur.
+        // Day key, minute and the time handed to the callback come from one sample: taken separately around midnight, the steps would belong to yesterday and the time to today.
         long at = System.currentTimeMillis();
         sampledAt.set(at);
-        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date(at));
-        java.util.Calendar now = java.util.Calendar.getInstance();
+        String today = day(at);
+        Calendar now = Calendar.getInstance();
         now.setTimeInMillis(at);
-        int minutes = now.get(java.util.Calendar.HOUR_OF_DAY) * 60 + now.get(java.util.Calendar.MINUTE);
+        int minutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
         boolean closed = closeFirst && StepMath.closeDay(s, today, counter, minutes, hist);
         long steps = StepMath.update(s, today, counter, minutes, hist);
-        if (steps > StepMath.MAX_DAY) { // eski sürümlerden kalan bozuk durum: bugün bu okumadan yeniden sayılır
+        if (steps > StepMath.MAX_DAY) { // corrupt state: count today again from this reading
             s.carry = 0;
             s.base = counter;
             steps = 0;
@@ -158,12 +166,12 @@ final class StepStore {
         return steps;
     }
 
-    /** Gece alarmının günü gerçekten kapattığı son zaman (ms), hiç olmadıysa 0. */
+    /** The last time (ms) the night alarm really closed a day, 0 if never. */
     static long snapAt(Context c) {
         return prefs(c).getLong("snapAt", 0L);
     }
 
-    /** Biten günlerin adımları. */
+    /** Steps of the finished days. */
     static Map<String, Long> history(Context c) {
         Map<String, Long> out = new HashMap<>();
         for (Map.Entry<String, ?> x : prefs(c).getAll().entrySet())

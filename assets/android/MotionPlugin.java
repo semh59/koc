@@ -12,9 +12,8 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
-import java.util.List;
 
-/** Otomatik yürüyüş/koşu algılama: izinler, açma/kapama, kullanıcı boyu-kilosu, biten aralıkların alınması ve elle yürüyüşte GPS penceresi. Arka plan konum izni yok. */
+/** Automatic walk/run detection: permissions, on/off, the user's height and weight, collecting finished intervals, and the GPS window of a manual walk. There is no background location permission. */
 @CapacitorPlugin(
     name = "Motion",
     permissions = {
@@ -24,7 +23,7 @@ import java.util.List;
 )
 public class MotionPlugin extends Plugin {
     private boolean has(String alias) {
-        if (Build.VERSION.SDK_INT < 29 && !alias.equals("fine")) return true;
+        if (Build.VERSION.SDK_INT < 29 && !alias.equals("fine")) return true; // activity recognition became a runtime permission in Android 10
         return getPermissionState(alias) == PermissionState.GRANTED;
     }
 
@@ -44,19 +43,19 @@ public class MotionPlugin extends Plugin {
         call.resolve(status());
     }
 
-    /** Otomatik algılama yalnız fiziksel aktivite izni ister; konum izni elle yürüyüş başlatılırken requestPermissions ile istenir. */
+    /** Automatic detection asks only for the physical-activity permission; the location permission is requested with requestPermissions when a manual walk starts. */
     @PluginMethod
     public void requestAccess(PluginCall call) {
         if (!has("activity")) requestPermissionForAlias("activity", call, "afterActivity");
-        else afterActivity(call);
+        else status(call);
     }
 
     @PermissionCallback
     private void afterActivity(PluginCall call) {
-        call.resolve(status());
+        status(call);
     }
 
-    /** Elle yürüyüş başlarken (uygulama görünür) GPS penceresini açar, yürüyüş bitince kapatır. Konum izni yoksa açmaz. */
+    /** Opens the GPS window when a manual walk starts (the app is visible) and closes it when the walk ends. Does not open without the location permission. */
     @PluginMethod
     public void walkGps(PluginCall call) {
         boolean on = Boolean.TRUE.equals(call.getBoolean("on", false)) && has("fine");
@@ -73,6 +72,7 @@ public class MotionPlugin extends Plugin {
         call.resolve();
     }
 
+    /** The reject messages are shown to the user. */
     @PluginMethod
     public void start(final PluginCall call) {
         final Context c = getContext();
@@ -82,15 +82,9 @@ public class MotionPlugin extends Plugin {
         }
         try {
             MotionStore.setEnabled(c, true);
-            MotionReceiver.register(c).addOnSuccessListener(new com.google.android.gms.tasks.OnSuccessListener<Void>() {
-                public void onSuccess(Void v) {
-                    call.resolve(status());
-                }
-            }).addOnFailureListener(new com.google.android.gms.tasks.OnFailureListener() {
-                public void onFailure(Exception e) {
-                    MotionStore.setEnabled(c, false);
-                    call.reject("Bu telefonda etkinlik tanıma (Google Play hizmetleri) kullanılamıyor");
-                }
+            MotionReceiver.register(c).addOnSuccessListener(v -> call.resolve(status())).addOnFailureListener(e -> {
+                MotionStore.setEnabled(c, false);
+                call.reject("Bu telefonda etkinlik tanıma (Google Play hizmetleri) kullanılamıyor");
             });
         } catch (Exception e) {
             MotionStore.setEnabled(c, false);
@@ -107,7 +101,7 @@ public class MotionPlugin extends Plugin {
         try {
             MotionReceiver.unregister(c);
         } catch (Exception e) {
-            // Google Play hizmetleri yoksa kayıt zaten yok
+            // without Google Play services nothing was registered
         }
         call.resolve(status());
     }
@@ -115,8 +109,7 @@ public class MotionPlugin extends Plugin {
     @PluginMethod
     public void take(PluginCall call) {
         JSArray items = new JSArray();
-        List<String[]> l = MotionStore.takePending(getContext());
-        for (String[] f : l) {
+        for (String[] f : MotionStore.takePending(getContext())) {
             try {
                 JSObject o = new JSObject();
                 o.put("t0", Long.parseLong(f[0]));
@@ -129,7 +122,7 @@ public class MotionPlugin extends Plugin {
                 o.put("gps", "1".equals(f[7]));
                 items.put(o);
             } catch (NumberFormatException e) {
-                // bozuk kayıt atlanır
+                // malformed record: skipped
             }
         }
         JSObject r = new JSObject();

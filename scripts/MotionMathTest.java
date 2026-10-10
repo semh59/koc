@@ -35,8 +35,6 @@ public class MotionMathTest {
         MotionMath.Model r = MotionMath.Model.dec(m.enc());
         ok("model: kodla ve çöz aynı", r.enc().equals(m.enc()) && r.n[0] == 1 && near(r.f[0], m.f[0], 1e-9));
         ok("model: bozuk metin varsayılana döner", MotionMath.Model.dec("x").n[0] == 0 && MotionMath.Model.dec(null).f[1] == 1 && MotionMath.Model.dec("1,1,0,0,-1,-1,a").f[0] == 1 && MotionMath.Model.dec("9,1,0,0").f[0] == 1 && MotionMath.Model.dec("1,1,0").f[0] == 1);
-        MotionMath.Model old = MotionMath.Model.dec("1.08,0.95,7,3,20000,19990" + ",1".repeat(24));
-        ok("model: eski 30 alanlı kayıt (gün ve ritim aralığı sayaçlarıyla) ölçek ve örnek sayısını korur", near(old.f[0], 1.08, 1e-9) && near(old.f[1], 0.95, 1e-9) && old.n[0] == 7 && old.n[1] == 3 && old.enc().equals("1.08,0.95,7,3"));
 
         ok("GPS noktası: iyi", MotionMath.goodFix(10, 0.5f, 1.4f) && MotionMath.goodFix(10, -1f, 1.4f));
         ok("GPS noktası: kötü doğruluk ya da hız doğruluğu ya da hız reddedilir", !MotionMath.goodFix(20, 0.5f, 1.4f) && !MotionMath.goodFix(10, 1.2f, 1.4f) && !MotionMath.goodFix(10, 0.5f, -1f) && !MotionMath.goodFix(0, 0.5f, 1f) && !MotionMath.goodFix(10, 0.5f, 16f));

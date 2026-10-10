@@ -12,21 +12,33 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.PowerManager;
+import java.util.Arrays;
+import java.util.Locale;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/** İlaç dozunda kilitli ekranı yakar: bildirimle aynı anda kısa süre ekranı açan ayrı alarm. Bildirim eklentisi ekranı uyandırmaz. */
+/** Lights the locked screen at a medication dose: a separate alarm opens the screen at the same moment as the notification, which the notification plugin cannot do. */
 public class MedWakeReceiver extends BroadcastReceiver {
-    static final int BASE = 7100, MAX = 40, LOG_MAX = 20;
+    static final int NID = 7150;
+    private static final int BASE = 7100, MAX = 40, LOG_MAX = 20, MAX_DOSES = 200;
+    /** An alarm may fire this early relative to its planned time. */
+    static final long EARLY_MS = 5000;
+    private static final long WAKE_MS = 20000, TEST_VISIBLE_MS = 120000, NOTIFICATION_TIMEOUT_MS = 30000;
     private static final String PREFS = "nw_medwake", KEY = "times", DOSES = "doses", LOG = "log", TEST = "test", WAKE = "com.neowell.app.MED_WAKE";
+    /** The id was bumped once because Android restores the old settings (including a lowered importance) when a deleted channel is recreated under the same id. */
+    static final String CH = "nw_medwake2";
+
+    private static SharedPreferences prefs(Context c) {
+        return c.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+    }
 
     @Override
     public void onReceive(Context c, Intent i) {
         String a = i.getAction();
         if (WAKE.equals(a)) {
             wake(c);
-            // 40'ı aşan dozlar sıra bekler: biri çalınca pencere kayar, sıradaki doz kurulur.
+            // Doses beyond MAX wait in line: when one rings the window slides on and the next dose is set.
             arm(c, load(c), "AFTER");
         } else if (Intent.ACTION_BOOT_COMPLETED.equals(a) || Intent.ACTION_MY_PACKAGE_REPLACED.equals(a) || Intent.ACTION_TIME_CHANGED.equals(a) || Intent.ACTION_TIMEZONE_CHANGED.equals(a)
             || AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED.equals(a)) arm(c, load(c), cause(a));
@@ -42,23 +54,18 @@ public class MedWakeReceiver extends BroadcastReceiver {
 
     @SuppressWarnings("deprecation")
     private static void wake(Context c) {
-        // Durum wake lock'tan önce okunur: ACQUIRE_CAUSES_WAKEUP ekranı açarsa isInteractive sonradan true döner.
+        // The state is read before the wake lock: ACQUIRE_CAUSES_WAKEUP turns the screen on, so isInteractive would report true afterwards.
         JSONObject e = state(c, "WAKE");
-        long now = System.currentTimeMillis(), test = c.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getLong(TEST, 0), at = planned(load(c), test, now);
+        long now = System.currentTimeMillis(), test = prefs(c).getLong(TEST, 0), at = planned(load(c), test, now);
         put(e, "p", at);
         if (at != 0 && at == test) put(e, "k", "T");
         try {
-            PowerManager pm = (PowerManager) c.getSystemService(Context.POWER_SERVICE);
-            if (pm == null) {
-                put(e, "err", "PowerManager yok");
-                return;
-            }
-            KeyguardManager km = (KeyguardManager) c.getSystemService(Context.KEYGUARD_SERVICE);
-            boolean locked = km != null && km.isKeyguardLocked(), dark = !pm.isInteractive();
+            PowerManager pm = c.getSystemService(PowerManager.class);
+            boolean locked = c.getSystemService(KeyguardManager.class).isKeyguardLocked(), dark = !pm.isInteractive();
             PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "neowell:medwake");
-            wl.acquire(20000);
+            wl.acquire(WAKE_MS);
             put(e, "wl", wl.isHeld());
-            // Kilitliyken ya da ekran kapalıyken tam ekran bildirim: üreticiler (Xiaomi) yalnız wake lock'a güvenmez, alarm uygulamaları bunu kullanır.
+            // Full-screen notification while locked or dark: vendors (Xiaomi) do not rely on the wake lock alone, alarm apps use this.
             put(e, "fs", locked || dark ? fullScreen(c) : "skip");
         } catch (Exception x) {
             put(e, "err", String.valueOf(x));
@@ -67,23 +74,16 @@ public class MedWakeReceiver extends BroadcastReceiver {
         }
     }
 
-    /** Çalan alarmın planlanan zamanı: şimdiye kadar gelmiş en geç kayıtlı doz ya da test (erken çalma payı 5 sn). */
-    static long planned(long[] times, long test, long now) {
-        long best = test <= now + 5000 ? test : 0;
-        for (long t : times) if (t <= now + 5000 && t > best) best = t;
+    /** Planned time of the alarm that just rang: the latest saved dose that is due, or the test (may fire EARLY_MS early). */
+    private static long planned(long[] times, long test, long now) {
+        long best = test <= now + EARLY_MS ? test : 0;
+        for (long t : times) if (t <= now + EARLY_MS && t > best) best = t;
         return best;
     }
 
-    static final int NID = 7150;
-    // Kullanıcı ya da üretici eski kanalın önemini düşürmüş olabilir; aynı kimlikle silip açmak eski ayarları geri getirir, bu yüzden yeni kimlik.
-    static final String CH = "nw_medwake2";
-    private static final String OLD_CH = "nw_medwake";
-
     static void channel(Context c) {
         if (Build.VERSION.SDK_INT < 26) return;
-        NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (nm == null) return;
-        if (nm.getNotificationChannel(OLD_CH) != null) nm.deleteNotificationChannel(OLD_CH);
+        NotificationManager nm = c.getSystemService(NotificationManager.class);
         if (nm.getNotificationChannel(CH) != null) return;
         NotificationChannel ch = new NotificationChannel(CH, "İlaç alarmı ekranı", NotificationManager.IMPORTANCE_HIGH);
         ch.setSound(null, null);
@@ -92,12 +92,11 @@ public class MedWakeReceiver extends BroadcastReceiver {
         nm.createNotificationChannel(ch);
     }
 
-    /** Sessiz, kısa ömürlü bildirim: asıl ses ve düğmeler eklentinin ilaç bildiriminde; bu yalnız MainActivity'yi kilit ekranı üstünde açar. Döner: "ok" ya da hata. */
+    /** Silent, short-lived notification: the sound and buttons come from the plugin's medication notification, this one only opens AlarmActivity over the lock screen. Returns "ok" or the error. */
     @SuppressWarnings("deprecation")
     private static String fullScreen(Context c) {
         try {
-            NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
-            if (nm == null) return "err:NotificationManager yok";
+            NotificationManager nm = c.getSystemService(NotificationManager.class);
             channel(c);
             Intent open = new Intent(c, AlarmActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             PendingIntent pi = PendingIntent.getActivity(c, NID, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
@@ -105,7 +104,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
             b.setSmallIcon(c.getApplicationInfo().icon).setContentTitle("İlaç zamanı").setContentText("İlaçlarını görmek için dokun")
                 .setCategory(Notification.CATEGORY_ALARM).setVisibility(Notification.VISIBILITY_PUBLIC).setAutoCancel(true).setOnlyAlertOnce(false)
                 .setContentIntent(pi).setFullScreenIntent(pi, true);
-            if (Build.VERSION.SDK_INT >= 26) b.setTimeoutAfter(30000);
+            if (Build.VERSION.SDK_INT >= 26) b.setTimeoutAfter(NOTIFICATION_TIMEOUT_MS);
             nm.notify(NID, b.build());
             return "ok";
         } catch (Exception x) {
@@ -113,9 +112,9 @@ public class MedWakeReceiver extends BroadcastReceiver {
         }
     }
 
-    /** Ayarlar'daki 'Kilitli ekran testi' ve 'Gerçek doz testi': gerçek doz alarmlarına dokunmadan ayrı kodla ms sonra aynı yolu çalıştırır. */
+    /** Settings > "Lock screen test" and "Real dose test": runs the same path ms from now with its own request code, leaving the real dose alarms alone. */
     static void test(Context c, long ms) {
-        c.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putLong(TEST, System.currentTimeMillis() + ms).commit();
+        prefs(c).edit().putLong(TEST, System.currentTimeMillis() + ms).commit();
         Alarms.setClock(c, System.currentTimeMillis() + ms, pi(c, MAX, PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
@@ -125,7 +124,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
     }
 
     private static long[] load(Context c) {
-        String s = c.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY, "");
+        String s = prefs(c).getString(KEY, "");
         if (s.isEmpty()) return new long[0];
         String[] p = s.split(",");
         long[] t = new long[p.length];
@@ -135,24 +134,23 @@ public class MedWakeReceiver extends BroadcastReceiver {
         return t;
     }
 
-    /** Önceki alarmları siler, gelecekteki en yakın MAX dozu kurar; gelecekteki tüm dozları (kurulmayanlar dahil) açılışta ve çalan alarmda yeniden kurmak için saklar. */
+    /** Cancels the previous alarms and sets the nearest MAX future doses; keeps every future dose (including the unset ones) to re-arm at boot and after an alarm rings. */
     static void arm(Context c, long[] times, String why) {
-        AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
-        if (am == null) return;
+        AlarmManager am = Alarms.manager(c);
         channel(c);
         for (int n = 0; n < MAX; n++) {
             PendingIntent old = pi(c, n, PendingIntent.FLAG_NO_CREATE);
             if (old != null) am.cancel(old);
         }
         long now = System.currentTimeMillis();
-        long[] t = java.util.Arrays.copyOf(times, times.length);
-        java.util.Arrays.sort(t);
+        long[] t = Arrays.copyOf(times, times.length);
+        Arrays.sort(t);
         StringBuilder keep = new StringBuilder();
         JSONArray first = new JSONArray();
         int n = 0;
         long prev = 0;
         for (long at : t) {
-            // Aynı dakikada iki ilaç aynı zamanı verir: tek alarm yeter (alarm ekranı ikisini de listeler), yoksa 40'lık sınır boşa gider.
+            // Two medications in the same minute give the same time: one alarm is enough (the alarm screen lists both), otherwise the limit of 40 is wasted.
             if (at <= now + 2000 || at == prev) continue;
             prev = at;
             if (n < MAX) {
@@ -163,8 +161,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
             if (keep.length() > 0) keep.append(',');
             keep.append(at);
         }
-        SharedPreferences.Editor ed = c.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit();
-        ed.putString(KEY, keep.toString()).apply();
+        prefs(c).edit().putString(KEY, keep.toString()).apply();
         JSONObject e = new JSONObject();
         put(e, "t", now);
         put(e, "a", why);
@@ -174,32 +171,26 @@ public class MedWakeReceiver extends BroadcastReceiver {
         record(c, e);
     }
 
-    /** Tanı için anlık durum; kişisel veri ya da ilaç adı içermez. */
+    /** Snapshot for the diagnosis; contains no personal data or medication names. */
     @SuppressWarnings("deprecation")
     static JSONObject state(Context c, String act) {
         JSONObject e = new JSONObject();
         put(e, "t", System.currentTimeMillis());
         put(e, "a", act);
         try {
-            KeyguardManager km = (KeyguardManager) c.getSystemService(Context.KEYGUARD_SERVICE);
-            PowerManager pm = (PowerManager) c.getSystemService(Context.POWER_SERVICE);
-            NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
-            AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
-            if (km != null) put(e, "kl", km.isKeyguardLocked());
-            if (pm != null) {
-                put(e, "ia", pm.isInteractive());
-                put(e, "bo", pm.isIgnoringBatteryOptimizations(c.getPackageName()));
+            PowerManager pm = c.getSystemService(PowerManager.class);
+            NotificationManager nm = c.getSystemService(NotificationManager.class);
+            put(e, "kl", c.getSystemService(KeyguardManager.class).isKeyguardLocked());
+            put(e, "ia", pm.isInteractive());
+            put(e, "bo", pm.isIgnoringBatteryOptimizations(c.getPackageName()));
+            put(e, "ne", nm.areNotificationsEnabled());
+            if (Build.VERSION.SDK_INT >= 34) put(e, "fsi", nm.canUseFullScreenIntent());
+            if (Build.VERSION.SDK_INT >= 26) {
+                NotificationChannel w = nm.getNotificationChannel(CH), m = nm.getNotificationChannel("nw_med");
+                put(e, "ci", w == null ? -1 : w.getImportance());
+                put(e, "mi", m == null ? -1 : m.getImportance());
             }
-            if (nm != null) {
-                if (Build.VERSION.SDK_INT >= 24) put(e, "ne", nm.areNotificationsEnabled());
-                if (Build.VERSION.SDK_INT >= 34) put(e, "fsi", nm.canUseFullScreenIntent());
-                if (Build.VERSION.SDK_INT >= 26) {
-                    NotificationChannel w = nm.getNotificationChannel(CH), m = nm.getNotificationChannel("nw_med");
-                    put(e, "ci", w == null ? -1 : w.getImportance());
-                    put(e, "mi", m == null ? -1 : m.getImportance());
-                }
-            }
-            if (am != null) put(e, "ex", Build.VERSION.SDK_INT < 31 || am.canScheduleExactAlarms());
+            put(e, "ex", Build.VERSION.SDK_INT < 31 || Alarms.manager(c).canScheduleExactAlarms());
             if (isXiaomi()) {
                 put(e, "xl", miuiOp(c, 10020));
                 put(e, "xp", miuiOp(c, 10021));
@@ -210,12 +201,12 @@ public class MedWakeReceiver extends BroadcastReceiver {
         return e;
     }
 
-    static boolean isXiaomi() {
-        String m = Build.MANUFACTURER == null ? "" : Build.MANUFACTURER.toLowerCase(java.util.Locale.ROOT);
+    private static boolean isXiaomi() {
+        String m = Build.MANUFACTURER.toLowerCase(Locale.ROOT);
         return m.contains("xiaomi") || m.contains("redmi") || m.contains("poco");
     }
 
-    /** MIUI/HyperOS özel izinleri (10020 kilit ekranında göster, 10021 arka planda pencere aç): 0 izinli, 1+ kapalı, -1 okunamadı. */
+    /** MIUI/HyperOS special permissions (10020 show on lock screen, 10021 open windows in the background): 0 allowed, 1+ denied, -1 unreadable. */
     private static int miuiOp(Context c, int op) {
         try {
             Object ops = c.getSystemService(Context.APP_OPS_SERVICE);
@@ -232,10 +223,9 @@ public class MedWakeReceiver extends BroadcastReceiver {
         }
     }
 
-    /** Son LOG_MAX kayıt; art arda gelen kurulum kayıtları tek satırda birleşir, böylece sık yeniden kurulum çalan alarm kayıtlarını itmez.
-     *  Önceki kurulumun ilk alarm zamanı geçmişse birleşmez: çalmayan alarmın kanıtı kalır. */
+    /** Keeps the last LOG_MAX records; consecutive arm records merge into one line so frequent re-arming does not push out the alarm-ring records.
+     *  They do not merge when the previous arm's first alarm time has passed: that is the evidence of an alarm that did not ring. */
     static synchronized void record(Context c, JSONObject e) {
-        SharedPreferences sp = c.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         JSONArray a = log(c), out = new JSONArray();
         int len = a.length();
         JSONObject last = a.optJSONObject(len - 1);
@@ -244,22 +234,30 @@ public class MedWakeReceiver extends BroadcastReceiver {
         if (last != null && !"WAKE".equals(last.optString("a")) && !"WAKE".equals(e.optString("a")) && (due == 0 || due > e.optLong("t"))) len--;
         for (int k = Math.max(0, len - (LOG_MAX - 1)); k < len; k++) out.put(a.opt(k));
         out.put(e);
-        // Alıcı süreci onReceive'den hemen sonra sonlanabilir: kayıt diske eşzamanlı yazılır.
-        sp.edit().putString(LOG, out.toString()).commit();
+        // The receiver process can end right after onReceive: the record is written synchronously.
+        prefs(c).edit().putString(LOG, out.toString()).commit();
     }
 
     static JSONArray log(Context c) {
+        return json(c, LOG);
+    }
+
+    static JSONArray doses(Context c) {
+        return json(c, DOSES);
+    }
+
+    private static JSONArray json(Context c, String key) {
         try {
-            return new JSONArray(c.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(LOG, "[]"));
+            return new JSONArray(prefs(c).getString(key, "[]"));
         } catch (JSONException x) {
             return new JSONArray();
         }
     }
 
-    /** JS'nin verdiği doz ayrıntıları (zaman at, bildirim kimliği nid, ilaç kimliği m, saat s, gösterilecek metin b); alarm ekranı bunlardan çizilir. */
+    /** Dose details from JS (time at, notification id nid, medication id m, clock s, display text b); the alarm screen is drawn from them. */
     static void saveDoses(Context c, JSONArray in) {
         JSONArray out = new JSONArray();
-        for (int k = 0; k < in.length() && out.length() < 200; k++) {
+        for (int k = 0; k < in.length() && out.length() < MAX_DOSES; k++) {
             JSONObject d = in.optJSONObject(k), o = new JSONObject();
             if (d == null || d.optLong("at") <= 0 || d.optInt("nid") <= 0) continue;
             put(o, "at", d.optLong("at"));
@@ -269,18 +267,10 @@ public class MedWakeReceiver extends BroadcastReceiver {
             put(o, "b", d.optString("b"));
             out.put(o);
         }
-        c.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(DOSES, out.toString()).commit();
+        prefs(c).edit().putString(DOSES, out.toString()).commit();
     }
 
-    static JSONArray doses(Context c) {
-        try {
-            return new JSONArray(c.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(DOSES, "[]"));
-        } catch (JSONException x) {
-            return new JSONArray();
-        }
-    }
-
-    /** Kaydı yazılan dozu (anahtar "m12_0800" / "k12_0800") vadesi gelmiş listeden çıkarır; alarm ekranı onu bir daha göstermez. */
+    /** Removes a dose whose record was written (key "m12_0800" / "k12_0800") from the due list; the alarm screen no longer shows it. */
     static synchronized void drop(Context c, String key) {
         int us = key.indexOf('_');
         if (us < 2 || key.length() != us + 5) return;
@@ -291,21 +281,21 @@ public class MedWakeReceiver extends BroadcastReceiver {
             JSONArray a = doses(c), out = new JSONArray();
             for (int k = 0; k < a.length(); k++) {
                 JSONObject d = a.optJSONObject(k);
-                if (d != null && !(d.optInt("m") == m && s.equals(d.optString("s")) && d.optLong("at") <= now + 5000)) out.put(d);
+                if (d != null && !(d.optInt("m") == m && s.equals(d.optString("s")) && d.optLong("at") <= now + EARLY_MS)) out.put(d);
             }
-            c.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(DOSES, out.toString()).commit();
+            prefs(c).edit().putString(DOSES, out.toString()).commit();
         } catch (NumberFormatException e) {
-            // bozuk anahtar atlanır
+            // malformed key: ignored
         }
     }
 
-    /** Ayarlar'daki test alarmı son 2 dk içinde mi çaldı. */
+    /** Whether the Settings test alarm rang within the last two minutes. */
     static boolean testActive(Context c, long now) {
-        long t = c.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getLong(TEST, 0);
-        return t > 0 && t <= now + 5000 && now - t <= 120000;
+        long t = prefs(c).getLong(TEST, 0);
+        return t > 0 && t <= now + EARLY_MS && now - t <= TEST_VISIBLE_MS;
     }
 
     static void clearLog(Context c) {
-        c.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(LOG).commit();
+        prefs(c).edit().remove(LOG).commit();
     }
 }

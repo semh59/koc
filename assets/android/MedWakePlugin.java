@@ -1,6 +1,5 @@
 package com.neowell.app;
 
-import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -16,9 +15,12 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import org.json.JSONException;
 
-/** JS, ilaç doz zamanlarını (ms) verir; dozda ekranı uyandıran alarmlar kurulur. */
+/** JS passes the medication dose times (ms); this plugin sets the alarms that wake the screen at each dose. */
 @CapacitorPlugin(name = "MedWake")
 public class MedWakePlugin extends Plugin {
+    static final int SNOOZE_RC = 7141;
+    private static final long TEST_DEFAULT_MS = 15000, TEST_MIN_MS = 1000, TEST_MAX_MS = 300000, SNOOZE_MAX_MS = 3600000;
+
     @Override
     public void load() {
         MedWakeReceiver.channel(getContext());
@@ -40,14 +42,11 @@ public class MedWakePlugin extends Plugin {
         call.resolve();
     }
 
-    /** Android 14+ tam ekran bildirimi varsayılan olarak yalnız alarm/arama uygulamalarına açık; kullanıcı Ayarlar'dan verir. */
+    /** From Android 14 the full-screen notification is open only to alarm and calling apps by default; the user grants it in Settings. */
     @PluginMethod
     public void fsi(PluginCall call) {
         boolean ok = true;
-        if (Build.VERSION.SDK_INT >= 34) {
-            NotificationManager nm = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
-            ok = nm != null && nm.canUseFullScreenIntent();
-        }
+        if (Build.VERSION.SDK_INT >= 34) ok = getContext().getSystemService(NotificationManager.class).canUseFullScreenIntent();
         JSObject r = new JSObject();
         r.put("allowed", ok);
         call.resolve(r);
@@ -56,7 +55,7 @@ public class MedWakePlugin extends Plugin {
     @PluginMethod
     public void fsiSettings(PluginCall call) {
         if (open(fsiIntent())) call.resolve();
-        else call.reject("ayar açılamadı");
+        else call.reject("cannot open settings");
     }
 
     private Intent fsiIntent() {
@@ -74,7 +73,7 @@ public class MedWakePlugin extends Plugin {
         }
     }
 
-    /** Tanıdaki sorunun ayar ekranı: to = channel (id: ekran ya da ilaç kanalı), notif, battery, exact, fsi. Açılamazsa uygulama ayrıntıları. */
+    /** Settings screen for a problem found by the diagnosis: to = channel (id: wake-screen or medication channel), notif, battery, exact, fsi, miui. Falls back to the app details screen. */
     @PluginMethod
     public void settings(PluginCall call) {
         String to = call.getString("to", ""), pkgName = getContext().getPackageName();
@@ -96,18 +95,18 @@ public class MedWakePlugin extends Plugin {
             i = new Intent("miui.intent.action.APP_PERM_EDITOR").setClassName("com.miui.securitycenter", "com.miui.permcenter.permissions.PermissionsEditorActivity").putExtra("extra_pkgname", pkgName);
         }
         if ((i != null && open(i)) || open(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, pkg))) call.resolve();
-        else call.reject("ayar açılamadı");
+        else call.reject("cannot open settings");
     }
 
-    /** at (ms) verilirse o zamana, yoksa 15 sn sonraya ayrı test alarmı; en çok 5 dk ileri. */
+    /** Separate test alarm at "at" (ms), or 15 s from now when absent; at most 5 minutes ahead. */
     @PluginMethod
     public void test(PluginCall call) {
-        long at = call.getData().optLong("at", 0), ms = at > 0 ? at - System.currentTimeMillis() : 15000;
-        MedWakeReceiver.test(getContext(), Math.max(1000, Math.min(ms, 300000)));
+        long at = call.getData().optLong("at", 0), ms = at > 0 ? at - System.currentTimeMillis() : TEST_DEFAULT_MS;
+        MedWakeReceiver.test(getContext(), Math.max(TEST_MIN_MS, Math.min(ms, TEST_MAX_MS)));
         call.resolve();
     }
 
-    /** Son alarm kayıtları (eskiden yeniye) ve şu anki izin/kanal durumu. */
+    /** The latest alarm records (oldest first) and the current permission and channel state. */
     @PluginMethod
     public void log(PluginCall call) {
         JSObject r = new JSObject();
@@ -123,9 +122,7 @@ public class MedWakePlugin extends Plugin {
         call.resolve();
     }
 
-    static final int SNOOZE_RC = 7141;
-
-    /** Erteleme: at (ms) zamanında doz alarmlarından ayrı kodla ekranı yeniden uyandırır (en çok 1 saat ileri); at verilmezse ya da geçmişse iptal eder. */
+    /** Snooze: wakes the screen again at "at" (ms, at most 1 hour ahead) with a request code separate from the dose alarms; cancels when "at" is absent or past. */
     @PluginMethod
     public void snooze(PluginCall call) {
         snoozeAt(getContext(), call.getData().optLong("at", 0));
@@ -137,10 +134,9 @@ public class MedWakePlugin extends Plugin {
         Intent i = new Intent(c, MedWakeReceiver.class).setAction("com.neowell.app.MED_WAKE");
         PendingIntent pi = PendingIntent.getBroadcast(c, SNOOZE_RC, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         if (at <= now) {
-            AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
-            if (am != null) am.cancel(pi);
+            Alarms.manager(c).cancel(pi);
         } else {
-            Alarms.setClock(c, Math.min(at, now + 3600000), pi);
+            Alarms.setClock(c, Math.min(at, now + SNOOZE_MAX_MS), pi);
         }
     }
 }

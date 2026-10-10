@@ -56,15 +56,15 @@ TK=$(adb shell run-as com.neowell.app cat shared_prefs/nw_quick.xml 2>/dev/null 
 [ -n "$TK" ] || { echo "BİLDİRİM ANAHTARI ÜRETİLMEDİ (nw_quick.xml tk)"; exit 1; }
 step "sahte su intent'i (anahtarsız, yanlış anahtarlı)"
 # Başka uygulamanın sahte intent'i: anahtarsız ve yanlış anahtarlı su kaydı yazılmamalı, widget suyu artmamalı. Olumsuz denetim: işlenmesi için öne gelmesi beklenir.
-adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction su --ei LocalNotificationId 200 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250}}'"
+adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction water --ei LocalNotificationId 200 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250}}'"
 until_ok 20 focused; sleep 2
-adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction su --ei LocalNotificationId 200 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250,\"tk\":\"00000000000000000000000000000000\"}}'"
+adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction water --ei LocalNotificationId 200 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250,\"tk\":\"00000000000000000000000000000000\"}}'"
 until_ok 20 focused; sleep 2
 adb shell run-as com.neowell.app cat shared_prefs/nw_quick.xml > quick0.xml 2>&1
 if grep -q "250," quick0.xml || [ "$(wv)" != "$w0" ]; then echo "SAHTE SU KAYDI YAZILDI (anahtarsız intent)"; cat quick0.xml; exit 1; fi
 step "bildirim +250 ml düğmesi"
 # Bildirimdeki "+250 ml" düğmesi benzetimi: eylem uygulama açıkken gelir, kayıt yerelde birikir, uygulama öne gelince ana veriye alınır.
-adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction su --ei LocalNotificationId 200 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250,\"tk\":\"$TK\"}}'"
+adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction water --ei LocalNotificationId 200 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250,\"tk\":\"$TK\"}}'"
 q250() { qx | grep -q "250,"; }
 until_ok 20 q250
 adb shell run-as com.neowell.app cat shared_prefs/nw_quick.xml > quick.xml 2>&1
@@ -90,7 +90,7 @@ if grep -q "250," quick2.xml; then echo "BEKLEYEN KAYIT TEMİZLENMEDİ"; cat qui
 # "yeni gün" dalı da 250 verirdi ve gün uyuşmazlığı görünmezdi.
 w2=$(wv)
 [ "$w2" = "$((w0 + 250))" ] || { echo "UYGULAMA WIDGET SUYUNU YAZMADI: $w2"; cat widget.xml; exit 1; }
-adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction su --ei LocalNotificationId 200 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250,\"tk\":\"$TK\"}}'"
+adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction water --ei LocalNotificationId 200 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250,\"tk\":\"$TK\"}}'"
 until_ok 20 w_is "$((w2 + 250))"
 w3=$(wv)
 echo "Widget su (uygulama günü): $w2 -> $w3"
@@ -129,7 +129,7 @@ step "süreç ölümü sonrası yeniden teslim"
 adb shell am force-stop com.neowell.app
 until_ok 10 stopped
 clr
-adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction su --ei LocalNotificationId 200 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250,\"tk\":\"$TK\"}}'"
+adb shell "am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction water --ei LocalNotificationId 200 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250,\"tk\":\"$TK\"}}'"
 boot_wait
 adb logcat -d | grep -E "Capacitor/Console" > replay1.log
 p1=$(adb shell pidof com.neowell.app)
@@ -146,7 +146,7 @@ echo "Tekrar testi: alınan su kaydı $n"
 [ "$n" = "1" ] || { echo "SU KAYDI TEKRARLANDI YA DA ALINMADI ($n)"; cat replay1.log replay2.log; exit 1; }
 step "aynı bildirimin yeniden teslimi"
 # Bildirim intent'i yeniden teslim edilirse (aynı planlanmış bildirim, aynı extra.at) su ikinci kez yazılmamalı; uygulama normal açılır.
-SU_AT="am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction su --ei LocalNotificationId 201 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250,\"at\":1790928000000,\"tk\":\"$TK\"}}'"
+SU_AT="am start -n com.neowell.app/.MainActivity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER --es LocalNotificationUserAction water --ei LocalNotificationId 201 --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250,\"at\":1790928000000,\"tk\":\"$TK\"}}'"
 qn() { adb shell run-as com.neowell.app cat shared_prefs/nw_quick.xml 2>/dev/null | grep -oE '250,[0-9]+' | wc -l; }
 qn_is() { [ "$(qn)" = "$1" ]; }
 front
@@ -161,7 +161,7 @@ sleep 3
 [ "$(qn)" = "0" ] || { echo "YENİDEN TESLİM EDİLEN BİLDİRİM SUYU İKİNCİ KEZ YAZILDI"; exit 1; }
 step "widget +su yayını"
 # Widget "+su": exported=false yayın alıcısı, ekran açılmaz. Kabuk (uid 2000) ulaşamamalı; widget'ın PendingIntent'i root ile benzetilir.
-wsu() { adb shell "am broadcast -n com.neowell.app/.WaterReceiver --es LocalNotificationUserAction su --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250}}'"; }
+wsu() { adb shell "am broadcast -n com.neowell.app/.WaterReceiver --es LocalNotificationUserAction water --es LocalNotficationObject '{\"extra\":{\"act\":\"su\",\"v\":250}}'"; }
 ingested() { adb logcat -d | grep -E "Capacitor/Console" | grep -oE "NW-QUICK ingested [0-9]+" | grep -oE "[0-9]+$" | awk '{s+=$1} END{print s+0}'; }
 ingested_is() { [ "$(ingested)" = "$1" ]; }
 # Arka plandaki süreç öne gelince sayfa yeniden yüklenmez (NW-DIAG basılmaz); soğuk açılışta da ön plana gelmesi yeter.

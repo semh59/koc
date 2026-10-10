@@ -3,13 +3,18 @@ package com.neowell.app;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 
-/** Uyandıran alarm: tam alarm izni varsa tam saatte, yoksa Doze'da dakikalarca gecikebilen yaklaşık saatte kurulur. */
+/** Alarm scheduling shared by the step, motion and medication receivers. */
 final class Alarms {
-    static void set(Context c, long at, PendingIntent pi) {
-        AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
-        if (am == null) return;
+    static AlarmManager manager(Context c) {
+        return c.getSystemService(AlarmManager.class);
+    }
+
+    /** Exact wake-up alarm when the exact-alarm permission is granted (also in Doze), otherwise inexact: Doze can delay it by minutes. */
+    private static void set(Context c, long at, PendingIntent pi) {
+        AlarmManager am = manager(c);
         try {
             if (Build.VERSION.SDK_INT < 31 || am.canScheduleExactAlarms()) am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
             else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
@@ -18,21 +23,18 @@ final class Alarms {
         }
     }
 
-    /** Alarm saati: Doze'da ve tam alarm izni olmadan da tam saatinde çalar, uygulamaya arka plandan ekran açma hakkı verir (ilaç ekranı uyandırma). */
+    /** Alarm-clock alarm: fires on time in Doze and may open an activity from the background (medication screen wake-up). Falls back to {@link #set} when the system refuses it. */
     static void setClock(Context c, long at, PendingIntent pi) {
-        AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
-        if (am == null) return;
-        PendingIntent show = PendingIntent.getActivity(c, 0, new android.content.Intent(c, MainActivity.class), PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent show = PendingIntent.getActivity(c, 0, new Intent(c, MainActivity.class), PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         try {
-            am.setAlarmClock(new AlarmManager.AlarmClockInfo(at, show), pi);
+            manager(c).setAlarmClock(new AlarmManager.AlarmClockInfo(at, show), pi);
         } catch (SecurityException e) {
             set(c, at, pi);
         }
     }
 
-    /** Tam saat gerekmeyen alarm (hareket kontrol noktası): Play tam alarmı yalnız ilaç hatırlatması gibi çekirdek işlev için kabul eder. */
+    /** Alarm that does not need the exact minute (motion checkpoint, step snapshots): Play accepts exact alarms only for core features such as medication reminders. */
     static void setInexact(Context c, long at, PendingIntent pi) {
-        AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
-        if (am != null) am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+        manager(c).setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
     }
 }

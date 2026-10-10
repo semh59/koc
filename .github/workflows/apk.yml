@@ -2,17 +2,17 @@ name: APK derle
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 env:
-  # Release (Play upload) anahtarının sertifika parmak izi; gizli değişken başka bir anahtarla değiştirilirse CI durur.
+  # Certificate fingerprint of the release (Play upload) key; if the secret is replaced with another key, CI stops.
   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
 
-# main'de iptal yok: yayın adımı yarıda kesilmesin. Dal ve PR'larda yeni push eskisini iptal eder.
+# Nothing is cancelled on main so the release step is never cut short; a manual run on another branch is cancelled by a newer one.
 concurrency:
   group: apk-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
@@ -34,35 +34,35 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Bağımlılıkları kur
+      - name: Install dependencies
         run: npm ci
 
-      - name: Testleri çalıştır
+      - name: Run tests
         run: npm test
 
-      - name: Adım sayacı mantığı testi
+      - name: Native logic tests
         run: |
           javac -d /tmp/stepmath assets/android/StepMath.java assets/android/QuickMath.java assets/android/MotionMath.java scripts/StepMathTest.java scripts/QuickMathTest.java scripts/MotionMathTest.java
           java -cp /tmp/stepmath com.neowell.app.StepMathTest
           java -cp /tmp/stepmath com.neowell.app.QuickMathTest
           java -cp /tmp/stepmath com.neowell.app.MotionMathTest
 
-      - name: Android projesini oluştur
+      - name: Generate the Android project
         run: |
           npx cap add android
           node scripts/patch-android.js
           npx cap sync android
 
-      - name: Release anahtarını çöz
+      - name: Decode the release key
         env:
           RELEASE_KEYSTORE_B64: ${{ secrets.RELEASE_KEYSTORE_B64 }}
         run: |
-          # Gizli değişken yoksa debug imzaya düşülmez: yayınlanan APK herkesçe bilinen anahtarla imzalanmış olurdu.
-          [ -n "$RELEASE_KEYSTORE_B64" ] || { echo "RELEASE_KEYSTORE_B64 gizli değişkeni yok, release imzalanamaz"; exit 1; }
+          # Never fall back to the debug signature: the published APK would be signed with a publicly known key.
+          [ -n "$RELEASE_KEYSTORE_B64" ] || { echo "RELEASE_KEYSTORE_B64 secret is missing, the release cannot be signed"; exit 1; }
           echo "$RELEASE_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
           echo "RELEASE_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
 
-      - name: APK ve AAB derle
+      - name: Build APK and AAB
         working-directory: android
         env:
           RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
@@ -72,33 +72,33 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug assembleRelease bundleRelease --no-daemon
 
-      - name: Dosyaları hazırla
+      - name: Collect the files
         run: |
           mkdir -p smoke
           cp android/app/build/outputs/apk/debug/app-debug.apk smoke/neowell.apk
           cp android/app/build/outputs/apk/release/app-release.apk neowell.apk
           cp android/app/build/outputs/bundle/release/app-release.aab neowell.aab
 
-      - name: Release imzası beklenen anahtar mı
+      - name: Release signature is the expected key
         run: |
           norm() { tr -d ': ' | tr 'A-F' 'a-f'; }
           bt=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)
           apksigner=${bt}apksigner
-          ${bt}aapt2 dump badging neowell.apk > badging0.txt || { echo "aapt2 çalışmadı"; exit 1; }
+          ${bt}aapt2 dump badging neowell.apk > badging0.txt || { echo "aapt2 failed"; exit 1; }
           min=$(grep -oE "minSdkVersion:'[0-9]+'" badging0.txt | grep -oE "[0-9]+" | head -1 || true)
-          echo "minSdk=${min:-okunamadı}"; [ -n "$min" ] || { echo "minSdk okunamadı; badging başı:"; head -5 badging0.txt; exit 1; }
-          # Hata çıktısı bastırılmaz: imza bozuksa nedeni günlükte görünür.
+          echo "minSdk=${min:-unreadable}"; [ -n "$min" ] || { echo "minSdk unreadable; start of badging:"; head -5 badging0.txt; exit 1; }
+          # Error output is not suppressed: if the signature is broken the log shows why.
           $apksigner verify --verbose --print-certs --min-sdk-version "$min" neowell.apk | tee verify.txt
-          grep -q "Verified using v2 scheme (APK Signature Scheme v2): true" verify.txt || { echo "APK İMZASI v2 ŞEMASINDA DOĞRULANMADI"; exit 1; }
+          grep -q "Verified using v2 scheme (APK Signature Scheme v2): true" verify.txt || { echo "APK SIGNATURE NOT VERIFIED WITH THE V2 SCHEME"; exit 1; }
           grep -E "Verified using v1" verify.txt
           apk=$(grep -m1 "certificate SHA-256 digest" verify.txt | sed 's/.*: //' | norm)
           aab=$(keytool -printcert -jarfile neowell.aab | grep -m1 "SHA256:" | sed 's/.*SHA256: //' | norm)
-          dbg=$(keytool -list -keystore signing/bilinen-debug-yalniz-smoke.keystore -storepass android | grep -i "SHA-256" | sed 's/.*: //' | norm)
-          echo "APK: $apk"; echo "AAB: $aab"; echo "Beklenen: $RELEASE_SHA256"; echo "Debug: $dbg"
-          [ -n "$dbg" ] && [ "$apk" != "$dbg" ] && [ "$aab" != "$dbg" ] || { echo "YAYINLANAN DOSYA DEBUG ANAHTARIYLA İMZALI"; exit 1; }
-          [ "$apk" = "$RELEASE_SHA256" ] && [ "$aab" = "$RELEASE_SHA256" ] || { echo "RELEASE İMZA ANAHTARI UYUŞMUYOR"; exit 1; }
+          dbg=$(keytool -list -keystore signing/known-debug-smoke-only.keystore -storepass android | grep -i "SHA-256" | sed 's/.*: //' | norm)
+          echo "APK: $apk"; echo "AAB: $aab"; echo "Expected: $RELEASE_SHA256"; echo "Debug: $dbg"
+          [ -n "$dbg" ] && [ "$apk" != "$dbg" ] && [ "$aab" != "$dbg" ] || { echo "PUBLISHED FILE IS SIGNED WITH THE DEBUG KEY"; exit 1; }
+          [ "$apk" = "$RELEASE_SHA256" ] && [ "$aab" = "$RELEASE_SHA256" ] || { echo "RELEASE SIGNING KEY MISMATCH"; exit 1; }
 
-      - name: APK içeriği denetimi
+      - name: APK content audit
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -107,92 +107,93 @@ jobs:
           $aapt2 dump xmltree neowell.apk --file AndroidManifest.xml > manifest.txt
           grep -E "allowBackup|dataExtractionRules|fullBackupContent|usesCleartextTraffic" manifest.txt
           if grep -q "debuggable" manifest.txt; then echo "RELEASE APK DEBUGGABLE"; exit 1; fi
-          grep -qE "allowBackup[^=]*=(false|0x0)" manifest.txt || { echo "OTOMATİK YEDEK AÇIK"; exit 1; }
-          if grep "usesCleartextTraffic" manifest.txt | grep -qE "=true|0xffffffff"; then echo "DÜZ METİN (HTTP) TRAFİĞİ AÇIK"; exit 1; fi
+          grep -qE "allowBackup[^=]*=(false|0x0)" manifest.txt || { echo "AUTOMATIC BACKUP ENABLED"; exit 1; }
+          if grep "usesCleartextTraffic" manifest.txt | grep -qE "=true|0xffffffff"; then echo "CLEARTEXT (HTTP) TRAFFIC ENABLED"; exit 1; fi
           grep -oE "android\.permission\.[A-Z_]+" manifest.txt | sort -u | tee apk-perms.txt
-          if grep -qE "USE_EXACT_ALARM|FLASHLIGHT|ACCESS_BACKGROUND_LOCATION" manifest.txt; then echo "PLAY'E UYGUN OLMAYAN İZİN VAR"; exit 1; fi
-          grep -q "android.permission.FOREGROUND_SERVICE_LOCATION" manifest.txt || { echo "KONUM SERVİSİ İZNİ YOK"; exit 1; }
-          grep -q "android.permission.USE_BIOMETRIC" manifest.txt || { echo "USE_BIOMETRIC İZNİ YOK (uygulama kilidi çöker)"; exit 1; }
-          # Dışa açık bileşenler: yalnız MainActivity ve widget (sistem APPWIDGET_UPDATE gönderir) ve izinle korunan androidx profileinstaller alıcısı ve yalnız sistemin tutabildiği START_VIEW_PERMISSION_USAGE iznine bağlı Health Connect izin ekranı takma adı.
+          if grep -qE "USE_EXACT_ALARM|FLASHLIGHT|ACCESS_BACKGROUND_LOCATION" manifest.txt; then echo "PERMISSION NOT ALLOWED BY PLAY"; exit 1; fi
+          grep -q "android.permission.FOREGROUND_SERVICE_LOCATION" manifest.txt || { echo "LOCATION SERVICE PERMISSION MISSING"; exit 1; }
+          grep -q "android.permission.USE_BIOMETRIC" manifest.txt || { echo "USE_BIOMETRIC PERMISSION MISSING (the app lock would crash)"; exit 1; }
+          # Exported components: only MainActivity and the widget (the system sends APPWIDGET_UPDATE), the androidx profileinstaller receiver (protected by a permission),
+          # and the Health Connect permission-usage alias (bound to START_VIEW_PERMISSION_USAGE, which only the system can hold).
           awk '/^ *E: (activity|activity-alias|receiver|service|provider)( |$)/ {if (n != "" && e) print n; n=""; e=0; c=1; next} /^ *E: / {c=0} c && /android:name\(/ {match($0, /="[^"]*"/); n=substr($0, RSTART+2, RLENGTH-3)} c && /android:exported\(/ && (/=true/ || /0xffffffff/) {e=1} END {if (n != "" && e) print n}' manifest.txt | sort -u > exported.txt
-          echo "Dışa açık bileşenler:"; cat exported.txt
+          echo "Exported components:"; cat exported.txt
           bad=$(grep -vE '(^|\.)(MainActivity|NeoWidget|HealthPermissionUsage)$|^androidx\.profileinstaller\.ProfileInstallReceiver$' exported.txt || true)
-          [ -z "$bad" ] || { echo "BEKLENMEYEN DIŞA AÇIK BİLEŞEN (yalnız MainActivity ve NeoWidget olmalı):"; echo "$bad"; exit 1; }
-          grep -qE "(^|\.)MainActivity$" exported.txt && grep -qE "(^|\.)NeoWidget$" exported.txt || { echo "MainActivity ya da NeoWidget dışa açık görünmüyor, denetim ayrıştırması bozulmuş olabilir"; exit 1; }
+          [ -z "$bad" ] || { echo "UNEXPECTED EXPORTED COMPONENT (only MainActivity and NeoWidget may be exported):"; echo "$bad"; exit 1; }
+          grep -qE "(^|\.)MainActivity$" exported.txt && grep -qE "(^|\.)NeoWidget$" exported.txt || { echo "MainActivity or NeoWidget does not look exported, the audit parser may be broken"; exit 1; }
           $aapt2 dump badging neowell.apk > badging.txt
           min=$(grep -oE "minSdkVersion:'[0-9]+'" badging.txt | grep -oE "[0-9]+" | head -1 || true)
           vc=$(grep -oE "versionCode='[0-9]+'" badging.txt | grep -oE "[0-9]+")
           echo "minSdk=$min versionCode=$vc"
-          [ "$min" -ge 24 ] && [ "$min" -le 26 ] || { echo "minSdk beklenen aralıkta (24-26) değil: $min"; exit 1; }
-          [ "$vc" = "$GITHUB_RUN_NUMBER" ] || { echo "versionCode çalışma numarasına eşit değil ($vc, $GITHUB_RUN_NUMBER)"; exit 1; }
+          [ "$min" -ge 24 ] && [ "$min" -le 26 ] || { echo "minSdk outside the expected range (24-26): $min"; exit 1; }
+          [ "$vc" = "$GITHUB_RUN_NUMBER" ] || { echo "versionCode differs from the run number ($vc, $GITHUB_RUN_NUMBER)"; exit 1; }
           mkdir -p prev
-          # Release gerçekten yoksa (404) ilk yayındır, karşılaştırma atlanır; ağ ya da API hatası atlanmaz: 3 kez denenir, sonra derleme durur.
+          # No release at all (404) means this is the first publication and the comparison is skipped; a network or API error is not skipped: 3 tries, then the build stops.
           state=""
           for t in 1 2 3; do
-            if err=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/son-surum" --jq .tag_name 2>&1); then state=var; break; fi
-            case "$err" in *"HTTP 404"*) state=yok; break;; esac
-            echo "Release sorgusu başarısız ($t/3): $err"; sleep $((t * 10))
+            if err=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/son-surum" --jq .tag_name 2>&1); then state=exists; break; fi
+            case "$err" in *"HTTP 404"*) state=none; break;; esac
+            echo "Release query failed ($t/3): $err"; sleep $((t * 10))
           done
-          [ -n "$state" ] || { echo "ÖNCEKİ RELEASE SORGULANAMADI (ağ ya da API hatası): versionCode karşılaştırması atlanamaz"; exit 1; }
-          if [ "$state" = var ]; then
+          [ -n "$state" ] || { echo "PREVIOUS RELEASE COULD NOT BE QUERIED (network or API error): the versionCode comparison cannot be skipped"; exit 1; }
+          if [ "$state" = exists ]; then
             got=""
             for t in 1 2 3; do
               if gh release download son-surum -p neowell.apk -D prev --clobber; then got=1; break; fi
-              echo "Önceki APK indirilemedi ($t/3)"; sleep $((t * 10))
+              echo "Previous APK download failed ($t/3)"; sleep $((t * 10))
             done
-            [ -n "$got" ] || { echo "ÖNCEKİ SÜRÜM İNDİRİLEMEDİ: versionCode karşılaştırması atlanamaz"; exit 1; }
+            [ -n "$got" ] || { echo "PREVIOUS VERSION COULD NOT BE DOWNLOADED: the versionCode comparison cannot be skipped"; exit 1; }
             pvc=$($aapt2 dump badging prev/neowell.apk | grep -oE "versionCode='[0-9]+'" | grep -oE "[0-9]+")
-            echo "Önceki sürümün versionCode: $pvc"
-            [ "$vc" -gt "$pvc" ] || { echo "versionCode öncekinden büyük değil ($vc <= $pvc): Play yüklemeyi reddeder"; exit 1; }
+            echo "Previous versionCode: $pvc"
+            [ "$vc" -gt "$pvc" ] || { echo "versionCode not greater than the previous one ($vc <= $pvc): Play rejects the upload"; exit 1; }
           else
-            echo "Önceki release yok (ilk yayın): versionCode karşılaştırması atlandı"
+            echo "No previous release (first publication): versionCode comparison skipped"
           fi
           ls -l neowell.apk
           unzip -lv neowell.apk | awk 'NR>3 && length($7)==8 && $7 ~ /^[0-9a-f]+$/ {split($8,p,"/"); k=(p[1]=="lib"||p[1]=="assets")?p[1]"/"p[2]:p[1]; s[k]+=$3} END {for (k in s) printf "%8.2f MB  %s\n", s[k]/1e6, k}' | sort -rn | head -12
           unzip -l neowell.apk > apk-list.txt
-          if grep -qE "lib/x86/|libbarhopper" apk-list.txt; then echo "APK KÜÇÜLTMESİ UYGULANMADI"; exit 1; fi
+          if grep -qE "lib/x86/|libbarhopper" apk-list.txt; then echo "APK SHRINKING NOT APPLIED"; exit 1; fi
 
-      - name: AAB içeriği denetimi
+      - name: AAB content audit
         run: |
           unzip -l neowell.aab > aab-list.txt
-          if grep -qE "base/lib/x86/|libbarhopper" aab-list.txt; then echo "AAB KÜÇÜLTMESİ UYGULANMADI (lib/x86 ya da libbarhopper var)"; exit 1; fi
-          grep -q "base/lib/arm64-v8a/" aab-list.txt || { echo "AAB'DE arm64-v8a KİTAPLIĞI YOK"; exit 1; }
-          # AAB manifest'i protobuf; izin adları düz metin olarak okunur. APK ile aynı küme olmalı.
+          if grep -qE "base/lib/x86/|libbarhopper" aab-list.txt; then echo "AAB SHRINKING NOT APPLIED (lib/x86 or libbarhopper present)"; exit 1; fi
+          grep -q "base/lib/arm64-v8a/" aab-list.txt || { echo "AAB HAS NO arm64-v8a LIBRARY"; exit 1; }
+          # The AAB manifest is protobuf; permission names are readable as plain text. The set must equal the APK's.
           unzip -p neowell.aab base/manifest/AndroidManifest.xml | grep -aoE "android\.permission\.[A-Z_]+" | sort -u > aab-perms.txt
-          echo "AAB izinleri:"; cat aab-perms.txt
-          if grep -qE "USE_EXACT_ALARM|FLASHLIGHT|ACCESS_BACKGROUND_LOCATION" aab-perms.txt; then echo "AAB'DE PLAY'E UYGUN OLMAYAN İZİN VAR"; exit 1; fi
-          diff apk-perms.txt aab-perms.txt || { echo "APK VE AAB İZİN LİSTELERİ FARKLI (yukarıda - APK, + AAB)"; exit 1; }
+          echo "AAB permissions:"; cat aab-perms.txt
+          if grep -qE "USE_EXACT_ALARM|FLASHLIGHT|ACCESS_BACKGROUND_LOCATION" aab-perms.txt; then echo "AAB HAS A PERMISSION NOT ALLOWED BY PLAY"; exit 1; fi
+          diff apk-perms.txt aab-perms.txt || { echo "APK AND AAB PERMISSION LISTS DIFFER (above: - APK, + AAB)"; exit 1; }
 
-      - name: Hedef API 36 ve 16 KB sayfa hizası
+      - name: Target API 36 and 16 KB page alignment
         run: |
-          # Play, 16 KB sayfalı cihazlar için hem ZIP içi hizayı (sıkıştırılmamış .so dosyaları) hem her LOAD bölümünün 2^14 hizasını ister.
-          # Önce tüm denetimler çalışır ve özet yazılır, sonra nedenleriyle birlikte kırmızı olur.
+          # For 16 KB-page devices Play requires both the alignment inside the ZIP (uncompressed .so files) and the 2^14 alignment of every LOAD segment.
+          # All checks run and print a summary first, then the step fails with the reasons.
           bt=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)
           fail=""
           for f in neowell.apk smoke/neowell.apk; do
-            ${bt}aapt2 dump badging $f | grep -q "targetSdkVersion:'36'" || fail="$fail\n$f: hedef API 36 değil"
+            ${bt}aapt2 dump badging $f | grep -q "targetSdkVersion:'36'" || fail="$fail\n$f: target API is not 36"
             if ! ${bt}zipalign -c -P 16 -v 4 $f > zipalign.txt; then
               grep -v "(OK" zipalign.txt | tail -20
-              fail="$fail\n$f: zipalign -P 16 başarısız (ZIP içindeki .so dosyaları 16 KB sınırında hizalı değil)"
+              fail="$fail\n$f: zipalign -P 16 failed (.so files inside the ZIP are not aligned to 16 KB)"
             fi
           done
           so=$RUNNER_TEMP/so
           mkdir -p $so/apk $so/aab
           unzip -qo neowell.apk 'lib/arm64-v8a/*' 'lib/x86_64/*' -d $so/apk
           unzip -qo neowell.aab 'base/lib/arm64-v8a/*' 'base/lib/x86_64/*' -d $so/aab
-          printf "%-5s %-55s %s\n" KAYNAK KİTAPLIK LOAD-HİZALARI
+          printf "%-5s %-55s %s\n" SOURCE LIBRARY LOAD-ALIGNMENTS
           for src in apk aab; do
             for f in $(find $so/$src -name '*.so' | sort); do
               a=$(readelf -lW "$f" | awk '$1=="LOAD"{print $NF}' | sort -u | tr '\n' ' ')
               printf "%-5s %-55s %s\n" $src ${f#$so/$src/} "$a"
-              for x in $a; do [ $((x)) -ge 16384 ] || { fail="$fail\n$src ${f#$so/$src/}: LOAD hizası $x < 16384"; break; }; done
+              for x in $a; do [ $((x)) -ge 16384 ] || { fail="$fail\n$src ${f#$so/$src/}: LOAD alignment $x < 16384"; break; }; done
             done
           done
-          [ -z "$fail" ] || { echo "---- 16 KB / HEDEF API DENETİMİ BAŞARISIZ ----"; printf "$fail\n"; exit 1; }
-          echo "16 KB hizası ve hedef API 36 tamam"
+          [ -z "$fail" ] || { echo "---- 16 KB / TARGET API CHECK FAILED ----"; printf "$fail\n"; exit 1; }
+          echo "16 KB alignment and target API 36 OK"
 
-      # İşler arası aktarım Actions önbelleğiyle: artifact depolama kotası dolunca yayın durmasın.
-      - name: Sonraki işler için dosyaları hazırla
+      # Files travel between jobs through the Actions cache: the release must not stop when the artifact storage quota is full.
+      - name: Prepare the files for the next jobs
         run: |
           mkdir -p handoff/release
           cp neowell.apk neowell.aab handoff/release/
@@ -202,7 +203,7 @@ jobs:
           path: handoff
           key: nw-${{ github.run_id }}-${{ github.run_attempt }}
 
-  # Tarayıcıda uçtan uca kullanıcı senaryoları (e2e/). Derlemeden bağımsız; yayın adımı buna bağlı değil.
+  # End-to-end user scenarios in the browser (e2e/). Independent of the build; the release job waits for it.
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -212,22 +213,22 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - name: Bağımlılıkları kur
+      - name: Install dependencies
         run: npm ci
-      - name: Chromium kur
+      - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Uçtan uca testler
+      - name: End-to-end tests
         run: npm run test:e2e
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: failure()
         with:
-          name: e2e-rapor
+          name: e2e-report
           path: |
             e2e-report/
             test-results/
           retention-days: 14
 
-  # main'e her push'ta da koşar (emülatör ~8 dk).
+  # Runs on every push to main (emulator ~8 min).
   smoke:
     needs: build
     runs-on: ubuntu-latest
@@ -240,16 +241,16 @@ jobs:
           key: nw-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: nw-${{ github.run_id }}-
           fail-on-cache-miss: true
-      - name: Dosyaları yerleştir
+      - name: Place the files
         run: |
           cp handoff/smoke.apk neowell.apk
           cp -r handoff/release release
-      - name: KVM iznini aç
+      - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-      - name: Emülatörde aç ve kontrol et
+      - name: Open and check in the emulator
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         with:
           api-level: 36
@@ -257,8 +258,8 @@ jobs:
           arch: x86_64
           script: bash scripts/smoke.sh && bash scripts/smoke-release.sh
 
-  # Yalnız build, e2e ve smoke geçince. Yeni dosyalar önce yüklenir (--clobber aynı adlı eskinin yerine geçer), eski sürüm hiç silinmez:
-  # iş yarıda kesilse bile indirilebilir bir sürüm kalır.
+  # Only after build, e2e and smoke pass. The new files are uploaded first (--clobber replaces a file of the same name) and the old release is never deleted:
+  # even if the job is cut short, a downloadable version remains.
   release:
     needs: [build, e2e, smoke]
     if: github.ref == 'refs/heads/main'
@@ -273,26 +274,26 @@ jobs:
           key: nw-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: nw-${{ github.run_id }}-
           fail-on-cache-miss: true
-      - name: Dosyaları yerleştir
+      - name: Place the files
         run: cp -r handoff/release release
-      - name: Releases sayfasına yükle (telefondan kolay indirme)
+      - name: Upload to the Releases page (easy download from the phone)
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          # GitHub yayın tarihi ilk yayında kalır; güncel sürüm ve derleme zamanı başlıkta ve notta görünsün.
+          # GitHub keeps the date of the first publication; the title and the notes show the current version and build time. The notes are read on the phone, so they stay Turkish.
           title="NeoWell 1.0.${{ github.run_number }} ($(date -u +'%d.%m.%Y %H:%M') UTC)"
           notes="Sürüm 1.0.${{ github.run_number }}, derleme $(date -u +'%d.%m.%Y %H:%M') UTC, commit ${GITHUB_SHA::7}. Telefondan neowell.apk dosyasını indirip kur. neowell.aab Play Console yüklemesi içindir."
           publish() {
             if gh release view son-surum > /dev/null 2>&1; then
               gh release upload son-surum release/neowell.apk release/neowell.aab --clobber &&
               gh release edit son-surum --title "$title" --notes "$notes" &&
-              # Etiket yeni derlemenin işlemini göstersin.
+              # The tag must point at the commit of the new build.
               gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/son-surum" -f sha="$GITHUB_SHA" -F force=true
             else
               gh release create son-surum release/neowell.apk release/neowell.aab --title "$title" --notes "$notes" --target "$GITHUB_SHA"
             fi
           }
-          # Ağ ya da API'nin geçici 403/5xx hatası derlemeyi boşa çıkarmasın: 3 deneme.
-          for i in 1 2 3; do publish && exit 0; echo "yükleme denemesi $i başarısız"; sleep 15; done
+          # A temporary 403/5xx from the network or API must not waste the build: 3 attempts.
+          for i in 1 2 3; do publish && exit 0; echo "upload attempt $i failed"; sleep 15; done
           exit 1

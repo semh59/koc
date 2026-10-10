@@ -1,14 +1,13 @@
 package com.neowell.app;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.KeyguardManager;
-import android.content.Context;
 import android.content.Intent;
 import android.hardware.biometrics.BiometricManager;
 import android.hardware.biometrics.BiometricPrompt;
 import android.os.Build;
 import android.os.CancellationSignal;
-import android.view.WindowManager;
 import androidx.activity.result.ActivityResult;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -18,19 +17,20 @@ import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
 /**
- * Uygulama kilidi: telefonun kendi ekran kilidi doğrular (parmak izi, yüz, PIN, desen, parola). Uygulama parola ya da biyometrik veri saklamaz.
- * Android 11 ve üstü sistemin biyometrik penceresi (parola yedeğiyle), daha eskisi cihaz kimlik bilgisi ekranı.
+ * App lock: the phone's own screen lock verifies the user (fingerprint, face, PIN, pattern, password); the app stores no password or biometric data.
+ * Android 11+ uses the system biometric prompt (with credential fallback), older versions the device-credential screen.
  */
 @CapacitorPlugin(name = "AppLock")
 public class AppLockPlugin extends Plugin {
+    /** BiometricPrompt error codes (the framework constants are hidden). */
+    private static final int ERR_CANCELED = 5, ERR_USER_CANCELED = 10, ERR_NO_DEVICE_CREDENTIAL = 14;
     private CancellationSignal pending;
 
     private boolean secure() {
-        KeyguardManager km = (KeyguardManager) getContext().getSystemService(Context.KEYGUARD_SERVICE);
-        return km != null && km.isDeviceSecure();
+        return getContext().getSystemService(KeyguardManager.class).isDeviceSecure();
     }
 
-    /** Cihazda ekran kilidi var mı: yoksa kilit kurulamaz. */
+    /** {secure}: the device has a screen lock; without one the app lock cannot be turned on. */
     @PluginMethod
     public void status(PluginCall call) {
         JSObject r = new JSObject();
@@ -38,33 +38,33 @@ public class AppLockPlugin extends Plugin {
         call.resolve(r);
     }
 
-    /** Sonuç: {ok} başarılı; {none} cihazda ekran kilidi yok; {cancelled} kullanıcı vazgeçti; aksi halde {code}. */
+    private static void none(PluginCall call) {
+        JSObject r = new JSObject();
+        r.put("ok", false);
+        r.put("none", true);
+        call.resolve(r);
+    }
+
+    /** Result: {ok} verified; {none} the device has no screen lock; {cancelled} the user gave up; otherwise {code}. */
     @PluginMethod
     public void authenticate(final PluginCall call) {
         final Activity a = getActivity();
         final String title = call.getString("title", "NeoWell");
         if (a == null) {
-            call.reject("etkinlik yok");
+            call.reject("no activity");
             return;
         }
         if (!secure()) {
-            JSObject r = new JSObject();
-            r.put("ok", false);
-            r.put("none", true);
-            call.resolve(r);
+            none(call);
             return;
         }
         if (Build.VERSION.SDK_INT >= 30) {
             a.runOnUiThread(() -> prompt(a, call, title));
             return;
         }
-        KeyguardManager km = (KeyguardManager) getContext().getSystemService(Context.KEYGUARD_SERVICE);
-        Intent i = km.createConfirmDeviceCredentialIntent(title, null);
+        Intent i = getContext().getSystemService(KeyguardManager.class).createConfirmDeviceCredentialIntent(title, null);
         if (i == null) {
-            JSObject r = new JSObject();
-            r.put("ok", false);
-            r.put("none", true);
-            call.resolve(r);
+            none(call);
             return;
         }
         startActivityForResult(call, i, "credResult");
@@ -79,34 +79,34 @@ public class AppLockPlugin extends Plugin {
         call.resolve(r);
     }
 
-    @android.annotation.TargetApi(30)
+    @TargetApi(30)
     private void prompt(Activity a, final PluginCall call, String title) {
         if (pending != null) pending.cancel();
         pending = new CancellationSignal();
         try {
-        BiometricPrompt p = new BiometricPrompt.Builder(a).setTitle(title)
-            .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG | BiometricManager.Authenticators.DEVICE_CREDENTIAL).build();
-        p.authenticate(pending, a.getMainExecutor(), new BiometricPrompt.AuthenticationCallback() {
-            @Override
-            public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
-                JSObject r = new JSObject();
-                r.put("ok", true);
-                call.resolve(r);
-            }
+            BiometricPrompt p = new BiometricPrompt.Builder(a).setTitle(title)
+                .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG | BiometricManager.Authenticators.DEVICE_CREDENTIAL).build();
+            p.authenticate(pending, a.getMainExecutor(), new BiometricPrompt.AuthenticationCallback() {
+                @Override
+                public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
+                    JSObject r = new JSObject();
+                    r.put("ok", true);
+                    call.resolve(r);
+                }
 
-            @Override
-            public void onAuthenticationError(int code, CharSequence msg) {
-                JSObject r = new JSObject();
-                r.put("ok", false);
-                r.put("code", code);
-                // 14: cihazda ekran kilidi kalmadı (kullanıcı uygulama kilidi açıkken telefon kilidini kaldırdı).
-                if (code == 14) r.put("none", true);
-                else if (code == 10 || code == 5) r.put("cancelled", true); // 10: kullanıcı vazgeçti, 5: sistem iptal etti
-                call.resolve(r);
-            }
-        });
+                @Override
+                public void onAuthenticationError(int code, CharSequence msg) {
+                    JSObject r = new JSObject();
+                    r.put("ok", false);
+                    r.put("code", code);
+                    // The user removed the phone's screen lock while the app lock was on.
+                    if (code == ERR_NO_DEVICE_CREDENTIAL) r.put("none", true);
+                    else if (code == ERR_USER_CANCELED || code == ERR_CANCELED) r.put("cancelled", true);
+                    call.resolve(r);
+                }
+            });
         } catch (RuntimeException e) {
-            // İzin ya da sistem hatası (örn. SecurityException): uygulama çökmesin, doğrulama başarısız sayılsın.
+            // Permission or system failure (e.g. SecurityException): do not crash, count the verification as failed.
             JSObject r = new JSObject();
             r.put("ok", false);
             r.put("code", -1);
@@ -114,19 +114,9 @@ public class AppLockPlugin extends Plugin {
         }
     }
 
-    /** Son uygulamalar önizlemesi ve ekran görüntüsü kapanır: kilit açıkken içerik arka planda görünmez. */
+    /** Hides the recents preview and blocks screenshots while the lock is on, so content is not visible in the background. */
     @PluginMethod
     public void setSecure(PluginCall call) {
-        final boolean on = Boolean.TRUE.equals(call.getBoolean("on", false));
-        final Activity a = getActivity();
-        if (a == null) {
-            call.reject("etkinlik yok");
-            return;
-        }
-        a.runOnUiThread(() -> {
-            if (on) a.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
-            else a.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
-            call.resolve();
-        });
+        WindowFlags.secure(this, call, WindowFlags.LOCK);
     }
 }

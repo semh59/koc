@@ -1,6 +1,7 @@
 package com.neowell.app;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.health.connect.AggregateRecordsRequest;
 import android.health.connect.AggregateRecordsResponse;
 import android.health.connect.HealthConnectException;
@@ -22,32 +23,41 @@ import com.getcapacitor.annotation.PermissionCallback;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.concurrent.Executor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 import org.json.JSONException;
 
 /**
- * Health Connect'ten yalnız okuma (Android 14 ve üstünde sistemin içinde hazır gelir; ek kitaplık yok).
- * Adım, uyku ve nabız: saatin verisi Samsung Health aracılığıyla oraya yazılır; kaynaklar arası çift sayımı Health Connect kendi önceliğiyle çözer.
- * Uygulama Health Connect'e hiçbir şey yazmaz.
+ * Read-only access to Health Connect (built into Android 14+, no extra library).
+ * Steps, sleep and heart rate: the watch writes its data there through Samsung Health, and Health Connect resolves double counting between sources by its own priority.
+ * The app never writes to Health Connect.
  */
 @CapacitorPlugin(name = "Health", permissions = { @Permission(strings = { "android.permission.health.READ_STEPS", "android.permission.health.READ_SLEEP", "android.permission.health.READ_HEART_RATE" }, alias = "health") })
 public class HealthPlugin extends Plugin {
-    private final Executor io = Executors.newSingleThreadExecutor();
+    private static final int MAX_DAYS = 40;
+    private final ExecutorService io = Executors.newSingleThreadExecutor();
+
+    @Override
+    protected void handleOnDestroy() {
+        io.shutdown();
+    }
 
     private HealthConnectManager manager() {
         return Build.VERSION.SDK_INT >= 34 ? getContext().getSystemService(HealthConnectManager.class) : null;
     }
 
     private boolean has(String perm) {
-        return Build.VERSION.SDK_INT >= 34 && getContext().checkSelfPermission("android.permission.health." + perm) == android.content.pm.PackageManager.PERMISSION_GRANTED;
+        return Build.VERSION.SDK_INT >= 34 && getContext().checkSelfPermission("android.permission.health." + perm) == PackageManager.PERMISSION_GRANTED;
     }
 
     private boolean granted() {
         return has("READ_STEPS");
     }
 
-    /** {available}: bu telefonda Health Connect var (Android 14+); {granted}: adım okuma izni; {sleep}, {hr}: uyku ve nabız okuma izinleri (üçü ayrı verilir). */
+    /** {available}: Health Connect exists on this phone (Android 14+); {granted}: steps permission; {sleep}, {hr}: sleep and heart-rate permissions (the three are granted separately). */
     @PluginMethod
     public void status(PluginCall call) {
         JSObject r = new JSObject();
@@ -72,7 +82,7 @@ public class HealthPlugin extends Plugin {
         status(call);
     }
 
-    /** İzin penceresi açılmazsa: Health Connect'in NeoWell izin ekranı. */
+    /** Fallback when the permission dialog does not appear: Health Connect's own permission screen for NeoWell. */
     @PluginMethod
     public void manage(PluginCall call) {
         try {
@@ -80,88 +90,60 @@ public class HealthPlugin extends Plugin {
             getActivity().startActivity(i);
             call.resolve();
         } catch (Exception e) {
-            call.reject("açılamadı");
+            call.reject("cannot open");
         }
     }
 
-    /** days: "YYYY-MM-DD" günleri; her gün için yerel gün başından (bugünse şimdiye kadar) toplam adım. Sonuç {days: {gün: adım}}. */
-    @PluginMethod
-    public void steps(final PluginCall call) {
-        final HealthConnectManager m = manager();
+    /** The "days" argument ("YYYY-MM-DD" strings), or null when it is missing, too long or contains a malformed date. Validated up front so a rejected call never receives late answers. */
+    private static LocalDate[] days(PluginCall call) {
         JSArray in = call.getArray("days");
-        if (m == null || !granted() || in == null || in.length() == 0 || in.length() > 40) {
-            call.reject("kullanılamaz");
-            return;
+        if (in == null || in.length() == 0 || in.length() > MAX_DAYS) return null;
+        LocalDate[] days = new LocalDate[in.length()];
+        try {
+            for (int k = 0; k < days.length; k++) days[k] = LocalDate.parse(in.getString(k));
+        } catch (JSONException | RuntimeException e) {
+            return null;
         }
-        final int n = in.length();
-        final String[] day = new String[n];
-        final Instant[] from = new Instant[n], to = new Instant[n];
-        ZoneId z = ZoneId.systemDefault();
-        Instant now = Instant.now();
-        // Önce hepsi doğrulanır: yarıda reddedilen çağrıya sonradan gelen yanıtlar yazılmasın.
-        for (int k = 0; k < n; k++) {
-            try {
-                day[k] = in.getString(k);
-                LocalDate d = LocalDate.parse(day[k]);
-                from[k] = d.atStartOfDay(z).toInstant();
-                Instant end = d.plusDays(1).atStartOfDay(z).toInstant();
-                to[k] = end.isAfter(now) ? now : end;
-            } catch (JSONException | RuntimeException e) {
-                call.reject("geçersiz gün");
-                return;
-            }
-        }
-        final JSObject out = new JSObject();
-        final int[] left = { n };
-        final boolean[] failed = { false };
-        for (int k = 0; k < n; k++) {
-            final String dk = day[k];
-            if (!to[k].isAfter(from[k])) {
-                finish(call, out, left, failed, dk, null);
-                continue;
-            }
-            AggregateRecordsRequest<Long> req = new AggregateRecordsRequest.Builder<Long>(new TimeInstantRangeFilter.Builder().setStartTime(from[k]).setEndTime(to[k]).build())
-                .addAggregationType(StepsRecord.STEPS_COUNT_TOTAL).build();
-            m.aggregate(req, io, new OutcomeReceiver<AggregateRecordsResponse<Long>, HealthConnectException>() {
-                @Override
-                public void onResult(AggregateRecordsResponse<Long> res) {
-                    finish(call, out, left, failed, dk, res.get(StepsRecord.STEPS_COUNT_TOTAL));
-                }
-
-                @Override
-                public void onError(HealthConnectException e) {
-                    synchronized (left) {
-                        failed[0] = true;
-                    }
-                    finish(call, out, left, failed, dk, null);
-                }
-            });
-        }
+        return days;
     }
 
-    /** Günlük uyku ve nabız sonuçlarını toplar; son yanıt gelince çağrıyı tek kez çözer. */
-    private static final class Daily {
-        final PluginCall call;
-        final JSObject sleep = new JSObject(), avg = new JSObject(), min = new JSObject();
-        int left;
-        boolean failed;
+    private static Instant min(Instant a, Instant b) {
+        return a.isAfter(b) ? b : a;
+    }
 
-        Daily(PluginCall call) {
+    private static AggregateRecordsRequest.Builder<Long> request(Instant from, Instant to) {
+        return new AggregateRecordsRequest.Builder<Long>(new TimeInstantRangeFilter.Builder().setStartTime(from).setEndTime(to).build());
+    }
+
+    /** Collects the answers of parallel aggregate calls into one result and resolves the call once, after the last answer. */
+    private static final class Join {
+        private final PluginCall call;
+        private final JSObject result;
+        private int left;
+        private boolean failed;
+
+        Join(PluginCall call, JSObject result) {
             this.call = call;
+            this.result = result;
         }
 
-        synchronized void put(JSObject to, String day, Long v, long div) {
-            if (v != null && v > 0) to.put(day, v / div);
+        /** Stores v / div under the day when it is at least minValue (null means Health Connect has no data). */
+        synchronized void put(JSObject to, String day, Long v, long div, long minValue) {
+            if (v != null && v >= minValue) to.put(day, v / div);
+        }
+
+        void run(List<Runnable> jobs) {
+            synchronized (this) {
+                left = jobs.size() + 1; // +1: do not resolve before every job has started
+            }
+            for (Runnable j : jobs) j.run();
+            tick();
         }
 
         synchronized void tick() {
             if (--left > 0) return;
-            JSObject r = new JSObject();
-            r.put("sleep", sleep);
-            r.put("hrAvg", avg);
-            r.put("hrMin", min);
-            r.put("partial", failed);
-            call.resolve(r);
+            result.put("partial", failed);
+            call.resolve(result);
         }
 
         synchronized void fail() {
@@ -170,94 +152,80 @@ public class HealthPlugin extends Plugin {
         }
     }
 
-    private static TimeInstantRangeFilter range(Instant a, Instant b) {
-        return new TimeInstantRangeFilter.Builder().setStartTime(a).setEndTime(b).build();
+    private void aggregate(HealthConnectManager m, AggregateRecordsRequest<Long> req, Join j, Consumer<AggregateRecordsResponse<Long>> sink) {
+        m.aggregate(req, io, new OutcomeReceiver<AggregateRecordsResponse<Long>, HealthConnectException>() {
+            @Override
+            public void onResult(AggregateRecordsResponse<Long> res) {
+                sink.accept(res);
+                j.tick();
+            }
+
+            @Override
+            public void onError(HealthConnectException e) {
+                j.fail();
+            }
+        });
     }
 
-    /** Günlük uyku ve nabız. days: "YYYY-MM-DD". Uyku: önceki gün 18:00 - o gün 18:00 arasındaki uyku oturumlarının toplam süresi (dakika), yani gün uyanılan güne yazılır;
-     *  nabız: yerel gün ortalaması ve en düşüğü. İzni olmayan tür boş döner. Sonuç {sleep:{gün:dk}, hrAvg:{gün:bpm}, hrMin:{gün:bpm}}. */
+    /** Total steps per local day (up to now for today). Result {days: {day: steps}, partial}. */
+    @PluginMethod
+    public void steps(final PluginCall call) {
+        final HealthConnectManager m = manager();
+        final LocalDate[] days = days(call);
+        if (m == null || !granted() || days == null) {
+            call.reject("unavailable");
+            return;
+        }
+        ZoneId z = ZoneId.systemDefault();
+        Instant now = Instant.now();
+        final JSObject out = new JSObject(), result = new JSObject();
+        result.put("days", out);
+        final Join j = new Join(call, result);
+        List<Runnable> jobs = new ArrayList<>();
+        for (LocalDate d : days) {
+            Instant from = d.atStartOfDay(z).toInstant(), to = min(d.plusDays(1).atStartOfDay(z).toInstant(), now);
+            if (to.isAfter(from))
+                jobs.add(() -> aggregate(m, request(from, to).addAggregationType(StepsRecord.STEPS_COUNT_TOTAL).build(), j,
+                    res -> j.put(out, d.toString(), res.get(StepsRecord.STEPS_COUNT_TOTAL), 1L, 0L)));
+        }
+        j.run(jobs);
+    }
+
+    /**
+     * Daily sleep and heart rate for the "days" argument. Sleep: total duration (minutes) of the sleep sessions between 18:00 the previous day and 18:00 that day,
+     * so a night is written to the day the user woke up; heart rate: the local day's average and minimum. A type without permission comes back empty.
+     * Result {sleep: {day: min}, hrAvg: {day: bpm}, hrMin: {day: bpm}, partial}.
+     */
     @PluginMethod
     public void daily(final PluginCall call) {
         final HealthConnectManager m = manager();
-        JSArray in = call.getArray("days");
-        if (m == null || in == null || in.length() == 0 || in.length() > 40) {
-            call.reject("kullanılamaz");
+        final LocalDate[] days = days(call);
+        if (m == null || days == null) {
+            call.reject("unavailable");
             return;
         }
         final boolean sl = has("READ_SLEEP"), hr = has("READ_HEART_RATE");
-        final int n = in.length();
         ZoneId z = ZoneId.systemDefault();
         Instant now = Instant.now();
-        final String[] day = new String[n];
-        final Instant[][] w = new Instant[n][4];
-        // Önce hepsi doğrulanır: yarıda reddedilen çağrıya sonradan gelen yanıtlar yazılmasın.
-        for (int k = 0; k < n; k++) {
-            try {
-                day[k] = in.getString(k);
-                LocalDate d = LocalDate.parse(day[k]);
-                w[k][0] = d.minusDays(1).atTime(18, 0).atZone(z).toInstant();
-                w[k][1] = d.atTime(18, 0).atZone(z).toInstant();
-                w[k][2] = d.atStartOfDay(z).toInstant();
-                w[k][3] = d.plusDays(1).atStartOfDay(z).toInstant();
-                if (w[k][1].isAfter(now)) w[k][1] = now;
-                if (w[k][3].isAfter(now)) w[k][3] = now;
-            } catch (JSONException | RuntimeException e) {
-                call.reject("geçersiz gün");
-                return;
-            }
+        final JSObject sleep = new JSObject(), avg = new JSObject(), low = new JSObject(), result = new JSObject();
+        result.put("sleep", sleep);
+        result.put("hrAvg", avg);
+        result.put("hrMin", low);
+        final Join j = new Join(call, result);
+        List<Runnable> jobs = new ArrayList<>();
+        for (LocalDate d : days) {
+            Instant s0 = d.minusDays(1).atTime(18, 0).atZone(z).toInstant(), s1 = min(d.atTime(18, 0).atZone(z).toInstant(), now);
+            Instant h0 = d.atStartOfDay(z).toInstant(), h1 = min(d.plusDays(1).atStartOfDay(z).toInstant(), now);
+            String day = d.toString();
+            if (sl && s1.isAfter(s0))
+                jobs.add(() -> aggregate(m, request(s0, s1).addAggregationType(SleepSessionRecord.SLEEP_DURATION_TOTAL).build(), j,
+                    res -> j.put(sleep, day, res.get(SleepSessionRecord.SLEEP_DURATION_TOTAL), 60000L, 1L)));
+            if (hr && h1.isAfter(h0))
+                jobs.add(() -> aggregate(m, request(h0, h1).addAggregationType(HeartRateRecord.BPM_AVG).addAggregationType(HeartRateRecord.BPM_MIN).build(), j, res -> {
+                    j.put(avg, day, res.get(HeartRateRecord.BPM_AVG), 1L, 1L);
+                    j.put(low, day, res.get(HeartRateRecord.BPM_MIN), 1L, 1L);
+                }));
         }
-        final Daily d = new Daily(call);
-        final java.util.List<Runnable> jobs = new java.util.ArrayList<>();
-        for (int k = 0; k < n; k++) {
-            final String dk = day[k];
-            final Instant s0 = w[k][0], s1 = w[k][1], h0 = w[k][2], h1 = w[k][3];
-            if (sl && s1.isAfter(s0)) {
-                jobs.add(() -> m.aggregate(new AggregateRecordsRequest.Builder<Long>(range(s0, s1)).addAggregationType(SleepSessionRecord.SLEEP_DURATION_TOTAL).build(), io,
-                    new OutcomeReceiver<AggregateRecordsResponse<Long>, HealthConnectException>() {
-                        @Override
-                        public void onResult(AggregateRecordsResponse<Long> res) {
-                            d.put(d.sleep, dk, res.get(SleepSessionRecord.SLEEP_DURATION_TOTAL), 60000L);
-                            d.tick();
-                        }
-
-                        @Override
-                        public void onError(HealthConnectException e) {
-                            d.fail();
-                        }
-                    }));
-            }
-            if (hr && h1.isAfter(h0)) {
-                jobs.add(() -> m.aggregate(new AggregateRecordsRequest.Builder<Long>(range(h0, h1)).addAggregationType(HeartRateRecord.BPM_AVG).addAggregationType(HeartRateRecord.BPM_MIN).build(), io,
-                    new OutcomeReceiver<AggregateRecordsResponse<Long>, HealthConnectException>() {
-                        @Override
-                        public void onResult(AggregateRecordsResponse<Long> res) {
-                            d.put(d.avg, dk, res.get(HeartRateRecord.BPM_AVG), 1L);
-                            d.put(d.min, dk, res.get(HeartRateRecord.BPM_MIN), 1L);
-                            d.tick();
-                        }
-
-                        @Override
-                        public void onError(HealthConnectException e) {
-                            d.fail();
-                        }
-                    }));
-            }
-        }
-        d.left = jobs.size() + 1; // +1: tüm işler başlatılmadan çözülmesin
-        for (Runnable j : jobs) j.run();
-        d.tick();
-    }
-
-    private static void finish(PluginCall call, JSObject out, int[] left, boolean[] failed, String day, Long v) {
-        boolean last;
-        synchronized (left) {
-            if (v != null) out.put(day, v.longValue());
-            last = --left[0] == 0;
-        }
-        if (!last) return;
-        JSObject r = new JSObject();
-        r.put("days", out);
-        r.put("partial", failed[0]);
-        call.resolve(r);
+        j.run(jobs);
     }
 }

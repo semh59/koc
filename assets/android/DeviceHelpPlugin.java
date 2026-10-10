@@ -6,20 +6,20 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
-import android.view.WindowManager;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import java.util.Locale;
 
-/** Üretici kısıtlamaları (Xiaomi otomatik başlat, pil) için ilgili ayar ekranını doğrudan açar. */
+/** Opens the vendor settings screens that restrict background work (Xiaomi autostart, battery) and toggles window flags. */
 @CapacitorPlugin(name = "DeviceHelp")
 public class DeviceHelpPlugin extends Plugin {
     @PluginMethod
     public void info(PluginCall call) {
         JSObject r = new JSObject();
-        r.put("manufacturer", Build.MANUFACTURER.toLowerCase());
+        r.put("manufacturer", Build.MANUFACTURER.toLowerCase(Locale.ROOT));
         call.resolve(r);
     }
 
@@ -35,22 +35,23 @@ public class DeviceHelpPlugin extends Plugin {
         }
     }
 
-    private void details(PluginCall call, String how) {
-        Intent i = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getContext().getPackageName()));
+    private void opened(PluginCall call, String what) {
         JSObject r = new JSObject();
-        r.put("opened", start(i) ? how : "none");
+        r.put("opened", what);
         call.resolve(r);
+    }
+
+    private void details(PluginCall call) {
+        Intent i = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getContext().getPackageName()));
+        opened(call, start(i) ? "details" : "none");
     }
 
     @PluginMethod
     public void openAutostart(PluginCall call) {
         Intent i = new Intent().setComponent(new ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"));
-        // Bileşen adı HyperOS'ta doğrulanmadı: eylem adı ikinci deneme, o da yoksa uygulama ayrıntıları ekranı.
-        if (start(i) || start(new Intent("miui.intent.action.OP_AUTO_START").addCategory(Intent.CATEGORY_DEFAULT))) {
-            JSObject r = new JSObject();
-            r.put("opened", "autostart");
-            call.resolve(r);
-        } else details(call, "details");
+        // The component name is unverified on HyperOS: the action name is the second attempt, the app details screen the last.
+        if (start(i) || start(new Intent("miui.intent.action.OP_AUTO_START").addCategory(Intent.CATEGORY_DEFAULT))) opened(call, "autostart");
+        else details(call);
     }
 
     @PluginMethod
@@ -58,46 +59,20 @@ public class DeviceHelpPlugin extends Plugin {
         Intent i = new Intent().setComponent(new ComponentName("com.miui.powerkeeper", "com.miui.powerkeeper.ui.HiddenAppsConfigActivity"));
         i.putExtra("package_name", getContext().getPackageName());
         i.putExtra("package_label", "NeoWell");
-        if (start(i)) {
-            JSObject r = new JSObject();
-            r.put("opened", "battery");
-            call.resolve(r);
-        } else if (start(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))) {
-            JSObject r = new JSObject();
-            r.put("opened", "battery-generic");
-            call.resolve(r);
-        } else details(call, "details");
+        if (start(i)) opened(call, "battery");
+        else if (start(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))) opened(call, "battery-generic");
+        else details(call);
     }
 
-    /** Antrenmanda ekranı açık tutar. Pencere bayrağı yalnız pencere görünürken etkilidir; Wake Lock izni ve pil kilidi gerekmez. */
+    /** Keeps the screen on during a workout. A window flag needs no wake-lock permission and only acts while the window is visible. */
     @PluginMethod
     public void keepAwake(PluginCall call) {
-        final boolean on = Boolean.TRUE.equals(call.getBoolean("on", false));
-        final Activity a = getActivity();
-        if (a == null) {
-            call.reject("etkinlik yok");
-            return;
-        }
-        a.runOnUiThread(() -> {
-            if (on) a.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-            else a.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-            call.resolve();
-        });
+        WindowFlags.keepAwake(this, call);
     }
 
-    /** İlerleme fotoğrafı ekranı açıkken ekran görüntüsü ve son uygulamalar önizlemesi kapanır (FLAG_SECURE). */
+    /** Blocks screenshots and the recents preview while the progress-photo screen is open (FLAG_SECURE). */
     @PluginMethod
     public void secure(PluginCall call) {
-        final boolean on = Boolean.TRUE.equals(call.getBoolean("on", false));
-        final Activity a = getActivity();
-        if (a == null) {
-            call.reject("etkinlik yok");
-            return;
-        }
-        a.runOnUiThread(() -> {
-            if (on) a.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
-            else a.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
-            call.resolve();
-        });
+        WindowFlags.secure(this, call, WindowFlags.PHOTO);
     }
 }
