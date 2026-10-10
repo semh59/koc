@@ -14,7 +14,7 @@ adb shell pm grant $P android.permission.POST_NOTIFICATIONS
 adb logcat -c -b all
 step "açılış ve eklenti tanılaması"
 # Release derlemede konsol logcata yazılmaz: MainActivity bu intent ekiyle her eklentinin yüklendiğini ve @PluginMethod yöntemlerinin
-# R8/ProGuard'dan sağ çıktığını NW-DIAG etiketiyle yazar (patch-android.js, diag).
+# R8/ProGuard'dan sağ çıktığını NW-DIAG etiketiyle yazar (MainActivity.java, diag).
 adb shell am start -n $P/.MainActivity --ez nw_diag true
 diag_line() { diag=$(adb logcat -d -s NW-DIAG:I | grep "NW-DIAG" | tail -1); [ -n "$diag" ]; }
 until_ok 60 diag_line || { adb logcat -d | grep -iE "neowell|AndroidRuntime|Capacitor" | tail -60; die "RELEASE: NW-DIAG YOK (eklenti tanılaması çalışmadı, uygulama açılmadı ya da tanılama yolu bozuk)"; }
