@@ -1,5 +1,5 @@
 "use strict";
-/* Trend > Bağlantılar kartı. Veri yalnız bu cihazda hesaplanır; Koç bağlamına girmez. index.html'deki S, weights, dayKey ve esc ile çalışır. */
+/* Trend > Bağlantılar card. Computed only on this device; never part of the Coach context. */
 function linksCard(){
   const by=Log.byDay;
   const items=LinksLib.analyze({today:dayKey(),sleep:Habits.sleep(),mood:Habits.mood(),steps:by("steps"),kcal:by("food"),weights:weights()});

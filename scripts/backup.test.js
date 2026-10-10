@@ -10,6 +10,9 @@ const ok=(n,c,x)=>{console.log((c?"PASS ":"FAIL ")+n+(c?"":" -> "+JSON.stringify
   ok("değiştirilmiş veri hata verir",await B.decrypt(t,"parola").then(()=>false,()=>true));
   ok("aşırı yineleme sayısı reddedilir",await B.decrypt(Object.assign({},e,{iter:1e9}),"parola").then(()=>false,()=>true));
   ok("iki şifreleme farklı",(await B.encrypt(obj,"parola")).data!==e.data);
+  {const e2=await B.encrypt(obj,"parola");ok("every encryption draws a fresh salt and IV",e2.salt!==e.salt&&e2.iv!==e.iv&&B.unb64(e.salt).length===16&&B.unb64(e.iv).length===12)}
+  {const big=Uint8Array.from({length:100003},(_,i)=>i*7%256);ok("b64/unb64 round trip over the chunk size",B.unb64(B.b64(big)).every((v,i)=>v===big[i])&&B.b64(new Uint8Array([37,80,68,70]))==="JVBERg==")}
+  ok("manual and auto file names",B.manualName("2026-10-01")==="neowell-yedek-2026-10-01.json"&&B.autoName("2026-10-01")==="neowell-oto-2026-10-01.json")
   ok("otomatik yedek: ayrı önekli ad (elle yedekle çakışmaz)",B.autoName("2026-10-02")==="neowell-oto-2026-10-02.json");
   ok("otomatik yedek: en yeni 4 kalır, yalnız yedek adları silinir",JSON.stringify(B.autoPrune(["neowell-oto-2026-09-04.json","neowell-oto-2026-09-25.json","not.txt","neowell-oto-2026-08-28.json","neowell-oto-2026-09-11.json","neowell-oto-2026-09-18.json","neowell-oto-x.json"],"neowell-oto-2026-09-25.json"))===JSON.stringify(["neowell-oto-2026-08-28.json"])&&B.autoPrune(["neowell-oto-2026-09-04.json"],"neowell-oto-2026-09-04.json").length===0);
   ok("otomatik yedek: elle yedekler ve eski 'neowell-yedek-' adlı dosyalar (aynı gün dahil) hiç budanmaz",JSON.stringify(B.autoPrune(["neowell-yedek-2026-08-01.json","neowell-yedek-2026-10-02.json","neowell-oto-2026-09-11.json","neowell-oto-2026-09-18.json","neowell-oto-2026-09-25.json","neowell-oto-2026-10-02.json","neowell-yedek-2026-09-04.json"],"neowell-oto-2026-10-02.json"))===JSON.stringify([]));

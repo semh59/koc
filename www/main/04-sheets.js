@@ -228,16 +228,12 @@ function markBackup(soft){S.settings.lastBackup=dayKey();save(soft)}
 async function backupText(){
   const pw=$("#bkpw").value,m2=$("#bkpw2"),bad=BackupLib.pwCheck(pw)||(m2&&m2.value!==pw?"Parolalar aynı değil":"");
   if(bad){const w=$("#bkw");if(w)w.textContent=bad;toast(bad);return null}
-  return JSON.stringify(await BackupLib.encrypt({v:1,S,keys:getKeys()},pw));
+  return backupJson(pw);
 }
-async function shareBackup(){
-  const fs=plugin("Filesystem"),sh=plugin("Share");
-  if(!fs||!sh)return toast("Paylaşım bu cihazda yok, Kopyala'yı kullan");
-  try{
-    const txt=await backupText();if(!txt)return;
-    const f=await fs.writeFile({path:`neowell-yedek-${dayKey()}.json`,data:txt,directory:"CACHE",encoding:"utf8"});
-    await sh.share({title:"NeoWell yedeği",files:[f.uri]});markBackup();
-  }catch(e){if(!/cancel/i.test(e&&e.message||""))toast("Paylaşılamadı, Kopyala'yı kullan")}
+/* Share sheet on the phone, file download in a browser. */
+async function exportBackup(){
+  const txt=await backupText();
+  if(txt&&await shareFile(BackupLib.manualName(dayKey()),"NeoWell yedeği","application/json",txt,true))markBackup();
 }
 async function goRestore(){
   let r,keysIn=null;try{r=JSON.parse($("#bk").value)}catch{return toast("Yedek metni okunamadı")}

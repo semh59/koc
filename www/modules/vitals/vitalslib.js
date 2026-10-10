@@ -13,14 +13,12 @@ const VitalsLib=(()=>{
   const CRISIS={sys:180,dia:120,gLow:54,gHigh:400};
   /* "Are you sure" question: jump from the previous reading of the same kind. */
   const JUMP_SYS=60,JUMP_G=150;
-  const dayOk=d=>typeof d==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&new Date(d+"T00:00Z").toJSON()?.slice(0,10)===d;
-  const timeOk=s=>typeof s==="string"&&/^([01]\d|2[0-3]):[0-5]\d$/.test(s);
+  const ALGO=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js"),{dayOk,timeOk}=ALGO;
   const fin=x=>typeof x==="number"&&Number.isFinite(x);
   const inr=(x,[a,b])=>fin(x)&&x>=a&&x<=b;
   const r1=x=>Math.round(x*10)/10;
   const mean=(a,f=x=>x)=>a.reduce((t,x)=>t+f(x),0)/a.length;
   const UN=typeof Units!=="undefined"?Units:require("../../kernel/unitlib.js");
-  const ALGO=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
   const dayN=ALGO.dayNum,fmtD=k=>ALGO.fdate(k,true);
   /* Oldest first by day and time, then id. */
   const cmpAt=(a,b)=>{const x=a.day+a.time,y=b.day+b.time;return x<y?-1:x>y?1:a.id-b.id};

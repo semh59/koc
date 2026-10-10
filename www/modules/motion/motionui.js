@@ -1,14 +1,13 @@
 "use strict";
-/* Otomatik yürüyüş/koşu algılama arayüzü: Ayarlar bloğu, Adım ekranındaki Hareketler kartı, yerel taraftan kayıt alma, elle yürüyüşte GPS.
-   index.html'deki S, save, toast, esc, fmt, render, tab, isNative, weights, Algo ile çalışır. */
-const MO=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Motion;
+/* Automatic walk/run detection UI: the settings block, the Movements card on the steps screen, taking records from the native side, GPS during a manual walk. */
+const MO=()=>plugin("Motion");
 let motionPerm=null;
 
 function motionKg(){
-  const w=weights(),d=Object.keys(w).sort();
-  return d.length?Algo.trend(w)[d[d.length-1]]:0;
+  const t=Algo.trend(weights()),ks=Object.keys(t);
+  return ks.length?t[ks[ks.length-1]]:0;
 }
-function motionConfigure(){const m=MO();if(m)m.configure({cm:S.settings.heightCm||0,kg:motionKg()||0}).catch(()=>{})}
+function motionConfigure(){MO()?.configure({cm:S.settings.heightCm||0,kg:motionKg()||0}).catch(()=>{})}
 
 async function motionStatus(){
   const m=MO();if(!m)return;
@@ -39,23 +38,21 @@ async function motionToggle(){
   }catch(e){toast("Hareket algılama açılamadı: "+(e&&e.message||e))}
 }
 
-/* Yerel taraftan biten aralıkları al, kaydet. */
+/* Takes the intervals the native side has finished and stores them. */
 async function motionIngest(){
   const m=MO();if(!m||!S.settings.motionOn)return;
   let r;try{r=await m.take()}catch(e){return}
-  const n=MotionLib.ingest(S.moves,(r&&r.items)||[],Date.now());
-  if(!n)return;
+  if(!MotionLib.ingest(S.moves,r?.items??[],Date.now()))return;
   save();
   if(tab==="steps"&&!$("#sheet").classList.contains("on"))render();
-  console.log("NW-MOTION ingested "+n);
 }
-/* Adım sayar kapanınca hareket algılama da durur (ayar bloğu adım sayara bağlı). */
+/* Motion detection hangs on the step counter: turning the counter off stops it too. */
 async function motionStopAll(){
-  const m=MO();if(!S.settings.motionOn)return;
+  if(!S.settings.motionOn)return;
   await motionIngest();S.settings.motionOn=false;save();
-  if(m)try{await m.stop()}catch(e){}
+  try{await MO()?.stop()}catch(e){}
 }
-/* Yedekten gelen ya da izni geri alınmış ayarda yerel taraf kapalıysa ayarı düşür, kullanıcıya açık görünüp çalışmamasın. */
+/* A restored backup or a revoked permission can leave the setting on while the native side is off: switch it off so it does not look active and do nothing. */
 async function motionBoot(){
   const m=MO();if(!m||!S.settings.motionOn)return;
   await motionStatus();
@@ -65,30 +62,30 @@ async function motionBoot(){
   motionIngest();
 }
 
-/* Adım ekranı kartı: son 2 gün. */
+/* Card on the steps screen: the last 2 days. */
 function motionCard(){
   if(!S.settings.motionOn)return "";
-  const t=dayKey(),y=keyOff(-1),row=m=>`<div class="row" style="display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span><b>${m.t0}</b> ${m.k==="r"?"Koşu":"Yürüyüş"} <small class="mut">${m.min} dk</small></span><span class="ta-r num">${fmt(m.km,1)} km · ${fmt(m.kmh,1)} km/s${m.kcal!=null?` · ${m.kcal} kcal`:""}</span></div>`;
-  const tl=S.moves.filter(m=>m.day===t),yl=S.moves.filter(m=>m.day===y);
+  const row=m=>`<div class="row" style="display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span><b>${m.t0}</b> ${m.k==="r"?"Koşu":"Yürüyüş"} <small class="mut">${m.min} dk</small></span><span class="ta-r num">${fmt(m.km,1)} km · ${fmt(m.kmh,1)} km/s${m.kcal!=null?` · ${m.kcal} kcal`:""}</span></div>`;
+  const tl=S.moves.filter(m=>m.day===dayKey()),yl=S.moves.filter(m=>m.day===keyOff(-1));
   const sum=l=>{const x=MotionLib.totals(l);return `${x.min} dk, ${fmt(x.km,1)} km${x.kcalN?`, ${x.kcal} kcal`:""}`};
-  /* Gün toplamı görünür, tek tek hareketler dokununca açılır. */
-  const grp=(ad,l)=>`<details class="acc"><summary><b class="grow">${ad}</b><span class="num mut">${sum(l)}</span></summary>${l.slice().reverse().map(row).join("")}</details>`;
+  /* The day total is visible, single movements open on tap. */
+  const grp=(name,l)=>`<details class="acc"><summary><b class="grow">${name}</b><span class="num mut">${sum(l)}</span></summary>${l.slice().reverse().map(row).join("")}</details>`;
   const body=tl.length||yl.length?`${tl.length?grp("Bugün",tl):`<p class="mut sm" style="margin:0 0 6px">Bugün henüz algılanan yürüyüş ya da koşu yok.</p>`}${yl.length?grp("Dün",yl):""}`
     :`<p class="m0 mut sm">Henüz algılanan yürüyüş ya da koşu yok. En az 3 dakikalık, kesintisiz yürüyüşler listelenir.</p>`;
   return `<div class="card"><div class="lbl">Hareketler</div>${body}<p class="pt-2 hint">Algılama 1-2 dakika gecikebilir, süre ve mesafe yaklaşıktır.${S.settings.heightCm>0?"":" Mesafe için Ayarlar'dan boyunu gir."}</p></div>`;
 }
 
-/* Elle yürüyüşte GPS: adım uzunluğunu öğrenmenin tek yolu. Ritim adım sayacından gelir, öğrenilen ölçeği otomatik aralıklar ve elle yürüyüş mesafesi kullanır;
-   bu yüzden yalnız ikisi de açıkken. Konum izni burada istenir, ret telefona özel bayrakla hatırlanır (yedeğe girmez). */
+/* GPS during a manual walk is the only way to learn the step length. The cadence comes from the step counter and the learned scale is used for automatic intervals and
+   manual walk distance, so GPS runs only when both are on. The location permission is asked here; a refusal is remembered in a flag specific to this phone (not in the backup). */
 const WGPS_NO="nw_walkgps_no";
 async function walkGpsOn(){
-  const m=MO(),st=S.settings;if(!m||!isNative()||!st.stepsOn||!st.motionOn)return;
+  const st=S.settings;if(!MO()||!isNative()||!st.stepsOn||!st.motionOn)return;
   await motionStatus();
-  if(motionPerm&&motionPerm.fine)walkGpsGo();
+  if(motionPerm?.fine)walkGpsGo();
   else if(!lsGet(WGPS_NO))motionDisclose();
 }
-function walkGpsGo(){const m=MO();if(m&&S.walk&&!S.walk.t1)m.walkGps({on:true}).catch(()=>{})}
-function walkGpsOff(){const m=MO();if(m)m.walkGps({on:false}).catch(()=>{})}
+function walkGpsGo(){if(S.walk&&!S.walk.t1)MO()?.walkGps({on:true}).catch(()=>{})}
+function walkGpsOff(){MO()?.walkGps({on:false}).catch(()=>{})}
 async function walkGpsAsk(){
   const m=MO();if(!m)return;
   let ok=false;try{ok=(await m.requestPermissions({permissions:["fine"]})).fine==="granted"}catch(e){}

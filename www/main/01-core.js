@@ -31,6 +31,13 @@ const num=(s,int)=>{
 const MONTHS=["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
 const WEEKDAYS=["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
 const WEEKDAYS_SHORT=["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"];
+/* Month grid of the cycle and history calendars: Monday-first header, blanks before day 1, cell(dayKey,dayNumber) per day. ymShift moves a "YYYY-MM" month. */
+const ymShift=(ym,n)=>{const d=new Date(+ym.slice(0,4),+ym.slice(5,7)-1+n,1);return `${d.getFullYear()}-${pad(d.getMonth()+1)}`};
+const calGrid=(ym,label,cell)=>{
+  let cells="<span></span>".repeat((new Date(+ym.slice(0,4),+ym.slice(5,7)-1,1).getDay()+6)%7);
+  for(let d=1,n=new Date(+ym.slice(0,4),+ym.slice(5,7),0).getDate();d<=n;d++)cells+=cell(`${ym}-${pad(d)}`,d);
+  return `<div class="cyg" role="group" aria-label="${label} takvimi">${[...WEEKDAYS_SHORT.slice(1),WEEKDAYS_SHORT[0]].map(w=>`<span class="cyw" aria-hidden="true">${w}</span>`).join("")}${cells}</div>`;
+};
 /* Display date: the year is left out for the current year. */
 const fd=k=>Algo.fdate(k,k.slice(0,4)!==dayKey().slice(0,4));
 const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
@@ -60,8 +67,7 @@ const ZEROOK=["goalKg","kcal","heightCm","age",...Object.keys(VR)];
 const {copyNutr,NUTR}=LogLib;
 const NLBL={p:"protein",c:"karbonhidrat",f:"yağ",fb:"lif",sg:"şeker",na:"sodyum"},NUNIT=k=>k==="na"?"mg":"g";
 const TYPES=["water","weight","food","exercise","note","steps"];
-const dayOk=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&new Date(s+"T00:00Z").toJSON()?.slice(0,10)===s;
-const timeOk=s=>typeof s==="string"&&/^([01]\d|2[0-3]):[0-5]\d$/.test(s);
+const {dayOk,timeOk}=Algo;
 /* Bumped when the Coach consent text changes: a consent given for an older text is void and asked again. */
 const CONSENT_V=2;
 const MED_NOTE="NeoWell tıbbi cihaz değildir, tanı koymaz ve tedavi önermez; hekim yerine geçmez. Sağlık kararların için hekimine danış.";

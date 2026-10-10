@@ -66,6 +66,37 @@ Sequential code-quality program. One row per file that was read completely, line
 | www/modules/labs/index.js | 3 | agent 6 | `Labs.latest` is one reduce instead of filter + sort |
 | www/modules/measures/measureui.js | 50 | agent 6 | header translated; `MNAME` moved to `index.js` so the Node CSV test and the screens share one name table; no other dead code found |
 | www/modules/measures/index.js | 7 | agent 6 | one name table instead of three (`MN`, `names`, `MNAME`); removed the unknown-kind filter (`cleanMeasures` already drops them) and `\|\|[]` guards |
+| www/modules/pulse/hcui.js | 81 | agent 7 | comments translated; `plugin()`; sleep/pulse day merge uses Maps instead of filter+concat; sleep bounds from `HabitLib.SLEEP_LIM`; `HC_DAYS`; removed the impossible `dayOk(d)` on generated keys; bug: the permission hint printed the English word "sleep" instead of "uyku" |
+| www/modules/pulse/index.js | 7 | agent 7 | CSV rows sorted with `by`, unused destructured names and `||[]` guards removed |
+| www/modules/pulse/pulselib.js | 139 | agent 7 | comments translated; `dayOk`/`timeOk` from Algo; `MAX_ROWS`, `HR_LIM`, `MAX_CAMERAS` named; `cleanHr` comment said 400 days while the cap is 20000; the interval mean/sd computed once (was recomputed per element, O(k^2)); removed the unused `LIM`/`HZ` exports, the `fail` second parameter and the non-array guard. Signal path checked: resample, detrend and smoothing are O(n) (prefix sums), autocorrelation covers about 40 lags so it is O(n) per call, peak picking is O(n log n); no FFT needed |
+| www/modules/pulse/pulseui.js | 104 | agent 7 | comments translated; `plRes` -> `plBpm`, `MedLib.hm` replaces `plPad`/`plNow`, one `plProgress`/`plNext`, `PL_PX`, dropped the unused `cv`/`ctx` fields and nested try blocks |
+| www/modules/motion/index.js | 2 | agent 7 | read; no change |
+| www/modules/motion/motionlib.js | 52 | agent 7 | comments translated; `dayOk`/`timeOk` from Algo; one `LIM` table instead of repeated literals; `keyOf`; `MAX_ROWS` |
+| www/modules/motion/motionui.js | 110 | agent 7 | comments translated; `plugin()`; removed the unreferenced debug `console.log`, the local `row` lookups and the `isFinite` helper; `motionKg` reads the trend once |
+| www/modules/motion/walkui.js | 75 | agent 7 | comments translated; `WKIND` is a plain name table, `WALK_MAX_MIN`, `fint`, global `pad`; the inline `oninput` became a delegated listener |
+| www/modules/cycle/index.js | 2 | agent 7 | read; no change |
+| www/modules/cycle/cyclelib.js | 80 | agent 7 | comments translated; `dayOk`/`dayNum` from Algo (own `dayN` removed); named `CYCLE_DAYS`, `LAST_CYCLES`, `LUTEAL`, `NOTE_MAX`; `clean` no longer cuts the input to its first 400 rows before sorting; removed the unused `MAXROWS`/`LEAD`/`dayOk`/`dayN` exports |
+| www/modules/cycle/cycleui.js | 113 | agent 7 | comments translated; shared `calGrid`/`ymShift` (01-core) and `MONTHS`; period spans computed once per month; delete now goes through `cycPut` (a failed save is undone and reported); `ferr` replaces the local warn |
+| www/modules/habits/index.js | 17 | agent 7 | unused destructured names and `||[]` guards removed |
+| www/modules/habits/habitlib.js | 41 | agent 7 | comments translated; `dayOk` from Algo; `SLEEP_LIM`, `NOTE_MAX`, `MAX_ROWS`, `MAX_FASTS` named and shared with the UI |
+| www/modules/habits/habitui.js | 115 | agent 7 | comments translated; `HB_SHOWN`, `LONG_PLAN`, `FAST_REMINDER` named; `fastToggle` split out of the click handler; sleep bounds from `HabitLib` |
+| www/modules/history/historylib.js | 57 | agent 7 | comments translated; `foldTr` replaces the local Turkish folding chain; `marks` uses a predicate table; `months` groups the index once instead of scanning it per month; named search constants |
+| www/modules/history/historyui.js | 108 | agent 7 | comments translated; the index is built once per render (was twice); shared `calGrid`/`ymShift`; `hgDaysAgo` is `Algo.dayNum`; segment ids `tak/ay/ara` -> `cal/months/search`; year picker always contains the shown year; dropped the try/catch around `gNames` (never throws); `fint` |
+| www/modules/insights/goallib.js | 32 | agent 7 | comments translated; uses `Algo.lossSlope` (now exported) and `roundTo`; named thresholds; removed unused exports |
+| www/modules/insights/goalui.js | 20 | agent 7 | comment translated; no other change |
+| www/modules/insights/linkslib.js | 46 | agent 7 | comments translated; bug: sleep is stored on the wake-up day but was paired with the mood of the day after, now the same day (test fixture corrected); `dayNum` from Algo; id `kalori` -> `calories` |
+| www/modules/insights/linksui.js | 7 | agent 7 | comment translated; no other change |
+| www/modules/insights/weeklylib.js | 107 | agent 7 | comments translated; one pass over the entries instead of a filter per day and type; `Algo` bound once; removed the unused `RW`/`RH` exports |
+| www/modules/insights/weeklyui.js | 10 | agent 7 | uses `canvasPdf` |
+| www/modules/data/backuplib.js | 37 | agent 7 | comments translated; WebCrypto reviewed (PBKDF2-SHA256 600k, fresh 16-byte salt and 12-byte IV per file, AES-GCM, bounded iteration count on read): unchanged; chunked `b64`, exported with `unb64`; `manualName`; error code `format`; tests for fresh salt/IV and the base64 round trip |
+| www/modules/data/backupui.js | 121 | agent 7 | comments translated; `backupJson` is the single backup payload (the `v:1` field nobody read is gone); `shareFile` replaces the copied Filesystem/Share/download flow; `bkNewPw` replaces two copies of the password check; `plugin()`; error code `no-password` |
+| www/modules/data/csvlib.js | 25 | agent 7 | comments translated; single map over the module table; BOM written as an escape; unused `ctx` entries unchanged (all are used) |
+| www/modules/data/lockui.js | 58 | agent 7 | comments translated; removed the fallback that parsed `nw_state` (save() always keeps `nw_lockon`); `plugin()` |
+| www/modules/data/photolib.js | 20 | agent 7 | comments translated; `Algo.dayNum`; `KG` range shared with the UI |
+| www/modules/data/photoui.js | 130 | agent 7 | comments translated; error codes in English; weight-label limits from `PhotoLib.KG` |
+| www/modules/data/privacyui.js | 58 | agent 7 | comments translated; no other change |
+| www/modules/data/onboardui.js | 113 | agent 7 | comments translated; `fint` |
+| www/modules/data/shareui.js | 30 | agent 7 | new: `shareFile` (now returns whether the file was handed over), `sharePdf`, `cacheClean`, `canvasPdf` moved here from labs/labui.js; the file is loaded by index.html before the report modules |
 
 ## Notes
 
@@ -87,3 +118,7 @@ Sequential code-quality program. One row per file that was read completely, line
 - Moved `myFoodPut`/`myFoodAdd` from `coach.js` to `Nutrition.putMy`/`Nutrition.addMy` (`nutrition/index.js`); callers in the main shell, `ocrui.js` and `coach.js` updated, test added for replace-by-name/barcode and the cap.
 - Tests: `scripts/lab.test.js` had three toNum/dayOk checks after `process.exit`, so they never ran; moved before the exit.
 - Labs behavior changes: lines like "CRP Negatif" (a word instead of a value) are now ignored instead of producing a row the UI could not save; `cleanLabs` rejects negative values (no input path produces them); the lab dictionary alias "serum demiri" became "demiri" (the old one was unreachable).
+- Agent 7: `dayOk`/`timeOk` now live once in `Algo` (`dateOk` was the weaker twin and is gone); `LabLib.dayOk` and `MedLib.timeOk` exports removed. Toolbox of shared helpers added to 01-core: `calGrid`, `ymShift`.
+- Agent 7: the main shell's manual backup share/download (`04-sheets.js`, `06-events.js`) goes through `exportBackup` -> `shareFile`.
+- Agent 7: not used on purpose: `toSorted`, `toReversed`, `Object.groupBy` (no WebView version floor). Test titles in several scripts are still Turkish (not renamed).
+- Agent 7: page size 1240x1754 is still declared in lablib, vitalslib and weeklylib; `canvasPdf` uses the LabLib value.

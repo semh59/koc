@@ -23,7 +23,7 @@ const U=require("../www/kernel/unitlib.js"),V=require("../www/modules/vitals/vit
   ok("şeker 'emin misin' ve rapor satırı seçilen birimde",V.needsConfirm([{k:"s",ctx:"fasting",g:80,day:"2026-10-05",time:"08:00",id:1}],{k:"s",ctx:"fasting",g:300},"mmol").includes("16,7")&&V.reportRows([{k:"s",g:95,ctx:"fasting",day:"2026-10-06",time:"08:00",id:1}],"s","2026-10-01","2026-10-07","mmol")[0].v==="5,3 mmol/L"&&V.reportRows([{k:"s",g:95,ctx:"fasting",day:"2026-10-06",time:"08:00",id:1}],"s","2026-10-01","2026-10-07","mgdl")[0].v==="95 mg/dL");
 }
 { // CSV
-  const S={settings:{wUnit:"lb",gUnit:"mmol"},entries:[{id:1,day:"2026-10-06",time:"08:00",type:"weight",v:100,text:""}],measures:[],workouts:[],vitals:[{id:1,k:"s",day:"2026-10-06",time:"08:00",g:95,ctx:"fasting"}],recipes:[],sleep:[],mood:[],fast:{log:[]},medLog:[],meds:[]};
+  const S={settings:{wUnit:"lb",gUnit:"mmol"},entries:[{id:1,day:"2026-10-06",time:"08:00",type:"weight",v:100,text:""}],measures:[],workouts:[],vitals:[{id:1,k:"s",day:"2026-10-06",time:"08:00",g:95,ctx:"fasting"}],recipes:[],sleep:[],mood:[],pulse:[],hr:[],fast:{log:[]},medLog:[],meds:[]};
   const f=Csv.files(S,{exName:x=>x,vctx:()=>"Açlık"}),a=f.find(x=>x.key==="kayitlar").build(),s=f.find(x=>x.key==="saglik").build();
   ok("CSV: kilo seçilen birimde ve birim sütunuyla, şeker mmol/L başlığıyla",a.includes("220,46;lb")&&s.includes("şeker_mmoll")&&s.includes(";5,27;"),[a,s]);
   const d=Csv.files({...S,settings:{}},{exName:x=>x,vctx:()=>""});

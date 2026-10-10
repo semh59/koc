@@ -68,7 +68,7 @@ ok("ekran açık: keepAwake eklenti metodu, UI iş parçacığında bayrak ekler
   ok("yürüyüş GPS: servis ön planda startService ile başlar ve hemen konum türünde startForeground çağırır",/c\.startService\(new Intent\(c, MotionGpsService\.class\)\)/.test(gs)&&!/c\.startForegroundService\(/.test(gs)&&/startForeground\(NOTIF_ID, n, ServiceInfo\.FOREGROUND_SERVICE_TYPE_LOCATION\)/.test(gs));
   ok("hareket: otomatik GPS karar mantığı (gpsWanted, ritim aralığı, sapma, pil) kalmadı",!/gpsWanted|bucket|cadenceShift|BatteryManager|isPowerSaveMode|gpsToday/.test(mm+gs+rd("assets/android/MotionStore.java")));
 }
-ok("hareket: status öğrenilmiş adım ölçeğini (fw/fr) JS'e verir, elle yürüyüş km'si onu kullanır",/r\.put\("fw", m\.f\[MotionMath\.WALK\]\);\s*r\.put\("fr", m\.f\[MotionMath\.RUN\]\);/.test(rd("assets/android/MotionPlugin.java"))&&/f:motionPerm&&motionPerm\[wKind==="r"\?"fr":"fw"\]/.test(rd("www/modules/motion/walkui.js")));
+ok("hareket: status öğrenilmiş adım ölçeğini (fw/fr) JS'e verir, elle yürüyüş km'si onu kullanır",/r\.put\("fw", m\.f\[MotionMath\.WALK\]\);\s*r\.put\("fr", m\.f\[MotionMath\.RUN\]\);/.test(rd("assets/android/MotionPlugin.java"))&&/f:motionPerm\?\.\[wKind==="r"\?"fr":"fw"\]/.test(rd("www/modules/motion/walkui.js")));
 { // Dalga 11: smoke çökme denetimi
   const sm=rd("scripts/smoke.sh");
   ok("smoke: crash tamponunda uygulamanın çökmesi (Java ve yerel) aranır, her logcat temizliğinden önce ve sonda",/crashcheck\(\) \{ adb logcat -d -b crash > crash\.log; if grep -qE "Process: com\\.neowell\\.app\|>>> com\\.neowell\\.app <<<" crash\.log/.test(sm)&&/clr\(\) \{ crashcheck; adb logcat -c; \}/.test(sm)&&(sm.match(/adb logcat -c/g)||[]).length===1&&/crashcheck\r?\necho "Smoke testi geçti"/.test(sm));

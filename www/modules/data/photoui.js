@@ -1,7 +1,6 @@
 "use strict";
-/* İlerleme fotoğrafları (Trend). Fotoğraf IndexedDB'de durur (localStorage kotasını yemez); yedeğe, Koç'a ve paylaşıma girmez.
-   Küçük resim ve künye "m", en uzun kenarı 900 px'e inmiş JPEG "f" deposunda. Android'de bu ekran açıkken ekran görüntüsü kilitlenir (DeviceHelp.secure).
-   index.html'deki tab, weights, dw, wlab, dayOptions, fday, fd, num, ferr, openSheet, closeSheet, render, toast, DH, esc ile çalışır. */
+/* Progress photos (Trend). Photos live in IndexedDB (they do not eat the localStorage quota) and never reach the backup, the Coach or sharing.
+   Store "m" holds the thumbnail and metadata, store "f" the JPEG scaled to 900 px on its longest side. On Android screenshots are blocked while this screen is open (DeviceHelp.secure). */
 let phList=[],phDbP=null,phUrls=[],phSecure=false;
 const phRevoke=()=>{if(URL.revokeObjectURL)phUrls.forEach(u=>URL.revokeObjectURL(u));phUrls=[]};
 const phOk=()=>typeof indexedDB!=="undefined"&&!!indexedDB;
@@ -25,7 +24,7 @@ async function phDel(id){
   const t=(await phDb()).transaction(["m","f"],"readwrite");
   t.objectStore("m").delete(id);t.objectStore("f").delete(id);await phDone(t);
 }
-/* Tüm veriler / gizlilik silmesi: liste hemen boşalır, depo arkadan temizlenir; olmazsa söylenir. */
+/* Delete-all and privacy delete: the list empties at once and the store is cleared behind it; a failure is reported. */
 async function phClear(){
   phList=[];phRevoke();
   if(!phOk())return;
@@ -39,15 +38,15 @@ function phGuard(){
 }
 const phImg=file=>new Promise((ok,no)=>{
   const u=URL.createObjectURL(file),i=new Image();
-  i.onload=()=>{URL.revokeObjectURL(u);ok(i)};i.onerror=()=>{URL.revokeObjectURL(u);no(new Error("görüntü"))};i.src=u;
+  i.onload=()=>{URL.revokeObjectURL(u);ok(i)};i.onerror=()=>{URL.revokeObjectURL(u);no(new Error("image"))};i.src=u;
 });
-/* En uzun kenar 900 px, JPEG kalite 0,75; küçük resim 160 px. Şeffaf PNG beyaz zemine çizilir. */
+/* Longest side 900 px, JPEG quality 0.75; thumbnail 160 px. A transparent PNG is drawn on a white background. */
 async function phShrink(file){
   const img=await phImg(file),d=PhotoLib.fit(img.naturalWidth,img.naturalHeight);
-  if(!d)throw new Error("boyut");
+  if(!d)throw new Error("size");
   const draw=(w,h)=>{const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,w,h);x.drawImage(img,0,0,w,h);return c};
   const blob=await new Promise(r=>draw(d.w,d.h).toBlob(r,"image/jpeg",PhotoLib.QUALITY));
-  if(!blob)throw new Error("jpeg");
+  if(!blob)throw new Error("jpeg-encode");
   const t=PhotoLib.fit(d.w,d.h,PhotoLib.THUMB);
   return {blob,thumb:draw(t.w,t.h).toDataURL("image/jpeg",0.6),w:d.w,h:d.h};
 }
@@ -75,7 +74,7 @@ function sheetPhoto(){
 }
 async function phAdd(file){
   const kr=$("#phkg").value.trim(),kg=kr?PhotoLib.kgLabel(Units.wIn(num(kr))):null,day=fday();
-  if(kg===undefined)return ferr("pherr",`Kilo etiketi ${dw(20,0)} ile ${dw(400,0)} ${wlab()} arası olmalı ya da boş bırak`);
+  if(kg===undefined)return ferr("pherr",`Kilo etiketi ${dw(PhotoLib.KG[0],0)} ile ${dw(PhotoLib.KG[1],0)} ${wlab()} arası olmalı ya da boş bırak`);
   try{
     const r=await phShrink(file);
     if(!PhotoLib.canAdd(phList.length))return ferr("pherr",`En fazla ${PhotoLib.MAX} fotoğraf tutulur`);
@@ -127,5 +126,5 @@ document.addEventListener("change",ev=>{
   if(t.dataset&&t.dataset.phf){const f=t.files&&t.files[0];t.value="";if(f)phAdd(f)}
   else if(t.id==="pha"||t.id==="phb")phCmp();
 });
-document.addEventListener("nw:boot",phLoad); // ana betik (render, S) çalıştıktan sonra
+document.addEventListener("nw:boot",phLoad); // after the main script (render, S) has run
 Data.privacy.push(["İlerleme fotoğrafları",()=>phList.length,()=>{phClear()},11]);

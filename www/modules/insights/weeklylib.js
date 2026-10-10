@@ -1,6 +1,6 @@
 "use strict";
-/* Son 7 gün özet raporu (bugün dahil kayan pencere, takvim haftası değil): kayıtlardan sayıları derler ve tek sayfalık PDF görüntüsünü çizer (DOM yok).
-   Yalnızca kullanıcının girdiği kayıtları ve kendi hedeflerini yan yana koyar; yorum yapmaz. */
+/* Last-7-days summary report (a sliding window that includes today, not a calendar week): collects the numbers from the records and draws the one-page PDF image (no DOM).
+   It only puts the user's own records next to the user's own goals; it does not comment. */
 const WeeklyLib=(()=>{
   const VL=typeof VitalsLib!=="undefined"?VitalsLib:require("../vitals/vitalslib.js"),ML=typeof MedLib!=="undefined"?MedLib:require("../meds/medlib.js");
   const WEEKDAYS_SHORT=["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"];
@@ -10,28 +10,34 @@ const WeeklyLib=(()=>{
   const fmt=(x,d)=>Number(x).toFixed(d==null?1:d).replace(".",",");
   const fmtS=x=>(x>0?"+":x<0?"−":"")+fmt(Math.abs(x));
   const UN=typeof Units!=="undefined"?Units:require("../../kernel/unitlib.js");
-  const AL=()=>typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
-  const dmy=k=>AL().fdate(k,true);
-  /* Su hedefine yalnız su ve sade maden suyu sayılır; tür alanı olmayan eski kayıt su. Çay, kahve, gazlı, süt, diğer ayrı tutulur. */
+  const A=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
+  const dmy=k=>A.fdate(k,true);
+  /* Only plain water and mineral water count toward the water goal (a plain entry has no dr); tea, coffee, soda, milk and other drinks are kept apart. */
   const isWater=e=>e.type==="water"&&(!e.dr||e.dr==="water"||e.dr==="mineral");
-  const sumOf=(es,t,k)=>es.filter(e=>(t==="water"?isWater(e):e.type===t)&&e.day===k).reduce((s,e)=>s+(e.v||0),0);
   const mean=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
 
-  /* endDay "YYYY-MM-DD", days: pencere (7). D: {settings, entries, vitals, meds, medLog}. */
-  function build(D,endDay,days,nowTime){
-    days=days||7;
-    const [y,m,d]=endDay.split("-").map(Number),end=new Date(y,m-1,d),st=D.settings,es=D.entries,rows=[];
+  /* endDay "YYYY-MM-DD", days: window length. D: {settings, entries, vitals, meds, medLog}. */
+  function build(D,endDay,days=7,nowTime){
+    const [y,m,d]=endDay.split("-").map(Number),end=new Date(y,m-1,d),st=D.settings,rows=[];
     for(let i=days-1;i>=0;i--){
-      const dt=new Date(end.getFullYear(),end.getMonth(),end.getDate()-i),k=key(dt);
-      const kg=es.filter(e=>e.type==="weight"&&e.day===k).map(e=>e.v).pop();
-      rows.push({day:k,label:`${WEEKDAYS_SHORT[dt.getDay()]} ${dt.getDate()}`,weight:kg==null?null:kg,water:sumOf(es,"water",k),kcal:sumOf(es,"food",k),exercise:sumOf(es,"exercise",k),steps:sumOf(es,"steps",k)});
+      const dt=new Date(end.getFullYear(),end.getMonth(),end.getDate()-i);
+      rows.push({day:key(dt),label:`${WEEKDAYS_SHORT[dt.getDay()]} ${dt.getDate()}`,weight:null,water:0,kcal:0,exercise:0,steps:0});
+    }
+    const rowOf=new Map(rows.map(r=>[r.day,r]));
+    for(const e of D.entries){ // one pass over all entries; the last weigh-in of a day wins
+      const r=rowOf.get(e.day);if(!r)continue;
+      if(e.type==="weight")r.weight=e.v??null;
+      else if(e.type==="food")r.kcal+=e.v||0;
+      else if(e.type==="exercise")r.exercise+=e.v||0;
+      else if(e.type==="steps")r.steps+=e.v||0;
+      else if(isWater(e))r.water+=e.v||0;
     }
     const from=rows[0].day,wu=st.wUnit==="lb"?"lb":"kg",gu=st.gUnit==="mmol"?"mmol":"mgdl",kw=x=>fmt(UN.w(x,wu)),summary=[["Dönem",`${dmy(from)} - ${dmy(endDay)}`]];
     const ks=rows.filter(r=>r.weight!=null);
     if(ks.length>=2)summary.push(["Kilo",`${kw(ks[0].weight)} → ${kw(ks[ks.length-1].weight)} ${wu} (${fmtS(UN.w(ks[ks.length-1].weight-ks[0].weight,wu))})`]);
     else if(ks.length===1)summary.push(["Kilo",`${kw(ks[0].weight)} ${wu} (tek ölçüm)`]);
     else summary.push(["Kilo","son 7 günde tartı kaydı yok"]);
-    const A=AL(),any=rows.filter(r=>r.kcal>0),kc=any.filter(r=>A.fullKcal(r.kcal));
+    const any=rows.filter(r=>r.kcal>0),kc=any.filter(r=>A.fullKcal(r.kcal));
     summary.push(["Kalori",!any.length?"yemek kaydı yok":kc.length>=A.MIN_AVG_DAYS
       ?`günlük ortalama ${Math.round(mean(kc.map(r=>r.kcal)))} kcal${st.kcal>0?` (hedef ${st.kcal})`:""}, ${kc.length} tam kayıtlı gün${any.length>kc.length?`; ${any.length-kc.length} gün 800 kcal altında, ortalamaya katılmadı`:""}`
       :`${any.length} gün kayıt var; ortalama için en az ${A.MIN_AVG_DAYS} tam kayıtlı (800 kcal üstü) gün gerekir`]);
@@ -48,7 +54,7 @@ const WeeklyLib=(()=>{
       const a=ML.adherence(D.meds,D.medLog||[],from,endDay,endDay,nowTime||"23:59");
       if(a.total)summary.push(["İlaç uyumu",`%${a.pct} (${a.taken} / ${a.total} doz alındı${a.missed?`, ${a.missed} kaçırılan`:""}${a.late?`, ${a.late} bugün bekliyor`:""}${a.skipped?`, ${a.skipped} atlanan`:""})`]);
     }
-    /* Grafikler yalnız en az iki günlük veri varsa çıkar. Renkler uygulamadaki ile aynı: kilo prim, sistolik ink, diyastolik su. */
+    /* A chart appears only with at least two days of data. Colours match the app: weight primary, systolic ink, diastolic water. */
     const charts=[],kp=rows.filter(r=>r.weight!=null).map(r=>({day:r.day,v:UN.w(r.weight,wu)}));
     if(kp.length>=2)charts.push({title:`Kilo (${wu})`,series:[{pts:kp,color:"#0f5c55",shape:"c",vals:true,fmt:v=>fmt(v)}],from,to:endDay});
     if(st.bpOn){
@@ -83,7 +89,7 @@ const WeeklyLib=(()=>{
       ctx.strokeStyle="#e3ebe8";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(RM,y+ROW-4);ctx.lineTo(RW-RM,y+ROW-4);ctx.stroke();
       y+=ROW;
     }
-    /* Tablonun altındaki boşluk: iki grafik yan yana, tek grafik tam genişlikte. Sığmazsa hiç çizilmez. */
+    /* The space under the table: two charts side by side, one chart at full width. Nothing is drawn when it does not fit. */
     y+=20;
     const cs=data.charts||[],h=Math.min(320,RH-90-y-110);
     if(cs.length&&h>=150){
@@ -96,6 +102,6 @@ const WeeklyLib=(()=>{
     }
     ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText("NeoWell",RM,RH-45);
   }
-  return {build,drawPage,RW,RH,isWater};
+  return {build,drawPage,isWater};
 })();
 if(typeof module!=="undefined")module.exports=WeeklyLib;

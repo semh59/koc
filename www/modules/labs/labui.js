@@ -1,6 +1,5 @@
 "use strict";
-/* Lab results screens. Only the saved result rows are stored: the PDF text, the patient name and ID are never written anywhere.
-   This file also holds the file-sharing helpers (shareFile, sharePdf, cacheClean) and the canvas-to-PDF helper that the rest of the app uses. */
+/* Lab results screens. Only the saved result rows are stored: the PDF text, the patient name and ID are never written anywhere. */
 let labRows=[],labDate="",labManual=false,labKeep=null,labCancel=false;
 const PDF_MAX_BYTES=15e6;
 
@@ -84,7 +83,7 @@ function labReview(parsed,manual){
 }
 function labSave(){
   labCollect();
-  if(!LabLib.dayOk(labDate)||labDate>dayKey())return toast("Numune tarihini seç (bugünden ileri olamaz)");
+  if(!dayOk(labDate)||labDate>dayKey())return toast("Numune tarihini seç (bugünden ileri olamaz)");
   const out=[];let badN=0;
   for(const r of labRows){
     if(r.off)continue;
@@ -161,38 +160,11 @@ async function labFile(f){
   await labRead(new Uint8Array(buf));
 }
 
-const labB64=u8=>{let s="";for(let i=0;i<u8.length;i+=0x8000)s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));return btoa(s)};
-const labUnb64=b=>{const s=atob(b),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u};
-/* Draws `count` pages (draw(ctx,pageIndex)) on canvases and puts them in a PDF as JPEGs. */
-function canvasPdf(count,draw){
-  return LabLib.buildPdf(Array.from({length:count},(_,i)=>{
-    const c=document.createElement("canvas");c.width=LabLib.RW;c.height=LabLib.RH;
-    draw(c.getContext("2d"),i);
-    return {data:labUnb64(c.toDataURL("image/jpeg",0.85).split(",")[1]),w:c.width,h:c.height};
-  }));
-}
 function labBuildReport(){
   const list=LabLib.series(S.labs),pages=LabLib.paginate(list);
   const info={today:dayKey(),count:list.length,rows:list.reduce((a,s)=>a+s.pts.length,0),total:pages.length};
   return canvasPdf(pages.length,(ctx,i)=>LabLib.drawPage(ctx,pages[i],{...info,page:i+1}));
 }
-/* Files written to the cache for sharing (backup, report, CSV) must not stay after the share: the target app may read the file late, so they are not removed
-   right away but before the next write and at every start. Even an encrypted backup file does not need to sit on the phone. */
-async function cacheClean(){
-  const fs=plugin("Filesystem");if(!fs)return;
-  try{const r=await fs.readdir({path:"",directory:"CACHE"});for(const f of r.files||[]){const n=f.name||f;if(/^neowell-.+\.(json|pdf|csv|txt|zip)$/.test(n))await fs.deleteFile({path:n,directory:"CACHE"}).catch(()=>{})}}catch(e){}
-}
-/* Hands the file to the share sheet (on the phone) or downloads it (in a browser). data: text when utf8 is true, base64 otherwise. */
-async function shareFile(name,title,mime,data,utf8){
-  const fs=plugin("Filesystem"),sh=plugin("Share");
-  if(fs&&sh){
-    try{await cacheClean();const f=await fs.writeFile(utf8?{path:name,data,directory:"CACHE",encoding:"utf8"}:{path:name,data,directory:"CACHE"});await sh.share({title,files:[f.uri]})}
-    catch(e){if(!/cancel/i.test(e&&e.message||""))toast("Paylaşılamadı")}
-    return;
-  }
-  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([utf8?data:labUnb64(data)],{type:mime}));a.download=name;document.body.appendChild(a);a.click();a.remove();
-}
-const sharePdf=(pdf,name,title)=>shareFile(name,title,"application/pdf",labB64(pdf));
 async function labExport(){
   let pdf;try{pdf=labBuildReport()}catch(e){return toast("PDF hazırlanamadı")}
   await sharePdf(pdf,`neowell-tahlil-${dayKey()}.pdf`,"Tahlil sonuçları");
@@ -235,4 +207,4 @@ async function labSelfTest(){
     try{localStorage.setItem("nw_pdfok","1")}catch(e){}
   }catch(e){console.log("NW-PDF hata "+(e&&e.message||e))}
 }
-document.addEventListener("nw:boot",()=>{cacheClean();if(isNative())setTimeout(labSelfTest,4000)});
+document.addEventListener("nw:boot",()=>{if(isNative())setTimeout(labSelfTest,4000)});

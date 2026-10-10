@@ -39,8 +39,7 @@ document.addEventListener("click",ev=>{
   if(d.go){
     ({weight:goWeight,food:goFood,nutrition:goNutrition,mydel:goMyDelete,tpl:goTpl,steps:goSteps,exercise:goExercise,note:goNote,restore:goRestore,health:()=>{S.settings.healthNote=$("#hn").value.trim().slice(0,500);cNoteCheck();save();closeSheet();render();toast("Kaydedildi")}})[d.go]?.();
     if(d.go==="copy")backupText().then(v=>{if(!v)return;(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast("Panoya kopyalandı"),()=>{const b=$("#bk");b.value=v;b.select();document.execCommand&&document.execCommand("copy");toast("Metni seçtim, kopyala")})});
-    if(d.go==="share")shareBackup();
-    if(d.go==="download")backupText().then(v=>{if(!v)return;try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([v],{type:"application/json"}));a.download=`neowell-yedek-${dayKey()}.json`;a.click();markBackup()}catch{toast("İndirme bu cihazda çalışmadı, Kopyala'yı kullan")}});
+    if(d.go==="share"||d.go==="download")exportBackup();
   }
 });
 $("#tundo").addEventListener("click",()=>{

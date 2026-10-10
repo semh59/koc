@@ -1,17 +1,17 @@
 "use strict";
-/* İlk açılış: karşılama (adım -1) ve 3 adım. Girdiler mevcut profil ve ayar alanlarına yazılır; taslak yalnızca bellekte durur. */
+/* First run: welcome (step -1) and 3 steps. Inputs are written to the existing profile and settings fields; the draft lives only in memory. */
 const obFresh=()=>({step:-1,kg:"",cm:"",age:"",sex:"",dir:"keep",goal:"",hd:false,hn:false,mods:[],err:"",bad:"",minor:false,kgOk:"",job:"",walk:""});
 const ob=obFresh();
 const OB_MODS=[["med","İlaç hatırlatıcı","meds"],["fast","Oruç takibi","fast"],["steps","Adım sayar","steps"],["bp","Tansiyon","heart"],["bs","Şeker","water"]];
 const OB_DIRS=[["lose","Kilo ver"],["keep","Koru"],["gain","Kilo al"]];
-/* Eski kullanıcıya hiç gösterilmez: bayrak, profil, kayıt, sohbet ya da ilaç varsa atlanır. */
+/* Never shown to an existing user: skipped when the flag, a profile, a record, a chat or a medication exists. */
 const obNeeded=()=>{const s=S.settings;return !s.obDone&&!s.heightCm&&!s.age&&!s.goalKg&&!s.kcal&&!s.consent&&!Log.all().length&&!Coach.chatCount()&&!Meds.count()};
 
 function obRead(){
   for(const k of ["cm","kg","age","goal"]){const f=$("#ob"+k);if(f)ob[k]=f.value.trim()}
   for(const k of ["hd","hn"]){const h=$("#ob"+k);if(h)ob[k]=h.checked}
 }
-/* Doğrulanmış sayılar ya da hata; hata alanın altında yazılır ve alan aria-invalid olur. */
+/* Validated numbers or an error; the error is written under the field and the field gets aria-invalid. */
 function obParse(){
   const o={};
   for(const [k,lbl,lo,hi,int] of [["cm","Boy",...RANGES.heightCm],["kg","Kilo",20,400,false],["age","Yaş",...RANGES.age]]){
@@ -29,10 +29,10 @@ function obParse(){
   }
   return o;
 }
-/* İşaretler sağlık notuna yazılır; ilki riskFlags'ta sert (hamilelik), ikincisi yumuşak sayılır. */
+/* The flags are written into the health note; riskFlags treats the first as hard (pregnancy) and the second as soft. */
 const OB_HD="İlk kurulumda işaretlendi: hamilelik, emzirme ya da yeme bozukluğu geçmişi",OB_HN="İlk kurulumda işaretlendi: hekim kontrolü ya da düzenli ilaç";
 const obNote=()=>[S.settings.healthNote,ob.hd&&OB_HD,ob.hn&&OB_HN].filter(Boolean).join(". ").slice(0,500);
-/* İki soru da cevaplandıysa triyajdan, yoksa mevcut ayardan. */
+/* From the triage when both questions are answered, otherwise from the current setting. */
 const obAct=()=>ob.job!==""&&ob.walk!==""?Algo.actFromTriage(+ob.job,+ob.walk):S.settings.act;
 function obPlan(p){
   const q={kg:p.kg,cm:p.cm,age:p.age,sex:ob.sex},inp={...riskInput(p.kg),age:p.age,sex:ob.sex,cm:p.cm,goalKg:p.goal,healthNote:obNote()};
@@ -42,12 +42,12 @@ function obPlan(p){
 function obView(){
   const st=ob.step,bad=k=>ob.bad===k?` aria-invalid="true" aria-describedby="oberr"`:"";
   const err=`<div class="ferr" id="oberr" role="alert">${esc(ob.err)}</div>`;
-  /* Hata metni hatalı alanın hemen altında, kartın içinde. */
+  /* The error text sits right under the faulty field, inside the card. */
   const fld=(k,lbl,val,small,mode)=>`<div class="field"><label for="ob${k}">${lbl}${small?`<small>${small}</small>`:""}</label><input id="ob${k}" type="text" inputmode="${mode}" value="${esc(val)}" autocomplete="off"${bad(k)}></div>${ob.bad===k?err:""}`;
   const seg=(attr,opts,sel)=>`<div class="seg2" role="group">${opts.map(([v,l])=>`<button data-ob="${attr}:${v}" aria-pressed="${sel===v}">${l}</button>`).join("")}</div>`;
   if(st<0&&!ob.minor)return `<div class="about"><img src="logo.svg" alt="" width="96" height="96"><h2 class="m0">NeoWell'e hoş geldin</h2><p class="tc mut m0">Yemek, su, hareket ve sağlık ölçümlerini tek yerde tut; hedefini sana göre hesaplayalım.</p></div>
   <p class="tc hint">Verilerin yalnızca bu telefonda durur.</p><button class="btn" data-ob="next">Başla</button><button class="mt-2 lnk" data-ob="skip">Şimdilik geç</button>`;
-  /* 18 yaş altı: kurulum ilerlemez, taslak silinmiştir; geçme ve geri yolu yok, yalnız yaşı düzeltme. */
+  /* Under 18: setup does not continue and the draft is gone; there is no skip or back, only correcting the age. */
   if(ob.minor)return `<h2>NeoWell 18 yaş ve üzeri için</h2><div class="card"><p>Büyüme çağında kalori ve kilo hedefleri farklıdır; bu uygulama onları hesaplamaz.</p><p>Beslenme, kilo ya da spor konusunda bir yetişkinle ve hekiminle ya da diyetisyeninle konuş.</p><p class="hint">Girdiğin bilgiler kaydedilmedi.</p></div><button class="btn ghost" data-ob="fixage">Yaşımı yanlış girdim</button>`;
   let body,next="Devam";
   if(st===0)body=`<h2>Seni tanıyalım</h2><p class="m0 mb-2 hint">Günlük kalori ve protein hedefini buna göre hesaplarız.</p><div class="card">
@@ -65,7 +65,7 @@ function obView(){
     ${swRow('id="obhd"',ob.hd,"Hamileyim, emziriyorum ya da yeme bozukluğu geçmişim var")}${swRow('id="obhn"',ob.hn,"Hekim kontrolündeyim ya da düzenli ilaç kullanıyorum")}</details></div>`;
   else{
     const p=obParse(),pl=obPlan(p);next="Başla";
-    body=`<h2>Günlük hedefin</h2><div class="card"><div class="lbl">Kalori</div><div class="pc sumv num">${pl.kcal.toLocaleString("tr-TR")} <small>kcal</small></div>
+    body=`<h2>Günlük hedefin</h2><div class="card"><div class="lbl">Kalori</div><div class="pc sumv num">${fint(pl.kcal)} <small>kcal</small></div>
     <div class="lbl">Protein</div><div class="t-h1 b7 num">${pl.protein?`${pl.protein[0]}–${pl.protein[1]} <small class="mut">g</small>`:"Hekiminle belirle"}</div><p class="p0 hint">${Algo.PROTEIN_NOTE}</p>
     <p class="hint">Verilerin yalnızca telefonunda durur. Koç'u açarsan, yalnızca onayınla, seçtiğin yapay zekâ sağlayıcısına (yurt dışı) gider. Koç olmadan da uygulama tam çalışır. ${MED_NOTE} <button class="wa ib lnk" data-pv="open">Gizlilik ve veri</button></p>
     ${pl.risk.block?riskBox(pl.risk,"Kalori açığı önermiyorum")+(p.goal>p.kg?"":`<p class="hint">Yukarıdaki değer kilonu koruma düzeyidir.</p>`):`<p class="hint">${pl.note==="Kilo verme"?"Yavaş ve güvenli kilo verme hızına göre":pl.note==="Kilo alma"?"Yavaş kilo alma hızına göre":"Kilonu koruma düzeyine göre"} hesaplandı. Kayıt girdikçe gerçek verine göre güncellenir. Tahmindir, tıbbi tavsiye değildir.</p>`}</div>`;

@@ -1,11 +1,11 @@
 "use strict";
-/* Uygulama kilidi: telefonun ekran kilidi (parmak izi, yüz, PIN, desen, parola) Android penceresiyle doğrulanır; uygulama parola ya da biyometrik veri saklamaz.
-   Açılışta ve 30 sn'den uzun arka plandan dönüşte kilit ekranı görünür; içerik ancak doğrulamadan sonra gösterilir. S, save, toast, render index.html'dedir. */
+/* App lock: the phone's screen lock (fingerprint, face, PIN, pattern, password) is verified through the Android prompt; the app stores no password or biometric data.
+   The lock screen shows at start and after returning from more than LOCK_GRACE ms in the background; the content shows only after verification. */
 const LOCK_GRACE=30000;
-const AL=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.AppLock;
+const AL=()=>plugin("AppLock");
 let lockHiddenAt=0,lockBusy=false;
-/* İlk boyamadan önce: kilit açıksa içerik gizli başlar (ayar sayfa durumu yüklenmeden ham kayıttan okunur). */
-try{const f=localStorage.getItem("nw_lockon");if(f==="1"||(f==null&&JSON.parse(localStorage.getItem("nw_state")).settings.lockOn===true))document.documentElement.classList.add("locked")}catch(e){} // nw_lockon save() ile güncellenir; yoksa (eski sürümden) ham kayıttan
+/* Before the first paint: with the lock on, the content starts hidden. save() keeps the nw_lockon flag in sync, so the state is not parsed here. */
+try{if(localStorage.getItem("nw_lockon")==="1")document.documentElement.classList.add("locked")}catch(e){}
 const lockUp=()=>document.documentElement.classList.contains("locked");
 const lockSecure=on=>{const a=AL();if(a)a.setSecure({on}).catch(()=>{})};
 
@@ -32,11 +32,11 @@ async function lockAsk(){
   let r;try{r=await a.authenticate({title:"NeoWell kilidi"})}catch(e){r={ok:false}}
   lockBusy=false;
   if(r&&r.ok)return lockOpen();
-  if(r&&r.none){ // telefonda ekran kilidi kalmadı: kullanıcı kendi verisinden kilitlenmesin
+  if(r&&r.none){ // the phone has no screen lock left: the user must not be locked out of their own data
     S.settings.lockOn=false;save();lockSecure(false);lockOpen();toast("Telefonda ekran kilidi kalmadı, uygulama kilidi kapatıldı");return}
   lockMsg(r&&r.cancelled?"Kilidi açmak için doğrula.":"Doğrulanamadı, tekrar dene.");
 }
-/* Ayar: açarken doğrulama istenir (çalıştığı görülür, telefonda ekran kilidi yoksa açılmaz). */
+/* Setting: turning it on asks for verification (so it is seen working; it does not turn on without a phone screen lock). */
 async function lockToggle(el){
   const a=AL();
   if(!el.checked){S.settings.lockOn=false;save();lockSecure(false);render();toast("Uygulama kilidi kapatıldı");return}

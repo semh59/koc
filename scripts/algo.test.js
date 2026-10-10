@@ -136,4 +136,6 @@ ok("ısınma setleri hesaba girmez (en son, önceki ve tek başına)",A.nextTarg
   const T=(j,w)=>A.actFromTriage(j,w);
   ok("hareket düzeyi triyajı: oturarak + az yürüyüş = Az; ayakta ya da 5-9 bin = Orta; fiziksel iş + 10 bin+ = Çok",T(0,0)===0&&T(0,1)===0&&T(1,0)===0&&T(1,1)===1&&T(0,2)===1&&T(2,0)===1&&T(2,1)===1&&T(1,2)===1&&T(2,2)===2);
 }
+ok("dayOk: rejects impossible calendar days and non-strings, accepts leap day",!A.dayOk("2026-02-31")&&!A.dayOk("2026-13-01")&&!A.dayOk("2026-02-29")&&!A.dayOk("2026-2-3")&&!A.dayOk(null)&&A.dayOk("2024-02-29"));
+ok("timeOk: 00:00-23:59 only, with leading zeros",A.timeOk("00:00")&&A.timeOk("23:59")&&!A.timeOk("24:00")&&!A.timeOk("7:30")&&!A.timeOk("12:60")&&!A.timeOk(730));
 process.exit(bad?1:0);

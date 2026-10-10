@@ -1,5 +1,5 @@
 "use strict";
-/* Trend ekranında haftalık kalori hedefi önerisi: otomatik uygulanmaz; "Şimdi değil" 7 gün susturur (goalSugAt). */
+/* Weekly calorie-target suggestion on the Trend screen: never applied automatically; "Şimdi değil" silences it for 7 days (goalSugAt). */
 function goalSug(){
   const st=S.settings,w=weights();
   if(!(st.kcal>0)||!Object.keys(w).length)return null;
