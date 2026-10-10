@@ -1,5 +1,5 @@
 const {ok,finish}=require("./ok");
-// Design system rules (docs/tasarim-dili.md): type scale, radius, confirmation sheet, heading order, dark theme, inline style.
+// Design system rules (docs/design-language.md): type scale, radius, confirmation sheet, heading order, dark theme, inline style.
 const fs=require("fs"),path=require("path");
 const www=path.join(__dirname,"..","www");
 const html=require("./html").full();

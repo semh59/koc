@@ -28,6 +28,6 @@
 
 ## Bekleyen işler (senden)
 - Gerçek tahlil PDF'i (okuyucuyu sağlamlaştırmak için)
-- Telefonda test: `docs/yapilacaklar.md`
+- Telefonda test: `docs/todo.md`
 - D: eski NeoWell klasörleri ve olası sızmış token'lar için karar
 - Mi Band / saat var mı (7. madde)

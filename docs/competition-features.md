@@ -11,7 +11,7 @@ Amaç: NeoWell'i gerçek rakiplerle dürüstçe karşılaştırmak. NeoWell bilg
 ## 1. NeoWell'in gerçek özellik envanteri
 
 **Durum işaretleri**
-- **K:** Kodda var, telefonda henüz denenmedi (`docs/yapilacaklar.md` içinde `[~]` ya da `[ ]`).
+- **K:** Kodda var, telefonda henüz denenmedi (`docs/todo.md` içinde `[~]` ya da `[ ]`).
 - **T:** Telefonda denendi (`[x]`). Bugün bu durumda yalnızca barkod okutma var.
 
 Aşağıdaki her özellik, aksi yazmadıkça **K** durumundadır.
@@ -34,7 +34,7 @@ Aşağıdaki her özellik, aksi yazmadıkça **K** durumundadır.
 | Su ve widget | Su hedefi, hatırlatmalar (hedef dolunca susuyor), bildirimden ve widget'tan "+250 ml". Ana ekran widget'ında kalan kalori, su ve adım görünüyor. | |
 | Yedek | Parolalı şifreli yedek dosyası (parola zorunlu), paylaşım menüsüyle Drive'a gönderme (hesap bağlamadan), dosyadan geri yükleme, Pazar hatırlatması; otomatik yedek: seçilen klasöre, son yedek 7 günden eskiyse (`www/modules/data/backupui.js`). | Bulut eşitleme ve cihazlar arası senkron yok. |
 | Raporlar | Haftalık rapor PDF'i (yorumsuz), Pazar akşamı haftalık özet bildirimi, tahlil PDF'i, tansiyon/şeker doktor raporu. | |
-| Gizlilik ve model | Hesap yok, reklam yok, abonelik yok. Veriler telefonda kalıyor. | İnternet izni var: barkod ve Koç için gerekiyor. Uygulama yalnızca Android'de ve yalnızca Türkçe. Dağıtım GitHub Releases'ten APK ile yapılıyor, Play Store'da yok (yayın engelleri `docs/yapilacaklar.md` başında). Sürüm Ayarlar > Hakkında'da görünür (1.0.<derleme numarası>). |
+| Gizlilik ve model | Hesap yok, reklam yok, abonelik yok. Veriler telefonda kalıyor. | İnternet izni var: barkod ve Koç için gerekiyor. Uygulama yalnızca Android'de ve yalnızca Türkçe. Dağıtım GitHub Releases'ten APK ile yapılıyor, Play Store'da yok (yayın engelleri `docs/todo.md` başında). Sürüm Ayarlar > Hakkında'da görünür (1.0.<derleme numarası>). |
 | Olmayanlar | Health Connect (karar bekliyor), giyilebilir cihaz, fotoğraftan yemek tanıma (iptal edildi), sosyal özellikler, diyetisyen, adet döngüsü (karar bekliyor), iOS, web. Eskiden eksikti, artık kodda var: tarif, Koç'tan haftalık menü, alışveriş listesi, bel ve vücut ölçüleri. | |
 
 ## 2. Rakip özetleri
@@ -111,13 +111,13 @@ Rakip sütunlarında hücre değerlerinin çoğu İK kaynaklardan geliyor.
 3. **Sağlık kayıtlarının tek yerde olması.** Tahlil PDF ve OCR içe aktarma, tansiyon ve şeker için doktor raporu PDF'i ve alarm tipi ilaç hatırlatıcı aynı uygulamada. Bu birleşim incelenen diyet ve spor uygulamalarının hiçbirinde yok. Samsung Health ilaç, yemek ve adımı ücretsiz veriyor, yani "her şey tek yerde" iddiası tek başına ayırt edici değil. Ayırt edici olan **tahlil, tansiyon ve şeker raporu ile salon ve diyetin birlikte olması**.
 4. **Salon ve beslenme birlikte.** Hevy ve Strong'da beslenme yok. MFP, Yazio ve Cronometer'da ciddi salon kaydı yok. MacroFactor bunu ayrı bir ücretli uygulamayla çözüyor.
 5. **Kendi anahtarınla Koç.** Abonelik yok, sağlayıcıyı kullanıcı seçiyor, paylaşım onaya bağlı. "Neden kilo vermedim" kartı Koç'a gönderilmeden yerelde de çalışıyor.
-6. **Adım algoritması.** Otomatik yürüyüş ve koşu algılanıyor, adım uzunluğu öğreniliyor, gece kapanışı sağlam. Adım saymanın kendisi rakiplerden daha doğru değil, çünkü aynı sensörü kullanıyor (`docs/fikirler.md` kararı). Fark kayıt düzeninde ve sağlamlıkta.
+6. **Adım algoritması.** Otomatik yürüyüş ve koşu algılanıyor, adım uzunluğu öğreniliyor, gece kapanışı sağlam. Adım saymanın kendisi rakiplerden daha doğru değil, çünkü aynı sensörü kullanıyor (`docs/ideas.md` kararı). Fark kayıt düzeninde ve sağlamlıkta.
 7. **Dürüst veri etiketi.** Her besinde "USDA" ya da "tahmini" kaynağı yazıyor. Rakiplerin kullanıcı girdili kayıtlarındaki tutarsızlık Türk kullanıcıların en sık şikâyeti.
 
 ## 5. c) NeoWell'in geride olduğu yerler (önem sırasıyla)
 
 1. **Dağıtım ve platform.** Play Store'da yok, yalnızca APK. iOS yok, yalnızca Türkçe. Kullanıcı uygulamayı bulamıyor ve güvenmiyor; bu her eksikten büyük. Play'e çıkmak sağlık uygulaması beyanı ve gizlilik politikası gerektiriyor (Play Console Help).
-2. **Türk yemeği veritabanı derinliği.** Yaklaşık 818 besin var; açık artık sayıdan çok markalı ürün ve kapsam. Diyetkolik'te markalı ürünler ve binlerce kayıt var, MFP'de kalabalık ama tutarsız veri var. Kullanıcının günde birkaç kez "bulamadım" demesi uygulamayı bıraktırır. Türk yemeklerinin değerleri tahmini ve tarife göre ±%20-40 değişiyor (`docs/besin-arastirmasi.md`).
+2. **Türk yemeği veritabanı derinliği.** Yaklaşık 818 besin var; açık artık sayıdan çok markalı ürün ve kapsam. Diyetkolik'te markalı ürünler ve binlerce kayıt var, MFP'de kalabalık ama tutarsız veri var. Kullanıcının günde birkaç kez "bulamadım" demesi uygulamayı bıraktırır. Türk yemeklerinin değerleri tahmini ve tarife göre ±%20-40 değişiyor (`docs/nutrition-research.md`).
 3. **Veri tutarlılığı ve doğrulama.** Neredeyse tüm özellikler telefonda denenmedi (K durumunda). Adım, ilaç alarmı, widget ve Xiaomi pil davranışında bir hata, güveni hemen bitirir.
 4. **Giyilebilir cihaz ve Health Connect yok.** Saat ya da bant kullananların adım, uyku ve nabız verisi gelmiyor. Google Fit kapanınca Health Connect bu verinin tek kapısı olacak.
 5. **Tarif ve menü planı sınırlı.** Tarif hesaplama, Koç'tan haftalık menü ve alışveriş listesi var (telefonda denenmedi); hazır tarif kütüphanesi yok. Yazio, Diyetkolik ve FatSecret bunun için para alıyor.
@@ -143,7 +143,7 @@ Rakip sütunlarında hücre değerlerinin çoğu İK kaynaklardan geliyor.
 
 **Rekabet gücünü en çok artıracak 5 özellik**
 1. **Play Store'a çıkış ve doğrulama turu.** Önce K durumundaki maddeleri telefonda T durumuna getirmek, sonra release imzası, gizlilik politikası, KVKK metni ve sağlık uygulaması beyanı. Kullanıcıya hiçbir özellik bu adım kadar ulaşmaz.
-2. **Türk yemeği veritabanını yaklaşık 500 kayda çıkarmak.** Malzemeden yerel tarif hesaplayıcı ("Kendi tarifim") eklemek ve Türk yemeklerinde tek sayı yerine aralık göstermek (`docs/besin-arastirmasi.md` madde 4).
+2. **Türk yemeği veritabanını yaklaşık 500 kayda çıkarmak.** Malzemeden yerel tarif hesaplayıcı ("Kendi tarifim") eklemek ve Türk yemeklerinde tek sayı yerine aralık göstermek (`docs/nutrition-research.md` madde 4).
    - Kaynak: USDA CC0 temel malzemeleri ve tarif hesabı.
    - TürKomp toptan kopyalanamaz, izin gerekir.
    - Open Food Facts ODbL lisanslı: kaynak gösterilmeli ve türev veritabanı aynı lisansla paylaşılmalı.

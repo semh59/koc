@@ -1,6 +1,6 @@
 # Kalori verisi: nereden gelir, ne kadar doğrudur, NeoWell ne yapmalı (3 Ekim 2026)
 
-`docs/besin-arastirmasi.md` dosyasının devamıdır. O dosyadaki USDA karşılaştırması ve kaynak tablosu burada tekrarlanmadı.
+`docs/nutrition-research.md` dosyasının devamıdır. O dosyadaki USDA karşılaştırması ve kaynak tablosu burada tekrarlanmadı.
 
 **Kaynak etiketleri:**
 - **[O]** Birincil kaynak doğrudan okundu.
@@ -55,7 +55,7 @@
 
 ### A3. Tarif hesabı ve pişme kaybı
 - Ev yemeğinde kalori şöyle hesaplanır: çiğ malzemelerin toplamı alınır, pişince değişen ağırlık (verim veya yield) hesaba katılır, sonra 100 g'a bölünür. Vitamin ve mineral kaybı için **USDA Nutrient Retention Factors Release 6 (2007)** kullanılır. Bu tablo yaklaşık 290 besin için 16 vitamin, 8 mineral ve alkol kaybını verir, CSV olarak indirilebilir, kamu malıdır [Ö]. EuroFIR'in tarif hesaplama kılavuzu da aynı yöntemi anlatır [Ö].
-- **Tarif hesabında en büyük belirsizlik su ve yağdır.** Örneğin "1 porsiyon kuru fasulye" ne kadar sulu ve ne kadar yağlı? Aynı ad için ±%20-40 sapmanın kaynağı budur (bkz. `besin-arastirmasi.md`).
+- **Tarif hesabında en büyük belirsizlik su ve yağdır.** Örneğin "1 porsiyon kuru fasulye" ne kadar sulu ve ne kadar yağlı? Aynı ad için ±%20-40 sapmanın kaynağı budur (bkz. `nutrition-research.md`).
 
 ### A4. Veri tabanı ve porsiyon hataları
 - **Kitle kaynaklı kayıtlar:** MyFitnessPal, Belçika'nın NUBEL veri tabanıyla karşılaştırıldığında toplam enerjide yalnızca %1,3 fazla tahmin verdi. Protein %7,8, karbonhidrat %6,4 eksik çıktı. Kolesterol ve sodyumda güvenilmez bulundu (Evenepoel ve ark., JMIR 2020) [Ö]. Yorumumuz: tek tek kayıtlardaki hatalar günlük toplamda birbirini kısmen dengeliyor olabilir.

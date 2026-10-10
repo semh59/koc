@@ -1,6 +1,6 @@
 # Tüm proje inceleme planı
 
-Amaç: NeoWell'i her açıdan sırayla gözden geçirmek, bulguları ciddiyetle kaydetmek, düzeltmeleri ayrı ayrı yapmak. Bulgular `docs/bulgular.md` dosyasına tek tabloda yazılır (no, açı, dosya:satır, ne, ciddiyet, durum).
+Amaç: NeoWell'i her açıdan sırayla gözden geçirmek, bulguları ciddiyetle kaydetmek, düzeltmeleri ayrı ayrı yapmak. Bulgular `docs/findings.md` dosyasına tek tabloda yazılır (no, açı, dosya:satır, ne, ciddiyet, durum).
 
 Boyut: web tarafı 64 JS dosyası + index.html (~10 bin uzun satır), Java 26 dosya (~3,4 bin satır), 44 birim test dosyası, 16 e2e dosyası, 1 CI iş akışı.
 
@@ -33,7 +33,7 @@ Boyut: web tarafı 64 JS dosyası + index.html (~10 bin uzun satır), Java 26 do
 - Maskeleme (PII) testi: gerçekten ad/telefon/adres gidiyor mu.
 - Politika, onay metni, Play veri güvenliği formu, izin beyanları birbiriyle tutarlı mı (`docs/`).
 - Sağlık verisi sınıflaması, silme hakkı, açık rıza, çocuk kullanıcı, hekim raporu (PDF) dili.
-- Çıktı: avukata gidecek güncel soru listesi (`docs/hukukcuya-sorular.md`).
+- Çıktı: avukata gidecek güncel soru listesi (`docs/legal-questions.md`).
 
 ### Faz 4. Sağlık doğruluğu ve ürün güvenliği
 - Formüller: kalori hedefi, harcama tahmini, kilo trendi, adım mesafe/enerji, su, oruç süresi, döngü tahmini, tansiyon/şeker ortalamaları. Her biri kaynağıyla ve uç değerle test edilir.
@@ -69,7 +69,7 @@ Boyut: web tarafı 64 JS dosyası + index.html (~10 bin uzun satır), Java 26 do
 - Yöntem: sentetik büyük veriyle jsdom/playwright ölçümü, telefonda pil ekranı kontrolü.
 
 ### Faz 9. Test kalitesi
-- Her kabul koşulunun testi var mı (`docs/yapilacaklar.md` ile eşle).
+- Her kabul koşulunun testi var mı (`docs/todo.md` ile eşle).
 - Sahte pozitif: hiçbir şeyi doğrulamayan ya da kendini doğrulayan testler.
 - Boşluklar: yalnız telefonda görülebilenler (listeye taşınır), e2e kapsamayan ekranlar.
 - Kararsız (flaky) testler ve emülatör smoke testindeki zamanlama kırılganlığı (alarm sayısı, ilaç kanalı).
@@ -101,9 +101,9 @@ Boyut: web tarafı 64 JS dosyası + index.html (~10 bin uzun satır), Java 26 do
 - **Kamerayla nabız ölçülemedi (telefonda):** Parmak algılama eşiği, flaş (torch) açılması, WebView kamera izni, kare hızı, sonuç reddi nedeni ayrı ayrı ayıklanacak. Ret nedeni ekranda daha açık gösterilecek; gerekirse gerçek kayıtlarla eşik ayarı.
 
 ## Çalışma biçimi
-- Her faz ayrı oturumda ya da yarım gün işi; faz başına sonuç raporu 10 satırı geçmez, ayrıntı `docs/bulgular.md`'de.
+- Her faz ayrı oturumda ya da yarım gün işi; faz başına sonuç raporu 10 satırı geçmez, ayrıntı `docs/findings.md`'de.
 - Büyük okuma işi (faz 2, 5, 10) alt ajanla paralel yapılabilir; haftalık limit nedeniyle şu an kod okumayı ben yaparım. Ajan şartı sende.
-- Yalnız telefonla doğrulanacak maddeler faz sonunda tek test listesine toplanır (`docs/telefon-testi-kisa.md` formatında).
+- Yalnız telefonla doğrulanacak maddeler faz sonunda tek test listesine toplanır (`docs/phone-test-short.md` formatında).
 - Karar gerektiren her şey (şifreleme, avukat, mağaza) faz raporunda "Senin kararın" başlığında toplanır; beklemeden devam edilir.
 
 ## Önerilen başlangıç

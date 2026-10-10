@@ -51,7 +51,7 @@ Bluetooth cihaz bağlantısı, Health Connect'ten otomatik aktarım, insülin/il
 - Arayüz akışı (jsdom): anahtar kapalıyken hiçbir yerde görünmez, açılınca düğme ve kart; giriş, aykırı değer onayı, uç değerde acil kutusu, silme ve geri alma; yasak kelimeler hiçbir ekranda ve PDF metninde geçmez.
 - Hatırlatma kurulumu (kimlikler çakışmaz, kapalıyken kurulmaz).
 - PDF: sayfa bölme, metinler (kayıt dışı veri yok), pdf.js ile geri açma.
-- Telefonda Semih'in deneyeceği maddeler `docs/yapilacaklar.md` içine eklenir.
+- Telefonda Semih'in deneyeceği maddeler `docs/todo.md` içine eklenir.
 
 ## Karar bekleyenler (Semih'e)
 1. Aralıklar: "Genel kılavuz değerlerini kullan" düğmesi olsun mu (öneri: evet, kullanıcı isterse doldurur)?

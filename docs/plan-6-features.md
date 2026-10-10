@@ -268,7 +268,7 @@ Yeni: `assets/android/NeoWidget.java` (AppWidgetProvider + statik `push/bump`), 
 
 ### Testler
 - `app.test.js`: Widget sahtesiyle `render()` sonrası `update` doğru alanlarla bir kez çağrılır, değişiklik yoksa tekrar çağrılmaz; kcal hedefi 0 iken `kcalLeft:null`.
-- Smoke: yukarıdaki üç kontrol. Widget görünümü emülatörde doğrulanamaz → telefon test listesine (`docs/yapilacaklar.md`) madde.
+- Smoke: yukarıdaki üç kontrol. Widget görünümü emülatörde doğrulanamaz → telefon test listesine (`docs/todo.md`) madde.
 
 ### Riskler
 - `exported="true"` zorunlu (sistem APPWIDGET_UPDATE gönderir); su ekleme bu alıcıda değil exported=false `WaterReceiver`'da, widget dışarıdan tetikleme yüzeyini genişletmez. Bildirim düğmelerinin yolu (exported `MainActivity`) ise dışarıdan tetiklenebilir: bkz. 10.1 tuzak 4.
@@ -297,7 +297,7 @@ Doğrulanacaklar (developer.android.com "Health Connect get started" ve npm'den;
 
 ### Çift sayım kuralları
 - Günün otomatik adımı tek `adim` kaydında: `e.ph` (telefon), `e.hc` (HC), `e.v=max(ph,hc)` (ayara göre yalnız biri). `setSteps` `ph`'yi, `hcSync` `hc`'yi yazar, ikisi de `v`'yi yeniden hesaplar. Bugün kartı/Adım halkası da `stepToday` yerine bu birleşik değer + elle toplamı göstermeli (`stepsShown()`). Eski kayıtta `ph` yoksa `v` telefon değeri sayılır. `cleanEntries` adim için `ph`/`hc`'yi korur.
-- Neden max: Mi Fitness/Google Fit telefon adımını da HC'ye yazıyor olabilir; toplamak %20-40 şişirir (docs/adim-arastirma.md). HC kendi içinde kaynakları önceliğe göre birleştirir (aggregate), biz yalnız telefonla HC'yi max'la birleştiririz.
+- Neden max: Mi Fitness/Google Fit telefon adımını da HC'ye yazıyor olabilir; toplamak %20-40 şişirir (docs/steps-research.md). HC kendi içinde kaynakları önceliğe göre birleştirir (aggregate), biz yalnız telefonla HC'yi max'la birleştiririz.
 - Elle adım (`text:"elle"`) üstüne eklenir; HC açıkken elle ekleme sayfasında "saat/bant adımları zaten sayılıyor olabilir" notu.
 - Hareket algılama (MotionPlugin) adım toplamına hiç eklenmez (yalnız aralık özeti), HC'den etkilenmez. HC egzersiz oturumları okunmaz → spor/salon kayıtlarıyla çift sayım yok.
 

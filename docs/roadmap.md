@@ -2,12 +2,12 @@
 
 Kod durumu `9953416`. Kaynaklar: oneri-listesi, plan-6-ozellik, rekabet-ozellik, rekabet-arayuz, rekabet-egzersiz, yapilacaklar, adim-arastirma, akilli-gps-tasarim, fikirler, besin-arastirmasi, git log ve kod denetimi. Yapılmış özellikler listelenmez. Her madde tek yerde durur; E ve G bölümleri yalnızca kimlik verir.
 
-Dış değerlendirmenin 36 maddesi kanıtla doğrulandı ve öncelik sıralı Play yolu çıkarıldı: `dis-degerlendirme-dogrulama.md` (6 Ekim 2026).
+Dış değerlendirmenin 36 maddesi kanıtla doğrulandı ve öncelik sıralı Play yolu çıkarıldı: `external-review-verification.md` (6 Ekim 2026).
 
 Emek: S ≤ yarım gün, M ≈ 1 gün, L > 1 gün. "Bağımlılık / karar" sütunu önce gelmesi gereken maddeyi ya da G'deki kararı gösterir.
 
 ## A) Telefonda doğrulama bekleyenler
-Ayrıntı ve test adımları `yapilacaklar.md`'de. Telefonda denenen tek özellik barkod okutma.
+Ayrıntı ve test adımları `todo.md`'de. Telefonda denenen tek özellik barkod okutma.
 
 - A1 Adım sayar: gece kapanışı, 23:58 örneği, geç alarm
 - A2 Elle adım ve "sayım durdu" kartı
@@ -39,9 +39,9 @@ Ayrıntı ve test adımları `yapilacaklar.md`'de. Telefonda denenen tek özelli
 | B6 (yapıldı) | KVKK aydınlatma, açık rıza, gizlilik politikası | Koç'a onayın yurt dışı aktarım olduğu açıkça yazılır, Play şartı karşılanır. | M | rekabet-ozellik §9 | G7 |
 | B7 (yapıldı) | Koç ve program güvenlik metinleri | Ağrı, ilaç ve programlarda "hekime / eczacıya / fizyoterapiste danış" kuralları eklenir. SYSTEM'e kural 10-12 (ağrı/sakatlık, ilaç/takviye, program: gebelik, 18 yaş altı, yeme bozukluğu); Koç program kartı ve hazır programlar aynı notu (`gPgNote`) gösterir. | S | rekabet-egzersiz §9, rekabet-ozellik §9 | – |
 | B8 (yapıldı) | Depolama sınırı uyarısı | localStorage (5-10 MB) dolmadan boyut ölçülüp uyarılır, uzun geçmişte sessiz veri kaybı önlenir. Tüm anahtarlar ölçülür, 3,5 MB üstünde Bugün ve Ayarlar > Veriler'de uyarı; kota hatasında her seferinde mesaj ve kalıcı uyarı, değişiklik bellekte kalır, yedek ekranı onu alır. Toplu "eski kayıtları temizle" aracı yok (ayrı iş). | S | rekabet-egzersiz #19 | – |
-| B9 (yapıldı) | Release imzası | Debug anahtarı yerine saklanan bir release anahtarıyla imzalanır. Yayınlanan APK ve AAB release buildType'la (debuggable=false, R8 kapalı) Play upload anahtarıyla (`neowell-upload`, RSA 4096, repo dışında) imzalanır; CI parmak izini doğrular, gizli değişken yoksa durur. Akış: docs/dagitim.md. | S | scripts/patch-android.js, .github/workflows/apk.yml | G3; imza değişince yerinde güncelleme olmaz: önce şifreli yedek, sonra yeniden kurulum |
-| B10 (yapıldı, api36 dalı) | targetSdk 36 yükseltmesi | Play'in 31 Ağustos 2026 şartı (yeni uygulama ve güncellemeler API 36) karşılanır. Capacitor 6.2 → 8.5 (compileSdk/targetSdk 36, minSdk 24: Android 6 düşer), JDK 21, Node 22; kenardan kenara çizim SystemBars güvenli alan değişkenleriyle; CI APK'da targetSdk 36 ve 16 KB hizasını denetler. Notlar: docs/dagitim.md. | L | package.json, scripts/patch-android.js, .github/workflows/apk.yml, www/index.html | G12 (kabul edildi); telefonda kenar boşlukları, geri tuşu, widget, bildirim |
-| B11 (yapıldı) | Play izin uyumu | Arka plan konumu, `USE_EXACT_ALARM` ve konum servisi için beyan hazırlanır ya da gereksiz izin kaldırılır. `USE_EXACT_ALARM` ve `FLASHLIGHT` kaldırıldı; tam saat izni yoksa uyarı + yeniden kurulum; konum izninden önce açıklama ekranı; beyanlar `docs/play-izin-beyanlari.md`. 3 Ekim 2026: `ACCESS_BACKGROUND_LOCATION` ve otomatik GPS kaldırıldı; konum yalnız elle başlatılan yürüyüşte, uygulama görünürken başlayan konum servisiyle; CI APK'da arka plan konumunu görürse durur. Kalan: ön plan servisi beyanı (kısa video). | S | AndroidManifest.xml | – |
+| B9 (yapıldı) | Release imzası | Debug anahtarı yerine saklanan bir release anahtarıyla imzalanır. Yayınlanan APK ve AAB release buildType'la (debuggable=false, R8 kapalı) Play upload anahtarıyla (`neowell-upload`, RSA 4096, repo dışında) imzalanır; CI parmak izini doğrular, gizli değişken yoksa durur. Akış: docs/distribution.md. | S | scripts/patch-android.js, .github/workflows/apk.yml | G3; imza değişince yerinde güncelleme olmaz: önce şifreli yedek, sonra yeniden kurulum |
+| B10 (yapıldı, api36 dalı) | targetSdk 36 yükseltmesi | Play'in 31 Ağustos 2026 şartı (yeni uygulama ve güncellemeler API 36) karşılanır. Capacitor 6.2 → 8.5 (compileSdk/targetSdk 36, minSdk 24: Android 6 düşer), JDK 21, Node 22; kenardan kenara çizim SystemBars güvenli alan değişkenleriyle; CI APK'da targetSdk 36 ve 16 KB hizasını denetler. Notlar: docs/distribution.md. | L | package.json, scripts/patch-android.js, .github/workflows/apk.yml, www/index.html | G12 (kabul edildi); telefonda kenar boşlukları, geri tuşu, widget, bildirim |
+| B11 (yapıldı) | Play izin uyumu | Arka plan konumu, `USE_EXACT_ALARM` ve konum servisi için beyan hazırlanır ya da gereksiz izin kaldırılır. `USE_EXACT_ALARM` ve `FLASHLIGHT` kaldırıldı; tam saat izni yoksa uyarı + yeniden kurulum; konum izninden önce açıklama ekranı; beyanlar `docs/play-permission-declarations.md`. 3 Ekim 2026: `ACCESS_BACKGROUND_LOCATION` ve otomatik GPS kaldırıldı; konum yalnız elle başlatılan yürüyüşte, uygulama görünürken başlayan konum servisiyle; CI APK'da arka plan konumunu görürse durur. Kalan: ön plan servisi beyanı (kısa video). | S | AndroidManifest.xml | – |
 
 ### İnceleme düzeltmeleri (Dalga 11)
 Android yerel katman ve veri bütünlüğü incelemesi (3 Ekim 2026):
@@ -50,7 +50,7 @@ Android yerel katman ve veri bütünlüğü incelemesi (3 Ekim 2026):
 - **A3 (yapıldı): sesli komut kesilmesi.** Kısa komut (≤20 karakter) sıraya eklenir, uzun evre cümlesi eskisini keser; 10 sn'den kısa dinlenme ve hazırlıkta yalnız "Sıradaki: <ad>".
 - **A4 (yapıldı): smoke çökme denetimi.** crash tamponunda uygulamanın Java/yerel çökmesi her logcat temizliğinden önce ve sonda aranır. Emülatör API 33'te kaldı (API 34 riski yapılacaklar'da).
 - **A5 (yapıldı): gece yarısı adım yarışı.** Adım değeri, gün anahtarı ve zaman aynı sayaç örneğinden; geçiş olayı ile okuma gece yarısının iki yanındaysa zaman sayacın gününe çekilir.
-- **A6 (yapıldı): yanıltıcı güvenlik notu** (`patch-android.js`, `plan-6-ozellik.md` 10.1 tuzak 4).
+- **A6 (yapıldı): yanıltıcı güvenlik notu** (`patch-android.js`, `plan-6-features.md` 10.1 tuzak 4).
 - **A7 (yapıldı): elle yürüyüş km'si öğrenilmiş adım uzunluğuyla.** `MotionPlugin.status` öğrenilmiş ölçeği (`fw`/`fr`) verir; `Algo.moveSummary` (tek hesap yeri) boy önseli × ölçek kullanır, ölçek yoksa ya da 0,7-1,3 dışındaysa boy önseli. Durum Bitir'de ve Kaydet sayfası açılırken tazelenir (o yürüyüşte öğrenilen ölçek de girer).
 
 Uygulama katmanı incelemesi (5 Opus incelemesi, 3 Ekim 2026). İşaret: [x] yapıldı, testli.
@@ -64,7 +64,7 @@ Uygulama katmanı incelemesi (5 Opus incelemesi, 3 Ekim 2026). İşaret: [x] yap
 - [x] **8 İlaç bildirimine dokunma:** gerçek `act:"med"` extra'sı İlaçlar'ı (kapalıysa Daha fazla) açar.
 - [x] **9 Onay metni:** `CONSENT_SENT` ve `CONSENT_NOT` tek kaynak, politika §5 aynı metin (testle eşit), `CONSENT_V=2`. Politika §9: parola Drive ve otomatik yedekte zorunluydu (en az 6), paylaş/kopyada isteğe bağlıydı. **7 Ekim güncellemesi:** artık tüm yedek yollarında parola zorunlu ve en az karakter sayısı `BackupLib.MINPW` (bugün 10); "isteğe bağlı" ifadesi kalmadı. §2 tabloya vücut ölçüleri ve tarifler eklendi.
 - [x] **10 isLosing:** 28 gün, en az 3 tartı ve 14 gün yayılım; veri yetersizse "neden" sorusu ve plato çıkmaz.
-- [x] **11 Bağlam boyutu:** ilaç 8 satır, yemek 12 satır, geçmiş 300 karakter üst sınırları; gerçek sınır ve ölçüm `plan-6-ozellik.md` 2.2 notunda.
+- [x] **11 Bağlam boyutu:** ilaç 8 satır, yemek 12 satır, geçmiş 300 karakter üst sınırları; gerçek sınır ve ölçüm `plan-6-features.md` 2.2 notunda.
 - [x] **12 Küçükler:** boş "not:" satırı, tansiyon bandı 135/85 ve metin, karbonhidrat/yağ eksik öğün notu, menü %15 sapma ve kalori açığı onayı, Koç porsiyon besini tarifte porsiyon olarak, rehberli süre tavanı 7200 sn.
 
 ### Güvenlik freni (Dalga 12)
