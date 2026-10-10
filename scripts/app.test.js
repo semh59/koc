@@ -847,7 +847,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("automatic backup: without the plugin (browser) the setting is not shown",!q("[data-ab]"));
     const files={},bfLog=[];let bfFail=false;
     w.Capacitor.Plugins.BackupFolder={pick:async()=>{bfLog.push("pick");return {name:"NeoWell"}},status:async()=>({set:true,name:"NeoWell"}),clear:async()=>{bfLog.push("clear")},
-      write:async({name,data})=>{bfLog.push("write");if(bfFail)throw new Error("yazılamadı");files[name]=data;return {names:Object.keys(files)}},remove:async({names})=>{names.forEach(n=>delete files[n])}};
+      write:async({name,data})=>{bfLog.push("write");if(bfFail)throw new Error("write failed");files[name]=data;return {names:Object.keys(files)}},remove:async({names})=>{names.forEach(n=>delete files[n])}};
     ev("render()");
     ok("automatic backup: in Data and backup an off box and a 'turn on weekly' note",!!q('[data-ab="toggle"]')&&!q('[data-ab="toggle"]').checked&&q("#view").textContent.includes("en az haftada bir"));
     click('[data-ab="toggle"]');await flush();
@@ -2056,7 +2056,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   await ev("barcodeFind('8690526010113')");
   ok("barcode: with a full food list the product opens unsaved instead of crashing",ev("S.myFoods.length")===200&&w.document.querySelector("#fprev").textContent.startsWith("176 kcal")&&w.document.querySelector("#sheet").textContent.includes("listen dolu"));
   ev("S.myFoods=[]");
-  w.fetch=async()=>{throw new Error("ağ yok")};
+  w.fetch=async()=>{throw new Error("no network")};
   await ev("barcodeFind('8690526010113')");
   ok("barcode: without internet it gives an error",w.document.querySelector("#tmsg").textContent.includes("İnternete ulaşılamadı"));
   await ev("barcodeFind('123')");
@@ -2378,8 +2378,8 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev(`S.entries=cleanEntries([${JSON.stringify(mk("food","08:10",200))},${JSON.stringify(mk("food","13:00",300))},${JSON.stringify(mk("food","19:00",150,{meal:"snack"}))},${JSON.stringify(mk("water","09:00",250))},${JSON.stringify(mk("water","10:00",250))},${JSON.stringify(mk("water","11:00",500))}]).out;render()`);
     const heads=[...w.document.querySelectorAll(".log .gh")].map(h=>h.textContent);
     ok("grouped by daily meal, each group has a kcal subtotal; default meal from meal time, a record with meal stays in its chosen group",heads.join("|")==="Kahvaltı200 kcal|Öğle300 kcal|Atıştırmalık150 kcal",heads);
-    ok("water records are a single row in the log: 'Su: 1,0 L, 3 kez' format",w.document.querySelectorAll(".log [data-suall]").length===1&&lg().includes("Su: 1,0 L, 3 kez")&&!lg().includes("250 ml"),lg());
-    q("[data-suall]").click();
+    ok("water records are a single row in the log: 'Su: 1,0 L, 3 kez' format",w.document.querySelectorAll(".log [data-waterall]").length===1&&lg().includes("Su: 1,0 L, 3 kez")&&!lg().includes("250 ml"),lg());
+    q("[data-waterall]").click();
     ok("tapping the water row opens a detail page: each record with time and a 44 px delete button",q("#sheet").textContent.includes("09:00")&&q("#sheet").textContent.includes("500 ml")&&q("#sheet").querySelectorAll("[data-del]").length===3);
     q("#sheet [data-del]").click();
     ok("deleting from the detail removes the record, the summary updates, the page stays open",ev("S.entries.filter(e=>e.type==='water').length")===2&&lg().includes("2 kez")&&q("#sheet").classList.contains("on")&&q("#sheet").querySelectorAll("[data-del]").length===2);
@@ -2667,7 +2667,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("an ingredient with 0 grams is rejected, name and ingredients are kept",q("#rerr").textContent.includes("gramı")&&q("#rn").value==="Salata"&&ev("recipeDraft.items.length")===1);
     click('[data-rp="rm:0"]');click('[data-rp="save"]');
     ok("a recipe without ingredients is rejected",q("#rerr").textContent.includes("En az bir malzeme"));
-    ev("closeSheet();S.recipes=[];sheetRecipe();recipeDraft.items.push({n:'P',g:100,k:100,por:true});$('#rrows').innerHTML=rpRows()");inp('[data-rg="0"]',"1,1");
+    ev("closeSheet();S.recipes=[];sheetRecipe();recipeDraft.items.push({n:'P',g:100,k:100,portion:true});$('#rrows').innerHTML=rpRows()");inp('[data-rg="0"]',"1,1");
     ok("per-portion ingredient: 1.1 portions is exactly 110 g (no floating-point residue)",ev("recipeDraft.items[0].g")===110);
     ev("closeSheet();S.recipes=[{id:1,n:'a',s:1,items:[{n:'a',g:1,k:1}]}]");
     ev("closeSheet();S.recipes[0].items.push(...Array.from({length:40},(_,i)=>({n:'x'+i,g:1,k:1})));S.recipes=LogLib.cleanRecipes(S.recipes)");
@@ -2794,16 +2794,16 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     reset();
   }
   { // the Coach's portion food does not count as 100 g in a recipe
-    reset();ev("S.myFoods=[{n:'Koç lahmacun',k:300,p:10,por:true},{n:'Gramlı besin',k:200,u:[['1 adet (50 g)',50]]}];sheetRecipe()");
+    reset();ev("S.myFoods=[{n:'Koç lahmacun',k:300,p:10,portion:true},{n:'Gramlı besin',k:200,u:[['1 adet (50 g)',50]]}];sheetRecipe()");
     const pick=name=>{const r=$q("#rq");r.value=name;r.dispatchEvent(new w.Event("input",{bubbles:true}));$q('[data-rp="pick:0"]').click()};
-    pick("Koç lahmacun");pick("Gramlı besin");ok("a food added from a Coach card is stored with the por flag, the cleaner keeps it",ev("(()=>{S.myFoods=[];Nutrition.addMy('Test',250,5);return S.myFoods[0].por===true&&cleanMyFoods(S.myFoods)[0].por===true&&cleanMyFoods([{n:'a',k:1}])[0].por===undefined})()"));ev("S.myFoods=[{n:'Koç lahmacun',k:300,p:10,por:true},{n:'Gramlı besin',k:200,u:[['1 adet (50 g)',50]]}];sheetRecipe()");pick("Koç lahmacun");pick("Gramlı besin");
+    pick("Koç lahmacun");pick("Gramlı besin");ok("a food added from a Coach card is stored with the portion flag, the cleaner keeps it",ev("(()=>{S.myFoods=[];Nutrition.addMy('Test',250,5);return S.myFoods[0].portion===true&&cleanMyFoods(S.myFoods)[0].portion===true&&cleanMyFoods([{n:'a',k:1}])[0].portion===undefined})()"));ev("S.myFoods=[{n:'Koç lahmacun',k:300,p:10,portion:true},{n:'Gramlı besin',k:200,u:[['1 adet (50 g)',50]]}];sheetRecipe()");pick("Koç lahmacun");pick("Gramlı besin");
     ok("Nutrition.putMy: same name (Turkish case-insensitive) or barcode replaces, a new food goes first, a full list refuses",ev("(()=>{S.myFoods=[];const P=f=>Nutrition.putMy(f);P({n:'Işık Çorbası',k:100});P({n:'Bar',k:50,b:'123'});P({n:'IŞIK çorbası',k:120});P({n:'Başka ad',k:60,b:'123'});const a=S.myFoods.map(f=>f.n+':'+f.k).join();S.myFoods=Array.from({length:MYFOODS_MAX},(_,i)=>({n:'F'+i,k:1}));return a==='Başka ad:60,IŞIK çorbası:120'&&P({n:'Yeni',k:1})===false&&S.myFoods.length===MYFOODS_MAX&&P({n:'F3',k:9})===true})()"));
     const gi=()=>[...w.document.querySelectorAll("[data-rg]")],sh=()=>$q("#sheet").textContent;
-    ok("a food with unknown grams (Coach) goes into a recipe by portion, a food with grams by grams",ev("recipeDraft.items[0].por")===true&&ev("recipeDraft.items[1].por")===undefined&&sh().includes("1 porsiyon: 300 kcal")&&sh().includes("100 g: 200 kcal"));
+    ok("a food with unknown grams (Coach) goes into a recipe by portion, a food with grams by grams",ev("recipeDraft.items[0].portion")===true&&ev("recipeDraft.items[1].portion")===undefined&&sh().includes("1 porsiyon: 300 kcal")&&sh().includes("100 g: 200 kcal"));
     gi()[0].value="2";gi()[0].dispatchEvent(new w.Event("input",{bubbles:true}));gi()[1].value="100";gi()[1].dispatchEvent(new w.Event("input",{bubbles:true}));
     ok("2 portions of a Coach food = 600 kcal (not 100 g x 2), 100 g with grams = 200 kcal; total 800",ev("recipeDraft.items[0].g")===200&&$q("#rsum").textContent.includes("800 kcal"),$q("#rsum").textContent);
     $q("#rn").value="Karışık";$q("#rs").value="2";$q('[data-rp="save"]').click();
-    ok("a saved recipe keeps por; an old recipe (no por) is unchanged; the recipe portion is 400 kcal",ev("S.recipes[0].items[0].por")===true&&ev("LogLib.cleanRecipes([{n:'a',items:[{n:'x',g:100,k:50}]}])[0].items[0].por")===undefined&&Math.round(ev("LogLib.recipeFood(S.recipes[0]).k*LogLib.recipeFood(S.recipes[0]).u[0][1]/100"))===400);
+    ok("a saved recipe keeps portion; an old recipe (no portion) is unchanged; the recipe portion is 400 kcal",ev("S.recipes[0].items[0].portion")===true&&ev("LogLib.cleanRecipes([{n:'a',items:[{n:'x',g:100,k:50}]}])[0].items[0].portion")===undefined&&Math.round(ev("LogLib.recipeFood(S.recipes[0]).k*LogLib.recipeFood(S.recipes[0]).u[0][1]/100"))===400);
     reset();
   }
   { // safety brake from one source, with real data

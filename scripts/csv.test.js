@@ -1,7 +1,7 @@
 const {ok,finish}=require("./ok");
 const C=require("../www/modules/data/csvlib.js");
 const out=C.csv(["a","b"],[["x",80.5],["y",1500.25]]);
-ok("BOM, ; separator, CRLF, decimal comma, no thousands separator",out==="﻿a;b\r\nx;80,5\r\ny;1500,25\r\n",out);
+ok("BOM, ; separator, CRLF, decimal comma, no thousands separator",out==="\uFEFFa;b\r\nx;80,5\r\ny;1500,25\r\n",out);
 ok("formula injection: text starting with = + - @ tab or CR gets a leading '",["=HYPERLINK(\"http://x\")","+1","-2 kg","@SUM(A1)","\tx","\rx"].every(v=>C.cell(v).replace(/^"/,"").startsWith("'")),["=1","+1"].map(C.cell));
 ok("numbers are untouched: a negative number gets no '; plain text is unchanged",C.cell(-5)==="-5"&&C.cell("ekmek")==="ekmek"&&C.cell("a=b")==="a=b");
 ok("a cell with ; \" or a line break is quoted and quotes are doubled",C.cell("a;b")==='"a;b"'&&C.cell('x"y')==='"x""y"'&&C.cell("a\nb")==='"a\nb"'&&C.cell("=A;B")==='"\'=A;B"');

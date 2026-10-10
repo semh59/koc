@@ -23,7 +23,7 @@ test.describe("Today",()=>{
     await expect(app.toast).toHaveText("+250 ml, bugün 250 / 2500 ml");
     await page.click('.act[data-act="water"]');
     await expect(ring(page,"Su").locator(".rs")).toHaveText("0,5 / 2,5 L");
-    await expect(page.locator('[data-suall]')).toHaveText("Su: 500 ml, 2 kez");
+    await expect(page.locator('[data-waterall]')).toHaveText("Su: 500 ml, 2 kez");
     await page.click("#tundo");
     await expect(ring(page,"Su").locator(".rs")).toHaveText("0,3 / 2,5 L");
   });

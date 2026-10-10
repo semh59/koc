@@ -45,7 +45,7 @@ const LogLib=(()=>{
     if(!x||typeof x.n!=="string"||!x.n.trim()||!(g>0&&g<=5000)||!(x.k>=0&&x.k<=5000))return null;
     const o={n:x.n.trim().slice(0,60),g,k:x.k};
     for(const m of NUTR)if(Number.isFinite(x[m])&&x[m]>=0&&x[m]<=PER100[m])o[m]=x[m];
-    if(x.por===true)o.por=true; // food with unknown gram weight: g = portions x 100, values were entered per portion
+    if(x.portion===true)o.portion=true; // food with unknown gram weight: g = portions x 100, values were entered per portion
     return o;
   }
   function cleanRecipes(arr){
@@ -74,7 +74,7 @@ const LogLib=(()=>{
   const recipeNote=c=>"Çiğ ağırlıklarla hesaplandı, pişince değişir; tahmindir."+c.part.map(([m,h])=>` ${RLBL[m][0].toUpperCase()+RLBL[m].slice(1)}: ${h}/${c.n} malzemede veri var, toplam yazılmadı.`).join("");
   // Shape of a food in the search list (allFoods): a recipe is searched like one food, with a per-portion entry first.
   function recipeFood(r){
-    const c=recipeCalc(r),pg=c.g/r.s,f={n:r.n,k:c.tot.k*100/c.g,my:true,src:"recipe",rec:r.id,hint:`Tarifim, ${r.s} porsiyon. ${recipeNote(c)}`,u:[[r.items.some(i=>i.por)?"1 porsiyon":`1 porsiyon (${Math.round(pg)} g)`,pg],["100 g",100]]};
+    const c=recipeCalc(r),pg=c.g/r.s,f={n:r.n,k:c.tot.k*100/c.g,my:true,src:"recipe",rec:r.id,hint:`Tarifim, ${r.s} porsiyon. ${recipeNote(c)}`,u:[[r.items.some(i=>i.portion)?"1 porsiyon":`1 porsiyon (${Math.round(pg)} g)`,pg],["100 g",100]]};
     for(const m of NUTR)f[m]=c.tot[m]==null?null:c.tot[m]*100/c.g;
     return f;
   }

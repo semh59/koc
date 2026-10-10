@@ -12,7 +12,7 @@ const Nutrition={
     return true;
   },
   addMy(n,kcal,p){
-    const f={n:n.slice(0,60),k:Math.round(kcal),por:true};if(p!=null&&p>=0)f.p=Math.round(p*10)/10;
+    const f={n:n.slice(0,60),k:Math.round(kcal),portion:true};if(p!=null&&p>=0)f.p=Math.round(p*10)/10;
     return Nutrition.putMy(f);
   }
 };

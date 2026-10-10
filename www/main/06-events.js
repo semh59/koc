@@ -1,6 +1,6 @@
 /* ---------- events ---------- */
 document.addEventListener("click",ev=>{
-  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-rc],[data-fv],[data-fva],[data-fvd],[data-tp],[data-tpd],[data-sp],[data-lo],[data-kd],[data-g],[data-sex],[data-actl],[data-thm],[data-c],[data-food],[data-fp],[data-ml],[data-meal],[data-mset],[data-suall]");
+  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-rc],[data-fv],[data-fva],[data-fvd],[data-tp],[data-tpd],[data-sp],[data-lo],[data-kd],[data-g],[data-sex],[data-actl],[data-thm],[data-c],[data-food],[data-fp],[data-ml],[data-meal],[data-mset],[data-waterall]");
   if(ev.target.id==="scrim")return closeSheet();
   if(!el)return;
   const d=el.dataset;
@@ -15,7 +15,7 @@ document.addEventListener("click",ev=>{
   if(d.lo){logOff=Math.max(0,Math.min(hgOldest(),logOff+(+d.lo)));render();return}
   if(d.ml){document.querySelectorAll("#fml .chip").forEach(c=>c.setAttribute("aria-pressed",c===el));return}
   if(d.meal){sheetMeal(+d.meal);return}
-  if(d.suall){sheetWater();return}
+  if(d.waterall){sheetWater();return}
   if(d.mset){const [id,k]=d.mset.split(":"),e=S.entries.find(x=>x.id===+id);if(e){e.meal=k;save();closeSheet();render()}return}
   if(d.del){
     const id=+d.del,rm=S.entries.find(e=>e.id===id);if(!rm)return;

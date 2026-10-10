@@ -7,7 +7,7 @@ const ImportLib=(()=>{
   const hnorm=h=>String(h).toLowerCase().replace(/[^a-z0-9]/g,"");
   /* The delimiter is the most frequent one outside quotes in the first record. An unclosed quote means a corrupt file. */
   function parse(text){
-    text=text.replace(/^﻿/,"");
+    text=text.replace(/^\uFEFF/,"");
     if(text.slice(0,4096).includes("\0"))throw new Error("Dosya metin değil");
     const cnt={",":0,";":0,"\t":0};let q=false;
     for(let i=0;i<text.length;i++){const c=text[i];if(c==='"')q=!q;else if(!q){if(c==="\n")break;if(c in cnt)cnt[c]++}}

@@ -1,4 +1,4 @@
-# External source records: key (ciq:<alim_code> or cof:<Food Code>). Run harici.py after adding a row.
+# External source records: key (ciq:<alim_code> or cof:<Food Code>). Run extract_external.py after adding a row.
 ciq:30300
 ciq:28860
 cof:12-496

@@ -1,5 +1,5 @@
 "use strict";
-/* Play Store images: node store/uret.js (made-up data; www/ is served from a local server). */
+/* Play Store images: node store/generate.js (made-up data; www/ is served from a local server). */
 const path=require("path"),fs=require("fs"),http=require("http");
 const {chromium}=require("@playwright/test");
 const {NOW,day,state,entry,CONSENT}=require("../e2e/fixtures");
@@ -10,7 +10,7 @@ const server=()=>new Promise(res=>{
   const s=http.createServer((q,r)=>{
     const p=path.join(www,decodeURIComponent(q.url.split("?")[0]));
     fs.readFile(p,(e,b)=>{if(e||!p.startsWith(www)){r.writeHead(404);return r.end()}
-      const t={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".css":"text/css",".json":"application/json",".png":"image/png",".svg":"image/svg+xml"}[path.extname(p)]||"application/octet-stream";
+      const t={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".css":"text/css",".png":"image/png",".svg":"image/svg+xml"}[path.extname(p)]||"application/octet-stream";
       r.writeHead(200,{"Content-Type":t,"Cache-Control":"no-store"});r.end(b)});
   }).listen(PORT,"127.0.0.1",()=>res(s));
 });
@@ -18,7 +18,7 @@ const server=()=>new Promise(res=>{
 async function icon(b){
   const pg=await b.newPage({viewport:{width:512,height:512}});
   await pg.setContent(`<body style="margin:0;background:rgba(16,93,86,.996)"><img src="${logo}" style="display:block;width:512px;height:512px">`);
-  await pg.screenshot({path:path.join(out,"simge-512.png"),omitBackground:true});await pg.close();
+  await pg.screenshot({path:path.join(out,"icon-512.png"),omitBackground:true});await pg.close();
 }
 
 async function banner(b){
@@ -26,7 +26,7 @@ async function banner(b){
   await pg.setContent(`<style>body{margin:0;width:1024px;height:500px;background:linear-gradient(135deg,#0f5c55,#0a4640);color:#fff;font-family:"Segoe UI",system-ui,sans-serif;display:flex;align-items:center;gap:56px;padding:0 90px;box-sizing:border-box;overflow:hidden}
 img{width:230px;height:230px;border-radius:52px;box-shadow:0 12px 40px #0006}h1{margin:0;font-size:96px;font-weight:700;letter-spacing:-2px}p{margin:14px 0 0;font-size:36px;color:#cfeee6;line-height:1.3}</style>
 <img src="${logo}"><div><h1>NeoWell</h1><p>Yemek, hareket ve ilaçların<br>tek sakin ekranda.</p></div>`);
-  await pg.screenshot({path:path.join(out,"one-cikan-1024x500.png")});await pg.close();
+  await pg.screenshot({path:path.join(out,"feature-1024x500.png")});await pg.close();
 }
 
 const S=(o,rest)=>state({stepsOn:true,stepGoal:8000,medOn:true,kcal:2100,goalKg:78,...o},rest);
@@ -43,12 +43,12 @@ const chat=[
 ];
 
 const SHOTS=[
-  ["ekran-1-bugun",{seed:S({},{entries:[...meals,...weights]}),native:{steps:6240}},async a=>{}],
-  ["ekran-2-koc",{seed:S(CONSENT,{entries:weights,chat,cid:3}),keys:{groq:"gsk_demo"}},async a=>{await a.tab("coach")}],
-  ["ekran-3-salon",{seed:S({},{entries:weights,workouts,templates,gid:3})},async a=>{await a.tab("gym")}],
-  ["ekran-4-trend",{seed:S({},{entries:[...meals,...weights]})},async a=>{await a.tab("trend")}],
-  ["ekran-5-ilaclar",{seed:S({},{entries:weights,meds,medLog}),native:{}},async a=>{await a.go("meds")}],
-  ["ekran-6-yemek-ekle",{seed:S({},{entries:[...meals,...weights]})},async a=>{await a.page.click('.act[data-act="food"]');await a.page.fill("#fq","menemen");await a.page.locator("#flist [data-food]").first().waitFor()}]
+  ["screen-1-today",{seed:S({},{entries:[...meals,...weights]}),native:{steps:6240}},async a=>{}],
+  ["screen-2-coach",{seed:S(CONSENT,{entries:weights,chat,cid:3}),keys:{groq:"gsk_demo"}},async a=>{await a.tab("coach")}],
+  ["screen-3-gym",{seed:S({},{entries:weights,workouts,templates,gid:3})},async a=>{await a.tab("gym")}],
+  ["screen-4-trend",{seed:S({},{entries:[...meals,...weights]})},async a=>{await a.tab("trend")}],
+  ["screen-5-meds",{seed:S({},{entries:weights,meds,medLog}),native:{}},async a=>{await a.go("meds")}],
+  ["screen-6-add-food",{seed:S({},{entries:[...meals,...weights]})},async a=>{await a.page.click('.act[data-act="food"]');await a.page.fill("#fq","menemen");await a.page.locator("#flist [data-food]").first().waitFor()}]
 ];
 
 async function shot(b,[name,open,act]){

@@ -15,7 +15,7 @@ const HEVY='"title","start_time","end_time","description","exercise_title","supe
  +'"Bacak","15 Mar 2024, 18:30","15 Mar 2024, 19:35","","Squat (Barbell)","","","0","warmup","40","8","","",""\n'
  +'"Bacak","15 Mar 2024, 18:30","15 Mar 2024, 19:35","","Squat (Barbell)","","","1","normal","100","5","","","9"\n'
  +'"Bacak","15 Mar 2024, 18:30","15 Mar 2024, 19:35","","Bench Press (Dumbbell)","","","0","normal","30","10","","",""\n';
-const r=I.read("﻿"+STRONG,{unit:"lbs"});
+const r=I.read("\uFEFF"+STRONG,{unit:"lbs"});
 ok("Strong is recognized, the unit is asked, BOM and quoted comma / multi-line note",r.format==="Strong"&&r.unitAsk&&r.workouts.length===2&&r.workouts[0].name==="Push, günü"&&r.workouts[0].ex[0].note==='ilk satır\nikinci satır "tırnaklı"',r.workouts[0]);
 ok("duration 1h 5m: t1 = t0 + 65 min; local day",r.workouts[0].t1-r.workouts[0].t0===65*60000&&r.workouts[0].day==="2024-03-15");
 ok("lbs are converted to kg (135 lbs = 61.23 kg); choosing kg leaves values alone",r.workouts[0].ex[0].sets[1].kg===61.23&&I.read(STRONG,{unit:"kg"}).workouts[0].ex[0].sets[1].kg===135);

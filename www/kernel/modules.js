@@ -1,6 +1,6 @@
 "use strict";
 /* Data ownership: which module manages each S field and which files may touch it directly (the owner files).
-   Other files get that data through the module's contract; scripts/sinir.test.js checks the boundary. main/* is the core and may touch every field. */
+   Other files get that data through the module's contract; scripts/boundary.test.js checks the boundary. main/* is the core and may touch every field. */
 const Modules={
   log:{keys:["entries","nextId"]},
   nutrition:{keys:["myFoods","favFoods","mealTpl","recipes"]},

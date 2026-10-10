@@ -1,4 +1,4 @@
-# Common Turkish foods with no exact match: a proxy or a computation from components; the reason for each row is in vekil.tsv. Same format as tarif.txt: name | method | portions | ingredients | aliases | ~N (+-N% kcal range)
+# Common Turkish foods with no exact match: a proxy or a computation from components; the reason for each row is in proxy-notes.tsv. Same format as recipes.txt: name | method | portions | ingredients | aliases | ~N (+-N% kcal range)
 # Range ~N: these foods have no single USDA record; the range is wide because of the spread between proxy records and home or product variability (at most +-45).
 # Yield: sucuk and pastırma lose about 25% water when fried (assumption): yield = 1 - 0.25 x sucuk (pastırma) grams / input grams including water. Dried tarhana: the dry matter (flour 88%, yogurt 12%, tomato 5.5%; with USDA water values) dried to 10% moisture leaves about 1080 g of 2000 g input (0.54).
 # --- Egg and sucuk dishes ---

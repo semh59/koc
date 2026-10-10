@@ -1,4 +1,4 @@
-# Foods among the first 106 rows with no verbatim USDA match: tarif.txt format (name | method | - | ingredients | - | spread). The name equals the one in mevcut.txt; uret.js writes only kcal/macros and [lo, hi], portions stay in mevcut.txt. One-ingredient 100 g rows are proxies. Reasons are in vekil.tsv.
+# Foods among the first 106 rows with no verbatim USDA match: recipes.txt format (name | method | - | ingredients | - | spread). The name equals the one in core-rows.txt; generate.js writes only kcal/macros and [lo, hi], portions stay in core-rows.txt. One-ingredient 100 g rows are proxies. Reasons are in proxy-notes.tsv.
 Menemen | stew | - | Yumurta (çiğ) 100;Domates 200;Yeşil biber (çiğ) 60;Soğan 30;Ayçiçek yağı 15 | - | ~40
 Tost (kaşarlı) | 0.97 | - | Ekmek (beyaz) 90;Kaşar 35;Tereyağı 5 | - | ~25
 Gözleme (peynirli) | 0.9 | - | Buğday unu 100;Su 55;Beyaz peynir 60;Maydanoz 5;Ayçiçek yağı 10 | - | ~25
