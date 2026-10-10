@@ -50,7 +50,7 @@ async function scheduleReminders(){
     // Android caps simultaneous alarms per app (500): the nearest are kept, farther ones are rescheduled when the app opens.
     list.sort((a,b)=>a.schedule.at-b.schedule.at);if(list.length>MedLib.BUDGET)list.length=MedLib.BUDGET;
     const tk=await quickToken();if(tk)for(const n of list)if(n.extra&&(n.extra.act==="water"||n.extra.act==="med"))n.extra.tk=tk;
-    if(list.length)await ln.schedule({notifications:list});
+    console.log("NW-SCHED n="+list.length);if(list.length){const r=await ln.schedule({notifications:list});console.log("NW-SCHED done "+(r&&r.notifications&&r.notifications.length))}
     /* The notification plugin does not light the locked screen: for medication doses (reminder repeats excluded) a separate alarm screen wakes it briefly. */
     const mw=MW();if(mw)await mw.set({times:MedLib.wakeTimes(list),doses:MedLib.wakeDoses(list)}).catch(()=>{});
     return "ok";
