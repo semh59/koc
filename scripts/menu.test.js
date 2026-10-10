@@ -17,9 +17,9 @@ const errs=[];
     ev(base.replace("S.settings.consent=true;","S.settings.consent=false;").replace("setKey('nvidia','K1');","KEYS={};"));
     ok("without consent the Coach menu button states the reason and stays enabled for on-device generation",!q('[data-c="menu"]').disabled&&q('[data-c="menu"]').textContent.includes("cihazda")&&q("#view").textContent.includes("veri paylaşımını kabul et"));
     ev(base.replace("setKey('nvidia','K1');","KEYS={};"));
-    ok("without a key the Coach menu states the reason (key needed) and the button is enabled",!q('[data-c="menu"]').disabled&&q("#view").textContent.includes("Koç anahtarı gerekli"));
+    ok("without a key the Coach menu states the reason (key needed) and the button is enabled",!q('[data-c="menu"]').disabled&&q("#view").textContent.includes("Rehber anahtarı gerekli"));
     ev(base);
-    ok("with consent and a key the menu button is the Coach menu, with no reason text",!q('[data-c="menu"]').disabled&&!q("#view").textContent.includes("Koç menüsü için"));
+    ok("with consent and a key the menu button is the Coach menu, with no reason text",!q('[data-c="menu"]').disabled&&!q("#view").textContent.includes("Rehber menüsü için"));
     // worst case: 30 foods (60-character names), 20 favorites, 20 templates, 14 filled days, a long health note and chat history
     ev(`S.myFoods=Array.from({length:30},(_,i)=>({n:'Besin '+i+' '+'a'.repeat(50),k:200+i,p:5,c:20,f:5,...(i%3?{u:[['1 adet (50 g)',50]]}:{})}));S.favFoods=Array.from({length:20},(_,i)=>({text:'Favori '+i+'|'+'b'.repeat(80),v:300,p:10}));S.mealTpl=Array.from({length:20},(_,i)=>({id:i+1,n:'Şablon '+i,items:[{text:'x',v:100,p:3},{text:'y',v:200,p:4}]}));S.recipes=[{id:1,n:'GizliTarifAdi',s:2,items:[{n:'GizliMalzeme',g:100,k:100}]}];S.settings.healthNote='x'.repeat(300);for(let i=0;i<14;i++){const k=keyOff(-i);add('weight',80,'',k);for(let j=0;j<4;j++){const e=add('food',650,'öğün',k);e.p=35}add('water',2500,'',k);add('exercise',45,'Yürüyüş',k);add('steps',12345,'',k);add('note',null,'n'.repeat(100),k);S.sleep.push({day:k,min:450});S.mood.push({day:k,v:4})}S.chat=[{id:1,role:'user',text:'z'.repeat(600),t:1},{id:2,role:'coach',text:'y'.repeat(1500),t:2}];S.cid=3`);
     const cc=ev("(()=>{const c=cMenuCat();return {n:c.text.split('\\n').length,first:c.text.split('\\n')[0],ids:Object.keys(c.cat),text:c.text}})()");

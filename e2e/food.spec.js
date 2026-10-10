@@ -11,7 +11,7 @@ test.describe("Add food",()=>{
       await page.fill("#fq",q);
       // Acceptance: searchable without typing Turkish characters, the most relevant food on top.
       await expect(results(page).first()).toContainText(first,{ignoreCase:true});
-      await expect(page.locator('#flist [data-c="askfood"]')).toContainText(`"${q}" için Koç'a sor`);
+      await expect(page.locator('#flist [data-c="askfood"]')).toContainText(`"${q}" için Rehber'e sor`);
     });
 
   test("search 'kasarli tost': the exact name match comes first",async({app,page})=>{

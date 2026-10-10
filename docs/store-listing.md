@@ -2,7 +2,7 @@
 
 Kaynak: kod (`www/`, `assets/android/`), `docs/privacy-policy.md`, `docs/play-permission-declarations.md`. Sayılar 7 Ekim 2026 koduna göre: 818 besin kaydı (`www/modules/nutrition/foods.js`; metinde güvenli alt sınır "700'den fazla" yazılı, kayıt eklendikçe metin bozulmaz), 324 egzersiz (`www/modules/gym/exlib.js`), 5 hazır program. Sayı değişirse bu dosya ve README güncellenir.
 
-Yazım kuralı: tedavi, tanı ya da hekim yerine geçme iddiası yok. "Tedavi", "tanı", "hekim yerine" gibi sözcükler yalnız olumsuz ya da sınırlayıcı kullanımda ("tanı koymaz", "tedavi önermez", "hekim yerine geçmez") serbest; "teşhis", "iyileştirir", "garanti", "kilo verdirir" hiç geçmez (aynı kural: `docs/play-data-safety.md`), "çevrimdışı" yalnız çekirdek özellikler için, Koç ve barkod internet ister.
+Yazım kuralı: tedavi, tanı ya da hekim yerine geçme iddiası yok. "Tedavi", "tanı", "hekim yerine" gibi sözcükler yalnız olumsuz ya da sınırlayıcı kullanımda ("tanı koymaz", "tedavi önermez", "hekim yerine geçmez") serbest; "teşhis", "iyileştirir", "garanti", "kilo verdirir" hiç geçmez (aynı kural: `docs/play-data-safety.md`), "çevrimdışı" yalnız çekirdek özellikler için, Rehber ve barkod internet ister.
 
 ## Türkçe
 
@@ -11,7 +11,7 @@ Yazım kuralı: tedavi, tanı ya da hekim yerine geçme iddiası yok. "Tedavi", 
 **Kısa açıklama (80):**
 Hesapsız, reklamsız diyet, su, spor ve sağlık günlüğü. Kayıtlar telefonda.
 
-> "Verilerin telefonunda kalır" gibi mutlak bir cümle kullanılmadı: Koç (açık rızayla) ve barkod araması veri gönderir.
+> "Verilerin telefonunda kalır" gibi mutlak bir cümle kullanılmadı: Rehber (açık rızayla) ve barkod araması veri gönderir.
 
 **Uzun açıklama:**
 
@@ -45,10 +45,10 @@ SAĞLIK KAYITLARI
 - Hatırlatmalar: su, tartı, ilaç, oruç ve yedek
 Bu bölümler kayıt ve görüntüleme içindir. NeoWell bu değerleri yorumlamaz, hedef ya da eşik karşılaştırması yapmaz; raporlarını hekimine götürebilirsin.
 
-KOÇ (İSTEĞE BAĞLI, YAPAY ZEKÂ)
+REHBER (İSTEĞE BAĞLI, YAPAY ZEKÂ)
 - Kendi API anahtarını girersen sohbet ve kayıt önerileri alırsın; konuları ayrı sohbetlerde tutarsın. İnternet ister.
-- Koç yalnız sen açık rıza verirsen çalışır. Rıza verirsen, yalnız sen bir düğmeye bastığında (mesaj, yorum, menü ya da program isteği) sohbetin, profilin ve son kayıtların seçtiğin sağlayıcıya (NVIDIA Build, Groq, OpenRouter, Google Gemini, OpenAI, Anthropic Claude ya da kendi eklediğin servis; OpenAI ve Anthropic ücretlidir) gider; kendiliğinden ya da arka planda hiçbir şey gönderilmez. Sunucuları yurt dışındadır. Rızayı istediğin an geri alırsın; vermezsen uygulama tam çalışır.
-- NeoWell 18 yaş ve üzeri içindir; kurulumda 18 yaş altı kabul edilmez, yaş girilmeden Koç açılmaz.
+- Rehber yalnız sen açık rıza verirsen çalışır. Rıza verirsen, yalnız sen bir düğmeye bastığında (mesaj, yorum, menü ya da program isteği) sohbetin, profilin ve son kayıtların seçtiğin sağlayıcıya (NVIDIA Build, Groq, OpenRouter, Google Gemini, OpenAI, Anthropic Claude ya da kendi eklediğin servis; OpenAI ve Anthropic ücretlidir) gider; kendiliğinden ya da arka planda hiçbir şey gönderilmez. Sunucuları yurt dışındadır. Rızayı istediğin an geri alırsın; vermezsen uygulama tam çalışır.
+- NeoWell 18 yaş ve üzeri içindir; kurulumda 18 yaş altı kabul edilmez, yaş girilmeden Rehber açılmaz.
 
 GİZLİLİK
 - Hesap, kendi sunucumuz, reklam ve analitik yok.

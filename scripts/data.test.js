@@ -25,7 +25,7 @@ const E=(day,type,v,x={})=>({id:0,day,time:"08:00",type,v,text:"",...x});
   ok("save writes nothing on the recovery screen (the raw data is not overwritten)",ls("nw_state")==='{"entries":[{"id":1,');
   q('[data-act="rectry"]').click();
   ok("retry: if still corrupt the screen stays",q("#view").textContent.includes("Kayıtların okunamadı"));
-  w.localStorage.setItem("nw_state",JSON.stringify({entries:[E("2026-09-01","weight",80)],settings:{obDone:true}}));
+  w.localStorage.setItem("nw_state",JSON.stringify({entries:[E("2026-09-01","weight",80)],settings:{obDone:true,noticeOk:true}}));
   q('[data-act="rectry"]').click();
   ok("retry: once the record is fixed it loads",ev("S.entries.length")===1&&!q("#view").textContent.includes("Kayıtların okunamadı"));
   w=await open({nw_state:"bozuk{"});ev=s=>w.eval(s);q=s=>w.document.querySelector(s);
@@ -39,7 +39,7 @@ const E=(day,type,v,x={})=>({id:0,day,time:"08:00",type,v,text:"",...x});
   // field isolation, dropped item count, ids, orphan wid
   w=await open({});ev=s=>w.eval(s);
   const raw={entries:[E("2026-09-01","weight",80,{id:7}),E("2026-09-02","weight",81,{id:7}),E("2026-09-03","exercise",30,{id:3,wid:5}),E("2026-09-03","exercise",20,{id:4,wid:99}),{type:"x"},E("2026-09-04","water",-5)],
-    settings:{obDone:true,kcal:2000},meds:[{id:1,n:"A",t:["08:00"]}],medLog:[{m:1,day:"2026-09-01",slot:"08:00",st:"t"}],
+    settings:{obDone:true,noticeOk:true,kcal:2000},meds:[{id:1,n:"A",t:["08:00"]}],medLog:[{m:1,day:"2026-09-01",slot:"08:00",st:"t"}],
     workouts:[{id:5,day:"2026-09-03",t0:1e12,t1:1e12+6e5,name:"A",ex:[{id:"squat",sets:[{kg:100,reps:5,done:true},{kg:5000,reps:5,done:true}]}]},{id:"x"}]};
   ev(`window.__b=buildState(${JSON.stringify(raw)})`);
   ok("ids are kept, a clashing id is reassigned, nextId is the largest + 1",ev("__b.S.entries.map(e=>e.id).join()")==="7,8,3,4"&&ev("__b.S.nextId")===9,ev("__b.S.entries.map(e=>e.id).join()"));
@@ -50,16 +50,16 @@ const E=(day,type,v,x={})=>({id:0,day,time:"08:00",type,v,text:"",...x});
   ok("when one field is corrupt only that field returns to its default: entries, settings and workouts are kept",ev("__b.lost.join()")==="meds"&&ev("__b.S.meds.length")===0&&ev("__b.S.medLog.length")===0&&ev("__b.S.entries.length")===4&&ev("__b.S.settings.kcal")===2000&&ev("__b.S.workouts.length")===1,ev("__b.lost.join()"));
   w=await open({nw_state:JSON.stringify(raw)});ev=s=>w.eval(s);
   ok("what was dropped at startup is reported and the raw copy is kept",ev("loadNote").includes("4 geçersiz kayıt")&&JSON.parse(w.localStorage.getItem("nw_state_corrupt")).entries.length===6&&w.document.querySelector("#tmsg").textContent.includes("4 geçersiz"),ev("loadNote"));
-  w=await open({nw_state:JSON.stringify({entries:[E("2026-09-01","weight",80,{id:3})],settings:{obDone:true}})});ev=s=>w.eval(s);
+  w=await open({nw_state:JSON.stringify({entries:[E("2026-09-01","weight",80,{id:3})],settings:{obDone:true,noticeOk:true}})});ev=s=>w.eval(s);
   ok("with a clean record there is no note and no copy; ids are the same after the round trip",ev("loadNote")===""&&w.localStorage.getItem("nw_state_corrupt")===null&&ev("S.entries[0].id")===3&&ev("S.nextId")===4);
 
   // quota: safety copies go first; archive limit
   const big="x".repeat(300000);
-  w=await open({nw_state:JSON.stringify({entries:[E("2026-09-01","weight",80)],settings:{obDone:true}}),nw_state_previous:big,nw_state_corrupt:big},{quota:900000});ev=s=>w.eval(s);
+  w=await open({nw_state:JSON.stringify({entries:[E("2026-09-01","weight",80)],settings:{obDone:true,noticeOk:true}}),nw_state_previous:big,nw_state_corrupt:big},{quota:900000});ev=s=>w.eval(s);
   ev("S.entries.push(...Array.from({length:3000},(_,i)=>({id:i+10,day:'2026-09-01',time:'08:00',type:'note',v:null,text:'n'.repeat(60)})));save()");
   ok("when storage is full the safety copy is deleted first, the record is written, user data is untouched",ev("saveFail")===false&&JSON.parse(w.localStorage.getItem("nw_state")).entries.length===3001&&w.localStorage.getItem("nw_state_previous")===null&&w.localStorage.getItem("nw_state_corrupt")!==null);
   {
-    const seed=at=>open({nw_state:JSON.stringify({entries:[E("2026-09-01","weight",80)],settings:{obDone:true,copyAt:at}}),nw_state_previous:big},{quota:600000});
+    const seed=at=>open({nw_state:JSON.stringify({entries:[E("2026-09-01","weight",80)],settings:{obDone:true,noticeOk:true,copyAt:at}}),nw_state_previous:big},{quota:600000});
     const fill="S.entries.push(...Array.from({length:3000},(_,i)=>({id:i+10,day:'2026-09-01',time:'08:00',type:'note',v:null,text:'n'.repeat(60)})))";
     w=await seed("2026-09-01");ev=s=>w.eval(s);ev("S.settings.copyAt=dayKey()");
     ev(fill+";markBackup(true)");
@@ -79,8 +79,8 @@ const E=(day,type,v,x={})=>({id:0,day,time:"08:00",type,v,text:"",...x});
   ok("archived chats stay within the total size limit (the oldest go, the newest stay)",JSON.stringify(ev("S.chats")).length<=1.5e6&&ev("S.chats.length")<20&&ev("S.chats[0].id")===1000&&w.localStorage.getItem("nw_state").length<2e6,ev("S.chats.length"));
 
   // restore: safety copy
-  w=await open({nw_state:JSON.stringify({entries:[E("2026-09-01","weight",80)],settings:{obDone:true}})});ev=s=>w.eval(s);
-  ev("sheetBackup()");w.document.querySelector("#bk").value=JSON.stringify({entries:[E("2026-09-05","weight",70),E("2026-09-06","weight",69)],settings:{obDone:true}});
+  w=await open({nw_state:JSON.stringify({entries:[E("2026-09-01","weight",80)],settings:{obDone:true,noticeOk:true}})});ev=s=>w.eval(s);
+  ev("sheetBackup()");w.document.querySelector("#bk").value=JSON.stringify({entries:[E("2026-09-05","weight",70),E("2026-09-06","weight",69)],settings:{obDone:true,noticeOk:true}});
   await loadBackup();
   ok("a password-protected backup loads; the previous data is in the safety copy",ev("S.entries.length")===2&&JSON.parse(w.localStorage.getItem("nw_state_previous")).entries[0].v===80);
   ok("once a copy is taken on restore the 7-day protection starts (copyAt is today)",ev("S.settings.copyAt")===ev("dayKey()"));

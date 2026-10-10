@@ -226,7 +226,7 @@ test.describe("Coach identity masking",()=>{
   test("with preview on the full outgoing text is shown and nothing is sent until Send",async({app,page,fake})=>{
     fake.st.reply=()=>JSON.stringify({reply:"Selam [AD1]."});
     await openPrev(app);await send(app,page,MSG);
-    await expect(page.locator("#sheet")).toContainText("Koç'a giden metin");
+    await expect(page.locator("#sheet")).toContainText("Rehber'e giden metin");
     await expect(page.locator("#sheet pre")).toContainText("[AD1]");
     await expect(page.locator("#sheet pre")).not.toContainText("0532");
     expect(fake.chats().length).toBe(0);

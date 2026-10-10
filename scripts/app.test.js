@@ -220,7 +220,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   { // Coach first impression
     const q=s=>$q(s),qa=s=>[...w.document.querySelectorAll(s)],k=()=>ev("viewCoach()");
     ev("S.chat=[];S.settings.consent=false;offline=null");
-    ok("without a key the intro: what it does, where data goes, offline, works without the Coach; no 'API'",k().includes("Koç ne yapar")&&k().includes("Verin nereye gider")&&k().includes("çevrimdışı çalışmaz")&&k().includes("onay verirsen")&&k().includes("Koç olmadan da uygulama tam çalışır")&&!/\bAPI\b/.test(k())&&!k().includes("Açık rızamı veriyorum"),k());
+    ok("without a key the intro: what it does, where data goes, offline, works without the Coach; no 'API'",k().includes("Rehber ne yapar")&&k().includes("Verin nereye gider")&&k().includes("çevrimdışı çalışmaz")&&k().includes("onay verirsen")&&k().includes("Rehber olmadan da uygulama tam çalışır")&&!/\bAPI\b/.test(k())&&!k().includes("Açık rızamı veriyorum"),k());
     ev("openSheet('x');cClick('guide',document.body)");
     const names=ev("S.providers.filter(p=>GUIDE[p.id]).map(p=>p.name)"),st=()=>q("#sheet").textContent;
     ok("setup: key field and 6 provider buttons; no 'API'",names.length===6&&names.every(n=>st().includes(n))&&!!q("#sk[type=password]")&&qa('[data-c^="sp:"]').length===6&&!/\bAPI\b/.test(st()),names);
@@ -259,7 +259,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("no network: a separate message and a 'Denemeden kaydet' option",st().includes("İnternet yok")&&!!q('[data-c="ssave"]'));
     ev("S.settings.healthNote='gizli not'");calls.length=0;resp=R(200,JSON.stringify({choices:[{message:{content:"tamam"}}]}));await ev("suTest()");
     ok("the test request carries no health data, only a fixed sentence",calls.length===1&&!calls[0].o.body.includes("gizli not")&&JSON.parse(calls[0].o.body).messages.length===1);
-    ok("successful test: key and chosen model are saved, the provider turns on, the intro yields to the consent notice",ev("getKeys().groq")==="gsk_ornekanahtar123"&&ev("S.providers.find(p=>p.id==='groq').model")==="llama-3.3-70b-versatile"&&ev("S.providers.find(p=>p.id==='groq').on")&&!k().includes("Koç ne yapar")&&k().includes("Açık rızamı veriyorum")&&!q("#sheet").classList.contains("on"));
+    ok("successful test: key and chosen model are saved, the provider turns on, the intro yields to the consent notice",ev("getKeys().groq")==="gsk_ornekanahtar123"&&ev("S.providers.find(p=>p.id==='groq').model")==="llama-3.3-70b-versatile"&&ev("S.providers.find(p=>p.id==='groq').on")&&!k().includes("Rehber ne yapar")&&k().includes("Açık rızamı veriyorum")&&!q("#sheet").classList.contains("on"));
     ok("setup gives no consent: consent stays off, coachOn false",ev("S.settings.consent")===false&&ev("coachOn()")===false);
     ev("pFail('groq',Object.assign(new Error('x'),{status:429,body:'insufficient_quota'}));offline='fail'");
     ok("a chat error shows the reason (quota)",k().includes("Groq: Hesabının kotası"));
@@ -1648,12 +1648,12 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("S.chat=[];tab='trend';render()");
     q('[data-c="why"]').click();await flush();
     const wc=ev("S.chat.find(m=>m.card&&m.card.kind==='why')");
-    ok("without consent the why card is local, no fetch, 'Koç'a yorumlat' not shown",ev("tab")==="coach"&&wc&&wc.card.items[0].t.includes("hedefin 1800 kcal")&&fetched===0&&!q('[data-c^="whyai"]'),[wc,fetched]);
+    ok("without consent the why card is local, no fetch, 'Rehber'e yorumlat' not shown",ev("tab")==="coach"&&wc&&wc.card.items[0].t.includes("hedefin 1800 kcal")&&fetched===0&&!q('[data-c^="whyai"]'),[wc,fetched]);
     await ev(`cWhyAsk(${wc.id})`);
-    ok("without consent 'Koç'a yorumlat' makes no call",fetched===0&&!ev(`S.chat.find(m=>m.id===${wc.id}).card.asked`));
+    ok("without consent 'Rehber'e yorumlat' makes no call",fetched===0&&!ev(`S.chat.find(m=>m.id===${wc.id}).card.asked`));
     ev("S.settings.consent=true;S.settings.consentP='gemini,groq,nvidia,openrouter';S.settings.age=30;render()");
     q(`[data-c="whyai:${wc.id}"]`).click();await flush();
-    ok("with consent and a provider 'Koç'a yorumlat' calls once, the reply lands in chat, the button goes",fetched===1&&ev("S.chat[S.chat.length-1].text")==="Yorum"&&!q('[data-c^="whyai"]')&&!q("#view").textContent.includes("gönderilmedi")&&q("#view").textContent.includes("Koç'a gönderildi"),fetched);
+    ok("with consent and a provider 'Rehber'e yorumlat' calls once, the reply lands in chat, the button goes",fetched===1&&ev("S.chat[S.chat.length-1].text")==="Yorum"&&!q('[data-c^="whyai"]')&&!q("#view").textContent.includes("gönderilmedi")&&q("#view").textContent.includes("Rehber'e gönderildi"),fetched);
     const cc=JSON.parse(ev("JSON.stringify(cleanCoach(JSON.parse(JSON.stringify(S))))"));
     ok("the why card survives a reload",cc.chat.some(m=>m.card&&m.card.kind==="why"&&m.card.items.length===wc.card.items.length&&m.card.asked===true));
     const g=JSON.parse(ev(`JSON.stringify(cleanCoach({chat:[{id:1,role:'coach',text:'',t:1,card:{kind:'why',items:'x'}},{id:2,role:'coach',text:'',t:1,card:{kind:'why',items:[null,{k:'X!',t:1}]}},{id:3,role:'user',text:'merhaba',t:1}]}))`));
@@ -1819,7 +1819,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("S.entries=S.entries.filter(e=>e.type!=='weight');S.chat=[];S.cid=1;cReply({reply:'Harika',log:[{type:'exercise',min:30,name:'Cross',kcal:900}]});render()");
     ok("without weight the Coach's exercise estimate is capped at 15 kcal per minute",q("#view").textContent.includes("30 dk · ~450 kcal"));
     const nk=ev("S.entries.length");ev("add('weight',80,'',dayKey());render()");
-    ok("exercise card: 'Egzersizi ekle', calories by weight and MET (cross 8 MET, 80 kg, 30 min = net 280), a warning for a deviating Coach estimate",q("#view").textContent.includes("Egzersizi ekle")&&q("#view").textContent.includes("30 dk · ~280 kcal")&&q("#view").textContent.includes("Koç ~900 kcal dedi")&&q(`[data-c="ok:${sk().id}"]`).textContent==="Egzersizi ekle");
+    ok("exercise card: 'Egzersizi ekle', calories by weight and MET (cross 8 MET, 80 kg, 30 min = net 280), a warning for a deviating Coach estimate",q("#view").textContent.includes("Egzersizi ekle")&&q("#view").textContent.includes("30 dk · ~280 kcal")&&q("#view").textContent.includes("Rehber ~900 kcal dedi")&&q(`[data-c="ok:${sk().id}"]`).textContent==="Egzersizi ekle");
     q(`[data-c="ok:${sk().id}"]`).click();ev(`cClick('ok:${sk().id}',document.body)`);
     const se=ev("JSON.stringify(S.entries.filter(e=>e.type==='exercise').slice(-1).map(e=>[e.v,e.text,e.kcal,e.day===dayKey()]))");
     ok("one tap writes to the existing sport record (duration, name, calories), once; shows on Today",se==='[[30,"Cross",280,true]]'&&ev("S.entries.length")===nk+2&&ev("S.entries.filter(e=>e.type==='exercise'&&e.text==='Cross').length")===1&&ev("viewToday()").includes("Cross"),se);
@@ -1827,9 +1827,9 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("S.entries=JSON.parse(window.__keep);S.chat=[];tab='today';render()");
   }
   ev("sheetFood()");const fq3=w.document.querySelector("#fq");fq3.value="ev yapımı mantı";fq3.dispatchEvent(new w.Event("input",{bubbles:true}));
-  ok("for a food not in the list 'Koç'a sor' appears",w.document.querySelector("#flist [data-c=askfood]")&&w.document.querySelector("#flist").innerHTML.includes("ev yapımı mantı"));
+  ok("for a food not in the list 'Rehber'e sor' appears",w.document.querySelector("#flist [data-c=askfood]")&&w.document.querySelector("#flist").innerHTML.includes("ev yapımı mantı"));
   ev("S.chat=[];cClick('askfood',document.body)");
-  ok("'Koç'a sor' sends the message",ev("S.chat.some(m=>m.role==='user'&&m.text.includes('ev yapımı mantı kaç kalori'))")&&ev("tab")==="coach");
+  ok("'Rehber'e sor' sends the message",ev("S.chat.some(m=>m.role==='user'&&m.text.includes('ev yapımı mantı kaç kalori'))")&&ev("tab")==="coach");
   ev("tab='today';S.chat=[]");
   let stepGranted=false,stepSnap=0,stepSteps=4321,stepHist={"2026-09-30":9000};
   w.Capacitor.Plugins.StepCounter={isAvailable:async()=>({available:true,granted:stepGranted}),requestAccess:async()=>{stepGranted=true;return {granted:true}},start:async()=>{},read:async()=>({steps:stepSteps,history:stepHist,snapAt:stepSnap})};
@@ -2199,7 +2199,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("S.settings.age=30;tab='settings-data';render()");
     q('[data-pv="open"]').click();
     const g=sh();
-    ok("Privacy and data: where, Open Food Facts barcode only, ML Kit, Drive, the Coach consent text is the same, medical warning",["Verin nerede","Open Food Facts","yalnızca barkod numarası","Google barkod tarayıcı","Google Drive","Koç ile veri paylaşımına açık rızan"].every(x=>g.includes(x))&&g.includes(ev("(()=>{const d=document.createElement(\"div\");d.innerHTML=consentHtml();return d.textContent})()"))&&g.includes(ev("MED_NOTE")),g.slice(0,200));
+    ok("Privacy and data: where, Open Food Facts barcode only, ML Kit, Drive, the Coach consent text is the same, medical warning",["Verin nerede","Open Food Facts","yalnızca barkod numarası","Google barkod tarayıcı","Google Drive","Rehber ile veri paylaşımına açık rızan"].every(x=>g.includes(x))&&g.includes(ev("(()=>{const d=document.createElement(\"div\");d.innerHTML=consentHtml();return d.textContent})()"))&&g.includes(ev("MED_NOTE")),g.slice(0,200));
     q('[data-pv="consent"]').click();
     ok("consent from the sheet: the sheet stays open, the state updates, a withdraw button appears",ev("S.settings.consent")&&sh().includes("kabul edildi")&&!!q('[data-pv="revoke"]'));
     q('[data-pv="revoke"]').click();
@@ -2227,7 +2227,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     const cnt=()=>ev("JSON.stringify([S.entries.length,S.workouts.length,S.moves.length,S.meds.length+S.medLog.length,S.vitals.length,S.labs.length,S.sleep.length+S.mood.length+S.fast.log.length+(S.fast.t0?1:0),S.chat.length])");
     const del=i=>{q(`[data-pv="del:${i}"]`).click()};
     seed();const all=cnt();
-    ok("list: 15 categories, each with a record count and a Sil button; backup reminder",qa('[data-pv^="del:"]').length===15&&sh().includes("Yemek ve su kayıtları")&&sh().includes("2 kayıt")&&sh().includes("Önce yedek al")&&sh().includes("Koç sohbeti"));
+    ok("list: 15 categories, each with a record count and a Sil button; backup reminder",qa('[data-pv^="del:"]').length===15&&sh().includes("Yemek ve su kayıtları")&&sh().includes("2 kayıt")&&sh().includes("Önce yedek al")&&sh().includes("Rehber sohbeti"));
     ev("window.confirm=()=>false");del(0);
     ok("nothing is deleted if not confirmed",cnt()===all);
     let msg="";w.confirm=m=>{msg=m;return true};
@@ -2281,7 +2281,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("closeSheet();S.settings.obDone=true;S.settings.heightCm=170;S.settings.age=30;S.settings.goalKg=72;S.settings.medOn=true;S.settings.fastOn=true;S.settings.bpOn=true;S.settings.bsOn=true;S.settings.stepsOn=false;S.settings.lastBackup='';tab='settings';render()");
     const rows=qa('#view [data-tab^="settings-"]').map(b=>b.dataset.tab);
     ok("Settings home is a short list: 6 sections, summary value and ›, no fields, a ‹ in the header (to Daha fazla)",rows.join()==="settings-profile,settings-reminders,settings-coach,settings-modules,settings-data,settings-about"&&v().includes("170 cm · 30 yaş · hedef 72,0 kg")&&v().includes("İlaç, Oruç, Tansiyon, Şeker açık")&&v().includes("Henüz yedek dosyası yok")&&!q("#view input")&&!q("#back").hidden&&q('nav [data-tab="more"]').getAttribute("aria-current")==="page",v());
-    const T={profile:"Profil ve hedefler",modules:"Modüller",reminders:"Hatırlatmalar",coach:"Koç",data:"Veri ve yedek",about:"Hakkında"},seen=new Set();
+    const T={profile:"Profil ve hedefler",modules:"Modüller",reminders:"Hatırlatmalar",coach:"Rehber",data:"Veri ve yedek",about:"Hakkında"},seen=new Set();
     let titles=true;
     for(const k in T){
       q(`[data-tab="settings-${k}"]`).click();
@@ -2314,7 +2314,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     const tabs=()=>qa("nav button").map(b=>b.dataset.tab).join(),rowsOf=()=>qa('#view .prow');
     ev("S.settings.obDone=true;S.settings.medOn=false;S.settings.bpOn=false;S.settings.bsOn=false;S.settings.stepsOn=false");go("today");
     const closed=tabs();ev("S.settings.medOn=true;S.settings.bpOn=true;S.settings.bsOn=true;S.settings.stepsOn=true;S.settings.cycleOn=true");go("today");
-    ok("the bottom menu is always the same 5 tabs (medication off or on): Bugün, Salon, Trend, Koç, Daha fazla; opens on Today",closed==="today,gym,trend,coach,more"&&tabs()===closed&&/let tab="today"/.test(html)&&qa("nav button").pop().textContent.includes("Daha fazla"));
+    ok("the bottom menu is always the same 5 tabs (medication off or on): Bugün, Salon, Trend, Rehber, Daha fazla; opens on Today",closed==="today,gym,trend,coach,more"&&tabs()===closed&&/let tab="today"/.test(html)&&qa("nav button").pop().textContent.includes("Daha fazla"));
     go("more");
     ok("Daha fazla with modules open: 5 headed groups, header, no ‹, tab active",q("#ttl").textContent==="Daha fazla"&&q("#back").hidden&&cur()==="more"&&qa("#view h2.grp").map(h=>h.textContent).join()==="Geçmiş,Sağlık takibi,Beslenme ve hareket,Veri,Uygulama"&&rowsOf().length===(ev("phOk()")?19:18)&&!q(".prow.off")&&["meds","cycle","steps","labs","bp","glucose","exlib","settings","settings-about"].every(t=>!!q(`#view [data-tab="${t}"]`))&&!!q('#view [data-pv="open"]'));
     ev("S.settings.medOn=false;S.settings.bsOn=false;S.settings.stepsOn=false;S.settings.cycleOn=false;render()");
@@ -2713,7 +2713,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     const gone=()=>["nw_state_previous","nw_state_corrupt","nw_keys","nw_keys_enc"].every(k=>ls.getItem(k)===null);
     reset();seed();let msg="";w.confirm=m=>{msg=m;return true};
     ev("tab='settings-data';render()");$q('[data-act="reset"]').click();
-    ok("Delete all data: the safety copy, the corrupt copy and API keys go too; the confirm text mentions the keys",gone()&&Object.keys(ev("getKeys()")).length===0&&msg.includes("Koç anahtar"),[msg,Object.keys(ls)]);
+    ok("Delete all data: the safety copy, the corrupt copy and API keys go too; the confirm text mentions the keys",gone()&&Object.keys(ev("getKeys()")).length===0&&msg.includes("Rehber anahtar"),[msg,Object.keys(ls)]);
     reset();seed();ev("S.meds=[{id:1,n:'A',t:['08:00']}]");ev("pvDelete(PV_CATS.findIndex(c=>c[0]==='İlaç'))");
     ok("deleting a category also deletes the safety copy (deleted data does not stay there)",ls.getItem("nw_state_previous")===null);
     // steps: deleted history does not return with a sensor sync, a running walk is deleted
@@ -2779,7 +2779,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   { // the consent text matches the real data and the policy
     const doc=require("fs").readFileSync(path.join(__dirname,"../docs/privacy-policy.md"),"utf8"),sent=ev("CONSENT_SENT"),note=ev("CONSENT_NOT");
     ok("consent text version 2; consent of an old version lapses",ev("CONSENT_V")===2&&ev("cleanSettings({consent:true,consentV:1}).consent")===false);
-    ok("the in-app consent text and policy section 5 carry the same sent/not-sent list",doc.includes("**Koç'a gönderilenler** (uygulama içindeki onay metniyle aynıdır): "+sent+".")&&doc.includes("**Koç'a ne zaman gider:** "+ev("CONSENT_WHEN"))&&ev("consentHtml()").includes(ev("CONSENT_WHEN"))&&doc.includes("**Koç'a gönderilmeyenler:** "+note)&&ev("consentHtml()").includes(sent)&&ev("consentHtml()").includes(note));
+    ok("the in-app consent text and policy section 5 carry the same sent/not-sent list",doc.includes("**Rehber'e gönderilenler** (uygulama içindeki onay metniyle aynıdır): "+sent+".")&&doc.includes("**Rehber'e ne zaman gider:** "+ev("CONSENT_WHEN"))&&ev("consentHtml()").includes(ev("CONSENT_WHEN"))&&doc.includes("**Rehber'e gönderilmeyenler:** "+note)&&ev("consentHtml()").includes(sent)&&ev("consentHtml()").includes(note));
     reset();ev("S.settings.medOn=true;S.meds=[{id:1,n:'Ilac',d:'1 tablet',t:['08:00'],w:[1],on:true,k:10}];S.mealTpl=[];S.myFoods=[{n:'Kendi besinim',k:100,p:5}]");
     const ctx=ev("CoachLib.contextText(cData())"),cat=ev("cMenuCat().text");
     ok("every datum named in the text is really in the context: dose, weekdays, adherence, stock, today's food, own food name",ctx.includes("1 tablet")&&ctx.includes("haftanın günleri")&&ctx.includes("son 7 gün")&&ctx.includes("stok")&&cat.includes("Kendi besinim")&&["doz","haftanın günleri","son 7 günün uyumu","stok","bugünkü kayıtların","kendi besin"].every(k=>sent.includes(k)));
@@ -2794,9 +2794,9 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     reset();
   }
   { // the Coach's portion food does not count as 100 g in a recipe
-    reset();ev("S.myFoods=[{n:'Koç lahmacun',k:300,p:10,portion:true},{n:'Gramlı besin',k:200,u:[['1 adet (50 g)',50]]}];sheetRecipe()");
+    reset();ev("S.myFoods=[{n:'Rehber lahmacun',k:300,p:10,portion:true},{n:'Gramlı besin',k:200,u:[['1 adet (50 g)',50]]}];sheetRecipe()");
     const pick=name=>{const r=$q("#rq");r.value=name;r.dispatchEvent(new w.Event("input",{bubbles:true}));$q('[data-rp="pick:0"]').click()};
-    pick("Koç lahmacun");pick("Gramlı besin");ok("a food added from a Coach card is stored with the portion flag, the cleaner keeps it",ev("(()=>{S.myFoods=[];Nutrition.addMy('Test',250,5);return S.myFoods[0].portion===true&&cleanMyFoods(S.myFoods)[0].portion===true&&cleanMyFoods([{n:'a',k:1}])[0].portion===undefined})()"));ev("S.myFoods=[{n:'Koç lahmacun',k:300,p:10,portion:true},{n:'Gramlı besin',k:200,u:[['1 adet (50 g)',50]]}];sheetRecipe()");pick("Koç lahmacun");pick("Gramlı besin");
+    pick("Rehber lahmacun");pick("Gramlı besin");ok("a food added from a Coach card is stored with the portion flag, the cleaner keeps it",ev("(()=>{S.myFoods=[];Nutrition.addMy('Test',250,5);return S.myFoods[0].portion===true&&cleanMyFoods(S.myFoods)[0].portion===true&&cleanMyFoods([{n:'a',k:1}])[0].portion===undefined})()"));ev("S.myFoods=[{n:'Rehber lahmacun',k:300,p:10,portion:true},{n:'Gramlı besin',k:200,u:[['1 adet (50 g)',50]]}];sheetRecipe()");pick("Rehber lahmacun");pick("Gramlı besin");
     ok("Nutrition.putMy: same name (Turkish case-insensitive) or barcode replaces, a new food goes first, a full list refuses",ev("(()=>{S.myFoods=[];const P=f=>Nutrition.putMy(f);P({n:'Işık Çorbası',k:100});P({n:'Bar',k:50,b:'123'});P({n:'IŞIK çorbası',k:120});P({n:'Başka ad',k:60,b:'123'});const a=S.myFoods.map(f=>f.n+':'+f.k).join();S.myFoods=Array.from({length:MYFOODS_MAX},(_,i)=>({n:'F'+i,k:1}));return a==='Başka ad:60,IŞIK çorbası:120'&&P({n:'Yeni',k:1})===false&&S.myFoods.length===MYFOODS_MAX&&P({n:'F3',k:9})===true})()"));
     const gi=()=>[...w.document.querySelectorAll("[data-rg]")],sh=()=>$q("#sheet").textContent;
     ok("a food with unknown grams (Coach) goes into a recipe by portion, a food with grams by grams",ev("recipeDraft.items[0].portion")===true&&ev("recipeDraft.items[1].portion")===undefined&&sh().includes("1 porsiyon: 300 kcal")&&sh().includes("100 g: 200 kcal"));

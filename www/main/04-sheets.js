@@ -126,7 +126,7 @@ function goTpl(){
 }
 let curFood=null,curPor=0,foodAskQ="";
 const allFoods=()=>S.myFoods.map(m=>Object.assign({n:m.n,k:m.k,u:m.u||[["1 porsiyon",100]],portion:m.portion===true,my:true,b:m.b,src:m.src},...NUTR.map(k=>({[k]:m[k]==null?null:m[k]})))).concat(S.recipes.map(LogLib.recipeFood),FOODS);
-const foodListHtml=q=>{const L=allFoods(),ask=q.trim().length>=2?`<button class="prow" data-c="askfood"><span class="grow"><b>"${esc(q.trim())}" için Koç'a sor</b><span class="mut sm">Yapay zekâ tahmin eder, sonra listene ekleyebilirsin</span></span><span class="aic" aria-hidden="true">${Icons.svg("sparkle")}</span></button>`:"";return foodSearch(q,8,L).map(i=>{const f=L[i];return `<button class="prow" data-food="${i}"><span class="grow"><b>${esc(f.n)}</b><span class="mut sm">${f.rec?`Tarifim, 1 porsiyon: ${Math.round(f.k*f.u[0][1]/100)} kcal`:f.o?`Öğün, ${esc(f.u[0][0])}: ${Math.round(f.k*f.u[0][1]/100)} kcal`:f.my?(f.u.length>1||f.u[0][1]!==100?`Benim ürünüm, 100 g: ${f.k} kcal`:`Benim besinim, 1 porsiyon: ${f.k} kcal`):`100 g: ${f.k} kcal, protein ${fmt(f.p,0)} g`}</span></span><span class="aic" aria-hidden="true">${Icons.svg("plus")}</span></button>`}).join("")+ask};
+const foodListHtml=q=>{const L=allFoods(),ask=q.trim().length>=2?`<button class="prow" data-c="askfood"><span class="grow"><b>"${esc(q.trim())}" için Rehber'e sor</b><span class="mut sm">Yapay zekâ tahmin eder, sonra listene ekleyebilirsin</span></span><span class="aic" aria-hidden="true">${Icons.svg("sparkle")}</span></button>`:"";return foodSearch(q,8,L).map(i=>{const f=L[i];return `<button class="prow" data-food="${i}"><span class="grow"><b>${esc(f.n)}</b><span class="mut sm">${f.rec?`Tarifim, 1 porsiyon: ${Math.round(f.k*f.u[0][1]/100)} kcal`:f.o?`Öğün, ${esc(f.u[0][0])}: ${Math.round(f.k*f.u[0][1]/100)} kcal`:f.my?(f.u.length>1||f.u[0][1]!==100?`Benim ürünüm, 100 g: ${f.k} kcal`:`Benim besinim, 1 porsiyon: ${f.k} kcal`):`100 g: ${f.k} kcal, protein ${fmt(f.p,0)} g`}</span></span><span class="aic" aria-hidden="true">${Icons.svg("plus")}</span></button>`}).join("")+ask};
 function sheetPortion(i,food){
   curFood=food||allFoods()[i];curPor=0;
   openSheet(`<h3>${esc(curFood.n)}</h3><div class="lbl">Porsiyon</div><div class="chips" id="fpc">${curFood.u.map((u,j)=>`<button class="chip" data-fp="${j}" aria-pressed="${j===0}">${esc(u[0])}</button>`).join("")}</div>
@@ -169,7 +169,7 @@ async function barcodeFind(raw){
   }catch{return toast("İnternete ulaşılamadı, barkod aranamadı")}
   const x=OffLib.parse(j);
   if(x.status==="none"||x.status==="bad"){
-    sheetFood();ownOpen();toast(`${x.why}. Etiketteki değerleri elle yaz ya da Koç'a sor`);return;
+    sheetFood();ownOpen();toast(`${x.why}. Etiketteki değerleri elle yaz ya da Rehber'e sor`);return;
   }
   const food=Object.assign({},x.food,{src:"off"});
   if(x.status==="ok"&&Nutrition.putMy(food)){save();return sheetPortion(S.myFoods.findIndex(m=>m.b===code))}
@@ -218,7 +218,7 @@ function goNote(){const t=$("#fv").value.trim();if(!t)return toast("Önce notunu
 
 function sheetBackup(){
   openSheet(`<h3>Yedekle veya geri yükle</h3><div class="lbl">Yedek metni. Geri yüklemek için yedek metnini buraya yapıştır ya da "Dosyadan oku"yu kullan. Yedek alırken Kopyala'ya basınca metin burada çıkar.</div><textarea class="in" id="bk" spellcheck="false"></textarea>
-  <div class="lbl">Yedek parolası (zorunlu, en az ${BackupLib.MINPW} karakter). Yedek her zaman şifrelenir ve Koç anahtarların da içine girer. Parolayı unutursan yedeğini kimse açamaz, kurtarma yolu yoktur. Parolayı güvenli bir yere yaz. Geri yüklerken de aynı parola gerekir.</div>
+  <div class="lbl">Yedek parolası (zorunlu, en az ${BackupLib.MINPW} karakter). Yedek her zaman şifrelenir ve Rehber anahtarların da içine girer. Parolayı unutursan yedeğini kimse açamaz, kurtarma yolu yoktur. Parolayı güvenli bir yere yaz. Geri yüklerken de aynı parola gerekir.</div>
   <input class="in" id="bkpw" type="password" autocomplete="new-password" placeholder="Parola"><input class="in" id="bkpw2" type="password" autocomplete="new-password" placeholder="Yedek alırken parolayı tekrar yaz">
   <div class="hint" id="bkw" role="alert"></div>
   <div class="two"><button class="btn ghost" data-go="copy">Kopyala</button><button class="btn ghost" data-go="${isNative()?"share":"download"}">${isNative()?"Dosya olarak paylaş":"Dosya indir"}</button></div>
@@ -248,7 +248,7 @@ async function goRestore(){
   const prevS=S;
   S=b.S;
   /* A backup must not change where the key goes, the consent setting or the data-sharing permission. The automatic backup folder belongs to this phone. */
-  Object.assign(S.settings,{consent:prevS.settings.consent,consentV:prevS.settings.consentV,consentAt:prevS.settings.consentAt,consentP:prevS.settings.consentP,chatRisk:riskMerge(prevS.settings.chatRisk,S.settings.chatRisk),lastBackup:dayKey(),autoBk:prevS.settings.autoBk,lastAutoBk:prevS.settings.lastAutoBk});cAgeGuard();
+  Object.assign(S.settings,Object.fromEntries(["noticeOk",...SHARE_KEYS].map(k=>[k,prevS.settings[k]])),{consent:prevS.settings.consent,consentV:prevS.settings.consentV,consentAt:prevS.settings.consentAt,consentP:prevS.settings.consentP,chatRisk:riskMerge(prevS.settings.chatRisk,S.settings.chatRisk),lastBackup:dayKey(),autoBk:prevS.settings.autoBk,lastAutoBk:prevS.settings.lastAutoBk});cAgeGuard();
   const keys=getKeys();
   for(const p of S.providers){
     const cur=prevS.providers.find(x=>x.id===p.id),def=defProviders().find(x=>x.id===p.id);

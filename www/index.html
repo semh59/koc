@@ -19,14 +19,14 @@
   <button data-tab="today"><span class="ic" data-ic="today"></span>Bugün</button>
   <button data-tab="gym"><span class="ic" data-ic="gym"></span>Salon</button>
   <button data-tab="trend"><span class="ic" data-ic="trend"></span>Trend</button>
-  <button data-tab="coach"><span class="ic" data-ic="coach"></span>Koç</button>
+  <button data-tab="coach"><span class="ic" data-ic="coach"></span>Rehber</button>
   <button data-tab="more"><span class="ic" data-ic="more"></span>Daha fazla</button>
 </div></nav>
 <script>/* With large text the menu labels wrap and the menu grows; fixed-position parts move up by --nx. */
 {const n=document.querySelector("nav .in");if(window.ResizeObserver)new ResizeObserver(()=>document.documentElement.style.setProperty("--nx",Math.max(0,n.getBoundingClientRect().height-parseFloat(getComputedStyle(n.firstElementChild).minHeight))+"px")).observe(n)}</script>
-<div id="composer" hidden role="region" aria-label="Koça yaz">
+<div id="composer" hidden role="region" aria-label="Rehbere yaz">
   <div class="chiprow"><button class="chip" data-act="water"><span data-ic="water"></span> +250</button><button class="chip" data-act="food"><span data-ic="food"></span> Yemek</button><button class="chip" data-act="weight"><span data-ic="weight"></span> Kilo</button><button class="chip" data-act="exercise"><span data-ic="exercise"></span> Spor</button></div>
-  <div class="cin"><input id="cmsg" aria-label="Koça yaz" placeholder="Koça yaz" autocomplete="off" maxlength="600"><button id="csend" data-c="send" aria-label="Gönder" data-ic="send"></button></div>
+  <div class="cin"><input id="cmsg" aria-label="Rehbere yaz" placeholder="Rehbere yaz" autocomplete="off" maxlength="600"><button id="csend" data-c="send" aria-label="Gönder" data-ic="send"></button></div>
 </div>
 <div id="scrim"></div>
 <div id="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>

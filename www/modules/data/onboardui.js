@@ -1,5 +1,9 @@
 "use strict";
 /* First run: welcome (step -1) and 3 steps. Inputs are written to the existing profile and settings fields; the draft lives only in memory. */
+/* Fixed start-up notice: shown on the welcome screen and, for an existing install, once in a sheet until acknowledged. */
+const NOTICE="NeoWell bir tıbbi cihaz değildir ve hekim yerine geçmez. Rehber yapay zekâ kullanır ve yanılabilir; sağlıkla ilgili kararları hekiminle ver. Acil bir durumda 112'yi ara.";
+const noticeGate=()=>{if(!S.settings.noticeOk)openSheet(`<h3>Önemli uyarı</h3><div class="banner"><p>${NOTICE}</p></div><button class="btn" data-notice>Anladım</button>`)};
+document.addEventListener("click",ev=>{if(ev.target.closest("[data-notice]")){S.settings.noticeOk=true;save();closeSheet()}});
 const obFresh=()=>({step:-1,kg:"",cm:"",age:"",sex:"",dir:"keep",goal:"",hd:false,hn:false,mods:[],err:"",bad:"",minor:false,kgOk:"",job:"",walk:""});
 const ob=obFresh();
 const OB_MODS=[["med","İlaç hatırlatıcı","meds"],["fast","Oruç takibi","fast"],["steps","Adım sayar","steps"],["bp","Tansiyon","heart"],["bs","Şeker","water"]];
@@ -46,7 +50,7 @@ function obView(){
   const fld=(k,lbl,val,small,mode)=>`<div class="field"><label for="ob${k}">${lbl}${small?`<small>${small}</small>`:""}</label><input id="ob${k}" type="text" inputmode="${mode}" value="${esc(val)}" autocomplete="off"${bad(k)}></div>${ob.bad===k?err:""}`;
   const seg=(attr,opts,sel)=>`<div class="seg2" role="group">${opts.map(([v,l])=>`<button data-ob="${attr}:${v}" aria-pressed="${sel===v}">${l}</button>`).join("")}</div>`;
   if(st<0&&!ob.minor)return `<div class="about"><img src="logo.svg" alt="" width="96" height="96"><h2 class="m0">NeoWell'e hoş geldin</h2><p class="tc mut m0">Yemek, su, hareket ve sağlık ölçümlerini tek yerde tut; hedefini sana göre hesaplayalım.</p></div>
-  <p class="tc hint">Verilerin yalnızca bu telefonda durur.</p><button class="btn" data-ob="next">Başla</button><button class="mt-2 lnk" data-ob="skip">Şimdilik geç</button>`;
+  <p class="tc hint">Verilerin yalnızca bu telefonda durur.</p><div class="banner"><p>${NOTICE}</p></div><button class="btn" data-ob="next">Başla</button><button class="mt-2 lnk" data-ob="skip">Şimdilik geç</button>`;
   /* Under 18: setup does not continue and the draft is gone; there is no skip or back, only correcting the age. */
   if(ob.minor)return `<h2>NeoWell 18 yaş ve üzeri için</h2><div class="card"><p>Büyüme çağında kalori ve kilo hedefleri farklıdır; bu uygulama onları hesaplamaz.</p><p>Beslenme, kilo ya da spor konusunda bir yetişkinle ve hekiminle ya da diyetisyeninle konuş.</p><p class="hint">Girdiğin bilgiler kaydedilmedi.</p></div><button class="btn ghost" data-ob="fixage">Yaşımı yanlış girdim</button>`;
   let body,next="Devam";
@@ -67,14 +71,14 @@ function obView(){
     const p=obParse(),pl=obPlan(p);next="Başla";
     body=`<h2>Günlük hedefin</h2><div class="card"><div class="lbl">Kalori</div><div class="pc sumv num">${fint(pl.kcal)} <small>kcal</small></div>
     <div class="lbl">Protein</div><div class="t-h1 b7 num">${pl.protein?`${pl.protein[0]}–${pl.protein[1]} <small class="mut">g</small>`:"Hekiminle belirle"}</div><p class="p0 hint">${Algo.PROTEIN_NOTE}</p>
-    <p class="hint">Verilerin yalnızca telefonunda durur. Koç'u açarsan, yalnızca onayınla, seçtiğin yapay zekâ sağlayıcısına (yurt dışı) gider. Koç olmadan da uygulama tam çalışır. ${MED_NOTE} <button class="wa ib lnk" data-pv="open">Gizlilik ve veri</button></p>
+    <p class="hint">Verilerin yalnızca telefonunda durur. Rehber'i açarsan, yalnızca onayınla, seçtiğin yapay zekâ sağlayıcısına (yurt dışı) gider. Rehber olmadan da uygulama tam çalışır. ${MED_NOTE} <button class="wa ib lnk" data-pv="open">Gizlilik ve veri</button></p>
     ${pl.risk.block?riskBox(pl.risk,"Kalori açığı önermiyorum")+(p.goal>p.kg?"":`<p class="hint">Yukarıdaki değer kilonu koruma düzeyidir.</p>`):`<p class="hint">${pl.note==="Kilo verme"?"Yavaş ve güvenli kilo verme hızına göre":pl.note==="Kilo alma"?"Yavaş kilo alma hızına göre":"Kilonu koruma düzeyine göre"} hesaplandı. Kayıt girdikçe gerçek verine göre güncellenir. Tahmindir, tıbbi tavsiye değildir.</p>`}</div>`;
   }
   const dots=`<div class="obp" role="status"><span class="mut sm">Adım ${st+1}/3</span><span class="obbar" aria-hidden="true">${[0,1,2].map(i=>`<i${i<=st?' class="on"':""}></i>`).join("")}</span></div>`;
   return `<div class="row">${dots}<button class="lnk wa" data-ob="skip">Şimdilik geç</button></div>${body}
   <div class="two" style="display:grid;grid-template-columns:${st?"1fr 2fr":"1fr"};gap:10px">${st?`<button class="btn ghost" data-ob="back">Geri</button>`:""}<button class="btn" data-ob="next">${next}</button></div>`;
 }
-function obDone(){Object.assign(ob,obFresh());S.settings.obDone=true;tab="today";logOff=0;save();render();window.scrollTo(0,0)}
+function obDone(){Object.assign(ob,obFresh());S.settings.obDone=S.settings.noticeOk=true;tab="today";logOff=0;save();render();window.scrollTo(0,0)}
 function obFinish(){
   const p=obParse();if(p.err)return;
   const st=S.settings,pl=obPlan(p),mods=ob.mods;
