@@ -54,7 +54,7 @@ async function scheduleReminders(){
     /* The notification plugin does not light the locked screen: for medication doses (reminder repeats excluded) a separate alarm screen wakes it briefly. */
     const mw=MW();if(mw)await mw.set({times:MedLib.wakeTimes(list),doses:MedLib.wakeDoses(list)}).catch(()=>{});
     return "ok";
-  }catch(e){return "Bildirimler kurulamadı: "+(e&&e.message||e)}
+  }catch(e){console.log("NW-SCHED-FAIL "+(e&&e.message||e));return "Bildirimler kurulamadı: "+(e&&e.message||e)}
 }
 /* Only tapping a notification ("tap"); the water/medication buttons are caught natively in QuickLogPlugin. Without Coach consent the weekly summary opens in Trend, the backup reminder in Data and backup. */
 function notifTap(e){
