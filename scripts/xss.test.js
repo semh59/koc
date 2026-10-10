@@ -17,7 +17,7 @@ setTimeout(()=>{
     S.templates=[{id:1,name:P,ex:["c1"],tg:{}}];
     S.workouts=[{id:1,day:d,t0:Date.now()-36e5,t1:Date.now(),name:P,tpl:1,ex:[{id:"c1",note:P,sets:[{kg:10,reps:5,done:true}]}]}];
     S.meds=[{id:1,n:P,d:P,t:["08:00"],days:[0,1,2,3,4,5,6],k:0}];
-    S.labs=[{id:1,day:d,items:[{n:P,v:5,u:P}]}];
+    S.labs=[{id:1,day:d,k:"x",n:P,v:5,u:P}];
     S.vitals=[{id:1,day:d,time:"08:00",k:"t",sys:120,dia:80,note:P,session:"morning"},{id:2,day:d,time:"08:00",k:"s",g:100,ctx:"fasting",note:P}];
     S.mood=[{day:d,v:3,t:P}];S.sleep=[{day:d,min:420}];
     S.chat=[{role:"user",text:P},{role:"assistant",text:P}];

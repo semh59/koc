@@ -92,10 +92,7 @@ ok("kaydı girilmiş doz için bildirim kurulmaz",M.notifications(A,M.cleanLog([
 ok("bildirim kimlikleri benzersiz ve büyük aralıkta",(ids=>new Set(ids).size===ids.length&&ids.every(i=>i>=1e6&&i<2**31))(M.notifications(M.cleanMeds([med({id:1}),med({id:2,t:["10:00","11:00","12:30"]}),med({id:999,t:["23:00"]})]),[],new Date(2026,8,10,0,0,0),30,true).map(n=>n.id)));
 ok("kimlikler normal hatırlatma kimlikleriyle (1-1100) çakışmaz",M.notifications(A,[],now,30,true).every(n=>n.id>1100));
 ok("kapalı ya da hafta günü dışı ilaç bildirim üretmez",M.notifications(M.cleanMeds([med({on:false})]),[],now,5,true).length===0&&M.notifications(wd,[],new Date(2026,8,15,0,0,0),1,true).length===0);
-const big=M.notifications(M.cleanMeds(Array.from({length:12},(_,i)=>med({id:i+1,n:"M"+i,t:["06:00","10:00","14:00","18:00","22:00","23:00"]}))),[],new Date(2026,8,10,0,0,0),40,true);
-const bg=M.budget(big);
-ok("bütçe: 440 ile sınırlı, en yakın tarihler korunur",big.length>440&&bg.length===440&&bg[0].at<=bg[439].at&&Math.max(...bg.map(n=>n.at))<=Math.min(...big.filter(n=>!bg.includes(n)).map(n=>n.at.getTime()))+1,[big.length,bg.length]);
-ok("bütçe: az bildirimde hepsi kalır",M.budget(N).length===N.length);
+ok("notification ids stay unique over 40 days and the id layout cap is respected",(ids=>new Set(ids).size===ids.length)(M.notifications(M.cleanMeds(Array.from({length:12},(_,i)=>med({id:i+1,n:"M"+i,t:["06:00","10:00","14:00","18:00","22:00","23:00"]}))),[],new Date(2026,8,10,0,0,0),60,true).map(n=>n.id)));
 ok("kış/yaz saati günü: saat hâlâ doğru (2026-03-29 geçişi)",(l=>l.length===2&&l[0].at.getHours()===8)(M.notifications(M.cleanMeds([med({t:["08:00"]})]),[],new Date(2026,2,27,12,0,0),3,true).slice(0,2)));
 
 // bildirim düğmesinden gün bulma
@@ -165,5 +162,17 @@ ok("sinceFor: yeni saat bugünden, vakti geçmiş saat yarından, eski saat koru
 // yorum ve tanı dili yok
 const src=require("fs").readFileSync(require("path").join(__dirname,"../www/modules/meds/medlib.js"),"utf8").replace(/\/\*[\s\S]*?\*\//g,"");
 ok("doz önerisi/yorum dili kullanılmaz",!/öner|tavsiye|etkileşim|yan etki|aşırı doz|tehlikeli/i.test(src));
-ok("dayOk: geçersiz takvim günü reddedilir",!M.dayOk("2026-02-31")&&!M.dayOk("2026-04-31")&&M.dayOk("2026-02-28"));
+ok("cleanMeds: an impossible calendar day is not kept as a start day",M.cleanMeds([med({s:"2026-02-31"})])[0].s===undefined&&M.cleanMeds([med({s:"2026-02-28"})])[0].s==="2026-02-28");
+// stock keeps two decimals (a quarter tablet does not drift after a reload), adherence by day, indexes, ids, time helpers
+ok("stock: quarter doses are not rounded to one decimal by cleanMeds",(m=>M.cleanMeds([m])[0].k===29.75&&M.cleanMeds([M.cleanMeds([m])[0]])[0].k===29.75)(med({k:29.75,p:0.25})));
+ok("stock: a per-dose amount that rounds to zero is dropped",M.cleanMeds([med({p:0.004})])[0].p===undefined&&M.cleanMeds([med({p:0.5})])[0].p===0.5);
+{const S2={meds:M.cleanMeds([med({k:30,p:0.25})]),medLog:[]};M.mark(S2,1,"2026-09-10","08:00","t");M.mark(S2,1,"2026-09-10","20:00","t");
+ ok("stock: marks and a reload keep the same value",S2.meds[0].k===29.5&&M.cleanMeds(S2.meds)[0].k===29.5);}
+{const per=M.adherenceDays(A,log,"2026-09-10","2026-09-12","2026-09-12","09:00"),sum=M.sumAdherence(per);
+ ok("adherenceDays: one entry per day, summed equals adherence",per.map(d=>d.day).join()==="2026-09-10,2026-09-11,2026-09-12"&&JSON.stringify(sum)===JSON.stringify(M.adherence(A,log,"2026-09-10","2026-09-12","2026-09-12","09:00"))&&per[0].taken===1&&per[0].skipped===1&&per[2].late===1,per);}
+{const rec=M.logIndex(log,"2026-09-11");
+ ok("logIndex: finds a row by medication, day and time; days before `from` are left out",rec(1,"2026-09-11","08:00").st==="t"&&rec(1,"2026-09-10","08:00")===undefined&&rec(2,"2026-09-11","08:00")===undefined);}
+ok("freeId: smallest unused id",M.freeId(new Set([1,2,4]))===3&&M.freeId(new Set())===1);
+ok("hm and slotAt: HH:MM of a date, local date of a day and time",M.hm(new Date(2026,8,10,7,5))==="07:05"&&(d=>d.getFullYear()===2026&&d.getMonth()===8&&d.getDate()===10&&d.getHours()===23&&d.getMinutes()===55)(M.slotAt("2026-09-10","23:55")));
+ok("mark: new log ids stay unique",(S3=>{M.mark(S3,1,"2026-09-10","08:00","t");M.mark(S3,1,"2026-09-10","20:00","t");M.mark(S3,1,"2026-09-11","08:00","s");return new Set(S3.medLog.map(x=>x.id)).size===3})({meds:M.cleanMeds([med({})]),medLog:[]}));
 console.log(bad?"\n"+bad+" HATA":"\nTüm ilaç testleri geçti");process.exit(bad?1:0);

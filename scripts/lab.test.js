@@ -43,6 +43,10 @@ ok("bilinmeyen ad birim ve aralıkla kabul edilir, tahmin işareti yok",(r=>r&&!
 ok("bilinmeyen ad birim/aralık eksikse tahmin işaretlenir",P("Akreditasyon No: 123 ISO 15189").guess===true);
 ok("bilinmeyen ad birim ve aralık olmadan reddedilir",P("Kontrol Sayısı 12")===null);
 ok("nitel sonuç: bilinen ad olmayınca atlanır",P("HIV Negatif")===null);
+ok("a qualitative word instead of a value is not a result",P("CRP Negatif")===null&&P("Glukoz Normal")===null);
+ok("alias: \"Serum Demiri\" is iron",(r=>r&&r.k==="demir"&&r.n==="Demir")(P("Serum Demiri 45 ug/dL 50-170")));
+ok("optNum: blank is undefined, text is null, numbers parse",L.optNum("  ")===undefined&&L.optNum(null)===undefined&&L.optNum("abc")===null&&L.optNum("1,5")===1.5);
+ok("fmtN: two decimals at most, decimal comma",L.fmtN(5.4)==="5,4"&&L.fmtN(5.456)==="5,46"&&L.fmtN(6)==="6");
 
 // Hasta ve belge satırları sonuç sayılmaz
 for(const l of ["Hasta Adı Soyadı: Ali Veli","T.C. Kimlik No: 12345678901","Protokol No 1234567","Doğum Tarihi 12.03.1985","Sayfa 1 / 3","Numune Tarihi: 12.09.2026 08:14","Telefon: 0212 555 44 33","Dr. Ayşe Yılmaz Uzm. 12345","Barkod No 8690526010113","Rapor Onay: 12.09.2026 15:00","Kolesterol düzeyi yüksektir, 3 ay sonra tekrar","Test Adı Sonuç Birim Referans Aralığı","12.09.2026 14:32"])
@@ -71,14 +75,15 @@ ok("bitişik parçalar birleşir",L.groupLines([it("Glu",50,10,10),it("koz",60,1
 // cleanLabs
 const base={day:"2026-09-12",n:"Glukoz",k:"glukoz",v:98,u:"mg/dL",lo:70,hi:100};
 const cl=L.cleanLabs([base,{...base},{...base,day:"bozuk"},{...base,v:NaN},{...base,n:""},{...base,v:1e9},{...base,v:105,lo:"x"},{day:"2026-09-12",n:"HIV",t:"Negatif"},null,{...base,v:99,q:"="}]);
-ok("cleanLabs: geçersiz ve yinelenenleri atar",cl.length===4&&cl.map(x=>x.v).join()==="98,105,,99",cl);
-ok("cleanLabs: bozuk aralık atılır, id yeniden numaralanır",cl[1].lo===undefined&&cl.map(x=>x.id).join()==="1,2,3,4");
+ok("cleanLabs: invalid, duplicate and value-less rows are dropped",cl.length===3&&cl.map(x=>x.v).join()==="98,105,99",cl);
+ok("cleanLabs: a broken range is dropped and ids are renumbered",cl[1].lo===undefined&&cl.map(x=>x.id).join()==="1,2,3");
 ok("cleanLabs: dizi olmayan girdi boş döner",L.cleanLabs(null).length===0&&L.cleanLabs("x").length===0);
 ok("cleanLabs: 5000 satırla sınırlı",L.cleanLabs(Array.from({length:6000},(_,i)=>({...base,v:i}))).length===5000);
+ok("cleanLabs: over the cap the newest rows are kept",(c=>c[0].v===1000&&c[4999].v===5999)(L.cleanLabs(Array.from({length:6000},(_,i)=>({...base,v:i})))));
 
 // flag ve seri
-ok("aralık dışı yalnızca laboratuvar aralığıyla",L.flag({v:60,lo:70,hi:100})==="low"&&L.flag({v:130,lo:70,hi:100})==="high"&&L.flag({v:80,lo:70,hi:100})===null&&L.flag({v:80})===null&&L.flag({t:"Negatif"})===null);
-const ser=L.series(L.cleanLabs([{...base,day:"2026-09-12"},{...base,day:"2026-03-01",v:90},{...base,day:"2026-06-01",v:5.4,u:"mmol/L"},{day:"2026-09-12",n:"HIV",t:"Negatif"}]));
+ok("aralık dışı yalnızca laboratuvar aralığıyla",L.flag({v:60,lo:70,hi:100})==="low"&&L.flag({v:130,lo:70,hi:100})==="high"&&L.flag({v:80,lo:70,hi:100})===null&&L.flag({v:80})===null);
+const ser=L.series(L.cleanLabs([{...base,day:"2026-09-12"},{...base,day:"2026-03-01",v:90},{...base,day:"2026-06-01",v:5.4,u:"mmol/L"}]));
 ok("birim değişirse ayrı seri, tarih sırası",ser.length===2&&ser.find(s=>s.u==="mg/dL").pts.map(p=>p.v).join()==="90,98"&&ser.find(s=>s.u==="mmol/L").pts.length===1,ser);
 
 // Sözlük çakışması olmaz
@@ -149,8 +154,9 @@ ok("tanınmayan kalemde bilgi yok",L.info(L.parseLine("Bilinmeyen Test 5 mg/dL 1
   const w=fs.readFileSync(path.join(__dirname,"../www/vendor/pdfjs/pdf.worker.min.js")),nw=fs.readFileSync(path.join(__dirname,"../node_modules/pdfjs-dist/legacy/build/pdf.worker.min.mjs"));
   ok("gömülü pdf.js testte kullanılanla aynı sürüm",v.equals(n)&&w.equals(nw));
   ok("pdf.js sürümü CVE-2024-4367 düzeltmesinden yeni",(()=>{const [a,b,c]=lib.version.split(".").map(Number);return a>4||(a===4&&(b>2||(b===2&&c>=67)))})(),lib.version);
-  console.log(bad?"\n"+bad+" HATA":"\nTüm lab testleri geçti");process.exit(bad?1:0);
 // toNum: başı 0 ya da tek noktadan sonra 0 gelen üç haneli ondalıktır, binlik değil; geçersiz takvim günü reddedilir
 for(const [s,v] of [["0.850",0.85],["1.050",1.05],["0.005",0.005],["1.500",1500],["12.034.567",12034567],["250.000",250000]])ok("toNum ondalık/binlik: "+s,L.toNum(s)===v,L.toNum(s));
 ok("dayOk: 2026-02-31 ve 2026-13-01 reddedilir, 2024-02-29 kabul",!L.dayOk("2026-02-31")&&!L.dayOk("2026-13-01")&&L.dayOk("2024-02-29")&&!L.dayOk("2026-02-29"));
+  ok("a text PDF over the page cap reports the pages left out",await(async()=>{const fake=n=>({getDocument:()=>({promise:Promise.resolve({numPages:n,getPage:async()=>({getTextContent:async()=>({items:[{str:"Glukoz 98 mg/dL",transform:[1,0,0,1,40,700],width:50}]})})}),destroy:async()=>{}})}),r=await L.extract(fake(31),new Uint8Array()),r2=await L.extract(fake(30),new Uint8Array());return r.lines.length===30&&r.limited.read===30&&r.limited.total===31&&!r2.limited})());
+  console.log(bad?"\n"+bad+" HATA":"\nTüm lab testleri geçti");process.exit(bad?1:0);
 })().catch(e=>{console.log("FAIL beklenmeyen hata",e);process.exit(1)});

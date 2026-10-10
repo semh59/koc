@@ -401,18 +401,8 @@ function cReply(o,kind){
     if(cl&&cl.kcal!==S.settings.kcal)cPush({role:"coach",text:"",card:{kind:"propose",kcal:cl.kcal,why:String(o.propose.why||"").slice(0,160),limited:cl.limited,state:"pending"}});
   }
 }
-/* My foods: an AI estimate or a saved meal enters the searchable list with its one-portion values. */
-function myFoodPut(f){
-  const i=Nutrition.my().findIndex(x=>(f.b&&x.b===f.b)||tr(x.n)===tr(f.n));
-  if(i>=0)Nutrition.my()[i]=f;else if(Nutrition.my().length<MYFOODS_MAX)Nutrition.my().unshift(f);else return false;
-  return true;
-}
 const mealNow=()=>LogLib.mealOf({time:cTime(Date.now())});
 const cardMeal=c=>c.meal||(c.items.find(i=>i.meal)||{}).meal||mealNow();
-function myFoodAdd(n,kcal,p){
-  const f={n:n.slice(0,60),k:Math.round(kcal),por:true};if(p!=null&&p>=0)f.p=Math.round(p*10)/10;
-  return myFoodPut(f);
-}
 function cApplyLog(id,el){
   const m=S.chat.find(x=>x.id===id);if(!m||!m.card||m.card.kind!=="log"||m.card.state!=="pending")return;
   lReadK(m.card,el);
@@ -987,11 +977,11 @@ function cClick(v,el){
       const m=S.chat.find(x=>x.id===+p1),c=m&&m.card;if(!c||c.kind!=="food"||c.logged)return;
       c.logged=true;return addFoods([{text:c.f.n,v:c.f.k,p:c.f.p==null?undefined:c.f.p,meal:mealNow()}],dayKey(),`${c.f.n} günlüğe eklendi`,()=>{c.logged=false});
     }
-    case "addfood":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card&&m.card.kind==="food"&&m.card.state==="pending"){if(myFoodAdd(m.card.f.n,m.card.f.k,m.card.f.p)){m.card.state="ok";save();render();toast("Besin listene eklendi")}else toast(`Listen dolu (en fazla ${MYFOODS_MAX} besin)`)}return}
+    case "addfood":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card&&m.card.kind==="food"&&m.card.state==="pending"){if(Nutrition.addMy(m.card.f.n,m.card.f.k,m.card.f.p)){m.card.state="ok";save();render();toast("Besin listene eklendi")}else toast(`Listen dolu (en fazla ${MYFOODS_MAX} besin)`)}return}
     case "nofood":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card){m.card.state="no";save();render()}return}
     case "savefood":{
       const m=S.chat.find(x=>x.id===+p1);if(!m||!m.card||m.card.kind!=="log"||m.card.saved)return;
-      let n=0;for(const it of m.card.items)if(it.type==="food"&&it.text&&it.kcal!=null&&myFoodAdd(it.text,it.kcal,it.p))n++;
+      let n=0;for(const it of m.card.items)if(it.type==="food"&&it.text&&it.kcal!=null&&Nutrition.addMy(it.text,it.kcal,it.p))n++;
       m.card.saved=true;save();render();toast(n?`${n} besin listene eklendi`:"Eklenecek besin yok");return;
     }
     case "no":{const m=S.chat.find(x=>x.id===+p1);if(m&&m.card){m.card.state="no";save();render()}return}

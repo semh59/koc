@@ -1,7 +1,5 @@
 "use strict";
-/* Vücut ölçüleri (bel, kalça, göğüs, kol, uyluk): ekleme sayfası ve Trend kartı. Koç bağlamına girmez.
-   index.html'deki S, save, toast, esc, fmt, fmtS, fd, num, dayOptions, fday, ferr, openSheet, closeSheet, render, Algo ile çalışır. */
-const MNAME={waist:"Bel",hip:"Kalça",chest:"Göğüs",arm:"Kol",thigh:"Uyluk"};
+/* Body measures (waist, hip, chest, arm, thigh): add sheet and Trend card. Not part of the Coach context. */
 let msel="waist";
 const mLast=k=>{const a=S.measures.filter(m=>m.k===k);return a.length?a[a.length-1]:null};
 const mChips=id=>`<div class="chips" id="${id}">${Algo.MEASURES.map(k=>`<button class="chip" data-ms="k:${k}" aria-pressed="${k===msel}">${MNAME[k]}</button>`).join("")}</div>`;

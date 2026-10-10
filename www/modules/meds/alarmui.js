@@ -1,6 +1,5 @@
 "use strict";
-/* Uygulama içi ilaç alarm ekranı: ilaç bildirimine dokununca açılır (kilit üstü ekran yereldir: AlarmActivity.java).
-   index.html'deki S, save, render, trap, toast, esc, MW, LN ve medui.js'teki medNowHM, medResched ile çalışır. */
+/* In-app medication alarm screen: opens when a medication notification is tapped (the lock-screen part is native: AlarmActivity.java). */
 let alarm=null;
 
 function alarmEl(){
@@ -25,27 +24,26 @@ function alarmDraw(){
       :`<span class="alact"><button class="btn" data-al="t:${k}" aria-label="${esc(lab)}: aldım">${Icons.svg("check")} Aldım</button><button class="btn ghost" data-al="s:${k}" aria-label="${esc(lab)}: atla">Atla</button></span>`}</div>`;
   }).join("");
   const left=a.items.filter(i=>!i.st).length;
-  alarmEl();$("#allive").textContent=a.say||"";
+  $("#allive").textContent=a.say||"";
   $("#albody").innerHTML=`
-    <div class="alclk num" aria-hidden="true">${AlarmLib.hm(new Date())}</div>
+    <div class="alclk num" aria-hidden="true">${MedLib.hm(new Date())}</div>
     <h2 id="alt" tabindex="-1">İlaç zamanı</h2>
     <p id="allead" class="allead">${esc(done&&a.items.length?"Tüm dozlar alındı.":v.lead)}${v.count&&!done?` <span class="num">${v.count}</span>`:""}</p>
     ${rows?`<div class="card">${rows}</div>`:""}
     <div class="albar">${left>1?`<button class="btn ghost" data-al="all">Hepsini aldım</button>`:""}${left?`<button class="btn ghost" data-al="snooze">10 dk sonra hatırlat</button>`:""}<button class="lnk" data-al="open">Uygulamayı aç</button></div>`;
 }
 
-/* o.quiet: gösterilecek doz yoksa hiç açılmaz (bildirime geç dokunma). */
+/* o.quiet: when there is no dose to show, nothing opens (late tap on a notification). */
 function alarmOpen(o={}){
-  if(typeof recovery!=="undefined"&&recovery)return;
-  if(!S.settings.medOn)return;
-  const now=new Date(),items=AlarmLib.due(S.meds,S.medLog,now);
+  if(recovery||!S.settings.medOn)return;
+  const items=AlarmLib.due(S.meds,S.medLog,new Date());
   if(!items.length&&o.quiet&&!alarm)return;
-  if(alarm){ // açıkken yeni uyandırma: liste tazelenir, işaretlenenler kalır
-    const old=new Map(alarm.items.map(i=>[i.m+"|"+i.day+"|"+i.slot,i.st]));
-    for(const i of items)i.st=old.get(i.m+"|"+i.day+"|"+i.slot);
+  if(alarm){ // a new wake-up while open: the list is refreshed and marked doses stay marked
+    const old=new Map(alarm.items.map(i=>[MedLib.doseKey(i.m,i.day,i.slot),i.st]));
+    for(const i of items)i.st=old.get(MedLib.doseKey(i.m,i.day,i.slot));
     alarm.items=items.length?items:alarm.items;
   }else{
-    alarm={items,from:document.activeElement,tick:setInterval(()=>{const c=document.querySelector("#alarm .alclk");if(c)c.textContent=AlarmLib.hm(new Date())},15000)};
+    alarm={items,from:document.activeElement,tick:setInterval(()=>{const c=document.querySelector("#alarm .alclk");if(c)c.textContent=MedLib.hm(new Date())},15000)};
   }
   const d=alarmEl();alarmDraw();d.hidden=false;document.body.classList.add("alon");trap();
   $("#alt").focus({preventScroll:true});
@@ -58,7 +56,7 @@ function alarmClose(){
   const d=alarmEl();d.hidden=true;$("#albody").innerHTML="";$("#allive").textContent="";document.body.classList.remove("alon");trap();
   if(f&&f.isConnected)f.focus({preventScroll:true});
 }
-/* İşaretleme bildirimdeki "Aldım" ile aynı kayıt: MedLib.mark + save + medResched (alınan dozun bekleyen tekrar bildirimleri iptal olur). */
+/* Same record as the notification's "taken" button: MedLib.mark + save + medResched (the pending repeats of a taken dose are cancelled). */
 function alarmMark(ks,st){
   const a=alarm,list=ks.map(k=>a.items[k]).filter(i=>i&&!i.st);if(!list.length)return;
   const at=medNowHM(),undo=[];
@@ -70,18 +68,18 @@ function alarmMark(ks,st){
   const next=document.querySelector('#alarm [data-al^="t:"]');(next||$("#alt")).focus({preventScroll:true});
   if(AlarmLib.allDone(a.items)){alarmSnoozeCancel();alarmAuto()}
 }
-function alarmSnoozeCancel(){const ln=LN(),w=MW();if(ln)ln.cancel({notifications:[{id:AlarmLib.SNOOZE_NID}]}).catch(()=>{});if(w&&w.snooze)w.snooze({at:0}).catch(()=>{})}
-/* Erteleme: doz işaretlenmez; 10 dk sonra tek seferlik ilaç bildirimi ve ekranı yeniden uyandıran alarm. */
+function alarmSnoozeCancel(){LN()?.cancel({notifications:[{id:AlarmLib.SNOOZE_NID}]}).catch(()=>{});MW()?.snooze?.({at:0}).catch(()=>{})}
+/* Snooze: the dose is not marked; 10 minutes later a one-shot medication notification and an alarm wake the screen again. */
 async function alarmSnooze(){
   const a=alarm;if(!a)return;
   const at=AlarmLib.snoozeAt(Date.now()),ln=LN(),w=MW(),items=a.items.filter(i=>!i.st);
   try{
     if(ln)await ln.schedule({notifications:[AlarmLib.snoozeNote(items,alarmShowName(),at)]});
-    if(w&&w.snooze)await w.snooze({at});
+    if(w?.snooze)await w.snooze({at});
     alarmClose();toast("10 dakika sonra yeniden hatırlatacağım");
   }catch(e){a.say="Erteleme kurulamadı";alarmDraw()}
 }
-/* Android geri tuşu ve Escape: alarm ekranı kapanır, uygulama açılır (dozlar işaretlenmez, bildirimler sürer). */
+/* Android back key and Escape: the alarm screen closes and the app shows (doses stay unmarked, notifications stay). */
 function alarmBack(){if(!alarm)return false;alarmClose();return true}
 
 document.addEventListener("click",ev=>{

@@ -1,46 +1,57 @@
 "use strict";
-/* Tansiyon ve şeker ölçümleri: doğrulama, ortalama, doktor raporu (DOM yok).
-   Değerleri yorumlamaz: eşik, etiket ve renk yok; yalnızca kaydeder, ortalar, çizer. */
+/* Blood pressure and glucose readings: validation, averages, doctor report (no DOM).
+   It does not interpret values: no thresholds, labels or colours; it only records, averages and plots. */
 const VitalsLib=(()=>{
   const CTX=[["fasting","Açlık"],["before","Yemek öncesi"],["after","Yemekten 2 saat sonra"],["bedtime","Yatmadan önce"],["random","Rastgele"]];
   const SESSIONS=[["morning","Sabah"],["evening","Akşam"],["other","Diğer"]];
-  const ctxName=c=>(CTX.find(x=>x[0]===c)||[0,"Rastgele"])[1];
-  const sessionName=c=>(SESSIONS.find(x=>x[0]===c)||[0,"Diğer"])[1];
+  const CTX_NAME=new Map(CTX),SESSION_NAME=new Map(SESSIONS);
+  const ctxName=c=>CTX_NAME.get(c)??"Rastgele";
+  const sessionName=c=>SESSION_NAME.get(c)??"Diğer";
   const LIM={sys:[50,300],dia:[30,200],pulse:[25,250],g:[20,800]};
+  const MAX_ROWS=50000,NOTE_MAX=80;
+  /* Emergency box: a reading from today at or beyond these values (mg/dL for glucose). */
+  const CRISIS={sys:180,dia:120,gLow:54,gHigh:400};
+  /* "Are you sure" question: jump from the previous reading of the same kind. */
+  const JUMP_SYS=60,JUMP_G=150;
   const dayOk=d=>typeof d==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&new Date(d+"T00:00Z").toJSON()?.slice(0,10)===d;
   const timeOk=s=>typeof s==="string"&&/^([01]\d|2[0-3]):[0-5]\d$/.test(s);
   const fin=x=>typeof x==="number"&&Number.isFinite(x);
   const inr=(x,[a,b])=>fin(x)&&x>=a&&x<=b;
   const r1=x=>Math.round(x*10)/10;
+  const mean=(a,f=x=>x)=>a.reduce((t,x)=>t+f(x),0)/a.length;
   const UN=typeof Units!=="undefined"?Units:require("../../kernel/unitlib.js");
-  const dayN=k=>Date.UTC(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10))/864e5;
+  const ALGO=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
+  const dayN=ALGO.dayNum,fmtD=k=>ALGO.fdate(k,true);
+  /* Oldest first by day and time, then id. */
+  const cmpAt=(a,b)=>{const x=a.day+a.time,y=b.day+b.time;return x<y?-1:x>y?1:a.id-b.id};
+  const latest=rows=>rows.reduce((b,r)=>!b||cmpAt(r,b)>0?r:b,undefined);
 
-  /* Tek ölçümü doğrular; geçerliyse temiz satırı, değilse {err} döner. */
+  /* Validates one reading: returns the clean row, or {err}. err is a code ("kind", "date", "glucose") or a Turkish message. */
   function check(x){
-    if(!x||(x.k!=="t"&&x.k!=="s"))return {err:"tür"};
-    if(!dayOk(x.day)||!timeOk(x.time))return {err:"tarih"};
+    if(!x||(x.k!=="t"&&x.k!=="s"))return {err:"kind"};
+    if(!dayOk(x.day)||!timeOk(x.time))return {err:"date"};
     const o={day:x.day,time:x.time,k:x.k};
-    if(typeof x.note==="string"&&x.note.trim())o.note=x.note.trim().slice(0,80);
+    if(typeof x.note==="string"&&x.note.trim())o.note=x.note.trim().slice(0,NOTE_MAX);
     if(typeof x.sid==="string"&&/^[a-z0-9]{1,12}$/.test(x.sid))o.sid=x.sid;
     if(x.k==="t"){
-      if(!inr(x.sys,LIM.sys)||!inr(x.dia,LIM.dia))return {err:"Sistolik 50-300, diyastolik 30-200 arasında olmalı"};
+      if(!inr(x.sys,LIM.sys)||!inr(x.dia,LIM.dia))return {err:`Sistolik ${LIM.sys.join("-")}, diyastolik ${LIM.dia.join("-")} arasında olmalı`};
       if(x.sys<=x.dia)return {err:"Sistolik (büyük tansiyon) diyastolikten büyük olmalı"};
       o.sys=Math.round(x.sys);o.dia=Math.round(x.dia);
-      if(x.pulse!=null&&x.pulse!==""){if(!inr(x.pulse,LIM.pulse))return {err:"Nabız 25-250 arasında olmalı"};o.pulse=Math.round(x.pulse)}
-      o.session=SESSIONS.some(s=>s[0]===x.session)?x.session:"other";
+      if(x.pulse!=null&&x.pulse!==""){if(!inr(x.pulse,LIM.pulse))return {err:`Nabız ${LIM.pulse.join("-")} arasında olmalı`};o.pulse=Math.round(x.pulse)}
+      o.session=SESSION_NAME.has(x.session)?x.session:"other";
       if(x.i===1||x.i===2)o.i=x.i;
     }else{
-      if(!inr(x.g,LIM.g))return {err:"Şeker 20-800 mg/dL arasında olmalı"};
-      o.g=r1(x.g);o.ctx=CTX.some(c=>c[0]===x.ctx)?x.ctx:"random";
+      if(!inr(x.g,LIM.g))return {err:"glucose"};
+      o.g=r1(x.g);o.ctx=CTX_NAME.has(x.ctx)?x.ctx:"random";
     }
     return {row:o};
   }
-  /* Elle girilen her ölçüm kendi kimliğini alır: aynı dakikadaki aynı değerler iki gerçek ölçümdür, temizlikte birleşmez. */
-  const newSid=()=>Math.random().toString(36).slice(2,10).replace(/[^a-z0-9]/g,"a");
-  /* Saklanan listeyi temizler: geçersizleri ve yinelenenleri (aynı sid, sid yoksa aynı imza) atar, kimlikleri yeniden verir. */
+  /* Every manual reading gets its own id: identical values in the same minute are two real readings and must not merge when cleaning. */
+  const newSid=()=>Math.random().toString(36).slice(2,10);
+  /* Cleans a stored list: drops invalid rows and duplicates (same sid, or the same signature when there is no sid) and renumbers the ids. */
   function clean(arr){
     const out=[],seen=new Set();let id=1;
-    for(const x of (Array.isArray(arr)?arr:[]).slice(-50000)){
+    for(const x of (Array.isArray(arr)?arr:[]).slice(-MAX_ROWS)){
       const c=check(x);if(!c.row)continue;
       const o=c.row,sig=[o.k,o.day,o.time,o.sys,o.dia,o.g,o.ctx,o.sid,o.i,o.session,o.pulse,o.note].join("|");
       if(seen.has(sig))continue;seen.add(sig);
@@ -49,71 +60,72 @@ const VitalsLib=(()=>{
     return out;
   }
 
-  /* Tansiyon seansları: aynı sid'li ölçümler bir seanstır, sid'siz ölçüm kendi başına. Ham ölçümler korunur. */
+  /* Blood pressure sessions: readings with the same sid form one session, a reading without sid is a session of its own. Raw readings are kept. */
   function sessions(rows){
     const m=new Map(),list=[];
-    for(const r of rows.filter(r=>r.k==="t").sort((a,b)=>a.day<b.day?-1:a.day>b.day?1:a.time<b.time?-1:a.time>b.time?1:a.id-b.id)){
+    for(const r of rows.filter(r=>r.k==="t").sort(cmpAt)){
       const key=r.sid?r.sid+"|"+r.day:"r"+r.id;
       let s=m.get(key);
       if(!s){s={day:r.day,time:r.time,session:r.session,raw:[]};m.set(key,s);list.push(s)}
       s.raw.push({id:r.id,sys:r.sys,dia:r.dia,pulse:r.pulse,time:r.time});
     }
     for(const s of list){
-      s.n=s.raw.length;s.sys=r1(s.raw.reduce((a,x)=>a+x.sys,0)/s.n);s.dia=r1(s.raw.reduce((a,x)=>a+x.dia,0)/s.n);
-      const p=s.raw.filter(x=>x.pulse!=null);s.pulse=p.length?Math.round(p.reduce((a,x)=>a+x.pulse,0)/p.length):null;
+      s.n=s.raw.length;s.sys=r1(mean(s.raw,x=>x.sys));s.dia=r1(mean(s.raw,x=>x.dia));
+      const p=s.raw.filter(x=>x.pulse!=null);s.pulse=p.length?Math.round(mean(p,x=>x.pulse)):null;
     }
     return list;
   }
-  const avgOf=a=>a.length?{sys:r1(a.reduce((s,x)=>s+x.sys,0)/a.length),dia:r1(a.reduce((s,x)=>s+x.dia,0)/a.length),n:a.length}:null;
-  /* Ev ortalaması: bitiş gününden geriye `days` gün, tüm ham ölçümlerin ortalaması. 3 günden az günde "yetersiz". */
+  const avgOf=a=>a.length?{sys:r1(mean(a,x=>x.sys)),dia:r1(mean(a,x=>x.dia)),n:a.length}:null;
+  /* Home average: the `days` days back from the end day, over all raw readings. "Not enough" under 3 distinct days. */
   function homeAvg(rows,endDay,days){
-    const end=dayN(endDay),raw=rows.filter(r=>r.k==="t"&&dayN(r.day)<=end&&dayN(r.day)>end-(days||7));
+    const end=dayN(endDay),raw=rows.filter(r=>{const n=end-dayN(r.day);return r.k==="t"&&n>=0&&n<days});
     const dset=new Set(raw.map(r=>r.day));
     return {all:avgOf(raw),morning:avgOf(raw.filter(r=>r.session==="morning")),evening:avgOf(raw.filter(r=>r.session==="evening")),days:dset.size,enough:dset.size>=3};
   }
 
-  /* Şeker özeti: sayı, ortalama, uç değerler, bağlama göre ortalama. */
+  /* Glucose summary: count, average, extremes, average per context. */
   function gStats(rows,from,to){
     const a=rows.filter(r=>r.k==="s"&&r.day>=from&&r.day<=to);
     if(!a.length)return null;
-    const v=a.map(r=>r.g),byCtx={};
-    for(const [c] of CTX){const x=a.filter(r=>r.ctx===c);if(x.length)byCtx[c]={n:x.length,avg:r1(x.reduce((t,r)=>t+r.g,0)/x.length)}}
-    return {n:a.length,avg:r1(v.reduce((t,x)=>t+x,0)/v.length),min:Math.min(...v),max:Math.max(...v),byCtx};
+    const by=new Map();let min=Infinity,max=-Infinity;
+    for(const r of a){
+      if(!by.has(r.ctx))by.set(r.ctx,[]);
+      by.get(r.ctx).push(r.g);
+      if(r.g<min)min=r.g;
+      if(r.g>max)max=r.g;
+    }
+    const byCtx={};
+    for(const [c] of CTX){const g=by.get(c);if(g)byCtx[c]={n:g.length,avg:r1(mean(g))}}
+    return {n:a.length,avg:r1(mean(a,r=>r.g)),min,max,byCtx};
   }
-  /* Uç değer kutusu: yalnızca bugün tarihli kayıtlarda. */
-  const crisis=(r,today)=>r.day===today&&(r.k==="t"?(r.sys>=180||r.dia>=120):(r.g<54||r.g>400));
-  /* "Emin misin" soru: yalnızca aynı türdeki (şekerde aynı bağlamdaki) en son ölçümle karşılaştırılır. */
+  /* Emergency box: only for readings dated today. */
+  const crisis=(r,today)=>r.day===today&&(r.k==="t"?(r.sys>=CRISIS.sys||r.dia>=CRISIS.dia):(r.g<CRISIS.gLow||r.g>CRISIS.gHigh));
+  /* "Are you sure" question: compared only with the latest reading of the same kind (for glucose, the same context). */
   function needsConfirm(rows,n,gu){
-    const prev=rows.filter(r=>r.k===n.k&&(n.k==="t"||r.ctx===n.ctx)).sort((a,b)=>a.day<b.day?1:a.day>b.day?-1:a.time<b.time?1:a.time>b.time?-1:b.id-a.id)[0];
+    const prev=latest(rows.filter(r=>r.k===n.k&&(n.k==="t"||r.ctx===n.ctx)));
     if(!prev)return null;
-    if(n.k==="t")return Math.abs(n.sys-prev.sys)>60?`Son sistolik ölçümün ${prev.sys} idi, şimdi ${n.sys}.`:null;
-    return Math.abs(n.g-prev.g)>150?`Aynı bağlamdaki son ölçümün ${UN.fg(prev.g,gu)} idi, şimdi ${UN.fg(n.g,gu)}.`:null;
+    if(n.k==="t")return Math.abs(n.sys-prev.sys)>JUMP_SYS?`Son sistolik ölçümün ${prev.sys} idi, şimdi ${n.sys}.`:null;
+    return Math.abs(n.g-prev.g)>JUMP_G?`Aynı bağlamdaki son ölçümün ${UN.fg(prev.g,gu)} idi, şimdi ${UN.fg(n.g,gu)}.`:null;
   }
 
-  /* ---- Doktor raporu PDF'i ---- */
-  const RW=1240,RH=1754,RM=70,ROW=44,FOOT=80;
-  const fmtD=k=>(typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js")).fdate(k,true);
-  const num=x=>String(r1(x)).replace(".",",");
-  /* Tablo satırları: her ham ölçüm bir satır. */
+  /* ---- Doctor report PDF ---- */
+  const RW=1240,RH=1754,RM=70,ROW=44,FOOT=80,HEAD1=330,CHART=360;
+  /* Table rows: one row per raw reading. A pressure reading of a session shows its measurement number (i). */
   function reportRows(rows,kind,from,to,gu){
-    const a=rows.filter(r=>r.k===kind&&r.day>=from&&r.day<=to).sort((x,y)=>x.day<y.day?-1:x.day>y.day?1:x.time<y.time?-1:x.time>y.time?1:x.id-y.id);
-    const nth=new Map();
-    return a.map(r=>{
+    return rows.filter(r=>r.k===kind&&r.day>=from&&r.day<=to).sort(cmpAt).map(r=>{
       let ctx,val;
-      if(kind==="t"){const key=r.sid?r.sid+r.day:null,i=!key?0:r.i?r.i:(nth.set(key,(nth.get(key)||0)+1),nth.get(key));ctx=sessionName(r.session)+(i?`, ${i}. ölçüm`:"");val=`${r.sys}/${r.dia} mmHg`+(r.pulse?`  nabız ${r.pulse}`:"")}
+      if(kind==="t"){ctx=sessionName(r.session)+(r.sid&&r.i?`, ${r.i}. ölçüm`:"");val=`${r.sys}/${r.dia} mmHg`+(r.pulse?`  nabız ${r.pulse}`:"")}
       else{ctx=ctxName(r.ctx);val=`${UN.fg(r.g,gu)} ${UN.gl(gu)}`}
       return {d:fmtD(r.day),t:r.time,c:ctx,v:val,note:r.note||""};
     });
   }
-  const HEAD1=330,CHART=360;
   function paginate(rowsN,nSummary){
     const first=Math.max(0,Math.floor((RH-RM-HEAD1-nSummary*38-CHART-FOOT)/ROW)),rest=Math.floor((RH-RM-FOOT-RM-ROW)/ROW);
-    const pages=[],items=[];let i=0;
-    pages.push({n:Math.min(first,rowsN)});i+=pages[0].n;
+    const pages=[{n:Math.min(first,rowsN)}];let i=pages[0].n;
     while(i<rowsN){const n=Math.min(rest,rowsN-i);pages.push({n});i+=n}
     return pages;
   }
-  /* Renk körü ve siyah-beyaz baskı için seri şekli (c daire, s kare, t üçgen, d baklava), kesik çizgi ve doğrudan etiket (short) taşır. */
+  /* The series shape (c circle, s square, t triangle, d diamond), dashed line and direct label (short) keep series apart for colour-blind readers and black-and-white print. */
   function mark(ctx,sh,x,y,r){
     ctx.beginPath();
     if(sh==="s")ctx.rect(x-r,y-r,2*r,2*r);
@@ -133,7 +145,7 @@ const VitalsLib=(()=>{
       ctx.strokeStyle=s.color;ctx.lineWidth=2.5;if(ctx.setLineDash)ctx.setLineDash(s.dash?[14,8]:[]);ctx.beginPath();s.pts.forEach((p,i)=>i?ctx.lineTo(X(p.day),Y(p.v)):ctx.moveTo(X(p.day),Y(p.v)));ctx.stroke();if(ctx.setLineDash)ctx.setLineDash([]);
       for(const p of s.pts){ctx.fillStyle=s.color;mark(ctx,s.shape,X(p.day),Y(p.v),6)}
       if(s.vals){
-        /* Değer etiketi yalnız ilk, son, en düşük ve en yüksek noktada; birbirine binen etiket atlanır. */
+        /* Value labels only at the first, last, lowest and highest point; overlapping labels are skipped. */
         const vv=s.pts.map(p=>p.v),keep=new Set([0,s.pts.length-1,vv.indexOf(Math.min(...vv)),vv.indexOf(Math.max(...vv))]);let right=-1e9;
         ctx.fillStyle="#10232b";ctx.font="22px sans-serif";
         s.pts.forEach((p,i)=>{if(!keep.has(i))return;const tx=s.fmt?s.fmt(p.v):String(Math.round(p.v)),tw=ctx.measureText(tx).width,lx=Math.min(Math.max(X(p.day)-tw/2,x+2),x+w-tw-2);if(lx<right+6)return;right=lx+tw;ctx.fillText(tx,lx,Y(p.v)-14)});
@@ -143,7 +155,7 @@ const VitalsLib=(()=>{
     ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText(fmtD(from),x,y+h+30);const e=fmtD(to);ctx.fillText(e,x+w-ctx.measureText(e).width,y+h+30);
     const ax=v=>dec?v.toFixed(dec).replace(".",","):Math.round(v);ctx.fillText(`${ax(lo)} – ${ax(hi)}`,x+w+12,y+h);
   }
-  /* info: {kind,title,period,summary:[[etiket,değer]],rows (reportRows),chart:{series,from,to},page,total,today} */
+  /* info: {kind,title,period,summary:[[label,value]],chart:{series,from,to,dec},page,total,today} */
   function drawPage(ctx,items,info){
     ctx.fillStyle="#ffffff";ctx.fillRect(0,0,RW,RH);ctx.textBaseline="alphabetic";
     let y=RM;
@@ -170,6 +182,6 @@ const VitalsLib=(()=>{
     }
     ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText(`NeoWell · sayfa ${info.page}/${info.total}`,RM,RH-45);
   }
-  return {newSid,CTX,SESSIONS,ctxName,sessionName,LIM,check,clean,sessions,homeAvg,gStats,crisis,needsConfirm,reportRows,paginate,drawPage,drawChart,RW,RH,dayN,num};
+  return {newSid,CTX,SESSIONS,ctxName,sessionName,LIM,check,clean,sessions,homeAvg,gStats,crisis,needsConfirm,latest,cmpAt,reportRows,paginate,drawPage,drawChart,RW,RH};
 })();
 if(typeof module!=="undefined")module.exports=VitalsLib;

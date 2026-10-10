@@ -24,7 +24,7 @@ ok("en eski ve en yeni gün",H.span(ix).first==="2024-03-05"&&H.span(ix).last===
 {const r=H.search(S,"cigkofte");ok("arama: büyük harf ve Türkçe harf farkı gözetmez, 2 yıl öncesini bulur",r.total===1&&r.items[0].day==="2024-03-05",r);
  ok("arama: not ve antrenman adı, yeniden eskiye",H.search(S,"agri").total===1&&H.search(S,"GÖĞÜS").items[0].type==="wo"&&H.search(S,"pil").items[0].text==="Tavuk pilav");
  ok("arama: 2 harften kısa boş, sonuç yoksa 0",H.search(S,"a").total===0&&H.search(S,"zzzz").total===0);
- const big=Array.from({length:500},(_,i)=>E("food","2025-01-01",300,"tavuk"+i));ok("arama: sonuç sınırı, toplam doğru",H.search({entries:big,workouts:[]},"tavuk",300).items.length===300&&H.search({entries:big,workouts:[]},"tavuk",300).total===500);}
+ const big=Array.from({length:500},(_,i)=>E("food","2025-01-01",300,"tavuk"+i));ok("arama: sonuç sınırı, toplam doğru",H.search({entries:big,workouts:[],vitals:[],medLog:[],measures:[]},"tavuk",300).items.length===300&&H.search({entries:big,workouts:[],vitals:[],medLog:[],measures:[]},"tavuk",300).total===500);}
 {const many=[];for(let i=0;i<1100*8;i++){const d=new Date(2023,0,1+Math.floor(i/8));many.push(E(i%3?"food":"water",dk(d),i%3?400:250,"x"+i))}
- const t=Date.now(),i2=H.index({entries:many,workouts:[]},dk);H.months(i2);ok("3 yıl x 8 kayıt/gün: dizin ve aylar < 300 ms",Date.now()-t<300&&i2.size===1100,[Date.now()-t,i2.size]);}
+ const t=Date.now(),i2=H.index({entries:many,workouts:[],vitals:[],medLog:[],measures:[]},dk);H.months(i2);ok("3 yıl x 8 kayıt/gün: dizin ve aylar < 300 ms",Date.now()-t<300&&i2.size===1100,[Date.now()-t,i2.size]);}
 console.log(bad?bad+" başarısız":"Tüm geçmiş testleri geçti");process.exit(bad?1:0);
