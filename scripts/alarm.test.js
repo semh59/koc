@@ -28,7 +28,7 @@ const A=require("../www/modules/meds/alarmlib.js"),M=require("../www/modules/med
 // jsdom: opening with alarmOpen(), marking, privacy, snooze
 const p2=n=>String(n).padStart(2,"0"),hm=d=>p2(d.getHours())+":"+p2(d.getMinutes());
 const now=new Date(),slot=hm(new Date(now-600000)),later=hm(new Date(+now+7200000));
-const seed={settings:{obDone:true,heightCm:178,age:35,sex:"m",goalKg:78,kcal:2200,stepsAsked:true,medOn:true},entries:[],meds:[{id:1,n:"Aspirin",d:"100 mg",t:[slot],on:true},{id:2,n:"Gece",t:[later],on:true}]};
+const seed={settings:{obDone:true,noticeOk:true,heightCm:178,age:35,sex:"m",goalKg:78,kcal:2200,stepsAsked:true,medOn:true},entries:[],meds:[{id:1,n:"Aspirin",d:"100 mg",t:[slot],on:true},{id:2,n:"Gece",t:[later],on:true}]};
 const calls=[],errs=[];
 const rec=(p,defs)=>new Proxy({},{get:(_,k)=>k==="then"?undefined:k==="addListener"?()=>({remove(){}}):async a=>{calls.push([p+"."+k,a]);const v=defs[k];return typeof v==="function"?v(a):v||{}}});
 boot(w=>{

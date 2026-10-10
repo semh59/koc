@@ -23,7 +23,7 @@ function impSheet(){
     t.dup?`${t.dup} antrenman zaten kayıtlı, atlanır.`:"",
     t.skippedSets||s.raw.skipped?`${t.skippedSets} set ve ${s.raw.skipped} satır okunamadı ya da sınır dışı, atlanır.`:"",
     t.over.length?`Yeni egzersiz sınırı (${ImportLib.MAX_NEW}) aşıldı; şu egzersizlerin setleri alınmaz: ${t.over.slice(0,5).map(esc).join(", ")}${t.over.length>5?" ...":""}.`:"",
-    p.fitN!=null?`Depolama uyarısı: ${p.full} antrenman bu telefondaki boş yere sığmaz${p.fitN?`; en yeni ${p.fitN} antrenman sığar`:""}. Önce yedek al, Koç sohbetini temizle ya da eski kayıtları sil.`:""
+    p.fitN!=null?`Depolama uyarısı: ${p.full} antrenman bu telefondaki boş yere sığmaz${p.fitN?`; en yeni ${p.fitN} antrenman sığar`:""}. Önce yedek al, Rehber sohbetini temizle ya da eski kayıtları sil.`:""
   ].filter(Boolean).map(l=>`<p class="my-2 mut sm">${l}</p>`).join("");
   openSheet(`<h3>Antrenman geçmişini içe aktar</h3><div class="mut sm">${s.raw.format} dosyası${s.name?": "+esc(s.name):""}</div>
   ${s.raw.unitAsk?`<div class="lbl">Ağırlık birimi (dosyada yazmıyor)</div><div class="chips">${["kg","lbs"].map(u=>`<button class="chip" data-imp="unit:${u}" aria-pressed="${s.unit===u}">${u}</button>`).join("")}</div>`:""}

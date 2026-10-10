@@ -48,7 +48,7 @@ const pg=C.cleanProgram({name:"P",days:[day(["squat","uydurma","bench"]),day(["r
 ok("cleanProgram: unknown ids and days with 1 exercise are dropped, cut at 6 days",pg.days.length===6&&pg.days[0].ex.join()==="squat,bench"&&pg.days[1].ex.join()==="curl,ohp",pg);
 ok("cleanProgram: days beyond the requested count are cut, an invalid request falls to 6",C.cleanProgram({days:[day(K),day(K),day(K),day(K)]},K,3).days.length===3&&C.cleanProgram({days:Array(7).fill(day(K))},K,9).days.length===6);
 ok("cleanProgram: null when everything is invalid or the input is garbage, no error",C.cleanProgram({days:[day(["x","y"])]},K)===null&&C.cleanProgram("x",K)===null&&C.cleanProgram({days:"x"},K)===null&&C.cleanProgram({days:[null,{ex:[1,{}]}]},K)===null&&C.cleanProgram(null)===null);
-ok("cleanProgram: at most 8 exercises, repeated ids are deduplicated, default name",C.cleanProgram({days:[{ex:["squat","squat","bench"]}]},K).days[0].ex.length===2&&C.cleanProgram({days:[{ex:["squat","bench"]}]},K).name==="Koç programı");
+ok("cleanProgram: at most 8 exercises, repeated ids are deduplicated, default name",C.cleanProgram({days:[{ex:["squat","squat","bench"]}]},K).days[0].ex.length===2&&C.cleanProgram({days:[{ex:["squat","bench"]}]},K).name==="Rehber programı");
 ok("parse returns the program key",C.parse('{"reply":"ok","program":{"name":"P","days":[]}}').program.name==="P"&&C.parse('{"reply":"ok"}').program===null&&C.parse("düz").program===null);
 const EX=require("../www/modules/gym/exlib.js"),cat=o=>C.catalog(EX,o,["squat","bench","pullup","crunch"]);
 { const l=cat({q:"Salon",l:"İleri"}),t=C.catalogText(l),ids=t.split("\n").flatMap(r=>r.split(": ").slice(1).join(": ").split(", ").map(x=>x.split("|")[0])),old=l.map(e=>`${e.id}|${e.n}|${e.r}`).join("\n");

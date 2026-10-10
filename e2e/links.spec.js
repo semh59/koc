@@ -9,7 +9,7 @@ test.describe("Trend > Connections",()=>{
     const card=page.locator(".bgl");
     await expect(card).toContainText("7 sa ve üstü uyuduğun gecelerin ertesi günü ruh halin ortalama 4,0");
     await expect(page.locator("#view")).toContainText("neden-sonuç değildir");
-    await expect(page.locator("#view")).toContainText("Koç'a gönderilmez");
+    await expect(page.locator("#view")).toContainText("Rehber'e gönderilmez");
     expect(await page.locator("#view").innerText()).not.toMatch(/depresyon|bozukluk|skor|teşhis|tedavi/i);
   });
   test("fewer than 14 paired days show no card",async({app,page})=>{

@@ -10,7 +10,7 @@ const block=re=>Object.fromEntries([...(html.match(re)||[,""])[1].matchAll(/--([
 const root=block(/:root\{([^}]*)\}/),dark=block(/prefers-color-scheme:dark\)\{\s*:root:not\(\[data-theme="light"\]\)\{([^}]*)\}/),forced=block(/:root\[data-theme="dark"\]\{([^}]*)\}/);
 
 // Type scale: only these px values, none under 12. SVG text is in viewBox units: in the narrowest card (296 px) the drawn height must be at least 12 px.
-const SCALE=[12,13,15,16,18,20,24,34],SVG={".mmt":220,".mmf":220,"--fs-svg":340},CARD=296;
+const SCALE=[14,15,16,18,20,24,34],SVG={".mmt":220,".mmf":220,"--fs-svg":340},CARD=296;
 const px=v=>[...v.matchAll(/([\d.]+)px/g)].map(m=>+m[1]);
 const fsTok=Object.entries(root).filter(([k])=>k.startsWith("fs-"));
 ok("--fs-* tokens are on the scale (--fs-svg is in SVG units, drawn height at least 12 px)",fsTok.every(([k,v])=>SVG["--"+k]?px(v)[0]*CARD/SVG["--"+k]>=12:SCALE.includes(px(v)[0])),fsTok);

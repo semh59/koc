@@ -56,7 +56,7 @@ async function phUrl(id){
   const u=URL.createObjectURL(b);phUrls.push(u);return u;
 }
 const phCap=p=>`${fd(p.day)}${p.kg!=null?" · "+dw(p.kg)+" "+wlab():""}`,phKg=p=>p.kg!=null?dw(p.kg)+" "+wlab():"";
-const phTxt="Fotoğraflar yalnız bu telefonda, uygulamanın özel alanında durur. Koç'a, bir sunucuya ya da paylaşım ekranına gitmez. Otomatik ve şifreli yedeğe girmez (boyut): telefon değiştirirsen ya da uygulamayı silersen kaybolur. Bu ekran açıkken Android ekran görüntüsü almayı engeller.",phNote=`<details class="acc"><summary>Gizlilik</summary><p class="m0 hint">${phTxt}</p></details>`;
+const phTxt="Fotoğraflar yalnız bu telefonda, uygulamanın özel alanında durur. Rehber'e, bir sunucuya ya da paylaşım ekranına gitmez. Otomatik ve şifreli yedeğe girmez (boyut): telefon değiştirirsen ya da uygulamayı silersen kaybolur. Bu ekran açıkken Android ekran görüntüsü almayı engeller.",phNote=`<details class="acc"><summary>Gizlilik</summary><p class="m0 hint">${phTxt}</p></details>`;
 function photoCard(){
   if(!phOk())return `<h2>İlerleme fotoğrafları</h2><div class="card"><p class="hint">Bu cihazda fotoğraf saklanamıyor.</p></div>`;
   const btns=`<div class="btns"><button class="btn ghost" data-ph="add"${PhotoLib.canAdd(phList.length)?"":" disabled"}>Fotoğraf ekle${phList.length?` (${phList.length}/${PhotoLib.MAX})`:""}</button>${phList.length>1?`<button class="btn ghost" data-ph="cmp">Karşılaştır</button>`:""}</div>`;

@@ -1,5 +1,5 @@
 "use strict";
-const {test,expect}=require("./fixtures");
+const {test,expect,state}=require("./fixtures");
 
 const step=page=>page.locator(".obp .mut");
 async function fill(page,{cm="178",kg="84",age="35"}={}){
@@ -82,4 +82,25 @@ test.describe("Onboarding",()=>{
     await expect(page.locator(".obp")).toHaveCount(0);
     expect((await app.state()).settings.heightCm).toBe(0);
   });
+});
+
+test("fixed notice: existing install sees it once until acknowledged; the welcome screen carries it too",async({app,page})=>{
+  await app.open({seed:state({noticeOk:false})});
+  await expect(app.sheet).toContainText("tıbbi cihaz değildir");
+  await app.sheet.getByRole("button",{name:"Anladım"}).click();
+  await expect(page.locator("#sheet.on")).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator("#sheet.on")).toHaveCount(0);
+});
+
+test("welcome screen shows the fixed notice",async({app,page})=>{
+  await app.open();
+  await expect(page.locator(".banner")).toContainText("112");
+});
+
+test("Coach data choices: a switch stores the choice",async({app,page})=>{
+  await app.open({seed:state({})});
+  await app.go("settings-coach");
+  await page.locator('[data-csh="Food"]').locator("xpath=..").click();
+  expect(await page.evaluate(()=>S.settings.shareFood)).toBe(false);
 });

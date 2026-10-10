@@ -128,7 +128,7 @@ const CoachLib=(()=>{
       const ex=[...new Set(d.ex.filter(i=>typeof i==="string"&&ok.has(i)))].slice(0,8);
       if(ex.length>=2)days.push({n:label(d.n,"Gün "+(days.length+1),40),ex});
     }
-    return days.length?{name:label(p.name,"Koç programı",60),days}:null;
+    return days.length?{name:label(p.name,"Rehber programı",60),days}:null;
   }
   /* Weekly menu. The model gives only catalog ids and a portion multiplier: {days:[{n,meals:[{m,i:[[id,q]]}]}]}.
      With cat the model output is resolved; without cat a stored card (item values already multiplied) is validated again.
@@ -270,7 +270,7 @@ const CoachLib=(()=>{
   const ERR_TXT={key:"Anahtar kabul edilmedi. Doğru sağlayıcıyı seçtiğinden ve anahtarı eksiksiz yapıştırdığından emin ol.",quota:"Hesabının kotası ya da bakiyesi bitmiş. Sağlayıcının sitesinde kullanımına bak.",limit:"Kısa süreli kullanım sınırı doldu, bir dakika sonra yeniden dene.",model:"Bu model bulunamadı ya da hesabında kullanılamıyor. Başka model seç.",net:"İnternet yok ya da sağlayıcıya ulaşılamadı.",time:"Model zamanında yanıt vermedi. Yeniden dene ya da başka model seç.",down:"Sağlayıcıda geçici bir sorun var, sonra yeniden dene.",empty:"Bağlantı çalışıyor ama model boş yanıt verdi. Önerilen modeli seç."};
   const errText=(kind,status)=>ERR_TXT[kind]||`Beklenmeyen bir hata oldu${status?" (kod "+status+")":""}.`;
 
-  const SYSTEM=`Sen "Koç"sun: tek bir kişiye özel beslenme, spor ve yaşam koçu. Hekim değilsin ve tanı koymazsın. Türkçe, sıcak, kısa ve net konuş, suçlama. Cevap en fazla yaklaşık 90 kelime, kullanıcı detay istemedikçe.
+  const SYSTEM=`Sen "Rehber"sun: tek bir kişiye özel beslenme, spor ve yaşam rehberi. Hekim değilsin ve tanı koymazsın. Türkçe, sıcak, kısa ve net konuş, suçlama. Cevap en fazla yaklaşık 90 kelime, kullanıcı detay istemedikçe.
 
 KURALLAR
 1. Sayıları yalnızca "HESAPLANAN" ve "SON 14 GÜN" bölümlerinden al. Kilo, harcama, hız gibi sayıları kendin hesaplama ya da uydurma; yalnız yemek için kalori ve protein tahmin edebilirsin.
@@ -309,11 +309,12 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
   function contextText(d,q,lean){
     const ql=low(q),medHit=!!(d.meds||[]).some(m=>ql.includes(low(m.n).slice(0,30))&&m.n),hit={med:K.med.test(ql)||medHit,exercise:K.exercise.test(ql),note:K.note.test(ql)};
     const all=!hit.med&&!hit.exercise&&!hit.note&&!K.other.test(ql),L=[];
+    if(d.off&&d.off.length)L.push("KULLANICININ PAYLAŞMADIĞI VERİLER (kapalı): "+d.off.join(", ")+". Bunlar hakkında tahmin yürütme; bilmediğini söyle."+(d.goals?"":" Profil paylaşılmadığı için kalori açığı ve oruç önerme."));
     L.push("PROFİL: "+[d.profile.cm?d.profile.cm+" cm":null,d.profile.age?ageBand(d.profile.age)+" yaş":null,d.profile.sex==="m"?"erkek":d.profile.sex==="f"?"kadın":null,d.profile.act!=null?"hareket düzeyi "+["az","orta","çok"][d.profile.act]:null].filter(Boolean).join(", ")||"girilmemiş");
     if(d.profile.note)L.push("SAĞLIK NOTU (kullanıcı yazdı): "+oneLine(d.profile.note,500));
-    L.push(`HEDEFLER: kilo ${d.goals.kg||"yok"}, kalori ${d.goals.kcal||"yok"}, su ${d.goals.water} ml, spor ${d.goals.sport} dk/hafta`);
+    if(d.goals)L.push(`HEDEFLER: kilo ${d.goals.kg||"yok"}, kalori ${d.goals.kcal||"yok"}, su ${d.goals.water} ml, spor ${d.goals.sport} dk/hafta`);
     const c=d.calc;
-    L.push(`HESAPLANAN: trend kilo ${f1(c.trendKg)} kg, hız ${c.slope==null?"yetersiz veri":f1(c.slope)+" kg/hafta"}, tahmini harcama ${c.tdee?Math.round(c.tdee/10)*10+" kcal ("+c.source+")":"hesaplanamadı"}, önerilen hedef ${c.target||"–"} kcal, protein aralığı ${c.protein?c.protein[0]+"-"+c.protein[1]+" g":c.proteinDoc?"hekimle belirlenmeli (yüksek protein önerme)":"–"}`);
+    if(!c.off)L.push(`HESAPLANAN: trend kilo ${f1(c.trendKg)} kg, hız ${c.slope==null?"yetersiz veri":f1(c.slope)+" kg/hafta"}, tahmini harcama ${c.tdee?Math.round(c.tdee/10)*10+" kcal ("+c.source+")":"hesaplanamadı"}, önerilen hedef ${c.target||"–"} kcal, protein aralığı ${c.protein?c.protein[0]+"-"+c.protein[1]+" g":c.proteinDoc?"hekimle belirlenmeli (yüksek protein önerme)":"–"}`);
     if(c.block)L.push("KISIT: "+c.why+". Kalori açığı ve oruç önerme, hekime yönlendir.");
     if(!lean){
       const hs=d.days.some(r=>r.sl),hm=d.days.some(r=>r.mo),cells=r=>[r.kg,r.kcal,r.p,r.water,r.sport,r.ad,r.sl,r.mo],empty=[];

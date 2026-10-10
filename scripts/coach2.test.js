@@ -116,6 +116,16 @@ boot().then(async win=>{
     ok("cData: another day's entries stay in their own row",ev("cData().days.find(r=>r.d===keyOff(-2).slice(5)).kcal")===111);
   }
   {
+    reset();
+    ev(`S.settings.healthNote="tansiyon";S.settings.heightCm=170;S.entries=[{id:1,day:dayKey(),time:'08:00',type:'food',v:300,p:20,text:'çorba'},{id:2,day:dayKey(),time:'09:00',type:'weight',v:80,text:''},{id:3,day:dayKey(),time:'10:00',type:'note',v:0,text:'gizli not'},{id:4,day:dayKey(),time:'11:00',type:'exercise',v:30,text:'yürüyüş'}];S.sleep=[{day:dayKey(),min:420}];S.settings.shareFood=S.settings.shareWeight=S.settings.shareNotes=S.settings.shareActivity=S.settings.shareSleep=false`);
+    const d=ev("cData()"),ctx=ev("CoachLib.contextText(cData())");
+    ok("sharing off: food, weight, note, exercise and sleep never reach the Coach context",d.today.length===0&&d.notes.length===0&&d.days.every(r=>!r.kcal&&r.kg==null&&!r.sport&&r.sl==null)&&!/çorba|gizli not|yürüyüş/.test(JSON.stringify(d)),d);
+    ok("sharing off: the context names what is withheld and drops the calculated line",ctx.includes("KULLANICININ PAYLAŞMADIĞI VERİLER")&&ctx.includes("Kilo")&&!ctx.includes("HESAPLANAN")&&ctx.includes("SAĞLIK NOTU"));
+    ev("S.settings.shareProfile=false");
+    const c2=ev("CoachLib.contextText(cData())");
+    ok("profile sharing off: health note and goals are gone and the Coach is told not to suggest a deficit or fasting",!c2.includes("SAĞLIK NOTU")&&!c2.includes("HEDEFLER")&&c2.includes("kalori açığı ve oruç önerme"));
+  }
+  {
     reset();const st=w.setTimeout;w.setTimeout=(f,ms,...a)=>st(f,ms===15000?5:ms,...a);
     fetchWith((u,o)=>new Promise((_,rej)=>o.signal.addEventListener("abort",()=>rej(Object.assign(new Error("aborted"),{name:"AbortError"})))));
     const r=await ev("fetchModels(S.providers[0],'k').then(()=>'ok',e=>errOf(e).kind)");

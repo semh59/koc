@@ -85,9 +85,9 @@ function viewToday(){
     S.entries.length>=10&&(old==null||old>14)?row("cloud","Verilerini yedekle",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Yedekle"]]):""].filter(Boolean);
   /* The first 3 jobs are visible (a data-loss warning is always first); the rest folds so it does not push the log down. */
   const todoCard=todo.length?`<div class="card todo"><h2 class="grp">Bugün yapılacaklar</h2>${todo.slice(0,3).join("")}${todo.length>3?`<details class="acc" ${keepOpen("todo")}><summary>${todo.length-3} iş daha</summary>${todo.slice(3).join("")}</details>`:""}</div>`:"";
-  const minor=S.settings.age>0&&S.settings.age<18?`<div class="banner"><b>NeoWell 18 yaş ve üzeri için</b><p>Profilindeki yaş 18'in altında. Kalori açığı, oruç önerisi ve Koç kapalı. Beslenme ve kilo konusunda bir yetişkinle ve hekiminle ya da diyetisyeninle konuş. Yaş yanlışsa Ayarlar > Profil'den düzelt.</p></div>`:"";
+  const minor=S.settings.age>0&&S.settings.age<18?`<div class="banner"><b>NeoWell 18 yaş ve üzeri için</b><p>Profilindeki yaş 18'in altında. Kalori açığı, oruç önerisi ve Rehber kapalı. Beslenme ve kilo konusunda bir yetişkinle ve hekiminle ya da diyetisyeninle konuş. Yaş yanlışsa Ayarlar > Profil'den düzelt.</p></div>`:"";
   /* .bg2 has no effect in portrait; in landscape the left column holds rings and summary, the right one jobs and entries. */
-  return `<div class="bg2"><div class="bgL">${minor}${rings}${actions}${habitRow()}</div><div class="bgR">${todoCard}${gTodayCard()}${weight}<div class="card coachc"><button class="coach" data-tab="coach">${esc(dailyTip())} <b>Koç ›</b></button></div>${hasKey()?`<div class="btns">${cCommentBtn("plan")}</div>`:""}<div class="card">${dnav}${log}${items.some(e=>e.type==="food")?`<button class="lnk" data-act="tplnew">Bu günün yemeklerinden şablon yap</button>`:""}<button class="lnk" data-tab="history">Geçmiş ve takvim</button></div></div></div>`;
+  return `<div class="bg2"><div class="bgL">${minor}${rings}${actions}${habitRow()}</div><div class="bgR">${todoCard}${gTodayCard()}${weight}<div class="card coachc"><button class="coach" data-tab="coach">${esc(dailyTip())} <b>Rehber ›</b></button></div>${hasKey()?`<div class="btns">${cCommentBtn("plan")}</div>`:""}<div class="card">${dnav}${log}${items.some(e=>e.type==="food")?`<button class="lnk" data-act="tplnew">Bu günün yemeklerinden şablon yap</button>`:""}<button class="lnk" data-tab="history">Geçmiş ve takvim</button></div></div></div>`;
 }
 
 /* PDF reports in one place; the share handlers listen on the document, so they work from any screen. */
@@ -153,7 +153,7 @@ const swHelp=(attrs,on,label,sub,id,help)=>`<div class="row">${swRow(attrs,on,la
 const modRow=(attrs,on,name,line,id,help,extra="")=>swHelp(attrs+" data-mod",on,name,line,id,help)+(on&&extra?`<div class="pv-2">${extra}</div>`:"");
 document.addEventListener("click",ev=>{if(ev.target.matches?.("input[data-mod]"))ev.preventDefault()},true);
 document.addEventListener("click",ev=>{const b=ev.target.closest("[data-help]"),x=b&&document.getElementById(b.dataset.help);if(x){x.hidden=!x.hidden;b.setAttribute("aria-expanded",!x.hidden)}});
-const SETTINGS_TABS=[["profile","Profil ve hedefler","user"],["reminders","Hatırlatmalar","bell"],["coach","Koç","coach"],["modules","Modüller","grid"],["data","Veri ve yedek","data"],["about","Hakkında","info"]];
+const SETTINGS_TABS=[["profile","Profil ve hedefler","user"],["reminders","Hatırlatmalar","bell"],["coach","Rehber","coach"],["modules","Modüller","grid"],["data","Veri ve yedek","data"],["about","Hakkında","info"]];
 /* Parent of a sub-screen: the ‹ in the header and the Android and browser back keys return to it. */
 const PARENT={steps:"today",labs:"trend",bp:"trend",glucose:"trend",exlib:"gym",meds:"more",cycle:"more",history:"more",day:"history",settings:"more",...Object.fromEntries(SETTINGS_TABS.map(([k])=>["settings-"+k,"settings"]))};
 /* A sub-screen opened from another tab (Meds from Today, Steps from More) returns to and highlights that tab; for a deep link the fixed parent applies. */
@@ -164,8 +164,8 @@ const navTab=()=>/^(meds|steps|settings|history|day)/.test(tab)?"more":topTab(ta
 /* More: a grouped list. A row's fourth field is the setting name; a disabled module is not listed and is enabled from the Modules row. */
 const MORE_GROUPS=[["Geçmiş",[['data-tab="history"',"Geçmiş ve takvim","trend",0,"Her günün kaydı, aylık özet, arama"]]],["Sağlık takibi",[['data-tab="meds"',"İlaçlar","meds","medOn","İlaç saatleri ve bugünkü dozlar"],['data-tab="bp"',"Tansiyon","heart","bpOn","Ev ölçümleri ve ortalama"],['data-tab="glucose"',"Şeker","water","bsOn","Ölçümler ve ortalama"],['data-tab="labs"',"Tahlil takibi","file",0,"Sonuçlar ve değişim"],['data-tab="cycle"',"Döngü","moon","cycleOn","Dönem günleri ve tahmin"],['data-hb="more"',"Uyku ve ruh hali","smile",0,"Bugünkü uykun ve nasıl hissettiğin"]]],
   ["Beslenme ve hareket",[['data-tab="steps"',"Adım raporu","steps","stepsOn","Günlük adım ve yürüyüş"],['data-pl="open"',"Nabız","heart",0,"Kamerayla ölç, saatten günlük nabız"],['data-tab="exlib"',"Egzersiz kütüphanesi","gym",0,"Hareketler, kaslar, ekipman"],['data-ckg="open"',"Kardiyo","exercise",0,"Koşu, yürüyüş, bisiklet ve yüzme ekle"],['data-ms="open"',"Vücut ölçüleri","weight",0,"Bel, kalça, göğüs, kol ve uyluk"],['data-ph="add"',"İlerleme fotoğrafı","camera","ph","Yalnız bu telefonda saklanır"]]],
-  ["Veri",[['data-tab="settings-data"',"Uygulama kilidi","lock",0,"Açılışta telefonun ekran kilidini iste"],['data-tab="settings-data"',"Veri ve yedek","data",0,"Yedek, tabloya aktarma, silme"],['data-pv="open"',"Gizlilik ve veri","lock",0,"Veriler nerede durur, Koç'a ne gider"]]],
-  ["Uygulama",[['data-tab="settings"',"Ayarlar","settings",0,"Profil, hatırlatmalar, Koç, görünüm"],['data-tab="settings-modules"',"Modüller","grid",0,"Takipleri aç ya da kapat"],['data-tab="settings-about"',"Hakkında","info",0,"Sürüm, kaynaklar ve tıbbi uyarı"]]]];
+  ["Veri",[['data-tab="settings-data"',"Uygulama kilidi","lock",0,"Açılışta telefonun ekran kilidini iste"],['data-tab="settings-data"',"Veri ve yedek","data",0,"Yedek, tabloya aktarma, silme"],['data-pv="open"',"Gizlilik ve veri","lock",0,"Veriler nerede durur, Rehber'e ne gider"]]],
+  ["Uygulama",[['data-tab="settings"',"Ayarlar","settings",0,"Profil, hatırlatmalar, Rehber, görünüm"],['data-tab="settings-modules"',"Modüller","grid",0,"Takipleri aç ya da kapat"],['data-tab="settings-about"',"Hakkında","info",0,"Sürüm, kaynaklar ve tıbbi uyarı"]]]];
 function viewMore(){
   const st=S.settings,on=k=>!k||(k==="ph"?phOk():st[k]);
   return MORE_GROUPS.map(([g,rows])=>`<h2 class="grp">${g}</h2><div class="card">${rows.filter(r=>on(r[3])).map(([a,t,i,,sub])=>navRow(a,i,t,sub)).join("")}</div>`).join("");
@@ -178,7 +178,7 @@ function viewSettings(){
       modules:on.length?on.join(", ")+" açık":"Hepsi kapalı",reminders:st.reminders.filter(r=>r.on&&remShown(r)).length+" hatırlatma açık",
       coach:keysStored()?"Anahtar kayıtlı":"Anahtar yok",data:storeMsg()?storeMsg()[0]:st.lastBackup?"Son yedek "+fd(st.lastBackup):"Henüz yedek dosyası yok",about:appVer?"Sürüm "+appVer:"Sürüm, kaynaklar ve tıbbi uyarı"};
     const grp=(g,ks)=>`<h2 class="grp">${g}</h2><div class="card">${SETTINGS_TABS.filter(([k])=>ks.includes(k)).map(([k,t,ic])=>navRow(`data-tab="settings-${k}"`,ic,t,esc(d[k]))).join("")}</div>`;
-    return `${grp("Kişisel",["profile","reminders"])}${grp("Koç ve modüller",["coach","modules"])}
+    return `${grp("Kişisel",["profile","reminders"])}${grp("Rehber ve modüller",["coach","modules"])}
     <h2 class="grp">Görünüm ve erişilebilirlik</h2><div class="card"><div class="lbl" id="thml">Tema</div>${segb("thm",[["","Sistem"],["light","Açık"],["dark","Koyu"]],st.theme).replace('role="group"','role="group" aria-labelledby="thml"')}<p class="hint">Yazı boyutu telefonun yazı boyutu ayarını izler.</p></div>
     ${grp("Veri ve uygulama",["data","about"])}`;
   }
@@ -208,10 +208,10 @@ function viewSettings(){
   <details class="acc"><summary>Dambıl ve plakalar</summary>${gGearHtml()}</details></div>`;
   if(sub==="coach")return viewProviders();
   if(sub==="reminders"){
-    const nf={web:"Bildirimler yalnızca telefondaki uygulamada çalışır.",ok:"Hatırlatmalar açık.",denied:"Bildirim izni kapalı. Telefon ayarlarından Koç için bildirimleri aç.","":""}[notifStatus]||notifStatus;
+    const nf={web:"Bildirimler yalnızca telefondaki uygulamada çalışır.",ok:"Hatırlatmalar açık.",denied:"Bildirim izni kapalı. Telefon ayarlarından Rehber için bildirimleri aç.","":""}[notifStatus]||notifStatus;
     return `<div class="card"><div class="status">${esc(nf)}</div>${isNative()&&!exactOk?`<p class="flush hint">Tam saat alarm izni kapalı: hatırlatmalar birkaç dakika gecikebilir.</p><div class="btns"><button class="btn ghost" data-act="fullalarm">Tam saat alarm iznini aç</button></div>`:""}${notifDiag?`<p class="flush hint">${esc(notifDiag)}</p>`:""}${isNative()?`<div class="btns"><button class="btn ghost" data-act="notiftest">Test bildirimi gönder</button>${oemXiaomi()?`<button class="btn ghost" data-act="oem">Xiaomi hatırlatma ayarları</button>`:""}</div>`:""}
     ${st.reminders.filter(remShown).map(r=>`<div class="rem"><span class="nm">${esc(r.name)}</span><input type="time" value="${r.t}" data-rt="${r.id}" aria-label="${esc(r.name)} saati"><label class="sw"><input type="checkbox" ${r.on?"checked":""} data-ro="${r.id}" aria-label="${esc(r.name)} açık"><span></span></label></div>`).join("")}
-    <p class="hint">Koç bağlıysa sabah, öğleden sonra ve akşam bildirim metinlerini her gün yeniden yazar. Bağlı değilse sabit metinler kullanılır.</p></div>`;
+    <p class="hint">Rehber bağlıysa sabah, öğleden sonra ve akşam bildirim metinlerini her gün yeniden yazar. Bağlı değilse sabit metinler kullanılır.</p></div>`;
   }
   if(sub==="data")return `<div class="card">${swRow('data-lk="toggle"',st.lockOn,"Uygulama kilidi","Açarken ve 30 saniyeden uzun aradan dönünce telefonun ekran kilidi (parmak izi, yüz, PIN, desen) sorulur")}</div>
     <button class="mt-3 btn" data-act="drive">${Icons.svg("cloud")} Yedeği Drive'a gönder</button>
@@ -221,7 +221,7 @@ function viewSettings(){
   return `<div class="about"><img src="logo.png" alt="NeoWell logosu" width="72" height="72"><b>NeoWell</b><span class="mut sm">Sağlığın yeni kaynağı</span></div>
   <div class="card"><div class="lrow"><span>Sürüm</span><b class="num">${appVer?esc(appVer):"Tarayıcı"}</b></div>${appBuild?`<div class="lrow"><span>Derleme</span><b class="num">${esc(appBuild)}</b></div>`:""}</div>
   <div class="banner"><p class="m0">${MED_NOTE}</p></div>
-  <div class="card">${navRow('data-pv="open"',"lock","Gizlilik ve veri","Veriler nerede durur, Koç'a ne gider")}</div>
+  <div class="card">${navRow('data-pv="open"',"lock","Gizlilik ve veri","Veriler nerede durur, Rehber'e ne gider")}</div>
   <div class="card"><details class="acc"><summary>Besin verisi kaynakları ve lisanslar</summary><p class="hint">Genel besinlerin değerleri ABD Tarım Bakanlığı FoodData Central (SR Legacy) verisidir, CC0 kamu malı: fdc.nal.usda.gov. Türk ev yemekleri bu değerlerden tarifle hesaplanmış tahminlerdir. Sucuk, pastırma, hellim ve karşılaştırma değerlerinde Fransa ANSES Ciqual 2025 tablosu (Etalab Açık Lisans 2.0, ciqual.anses.fr) ile İngiltere McCance and Widdowson CoFID 2021 verisi (Public Health England, Open Government Licence v3.0, gov.uk) kullanıldı; her vekil kayıt kendi notunda belirtilir. Barkoddan gelen ürünler Open Food Facts verisini içerir, Open Database License (ODbL) ile sunulur: world.openfoodfacts.org. Tablo ve paket etiketi değerleri yaklaşık olup ±%20 sapabilir.</p></details></div>`;
 }
 
@@ -236,7 +236,7 @@ function render(){
   if(sb&&render.sb!==st){render.sb=st;sb.setStyle({style:st}).catch(()=>{})}
   document.body.classList.toggle("ob",onb);$("#back").hidden=onb||!UP(tab);
   if(onb){$("#ttl").innerHTML='<img class="brand" src="logo.svg" alt="" width="28" height="28">NeoWell';$("#streak").innerHTML="";$("#composer").hidden=true;v.innerHTML=recovery?recView():obView();widgetPush();return}
-  const ttl={today:`${fd(dayKey())}, ${WEEKDAYS[new Date().getDay()]}`,coach:"Koç",gym:"Salon",trend:"Trend",more:"Daha fazla",settings:"Ayarlar",exlib:"Egzersiz kütüphanesi",steps:"Adım raporu",labs:"Tahlil takibi",bp:"Tansiyon",glucose:"Şeker",meds:"İlaçlar",cycle:"Döngü",history:"Geçmiş",day:"Gün",...Object.fromEntries(SETTINGS_TABS.map(([k,t])=>["settings-"+k,t]))}[tab];
+  const ttl={today:`${fd(dayKey())}, ${WEEKDAYS[new Date().getDay()]}`,coach:"Rehber",gym:"Salon",trend:"Trend",more:"Daha fazla",settings:"Ayarlar",exlib:"Egzersiz kütüphanesi",steps:"Adım raporu",labs:"Tahlil takibi",bp:"Tansiyon",glucose:"Şeker",meds:"İlaçlar",cycle:"Döngü",history:"Geçmiş",day:"Gün",...Object.fromEntries(SETTINGS_TABS.map(([k,t])=>["settings-"+k,t]))}[tab];
   $("#ttl").textContent=ttl;
   const n=streak();$("#streak").innerHTML=n>0&&tab==="today"?`${Icons.svg("flame")}<b class="num">${n}</b> gün`:"";$("#streak").setAttribute("aria-label",n+" günlük seri");
   v.innerHTML=(saveFail&&tab!=="today"&&tab!=="settings-data"?`<div class="card todo" role="alert"><div class="row"><span>${Icons.svg("save")} <b>${storeMsg()[0]}</b><small class="mut sm">${storeMsg()[1]}</small></span><button class="chip" data-act="databackup">Yedek al</button></div></div>`:"")+(tab==="coach"?viewCoach():tab==="today"?viewToday():tab==="gym"?viewGym():tab==="trend"?viewTrend():tab==="steps"?viewSteps():tab==="labs"?viewLabs():tab==="bp"?viewBp():tab==="glucose"?viewGlucose():tab==="exlib"?viewExlib():tab==="meds"?viewMeds():tab==="cycle"?viewCycle():tab==="history"?viewHistory():tab==="day"?viewDay():tab==="more"?viewMore():viewSettings());

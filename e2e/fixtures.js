@@ -7,7 +7,7 @@ const {expect}=base;
 const NOW=new Date("2026-10-06T10:00:00+03:00");
 const day=n=>{const d=new Date(NOW.getTime()+n*864e5);return d.toLocaleDateString("sv-SE",{timeZone:"Europe/Istanbul"})};
 /* An adult user who has finished onboarding. */
-const PROFILE={obDone:true,heightCm:178,age:35,sex:"m",act:1,goalKg:78,kcal:2200,stepsAsked:true};
+const PROFILE={obDone:true,noticeOk:true,heightCm:178,age:35,sex:"m",act:1,goalKg:78,kcal:2200,stepsAsked:true};
 const state=(settings={},rest={})=>({settings:{...PROFILE,...settings},entries:[],...rest});
 /* Coach consent as already given for the four built-in providers. */
 const CONSENT={consent:true,consentV:2,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter"};

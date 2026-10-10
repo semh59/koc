@@ -14,7 +14,7 @@ function sheetPrivacy(){
   const st=S.settings;
   const pt=(ic,t,s)=>`<div class="row"><div class="aic">${Icons.svg(ic)}</div><span class="grow"><b>${t}</b><small class="db mut sm">${s}</small></span></div>`;
   openSheet(`<h3>Gizlilik ve veri</h3>
-  ${pt("lock","Veriler telefonunda","NeoWell'in sunucusu ve hesabı yok. Yedeği sen alır, yerini sen seçersin.")}${pt("coach","Koç'a ne gider","Yalnız onay verirsen ve sen gönderdiğinde. Ad, telefon gibi bilgiler önce maskelenir.")}${pt("trash","Silme","Aşağıdan kategori kategori silebilirsin; geri alınamaz.")}
+  ${pt("lock","Veriler telefonunda","NeoWell'in sunucusu ve hesabı yok. Yedeği sen alır, yerini sen seçersin.")}${pt("coach","Rehber'e ne gider","Yalnız onay verirsen ve sen gönderdiğinde. Ad, telefon gibi bilgiler önce maskelenir.")}${pt("trash","Silme","Aşağıdan kategori kategori silebilirsin; geri alınamaz.")}
   <div class="my-2 banner"><p class="m0">${MED_NOTE}</p></div>
   <details class="acc"><summary>Verin nerede</summary>
   <p class="mut sm">Tüm kayıtların yalnızca bu telefonda durur; NeoWell'in sunucusu ve hesabı yoktur. Yedek dosyasını sen oluşturur, nereye kaydedeceğini sen seçersin. İlerleme fotoğrafları yalnız bu telefonda durur ve yedeğe girmez. PDF ve tablo paylaşımları da senin seçtiğin yere gider. Google otomatik yedeğine ve telefondan telefona aktarıma bilerek dahil edilmez.</p>
@@ -22,15 +22,15 @@ function sheetPrivacy(){
   <details class="acc"><summary>İnternete çıkanlar</summary>
   <ul class="mut sm" style="margin:0 0 10px;padding-left:18px">
     <li><b>Open Food Facts</b> (barkod araması): yalnızca barkod numarası gider. Hizmet, her internet isteğinde olduğu gibi IP adresini görür.</li>
-    <li><b>Koç</b>: yalnızca açık rızanla ve yalnız sen bir düğmeye bastığında (otomatik ya da arka planda gönderim yok), aşağıda yazılanlar, seçtiğin sağlayıcıya (${esc(provNames())} ya da kendi eklediğin servis). OpenAI ve Anthropic ücretlidir. Kurulumda yalnız anahtarın ve bir deneme cümlesi gider, sağlık verin gitmez.</li>
+    <li><b>Rehber</b>: yalnızca açık rızanla ve yalnız sen bir düğmeye bastığında (otomatik ya da arka planda gönderim yok), aşağıda yazılanlar, seçtiğin sağlayıcıya (${esc(provNames())} ya da kendi eklediğin servis). OpenAI ve Anthropic ücretlidir. Kurulumda yalnız anahtarın ve bir deneme cümlesi gider, sağlık verin gitmez.</li>
     <li><b>Google barkod tarayıcı</b> (Play hizmetleri): görüntü telefonda işlenir, NeoWell görüntüyü almaz. Google, kendi koşullarına göre kullanım ve tanılama bilgisi toplayabilir.</li>
     <li><b>Google Drive</b>: yalnızca sen yedeği paylaşım ekranından Drive'a gönderirsen. Yedek parolayla şifrelenir.</li>
   </ul>
-  <p class="mut sm">Koç sağlayıcısı IP adresini görür; kimlik bilgileri (ad, telefon, e-posta, TC, adres gibi) göndermeden önce telefonda maskelenir; filtre %100 garanti değildir (tam garanti yok): serbest cümleyle anlatılan adres ve listede olmayan nadir adlar yakalanmayabilir.</p>
+  <p class="mut sm">Rehber sağlayıcısı IP adresini görür; kimlik bilgileri (ad, telefon, e-posta, TC, adres gibi) göndermeden önce telefonda maskelenir; filtre %100 garanti değildir (tam garanti yok): serbest cümleyle anlatılan adres ve listede olmayan nadir adlar yakalanmayabilir.</p>
   <p class="mut sm">${usageText()}. Yalnız sayılar bu telefonda tutulur, hiçbir yere gönderilmez.</p></details>
-  <details class="acc"><summary>Koç açık rıza metni</summary>${consentHtml()}</details>
-  ${swRow('data-pv="prev"',st.piiPrev,"Koç'a giden metni önizle","Açıkken her gönderimden önce giden tam metni görür, Gönder ya da İptal dersin.")}
-  <div class="banner info"><p class="m0">Koç veri paylaşımı: ${st.consent?`kabul edildi (${esc(st.consentAt)})`:"kabul edilmedi"}</p>
+  <details class="acc"><summary>Rehber açık rıza metni</summary>${consentHtml()}</details>
+  ${swRow('data-pv="prev"',st.piiPrev,"Rehber'e giden metni önizle","Açıkken her gönderimden önce giden tam metni görür, Gönder ya da İptal dersin.")}
+  <div class="banner info"><p class="m0">Rehber veri paylaşımı: ${st.consent?`kabul edildi (${esc(st.consentAt)})`:"kabul edilmedi"}</p>
   ${st.consent?`<button class="btn ghost" data-pv="revoke">Rızamı geri al</button>`:consentOk()?`<button class="btn" data-pv="consent">Açık rızamı veriyorum</button>`:""}</div>
   <h4 class="grp">Verilerini sil</h4>
   <p class="mut sm">Kategori başına silinir, geri alınamaz. <button class="lnk" style="display:inline;width:auto;min-height:44px" data-act="backup">Önce yedek al</button></p>

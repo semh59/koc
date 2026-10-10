@@ -105,6 +105,7 @@ render();
 cPlateauCheck();
 if(loadNote)toast(loadNote);
 quickIngest();
+if(!obNeeded())noticeGate();
 scheduleReminders().then(setNotif);
 setInterval(gTick,1000);
 const keysP=keysInit().then(render);
