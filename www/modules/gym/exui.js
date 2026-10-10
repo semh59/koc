@@ -108,7 +108,7 @@ const exKindSec=(id,sec)=>gKind(id)==="c"?Math.round(sec/60)+" dk":sec+" sn";
 /* Queued so that a quick ✓ followed by Skip cannot run its cancel before the previous schedule and leave the notification armed. */
 let gLnQ=Promise.resolve();
 const gLn=f=>gLnQ=gLnQ.then(()=>{const ln=plugin("LocalNotifications");return ln&&f(ln)}).catch(()=>{});
-const gNotify=(at,title,body,id=9001)=>gLn(async ln=>{await ln.cancel({notifications:[{id}]});await ln.schedule({notifications:[{id,title,body,schedule:{at:new Date(at),allowWhileIdle:true}}]})});
+const gNotify=(at,title,body,id=9001)=>gLn(async ln=>{await ln.cancel({notifications:[{id}]});await lnSchedule(ln,[{id,title,body,schedule:{at:new Date(at),allowWhileIdle:true}}])});
 const gNotifyCancel=(id=9001)=>gLn(ln=>ln.cancel({notifications:[{id}]}));
 function gTimStop(){if(gTim){gTim=null;gNotifyCancel()}}
 const gTimNotify=(t,name)=>gNotify(t.end,t.phase==="rest"?"Sıradaki tur başlıyor":"⏱ Süre doldu",name);

@@ -2,6 +2,11 @@
 const WATER_REM=[2,3,4],BACKUP_REM=10,WEEKLY_REM=12,FAST_NID=9100;
 const SCHED_DAYS=30,LEAD_MS=5000,RESCHEDULE_MS=6*36e5;let lastSched=0,exactOk=true,fsiOk=true;
 const LN=()=>plugin("LocalNotifications");
+/* Plugin 8.3+ opens the system "Alarms & reminders" screen on every schedule() with an exact alarm while the permission is missing; the exact flag follows the permission so it never does. */
+async function lnSchedule(ln,list){
+  const isExactNotification=(await ln.checkExactNotificationSetting()).exact_alarm!=="denied";
+  return ln.schedule({notifications:list.map(n=>({...n,isExactNotification}))});
+}
 async function scheduleReminders(){
   const ln=LN();if(!ln||recovery)return "web";
   try{
@@ -50,11 +55,11 @@ async function scheduleReminders(){
     // Android caps simultaneous alarms per app (500): the nearest are kept, farther ones are rescheduled when the app opens.
     list.sort((a,b)=>a.schedule.at-b.schedule.at);if(list.length>MedLib.BUDGET)list.length=MedLib.BUDGET;
     const tk=await quickToken();if(tk)for(const n of list)if(n.extra&&(n.extra.act==="water"||n.extra.act==="med"))n.extra.tk=tk;
-    console.log("NW-SCHED n="+list.length);if(list.length){const r=await ln.schedule({notifications:list});console.log("NW-SCHED done "+(r&&r.notifications&&r.notifications.length))}
+    if(list.length)await lnSchedule(ln,list);
     /* The notification plugin does not light the locked screen: for medication doses (reminder repeats excluded) a separate alarm screen wakes it briefly. */
     const mw=MW();if(mw)await mw.set({times:MedLib.wakeTimes(list),doses:MedLib.wakeDoses(list)}).catch(()=>{});
     return "ok";
-  }catch(e){console.log("NW-SCHED-FAIL "+(e&&e.message||e));return "Bildirimler kurulamadı: "+(e&&e.message||e)}
+  }catch(e){return "Bildirimler kurulamadı: "+(e&&e.message||e)}
 }
 /* Only tapping a notification ("tap"); the water/medication buttons are caught natively in QuickLogPlugin. Without Coach consent the weekly summary opens in Trend, the backup reminder in Data and backup. */
 function notifTap(e){
@@ -186,7 +191,7 @@ async function notifTest(){
     const pend=(await ln.getPending()).notifications.length;
     notifDiag=`Bildirim izni: ${p.display}. Tam saat alarmı: ${ex}. Kurulu hatırlatma: ${pend}.`;
     if(p.display!=="granted"){render();return toast("Bildirim izni yok. Telefon ayarlarından NeoWell için bildirimleri aç")}
-    await ln.schedule({notifications:[{id:99,title:"NeoWell",body:"Test bildirimi çalışıyor",schedule:{at:new Date(Date.now()+5000),allowWhileIdle:true}}]});
+    await lnSchedule(ln,[{id:99,title:"NeoWell",body:"Test bildirimi çalışıyor",schedule:{at:new Date(Date.now()+5000),allowWhileIdle:true}}]);
     render();toast("5 saniye içinde bildirim gelmeli. İstersen uygulamadan çık");
   }catch(e){notifDiag="Hata: "+(e&&e.message||e);render()}
 }
