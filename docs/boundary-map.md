@@ -1,4 +1,4 @@
-# Sınır haritası (otomatik: node scripts/sinir-haritasi.js)
+# Sınır haritası (otomatik: node scripts/boundary-map.js)
 
 ## Veri alanı -> dokunan dosyalar
 | S alanı | dosya sayısı | dosyalar |

@@ -2,7 +2,7 @@
 /* Static server for www/ (Playwright webServer). Cache off: every test gets the latest file. */
 const http=require("http"),fs=require("fs"),path=require("path");
 const root=path.join(__dirname,"..","www"),port=+process.env.E2E_PORT||4173;
-const MIME={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".css":"text/css",".json":"application/json",".png":"image/png",".svg":"image/svg+xml",".webp":"image/webp",".jpg":"image/jpeg",".mjs":"text/javascript; charset=utf-8",".wasm":"application/wasm",".woff2":"font/woff2"};
+const MIME={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".css":"text/css",".png":"image/png",".svg":"image/svg+xml",".webp":"image/webp"};
 http.createServer((q,r)=>{
   const p=path.normalize(path.join(root,decodeURIComponent(q.url.split("?")[0])));
   if(!p.startsWith(root)){r.writeHead(403);return r.end()}

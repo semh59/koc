@@ -46,7 +46,7 @@ Tantuni	Hesap: dana kuşbaşı, domates; pamuk yağı yerine USDA ayçiçek yağ
 Ciğer şiş (kuzu)	Vekil: ciğer şiş yerine CoFID mısırözü yağında kızartılmış kuzu ciğeri (237 kcal); ızgarada yağ azdır, değer biraz düşük olabilir.
 Midye dolma	Hesap: USDA haşlanmış midye 25 g, haşlanmış pirinç 55 g, soğan 15 g, zeytinyağı 5 g (100 g = yaklaşık 4 adet). Kabuk hesapta yok; tuz, kuş üzümü ve baharat sayılmadı.
 Etli yaprak sarma	Hesap: pirinç, dana kıyma, soğan, salça ve zeytinyağı; asma yaprağı hesapta yok. Zeytinyağlı yaprak sarma için CoFID değeri 263 kcal.
-Çiğ börek (kıymalı)	Hesap: hamur ve kıymalı iç; tava kızartmasında hamur başına 15 g yağ emilimi varsayıldı (tarif.txt kuralı). Boyut ve yağ yere göre değişir.
+Çiğ börek (kıymalı)	Hesap: hamur ve kıymalı iç; tava kızartmasında hamur başına 15 g yağ emilimi varsayıldı (recipes.txt kuralı). Boyut ve yağ yere göre değişir.
 Şakşuka	Hesap: patlıcan tavada kızarır (15 g yağ/100 g sebze), biber ve domates sosla pişer. Yağ miktarı evden eve değişir.
 Muhammara	Hesap: ceviz, kırmızı biber, salça, galeta unu, zeytinyağı, nar ekşisi. Ev ve restoran tarifi ceviz oranına göre değişir.
 Etli ekmek	Hesap: Konya tipi etli ekmek; hamur, kuzu kıyma, soğan, domates, biber, tereyağı. Hamur kalınlığı ve et oranı yere göre değişir.

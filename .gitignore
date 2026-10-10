@@ -1,5 +1,6 @@
 node_modules/
 /android/
-tools/besin/FoodData*/
+tools/nutrition/FoodData*/
 test-results/
 e2e-report/
+__pycache__/

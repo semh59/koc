@@ -5,7 +5,7 @@ const CsvLib=(()=>{
   const num=v=>Number.isFinite(v)?String(Math.round(v*100)/100).replace(".",","):"";
   const txt=v=>{let s=v==null?"":String(v);if(/^[=+\-@\t\r]/.test(s))s="'"+s;return /[;"\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
   const cell=v=>typeof v==="number"?num(v):txt(v);
-  const csv=(head,rows)=>"﻿"+[head,...rows].map(r=>r.map(cell).join(";")).join("\r\n")+"\r\n";
+  const csv=(head,rows)=>"\uFEFF"+[head,...rows].map(r=>r.map(cell).join(";")).join("\r\n")+"\r\n";
   /* Sorted copy; each key function gives one level of the ordering. */
   const by=(a,...k)=>a.slice().sort((x,y)=>{for(const f of k){const p=f(x),q=f(y);if(p!==q)return p<q?-1:1}return 0});
   const iso=t=>{const d=new Date(t),p=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`};

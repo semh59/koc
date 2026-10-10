@@ -119,7 +119,7 @@ function cleanMyFoods(arr){
     for(const m of NUTR)if(Number.isFinite(x[m])&&x[m]>=0&&x[m]<=LogLib.PER100[m])f[m]=x[m];
     if(typeof x.b==="string"&&/^\d{8,14}$/.test(x.b))f.b=x.b;
     if(x.src==="off")f.src="off";
-    if(x.por===true)f.por=true; // from a Coach card: values are per 1 portion, grams unknown
+    if(x.portion===true)f.portion=true; // from a Coach card: values are per 1 portion, grams unknown
     if(Array.isArray(x.u)){const u=x.u.filter(q=>Array.isArray(q)&&typeof q[0]==="string"&&q[1]>0&&q[1]<=5000).slice(0,4).map(q=>[q[0].slice(0,40),q[1]]);if(u.length)f.u=u}
     out.push(f);
   }

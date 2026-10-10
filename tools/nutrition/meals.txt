@@ -1,7 +1,7 @@
 # Meal records: a single plate, sandwich or menu. Row: name | method | portion label | components (name grams;...) | aliases (- if none) | optional ~N (+-N% kcal range for a restaurant portion)
-# Grams are the eaten weight; components are USDA rows (genel, malzeme, ek) or tarif.txt rows. Method "raw" (sum of weights, no cooking). Portion grams = sum of components (uret.js computes it).
+# Grams are the eaten weight; components are USDA rows (genel, malzeme, ek) or recipes.txt rows. Method "raw" (sum of weights, no cooking). Portion grams = sum of components (generate.js computes it).
 # If a component is a recipe row, its low/high-fat range carries into the meal; fat ingredients are x0.6 and x1.5. Restaurant meals use ~30: portion and fat vary by place (the old home-cooking rule of +-30% for oily or doughy dishes).
-# Doner and meatballs have no USDA match: grilled ground beef (15%/20% fat, cooked) is the proxy and the ~30 range covers it. Sucuk, pekmez and protein bar are proxy rows (vekil.txt).
+# Doner and meatballs have no USDA match: grilled ground beef (15%/20% fat, cooked) is the proxy and the ~30 range covers it. Sucuk, pekmez and protein bar are proxy rows (proxies.txt).
 # --- Breakfast ---
 Sade kahvaltı tabağı | raw | 1 tabak | Beyaz peynir 40;Yeşil zeytin 20;Domates 60;Salatalık 50;Ekmek (beyaz) 60 | kahvalti
 Serpme kahvaltı (1 kişilik) | raw | 1 tabak | Beyaz peynir 40;Kaşar 30;Haşlanmış yumurta 50;Yeşil zeytin 20;Siyah zeytin 15;Domates 60;Salatalık 50;Tereyağı 10;Bal 20;Meyve reçeli 20;Ekmek (beyaz) 90 | kahvalti

@@ -27,7 +27,7 @@ Use the best tool that makes the code shorter or the complexity class lower, not
 
 ## Verification
 - `npm test` (unit, jsdom) and `CI=1 E2E_PORT=44xx npx playwright test -c e2e/playwright.config.js --output=$TEMP/pwN` (e2e) must pass before every commit.
-- `node scripts/sinir.test.js` enforces module data boundaries; `node scripts/paths.test.js` checks file paths.
+- `node scripts/boundary.test.js` enforces module data boundaries; `node scripts/paths.test.js` checks file paths.
 
 ## Final vocabulary table
 Applied everywhere (persisted data, ids, globals, files, `data-*` values, tests). New terms are added here by whoever introduces them.

@@ -69,7 +69,7 @@ ok("catalog: equipment and level are filtered",c2.length>0&&c2.every(e=>e.q!=="S
   ok("cleanMenu: the stored item form without an id is validated too, a target outside 800-5000 gives null",C.cleanMenu({days:[day(["breakfast","lunch","dinner"].map(m=>({m,items:[{n:"A",q:1,k:700}]})))]},null,99999).kcal===null);
   ok("parse: the menu key is returned, otherwise null",C.parse('{"reply":"ok","menu":{"days":[]}}').menu.days.length===0&&C.parse('{"reply":"ok"}').menu===null&&C.parse("düz").menu===null);
   const sl=C.shopList({days:[{meals:[{m:"breakfast",items:[{n:"Yumurta",q:2,g:100,a:2},{n:"Süt",q:1,g:200,a:null}]}]},{meals:[{m:"breakfast",items:[{n:"yumurta",q:1,g:50,a:1},{n:"Ayran",q:1.5,g:null,a:null}]}]}]});
-  ok("shopList: names merge İ/I-insensitively, grams and counts are summed, an item without grams uses portions, sorted in Turkish",sl.map(x=>x.n+":"+x.t).join("|")==="Ayran:1,5 porsiyon|Süt:200 g|Yumurta:150 g · 3 adet",sl);
+  ok("shopList: names merge İ/I-insensitively, grams and counts are summed, an item without grams uses the portion flagtions, sorted in Turkish",sl.map(x=>x.n+":"+x.t).join("|")==="Ayran:1,5 porsiyon|Süt:200 g|Yumurta:150 g · 3 adet",sl);
 }
 ok("rule 3 is tied to the KISIT line (riskFlags): calorie deficit, fasting, high protein",/3\.[^\n]*"KISIT"[^\n]*oruç[^\n]*protein/.test(C.SYSTEM)&&C.contextText({profile:{},goals:{},calc:{block:"x",why:"İlaç kaydın var"},days:[],today:[],now:"",workouts:[],notes:[]}).includes("KISIT: İlaç kaydın var"));
 { // provider setup

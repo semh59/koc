@@ -76,7 +76,7 @@ Bakılanlar: 26 Java dosyasının tamamı en az bir kez satır satır okundu (bu
 | 7-1 | O | `www/modules/pulse/pulseui.js` | Ölçüm geri sayımı ekran okuyucuda her saniye okunuyordu. | Düzeltildi: `role=timer`, yönerge yalnız değişince. |
 | 7-2 | Bilgi | yeni ekranlar | Yeni e2e dosyası (`e2e/new-screens.spec.js`): nabız, saat kartı, uyku; 28 test geçiyor. ASCII-Türkçe (aksansız) metin taraması temiz. | Doğrulandı. |
 | 8-1 | Bilgi | performans | Büyük veriyle ölçüm: sorun yok. | Doğrulandı. |
-| 9-1 | Bilgi | testler | Mutasyon taramasıyla test boşlukları arandı; sınır değer testleri eklendi (`scripts/sinir.test.js`). `pulselib` eşikleri (CV 0,15, özilinti gücü 0,3, tutulan atım oranı) için ayrı ret testi hâlâ yok. | Düzeltildi: `pulselib` eşikleri için mutasyon taraması, 13 eşik değişikliğinin hepsi testlerce yakalandı. |
+| 9-1 | Bilgi | testler | Mutasyon taramasıyla test boşlukları arandı; sınır değer testleri eklendi (`scripts/boundary.test.js`). `pulselib` eşikleri (CV 0,15, özilinti gücü 0,3, tutulan atım oranı) için ayrı ret testi hâlâ yok. | Düzeltildi: `pulselib` eşikleri için mutasyon taraması, 13 eşik değişikliğinin hepsi testlerce yakalandı. |
 | 9-2 | O | `www/modules/pulse/pulselib.js` | Sentetik tarama (600 sinyal, 45-109 atım/dk, gürültü genliğe yakın veya büyük): kabul edilenlerin ~%8'i 5-9 atım/dk sapıyor. Gürültüsüz/hafif gürültüde sapma yok. Gerçek parmak verisi ölçülmeden eşik sıkılaştırılmadı. | Düzeltildi: sayı artık atım noktalarının ortalamasından değil özilintiden (parabolla inceltilmiş) alınıyor; sentetik taramada 45-110 atım/dk için yanlış oranı %8 → %0,5 (en çok 5 atım sapma). 130+ atım/dk için sapma 5-20 kalıyor (dinlenme nabzı için sorun değil). Telefonda saatle karşılaştır. |
 
 ## Faz 14: Telefon bulguları (kullanıcıdan)

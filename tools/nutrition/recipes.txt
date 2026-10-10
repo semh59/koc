@@ -1,5 +1,5 @@
 # Home-cooking recipes (a pot or tray of about 4 servings). Row: name | method | portions (label=grams) | ingredients (name grams;...) | aliases
-# Ingredient names are those in genel.tsv and malzeme.tsv; all are raw USDA records (or cooked ones with "haşlanmış/fırında" in the name); grams are the raw or edible weight.
+# Ingredient names are those in generic.tsv and ingredients.tsv; all are raw USDA records (or cooked ones with "haşlanmış/fırında" in the name); grams are the raw or edible weight.
 # Method = cooking yield (cooked weight / input weight including water; fat does not evaporate, the yield applies to the non-fat input). A number is used as the yield itself.
 #   raw 1.0 (salad, meze, puree) | soup 0.90 | stew 0.85 (covered pot) | pilaf 0.94 | bake 0.80 | fry 0.85 | dough 0.88 | dessert 0.90
 # Fat absorption: the fat taken up while frying (not what stays on the surface) is written as a separate ingredient: pan frying 15-18 g fat per 100 g vegetable or dough, 12-14 g per 100 g meatballs, 8-10 g per 100 g floured fish.

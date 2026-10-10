@@ -9,8 +9,8 @@ ok("the grams in the label match the serving",FOODS.every(f=>f.u.every(([l,g])=>
 ok("number of foods verified against USDA",FOODS.filter(f=>f.s).length>=250,FOODS.filter(f=>f.s).length);
 ok("the tuna protein value is realistic",FOODS.find(f=>f.n.startsWith("Ton")).p<22);
 ok("at least 500 foods",FOODS.length>=500,FOODS.length);
-{const r=require("child_process").spawnSync(process.execPath,[require("path").join(__dirname,"../tools/besin/uret.js"),"--check"],{encoding:"utf8"});
-ok("www/modules/nutrition/foods.js equals the tools/besin/uret.js output",r.status===0,r.stderr)}
+{const r=require("child_process").spawnSync(process.execPath,[require("path").join(__dirname,"../tools/nutrition/generate.js"),"--check"],{encoding:"utf8"});
+ok("www/modules/nutrition/foods.js equals the tools/nutrition/generate.js output",r.status===0,r.stderr)}
 ok("third round: paça, beyti, kuzu incik, kemalpaşa, kalburabastı, şöbiyet, zerde, labne, vişne suyu, roasted almond are found in search",["paca:Paça çorbası","beyti:Beyti","kuzu incik:Kuzu incik","kemalpasa:Kemalpaşa tatlısı","kalburabasti:Kalburabastı","sobiyet:Şöbiyet","zerde:Zerde","labne:Labne","visne suyu:Vişne suyu","kavrulmuş badem:Badem (kavrulmuş)","3ü 1 arada:3'ü 1 arada kahve"].every(x=>{const[q,n]=x.split(":");return foodSearch(q,8).some(i=>FOODS[i].n===n)}));
 const vk=FOODS.slice(743);
 ok("proxy records: at least 24, all with a reason (v), no USDA mark, with a range",vk.length>=24&&vk.every(f=>/^(Vekil|Hesap): /.test(f.v)&&!f.s&&f.lo<f.k&&f.k<f.hi&&f.hi/f.k<1.7&&f.lo/f.k>0.5),vk.filter(f=>!(/^(Vekil|Hesap): /.test(f.v)&&!f.s&&f.lo<f.k&&f.k<f.hi)).map(f=>f.n));

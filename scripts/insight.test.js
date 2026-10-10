@@ -26,10 +26,10 @@ ok("noiseSd: small on a flat series, needs at least 8 weigh-ins",I.noiseSd(W(D10
 {
   let seed=20261002;const rnd=()=>(seed=seed*16807%2147483647)/2147483647,gauss=()=>Math.sqrt(-2*Math.log(rnd()))*Math.cos(2*Math.PI*rnd());
   const rate=(f,sd,q,R=600)=>{let k=0;for(let r=0;r<R;r++){const w={};for(let o=-48;o<=0;o++)if(o===0||rnd()<q)w[key(o)]=80+f(o)+sd*gauss();if(I.plateau(w,T).ok)k++}return Math.round(k/R*100)};
-  const S={duz:()=>0,k3:o=>-0.3*o/7,k5:o=>-0.5*o/7,a3:o=>0.3*o/7,fresh:o=>o<-21?0:-0.5*(o+21)/7},res=[];
+  const S={flat:()=>0,k3:o=>-0.3*o/7,k5:o=>-0.5*o/7,a3:o=>0.3*o/7,fresh:o=>o<-21?0:-0.5*(o+21)/7},res=[];
   for(const q of [1,0.8,4/7])for(const sd of [0.4,0.7,1.0]){const r={q:Math.round(q*100),sd};for(const k in S)r[k]=rate(S[k],sd,q);res.push(r)}
-  ok("simulation: sd 0.4 and 0.7 detect a flat series at 65% or more (every day, 80%, 4 days a week)",res.every(r=>r.duz>=65||r.sd===1),res);
-  ok("simulation: even at sd 1.0 and 4 days a week a flat series is caught at least 50% (realistic limit)",res.every(r=>r.duz>=50),res);
+  ok("simulation: sd 0.4 and 0.7 detect a flat series at 65% or more (every day, 80%, 4 days a week)",res.every(r=>r.flat>=65||r.sd===1),res);
+  ok("simulation: even at sd 1.0 and 4 days a week a flat series is caught at least 50% (realistic limit)",res.every(r=>r.flat>=50),res);
   ok("simulation: false plateau at most 5% when losing 0.3 and 0.5 kg/week",res.every(r=>r.k3<=5&&r.k5<=5),res);
   ok("simulation: false plateau at most 5% when gaining 0.3 kg/week",res.every(r=>r.a3<=5),res);
   ok("simulation: false plateau at most 5% for 4 flat weeks then -0.5 kg/week for 3 weeks",res.every(r=>r.fresh<=5),res);

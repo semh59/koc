@@ -1,11 +1,11 @@
-# Writes the CIQUAL and CoFID records listed in harici.tsv into harici.json (values are read from the source, never typed by hand).
-# Usage: python tools/besin/harici.py <CIQUAL 2025 folder (alim_*.xml, compo_*.xml)> <CoFID 2021 xlsx>
+# Writes the CIQUAL and CoFID records listed in external.tsv into external.json (values are read from the source, never typed by hand).
+# Usage: python tools/nutrition/extract_external.py <CIQUAL 2025 folder (alim_*.xml, compo_*.xml)> <CoFID 2021 xlsx>
 # CIQUAL: https://entrepot.recherche.data.gouv.fr/dataset.xhtml?persistentId=doi:10.57745/RDMHWY (Etalab 2.0). CoFID: https://www.gov.uk/government/publications/composition-of-foods-integrated-dataset-cofid (OGL v3).
 # Carbohydrate is converted to the USDA definition (fibre included): CIQUAL 31000+34100, CoFID Carbohydrate + AOAC fibre. Protein is CIQUAL 25000 (Jones factor), energy is kcal (CIQUAL 328).
 import glob,json,os,re,sys
 import openpyxl
 H=os.path.dirname(os.path.abspath(__file__))+'/'
-keys=[l.split('\t')[0].strip() for l in open(H+'harici.tsv',encoding='utf-8') if l.strip() and not l.startswith('#')]
+keys=[l.split('\t')[0].strip() for l in open(H+'external.tsv',encoding='utf-8') if l.strip() and not l.startswith('#')]
 num=lambda s:0.0 if s.strip().startswith(('traces','Tr','-')) else float(s.strip().replace('&lt;','').lstrip('<').strip().replace(',','.') or 'nan')
 out={}
 cq=[k[4:] for k in keys if k.startswith('ciq:')]
@@ -29,5 +29,5 @@ inconsistent=[k for k,x in out.items() if abs(x['k']-4*x['p']-4*x['c']-9*x['f'])
 if inconsistent:sys.exit('KCAL/MACROS DO NOT ADD UP (missing component?): '+' | '.join(inconsistent))
 miss=[k for k in keys if k not in out]
 if miss:sys.exit('UNRESOLVED: '+' | '.join(miss))
-json.dump(out,open(H+'harici.json','w',encoding='utf-8'),ensure_ascii=False,indent=0,separators=(',',':'))
+json.dump(out,open(H+'external.json','w',encoding='utf-8'),ensure_ascii=False,indent=0,separators=(',',':'))
 print(len(out),'records written')

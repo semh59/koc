@@ -9,13 +9,13 @@ function recipeListHtml(){
   return `<div class="lbl">Tariflerim</div>${S.recipes.map(r=>{const f=LogLib.recipeFood(r);return `<div class="prow"><button class="grow pbtn" data-rp="add:${r.id}"><span class="grow"><b>${esc(r.n)}</b><span class="mut sm">1 porsiyon: ${Math.round(f.k*f.u[0][1]/100)} kcal</span></span></button><button class="plus" data-rp="edit:${r.id}" aria-label="${esc(r.n)} tarifini düzenle">${Icons.svg("note")}</button></div>`}).join("")}`;
 }
 function rpRows(){
-  return recipeDraft.items.map((it,i)=>`<div class="prow"><span class="grow"><b>${esc(it.n)}</b><span class="mut sm">${it.por?"1 porsiyon":"100 g"}: ${Math.round(it.k)} kcal</span></span><input class="in num rgin" data-rg="${i}" inputmode="decimal" aria-label="${esc(it.n)} ${it.por?"porsiyon":"gram"}" value="${it.por?(it.g?it.g/100:""):it.g||""}"><span class="mut">${it.por?"porsiyon":"g"}</span><button class="del" data-rp="rm:${i}" aria-label="${esc(it.n)} malzemesini çıkar">✕</button></div>`).join("")||`<p class="mut sm">Malzemeleri aşağıdan arayıp ekle.</p>`;
+  return recipeDraft.items.map((it,i)=>`<div class="prow"><span class="grow"><b>${esc(it.n)}</b><span class="mut sm">${it.portion?"1 porsiyon":"100 g"}: ${Math.round(it.k)} kcal</span></span><input class="in num rgin" data-rg="${i}" inputmode="decimal" aria-label="${esc(it.n)} ${it.portion?"porsiyon":"gram"}" value="${it.portion?(it.g?it.g/100:""):it.g||""}"><span class="mut">${it.portion?"porsiyon":"g"}</span><button class="del" data-rp="rm:${i}" aria-label="${esc(it.n)} malzemesini çıkar">✕</button></div>`).join("")||`<p class="mut sm">Malzemeleri aşağıdan arayıp ekle.</p>`;
 }
 function rpSum(){
   const ok=recipeDraft.items.filter(i=>i.g>0),c=LogLib.recipeCalc({items:ok}),s=Math.round(num($("#rs").value))||1;
   const total=[`${Math.round(c.tot.k)} kcal`,...NUTR.map(m=>c.tot[m]!=null&&`${NLBL[m]} ${rpFmt(c.tot[m])} ${NUNIT(m)}`)].filter(Boolean).join(" · ");
   const per={k:c.tot.k/s};for(const m of NUTR)per[m]=c.tot[m]==null?null:c.tot[m]/s;
-  const ap=recipeDraft.items.some(i=>i.por);
+  const ap=recipeDraft.items.some(i=>i.portion);
   $("#rsum").innerHTML=ok.length?`<div class="lbl">Porsiyon başı (${s} porsiyon${ap?"":`, ${Math.round(c.g/s)} g`})</div>${nutrBlock(per)}<div class="mt-2 lbl">Tarifin tamamı${ap?"":` (${Math.round(c.g)} g)`}</div><p class="m0 sm num">${total}</p>`:`<p class="m0 hint">Malzeme ve gram girince değerler burada görünür.</p>`;
   $("#rnote").textContent=ok.length?LogLib.recipeNote(c):"Çiğ ağırlıklarla hesaplanır, pişince değişir; tahmindir.";
 }
@@ -55,7 +55,7 @@ document.addEventListener("click",ev=>{
   else if(a==="pick"){
     const f=recipeHits[+p];rpRead();if(!f)return;
     if(recipeDraft.items.length>=RECIPE_ITEMS_MAX)return ferr("rerr",`Bir tarifte en fazla ${RECIPE_ITEMS_MAX} malzeme olur`);
-    const it=LogLib.recipeItem({...f,g:f.por?100:Math.min(5000,Math.round(f.u[0][1]))});
+    const it=LogLib.recipeItem({...f,g:f.portion?100:Math.min(5000,Math.round(f.u[0][1]))});
     if(it){recipeDraft.items.push(it);$("#rrows").innerHTML=rpRows();$("#rq").value="";$("#rlist").innerHTML="";rpSum()}
   }else if(a==="dup"&&recipeDraft.id!=null){
     rpRead();
@@ -74,6 +74,6 @@ document.addEventListener("input",ev=>{
   if(t.id==="rq"){
     const q=t.value.trim(),all=allFoods();recipeHits=q?foodSearch(q,6,all).map(i=>all[i]):[];
     $("#rlist").innerHTML=recipeHits.map((f,i)=>`<button class="prow" data-rp="pick:${i}"><span class="grow"><b>${esc(f.n)}</b><span class="mut sm">100 g: ${Math.round(f.k)} kcal</span></span><span class="aic" aria-hidden="true">${Icons.svg("plus")}</span></button>`).join("");
-  }else if(t.dataset.rg!==undefined&&recipeDraft){const v=num(t.value),it=recipeDraft.items[+t.dataset.rg];it.g=v>0?Math.round(v*(it.por?100:1)*10)/10:0;rpSum()}
+  }else if(t.dataset.rg!==undefined&&recipeDraft){const v=num(t.value),it=recipeDraft.items[+t.dataset.rg];it.g=v>0?Math.round(v*(it.portion?100:1)*10)/10:0;rpSum()}
   else if(t.id==="rs"&&recipeDraft)rpSum();
 });

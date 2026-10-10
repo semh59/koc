@@ -1,4 +1,4 @@
-# Proxy or computed meal records (second round). Same format as ogun.txt; rows from vekil.txt may be components. Appended at the end.
+# Proxy or computed meal records (second round). Same format as meals.txt; rows from proxies.txt may be components. Appended at the end.
 Kokoreç ekmek arası | raw | 1 adet | Ekmek (beyaz) 80;Kokoreç 100;Domates 30 | kokorec | ~35
 Tantuni dürüm | raw | 1 dürüm | Tortilla (buğday) 70;Tantuni 100;Domates 30;Soğan 15 | tantuni | ~30
 Kaymak, bal ve ekmek | raw | 1 porsiyon | Ekmek (beyaz) 60;Kaymak 30;Bal 20 | kahvaltı kaymak bal | ~25

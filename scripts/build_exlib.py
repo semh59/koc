@@ -62,7 +62,7 @@ def main():
             raise SystemExit("unknown region: " + region)
         rows.append((by[name], id_, tr, region, tpl, prop, kind, o))
     if miss:
-        raise SystemExit("veri setinde olmayan adlar:\n" + "\n".join(miss))
+        raise SystemExit("names missing from the dataset:\n" + "\n".join(miss))
 
     imgs = {}
     def job(r):
