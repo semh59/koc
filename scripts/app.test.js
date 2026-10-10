@@ -2430,7 +2430,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("the Movement tab has the sport chart and cardio",qa("#tp-motion svg.bars").length>=1&&!!q('#tp-motion [data-ckg="open"]'));
     ev("tSec='weight'");
     // reports
-    const rep=()=>qa("#view h2").filter(h=>h.textContent==="Daha fazla ölçüm").length;
+    const rep=()=>qa("#view summary").filter(h=>h.textContent==="Daha fazla ölçüm").length;
     ev("S.settings.bpOn=false;S.settings.bsOn=false;S.labs=[];render()");
     ok("Daha fazla ölçüm: only the weekly report (no row for closed modules and empty labs)",rep()===1&&!!q('[data-wk="pdf"]')&&!q('[data-vt^="pdfmenu"]')&&!q('[data-lab="pdf"]'));
     ev("S.settings.bpOn=true;S.settings.bsOn=true;S.labs=[{id:1,day:keyOff(0),n:'Glukoz',v:90,u:'mg/dL'}];render()");
