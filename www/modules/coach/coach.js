@@ -315,7 +315,7 @@ async function sendOk(p,conf,msgs){
 function cPreview(msgs,p,warn){
   return new Promise(res=>{
     const n=Object.keys(msgs.pii||{}).length;
-    openSheet(`<h3>Rehber'e giden metin</h3><p class="mut sm">${esc(p.name)} sağlayıcısına tam olarak aşağıdaki metin gider.${n?` Kimlik bilgisi gibi duran ${n} parça maskelendi.`:""}</p>${warn?`<div class="banner"><p class="m0">${esc(warn)}</p></div>`:""}<pre style="white-space:pre-wrap;word-break:break-word;max-height:45vh;overflow:auto;font-size:12px;margin:8px 0" tabindex="0" role="region" aria-label="Giden metin">${esc(msgs.map(m=>`[${m.role==="user"?"sen":m.role==="system"?"sistem":"rehber"}]\n${m.content}`).join("\n\n"))}</pre><div class="two"><button class="btn" data-c="pvok">Gönder</button><button class="btn ghost" data-c="pvno">İptal</button></div>`);
+    openSheet(`<h3>Rehber'e giden metin</h3><p class="mut sm">${esc(p.name)} sağlayıcısına tam olarak aşağıdaki metin gider.${n?` Kimlik bilgisi gibi duran ${n} parça maskelendi.`:""}</p>${warn?`<div class="banner"><p class="m0">${esc(warn)}</p></div>`:""}<pre style="white-space:pre-wrap;word-break:break-word;max-height:45vh;overflow:auto;font-size:14px;margin:8px 0" tabindex="0" role="region" aria-label="Giden metin">${esc(msgs.map(m=>`[${m.role==="user"?"sen":m.role==="system"?"sistem":"rehber"}]\n${m.content}`).join("\n\n"))}</pre><div class="two"><button class="btn" data-c="pvok">Gönder</button><button class="btn ghost" data-c="pvno">İptal</button></div>`);
     sheetEnd=res;
   });
 }
