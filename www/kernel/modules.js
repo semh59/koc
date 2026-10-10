@@ -17,6 +17,6 @@ const Modules={
 };
 /* Store shards: one record per module; settings belong to the core. A field in no shard goes to the "other" shard (data is never dropped silently).
    Fast-growing arrays are split into one shard per month (shard id "<module>/<month>"): adding an entry writes only that month's shard. */
-const Chunks={entries:e=>String(e&&e.day||"").slice(0,7)||"x"};
+const Chunks={entries:e=>e.day.slice(0,7)};
 const Shards={settings:["settings"],...Object.fromEntries(Object.entries(Modules).map(([id,m])=>[id,m.keys]))};
 if(typeof module!=="undefined")module.exports=Modules;

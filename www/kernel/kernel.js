@@ -10,5 +10,5 @@ const Act=(()=>{
 })();
 /* Data modules register their hooks here; consumers (privacy, CSV, history, Coach) know no module fields and only walk the lists. */
 const Data={privacy:[],csv:[],csvEntries:[],hist:[],histSearch:[],dayRows:[],dayWork:[]}; // privacy row: [label, count, clear, order]
-if(typeof document!=="undefined")document.addEventListener("nw:boot",()=>Data.privacy.sort((a,b)=>(a[3]??99)-(b[3]??99)));
+if(typeof document!=="undefined")document.addEventListener("nw:boot",()=>Data.privacy.sort((a,b)=>a[3]-b[3]));
 if(typeof module!=="undefined")module.exports={Act,Data};

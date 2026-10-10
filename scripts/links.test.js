@@ -18,6 +18,9 @@ for(let w=0;w<6;w++)for(let i=0;i<7;i++){const o=-(w*7+i);kcal[key(o)]=w%2?2600:
 for(let o=-42;o<=0;o+=3){const w=Math.floor(-o/7);weights[key(o)]=80+(o+42)*(w%2?0.02:-0.02)}
 r=B.analyze({today:T,sleep:[],mood:[],kcal,weights});
 ok("calories vs weight trend in weekly blocks",r.length===1&&r[0].id==="calories"&&/kcal/.test(r[0].text),r);
+{const ends={[key(-42)]:80,[key(0)]:78},old={};for(let i=43;i<1200;i+=3)old[key(-i)]=85;
+ok("calories: weeks without a weigh-in inside them are skipped",B.analyze({today:T,sleep:[],mood:[],kcal,weights:ends}).length===0);
+ok("calories: years of older weigh-ins change nothing for the weeks in the window",JSON.stringify(B.analyze({today:T,sleep:[],mood:[],kcal,weights:{...old,...weights}})).includes('"calories"'));}
 ok("no data and garbage input: empty result, no throw",B.analyze({today:T}).length===0&&B.analyze({today:T,sleep:[{day:key(-1),min:400}],mood:[],kcal:{},weights:{}}).length===0);
 const all=JSON.stringify(B.analyze(mk(20,i=>i%2?[480,4]:[360,2])).concat(r));
 ok("wording: no diagnosis, score or cause-and-effect claim",!/depresyon|bozukluk|skor|tedavi|teşhis|neden olur|sebep/i.test(all),all);

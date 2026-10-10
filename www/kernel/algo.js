@@ -37,7 +37,9 @@ const Algo=(()=>{
     const ks=Object.keys(w).sort();if(ks.length<2)return [];
     const last=dayNum(ks[ks.length-1]);
     if(today&&dayNum(today)-last>7)return [];
-    return ks.filter(k=>last-dayNum(k)<days).map(k=>[dayNum(k),w[k]]);
+    const pts=[];
+    for(let i=ks.length-1;i>=0;i--){const d=dayNum(ks[i]);if(last-d>=days)break;pts.push([d,w[ks[i]]])}
+    return pts.reverse();
   }
   /* kg/week over the last `days` days; by default needs at least 4 weigh-ins spanning 7 days. */
   function slopePerWeek(w,days=21,minPts=4,minSpan=7,today=clock&&clock()){

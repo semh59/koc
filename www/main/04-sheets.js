@@ -51,7 +51,7 @@ const fday=()=>($("#fday")||{}).value||dayKey();
 /* The error stays right under the field, in place of what the toast would hide. */
 const ferr=(id,msg)=>{$("#"+id).textContent=msg};
 /* Day/month navigator: data-<attr>="1" back, "-1" forward; forward is disabled when there is none. */
-const dayNav=(attr,label,last,unit="gün")=>`<div class="dnav"><button data-${attr}="1" aria-label="Önceki ${unit}">${Icons.svg("back")}</button><h2 aria-live="polite">${label}</h2><button data-${attr}="-1" aria-label="Sonraki ${unit}"${last?" disabled":""}>${Icons.svg("chev")}</button></div>`;
+const dayNav=(attr,label,last)=>`<div class="dnav"><button data-${attr}="1" aria-label="Önceki gün">${Icons.svg("back")}</button><h2 aria-live="polite">${label}</h2><button data-${attr}="-1" aria-label="Sonraki gün"${last?" disabled":""}>${Icons.svg("chev")}</button></div>`;
 /* A collapsible section stays open across redraws: <details ${keepOpen(name)}>. toggle does not bubble, so it is listened for in the capture phase. */
 const OPEN=new Set(),keepOpen=k=>`data-keep="${k}"${OPEN.has(k)?" open":""}`;
 document.addEventListener("toggle",e=>{const k=e.target.dataset&&e.target.dataset.keep;if(k)e.target.open?OPEN.add(k):OPEN.delete(k)},true);

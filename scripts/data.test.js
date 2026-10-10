@@ -78,14 +78,6 @@ const E=(day,type,v,x={})=>({id:0,day,time:"08:00",type,v,text:"",...x});
   ev(`S.chats=${JSON.stringify(arc(20))};save()`);
   ok("archived chats stay within the total size limit (the oldest go, the newest stay)",JSON.stringify(ev("S.chats")).length<=1.5e6&&ev("S.chats.length")<20&&ev("S.chats[0].id")===1000&&w.localStorage.getItem("nw_state").length<2e6,ev("S.chats.length"));
 
-  // multiple tabs
-  w=await open({nw_state:JSON.stringify({entries:[E("2026-09-01","weight",80)],settings:{obDone:true}})});ev=s=>w.eval(s);
-  const other=JSON.stringify({entries:[E("2026-09-01","weight",80),E("2026-09-02","weight",79)],settings:{obDone:true,kcal:1900}});
-  w.dispatchEvent(new w.StorageEvent("storage",{key:"nw_state",newValue:other,storageArea:w.localStorage}));
-  ok("another tab's save is taken, this tab does not overwrite it with old data",ev("S.entries.length")===2&&ev("S.settings.kcal")===1900&&w.document.querySelector("#tmsg").textContent.includes("sekme"));
-  w.dispatchEvent(new w.StorageEvent("storage",{key:"nw_state",newValue:"bozuk{",storageArea:w.localStorage}));
-  ok("a corrupt remote value is ignored",ev("S.entries.length")===2);
-
   // restore: safety copy
   w=await open({nw_state:JSON.stringify({entries:[E("2026-09-01","weight",80)],settings:{obDone:true}})});ev=s=>w.eval(s);
   ev("sheetBackup()");w.document.querySelector("#bk").value=JSON.stringify({entries:[E("2026-09-05","weight",70),E("2026-09-06","weight",69)],settings:{obDone:true}});

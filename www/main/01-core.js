@@ -191,7 +191,7 @@ const assemble=m=>{
   for(const j of Object.values(m))for(const [k,v] of Object.entries(JSON.parse(j))){
     if(Chunks[k]&&Array.isArray(v)&&Array.isArray(r[k]))r[k]=r[k].concat(v);else r[k]=v;
   }
-  for(const k of Object.keys(Chunks))if(Array.isArray(r[k]))r[k].sort((a,b)=>(a.id||0)-(b.id||0));
+  for(const k of Object.keys(Chunks))if(Array.isArray(r[k]))r[k].sort((a,b)=>a.id-b.id);
   return r;
 };
 let lastShard={};
@@ -264,20 +264,6 @@ document.addEventListener("nw:boot",()=>{
   if(Store.mode!=="idb"||recovery||Store.sharded)return;
   save();
   if(Store.get("nw_state")!=null)Store.whenIdle().then(()=>{if(!Store.failed)Store.del("nw_state")});
-});
-/* Another tab (web only) saved: take its state, or this tab would overwrite it with stale data on its next save. `synced` records what was taken before the redraw. */
-function adoptExternal(r,synced){
-  if(recovery||!r||!Array.isArray(r.entries))return;
-  S=buildState(r).S;synced();logOff=0;render();toast("Başka bir sekmedeki değişiklik alındı");
-}
-addEventListener("storage",ev=>{
-  if(Store.mode==="idb"||ev.storageArea!==localStorage||ev.key!=="nw_state"||!ev.newValue||ev.newValue===lastJ)return;
-  let r=null;try{r=JSON.parse(ev.newValue)}catch{}
-  adoptExternal(r,()=>{lastJ=ev.newValue});
-});
-Store.onExternal(x=>{
-  let r=null;try{r=assemble(x)}catch{}
-  adoptExternal(r,()=>{lastShard=x});
 });
 /* When the fasting brake changes (note, medication, measurement, chat flag or confirmation) the fasting notifications are rescheduled whatever screen is open. */
 let fastBlk=null;

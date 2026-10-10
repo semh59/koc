@@ -8,6 +8,7 @@ ok("1 rep = itself",A.est1RM(100,1)===100); ok("over 20 reps is unreliable",A.es
 ok("volume",A.volume([{kg:62.5,reps:8,done:true},{kg:62.5,reps:8,done:true},{kg:62.5,reps:7,done:true}])===1437.5);
 const w={},intake={};for(let i=0;i<29;i++){w[day(i)]=88-0.05*i;intake[day(i)]=1800}
 const sl=A.slopePerWeek(w);ok("slope about -0.35 kg/week",near(sl,-0.35,0.01),sl);
+{const old={};for(let i=1;i<=1100;i++)old[day(-i)]=95+(i%7);ok("slope: weigh-ins older than the window do not change it",A.slopePerWeek({...old,...w})===sl);}
 const r=A.adaptiveTdee({weights:w,intake,profile:{kg:86.6,cm:175,age:34,sex:"m",act:1}});
 ok("adaptive TDEE about 1800+0.05*7700=2185",near(r.est,2185,15)&&r.source!=="formül",JSON.stringify(r));
 ok("with little data it falls back to the formula",A.adaptiveTdee({weights:{[day(0)]:80,[day(3)]:79.8},intake:{},profile:{kg:80,cm:175,age:30,sex:"m",act:1}}).source==="formül");

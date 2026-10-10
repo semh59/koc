@@ -66,8 +66,8 @@ const GuideLib=(()=>{
   /* Ready-made flows: general patterns, not a personal program. */
   const rounds=(ids,k,sec,rest)=>Array.from({length:k},(_,i)=>({ex:ids[i%ids.length],sec,rest,n:1}));
   const tabata=ids=>rounds(ids,8,20,10);
-  const hiit=(ids,k=8)=>rounds(ids,k,40,20);
-  const stretch=(ids,rest=8)=>ids.map(ex=>({ex,sec:30,rest,n:1}));
+  const hiit=ids=>rounds(ids,8,40,20);
+  const stretch=ids=>ids.map(ex=>({ex,sec:30,rest:8,n:1}));
   const FLOWS=[
     {id:"warmup5",n:"5 dk ısınma",about:"Hafif kardiyo ve eklem hareketleri; antrenman öncesi.",warm:true,steps:[
       {ex:"jumpingjack",sec:40,rest:5},{ex:"armcircles",sec:30,rest:5},{ex:"shouldercircles",sec:30,rest:5},{ex:"torsotwist",sec:30,rest:5},

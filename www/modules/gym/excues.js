@@ -50,4 +50,3 @@ const EXCUE={
   neckstretch:["Başı yavaşça yana eğ, omuzları düşük tut.","Zorlama, hafif gerginlik yeter."],
   twiststretch:["Gövdeyi yavaşça döndür, kalça sabit.","Nefes ver ve gevşe."]
 };
-if(typeof module!=="undefined")module.exports=EXCUE;
