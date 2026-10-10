@@ -40,7 +40,7 @@ done
 alarms_ok() { n=$(adb shell dumpsys alarm | grep -E "RTC_WAKEUP.*com.neowell.app" | wc -l); [ "$n" -ge 100 ]; }
 until_ok 60 alarms_ok
 echo "Scheduled wake-up alarms: $n"
-[ "$n" -ge 100 ] || { echo "REMINDER ALARMS NOT SCHEDULED"; exit 1; }
+[ "$n" -ge 100 ] || { echo "REMINDER ALARMS NOT SCHEDULED"; grep "NW-SCHED" smoke.log; adb shell dumpsys alarm | grep -B1 -A3 com.neowell.app | head -60; exit 1; }
 grep -q "NW-PDF ok pages=1" smoke.log || { echo "PDF (canvas, pdf.js) FAILED"; grep "NW-PDF" smoke.log; exit 1; }
 grep -q "NW-OCR ok" smoke.log || { echo "TEXT RECOGNITION (ML Kit) FAILED"; grep "NW-OCR" smoke.log; exit 1; }
 grep -q "NW-VAULT ok" smoke.log || { echo "KEY VAULT FAILED"; exit 1; }
