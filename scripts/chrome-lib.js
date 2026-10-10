@@ -36,8 +36,11 @@ async function launch(bin){
       return r.result.value;
     },
     async waitFor(expr,ms=10000){
-      for(const end=Date.now()+ms;Date.now()<end;await new Promise(r=>setTimeout(r,20)))if(await this.eval("Boolean("+expr+")"))return;
-      throw new Error("waitFor timed out: "+expr);
+      let last;
+      for(const end=Date.now()+ms;Date.now()<end;await new Promise(r=>setTimeout(r,20))){
+        try{if(await this.eval("Boolean("+expr+")"))return}catch(e){last=e} // the document may not exist yet right after navigation
+      }
+      throw new Error("waitFor timed out: "+expr+(last?" ("+last.message+")":""));
     },
     async shot(file){fs.writeFileSync(file,Buffer.from((await cmd("Page.captureScreenshot",{format:"png"})).data,"base64"))},
     close(){try{ws.close()}catch(e){}proc.kill();setTimeout(()=>{try{fs.rmSync(dir,{recursive:true,force:true,maxRetries:5})}catch(e){}},500)}
