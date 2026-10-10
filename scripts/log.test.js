@@ -1,6 +1,9 @@
 const {ok,finish}=require("./ok");
 const L=require("../www/modules/log/loglib.js");
 ok("copyNutr carries only numeric macros",JSON.stringify(L.copyNutr({p:5,c:null,f:0,text:"x"},{}))==='{"p":5,"f":0}');
+ok("dayRange: foods with a range cover at least half of the calories and the range is 10% wide or more",JSON.stringify(L.dayRange([{v:600,lo:500,hi:800},{v:400}]))==='{"lo":900,"hi":1200}');
+ok("dayRange: no range when no food has one, coverage is under half, or the range is narrow",L.dayRange([{v:500},{v:300}])===null&&L.dayRange([{v:200,lo:150,hi:300},{v:800}])===null&&L.dayRange([{v:1000,lo:980,hi:1020}])===null);
+ok("item keeps a valid lo/hi and drops a range that does not contain v",JSON.stringify(L.cleanFav([{text:"A",v:100,lo:80,hi:140},{text:"B",v:100,lo:120,hi:140}]))==='[{"text":"A","v":100,"lo":80,"hi":140},{"text":"B","v":100}]');
 ok("copyNutr: per-meal sodium is kept up to the 100,000 mg limit (the 40,000 per 100 g limit is separate)",L.copyNutr({na:60000},{}).na===60000&&L.copyNutr({na:100001},{}).na===undefined);
 const e=(day,id,text,v,x)=>Object.assign({type:"food",day,id,text,v},x);
 let r=L.recents([e("2026-10-01",1,"Menemen",200),e("2026-10-01",2,"menemen",210,{p:9}),e("2026-09-30",3,"Ekmek",90),e("2026-08-01",4,"Eski",50),e("2026-10-03",5,"Gelecek",5),{type:"water",day:"2026-10-01",id:6,text:"x",v:250}],"2026-10-02");

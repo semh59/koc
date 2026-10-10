@@ -50,5 +50,11 @@ const lockOnState=w=>JSON.parse(w.localStorage.getItem("nw_state")).settings.loc
   ok("returning after 10 s does not ask for the lock",g.w.document.querySelector("#lock").hidden);
   vis(true);clock+=40000;vis(false);
   ok("returning after more than 30 s asks for the lock again",await until(()=>authCount(g.calls)===2));
+  g.w.eval("S.settings.lockGrace=300");
+  vis(true);clock+=200000;vis(false);await flush();
+  ok("with a 5 minute grace, returning after 200 s does not ask again",authCount(g.calls)===2);
+  vis(true);clock+=400000;vis(false);
+  ok("with a 5 minute grace, returning after 400 s asks again",await until(()=>authCount(g.calls)===3));
+  ok("an invalid lockGrace in saved settings falls back to 30 s",g.w.eval("cleanSettings({lockGrace:7}).lockGrace")===30&&g.w.eval("cleanSettings({lockGrace:120}).lockGrace")===120);
   finish();
 })();

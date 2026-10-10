@@ -17,7 +17,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   { // onboarding
     const q=s=>$q(s),click=s=>q(s).click(),val=(id,v)=>{q("#ob"+id).value=v},v=()=>q("#view").textContent;
     const fill=(cm,kg,age)=>{val("cm",cm);val("kg",kg);val("age",age)};
-    ok("first launch welcome: logo, one sentence, one primary Başla button, a skip link; no step counter",v().includes("hoş geldin")&&q('#view .btn[data-ob="next"]').textContent==="Başla"&&q("#view").querySelectorAll(".btn").length===1&&!!q('[data-ob="skip"]')&&!v().includes("Adım"));
+    ok("first launch welcome: logo, one sentence, one primary Başla button, a skip link; no step counter",v().includes("hoş geldin")&&q('#view .btn[data-ob="next"]').textContent==="Başla"&&q("#view").querySelectorAll(".btn:not(.ghost)").length===1&&!!q('[data-obr="open"]')&&!!q('[data-ob="skip"]')&&!v().includes("Adım"));
     click('[data-ob="next"]');
     ok("first-launch onboarding: step 1/3, menu hidden, labelled fields",v().includes("Adım 1/3")&&w.document.body.classList.contains("ob")&&["cm","kg","age"].every(k=>q(`label[for="ob${k}"]`)&&q("#ob"+k)));
     ok("a settings state without the flag counts onboarding as done; it hides record and profile",ev("cleanSettings({kcal:1800}).obDone")===false&&ev("cleanSettings({obDone:false,kcal:1}).obDone")===false&&ev("cleanSettings(undefined).obDone")===false&&ev("(()=>{const r=[];const s0=S;for(const f of [()=>S.entries.push({}),()=>{S.settings.heightCm=170},()=>{S.settings.goalKg=70},()=>{S.settings.obDone=true}]){S=structuredClone(DEF);f();r.push(obNeeded())}S=s0;return r.join()})()")==="false,false,false,false");
@@ -69,7 +69,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("cleanGym tg: a valid target is kept, unknown/removed exercises and junk values are dropped",JSON.stringify(T.o.templates[1].tg)==='{"squat":{"sets":4,"reps":6,"hi":10},"plank":{"sets":3,"sec":45}}'&&JSON.stringify(T.o.templates[2].tg)==='{"row":{"sets":3,"reps":8}}',T.o.templates);
     ok("an old template (no tg) keeps its shape, the cleaner does not touch the input",JSON.stringify(T.o.templates[0])==='{"id":1,"name":"Eski","ex":["squat","bench"]}'&&T.o.templates[3].tg===undefined&&T.same);
     // starting without tg is the old behaviour; starting with tg fills from the target, kg from the previous session
-    ev(`S.workouts=[{id:5,day:'2026-09-01',t0:1000,t1:2000,name:'Eski',tpl:null,ex:[{id:'squat',note:'',sets:[{kg:100,reps:12,done:true},{kg:100,reps:12,done:true}]},{id:'plank',note:'',sets:[{kg:null,reps:null,sec:40,done:true}]}]}];S.gid=10;render()`);
+    ev(`S.workouts=[{id:5,day:dayKey(),t0:1000,t1:2000,name:'Eski',tpl:null,ex:[{id:'squat',note:'',sets:[{kg:100,reps:12,done:true},{kg:100,reps:12,done:true}]},{id:'plank',note:'',sets:[{kg:null,reps:null,sec:40,done:true}]}]}];S.gid=10;render()`);
     ev("S.templates=[{id:11,name:'Tg yok',ex:['squat','plank']},{id:12,name:'Hedefli',ex:['squat','plank','bwsquat'],tg:{squat:{sets:4,reps:6,hi:10},plank:{sets:2,sec:60},bwsquat:{sets:5,reps:15}}}];render()");
     ev("gStart(11)");let a=ev("JSON.stringify(gActive().ex.map(x=>[x.id,x.sets.length,x.sets[0].kg,x.sets[0].reps,x.sets[0].sec||0]))");
     ok("a template without tg starts as before: set count from history, kg and reps from the suggestion, duration from history",a==='[["squat",2,102.5,8,0],["plank",1,null,null,40]]',a);
@@ -101,7 +101,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("save: name, order and targets are written to the template; the page closes",t&&t.ex.join()==="plank,bench"&&t.tg.bench.sets===5&&t.tg.bench.reps===5&&t.tg.plank.sec===45&&!q("#sheet").classList.contains("on"),t);
     ok("save round trip: tg persists, the template shows on the home screen",ev("cleanGym(JSON.parse(JSON.stringify(S))).templates.find(x=>x.name==='İtiş günü').tg.plank.sec")===45&&q("#view").textContent.includes("İtiş günü"));
     // edit: id and link are kept
-    const id=t.id;ev(`S.workouts.push({id:20,day:'2026-09-02',t0:3000,t1:4000,name:'İtiş günü',tpl:${id},ex:[{id:'bench',note:'',sets:[{kg:60,reps:8,done:true},{kg:60,reps:7,done:true},{kg:20,reps:5,w:true,done:true}]},{id:'squat',note:'',sets:[{kg:80,reps:10,done:true}]}]});S.gid=30;render()`);
+    const id=t.id;ev(`S.workouts.push({id:20,day:dayKey(),t0:3000,t1:4000,name:'İtiş günü',tpl:${id},ex:[{id:'bench',note:'',sets:[{kg:60,reps:8,done:true},{kg:60,reps:7,done:true},{kg:20,reps:5,w:true,done:true}]},{id:'squat',note:'',sets:[{kg:80,reps:10,done:true}]}]});S.gid=30;render()`);
     q(`[data-g="tedit:${id}"]`).click();
     ok("edit: opens with the existing values",q("#gten").value==="İtiş günü"&&sh().includes("Şablonu düzenle")&&q('[data-te="sets:1"]').value==="5");
     set("#gten","İtiş B");q('[data-g="tesave"]').click();
@@ -184,7 +184,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   }
   { // home equipment profile
     const q=s=>$q(s),qa=s=>[...w.document.querySelectorAll(s)];
-    const H=(id,kg,reps,n=3)=>`S.workouts=[{id:5,day:'2026-09-01',t0:1000,t1:2000,name:'E',tpl:null,ex:[{id:'${id}',note:'',sets:[${Array(n).fill(`{kg:${kg},reps:${reps},done:true}`).join()}]}]}];`;
+    const H=(id,kg,reps,n=3)=>`S.workouts=[{id:5,day:dayKey(),t0:1000,t1:2000,name:'E',tpl:null,ex:[{id:'${id}',note:'',sets:[${Array(n).fill(`{kg:${kg},reps:${reps},done:true}`).join()}]}]}];`;
     ev("closeSheet();S.workouts=[];S.templates=[];S.customEx=[];S.exCfg={};S.gid=10;S.bar=20;S.dbStep=0;S.plates=GPLATE_DEF.slice();tab='gym';render()");
     const D=JSON.parse(ev("JSON.stringify(cleanGym({}))")),B=JSON.parse(ev("JSON.stringify(cleanGym({dbStep:3,plates:['x',99,25,25,10,0.5],bar:15}))")),Z=JSON.parse(ev("JSON.stringify([cleanGym({plates:[]}).plates,cleanGym({plates:'x',dbStep:'2'}),cleanGym({dbStep:2.5}).dbStep])"));
     ok("old backup (no fields): dumbbell step off, plate set default, bar kept",D.dbStep===0&&D.plates.join()==="25,20,15,10,5,2.5,1.25"&&D.bar===20&&B.bar===15);
@@ -201,6 +201,8 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("an unachievable kg suggestion drops down (102.5 -> 100)",ev("gSuggest('squat').kg")===100);
     ev("S.plates=GPLATE_DEF.slice()");ev(H("squat",102.5,8));
     ok("in the default inventory the suggestion is unchanged",ev("gSuggest('squat').kg")===102.5);
+    ev("S.workouts[0].day=keyOff(-21)");
+    ok("gSuggest after a 21 day break: 10% lighter, with the reason",ev("gSuggest('squat').kg")<ev("S.workouts[0].ex[0].sets[0].kg")&&ev("gSuggest('squat').why").includes("Uzun ara verdin (21 gün)"),ev("gSuggest('squat')"));
     ev("S.plates=[25,20,15,10,5];S.workouts=[];gStart(null);gAddEx(gActive(),'squat');gActive().ex[0].sets[0].kg=100;gClick('kgp:0:0',document.body)");
     ok("the +/- button steps by the inventory step",ev("gActive().ex[0].sets[0].kg")===110);
     ev("S.plates=[20,10];exPlateSheet(0)");
@@ -335,7 +337,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
       ok("restore: if saving fails the key is not written, the old data stays",k===undefined&&h==="eski",[k,h]);
       // if storage is full, the inability to take a safety copy is announced BEFORE confirmation
       const oc=w.confirm;let cm="";w.confirm=m=>(cm=m,false);const ob=ev("otherBytes");ev("otherBytes=4e6");
-      await ev("goRestore()");ev("otherBytes="+ob);w.confirm=oc;
+      ev("S.entries=[{id:1,day:dayKey(),time:'08:00',type:'note',v:null,text:'x'}]");await ev("goRestore()");ev("otherBytes="+ob+";S.entries=[]");w.confirm=oc;
       ok("restore confirmation: says in advance if a safety copy cannot be taken",/güvenlik kopyası ALINAMAYACAK/.test(cm),cm);
     }
   { // automatic refresh (visibility, day change) does not erase a filled form field
@@ -820,6 +822,11 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     const encJ=saved.data;
     ev("sheetBackup()");q("#bk").value=encJ;q("#bkpw").value="mavi-bulut-77";await ev("goRestore()");
     ok("the sent backup is restored with the same password",ev("S.settings.healthNote")==="gizli sağlık notu");
+    ev("S.settings.healthNote='sonradan'");q("#bk").value=encJ;q("#bkpw").value="mavi-bulut-77";await ev("checkBackup()");
+    ok("Yalnız denetle: the right password reports what is inside and loads nothing",ev("S.settings.healthNote")==="sonradan"&&/Parola doğru. Yedekte .*kayıt.*Hiçbir şey yüklenmedi/.test(toastT()),toastT());
+    q("#bkpw").value="yanlis-parola-1";await ev("checkBackup()");
+    ok("Yalnız denetle: a wrong password says so and loads nothing",ev("S.settings.healthNote")==="sonradan"&&toastT().includes("Parola yanlış"),toastT());
+    ev("S.settings.healthNote='gizli sağlık notu'");
     // cancel
     shareErr=new Error("Share canceled");saved=null;ev("S.settings.lastBackup=''");
     ev("sheetDrive()");await flush();
@@ -2735,7 +2742,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     SP.setItem=function(k,v){if(used(k)+v.length>Q)throw new w.DOMException("dolu","QuotaExceededError");return set0.apply(this,arguments)};
     await load(big(150));
     ok("restore: the new data is written while there is room, a safety copy that does not fit is skipped",ev("S.entries.length")===150&&ls.getItem("nw_state_previous")===null&&!ev("saveFail"),[a,b,Q]);
-    SP.setItem=set0;ev("S.entries=[];save()");await load(big(5));
+    SP.setItem=set0;ev("S.entries=[{id:1,day:dayKey(),time:'08:00',type:'note',v:null,text:'x'}];save()");await load(big(5));
     ok("restore: when it fits the safety copy is written; the storage measure counts the copy and the corrupt copy",ls.getItem("nw_state_previous")!==null&&(ls.setItem("nw_state_corrupt","y".repeat(1e5)),ev("lsOther()"))>=2e5);
     ls.removeItem("nw_state_corrupt");w.confirm=()=>true;reset();
   }

@@ -9,6 +9,15 @@ function pvDelete(i){
 function pvDeleteDo(name,del){
   if(del()===false)return;Store.del("nw_state_previous");Store.del("nw_state_corrupt");otherBytes=lsOther();save();render();scheduleReminders().then(setNotif);sheetPrivacy();toast(`${name} silindi`);
 }
+const NET_KIND={off:"barkod numarası",chat:"Rehber mesajı (onayladığın metin)",models:"model listesi (anahtarın istek başlığında gider)"};
+/* What NeoWell itself sent in the last 30 days; Google services (barcode scanner, text recognition) run outside the WebView and are not in this list. */
+function netLogHtml(){
+  const rows=NetLog.recent().reverse();
+  const when=r=>{const d=new Date(r.t);return `${fd(dayKey(d))} ${pad(d.getHours())}:${pad(d.getMinutes())}`};
+  const head=rows.length?`Son 30 günde NeoWell kendi başına ${rows.length} istek gönderdi.`:"Son 30 günde NeoWell kendi başına internete hiçbir şey göndermedi.";
+  const list=rows.map(r=>`<div class="row"><span class="grow">${when(r)} · ${esc(r.host)}<small class="db mut sm">${NET_KIND[r.kind]||r.kind}${r.out?`, ${fint(r.out)} bayt`:""}${r.ok?"":", başarısız"}</small></span></div>`).join("");
+  return `<p class="m0"><b>${head}</b></p>${rows.length?`<details class="acc"><summary>Ayrıntı</summary>${list}<button class="chip" data-pv="netclear">Defteri temizle</button></details>`:""}<p class="mut sm">Google barkod okuyucu ve metin tanıma (Play hizmetleri) bu listede görünmez.</p>`;
+}
 /* Privacy and data: where the data lives, which services reach the internet, and the Coach consent. It is a sheet, so onboarding can open it too. */
 function sheetPrivacy(){
   const st=S.settings;
@@ -27,7 +36,7 @@ function sheetPrivacy(){
     <li><b>Google Drive</b>: yalnızca sen yedeği paylaşım ekranından Drive'a gönderirsen. Yedek parolayla şifrelenir.</li>
   </ul>
   <p class="mut sm">Rehber sağlayıcısı IP adresini görür; kimlik bilgileri (ad, telefon, e-posta, TC, adres gibi) göndermeden önce telefonda maskelenir; filtre %100 garanti değildir (tam garanti yok): serbest cümleyle anlatılan adres ve listede olmayan nadir adlar yakalanmayabilir.</p>
-  <p class="mut sm">${usageText()}. Yalnız sayılar bu telefonda tutulur, hiçbir yere gönderilmez.</p></details>
+  <p class="mut sm">${usageText()}. Yalnız sayılar bu telefonda tutulur, hiçbir yere gönderilmez.</p>${netLogHtml()}</details>
   <details class="acc"><summary>Rehber açık rıza metni</summary>${consentHtml()}</details>
   ${swRow('data-pv="prev"',st.piiPrev,"Rehber'e giden metni önizle","Açıkken her gönderimden önce giden tam metni görür, Gönder ya da İptal dersin.")}
   <div class="banner info"><p class="m0">Rehber veri paylaşımı: ${st.consent?`kabul edildi (${esc(st.consentAt)})`:"kabul edilmedi"}</p>
@@ -52,6 +61,7 @@ document.addEventListener("click",ev=>{
   else if(a==="close")closeSheet();
   else if(a==="del")pvDelete(+arg);
   else if(a==="prev"){S.settings.piiPrev=el.checked;save()}
+  else if(a==="netclear"){NetLog.clear();sheetPrivacy()}
   else if(a==="csv")sheetCsv();
   else if(a==="csvsh"){const f=pvCsv()[+arg];shareFile(`neowell-${f.key}-${dayKey()}.csv`,f.label,"text/csv",f.build(),true)}
   else if(a==="consent"||a==="revoke"){cConsent(a==="consent");sheetPrivacy()}

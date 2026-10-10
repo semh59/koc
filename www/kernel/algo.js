@@ -279,12 +279,18 @@ const Algo=(()=>{
   }
   /* Double progression: raise the weight once all sets reach the upper reps, otherwise +1 rep at the same weight.
      prev: sets of earlier sessions, newest first. Two sessions in a row below the lower reps at the same weight suggest a 10% drop;
+     after a break of LONG_BREAK_DAYS or more the first sets start 10% lighter instead of progressing;
      a deload note is added when the estimated 1RM did not improve over the last 3 sessions (only when the weight is not being raised). Warm-up sets never count. */
-  function nextTarget(sets,{lo=8,hi=12,inc=2.5,prev=[]}={}){
+  const LONG_BREAK_DAYS=14;
+  function nextTarget(sets,{lo=8,hi=12,inc=2.5,prev=[],gapDays=0}={}){
     const work=a=>a.filter(x=>x.reps>0&&!x.w),top=a=>{const kg=Math.max(...a.map(x=>x.kg||0));return {kg,min:Math.min(...a.filter(x=>(x.kg||0)===kg).map(x=>x.reps))}};
     const s=work(sets);if(!s.length)return null;
     const {kg,min:minReps}=top(s);
     if(kg===0)return {kg:0,reps:minReps+1,why:"Bir tekrar fazla dene"};
+    if(gapDays>=LONG_BREAK_DAYS){
+      const d=roundTo(kg*0.9,inc);
+      return {kg:d<kg?d:Math.max(0,kg-inc),reps:Math.min(hi,Math.max(lo,minReps)),why:`Uzun ara verdin (${gapDays} gün), ilk setlerde %10 hafif başla`};
+    }
     if(minReps>=hi)return {kg:roundTo(kg+inc,0.25),reps:lo,why:"Tüm setlerde üst tekrara ulaştın, ağırlığı artır"};
     const p=prev.map(work).filter(a=>a.length),p1=p[0]&&top(p[0]);
     if(minReps<lo&&p1&&p1.kg===kg&&p1.min<lo){

@@ -141,7 +141,7 @@ function gInc(id){
 function gSuggest(exId){
   if(gKind(exId)!=="w")return null;
   const [h,...old]=gHistory(exId);if(!h)return null;
-  const r=Algo.nextTarget(gWork(h.sets),Object.assign({lo:8,hi:12,inc:gInc(exId),prev:old.slice(0,2).map(x=>gWork(x.sets))},S.exCfg[exId])),p=gPr(exId);
+  const r=Algo.nextTarget(gWork(h.sets),Object.assign({lo:8,hi:12,inc:gInc(exId),prev:old.slice(0,2).map(x=>gWork(x.sets)),gapDays:Algo.dayNum(dayKey())-Algo.dayNum(h.w.day)},S.exCfg[exId])),p=gPr(exId);
   if(!r)return r;
   if(p==="bar"&&r.kg>=S.bar)r.kg=Algo.plates(r.kg,S.bar,S.plates).made;
   else if(p==="db"&&S.dbStep)r.kg=Algo.roundTo(r.kg,S.dbStep);

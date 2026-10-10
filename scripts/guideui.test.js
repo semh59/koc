@@ -74,7 +74,7 @@ boot(w=>{Object.defineProperty(w,"crypto",{value:require("node:crypto").webcrypt
     const t=ev("S.workouts[1]");
     ok("Tabata log: interval sets are timed, done, sec 20; exercise minutes are added",t.ex.length===4&&t.ex.every(x=>x.sets.length===2&&x.sets.every(s=>s.done&&s.sec===20&&!s.w))&&ev("S.entries.filter(x=>x.wid===S.workouts[1].id&&x.type==='exercise').length")===1);
     // weighted template: kg comes from the previous real set (60), not the suggestion (62.5); the user can correct it
-    ev(`S.workouts.push({id:3,day:'2026-09-01',t0:1000,t1:2000,name:'Eski',tpl:null,ex:[{id:'squat',note:'',sets:[{kg:60,reps:12,done:true}]}]});S.templates=[{id:7,name:'Bacak',ex:['squat'],tg:{squat:{sets:2,reps:12}}}]`);
+    ev(`S.workouts.push({id:3,day:dayKey(),t0:1000,t1:2000,name:'Eski',tpl:null,ex:[{id:'squat',note:'',sets:[{kg:60,reps:12,done:true}]}]});S.templates=[{id:7,name:'Bacak',ex:['squat'],tg:{squat:{sets:2,reps:12}}}]`);
     fin("t:7");
     ok("summary: for a weighted movement the kg field holds the previous session's real weight (not the 62.5 suggestion)",ev("gSuggest('squat').kg")===62.5&&q('[data-gdkg="squat"]').value==="60");
     const n0=ev("S.workouts.length");q('[data-gdkg="squat"]').value="";click('[data-gd="save"]');

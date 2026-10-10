@@ -18,10 +18,11 @@ for(const m of src.matchAll(/const\s+([\w$]+)\s*=\s*(?:async\s*)?(?:\([^)]*\)|[\
 /* Touch and keyboard listeners are user actions; everything else (startup, visibilitychange, timers, notification/widget listeners) counts as a root. */
 for(const m of [...top.matchAll(/addEventListener\("(click|keydown|input|change)"/g)].reverse())top=top.slice(0,m.index)+top.slice(close(top,m.index+16,"(",")")+1);
 for(const m of [...top.matchAll(/^on(?:Pre)?\("[^"]+",/gm)].reverse())top=top.slice(0,m.index)+top.slice(close(top,m.index+m[0].indexOf("("),"(",")")+1); // Act registrations run only on a user click, like a click listener
-const net=Object.keys(fns).filter(k=>/\bfetch\(|\bcallProvider\(/.test(fns[k]));
+const net=Object.keys(fns).filter(k=>/\bNetLog\.fetch\(|\bcallProvider\(/.test(fns[k]));
 const ids=s=>new Set(s.match(/[A-Za-z_$][\w$]*/g)||[]);
 const seen=new Set(),q=[...ids(top)].filter(k=>k in fns);
 while(q.length){const k=q.pop();if(seen.has(k))continue;seen.add(k);for(const x of ids(fns[k]))if(x in fns&&!seen.has(x))q.push(x)}
+ok("every outgoing request goes through NetLog.fetch: no other fetch( call besides the same-origin file read and NetLog itself",(src.match(/(?<![.\w])fetch\(/g)||[]).length<=1,(src.match(/.{30}(?<![.\w])fetch\(.{20}/g)||[]));
 ok("the functions that make network requests are found (Coach, setup, barcode)",["callProvider","fetchModels","barcodeFind"].every(k=>net.includes(k)),net);
 ok("no network request is reachable from startup, visibilitychange, timer and notification paths",!net.some(k=>seen.has(k))&&!["cAsk","cFlush","cSend","cComment"].some(k=>seen.has(k)),net.filter(k=>seen.has(k)));
 ok("the root scan really works: it sees startup render, visibilitychange and the notification tap",["render","cPlateauCheck","notifTap","scheduleReminders"].every(k=>seen.has(k)));

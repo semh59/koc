@@ -35,6 +35,10 @@ ok("goalEta: no estimate when the rate is about 0, the rate is still returned",A
 ok("goalEta: no estimate at the goal or without a goal; no rate without data",A.goalEta(wk(()=>80),80).weeks===null&&A.goalEta(wk(i=>88-0.05*i),0).weeks===null&&A.goalEta({},70).slope===null);
 const n1=A.nextTarget([{kg:60,reps:12},{kg:60,reps:12},{kg:60,reps:12}],{lo:8,hi:12,inc:2.5});ok("top reps -> +2.5 kg",n1.kg===62.5&&n1.reps===8);
 const n2=A.nextTarget([{kg:60,reps:10},{kg:60,reps:8},{kg:60,reps:8}]);ok("same kg +1 rep",n2.kg===60&&n2.reps===9);
+const gap=g=>A.nextTarget([{kg:60,reps:12},{kg:60,reps:12},{kg:60,reps:12}],{lo:8,hi:12,inc:2.5,gapDays:g});
+ok("a break under 14 days leaves the suggestion unchanged",gap(13).kg===62.5&&gap(0).kg===62.5);
+ok("a break of 14 days or more starts 10% lighter, no progression, with the reason",gap(14).kg===55&&gap(21).reps===12&&gap(21).why.includes("21 gün"));
+ok("after a long break the body-weight exercise is not reduced",A.nextTarget([{kg:0,reps:6}],{gapDays:30}).reps===7);
 ok("body weight",A.nextTarget([{kg:0,reps:6}]).reps===7); ok("null when empty",A.nextTarget([])===null);
 ok("trend with empty days",Object.keys(A.trend({"2026-09-01":80,"2026-09-05":79})).length===2);
 const g=(o)=>A.suggestTarget(Object.assign({tdee:2400,kg:84,goalKg:75,bmr:1800},o));

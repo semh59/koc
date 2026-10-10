@@ -30,6 +30,11 @@ test.describe("Today",()=>{
     await expect(page.locator("#sheet.on h3")).toHaveText("Uyku");
   });
 
+  test("Today shows the day's calorie range when recipe-range foods are most of the day",async({app,page})=>{
+    await app.open({seed:state({kcal:2000},{entries:[entry("food",600,"Karnıyarık",{x:{lo:500,hi:800}}),entry("food",400,"Ekmek")]})});
+    await expect(page.locator("#view")).toContainText("Tarif farkına göre bugün ~900–1.200 kcal olabilir.");
+  });
+
   test("add water: ring and daily total, Undo",async({app,page})=>{
     await app.open({seed:state()});
     await page.click('.act[data-act="water"]');
