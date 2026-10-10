@@ -11,7 +11,7 @@ test.describe("Onboarding",()=>{
     await app.open();
     // Welcome: the only primary action is Başla, no step counter.
     await expect(page.locator("#view h2")).toHaveText("NeoWell'e hoş geldin");
-    await expect(page.locator("#view .btn")).toHaveText(["Başla"]);
+    await expect(page.locator("#view .btn:not(.ghost)")).toHaveText(["Başla"]);
     await expect(page.locator(".obp")).toHaveCount(0);
     await page.click('[data-ob="next"]');
     await expect(step(page)).toHaveText("Adım 1/3");
@@ -103,4 +103,38 @@ test("Coach data choices: a switch stores the choice",async({app,page})=>{
   await app.go("settings-coach");
   await page.locator('[data-csh="Food"]').locator("xpath=..").click();
   expect(await page.evaluate(()=>S.settings.shareFood)).toBe(false);
+});
+
+test("what leaves the phone: the privacy sheet lists NeoWell's own requests and can clear them",async({app,page})=>{
+  await app.open({seed:state({})});
+  await page.evaluate(()=>sheetPrivacy());
+  await expect(app.sheet).toContainText("internete hiçbir şey göndermedi");
+  await page.evaluate(()=>NetLog.fetch("off",location.origin+"/index.html"));
+  await page.evaluate(()=>sheetPrivacy());
+  await expect(app.sheet).toContainText("1 istek gönderdi");
+  await expect(app.sheet).toContainText("barkod numarası");
+  await app.sheet.locator("summary",{hasText:"İnternete çıkanlar"}).click();
+  await app.sheet.locator("summary",{hasText:"Ayrıntı"}).click();
+  await app.sheet.getByRole("button",{name:"Defteri temizle"}).click();
+  await expect(app.sheet).toContainText("internete hiçbir şey göndermedi");
+});
+
+test("welcome screen: restore a backup from the welcome screen without opening Settings",async({app,page})=>{
+  await app.open();
+  const file=await page.evaluate(async()=>JSON.stringify(await BackupLib.encrypt({S:{entries:[{id:1,day:dayKey(),time:"08:00",type:"food",v:300,text:"Mercimek çorbası"},{id:2,day:dayKey(),time:"09:00",type:"water",v:250,text:""}],settings:{heightCm:170,age:40}},keys:{}},"Mavi-Bulut-2026")));
+  await page.click('[data-obr="open"]');
+  await expect(app.sheet).toContainText("Yedeğini geri yükle");
+  await page.setInputFiles("#obf",{name:"neowell-yedek.json",mimeType:"application/json",buffer:Buffer.from(file)});
+  await page.fill("#obpw","Yanlis-Parola-2026");
+  await page.click('[data-obr="go"]');
+  await expect(app.toast).toContainText("Parola yanlış");
+  await expect(page.locator('[data-ob="next"]')).toHaveCount(1);
+  await page.fill("#obpw","Mavi-Bulut-2026");
+  await page.click('[data-obr="go"]');
+  await expect.poll(()=>app.dialogs.at(-1)).toMatch(/^Yedekten 2 kayıt yüklenecek\./);
+  expect(app.dialogs.at(-1)).not.toContain("Mevcut veriler değişecek");
+  await expect(app.toast).toContainText("Yedek yüklendi");
+  await expect(page.locator("#view")).toContainText("Mercimek çorbası");
+  expect(await page.evaluate(()=>[S.settings.obDone,S.settings.noticeOk,Boolean(S.settings.heightCm)])).toEqual([true,true,true]);
+  await expect(page.locator("#sheet.on")).toHaveCount(0);
 });

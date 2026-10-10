@@ -3,6 +3,23 @@
 /* Fixed start-up notice: shown on the welcome screen and, for an existing install, once in a sheet until acknowledged. */
 const NOTICE="NeoWell bir tıbbi cihaz değildir ve hekim yerine geçmez. Rehber yapay zekâ kullanır ve yanılabilir; sağlıkla ilgili kararları hekiminle ver. Acil bir durumda 112'yi ara.";
 const noticeGate=()=>{if(!S.settings.noticeOk)openSheet(`<h3>Önemli uyarı</h3><div class="banner"><p>${NOTICE}</p></div><button class="btn" data-notice>Anladım</button>`)};
+/* Restoring a backup from the welcome screen (new phone, reinstall): the same code as Settings, fed from this sheet instead of the backup text box. */
+function sheetObRestore(){
+  openSheet(`<h3>Yedeğini geri yükle</h3><p class="mut">Daha önce aldığın NeoWell yedek dosyasını seç ve yedek parolanı yaz.</p>
+  <label class="lbl" for="obf">Yedek dosyası</label><input class="in" type="file" id="obf" accept=".json,application/json,text/plain">
+  <label class="lbl" for="obpw">Yedek parolası</label><input class="in" type="password" id="obpw" autocomplete="off">
+  <button class="btn" data-obr="go">Geri yükle</button>
+  <p class="hint">Parolayı unuttuysan yedek açılamaz. Fotoğraflar yedeğe girmez. Rehber izni ve otomatik yedek bu telefonda yeniden ayarlanır.</p>`);
+}
+async function obRestoreGo(btn){
+  const f=$("#obf").files[0];
+  if(!f)return toast("Önce yedek dosyasını seç");
+  if(f.size>5e6)return toast("Dosya çok büyük, bir NeoWell yedeği olmayabilir");
+  let text;try{text=await f.text()}catch{return toast("Dosya okunamadı")}
+  btn.disabled=true;btn.textContent="Açılıyor…";
+  try{await goRestore(text,$("#obpw").value)}finally{if(btn.isConnected){btn.disabled=false;btn.textContent="Geri yükle"}}
+}
+document.addEventListener("click",ev=>{const r=ev.target.closest("[data-obr]");if(r)r.dataset.obr==="open"?sheetObRestore():obRestoreGo(r)});
 document.addEventListener("click",ev=>{if(ev.target.closest("[data-notice]")){S.settings.noticeOk=true;save();closeSheet()}});
 const obFresh=()=>({step:-1,kg:"",cm:"",age:"",sex:"",dir:"keep",goal:"",hd:false,hn:false,mods:[],err:"",bad:"",minor:false,kgOk:"",job:"",walk:""});
 const ob=obFresh();
@@ -50,7 +67,7 @@ function obView(){
   const fld=(k,lbl,val,small,mode)=>`<div class="field"><label for="ob${k}">${lbl}${small?`<small>${small}</small>`:""}</label><input id="ob${k}" type="text" inputmode="${mode}" value="${esc(val)}" autocomplete="off"${bad(k)}></div>${ob.bad===k?err:""}`;
   const seg=(attr,opts,sel)=>`<div class="seg2" role="group">${opts.map(([v,l])=>`<button data-ob="${attr}:${v}" aria-pressed="${sel===v}">${l}</button>`).join("")}</div>`;
   if(st<0&&!ob.minor)return `<div class="about"><img src="logo.svg" alt="" width="96" height="96"><h2 class="m0">NeoWell'e hoş geldin</h2><p class="tc mut m0">Yemek, su, hareket ve sağlık ölçümlerini tek yerde tut; hedefini sana göre hesaplayalım.</p></div>
-  <p class="tc hint">Verilerin yalnızca bu telefonda durur.</p><div class="banner"><p>${NOTICE}</p></div><button class="btn" data-ob="next">Başla</button><button class="mt-2 lnk" data-ob="skip">Şimdilik geç</button>`;
+  <p class="tc hint">Verilerin yalnızca bu telefonda durur.</p><div class="banner"><p>${NOTICE}</p></div><button class="btn" data-ob="next">Başla</button><button class="mt-2 btn ghost" data-obr="open">Yedeğim var</button><button class="mt-2 lnk" data-ob="skip">Şimdilik geç</button>`;
   /* Under 18: setup does not continue and the draft is gone; there is no skip or back, only correcting the age. */
   if(ob.minor)return `<h2>NeoWell 18 yaş ve üzeri için</h2><div class="card"><p>Büyüme çağında kalori ve kilo hedefleri farklıdır; bu uygulama onları hesaplamaz.</p><p>Beslenme, kilo ya da spor konusunda bir yetişkinle ve hekiminle ya da diyetisyeninle konuş.</p><p class="hint">Girdiğin bilgiler kaydedilmedi.</p></div><button class="btn ghost" data-ob="fixage">Yaşımı yanlış girdim</button>`;
   let body,next="Devam";

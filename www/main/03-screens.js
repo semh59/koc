@@ -54,13 +54,14 @@ function viewToday(){
   const mi=["fb","sg","na"].map(k=>[k,meals.filter(e=>e[k]!=null).length]).filter(x=>x[1]).map(([k,n])=>`${NLBL[k][0].toUpperCase()+NLBL[k].slice(1)} <b>${Math.round(mac(k))}</b> ${NUNIT(k)} (${n}/${meals.length})`);
   const nc=meals.filter(e=>e.c!=null).length,nf=meals.filter(e=>e.f!=null).length;
   const macroNote=macro&&meals.some(e=>e.c!=null||e.f!=null)&&(nc<meals.length||nf<meals.length)?`<div class="mut sm macro">Karbonhidrat ${nc}/${meals.length}, yağ ${nf}/${meals.length} öğünde veri var; toplam eksik olabilir.</div>`:"";
+  const dr=LogLib.dayRange(meals),rangeNote=dr?`<p class="pt-2 hint">Tarif farkına göre bugün ~${fint(dr.lo)}–${fint(dr.hi)} kcal olabilir.</p>`:"";
   const micro=mi.length?`<div class="macro num">${mi.join(" · ")} <span class="mut sm">öğünde veri var</span></div>`:"";
   /* Summary card: big calorie ring and the remainder; water, sport and steps in small rings; macros below. */
   const rings=`<div class="card"><div class="rings">
     ${rb("kcal","Kalori",ring(kcP,"var(--kcal)",kcC,"Kalori",kgl>0?`${Math.round(kc)} / ${kgl} kcal`:"hedef yok",kcU,"main"))}
     <div class="rmini">${rb("water","Su",ring(water/sh,"var(--water)",waterC||fmt((sh-water)/1000,1),"Su",`${fmt(water/1000,1)} / ${fmt(sh/1000,1)} L`,waterU,"mini"+(waterC?" done":"")))}
     ${rb("exercise","Spor",ring(sw/sg,"color-mix(in srgb,var(--exercise) 80%,var(--card))",spC||Math.round(sg-sw),"Spor",`${Math.round(sw)} / ${sg} dk`,spU,"mini"+(spC?" done":"")))}${sOn?stepCard():""}</div>
-  </div>${macro}${macroNote}${micro}${moveAdd(t)?`<p class="pt-2 hint">Hedefe hareketten +${moveAdd(t)} kcal eklendi (kayıtlı antrenman ve yürüyüşün yarısı, tahmindir).</p>`:""}</div>`;
+  </div>${macro}${macroNote}${micro}${rangeNote}${moveAdd(t)?`<p class="pt-2 hint">Hedefe hareketten +${moveAdd(t)} kcal eklendi (kayıtlı antrenman ve yürüyüşün yarısı, tahmindir).</p>`:""}</div>`;
   const actions=`<div class="actions"><button class="btn act" data-act="food">${Icons.svg("plus")} Yemek ekle</button><div class="qa">
     <button class="chip act" data-act="water" aria-label="${st.glass} ml su ekle">${Icons.svg("water")} +${st.glass} ml</button><button class="chip" data-dk="open">${Icons.svg("water")} Başka içecek</button>
     <button class="chip act" data-act="weight">${Icons.svg("weight")} Kilo</button><button class="chip act" data-act="exercise">${Icons.svg("exercise")} Spor</button>
@@ -135,6 +136,7 @@ function viewTrend(){
   <details class="acc more"><summary>Daha fazla ölçüm</summary><div class="card">${vTrendCards()}${labTrendCard()}${navRow('data-tab="gym"',"exercise","Haftalık spor",`${Math.round(sw)} / ${st.sportWeek} dk, ${sd} gün aktif`)}${reportRows()}</div></details>`;
 }
 
+const LOCK_LABEL={30:"30 saniyeden",120:"2 dakikadan",300:"5 dakikadan"};
 let notifStatus="";
 const fld=(id,label,val,small,mode)=>`<div class="field"><label for="${id}">${label}${small?`<small>${small}</small>`:""}</label><input id="${id}" type="text" inputmode="${mode||"decimal"}" value="${val}" data-set="${id}"></div>`;
 const segb=(attr,opts,sel)=>`<div class="seg2" role="group">${opts.map(([v,l])=>`<button data-${attr}="${v}" aria-pressed="${sel===v}">${l}</button>`).join("")}</div>`;
@@ -213,7 +215,7 @@ function viewSettings(){
     ${st.reminders.filter(remShown).map(r=>`<div class="rem"><span class="nm">${esc(r.name)}</span><input type="time" value="${r.t}" data-rt="${r.id}" aria-label="${esc(r.name)} saati"><label class="sw"><input type="checkbox" ${r.on?"checked":""} data-ro="${r.id}" aria-label="${esc(r.name)} açık"><span></span></label></div>`).join("")}
     <p class="hint">Rehber bağlıysa sabah, öğleden sonra ve akşam bildirim metinlerini her gün yeniden yazar. Bağlı değilse sabit metinler kullanılır.</p></div>`;
   }
-  if(sub==="data")return `<div class="card">${swRow('data-lk="toggle"',st.lockOn,"Uygulama kilidi","Açarken ve 30 saniyeden uzun aradan dönünce telefonun ekran kilidi (parmak izi, yüz, PIN, desen) sorulur")}</div>
+  if(sub==="data")return `<div class="card">${swRow('data-lk="toggle"',st.lockOn,"Uygulama kilidi",`Açarken ve ${LOCK_LABEL[st.lockGrace]} uzun aradan dönünce telefonun ekran kilidi (parmak izi, yüz, PIN, desen) sorulur`)}${st.lockOn?`<div class="lbl">Kilit ne zaman yeniden sorulsun?</div>${segb("lg",[[30,"30 saniye"],[120,"2 dakika"],[300,"5 dakika"]],st.lockGrace)}${st.lockGrace===300?`<p class="hint">Telefonu başkası alırsa 5 dakika boyunca açık kalabilir.</p>`:""}`:""}</div>
     <button class="mt-3 btn" data-act="drive">${Icons.svg("cloud")} Yedeği Drive'a gönder</button>
     <div class="mt-3 card">${navRow('data-act="backup"',"save","Yedekle veya geri yükle","Şifreli yedek dosyası oluştur ya da yükle")}${navRow('data-pv="csv"',"file","Tabloya aktar (CSV)","Excel ya da Sheets'te açılır")}${navRow('data-imp="open"',"gym","Antrenman geçmişini içe aktar","Başka bir uygulamadan dışa aktardığın dosya")}${navRow('data-pv="open"',"lock","Gizlilik ve veri","Verilerin nerede durduğu")}${navRow('data-act="reset"',"trash","Tüm verileri sil","Geri alınamaz","  dng")}</div>
     <div class="card">${storeMsg()?`<p class="status" role="alert"><b>${storeMsg()[0]}.</b> ${storeMsg()[1]}</p>`:""}${loadNote?`<p class="status" role="status">${esc(loadNote)}</p>`:""}${COPIES.filter(([k])=>Store.get(k)!=null).map(([k,n])=>`<div class="row"><span class="grow"><b>${n}</b><small class="db mut sm">${fmt(Store.get(k).length*2/1e6)} MB</small></span>${k==="nw_state_previous"&&copyHeld()?`<button class="chip" data-act="copyseen">Gördüm</button>`:""}<button class="chip" data-act="copy:${k}">Dışa aktar</button><button class="chip" data-act="copydel:${k}">Sil</button></div>`).join("")}<p class="hint">${storeMsg()?`Kullanılan alan: yaklaşık ${fmt(storeBytes/1e6)} MB, sınır telefona göre 5-10 MB.`:"Alan yeterli."}</p>

@@ -55,7 +55,7 @@ test("encrypted backup: create, wipe all data, rejected without or with a wrong 
   app.onDialog=null;
   await page.click('[data-go="restore"]');
   await toastIs("Yedek yüklendi");
-  expect(app.dialogs[2]).toMatch(/^2 kayıt yüklenecek\. Mevcut veriler değişecek\./);
+  expect(app.dialogs[2]).toMatch(/^Yedekten 2 kayıt yüklenecek\. Mevcut veriler değişecek\./);
   const st=await app.state();
   expect(st.entries.map(e=>e.text).sort()).toEqual(["","Gizli sağlık notum"]);
   expect(st.entries.find(e=>e.type==="weight").v).toBe(81.5);

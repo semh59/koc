@@ -35,9 +35,9 @@
 | pulse | 2 | modules/pulse/index.js, modules/pulse/pulseui.js |
 | hr | 2 | modules/pulse/index.js, modules/pulse/pulseui.js |
 | failed | 1 | kernel/storelib.js |
-| rev | 1 | kernel/storelib.js |
 | init | 1 | kernel/storelib.js |
 | sharded | 1 | kernel/storelib.js |
+| rev | 1 | kernel/storelib.js |
 | ids | 1 | kernel/storelib.js |
 | shardError | 1 | kernel/storelib.js |
 | mode | 1 | kernel/storelib.js |
@@ -48,7 +48,6 @@
 | del | 1 | kernel/storelib.js |
 | whenIdle | 1 | kernel/storelib.js |
 | onState | 1 | kernel/storelib.js |
-| onExternal | 1 | kernel/storelib.js |
 | cid | 1 | modules/coach/coach.js |
 
 ## Dosya -> başka dosyalardan kullandığı adlar (sayı)
@@ -58,18 +57,19 @@
 | kernel/icons.js | 3 | 1 |
 | kernel/kernel.js | 0 | 2 |
 | kernel/modules.js | 0 | 3 |
+| kernel/netlog.js | 1 | 1 |
 | kernel/piilib.js | 5 | 1 |
 | kernel/storelib.js | 2 | 1 |
 | kernel/unitlib.js | 0 | 1 |
 | kernel/unitui.js | 6 | 1 |
 | main/01-core.js | 27 | 72 |
 | main/02-state-components.js | 13 | 10 |
-| main/03-screens.js | 103 | 36 |
-| main/04-sheets.js | 53 | 56 |
-| main/05-notifications.js | 50 | 29 |
-| main/06-events.js | 84 | 6 |
-| main/07-actions.js | 47 | 1 |
-| modules/coach/coach.js | 57 | 156 |
+| main/03-screens.js | 103 | 37 |
+| main/04-sheets.js | 61 | 59 |
+| main/05-notifications.js | 50 | 30 |
+| main/06-events.js | 86 | 6 |
+| main/07-actions.js | 48 | 1 |
+| modules/coach/coach.js | 58 | 159 |
 | modules/coach/coachlib.js | 9 | 1 |
 | modules/coach/index.js | 3 | 1 |
 | modules/coach/insightlib.js | 6 | 1 |
@@ -79,17 +79,17 @@
 | modules/data/backuplib.js | 1 | 1 |
 | modules/data/backupui.js | 24 | 15 |
 | modules/data/csvlib.js | 6 | 1 |
-| modules/data/lockui.js | 6 | 11 |
-| modules/data/onboardui.js | 30 | 14 |
+| modules/data/lockui.js | 6 | 10 |
+| modules/data/onboardui.js | 34 | 18 |
 | modules/data/photolib.js | 1 | 1 |
 | modules/data/photoui.js | 19 | 24 |
-| modules/data/privacyui.js | 28 | 6 |
+| modules/data/privacyui.js | 31 | 8 |
 | modules/data/shareui.js | 6 | 4 |
 | modules/gym/cardiolib.js | 3 | 1 |
 | modules/gym/cardioui.js | 23 | 9 |
 | modules/gym/excues.js | 1 | 1 |
 | modules/gym/exlib.js | 2 | 1 |
-| modules/gym/exui.js | 44 | 48 |
+| modules/gym/exui.js | 45 | 48 |
 | modules/gym/figlib.js | 5 | 1 |
 | modules/gym/figtpl.js | 0 | 1 |
 | modules/gym/guidelib.js | 3 | 1 |
@@ -101,13 +101,13 @@
 | modules/gym/musclemap.js | 3 | 1 |
 | modules/gym/programs.js | 0 | 1 |
 | modules/habits/habitlib.js | 3 | 1 |
-| modules/habits/habitui.js | 24 | 20 |
+| modules/habits/habitui.js | 25 | 21 |
 | modules/habits/index.js | 11 | 1 |
 | modules/history/historylib.js | 5 | 1 |
 | modules/history/historyui.js | 37 | 16 |
 | modules/insights/goallib.js | 1 | 1 |
 | modules/insights/goalui.js | 13 | 2 |
-| modules/insights/linkslib.js | 5 | 1 |
+| modules/insights/linkslib.js | 6 | 1 |
 | modules/insights/linksui.js | 7 | 1 |
 | modules/insights/weeklylib.js | 12 | 1 |
 | modules/insights/weeklyui.js | 11 | 1 |
@@ -121,10 +121,10 @@
 | modules/measures/index.js | 7 | 1 |
 | modules/measures/measureui.js | 21 | 7 |
 | modules/meds/alarmlib.js | 3 | 1 |
-| modules/meds/alarmui.js | 19 | 11 |
+| modules/meds/alarmui.js | 20 | 11 |
 | modules/meds/index.js | 6 | 1 |
 | modules/meds/medlib.js | 7 | 1 |
-| modules/meds/medui.js | 31 | 22 |
+| modules/meds/medui.js | 32 | 22 |
 | modules/motion/index.js | 4 | 0 |
 | modules/motion/motionlib.js | 5 | 1 |
 | modules/motion/motionui.js | 22 | 17 |

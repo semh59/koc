@@ -79,7 +79,7 @@ function goWeight(){
 }
 /* Yesterday's entry carries its own meal; favourites and templates have none, so the selected chip applies. */
 function addFoods(items,day,msg,undo){
-  const ids=items.map(s=>{const e=copyNutr(s,add("food",s.v,s.text,day));e.meal=LogLib.mealKey(s.meal)||(s.time?LogLib.mealOf(s):fmeal());return e.id});save();closeSheet();render();
+  const ids=items.map(s=>{const e=copyNutr(s,add("food",s.v,s.text,day));if(s.lo!=null){e.lo=s.lo;e.hi=s.hi}e.meal=LogLib.mealKey(s.meal)||(s.time?LogLib.mealOf(s):fmeal());return e.id});save();closeSheet();render();
   toast(msg,()=>{S.entries=S.entries.filter(e=>!ids.includes(e.id));if(undo)undo();save();render()});
 }
 function repeatYesterday(){
@@ -164,7 +164,7 @@ async function barcodeFind(raw){
   toast("Ürün aranıyor…");
   let j;
   try{
-    const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=${OffLib.FIELDS}`,{headers:{"User-Agent":"NeoWell/1.0 (kisisel kullanim)"}});
+    const r=await NetLog.fetch("off",`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=${OffLib.FIELDS}`,{headers:{"User-Agent":"NeoWell/1.0 (kisisel kullanim)"}});
     j=await r.json();
   }catch{return toast("İnternete ulaşılamadı, barkod aranamadı")}
   const x=OffLib.parse(j);
@@ -222,7 +222,8 @@ function sheetBackup(){
   <input class="in" id="bkpw" type="password" autocomplete="new-password" placeholder="Parola"><input class="in" id="bkpw2" type="password" autocomplete="new-password" placeholder="Yedek alırken parolayı tekrar yaz">
   <div class="hint" id="bkw" role="alert"></div>
   <div class="two"><button class="btn ghost" data-go="copy">Kopyala</button><button class="btn ghost" data-go="${isNative()?"share":"download"}">${isNative()?"Dosya olarak paylaş":"Dosya indir"}</button></div>
-  <div class="btns"><label class="tc btn ghost">Dosyadan oku<input id="bkfile" type="file" accept=".json,application/json,text/plain" hidden></label><button class="btn" data-go="restore">Bu metinden geri yükle</button></div>`);
+  <div class="btns"><label class="tc btn ghost">Dosyadan oku<input id="bkfile" type="file" accept=".json,application/json,text/plain" hidden></label><button class="btn" data-go="restore">Bu metinden geri yükle</button></div>
+  <button class="mt-2 btn ghost" data-go="checkbk">Yalnız denetle (hiçbir şey yüklenmez)</button>`);
 }
 function markBackup(soft){S.settings.lastBackup=dayKey();save(soft)}
 async function backupText(){
@@ -235,16 +236,30 @@ async function exportBackup(){
   const txt=await backupText();
   if(txt&&await shareFile(BackupLib.manualName(dayKey()),"NeoWell yedeği","application/json",txt,true))markBackup();
 }
-async function goRestore(){
-  let r,keysIn=null;try{r=JSON.parse($("#bk").value)}catch{return toast("Yedek metni okunamadı")}
-  if(!(r&&r.enc))return toast("Yalnız parolalı yedek geri yüklenir");
-  const pw=$("#bkpw").value;if(!pw)return toast("Şifreli yedek: önce parolayı yaz");
-  try{const p=await BackupLib.decrypt(r,pw);r=p.S;keysIn=p.keys}catch{return toast("Parola yanlış ya da yedek bozuk")}
-  if(!r||!Array.isArray(r.entries))return toast("Bu bir NeoWell yedeği değil");
-  const b=buildState(r),drop=b.drop,out=b.S.entries;
-  if(!out.length&&r.entries.length)return toast("Yedekte geçerli kayıt yok");
+/* Decrypts and validates a backup without touching the app state; null (after a toast) when it cannot be used. */
+async function openBackup(text,pw){
+  const bad=m=>{toast(m);return null};
+  let r,keysIn=null;try{r=JSON.parse(text)}catch{return bad("Yedek metni okunamadı")}
+  if(!(r&&r.enc))return bad("Yalnız parolalı yedek geri yüklenir");
+  if(!pw)return bad("Şifreli yedek: önce parolayı yaz");
+  try{const p=await BackupLib.decrypt(r,pw);r=p.S;keysIn=p.keys}catch{return bad("Parola yanlış ya da yedek bozuk")}
+  if(!r||!Array.isArray(r.entries))return bad("Bu bir NeoWell yedeği değil");
+  const b=buildState(r);
+  if(!b.S.entries.length&&r.entries.length)return bad("Yedekte geçerli kayıt yok");
+  return {b,keysIn};
+}
+const backupCounts=s=>[[s.entries,"kayıt"],[s.workouts,"antrenman"],[s.meds,"ilaç"],[s.vitals,"ölçüm"]].filter(([a])=>a.length).map(([a,n])=>`${fint(a.length)} ${n}`).join(", ");
+/* "Yalnız denetle": proves the file and password work and shows what is inside, loads nothing. */
+async function checkBackup(){
+  const o=await openBackup($("#bk").value,$("#bkpw").value);if(!o)return;
+  const days=o.b.S.entries.map(e=>e.day).sort(),last=days[days.length-1];
+  toast(`Parola doğru. Yedekte ${backupCounts(o.b.S)||"kayıt yok"}${last?`; son kayıt ${fd(last)}`:""}. Hiçbir şey yüklenmedi.`);
+}
+async function goRestore(text=$("#bk").value,pw=$("#bkpw").value){
+  const o=await openBackup(text,pw);if(!o)return;
+  const {b,keysIn}=o,drop=b.drop,out=b.S.entries,hasData=Log.all().length>0||Gym.workouts().length>0||Meds.count()>0,fresh=obNeeded();
   const pj=JSON.stringify(S),canCopy=otherBytes+JSON.stringify(b.S).length*2+pj.length*2<=STORE_WARN;
-  if(!await confirmSheet({title:"Yedek yüklensin mi?",ok:"Yükle",danger:true,body:`${out.length} kayıt yüklenecek${drop?`, ${drop} geçersiz kayıt atlanacak`:""}. Mevcut veriler değişecek.${canCopy?"":" Depolama dolu olduğundan eski verin için güvenlik kopyası ALINAMAYACAK; geri dönüş olmaz, önce yedek al."} Devam edilsin mi?`}))return;
+  if(!await confirmSheet({title:"Yedek yüklensin mi?",ok:"Yükle",danger:true,body:`Yedekten ${backupCounts(b.S)||"0 kayıt"} yüklenecek${drop?`; ${drop} geçersiz kayıt atlanacak`:""}.${hasData?" Mevcut veriler değişecek.":""}${canCopy||!hasData?"":" Depolama dolu olduğundan eski verin için güvenlik kopyası ALINAMAYACAK; geri dönüş olmaz, önce yedek al."} Devam edilsin mi?`}))return;
   const prevS=S;
   S=b.S;
   /* A backup must not change where the key goes, the consent setting or the data-sharing permission. The automatic backup folder belongs to this phone. */
@@ -259,11 +274,13 @@ async function goRestore(){
   if(keysIn&&typeof keysIn==="object")for(const id in keysIn)if(typeof keysIn[id]==="string"&&S.providers.some(p=>p.id===id))try{await setKey(id,keysIn[id])}catch{toast("Bir anahtar kasaya yazılamadı")}
   /* The safety copy keeps the old data and doubles the store: it is taken only if the total stays under the warning limit. */
   let copy=false;
-  if(storeBytes+pj.length*2<=STORE_WARN)copy=Store.set("nw_state_previous",pj);
+  if(hasData&&storeBytes+pj.length*2<=STORE_WARN)copy=Store.set("nw_state_previous",pj);
   if(!copy)Store.del("nw_state_previous");
-  S.settings.copyAt=copy?dayKey():"";save(true);
+  S.settings.copyAt=copy?dayKey():"";
+  if(fresh)S.settings.obDone=S.settings.noticeOk=true;
+  save(true);
   otherBytes=lsOther();storeBytes=otherBytes+lastJ.length*2;
   logOff=0;closeSheet();render();scheduleReminders().then(setNotif);
-  toast((drop?`Yedek yüklendi, ${drop} geçersiz kayıt atlandı`:"Yedek yüklendi")+(b.lost.length?`; okunamayan alanlar varsayılana döndü (${b.lost.join(", ")})`:"")+(copy?"":". Eski verin için güvenlik kopyası alınamadı (depolama dolu)"));
+  toast((drop?`Yedek yüklendi, ${drop} geçersiz kayıt atlandı`:"Yedek yüklendi")+(b.lost.length?`; okunamayan alanlar varsayılana döndü (${b.lost.join(", ")})`:"")+(copy||!hasData?"":". Eski verin için güvenlik kopyası alınamadı (depolama dolu)"));
 }
 

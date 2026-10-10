@@ -243,7 +243,7 @@ async function callProvider(p,key,messages,maxTokens=700,o={}){
   if(ms<=0){const e=new Error("Süre doldu");e.kind="time";throw e}
   const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),ms);
   try{
-    const ant=p.id==="anthropic",r=await fetch(p.base.replace(/\/+$/,"")+(ant?"/messages":"/chat/completions"),{method:"POST",signal:ctl.signal,headers:{"Content-Type":"application/json",...pHeaders(p,key)},body:JSON.stringify(pBody(p,gate(messages),maxTokens))});
+    const ant=p.id==="anthropic",r=await NetLog.fetch("chat",p.base.replace(/\/+$/,"")+(ant?"/messages":"/chat/completions"),{method:"POST",signal:ctl.signal,headers:{"Content-Type":"application/json",...pHeaders(p,key)},body:JSON.stringify(pBody(p,gate(messages),maxTokens))});
     if(!r.ok)throw await httpError(r);
     const j=await r.json();trackUsage(p,j,ant);const c=j&&j.choices&&j.choices[0],t=ant?(j&&Array.isArray(j.content)?j.content.filter(b=>b&&b.type==="text").map(b=>b.text).join(""):""):c&&c.message&&c.message.content;
     if(o.probe&&(ant?Array.isArray(j&&j.content):!!c))return "";
@@ -258,7 +258,7 @@ const MODELS_MS=15000;
 async function fetchModels(p,key){
   const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),MODELS_MS);
   try{
-    const r=await fetch(p.base.replace(/\/+$/,"")+"/models"+(p.id==="anthropic"?"?limit=1000":""),{headers:pHeaders(p,key),signal:ctl.signal});
+    const r=await NetLog.fetch("models",p.base.replace(/\/+$/,"")+"/models"+(p.id==="anthropic"?"?limit=1000":""),{headers:pHeaders(p,key),signal:ctl.signal});
     if(!r.ok)throw await httpError(r);
     return CoachLib.parseModels(await r.json());
   }finally{clearTimeout(to)}

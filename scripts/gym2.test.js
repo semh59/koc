@@ -38,7 +38,7 @@ const errs=[];
     ok("cleanGym ss: an adjacent group stays, a lone member is cleared",cg(base([{kg:50,reps:8,done:true}],[3,3,7])).workouts[0].ex.map(x=>x.ss||0).join()==="3,3,0");
     ok("cleanGym ss: non-consecutive equal ids do not form a group",cg(base([{kg:50,reps:8,done:true}],[3,5,3])).workouts[0].ex.every(x=>!x.ss));
     ok("data without t and ss stays without them in the output",!JSON.stringify(cg(base([{kg:50,reps:8,done:true}]))).match(/"t":|"ss"/));
-    ev("S.workouts=[{id:1,day:'2026-09-01',t0:1000,t1:2000,name:'A',tpl:null,ex:[{id:'bench',note:'',sets:[{kg:100,reps:10,done:true}]}]},{id:2,day:'2026-09-08',t0:2000000,t1:2100000,name:'B',tpl:null,ex:[{id:'bench',note:'',sets:[{kg:100,reps:10,done:true},{kg:60,reps:30,done:true,t:'d'}]}]}]");
+    ev("S.workouts=[{id:1,day:dayKey(),t0:1000,t1:2000,name:'A',tpl:null,ex:[{id:'bench',note:'',sets:[{kg:100,reps:10,done:true}]}]},{id:2,day:dayKey(),t0:2000000,t1:2100000,name:'B',tpl:null,ex:[{id:'bench',note:'',sets:[{kg:100,reps:10,done:true},{kg:60,reps:30,done:true,t:'d'}]}]}]");
     ok("drop sets count toward volume",ev("gWorkVol(S.workouts[1])")===1000+1800);
     ok("drop sets do not count as records: 60x30 (Epley 120) is no record, best 1RM is unchanged",ev("gIsPR(S.workouts[1],'bench')")===null&&Math.round(ev("gBest(S.workouts[1],'bench')"))===Math.round(ev("gBest(S.workouts[0],'bench')")));
     ev("S.workouts[1].ex[0].sets[1].t='f';S.workouts[1].ex[0].sets[1].kg=140;S.workouts[1].ex[0].sets[1].reps=5");

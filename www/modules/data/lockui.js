@@ -1,7 +1,6 @@
 "use strict";
 /* App lock: the phone's screen lock (fingerprint, face, PIN, pattern, password) is verified through the Android prompt; the app stores no password or biometric data.
-   The lock screen shows at start and after returning from more than LOCK_GRACE ms in the background; the content shows only after verification. */
-const LOCK_GRACE=30000;
+   The lock screen shows at start and after returning from more than the chosen lockGrace seconds in the background; the content shows only after verification. */
 const AL=()=>plugin("AppLock");
 let lockHiddenAt=0,lockBusy=false;
 /* Before the first paint: with the lock on, the content starts hidden. save() keeps the nw_lockon flag in sync, so the state is not parsed here. */
@@ -49,10 +48,13 @@ async function lockToggle(el){
   S.settings.lockOn=true;save();lockSecure(true);render();toast("Uygulama kilidi açıldı");
 }
 document.addEventListener("change",ev=>{const el=ev.target.closest&&ev.target.closest("[data-lk=toggle]");if(el)lockToggle(el)});
-document.addEventListener("click",ev=>{if(ev.target.closest("[data-lk=ask]"))lockAsk()});
+document.addEventListener("click",ev=>{
+  if(ev.target.closest("[data-lk=ask]"))lockAsk();
+  const g=ev.target.closest("[data-lg]");if(g){S.settings.lockGrace=+g.dataset.lg;save();render()}
+});
 document.addEventListener("visibilitychange",()=>{
   if(lockBusy||!AL())return;
   if(document.hidden){lockHiddenAt=Date.now();if(S.settings.lockOn)lockSecure(true)}
-  else if(S.settings.lockOn&&lockHiddenAt&&Date.now()-lockHiddenAt>=LOCK_GRACE)lockShow();
+  else if(S.settings.lockOn&&lockHiddenAt&&Date.now()-lockHiddenAt>=S.settings.lockGrace*1000)lockShow();
 });
 document.addEventListener("nw:boot",()=>{if(S.settings.lockOn&&AL())lockShow();else document.documentElement.classList.remove("locked")});

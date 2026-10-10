@@ -4,13 +4,25 @@ const LogLib=(()=>{
   const MAX={p:500,c:2000,f:1000,fb:500,sg:2000,na:100000},NUTR=Object.keys(MAX);
   const FAVS_MAX=20,TPL_MAX=20,TPL_ITEMS_MAX=15,RECENTS_MAX=8,RECENT_DAYS=30,RECIPES_MAX=50,RECIPE_ITEMS_MAX=30;
   const copyNutr=(src,dst)=>{for(const k of NUTR)if(Number.isFinite(src[k])&&src[k]>=0&&src[k]<=MAX[k])dst[k]=src[k];return dst};
+  /* A recipe or portion estimate range (lo <= v <= hi) travels with repeated foods; anything else is dropped. */
+  const copyRange=(src,dst)=>{if(dst.v!=null&&Number.isInteger(src.lo)&&Number.isInteger(src.hi)&&src.lo>=0&&src.lo<=dst.v&&dst.v<=src.hi&&src.hi<=20000){dst.lo=src.lo;dst.hi=src.hi}return dst};
+  /* Day total as a range, only when the foods that carry a range make up at least half of the calories and the range is at least 10% wide; ends are summed, not combined statistically (they are scenarios, not confidence intervals). */
+  function dayRange(foods){
+    let v=0,lo=0,hi=0,ranged=0;
+    for(const e of foods){
+      if(!(e.v>0))continue;
+      v+=e.v;
+      if(e.lo!=null){lo+=e.lo;hi+=e.hi;ranged+=e.v}else{lo+=e.v;hi+=e.v}
+    }
+    return v>0&&ranged>=v/2&&(hi-lo)/v>=0.1?{lo:Math.round(lo),hi:Math.round(hi)}:null;
+  }
   const key=s=>s.trim().replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
   const nextId=(raw,ids)=>Number.isInteger(raw)&&raw>0&&!ids.has(raw)?raw:Math.max(0,...ids)+1;
   function item(x){
     if(!x||typeof x.text!=="string"||!x.text.trim())return null;
     const v=x.v==null?null:Number(x.v);
     if(v!=null&&!(v>=0&&v<=20000))return null;
-    return copyNutr(x,{text:x.text.trim().slice(0,100),v});
+    return copyRange(x,copyNutr(x,{text:x.text.trim().slice(0,100),v}));
   }
   function uniqueItems(xs,limit){
     const out=[],seen=new Set();
@@ -95,6 +107,6 @@ const LogLib=(()=>{
     return {groups,water,dr,waterTotal:total(water),drMl:total(dr),rest};
   }
   const stalled=(snapAt,now,yest,prev7)=>(snapAt>0&&now-snapAt>26*36e5)||(yest===0&&prev7>1000);
-  return {PER100,RECIPES_MAX,RECIPE_ITEMS_MAX,recipeItem,cleanRecipes,recipeCalc,recipeNote,recipeFood,MEALS,mealKey,mealOf,dayLog,stalled,NUTR,copyNutr,key,cleanFav,cleanTpl,recents};
+  return {PER100,RECIPES_MAX,RECIPE_ITEMS_MAX,recipeItem,cleanRecipes,recipeCalc,recipeNote,recipeFood,MEALS,mealKey,mealOf,dayLog,stalled,NUTR,copyNutr,dayRange,key,cleanFav,cleanTpl,recents};
 })();
 if(typeof module!=="undefined")module.exports=LogLib;
