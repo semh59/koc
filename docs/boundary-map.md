@@ -58,7 +58,7 @@
 | kernel/icons.js | 3 | 1 |
 | kernel/kernel.js | 0 | 2 |
 | kernel/ls.js | 1 | 4 |
-| kernel/modules.js | 33 | 3 |
+| kernel/modules.js | 30 | 3 |
 | kernel/netlog.js | 1 | 1 |
 | kernel/piilib.js | 6 | 1 |
 | kernel/share.js | 6 | 4 |
@@ -109,8 +109,9 @@
 | modules/habits/habitlib.js | 3 | 1 |
 | modules/habits/habitui.js | 25 | 21 |
 | modules/habits/index.js | 12 | 1 |
-| modules/habits/ramadanlib.js | 4 | 1 |
-| modules/habits/ramadanui.js | 24 | 14 |
+| modules/habits/ramadanlib.js | 5 | 1 |
+| modules/habits/ramadanui.js | 24 | 15 |
+| modules/habits/ramcities.js | 0 | 1 |
 | modules/history/historylib.js | 5 | 1 |
 | modules/history/historyui.js | 37 | 15 |
 | modules/insights/activitylib.js | 1 | 1 |

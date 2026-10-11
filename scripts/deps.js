@@ -37,7 +37,7 @@ function scan(){
   const isPublic=(n,f)=>/Lib$/.test(n)||f.endsWith("/index.js")||((Modules[owner(f)]||{}).api||[]).includes(n);
   const out=[];
   for(const f of files){
-    const o=owner(f);if(o==="main"||o==="kernel")continue;
+    const o=owner(f);if(o==="main")continue;
     for(const id of idents(src[f])){
       const d=defs[id];if(!d||d.includes(f)||d.some(x=>owner(x)===o))continue;
       const mods=d.filter(x=>owner(x)!=="main"&&owner(x)!=="kernel");if(!mods.length||mods.every(x=>isPublic(id,x)))continue;
