@@ -25,3 +25,17 @@ Tek güncel liste. Eski ayrıntılar: `todo.md` (telefon test adımları), `road
 - Ramazan hesabı yalnız Ekim 2026 verisiyle ölçüldü; mevsim sapması kartta "Doğrula" ile yakalanır.
 - Faz 6: `settings` bölünmedi (veri şeması riski), modül→çekirdek bağımlılıkları daraltılmadı.
 - Hukuki süreç yok (kararı); `legal-questions.md` yalnız veri akışlarını listeler.
+
+## 5. Ar-Ge raporu (`docs/rd/`) durumu
+Birleşik liste `rd/oncelik.md`; takım raporları öneri numaralarıyla kodla karşılaştırıldı (11 Ekim 2026).
+
+**Yapıldı:** Dalga 1 (7 madde) ve Dalga 2 (9 maddenin sodyum çubuğu ve Rehber rakam doğrulama dışındakiler); Dalga 3'ten tam arşiv (JSON) ve denge/işlevsel güç içeriği.
+
+**Bilerek yapılmadı:**
+- Sodyum çubuğu: sodyum verisi güvenilir değil (lif yapıldı).
+- Rehber rakam doğrulama ve "Rehber'e ne gitti" defteri: Rehber daraltıldı, modele yalnız profil satırı gidiyor, yanıtta doğrulanacak kayıt rakamı kalmadı; yemek tahmin kartında kcal ile makro tutarlılık denetimi var, ağ defteri Gizlilik ekranında.
+- Health Connect'ten tansiyon/şeker: Play'e ilk çıkış onaylanana kadar ertelendi (`rd/analiz-dalga-3.md`).
+- FHIR arşivi: şeker kodu doğrulanamadı, JSON arşivi yeterli.
+- N-of-1 deneme, "yakınıma haber ver", egzersizde "rahatsızlık işareti": tıbbi iddia ya da sunucu riski nedeniyle ertelendi/reddedildi.
+
+**Açık, yapılabilir (istenirse):** tahlilin yanında o dönemin ev ölçümü bağlamı (saglik Ö6), döngü evresi x ruh hali/uyku (Ö7), sesli aralıklı yürüyüş akışı (hareket Ö7), kuvvet x kilo Bağlantılar satırı (hareket Ö5), kişisel normal bandı (rehber Ö8). Hepsi küçük ve isteğe bağlı; hiçbiri yayın için gerekli değil.
