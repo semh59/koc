@@ -22,7 +22,7 @@ BESİN VE KALORİ
 - Kahvaltı, tabak, ara öğün ve restoran menüsü gibi hazır öğünler
 - Kendi besinini, tarifini, favorini ve öğün şablonunu ekle
 - Barkod okut: ürün Open Food Facts veritabanında aranır (internet ister; yalnız barkod numarası gider)
-- Ramazan modu (isteğe bağlı, kapalı başlar): ilçenin imsak ve iftar saatlerini Diyanet tablosundan alır (internet ister; yalnız ilçe numarası gider); oruç tutmayı önermez
+- Ramazan modu (isteğe bağlı, kapalı başlar): imsak ve iftar saatlerini bulunduğun yerden telefonda hesaplar (internet istemez) ve dokununca Diyanet tablosuyla karşılaştırıp doğrulandığını söyler (yalnız en yakın il merkezinin ilçe numarası gider; konumun telefonda kalır); oruç tutmayı önermez
 - Paket etiketinin fotoğrafından değer okuma (yazı tanıma telefonda yapılır, fotoğraf saklanmaz)
 - Günlük kalori ve protein aralığı; değerler yaklaşıktır
 

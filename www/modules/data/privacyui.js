@@ -9,7 +9,7 @@ function pvDelete(i){
 function pvDeleteDo(name,del){
   if(del()===false)return;Store.del("nw_state_previous");Store.del("nw_state_corrupt");otherBytes=lsOther();save();render();scheduleReminders().then(setNotif);sheetPrivacy();toast(`${name} silindi`);
 }
-const NET_KIND={off:"barkod numarası",chat:"Rehber mesajı (onayladığın metin)",models:"model listesi (anahtarın istek başlığında gider)",ram:"ezan vakitleri (yalnız ilçe numaran)"};
+const NET_KIND={off:"barkod numarası",chat:"Rehber mesajı (onayladığın metin)",models:"model listesi (anahtarın istek başlığında gider)",ram:"ezan vakitleri (yalnız en yakın il merkezinin numarası)"};
 /* What NeoWell itself sent in the last 30 days; Google services (barcode scanner, text recognition) run outside the WebView and are not in this list. */
 function netLogHtml(){
   const rows=NetLog.recent().reverse();
@@ -27,12 +27,12 @@ function sheetPrivacy(){
   <div class="my-2 banner"><p class="m0">${MED_NOTE}</p></div>
   <details class="acc"><summary>Verin nerede</summary>
   <p class="mut sm">Tüm kayıtların yalnızca bu telefonda durur; NeoWell'in sunucusu ve hesabı yoktur. Yedek dosyasını sen oluşturur, nereye kaydedeceğini sen seçersin. İlerleme fotoğrafları yalnız bu telefonda durur ve yedeğe girmez. PDF ve tablo paylaşımları da senin seçtiğin yere gider. Google otomatik yedeğine ve telefondan telefona aktarıma bilerek dahil edilmez.</p>
-  <p class="mut sm">Konum yalnız elle başlattığın yürüyüşte, uygulama açıkken başlayan kısa bir ölçüm için kullanılır (sürerken bildirim görünür). Yalnız öğrenilen adım uzunluğu saklanır, konum noktası ve rota saklanmaz. Arka planda konum istenmez.</p></details>
+  <p class="mut sm">Konum yalnız elle başlattığın yürüyüşte ve Ramazan modunda "Konumumu kullan"a dokununca, uygulama açıkken kısa bir ölçüm için kullanılır (yürüyüş sürerken bildirim görünür). Yürüyüşte yalnız öğrenilen adım uzunluğu saklanır, nokta ve rota saklanmaz; Ramazan modunda yaklaşık 1 km'ye yuvarlanmış yerin telefonda kalır ve hiçbir yere gönderilmez. Arka planda konum istenmez.</p></details>
   <details class="acc"><summary>İnternete çıkanlar</summary>
   <ul class="mut sm" style="margin:0 0 10px;padding-left:18px">
     <li><b>Open Food Facts</b> (barkod araması): yalnızca barkod numarası gider. Hizmet, her internet isteğinde olduğu gibi IP adresini görür.</li>
     <li><b>Rehber</b>: yalnızca açık rızanla ve yalnız sen bir düğmeye bastığında (otomatik ya da arka planda gönderim yok), aşağıda yazılanlar, seçtiğin sağlayıcıya (${esc(provNames())} ya da kendi eklediğin servis). OpenAI ve Anthropic ücretlidir. Kurulumda yalnız anahtarın ve bir deneme cümlesi gider, sağlık verin gitmez.</li>
-    <li><b>Ezan vakitleri</b> (yalnız Ramazan modunu açarsan): seçtiğin ilçenin numarası ve il/ilçe listesi istenir; Diyanet vakit tablosunun internetteki bir kopyasından (ezanvakti.emushaf.net) saatler alınır. Hizmet IP adresini görür; ilçe numaran yaklaşık bölgeni gösterir.</li>
+    <li><b>Ezan vakitleri</b> (yalnız Ramazan modunu açarsan): saatler telefonda hesaplanır; doğrulamak için en yakın il merkezinin ilçe numarası gönderilir ve Diyanet vakit tablosunun internetteki bir kopyasından (ezanvakti.emushaf.net) o tablo alınır. Konumun gönderilmez. Hizmet IP adresini görür; ilçe numarası yaklaşık bölgeni gösterir.</li>
     <li><b>Google barkod tarayıcı</b> (Play hizmetleri): görüntü telefonda işlenir, NeoWell görüntüyü almaz. Google, kendi koşullarına göre kullanım ve tanılama bilgisi toplayabilir.</li>
     <li><b>Google Drive</b>: yalnızca sen yedeği paylaşım ekranından Drive'a gönderirsen. Yedek parolayla şifrelenir.</li>
   </ul>
