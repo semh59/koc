@@ -11,7 +11,24 @@ const MED_LOW_STOCK=5;
 function medSettingsHtml(){
   const st=S.settings;
   return modRow('data-md="toggle"',st.medOn,"İlaç hatırlatıcı","Saati gelince bildirim, tek dokunuşla kayıt.","hlpmd",`İlaçlarını ve saatlerini gir, zamanı gelince bildirim al. Bildirimdeki "Aldım" düğmesiyle uygulamayı açmadan kaydet. Uygulama doz önermez ve ilaç etkileşimlerini denetlemez: doktorunun ve eczacının söylediği gibi kullan.`,
-    `${swRow('data-md="shown"',st.medShowName,"İlaç adı bildirimde görünsün (kilit ekranında da)")}<button class="btn ghost" data-tab="meds">${Icons.svg("meds")} İlaçlarımı düzenle</button>${isNative()?`<details class="acc mt-2"><summary>Bildirim sorun giderme</summary><p class="m0 hint">Kilitli ekran testinde düğmeye bas, telefonu kilitle ve ekranı kapat. 15 saniye sonra ekran yanıp ilaç ekranı açılmalı. Açılmazsa telefon ayarlarından uygulamaya kilit ekranında gösterme ve tam ekran bildirim izni ver.</p><div class="btns"><button class="btn ghost" data-md="locktest">Kilitli ekran testi</button><button class="btn ghost" data-md="realtest">Gerçek doz testi (1 dk)</button><button class="btn ghost" data-md="wakelog">Alarm kayıtları</button></div></details>`:""}`);
+    `${swRow('data-md="shown"',st.medShowName,"İlaç adı bildirimde görünsün (kilit ekranında da)")}<button class="btn ghost" data-md="near">${Icons.svg("heart")} ${st.medNear?"Yakınım: "+esc(st.medNear)+" · değiştir":"Yakınıma haber ver: numara ekle"}</button><button class="btn ghost" data-tab="meds">${Icons.svg("meds")} İlaçlarımı düzenle</button>${isNative()?`<details class="acc mt-2"><summary>Bildirim sorun giderme</summary><p class="m0 hint">Kilitli ekran testinde düğmeye bas, telefonu kilitle ve ekranı kapat. 15 saniye sonra ekran yanıp ilaç ekranı açılmalı. Açılmazsa telefon ayarlarından uygulamaya kilit ekranında gösterme ve tam ekran bildirim izni ver.</p><div class="btns"><button class="btn ghost" data-md="locktest">Kilitli ekran testi</button><button class="btn ghost" data-md="realtest">Gerçek doz testi (1 dk)</button><button class="btn ghost" data-md="wakelog">Alarm kayıtları</button></div></details>`:""}`);
+}
+/* "Yakınıma haber ver": the messaging app opens with the number and a short text (no medicine name); the person presses send. The number stays on the phone. */
+const MED_NEAR_TEXT="Merhaba, ilaç saatimi kaçırmış olabilirim. Müsait olunca beni arar mısın?";
+function medNearSheet(){
+  const v=S.settings.medNear;
+  openSheet(`<h3>Yakınıma haber ver</h3><p class="mut sm">Geciken bir dozda Bugün'de "Yakınıma haber ver" düğmesi çıkar. Mesaj uygulaması numara ve kısa bir metinle açılır, göndermek sana kalır. Mesajda ilaç adı yazmaz. Numara yalnız bu telefonda durur.</p>
+  <input class="in" id="mdnear" type="tel" inputmode="tel" placeholder="Örn. +905551112233" aria-label="Yakınının telefon numarası" value="${esc(v)}"><div id="mdnearerr" class="mut sm"></div>
+  <div class="btns"><button class="btn" data-md="nearsave">Kaydet</button>${v?'<button class="btn ghost" data-md="nearclear">Numarayı sil</button>':""}<button class="btn ghost" data-md="nearclose">Vazgeç</button></div>`);
+}
+function medNearSave(){
+  const v=$("#mdnear").value.replace(/[\s()-]/g,"");
+  if(!/^\+?\d{7,15}$/.test(v)){$("#mdnearerr").textContent="Numara 7-15 rakam olmalı, başında + olabilir.";return}
+  S.settings.medNear=v;save();closeSheet();render();toast("Kaydedildi");
+}
+function medNearSend(){
+  const p=DH();if(!p||!p.sms)return toast("Mesaj yalnızca telefondaki uygulamada açılır");
+  p.sms({to:S.settings.medNear,body:MED_NEAR_TEXT}).then(r=>{if(r.opened==="none")toast("Mesaj uygulaması açılamadı")},()=>toast("Mesaj uygulaması açılamadı"));
 }
 function medToggle(){
   const st=S.settings;st.medOn=!st.medOn;save();render();medResched();
@@ -62,7 +79,7 @@ function medTodo(){
   if(!S.settings.medOn)return [];
   if(!S.meds.length)return [`<div class="row"><span>${Icons.svg("meds")} Henüz ilaç eklemedin</span><button class="chip" data-md="new">${Icons.svg("plus")} Ekle</button></div>`];
   const t=dayKey(),now=medNowHM(),rec=MedLib.logIndex(S.medLog,t);
-  return MedLib.dosesOn(S.meds,t).filter(({m,slot})=>slot<=now&&!rec(m.id,t,slot)).map(({m,slot})=>`<div class="row"><b class="num tm">${slot}</b><span>${esc(m.n)}<small class="mut sm">${[esc(m.d),"Gecikti"].filter(Boolean).join(" · ")}</small></span><div class="acts"><button class="b7 chip" data-md="take:${m.id}:${slot}">${Icons.svg("check")} Aldım</button><button class="chip" data-md="skip:${m.id}:${slot}">Atla</button></div></div>`);
+  return MedLib.dosesOn(S.meds,t).filter(({m,slot})=>slot<=now&&!rec(m.id,t,slot)).map(({m,slot})=>`<div class="row"><b class="num tm">${slot}</b><span>${esc(m.n)}<small class="mut sm">${[esc(m.d),"Gecikti"].filter(Boolean).join(" · ")}</small></span><div class="acts"><button class="b7 chip" data-md="take:${m.id}:${slot}">${Icons.svg("check")} Aldım</button><button class="chip" data-md="skip:${m.id}:${slot}">Atla</button>${S.settings.medNear?`<button class="chip" data-md="nearsend">Yakınıma haber ver</button>`:""}</div></div>`);
 }
 
 /* ---- Meds screen ---- */
@@ -177,6 +194,11 @@ document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-md]");if(!el)return;
   const [a,...r]=el.dataset.md.split(":");
   if(a==="toggle")medToggle();
+  else if(a==="near")medNearSheet();
+  else if(a==="nearsave")medNearSave();
+  else if(a==="nearclear"){S.settings.medNear="";save();closeSheet();render();toast("Numara silindi")}
+  else if(a==="nearclose")closeSheet();
+  else if(a==="nearsend")medNearSend();
   else if(a==="locktest"){const w=MW();if(!w)return toast("Yalnızca telefondaki uygulamada çalışır");w.test().then(()=>toast("15 saniye sonra alarm çalacak: telefonu kilitle")).catch(()=>toast("Test kurulamadı"))}
   else if(a==="realtest")medRealTest();
   else if(a==="wakelog")medWakeLog();
