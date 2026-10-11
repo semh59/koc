@@ -141,7 +141,9 @@ function gInc(id){
 function gSuggest(exId){
   if(gKind(exId)!=="w")return null;
   const [h,...old]=gHistory(exId);if(!h)return null;
-  const r=Algo.nextTarget(gWork(h.sets),Object.assign({lo:8,hi:12,inc:gInc(exId),prev:old.slice(0,2).map(x=>gWork(x.sets)),gapDays:Algo.dayNum(dayKey())-Algo.dayNum(h.w.day)},S.exCfg[exId])),p=gPr(exId);
+  const ws=gWork(h.sets),top=Math.max(...ws.map(x=>x.kg||0));
+  const hard=!!S.settings.rpeOn&&ws.some(x=>(x.kg||0)===top&&x.rpe>=9.5); // a hard top set rated by the user
+  const r=Algo.nextTarget(ws,Object.assign({lo:8,hi:12,inc:gInc(exId),prev:old.slice(0,2).map(x=>gWork(x.sets)),gapDays:Algo.dayNum(dayKey())-Algo.dayNum(h.w.day),hard},S.exCfg[exId])),p=gPr(exId);
   if(!r)return r;
   if(p==="bar"&&r.kg>=S.bar)r.kg=Algo.plates(r.kg,S.bar,S.plates).made;
   else if(p==="db"&&S.dbStep)r.kg=Algo.roundTo(r.kg,S.dbStep);
