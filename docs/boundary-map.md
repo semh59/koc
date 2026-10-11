@@ -3,7 +3,7 @@
 ## Veri alanı -> dokunan dosyalar
 | S alanı | dosya sayısı | dosyalar |
 |---|---|---|
-| settings | 38 | kernel/unitui.js, main/01-core.js, main/02-state-components.js, main/03-screens.js, main/04-sheets.js, main/05-notifications.js, main/06-events.js, main/07-actions.js, modules/coach/coach.js, modules/cycle/cycleui.js, modules/data/backupui.js, modules/data/csvlib.js, modules/data/lockui.js, modules/data/onboardui.js, modules/data/privacyui.js, modules/gym/guideui.js, modules/gym/gym.js, modules/habits/habitui.js, modules/habits/index.js, modules/history/historyui.js, modules/insights/activityui.js, modules/insights/doctorui.js, modules/insights/goalui.js, modules/insights/weeklyui.js, modules/log/drinkui.js, modules/log/entries.js, modules/log/quickui.js, modules/measures/measureui.js, modules/meds/alarmui.js, modules/meds/medui.js, modules/motion/index.js, modules/motion/motionui.js, modules/motion/stepsui.js, modules/motion/walkui.js, modules/pulse/hcui.js, modules/pulse/index.js, modules/pulse/pulseui.js, modules/vitals/vitalsui.js |
+| settings | 39 | kernel/unitui.js, main/01-core.js, main/02-state-components.js, main/03-screens.js, main/04-sheets.js, main/05-notifications.js, main/06-events.js, main/07-actions.js, modules/coach/coach.js, modules/cycle/cycleui.js, modules/data/archivelib.js, modules/data/backupui.js, modules/data/csvlib.js, modules/data/lockui.js, modules/data/onboardui.js, modules/data/privacyui.js, modules/gym/guideui.js, modules/gym/gym.js, modules/habits/habitui.js, modules/habits/index.js, modules/history/historyui.js, modules/insights/activityui.js, modules/insights/doctorui.js, modules/insights/goalui.js, modules/insights/weeklyui.js, modules/log/drinkui.js, modules/log/entries.js, modules/log/quickui.js, modules/measures/measureui.js, modules/meds/alarmui.js, modules/meds/medui.js, modules/motion/index.js, modules/motion/motionui.js, modules/motion/stepsui.js, modules/motion/walkui.js, modules/pulse/hcui.js, modules/pulse/index.js, modules/pulse/pulseui.js, modules/vitals/vitalsui.js |
 | entries | 4 | main/04-sheets.js, modules/log/entries.js, modules/log/index.js, modules/log/quickui.js |
 | meds | 4 | modules/meds/alarmui.js, modules/meds/index.js, modules/meds/medlib.js, modules/meds/medui.js |
 | medLog | 4 | modules/meds/alarmui.js, modules/meds/index.js, modules/meds/medlib.js, modules/meds/medui.js |
@@ -79,6 +79,7 @@
 | modules/cycle/cyclelib.js | 3 | 1 |
 | modules/cycle/cycleui.js | 27 | 15 |
 | modules/cycle/index.js | 2 | 0 |
+| modules/data/archivelib.js | 3 | 1 |
 | modules/data/backuplib.js | 1 | 1 |
 | modules/data/backupui.js | 24 | 15 |
 | modules/data/csvimportui.js | 15 | 7 |
@@ -88,7 +89,7 @@
 | modules/data/onboardui.js | 34 | 18 |
 | modules/data/photolib.js | 1 | 1 |
 | modules/data/photoui.js | 19 | 24 |
-| modules/data/privacyui.js | 31 | 8 |
+| modules/data/privacyui.js | 32 | 9 |
 | modules/gym/cardiolib.js | 3 | 1 |
 | modules/gym/cardioui.js | 23 | 9 |
 | modules/gym/excues.js | 1 | 1 |

@@ -2295,6 +2295,11 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("Settings > Data Tabloya aktar: 9 files, with row counts; the button of an empty one is disabled",sheet().includes("Kayıtlar (yemek, su, kilo, ölçü, spor, adım, not)")&&sheet().includes("2 satır")&&qa('[data-pv^="csvsh:"]').length===9&&qa('[data-pv^="csvsh:"]').filter(b=>b.disabled).length===8);
     q('[data-pv="csvsh:0"]').click();await flush();
     ok("share: a single file, UTF-8 text, BOM, ; separator, decimal comma, injection-safe, uri goes to the share sheet",wr.length===1&&wr[0].encoding==="utf8"&&wr[0].directory==="CACHE"&&/^neowell-kayitlar-\d{4}-\d\d-\d\d\.csv$/.test(wr[0].path)&&wr[0].data.startsWith("﻿tarih;saat;")&&wr[0].data.includes(";kilo;80,5;kg;")&&wr[0].data.includes("'=1+1")&&shr.length===1&&shr[0].files[0]==="file:///cache/"+wr[0].path,wr[0]);
+    ok("full archive row: record total shown, button enabled",sheet().includes("Tüm verim (tek JSON dosyası)")&&sheet().includes("2 kayıt")&&!q('[data-pv="archive"]').disabled,sheet());
+    q('[data-pv="archive"]').click();await flush();
+    const ar=JSON.parse(wr[1].data);
+    ok("archive share: a readable JSON file with the user's entries, no API key, file name with the date",/^neowell-arsiv-\d{4}-\d\d-\d\d\.json$/.test(wr[1].path)&&wr[1].encoding==="utf8"&&ar.schema===1&&ar.modules.log.entries.length===2&&!("providers" in ar.modules.coach),wr[1].path);
+    wr.length=1;
     ev("S.nextId=1");
     await ev("sharePdf(new Uint8Array([37,80,68,70]),'x.pdf','PDF')");
     ok("PDF sharing takes the same path, base64 and without encoding (no regression)",wr.length===2&&wr[1].path==="x.pdf"&&wr[1].encoding===undefined&&wr[1].data==="JVBERg==",wr[1]);
