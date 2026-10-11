@@ -147,6 +147,19 @@ ok("sinceFor: a new time starts today, a passed time tomorrow, an old time is ke
   ok("wakeIssues: off notifications, blocked/low channel, full screen, battery, exact alarm each point to the matching setting",to({ne:false,ci:0,mi:2,fsi:false,bo:false,ex:false},[wk])==="notif,channel,channel,fsi,battery,exact"&&M.wakeIssues({...ok0,mi:2},[wk])[0].id==="nw_med");
   ok("wakeIssues: a channel that does not exist yet (-1) is not a problem",M.wakeIssues({...ok0,ci:-1,mi:-1},[wk]).length===0);
   ok("wakeIssues: with no record 'alarm never fired' points to autostart; zero scheduled gives a separate warning",to(ok0,[])==="autostart"&&/hiç çalmadı/.test(M.wakeIssues(ok0,[])[0].t)&&/Kurulu ekran alarmı yok/.test(M.wakeIssues(ok0,[{a:"APP",in:0,n:0}])[0].t));
+  { // double-dose guard: records of different slots of the same medication within an hour
+    const D="2026-10-07",ms=(t,day=D)=>new Date(...day.split("-").map((x,k)=>k===1?x-1:+x),...t.split(":").map(Number)).getTime();
+    const lg=(slot,at,extra={})=>({id:1,m:1,day:D,slot,st:"t",at,...extra});
+    const r1=M.recentTaken([lg("08:00","08:05")],1,D,"10:00",ms("08:30"));
+    ok("recentTaken: a different slot taken 25 minutes ago is reported with the minutes",r1&&r1.min===25&&r1.slot==="08:00",JSON.stringify(r1));
+    ok("recentTaken: a record older than an hour is not reported",M.recentTaken([lg("08:00","08:05")],1,D,"10:00",ms("09:20"))===null);
+    ok("recentTaken: marking the same slot again replaces it, no warning",M.recentTaken([lg("08:00","08:05")],1,D,"08:00",ms("08:10"))===null);
+    ok("recentTaken: slots planned 30 minutes apart do not ask",M.recentTaken([lg("08:00","08:05")],1,D,"08:30",ms("08:10"))===null);
+    ok("recentTaken: skipped records, records without a time and other medications do not count",M.recentTaken([lg("08:00","08:05",{st:"s"}),lg("08:00",undefined),lg("08:00","08:05",{m:2})],1,D,"10:00",ms("08:30"))===null);
+    ok("recentTaken: a late-night slot tapped after midnight is placed on the next day",(r=>r&&r.min===10)(M.recentTaken([lg("23:00","00:05")],1,"2026-10-08","01:30",ms("00:15","2026-10-08"))),M.recentTaken([lg("23:00","00:05")],1,"2026-10-08","01:30",ms("00:15","2026-10-08")));
+    ok("recentTaken: a record in the future of now is ignored",M.recentTaken([lg("08:00","09:30")],1,D,"10:00",ms("08:30"))===null);
+    ok("recentText: states the fact and that only own records are compared, never calls it safe or dangerous",/25 dakika önce/.test(M.recentText({min:25}))&&!/güvenli|tehlike|aşırı/.test(M.recentText({min:25})));
+  }
   { // alarm screen evidence (AS/AE records)
     const w2={...wk,v:2},as={t:wk.t+900,a:"AS",kl:true},ae={t:wk.t+9000,a:"AE",ms:8100};
     ok("wakeLine: alarm screen opened and closed lines",/alarm ekranı açıldı \(ekran kilitliydi\)/.test(M.wakeLine(as))&&/alarm ekranı kapandı \(8 sn açık kaldı\)/.test(M.wakeLine(ae)));

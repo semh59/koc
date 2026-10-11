@@ -145,7 +145,11 @@ function medSave(){
   if(!save()){S.meds=before;return toast("Kaydedilemedi, depolama dolu")}
   medClose();render();medResched();toast("İlaç kaydedildi");
 }
-function medMark(mid,slot,st){
+function medMark(mid,slot,st,force){
+  if(st==="t"&&!force){
+    const r=MedLib.recentTaken(S.medLog,mid,dayKey(),slot,Date.now());
+    if(r){confirmSheet({title:"Yine de kaydedilsin mi?",body:MedLib.recentText(r),ok:"Evet, kaydet",no:"Hayır, kaydetme"}).then(yes=>yes?medMark(mid,slot,st,true):toast(MedLib.NOT_SAVED));return}
+  }
   const res=MedLib.mark(S,mid,dayKey(),slot,st,st==="t"?medNowHM():undefined);
   if(!res)return;
   if(!save()){res.undo();return toast("Kaydedilemedi, depolama dolu")}

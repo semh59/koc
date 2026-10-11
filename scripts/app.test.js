@@ -2807,7 +2807,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("S.vitals=[{id:1,k:'s',day:keyOff(-95),time:'08:00',g:110,ctx:'ac'}]");ok("a sugar measurement from 95 days ago does not count",!ctx().includes("KISIT"));
     ev("S.vitals=[];S.settings.age=16;S.settings.riskClearedAt=dayKey();tab='trend';render()");
     ok("hard block (under 18): no confirm button, confirmation does not lift it, an explanation",!$q('[data-act="riskok"]')&&$q("#view").textContent.includes("18 yaş altındasın")&&ctx().includes("KISIT: 18 yaş altındasın"));
-    ok("Trend: under a block there is no time-to-goal estimate",!/hafta(.| arası.)</p>|kestirilemiyor./.test(ev("viewTrend()")));
+    ok("Trend: under a block there is no time-to-goal estimate",!/hafta(\.| arası\.)<\/p>|kestirilemiyor\./.test(ev("viewTrend()")));
     ev("S.settings.age=35;S.settings.heightCm=0;S.settings.healthNote='hamileyim';S.entries=[]");
     ok("the pregnancy KISIT line goes even without height and weigh-in",ctx().includes("KISIT: Sağlık notunda hamilelik"));
     ev("S.settings.healthNote='';S.chat=[{id:1,t:1,role:'user',text:'x',fl:'ed'}]");

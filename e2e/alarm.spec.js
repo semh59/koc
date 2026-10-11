@@ -67,3 +67,21 @@ test("alarm screen in landscape and dark theme: no overflow, buttons reachable, 
   await expect(page.locator("#alarm")).toBeHidden();
   await expect(page.locator('nav button[data-tab="today"]')).toHaveAttribute("aria-current",/page|true/);
 });
+
+test("alarm screen double-dose guard: the question sits inside the alarm, No keeps the dose open, Yes records it",async({app,page})=>{
+  await page.addInitScript(plugins);
+  const {day}=require("./fixtures");
+  const seed=state({medOn:true,medShowName:true},{meds:[{id:1,n:"Metformin",t:["08:50","09:55"],on:true}],medLog:[{id:1,m:1,day:day(0),slot:"08:50",st:"t",at:"09:45"}]});
+  await app.open({seed,native:{}});
+  await page.evaluate("alarmOpen()");
+  const al=page.getByRole("alertdialog",{name:"İlaç zamanı"});
+  await al.getByRole("button",{name:"Metformin 09:55: aldım"}).click();
+  await expect(al.getByRole("group",{name:"Çift doz sorusu"})).toContainText("15 dakika önce");
+  expect((await app.state()).medLog.length).toBe(1);
+  await al.getByRole("button",{name:"Hayır, kaydetme"}).click();
+  await expect(al).toContainText("Kaydedilmedi");
+  expect((await app.state()).medLog.length).toBe(1);
+  await al.getByRole("button",{name:"Metformin 09:55: aldım"}).click();
+  await al.getByRole("button",{name:"Evet, kaydet"}).click();
+  await expect.poll(async()=>(await app.state()).medLog.length).toBe(2);
+});
