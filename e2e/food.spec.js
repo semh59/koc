@@ -137,3 +137,25 @@ test.describe("Barcode (fake scanner, fake Open Food Facts reply)",()=>{
     await expect(app.toast).toHaveText("İnternete ulaşılamadı, barkod aranamadı");
   });
 });
+
+test.describe("Quick text entry",()=>{
+  test("write several foods, preview, fix a measure, add all with one undo",async({app,page})=>{
+    await openFood(app,page);
+    await page.click('[data-qk="open"]');
+    await page.fill("#qkt","2 dilim ekmek, yarım simit, 3 yemek kaşığı pilav, xyzqq");
+    await page.click('[data-qk="prep"]');
+    await expect(page.locator("#sheet, .sheet").first()).toContainText("Besin bulunamadı, eklenmez");
+    await expect(page.locator("body")).toContainText("Beyaz ekmek, 2 × 1 dilim (30 g)");
+    await expect(page.locator('[data-qk="add"]')).toBeDisabled();
+    await page.click('[data-qk^="ack:"]');
+    await expect(page.locator('[data-qk="add"]')).toBeEnabled();
+    expect((await app.state()).entries.filter(e=>e.type==="food").length).toBe(0);
+    await page.click('[data-qk="add"]');
+    await expect(app.toast).toContainText("3 yemek eklendi");
+    const food=(await app.state()).entries.filter(e=>e.type==="food");
+    expect(food.length).toBe(3);
+    expect(food.every(e=>e.v>0&&e.meal)).toBe(true);
+    await page.click("#tundo");
+    expect((await app.state()).entries.filter(e=>e.type==="food").length).toBe(0);
+  });
+});
