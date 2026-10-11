@@ -1,4 +1,4 @@
-/* Module boundary: only files in the owning module's folder (www/modules/<module>/) and the core (main/, kernel/) touch an S field directly.
+/* Module boundary (kernel files included): only files in the owning module's folder (www/modules/<module>/) and the core (main/, kernel/) touch an S field directly.
    Other files get that data through the module's API. */
 const {ok,finish}=require("./ok");
 const fs=require("fs"),path=require("path");
@@ -8,7 +8,6 @@ const Modules=require(www("kernel/modules.js"));
 const keyOwner={};for(const [id,m] of Object.entries(Modules))for(const k of m.keys)keyOwner[k]={id,owners:m.owners||[]};
 const violations=new Set();
 for(const f of listJs()){
-  if(f.startsWith("kernel/"))continue;
   for(const [,key] of stripComments(read(f)).matchAll(/(?<![.\w])S\.([a-zA-Z_]\w*)/g)){
     const o=keyOwner[key];
     if(o&&!f.startsWith("modules/"+o.id+"/")&&!o.owners.includes(f))violations.add(key+" <- "+f);

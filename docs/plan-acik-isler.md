@@ -49,7 +49,9 @@ Kaynaklar: `docs/rd/oncelik.md`, `docs/rd/analiz-dalga-1.md`, `-2a`, `-2b`, `-3`
 - Ertelendi (dış onay ya da karar): Health Connect'ten tansiyon/şeker (Play beyanı), FHIR (şeker kodu doğrulanamadı), N-of-1 deneme.
 
 ### Faz 6: Mimari artıklar (isteğe bağlı, davranış değiştirmez)
-- 6.1 `settings` modül başına bölme; 6.2 modül → çekirdek bağımlılıkları (~650) ve `api` listelerini daraltma; 6.3 `kernel/` için de sınır testi.
+- 6.3 BİTTİ: sınır testi artık `kernel/` dosyalarını da kapsar (S alanı ve modül iç adı).
+- 6.2 KISMEN: kullanılmayan `api` adları (`inType`, `moveAdd`, `quickBtn`) çıkarıldı; kalan adların hepsi başka bir modülce kullanılıyor. ~650 modül → çekirdek bağımlılığını daraltmak yalnız kod taşıma getirir, kullanıcıya fayda sağlamaz; yapılmadı.
+- 6.1 YAPILMADI (bilinçli): `settings`i modüllere bölmek kayıtlı veri şemasını, yedek ve içe aktarma biçimini değiştirir; fayda küçük, veri kaybı riski var.
 
 ## B2. Durum (2026-10-11 sonu)
 Bitti: 3.1 Trend aralığı, 3.2 RPE "tut" yönü, 3.3 hızlı metin kaydı, 3.4 rahat mod, 4.1 çift doz, 4.2 son dozdan beri etiketi, 4.3 barkod-etiket, 4.4 lif çubuğu (sodyum yapılmadı), 4.5 pişmiş ağırlık, 4.6 Bağlantılar kanıt etiketi, 4.7 CSV içe aktarma (yalnız tanınan başlıklar; eşleme ekranı yok), 4.8 hekim raporu (oklar kalır), 4.9 Ramazan modu, 4.10 hareket kartı, 5.1 tam arşiv, 5.2 denge içeriği, 2.1-2.4, 2.6 (CI targetSdk 36 doğruluyor) ve 2.8.
