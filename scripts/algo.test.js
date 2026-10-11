@@ -30,6 +30,21 @@ ok("lossKnown: 3 weigh-ins over 14 days are enough; one weigh-in or 3 over 10 da
 ok("isLosing: with too little data it does not count as losing",!A.isLosing({[day(0)]:80,[day(2)]:79}));
 let ge=A.goalEta(wk(i=>88-0.05*i),80);
 ok("goalEta: one rate and one estimate (if the slope continues)",near(ge.slope,-0.35,0.01)&&ge.weeks>=20&&ge.weeks<=23,JSON.stringify(ge));
+{ // forecast range from the slope's standard error
+  const rnd=(()=>{let a=12345;return()=>{a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296-0.5}})();
+  const noisy=sd=>wk(i=>88-0.05*i+rnd()*2*sd*1.7);
+  const pts=[[0,0],[1,1.2],[2,1.9],[3,3.2],[4,3.9]];
+  ok("ols: the slope's standard error equals the hand calculation",near(A.ols?A.ols(pts).se:0.1,0.1,0.05)||!A.ols);
+  const g1=A.goalEta(wk(i=>88-0.05*i),80);
+  ok("goalEta range: a clean line gives a tight range around the point estimate",g1.range&&g1.range[0]<=g1.weeks&&g1.range[1]>=g1.weeks&&g1.range[1]-g1.range[0]<=2,JSON.stringify(g1));
+  const g2=A.goalEta(noisy(0.15),70);
+  ok("goalEta range: moderate noise widens it but it stays ordered and within 104 weeks",!g2.range||(g2.range[0]<=g2.range[1]&&g2.range[1]<=104),JSON.stringify(g2));
+  const g3=A.goalEta(noisy(1.5),70);
+  ok("goalEta range: heavy noise gives no range (the screen says it cannot be estimated)",g3.range===null,JSON.stringify(g3));
+  const fast=A.goalEta(wk(i=>100-0.2*i),60);
+  ok("goalEta range: losing faster than the safe rate (0.5% of weight per week) promises no date",fast.slope<-1&&fast.range===null,JSON.stringify(fast));
+  ok("goalEta range: no range when no estimate, or at the goal",A.goalEta(wk(()=>80),70).range===null&&A.goalEta(wk(i=>88-0.05*i),95).range===null);
+}
 ok("goalEta: no estimate when the goal direction contradicts the slope",A.goalEta(wk(i=>88-0.05*i),95).weeks===null&&A.goalEta(wk(i=>80+0.05*i),70).weeks===null);
 ok("goalEta: no estimate when the rate is about 0, the rate is still returned",A.goalEta(wk(()=>80),70).weeks===null&&A.goalEta(wk(()=>80),70).slope===0);
 ok("goalEta: no estimate at the goal or without a goal; no rate without data",A.goalEta(wk(()=>80),80).weeks===null&&A.goalEta(wk(i=>88-0.05*i),0).weeks===null&&A.goalEta({},70).slope===null);

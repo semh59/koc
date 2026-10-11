@@ -27,8 +27,14 @@ const Algo=(()=>{
   function ols(pts){
     const n=pts.length,mx=pts.reduce((s,p)=>s+p[0],0)/n,my=pts.reduce((s,p)=>s+p[1],0)/n;
     let sxy=0,sxx=0;for(const [x,y] of pts){sxy+=(x-mx)*(y-my);sxx+=(x-mx)*(x-mx)}
-    return sxx?{m:sxy/sxx,b:my-sxy/sxx*mx}:null;
+    if(!sxx)return null;
+    const m=sxy/sxx,b=my-m*mx;
+    let rss=0;for(const [x,y] of pts){const e=y-(b+m*x);rss+=e*e}
+    return {m,b,se:n>2?Math.sqrt(rss/(n-2)/sxx):null,df:n-2};
   }
+  /* Two-sided 80% Student t for 1..30 degrees of freedom (1.282 beyond). */
+  const T80=[3.078,1.886,1.638,1.533,1.476,1.44,1.415,1.397,1.383,1.372,1.363,1.356,1.35,1.345,1.341,1.337,1.333,1.33,1.328,1.325,1.323,1.321,1.319,1.318,1.316,1.315,1.314,1.313,1.311,1.31];
+  const t80=df=>df>=1?T80[Math.min(df,30)-1]||1.282:null;
   /* The browser supplies today (setClock) because the Coach calls without a date; without a clock the window ends at the last weigh-in (pure call). */
   let clock=null;
   const setClock=f=>{clock=f};
@@ -96,8 +102,22 @@ const Algo=(()=>{
   function goalEta(w,goalKg,today){
     const ks=Object.keys(w).sort(),slope=slopePerWeek(w,21,4,7,today);
     if(!ks.length)return {slope:null,weeks:null};
-    const wk=etaWeeks(trend(w)[ks[ks.length-1]],goalKg,slope);
-    return {slope,weeks:wk>0?wk:null};
+    const now=trend(w)[ks[ks.length-1]],wk=etaWeeks(now,goalKg,slope);
+    return {slope,weeks:wk>0?wk:null,range:wk>0?etaRange(w,now,goalKg,today):null};
+  }
+  /* Weeks to the goal as an 80% range from the slope's standard error. The fast end is capped at the app's own safe rate. Null (the screen says "cannot be estimated")
+     when either end of the slope is ~0 or points the wrong way, the slow end passes 104 weeks, or the slow end is more than 2.5 times the fast end. */
+  function etaRange(w,now,goalKg,today){
+    const f=ols(windowPts(w,21,today));if(!f||f.se==null)return null;
+    const d=goalKg-now,t=t80(f.df);if(!t||Math.abs(d)<0.2)return null;
+    const cap=d<0?Math.min(0.005*now,0.75):0.0025*now*2;
+    const a=7*(f.m-t*f.se),b=7*(f.m+t*f.se),sg=Math.sign(d),ends=[a,b].map(s=>s*sg).filter(x=>x>0);
+    if(ends.length<2||Math.min(...ends)<0.05)return null;
+    const slow=Math.min(...ends);
+    if(slow>=cap)return null; // already faster than the safe rate: no date is promised
+    const fast=Math.min(Math.max(...ends),cap);
+    const lo=Math.ceil(Math.abs(d)/fast),hi=Math.ceil(Math.abs(d)/slow);
+    return hi>104||hi>lo*2.5?null:[lo,Math.max(lo,hi)];
   }
   /* Safety brake (calorie deficit, fasting, high protein): the single source. A hard block cannot be confirmed away; a soft one is lifted for 30 days
      (including the day itself) by "Hekimime danıştım" (clearedAt).
