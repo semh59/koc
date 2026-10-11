@@ -181,6 +181,6 @@ const VitalsLib=(()=>{
     }
     ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText(`NeoWell · sayfa ${info.page}/${info.total}`+(items.some(r=>r.dose)?" · Süreler uygulamaya yazılan kayıtlara göredir.":""),RM,RH-45);
   }
-  return {newSid,CTX,SESSIONS,ctxName,sessionName,LIM,check,clean,sessions,homeAvg,gStats,crisis,needsConfirm,latest,cmpAt,reportRows,paginate,drawPage,drawChart,RW,RH};
+  return {MAX_ROWS,newSid,CTX,SESSIONS,ctxName,sessionName,LIM,check,clean,sessions,homeAvg,gStats,crisis,needsConfirm,latest,cmpAt,reportRows,paginate,drawPage,drawChart,RW,RH};
 })();
 if(typeof module!=="undefined")module.exports=VitalsLib;

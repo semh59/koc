@@ -206,6 +206,6 @@ const ImportLib=(()=>{
     const keep=p.workouts.slice().sort((a,b)=>b.t0-a.t0).slice(0,n),used=new Set(keep.flatMap(w=>w.ex.map(x=>x.id))),newEx=p.newEx.filter(e=>used.has(e.id));
     return {...p,workouts:keep.sort((a,b)=>a.id-b.id),newEx,stats:{...p.stats,...summary(keep,newEx)}};
   }
-  return {read,num,matcher,plan,bytes,fit,cut,MAP,MAX_NEW};
+  return {parse,read,num,matcher,plan,bytes,fit,cut,MAP,MAX_NEW};
 })();
 if(typeof module!=="undefined")module.exports=ImportLib;
