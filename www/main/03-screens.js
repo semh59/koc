@@ -107,7 +107,8 @@ function viewTrend(){
     const gi=goalInfo(cur,first);
     if(gi)cells.push(["Hedefe kalan",gi.done?"Ulaştın":`${dw(gi.left)} ${wlab()}`]);
     const eta=gi&&!gi.done&&!(gi.dir<0&&risk(cur).block)?ge.weeks:null;
-    stats=`<div class="stats kp">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1].replace(/ ((?:kg|lb)\/hafta|kg|lb)$/," <small>$1</small>")}</div></div>`).join("")}</div>${eta?`<p class="pt-2 hint">Son 3 haftanın eğimi sürerse ~${eta} hafta.</p>`:""}`;
+    const etaTxt=!eta?"":ge.range?(ge.range[0]===ge.range[1]?`Son 3 haftanın eğimi sürerse ~${ge.range[0]} hafta.`:`Son 3 haftanın eğimi sürerse ${ge.range[0]}–${ge.range[1]} hafta arası.`):"Hızın değişken olduğu için hedef tarihi kestirilemiyor.";
+    stats=`<div class="stats kp">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1].replace(/ ((?:kg|lb)\/hafta|kg|lb)$/," <small>$1</small>")}</div></div>`).join("")}</div>${etaTxt?`<p class="pt-2 hint">${etaTxt}</p>`:""}`;
   }
   const waterOf=dayTotal("water"),foodOf=dayTotal("food"),sportOf=dayTotal("exercise"),stepsOf=dayTotal("steps"),wkW=weights(keyOff(-6),t);
   let rows="",hasWeek=false;const hasSteps=st.stepsOn||sum("steps",keyOff(-6),t)>0;

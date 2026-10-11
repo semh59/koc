@@ -1629,11 +1629,13 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("the button appears when the trend is rising",whyBtn());
     const tv=()=>q("#view").textContent;
     ev("S.settings.goalKg=75");setW("80+0.07*i");ev("tab='trend';render()");
-    ok("one speed and one forecast with its condition stated in Trend; no old 'Kaba tahmin' or 'Haftalık ortalama farkı'",/Kilo hızı/.test(tv())&&(tv().match(/~\d+ hafta/g)||[]).length===1&&/Son 3 haftanın eğimi sürerse ~\d+ hafta/.test(tv())&&!/Kaba tahmin|Haftalık ortalama farkı|Hedefe tahmini/.test(tv()),tv().slice(0,400));
+    ok("one speed and one forecast with its condition stated in Trend; no old 'Kaba tahmin' or 'Haftalık ortalama farkı'",/Kilo hızı/.test(tv())&&(tv().match(/Son 3 haftanın eğimi sürerse|tarihi kestirilemiyor/g)||[]).length===1&&/Son 3 haftanın eğimi sürerse (~\d+|\d+–\d+) hafta|hedef tarihi kestirilemiyor/.test(tv())&&!/Kaba tahmin|Haftalık ortalama farkı|Hedefe tahmini/.test(tv()),tv().slice(0,400));
     ev("S.settings.goalKg=90;render()");
     ok("if the goal direction contradicts the slope no forecast is shown",!/~\d+ hafta/.test(tv()));
     setW("80");ev("S.settings.goalKg=75;render()");
     ok("with speed ~0 no forecast is shown",!/~\d+ hafta/.test(tv()));
+    ev("S.settings.goalKg=70;S.entries=S.entries.filter(e=>e.type!=='weight');[0,2,5,8,11,13,16,19,20].forEach((d,k)=>add('weight',[84,87.5,82,88,83,86.5,81,87,82.5][k]-d*0.05,'',keyOff(-20+d)));tab='trend';render()");
+    ok("with a noisy slope the forecast says it cannot be estimated instead of a made-up date",/hedef tarihi kestirilemiyor/.test(tv())&&!/~\d+ hafta/.test(tv()),tv().slice(0,400));
     ev("S.settings.goalKg=70;S.entries=S.entries.filter(e=>e.type!=='weight');for(let i=0;i<=20;i+=2)add('weight',80,'',keyOff(-i));tab='trend';render()");
     ev("S.chat=[];tab='trend';render()");
     q('[data-c="why"]').click();await flush();
@@ -2791,7 +2793,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     const MED="[{id:1,n:'Vitamin D',t:['08:00'],on:true}]";
     const prof=`S.entries=[];S.chat=[];S.meds=[];S.vitals=[];Object.assign(S.settings,{heightCm:175,age:35,goalKg:80,healthNote:'',riskClearedAt:'',kcal:0});for(let i=0;i<20;i++)add('weight',90+i*0.1,'',keyOff(-i));`;
     reset();ev(prof);
-    ok("clean profile: no KISIT, no confirm button, the goal duration in Trend",!ev("cCalc().block")&&!ev("gEnergy()").includes("riskok")&&ev("viewTrend()").includes("hafta.</p>"));
+    ok("clean profile: no KISIT, no confirm button, the goal duration in Trend",!ev("cCalc().block")&&!ev("gEnergy()").includes("riskok")&&/hafta(\.| arası\.)<\/p>|kestirilemiyor\.<\/p>/.test(ev("viewTrend()")));
     ev(`S.meds=${MED}`);
     const ctx=()=>ev("(()=>{const c=cCalc();return c.block?'KISIT: '+c.why:''})()");
     ok("90 kg with no note, medication record: the Coach KISIT line with a reason",ctx().includes("KISIT: İlaç kaydın var"),ctx().split("\n").filter(l=>l.includes("KISIT")));
@@ -2805,7 +2807,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("S.vitals=[{id:1,k:'s',day:keyOff(-95),time:'08:00',g:110,ctx:'ac'}]");ok("a sugar measurement from 95 days ago does not count",!ctx().includes("KISIT"));
     ev("S.vitals=[];S.settings.age=16;S.settings.riskClearedAt=dayKey();tab='trend';render()");
     ok("hard block (under 18): no confirm button, confirmation does not lift it, an explanation",!$q('[data-act="riskok"]')&&$q("#view").textContent.includes("18 yaş altındasın")&&ctx().includes("KISIT: 18 yaş altındasın"));
-    ok("Trend: under a block there is no time-to-goal estimate",!ev("viewTrend()").includes("hafta.</p>"));
+    ok("Trend: under a block there is no time-to-goal estimate",!/hafta(.| arası.)</p>|kestirilemiyor./.test(ev("viewTrend()")));
     ev("S.settings.age=35;S.settings.heightCm=0;S.settings.healthNote='hamileyim';S.entries=[]");
     ok("the pregnancy KISIT line goes even without height and weigh-in",ctx().includes("KISIT: Sağlık notunda hamilelik"));
     ev("S.settings.healthNote='';S.chat=[{id:1,t:1,role:'user',text:'x',fl:'ed'}]");
