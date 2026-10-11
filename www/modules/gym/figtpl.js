@@ -56,6 +56,13 @@ const FigTpl={
   hamstretch:{frames:[{t:6,a1:92,a2:92,l1:90,l2:90,l3:90},{t:62,a1:90,a2:100,l1:90,l2:90,l3:90}],fix:{x:["hip",0],y:["hip",3]}},
   armstretch:{view:"f",frames:[{t:0,a1:40,a2:40,l1:3,l2:3},{t:0,a1:150,a2:150,l1:3,l2:3}]},
   neckstretch:{view:"f",frames:[{t:0,hd:0,a1:4,a2:4,l1:3,l2:3},{t:0,hd:34,a1:4,a2:4,l1:3,l2:3}]},
-  twiststretch:{view:"f",frames:[{t:0,a1:84,a2:86,l1:3,l2:3},{t:12,a1:70,a2:76,l1:3,l2:3}]}
+  twiststretch:{view:"f",frames:[{t:0,a1:84,a2:86,l1:3,l2:3},{t:12,a1:70,a2:76,l1:3,l2:3}]},
+  /* ---- balance ---- */
+  onefoot:{frames:[{t:0,a1:30,a2:30},{t:0,a1:30,a2:30,l1:80,m1:0}]},
+  balwalk:{frames:[{t:0,a1:36,a2:36,l1:16,l2:-12,m1:16,m2:-12},{t:0,a1:36,a2:36,l1:2,l2:2,m1:2,m2:2}]},
+  balwalk2:{frames:[{t:0,a1:4,a2:4,l1:22,l2:-16,m1:22,m2:-16},{t:0,a1:4,a2:4,l1:2,l2:2,m1:2,m2:2}]},
+  tandem:{view:"f",frames:[{t:0,a1:66,a2:74,l1:2,l2:2},{t:5,a1:76,a2:84,l1:2,l2:2}]}
 };
+FigTpl.chairstand=FigTpl.squat;
+FigTpl.sidestep=FigTpl.legspread;
 if(typeof module!=="undefined")module.exports=FigTpl;
