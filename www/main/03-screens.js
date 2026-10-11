@@ -124,7 +124,7 @@ function viewTrend(){
   const N=days.length?(range===0?trendAll():range):30,bag=linksCard();
   const tabs=[["weight","Kilo",`${measureCard()}${photoCard()}${hasWeek?`<h2>Son 7 gün</h2><div class="card"><table><thead><tr><th>Gün</th><th>Kilo</th><th>Su (L)</th><th>kcal</th><th>Spor (dk)</th>${hasSteps?"<th>Adım</th>":""}</tr></thead><tbody>${rows}</tbody></table></div>`:""}`],
     ["nutrition","Beslenme",`<div class="card">${miniBars(N,foodOf,"var(--kcal)",kcalGoal(t),"Kalori","kcal")}${miniBars(N,waterOf,"var(--water)",st.waterMl,"Su","L",x=>fmt(x/1000,1))}</div>${gEnergy()}`],
-    ["motion","Hareket",`<div class="card">${miniBars(N,sportOf,"var(--exercise)",0,"Spor","dk")}${hasSteps?miniBars(N,stepsOf,"var(--prim)",st.stepGoal,"Adım","adım",fint):""}</div>${cardioCard()}`],
+    ["motion","Hareket",`<div class="card">${miniBars(N,sportOf,"var(--exercise)",0,"Spor","dk")}${hasSteps?miniBars(N,stepsOf,"var(--prim)",st.stepGoal,"Adım","adım",fint):""}</div>${activityCard()}${cardioCard()}`],
     ...bag?[["bag","Bağlantılar",bag]]:[]];
   if(!tabs.some(x=>x[0]===tSec))tSec="weight";
   const sub=h=>h.replace(/<h2>(.*?)<\/h2>/g,'<h3 class="grp">$1</h3>');

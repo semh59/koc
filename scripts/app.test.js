@@ -2834,6 +2834,17 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("recipe: the cooked weight survives the cleaner used by backup and restore",bk[0].cw===850);
     ev("S.recipes=[];closeSheet()");
   }
+  { // Trend > Hareket: weekly movement card
+    reset();ev("S.settings.sportWeek=150;S.settings.age=0;tSec='motion';tab='trend';render()");
+    const card=()=>[...w.document.querySelectorAll("#view .card")].map(c=>c.textContent).find(t=>t.includes("Kuvvet çalışması"))||(w.document.querySelector("#view").textContent.includes("henüz spor kaydı yok")?"EMPTY":"");
+    ok("movement card: without records it only invites, no bars",card()==="EMPTY");
+    ev("add('exercise',45,'Yürüyüş');add('exercise',50,'Bisiklet');S.workouts=[{id:1,name:'A',day:dayKey(),t0:1,t1:2,ex:[{id:'squat',sets:[1,2,3].map(()=>({reps:8,kg:20,done:true}))}]}];render()");
+    const t=card();
+    ok("movement card: minutes against the user's own goal, one strength day of two, the walking note and the guideline",/95 \/ 150 dk/.test(t)&&/1 \/ 2 gün/.test(t)&&/algıladığı yürüyüşler bu süreye eklenmez/.test(t)&&/WHO/.test(t),t);
+    ok("movement card: the 65+ sentence appears only for 65 and over",!/65 yaş üstü/.test(t)&&(ev("S.settings.age=70;render()"),/65 yaş üstü/.test(card()))&&(ev("S.settings.age=0;render()"),!/65 yaş üstü/.test(card())));
+    ok("movement card wording: no verdict words",!/yeterli|yetersiz|riskli|tebrik|harika|başardın/i.test(t));
+    ev("S.workouts=[];Log.drop('exercise');tab='today';render()");
+  }
   { // safety brake from one source, with real data
     const MED="[{id:1,n:'Vitamin D',t:['08:00'],on:true}]";
     const prof=`S.entries=[];S.chat=[];S.meds=[];S.vitals=[];Object.assign(S.settings,{heightCm:175,age:35,goalKg:80,healthNote:'',riskClearedAt:'',kcal:0});for(let i=0;i<20;i++)add('weight',90+i*0.1,'',keyOff(-i));`;
