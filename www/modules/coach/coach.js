@@ -5,10 +5,6 @@ const KEYS_LS="nw_keys",KEYS_ENC="nw_keys_enc";
 /* Number of chat messages sent to the model; the consent text (CONSENT_SENT) is built from the same constant. */
 const HIST_N=10;
 let KEYS={},vaultOn=false;
-const KV=()=>plugin("KeyVault");
-const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
-const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
-const lsDel=k=>{try{localStorage.removeItem(k)}catch(e){}};
 const getKeys=()=>KEYS;
 const keysStored=()=>!!(lsGet(KEYS_ENC)||lsGet(KEYS_LS));
 const VAULT_WARN="Anahtarlar bu telefonda şifrelenemedi, düz saklanır";

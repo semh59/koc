@@ -3,6 +3,7 @@
 const {ok,finish}=require("./ok");
 const fs=require("fs"),path=require("path");
 const {www,listJs,read,stripComments}=require("./html");
+const {scan}=require("./deps");
 const Modules=require(www("kernel/modules.js"));
 const keyOwner={};for(const [id,m] of Object.entries(Modules))for(const k of m.keys)keyOwner[k]={id,owners:m.owners||[]};
 const violations=new Set();
@@ -14,5 +15,7 @@ for(const f of listJs()){
   }
 }
 ok("no file outside the owning module touches its S field",!violations.size,[...violations]);
+const cross=scan();
+ok("no module uses another module's internal name: only its index.js names, XxxLib namespaces and the api list in kernel/modules.js",!cross.length,cross);
 ok("every module has an index.js",Object.keys(Modules).every(id=>fs.existsSync(www("modules/"+id+"/index.js"))));
 finish();

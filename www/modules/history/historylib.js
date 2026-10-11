@@ -1,7 +1,7 @@
 "use strict";
 /* History: day-by-day summary index, month summary and search (no DOM). Does not change data and never truncates a record. */
 const HistoryLib=(()=>{
-  const norm=typeof foldTr!=="undefined"?foldTr:require("../nutrition/foods.js").foldTr;
+  const norm=typeof foldTr!=="undefined"?foldTr:require("../../kernel/common.js").foldTr;
   const SEARCH_MAX=300,MIN_QUERY=2,KCAL_FULL_DAY=800;
   /* Day -> counters filled by the data modules (Data.hist), one pass. dk: ms -> day key. */
   function index(S,dk){
