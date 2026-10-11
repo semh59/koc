@@ -81,6 +81,12 @@ const VitalsLib=(()=>{
     return {all:avgOf(raw),morning:avgOf(raw.filter(r=>r.session==="morning")),evening:avgOf(raw.filter(r=>r.session==="evening")),days:dset.size,enough:dset.size>=3};
   }
 
+  /* Home readings of the `days` days before a day (the day itself not included), e.g. next to a lab result: {bp:{sys,dia,n}|null, g:{avg,n}|null}. No comparison, no judgement. */
+  function before(rows,day,days){
+    const end=dayN(day),inWin=r=>{const n=end-dayN(r.day);return n>=1&&n<=days};
+    const bp=avgOf(rows.filter(r=>r.k==="t"&&inWin(r))),g=rows.filter(r=>r.k==="s"&&inWin(r));
+    return {bp,g:g.length?{avg:r1(mean(g,r=>r.g)),n:g.length}:null};
+  }
   /* Glucose summary: count, average, extremes, average per context. */
   function gStats(rows,from,to){
     const a=rows.filter(r=>r.k==="s"&&r.day>=from&&r.day<=to);
@@ -181,6 +187,6 @@ const VitalsLib=(()=>{
     }
     ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText(`NeoWell · sayfa ${info.page}/${info.total}`+(items.some(r=>r.dose)?" · Süreler uygulamaya yazılan kayıtlara göredir.":""),RM,RH-45);
   }
-  return {MAX_ROWS,newSid,CTX,SESSIONS,ctxName,sessionName,LIM,check,clean,sessions,homeAvg,gStats,crisis,needsConfirm,latest,cmpAt,reportRows,paginate,drawPage,drawChart,RW,RH};
+  return {MAX_ROWS,newSid,CTX,SESSIONS,ctxName,sessionName,LIM,check,clean,sessions,homeAvg,before,gStats,crisis,needsConfirm,latest,cmpAt,reportRows,paginate,drawPage,drawChart,RW,RH};
 })();
 if(typeof module!=="undefined")module.exports=VitalsLib;

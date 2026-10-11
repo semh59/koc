@@ -30,4 +30,15 @@ ok("no data and garbage input: empty result, no throw",B.analyze({today:T}).leng
 const z=B.analyze({today:T,sleep:sl,mood:[],steps:stp});ok("steps of the day before vs that night's sleep",z.length===1&&z[0].id==='stepsleep'&&/Önceki gün/.test(z[0].text)&&/\(belirgin ipucu\)/.test(z[0].text),z);}
 const all=JSON.stringify(B.analyze(mk(20,hl)).concat(r));
 ok("wording: no diagnosis, score or cause-and-effect claim",!/depresyon|bozukluk|skor|tedavi|teşhis|neden olur|sebep|yüksek|düşük|normal/i.test(all),all);
+{ // strength next to the weight trend
+  const strong=id=>id!=="run",set=(kg,reps,o={})=>({kg,reps,done:true,...o});
+  const wk=(o,kg)=>({day:key(o),t1:1,ex:["squat","bench","row"].map(id=>({id,sets:[set(kg,5),set(20,12,{w:true}),set(kg*2,15,{t:"d"})]}))});
+  const early=[-26,-23,-20,-17].map(o=>wk(o,100)),late=[-10,-6,-2].map(o=>wk(o,104));
+  const wts={};for(let o=-30;o<=0;o+=2)wts[key(o)]=82-(o+30)*0.04;
+  const line=B.strength(early.concat(late),strong,wts,T);
+  ok("strength line: weight trend change and the average 1RM change are shown side by side, with the no-cause note",/^Son 4 haftada kilo trendin -\d/.test(line)&&line.includes("3 ana harekette tahmini 1TM değişimi ortalama +%4.")&&/nedeni olmayabilir/.test(line),line);
+  ok("strength line: warm-up sets and drop sets do not move the estimate (+4 %, not the drop set's 15 reps)",line.includes("+%4."));
+  ok("strength line: under 6 sessions, under 3 shared lifts, no weigh-ins or no finished workouts give nothing",B.strength(early.slice(0,2).concat(late.slice(0,3)),strong,wts,T)===null&&B.strength(early.concat(late).map(w=>({...w,ex:w.ex.slice(0,2)})),strong,wts,T)===null&&B.strength(early.concat(late),strong,{},T)===null&&B.strength(early.concat(late).map(w=>({...w,t1:null})),strong,wts,T)===null);
+  ok("strength line: wording has no cause, advice or assessment",!/neden olur|sebep|öner|tavsiye|iyi|kötü|başarı|hedef/i.test(line.replace("nedeni olmayabilir","")),line);
+}
 finish();

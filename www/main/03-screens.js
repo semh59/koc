@@ -79,7 +79,7 @@ function viewToday(){
   /* One list instead of separate cards: only pending jobs of enabled modules; no card when empty. */
   const todo=[storeMsg()?row("save",storeMsg()[0],storeMsg()[1],[["databackup","Yedek al"]]):"",
     abErr?row("cloud","Otomatik yedek alınamadı",abErr,[["abfix","Düzelt"]]):"",
-    ...medTodo(),...fastTodo(),...ramadanTodo(),...vTodo(),
+    ...medTodo(),...fastTodo(),...ramadanTodo(),...trialTodo(),...vTodo(),
     Motion.walk()?row("steps",Motion.walk().t1?"Yürüyüş kaydedilmedi":"Yürüyüş sürüyor","Adım raporunda bitir ya da kaydet.",[["walkgo","Aç"]]):"",
     sOn&&stepsRead&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?row("steps","Adım sayımı durmuş olabilir","Pil ayarında NeoWell'e kısıtlama koyma.",[["stepsfix","Ayarla"],["stepshide","Kapat"]]):"",
     isNative()&&!exactOk&&st.medOn&&Meds.count()?row("clock","İlaç alarmı birkaç dakika gecikebilir","Tam saat alarm izni kapalı. İzin verirsen tam saatinde çalar.",[["fullalarm","İzin ver"]]):"",

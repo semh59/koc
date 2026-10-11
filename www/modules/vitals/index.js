@@ -4,7 +4,7 @@ Data.csv.push(["saglik","Sağlık ölçümleri (tansiyon, şeker)",({gu})=>["tar
 Data.hist.push((S,{add})=>{for(const x of S.vitals)add(x.day,x.k==="t"?"bp":"glucose",1)});
 Data.dayRows.push([3,k=>S.vitals.filter(x=>x.day===k).sort((a,b)=>a.time<b.time?-1:1).map(x=>hgRow("heart",`${x.time} ${x.k==="t"?"Tansiyon":"Şeker"}`,x.k==="t"?`${x.sys}/${x.dia}${x.pulse?` · nabız ${x.pulse}`:""}`:`${Units.fg(x.g)} ${Units.gl()}`)).join("")]);
 const Vitals={
-  all:()=>S.vitals,pages:(kind,days)=>vPdfPages(kind,days),
+  all:()=>S.vitals,before:(day,days)=>VitalsLib.before(S.vitals,day,days),pages:(kind,days)=>vPdfPages(kind,days),
   /* Appends checked rows (from a file import) with fresh ids and sids; returns the new ids, or null when the list would pass its limit. */
   addAll:rows=>{
     if(S.vitals.length+rows.length>VitalsLib.MAX_ROWS)return null;

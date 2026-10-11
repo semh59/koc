@@ -85,6 +85,14 @@ const seed=()=>ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.cycl
   seed();ev("S.settings.healthNote='';tab='cycle';render()");
   const v=()=>ev("document.querySelector('#view').textContent");
   ok("screen: prediction, note and calendar are visible",ev("!!document.querySelector('.cypr')")&&/tıbbi tavsiye değildir/.test(v())&&ev("document.querySelectorAll('.cyd').length")===31);
+  ok("screen: without mood or sleep records there is no 'before the period' card",!/Dönemden önceki günler/.test(v()));
+  {
+    const sd=ev("S.cycle.map(r=>r.s).slice(-3)"),near=d=>sd.some(x=>[1,2,3,4,5].some(i=>ev("CycleLib.addDays('"+x+"',-"+i+")")===d)),mood=[];
+    for(let d=ev("CycleLib.addDays('"+sd[0]+"',-5)");d<="2026-10-06";d=ev("CycleLib.addDays('"+d+"',1)"))mood.push({day:d,v:near(d)?2:4});
+    ev("S.mood="+JSON.stringify(mood)+";render()");
+    ok("screen: with mood records the card compares the 5 days before the period with the other days",/Dönemden önceki günler/.test(v())&&/ruh halin ortalama 2,0, diğer günlerde 4,0/.test(v()),v().slice(0,500));
+    ev("S.mood=[]");
+  }
   ev("S.settings.healthNote='hamileyim';render()");
   ok("with a pregnancy marker there is no prediction, a neutral note is shown",!ev("!!document.querySelector('.cypr')")&&/hamilelik/.test(v()));
   ev("S.settings.healthNote='';S.settings.cycleOn=false;render()");

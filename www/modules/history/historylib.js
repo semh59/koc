@@ -39,6 +39,22 @@ const HistoryLib=(()=>{
     for(const e of idx){const ym=e[0].slice(0,7);let l=g.get(ym);if(!l)g.set(ym,l=[]);l.push(e)}
     return [...g.keys()].sort().reverse().map(ym=>summarize(ym,g.get(ym)));
   }
+  /* The person's own usual range for calories (800 kcal and over), water and steps: median of the recorded days in the 56 days up to the end of the month, band = median ± 4 x median absolute deviation
+     (at least 5 % of the median, so a very steady series does not flag every small change). No band under 14 recorded days. Returns {key:{med, lo, hi, n, low:[days], high:[days]}}; low and high list only days of ym. */
+  const NORMAL={kcal:o=>o.kcal>=KCAL_FULL_DAY?o.kcal:null,water:o=>o.water>0?o.water:null,steps:o=>o.steps>0?o.steps:null},NORMAL_DAYS=56,NORMAL_MIN=14,NORMAL_K=4;
+  const median=a=>{const s=a.slice().sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
+  function normal(idx,ym){
+    const end=Date.UTC(+ym.slice(0,4),+ym.slice(5,7),0)/864e5,out={};
+    for(const [key,pick] of Object.entries(NORMAL)){
+      const rows=[];
+      for(const [d,o] of idx){const n=Date.parse(d+"T00:00:00Z")/864e5,v=pick(o);if(v!=null&&n<=end&&n>end-NORMAL_DAYS)rows.push([d,v])}
+      if(rows.length<NORMAL_MIN)continue;
+      const med=median(rows.map(r=>r[1])),mad=Math.max(median(rows.map(r=>Math.abs(r[1]-med))),med*0.05),lo=med-NORMAL_K*mad,hi=med+NORMAL_K*mad;
+      const mine=rows.filter(r=>r[0].slice(0,7)===ym);
+      out[key]={med,lo,hi,n:rows.length,low:mine.filter(r=>r[1]<lo).map(r=>r[0]).sort(),high:mine.filter(r=>r[1]>hi).map(r=>r[0]).sort()};
+    }
+    return out;
+  }
   /* Searches food, note, exercise and workout names, ignoring case and Turkish letter variants. wname(w): extra searchable workout text. */
   function search(S,q,max=SEARCH_MAX,wname){
     const n=norm(q).trim();if(n.length<MIN_QUERY)return {items:[],total:0,days:0};
@@ -49,7 +65,7 @@ const HistoryLib=(()=>{
   }
   /* First and last record day: the calendar year picker and the "oldest" bound. */
   function span(idx){let a=null,b=null;for(const d of idx.keys()){if(a==null||d<a)a=d;if(b==null||d>b)b=d}return {first:a,last:b}}
-  return {index,marks,month,months,search,span,SEARCH_MAX,MIN_QUERY};
+  return {index,marks,month,months,normal,search,span,SEARCH_MAX,MIN_QUERY};
 })();
 if(typeof module!=="undefined"){
   module.exports=HistoryLib;

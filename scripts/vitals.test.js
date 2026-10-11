@@ -100,4 +100,11 @@ ok("the same sid and signature (backup merge double counting) becomes one record
 ok("records without a sid stay as they are, an exact copy without a sid is kept once",V.clean([G({g:90}),G({g:90}),G({g:91})]).length===2&&V.clean([G({g:90})])[0].sid===undefined);
 ok("glucose also keeps a safe sid, a bad sid is dropped",V.check(G({sid:"x1"})).row.sid==="x1"&&V.check(G({sid:"A B"})).row.sid===undefined);}
 ok("reportRows: the dose label comes from the since callback, only for pressure rows",(r=>r[0].dose==="X"&&V.reportRows([T({id:1})],"t","2026-09-01","2026-09-30")[0].dose===""&&V.reportRows([{k:"s",ctx:"fasting",g:90,day:"2026-09-10",time:"08:00",id:2}],"s","2026-09-01","2026-09-30",undefined,()=>"X")[0].dose==="")(V.reportRows([T({id:1})],"t","2026-09-01","2026-09-30",undefined,()=>"X")));
+{ // home readings before a lab result
+  const rows=[T({day:"2026-09-01",sys:130,dia:90}),T({day:"2026-09-08",sys:120,dia:80}),T({day:"2026-09-10",sys:150,dia:100}),G({day:"2026-09-05",g:100}),G({day:"2026-09-09",g:110}),T({day:"2026-07-01"})],b=V.before(rows,"2026-09-10",30);
+  ok("before: the 30 days before the day, the day itself and older readings left out",b.bp.n===2&&b.bp.sys===125&&b.bp.dia===85&&b.g.n===2&&b.g.avg===105,b);
+  const g=V.gStats(rows,"2026-08-11","2026-09-09");
+  ok("before: the glucose average equals gStats over the same days",g.avg===b.g.avg&&g.n===b.g.n);
+  ok("before: no readings in the window gives nothing for that kind",V.before(rows,"2026-12-01",30).bp===null&&V.before(rows,"2026-12-01",30).g===null&&V.before(rows,"2026-09-02",30).g===null&&V.before([],"2026-09-10",30).bp===null);
+}
 finish();

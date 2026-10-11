@@ -411,6 +411,16 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
 
     click('[data-lab="open:glukoz|mg/dL"]');
     ok("detail: chart and delete buttons for two results",!!q("#sheet svg")&&qa('#sheet [data-lab^="del:"]').length===2);
+    {
+      const last=ev("S.labs.filter(x=>x.k==='glukoz').map(x=>x.day).sort().pop()"),back=n=>new Date(Date.parse(last+"T00:00:00Z")-n*864e5).toISOString().slice(0,10),oldv=ev("S.vitals");
+      ok("lab detail: no home readings, no home-readings block",!q("#sheet details"));
+      ev("S.vitals=[{id:1,sid:'a',k:'t',day:'"+back(3)+"',time:'08:00',sys:130,dia:90,session:'morning'},{id:2,sid:'b',k:'s',day:'"+back(5)+"',time:'08:00',g:100,ctx:'fasting'}]");
+      click('#sheet [data-lab="close"]');click('[data-lab="open:glukoz|mg/dL"]');
+      const d=q("#sheet details");
+      ok("lab detail: home readings of the 30 days before sit side by side without any comparison or judgement",!!d&&d.textContent.includes("Tansiyon ortalaması 130/90 (1 ölçüm)")&&/Şeker ortalaması 100/.test(d.textContent)&&/yorum değildir/.test(d.textContent)&&!/yüksek|düşük|normal|uyumlu/i.test(d.textContent),d&&d.textContent);
+      ev("S.vitals=[]");
+      click('#sheet [data-lab="close"]');click('[data-lab="open:glukoz|mg/dL"]');
+    }
     click('#sheet [data-lab^="del:"]');
     ok("a single result is deleted, the undo button brings it back",ev("S.labs.filter(x=>x.k==='glukoz').length")===1);
     click("#tundo");
@@ -1397,6 +1407,26 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("choosing 5-8 makes the suggestion follow that range: weight rises on reaching 8, starts from 5",ev("JSON.stringify(S.exCfg)")==='{"squat":{"lo":5,"hi":8}}'&&ev("gSuggest('squat').kg")===62.5&&ev("gSuggest('squat').reps")===5);
     click('[data-g="menu:0"]');click('[data-g="rng:0"]');click('[data-g="rngset:0:8-12"]');
     ok("choosing 8-12 returns to the default",ev("Object.keys(S.exCfg).length")===0);
+    { // "this move bothered me"
+      click('[data-g="menu:0"]');click('[data-g="rng:0"]');click('[data-g="rngset:0:5-8"]');
+      click('[data-g="menu:0"]');click('[data-g="flag:0"]');
+      ok("flagging stores only a day; the weight suggestion stops rising (62.5 would be next) and says why",ev("S.exCfg.squat.flag")===ev("dayKey()")&&ev("gSuggest('squat').kg")===60&&ev("gSuggest('squat').why").includes("işaretledin"),ev("JSON.stringify(S.exCfg)"));
+      click('[data-g="menu:0"]');
+      ok("the menu then offers to remove the mark and to show similar moves",q('[data-g="flag:0"]').textContent.includes("kaldır")&&!!q('[data-g="alt:0"]'));
+      click('[data-g="alt:0"]');
+      const alts=[...w.document.querySelectorAll('#sheet [data-g^="exadd:"]')].map(b=>b.dataset.g.slice(6));
+      ok("similar moves: same region and equipment, not itself, not already in the workout, at most 8, no claim in the text",alts.length>0&&alts.length<=8&&!alts.includes("squat")&&alts.every(id=>ev("gEx('"+id+"').r")===ev("gEx('squat').r")&&ev("gEx('"+id+"').q")===ev("gEx('squat').q"))&&!/tedavi|iyileş|önler|tanı/i.test(q("#sheet").textContent),alts);
+      click('#sheet [data-g="closesheet"]');
+      click('[data-g="menu:0"]');click('[data-g="flag:0"]');
+      ok("removing the mark brings the 62.5 suggestion back",ev("S.exCfg.squat.flag")===undefined&&ev("gSuggest('squat').kg")===62.5);
+      ev("S.exCfg.squat.flag=keyOff(-15)");
+      ok("a mark older than 14 days no longer counts",ev("gFlagged('squat')")===false&&ev("gSuggest('squat').kg")===62.5);
+      ev("S.exCfg.squat.flag=keyOff(-13)");
+      ok("a 13-day-old mark still counts",ev("gFlagged('squat')")===true);
+      const F=JSON.parse(ev("JSON.stringify(cleanGym({exCfg:{squat:{flag:'2026-09-01'},bench:{flag:'x'},row:{flag:5}}}).exCfg)"));
+      ok("a valid mark survives a reload, junk is dropped",JSON.stringify(F)==='{"squat":{"flag":"2026-09-01"}}',F);
+      ev("S.exCfg={}");
+    }
     const X=JSON.parse(ev(`JSON.stringify(cleanGym({exCfg:{squat:{lo:5,hi:8},bilinmeyen:{lo:5,hi:8},bench:{lo:9,hi:9},row:{lo:0,hi:5}}}))`));
     ok("exCfg is kept on reload, an unknown id and an invalid range are dropped",JSON.stringify(X.exCfg)==='{"squat":{"lo":5,"hi":8}}',X.exCfg);
     { // all-history charts
@@ -2299,6 +2329,9 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     q('[data-pv="archive"]').click();await flush();
     const ar=JSON.parse(wr[1].data);
     ok("archive share: a readable JSON file with the user's entries, no API key, file name with the date",/^neowell-arsiv-\d{4}-\d\d-\d\d\.json$/.test(wr[1].path)&&wr[1].encoding==="utf8"&&ar.schema===1&&ar.modules.log.entries.length===2&&!("providers" in ar.modules.coach),wr[1].path);
+    ok("FHIR row: weight and blood pressure counts shown, button enabled with a weight record",sheet().includes("Tansiyon ve kilo (FHIR R4)")&&sheet().includes("0 tansiyon, 1 kilo kaydı")&&!q('[data-pv="fhir"]').disabled,sheet());
+    q('[data-pv="fhir"]').click();await flush();
+    {const fj=JSON.parse(wr[2].data);ok("FHIR share: a Bundle file with the weight observation, dated file name, no other data",wr[2].path.startsWith("neowell-fhir-")&&wr[2].path.endsWith(".json")&&fj.resourceType==="Bundle"&&fj.entry.length===2&&fj.entry[1].resource.valueQuantity.value===80.5&&!wr[2].data.includes("=1+1"),wr[2].path)}
     wr.length=1;
     ev("S.nextId=1");
     await ev("sharePdf(new Uint8Array([37,80,68,70]),'x.pdf','PDF')");
@@ -2934,6 +2967,26 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("Ramadan mode: 'Konumu sil' removes the place and the cached comparison",ev("S.settings.ramLat")===0&&ev("S.settings.ramLon")===0&&ev("S.settings.ramName")===""&&w.localStorage.getItem("nw_ram")===null&&ev("Habits.ramReminders(Date.now(),0,7).length")===0);
     ok("Ramadan mode settings cleaner: an out-of-range place becomes 0, a valid one stays, control characters leave the name, a bad start day is dropped",ev("cleanSettings({ramLat:10,ramLon:99})").ramLat===0&&ev("cleanSettings({ramLat:10,ramLon:99})").ramLon===0&&ev("cleanSettings({ramLat:39.93,ramLon:32.86})").ramLat===39.93&&ev("cleanSettings({ramName:'A\\u0000B'})").ramName==="AB"&&ev("cleanSettings({ramFrom:'x'})").ramFrom==="");
     ev("S.meds=[];S.settings.riskClearedAt='';S.settings.ramOn=false;S.settings.ramLat=0;S.settings.ramLon=0;S.settings.fastInfoOk=false;tab='today';render()");delete w.fetch;delete w.navigator.geolocation;
+  }
+  { // "Kendi deneyin" (14-night personal comparison)
+    reset();const q=s=>$q(s);
+    ev("S.settings.obDone=true;S.sleep=[];S.settings.trial=null;tab='trend';tSec='bag';render()");
+    ok("trial: without sleep records the offer is not shown (no empty tab)",!q('[data-tr="start"]'));
+    ev("S.sleep=[1,2,3,4,5,6].map(i=>({day:keyOff(-i),min:420}));render()");
+    ok("trial: with a few sleep records the offer is shown with the no-certainty note",!!q('[data-tr="start"]')&&q("#view").textContent.includes("Kesin bir sonuç vermez"));
+    q('[data-tr="start"]').click();
+    ok("trial: starting stores a valid plan; the card names tonight's plan and no result",ev("TrialLib.clean(S.settings.trial)!==null")&&ev("S.settings.trial.start")===ev("dayKey()")&&/Bu gece/.test(q("#view").textContent)&&!/ortalama uyku/.test(q("#view").textContent));
+    ev("S.settings.trial.start=keyOff(-1);tab='today';render()");
+    const row=()=>[...w.document.querySelectorAll("#view .row")].map(r=>r.textContent).find(t=>t.includes("Dün geceki plana uydun mu"));
+    ok("trial: the next day Today asks about last night with Evet / Hayır",!!row()&&!!q('[data-tr="ans:y"]'));
+    q('[data-tr="ans:y"]').click();
+    ok("trial: the answer is stored on that night and the question goes away",ev("Object.keys(S.settings.trial.ans).length")===1&&!row());
+    ev("S.settings.trial.start=keyOff(-16);S.settings.trial.ans={};tab='trend';tSec='bag';render()");
+    ok("trial: when the 14 nights are over without answers the card says there is no result and gives no averages",q("#view").textContent.includes("Sonuç yok")&&!/ortalama uyku/.test(q("#view").textContent));
+    q('[data-tr="stop"]').click();
+    ok("trial: closing removes it and Undo brings it back",ev("S.settings.trial")===null&&(q("#tundo").click(),ev("S.settings.trial!==null")));
+    ok("trial settings cleaner: a broken trial becomes null, a valid one is kept",ev("cleanSettings({trial:{start:'x',plan:'y'}}).trial")===null&&ev("cleanSettings({trial:{start:'2026-10-01',plan:'ABBAABABBABAAB',ans:{}}}).trial.plan")==="ABBAABABBABAAB");
+    ev("S.settings.trial=null;S.sleep=[];tab='today';render()");
   }
   { // safety brake from one source, with real data
     const MED="[{id:1,n:'Vitamin D',t:['08:00'],on:true}]";

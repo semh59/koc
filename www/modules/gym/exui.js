@@ -184,6 +184,16 @@ function exPlateSheet(ei){
   <div class="btns"><button class="btn" data-g="wadd:${ei}">Isınmayı antrenmana ekle</button><button class="btn ghost" data-g="closesheet">Kapat</button></div>`);
   $("#pk").oninput=$("#pb").oninput=exPlateCalc;exPlateCalc();
 }
+/* Moves of the same region and equipment (and kind) as a flagged move, not flagged themselves and not already in the workout. */
+function exAlternatives(w,id,max=8){
+  const e=gEx(id),have=new Set(w.ex.map(x=>x.id));
+  return gExAll().filter(a=>a.id!==id&&a.r===e.r&&a.q===e.q&&gKind(a.id)===gKind(id)&&!have.has(a.id)&&!gFlagged(a.id)).slice(0,max);
+}
+function exAltSheet(ei){
+  const w=gActive(),id=w.ex[ei].id,list=exAlternatives(w,id);
+  openSheet(`<h3>${esc(gEx(id).n)}: benzer hareketler</h3>${list.length?`<div class="plist">${list.map(a=>`<button class="prow" data-g="exadd:${a.id}"><span class="grow"><b>${esc(a.n)}</b></span></button>`).join("")}</div>`:`<p class="mut">Aynı bölge ve ekipmanda başka hareket bulunamadı.</p>`}
+  <p class="hint">Yalnız aynı bölgeyi çalıştıran hareketlerin listesidir; ne olduğunu ya da ne yapman gerektiğini söylemez. Devam eden bir rahatsızlık için hekimine danış.</p><button class="btn ghost" data-g="closesheet">Kapat</button>`);
+}
 const EXRANGES=["5-8","8-12","12-15"];
 function exRangeSheet(ei){
   const id=gActive().ex[ei].id,c=Object.assign({lo:8,hi:12},S.exCfg[id]);
@@ -244,6 +254,12 @@ function exClick(a,p1,p2){
     case "chm":exChM=p1;exChI=null;return exChRefresh();
     case "chp":exChI=ei;return exChRefresh();
     case "plate":return exPlateSheet(ei);
+    case "flag":{
+      const id=gActive().ex[ei].id,was=gFlagged(id);
+      gCfg(id,{flag:was?null:dayKey()});save();closeSheet();render();
+      return toast(was?"İşaret kaldırıldı":"İşaretlendi; 14 gün ağırlık artırma önerisi kapalı");
+    }
+    case "alt":return exAltSheet(ei);
     case "rng":return exRangeSheet(ei);
     case "rngset":return exRangeSet(ei,p2);
     case "rst":return exRestSheet(ei);

@@ -1,0 +1,14 @@
+const {ok,finish}=require("./ok");
+const F=require("../www/modules/data/fhirlib.js");
+const vit=[{k:"t",day:"2026-10-02",time:"21:30",sys:128,dia:84},{k:"t",day:"2026-10-01",time:"08:05",sys:121,dia:79},{k:"s",day:"2026-10-01",time:"08:00",g:95,ctx:"fasting"}];
+const b=F.build(vit,{"2026-10-03":80.5,"2026-10-01":81},()=>180),j=JSON.parse(b.json),obs=j.entry.slice(1).map(e=>e.resource);
+const DT=/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2})?$/;
+ok("bundle: a collection with one anonymous Patient first, then the observations; counts match",j.resourceType==="Bundle"&&j.type==="collection"&&j.entry[0].resource.resourceType==="Patient"&&Object.keys(j.entry[0].resource).join()==="resourceType,id"&&b.bp===2&&b.weight===2&&b.total===4&&obs.length===4);
+ok("every observation: status final, vital-signs category, subject = the patient entry, valid dateTime, unique fullUrl",obs.every(o=>o.resourceType==="Observation"&&o.status==="final"&&o.category[0].coding[0].code==="vital-signs"&&o.category[0].coding[0].system==="http://terminology.hl7.org/CodeSystem/observation-category"&&o.subject.reference===j.entry[0].fullUrl&&DT.test(o.effectiveDateTime))&&new Set(j.entry.map(e=>e.fullUrl)).size===j.entry.length&&j.entry.every(e=>/^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(e.fullUrl)));
+const bp=obs.filter(o=>o.code.coding[0].code==="85354-9");
+ok("blood pressure: panel 85354-9 with systolic 8480-6 and diastolic 8462-4 components in mm[Hg], oldest first, local time with offset",bp.length===2&&bp[0].effectiveDateTime==="2026-10-01T08:05:00+03:00"&&bp[0].component[0].code.coding[0].code==="8480-6"&&bp[0].component[0].valueQuantity.value===121&&bp[0].component[1].code.coding[0].code==="8462-4"&&bp[0].component[1].valueQuantity.value===79&&bp.every(o=>o.component.every(c=>c.valueQuantity.code==="mm[Hg]"&&c.valueQuantity.system==="http://unitsofmeasure.org")));
+const wt=obs.filter(o=>o.code.coding[0].code==="29463-7");
+ok("weight: LOINC 29463-7 in kg (UCUM), by date, oldest first",wt.length===2&&wt[0].effectiveDateTime==="2026-10-01"&&wt[0].valueQuantity.value===81&&wt[0].valueQuantity.code==="kg"&&wt[1].valueQuantity.value===80.5);
+ok("glucose is left out, no interpretation words and no personal identifiers in the file",!/g\b.*95/.test(b.json)&&!obs.some(o=>o.code.coding[0].code==="2339-0"||/glucose|şeker/i.test(JSON.stringify(o)))&&!/yüksek|düşük|normal|referenceRange|interpretation|identifier|name/.test(b.json));
+ok("a negative offset and an empty export are handled",JSON.parse(F.build(vit,{},()=>-90).json).entry[1].resource.effectiveDateTime==="2026-10-01T08:05:00-01:30"&&F.build([],{},()=>0).total===0&&JSON.parse(F.build(null,null,()=>0).json).entry.length===1);
+finish();

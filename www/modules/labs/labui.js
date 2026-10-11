@@ -47,11 +47,12 @@ function labTrendCard(){
 function labDetail(id){
   const s=LabLib.series(S.labs).find(x=>x.id===id);
   if(!s){closeSheet();return render()}
-  const last=s.pts[s.pts.length-1],rt=LabLib.rangeText(last);
+  const last=s.pts[s.pts.length-1],rt=LabLib.rangeText(last),hm=Vitals.before(last.day,30);
+  const home=hm.bp||hm.g?`<details class="mt-3"><summary>Ev ölçümlerin (bu sonuçtan önceki 30 gün)</summary><p class="hint num">${[hm.bp?`Tansiyon ortalaması ${hm.bp.sys}/${hm.bp.dia} (${hm.bp.n} ölçüm)`:"",hm.g?`Şeker ortalaması ${Units.fg(hm.g.avg)} ${Units.gl()} (${hm.g.n} ölçüm)`:""].filter(Boolean).join(" · ")}</p><p class="hint">Yan yana gösterilir; karşılaştırma ya da yorum değildir.</p></details>`:"";
   const rows=s.pts.slice().reverse().map(p=>{const pf=LabLib.flag(p),r=LabLib.rangeText(p);return `<div class="row"><span class="grow">${fd(p.day)}${r?`<small class="db mut num">Aralık ${esc(r)}</small>`:""}</span><span class="ta-r"><b class="num">${labV(p)}</b>${pf?`<small class="db b7">${pf==="high"?"▲ Üstünde":"▼ Altında"}</small>`:""}</span><button class="del" data-lab="del:${p.id}" aria-label="${fd(p.day)} sonucunu sil">${Icons.svg("x")}</button></div>`}).join("");
   openSheet(`<h3>${esc(s.n)}</h3><div class="ink sumv num">${labV(last)} <small>${esc(s.u)}</small></div>${labStat(last,rt)}<div class="mut sm">${fd(last.day)}${rt?" · Rapor aralığı: "+esc(rt):""}</div>
   <div class="mt-3">${labInfoBox(s.k,"lid",0)}</div><div class="my-2">${s.pts.length>1?labSvg(s,320,150):`<p class="hint">Grafik için aynı testten en az iki sonuç gerekir.</p>`}</div>
-  <p class="hint">${s.pts.length>1&&rt?"Gölgeli bölge raporda yazan aralıktır. ":""}Tanım yalnızca testin ne olduğunu anlatır; tanı veya yorum değildir.</p><div class="grp">Sonuçlar</div>${rows}<button class="mt-3 btn ghost" data-lab="close">Kapat</button>`);
+  <p class="hint">${s.pts.length>1&&rt?"Gölgeli bölge raporda yazan aralıktır. ":""}Tanım yalnızca testin ne olduğunu anlatır; tanı veya yorum değildir.</p>${home}<div class="grp">Sonuçlar</div>${rows}<button class="mt-3 btn ghost" data-lab="close">Kapat</button>`);
 }
 
 function labRowHtml(r,i){

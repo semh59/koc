@@ -58,6 +58,27 @@ const LinksLib=(()=>{
     out.quiet=quiet;
     return out;
   }
-  return {analyze,split};
+  /* The last 28 days side by side, no comparison test: the weight-trend change and the average change of the estimated 1RM (Epley) of the lifts trained in both halves of the window.
+     Needs 6 strength sessions, at least 3 such lifts and a weigh-in at both ends; drop sets and warm-ups do not count. Returns the sentence or null. */
+  function strength(workouts,isStrength,weights,today){
+    const t=dn(today),from=t-27,mid=t-13,days=new Set(),lifts={};
+    for(const w of workouts||[]){
+      if(w.t1==null)continue;const n=dn(w.day);if(n<from||n>t)continue;
+      for(const x of w.ex||[]){
+        if(!isStrength(x.id))continue;days.add(w.day);
+        const best=Math.max(0,...(x.sets||[]).filter(s=>s.done&&!s.w&&s.t!=="d").map(s=>A.est1RM(s.kg||0,s.reps)));
+        if(!best)continue;
+        const l=lifts[x.id]||(lifts[x.id]=[0,0]),h=n>=mid?1:0;l[h]=Math.max(l[h],best);
+      }
+    }
+    const ch=Object.values(lifts).filter(l=>l[0]>0&&l[1]>0).map(l=>l[1]/l[0]-1);
+    if(days.size<6||ch.length<3)return null;
+    const tr=A.trend(weights||{}),ks=Object.keys(tr).sort(),last=(n)=>{let r=null;for(const k of ks){if(dn(k)<=n)r=k;else break}return r};
+    const a=last(from),b=last(t);
+    if(a==null||b==null||a===b)return null;
+    const sg=(x,u)=>(x>0?"+":x<0?"-":"")+(u==="%"?"%":"")+f1(Math.abs(x)).replace(/,0$/,""),kg=tr[b]-tr[a],pc=avg(ch)*100;
+    return `Son 4 haftada kilo trendin ${sg(kg)} kg; ${ch.length} ana harekette tahmini 1TM değişimi ortalama ${sg(Math.round(pc),"%")}. İkisi yan yana gösterilir; biri diğerinin nedeni olmayabilir.`;
+  }
+  return {analyze,split,strength};
 })();
 if(typeof module!=="undefined")module.exports=LinksLib;

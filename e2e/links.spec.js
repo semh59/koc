@@ -21,6 +21,7 @@ test.describe("Trend > Connections",()=>{
   test("fewer than 14 paired days show no card",async({app,page})=>{
     await app.open({seed:seed(10)});await app.tab("trend");
     await expect(page.locator(".bgl")).toHaveCount(0);
-    await expect(page.locator("#view")).not.toContainText("Bağlantılar");
+    await expect(page.locator("#view")).not.toContainText("Henüz belirgin bir bağ");
+    await expect(page.locator("#view")).toContainText("Kendi deneyin");
   });
 });

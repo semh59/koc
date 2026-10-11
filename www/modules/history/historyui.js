@@ -32,7 +32,9 @@ function hgMonthCard(idx,ym){
   if(!s.days)return `<div class="card"><p class="mut sm">${hgMon(ym)}: kayıt yok.</p></div>`;
   st.push(t("Kayıt günü",s.days),t("Ort. kalori",s.kcalAvg!=null?fint(s.kcalAvg):"–"),t("Ort. su",s.waterAvg!=null?fmt(s.waterAvg/1000,1)+" L":"–"),t("Spor",`${Math.round(s.exercise)} dk`+(s.wo?`, ${s.wo} antr.`:"")),t("Ort. adım",s.stepsAvg!=null?fint(s.stepsAvg):"–"),
     t("Kilo",s.weightN===2?`${dw(s.weightFirst)} → ${dw(s.weightLast)} ${wlab()}`:s.weightN===1?`${dw(s.weightLast)} ${wlab()}`:"–"));
-  return `<div class="card"><div class="lbl">${hgMon(ym)}</div><div class="stats hgs">${st.join("")}</div><p class="hint">Ortalamalar yalnız o veriyi girdiğin günler üzerinden; kalori için 800 kcal üstü kayıtlı günler.</p></div>`;
+  const NL={kcal:"kalori",water:"su",steps:"adım"},nm=HistoryLib.normal(idx,ym);
+  const odd=Object.entries(nm).flatMap(([k,b])=>[b.low.length?`${NL[k]}: ${b.low.length} gün düşük`:"",b.high.length?`${NL[k]}: ${b.high.length} gün yüksek`:""]).filter(Boolean);
+  return `<div class="card"><div class="lbl">${hgMon(ym)}</div><div class="stats hgs">${st.join("")}</div><p class="hint">Ortalamalar yalnız o veriyi girdiğin günler üzerinden; kalori için 800 kcal üstü kayıtlı günler.</p>${odd.length?`<p class="hint">Kendi ortancandan belirgin farklı günler (son 8 hafta): ${odd.join("; ")}. Yalnız bir karşılaştırmadır.</p>`:""}</div>`;
 }
 function hgMonths(idx){
   const ms=HistoryLib.months(idx);
