@@ -1,5 +1,7 @@
 # Yapılacaklar ve test listesi
 
+Güncel kalan işler listesi: `kalan-isler.md`.
+
 Durum: [ ] bekliyor, [~] yapıldı ama telefonda denenmedi, [x] telefonda denendi. Telefon test listesinde (aşağıda) [ ] hiç denenmedi demektir, [~] kısmen denendi ya da CI/jsdom testiyle kanıtlı ama telefonda tam denenmedi demektir; kodu yazılmış olsa da telefonda denenmeyen madde [x] olmaz.
 
 ## Play'i engelleyenler (yayın öncesi, sırayla)
@@ -38,7 +40,7 @@ Bunlar bitmeden Play'e yayın yapılamaz ya da reddedilir. Ayrıntı ve kaynakla
 - [~] Bildirimden tek dokunuşla "+250 ml" (yapıldı: su bildirimindeki düğme, ekran açılmadan kayıt, uygulama bir sonraki açılışta alır).
 - [~] Drive yedeği paylaş yöntemiyle (hesap bağlamadan): Ayarlar > Yedeği Drive'a gönder, parolalı şifreli dosya, parola isteğe bağlı Keystore'da saklanır, Pazar akşamı hatırlatma (yedek yeniyse atlanır).
 - [~] Ana ekran widget'ı (kalan kalori, su, adım, "+250"): yapıldı, CI derlemesi ve telefonda deneme bekliyor (test maddeleri aşağıda).
-- [ ] Health Connect (Mi Band/saat kullanımı netleşince).
+- [~] Health Connect: adım, uyku ve nabız okuma yapıldı (`www/modules/pulse/hcui.js`), telefonda denenmedi.
 - [~] Öğün şablonları, favoriler, son yenilenler, elle adım, "sayım durdu" uyarısı yapıldı (telefon test maddeleri aşağıda).
 - [~] Koç: ayrı sohbetler (Yeni sohbet, Geçmiş: sohbet arşivi, depolama kotası dolmasın diye eskiler atılır), yeme düzeni/hamilelik freni kalıcı (yeni sohbet ya da silme kaldırmaz), kayıt kartı güvenilirliği (yemek ve egzersiz kartı), OpenAI ve Anthropic Claude sağlayıcıları, 18 yaş altında kapalı, otomatik gönderim kaldırıldı (yalnız düğmeyle). Yapıldı; telefon testleri aşağıda.
 - [~] İlaç alarmı kilitli ekranı uyandırır (MedWake, 6 Ekim): doz saatlerinde ayrı alarm ekranı birkaç saniye yakar. Yapıldı; telefon testi aşağıda.
@@ -87,7 +89,7 @@ Sürüm: son APK (GitHub Releases, `neowell.apk`).
 - [~] Tahlil: Trend sekmesi > Tahlil takibi > PDF'ten oku. Gerçek bir laboratuvar PDF'i okut (satırlar doğru mu, tarih, birim, referans), kaydet, test detayında grafik, "PDF olarak paylaş" ile çıkan PDF'i aç (Türkçe karakterler, grafik), korumalı PDF parolası, taranmış PDF mesajı.
 - [~] Etiket okuma: gerçek bir paketin besin tablosunu çek (kalori ve makrolar doğru mu, ad yazıp kaydet, porsiyon ekranı). Tahlil fotoğrafı: rapor fotoğrafını okut, satırları kontrol et.
 - [~] Döngü takibi (Ayarlar > Modüller > Döngü takibi, varsayılan kapalı): açınca Daha fazla'da Döngü satırı çıkıyor mu; Dönem ekle (başlangıç/bitiş, akış, belirti, not), gelecek tarih ve çakışma uyarısı; 3 dönemden sonra "Yaklaşık X – Y", güven ve "tıbbi tavsiye değildir" notu, 2 döngüden azda "Yeterli veri yok"; takvimde dönem günü dolu, tahmin kesikli çerçeve; kayıt silince Geri al; yatayda taşma yok; hatırlatmayı açınca bildirim yalnız "Hatırlatma" yazıyor (kilit ekranında konu yok) ve dokununca Döngü açılıyor; hamilelik notunda tahmin yerine nötr bilgi; kapatınca ekran ve bildirim gidiyor; Gizlilik ve veri'de "Döngü kayıtları" siliniyor; şifreli yedek alıp geri yükleyince kayıtlar geliyor; Koç'a giden metin önizlemesinde döngü yok.
-- [~] Tansiyon ve şeker (Ayarlar > Sağlık ölçümleri'nden aç): tansiyon girişi (2 ölçüm, seans), şeker girişi (bağlam), hedef aralığı ön ayarları, Bugün'de Ölçümler kartı, Trend'de kartlar, grafikler, uç değerde 112 kutusu (yalnızca bugün tarihli), "emin misin" uyarısı, silme/geri al, hatırlatmalar (Ayarlar'da aç), Doktor raporu PDF (Türkçe karakter, grafik, tablo).
+- [~] Tansiyon ve şeker (Ayarlar > Sağlık ölçümleri'nden aç): tansiyon girişi (2 ölçüm, seans), şeker girişi (bağlam), hedef aralığı ön ayarları, Bugün'de Ölçümler kartı, Trend'de kartlar, grafikler, uç değerde nötr "hekimine danış, kötü hissediyorsan acil yardım al" kutusu (yalnızca bugün tarihli), "emin misin" uyarısı, silme/geri al, hatırlatmalar (Ayarlar'da aç), Hekim özeti PDF (Türkçe karakter, grafik, tablo).
 - [~] Haftalık rapor: Trend sekmesi altındaki düğmeyle PDF üret, aç (Türkçe karakterler, tablo, kilo farkı doğru mu, kayıtsız gün '–').
 - [~] Bildirim düğmesi: su bildirimi geldiğinde "+250 ml" düğmesine dokun; ekran çok kısa yanıp sönmeli, sonra uygulamayı açınca su eklenmiş olmalı (bugün toplamı artmış, bildirim kaybolmuş). Uygulama tamamen kapalıyken de dene. Güncelleme sonrası (Dalga 11-A1): güncellemeyi kurduktan sonra uygulamayı bir kez aç; sonraki su bildiriminde "+250 ml" ve ilaç bildiriminde "✔ Aldım"/"Atla" eskisi gibi kayıt yazıyor, ekran açılmıyor mu (10/20 dk tekrar bildiriminde de). Güncellemeden önce kurulmuş ya da ekranda bekleyen bildirimin düğmesi (uygulama ilk açılana kadar) kayıt yazmaz, uygulamayı açar (beklenen); kalıcı ilaç alarmı o zaman doz uygulamada işaretlenince kalkar. CI smoke'ta "SAHTE SU KAYDI YAZILDI" ya da "BİLDİRİM ANAHTARI ÜRETİLMEDİ" çıkmamalı.
 - [~] Drive yedeği: Ayarlar > Yedeği Drive'a gönder > parola > paylaşım ekranında Drive'ı seç; Drive'da dosya var mı; başka telefonda/yeniden kurulumda Dosyadan oku ile geri yükle. Pazar 20:00 hatırlatması geliyor mu.
