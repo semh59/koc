@@ -13,18 +13,20 @@ function rpRows(){
 }
 function rpSum(){
   const ok=recipeDraft.items.filter(i=>i.g>0),c=LogLib.recipeCalc({items:ok}),s=Math.round(num($("#rs").value))||1;
+  const cwv=num($("#rcw")?.value,true),useCw=cwv>=0.2*c.g&&cwv<=5*c.g&&!recipeDraft.items.some(i=>i.portion)?cwv:0,gShown=useCw||c.g;
   const total=[`${Math.round(c.tot.k)} kcal`,...NUTR.map(m=>c.tot[m]!=null&&`${NLBL[m]} ${rpFmt(c.tot[m])} ${NUNIT(m)}`)].filter(Boolean).join(" · ");
   const per={k:c.tot.k/s};for(const m of NUTR)per[m]=c.tot[m]==null?null:c.tot[m]/s;
   const ap=recipeDraft.items.some(i=>i.portion);
-  $("#rsum").innerHTML=ok.length?`<div class="lbl">Porsiyon başı (${s} porsiyon${ap?"":`, ${Math.round(c.g/s)} g`})</div>${nutrBlock(per)}<div class="mt-2 lbl">Tarifin tamamı${ap?"":` (${Math.round(c.g)} g)`}</div><p class="m0 sm num">${total}</p>`:`<p class="m0 hint">Malzeme ve gram girince değerler burada görünür.</p>`;
-  $("#rnote").textContent=ok.length?LogLib.recipeNote(c):"Çiğ ağırlıklarla hesaplanır, pişince değişir; tahmindir.";
+  $("#rsum").innerHTML=ok.length?`<div class="lbl">Porsiyon başı (${s} porsiyon${ap?"":`, ${Math.round(gShown/s)} g`})</div>${nutrBlock(per)}<div class="mt-2 lbl">Tarifin tamamı${ap?"":` (${Math.round(gShown)} g${useCw?", pişmiş":""})`}</div><p class="m0 sm num">${total}</p>`:`<p class="m0 hint">Malzeme ve gram girince değerler burada görünür.</p>`;
+  $("#rnote").textContent=ok.length?LogLib.recipeNote(c,useCw):"Çiğ ağırlıklarla hesaplanır, pişince değişir; tahmindir.";
 }
-function rpRead(){if(!recipeDraft)return;recipeDraft.n=$("#rn").value;recipeDraft.s=$("#rs").value}
+function rpRead(){if(!recipeDraft)return;recipeDraft.n=$("#rn").value;recipeDraft.s=$("#rs").value;const w=$("#rcw");if(w)recipeDraft.cw=w.value}
 function sheetRecipe(r){
-  recipeDraft=r?{id:r.id,n:r.n,s:r.s,items:r.items.map(i=>({...i}))}:{id:null,n:"",s:4,items:[]};recipeHits=[];
+  recipeDraft=r?{id:r.id,n:r.n,s:r.s,cw:r.cw||"",items:r.items.map(i=>({...i}))}:{id:null,n:"",s:4,cw:"",items:[]};recipeHits=[];
   openSheet(`<h3>${r?"Tarifi düzenle":"Tarif oluştur"}</h3>
   <label class="lbl" for="rn">Tarif adı</label><input class="in" id="rn" maxlength="60" autocomplete="off" value="${esc(recipeDraft.n)}" placeholder="Örneğin mercimek köftesi">
   <label class="lbl" for="rs">Kaç porsiyon çıkar</label><input class="in num" id="rs" inputmode="numeric" autocomplete="off" value="${recipeDraft.s}">
+  <label class="lbl" for="rcw">Pişmiş yemeğin ağırlığı (g), tarttıysan</label><input class="in num" id="rcw" inputmode="decimal" autocomplete="off" value="${recipeDraft.cw||""}" aria-describedby="rcwh"><p class="hint" id="rcwh">Boş bırakırsan çiğ ağırlıklar kullanılır. Boş tencere hariç, yalnız yemeği tart.</p>
   <div class="lbl">Malzemeler (gram)</div><div id="rrows">${rpRows()}</div>
   <label class="lbl" for="rq">Malzeme ekle</label><input class="in" id="rq" type="search" enterkeyhint="search" aria-label="Malzeme ara" placeholder="Un, yumurta, süt…" autocomplete="off"><div id="rlist" class="plist"></div>
   <div class="my-2" id="rsum" aria-live="polite"></div><div class="mb-2 mut sm" id="rnote"></div>
@@ -40,7 +42,10 @@ function rpSave(){
   if(!(s>=1&&s<=50))return err("Porsiyon sayısı 1 ile 50 arasında olmalı");
   if(S.recipes.some(x=>x.id!==recipeDraft.id&&LogLib.key(x.n)===LogLib.key(n)))return err("Bu adda bir tarifin var");
   if(recipeDraft.id==null&&S.recipes.length>=RECIPES_MAX)return err(`En fazla ${RECIPES_MAX} tarif olur`);
-  const id=recipeDraft.id??newRecipeId(),r=LogLib.cleanRecipes([{id,n,s,items:recipeDraft.items}])[0];
+  const cwIn=String(recipeDraft.cw??"").trim(),cw=cwIn===""?null:num(cwIn,true),raw=recipeDraft.items.reduce((t,i)=>t+i.g,0);
+  if(cw!=null&&recipeDraft.items.some(i=>i.portion))return err("Porsiyonla eklenen malzemede pişmiş ağırlık kullanılamaz; kutuyu boş bırak");
+  if(cw!=null&&!(cw>=0.2*raw&&cw<=5*raw&&cw<=50000))return err(`Pişmiş ağırlık çiğ toplamın (${Math.round(raw)} g) 0,2 ile 5 katı arasında olmalı`);
+  const id=recipeDraft.id??newRecipeId(),r=LogLib.cleanRecipes([{id,n,s,cw,items:recipeDraft.items}])[0];
   S.recipes=recipeDraft.id==null?[...S.recipes,r]:S.recipes.map(x=>x.id===id?r:x);
   save();closeSheet();render();toast(`"${r.n}" tarifi kaydedildi`);
 }
@@ -75,5 +80,5 @@ document.addEventListener("input",ev=>{
     const q=t.value.trim(),all=allFoods();recipeHits=q?foodSearch(q,6,all).map(i=>all[i]):[];
     $("#rlist").innerHTML=recipeHits.map((f,i)=>`<button class="prow" data-rp="pick:${i}"><span class="grow"><b>${esc(f.n)}</b><span class="mut sm">100 g: ${Math.round(f.k)} kcal</span></span><span class="aic" aria-hidden="true">${Icons.svg("plus")}</span></button>`).join("");
   }else if(t.dataset.rg!==undefined&&recipeDraft){const v=num(t.value),it=recipeDraft.items[+t.dataset.rg];it.g=v>0?Math.round(v*(it.portion?100:1)*10)/10:0;rpSum()}
-  else if(t.id==="rs"&&recipeDraft)rpSum();
+  else if((t.id==="rs"||t.id==="rcw")&&recipeDraft)rpSum();
 });
