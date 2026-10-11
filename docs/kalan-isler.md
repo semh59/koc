@@ -29,12 +29,12 @@ Tek güncel liste. Eski ayrıntılar: `todo.md` (telefon test adımları), `road
 ## 5. Ar-Ge raporu (`docs/rd/`) durumu
 Birleşik liste `rd/oncelik.md`; takım raporları öneri numaralarıyla kodla karşılaştırıldı (11 Ekim 2026).
 
-**Yapıldı:** Dalga 1 ve 2'nin tamamı (sodyum ve Rehber rakam doğrulama hariç), Dalga 3'ten tam arşiv (JSON), denge/işlevsel güç içeriği ve FHIR R4 dosyası (tansiyon ve kilo). Ayrıca öneri listelerinden: aralıklı yürüyüş akışı (adım/dk geri bildirimi yok), geçmiş aylık özetinde kişisel normal bandı (adım, su, kalori; Trend'de yok), kuvvet x kilo satırı (Bağlantılar), tahlil detayında önceki 30 günün ev ölçümü, döngü kartında dönemden önceki 5 günün ruh hali/uyku özeti, "bu hareket rahatsız etti" işareti ve benzer hareketler, "Kendi deneyin" (14 gece, tek sabit soru).
+**Yapıldı:** Dalga 1 ve 2'nin tamamı (sodyum ve Rehber rakam doğrulama hariç), Dalga 3'ten tam arşiv (JSON), denge/işlevsel güç içeriği ve FHIR R4 dosyası (tansiyon, kilo ve şeker; HAPI R4 doğrulayıcıdan hatasız geçti). Ayrıca öneri listelerinden: aralıklı yürüyüş akışı (adım/dk geri bildirimi yok), geçmiş aylık özetinde kişisel normal bandı (adım, su, kalori; Trend'de yok), kuvvet x kilo satırı (Bağlantılar), tahlil detayında önceki 30 günün ev ölçümü, döngü kartında dönemden önceki 5 günün ruh hali/uyku özeti, "bu hareket rahatsız etti" işareti ve benzer hareketler, "Kendi deneyin" (14 gece, tek sabit soru).
 
 **Bilerek yapılmadı:**
 - Sodyum/tuz çubuğu: tariflerde tuz bileşeni yok (`recipes.txt`, `meals.txt`); hesap yalnız malzemenin kendi sodyumunu sayar, eklenen tuzu saymaz. Kaynaksız bir tuz varsayımı eklemek uydurma olur.
 - Rehber rakam doğrulama ve "Rehber'e ne gitti" defteri: Rehber daraltıldı, modele yalnız profil satırı gidiyor; yemek tahmin kartında kcal-makro tutarlılık denetimi var, ağ defteri Gizlilik ekranında.
 - Health Connect'ten tansiyon/şeker okuma: yerel Java kodu yalnız CI'da derlenir, telefonda denenemez; Play beyanını değiştirir. `rd/analiz-dalga-3.md` kararı: Play ilk onayından sonra.
-- FHIR'de şeker: LOINC kodu doğrulanamadı, dosyada yok.
+- (FHIR şeker kodu sonradan HL7 terminoloji sunucusundan doğrulandı: 41653-7; dosyaya eklendi.)
 - "Yakınıma haber ver": sunucu/SMS gerektirir, mimariyle çelişir (rapor reddetti).
 - Aralıklı yürüyüşte adım/dk: faz sınırında adım sayacı farkı ister; sensör eklentisi telefonda denenmeden bağlanmadı.
