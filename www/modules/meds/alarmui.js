@@ -30,6 +30,7 @@ function alarmDraw(){
     <h2 id="alt" tabindex="-1">İlaç zamanı</h2>
     <p id="allead" class="allead">${esc(done&&a.items.length?"Tüm dozlar alındı.":v.lead)}${v.count&&!done?` <span class="num">${v.count}</span>`:""}</p>
     ${rows?`<div class="card">${rows}</div>`:""}
+    ${a.ask?`<div class="card alask" role="group" aria-label="Çift doz sorusu"><p>${esc(a.ask.text)}</p><div class="albar"><button class="btn" data-al="askno">Hayır, kaydetme</button><button class="btn ghost" data-al="askyes">Evet, kaydet</button></div></div>`:""}
     <div class="albar">${left>1?`<button class="btn ghost" data-al="all">Hepsini aldım</button>`:""}${left?`<button class="btn ghost" data-al="snooze">10 dk sonra hatırlat</button>`:""}<button class="lnk" data-al="open">Uygulamayı aç</button></div>`;
 }
 
@@ -57,8 +58,13 @@ function alarmClose(){
   if(f&&f.isConnected)f.focus({preventScroll:true});
 }
 /* Same record as the notification's "taken" button: MedLib.mark + save + medResched (the pending repeats of a taken dose are cancelled). */
-function alarmMark(ks,st){
+function alarmMark(ks,st,force){
   const a=alarm,list=ks.map(k=>a.items[k]).filter(i=>i&&!i.st);if(!list.length)return;
+  a.ask=null;
+  if(st==="t"&&!force){
+    const r=list.map(i=>MedLib.recentTaken(S.medLog,i.m,i.day,i.slot,Date.now())).find(Boolean);
+    if(r){a.ask={ks,st,text:MedLib.recentText(r)};a.say=a.ask.text;alarmDraw();$('#alarm [data-al="askno"]')?.focus({preventScroll:true});return}
+  }
   const at=medNowHM(),undo=[];
   for(const i of list){const r=MedLib.mark(S,i.m,i.day,i.slot,st,st==="t"?at:undefined);if(r){undo.push(r);i.st=st}}
   if(!save()){undo.reverse().forEach(r=>r.undo());list.forEach(i=>{i.st=undefined});a.say="Kaydedilemedi, depolama dolu";alarmDraw();return}
@@ -87,6 +93,8 @@ document.addEventListener("click",ev=>{
   const [k,n]=b.dataset.al.split(":");
   if(k==="t"||k==="s")alarmMark([+n],k);
   else if(k==="all")alarmMark(alarm.items.map((_,i)=>i),"t");
+  else if(k==="askyes"){const q=alarm.ask;alarm.ask=null;if(q)alarmMark(q.ks,q.st,true)}
+  else if(k==="askno"){alarm.ask=null;alarm.say=MedLib.NOT_SAVED;alarmDraw();$("#alt").focus({preventScroll:true})}
   else if(k==="snooze")alarmSnooze();
   else if(k==="open"){alarmClose();widgetOpen()}
 },true);

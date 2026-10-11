@@ -115,6 +115,24 @@ const MedLib=(()=>{
     }};
   }
 
+  /* Double-dose guard (records only, no dose advice): the same medication has a taken record for a DIFFERENT slot within the last hour and the two slots are planned more than an hour apart.
+     `at` is the moment of the tap, so a tap after midnight on the previous day's slot counts as the next day. Returns {min, slot} of the most recent such record or null. */
+  const WIN=3600000;
+  const slotMs=(day,t)=>{const [y,m,d]=day.split("-").map(Number),[h,mi]=t.split(":").map(Number);return new Date(y,m-1,d,h,mi).getTime()};
+  function recentTaken(log,mid,day,slot,nowMs){
+    let best=null;
+    for(const x of log){
+      if(x.m!==mid||x.st!=="t"||!timeOk(x.at)||(x.day===day&&x.slot===slot))continue;
+      const sm=slotMs(x.day,x.slot);let am=slotMs(x.day,x.at);if(am<sm-WIN)am+=864e5;
+      const age=nowMs-am;
+      if(age<0||age>WIN||Math.abs(slotMs(day,slot)-sm)<=WIN)continue;
+      if(!best||age<best.age)best={age,min:Math.max(1,Math.round(age/60000)),slot:x.slot};
+    }
+    return best;
+  }
+  const recentText=r=>`Bu ilaç için ${r.min} dakika önce de "Aldım" kaydı var. Bu yalnız kendi kayıtlarını karşılaştırır. Yine de kaydedilsin mi?`;
+  const NOT_SAVED="Kaydedilmedi. Hatırlatma, aldığını işaretleyene kadar sürebilir.";
+
   /* Adherence has one definition (PDF, weekly report, Coach and screens use it). The user can log today's dose late until the day ends,
      so today's unlogged dose whose time has passed is "late", neither "missed" nor in the denominator. "Missed" is only an unlogged dose of a finished day. */
   function adherenceDays(meds,log,from,to,nowDay,nowTime){
@@ -240,6 +258,6 @@ const MedLib=(()=>{
     if(bad)add("Tam ekran bildirimi gönderilemedi: "+bad.fs.replace(/^err:/,""));
     return out;
   }
-  return {wakeTimes,wakeDoses,wakeLine,wakeIssues,sinceFor,doseOfId,freeId,doseKey,MAXM,MAXT,BUDGET,TITLE,GENERIC_BODY,cleanMeds,cleanLog,dosesOn,statusOf,logIndex,mark,adherence,adherenceDays,sumAdherence,stockLeft,notifications,dayForTap,revise,addDay,slotAt,hm,timeOk,key};
+  return {recentTaken,recentText,NOT_SAVED,wakeTimes,wakeDoses,wakeLine,wakeIssues,sinceFor,doseOfId,freeId,doseKey,MAXM,MAXT,BUDGET,TITLE,GENERIC_BODY,cleanMeds,cleanLog,dosesOn,statusOf,logIndex,mark,adherence,adherenceDays,sumAdherence,stockLeft,notifications,dayForTap,revise,addDay,slotAt,hm,timeOk,key};
 })();
 if(typeof module!=="undefined")module.exports=MedLib;

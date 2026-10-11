@@ -48,3 +48,18 @@ test("real dose test: the 7149 notification on the medication channel and the sc
   expect(new Date(c.n.schedule.at).getTime()).toBe(c.w.at);
   expect(c.w.at-T).toBeGreaterThanOrEqual(60000);
 });
+
+test("double-dose guard: a different slot taken 20 minutes ago asks first; No keeps the dose unmarked, Yes records it once",async({app,page})=>{
+  const {day}=require("./fixtures");
+  const seed=state({medOn:true},{meds:[{id:1,n:"Metformin",t:["07:00","12:00"],on:true,k:10}],medLog:[{id:1,m:1,day:day(0),slot:"07:00",st:"t",at:"09:40"}]});
+  await app.open({seed,native:{}});
+  app.onDialog=d=>d.dismiss();
+  await page.evaluate("medMark(1,'12:00','t')");
+  await expect.poll(()=>app.dialogs.length).toBe(1);
+  expect(app.dialogs[0]).toContain("20 dakika önce");
+  expect((await app.state()).medLog.length).toBe(1);
+  app.onDialog=null;
+  await page.evaluate("medMark(1,'12:00','t')");
+  await expect.poll(async()=>(await app.state()).medLog.length).toBe(2);
+  expect((await app.state()).meds[0].k).toBe(9);
+});
