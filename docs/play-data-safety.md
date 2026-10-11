@@ -24,12 +24,12 @@ Ağ çağrıları (kodda tek tek doğrulandı, başka yok): (1) Rehber: `www/mod
 | Kişisel bilgi: yaş, cinsiyet, boy (profil) | Evet | Evet (Rehber sağlayıcısı) | Uygulama işlevselliği | Evet | Play'de "Diğer bilgiler"/ilgili tür altında; boy ve yaş sağlık/fitness altında da beyan edilebilir |
 | Mesajlar: diğer uygulama içi mesajlar (Rehber sohbeti ve not metinleri) | Evet | Evet (Rehber sağlayıcısı) | Uygulama işlevselliği | Evet | Son 10 mesaj + yazılan istek |
 | Diğer: API anahtarı | Hayır (geliştiriciye gitmez) | Hayır | n/a | n/a | Anahtar yalnız kimlik doğrulama için seçilen sağlayıcıya gider, Keystore'da saklanır. Play'de kimlik bilgisi türü yok; Rehber paylaşımının parçası sayılır |
-| Konum (yaklaşık/kesin) | Hayır | Hayır | n/a | n/a | Yalnız elle başlatılan yürüyüşte cihazda işlenir; yalnız adım uzunluğu saklanır, nokta/rota saklanmaz, hiçbir yere gönderilmez |
+| Konum (yaklaşık/kesin) | Hayır | Hayır | n/a | n/a | Yalnız elle başlatılan yürüyüşte ve Ramazan modunda "Konumumu kullan"a dokunulunca cihazda işlenir; yürüyüşte yalnız adım uzunluğu saklanır, nokta/rota saklanmaz; Ramazan'da yaklaşık 1 km'ye yuvarlanmış nokta telefonda kalır; hiçbir yere gönderilmez |
 | Fotoğraf ve video (kamera) | Hayır | Hayır | n/a | n/a | Etiket/tahlil fotoğrafı telefonda yazı tanımayla okunur, saklanmaz ve gönderilmez. Barkod görüntüsünü Google Play hizmetleri işler, NeoWell almaz |
 | Bildirimler | Hayır | Hayır | n/a | n/a | Yalnızca yerel hatırlatma; sunucu push yok |
 | Cihaz veya diğer kimlikler (Google ML Kit / Play hizmetleri tanılaması) | **Toplanıyor olabilir (doğrulanmadı)**; formda güvenli taraf: Evet | Hayır (NeoWell geliştiricisine gitmez; Google kendi hizmetini sağlar) | Uygulama işlevselliği ve analiz (Google SDK'sının kendi amacı) | Hayır (kapatılamaz) | ML Kit açıklaması: cihaz bilgisi ve kuruluma özel tanımlayıcı. Politika §5 ile tutarlı: "Google tanılama bilgisi toplayabilir". Kesinleşmesi hukukçu ve Play soru listesinde (karar 5) |
 | Uygulama etkinliği, finansal bilgi, kişiler, takvim, dosyalar | Hayır | Hayır | n/a | n/a | Dosya: yedek (her zaman parolayla şifreli, parola zorunlu) / PDF / CSV yalnız kullanıcının seçtiği yere yazılır |
-| Ezan vakitleri (Ramazan modu, ezanvakti.emushaf.net) | Seçilen ilçenin numarası (yaklaşık bölge) ve IP adresi; yalnız kullanıcı modu açıp ilçe seçerse ya da Yenile derse. Konum izni kullanılmaz | Bkz. karar 3 | Uygulama işlevselliği | Evet (kullanıcı seçerse) |
+| Ezan vakitleri (Ramazan modu, ezanvakti.emushaf.net) | En yakın il merkezinin ilçe numarası (yaklaşık bölge) ve IP adresi; konum noktası gönderilmez; yalnız kullanıcı Ramazan modunda konumunu belirler ya da Doğrula derse | Bkz. karar 3 | Uygulama işlevselliği | Evet (kullanıcı seçerse) |
 | Barkod araması (Open Food Facts) | Barkod numarası kişisel veri değil. Hizmet IP adresini görür | Bkz. karar 3 | Uygulama işlevselliği | Evet (kullanıcı okutursa) | |
 
 ## Güvenlik uygulamaları

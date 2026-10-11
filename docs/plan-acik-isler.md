@@ -39,7 +39,7 @@ Kaynaklar: `docs/rd/oncelik.md`, `docs/rd/analiz-dalga-1.md`, `-2a`, `-2b`, `-3`
 - 4.6 Bağlantılar: adım (D-1) → uyku çifti ve kanıt etiketi (15); tansiyon ve ilaç uyumu çiftleri yapılmaz.
 - 4.7 Genel CSV içe aktarma (16): yalnız kilo, tansiyon, şeker; önizleme ve geri alma.
 - 4.8 Birleşik hekim raporu (8): 30/90 gün sayfa düzeni; tahlil oku ile "yorum yok" çelişkisi çözülür (öneri: okları kaldır, yalnız değer ve tarih).
-- 4.9 Ramazan modu (11): imsak/iskan saatleri internetten tablo + cihazda hesap yedeği, başlangıç tarihi elle, sert bayrakta kapalı, ilaç saatine dokunmaz.
+- 4.9 Ramazan modu (11): imsak/iftar saatleri: GPS konumuyla cihazda hesap, Diyanet tablosuyla dokunuşla doğrulama, başlangıç tarihi elle, sert bayrakta kapalı, ilaç saatine dokunmaz.
 - 4.10 Haftalık hareket kılavuzu kartı (12): mevcut spor dakikası + kuvvet günü ile sınırlı.
 - Yapılmayanlar: 9 (Rehber rakam doğrulama; Rehber artık sayı hesaplamıyor), 10 ("Rehber'e ne gitti" defteri; Dalga 1 çıkış defteri bunu kapsıyor).
 
@@ -53,7 +53,7 @@ Kaynaklar: `docs/rd/oncelik.md`, `docs/rd/analiz-dalga-1.md`, `-2a`, `-2b`, `-3`
 
 ## B2. Durum (2026-10-11 sonu)
 Bitti: 3.1 Trend aralığı, 3.2 RPE "tut" yönü, 3.3 hızlı metin kaydı, 3.4 rahat mod, 4.1 çift doz, 4.2 son dozdan beri etiketi, 4.3 barkod-etiket, 4.4 lif çubuğu (sodyum yapılmadı), 4.5 pişmiş ağırlık, 4.6 Bağlantılar kanıt etiketi, 4.7 CSV içe aktarma (yalnız tanınan başlıklar; eşleme ekranı yok), 4.8 hekim raporu (oklar kalır), 4.9 Ramazan modu, 4.10 hareket kartı, 5.1 tam arşiv, 5.2 denge içeriği, 2.1-2.4, 2.6 (CI targetSdk 36 doğruluyor) ve 2.8.
-Ramazan modunda yerel hesap yedeği YAPILMADI: saatler internetten (kullanıcı dokunuşuyla) alınıp 45 güne kadar telefonda saklanır; tablo yoksa kart "Yenile" der. Gerekçe: koordinat tablosu ve mevsim doğrulaması gerekmeden resmî veri.
+Ramazan modu (v2): saatler telefonda, konumdan (GPS ya da 81 il listesi) hesaplanır; Eki 2026'da 81 il x her gün Diyanet'ten en çok 1 dk sapar. Mevsim doğrulaması yalnız Ekim verisiyle yapıldı; bu yüzden kart, kullanıcı "Doğrula"ya dokunup en yakın il merkezinin tablosu hesapla 2 dk içinde uyuşana kadar "internetle doğrulanmadı" der; uyuşmazsa tablonun kendi günleri gösterilir. Telefonda gerçek konum izni denenmedi.
 Açık: 2.5 "Yanıtı bildir" (e-posta gerekli), 2.7 politika bilgileri, 2.9 KVKK raporu, Faz 6.
 
 ## C. Karar bekleyen (kullanıcıya sorulacak, işi durdurmaz)

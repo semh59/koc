@@ -2879,35 +2879,61 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("S.entries=[]");
   }
   { // Ramadan mode
-    reset();const q=s=>$q(s);ev("S.settings.age=40;S.meds=[];S.vitals=[];S.settings.healthNote='';S.settings.riskClearedAt='';S.settings.fastInfoOk=false;S.settings.ramOn=false;S.settings.ramId=0;tab='settings-modules';render()");
-    const rdays=ev("[0,1,2,3,4,5,6].map(n=>RamadanLib.addDay(RamadanLib.tr(Date.now()).day,n))"),row=(d,i,f)=>({MiladiTarihUzunIso8601:d+"T00:00:00",Imsak:i,Aksam:f}),calls=[];
-    w.fetch=async u=>{calls.push(String(u));return {ok:true,json:async()=>/sehirler/.test(u)?[{SehirID:"506",SehirAdi:"ANKARA"}]:/ilceler/.test(u)?[{IlceID:"9206",IlceAdi:"ANKARA"},{IlceID:"9207",IlceAdi:"AYAŞ"}]:rdays.map(d=>row(d,"00:00","23:59"))}};
+    reset();const q=s=>$q(s);ev("S.settings.age=40;S.meds=[];S.vitals=[];S.settings.healthNote='';S.settings.riskClearedAt='';S.settings.fastInfoOk=false;S.settings.ramOn=false;S.settings.ramLat=0;S.settings.ramLon=0;S.settings.ramName='';tab='settings-modules';render()");
+    const R={times:(d,la,lo)=>ev(`RamadanLib.times('${d}',${la},${lo})`)},rdays=ev("[0,1,2,3,4,5,6].map(n=>RamadanLib.addDay(RamadanLib.tr(Date.now()).day,n))"),calls=[],geo={n:0,ok:true,la:39.93,lo:32.86,off:0};
+    const add=(t,k)=>{const x=+t.slice(0,2)*60+ +t.slice(3,5)+k;return String(Math.floor(x/60)).padStart(2,"0")+":"+String(x%60).padStart(2,"0")};
+    const rows=()=>rdays.map(d=>{const t=R.times(d,39.93,32.86);return {MiladiTarihUzunIso8601:d+"T00:00:00",Imsak:t[0],Aksam:add(t[1],geo.off)}});
+    let net=true;
+    w.fetch=async u=>{calls.push(String(u));if(!net)throw new Error("offline");return {ok:true,json:async()=>rows()}};
+    Object.defineProperty(w.navigator,"geolocation",{value:{getCurrentPosition:(good,bad)=>{geo.n++;if(geo.ok)good({coords:{latitude:geo.la,longitude:geo.lo}});else bad({})}},configurable:true});
     const card=()=>[...w.document.querySelectorAll("#view .row")].map(r=>r.textContent).find(t=>/İftara|Sahura|Ramazan modu/.test(t))||"";
-    ok("Ramadan mode: off by default, the Settings row is there, the Today card and the internet are untouched",!ev("S.settings.ramOn")&&!!q('[data-ram="toggle"]')&&calls.length===0);
+    const verified=()=>/doğrulandı/.test(card());
+    ok("Ramadan mode: off by default, the Settings row is there, no location request, no internet",!ev("S.settings.ramOn")&&!!q('[data-ram="toggle"]')&&calls.length===0&&geo.n===0);
     ev("S.settings.age=17;render()");q('[data-ram="toggle"]').click();
-    ok("Ramadan mode: a hard risk flag (under 18) keeps it closed with a reason, no sheet, no request",!ev("S.settings.ramOn")&&!q("#sheet.on, #sheet[open]")&&calls.length===0&&q("#toast").textContent.includes("kapalı"));
+    ok("Ramadan mode: a hard risk flag (under 18) keeps it closed with a reason, no sheet, no location, no request",!ev("S.settings.ramOn")&&!q("#sheet.on, #sheet[open]")&&calls.length===0&&geo.n===0&&q("#toast").textContent.includes("kapalı"));
     ev("S.settings.age=40;render()");q('[data-ram="toggle"]').click();
     ok("Ramadan mode: the first opening shows the doctor note and needs the tick",!!q('[data-ram="infook"]')&&!ev("S.settings.ramOn"));
-    q('[data-ram="infook"]').click();ok("no tick, no opening",!ev("S.settings.ramOn"));
+    q('[data-ram="infook"]').click();ok("no tick, no opening, no location",!ev("S.settings.ramOn")&&geo.n===0);
     q("#ric").checked=true;q('[data-ram="infook"]').click();await flush();
-    ok("Ramadan mode: after the tick it is on, the start day is set and the province list is requested",ev("S.settings.ramOn")&&ev("S.settings.fastInfoOk")&&ev("S.settings.ramFrom")===ev("dayKey()")&&calls.some(u=>/sehirler\/2$/.test(u)));
-    q('[data-ram^="il:"]').click();await flush();q('[data-ram^="pl:"]').click();await flush();
-    ok("Ramadan mode: province, district, then the table of that district only; the cache is on the phone, not in the data file",ev("S.settings.ramId")===9206&&/Ankara \/ Ankara/.test(ev("S.settings.ramName"))&&calls.some(u=>/vakitler\/9206$/.test(u))&&JSON.parse(w.localStorage.getItem("nw_ram")).id===9206&&!JSON.stringify(ev("S")).includes("00:00"));
+    ok("Ramadan mode: after the tick it is on, the start day is set and the phone is asked for the location once",ev("S.settings.ramOn")&&ev("S.settings.fastInfoOk")&&ev("S.settings.ramFrom")===ev("dayKey()")&&geo.n===1);
+    ok("Ramadan mode: the place is stored rounded with the nearest province; only that centre's table is requested; the comparison is cached on the phone",Math.abs(ev("S.settings.ramLat")-39.93)<1e-9&&ev("S.settings.ramName")==="Ankara"&&calls.length===1&&/vakitler\/9206$/.test(calls[0])&&JSON.parse(w.localStorage.getItem("nw_ram")).il===ev("RamadanLib.nearest(39.93,32.86).i")&&!JSON.stringify(ev("S")).includes("\"days\""));
     ev("tab='today';render()");
-    ok("Ramadan mode: the Today card counts down and says the times are approximate",/İftara \d/.test(card())&&/İmsak 00:00 · İftar 23:59/.test(card())&&/yaklaşık/.test(card()),card());
+    ok("Ramadan mode: the Today card counts down, says it was verified against the Diyanet table and that the times are approximate",/İftara \d|Sahura \d/.test(card())&&verified()&&/yaklaşık/.test(card())&&/Ankara civarı/.test(card())&&!/Doğrula/.test(card()),card());
     ev("S.settings.ramSahur=true;S.settings.ramIftar=true");
-    const rem=ev("Habits.ramReminders(Date.now()-864e5*0,0,7)");
-    ok("Ramadan mode: reminders come only from the cached days and only when the switches are on",rem.length>=1&&rem.every(x=>/yaklaşık/.test(x.body))&&ev("(()=>{S.settings.ramSahur=false;S.settings.ramIftar=false;return Habits.ramReminders(Date.now(),0,7).length})()")===0);
+    const rem=ev("Habits.ramReminders(Date.now(),0,7)");
+    ok("Ramadan mode: reminders come from the calculation and only when the switches are on",rem.length>=1&&rem.every(x=>/yaklaşık/.test(x.body))&&ev("(()=>{S.settings.ramSahur=false;S.settings.ramIftar=false;return Habits.ramReminders(Date.now(),0,7).length})()")===0);
     ev("S.settings.ramSahur=true;S.settings.ramIftar=true;S.meds=[{id:1,n:'A',t:['08:00'],on:true}];S.settings.riskClearedAt='';render()");
     ok("Ramadan mode: a soft flag (medication) hides the times and the reminders until 'Hekimime danıştım'",/Hekimime danıştım/.test(card())&&!/İftara \d/.test(card())&&ev("Habits.ramReminders(Date.now(),0,7).length")===0);
     ev("S.settings.riskClearedAt=dayKey();render()");
-    ok("Ramadan mode: after the confirmation the card and the reminders are back",/İftara \d/.test(card())&&ev("Habits.ramReminders(Date.now(),0,7).length")>=1);
+    ok("Ramadan mode: after the confirmation the card and the reminders are back",/İftara \d|Sahura \d/.test(card())&&ev("Habits.ramReminders(Date.now(),0,7).length")>=1);
     ev("S.settings.ramFrom=keyOff(-40);render()");
-    ok("Ramadan mode: after 31 days the card asks whether it is over",/Ramazan bitti mi/.test(card()+[...w.document.querySelectorAll("#view .row")].map(r=>r.textContent).join()));
+    ok("Ramadan mode: after 31 days the card asks whether it is over",/Ramazan bitti mi/.test([...w.document.querySelectorAll("#view .row")].map(r=>r.textContent).join()));
     q('[data-ram="off"]').click();
-    ok("Ramadan mode: closing it removes the card and the start day; the district stays for next year",!ev("S.settings.ramOn")&&ev("S.settings.ramFrom")===""&&ev("S.settings.ramId")===9206&&card()==="");
-    ok("Ramadan mode settings cleaner: out-of-range district becomes 0, control characters leave the name, a bad start day is dropped",ev("cleanSettings({ramId:99999999,ramName:'A\\u0000B',ramFrom:'x'})").ramId===0&&ev("cleanSettings({ramName:'A\\u0000B'})").ramName==="AB"&&ev("cleanSettings({ramFrom:'x'})").ramFrom==="");
-    ev("S.meds=[];S.settings.riskClearedAt='';S.settings.ramId=0;S.settings.fastInfoOk=false;tab='today';render()");delete w.fetch;
+    ok("Ramadan mode: closing it removes the card and the start day; the place stays for next year",!ev("S.settings.ramOn")&&ev("S.settings.ramFrom")===""&&ev("S.settings.ramLat")>0&&card()==="");
+    // offline: the clock works, it says it was not verified, and the verify button waits for a tap
+    ev("S.meds=[];S.settings.ramOn=true;S.settings.ramFrom=dayKey();S.settings.ramLat=0;S.settings.ramLon=0;S.settings.ramName='';tab='settings-modules';render()");
+    w.localStorage.removeItem("nw_ram");ev("ramCache=undefined");net=false;calls.length=0;
+    q('[data-ram="gps"]').click();await flush();ev("tab='today';render()");
+    ok("Ramadan mode offline: the times are calculated and the card says they were not verified; the failed comparison only gives a notice",/İftara \d|Sahura \d/.test(card())&&/internetle doğrulanmadı/.test(card())&&/Doğrula/.test(card())&&calls.length===1&&q("#toast").textContent.includes("Doğrulanamadı"),card());
+    ev("S.settings.ramSahur=true;S.settings.ramIftar=true");
+    ok("Ramadan mode offline: reminders still work",ev("Habits.ramReminders(Date.now(),0,7).length")>=1);
+    net=true;calls.length=0;geo.off=15;q('[data-ram="verify"]').click();await flush();
+    ok("Ramadan mode: a table that differs from the calculation is shown instead, and the card says so",/tablodan saptı/.test(card())&&!verified()&&calls.length===1,card());
+    geo.off=0;q('[data-ram="verify"]').click();await flush();
+    ok("Ramadan mode: a later agreeing comparison makes it verified again",verified()&&!/Doğrula/.test(card()),card());
+    // the place choices
+    const n0=geo.n;geo.ok=false;q('[data-ram="gps"]')||ev("tab='settings-modules';render()");ev("tab='settings-modules';render()");q('[data-ram="gps"]').click();
+    ok("Ramadan mode: a refused location permission leaves the place as it was and points to the list",geo.n===n0+1&&ev("S.settings.ramName")==="Ankara"&&q("#toast").textContent.includes("listeden"));
+    geo.ok=true;geo.la=48.85;geo.lo=2.35;q('[data-ram="gps"]').click();
+    ok("Ramadan mode: a position outside Turkey is not used",ev("S.settings.ramName")==="Ankara"&&Math.abs(ev("S.settings.ramLat")-39.93)<1e-9&&q("#toast").textContent.includes("Türkiye dışında"));
+    q('[data-ram="place"]').click();
+    ok("Ramadan mode: the list has the 81 provinces offline and no request is made to open it",w.document.querySelectorAll("#ramlist .prow").length===81);
+    calls.length=0;[...w.document.querySelectorAll("#ramlist .prow")].find(b=>/İzmir/.test(b.textContent)).click();
+    ok("Ramadan mode: choosing a province from the list sets the place without any request",ev("S.settings.ramName")==="İzmir"&&calls.length===0&&ev("S.settings.ramLat")>38&&ev("S.settings.ramLon")<28);
+    ev("tab='settings-modules';render()");q('[data-ram="forget"]').click();
+    ok("Ramadan mode: 'Konumu sil' removes the place and the cached comparison",ev("S.settings.ramLat")===0&&ev("S.settings.ramLon")===0&&ev("S.settings.ramName")===""&&w.localStorage.getItem("nw_ram")===null&&ev("Habits.ramReminders(Date.now(),0,7).length")===0);
+    ok("Ramadan mode settings cleaner: an out-of-range place becomes 0, a valid one stays, control characters leave the name, a bad start day is dropped",ev("cleanSettings({ramLat:10,ramLon:99})").ramLat===0&&ev("cleanSettings({ramLat:10,ramLon:99})").ramLon===0&&ev("cleanSettings({ramLat:39.93,ramLon:32.86})").ramLat===39.93&&ev("cleanSettings({ramName:'A\\u0000B'})").ramName==="AB"&&ev("cleanSettings({ramFrom:'x'})").ramFrom==="");
+    ev("S.meds=[];S.settings.riskClearedAt='';S.settings.ramOn=false;S.settings.ramLat=0;S.settings.ramLon=0;S.settings.fastInfoOk=false;tab='today';render()");delete w.fetch;delete w.navigator.geolocation;
   }
   { // safety brake from one source, with real data
     const MED="[{id:1,n:'Vitamin D',t:['08:00'],on:true}]";
