@@ -10,13 +10,13 @@ const targets=page=>page.evaluate(()=>{const o=[];let n=0;for(const e of documen
 const small=async page=>(await targets(page)).o;
 /* Android font scaling only enlarges text in the WebView: px font-size declarations and every --fs-* variable are multiplied.
    Upper bounds inside min()/clamp() (bottom menu label, ring number, SVG axis) are deliberate design limits and are not scaled. */
-const scaleText=(page,k)=>page.evaluate(k=>{const m=v=>v.replace(/([\d.]+)px/,(a,b)=>b*k+"px");
+const scaleText=(page,k,base=16)=>page.evaluate(([k,base])=>{const m=v=>v.replace(/([\d.]+)px/,(a,b)=>b*k+"px");
   const walk=rs=>{for(const r of rs){if(r.cssRules&&!r.style)walk(r.cssRules);else if(r.style&&/^[\d.]+px$/.test(r.style.fontSize))r.style.fontSize=m(r.style.fontSize)}};
   for(const s of document.styleSheets)walk(s.cssRules);
   const de=document.documentElement,cs=getComputedStyle(de),names=new Set();
   for(const s of document.styleSheets)for(const r of s.cssRules)if(r.style)for(const p of r.style)if(p.startsWith("--fs-"))names.add(p);
   for(const p of names)de.style.setProperty(p,m(cs.getPropertyValue(p).trim()));
-  if(Math.abs(parseFloat(getComputedStyle(document.body).fontSize)-16*k)>.5)throw new Error("body text was not scaled")},k);
+  if(Math.abs(parseFloat(getComputedStyle(document.body).fontSize)-base*k)>.5)throw new Error("body text was not scaled")},[k,base]);
 const overflow=page=>page.evaluate(()=>{const o=[];if(document.documentElement.scrollWidth>innerWidth)o.push("page scrolls horizontally");
   for(const e of document.querySelectorAll("#sheet *,#view *,#lock *")){const c=getComputedStyle(e);if(c.display==="none"||e.closest("svg,.chiprow,[hidden]")||!e.getClientRects().length)continue;
     const r=e.getBoundingClientRect();if(r.width&&r.right>innerWidth+1)o.push("overflows: "+e.tagName+"."+e.className+" "+(e.textContent||"").trim().slice(0,20))}return [...new Set(o)]});

@@ -392,3 +392,8 @@ button:is(.row,.prow,.rrow){width:100%}
 .pt-2{padding:var(--sp-2) 0 0}.pv-1{padding:var(--sp-1) 0}.pv-2{padding:var(--sp-2) 0}.nw{white-space:nowrap}.w100{width:100%}.ib{display:inline-block}.rxs{border-radius:var(--r-xs)}
 .t-h1{font-size:var(--fs-h1)}.t-h2{font-size:var(--fs-h2)}.row.wrap{flex-wrap:wrap}#sheet input.in.url,input.in.url{font-size:var(--fs-2);overflow-wrap:anywhere}.lsv{width:100%;display:block}
 .dl{display:flex;align-items:center;gap:var(--sp-2)}.g2{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2)}.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--sp-2)}
+
+/* Comfortable mode (Settings > Appearance): larger text and 52 px touch targets. The workout set grid, calendar cells, charts and the bottom menu keep their size so they still fit a 320 px screen. */
+:root[data-comfy]{--fs-cap:16px;--fs-s:16px;--fs-2:17px;--fs-1:18px;--fs-h3:20px;--fs-h2:22px;--fs-h1:26px;--fs-svg:16px}
+:root[data-comfy] :is(.btn,.chip,.seg button,.seg2 button,.lnk,.rbtn,.coach,.plus,.help,.cin,input.in,select.in,.chip>button,.rem input[type=time],.hgsel .in,.log button.tx,.qrow .btn,.chiprow .chip,.tmain,.exn,.gdtop){min-height:52px}
+:root[data-comfy] :is(.del,.dnav button,.shx,#csend,#back,.gdx){width:52px;height:52px}
