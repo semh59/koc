@@ -2806,6 +2806,19 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("a saved recipe keeps portion; an old recipe (no portion) is unchanged; the recipe portion is 400 kcal",ev("S.recipes[0].items[0].portion")===true&&ev("LogLib.cleanRecipes([{n:'a',items:[{n:'x',g:100,k:50}]}])[0].items[0].portion")===undefined&&Math.round(ev("LogLib.recipeFood(S.recipes[0]).k*LogLib.recipeFood(S.recipes[0]).u[0][1]/100"))===400);
     reset();
   }
+  { // recipe: optional cooked pot weight
+    reset();ev("S.recipes=[];sheetRecipe()");
+    ev("recipeDraft.items=[{n:'Pirinç',g:500,k:360},{n:'Su ve sebze',g:500,k:40}]");
+    $q("#rn").value="Pilav";$q("#rs").value="4";$q("#rcw").value="5";$q('[data-rp="save"]').click();
+    ok("recipe: a cooked weight far outside the raw total is refused with an explanation, nothing is saved",ev("S.recipes.length")===0&&$q("#rerr").textContent.includes("0,2 ile 5 katı"),$q("#rerr").textContent);
+    $q("#rcw").value="850";$q("#rcw").dispatchEvent(new w.Event("input",{bubbles:true}));
+    ok("recipe: the preview switches to the cooked weight",$q("#rsum").textContent.includes("850 g, pişmiş")&&$q("#rnote").textContent.includes("Pişmiş ağırlığa göre"),$q("#rsum").textContent);
+    $q('[data-rp="save"]').click();
+    ok("recipe: a valid cooked weight is saved and the food shape uses it",ev("S.recipes[0].cw")===850&&Math.round(ev("LogLib.recipeFood(S.recipes[0]).k"))===235);
+    const bk=JSON.parse(ev("JSON.stringify(LogLib.cleanRecipes(S.recipes))"));
+    ok("recipe: the cooked weight survives the cleaner used by backup and restore",bk[0].cw===850);
+    ev("S.recipes=[];closeSheet()");
+  }
   { // safety brake from one source, with real data
     const MED="[{id:1,n:'Vitamin D',t:['08:00'],on:true}]";
     const prof=`S.entries=[];S.chat=[];S.meds=[];S.vitals=[];Object.assign(S.settings,{heightCm:175,age:35,goalKg:80,healthNote:'',riskClearedAt:'',kcal:0});for(let i=0;i<20;i++)add('weight',90+i*0.1,'',keyOff(-i));`;

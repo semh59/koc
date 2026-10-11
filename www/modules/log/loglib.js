@@ -68,7 +68,9 @@ const LogLib=(()=>{
       if(!items.length||names.has(key(n)))continue;
       names.add(key(n));
       const id=nextId(r.id,ids),s=Math.round(r.s);
-      ids.add(id);out.push({id,n,s:s>=1&&s<=50?s:1,items});
+      /* Cooked pot weight (optional): only when every item is a weighed ingredient and it is within 0.2-5 times the raw total. */
+      const raw=items.reduce((t,i)=>t+i.g,0),cw=Math.round(r.cw),cwOk=!items.some(i=>i.portion)&&cw>=1&&cw<=50000&&cw>=0.2*raw&&cw<=5*raw;
+      ids.add(id);out.push({id,n,s:s>=1&&s<=50?s:1,items,...(cwOk?{cw}:{})});
       if(out.length===RECIPES_MAX)break;
     }
     return out;
@@ -83,11 +85,11 @@ const LogLib=(()=>{
     }
     return {g,tot,part,n:r.items.length};
   }
-  const recipeNote=c=>"Çiğ ağırlıklarla hesaplandı, pişince değişir; tahmindir."+c.part.map(([m,h])=>` ${RLBL[m][0].toUpperCase()+RLBL[m].slice(1)}: ${h}/${c.n} malzemede veri var, toplam yazılmadı.`).join("");
+  const recipeNote=(c,cw)=>(cw?"Pişmiş ağırlığa göre hesaplandı; tahmindir.":"Çiğ ağırlıklarla hesaplandı, pişince değişir; tahmindir.")+c.part.map(([m,h])=>` ${RLBL[m][0].toUpperCase()+RLBL[m].slice(1)}: ${h}/${c.n} malzemede veri var, toplam yazılmadı.`).join("");
   // Shape of a food in the search list (allFoods): a recipe is searched like one food, with a per-portion entry first.
   function recipeFood(r){
-    const c=recipeCalc(r),pg=c.g/r.s,f={n:r.n,k:c.tot.k*100/c.g,my:true,src:"recipe",rec:r.id,hint:`Tarifim, ${r.s} porsiyon. ${recipeNote(c)}`,u:[[r.items.some(i=>i.portion)?"1 porsiyon":`1 porsiyon (${Math.round(pg)} g)`,pg],["100 g",100]]};
-    for(const m of NUTR)f[m]=c.tot[m]==null?null:c.tot[m]*100/c.g;
+    const c=recipeCalc(r),W=r.cw||c.g,pg=W/r.s,f={n:r.n,k:c.tot.k*100/W,my:true,src:"recipe",rec:r.id,hint:`Tarifim, ${r.s} porsiyon.${r.cw?` Pişmiş ağırlık: ${Math.round(r.cw)} g (senin girdiğin).`:""} ${recipeNote(c,r.cw)}`,u:[[r.items.some(i=>i.portion)?"1 porsiyon":`1 porsiyon (${Math.round(pg)} g)`,pg],["100 g",100]]};
+    for(const m of NUTR)f[m]=c.tot[m]==null?null:c.tot[m]*100/W;
     return f;
   }
   const MEALS=[["breakfast","Kahvaltı"],["lunch","Öğle"],["dinner","Akşam"],["snack","Atıştırmalık"]];

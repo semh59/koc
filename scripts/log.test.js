@@ -47,4 +47,14 @@ ok("stalled: warns when yesterday is 0 and the earlier average is above 1000, no
   const src=[R("Z",[it("a",5,5)])];L.cleanRecipes(src);
   ok("cleaner leaves the input untouched; undefined and non-array input give empty",src[0].items[0].g===5&&L.cleanRecipes(undefined).length===0&&L.cleanRecipes("x").length===0);
 }
+{ // cooked pot weight on a recipe
+  const mk=(x={})=>({id:1,n:"Tencere",s:4,items:[{n:"Pirinç",g:500,k:360},{n:"Su ve sebze",g:500,k:40}],...x});
+  const base=L.recipeFood(L.cleanRecipes([mk()])[0]),cw=L.recipeFood(L.cleanRecipes([mk({cw:850})])[0]);
+  ok("cw: 1000 g raw with 850 g cooked gives a denser 100 g value (the raw total is 2000 kcal)",Math.round(base.k)===200&&Math.round(cw.k*10)/10===235.3,[base.k,cw.k]);
+  ok("cw: the per-portion kcal does not change, only the portion grams do",Math.round(base.u[0][1]*base.k/100)===Math.round(cw.u[0][1]*cw.k/100)&&Math.round(cw.u[0][1])===213);
+  ok("cw: without it the recipe equals today's behaviour and has no cw key",!("cw" in L.cleanRecipes([mk()])[0]));
+  ok("cw: out of range (below 0.2x or above 5x the raw total) is dropped, the recipe stays",!("cw" in L.cleanRecipes([mk({cw:5})])[0])&&!("cw" in L.cleanRecipes([mk({cw:5001})])[0])&&L.cleanRecipes([mk({cw:5000})])[0].cw===5000);
+  ok("cw: a recipe with a portion-based ingredient drops it",!("cw" in L.cleanRecipes([mk({cw:800,items:[{n:"Lahmacun",g:100,k:300,portion:true},{n:"Su",g:100,k:0}]})])[0]));
+  ok("cw: the note says it was calculated on the cooked weight",/Pişmiş ağırlığa göre/.test(cw.hint)&&/Pişmiş ağırlık: 850 g/.test(cw.hint)&&/Çiğ ağırlıklarla/.test(base.hint));
+}
 finish();
