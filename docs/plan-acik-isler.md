@@ -60,7 +60,7 @@ Ramazan modu (v2): saatler telefonda, konumdan (GPS ya da 81 il listesi) hesapla
 Açık: 2.5 "Yanıtı bildir" (e-posta gerekli), 2.7 politika bilgileri.
 
 ## C. Karar bekleyen (kullanıcıya sorulacak, işi durdurmaz)
-- Tansiyon acil kutusu (180/120, 54/400 "112") nötr nota çevrilsin mi; "Doktor raporu" adı değişsin mi.
+- (Karara bağlandı, yapıldı) Tansiyon acil kutusu nötr nota çevrildi; "Doktor raporu" adı "Hekim özeti" oldu.
 - Depoyu kalıcı public yapmak (gizlilik politikası adresi için GitHub Pages).
 - Politika yer tutucuları için ad, adres, e-posta.
 - (Karara bağlandı) 4.8: oklar kalır.
