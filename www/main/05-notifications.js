@@ -50,6 +50,7 @@ async function scheduleReminders(){
     if(S.settings.medOn){
       for(const n of MedLib.notifications(Meds.meds(),Meds.log(),new Date(),SCHED_DAYS,S.settings.medShowName))list.push({id:n.id,title:n.title,body:n.body,schedule:{at:n.at,allowWhileIdle:true},actionTypeId:n.actionTypeId,extra:n.extra,channelId:n.channelId,ongoing:n.ongoing});
     }
+    for(const n of Habits.ramReminders(now,LEAD_MS,SCHED_DAYS))list.push({id:n.id,title:n.title,body:n.body,schedule:{at:new Date(n.at),allowWhileIdle:true}});
     const cn=cycNotif();if(cn)list.push(cn);
     if(Habits.fast().t0&&!fastBlock){const at=new Date(Habits.fast().t0+Habits.fast().plan*36e5);if(at.getTime()>now+LEAD_MS)list.push({id:FAST_NID,title:"⏳ Oruç",body:"Oruç süren doldu. İstediğinde bitirebilirsin.",schedule:{at,allowWhileIdle:true}})}
     // Android caps simultaneous alarms per app (500): the nearest are kept, farther ones are rescheduled when the app opens.

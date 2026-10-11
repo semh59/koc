@@ -1,0 +1,402 @@
+{
+ "source": "https://ezanvakti.emushaf.net/vakitler/{IlceID} (Diyanet times, unofficial mirror)",
+ "fetched": "2026-10-11",
+ "cities": {
+  "Ankara": {
+   "id": 9206,
+   "raw": [
+    {
+     "HicriTarihKisa": "25.4.1448",
+     "HicriTarihKisaIso8601": null,
+     "HicriTarihUzun": "25 Rebiulahir 1448",
+     "HicriTarihUzunIso8601": null,
+     "AyinSekliURL": "https://namazvakti.diyanet.gov.tr/images/sd3.gif",
+     "MiladiTarihKisa": "06.10.2026",
+     "MiladiTarihKisaIso8601": "06.10.2026",
+     "MiladiTarihUzun": "06 Ekim 2026 Salı",
+     "MiladiTarihUzunIso8601": "2026-10-06T00:00:00.0000000+03:00",
+     "GreenwichOrtalamaZamani": 3,
+     "Aksam": "18:31",
+     "Gunes": "06:42",
+     "GunesBatis": "18:24",
+     "GunesDogus": "06:49",
+     "Ikindi": "15:56",
+     "Imsak": "05:20",
+     "KibleSaati": "11:39",
+     "Ogle": "12:42",
+     "Yatsi": "19:49"
+    },
+    {
+     "HicriTarihKisa": "26.4.1448",
+     "HicriTarihKisaIso8601": null,
+     "HicriTarihUzun": "26 Rebiulahir 1448",
+     "HicriTarihUzunIso8601": null,
+     "AyinSekliURL": "https://namazvakti.diyanet.gov.tr/images/sd4.gif",
+     "MiladiTarihKisa": "07.10.2026",
+     "MiladiTarihKisaIso8601": "07.10.2026",
+     "MiladiTarihUzun": "07 Ekim 2026 Çarşamba",
+     "MiladiTarihUzunIso8601": "2026-10-07T00:00:00.0000000+03:00",
+     "GreenwichOrtalamaZamani": 3,
+     "Aksam": "18:30",
+     "Gunes": "06:43",
+     "GunesBatis": "18:23",
+     "GunesDogus": "06:50",
+     "Ikindi": "15:55",
+     "Imsak": "05:21",
+     "KibleSaati": "11:39",
+     "Ogle": "12:42",
+     "Yatsi": "19:47"
+    },
+    {
+     "HicriTarihKisa": "27.4.1448",
+     "HicriTarihKisaIso8601": null,
+     "HicriTarihUzun": "27 Rebiulahir 1448",
+     "HicriTarihUzunIso8601": null,
+     "AyinSekliURL": "https://namazvakti.diyanet.gov.tr/images/sd5.gif",
+     "MiladiTarihKisa": "08.10.2026",
+     "MiladiTarihKisaIso8601": "08.10.2026",
+     "MiladiTarihUzun": "08 Ekim 2026 Perşembe",
+     "MiladiTarihUzunIso8601": "2026-10-08T00:00:00.0000000+03:00",
+     "GreenwichOrtalamaZamani": 3,
+     "Aksam": "18:28",
+     "Gunes": "06:44",
+     "GunesBatis": "18:21",
+     "GunesDogus": "06:51",
+     "Ikindi": "15:54",
+     "Imsak": "05:22",
+     "KibleSaati": "11:38",
+     "Ogle": "12:41",
+     "Yatsi": "19:46"
+    }
+   ],
+   "days": {
+    "2026-10-06": [
+     "05:20",
+     "18:31"
+    ],
+    "2026-10-07": [
+     "05:21",
+     "18:30"
+    ],
+    "2026-10-08": [
+     "05:22",
+     "18:28"
+    ],
+    "2026-10-09": [
+     "05:23",
+     "18:27"
+    ],
+    "2026-10-10": [
+     "05:24",
+     "18:25"
+    ],
+    "2026-10-11": [
+     "05:25",
+     "18:23"
+    ],
+    "2026-10-12": [
+     "05:26",
+     "18:22"
+    ],
+    "2026-10-13": [
+     "05:27",
+     "18:20"
+    ],
+    "2026-10-14": [
+     "05:28",
+     "18:19"
+    ],
+    "2026-10-15": [
+     "05:29",
+     "18:17"
+    ],
+    "2026-10-16": [
+     "05:30",
+     "18:16"
+    ],
+    "2026-10-17": [
+     "05:31",
+     "18:14"
+    ],
+    "2026-10-18": [
+     "05:32",
+     "18:13"
+    ],
+    "2026-10-19": [
+     "05:33",
+     "18:12"
+    ],
+    "2026-10-20": [
+     "05:34",
+     "18:10"
+    ],
+    "2026-10-21": [
+     "05:35",
+     "18:09"
+    ],
+    "2026-10-22": [
+     "05:36",
+     "18:07"
+    ],
+    "2026-10-23": [
+     "05:37",
+     "18:06"
+    ],
+    "2026-10-24": [
+     "05:38",
+     "18:05"
+    ],
+    "2026-10-25": [
+     "05:39",
+     "18:03"
+    ],
+    "2026-10-26": [
+     "05:40",
+     "18:02"
+    ],
+    "2026-10-27": [
+     "05:41",
+     "18:01"
+    ],
+    "2026-10-28": [
+     "05:42",
+     "17:59"
+    ],
+    "2026-10-29": [
+     "05:43",
+     "17:58"
+    ],
+    "2026-10-30": [
+     "05:44",
+     "17:57"
+    ],
+    "2026-10-31": [
+     "05:45",
+     "17:55"
+    ],
+    "2026-11-01": [
+     "05:46",
+     "17:54"
+    ],
+    "2026-11-02": [
+     "05:47",
+     "17:53"
+    ],
+    "2026-11-03": [
+     "05:48",
+     "17:52"
+    ],
+    "2026-11-04": [
+     "05:49",
+     "17:51"
+    ],
+    "2026-11-05": [
+     "05:50",
+     "17:50"
+    ],
+    "2026-11-06": [
+     "05:51",
+     "17:49"
+    ]
+   }
+  },
+  "Istanbul": {
+   "id": 9541,
+   "raw": [
+    {
+     "HicriTarihKisa": "23.4.1448",
+     "HicriTarihKisaIso8601": null,
+     "HicriTarihUzun": "23 Rebiulahir 1448",
+     "HicriTarihUzunIso8601": null,
+     "AyinSekliURL": "https://namazvakti.diyanet.gov.tr/images/sd1.gif",
+     "MiladiTarihKisa": "04.10.2026",
+     "MiladiTarihKisaIso8601": "04.10.2026",
+     "MiladiTarihUzun": "04 Ekim 2026 Pazar",
+     "MiladiTarihUzunIso8601": "2026-10-04T00:00:00.0000000+03:00",
+     "GreenwichOrtalamaZamani": 3,
+     "Aksam": "18:50",
+     "Gunes": "06:56",
+     "GunesBatis": "18:43",
+     "GunesDogus": "07:03",
+     "Ikindi": "16:13",
+     "Imsak": "05:32",
+     "KibleSaati": "11:28",
+     "Ogle": "12:58",
+     "Yatsi": "20:09"
+    },
+    {
+     "HicriTarihKisa": "24.4.1448",
+     "HicriTarihKisaIso8601": null,
+     "HicriTarihUzun": "24 Rebiulahir 1448",
+     "HicriTarihUzunIso8601": null,
+     "AyinSekliURL": "https://namazvakti.diyanet.gov.tr/images/sd2.gif",
+     "MiladiTarihKisa": "05.10.2026",
+     "MiladiTarihKisaIso8601": "05.10.2026",
+     "MiladiTarihUzun": "05 Ekim 2026 Pazartesi",
+     "MiladiTarihUzunIso8601": "2026-10-05T00:00:00.0000000+03:00",
+     "GreenwichOrtalamaZamani": 3,
+     "Aksam": "18:48",
+     "Gunes": "06:57",
+     "GunesBatis": "18:41",
+     "GunesDogus": "07:04",
+     "Ikindi": "16:12",
+     "Imsak": "05:33",
+     "KibleSaati": "11:27",
+     "Ogle": "12:58",
+     "Yatsi": "20:07"
+    },
+    {
+     "HicriTarihKisa": "25.4.1448",
+     "HicriTarihKisaIso8601": null,
+     "HicriTarihUzun": "25 Rebiulahir 1448",
+     "HicriTarihUzunIso8601": null,
+     "AyinSekliURL": "https://namazvakti.diyanet.gov.tr/images/sd3.gif",
+     "MiladiTarihKisa": "06.10.2026",
+     "MiladiTarihKisaIso8601": "06.10.2026",
+     "MiladiTarihUzun": "06 Ekim 2026 Salı",
+     "MiladiTarihUzunIso8601": "2026-10-06T00:00:00.0000000+03:00",
+     "GreenwichOrtalamaZamani": 3,
+     "Aksam": "18:46",
+     "Gunes": "06:59",
+     "GunesBatis": "18:39",
+     "GunesDogus": "07:06",
+     "Ikindi": "16:10",
+     "Imsak": "05:34",
+     "KibleSaati": "11:27",
+     "Ogle": "12:57",
+     "Yatsi": "20:05"
+    }
+   ],
+   "days": {
+    "2026-10-04": [
+     "05:32",
+     "18:50"
+    ],
+    "2026-10-05": [
+     "05:33",
+     "18:48"
+    ],
+    "2026-10-06": [
+     "05:34",
+     "18:46"
+    ],
+    "2026-10-07": [
+     "05:35",
+     "18:45"
+    ],
+    "2026-10-08": [
+     "05:36",
+     "18:43"
+    ],
+    "2026-10-09": [
+     "05:37",
+     "18:41"
+    ],
+    "2026-10-10": [
+     "05:39",
+     "18:40"
+    ],
+    "2026-10-11": [
+     "05:40",
+     "18:38"
+    ],
+    "2026-10-12": [
+     "05:41",
+     "18:37"
+    ],
+    "2026-10-13": [
+     "05:42",
+     "18:35"
+    ],
+    "2026-10-14": [
+     "05:43",
+     "18:33"
+    ],
+    "2026-10-15": [
+     "05:44",
+     "18:32"
+    ],
+    "2026-10-16": [
+     "05:45",
+     "18:30"
+    ],
+    "2026-10-17": [
+     "05:46",
+     "18:29"
+    ],
+    "2026-10-18": [
+     "05:47",
+     "18:27"
+    ],
+    "2026-10-19": [
+     "05:48",
+     "18:26"
+    ],
+    "2026-10-20": [
+     "05:49",
+     "18:24"
+    ],
+    "2026-10-21": [
+     "05:50",
+     "18:23"
+    ],
+    "2026-10-22": [
+     "05:51",
+     "18:21"
+    ],
+    "2026-10-23": [
+     "05:52",
+     "18:20"
+    ],
+    "2026-10-24": [
+     "05:53",
+     "18:19"
+    ],
+    "2026-10-25": [
+     "05:54",
+     "18:17"
+    ],
+    "2026-10-26": [
+     "05:55",
+     "18:16"
+    ],
+    "2026-10-27": [
+     "05:56",
+     "18:14"
+    ],
+    "2026-10-28": [
+     "05:57",
+     "18:13"
+    ],
+    "2026-10-29": [
+     "05:58",
+     "18:12"
+    ],
+    "2026-10-30": [
+     "05:59",
+     "18:10"
+    ],
+    "2026-10-31": [
+     "06:01",
+     "18:09"
+    ],
+    "2026-11-01": [
+     "06:02",
+     "18:08"
+    ],
+    "2026-11-02": [
+     "06:03",
+     "18:07"
+    ],
+    "2026-11-03": [
+     "06:04",
+     "18:05"
+    ],
+    "2026-11-04": [
+     "06:05",
+     "18:04"
+    ]
+   }
+  }
+ }
+}

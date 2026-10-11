@@ -79,7 +79,7 @@ function viewToday(){
   /* One list instead of separate cards: only pending jobs of enabled modules; no card when empty. */
   const todo=[storeMsg()?row("save",storeMsg()[0],storeMsg()[1],[["databackup","Yedek al"]]):"",
     abErr?row("cloud","Otomatik yedek alınamadı",abErr,[["abfix","Düzelt"]]):"",
-    ...medTodo(),...fastTodo(),...vTodo(),
+    ...medTodo(),...fastTodo(),...ramadanTodo(),...vTodo(),
     Motion.walk()?row("steps",Motion.walk().t1?"Yürüyüş kaydedilmedi":"Yürüyüş sürüyor","Adım raporunda bitir ya da kaydet.",[["walkgo","Aç"]]):"",
     sOn&&stepsRead&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?row("steps","Adım sayımı durmuş olabilir","Pil ayarında NeoWell'e kısıtlama koyma.",[["stepsfix","Ayarla"],["stepshide","Kapat"]]):"",
     isNative()&&!exactOk&&st.medOn&&Meds.count()?row("clock","İlaç alarmı birkaç dakika gecikebilir","Tam saat alarm izni kapalı. İzin verirsen tam saatinde çalar.",[["fullalarm","İzin ver"]]):"",
@@ -206,7 +206,7 @@ function viewSettings(){
     ${swHelp("data-mk",st.moveKcalOn,"Hareket kalorisini hedefe ekle","Kilo vermek istiyorsan kapalı bırak.","hlpmk","Açıkken günlük kalori hedefine, kayıtlı antrenman, yürüyüş ve koşuların tahmini enerjisinin %50'si eklenir. Adımlar sayılmaz: hareket düzeyin ve kilo trendin günlük adımı zaten içerir, bu yüzden yarısı eklenir; yine de tahmin hatalıdır ve fazla yemene yol açabilir. Hedefi yalnız artırır, azaltmaz. Kilo vermek istiyorsan kapalı bırakman daha güvenlidir.")}
   </div>`;
   if(sub==="modules")return `<p class="hint">Açtığın takipler ilgili ekranlarda görünür. Kapatınca kayıtların silinmez.</p>
-  <h2 class="grp">Takipler</h2><div class="card">${medSettingsHtml()}${vitalsSettingsHtml()}${cycSettingsHtml()}${fastSettingsHtml()}
+  <h2 class="grp">Takipler</h2><div class="card">${medSettingsHtml()}${vitalsSettingsHtml()}${cycSettingsHtml()}${fastSettingsHtml()}${ramadanSettingsHtml()}
   ${isNative()&&SC()?modRow(`data-act="${st.stepsOn?"stepsoff":"stepsopen"}"`,st.stepsOn,"Adım sayar","Günlük adımını telefon sayar.","hlpst","Telefonun adım sayacını kullanır; ilk açılışta fiziksel aktivite izni istenir. Adımlar yalnız bu telefonda durur."):""}
   ${motionSettingsHtml()}</div>
   <h2 class="grp">Salon antrenmanı</h2><div class="card">${swHelp("data-aw",st.awakeOn,"Antrenmanda ekranı açık tut","","hlpaw","Antrenman sürerken Salon açıkken ekran kararmaz. Başka sekmeye geçince, uygulamadan çıkınca ya da antrenman bitince normale döner.")}${swHelp("data-rpe",st.rpeOn,"Zorluk (RPE) alanı","","hlprpe","Set satırına isteğe bağlı 6-10 zorluk alanı ekler (10 en zor). Çok zorlandığın seanslarda (9,5 ve üstü) öneri ağırlığı artırmaz.")}${swHelp("data-gdv",st.gdVoice,"Rehberli modda sesli komut","","hlpgdv","Sesli komut telefonun metin okuma (TTS) sesiyle çalışır; Türkçe ses yoksa telefonun varsayılan dili kullanılır, ses hiç yoksa sessiz devam eder. Müzik çalarken kısa süre kısılır.")}${swRow("data-gdb",st.gdVib,"Rehberli modda titreşim")}
