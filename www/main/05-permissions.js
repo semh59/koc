@@ -25,6 +25,8 @@ const pmMany=()=>pmMissing().length>=2;
 async function pmRefresh(){
   const ln=LN();
   if(ln){try{pmNotif=(await ln.checkPermissions()).display==="granted"}catch{}}
+  try{const w=MW();if(w)fsiOk=(await w.fsi()).allowed!==false}catch{}
+  try{if(ln)exactOk=(await ln.checkExactNotificationSetting()).exact_alarm!=="denied"}catch{}
   await motionStatus();
   if(document.querySelector('#sheet [data-pm="wiz"]'))pmSheet();
   else if(tab==="today"||tab==="settings")render();

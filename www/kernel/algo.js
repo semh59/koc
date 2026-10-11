@@ -79,6 +79,7 @@ const Algo=(()=>{
     const t=trend(weights),ks=Object.keys(t).sort();
     if(!ks.length)return {tdee:f,source:f?"formül":null,confidence:0,formula:f,est:null};
     const lastDay=dayNum(ks[ks.length-1]);
+    if(today&&dayNum(today)-lastDay>TDEE_WINDOW)return {tdee:f,source:f?"formül":null,confidence:0,formula:f,est:null}; // weights this old say nothing about now
     const inWin=k=>lastDay-dayNum(k)<TDEE_WINDOW&&lastDay-dayNum(k)>=0;
     const days=Object.keys(intake).filter(k=>inWin(k)&&fullKcal(intake[k],f)&&!(today&&k>=today));
     const pts=windowPts(weights,TDEE_WINDOW);
@@ -130,7 +131,7 @@ const Algo=(()=>{
     for(const m of t.matchAll(re)){
       const rest=t.slice(m.index+m[0].length),suf=rest.match(/^[^\s,.;:!?]*/)[0];
       const next=rest.slice(suf.length).split(/[,.;:!?\n]/)[0].trim().split(/\s+/).slice(0,2);
-      if(!/^(m[iu]yor|m[ae](d[iu]|z|m[iu]s|y[ae]c))/.test(suf)&&!next.some(w=>/^(degil|yok|olmayan|olmad|hayir)|m[iu]yor|m[ae]d[iu]/.test(w)))return true;
+      if(!/^(m[iu]yor|m[ae](d[iu]|z|m[iu]s|y[ae]c))/.test(suf)&&!(/^(degil|yok|olmayan|olmad|hayir|m[iu]yor|m[ae]d[iu])/.test(next[0]||"")||/^(degil|yok)/.test(next[1]||"")))return true;
     }
     return false;
   }

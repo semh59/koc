@@ -20,8 +20,10 @@ const CoachLib=(()=>{
   const IDIOM=/(?:yemek\w*|yemeğ\w*|baklava\w*|pizza\w*|çikolata\w*|tatlı\w*|börek\w*|kebap\w*|dondurma\w*|makarna\w*|kahve\w*|lezzet\w*|müzi[kğ]\w*|film\w*|dizi\w*|şarkı\w*|kitab\w*|kitap\w*|seni|sana|ona|buna|harika|güzel|muhteşem|[a-zçğıöşü]{3,}(?:ya|ye))\s+(?:çok\s+|gerçekten\s+)?bayıl\S*/g;
   /* Patterns that also catch spellings without Turkish letters (the text is folded); capitals are handled by low(). */
   const FOLDED={
-    emergency:/gog(?:u|)s\w*\s+(?:\w+\s+)?(?:agri(?!mi)|sikis)|kal(?:b\w*|p)\s+(?:\w+\s+)?agri(?!mi)|nefes\w*\s+(?:\w+\s+)?kesil|kalp kriz|zehirlen(?:d|iyor|mis)|asiri\s+doz|overdo|fazla\s+(?:ilac|hap)\s+(?:ic|al)|(?:ilac|hap)\w*\s+fazla\s+(?:ic|al)/,
-    ed:/(?:\d+\s*gundur|gunlerdir|haftalardir|gunlerce)\s+(?:hic\s+)?(?:ac\b|bir sey yem|yemek yem)|hic\s*bir sey yemiyorum|yemek yemiyorum|kendimi ac birak|yemeyi reddet/
+    mind:/intihar|kendime zarar|kendimi oldur|olmek istiyorum|yasamak istemiyor|kendimi kes|hayatima son|olsem iyi|canima kiy|kendimi as(?:mak|icam|acagim)|kendimi yok et/,
+    check:/bas(?:im)?\s+donu|carpinti|gozum(?:un onu)?\s+karar|gozlerim karar|titreme|asiri halsiz|cok halsiz/,
+    emergency:/bayilacag|bayilacak|bayilma(?![a-z])|gog(?:u|)s\w*\s+(?:\w+\s+)?(?:agri(?!mi)|sikis)|kal(?:b\w*|p)\s+(?:\w+\s+)?agri(?!mi)|nefes\w*\s+(?:\w+\s+)?kesil|kalp kriz|zehirlen(?:d|iyor|mis)|asiri\s+doz|overdo|fazla\s+(?:ilac|hap)\s+(?:ic|al)|(?:ilac|hap)\w*\s+fazla\s+(?:ic|al)/,
+    ed:/anoreksi|bulimi|yeme bozuklu|tikin(?:iyorum|ma)|kusmaya calis|kustum|kusuyorum|yedikten sonra kus|laksatif|yemeyi birak|ac kalmaya calis|kilo vermek icin (?:hic )?(?:yemiyorum|kus)|yediklerimi cikar|(?:\d+\s*gundur|gunlerdir|haftalardir|gunlerce)\s+(?:hic\s+)?(?:ac\b|bir sey yem|yemek yem)|hic\s*bir sey yemiyorum|yemek yemiyorum|kendimi ac birak|yemeyi reddet/
   };
   function redFlag(text){
     const t=low(text).replace(IDIOM,""),f=fold(t);
@@ -32,7 +34,7 @@ const CoachLib=(()=>{
     return null;
   }
   const PREG=/hamileyim|hamile kal|hamilelik|gebeyim|gebe kal|emziriyorum|bebek bekliyorum/;
-  const pregnant=t=>PREG.test(low(t));
+  const pregnant=t=>PREG.test(low(t).replace(/(?:hamilelik|gebelik)\s+(?:yok|de[gğ]il)\w*/g,""));
   /* Line breaks and section headings are neutralized: user text enters the system prompt as data, not as instructions. */
   const HEAD=/KURALLAR|ÇIKTI|KISIT|HESAPLANAN|PROFİL|HEDEFLER|BUGÜN|İLAÇLAR|KATALOG|SON \d+ GÜN|SON ANTRENMANLAR|SON NOTLAR|SAĞLIK NOTU|MENÜ İSTEĞİ|NOT(?=\s*:)/g;
   const oneLine=(x,n)=>String(x==null?"":x).replace(/[\r\n\u2028\u2029\t]+/g," ").replace(HEAD,m=>low(m)).replace(/\s+/g," ").trim().slice(0,n);

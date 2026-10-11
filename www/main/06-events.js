@@ -106,7 +106,7 @@ cPlateauCheck();
 if(loadNote)toast(loadNote);
 quickIngest();
 if(!obNeeded())noticeGate();
-scheduleReminders().then(setNotif);
+if(!obNeeded())scheduleReminders().then(setNotif); // the first run asks for notifications only after the intro
 setInterval(gTick,1000);
 const keysP=keysInit().then(render);
 abBoot();

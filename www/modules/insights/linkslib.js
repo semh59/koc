@@ -75,7 +75,7 @@ const LinksLib=(()=>{
     if(days.size<6||ch.length<3)return null;
     const tr=A.trend(weights||{}),ks=Object.keys(tr).sort(),last=(n)=>{let r=null;for(const k of ks){if(dn(k)<=n)r=k;else break}return r};
     const a=last(from),b=last(t);
-    if(a==null||b==null||a===b)return null;
+    if(a==null||b==null||a===b||dn(a)<from-14||dn(b)<mid)return null; // both ends must be inside the 4 weeks, not months-old weigh-ins
     const sg=(x,u)=>(x>0?"+":x<0?"-":"")+(u==="%"?"%":"")+f1(Math.abs(x)).replace(/,0$/,""),kg=tr[b]-tr[a],pc=avg(ch)*100;
     return `Son 4 haftada kilo trendin ${sg(kg)} kg; ${ch.length} ana harekette tahmini 1TM değişimi ortalama ${sg(Math.round(pc),"%")}. İkisi yan yana gösterilir; biri diğerinin nedeni olmayabilir.`;
   }

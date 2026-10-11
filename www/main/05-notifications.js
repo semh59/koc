@@ -7,11 +7,12 @@ async function lnSchedule(ln,list){
   const isExactNotification=(await ln.checkExactNotificationSetting()).exact_alarm!=="denied";
   return ln.schedule({notifications:list.map(n=>({...n,isExactNotification}))});
 }
+let notifAsked=false; // the system dialog is shown once per app run; a refusal is handled from the permissions centre
 async function scheduleReminders(){
   const ln=LN();if(!ln||recovery)return "web";
   try{
     let p=await ln.checkPermissions();
-    if(p.display!=="granted")p=await ln.requestPermissions();
+    if(p.display!=="granted"&&!notifAsked){notifAsked=true;p=await ln.requestPermissions()}
     if(p.display!=="granted")return "denied";
     /* Android 14+ does not grant the exact-alarm permission on a fresh install; the plugin then sets the alarm to an approximate time, and the user is told. */
     try{const v=(await ln.checkExactNotificationSetting()).exact_alarm!=="denied";if(v!==exactOk){exactOk=v;if(tab==="today")render()}}catch{}

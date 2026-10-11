@@ -421,7 +421,7 @@ function cCatalog(o){const c=CoachLib.catalog(EXDB,o,CORE_EX);return {ids:c.map(
 function cProgSheet(){
   const o=progOpt,g=(k,vals,lbl=v=>v)=>`<div class="chips">${vals.map(v=>`<button class="chip" data-c="po:${k}:${v}" aria-pressed="${o[k]===v}">${lbl(v)}</button>`).join("")}</div>`;
   openSheet(`<h3>Rehber'den program iste</h3><div class="lbl">Haftada gün</div>${g("d",[2,3,4,5,6])}<div class="lbl">Ekipman</div>${g("q",["Salon","Ev tipi","Ağırlıksız"])}<div class="lbl">Seans süresi</div>${g("m",[30,45,60],v=>v+" dk")}<div class="lbl">Seviye</div>${g("l",["Başlangıç","Orta","İleri"])}
-  <p class="hint">Rehber yalnız kütüphanedeki egzersizlerden seçer. İstek, profil ve kayıtlarınla birlikte sağlayıcıya gönderilir.</p><button class="btn" data-c="progask">İste</button>`);
+  <p class="hint">Rehber yalnız kütüphanedeki egzersizlerden seçer. İstek ve profil bilgin sağlayıcıya gönderilir.</p><button class="btn" data-c="progask">İste</button>`);
 }
 async function cProgram(o){
   if(busy||coachBlocked())return;
@@ -470,7 +470,7 @@ function cMenuSheet(){
   const pl=cMenuPlan();
   openSheet(`<h3>Haftalık menü öner</h3>${pl.why?`<p class="mut">${esc(pl.why)}</p>`:`<p class="mut sm">Hedef: günde ~${pl.kcal} kcal${pl.protein?`, protein ${pl.protein[0]}-${pl.protein[1]} g`:pl.pdoc?", protein hedefini hekiminle belirle":""}. ${Algo.PROTEIN_NOTE}${pl.held?` ${esc(pl.block)}; menü bakım düzeyinde hazırlanır, hekimine danış.`:""}</p>`}
   <label class="lbl" for="mnote">Kısıt ya da alerji (isteğe bağlı)</label><textarea class="in" id="mnote" maxlength="200" placeholder="Örneğin: fıstık alerjisi, domuz eti yemem">${esc(menuNote)}</textarea>
-  <p class="hint">Rehber yalnız Benim besinlerim, favorilerin, şablonların ve yerleşik listeden seçer. Tıbbi diyet ya da hastalık menüsü değildir; hastalığın varsa diyetisyenine danış. Yazdığın not, profilin ve kayıtlarınla birlikte sağlayıcıya gönderilir.</p>
+  <p class="hint">Rehber yalnız Benim besinlerim, favorilerin, şablonların ve yerleşik listeden seçer. Tıbbi diyet ya da hastalık menüsü değildir; hastalığın varsa diyetisyenine danış. Yazdığın not, profilin ve bilgin sağlayıcıya gönderilir.</p>
   <div class="two"><button class="btn" data-c="menuask"${pl.why||!coachReady()?" disabled":""}>Rehber'den iste</button><button class="btn ghost" data-c="menulocal"${pl.why?" disabled":""}>Cihazda oluştur</button></div>
   <p class="hint">Cihazda oluştur: anahtar ve izin gerekmez, hiçbir şey gönderilmez. Notta yalnız fıstık, fındık, ceviz, badem, süt, yumurta, gluten, balık ve vejetaryen tanınır; içerikleri yine de kendin kontrol et.</p>`);
 }
