@@ -109,12 +109,12 @@ const VitalsLib=(()=>{
   /* ---- Doctor report PDF ---- */
   const {w:RW,h:RH,m:RM}=ALGO.PAGE,ROW=44,FOOT=80,HEAD1=330,CHART=360;
   /* Table rows: one row per raw reading. A pressure reading of a session shows its measurement number (i). */
-  function reportRows(rows,kind,from,to,gu){
+  function reportRows(rows,kind,from,to,gu,since){
     return rows.filter(r=>r.k===kind&&r.day>=from&&r.day<=to).sort(cmpAt).map(r=>{
       let ctx,val;
       if(kind==="t"){ctx=sessionName(r.session)+(r.sid&&r.i?`, ${r.i}. ölçüm`:"");val=`${r.sys}/${r.dia} mmHg`+(r.pulse?`  nabız ${r.pulse}`:"")}
       else{ctx=ctxName(r.ctx);val=`${UN.fg(r.g,gu)} ${UN.gl(gu)}`}
-      return {d:fmtD(r.day),t:r.time,c:ctx,v:val,note:r.note||""};
+      return {d:fmtD(r.day),t:r.time,c:ctx,v:val,note:r.note||"",dose:(kind==="t"&&since&&since(r.day,r.time))||""};
     });
   }
   function paginate(rowsN,nSummary){
@@ -175,10 +175,11 @@ const VitalsLib=(()=>{
     y+=ROW;
     ctx.font="26px sans-serif";
     for(const r of items){
-      ctx.fillStyle="#10232b";ctx.fillText(r.d,RM,y+30);ctx.fillText(r.t,RM+190,y+30);ctx.fillText(r.c,RM+300,y+30);ctx.fillText(r.v,RM+700,y+30);
+      ctx.fillStyle="#10232b";ctx.fillText(r.d,RM,y+30);ctx.fillText(r.t,RM+190,y+30);ctx.fillText(r.c,RM+300,r.dose?y+24:y+30);ctx.fillText(r.v,RM+700,y+30);
+      if(r.dose){ctx.font="18px sans-serif";ctx.fillStyle="#62737a";ctx.fillText(r.dose,RM+300,y+41);ctx.font="26px sans-serif"}
       y+=ROW;
     }
-    ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText(`NeoWell · sayfa ${info.page}/${info.total}`,RM,RH-45);
+    ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText(`NeoWell · sayfa ${info.page}/${info.total}`+(items.some(r=>r.dose)?" · Süreler uygulamaya yazılan kayıtlara göredir.":""),RM,RH-45);
   }
   return {newSid,CTX,SESSIONS,ctxName,sessionName,LIM,check,clean,sessions,homeAvg,gStats,crisis,needsConfirm,latest,cmpAt,reportRows,paginate,drawPage,drawChart,RW,RH};
 })();

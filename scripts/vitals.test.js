@@ -99,4 +99,5 @@ ok("two identical manually entered readings in the same minute (glucose and bloo
 ok("the same sid and signature (backup merge double counting) becomes one record",V.clean([G({g:100,sid:"ab"}),G({g:100,sid:"ab"})]).length===1);
 ok("records without a sid stay as they are, an exact copy without a sid is kept once",V.clean([G({g:90}),G({g:90}),G({g:91})]).length===2&&V.clean([G({g:90})])[0].sid===undefined);
 ok("glucose also keeps a safe sid, a bad sid is dropped",V.check(G({sid:"x1"})).row.sid==="x1"&&V.check(G({sid:"A B"})).row.sid===undefined);}
+ok("reportRows: the dose label comes from the since callback, only for pressure rows",(r=>r[0].dose==="X"&&V.reportRows([T({id:1})],"t","2026-09-01","2026-09-30")[0].dose===""&&V.reportRows([{k:"s",ctx:"fasting",g:90,day:"2026-09-10",time:"08:00",id:2}],"s","2026-09-01","2026-09-30",undefined,()=>"X")[0].dose==="")(V.reportRows([T({id:1})],"t","2026-09-01","2026-09-30",undefined,()=>"X")));
 finish();

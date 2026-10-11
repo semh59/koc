@@ -135,7 +135,7 @@ function viewBp(){
   const raw=S.vitals.filter(r=>r.k==="t"&&r.day>=from&&r.day<=end);
   const bpSeries=[{pts:pt(raw,"sys"),color:"var(--ink)",shape:"c",label:"Sistolik (büyük)",short:"Sistolik"},{pts:pt(raw,"dia"),color:"var(--water)",shape:"s",dash:true,below:true,label:"Diyastolik (küçük)",short:"Diyastolik"}];
   const avgTxt=a=>a?`${Math.round(a.sys)}/${Math.round(a.dia)}`:"–";
-  const rows=session.slice().reverse().map(s=>`<div class="row"><span class="grow"><b class="num">${Math.round(s.sys)}/${Math.round(s.dia)}</b>${s.pulse?`<span class="mut num"> · nabız ${s.pulse}</span>`:""}<small class="db mut num">${fd(s.day)} ${s.time} · ${VitalsLib.sessionName(s.session)}${s.n>1?`, ${s.n} ölçüm`:""}</small></span>${vDel(s.raw.map(x=>x.id))}</div>`);
+  const rows=session.slice().reverse().map(s=>`<div class="row"><span class="grow"><b class="num">${Math.round(s.sys)}/${Math.round(s.dia)}</b>${s.pulse?`<span class="mut num"> · nabız ${s.pulse}</span>`:""}<small class="db mut num">${fd(s.day)} ${s.time} · ${VitalsLib.sessionName(s.session)}${s.n>1?`, ${s.n} ölçüm`:""}</small>${(d=>d?`<small class="db mut">${d}</small>`:"")(Meds.bpSince(s.day,s.time))}</span>${vDel(s.raw.map(x=>x.id))}</div>`);
   return `${vBtns("addbp")}
   ${h.all?`<div class="card"><div class="lbl">Ev ortalaması (son 7 gün)</div>
     <div class="ink sumv num">${avgTxt(h.all)} <small>mmHg</small></div><div class="mut sm">${h.all.n} ölçüm, ${h.days} gün</div>${h.enough?"":`<div class="mut sm">Ortalama için en az 3 gün, tercihen 7 gün sabah ve akşam ölçüm gerekir.</div>`}
@@ -167,7 +167,7 @@ function vPdfMenu(kind){
   openSheet(`<h3>Doktor raporu</h3><p class="mut sm">Hangi dönemi rapora ekleyelim?</p>${[7,14,30,90].map(n=>`<button class="mb-2 btn ghost" data-vt="pdf:${kind}:${n}">Son ${n} gün</button>`).join("")}<button class="btn ghost" data-vt="close">Vazgeç</button>`);
 }
 function vReportInfo(kind,days){
-  const end=dayKey(),from=keyOff(1-days),all=S.vitals,rows=VitalsLib.reportRows(all,kind,from,end,Units.gu());
+  const end=dayKey(),from=keyOff(1-days),all=S.vitals,rows=VitalsLib.reportRows(all,kind,from,end,Units.gu(),Meds.bpSince);
   const period=`${vFy(from)} - ${vFy(end)}`;
   const summary=[["Dönem",`${period} (${days} gün)`],["Ölçüm sayısı",String(rows.length)]];
   let series,title;

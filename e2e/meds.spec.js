@@ -1,6 +1,6 @@
 "use strict";
 /* Medication alarm diagnostics: the alarm log page in Settings > Modules and the real dose test (fake MedWake and LocalNotifications). */
-const {test,expect,NOW,state,medPlugins:plugins}=require("./fixtures");
+const {test,expect,NOW,state,day,medPlugins:plugins}=require("./fixtures");
 
 const T=NOW.getTime();
 const LOG={sdk:35,state:{t:T,a:"NOW",kl:false,ia:true,ne:true,fsi:true,ci:2,mi:4,bo:false,ex:true},
@@ -62,4 +62,16 @@ test("double-dose guard: a different slot taken 20 minutes ago asks first; No ke
   await page.evaluate("medMark(1,'12:00','t')");
   await expect.poll(async()=>(await app.state()).medLog.length).toBe(2);
   expect((await app.state()).meds[0].k).toBe(9);
+});
+
+test("blood pressure label: the dose-since line appears only after the medication is marked as a pressure medicine",async({app,page})=>{
+  const seed=state({medOn:true,bpOn:true},{meds:[{id:1,n:"Amlodipin",t:["07:00"],on:true}],medLog:[{id:1,m:1,day:day(0),slot:"07:00",st:"t",at:"07:10"}],vitals:[{id:1,k:"t",day:day(0),time:"09:30",sys:128,dia:82,session:"morning"}]});
+  await app.open({seed});await app.go("bp");
+  await expect(app.view).toContainText("128/82");
+  await expect(app.view).not.toContainText("Son ilaç kaydından");
+  await app.go("meds");await page.locator('[data-md="edit:1"]').click();
+  await page.locator('label:has(#mbp), #mbp').first().click({force:true});await page.locator('[data-md="save"]').click();
+  expect((await app.state()).meds[0].bp).toBe(true);
+  await app.go("bp");
+  await expect(app.view).toContainText("Son ilaç kaydından 2 sa 20 dk sonra");
 });
