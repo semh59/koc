@@ -64,13 +64,13 @@
 | kernel/unitui.js | 6 | 1 |
 | main/01-core.js | 27 | 72 |
 | main/02-state-components.js | 13 | 10 |
-| main/03-screens.js | 103 | 37 |
+| main/03-screens.js | 101 | 37 |
 | main/04-sheets.js | 61 | 59 |
 | main/05-notifications.js | 50 | 30 |
 | main/06-events.js | 86 | 6 |
 | main/07-actions.js | 48 | 1 |
-| modules/coach/coach.js | 58 | 159 |
-| modules/coach/coachlib.js | 9 | 1 |
+| modules/coach/coach.js | 52 | 151 |
+| modules/coach/coachlib.js | 8 | 1 |
 | modules/coach/index.js | 3 | 1 |
 | modules/coach/insightlib.js | 6 | 1 |
 | modules/cycle/cyclelib.js | 3 | 1 |

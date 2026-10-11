@@ -139,17 +139,6 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("log card: saving twice does nothing",ev("S.myFoods.filter(f=>f.n==='Simit').length")===1);
     tap("c","no:1");
     ok("log card: 'no' marks the card declined",card(0).state==="no");
-    ev("S.settings.age=16");
-    chat({kind:"propose",kcal:500,why:"",state:"pending"});
-    tap("c","applyk:1");
-    ok("calorie proposal while a safety block applies (under 18) is refused and the card is closed",card(0).state==="no"&&ev("S.settings.kcal")!==500);
-    ev("Object.assign(S.settings,{heightCm:178,age:35,sex:'m',act:1,goalKg:78,kcal:2200})");
-    chat({kind:"propose",kcal:2000,why:"",state:"pending"});
-    tap("c","applyk:1");
-    ok("calorie proposal inside the safe range is applied",card(0).state==="ok"&&ev("S.settings.kcal")===2000);
-    chat({kind:"propose",kcal:1900,why:"",state:"pending"});
-    tap("c","nok:1");
-    ok("calorie proposal: 'no' leaves the target unchanged",card(0).state==="no"&&ev("S.settings.kcal")===2000);
     ev("S.chat=[{id:3,role:'coach',text:'',card:{kind:'safety',level:'check'}},{id:4,role:'user',text:'merhaba'}];tab='coach';render()");
     $q('[data-mid="3"] [data-c="dismiss"]').click();
     ok("a safety notice is dismissed with its button; other messages stay",ev("S.chat.map(m=>m.id).join()")==="4");

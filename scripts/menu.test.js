@@ -26,13 +26,10 @@ const errs=[];
     ok("the catalog has at most 60 lines, my foods first, line format id|name|kcal|protein, '|' is stripped, recipes are not sent",cc.n===60&&/^m0\|Besin 0 a+( 50 g)?\|\d+\|\d+$/.test(cc.first)&&cc.text.split("\n").every(l=>l.split("|").length===4)&&cc.ids.some(i=>i[0]==="f")&&cc.ids.some(i=>i[0]==="t")&&cc.ids.some(i=>i[0]==="b")&&!cc.text.includes("Gizli"),cc.first);
     await ev("(()=>{menuNote='n'.repeat(200);S.settings.kcal=2000;S.settings.healthNote='';return cMenu()})()");
     const tot=sent.messages.reduce((a,m)=>a+m.content.length,0);
-    {const sys0=sent.messages[0].content,full=ev("CoachLib.contextText(cData())").length,lean=ev("CoachLib.contextText(cData(),'x','menu')").length;
-    ok("menu request: no 14-day table, TODAY or notes; restriction/profile/calorie target present; context at least 2x shorter than full",!/SON 14 GÜN|BUGÜN:|SON NOTLAR/.test(sys0.slice(sys0.indexOf("PROFİL:")))&&sys0.includes("PROFİL:")&&sys0.includes("HESAPLANAN:")&&sys0.includes("Hedef günlük 2000 kcal")&&lean*2<full,[lean,full]);}
+    {const sys0=sent.messages[0].content;ok("menu request: only the profile line and the calorie target reach the model, no records, notes or medication",sys0.includes("PROFİL:")&&sys0.includes("Hedef günlük 2000 kcal")&&!/SON 14 GÜN|BUGÜN:|SON NOTLAR|İLAÇ|HESAPLANAN|SAĞLIK NOTU/.test(sys0));}
     ok("in the worst case (60-line catalog, 14 days, 200-character restriction note) the real request's total context is < 9000 characters",tot<9000&&sent.messages.length===2,tot);
     // realistic worst case: 12 medications (6 times), 10 long meals today, 12 long chat messages, 500-character health note, 3 workouts
     ev(base+";S.settings.healthNote='h'.repeat(500);S.entries=[];S.meds=Array.from({length:12},(_,i)=>({id:i+1,n:'İlaç '+i+' '+'a'.repeat(34),d:'d'.repeat(30),t:['06:00','09:00','12:00','15:00','18:00','21:00'],w:[1,2,3,4,5],on:true,k:50}));S.settings.medOn=true;for(let i=0;i<14;i++){add('weight',80,'',keyOff(-i));add('food',500,'y',keyOff(-i))}for(let i=0;i<10;i++)add('food',500,'Uzun yemek adı '+'b'.repeat(80));for(let i=0;i<9;i++)add('water',250,'');for(let i=0;i<8;i++)add('exercise',30,'s'.repeat(60));for(let i=0;i<6;i++)add('note',null,'n'.repeat(300));add('steps',500,'');S.chat=Array.from({length:12},(_,i)=>({id:i+1,role:i%2?'coach':'user',text:'m'.repeat(1500),t:i+1}));S.cid=13;S.workouts=Array.from({length:3},(_,i)=>({id:i+1,day:keyOff(-i),t0:Date.now()-i*1e6-1e5,t1:Date.now()-i*1e6,name:'Antrenman '+i,ex:CORE_EX.slice(0,12).map(id=>({id,note:'',sets:[{kg:100,reps:10,done:true}]}))}))");
-    const ctx=ev("CoachLib.contextText(cData())");
-    ok("context: at most 8 medication lines, at most 12 meal lines with names of 40 characters, water on one line, no empty 'not:' line",(ctx.match(/\| saatler /g)||[]).length===8&&(ctx.match(/yemek: /g)||[]).length===11&&!ctx.includes("b".repeat(41))&&(ctx.match(/; su \d+ ml/g)||[]).length===1&&!/^BUGÜN:.*not: (;|\()/m.test(ctx)&&ctx.includes("not: "+"n".repeat(100))&&!ctx.includes("n".repeat(101)),ctx.length);
     ok("chat history is the last 10 messages, each at most 300 characters",ev("cMessages('x').length")===12&&ev("cMessages('x').slice(1,11).every(m=>m.role==='user'?m.content.length===300:JSON.parse(m.content).reply.length===260)"));
     const size=()=>sent.messages.reduce((a,m)=>a+m.content.length,0),LIM={chat:11800,menu:11300,program:13000},got={};
     sent=null;ev("cSend('merhaba')");await until(()=>sent);got.chat=size();
@@ -103,7 +100,7 @@ const errs=[];
     ok("calorie-deficit block (health note) + target below maintenance: the menu is at maintenance level, with a physician note",hp.held===true&&hp.kcal>1500&&hp.block.includes("Sağlık notun"),hp);
     ev("menuNote=''");reply={reply:"x",menu:null};
     await ev("cMenu()");
-    ok("under the block the request carries a restriction line and says not to build a deficit",sent.messages[0].content.includes("KISIT var: Sağlık notunda hekim takibi")&&sent.messages[0].content.includes("kalori açığı kurma"));
+    ok("under the block the request says not to build a deficit without naming the reason",!sent.messages[0].content.includes("KISIT")&&!sent.messages[0].content.includes("Sağlık notunda")&&sent.messages[0].content.includes("Kalori açığı kurma"));
     ev(base+";S.chat=[];S.settings.healthNote='tansiyon';S.settings.kcal=1500;S.entries=[]");
     ok("block present but maintenance not computable (no weight records): no menu, the reason is stated",ev("cMenuPlan().why").includes("hekimine ya da diyetisyene danış"));
     ev(base+";S.chat=[{id:1,role:'user',text:'x',t:1,fl:'ed'}]");

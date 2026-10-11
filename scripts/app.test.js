@@ -949,7 +949,6 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     // medications screen
     ev("tab='meds';render()");
     ok("medications screen: title, today's doses, medication list, warning text",q("#ttl").textContent==="İlaçlar"&&q("#view").textContent.includes("Test İlaç")&&q("#view").textContent.includes("08:00, 20:00 · her gün")&&q("#view").textContent.includes("doz önermez")&&q('nav [data-tab="more"]').getAttribute("aria-current")==="page"&&!q('nav [data-tab="today"]').getAttribute("aria-current"));
-    ok("Coach context: medications go with name, time, last 7 days adherence and the warning",(c=>c.includes("İLAÇLAR")&&c.includes("Test İlaç")&&c.includes("08:00, 20:00")&&c.includes("doz sayıları son 7 gün")&&c.includes("hekime"))(ev("CoachLib.contextText(cData())")));
     ev("S.settings.medOn=false;render()");
     ok("with medications off the bottom menu has the same 5 tabs, no medication in the Coach context",qa("nav button").map(b=>b.dataset.tab).join()==="today,gym,trend,coach,more"&&!ev("CoachLib.contextText(cData())").includes("İLAÇLAR"));
     ev("S.settings.medOn=true;render()");
@@ -1218,9 +1217,6 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     click('[data-g="menu:0"]');click('[data-g="rmex:0"]');
     ok("when an exercise is deleted the timer stops",ev("gTim")===null);
     ev("S.workouts=[{id:50,day:dayKey(),t0:Date.now()-3600000,t1:Date.now(),name:'Test',tpl:null,ex:[{id:'plank',note:'',sets:[{kg:null,reps:null,sec:30,done:true},{kg:null,reps:null,sec:30,done:true}]},{id:'pushup',note:'',sets:[{kg:0,reps:12,done:true}]},{id:'treadjog',note:'',sets:[{kg:null,reps:null,sec:1500,done:true}]},{id:'squat',note:'',sets:[{kg:100,reps:5,done:true}]}]}]");
-    const ctx=ev("CoachLib.contextText(cData())");
-    ok("Coach context: timed, body weight, cardio and weighted exercises are read",ctx.includes("Plank 2x30 sn")&&ctx.includes("Şınav 1x12")&&ctx.includes("25 dk")&&ctx.includes("Squat 100x5"),ctx.split("\n").filter(l=>l.startsWith("SON ANTRENMAN")));
-    ok("Coach context: weekly sets by region",ctx.includes("BU HAFTA TAMAMLANAN SET (bölgeye göre):")&&ctx.includes("Karın 2")&&ctx.includes("Ön bacak 1"),ctx.split("\n").filter(l=>l.startsWith("BU HAFTA")));
     ev("S.workouts=[];S.customEx=[];tab='today';render()");
     w.Capacitor.Plugins.LocalNotifications=lnOld2;
   }
@@ -1258,12 +1254,6 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     q("#bk").value=JSON.stringify({...JSON.parse(bk),sleep:"x",mood:{a:1},fast:7});await loadBackup();
     ok("with a junk sleep/mood/fasting value the other data loads completely",ev("S.entries.length")===JSON.parse(bk).entries.length&&ev("S.sleep.length")===0&&ev("S.fast.log.length")===0);
     ev("S.sleep=[{day:dayKey(),min:450}];S.mood=[]");
-    let ctx=ev("CoachLib.contextText(cData())");
-    ok("Coach context: the sleep column only when there is data, the mood column absent when there is none",ctx.includes("| adım | uyku sa):")&&ctx.includes("| 7,5")&&!ctx.includes("ruh hali"),ctx.split("\n").filter(l=>l.startsWith("SON 14")));
-    ev("S.sleep=[]");ctx=ev("CoachLib.contextText(cData())");
-    ok("Coach context: with no sleep and mood data the column header is as before",ctx.includes("| spor dk | adım):")&&!ctx.includes("uyku"));
-    ev("S.mood=[{day:dayKey(),v:3}]");ctx=ev("CoachLib.contextText(cData())");
-    ok("Coach context: the mood column",ctx.includes("| adım | ruh hali 1-5):"));
     ev("S.mood=[];render()");
     // fasting
     const lnO=w.Capacitor.Plugins.LocalNotifications,sc=[],rmv=[];
@@ -1587,14 +1577,6 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     click('[data-range="0"]');
     ok("Trend Tümü: from the first record to today (monthly bars), chart 790+ days, no NaN",ev("range")===0&&q("#view").innerHTML.includes("aylık ortalamalar")&&q("#view").innerHTML.includes("Son")&&!/NaN|undefined/.test(q("#view").textContent)&&q(".chart").getAttribute("data-tip").includes("95"));
     ev("range=30;tab='today';render()");
-    { // Coach context: watch (Health Connect) steps and sleep do not go; phone sensor and hand-entered do
-      const k=ev("keyOff(-1)");
-      ev(`S.entries=[{id:S.nextId++,day:"${k}",time:"00:00",type:"steps",v:9000,ph:3000,hc:9000,text:""},{id:S.nextId++,day:"${k}",time:"10:00",type:"steps",v:500,text:"manual"}];S.sleep=[{day:"${k}",min:420,src:"hc"}]`);
-      const d=JSON.parse(ev("JSON.stringify(cData())")),row=(Array.isArray(d)?d:d.days||[]).find(x=>x&&x.ad!=null&&String(k).endsWith(x.d))||{};
-      ok("Coach context: watch steps (9000) and watch sleep do not go; phone sensor (3000) + manual (500) go",row.ad===3500&&row.sl===undefined,row);
-      ev("S.entries=[];S.sleep=[{day:'"+k+"',min:400}]");
-      ok("Coach context: hand-entered sleep goes",(r=>r&&r.sl===400)((JSON.parse(ev("JSON.stringify(cData())")).days||JSON.parse(ev("JSON.stringify(cData())"))).find(x=>x&&String(k).endsWith(x.d))));
-    }
     // Rings show today; tapping opens the Day screen, last 14 days and calendar
     ev(`S.workouts=[];S.entries=[{id:S.nextId++,day:keyOff(-1),time:"20:00",type:"exercise",v:45,text:"Cross bike"},{id:S.nextId++,day:dayKey(),time:"08:00",type:"exercise",v:20,text:"Yürüyüş"}];S.settings.sportWeek=150;logOff=0;tab="today";render()`);
     ok("the sport ring counts only today (yesterday's 45 min does not), daily share 21 min",q(".rings").textContent.includes("20 / 21 dk")&&!q(".rings").textContent.includes("65"));
@@ -1656,14 +1638,9 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("S.chat=[];tab='trend';render()");
     q('[data-c="why"]').click();await flush();
     const wc=ev("S.chat.find(m=>m.card&&m.card.kind==='why')");
-    ok("without consent the why card is local, no fetch, 'Rehber'e yorumlat' not shown",ev("tab")==="coach"&&wc&&wc.card.items[0].t.includes("hedefin 1800 kcal")&&fetched===0&&!q('[data-c^="whyai"]'),[wc,fetched]);
-    await ev(`cWhyAsk(${wc.id})`);
-    ok("without consent 'Rehber'e yorumlat' makes no call",fetched===0&&!ev(`S.chat.find(m=>m.id===${wc.id}).card.asked`));
-    ev("S.settings.consent=true;S.settings.consentP='gemini,groq,nvidia,openrouter';S.settings.age=30;render()");
-    q(`[data-c="whyai:${wc.id}"]`).click();await flush();
-    ok("with consent and a provider 'Rehber'e yorumlat' calls once, the reply lands in chat, the button goes",fetched===1&&ev("S.chat[S.chat.length-1].text")==="Yorum"&&!q('[data-c^="whyai"]')&&!q("#view").textContent.includes("gönderilmedi")&&q("#view").textContent.includes("Rehber'e gönderildi"),fetched);
+    ok("without consent the why card is local, no fetch, no AI button",ev("tab")==="coach"&&wc&&wc.card.items[0].t.includes("hedefin 1800 kcal")&&fetched===0&&!q('[data-c^="whyai"]'),[wc,fetched]);
     const cc=JSON.parse(ev("JSON.stringify(cleanCoach(JSON.parse(JSON.stringify(S))))"));
-    ok("the why card survives a reload",cc.chat.some(m=>m.card&&m.card.kind==="why"&&m.card.items.length===wc.card.items.length&&m.card.asked===true));
+    ok("the why card survives a reload",cc.chat.some(m=>m.card&&m.card.kind==="why"&&m.card.items.length===wc.card.items.length));
     const g=JSON.parse(ev(`JSON.stringify(cleanCoach({chat:[{id:1,role:'coach',text:'',t:1,card:{kind:'why',items:'x'}},{id:2,role:'coach',text:'',t:1,card:{kind:'why',items:[null,{k:'X!',t:1}]}},{id:3,role:'user',text:'merhaba',t:1}]}))`));
     ok("with a junk why card the other messages load completely",g.chat.length===3&&!g.chat[0].card&&!g.chat[1].card&&g.chat[2].text==="merhaba");
     // plateau
@@ -2138,11 +2115,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   ok("a model safety flag produces a card",ev("S.chat.some(m=>m.card&&m.card.kind==='safety')"));
   ev("S.chat=[];Object.assign(S.settings,{age:12,heightCm:165,goalKg:45,healthNote:'',kcal:0});S.entries=[];for(let i=13;i>=0;i--)S.entries.push({id:100+i,day:keyOff(-i),time:'08:00',type:'weight',v:60-i*0.01,text:''})");
   ev("cReply({reply:'x',log:[],propose:{kcal:1300,why:'a'},flag:null})");
-  ok("no deficit suggestion is made to under 18",!ev("S.chat.some(m=>m.card&&m.card.kind==='propose')"));
-  ev("S.entries=[];cReply({reply:'x',log:[],propose:{kcal:1300,why:'a'},flag:null})");
-  ok("with the brake on and maintenance not computable (no weigh-in) no calorie suggestion is made",!ev("S.chat.some(m=>m.card&&m.card.kind==='propose')"));
-  ev("S.settings.kcal=0;cClick('applyk:'+cPush({role:'coach',text:'',card:{kind:'propose',kcal:1300,why:'',limited:false,state:'pending'}}).id)");
-  ok("a pending suggestion left from before the brake is not applied",ev("S.settings.kcal")===0&&ev("S.chat[S.chat.length-1].card.state")==="no");
+  ok("the Coach cannot propose a calorie target any more: a propose field in the reply makes no card",!ev("S.chat.some(m=>m.card&&m.card.kind==='propose')"));
   ev("S.entries=[];for(let i=0;i<10;i++)add('water',250)");ev("S.settings.lastBackup=''");
   ok("a warning appears if there is no backup",ev("viewToday()").includes("Verilerini yedekle"));
   ev("markBackup()");
@@ -2759,9 +2732,9 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     const inp=w.document.querySelector("#ageIn");inp.value="16";inp.dispatchEvent(new w.Event("change",{bubbles:true}));
     ok("once consent is given, setting the age to 16 drops the consent",ev("S.settings.consent")===false&&ev("S.settings.consentV")===0);
     ev("S.settings.consent=true;S.settings.consentP='gemini,groq,nvidia,openrouter';S.settings.consentV=CONSENT_V"); // old/external state
-    ev("cSend('merhaba')");await ev("cFlush()");ev("progOpt={d:3,q:'Salon',m:45,l:'Başlangıç'}");await ev("cProgram(progOpt)");await ev("cMenu()");await ev("cComment('plan')");await ev("cComment('weekly')");
+    ev("cSend('merhaba')");await ev("cFlush()");ev("progOpt={d:3,q:'Salon',m:45,l:'Başlangıç'}");await ev("cProgram(progOpt)");await ev("cMenu()");
     let t="none";try{await ev("cAsk([{role:'user',content:'x'}],10)")}catch(e){t=e.message}
-    ok("under 18: chat, program, menu, comment and direct cAsk send no request",n===0&&t==="consent",[n,t]);
+    ok("under 18: chat, program, menu and direct cAsk send no request",n===0&&t==="consent",[n,t]);
     ok("backup/startup cleaner: consent is invalid if age<18, kept if 18+",ev("cleanSettings({consent:true,consentV:CONSENT_V,age:16}).consent")===false&&ev("cleanSettings({consent:true,consentV:CONSENT_V,age:30}).consent")===true);
     ok("in old data an under-18 age is kept (the brake chain continues)",ev("cleanSettings({age:15}).age")===15&&ev("cleanSettings({age:17,consent:true,consentV:CONSENT_V}).consent")===false);
     reset();ev("Object.assign(S.settings,{age:16,fastOn:true,heightCm:165});S.entries=[{id:1,day:dayKey(),time:'08:00',type:'weight',v:60,text:''}];save();S=load();tab='today';render()");
@@ -2786,11 +2759,11 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   }
   { // the consent text matches the real data and the policy
     const doc=require("fs").readFileSync(path.join(__dirname,"../docs/privacy-policy.md"),"utf8"),sent=ev("CONSENT_SENT"),note=ev("CONSENT_NOT");
-    ok("consent text version 2; consent of an old version lapses",ev("CONSENT_V")===2&&ev("cleanSettings({consent:true,consentV:1}).consent")===false);
+    ok("consent text version 3; consent of an old version lapses",ev("CONSENT_V")===3&&ev("cleanSettings({consent:true,consentV:2}).consent")===false);
     ok("the in-app consent text and policy section 5 carry the same sent/not-sent list",doc.includes("**Rehber'e gönderilenler** (uygulama içindeki onay metniyle aynıdır): "+sent+".")&&doc.includes("**Rehber'e ne zaman gider:** "+ev("CONSENT_WHEN"))&&ev("consentHtml()").includes(ev("CONSENT_WHEN"))&&doc.includes("**Rehber'e gönderilmeyenler:** "+note)&&ev("consentHtml()").includes(sent)&&ev("consentHtml()").includes(note));
-    reset();ev("S.settings.medOn=true;S.meds=[{id:1,n:'Ilac',d:'1 tablet',t:['08:00'],w:[1],on:true,k:10}];S.mealTpl=[];S.myFoods=[{n:'Kendi besinim',k:100,p:5}]");
+    reset();ev("S.myFoods=[{n:'Kendi besinim',k:100,p:5}];Object.assign(S.settings,{heightCm:170,age:34,sex:'m',act:1,kcal:1900})");
     const ctx=ev("CoachLib.contextText(cData())"),cat=ev("cMenuCat().text");
-    ok("every datum named in the text is really in the context: dose, weekdays, adherence, stock, today's food, own food name",ctx.includes("1 tablet")&&ctx.includes("haftanın günleri")&&ctx.includes("son 7 gün")&&ctx.includes("stok")&&cat.includes("Kendi besinim")&&["doz","haftanın günleri","son 7 günün uyumu","stok","bugünkü kayıtların","kendi besin"].every(k=>sent.includes(k)));
+    ok("every datum named in the text is really sent: profile, calorie goal, own food names; the list names nothing else",ctx.includes("170 cm")&&ctx.includes("1900")&&cat.includes("Kendi besinim")&&["boyun","kalori hedefin","kendi besin"].every(k=>sent.includes(k))&&!/sağlık notun;|ilaç adı|son 14 günün|bugünkü kayıtların/.test(sent.replace("sağlık notun, ilaçların","")));
     ok("policy: a password is required on all backups (at least 10); body measurements and recipes are in the table",doc.includes("parola zorunludur, en az 10 karakterdir")&&doc.includes("vücut ölçüleri (bel, kalça")&&doc.includes("kendi tarifleri"));
     reset();
   }
@@ -2818,9 +2791,9 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     const MED="[{id:1,n:'Vitamin D',t:['08:00'],on:true}]";
     const prof=`S.entries=[];S.chat=[];S.meds=[];S.vitals=[];Object.assign(S.settings,{heightCm:175,age:35,goalKg:80,healthNote:'',riskClearedAt:'',kcal:0});for(let i=0;i<20;i++)add('weight',90+i*0.1,'',keyOff(-i));`;
     reset();ev(prof);
-    ok("clean profile: no KISIT, no confirm button, the goal duration in Trend",!ev("CoachLib.contextText(cData())").includes("KISIT")&&!ev("gEnergy()").includes("riskok")&&ev("viewTrend()").includes("hafta.</p>"));
+    ok("clean profile: no KISIT, no confirm button, the goal duration in Trend",!ev("cCalc().block")&&!ev("gEnergy()").includes("riskok")&&ev("viewTrend()").includes("hafta.</p>"));
     ev(`S.meds=${MED}`);
-    const ctx=()=>ev("CoachLib.contextText(cData())");
+    const ctx=()=>ev("(()=>{const c=cCalc();return c.block?'KISIT: '+c.why:''})()");
     ok("90 kg with no note, medication record: the Coach KISIT line with a reason",ctx().includes("KISIT: İlaç kaydın var"),ctx().split("\n").filter(l=>l.includes("KISIT")));
     const tdee=ev("Math.round(cCalc().tdee/10)*10");
     ok("medication record: the suggested target is maintenance level, a 'Hekimime danıştım' button",ev("cCalc().target")===tdee&&ev("gEnergy()").includes('data-act="riskok"'));
@@ -2838,16 +2811,16 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("S.settings.healthNote='';S.chat=[{id:1,t:1,role:'user',text:'x',fl:'ed'}]");
     ok("the chat ed flag is a KISIT and a menu block",ctx().includes("Yeme düzeniyle")&&!!ev("cMenuPlan().why"));
     { // chat brake: every code path goes through a single risk(); the user cannot lift it
-      const gates=()=>ev("(()=>{const c=cCalc();S.chat=S.chat.filter(m=>!(m.card&&m.card.kind==='propose'));cReply({reply:'x',propose:{kcal:Math.round(c.tdee-300)}});const pr=S.chat.some(m=>m.card&&m.card.kind==='propose');return [pr,!!cMenuPlan().why,!!(risk().ed||risk().pregnant),!!risk().block,kcalBlocked(c.tdee-300,c)]})()")
+      const gates=()=>ev("(()=>{const c=cCalc();return [!!cMenuPlan().why,!!(risk().ed||risk().pregnant),!!risk().block]})()")
       const brake=(chat,cr)=>ev(`${prof}S.chat=${chat};S.cid=5;S.settings.chatRisk='${cr}'`);
       const view=()=>{ev("tab='settings-profile';render()");return $q("#view")};
       brake("[{id:1,t:1,role:'user',text:'x',fl:'ed'}]","ed");
-      ok("under the brake the suggestion card, menu, program, fasting and calorie target are off; Profil has an explanation, no Kaldır button",String(gates())==="false,true,true,true,true"&&view().textContent.includes("Sohbetten bir sağlık işareti algılandı")&&!$q('[data-act="riskclr"]'),gates());
+      ok("under the brake menu, program, fasting and calorie target are off; Profil has an explanation, no Kaldır button",String(gates())==="true,true,true"&&view().textContent.includes("Sohbetten bir sağlık işareti algılandı")&&!$q('[data-act="riskclr"]'),gates());
       brake("[{id:1,t:1,role:'coach',text:'',card:{kind:'safety',level:'ed'}}]","");
-      ok("a safety card (ed) is a permanent brake too",String(gates())==="false,true,true,true,true"&&(view(),!$q('[data-act="riskclr"]')));
+      ok("a safety card (ed) is a permanent brake too",String(gates())==="true,true,true"&&(view(),!$q('[data-act="riskclr"]')));
       brake("[]","preg");
-      ok("pregnancy flag: brake and explanation, no Kaldır",String(gates())==="false,false,true,true,true"&&view().textContent.includes("Sohbetten bir sağlık işareti algılandı")&&!$q('[data-act="riskclr"]'),gates());
-      ok("the brake stays even if the chat is deleted (chatRisk)",(ev("S.chat=[]"),String(gates())==="false,false,true,true,true"));
+      ok("pregnancy flag: brake and explanation, no Kaldır",String(gates())==="false,true,true"&&view().textContent.includes("Sohbetten bir sağlık işareti algılandı")&&!$q('[data-act="riskclr"]'),gates());
+      ok("the brake stays even if the chat is deleted (chatRisk)",(ev("S.chat=[]"),String(gates())==="false,true,true"));
     }
     ok("cleanSettings riskClearedAt: a valid day is kept, broken and missing are empty",ev("cleanSettings({riskClearedAt:'2026-09-01'}).riskClearedAt")==="2026-09-01"&&ev("cleanSettings({riskClearedAt:'dün'}).riskClearedAt")===""&&ev("cleanSettings({}).riskClearedAt")==="");
     reset();
@@ -2870,9 +2843,9 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     reset();ev("S.entries=[];Object.assign(S.settings,{heightCm:180,age:35,goalKg:0,healthNote:''});for(let i=0;i<20;i++)add('weight',140,'',keyOff(-i));add('food',500,'Tavuk').p=40;tab='today';render()");
     const FOOT="Böbrek ya da karaciğer sorunun varsa hekimine danış";
     ok("Today: 140 kg/180 cm protein 153-200 g and the footnote",ev("viewToday()").includes("/ 153–200 g")&&ev("viewToday()").includes(FOOT),ev("viewToday()").match(/Protein.{0,80}/));
-    ok("Energy card and Coach context: the same range, the footnote",ev("gEnergy()").includes("153–200 g")&&ev("gEnergy()").includes(FOOT)&&ev("CoachLib.contextText(cData())").includes("protein aralığı 153-200 g"));
+    ok("Energy card and menu plan: the same range, the footnote",ev("gEnergy()").includes("153–200 g")&&ev("gEnergy()").includes(FOOT)&&ev("cMenuPlan().protein").join("-")==="153-200");
     ev("S.settings.healthNote='diyalize giriyorum'");
-    ok("kidney note: no range on Today, Energy, Coach and menu, 'hekiminle belirle'",ev("viewToday()").includes("hekiminle belirle")&&!ev("viewToday()").includes("153–200")&&ev("gEnergy()").includes("Hekiminle belirle")&&ev("CoachLib.contextText(cData())").includes("protein aralığı hekimle belirlenmeli")&&ev("cMenuPlan().protein")===null);
+    ok("kidney note: no range on Today, Energy and menu, 'hekiminle belirle'",ev("viewToday()").includes("hekiminle belirle")&&!ev("viewToday()").includes("153–200")&&ev("gEnergy()").includes("Hekiminle belirle")&&ev("cMenuPlan().protein")===null&&ev("cMenuPlan().pdoc"));
     ev("S.settings.healthNote='';S.settings.age=70;S.meds=[{id:1,n:'X',t:['08:00'],on:true}]");
     ok("age 70 + medication: no range",ev("viewToday()").includes("hekiminle belirle"));
     ev("S.meds=[]");reset();

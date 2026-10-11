@@ -10,7 +10,7 @@ const day=n=>{const d=new Date(NOW.getTime()+n*864e5);return d.toLocaleDateStrin
 const PROFILE={obDone:true,noticeOk:true,heightCm:178,age:35,sex:"m",act:1,goalKg:78,kcal:2200,stepsAsked:true};
 const state=(settings={},rest={})=>({settings:{...PROFILE,...settings},entries:[],...rest});
 /* Coach consent as already given for the four built-in providers. */
-const CONSENT={consent:true,consentV:2,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter"};
+const CONSENT={consent:true,consentV:3,consentAt:"2026-10-06",consentP:"gemini,groq,nvidia,openrouter"};
 const entry=(type,v,text="",o={})=>({day:day(o.d||0),time:o.time||"09:00",type,v,text,...o.x});
 
 const test=base.test.extend({

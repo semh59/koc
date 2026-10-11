@@ -44,13 +44,13 @@ Kullanıcının telefonundan internete çıkan tek veri akışları:
 
 Uygulamanın kendi gönderdiği her internet isteği (zaman, tür, adres, gövde boyutu; içerik değil) son 30 gün için Gizlilik ve veri ekranında listelenir ve silinebilir. Defter yalnız bu telefonda kalır, yedeğe girmez. Google hizmetlerinin (barkod okuyucu, metin tanıma) trafiği bu listede görünmez.
 
-**Rehber'e gönderilenler** (uygulama içindeki onay metniyle aynıdır): yazdığın mesajlar ve son 10 sohbet mesajı (Rehber yanıtları dahil); profilin (boy, 5 yıllık yaş aralığı, cinsiyet, hareket düzeyi); sağlık notun; hedeflerin ve hesaplanan değerler (trend kilo, tahmini harcama, protein aralığı); son 14 günün kilo, yemek (kcal ve protein), su, spor ve adım özeti (varsa uyku ve ruh hali); bugünkü kayıtların (yemek adları, su, tartı, spor ve not metinleri); son 3 antrenman (hareket adları, en iyi set) ve bu haftaki bölge başına set sayıları; son 7 günün en çok 3 notu; ilaç modülü açıksa ilaç adı, doz, saatler, haftanın günleri, son 7 günün uyumu ve stok; menü ya da program istersen yazdığın istek notu ve menü kataloğunda kendi besin, favori ve şablon adların (kalori ve protein değerleriyle).
+**Rehber'e gönderilenler** (uygulama içindeki onay metniyle aynıdır): yazdığın mesajlar ve son 10 sohbet mesajı (Rehber yanıtları dahil); profil anahtarı açıksa boyun, 5 yıllık yaş aralığın, cinsiyetin, hareket düzeyin ve günlük kalori hedefin; menü ya da program istersen yazdığın istek notu, program için seçtiğin gün, süre, ekipman ve seviye, menü için hesaplanan protein aralığın ve menü kataloğunda kendi besin, favori ve şablon adların (kalori ve protein değerleriyle).
 
-**Rehber'e ne zaman gider:** Yalnız sen bir düğmeye bastığında gönderilir (mesaj gönder, yorum, menü ya da program iste); uygulama açılırken ya da arka planda kendiliğinden hiçbir şey gönderilmez.
+**Rehber'e ne zaman gider:** Yalnız sen bir düğmeye bastığında gönderilir (mesaj gönder, menü ya da program iste); uygulama açılırken ya da arka planda kendiliğinden hiçbir şey gönderilmez.
 
 **Kimlik maskeleme:** Rehber sağlayıcısı IP adresini görür; kimlik bilgileri (ad, telefon, e-posta, TC kimlik no, IBAN, kart, adres, doğum tarihi, il/ilçe, kurum adı gibi) göndermeden önce telefonda maskelenir ve yanıt yine telefonda geri çevrilir. Maskeleme sağlayıcıya giden her isteğin tek çıkış noktasında yapılır; sabit kural metni dışındaki bütün içerik (profil, kayıtlar, sohbet geçmişi, menü/program isteği) süzülür. Filtre %100 garanti değildir (tam garanti yoktur). Yakalanmayanlar: serbest cümleyle anlatılan adres ya da tarif ("markete yakın mavi kapılı apartman" gibi), ad listesinde olmayan nadir adlar (listede olmayan bir ad "Ben/annem" gibi kalıp olmadan küçük harfle yazılırsa), tek başına yazılmış il adı, sıradan sözcükle aynı yazılan küçük harfli adlar, görsel ya da yalnızca bağlamdan tanınabilen bilgi. Sağlık notuna, ilaç adına ve besin adına yazdığın metin de aynı filtreden geçer ama aynı sınırlara tabidir. İstenirse Ayarlar > Gizlilik ve veri'deki "Rehber'e giden metni önizle" anahtarıyla gönderimden önce giden tam metin görülür.
 
-**Rehber'e gönderilmeyenler:** Tahlil, tansiyon, şeker, nabız, saatten (Health Connect) gelen adım ve uyku, bel ve kalça gibi vücut ölçüleri, tarifler, oruç kayıtları, fotoğraf, konum ve yedek gönderilmez. (Boy, profilin parçası olarak yukarıdaki listede gönderilir.)
+**Rehber'e gönderilmeyenler:** Kilo, yemek, su, spor ve antrenman kayıtların, sağlık notun, ilaçların, uyku ve ruh halin, tahlil, tansiyon, şeker, nabız, saatten (Health Connect) gelen veriler, fotoğraf, konum ve yedek gönderilmez.
 
 **İlerleme fotoğrafları:** Eklediğin ilerleme fotoğrafları yalnız telefondaki uygulamanın özel alanında durur; Rehber'e ya da herhangi bir sunucuya gönderilmez, paylaşma seçeneği yoktur, **yedeğe girmez** (telefon değiştirirsen fotoğraflar yeni telefona taşınmaz) ve "İlerleme fotoğrafları" kategorisiyle ya da "Tüm verileri sil" ile silinir.
 
@@ -76,7 +76,7 @@ Veriler yalnız uygulamanın özel depolamasındadır; API anahtarları Android 
 NeoWell tıbbi cihaz değildir, tanı koymaz ve tedavi önermez; hekim yerine geçmez. Sağlık kararları için hekiminize danışın. Rehber yanıtları genel bilgidir.
 
 ## 11. Değişiklikler
-Metin değişirse uygulama içinde duyurulur; Rehber onay metni değişirse (sürüm 2: gönderilen verilerin tam listesi) eski onay düşer ve yeniden istenir. Güncel metin: [DOLDURULACAK: yayın URL'si]
+Metin değişirse uygulama içinde duyurulur; Rehber onay metni değişirse (sürüm 3: Rehber yalnız menü, egzersiz programı ve kalori tahmini yapar; gönderilen veri profil ve kalori hedefiyle sınırlandı) eski onay düşer ve yeniden istenir. Güncel metin: [DOLDURULACAK: yayın URL'si]
 
 ---
 

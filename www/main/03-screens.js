@@ -88,7 +88,7 @@ function viewToday(){
   const todoCard=todo.length?`<div class="card todo"><h2 class="grp">Bugün yapılacaklar</h2>${todo.slice(0,3).join("")}${todo.length>3?`<details class="acc" ${keepOpen("todo")}><summary>${todo.length-3} iş daha</summary>${todo.slice(3).join("")}</details>`:""}</div>`:"";
   const minor=S.settings.age>0&&S.settings.age<18?`<div class="banner"><b>NeoWell 18 yaş ve üzeri için</b><p>Profilindeki yaş 18'in altında. Kalori açığı, oruç önerisi ve Rehber kapalı. Beslenme ve kilo konusunda bir yetişkinle ve hekiminle ya da diyetisyeninle konuş. Yaş yanlışsa Ayarlar > Profil'den düzelt.</p></div>`:"";
   /* .bg2 has no effect in portrait; in landscape the left column holds rings and summary, the right one jobs and entries. */
-  return `<div class="bg2"><div class="bgL">${minor}${rings}${actions}${habitRow()}</div><div class="bgR">${todoCard}${gTodayCard()}${weight}<div class="card coachc"><button class="coach" data-tab="coach">${esc(dailyTip())} <b>Rehber ›</b></button></div>${hasKey()?`<div class="btns">${cCommentBtn("plan")}</div>`:""}<div class="card">${dnav}${log}${items.some(e=>e.type==="food")?`<button class="lnk" data-act="tplnew">Bu günün yemeklerinden şablon yap</button>`:""}<button class="lnk" data-tab="history">Geçmiş ve takvim</button></div></div></div>`;
+  return `<div class="bg2"><div class="bgL">${minor}${rings}${actions}${habitRow()}</div><div class="bgR">${todoCard}${gTodayCard()}${weight}<div class="card coachc"><button class="coach" data-tab="coach">${esc(dailyTip())} <b>Rehber ›</b></button></div><div class="card">${dnav}${log}${items.some(e=>e.type==="food")?`<button class="lnk" data-act="tplnew">Bu günün yemeklerinden şablon yap</button>`:""}<button class="lnk" data-tab="history">Geçmiş ve takvim</button></div></div></div>`;
 }
 
 /* PDF reports in one place; the share handlers listen on the document, so they work from any screen. */
@@ -130,7 +130,6 @@ function viewTrend(){
   const tabBar=`<div class="seg tabs" role="tablist" aria-label="Trend bölümleri">${tabs.map(([k,l])=>`<button role="tab" id="tt-${k}" data-tsec="${k}" aria-controls="tp-${k}" aria-selected="${k===tSec}">${l}</button>`).join("")}</div>${tabs.map(([k,,h])=>`<div class="tpan" role="tabpanel" id="tp-${k}" aria-labelledby="tt-${k}"${k===tSec?"":" hidden"}>${sub(h)}</div>`).join("")}`;
   return `${days.length?`<div class="seg" role="group" aria-label="Aralık"><button data-range="30" aria-pressed="${range==30}">30 gün</button><button data-range="90" aria-pressed="${range==90}">90 gün</button><button data-range="365" aria-pressed="${range==365}">1 yıl</button><button data-range="0" aria-pressed="${range==0}">Tümü</button></div>
   <div class="card">${chart(N)}${stats}</div>`:empty}${goalCard()}
-  ${hasKey()?`<div class="btns">${cCommentBtn("weekly")}</div>`:""}
   ${lossAsk()?`<div class="btns"><button class="btn ghost" data-c="why">Bu hafta neden kilo vermedim?</button></div>`:""}
   ${tabBar}
   <details class="acc more"><summary>Daha fazla ölçüm</summary><div class="card">${vTrendCards()}${labTrendCard()}${navRow('data-tab="gym"',"exercise","Haftalık spor",`${Math.round(sw)} / ${st.sportWeek} dk, ${sd} gün aktif`)}${reportRows()}</div></details>`;
