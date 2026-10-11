@@ -3,17 +3,17 @@
    Data ownership: which module manages each S field and which files may touch it directly (the owner files).
    Other files get that data through the module's contract; scripts/boundary.test.js checks the boundary. main/* is the core and may touch every field. */
 const Modules={
-  log:{keys:["entries","nextId"]},
+  log:{keys:["entries","nextId"],api:["add","of","inType","sum","dayTotal","weights","streak","moveAdd","kcalGoal"]},
   nutrition:{keys:["myFoods","favFoods","mealTpl","recipes"],api:["FOODS","MenuLocal","ocrBtn"]},
   gym:{keys:["workouts","templates","customEx","gid","bar","dbStep","plates","exCfg"],api:["gEx","gPgNote","gTplAdd","gNames","gStats"]},
   meds:{keys:["meds","medLog"],api:["medNowHM","medIngest"]},
   habits:{keys:["sleep","mood","fast"]},
-  pulse:{keys:["pulse","hr"]},
+  pulse:{keys:["pulse","hr"],api:["hcCard","hcNow","hcSync"]},
   vitals:{keys:["vitals"]},
   labs:{keys:["labs"],api:["labReview"]},
   measures:{keys:["measures"]},
   cycle:{keys:["cycle"]},
-  motion:{keys:["walk","moves"],api:["motionKg"]},
+  motion:{keys:["walk","moves"],api:["motionKg","setHc"]},
   coach:{keys:["chat","chats","cid","providers"],api:["cNoteCheck","cConsent","consentHtml","consentOk","provNames","usageText","cCalc"]}
 };
 /* Store shards: one record per module; settings belong to the core. A field in no shard goes to the "other" shard (data is never dropped silently).

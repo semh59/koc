@@ -243,8 +243,8 @@ function save(soft){
   let j=null,m=null,len;
   const meas=()=>{if(idb){m=shardOf(S);len=Object.values(m).reduce((a,x)=>a+x.length,0)}else{j=JSON.stringify(S);len=j.length}};
   meas();
-  if(len>STORE_WARN/2&&S.chats.length){
-    let n=0;while(S.chats.length&&JSON.stringify(S.chats).length>ARC_MAX){S.chats.pop();n++}
+  if(len>STORE_WARN/2&&Coach.chats().length){
+    let n=0;while(Coach.chats().length&&JSON.stringify(Coach.chats()).length>ARC_MAX){Coach.chats().pop();n++}
     if(n){meas();toast(`Depolama için en eski ${n} arşiv sohbeti silindi`)}
   }
   storeBytes=otherBytes+len*2;
@@ -277,31 +277,12 @@ const isNative=()=>!!window.Capacitor?.isNativePlatform?.();
 const plugin=name=>window.Capacitor?.Plugins?.[name];
 navigator.storage?.persist?.()?.catch(()=>{});
 
-function add(type,v,text,day){
-  const n=new Date();
-  if(!day)logOff=0;
-  const e={id:S.nextId++,day:day||dayKey(n),time:`${pad(n.getHours())}:${pad(n.getMinutes())}`,type,v:v==null?null:v,text:text||""};
-  if(type==="exercise"&&day&&day!==dayKey(n))e.bt=true; // logged for a past day: the time is the logging moment, the exercise span is unknown (Algo.exerciseKcal)
-  S.entries.push(e);save();return e;
-}
-const of=(type,day)=>S.entries.filter(e=>e.type===type&&e.day===day);
-const inType=(type,e)=>type==="water"?WeeklyLib.isWater(e):e.type===type;
-const sum=(type,a,b)=>S.entries.filter(e=>inType(type,e)&&e.day>=a&&e.day<=b).reduce((s,e)=>s+(e.v||0),0);
-/* Per-day totals of one entry type in a single pass; returns a day -> total lookup. Chart loops use it instead of a sum() scan per day. */
-const dayTotal=type=>{const m=new Map();for(const e of S.entries)if(inType(type,e))m.set(e.day,(m.get(e.day)||0)+(e.v||0));return k=>m.get(k)||0};
-/* The part added to that day's calorie target when the movement-calories setting is on, else 0. The ring, widget and toast all read it here. */
-const moveAdd=day=>{
-  if(!(S.settings.moveKcalOn&&S.settings.kcal>0))return 0;
-  const dn=Algo.dayNum(day),near=x=>Math.abs(Algo.dayNum(x.day)-dn)<=1; // an exercise past midnight is stored on the neighbouring day too
-  return Algo.moveBonus(Algo.exerciseKcal(S.entries.filter(e=>e.type==="exercise"&&near(e)),S.moves.filter(near),day));
-};
-const kcalGoal=day=>S.settings.kcal>0?S.settings.kcal+moveAdd(day):0;
 /* Chat flag (eating disorder): a flag in the chat or a safety card is a permanent brake the user cannot lift. */
-const chatEd=()=>S.chat.some(m=>m.fl==="ed"||(m.card&&m.card.kind==="safety"&&m.card.level==="ed"));
+const chatEd=()=>Coach.chatEd();
 /* The safety brake's input in one place; without kg the latest trend weight is used. */
 function riskInput(kg){
-  const st=S.settings,from=keyOff(-89),w=weights(),ks=Object.keys(w).sort(),n=k=>S.vitals.filter(v=>v.k===k&&v.day>=from).length;
-  return {age:st.age,sex:st.sex,cm:st.heightCm,kg:kg!=null?kg:ks.length?Algo.trend(w)[ks[ks.length-1]]:0,goalKg:st.goalKg,healthNote:st.healthNote+((st.chatRisk||"").includes("preg")?" hamilelik":""),meds:S.meds.length,glucoseCount90d:n("s"),bpCount90d:n("t"),
+  const st=S.settings,from=keyOff(-89),w=weights(),ks=Object.keys(w).sort(),n=k=>Vitals.all().filter(v=>v.k===k&&v.day>=from).length;
+  return {age:st.age,sex:st.sex,cm:st.heightCm,kg:kg!=null?kg:ks.length?Algo.trend(w)[ks[ks.length-1]]:0,goalKg:st.goalKg,healthNote:st.healthNote+((st.chatRisk||"").includes("preg")?" hamilelik":""),meds:Meds.count(),glucoseCount90d:n("s"),bpCount90d:n("t"),
     edFlag:(st.chatRisk||"").includes("ed")||chatEd(),clearedAt:st.riskClearedAt,today:dayKey()};
 }
 function risk(kg){return Algo.riskFlags(riskInput(kg))}
@@ -312,10 +293,4 @@ function kcalWhy(v){
 }
 /* Brake explanation: a hard block only explains, a soft one offers the 30-day "Hekimime danıştım" confirmation. */
 const riskBox=(r,title)=>r.block?`<div class="banner"><b>${title}</b><p>${esc((r.hard.length?r.hard:r.soft).join(". "))}. ${r.hard.length?"Hekimine ya da diyetisyenine danış. Bilgi yanlışsa Profil > Sağlık notların'dan düzelt.":"Önce hekimine danış; konuştuysan 30 gün için devam edebilirsin."}</p>${r.hard.length?"":`<button class="btn ghost" data-act="riskok">Hekimime danıştım, devam</button>`}</div>`:"";
-function weights(a="0000",b="9999"){const m={};for(const e of S.entries)if(e.type==="weight"&&e.day>=a&&e.day<=b)m[e.day]=e.v;return m}
-function streak(){
-  const ds=new Set(S.entries.filter(e=>e.type!=="steps").map(e=>e.day));let d=new Date();
-  if(!ds.has(dayKey(d)))d=addDays(-1);
-  let n=0;while(ds.has(dayKey(d))){n++;d=addDays(-1,d)}return n;
-}
 

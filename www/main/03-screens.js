@@ -14,7 +14,7 @@ for(const t of ["pointerdown","pointermove"])document.addEventListener(t,ev=>{
 });
 /* One day's entry list (meal groups, water summary, other entries): shared by Today and the Day screen. */
 function dayLogHtml(lk){
-  const items=S.entries.filter(e=>e.day===lk&&e.type!=="steps");
+  const items=Log.where(e=>e.day===lk&&e.type!=="steps");
   const vtxt=e=>e.type==="weight"?`${dw(e.v)} ${wlab()}`:e.type==="food"?(e.v?e.lo!=null?`~${Math.round(e.v)} kcal<small class="db mut sm">${e.lo}-${e.hi}</small>`:`${Math.round(e.v)} kcal`:""):e.type==="exercise"?`${Math.round(e.v)} dk`:"";
   const ttx=e=>e.type==="weight"?"Tartı":esc(e.text||(e.type==="food"?"Öğün":"Antrenman"))+(e.kcal?` · ~${e.kcal} kcal tahmini`:"");
   const li=(e,tx)=>`<li class="row"><span class="t num">${e.time}</span><span class="ic">${Icons.svg(e.type)}</span>${tx}<span class="vl num">${vtxt(e)}</span><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></li>`;
@@ -48,7 +48,7 @@ function viewToday(){
   const left=(v,g,u)=>v<g?[null,`${u} kaldı`]:["✓","Hedef tamam"];
   const [waterC,waterU]=left(water,sh,"L"),[spC,spU]=left(sw,sg,"dk");
   const kcC=kgl>0?Math.round(Math.abs(kgl-kc)):Math.round(kc),kcU=kgl>0?(kc>kgl?"kcal fazla":"kcal kaldı"):"kcal";
-  const meals=S.entries.filter(e=>e.type==="food"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
+  const meals=Log.where(e=>e.type==="food"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
   const pr=cur!=null?Algo.protein(riskInput(cur)):{};
   const macro=meals.some(e=>e.p||e.c||e.f)?`<div class="macro num">Protein <b>${Math.round(mac("p"))}</b>${pr.range?` / ${pr.range[0]}–${pr.range[1]}`:""} g${pr.doc?" (hedefi hekiminle belirle)":""}${meals.some(e=>e.c!=null||e.f!=null)?` · Karbonhidrat <b>${Math.round(mac("c"))}</b> g · Yağ <b>${Math.round(mac("f"))}</b> g`:""}</div>${pr.range||pr.doc?`<div class="mut sm macro">${Algo.PROTEIN_NOTE}</div>`:""}`:"";
   const mi=["fb","sg","na"].map(k=>[k,meals.filter(e=>e[k]!=null).length]).filter(x=>x[1]).map(([k,n])=>`${NLBL[k][0].toUpperCase()+NLBL[k].slice(1)} <b>${Math.round(mac(k))}</b> ${NUNIT(k)} (${n}/${meals.length})`);
@@ -77,13 +77,13 @@ function viewToday(){
   const todo=[storeMsg()?row("save",storeMsg()[0],storeMsg()[1],[["databackup","Yedek al"]]):"",
     abErr?row("cloud","Otomatik yedek alınamadı",abErr,[["abfix","Düzelt"]]):"",
     ...medTodo(),...fastTodo(),...vTodo(),
-    S.walk?row("steps",S.walk.t1?"Yürüyüş kaydedilmedi":"Yürüyüş sürüyor","Adım raporunda bitir ya da kaydet.",[["walkgo","Aç"]]):"",
+    Motion.walk()?row("steps",Motion.walk().t1?"Yürüyüş kaydedilmedi":"Yürüyüş sürüyor","Adım raporunda bitir ya da kaydet.",[["walkgo","Aç"]]):"",
     sOn&&stepsRead&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?row("steps","Adım sayımı durmuş olabilir","Pil ayarında NeoWell'e kısıtlama koyma.",[["stepsfix","Ayarla"],["stepshide","Kapat"]]):"",
-    isNative()&&!exactOk&&st.medOn&&S.meds.length?row("clock","İlaç alarmı birkaç dakika gecikebilir","Tam saat alarm izni kapalı. İzin verirsen tam saatinde çalar.",[["fullalarm","İzin ver"]]):"",
-    isNative()&&!fsiOk&&st.medOn&&S.meds.length?row("clock","İlaç alarmı kilitli ekranı açmayabilir","Tam ekran bildirim izni kapalı. İzin verirsen alarm ekranı yakar.",[["fullscreen","İzin ver"]]):"",
+    isNative()&&!exactOk&&st.medOn&&Meds.count()?row("clock","İlaç alarmı birkaç dakika gecikebilir","Tam saat alarm izni kapalı. İzin verirsen tam saatinde çalar.",[["fullalarm","İzin ver"]]):"",
+    isNative()&&!fsiOk&&st.medOn&&Meds.count()?row("clock","İlaç alarmı kilitli ekranı açmayabilir","Tam ekran bildirim izni kapalı. İzin verirsen alarm ekranı yakar.",[["fullscreen","İzin ver"]]):"",
     isNative()&&oemXiaomi()&&!st.oemDone?row("bell","Hatırlatmalar için bir kez ayar gerekli","İki izin verince hatırlatmalar kaçmaz.",[["oem","Ayarla"]]):"",
     isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?row("steps","Adım sayarı aç","Telefonun sensörü sayar, hesap gerekmez.",[["stepsopen","Aç"],["stepsno","Şimdi değil"]]):"",
-    S.entries.length>=10&&(old==null||old>14)?row("cloud","Verilerini yedekle",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Yedekle"]]):""].filter(Boolean);
+    Log.all().length>=10&&(old==null||old>14)?row("cloud","Verilerini yedekle",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Yedekle"]]):""].filter(Boolean);
   /* The first 3 jobs are visible (a data-loss warning is always first); the rest folds so it does not push the log down. */
   const todoCard=todo.length?`<div class="card todo"><h2 class="grp">Bugün yapılacaklar</h2>${todo.slice(0,3).join("")}${todo.length>3?`<details class="acc" ${keepOpen("todo")}><summary>${todo.length-3} iş daha</summary>${todo.slice(3).join("")}</details>`:""}</div>`:"";
   const minor=S.settings.age>0&&S.settings.age<18?`<div class="banner"><b>NeoWell 18 yaş ve üzeri için</b><p>Profilindeki yaş 18'in altında. Kalori açığı, oruç önerisi ve Rehber kapalı. Beslenme ve kilo konusunda bir yetişkinle ve hekiminle ya da diyetisyeninle konuş. Yaş yanlışsa Ayarlar > Profil'den düzelt.</p></div>`:"";
@@ -94,7 +94,7 @@ function viewToday(){
 /* PDF reports in one place; the share handlers listen on the document, so they work from any screen. */
 function reportRows(){
   const st=S.settings,r=(a,ic,t,sub)=>navRow(a,ic,t,sub);
-  return `${r('data-wk="pdf"',"share","Son 7 gün raporu","Bugün dahil 7 gün, PDF")}${st.bpOn?r('data-vt="pdfmenu:t"',"heart","Tansiyon doktor raporu","Dönem seç, PDF"):""}${st.bsOn?r('data-vt="pdfmenu:s"',"water","Şeker doktor raporu","Dönem seç, PDF"):""}${LabLib.series(S.labs).length?r('data-lab="pdf"',"file","Tahlil raporu","Tüm sonuçlar, PDF"):""}`;
+  return `${r('data-wk="pdf"',"share","Son 7 gün raporu","Bugün dahil 7 gün, PDF")}${st.bpOn?r('data-vt="pdfmenu:t"',"heart","Tansiyon doktor raporu","Dönem seç, PDF"):""}${st.bsOn?r('data-vt="pdfmenu:s"',"water","Şeker doktor raporu","Dönem seç, PDF"):""}${LabLib.series(Labs.all()).length?r('data-lab="pdf"',"file","Tahlil raporu","Tüm sonuçlar, PDF"):""}`;
 }
 function viewTrend(){
   const t=dayKey(),st=S.settings;
@@ -117,7 +117,7 @@ function viewTrend(){
     rows+=`<tr><td class="${i==0?"today":""}">${WEEKDAYS_SHORT[d.getDay()]} ${d.getDate()}</td><td class="num">${w!=null?dw(w):"–"}</td><td class="num">${water?fmt(water/1000,1):"–"}</td><td class="num">${kc?Math.round(kc):"–"}</td><td class="num">${sp?Math.round(sp):"–"}</td>${hasSteps?`<td class="num">${as?fint(as):"–"}</td>`:""}</tr>`;
   }
   const sw=sum("exercise",keyOff(-6),t);
-  const sd=new Set(S.entries.filter(e=>e.type==="exercise"&&e.day>=keyOff(-6)).map(e=>e.day)).size;
+  const sd=new Set(Log.where(e=>e.type==="exercise"&&e.day>=keyOff(-6)).map(e=>e.day)).size;
   const empty=`${emptyCard("weight","İlk tartını ekle","Grafik ikinci tartıdan sonra çizilir. Su, yemek, spor ve adımların da burada haftalık tabloda görünür.",`<button class="btn" data-act="weight">${Icons.svg("weight")} Kilo ekle</button>`)}`;
   /* Hierarchy: range picker and weight chart on top, summary below; detail in tabs (all in the DOM, only the selected one visible). */
   const N=days.length?(range===0?trendAll():range):30,bag=linksCard();

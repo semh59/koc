@@ -16,25 +16,25 @@ document.addEventListener("click",ev=>{
   if(d.ml){document.querySelectorAll("#fml .chip").forEach(c=>c.setAttribute("aria-pressed",c===el));return}
   if(d.meal){sheetMeal(+d.meal);return}
   if(d.waterall){sheetWater();return}
-  if(d.mset){const [id,k]=d.mset.split(":"),e=S.entries.find(x=>x.id===+id);if(e){e.meal=k;save();closeSheet();render()}return}
+  if(d.mset){const [id,k]=d.mset.split(":"),e=Log.find(x=>x.id===+id);if(e){e.meal=k;save();closeSheet();render()}return}
   if(d.del){
-    const id=+d.del,rm=S.entries.find(e=>e.id===id);if(!rm)return;
+    const id=+d.del,rm=Log.find(e=>e.id===id);if(!rm)return;
     const inWater=!!el.closest("#sheet");
-    S.entries=S.entries.filter(e=>e.id!==id);save();render();if(inWater)sheetWater();
-    toast("Kayıt silindi",()=>{S.entries.push(rm);S.entries.sort((a,b)=>a.id-b.id);save();render()});return;
+    Log.remove(e=>e.id===id);save();render();if(inWater)sheetWater();
+    toast("Kayıt silindi",()=>{Log.restore([rm]);save();render()});return;
   }
   if(d.sp){document.querySelectorAll("#sp .chip").forEach(c=>c.setAttribute("aria-pressed",c===el));return}
   if(d.food!==undefined){sheetPortion(+d.food);return}
   if(d.fp!==undefined){curPor=+d.fp;document.querySelectorAll("#fpc .chip").forEach(c=>c.setAttribute("aria-pressed",c===el));foodPreview();return}
-  if(d.rc!==undefined||d.fv!==undefined){const x=d.rc!==undefined?recList[+d.rc]:S.favFoods[+d.fv];if(x)addFoods([x],fday(),`${x.text} eklendi`);return}
+  if(d.rc!==undefined||d.fv!==undefined){const x=d.rc!==undefined?recList[+d.rc]:Nutrition.fav()[+d.fv];if(x)addFoods([x],fday(),`${x.text} eklendi`);return}
   if(d.fva!==undefined){
     const x=recList[+d.fva];if(!x)return;
-    if(S.favFoods.length>=20)return toast("En fazla 20 favori");
-    S.favFoods=LogLib.cleanFav([x,...S.favFoods]);save();$("#frl").innerHTML=favHtml();return;
+    if(Nutrition.fav().length>=20)return toast("En fazla 20 favori");
+    Nutrition.setFav(LogLib.cleanFav([x,...Nutrition.fav()]));save();$("#frl").innerHTML=favHtml();return;
   }
-  if(d.tp!==undefined){const t=S.mealTpl[+d.tp];if(t)addFoods(t.items,fday(),`${t.n}: ${t.items.length} yemek eklendi`);return}
-  if(d.tpd!==undefined){const t=S.mealTpl[+d.tpd];confirmSheet({title:"Şablon silinsin mi?",ok:"Sil",danger:true}).then(ok=>{const i=S.mealTpl.indexOf(t);if(ok&&i>=0){S.mealTpl.splice(i,1);save();const l=$("#frl");if(l)l.innerHTML=favHtml()}});return}
-  if(d.fvd!==undefined){S.favFoods.splice(+d.fvd,1);save();$("#frl").innerHTML=favHtml();return}
+  if(d.tp!==undefined){const t=Nutrition.tpl()[+d.tp];if(t)addFoods(t.items,fday(),`${t.n}: ${t.items.length} yemek eklendi`);return}
+  if(d.tpd!==undefined){const t=Nutrition.tpl()[+d.tpd];confirmSheet({title:"Şablon silinsin mi?",ok:"Sil",danger:true}).then(ok=>{const i=Nutrition.tpl().indexOf(t);if(ok&&i>=0){Nutrition.tpl().splice(i,1);save();const l=$("#frl");if(l)l.innerHTML=favHtml()}});return}
+  if(d.fvd!==undefined){Nutrition.fav().splice(+d.fvd,1);save();$("#frl").innerHTML=favHtml();return}
   if(d.act)return Act.run(d.act);
   if(d.go){
     ({weight:goWeight,food:goFood,nutrition:goNutrition,mydel:goMyDelete,tpl:goTpl,steps:goSteps,exercise:goExercise,note:goNote,restore:goRestore,checkbk:checkBackup,health:()=>{S.settings.healthNote=$("#hn").value.trim().slice(0,500);cNoteCheck();save();closeSheet();render();toast("Kaydedildi")}})[d.go]?.();
@@ -45,7 +45,7 @@ document.addEventListener("click",ev=>{
 $("#tundo").addEventListener("click",()=>{
   const u=lastUndo;lastUndo=null;
   if(typeof u==="function")u();
-  else if(u!=null){S.entries=S.entries.filter(e=>e.id!==u);save();render()}
+  else if(u!=null){Log.remove(e=>e.id===u);save();render()}
   $("#toast").classList.remove("on");
 });
 const TOGGLES={mk:"moveKcalOn",rpe:"rpeOn",gdv:"gdVoice",gdb:"gdVib",aw:"awakeOn"}; // data-<key> checkbox -> boolean setting

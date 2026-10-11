@@ -80,7 +80,7 @@ function goWeight(){
 /* Yesterday's entry carries its own meal; favourites and templates have none, so the selected chip applies. */
 function addFoods(items,day,msg,undo){
   const ids=items.map(s=>{const e=copyNutr(s,add("food",s.v,s.text,day));if(s.lo!=null){e.lo=s.lo;e.hi=s.hi}e.meal=LogLib.mealKey(s.meal)||(s.time?LogLib.mealOf(s):fmeal());return e.id});save();closeSheet();render();
-  toast(msg,()=>{S.entries=S.entries.filter(e=>!ids.includes(e.id));if(undo)undo();save();render()});
+  toast(msg,()=>{Log.remove(e=>ids.includes(e.id));if(undo)undo();save();render()});
 }
 function repeatYesterday(){
   const src=of("food",keyOff(-1));
@@ -88,11 +88,11 @@ function repeatYesterday(){
   addFoods(src,dayKey(),`Dünkü ${src.length} yemek bugüne eklendi`);
 }
 function favHtml(){
-  recList=LogLib.recents(S.entries,dayKey());
-  const fk=new Set(S.favFoods.map(f=>LogLib.key(f.text)));
+  recList=LogLib.recents(Log.all(),dayKey());
+  const fk=new Set(Nutrition.fav().map(f=>LogLib.key(f.text)));
   const row=(x,i,a,b,star,lab)=>`<div class="prow"><button class="grow pbtn" data-${a}="${i}"><span class="grow"><b>${esc(x.text)}</b><span class="mut sm">${x.v!=null?Math.round(x.v)+" kcal":"kalori yok"}</span></span><span class="aic" aria-hidden="true">${Icons.svg("plus")}</span></button><button class="plus" data-${b}="${i}" aria-label="${lab}" title="${lab}"${star==="★"&&b==="fva"?" disabled":""}>${star}</button></div>`;
-  const tp=S.mealTpl.length?`<div class="lbl">Şablonlar</div><div class="chips">${S.mealTpl.map((t,i)=>`<span class="chip tchip"><button data-tp="${i}">${esc(t.n)} · ${t.items.length}</button><button class="del" data-tpd="${i}" aria-label="Şablonu sil">✕</button></span>`).join("")}</div>`:"";
-  return recipeListHtml()+tp+(S.favFoods.length?`<div class="lbl">Sık kullanılanlar</div>${S.favFoods.map((x,i)=>row(x,i,"fv","fvd","★","Sık kullanılanlardan çıkar")).join("")}`:"")+(recList.length?`<div class="lbl">Son yediklerin</div>${S.favFoods.length?"":`<div class="p0 hint">☆ ile sık kullanılanlara ekle, + ile bugüne ekle.</div>`}${recList.map((x,i)=>row(x,i,"rc","fva",fk.has(LogLib.key(x.text))?"★":"☆",fk.has(LogLib.key(x.text))?"Sık kullanılanlarda":"Sık kullanılanlara ekle")).join("")}`:"");
+  const tp=Nutrition.tpl().length?`<div class="lbl">Şablonlar</div><div class="chips">${Nutrition.tpl().map((t,i)=>`<span class="chip tchip"><button data-tp="${i}">${esc(t.n)} · ${t.items.length}</button><button class="del" data-tpd="${i}" aria-label="Şablonu sil">✕</button></span>`).join("")}</div>`:"";
+  return recipeListHtml()+tp+(Nutrition.fav().length?`<div class="lbl">Sık kullanılanlar</div>${Nutrition.fav().map((x,i)=>row(x,i,"fv","fvd","★","Sık kullanılanlardan çıkar")).join("")}`:"")+(recList.length?`<div class="lbl">Son yediklerin</div>${Nutrition.fav().length?"":`<div class="p0 hint">☆ ile sık kullanılanlara ekle, + ile bugüne ekle.</div>`}${recList.map((x,i)=>row(x,i,"rc","fva",fk.has(LogLib.key(x.text))?"★":"☆",fk.has(LogLib.key(x.text))?"Sık kullanılanlarda":"Sık kullanılanlara ekle")).join("")}`:"");
 }
 const mealChips=()=>{const d=LogLib.mealOf({time:`${pad(new Date().getHours())}:00`});return `<div class="lbl" id="fmll">Öğün</div><div class="chips" id="fml" role="group" aria-labelledby="fmll">${LogLib.MEALS.map(([k,n])=>`<button class="chip" data-ml="${k}" aria-pressed="${k===d}">${n}</button>`).join("")}</div>`};
 const fmeal=()=>{const b=document.querySelector("#fml [aria-pressed=true]");return b?b.dataset.ml:undefined};
@@ -103,12 +103,12 @@ function sheetFood(){
   <div id="fown" hidden><input class="in" id="ft" aria-label="Yemeğin adı" placeholder="Ne yedin?" autocomplete="off"><input class="in num" id="fv" aria-label="Kalori, isteğe bağlı" inputmode="numeric" placeholder="Kalori (isteğe bağlı)"><div class="ferr" id="yerr" role="alert"></div><button class="btn" data-go="food">Kaydet</button><button class="mt-2 btn ghost" data-rp="new">Tarif oluştur</button></div><div id="frl" class="plist">${favHtml()}</div>`);
 }
 function sheetWater(){
-  const L=S.entries.filter(e=>e.type==="water"&&e.day===keyOff(-logOff));
+  const L=Log.where(e=>e.type==="water"&&e.day===keyOff(-logOff));
   if(!L.length)return closeSheet();
   openSheet(`<h3>Su kayıtları</h3>${L.map(e=>`<div class="prow"><span><b class="num">${e.time}</b></span><span class="num">${e.v} ml${e.dr?` · ${drinkName(e.dr)}`:""}</span><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></div>`).join("")}`);
 }
 function sheetMeal(id){
-  const e=S.entries.find(x=>x.id===id);if(!e)return;
+  const e=Log.find(x=>x.id===id);if(!e)return;
   openSheet(`<h3>Öğünü değiştir</h3><p class="mut sm">${esc(e.text||"Öğün")}</p><div class="chips">${LogLib.MEALS.map(([k,n])=>`<button class="chip" data-mset="${id}:${k}" aria-pressed="${k===LogLib.mealOf(e)}">${n}</button>`).join("")}</div>`);
 }
 let tplSrc=[];
@@ -121,11 +121,11 @@ function goTpl(){
   if(!items.length)return toast("En az bir yemek seç");
   if(!n)return toast("Şablona bir ad yaz");
   if(items.length>15)return toast("Bir şablonda en fazla 15 yemek olur");
-  if(S.mealTpl.length>=20)return toast("En fazla 20 şablon");
-  S.mealTpl=LogLib.cleanTpl([...S.mealTpl,{id:Math.max(0,...S.mealTpl.map(t=>t.id))+1,n,items}]);save();closeSheet();toast(`"${n}" şablonu kaydedildi`);
+  if(Nutrition.tpl().length>=20)return toast("En fazla 20 şablon");
+  Nutrition.addTpl({id:Math.max(0,...Nutrition.tpl().map(t=>t.id))+1,n,items});save();closeSheet();toast(`"${n}" şablonu kaydedildi`);
 }
 let curFood=null,curPor=0,foodAskQ="";
-const allFoods=()=>S.myFoods.map(m=>Object.assign({n:m.n,k:m.k,u:m.u||[["1 porsiyon",100]],portion:m.portion===true,my:true,b:m.b,src:m.src},...NUTR.map(k=>({[k]:m[k]==null?null:m[k]})))).concat(S.recipes.map(LogLib.recipeFood),FOODS);
+const allFoods=()=>Nutrition.my().map(m=>Object.assign({n:m.n,k:m.k,u:m.u||[["1 porsiyon",100]],portion:m.portion===true,my:true,b:m.b,src:m.src},...NUTR.map(k=>({[k]:m[k]==null?null:m[k]})))).concat(Nutrition.recipes().map(LogLib.recipeFood),FOODS);
 const foodListHtml=q=>{const L=allFoods(),ask=q.trim().length>=2?`<button class="prow" data-c="askfood"><span class="grow"><b>"${esc(q.trim())}" için Rehber'e sor</b><span class="mut sm">Yapay zekâ tahmin eder, sonra listene ekleyebilirsin</span></span><span class="aic" aria-hidden="true">${Icons.svg("sparkle")}</span></button>`:"";return foodSearch(q,8,L).map(i=>{const f=L[i];return `<button class="prow" data-food="${i}"><span class="grow"><b>${esc(f.n)}</b><span class="mut sm">${f.rec?`Tarifim, 1 porsiyon: ${Math.round(f.k*f.u[0][1]/100)} kcal`:f.o?`Öğün, ${esc(f.u[0][0])}: ${Math.round(f.k*f.u[0][1]/100)} kcal`:f.my?(f.u.length>1||f.u[0][1]!==100?`Benim ürünüm, 100 g: ${f.k} kcal`:`Benim besinim, 1 porsiyon: ${f.k} kcal`):`100 g: ${f.k} kcal, protein ${fmt(f.p,0)} g`}</span></span><span class="aic" aria-hidden="true">${Icons.svg("plus")}</span></button>`}).join("")+ask};
 function sheetPortion(i,food){
   curFood=food||allFoods()[i];curPor=0;
@@ -172,12 +172,12 @@ async function barcodeFind(raw){
     sheetFood();ownOpen();toast(`${x.why}. Etiketteki değerleri elle yaz ya da Rehber'e sor`);return;
   }
   const food=Object.assign({},x.food,{src:"off"});
-  if(x.status==="ok"&&Nutrition.putMy(food)){save();return sheetPortion(S.myFoods.findIndex(m=>m.b===code))}
+  if(x.status==="ok"&&Nutrition.putMy(food)){save();return sheetPortion(Nutrition.my().findIndex(m=>m.b===code))}
   const why=x.status==="ok"?"Besin listen dolu (en çok 200) olduğu için listene kaydedilmedi.":"Bazı besin değerleri eksik olduğu için listene kaydedilmedi.";
   sheetPortion(0,Object.assign(food,{my:true,hint:"Kaynak: Open Food Facts. "+why}));
 }
 function goMyDelete(){
-  S.myFoods=S.myFoods.filter(m=>tr(m.n)!==tr(curFood.n));save();closeSheet();render();toast("Besin listenden silindi");
+  Nutrition.setMy(Nutrition.my().filter(m=>tr(m.n)!==tr(curFood.n)));save();closeSheet();render();toast("Besin listenden silindi");
 }
 function goNutrition(){
   const x=foodCalc();if(!x.g)return ferr("berr","Miktarı 0,1 ile 20 arasında yaz");
@@ -265,13 +265,13 @@ async function goRestore(text=$("#bk").value,pw=$("#bkpw").value){
   /* A backup must not change where the key goes, the consent setting or the data-sharing permission. The automatic backup folder belongs to this phone. */
   Object.assign(S.settings,Object.fromEntries(["noticeOk",...SHARE_KEYS].map(k=>[k,prevS.settings[k]])),{consent:prevS.settings.consent,consentV:prevS.settings.consentV,consentAt:prevS.settings.consentAt,consentP:prevS.settings.consentP,chatRisk:riskMerge(prevS.settings.chatRisk,S.settings.chatRisk),lastBackup:dayKey(),autoBk:prevS.settings.autoBk,lastAutoBk:prevS.settings.lastAutoBk});cAgeGuard();
   const keys=getKeys();
-  for(const p of S.providers){
+  for(const p of Coach.providers()){
     const cur=prevS.providers.find(x=>x.id===p.id),def=defProviders().find(x=>x.id===p.id);
     if(!def&&keys[p.id]&&cur)p.base=cur.base;
     if(def)p.confirm=def.confirm;
   }
   if(!save()){S=prevS;saveFail=false;return toast("Yedek yüklenemedi, depolama dolu")}
-  if(keysIn&&typeof keysIn==="object")for(const id in keysIn)if(typeof keysIn[id]==="string"&&S.providers.some(p=>p.id===id))try{await setKey(id,keysIn[id])}catch{toast("Bir anahtar kasaya yazılamadı")}
+  if(keysIn&&typeof keysIn==="object")for(const id in keysIn)if(typeof keysIn[id]==="string"&&Coach.providers().some(p=>p.id===id))try{await setKey(id,keysIn[id])}catch{toast("Bir anahtar kasaya yazılamadı")}
   /* The safety copy keeps the old data and doubles the store: it is taken only if the total stays under the warning limit. */
   let copy=false;
   if(hasData&&storeBytes+pj.length*2<=STORE_WARN)copy=Store.set("nw_state_previous",pj);
