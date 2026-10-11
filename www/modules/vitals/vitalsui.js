@@ -72,7 +72,7 @@ function vFinish(rows,msg){
   if(!save()){S.vitals=backup;return toast("Kaydedilemedi, depolama dolu")}
   closeSheet();render();
   if(rows.some(r=>VitalsLib.crisis(r,dayKey()))){
-    return openSheet(`<h3>Ölçüm kaydedildi</h3><p>Cihazı kontrol edip ölçümü tekrarla. Belirtin varsa ya da değer doğruysa 112'yi ara.</p><button class="btn" data-vt="close">Tamam</button>`);
+    return openSheet(`<h3>Ölçüm kaydedildi</h3><p>Cihazı kontrol edip ölçümü tekrarla. Değer doğruysa hekimine danış; kendini kötü hissediyorsan acil yardım al.</p><button class="btn" data-vt="close">Tamam</button>`);
   }
   const ids=new Set(added.map(r=>r.id));
   toast(msg,()=>{S.vitals=S.vitals.filter(r=>!ids.has(r.id));save();render()});
@@ -172,7 +172,7 @@ function vPdfPages(kind,days){
   return {count:pages.length,draw:(ctx,n)=>VitalsLib.drawPage(ctx,slices[n],{...info,page:n+1,total:pages.length})};
 }
 function vPdfMenu(kind){
-  openSheet(`<h3>Doktor raporu</h3><p class="mut sm">Hangi dönemi rapora ekleyelim?</p>${[7,14,30,90].map(n=>`<button class="mb-2 btn ghost" data-vt="pdf:${kind}:${n}">Son ${n} gün</button>`).join("")}<button class="btn ghost" data-vt="close">Vazgeç</button>`);
+  openSheet(`<h3>Hekim özeti</h3><p class="mut sm">Hangi dönemi rapora ekleyelim?</p>${[7,14,30,90].map(n=>`<button class="mb-2 btn ghost" data-vt="pdf:${kind}:${n}">Son ${n} gün</button>`).join("")}<button class="btn ghost" data-vt="close">Vazgeç</button>`);
 }
 function vReportInfo(kind,days){
   const end=dayKey(),from=keyOff(1-days),all=S.vitals,rows=VitalsLib.reportRows(all,kind,from,end,Units.gu(),Meds.bpSince);
