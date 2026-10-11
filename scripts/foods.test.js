@@ -48,4 +48,11 @@ ok("synonyms: potato->patates, doner->döner, hummus->humus, feta->beyaz peynir,
 ok("a whole word (with a possessive suffix) comes before a word start: peynir, yumurta, ekmek, pilav",top("peynir")[0]==="Beyaz peynir"&&top("peynir").includes("Kaşar peyniri")&&top("yumurta")[0]==="Haşlanmış yumurta"&&top("ekmek")[0]==="Beyaz ekmek"&&top("pilav")[0]==="Pirinç pilavı",["peynir","yumurta","ekmek","pilav"].map(top));
 ok("word order and extra spaces do not matter",top("doner tavuk")[0]==="Tavuk döner"&&top("corba mercimek")[0]==="Mercimek çorbası"&&top("tavuk  döner")[0]==="Tavuk döner",[top("doner tavuk"),top("tavuk  döner")]);
 ok("a name match comes before a match with a same-named item",top("patates")[0].toLowerCase().includes("patates"));
+{ // fibre per 100 g (USDA 1079), only where every component has it
+  const fb=n=>(FOODS.find(f=>f.n===n)||{}).fb;
+  ok("fibre coverage: at least 60% of the rows have it",FOODS.filter(f=>f.fb!=null).length/FOODS.length>=0.6,FOODS.filter(f=>f.fb!=null).length);
+  ok("fibre: white bread is about 2.7 g per 100 g, a computed soup has a value",fb("Beyaz ekmek")>2&&fb("Beyaz ekmek")<3.5&&fb("Mercimek çorbası")>0);
+  ok("fibre values are plausible (0-60 g per 100 g) and never negative",FOODS.every(f=>f.fb==null||(f.fb>=0&&f.fb<=60)));
+  ok("fibre cannot exceed the carbohydrate of the same row (USDA carbohydrate includes fibre)",FOODS.filter(f=>f.fb!=null).every(f=>f.fb<=f.c+0.6),FOODS.filter(f=>f.fb!=null&&f.fb>f.c+0.6).map(f=>f.n));
+}
 finish();

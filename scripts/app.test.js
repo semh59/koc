@@ -2865,6 +2865,19 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("S.settings.comfy=true;render()");
     ok("the switch puts data-comfy on the page root and removing it takes it off",w.document.documentElement.hasAttribute("data-comfy")&&(ev("S.settings.comfy=false;render()"),!w.document.documentElement.hasAttribute("data-comfy")));
   }
+  { // fibre bar on Today: only when every meal has fibre data, for adults
+    reset();ev("S.settings.age=40;S.entries=[];add('food',200,'Ekmek');add('food',150,'Çorba')");
+    const fb=(a,b)=>ev("(()=>{const m=S.entries.filter(e=>e.type==='food');m[0].fb="+a+";"+(b===null?"delete m[1].fb":"m[1].fb="+b)+";return viewToday()})()");
+    let h=fb(5,9.5);
+    ok("fibre bar: every meal has data -> 'Lif 15 / en az 25 g' with the guideline sentence, no verdict words",h.includes("Lif <b>15</b> / en az 25 g")&&h.includes("Dünya Sağlık Örgütü önerisi günde en az 25 g")&&!/yetersiz|yüksek|düşük|normal|riskli/.test(h.slice(h.indexOf("Lif <b>"),h.indexOf("Lif <b>")+400)),h.slice(h.indexOf("Lif"),h.indexOf("Lif")+120));
+    h=fb(5,null);
+    ok("fibre bar: a meal without fibre data -> no bar, the partial total with n/m stays",!h.includes("en az 25 g")&&h.includes("(1/2)"));
+    ev("S.settings.age=17");h=fb(5,9);
+    ok("fibre bar: under 18 -> no bar",!h.includes("en az 25 g"));
+    ev("S.settings.age=0");h=fb(5,9);
+    ok("fibre bar: age unknown -> no bar",!h.includes("en az 25 g"));
+    ev("S.entries=[]");
+  }
   { // safety brake from one source, with real data
     const MED="[{id:1,n:'Vitamin D',t:['08:00'],on:true}]";
     const prof=`S.entries=[];S.chat=[];S.meds=[];S.vitals=[];Object.assign(S.settings,{heightCm:175,age:35,goalKg:80,healthNote:'',riskClearedAt:'',kcal:0});for(let i=0;i<20;i++)add('weight',90+i*0.1,'',keyOff(-i));`;
