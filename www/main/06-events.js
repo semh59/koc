@@ -48,7 +48,7 @@ $("#tundo").addEventListener("click",()=>{
   else if(u!=null){Log.remove(e=>e.id===u);save();render()}
   $("#toast").classList.remove("on");
 });
-const TOGGLES={mk:"moveKcalOn",rpe:"rpeOn",gdv:"gdVoice",gdb:"gdVib",aw:"awakeOn"}; // data-<key> checkbox -> boolean setting
+const TOGGLES={mk:"moveKcalOn",rpe:"rpeOn",gdv:"gdVoice",gdb:"gdVib",aw:"awakeOn",comfy:"comfy"}; // data-<key> checkbox -> boolean setting
 document.addEventListener("change",ev=>{
   const t=ev.target;
   if(t.id==="bkfile"){
@@ -59,7 +59,7 @@ document.addEventListener("change",ev=>{
   }
   if(t.dataset.gi){gInput(t);return}
   const tg=Object.keys(TOGGLES).find(k=>t.dataset[k]!==undefined);
-  if(tg){S.settings[TOGGLES[tg]]=t.checked;save();if(tg==="aw")gAwake();return}
+  if(tg){S.settings[TOGGLES[tg]]=t.checked;save();if(tg==="aw")gAwake();if(tg==="comfy")render();return}
   if(t.dataset.set){
     const k=t.dataset.set,st=S.settings,[lo,hi,int]=RANGES[k],raw=t.value.trim();
     const wk=k==="goalKg",show=x=>x?(wk?dw(x).replace(/,0$/,""):String(x).replace(".",",")):"";

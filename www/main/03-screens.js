@@ -181,7 +181,7 @@ function viewSettings(){
       coach:keysStored()?"Anahtar kayıtlı":"Anahtar yok",data:storeMsg()?storeMsg()[0]:st.lastBackup?"Son yedek "+fd(st.lastBackup):"Henüz yedek dosyası yok",about:appVer?"Sürüm "+appVer:"Sürüm, kaynaklar ve tıbbi uyarı"};
     const grp=(g,ks)=>`<h2 class="grp">${g}</h2><div class="card">${SETTINGS_TABS.filter(([k])=>ks.includes(k)).map(([k,t,ic])=>navRow(`data-tab="settings-${k}"`,ic,t,esc(d[k]))).join("")}</div>`;
     return `${grp("Kişisel",["profile","reminders"])}${grp("Rehber ve modüller",["coach","modules"])}
-    <h2 class="grp">Görünüm ve erişilebilirlik</h2><div class="card"><div class="lbl" id="thml">Tema</div>${segb("thm",[["","Sistem"],["light","Açık"],["dark","Koyu"]],st.theme).replace('role="group"','role="group" aria-labelledby="thml"')}<p class="hint">Yazı boyutu telefonun yazı boyutu ayarını izler.</p></div>
+    <h2 class="grp">Görünüm ve erişilebilirlik</h2><div class="card"><div class="lbl" id="thml">Tema</div>${segb("thm",[["","Sistem"],["light","Açık"],["dark","Koyu"]],st.theme).replace('role="group"','role="group" aria-labelledby="thml"')}${swHelp("data-comfy",st.comfy,"Büyük yazı ve düğmeler","","hlpcf","Yazıları ve düğmeleri büyütür. Telefonun yazı boyutu ayarı da ayrıca çalışır.")}</div>
     ${grp("Veri ve uygulama",["data","about"])}`;
   }
   if(sub==="profile")return `<p class="hint">Kalori, su ve protein hedeflerin bu bilgilerle hesaplanır.</p><h2>Profil</h2><div class="card">
@@ -232,6 +232,7 @@ const recView=()=>`<div class="card todo" role="alert"><h3>Kayıtların okunamad
 function render(){
   const v=$("#view"),onb=obNeeded()||!!recovery;
   const de=document.documentElement;if(S.settings.theme)de.dataset.theme=S.settings.theme;else delete de.dataset.theme;
+  if(S.settings.comfy)de.dataset.comfy="";else delete de.dataset.comfy;
   $('meta[name="theme-color"]').content=getComputedStyle(de).getPropertyValue("--bg").trim();
   // Android 15+ status bar is transparent: the icon colour must follow the app theme, not the system's.
   const sb=plugin("SystemBars"),st={dark:"DARK",light:"LIGHT"}[S.settings.theme]||"DEFAULT";

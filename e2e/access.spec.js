@@ -167,3 +167,30 @@ test.describe("Landscape phone",()=>{
     expect(await page.evaluate(()=>getComputedStyle(document.querySelector(".cbar")).position)).toBe("sticky");
   });
 });
+
+test.describe("Comfortable mode (large text and buttons)",()=>{
+  const COMFY=state({...CONSENT,comfy:true,medOn:true,bpOn:true,bsOn:true,fastOn:true,stepsOn:true},{meds:[{id:1,n:"A",t:["09:00"],on:true}]});
+  test("main controls are at least 52 px on every screen and the sheet; the switch turns it on and off",async({app,page})=>{
+    await app.open({seed:COMFY});
+    const big=()=>page.evaluate(()=>{const o=[];let n=0;for(const e of document.querySelectorAll("#view .btn,#view .chip,#view input.in,#view select.in,#view .lnk,#sheet .btn,#sheet .chip,#sheet input.in")){
+      const r=e.getBoundingClientRect();if(!r.width||e.closest("[hidden],[inert]")||getComputedStyle(e).visibility==="hidden")continue;n++;if(r.height<51.5)o.push((e.textContent||e.id||e.className).trim().slice(0,25)+" "+Math.round(r.height))}return {o,n}});
+    expect(await page.evaluate(()=>document.documentElement.hasAttribute("data-comfy"))).toBe(true);
+    for(const t of SCREENS){await app.go(t);const r=await big();expect(r.o,t).toEqual([])}
+    await openSheet(app,page,SHEETS[0]);expect((await big()).o,"food sheet").toEqual([]);await app.closeSheet();
+    await app.go("settings");await page.locator("input[data-comfy]").evaluate(e=>e.click());
+    expect(await page.evaluate(()=>document.documentElement.hasAttribute("data-comfy"))).toBe(false);
+    expect((await app.state()).settings.comfy).toBe(false);
+  });
+});
+
+test.describe("Comfortable mode with 200% text on a 320 px screen",()=>{
+  test.use({viewport:{width:320,height:640}});
+  test("no horizontal scroll and nothing overflows the screen",async({app,page})=>{
+    await app.open({seed:state({...CONSENT,comfy:true,medOn:true,bpOn:true,bsOn:true,fastOn:true,stepsOn:true},{meds:[{id:1,n:"A",t:["09:00"],on:true}]})});
+    await scaleText(page,2,18);
+    const bad=()=>page.evaluate(()=>{const o=[];if(document.documentElement.scrollWidth>innerWidth)o.push("page scrolls horizontally");
+      for(const e of document.querySelectorAll("body *")){const c=getComputedStyle(e);if(c.display==="none"||e.closest("svg,.chiprow,[hidden]")||!e.getClientRects().length)continue;
+        const r=e.getBoundingClientRect();if(r.width&&r.right>innerWidth+1)o.push("overflows: "+e.tagName+"."+e.className+" "+(e.textContent||"").trim().slice(0,20))}return [...new Set(o)]});
+    for(const t of SCREENS){await app.go(t);expect(await bad(),t).toEqual([])}
+  });
+});

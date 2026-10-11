@@ -2304,7 +2304,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     const q=s=>$q(s),qa=s=>[...w.document.querySelectorAll(s)],v=()=>q("#view").textContent;
     ev("closeSheet();S.settings.obDone=true;S.settings.heightCm=170;S.settings.age=30;S.settings.goalKg=72;S.settings.medOn=true;S.settings.fastOn=true;S.settings.bpOn=true;S.settings.bsOn=true;S.settings.stepsOn=false;S.settings.lastBackup='';tab='settings';render()");
     const rows=qa('#view [data-tab^="settings-"]').map(b=>b.dataset.tab);
-    ok("Settings home is a short list: 6 sections, summary value and ›, no fields, a ‹ in the header (to Daha fazla)",rows.join()==="settings-profile,settings-reminders,settings-coach,settings-modules,settings-data,settings-about"&&v().includes("170 cm · 30 yaş · hedef 72,0 kg")&&v().includes("İlaç, Oruç, Tansiyon, Şeker açık")&&v().includes("Henüz yedek dosyası yok")&&!q("#view input")&&!q("#back").hidden&&q('nav [data-tab="more"]').getAttribute("aria-current")==="page",v());
+    ok("Settings home is a short list: 6 sections, summary value and ›, no fields (except the large-text switch), a ‹ in the header (to Daha fazla)",rows.join()==="settings-profile,settings-reminders,settings-coach,settings-modules,settings-data,settings-about"&&v().includes("170 cm · 30 yaş · hedef 72,0 kg")&&v().includes("İlaç, Oruç, Tansiyon, Şeker açık")&&v().includes("Henüz yedek dosyası yok")&&![...w.document.querySelectorAll("#view input")].some(i=>!i.hasAttribute("data-comfy"))&&!q("#back").hidden&&q('nav [data-tab="more"]').getAttribute("aria-current")==="page",v());
     const T={profile:"Profil ve hedefler",modules:"Modüller",reminders:"Hatırlatmalar",coach:"Rehber",data:"Veri ve yedek",about:"Hakkında"},seen=new Set();
     let titles=true;
     for(const k in T){
@@ -2853,6 +2853,12 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("movement card: the 65+ sentence appears only for 65 and over",!/65 yaş üstü/.test(t)&&(ev("S.settings.age=70;render()"),/65 yaş üstü/.test(card()))&&(ev("S.settings.age=0;render()"),!/65 yaş üstü/.test(card())));
     ok("movement card wording: no verdict words",!/yeterli|yetersiz|riskli|tebrik|harika|başardın/i.test(t));
     ev("S.workouts=[];Log.drop('exercise');tab='today';render()");
+  }
+  { // comfortable mode
+    reset();
+    ok("comfortable mode: off by default, survives the settings cleaner, junk becomes off",ev("cleanSettings({}).comfy")===false&&ev("cleanSettings({comfy:true}).comfy")===true&&ev("cleanSettings({comfy:'yes'}).comfy")===false);
+    ev("S.settings.comfy=true;render()");
+    ok("the switch puts data-comfy on the page root and removing it takes it off",w.document.documentElement.hasAttribute("data-comfy")&&(ev("S.settings.comfy=false;render()"),!w.document.documentElement.hasAttribute("data-comfy")));
   }
   { // safety brake from one source, with real data
     const MED="[{id:1,n:'Vitamin D',t:['08:00'],on:true}]";
