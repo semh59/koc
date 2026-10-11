@@ -169,7 +169,8 @@ async function barcodeFind(raw){
   }catch{return toast("İnternete ulaşılamadı, barkod aranamadı")}
   const x=OffLib.parse(j);
   if(x.status==="none"||x.status==="bad"){
-    sheetFood();ownOpen();toast(`${x.why}. Etiketteki değerleri elle yaz ya da Rehber'e sor`);return;
+    sheetFood();ownOpen();setPendingBarcode(x.status==="none"?code:"");
+    toast(x.status==="none"&&plugin("Ocr")?"Bu barkod Open Food Facts'te yok. Paketin arkasındaki besin tablosunu 'Etiketten oku' ile fotoğraflarsan ürünü kaydederim; sonraki okutmada kendiliğinden gelir.":`${x.why}. Etiketteki değerleri elle yaz`);return;
   }
   const food=Object.assign({},x.food,{src:"off"});
   if(x.status==="ok"&&Nutrition.putMy(food)){save();return sheetPortion(Nutrition.my().findIndex(m=>m.b===code))}

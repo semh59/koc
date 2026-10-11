@@ -2,6 +2,9 @@
 /* Photo text reading UI: nutrition label and lab report. Reading runs on the phone (ML Kit); the photo is sent nowhere.
    Works with S, save, toast, openSheet, closeSheet, esc, dayKey, sheetPortion, Nutrition, MYFOODS_MAX from the main shell. */
 let labelWarned=false;
+/* A scanned barcode that Open Food Facts does not know: the next label saved from a photo is stored under it, so the next scan finds it on the phone. Cleared when the label sheet is dismissed. */
+let pendingBarcode="";
+const setPendingBarcode=c=>{pendingBarcode=c||""};
 
 const ocrBtn=(kind,label)=>plugin("Ocr")?`<button class="mb-2 btn ghost" data-ocr="choose:${kind}">${label}</button>`:"";
 function ocrChoose(kind){
@@ -76,9 +79,11 @@ function labelSave(){
   if(!(f.k>=0&&f.k<=KCAL_MAX))return toast("Kalori 100 g için 0-900 olmalı");
   const food={n:name,u:[["100 g",100]]};
   for(const [k] of LABEL_FIELDS)if(f[k]!=null)food[k]=Math.round(f[k]*10)/10;
+  if(pendingBarcode)food.b=pendingBarcode;
   if(!Nutrition.putMy(food))return toast(`Besin listesi dolu (en çok ${MYFOODS_MAX})`);
+  const bar=pendingBarcode;pendingBarcode="";
   save();
-  const i=S.myFoods.findIndex(m=>m.n===name);
+  const i=S.myFoods.findIndex(m=>bar?m.b===bar:m.n===food.n);
   closeSheet();sheetPortion(i);
 }
 
@@ -89,7 +94,7 @@ document.addEventListener("click",ev=>{
   else if(a==="cam")ocrPick(true,arg);
   else if(a==="gal")ocrPick(false,arg);
   else if(a==="esave")labelSave();
-  else if(a==="close")closeSheet();
+  else if(a==="close"){pendingBarcode="";closeSheet()}
 });
 
 /* Once per device: draw text on a canvas and have ML Kit read it. The result goes to the console, where the smoke test reads it. */
