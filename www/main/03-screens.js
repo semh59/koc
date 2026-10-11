@@ -51,7 +51,10 @@ function viewToday(){
   const meals=Log.where(e=>e.type==="food"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
   const pr=cur!=null?Algo.protein(riskInput(cur)):{};
   const macro=meals.some(e=>e.p||e.c||e.f)?`<div class="macro num">Protein <b>${Math.round(mac("p"))}</b>${pr.range?` / ${pr.range[0]}–${pr.range[1]}`:""} g${pr.doc?" (hedefi hekiminle belirle)":""}${meals.some(e=>e.c!=null||e.f!=null)?` · Karbonhidrat <b>${Math.round(mac("c"))}</b> g · Yağ <b>${Math.round(mac("f"))}</b> g`:""}</div>${pr.range||pr.doc?`<div class="mut sm macro">${Algo.PROTEIN_NOTE}</div>`:""}`:"";
-  const mi=["fb","sg","na"].map(k=>[k,meals.filter(e=>e[k]!=null).length]).filter(x=>x[1]).map(([k,n])=>`${NLBL[k][0].toUpperCase()+NLBL[k].slice(1)} <b>${Math.round(mac(k))}</b> ${NUNIT(k)} (${n}/${meals.length})`);
+  /* The fibre bar only when every meal of the day has fibre data (a partial total would look like the whole day) and for adults. */
+  const fibAll=meals.length>0&&meals.every(e=>e.fb!=null)&&S.settings.age>=18;
+  const fiber=fibAll?`<div class="macro num">Lif <b>${Math.round(mac("fb"))}</b> / en az 25 g</div><div class="bar" aria-hidden="true"><i style="width:${Math.min(100,mac("fb")/25*100).toFixed(0)}%"></i></div><p class="hint">Yetişkinler için Dünya Sağlık Örgütü önerisi günde en az 25 g. Gün bitmeden az görünmesi olağandır. Hedefin farklıysa hekiminin söylediğine uy.</p>`:"";
+  const mi=(fibAll?["sg","na"]:["fb","sg","na"]).map(k=>[k,meals.filter(e=>e[k]!=null).length]).filter(x=>x[1]).map(([k,n])=>`${NLBL[k][0].toUpperCase()+NLBL[k].slice(1)} <b>${Math.round(mac(k))}</b> ${NUNIT(k)} (${n}/${meals.length})`);
   const nc=meals.filter(e=>e.c!=null).length,nf=meals.filter(e=>e.f!=null).length;
   const macroNote=macro&&meals.some(e=>e.c!=null||e.f!=null)&&(nc<meals.length||nf<meals.length)?`<div class="mut sm macro">Karbonhidrat ${nc}/${meals.length}, yağ ${nf}/${meals.length} öğünde veri var; toplam eksik olabilir.</div>`:"";
   const dr=LogLib.dayRange(meals),rangeNote=dr?`<p class="pt-2 hint">Tarif farkına göre bugün ~${fint(dr.lo)}–${fint(dr.hi)} kcal olabilir.</p>`:"";
@@ -61,7 +64,7 @@ function viewToday(){
     ${rb("kcal","Kalori",ring(kcP,"var(--kcal)",kcC,"Kalori",kgl>0?`${Math.round(kc)} / ${kgl} kcal`:"hedef yok",kcU,"main"))}
     <div class="rmini">${rb("water","Su",ring(water/sh,"var(--water)",waterC||fmt((sh-water)/1000,1),"Su",`${fmt(water/1000,1)} / ${fmt(sh/1000,1)} L`,waterU,"mini"+(waterC?" done":"")))}
     ${rb("exercise","Spor",ring(sw/sg,"color-mix(in srgb,var(--exercise) 80%,var(--card))",spC||Math.round(sg-sw),"Spor",`${Math.round(sw)} / ${sg} dk`,spU,"mini"+(spC?" done":"")))}${sOn?stepCard():""}</div>
-  </div>${macro}${macroNote}${micro}${rangeNote}${moveAdd(t)?`<p class="pt-2 hint">Hedefe hareketten +${moveAdd(t)} kcal eklendi (kayıtlı antrenman ve yürüyüşün yarısı, tahmindir).</p>`:""}</div>`;
+  </div>${macro}${macroNote}${fiber}${micro}${rangeNote}${moveAdd(t)?`<p class="pt-2 hint">Hedefe hareketten +${moveAdd(t)} kcal eklendi (kayıtlı antrenman ve yürüyüşün yarısı, tahmindir).</p>`:""}</div>`;
   const actions=`<div class="actions"><button class="btn act" data-act="food">${Icons.svg("plus")} Yemek ekle</button><div class="qa">
     <button class="chip act" data-act="water" aria-label="${st.glass} ml su ekle">${Icons.svg("water")} +${st.glass} ml</button><button class="chip" data-dk="open">${Icons.svg("water")} Başka içecek</button>
     <button class="chip act" data-act="weight">${Icons.svg("weight")} Kilo</button><button class="chip act" data-act="exercise">${Icons.svg("exercise")} Spor</button>
