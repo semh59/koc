@@ -2084,6 +2084,23 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("on the label screen fiber/sugar/sodium come filled",T("#efb").value==="3"&&T("#esg").value==="12"&&T("#ena").value==="480");
     T("#en").value="Etiketli";T('[data-ocr="esave"]').click();
     ok("a label save writes fiber/sugar/sodium to myFoods",ev("[S.myFoods[0].fb,S.myFoods[0].sg,S.myFoods[0].na].join()")==="3,12,480",ev("S.myFoods"));
+    { // an unknown barcode is attached to the next label saved from a photo
+      ev("closeSheet();S.myFoods=[]");w.fetch=async()=>({ok:true,json:async()=>({status:0})});
+      await ev("barcodeFind('8690526010113')");
+      ok("unknown barcode: the manual form opens and the barcode waits for the label",w.document.querySelector("#fown")&&ev("pendingBarcode")==="8690526010113");
+      ev("labelReview({food:{k:440,p:8.5,c:70,f:13}})");T("#en").value="Paket kraker";T('[data-ocr="esave"]').click();
+      ok("the saved label carries the barcode, the wait is cleared, and the next scan finds it without the internet",ev("S.myFoods[0].b")==="8690526010113"&&ev("pendingBarcode")===""&&await (async()=>{let f=0;w.fetch=async()=>{f++;return {ok:true,json:async()=>({status:0})}};await ev("barcodeFind('8690526010113')");return f===0})());
+      ev("closeSheet();S.myFoods=[]");w.fetch=async()=>({ok:true,json:async()=>({status:0})});
+      await ev("barcodeFind('8690526010113')");ev("labelReview({food:{k:100}})");T('[data-ocr="close"]').click();
+      ev("labelReview({food:{k:440,p:8.5,c:70,f:13}})");T("#en").value="Başka";T('[data-ocr="esave"]').click();
+      ok("dismissing the label sheet clears the waiting barcode: an unrelated label gets no barcode",ev("S.myFoods[0].b")===undefined);
+      ev("S.myFoods=[]");
+      ev("Nutrition.putMy({n:'Süt',k:60,b:'11111111'});Nutrition.putMy({n:'süt',k:62,b:'22222222'})");
+      ok("two different barcoded products with the same name are both kept (the second gets a suffix)",ev("S.myFoods.length")===2&&ev("S.myFoods.map(m=>m.n).sort().join()")==="Süt,süt (2)",ev("S.myFoods.map(m=>m.n)"));
+      ev("Nutrition.putMy({n:'Süt',k:61,b:'11111111'})");
+      ok("the same barcode still replaces its entry",ev("S.myFoods.length")===2&&ev("S.myFoods.find(m=>m.b==='11111111').k")===61);
+      ev("S.myFoods=[]");
+    }
     ev("closeSheet();S.myFoods=[];labelReview({food:{k:300,p:5,c:40,f:10,sg:45}})");
     T("#en").value="Şekerli";T('[data-ocr="esave"]').click();
     ok("label: if sugar exceeds carbs it is not silently dropped, it warns and does not save",ev("S.myFoods.length")===0&&T("#ewarn").textContent.includes("Şeker, karbonhidrattan büyük"),T("#ewarn").textContent);

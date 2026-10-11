@@ -8,7 +8,9 @@ const Nutrition={
   removeTpl:id=>{S.mealTpl=S.mealTpl.filter(t=>t.id!==id)},
   /* My foods: an AI estimate, a scanned barcode or a saved meal enters the searchable list with its one-portion values. A food with the same barcode or name is replaced; false when the list is full. */
   putMy(f){
-    const my=S.myFoods,i=my.findIndex(x=>(f.b&&x.b===f.b)||tr(x.n)===tr(f.n));
+    /* The same name replaces an entry only when it is not a different barcoded product; a different product with a clashing name gets a (2) suffix. */
+    const my=S.myFoods,i=my.findIndex(x=>(f.b&&x.b===f.b)||(tr(x.n)===tr(f.n)&&!(f.b&&x.b&&f.b!==x.b)));
+    if(i<0&&my.some(x=>tr(x.n)===tr(f.n)))f={...f,n:f.n.slice(0,55)+" (2)"};
     if(i>=0)my[i]=f;else if(my.length<MYFOODS_MAX)my.unshift(f);else return false;
     return true;
   },
