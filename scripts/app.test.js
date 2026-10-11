@@ -2161,9 +2161,9 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   }
   { // KVKK explicit consent, Privacy and data
     const q=s=>$q(s),k=()=>q("#view").textContent,sh=()=>q("#sheet").textContent;
-    ev("closeSheet();S.settings.age=30;S.settings.consent=false;S.settings.consentV=0;S.settings.consentAt='';S.chat=[];S.entries=[];Object.assign(S.settings,{obDone:true});setKey('nvidia','K1');tab='coach';render()");
+    ev("closeSheet();S.settings.age=30;S.settings.consent=false;S.settings.consentV=0;S.settings.consentAt='';S.chat=[];S.entries=[];Object.assign(S.settings,{obDone:true});setKey('groq','K1');tab='coach';render()");
     const t=ev("document.querySelector('#view .chat>.card').textContent");
-    ok("consent text: what is sent, to whom (provider name), transfer abroad, withdrawal, fully works without consent",["Ne gönderilir","NVIDIA Build","yurt dışına aktarım","Geri alma","Onay vermezsen","uygulama tam çalışır"].every(x=>t.includes(x))&&!!q('[data-c="consent"]'),t);
+    ok("consent text: what is sent, to whom (provider name), transfer abroad, withdrawal, fully works without consent",["Ne gönderilir","Groq","yurt dışına aktarım","Geri alma","Onay vermezsen","uygulama tam çalışır"].every(x=>t.includes(x))&&!!q('[data-c="consent"]'),t);
     ev("cConsent(true)");
     ok("consent: consentV and consentAt are written, saved",ev("S.settings.consent&&S.settings.consentV===CONSENT_V&&S.settings.consentAt===dayKey()")&&JSON.parse(w.localStorage.getItem("nw_state")).settings.consentAt===ev("dayKey()"));
     ev("cConsent(false)");

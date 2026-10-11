@@ -93,9 +93,10 @@ const seed=()=>ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.cycl
   ok("it is in the Privacy category list, deleting removes only the cycle",ev("PV_CATS.some(c=>c[0]==='Döngü kayıtları')")&&(ev("pvDelete(PV_CATS.findIndex(c=>c[0]==='Döngü kayıtları'))"),ev("S.cycle.length")===0));
 }
 {
-  ev("localStorage.setItem('nw_state_usage','{\"x\":1}');tab='settings-data';render()");
+  ev("localStorage.setItem('nw_state_usage','{\"x\":1}');localStorage.setItem('nw_bkpw_enc','xyz');tab='settings-data';render()");
   ev("document.querySelector('[data-act=\"reset\"]').click()");
   ok("Delete all data clears the nw_state_usage key",ev("localStorage.getItem('nw_state_usage')")===null);
+  ok("Delete all data also clears the remembered backup password",ev("localStorage.getItem('nw_bkpw_enc')")===null);
 }
 { // Privacy > Cycle records: only the records go, the setting stays, the pending cycle notification is cancelled
   seed();

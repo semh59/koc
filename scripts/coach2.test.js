@@ -125,5 +125,23 @@ boot().then(async win=>{
     w.setTimeout=st;
     ok("fetchModels: a model list request that never answers is aborted and classified as a timeout",r==="time",r);
   }
+  { // provider terms warnings and defaults
+    reset();
+    ok("a keyed NVIDIA provider shows its trial-terms warning in the consent area, Groq shows none",ev("consentWarn()").includes("NVIDIA Build:")&&!ev("consentWarn()").includes("Groq:"));
+    ev("S.providers.find(p=>p.id==='gemini').on=true;S.providers.find(p=>p.id==='gemini').health=true;KEYS.gemini='g'");
+    ok("a keyed Gemini provider shows the free-tier review warning",ev("consentWarn()").includes("Google Gemini:</b> Gemini ücretsiz katmanında"));
+    ok("NVIDIA is off by default",ev("defProviders().find(p=>p.id==='nvidia').on")===false&&ev("defProviders().filter(p=>p.on).map(p=>p.id).join()")==="groq,openrouter");
+  }
+  { // revoking the consent offers to delete the chat too
+    reset();ev("S.chat=[{id:1,role:'user',text:'merhaba',t:1}];S.cid=2");
+    w.confirm=()=>false;ev("cConsent(false)");await new Promise(r=>setTimeout(r,10));
+    ok("revoking the consent: declining the offer keeps the chat",ev("S.settings.consent")===false&&ev("S.chat.length")===1);
+    reset();ev("S.chat=[{id:1,role:'user',text:'merhaba',t:1}];S.cid=2");
+    w.confirm=()=>true;ev("cConsent(false)");await new Promise(r=>setTimeout(r,10));
+    ok("revoking the consent: accepting the offer deletes the chat and its archive",ev("S.chat.length")===0&&ev("S.chats.length")===0);
+    reset();w.confirm=()=>{throw new Error("asked")};ev("S.chat=[];S.chats=[]");let asked=false;try{ev("cConsent(false)")}catch{asked=true}
+    ok("revoking the consent with no chat asks nothing",!asked);
+    w.confirm=()=>true;
+  }
   finish();
 });
