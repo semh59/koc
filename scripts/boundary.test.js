@@ -8,13 +8,13 @@ const Modules=require(www("kernel/modules.js"));
 const keyOwner={};for(const [id,m] of Object.entries(Modules))for(const k of m.keys)keyOwner[k]={id,owners:m.owners||[]};
 const violations=new Set();
 for(const f of listJs()){
-  if(f.startsWith("main/")||f.startsWith("kernel/"))continue;
-  for(const [,key] of stripComments(read(f)).matchAll(/\bS\.([a-zA-Z_]\w*)/g)){
+  if(f.startsWith("kernel/"))continue;
+  for(const [,key] of stripComments(read(f)).matchAll(/(?<![.\w])S\.([a-zA-Z_]\w*)/g)){
     const o=keyOwner[key];
     if(o&&!f.startsWith("modules/"+o.id+"/")&&!o.owners.includes(f))violations.add(key+" <- "+f);
   }
 }
-ok("no file outside the owning module touches its S field",!violations.size,[...violations]);
+ok("no file outside the owning module touches its S field (the core in main/ goes through the module api too)",!violations.size,[...violations]);
 const cross=scan();
 ok("no module uses another module's internal name: only its index.js names, XxxLib namespaces and the api list in kernel/modules.js",!cross.length,cross);
 ok("every module has an index.js",Object.keys(Modules).every(id=>fs.existsSync(www("modules/"+id+"/index.js"))));

@@ -32,7 +32,7 @@ function ring(p,color,center,label,sub,unit,cls=""){
   return `<div class="ring ${cls}"><svg viewBox="0 0 84 84" aria-hidden="true"><circle class="rt" cx="42" cy="42" r="${r}"/>${f>0?`<circle class="rp" cx="42" cy="42" r="${r}" style="stroke:${color}" stroke-dasharray="${(c*f).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 42 42)"/>`:""}</svg><div class="rc num">${center}<small>${unit}</small></div><div class="rl">${label}</div><div class="rs num">${sub}</div></div>`;
 }
 /* "All": days from the first entry to today (at least 30). */
-const trendAll=()=>Math.max(30,Algo.dayNum(dayKey())-Algo.dayNum(S.entries.reduce((m,x)=>x.day<m?x.day:m,dayKey()))+1);
+const trendAll=()=>Math.max(30,Algo.dayNum(dayKey())-Algo.dayNum(Log.all().reduce((m,x)=>x.day<m?x.day:m,dayKey()))+1);
 function trendSeries(N){
   const keys=[];for(let i=N-1;i>=0;i--)keys.push(keyOff(-i));
   const w=weights(keys[0],keys[N-1]);
