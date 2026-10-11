@@ -9,7 +9,7 @@ function pvDelete(i){
 function pvDeleteDo(name,del){
   if(del()===false)return;Store.del("nw_state_previous");Store.del("nw_state_corrupt");otherBytes=lsOther();save();render();scheduleReminders().then(setNotif);sheetPrivacy();toast(`${name} silindi`);
 }
-const NET_KIND={off:"barkod numarası",chat:"Rehber mesajı (onayladığın metin)",models:"model listesi (anahtarın istek başlığında gider)"};
+const NET_KIND={off:"barkod numarası",chat:"Rehber mesajı (onayladığın metin)",models:"model listesi (anahtarın istek başlığında gider)",ram:"ezan vakitleri (yalnız ilçe numaran)"};
 /* What NeoWell itself sent in the last 30 days; Google services (barcode scanner, text recognition) run outside the WebView and are not in this list. */
 function netLogHtml(){
   const rows=NetLog.recent().reverse();
@@ -32,6 +32,7 @@ function sheetPrivacy(){
   <ul class="mut sm" style="margin:0 0 10px;padding-left:18px">
     <li><b>Open Food Facts</b> (barkod araması): yalnızca barkod numarası gider. Hizmet, her internet isteğinde olduğu gibi IP adresini görür.</li>
     <li><b>Rehber</b>: yalnızca açık rızanla ve yalnız sen bir düğmeye bastığında (otomatik ya da arka planda gönderim yok), aşağıda yazılanlar, seçtiğin sağlayıcıya (${esc(provNames())} ya da kendi eklediğin servis). OpenAI ve Anthropic ücretlidir. Kurulumda yalnız anahtarın ve bir deneme cümlesi gider, sağlık verin gitmez.</li>
+    <li><b>Ezan vakitleri</b> (yalnız Ramazan modunu açarsan): seçtiğin ilçenin numarası ve il/ilçe listesi istenir; Diyanet vakit tablosunun internetteki bir kopyasından (ezanvakti.emushaf.net) saatler alınır. Hizmet IP adresini görür; ilçe numaran yaklaşık bölgeni gösterir.</li>
     <li><b>Google barkod tarayıcı</b> (Play hizmetleri): görüntü telefonda işlenir, NeoWell görüntüyü almaz. Google, kendi koşullarına göre kullanım ve tanılama bilgisi toplayabilir.</li>
     <li><b>Google Drive</b>: yalnızca sen yedeği paylaşım ekranından Drive'a gönderirsen. Yedek parolayla şifrelenir.</li>
   </ul>

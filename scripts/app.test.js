@@ -2878,6 +2878,37 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("fibre bar: age unknown -> no bar",!h.includes("en az 25 g"));
     ev("S.entries=[]");
   }
+  { // Ramadan mode
+    reset();const q=s=>$q(s);ev("S.settings.age=40;S.meds=[];S.vitals=[];S.settings.healthNote='';S.settings.riskClearedAt='';S.settings.fastInfoOk=false;S.settings.ramOn=false;S.settings.ramId=0;tab='settings-modules';render()");
+    const rdays=ev("[0,1,2,3,4,5,6].map(n=>RamadanLib.addDay(RamadanLib.tr(Date.now()).day,n))"),row=(d,i,f)=>({MiladiTarihUzunIso8601:d+"T00:00:00",Imsak:i,Aksam:f}),calls=[];
+    w.fetch=async u=>{calls.push(String(u));return {ok:true,json:async()=>/sehirler/.test(u)?[{SehirID:"506",SehirAdi:"ANKARA"}]:/ilceler/.test(u)?[{IlceID:"9206",IlceAdi:"ANKARA"},{IlceID:"9207",IlceAdi:"AYAŞ"}]:rdays.map(d=>row(d,"00:00","23:59"))}};
+    const card=()=>[...w.document.querySelectorAll("#view .row")].map(r=>r.textContent).find(t=>/İftara|Sahura|Ramazan modu/.test(t))||"";
+    ok("Ramadan mode: off by default, the Settings row is there, the Today card and the internet are untouched",!ev("S.settings.ramOn")&&!!q('[data-ram="toggle"]')&&calls.length===0);
+    ev("S.settings.age=17;render()");q('[data-ram="toggle"]').click();
+    ok("Ramadan mode: a hard risk flag (under 18) keeps it closed with a reason, no sheet, no request",!ev("S.settings.ramOn")&&!q("#sheet.on, #sheet[open]")&&calls.length===0&&q("#toast").textContent.includes("kapalı"));
+    ev("S.settings.age=40;render()");q('[data-ram="toggle"]').click();
+    ok("Ramadan mode: the first opening shows the doctor note and needs the tick",!!q('[data-ram="infook"]')&&!ev("S.settings.ramOn"));
+    q('[data-ram="infook"]').click();ok("no tick, no opening",!ev("S.settings.ramOn"));
+    q("#ric").checked=true;q('[data-ram="infook"]').click();await flush();
+    ok("Ramadan mode: after the tick it is on, the start day is set and the province list is requested",ev("S.settings.ramOn")&&ev("S.settings.fastInfoOk")&&ev("S.settings.ramFrom")===ev("dayKey()")&&calls.some(u=>/sehirler\/2$/.test(u)));
+    q('[data-ram^="il:"]').click();await flush();q('[data-ram^="pl:"]').click();await flush();
+    ok("Ramadan mode: province, district, then the table of that district only; the cache is on the phone, not in the data file",ev("S.settings.ramId")===9206&&/Ankara \/ Ankara/.test(ev("S.settings.ramName"))&&calls.some(u=>/vakitler\/9206$/.test(u))&&JSON.parse(w.localStorage.getItem("nw_ram")).id===9206&&!JSON.stringify(ev("S")).includes("00:00"));
+    ev("tab='today';render()");
+    ok("Ramadan mode: the Today card counts down and says the times are approximate",/İftara \d/.test(card())&&/İmsak 00:00 · İftar 23:59/.test(card())&&/yaklaşık/.test(card()),card());
+    ev("S.settings.ramSahur=true;S.settings.ramIftar=true");
+    const rem=ev("Habits.ramReminders(Date.now()-864e5*0,0,7)");
+    ok("Ramadan mode: reminders come only from the cached days and only when the switches are on",rem.length>=1&&rem.every(x=>/yaklaşık/.test(x.body))&&ev("(()=>{S.settings.ramSahur=false;S.settings.ramIftar=false;return Habits.ramReminders(Date.now(),0,7).length})()")===0);
+    ev("S.settings.ramSahur=true;S.settings.ramIftar=true;S.meds=[{id:1,n:'A',t:['08:00'],on:true}];S.settings.riskClearedAt='';render()");
+    ok("Ramadan mode: a soft flag (medication) hides the times and the reminders until 'Hekimime danıştım'",/Hekimime danıştım/.test(card())&&!/İftara \d/.test(card())&&ev("Habits.ramReminders(Date.now(),0,7).length")===0);
+    ev("S.settings.riskClearedAt=dayKey();render()");
+    ok("Ramadan mode: after the confirmation the card and the reminders are back",/İftara \d/.test(card())&&ev("Habits.ramReminders(Date.now(),0,7).length")>=1);
+    ev("S.settings.ramFrom=keyOff(-40);render()");
+    ok("Ramadan mode: after 31 days the card asks whether it is over",/Ramazan bitti mi/.test(card()+[...w.document.querySelectorAll("#view .row")].map(r=>r.textContent).join()));
+    q('[data-ram="off"]').click();
+    ok("Ramadan mode: closing it removes the card and the start day; the district stays for next year",!ev("S.settings.ramOn")&&ev("S.settings.ramFrom")===""&&ev("S.settings.ramId")===9206&&card()==="");
+    ok("Ramadan mode settings cleaner: out-of-range district becomes 0, control characters leave the name, a bad start day is dropped",ev("cleanSettings({ramId:99999999,ramName:'A\\u0000B',ramFrom:'x'})").ramId===0&&ev("cleanSettings({ramName:'A\\u0000B'})").ramName==="AB"&&ev("cleanSettings({ramFrom:'x'})").ramFrom==="");
+    ev("S.meds=[];S.settings.riskClearedAt='';S.settings.ramId=0;S.settings.fastInfoOk=false;tab='today';render()");delete w.fetch;
+  }
   { // safety brake from one source, with real data
     const MED="[{id:1,n:'Vitamin D',t:['08:00'],on:true}]";
     const prof=`S.entries=[];S.chat=[];S.meds=[];S.vitals=[];Object.assign(S.settings,{heightCm:175,age:35,goalKg:80,healthNote:'',riskClearedAt:'',kcal:0});for(let i=0;i<20;i++)add('weight',90+i*0.1,'',keyOff(-i));`;

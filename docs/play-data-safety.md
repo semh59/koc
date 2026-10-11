@@ -29,6 +29,7 @@ Ağ çağrıları (kodda tek tek doğrulandı, başka yok): (1) Rehber: `www/mod
 | Bildirimler | Hayır | Hayır | n/a | n/a | Yalnızca yerel hatırlatma; sunucu push yok |
 | Cihaz veya diğer kimlikler (Google ML Kit / Play hizmetleri tanılaması) | **Toplanıyor olabilir (doğrulanmadı)**; formda güvenli taraf: Evet | Hayır (NeoWell geliştiricisine gitmez; Google kendi hizmetini sağlar) | Uygulama işlevselliği ve analiz (Google SDK'sının kendi amacı) | Hayır (kapatılamaz) | ML Kit açıklaması: cihaz bilgisi ve kuruluma özel tanımlayıcı. Politika §5 ile tutarlı: "Google tanılama bilgisi toplayabilir". Kesinleşmesi hukukçu ve Play soru listesinde (karar 5) |
 | Uygulama etkinliği, finansal bilgi, kişiler, takvim, dosyalar | Hayır | Hayır | n/a | n/a | Dosya: yedek (her zaman parolayla şifreli, parola zorunlu) / PDF / CSV yalnız kullanıcının seçtiği yere yazılır |
+| Ezan vakitleri (Ramazan modu, ezanvakti.emushaf.net) | Seçilen ilçenin numarası (yaklaşık bölge) ve IP adresi; yalnız kullanıcı modu açıp ilçe seçerse ya da Yenile derse. Konum izni kullanılmaz | Bkz. karar 3 | Uygulama işlevselliği | Evet (kullanıcı seçerse) |
 | Barkod araması (Open Food Facts) | Barkod numarası kişisel veri değil. Hizmet IP adresini görür | Bkz. karar 3 | Uygulama işlevselliği | Evet (kullanıcı okutursa) | |
 
 ## Güvenlik uygulamaları

@@ -44,7 +44,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- data ---------- */
 const DEF={
-  settings:{comfy:false,goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,shareProfile:true,noticeOk:false,lockGrace:30,piiPrev:false,chatRisk:"",copyAt:"",lastPlateau:"",goalSugAt:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:false,lockOn:false,hcOn:false,hcFrom:"",cycleOn:false,cycleRem:false,fastOn:false,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
+  settings:{ramOn:false,ramId:0,ramName:"",ramSahur:false,ramIftar:false,ramFrom:"",comfy:false,goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,shareProfile:true,noticeOk:false,lockGrace:30,piiPrev:false,chatRisk:"",copyAt:"",lastPlateau:"",goalSugAt:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:false,lockOn:false,hcOn:false,hcFrom:"",cycleOn:false,cycleRem:false,fastOn:false,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
     {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -61,7 +61,7 @@ const DEF={
   entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,dbStep:0,plates:GPLATE_DEF.slice(),exCfg:{},providers:defProviders(),chat:[],chats:[],cid:1,myFoods:[],recipes:[],favFoods:[],mealTpl:[],fast:{plan:16,t0:null,log:[]},sleep:[],mood:[],labs:[],vitals:[],pulse:[],hr:[],meds:[],medLog:[],moves:[],measures:[],walk:null,cycle:[]
 };
 const VR={bpSysHi:[80,300,true],bpDiaHi:[40,200,true],bpSysLo:[50,300,true],bpDiaLo:[30,200,true],gFastLo:[20,600,true],gFastHi:[20,600,true],gPostLo:[20,600,true],gPostHi:[20,600,true]};
-const RANGES={...VR,goalKg:[20,400,false],kcal:[800,8000,true],waterMl:[500,10000,true],glass:[50,1500,true],sportWeek:[10,3000,true],stepGoal:[1000,100000,true],heightCm:[100,250,true],age:[10,100,true]};
+const RANGES={...VR,goalKg:[20,400,false],kcal:[800,8000,true],waterMl:[500,10000,true],glass:[50,1500,true],sportWeek:[10,3000,true],stepGoal:[1000,100000,true],heightCm:[100,250,true],age:[10,100,true],ramId:[0,999999,true]};
 const SETLBL={goalKg:"Hedef kilo",kcal:"Günlük kalori",waterMl:"Günlük su",glass:"Bir bardak",sportWeek:"Haftalık spor",stepGoal:"Günlük adım",heightCm:"Boy",age:"Yaş",bpSysHi:"Büyük tansiyon üst sınır",bpDiaHi:"Küçük tansiyon üst sınır",bpSysLo:"Büyük tansiyon alt sınır",bpDiaLo:"Küçük tansiyon alt sınır",gFastLo:"Açlık alt sınır",gFastHi:"Açlık üst sınır",gPostLo:"Yemek sonrası alt sınır",gPostHi:"Yemek sonrası üst sınır"};
 const ZEROOK=["goalKg","kcal","heightCm","age",...Object.keys(VR)];
 const {copyNutr,NUTR}=LogLib;
@@ -73,7 +73,7 @@ const CONSENT_V=3;
 const MED_NOTE="NeoWell tıbbi cihaz değildir, tanı koymaz ve tedavi önermez; hekim yerine geçmez. Sağlık kararların için hekimine danış.";
 /* Seconds in the background before the app lock asks again. */
 const LOCK_GRACES=[30,120,300];
-const DAY_KEYS=["copyAt","lastPlateau","goalSugAt","lastBackup","lastAutoBk","riskClearedAt","hcFrom","stepWarnDay","stepsFrom"];
+const DAY_KEYS=["copyAt","lastPlateau","goalSugAt","lastBackup","lastAutoBk","riskClearedAt","hcFrom","stepWarnDay","stepsFrom","ramFrom"];
 function cleanSettings(raw){
   const d=structuredClone(DEF.settings),o=raw&&typeof raw==="object"?raw:{};
   for(const k in RANGES){
@@ -87,6 +87,7 @@ function cleanSettings(raw){
   if(o.act===0||o.act===1||o.act===2)d.act=o.act;
   if(LOCK_GRACES.includes(o.lockGrace))d.lockGrace=o.lockGrace;
   if(typeof o.healthNote==="string")d.healthNote=o.healthNote.slice(0,500);
+  if(typeof o.ramName==="string")d.ramName=o.ramName.replace(/[\u0000-\u001F\u007F]/g,"").slice(0,40);
   d.consent=o.consent===true&&o.consentV===CONSENT_V&&!(d.age>0&&d.age<18);
   if(d.consent){d.consentV=CONSENT_V;if(dayOk(o.consentAt))d.consentAt=o.consentAt;if(typeof o.consentP==="string")d.consentP=o.consentP.slice(0,200)}
   if(!d.cycleOn)d.cycleRem=false;

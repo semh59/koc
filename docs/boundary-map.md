@@ -3,7 +3,7 @@
 ## Veri alanı -> dokunan dosyalar
 | S alanı | dosya sayısı | dosyalar |
 |---|---|---|
-| settings | 39 | kernel/unitui.js, main/01-core.js, main/02-state-components.js, main/03-screens.js, main/04-sheets.js, main/05-notifications.js, main/06-events.js, main/07-actions.js, modules/coach/coach.js, modules/cycle/cycleui.js, modules/data/archivelib.js, modules/data/backupui.js, modules/data/csvlib.js, modules/data/lockui.js, modules/data/onboardui.js, modules/data/privacyui.js, modules/gym/guideui.js, modules/gym/gym.js, modules/habits/habitui.js, modules/habits/index.js, modules/history/historyui.js, modules/insights/activityui.js, modules/insights/doctorui.js, modules/insights/goalui.js, modules/insights/weeklyui.js, modules/log/drinkui.js, modules/log/entries.js, modules/log/quickui.js, modules/measures/measureui.js, modules/meds/alarmui.js, modules/meds/medui.js, modules/motion/index.js, modules/motion/motionui.js, modules/motion/stepsui.js, modules/motion/walkui.js, modules/pulse/hcui.js, modules/pulse/index.js, modules/pulse/pulseui.js, modules/vitals/vitalsui.js |
+| settings | 40 | kernel/unitui.js, main/01-core.js, main/02-state-components.js, main/03-screens.js, main/04-sheets.js, main/05-notifications.js, main/06-events.js, main/07-actions.js, modules/coach/coach.js, modules/cycle/cycleui.js, modules/data/archivelib.js, modules/data/backupui.js, modules/data/csvlib.js, modules/data/lockui.js, modules/data/onboardui.js, modules/data/privacyui.js, modules/gym/guideui.js, modules/gym/gym.js, modules/habits/habitui.js, modules/habits/index.js, modules/habits/ramadanui.js, modules/history/historyui.js, modules/insights/activityui.js, modules/insights/doctorui.js, modules/insights/goalui.js, modules/insights/weeklyui.js, modules/log/drinkui.js, modules/log/entries.js, modules/log/quickui.js, modules/measures/measureui.js, modules/meds/alarmui.js, modules/meds/medui.js, modules/motion/index.js, modules/motion/motionui.js, modules/motion/stepsui.js, modules/motion/walkui.js, modules/pulse/hcui.js, modules/pulse/index.js, modules/pulse/pulseui.js, modules/vitals/vitalsui.js |
 | entries | 4 | main/04-sheets.js, modules/log/entries.js, modules/log/index.js, modules/log/quickui.js |
 | meds | 4 | modules/meds/alarmui.js, modules/meds/index.js, modules/meds/medlib.js, modules/meds/medui.js |
 | medLog | 4 | modules/meds/alarmui.js, modules/meds/index.js, modules/meds/medlib.js, modules/meds/medui.js |
@@ -67,11 +67,11 @@
 | kernel/unitui.js | 6 | 1 |
 | main/01-core.js | 32 | 63 |
 | main/02-state-components.js | 14 | 10 |
-| main/03-screens.js | 106 | 37 |
+| main/03-screens.js | 108 | 37 |
 | main/04-sheets.js | 64 | 59 |
-| main/05-notifications.js | 31 | 14 |
+| main/05-notifications.js | 32 | 14 |
 | main/06-events.js | 89 | 6 |
-| main/07-actions.js | 49 | 1 |
+| main/07-actions.js | 51 | 1 |
 | modules/coach/coach.js | 55 | 148 |
 | modules/coach/coachlib.js | 9 | 1 |
 | modules/coach/index.js | 5 | 1 |
@@ -90,6 +90,7 @@
 | modules/data/photolib.js | 1 | 1 |
 | modules/data/photoui.js | 19 | 24 |
 | modules/data/privacyui.js | 32 | 9 |
+| modules/gym/balance.js | 1 | 1 |
 | modules/gym/cardiolib.js | 3 | 1 |
 | modules/gym/cardioui.js | 23 | 9 |
 | modules/gym/excues.js | 1 | 1 |
@@ -107,7 +108,9 @@
 | modules/gym/programs.js | 0 | 1 |
 | modules/habits/habitlib.js | 3 | 1 |
 | modules/habits/habitui.js | 25 | 21 |
-| modules/habits/index.js | 11 | 1 |
+| modules/habits/index.js | 12 | 1 |
+| modules/habits/ramadanlib.js | 4 | 1 |
+| modules/habits/ramadanui.js | 24 | 14 |
 | modules/history/historylib.js | 5 | 1 |
 | modules/history/historyui.js | 37 | 15 |
 | modules/insights/activitylib.js | 1 | 1 |
