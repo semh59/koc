@@ -94,7 +94,7 @@ function viewToday(){
 /* PDF reports in one place; the share handlers listen on the document, so they work from any screen. */
 function reportRows(){
   const st=S.settings,r=(a,ic,t,sub)=>navRow(a,ic,t,sub);
-  return `${r('data-wk="pdf"',"share","Son 7 gün raporu","Bugün dahil 7 gün, PDF")}${st.bpOn?r('data-vt="pdfmenu:t"',"heart","Tansiyon doktor raporu","Dönem seç, PDF"):""}${st.bsOn?r('data-vt="pdfmenu:s"',"water","Şeker doktor raporu","Dönem seç, PDF"):""}${LabLib.series(Labs.all()).length?r('data-lab="pdf"',"file","Tahlil raporu","Tüm sonuçlar, PDF"):""}`;
+  return `${r('data-doc="open"',"share","Hekime hazırlan","Tek PDF, yorum içermez")}${r('data-wk="pdf"',"share","Son 7 gün raporu","Bugün dahil 7 gün, PDF")}${st.bpOn?r('data-vt="pdfmenu:t"',"heart","Tansiyon doktor raporu","Dönem seç, PDF"):""}${st.bsOn?r('data-vt="pdfmenu:s"',"water","Şeker doktor raporu","Dönem seç, PDF"):""}${LabLib.series(Labs.all()).length?r('data-lab="pdf"',"file","Tahlil raporu","Tüm sonuçlar, PDF"):""}`;
 }
 function viewTrend(){
   const t=dayKey(),st=S.settings;

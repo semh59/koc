@@ -163,6 +163,14 @@ function viewGlucose(){
 }
 
 /* ---- Doctor report ---- */
+/* Pages of one report kind for the combined doctor report: {count, draw(ctx,n)}, or null without readings in the period. */
+function vPdfPages(kind,days){
+  if(!S.vitals.some(r=>r.k===kind))return null;
+  const {rows,pages,info}=vReportInfo(kind,days);
+  if(!rows.length)return null;
+  let i=0;const slices=pages.map(p=>{const s=rows.slice(i,i+p.n);i+=p.n;return s});
+  return {count:pages.length,draw:(ctx,n)=>VitalsLib.drawPage(ctx,slices[n],{...info,page:n+1,total:pages.length})};
+}
 function vPdfMenu(kind){
   openSheet(`<h3>Doktor raporu</h3><p class="mut sm">Hangi dönemi rapora ekleyelim?</p>${[7,14,30,90].map(n=>`<button class="mb-2 btn ghost" data-vt="pdf:${kind}:${n}">Son ${n} gün</button>`).join("")}<button class="btn ghost" data-vt="close">Vazgeç</button>`);
 }

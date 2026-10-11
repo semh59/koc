@@ -35,7 +35,7 @@ const WeeklyLib=(()=>{
     const ks=rows.filter(r=>r.weight!=null);
     if(ks.length>=2)summary.push(["Kilo",`${kw(ks[0].weight)} → ${kw(ks[ks.length-1].weight)} ${wu} (${fmtS(UN.w(ks[ks.length-1].weight-ks[0].weight,wu))})`]);
     else if(ks.length===1)summary.push(["Kilo",`${kw(ks[0].weight)} ${wu} (tek ölçüm)`]);
-    else summary.push(["Kilo","son 7 günde tartı kaydı yok"]);
+    else summary.push(["Kilo",`son ${days} günde tartı kaydı yok`]);
     const any=rows.filter(r=>r.kcal>0),kc=any.filter(r=>A.fullKcal(r.kcal));
     summary.push(["Kalori",!any.length?"yemek kaydı yok":kc.length>=A.MIN_AVG_DAYS
       ?`günlük ortalama ${Math.round(mean(kc.map(r=>r.kcal)))} kcal${st.kcal>0?` (hedef ${st.kcal})`:""}, ${kc.length} tam kayıtlı gün${any.length>kc.length?`; ${any.length-kc.length} gün 800 kcal altında, ortalamaya katılmadı`:""}`
