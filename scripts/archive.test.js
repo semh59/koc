@@ -8,4 +8,5 @@ ok("archive: records are the user's own, in the module that owns them",d.modules
 ok("archive: the provider list (and anything key-like) and the cycle record are not included",!("providers" in d.modules.coach)&&!r.json.includes("SECRET")&&!r.json.includes("CYC")&&Object.keys(d.modules.cycle).length===0);
 ok("archive: counts equal the array lengths shown to the user",r.counts.log===2&&r.counts.vitals===1&&r.counts.coach===1&&r.total===4,r.counts);
 ok("archive: an empty state gives a total of 0 and does not throw",A.build({settings:{}},"2026-10-11").total===0);
+ok("archive: settings that stay on the phone (health note, near person, place) are not in the file",(d=>!("healthNote" in d.settings)&&!("medNear" in d.settings)&&d.settings.kcal===2000)(JSON.parse(A.build({settings:{kcal:2000,healthNote:"x",medNear:"+905551112233",ramLat:39}},"2026-10-11").json)));
 finish();

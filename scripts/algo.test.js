@@ -161,4 +161,5 @@ ok("warm-up sets do not count (latest, previous and alone)",A.nextTarget(S3(60,9
 }
 ok("dayOk: rejects impossible calendar days and non-strings, accepts leap day",!A.dayOk("2026-02-31")&&!A.dayOk("2026-13-01")&&!A.dayOk("2026-02-29")&&!A.dayOk("2026-2-3")&&!A.dayOk(null)&&A.dayOk("2024-02-29"));
 ok("timeOk: 00:00-23:59 only, with leading zeros",A.timeOk("00:00")&&A.timeOk("23:59")&&!A.timeOk("24:00")&&!A.timeOk("7:30")&&!A.timeOk("12:60")&&!A.timeOk(730));
+ok("adaptive TDEE: weigh-ins older than the window give the formula, not a data estimate",(()=>{const x=A.adaptiveTdee({weights:w,intake,profile:{kg:86.6,cm:175,age:34,sex:"m",act:1},today:day(60)});return x.source==="formül"&&x.est===null})());
 finish();

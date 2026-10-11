@@ -28,7 +28,8 @@ const QuickLib=(()=>{
     let [q,rest]=lead(tok(s));
     let g=null,unit=null;
     const gm=/^(g|gr|gram|kg)( |$)/.exec(rest);
-    if(gm&&q!=null){g=gm[1]==="kg"?q*1000:q;rest=rest.slice(gm[0].length)}
+    if(gm&&q!=null){if(gm[1]!=="kg"&&/^\d{1,3}\.\d{3}$/.test(tok(s).split(" ")[0]))q*=1000; // "1.500 g" is 1500 g in Turkish
+      g=gm[1]==="kg"?q*1000:q;rest=rest.slice(gm[0].length)}
     else for(const u of UNITS)if(rest===u||rest.startsWith(u+" ")){unit=u;rest=rest.slice(u.length).trim();break}
     return {q:g!=null?1:q,name:rest,unit,grams:g};
   }

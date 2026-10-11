@@ -27,4 +27,5 @@ ok("the entry label reads like a hand-added food",Q.label(L[0],one("2 dilim ekme
 ok("alternatives: picking another hit keeps the written quantity",(r=>{const a=Q.pick(r.text,r.p,r.hits,1,L);return a.q===r.q&&a.f===r.hits[1]})(Q.parse("2 simit",L)[0]));
 ok("real food list: common sentences resolve without throwing",(rows=>rows.length===3&&rows.every(r=>!r.miss))(Q.parse("2 dilim ekmek, yarım simit, 200 g tavuk",FOODS)));
 ok("garbage and empty input do not throw",Q.parse("",L).length===0&&Q.parse(null,L).length===0&&Q.parse("%%% ,,, ;;",L).length<=3);
+ok("quick: a thousands dot before grams means thousands (1.500 g = 1500 g), a decimal stays a decimal",require("../www/modules/nutrition/quicklib.js").piece("1.500 g pilav").grams===1500&&require("../www/modules/nutrition/quicklib.js").piece("2.5 g tuz").grams===2.5);
 finish();

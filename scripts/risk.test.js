@@ -13,6 +13,7 @@ ok("pregnancy and eating-disorder markers are separate flags",R({healthNote:"ham
 for(const t of ["hamile değilim","Hamile değilim, emzirmiyorum","gebelik yok","yeme bozukluğu yok","hiç kusmadım","insülin kullanmıyorum, böbrek sorunum yok"]){
   const r=R({healthNote:t});ok("a negated note is not a hard block: "+t,!r.hard.length&&r.soft.length>0&&!r.pregnant&&!r.kidney,r);
 }
+ok("a negation later in the sentence does not cancel a positive: \"hamileyim ilaç kullanmıyorum\"",R({healthNote:"hamileyim ilaç kullanmıyorum"}).pregnant);
 ok("negative and positive in one note: 'diyabet yok, hamileyim' is hard",R({healthNote:"diyabet yok, hamileyim"}).pregnant);
 ok("onboarding notes: the pregnancy/eating-disorder note is hard, the doctor/medication note is soft",R({healthNote:"İlk kurulumda işaretlendi: hamilelik, emzirme ya da yeme bozukluğu geçmişi"}).hard.length>0&&!R({healthNote:"İlk kurulumda işaretlendi: hekim kontrolü ya da düzenli ilaç"}).hard.length&&R({healthNote:"İlk kurulumda işaretlendi: hekim kontrolü ya da düzenli ilaç"}).soft.length>0);
 // soft blocks and confirmation

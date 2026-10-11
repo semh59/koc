@@ -113,7 +113,7 @@ document.addEventListener("click",ev=>{
   obRead();
   if(a==="fixage"){Object.assign(ob,obFresh(),{step:0});return render()}
   if(ob.minor)return;
-  if(a==="skip")return obDone();
+  if(a==="skip"){obDone();scheduleReminders().then(setNotif);return}
   if(ob.step<0){ob.step=0;return render()}
   if(a==="back"){ob.step--;ob.err=ob.bad="";return render()}
   if(a==="sex"||a==="dir"||a==="job"||a==="walk"){ob[a]=v;ob.err=ob.bad="";return render()}
