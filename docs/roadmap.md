@@ -1,5 +1,7 @@
 # Yol haritası: eksikler (2 Ekim 2026)
 
+Güncel kalan işler listesi: `kalan-isler.md`.
+
 Kod durumu `9953416`. Kaynaklar: oneri-listesi, plan-6-ozellik, rekabet-ozellik, rekabet-arayuz, rekabet-egzersiz, yapilacaklar, adim-arastirma, akilli-gps-tasarim, fikirler, besin-arastirmasi, git log ve kod denetimi. Yapılmış özellikler listelenmez. Her madde tek yerde durur; E ve G bölümleri yalnızca kimlik verir.
 
 Dış değerlendirmenin 36 maddesi kanıtla doğrulandı ve öncelik sıralı Play yolu çıkarıldı: `external-review-verification.md` (6 Ekim 2026).
@@ -73,7 +75,7 @@ Harici değerlendirmede bildirilen açık sağlık güvenliği boşlukları (3 E
 - [x] **B Protein:** BMI≥30'da ayarlı ağırlık (BMI 25 ağırlığı + fazlanın %25'i), boy yoksa üst 2,0 g/kg, her durumda üst 200 g; böbrek/diyaliz/karaciğer anahtarı, sert engel ya da 65+ yaşta ilaç/yumuşak engelde aralık yok ("hekiminle belirle"); her gösterimde böbrek/karaciğer dipnotu.
 - [x] **C Oruç:** sert engelde başlatma ve 18:6/20:4 kapalı (süren oruç bitirilebilir), yumuşakta onaydan sonra; uzun planlar için tek seferlik ek onay; modül ilk açılışta riskli gruplar bilgisi onay kutusuyla; engelde hatırlatıcı 11 ve 9100 kurulmaz, fren durumu değişince bildirimler yeniden kurulur.
 - Açık: yumuşak ağ geniş (tek tansiyon ölçümü ya da vitamin kaydı yeter, tek dokunuşla 30 gün kalkar); sohbet ed işareti kalıcıdır (yeni sohbet ya da silme kaldırmaz, `www/modules/coach/coach.js` riskInput); anahtar kelime eşleşmesi tıbbi değerlendirme değildir. Hukuki ve tıbbi metinler (oruç bilgilendirmesi, protein dipnotu) bir hekim/hukukçu gözünden geçmedi.
-- [x] **Tanı koymak yok:** tansiyon/şeker ölçümleri yorumlanmaz (eşik, hedef alanı, ADA/135-85 ön ayarı, bant, kırmızı işaret, hedef yüzdesi kaldırıldı); tahlilde yalnız raporda yazan aralık, nötr renkle; tek uyarı "Bu değerleri hekiminle değerlendir."; `riskFlags` freni aynen (yalnız ölçümün varlığına bakar). Tek istisna: bugün tarihli kayıtta tansiyon 180/120 ve üstü ya da şeker 54 altı / 400 üstü ise kayıttan sonra yorumsuz bir acil kutusu çıkar ("Cihazı kontrol edip ölçümü tekrarla. Belirtin varsa ya da değer doğruysa 112'yi ara."); eşik `vitalslib.js` `CRISIS` sabitidir, geriye dönük girilen kayıtta çıkmaz, karar `bp-glucose-plan.md:28`, doğrulama `findings.md:56`. Play tıbbi kategori riski azaldı (`play-data-safety.md` madde 4). Ayarlardaki eski eşik alanları yedek uyumu için veri modelinde durur, arayüzde yok.
+- [x] **Tanı koymak yok:** tansiyon/şeker ölçümleri yorumlanmaz (eşik, hedef alanı, ADA/135-85 ön ayarı, bant, kırmızı işaret, hedef yüzdesi kaldırıldı); tahlilde yalnız raporda yazan aralık, nötr renkle; tek uyarı "Bu değerleri hekiminle değerlendir."; `riskFlags` freni aynen (yalnız ölçümün varlığına bakar). Tek istisna: bugün tarihli kayıtta tansiyon 180/120 ve üstü ya da şeker 54 altı / 400 üstü ise kayıttan sonra yorumsuz bir acil kutusu çıkar ("Cihazı kontrol edip ölçümü tekrarla. Değer doğruysa hekimine danış; kendini kötü hissediyorsan acil yardım al." (11 Ekim 2026: "112" çağrısı nötr nota çevrildi)); eşik `vitalslib.js` `CRISIS` sabitidir, geriye dönük girilen kayıtta çıkmaz, karar `bp-glucose-plan.md:28`, doğrulama `findings.md:56`. Play tıbbi kategori riski azaldı (`play-data-safety.md` madde 4). Ayarlardaki eski eşik alanları yedek uyumu için veri modelinde durur, arayüzde yok.
 
 ## C) Arayüz ve tasarım
 | # | Ad | Değer | Emek | Kaynak | Bağımlılık / karar |
@@ -124,8 +126,8 @@ Harici değerlendirmede bildirilen açık sağlık güvenliği boşlukları (3 E
 ### Adım ve hareket
 | # | Ad | Değer | Emek | Kaynak | Bağımlılık / karar |
 |---|---|---|---|---|---|
-| D-Adım1 | Health Connect keşfi | Kitaplık, minSdk, Kotlin köprüsü ve manifest öğeleri doğrulanıp boş eklentiyle CI yeşil alınır. | S | plan-6 §9 (6.0) | G1 |
-| D-Adım2 | Health Connect okuma | Saat/bant adımı (telefonla max, asla toplam), uyku ve nabız uygulamaya gelir. | L | plan-6 §9 (6.1-6.2) | D-Adım1, G1 |
+| D-Adım1 (yapıldı) | Health Connect keşfi | Kitaplık, minSdk, Kotlin köprüsü ve manifest öğeleri doğrulanıp boş eklentiyle CI yeşil alınır. | S | plan-6 §9 (6.0) | G1 |
+| D-Adım2 (yapıldı, telefonda denenmedi) | Health Connect okuma | Saat/bant adımı (telefonla max, asla toplam), uyku ve nabız uygulamaya gelir. | L | plan-6 §9 (6.1-6.2) | D-Adım1, G1 |
 | D-Adım3 (yapıldı) | Elle yürüyüş başlat/durdur | Tek yürüyüşün mesafe, süre ve kalorisi elle ölçülür. | M | oneri #3, adim-arastirma | – |
 | D-Adım4 (yapıldı) | Hareket kalorisini hedefe ekleme | Varsayılan kapalı bir ayarla yakılan kalori günlük hedefe eklenir. | S | oneri #5 | G11 |
 | D-Adım5 (yapıldı) | Aylık adım grafiği ve adım serisi | 14 günlük grafiğe aylık görünüm ve adım hedefi serisi eklenir. | S | oneri #6 | – |
