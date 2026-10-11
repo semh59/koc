@@ -697,6 +697,21 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     const pb=Buffer.from(saved.data,"base64"),pd=await pdfjs.getDocument({data:new Uint8Array(pb),verbosity:0}).promise;
     ok("weekly report: a valid single-page PDF, file name, share",/^neowell-haftalik-\d{4}-\d{2}-\d{2}\.pdf$/.test(saved.path)&&pb.slice(0,5).toString()==="%PDF-"&&pd.numPages===1&&shared.files[0]==="file:///cache/h.pdf",[saved.path,pd.numPages]);
     ok("report content: weight, water, calories, sport and (if tracking is on) blood pressure",drawn.includes("NeoWell · Son 7 gün raporu")&&drawn.some(t=>t.includes("81,9"))&&drawn.some(t=>/günlük ortalama 2,0 L/.test(t))&&drawn.some(t=>/1 gün kayıt var; ortalama için en az 3/.test(t))&&drawn.some(t=>/toplam 45 dk/.test(t))&&drawn.some(t=>/128\/82 mmHg/.test(t)),drawn);
+    { // combined doctor report: cover + the blood pressure pages, the user's questions, no comments
+      drawn.length=0;saved=null;
+      ok("Hekime hazırlan row is the first one in the report list",!!q('[data-doc="open"]'));
+      q('[data-doc="open"]').click();
+      ok("the sheet asks for the period and five optional questions",w.document.querySelectorAll('[data-doc^="days"]').length===2&&w.document.querySelectorAll('#sheet input[id^="dq"]').length===5);
+      q('[data-doc="days:90"]').click();q("#dq0").value="Tansiyon ilacımın saatini değiştirelim mi?";q("#dq1").value="  ";
+      q('[data-doc="go"]').click();await flush();
+      const db=Buffer.from(saved.data,"base64"),dd=await pdfjs.getDocument({data:new Uint8Array(db),verbosity:0}).promise;
+      ok("doctor report: valid PDF with cover and the pressure page, file name",/^neowell-hekim-\d{4}-\d{2}-\d{2}\.pdf$/.test(saved.path)&&db.slice(0,5).toString()==="%PDF-"&&dd.numPages===2,[saved.path,dd.numPages]);
+      ok("doctor report content: title, period, coverage, the question; empty question skipped",drawn.includes("NeoWell · Hekime hazırlan")&&drawn.some(t=>t.includes("son 90 gün"))&&drawn.some(t=>t==="Tansiyon ölçümü olan gün")&&drawn.some(t=>t.startsWith("1. Tansiyon ilacımın"))&&!drawn.some(t=>t.startsWith("2.")));
+      ok("doctor report wording: no comment or rating words",!drawn.some(t=>/yüksek|düşük|normal|risk|iyi |kötü/i.test(t)),drawn.filter(t=>/yüksek|düşük|normal|risk/i.test(t)));
+      ev("S.entries=[];S.vitals=[];S.labs=[]");saved=null;
+      q('[data-doc="open"]').click();q('[data-doc="go"]').click();await flush();
+      ok("doctor report: no records, no file, an explanation",saved===null&&q("#toast").textContent.includes("kayıt yok"));
+    }
     ev("S.entries=[];S.vitals=[];S.settings.bpOn=false;tab='today';render()");
   }
   {

@@ -165,6 +165,12 @@ function labBuildReport(){
   const info={today:dayKey(),count:list.length,rows:list.reduce((a,s)=>a+s.pts.length,0),total:pages.length};
   return canvasPdf(pages.length,(ctx,i)=>LabLib.drawPage(ctx,pages[i],{...info,page:i+1}));
 }
+/* Pages of the lab report for the combined doctor report: {count, draw(ctx,n)}, or null without results. */
+function labPdfPages(){
+  const list=LabLib.series(S.labs);if(!list.length)return null;
+  const pages=LabLib.paginate(list),info={today:dayKey(),count:list.length,rows:list.reduce((a,s)=>a+s.pts.length,0),total:pages.length};
+  return {count:pages.length,draw:(ctx,i)=>LabLib.drawPage(ctx,pages[i],{...info,page:i+1})};
+}
 async function labExport(){
   let pdf;try{pdf=labBuildReport()}catch(e){return toast("PDF hazırlanamadı")}
   await sharePdf(pdf,`neowell-tahlil-${dayKey()}.pdf`,"Tahlil sonuçları");
