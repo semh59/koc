@@ -1,7 +1,7 @@
 "use strict";
 /* Exercise library UI, stick-figure/photo detail sheet and the timed-set timer. Works with gym.js and the main-shell helpers. */
 let gLQ="",gLReg="Tümü",gLCat="Tümü",gLEq="Tümü",gLN=40;
-const EXCAT={g:"Güç",e:"Esneme",k:"Kardiyo",p:"Pliyometrik"},EXKIND={w:"Ağırlık × tekrar",b:"Tekrar (vücut ağırlığı)",t:"Süreli tutuş",i:"Aralıklı (tur)",c:"Süre (dakika)"};
+const EXCAT={g:"Güç",e:"Esneme",k:"Kardiyo",p:"Pliyometrik",d:"Denge"},EXKIND={w:"Ağırlık × tekrar",b:"Tekrar (vücut ağırlığı)",t:"Süreli tutuş",i:"Aralıklı (tur)",c:"Süre (dakika)"};
 
 function exDef(e){
   const d=Object.assign({},FigTpl[e.tp]);if(!d.frames)return null;

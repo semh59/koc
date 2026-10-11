@@ -1,6 +1,6 @@
 const {ok,finish}=require("./ok");
 // Guided mode flow engine (pure logic).
-const G=require("../www/modules/gym/guidelib.js"),EXDB=require("../www/modules/gym/exlib.js"),fs=require("fs"),path=require("path");
+const G=require("../www/modules/gym/guidelib.js"),EXDB=require("../www/modules/gym/exlib.js"),_bal=require("../www/modules/gym/balance.js"),fs=require("fs"),path=require("path");
 const load=(f,name)=>{const m=new module.constructor();m._compile(fs.readFileSync(path.join(__dirname,"../www",f),"utf8")+`;module.exports=${name}`,f);return m.exports};
 const FigTpl=load("modules/gym/figtpl.js","FigTpl"),EXCUE=load("modules/gym/excues.js","EXCUE");
 const T0=1e6,P=G.PREP*1000;
