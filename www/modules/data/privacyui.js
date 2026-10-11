@@ -49,9 +49,12 @@ function sheetPrivacy(){
 }
 /* Each table is shared on its own: a chained share sheet may not open for the second file. */
 const pvCsv=()=>CsvLib.files(S,{exName:id=>gEx(id).n,vctx:r=>r.k==="t"?VitalsLib.sessionName(r.session):VitalsLib.ctxName(r.ctx)});
+const pvArchive=()=>ArchiveLib.build(S,dayKey());
 function sheetCsv(){
+  const ar=pvArchive();
   openSheet(`<h3>Tabloya aktar (CSV)</h3><p class="mut sm">Excel ve Google Sheets'te açılır. Dosya şifresizdir, paylaştığın yere gider; yedek yerine geçmez.</p>
   ${pvCsv().map((f,i)=>`<div class="row"><span class="grow"><b>${f.label}</b><small class="db mut sm">${f.n} satır</small></span><button class="chip" data-pv="csvsh:${i}" ${f.n?"":"disabled"} aria-label="${f.label} paylaş">Paylaş</button></div>`).join("")}
+  <div class="row"><span class="grow"><b>Tüm verim (tek JSON dosyası)</b><small class="db mut sm">${ar.total} kayıt, tüm modüller; API anahtarları, fotoğraflar ve döngü kaydı girmez</small></span><button class="chip" data-pv="archive" ${ar.total?"":"disabled"} aria-label="Tüm veriyi paylaş">Paylaş</button></div>
   <button class="mt-3 btn ghost" data-pv="close">Kapat</button>`);
 }
 document.addEventListener("click",ev=>{
@@ -63,6 +66,7 @@ document.addEventListener("click",ev=>{
   else if(a==="prev"){S.settings.piiPrev=el.checked;save()}
   else if(a==="netclear"){NetLog.clear();sheetPrivacy()}
   else if(a==="csv")sheetCsv();
+  else if(a==="archive")shareFile(`neowell-arsiv-${dayKey()}.json`,"Tüm verim","application/json",pvArchive().json,true);
   else if(a==="csvsh"){const f=pvCsv()[+arg];shareFile(`neowell-${f.key}-${dayKey()}.csv`,f.label,"text/csv",f.build(),true)}
   else if(a==="consent"||a==="revoke"){cConsent(a==="consent");sheetPrivacy()}
 });
