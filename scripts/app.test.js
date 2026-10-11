@@ -2329,7 +2329,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     q('[data-pv="archive"]').click();await flush();
     const ar=JSON.parse(wr[1].data);
     ok("archive share: a readable JSON file with the user's entries, no API key, file name with the date",/^neowell-arsiv-\d{4}-\d\d-\d\d\.json$/.test(wr[1].path)&&wr[1].encoding==="utf8"&&ar.schema===1&&ar.modules.log.entries.length===2&&!("providers" in ar.modules.coach),wr[1].path);
-    ok("FHIR row: weight and blood pressure counts shown, button enabled with a weight record",sheet().includes("Tansiyon ve kilo (FHIR R4)")&&sheet().includes("0 tansiyon, 1 kilo kaydı")&&!q('[data-pv="fhir"]').disabled,sheet());
+    ok("FHIR row: weight and blood pressure counts shown, button enabled with a weight record",sheet().includes("Tansiyon, kilo ve şeker (FHIR R4)")&&sheet().includes("0 tansiyon, 1 kilo, 0 şeker kaydı")&&!q('[data-pv="fhir"]').disabled,sheet());
     q('[data-pv="fhir"]').click();await flush();
     {const fj=JSON.parse(wr[2].data);ok("FHIR share: a Bundle file with the weight observation, dated file name, no other data",wr[2].path.startsWith("neowell-fhir-")&&wr[2].path.endsWith(".json")&&fj.resourceType==="Bundle"&&fj.entry.length===2&&fj.entry[1].resource.valueQuantity.value===80.5&&!wr[2].data.includes("=1+1"),wr[2].path)}
     wr.length=1;
