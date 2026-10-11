@@ -201,6 +201,15 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("an unachievable kg suggestion drops down (102.5 -> 100)",ev("gSuggest('squat').kg")===100);
     ev("S.plates=GPLATE_DEF.slice()");ev(H("squat",102.5,8));
     ok("in the default inventory the suggestion is unchanged",ev("gSuggest('squat').kg")===102.5);
+    { // a top set rated 9.5 or harder keeps the weight, only while the difficulty field is on
+      ev(H("squat",100,12));ev("S.workouts[0].ex[0].sets.forEach(x=>x.rpe=9.5);S.settings.rpeOn=false");
+      ok("RPE off: a hard rating is ignored, the weight goes up",ev("gSuggest('squat').kg")===102.5);
+      ev("S.settings.rpeOn=true");
+      ok("RPE on, top reps reached with a 9.5 set: same weight, with the reason",ev("gSuggest('squat').kg")===100&&/zorlandın/.test(ev("gSuggest('squat').why")));
+      ev("S.workouts[0].ex[0].sets.forEach(x=>x.rpe=8);");
+      ok("RPE on but not hard: the weight goes up",ev("gSuggest('squat').kg")===102.5);
+      ev("S.settings.rpeOn=false");ev(H("squat",102.5,8));
+    }
     ev("S.workouts[0].day=keyOff(-21)");
     ok("gSuggest after a 21 day break: 10% lighter, with the reason",ev("gSuggest('squat').kg")<ev("S.workouts[0].ex[0].sets[0].kg")&&ev("gSuggest('squat').why").includes("Uzun ara verdin (21 gün)"),ev("gSuggest('squat')"));
     ev("S.plates=[25,20,15,10,5];S.workouts=[];gStart(null);gAddEx(gActive(),'squat');gActive().ex[0].sets[0].kg=100;gClick('kgp:0:0',document.body)");
