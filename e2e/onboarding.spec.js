@@ -101,8 +101,8 @@ test("welcome screen shows the fixed notice",async({app,page})=>{
 test("Coach data choices: a switch stores the choice",async({app,page})=>{
   await app.open({seed:state({})});
   await app.go("settings-coach");
-  await page.locator('[data-csh="Food"]').locator("xpath=..").click();
-  expect(await page.evaluate(()=>S.settings.shareFood)).toBe(false);
+  await page.locator('[data-csh="Profile"]').locator("xpath=..").click();
+  expect(await page.evaluate(()=>S.settings.shareProfile)).toBe(false);
 });
 
 test("what leaves the phone: the privacy sheet lists NeoWell's own requests and can clear them",async({app,page})=>{

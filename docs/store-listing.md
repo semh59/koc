@@ -47,7 +47,7 @@ Bu bölümler kayıt ve görüntüleme içindir. NeoWell bu değerleri yorumlama
 
 REHBER (İSTEĞE BAĞLI, YAPAY ZEKÂ)
 - Kendi API anahtarını girersen sohbet ve kayıt önerileri alırsın; konuları ayrı sohbetlerde tutarsın. İnternet ister.
-- Rehber yalnız sen açık rıza verirsen çalışır. Rıza verirsen, yalnız sen bir düğmeye bastığında (mesaj, yorum, menü ya da program isteği) sohbetin, profilin ve son kayıtların seçtiğin sağlayıcıya (NVIDIA Build, Groq, OpenRouter, Google Gemini, OpenAI, Anthropic Claude ya da kendi eklediğin servis; OpenAI ve Anthropic ücretlidir) gider; kendiliğinden ya da arka planda hiçbir şey gönderilmez. Sunucuları yurt dışındadır. Rızayı istediğin an geri alırsın; vermezsen uygulama tam çalışır.
+- Rehber yalnız sen açık rıza verirsen çalışır. Rıza verirsen, yalnız sen bir düğmeye bastığında (mesaj, menü ya da program isteği) yazdıkların ve istersen profilin (boy, yaş aralığı, cinsiyet, hareket düzeyi, kalori hedefi) seçtiğin sağlayıcıya (NVIDIA Build, Groq, OpenRouter, Google Gemini, OpenAI, Anthropic Claude ya da kendi eklediğin servis; OpenAI ve Anthropic ücretlidir) gider; kendiliğinden ya da arka planda hiçbir şey gönderilmez. Sunucuları yurt dışındadır. Rızayı istediğin an geri alırsın; vermezsen uygulama tam çalışır. Rehber yalnız menü ve egzersiz programı önerir, yemek ve egzersiz kalorisini tahmin eder; sağlık verini yorumlamaz, tıbbi tavsiye vermez.
 - NeoWell 18 yaş ve üzeri içindir; kurulumda 18 yaş altı kabul edilmez, yaş girilmeden Rehber açılmaz.
 
 GİZLİLİK

@@ -170,7 +170,7 @@ test.describe("Coach reliability",()=>{
   });
   test("custom provider: the user's address is used and a clear warning appears before data is sent",async({app,page,fake})=>{
     const u1={id:"u1",name:"Benimki",base:"https://custom.example/v1",model:"m",on:true,health:true,confirm:false};
-    await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"u1"},{providers:[u1]}),keys:{u1:"k1"}});
+    await app.open({seed:state({consent:true,consentV:3,consentAt:"2026-10-06",consentP:"u1"},{providers:[u1]}),keys:{u1:"k1"}});
     await send(app,page,"Selam");
     await expect(view(page)).toContainText("Merhaba, buradayım.");
     expect(fake.chats().length).toBe(1);
@@ -179,7 +179,7 @@ test.describe("Coach reliability",()=>{
   });
   test("entering a key for a paid provider that was not part of the consent makes Coach ask again; no data is sent",async({app,page,fake})=>{
     const oa={id:"openai",name:"OpenAI",base:"https://api.openai.com/v1",model:"gpt-6-luna",on:true,health:true,confirm:false};
-    await app.open({seed:state({consent:true,consentV:2,consentAt:"2026-10-06",consentP:"groq,nvidia,openrouter"},{providers:[oa]}),keys:{openai:"sk-x"}});
+    await app.open({seed:state({consent:true,consentV:3,consentAt:"2026-10-06",consentP:"groq,nvidia,openrouter"},{providers:[oa]}),keys:{openai:"sk-x"}});
     await app.tab("coach");
     await expect(page.locator('[data-c="consent"]')).toBeVisible();
     await expect(view(page)).toContainText("Sağlayıcı listen değişti");
@@ -251,7 +251,7 @@ test.describe("Coach identity masking",()=>{
     await expect(page.locator("#view")).toContainText("Tamam.");
     expect(app.dialogs.length).toBe(0);
   });
-  test("final gate: the outgoing body has no raw identity in chat, retry, comment, program, menu and direct call",async({app,page,fake})=>{
+  test("final gate: the outgoing body has no raw identity in chat, retry, program, menu and direct call",async({app,page,fake})=>{
     const RAW=/0532|123 45 67|a\.b@posta|12345678901|Ahmet|TR33/;
     let n=0;fake.st.reply=()=>++n===1?"düz yanıt":JSON.stringify({reply:"Selam [AD1].",log:[]});
     await app.open({seed:state({...CONSENT,healthNote:"Tel 0532 123 45 67, TC 12345678901"},{entries:[entry("note",0,"Ahmet aradı a.b@posta.com"),...[0,1,2,3,4,5,6].map(i=>entry("weight",80-i/10,"",{d:-i}))]}),keys:{groq:"gsk_test"}});
@@ -260,18 +260,17 @@ test.describe("Coach identity masking",()=>{
     const hit=async(name,run)=>{const k=fake.st.log.length;await run();await expect.poll(()=>fake.st.log.length).toBeGreaterThan(k);paths[name]=fake.st.log.slice(k).filter(x=>x.method==="POST").map(x=>JSON.stringify(x.body));expect(paths[name].length,name).toBeGreaterThan(0);paths[name].forEach(b=>expect(b,name).not.toMatch(RAW))};
     await hit("chat+retry",async()=>{await page.fill("#cmsg","Ben Ahmet, 0532 123 45 67, TC 12345678901, IBAN TR33 0006 1005 1978 6457 8413 26");await page.click("#csend");await expect(page.locator("#view")).toContainText("Selam Ahmet")});
     expect(paths["chat+retry"].length).toBe(2);
-    await hit("comment",()=>page.evaluate("cComment('daily')"));
     await hit("program",()=>page.evaluate("cProgram({d:3,m:45,q:'Salon',l:'Orta'})"));
     await hit("menu",()=>page.evaluate("menuNote='Ahmet için, a.b@posta.com';cMenu()"));
     await hit("direct call (probe/test)",()=>page.evaluate("callProvider(S.providers.find(p=>p.id==='groq'),'gsk_test',[{role:'system',content:'kural Ahmet 0532 123 45 67'},{role:'user',content:'Ahmet a.b@posta.com 12345678901 TR33 0006 1005 1978 6457 8413 26'}],50)"));
   });
-  test("for a user with medications every request carries the name and dose line (chat, menu, program, comment)",async({app,page,fake})=>{
+  test("every request carries only the profile line: no medication, weight, notes or health note",async({app,page,fake})=>{
     fake.st.reply=()=>JSON.stringify({reply:"Tamam.",log:[]});
-    await app.open({seed:state({...CONSENT,medOn:true},{entries:[...[0,1,2,3,4,5,6].map(i=>entry("weight",80-i/10,"",{d:-i}))],meds:[{id:1,n:"Metformin",d:"500 mg",t:["08:00"],on:true}]}),keys:{groq:"gsk_test"}});
+    await app.open({seed:state({...CONSENT,medOn:true,healthNote:"Sağ dizim ağrıyor",heightCm:170,age:34,sex:"m",kcal:1900},{entries:[...[0,1,2,3,4,5,6].map(i=>entry("weight",80-i/10,"",{d:-i})),entry("note",0,"gizli not")],meds:[{id:1,n:"Metformin",d:"500 mg",t:["08:00"],on:true}]}),keys:{groq:"gsk_test"}});
     await app.tab("coach");
     const sysOf=async run=>{await expect.poll(()=>page.evaluate("!busy")).toBe(true);const k=fake.chats().length;await run();await expect.poll(()=>fake.chats().length).toBeGreaterThan(k);return fake.chats().at(-1).body.messages[0].content};
-    const all={chat:await sysOf(async()=>{await page.fill("#cmsg","Bugün kaç ml su içtim");await page.click("#csend")}),comment:await sysOf(()=>page.evaluate("cComment('weekly')")),program:await sysOf(()=>page.evaluate("cProgram({d:3,m:45,q:'Salon',l:'Orta'})")),menu:await sysOf(()=>page.evaluate("cMenu()"))};
-    for(const [k,t] of Object.entries(all)){expect(t,k).toContain("KULLANDIĞI İLAÇLAR (yalnız ad ve doz");expect(t,k).toContain("Metformin 500 mg");expect(t,k).toContain("KISIT:");if(k!=="comment")expect(t,k).not.toContain("saatler 08:00")}
+    const all={chat:await sysOf(async()=>{await page.fill("#cmsg","Bir elma kaç kalori");await page.click("#csend")}),program:await sysOf(()=>page.evaluate("cProgram({d:3,m:45,q:'Salon',l:'Orta'})")),menu:await sysOf(()=>page.evaluate("cMenu()"))};
+    for(const [k,t] of Object.entries(all)){expect(t,k).toContain("PROFİL: 170 cm, 30-34 yaş, erkek");expect(t,k).toContain("günlük kalori hedefi 1900");expect(t,k).not.toMatch(/Metformin|Sağ dizim|gizli not|SON 14 GÜN|BUGÜN:|HESAPLANAN|KISIT|İLAÇ|SAĞLIK NOTU/)}
   });
   test("a program request goes with short context: no 14-day table, catalog ids present, a program card appears",async({app,page,fake})=>{
     fake.st.reply=()=>JSON.stringify({reply:"Program hazır.",log:[],program:{name:"3 gün",days:[{n:"A",ex:["squat","bench","row"]},{n:"B",ex:["squat","ohp","pulldown"]},{n:"C",ex:["legpress","incdb","curl"]}]}});
@@ -281,8 +280,7 @@ test.describe("Coach identity masking",()=>{
     await page.evaluate("cProgram({d:3,m:45,q:'Salon',l:'Başlangıç'})");
     await expect.poll(()=>fake.chats().length).toBeGreaterThan(k);
     const b=fake.chats().at(-1).body,t=b.messages[0].content,ctx=t.slice(t.indexOf("PROFİL:"));
-    expect(ctx).not.toMatch(/SON 14 GÜN|BUGÜN:|SON NOTLAR/);
-    expect(ctx).toContain("SAĞLIK NOTU");expect(ctx).toContain("Metformin 500 mg");
+    expect(ctx).not.toMatch(/SON 14 GÜN|BUGÜN:|SON NOTLAR|SAĞLIK NOTU|Metformin/);
     expect(t).toMatch(/KATALOG \(bölge: kimlik\|ad, \.\.\.\):\n/);expect(t).toContain("squat|Squat");expect(t).toContain("bench|");
     expect(b.max_tokens).toBe(900);
     await expect(page.locator("#view")).toContainText("Program hazır");
@@ -303,14 +301,11 @@ test.describe("Coach identity masking",()=>{
 test.describe("Coach context sections follow the question",()=>{
   const sys=fake=>fake.chats().at(-1).body.messages[0].content;
   const openMed=app=>app.open({seed:state({...CONSENT,medOn:true},{meds:[{id:1,n:"Metformin",t:["08:00"],on:true}]}),keys:{groq:"gsk_test"}});
-  test("a medication question sends the medication section, a water question does not; safety sections are in both",async({app,page,fake})=>{
+  test("a medication question sends no medication section: the context is the profile line only",async({app,page,fake})=>{
     fake.st.reply=()=>JSON.stringify({reply:"Tamam.",log:[]});
     await openMed(app);
-    await send(app,page,"Bugün kaç ml su içtim");
+    await send(app,page,"İlacımı unuttum ne yapayım");
     await expect(page.locator("#view")).toContainText("Tamam.");
-    expect(sys(fake)).not.toContain("İLAÇLAR (kullanıcının");expect(sys(fake)).toContain("HESAPLANAN");expect(sys(fake)).toContain("SON 14 GÜN");
-    await page.fill("#cmsg","İlacımı unuttum ne yapayım");await page.click("#csend");
-    await expect.poll(()=>fake.chats().length).toBe(2);
-    expect(sys(fake)).toContain("İLAÇLAR");expect(sys(fake)).toContain("Metformin");expect(sys(fake)).toContain("HESAPLANAN");
+    expect(sys(fake)).not.toContain("İLAÇ");expect(sys(fake)).not.toContain("Metformin");expect(sys(fake)).toContain("PROFİL");
   });
 });

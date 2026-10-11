@@ -63,13 +63,13 @@ test.describe("Accessibility and layout",()=>{
     await expect(page.locator(".mmp .chip",{hasText:/\d/})).toHaveCount(0);
   });
 
-  test("Coach empty state: three examples, tapping one sends the message",async({app,page,fake})=>{
+  test("Coach empty state: two examples, tapping one fills the box for the user to finish",async({app,page,fake})=>{
     fake.st.reply=()=>JSON.stringify({reply:"Tamam."});
     await app.open({seed:state(CONSENT),keys:{groq:"gsk_test"}});
     await app.tab("coach");
-    await expect(page.locator('[data-c^="ask:"]')).toHaveCount(3);
+    await expect(page.locator('[data-c^="ask:"]')).toHaveCount(2);
     await page.click('[data-c="ask:1"]');
-    await expect(page.locator(".ub")).toHaveText("Bugün ne yapmalıyım?");
+    await expect(page.locator("#cmsg")).toHaveValue("Kaç kalori yakar: ");
   });
 });
 
