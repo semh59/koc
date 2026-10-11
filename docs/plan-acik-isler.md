@@ -52,9 +52,9 @@ Kaynaklar: `docs/rd/oncelik.md`, `docs/rd/analiz-dalga-1.md`, `-2a`, `-2b`, `-3`
 - 6.1 `settings` modül başına bölme; 6.2 modül → çekirdek bağımlılıkları (~650) ve `api` listelerini daraltma; 6.3 `kernel/` için de sınır testi.
 
 ## B2. Durum (2026-10-11 sonu)
-Bitti: 3.1 Trend aralığı, 3.2 RPE "tut" yönü, 3.3 hızlı metin kaydı, 3.4 rahat mod, 4.1 çift doz, 4.2 son dozdan beri etiketi, 4.3 barkod-etiket, 4.4 lif çubuğu (sodyum yapılmadı), 4.5 pişmiş ağırlık, 4.6 Bağlantılar kanıt etiketi, 4.7 CSV içe aktarma (yalnız tanınan başlıklar; eşleme ekranı yok), 4.8 hekim raporu (oklar kalır), 4.9 Ramazan modu, 4.10 hareket kartı, 5.1 tam arşiv, 5.2 denge içeriği, 2.1-2.4 ve 2.8.
+Bitti: 3.1 Trend aralığı, 3.2 RPE "tut" yönü, 3.3 hızlı metin kaydı, 3.4 rahat mod, 4.1 çift doz, 4.2 son dozdan beri etiketi, 4.3 barkod-etiket, 4.4 lif çubuğu (sodyum yapılmadı), 4.5 pişmiş ağırlık, 4.6 Bağlantılar kanıt etiketi, 4.7 CSV içe aktarma (yalnız tanınan başlıklar; eşleme ekranı yok), 4.8 hekim raporu (oklar kalır), 4.9 Ramazan modu, 4.10 hareket kartı, 5.1 tam arşiv, 5.2 denge içeriği, 2.1-2.4, 2.6 (CI targetSdk 36 doğruluyor) ve 2.8.
 Ramazan modunda yerel hesap yedeği YAPILMADI: saatler internetten (kullanıcı dokunuşuyla) alınıp 45 güne kadar telefonda saklanır; tablo yoksa kart "Yenile" der. Gerekçe: koordinat tablosu ve mevsim doğrulaması gerekmeden resmî veri.
-Açık: 2.5 "Yanıtı bildir" (e-posta gerekli), 2.6 targetSdk 36, 2.7 politika bilgileri, 2.9 KVKK raporu, Faz 6.
+Açık: 2.5 "Yanıtı bildir" (e-posta gerekli), 2.7 politika bilgileri, 2.9 KVKK raporu, Faz 6.
 
 ## C. Karar bekleyen (kullanıcıya sorulacak, işi durdurmaz)
 - Tansiyon acil kutusu (180/120, 54/400 "112") nötr nota çevrilsin mi; "Doktor raporu" adı değişsin mi.
