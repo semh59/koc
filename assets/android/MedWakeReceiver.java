@@ -11,6 +11,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.PowerManager;
 import java.util.Arrays;
 import java.util.Locale;
@@ -24,7 +26,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
     private static final int BASE = 7100, MAX = 40, LOG_MAX = 20, MAX_DOSES = 200;
     /** An alarm may fire this early relative to its planned time. */
     static final long EARLY_MS = 5000;
-    private static final long WAKE_MS = 20000, TEST_VISIBLE_MS = 120000, NOTIFICATION_TIMEOUT_MS = 30000;
+    private static final long FSI_GRACE_MS = 1200, WAKE_MS = 20000, TEST_VISIBLE_MS = 120000, NOTIFICATION_TIMEOUT_MS = 30000;
     private static final String PREFS = "nw_medwake", KEY = "times", DOSES = "doses", LOG = "log", TEST = "test", WAKE = "com.neowell.app.MED_WAKE";
     /** The id was bumped once because Android restores the old settings (including a lowered importance) when a deleted channel is recreated under the same id. */
     static final String CH = "nw_medwake2";
@@ -37,7 +39,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
     public void onReceive(Context c, Intent i) {
         String a = i.getAction();
         if (WAKE.equals(a)) {
-            wake(c);
+            wake(c, goAsync());
             // Doses beyond MAX wait in line: when one rings the window slides on and the next dose is set.
             arm(c, load(c), "AFTER");
         } else if (Intent.ACTION_BOOT_COMPLETED.equals(a) || Intent.ACTION_MY_PACKAGE_REPLACED.equals(a) || Intent.ACTION_TIME_CHANGED.equals(a) || Intent.ACTION_TIMEZONE_CHANGED.equals(a)
@@ -52,26 +54,44 @@ public class MedWakeReceiver extends BroadcastReceiver {
         return "EXACT";
     }
 
+    /** The full-screen notification goes first and the screen-lighting lock follows after FSI_GRACE_MS: when the lock turned the screen on before the notification, Samsung (One UI) treated the phone as in use and showed only a banner instead of opening AlarmActivity. The lock is skipped when the alarm screen is already up. */
     @SuppressWarnings("deprecation")
-    private static void wake(Context c) {
+    private static void wake(Context c, BroadcastReceiver.PendingResult pr) {
         // The state is read before the wake lock: ACQUIRE_CAUSES_WAKEUP turns the screen on, so isInteractive would report true afterwards.
         JSONObject e = state(c, "WAKE");
         long now = System.currentTimeMillis(), test = prefs(c).getLong(TEST, 0), at = planned(load(c), test, now);
         put(e, "p", at);
+        put(e, "v", 2);
         if (at != 0 && at == test) put(e, "k", "T");
+        long grace = 0;
+        PowerManager.WakeLock made = null;
         try {
             PowerManager pm = c.getSystemService(PowerManager.class);
             boolean locked = c.getSystemService(KeyguardManager.class).isKeyguardLocked(), dark = !pm.isInteractive();
-            PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "neowell:medwake");
-            wl.acquire(WAKE_MS);
-            put(e, "wl", wl.isHeld());
+            made = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "neowell:medwake");
             // Full-screen notification while locked or dark: vendors (Xiaomi) do not rely on the wake lock alone, alarm apps use this.
             put(e, "fs", locked || dark ? fullScreen(c) : "skip");
+            if (dark) grace = FSI_GRACE_MS;
         } catch (Exception x) {
             put(e, "err", String.valueOf(x));
-        } finally {
-            record(c, e);
         }
+        final PowerManager.WakeLock wl = made;
+        final JSONObject rec = e;
+        Runnable light = () -> {
+            try {
+                if (wl != null && !AlarmActivity.visible) {
+                    wl.acquire(WAKE_MS);
+                    put(rec, "wl", wl.isHeld());
+                } else put(rec, "wl", wl != null ? "up" : false);
+            } catch (Exception x) {
+                put(rec, "err", String.valueOf(x));
+            } finally {
+                record(c, rec);
+                if (pr != null) pr.finish();
+            }
+        };
+        if (grace > 0 && pr != null) new Handler(Looper.getMainLooper()).postDelayed(light, grace);
+        else light.run();
     }
 
     /** Planned time of the alarm that just rang: the latest saved dose that is due, or the test (may fire EARLY_MS early). */
@@ -231,11 +251,16 @@ public class MedWakeReceiver extends BroadcastReceiver {
         JSONObject last = a.optJSONObject(len - 1);
         JSONArray nx = last == null ? null : last.optJSONArray("nx");
         long due = nx == null ? 0 : nx.optLong(0, 0);
-        if (last != null && !"WAKE".equals(last.optString("a")) && !"WAKE".equals(e.optString("a")) && (due == 0 || due > e.optLong("t"))) len--;
+        if (last != null && !ring(last.optString("a")) && !ring(e.optString("a")) && (due == 0 || due > e.optLong("t"))) len--;
         for (int k = Math.max(0, len - (LOG_MAX - 1)); k < len; k++) out.put(a.opt(k));
         out.put(e);
         // The receiver process can end right after onReceive: the record is written synchronously.
         prefs(c).edit().putString(LOG, out.toString()).commit();
+    }
+
+    /** Records that must never merge into a schedule line: an alarm ringing, the alarm screen opening (AS) and closing (AE). */
+    static boolean ring(String a) {
+        return "WAKE".equals(a) || "AS".equals(a) || "AE".equals(a);
     }
 
     static JSONArray log(Context c) {

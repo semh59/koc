@@ -28,6 +28,9 @@ import org.json.JSONObject;
 public class AlarmActivity extends Activity {
     private static final int TEAL = 0xFF0F5E55, INK = 0xFF16252B, SOFT = 0xFFE3EFEC;
     private static final long WINDOW = 30 * 60000L, SNOOZE = 10 * 60000L;
+    /** True while an alarm screen is on top: the receiver then skips the screen-lighting lock. */
+    static volatile boolean visible;
+    private long shownAt;
 
     @Override
     protected void onCreate(Bundle b) {
@@ -41,6 +44,9 @@ public class AlarmActivity extends Activity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         getSystemService(NotificationManager.class).cancel(MedWakeReceiver.NID);
         draw();
+        visible = true;
+        shownAt = System.currentTimeMillis();
+        MedWakeReceiver.record(this, MedWakeReceiver.state(this, "AS"));
     }
 
     @Override
@@ -54,7 +60,15 @@ public class AlarmActivity extends Activity {
     @Override
     protected void onStop() {
         super.onStop();
-        if (!isChangingConfigurations()) finish();
+        if (isChangingConfigurations()) return;
+        visible = false;
+        JSONObject e = MedWakeReceiver.state(this, "AE");
+        try {
+            e.put("ms", System.currentTimeMillis() - shownAt);
+        } catch (org.json.JSONException ignored) {
+        }
+        MedWakeReceiver.record(this, e);
+        finish();
     }
 
     private List<JSONObject> due() {

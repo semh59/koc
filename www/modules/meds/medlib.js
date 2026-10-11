@@ -191,8 +191,11 @@ const MedLib=(()=>{
   const stamp=ms=>`${dhm(ms)}:${p2(new Date(ms).getSeconds())}`;
   const span=ms=>{const a=Math.abs(ms),s=ms<0?"-":"+";return a<60000?`${s}${Math.round(a/1000)} sn`:`${s}${Math.round(a/60000)} dk`};
   const CAUSE={APP:"uygulama alarmları kurdu",AFTER:"alarm sonrası yeniden kuruldu",BOOT:"telefon açıldı, alarmlar kuruldu",UPDATE:"uygulama güncellendi, alarmlar kuruldu",TIME:"saat değişti, alarmlar kuruldu",TZ:"saat dilimi değişti, alarmlar kuruldu",EXACT:"tam alarm izni değişti, alarmlar kuruldu"};
+  const RING=a=>a==="WAKE"||a==="AS"||a==="AE";
   function wakeLine(e){
     const ts=stamp(e.t);
+    if(e.a==="AS")return `${ts} alarm ekranı açıldı${e.kl?" (ekran kilitliydi)":""}`;
+    if(e.a==="AE")return `${ts} alarm ekranı kapandı (${e.ms>=1000?Math.round(e.ms/1000)+" sn":(e.ms||0)+" ms"} açık kaldı)`;
     if(e.a!=="WAKE"&&e.a!=="NOW"){
       const nx=(e.nx||[]).map(dhm).join(", ");
       return `${ts} ${CAUSE[e.a]||e.a}: ${e.n} alarm${e.in!==e.n?` (gelen ${e.in} zaman)`:""}${nx?`, ilk: ${nx}`:""}`;
@@ -220,14 +223,19 @@ const MedLib=(()=>{
     if(st.xp>0)add("Xiaomi: 'Arka planda açılan pencereler' izni kapalı. Uygulama izinlerinde aç, yoksa kilitli telefonda alarm ekranı açılmaz.","miui");
     if(st.bo===false)add("Pil kısıtı var: telefon uygulamayı arka planda durdurabilir, alarm geç gelebilir. Pil ayarını 'Kısıtlama yok' yap.","battery");
     if(st.ex===false)add("Tam saat alarm izni yok: ilaç bildirimi ve ekran alarmı birkaç dakika gecikebilir.","exact");
-    const w=items.filter(e=>e.a==="WAKE"),arm=items.filter(e=>e.a!=="WAKE").pop();
+    const w=items.filter(e=>e.a==="WAKE"),arm=items.filter(e=>!RING(e.a)).pop();
     /* If the next setup log comes more than a minute after the first scheduled alarm time and no ring log lies between, that alarm did not ring. */
-    const miss=items.filter((e,i)=>e.a!=="WAKE"&&e.nx&&e.nx[0]&&items[i+1]&&items[i+1].a!=="WAKE"&&items[i+1].t>e.nx[0]+60000).pop();
+    const miss=items.filter((e,i)=>!RING(e.a)&&e.nx&&e.nx[0]&&items[i+1]&&!RING(items[i+1].a)&&items[i+1].t>e.nx[0]+60000).pop();
     if(miss)add(`Planlanan ${dhm(miss.nx[0])} alarmı çalmadı: telefon uygulamayı arka planda engellemiş olabilir. Otomatik başlatmayı aç, pil kısıtını kaldır.`,"autostart");
     if(arm&&arm.n===0)add("Kurulu ekran alarmı yok: ilaç saatleri telefona iletilmemiş. Uygulamayı güncelle, sonra İlaçlar ekranını bir kez aç.");
     if(!w.length)add("Kayıtlarda çalan alarm yok: alarm hiç çalmadı. Xiaomi'de otomatik başlatmayı aç.","autostart");
     const late=Math.max(0,...w.filter(e=>e.p).map(e=>e.t-e.p));
     if(late>60000)add(`Alarm planlanandan geç çaldı (en çok ${span(late)}): pil kısıtı ya da otomatik başlatma kapalı olabilir.`,"autostart");
+    /* The full-screen notification went out but no alarm screen opened within 20 s: the phone showed only a banner (Samsung/One UI demotes it when notifications are not allowed over the lock screen or full-screen notifications are off). */
+    const lastW=w[w.length-1];
+    if(lastW&&lastW.v===2&&lastW.fs==="ok"&&!items.some(e=>e.a==="AS"&&e.t>=lastW.t-1000&&e.t<=lastW.t+20000))add("Son alarmda tam ekran bildirimi gönderildi ama alarm ekranı açılmadı, telefon yalnız bildirim gösterdi. Ekran alarmı kanalında 'Kilit ekranında göster' ve 'Açılır pencere'yi aç; Samsung'ta ayrıca Ayarlar > Uygulamalar > NeoWell > Bildirimler'de tam ekran bildirimini izin ver.","channel");
+    const quick=items.filter(e=>e.a==="AE"&&e.ms<1500).pop();
+    if(quick)add("Alarm ekranı açıldı ve hemen kapandı: başka bir uygulama ya da ekran kilidi üstüne geçmiş olabilir.");
     const bad=w.filter(e=>e.fs&&/^err/.test(e.fs)).pop();
     if(bad)add("Tam ekran bildirimi gönderilemedi: "+bad.fs.replace(/^err:/,""));
     return out;

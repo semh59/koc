@@ -147,6 +147,13 @@ ok("sinceFor: a new time starts today, a passed time tomorrow, an old time is ke
   ok("wakeIssues: off notifications, blocked/low channel, full screen, battery, exact alarm each point to the matching setting",to({ne:false,ci:0,mi:2,fsi:false,bo:false,ex:false},[wk])==="notif,channel,channel,fsi,battery,exact"&&M.wakeIssues({...ok0,mi:2},[wk])[0].id==="nw_med");
   ok("wakeIssues: a channel that does not exist yet (-1) is not a problem",M.wakeIssues({...ok0,ci:-1,mi:-1},[wk]).length===0);
   ok("wakeIssues: with no record 'alarm never fired' points to autostart; zero scheduled gives a separate warning",to(ok0,[])==="autostart"&&/hiç çalmadı/.test(M.wakeIssues(ok0,[])[0].t)&&/Kurulu ekran alarmı yok/.test(M.wakeIssues(ok0,[{a:"APP",in:0,n:0}])[0].t));
+  { // alarm screen evidence (AS/AE records)
+    const w2={...wk,v:2},as={t:wk.t+900,a:"AS",kl:true},ae={t:wk.t+9000,a:"AE",ms:8100};
+    ok("wakeLine: alarm screen opened and closed lines",/alarm ekranı açıldı \(ekran kilitliydi\)/.test(M.wakeLine(as))&&/alarm ekranı kapandı \(8 sn açık kaldı\)/.test(M.wakeLine(ae)));
+    ok("wakeIssues: a full-screen notification sent but no alarm screen opened within 20 s is reported (new records only)",to(ok0,[w2])==="channel"&&M.wakeIssues(ok0,[wk]).length===0);
+    ok("wakeIssues: with the alarm screen opened there is no such problem; one that closed within 1.5 s is reported",M.wakeIssues(ok0,[w2,as,ae]).length===0&&/hemen kapandı/.test(M.wakeIssues(ok0,[w2,as,{...ae,ms:700}])[0].t));
+    ok("wakeIssues: AS/AE records do not count as a schedule record",M.wakeIssues(ok0,[w2,as]).length===0);
+  }
   const armAt=(t,nx)=>({t,a:"APP",in:1,n:1,nx:[nx]});
   ok("wakeIssues: if the first alarm time passed with no firing record it says 'did not fire'; a reschedule before its time or a firing in between is not a problem",/Planlanan 07\.10 14:00 alarmı çalmadı/.test(M.wakeIssues(ok0,[wk,armAt(T(9,0,0),T(14,0,0)),armAt(T(18,0,0),T(20,0,0))]).map(i=>i.t).join())&&M.wakeIssues(ok0,[wk,armAt(T(9,0,0),T(14,0,0)),armAt(T(13,0,0),T(14,0,0))]).length===0&&M.wakeIssues(ok0,[armAt(T(9,0,0),T(14,0,0)),{...wk,t:T(14,0,1),p:T(14,0,0)},armAt(T(18,0,0),T(20,0,0))]).length===0);
   ok("wakeIssues: firing more than 1 min late and a full-screen failure are reported",/geç çaldı \(en çok \+5 dk\)/.test(M.wakeIssues(ok0,[{...wk,t:wk.p+300000}])[0].t)&&/gönderilemedi/.test(M.wakeIssues(ok0,[{...wk,fs:"err:X"}]).pop().t));
