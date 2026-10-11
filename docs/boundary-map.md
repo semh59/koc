@@ -58,7 +58,7 @@
 | kernel/icons.js | 3 | 1 |
 | kernel/kernel.js | 0 | 2 |
 | kernel/ls.js | 1 | 4 |
-| kernel/modules.js | 32 | 3 |
+| kernel/modules.js | 33 | 3 |
 | kernel/netlog.js | 1 | 1 |
 | kernel/piilib.js | 6 | 1 |
 | kernel/share.js | 6 | 4 |
@@ -68,7 +68,7 @@
 | main/01-core.js | 32 | 63 |
 | main/02-state-components.js | 14 | 10 |
 | main/03-screens.js | 106 | 37 |
-| main/04-sheets.js | 63 | 59 |
+| main/04-sheets.js | 64 | 59 |
 | main/05-notifications.js | 31 | 14 |
 | main/06-events.js | 89 | 6 |
 | main/07-actions.js | 49 | 1 |
@@ -145,6 +145,8 @@
 | modules/nutrition/menulocal.js | 7 | 1 |
 | modules/nutrition/ocrui.js | 14 | 7 |
 | modules/nutrition/offlib.js | 1 | 1 |
+| modules/nutrition/quicklib.js | 6 | 1 |
+| modules/nutrition/quickui.js | 16 | 7 |
 | modules/nutrition/recipeui.js | 21 | 9 |
 | modules/pulse/hcui.js | 19 | 10 |
 | modules/pulse/index.js | 8 | 1 |
