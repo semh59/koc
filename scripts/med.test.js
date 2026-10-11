@@ -185,4 +185,14 @@ ok("stock: a per-dose amount that rounds to zero is dropped",M.cleanMeds([med({p
 ok("freeId: smallest unused id",M.freeId(new Set([1,2,4]))===3&&M.freeId(new Set())===1);
 ok("hm and slotAt: HH:MM of a date, local date of a day and time",M.hm(new Date(2026,8,10,7,5))==="07:05"&&(d=>d.getFullYear()===2026&&d.getMonth()===8&&d.getDate()===10&&d.getHours()===23&&d.getMinutes()===55)(M.slotAt("2026-09-10","23:55")));
 ok("mark: new log ids stay unique",(S3=>{M.mark(S3,1,"2026-09-10","08:00","t");M.mark(S3,1,"2026-09-10","20:00","t");M.mark(S3,1,"2026-09-11","08:00","s");return new Set(S3.medLog.map(x=>x.id)).size===3})({meds:M.cleanMeds([med({})]),medLog:[]}));
+{ // blood-pressure label: time since the recorded dose of a medication marked bp
+  const ms=[med({id:1,bp:true}),med({id:2,n:"Vitamin"})],D="2026-10-06";
+  const lg=(m,at,day=D,st="t")=>({m,day,slot:"08:00",st,at});
+  ok("bp: cleanMeds keeps bp:true and drops anything else",M.cleanMeds([med({bp:true}),med({id:2,bp:"x"}),med({id:3,bp:false})]).map(m=>m.bp).join()==="true,,");
+  ok("bp: 2 h 20 min after the nearest earlier recorded dose",M.sinceDose(ms,[lg(1,"07:00"),lg(1,"08:30")],D,"10:50")==="Son ilaç kaydından 2 sa 20 dk sonra");
+  ok("bp: under an hour shows minutes only, a whole hour no minutes",M.sinceDose(ms,[lg(1,"10:10")],D,"10:50")==="Son ilaç kaydından 40 dk sonra"&&M.sinceDose(ms,[lg(1,"08:50")],D,"10:50")==="Son ilaç kaydından 2 sa sonra");
+  ok("bp: a measurement before the day's first record says before",M.sinceDose(ms,[lg(1,"09:00")],D,"07:30")==="İlaç kaydından önce");
+  ok("bp: no marked medication, no record that day, skipped or unmarked-med rows give no label",M.sinceDose([med({id:2})],[lg(2,"07:00")],D,"10:00")===""&&M.sinceDose(ms,[],D,"10:00")===""&&M.sinceDose(ms,[lg(1,"07:00","2026-10-05")],D,"10:00")===""&&M.sinceDose(ms,[lg(1,"07:00",D,"s"),lg(2,"07:00")],D,"10:00")==="");
+  ok("bp: a record without a tap time gives no label",M.sinceDose(ms,[{m:1,day:D,slot:"08:00",st:"t"}],D,"10:00")==="");
+}
 finish();

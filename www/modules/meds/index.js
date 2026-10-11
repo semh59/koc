@@ -7,7 +7,7 @@ Data.csv.push(["ilac","İlaç alımı",()=>["tarih","saat","ilaç","doz","durum"
 Data.hist.push((S,{add})=>{for(const x of S.medLog)if(x.st==="t")add(x.day,"meds",1)});
 Data.dayRows.push([6,k=>{const ml=S.medLog.filter(x=>x.day===k);if(!ml.length)return "";const t=ml.filter(x=>x.st==="t").length,s=ml.length-t;return hgRow("meds","İlaç",`${t} alındı${s?`, ${s} atlandı`:""}`)}]);
 const Meds={
-  count:()=>S.meds.length,meds:()=>S.meds,log:()=>S.medLog,
+  count:()=>S.meds.length,bpSince:(day,time)=>MedLib.sinceDose(S.meds,S.medLog,day,time),meds:()=>S.meds,log:()=>S.medLog,
   snapshot:()=>({log:S.medLog,k:S.meds.map(m=>m.k)}),
   rollback:sn=>{S.medLog=sn.log;S.meds.forEach((m,i)=>{if(m.k!=null)m.k=sn.k[i]})}
 };

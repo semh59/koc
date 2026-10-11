@@ -42,6 +42,7 @@ const MedLib=(()=>{
       if(dayOk(x.s))o.s=x.s;
       if(dayOk(x.e)&&(!o.s||x.e>=o.s))o.e=x.e;
       if(c.ts)o.ts=c.ts;
+      if(x.bp===true)o.bp=true;
       const h=(Array.isArray(x.h)?x.h:[]).filter(q=>q&&dayOk(q.u)).sort((a,b)=>a.u.localeCompare(b.u)).slice(-MAXH).map(q=>{const s=cleanSched(q);return s&&{u:q.u,...s}}).filter(Boolean);
       if(h.length)o.h=h;
       if(fin(x.k)&&x.k>=0&&x.k<=STOCK_MAX)o.k=r2(x.k);
@@ -50,6 +51,17 @@ const MedLib=(()=>{
       out.push(o);
     }
     return out;
+  }
+  /* Blood-pressure label: time between the nearest earlier recorded dose of a medication marked bp on that same day and the measurement. Records are tap times, so the wording says "kayıt". */
+  function sinceDose(meds,log,day,time){
+    const bp=new Set(meds.filter(m=>m.bp).map(m=>m.id));
+    if(!bp.size||!timeOk(time))return "";
+    const at=log.filter(x=>bp.has(x.m)&&x.day===day&&x.st==="t"&&timeOk(x.at)).map(x=>x.at).sort();
+    if(!at.length)return "";
+    const mins=t=>+t.slice(0,2)*60+ +t.slice(3,5),prev=at.filter(t=>t<=time).pop();
+    if(!prev)return "İlaç kaydından önce";
+    const d=mins(time)-mins(prev),h=Math.floor(d/60),m=d%60;
+    return `Son ilaç kaydından ${d<1?"az":h?`${h} sa${m?` ${m} dk`:""}`:`${m} dk`} sonra`;
   }
   /* Log: only rows of existing medications, one row per (medication, day, time); the last one written wins. */
   function cleanLog(arr,meds){
@@ -258,6 +270,6 @@ const MedLib=(()=>{
     if(bad)add("Tam ekran bildirimi gönderilemedi: "+bad.fs.replace(/^err:/,""));
     return out;
   }
-  return {recentTaken,recentText,NOT_SAVED,wakeTimes,wakeDoses,wakeLine,wakeIssues,sinceFor,doseOfId,freeId,doseKey,MAXM,MAXT,BUDGET,TITLE,GENERIC_BODY,cleanMeds,cleanLog,dosesOn,statusOf,logIndex,mark,adherence,adherenceDays,sumAdherence,stockLeft,notifications,dayForTap,revise,addDay,slotAt,hm,timeOk,key};
+  return {sinceDose,recentTaken,recentText,NOT_SAVED,wakeTimes,wakeDoses,wakeLine,wakeIssues,sinceFor,doseOfId,freeId,doseKey,MAXM,MAXT,BUDGET,TITLE,GENERIC_BODY,cleanMeds,cleanLog,dosesOn,statusOf,logIndex,mark,adherence,adherenceDays,sumAdherence,stockLeft,notifications,dayForTap,revise,addDay,slotAt,hm,timeOk,key};
 })();
 if(typeof module!=="undefined")module.exports=MedLib;
