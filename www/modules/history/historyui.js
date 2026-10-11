@@ -60,7 +60,6 @@ function viewHistory(){
 }
 
 /* ---- Day screen ---- */
-const hgRow=(ic,l,v)=>`<div class="row"><span>${Icons.svg(ic)} ${l}</span><b class="num">${v}</b></div>`;
 function hgOther(k){ // the data modules produce the rows (Data.dayRows, Data.dayWork)
   return {rows:Data.dayRows.slice().sort((a,b)=>a[0]-b[0]).map(([,f])=>f(k)).join(""),wo:Data.dayWork.map(f=>f(k)).join("")};
 }

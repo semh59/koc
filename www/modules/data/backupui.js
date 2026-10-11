@@ -4,14 +4,14 @@
 const BKPW_LS="nw_bkpw_enc";
 const BF=()=>plugin("BackupFolder");
 /* The one backup payload: settings and data plus the API keys, encrypted with the password into a JSON string. */
-const backupJson=async pw=>JSON.stringify(await BackupLib.encrypt({S,keys:getKeys()},pw));
+const backupJson=async pw=>JSON.stringify(await BackupLib.encrypt({S,keys:Coach.keys()},pw));
 async function bkRemembered(){
   const kv=KV(),e=lsGet(BKPW_LS);
   if(!kv||!e)return null;
   try{return (await kv.decrypt({data:e})).text||null}catch{return null}
 }
 async function bkRemember(pw){
-  const kv=KV();if(!kv||!vaultOn)return false;
+  const kv=KV();if(!kv||!Coach.vaultOn())return false;
   try{lsSet(BKPW_LS,(await kv.encrypt({text:pw})).data);return true}catch{return false}
 }
 /* A new password from two fields: the password and, when it is unusable, the warning to show. */
@@ -20,7 +20,7 @@ function bkNewPw(first,again){
   return {pw,bad:BackupLib.pwCheck(pw)||(pw!==$("#"+again).value?"Parolalar aynı değil":"")};
 }
 async function sheetDrive(){
-  const rem=await bkRemembered(),native=!!KV()&&vaultOn,lb=S.settings.lastBackup;
+  const rem=await bkRemembered(),native=!!KV()&&Coach.vaultOn(),lb=S.settings.lastBackup;
   openSheet(`<h3>Yedeği Drive'a gönder</h3>
   <p class="m0 mb-3 mut sm">Verilerin parolayla şifrelenir. Paylaşım ekranında Google Drive'ı (ya da istediğin yeri) seç. Hesap bağlamak gerekmez.${lb?` Son yedek: ${fd(lb)}.`:""}</p>
   ${rem?`<p>Parola bu telefonda saklı.</p><button class="btn" data-bk="send">Şimdi gönder</button><button class="mt-2 btn ghost" data-bk="forget">Parolayı unut</button>`
@@ -64,7 +64,7 @@ function abHtml(){
   ${abErr?`<p class="status" role="alert"><b>Otomatik yedek alınamadı.</b> ${esc(abErr)}</p><div class="btns"><button class="btn ghost" data-ab="setup">Klasörü yeniden seç</button><button class="btn ghost" data-ab="off">Otomatik yedeği kapat</button></div>`:""}</div>`;
 }
 async function abSetup(){
-  if(!KV()||!vaultOn)return toast("Bu telefonda parola güvenle saklanamıyor, otomatik yedek kullanılamaz");
+  if(!KV()||!Coach.vaultOn())return toast("Bu telefonda parola güvenle saklanamıyor, otomatik yedek kullanılamaz");
   const rem=await bkRemembered();
   openSheet(`<h3>Otomatik yedek</h3>
   <p class="m0 mb-3 mut sm">Uygulamayı açtığında son yedek 7 günden eskiyse seçeceğin klasöre şifreli yedek (neowell-oto-…) yazılır, en son 4 otomatik yedek kalır; elle aldığın yedeklere dokunulmaz. Uygulamayı en az haftada bir aç.</p>

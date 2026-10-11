@@ -1,19 +1,20 @@
 "use strict";
-/* Data ownership: which module manages each S field and which files may touch it directly (the owner files).
+/* Cross-module contract (api): a module may use another module's top-level name only if it is defined in that module's index.js, is an XxxLib namespace, or is listed in that module's api.
+   Data ownership: which module manages each S field and which files may touch it directly (the owner files).
    Other files get that data through the module's contract; scripts/boundary.test.js checks the boundary. main/* is the core and may touch every field. */
 const Modules={
   log:{keys:["entries","nextId"]},
-  nutrition:{keys:["myFoods","favFoods","mealTpl","recipes"]},
-  gym:{keys:["workouts","templates","customEx","gid","bar","dbStep","plates","exCfg"]},
-  meds:{keys:["meds","medLog"]},
+  nutrition:{keys:["myFoods","favFoods","mealTpl","recipes"],api:["FOODS","MenuLocal","ocrBtn"]},
+  gym:{keys:["workouts","templates","customEx","gid","bar","dbStep","plates","exCfg"],api:["gEx","gPgNote","gTplAdd","gNames","gStats"]},
+  meds:{keys:["meds","medLog"],api:["medNowHM","medIngest"]},
   habits:{keys:["sleep","mood","fast"]},
   pulse:{keys:["pulse","hr"]},
   vitals:{keys:["vitals"]},
-  labs:{keys:["labs"]},
+  labs:{keys:["labs"],api:["labReview"]},
   measures:{keys:["measures"]},
   cycle:{keys:["cycle"]},
-  motion:{keys:["walk","moves"]},
-  coach:{keys:["chat","chats","cid","providers"]}
+  motion:{keys:["walk","moves"],api:["motionKg"]},
+  coach:{keys:["chat","chats","cid","providers"],api:["cNoteCheck","cConsent","consentHtml","consentOk","provNames","usageText","cCalc"]}
 };
 /* Store shards: one record per module; settings belong to the core. A field in no shard goes to the "other" shard (data is never dropped silently).
    Fast-growing arrays are split into one shard per month (shard id "<module>/<month>"): adding an entry writes only that month's shard. */

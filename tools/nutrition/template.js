@@ -17,8 +17,8 @@ const FOODS=(()=>{
 // The Coach menu catalog samples only the dish-focused first rows, so raw foods and recipe rows do not bloat the request.
 const FOOD_CORE=/*CORE*/;
 // Lowercase and strip diacritics (Turkish I/İ/ı included) so searches ignore case and accents.
-const foldTr=s=>String(s||"").toLowerCase().normalize("NFD").replace(/\p{M}/gu,"").replace(/ı/g,"i");
-const foodLow=s=>" "+foldTr(s).replace(/[^\p{L}\p{N}]+/gu," ").trim()+" ";
+const fold=typeof foldTr!=="undefined"?foldTr:require("../../kernel/common.js").foldTr;
+const foodLow=s=>" "+fold(s).replace(/[^\p{L}\p{N}]+/gu," ").trim()+" ";
 // Names are normalized once, not on every keystroke.
 const foodKeys=new Map(),foodKey=s=>{let v=foodKeys.get(s);if(v==null)foodKeys.set(s,v=foodLow(s));return v};
 /* Search by name and aliases. Rank: exact name, whole word (also with a possessive suffix: pilavı, peyniri), word start, inside the name, all words in any order, alias.
@@ -33,4 +33,4 @@ function foodSearch(q,max=8,list=FOODS){
   });
   return hit.sort((a,b)=>a.rank-b.rank||a.i-b.i).slice(0,max).map(h=>h.i);
 }
-if(typeof module!=="undefined")module.exports={FOODS,foodSearch,foldTr};
+if(typeof module!=="undefined")module.exports={FOODS,foodSearch,foldTr:fold};
