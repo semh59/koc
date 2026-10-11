@@ -36,5 +36,5 @@ Birleşik liste `rd/oncelik.md`; takım raporları öneri numaralarıyla kodla k
 - Rehber rakam doğrulama ve "Rehber'e ne gitti" defteri: Rehber daraltıldı, modele yalnız profil satırı gidiyor; yemek tahmin kartında kcal-makro tutarlılık denetimi var, ağ defteri Gizlilik ekranında.
 - Health Connect'ten tansiyon/şeker okuma: yerel Java kodu yalnız CI'da derlenir, telefonda denenemez; Play beyanını değiştirir. `rd/analiz-dalga-3.md` kararı: Play ilk onayından sonra.
 - (FHIR şeker kodu sonradan HL7 terminoloji sunucusundan doğrulandı: 41653-7; dosyaya eklendi.)
-- "Yakınıma haber ver": sunucu/SMS gerektirir, mimariyle çelişir (rapor reddetti).
+- Kendiliğinden SMS gönderme: `SEND_SMS` Play politikasında kısıtlı (yalnız varsayılan SMS uygulaması ya da onaylı istisna). Bunun yerine mesaj uygulaması numara ve metinle açılır, gönder tuşu kullanıcıda (yapıldı).
 - Aralıklı yürüyüşte adım/dk: faz sınırında adım sayacı farkı ister; sensör eklentisi telefonda denenmeden bağlanmadı.

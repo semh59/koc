@@ -1803,6 +1803,50 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     P.LocalNotifications=old;ev("S.settings.medOn=false;S.meds=[];tab='today';render()");
   }
   }
+  { // permissions centre: one list, one row in Today when two or more are missing, direct settings screens
+    const P=w.Capacitor.Plugins,oldLN=P.LocalNotifications,oldDH=P.DeviceHelp,opened=[];let notif="denied",ex="denied";
+    P.LocalNotifications={checkPermissions:async()=>({display:notif}),requestPermissions:async()=>({display:notif}),checkExactNotificationSetting:async()=>({exact_alarm:ex}),changeExactNotificationSetting:async()=>{ex="granted";return {exact_alarm:ex}},getPending:async()=>({notifications:[]}),getDeliveredNotifications:async()=>({notifications:[]}),cancel:async()=>{},registerActionTypes:async()=>{},schedule:async()=>{}};
+    P.DeviceHelp={info:async()=>({manufacturer:"samsung"}),openDetails:async()=>{opened.push("details");return {opened:"details"}},openBattery:async()=>{opened.push("battery");return {opened:"battery"}}};
+    const q=s=>$q(s),txt=()=>q("#view").textContent;
+    ev("S.settings.medOn=true;S.meds=[{id:1,n:'İlaç',t:['08:00']}];oem='samsung';exactOk=false;fsiOk=true;S.settings.stepsOn=false;tab='today';render()");
+    await ev("pmRefresh()");
+    ok("permissions: notifications denied and exact alarm off give one 'İzinler eksik' row instead of separate rows",txt().includes("İzinler eksik")&&txt().includes("Bildirimler, Tam saatli alarm")&&!txt().includes("İlaç alarmı birkaç dakika gecikebilir"),txt().slice(0,300));
+    ev("tab='settings';render()");
+    ok("permissions: Settings home has an İzinler row with the missing count",txt().includes("İzinler")&&txt().includes("2 eksik"));
+    ev("tab='today';render()");q('[data-pm="open"]').click();await flush();
+    ok("permissions: the sheet lists each item with its state and a button; a wizard button shows the missing count",q("#sheet").textContent.includes("Sırayla ayarla (2 eksik)")&&q("#sheet").textContent.includes("Tam saatli alarm")&&!!q('[data-pm="go:notif"]')&&!!q('[data-pm="go:exact"]')&&!!q('[data-pm="go:bat"]'));
+    q('[data-pm="next"]').click();await flush();
+    ok("permissions: Sırayla ayarla asks for notifications and, as the system dialog is refused, opens the app's own settings screen",opened.join()==="details",opened);
+    notif="granted";await ev("pmRefresh()");
+    ok("permissions: after returning with notifications granted one missing item is left and the sheet refreshed itself",q("#sheet").textContent.includes("Sırayla ayarla (1 eksik)"));
+    q('[data-pm="go:exact"]').click();await flush();await ev("pmRefresh()");
+    ok("permissions: exact alarm granted from the list: nothing is missing",q("#sheet").textContent.includes("Gereken izinlerin hepsi tamam")&&ev("pmMissing().length")===0);
+    q('[data-pm="go:bat"]').click();await flush();
+    ok("permissions: the battery button opens the battery screen directly",opened[opened.length-1]==="battery");
+    q('#sheet [data-pm="close"]').click();
+    ev("exactOk=false;tab='today';render()");
+    ok("permissions: a single missing item keeps its own explanatory row (no summary row)",txt().includes("İlaç alarmı birkaç dakika gecikebilir")&&!txt().includes("İzinler eksik"));
+    P.LocalNotifications=oldLN;P.DeviceHelp=oldDH;ev("exactOk=true;oem='';pmNotif=null;S.settings.medOn=false;S.meds=[];tab='today';render()");
+  }
+  { // "Yakınıma haber ver": the messaging app opens with the number and a short text, nothing is sent by the app
+    const P=w.Capacitor.Plugins,oldDH=P.DeviceHelp,sent=[];
+    P.DeviceHelp={info:async()=>({manufacturer:"samsung"}),sms:async o=>{sent.push(o);return {opened:"sms"}}};
+    const q=s=>$q(s);
+    ev("S.settings.medOn=true;S.settings.medNear='';S.meds=[{id:1,n:'Gizli İlaç',t:['00:01'],d:'5 mg',on:true}];S.medLog=[];tab='today';render()");
+    ok("near: without a saved number the late dose row has no 'Yakınıma haber ver' button",!q('[data-md="nearsend"]'));
+    ev("tab='settings-modules';render()");q('[data-md="near"]').click();
+    q("#mdnear").value="12ab";q('[data-md="nearsave"]').click();
+    ok("near: a bad number is refused with the reason, nothing is saved",ev("S.settings.medNear")===""&&q("#mdnearerr").textContent.includes("7-15 rakam"));
+    q("#mdnear").value="+90 (555) 111-22 33";q('[data-md="nearsave"]').click();
+    ok("near: a valid number is cleaned to digits and saved",ev("S.settings.medNear")==="+905551112233");
+    ev("tab='today';render()");
+    ok("near: the late dose row now has the button",!!q('[data-md="nearsend"]'));
+    q('[data-md="nearsend"]').click();await flush();
+    ok("near: the messaging app is opened with the number and a text that names no medicine and no dose",sent.length===1&&sent[0].to==="+905551112233"&&!/Gizli|5 mg/.test(sent[0].body)&&sent[0].body.length>10,sent);
+    ev("tab='settings-modules';render()");q('[data-md="near"]').click();q('[data-md="nearclear"]').click();
+    ok("near: the number can be deleted; a broken stored number is dropped on load",ev("S.settings.medNear")===""&&ev("cleanSettings({medNear:'abc'}).medNear")===""&&ev("cleanSettings({medNear:'+905551112233'}).medNear")==="+905551112233");
+    P.DeviceHelp=oldDH;ev("S.settings.medOn=false;S.meds=[];tab='today';render()");
+  }
   reset();
   w.eval("oem='xiaomi';S.settings.oemDone=false");
   ok("on Xiaomi a settings warning appears",ev("viewToday()").includes("Hatırlatmalar için bir kez ayar"));

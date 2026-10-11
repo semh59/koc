@@ -79,12 +79,12 @@ function viewToday(){
   /* One list instead of separate cards: only pending jobs of enabled modules; no card when empty. */
   const todo=[storeMsg()?row("save",storeMsg()[0],storeMsg()[1],[["databackup","Yedek al"]]):"",
     abErr?row("cloud","Otomatik yedek alınamadı",abErr,[["abfix","Düzelt"]]):"",
-    ...medTodo(),...fastTodo(),...ramadanTodo(),...trialTodo(),...vTodo(),
+    ...pmTodo(),...medTodo(),...fastTodo(),...ramadanTodo(),...trialTodo(),...vTodo(),
     Motion.walk()?row("steps",Motion.walk().t1?"Yürüyüş kaydedilmedi":"Yürüyüş sürüyor","Adım raporunda bitir ya da kaydet.",[["walkgo","Aç"]]):"",
     sOn&&stepsRead&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?row("steps","Adım sayımı durmuş olabilir","Pil ayarında NeoWell'e kısıtlama koyma.",[["stepsfix","Ayarla"],["stepshide","Kapat"]]):"",
-    isNative()&&!exactOk&&st.medOn&&Meds.count()?row("clock","İlaç alarmı birkaç dakika gecikebilir","Tam saat alarm izni kapalı. İzin verirsen tam saatinde çalar.",[["fullalarm","İzin ver"]]):"",
-    isNative()&&!fsiOk&&st.medOn&&Meds.count()?row("clock","İlaç alarmı kilitli ekranı açmayabilir","Tam ekran bildirim izni kapalı. İzin verirsen alarm ekranı yakar.",[["fullscreen","İzin ver"]]):"",
-    isNative()&&oemXiaomi()&&!st.oemDone?row("bell","Hatırlatmalar için bir kez ayar gerekli","İki izin verince hatırlatmalar kaçmaz.",[["oem","Ayarla"]]):"",
+    !pmMany()&&isNative()&&!exactOk&&st.medOn&&Meds.count()?row("clock","İlaç alarmı birkaç dakika gecikebilir","Tam saat alarm izni kapalı. İzin verirsen tam saatinde çalar.",[["fullalarm","İzin ver"]]):"",
+    !pmMany()&&isNative()&&!fsiOk&&st.medOn&&Meds.count()?row("clock","İlaç alarmı kilitli ekranı açmayabilir","Tam ekran bildirim izni kapalı. İzin verirsen alarm ekranı yakar.",[["fullscreen","İzin ver"]]):"",
+    !pmMany()&&isNative()&&oemXiaomi()&&!st.oemDone?row("bell","Hatırlatmalar için bir kez ayar gerekli","İki izin verince hatırlatmalar kaçmaz.",[["oem","Ayarla"]]):"",
     isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?row("steps","Adım sayarı aç","Telefonun sensörü sayar, hesap gerekmez.",[["stepsopen","Aç"],["stepsno","Şimdi değil"]]):"",
     Log.all().length>=10&&(old==null||old>14)?row("cloud","Verilerini yedekle",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Yedekle"]]):""].filter(Boolean);
   /* The first 3 jobs are visible (a data-loss warning is always first); the rest folds so it does not push the log down. */
@@ -185,6 +185,7 @@ function viewSettings(){
     const grp=(g,ks)=>`<h2 class="grp">${g}</h2><div class="card">${SETTINGS_TABS.filter(([k])=>ks.includes(k)).map(([k,t,ic])=>navRow(`data-tab="settings-${k}"`,ic,t,esc(d[k]))).join("")}</div>`;
     return `${grp("Kişisel",["profile","reminders"])}${grp("Rehber ve modüller",["coach","modules"])}
     <h2 class="grp">Görünüm ve erişilebilirlik</h2><div class="card"><div class="lbl" id="thml">Tema</div>${segb("thm",[["","Sistem"],["light","Açık"],["dark","Koyu"]],st.theme).replace('role="group"','role="group" aria-labelledby="thml"')}${swHelp("data-comfy",st.comfy,"Büyük yazı ve düğmeler","","hlpcf","Yazıları ve düğmeleri büyütür. Telefonun yazı boyutu ayarı da ayrıca çalışır.")}</div>
+    ${isNative()?`<h2 class="grp">Telefon</h2><div class="card">${navRow('data-pm="open"',"bell","İzinler",pmMissing().length?`${pmMissing().length} eksik: ${esc(pmMissing().map(i=>i.t).join(", "))}`:"Bildirim, alarm, adım ve pil ayarları")}</div>`:""}
     ${grp("Veri ve uygulama",["data","about"])}`;
   }
   if(sub==="profile")return `<p class="hint">Kalori, su ve protein hedeflerin bu bilgilerle hesaplanır.</p><h2>Profil</h2><div class="card">

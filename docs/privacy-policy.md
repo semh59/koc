@@ -18,6 +18,7 @@ Hepsini kullanıcı kendisi girer ya da telefon sensörlerinden, kullanıcının
 | Kategori | İçerik |
 |---|---|
 | Profil | boy, yaş, cinsiyet (isteğe bağlı), hareket düzeyi, hedefler |
+| Yakın kişi numarası | isteğe bağlı; "Yakınıma haber ver" için girilen telefon numarası yalnız telefonda durur, hiçbir yere gönderilmez; uygulama mesaj göndermez, mesaj uygulamasını numara ve metinle açar, göndermek kullanıcıya kalır |
 | Sağlık verisi (özel nitelikli) | kilo, vücut ölçüleri (bel, kalça vb.), yemek ve su kayıtları, spor ve antrenman setleri, adım ve hareket, tahlil sonuçları, tansiyon ve şeker ölçümleri, nabız (kamerayla ölçtüğün ya da saatinden gelen), ilaç adı-doz-saat-alım kaydı ve stok, uyku, ruh hali, oruç, isteğe bağlı döngü (dönem günleri, akış, belirti, kısa not) kaydı, kullanıcının yazdığı sağlık notu |
 | Kullanıcı içeriği | kendi tarifleri, besinleri, favorileri, öğün ve antrenman şablonları |
 | Notlar ve Rehber sohbeti | kullanıcının yazdığı notlar, Rehber ile mesajlar (açık sohbet ve geçmişe arşivlenmiş ayrı sohbetler; modele yalnız açık sohbet gider) |

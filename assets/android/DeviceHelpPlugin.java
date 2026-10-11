@@ -41,6 +41,21 @@ public class DeviceHelpPlugin extends Plugin {
         call.resolve(r);
     }
 
+    /** The app's own settings screen: where a permission denied twice can be turned on, since the system dialog no longer appears. */
+    @PluginMethod
+    public void openDetails(PluginCall call) {
+        details(call);
+    }
+
+    /** Opens the messaging app with the number and the text filled in; the person presses send. No SMS permission is used. */
+    @PluginMethod
+    public void sms(PluginCall call) {
+        String to = call.getString("to", "");
+        Intent i = new Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:" + Uri.encode(to)));
+        i.putExtra("sms_body", call.getString("body", ""));
+        opened(call, start(i) ? "sms" : "none");
+    }
+
     private void details(PluginCall call) {
         Intent i = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getContext().getPackageName()));
         opened(call, start(i) ? "details" : "none");
