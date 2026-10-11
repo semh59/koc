@@ -27,4 +27,16 @@ ok("oldest and newest day",H.span(ix).first==="2024-03-05"&&H.span(ix).last==="2
  const big=Array.from({length:500},(_,i)=>E("food","2025-01-01",300,"tavuk"+i));ok("search: result limit, correct total",H.search({entries:big,workouts:[],vitals:[],medLog:[],measures:[]},"tavuk",300).items.length===300&&H.search({entries:big,workouts:[],vitals:[],medLog:[],measures:[]},"tavuk",300).total===500);}
 {const many=[];for(let i=0;i<1100*8;i++){const d=new Date(2023,0,1+Math.floor(i/8));many.push(E(i%3?"food":"water",dk(d),i%3?400:250,"x"+i))}
  const t=Date.now(),i2=H.index({entries:many,workouts:[],vitals:[],medLog:[],measures:[],sleep:[],mood:[],pulse:[],hr:[],fast:{log:[]}},dk);H.months(i2);ok("3 years x 8 entries/day: index and months in under 1 s",Date.now()-t<1000&&i2.size===1100,[Date.now()-t,i2.size]);}
+{ // personal normal band
+  const day=n=>"2026-09-"+String(n).padStart(2,"0"),steady=[],S2={entries:[],workouts:[],sleep:[],mood:[],vitals:[],pulse:[],hr:[],medLog:[],measures:[],fast:{log:[]}};
+  for(let i=1;i<=20;i++)S2.entries.push(E("steps",day(i),7000+(i%5)*100));
+  const base=H.index(S2,dk);
+  ok("normal band: under 14 recorded days there is no band",H.normal(H.index({...S2,entries:S2.entries.slice(0,13)},dk),"2026-09").steps===undefined);
+  const flat=H.normal(base,"2026-09").steps;
+  ok("normal band: a steady series has a band around its median and flags nothing",flat.n===20&&flat.med===7200&&flat.low.length===0&&flat.high.length===0&&flat.lo<7000&&flat.hi>7400,flat);
+  S2.entries.push(E("steps",day(21),1500),E("steps",day(22),15000));
+  const odd=H.normal(H.index(S2,dk),"2026-09").steps;
+  ok("normal band: one very low and one very high day are flagged, a single outlier does not move the band",odd.low.join()===day(21)&&odd.high.join()===day(22)&&odd.med===7200,odd);
+  ok("normal band: only the asked month's days are listed (the band itself uses the last 56 days), calories need 800 kcal and over",H.normal(H.index(S2,dk),"2026-10").steps.low.length===0&&H.normal(H.index(S2,dk),"2026-11").steps===undefined&&H.normal(base,"2026-09").kcal===undefined);
+}
 finish();

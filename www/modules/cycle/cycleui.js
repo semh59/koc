@@ -41,6 +41,13 @@ function cycCal(p,f,today){
 /* ---- Screen ---- */
 const cycFertNote="Tahmindir. Doğum kontrolü veya gebelik planlaması için güvenilir değildir; hekimine danış.";
 const cycFertile=f=>`<div class="card"><div class="lbl">Tahmini doğurgan pencere</div>${f.irregular?`<p class="mut" role="note">Düzensiz döngüde tahmin güvenilmez.</p>`:`<div class="ink sumv cyv cyfw num">${cycRange(f.from,f.to)}</div><div class="mut sm">Tahmini yumurtlama: ${fd(f.ov)}. Takvim yöntemine göre: yumurtlama sonraki dönemden yaklaşık 14 gün önce, pencere yumurtlamadan 5 gün önce - 1 gün sonra.</div>`}<div class="mt-2 mut sm" role="note">${cycFertNote}</div></div>`;
+/* Mood and sleep in the 5 days before the last 3 period starts against the other days; descriptive, hidden under 3 starts or too few values. */
+function cycMood(){
+  const b=CycleLib.beforeStart(S.cycle,Habits.mood(),Habits.sleep(),dayKey());
+  if(!b)return "";
+  const f1=x=>x.toFixed(1).replace(".",","),bits=[b.mood?`ruh halin ortalama ${f1(b.mood.pre)}, diğer günlerde ${f1(b.mood.other)} (5 üzerinden)`:"",b.sleep?`uyku ortalaman ${f1(b.sleep.pre/60)} sa, diğer günlerde ${f1(b.sleep.other/60)} sa`:""].filter(Boolean);
+  return `<div class="card"><div class="lbl">Dönemden önceki günler</div><p class="m0">Son 3 dönemde dönem başlamadan önceki 5 günde ${bits.join("; ")}.</p><div class="mt-2 mut sm">Yalnız bir karşılaştırmadır; tahmin ya da tıbbi değerlendirme değildir.</div></div>`;
+}
 function viewCycle(){
   const st=S.settings,today=dayKey();
   if(!st.cycleOn)return `${emptyCard("data","Döngü takibi kapalı","Açarsan dönem günlerini kaydedip tahmini sonraki dönemi görebilirsin.",`<button class="btn" data-cy="toggle">Döngü takibini aç</button>`)}<p class="hint">Veriler yalnız telefonda durur. ${cycNote}</p>`;
@@ -61,6 +68,7 @@ function viewCycle(){
   <div class="card"><div class="lbl">Bu dönem</div>${dn?`<div class="ink sumv cyv num">${dn}. gün</div><button class="btn ghost" data-cy="end">Dönem bugün bitti</button>`:`<p class="m0 mut">${lastRow?`Açık dönem yok. Son başlangıç: ${fd(lastRow.s)}.`:"Henüz kayıt yok. İlk dönemini eklediğinde burada görünür."}</p>`}</div>
   <div class="card"><div class="lbl">Tahmini sonraki dönem (yaklaşık)</div>${pred}<div class="mt-2 mut sm">${cycNote}</div></div>
   ${p.ok?cycFertile(f):""}
+  ${preg?"":cycMood()}
   ${cycCal(p.ok?p:null,f,today)}
   ${rows?`<div class="card"><div class="lbl">Geçmiş</div>${rows}</div>`:""}
   <p class="hint">Veriler yalnız telefonda durur; Rehber'e, bildirim metnine ve widget'a girmez. Silmek için Gizlilik ve veri'yi kullan.</p>`;

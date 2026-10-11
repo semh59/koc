@@ -81,6 +81,7 @@ function cleanGym(r){
     if(!known.has(id)||!c)continue;
     if(Number.isInteger(c.lo)&&c.lo>=1&&c.lo<=30&&Number.isInteger(c.hi)&&c.hi>c.lo&&c.hi<=50)Object.assign(o,{lo:c.lo,hi:c.hi});
     if(Number.isInteger(c.rest)&&c.rest>=0&&c.rest<=600)o.rest=c.rest;
+    if(dayOk(c.flag))o.flag=c.flag;
     if(Object.keys(o).length)out.exCfg[id]=o;
   }
   for(const w of (Array.isArray(r.workouts)?r.workouts:[])){
@@ -138,6 +139,9 @@ function gInc(id){
   const inc=gEx(id).inc,p=gPr(id);
   return p==="db"&&S.dbStep?S.dbStep:p==="bar"?Math.max(inc,2*Math.min(...S.plates)):inc;
 }
+/* "This move bothered me": for 14 days the weight suggestion for the move does not go up. A mark is only a day; no text about what bothered. */
+const GFLAG_DAYS=14;
+const gFlagged=id=>{const c=S.exCfg[id];return !!(c&&c.flag&&Algo.dayNum(dayKey())-Algo.dayNum(c.flag)<GFLAG_DAYS)};
 function gSuggest(exId){
   if(gKind(exId)!=="w")return null;
   const [h,...old]=gHistory(exId);if(!h)return null;
@@ -147,6 +151,7 @@ function gSuggest(exId){
   if(!r)return r;
   if(p==="bar"&&r.kg>=S.bar)r.kg=Algo.plates(r.kg,S.bar,S.plates).made;
   else if(p==="db"&&S.dbStep)r.kg=Algo.roundTo(r.kg,S.dbStep);
+  if(gFlagged(exId)&&r.kg>top){r.kg=top;r.why="Bu hareketi rahatsız etti diye işaretledin; ağırlığı artırmıyorum"}
   return r;
 }
 function gGearHtml(){
@@ -385,6 +390,8 @@ function gMenu(ei){
    <button class="prow" data-g="note:${ei}"><span><b>Egzersiz notu</b><span class="mut sm">Örn. bar yüksekliği, ağrı</span></span></button>
    ${gKind(x.id)==="w"?`<button class="prow" data-g="plate:${ei}"><span><b>Plaka ve ısınma</b><span class="mut sm">Bar başına plaka, ısınma setleri</span></span></button>`:""}
    ${gKind(x.id)==="w"?`<button class="prow" data-g="rng:${ei}"><span><b>Tekrar aralığı</b><span class="mut sm">${(c=>c.lo+"-"+c.hi)(Object.assign({lo:8,hi:12},S.exCfg[x.id]))}, öneri bu aralığa göre</span></span></button>`:""}
+   <button class="prow" data-g="flag:${ei}"><span><b>${gFlagged(x.id)?"Rahatsızlık işaretini kaldır":"Bu hareket rahatsız etti"}</b><span class="mut sm">${gFlagged(x.id)?"İşaret 14 gün sonra kendiliğinden kalkar":"14 gün ağırlık artırma önerisi kapanır"}</span></span></button>
+   ${gFlagged(x.id)?`<button class="prow" data-g="alt:${ei}"><span><b>Benzer hareketler</b><span class="mut sm">Aynı bölge ve ekipman</span></span></button>`:""}
    <button class="prow" data-g="rst:${ei}"><span><b>Dinlenme süresi</b><span class="mut sm">${gRestTx(gRestSec(x.id))}, set ✓ sonrası sayaç ve bildirim</span></span></button>
    ${ei>0?(x.ss&&w.ex[ei-1].ss===x.ss?`<button class="prow" data-g="ssu:${ei}"><span><b>Süpersetten çıkar</b></span></button>`:`<button class="prow" data-g="ssl:${ei}"><span><b>Önceki egzersizle süperset yap</b><span class="mut sm">${esc(gEx(w.ex[ei-1].id).n)} ile arka arkaya, dinlenme grubun sonunda</span></span></button>`):""}
    <button class="prow" data-g="mv:${ei}:-1"><span><b>Yukarı taşı</b></span></button>

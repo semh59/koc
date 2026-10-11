@@ -12,4 +12,9 @@ ok("no text claims a health effect (falls, risk, prevention, treatment)",!/düş
   ok("balance flow: about 10 minutes, only balance exercises, logged as exercise (not a warm-up)",total>=540&&total<=660&&f.steps.every(s=>BAL.some(e=>e.id===s.ex))&&!f.warm,total);
   ok("the flow starts through the same phases engine",G.phases(f.steps).length>10);
 }
+{
+  const f=G.FLOWS.find(x=>x.id==="iwt30"),ph=G.phases(f.steps),work=ph.filter(p=>p.k==="w");
+  ok("interval walking: 5 rounds of 3 min fast then 3 min slow, 30 minutes plus the preparation, no rest phases",work.length===10&&work.every((p,i)=>p.sec===180&&p.ex===(i%2?"slowwalk":"fastwalk"))&&G.total(ph)===1800+G.PREP&&ph.filter(p=>p.k==="r").length===1);
+  ok("interval walking: both paces exist in the library with a figure and a cue, logged as exercise, no health claim",["fastwalk","slowwalk"].every(id=>{const e=EXDB.find(x=>x.id===id);return e&&FigTpl[e.tp]&&EXCUE[e.tp]})&&!f.warm&&!/düş|önler|azaltır|risk|tedavi|iyileş|kan basınc|tansiyon/i.test(JSON.stringify(f)));
+}
 finish();

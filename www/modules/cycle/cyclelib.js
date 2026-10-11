@@ -75,6 +75,20 @@ const CycleLib=(()=>{
     const d=addDays(p.from,-LEAD);
     return d>=today&&diff(d,today)<win?d:null;
   }
-  return {FLOW,SYM,MAXLEN,NOTE_MAX,NID,check,clean,overlap,lengths,addDays,diff,predict,fertile,dayOfPeriod,remindDay};
+  /* The 5 days before each of the last 3 period starts against the other days since the first of those windows: average mood (1-5) and sleep minutes. A series needs 4 values before and 6 outside; null for a series that does not have them, null overall under 3 starts.
+     Descriptive only: no cycle phase, no fertile day. mood: [{day,v}], sleep: [{day,min}]. */
+  function beforeStart(rows,mood,sleep,today){
+    const st=rows.map(r=>r.s).sort().filter(s=>s<=today).slice(-3);
+    if(st.length<3)return null;
+    const pre=new Set();for(const s of st)for(let i=1;i<=5;i++)pre.add(addDays(s,-i));
+    const from=addDays(st[0],-5),avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
+    const one=(list,f)=>{
+      const a=[],b=[];for(const x of list||[]){if(x.day<from||x.day>today)continue;(pre.has(x.day)?a:b).push(f(x))}
+      return a.length>=4&&b.length>=6?{pre:avg(a),other:avg(b)}:null;
+    };
+    const m=one(mood,x=>x.v),s=one(sleep,x=>x.min);
+    return m||s?{mood:m,sleep:s}:null;
+  }
+  return {beforeStart,FLOW,SYM,MAXLEN,NOTE_MAX,NID,check,clean,overlap,lengths,addDays,diff,predict,fertile,dayOfPeriod,remindDay};
 })();
 if(typeof module!=="undefined")module.exports=CycleLib;

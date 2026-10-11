@@ -9,5 +9,7 @@ const EXBAL=[
   {id:"tandem",n:"Tandem duruş (ayaklar art arda)",tp:"tandem",k:"t"},
   {id:"armswalk",n:"Kollar yanda yürüyüş",tp:"balwalk2",k:"t"}
 ].map(e=>({id:e.id,n:e.n,r:"Tüm vücut",g:"Bacak",k:e.k,q:"Ağırlıksız",l:"Başlangıç",c:"d",inc:1,tp:e.tp,pr:"-"}));
-(typeof EXDB!=="undefined"?EXDB:require("./exlib.js")).push(...EXBAL);
+/* Two walking paces for the interval-walking flow (guidelib.js). */
+const EXWALK=[{id:"fastwalk",n:"Hızlı yürüyüş"},{id:"slowwalk",n:"Yavaş yürüyüş"}].map(e=>({...e,r:"Tüm vücut",g:"Bacak",k:"t",q:"Ağırlıksız",l:"Başlangıç",c:"k",inc:1,tp:"walk",pr:"-"}));
+(typeof EXDB!=="undefined"?EXDB:require("./exlib.js")).push(...EXBAL,...EXWALK);
 if(typeof module!=="undefined")module.exports=EXBAL;
