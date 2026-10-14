@@ -109,6 +109,6 @@ const LogLib=(()=>{
     return {groups,water,dr,waterTotal:total(water),drMl:total(dr),rest};
   }
   const stalled=(snapAt,now,yest,prev7)=>(snapAt>0&&now-snapAt>26*36e5)||(yest===0&&prev7>1000);
-  return {PER100,RECIPES_MAX,RECIPE_ITEMS_MAX,recipeItem,cleanRecipes,recipeCalc,recipeNote,recipeFood,MEALS,mealKey,mealOf,dayLog,stalled,NUTR,copyNutr,dayRange,key,cleanFav,cleanTpl,recents};
+  return {MAX,PER100,RECIPES_MAX,RECIPE_ITEMS_MAX,recipeItem,cleanRecipes,recipeCalc,recipeNote,recipeFood,MEALS,mealKey,mealOf,dayLog,stalled,NUTR,copyNutr,dayRange,key,cleanFav,cleanTpl,recents};
 })();
 if(typeof module!=="undefined")module.exports=LogLib;

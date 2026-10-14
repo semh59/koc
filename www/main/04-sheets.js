@@ -129,6 +129,18 @@ function sheetWater(){
   openSheet(`<h3>Su kayıtları</h3>${L.map(e=>`<div class="prow"><button class="tx grow" data-edit="${e.id}" aria-label="${e.time}, ${e.v} ml, düzenle"><b class="num">${e.time}</b></button><span class="num">${e.v} ml${e.dr?` · ${drinkName(e.dr)}`:""}</span><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></div>`).join("")}`);
   sh.scrollTop=y;
 }
+/* Tap on a meal: the calories and macros it carries, what is missing, and fields to complete the macros. */
+const MACRO_IDS=[["p","epr"],["c","ech"],["f","efa"]];
+const foodDetail=e=>{
+  const miss=MACRO_IDS.filter(([k])=>e[k]==null).map(([k])=>NLBL[k]);
+  return `${e.v>0?`<div class="my-2">${nutrBlock({k:e.v,lo:e.lo,hi:e.hi,p:e.p,c:e.c,f:e.f,fb:e.fb,sg:e.sg,na:e.na})}</div>`:""}${miss.length?`<p class="m0 mut sm">Eksik besin verisi: ${miss.join(", ")}.</p>`:""}
+  <details class="acc" ${miss.length?"open":""}><summary>Besin değerleri (g)</summary>${MACRO_IDS.map(([k,id])=>`<label class="lbl" for="${id}">${NLBL[k][0].toUpperCase()+NLBL[k].slice(1)} (g)</label><input class="in num" id="${id}" inputmode="decimal" value="${e[k]!=null?fmt(e[k],e[k]%1?1:0):""}" autocomplete="off">`).join("")}</details>`;
+};
+function sheetMissing(){
+  const L=Log.where(e=>e.type==="food"&&e.day===keyOff(-logOff)&&MACRO_IDS.some(([k])=>e[k]==null));
+  if(!L.length)return closeSheet();
+  openSheet(`<h3>Eksik besin verisi</h3><p class="hint">Birine dokun, protein, karbonhidrat ve yağı yazıp kaydet.</p>${L.map(e=>`<div class="prow"><button class="grow pbtn" data-edit="${e.id}"><span class="grow"><b>${esc(e.text||"Öğün")}</b><span class="mut sm">Eksik: ${MACRO_IDS.filter(([k])=>e[k]==null).map(([k])=>NLBL[k]).join(", ")}</span></span><span class="aic" aria-hidden="true">›</span></button></div>`).join("")}`);
+}
 /* One edit sheet for a log entry: value, name or note, day and time, and the meal for food. */
 let editId=0;
 function sheetEntry(id){
@@ -139,7 +151,7 @@ function sheetEntry(id){
   editId=id;
   openSheet(`<h3>Kaydı düzenle</h3>${val?`<label class="lbl" for="ev">${val}</label><input class="in num" id="ev" inputmode="${t==="weight"?"decimal":"numeric"}" value="${v}" autocomplete="off">`:""}
   ${name?`<label class="lbl" for="et">${name}</label><input class="in" id="et" value="${esc(e.text)}" autocomplete="off">`:""}${t==="note"?`<label class="lbl" for="et">Not</label><textarea class="in" id="et">${esc(e.text)}</textarea>`:""}
-  ${t==="food"?`<div class="lbl" id="fmll">Öğün</div><div class="chips" id="fml" role="group" aria-labelledby="fmll">${LogLib.MEALS.map(([k,n])=>`<button class="chip" data-ml="${k}" aria-pressed="${k===LogLib.mealOf(e)}">${n}</button>`).join("")}</div>`:""}
+  ${t==="food"?foodDetail(e):""}${t==="food"?`<div class="lbl" id="fmll">Öğün</div><div class="chips" id="fml" role="group" aria-labelledby="fmll">${LogLib.MEALS.map(([k,n])=>`<button class="chip" data-ml="${k}" aria-pressed="${k===LogLib.mealOf(e)}">${n}</button>`).join("")}</div>`:""}
   <label class="lbl" for="eday">Gün</label><input class="in" type="date" id="eday" value="${e.day}" max="${dayKey()}">
   <label class="lbl" for="etime">Saat</label><input class="in" type="time" id="etime" value="${e.time||""}">
   <div class="ferr" id="eerr" role="alert"></div><button class="btn" data-go="entry">Kaydet</button>`);
@@ -164,6 +176,12 @@ function goEntry(){
     if(!text&&isNaN(kc))return bad("Yemeğin adını ya da kalorisini yaz");
     if(!isNaN(kc)&&kc>20000)return bad("Kalori çok yüksek görünüyor, kontrol et");
     next.v=isNaN(kc)?null:kc;next.meal=fmeal();
+    for(const [k,id] of MACRO_IDS){
+      const r=$("#"+id).value.trim(),g=num(r);
+      if(!r)delete next[k];
+      else if(!(g>=0&&g<=LogLib.MAX[k]))return bad(`${NLBL[k][0].toUpperCase()+NLBL[k].slice(1)} değerini gram olarak yaz, örneğin 12`);
+      else next[k]=g;
+    }
     if(next.v!==e.v){delete next.lo;delete next.hi}
   }else if(t==="note"&&!text)return bad("Önce notunu yaz");
   if(t==="exercise"){
