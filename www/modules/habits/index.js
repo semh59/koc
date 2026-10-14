@@ -14,6 +14,6 @@ Data.dayRows.push([1,k=>{const x=S.sleep.find(y=>y.day===k);return x?hgRow("moon
   [7,k=>S.fast.log.filter(x=>dayAt(x.t1)===k).map(x=>hgRow("moon","Oruç",hbDur(Math.round((x.t1-x.t0)/6e4)))).join("")]);
 const Habits={
   sleep:()=>S.sleep,mood:()=>S.mood,fast:()=>S.fast,ramReminders:(now,lead,days)=>ramReminders(now,lead,days),ramShift:(day,t,kind,k)=>ramShift(day,t,kind,k),dayTimes:day=>ramDay(day),
-  ramWaterNote:()=>ramWaterNote(),fastNote:()=>ramFastNote(),iftarAt:()=>ramIftarAt(),
+  ramWaterNote:()=>ramWaterNote(),fastNote:()=>ramFastNote(),fastWindow:()=>ramFastWindow(),fasting:()=>ramNow()?.kind==="iftar",
   setSleep:l=>{S.sleep=HabitLib.cleanSleep(l)}
 };

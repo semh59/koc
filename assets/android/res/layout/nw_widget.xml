@@ -6,7 +6,7 @@
     android:background="@drawable/nw_widget_bg"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:padding="10dp">
+    android:padding="6dp">
 
     <LinearLayout
         android:layout_width="0dp"
@@ -67,7 +67,7 @@
             android:background="#335BB4EA"
             android:gravity="center"
             android:minWidth="56dp"
-            android:minHeight="36dp"
+            android:minHeight="48dp"
             android:paddingStart="10dp"
             android:paddingEnd="10dp"
             android:text="+250"
@@ -78,7 +78,7 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="8dp"
             android:orientation="horizontal">
 
             <TextView
@@ -88,7 +88,7 @@
                 android:background="#33F0A24F"
                 android:gravity="center"
                 android:minWidth="48dp"
-                android:minHeight="36dp"
+                android:minHeight="48dp"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
                 android:text="Yemek"
@@ -99,11 +99,11 @@
                 android:id="@+id/nw_weight"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="8dp"
                 android:background="#33E8F0EE"
                 android:gravity="center"
                 android:minWidth="48dp"
-                android:minHeight="36dp"
+                android:minHeight="48dp"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
                 android:text="Kilo"

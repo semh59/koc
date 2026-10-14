@@ -19,6 +19,7 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TimeZone;
 
 /** Notification buttons ("+250 ml", "Aldım"): the record is written to SharedPreferences without opening the app, and the app picks it up at its next start. */
 @CapacitorPlugin(name = "QuickLog")
@@ -46,6 +47,10 @@ public class QuickLogPlugin extends Plugin {
         return s;
     }
 
+    private static int zone(long t) {
+        return TimeZone.getDefault().getOffset(t) / 60000;
+    }
+
     /** Cancels the notification plugin's scheduled alarm (request code = notification id) and its stored copy; a leftover copy would be rescheduled at the next start. */
     private static void cancelPending(Context c, int id) {
         AlarmManager am = Alarms.manager(c);
@@ -69,7 +74,8 @@ public class QuickLogPlugin extends Plugin {
     /** Medication record from the alarm screen ("m12_0800" taken, "k12_0800" skipped): written to the same queue as the notification buttons and picked up when the app opens. */
     static synchronized void recordMed(Context c, String key, int id) {
         SharedPreferences p = prefs(c);
-        p.edit().putString("q", QuickMath.append(p.getString("q", ""), key, System.currentTimeMillis())).commit();
+        long now = System.currentTimeMillis();
+        p.edit().putString("q", QuickMath.append(p.getString("q", ""), key, now, zone(now))).commit();
         cancelSiblings(c, id, true);
         MedWakeReceiver.drop(c, key);
     }
@@ -110,9 +116,16 @@ public class QuickLogPlugin extends Plugin {
             in.removeExtra(ACTION_KEY);
             return false;
         }
+        long now = System.currentTimeMillis();
+        // A double tap on the widget button is one glass: the notification buttons are covered by the signature check above.
+        if (widget && v > 0 && QuickMath.tooSoon(p.getLong("wlast", 0), now)) {
+            in.removeExtra(ACTION_KEY);
+            return false;
+        }
         String q = p.getString("q", "");
-        for (String k : keys) q = QuickMath.append(q, k, System.currentTimeMillis());
+        for (String k : keys) q = QuickMath.append(q, k, now, zone(now));
         SharedPreferences.Editor e = p.edit().putString("q", q);
+        if (widget && v > 0) e.putLong("wlast", now);
         if (sig != null) e.putString("seen", QuickMath.remember(seen, sig));
         // The queue write must be durable: with the app closed the receiver process can end at once and apply() would lose the asynchronous write.
         e.commit();
@@ -140,7 +153,7 @@ public class QuickLogPlugin extends Plugin {
         for (String[] x : QuickMath.parse(p.getString("inflight", ""))) {
             try {
                 long t = Long.parseLong(x[1]);
-                if (t > upto) left = QuickMath.append(left, x[0], t);
+                if (t > upto) left = QuickMath.append(left, x[0], t, Integer.parseInt(x[2]));
             } catch (RuntimeException e) {
                 // malformed record: dropped
             }
@@ -180,6 +193,7 @@ public class QuickLogPlugin extends Plugin {
                     o.put("v", Integer.parseInt(x[0]));
                 }
                 o.put("t", Long.parseLong(x[1]));
+                o.put("z", Integer.parseInt(x[2]));
                 items.put(o);
             } catch (RuntimeException e) {
                 // malformed record: skipped

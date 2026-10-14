@@ -39,6 +39,16 @@ boot(w=>{
   ok("imsak moved 15+ minutes since the shift: the card says so and offers a recalculation",/İmsak kaydırdığından beri yaklaşık 20 dk geriye gitti/.test($("#view").textContent)&&!!$('[data-md="ramredo:1"]'),$("#view").textContent.slice(0,300));
   ev("medRamRedo(1)");await flush();
   ok("recalculating re-anchors to today's imsak and keeps three distinct times",ev("S.settings.ramMedsRef[1]")===tt[0]&&new Set(ev("S.meds[0].t")).size===3&&ev("Object.keys(S.meds[0].q).length")===1&&ev("Object.values(S.meds[0].q)[0].d")==="2 tablet");
+  ev("S.settings.ramMedsRef={};tab='today';render()");
+  ok("a shift left from an earlier Ramadan (the mode was opened again) is offered back on Today, not silent",/Geçen Ramazan'dan kalan/.test($("#view").textContent));
+  ev("tab='meds';render()");
+  ok("...and the Meds card names it and offers a recalculation or the old times",/Geçen Ramazan'dan kalmış/.test($("#view").textContent)&&!!$('[data-md="ramredo:1"]')&&!!$('[data-md="ramback:1"]'));
+  ev("S.settings.ramMedsRef[1]='"+tt[0]+"';tab='today';render()");
+  ok("a shift taken in this Ramadan is not called old",!/Geçen Ramazan'dan kalan/.test($("#view").textContent));
+  const mp=ev("S.settings.ramMeds[1]"),b0=Object.values(mp)[0];
+  ev("S.meds[0].t=S.meds[0].t.map(x=>x==='"+b0+"'?'03:11':x)");
+  ev("medRamUndo(1)");await flush();
+  ok("undo after the person edited one shifted time says how many came back instead of 'döndü' for all",/1 saat eski yerine döndü, 1 saat sen değiştirdiğin için aynı kaldı/.test($("#tmsg").textContent),$("#tmsg").textContent);
   ok("the page ran without errors",errs.length===0,errs);
   finish();
 });

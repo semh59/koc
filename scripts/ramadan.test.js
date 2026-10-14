@@ -70,6 +70,8 @@ ok("a daytime over 16 hours is flagged long (summer)",R.now(()=>["03:00","20:30"
 {
   const d=["05:00","18:30"];
   ok("shift: water inside the fast moves after iftar, three reminders do not land together; one outside stays",R.shift(d,"water","11:30",0)==="19:00"&&R.shift(d,"water","14:30",1)==="20:30"&&R.shift(d,"water","17:30",2)==="22:00"&&R.shift(d,"water","19:00",0)==="19:00"&&R.shift(["07:00","17:10"],"water","17:30",2)==="17:30");
+  ok("shift: with the spread switch every water reminder goes to the evening, the first half an hour after iftar and the rest evenly, never past 23:00 unless iftar itself is that late",
+    [0,1,2].map(k=>R.shift(d,"water",["06:00","11:30","21:30"][k],k,true)).join()==="19:00,21:00,23:00"&&R.shift(["04:00","21:00"],"water","11:30",1,true)==="22:15"&&R.shift(["04:00","21:30"],"water","11:30",2,true)==="23:00"&&R.shift(d,"water","11:30",1,false)==="20:30");
   ok("shift: the motion reminder waits an hour after iftar and stays when it is already later",R.shift(["06:00","19:30"],"move","19:30")==="20:30"&&R.shift(d,"move","19:30")==="19:30"&&R.shift(d,"move","08:00")==="19:30");
   ok("medMap: a time in the fast goes to the nearer of sahur and iftar, others are left out",JSON.stringify(R.medMap(["02:00","08:00","14:00","22:00"],d))==='{"08:00":"04:30","14:00":"18:40"}'&&Object.keys(R.medMap(["20:00"],d)).length===0);
   ok("ids: the sahur and iftar ids are recognised, medication ids and the cycle id are not",R.isNid(7000000)&&R.isNid(7000061)&&!R.isNid(1001040)&&!R.isNid(2001040)&&!R.isNid(6999999));
