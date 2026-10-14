@@ -98,7 +98,7 @@ document.addEventListener("keydown",ev=>{
 document.addEventListener("click",ev=>{const b=ev.target.closest("[data-sr]");if(b){stepRange=+b.dataset.sr;render()}});
 $("#sheet").addEventListener("click",ev=>{if(ev.target.closest("[data-shx]"))closeSheet()});
 $("#cfm").addEventListener("click",ev=>{if(!cfmDone)return;const b=ev.target.closest("[data-cf]");if(b)cfmDone(b.dataset.cf==="1");else if(ev.target.id==="cfm")cfmDone(false)});
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="settings-modules")render()});stepsSync();renderSoft();cPlateauCheck();abRun();if(Date.now()-lastSched>RESCHEDULE_MS||!exactOk)scheduleReminders().then(setNotif)}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="settings-modules")render()});stepsSync();renderSoft();cPlateauCheck();abRun();schedDue().then(d=>d&&scheduleReminders().then(setNotif))}});
 
 document.querySelectorAll("[data-ic]").forEach(e=>e.innerHTML=Icons.svg(e.dataset.ic));
 render();
@@ -115,7 +115,7 @@ setInterval(stepsTick,STEP_POLL);
 if(DH())DH().info().then(r=>{oem=String(r.manufacturer||"");render()},()=>{});
 if(isNative())pmRefresh();
 try{const P=window.Capacitor?.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp","BarcodeScanner","StepCounter","Ocr","Motion","Speech","Widget","BackupFolder","MedWake","Health"].map(n=>n+"="+typeof P[n]).join(" "))}catch{}
-setInterval(()=>{if(dayKey()!==lastDay&&!viewBusy()){lastDay=dayKey();logOff=0;render()}},60000);
+setInterval(()=>{if(dayKey()!==lastDay&&!viewBusy()){lastDay=dayKey();logOff=0;render()}if(lastTz&&tzKey()!==lastTz)scheduleReminders().then(setNotif)},60000);
 LN()?.addListener?.("localNotificationActionPerformed",notifTap);
 function widgetOpen(){tab="today";logOff=0;closeSheet();render();window.scrollTo(0,0)}
 WG()?.addListener?.("open",widgetOpen);

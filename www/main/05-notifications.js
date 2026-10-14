@@ -1,11 +1,17 @@
 /* ---------- notifications (APK only) ---------- */
 const WATER_REM=[2,3,4],BACKUP_REM=10,WEEKLY_REM=12,FAST_NID=9100;
-const SCHED_DAYS=30,LEAD_MS=5000,RESCHEDULE_MS=6*36e5;let lastSched=0,exactOk=true,fsiOk=true,medBudgetMsg="";
+const SCHED_DAYS=30,LEAD_MS=5000,RESCHEDULE_MS=6*36e5;let lastSched=0,lastTz="",exactOk=true,fsiOk=true,medBudgetMsg="";
 const LN=()=>plugin("LocalNotifications");
 /* Plugin 8.3+ opens the system "Alarms & reminders" screen on every schedule() with an exact alarm while the permission is missing; the exact flag follows the permission so it never does. */
 async function lnSchedule(ln,list){
   const isExactNotification=(await ln.checkExactNotificationSetting()).exact_alarm!=="denied";
   return ln.schedule({notifications:list.map(n=>({...n,isExactNotification}))});
+}
+const tzKey=()=>new Date().getTimezoneOffset()+Intl.DateTimeFormat().resolvedOptions().timeZone;
+/* A reminder is rebuilt when the zone offset changed, the phone moved the alarms (boot, clock or zone change, from the alarm log) or 6 hours passed. */
+async function schedDue(){
+  if(Date.now()-lastSched>RESCHEDULE_MS||!exactOk||tzKey()!==lastTz)return true;
+  try{return MedLib.clockMoved((await MW().log()).items||[])}catch{return false}
 }
 let notifAsked=false; // the system dialog is shown once per app run; a refusal is handled from the permissions centre
 async function scheduleReminders(){
@@ -48,7 +54,7 @@ async function scheduleReminders(){
         if(at.getTime()>now+LEAD_MS)list.push(Object.assign({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}},water?{actionTypeId:"water",extra:{act:"water",v:S.settings.glass,at:at.getTime()}}:r.id===WEEKLY_REM?{extra:{act:"open",tab:"coach"}}:r.id===BACKUP_REM?{extra:{act:"open",tab:"settings-data"}}:{}));
       }
     }
-    lastSched=now;
+    lastSched=now;lastTz=tzKey();
     if(S.settings.medOn){
       for(const n of MedLib.notifications(Meds.meds(),Meds.log(),new Date(),SCHED_DAYS,S.settings.medShowName))medList.push({id:n.id,title:n.title,body:n.body,schedule:{at:n.at,allowWhileIdle:true},actionTypeId:n.actionTypeId,extra:n.extra,channelId:n.channelId,ongoing:n.ongoing});
       for(const n of MedLib.notices(Meds.meds(),new Date(),S.settings.medShowName))medList.push({id:n.id,title:n.title,body:n.body,schedule:{at:n.at,allowWhileIdle:true},extra:n.extra});

@@ -296,6 +296,11 @@ const MedLib=(()=>{
     if(e.err)out.push("alarm kurulurken bir sorun çıktı");
     return out.join(", ");
   }
+  /* Whether the phone moved the alarms by itself since the app last set them (reboot, clock or time zone change): the tail of the log after the last app setup. */
+  const clockMoved=items=>{
+    for(let i=items.length;i--;){const a=items[i].a;if(a==="APP")return false;if(a==="TIME"||a==="TZ"||a==="BOOT")return true}
+    return items.length>0;
+  };
   /* Likely problems: st is the current state, items the log rows. `to` is the settings screen to open (MedWake.settings); autostart is Xiaomi's autostart screen. */
   function wakeIssues(st,items){
     const out=[],add=(t,to,id)=>out.push({t,to,id}),low=(i,ad)=>i===0?`${ad} kanalı engelli.`:i>0&&i<4?`${ad} kanalı düşük önemde.`:"";
@@ -324,6 +329,6 @@ const MedLib=(()=>{
     if(bad)add("Tam ekran bildirimi gönderilemedi: "+bad.fs.replace(/^err:/,""));
     return out;
   }
-  return {sinceDose,recentTaken,recentText,NOT_SAVED,wakeTimes,wakeDoses,wakeLine,wakeIssues,sinceFor,doseOfId,amt,doseText,stockDays,stockLow,notices,STOCK_DAYS,FED,FED_TEXT,NAME_MAX,freeId,doseKey,MAXM,MAXT,BUDGET,TITLE,GENERIC_BODY,cleanMeds,cleanLog,dosesOn,statusOf,logIndex,mark,adherence,adherenceDays,sumAdherence,notifications,fit,budgetText,dayForTap,revise,addDay,slotAt,hm,timeOk,key};
+  return {clockMoved,sinceDose,recentTaken,recentText,NOT_SAVED,wakeTimes,wakeDoses,wakeLine,wakeIssues,sinceFor,doseOfId,amt,doseText,stockDays,stockLow,notices,STOCK_DAYS,FED,FED_TEXT,NAME_MAX,freeId,doseKey,MAXM,MAXT,BUDGET,TITLE,GENERIC_BODY,cleanMeds,cleanLog,dosesOn,statusOf,logIndex,mark,adherence,adherenceDays,sumAdherence,notifications,fit,budgetText,dayForTap,revise,addDay,slotAt,hm,timeOk,key};
 })();
 if(typeof module!=="undefined")module.exports=MedLib;

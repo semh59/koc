@@ -42,10 +42,11 @@ jobs:
 
       - name: Native logic tests
         run: |
-          javac -d /tmp/stepmath assets/android/StepMath.java assets/android/QuickMath.java assets/android/MotionMath.java scripts/StepMathTest.java scripts/QuickMathTest.java scripts/MotionMathTest.java
+          javac -d /tmp/stepmath assets/android/StepMath.java assets/android/QuickMath.java assets/android/MotionMath.java assets/android/ZoneMath.java scripts/StepMathTest.java scripts/QuickMathTest.java scripts/MotionMathTest.java scripts/ZoneMathTest.java
           java -cp /tmp/stepmath com.neowell.app.StepMathTest
           java -cp /tmp/stepmath com.neowell.app.QuickMathTest
           java -cp /tmp/stepmath com.neowell.app.MotionMathTest
+          java -cp /tmp/stepmath com.neowell.app.ZoneMathTest
 
       - name: Generate the Android project
         run: |
