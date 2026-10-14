@@ -35,11 +35,26 @@ function confirmSheet({title,body="",ok="Tamam",no="İptal",danger=false}){
   d.hidden=false;trap();n.focus();
   return new Promise(res=>{cfmDone=v=>{cfmDone=null;d.hidden=true;trap();if(from&&from.isConnected)from.focus({preventScroll:true});res(v)}});
 }
+/* Recent undoable actions, newest last: each "Geri al" tap takes back one, so a double tap on "+250 ml" is undone twice. */
+const UNDO_KEEP=10,UNDO_MS=10000,undoStack=[];
+let toastSeq=0;
+function toastShow(msg,undoable){
+  $("#tmsg").textContent=msg;$("#tundo").hidden=!undoable;toastSeq++;
+  $("#toast").classList.add("on");clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("#toast").classList.remove("on"),undoable?UNDO_MS:3800);
+}
 function toast(msg,undo){
   /* While saving fails, a following message such as "+250 ml" must not cover the error. */
   if(saveFail&&msg!==SAVE_FAIL)msg=SAVE_FAIL+" "+msg;
-  $("#tmsg").textContent=msg;lastUndo=undo==null?null:undo;$("#tundo").hidden=lastUndo==null;
-  $("#toast").classList.add("on");clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("#toast").classList.remove("on"),undo!=null?6000:3800);
+  if(undo!=null){undoStack.push({undo,msg,t:Date.now()});if(undoStack.length>UNDO_KEEP)undoStack.shift()}
+  toastShow(msg,undo!=null);
+}
+function undoLast(){
+  const e=undoStack.pop();if(!e)return;
+  const n=toastSeq,u=e.undo;
+  if(typeof u==="function")u();else{Log.remove(x=>x.id===u);save();render()}
+  if(toastSeq!==n)return;
+  const next=undoStack[undoStack.length-1];
+  if(next&&Date.now()-next.t<60000)toastShow(`Geri alındı. Bir önceki: ${next.msg}`,true);else{undoStack.length=0;$("#toast").classList.remove("on")}
 }
 function dayOptions(inl){
   let o="";for(let i=0;i<7;i++){const d=addDays(-i);o+=`<option value="${dayKey(d)}">${i==0?"Bugün":i==1?"Dün":WEEKDAYS[d.getDay()]+" "+fd(dayKey(d))}</option>`}

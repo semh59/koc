@@ -23,7 +23,11 @@ document.addEventListener("click",ev=>{
     Log.remove(e=>e.id===id);
     if(!commit(()=>Log.restore([rm])))return;
     render();if(inWater)sheetWater();
-    toast("Kayıt silindi",()=>{Log.restore([rm]);save();render()});return;
+    toast("Kayıt silindi",()=>{
+      Log.restore([rm]);
+      if(!commit(()=>Log.remove(e=>e.id===id)))return;
+      render();if(inWater&&$("#sheet").classList.contains("on"))sheetWater();
+    });return;
   }
   if(d.sp){document.querySelectorAll("#sp .chip").forEach(c=>c.setAttribute("aria-pressed",c===el));return}
   if(d.food!==undefined){sheetPortion(+d.food);return}
@@ -44,12 +48,7 @@ document.addEventListener("click",ev=>{
     if(d.go==="share"||d.go==="download")exportBackup();
   }
 });
-$("#tundo").addEventListener("click",()=>{
-  const u=lastUndo;lastUndo=null;
-  if(typeof u==="function")u();
-  else if(u!=null){Log.remove(e=>e.id===u);save();render()}
-  $("#toast").classList.remove("on");
-});
+$("#tundo").addEventListener("click",undoLast);
 const TOGGLES={mk:"moveKcalOn",rpe:"rpeOn",gdv:"gdVoice",gdb:"gdVib",aw:"awakeOn",comfy:"comfy"}; // data-<key> checkbox -> boolean setting
 document.addEventListener("change",ev=>{
   const t=ev.target;

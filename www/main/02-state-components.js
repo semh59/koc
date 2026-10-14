@@ -1,5 +1,5 @@
 /* ---------- UI state ---------- */
-let tab="today",via=null,range=30,toastTimer=null,lastUndo=null,logOff=0,recList=[],lastDay=dayKey();
+let tab="today",via=null,range=30,toastTimer=null,logOff=0,recList=[],lastDay=dayKey();
 function goalInfo(cur,first){
   const g=S.settings.goalKg;if(!(g>0))return null;
   const f=first==null?cur:first,dir=f>=g?-1:1;
