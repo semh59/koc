@@ -6,7 +6,7 @@ const KG_MAX=1000,REPS_MAX=200,SEC_MAX=7200,WORKOUT_MIN_MAX=600,WEEK_MS=7*864e5;
 // Exercises the Coach catalog lists first.
 const CORE_EX=["squat","legpress","rdl","legcurl","legext","calf","bench","incdb","tri","ohp","lat","pullup","pulldown","row","curl","crunch"];
 const REST_SEC=90;
-let gPgF={d:0,lv:""},gPgD=0,gTe=null,gTeOn=false,gHistMax=20,gTim=null,gPickMax=40,restEnd=0,gQuery="",gGroup="Tümü",gNew=false;
+let gPgF={d:0,lv:""},gPgD=0,gTe=null,gTeOn=false,gHistMax=20,gTim=null,gPickMax=40,restEnd=0,restTx="",gQuery="",gGroup="Tümü",gNew=false;
 
 const EXREG=["Göğüs","Sırt","Omuz","Biseps","Triseps","Ön kol","Karın","Bel","Kalça","Ön bacak","Arka bacak","Baldır","İç-dış bacak","Trapez","Boyun","Tüm vücut"];
 const EXBY=new Map(EXDB.map(e=>[e.id,e]));
@@ -50,10 +50,17 @@ function gCfg(id,patch){
   if(Object.keys(c).length)S.exCfg[id]=c;else delete S.exCfg[id];
 }
 /* The rest end is also announced by a local notification: the JS timer does not run while the screen is off or the app is in the background. */
-const gRestGo=(w,ei)=>{if(gSsLast(w,ei))gRestSet(Date.now()+gRestSec(w.ex[ei].id)*1000,w.ex[ei].id)};
-function gRestSet(end,exId){
+const gRestGo=(w,ei)=>{if(gSsLast(w,ei))gRestSet(Date.now()+gRestSec(w.ex[ei].id)*1000,gNextTx(w,ei))};
+/* What the rest notification names: the first exercise with a set left, counted from this one (a superset round goes back to its first exercise), or the end. */
+function gNextTx(w,ei){
+  const g=gGrp(w,ei),a=g?g.a:ei,x=[...w.ex.slice(a),...w.ex.slice(0,a)].find(e=>e.sets.some(s=>!s.done));
+  return x?`Sıradaki: ${gEx(x.id).n}`:"Tüm setler tamam, antrenmanı bitirebilirsin";
+}
+/* tx is the line for the notification; without it (the +30 s buttons) the last one stays. */
+function gRestSet(end,tx){
   restEnd=end>Date.now()?end:0;
-  if(restEnd)gNotify(restEnd,"⏱ Dinlenme bitti",exId?`Sıradaki set: ${gEx(exId).n}`:"Sıradaki sete geç",9002);else gNotifyCancel(9002);
+  if(tx!=null)restTx=tx;
+  if(restEnd)gNotify(restEnd,"⏱ Dinlenme bitti",restTx||"Sıradaki sete geç",9002);else{restTx="";gNotifyCancel(9002)}
 }
 const gRpeTx=s=>s&&s.rpe?` @${fkg(s.rpe)}`:"";
 const fkg=x=>x==null||x===""?"":String(Math.round(x*100)/100).replace(".",",");

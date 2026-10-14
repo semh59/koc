@@ -83,5 +83,29 @@ ok("native: ZoneMath is copied to the project and compiled and run in CI",/"Zone
   w.Capacitor.Plugins.LocalNotifications.checkPermissions=async()=>({display:"denied"});
   await ev("notifTest()");
   ok("diagnosis line is Turkish: no granted/denied/prompt",/Bildirim izni: kapalı\. Tam saat alarmı: açık\./.test(ev("notifDiag"))&&!/granted|denied|prompt/.test(ev("notifDiag")),ev("notifDiag"));
+
+  /* P3.4 notification actions */
+  const tap=x=>ev(`notifTap(${JSON.stringify({actionId:"tap",notification:{extra:x}})});[tab,tSec].join()`);
+  w.Capacitor.Plugins.LocalNotifications.checkPermissions=async()=>({display:"granted"});
+  sched.length=0;ev("S.settings.reminders.find(r=>r.id===1).dow=null;S.settings.reminders.find(r=>r.id===1).on=true");await ev("scheduleReminders()");
+  const wn=sched.flatMap(x=>x.notifications).find(n=>n.id>=100&&n.id<130);
+  ok("weight reminder: the notification carries the weight page target",wn&&wn.extra&&wn.extra.tab==="weight",wn);
+  ev("tab='today';tSec='nutrition'");
+  ok("weight reminder: a tap opens Trend on the weight section",tap(wn.extra)==="trend,weight");
+  ev("tab='today'");
+  ok("rest notification: a tap goes to Salon",tap({act:"open",tab:"gym"})==="gym,weight");
+  const wk=ex=>`({ex:${JSON.stringify(ex)}})`,st2=(n,d)=>Array.from({length:n},(_,i)=>({done:i<d}));
+  const E=(id,n,d,ss)=>({id:"x"+id,sets:st2(n,d),...(ss?{ss}:{})});
+  ev("S.customEx=[{id:'xa',n:'Squat',g:'Bacak',inc:2.5},{id:'xb',n:'Bench',g:'Göğüs',inc:2.5},{id:'xc',n:'Row',g:'Sırt',inc:2.5}]");
+  const nt=(ex,ei)=>ev(`gNextTx(${wk(ex)},${ei})`);
+  ok("rest text: sets left on the same exercise name that exercise",nt([E("a",3,1),E("b",3,0)],0)==="Sıradaki: Squat");
+  ok("rest text: the last set of an exercise names the next exercise, not the one just done",nt([E("a",3,3),E("b",3,0)],0)==="Sıradaki: Bench");
+  ok("rest text: the end of a superset round goes back to its first exercise",nt([E("a",3,2,7),E("b",3,2,7),E("c",3,0)],1)==="Sıradaki: Squat");
+  ok("rest text: a skipped earlier exercise is found after the later ones are done",nt([E("a",3,1),E("b",3,3)],1)==="Sıradaki: Squat");
+  ok("rest text: everything done says so",/antrenmanı bitirebilirsin/.test(nt([E("a",2,2),E("b",1,1)],1)));
+  const body=[];w.Capacitor.Plugins.LocalNotifications.schedule=async x=>{body.push(...x.notifications)};
+  ev("gRestSet(Date.now()+60000,'Sıradaki: Bench')");await flush();await flush();
+  ev("gRestSet(Date.now()+90000)");await flush();await flush();
+  ok("rest notification: the +30 s buttons keep the same line and the tap target is Salon",body.length===2&&body.every(n=>n.id===9002&&n.body==="Sıradaki: Bench"&&n.extra.tab==="gym"),body);
   finish();
 })();

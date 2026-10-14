@@ -69,7 +69,7 @@
 | main/02-state-components.js | 15 | 11 |
 | main/03-screens.js | 115 | 37 |
 | main/04-sheets.js | 65 | 65 |
-| main/05-notifications.js | 34 | 19 |
+| main/05-notifications.js | 35 | 19 |
 | main/05-permissions.js | 25 | 10 |
 | main/06-events.js | 98 | 6 |
 | main/07-actions.js | 64 | 2 |
@@ -97,12 +97,12 @@
 | modules/gym/cardioui.js | 23 | 9 |
 | modules/gym/excues.js | 1 | 1 |
 | modules/gym/exlib.js | 2 | 1 |
-| modules/gym/exui.js | 47 | 50 |
+| modules/gym/exui.js | 48 | 50 |
 | modules/gym/figlib.js | 5 | 1 |
 | modules/gym/figtpl.js | 0 | 1 |
 | modules/gym/guidelib.js | 3 | 1 |
 | modules/gym/guideui.js | 40 | 24 |
-| modules/gym/gym.js | 48 | 115 |
+| modules/gym/gym.js | 48 | 116 |
 | modules/gym/importlib.js | 7 | 1 |
 | modules/gym/importui.js | 13 | 7 |
 | modules/gym/index.js | 13 | 1 |

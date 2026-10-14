@@ -108,7 +108,7 @@ const exKindSec=(id,sec)=>gKind(id)==="c"?Math.round(sec/60)+" dk":sec+" sn";
 /* Queued so that a quick ✓ followed by Skip cannot run its cancel before the previous schedule and leave the notification armed. */
 let gLnQ=Promise.resolve();
 const gLn=f=>gLnQ=gLnQ.then(()=>{const ln=plugin("LocalNotifications");return ln&&f(ln)}).catch(()=>{});
-const gNotify=(at,title,body,id=9001)=>gLn(async ln=>{await ln.cancel({notifications:[{id}]});await lnSchedule(ln,[{id,title,body,schedule:{at:new Date(at),allowWhileIdle:true}}])});
+const gNotify=(at,title,body,id=9001)=>gLn(async ln=>{await ln.cancel({notifications:[{id}]});await lnSchedule(ln,[{id,title,body,schedule:{at:new Date(at),allowWhileIdle:true},extra:{act:"open",tab:"gym"}}])});
 const gNotifyCancel=(id=9001)=>gLn(ln=>ln.cancel({notifications:[{id}]}));
 function gTimStop(){if(gTim){gTim=null;gNotifyCancel()}}
 const gTimNotify=(t,name)=>gNotify(t.end,t.phase==="rest"?"Sıradaki tur başlıyor":"⏱ Süre doldu",name);
@@ -143,7 +143,7 @@ function gTimDone(skip){
     if(kind==="i"&&nx&&!nx.done&&nx.sec>0){
       gTim={ei:t.ei,si:t.si+1,end:Date.now()+20000,total:20,phase:"rest"};
       gTimNotify(gTim,gEx(x.id).n);
-    }else{gNotifyCancel();gRestSet(Date.now()+gRestSec(x.id)*1000,x.id)}
+    }else{gNotifyCancel();gRestSet(Date.now()+gRestSec(x.id)*1000,gNextTx(w,t.ei))}
     toast(`${gEx(x.id).n}: ${t.si+1}. set tamamlandı`);
   }else{
     const nx=x.sets[t.si];

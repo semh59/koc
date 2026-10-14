@@ -51,7 +51,7 @@ async function scheduleReminders(){
         const at=addDays(i);at.setHours(h,m,0,0);
         if(r.dow!=null&&at.getDay()!==r.dow)continue;
         if(r.id===BACKUP_REM&&(Log.all().length<10||(lb&&Algo.dayNum(dayKey(at))-Algo.dayNum(lb)<7)))continue;
-        if(at.getTime()>now+LEAD_MS)list.push(Object.assign({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}},water?{actionTypeId:"water",extra:{act:"water",v:S.settings.glass,at:at.getTime()}}:r.id===WEEKLY_REM?{extra:{act:"open",tab:"coach"}}:r.id===BACKUP_REM?{extra:{act:"open",tab:"settings-data"}}:{}));
+        if(at.getTime()>now+LEAD_MS)list.push(Object.assign({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}},water?{actionTypeId:"water",extra:{act:"water",v:S.settings.glass,at:at.getTime()}}:r.id===WEEKLY_REM?{extra:{act:"open",tab:"coach"}}:r.id===BACKUP_REM?{extra:{act:"open",tab:"settings-data"}}:r.id===1?{extra:{act:"open",tab:"weight"}}:{}));
       }
     }
     lastSched=now;lastTz=tzKey();
@@ -77,7 +77,7 @@ async function scheduleReminders(){
 function notifTap(e){
   const x=e&&e.notification&&e.notification.extra;
   if(!e||e.actionId!=="tap"||!x||(x.act!=="open"&&x.act!=="med"))return;
-  tab=x.act==="med"||x.tab==="meds"?(S.settings.medOn?"meds":"more"):x.tab==="coach"&&S.settings.consent?"coach":x.tab==="cycle"&&S.settings.cycleOn?"cycle":x.tab==="settings-data"?x.tab:"trend";via=null;closeSheet();render();window.scrollTo(0,0);
+  tab=x.act==="med"||x.tab==="meds"?(S.settings.medOn?"meds":"more"):x.tab==="coach"&&S.settings.consent?"coach":x.tab==="cycle"&&S.settings.cycleOn?"cycle":x.tab==="settings-data"||x.tab==="gym"?x.tab:"trend";if(x.tab==="weight")tSec="weight";via=null;closeSheet();render();window.scrollTo(0,0);
   if(x.act==="med")setTimeout(()=>alarmOpen({quiet:true}),0);
 }
 function setNotif(s){notifStatus=s;if(tab==="settings-reminders")render()}
