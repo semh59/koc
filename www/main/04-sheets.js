@@ -15,7 +15,7 @@ function openSheet(html){
   const f=s.querySelector("[autofocus]");if(f)setTimeout(()=>{const a=document.activeElement;if(f.isConnected&&!(a&&a!==f&&s.contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)))f.focus()},220);else(h||s).focus({preventScroll:true});
 }
 function closeSheet(){
-  Units.reset();plStop();sheetDone(false);const s=$("#sheet"),was=s.classList.contains("on"),f=sheetFrom;
+  Units.reset();plStop();sheetDone(false);setPendingBarcode("");const s=$("#sheet"),was=s.classList.contains("on"),f=sheetFrom;
   s.classList.remove("on");$("#scrim").classList.remove("on");sheetFrom=null;trap();
   if(was&&f&&f.isConnected)f.focus({preventScroll:true});
 }
@@ -170,22 +170,23 @@ function sheetEntry(id){
   <label class="lbl" for="etime">Saat</label><input class="in" type="time" id="etime" value="${e.time||""}">
   <div class="ferr" id="eerr" role="alert"></div><button class="btn" data-go="entry">Kaydet</button>`);
 }
-function goEntry(){
+async function goEntry(){
   const e=Log.find(x=>x.id===editId);if(!e)return closeSheet();
   const t=e.type,raw=($("#ev")||{value:""}).value.trim(),text=$("#et")?$("#et").value.trim():e.text,day=$("#eday").value,time=$("#etime").value,next={...e,day,time,text};
-  const bad=m=>ferr("eerr",m);
+  const bad=m=>ferr("eerr",m),same=!!$("#ev")&&$("#ev").value===$("#ev").defaultValue;
   if(!/^\d{4}-\d\d-\d\d$/.test(day)||day>dayKey())return bad("Geçerli bir gün seç, gelecek günler olmaz");
   if(!/^\d\d:\d\d$/.test(time))return bad("Saati yaz, örneğin 08:30");
   if(t==="weight"){
-    const kg=Units.wIn(num(raw));
-    if(!(kg>=20&&kg<=400)||/[.,]\d{3}/.test(raw))return bad(`Kiloyu ${wlab()} olarak yaz, örneğin ${wlab()==="lb"?"185,4":"84,3"}`);
+    const kg=same?e.v:Units.wIn(num(raw));
+    if(!(kg>=20&&kg<=400)||(!same&&/[.,]\d{3}/.test(raw)))return bad(`Kiloyu ${wlab()} olarak yaz, örneğin ${wlab()==="lb"?"185,4":"84,3"}`);
+    if(day!==e.day&&of("weight",day).length&&!await confirmSheet({title:"Bu günde başka kilo var",body:`${fd(day)} gününde bir tartı kaydı var. İki kayıttan saati geç olan o günün kilosu sayılır.`,ok:"Taşı"}))return;
     next.v=kg;
   }else if(t==="water"||t==="exercise"){
-    const n=num(raw,true),max=t==="water"?5000:600;
+    const n=same?e.v:num(raw,true),max=t==="water"?5000:600;
     if(!(n>0&&n<=max))return bad(t==="water"?"Miktarı ml olarak yaz (1-5000), örneğin 250":"Süreyi dakika olarak yaz (1-600), örneğin 40");
     next.v=n;
   }else if(t==="food"){
-    const kc=num(raw,true);
+    const kc=same?e.v??NaN:num(raw,true);
     if(raw&&isNaN(kc))return bad("Kaloriyi tam sayı olarak yaz, örneğin 250");
     if(!text&&isNaN(kc))return bad("Yemeğin adını ya da kalorisini yaz");
     if(!isNaN(kc)&&kc>20000)return bad("Kalori çok yüksek görünüyor, kontrol et");
@@ -199,7 +200,7 @@ function goEntry(){
     if(next.v!==e.v){delete next.lo;delete next.hi}
   }else if(t==="note"&&!text)return bad("Önce notunu yaz");
   if(t==="exercise"){
-    if(day!==dayKey())next.bt=true;
+    if(day!==dayKey())next.bt=true;else delete next.bt;
     if(e.kcal!=null){const kc=Algo.netKcal(EXERCISE_MET[text],motionKg(),next.v);if(kc)next.kcal=kc;else delete next.kcal}
   }
   Log.swap(e,next);
@@ -314,7 +315,9 @@ function goFood(){
   if($("#fv").value.trim()&&isNaN(kc))return ferr("yerr","Kaloriyi tam sayı olarak yaz, örneğin 250");
   if(!text&&isNaN(kc))return ferr("yerr","Yemeğin adını ya da kalorisini yaz");
   if(!isNaN(kc)&&kc>20000)return ferr("yerr","Kalori çok yüksek görünüyor, kontrol et");
-  const e=add("food",isNaN(kc)?null:kc,text,fday());e.meal=fmeal();save();closeSheet();render();
+  const e=add("food",isNaN(kc)?null:kc,text,fday());e.meal=fmeal();
+  if(pendingBarcode&&text&&!isNaN(kc))Nutrition.addMy(text,kc,null,pendingBarcode);
+  save();closeSheet();render();
   const t=dayKey(),top=sum("food",t,t),g=kcalGoal(t);
   toast(g>0&&top?`Kaydedildi. Bugün ${Math.round(top)} / ${g} kcal`:"Yemek kaydedildi",e.id);
 }

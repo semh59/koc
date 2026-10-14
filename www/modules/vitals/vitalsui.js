@@ -130,7 +130,7 @@ function sheetVEdit(ids){
   openSheet(`<h3>${bp?"Tansiyonu düzenle":"Şekeri düzenle"}</h3>
   ${bp?`<div class="lbl">Seans</div>${vChips("vsession",VitalsLib.SESSIONS,vSession)}
   ${rs.map((r,i)=>`<div class="lbl">${i+1}. ölçüm</div><div class="g3 mb-2">${vIn("bs"+(i+1),"Büyük",r.sys)}${vIn("bd"+(i+1),"Küçük",r.dia)}${vIn("bn"+(i+1),"Nabız",r.pulse??"")}</div>`).join("")}`
-  :`<label class="lbl" for="gv">Şeker (${glab()})</label><input class="in num" id="gv" inputmode="${vMmol()?"decimal":"numeric"}" value="${dg(r0.g)}" autocomplete="off"><div class="lbl">Ne zaman ölçtün?</div>${vChips("vctx",VitalsLib.CTX,vCtx)}`}
+  :`<label class="lbl" for="gv">Şeker (${glab()})</label><input class="in num" id="gv" inputmode="${vMmol()?"decimal":"numeric"}" value="${dg(r0.g)}" data-base="${r0.g}" data-shown="${dg(r0.g)}" autocomplete="off"><div class="lbl">Ne zaman ölçtün?</div>${vChips("vctx",VitalsLib.CTX,vCtx)}`}
   <label class="lbl" for="vday">Gün</label><input class="in" type="date" id="vday" max="${dayKey()}" value="${r0.day}">
   <label class="lbl" for="vtime">Saat</label><input class="in" type="time" id="vtime" value="${r0.time}">
   ${vNote(r0.note||"")}

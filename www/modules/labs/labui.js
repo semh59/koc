@@ -84,13 +84,14 @@ function labReview(parsed,manual){
 }
 /* Edit sheet for one stored result: value (with a leading < or >), sample date and the range the lab wrote. */
 let labEditId=0;
+const labDec=v=>String(v).replace(".",",");
 function labEdit(id){
   const r=S.labs.find(x=>x.id===id);if(!r)return;
   labEditId=id;
   const f=(lab,i,v,mode="decimal")=>`<label class="labf"><span>${lab}</span><input class="in num" id="${i}" inputmode="${mode}" value="${esc(v)}" autocomplete="off"></label>`;
-  openSheet(`<h3>${esc(r.n)}</h3>${f(`Değer${r.u?` (${esc(r.u)})`:""}`,"lev",(r.q||"")+LabLib.fmtN(r.v))}
+  openSheet(`<h3>${esc(r.n)}</h3>${f(`Değer${r.u?` (${esc(r.u)})`:""}`,"lev",(r.q||"")+labDec(r.v))}
   <label class="lbl" for="led">Numune tarihi</label><input class="in" type="date" id="led" max="${dayKey()}" value="${r.day}">
-  <div class="labg">${f("Alt sınır","lel",r.lo==null?"":LabLib.fmtN(r.lo))}${f("Üst sınır","leh",r.hi==null?"":LabLib.fmtN(r.hi))}</div>
+  <div class="labg">${f("Alt sınır","lel",r.lo==null?"":labDec(r.lo))}${f("Üst sınır","leh",r.hi==null?"":labDec(r.hi))}</div>
   <div class="ferr" id="leerr" role="alert"></div><button class="btn" data-lab="editgo">Kaydet</button><button class="mt-2 btn ghost" data-lab="close">Vazgeç</button>`);
 }
 function labEditSave(){
