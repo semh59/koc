@@ -75,5 +75,20 @@ const {boot}=require("./html");
   ok("setup: 'Emziriyorum' sets only the nursing flag, no health note text is written",ev("S.settings.nursing")===true&&ev("S.settings.pregnant")===false&&ev("S.settings.edFlag")===false&&ev("S.settings.healthNote")==="");
   ev("S=structuredClone(DEF);Object.assign(ob,obFresh(),{step:0});render()");
   ok("setup health card has three separate answers",!!q("#obpg")&&!!q("#obnu")&&!!q("#obed"));
+  // Chat and note: only first-person statements, said aloud, never silently re-opened from a note
+  ok("a question about pregnancy is not a sign, a first-person statement is",!ev("CoachLib.pregnant('hamilelikte spor olur mu?')")&&!ev("CoachLib.pregnant('hamilelik beslenmesi')")&&ev("CoachLib.pregnant('hamile kaldım')")==="preg"&&ev("CoachLib.pregnant('Gebeyim')")==="preg");
+  fresh("S.settings.riskOff='preg';S.settings.pregnant=false");
+  ev("cSend('hamilelikte spor olur mu?')");
+  ok("a question in the chat does not re-open a lifted flag",ev("S.settings.pregnant")===false&&ev("S.settings.riskOff")==="preg");
+  ev("S.settings.healthNote='hamileyim';cNoteCheck()");
+  ok("note text does not re-open a lifted flag",ev("S.settings.pregnant")===false);
+  fresh();
+  ev("cSend('hamileyim ve spor yapmak istiyorum')");
+  ok("a first-person chat statement opens the flag and tells the user",ev("S.settings.pregnant")===true&&/hamilelik işareti gördüm/.test(q("#tmsg").textContent)&&/Sağlık notların/.test(q("#tmsg").textContent),q("#tmsg").textContent);
+  // Restore: the side whose pregnancy flag changed last wins
+  const lifted2=await backupOf("S.settings.pregnant=false;S.settings.riskOff='preg';S.settings.pregAt='2026-10-01T10:00:00.000Z';add('weight',80)");
+  ok("a sign opened on this phone after the backup's lift is kept",String(await restoreInto(lifted2,"S.settings.pregnant=true;S.settings.riskOff='';S.settings.pregAt='2026-10-05T10:00:00.000Z';add('weight',70)"))==="true,,true");
+  const opened2=await backupOf("S.settings.pregnant=true;S.settings.riskOff='';S.settings.pregAt='2026-10-10T10:00:00.000Z';add('weight',80)");
+  ok("a lift on this phone before the backup's newer sign lets the sign in",String(await restoreInto(opened2,"S.settings.pregnant=false;S.settings.riskOff='preg';S.settings.pregAt='2026-10-02T10:00:00.000Z';add('weight',70)"))==="true,,true");
   finish();
 })();

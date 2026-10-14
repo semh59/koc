@@ -66,9 +66,10 @@ async function goHealth(){
   for(const [k,was,now,title] of lifts)if(was&&!now&&!await confirmSheet({title,body:"Bu işaretle kapanan öneriler (kalori açığı, oruç, program, hatırlatmalar, döngü tahmini) yeniden açılır. Hâlâ başka bir durum varsa kutuyu açık bırak.",ok:"Evet, kaldır"}))return;
   for(const [k,was,now] of lifts){if(now&&!was)setRisk(k);else if(was&&!now)liftRisk(k)}
   if($("#hed")?.checked)setRisk("ed");
-  const old=st.healthNote;st.healthNote=note;if(note!==old)cNoteCheck();
+  const old=st.healthNote,flags=st.pregnant+st.nursing;st.healthNote=note;if(note!==old)cNoteCheck();
   if(!commit(()=>Object.assign(S.settings,snap)))return;
-  closeSheet();render();toast("Kaydedildi");
+  closeSheet();render();
+  if(flags===st.pregnant+st.nursing)toast("Kaydedildi");
 }
 on("riskok",()=>{S.settings.riskClearedAt=dayKey();save();render();toast("Onaylandı, 30 gün geçerli")});
 onPre("apply:",a=>{S.settings.kcal=+a.slice(6);save();render();toast(`Kalori hedefi ${S.settings.kcal} kcal oldu`)});

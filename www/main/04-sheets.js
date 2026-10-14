@@ -391,7 +391,10 @@ async function goRestore(text=$("#bk").value,pw=$("#bkpw").value){
   Object.assign(S.settings,Object.fromEntries(["noticeOk","hideRecents",...SHARE_KEYS].map(k=>[k,prevS.settings[k]])),{consent:prevS.settings.consent,consentV:prevS.settings.consentV,consentAt:prevS.settings.consentAt,consentP:prevS.settings.consentP,lastBackup:dayKey(),autoBk:prevS.settings.autoBk,lastAutoBk:prevS.settings.lastAutoBk});cAgeGuard();
   /* A brake on this phone stays and a backup brings its own, but a sign lifted on this phone or in the backup is not brought back by the other. */
   {const a=S.settings,p=prevS.settings,off=[...new Set((a.riskOff+","+p.riskOff).split(",").filter(Boolean))],on=k=>!off.includes(k);
-    Object.assign(a,{riskOff:off.join(","),edFlag:a.edFlag||p.edFlag,pregnant:(a.pregnant||p.pregnant)&&on("preg"),nursing:(a.nursing||p.nursing)&&on("nurs")})}
+    /* The side whose pregnancy flag changed last decides it, so a sign set on this phone after the backup is not dropped. */
+    const newer=a.pregAt===p.pregAt?null:a.pregAt>p.pregAt?a:p,pg=newer&&{on:newer.pregnant,off:newer.riskOff.split(",").includes("preg")},at=a.pregAt>p.pregAt?a.pregAt:p.pregAt;
+    Object.assign(a,{riskOff:off.join(","),edFlag:a.edFlag||p.edFlag,pregnant:(a.pregnant||p.pregnant)&&on("preg"),nursing:(a.nursing||p.nursing)&&on("nurs"),pregAt:at});
+    if(pg){a.pregnant=pg.on;a.riskOff=off.filter(k=>k!=="preg"||pg.off).join(",")}}
   const keys=getKeys();
   for(const p of Coach.providers()){
     const cur=prevS.providers.find(x=>x.id===p.id),def=defProviders().find(x=>x.id===p.id);

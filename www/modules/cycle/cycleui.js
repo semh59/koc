@@ -1,6 +1,8 @@
 "use strict";
 /* Cycle screen. The data lives only in S.cycle; it never reaches the Coach context, a notification body or the widget. No calorie or diet advice. */
 let cycMonth="",cycFlow="",cycSym=[],cycEditId=0;
+/* Days past the forecast range before the note says "ask your doctor". */
+const LATE_ASK=7;
 const cycResched=()=>scheduleReminders().then(setNotif);
 /* A range on one line: "21–25 Eki" within a month, "28 Eki – 2 Kas" across months. */
 const cycRange=(a,b)=>a.slice(0,7)===b.slice(0,7)?`${+a.slice(8)}–${fd(b)}`:`${fd(a)} – ${fd(b)}`;
@@ -67,7 +69,7 @@ function viewCycle(){
   }
   if(!preg&&risk().nursing)pred+=`<div class="mut sm" role="note">Emzirme döneminde döngü düzensiz olabilir; tahmin güvenilmez olabilir.</div>`;
   const skip=CycleLib.skipped(S.cycle),late=preg?0:CycleLib.overdue(p,today);
-  if(late)pred+=`<div class="mut sm" role="note">Tahmin aralığı ${late} gün önce bitti; hekimine danış.</div>`;
+  if(late)pred+=`<div class="mut sm" role="note">Tahmin aralığı ${late} gün önce bitti${late>=LATE_ASK?"; hekimine danış.":". Dönemin başladıysa ekleyebilirsin."}</div>`;
   if(!preg&&skip)pred+=`<div class="mut sm" role="note">${skip} aralık 15-60 gün dışında kaldığı için ortalamaya katılmadı (atlanmış bir kayıt olabilir).</div>`;
   const label=(list,k)=>list.find(x=>x[0]===k)[1];
   const rows=S.cycle.slice().reverse().map(r=>{

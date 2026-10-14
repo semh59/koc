@@ -7,7 +7,7 @@ const ArchiveLib=(()=>{
   const LEFT_OUT="API anahtarları ve sağlayıcı listesi, fotoğraflar, döngü kaydı ve döngü ayarları, hamilelik ve emzirme bilgisi, sağlık notu, yakının telefonu, konum, güvenlik uyarısı tercihleri ve rıza kayıtları";
   /* S: the state; date: "YYYY-MM-DD"; tables: optional {csv key: csv text}, added as they are. Returns {json, counts} where counts is the number of records per module (arrays only). */
   /* Settings that stay on the phone: the policy says they are not sent or shared anywhere. */
-  const PRIVATE=new Set(["medNear","healthNote","ramLat","ramLon","ramName","pregnant","nursing","edFlag","riskOff","riskClearedAt","consentAt","consentP","cycleOn","cycleRem"]);
+  const PRIVATE=new Set(["medNear","healthNote","ramLat","ramLon","ramName","ramMedsRef","pregnant","pregAt","nursing","edFlag","riskOff","riskClearedAt","consentAt","consentP","cycleOn","cycleRem"]);
   function build(S,date,tables){
     const modules={},counts={};
     for(const [id,m] of Object.entries(mod)){

@@ -33,7 +33,8 @@ const CoachLib=(()=>{
     }
     return null;
   }
-  const PREG=/hamileyim|hamile kal|hamilelik|gebeyim|gebe kal|bebek bekliyorum/;
+  /* Only first-person statements count: a question about pregnancy ("hamilelikte spor olur mu?") is not a sign. */
+  const PREG=/hamileyim|gebeyim|(?:hamile|gebe) kald[ıi]m|bebek bekliyorum/;
   /* "preg", "nurs" or null: pregnancy and nursing are separate signs. */
   const pregnant=t=>{const x=low(t).replace(/(?:hamilelik|gebelik)\s+(?:yok|de[gğ]il)\w*/g,"");return PREG.test(x)?"preg":/emziriyorum/.test(x)?"nurs":null};
   /* Line breaks and section headings are neutralized: user text enters the system prompt as data, not as instructions. */
