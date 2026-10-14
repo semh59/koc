@@ -55,7 +55,7 @@ function ramLocate(){
       if(!RamadanLib.inTurkey(la,lo))return toast("Konumun Türkiye dışında görünüyor; listeden il seç");
       ramPlace(la,lo);ramVerify();
     },
-    ()=>toast("Konum alınamadı; izin ver ya da listeden il seç"),
+    e=>toast(e?.code===1?"Konum izni verilmedi; telefon ayarlarından aç ya da listeden il seç":"Konum şu an alınamadı; biraz sonra tekrar dene ya da listeden il seç"),
     {enableHighAccuracy:false,timeout:20000,maximumAge:36e5});
 }
 /* Reminder list for scheduleReminders: [] unless the mode and the matching switches are on and the brake is open. */

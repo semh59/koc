@@ -279,7 +279,7 @@ function save(soft){
     for(const k of ["nw_state_previous","nw_state_corrupt"])if(!ok&&Store.get(k)!=null){Store.del(k);try{localStorage.setItem("nw_state",j);ok=true}catch{}}
     otherBytes=lsOther();storeBytes=otherBytes+j.length*2;
     if(!ok){saveFail=true;toast(SAVE_FAIL);return false}
-    saveFail=false;toast("Depolama doluydu: eski güvenlik kopyaları silindi");
+    saveFail=false;toast("Depolama doluydu: eski güvenlik kopyaları silindi. Yedek almayı unutma");
   }
   lastJ=j;fastWatch();return true;
 }

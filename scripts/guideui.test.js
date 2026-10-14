@@ -90,7 +90,7 @@ boot(w=>{Object.defineProperty(w,"crypto",{value:require("node:crypto").webcrypt
     ok("after a guided log the suggestion is a number (not NaN)",(r=>r&&Number.isFinite(r.kg)&&Number.isFinite(r.reps))(ev("gSuggest('squat')")));
     ok("cleanGym round trip: guided logs survive unchanged",JSON.stringify(ev("cleanGym(JSON.parse(JSON.stringify(S))).workouts"))===JSON.stringify(ev("S.workouts")));
     ev("gdStart('f:tabata4');gdClick('end')");
-    ok("with nothing completed there is no save button",!q('[data-gd="save"]')&&gt().includes("Tamamlanan hareket yok"));
+    ok("with nothing completed there is no save button",!q('[data-gd="save"]')&&gt().includes("Tamamlanan egzersiz yok"));
     ev("gdClick('close')");
   }
   ok("the page ran without errors",errs.length===0,errs);

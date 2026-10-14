@@ -39,7 +39,7 @@ function sheetPrivacy(){
   <p class="mut sm">Rehber sağlayıcısı IP adresini görür; kimlik bilgileri (ad, telefon, e-posta, TC, adres gibi) göndermeden önce telefonda maskelenir; filtre %100 garanti değildir (tam garanti yok): serbest cümleyle anlatılan adres ve listede olmayan nadir adlar yakalanmayabilir.</p>
   <p class="mut sm">${usageText()}. Yalnız sayılar bu telefonda tutulur, hiçbir yere gönderilmez.</p>${netLogHtml()}</details>
   <details class="acc"><summary>Rehber açık rıza metni</summary>${consentHtml()}</details>
-  ${swRow('data-pv="prev"',st.piiPrev,"Rehber'e giden metni önizle","Açıkken her gönderimden önce giden tam metni görür, Gönder ya da İptal dersin.")}
+  ${swRow('data-pv="prev"',st.piiPrev,"Rehber'e giden metni önizle","Açıkken her gönderimden önce giden tam metni görür, Gönder ya da Vazgeç dersin.")}
   <div class="banner info"><p class="m0">Rehber veri paylaşımı: ${st.consent?`kabul edildi (${esc(st.consentAt)})`:"kabul edilmedi"}</p>
   ${st.consent?`<button class="btn ghost" data-pv="revoke">Rızamı geri al</button>`:consentOk()?`<button class="btn" data-pv="consent">Açık rızamı veriyorum</button>`:""}</div>
   <h4 class="grp">Verilerini sil</h4>

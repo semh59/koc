@@ -189,7 +189,7 @@ function gSuggest(exId){
   if(!r)return r;
   if(p==="bar"&&r.kg>=S.bar)r.kg=Algo.plates(r.kg,S.bar,S.plates).made;
   else if(p==="db"&&S.dbStep)r.kg=Algo.roundTo(r.kg,S.dbStep);
-  if(gFlagged(exId)&&r.kg>top){r.kg=top;r.why="Bu hareketi rahatsız etti diye işaretledin; ağırlığı artırmıyorum"}
+  if(gFlagged(exId)&&r.kg>top){r.kg=top;r.why="Bu egzersizi rahatsız etti diye işaretledin; ağırlığı artırmıyorum"}
   return r;
 }
 function gGearHtml(){
@@ -290,14 +290,14 @@ function gHome(){
     return `<div class="card trow"><button class="tmain" data-g="startgo:${t.id}"><b>${esc(t.name)}</b><span class="mut tex">${esc(t.ex.map(i=>gEx(i).n).join(", ")||"Egzersiz yok")}</span><span class="mut">${lt?"Son: "+fd(lt.day):"Yeni"}</span></button><span class="tact"><button class="del" data-g="start:${t.id}" aria-label="${esc(t.name)} şablonunu önizle">${Icons.svg("info")}</button><button class="del" data-g="tedit:${t.id}" aria-label="${esc(t.name)} şablonunu düzenle">${Icons.svg("note")}</button><button class="del" data-g="tdel:${t.id}" aria-label="${esc(t.name)} şablonunu sil">${Icons.svg("trash")}</button></span></div>`;
   }).join("");
   const recs=gRecords(done),rl=recs.slice(0,gRecMax);
-  const rec=done.length?`<h2>Rekorlar</h2><div class="card">${rl.map(p=>`<div class="row"><span class="grow"><b>${esc(p.ex.n)}</b><span class="mut sm num">${gW(p.kg)||0} ${Units.wu()} × ${p.reps} · tahmini 1TM ${fint(Units.w(p.e1))} ${Units.wu()}</span></span><span class="tag">${fd(p.day)}</span></div>`).join("")||`<p class="m0 hint">Ağırlıklı bir hareketi tamamlayınca en iyi setin burada görünür.</p>`}${recs.length>rl.length?`<button class="lnk" data-g="recmore">Tüm rekorlar (${recs.length-rl.length} daha)</button>`:""}</div>`:"";
+  const rec=done.length?`<h2>Rekorlar</h2><div class="card">${rl.map(p=>`<div class="row"><span class="grow"><b>${esc(p.ex.n)}</b><span class="mut sm num">${gW(p.kg)||0} ${Units.wu()} × ${p.reps} · tahmini 1TM ${fint(Units.w(p.e1))} ${Units.wu()}</span></span><span class="tag">${fd(p.day)}</span></div>`).join("")||`<p class="m0 hint">Ağırlıklı bir egzersizi tamamlayınca en iyi setin burada görünür.</p>`}${recs.length>rl.length?`<button class="lnk" data-g="recmore">Tüm rekorlar (${recs.length-rl.length} daha)</button>`:""}</div>`:"";
   const wk=gWeekRegions(),rk=Object.keys(wk).sort((a,b)=>wk[b]-wk[a]),mx=Math.max(14,...Object.values(wk));
   const note=gWeekNote(wk,done.length>0).map(l=>`<p class="hint">${l}</p>`).join("");
   const bars=`<h2>Bu hafta, bölgeye göre set</h2><div class="card">${rk.map(g=>`<div class="gbar"><span>${g}</span><span class="bar"><i style="width:${(wk[g]/mx*100).toFixed(0)}%"></i></span><span class="num">${wk[g]}</span></div>`).join("")||`<p class="m0 hint">Bu hafta set yok.</p>`}${note?`<div id="wknote">${note}</div>`:""}
   <details class="acc" id="mmacc"><summary>Kas haritası</summary>${MuscleMap.html(wk)}<p class="hint">Bölge başına haftada 10 ile 20 set çoğu kişi için makul bir aralıktır.</p></details></div>`;
   return `${sum}
   <h2>Şablonlarım</h2>${tpl?`<div class="hscroll">${tpl}</div>`:emptyCard("gym","","Sık yaptığın antrenmanı şablon olarak kaydet, tek dokunuşla başlat.")}<button class="btn ghost" data-g="tedit:">${Icons.svg("plus")} Yeni şablon</button>
-  <div class="mt-3 card">${navRow('data-g="gdpick"',"clock","Rehberli antrenman","Esneme, ısınma ve Tabata; sesli komutla")}${navRow('data-g="lib"',"book","Egzersiz kütüphanesi","Hareketleri ara, incele, antrenmana ekle")}${navRow('data-c="prog"',"coach","Rehber'den program iste","Hedefine ve ekipmanına göre")}</div>
+  <div class="mt-3 card">${navRow('data-g="gdpick"',"clock","Rehberli antrenman","Esneme, ısınma ve Tabata; sesli komutla")}${navRow('data-g="lib"',"book","Egzersiz kütüphanesi","Egzersizleri ara, incele, antrenmana ekle")}${navRow('data-c="prog"',"coach","Rehber'den program iste","Hedefine ve ekipmanına göre")}</div>
   ${rec}
   <details class="acc more"><summary>Haftalık dağılım</summary>${bars}</details>
   ${gPgHtml()}
@@ -388,7 +388,7 @@ function gLive(w){
   ${gTimBar()}</div>
   <div class="rest" id="grest" role="timer" aria-label="Dinlenme"${restEnd>Date.now()?"":" hidden"}><div><span class="mut sm">Dinlenme</span><b class="num" id="gr">${restEnd>Date.now()?gClock(restEnd-Date.now()):""}</b></div><button data-g="rest:-15" aria-label="15 saniye azalt">−15</button><button data-g="rest:15" aria-label="15 saniye ekle">+15</button><button class="rsk" data-g="rest:0">Atla</button></div>
   ${Habits.fastNote()}
-  ${cards||`<p class="hint">Aşağıdan hareket ekleyerek başla.</p>`}
+  ${cards||`<p class="hint">Aşağıdan egzersiz ekleyerek başla.</p>`}
   <button class="btn ghost" data-g="pick">Egzersiz ekle</button>
   <p class="hint">${gPainNote}</p>`;
 }
@@ -422,7 +422,7 @@ function gPickHtml(){
   return list.map(e=>{
     const h=gHistory(e.id)[0],last=h?(gTimed(e.id)?`son ${h.sets[0].sec} sn`:`son ${gW(Math.max(...h.sets.map(s=>s.kg||0)))||0} ${Units.wu()} × ${h.sets[0].reps}`):"henüz yok";
     return `<button class="prow" data-g="addex:${e.id}"><span><b>${esc(e.n)}</b><span class="mut sm">${e.r||e.g}${e.q?", "+e.q.toLowerCase():""}, ${last}</span></span>${inW.has(e.id)?`<span class="tag">Eklendi</span>`:`<span class="plus">+</span>`}</button>`;
-  }).join("")+(all.length>list.length?`<button class="lnk" data-g="pickmore">Daha fazla göster</button>`:"")||`<p class="hint">Eşleşen hareket yok. Başka bir ad dene.</p>`;
+  }).join("")+(all.length>list.length?`<button class="lnk" data-g="pickmore">Daha fazla göster</button>`:"")||`<p class="hint">Eşleşen egzersiz yok. Başka bir ad dene.</p>`;
 }
 function gSheetPick(te){
   gTeOn=!!te;gQuery="";gGroup="Tümü";gNew=false;gPickMax=40;
@@ -437,7 +437,7 @@ function gNewHtml(){
   const ch=(f,vals,lbl)=>`<div class="chips">${vals.map(v=>`<button class="chip" data-g="nf:${f}:${v}" aria-pressed="${gNewS[f]===v}">${lbl(v)}</button>`).join("")}</div>`;
   return `<div class="mt-2 card"><input class="in" id="gnn" placeholder="Egzersiz adı" maxlength="60" value="${esc(gNewS.n)}">
   <div class="lbl">Tür</div>${ch("k",Object.keys(GNEWK),v=>GNEWK[v])}<div class="lbl">Bölge</div>${ch("r",EXREG,v=>v)}<div class="lbl">Ekipman</div>${ch("q",GNEWQ,v=>v)}
-  <div class="lbl">Hareket şekli (figür)</div><select class="in" id="gntp" aria-label="Hareket şekli"><option value="">Figür yok</option>${Object.keys(GFIG).map(k=>`<option value="${k}"${k===gNewS.tp?" selected":""}>${GFIG[k]}</option>`).join("")}</select>
+  <div class="lbl">Egzersiz şekli (figür)</div><select class="in" id="gntp" aria-label="Egzersiz şekli"><option value="">Figür yok</option>${Object.keys(GFIG).map(k=>`<option value="${k}"${k===gNewS.tp?" selected":""}>${GFIG[k]}</option>`).join("")}</select>
   <button class="btn" data-g="mkex">Oluştur ve ekle</button></div>`;
 }
 function gMenu(ei){
@@ -446,8 +446,8 @@ function gMenu(ei){
    <button class="prow" data-g="note:${ei}"><span><b>Egzersiz notu</b><span class="mut sm">Örn. bar yüksekliği, ağrı</span></span></button>
    ${gKind(x.id)==="w"?`<button class="prow" data-g="plate:${ei}"><span><b>Plaka ve ısınma</b><span class="mut sm">Bar başına plaka, ısınma setleri</span></span></button>`:""}
    ${gKind(x.id)==="w"?`<button class="prow" data-g="rng:${ei}"><span><b>Tekrar aralığı</b><span class="mut sm">${(c=>c.lo+"-"+c.hi)(Object.assign({lo:8,hi:12},S.exCfg[x.id]))}, öneri bu aralığa göre</span></span></button>`:""}
-   <button class="prow" data-g="flag:${ei}"><span><b>${gFlagged(x.id)?"Rahatsızlık işaretini kaldır":"Bu hareket rahatsız etti"}</b><span class="mut sm">${gFlagged(x.id)?"İşaret 14 gün sonra kendiliğinden kalkar":"14 gün ağırlık artırma önerisi kapanır"}</span></span></button>
-   ${gFlagged(x.id)?`<button class="prow" data-g="alt:${ei}"><span><b>Benzer hareketler</b><span class="mut sm">Aynı bölge ve ekipman</span></span></button>`:""}
+   <button class="prow" data-g="flag:${ei}"><span><b>${gFlagged(x.id)?"Rahatsızlık işaretini kaldır":"Bu egzersiz rahatsız etti"}</b><span class="mut sm">${gFlagged(x.id)?"İşaret 14 gün sonra kendiliğinden kalkar":"14 gün ağırlık artırma önerisi kapanır"}</span></span></button>
+   ${gFlagged(x.id)?`<button class="prow" data-g="alt:${ei}"><span><b>Benzer egzersizler</b><span class="mut sm">Aynı bölge ve ekipman</span></span></button>`:""}
    <button class="prow" data-g="rst:${ei}"><span><b>Dinlenme süresi</b><span class="mut sm">${gRestTx(gRestSec(x.id))}, set ✓ sonrası sayaç ve bildirim</span></span></button>
    ${ei>0?(x.ss&&w.ex[ei-1].ss===x.ss?`<button class="prow" data-g="ssu:${ei}"><span><b>Süpersetten çıkar</b></span></button>`:`<button class="prow" data-g="ssl:${ei}"><span><b>Önceki egzersizle süperset yap</b><span class="mut sm">${esc(gEx(w.ex[ei-1].id).n)} ile arka arkaya, dinlenme grubun sonunda</span></span></button>`):""}
    <button class="prow" data-g="mv:${ei}:-1"><span><b>Yukarı taşı</b></span></button>
@@ -462,7 +462,7 @@ function gSheetNote(ei){
 function gSheetHist(exId){
   const ex=gEx(exId),h=gHistory(exId);
   if(gKind(exId)!=="w")return gSheetHistSimple(exId,h);
-  if(!h.length)return openSheet(`<h3>${esc(ex.n)}</h3><p class="hint">Bu hareketle tamamladığın setler burada görünür.</p><button class="btn" data-g="closesheet">Kapat</button>`);
+  if(!h.length)return openSheet(`<h3>${esc(ex.n)}</h3><p class="hint">Bu egzersizle tamamladığın setler burada görünür.</p><button class="btn" data-g="closesheet">Kapat</button>`);
   const per=h.map(x=>({d:x.w.day,e:gBest(x.w,exId),vol:Algo.volume(x.sets),top:gWork(x.sets).reduce((a,s)=>Algo.est1RM(s.kg,s.reps)>Algo.est1RM(a.kg,a.reps)?s:a,gWork(x.sets)[0])}));
   const best=per.reduce((a,b)=>b.e>a.e?b:a,per[0]);
   openSheet(`<h3>${esc(ex.n)}</h3><div class="two"><div class="stat"><div class="k">En iyi set</div><div class="v num">${gW(best.top.kg)||0} ${Units.wu()} × ${best.top.reps}</div></div><div class="stat"><div class="k">Tahmini 1TM</div><div class="v num">${fint(Units.w(best.e))} ${Units.wu()}</div></div></div>
@@ -480,7 +480,7 @@ function gSheetSummary(id){
   ${prs.length?`<div class="pr"><b>${prs.length} yeni rekor</b>${prs.map(p=>`<div>${esc(p.ex.n)}, ${gW(p.kg)||0} ${Units.wu()} × ${p.reps}<div class="mut sm">Tahmini 1TM ${fint(Units.w(p.e1))} ${Units.wu()}, önceki ${fint(Units.w(p.prev))} ${Units.wu()}</div></div>`).join("")}</div>`:""}
   ${(k=>k?`<div class="mt-2 mut sm">Tahmini ~${k} kcal (dinlenme hariç, tahmindir)</div>`:"")((Log.find(e=>e.wid===w.id)||{}).kcal)}
   <div class="my-2 mut sm">${Object.keys(sets).map(g=>`${g} ${sets[g]}`).join(", ")}</div>
-  <div class="lbl">Hareketler</div>${w.ex.map(x=>`<div class="row"><span class="grow"><b>${esc(gEx(x.id).n)}</b><span class="mut sm num">${gSetsLine(x)||"–"}</span></span></div>`).join("")}
+  <div class="lbl">Egzersizler</div>${w.ex.map(x=>`<div class="row"><span class="grow"><b>${esc(gEx(x.id).n)}</b><span class="mut sm num">${gSetsLine(x)||"–"}</span></span></div>`).join("")}
   ${gSsGroups(w).map(g=>`<div class="mut sm">Süperset: ${esc(g.map(x=>gEx(x.id).n).join(" + "))}</div>`).join("")}${gDrops(w)?`<div class="mut sm">${gDrops(w)} drop set (hacme girer, rekor hesabına girmez)</div>`:""}
   <div class="btns">${w.tpl==null?`<button class="btn ghost" data-g="savetpl:${w.id}">Şablon olarak kaydet</button>`:S.templates.some(t=>t.id===w.tpl)?`<button class="btn ghost" data-g="tplupd:${w.id}">Şablonu bu seansa göre güncelle</button>`:""}<button class="btn ghost" data-g="wedit:${w.id}">Setleri düzenle</button><button class="btn ghost" data-g="closesheet">Kapat</button><button class="btn danger" data-g="delw:${w.id}">Antrenmanı sil</button></div>`);
 }
@@ -575,7 +575,7 @@ function gTeSheet(){
     <div><div class="lbl">${tm?k==="c"?"Süre (dk)":"Süre (sn)":"Tekrar"}</div><input class="in num" inputmode="${tm?"numeric":"text"}" data-te="${tm?"sec":"reps"}:${i}" value="${tm?a.sec?Math.round(a.sec/u):"":gRepsTx(a)}" placeholder="${tm?"":"8-12"}" aria-label="${esc(e.n)} ${tm?"süre":"tekrar"}"></div></div></div>`;
   }).join("");
   openSheet(`<h3>${gTe.id?"Şablonu düzenle":"Yeni şablon"}</h3><div class="lbl">Ad</div><input class="in" id="gten" maxlength="60" value="${esc(gTe.name)}" placeholder="Örn. İtiş günü">
-  ${rows||`<p class="hint">Hareket ekleyerek başla.</p>`}
+  ${rows||`<p class="hint">Egzersiz ekleyerek başla.</p>`}
   <button class="mb-2 btn ghost" data-g="teadd">+ Egzersiz ekle</button>
   <div class="btns"><button class="btn" data-g="tesave">Kaydet</button><button class="btn ghost" data-g="closesheet">Vazgeç</button></div>`);
 }

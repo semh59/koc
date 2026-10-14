@@ -54,7 +54,7 @@ on("stepshide",()=>{S.settings.stepWarnDay=dayKey();save();render()});
 on("profile",()=>{tab="settings-profile";render();window.scrollTo(0,0)});
 on("health",()=>{
   const r=risk();
-  openSheet(`<h3>Sağlık notların</h3><div class="lbl">Güvenlik frenin bilmesi gerekenler. Yalnız telefonda durur, Rehber’e gönderilmez.</div>
+  openSheet(`<h3>Sağlık notların</h3><div class="lbl">Güvenlik frenin bilmesi gerekenler. Yalnız telefonda durur, Rehber'e gönderilmez.</div>
   ${swRow('id="hpg"',r.pregnant,"Hamileyim")}${swRow('id="hnu"',r.nursing,"Emziriyorum")}
   ${r.ed?`<p class="hint">Yeme düzeniyle ilgili bir işaret var: kalori açığı, oruç ve program önerileri kapalı. Bu işareti uygulamadan kaldıramazsın; hekimine ya da diyetisyenine danış.</p>`:swRow('id="hed"',false,"Yeme bozukluğu geçmişim var")}
   <label class="lbl" for="hn">Hastalık, ilaç ve diğer notlar</label><textarea class="in" id="hn" maxlength="500">${esc(S.settings.healthNote)}</textarea><button class="btn" data-go="health">Kaydet</button>`);

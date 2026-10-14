@@ -56,7 +56,7 @@ async function plStart(){
   plStop();
   let pick;
   try{pick=await PulseLib.pickTorchCamera(navigator.mediaDevices,{width:{ideal:320},height:{ideal:240},frameRate:{ideal:30}})}
-  catch(e){plSheet();return toast("Kamera izni verilmedi. Telefon ayarlarından aç")}
+  catch(e){plSheet();return toast(e?.name==="NotAllowedError"||e?.name==="SecurityError"?"Kamera izni verilmedi. Telefon ayarlarından aç":"Kamera şu an açılamadı; başka bir uygulama kullanıyor olabilir, biraz sonra tekrar dene")}
   const {stream,track}=pick;
   let torch=false;
   try{if(!pick.noTorch){await track.applyConstraints({advanced:[{torch:true}]});torch=true}}catch(e){}

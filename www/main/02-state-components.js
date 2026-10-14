@@ -22,7 +22,7 @@ function dailyTip(){
   const sh=S.settings.waterMl,water=sum("water",t,t);
   if(Algo.dayNum(t)%7===0&&!Object.keys(weights(t,t)).length&&h<12)return "Sabah tartısını gir. Tuvaletten sonra, kahvaltıdan önce en tutarlısı.";
   const exp=sh*Math.min(Math.max((h-8)/14,0),1);
-  if(water<exp-250)return `Su biraz geride: ${Math.round(water)} ml içtin, şu an ${Math.round(exp)} ml civarı olmalı.`;
+  if(water<exp-250)return `Şimdiye kadar ${Math.round(water)} ml içtin; bir bardak su iyi gelir.`;
   if(!of("exercise",t).length&&h>=17)return "Bugün hareket yok. 20 dakikalık tempolu yürüyüş de sayılır.";
   return QUOTES[Algo.dayNum(t)%QUOTES.length];
 }
