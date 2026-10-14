@@ -375,7 +375,7 @@ function gLive(w){
       if(tm)return `<div class="srow${s.done?" dn":""}${on?" nx":""}"><button class="sn tb" data-g="stype:${ei}:${si}" aria-label="${si+1}. set seçenekleri">${si+1}</button><span class="sp num">${p}</span>
       <input class="sin num" inputmode="numeric" aria-label="${si+1}. set ${kind==="c"?"dakika":"saniye"}" data-gi="sec:${ei}:${si}" value="${gShow("sec",s,x.id)}" placeholder="${kind==="c"?"dk":"sn"}">
       <button class="sin tgo" data-g="tstart:${ei}:${si}" aria-label="${si+1}. set zamanlayıcıyı başlat">${Icons.svg(gTim&&gTim.ei===ei&&gTim.si===si?"pause":"play")}</button>${tick}</div>`;
-      return `<div class="srow${rpe?" r":""}${s.done?" dn":""}${on?" nx":""}"><button class="sn tb" data-g="stype:${ei}:${si}" aria-label="${si+1}. set türü: ${gSetTx(s)}">${si+1}${s.t?`<b class="tbd">${s.t.toUpperCase()}</b>`:""}</button><span class="sp num">${p}</span>
+      return `<div class="srow${rpe?" r":""}${s.done?" dn":""}${on?" nx":""}"><button class="sn tb" data-g="stype:${ei}:${si}" aria-label="${si+1}. set türü: ${gSetTx(s)}">${si+1}${s.t?`<b class="tbd">${s.t.toUpperCase()}</b>`:""}</button><span class="sp num">${rpe&&!s.w?"Önceki: "+p:p}</span>
       <input class="sin num" inputmode="decimal" aria-label="${si+1}. set ağırlık (${Units.wu()})" data-gi="kg:${ei}:${si}" value="${gShow("kg",s,x.id)}" placeholder="${kind==="b"?"ek "+Units.wu():Units.wu()}">
       <input class="sin num" inputmode="numeric" aria-label="${si+1}. set tekrar" data-gi="reps:${ei}:${si}" value="${gShow("reps",s,x.id)}" placeholder="tekrar">${rpe?`<input class="sin num" inputmode="decimal" aria-label="${si+1}. set zorluk (RPE)" data-gi="rpe:${ei}:${si}" value="${gShow("rpe",s,x.id)}" placeholder="RPE">`:""}${tick}</div>${on?gStepPanel(w,ei,si,prev):""}`;
     }).join("");
@@ -384,8 +384,8 @@ function gLive(w){
     <div class="shead${rpe?" r":""}"><span>Set</span><span>Önceki</span>${tm?`<span>${kind==="c"?"Dakika":"Süre (sn)"}</span><span>Süre</span>`:`<span>${kind==="b"?"Ek "+Units.wu():Units.wu()}</span><span>Tekrar</span>${rpe?"<span>RPE</span>":""}`}<span></span></div>${rows}
     <button class="lnk" data-g="addset:${ei}">Set ekle</button></div>`;
   }).join("");
-  return `<div class="livebar"><button class="chip" data-g="cancel" aria-label="Antrenmanı sil, kaydetmeden iptal et">${Icons.svg("trash")} Antrenmanı sil</button><div><b>${esc(w.name)}</b><div class="mut num" id="gstat">${gStat(w)}</div></div><button class="btn fin" data-g="finish">Bitir</button></div>
-  ${gTimBar()}
+  return `<div class="livetop"><div class="livebar"><button class="chip" data-g="cancel" aria-label="Antrenmanı sil, kaydetmeden iptal et">${Icons.svg("trash")} Antrenmanı sil</button><div><b>${esc(w.name)}</b><div class="mut num" id="gstat">${gStat(w)}</div></div><button class="btn fin" data-g="finish">Bitir</button></div>
+  ${gTimBar()}</div>
   <div class="rest" id="grest" role="timer" aria-label="Dinlenme"${restEnd>Date.now()?"":" hidden"}><div><span class="mut sm">Dinlenme</span><b class="num" id="gr">${restEnd>Date.now()?gClock(restEnd-Date.now()):""}</b></div><button data-g="rest:-15" aria-label="15 saniye azalt">−15</button><button data-g="rest:15" aria-label="15 saniye ekle">+15</button><button class="rsk" data-g="rest:0">Atla</button></div>
   ${Habits.fastNote()}
   ${cards||`<p class="hint">Aşağıdan hareket ekleyerek başla.</p>`}

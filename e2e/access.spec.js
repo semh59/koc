@@ -1,5 +1,5 @@
 "use strict";
-const {test,expect,state,CONSENT}=require("./fixtures");
+const {test,expect,state,CONSENT,day,NOW}=require("./fixtures");
 const {axe,targets,scaleText}=require("./a11y");
 
 const COACH=state({...CONSENT,medOn:true,bpOn:true,bsOn:true,fastOn:true,stepsOn:true},{meds:[{id:1,n:"A",t:["09:00"],on:true}]});
@@ -23,6 +23,32 @@ test.describe("Accessibility and layout",()=>{
     await expect(page.locator("#sheet")).not.toHaveClass(/\bon\b/);
     await expect(page.locator("#app")).toHaveJSProperty("inert",false);
     expect(await page.evaluate(()=>document.activeElement.dataset.act)).toBe("food");
+  });
+
+  for(const rpeOn of [false,true])test(`Gym: set buttons are 48 px and 8 px apart, Bitir and the timer bar stay in view while scrolling (RPE ${rpeOn})`,async({app,page})=>{
+    const sets=n=>Array.from({length:n},()=>({kg:60,reps:8,done:false}));
+    const live={id:2,day:day(0),t0:NOW.getTime()-600e3,t1:null,name:"Antrenman",tpl:null,ex:[{id:"bench",note:"",sets:sets(6)},{id:"squat",note:"",sets:sets(6)},{id:"plank",note:"",sets:[{kg:null,reps:null,sec:30,done:false}]}]};
+    await app.open({seed:state({rpeOn},{workouts:[live]})});
+    await app.tab("gym");
+    const size=sel=>page.locator(sel).first().evaluate(e=>{const r=e.getBoundingClientRect();return [r.width,r.height]});
+    for(const sel of ['[data-g="stype:0:0"]','[data-gi="kg:0:0"]','[data-g="done:0:0"]','[data-g="finish"]','[data-g="cancel"]']){
+      const [w,h]=await size(sel);
+      expect(w,sel+" width").toBeGreaterThanOrEqual(47.5);expect(h,sel+" height").toBeGreaterThanOrEqual(47.5);
+    }
+    const gaps=await page.locator(".srow").first().evaluate(row=>{
+      const r=[...row.querySelectorAll("button,input")].map(e=>e.getBoundingClientRect()).sort((a,b)=>a.left-b.left);
+      return r.slice(1).map((b,i)=>b.left-r[i].right);
+    });
+    for(const g of gaps)expect(g).toBeGreaterThanOrEqual(7.5);
+    const rows=await page.locator(".srow").evaluateAll(a=>a.slice(0,2).map(e=>e.getBoundingClientRect()));
+    expect(rows[1].top-rows[0].bottom).toBeGreaterThanOrEqual(7.5);
+    await page.click('[data-g="done:0:0"]');
+    await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+    const v=await page.evaluate(()=>{const r=e=>document.querySelector(e).getBoundingClientRect();return {y:scrollY,fin:r('[data-g="finish"]'),bar:r(".livetop"),rest:r("#grest"),h:innerHeight}});
+    expect(v.y).toBeGreaterThan(100);
+    expect(v.fin.top).toBeGreaterThanOrEqual(0);expect(v.fin.bottom).toBeLessThanOrEqual(v.h);
+    expect(v.bar.top).toBeLessThanOrEqual(1);
+    expect(v.rest.top).toBeGreaterThan(0);expect(v.rest.bottom).toBeLessThanOrEqual(v.h);
   });
 
   test("touch targets: muscle map buttons and Settings check rows are at least 44 px",async({app,page})=>{
