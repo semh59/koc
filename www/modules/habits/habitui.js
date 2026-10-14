@@ -3,7 +3,7 @@
 const MOODS=["😞","😕","😐","🙂","😄"],MOODN=["Çok kötü","Kötü","Orta","İyi","Çok iyi"];
 const HB_SHOWN=7,FAST_REMINDER=11,LONG_PLAN=18;
 const hbDur=m=>`${Math.floor(m/60)} sa ${m%60} dk`;
-const hbRow=(txt,act,sub="")=>`<div class="row"><span class="grow">${txt}${sub?`<small class="db mut ell">${sub}</small>`:""}</span><button class="del" data-hb="${act}" aria-label="Kaydı sil">${Icons.svg("x")}</button></div>`;
+const hbRow=(txt,act,sub="",edit="")=>{const t=`<span class="grow">${txt}${sub?`<small class="db mut ell">${sub}</small>`:""}</span>`;return `<div class="${edit?"prow":"row"}">${edit?`<button class="grow pbtn" data-hb="${edit}">${t}</button>`:t}<button class="del" data-hb="${act}" aria-label="Kaydı sil">${Icons.svg("x")}</button></div>`};
 /* History: the newest HB_SHOWN records are open, the rest fold away. */
 const hbHist=rows=>rows.length?`<div class="grp">Geçmiş</div>${rows.slice(0,HB_SHOWN).join("")}${rows.length>HB_SHOWN?`<details class="acc"><summary>Daha fazla göster (${rows.length-HB_SHOWN})</summary>${rows.slice(HB_SHOWN).join("")}</details>`:""}`:"";
 let hbMood=0;
@@ -63,21 +63,22 @@ function fastEnd(){
   hbSet("fast",r.fast,r.min<1?"Oruç 1 dakikadan kısa, geçmişe yazılmadı":r.capped?"Oruç bitti: 72 saatten uzun sürdüğü için 72 saat olarak kaydedildi":`Oruç bitti: ${hbDur(r.min)}`);
 }
 setInterval(()=>{if(S.fast.t0&&tab==="today"&&!document.hidden&&!$("#sheet").classList.contains("on"))render()},6e4);
-function sheetSleep(){
-  openSheet(`<h3>Uyku</h3>${dayOptions().replace(">Gün<",">Kalkış günü<")}
+function sheetSleep(day){
+  const x=S.sleep.find(s=>s.day===day);
+  openSheet(`<h3>Uyku</h3>${dayOptions(false,day).replace(">Gün<",">Kalkış günü<")}
   <label class="lbl" for="hbb">Yattığın saat</label><input class="in" type="time" id="hbb">
   <label class="lbl" for="hbw">Kalktığın saat</label><input class="in" type="time" id="hbw">
-  <label class="lbl" for="hbh">Ya da toplam süre (saat)</label><input class="in num" id="hbh" inputmode="decimal" placeholder="örn. 7,5" autocomplete="off">
-  <label class="lbl" for="hbq">Uyku kalitesi (isteğe bağlı)</label><select class="in" id="hbq"><option value="">Seçilmedi</option>${MOODN.map((l,i)=>`<option value="${i+1}">${i+1} · ${l}</option>`).join("")}</select>
-  <div class="ferr" id="hberr" role="alert"></div><button class="btn" data-hb="sleepgo">Kaydet</button>${hbHist(S.sleep.slice().reverse().map(x=>hbRow(`<b class="num">${hbDur(x.min)}</b>`,"sdel:"+x.day,`${fd(x.day)}${x.q?` · Kalite: ${MOODN[x.q-1].toLowerCase()}`:""}`)))}`);
+  <label class="lbl" for="hbh">Ya da toplam süre (saat)</label><input class="in num" id="hbh" inputmode="decimal" placeholder="örn. 7,5" value="${x?String(Math.round(x.min/6)/10).replace(".",","):""}" autocomplete="off">
+  <label class="lbl" for="hbq">Uyku kalitesi (isteğe bağlı)</label><select class="in" id="hbq"><option value="">Seçilmedi</option>${MOODN.map((l,i)=>`<option value="${i+1}"${x&&x.q===i+1?" selected":""}>${i+1} · ${l}</option>`).join("")}</select>
+  <div class="ferr" id="hberr" role="alert"></div><button class="btn" data-hb="sleepgo">Kaydet</button>${hbHist(S.sleep.slice().reverse().map(x=>hbRow(`<b class="num">${hbDur(x.min)}</b>`,"sdel:"+x.day,`${fd(x.day)}${x.q?` · Kalite: ${MOODN[x.q-1].toLowerCase()}`:""}`,"sedit:"+x.day)))}`);
 }
 /* More tab entry: weekly summary of the newest 7 sleep and mood records with the Health Connect source marked, and shortcuts to add either. */
 function sheetSleepMood(){
   const sl=S.sleep.slice(-7),mo=S.mood.slice(-7),avg=a=>a.reduce((t,x)=>t+x,0)/a.length;
   const sq=sl.filter(x=>x.q);
   const sum=sl.length?`<div class="row"><span class="grow">Son ${sl.length} gecenin ortalaması<small class="db mut">${sq.length?`Ortalama kalite: ${MOODN[Math.round(avg(sq.map(x=>x.q)))-1].toLowerCase()}`:"Kalite girilmedi"}</small></span><b class="num">${hbDur(Math.round(avg(sl.map(x=>x.min))))}</b></div>`:`<p class="mut">Henüz uyku kaydı yok. Saatten alabilir ya da elle ekleyebilirsin.</p>`;
-  const nights=sl.slice().reverse().map(x=>`<div class="row"><span class="grow">${fd(x.day)}${x.src==="hc"?`<small class="db mut">Saatten (Health Connect)</small>`:x.q?`<small class="db mut">Kalite: ${MOODN[x.q-1].toLowerCase()}</small>`:""}</span><b class="num">${hbDur(x.min)}</b></div>`).join("");
-  const moods=mo.length?`<div class="grp">Ruh hali</div>${mo.slice().reverse().map(x=>`<div class="row"><span class="grow"><span aria-hidden="true">${MOODS[x.v-1]}</span> ${MOODN[x.v-1]}<small class="db mut ell">${fd(x.day)}${x.t?" · "+esc(x.t):""}</small></span></div>`).join("")}`:"";
+  const nights=sl.slice().reverse().map(x=>`<div class="prow"><button class="grow pbtn" data-hb="sedit:${x.day}"><span class="grow">${fd(x.day)}${x.src==="hc"?`<small class="db mut">Saatten (Health Connect)</small>`:x.q?`<small class="db mut">Kalite: ${MOODN[x.q-1].toLowerCase()}</small>`:""}</span><b class="num">${hbDur(x.min)}</b></button></div>`).join("");
+  const moods=mo.length?`<div class="grp">Ruh hali</div>${mo.slice().reverse().map(x=>`<div class="prow"><button class="grow pbtn" data-hb="medit:${x.day}"><span class="grow"><span aria-hidden="true">${MOODS[x.v-1]}</span> ${MOODN[x.v-1]}<small class="db mut ell">${fd(x.day)}${x.t?" · "+esc(x.t):""}</small></span></button></div>`).join("")}`:"";
   openSheet(`<h3>Uyku ve ruh hali</h3>${sum}${nights?`<div class="grp">Geceler</div>${nights}`:""}${moods}<div class="hrow mt-2"><button class="btn" data-hb="sleep">Uyku ekle</button><button class="btn" data-hb="mood">Ruh hali ekle</button></div>`);
 }
 function sleepSave(){
@@ -93,10 +94,10 @@ function moodFill(){
   document.querySelectorAll('[data-hb^="mood:"]').forEach(b=>b.setAttribute("aria-pressed",+b.dataset.hb.slice(5)===hbMood));
   if(n)n.value=mo&&mo.t||"";
 }
-function sheetMood(){
-  openSheet(`<h3>Ruh halin</h3>${dayOptions()}<div class="lbl" id="hbml">Nasıl hissediyorsun?</div><div class="moods" role="group" aria-labelledby="hbml">${MOODS.map((e,i)=>`<button class="chip" data-hb="mood:${i+1}" aria-pressed="false"><span class="t-h2" aria-hidden="true">${e}</span><small>${MOODN[i]}</small></button>`).join("")}</div>
+function sheetMood(day){
+  openSheet(`<h3>Ruh halin</h3>${dayOptions(false,day)}<div class="lbl" id="hbml">Nasıl hissediyorsun?</div><div class="moods" role="group" aria-labelledby="hbml">${MOODS.map((e,i)=>`<button class="chip" data-hb="mood:${i+1}" aria-pressed="false"><span class="t-h2" aria-hidden="true">${e}</span><small>${MOODN[i]}</small></button>`).join("")}</div>
   <label class="lbl" for="hbn">Kısa not (isteğe bağlı)</label><input class="in" id="hbn" maxlength="${HabitLib.NOTE_MAX}" placeholder="örn. Yoğun bir gündü" autocomplete="off">
-  <div class="ferr" id="hberr" role="alert"></div><button class="btn" data-hb="moodgo">Kaydet</button>${hbHist(S.mood.slice().reverse().map(x=>hbRow(`<span aria-hidden="true">${MOODS[x.v-1]}</span> ${MOODN[x.v-1]}`,"mdel:"+x.day,fd(x.day)+(x.t?" · "+esc(x.t):""))))}`);
+  <div class="ferr" id="hberr" role="alert"></div><button class="btn" data-hb="moodgo">Kaydet</button>${hbHist(S.mood.slice().reverse().map(x=>hbRow(`<span aria-hidden="true">${MOODS[x.v-1]}</span> ${MOODN[x.v-1]}`,"mdel:"+x.day,fd(x.day)+(x.t?" · "+esc(x.t):""),"medit:"+x.day)))}`);
   moodFill();
 }
 function moodSave(v){
@@ -109,6 +110,8 @@ document.addEventListener("click",ev=>{
   const a=el.dataset.hb;
   if(a==="more")sheetSleepMood();
   else if(a==="sleep")sheetSleep();
+  else if(a.startsWith("sedit:"))sheetSleep(a.slice(6));
+  else if(a.startsWith("medit:"))sheetMood(a.slice(6));
   else if(a==="fasttoggle")fastToggle();
   else if(a.startsWith("plan:")){S.fast.plan=+a.slice(5);save();render()}
   else if(a==="fastgo")fastGo();

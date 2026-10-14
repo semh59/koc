@@ -49,7 +49,7 @@ function labDetail(id){
   if(!s){closeSheet();return render()}
   const last=s.pts[s.pts.length-1],rt=LabLib.rangeText(last),hm=Vitals.before(last.day,30);
   const home=hm.bp||hm.g?`<details class="mt-3"><summary>Ev ölçümlerin (bu sonuçtan önceki 30 gün)</summary><p class="hint num">${[hm.bp?`Tansiyon ortalaması ${hm.bp.sys}/${hm.bp.dia} (${hm.bp.n} ölçüm)`:"",hm.g?`Şeker ortalaması ${Units.fg(hm.g.avg)} ${Units.gl()} (${hm.g.n} ölçüm)`:""].filter(Boolean).join(" · ")}</p><p class="hint">Yan yana gösterilir; karşılaştırma ya da yorum değildir.</p></details>`:"";
-  const rows=s.pts.slice().reverse().map(p=>{const pf=LabLib.flag(p),r=LabLib.rangeText(p);return `<div class="row"><span class="grow">${fd(p.day)}${r?`<small class="db mut num">Aralık ${esc(r)}</small>`:""}</span><span class="ta-r"><b class="num">${labV(p)}</b>${pf?`<small class="db b7">${pf==="high"?"▲ Üstünde":"▼ Altında"}</small>`:""}</span><button class="del" data-lab="del:${p.id}" aria-label="${fd(p.day)} sonucunu sil">${Icons.svg("x")}</button></div>`}).join("");
+  const rows=s.pts.slice().reverse().map(p=>{const pf=LabLib.flag(p),r=LabLib.rangeText(p);return `<div class="prow"><button class="grow pbtn" data-lab="edit:${p.id}" aria-label="${fd(p.day)} sonucunu düzenle"><span class="grow">${fd(p.day)}${r?`<small class="db mut num">Aralık ${esc(r)}</small>`:""}</span><span class="ta-r"><b class="num">${labV(p)}</b>${pf?`<small class="db b7">${pf==="high"?"▲ Üstünde":"▼ Altında"}</small>`:""}</span></button><button class="del" data-lab="del:${p.id}" aria-label="${fd(p.day)} sonucunu sil">${Icons.svg("x")}</button></div>`}).join("");
   openSheet(`<h3>${esc(s.n)}</h3><div class="ink sumv num">${labV(last)} <small>${esc(s.u)}</small></div>${labStat(last,rt)}<div class="mut sm">${fd(last.day)}${rt?" · Rapor aralığı: "+esc(rt):""}</div>
   <div class="mt-3">${labInfoBox(s.k,"lid",0)}</div><div class="my-2">${s.pts.length>1?labSvg(s,320,150):`<p class="hint">Grafik için aynı testten en az iki sonuç gerekir.</p>`}</div>
   <p class="hint">${s.pts.length>1&&rt?"Gölgeli bölge raporda yazan aralıktır. ":""}Tanım yalnızca testin ne olduğunu anlatır; tanı veya yorum değildir.</p>${home}<div class="grp">Sonuçlar</div>${rows}<button class="mt-3 btn ghost" data-lab="close">Kapat</button>`);
@@ -81,6 +81,29 @@ function labReview(parsed,manual){
   if(manual&&!labRows.length)labRows=[{n:"",v:undefined}];
   if(manual)labDate=dayKey();
   labRender();
+}
+/* Edit sheet for one stored result: value (with a leading < or >), sample date and the range the lab wrote. */
+let labEditId=0;
+function labEdit(id){
+  const r=S.labs.find(x=>x.id===id);if(!r)return;
+  labEditId=id;
+  const f=(lab,i,v,mode="decimal")=>`<label class="labf"><span>${lab}</span><input class="in num" id="${i}" inputmode="${mode}" value="${esc(v)}" autocomplete="off"></label>`;
+  openSheet(`<h3>${esc(r.n)}</h3>${f(`Değer${r.u?` (${esc(r.u)})`:""}`,"lev",(r.q||"")+LabLib.fmtN(r.v))}
+  <label class="lbl" for="led">Numune tarihi</label><input class="in" type="date" id="led" max="${dayKey()}" value="${r.day}">
+  <div class="labg">${f("Alt sınır","lel",r.lo==null?"":LabLib.fmtN(r.lo))}${f("Üst sınır","leh",r.hi==null?"":LabLib.fmtN(r.hi))}</div>
+  <div class="ferr" id="leerr" role="alert"></div><button class="btn" data-lab="editgo">Kaydet</button><button class="mt-2 btn ghost" data-lab="close">Vazgeç</button>`);
+}
+function labEditSave(){
+  const r=S.labs.find(x=>x.id===labEditId);if(!r)return closeSheet();
+  const g=id=>document.getElementById(id).value,vs=g("lev"),q=/^\s*[<>]/.test(vs)?vs.trim()[0]:"",v=LabLib.optNum(vs.replace(/^\s*[<>]=?/,"")),lo=LabLib.optNum(g("lel")),hi=LabLib.optNum(g("leh")),day=g("led");
+  const err=v==null?"Değeri sayı olarak yaz":!dayOk(day)||day>dayKey()?"Numune tarihini seç (bugünden ileri olamaz)":(g("lel")&&lo==null)||(g("leh")&&hi==null)?"Sınırı sayı olarak yaz":lo!=null&&hi!=null&&lo>hi?"Alt sınır üst sınırdan büyük olamaz":"";
+  if(err)return ferr("leerr",err);
+  const was=S.labs,next={...r,day,v,q,lo,hi};
+  for(const k of ["q","lo","hi"])if(!next[k]&&next[k]!==0)delete next[k];
+  S.labs=LabLib.cleanLabs(was.map(x=>x===r?next:x));
+  if(!commit(()=>{S.labs=was}))return;
+  closeSheet();render();
+  toast("Sonuç güncellendi",()=>{S.labs=was;save();render()});
 }
 function labSave(){
   labCollect();
@@ -191,6 +214,8 @@ document.addEventListener("click",ev=>{
   else if(a==="add")labReview({date:"",rows:[]},true);
   else if(a==="addrow"){labCollect();labRows.push({n:"",v:undefined});labRender();const e=document.getElementById("ln"+(labRows.length-1));if(e)e.focus()}
   else if(a==="save")labSave();
+  else if(a==="edit")labEdit(+arg);
+  else if(a==="editgo")labEditSave();
   else if(a==="pdf")labExport();
   else if(a==="pw"){const pw=document.getElementById("labpw").value;if(pw&&labKeep){const d=labKeep;closeSheet();labRead(d,pw)}}
   else if(a==="del"){

@@ -7,6 +7,7 @@ const Log={
   all:()=>S.entries,
   put:e=>{e.id=S.nextId++;S.entries.push(e);return e},
   byDay:type=>{const m={};for(const e of S.entries)if(e.type===type&&e.v)m[e.day]=(m[e.day]||0)+e.v;return m}, // day -> total value (food: kcal)
+  swap:(a,b)=>{const i=S.entries.indexOf(a);if(i>=0)S.entries[i]=b;return i>=0},
   remove:f=>{const r=S.entries.filter(f);S.entries=S.entries.filter(e=>!f(e));return r},
   restore:list=>{S.entries.push(...list);S.entries.sort((a,b)=>a.id-b.id)},
   count:(...t)=>S.entries.filter(e=>t.includes(e.type)).length,

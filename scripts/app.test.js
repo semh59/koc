@@ -2490,8 +2490,8 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     q("#sheet [data-del]").click();
     ok("deleting from the detail removes the record, the summary updates, the page stays open",ev("S.entries.filter(e=>e.type==='water').length")===2&&lg().includes("2 kez")&&q("#sheet").classList.contains("on")&&q("#sheet").querySelectorAll("[data-del]").length===2);
     ev("closeSheet()");
-    q('[data-meal="1"]').click();
-    q('[data-mset="1:dinner"]').click();
+    q('[data-edit="1"]').click();
+    q('#sheet [data-ml="dinner"]').click();q('#sheet [data-go="entry"]').click();
     ok("the meal can be changed: the record gets meal, the group changes, the record is stored",ev("S.entries.find(e=>e.id===1).meal")==="dinner"&&[...w.document.querySelectorAll(".log .gh")].map(h=>h.querySelector("b").textContent).join()==="Öğle,Akşam,Atıştırmalık"&&JSON.parse(ev("localStorage.getItem('nw_state')")).entries.find(e=>e.id===1).meal==="dinner");
     ev("S.entries=[];render()");
     ok("with only water no meal header appears",(ev("add('water',250);render();1"),w.document.querySelectorAll(".log .gh").length===0&&lg().includes("Su: 250 ml, 1 kez")));
