@@ -23,7 +23,7 @@ function plStats(){
 }
 function plSheet(){
   plStop();plBpm=0;
-  const list=S.pulse.slice(-8).reverse().map(x=>`<div class="row"><span>${fd(x.day)} ${x.time}</span><b class="num">${x.bpm}</b><button class="del" data-pl="del:${x.id}" aria-label="Kaydı sil">✕</button></div>`).join("");
+  const list=S.pulse.slice().reverse().map(x=>`<div class="row"><span>${fd(x.day)} ${x.time}</span><b class="num">${x.bpm}</b><button class="del" data-pl="del:${x.id}" aria-label="Kaydı sil">✕</button></div>`).join("");
   openSheet(`<h3>Nabız</h3>
   <p class="flush hint">Parmağını arka kameranın ve flaşın üstüne hafifçe koy. Ölçüm ${PL_SEC} saniye sürer; kıpırdama.</p>
   ${plHave()?`<button class="btn" data-pl="start">Kamerayla ölç</button>`:`<p class="hint">Bu cihazda kamera ölçümü kullanılamıyor.</p>`}
@@ -99,6 +99,11 @@ document.addEventListener("click",ev=>{
   if(a==="open"||a==="cancel"||a==="back")plSheet();
   else if(a==="start"||a==="again")plStart();
   else if(a==="save")plSave();
-  else if(a.startsWith("del:")){const id=+a.slice(4);S.pulse=PulseLib.clean(S.pulse.filter(x=>x.id!==id));save();plSheet();render()}
+  else if(a.startsWith("del:")){
+    const id=+a.slice(4),was=S.pulse;
+    S.pulse=PulseLib.clean(was.filter(x=>x.id!==id));
+    if(!commit(()=>{S.pulse=was}))return;
+    plSheet();render();toast("Nabız kaydı silindi",()=>{S.pulse=was;save();render();plSheet()});
+  }
 });
 document.addEventListener("visibilitychange",()=>{if(document.hidden&&pl)plSheet()});

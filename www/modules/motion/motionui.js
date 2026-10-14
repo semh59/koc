@@ -107,4 +107,10 @@ document.addEventListener("click",ev=>{
   else if(a==="perm")motionDisclose();
   else if(a==="gps"){closeSheet();walkGpsAsk()}
   else if(a==="nogps"){closeSheet();lsSet(WGPS_NO,"1");toast("Tamam. Mesafe boyuna göre tahmin edilir")}
+  else if(a.startsWith("del:")){
+    const [day,t0,k]=a.slice(4).split("|"),was=S.moves;
+    S.moves=was.filter(m=>m.day!==day||m.t0!==t0||m.k!==k);
+    if(!commit(()=>{S.moves=was}))return;
+    render();toast("Hareket kaydı silindi",()=>{S.moves=was;save();render()});
+  }
 });

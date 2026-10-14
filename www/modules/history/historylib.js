@@ -10,7 +10,7 @@ const HistoryLib=(()=>{
     return m;
   }
   const MAIN={food:o=>o.food>0,water:o=>o.water>0,exercise:o=>o.exercise>0||o.wo>0,weight:o=>o.weight!=null};
-  const OTHER=["steps","drink","note","sleep","mood","bp","glucose","pulse","hr","meds","measures","fast"];
+  const OTHER=["steps","drink","note","sleep","mood","bp","glucose","pulse","hr","meds","measures","fast","moves","labs"];
   /* The main kinds shown in a calendar cell; every other record counts as "other". */
   function marks(o){
     if(!o)return {main:[],other:false};
@@ -55,11 +55,13 @@ const HistoryLib=(()=>{
     }
     return out;
   }
-  /* Searches food, note, exercise and workout names, ignoring case and Turkish letter variants. wname(w): extra searchable workout text. */
-  function search(S,q,max=SEARCH_MAX,wname){
+  /* Searches the names and notes the data modules offer, ignoring case and Turkish letter variants. wname(w): extra searchable workout text.
+     only: {type, from, to} narrows the result to one record type and a day range (both ends inclusive). */
+  function search(S,q,max=SEARCH_MAX,wname,only={}){
     const n=norm(q).trim();if(n.length<MIN_QUERY)return {items:[],total:0,days:0};
-    const out=[];
+    let out=[];
     const ctx={n,norm,out,wname};for(const f of Data.histSearch)f(S,ctx);
+    out=out.filter(x=>(!only.type||x.type===only.type)&&(!only.from||x.day>=only.from)&&(!only.to||x.day<=only.to));
     out.sort((a,b)=>a.day<b.day?1:a.day>b.day?-1:(b.time||"").localeCompare(a.time||""));
     return {items:out.slice(0,max),total:out.length,days:new Set(out.map(x=>x.day)).size};
   }
@@ -69,5 +71,5 @@ const HistoryLib=(()=>{
 })();
 if(typeof module!=="undefined"){
   module.exports=HistoryLib;
-  if(typeof Data==="undefined"){globalThis.Data=require("../../kernel/kernel.js").Data;for(const m of ["log","gym","vitals","habits","meds","pulse","measures"])require("../"+m+"/index.js")} // Node tests
+  if(typeof Data==="undefined"){globalThis.Data=require("../../kernel/kernel.js").Data;for(const m of ["log","gym","vitals","habits","meds","pulse","measures","motion","labs"])require("../"+m+"/index.js")} // Node tests
 }

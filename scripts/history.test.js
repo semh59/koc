@@ -9,7 +9,7 @@ const S={entries:[
   E("food","2024-03-05",2000,"Izgara ÇİĞKÖFTE")
 ],workouts:[{id:5,day:"2026-10-02",t0:1,t1:2,name:"Göğüs günü",ex:[]},{id:6,day:"2026-10-04",t0:1,t1:null,name:"Bitmedi",ex:[]}],
 sleep:[{day:"2026-10-01",min:420}],mood:[{day:"2026-10-01",v:4}],vitals:[{day:"2026-10-05",k:"t"},{day:"2026-10-05",k:"s"}],
-pulse:[{day:"2026-10-06"}],hr:[{day:"2026-10-07",a:60}],medLog:[{day:"2026-10-08",st:"t"},{day:"2026-10-08",st:"s"}],measures:[{day:"2026-10-09"}],
+pulse:[{day:"2026-10-06"}],hr:[{day:"2026-10-07",a:60}],medLog:[{day:"2026-10-08",st:"t"},{day:"2026-10-08",st:"s"}],moves:[],labs:[],measures:[{day:"2026-10-09"}],
 fast:{log:[{t0:0,t1:new Date(2026,9,10,12).getTime()}]}};
 const ix=H.index(S,dk),g=d=>ix.get(d);
 ok("day summary: food count and calories, water counts only water (coffee excluded)",g("2026-10-01").food===2&&g("2026-10-01").kcal===2100&&g("2026-10-01").water===750&&g("2026-10-01").drink===1,g("2026-10-01"));
@@ -24,11 +24,11 @@ ok("oldest and newest day",H.span(ix).first==="2024-03-05"&&H.span(ix).last==="2
 {const r=H.search(S,"cigkofte");ok("search: ignores case and Turkish letter variants, finds entries from two years ago",r.total===1&&r.items[0].day==="2024-03-05",r);
  ok("search: notes and workout names, newest first",H.search(S,"agri").total===1&&H.search(S,"GÖĞÜS").items[0].type==="wo"&&H.search(S,"pil").items[0].text==="Tavuk pilav");
  ok("search: under 2 characters gives nothing, no match gives 0",H.search(S,"a").total===0&&H.search(S,"zzzz").total===0);
- const big=Array.from({length:500},(_,i)=>E("food","2025-01-01",300,"tavuk"+i));ok("search: result limit, correct total",H.search({entries:big,workouts:[],vitals:[],medLog:[],measures:[]},"tavuk",300).items.length===300&&H.search({entries:big,workouts:[],vitals:[],medLog:[],measures:[]},"tavuk",300).total===500);}
+ const big=Array.from({length:500},(_,i)=>E("food","2025-01-01",300,"tavuk"+i));ok("search: result limit, correct total",H.search({entries:big,workouts:[],vitals:[],mood:[],medLog:[],moves:[],labs:[],measures:[]},"tavuk",300).items.length===300&&H.search({entries:big,workouts:[],vitals:[],mood:[],medLog:[],moves:[],labs:[],measures:[]},"tavuk",300).total===500);}
 {const many=[];for(let i=0;i<1100*8;i++){const d=new Date(2023,0,1+Math.floor(i/8));many.push(E(i%3?"food":"water",dk(d),i%3?400:250,"x"+i))}
- const t=Date.now(),i2=H.index({entries:many,workouts:[],vitals:[],medLog:[],measures:[],sleep:[],mood:[],pulse:[],hr:[],fast:{log:[]}},dk);H.months(i2);ok("3 years x 8 entries/day: index and months in under 1 s",Date.now()-t<1000&&i2.size===1100,[Date.now()-t,i2.size]);}
+ const t=Date.now(),i2=H.index({entries:many,workouts:[],vitals:[],mood:[],medLog:[],moves:[],labs:[],measures:[],sleep:[],mood:[],pulse:[],hr:[],fast:{log:[]}},dk);H.months(i2);ok("3 years x 8 entries/day: index and months in under 1 s",Date.now()-t<1000&&i2.size===1100,[Date.now()-t,i2.size]);}
 { // personal normal band
-  const day=n=>"2026-09-"+String(n).padStart(2,"0"),steady=[],S2={entries:[],workouts:[],sleep:[],mood:[],vitals:[],pulse:[],hr:[],medLog:[],measures:[],fast:{log:[]}};
+  const day=n=>"2026-09-"+String(n).padStart(2,"0"),steady=[],S2={entries:[],workouts:[],sleep:[],mood:[],vitals:[],pulse:[],hr:[],medLog:[],moves:[],labs:[],measures:[],fast:{log:[]}};
   for(let i=1;i<=20;i++)S2.entries.push(E("steps",day(i),7000+(i%5)*100));
   const base=H.index(S2,dk);
   ok("normal band: under 14 recorded days there is no band",H.normal(H.index({...S2,entries:S2.entries.slice(0,13)},dk),"2026-09").steps===undefined);
