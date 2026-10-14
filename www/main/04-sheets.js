@@ -38,8 +38,10 @@ function confirmSheet({title,body="",ok="Tamam",no="Vazgeç",danger=false}){
 /* Recent undoable actions, newest last: each "Geri al" tap takes back one, so a double tap on "+250 ml" is undone twice. */
 const UNDO_KEEP=10,UNDO_MS=10000,TOAST_MS=6000,undoStack=[];
 let toastSeq=0;
+/* A second tap right after an undo is the same finger, not a decision: the chained undo wakes up after this pause. */
+const UNDO_GAP=1200;
 function toastShow(msg,undoable){
-  $("#tmsg").textContent=msg;$("#tundo").hidden=!undoable;toastSeq++;
+  $("#tmsg").textContent=msg;$("#tundo").hidden=!undoable;$("#tundo").disabled=false;toastSeq++;
   $("#toast").classList.add("on");clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("#toast").classList.remove("on"),undoable?UNDO_MS:TOAST_MS);
 }
 function toast(msg,undo){
@@ -54,7 +56,7 @@ function undoLast(){
   if(typeof u==="function")u();else{Log.remove(x=>x.id===u);save();render()}
   if(toastSeq!==n)return;
   const next=undoStack[undoStack.length-1];
-  if(next&&Date.now()-next.t<60000)toastShow(`Geri alındı. Bir önceki: ${next.msg}`,true);else{undoStack.length=0;$("#toast").classList.remove("on")}
+  if(next&&Date.now()-next.t<60000){toastShow(`Geri alındı. Bir önceki: ${next.msg}`,true);const b=$("#tundo");b.disabled=true;setTimeout(()=>{if(toastSeq===n+1)b.disabled=false},UNDO_GAP)}else{undoStack.length=0;$("#toast").classList.remove("on")}
 }
 /* `sel` is the day an open record belongs to; on the Day screen an older day is preselected for new records. */
 function dayOptions(inl,sel=tab==="day"&&logOff>=7?keyOff(-logOff):""){
@@ -101,7 +103,8 @@ function goWeight(){
 /* Yesterday's entry carries its own meal; favourites and templates have none, so the selected chip applies. */
 function addFoods(items,day,msg,undo){
   const ids=items.map(s=>{const e=copyNutr(s,add("food",s.v,s.text,day));if(s.lo!=null){e.lo=s.lo;e.hi=s.hi}e.meal=LogLib.mealKey(s.meal)||(s.time?LogLib.mealOf(s):fmeal());return e.id});save();closeSheet();render();
-  toast(msg,()=>{Log.remove(e=>ids.includes(e.id));if(undo)undo();save();render()});
+  const kc=Math.round(items.reduce((a,s)=>a+(s.v||0),0));
+  toast(kc>0&&!S.settings.hideNums?`${msg}, ${kc} kcal`:msg,()=>{Log.remove(e=>ids.includes(e.id));if(undo)undo();save();render()});
 }
 function repeatYesterday(){
   const src=of("food",keyOff(-1));
@@ -139,9 +142,10 @@ function sheetCopy(scope){
   const chips=scope==="day"?"":`<div class="lbl" id="fmll">Hangi öğüne</div><div class="chips" id="fml" role="group" aria-labelledby="fmll">${LogLib.MEALS.map(([k,n])=>`<button class="chip" data-ml="${k}" aria-pressed="${k===scope}">${n}</button>`).join("")}</div>`;
   openSheet(`<h3>${scope==="day"?"Günü kopyala":"Öğünü kopyala"}</h3><p class="hint">${src.length} yemek, ${Math.round(src.reduce((a,e)=>a+(e.v||0),0))} kcal. Hedef gün seç.</p>${chips}${dayOptions(false,logOff?dayKey():keyOff(-1))}<button class="btn" data-go="cp">Kopyala</button>`);
 }
-function goCopy(){
+async function goCopy(){
   const from=keyOff(-logOff),to=fday(),m=fmeal();
   const src=Log.where(e=>e.type==="food"&&e.day===from&&(cpScope==="day"||LogLib.mealOf(e)===cpScope));
+  if(to===from&&(cpScope==="day"||m===cpScope)&&!await confirmSheet({title:"Aynı güne kopyalansın mı?",body:"Bu yemekler zaten bu günde kayıtlı; kopyalarsan iki kez sayılır.",ok:"Yine de kopyala"}))return;
   addFoods(src.map(e=>({...e,meal:cpScope==="day"?LogLib.mealOf(e):m})),to,`${src.length} yemek ${to===dayKey()?"bugüne":fd(to)+" gününe"} kopyalandı`);
 }
 /* Tap on a meal: the calories and macros it carries, what is missing, and fields to complete the macros. */

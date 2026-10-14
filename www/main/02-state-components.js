@@ -90,3 +90,14 @@ let tSec="weight";
 document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-tsec]");if(!b)return;tSec=b.dataset.tsec;
   document.querySelectorAll("[data-tsec]").forEach(x=>x.setAttribute("aria-selected",x===b));document.querySelectorAll(".tpan").forEach(p=>p.hidden=p.id!=="tp-"+tSec)});
 
+
+/* The formula behind a calorie target with the person's own numbers; before height, age and weight are known it names the formula only. */
+function energyHow(p,sg){
+  const {kg,cm,age,sex,act}=p,n=x=>Math.round(x).toLocaleString("tr-TR");
+  if(!(kg>0&&cm>0&&age>0))return `<p class="p0 hint">Bazal hız (Mifflin-St Jeor): 10 × kilo + 6,25 × boy − 5 × yaş ± sabit sayı. Hareket çarpanıyla çarpılır; hedef, harcama ± haftalık kilo değişimidir. Boy, yaş ve kilon girilince kendi sayılarınla gösteririm.</p>`;
+  const bmr=Algo.bmrMifflin(p),k=Algo.ACT[act]||1.45,c=sex==="m"?"+ 5":sex==="f"?"− 161":"− 78";
+  return `<p class="p0 hint num">Bazal hız (Mifflin-St Jeor): 10 × ${fmt(kg)} kg + 6,25 × ${cm} cm − 5 × ${age} yaş ${c} = <b>${n(bmr)} kcal</b>${sex?"":" (cinsiyet belirtilmediği için ortalama sabit)"}.<br>
+  Hareket çarpanı (${["Az","Orta","Çok"][act]||"Orta"}): × ${fmt(k,2)} = <b>${n(bmr*k)} kcal</b> formül harcaması.<br>
+  Hedef: harcama ± haftalık kilo değişimi × ${Algo.KCAL_PER_KG} kcal/kg ÷ 7${sg?`; şimdi ${sg.note.toLowerCase()}, haftada ${fmt(Math.abs(sg.rateKgWk),2)} kg`:""}. Antrenman ayrıca eklenir.</p>`;
+}
+const energyHowAcc=(p,sg)=>`<details class="acc"><summary>Nasıl hesaplandı</summary>${energyHow(p,sg)}</details>`;
