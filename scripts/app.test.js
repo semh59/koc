@@ -993,7 +993,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("adherence boxes: 7-day percentage and dose count, daily breakdown",q("#view").textContent.includes("Uyum")&&/%\d+/.test(q("#view").textContent)&&q("#view").textContent.includes("dozdan")&&qa(".dd7 .dd").length===7&&!q("#view").textContent.includes("kaçırılan"),q("#view").textContent.slice(0,400));
     ev("S.medLog=S.medLog.filter(x=>x.id!==99&&x.id!==100)");
     ev("S.meds[0].k=3");ev("render()");
-    ok("a warning when stock runs low",q("#view").textContent.includes("Yaklaşık 3 doz kaldı"));
+    ok("a warning when stock runs low",q("#view").textContent.includes("günlük stok kaldı"));
     ok("no diagnosis/advice language",!/etkileşim kontrol|dozu artır|doktora danış|yan etki/i.test(q("#view").textContent.replace("etkileşimlerini denetlemez","")));
 
     // edit, switch off, delete
@@ -1020,7 +1020,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     w.Capacitor.Plugins.LocalNotifications={checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),cancel:async()=>{},registerActionTypes:async o=>{types=o.types},schedule:async o=>{list=o.notifications}};
     ev("S.medLog=[]");
     await ev("scheduleReminders()");
-    const medN=()=>list.filter(n=>n.id>=1e6);
+    const medN=()=>list.filter(n=>n.id>=1e6&&n.extra?.act==="med");
     ok("medication notifications are scheduled: large id, 'Aldım' action, extra data, name visible",medN().length>=40&&medN().every(n=>n.actionTypeId==="med"&&n.extra.act==="med"&&n.extra.m===1&&n.extra.at===new Date(n.schedule.at).getTime())&&medN()[0].body.includes("Yeni Ad"),medN()[0]);
     ok("action types: water and medication ('✓ Aldım')",types.some(t=>t.id==="med"&&t.actions[0].id==="med"&&t.actions[0].title==="✓ Aldım")&&types.some(t=>t.id==="water"));
     ok("normal reminders do not clash with medication ids, ids are unique",new Set(list.map(n=>n.id)).size===list.length);
