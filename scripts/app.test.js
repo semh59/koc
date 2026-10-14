@@ -323,13 +323,17 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   ok("provider names from one source: the privacy screen, policy, data safety and store text all list them",(()=>{const n=ev("defProviders().map(p=>p.name)"),rd=f=>require("fs").readFileSync(path.join(__dirname,"../docs/"+f),"utf8");ev("sheetPrivacy()");const pv=$q("#sheet").textContent;ev("closeSheet()");return n.length===6&&n.every(x=>pv.includes(x)&&["privacy-policy.md","play-data-safety.md","store-listing.md"].every(f=>rd(f).includes(x)))})());
   ev("setKey('groq','KEY-sirri-12345');S.settings.healthNote='gizli not'");
   ev("document.querySelector('#bkpw')||document.body.insertAdjacentHTML('beforeend','<input id=\"bkpw\">')");
+  ev("document.querySelector('#bkpw2')||document.body.insertAdjacentHTML('beforeend','<input id=\"bkpw2\">')");
   ev("document.querySelector('#bkw')||document.body.insertAdjacentHTML('beforeend','<div id=\"bkw\"></div>')");
   const pw1=w.document.querySelector("#bkpw");
+  const pw2=w.document.querySelector("#bkpw2");
   for(const [a,msg,n] of [["","en az 10","parolasız"],["abc","en az 10","kısa"],["abcdefgh1","en az 10","9 karakter"],["1234567890","kolay","yalnız rakam"],["Password123!","kolay","yaygın parola + rakam"]]){
-    pw1.value=a;
+    pw1.value=a;pw2.value=a;
     ok(`a passwordless/weak backup is rejected: ${n}`,await ev("backupText()")===null&&w.document.querySelector("#bkw").textContent.includes(msg),w.document.querySelector("#bkw").textContent);
   }
-  w.document.querySelector("#bkw").remove();pw1.value="mavi-bulut-77";
+  pw1.value="mavi-bulut-77";pw2.value="mavi-bulut-78";
+  ok("a backup with two different passwords is not made and says so",await ev("backupText()")===null&&w.document.querySelector("#bkw").textContent.includes("Parolalar aynı değil"));
+  w.document.querySelector("#bkw").remove();pw2.value="mavi-bulut-77";
   w.backupP=ev("backupText()");
   const enc=await w.backupP;{
     ok("an encrypted backup contains no plain text",!enc.includes("gizli not")&&!enc.includes("KEY-sirri-12345")&&JSON.parse(enc).enc==="aes-gcm-pbkdf2");
@@ -1786,7 +1790,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("quota error: a persistent warning in other tabs too",$q("#view").textContent.includes("Son değişiklik kaydedilemedi"));
     ev("tab='today';render()");
     $q('.todo [data-act="databackup"]').click();
-    ok("quota error: Yedek al goes to Data and backup, the backup screen includes the in-memory (unsaved) state",ev("tab")==="settings-data"&&(()=>{$q("#bkpw").value="mavi-bulut-77";return true})()&&(await (await ev("BackupLib.decrypt"))(JSON.parse(await ev("backupText()")),"mavi-bulut-77")).S.entries.filter(e=>e.type==="water").length===2);
+    ok("quota error: Yedek al goes to Data and backup, the backup screen includes the in-memory (unsaved) state",ev("tab")==="settings-data"&&(()=>{$q("#bkpw").value="mavi-bulut-77";$q("#bkpw2").value="mavi-bulut-77";return true})()&&(await (await ev("BackupLib.decrypt"))(JSON.parse(await ev("backupText()")),"mavi-bulut-77")).S.entries.filter(e=>e.type==="water").length===2);
     ev("closeSheet()");SP.setItem=set0;
     ev("save();render()");
     ok("once quota frees up the record is written and the warning goes",!v().includes("kaydedilemedi")&&JSON.parse(w.localStorage.getItem("nw_state")).entries.length===2);

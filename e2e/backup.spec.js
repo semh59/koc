@@ -17,6 +17,10 @@ test("encrypted backup: create, wipe all data, rejected without or with a wrong 
   await page.click('[data-go="download"]');
   await expect(page.locator("#bkw")).toContainText("en az 10 karakter");
   await page.fill("#bkpw",PW);
+  await page.fill("#bkpw2",PW+"x");
+  await page.click('[data-go="download"]');
+  await expect(page.locator("#bkw")).toContainText("Parolalar aynı değil");
+  await page.fill("#bkpw2",PW);
   const [dl]=await Promise.all([page.waitForEvent("download"),page.click('[data-go="download"]')]);
   expect(dl.suggestedFilename()).toBe("neowell-yedek-2026-10-06.json");
   const text=await readFile(await dl.path(),"utf8");

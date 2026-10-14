@@ -23,7 +23,7 @@ const text=w=>w.document.querySelector("#sheet").textContent;
   w.eval("S.settings.healthNote='yeni';add('note',null,'c',dayKey())");
 
   w.eval("sheetBackup()");
-  ok("the backup page has one password field, the photo note and a way to the restore page",!w.document.querySelector("#bkpw2")&&/Fotoğraflar yedeğe girmez/.test(text(w))&&!!w.document.querySelector("[data-obr=open]"));
+  ok("the backup page asks the password twice, the photo note and a way to the restore page",!!w.document.querySelector("#bkpw2")&&/Fotoğraflar yedeğe girmez/.test(text(w))&&!!w.document.querySelector("[data-obr=open]"));
   w.eval("sheetDrive()");await flush();
   ok("the Drive page: photo note, key note, same-password note, last backup says shared and to verify",/Fotoğraflar yedeğe girmez/.test(text(w))&&/anahtarların da yedeğe girer/.test(text(w))&&/aynı parolayı/.test(text(w))&&/ulaştığını denetle/.test(text(w)));
   w.eval("closeSheet();tab='settings-data';render()");
@@ -81,7 +81,7 @@ const text=w=>w.document.querySelector("#sheet").textContent;
   w.document.querySelector('[data-act=reset]').click();await flush();
   ok("delete everything names the last backup and asks for a backup first",/Son yedek: .*ulaştığını denetle/.test(cm)&&/Önce yedek al/.test(cm),cm);
   w.eval("closeSheet();S.settings.lastBackup='';sheetBackup()");
-  w.document.querySelector("#bkpw").value=PW;w.document.querySelector('[data-go=share]').click();
+  w.document.querySelector("#bkpw").value=PW;w.document.querySelector("#bkpw2").value=PW;w.document.querySelector('[data-go=share]').click();
   await until(()=>w.eval("S.settings.lastBackup")!=="");
   ok("the manual share path also points to Yalnız denetle",/Yalnız denetle/.test(toast(w)));
   w.eval("add('weight',70)");cm="";w.confirm=m=>(cm=m,false);

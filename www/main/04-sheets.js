@@ -280,7 +280,7 @@ function goNote(){const t=$("#fv").value.trim();if(!t)return toast("Önce notunu
 function sheetBackup(){
   openSheet(`<h3>Yedek al</h3><p class="m0 mb-3 mut sm">${BK_PHOTOS} Yedek her zaman şifrelenir${S.settings.bkNoKeys?" ve Rehber anahtarların içine girmez":" ve Rehber anahtarların da içine girer"}. ${bkLast()}.</p>
   <label class="lbl" for="bkpw">Yedek parolası (en az ${BackupLib.MINPW} karakter). Parolayı unutursan yedeğini kimse açamaz, kurtarma yolu yoktur. Parolayı güvenli bir yere yaz.</label>
-  <input class="in" id="bkpw" type="password" autocomplete="new-password" placeholder="Parola">
+  <input class="in" id="bkpw" type="password" autocomplete="new-password" placeholder="Parola"><input class="in" id="bkpw2" type="password" autocomplete="new-password" placeholder="Parolayı tekrar yaz" aria-label="Parolayı tekrar yaz">
   <div class="lbl">Kopyala'ya basınca yedek metni burada çıkar.</div><textarea class="in" id="bk" spellcheck="false" readonly></textarea>
   <div class="hint" id="bkw" role="alert"></div>
   <div class="two"><button class="btn ghost" data-go="copy">Kopyala</button><button class="btn" data-go="${isNative()?"share":"download"}">${isNative()?"Dosya olarak paylaş":"Dosya indir"}</button></div>
@@ -288,7 +288,7 @@ function sheetBackup(){
 }
 function markBackup(soft){S.settings.lastBackup=dayKey();save(soft)}
 async function backupText(){
-  const pw=$("#bkpw").value,bad=BackupLib.pwCheck(pw);
+  const {pw,bad}=bkNewPw("bkpw","bkpw2");
   if(bad){const w=$("#bkw");if(w)w.textContent=bad;toast(bad);return null}
   return backupJson(pw);
 }
