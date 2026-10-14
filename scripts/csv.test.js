@@ -40,5 +40,8 @@ ok("moves file: walk or run with minutes, steps, km, speed and kcal",g("hareket"
  ok("workout file: the header carries the chosen weight unit and the values follow it",lb[0].includes(";set;lb;tekrar")&&lb[1].includes(";1;44,09;10"),lb.slice(0,2));
  const bn=JSON.parse(A.build({settings:{},entries:S.entries},"2026-10-05",{kayitlar:"a;b"}).json);
  ok("bundle: the archive carries the tables as they are; without tables there is no tables key",bn.tables.kayitlar==="a;b"&&!("tables" in JSON.parse(A.build({settings:{}},"2026-10-05").json)));
- ok("archive states what it leaves out",/API anahtarları/.test(A.LEFT_OUT)&&/döngü/.test(A.LEFT_OUT)&&/fotoğraflar/.test(A.LEFT_OUT));}
+ const WORDS={providers:"API anahtarları",cycle:"döngü kaydı",cycleSym:"döngü kaydı",medNear:"yakının telefonu",healthNote:"sağlık notu",ramLat:"konum",ramLon:"konum",ramName:"konum",pregnant:"hamilelik",nursing:"emzirme",edFlag:"güvenlik uyarısı",riskOff:"güvenlik uyarısı",riskClearedAt:"güvenlik uyarısı",consentAt:"rıza",consentP:"rıza",cycleOn:"döngü ayarları",cycleRem:"döngü ayarları"};
+ const S2={settings:Object.fromEntries(Object.keys(WORDS).filter(k=>!["providers","cycle","cycleSym"].includes(k)).map(k=>[k,1])),providers:[1],cycle:[1],cycleSym:[1]},o=JSON.parse(A.build(S2,"2026-10-05").json);
+ ok("archive: every key the file drops is named in the left-out text, and none of them is in the file",Object.entries(WORDS).every(([k,w])=>A.LEFT_OUT.includes(w))&&Object.keys(o.settings).length===0&&!/"providers"|"cycleSym"/.test(JSON.stringify(o.modules)),o.settings);
+ ok("archive: photos are named as left out",A.LEFT_OUT.includes("fotoğraflar"));}
 finish();

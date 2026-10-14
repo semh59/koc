@@ -57,16 +57,16 @@ const pvFhir=()=>FhirLib.build(Vitals.all(),weights(),(d,t)=>-new Date(`${d}T${t
 const pvRow=(t,sub,act,aria,on)=>`<div class="row"><span class="grow"><b>${t}</b><small class="db mut sm">${sub}</small></span><button class="chip" data-pv="${act}" ${on?"":"disabled"} aria-label="${aria}">Paylaş</button></div>`;
 /* One place for every PDF report and every table or file that leaves the phone. */
 function sheetExport(){
-  const ar=pvArchive(),fh=pvFhir(),bn=pvBundle(),tabs=Object.keys(JSON.parse(bn.json).tables).length;
+  const ar=pvArchive(),fh=pvFhir(),files=pvCsv(),tabs=pvCsv(false).filter(f=>f.n).length;
   openSheet(`<h3>Raporlar ve dışa aktarma</h3>
   <h4 class="grp">PDF raporları</h4>${reportRows()}
   <h4 class="grp">Tablolar (CSV)</h4><p class="mut sm">Excel ve Google Sheets'te açılır. Aşağıdan şifrelemezsen dosya şifresizdir ve paylaştığın yere gider; yedek yerine geçmez.</p>
   ${swRow('data-pv="seal"',pvSeal,"Parolayla şifrele","Paylaşılan dosyayı yalnız parolayı bilen açabilir; Excel ve Sheets şifreli dosyayı doğrudan açmaz")}
   ${swRow('data-pv="split"',pvSplit,"Tür başına ayrı dosya","Yemek, su, kilo gibi her tür kendi tablosunda olur; her tabloda tek birim bulunur")}
   ${swRow('data-pv="intl"',pvIntl,"Nokta ondalık, virgül ayraç","Türkçe Excel için kapalı bırak; İngilizce Excel ve Google Sheets (ABD) için aç")}
-  ${pvCsv().map((f,i)=>pvRow(f.label,`${f.n} satır`,"csvsh:"+i,`${f.label} paylaş`,f.n)).join("")}
+  ${files.map((f,i)=>pvRow(f.label,`${f.n} satır`,"csvsh:"+i,`${f.label} paylaş`,f.n)).join("")}
   <h4 class="grp">Tüm kayıtlar</h4>
-  ${pvRow("Hepsini tek paket (tek JSON dosyası)",`${bn.total} kayıt ve ${tabs} tablo. Dışarıda: ${ArchiveLib.LEFT_OUT}`,"bundle","Hepsini tek paket olarak paylaş",bn.total)}
+  ${pvRow("Hepsini tek paket (tek JSON dosyası)",`${ar.total} kayıt ve ${tabs} tablo. Dışarıda: ${ArchiveLib.LEFT_OUT}`,"bundle","Hepsini tek paket olarak paylaş",ar.total)}
   ${pvRow("Kayıtlarım (tek JSON dosyası, bazı veriler dışarıda)",`${ar.total} kayıt, tüm modüller. Dışarıda: ${ArchiveLib.LEFT_OUT}`,"archive","Kayıtlarımı paylaş",ar.total)}
   ${pvRow("Tansiyon, kilo ve şeker (FHIR R4)",`${fh.bp} tansiyon, ${fh.weight} kilo, ${fh.glucose} şeker kaydı; başka sağlık uygulamalarının okuyabildiği biçim, yorum içermez`,"fhir","FHIR dosyasını paylaş",fh.total)}
   <button class="mt-3 btn ghost" data-pv="close">Kapat</button>`);

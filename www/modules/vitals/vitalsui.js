@@ -140,7 +140,7 @@ function vSaveEdit(){
   for(const [i,r] of old.entries()){
     const f={...r,day,time:vGet("vtime"),note:vGet("vnot")};
     if(r.k==="t")Object.assign(f,{sys:LabLib.optNum(vGet("bs"+(i+1))),dia:LabLib.optNum(vGet("bd"+(i+1))),pulse:LabLib.optNum(vGet("bn"+(i+1))),session:vSession});
-    else{const g=LabLib.optNum(vGet("gv"));Object.assign(f,{g:g==null?g:Units.gIn(g),ctx:vCtx})}
+    else{const g=LabLib.optNum(vGet("gv"));Object.assign(f,{g:g==null?g:unitVal($("#gv"),Units.gIn),ctx:vCtx})}
     const c=VitalsLib.check(f);
     if(!c.row)return vWarn(vErrText(c));
     next.set(r.id,{...c.row,id:r.id});
@@ -170,7 +170,7 @@ function vSaveBp(){
   vFinish(rows,`Kaydedildi: ${as}/${ad}${rows.length>1?" (ortalama)":""}`);
 }
 function vSaveBs(){
-  const day=vGet("fday"),time=vGet("vtime"),g0=LabLib.optNum(vGet("gv")),g=g0==null?g0:Units.gIn(g0);
+  const day=vGet("fday"),time=vGet("vtime"),g0=LabLib.optNum(vGet("gv")),g=g0==null?g0:unitVal($("#gv"),Units.gIn);
   if(g==null)return toast(`Şekeri ${glab()} olarak yaz, örneğin ${vMmol()?"5,3":"95"}`);
   const c=VitalsLib.check({k:"s",day,time,g,ctx:vCtx,note:vGet("vnot")});
   if(!c.row)return toast(vErrText(c));
