@@ -164,7 +164,7 @@ async function labRead(data,password){
     }
   }catch(e){closeSheet();return toast("PDF okunamadı")}
   document.getElementById("toast").classList.remove("on");
-  if(ex.cancelled)return toast("Okuma iptal edildi");
+  if(ex.cancelled)return toast("Okuma durduruldu");
   if(ex.need==="password"){
     labKeep=data;
     return openSheet(`<h3>Korumalı PDF</h3><p class="mut sm">${ex.wrong?"Parola yanlış. ":""}Laboratuvarın verdiği PDF parolasını yaz. Parola saklanmaz.</p><input class="in" id="labpw" type="password" autocomplete="off" autofocus><button class="btn" data-lab="pw">Aç</button><button class="mt-2 btn ghost" data-lab="close">Vazgeç</button>`);

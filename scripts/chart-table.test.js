@@ -23,5 +23,16 @@ const L=n=>{const d=new Date(Date.now()-n*864e5),p=x=>String(x).padStart(2,"0");
   const h=w.document.createElement("div");
   h.innerHTML=w.eval("msel='waist';mChart(S.measures.slice().sort((a,b)=>a.day<b.day?-1:1))");
   ok("measure chart: value in the label and a table with both points",/son değer 88,0 cm/.test(h.querySelector("svg").getAttribute("aria-label"))&&h.querySelectorAll("details table tr").length===2,h.innerHTML.slice(0,300));
+  {
+    const wk=[3,2,1].map((n,i)=>({id:i+1,day:L(n),t0:1,t1:2,name:"A",ex:[{id:"bench",sets:[{kg:50+i*5,reps:8,done:true}]}]}));
+    w.eval("S.workouts="+JSON.stringify(wk)+";S.steps=[];tab='gym';render();exSheet('bench')");
+    const sh=q("#sheet svg.chart");
+    ok("exercise chart: the label gives the session count and the first and last value",sh&&/3 seans, .* 1TM|3 seans/.test(sh.getAttribute("aria-label"))&&/tabloda/.test(sh.getAttribute("aria-label")),sh&&sh.getAttribute("aria-label"));
+    const et=sh&&sh.parentElement.querySelector("details table");
+    ok("exercise chart: an all sessions table with one row per session",et&&et.rows.length===3,et&&et.textContent);
+    w.eval("closeSheet();for(const n of [3,2,1])S.entries.push({id:100+n,day:keyOff(-n),time:'09:00',type:'steps',v:4000+n*100,text:'manual'});tab='steps';render()");
+    const sc=q("#view svg.bars");
+    ok("steps chart: label with average and goal, touch bubble text and a table of the days",sc&&/günlük ortalama/.test(sc.getAttribute("aria-label"))&&/tabloda/.test(sc.getAttribute("aria-label"))&&JSON.parse(sc.dataset.tip).length>=3&&JSON.parse(sc.dataset.tip).some(t=>/4.300 adım/.test(t[2]))&&sc.parentElement.querySelector("details table").rows.length>=3,sc&&sc.getAttribute("aria-label"));
+  }
   finish();
 })();
