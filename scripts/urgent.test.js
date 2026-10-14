@@ -24,11 +24,16 @@ const {boot}=require("./html");
   ok("glucose above 400: box says high and names the value",/Yüksek şeker ölçümü: 450 mg\/dL/.test(sheet())&&/112/.test(sheet()),sheet());
   ev("closeSheet()");bs(300);
   ok("glucose 250-400: neutral line, no emergency sheet",/Hekimine danış; bu bir tanı değildir/.test(msg())&&!q("#sheet.on"),msg());
+  bs(60);
+  ok("glucose 54-69: neutral line, no emergency sheet",/Hekimine danış; bu bir tanı değildir/.test(msg())&&!q("#sheet.on"),msg());
+  bp(85,55);
+  ok("low blood pressure: neutral line, no emergency sheet",/Hekimine danış; bu bir tanı değildir/.test(msg())&&!q("#sheet.on"),msg());
   bs(100);
   ok("normal glucose: no extra line",!/tanı değildir/.test(msg()),msg());
 
   const L=ev("VitalsLib"),t="2026-10-01",T=o=>({k:"t",day:t,sys:120,dia:80,...o}),G=o=>({k:"s",day:t,g:100,...o});
-  ok("level: bands and boundaries",L.level(T({sys:139,dia:89}),t)===null&&L.level(T({sys:140}),t)==="ask"&&L.level(T({dia:90}),t)==="ask"&&L.level(T({sys:180}),t)==="high"&&L.level(G({g:249}),t)===null&&L.level(G({g:250}),t)==="ask"&&L.level(G({g:400}),t)==="ask"&&L.level(G({g:401}),t)==="high"&&L.level(G({g:53}),t)==="low"&&L.level(G({g:54}),t)===null);
+  ok("level: bands and boundaries",L.level(T({sys:139,dia:89}),t)===null&&L.level(T({sys:140}),t)==="ask"&&L.level(T({dia:90}),t)==="ask"&&L.level(T({sys:180}),t)==="high"&&L.level(G({g:249}),t)===null&&L.level(G({g:250}),t)==="ask"&&L.level(G({g:400}),t)==="ask"&&L.level(G({g:401}),t)==="high"&&L.level(G({g:53}),t)==="low"&&L.level(G({g:54}),t)==="ask"&&L.level(G({g:69}),t)==="ask"&&L.level(G({g:70}),t)===null&&L.level(T({sys:89}),t)==="ask"&&L.level(T({sys:80,dia:50}),t)==="ask"&&L.level(T({sys:90,dia:60}),t)===null);
+  ok("level: own low limit replaces the default low line",L.level(T({sys:100}),t,{sysLo:105})==="ask"&&L.level(T({sys:85}),t,{sysLo:80})===null&&L.level(G({g:75}),t,{gLo:80})==="ask"&&L.level(G({g:65}),t,{gLo:60})===null);
   ok("level: a past day gives nothing",L.level(T({sys:190,day:"2026-09-01"}),t)===null);
   ok("level: own limit replaces the default",L.level(T({sys:132}),t,{sys:130})==="ask"&&L.level(T({sys:132}),t)===null&&L.level(G({g:160}),t,{g:150})==="ask");
 

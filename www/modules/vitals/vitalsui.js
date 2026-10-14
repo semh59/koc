@@ -79,7 +79,7 @@ function vFinish(rows,msg){
   const ids=new Set(added.map(r=>r.id));
   toast(msg+vAsk(rows),()=>{S.vitals=S.vitals.filter(r=>!ids.has(r.id));save();render()});
 }
-const vMy=()=>({sys:S.settings.bpSysHi,dia:S.settings.bpDiaHi,g:S.settings.gFastHi});
+const vMy=()=>{const t=S.settings;return {sys:t.bpSysHi,dia:t.bpDiaHi,g:t.gFastHi,sysLo:t.bpSysLo,diaLo:t.bpDiaLo,gLo:t.gFastLo}};
 const vLevels=rows=>rows.map(r=>VitalsLib.level(r,dayKey(),vMy()));
 const vAsk=rows=>vLevels(rows).includes("ask")?". Hekimine danış; bu bir tanı değildir":"";
 /* Emergency box: names the value, tells low from high, and 112 is one tap away. Returns true when it opened. */
@@ -95,21 +95,23 @@ function vAlert(rows){
 function sheetLimits(){
   const st=S.settings,f=(id,lab,v)=>`<label class="lbl" for="${id}">${lab}</label><input class="in num" id="${id}" inputmode="decimal" value="${v?(id==="vlg"?dg(v):v):""}" autocomplete="off">`;
   openSheet(`<h3>Hekimimin verdiği sınır</h3><p class="mut sm">Hekimin bir sınır verdiyse yaz; ölçüm bu sınıra gelince "Hekimine danış" satırı çıkar. Boş bırakırsan varsayılan sınır kullanılır. Uygulama değeri yorumlamaz.</p>
-  ${f("vlsys","Büyük tansiyon (mmHg)",st.bpSysHi)}${f("vldia","Küçük tansiyon (mmHg)",st.bpDiaHi)}${f("vlg",`Şeker (${glab()})`,st.gFastHi)}
+  ${f("vlsys","Büyük tansiyon üst (mmHg)",st.bpSysHi)}${f("vldia","Küçük tansiyon üst (mmHg)",st.bpDiaHi)}${f("vlg",`Şeker üst (${glab()})`,st.gFastHi)}
+  ${f("vlsyslo","Büyük tansiyon alt (mmHg)",st.bpSysLo)}${f("vldialo","Küçük tansiyon alt (mmHg)",st.bpDiaLo)}${f("vlglo",`Şeker alt (${glab()})`,st.gFastLo)}
   <div class="ferr" id="vwarn" role="alert"></div><button class="btn" data-vt="savelimits">Kaydet</button>`);
 }
 function vSaveLimits(){
   const st=S.settings,out={};
-  for(const [id,k,lbl] of [["vlsys","bpSysHi","Büyük tansiyon"],["vldia","bpDiaHi","Küçük tansiyon"],["vlg","gFastHi","Şeker"]]){
+  const KEYS=[["vlsys","bpSysHi","Büyük tansiyon"],["vldia","bpDiaHi","Küçük tansiyon"],["vlg","gFastHi","Şeker"],["vlsyslo","bpSysLo","Büyük tansiyon alt"],["vldialo","bpDiaLo","Küçük tansiyon alt"],["vlglo","gFastLo","Şeker alt"]];
+  for(const [id,k,lbl] of KEYS){
     const raw=vGet(id).trim();let v=0;
     if(raw){
-      v=LabLib.optNum(raw);if(k==="gFastHi"&&v>0)v=Units.gIn(v);
+      v=LabLib.optNum(raw);if(k.startsWith("gFast")&&v>0)v=Units.gIn(v);
       const [lo,hi]=RANGES[k];
       if(!(v>=lo&&v<=hi))return vWarn(`${lbl} sınırı geçerli değil`);
     }
     out[k]=Math.round(v);
   }
-  const was={bpSysHi:st.bpSysHi,bpDiaHi:st.bpDiaHi,gFastHi:st.gFastHi};
+  const was=Object.fromEntries(KEYS.map(([,k])=>[k,st[k]]));
   Object.assign(st,out);
   if(!commit(()=>Object.assign(st,was)))return;
   closeSheet();render();toast("Sınır kaydedildi");
