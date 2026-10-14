@@ -1,7 +1,7 @@
 "use strict";
 /* History: month calendar, monthly summary, search and the day screen. The data comes from HistoryLib; adding and deleting records use the same flows as the Today screen. */
 let hg={seg:"cal",ym:null,q:"",focus:null,type:"",from:"",to:""};
-const HG_TYPES=[["","Hepsi"],["food","Yemek"],["exercise","Spor"],["wo","Antrenman"],["move","Hareket"],["note","Not"],["vitals","Tansiyon, şeker"],["mood","Ruh hali"],["lab","Tahlil"]];
+const HG_TYPES=[["","Hepsi"],["food","Yemek"],["exercise","Spor"],["wo","Antrenman"],["move","Hareket"],["note","Not"],["weight","Kilo"],["water","Su"],["sleep","Uyku"],["vitals","Tansiyon, şeker"],["mood","Ruh hali"],["lab","Tahlil"]];
 const hgDay=k=>WEEKDAYS[new Date(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10)).getDay()];
 const hgIndex=()=>HistoryLib.index(S,d=>dayAt(d.getTime())); // one pass, a few ms for 3 years of data
 const HG_ICON={food:"Yemek",water:"Su",exercise:"Spor",weight:"Kilo"};
@@ -49,7 +49,8 @@ function hgMonths(idx){
 }
 function hgResults(){
   const q=hg.q.trim();
-  if(foldTr(q).trim().length<HistoryLib.MIN_QUERY)return `<p class="hint">En az ${HistoryLib.MIN_QUERY} harf yaz. Yemek, spor, antrenman, hareket, not, tansiyon ve şeker notu, ruh hali notu ve tahlil adlarında arar.</p>`;
+  if(foldTr(q).trim().length<HistoryLib.MIN_QUERY)return `<p class="hint">En az ${HistoryLib.MIN_QUERY} harf yaz. Yemek, spor, antrenman, hareket, not, kilo, su, uyku, tansiyon ve şeker notu, ruh hali notu ve tahlil adlarında arar.</p>`;
+  if(hg.from&&hg.to&&hg.from>hg.to)return `<p class="ferr" role="alert">Başlangıç günü, bitiş gününden sonra olamaz. Tarihleri düzelt.</p>`;
   const r=HistoryLib.search(S,q,HistoryLib.SEARCH_MAX,w=>gNames(w,50),hg);
   if(!r.total)return emptyCard("note","",`"${esc(q)}" için kayıt bulunamadı.`);
   return `<p class="hint" role="status">${r.total} kayıt, ${r.days} günde${r.total>r.items.length?` (ilk ${r.items.length} gösteriliyor)`:""}.</p>`+r.items.map(x=>`<button class="rrow" data-hg="day:${x.day}"><span class="num mut">${fd(x.day)}</span><span class="grow tx"><b>${esc(x.text||x.kind)}</b><span class="mut sm">${x.kind}${x.sub?` · ${esc(x.sub)}`:""}</span></span></button>`).join("");

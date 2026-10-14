@@ -163,9 +163,9 @@ function sheetMissing(){
 /* One edit sheet for a log entry: value, name or note, day and time, and the meal for food. */
 let editId=0;
 function sheetEntry(id){
-  const e=Log.find(x=>x.id===id);if(!e||e.type==="steps")return;
+  const e=Log.find(x=>x.id===id);if(!e||e.type==="steps"&&e.text!=="manual")return;
   const t=e.type,v=e.v==null?"":t==="weight"?dw(e.v):fmt(e.v,e.v%1?1:0);
-  const val={weight:`Kilo (${wlab()})`,water:"Miktar (ml)",exercise:"Süre (dakika)",food:"Kalori (kcal, isteğe bağlı)"}[t];
+  const val={weight:`Kilo (${wlab()})`,water:"Miktar (ml)",exercise:"Süre (dakika)",food:"Kalori (kcal, isteğe bağlı)",steps:"Adım sayısı"}[t];
   const name={food:"Yemeğin adı",exercise:"Tür"}[t];
   editId=id;
   openSheet(`<h3>Kaydı düzenle</h3>${val?`<label class="lbl" for="ev">${val}</label><input class="in num" id="ev" inputmode="${t==="weight"?"decimal":"numeric"}" value="${v}" autocomplete="off">`:""}
@@ -186,9 +186,9 @@ async function goEntry(){
     if(!(kg>=20&&kg<=400)||(!same&&/[.,]\d{3}/.test(raw)))return bad(`Kiloyu ${wlab()} olarak yaz, örneğin ${wlab()==="lb"?"185,4":"84,3"}`);
     if(day!==e.day&&of("weight",day).length&&!await confirmSheet({title:"Bu günde başka kilo var",body:`${fd(day)} gününde bir tartı kaydı var. İki kayıttan saati geç olan o günün kilosu sayılır.`,ok:"Taşı"}))return;
     next.v=kg;
-  }else if(t==="water"||t==="exercise"){
-    const n=same?e.v:num(raw,true),max=t==="water"?5000:600;
-    if(!(n>0&&n<=max))return bad(t==="water"?"Miktarı ml olarak yaz (1-5000), örneğin 250":"Süreyi dakika olarak yaz (1-600), örneğin 40");
+  }else if(t==="water"||t==="exercise"||t==="steps"){
+    const n=same?e.v:num(raw,true),max=t==="water"?5000:t==="steps"?1e5:600;
+    if(!(n>0&&n<=max))return bad(t==="water"?"Miktarı ml olarak yaz (1-5000), örneğin 250":t==="steps"?"Adımı 1 ile 100.000 arasında yaz":"Süreyi dakika olarak yaz (1-600), örneğin 40");
     next.v=n;
   }else if(t==="food"){
     const kc=same?e.v??NaN:num(raw,true);

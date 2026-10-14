@@ -72,7 +72,7 @@ function viewSteps(){
   const km=st.heightCm>0?today*st.heightCm*0.415/1e5:null;
   const extra=km!=null?`<div class="stat"><div class="k">Yaklaşık mesafe</div><div class="v num">${fmt(km,1)} km</div></div>${kg!=null?`<div class="stat"><div class="k">Yaklaşık enerji</div><div class="v num">${Math.round(0.5*kg*km)} kcal</div></div>`:""}`:"";
   const rows=all.slice(-7).reverse().map(d=>`<div class="row"><span>${d.k===calKey()?"Bugün":WEEKDAYS_SHORT[d.d.getDay()]+" "+fd(d.k)}</span><b class="num">${d.v?fint(d.v):"–"}</b></div>`).join("");
-  const man=Log.where(e=>e.type==="steps"&&e.text==="manual").sort((a,b)=>b.day.localeCompare(a.day)||b.id-a.id).map(e=>`<div class="row"><span>${fd(e.day)}</span><b class="num">+${fint(e.v)}</b><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></div>`).join("");
+  const man=Log.where(e=>e.type==="steps"&&e.text==="manual").sort((a,b)=>b.day.localeCompare(a.day)||b.id-a.id).map(e=>`<div class="prow"><button class="grow pbtn" data-edit="${e.id}" aria-label="${fd(e.day)}, ${fint(e.v)} adım, düzenle"><span class="grow">${fd(e.day)}</span><b class="num">+${fint(e.v)}</b></button><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></div>`).join("");
   const manualCard=`<div class="card"><div class="lbl">Elle eklenenler</div>${man||'<p class="hint">Elle eklediğin adım yok.</p>'}<button class="lnk" data-act="stepsadd">Adım ekle (elle)</button></div>`;
   /* With no steps at all: one sentence and starting a walk instead of a wall of counters and statistics. */
   if(!sl.n&&!today&&!S.walk)return `${emptyCard("steps","Henüz adım kaydı yok","Telefonu yanında taşıdıkça adımların burada görünür.",`<button class="btn" data-w="start">Yürüyüş başlat</button>`)}

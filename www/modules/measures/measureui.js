@@ -1,6 +1,6 @@
 "use strict";
 /* Body measures (waist, hip, chest, arm, thigh): add sheet and Trend card. Not part of the Coach context. */
-let msel="waist";
+let mAll=false,msel="waist";
 const mLast=k=>{const a=S.measures.filter(m=>m.k===k);return a.length?a[a.length-1]:null};
 const mChips=id=>`<div class="chips" id="${id}">${Algo.MEASURES.map(k=>`<button class="chip" data-ms="k:${k}" aria-pressed="${k===msel}">${MNAME[k]}</button>`).join("")}</div>`;
 
@@ -40,13 +40,14 @@ function measureCard(){
   const list=S.measures.filter(m=>m.k===msel),l=list[list.length-1],f=list[0],w=mLast("waist"),cm=S.settings.heightCm;
   const stats=l?`<div class="stats"><div class="stat"><div class="k">Son</div><div class="v num">${fmt(l.v)} ${MUNIT(msel)}</div></div>${list.length>1?`<div class="stat"><div class="k">${fd(f.day)}'den beri</div><div class="v num">${fmtS(l.v-f.v)} ${MUNIT(msel)}</div></div>`:""}</div>`:"";
   const whtr=w&&cm>0?`<p class="pt-2 hint">Bel/boy oranı: <b class="num">${fmt(Algo.whtr(w.v,cm),2)}</b> (bel ${fmt(w.v)} cm, boy ${cm} cm). Genel bilgi: bel çevresinin boyun yarısından küçük olması sık anılan bir referanstır; tek başına bir şey söylemez, tanı ya da yorum değildir. Sağlık kararların için hekimine danış.</p>`:"";
-  const rows=list.slice(-5).reverse().map(m=>`<div class="prow"><button class="grow pbtn" data-ms="edit:${m.day}"><span class="grow">${fd(m.day)}</span><b class="num">${fmt(m.v)} ${MUNIT(msel)}</b></button><button class="del" data-ms="del:${m.day}" aria-label="${fd(m.day)} ${MNAME[msel]} ölçüsünü sil">${Icons.svg("x")}</button></div>`).join("");
-  return `<h2>Vücut ölçüleri</h2><div class="card">${mChips("mt")}${list.length?mChart(list):`<p class="hint">${MNAME[msel]} için ölçü yok.</p>`}${stats}${whtr}<div class="mt-2">${rows}</div>${addBtn}</div>`;
+  const rows=(mAll?list:list.slice(-5)).slice().reverse().map(m=>`<div class="prow"><button class="grow pbtn" data-ms="edit:${m.day}"><span class="grow">${fd(m.day)}</span><b class="num">${fmt(m.v)} ${MUNIT(msel)}</b></button><button class="del" data-ms="del:${m.day}" aria-label="${fd(m.day)} ${MNAME[msel]} ölçüsünü sil">${Icons.svg("x")}</button></div>`).join("");
+  return `<h2>Vücut ölçüleri</h2><div class="card">${mChips("mt")}${list.length?mChart(list):`<p class="hint">${MNAME[msel]} için ölçü yok.</p>`}${stats}${whtr}<div class="mt-2">${rows}</div>${list.length>5?`<button class="lnk" data-ms="all">${mAll?"Son 5 ölçüyü göster":`Tümünü göster (${list.length})`}</button>`:""}${addBtn}</div>`;
 }
 document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-ms]");if(!el)return;
   const [a,p]=el.dataset.ms.split(":");
   if(a==="open")sheetMeasures();
+  else if(a==="all"){mAll=!mAll;render()}
   else if(a==="edit")sheetMeasures(p);
   else if(a==="go")goMeasures();
   else if(a==="k"){

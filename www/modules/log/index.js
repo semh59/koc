@@ -1,6 +1,9 @@
 "use strict";
 /* Log module: food, water, weight, exercise, note and steps entries (S.entries, S.nextId). Other modules touch this data only through this API. */
 const WL=typeof WeeklyLib!=="undefined"?WeeklyLib:require("../insights/weeklylib.js");
+/* Drink kinds of a water entry (dr); drinkui.js uses them too. */
+const DRINKS=[["water","Su"],["mineral","Maden suyu (sade)"],["tea","Çay"],["coffee","Kahve"],["soda","Gazlı içecek"],["energy","Enerji içeceği"],["milk","Süt"],["other","Diğer"]];
+const drinkName=c=>(DRINKS.find(d=>d[0]===c)||DRINKS[0])[1];
 const Log={
   where:f=>S.entries.filter(f),
   find:f=>S.entries.find(f),
@@ -32,6 +35,11 @@ Data.hist.push((S,{add,get})=>{
 });
 Data.histSearch.push((S,{n,norm,out})=>{
   for(const e of S.entries||[]){
+    if(e.type==="weight"||e.type==="water"){
+      const tx=e.type==="weight"?`Kilo ${String(Math.round(e.v*10)/10).replace(".",",")} kg`:`Su ${e.dr?drinkName(e.dr)+" ":""}${Math.round(e.v)} ml`;
+      if(norm(tx).includes(n))out.push({day:e.day,time:e.time,type:e.type,kind:e.type==="weight"?"Kilo":"Su",text:tx,sub:"",id:e.id});
+      continue;
+    }
     if(e.type!=="food"&&e.type!=="note"&&e.type!=="exercise")continue;
     if(!norm(e.text).includes(n))continue;
     const food=e.type==="food";
