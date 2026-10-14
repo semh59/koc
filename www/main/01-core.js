@@ -58,7 +58,7 @@ const DEF={
     {id:11,t:"20:00",on:false,name:"Oruç başlangıcı",title:"⏳ Oruç başlangıcı",body:"Oruç penceren başlıyor, istersen Bugün'den başlat."},
     {id:12,t:"20:30",on:true,dow:0,name:"Haftalık özet (Pazar)",title:"📊 Haftalık özet",body:"Haftanı birlikte inceleyelim, bakmak için dokun."}
   ]},
-  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,dbStep:0,plates:GPLATE_DEF.slice(),exCfg:{},providers:defProviders(),chat:[],chats:[],cid:1,myFoods:[],recipes:[],favFoods:[],mealTpl:[],fast:{plan:16,t0:null,log:[]},sleep:[],mood:[],labs:[],vitals:[],pulse:[],hr:[],meds:[],medLog:[],moves:[],measures:[],walk:null,cycle:[]
+  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,dbStep:0,plates:GPLATE_DEF.slice(),exCfg:{},providers:defProviders(),chat:[],chats:[],cid:1,myFoods:[],recipes:[],favFoods:[],mealTpl:[],fast:{plan:16,t0:null,log:[]},sleep:[],mood:[],labs:[],vitals:[],pulse:[],hr:[],meds:[],medLog:[],moves:[],measures:[],walk:null,cycle:[],cycleSym:[]
 };
 const VR={bpSysHi:[80,300,true],bpDiaHi:[40,200,true],bpSysLo:[50,300,true],bpDiaLo:[30,200,true],gFastLo:[20,600,true],gFastHi:[20,600,true],gPostLo:[20,600,true],gPostHi:[20,600,true]};
 const RANGES={...VR,goalKg:[20,400,false],kcal:[800,8000,true],waterMl:[500,10000,true],glass:[50,1500,true],sportWeek:[10,3000,true],stepGoal:[1000,100000,true],heightCm:[100,250,true],age:[10,100,true],ramLat:[35.5,42.5,false],ramLon:[25.5,45,false]};
@@ -169,7 +169,7 @@ function buildState(r){
   const parts=[["ayarlar",()=>({settings:cleanSettings(r.settings)})],
     ["kayıtlar",()=>{const c=cleanEntries(r.entries);DROPS.n+=c.drop;return {entries:c.out,nextId:c.next}}],
     ["besinler",()=>({myFoods:cleanMyFoods(r.myFoods)})],["tahliller",()=>({labs:LabLib.cleanLabs(r.labs)})],["ölçümler",()=>({vitals:VitalsLib.clean(r.vitals)})],
-    ["sağlık",()=>cleanHealthState(r)],["döngü",()=>({cycle:CycleLib.clean(r.cycle,dayKey())})],["antrenman",()=>cleanGym(r)],["Rehber",()=>cleanCoach(r)]];
+    ["sağlık",()=>cleanHealthState(r)],["döngü",()=>({cycle:CycleLib.clean(r.cycle,dayKey()),cycleSym:CycleLib.cleanDays(r.cycleSym,dayKey())})],["antrenman",()=>cleanGym(r)],["Rehber",()=>cleanCoach(r)]];
   const st=structuredClone(DEF);
   for(const [k,fn] of parts)try{Object.assign(st,fn())}catch{LOST.push(k)}
   const wids=new Set(st.workouts.map(w=>w.id));

@@ -119,5 +119,49 @@ const seed=()=>ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.cycl
   ok("the pending cycle notification is cancelled and not rescheduled",log.cancel.includes(9200)&&!log.sched.includes(9200),log);
   w.Capacitor=old;
 }
+{ // daily symptoms, open period after 14 days, overdue note, skipped gaps, paused reminder
+  const click=sel=>ev(`document.querySelector('${sel}').click()`),v=()=>ev("document.querySelector('#view').textContent");
+  const cd=C.cleanDays([{day:"2026-10-05",sym:["nausea","zz","nausea"]},{day:"2026-10-05",sym:["cramp"]},{day:"2026-10-07",sym:["cramp"]},{day:"2026-10-01",sym:[]},{day:"2026-09-30",sym:["fatigue","breast"]},null,{day:"x",sym:["cramp"]}],T);
+  ok("cleanDays: unknown, empty and future days dropped, one record per day (last wins), sorted",JSON.stringify(cd)==='[{"day":"2026-09-30","sym":["fatigue","breast"]},{"day":"2026-10-05","sym":["cramp"]}]'&&C.cleanDays(null,T).length===0,cd);
+  ok("cleanDays: at most 800 days kept",C.cleanDays(Array.from({length:1000},(_,i)=>({day:C.addDays("2024-01-01",i%900),sym:["cramp"]})),"2027-01-01").length<=800);
+  seed();ev("S.settings.healthNote='';tab='cycle';render()");
+  const before=ev("JSON.stringify(S.cycle)");
+  click('[data-cy="dsym:nausea"]');click('[data-cy="dsym:fatigue"]');
+  ok("daily symptoms: saved for today without a period record, the period list is untouched",ev("JSON.stringify(S.cycleSym)")===`[{"day":"${ev("dayKey()")}","sym":["nausea","fatigue"]}]`&&ev("JSON.stringify(S.cycle)")===before&&ev("document.querySelector('[data-cy=\"dsym:nausea\"]').getAttribute('aria-pressed')")==="true");
+  click('[data-cy="dsym:nausea"]');
+  ok("daily symptoms: a second tap switches it off",ev("S.cycleSym[0].sym.join()")==="fatigue");
+  ev("S.settings.healthNote='hamileyim';render()");click('[data-cy="dsym:smell"]');
+  ok("daily symptoms: still works with a pregnancy marker",ev("S.cycleSym[0].sym.includes('smell')"));
+  ev("S.settings.healthNote=''");
+  const b=ev("buildState(JSON.parse(JSON.stringify(S)))");
+  ok("daily symptoms: backup round trip",JSON.stringify(b.S.cycleSym)===ev("JSON.stringify(S.cycleSym)")&&ev("ArchiveLib.build(S,'2026-10-06').json.includes('cycleSym')")===false);
+  ev("pvDelete(PV_CATS.findIndex(c=>c[0]==='Döngü kayıtları'))");
+  ok("daily symptoms: deleting the cycle category removes them too",ev("S.cycleSym.length")===0&&ev("S.cycle.length")===0);
+  // open period older than 14 days
+  seed();ev("S.cycle=[{id:1,s:'2026-08-26',e:'2026-08-30'},{id:2,s:'2026-09-10'}];render()");
+  ok("old open period: no 'bugün bitti', an end-date button and a hint on the row",!/Dönem bugün bitti/.test(v())&&/Bitiş tarihini gir/.test(v())&&/bitiş girilmedi, eklemek için dokun/.test(v()));
+  click('[data-cy="edit:2"]');
+  ok("old open period: the end picker is capped to 14 days from the start",ev("document.querySelector('#cye').max")==="2026-09-23");
+  ev("document.querySelector('#cye').value='2026-09-14'");click('[data-cy="save"]');
+  ok("old open period: the end date is saved",ev("S.cycle[1].e")==="2026-09-14");
+  // overdue and skipped
+  seed();ev("S.cycle=CycleLib.clean([{s:'2026-06-01'},{s:'2026-06-29'},{s:'2026-07-27'},{s:'2026-08-24'}],'2026-10-06');tab='cycle';render()");
+  const late=ev("CycleLib.overdue(CycleLib.predict(S.cycle),dayKey())");
+  ok("overdue: neutral note with the day count and 'hekimine danış', no interpretation",late>0&&v().includes(`Tahmin aralığı ${late} gün önce bitti; hekimine danış.`)&&!/hamile|gecik|test/i.test(v().match(/Tahmin aralığı[^.]*\./)[0]));
+  ok("overdue: none when the range has not ended or there is no prediction",C.overdue({ok:true,to:"2026-10-10"},T)===0&&C.overdue({ok:false},T)===0&&C.overdue(null,T)===0);
+  ev("S.settings.healthNote='hamileyim';render()");
+  ok("overdue: never shown with a pregnancy marker",!/gün önce bitti/.test(v()));
+  ev("S.settings.healthNote=''");
+  ok("skipped gaps: counted over 60 days, the note shows with a prediction and with too little data",C.skipped(chain([28,100,28,28]))===1&&C.skipped(chain([28,28]))===0);
+  ev("S.cycle=CycleLib.clean([{s:'2026-06-01'},{s:'2026-09-20'}],'2026-10-06');render()");
+  ok("skipped gaps: note in the 'not enough data' branch",/Yeterli veri yok/.test(v())&&/1 aralık 15-60 gün dışında kaldığı için/.test(v()));
+  ev("S.cycle=CycleLib.clean([{s:'2026-04-01'},{s:'2026-04-29'},{s:'2026-05-27'},{s:'2026-09-03'},{s:'2026-10-01'}],'2026-10-06');render()");
+  ok("skipped gaps: note next to a prediction",ev("!!document.querySelector('.cypr')")&&/1 aralık 15-60 gün dışında/.test(v()));
+  // paused reminder reason
+  seed();ev("S.settings.healthNote='hamileyim';tab='settings-modules';render()");
+  ok("paused reminder: the settings row says why",/Hamilelik işareti olduğu için hatırlatma durduruldu/.test(ev("document.querySelector('#view').textContent")));
+  ev("S.settings.healthNote='';render()");
+  ok("paused reminder: no such text without a pregnancy marker",!/hatırlatma durduruldu/.test(ev("document.querySelector('#view').textContent")));
+}
 finish();
 });

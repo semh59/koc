@@ -12,7 +12,7 @@ const Modules={
   vitals:{keys:["vitals"]},
   labs:{keys:["labs"],api:["labReview"]},
   measures:{keys:["measures"]},
-  cycle:{keys:["cycle"]},
+  cycle:{keys:["cycle","cycleSym"]},
   motion:{keys:["walk","moves"],api:["motionKg","setHc"]},
   coach:{keys:["chat","chats","cid","providers"],api:["cNoteCheck","cConsent","consentHtml","consentOk","provNames","usageText","cCalc"]}
 };
