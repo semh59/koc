@@ -1,6 +1,6 @@
 /* Cycle tracking: cyclelib (validation, cleaning, prediction), backup round trip, privacy (Coach context, notification), notification ids. */
 const {ok,finish}=require("./ok");
-const {boot,until}=require("./html");
+const {boot,until,clockAt}=require("./html");
 const C=require("../www/modules/cycle/cyclelib.js"),T="2026-10-06";
 const add=(k,n)=>C.addDays(k,n);
 const starts=(...ds)=>ds.map(s=>({s}));
@@ -50,7 +50,7 @@ const chain=lens=>{let d="2025-01-01";const r=[{s:d}];for(const l of lens){d=add
   ok("reminder day: 2 days before the range, none if past or outside the window",(()=>{const pp={ok:true,from:"2026-10-20"};return C.remindDay(pp,T,30)==="2026-10-18"&&C.remindDay({ok:true,from:"2026-10-07"},T,30)===null&&C.remindDay({ok:true,from:"2026-12-20"},T,30)===null&&C.remindDay({ok:false},T,30)===null})());
 }
 
-boot().then(async w=>{
+boot(w=>w.eval(clockAt(T+"T10:00:00"))).then(async w=>{
 const ev=s=>w.eval(s);
 ev("toast=()=>{}");
 const SECRET="GIZLIDONGUNOTU";

@@ -217,7 +217,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("cycle form: a symptom chip toggles on and off",chip("data-cyb").getAttribute("aria-pressed")==="true"&&ev("cycSym.join()")===first&&(chip("data-cyb").click(),ev("cycSym.length")===0));
     chip("data-cyf").click();
     ok("cycle form: the flow chip is exclusive and toggles off on a second tap",ev("cycFlow")!==""&&(chip("data-cyf").click(),ev("cycFlow")===""));
-    ev("closeSheet();S.cycle=[{id:1,s:'2026-10-01',e:null}]");
+    ev("closeSheet();S.cycle=[{id:1,s:keyOff(-2),e:null}]");
     tap("cy","end");
     ok("ending a period sets today as its end",ev("S.cycle[0].e")===ev("dayKey()")&&toastText().includes("Dönem bitirildi"),[ev("S.cycle[0].e"),toastText()]);
     ev("S.cycle=[]");tap("cy","end");

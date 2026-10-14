@@ -17,12 +17,12 @@ const runOne = (tz, s, f) => new Promise(res => execFile(process.execPath, ["-r"
 }));
 (async () => {
   let errors = 0;
-  for (let i = 0; i < combos.length; i += 4) {
-    await Promise.all(combos.slice(i, i + 4).map(async ([tz, s]) => {
-      const bad = (await Promise.all(testFiles.map(f => runOne(tz, s, f)))).filter(Boolean);
-      errors += bad.length;
-      console.log(`${bad.length ? "FAIL" : "ok  "} TZ=${tz} ${s} ${bad.join(" ")}`);
-    }));
+  const limit = Math.max(2, require("os").cpus().length);
+  for (const [tz, s] of combos) {
+    const bad = [], queue = testFiles.slice();
+    await Promise.all(Array.from({ length: limit }, async () => { for (let f; (f = queue.shift());) { const r = await runOne(tz, s, f); if (r) bad.push(r); } }));
+    errors += bad.length;
+    console.log(`${bad.length ? "FAIL" : "ok  "} TZ=${tz} ${s} ${bad.join(" ")}`);
   }
   process.exit(errors ? 1 : 0);
 })();

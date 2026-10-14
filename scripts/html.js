@@ -20,6 +20,8 @@ module.exports.boot=(before,html=module.exports.build())=>{
   const d=dom.window.document;
   return d.documentElement.dataset.boot?Promise.resolve(dom.window):new Promise(r=>d.addEventListener("nw:boot",()=>r(dom.window),{once:true}));
 };
+/* Source for eval (Node and w.eval): moves the clock to the local time `iso`, still ticking. The offset is fixed when this is called, so Node and every window given the same source agree to the millisecond. */
+module.exports.clockAt=iso=>`{const D=Date,o=${new Date(iso).getTime()-Date.now()};Date=class extends D{constructor(...a){super(...(a.length?a:[D.now()+o]))}static now(){return D.now()+o}}}`;
 /* Makes the state write throw a quota error: returns {full(), free()}. */
 module.exports.quota=w=>{const SP=w.Storage.prototype,set=SP.setItem;return {full:()=>{SP.setItem=function(k){if(k==="nw_state")throw new w.DOMException("dolu","QuotaExceededError");return set.apply(this,arguments)}},free:()=>{SP.setItem=set}}};
 /* Polls `cond` until it is truthy; resolves false on timeout. */
