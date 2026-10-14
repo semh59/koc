@@ -19,7 +19,8 @@ const moveAdd=day=>{
   return Algo.moveBonus(Algo.exerciseKcal(S.entries.filter(e=>e.type==="exercise"&&near(e)),Motion.moves().filter(near),day));
 };
 const kcalGoal=day=>S.settings.kcal>0?S.settings.kcal+moveAdd(day):0;
-function weights(a="0000",b="9999"){const m={};for(const e of S.entries)if(e.type==="weight"&&e.day>=a&&e.day<=b)m[e.day]=e.v;return m}
+/* Several weights on one day: the one with the latest time counts. */
+function weights(a="0000",b="9999"){const m={},at={};for(const e of S.entries)if(e.type==="weight"&&e.day>=a&&e.day<=b&&(e.time||"")>=(at[e.day]??"")){m[e.day]=e.v;at[e.day]=e.time||""}return m}
 function streak(){
   const ds=new Set(S.entries.filter(e=>e.type!=="steps").map(e=>e.day));let d=addDays(0);
   if(!ds.has(dayKey(d)))d=addDays(-1,d);

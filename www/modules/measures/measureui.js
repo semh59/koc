@@ -11,11 +11,12 @@ function sheetMeasures(day=""){
   mEditDay=day;
   openSheet(`<h3>${day?"Ölçüyü düzenle":"Ölçü ekle"}</h3>${day?"":`<div class="lbl">Bölge</div>${mChips("mk")}`}<label class="lbl" for="fv">${msel==="fat"?"Yağ oranı (%)":"Ölçü (cm)"}</label><input class="in num" id="fv" inputmode="decimal" placeholder="örn. 86,5" value="${l?fmt(l.v):""}" autocomplete="off" autofocus onfocus="this.select()"><div class="ferr" id="merr" role="alert"></div>${dayOptions(false,day||undefined)}<button class="btn" data-ms="go">Kaydet</button>`);
 }
-function goMeasures(){
+async function goMeasures(){
   const v=num($("#fv").value);
   const [lo,hi]=Algo.measureRange(msel);
   if(!(v>=lo&&v<=hi))return ferr("merr",msel==="fat"?`Yağ oranını yüzde olarak yaz (${lo} ile ${hi} arası), örneğin 24,5`:"Ölçüyü santimetre olarak yaz (20 ile 250 arası), örneğin 86,5");
   const prev=S.measures;
+  if(mEditDay&&fday()!==mEditDay&&prev.some(m=>m.day===fday()&&m.k===msel)&&!await confirmSheet({title:"Bu günün ölçümü değişsin mi?",body:`${fd(fday())} gününde ${MNAME[msel]} ölçümü var. Devam edersen o gün bu değerle değişir.`,ok:"Değiştir"}))return;
   S.measures=Algo.cleanMeasures([...prev.filter(m=>!(m.day===mEditDay&&m.k===msel)),{day:fday(),k:msel,v}]);
   if(!commit(()=>{S.measures=prev}))return;
   closeSheet();render();

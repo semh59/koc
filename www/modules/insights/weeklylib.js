@@ -23,9 +23,10 @@ const WeeklyLib=(()=>{
       rows.push({day:key(dt),label:`${WEEKDAYS_SHORT[dt.getDay()]} ${dt.getDate()}`,weight:null,water:0,kcal:0,exercise:0,steps:0});
     }
     const rowOf=new Map(rows.map(r=>[r.day,r]));
-    for(const e of D.entries){ // one pass over all entries; the last weigh-in of a day wins
+    const wAt=new Map();
+    for(const e of D.entries){ // one pass over all entries; the latest weigh-in time of a day wins
       const r=rowOf.get(e.day);if(!r)continue;
-      if(e.type==="weight")r.weight=e.v??null;
+      if(e.type==="weight"){if((e.time||"")>=(wAt.get(e.day)??"")){r.weight=e.v??null;wAt.set(e.day,e.time||"")}}
       else if(e.type==="food")r.kcal+=e.v||0;
       else if(e.type==="exercise")r.exercise+=e.v||0;
       else if(e.type==="steps")r.steps+=e.v||0;

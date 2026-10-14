@@ -14,8 +14,8 @@ const Nutrition={
     if(i>=0)my[i]=f;else if(my.length<MYFOODS_MAX)my.unshift(f);else return false;
     return true;
   },
-  addMy(n,kcal,p){
-    const f={n:n.slice(0,60),k:Math.round(kcal),portion:true};if(p!=null&&p>=0)f.p=Math.round(p*10)/10;
+  addMy(n,kcal,p,b){
+    const f={n:n.slice(0,60),k:Math.round(kcal),portion:true};if(p!=null&&p>=0)f.p=Math.round(p*10)/10;if(b)f.b=b;
     return Nutrition.putMy(f);
   }
 };

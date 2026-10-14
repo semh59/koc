@@ -2,7 +2,7 @@
 /* Photo text reading UI: nutrition label and lab report. Reading runs on the phone (ML Kit); the photo is sent nowhere.
    Works with S, save, toast, openSheet, closeSheet, esc, dayKey, sheetPortion, Nutrition, MYFOODS_MAX from the main shell. */
 let labelWarned=false;
-/* A scanned barcode that Open Food Facts does not know: the next label saved from a photo is stored under it, so the next scan finds it on the phone. Cleared when the label sheet is dismissed. */
+/* A scanned barcode that Open Food Facts does not know: the next label saved from a photo is stored under it, so the next scan finds it on the phone. Cleared whenever a sheet closes; photo reading hands it over. */
 let pendingBarcode="";
 const setPendingBarcode=c=>{pendingBarcode=c||""};
 
@@ -30,7 +30,7 @@ async function ocrImage(file){
 async function ocrRun(kind,file){
   const P=plugin("Ocr");if(!P)return toast("Yazı okuma yalnızca telefondaki uygulamada çalışır");
   if(file.size>30e6)return toast("Fotoğraf çok büyük");
-  closeSheet();toast("Yazı okunuyor…");
+  const bar=pendingBarcode;closeSheet();setPendingBarcode(bar);toast("Yazı okunuyor…");
   let lines;
   try{lines=LabLib.ocrToLines(await P.recognize({image:await ocrImage(file)}))}
   catch{return toast("Fotoğraf okunamadı, daha net çekip tekrar dene")}

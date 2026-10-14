@@ -66,8 +66,9 @@ function fastEnd(){
   hbSet("fast",r.fast,r.min<1?"Oruç 1 dakikadan kısa, geçmişe yazılmadı":r.capped?"Oruç bitti: 72 saatten uzun sürdüğü için 72 saat olarak kaydedildi":`Oruç bitti: ${hbDur(r.min)}`);
 }
 setInterval(()=>{if(S.fast.t0&&tab==="today"&&!document.hidden&&!$("#sheet").classList.contains("on"))render()},6e4);
+let hbFrom="";
 function sheetSleep(day){
-  const x=S.sleep.find(s=>s.day===day);
+  const x=S.sleep.find(s=>s.day===day);hbFrom=day||"";
   openSheet(`<h3>Uyku</h3>${dayOptions(false,day).replace(">Gün<",">Kalkış günü<")}
   <label class="lbl" for="hbb">Yattığın saat</label><input class="in" type="time" id="hbb">
   <label class="lbl" for="hbw">Kalktığın saat</label><input class="in" type="time" id="hbw">
@@ -86,10 +87,11 @@ function sheetSleepMood(){
 }
 function sleepSave(){
   const b=$("#hbb").value,w=$("#hbw").value,h=num($("#hbh").value);
-  const min=b&&w?HabitLib.sleepMin(b,w):isNaN(h)?null:Math.round(h*60);
+  const was=S.sleep.find(x=>x.day===hbFrom),hh=$("#hbh");
+  const min=b&&w?HabitLib.sleepMin(b,w):was&&hh.value===hh.defaultValue?was.min:isNaN(h)?null:Math.round(h*60);
   if(!(min>=HabitLib.SLEEP_LIM[0]&&min<=HabitLib.SLEEP_LIM[1]))return ferr("hberr","Süreyi kontrol et: 1 ile 18 saat arası olmalı");
   const day=fday(),old=S.sleep.some(x=>x.day===day),q=+$("#hbq").value;
-  closeSheet();hbSet("sleep",HabitLib.cleanSleep(S.sleep.filter(x=>x.day!==day).concat({day,min,q})),`Uyku ${old?"güncellendi":"kaydedildi"}: ${hbDur(min)}`);
+  closeSheet();hbSet("sleep",HabitLib.cleanSleep(S.sleep.filter(x=>x.day!==day&&x.day!==hbFrom).concat({day,min,q})),`Uyku ${old?"güncellendi":"kaydedildi"}: ${hbDur(min)}`);
 }
 /* A face is picked, the note is optional, saving is with "Kaydet". If the chosen day already has a record, the face and note come filled in (a note can be added later). */
 function moodFill(){
@@ -98,6 +100,7 @@ function moodFill(){
   if(n)n.value=mo&&mo.t||"";
 }
 function sheetMood(day){
+  hbFrom=day||"";
   openSheet(`<h3>Ruh halin</h3>${dayOptions(false,day)}<div class="lbl" id="hbml">Nasıl hissediyorsun?</div><div class="moods" role="group" aria-labelledby="hbml">${MOODS.map((e,i)=>`<button class="chip" data-hb="mood:${i+1}" aria-pressed="false"><span class="t-h2" aria-hidden="true">${e}</span><small>${MOODN[i]}</small></button>`).join("")}</div>
   <label class="lbl" for="hbn">Kısa not (isteğe bağlı)</label><input class="in" id="hbn" maxlength="${HabitLib.NOTE_MAX}" placeholder="örn. Yoğun bir gündü" autocomplete="off">
   <div class="ferr" id="hberr" role="alert"></div><button class="btn" data-hb="moodgo">Kaydet</button>${hbHist(S.mood.slice().reverse().map(x=>hbRow(`<span aria-hidden="true">${MOODS[x.v-1]}</span> ${MOODN[x.v-1]}`,"mdel:"+x.day,fd(x.day)+(x.t?" · "+esc(x.t):""),"medit:"+x.day)))}`);
@@ -106,7 +109,7 @@ function sheetMood(day){
 function moodSave(v){
   if(!v)return ferr("hberr","Önce nasıl hissettiğini seç");
   const day=fday(),old=S.mood.some(x=>x.day===day),t=$("#hbn").value;
-  closeSheet();hbSet("mood",HabitLib.cleanMood(S.mood.filter(x=>x.day!==day).concat({day,v,t})),`Ruh hali ${old?"güncellendi":"kaydedildi"}`);
+  closeSheet();hbSet("mood",HabitLib.cleanMood(S.mood.filter(x=>x.day!==day&&x.day!==hbFrom).concat({day,v,t})),`Ruh hali ${old?"güncellendi":"kaydedildi"}`);
 }
 document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-hb]");if(!el)return;
