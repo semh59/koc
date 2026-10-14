@@ -42,6 +42,15 @@
             android:textColor="#E8F0EE"
             android:textSize="12sp"
             android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/nw_iftar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:textColor="#E8F0EE"
+            android:textSize="12sp"
+            android:visibility="gone" />
     </LinearLayout>
 
     <TextView
