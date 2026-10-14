@@ -42,26 +42,29 @@ function vTrendCards(){
 }
 
 /* ---- Entry sheets ---- */
-const vIn=(id,lab,val="",mode="numeric")=>`<label class="labf"><span>${lab}</span><input class="in num" id="${id}" inputmode="${mode}" value="${val}" autocomplete="off"></label>`;
+const vIn=(id,lab,val="",ph="")=>`<label class="labf"><span>${lab}</span><input class="in num" id="${id}" inputmode="numeric" value="${val}" placeholder="${ph}" autocomplete="off"></label>`;
+/* The note is folded (open when it has text) with a character counter. */
+const vNote=(val="")=>`<details class="acc"${val?" open":""}><summary>Not ekle</summary><label class="lbl" for="vnot">Not (isteğe bağlı)</label><input class="in" id="vnot" maxlength="80" value="${esc(val)}" autocomplete="off"><div class="mut sm" id="vnc">${val.length} / 80</div></details>`;
 const vChips=(attr,list,sel)=>`<div class="chips">${list.map(([v,l])=>`<button class="chip" data-${attr}="${v}" aria-pressed="${v===sel}">${l}</button>`).join("")}</div>`;
 function sheetBp(){
   vConfirm="";vSession=new Date().getHours()<12?"morning":"evening";
+  const l=vLast("t")||{},ph=k=>l[k]??"";
   openSheet(`<h3>Tansiyon ekle</h3>
   <div class="lbl">Seans</div>${vChips("vsession",VitalsLib.SESSIONS,vSession)}
-  <div class="lbl">1. ölçüm</div><div class="g3 mb-2">${vIn("bs1","Büyük")}${vIn("bd1","Küçük")}${vIn("bn1","Nabız")}</div>
-  <div class="lbl">2. ölçüm (1-2 dakika sonra, isteğe bağlı)</div><div class="g3 mb-2">${vIn("bs2","Büyük")}${vIn("bd2","Küçük")}${vIn("bn2","Nabız")}</div>
+  <div class="lbl">1. ölçüm</div><div class="g3 mb-2">${vIn("bs1","Büyük","",ph("sys"))}${vIn("bd1","Küçük","",ph("dia"))}${vIn("bn1","Nabız","",ph("pulse"))}</div>
+  <details class="acc mb-2"><summary>2. ölçüm (1-2 dakika sonra, isteğe bağlı)</summary><div class="g3 mb-2">${vIn("bs2","Büyük")}${vIn("bd2","Küçük")}${vIn("bn2","Nabız")}</div></details>
   ${dayOptions()}<label class="lbl" for="vtime">Saat</label><input class="in" type="time" id="vtime" value="${vNow()}">
-  <label class="lbl" for="vnot">Not (isteğe bağlı)</label><input class="in" id="vnot" maxlength="80" autocomplete="off">
+  ${vNote()}
   <div class="mb-2 mut sm">Ölçmeden önce 5 dakika otur, kol kalp hizasında olsun. Sabah ölçümü kahvaltı ve ilaçtan önce.</div>
   <div class="ferr" id="vwarn" role="alert"></div><button class="btn" data-vt="savebp">Kaydet</button>`);
 }
 function sheetBs(){
-  vConfirm="";vCtx=new Date().getHours()<10?"fasting":"random";
+  vConfirm="";vCtx=S.settings.vCtx||(new Date().getHours()<10?"fasting":"random");
   openSheet(`<h3>Şeker ekle</h3>
   <label class="lbl" for="gv">Şeker (${glab()})</label><input class="in num" id="gv" inputmode="${vMmol()?"decimal":"numeric"}" placeholder="örn. ${vMmol()?"5,3":"95"}" autocomplete="off" autofocus>
   <div class="lbl">Ne zaman ölçtün?</div>${vChips("vctx",VitalsLib.CTX,vCtx)}
   ${dayOptions()}<label class="lbl" for="vtime">Saat</label><input class="in" type="time" id="vtime" value="${vNow()}">
-  <label class="lbl" for="vnot">Not (isteğe bağlı)</label><input class="in" id="vnot" maxlength="80" autocomplete="off">
+  ${vNote()}
   <div class="ferr" id="vwarn" role="alert"></div><button class="btn" data-vt="savebs">Kaydet</button>`);
 }
 const vGet=id=>{const e=document.getElementById(id);return e?e.value:""};
@@ -128,7 +131,7 @@ function sheetVEdit(ids){
   :`<label class="lbl" for="gv">Şeker (${glab()})</label><input class="in num" id="gv" inputmode="${vMmol()?"decimal":"numeric"}" value="${dg(r0.g)}" autocomplete="off"><div class="lbl">Ne zaman ölçtün?</div>${vChips("vctx",VitalsLib.CTX,vCtx)}`}
   <label class="lbl" for="vday">Gün</label><input class="in" type="date" id="vday" max="${dayKey()}" value="${r0.day}">
   <label class="lbl" for="vtime">Saat</label><input class="in" type="time" id="vtime" value="${r0.time}">
-  <label class="lbl" for="vnot">Not (isteğe bağlı)</label><input class="in" id="vnot" maxlength="80" value="${esc(r0.note||"")}" autocomplete="off">
+  ${vNote(r0.note||"")}
   <div class="ferr" id="vwarn" role="alert"></div><button class="btn" data-vt="saveedit">Kaydet</button>`);
 }
 function vSaveEdit(){
@@ -172,6 +175,7 @@ function vSaveBs(){
   const c=VitalsLib.check({k:"s",day,time,g,ctx:vCtx,note:vGet("vnot")});
   if(!c.row)return toast(vErrText(c));
   if(vConfirmAgain(VitalsLib.needsConfirm(S.vitals,c.row,Units.gu()),JSON.stringify([c.row.g,c.row.day,c.row.time,c.row.ctx])))return;
+  S.settings.vCtx=vCtx;
   vFinish([c.row],`Kaydedildi: ${dg(c.row.g)} ${glab()} (${VitalsLib.ctxName(c.row.ctx).toLowerCase()})`);
 }
 
@@ -277,6 +281,7 @@ async function vPdf(kind,days){
   await sharePdf(pdf,`neowell-${kind==="t"?"tansiyon":"seker"}-${dayKey()}.pdf`,kind==="t"?"Tansiyon raporu":"Şeker raporu");
 }
 
+document.addEventListener("input",ev=>{if(ev.target.id==="vnot")document.getElementById("vnc").textContent=`${ev.target.value.length} / 80`});
 document.addEventListener("click",ev=>{
   const sb=ev.target.closest("[data-vsession],[data-vctx]");
   if(sb){

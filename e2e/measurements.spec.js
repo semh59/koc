@@ -1,7 +1,14 @@
 "use strict";
 const {test,expect,state,day}=require("./fixtures");
 
-const fill=async(page,pairs)=>{for(const [id,v] of pairs)await page.fill("#"+id,String(v))};
+/* Optional fields (2nd reading, note) sit in a folded section: open it before typing. */
+const fill=async(page,pairs)=>{
+  for(const [id,v] of pairs){
+    const f=page.locator("#"+id);
+    if(!(await f.isVisible()))await f.locator("xpath=ancestor::details[1]/summary").click();
+    await f.fill(String(v));
+  }
+};
 const bp=async(page,pairs,time="09:30")=>{
   await page.click('[data-vt="addbp"]');
   await fill(page,[...pairs,["vtime",time]]);
