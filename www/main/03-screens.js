@@ -63,16 +63,21 @@ function viewToday(){
   const macroNote=macro&&meals.some(e=>e.c!=null||e.f!=null)&&(nc<meals.length||nf<meals.length)?`<div class="mut sm macro">Karbonhidrat ${nc}/${meals.length}, yağ ${nf}/${meals.length} öğünde veri var; toplam eksik olabilir. <button class="lnk" data-act="missmacro">Eksikleri tamamla</button></div>`:"";
   const dr=LogLib.dayRange(meals),rangeNote=dr?`<p class="pt-2 hint">Tarif farkına göre bugün ~${fint(dr.lo)}–${fint(dr.hi)} kcal olabilir.</p>`:"";
   const micro=mi.length?`<div class="macro num">${mi.join(" · ")} <span class="mut sm">öğünde veri var</span></div>`:"";
+  const cmg=caffeineMg(Log.where(e=>e.type==="water"&&e.day===t)),caff=cmg?`<div class="macro num">Kafein ~<b>${cmg}</b> mg <span class="mut sm">içeceklerden, tahmin</span></div>`:"";
+  /* Every note of the summary card sits in one folded "Ayrıntı" line, so the first screen keeps the rings and the log. */
+  const notesIn=[Habits.ramWaterNote(),lowLog&&!st.hideNums?`<p class="pt-2 hint">Bugün az yemek kayıtlı; kayıtlar tamamlanınca kalanı gösteririm.</p>`:"",...st.hideNums?[]:[macroNote,fiber,micro,rangeNote,moveAdd(t)?`<p class="pt-2 hint">Hedefe hareketten +${moveAdd(t)} kcal eklendi (kayıtlı antrenman ve yürüyüşün yarısı, tahmindir).</p>`:""]].join("");
+  const notes=notesIn?`<details class="acc" ${keepOpen("tnotes")}><summary>Ayrıntı</summary>${notesIn}</details>`:"";
   /* Summary card: big calorie ring and the remainder; water, sport and steps in small rings; macros below. */
   const rings=`<div class="card"><div class="rings">
     ${rb("kcal","Kalori",ring(st.hideNums?0:kcP,"var(--kcal)",kcC,"Kalori",st.hideNums?"sayılar gizli":kgl>0?`${Math.round(kc)} / ${kgl} kcal`:"hedef yok",kcU,"main"))}
     <div class="rmini">${rb("water","Su",ring(water/sh,"var(--water)",waterC||fmt((sh-water)/1000,1),"Su",`${fmt(water/1000,1)} / ${fmt(sh/1000,1)} L${fasting?", oruç saatinde":""}`,waterU,"mini"+(waterC?" done":"")))}
     ${rb("exercise","Spor",ring(sw/sg,"color-mix(in srgb,var(--exercise) 80%,var(--card))",spC||Math.round(sg-sw),"Spor",`${Math.round(sw)} / ${sg} dk`,spU,"mini"+(spC?" done":"")))}${sOn?stepCard():""}</div>
-  </div>${Habits.ramWaterNote()}${lowLog&&!st.hideNums?`<p class="pt-2 hint">Bugün az yemek kayıtlı; kayıtlar tamamlanınca kalanı gösteririm.</p>`:""}${st.hideNums?"":`${macro}${macroNote}${fiber}${micro}${rangeNote}${moveAdd(t)?`<p class="pt-2 hint">Hedefe hareketten +${moveAdd(t)} kcal eklendi (kayıtlı antrenman ve yürüyüşün yarısı, tahmindir).</p>`:""}`}</div>`;
-  /* The most used quick chips come first; the order inside equal counts stays as written. */
-  const Q=[["water",'data-act="water"',"water",`+${st.glass} ml`,`${st.glass} ml su ekle`],["drink",'data-dk="open"',"water","İçecek türü"],["weight",'data-act="weight"',"weight","Kilo"],["exercise",'data-act="exercise"',"exercise","Spor"],
+  </div>${st.hideNums?"":macro+caff}${notes}</div>`;
+  /* The chip order is fixed so a thumb never lands on another chip; the drink type sits right beside the water chip. */
+  const chip=([k,a,ic,l,al])=>`<button class="chip${a.startsWith("data-act")?" act":""}" data-chip="${k}" ${a}${al?` aria-label="${al}"`:""}>${Icons.svg(ic)} ${l}</button>`;
+  const Q=[["weight",'data-act="weight"',"weight","Kilo"],["exercise",'data-act="exercise"',"exercise","Spor"],
     ...st.bpOn?[["bp",'data-vt="addbp"',"heart","Tansiyon"]]:[],...st.bsOn?[["bs",'data-vt="addbs"',"water","Şeker"]]:[],["note",'data-act="note"',"note","Not"],...Motion.walk()?[]:[["walk",'data-w="start"',"steps","Yürüyüş"]]];
-  const chips=Q.map((c,i)=>[c,i]).sort((x,y)=>(st.chipUse[y[0][0]]||0)-(st.chipUse[x[0][0]]||0)||x[1]-y[1]).map(([[k,a,ic,l,al]])=>`<button class="chip${a.startsWith("data-act")?" act":""}" data-chip="${k}" ${a}${al?` aria-label="${al}"`:""}>${Icons.svg(ic)} ${l}</button>`).join("");
+  const chips=`<span class="qpair">${chip(["water",'data-act="water"',"water",`+${st.glass} ml`,`${st.glass} ml su ekle`])}${chip(["drink",'data-dk="open"',"water","İçecek türü"])}</span>`+Q.map(chip).join("");
   const actions=`<div class="actions"><button class="btn act" data-act="food">${Icons.svg("plus")} Yemek ekle</button><div class="qa">${chips}</div></div>`;
   const lk=keyOff(-logOff);
   const {items,log}=dayLogHtml(lk);
@@ -221,7 +226,7 @@ function viewSettings(){
     ${helpBox("hlpsn","Hamilelik, yeme bozukluğu geçmişi, hastalık ya da ilaç varsa buraya yaz. Öneriler bunlara göre ihtiyatlı olmalı, hekim kontrolü gerekebilir.")}${risk().block&&risk().hard.length?`<div class="row"><span>${esc(risk().hard.join(". "))}: kalori açığı, oruç ve program önerileri kapalı. Hamilelik ve emzirme işaretini "Sağlık notların"dan kaldırabilirsin; sağlık durumunu bir hekimle konuşmanı öneririz.</span></div>`:""}</div>
   <h2>Hedefler</h2><div class="card">
     ${fld("goalKg",`Hedef kilo (${wlab()})`,st.goalKg?dw(st.goalKg).replace(/,0$/,""):"",Algo.goalWhy(st.goalKg,st.heightCm,weightNow())||"Boş bırakırsan kapalı")}
-    ${fld("kcal","Günlük kalori (kcal)",st.kcal||"","Boş bırakırsan kapalı","numeric")}
+    ${fld("kcal","Günlük kalori (kcal)",st.kcal||"","Boş bırakırsan kapalı","numeric")}${energyHowAcc({kg:weightNow(),cm:st.heightCm,age:st.age,sex:st.sex||"",act:st.act})}
     ${fld("waterMl","Günlük su (ml)",st.waterMl,"","numeric")}
     ${fld("glass","Bir bardak (ml)",st.glass,"Su düğmesinin eklediği miktar","numeric")}
     ${fld("sportWeek","Haftalık spor (dk)",st.sportWeek,"","numeric")}

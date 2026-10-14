@@ -58,7 +58,7 @@ test.describe("Add food",()=>{
     const y=[entry("food",350,"Yulaf lapası",{d:-1,x:{meal:"breakfast"}}),entry("food",120,"Muz",{d:-1,x:{meal:"breakfast"}})];
     await openFood(app,page,state({},{entries:y}));
     await page.click('[data-act="yesterday"]');
-    await expect(app.toast).toHaveText("Dünkü 2 yemek bugüne eklendi");
+    await expect(app.toast).toHaveText("Dünkü 2 yemek bugüne eklendi, 470 kcal");
     await expect(page.locator(".log")).toContainText("Yulaf lapası");
     await page.click("#tundo");
     await expect(page.locator(".log li",{hasText:"Yulaf"})).toHaveCount(0);
@@ -74,7 +74,7 @@ test.describe("Add food",()=>{
     await expect(app.toast).toHaveText('"Kahvaltım" şablonu kaydedildi');
     await page.click('.act[data-act="food"]');
     await page.click('[data-tp="0"]');
-    await expect(app.toast).toHaveText("Kahvaltım: 1 yemek eklendi");
+    await expect(app.toast).toHaveText("Kahvaltım: 1 yemek eklendi, 120 kcal");
     const s=await app.state();
     expect([s.favFoods.length,s.mealTpl.length]).toEqual([1,1]);
   });

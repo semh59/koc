@@ -13,6 +13,6 @@ function weekCompareCard(){
   const c=WeeklyLib.compare({settings:S.settings,entries:Log.all()},dayKey());
   if(!Object.values(c.prev).some(x=>x.n)||!Object.values(c.cur).some(x=>x.n))return "";
   const cell=(x,f)=>x.n?`${f(x.v)} <small class="mut sm">${x.n} gün</small>`:"—";
-  const rows=[["Kalori (kcal)","kcal",x=>Math.round(x)],["Su (L)","water",x=>fmt(x/1000,1)],["Adım","steps",x=>Math.round(x).toLocaleString("tr-TR")]].filter(([,k])=>c.cur[k].n||c.prev[k].n);
-  return `<h2>Bu hafta ve geçen hafta</h2><div class="card"><table><thead><tr><th>Günlük ortalama</th><th>Bu hafta</th><th>Geçen hafta</th></tr></thead><tbody>${rows.map(([l,k,f])=>`<tr><td>${l}</td><td class="num">${cell(c.cur[k],f)}</td><td class="num">${cell(c.prev[k],f)}</td></tr>`).join("")}</tbody></table></div>`;
+  const rows=[["Kalori (kcal)","kcal",x=>Math.round(x)],["Su (L)","water",x=>fmt(x/1000,1)],["Adım","steps",x=>Math.round(x).toLocaleString("tr-TR")],["Spor (hafta toplamı, dk)","sport",x=>Math.round(x)]].filter(([,k])=>c.cur[k].n||c.prev[k].n);
+  return `<h2>Bu hafta ve geçen hafta</h2><div class="card"><table><thead><tr><th>Günlük ortalama</th><th>Bu hafta</th><th>Geçen hafta</th></tr></thead><tbody>${rows.map(([l,k,f])=>`<tr><td>${l}</td><td class="num">${cell(c.cur[k],f)}</td><td class="num">${cell(c.prev[k],f)}</td></tr>`).join("")}</tbody></table><p class="hint">Kalori yalnız öğünleri tam kayıtlı günlerden hesaplanır; diğer değerler kaydı olan günler üzerindendir.</p></div>`;
 }

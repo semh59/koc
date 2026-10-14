@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="nw_sc_water">Su</string>
-    <string name="nw_sc_water_long">Su ekle</string>
+    <string name="nw_sc_water_long">Su ekle: bardak boyutu hazır</string>
     <string name="nw_sc_food">Yemek</string>
     <string name="nw_sc_food_long">Yemek ekle</string>
     <string name="nw_sc_weight">Kilo</string>

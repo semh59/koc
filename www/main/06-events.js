@@ -54,7 +54,6 @@ document.addEventListener("click",ev=>{
   }
 });
 $("#tundo").addEventListener("click",undoLast);
-document.addEventListener("click",ev=>{const c=ev.target.closest(".qa [data-chip]");if(c){const u=S.settings.chipUse,k=c.dataset.chip;u[k]=(u[k]||0)+1;save()}});
 const TOGGLES={mk:"moveKcalOn",rpe:"rpeOn",gdv:"gdVoice",gdb:"gdVib",aw:"awakeOn",comfy:"comfy",hs:"hideStreak",hn:"hideNums",ld:"lockDetail",wh:"widgetHide"}; // data-<key> checkbox -> boolean setting
 document.addEventListener("change",ev=>{
   const t=ev.target;
@@ -95,7 +94,7 @@ document.addEventListener("keydown",ev=>{
     }
   }
   if(ev.key==="Enter"&&ev.target.id==="cmsg"){ev.preventDefault();const i=ev.target,t=i.value;i.value="";cSend(t);return}
-  if(ev.key==="Enter"&&ev.target.closest("#sheet")&&ev.target.tagName==="INPUT"&&ev.target.id!=="fq"){const b=$("#sheet [data-go]");if(b)b.click()}
+  if(ev.key==="Enter"&&ev.target.closest("#sheet")&&ev.target.tagName==="INPUT"&&ev.target.id!=="fq"){const b=$('#sheet [data-go],#sheet [data-vt^="save"]');if(b)b.click()}
 });
 document.addEventListener("click",ev=>{const b=ev.target.closest("[data-sr]");if(b){stepRange=+b.dataset.sr;render()}});
 $("#sheet").addEventListener("click",ev=>{if(ev.target.closest("[data-shx]"))closeSheet()});

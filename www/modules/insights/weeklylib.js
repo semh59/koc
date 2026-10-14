@@ -65,11 +65,11 @@ const WeeklyLib=(()=>{
     return {rows,summary,charts,from,end:endDay,wu};
   }
 
-  /* The last 7 days next to the 7 before: daily averages over the days that have data (calories only over fully logged days). */
+  /* The last 7 days next to the 7 before: daily averages over the days that have data (calories only over fully logged days); sport is the week's total minutes. */
   function compare(D,endDay){
     const [y,m,d]=endDay.split("-").map(Number),prevEnd=key(new Date(y,m-1,d-7));
     const avg=(rows,f,ok)=>{const a=rows.filter(ok).map(f);return {v:mean(a),n:a.length}};
-    const side=day=>{const r=build({...D,vitals:[],meds:[]},day).rows;return {kcal:avg(r,x=>x.kcal,x=>A.fullKcal(x.kcal)),water:avg(r,x=>x.water,x=>x.water>0),steps:avg(r,x=>x.steps,x=>x.steps>0)}};
+    const side=day=>{const r=build({...D,vitals:[],meds:[]},day).rows;return {kcal:avg(r,x=>x.kcal,x=>A.fullKcal(x.kcal)),water:avg(r,x=>x.water,x=>x.water>0),steps:avg(r,x=>x.steps,x=>x.steps>0),sport:(a=>({v:a.reduce((t,v)=>t+v,0),n:a.length}))(r.map(x=>x.exercise).filter(v=>v>0))}};
     return {cur:side(endDay),prev:side(prevEnd)};
   }
 
