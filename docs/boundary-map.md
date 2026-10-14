@@ -89,7 +89,7 @@
 | modules/data/csvreadlib.js | 9 | 1 |
 | modules/data/fhirlib.js | 5 | 1 |
 | modules/data/lockui.js | 6 | 11 |
-| modules/data/onboardui.js | 44 | 18 |
+| modules/data/onboardui.js | 45 | 19 |
 | modules/data/photolib.js | 1 | 1 |
 | modules/data/photoui.js | 19 | 24 |
 | modules/data/privacyui.js | 38 | 11 |

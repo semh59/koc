@@ -71,9 +71,9 @@ const {boot}=require("./html");
 
   // Setup: the three answers are separate flags
   fresh();
-  ev("Object.assign(ob,obFresh(),{step:2,cm:'170',kg:'80',age:'30',nu:true,mods:[]});obFinish()");
+  ev("Object.assign(ob,obFresh(),{step:0,cm:'170',kg:'80',age:'30',nu:true});obFinish()");
   ok("setup: 'Emziriyorum' sets only the nursing flag, no health note text is written",ev("S.settings.nursing")===true&&ev("S.settings.pregnant")===false&&ev("S.settings.edFlag")===false&&ev("S.settings.healthNote")==="");
-  ev("S=structuredClone(DEF);Object.assign(ob,obFresh(),{step:1});render()");
+  ev("S=structuredClone(DEF);Object.assign(ob,obFresh(),{step:0});render()");
   ok("setup health card has three separate answers",!!q("#obpg")&&!!q("#obnu")&&!!q("#obed"));
   finish();
 })();

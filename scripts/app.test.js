@@ -19,28 +19,27 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     const fill=(cm,kg,age)=>{val("cm",cm);val("kg",kg);val("age",age)};
     ok("first launch welcome: logo, one sentence, one primary Başla button, a skip link; no step counter",v().includes("hoş geldin")&&q('#view .btn[data-ob="next"]').textContent==="Başla"&&q("#view").querySelectorAll(".btn:not(.ghost)").length===1&&!!q('[data-obr="open"]')&&!!q('[data-ob="skip"]')&&!v().includes("Adım"));
     click('[data-ob="next"]');
-    ok("first-launch onboarding: step 1/3, menu hidden, labelled fields",v().includes("Adım 1/3")&&w.document.body.classList.contains("ob")&&["cm","kg","age"].every(k=>q(`label[for="ob${k}"]`)&&q("#ob"+k)));
+    ok("first-launch onboarding: one form, menu hidden, labelled fields, no step counter and no module step",v().includes("Seni tanıyalım")&&!v().includes("Adım")&&w.document.body.classList.contains("ob")&&["cm","kg","age"].every(k=>q(`label[for="ob${k}"]`)&&q("#ob"+k))&&!q('[data-ob^="mod:"]')&&!!q("#obpg")&&!q("#obtarget"));
     ok("a settings state without the flag counts onboarding as done; it hides record and profile",ev("cleanSettings({kcal:1800}).obDone")===false&&ev("cleanSettings({obDone:false,kcal:1}).obDone")===false&&ev("cleanSettings(undefined).obDone")===false&&ev("(()=>{const r=[];const s0=S;for(const f of [()=>S.entries.push({}),()=>{S.settings.heightCm=170},()=>{S.settings.goalKg=70},()=>{S.settings.obDone=true}]){S=structuredClone(DEF);f();r.push(obNeeded())}S=s0;return r.join()})()")==="false,false,false,false");
     click('[data-ob="next"]');
-    ok("an empty field is rejected: error under the field, aria-invalid",q("#oberr").textContent.includes("Boy")&&q("#obcm").getAttribute("aria-invalid")==="true"&&v().includes("Adım 1/3"));
-    for(const [a,b,c,m] of [["99","80","30","Boy"],["251","80","30","Boy"],["170","19","30","Kilo"],["170","80","101","Yaş"]]){fill(a,b,c);click('[data-ob="next"]');ok(`out of range is rejected: ${a}/${b}/${c}`,q("#oberr").textContent.startsWith(m)&&v().includes("Adım 1/3"),q("#oberr").textContent)}
+    ok("an empty field is rejected: error under the field, aria-invalid",q("#oberr").textContent.includes("Boy")&&q("#obcm").getAttribute("aria-invalid")==="true"&&ev("ob.step")===0);
+    for(const [a,b,c,m] of [["99","80","30","Boy"],["251","80","30","Boy"],["170","19","30","Kilo"],["170","80","101","Yaş"]]){fill(a,b,c);click('[data-ob="next"]');ok(`out of range is rejected: ${a}/${b}/${c}`,q("#oberr").textContent.startsWith(m)&&ev("ob.step")===0&&!q("#obtarget"),q("#oberr").textContent)}
     fill("170","80","30");click('[data-ob="dir:lose"]');val("goal","85");click('[data-ob="next"]');
     ok("lose weight: a goal above the current weight is rejected and the values are kept",q("#oberr").textContent.includes("düşük")&&q("#obcm").value==="170"&&q("#obgoal").getAttribute("aria-invalid")==="true");
     val("goal","72");click('[data-ob="sex:m"]');click('[data-ob="next"]');
-    ok("step 2: module options, all start off",v().includes("Adım 2/3")&&q("#view").querySelectorAll('[data-ob^="mod:"]').length===5&&q("#view").querySelectorAll('[data-ob^="mod:"][aria-pressed="true"]').length===0);
-    click('[data-ob="mod:med"]');click('[data-ob="mod:fast"]');click('[data-ob="mod:steps"]');click('[data-ob="mod:fast"]');
-    click('[data-ob="back"]');
-    ok("back: values and choices are kept",v().includes("Adım 1/3")&&q("#obkg").value==="80"&&q("#obgoal").value==="72"&&q('[data-ob="sex:m"]').getAttribute("aria-pressed")==="true");
-    click('[data-ob="next"]');click('[data-ob="next"]');
     const exp=ev("(()=>{const q={kg:80,cm:170,age:30,sex:'m'};return Algo.suggestTarget({tdee:Algo.formulaTdee({...q,act:1}),kg:80,goalKg:72,bmr:Algo.bmrMifflin(q),age:30,cm:170}).kcal})()");
-    ok("summary: personal calorie and protein target from Algo",v().includes("Adım 3/3")&&v().includes(exp.toLocaleString("tr-TR"))&&v().includes("128–176")&&!v().includes("açığı önermiyorum"),[exp,v()]);
+    ok("Devam shows the personal calorie and protein target on the same screen; the button becomes Başla",ev("ob.step")===0&&!!q("#obtarget")&&v().includes(exp.toLocaleString("tr-TR"))&&v().includes("128–176")&&!v().includes("açığı önermiyorum")&&q('[data-ob="next"]').textContent==="Başla"&&q("#obcm").value==="170",[exp,v()]);
+    click('[data-ob="sex:f"]');
+    ok("changing an answer hides the stale target and asks Devam again",!q("#obtarget")&&q('[data-ob="next"]').textContent==="Devam"&&q("#obgoal").value==="72");
+    click('[data-ob="sex:m"]');
+    ok("the target is back for the same answers",!!q("#obtarget")&&q('[data-ob="next"]').textContent==="Başla");
     click('[data-ob="next"]');
     const s=ev("S.settings");
     ok("Başla: values are written to the profile fields, lands on Today",s.heightCm===170&&s.age===30&&s.sex==="m"&&s.goalKg===72&&s.kcal===exp&&s.obDone&&ev("weights()[dayKey()]")===80&&ev("tab")==="today"&&!w.document.body.classList.contains("ob"),s);
-    ok("modules: chosen ones on, others off; no permission prompt for the step",s.medOn&&!s.fastOn&&!s.bpOn&&!s.bsOn&&!s.stepsOn&&!s.stepsAsked&&!s.consent);
+    ok("modules are not chosen in setup: all off, the steps prompt is not suppressed, no consent",!s.medOn&&!s.fastOn&&!s.bpOn&&!s.bsOn&&!s.stepsOn&&!s.stepsAsked&&!s.consent&&s.obNudge&&s.obAt===ev("dayKey()"));
     // health flag and under 18: no calorie deficit is suggested, physician note
     ev("S=structuredClone(DEF);render()");
-    click('[data-ob="next"]');fill("170","80","30");click('[data-ob="dir:lose"]');val("goal","70");click('[data-ob="next"]');q("#obhn").checked=true;click('[data-ob="next"]');
+    click('[data-ob="next"]');fill("170","80","30");click('[data-ob="dir:lose"]');val("goal","70");q("#obhn").checked=true;click('[data-ob="next"]');
     const mt=ev("(()=>{const q={kg:80,cm:170,age:30,sex:''};return Math.round(Algo.formulaTdee({...q,act:1})/10)*10})()");
     ok("health flag: no deficit, maintenance level and a physician note",v().includes("açığı önermiyorum")&&v().includes("hekim")&&v().includes(mt.toLocaleString("tr-TR")),v());
     click('[data-ob="next"]');
@@ -51,9 +50,9 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("age 17: setup stops with a gentle screen; no skip, back or continue; no draft and no record",v().includes("18 yaş ve üzeri için")&&v().includes("hekiminle ya da diyetisyeninle")&&!q('[data-ob="skip"]')&&!q('[data-ob="next"]')&&!q('[data-ob="back"]')&&ev("ob.age+ob.kg+ob.cm")===""&&ev("S.settings.age")===0&&!ev("S.settings.obDone")&&ev("S.entries.length")===0&&w.localStorage.getItem("nw_state")===ls0,v());
     for(const a of ["9","1"]){click('[data-ob="fixage"]');fill("165","60",a);click('[data-ob="next"]');ok(`age ${a}: the same screen instead of a range error`,v().includes("18 yaş ve üzeri için"))}
     click('[data-ob="fixage"]');
-    ok("Yaşımı yanlış girdim: returns to an empty step 1",v().includes("Adım 1/3")&&q("#obage").value==="");
+    ok("Yaşımı yanlış girdim: returns to an empty form",v().includes("Seni tanıyalım")&&q("#obage").value==="");
     fill("165","60","18");click('[data-ob="next"]');
-    ok("age 18: setup continues",v().includes("Adım 2/3")&&!v().includes("18 yaş ve üzeri için"));
+    ok("age 18: setup continues with the target",!!q("#obtarget")&&!v().includes("18 yaş ve üzeri için"));
     click('[data-ob="skip"]');
     ok("Şimdilik geç: nothing is written and it never shows again",ev("S.settings.obDone")&&ev("S.entries.length")===0&&ev("S.settings.heightCm")===0&&ev("obNeeded()")===false&&ev("tab")==="today");
     ev("tab='settings-data';render()");
@@ -2310,8 +2309,8 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("withdrawal from the sheet",!ev("S.settings.consent")&&sh().includes("kabul edilmedi"));
     ev("closeSheet()");
     ok("medical warning: About MED_NOTE, blood pressure/sugar/labs one pattern 'Bu değerleri hekiminle değerlendir.'",(ev("tab='settings-about';render()"),k().includes(ev("MED_NOTE")))&&["bp","glucose","labs"].every(t=>{ev(`tab='${t}';render()`);return k().includes("Bu değerleri hekiminle değerlendir.")}));
-    ev("Object.assign(S.settings,{obDone:false,heightCm:0,goalKg:0,kcal:0,age:0});S.entries=[];S.chat=[];S.meds=[];Object.assign(ob,{cm:'170',kg:'80',age:'30',step:2});render()");
-    ok("onboarding last step: a short summary and link, the sheet opens",k().includes("yalnızca telefonunda durur")&&k().includes(ev("MED_NOTE"))&&(q('[data-pv="open"]').click(),sh().includes("Verin nerede")));
+    ev("Object.assign(S.settings,{obDone:false,heightCm:0,goalKg:0,kcal:0,age:0});S.entries=[];S.chat=[];S.meds=[];Object.assign(ob,{cm:'170',kg:'80',age:'30',step:0,dir:'keep'});ob.shown=obSig();render()");
+    ok("onboarding target block: a short summary and link, the sheet opens",k().includes("yalnızca telefonunda durur")&&k().includes(ev("MED_NOTE"))&&(q('[data-pv="open"]').click(),sh().includes("Verin nerede")));
     ev("closeSheet()");
   }
   { // per-category deletion
@@ -3079,14 +3078,14 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   { // onboarding: hard and soft flags are separate
     ev("S=structuredClone(DEF);Object.assign(ob,obFresh(),{step:0});render()");
     const q=s=>$q(s),val=(id,v)=>{q("#ob"+id).value=v},v=()=>q("#view").textContent;
-    val("cm","170");val("kg","80");val("age","30");q('[data-ob="dir:lose"]').click();val("goal","70");q('[data-ob="next"]').click();q("#obpg").checked=true;q('[data-ob="next"]').click();
+    val("cm","170");val("kg","80");val("age","30");q('[data-ob="dir:lose"]').click();val("goal","70");q("#obpg").checked=true;q('[data-ob="next"]').click();
     ok("onboarding pregnancy/eating-disorder flag: hard, no confirm button",v().includes("açığı önermiyorum")&&!q('[data-act="riskok"]'));
     q('[data-ob="next"]').click();
     ok("a typed note counts as hard in riskFlags",ev("risk().hard.length")>0);
     ev("S=structuredClone(DEF);Object.assign(ob,obFresh(),{step:0});render()");
-    val("cm","170");val("kg","80");val("age","30");q('[data-ob="dir:lose"]').click();val("goal","70");q('[data-ob="next"]').click();q("#obhn").checked=true;q('[data-ob="next"]').click();
+    val("cm","170");val("kg","80");val("age","30");q('[data-ob="dir:lose"]').click();val("goal","70");q("#obhn").checked=true;q('[data-ob="next"]').click();
     q('[data-act="riskok"]').click();
-    ok("onboarding soft flag: 'Hekimime danıştım' works, a calorie deficit is suggested",ev("S.settings.riskClearedAt")===ev("dayKey()")&&!v().includes("açığı önermiyorum")&&v().includes("Adım 3/3"));
+    ok("onboarding soft flag: 'Hekimime danıştım' works, a calorie deficit is suggested",ev("S.settings.riskClearedAt")===ev("dayKey()")&&!v().includes("açığı önermiyorum")&&!!q("#obtarget"));
     q('[data-ob="next"]').click();
     reset();
   }

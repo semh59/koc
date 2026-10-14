@@ -1,7 +1,7 @@
 "use strict";
 const {test,expect,state}=require("./fixtures");
 
-const step=page=>page.locator(".obp .mut");
+const form=page=>page.locator("#view h2").first();
 async function fill(page,{cm="178",kg="84",age="35"}={}){
   await page.fill("#obcm",cm);await page.fill("#obkg",kg);await page.fill("#obage",age);
 }
@@ -14,7 +14,7 @@ test.describe("Onboarding",()=>{
     await expect(page.locator("#view .btn:not(.ghost)")).toHaveText(["Başla"]);
     await expect(page.locator(".obp")).toHaveCount(0);
     await page.click('[data-ob="next"]');
-    await expect(step(page)).toHaveText("Adım 1/3");
+    await expect(form(page)).toHaveText("Seni tanıyalım");
     await fill(page,{age:"17"});
     await page.click('[data-ob="next"]');
     // Acceptance: a polite screen; no skip, back or continue; no profile is written.
@@ -23,16 +23,15 @@ test.describe("Onboarding",()=>{
     const s=(await app.state())||{settings:{}};
     expect(s.settings.age||0).toBe(0);expect(s.entries||[]).toEqual([]);
     await page.click('[data-ob="fixage"]');
-    await expect(step(page)).toHaveText("Adım 1/3");
+    await expect(form(page)).toHaveText("Seni tanıyalım");
     await fill(page,{age:"18"});
     await page.click('[data-ob="next"]');
-    await expect(step(page)).toHaveText("Adım 2/3");
+    await expect(page.locator("#obtarget")).toBeVisible();
   });
 
-  test("profile and goal are saved, the progress bar follows the step",async({app,page})=>{
+  test("profile and goal are saved from one form, the target shows in place",async({app,page})=>{
     await app.open();await page.click('[data-ob="next"]');
-    const on=page.locator(".obbar i.on");
-    await expect(on).toHaveCount(1);
+    await expect(page.locator(".obp")).toHaveCount(0);
     await fill(page);
     await page.click('[data-ob="dir:lose"]');
     await page.fill("#obgoal","90"); // higher than the current weight: rejected
@@ -40,21 +39,15 @@ test.describe("Onboarding",()=>{
     await expect(page.locator("#oberr")).toContainText("düşük olmalı");
     await page.fill("#obgoal","76");
     await page.click('[data-ob="next"]');
-    await expect(on).toHaveCount(2);
-    await page.click('[data-ob="mod:bp"]');
-    await expect(page.locator('[data-ob="mod:bp"]')).toHaveAttribute("aria-pressed","true");
-    await page.click('[data-ob="back"]');
-    await expect(step(page)).toHaveText("Adım 1/3");
+    await expect(page.locator("#obtarget .sumv")).toContainText("kcal");
     await expect(page.locator("#obgoal")).toHaveValue("76");
-    await page.click('[data-ob="next"]');await page.click('[data-ob="next"]');
-    await expect(on).toHaveCount(3);
-    await expect(page.locator(".sumv")).toContainText("kcal");
     await page.click('[data-ob="next"]');
-    // Acceptance: Today opens, the bottom menu shows, the profile and first weigh-in are saved.
+    // Acceptance: Today opens, the bottom menu shows, the profile and first weigh-in are saved, no module is switched on.
     await expect(page.locator("nav")).toBeVisible();
     await expect(page.locator(".stepcard .wv")).toContainText("84,0");
+    await expect(page.locator('.todo [data-act="water"]')).toBeVisible();
     const s=await app.state();
-    expect(s.settings).toMatchObject({heightCm:178,age:35,goalKg:76,bpOn:true,obDone:true});
+    expect(s.settings).toMatchObject({heightCm:178,age:35,goalKg:76,bpOn:false,obDone:true});
     expect(s.settings.kcal).toBeGreaterThanOrEqual(1200);
     expect(s.entries.filter(e=>e.type==="weight").map(e=>e.v)).toEqual([84]);
   });
@@ -63,12 +56,11 @@ test.describe("Onboarding",()=>{
     await app.open();await page.click('[data-ob="next"]');
     await fill(page);
     await page.click('[data-ob="job:0"]');await page.click('[data-ob="walk:0"]');
-    await page.click('[data-ob="next"]');await page.click('[data-ob="next"]');
-    const low=+(await page.locator(".sumv").innerText()).replace(/\D/g,"");
-    await page.click('[data-ob="back"]');await page.click('[data-ob="back"]');
+    await page.click('[data-ob="next"]');
+    const low=+(await page.locator("#obtarget .sumv").innerText()).replace(/\D/g,"");
     await page.click('[data-ob="job:2"]');await page.click('[data-ob="walk:2"]');
-    await page.click('[data-ob="next"]');await page.click('[data-ob="next"]');
-    const high=+(await page.locator(".sumv").innerText()).replace(/\D/g,"");
+    await page.click('[data-ob="next"]');
+    const high=+(await page.locator("#obtarget .sumv").innerText()).replace(/\D/g,"");
     expect(high).toBeGreaterThan(low);
     await page.click('[data-ob="next"]');
     expect((await app.state()).settings.act).toBe(2);
