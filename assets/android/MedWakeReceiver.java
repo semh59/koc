@@ -320,6 +320,12 @@ public class MedWakeReceiver extends BroadcastReceiver {
         return t > 0 && t <= now + EARLY_MS && now - t <= TEST_VISIBLE_MS;
     }
 
+    /** "Delete all data": cancels the armed alarms and removes the dose details and the alarm log. */
+    static synchronized void wipe(Context c) {
+        arm(c, new long[0], "WIPE");
+        prefs(c).edit().remove(DOSES).remove(LOG).commit();
+    }
+
     static void clearLog(Context c) {
         prefs(c).edit().remove(LOG).commit();
     }

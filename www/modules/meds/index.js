@@ -1,5 +1,5 @@
 "use strict";
-Data.privacy.push(["İlaç",()=>S.meds.length+S.medLog.length,()=>{S.meds=[];S.medLog=[]},4]);
+Data.privacy.push(["İlaç",()=>S.meds.length+S.medLog.length,()=>chain(nativeWipe(["MedWake"]),ok=>{if(!ok)return toast(NATIVE_FAIL),false;S.meds=[];S.medLog=[]}),4]);
 Data.csv.push(["ilac","İlaç alımı",()=>["tarih","saat","ilaç","doz","durum","alım_saati"],({S,by,day})=>{
   const meds=new Map(S.meds.map(m=>[m.id,m]));
   return by(S.medLog,day,x=>x.slot).map(r=>{const m=meds.get(r.m)||{};return [r.day,r.slot,m.n,m.d,r.st==="t"?"alındı":"atlandı",r.at]});

@@ -23,6 +23,12 @@ final class MotionStore {
         p(c).edit().putBoolean("on", on).commit();
     }
 
+    /** "Delete all data": height, weight, learned model, open and pending intervals go; only the on/off switch stays (the registration is separate). */
+    static synchronized void wipe(Context c) {
+        boolean on = enabled(c);
+        p(c).edit().clear().putBoolean("on", on).commit();
+    }
+
     static void profile(Context c, double cm, double kg) {
         p(c).edit().putFloat("cm", (float) cm).putFloat("kg", (float) kg).apply();
     }

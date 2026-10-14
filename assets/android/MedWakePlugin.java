@@ -117,6 +117,12 @@ public class MedWakePlugin extends Plugin {
     }
 
     @PluginMethod
+    public void wipe(PluginCall call) {
+        MedWakeReceiver.wipe(getContext());
+        call.resolve();
+    }
+
+    @PluginMethod
     public void clearLog(PluginCall call) {
         MedWakeReceiver.clearLog(getContext());
         call.resolve();

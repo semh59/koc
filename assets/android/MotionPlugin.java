@@ -88,7 +88,7 @@ public class MotionPlugin extends Plugin {
             });
         } catch (Exception e) {
             MotionStore.setEnabled(c, false);
-            call.reject("Etkinlik tanıma kurulamadı: " + e.getMessage());
+            call.reject("Etkinlik tanıma kurulamadı");
         }
     }
 
@@ -104,6 +104,14 @@ public class MotionPlugin extends Plugin {
             // without Google Play services nothing was registered
         }
         call.resolve(status());
+    }
+
+    /** Local history of the step counter and the motion model: part of "Delete all data" and the steps category. */
+    @PluginMethod
+    public void wipe(PluginCall call) {
+        StepStore.wipe(getContext());
+        MotionStore.wipe(getContext());
+        call.resolve();
     }
 
     @PluginMethod

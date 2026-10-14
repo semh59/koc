@@ -24,12 +24,12 @@ async function phDel(id){
   const t=(await phDb()).transaction(["m","f"],"readwrite");
   t.objectStore("m").delete(id);t.objectStore("f").delete(id);await phDone(t);
 }
-/* Delete-all and privacy delete: the list empties at once and the store is cleared behind it; a failure is reported. */
-async function phClear(){
+/* Delete-all and privacy delete: the list empties at once and the store is cleared behind it; on failure the list is read back and false is returned. */
+function phClear(){
   phList=[];phRevoke();
-  if(!phOk())return;
-  try{const t=(await phDb()).transaction(["m","f"],"readwrite");t.objectStore("m").clear();t.objectStore("f").clear();await phDone(t)}
-  catch(e){toast("Fotoğraflar silinemedi, Ayarlar > Gizlilik ve veri'den yeniden dene")}
+  if(!phOk())return true;
+  return phDb().then(db=>{const t=db.transaction(["m","f"],"readwrite");t.objectStore("m").clear();t.objectStore("f").clear();return phDone(t)})
+    .then(()=>true,()=>{toast("Fotoğraflar silinemedi, Ayarlar > Gizlilik ve veri'den yeniden dene");phLoad();return false});
 }
 function phGuard(){
   const on=tab==="trend"&&phList.length>0,d=DH();
@@ -127,4 +127,4 @@ document.addEventListener("change",ev=>{
   else if(t.id==="pha"||t.id==="phb")phCmp();
 });
 document.addEventListener("nw:boot",phLoad); // after the main script (render, S) has run
-Data.privacy.push(["İlerleme fotoğrafları",()=>phList.length,()=>{phClear()},11]);
+Data.privacy.push(["İlerleme fotoğrafları",()=>phList.length,()=>phClear(),11]);
