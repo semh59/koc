@@ -41,7 +41,7 @@ function walkSheet(){
   <div class="mt-2 chips" id="wk">${Object.entries(WKIND).map(([k,name])=>`<button class="chip" data-w="k:${k}" aria-pressed="${k===wKind}">${name}</button>`).join("")}</div>
   <div class="lbl">Süre (dakika)</div><input class="in num" id="wmin" inputmode="numeric" value="${wMin()}">
   <div class="t-h2 sumv num" id="wprev"></div>
-  <p class="hint" style="padding:4px 0 8px">Mesafe ve kalori tahmindir. Süreyi unuttuysan düzelt. Adımlar günlük sayaca zaten dahildir, ikinci kez eklenmez.</p>
+  <p class="hint flush">Mesafe ve kalori tahmindir. Süreyi unuttuysan düzelt. Adımlar günlük sayaca zaten dahildir, ikinci kez eklenmez.</p>
   <div class="btns"><button class="btn" data-w="save">Kaydet</button><button class="btn ghost" data-w="close">Sonra</button><button class="btn danger" data-w="drop">Kaydetmeden at</button></div>`);
   walkPrev();
 }

@@ -19,7 +19,7 @@ function exFiltered(){
 }
 function exListHtml(){
   const all=exFiltered(),list=all.slice(0,gLN);
-  return (gLQ||exFilterN()?`<p class="hint" style="padding:0 4px 6px">${all.length} sonuç</p>`:"")+list.map(e=>`<button class="prow exrow" data-g="exinfo:${e.id}"><span class="exthumb" aria-hidden="true">${e.tp?exFig(e,false):""}</span><span class="grow"><b>${esc(e.n)}</b><span class="mut sm">${e.r||e.g}${e.q?" · "+e.q.toLowerCase():""}${e.l?" · "+exLv(e.l):""}</span></span><span class="plus">›</span></button>`).join("")
+  return (gLQ||exFilterN()?`<p class="hint flush">${all.length} sonuç</p>`:"")+list.map(e=>`<button class="prow exrow" data-g="exinfo:${e.id}"><span class="exthumb" aria-hidden="true">${e.tp?exFig(e,false):""}</span><span class="grow"><b>${esc(e.n)}</b><span class="mut sm">${e.r||e.g}${e.q?" · "+e.q.toLowerCase():""}${e.l?" · "+exLv(e.l):""}</span></span><span class="plus">›</span></button>`).join("")
     +(all.length>list.length?`<button class="lnk" data-g="lmore">Daha fazla göster</button>`:"")+(all.length?"":`<p class="hint">Eşleşen hareket yok. Başka bir ad dene ya da filtreleri temizle.</p>`);
 }
 const exChips=(arr,cur,act)=>arr.map(x=>`<button class="chip" data-g="${act}:${x}" aria-pressed="${x===cur}">${x}</button>`).join("");
@@ -79,7 +79,7 @@ function exChartBody(id){
   const m=exChM,sel=exChI!=null&&exChI<pts.length?exChI:pts.length-1,p=pts[sel];
   const val=m==="t"?`${fkg(p.t)||0} kg × ${p.r}`:`${fint(p[m])} kg`;
   const body=pts.length<2?`<p class="hint">Grafik için en az iki seans gerekir. Şimdilik tek seans var.</p>`:exChartSvg(pts,m,sel);
-  return `<div class="chips" style="margin:8px 0 4px">${Object.keys(EXMET).map(k=>`<button class="chip" data-g="chm:${k}" aria-pressed="${k===m}">${EXMET[k][0]}</button>`).join("")}</div>
+  return `<div class="chips my-2">${Object.keys(EXMET).map(k=>`<button class="chip" data-g="chm:${k}" aria-pressed="${k===m}">${EXMET[k][0]}</button>`).join("")}</div>
   <div class="num" aria-live="polite"><b>${val}</b> <span class="mut sm">${fd(p.d)}, ${sel+1}/${pts.length}. seans</span></div>${body}`;
 }
 function exCharts(id){

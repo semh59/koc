@@ -82,7 +82,7 @@ function obView(){
   else if(st===1)body=`<h2>Hangileri açık olsun?</h2><div class="card"><p class="flush hint">Kapalı olanlar ekranında görünmez. İstediğini sonra Ayarlar'dan açarsın.</p>
     <div class="chips">${OB_MODS.map(([k,l,ic])=>`<button class="chip" data-ob="mod:${k}" aria-pressed="${ob.mods.includes(k)}">${Icons.svg(ic)} ${l}</button>`).join("")}</div>
     ${ob.mods.includes("steps")?`<p class="p0 hint">Adım sayar için telefon izni, Bugün ekranındaki "Adım sayarı aç" satırından istenir.</p>`:""}</div>
-    <div class="card"><details class="acc"${ob.hd||ob.hn?" open":""}><summary>Sağlık notu ekle</summary><p class="hint" style="padding:0 0 4px">Önerilerin sana göre ihtiyatlı olması için. Hamilelik, yeme bozukluğu geçmişi, hekim kontrolü ya da ilaç varsa işaretle.</p>
+    <div class="card"><details class="acc"${ob.hd||ob.hn?" open":""}><summary>Sağlık notu ekle</summary><p class="hint flush">Önerilerin sana göre ihtiyatlı olması için. Hamilelik, yeme bozukluğu geçmişi, hekim kontrolü ya da ilaç varsa işaretle.</p>
     ${swRow('id="obhd"',ob.hd,"Hamileyim, emziriyorum ya da yeme bozukluğu geçmişim var")}${swRow('id="obhn"',ob.hn,"Hekim kontrolündeyim ya da düzenli ilaç kullanıyorum")}</details></div>`;
   else{
     const p=obParse(),pl=obPlan(p);next="Başla";

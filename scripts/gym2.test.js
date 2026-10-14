@@ -115,7 +115,7 @@ const errs=[];
   { // touch target and keyboard
     ev("S=structuredClone(DEF);S.settings.obDone=true;tab='gym';render()");
     const pills=[...q(".mmp").querySelectorAll("button.chip")];
-    ok("44 px button row for diagram regions: 15 regions, .chip at least 44 px",pills.length>=15&&/\.chip\{[^}]*min-height:44px/.test(html),pills.length);
+    ok("44 px button row for diagram regions: 15 regions, .chip at least 44 px",pills.length>=15&&/\.chip\{[^}]*min-height:var\(--hit\)/.test(html),pills.length);
     pills.find(b=>b.dataset.g==="mm:Biseps").click();
     ok("selecting by button updates the info line and marks it selected",q("#mminfo").textContent.startsWith("Biseps")&&q('.mmp [data-g="mm:Biseps"]').classList.contains("on")&&q('svg [data-g="mm:Biseps"]').classList.contains("on"));
     ok("with the keyboard open the bottom bar is hidden, the composer and sheet rise by --kb",/body\.kb nav,body\.kb \.chiprow\{display:none\}/.test(html)&&/body\.kb #composer\{bottom:var\(--kb/.test(html)&&/body\.kb #sheet\{bottom:var\(--kb/.test(html)&&html.includes("visualViewport"));

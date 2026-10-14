@@ -67,7 +67,7 @@ function labRender(){
   <div class="lbl">Numune tarihi${labDate?"":" (bulunamadı, seç)"}</div><input class="in" type="date" id="ld" value="${labDate}" max="${dayKey()}">
   <div class="mb-2 mut sm">${labManual?"":"Kaydetmeden önce her satırı PDF'inle karşılaştır. Yanlış satırın işaretini kaldır ya da düzelt."}</div>
   <div class="lscroll">${labRows.map(labRowHtml).join("")}</div>${dl}
-  <div class="lbtns"><button class="btn ghost" data-lab="addrow">＋ Satır</button><button class="btn" data-lab="save">Kaydet</button></div><button class="mt-2 btn ghost" data-lab="close">Vazgeç</button>`);
+  <div class="bgrid mt-3"><button class="btn ghost" data-lab="addrow">＋ Satır</button><button class="btn" data-lab="save">Kaydet</button></div><button class="mt-2 btn ghost" data-lab="close">Vazgeç</button>`);
 }
 /* Gathers the edits on screen into labRows (so they survive a redraw). vs/ls/hs are the raw value and range texts. */
 function labCollect(){

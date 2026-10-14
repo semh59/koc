@@ -56,4 +56,13 @@ ok("every var(--x) in use is defined",used.every(v=>defd.has(v)),used.filter(v=>
 ok("common row: .row and its modifiers share one rule, at least 56 px",/\.row,\.prow,\.rrow,\.lrow,\.chkrow,\.rem,\.trow,\.field\{[^}]*min-height:56px/.test(css));
 ok("the bottom tab label never breaks mid-word, height uses min-height",/nav button\{[^}]*min-height:var\(--nav-h\)[^}]*overflow-wrap:normal;word-break:keep-all/.test(css)&&!/nav button\{[^}]*overflow-wrap:anywhere/.test(css));
 ok("toast position comes only from the --toast-b token",/#toast\{[^}]*bottom:var\(--toast-b\)/.test(css)&&!/#toast\{bottom:/.test(css));
+// Shared components: one hit-size token, helper classes instead of fixed inline values, one empty-state component, one button grid.
+ok("--hit token is 48 px and no control size is hard-coded to 44 px",root.hit==="48px"&&!/(?<!--rs:)44px/.test(css.replace(/header\{[^}]*\}/g,"")),root.hit);
+const staticInl=inl.filter(v=>!v.includes("${")&&!/^(background|fill|stroke):var\(--[\w-]+\)(;opacity:[.\d]+)?$/.test(v));
+ok("a fixed inline style is only a colour token; sizes and spacing use helper classes",staticInl.length===0,staticInl);
+const offScale=[...css.matchAll(/(?:margin|padding|gap)[a-z-]*:([^;}]*)/g)].map(m=>m[1]).filter(v=>/(?<![\d.\-])(6|10|14)px/.test(v));
+ok("margin, padding and gap use the 4/8/12/16/24/32 scale (no 6, 10 or 14 px)",offScale.length===0,offScale);
+ok("empty states come from emptyCard(); no hand-written card empty or bare .empty block outside the Day list",(Object.entries(src).filter(([f])=>f!=="index.html").map(e=>e[1]).join("").match(/class="card empty"/g)||[]).length===1&&!/<div class="empty">\$\{Icons\.svg\("note"\)\}<p class="mut">"/.test(all));
+ok("one button grid: .bgrid replaces .lbtns, .cfbtns and .hrow",!/lbtns|cfbtns|\.hrow|class="hrow/.test(all)&&/\.bgrid\{/.test(css));
+ok("one check mark glyph (no heavy check mark)",!all.includes("✔"));
 finish();

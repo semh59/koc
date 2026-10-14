@@ -29,7 +29,7 @@ function sheetPrivacy(){
   <p class="mut sm">Tüm kayıtların yalnızca bu telefonda durur; NeoWell'in sunucusu ve hesabı yoktur. Yedek dosyasını sen oluşturur, nereye kaydedeceğini sen seçersin. İlerleme fotoğrafları yalnız bu telefonda durur ve yedeğe girmez. PDF ve tablo paylaşımları da senin seçtiğin yere gider. Google otomatik yedeğine ve telefondan telefona aktarıma bilerek dahil edilmez.</p>
   <p class="mut sm">Konum yalnız elle başlattığın yürüyüşte ve Ramazan modunda "Konumumu kullan"a dokununca, uygulama açıkken kısa bir ölçüm için kullanılır (yürüyüş sürerken bildirim görünür). Yürüyüşte yalnız öğrenilen adım uzunluğu saklanır, nokta ve rota saklanmaz; Ramazan modunda yaklaşık 1 km'ye yuvarlanmış yerin telefonda kalır ve hiçbir yere gönderilmez. Arka planda konum istenmez.</p></details>
   <details class="acc"><summary>İnternete çıkanlar</summary>
-  <ul class="mut sm" style="margin:0 0 10px;padding-left:18px">
+  <ul class="mut sm m0 mb-3 pl-4">
     <li><b>Open Food Facts</b> (barkod araması): yalnızca barkod numarası gider. Hizmet, her internet isteğinde olduğu gibi IP adresini görür.</li>
     <li><b>Rehber</b>: yalnızca açık rızanla ve yalnız sen bir düğmeye bastığında (otomatik ya da arka planda gönderim yok), aşağıda yazılanlar, seçtiğin sağlayıcıya (${esc(provNames())} ya da kendi eklediğin servis). OpenAI ve Anthropic ücretlidir. Kurulumda yalnız anahtarın ve bir deneme cümlesi gider, sağlık verin gitmez.</li>
     <li><b>Ezan vakitleri</b> (yalnız Ramazan modunu açarsan): saatler telefonda hesaplanır; doğrulamak için en yakın il merkezinin ilçe numarası gönderilir ve Diyanet vakit tablosunun internetteki bir kopyasından (ezanvakti.emushaf.net) o tablo alınır. Konumun gönderilmez. Hizmet IP adresini görür; ilçe numarası yaklaşık bölgeni gösterir.</li>
@@ -43,7 +43,7 @@ function sheetPrivacy(){
   <div class="banner info"><p class="m0">Rehber veri paylaşımı: ${st.consent?`kabul edildi (${esc(st.consentAt)})`:"kabul edilmedi"}</p>
   ${st.consent?`<button class="btn ghost" data-pv="revoke">Rızamı geri al</button>`:consentOk()?`<button class="btn" data-pv="consent">Açık rızamı veriyorum</button>`:""}</div>
   <h4 class="grp">Verilerini sil</h4>
-  <p class="mut sm">Kategori başına silinir, geri alınamaz. <button class="lnk" style="display:inline;width:auto;min-height:44px" data-act="backup">Önce yedek al</button></p>
+  <p class="mut sm">Kategori başına silinir, geri alınamaz. <button class="lnk ib wa" data-act="backup">Önce yedek al</button></p>
   ${PV_CATS.map(([name,n],i)=>`<div class="row"><span class="grow"><b>${name}</b><small class="db mut sm">${n()} kayıt</small></span><button class="chip" data-pv="del:${i}" ${n()?"":"disabled"} aria-label="${name} sil">Sil</button></div>`).join("")}
   <p class="hint">Kendi besinlerin, favorilerin, öğün şablonların ve antrenman şablonların bu listede yoktur; yalnız Ayarlar > Veri ve yedek > Tüm verileri sil ile gider.</p>
   <button class="mt-2 btn ghost" data-pv="close">Kapat</button>`);
