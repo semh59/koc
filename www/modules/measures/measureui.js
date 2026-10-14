@@ -4,15 +4,21 @@ let msel="waist";
 const mLast=k=>{const a=S.measures.filter(m=>m.k===k);return a.length?a[a.length-1]:null};
 const mChips=id=>`<div class="chips" id="${id}">${Algo.MEASURES.map(k=>`<button class="chip" data-ms="k:${k}" aria-pressed="${k===msel}">${MNAME[k]}</button>`).join("")}</div>`;
 
-function sheetMeasures(){
-  const l=mLast(msel);
-  openSheet(`<h3>Ölçü ekle</h3><div class="lbl">Bölge</div>${mChips("mk")}<label class="lbl" for="fv">Ölçü (cm)</label><input class="in num" id="fv" inputmode="decimal" placeholder="örn. 86,5" value="${l?fmt(l.v):""}" autocomplete="off" autofocus onfocus="this.select()"><div class="ferr" id="merr" role="alert"></div>${dayOptions()}<button class="btn" data-ms="go">Kaydet</button>`);
+/* `day` is the day of the record being edited; saving replaces that day's value, a changed day moves it. */
+let mEditDay="";
+function sheetMeasures(day=""){
+  const l=day?S.measures.find(m=>m.day===day&&m.k===msel):mLast(msel);
+  mEditDay=day;
+  openSheet(`<h3>${day?"Ölçüyü düzenle":"Ölçü ekle"}</h3>${day?"":`<div class="lbl">Bölge</div>${mChips("mk")}`}<label class="lbl" for="fv">Ölçü (cm)</label><input class="in num" id="fv" inputmode="decimal" placeholder="örn. 86,5" value="${l?fmt(l.v):""}" autocomplete="off" autofocus onfocus="this.select()"><div class="ferr" id="merr" role="alert"></div>${dayOptions(false,day||undefined)}<button class="btn" data-ms="go">Kaydet</button>`);
 }
 function goMeasures(){
   const v=num($("#fv").value);
   if(!(v>=20&&v<=250))return ferr("merr","Ölçüyü santimetre olarak yaz (20 ile 250 arası), örneğin 86,5");
-  S.measures=Algo.cleanMeasures([...S.measures,{day:fday(),k:msel,v}]);save();closeSheet();render();
-  toast(`${MNAME[msel]} ${fmt(Math.round(v*10)/10)} cm kaydedildi`);
+  const prev=S.measures;
+  S.measures=Algo.cleanMeasures([...prev.filter(m=>!(m.day===mEditDay&&m.k===msel)),{day:fday(),k:msel,v}]);
+  if(!commit(()=>{S.measures=prev}))return;
+  closeSheet();render();
+  toast(`${MNAME[msel]} ${fmt(Math.round(v*10)/10)} cm kaydedildi`,()=>{S.measures=prev;save();render()});
 }
 
 function mChart(list){
@@ -32,13 +38,14 @@ function measureCard(){
   const list=S.measures.filter(m=>m.k===msel),l=list[list.length-1],f=list[0],w=mLast("waist"),cm=S.settings.heightCm;
   const stats=l?`<div class="stats"><div class="stat"><div class="k">Son</div><div class="v num">${fmt(l.v)} cm</div></div>${list.length>1?`<div class="stat"><div class="k">${fd(f.day)}'den beri</div><div class="v num">${fmtS(l.v-f.v)} cm</div></div>`:""}</div>`:"";
   const whtr=w&&cm>0?`<p class="pt-2 hint">Bel/boy oranı: <b class="num">${fmt(Algo.whtr(w.v,cm),2)}</b> (bel ${fmt(w.v)} cm, boy ${cm} cm). Genel bilgi: bel çevresinin boyun yarısından küçük olması sık anılan bir referanstır; tek başına bir şey söylemez, tanı ya da yorum değildir. Sağlık kararların için hekimine danış.</p>`:"";
-  const rows=list.slice(-5).reverse().map(m=>`<div class="row"><span class="grow">${fd(m.day)}</span><b class="num">${fmt(m.v)} cm</b><button class="del" data-ms="del:${m.day}" aria-label="${fd(m.day)} ${MNAME[msel]} ölçüsünü sil">${Icons.svg("x")}</button></div>`).join("");
+  const rows=list.slice(-5).reverse().map(m=>`<div class="prow"><button class="grow pbtn" data-ms="edit:${m.day}"><span class="grow">${fd(m.day)}</span><b class="num">${fmt(m.v)} cm</b></button><button class="del" data-ms="del:${m.day}" aria-label="${fd(m.day)} ${MNAME[msel]} ölçüsünü sil">${Icons.svg("x")}</button></div>`).join("");
   return `<h2>Vücut ölçüleri</h2><div class="card">${mChips("mt")}${list.length?mChart(list):`<p class="hint">${MNAME[msel]} için ölçü yok.</p>`}${stats}${whtr}<div class="mt-2">${rows}</div>${addBtn}</div>`;
 }
 document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-ms]");if(!el)return;
   const [a,p]=el.dataset.ms.split(":");
   if(a==="open")sheetMeasures();
+  else if(a==="edit")sheetMeasures(p);
   else if(a==="go")goMeasures();
   else if(a==="k"){
     msel=p;

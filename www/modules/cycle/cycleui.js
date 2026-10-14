@@ -1,6 +1,6 @@
 "use strict";
 /* Cycle screen. The data lives only in S.cycle; it never reaches the Coach context, a notification body or the widget. No calorie or diet advice. */
-let cycMonth="",cycFlow="",cycSym=[];
+let cycMonth="",cycFlow="",cycSym=[],cycEditId=0;
 const cycResched=()=>scheduleReminders().then(setNotif);
 /* A range on one line: "21–25 Eki" within a month, "28 Eki – 2 Kas" across months. */
 const cycRange=(a,b)=>a.slice(0,7)===b.slice(0,7)?`${+a.slice(8)}–${fd(b)}`:`${fd(a)} – ${fd(b)}`;
@@ -62,7 +62,7 @@ function viewCycle(){
   const label=(list,k)=>list.find(x=>x[0]===k)[1];
   const rows=S.cycle.slice().reverse().map(r=>{
     const tags=[r.flow&&label(CycleLib.FLOW,r.flow),...(r.sym||[]).map(k=>label(CycleLib.SYM,k))].filter(Boolean).join(", ");
-    return `<div class="row"><span class="grow"><b class="num">${r.e?cycRange(r.s,r.e):fd(r.s)}</b>${r.e?"":`<span class="mut"> · bitiş girilmedi</span>`}${tags||r.note?`<small class="db mut">${esc(tags)}${r.note?(tags?" · ":"")+esc(r.note):""}</small>`:""}</span><button class="del" data-cy="del:${r.id}" aria-label="${fd(r.s)} tarihli kaydı sil">${Icons.svg("x")}</button></div>`;
+    return `<div class="prow"><button class="grow pbtn" data-cy="edit:${r.id}"><span class="grow"><b class="num">${r.e?cycRange(r.s,r.e):fd(r.s)}</b>${r.e?"":`<span class="mut"> · bitiş girilmedi</span>`}${tags||r.note?`<small class="db mut">${esc(tags)}${r.note?(tags?" · ":"")+esc(r.note):""}</small>`:""}</span></button><button class="del" data-cy="del:${r.id}" aria-label="${fd(r.s)} tarihli kaydı sil">${Icons.svg("x")}</button></div>`;
   }).join("");
   return `<button class="mb-3 btn" data-cy="add">${Icons.svg("plus")} Dönem ekle</button>
   <div class="card"><div class="lbl">Bu dönem</div>${dn?`<div class="ink sumv cyv num">${dn}. gün</div><button class="btn ghost" data-cy="end">Dönem bugün bitti</button>`:`<p class="m0 mut">${lastRow?`Açık dönem yok. Son başlangıç: ${fd(lastRow.s)}.`:"Henüz kayıt yok. İlk dönemini eklediğinde burada görünür."}</p>`}</div>
@@ -75,15 +75,16 @@ function viewCycle(){
 }
 
 /* ---- Adding a record ---- */
-const cycChips=(attr,list)=>`<div class="chips">${list.map(([v,l])=>`<button class="chip" data-${attr}="${v}" aria-pressed="false">${l}</button>`).join("")}</div>`;
-function sheetCycle(){
-  const t=dayKey();cycFlow="";cycSym=[];
-  openSheet(`<h3>Dönem ekle</h3>
-  <label class="lbl" for="cys">Başlangıç</label><input class="in" type="date" id="cys" max="${t}" value="${t}">
-  <label class="lbl" for="cye">Bitiş (isteğe bağlı)</label><input class="in" type="date" id="cye" max="${t}">
-  <div class="lbl">Akış (isteğe bağlı)</div>${cycChips("cyf",CycleLib.FLOW)}
-  <div class="lbl">Belirtiler (isteğe bağlı)</div>${cycChips("cyb",CycleLib.SYM)}
-  <label class="lbl" for="cynot">Not (isteğe bağlı)</label><input class="in" id="cynot" maxlength="${CycleLib.NOTE_MAX}" autocomplete="off">
+const cycChips=(attr,list,on)=>`<div class="chips">${list.map(([v,l])=>`<button class="chip" data-${attr}="${v}" aria-pressed="${on.includes(v)}">${l}</button>`).join("")}</div>`;
+/* `r` is the record being edited; without it a new period starts today. */
+function sheetCycle(r){
+  const t=dayKey();cycEditId=r?r.id:0;cycFlow=r?.flow||"";cycSym=r?.sym?[...r.sym]:[];
+  openSheet(`<h3>${r?"Dönemi düzenle":"Dönem ekle"}</h3>
+  <label class="lbl" for="cys">Başlangıç</label><input class="in" type="date" id="cys" max="${t}" value="${r?r.s:t}">
+  <label class="lbl" for="cye">Bitiş (isteğe bağlı)</label><input class="in" type="date" id="cye" max="${t}" value="${r?.e||""}">
+  <div class="lbl">Akış (isteğe bağlı)</div>${cycChips("cyf",CycleLib.FLOW,[cycFlow])}
+  <div class="lbl">Belirtiler (isteğe bağlı)</div>${cycChips("cyb",CycleLib.SYM,cycSym)}
+  <label class="lbl" for="cynot">Not (isteğe bağlı)</label><input class="in" id="cynot" maxlength="${CycleLib.NOTE_MAX}" value="${esc(r?.note||"")}" autocomplete="off">
   <div class="ferr" id="cywarn" role="alert"></div><button class="btn" data-cy="save">Kaydet</button>`);
 }
 /* Stores a new list; on a failed save the old list stays and the user is told. */
@@ -96,9 +97,10 @@ function cycPut(next,msg){
 function cycSave(){
   const v=id=>$("#"+id)?.value||"",t=dayKey();
   const c=CycleLib.check({s:v("cys"),e:v("cye"),flow:cycFlow,sym:cycSym,note:v("cynot")},t);
-  const err=c.err||(CycleLib.overlap(S.cycle,c.row)&&"Bu tarihler başka bir kayıtla çakışıyor");
+  const rest=S.cycle.filter(r=>r.id!==cycEditId);
+  const err=c.err||(CycleLib.overlap(rest,c.row)&&"Bu tarihler başka bir kayıtla çakışıyor");
   if(err)return ferr("cywarn",err);
-  cycPut(CycleLib.clean([...S.cycle,c.row],t),"Dönem kaydedildi");
+  cycPut(CycleLib.clean([...rest,c.row],t),cycEditId?"Kayıt güncellendi":"Dönem kaydedildi");
 }
 
 document.addEventListener("click",ev=>{
@@ -114,6 +116,7 @@ document.addEventListener("click",ev=>{
   if(a==="toggle")cycToggle();
   else if(a==="rem"){S.settings.cycleRem=el.checked;save();cycResched()}
   else if(a==="add")sheetCycle();
+  else if(a==="edit")sheetCycle(S.cycle.find(r=>r.id===+arg));
   else if(a==="save")cycSave();
   else if(a==="mon"){cycMonth=ymShift(cycMonth||dayKey().slice(0,7),+arg);render()}
   else if(a==="end"){const r=S.cycle[S.cycle.length-1],t=dayKey(),c=r&&CycleLib.check({...r,e:t},t);if(c?.row)cycPut(S.cycle.map(x=>x===r?{...c.row,id:r.id}:x),"Dönem bitirildi");else toast("Bitiş kaydedilemedi")}

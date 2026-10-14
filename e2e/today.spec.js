@@ -111,8 +111,9 @@ test.describe("Log",()=>{
   test("changing the meal",async({app,page})=>{
     await app.open({seed:state({},{entries:[entry("food",300,"Mercimek çorbası",{x:{meal:"breakfast"}})]})});
     await expect(page.locator(".log .gh").first()).toContainText("Kahvaltı");
-    await page.click('[data-meal]');
-    await page.click('[data-mset$=":dinner"]');
+    await page.click('[data-edit]');
+    await page.click('#sheet [data-ml="dinner"]');
+    await page.click('#sheet [data-go="entry"]');
     await expect(page.locator(".log .gh").first()).toContainText("Akşam");
   });
 

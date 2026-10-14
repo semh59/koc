@@ -56,11 +56,13 @@ function undoLast(){
   const next=undoStack[undoStack.length-1];
   if(next&&Date.now()-next.t<60000)toastShow(`Geri alındı. Bir önceki: ${next.msg}`,true);else{undoStack.length=0;$("#toast").classList.remove("on")}
 }
-function dayOptions(inl){
-  let o="";for(let i=0;i<7;i++){const d=addDays(-i);o+=`<option value="${dayKey(d)}">${i==0?"Bugün":i==1?"Dün":WEEKDAYS[d.getDay()]+" "+fd(dayKey(d))}</option>`}
-  if(tab==="day"&&logOff>=7){const k=keyOff(-logOff);o=`<option value="${k}" selected>${fd(k)}</option>`+o} // adding to an older day from the Day screen
-  const sel=`<label class="lbl" for="fday">Gün</label><select class="in" id="fday">${o}</select>`;
-  return inl?`<div class="inl">${sel}</div>`:sel;
+/* `sel` is the day an open record belongs to; on the Day screen an older day is preselected for new records. */
+function dayOptions(inl,sel=tab==="day"&&logOff>=7?keyOff(-logOff):""){
+  const ks=Array.from({length:7},(_,i)=>dayKey(addDays(-i)));
+  let o=ks.map((k,i)=>`<option value="${k}"${k===sel?" selected":""}>${i==0?"Bugün":i==1?"Dün":WEEKDAYS[addDays(-i).getDay()]+" "+fd(k)}</option>`).join("");
+  if(sel&&!ks.includes(sel))o=`<option value="${sel}" selected>${fd(sel)}</option>`+o;
+  const f=`<label class="lbl" for="fday">Gün</label><select class="in" id="fday">${o}</select>`;
+  return inl?`<div class="inl">${f}</div>`:f;
 }
 const fday=()=>($("#fday")||{}).value||dayKey();
 /* The error stays right under the field, in place of what the toast would hide. */
@@ -120,11 +122,53 @@ function sheetFood(){
 function sheetWater(){
   const L=Log.where(e=>e.type==="water"&&e.day===keyOff(-logOff));
   if(!L.length)return closeSheet();
-  openSheet(`<h3>Su kayıtları</h3>${L.map(e=>`<div class="prow"><span><b class="num">${e.time}</b></span><span class="num">${e.v} ml${e.dr?` · ${drinkName(e.dr)}`:""}</span><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></div>`).join("")}`);
+  openSheet(`<h3>Su kayıtları</h3>${L.map(e=>`<div class="prow"><button class="tx grow" data-edit="${e.id}" aria-label="${e.time}, ${e.v} ml, düzenle"><b class="num">${e.time}</b></button><span class="num">${e.v} ml${e.dr?` · ${drinkName(e.dr)}`:""}</span><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></div>`).join("")}`);
 }
-function sheetMeal(id){
-  const e=Log.find(x=>x.id===id);if(!e)return;
-  openSheet(`<h3>Öğünü değiştir</h3><p class="mut sm">${esc(e.text||"Öğün")}</p><div class="chips">${LogLib.MEALS.map(([k,n])=>`<button class="chip" data-mset="${id}:${k}" aria-pressed="${k===LogLib.mealOf(e)}">${n}</button>`).join("")}</div>`);
+/* One edit sheet for a log entry: value, name or note, day and time, and the meal for food. */
+let editId=0;
+function sheetEntry(id){
+  const e=Log.find(x=>x.id===id);if(!e||e.type==="steps")return;
+  const t=e.type,v=e.v==null?"":t==="weight"?dw(e.v):fmt(e.v,e.v%1?1:0);
+  const val={weight:`Kilo (${wlab()})`,water:"Miktar (ml)",exercise:"Süre (dakika)",food:"Kalori (kcal, isteğe bağlı)"}[t];
+  const name={food:"Yemeğin adı",exercise:"Tür"}[t];
+  editId=id;
+  openSheet(`<h3>Kaydı düzenle</h3>${val?`<label class="lbl" for="ev">${val}</label><input class="in num" id="ev" inputmode="${t==="weight"?"decimal":"numeric"}" value="${v}" autocomplete="off">`:""}
+  ${name?`<label class="lbl" for="et">${name}</label><input class="in" id="et" value="${esc(e.text)}" autocomplete="off">`:""}${t==="note"?`<label class="lbl" for="et">Not</label><textarea class="in" id="et">${esc(e.text)}</textarea>`:""}
+  ${t==="food"?`<div class="lbl" id="fmll">Öğün</div><div class="chips" id="fml" role="group" aria-labelledby="fmll">${LogLib.MEALS.map(([k,n])=>`<button class="chip" data-ml="${k}" aria-pressed="${k===LogLib.mealOf(e)}">${n}</button>`).join("")}</div>`:""}
+  <label class="lbl" for="eday">Gün</label><input class="in" type="date" id="eday" value="${e.day}" max="${dayKey()}">
+  <label class="lbl" for="etime">Saat</label><input class="in" type="time" id="etime" value="${e.time||""}">
+  <div class="ferr" id="eerr" role="alert"></div><button class="btn" data-go="entry">Kaydet</button>`);
+}
+function goEntry(){
+  const e=Log.find(x=>x.id===editId);if(!e)return closeSheet();
+  const t=e.type,raw=($("#ev")||{value:""}).value.trim(),text=$("#et")?$("#et").value.trim():e.text,day=$("#eday").value,time=$("#etime").value,next={...e,day,time,text};
+  const bad=m=>ferr("eerr",m);
+  if(!/^\d{4}-\d\d-\d\d$/.test(day)||day>dayKey())return bad("Geçerli bir gün seç, gelecek günler olmaz");
+  if(!/^\d\d:\d\d$/.test(time))return bad("Saati yaz, örneğin 08:30");
+  if(t==="weight"){
+    const kg=Units.wIn(num(raw));
+    if(!(kg>=20&&kg<=400)||/[.,]\d{3}/.test(raw))return bad(`Kiloyu ${wlab()} olarak yaz, örneğin ${wlab()==="lb"?"185,4":"84,3"}`);
+    next.v=kg;
+  }else if(t==="water"||t==="exercise"){
+    const n=num(raw,true),max=t==="water"?5000:600;
+    if(!(n>0&&n<=max))return bad(t==="water"?"Miktarı ml olarak yaz (1-5000), örneğin 250":"Süreyi dakika olarak yaz (1-600), örneğin 40");
+    next.v=n;
+  }else if(t==="food"){
+    const kc=num(raw,true);
+    if(raw&&isNaN(kc))return bad("Kaloriyi tam sayı olarak yaz, örneğin 250");
+    if(!text&&isNaN(kc))return bad("Yemeğin adını ya da kalorisini yaz");
+    if(!isNaN(kc)&&kc>20000)return bad("Kalori çok yüksek görünüyor, kontrol et");
+    next.v=isNaN(kc)?null:kc;next.meal=fmeal();
+    if(next.v!==e.v){delete next.lo;delete next.hi}
+  }else if(t==="note"&&!text)return bad("Önce notunu yaz");
+  if(t==="exercise"){
+    if(day!==dayKey())next.bt=true;
+    if(e.kcal!=null){const kc=Algo.netKcal(EXERCISE_MET[text],motionKg(),next.v);if(kc)next.kcal=kc;else delete next.kcal}
+  }
+  Log.swap(e,next);
+  if(!commit(()=>Log.swap(next,e)))return;
+  closeSheet();render();
+  toast("Kayıt güncellendi",()=>{if(Log.swap(next,e)&&commit(()=>Log.swap(e,next)))render()});
 }
 let tplSrc=[];
 function sheetTpl(){

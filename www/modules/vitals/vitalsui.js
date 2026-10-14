@@ -41,7 +41,7 @@ function vTrendCards(){
 }
 
 /* ---- Entry sheets ---- */
-const vIn=(id,lab,mode)=>`<label class="labf"><span>${lab}</span><input class="in num" id="${id}" inputmode="${mode||"numeric"}" autocomplete="off"></label>`;
+const vIn=(id,lab,val="",mode="numeric")=>`<label class="labf"><span>${lab}</span><input class="in num" id="${id}" inputmode="${mode}" value="${val}" autocomplete="off"></label>`;
 const vChips=(attr,list,sel)=>`<div class="chips">${list.map(([v,l])=>`<button class="chip" data-${attr}="${v}" aria-pressed="${v===sel}">${l}</button>`).join("")}</div>`;
 function sheetBp(){
   vConfirm="";vSession=new Date().getHours()<12?"morning":"evening";
@@ -81,6 +81,38 @@ function vConfirmAgain(why,sig){
   if(!why||vConfirm===sig)return false;
   vConfirm=sig;vWarn(`${why} Yanlış yazmış olabilir misin? Doğruysa tekrar Kaydet'e dokun.`);
   return true;
+}
+/* Edit sheet for one blood pressure session (1-2 readings) or one glucose reading; vEditIds are the raw reading ids. */
+let vEditIds=[];
+function sheetVEdit(ids){
+  const rs=S.vitals.filter(r=>ids.includes(r.id)).sort(VitalsLib.cmpAt);if(!rs.length)return;
+  const r0=rs[0],bp=r0.k==="t";
+  vEditIds=ids;vConfirm="";vSession=r0.session;vCtx=r0.ctx;
+  openSheet(`<h3>${bp?"Tansiyonu düzenle":"Şekeri düzenle"}</h3>
+  ${bp?`<div class="lbl">Seans</div>${vChips("vsession",VitalsLib.SESSIONS,vSession)}
+  ${rs.map((r,i)=>`<div class="lbl">${i+1}. ölçüm</div><div class="g3 mb-2">${vIn("bs"+(i+1),"Büyük",r.sys)}${vIn("bd"+(i+1),"Küçük",r.dia)}${vIn("bn"+(i+1),"Nabız",r.pulse??"")}</div>`).join("")}`
+  :`<label class="lbl" for="gv">Şeker (${glab()})</label><input class="in num" id="gv" inputmode="${vMmol()?"decimal":"numeric"}" value="${dg(r0.g)}" autocomplete="off"><div class="lbl">Ne zaman ölçtün?</div>${vChips("vctx",VitalsLib.CTX,vCtx)}`}
+  <label class="lbl" for="vday">Gün</label><input class="in" type="date" id="vday" max="${dayKey()}" value="${r0.day}">
+  <label class="lbl" for="vtime">Saat</label><input class="in" type="time" id="vtime" value="${r0.time}">
+  <label class="lbl" for="vnot">Not (isteğe bağlı)</label><input class="in" id="vnot" maxlength="80" value="${esc(r0.note||"")}" autocomplete="off">
+  <div class="ferr" id="vwarn" role="alert"></div><button class="btn" data-vt="saveedit">Kaydet</button>`);
+}
+function vSaveEdit(){
+  const old=S.vitals.filter(r=>vEditIds.includes(r.id)).sort(VitalsLib.cmpAt),day=vGet("vday"),next=new Map();
+  if(day>dayKey())return vWarn("Gelecek bir gün seçilemez");
+  for(const [i,r] of old.entries()){
+    const f={...r,day,time:vGet("vtime"),note:vGet("vnot")};
+    if(r.k==="t")Object.assign(f,{sys:LabLib.optNum(vGet("bs"+(i+1))),dia:LabLib.optNum(vGet("bd"+(i+1))),pulse:LabLib.optNum(vGet("bn"+(i+1))),session:vSession});
+    else{const g=LabLib.optNum(vGet("gv"));Object.assign(f,{g:g==null?g:Units.gIn(g),ctx:vCtx})}
+    const c=VitalsLib.check(f);
+    if(!c.row)return vWarn(vErrText(c));
+    next.set(r.id,{...c.row,id:r.id});
+  }
+  const was=S.vitals;
+  S.vitals=was.map(r=>next.get(r.id)||r);
+  if(!commit(()=>{S.vitals=was}))return;
+  closeSheet();render();
+  toast("Ölçüm güncellendi",()=>{S.vitals=was;if(commit(()=>{}))render()});
 }
 function vSaveBp(){
   const day=vGet("fday"),time=vGet("vtime"),note=vGet("vnot"),sid=VitalsLib.newSid();
@@ -135,7 +167,7 @@ function viewBp(){
   const raw=S.vitals.filter(r=>r.k==="t"&&r.day>=from&&r.day<=end);
   const bpSeries=[{pts:pt(raw,"sys"),color:"var(--ink)",shape:"c",label:"Sistolik (büyük)",short:"Sistolik"},{pts:pt(raw,"dia"),color:"var(--water)",shape:"s",dash:true,below:true,label:"Diyastolik (küçük)",short:"Diyastolik"}];
   const avgTxt=a=>a?`${Math.round(a.sys)}/${Math.round(a.dia)}`:"–";
-  const rows=session.slice().reverse().map(s=>`<div class="row"><span class="grow"><b class="num">${Math.round(s.sys)}/${Math.round(s.dia)}</b>${s.pulse?`<span class="mut num"> · nabız ${s.pulse}</span>`:""}<small class="db mut num">${fd(s.day)} ${s.time} · ${VitalsLib.sessionName(s.session)}${s.n>1?`, ${s.n} ölçüm`:""}</small>${(d=>d?`<small class="db mut">${d}</small>`:"")(Meds.bpSince(s.day,s.time))}</span>${vDel(s.raw.map(x=>x.id))}</div>`);
+  const rows=session.slice().reverse().map(s=>`<div class="prow"><button class="grow pbtn" data-vt="edit:${s.raw.map(x=>x.id)}"><span class="grow"><b class="num">${Math.round(s.sys)}/${Math.round(s.dia)}</b>${s.pulse?`<span class="mut num"> · nabız ${s.pulse}</span>`:""}<small class="db mut num">${fd(s.day)} ${s.time} · ${VitalsLib.sessionName(s.session)}${s.n>1?`, ${s.n} ölçüm`:""}</small>${(d=>d?`<small class="db mut">${d}</small>`:"")(Meds.bpSince(s.day,s.time))}</span></button>${vDel(s.raw.map(x=>x.id))}</div>`);
   return `${vBtns("addbp")}
   ${h.all?`<div class="card"><div class="lbl">Ev ortalaması (son 7 gün)</div>
     <div class="ink sumv num">${avgTxt(h.all)} <small>mmHg</small></div><div class="mut sm">${h.all.n} ölçüm, ${h.days} gün</div>${h.enough?"":`<div class="mut sm">Ortalama için en az 3 gün, tercihen 7 gün sabah ve akşam ölçüm gerekir.</div>`}
@@ -150,7 +182,7 @@ function viewGlucose(){
   const end=dayKey(),from=keyOff(1-vRange),a=S.vitals.filter(r=>r.k==="s"&&r.day>=from&&r.day<=end).sort(VitalsLib.cmpAt);
   const gs=VitalsLib.gStats(S.vitals,from,end),last=vLast("s");
   const series=VitalsLib.CTX.map(([c])=>({pts:a.filter(r=>r.ctx===c).map(r=>({day:r.day,time:r.time,v:Units.g(r.g)})),color:G_COLOR[c],shape:G_SHAPE[c],label:VitalsLib.ctxName(c),short:"",line:false})).filter(s=>s.pts.length);
-  const rows=a.slice().reverse().map(r=>`<div class="row"><span class="grow"><b class="num">${dg(r.g)}</b><span class="mut"> ${glab()}</span><small class="db mut num">${fd(r.day)} ${r.time} · ${esc(VitalsLib.ctxName(r.ctx))}</small></span>${vDel([r.id])}</div>`);
+  const rows=a.slice().reverse().map(r=>`<div class="prow"><button class="grow pbtn" data-vt="edit:${r.id}"><span class="grow"><b class="num">${dg(r.g)}</b><span class="mut"> ${glab()}</span><small class="db mut num">${fd(r.day)} ${r.time} · ${esc(VitalsLib.ctxName(r.ctx))}</small></span></button>${vDel([r.id])}</div>`);
   const labA1c=Labs.latest("hba1c");
   return `${vBtns("addbs")}
   ${last?`<div class="card"><div class="lbl">Son ölçüm</div><div class="ink sumv num">${dg(last.g)} <small>${glab()}</small></div><div class="mut sm">${esc(VitalsLib.ctxName(last.ctx))}, ${vWhen(last)}</div></div>`:emptyCard("water","Henüz ölçüm yok","İlk şeker ölçümünü ekle; ortalama ve grafik burada görünür.")}
@@ -223,6 +255,8 @@ document.addEventListener("click",ev=>{
   else if(a==="addbs")sheetBs();
   else if(a==="savebp")vSaveBp();
   else if(a==="savebs")vSaveBs();
+  else if(a==="edit")sheetVEdit(arg.split(",").map(Number));
+  else if(a==="saveedit")vSaveEdit();
   else if(a==="close")closeSheet();
   else if(a==="range"){vRange=+arg;render()}
   else if(a==="pdfmenu")vPdfMenu(arg);

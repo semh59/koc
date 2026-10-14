@@ -1,6 +1,6 @@
 /* ---------- events ---------- */
 document.addEventListener("click",ev=>{
-  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-rc],[data-fv],[data-fva],[data-fvd],[data-tp],[data-tpd],[data-sp],[data-lo],[data-kd],[data-g],[data-sex],[data-actl],[data-thm],[data-c],[data-food],[data-fp],[data-ml],[data-meal],[data-mset],[data-waterall]");
+  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-rc],[data-fv],[data-fva],[data-fvd],[data-tp],[data-tpd],[data-sp],[data-lo],[data-kd],[data-g],[data-sex],[data-actl],[data-thm],[data-c],[data-food],[data-fp],[data-ml],[data-edit],[data-waterall]");
   if(ev.target.id==="scrim")return closeSheet();
   if(!el)return;
   const d=el.dataset;
@@ -14,9 +14,8 @@ document.addEventListener("click",ev=>{
   if(d.kd){weightStep(+d.kd);return}
   if(d.lo){logOff=Math.max(0,Math.min(hgOldest(),logOff+(+d.lo)));render();return}
   if(d.ml){document.querySelectorAll("#fml .chip").forEach(c=>c.setAttribute("aria-pressed",c===el));return}
-  if(d.meal){sheetMeal(+d.meal);return}
+  if(d.edit){sheetEntry(+d.edit);return}
   if(d.waterall){sheetWater();return}
-  if(d.mset){const [id,k]=d.mset.split(":"),e=Log.find(x=>x.id===+id);if(e){e.meal=k;save();closeSheet();render()}return}
   if(d.del){
     const id=+d.del,rm=Log.find(e=>e.id===id);if(!rm)return;
     const inWater=!!el.closest("#sheet");
@@ -43,7 +42,7 @@ document.addEventListener("click",ev=>{
   if(d.fvd!==undefined){Nutrition.fav().splice(+d.fvd,1);save();$("#frl").innerHTML=favHtml();return}
   if(d.act)return Act.run(d.act);
   if(d.go){
-    ({weight:goWeight,food:goFood,nutrition:goNutrition,mydel:goMyDelete,tpl:goTpl,steps:goSteps,exercise:goExercise,note:goNote,restore:goRestore,checkbk:checkBackup,health:()=>{S.settings.healthNote=$("#hn").value.trim().slice(0,500);cNoteCheck();save();closeSheet();render();toast("Kaydedildi")}})[d.go]?.();
+    ({entry:goEntry,weight:goWeight,food:goFood,nutrition:goNutrition,mydel:goMyDelete,tpl:goTpl,steps:goSteps,exercise:goExercise,note:goNote,restore:goRestore,checkbk:checkBackup,health:()=>{S.settings.healthNote=$("#hn").value.trim().slice(0,500);cNoteCheck();save();closeSheet();render();toast("Kaydedildi")}})[d.go]?.();
     if(d.go==="copy")backupText().then(v=>{if(!v)return;(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast("Panoya kopyalandı"),()=>{const b=$("#bk");b.value=v;b.select();document.execCommand&&document.execCommand("copy");toast("Metni seçtim, kopyala")})});
     if(d.go==="share"||d.go==="download")exportBackup();
   }
