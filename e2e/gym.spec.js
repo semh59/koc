@@ -49,8 +49,7 @@ test.describe("Gym",()=>{
     const n=(await app.state()).templates.length;
     expect(n).toBeGreaterThanOrEqual(2);
     await expect(page.locator(".trow")).toHaveCount(n);
-    await page.locator('.trow [data-g^="start:"]').first().click();
-    await page.click('[data-g^="startgo:"]');
+    await page.locator(".trow .tmain").first().click();
     await expect(page.locator(".livebar")).toContainText("Salon tüm vücut");
     expect(await page.locator(".card.ex").count()).toBeGreaterThanOrEqual(2);
   });

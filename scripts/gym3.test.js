@@ -107,5 +107,27 @@ const {boot,flush,www,quota}=require("./html");
     click('[data-g="recmore"]');
     ok("Tüm rekorlar shows the remaining exercises",qa("#view .card .row .tag").length>=7);
   }
+  { // 10 one-tap template start, 4 past day
+    fresh("S.templates=[{id:3,name:'Üst',ex:['squat','plank'],tg:{squat:{sets:4,reps:6}}}]");
+    ok("template card: the main button starts, the preview is a separate labelled button",q(".tmain").dataset.g==="startgo:3"&&/önizle/.test(q('.trow [data-g="start:3"]').getAttribute("aria-label")));
+    click(".tmain");
+    ok("one tap starts the workout and opens the live screen",ev("gActive().tpl")===3&&ev("gActive().ex[0].sets.length")===4&&!!q('[data-g="finish"]'));
+    const y=ev("keyOff(-2)");
+    fresh("S.templates=[{id:3,name:'Üst',ex:['squat']}];S.workouts=[{id:1,day:keyOff(-1),t0:Date.now()-864e5,t1:Date.now()-864e5+3e6,name:'Dün',tpl:null,ex:[{id:'squat',note:'',sets:[{kg:100,reps:5,done:true}]}]}];S.gid=5");
+    click('[data-g="startday"]');
+    ok("the home screen offers a past-day start with a day field and a template choice",!!q("#gdday")&&!!q("#gdtpl")&&q('#sheet [data-g="closesheet"]').textContent==="Vazgeç");
+    q("#gdday").value="2999-01-01";click('[data-g="startdaygo"]');
+    ok("a future day is refused under the field",ev("gActive()")==null&&q("#gdderr").textContent!=="");
+    q("#gdday").value=y;q("#gdtpl").value="3";click('[data-g="startdaygo"]');
+    ok("the workout starts on the chosen day with the template, shown by date instead of a running clock",ev("gActive().day")===y&&ev("gActive().tpl")===3&&/günü/.test(q("#gstat").textContent)&&!/süre/.test(q("#gstat").textContent),q("#gstat").textContent);
+    ok("t0 falls on the chosen day, before the newer session",ev("gActive().t0")<ev("S.workouts[0].t0")&&ev("dayAt(gActive().t0)")===y);
+    ev("gActive().ex[0].sets[0].kg=80;gActive().ex[0].sets[0].reps=5;gActive().ex[0].sets[0].done=true");
+    click('[data-g="finish"]');
+    ok("finishing a past-day workout asks how long it took instead of using now",!!q("#gsd")&&/Antrenman kaç dakika/.test(text()));
+    q("#gsd").value="45";click('[data-g="stalego"]');
+    const w2=JSON.parse(ev("JSON.stringify(S.workouts.find(x=>x.day===keyOff(-2)))"));
+    ok("it is saved on that day with the typed duration and a sport entry on that day",w2.t1-w2.t0===45*6e4&&ev(`Log.find(e=>e.wid===${w2.id}).day`)===y);
+    ok("its previous session is empty (older than the others)",ev("gHistory('squat',S.workouts.find(x=>x.day===keyOff(-2)).t0).length")===0);
+  }
   finish();
 })();
