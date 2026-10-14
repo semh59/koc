@@ -2,7 +2,7 @@
 /* Cycle log: validation, cleaning and prediction (no DOM). The data stays on the device; it never reaches the Coach, a notification body or the widget.
    The prediction is the average of past period starts; ovulation and the fertile window are an information-only calendar method, not a contraception or pregnancy tool. */
 const CycleLib=(()=>{
-  const {dayOk,dayNum}=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
+  const {dayOk,dayNum,fdate}=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
   const FLOW=[["light","Hafif"],["medium","Orta"],["heavy","Yoğun"]],SYM=[["cramp","Kramp"],["headache","Baş ağrısı"],["mood","Ruh hali"]];
   const MAX_ROWS=80,MAXLEN=14,KEEP_DAYS=5*366,NID=9200,LEAD=2,NOTE_MAX=80,CYCLE_DAYS=[15,60],LAST_CYCLES=6,LUTEAL=14;
   const addDays=(k,n)=>new Date((dayNum(k)+n)*864e5).toJSON().slice(0,10);
@@ -89,6 +89,14 @@ const CycleLib=(()=>{
     const m=one(mood,x=>x.v),s=one(sleep,x=>x.min);
     return m||s?{mood:m,sleep:s}:null;
   }
-  return {beforeStart,FLOW,SYM,MAXLEN,NOTE_MAX,NID,check,clean,overlap,lengths,addDays,diff,predict,fertile,dayOfPeriod,remindDay};
+  /* Lines the user may add to the doctor report: the last starts with their length in days and the mean cycle length. No prediction, no fertile window. */
+  function report(rows){
+    const r=rows.slice(-LAST_CYCLES).reverse(),L=lengths(rows);
+    if(!r.length)return null;
+    const out=[["Son dönem başlangıçları",r.map(x=>fdate(x.s,true)+(x.e?` (${diff(x.e,x.s)+1} gün)`:"")).join(", ")]];
+    if(L.length)out.push(["Ortalama döngü uzunluğu",`${Math.round(L.reduce((a,b)=>a+b,0)/L.length)} gün (${L.length} döngü)`]);
+    return out;
+  }
+  return {report,beforeStart,FLOW,SYM,MAXLEN,NOTE_MAX,NID,check,clean,overlap,lengths,addDays,diff,predict,fertile,dayOfPeriod,remindDay};
 })();
 if(typeof module!=="undefined")module.exports=CycleLib;

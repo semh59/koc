@@ -191,7 +191,7 @@ function vSvg(series,from,to,W,H,dec){
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Ölçüm grafiği" data-tip="${tip}">${grid}${body}<text x="${L}" y="${H-6}">${fd(from)}</text><text x="${W-8}" y="${H-6}" text-anchor="end">${fd(to)}</text></svg>`;
 }
 const vSeg=()=>`<div class="seg" role="group" aria-label="Aralık">${[7,14,30].map(n=>`<button data-vt="range:${n}" aria-pressed="${vRange===n}">${n} gün</button>`).join("")}</div>`;
-const vBtns=add=>`<button class="mb-3 btn" data-vt="${add}">${Icons.svg("plus")} Ölçüm ekle</button>`;
+const vBtns=add=>`<div class="btns mb-3"><button class="btn" data-vt="${add}">${Icons.svg("plus")} Ölçüm ekle</button><button class="btn ghost" data-doc="open">${Icons.svg("share")} Doktora PDF</button></div>`;
 const vDel=ids=>`<button class="del" data-vt="del:${ids.join(",")}" aria-label="Ölçümü sil">${Icons.svg("x")}</button>`;
 /* List: the last 7 rows open, the rest folded. */
 const vList=rows=>rows.length?rows.slice(0,7).join("")+(rows.length>7?`<details class="acc"><summary>Tüm ölçümler (${rows.length})</summary>${rows.slice(7).join("")}</details>`:""):`<p class="m0 mut">Bu dönemde ölçüm yok.</p>`;

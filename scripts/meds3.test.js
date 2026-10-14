@@ -2,6 +2,7 @@
 const {ok,finish}=require("./ok");
 const M=require("../www/modules/meds/medlib.js");
 const {boot}=require("./html");
+const Doc=require("../www/modules/insights/doctorlib.js"),Cyc=require("../www/modules/cycle/cyclelib.js"),fakeCanvas=require("./canvas.js");
 const mk=(id,n,t=["08:00"],o={})=>({id,n,t,on:true,...o});
 const now=new Date(2026,8,14,7,0);
 
@@ -26,10 +27,53 @@ ok("budget: nothing is cut and no text when everything fits",(f=>f.list.length==
 const b=M.fit(med,oth,3,t0);
 ok("budget: when medication itself does not fit the nearest doses stay and the text says how far they reach",b.mainCut===2&&b.list.length===3&&b.days===3&&M.budgetText(b).includes("3 gün")&&M.budgetText(a).includes("tekrar hatırlatmaları"),M.budgetText(b));
 
+/* Doctor report: medication table */
+const rep=M.cleanMeds([mk(1,"Pause İlaç",["08:00","20:00"],{on:false,ou:"2026-10-01",d:"5 mg",fed:"with"}),mk(2,"Aktif",["07:30"],{d:"1 tablet",q:{"07:30":{d:"2 tablet",p:2}},w:[1,3],s:"2026-08-01",e:"2026-12-31"}),mk(3,"İki günde",["09:00"],{iv:2,ia:"2026-09-01"})]);
+const rr=Doc.medRows(rep);
+ok("report table: active medications first, then the paused ones with their pause end",rr.map(r=>r.name).join()==="Aktif,İki günde,Pause İlaç"&&rr[2].tag.join()==="Yemekle,Ara verildi, 1 Eki 2026 tarihine kadar");
+ok("report table: times carry their own dose and amount, days and start/end are written out",rr[0].times.join()==="07:30 · 2 tablet, 2 adet"&&rr[0].days==="Pzt, Çar"&&rr[0].dates.join()==="Başlangıç: 1 Ağu 2026,Bitiş: 31 Ara 2026"&&rr[1].days==="her 2 günde bir"&&rr[2].times.join()==="08:00 · 5 mg,20:00 · 5 mg"&&rr[2].days==="her gün");
+{
+  const {ctx,drawn}=fakeCanvas(s=>s.length*12),pg=Doc.listPages(rep,null,ctx);
+  pg.draw(ctx,0);
+  ok("report table: one page for a short list, names, doses and the pause are on it, no cycle title",pg.count===1&&["Kullandığım ilaçlar","Aktif","İki günde","Pause İlaç","Pzt, Çar"].every(t=>drawn.includes(t))&&!drawn.some(t=>t.includes("döngü")),drawn.slice(0,12));
+  const many=M.cleanMeds(Array.from({length:20},(_,i)=>mk(i+1,"İlaç "+(i+1),["06:00","10:00","14:00","18:00","20:00","22:00"],{d:"1 tablet"}))),big=fakeCanvas(s=>s.length*12),bp=Doc.listPages(many,null,big.ctx);
+  for(let i=0;i<bp.count;i++)bp.draw(big.ctx,i);
+  ok("report table: 20 medications with 6 times continue on more pages and every medication is drawn once, the header repeats",bp.count>=2&&Array.from({length:20},(_,i)=>big.drawn.filter(t=>t==="İlaç "+(i+1)).length).every(n=>n===1)&&big.drawn.filter(t=>t==="Saatler ve dozlar").length===bp.count);
+  const cy=fakeCanvas(s=>s.length*12),cp=Doc.listPages([],[["Son dönem başlangıçları","2 Eki 2026"]],cy.ctx);cp.draw(cy.ctx,0);
+  ok("report: a cycle section is drawn only when passed, alone it needs no medication table",cp.count===1&&cy.drawn.includes("2 Eki 2026")&&!cy.drawn.includes("Kullandığım ilaçlar"));
+}
+const cr=Cyc.report([{id:1,s:"2026-07-01",e:"2026-07-05"},{id:2,s:"2026-07-29",e:"2026-08-02"},{id:3,s:"2026-08-27"}]);
+ok("cycle lines: last starts with their length and the mean cycle length, no prediction",cr[0][1]==="27 Ağu 2026, 29 Tem 2026 (5 gün), 1 Tem 2026 (5 gün)"&&cr[1][1]==="29 gün (2 döngü)"&&cr.length===2&&Cyc.report([])===null,cr);
+
 (async()=>{
   const sched=[];
   const w=await boot(w=>{w.Capacitor={isNativePlatform:()=>true,Plugins:{LocalNotifications:{checkPermissions:async()=>({display:"granted"}),checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),getPending:async()=>({notifications:[]}),getDeliveredNotifications:async()=>({notifications:[]}),registerActionTypes:async()=>{},schedule:async x=>{sched.push(x)}}}}});
   const ev=s=>w.eval(s),q=s=>w.document.querySelector(s);
+  /* Doctor sheet and the vitals screens */
+  const seedDoc=(extra="")=>ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.noticeOk=true;S.settings.medOn=true;S.settings.bpOn=true;S.settings.bsOn=true;S.meds=MedLib.cleanMeds([${JSON.stringify(mk(1,"A"))}]);S.medLog=[];${extra};tab='today';render()`);
+  seedDoc();
+  ev("tab='bp';render()");
+  ok("blood pressure screen: a Doktora PDF button sits next to Ölçüm ekle and opens the report sheet",!!q('#view [data-doc="open"]')&&q('#view [data-doc="open"]').textContent.includes("Doktora PDF"));
+  q('#view [data-doc="open"]').click();
+  const chips=[...w.document.querySelectorAll('#sheet [data-doc^="days:"]')].map(e=>e.dataset.doc);
+  ok("report sheet: 7, 14, 30 and 90 day periods, 30 selected",chips.join()==="days:7,days:14,days:30,days:90"&&q('[data-doc="days:30"]').getAttribute("aria-pressed")==="true");
+  q('[data-doc="days:7"]').click();
+  ok("report sheet: choosing 7 days is kept",q('[data-doc="days:7"]').getAttribute("aria-pressed")==="true");
+  ok("report sheet: no cycle switch without a cycle record",!q('[data-doc="cycle"]'));
+  ev("closeSheet();docSt=null");
+  seedDoc("S.settings.cycleOn=true;S.cycle=[{id:1,s:'2026-09-01'}]");
+  ev("tab='glucose';render()");
+  ok("glucose screen has the same button",!!q('#view [data-doc="open"]'));
+  q('#view [data-doc="open"]').click();
+  const sw=q('[data-doc="cycle"]');
+  ok("report sheet: the cycle switch exists, is off by default and is written down in privacy terms",!!sw&&sw.checked===false&&q("#sheet").textContent.includes("Varsayılan olarak rapora girmez"));
+  sw.click();
+  ok("report sheet: turning the cycle switch on is kept",q('[data-doc="cycle"]').checked===true);
+  ev("closeSheet();docSt=null");
+  /* Today list order: medication and measurement rows lead, backup warning after */
+  seedDoc("S.settings.lastBackup=null;S.entries=Array.from({length:12},(_,i)=>({id:i+1,type:'water',day:dayKey(),v:200,t:'08:00'}));S.vitals=[];S.meds=MedLib.cleanMeds([{id:1,n:'Sabah',t:['00:00'],on:true,s:keyOff(-3)}])");
+  const rows=[...q("#view .todo").querySelectorAll(".row")].map(r=>r.textContent);
+  ok("Today: the medication row is the first job, before backup and other warnings",rows.length>0&&rows[0].includes("Sabah")&&rows.findIndex(r=>r.includes("Yedekle")||r.includes("yedek"))!==0,rows);
   const setMeds=m=>ev(`S.meds=MedLib.cleanMeds(${JSON.stringify(m)});render()`);
   ev("S=structuredClone(DEF);S.settings.obDone=true;S.settings.noticeOk=true;S.settings.medOn=true;S.settings.medShowName=true;S.medLog=[];tab='today'");
   /* Same four times for 12 medications group into 4 notifications a day: medication fits, only some repeats do not. */

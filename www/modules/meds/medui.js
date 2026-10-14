@@ -5,7 +5,7 @@ const medNowHM=()=>MedLib.hm(new Date());
 const medResched=()=>scheduleReminders().then(setNotif);
 const medNum=x=>x==null?"":String(x).replace(".",",");
 const medClose=()=>{closeSheet();medDraft=null};
-const MED_FED={empty:"Aç karnına",full:"Tok karnına",with:"Yemekle"};
+const MED_FED=MedLib.FED_TEXT;
 const MED_BACK=90;
 let medDay="";
 const medViewDay=()=>medDay&&medDay<dayKey()?medDay:dayKey();
