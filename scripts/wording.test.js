@@ -1,14 +1,19 @@
 /* Wording and error-text rules: Vazgeç on confirmations, exercise/workout vocabulary, one apostrophe, storage-full texts name the backup. */
 const {ok,finish}=require("./ok");
-const {boot,listJs,read}=require("./html");
+const {boot,listJs,read,clockAt}=require("./html");
 const src=[...listJs().filter(f=>!/piilib|foods\.js|exlib\.js/.test(f)).map(f=>[f,read(f)]),["index.html",read("index.html")]];
 const hits=re=>src.filter(([,t])=>re.test(t)).map(([f])=>f);
 (async()=>{
-  const w=await boot();
+  const w=await boot(w=>w.eval(clockAt("2026-10-06T16:00:00")));
   w.eval("confirmSheet({title:'x'})");
   ok("a confirmation's cancel button reads Vazgeç, the accept button Tamam",w.document.querySelector('#cfm [data-cf="0"]').textContent==="Vazgeç"&&w.document.querySelector('#cfm [data-cf="1"]').textContent==="Tamam");
-  ok("no UI source says İptal",hits(/İptal/).length===0,hits(/İptal/));
+  ok("no UI source says İptal or iptal",hits(/[İi]ptal/i).length===0,hits(/[İi]ptal/i));
   ok("the single exercise is called egzersiz, not hareket, in the gym and Coach-program screens",hits(/Eşleşen hareket|[Hh]areket ekle|enzer hareket|Bu hareket(i|le) |Hareket şekli|ilk hareket|Son hareket|Tamamlanan hareket/).length===0,hits(/Eşleşen hareket|[Hh]areket ekle|enzer hareket|Bu hareket(i|le) /));
+const bs=String.fromCharCode(92);
+  const re=new RegExp("Rehber(i|in|e|de|den|le)"+bs+"b");
+  ok("Rehber takes its suffix after an apostrophe",hits(re).length===0,hits(re));
+  const full=src.flatMap(([f,t])=>t.split(String.fromCharCode(10)).filter(l=>/depolama dolu/i.test(l)&&!/yedek/i.test(l)).map(()=>f));
+  ok("every storage-full text names the backup",full.length===0,full);
   ok("one apostrophe form: no curly ’ in user texts",hits(/[’‘]/).length===0,hits(/[’‘]/));
   ok("the save-failure toast and the banner both tell to take a backup",/yedek al/.test(w.eval("SAVE_FAIL"))&&/yedek/.test(w.eval("(saveFail=true,storeMsg().join(' '))")));
   ok("the restore-failure text names the backup too",/Yedek yüklenemedi, depolama dolu\. Mevcut verinin yedeğini al/.test(read("main/04-sheets.js")));
@@ -24,5 +29,8 @@ const hits=re=>src.filter(([,t])=>re.test(t)).map(([f])=>f);
   ok("camera: a refused permission says so",/Kamera izni verilmedi/.test(say()),say());
   cam("NotReadableError");await w.eval("plStart()");
   ok("camera: a busy camera is not reported as a permission problem",/şu an açılamadı/.test(say())&&!/izin/.test(say()),say());
+  w.eval("S.settings.waterMl=2000;S.entries=[]");
+  const tip=w.eval("dailyTip()");
+  ok("a behind-schedule water tip states the amount and suggests, without a verdict",/içtin/.test(tip)&&!/geride|olmalı|yetersiz|yetmiyor|az içtin/.test(tip),tip);
   finish();
 })();

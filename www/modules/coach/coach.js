@@ -643,7 +643,7 @@ function viewCoach(){
   const intro=offline==="none"||(!hasKey()&&!S.chat.length),li=a=>`<ul class="cul">${a.map(t=>`<li>${t}</li>`).join("")}</ul>`;
   if(intro)h+=`<div class="card"><h2 class="m0 t-h2">Rehber ne yapar?</h2>${li(["Haftalık menü ve egzersiz programı önerir.","Yazdığın yemeğin ya da egzersizin kalorisini tahmin eder.","<b>Rehber olmadan da uygulama tam çalışır.</b>"])}
   <details class="acc"><summary>Verin nereye gider?</summary><p class="sm mut">Rehber yapay zekâ kullanır: internet ister, çevrimdışı çalışmaz. Yalnızca sen onay verirsen ve kendi hesabından alacağın bir anahtarla çalışır (ücretsiz seçenekler var). Onay verirsen yazdıkların ve profilin seçtiğin sağlayıcıya gider; sağlayıcının sunucuları yurt dışındadır. İstediğin an geri alırsın (Ayarlar > Gizlilik ve veri).</p></details>
-  <button class="btn" data-c="guide">Rehberi etkinleştir</button><p class="hint tc">Yaklaşık 2 dakika sürer.</p></div>`;
+  <button class="btn" data-c="guide">Rehber'i etkinleştir</button><p class="hint tc">Yaklaşık 2 dakika sürer.</p></div>`;
   else if(offline==="fail"){
     const x=S.providers.filter(p=>pstat[p.id]&&pstat[p.id].s!=="ok").sort((a,b)=>pstat[b.id].t-pstat[a.id].t)[0],dt=x&&pstat[x.id].m;
     h+=`<div class="banner"><div class="lhead"><b>Rehber'e şu an ulaşılamıyor</b>${dt?`<button class="help" data-c="hx:kerr" aria-expanded="false" aria-controls="kerr" aria-label="Hata ayrıntısı">${Icons.svg("info")}</button>`:""}</div>${dt?`<p class="helpx" id="kerr" hidden>${esc(x.name)}: ${esc(dt)}</p>`:""}<p>Bağlantını kontrol et. Mesajın bu telefonda duruyor; su, kilo ve spor kaydı çalışmaya devam ediyor.</p><button class="btn" data-c="retry">Tekrar dene</button></div>`;
@@ -686,7 +686,7 @@ function viewProviders(){
   const k=getKeys(),on=S.providers.filter(p=>p.on&&p.health&&k[p.id]),ready=on.length>0;
   const rows=S.providers.map(p=>{const [a,b]=pStatus(p);return `<button class="prow" data-c="prov:${p.id}"><span class="grow"><b>${esc(p.name)}</b>${b?`<span class="mut sm">${esc(b)}</span>`:""}</span><span class="tag">${a}</span></button>`}).join("");
   return `<div class="card"><h2 class="m0">${ready?"Rehber hazır":"Rehber bağlı değil"}</h2><p class="hint">${ready?`${esc(on.map(p=>p.name).join(", "))} ile çalışıyor.`:"Rehber için bir yapay zekâ sağlayıcısından ücretsiz ya da ücretli bir anahtar gerekir. Rehber olmadan da uygulama tam çalışır."}</p>
-  <button class="btn${ready?" ghost":""}" data-c="setup">${ready?"Başka anahtar ekle":"Rehberi bağla"}</button>
+  <button class="btn${ready?" ghost":""}" data-c="setup">${ready?"Başka anahtar ekle":"Rehber'i bağla"}</button>
   <p class="hint">Veri paylaşımı: ${S.settings.consent?`kabul edildi (${fd(S.settings.consentAt)})`:"kabul edilmedi"}. ${S.settings.consent?`<button class="wa ib lnk" data-c="revoke">Geri al</button>`:""}</p></div>
   <h2 class="grp">Rehber'e giden veriler</h2><div class="card"><p class="hint">Kapattığın veri Rehber'e hiç gönderilmez. İstediğin an değiştirirsin.</p>${shareRows()}</div>
   <h2 class="grp">Sağlayıcılar</h2><div class="card">${rows}<p class="hint">Birden çok sağlayıcı açıksa sırayla denenir; biri meşgulse sıradaki devreye girer. Anahtarlar bu telefonda şifreli durur, yalnız parolalı yedeğe şifreli girer.</p>
@@ -716,7 +716,7 @@ let su=suNew();
 const suProv=()=>GUIDE[su.id]?S.providers.find(p=>p.id===su.id):null;
 function cSetup(fresh){
   if(fresh)su=suNew();
-  openSheet(`<h3>Rehberi bağla</h3><label class="lbl" for="sk">1. Anahtarını yapıştır</label>
+  openSheet(`<h3>Rehber'i bağla</h3><label class="lbl" for="sk">1. Anahtarını yapıştır</label>
   <input class="in" id="sk" type="password" value="${esc(su.k)}" placeholder="Anahtarı yapıştır" autocomplete="off" spellcheck="false">
   <div id="sbody">${suBody()}</div>`);
 }

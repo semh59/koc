@@ -412,7 +412,7 @@ async function goRestore(text=$("#bk").value,pw=$("#bkpw").value){
   otherBytes=lsOther();storeBytes=otherBytes+lastJ.length*2;
   logOff=0;closeSheet();render();scheduleReminders().then(setNotif);
   const ps=prevS.settings;
-  toast((drop?`Yedek yüklendi, ${drop} geçersiz kayıt atlandı`:"Yedek yüklendi")+(b.lost.length?`; okunamayan alanlar varsayılana döndü (${b.lost.join(", ")})`:"")+(copy||!hasData?"":". Eski verin için güvenlik kopyası alınamadı (depolama dolu)")+(ps.consent&&ps.autoBk?"":". Rehber izni ve otomatik yedek bu telefonda yeniden kurulur")+(miss?". Bazı Rehber anahtarları kasaya yazılamadı, Ayarlar > Veri ve yedek'te uyarı duruyor":""));
+  toast((drop?`Yedek yüklendi, ${drop} geçersiz kayıt atlandı`:"Yedek yüklendi")+(b.lost.length?`; okunamayan alanlar varsayılana döndü (${b.lost.join(", ")})`:"")+(copy||!hasData?"":". Eski verin için güvenlik kopyası alınamadı (depolama dolu); yedek al")+(ps.consent&&ps.autoBk?"":". Rehber izni ve otomatik yedek bu telefonda yeniden kurulur")+(miss?". Bazı Rehber anahtarları kasaya yazılamadı, Ayarlar > Veri ve yedek'te uyarı duruyor":""));
   return true;
 }
 

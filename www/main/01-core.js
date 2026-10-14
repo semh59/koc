@@ -233,7 +233,7 @@ function load(){
   const b=buildState(r);
   if(b.drop||b.lost.length){
     const kept=rawCopy(raw);
-    loadNote=[b.drop?`${b.drop} geçersiz kayıt atıldı`:"",b.lost.length?`okunamayan alanlar varsayılana döndü (${b.lost.join(", ")})`:""].filter(Boolean).join("; ")+(kept?". Eski hali ayrı bir kopyada, Ayarlar > Veri ve yedek'ten alınabilir.":". Eski hali saklanamadı (depolama dolu).");
+    loadNote=[b.drop?`${b.drop} geçersiz kayıt atıldı`:"",b.lost.length?`okunamayan alanlar varsayılana döndü (${b.lost.join(", ")})`:""].filter(Boolean).join("; ")+(kept?". Eski hali ayrı bir kopyada, Ayarlar > Veri ve yedek'ten alınabilir.":". Eski hali saklanamadı (depolama dolu); yedek al.");
   }
   return b.S;
 }

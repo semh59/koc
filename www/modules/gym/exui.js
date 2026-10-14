@@ -60,7 +60,7 @@ function exSeries(id){
     return {d:h.w.day,x:Algo.dayNum(h.w.day),e:gBest(h.w,id),t:top.kg||0,r:top.reps,v:Algo.volume(h.sets)};
   });
 }
-function exChartSvg(pts,m,sel){
+function exChartSvg(pts,m,sel,tx){
   const W=340,H=150,pl=40,pr=10,pt=10,pb=24,vs=pts.map(p=>p[m]);
   let lo=Math.min(...vs),hi=Math.max(...vs);const pad=Math.max((hi-lo)*.1,hi*.02,1);lo=Math.max(0,lo-pad);hi+=pad;
   const x0=pts[0].x,x1=pts[pts.length-1].x,X=p=>pl+(W-pl-pr)*(x1>x0?(p.x-x0)/(x1-x0):.5),Y=v=>pt+(H-pt-pb)*(1-(v-lo)/(hi-lo));
@@ -69,7 +69,7 @@ function exChartSvg(pts,m,sel){
   const hit=pts.map((p,k)=>{const a=k?(X(pts[k-1])+X(p))/2:pl,b=k<pts.length-1?(X(p)+X(pts[k+1]))/2:W-pr;
     return `<rect x="${a.toFixed(1)}" y="0" width="${(b-a).toFixed(1)}" height="${H}" fill="transparent" data-g="chp:${k}"/>`}).join("");
   const sp=pts[sel];
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${EXMET[m][0]} grafiği">${grid}<path d="${line}" fill="none" stroke="var(--exercise)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${EXMET[m][0]} grafiği, ${pts.length} seans, ${tx[0]}, ${tx[tx.length-1]}. Tüm değerler grafiğin altındaki tabloda">${grid}<path d="${line}" fill="none" stroke="var(--exercise)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
   ${pts.length<=40?pts.map(p=>`<circle cx="${X(p).toFixed(1)}" cy="${Y(p[m]).toFixed(1)}" r="2.6" fill="var(--exercise)"/>`).join(""):""}
   <circle cx="${X(sp).toFixed(1)}" cy="${Y(sp[m]).toFixed(1)}" r="5" fill="var(--card)" stroke="var(--exercise)" stroke-width="2.6"/>
   <text x="${pl}" y="${H-6}" text-anchor="start">${fd(pts[0].d)}</text><text x="${W-pr}" y="${H-6}" text-anchor="end">${fd(pts[pts.length-1].d)}</text>${hit}</svg>`;
@@ -77,8 +77,8 @@ function exChartSvg(pts,m,sel){
 function exChartBody(id){
   const pts=exSeries(id);if(!pts.length)return "";
   const m=exChM,sel=exChI!=null&&exChI<pts.length?exChI:pts.length-1,p=pts[sel];
-  const val=m==="t"?`${gW(p.t)||0} ${Units.wu()} × ${p.r}`:`${fint(Units.w(p[m]))} ${Units.wu()}`;
-  const body=pts.length<2?`<p class="hint">Grafik için en az iki seans gerekir. Şimdilik tek seans var.</p>`:exChartSvg(pts,m,sel);
+  const vt=q=>m==="t"?`${gW(q.t)||0} ${Units.wu()} × ${q.r}`:`${fint(Units.w(q[m]))} ${Units.wu()}`,val=vt(p),tx=pts.map(q=>`${fd(q.d)} · ${vt(q)}`);
+  const body=pts.length<2?`<p class="hint">Grafik için en az iki seans gerekir. Şimdilik tek seans var.</p>`:exChartSvg(pts,m,sel,tx)+ptsTable(tx);
   return `<div class="chips my-2">${Object.keys(EXMET).map(k=>`<button class="chip" data-g="chm:${k}" aria-pressed="${k===m}">${EXMET[k][0]}</button>`).join("")}</div>
   <div class="num" aria-live="polite"><b>${val}</b> <span class="mut sm">${fd(p.d)}, ${sel+1}/${pts.length}. seans</span></div>${body}`;
 }

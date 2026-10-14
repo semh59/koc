@@ -384,7 +384,7 @@ function gLive(w){
     <div class="shead${rpe?" r":""}"><span>Set</span><span>Önceki</span>${tm?`<span>${kind==="c"?"Dakika":"Süre (sn)"}</span><span>Süre</span>`:`<span>${kind==="b"?"Ek "+Units.wu():Units.wu()}</span><span>Tekrar</span>${rpe?"<span>RPE</span>":""}`}<span></span></div>${rows}
     <button class="lnk" data-g="addset:${ei}">Set ekle</button></div>`;
   }).join("");
-  return `<div class="livetop"><div class="livebar"><button class="chip" data-g="cancel" aria-label="Antrenmanı sil, kaydetmeden iptal et">${Icons.svg("trash")} Antrenmanı sil</button><div><b>${esc(w.name)}</b><div class="mut num" id="gstat">${gStat(w)}</div></div><button class="btn fin" data-g="finish">Bitir</button></div>
+  return `<div class="livetop"><div class="livebar"><button class="chip" data-g="cancel" aria-label="Antrenmanı sil, kaydetmeden vazgeç">${Icons.svg("trash")} Antrenmanı sil</button><div><b>${esc(w.name)}</b><div class="mut num" id="gstat">${gStat(w)}</div></div><button class="btn fin" data-g="finish">Bitir</button></div>
   ${gTimBar()}</div>
   <div class="rest" id="grest" role="timer" aria-label="Dinlenme"${restEnd>Date.now()?"":" hidden"}><div><span class="mut sm">Dinlenme</span><b class="num" id="gr">${restEnd>Date.now()?gClock(restEnd-Date.now()):""}</b></div><button data-g="rest:-15" aria-label="15 saniye azalt">−15</button><button data-g="rest:15" aria-label="15 saniye ekle">+15</button><button class="rsk" data-g="rest:0">Atla</button></div>
   ${Habits.fastNote()}

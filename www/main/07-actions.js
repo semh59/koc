@@ -28,7 +28,7 @@ on("rectry",()=>{const s=load();if(recovery)return toast("Kayıt hâlâ okunamı
 on("recnew",()=>{
   const fresh=()=>{recovery=null;S=structuredClone(DEF);save();render();scheduleReminders().then(setNotif)};
   if(rawCopy(recovery.raw))fresh();
-  else confirmSheet({title:"Boş başlansın mı?",body:"Ham kopya depolama dolu olduğu için saklanamıyor. Dışa aktarmadıysan bu veri kaybolur. Yine de boş başlansın mı?",ok:"Boş başla",danger:true}).then(ok=>{if(ok&&recovery)fresh()});
+  else confirmSheet({title:"Boş başlansın mı?",body:"Ham kopya depolama dolu olduğu için saklanamıyor. Yedek almadıysan ya da dışa aktarmadıysan bu veri kaybolur. Yine de boş başlansın mı?",ok:"Boş başla",danger:true}).then(ok=>{if(ok&&recovery)fresh()});
 });
 const copyKey=(a,prefix)=>{const k=a.slice(prefix.length);return COPIES.some(([c])=>c===k)?k:null};
 onPre("copy:",a=>{const k=copyKey(a,"copy:");if(k)shareFile(`neowell-kopya-${dayKey()}.json`,"Güvenlik kopyası","application/json",Store.get(k),true)});
