@@ -548,7 +548,7 @@ function cTime(t){const d=new Date(t);return `${pad(d.getHours())}:${pad(d.getMi
 function cSafety(level){
   const T={
     emergency:["Hemen yardım al","Bu belirtiler acil olabilir. Beklemeden 112'yi ara ya da en yakın acile git.",true],
-    check:["Bunu bir doktora danış","Baş dönmesinin nedeni az yemek olabilir ama başka nedenleri de var. Önce bir şeyler yiyip su iç. Geçmezse ya da çarpıntı olursa bugün bir hekime başvur. Bayılma, nefes darlığı veya göğüs ağrısında hemen 112.",true],
+    check:["Bunu bir doktora danış","Bu belirti hekime danışılması gereken bir konu; nedenini tahmin edemem. Geçmezse ya da çarpıntı olursa bugün bir hekime başvur. Bayılma, göğüs ağrısı veya nefes darlığında hemen 112'yi ara.",true],
     mind:["Yalnız değilsin","Kendine zarar vermeyi düşünüyorsan şimdi 112'yi ara ya da yanındaki birine söyle. Güvende olman her şeyden önemli.",true],
     ed:["Bunu konuşmak iyi bir adım","Yemekle ilgili zorlanmalar için bir hekim, psikolog ya da diyetisyen desteği çok değerli. Bu konuda kalori kısıtlaması önermem.",false]
   }[level];
