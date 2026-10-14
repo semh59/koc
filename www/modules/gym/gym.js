@@ -339,6 +339,7 @@ function gLive(w){
   return `<div class="livebar"><button class="chip" data-g="cancel" aria-label="Vazgeç, antrenmanı iptal et">${Icons.svg("back")} Vazgeç</button><div><b>${esc(w.name)}</b><div class="mut num" id="gstat">${gStat(w)}</div></div><button class="btn fin" data-g="finish">Bitir</button></div>
   ${gTimBar()}
   <div class="rest" id="grest" role="timer" aria-label="Dinlenme"${restEnd>Date.now()?"":" hidden"}><div><span class="mut sm">Dinlenme</span><b class="num" id="gr">${restEnd>Date.now()?gClock(restEnd-Date.now()):""}</b></div><button data-g="rest:-15" aria-label="15 saniye azalt">−15</button><button data-g="rest:15" aria-label="15 saniye ekle">+15</button><button class="rsk" data-g="rest:0">Atla</button></div>
+  ${Habits.fastNote()}
   ${cards||`<p class="hint">Aşağıdan hareket ekleyerek başla.</p>`}
   <button class="btn ghost" data-g="pick">Egzersiz ekle</button>
   <p class="hint">${gPainNote}</p>`;
