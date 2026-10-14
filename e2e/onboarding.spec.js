@@ -123,7 +123,7 @@ test("welcome screen: restore a backup from the welcome screen without opening S
   await app.open();
   const file=await page.evaluate(async()=>JSON.stringify(await BackupLib.encrypt({S:{entries:[{id:1,day:dayKey(),time:"08:00",type:"food",v:300,text:"Mercimek çorbası"},{id:2,day:dayKey(),time:"09:00",type:"water",v:250,text:""}],settings:{heightCm:170,age:40}},keys:{}},"Mavi-Bulut-2026")));
   await page.click('[data-obr="open"]');
-  await expect(app.sheet).toContainText("Yedeğini geri yükle");
+  await expect(app.sheet).toContainText("Yedekten geri yükle");
   await page.setInputFiles("#obf",{name:"neowell-yedek.json",mimeType:"application/json",buffer:Buffer.from(file)});
   await page.fill("#obpw","Yanlis-Parola-2026");
   await page.click('[data-obr="go"]');

@@ -2,9 +2,9 @@
 /* Count and delete per category. The user's own foods, favourites and templates are content they prepared and go only with "Tüm verileri sil". */
 const PV_CATS=Data.privacy; // the data modules add the rows
 function pvDelete(i){
-  const [name,n,del]=PV_CATS[i],lb=S.settings.lastBackup;
+  const [name,n,del]=PV_CATS[i];
   if(!n())return;
-  confirmSheet({title:`${name} silinsin mi?`,body:`${name}: ${n()} kayıt silinecek. Bu geri alınamaz. Son yedek: ${lb?fd(lb):"yok"}. Önce yedek almanı öneririz. Silinsin mi?`,ok:"Sil",danger:true}).then(ok=>{if(ok)pvDeleteDo(name,del)});
+  confirmSheet({title:`${name} silinsin mi?`,body:`${name}: ${n()} kayıt silinecek. Bu geri alınamaz. ${bkLast()}. Önce yedek almanı öneririz. Silinsin mi?`,ok:"Sil",danger:true}).then(ok=>{if(ok)pvDeleteDo(name,del)});
 }
 function pvDeleteDo(name,del){
   chain(del(),r=>{if(r===false)return;Store.del("nw_state_previous");Store.del("nw_state_corrupt");otherBytes=lsOther();save();render();scheduleReminders().then(setNotif);sheetPrivacy();toast(`${name} silindi`)});

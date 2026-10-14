@@ -14,8 +14,10 @@ const BackupLib=(()=>{
     const ct=new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM",iv},await derive(pw,salt,ITER),pt));
     return {neowell:1,enc:"aes-gcm-pbkdf2",iter:ITER,salt:b64(salt),iv:b64(iv),data:b64(ct)};
   }
-  /* Throws when the password is wrong or the data was changed. The iteration count comes from the file, so it is bounded: a crafted file cannot stall the app. */
+  /* Throws "version" for a file made by a newer envelope format and "format" for an unknown one; any other error means a wrong password or changed data.
+     The iteration count comes from the file, so it is bounded: a crafted file cannot stall the app. */
   async function decrypt(env,pw){
+    if(env?.neowell>1)throw new Error("version");
     if(env?.enc!=="aes-gcm-pbkdf2"||!(env.iter>=ITER_RANGE[0]&&env.iter<=ITER_RANGE[1]))throw new Error("format");
     const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(env.iv)},await derive(pw,unb64(env.salt),env.iter),unb64(env.data));
     return JSON.parse(td.decode(pt));

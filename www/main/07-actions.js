@@ -63,7 +63,8 @@ async function goHealth(){
 }
 on("riskok",()=>{S.settings.riskClearedAt=dayKey();save();render();toast("Onaylandı, 30 gün geçerli")});
 onPre("apply:",a=>{S.settings.kcal=+a.slice(6);save();render();toast(`Kalori hedefi ${S.settings.kcal} kcal oldu`)});
-on("reset",()=>{confirmSheet({title:"Tüm veriler silinsin mi?",body:"Tüm kayıtlar, güvenlik kopyası, kayıtlı Rehber anahtarları ve kayıtlı yedek parolası silinecek. Bu geri alınamaz. Devam edilsin mi?",ok:"Hepsini sil",danger:true}).then(ok=>{if(!ok)return;
+on("keymissok",()=>{S.settings.keyMiss=false;save();render()});
+on("reset",()=>{confirmSheet({title:"Tüm veriler silinsin mi?",body:`Tüm kayıtlar, güvenlik kopyası, kayıtlı Rehber anahtarları ve kayıtlı yedek parolası silinecek. Bu geri alınamaz. ${bkLast()}. Önce yedek al: Ayarlar > Veri ve yedek > Yedek al. Devam edilsin mi?`,ok:"Hepsini sil",danger:true}).then(ok=>{if(!ok)return;
   chain(S.settings.motionOn?motionStopAll():0,()=>chain(phClear(),photosOk=>chain(nativeWipe(["Motion","MedWake","Widget","QuickLog"]),nativeOk=>{
     if(!nativeOk)toast(NATIVE_FAIL);
     if(!photosOk||!nativeOk)return;
