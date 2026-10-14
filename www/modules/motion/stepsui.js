@@ -63,7 +63,7 @@ function viewSteps(){
   const bars=days.map((d,i)=>{const x=N>1?pl+i*step:(W-bw)/2,y=Y(d.v),hit=d.v>=g,cx=(x+bw/2).toFixed(1);
     const lbl=N<=7?WEEKDAYS_SHORT[d.d.getDay()]:(i%7===0||i===N-1)&&(i===N-1||N-1-i>=4)?fd(d.k):"";
     return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0,H-18-y).toFixed(1)}" rx="${bw>8?4:1.5}" fill="var(--water)" opacity="${hit?1:.45}"/>${lbl?`<text x="${cx}" y="${H-5}" text-anchor="${N<=7?"middle":i===0?"start":i===N-1?"end":"middle"}">${lbl}</text>`:""}${hit&&N<=14?`<text x="${cx}" y="${(y-3).toFixed(1)}" text-anchor="middle" style="fill:var(--ink)">✓</text>`:""}`}).join("");
-  const seg=`<div class="seg" role="group" aria-label="Grafik aralığı">${[[7,"7 gün"],[14,"14 gün"],[30,"30 gün"],[0,"Bu ay"]].map(([n,l])=>`<button data-sr="${n}" aria-pressed="${stepRange===n}" style="padding:7px 12px">${l}</button>`).join("")}</div>`;
+  const seg=`<div class="seg tight" role="group" aria-label="Grafik aralığı">${[[7,"7 gün"],[14,"14 gün"],[30,"30 gün"],[0,"Bu ay"]].map(([n,l])=>`<button data-sr="${n}" aria-pressed="${stepRange===n}">${l}</button>`).join("")}</div>`;
   const chartBody=sr.n?`<svg class="w100 bars" viewBox="0 0 ${W} ${H}" role="img" aria-label="Son ${N} günün adımları">${bars}<line x1="0" x2="${W}" y1="${Y(g).toFixed(1)}" y2="${Y(g).toFixed(1)}" stroke="var(--kcal)" stroke-width="1.4" stroke-dasharray="4 3"/></svg><div class="mut sm">Kesik çizgi hedef. ${N<=14?"✓ ve koyu":"Koyu"} çubuk: hedefe ulaşılan gün.</div>`:`<p class="hint">Bu aralıkta adım kaydı yok.</p>`;
   const wAll=weights(),wd=Object.keys(wAll).sort(),kg=wd.length?Algo.trend(wAll)[wd[wd.length-1]]:null;
   const km=st.heightCm>0?today*st.heightCm*0.415/1e5:null;

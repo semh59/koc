@@ -16,7 +16,7 @@ function hbSet(key,val,msg){
 function habitRow(){
   const t=dayKey(),sl=S.sleep.find(x=>x.day===t),mo=S.mood.find(x=>x.day===t);
   const tile=(a,ic,name,val)=>`<button class="hbt" data-hb="${a}">${Icons.svg(ic)}<span class="grow"><b>${name}</b><span class="db mut sm num">${val}</span></span></button>`;
-  return `<div class="hrow">${tile("sleep","moon","Uyku",sl?hbDur(sl.min):"Ekle")}${tile("mood","smile","Ruh hali",mo?MOODN[mo.v-1]:"Ekle")}</div>`;
+  return `<div class="bgrid mb-3">${tile("sleep","moon","Uyku",sl?hbDur(sl.min):"Ekle")}${tile("mood","smile","Ruh hali",mo?MOODN[mo.v-1]:"Ekle")}</div>`;
 }
 /* Today row: shows the running fast or the start button when fasting is on; plan and history are in Settings. Brake: a hard risk flag blocks starting (a running fast can still be ended),
    a soft one only after "Hekimime danıştım". */
@@ -79,7 +79,7 @@ function sheetSleepMood(){
   const sum=sl.length?`<div class="row"><span class="grow">Son ${sl.length} gecenin ortalaması<small class="db mut">${sq.length?`Ortalama kalite: ${MOODN[Math.round(avg(sq.map(x=>x.q)))-1].toLowerCase()}`:"Kalite girilmedi"}</small></span><b class="num">${hbDur(Math.round(avg(sl.map(x=>x.min))))}</b></div>`:`<p class="mut">Henüz uyku kaydı yok. Saatten alabilir ya da elle ekleyebilirsin.</p>`;
   const nights=sl.slice().reverse().map(x=>`<div class="prow"><button class="grow pbtn" data-hb="sedit:${x.day}"><span class="grow">${fd(x.day)}${x.src==="hc"?`<small class="db mut">Saatten (Health Connect)</small>`:x.q?`<small class="db mut">Kalite: ${MOODN[x.q-1].toLowerCase()}</small>`:""}</span><b class="num">${hbDur(x.min)}</b></button></div>`).join("");
   const moods=mo.length?`<div class="grp">Ruh hali</div>${mo.slice().reverse().map(x=>`<div class="prow"><button class="grow pbtn" data-hb="medit:${x.day}"><span class="grow"><span aria-hidden="true">${MOODS[x.v-1]}</span> ${MOODN[x.v-1]}<small class="db mut ell">${fd(x.day)}${x.t?" · "+esc(x.t):""}</small></span></button></div>`).join("")}`:"";
-  openSheet(`<h3>Uyku ve ruh hali</h3>${sum}${nights?`<div class="grp">Geceler</div>${nights}`:""}${moods}<div class="hrow mt-2"><button class="btn" data-hb="sleep">Uyku ekle</button><button class="btn" data-hb="mood">Ruh hali ekle</button></div>`);
+  openSheet(`<h3>Uyku ve ruh hali</h3>${sum}${nights?`<div class="grp">Geceler</div>${nights}`:""}${moods}<div class="bgrid mb-3 mt-2"><button class="btn" data-hb="sleep">Uyku ekle</button><button class="btn" data-hb="mood">Ruh hali ekle</button></div>`);
 }
 function sleepSave(){
   const b=$("#hbb").value,w=$("#hbw").value,h=num($("#hbh").value);

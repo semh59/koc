@@ -283,7 +283,7 @@ async function sendOk(p,conf,msgs){
 function cPreview(msgs,p,warn){
   return new Promise(res=>{
     const n=Object.keys(msgs.pii||{}).length;
-    openSheet(`<h3>Rehber'e giden metin</h3><p class="mut sm">${esc(p.name)} sağlayıcısına tam olarak aşağıdaki metin gider.${n?` Kimlik bilgisi gibi duran ${n} parça maskelendi.`:""}</p>${warn?`<div class="banner"><p class="m0">${esc(warn)}</p></div>`:""}<pre style="white-space:pre-wrap;word-break:break-word;max-height:45vh;overflow:auto;font-size:14px;margin:8px 0" tabindex="0" role="region" aria-label="Giden metin">${esc(msgs.map(m=>`[${m.role==="user"?"sen":m.role==="system"?"sistem":"rehber"}]\n${m.content}`).join("\n\n"))}</pre><div class="two"><button class="btn" data-c="pvok">Gönder</button><button class="btn ghost" data-c="pvno">İptal</button></div>`);
+    openSheet(`<h3>Rehber'e giden metin</h3><p class="mut sm">${esc(p.name)} sağlayıcısına tam olarak aşağıdaki metin gider.${n?` Kimlik bilgisi gibi duran ${n} parça maskelendi.`:""}</p>${warn?`<div class="banner"><p class="m0">${esc(warn)}</p></div>`:""}<pre class="outbox" tabindex="0" role="region" aria-label="Giden metin">${esc(msgs.map(m=>`[${m.role==="user"?"sen":m.role==="system"?"sistem":"rehber"}]\n${m.content}`).join("\n\n"))}</pre><div class="two"><button class="btn" data-c="pvok">Gönder</button><button class="btn ghost" data-c="pvno">İptal</button></div>`);
     sheetEnd=res;
   });
 }
@@ -558,20 +558,20 @@ function cCard(m){
   const c=m.card;if(!c)return "";
   if(c.kind==="safety")return cSafety(c.level);
   if(c.kind==="program")return `<div class="card lcard"><div class="lhead"><b>${esc(c.name)}</b><span class="tag">${c.days.length} gün</span></div>${c.days.map(d=>`<div class="lrow"><span class="grow"><b>${esc(d.n)}</b><span class="mut sm">${esc(d.ex.map(i=>gEx(i).n).join(", "))}</span></span></div>`).join("")}
-    ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="progadd:${m.id}">Şablon olarak ekle</button></div>`:`<p class="mut sm">${c.days.length} şablon Salon'a eklendi</p>`}<p class="hint">${gPgNote}</p></div>`;
+    ${c.state==="pending"?`<div class="bgrid mt-3"><button class="btn" data-c="progadd:${m.id}">Şablon olarak ekle</button></div>`:`<p class="mut sm">${c.days.length} şablon Salon'a eklendi</p>`}<p class="hint">${gPgNote}</p></div>`;
   if(c.kind==="menu"){
     /* Only today's day (the first day if no name matches) starts open; one action per day, the options are in a separate sheet. */
     const td=WEEKDAYS[new Date().getDay()],open=Math.max(0,c.days.findIndex(d=>d.n===td));
     return `<div class="card lcard"><div class="lhead"><b>Haftalık menü</b><span class="forecast">Tahmin</span></div><p class="mut sm">Hedef ${c.kcal?"~"+c.kcal+" kcal/gün":"belirtilmedi"}. Tıbbi diyet ya da hastalık menüsü değildir.</p>
     ${c.days.map((d,di)=>`<details class="acc mday"${di===open?" open":""}><summary class="lhead"><b class="grow">${esc(d.n)}</b><span class="num mut">~${d.k} kcal</span></summary>${d.off?`<p class="mut sm">Hedefin %15'inden fazla sapıyor</p>`:""}${d.meals.map(b=>`<div class="lrow"><span class="grow"><b>${mealLbl(b.m)}</b><span class="mut sm">${esc(b.items.map(i=>i.n+(i.q===1?"":` (${String(i.q).replace(".",",")} porsiyon)`)).join(", "))}</span></span><span class="num mut sm nw">~${b.items.reduce((s,i)=>s+i.k,0)} kcal</span></div>`).join("")}
     <button class="mt-2 btn ghost" data-c="menuday:${m.id}:${di}">Bu günü kullan</button></details>`).join("")}
-    <div class="lbtns"><button class="btn" data-c="shop:${m.id}">Alışveriş listesi</button></div></div>`;
+    <div class="bgrid mt-3"><button class="btn" data-c="shop:${m.id}">Alışveriş listesi</button></div></div>`;
   }
   if(c.kind==="why")return `<div class="card lcard"><b>Son 7 gün</b>${c.items.map(x=>`<p class="sm">${esc(x.t)}</p>`).join("")}<p class="mut sm">Telefonda hesaplandı, hiçbir yere gönderilmedi.</p></div>`;
   if(c.kind==="food"){
     return `<div class="card lcard"><div class="lhead"><b>${esc(c.f.n)}</b><span class="forecast">Tahmin</span></div><div class="lrow"><span class="grow mut sm">${c.f.p!=null?`Protein ~${Math.round(c.f.p)} g`:"1 porsiyon"}</span><span class="num b7">~${c.f.k} kcal</span></div>
-    ${c.logged?`<p class="mut sm">Günlüğe eklendi</p>`:`<div class="lbtns"><button class="btn" data-c="fooddiary:${m.id}">Günlüğe ekle</button></div>`}
-    ${c.state==="pending"?`<div class="lbtns"><button class="btn ghost" data-c="addfood:${m.id}">Listeme ekle</button><button class="btn ghost" data-c="nofood:${m.id}">Şimdi değil</button></div>`:`<p class="mut sm">${c.state==="ok"?"Besin listene eklendi":"Atlandı"}</p>`}</div>`;
+    ${c.logged?`<p class="mut sm">Günlüğe eklendi</p>`:`<div class="bgrid mt-3"><button class="btn" data-c="fooddiary:${m.id}">Günlüğe ekle</button></div>`}
+    ${c.state==="pending"?`<div class="bgrid mt-3"><button class="btn ghost" data-c="addfood:${m.id}">Listeme ekle</button><button class="btn ghost" data-c="nofood:${m.id}">Şimdi değil</button></div>`:`<p class="mut sm">${c.state==="ok"?"Besin listene eklendi":"Atlandı"}</p>`}</div>`;
   }
   const rows=c.items.map((it,i)=>{
     const lbl=(it.type==="food"?esc(it.text||"Öğün"):it.type==="water"?"Su":it.type==="weight"?"Tartı":it.type==="exercise"?esc(it.name):"Not")+(it.day==="yesterday"?" · dün":"");
@@ -583,7 +583,7 @@ function cCard(m){
   const est=c.items.some(i=>i.type==="food"),onlySp=c.items.every(i=>i.type==="exercise"),ml=cardMeal(c),tot=c.items.reduce((a,i)=>a+(i.type==="food"&&i.kcal?i.kcal:0),0);
   return `<div class="card lcard"><div class="lhead"><b>${est?"Öğüne ekle":onlySp?"Egzersizi ekle":"Kayıt önerisi"}</b>${est?`<span class="forecast">Tahmin</span>`:""}</div>${rows}
   ${est?`<p class="mt-2 mut sm num">Toplam ~${Math.round(tot)} kcal</p>${c.state==="pending"?`<div class="mt-2 chips" role="group" aria-label="Öğün">${LogLib.MEALS.map(([k,n])=>`<button class="chip" data-c="lml:${m.id}:${k}" aria-pressed="${ml===k}">${n}</button>`).join("")}</div>`:""}`:""}
-  ${c.state==="pending"?`<div class="lbtns"><button class="btn" data-c="ok:${m.id}">${est?"Günlüğe ekle":onlySp?"Egzersizi ekle":"Onayla"}</button><button class="btn ghost" data-c="no:${m.id}">Vazgeç</button></div>`:`<p class="mut sm">${c.state==="ok"?"Kaydedildi":"Vazgeçildi"}</p>${c.state==="ok"&&est&&!c.saved?`<div class="lbtns"><button class="btn ghost" data-c="savefood:${m.id}">Yemeği listeme kaydet</button></div>`:""}`}</div>`;
+  ${c.state==="pending"?`<div class="bgrid mt-3"><button class="btn" data-c="ok:${m.id}">${est?"Günlüğe ekle":onlySp?"Egzersizi ekle":"Onayla"}</button><button class="btn ghost" data-c="no:${m.id}">Vazgeç</button></div>`:`<p class="mut sm">${c.state==="ok"?"Kaydedildi":"Vazgeçildi"}</p>${c.state==="ok"&&est&&!c.saved?`<div class="bgrid mt-3"><button class="btn ghost" data-c="savefood:${m.id}">Yemeği listeme kaydet</button></div>`:""}`}</div>`;
 }
 /* Menu day options: add to today or make a meal template (one button per day on the card). */
 function cMenuDay(id,di){
@@ -629,7 +629,7 @@ function cOpenChat(id){
   save();closeSheet();render();cScroll();
 }
 function cChatList(){
-  openSheet(`<h3>Sohbet geçmişi</h3>${S.chats.length?S.chats.map(c=>`<div class="prow"><button class="lnk" style="flex:1;text-align:left" data-c="openchat:${c.id}"><b>${esc(c.title)}</b><span class="mut sm">${fd(dayKey(new Date(c.t)))}, ${cTime(c.t)}</span></button><button class="lnk" style="width:44px" data-c="delchat:${c.id}" aria-label="Sohbeti sil: ${esc(c.title)}">Sil</button></div>`).join(""):`<p class="hint">Geçmiş sohbet yok. Yeni sohbet başlatınca eskisi burada saklanır.</p>`}<button class="btn ghost" data-g="closesheet">Kapat</button>`);
+  openSheet(`<h3>Sohbet geçmişi</h3>${S.chats.length?S.chats.map(c=>`<div class="prow"><button class="lnk grow tl" data-c="openchat:${c.id}"><b>${esc(c.title)}</b><span class="mut sm">${fd(dayKey(new Date(c.t)))}, ${cTime(c.t)}</span></button><button class="lnk w-hit" data-c="delchat:${c.id}" aria-label="Sohbeti sil: ${esc(c.title)}">Sil</button></div>`).join(""):`<p class="hint">Geçmiş sohbet yok. Yeni sohbet başlatınca eskisi burada saklanır.</p>`}<button class="btn ghost" data-g="closesheet">Kapat</button>`);
 }
 function cConsent(on){
   const s=S.settings;if(on&&!consentOk())return;
@@ -651,12 +651,12 @@ function viewCoach(){
   if(!coachOn()&&!intro)h+=`<div class="card"><h2 class="m0 t-h2">Rehber ile veri paylaşımı</h2>${li(["Mesajların ve istersen profilin (boy, yaş aralığı, cinsiyet, hareket, kalori hedefi) seçtiğin sağlayıcıya gider.","Yalnız sen bir düğmeye bastığında gönderilir.","İstediğin an geri alırsın; onay vermezsen uygulama tam çalışır."])}${consentWarn()}
   <details class="acc"><summary>Detaylar</summary><div class="sm">${consentBody()}</div></details>${consentOk()?`<div class="lbl">Rehber'e hangi veriler gitsin?</div>${shareRows()}<button class="btn" data-c="consent">Açık rızamı veriyorum</button>`:""}<button class="lnk" data-pv="open">Gizlilik ve veri</button></div>`;
   if(S.chat.length||S.chats.length)h+=`<div class="chips cbar">${S.chat.length?`<button class="chip" data-c="newchat">Yeni sohbet</button>`:""}${S.chats.length?`<button class="chip" data-c="chats">Geçmiş</button>`:""}</div>`;
-  if(!S.chat.length&&hasKey()&&coachOn())h+=`<div class="card empty">${Icons.svg("coach")}<b>Bugün neyle başlayalım?</b><p class="mut sm">Bir yemeğin ya da egzersizin adını yaz, kalorisini tahmin edeyim. Menü ve program da isteyebilirsin.</p><div class="chips">${CASK.map((x,i)=>`<button class="chip" data-c="ask:${i}">${x[0]}</button>`).join("")}</div></div>`;
+  if(!S.chat.length&&hasKey()&&coachOn())h+=emptyCard("coach","Bugün neyle başlayalım?","Bir yemeğin ya da egzersizin adını yaz, kalorisini tahmin edeyim. Menü ve program da isteyebilirsin.",`<div class="chips">${CASK.map((x,i)=>`<button class="chip" data-c="ask:${i}">${x[0]}</button>`).join("")}</div>`);
   /* The bubble carries only text; the card is a separate full-width surface outside the bubble. */
   for(const m of S.chat){
     if(m.role==="user")h+=`<div class="ub">${esc(m.text)}</div>${m.pend?`<div class="pendl">Gönderilmedi${coachOn()&&!typing&&offline!=="fail"?`<button class="lnk wa ib" data-c="retry">Şimdi gönder</button>`:""}</div>`:""}`;
     else if(m.role==="coach"){
-      h+=`<div class="msg" data-mid="${m.id}">${m.text||m.kind==="plateau"?`<div class="cm">${m.text&&m.kind!=="plateau"?`<div class="mut sm">Yapay zekâ üretti, hekim değildir · ${cTime(m.t)}</div>`:""}<p>${esc(m.text)}</p>${m.kind==="plateau"&&lossAsk()?`<div class="lbtns"><button class="btn" data-c="why">Bak</button></div>`:""}</div>`:""}${cCard(m)}</div>`;
+      h+=`<div class="msg" data-mid="${m.id}">${m.text||m.kind==="plateau"?`<div class="cm">${m.text&&m.kind!=="plateau"?`<div class="mut sm">Yapay zekâ üretti, hekim değildir · ${cTime(m.t)}</div>`:""}<p>${esc(m.text)}</p>${m.kind==="plateau"&&lossAsk()?`<div class="bgrid mt-3"><button class="btn" data-c="why">Bak</button></div>`:""}</div>`:""}${cCard(m)}</div>`;
     }
   }
   if(typing)h+=`<div class="cm"><div class="mut sm">Rehber yazıyor</div><p class="dots">• • •</p></div>`;
@@ -705,7 +705,7 @@ const GUIDE={
 function cGuide(id){
   const p=S.providers.find(x=>x.id===id),g=GUIDE[id];if(!p||!g)return cSetup(true);
   su.id=id;
-  openSheet(`<h3>${esc(p.name)} anahtarı nasıl alınır?</h3><div class="mut sm" style="margin-bottom:6px">${esc(g.site)}</div><ol class="cues">${g.steps.map(t=>`<li>${esc(t)}</li>`).join("")}</ol>
+  openSheet(`<h3>${esc(p.name)} anahtarı nasıl alınır?</h3><div class="mut sm mb-2">${esc(g.site)}</div><ol class="cues">${g.steps.map(t=>`<li>${esc(t)}</li>`).join("")}</ol>
   <button class="btn" data-c="setup">‹ Anahtarı yapıştır</button>`);
 }
 /* ---- setup: 1 key (provider guessed from the prefix), 2 verify and fetch the models (the recommended one preselected), 3 test and save.

@@ -1022,7 +1022,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     await ev("scheduleReminders()");
     const medN=()=>list.filter(n=>n.id>=1e6);
     ok("medication notifications are scheduled: large id, 'Aldım' action, extra data, name visible",medN().length>=40&&medN().every(n=>n.actionTypeId==="med"&&n.extra.act==="med"&&n.extra.m===1&&n.extra.at===new Date(n.schedule.at).getTime())&&medN()[0].body.includes("Yeni Ad"),medN()[0]);
-    ok("action types: water and medication ('✔ Aldım')",types.some(t=>t.id==="med"&&t.actions[0].id==="med"&&t.actions[0].title==="✔ Aldım")&&types.some(t=>t.id==="water"));
+    ok("action types: water and medication ('✓ Aldım')",types.some(t=>t.id==="med"&&t.actions[0].id==="med"&&t.actions[0].title==="✓ Aldım")&&types.some(t=>t.id==="water"));
     ok("normal reminders do not clash with medication ids, ids are unique",new Set(list.map(n=>n.id)).size===list.length);
     ev("S.settings.medShowName=false");await ev("scheduleReminders()");
     ok("when the name is hidden the notification has no medication name",medN().length>0&&medN().every(n=>!JSON.stringify(n).includes("Yeni Ad")&&n.body==="İlaç saatin geldi."));
@@ -2058,7 +2058,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   }
   { // touch targets and under-field errors
     const css=html.match(/<style>([\s\S]*?)<\/style>/)[1],rule=sel=>{const i=css.indexOf("\n"+sel+"{")>=0?css.indexOf("\n"+sel+"{")+1:css.indexOf("}"+sel+"{")+1;return i>0?css.slice(i+sel.length+1,css.indexOf("}",i)):""};
-    ok("touch targets: general .del 44x44, .chip, .seg, toast button, fields at least 44 px",/width:44px;height:44px/.test(rule(".del"))&&/min-height:44px/.test(rule(".chip"))&&/min-width:44px/.test(rule(".chip"))&&/min-height:44px/.test(rule(".seg button"))&&/min-height:4[4-9]px/.test(rule("#toast button"))&&/height:44px/.test(rule(".sw input"))&&/min-height:44px/.test(rule("input.in,select.in,.chip>button")),[rule(".del"),rule(".chip"),rule(".sw input")]);
+    ok("touch targets: general .del 44x44, .chip, .seg, toast button, fields at least 44 px",/width:var\(--hit\);height:var\(--hit\)/.test(rule(".del"))&&/min-height:var\(--hit\)/.test(rule(".chip"))&&/min-width:var\(--hit\)/.test(rule(".chip"))&&/min-height:var\(--hit\)/.test(rule(".seg button"))&&/min-height:(var\(--hit\)|4[4-9]px)/.test(rule("#toast button"))&&/height:var\(--hit\)/.test(rule(".sw input"))&&/min-height:var\(--hit\)/.test(rule("input.in,select.in,.chip>button")),[rule(".del"),rule(".chip"),rule(".sw input")]);
     ok("delete X buttons outside Today are .del too (44 px)",ev("hbRow('x','fdel:1')").includes('class="del"')&&ev("S.mealTpl=[{id:1,n:'K',items:[{text:'a',v:1}]}];favHtml()").includes('class="del" data-tpd="0"'));
     ev("S.mealTpl=[];toast('');sheetWeight()");$q("#fv").value="abc";ev("goWeight()");
     ok("the weight error is under the field, not in the toast",$q("#kerr").textContent.includes("kg olarak")&&!$q("#tmsg").textContent.includes("kg olarak")&&$q("#sheet").classList.contains("on"));
@@ -2451,7 +2451,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   { // SVG icons
     const q=s=>$q(s),qa=s=>[...w.document.querySelectorAll(s)],emo=/\p{Extended_Pictographic}/u;
     ev("closeSheet();S.settings.medOn=true;S.settings.obDone=true;tab='today';render()");
-    const zones=()=>["nav","#view .actions","#view .hrow","#composer .chiprow","#csend","#back"].map(s=>q(s));
+    const zones=()=>["nav","#view .actions","#view .bgrid","#composer .chiprow","#csend","#back"].map(s=>q(s));
     const okZ=()=>zones().every(z=>z&&!emo.test(z.textContent)&&z.querySelectorAll("svg").length>0&&[...z.querySelectorAll("svg")].every(g=>g.getAttribute("aria-hidden")==="true"));
     const z1=okZ();ev("tab='settings';render()");
     ok("bottom menu, quick record, habit, Coach chips, send and back: no emoji, icons are SVG and aria-hidden; the text label stays",z1&&qa("nav button").every(b=>b.textContent.trim().length>1)&&qa('#view [data-tab^="settings-"] svg[aria-hidden="true"]').length===6&&!emo.test(q("#view").textContent));
@@ -2468,7 +2468,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
       back=back&&!q("#back").hidden&&q("#ttl").textContent===ttl&&![...w.document.querySelectorAll("#view .btn")].some(b=>b.textContent.trim().startsWith("‹"))&&q(`nav [data-tab="${nv||p}"]`).getAttribute("aria-current")==="page";
       q("#back").click();back=back&&ev("tab")===p&&q("#back").hidden;
     }
-    ok("on sub-screens a small ‹ in the header (44 px, aria-label Geri): no big back button, returns to the parent screen",back&&q("#back").getAttribute("aria-label")==="Geri"&&/#back\{width:44px;height:44px/.test(html));
+    ok("on sub-screens a small ‹ in the header (--hit, aria-label Geri): no big back button, returns to the parent screen",back&&q("#back").getAttribute("aria-label")==="Geri"&&/#back\{width:var\(--hit\);height:var\(--hit\)/.test(html));
     ok("theme setting: default Sistem, only light/dark remain, Sistem in an old backup",ev("DEF.settings.theme")===""&&ev("cleanSettings({theme:'dark'}).theme")==="dark"&&ev("cleanSettings({theme:'mavi'}).theme")===""&&ev("cleanSettings({kcal:1800}).theme")==="");
     ev("tab='settings';render()");const de=w.document.documentElement;
     q('[data-thm="dark"]').click();const t1=de.dataset.theme,s1=ev("S.settings.theme"),p1=q('[data-thm="dark"]').getAttribute("aria-pressed");

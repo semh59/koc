@@ -34,7 +34,7 @@ async function scheduleReminders(){
     const keep=new Set([9001,9002,GD_NID,MED_TEST_NID,AlarmLib.SNOOZE_NID]);
     const pn=pend.notifications.filter(n=>!keep.has(n.id));if(pn.length)await ln.cancel({notifications:pn.map(n=>({id:n.id}))});
     /* The plugin's daily repeat sets an alarm that Doze defers after the first notification. So every day is scheduled as its own one-shot alarm that pierces idle mode. */
-    try{await ln.registerActionTypes({types:[{id:"water",actions:[{id:"water",title:`+${S.settings.glass} ml`}]},{id:"med",actions:[{id:"med",title:"✔ Aldım"},{id:"medskip",title:"Atla"}]}]})}catch{}
+    try{await ln.registerActionTypes({types:[{id:"water",actions:[{id:"water",title:`+${S.settings.glass} ml`}]},{id:"med",actions:[{id:"med",title:"✓ Aldım"},{id:"medskip",title:"Atla"}]}]})}catch{}
     const list=[],now=Date.now(),lb=S.settings.lastBackup;
     const t0=dayKey(),waterDone=sum("water",t0,t0)>=S.settings.waterMl,fastBlock=!!risk().block;
     for(const r of S.settings.reminders.filter(r=>r.on&&!(r.id===11&&fastBlock))){

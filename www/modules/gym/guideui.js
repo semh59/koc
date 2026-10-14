@@ -12,7 +12,7 @@ const gdDur=steps=>Math.max(1,Math.round(GuideLib.total(GuideLib.phases(steps))/
 function gdPick(){
   const row=(v,n,sub)=>`<button class="rrow" data-g="gdgo:${v}"><span class="tx"><b>${esc(n)}</b><span class="mut sm">${sub}</span></span><span class="plus">›</span></button>`;
   const tpl=S.templates.filter(t=>t.ex.length).map(t=>row("t:"+t.id,t.name,`${t.ex.length} egzersiz · ~${gdDur(gdTplSteps(t))} dk`)).join("");
-  openSheet(`<h3>Rehberli başlat</h3><p class="hint" style="padding:0 0 6px">Adım adım: animasyon, geri sayım ve sesli komut.</p>
+  openSheet(`<h3>Rehberli başlat</h3><p class="hint flush">Adım adım: animasyon, geri sayım ve sesli komut.</p>
   <div class="lbl">Esneme, ısınma ve ev antrenmanı</div><div class="plist">${GuideLib.FLOWS.map(f=>row("f:"+f.id,f.n,`${f.about} ~${gdDur(f.steps)} dk`)).join("")}</div>
   ${tpl?`<div class="lbl">Şablonlarım</div><div class="plist">${tpl}</div>`:""}
   <p class="hint">${gPgNote}</p><button class="btn ghost" data-g="closesheet">Kapat</button>`);
@@ -92,9 +92,9 @@ function gdFinish(natural){
 }
 function gdSumHtml(){
   const r=GuideLib.result(gd.st),n=r.reduce((s,x)=>s+x.sets.length,0);
-  const rows=r.map(x=>`<div class="prow"><span class="grow"><b>${esc(gdName(x.ex))}</b><span class="mut sm num">${x.sets.map(s=>s.reps?s.reps+" tekrar":s.sec+" sn").join(" · ")}</span></span>${gKind(x.ex)==="w"&&!gd.meta.warm?`<input class="in num" style="width:84px;margin:0" inputmode="decimal" data-gdkg="${x.ex}" value="${fkg(gdLastKg(x.ex))}" placeholder="kg" aria-label="${esc(gdName(x.ex))} ağırlık (kg)">`:""}</span></div>`).join("");
+  const rows=r.map(x=>`<div class="prow"><span class="grow"><b>${esc(gdName(x.ex))}</b><span class="mut sm num">${x.sets.map(s=>s.reps?s.reps+" tekrar":s.sec+" sn").join(" · ")}</span></span>${gKind(x.ex)==="w"&&!gd.meta.warm?`<input class="in num w-kg" inputmode="decimal" data-gdkg="${x.ex}" value="${fkg(gdLastKg(x.ex))}" placeholder="kg" aria-label="${esc(gdName(x.ex))} ağırlık (kg)">`:""}</span></div>`).join("");
   return `<div class="gdtop"><b>${esc(gd.meta.n)}</b></div>
-  <h2 class="gdn" style="text-align:left;margin:8px 0">${GuideLib.over(gd.st)?"Akış bitti":"Akış durduruldu"}</h2>
+  <h2 class="gdn tl my-2">${GuideLib.over(gd.st)?"Akış bitti":"Akış durduruldu"}</h2>
   <div class="two"><div class="stat"><div class="k">Süre</div><div class="v num">${gClock(gd.t1-gd.st.t0)}</div></div><div class="stat"><div class="k">Tamamlanan</div><div class="v num">${n}/${GuideLib.works(gd.st)}</div></div></div>
   <div class="plist">${rows||`<p class="hint">Tamamlanan hareket yok.</p>`}</div>
   ${n?`<p class="hint">${gd.meta.warm?"Isınma seti olarak kaydedilir: hacme, haftalık set sayısına ve spor dakikasına girmez.":"Salon geçmişine süresiyle ve spor dakikasına eklenir. Ağırlıklı harekette kullandığın ağırlığı yaz (önceki seanstaki dolu gelir)."}</p>`:""}

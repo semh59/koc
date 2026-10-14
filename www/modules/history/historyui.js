@@ -50,7 +50,7 @@ function hgResults(){
   const q=hg.q.trim();
   if(foldTr(q).trim().length<HistoryLib.MIN_QUERY)return `<p class="hint">En az ${HistoryLib.MIN_QUERY} harf yaz. Yemek, not, spor ve antrenman adlarında arar.</p>`;
   const r=HistoryLib.search(S,q,HistoryLib.SEARCH_MAX,w=>gNames(w,50));
-  if(!r.total)return `<div class="empty">${Icons.svg("note")}<p class="mut">"${esc(q)}" için kayıt bulunamadı.</p></div>`;
+  if(!r.total)return emptyCard("note","",`"${esc(q)}" için kayıt bulunamadı.`);
   return `<p class="hint" role="status">${r.total} kayıt, ${r.days} günde${r.total>r.items.length?` (ilk ${r.items.length} gösteriliyor)`:""}.</p>`+r.items.map(x=>`<button class="rrow" data-hg="day:${x.day}"><span class="num mut">${fd(x.day)}</span><span class="grow tx"><b>${esc(x.text||(x.type==="food"?"Öğün":"Antrenman"))}</b><span class="mut sm">${x.type==="food"?"Yemek"+(x.v?` · ${Math.round(x.v)} kcal`:""):x.type==="note"?"Not":x.type==="exercise"?"Spor"+(x.v?` · ${Math.round(x.v)} dk`:""):"Antrenman"}</span></span></button>`).join("");
 }
 function viewHistory(){

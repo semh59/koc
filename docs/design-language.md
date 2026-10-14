@@ -21,13 +21,13 @@ Kurallar `scripts/design.test.js` ile denetlenir: ölçek dışı punto, token d
 | Köşe | `--r-xs` 8, `--r-s` 12, `--r` 16, `--r-xl` 24, `--r-pill` 999 | | Küçük alan, düğme ve alan, kart, sheet ve yazma alanı, hap; daire `50%` |
 | Gölge | `--sh-1`, `--sh-2` | koyuda `none` / 1 px çizgi | Kart; toast, sheet, onay penceresi |
 | Hareket | `--dur-1` 120 ms, `--dur` 200 ms, `--dur-3` 320 ms, `--dur-sheet` 240 ms, `--ease` | | Basış, geçiş, büyük geçiş, sheet yukarı kayma |
-| Ölçü | `--nav-h` 56 (yatayda 44), `--ring-w` 7, `--toast-b` | | Alt menü en az yüksekliği, halka çizgisi, toast konumu |
+| Ölçü | `--hit` 48, `--nav-h` 56 (yatayda `--hit`), `--ring-w` 7, `--toast-b` | | Dokunma hedefi (geri, gezgin, kapat, adım, anahtar, çip), alt menü en az yüksekliği, halka çizgisi, toast konumu |
 
 - **Renk kuralı.** Renkler 6 haneli hex yazılır; çiftleri `scripts/contrast.test.js` denetler (metin 4,5, grafik ve kenar 3). Ham renk değeri yalnız `:root` içinde olur. Koyu tema bloğu iki yerde aynı tutulur (medya sorgusu ve `data-theme="dark"`); test ikisini ve her renk token'ının koyu karşılığını karşılaştırır.
 - **Yazı kuralı.** Sistem yazı tipi yığını; ek dosya yok. `font-size` yalnız ölçekteki değerleri alır, 12 px altı yoktur. Başlık sırası h1 > h2 > h3 > gövde. Rakamlar tabular yazılır (`.num`, `.stat .v`, tablo). Büyük yazıda sığması gereken birkaç yer bilinçli sınırla büyür: alt menü etiketi `min(--fs-cap, max(12px, 4vw))`, halka rakamı halka çapının oranı, set tablosu başlığı `3,3vw`, SVG ekseni 16 birim.
 - **Yükseklik.** Yazıyla büyüyebilecek öğede sabit `height` yerine `min-height` kullanılır.
 - **Hareket.** `prefers-reduced-motion` açıksa geçiş, animasyon ve basış küçülmesi kapanır. `transition:all` yazılmaz.
-- **Satır içi stil.** Yalnız hesaplanan değer (genişlik yüzdesi, dinamik renk) için. Sabit değer için yardımcı sınıf kullanılır: `.m0 .mt-1 .mt-2 .mt-3 .mb-2 .mb-3 .my-1 .my-2 .p0 .pt-2 .pv-1 .pv-2 .flush .sep .grow .db .ib .tc .ta-r .nw .w100 .wa .b7 .ink .pc .t-h1 .t-h2 .g2 .g3 .rxs`.
+- **Satır içi stil.** Yalnız hesaplanan değer (genişlik yüzdesi, dinamik renk) için. Sabit değer için yardımcı sınıf kullanılır: `.m0 .mt-1 .mt-2 .mt-3 .mb-2 .mb-3 .my-1 .my-2 .p0 .pt-2 .pv-1 .pv-2 .flush .sep .grow .db .ib .tc .ta-r .nw .w100 .wa .b7 .ink .pc .t-h1 .t-h2 .g2 .g3 .rxs .tl .pl-4 .w-hit .w-kg .outbox`. Düğme ızgarası tek sınıf: `.bgrid` (en az 8em genişlikte sütunlar).
 
 ## Bileşenler
 - **Kart.** Tek sınıf `.card`. İçinde liste satırları varsa üst ve alt boşluk kendiliğinden azalır.
