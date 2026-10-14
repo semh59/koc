@@ -9,15 +9,16 @@ const all=Object.values(src).join("\n");
 const block=re=>Object.fromEntries([...(html.match(re)||[,""])[1].matchAll(/--([\w-]+):\s*([^;]+);/g)].map(m=>[m[1],m[2].trim()]));
 const root=block(/:root\{([^}]*)\}/),dark=block(/prefers-color-scheme:dark\)\{\s*:root:not\(\[data-theme="light"\]\)\{([^}]*)\}/),forced=block(/:root\[data-theme="dark"\]\{([^}]*)\}/);
 
-// Type scale: only these px values, none under 12. SVG text is in viewBox units: in the narrowest card (296 px) the drawn height must be at least 12 px.
-const SCALE=[14,15,16,18,20,24,34],SVG={".mmt":220,".mmf":220,"--fs-svg":340},CARD=296;
+// Type scale: only these px values, none under 12. SVG text is in viewBox units: at least 12 units (no exemption for the muscle map).
+const SCALE=[14,15,16,18,20,24,34],SVGSEL=[".mmt",".mmf","--fs-svg"];
 const px=v=>[...v.matchAll(/([\d.]+)px/g)].map(m=>+m[1]);
 const fsTok=Object.entries(root).filter(([k])=>k.startsWith("fs-"));
-ok("--fs-* tokens are on the scale (--fs-svg is in SVG units, drawn height at least 12 px)",fsTok.every(([k,v])=>SVG["--"+k]?px(v)[0]*CARD/SVG["--"+k]>=12:SCALE.includes(px(v)[0])),fsTok);
+ok("--fs-* tokens are on the scale (--fs-svg is in SVG units, at least 12)",fsTok.every(([k,v])=>SVGSEL.includes("--"+k)?px(v)[0]>=12:SCALE.includes(px(v)[0])),fsTok);
 const decl=[...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].flatMap(m=>[...m[2].matchAll(/font-size:([^;]+)/g)].map(f=>[m[1].trim(),f[1].trim()]));
-const badCss=decl.filter(([sel,v])=>{const s=Object.keys(SVG).find(k=>sel===k);if(s)return px(v)[0]*CARD/SVG[s]<12;
+const badCss=decl.filter(([sel,v])=>{if(SVGSEL.includes(sel))return px(v)[0]<12;
   if(/^min\(|^max\(|^clamp\(/.test(v))return px(v).some(n=>n<12);return px(v).some(n=>!SCALE.includes(n))});
-ok("CSS font-size: no value off the scale or under 12 px (floors inside min/max included)",badCss.length===0,badCss);
+ok("CSS font-size: no value off the scale or under 12 px/units (floors inside min/max included)",badCss.length===0,badCss);
+ok("muscle map labels are at least 12 viewBox units",decl.filter(([s])=>s===".mmt"||s===".mmf").length===2);
 const inl=[...all.matchAll(/style="([^"]*)"/g)].map(m=>m[1]),badInl=inl.flatMap(s=>px((s.match(/font-size:([^;"]+)/)||[,""])[1])).filter(n=>!SCALE.includes(n));
 ok("inline font-size is on the scale (nothing under 12 px)",badInl.length===0,badInl);
 ok("heading order: h1 > h2 > h3 > body",px(root["fs-h1"])[0]>px(root["fs-h2"])[0]&&px(root["fs-h2"])[0]>px(root["fs-h3"])[0]&&px(root["fs-h3"])[0]>px(root["fs-1"])[0]);
@@ -65,4 +66,20 @@ ok("margin, padding and gap use the 4/8/12/16/24/32 scale (no 6, 10 or 14 px)",o
 ok("empty states come from emptyCard(); no hand-written card empty or bare .empty block outside the Day list",(Object.entries(src).filter(([f])=>f!=="index.html").map(e=>e[1]).join("").match(/class="card empty"/g)||[]).length===1&&!/<div class="empty">\$\{Icons\.svg\("note"\)\}<p class="mut">"/.test(all));
 ok("one button grid: .bgrid replaces .lbtns, .cfbtns and .hrow",!/lbtns|cfbtns|\.hrow|class="hrow/.test(all)&&/\.bgrid\{/.test(css));
 ok("one check mark glyph (no heavy check mark)",!all.includes("✔"));
+// Accessibility and visual rules added with the UI audit (P9.1, P9.2).
+const jsAll=Object.entries(src).filter(([f])=>f!=="index.html").map(([f,t])=>[f,t]);
+const hexJs=jsAll.filter(([f,t])=>f!=="kernel/algo.js"&&/["'`]#[0-9a-fA-F]{6}/.test(t)).map(([f])=>f);
+ok("canvas report colors live only in Algo.PAGE.c (no hex literal in any module or main script)",hexJs.length===0&&/PAGE=\{[^}]*c:\{bg:/.test(src["kernel/algo.js"]),hexJs);
+ok("toast: plain message 6 s, undo 10 s",/UNDO_MS=10000,TOAST_MS=6000/.test(all)&&/undoable\?UNDO_MS:TOAST_MS/.test(all));
+ok("first-run welcome asks \"Yazıyı büyüt?\" with the comfort switch",/swRow\("data-comfy",S\.settings\.comfy,"Yazıyı büyüt\?"/.test(src["modules/data/onboardui.js"]));
+const medui=src["modules/meds/medui.js"];
+ok("repeated dose buttons carry the medication name in their accessible name",["take","skip"].every(a=>[...medui.matchAll(new RegExp(`data-md="${a}:[^"]*"([^>]*)>`,"g"))].every(m=>/aria-label="[^>]*\$\{esc\(m\.n\)\}/.test(m[1]))));
+ok("lab row switch and Today vitals chip have their own names",/id="lc\$\{i\}" aria-label="Satırı kaydet: /.test(src["modules/labs/labui.js"])&&/data-vt="\$\{act\}" aria-label="\$\{label\} ölçümü ekle"/.test(src["modules/vitals/vitalsui.js"]));
+ok("one button family: no .sbtn, .rbtn and .lnk share one rule",!/sbtn/.test(all)&&/\.rbtn,\.lnk\{[^}]*min-height:var\(--hit\)/.test(css)&&/\.btn\.info\{/.test(css));
+const sqr=[...css.matchAll(/([^{}]+)\{[^{}]*[^-]height:var\(--hit\)/g)].map(m=>m[1].trim().split(",").pop().trim().replace(/^.*\}/,"")).filter(x=>!/^(#back|\.del|\.dnav button|#csend|\.gdx|\.shx|\.sw|\.sw input)$/.test(x));
+ok("fixed height:var(--hit) only on icon-only squares; text controls use min-height",sqr.length===0,sqr);
+ok("section label .grp is an h2 on screens and an h4 in sheets (no div.grp)",!/<div class="grp"/.test(all)&&!/<h3 class="grp">(?!\$1)/.test(all.replace(/<h3 class="grp">\$1<\/h3>/,"")));
+ok("every switch has its own 48 px touch area, also when it is not the whole row (reminders)",/\.sw\{[^}]*height:var\(--hit\)/.test(css)&&/\.sw span\{[^}]*inset:calc\(\(var\(--hit\) - 32px\)\/2\) 0/.test(css));
+const bk=src["modules/data/backupui.js"];
+ok("backup and password texts: one visible sentence with an info button, the rest folded",/helpBtn\("bkh"/.test(bk)&&/helpBtn\("abh"/.test(bk)&&/helpBtn\("obh"/.test(src["modules/data/onboardui.js"]));
 finish();

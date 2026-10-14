@@ -2,7 +2,7 @@
 /* Doctor preparation report, cover page: the summary of WeeklyLib over 30 or 90 days, how many days have readings, and the user's own questions (no DOM, no S).
    It puts the user's records next to each other; it does not comment, colour or rate anything. */
 const DoctorLib=(()=>{
-  const A=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js"),{w:RW,h:RH,m:RM}=A.PAGE;
+  const A=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js"),{w:RW,h:RH,m:RM,c:C}=A.PAGE;
   const VL=typeof VitalsLib!=="undefined"?VitalsLib:require("../vitals/vitalslib.js");
   const ML=typeof MedLib!=="undefined"?MedLib:require("../meds/medlib.js");
   const MAXQ=5,QLEN=140,MAX_PAGES=12,WD=["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"];
@@ -55,43 +55,43 @@ const DoctorLib=(()=>{
       pages[pages.length-1].push(it);y+=it.h;
     }
     const draw=(c,n)=>{
-      c.fillStyle="#ffffff";c.fillRect(0,0,RW,RH);c.textBaseline="alphabetic";
-      c.fillStyle="#10232b";c.font="bold 50px sans-serif";c.fillText("NeoWell · Hekime hazırlan",RM,RM+50);
-      c.fillStyle="#62737a";c.font="24px sans-serif";c.fillText("Kullanıcının kendi girdiği liste. Yorum içermez, tanı ve tedavi yerine geçmez.",RM,RM+92);
+      c.fillStyle=C.bg;c.fillRect(0,0,RW,RH);c.textBaseline="alphabetic";
+      c.fillStyle=C.ink;c.font="bold 50px sans-serif";c.fillText("NeoWell · Hekime hazırlan",RM,RM+50);
+      c.fillStyle=C.mut;c.font="24px sans-serif";c.fillText("Kullanıcının kendi girdiği liste. Yorum içermez, tanı ve tedavi yerine geçmez.",RM,RM+92);
       let yy=TOP;
       for(const it of pages[n]){
-        if(it.title){c.fillStyle="#10232b";c.font="bold 32px sans-serif";c.fillText(it.title,RM,yy+36)}
-        else if(it.head){c.fillStyle="#62737a";c.font="bold 24px sans-serif";["İlaç","Saatler ve dozlar","Günler","Tarihler"].forEach((t,i)=>c.fillText(t,X[i]+8,yy+32))}
-        else if(it.kv){c.fillStyle="#62737a";c.font="24px sans-serif";c.fillText(it.kv[0],RM+8,yy+PAD+24);c.fillStyle="#10232b";c.font="bold 24px sans-serif";it.kv[1].forEach((t,i)=>c.fillText(t,RM+420,yy+PAD+24+i*LH))}
+        if(it.title){c.fillStyle=C.ink;c.font="bold 32px sans-serif";c.fillText(it.title,RM,yy+36)}
+        else if(it.head){c.fillStyle=C.mut;c.font="bold 24px sans-serif";["İlaç","Saatler ve dozlar","Günler","Tarihler"].forEach((t,i)=>c.fillText(t,X[i]+8,yy+32))}
+        else if(it.kv){c.fillStyle=C.mut;c.font="24px sans-serif";c.fillText(it.kv[0],RM+8,yy+PAD+24);c.fillStyle=C.ink;c.font="bold 24px sans-serif";it.kv[1].forEach((t,i)=>c.fillText(t,RM+420,yy+PAD+24+i*LH))}
         else it.cells.forEach((cell,i)=>cell.forEach((t,j)=>{
-          const bold=i===0&&j<it.nameN;c.fillStyle=bold||i===1?"#10232b":"#62737a";c.font=(bold?"bold ":"")+"24px sans-serif";c.fillText(t,X[i]+8,yy+PAD+24+j*LH);
+          const bold=i===0&&j<it.nameN;c.fillStyle=bold||i===1?C.ink:C.mut;c.font=(bold?"bold ":"")+"24px sans-serif";c.fillText(t,X[i]+8,yy+PAD+24+j*LH);
         }));
         yy+=it.h;
-        if(it.cells||it.head){c.fillStyle="#d5dde0";c.fillRect(RM,yy-1,RW-2*RM,2)}
+        if(it.cells||it.head){c.fillStyle=C.rule;c.fillRect(RM,yy-1,RW-2*RM,2)}
       }
-      c.fillStyle="#62737a";c.font="22px sans-serif";c.fillText(`NeoWell · liste ${n+1}/${pages.length}`,RM,RH-45);
+      c.fillStyle=C.mut;c.font="22px sans-serif";c.fillText(`NeoWell · liste ${n+1}/${pages.length}`,RM,RH-45);
     };
     return {count:pages.length,draw};
   }
   /* data: WeeklyLib.build result (summary, charts); info: {today, days, coverage, questions}. */
   function drawCover(ctx,data,info){
-    ctx.fillStyle="#ffffff";ctx.fillRect(0,0,RW,RH);ctx.textBaseline="alphabetic";
+    ctx.fillStyle=C.bg;ctx.fillRect(0,0,RW,RH);ctx.textBaseline="alphabetic";
     let y=RM;
-    ctx.fillStyle="#10232b";ctx.font="bold 50px sans-serif";ctx.fillText("NeoWell · Hekime hazırlan",RM,y+50);
-    ctx.fillStyle="#62737a";ctx.font="24px sans-serif";
+    ctx.fillStyle=C.ink;ctx.font="bold 50px sans-serif";ctx.fillText("NeoWell · Hekime hazırlan",RM,y+50);
+    ctx.fillStyle=C.mut;ctx.font="24px sans-serif";
     ctx.fillText(`Dönem: son ${info.days} gün · Oluşturulma: ${A.fdate(info.today,true)}`,RM,y+92);
     ctx.fillText("Kullanıcının kendi kayıtlarından derlenmiştir. Yorum içermez, tanı ve tedavi yerine geçmez.",RM,y+126);
     y+=180;
     const KW=330,VW=RW-2*RM-KW;
     for(const [k,v] of [...data.summary.filter(r=>r[0]!=="Dönem"),...info.coverage]){
       ctx.font="bold 28px sans-serif";const lines=wrap(ctx,v,VW);
-      ctx.fillStyle="#62737a";ctx.font="28px sans-serif";ctx.fillText(k,RM,y+30);
-      ctx.fillStyle="#10232b";ctx.font="bold 28px sans-serif";lines.forEach((l,i)=>ctx.fillText(l,RM+KW,y+30+i*36));
+      ctx.fillStyle=C.mut;ctx.font="28px sans-serif";ctx.fillText(k,RM,y+30);
+      ctx.fillStyle=C.ink;ctx.font="bold 28px sans-serif";lines.forEach((l,i)=>ctx.fillText(l,RM+KW,y+30+i*36));
       y+=Math.max(1,lines.length)*36+10;
     }
     y+=20;
     if(info.questions.length){
-      ctx.fillStyle="#10232b";ctx.font="bold 32px sans-serif";ctx.fillText("Hekime sormak istediklerim",RM,y+32);y+=56;
+      ctx.fillStyle=C.ink;ctx.font="bold 32px sans-serif";ctx.fillText("Hekime sormak istediklerim",RM,y+32);y+=56;
       ctx.font="28px sans-serif";
       info.questions.forEach((q,i)=>{wrap(ctx,`${i+1}. ${q}`,RW-2*RM).forEach(l=>{ctx.fillText(l,RM,y+30);y+=38});y+=8});
       y+=14;
@@ -101,11 +101,11 @@ const DoctorLib=(()=>{
       const colW=(RW-2*RM)/cs.length,w=cs.length>1?colW-150:RW-2*RM-110;
       cs.forEach((c,i)=>{
         const x=RM+i*colW;
-        ctx.fillStyle="#10232b";ctx.font="bold 26px sans-serif";ctx.fillText(c.title,x,y+26);
+        ctx.fillStyle=C.ink;ctx.font="bold 26px sans-serif";ctx.fillText(c.title,x,y+26);
         VL.drawChart(ctx,x,y+46,w,h,c.series,c.from,c.to);
       });
     }
-    ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText("Bu değerleri hekiminle değerlendir. · NeoWell · sayfa 1",RM,RH-45);
+    ctx.fillStyle=C.mut;ctx.font="22px sans-serif";ctx.fillText("Bu değerleri hekiminle değerlendir. · NeoWell · sayfa 1",RM,RH-45);
   }
   return {cleanQuestions,coverage,drawCover,wrap,listPages,medRows,MAXQ,QLEN,MAX_PAGES};
 })();

@@ -9,7 +9,7 @@ const WeeklyLib=(()=>{
   const fmt=(x,d)=>Number(x).toFixed(d==null?1:d).replace(".",",");
   const fmtS=x=>(x>0?"+":x<0?"−":"")+fmt(Math.abs(x));
   const UN=typeof Units!=="undefined"?Units:require("../../kernel/unitlib.js");
-  const A=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js"),{w:RW,h:RH,m:RM}=A.PAGE,ROW=52;
+  const A=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js"),{w:RW,h:RH,m:RM,c:C}=A.PAGE,ROW=52;
   const dmy=k=>A.fdate(k,true);
   /* Only plain water and mineral water count toward the water goal (a plain entry has no dr); tea, coffee, soda, milk and other drinks are kept apart. */
   const isWater=e=>e.type==="water"&&(!e.dr||e.dr==="water"||e.dr==="mineral");
@@ -55,11 +55,11 @@ const WeeklyLib=(()=>{
     }
     /* A chart appears only with at least two days of data. Colours match the app: weight primary, systolic ink, diastolic water. */
     const charts=[],kp=rows.filter(r=>r.weight!=null).map(r=>({day:r.day,v:UN.w(r.weight,wu)}));
-    if(kp.length>=2)charts.push({title:`Kilo (${wu})`,series:[{pts:kp,color:"#0f5c55",shape:"c",vals:true,fmt:v=>fmt(v)}],from,to:endDay});
+    if(kp.length>=2)charts.push({title:`Kilo (${wu})`,series:[{pts:kp,color:C.prim,shape:"c",vals:true,fmt:v=>fmt(v)}],from,to:endDay});
     if(st.bpOn){
       const byDay={};for(const r of vit)if(r.k==="t"&&r.day>=from&&r.day<=endDay)(byDay[r.day]=byDay[r.day]||[]).push(r);
       const ds=Object.keys(byDay).sort(),avg=f=>ds.map(k=>({day:k,v:mean(byDay[k].map(r=>r[f]))}));
-      if(ds.length>=2)charts.push({title:"Tansiyon (mmHg), günlük ortalama",series:[{pts:avg("sys"),color:"#10232b",shape:"c",short:"Sistolik"},{pts:avg("dia"),color:"#2a86bd",shape:"s",dash:true,short:"Diyastolik",below:true}],from,to:endDay});
+      if(ds.length>=2)charts.push({title:"Tansiyon (mmHg), günlük ortalama",series:[{pts:avg("sys"),color:C.ink,shape:"c",short:"Sistolik"},{pts:avg("dia"),color:C.water,shape:"s",dash:true,short:"Diyastolik",below:true}],from,to:endDay});
     }
     return {rows,summary,charts,from,end:endDay,wu};
   }
@@ -73,27 +73,27 @@ const WeeklyLib=(()=>{
   }
 
   function drawPage(ctx,data,info){
-    ctx.fillStyle="#ffffff";ctx.fillRect(0,0,RW,RH);ctx.textBaseline="alphabetic";
+    ctx.fillStyle=C.bg;ctx.fillRect(0,0,RW,RH);ctx.textBaseline="alphabetic";
     let y=RM;
-    ctx.fillStyle="#10232b";ctx.font="bold 50px sans-serif";ctx.fillText(`NeoWell · Son ${data.rows.length} gün raporu`,RM,y+50);
-    ctx.fillStyle="#62737a";ctx.font="24px sans-serif";
+    ctx.fillStyle=C.ink;ctx.font="bold 50px sans-serif";ctx.fillText(`NeoWell · Son ${data.rows.length} gün raporu`,RM,y+50);
+    ctx.fillStyle=C.mut;ctx.font="24px sans-serif";
     ctx.fillText(`Oluşturulma: ${dmy(info.today)}`,RM,y+92);
     ctx.fillText("Kullanıcının kendi kayıtlarından derlenmiştir. Tıbbi yorum içermez, tanı ve tedavi yerine geçmez.",RM,y+126);
     y+=190;
     for(const [k,v] of data.summary){
-      ctx.fillStyle="#62737a";ctx.font="28px sans-serif";ctx.fillText(k,RM,y+30);
-      ctx.fillStyle="#10232b";ctx.font="bold 28px sans-serif";ctx.fillText(v,RM+230,y+30);y+=44;
+      ctx.fillStyle=C.mut;ctx.font="28px sans-serif";ctx.fillText(k,RM,y+30);
+      ctx.fillStyle=C.ink;ctx.font="bold 28px sans-serif";ctx.fillText(v,RM+230,y+30);y+=44;
     }
     y+=30;
     const cols=[["Gün",RM],[`Kilo (${data.wu||"kg"})`,RM+210],["Su (L)",RM+420],["Kalori",RM+620],["Spor (dk)",RM+820],["Adım",RM+1020]];
-    ctx.fillStyle="#62737a";ctx.font="bold 26px sans-serif";cols.forEach(([t,x])=>ctx.fillText(t,x,y+30));
-    ctx.strokeStyle="#9fb4ad";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(RM,y+44);ctx.lineTo(RW-RM,y+44);ctx.stroke();
+    ctx.fillStyle=C.mut;ctx.font="bold 26px sans-serif";cols.forEach(([t,x])=>ctx.fillText(t,x,y+30));
+    ctx.strokeStyle=C.frame;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(RM,y+44);ctx.lineTo(RW-RM,y+44);ctx.stroke();
     y+=ROW;
     ctx.font="28px sans-serif";
     for(const r of data.rows){
       const c=[r.label,r.weight!=null?fmt(UN.w(r.weight,data.wu)):"–",r.water?fmt(r.water/1000):"–",r.kcal?String(Math.round(r.kcal)):"–",r.exercise?String(Math.round(r.exercise)):"–",r.steps?Math.round(r.steps).toLocaleString("tr-TR"):"–"];
-      ctx.fillStyle="#10232b";c.forEach((t,i)=>ctx.fillText(t,cols[i][1],y+32));
-      ctx.strokeStyle="#e3ebe8";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(RM,y+ROW-4);ctx.lineTo(RW-RM,y+ROW-4);ctx.stroke();
+      ctx.fillStyle=C.ink;c.forEach((t,i)=>ctx.fillText(t,cols[i][1],y+32));
+      ctx.strokeStyle=C.rule;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(RM,y+ROW-4);ctx.lineTo(RW-RM,y+ROW-4);ctx.stroke();
       y+=ROW;
     }
     /* The space under the table: two charts side by side, one chart at full width. Nothing is drawn when it does not fit. */
@@ -103,11 +103,11 @@ const WeeklyLib=(()=>{
       const colW=(RW-2*RM)/cs.length,w=cs.length>1?colW-150:RW-2*RM-110;
       cs.forEach((c,i)=>{
         const x=RM+i*colW;
-        ctx.fillStyle="#10232b";ctx.font="bold 26px sans-serif";ctx.fillText(c.title,x,y+26);
+        ctx.fillStyle=C.ink;ctx.font="bold 26px sans-serif";ctx.fillText(c.title,x,y+26);
         VL.drawChart(ctx,x,y+46,w,h,c.series,c.from,c.to);
       });
     }
-    ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText("NeoWell",RM,RH-45);
+    ctx.fillStyle=C.mut;ctx.font="22px sans-serif";ctx.fillText("NeoWell",RM,RH-45);
   }
   return {build,compare,drawPage,isWater};
 })();

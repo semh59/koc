@@ -529,7 +529,7 @@ function cShopText(c){const ch=new Set(c.chk);let g="";return "Alışveriş list
 function cShop(id){
   const c=menuCard(id);if(!c)return;
   const L=shopOf(c),ch=new Set(c.chk);
-  openSheet(`<h3>Alışveriş listesi</h3><p class="mut sm">Menüdeki yemekler ürünlere bölündü; miktarlar porsiyonlara göre yaklaşıktır. Liste bu telefonda hesaplandı, hiçbir yere gönderilmedi.</p>${L.map((x,i)=>`${x.c!==(L[i-1]||{}).c?`<div class="grp">${x.c}</div>`:""}<button class="prow shop" data-c="shopchk:${id}:${i}" aria-pressed="${ch.has(x.n)}"><span class="ck" aria-hidden="true">${Icons.svg("check")}</span><span class="grow"><b>${esc(x.n)}</b><span class="mut sm num">${esc(x.t)}</span></span></button>`).join("")}
+  openSheet(`<h3>Alışveriş listesi</h3><p class="mut sm">Menüdeki yemekler ürünlere bölündü; miktarlar porsiyonlara göre yaklaşıktır. Liste bu telefonda hesaplandı, hiçbir yere gönderilmedi.</p>${L.map((x,i)=>`${x.c!==(L[i-1]||{}).c?`<h4 class="grp">${x.c}</h4>`:""}<button class="prow shop" data-c="shopchk:${id}:${i}" aria-pressed="${ch.has(x.n)}"><span class="ck" aria-hidden="true">${Icons.svg("check")}</span><span class="grow"><b>${esc(x.n)}</b><span class="mut sm num">${esc(x.t)}</span></span></button>`).join("")}
   <div class="mt-3 two"><button class="btn ghost" data-c="shopcopy:${id}">Kopyala</button><button class="btn ghost" data-c="shopshare:${id}">Paylaş</button></div>`);
 }
 
@@ -550,7 +550,7 @@ function cSafety(level){
     mind:["Yalnız değilsin","Kendine zarar vermeyi düşünüyorsan şimdi 112'yi ara ya da yanındaki birine söyle. Güvende olman her şeyden önemli.",true],
     ed:["Bunu konuşmak iyi bir adım","Yemekle ilgili zorlanmalar için bir hekim, psikolog ya da diyetisyen desteği çok değerli. Bu konuda kalori kısıtlaması önermem.",false]
   }[level];
-  return `<div class="scard"><b>${T[0]}</b><p>${T[1]}</p><div class="srow2">${T[2]?`<a class="sbtn" href="tel:112">112'yi ara</a>`:""}<button class="sbtn ghost" data-c="dismiss">Anladım</button></div><div class="mut sm">Yapay zekâ rehberi hekim değildir, tanı koymaz.</div></div>`;
+  return `<div class="scard"><b>${T[0]}</b><p>${T[1]}</p><div class="srow2">${T[2]?`<a class="btn info" href="tel:112">112'yi ara</a>`:""}<button class="btn ghost" data-c="dismiss">Anladım</button></div><div class="mut sm">Yapay zekâ rehberi hekim değildir, tanı koymaz.</div></div>`;
 }
 function cCard(m){
   const c=m.card;if(!c)return "";

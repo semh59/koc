@@ -296,7 +296,7 @@ const LabLib=(()=>{
   function keyFor(name){const h=findAlias(String(name).trim());return h?h.d.k:slug(name)}
 
   /* ---- PDF report: the canvas context is passed in, so it can be tried without a DOM ---- */
-  const {w:RW,h:RH,m:RM}=ALGO.PAGE,BLOCK=250,HEAD=190,FOOT=80;
+  const {w:RW,h:RH,m:RM,c:C}=ALGO.PAGE,BLOCK=250,HEAD=190,FOOT=80;
   const dayN=ALGO.dayNum,fmtD=k=>ALGO.fdate(k,true);
   const fmtN=v=>String(Number(v.toFixed(2))).replace(".",",");
   const rangeText=r=>r.lo!=null&&r.hi!=null?`${fmtN(r.lo)} – ${fmtN(r.hi)}`:r.hi!=null?`< ${fmtN(r.hi)}`:r.lo!=null?`> ${fmtN(r.lo)}`:"";
@@ -318,39 +318,39 @@ const LabLib=(()=>{
     return {pts:pts.map(p=>({x:X(p.day),y:Y(p.v),out:flag(p)!==null,p})),band:(last.lo!=null||last.hi!=null)?{y1:Y(last.hi!=null?last.hi:hi),y2:Y(last.lo!=null?last.lo:lo)}:null};
   }
   function drawPage(ctx,items,info){
-    ctx.fillStyle="#ffffff";ctx.fillRect(0,0,RW,RH);
-    ctx.fillStyle="#10232b";ctx.textBaseline="alphabetic";
+    ctx.fillStyle=C.bg;ctx.fillRect(0,0,RW,RH);
+    ctx.fillStyle=C.ink;ctx.textBaseline="alphabetic";
     let y=RM;
     if(info.page===1){
       ctx.font="bold 46px sans-serif";ctx.fillText("NeoWell · Tahlil sonuçları",RM,y+46);
-      ctx.font="24px sans-serif";ctx.fillStyle="#62737a";
+      ctx.font="24px sans-serif";ctx.fillStyle=C.mut;
       ctx.fillText(`Oluşturulma: ${fmtD(info.today)}   ·   ${info.count} test, ${info.rows} sonuç`,RM,y+90);
       ctx.fillText("Değerler kullanıcının girdiği ya da PDF'ten okuduğu verilerdir. Aralık, raporda yazdığı gibi alınmıştır; yorumlanmamıştır. Bu değerleri hekiminle değerlendir.",RM,y+124);
       y+=HEAD-RM;
     }
     for(const s of items){
       const last=s.pts[s.pts.length-1],f=flag(last);
-      ctx.strokeStyle="#d9e2de";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(RM,y);ctx.lineTo(RW-RM,y);ctx.stroke();
-      ctx.fillStyle="#10232b";ctx.font="bold 34px sans-serif";ctx.fillText(s.n,RM,y+52);
+      ctx.strokeStyle=C.rule;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(RM,y);ctx.lineTo(RW-RM,y);ctx.stroke();
+      ctx.fillStyle=C.ink;ctx.font="bold 34px sans-serif";ctx.fillText(s.n,RM,y+52);
       ctx.font="bold 52px sans-serif";
       const vt=(last.q||"")+fmtN(last.v);ctx.fillText(vt,RM,y+120);
       const vw=ctx.measureText(vt).width;
-      ctx.font="26px sans-serif";ctx.fillStyle="#62737a";ctx.fillText(s.u||"",RM+vw+12,y+120);
+      ctx.font="26px sans-serif";ctx.fillStyle=C.mut;ctx.fillText(s.u||"",RM+vw+12,y+120);
       ctx.fillText(fmtD(last.day),RM,y+158);
       const rt=rangeText(last);
       if(rt)ctx.fillText(`Raporda yazan aralık: ${rt} ${s.u||""}`,RM,y+192);
-      if(f){ctx.fillStyle="#10232b";ctx.font="bold 24px sans-serif";ctx.fillText(f==="high"?"▲ Raporda yazan aralığın üstünde":"▼ Raporda yazan aralığın altında",RM,y+224)}
+      if(f){ctx.fillStyle=C.ink;ctx.font="bold 24px sans-serif";ctx.fillText(f==="high"?"▲ Raporda yazan aralığın üstünde":"▼ Raporda yazan aralığın altında",RM,y+224)}
       const cx=520,cy=y+30,cw=RW-RM-cx-10,ch=150,g=geom(s,cx,cy,cw,ch);
-      if(g.band){ctx.fillStyle="#e3efe9";ctx.fillRect(cx,Math.min(g.band.y1,g.band.y2),cw,Math.abs(g.band.y2-g.band.y1))}
-      ctx.strokeStyle="#9fb4ad";ctx.lineWidth=1.5;ctx.strokeRect(cx,cy,cw,ch);
-      ctx.strokeStyle="#0f5c52";ctx.lineWidth=3;ctx.beginPath();g.pts.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y));ctx.stroke();
-      for(const q of g.pts){ctx.fillStyle="#0f5c52";ctx.beginPath();ctx.arc(q.x,q.y,7,0,Math.PI*2);ctx.fill()}
-      ctx.fillStyle="#62737a";ctx.font="22px sans-serif";
+      if(g.band){ctx.fillStyle=C.band;ctx.fillRect(cx,Math.min(g.band.y1,g.band.y2),cw,Math.abs(g.band.y2-g.band.y1))}
+      ctx.strokeStyle=C.frame;ctx.lineWidth=1.5;ctx.strokeRect(cx,cy,cw,ch);
+      ctx.strokeStyle=C.prim;ctx.lineWidth=3;ctx.beginPath();g.pts.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y));ctx.stroke();
+      for(const q of g.pts){ctx.fillStyle=C.prim;ctx.beginPath();ctx.arc(q.x,q.y,7,0,Math.PI*2);ctx.fill()}
+      ctx.fillStyle=C.mut;ctx.font="22px sans-serif";
       ctx.fillText(fmtD(s.pts[0].day),cx,cy+ch+30);
       if(s.pts.length>1){const t=fmtD(last.day);ctx.fillText(t,cx+cw-ctx.measureText(t).width,cy+ch+30)}
       y+=BLOCK;
     }
-    ctx.fillStyle="#62737a";ctx.font="22px sans-serif";
+    ctx.fillStyle=C.mut;ctx.font="22px sans-serif";
     ctx.fillText(`NeoWell · sayfa ${info.page}/${info.total}`,RM,RH-45);
   }
 
