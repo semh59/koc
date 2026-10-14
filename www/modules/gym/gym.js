@@ -72,6 +72,8 @@ const gRpeTx=s=>s&&s.rpe?` @${fkg(s.rpe)}`:"";
 const fkg=x=>x==null||x===""?"":String(Math.round(x*100)/100).replace(".",",");
 /* Weight shown in the unit of the settings; storage and calculations stay in kg. */
 const gW=kg=>kg==null?"":fkg(Units.w(kg));
+/* The ± step in lb: the exercise's kg step rounded to a plate-like 2,5 / 5 / 10 lb. */
+const gLbStep=inc=>{const l=inc*2.20462;return Math.max(2.5,l<7.5?Math.round(l/2.5)*2.5:Math.round(l/5)*5)};
 /* A set's stored field as the text of its input (the cardio duration in minutes). */
 const gShow=(f,s,id)=>{const v=s[f];return v==null?"":f==="sec"?Math.round(v/(gKind(id)==="c"?60:1)):f==="kg"?gW(v):f==="rpe"?fkg(v):v};
 /* One typed set field: {v} to store (null = empty) or {err} with the message. A text equal to what the stored value shows is not parsed again, so a lb round trip does not drift. */
@@ -263,13 +265,13 @@ function gWeekNote(regs,hasHistory){
 }
 const gTimedSec=w=>w.ex.reduce((s,x)=>s+(gTimed(x.id)?gDoneSets(x).reduce((a,t)=>a+(t.sec||0),0):0),0);
 const gSecTx=s=>s>=120?Math.round(s/60)+" dk":s+" sn";
-const gVolTx=w=>{const v=gWorkVol(w),t=gTimedSec(w);return [v>0&&`${fint(v)} kg`,t>0&&gSecTx(t)].filter(Boolean).join(", ")};
+const gVolTx=w=>{const v=gWorkVol(w),t=gTimedSec(w);return [v>0&&`${fint(Units.w(v))} ${Units.wu()}`,t>0&&gSecTx(t)].filter(Boolean).join(", ")};
 const gStats=w=>[`${gWorkSets(w)} set`,`${gDur(w)} dk`,gVolTx(w),gSsGroups(w).length&&`${gSsGroups(w).length} süperset`,gDrops(w)&&`${gDrops(w)} drop set`].filter(Boolean).join(" · ");
 const gNames=(w,n)=>{const a=w.ex.map(x=>gEx(x.id).n);return a.slice(0,n).join(", ")+(a.length>n?` +${a.length-n}`:"")};
 const gDur=w=>Math.min(WORKOUT_MIN_MAX,Math.max(1,Math.round(((w.t1||Date.now())-w.t0)/60000)));
 /* A workout older than the longest possible one has no running clock: it was added for a past day or left open. */
 const gAged=w=>Date.now()-w.t0>WORKOUT_MIN_MAX*6e4;
-const gStat=w=>`${gAged(w)?fd(w.day)+" günü":gClock(Date.now()-w.t0)+" süre"}, ${fint(gWorkVol(w))} kg hacim`;
+const gStat=w=>`${gAged(w)?fd(w.day)+" günü":gClock(Date.now()-w.t0)+" süre"}, ${fint(Units.w(gWorkVol(w)))} ${Units.wu()} hacim`;
 const gClock=ms=>{const s=Math.max(0,Math.floor(ms/1000));return `${pad(Math.floor(s/60))}:${pad(s%60)}`};
 
 /* ---- screens ---- */
@@ -281,7 +283,7 @@ function gHome(){
   const done=S.workouts.filter(gDone).sort((a,b)=>b.t0-a.t0),from=Date.now()-WEEK_MS,wk7=done.filter(w=>w.t0>=from),last=done[0];
   const vol=wk7.reduce((s,w)=>s+gWorkVol(w),0),sets=wk7.reduce((s,w)=>s+gWorkSets(w),0);
   // Summary: weekly count and the last workout; one primary action.
-  const sum=`<div class="card"><div class="stats"><div class="stat"><div class="k">Bu hafta</div><div class="v num">${wk7.length} <small>antrenman</small></div></div><div class="stat"><div class="k">Hacim</div><div class="v num">${fint(vol)} <small>kg</small></div></div><div class="stat"><div class="k">Set</div><div class="v num">${sets}</div></div></div>
+  const sum=`<div class="card"><div class="stats"><div class="stat"><div class="k">Bu hafta</div><div class="v num">${wk7.length} <small>antrenman</small></div></div><div class="stat"><div class="k">Hacim</div><div class="v num">${fint(Units.w(vol))} <small>${Units.wu()}</small></div></div><div class="stat"><div class="k">Set</div><div class="v num">${sets}</div></div></div>
   <p class="mut sm">${last?`Son antrenman: ${esc(last.name)}, ${fd(last.day)}`:"Henüz antrenman yok. İlk antrenmanını başlat ya da bir şablon seç."}</p><button class="mt-2 btn" data-g="start:">${Icons.svg("play")} Antrenmanı başlat</button><button class="lnk" data-g="startday">Geçmiş bir güne kaydet</button></div>`;
   const tpl=S.templates.map(t=>{
     const lt=done.find(w=>w.tpl===t.id);
@@ -337,7 +339,7 @@ function gTplPreview(id){
   const tmp={ex:[]};for(const i of t.ex)gAddEx(tmp,i,t.tg&&t.tg[i]);
   const row=x=>{
     const s=x.sets[0],hi=t.tg&&t.tg[x.id]&&t.tg[x.id].hi,k=gKind(x.id);
-    const tg=s.sec!=null?(k==="c"?`${Math.round(s.sec/60)} dk`:`${s.sec} sn`):s.reps?`${s.kg?fkg(s.kg)+" kg × ":""}${s.reps}${hi>s.reps?"–"+hi:""} tekrar`:"hedef yok, antrenmanda girersin";
+    const tg=s.sec!=null?(k==="c"?`${Math.round(s.sec/60)} dk`:`${s.sec} sn`):s.reps?`${s.kg?gW(s.kg)+" "+Units.wu()+" × ":""}${s.reps}${hi>s.reps?"–"+hi:""} tekrar`:"hedef yok, antrenmanda girersin";
     return `<div class="prow"><span><b>${esc(gEx(x.id).n)}</b><span class="mut sm">${x.sets.length} set · ${tg}</span></span></div>`;
   };
   openSheet(`<h3>${esc(t.name)}</h3><div class="plist">${tmp.ex.map(row).join("")||`<p class="hint">Bu şablonda egzersiz yok. Başlatınca egzersizi sen eklersin.</p>`}</div><button class="btn" data-g="startgo:${id}">Başlat</button>${t.ex.length?`<button class="mt-2 btn ghost" data-g="gdgo:t:${id}">Rehberli başlat</button>`:""}<button class="mt-2 btn ghost" data-g="closesheet">Kapat</button>`);
@@ -348,7 +350,7 @@ function gEmptySet(w,ei,si,kgIn,repsIn,kind){
   const need=[!repsIn&&"tekrar",!kgIn&&kind==="w"&&"kg"].filter(Boolean);
   if(!need.length)return false;
   if(!ps||(need.includes("tekrar")&&!ps.reps)||(need.includes("kg")&&ps.kg==null)){toast(need.includes("tekrar")?"Önce tekrar sayısını yaz":"Ağırlığı yaz, ağırlıksızsa 0 yaz");return true}
-  openSheet(`<h3>Set boş</h3><p>${need.join(" ve ")} girilmedi. Önceki seansta bu set: <b class="num">${ps.kg?fkg(ps.kg)+" kg × ":""}${ps.reps} tekrar</b>.</p><button class="btn" data-g="fillok:${ei}:${si}">Bu değerle tamamla</button><button class="mt-2 btn ghost" data-g="closesheet">Kendim yazayım</button>`);
+  openSheet(`<h3>Set boş</h3><p>${need.join(" ve ")} girilmedi. Önceki seansta bu set: <b class="num">${ps.kg?gW(ps.kg)+" "+Units.wu()+" × ":""}${ps.reps} tekrar</b>.</p><button class="btn" data-g="fillok:${ei}:${si}">Bu değerle tamamla</button><button class="mt-2 btn ghost" data-g="closesheet">Kendim yazayım</button>`);
   return true;
 }
 /* Panel: ± for kg and reps (step = the exercise's inc) and one-tap fill from the same set of the previous session. */
@@ -356,8 +358,8 @@ function gStepPanel(w,ei,si,prev){
   const x=w.ex[ei],s=x.sets[si],st=(f,l,v)=>`<div class="stp"><button data-g="${f}m:${ei}:${si}" aria-label="${l} azalt">−</button><span class="num" aria-label="${l}">${v}</span><button data-g="${f}p:${ei}:${si}" aria-label="${l} artır">+</button></div>`;
   const ps=gPrevSet(w,x,si,prev);
   const same=ps&&(ps.kg||0)!==(s.kg||0)||ps&&ps.reps!==s.reps;
-  return `<div class="sx">${st("kg","Ağırlık",s.kg==null?"–":fkg(s.kg))}${st("rp","Tekrar",s.reps==null?"–":s.reps)}
-  ${same?`<button class="lnk sxs" data-g="same:${ei}:${si}">Önceki seansla aynı: ${ps.kg?fkg(ps.kg)+" × ":""}${ps.reps}</button>`:""}</div>`;
+  return `<div class="sx">${st("kg","Ağırlık",s.kg==null?"–":gW(s.kg))}${st("rp","Tekrar",s.reps==null?"–":s.reps)}
+  ${same?`<button class="lnk sxs" data-g="same:${ei}:${si}">Önceki seansla aynı: ${ps.kg?gW(ps.kg)+" × ":""}${ps.reps}</button>`:""}</div>`;
 }
 function gLive(w){
   gRestLoad();
@@ -367,19 +369,19 @@ function gLive(w){
     const kind=gKind(x.id),tm=gTimed(x.id),unit=kind==="c"?60:1,rpe=S.settings.rpeOn&&!tm;
     let wi=0;
     const g=gGrp(w,ei),rows=x.sets.map((s,si)=>{
-      const ps=!s.w&&prev&&prev.sets[wi++],p=s.w?"ısınma":!ps?"–":tm?`${kind==="c"?Math.round(ps.sec/60)+" dk":ps.sec+" sn"}`:`${ps.kg?fkg(ps.kg)+" × ":""}${ps.reps}`;
+      const ps=!s.w&&prev&&prev.sets[wi++],p=s.w?"ısınma":!ps?"–":tm?`${kind==="c"?Math.round(ps.sec/60)+" dk":ps.sec+" sn"}`:`${ps.kg?gW(ps.kg)+" × ":""}${ps.reps}`;
       const tick=`<button class="ok${s.done?" on":""}" data-g="done:${ei}:${si}" aria-label="${si+1}. set ${s.done?"geri al":"tamamlandı"}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>`;
       const on=nx&&nx.ei===ei&&nx.si===si;
       if(tm)return `<div class="srow${s.done?" dn":""}${on?" nx":""}"><button class="sn tb" data-g="stype:${ei}:${si}" aria-label="${si+1}. set seçenekleri">${si+1}</button><span class="sp num">${p}</span>
       <input class="sin num" inputmode="numeric" aria-label="${si+1}. set ${kind==="c"?"dakika":"saniye"}" data-gi="sec:${ei}:${si}" value="${gShow("sec",s,x.id)}" placeholder="${kind==="c"?"dk":"sn"}">
       <button class="sin tgo" data-g="tstart:${ei}:${si}" aria-label="${si+1}. set zamanlayıcıyı başlat">${Icons.svg(gTim&&gTim.ei===ei&&gTim.si===si?"pause":"play")}</button>${tick}</div>`;
       return `<div class="srow${rpe?" r":""}${s.done?" dn":""}${on?" nx":""}"><button class="sn tb" data-g="stype:${ei}:${si}" aria-label="${si+1}. set türü: ${gSetTx(s)}">${si+1}${s.t?`<b class="tbd">${s.t.toUpperCase()}</b>`:""}</button><span class="sp num">${p}</span>
-      <input class="sin num" inputmode="decimal" aria-label="${si+1}. set kg" data-gi="kg:${ei}:${si}" value="${gShow("kg",s,x.id)}" placeholder="${kind==="b"?"ek kg":"kg"}">
+      <input class="sin num" inputmode="decimal" aria-label="${si+1}. set ağırlık (${Units.wu()})" data-gi="kg:${ei}:${si}" value="${gShow("kg",s,x.id)}" placeholder="${kind==="b"?"ek "+Units.wu():Units.wu()}">
       <input class="sin num" inputmode="numeric" aria-label="${si+1}. set tekrar" data-gi="reps:${ei}:${si}" value="${gShow("reps",s,x.id)}" placeholder="tekrar">${rpe?`<input class="sin num" inputmode="decimal" aria-label="${si+1}. set zorluk (RPE)" data-gi="rpe:${ei}:${si}" value="${gShow("rpe",s,x.id)}" placeholder="RPE">`:""}${tick}</div>${on?gStepPanel(w,ei,si,prev):""}`;
     }).join("");
     return `<div class="card ex${g?" ssg":""}"><div class="exh"><button class="exn" data-g="hist:${x.id}"><b>${esc(ex.n)}</b><span class="mut">${ex.r||ex.g}${g?` · Süperset ${g.i}/${g.n}`:""}</span></button><button class="del" data-g="exinfo:${x.id}" aria-label="Egzersiz bilgisi">ⓘ</button><button class="del" data-g="menu:${ei}" aria-label="Egzersiz menüsü">⋮</button></div>
-    ${sug?`<div class="sug">Öneri: ${fkg(sug.kg)||0} kg × ${sug.reps}. ${sug.why}.${sug.note?` <span class="mut">${sug.note}</span>`:""}</div>`:""}${x.note?`<div class="note">${esc(x.note)}</div>`:""}
-    <div class="shead${rpe?" r":""}"><span>Set</span><span>Önceki</span>${tm?`<span>${kind==="c"?"Dakika":"Süre (sn)"}</span><span>Süre</span>`:`<span>${kind==="b"?"Ek kg":"kg"}</span><span>Tekrar</span>${rpe?"<span>RPE</span>":""}`}<span></span></div>${rows}
+    ${sug?`<div class="sug">Öneri: ${gW(sug.kg)||0} ${Units.wu()} × ${sug.reps}. ${sug.why}.${sug.note?` <span class="mut">${sug.note}</span>`:""}</div>`:""}${x.note?`<div class="note">${esc(x.note)}</div>`:""}
+    <div class="shead${rpe?" r":""}"><span>Set</span><span>Önceki</span>${tm?`<span>${kind==="c"?"Dakika":"Süre (sn)"}</span><span>Süre</span>`:`<span>${kind==="b"?"Ek "+Units.wu():Units.wu()}</span><span>Tekrar</span>${rpe?"<span>RPE</span>":""}`}<span></span></div>${rows}
     <button class="lnk" data-g="addset:${ei}">Set ekle</button></div>`;
   }).join("");
   return `<div class="livebar"><button class="chip" data-g="cancel" aria-label="Antrenmanı sil, kaydetmeden iptal et">${Icons.svg("trash")} Antrenmanı sil</button><div><b>${esc(w.name)}</b><div class="mut num" id="gstat">${gStat(w)}</div></div><button class="btn fin" data-g="finish">Bitir</button></div>
@@ -418,7 +420,7 @@ function gPickHtml(){
   const all=gExAll().filter(e=>(gGroup==="Tümü"||(e.r||e.g)===gGroup)&&(!q||tr(e.n).includes(q))),list=all.slice(0,gPickMax);
   const inW=new Set(gTeOn?gTe.ex:w?w.ex.map(x=>x.id):[]);
   return list.map(e=>{
-    const h=gHistory(e.id)[0],last=h?(gTimed(e.id)?`son ${h.sets[0].sec} sn`:`son ${fkg(Math.max(...h.sets.map(s=>s.kg||0)))||0} kg × ${h.sets[0].reps}`):"henüz yok";
+    const h=gHistory(e.id)[0],last=h?(gTimed(e.id)?`son ${h.sets[0].sec} sn`:`son ${gW(Math.max(...h.sets.map(s=>s.kg||0)))||0} ${Units.wu()} × ${h.sets[0].reps}`):"henüz yok";
     return `<button class="prow" data-g="addex:${e.id}"><span><b>${esc(e.n)}</b><span class="mut sm">${e.r||e.g}${e.q?", "+e.q.toLowerCase():""}, ${last}</span></span>${inW.has(e.id)?`<span class="tag">Eklendi</span>`:`<span class="plus">+</span>`}</button>`;
   }).join("")+(all.length>list.length?`<button class="lnk" data-g="pickmore">Daha fazla göster</button>`:"")||`<p class="hint">Eşleşen hareket yok. Başka bir ad dene.</p>`;
 }
@@ -463,9 +465,9 @@ function gSheetHist(exId){
   if(!h.length)return openSheet(`<h3>${esc(ex.n)}</h3><p class="hint">Bu hareketle tamamladığın setler burada görünür.</p><button class="btn" data-g="closesheet">Kapat</button>`);
   const per=h.map(x=>({d:x.w.day,e:gBest(x.w,exId),vol:Algo.volume(x.sets),top:gWork(x.sets).reduce((a,s)=>Algo.est1RM(s.kg,s.reps)>Algo.est1RM(a.kg,a.reps)?s:a,gWork(x.sets)[0])}));
   const best=per.reduce((a,b)=>b.e>a.e?b:a,per[0]);
-  openSheet(`<h3>${esc(ex.n)}</h3><div class="two"><div class="stat"><div class="k">En iyi set</div><div class="v num">${fkg(best.top.kg)||0} kg × ${best.top.reps}</div></div><div class="stat"><div class="k">Tahmini 1TM</div><div class="v num">${Math.round(best.e)} kg</div></div></div>
+  openSheet(`<h3>${esc(ex.n)}</h3><div class="two"><div class="stat"><div class="k">En iyi set</div><div class="v num">${gW(best.top.kg)||0} ${Units.wu()} × ${best.top.reps}</div></div><div class="stat"><div class="k">Tahmini 1TM</div><div class="v num">${fint(Units.w(best.e))} ${Units.wu()}</div></div></div>
   ${exCharts(exId)}
-  <table><thead><tr><th>Tarih</th><th>Setler</th><th>Hacim</th></tr></thead><tbody>${h.slice(0,6).map((x,i)=>`<tr><td>${fd(x.w.day)}</td><td class="num">${x.sets.map(t=>gSetLine(exId,t)+gRpeTx(t)).join(", ")}</td><td class="num">${fint(per[i].vol)} kg</td></tr>`).join("")}</tbody></table>
+  <table><thead><tr><th>Tarih</th><th>Setler</th><th>Hacim</th></tr></thead><tbody>${h.slice(0,6).map((x,i)=>`<tr><td>${fd(x.w.day)}</td><td class="num">${x.sets.map(t=>gSetLine(exId,t)+gRpeTx(t)).join(", ")}</td><td class="num">${fint(Units.w(per[i].vol))} ${Units.wu()}</td></tr>`).join("")}</tbody></table>
   <button class="btn" data-g="closesheet">Kapat</button>`);
 }
 function gSheetSummary(id){
@@ -473,9 +475,9 @@ function gSheetSummary(id){
   const prs=gPRs(w),sets={};
   for(const x of w.ex){const g=gEx(x.id).g;sets[g]=(sets[g]||0)+gDoneSets(x).length}
   openSheet(`<h3>${esc(w.name)}</h3><div class="mut sm">${fd(w.day)}, ${gDur(w)} dk</div>
-  ${gWorkVol(w)>0?`<div class="sumv num">${fint(gWorkVol(w))} <small>kg hacim</small></div>`:gTimedSec(w)>0?`<div class="sumv num">${gSecTx(gTimedSec(w))} <small>toplam süre</small></div>`:""}
+  ${gWorkVol(w)>0?`<div class="sumv num">${fint(Units.w(gWorkVol(w)))} <small>${Units.wu()} hacim</small></div>`:gTimedSec(w)>0?`<div class="sumv num">${gSecTx(gTimedSec(w))} <small>toplam süre</small></div>`:""}
   <div class="two"><div class="stat"><div class="k">Set</div><div class="v num">${gWorkSets(w)}</div></div><div class="stat"><div class="k">Egzersiz</div><div class="v num">${w.ex.length}</div></div></div>
-  ${prs.length?`<div class="pr"><b>${prs.length} yeni rekor</b>${prs.map(p=>`<div>${esc(p.ex.n)}, ${fkg(p.kg)||0} kg × ${p.reps}<div class="mut sm">Tahmini 1TM ${Math.round(p.e1)} kg, önceki ${Math.round(p.prev)} kg</div></div>`).join("")}</div>`:""}
+  ${prs.length?`<div class="pr"><b>${prs.length} yeni rekor</b>${prs.map(p=>`<div>${esc(p.ex.n)}, ${gW(p.kg)||0} ${Units.wu()} × ${p.reps}<div class="mut sm">Tahmini 1TM ${fint(Units.w(p.e1))} ${Units.wu()}, önceki ${fint(Units.w(p.prev))} ${Units.wu()}</div></div>`).join("")}</div>`:""}
   ${(k=>k?`<div class="mt-2 mut sm">Tahmini ~${k} kcal (dinlenme hariç, tahmindir)</div>`:"")((Log.find(e=>e.wid===w.id)||{}).kcal)}
   <div class="my-2 mut sm">${Object.keys(sets).map(g=>`${g} ${sets[g]}`).join(", ")}</div>
   <div class="lbl">Hareketler</div>${w.ex.map(x=>`<div class="row"><span class="grow"><b>${esc(gEx(x.id).n)}</b><span class="mut sm num">${gSetsLine(x)||"–"}</span></span></div>`).join("")}
@@ -674,7 +676,7 @@ function gClick(v,el){
     case "fillok":{
       const x=w.ex[ei],ps=gPrevSet(w,x,si),k=document.querySelector(`[data-gi="kg:${ei}:${si}"]`),r=document.querySelector(`[data-gi="reps:${ei}:${si}"]`);
       if(!ps||!k||!r)return;
-      if(!k.value.trim())k.value=fkg(ps.kg||0)||"0";
+      if(!k.value.trim())k.value=gW(ps.kg||0)||"0";
       if(!r.value.trim())r.value=ps.reps;
       closeSheet();return document.querySelector(`[data-g="done:${ei}:${si}"]`).click();
     }
@@ -757,12 +759,15 @@ function gClick(v,el){
       }else s.done=false;
       save();render();gTick();
       if(s.done){const n=document.querySelector(".srow.nx");if(n)n.scrollIntoView({block:"center",behavior:"smooth"})}
-      if(pr){toast(`Yeni rekor: ${pr.ex.n}, ${fkg(pr.kg)||0} kg × ${pr.reps}`);gVib([200,100,200])}
+      if(pr){toast(`Yeni rekor: ${pr.ex.n}, ${gW(pr.kg)||0} ${Units.wu()} × ${pr.reps}`);gVib([200,100,200])}
       return;
     }
     case "kgm":case "kgp":case "rpm":case "rpp":{
       const x=w.ex[ei],s=x.sets[si],up=a[2]==="p";
-      if(a[0]==="k")s.kg=Math.min(KG_MAX,Math.max(0,Math.round(((s.kg||0)+(up?1:-1)*gInc(x.id))*100)/100));
+      if(a[0]==="k"){
+        const r2=v=>Math.round(v*100)/100,step=Units.wu()==="lb"?gLbStep(gInc(x.id)):gInc(x.id);
+        s.kg=Math.min(KG_MAX,Units.wIn(Math.max(0,r2(r2(Units.w(s.kg||0))+(up?1:-1)*step))));
+      }
       else s.reps=Math.min(REPS_MAX,Math.max(1,(s.reps||0)+(up?1:-1)));
       save();return render();
     }

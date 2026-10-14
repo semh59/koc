@@ -48,7 +48,7 @@ const exRefreshChips=()=>{
 function exHistLine(e){
   const h=gHistory(e.id).slice(0,3);if(!h.length)return "";
   const t=gTimed(e.id);
-  return `<div class="my-2 mut sm">Son: ${h.map(x=>`${fd(x.w.day)} ${t?x.sets.map(s=>s.sec).join("/")+" sn":x.sets.map(s=>(s.kg?fkg(s.kg)+"×":"")+s.reps+gRpeTx(s)).join(", ")}`).join(" · ")}</div>`;
+  return `<div class="my-2 mut sm">Son: ${h.map(x=>`${fd(x.w.day)} ${t?x.sets.map(s=>s.sec).join("/")+" sn":x.sets.map(s=>(s.kg?gW(s.kg)+"×":"")+s.reps+gRpeTx(s)).join(", ")}`).join(" · ")}</div>`;
 }
 /* Whole-history charts: one point per session, x axis proportional to the real date. Warm-up and unchecked sets are already excluded by gHistory. */
 const EXMET={e:["Tahmini 1TM","kg"],t:["En ağır set","kg"],v:["Hacim","kg"]};
@@ -64,7 +64,7 @@ function exChartSvg(pts,m,sel){
   const W=340,H=150,pl=40,pr=10,pt=10,pb=24,vs=pts.map(p=>p[m]);
   let lo=Math.min(...vs),hi=Math.max(...vs);const pad=Math.max((hi-lo)*.1,hi*.02,1);lo=Math.max(0,lo-pad);hi+=pad;
   const x0=pts[0].x,x1=pts[pts.length-1].x,X=p=>pl+(W-pl-pr)*(x1>x0?(p.x-x0)/(x1-x0):.5),Y=v=>pt+(H-pt-pb)*(1-(v-lo)/(hi-lo));
-  const grid=[0,1,2].map(t=>{const v=lo+(hi-lo)*t/2,y=Y(v);return `<line x1="${pl}" x2="${W-pr}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--line)"/><text x="${pl-6}" y="${(y+3.5).toFixed(1)}" text-anchor="end">${fint(v)}</text>`}).join("");
+  const grid=[0,1,2].map(t=>{const v=lo+(hi-lo)*t/2,y=Y(v);return `<line x1="${pl}" x2="${W-pr}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--line)"/><text x="${pl-6}" y="${(y+3.5).toFixed(1)}" text-anchor="end">${fint(Units.w(v))}</text>`}).join("");
   const line=pts.map((p,k)=>(k?"L":"M")+X(p).toFixed(1)+" "+Y(p[m]).toFixed(1)).join("");
   const hit=pts.map((p,k)=>{const a=k?(X(pts[k-1])+X(p))/2:pl,b=k<pts.length-1?(X(p)+X(pts[k+1]))/2:W-pr;
     return `<rect x="${a.toFixed(1)}" y="0" width="${(b-a).toFixed(1)}" height="${H}" fill="transparent" data-g="chp:${k}"/>`}).join("");
@@ -77,7 +77,7 @@ function exChartSvg(pts,m,sel){
 function exChartBody(id){
   const pts=exSeries(id);if(!pts.length)return "";
   const m=exChM,sel=exChI!=null&&exChI<pts.length?exChI:pts.length-1,p=pts[sel];
-  const val=m==="t"?`${fkg(p.t)||0} kg × ${p.r}`:`${fint(p[m])} kg`;
+  const val=m==="t"?`${gW(p.t)||0} ${Units.wu()} × ${p.r}`:`${fint(Units.w(p[m]))} ${Units.wu()}`;
   const body=pts.length<2?`<p class="hint">Grafik için en az iki seans gerekir. Şimdilik tek seans var.</p>`:exChartSvg(pts,m,sel);
   return `<div class="chips my-2">${Object.keys(EXMET).map(k=>`<button class="chip" data-g="chm:${k}" aria-pressed="${k===m}">${EXMET[k][0]}</button>`).join("")}</div>
   <div class="num" aria-live="polite"><b>${val}</b> <span class="mut sm">${fd(p.d)}, ${sel+1}/${pts.length}. seans</span></div>${body}`;
@@ -99,8 +99,8 @@ function exSheet(id){
   <div class="mt-3 btns"><button class="btn" data-g="exadd:${id}">${inW?"Antrenmanda ekli":"Antrenmana ekle"}</button><button class="btn ghost" data-g="closesheet">Kapat</button></div>`);
 }
 function gSheetHistSimple(exId,h){
-  const ex=gEx(exId),t=gTimed(exId);
-  openSheet(`<h3>${esc(ex.n)}</h3>${h.length?`<table><thead><tr><th>Tarih</th><th>Setler</th></tr></thead><tbody>${h.slice(0,8).map(x=>`<tr><td>${fd(x.w.day)}</td><td class="num">${t?x.sets.map(s=>exKindSec(exId,s.sec)).join(" · "):x.sets.map(s=>(s.kg?fkg(s.kg)+" × ":"")+s.reps).join(" · ")}</td></tr>`).join("")}</tbody></table>`:`<p class="hint">Bu hareketle tamamladığın setler burada görünür.</p>`}<button class="btn" data-g="closesheet">Kapat</button>`);
+  const ex=gEx(exId);
+  openSheet(`<h3>${esc(ex.n)}</h3>${h.length?`<table><thead><tr><th>Tarih</th><th>Setler</th></tr></thead><tbody>${h.slice(0,8).map(x=>`<tr><td>${fd(x.w.day)}</td><td class="num">${x.sets.map(s=>gSetLine(exId,s)).join(" · ")}</td></tr>`).join("")}</tbody></table>`:`<p class="hint">Bu hareketle tamamladığın setler burada görünür.</p>`}<button class="btn" data-g="closesheet">Kapat</button>`);
 }
 const exKindSec=(id,sec)=>gKind(id)==="c"?Math.round(sec/60)+" dk":sec+" sn";
 
