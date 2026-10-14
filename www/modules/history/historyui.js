@@ -1,6 +1,7 @@
 "use strict";
 /* History: month calendar, monthly summary, search and the day screen. The data comes from HistoryLib; adding and deleting records use the same flows as the Today screen. */
-let hg={seg:"cal",ym:null,q:"",focus:null};
+let hg={seg:"cal",ym:null,q:"",focus:null,type:"",from:"",to:""};
+const HG_TYPES=[["","Hepsi"],["food","Yemek"],["exercise","Spor"],["wo","Antrenman"],["move","Hareket"],["note","Not"],["vitals","Tansiyon, şeker"],["mood","Ruh hali"],["lab","Tahlil"]];
 const hgDay=k=>WEEKDAYS[new Date(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10)).getDay()];
 const hgIndex=()=>HistoryLib.index(S,d=>dayAt(d.getTime())); // one pass, a few ms for 3 years of data
 const HG_ICON={food:"Yemek",water:"Su",exercise:"Spor",weight:"Kilo"};
@@ -48,16 +49,19 @@ function hgMonths(idx){
 }
 function hgResults(){
   const q=hg.q.trim();
-  if(foldTr(q).trim().length<HistoryLib.MIN_QUERY)return `<p class="hint">En az ${HistoryLib.MIN_QUERY} harf yaz. Yemek, not, spor ve antrenman adlarında arar.</p>`;
-  const r=HistoryLib.search(S,q,HistoryLib.SEARCH_MAX,w=>gNames(w,50));
+  if(foldTr(q).trim().length<HistoryLib.MIN_QUERY)return `<p class="hint">En az ${HistoryLib.MIN_QUERY} harf yaz. Yemek, spor, antrenman, hareket, not, tansiyon ve şeker notu, ruh hali notu ve tahlil adlarında arar.</p>`;
+  const r=HistoryLib.search(S,q,HistoryLib.SEARCH_MAX,w=>gNames(w,50),hg);
   if(!r.total)return emptyCard("note","",`"${esc(q)}" için kayıt bulunamadı.`);
-  return `<p class="hint" role="status">${r.total} kayıt, ${r.days} günde${r.total>r.items.length?` (ilk ${r.items.length} gösteriliyor)`:""}.</p>`+r.items.map(x=>`<button class="rrow" data-hg="day:${x.day}"><span class="num mut">${fd(x.day)}</span><span class="grow tx"><b>${esc(x.text||(x.type==="food"?"Öğün":"Antrenman"))}</b><span class="mut sm">${x.type==="food"?"Yemek"+(x.v?` · ${Math.round(x.v)} kcal`:""):x.type==="note"?"Not":x.type==="exercise"?"Spor"+(x.v?` · ${Math.round(x.v)} dk`:""):"Antrenman"}</span></span></button>`).join("");
+  return `<p class="hint" role="status">${r.total} kayıt, ${r.days} günde${r.total>r.items.length?` (ilk ${r.items.length} gösteriliyor)`:""}.</p>`+r.items.map(x=>`<button class="rrow" data-hg="day:${x.day}"><span class="num mut">${fd(x.day)}</span><span class="grow tx"><b>${esc(x.text||x.kind)}</b><span class="mut sm">${x.kind}${x.sub?` · ${esc(x.sub)}`:""}</span></span></button>`).join("");
 }
 function viewHistory(){
   const seg=`<div class="seg" role="group" aria-label="Geçmiş görünümü">${[["cal","Takvim"],["months","Aylar"],["search","Ara"]].map(([k,l])=>`<button data-hg="seg:${k}" aria-pressed="${hg.seg===k}">${l}</button>`).join("")}</div>`;
   const ym=hg.ym||dayKey().slice(0,7),idx=hg.seg==="search"?null:hgIndex();
   const body=hg.seg==="cal"?hgCal(idx)+hgMonthCard(idx,ym):hg.seg==="months"?`<div class="card">${hgMonths(idx)}</div>`:
-    `<div class="card"><label class="lbl" for="hgq">Ara</label><input class="in" id="hgq" type="search" enterkeyhint="search" placeholder="Örn. tavuk, yürüyüş, baş ağrısı" value="${esc(hg.q)}" autocomplete="off"><div id="hgres">${hgResults()}</div></div>`;
+    `<div class="card"><label class="lbl" for="hgq">Ara</label><input class="in" id="hgq" type="search" enterkeyhint="search" placeholder="Örn. tavuk, yürüyüş, baş ağrısı" value="${esc(hg.q)}" autocomplete="off">
+    <div class="chips my-1" role="group" aria-label="Kayıt türü">${HG_TYPES.map(([k,l])=>`<button class="chip" data-hg="type:${k}" aria-pressed="${hg.type===k}">${l}</button>`).join("")}</div>
+    <div class="inl"><label class="lbl" for="hgfrom">Başlangıç günü</label><input class="in" type="date" id="hgfrom" value="${hg.from}" max="${dayKey()}"><label class="lbl" for="hgto">Bitiş günü</label><input class="in" type="date" id="hgto" value="${hg.to}" max="${dayKey()}"></div>
+    <div id="hgres">${hgResults()}</div></div>`;
   return `${seg}${body}<p class="hint">Veriler bu telefonda durur. Kayıtların hiçbiri otomatik silinmez.</p>`;
 }
 
@@ -88,6 +92,7 @@ document.addEventListener("click",ev=>{
   const b=ev.target.closest&&ev.target.closest("[data-hg]");if(!b||b.disabled)return;
   const [a,p]=b.dataset.hg.split(/:(.*)/s);
   if(a==="seg"){hg.seg=p;render();return}
+  if(a==="type"){hg.type=p;render();return}
   if(a==="focus"){hg.focus=p;logOff=0;tab="day";render();window.scrollTo(0,0);return}
   if(a==="mon"){const n=ymShift(hg.ym||dayKey().slice(0,7),+p);if(n<=dayKey().slice(0,7)){hg.ym=n;render()}return}
   if(a==="now"){hg.ym=dayKey().slice(0,7);render();return}
@@ -99,7 +104,9 @@ document.addEventListener("click",ev=>{
   }
 });
 document.addEventListener("change",ev=>{
-  const t=ev.target;if(t.id!=="hgm"&&t.id!=="hgy")return;
+  const t=ev.target;
+  if(t.id==="hgfrom"||t.id==="hgto"){hg[t.id.slice(2)]=t.value;$("#hgres").innerHTML=hgResults();return}
+  if(t.id!=="hgm"&&t.id!=="hgy")return;
   const n=`${+$("#hgy").value}-${pad(+$("#hgm").value)}`,c=dayKey().slice(0,7);
   hg.ym=n>c?c:n;render();
 });

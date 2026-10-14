@@ -8,6 +8,7 @@ Data.hist.push((S,{get,add,dk})=>{
   for(const x of S.mood)get(x.day).mood=x.v;
   for(const f of S.fast.log)add(dk(new Date(f.t1)),"fast",1);
 });
+Data.histSearch.push((S,{n,norm,out})=>{for(const x of S.mood)if(x.t&&norm(x.t).includes(n))out.push({day:x.day,time:"",type:"mood",kind:"Ruh hali",text:x.t,sub:MOODN[x.v-1]})});
 Data.dayRows.push([1,k=>{const x=S.sleep.find(y=>y.day===k);return x?hgRow("moon","Uyku",hbDur(x.min)):""}],
   [2,k=>{const x=S.mood.find(y=>y.day===k);return x?hgRow("smile","Ruh hali",`${MOODS[x.v-1]} ${MOODN[x.v-1]}`):""}],
   [7,k=>S.fast.log.filter(x=>dayAt(x.t1)===k).map(x=>hgRow("moon","Oruç",hbDur(Math.round((x.t1-x.t0)/6e4)))).join("")]);

@@ -21,5 +21,5 @@ const CsvLib=(()=>{
 })();
 if(typeof module!=="undefined"){
   module.exports=CsvLib;
-  if(typeof Data==="undefined"){globalThis.Data=require("../../kernel/kernel.js").Data;for(const m of ["log","gym","vitals","nutrition","habits","meds","pulse","measures"])require("../"+m+"/index.js")} // Node tests: the data modules add their own CSV rows
+  if(typeof Data==="undefined"){globalThis.Data=require("../../kernel/kernel.js").Data;for(const m of ["log","gym","vitals","nutrition","habits","meds","pulse","measures","motion","labs"])require("../"+m+"/index.js")} // Node tests: the data modules add their own CSV rows
 }

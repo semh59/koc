@@ -2371,7 +2371,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("closeSheet();S.entries=[];S.nextId=1;S.workouts=[];S.vitals=[];S.sleep=[];S.mood=[];S.fast={plan:16,t0:null,log:[]};S.meds=[];S.medLog=[];add('weight',80.5);add('note',null,'=1+1');S.settings.obDone=true;tab='settings-data';render()");
     q('[data-pv="csv"]').click();
     const sheet=()=>q("#sheet").textContent;
-    ok("Settings > Data Tabloya aktar: 9 files, with row counts; the button of an empty one is disabled",sheet().includes("Kayıtlar (yemek, su, kilo, ölçü, spor, adım, not)")&&sheet().includes("2 satır")&&qa('[data-pv^="csvsh:"]').length===9&&qa('[data-pv^="csvsh:"]').filter(b=>b.disabled).length===8);
+    ok("Settings > Data Tabloya aktar: 11 files, with row counts; the button of an empty one is disabled",sheet().includes("Kayıtlar (yemek, su, kilo, ölçü, spor, adım, not)")&&sheet().includes("2 satır")&&qa('[data-pv^="csvsh:"]').length===11&&qa('[data-pv^="csvsh:"]').filter(b=>b.disabled).length===8);
     q('[data-pv="csvsh:0"]').click();await flush();
     ok("share: a single file, UTF-8 text, BOM, ; separator, decimal comma, injection-safe, uri goes to the share sheet",wr.length===1&&wr[0].encoding==="utf8"&&wr[0].directory==="CACHE"&&/^neowell-kayitlar-\d{4}-\d\d-\d\d\.csv$/.test(wr[0].path)&&wr[0].data.startsWith("﻿tarih;saat;")&&wr[0].data.includes(";kilo;80,5;kg;")&&wr[0].data.includes("'=1+1")&&shr.length===1&&shr[0].files[0]==="file:///cache/"+wr[0].path,wr[0]);
     ok("full archive row: record total shown, button enabled",sheet().includes("Tüm verim (tek JSON dosyası)")&&sheet().includes("2 kayıt")&&!q('[data-pv="archive"]').disabled,sheet());
@@ -2632,7 +2632,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("backup: S.measures is in the backup and survives a restore; an old backup (no field) gives an empty array",ev(`Algo.cleanMeasures(${JSON.stringify(back.measures)}).length`)===3&&ev("cleanHealthState({}).measures.length")===0&&ev("cleanHealthState({measures:'x'}).measures.length")===0);
     const many=JSON.stringify(Array.from({length:450},(_,i)=>({day:new Date(Date.UTC(2024,0,1+i)).toISOString().slice(0,10),k:"waist",v:80})));
     ok("cleaner: a measurement beyond the old limit (400) is not lost, the input array is not changed",ev(`(()=>{const a=${many};const r=Algo.cleanMeasures(a);return r.length===450&&a.length===450&&r[449].day===a[449].day&&r[0].day===a[0].day})()`));
-    ok("CSV: a measurement row in the kayitlar file (type ölçü_bel, unit cm, decimal comma), no new file",(()=>{const f=ev("pvCsv()");return f.length===9&&f[0].build().includes("ölçü_bel;87;cm")&&f[0].build().includes("ölçü_kalça;101;cm")})());
+    ok("CSV: a measurement row in the kayitlar file (type ölçü_bel, unit cm, decimal comma), no new file",(()=>{const f=ev("pvCsv()");return f.length===11&&f[0].build().includes("ölçü_bel;87;cm")&&f[0].build().includes("ölçü_kalça;101;cm")})());
     ok("measurements do not enter the Coach context",!/ölçü|measure|87|101|bel/i.test(JSON.stringify(ev("cData()")).replace(/belirt|belki/gi,"")));
     ev("sheetPrivacy()");
     ok("category deletion: Vücut ölçüleri is in the list, deleting removes only measurements",ev("PV_CATS.some(c=>c[0].startsWith('Vücut ölçüleri'))")&&(ev("pvDelete(PV_CATS.findIndex(c=>c[0].startsWith('Vücut ölçüleri')))"),ev("S.measures.length")===0));

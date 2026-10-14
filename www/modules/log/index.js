@@ -32,7 +32,9 @@ Data.hist.push((S,{add,get})=>{
 Data.histSearch.push((S,{n,norm,out})=>{
   for(const e of S.entries||[]){
     if(e.type!=="food"&&e.type!=="note"&&e.type!=="exercise")continue;
-    if(norm(e.text).includes(n))out.push({day:e.day,time:e.time,type:e.type,text:e.text||"",v:e.v,id:e.id});
+    if(!norm(e.text).includes(n))continue;
+    const food=e.type==="food";
+    out.push({day:e.day,time:e.time,type:e.type,kind:food?"Yemek":e.type==="note"?"Not":"Spor",text:e.text||(food?"Öğün":""),sub:e.v?`${Math.round(e.v)} ${food?"kcal":"dk"}`:"",id:e.id});
   }
 });
 Data.dayRows.push([0,k=>{const ad=Log.where(e=>e.type==="steps"&&e.day===k).reduce((s,e)=>s+(e.v||0),0);return ad?hgRow("steps","Adım",fint(ad)):""}]);

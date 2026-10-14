@@ -5,7 +5,7 @@ Data.hist.push((S,{add})=>{for(const w of S.workouts)if(w.t1!=null)add(w.day,"wo
 Data.histSearch.push((S,{n,norm,out,wname})=>{
   for(const w of S.workouts){
     if(w.t1==null)continue;
-    if(norm(w.name+" "+(wname?wname(w):"")).includes(n))out.push({day:w.day,time:"",type:"wo",text:w.name,id:w.id});
+    if(norm(w.name+" "+(wname?wname(w):"")).includes(n))out.push({day:w.day,time:"",type:"wo",kind:"Antrenman",text:w.name,id:w.id});
   }
 });
 Data.dayWork.push(k=>S.workouts.filter(w=>gDone(w)&&w.day===k).sort((a,b)=>a.t0-b.t0).map(w=>`<button class="rrow" data-g="sum:${w.id}"><span class="grow tx"><b>${esc(w.name)}</b><span class="mut sm">${esc(gNames(w,4))}</span><span class="mut sm num">${gStats(w)}</span></span></button>`).join(""));
