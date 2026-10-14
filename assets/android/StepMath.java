@@ -43,10 +43,15 @@ final class StepMath {
      *  Until 06:00 few steps are taken; a later alarm is mostly morning steps, so the day is not closed then. */
     static final int MAX_LATE_MINUTES = 360;
 
+    /** Flying west moves the day key back: the stored day is ahead of the clock's day, so it is neither closed nor overwritten; counting continues under it until the clock catches up. */
+    private static boolean isBehind(State s, String today) {
+        return !s.day.isEmpty() && today.compareTo(s.day) < 0;
+    }
+
     /** Night alarm: closes the finished day with the current reading and returns true if it closed one. */
     static boolean closeDay(State s, String today, float counter, int minutesSinceMidnight, Map<String, Long> history) {
         counter = stable(s, counter);
-        if (s.day.isEmpty() || s.day.equals(today)) return false;
+        if (s.day.isEmpty() || s.day.equals(today) || isBehind(s, today)) return false;
         if (s.sampled) {
             update(s, today, counter, minutesSinceMidnight, history);
             return true;
@@ -62,7 +67,7 @@ final class StepMath {
      *  Without a sample, a reading before 06:00 also writes the steps since the last reading to the old day (same rule as closeDay); a later reading cannot know the day of that gap, so it is not estimated and the new day starts from the counter. */
     static long update(State s, String today, float counter, int minutesSinceMidnight, Map<String, Long> history) {
         counter = stable(s, counter);
-        if (!s.day.equals(today)) {
+        if (!s.day.equals(today) && !isBehind(s, today)) {
             if (!s.day.isEmpty()) {
                 if (!s.sampled && minutesSinceMidnight <= MAX_LATE_MINUTES) {
                     handleReboot(s, counter);

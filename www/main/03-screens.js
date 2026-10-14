@@ -221,7 +221,7 @@ function viewSettings(){
     ${fld("waterMl","Günlük su (ml)",st.waterMl,"","numeric")}
     ${fld("glass","Bir bardak (ml)",st.glass,"Su düğmesinin eklediği miktar","numeric")}
     ${fld("sportWeek","Haftalık spor (dk)",st.sportWeek,"","numeric")}
-    ${fld("dayStart","Gün başlangıcı (saat)",st.dayStart,"0 = gece yarısı. Gün bu saatte başlar; adım sensörü ve ilaç saatleri takvim gününe göre kalır","numeric")}
+    ${fld("dayStart","Gün başlangıcı (saat)",st.dayStart,"0 = gece yarısı. Gün bu saatte başlar; adım sensörü ve ilaç saatleri takvim gününe göre kalır; eski kayıtlar taşınmaz","numeric")}
     ${macroFld("p","Protein")}${macroFld("c","Karbonhidrat")}${macroFld("f","Yağ")}
     <p class="hint">Makro hedefleri isteğe bağlıdır ve tıbbi tavsiye değildir; öneri yalnız genel bir başlangıç aralığıdır.</p>
     ${fld("stepGoal","Günlük adım",st.stepGoal,"Adım sayar açıksa","numeric")}
@@ -292,7 +292,7 @@ let widgetLast="";
 /* The null values are intentional: the Java side shows "no goal" / hides steps when the key exists but is null, and "–" when the key is missing. */
 function widgetPush(){
   if(!WG())return;
-  const t=dayKey(),st=S.settings,d={day:t,water:sum("water",t,t),waterGoal:st.waterMl,glass:st.glass,kcalLeft:st.kcal>0?Math.round(kcalGoal(t)-sum("food",t,t)):null,steps:st.stepsOn||st.hcOn?stepsShown():null},ia=Habits.iftarAt();
+  const t=dayKey(),st=S.settings,d={day:t,ds:st.dayStart|0,water:sum("water",t,t),waterGoal:st.waterMl,glass:st.glass,kcalLeft:st.kcal>0?Math.round(kcalGoal(t)-sum("food",t,t)):null,steps:st.stepsOn||st.hcOn?stepsShown():null},ia=Habits.iftarAt();
   if(ia)d.iftarAt=ia;
   const j=JSON.stringify(d);if(j===widgetLast)return;
   widgetLast=j;try{WG().update(d).catch(()=>{})}catch{}

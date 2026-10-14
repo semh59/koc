@@ -1,6 +1,6 @@
 "use strict";
 /* CSV export (no DOM). Made for Turkish Excel: UTF-8 BOM, ; separator (the TR locale uses , as the decimal separator), decimal comma, no thousands separator, ISO dates.
-   intl switches to a decimal point and a , separator. Formula injection: a text cell that starts with = + - @ tab or CR gets a leading ' ; numbers are left alone. */
+   With a day start after midnight the time sort puts the small hours after the evening and the date column says it is the app day. intl switches to a decimal point and a , separator. Formula injection: a text cell that starts with = + - @ tab or CR gets a leading ' ; numbers are left alone. */
 const CsvLib=(()=>{
   const num=(v,intl)=>{if(!Number.isFinite(v))return "";const s=String(Math.round(v*100)/100);return intl?s:s.replace(".",",")};
   const txt=(v,intl)=>{let s=v==null?"":String(v);if(/^[=+\-@\t\r]/.test(s))s="'"+s;return s.includes(intl?",":";")||/["\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
@@ -13,9 +13,9 @@ const CsvLib=(()=>{
   /* The files come from the data modules (Data.csv rows: key, label, head(ctx), rows(ctx), order, kind column). h.exName(id): exercise name, h.vctx(r): measurement context (fasting, morning...).
      o.split: a file with a kind column becomes one file per kind (one unit per file); o.intl: decimal point and , separator. */
   function files(S,h,o={}){
-    const st=S.settings||{},ctx={S,by,day:x=>x.day,time:x=>x.time||"",conv:typeof Units!=="undefined"?Units:require("../../kernel/unitlib.js"),wu:st.wUnit==="lb"?"lb":"kg",gu:st.gUnit==="mmol"?"mmol":"mgdl",h,iso};
+    const st=S.settings||{},ds=`${String(st.dayStart|0).padStart(2,"0")}:00`,ctx={S,by,day:x=>x.day,time:x=>{const t=x.time||"";return t&&t<ds?"~"+t:t},exact:v=>v==null?"":o.intl?String(v):String(v).replace(".",","),conv:typeof Units!=="undefined"?Units:require("../../kernel/unitlib.js"),wu:st.wUnit==="lb"?"lb":"kg",gu:st.gUnit==="mmol"?"mmol":"mgdl",h,iso};
     return Data.csv.slice().sort((x,y)=>x[4]-y[4]).flatMap(([key,label,head,rows,,col])=>{
-      const header=head(ctx),body=rows(ctx),one=(k,l,b)=>({key:k,label:l,n:b.length,build:()=>csv(header,b,o.intl)});
+      const header=head(ctx).map(h=>h==="tarih"&&st.dayStart>0?"tarih (uygulama günü)":h),body=rows(ctx),one=(k,l,b)=>({key:k,label:l,n:b.length,build:()=>csv(header,b,o.intl)});
       if(!o.split||col==null||!body.length)return [one(key,label,body)];
       return [...Map.groupBy(body,r=>r[col])].map(([kind,b])=>one(`${key}-${fold(kind).replace(/\W+/g,"_")}`,/^[^_]+_/.test(kind)?kind.replace("_",": ").replace(/^./,c=>c.toLocaleUpperCase("tr")):`${label.replace(/ \(.*/,"")}: ${kind}`,b));
     });

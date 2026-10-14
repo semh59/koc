@@ -31,6 +31,16 @@ public class NeoWidget extends AppWidgetProvider {
         }
     }
 
+    /** The app day: the calendar day shifted back by the day-start hour ("ds") the app pushed. Water and calories follow it; the step sensor stays on the calendar day. */
+    private static String appDay(JSONObject o) {
+        return StepStore.day(System.currentTimeMillis() - o.optInt("ds") * 3600000L);
+    }
+
+    /** The pushed steps still belong to today: by the sensor's calendar day once the widget has stamped one, otherwise by the app's own day. */
+    private static boolean stepsFresh(JSONObject o) {
+        return o.has("sday") ? StepStore.today().equals(o.optString("sday")) : appDay(o).equals(o.optString("day"));
+    }
+
     static synchronized void wipe(Context c) {
         prefs(c).edit().clear().apply();
         refresh(c);
@@ -44,7 +54,7 @@ public class NeoWidget extends AppWidgetProvider {
     /** Notification or widget "+water" button: the widget's water goes up even before the app is opened. */
     static synchronized void bump(Context c, int v) {
         JSONObject o = load(c);
-        String today = StepStore.today();
+        String today = appDay(o);
         try {
             if (today.equals(o.optString("day"))) {
                 o.put("water", o.optInt("water") + v);
@@ -66,10 +76,9 @@ public class NeoWidget extends AppWidgetProvider {
         JSONObject o = load(c);
         try {
             // The value the app pushed today also includes watch steps and manual entries; a phone sensor reading alone must not lower it.
-            String today = StepStore.today();
-            long pushed = today.equals(o.optString("sday", o.optString("day"))) && !o.isNull("steps") ? o.optLong("steps") : 0;
+            long pushed = stepsFresh(o) && !o.isNull("steps") ? o.optLong("steps") : 0;
             o.put("steps", Math.max(steps, pushed));
-            o.put("sday", today);
+            o.put("sday", StepStore.today());
         } catch (JSONException e) {
             return;
         }
@@ -95,8 +104,7 @@ public class NeoWidget extends AppWidgetProvider {
     }
 
     private static RemoteViews views(Context c, JSONObject o) {
-        String today = StepStore.today();
-        boolean isToday = today.equals(o.optString("day"));
+        boolean isToday = appDay(o).equals(o.optString("day"));
         RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.nw_widget);
         String kcal;
         if (!isToday || !o.has("kcalLeft")) kcal = "– kcal";
@@ -111,7 +119,7 @@ public class NeoWidget extends AppWidgetProvider {
         v.setTextViewText(R.id.nw_water, (isToday ? liters(o.optInt("water")) : "–") + " / " + (goal > 0 ? liters(goal) : "–") + " L");
         boolean steps = o.has("steps") && !o.isNull("steps");
         v.setViewVisibility(R.id.nw_steps, steps ? View.VISIBLE : View.GONE);
-        if (steps) v.setTextViewText(R.id.nw_steps, (today.equals(o.optString("sday", o.optString("day"))) ? num(o.optLong("steps")) : "–") + " adım");
+        if (steps) v.setTextViewText(R.id.nw_steps, (stepsFresh(o) ? num(o.optLong("steps")) : "–") + " adım");
         // Ramadan: the app pushes today's iftar time while the daytime fast runs; the remaining time is worked out here, at every refresh.
         long left = isToday && o.has("iftarAt") && !o.isNull("iftarAt") ? o.optLong("iftarAt") - System.currentTimeMillis() : 0;
         v.setViewVisibility(R.id.nw_iftar, left > 0 ? View.VISIBLE : View.GONE);
