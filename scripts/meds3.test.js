@@ -49,6 +49,18 @@ ok("cycle lines: last starts with their length and the mean cycle length, no pre
   const sched=[];
   const w=await boot(w=>{w.Capacitor={isNativePlatform:()=>true,Plugins:{LocalNotifications:{checkPermissions:async()=>({display:"granted"}),checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),getPending:async()=>({notifications:[]}),getDeliveredNotifications:async()=>({notifications:[]}),registerActionTypes:async()=>{},schedule:async x=>{sched.push(x)}}}}});
   const ev=s=>w.eval(s),q=s=>w.document.querySelector(s);
+  /* Button safety: Aldım is the main button, Atla is a quiet text button set 24 px away, undo has text */
+  const css=require("fs").readFileSync(require("path").join(__dirname,"../www/app.css"),"utf8"),html=require("fs").readFileSync(require("path").join(__dirname,"../www/index.html"),"utf8");
+  const sp5=+(/--sp-5:\s*(\d+)px/.exec(html+css)||[])[1],rule=(sel)=>(css.split(sel+"{")[1]||"").split("}")[0];
+  ok("spacing token: --sp-5 is 24 px, Atla sits that far from Aldım on the lists and on the alarm screen",sp5===24&&/margin-left:var\(--sp-5\)/.test(rule(".chip.skip"))&&/gap:var\(--sp-5\)/.test(rule(".alact")));
+  ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.noticeOk=true;S.settings.medOn=true;S.meds=MedLib.cleanMeds([{id:1,n:'Sabah',t:['00:00'],on:true,s:keyOff(-3)}]);S.medLog=[];tab='today';render()`);
+  let b=[...q("#view .todo .acts").children].map(e=>e.dataset.md.split(":")[0]+"."+e.className.replace(/\s+/g,"."));
+  ok("Today row: Aldım is the filled button and comes first, Atla is a quiet one after it",b[0].startsWith("take")&&b[0].includes("go")&&b[1].startsWith("skip")&&b[1].includes("skip")&&!b[1].includes("go"),b);
+  ev("tab='meds';render()");
+  b=[...q("#view .mda").children].map(e=>e.dataset.md.split(":")[0]+"."+e.className.replace(/\s+/g,"."));
+  ok("Meds screen row: same order and classes",b.length===2&&b[0].startsWith("take")&&b[0].includes("go")&&b[1].startsWith("skip")&&b[1].includes("skip"),b);
+  q('#view [data-md^="skip"]').click();
+  ok("after marking, the undo button says Geri al in words",q("#view .mda [data-md^='clear']").textContent.includes("Geri al"));
   /* Doctor sheet and the vitals screens */
   const seedDoc=(extra="")=>ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.noticeOk=true;S.settings.medOn=true;S.settings.bpOn=true;S.settings.bsOn=true;S.meds=MedLib.cleanMeds([${JSON.stringify(mk(1,"A"))}]);S.medLog=[];${extra};tab='today';render()`);
   seedDoc();

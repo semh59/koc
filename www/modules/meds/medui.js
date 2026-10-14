@@ -70,10 +70,10 @@ function medRows(day=dayKey()){
   return doses.map(({m,slot}) => {
     const r=rec(m.id,day,slot),st=r?.st,tag=`${m.id}:${slot}`;
     const late=!st&&(!isToday||slot<=now);
-    const undo=`<button class="chip" data-md="clear:${tag}${sfx}" aria-label="${esc(m.n)} kaydını geri al">${Icons.svg("undo")}</button>`;
+    const undo=`<button class="chip" data-md="clear:${tag}${sfx}" aria-label="${esc(m.n)} kaydını geri al">${Icons.svg("undo")} Geri al</button>`;
     const tail=st==="t"?`<button class="chip num" data-md="at:${tag}:${day}" aria-label="${esc(m.n)} alınan saati düzenle">✓ ${r.at||"saat ekle"}</button>${undo}`
       :st==="s"?`<span class="mut">Atlandı</span><button class="b7 chip" data-md="take:${tag}${sfx}">${isToday?"Şimdi aldım":"Aldım"}</button>${undo}`
-      :`<button class="b7 chip" data-md="take:${tag}${sfx}">${Icons.svg("check")} Aldım</button><button class="chip" data-md="skip:${tag}${sfx}">Atla</button>`;
+      :`<button class="chip go" data-md="take:${tag}${sfx}">${Icons.svg("check")} Aldım</button><button class="chip skip" data-md="skip:${tag}${sfx}">Atla</button>`;
     const sub=[slot,MedLib.doseText(m,slot)&&esc(MedLib.doseText(m,slot)),MED_FED[m.fed],late&&(isToday?"Gecikti":"Kaçırıldı")].filter(Boolean).join(" · ");
     return `<div class="wrap row mdose"><span class="grow"><b>${esc(m.n)}</b><small class="db mut num">${sub}</small></span><span class="mda">${tail}</span></div>`;
   }).join("");
@@ -84,7 +84,7 @@ function medTodo(){
   if(!S.meds.length)return [`<div class="row"><span>${Icons.svg("meds")} Henüz ilaç eklemedin</span><button class="chip" data-md="new">${Icons.svg("plus")} Ekle</button></div>`];
   const t=dayKey(),now=medNowHM(),rec=MedLib.logIndex(S.medLog,t);
   const paused=S.meds.filter(m=>!m.on&&m.ou&&m.ou<=t).map(m=>`<div class="row"><span class="grow">${esc(m.n)}<small class="db mut sm">Ara verme süresi doldu</small></span><button class="b7 chip" data-md="resume:${m.id}">Tekrar aç</button></div>`);
-  return paused.concat(MedLib.dosesOn(S.meds,t).filter(({m,slot})=>slot<=now&&!rec(m.id,t,slot)).map(({m,slot})=>`<div class="row"><b class="num tm">${slot}</b><span>${esc(m.n)}<small class="mut sm">${[esc(MedLib.doseText(m,slot)),MED_FED[m.fed],"Gecikti"].filter(Boolean).join(" · ")}</small></span><div class="acts"><button class="b7 chip" data-md="take:${m.id}:${slot}">${Icons.svg("check")} Aldım</button><button class="chip" data-md="skip:${m.id}:${slot}">Atla</button>${S.settings.medNear?`<button class="chip" data-md="nearsend">Yakınıma haber ver</button>`:""}</div></div>`));
+  return paused.concat(MedLib.dosesOn(S.meds,t).filter(({m,slot})=>slot<=now&&!rec(m.id,t,slot)).map(({m,slot})=>`<div class="row"><b class="num tm">${slot}</b><span>${esc(m.n)}<small class="mut sm">${[esc(MedLib.doseText(m,slot)),MED_FED[m.fed],"Gecikti"].filter(Boolean).join(" · ")}</small></span><div class="acts"><button class="chip go" data-md="take:${m.id}:${slot}">${Icons.svg("check")} Aldım</button><button class="chip skip" data-md="skip:${m.id}:${slot}">Atla</button>${S.settings.medNear?`<button class="chip" data-md="nearsend">Yakınıma haber ver</button>`:""}</div></div>`));
 }
 
 /* ---- Meds screen ---- */
