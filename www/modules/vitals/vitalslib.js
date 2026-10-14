@@ -12,7 +12,7 @@ const VitalsLib=(()=>{
   /* Emergency box: a reading from today at or beyond these values (mg/dL for glucose). */
   const CRISIS={sys:180,dia:120,gLow:54,gHigh:400};
   /* Neutral "ask your doctor" band below the emergency box; the user's own doctor limits (settings, 0 = off) replace these. */
-  const ASK={sys:140,dia:90,g:250};
+  const ASK={sys:140,dia:90,g:250,sysLo:90,diaLo:60,gLo:70};
   /* "Are you sure" question: jump from the previous reading of the same kind. */
   const JUMP_SYS=60,JUMP_G=150;
   const ALGO=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js"),{dayOk,timeOk}=ALGO;
@@ -106,11 +106,12 @@ const VitalsLib=(()=>{
   }
   /* Emergency box: only for readings dated today. */
   const crisis=(r,today)=>r.day===today&&(r.k==="t"?(r.sys>=CRISIS.sys||r.dia>=CRISIS.dia):(r.g<CRISIS.gLow||r.g>CRISIS.gHigh));
-  /* Today's reading -> "low" | "high" (emergency box), "ask" (neutral line) or null. my: {sys, dia, g} doctor limits in mg/dL, 0 = default. */
+  /* Today's reading -> "low" | "high" (emergency box), "ask" (neutral line) or null. my: {sys, dia, g, sysLo, diaLo, gLo} doctor limits in mg/dL, 0 = default. */
   const level=(r,today,my={})=>{
     if(crisis(r,today))return r.k==="s"&&r.g<CRISIS.gLow?"low":"high";
     if(r.day!==today)return null;
-    return (r.k==="t"?r.sys>=(my.sys||ASK.sys)||r.dia>=(my.dia||ASK.dia):r.g>=(my.g||ASK.g))?"ask":null;
+    const bp=r.k==="t";
+    return (bp?r.sys>=(my.sys||ASK.sys)||r.dia>=(my.dia||ASK.dia)||r.sys<(my.sysLo||ASK.sysLo)||r.dia<(my.diaLo||ASK.diaLo):r.g>=(my.g||ASK.g)||r.g<(my.gLo||ASK.gLo))?"ask":null;
   };
   /* "Are you sure" question: compared only with the latest reading of the same kind (for glucose, the same context). */
   function needsConfirm(rows,n,gu){
