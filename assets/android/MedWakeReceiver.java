@@ -16,6 +16,7 @@ import android.os.Looper;
 import android.os.PowerManager;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.TimeZone;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,7 +28,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
     /** An alarm may fire this early relative to its planned time. */
     static final long EARLY_MS = 5000;
     private static final long FSI_GRACE_MS = 1200, WAKE_MS = 20000, TEST_VISIBLE_MS = 120000, NOTIFICATION_TIMEOUT_MS = 30000;
-    private static final String PREFS = "nw_medwake", KEY = "times", DOSES = "doses", LOG = "log", TEST = "test", WAKE = "com.neowell.app.MED_WAKE";
+    private static final String PREFS = "nw_medwake", KEY = "times", DOSES = "doses", LOG = "log", TEST = "test", ZONE = "zone", WAKE = "com.neowell.app.MED_WAKE";
     /** The id was bumped once because Android restores the old settings (including a lowered importance) when a deleted channel is recreated under the same id. */
     static final String CH = "nw_medwake2";
 
@@ -43,7 +44,25 @@ public class MedWakeReceiver extends BroadcastReceiver {
             // Doses beyond MAX wait in line: when one rings the window slides on and the next dose is set.
             arm(c, load(c), "AFTER");
         } else if (Intent.ACTION_BOOT_COMPLETED.equals(a) || Intent.ACTION_MY_PACKAGE_REPLACED.equals(a) || Intent.ACTION_TIME_CHANGED.equals(a) || Intent.ACTION_TIMEZONE_CHANGED.equals(a)
-            || AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED.equals(a)) arm(c, load(c), cause(a));
+            || AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED.equals(a)) arm(c, rezone(c, load(c)), cause(a));
+    }
+
+    /** The saved times are absolute: after a time zone change (also one that happened while the phone was off) they move so that 08:00 stays 08:00 on the wall clock.
+     *  The alarm screen's dose list moves with them. The zone is stored by arm(), so the first arm after install has nothing to compare. */
+    private static long[] rezone(Context c, long[] times) {
+        String was = prefs(c).getString(ZONE, "");
+        TimeZone to = TimeZone.getDefault();
+        if (was.isEmpty() || was.equals(to.getID())) return times;
+        TimeZone from = TimeZone.getTimeZone(was);
+        JSONArray a = doses(c), out = new JSONArray();
+        for (int k = 0; k < a.length(); k++) {
+            JSONObject d = a.optJSONObject(k);
+            if (d == null) continue;
+            put(d, "at", ZoneMath.move(d.optLong("at"), from, to));
+            out.put(d);
+        }
+        prefs(c).edit().putString(DOSES, out.toString()).commit();
+        return ZoneMath.move(times, from, to);
     }
 
     private static String cause(String a) {
@@ -181,7 +200,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
             if (keep.length() > 0) keep.append(',');
             keep.append(at);
         }
-        prefs(c).edit().putString(KEY, keep.toString()).apply();
+        prefs(c).edit().putString(KEY, keep.toString()).putString(ZONE, TimeZone.getDefault().getID()).apply();
         JSONObject e = new JSONObject();
         put(e, "t", now);
         put(e, "a", why);
@@ -251,7 +270,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
         JSONObject last = a.optJSONObject(len - 1);
         JSONArray nx = last == null ? null : last.optJSONArray("nx");
         long due = nx == null ? 0 : nx.optLong(0, 0);
-        if (last != null && !ring(last.optString("a")) && !ring(e.optString("a")) && (due == 0 || due > e.optLong("t"))) len--;
+        if (last != null && !pinned(last.optString("a")) && !pinned(e.optString("a")) && (due == 0 || due > e.optLong("t"))) len--;
         for (int k = Math.max(0, len - (LOG_MAX - 1)); k < len; k++) out.put(a.opt(k));
         out.put(e);
         // The receiver process can end right after onReceive: the record is written synchronously.
@@ -261,6 +280,11 @@ public class MedWakeReceiver extends BroadcastReceiver {
     /** Records that must never merge into a schedule line: an alarm ringing, the alarm screen opening (AS) and closing (AE). */
     static boolean ring(String a) {
         return "WAKE".equals(a) || "AS".equals(a) || "AE".equals(a);
+    }
+
+    /** Records the app reads back later: rings, and the boot, time and zone setups (so a following app setup does not replace them). */
+    static boolean pinned(String a) {
+        return ring(a) || "BOOT".equals(a) || "TIME".equals(a) || "TZ".equals(a);
     }
 
     static JSONArray log(Context c) {
