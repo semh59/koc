@@ -20,3 +20,21 @@ test("a lab PDF is read in the browser by pdf.js and its worker; rows and date c
   expect(r.date).toBe("2026-09-12");
   expect(r.keys).toBe("glukoz,hba1c");
 });
+
+test("doctor report: the medication list is one extra page, the cycle lines alone are one extra page",async({app,page})=>{
+  const {state}=require("./fixtures");
+  const meds=Array.from({length:3},(_,i)=>({id:i+1,n:"İlaç "+(i+1),t:["08:00"],on:true}));
+  await app.open({seed:state({medOn:true,cycleOn:true},{meds,cycle:[{id:1,s:"2026-09-01"}]})});
+  const pages=async(cycle)=>{
+    await page.evaluate(()=>{docSt={days:7,seal:false,cycle:false,q:["","","","",""]};docSheet()});
+    if(cycle)await app.sheet.locator('[data-doc="cycle"]').click();
+    const dl=page.waitForEvent("download");
+    await app.sheet.getByRole("button",{name:"PDF hazırla"}).click();
+    const buf=await require("fs").promises.readFile(await (await dl).path());
+    expect(buf.subarray(0,4).toString()).toBe("%PDF");
+    return (buf.toString("latin1").match(/\/Type\s*\/Page\b/g)||[]).length;
+  };
+  expect(await pages(false)).toBe(2);
+  await page.evaluate(()=>{S.settings.medOn=false});
+  expect(await pages(true)).toBe(2);
+});

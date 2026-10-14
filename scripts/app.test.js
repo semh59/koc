@@ -720,7 +720,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
       drawn.length=0;saved=null;
       ok("Hekime hazırlan row is the first one in the report list",!!q('[data-doc="open"]'));
       q('[data-doc="open"]').click();
-      ok("the sheet asks for the period and five optional questions",w.document.querySelectorAll('[data-doc^="days"]').length===2&&w.document.querySelectorAll('#sheet input[id^="dq"]').length===5);
+      ok("the sheet asks for the period and five optional questions",w.document.querySelectorAll('[data-doc^="days"]').length===4&&w.document.querySelectorAll('#sheet input[id^="dq"]').length===5);
       q('[data-doc="days:90"]').click();q("#dq0").value="Tansiyon ilacımın saatini değiştirelim mi?";q("#dq1").value="  ";
       q('[data-doc="go"]').click();await flush();
       const db=Buffer.from(saved.data,"base64"),dd=await pdfjs.getDocument({data:new Uint8Array(db),verbosity:0}).promise;
