@@ -265,17 +265,27 @@ function barcodeMiss(code,msg){
   sheetFood();ownOpen();setPendingBarcode(code);
   $("#fown").insertAdjacentHTML("afterbegin",`<div class="banner" role="status"><p>${msg}</p></div>`);
 }
+/* Network failure: the form opens like for a missing product and the two ways forward are buttons, not a fading toast. */
+function barcodeFail(code,why){
+  barcodeMiss(code,`${why} Ürünün adını ve kalorisini şimdi elle yazabilirsin; bağlanınca tekrar okutabilirsin.`);
+  $("#fown .banner").insertAdjacentHTML("beforeend",`<div class="btns"><button class="btn ghost" data-bc="manual">Elle yaz</button><button class="btn ghost" data-bc="later">Sonra dene</button></div>`);
+}
+document.addEventListener("click",ev=>{
+  const b=ev.target.closest?.("[data-bc]");if(!b)return;
+  if(b.dataset.bc==="later")closeSheet();else $("#ft").focus();
+});
 async function barcodeFind(raw){
   const code=String(raw).replace(/\D/g,"");
   if(code.length<8||code.length>14)return toast("Bu bir ürün barkodu değil");
   const li=allFoods().findIndex(f=>f.b===code);
   if(li>=0)return sheetPortion(li);
+  if(navigator.onLine===false)return barcodeFail(code,"İnternete ulaşılamadı, barkod aranamadı: telefon çevrimdışı görünüyor.");
   toast("Ürün aranıyor…");
   let j;
   try{
     const r=await NetLog.fetch("off",`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=${OffLib.FIELDS}`,{headers:{"User-Agent":"NeoWell/1.0 (kisisel kullanim)"}});
     j=await r.json();
-  }catch{return barcodeMiss(code,"İnternete ulaşılamadı, barkod aranamadı. Ürünün adını ve kalorisini şimdi elle yazabilirsin; bağlanınca tekrar okutabilirsin.")}
+  }catch(e){return barcodeFail(code,e?.name==="TimeoutError"?"Barkod araması 10 saniyede cevap vermedi.":"İnternete ulaşılamadı, barkod aranamadı.")}
   const x=OffLib.parse(j);
   if(x.status==="none"||x.status==="bad"){
     return barcodeMiss(x.status==="none"?code:"",x.status==="none"?`Ürün bulunamadı, bu barkod Open Food Facts'te yok.${plugin("Ocr")?" Paketin arkasındaki besin tablosunu \"Etiket oku\" ile fotoğraflarsan ürünü kaydederim; sonraki okutmada kendiliğinden gelir.":" Ürünün adını ve kalorisini elle yazabilirsin."}`:`${x.why}. Etiketteki değerleri elle yaz.`);

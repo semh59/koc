@@ -35,6 +35,12 @@ const NetLog=require("../www/kernel/netlog.js");
   let thrown=false;try{await NetLog.fetch("off","https://a.b/c")}catch{thrown=true}
   ok("a storage error never breaks the request",!thrown);
 
+  let seen=null;global.window.fetch=async(u,i)=>{seen=i;return {ok:true}};
+  await NetLog.fetch("off","https://a.b/c");
+  ok("a request without its own signal gets a 10 second limit",seen.signal instanceof AbortSignal&&!seen.signal.aborted);
+  const own=new AbortController();await NetLog.fetch("chat","https://a.b/c",{signal:own.signal});
+  ok("a caller's own signal is kept as it is",seen.signal===own.signal);
+
   NetLog.clear();
   ok("clear empties the log",NetLog.recent().length===0);
   finish();
