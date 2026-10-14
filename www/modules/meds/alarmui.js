@@ -67,7 +67,7 @@ function alarmMark(ks,st,force){
   }
   const at=medNowHM(),undo=[];
   for(const i of list){const r=MedLib.mark(S,i.m,i.day,i.slot,st,st==="t"?at:undefined);if(r){undo.push(r);i.st=st}}
-  if(!save()){undo.reverse().forEach(r=>r.undo());list.forEach(i=>{i.st=undefined});a.say="Kaydedilemedi, depolama dolu";alarmDraw();return}
+  if(!save()){undo.reverse().forEach(r=>r.undo());list.forEach(i=>{i.st=undefined});a.say=SAVE_FAIL;alarmDraw();return}
   render();medResched();
   a.say=list.length>1?"Hepsi kaydedildi":(alarmShowName()?list[0].n+" ":"")+(st==="t"?"alındı":"atlandı");
   alarmDraw();

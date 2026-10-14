@@ -9,8 +9,8 @@ const hbHist=rows=>rows.length?`<div class="grp">Geçmiş</div>${rows.slice(0,HB
 let hbMood=0;
 /* Sleep, mood and fast changes (deletes and re-entry for the same day included) are undone with one "Geri al". */
 function hbSet(key,val,msg){
-  const prev=S[key],apply=v=>{S[key]=v;save();render();if(key==="fast")scheduleReminders().then(setNotif)};
-  apply(val);toast(msg,()=>apply(prev));
+  const prev=S[key],apply=v=>{const was=S[key];S[key]=v;if(!commit(()=>{S[key]=was}))return false;render();if(key==="fast")scheduleReminders().then(setNotif);return true};
+  if(apply(val))toast(msg,()=>apply(prev));
 }
 /* Sleep and mood: two equal tiles with today's value inside; with large text they stack in one column. */
 function habitRow(){

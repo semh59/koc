@@ -37,7 +37,7 @@ function confirmSheet({title,body="",ok="Tamam",no="İptal",danger=false}){
 }
 function toast(msg,undo){
   /* While saving fails, a following message such as "+250 ml" must not cover the error. */
-  if(saveFail&&!msg.includes("kaydedilemedi"))msg="Kaydedilemedi, depolama dolu. "+msg;
+  if(saveFail&&msg!==SAVE_FAIL)msg=SAVE_FAIL+" "+msg;
   $("#tmsg").textContent=msg;lastUndo=undo==null?null:undo;$("#tundo").hidden=lastUndo==null;
   $("#toast").classList.add("on");clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("#toast").classList.remove("on"),undo!=null?6000:3800);
 }
