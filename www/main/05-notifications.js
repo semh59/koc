@@ -1,5 +1,5 @@
 /* ---------- notifications (APK only) ---------- */
-const WATER_REM=[2,3,4],BACKUP_REM=10,WEEKLY_REM=12,FAST_NID=9100;
+const WATER_REM=[2,3,4],MOVE_REM=5,BACKUP_REM=10,WEEKLY_REM=12,FAST_NID=9100;
 const SCHED_DAYS=30,LEAD_MS=5000,RESCHEDULE_MS=6*36e5;let lastSched=0,lastTz="",exactOk=true,fsiOk=true,medBudgetMsg="";
 const LN=()=>plugin("LocalNotifications");
 /* Plugin 8.3+ opens the system "Alarms & reminders" screen on every schedule() with an exact alarm while the permission is missing; the exact flag follows the permission so it never does. */
@@ -29,7 +29,7 @@ async function scheduleReminders(){
       for(const n of dl.notifications){
         if(n.id===FAST_NID&&!Habits.fast().t0)gone.push({id:FAST_NID});
         if(n.id===CycleLib.NID&&!cycNotif())gone.push({id:n.id});
-        if(n.id<1000000)continue;
+        if(n.id<1000000||RamadanLib.isNid(n.id))continue;
         const d=MedLib.doseOfId(Meds.meds(),n.id);
         if(!d||MedLib.statusOf(Meds.log(),d.m.id,t1,d.slot)||MedLib.statusOf(Meds.log(),d.m.id,y,d.slot))gone.push({id:n.id});
       }
@@ -45,10 +45,10 @@ async function scheduleReminders(){
     const t0=dayKey(),waterDone=sum("water",t0,t0)>=S.settings.waterMl,fastBlock=!!risk().block;
     const preg=risk().pregnant;
     for(const r of S.settings.reminders.filter(r=>r.on&&!(r.id===11&&fastBlock)&&!(preg&&PREG_OFF.includes(r.id)))){
-      const [h,m]=r.t.split(":").map(Number),water=WATER_REM.includes(r.id);
+      const water=WATER_REM.includes(r.id),kind=water?"water":r.id===MOVE_REM?"move":"";
       for(let i=0;i<SCHED_DAYS;i++){
         if(i===0&&waterDone&&water)continue;
-        const at=addDays(i);at.setHours(h,m,0,0);
+        const at=addDays(i),[h,m]=(kind?Habits.ramShift(dayKey(at),r.t,kind,WATER_REM.indexOf(r.id)):r.t).split(":").map(Number);at.setHours(h,m,0,0);
         if(r.dow!=null&&at.getDay()!==r.dow)continue;
         if(r.id===BACKUP_REM&&(Log.all().length<10||(lb&&Algo.dayNum(dayKey(at))-Algo.dayNum(lb)<7)))continue;
         if(at.getTime()>now+LEAD_MS)list.push(Object.assign({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}},water?{actionTypeId:"water",extra:{act:"water",v:S.settings.glass,at:at.getTime()}}:r.id===WEEKLY_REM?{extra:{act:"open",tab:"coach"}}:r.id===BACKUP_REM?{extra:{act:"open",tab:"settings-data"}}:r.id===1?{extra:{act:"open",tab:"weight"}}:{}));

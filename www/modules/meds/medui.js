@@ -83,8 +83,64 @@ function medTodo(){
   if(!S.settings.medOn)return [];
   if(!S.meds.length)return [`<div class="row"><span>${Icons.svg("meds")} Henüz ilaç eklemedin</span><button class="chip" data-md="new">${Icons.svg("plus")} Ekle</button></div>`];
   const t=dayKey(),now=medNowHM(),rec=MedLib.logIndex(S.medLog,t);
-  const paused=S.meds.filter(m=>!m.on&&m.ou&&m.ou<=t).map(m=>`<div class="row"><span class="grow">${esc(m.n)}<small class="db mut sm">Ara verme süresi doldu</small></span><button class="b7 chip" data-md="resume:${m.id}">Tekrar aç</button></div>`);
-  return paused.concat(MedLib.dosesOn(S.meds,t).filter(({m,slot})=>slot<=now&&!rec(m.id,t,slot)).map(({m,slot})=>`<div class="row"><b class="num tm">${slot}</b><span>${esc(m.n)}<small class="mut sm">${[esc(MedLib.doseText(m,slot)),MED_FED[m.fed],"Gecikti"].filter(Boolean).join(" · ")}</small></span><div class="acts"><button class="chip go" data-md="take:${m.id}:${slot}">${Icons.svg("check")} Aldım</button><button class="chip skip" data-md="skip:${m.id}:${slot}">Atla</button>${S.settings.medNear?`<button class="chip" data-md="nearsend">Yakınıma haber ver</button>`:""}</div></div>`));
+  const ram=medRamTodo(),paused=S.meds.filter(m=>!m.on&&m.ou&&m.ou<=t).map(m=>`<div class="row"><span class="grow">${esc(m.n)}<small class="db mut sm">Ara verme süresi doldu</small></span><button class="b7 chip" data-md="resume:${m.id}">Tekrar aç</button></div>`);
+  return ram.concat(paused).concat(MedLib.dosesOn(S.meds,t).filter(({m,slot})=>slot<=now&&!rec(m.id,t,slot)).map(({m,slot})=>`<div class="row"><b class="num tm">${slot}</b><span>${esc(m.n)}<small class="mut sm">${[esc(MedLib.doseText(m,slot)),MED_FED[m.fed],"Gecikti"].filter(Boolean).join(" · ")}</small></span><div class="acts"><button class="chip go" data-md="take:${m.id}:${slot}">${Icons.svg("check")} Aldım</button><button class="chip skip" data-md="skip:${m.id}:${slot}">Atla</button>${S.settings.medNear?`<button class="chip" data-md="nearsend">Yakınıma haber ver</button>`:""}</div></div>`));
+}
+
+/* ---- Ramadan: moving the times inside the daytime fast ---- */
+/* Only on the user's approval; settings.ramMeds keeps {medId: {from: to}} so each medication goes back to its old times alone. */
+const medRamDone=m=>{const r=S.settings.ramMeds[m.id];return r&&Object.values(r).some(t=>m.t.includes(t))?r:null};
+function medRamPlan(){
+  const st=S.settings,d=st.ramMedsNo?null:Habits.dayTimes(dayKey());
+  return d?S.meds.filter(m=>m.on&&!medRamDone(m)).map(m=>({m,map:RamadanLib.medMap(m.t,d)})).filter(x=>Object.keys(x.map).length):[];
+}
+const medRamBack=()=>S.settings.ramOn?[]:S.meds.filter(medRamDone);
+const medRamPair=map=>Object.entries(map).map(([a,b])=>`${a} → ${b}`).join(", ");
+function medRamTodo(){
+  const k=medRamPlan().length,b=medRamBack().length;
+  const t=b?"Ramazan bitti; ilaç saatlerini eski saatlerine döndürelim mi?":k?"İlaç saatlerini sahur ya da iftara kaydırmak ister misin?":"";
+  return t?[`<div class="row"><span>${Icons.svg("meds")} ${t}<small class="mut sm">Sen onaylamadan hiçbir saat değişmez.</small></span><button class="chip" data-tab="meds">İncele</button></div>`]:[];
+}
+function medRamCard(){
+  const plan=medRamPlan(),back=S.settings.ramOn?S.meds.filter(medRamDone):medRamBack();
+  if(!plan.length&&!back.length)return "";
+  const row=(m,t,btn)=>`<div class="row"><span class="grow"><b>${esc(m.n)}</b><small class="db mut num">${t}</small></span>${btn}</div>`;
+  return `<div class="card"><div class="lbl">${S.settings.ramOn?"Ramazan ve ilaç saatleri":"Ramazan bitti"}</div>
+  ${plan.map(({m,map})=>row(m,medRamPair(map),`<button class="chip" data-md="ramgo:${m.id}">Kaydır</button>`)).join("")}
+  ${back.map(m=>row(m,"Kaydırıldı: "+medRamPair(S.settings.ramMeds[m.id]),`<button class="chip" data-md="ramback:${m.id}">Eski saatlere dön</button>`)).join("")}
+  <p class="hint">İlaç saatlerini hekimine sormadan değiştirme. Kaydırma yalnız senin onayınla yapılır; her ilaç ayrı geri alınır.${plan.length?` <button class="lnk" data-md="ramno">Gerek yok</button>`:""}</p></div>`;
+}
+/* Moves a medication's times by {from: to}: the same revise/since bookkeeping as an edit, so past days keep the old schedule. */
+function medRetime(m,map,undo){
+  const today=dayKey(),t=[...new Set(m.t.map(x=>map[x]||x))].sort(),q={};
+  for(const [x,v] of Object.entries(m.q||{}))q[map[x]||x]??=v;
+  const o={...m,t,q};
+  if(!Object.keys(q).length)delete o.q;
+  const ts=MedLib.sinceFor(m.t,t,m.ts,today,medNowHM());
+  delete o.ts;if(ts)o.ts=ts;
+  MedLib.revise(m,o,today);
+  const before=S.meds.slice();
+  S.meds=MedLib.cleanMeds(S.meds.map(x=>x.id===m.id?o:x));
+  return commit(()=>{S.meds=before;undo()});
+}
+function medRamGo(id){
+  const p=medRamPlan().find(x=>x.m.id===id);if(!p)return;
+  confirmSheet({title:`${p.m.n} saatleri kaydırılsın mı?`,body:`${medRamPair(p.map)}. İlaç saatini hekimine danışmadan değiştirme; danıştıysan kaydır. İstediğin zaman eski saatlere dönebilirsin.`,ok:"Kaydır"}).then(ok=>{
+    const m=S.meds.find(x=>x.id===id);if(!ok||!m)return;
+    const prev=S.settings.ramMeds;
+    S.settings.ramMeds={...prev,[id]:p.map};
+    if(!medRetime(m,p.map,()=>{S.settings.ramMeds=prev}))return;
+    render();medResched();toast(`${m.n}: saatler kaydırıldı`,()=>medRamUndo(id));
+  });
+}
+function medRamUndo(id){
+  const m=S.meds.find(x=>x.id===id),rec=S.settings.ramMeds[id];if(!m||!rec)return;
+  const inv=Object.fromEntries(Object.entries(rec).filter(([,b])=>m.t.includes(b)).map(([a,b])=>[b,a]));
+  const prev=S.settings.ramMeds,{[id]:_,...rest}=prev;
+  S.settings.ramMeds=rest;
+  if(Object.keys(inv).length&&!medRetime(m,inv,()=>{S.settings.ramMeds=prev}))return;
+  if(!Object.keys(inv).length)save();
+  render();medResched();toast(`${m.n}: eski saatlere döndü`);
 }
 
 /* ---- Meds screen ---- */
@@ -107,6 +163,7 @@ function viewMeds(){
   });
   const list=S.meds.map(m=>`<div class="row"><span class="grow"><b>${esc(m.n)}</b>${m.d?` <small class="mut">${esc(m.d)}</small>`:""}${m.on?"":` <small class="mut">(kapalı)</small>`}<div class="mut sm">${esc(medWhen(m))}${m.k!=null?` · Stok: ${medNum(m.k)} adet${MedLib.stockDays(m)!=null?`, yaklaşık ${MedLib.stockDays(m)} gün`:""}`:""}</div></span><button class="chip" data-md="edit:${m.id}">Düzenle</button></div>`).join("");
   return `${S.meds.length?`<div class="card"><div class="lbl">Dozlar</div><div class="row"><button class="chip" data-md="dprev" aria-label="Önceki gün">‹</button><span class="grow tc">${isT?"Bugün":WEEKDAYS_SHORT[new Date(day+"T12:00").getDay()]+" "+fd(day)}</span>${isT?"":`<button class="chip" data-md="dtoday">Bugün</button>`}<button class="chip" data-md="dnext" aria-label="Sonraki gün"${isT?" disabled":""}>›</button></div>${medRows(day)}</div>`:""}
+  ${medRamCard()}
   ${low?`<div class="card"><div class="lbl">Stok</div>${low}</div>`:""}
   ${a30.total?`<div class="card"><div class="lbl">Uyum</div><div class="stats"><div class="stat"><div class="k">Son 7 gün</div><div class="v num">${pct(a7)}</div><div class="mut sm">${cnt(a7)}</div></div><div class="stat"><div class="k">Son 30 gün</div><div class="v num">${pct(a30)}</div><div class="mut sm">${cnt(a30)}</div></div></div></div>`:""}
   ${days.some(d=>d.on)?`<div class="card"><div class="lbl">Son 7 gün</div><div class="dd7">${days.map(d=>d.h).join("")}</div></div>`:""}
@@ -261,6 +318,9 @@ document.addEventListener("click",ev=>{
   else if(a==="wcopy")(navigator.clipboard?navigator.clipboard.writeText(medWakeText):Promise.reject()).then(()=>toast("Kayıt panoya kopyalandı"),()=>{const s=getSelection(),g=document.createRange(),b=document.getElementById("wlog");if(b){g.selectNodeContents(b);s.removeAllRanges();s.addRange(g)}toast("Kopyalanamadı: metni seçtim, uzun basıp kopyala")});
   else if(a==="wclear")MW()?.clearLog().then(medWakeLog,()=>toast("Temizlenemedi"));
   else if(a==="shown"){S.settings.medShowName=el.checked;save();medResched()}
+  else if(a==="ramgo")medRamGo(+r[0]);
+  else if(a==="ramback")medRamUndo(+r[0]);
+  else if(a==="ramno"){S.settings.ramMedsNo=true;save();render()}
   else if(a==="new")medOpen(0);
   else if(a==="edit")medOpen(+r[0]);
   else if(a==="close")medClose();
