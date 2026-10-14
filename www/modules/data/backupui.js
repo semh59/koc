@@ -3,8 +3,8 @@
    The password can optionally be stored, encrypted with this phone's Keystore vault only. */
 const BKPW_LS="nw_bkpw_enc";
 const BF=()=>plugin("BackupFolder");
-/* The one backup payload: settings and data plus the API keys, encrypted with the password into a JSON string. */
-const backupJson=async pw=>JSON.stringify(await BackupLib.encrypt({S,keys:Coach.keys()},pw));
+/* The one backup payload: settings and data plus the API keys (unless the user keeps them out), encrypted with the password into a JSON string. */
+const backupJson=async pw=>JSON.stringify(await BackupLib.encrypt({S,keys:S.settings.bkNoKeys?{}:Coach.keys()},pw));
 async function bkRemembered(){
   const kv=KV(),e=lsGet(BKPW_LS);
   if(!kv||!e)return null;
@@ -50,6 +50,7 @@ document.addEventListener("click",ev=>{
   if(a==="send")bkSend();
   else if(a==="forget"){lsDel(BKPW_LS);if(S.settings.autoBk){abOff();toast("Parola unutuldu, otomatik yedek de kapatıldı")}sheetDrive()}
   else if(a==="close")closeSheet();
+  else if(a==="nokeys"){S.settings.bkNoKeys=el.checked;save()}
 });
 
 /* Automatic backup: when the app opens or the tab returns and the last automatic backup is older than 7 days, the same encrypted format is written to the chosen folder.

@@ -6,7 +6,8 @@ let lockHiddenAt=0,lockBusy=false;
 /* Before the first paint: with the lock on, the content starts hidden. save() keeps the nw_lockon flag in sync, so the state is not parsed here. */
 try{if(localStorage.getItem("nw_lockon")==="1")document.documentElement.classList.add("locked")}catch(e){}
 const lockUp=()=>document.documentElement.classList.contains("locked");
-const lockSecure=on=>{const a=AL();if(a)a.setSecure({on}).catch(()=>{})};
+/* Recent-apps preview and screenshots (FLAG_SECURE) are their own setting, independent of the lock. */
+const recentsSync=()=>{const a=AL();if(a)a.setSecure({on:S.settings.hideRecents===true}).catch(()=>{})};
 
 function lockEl(){
   let d=document.getElementById("lock");
@@ -18,7 +19,7 @@ function lockEl(){
   return d;
 }
 function lockShow(){
-  lockEl().hidden=false;document.documentElement.classList.add("locked");lockSecure(true);
+  lockEl().hidden=false;document.documentElement.classList.add("locked");
   lockAsk();
 }
 function lockOpen(){
@@ -32,29 +33,38 @@ async function lockAsk(){
   lockBusy=false;
   if(r&&r.ok)return lockOpen();
   if(r&&r.none){ // the phone has no screen lock left: the user must not be locked out of their own data
-    S.settings.lockOn=false;save();lockSecure(false);lockOpen();toast("Telefonda ekran kilidi kalmadı, uygulama kilidi kapatıldı");return}
+    S.settings.lockOn=false;save();lockOpen();toast("Telefonda ekran kilidi kalmadı, uygulama kilidi kapatıldı");return}
   lockMsg(r&&r.cancelled?"Kilidi açmak için doğrula.":"Doğrulanamadı, tekrar dene.");
 }
-/* Setting: turning it on asks for verification (so it is seen working; it does not turn on without a phone screen lock). */
-async function lockToggle(el){
+/* Turning it on asks for verification (so it is seen working; it does not turn on without a phone screen lock). Returns the error text, or "" when it is on. */
+async function lockEnable(){
   const a=AL();
-  if(!el.checked){S.settings.lockOn=false;save();lockSecure(false);render();toast("Uygulama kilidi kapatıldı");return}
-  const fail=t=>{el.checked=false;toast(t)};
-  if(!a)return fail("Uygulama kilidi yalnız telefondaki uygulamada çalışır");
-  let st;try{st=await a.status()}catch(e){return fail("Kilit durumu okunamadı")}
-  if(!st.secure)return fail("Önce telefonda bir ekran kilidi (PIN, desen ya da parmak izi) ayarla");
+  if(!a)return "Uygulama kilidi yalnız telefondaki uygulamada çalışır";
+  let st;try{st=await a.status()}catch(e){return "Kilit durumu okunamadı"}
+  if(!st.secure)return "Önce telefonda bir ekran kilidi (PIN, desen ya da parmak izi) ayarla";
   lockBusy=true;let r;try{r=await a.authenticate({title:"Uygulama kilidini aç"})}catch(e){r={ok:false}}lockBusy=false;
-  if(!r||!r.ok)return fail("Doğrulanamadı, kilit açılmadı");
-  S.settings.lockOn=true;save();lockSecure(true);render();toast("Uygulama kilidi açıldı");
+  if(!r||!r.ok)return "Doğrulanamadı, kilit açılmadı";
+  S.settings.lockOn=true;save();
+  return "";
 }
-document.addEventListener("change",ev=>{const el=ev.target.closest&&ev.target.closest("[data-lk=toggle]");if(el)lockToggle(el)});
+async function lockToggle(el){
+  if(!el.checked){S.settings.lockOn=false;save();render();toast("Uygulama kilidi kapatıldı");return}
+  const e=await lockEnable();
+  if(e){el.checked=false;return toast(e)}
+  render();toast("Uygulama kilidi açıldı");
+}
+document.addEventListener("change",ev=>{
+  const t=ev.target.closest?.("[data-lk=toggle]");if(t)return lockToggle(t);
+  const h=ev.target.closest?.("[data-lk=recents]");
+  if(h){S.settings.hideRecents=h.checked;save();recentsSync()}
+});
 document.addEventListener("click",ev=>{
   if(ev.target.closest("[data-lk=ask]"))lockAsk();
   const g=ev.target.closest("[data-lg]");if(g){S.settings.lockGrace=+g.dataset.lg;save();render()}
 });
 document.addEventListener("visibilitychange",()=>{
   if(lockBusy||!AL())return;
-  if(document.hidden){lockHiddenAt=Date.now();if(S.settings.lockOn)lockSecure(true)}
+  if(document.hidden)lockHiddenAt=Date.now();
   else if(S.settings.lockOn&&lockHiddenAt&&Date.now()-lockHiddenAt>=S.settings.lockGrace*1000)lockShow();
 });
-document.addEventListener("nw:boot",()=>{if(S.settings.lockOn&&AL())lockShow();else document.documentElement.classList.remove("locked")});
+document.addEventListener("nw:boot",()=>{recentsSync();if(S.settings.lockOn&&AL())lockShow();else document.documentElement.classList.remove("locked")});

@@ -4,16 +4,17 @@ let docSt=null;
 function docSheet(){
   const d=docSt;
   openSheet(`<h3>Hekime hazırlan</h3>
-  <p class="mut sm">Seçtiğin dönemdeki kayıtların tek PDF'te toplanır. Kayıtlar olduğu gibi yazılır; yorum ve değerlendirme yoktur. PDF şifresizdir, paylaştığın yere gider. Tahlil sayfaları tüm sonuçları içerir.</p>
+  <p class="mut sm">Seçtiğin dönemdeki kayıtların tek PDF'te toplanır. Kayıtlar olduğu gibi yazılır; yorum ve değerlendirme yoktur. PDF, aşağıdan şifrelemezsen şifresizdir ve paylaştığın yere gider. Tahlil sayfaları tüm sonuçları içerir.</p>
   <div class="lbl">Hangi dönem?</div><div class="chips">${[30,90].map(n=>`<button class="chip" data-doc="days:${n}" aria-pressed="${d.days===n}">Son ${n} gün</button>`).join("")}</div>
   <div class="lbl">Hekime sormak istediklerin (isteğe bağlı)</div>
   ${d.q.map((v,i)=>`<input class="in mb-2" id="dq${i}" maxlength="${DoctorLib.QLEN}" autocomplete="off" aria-label="${i+1}. soru" value="${esc(v)}">`).join("")}
   <p class="hint">Sorular kaydedilmez; PDF hazırlanınca biter.</p>
+  ${swRow('data-doc="seal"',d.seal,"Parolayla şifrele","Dosyayı yalnız parolayı bilen açabilir; hekime vermek için şifresiz bırak")}
   <div class="btns"><button class="btn" data-doc="go">PDF hazırla</button><button class="btn ghost" data-doc="close">Vazgeç</button></div>`);
 }
 function docRead(){docSt.q=docSt.q.map((_,i)=>{const e=document.getElementById("dq"+i);return e?e.value:""})}
 async function docGo(){
-  docRead();const days=docSt.days,q=DoctorLib.cleanQuestions(docSt.q);docSt=null;closeSheet();
+  docRead();const days=docSt.days,seal=docSt.seal,q=DoctorLib.cleanQuestions(docSt.q);docSt=null;closeSheet();
   const today=dayKey(),st=S.settings,D={settings:st,entries:Log.all(),vitals:Vitals.all(),meds:Meds.meds(),medLog:Meds.log()};
   let pdf;
   try{
@@ -27,13 +28,14 @@ async function docGo(){
       let k=n-1;for(const s of secs){if(k<s.count)return s.draw(ctx,k);k-=s.count}
     });
   }catch(e){return toast("PDF hazırlanamadı")}
-  await sharePdf(pdf,`neowell-hekim-${today}.pdf`,"Hekime hazırlan");
+  await sharePdf(pdf,`neowell-hekim-${today}.pdf`,"Hekime hazırlan",seal);
 }
 document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-doc]");if(!el)return;
   const [a,arg]=el.dataset.doc.split(":");
-  if(a==="open"){docSt={days:30,q:["","","","",""]};docSheet()}
+  if(a==="open"){docSt={days:30,seal:false,q:["","","","",""]};docSheet()}
   else if(a==="days"){docRead();docSt.days=+arg;docSheet()}
+  else if(a==="seal"){docRead();docSt.seal=el.checked;docSheet()}
   else if(a==="close"){docSt=null;closeSheet()}
   else if(a==="go")docGo();
 });

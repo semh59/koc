@@ -26,5 +26,26 @@ async function shareFile(name,title,mime,data,utf8){
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([utf8?data:BackupLib.unb64(data)],{type:mime}));a.download=name;document.body.appendChild(a);a.click();a.remove();
   return true;
 }
-const sharePdf=(pdf,name,title)=>shareFile(name,title,"application/pdf",BackupLib.b64(pdf));
+/* Password-sealed share: the file goes into the backup's AES-GCM/PBKDF2 envelope ({file:{name,mime,utf8,data}}) and is shared as <name>.enc.json. */
+function askSharePw(){
+  return new Promise(res=>{
+    openSheet(`<h3>Dosyayı parolayla şifrele</h3><p class="mut sm">Yedek parolanı yaz ya da yeni bir parola seç. Dosya yalnız bu parolayla açılır; parolayı unutursan kurtarma yolu yoktur.</p>
+    <input class="in" id="shp1" type="password" placeholder="Parola (en az ${BackupLib.MINPW} karakter)" autocomplete="new-password"><input class="in" id="shp2" type="password" placeholder="Parolayı tekrar yaz" autocomplete="new-password">
+    <div class="hint" id="shw" role="alert"></div><div class="two"><button class="btn" data-shp="ok">Şifrele ve paylaş</button><button class="btn ghost" data-shp="no">Vazgeç</button></div>`);
+    sheetEnd=res;
+  });
+}
+document.addEventListener("click",ev=>{
+  const b=ev.target.closest("[data-shp]");if(!b)return;
+  const pw=$("#shp1").value,bad=b.dataset.shp==="ok"&&(BackupLib.pwCheck(pw)||(pw!==$("#shp2").value?"Parolalar aynı değil":""));
+  if(bad)return ferr("shw",bad);
+  sheetDone(b.dataset.shp==="ok"?pw:false);closeSheet();
+});
+async function shareFileSealed(name,title,mime,data,utf8){
+  const pw=await askSharePw();if(!pw)return false;
+  let env;try{env=await BackupLib.encrypt({file:{name,mime,utf8,data}},pw)}catch(e){toast("Dosya şifrelenemedi");return false}
+  return shareFile(name+".enc.json",title,"application/json",JSON.stringify(env),true);
+}
+const shareOut=(sealed,...a)=>(sealed?shareFileSealed:shareFile)(...a);
+const sharePdf=(pdf,name,title,sealed)=>shareOut(sealed,name,title,"application/pdf",BackupLib.b64(pdf));
 document.addEventListener("nw:boot",cacheClean);

@@ -279,7 +279,7 @@ function goNote(){const t=$("#fv").value.trim();if(!t)return toast("Önce notunu
 
 function sheetBackup(){
   openSheet(`<h3>Yedekle veya geri yükle</h3><div class="lbl">Yedek metni. Geri yüklemek için yedek metnini buraya yapıştır ya da "Dosyadan oku"yu kullan. Yedek alırken Kopyala'ya basınca metin burada çıkar.</div><textarea class="in" id="bk" spellcheck="false"></textarea>
-  <div class="lbl">Yedek parolası (zorunlu, en az ${BackupLib.MINPW} karakter). Yedek her zaman şifrelenir ve Rehber anahtarların da içine girer. Parolayı unutursan yedeğini kimse açamaz, kurtarma yolu yoktur. Parolayı güvenli bir yere yaz. Geri yüklerken de aynı parola gerekir.</div>
+  <div class="lbl">Yedek parolası (zorunlu, en az ${BackupLib.MINPW} karakter). Yedek her zaman şifrelenir${S.settings.bkNoKeys?" ve Rehber anahtarların içine girmez":" ve Rehber anahtarların da içine girer"}. Parolayı unutursan yedeğini kimse açamaz, kurtarma yolu yoktur. Parolayı güvenli bir yere yaz. Geri yüklerken de aynı parola gerekir.</div>
   <input class="in" id="bkpw" type="password" autocomplete="new-password" placeholder="Parola"><input class="in" id="bkpw2" type="password" autocomplete="new-password" placeholder="Yedek alırken parolayı tekrar yaz">
   <div class="hint" id="bkw" role="alert"></div>
   <div class="two"><button class="btn ghost" data-go="copy">Kopyala</button><button class="btn ghost" data-go="${isNative()?"share":"download"}">${isNative()?"Dosya olarak paylaş":"Dosya indir"}</button></div>
@@ -324,7 +324,7 @@ async function goRestore(text=$("#bk").value,pw=$("#bkpw").value){
   const prevS=S;
   S=b.S;
   /* A backup must not change where the key goes, the consent setting or the data-sharing permission. The automatic backup folder belongs to this phone. */
-  Object.assign(S.settings,Object.fromEntries(["noticeOk",...SHARE_KEYS].map(k=>[k,prevS.settings[k]])),{consent:prevS.settings.consent,consentV:prevS.settings.consentV,consentAt:prevS.settings.consentAt,consentP:prevS.settings.consentP,lastBackup:dayKey(),autoBk:prevS.settings.autoBk,lastAutoBk:prevS.settings.lastAutoBk});cAgeGuard();
+  Object.assign(S.settings,Object.fromEntries(["noticeOk","hideRecents",...SHARE_KEYS].map(k=>[k,prevS.settings[k]])),{consent:prevS.settings.consent,consentV:prevS.settings.consentV,consentAt:prevS.settings.consentAt,consentP:prevS.settings.consentP,lastBackup:dayKey(),autoBk:prevS.settings.autoBk,lastAutoBk:prevS.settings.lastAutoBk});cAgeGuard();
   /* A brake on this phone stays and a backup brings its own, but a sign lifted on this phone or in the backup is not brought back by the other. */
   {const a=S.settings,p=prevS.settings,off=[...new Set((a.riskOff+","+p.riskOff).split(",").filter(Boolean))],on=k=>!off.includes(k);
     Object.assign(a,{riskOff:off.join(","),edFlag:a.edFlag||p.edFlag,pregnant:(a.pregnant||p.pregnant)&&on("preg"),nursing:(a.nursing||p.nursing)&&on("nurs")})}
