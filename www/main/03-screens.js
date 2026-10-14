@@ -86,7 +86,7 @@ function viewToday(){
     sOn&&stepsRead&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?row("steps","Adım sayımı durmuş olabilir","Pil ayarında NeoWell'e kısıtlama koyma.",[["stepsfix","Ayarla"],["stepshide","Kapat"]]):"",
     !pmMany()&&isNative()&&!exactOk&&st.medOn&&Meds.count()?row("clock","İlaç alarmı birkaç dakika gecikebilir","Tam saat alarm izni kapalı. İzin verirsen tam saatinde çalar.",[["fullalarm","İzin ver"]]):"",
     !pmMany()&&isNative()&&!fsiOk&&st.medOn&&Meds.count()?row("clock","İlaç alarmı kilitli ekranı açmayabilir","Tam ekran bildirim izni kapalı. İzin verirsen alarm ekranı yakar.",[["fullscreen","İzin ver"]]):"",
-    !pmMany()&&isNative()&&oemXiaomi()&&!st.oemDone?row("bell","Hatırlatmalar için bir kez ayar gerekli","İki izin verince hatırlatmalar kaçmaz.",[["oem","Ayarla"]]):"",
+    !pmMany()&&!bg.miss&&pmMissing().some(i=>i.id==="bat")?row("bell",oemXiaomi()?"Hatırlatmalar için bir kez ayar gerekli":"Pil kısıtı alarmı geciktiriyor",oemXiaomi()?"İki izin verince hatırlatmalar kaçmaz.":"Pil ayarında NeoWell'e kısıtlama koyma.",[["bat","Ayarla"]]):"",
     isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?row("steps","Adım sayarı aç","Telefonun sensörü sayar, hesap gerekmez.",[["stepsopen","Aç"],["stepsno","Şimdi değil"]]):"",
     Log.all().length>=10&&(old==null||old>14)?row("cloud","Verilerini yedekle",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Yedekle"]]):""].filter(Boolean);
   /* Medication and measurement jobs come first and never fold; of the rest the first 3 are visible, so the log is not pushed down. */
@@ -217,7 +217,7 @@ function viewSettings(){
   if(sub==="coach")return viewProviders();
   if(sub==="reminders"){
     const nf={web:"Bildirimler yalnızca telefondaki uygulamada çalışır.",ok:"Hatırlatmalar açık.",denied:"Bildirim izni kapalı. Telefon ayarlarından Rehber için bildirimleri aç.","":""}[notifStatus]||notifStatus;
-    return `<div class="card"><div class="status">${esc(nf)}</div>${isNative()&&!exactOk?`<p class="flush hint">Tam saat alarm izni kapalı: hatırlatmalar birkaç dakika gecikebilir.</p><div class="btns"><button class="btn ghost" data-act="fullalarm">Tam saat alarm iznini aç</button></div>`:""}${notifDiag?`<p class="flush hint">${esc(notifDiag)}</p>`:""}${isNative()?`<div class="btns"><button class="btn ghost" data-act="notiftest">Test bildirimi gönder</button>${oemXiaomi()?`<button class="btn ghost" data-act="oem">Xiaomi hatırlatma ayarları</button>`:""}</div>`:""}
+    return `<div class="card"><div class="status">${esc(nf)}</div>${isNative()&&!exactOk?`<p class="flush hint">Tam saat alarm izni kapalı: hatırlatmalar birkaç dakika gecikebilir.</p><div class="btns"><button class="btn ghost" data-act="fullalarm">Tam saat alarm iznini aç</button></div>`:""}${notifDiag?`<p class="flush hint">${esc(notifDiag)}</p>`:""}${isNative()?`<div class="btns"><button class="btn ghost" data-act="notiftest">Test bildirimi gönder</button></div>`:""}
     ${st.reminders.filter(remShown).map(r=>`<div class="rem"><span class="nm">${esc(r.name)}</span><input type="time" value="${r.t}" data-rt="${r.id}" aria-label="${esc(r.name)} saati"><label class="sw"><input type="checkbox" ${r.on?"checked":""} data-ro="${r.id}" aria-label="${esc(r.name)} açık"><span></span></label></div>`).join("")}
     <p class="hint">Bildirim metinleri sabittir; Rehber onları değiştirmez.</p></div>`;
   }

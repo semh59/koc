@@ -37,12 +37,11 @@ on("stepsadd",()=>sheetSteps());
 on("walkgo",()=>{tab="steps";render();window.scrollTo(0,0)});
 on("stepsno",()=>{S.settings.stepsAsked=true;save();render()});
 on("stepsoff",()=>{S.settings.stepsOn=false;save();motionStopAll();render();toast("Adım sayar kapatıldı. Eski adım kayıtların durur")});
-on("oem",()=>sheetOem());
+on("bat",batFix);
 on("oem1",()=>openDH("openAutostart"));
 on("oem2",()=>openDH("openBattery"));
-on("stepsfix",()=>{if(oemXiaomi())sheetOem();else openDH("openBattery")});
+on("stepsfix",batFix);
 on("stepshide",()=>{S.settings.stepWarnDay=dayKey();save();render()});
-on("oemok",()=>{S.settings.oemDone=true;save();closeSheet();render();toast("Tamam, hatırlatmaları şimdi dene")});
 on("profile",()=>{tab="settings-profile";render();window.scrollTo(0,0)});
 on("health",()=>{
   const r=risk();
