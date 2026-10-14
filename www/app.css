@@ -188,7 +188,8 @@ body.coach{--toast-b:var(--cmp,calc(200px + var(--sab)))}
 .rrow .tx{flex:1}
 .gbar{display:grid;grid-template-columns:92px 1fr 28px;gap:var(--sp-3);align-items:center;font-size:var(--fs-s);margin:var(--sp-2) 0}
 .gbar .bar{margin:0}
-.livebar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--sp-2) var(--sp-3);margin:2px 4px var(--sp-3)}
+.livebar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--sp-3);margin:2px 4px var(--sp-3)}
+.livetop{position:sticky;top:var(--sat);z-index:7;background:var(--bg);margin:0 -4px var(--sp-2);padding:var(--sp-1) 0 0}.livetop .livebar{margin:0 4px var(--sp-2)}.livetop .rest{margin-bottom:var(--sp-2)}
 .livebar>div{flex:1 1 8em;min-width:0}.livebar b{overflow-wrap:break-word;font-size:var(--fs-h3)}.livebar .mut{font-size:var(--fs-s)}.btn.fin{width:auto;flex:none;padding:11px 22px}
 .fig{width:100%;height:auto;display:block}
 #guide{position:fixed;inset:0;z-index:15;max-width:520px;margin:0 auto;background:var(--card);display:flex;flex-direction:column;padding:calc(var(--sp-2) + var(--sat)) calc(16px + var(--sar)) calc(var(--sp-3) + var(--sab)) calc(16px + var(--sal));overflow-y:auto}#guide[hidden]{display:none}body.gdon{overflow:hidden}
@@ -219,10 +220,10 @@ body.coach{--toast-b:var(--cmp,calc(200px + var(--sab)))}
 .ex{padding:8px var(--sp-3) var(--sp-2)}.exh{display:flex;align-items:center}
 .exn{flex:1;text-align:left;display:grid;min-height:var(--hit);align-content:center}.exn b{font-size:var(--fs-h3);overflow-wrap:break-word}.exn .mut{font-size:var(--fs-s)}
 .sug{font-size:var(--fs-s);color:var(--prim);margin:0 4px var(--sp-2)}.note{font-size:var(--fs-s);color:var(--mut);margin:0 4px var(--sp-2);font-style:italic}
-.shead,.srow{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(52px,70px) minmax(52px,70px) var(--hit);gap:var(--sp-2);align-items:center}.srow .sp{font-size:min(var(--fs-s),max(12px,3.6vw));overflow-wrap:anywhere}
+.shead,.srow{display:grid;grid-template-columns:var(--hit) minmax(0,1fr) minmax(52px,70px) minmax(52px,70px) var(--hit);gap:var(--sp-2);align-items:center}.srow .sp{font-size:min(var(--fs-s),max(12px,3.6vw));overflow-wrap:anywhere}
 /* Column headings must fit the narrow columns: with large text they stop at ≈3.3vw. */
 .shead{font-size:min(var(--fs-cap),max(12px,3.3vw));color:var(--mut);padding:0 4px 4px;text-align:center}.shead span:nth-child(2){text-align:left}
-.srow{padding:3px 4px;border-radius:var(--r-s);margin-bottom:4px}.shead.r,.srow.r{grid-template-columns:22px minmax(0,1fr) 56px 56px 50px var(--hit);gap:var(--sp-2)}.srow.r .sp{font-size:var(--fs-cap);white-space:nowrap;letter-spacing:-.02em}
+.srow{padding:3px 4px;border-radius:var(--r-s);margin-bottom:var(--sp-2)}.shead.r,.srow.r{grid-template-columns:var(--hit) repeat(3,minmax(48px,1fr)) var(--hit)}.shead.r span:nth-child(2){display:none}.srow.r .sp{grid-column:1/-1;grid-row:2;font-size:var(--fs-cap);text-align:left;padding-left:var(--sp-1)}
 .srow.nx{outline:2px solid color-mix(in srgb,var(--prim) 60%,var(--line));outline-offset:-1px}
 .sx{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 4px 8px}.stp{flex:1 1 130px;display:flex;align-items:center;background:var(--soft);border-radius:var(--r-s)}.stp span{flex:1;text-align:center;font-weight:700;font-size:var(--fs-h3)}.stp button{width:var(--hit);min-height:var(--hit);font-size:var(--fs-h1);font-weight:700;border-radius:var(--r-s)}.sxs{flex:1 0 100%;margin:0}
 .srow.dn{background:color-mix(in srgb,var(--exercise) 12%,var(--card))}

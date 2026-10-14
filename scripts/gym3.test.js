@@ -152,5 +152,15 @@ const {boot,flush,www,quota}=require("./html");
     ev("closeSheet();S.settings.wUnit='kg';S.workouts=[];gStart(null);gAddEx(gActive(),'bench');gActive().ex[0].sets[0].kg=60;gActive().ex[0].sets[0].reps=8;render()");
     ok("kg: the box keeps showing kg",q('[data-gi="kg:0:0"]').value==="60"&&q('[data-gi="kg:0:0"]').placeholder==="kg");
   }
+  { // 8 sticky bar, 12 touch targets and spacing (layout itself is measured in e2e/access.spec)
+    fresh("gStart(null);gAddEx(gActive(),'bench');render()");
+    const top=q(".livetop");
+    ok("the finish button and the timer bar share one sticky block",!!top&&!!top.querySelector('[data-g="finish"]')&&!!top.querySelector("#gtim")&&/\.livetop\{position:sticky;top:var\(--sat\)/.test(css));
+    ok("set rows: first column is the 48 px set button, rows are 8 px apart, the RPE row puts the previous value on its own line",/\.shead,\.srow\{display:grid;grid-template-columns:var\(--hit\) minmax/.test(css)&&/\.srow\{[^}]*margin-bottom:var\(--sp-2\)/.test(css)&&/\.srow\.r \.sp\{grid-column:1\/-1/.test(css));
+    ok("the live bar buttons are 12 px apart",/\.livebar\{[^}]*gap:var\(--sp-3\)/.test(css));
+    ev("S.settings.rpeOn=true;render()");
+    ok("RPE row: the previous value reads 'Önceki: …' under the boxes",/^Önceki: /.test(q(".srow.r .sp").textContent),q(".srow.r .sp").textContent);
+    ev("S.settings.rpeOn=false;render()");
+  }
   finish();
 })();
