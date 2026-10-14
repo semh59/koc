@@ -69,10 +69,10 @@
 | main/01-core.js | 33 | 77 |
 | main/02-state-components.js | 15 | 11 |
 | main/03-screens.js | 121 | 38 |
-| main/04-sheets.js | 69 | 65 |
+| main/04-sheets.js | 69 | 66 |
 | main/05-notifications.js | 38 | 19 |
 | main/05-permissions.js | 25 | 10 |
-| main/06-events.js | 99 | 7 |
+| main/06-events.js | 100 | 7 |
 | main/07-actions.js | 67 | 2 |
 | modules/coach/coach.js | 58 | 146 |
 | modules/coach/coachlib.js | 10 | 1 |
@@ -148,7 +148,7 @@
 | modules/motion/motionlib.js | 5 | 1 |
 | modules/motion/motionui.js | 23 | 17 |
 | modules/motion/stepsui.js | 36 | 17 |
-| modules/motion/walkui.js | 23 | 13 |
+| modules/motion/walkui.js | 23 | 14 |
 | modules/nutrition/foods.js | 3 | 6 |
 | modules/nutrition/index.js | 5 | 1 |
 | modules/nutrition/labellib.js | 4 | 1 |
@@ -164,4 +164,4 @@
 | modules/pulse/pulseui.js | 13 | 14 |
 | modules/vitals/index.js | 9 | 1 |
 | modules/vitals/vitalslib.js | 11 | 1 |
-| modules/vitals/vitalsui.js | 38 | 48 |
+| modules/vitals/vitalsui.js | 38 | 49 |

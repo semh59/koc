@@ -61,8 +61,8 @@ function dayOptions(inl,sel=tab==="day"&&logOff>=7?keyOff(-logOff):""){
   const ks=Array.from({length:7},(_,i)=>dayKey(addDays(-i)));
   let o=ks.map((k,i)=>`<option value="${k}"${k===sel?" selected":""}>${i==0?"Bugün":i==1?"Dün":WEEKDAYS[addDays(-i).getDay()]+" "+fd(k)}</option>`).join("");
   if(sel&&!ks.includes(sel))o=`<option value="${sel}" selected>${fd(sel)}</option>`+o;
-  const f=`<label class="lbl" for="fday">Gün</label><select class="in" id="fday">${o}</select>`;
-  return inl?`<div class="inl">${f}</div>`:f;
+  const f=`<label class="lbl" for="fday">Gün</label><select class="in" id="fday">${o}</select>`,b=!sel||sel===dayKey()?`<details class="acc"><summary>Bugün</summary>${f}</details>`:f;
+  return inl?`<div class="inl">${b}</div>`:b;
 }
 const fday=()=>($("#fday")||{}).value||dayKey();
 /* The error stays right under the field, in place of what the toast would hide. */
@@ -87,8 +87,10 @@ function goWeight(){
   /* If the selection is lost on the phone, "85" typed after "86,0" becomes 86.085; a scale gives at most 2 decimals. */
   if(!(v>=20&&v<=400)||/[.,]\d{3}/.test(raw))return ferr("kerr",`Kiloyu ${wlab()} olarak yaz, örneğin ${wlab()==="lb"?"185,4":"84,3"}`);
   const day=fday(),m=weights(),ds=Object.keys(m).filter(k=>k<day).sort(),prev=ds.length?m[ds[ds.length-1]]:null;
+  /* A jump against a weigh-in older than two weeks is not a typo signal. */
+  const fresh=prev!=null&&Algo.dayNum(day)-Algo.dayNum(ds[ds.length-1])<=14;
   const lb=prev==null&&wlab()==="kg"&&Algo.lbSuspect(v,S.settings.heightCm);
-  if((lb||prev!=null&&Math.round(Math.abs(v-prev)*10)>=30)&&weightOk!==v){weightOk=v;$("#kerr").textContent="";$("#kwarn").innerHTML=`<div class="banner"><b>${lb?`${fmt(v)} kg çok yüksek görünüyor`:`${dwS(v-prev)} ${wlab()} fark var`}</b><p>${lb?`Libre (lb) yazmış olabilirsin: ${fmt(v)} lb ≈ ${fmt(v*0.45359237)} kg. Doğruysa devam et.`:`Son tartın ${dw(prev)} ${wlab()} idi. Yanlış yazmış olabilir misin?`}</p><button class="btn" data-go="weight">Yine de kaydet</button></div>`;return}
+  if((lb||fresh&&Math.round(Math.abs(v-prev)*10)>=30)&&weightOk!==v){weightOk=v;$("#kerr").textContent="";$("#kwarn").innerHTML=`<div class="banner"><b>${lb?`${fmt(v)} kg çok yüksek görünüyor`:`${dwS(v-prev)} ${wlab()} fark var`}</b><p>${lb?`Libre (lb) yazmış olabilirsin: ${fmt(v)} lb ≈ ${fmt(v*0.45359237)} kg. Doğruysa devam et.`:`Son tartın ${dw(prev)} ${wlab()} idi. Yanlış yazmış olabilir misin?`}</p><button class="btn" data-go="weight">Yine de kaydet</button></div>`;return}
   const e=add("weight",v,"",day);closeSheet();render();
   let msg=`${dw(v)} ${wlab()} kaydedildi`;
   if(prev!=null)msg+=`, öncekine göre ${dwS(v-prev)} ${wlab()}`;
@@ -123,7 +125,9 @@ function sheetFood(){
 function sheetWater(){
   const L=Log.where(e=>e.type==="water"&&e.day===keyOff(-logOff));
   if(!L.length)return closeSheet();
+  const sh=$("#sheet"),y=sh.classList.contains("on")?sh.scrollTop:0;
   openSheet(`<h3>Su kayıtları</h3>${L.map(e=>`<div class="prow"><button class="tx grow" data-edit="${e.id}" aria-label="${e.time}, ${e.v} ml, düzenle"><b class="num">${e.time}</b></button><span class="num">${e.v} ml${e.dr?` · ${drinkName(e.dr)}`:""}</span><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></div>`).join("")}`);
+  sh.scrollTop=y;
 }
 /* One edit sheet for a log entry: value, name or note, day and time, and the meal for food. */
 let editId=0;
@@ -186,7 +190,7 @@ function goTpl(){
 }
 let curFood=null,curPor=0,foodAskQ="";
 const allFoods=()=>Nutrition.my().map(m=>Object.assign({n:m.n,k:m.k,u:m.u||[["1 porsiyon",100]],portion:m.portion===true,my:true,b:m.b,src:m.src},...NUTR.map(k=>({[k]:m[k]==null?null:m[k]})))).concat(Nutrition.recipes().map(LogLib.recipeFood),FOODS);
-const foodListHtml=q=>{const L=allFoods(),ask=q.trim().length>=2?`<button class="prow" data-c="askfood"><span class="grow"><b>"${esc(q.trim())}" için Rehber'e sor</b><span class="mut sm">Yapay zekâ tahmin eder, sonra listene ekleyebilirsin</span></span><span class="aic" aria-hidden="true">${Icons.svg("sparkle")}</span></button>`:"";return foodSearch(q,8,L).map(i=>{const f=L[i];return `<button class="prow" data-food="${i}"><span class="grow"><b>${esc(f.n)}</b><span class="mut sm">${f.rec?`Tarifim, 1 porsiyon: ${Math.round(f.k*f.u[0][1]/100)} kcal`:f.o?`Öğün, ${esc(f.u[0][0])}: ${Math.round(f.k*f.u[0][1]/100)} kcal`:f.my?(f.u.length>1||f.u[0][1]!==100?`Benim ürünüm, 100 g: ${f.k} kcal`:`Benim besinim, 1 porsiyon: ${f.k} kcal`):`100 g: ${f.k} kcal, protein ${fmt(f.p,0)} g`}</span></span><span class="aic" aria-hidden="true">${Icons.svg("plus")}</span></button>`}).join("")+ask};
+const foodListHtml=q=>{const L=allFoods(),ask=q.trim().length>=2?`<button class="prow" data-c="askfood"><span class="grow"><b>"${esc(q.trim())}" için Rehber'e sor</b><span class="mut sm">Yapay zekâ tahmin eder, sonra listene ekleyebilirsin</span></span><span class="aic" aria-hidden="true">${Icons.svg("sparkle")}</span></button>`:"";return foodSearch(q,8,L).map(i=>{const f=L[i];return `<div class="prow"><button class="grow pbtn" data-food="${i}"><span class="grow"><b>${esc(f.n)}</b><span class="mut sm">${f.rec?`Tarifim, 1 porsiyon: ${Math.round(f.k*f.u[0][1]/100)} kcal`:f.o?`Öğün, ${esc(f.u[0][0])}: ${Math.round(f.k*f.u[0][1]/100)} kcal`:f.my?(f.u.length>1||f.u[0][1]!==100?`Benim ürünüm, 100 g: ${f.k} kcal`:`Benim besinim, 1 porsiyon: ${f.k} kcal`):`100 g: ${f.k} kcal, protein ${fmt(f.p,0)} g`}</span></span></button><button class="plus aic" data-fadd="${i}" aria-label="${esc(f.n)}, ilk porsiyonla ekle" title="İlk porsiyonla ekle">${Icons.svg("plus")}</button></div>`}).join("")+ask};
 function sheetPortion(i,food){
   curFood=food||allFoods()[i];curPor=0;
   openSheet(`<h3>${esc(curFood.n)}</h3><div class="lbl">Porsiyon</div><div class="chips" id="fpc">${curFood.u.map((u,j)=>`<button class="chip" data-fp="${j}" aria-pressed="${j===0}">${esc(u[0])}</button>`).join("")}</div>
@@ -198,9 +202,17 @@ function sheetPortion(i,food){
 /* Nutrition value block (food detail and recipe): big calories, a protein/carbohydrate/fat grid, the rest as a small line. A missing value is not written. */
 const nutrBlock=x=>`<div class="nkc"><b class="num">${Math.round(x.k)}</b> kcal</div>${x.lo!=null?`<p class="m0 mut sm num">Aralık ~${Math.round(x.lo)}-${Math.round(x.hi)} kcal; ortalama kaydedilir</p>`:""}${(m=>m.length?`<div class="ngrid">${m.map(k=>`<div><b class="num">${fmt(x[k])} g</b><span>${NLBL[k]}</span></div>`).join("")}</div>`:"")(["p","c","f"].filter(k=>x[k]!=null))}${(m=>m.length?`<p class="m0 mut sm num">${m.map(k=>`${NLBL[k]} ${fmt(x[k])} ${NUNIT(k)}`).join(" · ")}</p>`:"")(["fb","sg","na"].filter(k=>x[k]!=null))}`;
 const RNOTE=" Aralık, tarif farkını (yağ, hamur) yansıtan bir tahmindir, ölçüm değildir. Ekle düğmesi ortalamayı kaydeder.";
-function foodCalc(){
-  const q=num($("#fqty").value),g=curFood.u[curPor][1]*(q>0&&q<=20?q:0),r=x=>x==null?null:x*g/100;
-  return Object.assign({q,g,k:r(curFood.k),lo:r(curFood.lo),hi:r(curFood.hi)},...NUTR.map(k=>({[k]:r(curFood[k])})));
+function foodCalc(f=curFood,por=curPor,q=num($("#fqty").value)){
+  const g=f.u[por][1]*(q>0&&q<=20?q:0),r=x=>x==null?null:x*g/100;
+  return Object.assign({q,g,k:r(f.k),lo:r(f.lo),hi:r(f.hi)},...NUTR.map(k=>({[k]:r(f[k])})));
+}
+/* The + on a result row: one portion of the first unit, no detail sheet; the day and meal come from the open sheet. */
+function quickFood(i){
+  const f=allFoods()[i];if(!f)return;
+  const x=foodCalc(f,0,1),s={v:Math.round(x.k),text:`${f.n}, ${f.u[0][0]}`};
+  for(const k of NUTR)if(x[k]!=null)s[k]=Math.round(x[k]*10)/10;
+  if(x.lo!=null){s.lo=Math.round(x.lo);s.hi=Math.round(x.hi)}
+  addFoods([s],fday(),`${f.n} eklendi`);
 }
 function foodPreview(){
   const x=foodCalc();
@@ -263,14 +275,16 @@ function goFood(){
 const EXERCISE=["Yürüyüş","Koşu","Ağırlık","Bisiklet","Yüzme","Yoga","Diğer"];
 const EXERCISE_MET={Yürüyüş:3.5,Koşu:8.3,Ağırlık:5,Bisiklet:6.8,Yüzme:6,Yoga:2.5,Diğer:4};
 function sheetExercise(){
-  openSheet(`<h3>Spor ekle</h3><div class="lbl" id="spl">Tür</div><div class="chips" id="sp" role="group" aria-labelledby="spl">${EXERCISE.map((s,i)=>`<button class="chip" data-sp="${s}" aria-pressed="${i==0}">${s}</button>`).join("")}</div>
-  <label class="lbl" for="fv">Süre (dakika)</label><input class="in num" id="fv" inputmode="numeric" placeholder="Örneğin 40" autocomplete="off" autofocus><div class="ferr" id="serr" role="alert"></div>${dayOptions()}<button class="btn" data-go="exercise">Kaydet</button>`);
+  const {exLast,exMin}=S.settings,last=EXERCISE.includes(exLast)?exLast:EXERCISE[0];
+  openSheet(`<h3>Spor ekle</h3><div class="lbl" id="spl">Tür</div><div class="chips" id="sp" role="group" aria-labelledby="spl">${EXERCISE.map(s=>`<button class="chip" data-sp="${s}" aria-pressed="${s===last}">${s}</button>`).join("")}</div>
+  <label class="lbl" for="fv">Süre (dakika)</label><input class="in num" id="fv" inputmode="numeric" placeholder="Örneğin 40" value="${exMin||""}" onfocus="this.select()" autocomplete="off" autofocus><div class="ferr" id="serr" role="alert"></div>${dayOptions()}<button class="btn" data-go="exercise">Kaydet</button>`);
 }
 function goExercise(){
   const dk=num($("#fv").value,true);
   if(!(dk>0&&dk<=600))return ferr("serr","Süreyi dakika olarak yaz (1-600), örneğin 40");
   const pr=document.querySelector("#sp [aria-pressed=true]"),name=pr?pr.dataset.sp:"Antrenman";
-  const e=add("exercise",dk,name,fday()),kc=Algo.netKcal(EXERCISE_MET[name],motionKg(),dk);if(kc)e.kcal=kc;save();closeSheet();render();
+  const e=add("exercise",dk,name,fday()),kc=Algo.netKcal(EXERCISE_MET[name],motionKg(),dk);if(kc)e.kcal=kc;
+  Object.assign(S.settings,{exLast:name,exMin:dk});save();closeSheet();render();
   const w=sum("exercise",keyOff(-6),dayKey());
   toast(`${name} ${Math.round(dk)} dk kaydedildi. Hafta: ${Math.round(w)} / ${S.settings.sportWeek} dk`,e.id);
 }

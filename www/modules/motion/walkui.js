@@ -8,9 +8,12 @@ const wClock=ms=>{const s=Math.max(0,Math.floor(ms/1000)),h=Math.floor(s/3600);r
 const wMin=()=>Math.min(WALK_MAX_MIN,Math.max(1,Math.round(wMs()/60000)));
 let wKind="w";
 
+let wStarting=false;
 async function walkStart(){
+  if(S.walk||wStarting)return;
+  wStarting=true;
+  try{await stepsSync()}finally{wStarting=false}
   if(S.walk)return;
-  await stepsSync();
   S.walk={t0:Date.now(),s0:stepToday??null,t1:null,s1:null};save();render();
   walkGpsOn();
 }

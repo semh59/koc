@@ -1,7 +1,11 @@
 /* ---------- events ---------- */
 document.addEventListener("click",ev=>{
-  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-rc],[data-fv],[data-fva],[data-fvd],[data-tp],[data-tpd],[data-sp],[data-lo],[data-kd],[data-g],[data-sex],[data-actl],[data-thm],[data-c],[data-food],[data-fp],[data-ml],[data-edit],[data-waterall]");
-  if(ev.target.id==="scrim")return closeSheet();
+  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-rc],[data-fv],[data-fva],[data-fvd],[data-tp],[data-tpd],[data-sp],[data-lo],[data-kd],[data-g],[data-sex],[data-actl],[data-thm],[data-c],[data-food],[data-fadd],[data-fp],[data-ml],[data-edit],[data-waterall]");
+  if(ev.target.id==="scrim"){
+    const typed=[...document.querySelectorAll("#sheet input,#sheet textarea")].some(e=>!e.readOnly&&!["search","checkbox","file"].includes(e.type)&&e.value!==e.defaultValue);
+    if(!typed)return closeSheet();
+    return confirmSheet({title:"Yazdıkların kaydedilmedi",body:"Pencereyi kapatırsan girdiğin bilgiler silinir.",ok:"Kapat",no:"Yazmaya devam et",danger:true}).then(ok=>{if(ok)closeSheet()});
+  }
   if(!el)return;
   const d=el.dataset;
   if(d.tab){via=!PARENT[tab]&&PARENT[d.tab]?{t:d.tab,p:tab}:null;tab=d.tab;render();window.scrollTo(0,0);return}
@@ -21,7 +25,8 @@ document.addEventListener("click",ev=>{
     const inWater=!!el.closest("#sheet");
     Log.remove(e=>e.id===id);
     if(!commit(()=>Log.restore([rm])))return;
-    render();if(inWater)sheetWater();
+    render();
+    if(inWater){el.closest(".prow").remove();if(!$("#sheet [data-del]"))closeSheet()}
     toast("Kayıt silindi",()=>{
       Log.restore([rm]);
       if(!commit(()=>Log.remove(e=>e.id===id)))return;
@@ -30,6 +35,7 @@ document.addEventListener("click",ev=>{
   }
   if(d.sp){document.querySelectorAll("#sp .chip").forEach(c=>c.setAttribute("aria-pressed",c===el));return}
   if(d.food!==undefined){sheetPortion(+d.food);return}
+  if(d.fadd!==undefined){quickFood(+d.fadd);return}
   if(d.fp!==undefined){curPor=+d.fp;document.querySelectorAll("#fpc .chip").forEach(c=>c.setAttribute("aria-pressed",c===el));foodPreview();return}
   if(d.rc!==undefined||d.fv!==undefined){const x=d.rc!==undefined?recList[+d.rc]:Nutrition.fav()[+d.fv];if(x)addFoods([x],fday(),`${x.text} eklendi`);return}
   if(d.fva!==undefined){
@@ -52,6 +58,7 @@ document.addEventListener("click",ev=>{const c=ev.target.closest(".qa [data-chip
 const TOGGLES={mk:"moveKcalOn",rpe:"rpeOn",gdv:"gdVoice",gdb:"gdVib",aw:"awakeOn",comfy:"comfy",hs:"hideStreak",hn:"hideNums"}; // data-<key> checkbox -> boolean setting
 document.addEventListener("change",ev=>{
   const t=ev.target;
+  if(t.id==="fday"){const sm=t.closest("details.acc")?.querySelector("summary");if(sm)sm.textContent=t.selectedOptions[0].textContent;return}
   if(t.dataset.gi){gInput(t);return}
   const tg=Object.keys(TOGGLES).find(k=>t.dataset[k]!==undefined);
   if(tg){S.settings[TOGGLES[tg]]=t.checked;save();if(tg==="aw")gAwake();if(tg==="comfy"||tg==="hs"||tg==="hn")render();return}
