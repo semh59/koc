@@ -101,12 +101,12 @@ test.describe("Gym",()=>{
     await bench.locator('[data-g="addset:0"]').click();
     await page.fill('[data-gi="kg:1:0"]',"80");await page.fill('[data-gi="reps:1:0"]',"5");
     await page.locator('.card.ex').nth(1).locator('[data-g="done:1:0"]').click();
-    let asked=0;app.onDialog=d=>{asked++;return asked===1?d.dismiss():d.accept()};
     await page.click('[data-g="finish"]');
-    await expect.poll(()=>asked).toBe(1);
-    expect(app.dialogs.at(-1)).toMatch(/set işaretlenmemiş/);
+    await expect(app.sheet).toContainText(/set işaretlenmemiş/);
+    await page.click('#sheet [data-g="closesheet"]');
     await expect(page.locator(".livebar")).toBeVisible();
     await page.click('[data-g="finish"]');
+    await page.click('[data-g="finall"]');
     // Acceptance: the summary opens showing set count and superset; history and Today get a sport entry.
     await expect(page.locator("#sheet")).toContainText("kg hacim");
     await expect(page.locator("#sheet")).toContainText("Süperset: Bench press + Squat");
