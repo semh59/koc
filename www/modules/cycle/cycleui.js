@@ -1,6 +1,6 @@
 "use strict";
 /* Cycle screen. The data lives only in S.cycle; it never reaches the Coach context, a notification body or the widget. No calorie or diet advice. */
-let cycMonth="",cycFlow="",cycSym=[],cycEditId=0;
+let cycMonth="",cycFlow="",cycSym=[],cycEditId=0,cycDay="";
 /* Days past the forecast range before the note says "ask your doctor". */
 const LATE_ASK=7;
 const cycResched=()=>scheduleReminders().then(setNotif);
@@ -50,18 +50,20 @@ function cycMood(){
   const f1=x=>x.toFixed(1).replace(".",","),bits=[b.mood?`ruh halin ortalama ${f1(b.mood.pre)}, diğer günlerde ${f1(b.mood.other)} (5 üzerinden)`:"",b.sleep?`uyku ortalaman ${f1(b.sleep.pre/60)} sa, diğer günlerde ${f1(b.sleep.other/60)} sa`:""].filter(Boolean);
   return `<div class="card"><div class="lbl">Dönemden önceki günler</div><p class="m0">Son 3 dönemde dönem başlamadan önceki 5 günde ${bits.join("; ")}.</p><div class="mt-2 mut sm">Yalnız bir karşılaştırmadır; tahmin ya da tıbbi değerlendirme değildir.</div></div>`;
 }
-/* Symptoms of today, saved on tap, independent of a period record; the last days listed under the chips. */
+/* A day start after midnight makes "today" the previous calendar date until that hour; the person is told once on each entry point. */
+const cycDsNote=()=>S.settings.dayStart>0?`<div class="mt-2 mut sm" role="note">Gün başlangıcın ${String(S.settings.dayStart).padStart(2,"0")}:00. O saate kadar "bugün" dünün tarihidir; farklı bir gün için tarihi değiştir.</div>`:"";
+/* Symptoms of the chosen day (today by default), saved on tap, independent of a period record; the last days listed under the chips, each removable. */
 function cycDaily(today){
-  const cur=S.cycleSym.find(x=>x.day===today)?.sym||[],name=k=>CycleLib.DAILY.find(x=>x[0]===k)[1];
-  const recent=S.cycleSym.filter(x=>x.day<today).slice(-5).reverse().map(x=>`${fd(x.day)}: ${x.sym.map(name).join(", ")}`);
-  return `<div class="card"><div class="lbl">Bugünkü belirtiler</div><div class="chips">${CycleLib.DAILY.map(([k,l])=>`<button class="chip" data-cy="dsym:${k}" aria-pressed="${cur.includes(k)}">${l}</button>`).join("")}</div>${recent.length?`<div class="mt-2 mut sm">${recent.map(esc).join("<br>")}</div>`:""}<div class="mt-2 mut sm" role="note">Yalnız not tutar; yorum ya da tanı değildir.</div></div>`;
+  const day=cycDay>today?today:cycDay||today,cur=S.cycleSym.find(x=>x.day===day)?.sym||[],name=k=>CycleLib.DAILY.find(x=>x[0]===k)[1];
+  const recent=S.cycleSym.slice(-5).reverse().map(x=>`<div class="prow"><span class="grow">${fd(x.day)}: ${esc(x.sym.map(name).join(", "))}</span><button class="del" data-cy="ddel:${x.day}" aria-label="${fd(x.day)} belirtilerini sil">${Icons.svg("x")}</button></div>`);
+  return `<div class="card"><div class="lbl">${day===today?"Bugünkü belirtiler":fd(day)+" belirtileri"}</div><label class="lbl" for="cyd">Gün</label><input class="in" type="date" id="cyd" max="${today}" min="${CycleLib.addDays(today,-90)}" value="${day}"><div class="chips mt-2">${CycleLib.DAILY.map(([k,l])=>`<button class="chip" data-cy="dsym:${k}" aria-pressed="${cur.includes(k)}">${l}</button>`).join("")}</div>${recent.join("")}${cycDsNote()}<div class="mt-2 mut sm" role="note">Yalnız not tutar; yorum ya da tanı değildir.</div></div>`;
 }
 function viewCycle(){
   const st=S.settings,today=dayKey();
   if(!st.cycleOn)return `${emptyCard("data","Döngü takibi kapalı","Açarsan dönem günlerini kaydedip tahmini sonraki dönemi görebilirsin.",`<button class="btn" data-cy="toggle">Döngü takibini aç</button>`)}<p class="hint">Veriler yalnız telefonda durur. ${cycNote}</p>`;
   const preg=risk().pregnant,p=preg?{ok:false}:CycleLib.predict(S.cycle),f=CycleLib.fertile(p,today),dn=CycleLib.dayOfPeriod(S.cycle,today),lastRow=S.cycle[S.cycle.length-1],openRow=!dn&&lastRow&&!lastRow.e&&lastRow.s<=today?lastRow:null;
   let pred;
-  if(preg)pred=`<p class="mut">Hamilelik işareti olduğu için tahmin gösterilmiyor. Sorularını hekimine danış. Kayıtların durur.</p>`;
+  if(preg)pred=`<p class="mut">Hamilelik işareti olduğu için tahmin gösterilmiyor. Sorularını hekimine danış. Kayıtların durur.</p><button class="lnk" data-act="health">İşareti Sağlık notların'dan kaldırabilirsin</button>`;
   else if(!p.ok)pred=`<p class="mut">Yeterli veri yok. Tahmin için en az 3 dönem başlangıcı kaydet.</p>`;
   else{
     const conf=p.irregular?"düşük":p.sd<=2?"yüksek":"orta";
@@ -93,7 +95,7 @@ const cycChips=(attr,list,on)=>`<div class="chips">${list.map(([v,l])=>`<button 
 function sheetCycle(r){
   const t=dayKey();cycEditId=r?r.id:0;cycFlow=r?.flow||"";cycSym=r?.sym?[...r.sym]:[];
   openSheet(`<h3>${r?"Dönemi düzenle":"Dönem ekle"}</h3>
-  <label class="lbl" for="cys">Başlangıç</label><input class="in" type="date" id="cys" max="${t}" value="${r?r.s:t}">
+  <label class="lbl" for="cys">Başlangıç</label><input class="in" type="date" id="cys" max="${t}" value="${r?r.s:t}">${cycDsNote()}
   <label class="lbl" for="cye">Bitiş (isteğe bağlı)</label><input class="in" type="date" id="cye" max="${r?.s&&CycleLib.addDays(r.s,CycleLib.MAXLEN-1)<t?CycleLib.addDays(r.s,CycleLib.MAXLEN-1):t}" value="${r?.e||""}">
   <div class="lbl">Akış (isteğe bağlı)</div>${cycChips("cyf",CycleLib.FLOW,[cycFlow])}
   <div class="lbl">Belirtiler (isteğe bağlı)</div>${cycChips("cyb",CycleLib.SYM,cycSym)}
@@ -133,6 +135,11 @@ document.addEventListener("click",ev=>{
   else if(a==="save")cycSave();
   else if(a==="mon"){cycMonth=ymShift(cycMonth||dayKey().slice(0,7),+arg);render()}
   else if(a==="end"){const r=S.cycle[S.cycle.length-1],t=dayKey(),c=r&&CycleLib.check({...r,e:t},t);if(c?.row)cycPut(S.cycle.map(x=>x===r?{...c.row,id:r.id}:x),"Dönem bitirildi");else toast("Bitiş kaydedilemedi")}
-  else if(a==="dsym"){const prev=S.cycleSym;S.cycleSym=CycleLib.toggleDay(prev,dayKey(),arg);if(commit(()=>{S.cycleSym=prev}))render()}
+  else if(a==="dsym"){const prev=S.cycleSym;S.cycleSym=CycleLib.toggleDay(prev,cycDay||dayKey(),arg);if(commit(()=>{S.cycleSym=prev}))render()}
+  else if(a==="ddel"){const prev=S.cycleSym;S.cycleSym=prev.filter(x=>x.day!==arg);if(commit(()=>{S.cycleSym=prev})){render();toast("Günün belirtileri silindi",()=>{S.cycleSym=prev;save();render()})}}
   else if(a==="del")cycPut(S.cycle.filter(r=>r.id!==+arg),"Kayıt silindi");
+});
+document.addEventListener("change",ev=>{
+  if(ev.target.id!=="cyd")return;
+  const v=ev.target.value;if(CycleLib.diff(dayKey(),v)>=0&&CycleLib.diff(dayKey(),v)<=90){cycDay=v;render()}
 });

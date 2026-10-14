@@ -1,0 +1,30 @@
+/* Audit round 2, section F (Cycle): daily symptoms for a past day and single-day delete, pregnancy flag removal link, day-start note. */
+const {ok,finish}=require("./ok");
+const {boot,flush}=require("./html");
+(async()=>{
+  const w=await boot(),ev=s=>w.eval(s),q=s=>w.document.querySelector(s),qa=s=>[...w.document.querySelectorAll(s)];
+  const fresh=(extra="")=>ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.noticeOk=true;S.settings.cycleOn=true;S.settings.age=30;S.cycle=[];S.cycleSym=[];${extra};cycDay="";tab='cycle';render()`);
+  fresh();
+  const y=ev("keyOff(-2)");
+  q("#cyd").value=y;q("#cyd").dispatchEvent(new w.Event("change",{bubbles:true}));
+  ok("the symptom card shows the chosen past day",q("#cyd").value===y&&/belirtileri/.test(q("#cyd").closest(".card").textContent)&&!/Bugünkü belirtiler/.test(q("#cyd").closest(".card").textContent));
+  q('[data-cy="dsym:nausea"]').click();
+  ok("a symptom is saved on the past day, not today",JSON.stringify(ev("S.cycleSym"))===JSON.stringify([{day:y,sym:["nausea"]}]),ev("S.cycleSym"));
+  q("#cyd").value=ev("dayKey()");q("#cyd").dispatchEvent(new w.Event("change",{bubbles:true}));
+  q('[data-cy="dsym:fatigue"]').click();
+  ok("today keeps its own list",ev("S.cycleSym.length")===2&&ev("S.cycleSym.find(x=>x.day===dayKey()).sym.join()")==="fatigue");
+  q(`[data-cy="ddel:${y}"]`).click();
+  ok("one day can be deleted and the other stays",ev("S.cycleSym.map(x=>x.day).join()")===ev("dayKey()"));
+  q("#tundo").click();
+  ok("Geri al brings the deleted day back",ev("S.cycleSym.length")===2);
+  fresh("S.settings.healthNote='hamileyim';S.cycle=CycleLib.clean([{s:'2026-07-01'}],dayKey())");
+  ok("with the pregnancy flag the forecast card links to the place that removes it",!!q('[data-act="health"]')&&/Sağlık notların/.test(q('[data-act="health"]').textContent));
+  fresh("S.settings.dayStart=3");
+  ok("a day start after midnight is explained on the symptom card",/Gün başlangıcın 03:00/.test(q("#cyd").closest(".card").textContent));
+  ev("sheetCycle()");
+  ok("and under the start date of a period record",/Gün başlangıcın 03:00/.test(q("#sheet").textContent));
+  ev("closeSheet()");
+  fresh();
+  ok("no note when the day starts at midnight",!/Gün başlangıcın/.test(q("#cyd").closest(".card").textContent));
+  finish();
+})();
