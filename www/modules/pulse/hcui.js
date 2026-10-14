@@ -4,7 +4,7 @@ let hcToday=null,hcDay="",hcAt=0,hcBusy=false,hcInfo=null,hcAsked=false;
 const HC_EVERY=60000,HC_RETRY=5000,HC_DAYS=8;
 const HP=()=>plugin("Health");
 /* After midnight yesterday's value must not count as today's (even when the read fails). */
-const hcNow=()=>hcDay===dayKey()?hcToday:null;
+const hcNow=()=>hcDay===calKey()?hcToday:null;
 
 async function hcStatus(){
   const p=HP();if(!p)return null;
@@ -22,7 +22,7 @@ async function hcSync(force){
       else if(was!==false&&hcInfo&&tab==="steps")render(); // the card switches to "grant permission"
       return;
     }
-    const days=Array.from({length:HC_DAYS},(_,i)=>keyOff(-i)),today=days[0];
+    const days=Array.from({length:HC_DAYS},(_,i)=>calOff(-i)),today=days[0];
     const m=(await p.steps({days}))?.days??{};
     hcAt=Date.now();hcDay=today;let ch=was===false;
     for(const d of days)if(typeof m[d]==="number"&&setHc(d,m[d]))ch=true;

@@ -17,7 +17,7 @@ async function quickIngest(){
   const n0=S.entries.length,id0=S.nextId,med0=Meds.snapshot();
   for(const i of water){
     const d=new Date(i.t);
-    S.entries.push({id:S.nextId++,day:dayKey(d),time:`${pad(d.getHours())}:${pad(d.getMinutes())}`,type:"water",v:Math.round(i.v),text:"",qt:i.t});
+    S.entries.push({id:S.nextId++,day:dayAt(i.t),time:`${pad(d.getHours())}:${pad(d.getMinutes())}`,type:"water",v:Math.round(i.v),text:"",qt:i.t});
   }
   const md=meds.length?medIngest(meds):{n:0,names:[]};
   if(!save()){

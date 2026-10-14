@@ -2,9 +2,15 @@
 /* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);
 const pad=n=>String(n).padStart(2,"0");
-const dayKey=(d=new Date())=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-const addDays=(n,from=new Date())=>new Date(from.getFullYear(),from.getMonth(),from.getDate()+n);
-const keyOff=n=>dayKey(addDays(n));
+/* The app day starts at settings.dayStart (hour 0-6). dayKey() and the default of addDays() are "now" shifted by it; a Date passed in is a plain calendar date.
+   dayAt(ms) is the app day of a timestamp. Things that follow the phone clock (step sensor, medication times, Ramadan times) use calKey()/calOff(). */
+const dayShift=()=>{try{return S.settings.dayStart*36e5||0}catch{return 0}};
+const calKey=(d=new Date())=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const dayAt=ms=>calKey(new Date(ms-dayShift()));
+const dayKey=d=>d?calKey(d):dayAt(new Date().getTime());
+const addDays=(n,from=new Date(new Date().getTime()-dayShift()))=>new Date(from.getFullYear(),from.getMonth(),from.getDate()+n);
+const keyOff=n=>calKey(addDays(n));
+const calOff=n=>calKey(addDays(n,new Date()));
 Algo.setClock(dayKey);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=(x,d=1)=>Number(x).toFixed(d).replace(".",",");
@@ -44,7 +50,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- data ---------- */
 const DEF={
-  settings:{medNear:"",trial:null,ramOn:false,ramLat:0,ramLon:0,ramName:"",ramSahur:false,ramIftar:false,ramFrom:"",ramWater:false,ramMedsNo:false,ramMeds:{},comfy:false,pregnant:false,nursing:false,edFlag:false,riskOff:"",fastEdOk:false,hideStreak:false,hideNums:false,goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,shareProfile:true,noticeOk:false,lockGrace:30,piiPrev:false,piiPrevOwn:false,hideRecents:false,bkNoKeys:false,keyMiss:false,copyAt:"",lastPlateau:"",goalSugAt:"",lastBackup:"",alarmWarnDay:"",obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:false,lockOn:false,hcOn:false,hcFrom:"",cycleOn:false,cycleRem:false,fastOn:false,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
+  settings:{medNear:"",trial:null,ramOn:false,ramLat:0,ramLon:0,ramName:"",ramSahur:false,ramIftar:false,ramFrom:"",ramWater:false,ramMedsNo:false,ramMeds:{},comfy:false,pregnant:false,nursing:false,edFlag:false,riskOff:"",fastEdOk:false,hideStreak:false,hideNums:false,goalKg:0,kcal:0,waterMl:2500,glass:250,dayStart:0,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,shareProfile:true,noticeOk:false,lockGrace:30,piiPrev:false,piiPrevOwn:false,hideRecents:false,bkNoKeys:false,keyMiss:false,copyAt:"",lastPlateau:"",goalSugAt:"",lastBackup:"",alarmWarnDay:"",obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:false,lockOn:false,hcOn:false,hcFrom:"",cycleOn:false,cycleRem:false,fastOn:false,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
     {id:1,t:"09:00",on:true,dow:1,name:"Haftalık tartı (Pazartesi)",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -61,8 +67,8 @@ const DEF={
   entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,dbStep:0,plates:GPLATE_DEF.slice(),exCfg:{},providers:defProviders(),chat:[],chats:[],cid:1,myFoods:[],recipes:[],favFoods:[],mealTpl:[],fast:{plan:16,t0:null,log:[]},sleep:[],mood:[],labs:[],vitals:[],pulse:[],hr:[],meds:[],medLog:[],moves:[],measures:[],walk:null,cycle:[],cycleSym:[]
 };
 const VR={bpSysHi:[80,300,true],bpDiaHi:[40,200,true],bpSysLo:[50,300,true],bpDiaLo:[30,200,true],gFastLo:[20,600,true],gFastHi:[20,600,true],gPostLo:[20,600,true],gPostHi:[20,600,true]};
-const RANGES={...VR,goalKg:[20,400,false],kcal:[800,8000,true],waterMl:[500,10000,true],glass:[50,1500,true],sportWeek:[10,3000,true],stepGoal:[1000,100000,true],heightCm:[100,250,true],age:[10,100,true],ramLat:[35.5,42.5,false],ramLon:[25.5,45,false]};
-const SETLBL={goalKg:"Hedef kilo",kcal:"Günlük kalori",waterMl:"Günlük su",glass:"Bir bardak",sportWeek:"Haftalık spor",stepGoal:"Günlük adım",heightCm:"Boy",age:"Yaş",bpSysHi:"Büyük tansiyon üst sınır",bpDiaHi:"Küçük tansiyon üst sınır",bpSysLo:"Büyük tansiyon alt sınır",bpDiaLo:"Küçük tansiyon alt sınır",gFastLo:"Açlık alt sınır",gFastHi:"Açlık üst sınır",gPostLo:"Yemek sonrası alt sınır",gPostHi:"Yemek sonrası üst sınır"};
+const RANGES={...VR,goalKg:[20,400,false],kcal:[800,8000,true],waterMl:[500,10000,true],glass:[50,1500,true],dayStart:[0,6,true],sportWeek:[10,3000,true],stepGoal:[1000,100000,true],heightCm:[100,250,true],age:[10,100,true],ramLat:[35.5,42.5,false],ramLon:[25.5,45,false]};
+const SETLBL={goalKg:"Hedef kilo",kcal:"Günlük kalori",waterMl:"Günlük su",glass:"Bir bardak",dayStart:"Gün başlangıcı",sportWeek:"Haftalık spor",stepGoal:"Günlük adım",heightCm:"Boy",age:"Yaş",bpSysHi:"Büyük tansiyon üst sınır",bpDiaHi:"Küçük tansiyon üst sınır",bpSysLo:"Büyük tansiyon alt sınır",bpDiaLo:"Küçük tansiyon alt sınır",gFastLo:"Açlık alt sınır",gFastHi:"Açlık üst sınır",gPostLo:"Yemek sonrası alt sınır",gPostHi:"Yemek sonrası üst sınır"};
 const ZEROOK=["goalKg","kcal","heightCm","age",...Object.keys(VR)];
 const {copyNutr,NUTR}=LogLib;
 const NLBL={p:"protein",c:"karbonhidrat",f:"yağ",fb:"lif",sg:"şeker",na:"sodyum"},NUNIT=k=>k==="na"?"mg":"g";

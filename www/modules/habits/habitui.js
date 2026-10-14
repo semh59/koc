@@ -45,7 +45,7 @@ function fastGo(){
   fastSet(Date.now(),"Oruç başladı");
 }
 function fastSettingsHtml(){
-  const f=S.fast,on=S.settings.fastOn,last=f.log.slice(-HB_SHOWN).reverse().map(x=>hbRow(`${fd(dayKey(new Date(x.t1)))} ${hbDur(Math.round((x.t1-x.t0)/6e4))}`,"fdel:"+x.t0)).join("");
+  const f=S.fast,on=S.settings.fastOn,last=f.log.slice(-HB_SHOWN).reverse().map(x=>hbRow(`${fd(dayAt(x.t1))} ${hbDur(Math.round((x.t1-x.t0)/6e4))}`,"fdel:"+x.t0)).join("");
   return modRow('data-hb="fasttoggle"',on,"Oruç zamanlayıcısı","Aralıklı oruç süreni tutar.","hlpfs","Planı burada seçersin; orucu Bugün ekranından başlatıp bitirirsin. İlk açılışta kimlerin oruç tutmaması gerektiği gösterilir. Uzun planlar sağlık işaretinde kapanır.",
     `<div class="lbl">Plan (oruç:yeme saati)</div><div class="chiprow">${HabitLib.PLANS.map(p=>`<button class="chip" data-hb="plan:${p}" aria-pressed="${f.plan===p}"${p>=LONG_PLAN&&risk().hard.length?" disabled":""}>${p}:${24-p}</button>`).join("")}</div>`)
   +(last?`<div class="mt-2 mut sm">Son oruçlar</div>${last}`:"");

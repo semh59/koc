@@ -29,7 +29,7 @@ function goCardio(){
   const min=num($("#fv").value,true),kr=$("#ckm").value.trim(),km=kr?num(kr):0,day=fday(),tm=$("#ctm").value,note=$("#cnote").value.trim();
   const c=CardioLib.check({kind:ckSel,min,km});
   if(c.err)return ferr("cerr",c.err);
-  const n=new Date(),today=day===dayKey(n);
+  const n=new Date(),today=day===dayKey();
   if(today&&timeOk(tm)&&tm>`${pad(n.getHours())}:${pad(n.getMinutes())}`)return ferr("cerr","Bitiş saati gelecekte olamaz");
   const dup=Log.find(x=>x.type==="exercise"&&x.day===day&&x.text.startsWith(c.name));
   if(dup)return confirmSheet({title:"Yine de eklensin mi?",body:`Bu gün için ${c.name} kaydı var (${Math.round(dup.v)} dk). Aynı antrenmanı ikinci kez eklersen iki kez sayılır. Yine de eklensin mi?`,ok:"Ekle"}).then(ok=>{if(ok)ckSave(c,min,day,tm,note,today)});

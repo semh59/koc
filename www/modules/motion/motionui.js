@@ -66,7 +66,7 @@ async function motionBoot(){
 function motionCard(){
   if(!S.settings.motionOn)return "";
   const row=m=>`<div class="row"><span><b>${m.t0}</b> ${m.k==="r"?"Koşu":"Yürüyüş"} <small class="mut">${m.min} dk</small></span><span class="ta-r num">${fmt(m.km,1)} km · ${fmt(m.kmh,1)} km/s${m.kcal!=null?` · ${m.kcal} kcal`:""}</span></div>`;
-  const tl=S.moves.filter(m=>m.day===dayKey()),yl=S.moves.filter(m=>m.day===keyOff(-1));
+  const tl=S.moves.filter(m=>m.day===calKey()),yl=S.moves.filter(m=>m.day===calOff(-1));
   const sum=l=>{const x=MotionLib.totals(l);return `${x.min} dk, ${fmt(x.km,1)} km${x.kcalN?`, ${x.kcal} kcal`:""}`};
   /* The day total is visible, single movements open on tap. */
   const grp=(name,l)=>`<details class="acc"><summary><b class="grow">${name}</b><span class="num mut">${sum(l)}</span></summary>${l.slice().reverse().map(row).join("")}</details>`;

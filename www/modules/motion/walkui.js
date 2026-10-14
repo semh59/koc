@@ -49,7 +49,7 @@ function walkSave(){
   const w=S.walk,min=num($("#wmin").value,true);
   if(!w)return;
   if(!(min>=1&&min<=WALK_MAX_MIN))return toast(`Süreyi dakika olarak yaz, 1 ile ${WALK_MAX_MIN} arası`);
-  const r=walkCalc(min),name=WKIND[wKind],e=add("exercise",min,r.km!=null?`${name}, ~${fmt(r.km,2)} km`:name,MotionLib.dayOf(w.t1));
+  const r=walkCalc(min),name=WKIND[wKind],e=add("exercise",min,r.km!=null?`${name}, ~${fmt(r.km,2)} km`:name,dayAt(w.t1));
   e.time=MotionLib.hmOf(w.t1);if(r.kcal)e.kcal=r.kcal;if(r.km!=null)e.km=r.km;
   S.walk=null;save();closeSheet();render();
   toast(`${name} ${min} dk kaydedildi${r.kcal?`, ~${r.kcal} kcal (tahmini)`:""}`,e.id);
