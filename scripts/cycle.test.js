@@ -148,6 +148,14 @@ const seed=()=>ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.cycl
   seed();ev("S.cycle=CycleLib.clean([{s:'2026-06-01'},{s:'2026-06-29'},{s:'2026-07-27'},{s:'2026-08-24'}],'2026-10-06');tab='cycle';render()");
   const late=ev("CycleLib.overdue(CycleLib.predict(S.cycle),dayKey())");
   ok("overdue: neutral note with the day count and 'hekimine danış', no interpretation",late>0&&v().includes(`Tahmin aralığı ${late} gün önce bitti; hekimine danış.`)&&!/hamile|gecik|test/i.test(v().match(/Tahmin aralığı[^.]*\./)[0]));
+  const lateText=n=>{
+    for(let d=20;d<80;d++){
+      ev(`S.cycle=CycleLib.clean([84,56,28,0].map(o=>({s:keyOff(-${d}-o)})),dayKey());tab='cycle';render()`);
+      if(ev("CycleLib.overdue(CycleLib.predict(S.cycle),dayKey())")===n)return v().match(/Tahmin aralığı[^.]*\.(?: Dönemin[^.]*\.)?/)[0];
+    }
+    return "";
+  };
+  ok("overdue: under 7 days gives the neutral add line, from 7 days 'hekimine danış'",/Dönemin başladıysa ekleyebilirsin/.test(lateText(1))&&!/hekimine/.test(lateText(6))&&/hekimine danış/.test(lateText(7)));
   ok("overdue: none when the range has not ended or there is no prediction",C.overdue({ok:true,to:"2026-10-10"},T)===0&&C.overdue({ok:false},T)===0&&C.overdue(null,T)===0);
   ev("S.settings.healthNote='hamileyim';render()");
   ok("overdue: never shown with a pregnancy marker",!/gün önce bitti/.test(v()));

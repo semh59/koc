@@ -317,7 +317,7 @@ function cSend(text){
   text=String(text||"").trim().slice(0,600);if(!text)return;
   const fl=CoachLib.redFlag(text),m=cPush({role:"user",text,pend:true});
   if(fl==="ed")setRisk("ed");
-  {const pg=CoachLib.pregnant(text);if(pg)setRisk(pg)}
+  {const pg=CoachLib.pregnant(text);if(pg)chatRisk(pg,"Mesajında")}
   if(fl){
     cPush({role:"coach",text:"",card:{kind:"safety",level:fl}});
     if(fl==="emergency"||fl==="mind")m.pend=false;else m.fl=fl;
@@ -326,11 +326,18 @@ function cSend(text){
 }
 /* An eating-disorder or pregnancy sign seen in a chat is a permanent brake: a new chat or a deletion does not lift it (riskInput reads it). */
 /* If the health note holds a severe sign (self-harm, emergency symptom), a safety card is shown in the chat. */
+/* A first-person pregnancy or nursing sign opens the flag and says so. A flag the user lifted stays lifted when it comes from note text. */
+function chatRisk(k,from,fromNote){
+  const st=S.settings;
+  if(st[RISK_KEY[k]]||(fromNote&&st.riskOff.split(",").includes(k)))return;
+  setRisk(k);
+  toast(`${from} ${k==="preg"?"hamilelik":"emzirme"} işareti gördüm; kalori açığı, oruç ve program önerilerini kapattım. Yanlışsa Sağlık notların'dan kaldırabilirsin`);
+}
 function cNoteCheck(t=S.settings.healthNote){
   const f=CoachLib.redFlag(t),preg=CoachLib.pregnant(t);
   if(f==="mind"||f==="emergency"){cPush({role:"coach",text:"",card:{kind:"safety",level:f}});toast("Notunda bir sağlık uyarısı işareti var, Rehber sekmesine bak")}
   if(f==="ed")setRisk("ed");
-  if(preg)setRisk(preg);
+  if(preg)chatRisk(preg,"Notunda",true);
   return f||preg;
 }
 async function cFlush(){

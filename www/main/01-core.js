@@ -50,7 +50,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- data ---------- */
 const DEF={
-  settings:{chipUse:{},vCtx:"",exLast:"",exMin:0,obSkipped:false,obNudge:false,obAt:"",modAsked:false,medNear:"",trial:null,ramOn:false,ramLat:0,ramLon:0,ramName:"",ramSahur:false,ramIftar:false,ramFrom:"",ramWater:false,ramMedsNo:false,ramMeds:{},comfy:false,pregnant:false,nursing:false,edFlag:false,riskOff:"",fastEdOk:false,hideStreak:false,hideNums:false,goalKg:0,kcal:0,waterMl:2500,glass:250,dayStart:0,sportWeek:150,macroP:0,macroC:0,macroF:0,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,shareProfile:true,noticeOk:false,lockGrace:30,piiPrev:false,piiPrevOwn:false,hideRecents:false,bkNoKeys:false,keyMiss:false,copyAt:"",lastPlateau:"",goalSugAt:"",lastBackup:"",alarmWarnDay:"",obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:false,lockOn:false,hcOn:false,hcFrom:"",cycleOn:false,cycleRem:false,fastOn:false,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
+  settings:{chipUse:{},vCtx:"",exLast:"",exMin:0,obSkipped:false,obNudge:false,obAt:"",modAsked:false,medNear:"",trial:null,ramOn:false,ramLat:0,ramLon:0,ramName:"",ramSahur:false,ramIftar:false,ramFrom:"",ramWater:false,ramMedsNo:false,ramMeds:{},ramMedsRef:{},comfy:false,pregnant:false,pregAt:"",nursing:false,edFlag:false,riskOff:"",fastEdOk:false,hideStreak:false,hideNums:false,goalKg:0,kcal:0,waterMl:2500,glass:250,dayStart:0,sportWeek:150,macroP:0,macroC:0,macroF:0,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,shareProfile:true,noticeOk:false,lockGrace:30,piiPrev:false,piiPrevOwn:false,hideRecents:false,bkNoKeys:false,keyMiss:false,copyAt:"",lastPlateau:"",goalSugAt:"",lastBackup:"",alarmWarnDay:"",obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:false,lockOn:false,hcOn:false,hcFrom:"",cycleOn:false,cycleRem:false,fastOn:false,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
     {id:1,t:"09:00",on:true,dow:1,name:"Haftalık tartı (Pazartesi)",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -89,6 +89,7 @@ function cleanSettings(raw){
   }
   for(const k in d)if(typeof d[k]==="boolean"&&typeof o[k]==="boolean")d[k]=o[k];
   for(const k of DAY_KEYS)if(dayOk(o[k]))d[k]=o[k];
+  if(typeof o.pregAt==="string"&&/^\d{4}-\d\d-\d\dT[\d:.]+Z$/.test(o.pregAt))d.pregAt=o.pregAt;
   if(o.sex==="m"||o.sex==="f")d.sex=o.sex;
   if(o.act===0||o.act===1||o.act===2)d.act=o.act;
   if(LOCK_GRACES.includes(o.lockGrace))d.lockGrace=o.lockGrace;
@@ -104,6 +105,7 @@ function cleanSettings(raw){
     const e=Object.entries(m||{}).filter(([a,b])=>timeOk(a)&&timeOk(b)&&a!==b).slice(0,6);
     if(/^\d{1,3}$/.test(id)&&e.length)d.ramMeds[id]=Object.fromEntries(e);
   }
+  if(o.ramMedsRef&&typeof o.ramMedsRef==="object")for(const [id,t] of Object.entries(o.ramMedsRef).slice(0,20))if(/^\d{1,3}$/.test(id)&&d.ramMeds[id]&&timeOk(t))d.ramMedsRef[id]=t;
   d.consent=o.consent===true&&o.consentV===CONSENT_V&&!(d.age>0&&d.age<18);
   if(d.consent){d.consentV=CONSENT_V;if(dayOk(o.consentAt))d.consentAt=o.consentAt;if(typeof o.consentP==="string")d.consentP=o.consentP.slice(0,200)}
   if(!d.cycleOn)d.cycleRem=false;
@@ -317,9 +319,11 @@ const PREG_OFF=[1,5];
 const RISK_KEY={ed:"edFlag",preg:"pregnant",nurs:"nursing"};
 function setRisk(k){
   const st=S.settings;st[RISK_KEY[k]]=true;st.riskOff=st.riskOff.split(",").filter(x=>x&&x!==k).join(",");
+  if(k==="preg")st.pregAt=new Date().toISOString();
   if(k!=="ed")scheduleReminders().then(setNotif);
 }
-function liftRisk(k){const st=S.settings;st[RISK_KEY[k]]=false;st.riskOff=[...new Set(st.riskOff.split(",").concat(k))].filter(Boolean).join(",");scheduleReminders().then(setNotif)}
+/* pregAt: when the pregnancy flag last changed, so a backup restore keeps the newer state. */
+function liftRisk(k){const st=S.settings;st[RISK_KEY[k]]=false;if(k==="preg")st.pregAt=new Date().toISOString();st.riskOff=[...new Set(st.riskOff.split(",").concat(k))].filter(Boolean).join(",");scheduleReminders().then(setNotif)}
 const weightNow=()=>{const w=weights(),ks=Object.keys(w).sort();return ks.length?Algo.trend(w)[ks[ks.length-1]]:0};
 function riskInput(kg){
   const st=S.settings,from=keyOff(-89),n=k=>Vitals.all().filter(v=>v.k===k&&v.day>=from).length;
