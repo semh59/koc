@@ -24,7 +24,7 @@ require("./html").boot().then(w=>{
       for(const e of el.querySelectorAll("*"))for(const a of e.attributes)if(/^on/i.test(a.name)&&!(a.name==="onfocus"&&a.value==="this.select()")&&!(a.name==="onclick"&&a.value==="if(!this.dataset.s){this.dataset.s=1;this.select()}")){found.push(where+" "+a.name);break}}};
     const tabs=["today","gym","trend","coach","more","settings","settings-about","settings-reminders","settings-modules","settings-data","steps","labs","bp","glucose","exlib","meds"];
     for(const t of tabs){try{tab=t;render();scan("tab:"+t)}catch(e){found.push("error "+t+": "+e.message)}}
-    for(const s of ["sheetSteps","sheetBp","sheetBs","sheetCsv","sheetCycle","sheetCardio","sheetCardioAll","sheetWeight","sheetEntry","sheetMood","sheetNote","sheetMeasures","sheetPrivacy","sheetExercise","sheetWater","sheetRecipe","sheetTpl","sheetSleep","sheetBackup","sheetFood","sheetDrink"]){try{tab="today";render();eval(s+"()");scan("sheet:"+s)}catch(e){found.push("error "+s+": "+e.message)}closeSheet()}
+    for(const s of ["sheetSteps","sheetBp","sheetBs","sheetExport","sheetCycle","sheetCardio","sheetCardioAll","sheetWeight","sheetEntry","sheetMood","sheetNote","sheetMeasures","sheetPrivacy","sheetExercise","sheetWater","sheetRecipe","sheetTpl","sheetSleep","sheetBackup","sheetFood","sheetDrink"]){try{tab="today";render();eval(s+"()");scan("sheet:"+s)}catch(e){found.push("error "+s+": "+e.message)}closeSheet()}
     return JSON.stringify([...new Set(found)]);
   })()`));
   ok("the HTML payload produces no executable element in any tab or sheet",found.length===0,found);

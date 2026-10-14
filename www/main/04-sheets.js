@@ -6,7 +6,7 @@ function trap(){const o=topLayer();for(const e of document.body.children)if(e.ta
 let sheetFrom=null,sheetEnd=null;
 const sheetDone=ok=>{const e=sheetEnd;sheetEnd=null;if(e)e(ok)};
 function openSheet(html){
-  sheetDone(false);$("#toast").classList.remove("on");const s=$("#sheet");
+  Units.reset();sheetDone(false);$("#toast").classList.remove("on");const s=$("#sheet");
   if(!s.classList.contains("on"))sheetFrom=document.activeElement;
   s.innerHTML=`<div class="grab"></div><button class="shx" data-shx aria-label="Pencereyi kapat">${Icons.svg("x")}</button>${html}`;
   const h=s.querySelector("h3");
@@ -15,7 +15,7 @@ function openSheet(html){
   const f=s.querySelector("[autofocus]");if(f)setTimeout(()=>{const a=document.activeElement;if(f.isConnected&&!(a&&a!==f&&s.contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)))f.focus()},220);else(h||s).focus({preventScroll:true});
 }
 function closeSheet(){
-  plStop();sheetDone(false);const s=$("#sheet"),was=s.classList.contains("on"),f=sheetFrom;
+  Units.reset();plStop();sheetDone(false);const s=$("#sheet"),was=s.classList.contains("on"),f=sheetFrom;
   s.classList.remove("on");$("#scrim").classList.remove("on");sheetFrom=null;trap();
   if(was&&f&&f.isConnected)f.focus({preventScroll:true});
 }
@@ -79,7 +79,7 @@ let weightOk=null;
 function sheetWeight(){
   const m=weights(),ds=Object.keys(m).sort(),last=ds.length?dw(m[ds[ds.length-1]]):"";
   /* The last weigh-in comes prefilled; it is selected on focus and on the first tap so the typed number is not appended to the old one. */
-  weightOk=null;openSheet(`<h3>Kilo ekle</h3><div class="kstep"><button class="chip" data-kd="-1" aria-label="0,1 ${wlab()} azalt">−0,1</button><input class="in num" id="fv" inputmode="decimal" placeholder="${wlab()==="lb"?"185,4":"84,3"}" value="${last}" autocomplete="off" autofocus onfocus="this.select()" onclick="if(!this.dataset.s){this.dataset.s=1;this.select()}"><button class="chip" data-kd="1" aria-label="0,1 ${wlab()} artır">+0,1</button></div><div class="ferr" id="kerr" role="alert"></div>${dayOptions()}<div id="kwarn" role="alert"></div><button class="btn" data-go="weight">Kaydet</button>`);
+  weightOk=null;openSheet(`<h3>Kilo ekle</h3><div class="lbl">Kilo (<button class="lnk ib wa" data-tu="w" data-for="fv" aria-label="Birimi bu kayıt için değiştir">${wlab()}</button>)</div><div class="kstep"><button class="chip" data-kd="-1" aria-label="0,1 ${wlab()} azalt">−0,1</button><input class="in num" id="fv" inputmode="decimal" placeholder="${wlab()==="lb"?"185,4":"84,3"}" value="${last}" autocomplete="off" autofocus onfocus="this.select()" onclick="if(!this.dataset.s){this.dataset.s=1;this.select()}"><button class="chip" data-kd="1" aria-label="0,1 ${wlab()} artır">+0,1</button></div><div class="ferr" id="kerr" role="alert"></div>${dayOptions()}<div id="kwarn" role="alert"></div><button class="btn" data-go="weight">Kaydet</button>`);
 }
 function weightStep(d){const f=$("#fv"),v=num(f.value),k=Units.wIn(v);if(k>=20&&k<=400)f.value=fmt(Math.round(v*10+d)/10)}
 function goWeight(){

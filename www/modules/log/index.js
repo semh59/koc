@@ -18,7 +18,7 @@ Data.privacy.push(["Yemek ve su kayıtları",()=>Log.count("food","water"),()=>L
   ["Notlar",()=>Log.count("note"),()=>Log.drop("note"),9]);
 const CSV_TYPE={food:"yemek",water:"su",weight:"kilo",exercise:"spor",steps:"adım",note:"not"};
 const UNIT={food:"kcal",water:"ml",weight:"kg",exercise:"dk",steps:"adım",note:""};
-Data.csv.push(["kayitlar","Kayıtlar (yemek, su, kilo, ölçü, spor, adım, not)",()=>["tarih","saat","tür","değer","birim","açıklama","protein_g","karbonhidrat_g","yağ_g","lif_g","şeker_g","sodyum_mg"],({S,by,day,time,conv,wu})=>by([...S.entries,...Data.csvEntries.flatMap(f=>f(S))],day,time).map(e=>[e.day,e.time,CSV_TYPE[e.type]||e.type,e.type==="note"?null:e.type==="weight"?conv.w(e.v,wu):e.v,e.type.startsWith("ölçü")?"cm":e.type==="weight"?wu:UNIT[e.type],e.text==="manual"?"elle":e.text,e.p,e.c,e.f,e.fb,e.sg,e.na]),0]);
+Data.csv.push(["kayitlar","Kayıtlar (yemek, su, kilo, ölçü, spor, adım, not)",()=>["tarih","saat","tür","değer","birim","açıklama","protein_g","karbonhidrat_g","yağ_g","lif_g","şeker_g","sodyum_mg"],({S,by,day,time,conv,wu})=>by([...S.entries,...Data.csvEntries.flatMap(f=>f(S))],day,time).map(e=>[e.day,e.time,CSV_TYPE[e.type]||e.type,e.type==="note"?null:e.type==="weight"?conv.w(e.v,wu):e.v,e.type.startsWith("ölçü")?"cm":e.type==="weight"?wu:UNIT[e.type],e.text==="manual"?"elle":e.text,e.p,e.c,e.f,e.fb,e.sg,e.na]),0,2]);
 Data.hist.push((S,{add,get})=>{
   for(const e of S.entries||[]){
     if(e.type==="food"){add(e.day,"food",1);if(e.v>0)add(e.day,"kcal",e.v)}

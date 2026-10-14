@@ -28,4 +28,17 @@ ok("workout CSV: set type (drop, failure) and superset group number",g2.join("|"
 ok("measure rows carry the lowercase Turkish region name",f.includes("ölçü_bel")&&f.includes("ölçü_göğüs")&&!f.includes("undefined"),f);}
 ok("labs file: one row per result with the qualifier, unit and the report range",g("tahlil")[1]==="2026-10-01;LDL;3,2;<;mmol/L;1;3"&&g("tahlil")[0].endsWith("rapor_alt;rapor_üst"),g("tahlil"));
 ok("moves file: walk or run with minutes, steps, km, speed and kcal",g("hareket")[1]==="2026-10-01;07:30;yürüyüş;25;2800;2,1;5;90",g("hareket"));
+{const A=require("../www/modules/data/archivelib.js");
+ const sp=C.files(S,{exName:id=>id,vctx:()=>"Açlık"},{split:true}),k=sp.map(f=>f.key);
+ ok("split: the log file becomes one file per kind; files without a kind column stay whole",k.includes("kayitlar-yemek")&&k.includes("kayitlar-kilo")&&k.includes("kayitlar-not")&&!k.includes("kayitlar")&&k.includes("antrenman")&&k.includes("saglik-tansiyon")&&k.includes("saglik-seker"),k);
+ const kilo=sp.find(f=>f.key==="kayitlar-kilo").build().split("\r\n");
+ ok("split: a kind file keeps the same columns so the import still reads it",kilo[0].includes("tarih;saat;tür;değer;birim")&&kilo[1]==="2026-10-02;09:00;kilo;80,5;kg;;;;;;;",kilo);
+ const intl=C.files(S,{exName:id=>id,vctx:()=>"Açlık"},{intl:true}).find(f=>f.key==="kayitlar").build().split("\r\n");
+ ok("intl: decimal point and , separator",intl[1].startsWith("2026-10-01,20:00,yemek,300,kcal,")&&intl[1].includes(",12.5,"),intl);
+ ok("intl: a text with ; stays unquoted, one with , is quoted",C.csv(["a"],[["x;y"],["x,y"]],true)==="﻿a\r\nx;y\r\n\"x,y\"\r\n");
+ const lb=C.files({...S,settings:{wUnit:"lb"}},{exName:id=>id,vctx:()=>""}).find(f=>f.key==="antrenman").build().split("\r\n");
+ ok("workout file: the header carries the chosen weight unit and the values follow it",lb[0].includes(";set;lb;tekrar")&&lb[1].includes(";1;44,09;10"),lb.slice(0,2));
+ const bn=JSON.parse(A.build({settings:{},entries:S.entries},"2026-10-05",{kayitlar:"a;b"}).json);
+ ok("bundle: the archive carries the tables as they are; without tables there is no tables key",bn.tables.kayitlar==="a;b"&&!("tables" in JSON.parse(A.build({settings:{}},"2026-10-05").json)));
+ ok("archive states what it leaves out",/API anahtarları/.test(A.LEFT_OUT)&&/döngü/.test(A.LEFT_OUT)&&/fotoğraflar/.test(A.LEFT_OUT));}
 finish();

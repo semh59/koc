@@ -61,7 +61,7 @@ function sheetBp(){
 function sheetBs(){
   vConfirm="";vCtx=S.settings.vCtx||(new Date().getHours()<10?"fasting":"random");
   openSheet(`<h3>Şeker ekle</h3>
-  <label class="lbl" for="gv">Şeker (${glab()})</label><input class="in num" id="gv" inputmode="${vMmol()?"decimal":"numeric"}" placeholder="örn. ${vMmol()?"5,3":"95"}" autocomplete="off" autofocus>
+  <div class="lbl"><label for="gv">Şeker</label> (<button class="lnk ib wa" data-tu="g" data-for="gv" aria-label="Birimi bu kayıt için değiştir">${glab()}</button>)</div><input class="in num" id="gv" inputmode="${vMmol()?"decimal":"numeric"}" placeholder="örn. ${vMmol()?"5,3":"95"}" autocomplete="off" autofocus>
   <div class="lbl">Ne zaman ölçtün?</div>${vChips("vctx",VitalsLib.CTX,vCtx)}
   ${dayOptions()}<label class="lbl" for="vtime">Saat</label><input class="in" type="time" id="vtime" value="${vNow()}">
   ${vNote()}
