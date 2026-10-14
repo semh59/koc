@@ -41,7 +41,7 @@ test.describe("Lab results",()=>{
 
     // detail: two results, only the high one flagged; after deleting the high one the card shows the earlier (in-range) value
     await g.locator(".labo").click();
-    const rows=page.locator("#sheet .row");
+    const rows=page.locator("#sheet .prow");
     await expect(rows).toHaveCount(2);
     await expect(rows.first()).toContainText("▲");await expect(rows.last()).not.toContainText("▲");
     await rows.first().locator('[data-lab^="del:"]').click();
@@ -67,7 +67,7 @@ test.describe("Blood pressure and glucose",()=>{
     await bp(page,[["bs1",120],["bd1",80],["bn1",70]]);
     await expect(app.toast).toHaveText("Kaydedildi: 120/80");
     await bp(page,[["bs1",120],["bd1",80],["bn1",70]]);
-    const rows=page.locator('#view .row:has([data-vt^="del:"])');
+    const rows=page.locator('#view .prow:has([data-vt^="del:"])');
     await expect(rows).toHaveCount(2);
     const v=(await app.state()).vitals;
     expect(v.map(r=>[r.sys,r.dia,r.pulse,r.day,r.time])).toEqual([[120,80,70,day(0),"09:30"],[120,80,70,day(0),"09:30"]]);
