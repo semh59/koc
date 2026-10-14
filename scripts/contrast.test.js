@@ -13,13 +13,15 @@ const PAIRS=[
  ["prim-ink","prim",4.5,"primary button"],["prim-ink","prim-btn",4.5,"primary button background"],["prim-btn","card",3,"button on a card"],["prim","prim-ink",4.5,"weight card button"],["warn","card",4.5,"warning text (card)"],["warn","bg",4.5,"warning text (page)"],
  ["exercise","card",4.5,"exercise accent text"],["exercise","bg",4.5,"exercise accent text (page)"],["exercise-ink","exercise",4.5,"selected exercise button"],
  ["tact","tbg",4.5,"toast undo button"],["tfg","tbg",4.5,"toast text"],
+ ["water","card",4.5,"water text (card)"],["water","bg",4.5,"water text (page)"],["water","soft",4.5,"water text (tonal)"],["kcal","card",4.5,"calorie text (card)"],["kcal","bg",4.5,"calorie text (page)"],["kcal","soft",4.5,"calorie text (tonal)"],
  ["water","card",3,"water chart"],["kcal","card",3,"calorie ring and goal line"],["prim","card",3,"chart line"],["exercise","card",3,"exercise chart"],["warn","card",3,"warning chart"],
  ["mut","card",3,"input border and faint lines"],
  ["prim","soft",4.5,"secondary (tonal) button text"],["prim","prim-soft",3,"active tab icon"],["ink","field",4.5,"input text"],["mut","field",4.5,"input placeholder"],["fbd","card",3,"input border (on a card)"],["fbd","bg",3,"input border (on the page)"],
  ["ban-ink","ban-bg",4.5,"warning box"],["inf-ink","inf-bg",4.5,"info box"],["ink","inf-bg",4.5,"info card"],["forecast-ink","forecast-bg",4.5,"forecast badge"],["info-ink","info",4.5,"blue button"],["ok","card",4.5,"success text (card)"],["ok","bg",4.5,"success text (page)"],
 ];
+const DARK_ONLY=[["card-bd","bg",3,"card border on the page (no shadow in dark mode)"],["card-bd","card",3,"card border on the card"]];
 for(const [name,t] of [["light",light],["dark",dark]]){
-  for(const [f,b,min,d] of PAIRS){
+  for(const [f,b,min,d] of [...PAIRS,...(name==="dark"?DARK_ONLY:[])]){
     const fh=hex(t,f),bh=hex(t,b);if(!fh||!bh){ok(`${name}: ${d} (${f}/${b}) color is defined`,false,"yok");continue}
     const r=cr(fh,bh);ok(`${name}: ${d} ${f} ${fh} / ${b} ${bh} >= ${min}`,r>=min,r.toFixed(2));
   }

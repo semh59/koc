@@ -12,7 +12,7 @@ async function sheetObRestore(){
   <label class="lbl" for="obpw">Yedek parolası</label><input class="in" type="password" id="obpw" autocomplete="off">
   ${keep?swRow('id="obrem"',true,"Parolayı bu telefonda sakla; Drive ve otomatik yedek aynı parolayla çalışır"):""}
   <button class="btn" data-obr="go">Geri yükle</button><button class="mt-2 btn ghost" data-obr="check">Yalnız denetle (hiçbir şey yüklenmez)</button>
-  <p class="hint">Parolayı unuttuysan yedek açılamaz. ${BK_PHOTOS} Rehber izni ve otomatik yedek bu telefonda yeniden ayarlanır.</p>`);
+  <p class="hint">Parolayı unuttuysan yedek açılamaz. ${helpBtn("obh","Geri yükleme")}</p>${helpBox("obh",`${BK_PHOTOS} Rehber izni ve otomatik yedek bu telefonda yeniden ayarlanır.`)}`);
 }
 async function obRestoreGo(btn){
   const f=$("#obf").files[0];let text;
@@ -78,7 +78,7 @@ function obView(){
   const fld=(k,lbl,val,small,mode)=>`<div class="field"><label for="ob${k}">${lbl}${small?`<small>${small}</small>`:""}</label><input id="ob${k}" type="text" inputmode="${mode}" value="${esc(val)}" autocomplete="off"${bad(k)}></div>${ob.bad===k?err:""}`;
   const seg=(attr,opts,sel)=>`<div class="seg2" role="group">${opts.map(([v,l])=>`<button data-ob="${attr}:${v}" aria-pressed="${sel===v}">${l}</button>`).join("")}</div>`;
   if(ob.step<0&&!ob.minor)return `<div class="about"><img src="logo.svg" alt="" width="96" height="96"><h2 class="m0">NeoWell'e hoş geldin</h2><p class="tc mut m0">Yemek, su, hareket ve sağlık ölçümlerini tek yerde tut; hedefini sana göre hesaplayalım.</p></div>
-  <p class="tc hint">Verilerin yalnızca bu telefonda durur.</p><div class="banner"><p>${NOTICE}</p></div><button class="btn" data-ob="next">Başla</button><button class="mt-2 btn ghost" data-obr="open">Yedeğim var</button><button class="mt-2 lnk" data-ob="skip">Şimdilik geç</button>`;
+  <p class="tc hint">Verilerin yalnızca bu telefonda durur.</p><div class="banner"><p>${NOTICE}</p></div><div class="card">${swRow("data-comfy",S.settings.comfy,"Yazıyı büyüt?","Yazılar ve düğmeler büyür. Sonra Ayarlar'dan değiştirirsin.")}</div><button class="btn" data-ob="next">Başla</button><button class="mt-2 btn ghost" data-obr="open">Yedeğim var</button><button class="mt-2 lnk" data-ob="skip">Şimdilik geç</button>`;
   /* Under 18: setup does not continue and the draft is gone; there is no skip or back, only correcting the age. */
   if(ob.minor)return `<h2>NeoWell 18 yaş ve üzeri için</h2><div class="card"><p>Büyüme çağında kalori ve kilo hedefleri farklıdır; bu uygulama onları hesaplamaz.</p><p>Beslenme, kilo ya da spor konusunda bir yetişkinle ve hekiminle ya da diyetisyeninle konuş.</p><p class="hint">Girdiğin bilgiler kaydedilmedi.</p></div><button class="btn ghost" data-ob="fixage">Yaşımı yanlış girdim</button>`;
   const p=ob.shown===obSig()?obParse():null,ok=p&&!p.err&&!p.minor,pl=ok?obPlan(p):null;
