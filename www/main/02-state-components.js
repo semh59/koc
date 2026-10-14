@@ -45,6 +45,8 @@ function trendSeries(N){
   });
   return {keys,pts,ma};
 }
+/* The chart's points as a table under it: the same texts as the touch bubble, readable without touching or seeing the chart. "date · value" splits into two cells. */
+const ptsTable=t=>`<details class="acc"><summary>Tüm noktalar (${t.length})</summary><table><tbody>${t.map(s=>{const i=s.indexOf(" · ");return `<tr><th scope="row">${esc(i<0?s:s.slice(0,i))}</th><td class="num">${esc(i<0?"":s.slice(i+3))}</td></tr>`}).join("")}</tbody></table></details>`;
 function chart(N){
   const {keys,pts,ma}=trendSeries(N);
   if(pts.length<2)return `<p class="hint">Grafik için en az iki gün kilo gir.</p>`;
@@ -60,10 +62,12 @@ function chart(N){
   const dots=pts.map(p=>`<circle cx="${X(p.i).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="${N>120?1.6:3}" fill="var(--mut)" opacity=".55"/>`).join("");
   const goal=(g>0&&g>=lo&&g<=hi)?`<line x1="${pl}" x2="${W-pr}" y1="${Y(g).toFixed(1)}" y2="${Y(g).toFixed(1)}" stroke="var(--kcal)" stroke-width="1.6" stroke-dasharray="5 4"/>`:"";
   const edge=g>0&&!goal?`<text x="${W-pr}" y="${g>hi?pt+10:H-pb-4}" text-anchor="end">${g>hi?"▲":"▼"} Hedef ${dw(g)} ${wlab()}</text>`:"";
-  const tip=esc(JSON.stringify(pts.map((p,k)=>[+X(p.i).toFixed(1),+Y(p.v).toFixed(1),`${fd(p.k)} · ${dw(p.v)} ${wlab()} · trend ${dw(ma[k].v)}`])));
+  const tm=new Map();for(const e of Log.where(e=>e.type==="weight"))tm.set(e.day,e.time);
+  const tx=pts.map((p,k)=>`${fd(p.k)}${tm.get(p.k)?" "+tm.get(p.k):""} · ${dw(p.v)} ${wlab()} · trend ${dw(ma[k].v)}`),
+    tip=esc(JSON.stringify(pts.map((p,k)=>[+X(p.i).toFixed(1),+Y(p.v).toFixed(1),tx[k]]))),a=pts[0],z=pts[pts.length-1];
   const xl=[0,Math.floor((N-1)/2),N-1].map((i,k)=>`<text x="${X(i).toFixed(1)}" y="${H-6}" text-anchor="${k==0?"start":k==2?"end":"middle"}">${fd(keys[i])}</text>`).join("");
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Kilo grafiği" data-tip="${tip}">${grid}${goal}${edge}${dots}<path d="${line}" fill="none" stroke="var(--prim)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>${xl}</svg>
-  <div class="legend"><span><i style="background:var(--prim)"></i>Trend çizgisi</span><span><i style="background:var(--mut);opacity:.6"></i>Günlük tartı</span>${goal?`<span><i style="background:var(--kcal)"></i>Hedef</span>`:""}</div>`;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Kilo grafiği, ${pts.length} ölçüm, ${fd(a.k)} ${dw(a.v)} ${wlab()}, ${fd(z.k)} ${dw(z.v)} ${wlab()}. Tüm değerler grafiğin altındaki tabloda" data-tip="${tip}">${grid}${goal}${edge}${dots}<path d="${line}" fill="none" stroke="var(--prim)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>${xl}</svg>
+  <div class="legend"><span><i style="background:var(--prim)"></i>Trend çizgisi</span><span><i style="background:var(--mut);opacity:.6"></i>Günlük tartı</span>${goal?`<span><i style="background:var(--kcal)"></i>Hedef</span>`:""}</div>${ptsTable(tx)}`;
 }
 
 /* Small bar chart for Trend: the last N days, dashed line = daily goal; touching shows a value bubble (chartTip). */
@@ -78,8 +82,9 @@ function miniBars(N,val,color,goal,name,unit,f=Math.round){
   const bars=bk.map((x,i)=>x>0?`<rect x="${(i*bw+bw*.15).toFixed(1)}" y="${Y(x).toFixed(1)}" width="${(bw*.7).toFixed(1)}" height="${(H-pb-Y(x)).toFixed(1)}" rx="${bw>8?3:1}" fill="${color}"/>`:"").join("");
   const gl=goal>0?`<line x1="0" x2="${W}" y1="${Y(goal).toFixed(1)}" y2="${Y(goal).toFixed(1)}" stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="4 3" opacity=".6"/>`:"";
   const xl=[0,Math.floor((B-1)/2),B-1].map((i,k)=>`<text x="${k==0?0:k==2?W:((i+.5)*bw).toFixed(1)}" y="${H-5}" text-anchor="${k==0?"start":k==2?"end":"middle"}">${fd(k==2?last(i):first(i))}</text>`).join("");
-  const tip=esc(JSON.stringify(bk.map((x,i)=>[+((i+.5)*bw).toFixed(1),+Y(x).toFixed(1),step>1?`${fd(first(i))} - ${fd(last(i))} · ort. ${f(x)} ${unit}`:`${fd(keys[i])} · ${f(x)} ${unit}`])));
-  return `<div class="mb-3"><div class="lhead"><b>${name}</b><span class="mut sm num">kayıtlı gün ort. ${f(avg)} ${unit}${goal>0?` · hedef ${f(goal)}`:""}</span></div><svg class="bars w100" viewBox="0 0 ${W} ${H}" role="img" aria-label="${name}, son ${N} gün${step>1?`, ${step==7?"haftalık":"aylık"} ortalamalar`:""}, kayıtlı gün ortalaması ${f(avg)} ${unit}" data-tip="${tip}">${gl}${bars}${xl}</svg></div>`;
+  const tx=bk.map((x,i)=>step>1?`${fd(first(i))} - ${fd(last(i))} · ort. ${f(x)} ${unit}`:`${fd(keys[i])} · ${f(x)} ${unit}`),
+    tip=esc(JSON.stringify(bk.map((x,i)=>[+((i+.5)*bw).toFixed(1),+Y(x).toFixed(1),tx[i]])));
+  return `<div class="mb-3"><div class="lhead"><b>${name}</b><span class="mut sm num">kayıtlı gün ort. ${f(avg)} ${unit}${goal>0?` · hedef ${f(goal)}`:""}</span></div><svg class="bars w100" viewBox="0 0 ${W} ${H}" role="img" aria-label="${name}, son ${N} gün${step>1?`, ${step==7?"haftalık":"aylık"} ortalamalar`:""}, kayıtlı gün ortalaması ${f(avg)} ${unit}. Tüm değerler grafiğin altındaki tabloda" data-tip="${tip}">${gl}${bars}${xl}</svg>${ptsTable(tx.filter((_,i)=>bk[i]>0))}</div>`;
 }
 let tSec="weight";
 document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-tsec]");if(!b)return;tSec=b.dataset.tsec;

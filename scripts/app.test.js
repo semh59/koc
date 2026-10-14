@@ -2623,7 +2623,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     add("waist","87");
     ok("same day and region: the new replaces the old",ev("S.measures.filter(m=>m.k==='waist'&&m.day===dayKey()).length")===1&&ev("S.measures.find(m=>m.k==='waist'&&m.day===dayKey()).v")===87);
     ev("closeSheet();tab='trend';render()");
-    ok("Trend: the measurement chart is a 2-point line, waist/height ratio with a general information note (no diagnosis/interpretation)",qa("#view svg.chart[aria-label='Bel ölçü grafiği'] circle").length===2&&txt().includes("0,51")&&txt().includes("tanı ya da yorum değildir")&&!/yüksek|riskli|obez|şişman/i.test(txt()));
+    ok("Trend: the measurement chart is a 2-point line, waist/height ratio with a general information note (no diagnosis/interpretation)",qa("#view svg.chart[aria-label^='Bel ölçü grafiği'] circle").length===2&&txt().includes("0,51")&&txt().includes("tanı ya da yorum değildir")&&!/yüksek|riskli|obez|şişman/i.test(txt()));
     q('#view [data-ms="k:hip"]').click();
     ok("region chosen: hip has a single measurement so information instead of a chart",txt().includes("en az iki ölçü")&&q('#view [data-ms="k:hip"]').getAttribute("aria-pressed")==="true");
     ev("msel='waist';render()");
