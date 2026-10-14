@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Launcher long-press shortcuts: each one only opens its entry sheet (extra nw_go, see WidgetPlugin); nothing is recorded from here. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="nw_water"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/nw_sc_water"
+        android:shortcutLongLabel="@string/nw_sc_water_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.neowell.app.MainActivity"
+            android:targetPackage="com.neowell.app">
+            <extra
+                android:name="nw_go"
+                android:value="water" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="nw_food"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/nw_sc_food"
+        android:shortcutLongLabel="@string/nw_sc_food_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.neowell.app.MainActivity"
+            android:targetPackage="com.neowell.app">
+            <extra
+                android:name="nw_go"
+                android:value="food" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="nw_weight"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/nw_sc_weight"
+        android:shortcutLongLabel="@string/nw_sc_weight_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.neowell.app.MainActivity"
+            android:targetPackage="com.neowell.app">
+            <extra
+                android:name="nw_go"
+                android:value="weight" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="nw_exercise"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/nw_sc_exercise"
+        android:shortcutLongLabel="@string/nw_sc_exercise_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.neowell.app.MainActivity"
+            android:targetPackage="com.neowell.app">
+            <extra
+                android:name="nw_go"
+                android:value="exercise" />
+        </intent>
+    </shortcut>
+</shortcuts>

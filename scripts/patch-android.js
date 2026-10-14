@@ -49,6 +49,12 @@ if (!manifest.includes("android.intent.action.TTS_SERVICE")) {
 }
 // The WebView shrinks when the keyboard opens; the UI also adjusts with visualViewport.
 if (!manifest.includes("windowSoftInputMode")) manifest = manifest.replace('android:name=".MainActivity"', 'android:name=".MainActivity" android:windowSoftInputMode="adjustResize"');
+// Launcher long-press shortcuts (Su, Yemek, Kilo, Antrenman): the shortcut file only opens entry sheets and adds no permission.
+if (!manifest.includes("android.app.shortcuts")) {
+  const at = manifest.indexOf('android:name=".MainActivity"'), end = manifest.indexOf("</activity>", at);
+  if (at < 0 || end < 0) throw new Error("MainActivity not found: the template changed, shortcuts could not be added");
+  manifest = manifest.slice(0, end) + '<meta-data android:name="android.app.shortcuts" android:resource="@xml/nw_shortcuts"/>\n        ' + manifest.slice(end);
+}
 fs.writeFileSync(manifestPath, manifest);
 console.log("Manifest patched.");
 
