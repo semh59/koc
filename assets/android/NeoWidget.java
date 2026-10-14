@@ -106,6 +106,13 @@ public class NeoWidget extends AppWidgetProvider {
         boolean steps = o.has("steps") && !o.isNull("steps");
         v.setViewVisibility(R.id.nw_steps, steps ? View.VISIBLE : View.GONE);
         if (steps) v.setTextViewText(R.id.nw_steps, (today.equals(o.optString("sday", o.optString("day"))) ? num(o.optLong("steps")) : "–") + " adım");
+        // Ramadan: the app pushes today's iftar time while the daytime fast runs; the remaining time is worked out here, at every refresh.
+        long left = isToday && o.has("iftarAt") && !o.isNull("iftarAt") ? o.optLong("iftarAt") - System.currentTimeMillis() : 0;
+        v.setViewVisibility(R.id.nw_iftar, left > 0 ? View.VISIBLE : View.GONE);
+        if (left > 0) {
+            long m = Math.max(1, left / 60000);
+            v.setTextViewText(R.id.nw_iftar, "İftara " + (m >= 60 ? (m / 60) + " sa" + (m % 60 > 0 ? " " + (m % 60) + " dk" : "") : m + " dk"));
+        }
         int glass = o.optInt("glass", 250);
         v.setTextViewText(R.id.nw_add, "+" + glass);
         int flags = PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT;

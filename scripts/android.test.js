@@ -17,6 +17,7 @@ ok("water intent: the action extra of a handled intent is removed",/in\.removeEx
 }
 const lay=rd("assets/android/res/layout/nw_widget.xml"),kc=lay.slice(lay.indexOf("nw_kcal"),lay.indexOf("/>",lay.indexOf("nw_kcal")));
 ok("widget: the calorie row is cut at the end, \"Kalan/Fazla\" and the number come first",/ellipsize="end"/.test(kc)&&/"Kalan " \+ num\(left\) : "Fazla " \+ num\(-left\)\) \+ " kcal"/.test(rd("assets/android/NeoWidget.java")));
+ok("widget: the iftar line is worked out in Java at each refresh from the pushed time, only for today, hidden once it passed; the layout has a one-line view for it",/o\.optLong\("iftarAt"\) - System\.currentTimeMillis\(\)/.test(rd("assets/android/NeoWidget.java"))&&/isToday && o\.has\("iftarAt"\)/.test(rd("assets/android/NeoWidget.java"))&&/R\.id\.nw_iftar, left > 0 \? View\.VISIBLE : View\.GONE/.test(rd("assets/android/NeoWidget.java"))&&/android:id="@\+id\/nw_iftar"[^>]*android:maxLines="1"/.test(lay.replace(/\s+/g," ")));
 ok("steps: snapAt is written only when the day really closes",/boolean closed = closeFirst && StepMath\.closeDay\(/.test(rd("assets/android/StepStore.java"))&&/if \(closed\) e\.putLong\("snapAt"/.test(rd("assets/android/StepStore.java")));
 {
   const ss=rd("assets/android/StepStore.java"),sp=rd("assets/android/StepCounterPlugin.java");
