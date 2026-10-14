@@ -72,7 +72,7 @@ if (!styles.includes("windowSplashScreenBackground")) {
 console.log("Icons and splash screen installed.");
 
 const javaDir = "android/app/src/main/java/com/neowell/app";
-const javaFiles = ["MainActivity", "Alarms", "WindowFlags", "AlarmActivity", "AppLockPlugin", "ZoneMath", "MedWakeReceiver", "MedWakePlugin", "KeyVaultPlugin", "DeviceHelpPlugin", "StepCounterPlugin", "StepStore", "StepMath", "StepSnapshotReceiver", "OcrPlugin", "QuickMath", "QuickLogPlugin", "MotionMath", "MotionStore", "MotionGpsService", "MotionReceiver", "MotionPlugin", "NeoWidget", "WidgetPlugin", "WaterReceiver", "SpeechPlugin", "BackupFolderPlugin", "HealthPlugin"];
+const javaFiles = ["MainActivity", "Alarms", "WindowFlags", "AlarmActivity", "AppLockPlugin", "LockText", "ZoneMath", "MedWakeReceiver", "MedWakePlugin", "KeyVaultPlugin", "DeviceHelpPlugin", "StepCounterPlugin", "StepStore", "StepMath", "StepSnapshotReceiver", "OcrPlugin", "QuickMath", "QuickLogPlugin", "MotionMath", "MotionStore", "MotionGpsService", "MotionReceiver", "MotionPlugin", "NeoWidget", "WidgetPlugin", "WaterReceiver", "SpeechPlugin", "BackupFolderPlugin", "HealthPlugin"];
 for (const f of javaFiles) fs.copyFileSync(`assets/android/${f}.java`, `${javaDir}/${f}.java`);
 console.log("Native sources copied.");
 

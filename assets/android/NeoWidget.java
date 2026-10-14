@@ -105,6 +105,8 @@ public class NeoWidget extends AppWidgetProvider {
 
     private static RemoteViews views(Context c, JSONObject o) {
         boolean isToday = appDay(o).equals(o.optString("day"));
+        // The app sets "hide" while the app lock is on or the user chose to hide numbers: the widget then shows no figures.
+        boolean hide = o.optBoolean("hide");
         RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.nw_widget);
         String kcal;
         if (!isToday || !o.has("kcalLeft")) kcal = "– kcal";
@@ -114,14 +116,14 @@ public class NeoWidget extends AppWidgetProvider {
             // The narrow widget cuts off at the end: the meaningful word and number come first, the unit last.
             kcal = (left >= 0 ? "Kalan " + num(left) : "Fazla " + num(-left)) + " kcal";
         }
-        v.setTextViewText(R.id.nw_kcal, kcal);
+        v.setTextViewText(R.id.nw_kcal, hide ? "NeoWell" : kcal);
         int goal = o.optInt("waterGoal");
-        v.setTextViewText(R.id.nw_water, (isToday ? liters(o.optInt("water")) : "–") + " / " + (goal > 0 ? liters(goal) : "–") + " L");
-        boolean steps = o.has("steps") && !o.isNull("steps");
+        v.setTextViewText(R.id.nw_water, hide ? "" : (isToday ? liters(o.optInt("water")) : "–") + " / " + (goal > 0 ? liters(goal) : "–") + " L");
+        boolean steps = !hide && o.has("steps") && !o.isNull("steps");
         v.setViewVisibility(R.id.nw_steps, steps ? View.VISIBLE : View.GONE);
         if (steps) v.setTextViewText(R.id.nw_steps, (stepsFresh(o) ? num(o.optLong("steps")) : "–") + " adım");
         // Ramadan: the app pushes today's iftar time while the daytime fast runs; the remaining time is worked out here, at every refresh.
-        long left = isToday && o.has("iftarAt") && !o.isNull("iftarAt") ? o.optLong("iftarAt") - System.currentTimeMillis() : 0;
+        long left = !hide && isToday && o.has("iftarAt") && !o.isNull("iftarAt") ? o.optLong("iftarAt") - System.currentTimeMillis() : 0;
         v.setViewVisibility(R.id.nw_iftar, left > 0 ? View.VISIBLE : View.GONE);
         if (left > 0) {
             long m = Math.max(1, left / 60000);

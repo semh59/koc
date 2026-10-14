@@ -1,12 +1,6 @@
 package com.neowell.app;
 
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.content.Intent;
-import android.media.AudioAttributes;
-import android.media.RingtoneManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import com.getcapacitor.BridgeActivity;
@@ -35,7 +29,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(BackupFolderPlugin.class);
         super.onCreate(savedInstanceState);
         diag(getIntent());
-        medChannel();
+        MedWakeReceiver.channel(this);
         if (quick) moveTaskToBack(true);
     }
 
@@ -52,20 +46,6 @@ public class MainActivity extends BridgeActivity {
             sb.append(n).append('=').append(k).append(' ');
         }
         Log.i("NW-DIAG", sb.toString().trim());
-    }
-
-    // The medication reminder rings like an alarm: alarm-sound channel, high importance, vibration. Whether it sounds in silent mode depends on the phone's own settings.
-    private void medChannel() {
-        if (Build.VERSION.SDK_INT < 26) return;
-        NotificationManager nm = getSystemService(NotificationManager.class);
-        if (nm.getNotificationChannel("nw_med") != null) return;
-        NotificationChannel ch = new NotificationChannel("nw_med", "İlaç alarmı", NotificationManager.IMPORTANCE_HIGH);
-        ch.setDescription("İlaç saatinde alarm gibi çalan hatırlatıcı");
-        ch.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM), new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
-        ch.enableVibration(true);
-        ch.setVibrationPattern(new long[] {0, 600, 300, 600, 300, 600});
-        ch.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-        nm.createNotificationChannel(ch);
     }
 
     @Override
