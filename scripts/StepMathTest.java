@@ -104,6 +104,13 @@ public class StepMathTest {
         rb.rebooted = true;
         ok("known reboot: total 300 + 900 even if the counter exceeds the last value", StepMath.update(rb, "r1", 900, 720, h) == 1200, rb.carry);
         ok("rebooted flag is consumed", !rb.rebooted && StepMath.update(rb, "r1", 950, 720, h) == 1250, 0);
+        // Flying west: the clock's day key goes back; the later stored day is neither closed nor overwritten.
+        StepMath.State w = new StepMath.State();
+        StepMath.update(w, "2026-10-15", 1000, 720, h);
+        StepMath.update(w, "2026-10-15", 1800, 720, h);
+        ok("day key going back counts under the stored day", StepMath.update(w, "2026-10-14", 2000, 720, h) == 1000 && w.day.equals("2026-10-15"), w.day);
+        ok("day key going back writes nothing to history", !h.containsKey("2026-10-15") && !h.containsKey("2026-10-14"), h);
+        ok("close alarm ignores a day key that went back", !StepMath.closeDay(w, "2026-10-14", 2100, 0, h) && w.day.equals("2026-10-15"), w.day);
         System.exit(bad == 0 ? 0 : 1);
     }
 

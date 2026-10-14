@@ -7,7 +7,7 @@ const CsvReadLib=(()=>{
   const A=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
   const MAX_ROWS=5000,LB=0.45359237,MMOL=18.016;
   const fold=h=>String(h).toLowerCase().replace(/ı/g,"i").replace(/ş/g,"s").replace(/ü/g,"u").replace(/ö/g,"o").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/[^a-z0-9]/g,"");
-  const ROLE=[["date",/^(tarih|date|gun|day|datetime|tarihsaat)$/],["time",/^(saat|time|hour)$/],["type",/^(tur|type)$/],["value",/^(deger|value)$/],["unit",/^(birim|unit)$/],
+  const ROLE=[["date",/^(tarih|tarihuygulamagunu|date|gun|day|datetime|tarihsaat)$/],["time",/^(saat|time|hour)$/],["type",/^(tur|type)$/],["value",/^(deger|value)$/],["unit",/^(birim|unit)$/],
     ["sys",/^(sistolik|systolic|sys|sbp|buyuktansiyon)$/],["dia",/^(diyastolik|diastolic|dia|dbp|kucuktansiyon)$/],["pulse",/^(nabiz|pulse|heartrate|hr|bpm)$/],["bp",/^(tansiyon|bloodpressure|bp)$/],
     ["weight",/^(kilo|weight|agirlik)(kg|lb|lbs)?$/],["glu",/^(seker|glucose|glukoz|bloodglucose|kanseker|kansekeri)(mgdl|mmoll|mmol)?$/],["ctx",/^(olcumzamani|baglam|context|seans|session)$/]];
   const NAMES=new Map([...V.CTX,...V.SESSIONS].map(([id,n])=>[fold(n),id]));

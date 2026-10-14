@@ -30,7 +30,7 @@ final class StepStore {
         return c.getSharedPreferences("nw_steps", Context.MODE_PRIVATE);
     }
 
-    private static String day(long at) {
+    static String day(long at) {
         return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date(at));
     }
 
@@ -160,7 +160,8 @@ final class StepStore {
         }
         SharedPreferences.Editor e = sp.edit();
         e.putString("day", s.day).putFloat("base", s.base).putFloat("carry", s.carry).putFloat("last", s.last).putBoolean("sampled", s.sampled).putLong("el", el).putInt("boot", boot);
-        for (Map.Entry<String, Long> x : hist.entrySet()) e.putLong("h_" + x.getKey(), x.getValue());
+        // A day key that comes round again (flight west) never lowers a total already written.
+        for (Map.Entry<String, Long> x : hist.entrySet()) e.putLong("h_" + x.getKey(), Math.max(x.getValue(), sp.getLong("h_" + x.getKey(), 0L)));
         if (closed) e.putLong("snapAt", at);
         e.apply();
         return steps;

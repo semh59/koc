@@ -42,13 +42,13 @@ async function scheduleReminders(){
     /* The plugin's daily repeat sets an alarm that Doze defers after the first notification. So every day is scheduled as its own one-shot alarm that pierces idle mode. */
     try{await ln.registerActionTypes({types:[{id:"water",actions:[{id:"water",title:`+${S.settings.glass} ml`}]},{id:"med",actions:[{id:"med",title:"✓ Aldım"},{id:"medskip",title:"Atla"}]},{id:"medgrp",actions:[{id:"med",title:"✓ Hepsini aldım"}]}]})}catch{}
     let list=[];const medList=[],now=Date.now(),lb=S.settings.lastBackup;
-    const t0=dayKey(),waterDone=sum("water",t0,t0)>=S.settings.waterMl,fastBlock=!!risk().block;
+    const fastBlock=!!risk().block;
     const preg=risk().pregnant;
     for(const r of S.settings.reminders.filter(r=>r.on&&!(r.id===11&&fastBlock)&&!(preg&&PREG_OFF.includes(r.id)))){
       const water=WATER_REM.includes(r.id),kind=water?"water":r.id===MOVE_REM?"move":"";
       for(let i=0;i<SCHED_DAYS;i++){
-        if(i===0&&waterDone&&water)continue;
         const at=addDays(i,new Date()),[h,m]=(kind?Habits.ramShift(dayKey(at),r.t,kind,WATER_REM.indexOf(r.id)):r.t).split(":").map(Number);at.setHours(h,m,0,0);
+        if(i===0&&water){const ad=dayAt(at.getTime());if(sum("water",ad,ad)>=S.settings.waterMl)continue}
         if(r.dow!=null&&at.getDay()!==r.dow)continue;
         if(r.id===BACKUP_REM&&(Log.all().length<10||(lb&&Algo.dayNum(dayKey(at))-Algo.dayNum(lb)<7)))continue;
         if(at.getTime()>now+LEAD_MS)list.push(Object.assign({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}},water?{actionTypeId:"water",extra:{act:"water",v:S.settings.glass,at:at.getTime()}}:r.id===WEEKLY_REM?{extra:{act:"open",tab:"coach"}}:r.id===BACKUP_REM?{extra:{act:"open",tab:"settings-data"}}:r.id===1?{extra:{act:"open",tab:"weight"}}:{}));
