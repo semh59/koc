@@ -317,19 +317,24 @@ const MedLib=(()=>{
     if(e.err)out.push("alarm kurulurken bir sorun çıktı");
     return out.join(", ");
   }
-  /* If the next setup log comes more than a minute after the first scheduled alarm time and no ring log lies between, that alarm did not ring: returns its planned time (0 = none). */
-  const lastMiss=items=>{const e=items.filter((e,i)=>!RING(e.a)&&e.nx&&e.nx[0]&&items[i+1]&&!RING(items[i+1].a)&&items[i+1].t>e.nx[0]+60000).pop();return e?e.nx[0]:0};
-  /* What the alarm log says about background limits, for the permissions list and Today. bo: battery unrestricted (null unknown); slow: the last ring came more than a minute late;
-     miss: a planned alarm of the last 2 days that never rang and no on-time ring came after it; boot: the last setup after a phone restart. */
-  function bgState(st,items,now){
-    const last=items.filter(e=>e.a==="WAKE"&&e.p).pop(),late=!!last&&last.t-last.p>60000,m=lastMiss(items);
-    return {bo:typeof st.bo==="boolean"?st.bo:null,ontime:!!last&&!late,slow:late,miss:m&&now-m<2*864e5&&!(last&&!late&&last.t>m)?m:0,boot:items.filter(e=>e.a==="BOOT").pop()||null};
-  }
-  /* Whether the phone moved the alarms by itself since the app last set them (reboot, clock or time zone change): the tail of the log after the last app setup. */
-  const clockMoved=items=>{
-    for(let i=items.length;i--;){const a=items[i].a;if(a==="APP")return false;if(a==="TIME"||a==="TZ"||a==="BOOT")return true}
-    return items.length>0;
+  /* If the next setup log comes more than a minute after the first scheduled alarm time and no ring of that alarm lies after it, that alarm did not ring:
+     {at: planned time, off: the next setup was a boot, so the phone was off} or null. */
+  const lastMiss=items=>{
+    let r=null;
+    items.forEach((e,i)=>{
+      const at=e.nx&&e.nx[0],nx=items[i+1];
+      if(!RING(e.a)&&at&&nx&&!RING(nx.a)&&nx.t>at+60000&&!items.some((x,j)=>j>i&&x.a==="WAKE"&&x.p===at))r={at,off:nx.a==="BOOT"};
+    });
+    return r;
   };
+  /* What the alarm log says about background limits, for the permissions list and Today. bo: battery unrestricted (null unknown); slow: the last ring came more than a minute late;
+     miss: a planned alarm of the last 2 days that never rang and no on-time ring came after it; off: the same while the phone was off (a restart followed); boot: the last setup after a phone restart. */
+  function bgState(st,items,now){
+    const last=items.filter(e=>e.a==="WAKE"&&e.p).pop(),late=!!last&&last.t-last.p>60000,m=lastMiss(items),at=m&&now-m.at<2*864e5?m.at:0;
+    return {bo:typeof st.bo==="boolean"?st.bo:null,ontime:!!last&&!late,slow:late,miss:at&&!m.off&&!(last&&!late&&last.t>at)?at:0,off:at&&m.off?at:0,boot:items.filter(e=>e.a==="BOOT").pop()||null};
+  }
+  /* Whether the phone moved the alarms by itself (reboot, clock or time zone change) after the app's last setup at `since` (ms). */
+  const clockMoved=(items,since)=>items.some(e=>(e.a==="TIME"||e.a==="TZ"||e.a==="BOOT")&&e.t>since);
   /* Likely problems: st is the current state, items the log rows. `to` is the settings screen to open (MedWake.settings); autostart is Xiaomi's autostart screen. */
   function wakeIssues(st,items){
     const out=[],add=(t,to,id)=>out.push({t,to,id}),low=(i,ad)=>i===0?`${ad} kanalı engelli.`:i>0&&i<4?`${ad} kanalı düşük önemde.`:"";
@@ -342,7 +347,7 @@ const MedLib=(()=>{
     if(st.bo===false)add("Pil kısıtı var: telefon uygulamayı arka planda durdurabilir, alarm geç gelebilir. Pil ayarını 'Kısıtlama yok' yap.","battery");
     if(st.ex===false)add("Tam saat alarm izni yok: ilaç bildirimi ve ekran alarmı birkaç dakika gecikebilir.","exact");
     const w=items.filter(e=>e.a==="WAKE"),arm=items.filter(e=>!RING(e.a)).pop(),miss=lastMiss(items);
-    if(miss)add(`Planlanan ${dhm(miss)} alarmı çalmadı: telefon uygulamayı arka planda engellemiş olabilir. Otomatik başlatmayı aç, pil kısıtını kaldır.`,"autostart");
+    if(miss&&!miss.off)add(`Planlanan ${dhm(miss.at)} alarmı çalmadı: telefon uygulamayı arka planda engellemiş olabilir. Otomatik başlatmayı aç, pil kısıtını kaldır.`,"autostart");
     if(arm&&arm.n===0)add("Kurulu ekran alarmı yok: ilaç saatleri telefona iletilmemiş. Uygulamayı güncelle, sonra İlaçlar ekranını bir kez aç.");
     if(!w.length)add("Kayıtlarda çalan alarm yok: alarm hiç çalmadı. Xiaomi'de otomatik başlatmayı aç.","autostart");
     const late=Math.max(0,...w.filter(e=>e.p).map(e=>e.t-e.p));

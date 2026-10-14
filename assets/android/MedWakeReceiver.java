@@ -18,7 +18,6 @@ import android.os.Looper;
 import android.os.PowerManager;
 import java.util.Arrays;
 import java.util.Locale;
-import java.util.TimeZone;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,7 +29,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
     /** An alarm may fire this early relative to its planned time. */
     static final long EARLY_MS = 5000;
     private static final long FSI_GRACE_MS = 1200, WAKE_MS = 20000, TEST_VISIBLE_MS = 120000, NOTIFICATION_TIMEOUT_MS = 30000;
-    private static final String PREFS = "nw_medwake", KEY = "times", DOSES = "doses", LOG = "log", TEST = "test", ZONE = "zone", DETAIL = "detail", WAKE = "com.neowell.app.MED_WAKE";
+    private static final String PREFS = "nw_medwake", KEY = "times", DOSES = "doses", LOG = "log", TEST = "test", SNOOZE = "snooze", DETAIL = "detail", WAKE = "com.neowell.app.MED_WAKE";
     /** The id was bumped once because Android restores the old settings (including a lowered importance) when a deleted channel is recreated under the same id. */
     static final String CH = "nw_medwake2";
 
@@ -42,29 +41,26 @@ public class MedWakeReceiver extends BroadcastReceiver {
     public void onReceive(Context c, Intent i) {
         String a = i.getAction();
         if (WAKE.equals(a)) {
+            long sn = snooze(c);
+            if (sn > 0 && sn <= System.currentTimeMillis() + EARLY_MS) saveSnooze(c, 0);
             wake(c, goAsync());
             // Doses beyond MAX wait in line: when one rings the window slides on and the next dose is set.
             arm(c, load(c), "AFTER");
         } else if (Intent.ACTION_BOOT_COMPLETED.equals(a) || Intent.ACTION_MY_PACKAGE_REPLACED.equals(a) || Intent.ACTION_TIME_CHANGED.equals(a) || Intent.ACTION_TIMEZONE_CHANGED.equals(a)
-            || AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED.equals(a)) arm(c, rezone(c, load(c)), cause(a));
+            || AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED.equals(a)) {
+            arm(c, load(c), cause(a));
+            // A restart drops every alarm, so the pending snooze is set again.
+            MedWakePlugin.snoozeAt(c, snooze(c));
+        }
     }
 
-    /** The saved times are absolute: after a time zone change (also one that happened while the phone was off) they move so that 08:00 stays 08:00 on the wall clock.
-     *  The alarm screen's dose list moves with them. The zone is stored by arm(), so the first arm after install has nothing to compare. */
-    private static long[] rezone(Context c, long[] times) {
-        String was = prefs(c).getString(ZONE, "");
-        TimeZone to = TimeZone.getDefault();
-        if (was.isEmpty() || was.equals(to.getID())) return times;
-        TimeZone from = TimeZone.getTimeZone(was);
-        JSONArray a = doses(c), out = new JSONArray();
-        for (int k = 0; k < a.length(); k++) {
-            JSONObject d = a.optJSONObject(k);
-            if (d == null) continue;
-            put(d, "at", ZoneMath.move(d.optLong("at"), from, to));
-            out.put(d);
-        }
-        prefs(c).edit().putString(DOSES, out.toString()).commit();
-        return ZoneMath.move(times, from, to);
+    /** When the snooze alarm is due (ms), 0 for none; kept so a restart can set it again. */
+    static long snooze(Context c) {
+        return prefs(c).getLong(SNOOZE, 0);
+    }
+
+    static void saveSnooze(Context c, long at) {
+        prefs(c).edit().putLong(SNOOZE, at).apply();
     }
 
     private static String cause(String a) {
@@ -226,7 +222,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
         long prev = 0;
         for (long at : t) {
             // Two medications in the same minute give the same time: one alarm is enough (the alarm screen lists both), otherwise the limit of 40 is wasted.
-            if (at <= now + 2000 || at == prev) continue;
+            if (at <= now + EARLY_MS || at == prev) continue;
             prev = at;
             if (n < MAX) {
                 Alarms.setClock(c, at, pi(c, n, PendingIntent.FLAG_UPDATE_CURRENT));
@@ -236,7 +232,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
             if (keep.length() > 0) keep.append(',');
             keep.append(at);
         }
-        prefs(c).edit().putString(KEY, keep.toString()).putString(ZONE, TimeZone.getDefault().getID()).apply();
+        prefs(c).edit().putString(KEY, keep.toString()).apply();
         JSONObject e = new JSONObject();
         put(e, "t", now);
         put(e, "a", why);
@@ -383,6 +379,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
     /** "Delete all data": cancels the armed alarms and removes the dose details and the alarm log. */
     static synchronized void wipe(Context c) {
         arm(c, new long[0], "WIPE");
+        MedWakePlugin.snoozeAt(c, 0);
         prefs(c).edit().remove(DOSES).remove(LOG).commit();
     }
 

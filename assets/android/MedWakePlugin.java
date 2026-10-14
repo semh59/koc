@@ -129,7 +129,7 @@ public class MedWakePlugin extends Plugin {
         call.resolve();
     }
 
-    /** Snooze: wakes the screen again at "at" (ms, at most 1 hour ahead) with a request code separate from the dose alarms; cancels when "at" is absent or past. */
+    /** Snooze: wakes the screen again at "at" (ms, at most 1 hour ahead) with a request code separate from the dose alarms; cancels when "at" is absent or past. The time is kept so a restart sets it again. */
     @PluginMethod
     public void snooze(PluginCall call) {
         snoozeAt(getContext(), call.getData().optLong("at", 0));
@@ -142,8 +142,11 @@ public class MedWakePlugin extends Plugin {
         PendingIntent pi = PendingIntent.getBroadcast(c, SNOOZE_RC, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         if (at <= now) {
             Alarms.manager(c).cancel(pi);
+            MedWakeReceiver.saveSnooze(c, 0);
         } else {
-            Alarms.setClock(c, Math.min(at, now + SNOOZE_MAX_MS), pi);
+            long t = Math.min(at, now + SNOOZE_MAX_MS);
+            Alarms.setClock(c, t, pi);
+            MedWakeReceiver.saveSnooze(c, t);
         }
     }
 }

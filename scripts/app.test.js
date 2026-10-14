@@ -646,7 +646,8 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     w.Capacitor.Plugins.LocalNotifications={checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),checkExactNotificationSetting:async()=>({exact_alarm:perm}),getPending:async()=>({notifications:[]}),cancel:async()=>{},schedule:async o=>{sched.push(...o.notifications.map(n=>n.id));exact.push(...o.notifications.map(n=>n.isExactNotification))}};
     await ev("scheduleReminders()");
     ok("alarms are exact while the permission is granted, and inexact (no settings screen from the plugin) while it is denied",exact.length>0&&exact.every(Boolean)&&(perm="denied",exact.length=0,await ev("scheduleReminders()"),exact.length>0&&exact.every(x=>x===false)),exact.length);perm="granted";sched.length=0;await ev("scheduleReminders()");
-    ok("blood pressure/sugar reminders are off by default: not scheduled",!sched.some(i=>i>=700&&i<1000));
+    ev("for(const r of S.settings.reminders)if([7,8,9].includes(r.id))r.on=false");sched.length=0;await ev("scheduleReminders()");
+    ok("blood pressure/sugar reminders that are off are not scheduled",!sched.some(i=>i>=700&&i<1000));
     ev("S.settings.reminders.find(r=>r.id===7).on=true;S.settings.reminders.find(r=>r.id===9).on=true");
     sched.length=0;await ev("scheduleReminders()");
     ok("when turned on, 30 days of alarms are scheduled, ids do not clash",sched.some(i=>i>=701&&i<730)&&sched.some(i=>i>=901&&i<930)&&!sched.some(i=>i>=800&&i<830)&&new Set(sched).size===sched.length,[sched.length]);
@@ -1818,11 +1819,11 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("tab='settings';render()");
     ok("permissions: Settings home has an İzinler row with the missing count",txt().includes("İzinler")&&txt().includes("2 eksik"));
     ev("tab='today';render()");q('[data-pm="open"]').click();await flush();
-    ok("permissions: the sheet lists each item with its state and a button; a wizard button shows the missing count",q("#sheet").textContent.includes("Sırayla ayarla (2 eksik)")&&q("#sheet").textContent.includes("Tam saatli alarm")&&!!q('[data-pm="go:notif"]')&&!!q('[data-pm="go:exact"]')&&!!q('[data-pm="go:bat"]'));
+    ok("permissions: the sheet lists each item with its state and a button; a wizard button shows the missing count",q("#sheet").textContent.includes("Sırayla ayarla (2 eksik")&&q("#sheet").textContent.includes("Tam saatli alarm")&&!!q('[data-pm="go:notif"]')&&!!q('[data-pm="go:exact"]')&&!!q('[data-pm="go:bat"]'));
     q('[data-pm="next"]').click();await flush();
     ok("permissions: Sırayla ayarla asks for notifications and, as the system dialog is refused, opens the app's own settings screen",opened.join()==="details",opened);
     notif="granted";await ev("pmRefresh()");
-    ok("permissions: after returning with notifications granted one missing item is left and the sheet refreshed itself",q("#sheet").textContent.includes("Sırayla ayarla (1 eksik)"));
+    ok("permissions: after returning with notifications granted one missing item is left and the sheet refreshed itself",q("#sheet").textContent.includes("Sırayla ayarla (1 eksik"));
     q('[data-pm="go:exact"]').click();await flush();await ev("pmRefresh()");
     ok("permissions: exact alarm granted from the list: nothing is missing",q("#sheet").textContent.includes("Gereken izinlerin hepsi tamam")&&ev("pmMissing().length")===0);
     q('[data-pm="go:bat"]').click();await flush();

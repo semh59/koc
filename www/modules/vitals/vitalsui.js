@@ -19,9 +19,9 @@ function vitalsSettingsHtml(){
 function vToggle(kind){
   const st=S.settings,on=kind==="bp"?"bpOn":"bsOn",ids=VT_REMINDERS[kind];
   st[on]=!st[on];
-  if(!st[on]){for(const r of st.reminders)if(ids.includes(r.id))r.on=false}
+  for(const r of st.reminders)if(ids.includes(r.id))r.on=st[on];
   save();render();scheduleReminders().then(setNotif);
-  toast(st[on]?(kind==="bp"?"Tansiyon takibi açık. Hatırlatmaları Ayarlar > Hatırlatmalar'dan açabilirsin":"Şeker takibi açık. Hatırlatmayı Ayarlar > Hatırlatmalar'dan açabilirsin"):"Kapatıldı. Kayıtların durur");
+  toast(st[on]?(kind==="bp"?"Tansiyon takibi açık, sabah ve akşam hatırlatması da açıldı. Saatleri Ayarlar > Hatırlatmalar'dan değiştirebilirsin":"Şeker takibi açık, ölçüm hatırlatması da açıldı. Saatini Ayarlar > Hatırlatmalar'dan değiştirebilirsin"):"Kapatıldı. Kayıtların durur");
 }
 /* ---- Today and Trend cards ---- */
 const vLast=k=>VitalsLib.latest(S.vitals.filter(r=>r.k===k));
