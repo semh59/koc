@@ -4,6 +4,8 @@
 const CycleLib=(()=>{
   const {dayOk,dayNum,fdate}=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
   const FLOW=[["light","Hafif"],["medium","Orta"],["heavy","Yoğun"]],SYM=[["cramp","Kramp"],["headache","Baş ağrısı"],["mood","Ruh hali"]];
+  /* Daily symptoms, independent of a period record; the last three are pregnancy-related and only noted, never interpreted. */
+  const DAILY=[...SYM,["nausea","Bulantı"],["fatigue","Yorgunluk"],["breast","Göğüs hassasiyeti"],["urine","Sık idrara çıkma"],["smell","Koku hassasiyeti"]],MAX_DAYS=800;
   const MAX_ROWS=80,MAXLEN=14,KEEP_DAYS=5*366,NID=9200,LEAD=2,NOTE_MAX=80,CYCLE_DAYS=[15,60],LAST_CYCLES=6,LUTEAL=14;
   const addDays=(k,n)=>new Date((dayNum(k)+n)*864e5).toJSON().slice(0,10);
   const diff=(a,b)=>dayNum(a)-dayNum(b);
@@ -41,10 +43,27 @@ const CycleLib=(()=>{
   const overlap=(rows,row)=>rows.some(r=>row.s<=last(r)&&last(row)>=r.s);
 
   /* Day counts between consecutive starts; those outside CYCLE_DAYS (a skipped record) stay out of the average. The last LAST_CYCLES cycles. */
-  function lengths(rows){
-    const s=rows.map(r=>r.s).sort(),L=[];
-    for(let i=1;i<s.length;i++){const d=diff(s[i],s[i-1]);if(d>=CYCLE_DAYS[0]&&d<=CYCLE_DAYS[1])L.push(d)}
-    return L.slice(-LAST_CYCLES);
+  const gaps=rows=>{const s=rows.map(r=>r.s).sort();return s.slice(1).map((x,i)=>diff(x,s[i]))};
+  const inRange=d=>d>=CYCLE_DAYS[0]&&d<=CYCLE_DAYS[1];
+  const lengths=rows=>gaps(rows).filter(inRange).slice(-LAST_CYCLES);
+  /* How many of the recent gaps between starts are left out of the average because they are outside CYCLE_DAYS. */
+  const skipped=rows=>gaps(rows).slice(-(LAST_CYCLES+2)).filter(d=>!inRange(d)).length;
+  /* Days since the predicted range ended, 0 when it has not (or there is no prediction). */
+  const overdue=(p,today)=>p&&p.ok&&today>p.to?diff(today,p.to):0;
+  /* Daily symptom list: one record per day, known symptoms only, no future day, newest MAX_DAYS kept. */
+  function cleanDays(arr,today){
+    const m=new Map(),ok=DAILY.map(x=>x[0]);
+    for(const x of Array.isArray(arr)?arr:[]){
+      if(!x||!dayOk(x.day)||x.day>today||diff(today,x.day)>KEEP_DAYS)continue;
+      const sym=ok.filter(k=>Array.isArray(x.sym)&&x.sym.includes(k));
+      if(sym.length)m.set(x.day,{day:x.day,sym});
+    }
+    return [...m.values()].sort((a,b)=>a.day<b.day?-1:1).slice(-MAX_DAYS);
+  }
+  /* The day's list with `key` switched on or off; an empty day is removed. */
+  function toggleDay(list,day,key){
+    const cur=list.find(x=>x.day===day),sym=cur?cur.sym:[],next=sym.includes(key)?sym.filter(k=>k!==key):[...sym,key];
+    return [...list.filter(x=>x.day!==day),...(next.length?[{day,sym:next}]:[])].sort((a,b)=>a.day<b.day?-1:1);
   }
   /* Prediction: {ok:false} or {ok:true,mean,sd,n,from,to,irregular}. Needs at least 2 cycle lengths. */
   function predict(rows){
@@ -97,6 +116,6 @@ const CycleLib=(()=>{
     if(L.length)out.push(["Ortalama döngü uzunluğu",`${Math.round(L.reduce((a,b)=>a+b,0)/L.length)} gün (${L.length} döngü)`]);
     return out;
   }
-  return {report,beforeStart,FLOW,SYM,MAXLEN,NOTE_MAX,NID,check,clean,overlap,lengths,addDays,diff,predict,fertile,dayOfPeriod,remindDay};
+  return {report,beforeStart,skipped,overdue,cleanDays,toggleDay,FLOW,SYM,DAILY,MAXLEN,NOTE_MAX,NID,check,clean,overlap,lengths,addDays,diff,predict,fertile,dayOfPeriod,remindDay};
 })();
 if(typeof module!=="undefined")module.exports=CycleLib;

@@ -1,7 +1,7 @@
 "use strict";
 /* Full data archive: everything the user has entered, as one readable JSON file (no DOM). Separate from the encrypted backup; it has no API keys, no photos, no provider list and no cycle record. */
 const ArchiveLib=(()=>{
-  const SKIP=new Set(["providers","cycle"]); // the cycle record stays in the encrypted backup only, like the CSV files
+  const SKIP=new Set(["providers","cycle","cycleSym"]); // the cycle record stays in the encrypted backup only, like the CSV files
   const mod=typeof Modules!=="undefined"?Modules:require("../../kernel/modules.js");
   /* S: the state; date: "YYYY-MM-DD". Returns {json, counts} where counts is the number of records per module (arrays only). */
   /* Settings that stay on the phone: the policy says they are not sent or shared anywhere. */

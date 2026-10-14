@@ -41,7 +41,7 @@ Applied everywhere (persisted data, ids, globals, files, `data-*` values, tests)
 | sabah / aksam, `ses` (seans) | morning / evening, `session` | vitals `session` |
 | nabiz, not (vitals/cycle field) | pulse, note | vitals and cycle fields |
 | kos / yur / bis / yuz / eli | run / walk / bike / swim / elliptical | cardio `ck` |
-| h / o / y, k / b / r | light / medium / heavy, cramp / headache / mood | cycle `flow`, `sym` |
+| h / o / y, k / b / r | light / medium / heavy, cramp / headache / mood | cycle `flow`, `sym`; daily symptom ids `nausea`, `fatigue`, `breast`, `urine`, `smell` (`S.cycleSym`) |
 | ver / koru / al | lose / keep / gain | onboarding `dir` |
 | elle | manual | steps entry marker (`text`) |
 | kayit / besin / salon / ilac / aliskanlik / nabiz / tansiyon / tahlil / olcu / dongu / hareket / koc / gecmis / analiz / veri | log / nutrition / gym / meds / habits / pulse / vitals / labs / measures / cycle / motion / coach / history / insights / data | module ids, `www/modules/*`, shard ids (`m:log/2026-10`) |

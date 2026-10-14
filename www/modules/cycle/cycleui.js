@@ -10,7 +10,7 @@ const cycNote="Bu bir tahmindir, tıbbi tavsiye değildir. Korunma ya da gebelik
 function cycSettingsHtml(){
   const st=S.settings;
   return modRow('data-cy="toggle"',st.cycleOn,"Döngü takibi","Dönem günleri ve tahmini sonraki dönem.","hlpcy",`Dönem günlerini kaydet, geçmişe bakarak tahmini sonraki dönemi gör. Veriler yalnız telefonda durur; Rehber'e, widget'a ve bildirim metnine girmez. ${cycNote}`,
-    `${swRow('data-cy="rem"',st.cycleRem,"Dönem yaklaşırken hatırlat","Bildirimde yalnız \"Hatırlatma\" yazar, kilit ekranında konu görünmez.")}<button class="btn ghost" data-tab="cycle">Döngü ekranını aç</button>`);
+    `${swRow('data-cy="rem"',st.cycleRem,"Dönem yaklaşırken hatırlat",st.cycleRem&&risk().pregnant?"Hamilelik işareti olduğu için hatırlatma durduruldu.":"Bildirimde yalnız \"Hatırlatma\" yazar, kilit ekranında konu görünmez.")}<button class="btn ghost" data-tab="cycle">Döngü ekranını aç</button>`);
 }
 function cycToggle(){
   const st=S.settings;st.cycleOn=!st.cycleOn;if(!st.cycleOn)st.cycleRem=false;
@@ -48,10 +48,16 @@ function cycMood(){
   const f1=x=>x.toFixed(1).replace(".",","),bits=[b.mood?`ruh halin ortalama ${f1(b.mood.pre)}, diğer günlerde ${f1(b.mood.other)} (5 üzerinden)`:"",b.sleep?`uyku ortalaman ${f1(b.sleep.pre/60)} sa, diğer günlerde ${f1(b.sleep.other/60)} sa`:""].filter(Boolean);
   return `<div class="card"><div class="lbl">Dönemden önceki günler</div><p class="m0">Son 3 dönemde dönem başlamadan önceki 5 günde ${bits.join("; ")}.</p><div class="mt-2 mut sm">Yalnız bir karşılaştırmadır; tahmin ya da tıbbi değerlendirme değildir.</div></div>`;
 }
+/* Symptoms of today, saved on tap, independent of a period record; the last days listed under the chips. */
+function cycDaily(today){
+  const cur=S.cycleSym.find(x=>x.day===today)?.sym||[],name=k=>CycleLib.DAILY.find(x=>x[0]===k)[1];
+  const recent=S.cycleSym.filter(x=>x.day<today).slice(-5).reverse().map(x=>`${fd(x.day)}: ${x.sym.map(name).join(", ")}`);
+  return `<div class="card"><div class="lbl">Bugünkü belirtiler</div><div class="chips">${CycleLib.DAILY.map(([k,l])=>`<button class="chip" data-cy="dsym:${k}" aria-pressed="${cur.includes(k)}">${l}</button>`).join("")}</div>${recent.length?`<div class="mt-2 mut sm">${recent.map(esc).join("<br>")}</div>`:""}<div class="mt-2 mut sm" role="note">Yalnız not tutar; yorum ya da tanı değildir.</div></div>`;
+}
 function viewCycle(){
   const st=S.settings,today=dayKey();
   if(!st.cycleOn)return `${emptyCard("data","Döngü takibi kapalı","Açarsan dönem günlerini kaydedip tahmini sonraki dönemi görebilirsin.",`<button class="btn" data-cy="toggle">Döngü takibini aç</button>`)}<p class="hint">Veriler yalnız telefonda durur. ${cycNote}</p>`;
-  const preg=risk().pregnant,p=preg?{ok:false}:CycleLib.predict(S.cycle),f=CycleLib.fertile(p,today),dn=CycleLib.dayOfPeriod(S.cycle,today),lastRow=S.cycle[S.cycle.length-1];
+  const preg=risk().pregnant,p=preg?{ok:false}:CycleLib.predict(S.cycle),f=CycleLib.fertile(p,today),dn=CycleLib.dayOfPeriod(S.cycle,today),lastRow=S.cycle[S.cycle.length-1],openRow=!dn&&lastRow&&!lastRow.e&&lastRow.s<=today?lastRow:null;
   let pred;
   if(preg)pred=`<p class="mut">Hamilelik işareti olduğu için tahmin gösterilmiyor. Sorularını hekimine danış. Kayıtların durur.</p>`;
   else if(!p.ok)pred=`<p class="mut">Yeterli veri yok. Tahmin için en az 3 dönem başlangıcı kaydet.</p>`;
@@ -60,14 +66,18 @@ function viewCycle(){
     pred=`<div class="ink sumv cyv cypr num">${cycRange(p.from,p.to)}</div><div class="mut sm">Son ${p.n} döngünün ortalaması ${String(p.mean).replace(".",",")} gün, sapma ${String(p.sd).replace(".",",")} gün. Güven: ${conf}.</div>${p.irregular?`<div class="mut sm" role="note">Döngülerin düzensiz görünüyor; bu tahmin güvenilir değil.</div>`:""}`;
   }
   if(!preg&&risk().nursing)pred+=`<div class="mut sm" role="note">Emzirme döneminde döngü düzensiz olabilir; tahmin güvenilmez olabilir.</div>`;
+  const skip=CycleLib.skipped(S.cycle),late=preg?0:CycleLib.overdue(p,today);
+  if(late)pred+=`<div class="mut sm" role="note">Tahmin aralığı ${late} gün önce bitti; hekimine danış.</div>`;
+  if(!preg&&skip)pred+=`<div class="mut sm" role="note">${skip} aralık 15-60 gün dışında kaldığı için ortalamaya katılmadı (atlanmış bir kayıt olabilir).</div>`;
   const label=(list,k)=>list.find(x=>x[0]===k)[1];
   const rows=S.cycle.slice().reverse().map(r=>{
     const tags=[r.flow&&label(CycleLib.FLOW,r.flow),...(r.sym||[]).map(k=>label(CycleLib.SYM,k))].filter(Boolean).join(", ");
-    return `<div class="prow"><button class="grow pbtn" data-cy="edit:${r.id}"><span class="grow"><b class="num">${r.e?cycRange(r.s,r.e):fd(r.s)}</b>${r.e?"":`<span class="mut"> · bitiş girilmedi</span>`}${tags||r.note?`<small class="db mut">${esc(tags)}${r.note?(tags?" · ":"")+esc(r.note):""}</small>`:""}</span></button><button class="del" data-cy="del:${r.id}" aria-label="${fd(r.s)} tarihli kaydı sil">${Icons.svg("x")}</button></div>`;
+    return `<div class="prow"><button class="grow pbtn" data-cy="edit:${r.id}"><span class="grow"><b class="num">${r.e?cycRange(r.s,r.e):fd(r.s)}</b>${r.e?"":`<span class="mut"> · bitiş girilmedi, eklemek için dokun</span>`}${tags||r.note?`<small class="db mut">${esc(tags)}${r.note?(tags?" · ":"")+esc(r.note):""}</small>`:""}</span></button><button class="del" data-cy="del:${r.id}" aria-label="${fd(r.s)} tarihli kaydı sil">${Icons.svg("x")}</button></div>`;
   }).join("");
   return `<button class="mb-3 btn" data-cy="add">${Icons.svg("plus")} Dönem ekle</button>
-  <div class="card"><div class="lbl">Bu dönem</div>${dn?`<div class="ink sumv cyv num">${dn}. gün</div><button class="btn ghost" data-cy="end">Dönem bugün bitti</button>`:`<p class="m0 mut">${lastRow?`Açık dönem yok. Son başlangıç: ${fd(lastRow.s)}.`:"Henüz kayıt yok. İlk dönemini eklediğinde burada görünür."}</p>`}</div>
+  <div class="card"><div class="lbl">Bu dönem</div>${dn?`<div class="ink sumv cyv num">${dn}. gün</div><button class="btn ghost" data-cy="end">Dönem bugün bitti</button>`:openRow?`<p class="m0 mut">${fd(openRow.s)} tarihinde başlayan dönemin bitişi girilmedi.</p><button class="btn ghost" data-cy="edit:${openRow.id}">Bitiş tarihini gir</button>`:`<p class="m0 mut">${lastRow?`Açık dönem yok. Son başlangıç: ${fd(lastRow.s)}.`:"Henüz kayıt yok. İlk dönemini eklediğinde burada görünür."}</p>`}</div>
   <div class="card"><div class="lbl">Tahmini sonraki dönem (yaklaşık)</div>${pred}<div class="mt-2 mut sm">${cycNote}</div></div>
+  ${cycDaily(today)}
   ${p.ok?cycFertile(f):""}
   ${preg?"":cycMood()}
   ${cycCal(p.ok?p:null,f,today)}
@@ -82,7 +92,7 @@ function sheetCycle(r){
   const t=dayKey();cycEditId=r?r.id:0;cycFlow=r?.flow||"";cycSym=r?.sym?[...r.sym]:[];
   openSheet(`<h3>${r?"Dönemi düzenle":"Dönem ekle"}</h3>
   <label class="lbl" for="cys">Başlangıç</label><input class="in" type="date" id="cys" max="${t}" value="${r?r.s:t}">
-  <label class="lbl" for="cye">Bitiş (isteğe bağlı)</label><input class="in" type="date" id="cye" max="${t}" value="${r?.e||""}">
+  <label class="lbl" for="cye">Bitiş (isteğe bağlı)</label><input class="in" type="date" id="cye" max="${r?.s&&CycleLib.addDays(r.s,CycleLib.MAXLEN-1)<t?CycleLib.addDays(r.s,CycleLib.MAXLEN-1):t}" value="${r?.e||""}">
   <div class="lbl">Akış (isteğe bağlı)</div>${cycChips("cyf",CycleLib.FLOW,[cycFlow])}
   <div class="lbl">Belirtiler (isteğe bağlı)</div>${cycChips("cyb",CycleLib.SYM,cycSym)}
   <label class="lbl" for="cynot">Not (isteğe bağlı)</label><input class="in" id="cynot" maxlength="${CycleLib.NOTE_MAX}" value="${esc(r?.note||"")}" autocomplete="off">
@@ -121,5 +131,6 @@ document.addEventListener("click",ev=>{
   else if(a==="save")cycSave();
   else if(a==="mon"){cycMonth=ymShift(cycMonth||dayKey().slice(0,7),+arg);render()}
   else if(a==="end"){const r=S.cycle[S.cycle.length-1],t=dayKey(),c=r&&CycleLib.check({...r,e:t},t);if(c?.row)cycPut(S.cycle.map(x=>x===r?{...c.row,id:r.id}:x),"Dönem bitirildi");else toast("Bitiş kaydedilemedi")}
+  else if(a==="dsym"){const prev=S.cycleSym;S.cycleSym=CycleLib.toggleDay(prev,dayKey(),arg);if(commit(()=>{S.cycleSym=prev}))render()}
   else if(a==="del")cycPut(S.cycle.filter(r=>r.id!==+arg),"Kayıt silindi");
 });
