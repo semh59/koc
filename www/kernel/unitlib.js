@@ -5,7 +5,8 @@ const Units=(()=>{
   const LB=2.20462,MG=18.016;
   let src=()=>({});
   const cur=()=>src()||{};
-  const wu=()=>cur().wUnit==="lb"?"lb":"kg",gu=()=>cur().gUnit==="mmol"?"mmol":"mgdl";
+  let ov={}; // one entry sheet's temporary unit: a tap on the unit label flips it, closing the sheet drops it
+  const wu=()=>ov.w||(cur().wUnit==="lb"?"lb":"kg"),gu=()=>ov.g||(cur().gUnit==="mmol"?"mmol":"mgdl");
   const w=(kg,u=wu())=>u==="lb"?kg*LB:kg;
   /* lb input converts to kg with 3 decimals: 0.1 lb = 0.045 kg, so the typed number comes back unchanged on display. */
   const wIn=(v,u=wu())=>u==="lb"?Math.round(v/LB*1000)/1000:v;
@@ -17,6 +18,6 @@ const Units=(()=>{
   const fwS=(dkg,d=1,u)=>{const x=w(dkg,u);return (x>0.049?"+":x<-0.049?"−":"")+f(Math.abs(x),d)};
   const fg=(mg,u=gu())=>u==="mmol"?f(mg/MG,1):String(Math.round(mg*10)/10).replace(".",",");
   const gl=(u=gu())=>u==="mmol"?"mmol/L":"mg/dL";
-  return {src:fn=>{src=fn},wu,gu,w,wIn,g,gIn,fw,fwS,fg,gl};
+  return {src:fn=>{src=fn},flip:k=>{ov[k]=k==="w"?(wu()==="kg"?"lb":"kg"):(gu()==="mgdl"?"mmol":"mgdl")},reset:()=>{ov={}},wu,gu,w,wIn,g,gIn,fw,fwS,fg,gl};
 })();
 if(typeof module!=="undefined")module.exports=Units;

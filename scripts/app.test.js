@@ -680,7 +680,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev(`(()=>{const t=dayKey();S.vitals=[
       {id:1,k:'t',day:t,time:'07:30',sys:128,dia:82,pulse:70,session:'morning',sid:'a1',i:1},{id:2,k:'t',day:t,time:'07:32',sys:140,dia:90,session:'morning',sid:'a1',i:2},
       {id:3,k:'s',day:t,time:'07:00',g:95,ctx:'fasting'},{id:4,k:'s',day:t,time:'09:30',g:150,ctx:'after'}]})()`);
-    ev("S.settings.bpOn=S.settings.bsOn=true;tab='trend';render()");click('[data-vt="pdfmenu:t"]');
+    ev("S.settings.bpOn=S.settings.bsOn=true;tab='trend';render();sheetExport()");click('[data-vt="pdfmenu:t"]');
     ok("report period choice: 7/14/30/90",qa('#sheet [data-vt^="pdf:t:"]').length===4);
     click('[data-vt="pdf:t:30"]');await flush();
     const pb=Buffer.from(saved.data,"base64"),pd=await pdfjs.getDocument({data:new Uint8Array(pb),verbosity:0}).promise;
@@ -688,7 +688,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("blood pressure report: two raw measurements on separate rows, average, warning note",drawn.includes("NeoWell · Tansiyon raporu")&&drawn.includes("128/82 mmHg  nabız 70")&&drawn.includes("140/90 mmHg")&&drawn.includes("Sabah, 1. ölçüm")&&drawn.includes("Sabah, 2. ölçüm")&&drawn.some(t=>/Bu değerleri hekiminle değerlendir\./.test(t))&&drawn.some(t=>/134\/86 mmHg/.test(t))&&drawn.some(t=>/^\d+ \S+ \d{4} - \d+ \S+ \d{4} \(30 gün\)$/.test(t)),drawn);
     ok("no diagnostic language in the report",!BAN.test(drawn.join(" ")));
     drawn.length=0;saved=null;
-    ev("tab='trend';render()");click('[data-vt="pdfmenu:s"]');click('[data-vt="pdf:s:7"]');await flush();
+    ev("tab='trend';render();sheetExport()");click('[data-vt="pdfmenu:s"]');click('[data-vt="pdf:s:7"]');await flush();
     ok("sugar report: context and values, no target percentage",drawn.includes("NeoWell · Şeker raporu")&&drawn.includes("Açlık")&&drawn.includes("95 mg/dL")&&drawn.includes("Yemekten 2 saat sonra")&&!drawn.some(t=>/Hedef aralığ/.test(t)),drawn);
     ev(`(()=>{const t=dayKey();S.vitals=[];for(let i=0;i<120;i++)S.vitals.push({id:i+1,k:'s',day:keyOff(-(i%25)),time:String(6+(i%12)).padStart(2,'0')+':'+String(i%60).padStart(2,'0'),g:80+(i%60),ctx:'random'})})()`);
     drawn.length=0;saved=null;
@@ -709,7 +709,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     w.HTMLCanvasElement.prototype.getContext=()=>ctx;
     w.Capacitor.Plugins.Filesystem={writeFile:async o=>{saved=o;return {uri:"file:///cache/h.pdf"}}};
     w.Capacitor.Plugins.Share={share:async o=>{shared=o}};
-    ev("S.entries=[];S.vitals=[];S.settings.bpOn=false;S.settings.bsOn=false;tab='trend';render()");
+    ev("S.entries=[];S.vitals=[];S.settings.bpOn=false;S.settings.bsOn=false;tab='trend';render();sheetExport()");
     ok("the weekly report button in Trend",!!q('[data-wk="pdf"]'));
     q('[data-wk="pdf"]').click();await flush();
     ok("no report is produced when there are no records, an explanation is given",saved===null&&q("#toast").textContent.includes("kayıt yok"));
@@ -731,7 +731,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
       ok("doctor report content: title, period, coverage, the question; empty question skipped",drawn.includes("NeoWell · Hekime hazırlan")&&drawn.some(t=>t.includes("son 90 gün"))&&drawn.some(t=>t==="Tansiyon ölçümü olan gün")&&drawn.some(t=>t.startsWith("1. Tansiyon ilacımın"))&&!drawn.some(t=>t.startsWith("2.")));
       ok("doctor report wording: no comment or rating words",!drawn.some(t=>/yüksek|düşük|normal|risk|iyi |kötü/i.test(t)),drawn.filter(t=>/yüksek|düşük|normal|risk/i.test(t)));
       ev("S.entries=[];S.vitals=[];S.labs=[]");saved=null;
-      q('[data-doc="open"]').click();q('[data-doc="go"]').click();await flush();
+      ev("sheetExport()");q('[data-doc="open"]').click();q('[data-doc="go"]').click();await flush();
       ok("doctor report: no records, no file, an explanation",saved===null&&q("#toast").textContent.includes("kayıt yok"));
     }
     ev("S.entries=[];S.vitals=[];S.settings.bpOn=false;tab='today';render()");
@@ -2369,12 +2369,12 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     w.Capacitor.Plugins.Filesystem={writeFile:async o=>{wr.push(o);return {uri:"file:///cache/"+o.path}}};
     w.Capacitor.Plugins.Share={share:async o=>{shr.push(o)}};
     ev("closeSheet();S.entries=[];S.nextId=1;S.workouts=[];S.vitals=[];S.sleep=[];S.mood=[];S.fast={plan:16,t0:null,log:[]};S.meds=[];S.medLog=[];add('weight',80.5);add('note',null,'=1+1');S.settings.obDone=true;tab='settings-data';render()");
-    q('[data-pv="csv"]').click();
+    q('[data-pv="export"]').click();
     const sheet=()=>q("#sheet").textContent;
     ok("Settings > Data Tabloya aktar: 11 files, with row counts; the button of an empty one is disabled",sheet().includes("Kayıtlar (yemek, su, kilo, ölçü, spor, adım, not)")&&sheet().includes("2 satır")&&qa('[data-pv^="csvsh:"]').length===11&&qa('[data-pv^="csvsh:"]').filter(b=>b.disabled).length===8);
     q('[data-pv="csvsh:0"]').click();await flush();
     ok("share: a single file, UTF-8 text, BOM, ; separator, decimal comma, injection-safe, uri goes to the share sheet",wr.length===1&&wr[0].encoding==="utf8"&&wr[0].directory==="CACHE"&&/^neowell-kayitlar-\d{4}-\d\d-\d\d\.csv$/.test(wr[0].path)&&wr[0].data.startsWith("﻿tarih;saat;")&&wr[0].data.includes(";kilo;80,5;kg;")&&wr[0].data.includes("'=1+1")&&shr.length===1&&shr[0].files[0]==="file:///cache/"+wr[0].path,wr[0]);
-    ok("full archive row: record total shown, button enabled",sheet().includes("Tüm verim (tek JSON dosyası)")&&sheet().includes("2 kayıt")&&!q('[data-pv="archive"]').disabled,sheet());
+    ok("full archive row: record total shown, button enabled",sheet().includes("Kayıtlarım (tek JSON dosyası, bazı veriler dışarıda)")&&sheet().includes("Dışarıda: API anahtarları")&&!q('[data-pv="archive"]').disabled,sheet());
     q('[data-pv="archive"]').click();await flush();
     const ar=JSON.parse(wr[1].data);
     ok("archive share: a readable JSON file with the user's entries, no API key, file name with the date",/^neowell-arsiv-\d{4}-\d\d-\d\d\.json$/.test(wr[1].path)&&wr[1].encoding==="utf8"&&ar.schema===1&&ar.modules.log.entries.length===2&&!("providers" in ar.modules.coach),wr[1].path);
@@ -2402,7 +2402,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     }
     ok("each section is its own sub-screen: header, ‹ visible, Daha fazla tab active; ‹ returns to the list",titles);
     const need=["heightCm","age","goalKg","kcal","waterMl","glass","sportWeek","stepGoal"].map(k=>"data-set="+k)
-      .concat([1,2,3,4,5,6,7,8,9,10,11,12].flatMap(i=>["data-rt="+i,"data-ro="+i]),["data-act=health","data-act=drive","data-act=backup","data-act=reset","data-pv=csv","data-pv=open","data-c=addprov","data-c=clearchat","data-g=gdb:2.5","data-g=gpl:25","data-hb=fasttoggle","data-hb=plan:16","data-md=toggle","data-md=shown","data-tab=meds","data-vt=bptoggle","data-vt=bstoggle","data-aw=","data-rpe=","data-sex=m","data-actl=2"]);
+      .concat([1,2,3,4,5,6,7,8,9,10,11,12].flatMap(i=>["data-rt="+i,"data-ro="+i]),["data-act=health","data-act=drive","data-act=backup","data-act=reset","data-pv=export","data-pv=open","data-c=addprov","data-c=clearchat","data-g=gdb:2.5","data-g=gpl:25","data-hb=fasttoggle","data-hb=plan:16","data-md=toggle","data-md=shown","data-tab=meds","data-vt=bptoggle","data-vt=bstoggle","data-aw=","data-rpe=","data-sex=m","data-actl=2"]);
     ok("all ids of the old single page are kept in the sub-screens",need.every(x=>seen.has(x)),need.filter(x=>!seen.has(x)));
     ev("tab='settings-profile';render()");q('[data-help="hlpmk"]').click();
     ok("ⓘ detail: the explanation opens inside the card, aria-expanded updates",!q("#hlpmk").hidden&&q('[data-help="hlpmk"]').getAttribute("aria-expanded")==="true");
@@ -2541,10 +2541,10 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("tSec='weight'");
     // reports
     const rep=()=>qa("#view summary").filter(h=>h.textContent==="Daha fazla ölçüm").length;
-    ev("S.settings.bpOn=false;S.settings.bsOn=false;S.labs=[];render()");
-    ok("Daha fazla ölçüm: only the weekly report (no row for closed modules and empty labs)",rep()===1&&!!q('[data-wk="pdf"]')&&!q('[data-vt^="pdfmenu"]')&&!q('[data-lab="pdf"]'));
-    ev("S.settings.bpOn=true;S.settings.bsOn=true;S.labs=[{id:1,day:keyOff(0),n:'Glukoz',v:90,u:'mg/dL'}];render()");
-    ok("Daha fazla ölçüm: with open modules and lab data the reports are in the same list, 44 px rows",rep()===1&&!!q('[data-wk="pdf"]')&&!!q('[data-vt="pdfmenu:t"]')&&!!q('[data-vt="pdfmenu:s"]')&&!!q('[data-lab="pdf"]')&&/\.row,\.prow[^{]*\{[^}]*min-height:56px/.test(html));
+    ev("S.settings.bpOn=false;S.settings.bsOn=false;S.labs=[];render();sheetExport()");
+    ok("Raporlar ve dışa aktarma: one row in Daha fazla ölçüm opens the sheet with only the weekly report (no row for closed modules and empty labs)",rep()===1&&!!q('#view [data-pv="export"]')&&!q('#view [data-wk="pdf"]')&&!!q('#sheet [data-wk="pdf"]')&&!q('[data-vt^="pdfmenu"]')&&!q('[data-lab="pdf"]'));
+    ev("S.settings.bpOn=true;S.settings.bsOn=true;S.labs=[{id:1,day:keyOff(0),n:'Glukoz',v:90,u:'mg/dL'}];render();sheetExport()");
+    ok("Raporlar ve dışa aktarma: with open modules and lab data the reports are in the same list, 56 px rows",rep()===1&&!!q('[data-wk="pdf"]')&&!!q('[data-vt="pdfmenu:t"]')&&!!q('[data-vt="pdfmenu:s"]')&&!!q('[data-lab="pdf"]')&&/\.row,\.prow[^{]*\{[^}]*min-height:56px/.test(html));
     ok("the PDF button is gone from the sub-screens (blood pressure, sugar, labs)",["bp","glucose","labs"].every(t=>{ev(`tab='${t}';render()`);return !q('#view [data-vt^="pdfmenu"]')&&!q('#view [data-lab="pdf"]')}));
     ev("S=structuredClone(DEF);S.settings.obDone=true;tab='today';render()");
   }

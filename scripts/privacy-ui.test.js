@@ -70,7 +70,7 @@ const sw=(w,attr,val)=>{const el=w.document.createElement("input");el.type="chec
   ok("without sealing the file goes out as is",shared.at(-1).path==="neowell-z.csv"&&shared.at(-1).data==="x");
 
   w.eval("add('weight',70)");
-  w.eval("sheetCsv()");
+  w.eval("sheetExport()");
   const s=w.document.querySelector("[data-pv=seal]");s.click();
   w.document.querySelector("[data-pv=archive]").click();await flush();
   ok("the CSV and archive sheet has a seal switch that routes the archive through the password sheet",!!w.document.querySelector("#shp1"));
