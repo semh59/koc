@@ -30,8 +30,8 @@ function mChart(list){
   let grid="";for(let t=0;t<=3;t++){const v=lo+(hi-lo)*t/3,y=Y(v);grid+=`<line x1="${pl}" x2="${W-pr}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--line)"/><text x="${pl-6}" y="${(y+3.5).toFixed(1)}" text-anchor="end">${fmt(v,0)}</text>`}
   const line=list.map((m,i)=>(i?"L":"M")+X(m).toFixed(1)+" "+Y(m.v).toFixed(1)).join(""),
     dots=list.map(m=>`<circle cx="${X(m).toFixed(1)}" cy="${Y(m.v).toFixed(1)}" r="3.5" fill="var(--prim)"/>`).join(""),
-    tip=esc(JSON.stringify(list.map(m=>[+X(m).toFixed(1),+Y(m.v).toFixed(1),`${fd(m.day)} · ${fmt(m.v)} ${MUNIT(msel)}`])));
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${MNAME[msel]} ölçü grafiği" data-tip="${tip}">${grid}<path d="${line}" fill="none" stroke="var(--prim)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>${dots}<text x="${pl}" y="${H-6}" text-anchor="start">${fd(list[0].day)}</text><text x="${W-pr}" y="${H-6}" text-anchor="end">${fd(list[list.length-1].day)}</text></svg>`;
+    tx=list.map(m=>`${fd(m.day)} · ${fmt(m.v)} ${MUNIT(msel)}`),tip=esc(JSON.stringify(list.map((m,i)=>[+X(m).toFixed(1),+Y(m.v).toFixed(1),tx[i]])));
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${MNAME[msel]} ölçü grafiği, ${list.length} ölçüm, son değer ${fmt(list[list.length-1].v)} ${MUNIT(msel)}. Tüm değerler grafiğin altındaki tabloda" data-tip="${tip}">${grid}<path d="${line}" fill="none" stroke="var(--prim)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>${dots}<text x="${pl}" y="${H-6}" text-anchor="start">${fd(list[0].day)}</text><text x="${W-pr}" y="${H-6}" text-anchor="end">${fd(list[list.length-1].day)}</text></svg>${ptsTable(tx)}`;
 }
 function measureCard(){
   const addBtn=`<button class="btn ghost" data-ms="open">Ölçü ekle</button>`;

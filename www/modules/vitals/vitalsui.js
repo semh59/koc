@@ -61,7 +61,7 @@ function sheetBp(){
 function sheetBs(){
   vConfirm="";vCtx=S.settings.vCtx||(new Date().getHours()<10?"fasting":"random");
   openSheet(`<h3>Şeker ekle</h3>
-  <div class="lbl"><label for="gv">Şeker</label> (<button class="lnk ib wa" data-tu="g" data-for="gv" aria-label="Birimi bu kayıt için değiştir">${glab()}</button>)</div><input class="in num" id="gv" inputmode="${vMmol()?"decimal":"numeric"}" placeholder="örn. ${vMmol()?"5,3":"95"}" autocomplete="off" autofocus>
+  <div class="lbl"><label for="gv" id="gul">Şeker (${glab()})</label> <button class="chip" data-tu="g" data-for="gv" data-lbl="gul" aria-label="Birimi bu kayıt için değiştir">mg/dL ⇄ mmol/L</button></div><input class="in num" id="gv" inputmode="${vMmol()?"decimal":"numeric"}" placeholder="örn. ${vMmol()?"5,3":"95"}" autocomplete="off" autofocus>
   <div class="lbl">Ne zaman ölçtün?</div>${vChips("vctx",VitalsLib.CTX,vCtx)}
   ${dayOptions()}<label class="lbl" for="vtime">Saat</label><input class="in" type="time" id="vtime" value="${vNow()}">
   ${vNote()}
@@ -191,8 +191,8 @@ function vSvg(series,from,to,W,H,dec){
   const body=series.map(s=>`${s.pts.length>1?`<polyline points="${s.pts.map(p=>X(p).toFixed(1)+","+Y(p.v).toFixed(1)).join(" ")}" fill="none" stroke="${s.color}" stroke-width="1.8" stroke-linejoin="round"${s.dash?' stroke-dasharray="5 3"':""} opacity="${s.line===false?0:.85}"/>`:""}${s.pts.map(p=>vMark(s.shape,X(p),Y(p.v),3.8,s.color)).join("")}`).join("");
   /* Axis numbers sit in a separate column on the left and the series name only in the legend: nothing collides with the line or is clipped at the edge. */
   let grid="";for(let i=0;i<=3;i++){const v=lo+(hi-lo)*i/3,y=Y(v);grid+=`<line x1="${L}" x2="${W-8}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--line)"/><text x="${L-6}" y="${(y+4).toFixed(1)}" text-anchor="end">${nf(v)}</text>`}
-  const tip=esc(JSON.stringify(series.flatMap(s=>s.pts.map(p=>[+X(p).toFixed(1),+Y(p.v).toFixed(1),`${fd(p.day)} ${p.time} · ${s.short||s.label||""} ${nf(p.v)}`.trim()]))));
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Ölçüm grafiği" data-tip="${tip}">${grid}${body}<text x="${L}" y="${H-6}">${fd(from)}</text><text x="${W-8}" y="${H-6}" text-anchor="end">${fd(to)}</text></svg>`;
+  const rows=series.flatMap(s=>s.pts.map(p=>[+X(p).toFixed(1),+Y(p.v).toFixed(1),`${fd(p.day)} ${p.time} · ${s.short||s.label||""} ${nf(p.v)}`.trim()])),tip=esc(JSON.stringify(rows));
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Ölçüm grafiği, ${rows.length} ölçüm, ${fd(from)} ile ${fd(to)} arası. Tüm değerler grafiğin altındaki tabloda" data-tip="${tip}">${grid}${body}<text x="${L}" y="${H-6}">${fd(from)}</text><text x="${W-8}" y="${H-6}" text-anchor="end">${fd(to)}</text></svg>${ptsTable(rows.map(r=>r[2]))}`;
 }
 const vSeg=()=>`<div class="seg" role="group" aria-label="Aralık">${[7,14,30].map(n=>`<button data-vt="range:${n}" aria-pressed="${vRange===n}">${n} gün</button>`).join("")}</div>`;
 const vBtns=add=>`<div class="btns mb-3"><button class="btn" data-vt="${add}">${Icons.svg("plus")} Ölçüm ekle</button><button class="btn ghost" data-doc="open">${Icons.svg("share")} Doktora PDF</button></div>`;
