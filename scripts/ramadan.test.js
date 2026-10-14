@@ -58,10 +58,21 @@ ok("a daytime over 16 hours is flagged long (summer)",R.now(()=>["03:00","20:30"
   ok("source: a recent agreeing comparison is 'verified' and the times are calculated",fresh.mode==="verified"&&fresh.get(D0).length===2&&fresh.max===good.max);
   ok("source: no comparison, or one older than 45 days, or one for another province is 'calc'",R.source(here,null,t).mode==="calc"&&R.source(here,good,t+46*864e5).mode==="calc"&&R.source({lat:41,lon:29},good,t).mode==="calc");
   const off=Object.fromEntries(Object.entries(ank.days).map(([d,v])=>[d,[v[0],"23:00"]])),bad=R.verify(ai,off,t),tab=R.source(here,bad,t);
-  ok("source: a comparison that disagrees falls back to the table's own days, nothing for other days",tab.mode==="table"&&tab.get(D0)[1]==="23:00"&&tab.get("2027-03-01")===null&&far.max<=R.TOL);
+  ok("source: a comparison that disagrees uses the table's own days; past its last day the calculation takes over",tab.mode==="table"&&tab.get(D0)[1]==="23:00"&&tab.end===days[days.length-1]&&tab.get("2027-03-01")[0]===R.times("2027-03-01",here.lat,here.lon)[0]&&far.max<=R.TOL);
+  ok("source: the age of the last comparison stays known after it went stale",R.source(here,good,t+46*864e5).at===good.at&&R.source(here,null,t).at===0);
+  const cf=R.addDay(tab.end,1),rem=R.reminders(tab.get,{sahur:true,iftar:true},at(tab.end,"12:00"),6e4,3,cf);
+  ok("reminders: the calculated days (after the table, or in calc mode) say to compare with the official calendar, table days do not",rem.length===5&&rem.filter(r=>/Resmî takvimle karşılaştır/.test(r.body)).length===rem.filter(r=>r.at>at(cf,"00:00")).length&&rem.some(r=>!/karşılaştır/.test(r.body))&&R.reminders(get,{sahur:true,iftar:false},at(D0,"00:10"),6e4,1,"0000-00-00")[0].body.endsWith("karşılaştır."));
 }
 {
   const ai=0,c=R.verify(ai,ank.days,5),back=R.clean(JSON.parse(JSON.stringify(c)));
   ok("clean: a valid record survives, garbage becomes null",JSON.stringify(back)===JSON.stringify(c)&&R.clean(null)===null&&R.clean({il:"x",days:{}})===null&&R.clean({il:999,max:0,days:{}})===null&&Object.keys(R.clean({il:1,max:0,days:{bad:["05:00","18:00"],"2026-10-06":["05:00","18:00"]}}).days).join()==="2026-10-06");
+}
+{
+  const d=["05:00","18:30"];
+  ok("shift: water inside the fast moves after iftar, three reminders do not land together; one outside stays",R.shift(d,"water","11:30",0)==="19:00"&&R.shift(d,"water","14:30",1)==="20:30"&&R.shift(d,"water","17:30",2)==="22:00"&&R.shift(d,"water","19:00",0)==="19:00"&&R.shift(["07:00","17:10"],"water","17:30",2)==="17:30");
+  ok("shift: the motion reminder waits an hour after iftar and stays when it is already later",R.shift(["06:00","19:30"],"move","19:30")==="20:30"&&R.shift(d,"move","19:30")==="19:30"&&R.shift(d,"move","08:00")==="19:30");
+  ok("medMap: a time in the fast goes to the nearer of sahur and iftar, others are left out",JSON.stringify(R.medMap(["02:00","08:00","14:00","22:00"],d))==='{"08:00":"04:30","14:00":"18:40"}'&&Object.keys(R.medMap(["20:00"],d)).length===0);
+  ok("ids: the sahur and iftar ids are recognised, medication ids and the cycle id are not",R.isNid(7000000)&&R.isNid(7000061)&&!R.isNid(1001040)&&!R.isNid(2001040)&&!R.isNid(6999999));
+  ok("bayram: only after the mode was opened in Ramadan and the 10th Hijri month began",R.bayram("2027-02-20",Date.UTC(2027,2,12))&&!R.bayram("2027-02-20",Date.UTC(2027,2,5))&&!R.bayram("2026-10-06",Date.UTC(2026,10,20)));
 }
 finish();

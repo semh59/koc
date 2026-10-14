@@ -8,12 +8,15 @@ const RamadanLib=(()=>{
   const CITIES=typeof RAM_CITIES!=="undefined"?RAM_CITIES:require("./ramcities.js");
   const TR_MS=3*36e5,TOL=2,FRESH_DAYS=45;
   const ANGLE=18.3,HORIZON=0.75,IM_OFF=1.17,IF_OFF=8.19; // imsak at 18.3 deg below the horizon, sunset at -0.75 deg, iftar = sunset + 8.19 min (fitted to 81 provinces, 2026-10)
+  const NID=7000000,isNid=id=>id>=NID&&id<NID+1000; // sahur/iftar notification ids; medication ids (1e6+) must not claim them
   const p2=n=>String(n).padStart(2,"0");
   const mins=t=>+t.slice(0,2)*60+ +t.slice(3,5);
   const hm=m=>`${p2(Math.floor(m/60))}:${p2(m%60)}`;
   const rad=d=>d*Math.PI/180,deg=r=>r*180/Math.PI;
   /* ms -> {day:"YYYY-MM-DD", min:minutes since midnight} in UTC+3. */
   const tr=ms=>{const d=new Date(ms+TR_MS);return {day:`${d.getUTCFullYear()}-${p2(d.getUTCMonth()+1)}-${p2(d.getUTCDate())}`,min:d.getUTCHours()*60+d.getUTCMinutes()}};
+  /* Epoch ms of "HH:MM" Turkish time on a day. */
+  const dayAt=(day,t)=>Date.parse(day+"T00:00:00Z")+mins(t)*6e4-TR_MS;
   const addDay=(k,n)=>{const d=new Date(Date.parse(k+"T00:00:00Z")+n*864e5);return d.toISOString().slice(0,10)};
   /* Low-precision solar position (NOAA formulas): minutes after midnight, UTC+3, of imsak and sunset. */
   function sun(day,lat,lon){
@@ -69,14 +72,14 @@ const RamadanLib=(()=>{
   }
   /* Where the times come from. loc {lat,lon}, cache = a verification record or null.
      "verified": calculated for the exact place, and the table of the nearest centre agreed within TOL minutes recently;
-     "table": the calculation disagreed with the table, so the table's own days are used (no other days);
-     "calc": calculated, not (or no longer) compared with the table. Returns {mode, get(day), max, at, il}. */
+     "table": the calculation disagreed with the table, so the table's own days are used and the days after its last day (end) fall back to the calculation;
+     "calc": calculated, not (or no longer) compared with the table; at is the time of the last comparison for this province, 0 if none. Returns {mode, get(day), max, at, il, end}. */
   function source(loc,cache,nowMs){
     const own=day=>times(day,loc.lat,loc.lon),near=nearest(loc.lat,loc.lon);
-    const fresh=cache&&cache.il===near.i&&nowMs-cache.at<=FRESH_DAYS*864e5;
+    const same=cache&&cache.il===near.i,fresh=same&&nowMs-cache.at<=FRESH_DAYS*864e5;
     if(fresh&&cache.max<=TOL)return {mode:"verified",get:own,max:cache.max,at:cache.at,il:near.i};
-    if(fresh)return {mode:"table",get:day=>cache.days[day]||null,max:cache.max,at:cache.at,il:near.i};
-    return {mode:"calc",get:own,max:null,at:0,il:near.i};
+    if(fresh)return {mode:"table",get:day=>cache.days[day]||own(day),end:Object.keys(cache.days).sort().pop(),max:cache.max,at:cache.at,il:near.i};
+    return {mode:"calc",get:own,max:null,at:same?cache.at:0,il:near.i};
   }
   const dur=m=>{const h=Math.floor(m/60),r=m%60;return h?`${h} sa${r?` ${r} dk`:""}`:`${r} dk`};
   /* What the Today card says: {kind:"iftar"|"sahur"|"night", left (min), text, imsak, iftar, long} or null without times for today. */
@@ -93,17 +96,38 @@ const RamadanLib=(()=>{
     }
     return {kind,left,imsak:d[0],iftar:d[1],long,text:`${kind==="iftar"?"İftara":"Sahura"} ${dur(Math.max(1,left))}`};
   }
-  /* One-shot reminders: sahur 45 minutes before imsak, iftar 5 minutes before. opt: {sahur, iftar}, lead: minimum ms ahead, days: how far. */
-  function reminders(get,opt,nowMs,lead,days){
+  /* One-shot reminders: sahur 45 minutes before imsak, iftar 5 minutes before. opt: {sahur, iftar}, lead: minimum ms ahead, days: how far.
+     Days from calcFrom on (a day key; undefined for none) are calculated, not from the table: the body says to compare with the official calendar. */
+  function reminders(get,opt,nowMs,lead,days,calcFrom){
     const out=[],t0=tr(nowMs).day;
     for(let i=0;i<days;i++){
       const day=addDay(t0,i),d=get(day);if(!d)continue;
-      const at=m=>Date.parse(day+"T00:00:00Z")+m*6e4-TR_MS;
-      if(opt.sahur&&at(mins(d[0])-45)>nowMs+lead)out.push({id:7000000+i*2,at:at(mins(d[0])-45),title:"Sahur",body:"Hesaplanan imsaka yaklaşık 45 dakika var."});
-      if(opt.iftar&&at(mins(d[1])-5)>nowMs+lead)out.push({id:7000001+i*2,at:at(mins(d[1])-5),title:"İftar",body:"Hesaplanan iftara yaklaşık 5 dakika var."});
+      const at=m=>dayAt(day,hm(m)),tail=calcFrom!==undefined&&day>=calcFrom?" Resmî takvimle karşılaştır.":"";
+      if(opt.sahur&&at(mins(d[0])-45)>nowMs+lead)out.push({id:NID+i*2,at:at(mins(d[0])-45),title:"Sahur",body:"Hesaplanan imsaka yaklaşık 45 dakika var."+tail});
+      if(opt.iftar&&at(mins(d[1])-5)>nowMs+lead)out.push({id:NID+1+i*2,at:at(mins(d[1])-5),title:"İftar",body:"Hesaplanan iftara yaklaşık 5 dakika var."+tail});
     }
     return out;
   }
-  return {times,nearest,inTurkey,parse,verify,clean,source,now,reminders,dur,tr,addDay,CITIES,TOL};
+  /* A daytime reminder time t ("HH:MM") on a day with times d=[imsak, iftar]: water inside the fast moves after iftar (k = 0..2 spreads three of them), the motion reminder waits an hour after iftar; anything else stays. */
+  function shift(d,kind,t,k){
+    const m=mins(t),im=mins(d[0]),ft=mins(d[1]);
+    if(kind==="water")return m>=im&&m<ft?hm(Math.min(ft+[30,120,210][k],1410)):t;
+    return m>=im&&m<ft+60?hm(Math.min(ft+60,1410)):t;
+  }
+  /* Medication times inside the fast, each moved to the nearer of sahur (30 min before imsak) and iftar (10 min after): {from: to}, empty when none is inside. */
+  function medMap(times,d){
+    const im=mins(d[0]),ft=mins(d[1]),out={};
+    for(const t of times){
+      const m=mins(t);
+      if(m>=im&&m<ft)out[t]=hm(m-(im-30)<=ft+10-m?im-30:ft+10);
+    }
+    return out;
+  }
+  const HJ=(()=>{try{return new Intl.DateTimeFormat("en-u-ca-islamic-umalqura",{month:"numeric",timeZone:"Europe/Istanbul"})}catch{return null}})();
+  const hijri=ms=>HJ?+HJ.format(ms):0;
+  /* The holiday has started: the mode was opened in the 9th Hijri month (Ramadan) and the 10th has begun. */
+  const bayram=(fromDay,nowMs)=>hijri(Date.parse(fromDay+"T12:00:00Z"))===9&&hijri(nowMs)===10;
+  const nightMin=d=>1440-(mins(d[1])-mins(d[0]));
+  return {NID,isNid,dayAt,nightMin,shift,medMap,bayram,times,nearest,inTurkey,parse,verify,clean,source,now,reminders,dur,tr,addDay,CITIES,TOL};
 })();
 if(typeof module!=="undefined")module.exports=RamadanLib;
