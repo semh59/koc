@@ -143,7 +143,7 @@ function gTimDone(skip){
     if(kind==="i"&&nx&&!nx.done&&nx.sec>0){
       gTim={ei:t.ei,si:t.si+1,end:Date.now()+20000,total:20,phase:"rest"};
       gTimNotify(gTim,gEx(x.id).n);
-    }else{gNotifyCancel();gRestSet(Date.now()+gRestSec(x.id)*1000,gNextTx(w,t.ei))}
+    }else{gNotifyCancel();gRestStart(w,t.ei)}
     toast(`${gEx(x.id).n}: ${t.si+1}. set tamamlandı`);
   }else{
     const nx=x.sets[t.si];

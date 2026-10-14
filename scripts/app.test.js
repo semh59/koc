@@ -1538,6 +1538,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     click('[data-g="menu:0"]');click('[data-g="rng:0"]');click('[data-g="rngset:0:5-8"]');
     click('[data-g="menu:0"]');click('[data-g="rng:0"]');click('[data-g="rngset:0:8-12"]');
     ok("the chosen rest is saved, it is not deleted when the rep range changes",ev("JSON.stringify(S.exCfg)")==='{"squat":{"rest":90}}',ev("JSON.stringify(S.exCfg)"));
+    ev("gActive().ex[0].sets.push({kg:60,reps:8,done:false});render()"); // the rest only starts while a set is left
     fire('[data-gi="kg:0:0"]',"60");fire('[data-gi="reps:0:0"]',"8");click('[data-g="done:0:0"]');
     ok("after the set checkmark the counter starts with the exercise's duration",Math.abs(ev("restEnd-Date.now()")-90000)<1000);
     click('[data-g="rest:0"]');click('[data-g="menu:0"]');click('[data-g="rst:0"]');click('[data-g="rstset:0:d"]');
@@ -1571,7 +1572,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("Today: ongoing workout card, marked/total sets and Devam et",q('.rrow[data-g="start:"] .tag').textContent==="Devam et"&&q("#view").textContent.includes("1 egzersiz, 1/3 set işaretli"),q("#view").textContent.includes("Devam ediyor"));
     click('.rrow[data-g="start:"]');
     ok("Devam et opens Gym",ev("tab")==="gym");
-    ev("gFinish()");
+    ev("gFinish()");click('[data-g="finall"]');
     ok("an unmarked set with values becomes done:true on confirm (Tamam) and is saved",ev("S.workouts[0].t1")!=null&&ev("S.workouts[0].ex[0].sets.length")===2&&ev("S.workouts[0].ex[0].sets.every(s=>s.done)")&&ev("S.entries.some(e=>e.type==='exercise'&&e.wid===20)"));
     ev("closeSheet();tab='today';render()");
     ok("Today: finished workout card with name, sets, duration, volume; tapping opens the summary",q("#view").textContent.includes("Squat")&&q("#view").textContent.includes("2 set")&&q("#view").textContent.includes("600 kg")&&(click('.rrow[data-g="sum:20"]'),q("#sheet").textContent.includes("600")));
