@@ -145,6 +145,13 @@ public class QuickLogPlugin extends Plugin {
         call.resolve();
     }
 
+    /** "Delete all data": waiting button records go; the notification secret stays so the existing notifications keep working. */
+    @PluginMethod
+    public synchronized void wipe(PluginCall call) {
+        prefs(getContext()).edit().remove("q").remove("inflight").commit();
+        call.resolve();
+    }
+
     @PluginMethod
     public void getToken(PluginCall call) {
         JSObject r = new JSObject();

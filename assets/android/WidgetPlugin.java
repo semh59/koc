@@ -16,6 +16,12 @@ public class WidgetPlugin extends Plugin {
         call.resolve();
     }
 
+    @PluginMethod
+    public void wipe(PluginCall call) {
+        NeoWidget.wipe(getContext());
+        call.resolve();
+    }
+
     // Also called on a cold start (BridgeActivity.load); the event is retained when the JS listener does not exist yet.
     @Override
     protected void handleOnNewIntent(Intent intent) {

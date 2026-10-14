@@ -47,4 +47,10 @@ on("profile",()=>{tab="settings-profile";render();window.scrollTo(0,0)});
 on("health",()=>{openSheet(`<h3>Sağlık notların</h3><div class="lbl">Hamilelik, hastalık, ilaç, yeme bozukluğu geçmişi gibi güvenlik frenin bilmesi gerekenler. Yalnız telefonda durur, Rehber’e gönderilmez.</div><textarea class="in" id="hn" maxlength="500" autofocus>${esc(S.settings.healthNote)}</textarea><button class="btn" data-go="health">Kaydet</button>`)});
 on("riskok",()=>{S.settings.riskClearedAt=dayKey();save();render();toast("Onaylandı, 30 gün geçerli")});
 onPre("apply:",a=>{S.settings.kcal=+a.slice(6);save();render();toast(`Kalori hedefi ${S.settings.kcal} kcal oldu`)});
-on("reset",()=>{confirmSheet({title:"Tüm veriler silinsin mi?",body:"Tüm kayıtlar, güvenlik kopyası, kayıtlı Rehber anahtarları ve kayıtlı yedek parolası silinecek. Bu geri alınamaz. Devam edilsin mi?",ok:"Hepsini sil",danger:true}).then(ok=>{if(ok){motionStopAll();BF()?.clear().catch(()=>{});cacheClean();["nw_state",...COPIES.map(([k])=>k)].forEach(k=>Store.del(k));["nw_state_usage",NetLog.KEY,KEYS_LS,KEYS_ENC,BKPW_LS,RAM_LS,"nw_keys_plain","nw_walkgps_no","nw_pdfok"].forEach(lsDel);ramCache=undefined;KEYS={};S=structuredClone(DEF);phClear();save();logOff=0;render();scheduleReminders().then(setNotif);toast("Tüm veriler silindi")}})});
+on("reset",()=>{confirmSheet({title:"Tüm veriler silinsin mi?",body:"Tüm kayıtlar, güvenlik kopyası, kayıtlı Rehber anahtarları ve kayıtlı yedek parolası silinecek. Bu geri alınamaz. Devam edilsin mi?",ok:"Hepsini sil",danger:true}).then(ok=>{if(!ok)return;
+  chain(S.settings.motionOn?motionStopAll():0,()=>chain(phClear(),photosOk=>chain(nativeWipe(["Motion","MedWake","Widget","QuickLog"]),nativeOk=>{
+    if(!nativeOk)toast(NATIVE_FAIL);
+    if(!photosOk||!nativeOk)return;
+    BF()?.clear().catch(()=>{});cacheClean();["nw_state",...COPIES.map(([k])=>k)].forEach(k=>Store.del(k));["nw_state_usage",NetLog.KEY,KEYS_LS,KEYS_ENC,BKPW_LS,RAM_LS,"nw_keys_plain","nw_walkgps_no","nw_pdfok"].forEach(lsDel);ramCache=undefined;KEYS={};S=structuredClone(DEF);save();logOff=0;render();scheduleReminders().then(setNotif);toast("Tüm veriler silindi");
+  })));
+})});

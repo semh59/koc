@@ -171,6 +171,14 @@ final class StepStore {
         return prefs(c).getLong("snapAt", 0L);
     }
 
+    /** "Delete all data": the finished-day history and the night-alarm mark go; today's counter state stays so counting continues. */
+    static synchronized void wipe(Context c) {
+        SharedPreferences sp = prefs(c);
+        SharedPreferences.Editor e = sp.edit().remove("snapAt");
+        for (String k : sp.getAll().keySet()) if (k.startsWith("h_")) e.remove(k);
+        e.commit();
+    }
+
     /** Steps of the finished days. */
     static Map<String, Long> history(Context c) {
         Map<String, Long> out = new HashMap<>();

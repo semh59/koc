@@ -29,6 +29,11 @@ public class NeoWidget extends AppWidgetProvider {
         }
     }
 
+    static synchronized void wipe(Context c) {
+        prefs(c).edit().clear().apply();
+        refresh(c);
+    }
+
     static synchronized void push(Context c, String json) {
         prefs(c).edit().putString("d", json).apply();
         refresh(c);
