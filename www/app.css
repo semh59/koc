@@ -147,7 +147,7 @@ td.today,th.today{font-weight:700}
 .bar>i{display:block;height:100%;background:var(--exercise);border-radius:var(--r-pill)}
 
 /* Coach */
-#composer{position:fixed;left:var(--sal);right:var(--sar);bottom:calc(68px + var(--nx,0px) + var(--sab));z-index:6;background:var(--bg);padding:var(--sp-2) 12px 8px;max-width:520px;margin:0 auto}
+#composer{position:fixed;left:var(--sal);right:var(--sar);bottom:calc(72px + var(--nx,0px) + var(--sab));z-index:6;background:var(--bg);padding:var(--sp-2) 12px 8px;max-width:520px;margin:0 auto}
 #composer[hidden]{display:none}body.kb nav,body.kb .chiprow{display:none}body.kb #composer{bottom:var(--kb,0px)}body.kb #sheet{bottom:var(--kb,0px);max-height:calc(var(--vh) - 8px);padding-bottom:18px}body.kb #sheet .plist{max-height:none;overflow:visible}
 /* With large text the chips neither shrink nor overlap: they keep their content width and the row scrolls sideways. */
 .chiprow{display:flex;gap:var(--sp-2);margin-bottom:var(--sp-2);overflow-x:auto;scrollbar-width:none}.chiprow::-webkit-scrollbar{display:none}.chiprow .chip{flex:1 0 auto;min-height:var(--hit);padding:0 var(--sp-2);font-size:var(--fs-s);white-space:nowrap;background:var(--card);box-shadow:var(--sh-1);border:1px solid var(--card-bd)}.chiprow .chip .i{color:var(--mut)}
@@ -213,7 +213,7 @@ body.coach{--toast-b:var(--cmp,calc(200px + var(--sab)))}
 .tgo{font-size:var(--fs-h3);color:var(--prim)}.rest.tim{background:color-mix(in srgb,var(--prim) 14%,var(--card));border-color:color-mix(in srgb,var(--prim) 40%,var(--line))}
 .rest{display:flex;align-items:center;gap:var(--sp-2);background:var(--prim-soft);border:1px solid color-mix(in srgb,var(--prim) 35%,var(--line));border-radius:var(--r);padding:var(--sp-2) var(--sp-3);margin-bottom:var(--sp-3)}
 /* The rest timer is fixed just above the bottom menu; while it is visible the page and the toast rise by its height. */
-#grest{position:fixed;left:calc(var(--sp-3) + var(--sal));right:calc(var(--sp-3) + var(--sar));bottom:calc(68px + var(--nx,0px) + var(--sab));z-index:6;max-width:496px;margin:0 auto;box-shadow:var(--sh-2)}body:has(#grest:not([hidden])){--toast-b:calc(var(--nav-h) + 112px + var(--nx,0px) + var(--sab))}body:has(#grest:not([hidden])) main{padding-bottom:calc(172px + var(--nx,0px) + var(--sab))}.rest .rsk{background:var(--prim-btn);color:var(--prim-ink);padding:0 var(--sp-4)}
+#grest{position:fixed;left:calc(var(--sp-3) + var(--sal));right:calc(var(--sp-3) + var(--sar));bottom:calc(72px + var(--nx,0px) + var(--sab));z-index:6;max-width:496px;margin:0 auto;box-shadow:var(--sh-2)}body:has(#grest:not([hidden])){--toast-b:calc(var(--nav-h) + 112px + var(--nx,0px) + var(--sab))}body:has(#grest:not([hidden])) main{padding-bottom:calc(172px + var(--nx,0px) + var(--sab))}.rest .rsk{background:var(--prim-btn);color:var(--prim-ink);padding:0 var(--sp-4)}
 .rest[hidden]{display:none}.rest{flex-wrap:wrap}.rest>div{flex:1 1 6em;display:grid;min-width:0}.rest b{font-size:min(var(--fs-num),max(24px,8vw));font-weight:700;line-height:1.1}
 .rest button{min-width:var(--hit);min-height:var(--hit);border-radius:var(--r-s);background:var(--card);font-weight:700;font-size:var(--fs-2);padding:0 var(--sp-3)}
 .ex{padding:8px var(--sp-3) var(--sp-2)}.exh{display:flex;align-items:center}
@@ -338,7 +338,7 @@ input.in,select.in,.chip>button{min-height:var(--hit)}
 .cyd{display:flex;align-items:center;justify-content:center;min-height:var(--hit);border-radius:var(--r-xs);border:2px solid transparent;position:relative}.cyd.cyp{background:var(--prim);color:var(--prim-ink);font-weight:700}.cyd.cyt{border-style:dashed;border-color:var(--prim)}.cyd.cyf::after,.cyd.cyo::after{content:"○";font-size:var(--fs-cap);line-height:1;position:absolute;bottom:1px}.cyd.cyo::after{content:"◆"}.cyd.cyn{text-decoration:underline;font-weight:700}
 .hgd{flex-direction:column;gap:2px;padding:4px 0;min-height:52px;background:none;color:var(--ink);font:inherit;cursor:pointer}.hgd:disabled{opacity:.35;cursor:default}.hgd.hge .hgn{color:var(--mut)}.hgd:not(:disabled):active{background:var(--soft)}
 .hgn{font-size:var(--fs-2);line-height:1}.hgm{display:flex;gap:1px;align-items:center;justify-content:center;min-height:11px}.hgm .i{width:11px;height:11px;stroke-width:2.4}.hgo,.legend .hgo{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--mut)}.legend .hgo{margin-right:4px}
-.hgcal{padding-left:var(--sp-2);padding-right:var(--sp-2)}.hgcal .cyg{gap:0}.hgcal .cyh{padding:0 var(--sp-2)}
+.hgcal{padding-left:var(--sp-1);padding-right:var(--sp-1)}.hgcal .cyg{gap:0}.hgcal .cyh{padding:0 var(--sp-2)}
 .hgd:not(.hge):not(:disabled){background:var(--soft);box-shadow:inset 0 0 0 2px var(--card)}.hgk{display:inline-flex}.hgk.food{color:var(--kcal)}.hgk.water{color:var(--water)}.hgk.exercise{color:var(--exercise)}.hgk.weight{color:var(--prim)}.hgs{grid-template-columns:repeat(3,1fr)}
 .hgsel{display:flex;gap:var(--sp-2);flex:1;justify-content:center}.hgsel .in{width:auto;min-height:var(--hit);margin:0}.hgs .stat .v{font-size:var(--fs-h3)}
 .cyk{display:inline-block;width:14px;height:14px;border-radius:var(--r-xs);border:2px solid transparent;margin-right:var(--sp-2);vertical-align:-2px}.cyk.cyp{background:var(--prim)}.cyk.cyt{border:2px dashed var(--prim)}
