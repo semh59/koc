@@ -3,7 +3,7 @@
 ## Veri alanı -> dokunan dosyalar
 | S alanı | dosya sayısı | dosyalar |
 |---|---|---|
-| settings | 42 | kernel/unitui.js, main/01-core.js, main/02-state-components.js, main/03-screens.js, main/04-sheets.js, main/05-notifications.js, main/05-permissions.js, main/06-events.js, main/07-actions.js, modules/coach/coach.js, modules/cycle/cycleui.js, modules/data/archivelib.js, modules/data/backupui.js, modules/data/csvlib.js, modules/data/lockui.js, modules/data/onboardui.js, modules/data/privacyui.js, modules/gym/guideui.js, modules/gym/gym.js, modules/habits/habitui.js, modules/habits/index.js, modules/habits/ramadanui.js, modules/history/historyui.js, modules/insights/activityui.js, modules/insights/doctorui.js, modules/insights/goalui.js, modules/insights/trialui.js, modules/insights/weeklyui.js, modules/log/drinkui.js, modules/log/entries.js, modules/log/quickui.js, modules/measures/measureui.js, modules/meds/alarmui.js, modules/meds/medui.js, modules/motion/index.js, modules/motion/motionui.js, modules/motion/stepsui.js, modules/motion/walkui.js, modules/pulse/hcui.js, modules/pulse/index.js, modules/pulse/pulseui.js, modules/vitals/vitalsui.js |
+| settings | 43 | kernel/unitui.js, main/01-core.js, main/02-state-components.js, main/03-screens.js, main/04-sheets.js, main/05-notifications.js, main/05-permissions.js, main/06-events.js, main/07-actions.js, modules/coach/coach.js, modules/cycle/cycleui.js, modules/cycle/index.js, modules/data/archivelib.js, modules/data/backupui.js, modules/data/csvlib.js, modules/data/lockui.js, modules/data/onboardui.js, modules/data/privacyui.js, modules/gym/guideui.js, modules/gym/gym.js, modules/habits/habitui.js, modules/habits/index.js, modules/habits/ramadanui.js, modules/history/historyui.js, modules/insights/activityui.js, modules/insights/doctorui.js, modules/insights/goalui.js, modules/insights/trialui.js, modules/insights/weeklyui.js, modules/log/drinkui.js, modules/log/entries.js, modules/log/quickui.js, modules/measures/measureui.js, modules/meds/alarmui.js, modules/meds/medui.js, modules/motion/index.js, modules/motion/motionui.js, modules/motion/stepsui.js, modules/motion/walkui.js, modules/pulse/hcui.js, modules/pulse/index.js, modules/pulse/pulseui.js, modules/vitals/vitalsui.js |
 | entries | 4 | main/04-sheets.js, modules/log/entries.js, modules/log/index.js, modules/log/quickui.js |
 | meds | 4 | modules/meds/alarmui.js, modules/meds/index.js, modules/meds/medlib.js, modules/meds/medui.js |
 | medLog | 4 | modules/meds/alarmui.js, modules/meds/index.js, modules/meds/medlib.js, modules/meds/medui.js |
@@ -61,7 +61,7 @@
 | kernel/modules.js | 30 | 3 |
 | kernel/netlog.js | 1 | 1 |
 | kernel/piilib.js | 6 | 1 |
-| kernel/share.js | 6 | 4 |
+| kernel/share.js | 10 | 7 |
 | kernel/storelib.js | 2 | 1 |
 | kernel/unitlib.js | 0 | 1 |
 | kernel/unitui.js | 6 | 1 |
@@ -72,14 +72,14 @@
 | main/05-notifications.js | 33 | 15 |
 | main/05-permissions.js | 22 | 8 |
 | main/06-events.js | 96 | 6 |
-| main/07-actions.js | 64 | 2 |
+| main/07-actions.js | 65 | 2 |
 | modules/coach/coach.js | 58 | 146 |
 | modules/coach/coachlib.js | 9 | 1 |
 | modules/coach/index.js | 5 | 1 |
 | modules/coach/insightlib.js | 6 | 1 |
-| modules/cycle/cyclelib.js | 4 | 1 |
+| modules/cycle/cyclelib.js | 5 | 1 |
 | modules/cycle/cycleui.js | 29 | 16 |
-| modules/cycle/index.js | 2 | 0 |
+| modules/cycle/index.js | 3 | 1 |
 | modules/data/archivelib.js | 3 | 1 |
 | modules/data/backuplib.js | 1 | 1 |
 | modules/data/backupui.js | 24 | 15 |
@@ -87,11 +87,11 @@
 | modules/data/csvlib.js | 6 | 1 |
 | modules/data/csvreadlib.js | 9 | 1 |
 | modules/data/fhirlib.js | 5 | 1 |
-| modules/data/lockui.js | 6 | 10 |
-| modules/data/onboardui.js | 35 | 18 |
+| modules/data/lockui.js | 6 | 11 |
+| modules/data/onboardui.js | 37 | 18 |
 | modules/data/photolib.js | 1 | 1 |
 | modules/data/photoui.js | 19 | 24 |
-| modules/data/privacyui.js | 37 | 10 |
+| modules/data/privacyui.js | 37 | 11 |
 | modules/gym/balance.js | 1 | 2 |
 | modules/gym/cardiolib.js | 3 | 1 |
 | modules/gym/cardioui.js | 23 | 9 |
@@ -118,8 +118,8 @@
 | modules/history/historyui.js | 37 | 15 |
 | modules/insights/activitylib.js | 1 | 1 |
 | modules/insights/activityui.js | 8 | 1 |
-| modules/insights/doctorlib.js | 4 | 1 |
-| modules/insights/doctorui.js | 17 | 4 |
+| modules/insights/doctorlib.js | 7 | 1 |
+| modules/insights/doctorui.js | 19 | 4 |
 | modules/insights/goallib.js | 1 | 1 |
 | modules/insights/goalui.js | 13 | 2 |
 | modules/insights/linkslib.js | 7 | 1 |
@@ -141,8 +141,8 @@
 | modules/meds/alarmlib.js | 3 | 1 |
 | modules/meds/alarmui.js | 21 | 11 |
 | modules/meds/index.js | 11 | 1 |
-| modules/meds/medlib.js | 7 | 1 |
-| modules/meds/medui.js | 34 | 26 |
+| modules/meds/medlib.js | 8 | 1 |
+| modules/meds/medui.js | 34 | 34 |
 | modules/motion/index.js | 8 | 1 |
 | modules/motion/motionlib.js | 5 | 1 |
 | modules/motion/motionui.js | 23 | 17 |
