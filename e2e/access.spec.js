@@ -29,7 +29,7 @@ test.describe("Accessibility and layout",()=>{
     await app.open({seed:state()});
     await app.tab("gym");
     const small=async sel=>page.evaluate(s=>[...document.querySelectorAll(s)].map(e=>e.getBoundingClientRect()).filter(r=>r.height<43.5||r.width<43.5).length,sel);
-    await page.click("summary:has-text(\"Rekorlar ve haftalık dağılım\")");await page.click("#mmacc summary");
+    await page.click("summary:has-text(\"Haftalık dağılım\")");await page.click("#mmacc summary");
     expect(await small(".mmp .chip")).toBe(0);
     expect(await small(".mmwrap [role=button],.mmwrap [tabindex]")).toBe(0);
     await app.go("settings-modules");await expect(page.locator(".chkrow").first()).toBeVisible();
