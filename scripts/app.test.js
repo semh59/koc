@@ -2146,7 +2146,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   ev("S.myFoods=[]");
   w.fetch=async()=>{throw new Error("no network")};
   await ev("barcodeFind('8690526010113')");
-  ok("barcode: without internet it gives an error",w.document.querySelector("#tmsg").textContent.includes("İnternete ulaşılamadı"));
+  ok("barcode: without internet the own-food form opens with the offline reason and the next step",w.document.querySelector("#fown .banner").textContent.includes("İnternete ulaşılamadı")&&!w.document.querySelector("#fown").hidden);
   await ev("barcodeFind('123')");
   ok("barcode: an invalid code is rejected",w.document.querySelector("#tmsg").textContent.includes("ürün barkodu değil"));
   w.Capacitor.Plugins.BarcodeScanner={isGoogleBarcodeScannerModuleAvailable:async()=>({available:true}),scan:async o=>{w.scanOpts=o;return {barcodes:[{rawValue:"8690526010113"}]}}};
@@ -2488,7 +2488,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("cleanEntries: meal is on the allow list, invalid is dropped, no field on an old record",ev(`(()=>{const d=dayKey(),r=cleanEntries([{day:d,time:"09:00",type:"food",v:1,meal:"dinner"},{day:d,time:"09:00",type:"food",v:1,meal:"x"},{day:d,time:"09:00",type:"food",v:1},{day:d,time:"09:00",type:"water",v:1,meal:"dinner"}]).out;return r.map(e=>e.meal).join()})()`)==="dinner,,,");
     ev(`S.entries=cleanEntries([${JSON.stringify(mk("food","08:10",200))},${JSON.stringify(mk("food","13:00",300))},${JSON.stringify(mk("food","19:00",150,{meal:"snack"}))},${JSON.stringify(mk("water","09:00",250))},${JSON.stringify(mk("water","10:00",250))},${JSON.stringify(mk("water","11:00",500))}]).out;render()`);
     const heads=[...w.document.querySelectorAll(".log .gh")].map(h=>h.textContent);
-    ok("grouped by daily meal, each group has a kcal subtotal; default meal from meal time, a record with meal stays in its chosen group",heads.join("|")==="Kahvaltı200 kcal|Öğle300 kcal|Atıştırmalık150 kcal",heads);
+    ok("grouped by daily meal, each group has a kcal subtotal; default meal from meal time, a record with meal stays in its chosen group",heads.join("|")==="Kahvaltı200 kcalKopyala|Öğle300 kcalKopyala|Atıştırmalık150 kcalKopyala",heads);
     ok("water records are a single row in the log: 'Su: 1,0 L, 3 kez' format",w.document.querySelectorAll(".log [data-waterall]").length===1&&lg().includes("Su: 1,0 L, 3 kez")&&!lg().includes("250 ml"),lg());
     q("[data-waterall]").click();
     ok("tapping the water row opens a detail page: each record with time and a 44 px delete button",q("#sheet").textContent.includes("09:00")&&q("#sheet").textContent.includes("500 ml")&&q("#sheet").querySelectorAll("[data-del]").length===3);

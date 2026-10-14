@@ -766,6 +766,13 @@ function gInput(t){
   save();gTick();
 }
 
+/* The formula behind the energy card, with the user's own numbers. */
+function energyHow({kg,cm,age,sex,act},bmr,sg){
+  const k=Algo.ACT[act]||1.45,c=sex==="m"?"+ 5":sex==="f"?"− 161":"− 78",n=x=>Math.round(x).toLocaleString("tr-TR");
+  return `<p class="p0 hint num">Bazal hız (Mifflin-St Jeor): 10 × ${fmt(kg)} kg + 6,25 × ${cm} cm − 5 × ${age} yaş ${c} = <b>${n(bmr)} kcal</b>${sex?"":" (cinsiyet belirtilmediği için ortalama sabit)"}.<br>
+  Hareket çarpanı (${["Az","Orta","Çok"][act]||"Orta"}): × ${fmt(k,2)} = <b>${n(bmr*k)} kcal</b> formül harcaması.<br>
+  Hedef: harcama ± haftalık kilo değişimi × ${Algo.KCAL_PER_KG} kcal/kg ÷ 7${sg?`; şimdi ${sg.note.toLowerCase()}, haftada ${fmt(Math.abs(sg.rateKgWk),2)} kg`:""}. Antrenman ayrıca eklenir.</p>`;
+}
 /* ---- energy and target card (Trend) ---- */
 function gEnergy(){
   const st=S.settings,wAll=weights(),days=Object.keys(wAll).sort();
@@ -784,5 +791,5 @@ function gEnergy(){
   cells.push(["Protein aralığı",pr?`${pr[0]}–${pr[1]} g`:"Hekiminle belirle"]);
   return `<h2>Enerji dengesi</h2><div class="card">${sg&&sg.blocked?riskBox(risk(kg),"Kalori açığı önermiyorum"):""}<div class="stats">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1]}</div></div>`).join("")}</div>
   ${sg&&sg.kcal!==st.kcal?`<div class="btns"><button class="btn ghost" data-act="apply:${sg.kcal}">Hedefi ${sg.kcal} kcal yap</button></div>`:""}
-  <details class="acc"><summary>Nasıl hesaplandı</summary><p class="p0 hint">${Algo.PROTEIN_NOTE} ${src}${sg&&sg.limited?" Hedef güvenli alt sınırda tutuldu.":""}${sg&&sg.blocked?" Öneri bakım düzeyinde tutuldu.":""}</p></details></div>`;
+  <details class="acc"><summary>Nasıl hesaplandı</summary>${energyHow(profile,bmr,sg)}<p class="p0 hint">${Algo.PROTEIN_NOTE} ${src}${sg&&sg.limited?" Hedef güvenli alt sınırda tutuldu.":""}${sg&&sg.blocked?" Öneri bakım düzeyinde tutuldu.":""}</p></details></div>`;
 }

@@ -16,6 +16,7 @@ on("lateyest",()=>{
   render();toast(`${list.length} kayıt dünkü güne taşındı`,()=>{list.forEach(e=>{e.day=t});save();render()});
 });
 on("missmacro",()=>sheetMissing());
+onPre("cp:",a=>sheetCopy(a.slice(3)));
 on("own",()=>{ownOpen();$("#ft").focus()});
 on("tplnew",()=>sheetTpl());
 on("food",()=>sheetFood());

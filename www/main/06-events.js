@@ -48,7 +48,7 @@ document.addEventListener("click",ev=>{
   if(d.fvd!==undefined){Nutrition.fav().splice(+d.fvd,1);save();$("#frl").innerHTML=favHtml();return}
   if(d.act)return Act.run(d.act);
   if(d.go){
-    ({entry:goEntry,weight:goWeight,food:goFood,nutrition:goNutrition,mydel:goMyDelete,tpl:goTpl,steps:goSteps,exercise:goExercise,note:goNote,restore:goRestore,checkbk:checkBackup,health:goHealth})[d.go]?.();
+    ({cp:goCopy,entry:goEntry,weight:goWeight,food:goFood,nutrition:goNutrition,mydel:goMyDelete,tpl:goTpl,steps:goSteps,exercise:goExercise,note:goNote,restore:goRestore,checkbk:checkBackup,health:goHealth})[d.go]?.();
     if(d.go==="copy")backupText().then(v=>{if(!v)return;(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast("Panoya kopyalandı"),()=>{const b=$("#bk");b.value=v;b.select();document.execCommand&&document.execCommand("copy");toast("Metni seçtim, kopyala")})});
     if(d.go==="share"||d.go==="download")exportBackup();
   }
