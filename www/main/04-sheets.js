@@ -83,7 +83,7 @@ function sheetWeight(){
 }
 function weightStep(d){const f=$("#fv"),v=num(f.value),k=Units.wIn(v);if(k>=20&&k<=400)f.value=fmt(Math.round(v*10+d)/10)}
 function goWeight(){
-  const raw=$("#fv").value,v=Units.wIn(num(raw));
+  const raw=$("#fv").value,v=unitVal($("#fv"),Units.wIn);
   /* If the selection is lost on the phone, "85" typed after "86,0" becomes 86.085; a scale gives at most 2 decimals. */
   if(!(v>=20&&v<=400)||/[.,]\d{3}/.test(raw))return ferr("kerr",`Kiloyu ${wlab()} olarak yaz, örneğin ${wlab()==="lb"?"185,4":"84,3"}`);
   const day=fday(),m=weights(),ds=Object.keys(m).filter(k=>k<day).sort(),prev=ds.length?m[ds[ds.length-1]]:null;

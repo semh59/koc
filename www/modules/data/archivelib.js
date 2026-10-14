@@ -4,7 +4,7 @@ const ArchiveLib=(()=>{
   const SKIP=new Set(["providers","cycle","cycleSym"]); // the cycle record stays in the encrypted backup only, like the CSV files
   const mod=typeof Modules!=="undefined"?Modules:require("../../kernel/modules.js");
   /* What the file leaves out, in words for the screen that offers it. */
-  const LEFT_OUT="API anahtarları ve sağlayıcı listesi, fotoğraflar, döngü kaydı, hamilelik ve emzirme bilgisi, sağlık notu, konum ve rıza ayarları";
+  const LEFT_OUT="API anahtarları ve sağlayıcı listesi, fotoğraflar, döngü kaydı ve döngü ayarları, hamilelik ve emzirme bilgisi, sağlık notu, yakının telefonu, konum, güvenlik uyarısı tercihleri ve rıza kayıtları";
   /* S: the state; date: "YYYY-MM-DD"; tables: optional {csv key: csv text}, added as they are. Returns {json, counts} where counts is the number of records per module (arrays only). */
   /* Settings that stay on the phone: the policy says they are not sent or shared anywhere. */
   const PRIVATE=new Set(["medNear","healthNote","ramLat","ramLon","ramName","pregnant","nursing","edFlag","riskOff","riskClearedAt","consentAt","consentP","cycleOn","cycleRem"]);

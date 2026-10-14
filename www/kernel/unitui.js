@@ -11,13 +11,16 @@ document.addEventListener("click",ev=>{
   else d.gun==="mmol"?st.gUnit="mmol":delete st.gUnit;
   save();render();
 });
+/* The stored-unit value of a field: the exact one from before a unit flip while the shown text is untouched, so a flip does not drift (126 mg/dL -> 7,0 mmol/L -> 126). */
+const unitVal=(f,conv)=>f.dataset.base&&f.value===f.dataset.shown?+f.dataset.base:conv(num(f.value));
 /* A tap on the unit label of an entry sheet converts the typed number and flips the unit for this entry only; the setting stays. */
 document.addEventListener("click",ev=>{
   const b=ev.target.closest("[data-tu]");if(!b)return;
   const w=b.dataset.tu==="w",f=document.getElementById(b.dataset.for),raw=num(f.value),base=w?Units.wIn(raw):Units.gIn(raw);
   Units.flip(b.dataset.tu);
+  f.dataset.base=Number.isFinite(base)?base:"";
   const l=document.getElementById(b.dataset.lbl);l.textContent=l.textContent.replace(/\(.*\)/,`(${w?Units.wu():Units.gl()})`);
-  if(Number.isFinite(base))f.value=w?fmt(Units.w(base)):Units.fg(base);
+  if(Number.isFinite(base)){f.value=w?fmt(Units.w(base)):Units.fg(base);f.dataset.shown=f.value}
   f.placeholder=w?(Units.wu()==="lb"?"185,4":"84,3"):(Units.gu()==="mmol"?"5,3":"95");
   f.inputMode=w||Units.gu()==="mmol"?"decimal":"numeric";
 });
