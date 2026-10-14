@@ -67,10 +67,10 @@
 | kernel/unitui.js | 6 | 1 |
 | main/01-core.js | 33 | 73 |
 | main/02-state-components.js | 15 | 11 |
-| main/03-screens.js | 114 | 37 |
+| main/03-screens.js | 115 | 37 |
 | main/04-sheets.js | 65 | 65 |
-| main/05-notifications.js | 33 | 19 |
-| main/05-permissions.js | 25 | 9 |
+| main/05-notifications.js | 34 | 19 |
+| main/05-permissions.js | 25 | 10 |
 | main/06-events.js | 98 | 6 |
 | main/07-actions.js | 64 | 2 |
 | modules/coach/coach.js | 58 | 146 |

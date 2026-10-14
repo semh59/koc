@@ -84,8 +84,8 @@ function viewToday(){
     ...pmTodo(),...fastTodo(),...ramadanTodo(),...trialTodo(),
     Motion.walk()?row("steps",Motion.walk().t1?"Yürüyüş kaydedilmedi":"Yürüyüş sürüyor","Adım raporunda bitir ya da kaydet.",[["walkgo","Aç"]]):"",
     sOn&&stepsRead&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?row("steps","Adım sayımı durmuş olabilir","Pil ayarında NeoWell'e kısıtlama koyma.",[["stepsfix","Ayarla"],["stepshide","Kapat"]]):"",
-    !pmMany()&&isNative()&&!exactOk&&st.medOn&&Meds.count()?row("clock","İlaç alarmı birkaç dakika gecikebilir","Tam saat alarm izni kapalı. İzin verirsen tam saatinde çalar.",[["fullalarm","İzin ver"]]):"",
-    !pmMany()&&isNative()&&!fsiOk&&st.medOn&&Meds.count()?row("clock","İlaç alarmı kilitli ekranı açmayabilir","Tam ekran bildirim izni kapalı. İzin verirsen alarm ekranı yakar.",[["fullscreen","İzin ver"]]):"",
+    !pmMany()&&isNative()&&!exactOk&&st.medOn&&Meds.count()?row("clock","İlaç alarmı birkaç dakika gecikebilir",PM_TEXT.exact.warn,[["fullalarm","İzin ver"]]):"",
+    !pmMany()&&isNative()&&!fsiOk&&st.medOn&&Meds.count()?row("clock","İlaç alarmı kilitli ekranı açmayabilir",PM_TEXT.fsi.warn,[["fullscreen","İzin ver"]]):"",
     !pmMany()&&!bg.miss&&pmMissing().some(i=>i.id==="bat")?row("bell",oemXiaomi()?"Hatırlatmalar için bir kez ayar gerekli":"Pil kısıtı alarmı geciktiriyor",oemXiaomi()?"İki izin verince hatırlatmalar kaçmaz.":"Pil ayarında NeoWell'e kısıtlama koyma.",[["bat","Ayarla"]]):"",
     isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?row("steps","Adım sayarı aç","Telefonun sensörü sayar, hesap gerekmez.",[["stepsopen","Aç"],["stepsno","Şimdi değil"]]):"",
     Log.all().length>=10&&(old==null||old>14)?row("cloud","Verilerini yedekle",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Yedekle"]]):""].filter(Boolean);
@@ -216,10 +216,10 @@ function viewSettings(){
   <details class="acc"><summary>Dambıl ve plakalar</summary>${gGearHtml()}</details></div>`;
   if(sub==="coach")return viewProviders();
   if(sub==="reminders"){
-    const nf={web:"Bildirimler yalnızca telefondaki uygulamada çalışır.",ok:"Hatırlatmalar açık.",denied:"Bildirim izni kapalı. Telefon ayarlarından Rehber için bildirimleri aç.","":""}[notifStatus]||notifStatus;
-    return `<div class="card"><div class="status">${esc(nf)}</div>${isNative()&&!exactOk?`<p class="flush hint">Tam saat alarm izni kapalı: hatırlatmalar birkaç dakika gecikebilir.</p><div class="btns"><button class="btn ghost" data-act="fullalarm">Tam saat alarm iznini aç</button></div>`:""}${notifDiag?`<p class="flush hint">${esc(notifDiag)}</p>`:""}${isNative()?`<div class="btns"><button class="btn ghost" data-act="notiftest">Test bildirimi gönder</button></div>`:""}
+    const nf={web:"Bildirimler yalnızca telefondaki uygulamada çalışır.",ok:"Hatırlatmalar açık.",denied:"Bildirim izni kapalı. Telefon ayarlarından NeoWell için bildirimleri aç.","":""}[notifStatus]||notifStatus;
+    return `<div class="card"><div class="status">${esc(nf)}</div>${isNative()&&!exactOk?`<p class="flush hint">${PM_TEXT.exact.warn}</p><div class="btns"><button class="btn ghost" data-act="fullalarm">Tam saat alarm iznini aç</button></div>`:""}${notifDiag?`<p class="flush hint">${esc(notifDiag)}</p>`:""}${isNative()?`<div class="btns"><button class="btn ghost" data-act="notiftest">Test bildirimi gönder</button></div>`:""}
     ${st.reminders.filter(remShown).map(r=>`<div class="rem"><span class="nm">${esc(r.name)}</span><input type="time" value="${r.t}" data-rt="${r.id}" aria-label="${esc(r.name)} saati"><label class="sw"><input type="checkbox" ${r.on?"checked":""} data-ro="${r.id}" aria-label="${esc(r.name)} açık"><span></span></label></div>`).join("")}
-    <p class="hint">Bildirim metinleri sabittir; Rehber onları değiştirmez.</p></div>`;
+    <p class="hint">Bildirim metinleri sabittir; Rehber onları değiştirmez. ${PM_TEXT.dnd}</p></div>`;
   }
   if(sub==="data")return `<div class="card">${swRow('data-lk="toggle"',st.lockOn,"Uygulama kilidi",`Açarken ve ${LOCK_LABEL[st.lockGrace]} uzun aradan dönünce telefonun ekran kilidi (parmak izi, yüz, PIN, desen) sorulur`)}${swRow('data-lk="recents"',st.hideRecents,"Son uygulamalarda ve ekran görüntüsünde gizle","Son uygulamalar listesinde içerik görünmez, ekran görüntüsü alınamaz. Uygulama kilidinden bağımsızdır")}${st.lockOn?`<div class="lbl">Kilit ne zaman yeniden sorulsun?</div>${segb("lg",[[30,"30 saniye"],[120,"2 dakika"],[300,"5 dakika"]],st.lockGrace)}${st.lockGrace===300?`<p class="hint">Telefonu başkası alırsa 5 dakika boyunca açık kalabilir.</p>`:""}`:""}</div>
     <div class="mt-3 card">${swRow('data-bk="nokeys"',st.bkNoKeys,"Rehber anahtarlarını yedeğe koyma","Açıkken yedek dosyasında anahtarların olmaz; yedeği yüklediğinde anahtarları yeniden girersin")}</div>
