@@ -203,27 +203,43 @@ const MedLib=(()=>{
     const m=meds.find(x=>x.id===Math.floor(b/1000)),slot=m&&m.t[Math.floor((b%1000)/NID_DAYS)];
     return slot?{m,slot}:null;
   }
-  /* Notifications for the next `days` days; doses already logged are skipped. Title and body follow the display setting. */
+  /* Notifications for the next `days` days; doses already logged are skipped. Title and body follow the display setting.
+     Doses of the same minute (and the same repeat step) are one notification: the id and the Aldım button of the first, the others listed in extra.g ("12_0800,13_0800"). */
   function notifications(meds,log,now,days,showName){
-    const out=[],today=key(now),nowT=now.getTime()+LEAD_MS,rec=logIndex(log,addDay(today,-1)),body=(m,slot)=>showName?`${m.n}${doseText(m,slot)?" · "+doseText(m,slot):""}`:GENERIC_BODY;
+    const today=key(now),nowT=now.getTime()+LEAD_MS,rec=logIndex(log,addDay(today,-1)),body=(m,slot)=>showName?`${m.n}${doseText(m,slot)?" · "+doseText(m,slot):""}`:GENERIC_BODY,groups=new Map();
+    const add=(step,at,id,m,slot)=>{const k=step+"|"+at.getTime();if(!groups.has(k))groups.set(k,[]);groups.get(k).push({step,at,id,m,slot})};
     for(let off=-1;off<days&&off<NID_DAYS-1;off++){
       const day=addDay(today,off);
       for(const m of meds){
         if(!m.on||!active(m,day))continue;
         m.t.forEach((slot,ti)=>{
           if(rec(m.id,day,slot)||!slotOn(m,day,slot))return;
-          const at=slotAt(day,slot);
-          const id=nid(m,ti,off<0?NID_DAYS-1:off),extra={act:"med",m:m.id,s:slot};
-          if(at.getTime()>nowT)out.push({id,title:TITLE,body:body(m,slot),at,extra:{...extra,at:at.getTime()}});
+          const at=slotAt(day,slot),id=nid(m,ti,off<0?NID_DAYS-1:off);
+          if(at.getTime()>nowT)add(0,at,id,m,slot);
           NAGS.forEach((min,k)=>{
             const t=new Date(at.getTime()+min*60000);
-            if(t.getTime()>nowT)out.push({id:id+NID_BASE*(k+1),title:"💊 İlacını aldın mı?",body:body(m,slot),at:t,extra:{...extra,at:t.getTime()}});
+            if(t.getTime()>nowT)add(k+1,t,id+NID_BASE*(k+1),m,slot);
           });
         });
       }
     }
-    return out.map(n=>Object.assign(n,{actionTypeId:"med",channelId:"nw_med",ongoing:true}));
+    return [...groups.values()].map(g=>{
+      g.sort((a,b)=>a.m.id-b.m.id);
+      const {step,at,id,m,slot}=g[0],ms=at.getTime(),one=g.length===1,names=g.map(x=>x.m.n).join(", ");
+      return {id,title:step?"💊 İlacını aldın mı?":TITLE,at,actionTypeId:one?"med":"medgrp",channelId:"nw_med",ongoing:true,
+        body:one?body(m,slot):showName?`${g.length} ilaç: ${names}`:`${g.length} ilaç saati geldi.`,
+        extra:{act:"med",m:m.id,s:slot,at:ms,...(one?{}:{g:g.map(x=>x.m.id+"_"+x.slot.replace(":","")).join(",")})}};
+    }).sort((a,b)=>a.at-b.at);
   }
+  /* Phone limit on pending alarms: medication doses and notices are kept first, the other reminders next, the repeat reminders last; inside a group the nearest are kept.
+     mainCut and nagCut count what did not fit; days is how many days ahead the kept doses reach. */
+  function fit(med,others,budget,now){
+    const byAt=(a,b)=>a.schedule.at-b.schedule.at,rep=n=>n.id>=2*NID_BASE;
+    const main=med.filter(n=>!rep(n)).sort(byAt),nag=med.filter(rep).sort(byAt),rest=others.slice().sort(byAt);
+    const km=main.slice(0,budget),kr=rest.slice(0,budget-km.length),kn=nag.slice(0,budget-km.length-kr.length),last=km[km.length-1];
+    return {list:[...km,...kr,...kn].sort(byAt),mainCut:main.length-km.length,nagCut:nag.length-kn.length,days:last?Math.max(0,Math.floor((last.schedule.at-now)/864e5)):0};
+  }
+  const budgetText=f=>f.mainCut?`Telefon bildirim sınırı doldu: ilaç hatırlatmaların yaklaşık ${f.days} gün ilerisine kadar kuruldu. Uygulamayı açtıkça yenilenir.`:f.nagCut?"Telefon bildirim sınırı doldu: bazı tekrar hatırlatmaları kurulmadı. İlaç saatlerin korunuyor.":"";
 
   /* One-off 09:00 notices: low stock (days left within the medication's threshold) and the end of a pause. Both open the Meds screen. */
   function notices(meds,now,showName){
@@ -247,7 +263,11 @@ const MedLib=(()=>{
   const wakeMain=list=>list.filter(n=>n.extra&&n.extra.act==="med"&&n.id>=NID_BASE&&n.id<2*NID_BASE);
   const wakeTimes=list=>wakeMain(list).map(n=>+n.schedule.at);
   /* Dose details drawn by the native alarm screen; b is the notification body (generic text when the name is hidden). */
-  const wakeDoses=list=>wakeMain(list).map(n=>({at:+n.schedule.at,nid:n.id,m:n.extra.m,s:n.extra.s,b:n.body}));
+  const wakeDoses=(list,meds,showName)=>wakeMain(list).flatMap(n=>{
+    const at=+n.schedule.at;
+    if(!n.extra.g)return [{at,nid:n.id,m:n.extra.m,s:n.extra.s,b:n.body}];
+    return n.extra.g.split(",").map(k=>{const [id,hhmm]=k.split("_"),m=meds.find(x=>x.id===+id),s=hhmm.slice(0,2)+":"+hhmm.slice(2);return {at,nid:n.id,m:+id,s,b:showName&&m?`${m.n}${doseText(m,s)?" · "+doseText(m,s):""}`:GENERIC_BODY}});
+  });
 
   /* Turns the MedWake diagnostic log (MedWakeReceiver.java) into plain Turkish lines. The log holds no personal data. */
   const hms=ms=>{const d=new Date(ms);return `${hm(d)}:${p2(d.getSeconds())}`};
@@ -304,6 +324,6 @@ const MedLib=(()=>{
     if(bad)add("Tam ekran bildirimi gönderilemedi: "+bad.fs.replace(/^err:/,""));
     return out;
   }
-  return {sinceDose,recentTaken,recentText,NOT_SAVED,wakeTimes,wakeDoses,wakeLine,wakeIssues,sinceFor,doseOfId,amt,doseText,stockDays,stockLow,notices,STOCK_DAYS,FED,NAME_MAX,freeId,doseKey,MAXM,MAXT,BUDGET,TITLE,GENERIC_BODY,cleanMeds,cleanLog,dosesOn,statusOf,logIndex,mark,adherence,adherenceDays,sumAdherence,notifications,dayForTap,revise,addDay,slotAt,hm,timeOk,key};
+  return {sinceDose,recentTaken,recentText,NOT_SAVED,wakeTimes,wakeDoses,wakeLine,wakeIssues,sinceFor,doseOfId,amt,doseText,stockDays,stockLow,notices,STOCK_DAYS,FED,NAME_MAX,freeId,doseKey,MAXM,MAXT,BUDGET,TITLE,GENERIC_BODY,cleanMeds,cleanLog,dosesOn,statusOf,logIndex,mark,adherence,adherenceDays,sumAdherence,notifications,fit,budgetText,dayForTap,revise,addDay,slotAt,hm,timeOk,key};
 })();
 if(typeof module!=="undefined")module.exports=MedLib;

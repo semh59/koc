@@ -27,6 +27,8 @@ public class QuickMathTest {
         ok("compare: equal strings match, different or null do not", QuickMath.same("ab", "ab") && !QuickMath.same("ab", "ac") && !QuickMath.same(null, "ab") && !QuickMath.same("ab", null) && !QuickMath.same(null, null));
         ok("med: a water notification yields no med key", QuickMath.medKey("{\"extra\":{\"act\":\"water\",\"v\":250}}", false) == null);
 
+        ok("med group: every dose of extra.g becomes a key, a bad id or time is skipped", QuickMath.medKeys("{\"extra\":{\"act\":\"med\",\"g\":\"12_0800,13_0800\"}}", false).equals(List.of("m12_0800", "m13_0800")) && QuickMath.medKeys("{\"extra\":{\"g\":\"12_0800,0_0800\"}}", true).equals(List.of("k12_0800")) && QuickMath.medKeys("{\"extra\":{\"g\":\"12_2500\"}}", false).isEmpty());
+        ok("med group: without g the single key is used", QuickMath.medKeys("{\"extra\":{\"m\":12,\"s\":\"08:00\"}}", false).equals(List.of("m12_0800")) && QuickMath.medKeys("{}", false).isEmpty());
         ok("med: skip key starts with k", "k12_0800".equals(QuickMath.medKey("{\"extra\":{\"act\":\"med\",\"m\":12,\"s\":\"08:00\"}}", true)));
 
         String sec = "0123456789abcdef0123456789abcdef";

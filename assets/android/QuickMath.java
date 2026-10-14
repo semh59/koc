@@ -14,6 +14,7 @@ final class QuickMath {
     private static final Pattern V = Pattern.compile("\"v\"\\s*:\\s*(\\d{1,5})(?![\\d.])");
     private static final Pattern M = Pattern.compile("\"m\"\\s*:\\s*(\\d{1,5})(?![\\d.])");
     private static final Pattern S = Pattern.compile("\"s\"\\s*:\\s*\"([01]\\d|2[0-3]):([0-5]\\d)\"");
+    private static final Pattern G = Pattern.compile("\"g\"\\s*:\\s*\"((?:\\d{1,3}_(?:[01]\\d|2[0-3])[0-5]\\d,?){1,20})\"");
     private static final Pattern AT = Pattern.compile("\"at\"\\s*:\\s*(\\d{10,15})(?![\\d.])");
     private static final Pattern TK = Pattern.compile("\"tk\"\\s*:\\s*\"([0-9a-f]{32})\"");
     private static final Pattern KEY = Pattern.compile("(\\d{1,4})|([mk]\\d{1,3}_\\d{4})");
@@ -43,6 +44,24 @@ final class QuickMath {
         int id = Integer.parseInt(m.group(1));
         if (id < 1 || id > MAX_MED_ID) return null;
         return (skip ? "k" : "m") + id + "_" + s.group(1) + s.group(2);
+    }
+
+    /** Keys of a grouped notification ("extra.g": "12_0800,13_0800", doses of one minute); a single dose gives one key. Empty when missing or malformed; ids outside 1-999 are skipped. */
+    static List<String> medKeys(String json, boolean skip) {
+        List<String> out = new ArrayList<>();
+        String e = extra(json);
+        if (e == null) return out;
+        Matcher g = G.matcher(e);
+        if (!g.find()) {
+            String k = medKey(json, skip);
+            if (k != null) out.add(k);
+            return out;
+        }
+        for (String part : g.group(1).split(",")) {
+            int us = part.indexOf('_'), id = Integer.parseInt(part.substring(0, us));
+            if (id >= 1 && id <= MAX_MED_ID) out.add((skip ? "k" : "m") + id + "_" + part.substring(us + 1));
+        }
+        return out;
     }
 
     /** The time (ms, "extra.at") the notification was scheduled for: different for every notification instance, the same in a redelivered intent. Null when absent. */

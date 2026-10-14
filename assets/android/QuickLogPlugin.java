@@ -17,6 +17,8 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
 
 /** Notification buttons ("+250 ml", "Aldım"): the record is written to SharedPreferences without opening the app, and the app picks it up at its next start. */
 @CapacitorPlugin(name = "QuickLog")
@@ -84,16 +86,17 @@ public class QuickLogPlugin extends Plugin {
             in.removeExtra(ACTION_KEY);
             return false;
         }
-        String act = in.getStringExtra(ACTION_KEY), obj = in.getStringExtra(OBJ_KEY), key = null;
+        String act = in.getStringExtra(ACTION_KEY), obj = in.getStringExtra(OBJ_KEY);
+        List<String> keys = new ArrayList<>();
         int v = 0;
         boolean med = "med".equals(act) || "medskip".equals(act);
         if ("water".equals(act)) {
             v = QuickMath.amount(obj);
-            if (v > 0) key = String.valueOf(v);
+            if (v > 0) keys.add(String.valueOf(v));
         } else if (med) {
-            key = QuickMath.medKey(obj, "medskip".equals(act));
+            keys = QuickMath.medKeys(obj, "medskip".equals(act));
         }
-        if (key == null) {
+        if (keys.isEmpty()) {
             if (med && (widget || QuickMath.signed(obj, secret(c)))) Log.w("NW-QUICK", "medication record skipped: id outside 1-999 or malformed time");
             return false;
         }
@@ -107,13 +110,15 @@ public class QuickLogPlugin extends Plugin {
             in.removeExtra(ACTION_KEY);
             return false;
         }
-        SharedPreferences.Editor e = p.edit().putString("q", QuickMath.append(p.getString("q", ""), key, System.currentTimeMillis()));
+        String q = p.getString("q", "");
+        for (String k : keys) q = QuickMath.append(q, k, System.currentTimeMillis());
+        SharedPreferences.Editor e = p.edit().putString("q", q);
         if (sig != null) e.putString("seen", QuickMath.remember(seen, sig));
         // The queue write must be durable: with the app closed the receiver process can end at once and apply() would lose the asynchronous write.
         e.commit();
         if (v > 0) NeoWidget.bump(c, v);
         if (id != Integer.MIN_VALUE) cancelSiblings(c, id, med);
-        if (med) MedWakeReceiver.drop(c, key);
+        if (med) for (String k : keys) MedWakeReceiver.drop(c, k);
         in.removeExtra(ACTION_KEY);
         return true;
     }
