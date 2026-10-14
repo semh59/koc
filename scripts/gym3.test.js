@@ -129,5 +129,28 @@ const {boot,flush,www,quota}=require("./html");
     ok("it is saved on that day with the typed duration and a sport entry on that day",w2.t1-w2.t0===45*6e4&&ev(`Log.find(e=>e.wid===${w2.id}).day`)===y);
     ok("its previous session is empty (older than the others)",ev("gHistory('squat',S.workouts.find(x=>x.day===keyOff(-2)).t0).length")===0);
   }
+  { // 11 kg / lb
+    const fire=(sel,v)=>{q(sel).value=v;q(sel).dispatchEvent(new w.Event("change",{bubbles:true}))};
+    const W1="{id:1,day:keyOff(-3),t0:Date.now()-3*864e5,t1:Date.now()-3*864e5+3e6,name:'Eski',tpl:null,ex:[{id:'bench',note:'',sets:[{kg:60,reps:8,done:true}]}]}";
+    fresh(`S.settings.wUnit='lb';S.workouts=[${W1}];S.gid=5;gStart(null);gAddEx(gActive(),'bench');render()`);
+    ok("lb: the set box shows the converted weight, the header and placeholder name the unit",q('[data-gi="kg:0:0"]').value==="132,28"&&q('[data-gi="kg:0:0"]').placeholder==="lb"&&q('.shead').textContent.includes("lb")&&/132,28 lb × 9/.test(q(".sug").textContent),[q('[data-gi="kg:0:0"]').value,q(".sug").textContent]);
+    fire('[data-gi="kg:0:0"]',"135");
+    ok("lb: a typed weight is stored in kg and shown as typed",Math.abs(ev("gActive().ex[0].sets[0].kg")-61.235)<1e-9&&q('[data-gi="kg:0:0"]').value==="135");
+    fire('[data-gi="reps:0:0"]',"8");
+    click('[data-g="done:0:0"]');
+    ok("lb: ticking without editing keeps the stored kg exactly",Math.abs(ev("gActive().ex[0].sets[0].kg")-61.235)<1e-9&&ev("gActive().ex[0].sets[0].done"));
+    ev("gActive().ex[0].sets.push({kg:60,reps:8,done:false});render()");
+    click('[data-g="done:0:1"]');
+    ok("lb: a kg value that was not touched is not shifted by the round trip",ev("gActive().ex[0].sets[1].kg")===60);
+    ev("gActive().ex[0].sets.push({kg:60,reps:8,done:false});render()");
+    click('[data-g="kgp:0:2"]');
+    ok("lb: the ± step is a plate-like lb step (5 lb for a 2,5 kg exercise)",ev("fkg(Units.w(gActive().ex[0].sets[2].kg))")==="137,28",ev("gActive().ex[0].sets[2].kg"));
+    fire('[data-gi="kg:0:2"]',"3000");
+    ok("lb: the range message names the unit",/lb arasında/.test(q("#tmsg").textContent),q("#tmsg").textContent);
+    ev("gFinishSave(gActive())");
+    ok("lb: the summary shows weights and volume in lb",/lb hacim/.test(text())&&/ lb/.test(text())&&!/ kg/.test(text().replace(/kcal/g,"")),text());
+    ev("closeSheet();S.settings.wUnit='kg';S.workouts=[];gStart(null);gAddEx(gActive(),'bench');gActive().ex[0].sets[0].kg=60;gActive().ex[0].sets[0].reps=8;render()");
+    ok("kg: the box keeps showing kg",q('[data-gi="kg:0:0"]').value==="60"&&q('[data-gi="kg:0:0"]').placeholder==="kg");
+  }
   finish();
 })();
