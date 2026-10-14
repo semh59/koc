@@ -2196,6 +2196,11 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
       await ev("barcodeFind('8690526010113')");ev("labelReview({food:{k:100}})");T('[data-ocr="close"]').click();
       ev("labelReview({food:{k:440,p:8.5,c:70,f:13}})");T("#en").value="Başka";T('[data-ocr="esave"]').click();
       ok("dismissing the label sheet clears the waiting barcode: an unrelated label gets no barcode",ev("S.myFoods[0].b")===undefined);
+      ev("closeSheet();S.myFoods=[]");w.fetch=async()=>({ok:true,json:async()=>({status:0})});
+      await ev("barcodeFind('8690526010113')");w.document.querySelector("#ft").value="Elle kraker";w.document.querySelector("#fv").value="320";w.document.querySelector('[data-go="food"]').click();
+      ok("a food typed by hand is linked to the waiting barcode and the wait is cleared",ev("S.myFoods[0].b")==="8690526010113"&&ev("S.myFoods[0].n")==="Elle kraker"&&ev("pendingBarcode")==="");
+      ev("S.myFoods=[]");await ev("barcodeFind('8690526010113')");ev("closeSheet()");
+      ok("closing the sheet clears the waiting barcode (Sonra dene, Vazgeç, x)",ev("pendingBarcode")==="");
       ev("S.myFoods=[]");
       ev("Nutrition.putMy({n:'Süt',k:60,b:'11111111'});Nutrition.putMy({n:'süt',k:62,b:'22222222'})");
       ok("two different barcoded products with the same name are both kept (the second gets a suffix)",ev("S.myFoods.length")===2&&ev("S.myFoods.map(m=>m.n).sort().join()")==="Süt,süt (2)",ev("S.myFoods.map(m=>m.n)"));
@@ -2256,7 +2261,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("tab='trend';render()");
     ok("the Coach sentence is a Coach shortcut, in Trend",!!$q('#view button.coach[data-tab="coach"]')&&!$q('#view .card.coachc [data-act]'));
     ev("tab='today';render()");
-    ev("S.settings.medOn=true;S.meds=[{id:1,n:'İlaç A',t:['08:00','20:00'],on:true}];S.settings.fastOn=true;S.settings.bpOn=true;render()");
+    ev("S.settings.medOn=true;S.meds=[{id:1,n:'İlaç A',t:['08:00','20:00'],on:true,s:calKey()}];S.settings.fastOn=true;S.settings.bpOn=true;render()");
     ok("medication, fasting and measurement are in the single 'Bugün yapılacaklar' card, no separate card",ev("document.querySelectorAll('#view .todo').length")===1&&$q(".todo").querySelectorAll('[data-md^="take:"]').length===2&&$q('.todo').textContent.includes('Oruç önerilmez')&&!!$q('.todo [data-vt="addbp"]')&&!v().includes("💊 İlaçlar")&&!v().includes("Ölçümler"));
     ok("to-do is compact: first 3 items shown, the rest under 'iş daha'; the time is a separate column on the medication row",$q(".todo").querySelectorAll(":scope>.row").length===3&&$q(".todo details.acc summary").textContent==="1 iş daha"&&$q(".todo details .row")&&$q('.todo .row .tm').textContent==="08:00");
     ok("information hierarchy: summary, record, to-do, Trend shortcut",at('class="bgL"')<at('class="rings"')&&at('class="rings"')<at('class="actions"')&&at('class="actions"')<at("Bugün yapılacaklar")&&at("Bugün yapılacaklar")<at('data-tab="trend"'));
@@ -2268,7 +2273,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   { // home screen widget
     const wc=[];w.Capacitor.Plugins.Widget={update:async d=>{wc.push(d)}};
     ev("widgetLast='';tab='today';S.entries=[];add('water',250);add('food',400,'makarna');S.settings.kcal=1800;S.settings.waterMl=2500;S.settings.glass=250;S.settings.stepsOn=true;stepToday=3000;add('steps',500,'manual');render()");
-    ok("widget: updated once after render with the right fields",wc.length===1&&JSON.stringify(wc[0])===JSON.stringify({day:ev("dayKey()"),water:250,waterGoal:2500,glass:250,kcalLeft:1400,steps:3500}),wc);
+    ok("widget: updated once after render with the right fields",wc.length===1&&JSON.stringify(wc[0])===JSON.stringify({day:ev("dayKey()"),ds:0,water:250,waterGoal:2500,glass:250,kcalLeft:1400,steps:3500}),wc);
     ev("render()");
     ok("widget: not sent again when nothing changed",wc.length===1);
     ev("S.settings.kcal=0;S.settings.stepsOn=false;render()");
