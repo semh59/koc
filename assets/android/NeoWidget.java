@@ -122,12 +122,14 @@ public class NeoWidget extends AppWidgetProvider {
         boolean steps = !hide && o.has("steps") && !o.isNull("steps");
         v.setViewVisibility(R.id.nw_steps, steps ? View.VISIBLE : View.GONE);
         if (steps) v.setTextViewText(R.id.nw_steps, (stepsFresh(o) ? num(o.optLong("steps")) : "–") + " adım");
-        // Ramadan: the app pushes today's iftar time while the daytime fast runs; the remaining time is worked out here, at every refresh.
-        long left = !hide && isToday && o.has("iftarAt") && !o.isNull("iftarAt") ? o.optLong("iftarAt") - System.currentTimeMillis() : 0;
+        // Ramadan: the app pushes the last imsak and iftar it knew; the remaining time is worked out here, at every refresh, also with the app closed
+        // (the pair rolls forward by days, so the line then says "~"). It does not depend on the app day.
+        long nowMs = System.currentTimeMillis(), iftarAt = o.optLong("iftarAt");
+        long left = hide ? 0 : QuickMath.iftarLeft(o.optLong("imsakAt"), iftarAt, nowMs);
         v.setViewVisibility(R.id.nw_iftar, left > 0 ? View.VISIBLE : View.GONE);
         if (left > 0) {
             long m = Math.max(1, left / 60000);
-            v.setTextViewText(R.id.nw_iftar, "İftara " + (m >= 60 ? (m / 60) + " sa" + (m % 60 > 0 ? " " + (m % 60) + " dk" : "") : m + " dk"));
+            v.setTextViewText(R.id.nw_iftar, "İftara " + (iftarAt <= nowMs ? "~" : "") + (m >= 60 ? (m / 60) + " sa" + (m % 60 > 0 ? " " + (m % 60) + " dk" : "") : m + " dk"));
         }
         int glass = o.optInt("glass", 250);
         v.setTextViewText(R.id.nw_add, "+" + glass);

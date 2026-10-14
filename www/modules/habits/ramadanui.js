@@ -10,20 +10,22 @@ const ramGet=()=>{
   return ramCache;
 };
 const ramSrc=()=>S.settings.ramLat?RamadanLib.source({lat:S.settings.ramLat,lon:S.settings.ramLon},ramGet(),Date.now()):null;
+/* "Bugün tutmuyorum": that one day has no times, so nothing shifts, nothing is suggested and no reminder is set for it. */
+const ramSkipped=day=>S.settings.ramSkip===day;
 /* [imsak, iftar] of a day while the mode is on and the brake is open, else null. */
-function ramDay(day){const src=S.settings.ramOn&&!risk().block?ramSrc():null;return src?src.get(day):null}
+function ramDay(day){const src=S.settings.ramOn&&!risk().block&&!ramSkipped(day)?ramSrc():null;return src?src.get(day):null}
 /* RamadanLib.now for today while the mode is on; kind "iftar" means the daytime fast is running. */
-const ramNow=()=>{const src=S.settings.ramOn&&!risk().block?ramSrc():null;return src&&RamadanLib.now(src.get,Date.now())};
-/* A daytime reminder time t on a day: water in the fast moves after iftar, the motion reminder waits for iftar (kind "water" with k, or "move"). */
-function ramShift(day,t,kind,k){const d=ramDay(day);return d?RamadanLib.shift(d,kind,t,k):t}
-/* Epoch ms of today's iftar while the daytime fast is running, else null. */
-const ramIftarAt=()=>{const n=ramNow();return n?.kind==="iftar"?RamadanLib.dayAt(RamadanLib.tr(Date.now()).day,n.iftar):null};
+const ramNow=()=>{const src=S.settings.ramOn&&!risk().block&&!ramSkipped(dayKey())?ramSrc():null;return src&&RamadanLib.now(src.get,Date.now())};
+/* A daytime reminder time t on a day: water in the fast moves after iftar (all of it moves with the spread switch), the motion reminder waits for iftar (kind "water" with k, or "move"). */
+function ramShift(day,t,kind,k){const d=ramDay(day);return d?RamadanLib.shift(d,kind,t,k,S.settings.ramWater):t}
+/* Epoch ms of today's imsak and iftar while the mode runs: the widget works the countdown out itself, also when the app stays closed. */
+const ramFastWindow=()=>{const n=ramNow();if(!n)return null;const day=RamadanLib.tr(Date.now()).day;return [RamadanLib.dayAt(day,n.imsak),RamadanLib.dayAt(day,n.iftar)]};
 const ramAge=at=>{const d=Math.floor((Date.now()-at)/864e5);return d<1?"bugün":`${d} gün önce`};
 const ramPerHour=n=>Math.round(S.settings.waterMl/(RamadanLib.nightMin([n.imsak,n.iftar])/60)/10)*10;
 const ramFastNote=()=>ramNow()?.kind==="iftar"?`<p class="hint">Oruçluyken baş dönmesi olursa bırak, hekimine danış.</p>`:"";
 function ramWaterNote(){
   const n=ramNow();if(!n)return "";
-  const t=[n.kind==="iftar"?"Oruç saatinde su içilmiyor.":"",S.settings.ramWater?`Su planın iftar ile sahur arası: saatte yaklaşık ${ramPerHour(n)} ml.`:""].filter(Boolean);
+  const t=[n.kind==="iftar"?"Oruç saatinde su içilmiyor.":"",S.settings.ramWater?`Su planın iftar ile sahur arası: saatte yaklaşık ${ramPerHour(n)} ml; su hatırlatmaları da akşama alındı.`:""].filter(Boolean);
   return t.length?`<p class="pt-2 hint">${t.join(" ")}</p>`:"";
 }
 const ramPlace=(lat,lon)=>{
@@ -63,14 +65,15 @@ function ramReminders(now,lead,days){
   const st=S.settings,src=ramSrc();
   if(!st.ramOn||!src||risk().block||!(st.ramSahur||st.ramIftar))return [];
   const calcFrom=src.mode==="calc"?"0000-00-00":src.mode==="table"?RamadanLib.addDay(src.end,1):undefined;
-  return RamadanLib.reminders(src.get,{sahur:st.ramSahur,iftar:st.ramIftar},now,lead,days,calcFrom);
+  return RamadanLib.reminders(day=>ramSkipped(day)?null:src.get(day),{sahur:st.ramSahur,iftar:st.ramIftar},now,lead,days,calcFrom);
 }
 const ramBtn=(a,t)=>`<button class="chip" data-ram="${a}">${t}</button>`;
 function ramadanTodo(){
   const st=S.settings;if(!st.ramOn)return [];
   const r=risk(),hard=r.hard.length,ic=Icons.svg("fast");
   if(r.block)return [`<div class="row"><span>${ic} Ramazan modu<small class="mut sm">${esc((hard?r.hard:r.soft).join(". "))}. ${hard?"Oruç önerilmez, hekimine danış; saatler gösterilmiyor.":"Oruç öncesi hekimine danış."}</small></span>${hard?"":`<button class="chip" data-act="riskok">Hekimime danıştım</button>`}</div>`];
-  const rows=[],src=ramSrc(),n=src&&RamadanLib.now(src.get,Date.now());
+  const rows=[],src=ramSrc(),n=src&&RamadanLib.now(src.get,Date.now()),skip=ramSkipped(dayKey());
+  if(skip)return [`<div class="row"><span>${ic} Bugün oruç tutmuyorsun<small class="mut sm">Bugün için saat kaydırma ve öneri yok. Yarın kendiliğinden geri gelir.</small></span>${ramBtn("unskip","Geri al")}</div>`];
   if(!src)rows.push(`<div class="row"><span>${ic} Ramazan modu<small class="mut sm">Önce yerini belirle</small></span>${ramBtn("gps","Konumumu kullan")}</div>`);
   else if(!n)rows.push(`<div class="row"><span>${ic} Ramazan modu<small class="mut sm">Bu yer için saat hesaplanamadı</small></span>${ramBtn("place","İl seç")}</div>`);
   else{
@@ -79,9 +82,11 @@ function ramadanTodo(){
       table:(left<0?"Diyanet tablosu bitti; saatler hesaplandı, resmî takvimle karşılaştır":left<=3?`Diyanet tablosu ${left?left+" gün sonra":"bugün"} bitiyor, sonrası hesaplanır; yenilemek için Doğrula'ya dokun`:"Hesap tablodan saptı; il merkezinin Diyanet tablosu gösteriliyor")+age,
       calc:`Hesaplandı, internetle doğrulanmadı${age}`}[src.mode];
     rows.push(`<div class="row"><span>${ic} <b class="num">${n.text}</b><small class="mut sm num">${n.kind==="night"?"":`İmsak ${n.imsak} · İftar ${n.iftar} · `}${esc(st.ramName)} civarı · ${note}, yaklaşık</small>${n.long?`<small class="mut sm">Gündüz bu yıl uzun; hekimine danış.</small>`:""}</span>${src.mode==="verified"?"":ramBtn("verify",ramBusy?"…":"Doğrula")}</div>`);
+    rows.push(`<div class="row"><span>${ic} Bugün oruç tutmuyor musun?<small class="mut sm">Bugün saat kaydırma ve önerileri atlarım.</small></span>${ramBtn("skip","Bugün tutmuyorum")}</div>`);
+    if(!st.ramSahur&&!st.ramIftar&&!st.ramRemNo)rows.push(`<div class="row"><span>${Icons.svg("bell")} Sahur ve iftar hatırlatması<small class="mut sm">Sahurdan 45 dk, iftardan 5 dk önce haber vereyim mi?</small></span>${ramBtn("rem","Aç")}${ramBtn("remno","Gerek yok")}</div>`);
   }
   if(src&&n&&!st.ramWater)rows.push(`<div class="row"><span>${Icons.svg("water")} Su hedefini iftar ile sahur arasına yay<small class="mut sm">Hedefin (${fmt(st.waterMl/1000,1)} L) aynı kalır; iftardan sahura saatte yaklaşık ${ramPerHour(n)} ml yeter.</small></span>${ramBtn("water","Yay")}</div>`);
-  if(st.ramFrom&&(RamadanLib.bayram(st.ramFrom,Date.now())||Algo.dayNum(dayKey())-Algo.dayNum(st.ramFrom)>=31))rows.push(`<div class="row"><span>Ramazan bitti mi?<small class="mut sm">Modu kapatabilirsin; ilaç saatlerini kaydırdıysan eski saatlere dönmeyi önereceğim.</small></span><button class="chip" data-ram="off">Modu kapat</button></div>`);
+  if(st.ramFrom&&(RamadanLib.bayram(st.ramFrom,Date.now())||Algo.dayNum(dayKey())-Algo.dayNum(st.ramFrom)>=31))rows.push(`<div class="row"><span>Ramazan bitmiş olabilir<small class="mut sm">Takvim hesabına göre bayram başlamış olabilir; resmî takvimle bir gün fark çıkabilir. Bitince modu kapat; ilaç saatlerini kaydırdıysan eski saatlere dönmeyi önereceğim.</small></span><button class="chip" data-ram="off">Modu kapat</button></div>`);
   return rows;
 }
 function ramadanSettingsHtml(){
@@ -106,7 +111,7 @@ function ramToggle(){
   ramOpen();
 }
 function ramOpen(){
-  const st=S.settings;st.ramOn=true;st.ramFrom=dayKey();st.ramWater=false;st.ramMedsNo=false;save();render();
+  const st=S.settings;st.ramOn=true;st.ramFrom=dayKey();st.ramWater=false;st.ramMedsNo=false;st.ramRemNo=false;st.ramSkip="";st.ramMedsRef={};save();render();
   if(!st.ramLat)ramLocate();
 }
 function ramPickIl(){
@@ -130,7 +135,10 @@ document.addEventListener("click",ev=>{
   else if(a==="verify")ramVerify();
   else if(a==="forget"){st.ramLat=0;st.ramLon=0;st.ramName="";lsDel(RAM_LS);ramCache=null;save();render();scheduleReminders().then(setNotif)}
   else if(a==="off")ramToggle();
-  else if(a==="water"){st.ramWater=!st.ramWater;save();render()}
+  else if(a==="water"){st.ramWater=!st.ramWater;save();render();scheduleReminders().then(setNotif)}
+  else if(a==="rem"){st.ramSahur=true;st.ramIftar=true;save();render();scheduleReminders().then(setNotif);toast("Sahur ve iftar hatırlatması açık")}
+  else if(a==="remno"){st.ramRemNo=true;save();render()}
+  else if(a==="skip"||a==="unskip"){st.ramSkip=a==="skip"?dayKey():"";save();render();scheduleReminders().then(setNotif)}
   else if(a==="sahur"||a==="iftar"){st[a==="sahur"?"ramSahur":"ramIftar"]=!st[a==="sahur"?"ramSahur":"ramIftar"];save();render();scheduleReminders().then(setNotif)}
   else if(a==="close")closeSheet();
 });

@@ -792,6 +792,14 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("invalid entries (out of range, future, malformed) are dropped, a valid one is added",ev("S.entries.length")===3&&ev("S.entries[2].v")===300,ev("S.entries"));
     pending=[];await ev("quickIngest()");
     ok("empty list: no change",ev("S.entries.length")===3);
+    { // a record made in another time zone keeps the day and clock the person saw, and the toast can take it back
+      ev("S.entries=[]");const t=tms(2026,9,30,23,50),off=-new Date(t).getTimezoneOffset();
+      pending=[{v:250,t,z:off+120}];await ev("quickIngest()");
+      ok("a water record made in a zone two hours ahead is placed at that zone's clock (01:50 the next day), not recomputed in the new zone",ev("S.entries.length")===1&&ev("S.entries[0].day")==="2026-10-01"&&ev("S.entries[0].time")==="01:50"&&ev("S.entries[0].qt")===t,ev("S.entries"));
+      ev("undoLast()");
+      ok("the toast's Geri al removes what the notification added",ev("S.entries.length")===0);
+      ev("S.entries=[]");
+    }
     { // if the record cannot be written (recovery mode) the queue is not lost and is retried later
       ev("S.entries=[]");pending=[{v:250,t:Date.now()-1000}];ev("recovery={}");await ev("quickIngest()");
       const held=ev("S.entries.length");ev("recovery=null");pending=[];await ev("quickIngest()");
@@ -2996,7 +3004,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("S.settings.riskClearedAt=dayKey();render()");
     ok("Ramadan mode: after the confirmation the card and the reminders are back",/İftara \d|Sahura \d/.test(card())&&ev("Habits.ramReminders(Date.now(),0,7).length")>=1);
     ev("S.settings.ramFrom=keyOff(-40);render()");
-    ok("Ramadan mode: after 31 days the card asks whether it is over",/Ramazan bitti mi/.test([...w.document.querySelectorAll("#view .row")].map(r=>r.textContent).join()));
+    ok("Ramadan mode: after 31 days the card says it may be over",/Ramazan bitmiş olabilir/.test([...w.document.querySelectorAll("#view .row")].map(r=>r.textContent).join()));
     q('[data-ram="off"]').click();
     ok("Ramadan mode: closing it removes the card and the start day; the place stays for next year",!ev("S.settings.ramOn")&&ev("S.settings.ramFrom")===""&&ev("S.settings.ramLat")>0&&card()==="");
     // offline: the clock works, it says it was not verified, and the verify button waits for a tap

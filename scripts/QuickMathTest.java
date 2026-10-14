@@ -40,19 +40,29 @@ public class QuickMathTest {
                 && !QuickMath.signed("{\"extra\":{\"tk\":\"" + sec.substring(1) + "\"}}", sec.substring(1))
                 && !QuickMath.signed(null, sec) && !QuickMath.signed("{\"extra\":{\"tk\":\"" + sec + "\"}}", null));
 
-        String s = QuickMath.append("", "250", 1000L);
-        s = QuickMath.append(s, "m12_0800", 2000L);
+        String s = QuickMath.append("", "250", 1000L, 180);
+        s = QuickMath.append(s, "m12_0800", 2000L, -300);
         List<String[]> l = QuickMath.parse(s);
         ok("append: two records in order", l.size() == 2 && l.get(0)[0].equals("250") && l.get(0)[1].equals("1000") && l.get(1)[0].equals("m12_0800"));
-        ok("append: null start", QuickMath.parse(QuickMath.append(null, "250", 5L)).size() == 1);
+        ok("append: null start", QuickMath.parse(QuickMath.append(null, "250", 5L, 0)).size() == 1);
 
         String big = "";
-        for (int i = 1; i <= 250; i++) big = QuickMath.append(big, "100", i);
+        for (int i = 1; i <= 250; i++) big = QuickMath.append(big, "100", i, 60);
         List<String[]> bl = QuickMath.parse(big);
         ok("limit: at most 200 records, oldest dropped", bl.size() == 200 && bl.get(0)[1].equals("51") && bl.get(199)[1].equals("250"));
 
-        List<String[]> m = QuickMath.parse("250,1000;abc;,5;100,;0,50;5000,70;300,0;-5,10;200,3000;;300,4000,9;m7_0900,10;k7_0900,11;m7_9,10;mx_0800,10;m1000_0800,10;");
+        List<String[]> m = QuickMath.parse("250,1000,z180;abc;,5,z0;100,,z0;0,50,z0;5000,70,z0;300,0,z0;-5,10,z0;200,3000,z-120;;300,4000,9;m7_0900,10,z0;k7_0900,11,z60;m7_9,10,z0;mx_0800,10,z0;m1000_0800,10,z0;250,1000;300,5,zx;");
         ok("parse: corrupt and out-of-range pieces are skipped", m.size() == 4 && m.get(0)[0].equals("250") && m.get(1)[0].equals("200") && m.get(2)[0].equals("m7_0900") && m.get(3)[0].equals("k7_0900"));
+        ok("parse: the zone offset (minutes, may be negative) is kept; a record without one is skipped", m.get(0)[2].equals("180") && m.get(1)[2].equals("-120") && m.get(3)[2].equals("60"));
+        ok("append: the zone is written after the time", QuickMath.append("", "250", 1000L, -300).equals("250,1000,z-300;"));
+        ok("widget tap: a second tap inside the gap is a repeat, the first, a later one and a clock that went back are not",
+            !QuickMath.tooSoon(0, 5000) && QuickMath.tooSoon(10000, 10500) && QuickMath.tooSoon(10000, 11499) && !QuickMath.tooSoon(10000, 11500) && !QuickMath.tooSoon(10000, 9000));
+        long day = 86400000L, h = 3600000L, im = 100000000L, ft = im + 14 * h;
+        ok("iftar line: nothing before imsak, the time left while the fast runs, nothing from iftar to the next imsak",
+            QuickMath.iftarLeft(im, ft, im - h) == 0 && QuickMath.iftarLeft(im, ft, im + h) == 13 * h && QuickMath.iftarLeft(im, ft, ft) == 0 && QuickMath.iftarLeft(im, ft, ft + h) == 0);
+        ok("iftar line: with the app closed the pair rolls forward by whole days, for at most 3 days",
+            QuickMath.iftarLeft(im, ft, im + day + 2 * h) == 12 * h && QuickMath.iftarLeft(im, ft, ft + 2 * day - h) == h && QuickMath.iftarLeft(im, ft, im + 3 * day + h) == 13 * h && QuickMath.iftarLeft(im, ft, ft + 5 * day) == 0);
+        ok("iftar line: missing or inverted times give nothing", QuickMath.iftarLeft(0, ft, im + h) == 0 && QuickMath.iftarLeft(im, 0, im + h) == 0 && QuickMath.iftarLeft(ft, im, im + h) == 0);
         ok("parse: empty and null", QuickMath.parse("").isEmpty() && QuickMath.parse(null).isEmpty());
 
         String n = "{\"id\":200,\"schedule\":{\"at\":\"2026-10-02T08:00\"},\"extra\":{\"act\":\"water\",\"v\":250,\"at\":1790928000000}}";

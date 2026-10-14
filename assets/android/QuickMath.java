@@ -10,6 +10,10 @@ import java.util.regex.Pattern;
 final class QuickMath {
     static final int MAX = 200;
     private static final int MAX_SEEN = 50, MAX_WATER_ML = 1500, MAX_MED_ID = 999;
+    /** The widget "+water" button ignores a second tap this soon after the first (a double tap, not two glasses). */
+    static final long WIDGET_GAP_MS = 1500;
+    private static final long DAY_MS = 86400000L;
+    private static final int MAX_ROLL_DAYS = 3;
     private static final Pattern EXTRA = Pattern.compile("\"extra\"\\s*:\\s*\\{([^}]*)\\}");
     private static final Pattern V = Pattern.compile("\"v\"\\s*:\\s*(\\d{1,5})(?![\\d.])");
     private static final Pattern M = Pattern.compile("\"m\"\\s*:\\s*(\\d{1,5})(?![\\d.])");
@@ -18,6 +22,7 @@ final class QuickMath {
     private static final Pattern AT = Pattern.compile("\"at\"\\s*:\\s*(\\d{10,15})(?![\\d.])");
     private static final Pattern TK = Pattern.compile("\"tk\"\\s*:\\s*\"([0-9a-f]{32})\"");
     private static final Pattern KEY = Pattern.compile("(\\d{1,4})|([mk]\\d{1,3}_\\d{4})");
+    private static final Pattern ZONE = Pattern.compile("z-?\\d{1,4}");
 
     private static String extra(String json) {
         if (json == null) return null;
@@ -94,9 +99,24 @@ final class QuickMath {
         return tail(list + sig + ";", MAX_SEEN);
     }
 
-    /** Appends "key,time;" to the pending records, keeping at most MAX (the oldest are dropped). */
-    static String append(String pending, String key, long t) {
-        return tail((pending == null ? "" : pending) + key + "," + t + ";", MAX);
+    /** Milliseconds to iftar for the widget line, 0 while the daytime fast is not running. imsak and iftar are the times the app last pushed; once they are past they roll
+     *  forward by whole days (they move a minute or two a day), for at most MAX_ROLL_DAYS days without the app. */
+    static long iftarLeft(long imsak, long iftar, long now) {
+        if (imsak <= 0 || iftar <= imsak) return 0;
+        long k = iftar > now ? 0 : (now - iftar) / DAY_MS + 1;
+        if (k > MAX_ROLL_DAYS) return 0;
+        return now >= imsak + k * DAY_MS ? iftar + k * DAY_MS - now : 0;
+    }
+
+    /** Whether a widget water tap at "now" repeats the one at "last" (0 = none yet). */
+    static boolean tooSoon(long last, long now) {
+        return last > 0 && now >= last && now - last < WIDGET_GAP_MS;
+    }
+
+    /** Appends "key,time,zone;" to the pending records, keeping at most MAX (the oldest are dropped). zone is the phone's UTC offset in minutes when the record was made:
+     *  the app places the record on the day and clock the person saw, also when the phone changed time zone before the app opened. */
+    static String append(String pending, String key, long t, int zoneMin) {
+        return tail((pending == null ? "" : pending) + key + "," + t + ",z" + zoneMin + ";", MAX);
     }
 
     /** The last max records of a ";"-separated list (also used by MotionStore). */
@@ -108,13 +128,13 @@ final class QuickMath {
         return sb.toString();
     }
 
-    /** Parses the pending records into {key, time}. Malformed and out-of-range parts are skipped. */
+    /** Parses the pending records into {key, time, zone minutes}. Malformed and out-of-range parts are skipped. */
     static List<String[]> parse(String pending) {
         List<String[]> out = new ArrayList<>();
         if (pending == null) return out;
         for (String part : pending.split(";")) {
             String[] f = part.split(",");
-            if (f.length != 2 || !KEY.matcher(f[0]).matches()) continue;
+            if (f.length != 3 || !KEY.matcher(f[0]).matches() || !ZONE.matcher(f[2]).matches()) continue;
             try {
                 long t = Long.parseLong(f[1]);
                 if (t <= 0) continue;
@@ -122,7 +142,7 @@ final class QuickMath {
                     int v = Integer.parseInt(f[0]);
                     if (v < 1 || v > MAX_WATER_ML) continue;
                 }
-                out.add(new String[] {f[0], f[1]});
+                out.add(new String[] {f[0], f[1], f[2].substring(1)});
             } catch (NumberFormatException e) {
                 // malformed part: skipped
             }

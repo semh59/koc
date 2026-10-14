@@ -93,6 +93,8 @@ function medTodo(){
 /* ---- Ramadan: moving the times inside the daytime fast ---- */
 /* Only on the user's approval; settings.ramMeds keeps {medId: {from: to}} so each medication goes back to its old times alone. */
 const medRamDone=m=>{const r=S.settings.ramMeds[m.id];return r&&Object.values(r).some(t=>m.t.includes(t))?r:null};
+/* Still shifted from an earlier Ramadan: the mode was opened again (which forgets the anchors) and the shift was never taken back or recalculated. */
+const medRamStale=m=>S.settings.ramOn&&medRamDone(m)&&!S.settings.ramMedsRef[m.id];
 function medRamPlan(){
   const st=S.settings,d=st.ramMedsNo?null:Habits.dayTimes(calKey());
   return d?S.meds.filter(m=>m.on&&!medRamDone(m)).map(m=>{const map=RamadanLib.medMap(m.t,d);return {m,map,left:m.t.filter(t=>RamadanLib.inFast(t,d)&&!map[t]),im:d[0]}}).filter(x=>Object.keys(x.map).length||x.left.length):[];
@@ -106,17 +108,18 @@ const RAM_DRIFT=15;
 const medRamBack=()=>S.settings.ramOn?[]:S.meds.filter(medRamDone);
 const medRamPair=map=>Object.entries(map).map(([a,b])=>`${a} → ${b}`).join(", ");
 function medRamTodo(){
-  const k=medRamPlan().filter(x=>Object.keys(x.map).length).length,b=medRamBack().length;
-  const t=b?"Ramazan bitti; ilaç saatlerini eski saatlerine döndürelim mi?":k?"İlaç saatlerini sahur ya da iftara kaydırmak ister misin?":"";
+  const k=medRamPlan().filter(x=>Object.keys(x.map).length).length,b=medRamBack().length,old=S.meds.some(medRamStale);
+  const t=b?"Ramazan bitti; ilaç saatlerini eski saatlerine döndürelim mi?":old?"Geçen Ramazan'dan kalan kaydırılmış ilaç saatlerin var; eski saatlerine dönelim mi?":k?"İlaç saatlerini sahur ya da iftara kaydırmak ister misin?":"";
   return t?[`<div class="row"><span>${Icons.svg("meds")} ${t}<small class="mut sm">Sen onaylamadan hiçbir saat değişmez.</small></span><button class="chip" data-tab="meds">İncele</button></div>`]:[];
 }
 function medRamCard(){
   const plan=medRamPlan(),back=S.settings.ramOn?S.meds.filter(medRamDone):medRamBack();
+  const fresh=m=>medRamStale(m)?" Geçen Ramazan'dan kalmış; bugünün imsağına göre yeniden hesaplayabilir ya da eski saatlere dönebilirsin.":"";
   if(!plan.length&&!back.length)return "";
   const row=(m,t,btn)=>`<div class="row"><span class="grow"><b>${esc(m.n)}</b><small class="db mut num">${t}</small></span>${btn}</div>`;
   return `<div class="card"><div class="lbl">${S.settings.ramOn?"Ramazan ve ilaç saatleri":"Ramazan bitti"}</div>
   ${plan.map(({m,map,left})=>row(m,(Object.keys(map).length?medRamPair(map):"")+(left.length?`${Object.keys(map).length?". ":""}${left.join(", ")} için boş saat bulunamadı, o doz kaydırılmadı; hekimine danış`:""),Object.keys(map).length?`<button class="chip" data-md="ramgo:${m.id}" aria-label="Kaydır: ${esc(m.n)}">Kaydır</button>`:"")).join("")}
-  ${back.map(m=>{const dr=medRamDrift(m),late=Math.abs(dr)>=RAM_DRIFT;return row(m,"Kaydırıldı: "+medRamPair(S.settings.ramMeds[m.id])+(late?`. İmsak kaydırdığından beri yaklaşık ${Math.abs(dr)} dk ${dr<0?"öne geldi":"geriye gitti"}; saatler eski imsağa göre`:""),`${late?`<button class="chip" data-md="ramredo:${m.id}" aria-label="Yeniden hesapla: ${esc(m.n)}">Yeniden hesapla</button>`:""}<button class="chip" data-md="ramback:${m.id}" aria-label="Eski saatlere dön: ${esc(m.n)}">Eski saatlere dön</button>`)}).join("")}
+  ${back.map(m=>{const dr=medRamDrift(m),old=medRamStale(m),late=Math.abs(dr)>=RAM_DRIFT;return row(m,"Kaydırıldı: "+medRamPair(S.settings.ramMeds[m.id])+(old?"."+fresh(m):"")+(late?`. İmsak kaydırdığından beri yaklaşık ${Math.abs(dr)} dk ${dr<0?"öne geldi":"geriye gitti"}; saatler eski imsağa göre`:""),`${late||old?`<button class="chip" data-md="ramredo:${m.id}" aria-label="Yeniden hesapla: ${esc(m.n)}">Yeniden hesapla</button>`:""}<button class="chip" data-md="ramback:${m.id}" aria-label="Eski saatlere dön: ${esc(m.n)}">Eski saatlere dön</button>`)}).join("")}
   <p class="hint">İlaç saatlerini hekimine sormadan değiştirme. Kaydırma yalnız senin onayınla yapılır; her ilaç ayrı geri alınır.${plan.length?` <button class="lnk" data-md="ramno">Gerek yok</button>`:""}</p></div>`;
 }
 /* Moves a medication's times by {from: to}: the same revise/since bookkeeping as an edit, so past days keep the old schedule. */
@@ -151,7 +154,8 @@ function medRamUndo(id){
   S.settings.ramMeds=rest;S.settings.ramMedsRef=restRef;
   if(Object.keys(inv).length&&!medRetime(m,inv,()=>{S.settings.ramMeds=prev;S.settings.ramMedsRef=prevRef}))return;
   if(!Object.keys(inv).length)save();
-  render();medResched();toast(`${m.n}: eski saatlere döndü`);
+  const n=Object.keys(rec).length,k=Object.keys(inv).length;
+  render();medResched();toast(k===n?`${m.n}: eski saatlere döndü`:k?`${m.n}: ${k} saat eski yerine döndü, ${n-k} saat sen değiştirdiğin için aynı kaldı`:`${m.n}: saatleri sen değiştirdiğin için eski saatlere dönülecek bir şey kalmadı`);
 }
 
 /* Moves the shifted times to today's imsak and iftar in one step: current time -> its original -> its new target. */

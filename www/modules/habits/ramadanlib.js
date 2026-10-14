@@ -108,9 +108,11 @@ const RamadanLib=(()=>{
     }
     return out;
   }
-  /* A daytime reminder time t ("HH:MM") on a day with times d=[imsak, iftar]: water inside the fast moves after iftar (k = 0..2 spreads three of them), the motion reminder waits an hour after iftar; anything else stays. */
-  function shift(d,kind,t,k){
+  /* A daytime reminder time t ("HH:MM") on a day with times d=[imsak, iftar]: water inside the fast moves after iftar (k = 0..2 spreads three of them), the motion reminder waits an hour after iftar; anything else stays.
+     With spread on, every water reminder goes to the evening: the first half an hour after iftar, the rest evenly up to 23:00. */
+  function shift(d,kind,t,k,spread){
     const m=mins(t),im=mins(d[0]),ft=mins(d[1]);
+    if(kind==="water"&&spread)return hm(Math.min(ft+30+Math.max(15,Math.min(150,Math.floor((1380-ft-30)/2)))*k,1410));
     if(kind==="water")return m>=im&&m<ft?hm(Math.min(ft+[30,120,210][k],1410)):t;
     return m>=im&&m<ft+60?hm(Math.min(ft+60,1410)):t;
   }

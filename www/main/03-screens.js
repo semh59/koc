@@ -48,7 +48,7 @@ function viewToday(){
   const sOn=(S.settings.stepsOn||S.settings.hcOn)&&isNative();
   /* The ring centre shows what is left; done / goal below with the unit. */
   const left=(v,g,u)=>v<g?[null,`${u} kaldı`]:["✓","Hedef tamam"];
-  const [waterC,waterU]=left(water,sh,"L"),[spC,spU]=left(sw,sg,"dk");
+  const [waterC,waterU0]=left(water,sh,"L"),[spC,spU]=left(sw,sg,"dk"),fasting=!waterC&&Habits.fasting(),waterU=fasting?"oruçta":waterU0;
   /* A day with almost nothing logged shows the total, not a remainder that would read as "you may eat this much more". */
   const lowLog=kgl>0&&kc<Algo.LOW_LOG_KCAL,kcC=st.hideNums?"•••":kgl>0&&!lowLog?Math.round(Math.abs(kgl-kc)):Math.round(kc),kcU=kgl>0&&!lowLog&&!st.hideNums?(kc>kgl?"kcal fazla":"kcal kaldı"):"kcal";
   const meals=Log.where(e=>e.type==="food"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
@@ -66,7 +66,7 @@ function viewToday(){
   /* Summary card: big calorie ring and the remainder; water, sport and steps in small rings; macros below. */
   const rings=`<div class="card"><div class="rings">
     ${rb("kcal","Kalori",ring(st.hideNums?0:kcP,"var(--kcal)",kcC,"Kalori",st.hideNums?"sayılar gizli":kgl>0?`${Math.round(kc)} / ${kgl} kcal`:"hedef yok",kcU,"main"))}
-    <div class="rmini">${rb("water","Su",ring(water/sh,"var(--water)",waterC||fmt((sh-water)/1000,1),"Su",`${fmt(water/1000,1)} / ${fmt(sh/1000,1)} L`,waterU,"mini"+(waterC?" done":"")))}
+    <div class="rmini">${rb("water","Su",ring(water/sh,"var(--water)",waterC||fmt((sh-water)/1000,1),"Su",`${fmt(water/1000,1)} / ${fmt(sh/1000,1)} L${fasting?", oruç saatinde":""}`,waterU,"mini"+(waterC?" done":"")))}
     ${rb("exercise","Spor",ring(sw/sg,"color-mix(in srgb,var(--exercise) 80%,var(--card))",spC||Math.round(sg-sw),"Spor",`${Math.round(sw)} / ${sg} dk`,spU,"mini"+(spC?" done":"")))}${sOn?stepCard():""}</div>
   </div>${Habits.ramWaterNote()}${lowLog&&!st.hideNums?`<p class="pt-2 hint">Bugün az yemek kayıtlı; kayıtlar tamamlanınca kalanı gösteririm.</p>`:""}${st.hideNums?"":`${macro}${macroNote}${fiber}${micro}${rangeNote}${moveAdd(t)?`<p class="pt-2 hint">Hedefe hareketten +${moveAdd(t)} kcal eklendi (kayıtlı antrenman ve yürüyüşün yarısı, tahmindir).</p>`:""}`}</div>`;
   /* The most used quick chips come first; the order inside equal counts stays as written. */
@@ -297,8 +297,8 @@ let widgetLast="";
 /* The null values are intentional: the Java side shows "no goal" / hides steps when the key exists but is null, and "–" when the key is missing. */
 function widgetPush(){
   if(!WG())return;
-  const t=dayKey(),st=S.settings,d={day:t,ds:st.dayStart|0,water:sum("water",t,t),waterGoal:st.waterMl,glass:st.glass,kcalLeft:st.kcal>0?Math.round(kcalGoal(t)-sum("food",t,t)):null,steps:st.stepsOn||st.hcOn?stepsShown():null,...(st.lockOn||st.widgetHide)&&{hide:true}},ia=Habits.iftarAt();
-  if(ia)d.iftarAt=ia;
+  const t=dayKey(),st=S.settings,d={day:t,ds:st.dayStart|0,water:sum("water",t,t),waterGoal:st.waterMl,glass:st.glass,kcalLeft:st.kcal>0?Math.round(kcalGoal(t)-sum("food",t,t)):null,steps:st.stepsOn||st.hcOn?stepsShown():null,...(st.lockOn||st.widgetHide)&&{hide:true}},fw=Habits.fastWindow();
+  if(fw){d.imsakAt=fw[0];d.iftarAt=fw[1]}
   const j=JSON.stringify(d);if(j===widgetLast)return;
   widgetLast=j;try{WG().update(d).catch(()=>{})}catch{}
 }

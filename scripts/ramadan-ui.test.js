@@ -42,7 +42,8 @@ boot(w=>{
     ok("approving keeps the goal and shows the per-hour plan; the switch in Settings can undo it",ev("S.settings.ramWater")&&ev("S.settings.waterMl")===2500&&/saatte yaklaşık \d+ ml/.test($("#view").textContent)&&!/Su hedefini iftar ile sahur arasına yay/.test($("#view").textContent));
     ev("S.settings.ramWater=false;render()");
     const wc=n("WG.update").pop()[1];
-    ok("widget: the iftar time is pushed while the fast runs",wc.iftarAt===at(trDay,tt[1]),wc);
+    ok("widget: today's imsak and iftar are pushed, the widget works the countdown out itself",wc.iftarAt===at(trDay,tt[1])&&wc.imsakAt===at(trDay,tt[0]),wc);
+    ok("Today: the water ring says it is the fasting hours, the goal itself is untouched",/oruçta/.test($("#view").textContent)&&ev("S.settings.waterMl")===2500);
     ok("gym: one neutral line while fasting",/Oruçluyken baş dönmesi olursa bırak, hekimine danış/.test(ev("Habits.fastNote()")));
     ev("tab='meds';render()");
     const mc=[...w.document.querySelectorAll("#view .card")].find(c=>/Ramazan ve ilaç saatleri/.test(c.textContent))?.textContent||"";
@@ -62,7 +63,7 @@ boot(w=>{
   { // after the fast
     clock(at(trDay,p2(Math.floor((m(tt[1])+60)/60))+":"+p2((m(tt[1])+60)%60)));
     ev("tab='today';widgetLast='';render()");
-    ok("after iftar: no fasting note, no iftar field in the widget",!/Oruç saatinde su içilmiyor/.test($("#view").textContent)&&!("iftarAt" in n("WG.update").pop()[1])&&ev("Habits.fastNote()")==="");
+    ok("after iftar: no fasting note, no fasting ring; the widget carries today's pair, already past, and hides the line itself",!/Oruç saatinde su içilmiyor/.test($("#view").textContent)&&!/oruçta/.test($("#view").textContent)&&n("WG.update").pop()[1].iftarAt<w.Date.now()&&ev("Habits.fastNote()")==="");
   }
   { // table that ends soon, then ended
     const il=R.CITIES.findIndex(c=>c[0]==="Ankara"),days={};
@@ -77,14 +78,37 @@ boot(w=>{
   }
   { // bayram
     clock(Date.UTC(2027,2,12,9));ev("S.settings.ramFrom='2027-02-20';tab='today';render()");
-    ok("after bayram starts the card suggests closing, and says the medication times come back by approval",/Ramazan bitti mi/.test($("#view").textContent)&&/eski saatlere dönmeyi önereceğim/.test($("#view").textContent));
+    ok("after bayram starts the card says Ramadan may be over (the calendar can differ by a day), and that the medication times come back by approval",/Ramazan bitmiş olabilir/.test($("#view").textContent)&&/bir gün fark çıkabilir/.test($("#view").textContent)&&/eski saatlere dönmeyi önereceğim/.test($("#view").textContent));
     ev("S.settings.ramFrom='2027-03-12'");clock(Date.UTC(2027,2,13,9));ev("render()");
-    ok("no bayram row when the mode was opened after Ramadan",!/Ramazan bitti mi/.test($("#view").textContent));
+    ok("no bayram row when the mode was opened after Ramadan",!/Ramazan bitmiş olabilir/.test($("#view").textContent));
     clock(realNow());
     ev("S.settings.ramFrom='"+today+"';S.settings.ramMeds={1:{'08:00':'04:30'}};S.meds[0].t=['04:30','14:00','21:00'];S.meds[0].q={};S.settings.ramOn=false;tab='meds';render()");
     ok("when the mode is off the shifted medication offers to go back",/Ramazan bitti/.test($("#view").textContent)&&/08:00 → 04:30/.test($("#view").textContent)&&!!$('[data-md="ramback:1"]'));
     ev("tab='today';render()");
     ok("...and Today asks, only offering",/eski saatlerine döndürelim mi/.test($("#view").textContent)&&ev("S.meds[0].t[0]")==="04:30");
+  }
+  { // opening the mode, skipping a day, the spread switch
+    const im=R.times(tomorrow,LAT,LON),w1=(l,x)=>l.find(y=>y.id===x*100+1);
+    ev("S.meds[0].t=['08:00','14:00','21:00'];S.settings.ramMeds={};S.settings.ramMedsRef={};S.settings.ramOn=true;S.settings.ramFrom='"+today+"';S.settings.ramSahur=false;S.settings.ramIftar=false;S.settings.ramRemNo=false;S.settings.ramSkip='';ramCache=null;tab='today';render()");
+    ok("opening the mode: sahur and iftar reminders are offered with one tap",/Sahur ve iftar hatırlatması/.test($("#view").textContent)&&!!$('[data-ram="rem"]'));
+    click('[data-ram="rem"]');await flush();
+    const l1=await sched();
+    ok("the tap switches both on and the reminders are scheduled",ev("S.settings.ramSahur&&S.settings.ramIftar")&&l1.some(l=>R.isNid(l.id)));
+    ev("S.settings.ramSahur=false;S.settings.ramIftar=false;render()");click('[data-ram="remno"]');
+    ok("'Gerek yok' stops asking",ev("S.settings.ramRemNo")&&!/Sahur ve iftar hatırlatması/.test($("#view").textContent));
+    ev("S.settings.ramSahur=true;S.settings.ramIftar=true;S.settings.ramWater=true");
+    const l2=await sched(),mi=x=>new Date(x).getHours()*60+new Date(x).getMinutes(),got=[2,3,4].map(x=>mi(w1(l2,x).schedule.at)),want=[2,3,4].map((x,k)=>m(R.shift(im,"water",{2:"11:30",3:"14:30",4:"17:30"}[x],k,true)));
+    ok("the spread switch really moves the water reminders: all in the evening, from half an hour after iftar, evenly",got.join()===want.join()&&got[0]===m(im[1])+30&&got[1]>got[0]&&got[2]>got[1],[got,want]);
+    ev("S.settings.ramWater=false");
+    clock(at(trDay,p2(Math.floor((m(tt[0])+180)/60))+":"+p2((m(tt[0])+180)%60)));
+    ev("tab='today';widgetLast='';render()");
+    ok("before skipping: the card offers 'Bugün tutmuyorum'",!!$('[data-ram="skip"]')&&ev("Habits.fasting()")===true);
+    click('[data-ram="skip"]');await flush();
+    const l3=await sched();
+    ok("skipping today: no times for the day, no fasting state, no sahur/iftar reminder for it, no iftar in the widget, the row says so",ev("S.settings.ramSkip")===ev("dayKey()")&&ev("Habits.dayTimes(dayKey())")===null&&ev("Habits.fasting()")===false&&!l3.some(l=>l.id===R.NID||l.id===R.NID+1)&&n("WG.update").pop()[1].iftarAt===undefined&&/Bugün oruç tutmuyorsun/.test($("#view").textContent));
+    click('[data-ram="unskip"]');await flush();
+    ok("taking the skip back brings the day back",ev("S.settings.ramSkip")===""&&ev("Habits.fasting()")===true);
+    clock(realNow());
   }
   finish();
 });
