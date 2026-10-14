@@ -1,6 +1,7 @@
 // Ramadan mode in the app: reminders move out of the fast, the notes and the approval-only suggestions, the table end, the bayram row, the widget field.
 const {ok,finish}=require("./ok");
-const {boot,until,flush}=require("./html");
+const {boot,until,flush,clockAt}=require("./html");
+const CLOCK=clockAt("2026-10-06T10:00:00");(0,eval)(CLOCK);
 const R=require("../www/modules/habits/ramadanlib.js");
 const LAT=39.93,LON=32.86,p2=n=>String(n).padStart(2,"0"),m=t=>+t.slice(0,2)*60+ +t.slice(3,5);
 const local=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`,today=local(new Date()),tomorrow=local(new Date(Date.now()+864e5));
@@ -11,6 +12,7 @@ const calls=[],errs=[],delivered=[{id:7000000},{id:7000001},{id:1999000}];
 const rec=(p,defs)=>new Proxy({},{get:(_,k)=>k==="then"?undefined:k==="addListener"?()=>({remove(){}}):async a=>{calls.push([p+"."+k,a]);const v=defs[k];return typeof v==="function"?v(a):v||{}}});
 boot(w=>{
   Object.defineProperty(w,"crypto",{value:require("node:crypto").webcrypto});w.addEventListener("error",e=>errs.push(e.message));
+  w.eval(CLOCK);
   w.localStorage.setItem("nw_state",JSON.stringify(seed));
   w.Capacitor={isNativePlatform:()=>true,getPlatform:()=>"android",Plugins:{
     Widget:rec("WG",{}),MedWake:rec("MW",{fsi:{allowed:true}}),App:rec("App",{}),
