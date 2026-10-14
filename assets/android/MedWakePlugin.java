@@ -37,6 +37,7 @@ public class MedWakePlugin extends Plugin {
             return;
         }
         JSArray doses = call.getArray("doses");
+        MedWakeReceiver.setDetail(getContext(), call.getBoolean("detail", false));
         MedWakeReceiver.saveDoses(getContext(), doses == null ? new JSArray() : doses);
         MedWakeReceiver.arm(getContext(), t, "APP");
         call.resolve();
@@ -81,7 +82,7 @@ public class MedWakePlugin extends Plugin {
         Intent i = null;
         if ("channel".equals(to) && Build.VERSION.SDK_INT >= 26) {
             MedWakeReceiver.channel(getContext());
-            String id = "nw_med".equals(call.getString("id")) ? "nw_med" : MedWakeReceiver.CH;
+            String id = "nw_med".equals(call.getString("id")) ? MedWakeReceiver.medId(getContext()) : MedWakeReceiver.wakeId(getContext());
             i = new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, pkgName).putExtra(Settings.EXTRA_CHANNEL_ID, id);
         } else if ("notif".equals(to) && Build.VERSION.SDK_INT >= 26) {
             i = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, pkgName);

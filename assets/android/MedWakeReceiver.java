@@ -10,6 +10,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.AudioAttributes;
+import android.media.RingtoneManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -28,7 +30,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
     /** An alarm may fire this early relative to its planned time. */
     static final long EARLY_MS = 5000;
     private static final long FSI_GRACE_MS = 1200, WAKE_MS = 20000, TEST_VISIBLE_MS = 120000, NOTIFICATION_TIMEOUT_MS = 30000;
-    private static final String PREFS = "nw_medwake", KEY = "times", DOSES = "doses", LOG = "log", TEST = "test", ZONE = "zone", WAKE = "com.neowell.app.MED_WAKE";
+    private static final String PREFS = "nw_medwake", KEY = "times", DOSES = "doses", LOG = "log", TEST = "test", ZONE = "zone", DETAIL = "detail", WAKE = "com.neowell.app.MED_WAKE";
     /** The id was bumped once because Android restores the old settings (including a lowered importance) when a deleted channel is recreated under the same id. */
     static final String CH = "nw_medwake2";
 
@@ -120,15 +122,48 @@ public class MedWakeReceiver extends BroadcastReceiver {
         return best;
     }
 
+    /** Whether the lock screen may show titles and text (Settings > Lock screen detail); off by default. */
+    static boolean detail(Context c) {
+        return prefs(c).getBoolean(DETAIL, false);
+    }
+
+    static void setDetail(Context c, boolean on) {
+        prefs(c).edit().putBoolean(DETAIL, on).apply();
+    }
+
+    static String wakeId(Context c) {
+        return LockText.channel(CH, detail(c));
+    }
+
+    static String medId(Context c) {
+        return LockText.channel("nw_med", detail(c));
+    }
+
+    /** A channel's lock-screen visibility cannot change after creation, so each channel has a public and a private twin; only the one matching the setting exists. */
     static void channel(Context c) {
         if (Build.VERSION.SDK_INT < 26) return;
         NotificationManager nm = c.getSystemService(NotificationManager.class);
-        if (nm.getNotificationChannel(CH) != null) return;
-        NotificationChannel ch = new NotificationChannel(CH, "İlaç alarmı ekranı", NotificationManager.IMPORTANCE_HIGH);
-        ch.setSound(null, null);
-        ch.enableVibration(false);
-        ch.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-        nm.createNotificationChannel(ch);
+        boolean on = detail(c);
+        int vis = on ? Notification.VISIBILITY_PUBLIC : Notification.VISIBILITY_PRIVATE;
+        nm.deleteNotificationChannel(LockText.channel(CH, !on));
+        nm.deleteNotificationChannel(LockText.channel("nw_med", !on));
+        if (nm.getNotificationChannel(wakeId(c)) == null) {
+            NotificationChannel ch = new NotificationChannel(wakeId(c), "İlaç alarmı ekranı", NotificationManager.IMPORTANCE_HIGH);
+            ch.setSound(null, null);
+            ch.enableVibration(false);
+            ch.setLockscreenVisibility(vis);
+            nm.createNotificationChannel(ch);
+        }
+        if (nm.getNotificationChannel(medId(c)) == null) {
+            // Rings like an alarm: alarm-sound channel, high importance, vibration. Whether it sounds in silent mode depends on the phone's own settings.
+            NotificationChannel ch = new NotificationChannel(medId(c), "İlaç alarmı", NotificationManager.IMPORTANCE_HIGH);
+            ch.setDescription("İlaç saatinde alarm gibi çalan hatırlatıcı");
+            ch.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM), new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
+            ch.enableVibration(true);
+            ch.setVibrationPattern(new long[] {0, 600, 300, 600, 300, 600});
+            ch.setLockscreenVisibility(vis);
+            nm.createNotificationChannel(ch);
+        }
     }
 
     /** Silent, short-lived notification: the sound and buttons come from the plugin's medication notification, this one only opens AlarmActivity over the lock screen. Returns "ok" or the error. */
@@ -137,11 +172,12 @@ public class MedWakeReceiver extends BroadcastReceiver {
         try {
             NotificationManager nm = c.getSystemService(NotificationManager.class);
             channel(c);
+            boolean on = detail(c);
             Intent open = new Intent(c, AlarmActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             PendingIntent pi = PendingIntent.getActivity(c, NID, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-            Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(c, CH) : new Notification.Builder(c).setPriority(Notification.PRIORITY_MAX);
-            b.setSmallIcon(c.getApplicationInfo().icon).setContentTitle("İlaç zamanı").setContentText("İlaçlarını görmek için dokun")
-                .setCategory(Notification.CATEGORY_ALARM).setVisibility(Notification.VISIBILITY_PUBLIC).setAutoCancel(true).setOnlyAlertOnce(false)
+            Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(c, wakeId(c)) : new Notification.Builder(c).setPriority(Notification.PRIORITY_MAX);
+            b.setSmallIcon(c.getApplicationInfo().icon).setContentTitle(on ? "İlaç zamanı" : LockText.TITLE).setContentText(on ? "İlaçlarını görmek için dokun" : LockText.TEXT)
+                .setCategory(Notification.CATEGORY_ALARM).setVisibility(on ? Notification.VISIBILITY_PUBLIC : Notification.VISIBILITY_PRIVATE).setAutoCancel(true).setOnlyAlertOnce(false)
                 .setContentIntent(pi).setFullScreenIntent(pi, true);
             if (Build.VERSION.SDK_INT >= 26) b.setTimeoutAfter(NOTIFICATION_TIMEOUT_MS);
             nm.notify(NID, b.build());
@@ -225,7 +261,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
             put(e, "ne", nm.areNotificationsEnabled());
             if (Build.VERSION.SDK_INT >= 34) put(e, "fsi", nm.canUseFullScreenIntent());
             if (Build.VERSION.SDK_INT >= 26) {
-                NotificationChannel w = nm.getNotificationChannel(CH), m = nm.getNotificationChannel("nw_med");
+                NotificationChannel w = nm.getNotificationChannel(wakeId(c)), m = nm.getNotificationChannel(medId(c));
                 put(e, "ci", w == null ? -1 : w.getImportance());
                 put(e, "mi", m == null ? -1 : m.getImportance());
             }
