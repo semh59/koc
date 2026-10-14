@@ -1,7 +1,9 @@
 /* ---------- UI state ---------- */
 let tab="today",via=null,range=30,toastTimer=null,logOff=0,recList=[],lastDay=dayKey();
+/* The goal weight shown on screens: 0 when it is off or fails the BMI check (a stored goal is still seen by the brakes). */
+const goalWeight=cur=>{const st=S.settings;return st.goalKg>0&&!Algo.goalWhy(st.goalKg,st.heightCm,cur)?st.goalKg:0};
 function goalInfo(cur,first){
-  const g=S.settings.goalKg;if(!(g>0))return null;
+  const g=goalWeight(cur);if(!(g>0))return null;
   const f=first==null?cur:first,dir=f>=g?-1:1;
   return {done:dir<0?cur<=g:cur>=g,left:Math.abs(cur-g),dir};
 }
@@ -18,7 +20,7 @@ const QUOTES=[
 function dailyTip(){
   const t=dayKey(),h=new Date().getHours();
   const sh=S.settings.waterMl,water=sum("water",t,t);
-  if(!Object.keys(weights(t,t)).length&&h<12)return "Sabah tartısını gir. Tuvaletten sonra, kahvaltıdan önce en tutarlısı.";
+  if(Algo.dayNum(t)%7===0&&!Object.keys(weights(t,t)).length&&h<12)return "Sabah tartısını gir. Tuvaletten sonra, kahvaltıdan önce en tutarlısı.";
   const exp=sh*Math.min(Math.max((h-8)/14,0),1);
   if(water<exp-250)return `Su biraz geride: ${Math.round(water)} ml içtin, şu an ${Math.round(exp)} ml civarı olmalı.`;
   if(!of("exercise",t).length&&h>=17)return "Bugün hareket yok. 20 dakikalık tempolu yürüyüş de sayılır.";
@@ -48,7 +50,7 @@ function chart(N){
   if(pts.length<2)return `<p class="hint">Grafik için en az iki gün kilo gir.</p>`;
   const W=340,H=180,pl=52,pr=10,pt=10,pb=24;
   let lo=Math.min(...pts.map(p=>p.v)),hi=Math.max(...pts.map(p=>p.v));
-  const g=S.settings.goalKg;
+  const g=goalWeight(pts[pts.length-1].v);
   /* The axis follows the data only: a far goal must not flatten the slope, it is shown at the edge with an arrow. */
   const pay=Math.max((hi-lo)*.15,.4);lo-=pay;hi+=pay;if(hi-lo<2){const m=(hi+lo)/2;lo=m-1;hi=m+1}
   const X=i=>pl+(W-pl-pr)*(N<=1?0:i/(N-1)),Y=v=>pt+(H-pt-pb)*(1-(v-lo)/(hi-lo));

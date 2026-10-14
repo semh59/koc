@@ -29,12 +29,15 @@ function fastTodo(){
 }
 function fastInfo(){
   openSheet(`<h3>Oruç zamanlayıcısı</h3><div class="banner"><b>Aralıklı oruç herkes için uygun değildir.</b><p>Şu durumlarda yapma ya da önce hekimine danış: Hamilelik ya da emzirme, 18 yaş altı, yeme bozukluğu geçmişi, diyabet, insülin ya da şeker düşüren ilaç kullanımı, düşük kilo. Baş dönmesi, halsizlik ya da çarpıntı olursa orucu bitir ve hekimine danış.</p></div>
-  <p class="hint">${MED_NOTE}</p>${swRow('id="fic"',false,"Okudum; bu durumlar bende yok ya da hekimime danıştım")}<button class="btn" data-hb="fastinfo">Oruç zamanlayıcısını aç</button>`);
+  <p class="hint">${MED_NOTE}</p>${swRow('id="fic"',false,"Okudum; bu durumlar bende yok ya da hekimime danıştım")}
+  <div class="lbl" id="edq">Yeme bozukluğu geçmişin ya da yemeyi kısıtlama eğilimin var mı?</div>
+  <button class="btn" data-hb="fastinfo">Hayır, oruç zamanlayıcısını aç</button>
+  <p class="hint mt-2">"Evet ya da emin değilim" yeme düzeniyle ilgili işareti açar; oruç ve kalori açığı önerileri kapanır.</p><button class="btn ghost" data-hb="fastedyes">Evet ya da emin değilim</button>`);
 }
 function fastGo(){
   const st=S.settings;
   if(risk().block)return render();
-  if(!st.fastInfoOk)return fastInfo();
+  if(!st.fastInfoOk||!st.fastEdOk)return fastInfo();
   if(S.fast.plan>=LONG_PLAN&&!st.fastLongOk){
     confirmSheet({title:"Uzun oruç başlatılsın mı?",body:`${S.fast.plan} saatlik oruç uzun bir plandır. Hekiminle konuştuysan devam et. Başlatılsın mı?`,ok:"Başlat"}).then(ok=>{if(ok){st.fastLongOk=true;fastGo()}});
     return;
@@ -50,7 +53,7 @@ function fastSettingsHtml(){
 function fastToggle(){
   const st=S.settings;
   if(S.fast.t0)return toast("Önce orucu bitir");
-  if(!st.fastOn&&!st.fastInfoOk)return fastInfo();
+  if(!st.fastOn&&!(st.fastInfoOk&&st.fastEdOk))return fastInfo();
   st.fastOn=!st.fastOn;
   if(!st.fastOn)st.reminders.find(r=>r.id===FAST_REMINDER).on=false;
   save();render();scheduleReminders().then(setNotif);
@@ -115,7 +118,8 @@ document.addEventListener("click",ev=>{
   else if(a==="fasttoggle")fastToggle();
   else if(a.startsWith("plan:")){S.fast.plan=+a.slice(5);save();render()}
   else if(a==="fastgo")fastGo();
-  else if(a==="fastinfo"){if(!$("#fic").checked)return toast("Önce kutuyu işaretle");Object.assign(S.settings,{fastInfoOk:true,fastOn:true});save();closeSheet();render();scheduleReminders().then(setNotif)}
+  else if(a==="fastinfo"){if(!$("#fic").checked)return toast("Önce kutuyu işaretle");Object.assign(S.settings,{fastInfoOk:true,fastEdOk:true,fastOn:true});save();closeSheet();render();scheduleReminders().then(setNotif)}
+  else if(a==="fastedyes"){setRisk("ed");S.settings.fastEdOk=false;save();closeSheet();render();scheduleReminders().then(setNotif);toast("Oruç ve kalori açığı önerilerini kapattım. Hekimine ya da diyetisyenine danış")}
   else if(a==="fastend")fastEnd();
   else if(a==="sleepgo")sleepSave();
   else if(a==="mood")sheetMood();

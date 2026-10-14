@@ -210,9 +210,9 @@ const CoachLib=(()=>{
     return [...g].map(([r,a])=>r+": "+a.join(", ")).join("\n");
   }
   /* If the model proposes a calorie target, pull it up to the safe floor. */
-  function clampKcal(k,{tdee,bmr}={}){
+  function clampKcal(k,{tdee,bmr,sex}={}){
     const v=num(k,800,5000);if(v==null)return null;
-    const floor=Math.max(1200,bmr||0,(tdee||0)*0.75);
+    const floor=Math.max(sex==="f"?1200:1500,bmr||0,(tdee||0)*0.75);
     if(v<floor)return {kcal:Math.round(floor/10)*10,limited:true};
     return {kcal:Math.round(v/10)*10,limited:false};
   }

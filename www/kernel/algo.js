@@ -68,7 +68,8 @@ const Algo=(()=>{
 
   /* The one definition of a fully logged day (weekly report, Coach analysis, expenditure estimate): at least 800 kcal, and more than half the formula
      expenditure when known. A half-logged day would drag averages down. */
-  const fullKcal=(kcal,tdee)=>kcal>=Math.max(800,tdee>0?tdee*0.5:0);
+  const LOW_LOG_KCAL=800;
+  const fullKcal=(kcal,tdee)=>kcal>=Math.max(LOW_LOG_KCAL,tdee>0?tdee*0.5:0);
   /* Fully logged days needed before a calorie "average" is shown; one 700 kcal day is not an average. */
   const MIN_AVG_DAYS=3;
   /* Adaptive expenditure: average intake - (trend change x 7700 / days).
@@ -153,8 +154,8 @@ const Algo=(()=>{
   /* Why a calorie deficit is unsafe, or "". */
   const lossBlock=o=>riskFlags(o).block;
 
-  /* Safe daily floor: 1500 for men, 1200 for everyone else (women, unspecified); the BMR when it is higher. */
-  const kcalFloor=(sex,bmr)=>Math.max(sex==="m"?1500:1200,bmr||0);
+  /* Safe daily floor: 1200 only when the sex is known to be female, 1500 otherwise (men, unspecified); the BMR when it is higher. */
+  const kcalFloor=(sex,bmr)=>Math.max(sex==="f"?1200:1500,bmr||0);
   /* Why a hand-entered daily target is rejected, or "". Never for under 18; below maintenance (when tdee is known) under a hard block or an unconfirmed
      soft one; below the sex-based floor always. */
   function manualKcal({kcal,sex,bmr,tdee,age,block}){
@@ -163,6 +164,17 @@ const Algo=(()=>{
     if(block&&keep>0&&kcal<keep)return `${block}. Kalori açığı hedefi koymuyorum; en az ${keep} kcal (bakım düzeyi) gir ya da hekimine danış`;
     const fl=Math.round(kcalFloor(sex,bmr)/10)*10;
     return kcal<fl?`Günlük hedef en az ${fl} kcal olabilir; daha düşüğü için hekimine danış`:"";
+  }
+  /* The trend falls faster than 1% of body weight per week (21-day slope). */
+  function fastLoss(w,today){
+    const s=slopePerWeek(w,21,4,7,today),ks=Object.keys(w).sort();
+    return s!=null&&ks.length>0&&-s>0.01*trend(w)[ks[ks.length-1]];
+  }
+  /* Why a goal weight is not accepted or shown, or "". The BMI check needs the height. Below BMI 18.5 only a gain from the current weight passes. */
+  function goalWhy(goalKg,cm,kg){
+    if(!(goalKg>0))return "";
+    if(!(cm>0))return "Hedef kilo için önce boyunu gir; boy-kilo oranı (BMI) buna göre kontrol edilir";
+    return goalKg/Math.pow(cm/100,2)<18.5&&!(kg>0&&goalKg>=kg)?"Bu hedef kilo boyuna göre çok düşük (BMI 18,5 altı). Hekimine ya da diyetisyenine danış":"";
   }
   /* Pound/kilogram mix-up on the first weigh-in: suspicious above BMI 45 when the height is known, above 160 kg otherwise. */
   const lbSuspect=(kg,cm)=>cm>0?kg/Math.pow(cm/100,2)>=45:kg>=160;
@@ -330,6 +342,6 @@ const Algo=(()=>{
   }
   /* A4 page in pixels at 150 dpi, with its margin: the canvas size of every PDF report. */
   const PAGE={w:1240,h:1754,m:70};
-  return {PAGE,dayOk,timeOk,KCAL_PER_KG,actFromTriage,dayNum,fdate,trend,slopePerWeek,setClock,fullKcal,MIN_AVG_DAYS,kcalFloor,manualKcal,lbSuspect,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,riskFlags,lossBlock,etaWeeks,lossSlope,isLosing,lossKnown,goalEta,protein,PROTEIN_NOTE,exerciseKcal,moveBonus,moveSummary,cleanWalk,netKcal,gymKcal,MEASURES,cleanMeasures,whtr,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
+  return {PAGE,dayOk,timeOk,KCAL_PER_KG,actFromTriage,dayNum,fdate,trend,slopePerWeek,setClock,fullKcal,LOW_LOG_KCAL,MIN_AVG_DAYS,kcalFloor,manualKcal,goalWhy,fastLoss,lbSuspect,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,riskFlags,lossBlock,etaWeeks,lossSlope,isLosing,lossKnown,goalEta,protein,PROTEIN_NOTE,exerciseKcal,moveBonus,moveSummary,cleanWalk,netKcal,gymKcal,MEASURES,cleanMeasures,whtr,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
 })();
 if(typeof module!=="undefined")module.exports=Algo;

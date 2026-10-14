@@ -48,7 +48,7 @@ document.addEventListener("click",ev=>{
   }
 });
 $("#tundo").addEventListener("click",undoLast);
-const TOGGLES={mk:"moveKcalOn",rpe:"rpeOn",gdv:"gdVoice",gdb:"gdVib",aw:"awakeOn",comfy:"comfy"}; // data-<key> checkbox -> boolean setting
+const TOGGLES={mk:"moveKcalOn",rpe:"rpeOn",gdv:"gdVoice",gdb:"gdVib",aw:"awakeOn",comfy:"comfy",hs:"hideStreak",hn:"hideNums"}; // data-<key> checkbox -> boolean setting
 document.addEventListener("change",ev=>{
   const t=ev.target;
   if(t.id==="bkfile"){
@@ -59,14 +59,14 @@ document.addEventListener("change",ev=>{
   }
   if(t.dataset.gi){gInput(t);return}
   const tg=Object.keys(TOGGLES).find(k=>t.dataset[k]!==undefined);
-  if(tg){S.settings[TOGGLES[tg]]=t.checked;save();if(tg==="aw")gAwake();if(tg==="comfy")render();return}
+  if(tg){S.settings[TOGGLES[tg]]=t.checked;save();if(tg==="aw")gAwake();if(tg==="comfy"||tg==="hs"||tg==="hn")render();return}
   if(t.dataset.set){
     const k=t.dataset.set,st=S.settings,[lo,hi,int]=RANGES[k],raw=t.value.trim();
     const wk=k==="goalKg",show=x=>x?(wk?dw(x).replace(/,0$/,""):String(x).replace(".",",")):"";
     if(raw===""&&ZEROOK.includes(k)){st[k]=0;save();t.value="";toast(`${SETLBL[k]} kapatıldı`);return}
     const v=wk?Units.wIn(num(raw)):num(raw,int);
     if(isNaN(v)||v<lo||v>hi){t.value=show(st[k]);toast(wk&&wlab()==="lb"?`${SETLBL[k]} ${dw(lo,0)} ile ${dw(hi,0)} ${wlab()} arasında olmalı`:`${SETLBL[k]} ${String(lo).replace(".",",")} ile ${String(hi).replace(".",",")} arasında${int?" tam sayı":""} olmalı`);return}
-    const why=k==="kcal"?kcalWhy(v):"";
+    const why=k==="kcal"?kcalWhy(v):k==="goalKg"?Algo.goalWhy(v,st.heightCm,weightNow()):"";
     if(why){t.value=show(st[k]);toast(why);return}
     st[k]=v;if(k==="age")cAgeGuard();save();t.value=show(v);return;
   }

@@ -46,6 +46,7 @@ function obParse(){
     const g=num(ob.goal,false),lose=ob.dir==="lose";
     if(isNaN(g)||g<20||g>400)return {err:"Hedef kilo 20 ile 400 arasında olmalı",bad:"goal"};
     if(lose?g>=o.kg:g<=o.kg)return {err:`Hedef kilo şimdiki kilodan ${lose?"düşük":"yüksek"} olmalı`,bad:"goal"};
+    const why=Algo.goalWhy(g,o.cm,o.kg);if(why)return {err:why,bad:"goal"};
     o.goal=g;
   }
   return o;

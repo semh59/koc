@@ -1701,8 +1701,8 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("with a junk why card the other messages load completely",g.chat.length===3&&!g.chat[0].card&&!g.chat[1].card&&g.chat[2].text==="merhaba");
     // plateau
     const f0=fetched,pq=()=>ev("S.chat.filter(m=>m.kind==='plateau').length");
-    ev("S.chat=[];S.settings.lastPlateau='';S.settings.goalKg=70;S.entries=[];[-20,-18,-16,-14,-12,-9,-7,-5,-2,0].forEach((o,i)=>add('weight',80+[0.2,-0.1,0.3,-0.2,0,0.1,-0.3,0.2,-0.1,0][i],'',keyOff(o)));cPlateauCheck()");
-    ok("the plateau question drops, no AI call is made (even with consent and a key)",pq()===1&&ev("S.chat[0].text")==="Son 3 haftadır kilon düşmüyor. Birlikte bakalım mı?"&&fetched===f0&&ev("S.settings.lastPlateau")===ev("dayKey()"));
+    ev("S.chat=[];S.settings.lastPlateau='';S.settings.goalKg=70;S.settings.heightCm=175;S.entries=[];[-20,-18,-16,-14,-12,-9,-7,-5,-2,0].forEach((o,i)=>add('weight',80+[0.2,-0.1,0.3,-0.2,0,0.1,-0.3,0.2,-0.1,0][i],'',keyOff(o)));cPlateauCheck()");
+    ok("the plateau question drops, no AI call is made (even with consent and a key)",pq()===1&&ev("S.chat[0].text")==="Son 3 haftadır kilon yerinde duruyor. İstersen birlikte bakabiliriz."&&fetched===f0&&ev("S.settings.lastPlateau")===ev("dayKey()"));
     ev("cPlateauCheck();S.settings.lastPlateau=keyOff(-13);cPlateauCheck()");
     ok("the plateau question does not drop again within 14 days",pq()===1);
     ev("S.settings.lastPlateau=keyOff(-14);cPlateauCheck()");
@@ -2386,7 +2386,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     const q=s=>$q(s),qa=s=>[...w.document.querySelectorAll(s)],v=()=>q("#view").textContent;
     ev("closeSheet();S.settings.obDone=true;S.settings.heightCm=170;S.settings.age=30;S.settings.goalKg=72;S.settings.medOn=true;S.settings.fastOn=true;S.settings.bpOn=true;S.settings.bsOn=true;S.settings.stepsOn=false;S.settings.lastBackup='';tab='settings';render()");
     const rows=qa('#view [data-tab^="settings-"]').map(b=>b.dataset.tab);
-    ok("Settings home is a short list: 6 sections, summary value and ›, no fields (except the large-text switch), a ‹ in the header (to Daha fazla)",rows.join()==="settings-profile,settings-reminders,settings-coach,settings-modules,settings-data,settings-about"&&v().includes("170 cm · 30 yaş · hedef 72,0 kg")&&v().includes("İlaç, Oruç, Tansiyon, Şeker açık")&&v().includes("Henüz yedek dosyası yok")&&![...w.document.querySelectorAll("#view input")].some(i=>!i.hasAttribute("data-comfy"))&&!q("#back").hidden&&q('nav [data-tab="more"]').getAttribute("aria-current")==="page",v());
+    ok("Settings home is a short list: 6 sections, summary value and ›, no fields (except the large-text switch), a ‹ in the header (to Daha fazla)",rows.join()==="settings-profile,settings-reminders,settings-coach,settings-modules,settings-data,settings-about"&&v().includes("170 cm · 30 yaş · hedef 72,0 kg")&&v().includes("İlaç, Oruç, Tansiyon, Şeker açık")&&v().includes("Henüz yedek dosyası yok")&&![...w.document.querySelectorAll("#view input")].some(i=>!(i.hasAttribute("data-comfy")||i.hasAttribute("data-hs")||i.hasAttribute("data-hn")))&&!q("#back").hidden&&q('nav [data-tab="more"]').getAttribute("aria-current")==="page",v());
     const T={profile:"Profil ve hedefler",modules:"Modüller",reminders:"Hatırlatmalar",coach:"Rehber",data:"Veri ve yedek",about:"Hakkında"},seen=new Set();
     let titles=true;
     for(const k in T){
@@ -2510,7 +2510,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("with an empty trend: a single empty-state card, an add-weight button; no chart, range picker or empty table",q(".empty")&&q(".empty").textContent.includes("İlk tartını ekle")&&!q("svg.chart")&&!q("#view table")&&!q("[data-range]")&&!!q('.empty [data-act="weight"]'));
     q('.empty [data-act="weight"]').click();
     ok("the button in the empty state opens the add-weight page",q("#sheet").classList.contains("on")&&q("#sheet").textContent.includes("Kilo"));
-    const wts=g=>ev(`closeSheet();S.settings.goalKg=${g};S.entries=[];for(let i=29;i>=0;i--)S.entries.push({id:i+1,day:keyOff(-i),time:"07:00",type:"weight",v:86+(i%7)*.5,text:""});range=30;render()`);
+    const wts=g=>ev(`closeSheet();S.settings.goalKg=${g};S.settings.heightCm=170;S.entries=[];for(let i=29;i>=0;i--)S.entries.push({id:i+1,day:keyOff(-i),time:"07:00",type:"weight",v:86+(i%7)*.5,text:""});range=30;render()`);
     const ticks=()=>qa("svg.chart text[text-anchor=end]").map(t=>t.textContent).filter(t=>/^\d+,\d$/.test(t)).map(t=>+t.replace(",","."));
     wts(60);
     ok("weight axis by data: a far target (60 kg) does not pull the axis to zero/target, it is shown at the edge with a down-arrow label",Math.min(...ticks())>84&&Math.max(...ticks())<91&&q("svg.chart").textContent.includes("▼ Hedef 60,0 kg")&&!q('svg.chart line[stroke="var(--kcal)"]'),ticks());
@@ -2717,9 +2717,9 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("once on it persists (the cleaner keeps it): target 2000 + 300x0.5 = 2150",ev("S.settings.moveKcalOn")===true&&ev("cleanSettings(JSON.parse(JSON.stringify(S.settings))).moveKcalOn")===true&&ev("kcalGoal(dayKey())")===2150);
     ev("tab='today';render()");
     ok("Today: ring with the new target (remaining = 2150 - eaten), the added part and a 'tahmindir' note",txt().includes("/ 2150 kcal")&&txt().includes("+150 kcal")&&txt().includes("tahmindir"));
-    ev("add('food',500,'x');render()");
-    ok("remaining calories from the new target: 2150-500=1650",txt().includes("1.650")||txt().includes("1650"));
-    ok("the widget's remaining calories from the same target",wc.length>0&&wc[wc.length-1].kcalLeft===1650,JSON.stringify(wc[wc.length-1]));
+    ev("add('food',1000,'x');render()");
+    ok("remaining calories from the new target: 2150-1000=1150",txt().includes("1.150")||txt().includes("1150"));
+    ok("the widget's remaining calories from the same target",wc.length>0&&wc[wc.length-1].kcalLeft===1150,JSON.stringify(wc[wc.length-1]));
     ev("add('steps',30000,'')");
     ok("steps do not add to the target: 30,000 steps do not change the target",ev("kcalGoal(dayKey())")===2150);
     ev("S.moves=[{day:dayKey(),t0:'17:30',min:30,k:'w',steps:3000,km:2,kmh:4,kcal:150,gps:false},{day:dayKey(),t0:'08:00',min:30,k:'w',steps:3000,km:2,kmh:4,kcal:100,gps:false}]");
