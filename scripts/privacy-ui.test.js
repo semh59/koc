@@ -27,13 +27,13 @@ const sw=(w,attr,val)=>{const el=w.document.createElement("input");el.type="chec
   ok("settings show the hide-recents switch next to the lock",!!w.document.querySelector("[data-lk=recents]")&&!!w.document.querySelector("[data-lk=toggle]"));}
 
   {const {w}=await open({lock:true,settings:{obDone:false,age:0}});
-  w.eval('Object.assign(ob,{step:2,cm:"170",kg:"70",age:"30",dir:"keep"});render()');
+  w.eval('Object.assign(ob,{step:0,cm:"170",kg:"70",age:"30",dir:"keep"});render()');
   const box=w.document.querySelector("#oblk");
   ok("setup ends with the question whether the app lock should be on",!!box&&/Uygulama kilidi açılsın mı/.test(w.document.body.textContent));
-  box.checked=true;w.document.querySelector('[data-ob="next"]').click();
+  box.checked=true;w.document.querySelector('[data-ob="next"]').click();w.document.querySelector('[data-ob="next"]').click();
   ok("answering yes turns the lock on after verification",await until(()=>w.eval("S.settings.lockOn")===true));
   const n=await open({lock:false,settings:{obDone:false,age:0}});
-  n.w.eval('Object.assign(ob,{step:2,cm:"170",kg:"70",age:"30",dir:"keep"});render()');
+  n.w.eval('Object.assign(ob,{step:0,cm:"170",kg:"70",age:"30",dir:"keep"});render()');
   ok("without the lock plugin (browser) the question is not shown",!n.w.document.querySelector("#oblk"));}
 
   {const {w}=await open();

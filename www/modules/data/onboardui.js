@@ -1,5 +1,5 @@
 "use strict";
-/* First run: welcome (step -1) and 3 steps. Inputs are written to the existing profile and settings fields; the draft lives only in memory. */
+/* First run: welcome (step -1) and one form (step 0) that shows the target in place before it is saved. Inputs are written to the existing profile and settings fields; the draft lives only in memory. */
 /* Fixed start-up notice: shown on the welcome screen and, for an existing install, once in a sheet until acknowledged. */
 const NOTICE="NeoWell bir tıbbi cihaz değildir ve hekim yerine geçmez. Rehber yapay zekâ kullanır ve yanılabilir; sağlıkla ilgili kararları hekiminle ver. Acil bir durumda 112'yi ara.";
 const noticeGate=()=>{if(!S.settings.noticeOk)openSheet(`<h3>Önemli uyarı</h3><div class="banner"><p>${NOTICE}</p></div><button class="btn" data-notice>Anladım</button>`)};
@@ -30,7 +30,7 @@ async function obRestoreGo(btn){
 }
 document.addEventListener("click",ev=>{const r=ev.target.closest("[data-obr]");if(r)r.dataset.obr==="open"?sheetObRestore():obRestoreGo(r)});
 document.addEventListener("click",ev=>{if(ev.target.closest("[data-notice]")){S.settings.noticeOk=true;save();closeSheet()}});
-const obFresh=()=>({step:-1,kg:"",cm:"",age:"",sex:"",dir:"keep",goal:"",pg:false,nu:false,ed:false,hn:false,lk:false,mods:[],err:"",bad:"",minor:false,kgOk:"",job:"",walk:"",redo:false});
+const obFresh=()=>({step:-1,kg:"",cm:"",age:"",sex:"",dir:"keep",goal:"",pg:false,nu:false,ed:false,hn:false,lk:false,shown:"",err:"",bad:"",minor:false,kgOk:"",job:"",walk:"",redo:false});
 const ob=obFresh();
 const OB_MODS=[["med","İlaç hatırlatıcı","meds"],["fast","Oruç takibi","fast"],["steps","Adım sayar","steps"],["bp","Tansiyon","heart"],["bs","Şeker","water"]];
 const OB_DIRS=[["lose","Kilo ver"],["keep","Koru"],["gain","Kilo al"]];
@@ -62,6 +62,7 @@ function obParse(){
 }
 /* Pregnancy, nursing and eating-disorder answers are their own flags; the doctor/medication answer is written into the health note (a soft brake). */
 const OB_HN="İlk kurulumda işaretlendi: hekim kontrolü ya da düzenli ilaç";
+const obSig=()=>JSON.stringify([ob.cm,ob.kg,ob.age,ob.sex,ob.dir,ob.dir==="keep"?"":ob.goal,ob.job,ob.walk,ob.pg,ob.nu,ob.ed,ob.hn]);
 const obNote=()=>[S.settings.healthNote,ob.hn&&OB_HN].filter(Boolean).join(". ").slice(0,500);
 /* From the triage when both questions are answered, otherwise from the current setting. */
 const obAct=()=>ob.job!==""&&ob.walk!==""?Algo.actFromTriage(+ob.job,+ob.walk):S.settings.act;
@@ -71,51 +72,43 @@ function obPlan(p){
   return {kcal:t.kcal,note:t.note,protein:Algo.protein(inp).range,risk:Algo.riskFlags(inp)};
 }
 function obView(){
-  const st=ob.step,bad=k=>ob.bad===k?` aria-invalid="true" aria-describedby="oberr"`:"";
+  const bad=k=>ob.bad===k?` aria-invalid="true" aria-describedby="oberr"`:"";
   const err=`<div class="ferr" id="oberr" role="alert">${esc(ob.err)}</div>`;
   /* The error text sits right under the faulty field, inside the card. */
   const fld=(k,lbl,val,small,mode)=>`<div class="field"><label for="ob${k}">${lbl}${small?`<small>${small}</small>`:""}</label><input id="ob${k}" type="text" inputmode="${mode}" value="${esc(val)}" autocomplete="off"${bad(k)}></div>${ob.bad===k?err:""}`;
   const seg=(attr,opts,sel)=>`<div class="seg2" role="group">${opts.map(([v,l])=>`<button data-ob="${attr}:${v}" aria-pressed="${sel===v}">${l}</button>`).join("")}</div>`;
-  if(st<0&&!ob.minor)return `<div class="about"><img src="logo.svg" alt="" width="96" height="96"><h2 class="m0">NeoWell'e hoş geldin</h2><p class="tc mut m0">Yemek, su, hareket ve sağlık ölçümlerini tek yerde tut; hedefini sana göre hesaplayalım.</p></div>
+  if(ob.step<0&&!ob.minor)return `<div class="about"><img src="logo.svg" alt="" width="96" height="96"><h2 class="m0">NeoWell'e hoş geldin</h2><p class="tc mut m0">Yemek, su, hareket ve sağlık ölçümlerini tek yerde tut; hedefini sana göre hesaplayalım.</p></div>
   <p class="tc hint">Verilerin yalnızca bu telefonda durur.</p><div class="banner"><p>${NOTICE}</p></div><button class="btn" data-ob="next">Başla</button><button class="mt-2 btn ghost" data-obr="open">Yedeğim var</button><button class="mt-2 lnk" data-ob="skip">Şimdilik geç</button>`;
   /* Under 18: setup does not continue and the draft is gone; there is no skip or back, only correcting the age. */
   if(ob.minor)return `<h2>NeoWell 18 yaş ve üzeri için</h2><div class="card"><p>Büyüme çağında kalori ve kilo hedefleri farklıdır; bu uygulama onları hesaplamaz.</p><p>Beslenme, kilo ya da spor konusunda bir yetişkinle ve hekiminle ya da diyetisyeninle konuş.</p><p class="hint">Girdiğin bilgiler kaydedilmedi.</p></div><button class="btn ghost" data-ob="fixage">Yaşımı yanlış girdim</button>`;
-  let body,next="Devam";
-  if(st===0)body=`<h2>Seni tanıyalım</h2><p class="m0 mb-2 hint">Günlük kalori ve protein hedefini buna göre hesaplarız.</p><div class="card">
+  const p=ob.shown===obSig()?obParse():null,ok=p&&!p.err&&!p.minor,pl=ok?obPlan(p):null;
+  const target=ok?`<div class="card" id="obtarget"><h2 class="m0">Günlük hedefin</h2><div class="lbl">Kalori</div><div class="pc sumv num">${fint(pl.kcal)} <small>kcal</small></div>
+    <div class="lbl">Protein</div><div class="t-h1 b7 num">${pl.protein?`${pl.protein[0]}–${pl.protein[1]} <small class="mut">g</small>`:"Hekiminle belirle"}</div><p class="p0 hint">${Algo.PROTEIN_NOTE}</p>
+    <p class="hint">Verilerin yalnızca telefonunda durur. Rehber'i açarsan, yalnızca onayınla, seçtiğin yapay zekâ sağlayıcısına (yurt dışı) gider. Rehber olmadan da uygulama tam çalışır. ${MED_NOTE} <button class="wa ib lnk" data-pv="open">Gizlilik ve veri</button></p>
+    ${pl.risk.block?riskBox(pl.risk,"Kalori açığı önermiyorum")+(p.goal>p.kg?"":`<p class="hint">Yukarıdaki değer kilonu koruma düzeyidir.</p>`):`<p class="hint">${pl.note==="Kilo verme"?"Yavaş ve güvenli kilo verme hızına göre":pl.note==="Kilo alma"?"Yavaş kilo alma hızına göre":"Kilonu koruma düzeyine göre"} hesaplandı. Kayıt girdikçe gerçek verine göre güncellenir. Tahmindir, tıbbi tavsiye değildir.</p>`}</div>`:"";
+  const body=`<h2>Seni tanıyalım</h2><p class="m0 mb-2 hint">Günlük kalori ve protein hedefini buna göre hesaplarız.</p><div class="card">
     ${fld("cm","Boy (cm)",ob.cm,"","numeric")}${fld("kg","Kilo (kg)",ob.kg,"","decimal")}${fld("age","Yaş",ob.age,"","numeric")}
     <div class="mt-3 lbl">Cinsiyet (isteğe bağlı)</div>${seg("sex",[["m","Erkek"],["f","Kadın"],["","Belirtmem"]],ob.sex)}
     <div class="mt-3 lbl">Hedefin</div>${seg("dir",OB_DIRS,ob.dir)}
     ${ob.dir!=="keep"?fld("goal","Hedef kilo (kg)",ob.goal,"","decimal"):""}
     <div class="mt-3 lbl">Gününü nasıl geçiriyorsun?</div>${seg("job",[["0","Oturarak"],["1","Ayakta"],["2","Fiziksel iş"]],ob.job)}
     <div class="mt-3 lbl">Günlük yürüyüşün</div>${seg("walk",[["0","5 bin adımdan az"],["1","5-9 bin"],["2","10 bin+"]],ob.walk)}
-    <p class="hint">Planlı antrenmanı sayma, onu ayrıca kaydedersin. Kalori hedefin buna göre başlar; birkaç hafta kayıttan sonra gerçek harcamandan düzelir.</p>${ob.bad?"":err}</div>`;
-  else if(st===1)body=`<h2>Hangileri açık olsun?</h2><div class="card"><p class="flush hint">Kapalı olanlar ekranında görünmez. İstediğini sonra Ayarlar'dan açarsın.</p>
-    <div class="chips">${OB_MODS.map(([k,l,ic])=>`<button class="chip" data-ob="mod:${k}" aria-pressed="${ob.mods.includes(k)}">${Icons.svg(ic)} ${l}</button>`).join("")}</div>
-    ${ob.mods.includes("steps")?`<p class="p0 hint">Adım sayar için telefon izni, Bugün ekranındaki "Adım sayarı aç" satırından istenir.</p>`:""}</div>
+    <p class="hint">Planlı antrenmanı sayma, onu ayrıca kaydedersin. Kalori hedefin buna göre başlar; birkaç hafta kayıttan sonra gerçek harcamandan düzelir.</p>${ob.bad?"":err}</div>
     <div class="card"><details class="acc"${ob.pg||ob.nu||ob.ed||ob.hn?" open":""}><summary>Sağlık notu ekle</summary><p class="hint flush">Önerilerin sana göre ihtiyatlı olması için. Hamilelik, yeme bozukluğu geçmişi, hekim kontrolü ya da ilaç varsa işaretle.</p>
-    ${swRow('id="obpg"',ob.pg,"Hamileyim")}${swRow('id="obnu"',ob.nu,"Emziriyorum")}${swRow('id="obed"',ob.ed,"Yeme bozukluğu geçmişim var")}${swRow('id="obhn"',ob.hn,"Hekim kontrolündeyim ya da düzenli ilaç kullanıyorum")}</details></div>`;
-  else{
-    const p=obParse(),pl=obPlan(p);next="Başla";
-    body=`<h2>Günlük hedefin</h2><div class="card"><div class="lbl">Kalori</div><div class="pc sumv num">${fint(pl.kcal)} <small>kcal</small></div>
-    <div class="lbl">Protein</div><div class="t-h1 b7 num">${pl.protein?`${pl.protein[0]}–${pl.protein[1]} <small class="mut">g</small>`:"Hekiminle belirle"}</div><p class="p0 hint">${Algo.PROTEIN_NOTE}</p>
-    <p class="hint">Verilerin yalnızca telefonunda durur. Rehber'i açarsan, yalnızca onayınla, seçtiğin yapay zekâ sağlayıcısına (yurt dışı) gider. Rehber olmadan da uygulama tam çalışır. ${MED_NOTE} <button class="wa ib lnk" data-pv="open">Gizlilik ve veri</button></p>
-    ${pl.risk.block?riskBox(pl.risk,"Kalori açığı önermiyorum")+(p.goal>p.kg?"":`<p class="hint">Yukarıdaki değer kilonu koruma düzeyidir.</p>`):`<p class="hint">${pl.note==="Kilo verme"?"Yavaş ve güvenli kilo verme hızına göre":pl.note==="Kilo alma"?"Yavaş kilo alma hızına göre":"Kilonu koruma düzeyine göre"} hesaplandı. Kayıt girdikçe gerçek verine göre güncellenir. Tahmindir, tıbbi tavsiye değildir.</p>`}</div>
-    ${AL()?`<div class="card">${swRow('id="oblk"',ob.lk,"Uygulama kilidi açılsın mı?","Uygulamayı açarken telefonun ekran kilidi (parmak izi, yüz, PIN, desen) sorulur. Sonra Ayarlar'dan değiştirirsin.")}</div>`:""}`;
-  }
-  const dots=`<div class="obp" role="status"><span class="mut sm">Adım ${st+1}/3</span><span class="obbar" aria-hidden="true">${[0,1,2].map(i=>`<i${i<=st?' class="on"':""}></i>`).join("")}</span></div>`;
-  return `<div class="row">${dots}<button class="lnk wa" data-ob="skip">Şimdilik geç</button></div>${body}
-  <div class="two" style="display:grid;grid-template-columns:${st?"1fr 2fr":"1fr"};gap:10px">${st?`<button class="btn ghost" data-ob="back">Geri</button>`:""}<button class="btn" data-ob="next">${next}</button></div>`;
+    ${swRow('id="obpg"',ob.pg,"Hamileyim")}${swRow('id="obnu"',ob.nu,"Emziriyorum")}${swRow('id="obed"',ob.ed,"Yeme bozukluğu geçmişim var")}${swRow('id="obhn"',ob.hn,"Hekim kontrolündeyim ya da düzenli ilaç kullanıyorum")}</details></div>
+    ${AL()?`<div class="card">${swRow('id="oblk"',ob.lk,"Uygulama kilidi açılsın mı?","Uygulamayı açarken telefonun ekran kilidi (parmak izi, yüz, PIN, desen) sorulur. Sonra Ayarlar'dan değiştirirsin.")}</div>`:""}${target}`;
+  return `<div class="ta-r"><button class="lnk wa" data-ob="skip">Şimdilik geç</button></div>${body}
+  <button class="btn" data-ob="next">${ok?"Başla":"Devam"}</button>`;
 }
-function obDone(){Object.assign(ob,obFresh());S.settings.obDone=S.settings.noticeOk=true;tab="today";logOff=0;save();render();window.scrollTo(0,0)}
+function obDone(){Object.assign(ob,obFresh());S.settings.obDone=S.settings.noticeOk=true;S.settings.obAt=dayKey();tab="today";logOff=0;save();render();window.scrollTo(0,0)}
 function obFinish(){
   const p=obParse();if(p.err)return;
-  const st=S.settings,pl=obPlan(p),mods=ob.mods,lock=ob.lk;
+  const st=S.settings,pl=obPlan(p),lock=ob.lk;
   if(ob.job!==""&&ob.walk!=="")st.act=obAct();
-  Object.assign(st,{heightCm:p.cm,age:p.age,sex:ob.sex,goalKg:p.goal,medOn:mods.includes("med"),fastOn:mods.includes("fast"),bpOn:mods.includes("bp"),bsOn:mods.includes("bs")});
+  Object.assign(st,{heightCm:p.cm,age:p.age,sex:ob.sex,goalKg:p.goal});
   if(pl.kcal>=RANGES.kcal[0]&&pl.kcal<=RANGES.kcal[1])st.kcal=pl.kcal;
   if(ob.pg)setRisk("preg");if(ob.nu)setRisk("nurs");if(ob.ed)setRisk("ed");
   if(ob.hn){st.healthNote=obNote();cNoteCheck()}
-  if(!mods.includes("steps"))st.stepsAsked=true;
   st.obSkipped=false;st.obNudge=true;
   add("weight",p.kg);
   obDone();scheduleReminders().then(setNotif);
@@ -132,19 +125,25 @@ document.addEventListener("click",ev=>{
     S.settings.obSkipped=true;obDone();scheduleReminders().then(setNotif);return;
   }
   if(ob.step<0){ob.step=0;return render()}
-  if(a==="back"){ob.step--;ob.err=ob.bad="";return render()}
   if(a==="sex"||a==="dir"||a==="job"||a==="walk"){ob[a]=v;ob.err=ob.bad="";return render()}
-  if(a==="mod"){ob.mods=ob.mods.includes(v)?ob.mods.filter(x=>x!==v):ob.mods.concat(v);return render()}
-  if(ob.step===0){
-    const p=obParse();
-    if(p.minor){Object.assign(ob,obFresh(),{minor:true});return render()}
-    ob.err=p.err||"";ob.bad=p.bad||"";
-    if(p.err){render();const f=$("#ob"+p.bad);if(f)f.focus();return}
-    if(Algo.lbSuspect(p.kg,p.cm)&&ob.kgOk!==ob.kg){ob.kgOk=ob.kg;ob.err=`${fmt(p.kg)} kg çok yüksek görünüyor. Libre (lb) yazmış olabilirsin: ${fmt(p.kg)} lb ≈ ${fmt(p.kg*0.45359237)} kg. Doğruysa Devam'a bir kez daha dokun.`;ob.bad="kg";render();$("#obkg").focus();return}
-    ob.step=1;return render();
-  }
-  if(ob.step===1){ob.step=2;return render()}
+  const p=obParse();
+  if(p.minor){Object.assign(ob,obFresh(),{minor:true});return render()}
+  ob.err=p.err||"";ob.bad=p.bad||"";
+  if(p.err){render();const f=$("#ob"+p.bad);if(f)f.focus();return}
+  if(Algo.lbSuspect(p.kg,p.cm)&&ob.kgOk!==ob.kg){ob.kgOk=ob.kg;ob.err=`${fmt(p.kg)} kg çok yüksek görünüyor. Libre (lb) yazmış olabilirsin: ${fmt(p.kg)} lb ≈ ${fmt(p.kg*0.45359237)} kg. Doğruysa Devam'a bir kez daha dokun.`;ob.bad="kg";render();$("#obkg").focus();return}
+  if(ob.shown!==obSig()){ob.shown=obSig();render();$("#obtarget")?.scrollIntoView({block:"nearest"});return}
   obFinish();
+});
+Act.on("obmods",()=>openSheet(`<h3>Hangilerini takip edelim?</h3><p class="hint flush">Kapalı olanlar ekranında görünmez. İstediğini sonra Ayarlar'dan açarsın.</p>
+  <div class="chips" id="omc">${OB_MODS.map(([k,l,ic])=>`<button class="chip" data-om="${k}" aria-pressed="false">${Icons.svg(ic)} ${l}</button>`).join("")}</div><button class="mt-3 btn" data-om="save">Kaydet</button>`));
+Act.on("obmodsno",()=>{S.settings.modAsked=true;save();render()});
+document.addEventListener("click",ev=>{
+  const b=ev.target.closest("[data-om]");if(!b)return;
+  if(b.dataset.om!=="save")return b.setAttribute("aria-pressed",String(b.getAttribute("aria-pressed")!=="true"));
+  const on=[...document.querySelectorAll("#omc [aria-pressed=true]")].map(c=>c.dataset.om),st=S.settings;
+  for(const [k,f] of [["med","medOn"],["fast","fastOn"],["bp","bpOn"],["bs","bsOn"]])if(on.includes(k))st[f]=true;
+  if(on.includes("steps"))st.stepsAsked=false;
+  st.modAsked=true;save();closeSheet();render();scheduleReminders().then(setNotif);
 });
 Act.on("obredo",()=>{Object.assign(ob,obFresh(),{step:0,redo:true});render();window.scrollTo(0,0)});
 document.addEventListener("keydown",ev=>{

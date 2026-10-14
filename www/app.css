@@ -269,7 +269,7 @@ body.coach{--toast-b:var(--cmp,calc(200px + var(--sab)))}
 .btns{display:grid;gap:8px;margin-top:8px}
 body.ob nav{display:none}body.ob main{padding-bottom:24px}
 .status{font-size:var(--fs-s);color:var(--mut);padding:2px 2px 8px}
-.obp{display:grid;gap:var(--sp-2);flex:1;padding:4px 4px 0}.obbar{display:flex;gap:var(--sp-2)}.obbar i{flex:1;height:4px;border-radius:var(--r-pill);background:var(--line);transition:background var(--dur)}.obbar i.on{background:var(--prim)}
+
 
 /* Bottom navigation */
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:var(--sp-2) calc(8px + var(--sar)) calc(var(--sp-2) + var(--sab)) calc(8px + var(--sal));z-index:7;isolation:isolate}

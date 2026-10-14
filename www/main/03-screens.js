@@ -85,7 +85,8 @@ function viewToday(){
   const first=[...medTodo(),...vTodo()],medBudget=isNative()&&medBudgetMsg&&st.medOn&&Meds.count()?[row("clock","İlaç hatırlatmaların sınırlı",medBudgetMsg,[])]:[];
   const firstWater=st.obNudge&&!Log.where(e=>e.type==="water").length?row("water","İlk suyunu ekle","Bir bardak su kaydı günlük ilerlemeni başlatır.",[["water",`+${st.glass} ml`]]):"";
   const goalRow=st.obDone&&st.obSkipped&&!st.kcal?row("weight","Hedefini hesapla","Boy, kilo ve yaşınla günlük kalori ve protein hedefini hesaplarım.",[["obredo","Hesapla"]]):"";
-  const todo=[...first,...medBudget,firstWater,goalRow,storeMsg()?row("save",storeMsg()[0],storeMsg()[1],[["databackup","Yedek al"]]):"",
+  const modRow=st.obDone&&!st.modAsked&&st.obAt&&st.obAt<t&&Algo.dayNum(t)-Algo.dayNum(st.obAt)<=7?row("more","Hangilerini takip edelim?","İlaç, oruç, tansiyon, şeker ve adım takibini istediğin gibi aç.",[["obmods","Seç"],["obmodsno","Şimdi değil"]]):"";
+  const todo=[...first,...medBudget,firstWater,goalRow,modRow,storeMsg()?row("save",storeMsg()[0],storeMsg()[1],[["databackup","Yedek al"]]):"",
     abErr?row("cloud","Otomatik yedek alınamadı",abErr,[["abfix","Düzelt"]]):"",
     lateRow(),...pmTodo(),...fastTodo(),...ramadanTodo(),...trialTodo(),
     Motion.walk()?row("steps",Motion.walk().t1?"Yürüyüş kaydedilmedi":"Yürüyüş sürüyor","Adım raporunda bitir ya da kaydet.",[["walkgo","Aç"]]):"",
