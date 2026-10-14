@@ -81,7 +81,7 @@ function viewSteps(){
   return `<div class="tc card">${ring(today/st.stepGoal,"var(--water)",fint(today),"Bugün",`/ ${fint(st.stepGoal)} adım`,"adım")}</div>
   ${walkCard()}
   <div class="card"><div class="lbl">Adım grafiği</div>${seg}${chartBody}</div>
-  <div class="stats"><div class="stat"><div class="k">7 gün ortalaması</div><div class="v num">${s7.n?fint(s7.avg):"–"}</div></div><div class="stat"><div class="k">30 gün ortalaması</div><div class="v num">${s30.n?fint(s30.avg):"–"}</div></div><div class="stat"><div class="k">En iyi gün</div><div class="v num">${best?fint(best.v):"–"}</div>${best?`<div class="mut sm">${fd(best.k)}</div>`:""}</div><div class="stat"><div class="k">Hedef serisi</div><div class="v num">${sl.streak} gün</div></div><div class="stat"><div class="k">Hedefe ulaşılan gün</div><div class="v num">${sr.hit} / ${N}</div></div>${extra}</div>
+  <div class="stats"><div class="stat"><div class="k">7 gün ortalaması</div><div class="v num">${s7.n?fint(s7.avg):"–"}</div></div><div class="stat"><div class="k">30 gün ortalaması</div><div class="v num">${s30.n?fint(s30.avg):"–"}</div></div>${st.hideNums?"":`<div class="stat"><div class="k">En iyi gün</div><div class="v num">${best?fint(best.v):"–"}</div>${best?`<div class="mut sm">${fd(best.k)}</div>`:""}</div>`}${st.hideNums||st.hideStreak?"":`<div class="stat"><div class="k">Hedef serisi</div><div class="v num">${sl.streak} gün</div></div>`}<div class="stat"><div class="k">Hedefe ulaşılan gün</div><div class="v num">${sr.hit} / ${N}</div></div>${extra}</div>
   ${motionCard()}
   <div class="card"><div class="lbl">Günler</div>${rows}</div>
   ${hcCard()}

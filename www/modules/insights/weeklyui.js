@@ -5,7 +5,7 @@ async function weeklyPdf(){
   if(!data.rows.some(r=>r.weight!=null||r.water||r.kcal||r.exercise||r.steps))return toast("Bu hafta rapor için kayıt yok");
   let pdf;
   try{pdf=canvasPdf(1,ctx=>WeeklyLib.drawPage(ctx,data,{today}))}catch(e){return toast("PDF hazırlanamadı")}
-  await sharePdf(pdf,`neowell-haftalik-${today}.pdf`,"Son 7 gün raporu");
+  await sharePdf(pdf,`neowell-rapor-${today}.pdf`,"Son 7 gün raporu");
 }
 document.addEventListener("click",ev=>{if(ev.target.closest('[data-wk="pdf"]'))weeklyPdf()});
 /* This week next to last week (Trend). Only days that have records enter an average; a side without any shows a dash. */

@@ -22,6 +22,17 @@ const BackupLib=(()=>{
     const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(env.iv)},await derive(pw,unb64(env.salt),env.iter),unb64(env.data));
     return JSON.parse(td.decode(pt));
   }
+  /* A shared file's envelope ({file:{name,mime,utf8,data}} inside the same AES-GCM box). AES-GCM cannot tell a wrong password from a changed file, so the shape is checked
+     first: a file that fails wellFormed is damaged, one that passes and does not decrypt has the wrong password. */
+  const B64=/^[A-Za-z0-9+/]*={0,2}$/,MIMES=["application/pdf","text/csv","application/json","text/plain"];
+  const wellFormed=e=>!!e&&typeof e==="object"&&[["salt",16],["iv",12]].every(([k,n])=>typeof e[k]==="string"&&B64.test(e[k])&&atob(e[k]).length===n)&&typeof e.data==="string"&&B64.test(e.data)&&e.data.length>=24;
+  /* The file made safe to write (plain name under neowell-, known type); null when the decrypted object is not a shared file. */
+  function sharedFile(p){
+    const f=p&&p.file;
+    if(!f||typeof f.data!=="string"||typeof f.name!=="string"||typeof f.utf8!=="boolean"||!f.utf8&&!B64.test(f.data))return null;
+    const n=f.name.replace(/[^A-Za-z0-9._-]/g,"_").replace(/^\.+/,"").slice(-80);
+    return {name:n.startsWith("neowell-")?n:"neowell-"+n,mime:MIMES.includes(f.mime)?f.mime:"application/octet-stream",utf8:f.utf8,data:f.data};
+  }
   /* Automatic backup: the same format as the manual one under a separate prefix (pruning never touches manual "neowell-yedek-" files, which the user may have taken);
      the folder keeps the file just written (cur) and the newest KEEP-1 automatic files.
      cur is kept apart: when the phone clock is set back, the new file name sorts below the old ones and would be deleted. */
@@ -34,6 +45,6 @@ const BackupLib=(()=>{
   const MINPW=10,COMMON=["password","parola","sifre","qwerty","qwertyuiop","abcdefgh","abcdefghij","neowell","iloveyou","welcome","admin","letmein","istanbul","ankara","galatasaray","fenerbahce","besiktas","trabzonspor","merhaba","bismillah"];
   const pwCheck=pw=>pw.length<MINPW?`Parola en az ${MINPW} karakter olmalı`
     :/^\d+$/.test(pw)||/^(.)\1+$/.test(pw)||COMMON.includes(pw.toLowerCase().replace(/[\d\W_]+$/,""))?"Bu parola çok kolay tahmin edilir. Harf ve rakam karıştır ya da birkaç kelime yaz":"";
-  return {b64,unb64,encrypt,decrypt,pwCheck,MINPW,manualName,autoName,autoPrune,autoDue};
+  return {b64,unb64,encrypt,decrypt,wellFormed,sharedFile,pwCheck,MINPW,manualName,autoName,autoPrune,autoDue};
 })();
 if(typeof module!=="undefined")module.exports=BackupLib;

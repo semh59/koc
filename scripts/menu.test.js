@@ -93,7 +93,7 @@ const errs=[];
     click(`[data-c="shopcopy:${mc.id}"]`);await flush();
     ok("copy: title and lines, checked ones [x]",clip.startsWith("Alışveriş listesi\n")&&clip.includes("[ ] Ayran favorim: 2 porsiyon")&&clip.includes("[x] Süt: 400 g")&&clip.includes("[ ] Yumurta: 150 g · 3 adet"),clip);
     click(`[data-c="shopshare:${mc.id}"]`);await flush();
-    ok("share: a single UTF-8 .txt file goes to the share sheet",wr.length===1&&/^neowell-alisveris-\d{4}-\d\d-\d\d\.txt$/.test(wr[0].path)&&wr[0].encoding==="utf8"&&wr[0].data===clip&&shr.length===1&&shr[0].files[0]==="file:///cache/"+wr[0].path);
+    ok("share: a single UTF-8 .txt file goes to the share sheet",wr.length===1&&/^neowell-liste-\d{4}-\d\d-\d\d\.txt$/.test(wr[0].path)&&wr[0].encoding==="utf8"&&wr[0].data===clip&&shr.length===1&&shr[0].files[0]==="file:///cache/"+wr[0].path);
     ev("closeSheet()");
     ev(base+";S.chat=[];S.settings.healthNote='tansiyon';S.settings.kcal=1500;for(let i=1;i<=7;i++)add('weight',70,'',keyOff(-i))");
     const hp=ev("cMenuPlan()");

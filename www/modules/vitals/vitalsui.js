@@ -280,7 +280,7 @@ async function vPdf(kind,days){
     const slices=pages.map(p=>{const s=rows.slice(i,i+p.n);i+=p.n;return s});
     pdf=canvasPdf(pages.length,(ctx,n)=>VitalsLib.drawPage(ctx,slices[n],{...info,page:n+1,total:pages.length}));
   }catch(e){return toast("PDF hazırlanamadı")}
-  await sharePdf(pdf,`neowell-${kind==="t"?"tansiyon":"seker"}-${dayKey()}.pdf`,kind==="t"?"Tansiyon raporu":"Şeker raporu");
+  await sharePdf(pdf,`neowell-rapor-${dayKey()}.pdf`,kind==="t"?"Tansiyon raporu":"Şeker raporu");
 }
 
 document.addEventListener("input",ev=>{if(ev.target.id==="vnot")document.getElementById("vnc").textContent=`${ev.target.value.length} / 80`});

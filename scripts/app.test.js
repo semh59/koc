@@ -439,7 +439,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     await ev("labExport()");
     const pdfBytes=Buffer.from(saved.data,"base64");
     const pd=await pdfjs.getDocument({data:new Uint8Array(pdfBytes),verbosity:0}).promise;
-    ok("the PDF is exported: file name, valid PDF, share",/^neowell-tahlil-\d{4}-\d{2}-\d{2}\.pdf$/.test(saved.path)&&pdfBytes.slice(0,5).toString()==="%PDF-"&&pd.numPages===1&&shared.files[0]==="file:///cache/x.pdf",[saved.path,pd.numPages]);
+    ok("the PDF is exported: file name, valid PDF, share",/^neowell-rapor-\d{4}-\d{2}-\d{2}\.pdf$/.test(saved.path)&&pdfBytes.slice(0,5).toString()==="%PDF-"&&pd.numPages===1&&shared.files[0]==="file:///cache/x.pdf",[saved.path,pd.numPages]);
     ok("tests and reference text are drawn into the PDF, no patient details",["Glukoz","LDL kolesterol","Ferritin","HbA1c"].every(n=>drawn.includes(n))&&drawn.some(t=>/Raporda yazan aralık: 70 – 100/.test(t))&&!drawn.join("|").match(/Ali|Veli|12345678901/),drawn);
     ok("an out-of-range value is stated plainly in the PDF",drawn.includes("▲ Raporda yazan aralığın üstünde")&&drawn.some(t=>/Bu değerleri hekiminle değerlendir\./.test(t)));
     ev("S.labs=S.labs.concat(Array.from({length:30},(_,i)=>({id:900+i,day:'2026-09-01',k:'t'+i,n:'Test '+i,v:i+1,u:'x'})))");
@@ -684,7 +684,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("report period choice: 7/14/30/90",qa('#sheet [data-vt^="pdf:t:"]').length===4);
     click('[data-vt="pdf:t:30"]');await flush();
     const pb=Buffer.from(saved.data,"base64"),pd=await pdfjs.getDocument({data:new Uint8Array(pb),verbosity:0}).promise;
-    ok("blood pressure report: valid PDF, file name, share",/^neowell-tansiyon-\d{4}-\d{2}-\d{2}\.pdf$/.test(saved.path)&&pb.slice(0,5).toString()==="%PDF-"&&pd.numPages===1&&shared.files[0]==="file:///cache/r.pdf",[saved.path,pd.numPages]);
+    ok("blood pressure report: valid PDF, file name, share",/^neowell-rapor-\d{4}-\d{2}-\d{2}\.pdf$/.test(saved.path)&&pb.slice(0,5).toString()==="%PDF-"&&pd.numPages===1&&shared.files[0]==="file:///cache/r.pdf",[saved.path,pd.numPages]);
     ok("blood pressure report: two raw measurements on separate rows, average, warning note",drawn.includes("NeoWell · Tansiyon raporu")&&drawn.includes("128/82 mmHg  nabız 70")&&drawn.includes("140/90 mmHg")&&drawn.includes("Sabah, 1. ölçüm")&&drawn.includes("Sabah, 2. ölçüm")&&drawn.some(t=>/Bu değerleri hekiminle değerlendir\./.test(t))&&drawn.some(t=>/134\/86 mmHg/.test(t))&&drawn.some(t=>/^\d+ \S+ \d{4} - \d+ \S+ \d{4} \(30 gün\)$/.test(t)),drawn);
     ok("no diagnostic language in the report",!BAN.test(drawn.join(" ")));
     drawn.length=0;saved=null;
@@ -717,7 +717,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("S.settings.bpOn=true;S.vitals=[{id:1,k:'t',day:dayKey(),time:'08:00',sys:128,dia:82,session:'morning'}]");
     q('[data-wk="pdf"]').click();await flush();
     const pb=Buffer.from(saved.data,"base64"),pd=await pdfjs.getDocument({data:new Uint8Array(pb),verbosity:0}).promise;
-    ok("weekly report: a valid single-page PDF, file name, share",/^neowell-haftalik-\d{4}-\d{2}-\d{2}\.pdf$/.test(saved.path)&&pb.slice(0,5).toString()==="%PDF-"&&pd.numPages===1&&shared.files[0]==="file:///cache/h.pdf",[saved.path,pd.numPages]);
+    ok("weekly report: a valid single-page PDF, file name, share",/^neowell-rapor-\d{4}-\d{2}-\d{2}\.pdf$/.test(saved.path)&&pb.slice(0,5).toString()==="%PDF-"&&pd.numPages===1&&shared.files[0]==="file:///cache/h.pdf",[saved.path,pd.numPages]);
     ok("report content: weight, water, calories, sport and (if tracking is on) blood pressure",drawn.includes("NeoWell · Son 7 gün raporu")&&drawn.some(t=>t.includes("81,9"))&&drawn.some(t=>/günlük ortalama 2,0 L/.test(t))&&drawn.some(t=>/1 gün kayıt var; ortalama için en az 3/.test(t))&&drawn.some(t=>/toplam 45 dk/.test(t))&&drawn.some(t=>/128\/82 mmHg/.test(t)),drawn);
     { // combined doctor report: cover + the blood pressure pages, the user's questions, no comments
       drawn.length=0;saved=null;
@@ -727,7 +727,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
       q('[data-doc="days:90"]').click();q("#dq0").value="Tansiyon ilacımın saatini değiştirelim mi?";q("#dq1").value="  ";
       q('[data-doc="go"]').click();await flush();
       const db=Buffer.from(saved.data,"base64"),dd=await pdfjs.getDocument({data:new Uint8Array(db),verbosity:0}).promise;
-      ok("doctor report: valid PDF with cover and the pressure page, file name",/^neowell-hekim-\d{4}-\d{2}-\d{2}\.pdf$/.test(saved.path)&&db.slice(0,5).toString()==="%PDF-"&&dd.numPages===2,[saved.path,dd.numPages]);
+      ok("doctor report: valid PDF with cover and the pressure page, file name",/^neowell-rapor-\d{4}-\d{2}-\d{2}\.pdf$/.test(saved.path)&&db.slice(0,5).toString()==="%PDF-"&&dd.numPages===2,[saved.path,dd.numPages]);
       ok("doctor report content: title, period, coverage, the question; empty question skipped",drawn.includes("NeoWell · Hekime hazırlan")&&drawn.some(t=>t.includes("son 90 gün"))&&drawn.some(t=>t==="Tansiyon ölçümü olan gün")&&drawn.some(t=>t.startsWith("1. Tansiyon ilacımın"))&&!drawn.some(t=>t.startsWith("2.")));
       ok("doctor report wording: no comment or rating words",!drawn.some(t=>/yüksek|düşük|normal|risk|iyi |kötü/i.test(t)),drawn.filter(t=>/yüksek|düşük|normal|risk/i.test(t)));
       ev("S.entries=[];S.vitals=[];S.labs=[]");saved=null;
@@ -1021,7 +1021,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     // notification setup
     const lnOld=w.Capacitor.Plugins.LocalNotifications;let types=null,list=[];
     w.Capacitor.Plugins.LocalNotifications={checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),getPending:async()=>({notifications:[]}),cancel:async()=>{},registerActionTypes:async o=>{types=o.types},schedule:async o=>{list=o.notifications}};
-    ev("S.medLog=[]");
+    ev("S.medLog=[]");ev("S.settings.lockDetail=true");
     await ev("scheduleReminders()");
     const medN=()=>list.filter(n=>n.id>=1e6&&n.extra?.act==="med");
     ok("medication notifications are scheduled: large id, 'Aldım' action, extra data, name visible",medN().length>=40&&medN().every(n=>n.actionTypeId==="med"&&n.extra.act==="med"&&n.extra.m===1&&n.extra.at===new Date(n.schedule.at).getTime())&&medN()[0].body.includes("Yeni Ad"),medN()[0]);
@@ -2379,14 +2379,14 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     const sheet=()=>q("#sheet").textContent;
     ok("Settings > Data Tabloya aktar: 11 files, with row counts; the button of an empty one is disabled",sheet().includes("Kayıtlar (yemek, su, kilo, ölçü, spor, adım, not)")&&sheet().includes("2 satır")&&qa('[data-pv^="csvsh:"]').length===11&&qa('[data-pv^="csvsh:"]').filter(b=>b.disabled).length===8);
     q('[data-pv="csvsh:0"]').click();await flush();
-    ok("share: a single file, UTF-8 text, BOM, ; separator, decimal comma, injection-safe, uri goes to the share sheet",wr.length===1&&wr[0].encoding==="utf8"&&wr[0].directory==="CACHE"&&/^neowell-kayitlar-\d{4}-\d\d-\d\d\.csv$/.test(wr[0].path)&&wr[0].data.startsWith("﻿tarih;saat;")&&wr[0].data.includes(";kilo;80,5;kg;")&&wr[0].data.includes("'=1+1")&&shr.length===1&&shr[0].files[0]==="file:///cache/"+wr[0].path,wr[0]);
+    ok("share: a single file, UTF-8 text, BOM, ; separator, decimal comma, injection-safe, uri goes to the share sheet",wr.length===1&&wr[0].encoding==="utf8"&&wr[0].directory==="CACHE"&&/^neowell-tablo-1-\d{4}-\d\d-\d\d\.csv$/.test(wr[0].path)&&wr[0].data.startsWith("﻿tarih;saat;")&&wr[0].data.includes(";kilo;80,5;kg;")&&wr[0].data.includes("'=1+1")&&shr.length===1&&shr[0].files[0]==="file:///cache/"+wr[0].path,wr[0]);
     ok("full archive row: record total shown, button enabled",sheet().includes("Kayıtlarım (tek JSON dosyası, bazı veriler dışarıda)")&&sheet().includes("Dışarıda: API anahtarları")&&!q('[data-pv="archive"]').disabled,sheet());
     q('[data-pv="archive"]').click();await flush();
     const ar=JSON.parse(wr[1].data);
-    ok("archive share: a readable JSON file with the user's entries, no API key, file name with the date",/^neowell-arsiv-\d{4}-\d\d-\d\d\.json$/.test(wr[1].path)&&wr[1].encoding==="utf8"&&ar.schema===1&&ar.modules.log.entries.length===2&&!("providers" in ar.modules.coach),wr[1].path);
+    ok("archive share: a readable JSON file with the user's entries, no API key, file name with the date",/^neowell-kayit-\d{4}-\d\d-\d\d\.json$/.test(wr[1].path)&&wr[1].encoding==="utf8"&&ar.schema===1&&ar.modules.log.entries.length===2&&!("providers" in ar.modules.coach),wr[1].path);
     ok("FHIR row: weight and blood pressure counts shown, button enabled with a weight record",sheet().includes("Tansiyon, kilo ve şeker (FHIR R4)")&&sheet().includes("0 tansiyon, 1 kilo, 0 şeker kaydı")&&!q('[data-pv="fhir"]').disabled,sheet());
     q('[data-pv="fhir"]').click();await flush();
-    {const fj=JSON.parse(wr[2].data);ok("FHIR share: a Bundle file with the weight observation, dated file name, no other data",wr[2].path.startsWith("neowell-fhir-")&&wr[2].path.endsWith(".json")&&fj.resourceType==="Bundle"&&fj.entry.length===2&&fj.entry[1].resource.valueQuantity.value===80.5&&!wr[2].data.includes("=1+1"),wr[2].path)}
+    {const fj=JSON.parse(wr[2].data);ok("FHIR share: a Bundle file with the weight observation, dated file name, no other data",wr[2].path.startsWith("neowell-aktarim-")&&wr[2].path.endsWith(".json")&&fj.resourceType==="Bundle"&&fj.entry.length===2&&fj.entry[1].resource.valueQuantity.value===80.5&&!wr[2].data.includes("=1+1"),wr[2].path)}
     wr.length=1;
     ev("S.nextId=1");
     await ev("sharePdf(new Uint8Array([37,80,68,70]),'x.pdf','PDF')");

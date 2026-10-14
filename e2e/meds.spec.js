@@ -42,7 +42,7 @@ test("real dose test: the 7149 notification on the medication channel and the sc
   await page.getByRole("button",{name:"Gerçek doz testi (1 dk)"}).click();
   await expect(app.toast).toContainText("telefonu kilitle");
   const c=await page.evaluate(()=>({n:window.__calls.filter(c=>c[0]==="LN.schedule").map(c=>c[1].notifications).flat().find(n=>n.id===7149),w:window.__calls.find(c=>c[0]==="MedWake.test")[1]}));
-  expect(c.n.channelId).toBe("nw_med");
+  expect(c.n.channelId).toBe("nw_medp");
   expect(c.n.actionTypeId).toBeUndefined();
   expect(c.n.body).toBe("Test");
   expect(new Date(c.n.schedule.at).getTime()).toBe(c.w.at);

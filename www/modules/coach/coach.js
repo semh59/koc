@@ -902,7 +902,7 @@ function cClick(v,el){
       el.setAttribute("aria-pressed",on);return;
     }
     case "shopcopy":{const c=menuCard(+p1);if(!c)return;const t=cShopText(c);(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Liste panoya kopyalandı"),()=>toast("Kopyalanamadı, Paylaş'ı kullan"));return}
-    case "shopshare":{const c=menuCard(+p1);if(c)shareFile(`neowell-alisveris-${dayKey()}.txt`,"Alışveriş listesi","text/plain",cShopText(c),true);return}
+    case "shopshare":{const c=menuCard(+p1);if(c)shareOut(false,`neowell-liste-${dayKey()}.txt`,"Alışveriş listesi","text/plain",cShopText(c),true);return}
     case "ok":return cApplyLog(+p1,el);
     case "lml":case "lrm":{
       const m=S.chat.find(x=>x.id===+p1),c=m&&m.card;if(!c||c.kind!=="log"||c.state!=="pending")return;

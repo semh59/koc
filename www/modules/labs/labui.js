@@ -198,7 +198,7 @@ function labPdfPages(){
 }
 async function labExport(){
   let pdf;try{pdf=labBuildReport()}catch(e){return toast("PDF hazırlanamadı")}
-  await sharePdf(pdf,`neowell-tahlil-${dayKey()}.pdf`,"Tahlil sonuçları");
+  await sharePdf(pdf,`neowell-rapor-${dayKey()}.pdf`,"Tahlil sonuçları");
 }
 
 document.addEventListener("change",ev=>{

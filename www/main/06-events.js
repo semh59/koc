@@ -55,13 +55,13 @@ document.addEventListener("click",ev=>{
 });
 $("#tundo").addEventListener("click",undoLast);
 document.addEventListener("click",ev=>{const c=ev.target.closest(".qa [data-chip]");if(c){const u=S.settings.chipUse,k=c.dataset.chip;u[k]=(u[k]||0)+1;save()}});
-const TOGGLES={mk:"moveKcalOn",rpe:"rpeOn",gdv:"gdVoice",gdb:"gdVib",aw:"awakeOn",comfy:"comfy",hs:"hideStreak",hn:"hideNums"}; // data-<key> checkbox -> boolean setting
+const TOGGLES={mk:"moveKcalOn",rpe:"rpeOn",gdv:"gdVoice",gdb:"gdVib",aw:"awakeOn",comfy:"comfy",hs:"hideStreak",hn:"hideNums",ld:"lockDetail",wh:"widgetHide"}; // data-<key> checkbox -> boolean setting
 document.addEventListener("change",ev=>{
   const t=ev.target;
   if(t.id==="fday"){const sm=t.closest("details.acc")?.querySelector("summary");if(sm)sm.textContent=t.selectedOptions[0].textContent;return}
   if(t.dataset.gi){gInput(t);return}
   const tg=Object.keys(TOGGLES).find(k=>t.dataset[k]!==undefined);
-  if(tg){S.settings[TOGGLES[tg]]=t.checked;save();if(tg==="aw")gAwake();if(tg==="comfy"||tg==="hs"||tg==="hn")render();return}
+  if(tg){S.settings[TOGGLES[tg]]=t.checked;save();if(tg==="aw")gAwake();if(tg==="comfy"||tg==="hs"||tg==="hn"||tg==="wh")render();if(tg==="ld")scheduleReminders().then(setNotif);return}
   if(t.dataset.set){
     const k=t.dataset.set,st=S.settings,[lo,hi,int]=RANGES[k],raw=t.value.trim();
     const wk=k==="goalKg",show=x=>x?(wk?dw(x).replace(/,0$/,""):String(x).replace(".",",")):"";
