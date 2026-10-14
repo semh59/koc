@@ -1034,7 +1034,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("S.meds=Array.from({length:20},(_,i)=>({id:i+1,n:'M'+i,t:['06:00','10:00','14:00','18:00','22:00','23:00'],on:true}));S.medLog=[]");
     await ev("scheduleReminders()");
     ok("with many medications the total alarms are capped at 440 (Android's 500 limit)",list.length===440,list.length);
-    ok("when capping, the nearest dates are kept (remaining alarms belong to at most 5 consecutive days)",(g=>Math.max(...g)-Math.min(...g)<=4)(list.filter(n=>n.id>=1e6).map(n=>n.id%40)),list.filter(n=>n.id>=1e6).map(n=>n.id%40).join());
+    ok("when capping, every day keeps its medication doses (same-minute doses are one alarm) and only the nearest repeats are kept",new Set(list.filter(n=>n.id>=1e6&&n.id<2e6).map(n=>n.id%40)).size>=29&&(g=>g.length>0&&Math.max(...g)-Math.min(...g)<=9)(list.filter(n=>n.id>=2e6).map(n=>n.id%40)),list.filter(n=>n.id>=2e6).map(n=>n.id%40).join());
     w.Capacitor.Plugins.LocalNotifications=lnOld;
     ev("S.meds=[{id:1,n:'Test İlaç',d:'1 tablet',t:['08:00','20:00'],on:true,k:10}];S.medLog=[]");
 

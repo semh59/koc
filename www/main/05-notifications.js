@@ -1,6 +1,6 @@
 /* ---------- notifications (APK only) ---------- */
 const WATER_REM=[2,3,4],BACKUP_REM=10,WEEKLY_REM=12,FAST_NID=9100;
-const SCHED_DAYS=30,LEAD_MS=5000,RESCHEDULE_MS=6*36e5;let lastSched=0,exactOk=true,fsiOk=true;
+const SCHED_DAYS=30,LEAD_MS=5000,RESCHEDULE_MS=6*36e5;let lastSched=0,exactOk=true,fsiOk=true,medBudgetMsg="";
 const LN=()=>plugin("LocalNotifications");
 /* Plugin 8.3+ opens the system "Alarms & reminders" screen on every schedule() with an exact alarm while the permission is missing; the exact flag follows the permission so it never does. */
 async function lnSchedule(ln,list){
@@ -34,8 +34,8 @@ async function scheduleReminders(){
     const keep=new Set([9001,9002,GD_NID,MED_TEST_NID,AlarmLib.SNOOZE_NID]);
     const pn=pend.notifications.filter(n=>!keep.has(n.id));if(pn.length)await ln.cancel({notifications:pn.map(n=>({id:n.id}))});
     /* The plugin's daily repeat sets an alarm that Doze defers after the first notification. So every day is scheduled as its own one-shot alarm that pierces idle mode. */
-    try{await ln.registerActionTypes({types:[{id:"water",actions:[{id:"water",title:`+${S.settings.glass} ml`}]},{id:"med",actions:[{id:"med",title:"✓ Aldım"},{id:"medskip",title:"Atla"}]}]})}catch{}
-    const list=[],now=Date.now(),lb=S.settings.lastBackup;
+    try{await ln.registerActionTypes({types:[{id:"water",actions:[{id:"water",title:`+${S.settings.glass} ml`}]},{id:"med",actions:[{id:"med",title:"✓ Aldım"},{id:"medskip",title:"Atla"}]},{id:"medgrp",actions:[{id:"med",title:"✓ Hepsini aldım"}]}]})}catch{}
+    let list=[];const medList=[],now=Date.now(),lb=S.settings.lastBackup;
     const t0=dayKey(),waterDone=sum("water",t0,t0)>=S.settings.waterMl,fastBlock=!!risk().block;
     const preg=risk().pregnant;
     for(const r of S.settings.reminders.filter(r=>r.on&&!(r.id===11&&fastBlock)&&!(preg&&PREG_OFF.includes(r.id)))){
@@ -50,18 +50,20 @@ async function scheduleReminders(){
     }
     lastSched=now;
     if(S.settings.medOn){
-      for(const n of MedLib.notifications(Meds.meds(),Meds.log(),new Date(),SCHED_DAYS,S.settings.medShowName))list.push({id:n.id,title:n.title,body:n.body,schedule:{at:n.at,allowWhileIdle:true},actionTypeId:n.actionTypeId,extra:n.extra,channelId:n.channelId,ongoing:n.ongoing});
-      for(const n of MedLib.notices(Meds.meds(),new Date(),S.settings.medShowName))list.push({id:n.id,title:n.title,body:n.body,schedule:{at:n.at,allowWhileIdle:true},extra:n.extra});
+      for(const n of MedLib.notifications(Meds.meds(),Meds.log(),new Date(),SCHED_DAYS,S.settings.medShowName))medList.push({id:n.id,title:n.title,body:n.body,schedule:{at:n.at,allowWhileIdle:true},actionTypeId:n.actionTypeId,extra:n.extra,channelId:n.channelId,ongoing:n.ongoing});
+      for(const n of MedLib.notices(Meds.meds(),new Date(),S.settings.medShowName))medList.push({id:n.id,title:n.title,body:n.body,schedule:{at:n.at,allowWhileIdle:true},extra:n.extra});
     }
     for(const n of Habits.ramReminders(now,LEAD_MS,SCHED_DAYS))list.push({id:n.id,title:n.title,body:n.body,schedule:{at:new Date(n.at),allowWhileIdle:true}});
     const cn=cycNotif();if(cn)list.push(cn);
     if(Habits.fast().t0&&!fastBlock){const at=new Date(Habits.fast().t0+Habits.fast().plan*36e5);if(at.getTime()>now+LEAD_MS)list.push({id:FAST_NID,title:"⏳ Oruç",body:"Oruç süren doldu. İstediğinde bitirebilirsin.",schedule:{at,allowWhileIdle:true}})}
-    // Android caps simultaneous alarms per app (500): the nearest are kept, farther ones are rescheduled when the app opens.
-    list.sort((a,b)=>a.schedule.at-b.schedule.at);if(list.length>MedLib.BUDGET)list.length=MedLib.BUDGET;
+    /* Android caps simultaneous alarms per app (500): medication first, repeats last; farther ones are rescheduled when the app opens, and the user is told. */
+    const fit=MedLib.fit(medList,list,MedLib.BUDGET,now),msg=S.settings.medOn?MedLib.budgetText(fit):"";
+    list=fit.list;
+    if(msg!==medBudgetMsg){medBudgetMsg=msg;if(tab==="today")render()}
     const tk=await quickToken();if(tk)for(const n of list)if(n.extra&&(n.extra.act==="water"||n.extra.act==="med"))n.extra.tk=tk;
     if(list.length)await lnSchedule(ln,list);
     /* The notification plugin does not light the locked screen: for medication doses (reminder repeats excluded) a separate alarm screen wakes it briefly. */
-    const mw=MW();if(mw)await mw.set({times:MedLib.wakeTimes(list),doses:MedLib.wakeDoses(list)}).catch(()=>{});
+    const mw=MW();if(mw)await mw.set({times:MedLib.wakeTimes(list),doses:MedLib.wakeDoses(list,Meds.meds(),S.settings.medShowName)}).catch(()=>{});
     return "ok";
   }catch(e){return "Bildirimler kurulamadı. Bildirim iznini kontrol edip tekrar dene"}
 }
