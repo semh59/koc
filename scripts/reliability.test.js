@@ -63,5 +63,25 @@ ok("native: ZoneMath is copied to the project and compiled and run in CI",/"Zone
   dhRes={opened:"autostart"};ev("closeSheet()");ev("openDH('openAutostart')");await flush();
   ok("autostart screen opened: no path sheet",!w.document.querySelector("#sheet").classList.contains("on")||!w.document.querySelector("#sheet").textContent.includes("Otomatik başlat > NeoWell"));
   ok("oemDone self-declaration is gone",!/oemDone|oemok/.test(rd("www/main/01-core.js")+rd("www/main/07-actions.js")+rd("www/main/05-notifications.js")));
+
+  /* P3.3 wizard and texts */
+  ev("oem='xiaomi';sheetOem()");
+  const wz=w.document.querySelector("#sheet").textContent;
+  ok("Xiaomi wizard: locking in recents is the first step, then autostart, then battery",wz.indexOf("1. Son uygulamalarda kilitle")>0&&wz.indexOf("1. Son uygulamalarda kilitle")<wz.indexOf("2. Otomatik başlat")&&wz.indexOf("2. Otomatik başlat")<wz.indexOf("3. Pil"));
+  ok("Xiaomi wizard: closes with Kapat, no self-declaration button",!!w.document.querySelector('#sheet [data-pm="close"]')&&!w.document.querySelector('#sheet [data-act="oemok"]'));
+  ev("closeSheet();S.settings.medOn=true;S.meds=MedLib.cleanMeds([{id:1,n:'A',t:['08:00'],on:true}]);exactOk=false;fsiOk=true;pmNotif=true;bg={bo:true,ontime:true};tab='today';render()");
+  const ex=ev("PM_TEXT.exact.warn"),fs=ev("PM_TEXT.fsi.warn"),t1=today().includes(ex);
+  ev("exactOk=true;fsiOk=false;render()");
+  ok("one text: the Today warning rows use the same sentence as PM_TEXT",t1&&today().includes(fs));
+  ev("exactOk=false;fsiOk=true");
+  ev("tab='settings-reminders';render()");
+  ok("one text: the Reminders screen shows the same exact-alarm sentence, the silent mode note, and no Xiaomi button of its own",today().includes(ex)&&today().includes(ev("PM_TEXT.dnd"))&&!today().includes("Xiaomi hatırlatma ayarları"));
+  ev("pmSheet()");
+  ok("one text: the permissions sheet carries the silent mode note and the list sentences come from PM_TEXT",w.document.querySelector("#sheet").textContent.includes(ev("PM_TEXT.dnd"))&&w.document.querySelector("#sheet").textContent.includes(ev("PM_TEXT.exact.why")));
+  const scr=rd("www/main/03-screens.js");
+  ok("one text: 03-screens holds no second copy of the warnings, and names the app instead of Rehber for notification settings",!/Tam saat alarm izni kapalı/.test(scr)&&!/Tam ekran bildirim izni kapalı/.test(scr)&&!/Rehber için bildirimleri/.test(scr)&&/NeoWell için bildirimleri aç/.test(scr));
+  w.Capacitor.Plugins.LocalNotifications.checkPermissions=async()=>({display:"denied"});
+  await ev("notifTest()");
+  ok("diagnosis line is Turkish: no granted/denied/prompt",/Bildirim izni: kapalı\. Tam saat alarmı: açık\./.test(ev("notifDiag"))&&!/granted|denied|prompt/.test(ev("notifDiag")),ev("notifDiag"));
   finish();
 })();

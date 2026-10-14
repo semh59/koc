@@ -1,6 +1,12 @@
 "use strict";
 /* İzinler: every permission the app can use in one list, with its state and a button that opens the right system screen directly, and a "Sırayla ayarla" button that walks through the missing ones.
    The list refreshes by itself when the app returns from the system settings. States come from the plugins; the battery screen cannot be read (null). */
+/* One wording per permission: t and why for the list, warn for the warning rows on Today and in Reminders; dnd is the note about silent mode. */
+const PM_TEXT={
+  exact:{t:"Tam saatli alarm",why:"Hatırlatmalar tam saatinde çalsın; yoksa birkaç dakika gecikebilir.",warn:"Tam saat alarm izni kapalı: hatırlatmalar ve ilaç alarmı birkaç dakika gecikebilir. İzin verirsen tam saatinde çalar."},
+  fsi:{t:"Tam ekran bildirim",why:"İlaç alarmı kilitli ekranı açıp ekranı yaksın diye (Android 14 ve üstü).",warn:"Tam ekran bildirim izni kapalı: ilaç alarmı kilitli ekranı açmayabilir. İzin verirsen alarm ekranı yakar."},
+  dnd:"Telefon sessizdeyken ya da Rahatsız Etme açıkken ilaç alarmının sesi telefonun kendi ayarına bağlıdır. Alarm sesini aç ve Rahatsız Etme ayarında alarmlara izin ver."
+};
 let pmNotif=null; // last known notification permission (true / false / null)
 let bg={}; // background limits read from the alarm log (MedLib.bgState)
 /* Items for the list. ok: true / false / null (cannot be checked). need: the person's current settings depend on it. */
@@ -9,8 +15,8 @@ function pmItems(){
   items.push({id:"notif",t:"Bildirimler",why:"Su, ilaç ve diğer hatırlatmaların gelmesi için.",ok:pmNotif,need:true,go:async()=>{
     let r={display:"denied"};try{r=await LN().requestPermissions()}catch{}
     if(r.display!=="granted")openDH("openDetails")}});
-  items.push({id:"exact",t:"Tam saatli alarm",why:"Hatırlatmalar tam saatinde çalsın; yoksa birkaç dakika gecikebilir.",ok:exactOk,need:med,go:()=>exactAsk()});
-  if(st.medOn)items.push({id:"fsi",t:"Tam ekran bildirim",why:"İlaç alarmı kilitli ekranı açıp ekranı yaksın diye (Android 14 ve üstü).",ok:fsiOk,need:med,go:()=>MW()?.fsiSettings().catch(()=>openDH("openDetails"))});
+  items.push({id:"exact",...PM_TEXT.exact,ok:exactOk,need:med,go:()=>exactAsk()});
+  if(st.medOn)items.push({id:"fsi",...PM_TEXT.fsi,ok:fsiOk,need:med,go:()=>MW()?.fsiSettings().catch(()=>openDH("openDetails"))});
   if(steps)items.push({id:"act",t:"Fiziksel aktivite",why:"Adım sayar ve hareket algılama için; konum sormaz.",ok:st.stepsOn?p.activity===undefined?null:!!p.activity:false,need:st.stepsOn,go:async()=>{
     if(!st.stepsOn)return stepsOpen();
     let g={granted:false};try{g=await SC().requestAccess()}catch{}
@@ -44,6 +50,7 @@ function pmSheet(){
   const rows=items.map(i=>`<div class="row"><span class="grow"><b>${esc(i.t)}</b><small class="db mut sm">${esc(i.why)}</small></span><span class="ta-r"><small class="db ${i.ok===false?"b7":"mut"} sm">${PM_STATE[i.ok]}</small>${i.ok===true?"":`<button class="chip" data-pm="go:${i.id}" aria-label="${esc(i.t)}: ayarla">${i.ok===false?"İzin ver":"Aç"}</button>`}</span></div>`).join("");
   openSheet(`<h3>İzinler</h3><p class="mut sm">Her satırdaki düğme seni doğru ayar ekranına götürür. Geri dönünce liste kendiliğinden yenilenir.</p>
   <div data-pm="wiz">${miss.length?`<button class="mb-3 btn" data-pm="next">Sırayla ayarla (${miss.length} eksik)</button>`:`<p class="b7">Gereken izinlerin hepsi tamam.</p>`}</div>${rows}
+  <p class="hint">${PM_TEXT.dnd}</p>
   <p class="hint">Telefon yeniden başlayınca ilaç alarmların kendiliğinden yeniden kurulur.${bg.boot?` Son kurulum: ${esc(MedLib.wakeLine(bg.boot))}.`:""}</p>
   <button class="mt-3 btn ghost" data-pm="close">Kapat</button>`);
 }

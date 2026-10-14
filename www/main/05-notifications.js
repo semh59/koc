@@ -99,8 +99,8 @@ const batFix=()=>oemXiaomi()?sheetOem():openDH("openBattery");
 const oemXiaomi=()=>/xiaomi|redmi|poco/.test(oem);
 function sheetOem(){
   openSheet(`<h3>Hatırlatmalar için bir kez ayar</h3><p class="flush hint">Xiaomi telefonlar, uygulamayı son uygulamalardan kaydırınca hatırlatmaları siler. Bunun için birkaç izin gerekir. Düğmeler doğrudan ilgili ekranı açar.</p>
-  <div class="btns"><button class="btn ghost" data-act="oem1">1. Otomatik başlat: NeoWell'i aç</button><button class="btn ghost" data-act="oem2">2. Pil: Kısıtlama yok seç</button></div>
-  <p class="hint">3. Son uygulamalar ekranında NeoWell kartını basılı tutup kilitle (asma kilit simgesi). Bu en sağlam yoldur.</p>
+  <p class="mb-3"><b>1. Son uygulamalarda kilitle.</b> Son uygulamalar ekranında NeoWell kartını basılı tutup kilitle (asma kilit simgesi). Bu en sağlam yoldur.</p>
+  <div class="btns"><button class="btn ghost" data-act="oem1">2. Otomatik başlat: NeoWell'i aç</button><button class="btn ghost" data-act="oem2">3. Pil: Kısıtlama yok seç</button></div>
   <p class="hint">4. İlaç alarmının kilitli ekranı açması için: Ayarlar > Uygulamalar > NeoWell > Diğer izinler bölümünde "Kilit ekranında göster" ve "Arka planda açılır pencere göster" izinlerini aç.</p>
   <div class="btns"><button class="btn" data-pm="close">Kapat</button></div>`);
 }
@@ -110,7 +110,8 @@ async function notifTest(){
     const p=await ln.checkPermissions();
     let ex="bilinmiyor";try{ex=(await ln.checkExactNotificationSetting()).exact_alarm}catch{}
     const pend=(await ln.getPending()).notifications.length;
-    notifDiag=`Bildirim izni: ${p.display}. Tam saat alarmı: ${ex}. Kurulu hatırlatma: ${pend}.`;
+    const tr={granted:"açık",denied:"kapalı",prompt:"henüz sorulmadı","prompt-with-rationale":"henüz sorulmadı"};
+    notifDiag=`Bildirim izni: ${tr[p.display]||"bilinmiyor"}. Tam saat alarmı: ${tr[ex]||"bilinmiyor"}. Kurulu hatırlatma: ${pend}.`;
     if(p.display!=="granted"){render();return toast("Bildirim izni yok. Telefon ayarlarından NeoWell için bildirimleri aç")}
     await lnSchedule(ln,[{id:99,title:"NeoWell",body:"Test bildirimi çalışıyor",schedule:{at:new Date(Date.now()+5000),allowWhileIdle:true}}]);
     render();toast("5 saniye içinde bildirim gelmeli. İstersen uygulamadan çık");

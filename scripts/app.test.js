@@ -2227,7 +2227,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   ok("reminder status ok",await ev("scheduleReminders()")==="ok");
   ok("30 days of one-shot alarms are scheduled",sched.length>=150&&new Set(sched.map(n=>n.id)).size===sched.length&&sched.every(n=>n.schedule.at>new Date()&&n.schedule.allowWhileIdle&&!n.schedule.on),[sched.length]);
   await ev("notifTest()");
-  ok("a test notification is scheduled and a diagnosis is written",sched.some(n=>n.id===99)&&ev("notifDiag").includes("granted")&&ev("notifDiag").includes("Kurulu hatırlatma: 2"),[sched.length,ev("notifDiag")]);
+  ok("a test notification is scheduled and a diagnosis is written",sched.some(n=>n.id===99)&&ev("notifDiag").includes("Bildirim izni: açık")&&ev("notifDiag").includes("Kurulu hatırlatma: 2"),[sched.length,ev("notifDiag")]);
   ev("S.chat=[];S.cid=1;cReply({reply:'x',log:[],propose:null,flag:'safety'})");
   ok("a model safety flag produces a card",ev("S.chat.some(m=>m.card&&m.card.kind==='safety')"));
   ev("S.chat=[];Object.assign(S.settings,{age:12,heightCm:165,goalKg:45,healthNote:'',kcal:0});S.entries=[];for(let i=13;i>=0;i--)S.entries.push({id:100+i,day:keyOff(-i),time:'08:00',type:'weight',v:60-i*0.01,text:''})");
