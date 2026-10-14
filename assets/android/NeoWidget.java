@@ -16,6 +16,8 @@ import org.json.JSONObject;
 /** Home-screen widget: shows the summary the app pushed (SharedPreferences "nw_widget"). */
 public class NeoWidget extends AppWidgetProvider {
     static final String OPEN = "nw_widget_open";
+    /** Which sheet the app opens: "food", "weight", "exercise" or "water". Opens a sheet only; nothing is recorded on this path. */
+    static final String GO = "nw_go";
 
     private static SharedPreferences prefs(Context c) {
         return c.getSharedPreferences("nw_widget", Context.MODE_PRIVATE);
@@ -88,6 +90,10 @@ public class NeoWidget extends AppWidgetProvider {
         return String.format(Locale.US, "%.1f", ml / 1000.0).replace('.', ',');
     }
 
+    private static Intent go(Context c, String what) {
+        return new Intent(c, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).putExtra(OPEN, true).putExtra(GO, what);
+    }
+
     private static RemoteViews views(Context c, JSONObject o) {
         String today = StepStore.today();
         boolean isToday = today.equals(o.optString("day"));
@@ -118,6 +124,8 @@ public class NeoWidget extends AppWidgetProvider {
         int flags = PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT;
         Intent open = new Intent(c, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).putExtra(OPEN, true);
         v.setOnClickPendingIntent(R.id.nw_root, PendingIntent.getActivity(c, 7201, open, flags));
+        v.setOnClickPendingIntent(R.id.nw_food, PendingIntent.getActivity(c, 7203, go(c, "food"), flags));
+        v.setOnClickPendingIntent(R.id.nw_weight, PendingIntent.getActivity(c, 7204, go(c, "weight"), flags));
         // The system can redeliver an activity intent (double water), so this is a broadcast: no screen opens and QuickLogPlugin.handle writes the record.
         Intent add = new Intent(c, WaterReceiver.class)
             .putExtra(QuickLogPlugin.ACTION_KEY, "water")

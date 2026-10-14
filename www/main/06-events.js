@@ -126,7 +126,12 @@ if(isNative())pmRefresh();
 try{const P=window.Capacitor?.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp","BarcodeScanner","StepCounter","Ocr","Motion","Speech","Widget","BackupFolder","MedWake","Health"].map(n=>n+"="+typeof P[n]).join(" "))}catch{}
 setInterval(()=>{if(!viewBusy())dayRoll();if(lastTz&&tzKey()!==lastTz)scheduleReminders().then(setNotif)},60000);
 LN()?.addListener?.("localNotificationActionPerformed",notifTap);
-function widgetOpen(){tab="today";logOff=0;closeSheet();render();window.scrollTo(0,0)}
+/* Widget buttons and launcher shortcuts name a sheet to open; they only open it, nothing is recorded from here. */
+const OPEN_GO={food:()=>sheetFood(),weight:()=>sheetWeight(),exercise:()=>sheetExercise(),water:()=>sheetDrink()};
+function widgetOpen(e){
+  tab="today";logOff=0;closeSheet();render();window.scrollTo(0,0);
+  const go=e&&e.go;if(typeof go==="string"&&Object.hasOwn(OPEN_GO,go))OPEN_GO[go]();
+}
 WG()?.addListener?.("open",widgetOpen);
 const AP=plugin("App");
 AP?.addListener?.("backButton",()=>{if(!backKey())AP.exitApp?.()});

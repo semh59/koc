@@ -23,10 +23,16 @@ public class WidgetPlugin extends Plugin {
     }
 
     // Also called on a cold start (BridgeActivity.load); the event is retained when the JS listener does not exist yet.
+    // The widget buttons and the launcher shortcuts carry GO ("food", "weight", ...): JS opens that sheet.
     @Override
     protected void handleOnNewIntent(Intent intent) {
-        if (intent == null || !intent.getBooleanExtra(NeoWidget.OPEN, false)) return;
+        if (intent == null) return;
+        String go = intent.getStringExtra(NeoWidget.GO);
+        if (!intent.getBooleanExtra(NeoWidget.OPEN, false) && go == null) return;
         intent.removeExtra(NeoWidget.OPEN);
-        notifyListeners("open", new JSObject(), true);
+        intent.removeExtra(NeoWidget.GO);
+        JSObject o = new JSObject();
+        if (go != null) o.put("go", go);
+        notifyListeners("open", o, true);
     }
 }

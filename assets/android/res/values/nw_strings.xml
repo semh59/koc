@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nw_sc_water">Su</string>
+    <string name="nw_sc_water_long">Su ekle</string>
+    <string name="nw_sc_food">Yemek</string>
+    <string name="nw_sc_food_long">Yemek ekle</string>
+    <string name="nw_sc_weight">Kilo</string>
+    <string name="nw_sc_weight_long">Kilo ekle</string>
+    <string name="nw_sc_exercise">Antrenman</string>
+    <string name="nw_sc_exercise_long">Antrenman ekle</string>
+</resources>
