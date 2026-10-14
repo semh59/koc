@@ -35,7 +35,7 @@ async function motionToggle(){
     await m.start();
     st.motionOn=true;save();motionPerm=p;render();
     toast("Hareket algılama açık");
-  }catch(e){toast("Hareket algılama açılamadı: "+(e&&e.message||e))}
+  }catch(e){toast("Hareket algılama açılamadı. Bu telefonda etkinlik tanıma kullanılamıyor olabilir")}
 }
 
 /* Takes the intervals the native side has finished and stores them. */

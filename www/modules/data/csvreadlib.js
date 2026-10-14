@@ -45,7 +45,7 @@ const CsvReadLib=(()=>{
   const unitIn=(h,u)=>{const s=fold(h+" "+u);return /lb|pound/.test(s)?"lb":/mmol/.test(s)?"mmol":/mgdl/.test(s)?"mg":/kg/.test(s)?"kg":null};
   /* text -> {err} | {rows:{w,t,s}, bad:[{line,why}], askDate, askW, askG, noTime}. opt: {today, order:"dmy"|"mdy", wUnit:"kg"|"lb", gUnit:"mg"|"mmol"}. */
   function read(text,opt={}){
-    let rows;try{rows=IL.parse(text)}catch(e){return {err:e.message}}
+    let rows;try{rows=IL.parse(text)}catch(e){return {err:e.user?e.message:"Dosya okunamadı. Tablo (CSV) dosyası olduğundan emin ol."}}
     if(rows.length>MAX_ROWS+1)return {err:`En çok ${MAX_ROWS} satır okunur`};
     const head=rows.shift()||[],idx={},hdr={};
     head.forEach((h,i)=>{const f=fold(h);for(const [r,re] of ROLE)if(idx[r]==null&&re.test(f)){idx[r]=i;hdr[r]=h;break}});

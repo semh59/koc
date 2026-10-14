@@ -13,7 +13,7 @@ function impPlan(){
 }
 function impText(text,name){
   let raw;
-  try{raw=ImportLib.read(text)}catch(e){return toast(e.message)}
+  try{raw=ImportLib.read(text)}catch(e){return toast(e.user?e.message:"Dosya okunamadı. Strong ya da Hevy CSV dosyası olduğundan emin ol")}
   impSt={raw,text,name:name||"",unit:raw.unit,keep:null};impSheet();
 }
 function impSheet(){

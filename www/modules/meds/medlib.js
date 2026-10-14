@@ -234,12 +234,12 @@ const MedLib=(()=>{
     if(e.wl===false)out.push("ekran kilidi alınamadı");
     if(e.fs==="ok")out.push("tam ekran bildirimi gönderildi");
     else if(e.fs==="skip")out.push("tam ekran bildirimi gerekmedi");
-    else if(e.fs)out.push("tam ekran bildirimi gönderilemedi: "+String(e.fs).replace(/^err:/,""));
+    else if(e.fs)out.push("tam ekran bildirimi gönderilemedi");
     if(e.ne===false)out.push("bildirimler kapalı");
     if(e.fsi===false)out.push("tam ekran izni yok");
     if(e.ci!=null&&e.ci>=0&&e.ci<4)out.push(e.ci===0?"ekran kanalı engelli":"ekran kanalı düşük önemde");
     if(e.bo===false)out.push("pil kısıtı var");
-    if(e.err)out.push("hata: "+e.err);
+    if(e.err)out.push("alarm kurulurken bir sorun çıktı");
     return out.join(", ");
   }
   /* Likely problems: st is the current state, items the log rows. `to` is the settings screen to open (MedWake.settings); autostart is Xiaomi's autostart screen. */
