@@ -92,12 +92,18 @@ function medTodo(){
 const medRamDone=m=>{const r=S.settings.ramMeds[m.id];return r&&Object.values(r).some(t=>m.t.includes(t))?r:null};
 function medRamPlan(){
   const st=S.settings,d=st.ramMedsNo?null:Habits.dayTimes(calKey());
-  return d?S.meds.filter(m=>m.on&&!medRamDone(m)).map(m=>({m,map:RamadanLib.medMap(m.t,d)})).filter(x=>Object.keys(x.map).length):[];
+  return d?S.meds.filter(m=>m.on&&!medRamDone(m)).map(m=>{const map=RamadanLib.medMap(m.t,d);return {m,map,left:m.t.filter(t=>RamadanLib.inFast(t,d)&&!map[t]),im:d[0]}}).filter(x=>Object.keys(x.map).length||x.left.length):[];
 }
+/* Minutes the imsak has moved since the times were shifted; the shift is anchored to that day's imsak. */
+function medRamDrift(m){
+  const ref=S.settings.ramMedsRef[m.id],d=S.settings.ramOn&&medRamDone(m)&&Habits.dayTimes(calKey());
+  return ref&&d?RamadanLib.mins(d[0])-RamadanLib.mins(ref):0;
+}
+const RAM_DRIFT=15;
 const medRamBack=()=>S.settings.ramOn?[]:S.meds.filter(medRamDone);
 const medRamPair=map=>Object.entries(map).map(([a,b])=>`${a} → ${b}`).join(", ");
 function medRamTodo(){
-  const k=medRamPlan().length,b=medRamBack().length;
+  const k=medRamPlan().filter(x=>Object.keys(x.map).length).length,b=medRamBack().length;
   const t=b?"Ramazan bitti; ilaç saatlerini eski saatlerine döndürelim mi?":k?"İlaç saatlerini sahur ya da iftara kaydırmak ister misin?":"";
   return t?[`<div class="row"><span>${Icons.svg("meds")} ${t}<small class="mut sm">Sen onaylamadan hiçbir saat değişmez.</small></span><button class="chip" data-tab="meds">İncele</button></div>`]:[];
 }
@@ -106,41 +112,55 @@ function medRamCard(){
   if(!plan.length&&!back.length)return "";
   const row=(m,t,btn)=>`<div class="row"><span class="grow"><b>${esc(m.n)}</b><small class="db mut num">${t}</small></span>${btn}</div>`;
   return `<div class="card"><div class="lbl">${S.settings.ramOn?"Ramazan ve ilaç saatleri":"Ramazan bitti"}</div>
-  ${plan.map(({m,map})=>row(m,medRamPair(map),`<button class="chip" data-md="ramgo:${m.id}" aria-label="Kaydır: ${esc(m.n)}">Kaydır</button>`)).join("")}
-  ${back.map(m=>row(m,"Kaydırıldı: "+medRamPair(S.settings.ramMeds[m.id]),`<button class="chip" data-md="ramback:${m.id}" aria-label="Eski saatlere dön: ${esc(m.n)}">Eski saatlere dön</button>`)).join("")}
+  ${plan.map(({m,map,left})=>row(m,(Object.keys(map).length?medRamPair(map):"")+(left.length?`${Object.keys(map).length?". ":""}${left.join(", ")} için boş saat bulunamadı, o doz kaydırılmadı; hekimine danış`:""),Object.keys(map).length?`<button class="chip" data-md="ramgo:${m.id}" aria-label="Kaydır: ${esc(m.n)}">Kaydır</button>`:"")).join("")}
+  ${back.map(m=>{const dr=medRamDrift(m),late=Math.abs(dr)>=RAM_DRIFT;return row(m,"Kaydırıldı: "+medRamPair(S.settings.ramMeds[m.id])+(late?`. İmsak kaydırdığından beri yaklaşık ${Math.abs(dr)} dk ${dr<0?"öne geldi":"geriye gitti"}; saatler eski imsağa göre`:""),`${late?`<button class="chip" data-md="ramredo:${m.id}" aria-label="Yeniden hesapla: ${esc(m.n)}">Yeniden hesapla</button>`:""}<button class="chip" data-md="ramback:${m.id}" aria-label="Eski saatlere dön: ${esc(m.n)}">Eski saatlere dön</button>`)}).join("")}
   <p class="hint">İlaç saatlerini hekimine sormadan değiştirme. Kaydırma yalnız senin onayınla yapılır; her ilaç ayrı geri alınır.${plan.length?` <button class="lnk" data-md="ramno">Gerek yok</button>`:""}</p></div>`;
 }
 /* Moves a medication's times by {from: to}: the same revise/since bookkeeping as an edit, so past days keep the old schedule. */
 function medRetime(m,map,undo){
   const today=calKey(),t=[...new Set(m.t.map(x=>map[x]||x))].sort(),q={};
   for(const [x,v] of Object.entries(m.q||{}))q[map[x]||x]??=v;
-  const o={...m,t,q};
+  const log=S.medLog,o={...m,t,q};
   if(!Object.keys(q).length)delete o.q;
   const ts=MedLib.sinceFor(m.t,t,m.ts,today,medNowHM());
-  delete o.ts;if(ts)o.ts=ts;
+  const taken=new Set(log.filter(r=>r.m===m.id&&r.day===today&&map[r.slot]).map(r=>map[r.slot]));
+  delete o.ts;if(ts||taken.size)o.ts={...ts,...Object.fromEntries([...taken].map(s=>[s,today]))};
   MedLib.revise(m,o,today);
   const before=S.meds.slice();
   S.meds=MedLib.cleanMeds(S.meds.map(x=>x.id===m.id?o:x));
-  return commit(()=>{S.meds=before;undo()});
+  S.medLog=MedLib.cleanLog(log.map(r=>r.m===m.id&&r.day===today&&map[r.slot]?{...r,slot:map[r.slot]}:r),S.meds);
+  return commit(()=>{S.meds=before;S.medLog=log;undo()});
 }
 function medRamGo(id){
   const p=medRamPlan().find(x=>x.m.id===id);if(!p)return;
   confirmSheet({title:`${p.m.n} saatleri kaydırılsın mı?`,body:`${medRamPair(p.map)}. İlaç saatini hekimine danışmadan değiştirme; danıştıysan kaydır. İstediğin zaman eski saatlere dönebilirsin.`,ok:"Kaydır"}).then(ok=>{
     const m=S.meds.find(x=>x.id===id);if(!ok||!m)return;
-    const prev=S.settings.ramMeds;
-    S.settings.ramMeds={...prev,[id]:p.map};
-    if(!medRetime(m,p.map,()=>{S.settings.ramMeds=prev}))return;
+    const prev=S.settings.ramMeds,prevRef=S.settings.ramMedsRef;
+    S.settings.ramMeds={...prev,[id]:p.map};S.settings.ramMedsRef={...prevRef,[id]:p.im};
+    if(!medRetime(m,p.map,()=>{S.settings.ramMeds=prev;S.settings.ramMedsRef=prevRef}))return;
     render();medResched();toast(`${m.n}: saatler kaydırıldı`,()=>medRamUndo(id));
   });
 }
 function medRamUndo(id){
   const m=S.meds.find(x=>x.id===id),rec=S.settings.ramMeds[id];if(!m||!rec)return;
   const inv=Object.fromEntries(Object.entries(rec).filter(([,b])=>m.t.includes(b)).map(([a,b])=>[b,a]));
-  const prev=S.settings.ramMeds,{[id]:_,...rest}=prev;
-  S.settings.ramMeds=rest;
-  if(Object.keys(inv).length&&!medRetime(m,inv,()=>{S.settings.ramMeds=prev}))return;
+  const prev=S.settings.ramMeds,{[id]:_,...rest}=prev,prevRef=S.settings.ramMedsRef,{[id]:__,...restRef}=prevRef;
+  S.settings.ramMeds=rest;S.settings.ramMedsRef=restRef;
+  if(Object.keys(inv).length&&!medRetime(m,inv,()=>{S.settings.ramMeds=prev;S.settings.ramMedsRef=prevRef}))return;
   if(!Object.keys(inv).length)save();
   render();medResched();toast(`${m.n}: eski saatlere döndü`);
+}
+
+/* Moves the shifted times to today's imsak and iftar in one step: current time -> its original -> its new target. */
+function medRamRedo(id){
+  const m=S.meds.find(x=>x.id===id),rec=S.settings.ramMeds[id],d=Habits.dayTimes(calKey());if(!m||!rec||!d)return;
+  const inv=Object.fromEntries(Object.entries(rec).map(([a,b])=>[b,a])),orig=m.t.map(x=>inv[x]||x),map=RamadanLib.medMap(orig,d);
+  const total=Object.fromEntries(m.t.map((c,i)=>[c,map[orig[i]]||orig[i]]));
+  if(!Object.keys(map).length)return medRamUndo(id);
+  const prev=S.settings.ramMeds,prevRef=S.settings.ramMedsRef;
+  S.settings.ramMeds={...prev,[id]:map};S.settings.ramMedsRef={...prevRef,[id]:d[0]};
+  if(!medRetime(m,total,()=>{S.settings.ramMeds=prev;S.settings.ramMedsRef=prevRef}))return;
+  render();medResched();toast(`${m.n}: saatler bugünün imsağına göre yeniden hesaplandı`,()=>medRamUndo(id));
 }
 
 /* ---- Meds screen ---- */
@@ -320,6 +340,7 @@ document.addEventListener("click",ev=>{
   else if(a==="shown"){S.settings.medShowName=el.checked;save();medResched()}
   else if(a==="ramgo")medRamGo(+r[0]);
   else if(a==="ramback")medRamUndo(+r[0]);
+  else if(a==="ramredo")medRamRedo(+r[0]);
   else if(a==="ramno"){S.settings.ramMedsNo=true;save();render()}
   else if(a==="new")medOpen(0);
   else if(a==="edit")medOpen(+r[0]);

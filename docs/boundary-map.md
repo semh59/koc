@@ -66,7 +66,7 @@
 | kernel/storelib.js | 2 | 1 |
 | kernel/unitlib.js | 0 | 1 |
 | kernel/unitui.js | 8 | 2 |
-| main/01-core.js | 33 | 77 |
+| main/01-core.js | 34 | 77 |
 | main/02-state-components.js | 16 | 12 |
 | main/03-screens.js | 124 | 40 |
 | main/04-sheets.js | 70 | 74 |
@@ -74,12 +74,12 @@
 | main/05-permissions.js | 25 | 10 |
 | main/06-events.js | 106 | 8 |
 | main/07-actions.js | 69 | 2 |
-| modules/coach/coach.js | 58 | 146 |
+| modules/coach/coach.js | 59 | 147 |
 | modules/coach/coachlib.js | 10 | 1 |
 | modules/coach/index.js | 5 | 1 |
 | modules/coach/insightlib.js | 6 | 1 |
 | modules/cycle/cyclelib.js | 6 | 1 |
-| modules/cycle/cycleui.js | 29 | 17 |
+| modules/cycle/cycleui.js | 29 | 18 |
 | modules/cycle/index.js | 3 | 1 |
 | modules/data/archivelib.js | 3 | 1 |
 | modules/data/backuplib.js | 1 | 1 |
@@ -112,7 +112,7 @@
 | modules/habits/habitlib.js | 3 | 1 |
 | modules/habits/habitui.js | 28 | 21 |
 | modules/habits/index.js | 17 | 1 |
-| modules/habits/ramadanlib.js | 6 | 1 |
+| modules/habits/ramadanlib.js | 7 | 1 |
 | modules/habits/ramadanui.js | 27 | 23 |
 | modules/habits/ramcities.js | 0 | 1 |
 | modules/history/historylib.js | 5 | 1 |
@@ -143,7 +143,7 @@
 | modules/meds/alarmui.js | 21 | 11 |
 | modules/meds/index.js | 11 | 1 |
 | modules/meds/medlib.js | 8 | 1 |
-| modules/meds/medui.js | 36 | 43 |
+| modules/meds/medui.js | 36 | 46 |
 | modules/motion/index.js | 14 | 1 |
 | modules/motion/motionlib.js | 5 | 1 |
 | modules/motion/motionui.js | 24 | 17 |
@@ -164,4 +164,4 @@
 | modules/pulse/pulseui.js | 14 | 14 |
 | modules/vitals/index.js | 9 | 1 |
 | modules/vitals/vitalslib.js | 12 | 1 |
-| modules/vitals/vitalsui.js | 40 | 49 |
+| modules/vitals/vitalsui.js | 41 | 49 |

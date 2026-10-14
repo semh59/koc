@@ -115,11 +115,16 @@ const RamadanLib=(()=>{
     return m>=im&&m<ft+60?hm(Math.min(ft+60,1410)):t;
   }
   /* Medication times inside the fast, each moved to the nearer of sahur (30 min before imsak) and iftar (10 min after): {from: to}, empty when none is inside. */
+  const inFast=(t,d)=>mins(t)>=mins(d[0])&&mins(t)<mins(d[1]);
+  /* Two doses never share a target: a taken target opens in 5 minute steps, and a dose that finds no free time before imsak (or midnight) stays out of the map. */
   function medMap(times,d){
-    const im=mins(d[0]),ft=mins(d[1]),out={};
+    const im=mins(d[0]),ft=mins(d[1]),out={},used=new Set(times.filter(t=>!inFast(t,d)));
     for(const t of times){
-      const m=mins(t);
-      if(m>=im&&m<ft)out[t]=hm(m-(im-30)<=ft+10-m?im-30:ft+10);
+      if(!inFast(t,d))continue;
+      const m=mins(t),sahur=m-(im-30)<=ft+10-m;
+      let x=sahur?im-30:ft+10;
+      while(x<1440&&used.has(hm(x)))x+=5;
+      if(x<(sahur?im:1440)){out[t]=hm(x);used.add(hm(x))}
     }
     return out;
   }
@@ -128,6 +133,6 @@ const RamadanLib=(()=>{
   /* The holiday has started: the mode was opened in the 9th Hijri month (Ramadan) and the 10th has begun. */
   const bayram=(fromDay,nowMs)=>hijri(Date.parse(fromDay+"T12:00:00Z"))===9&&hijri(nowMs)===10;
   const nightMin=d=>1440-(mins(d[1])-mins(d[0]));
-  return {NID,isNid,dayAt,nightMin,shift,medMap,bayram,times,nearest,inTurkey,parse,verify,clean,source,now,reminders,dur,tr,addDay,CITIES,TOL};
+  return {NID,isNid,dayAt,nightMin,shift,medMap,inFast,mins,bayram,times,nearest,inTurkey,parse,verify,clean,source,now,reminders,dur,tr,addDay,CITIES,TOL};
 })();
 if(typeof module!=="undefined")module.exports=RamadanLib;
