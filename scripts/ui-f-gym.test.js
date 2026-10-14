@@ -100,6 +100,6 @@ const {boot,flush,www}=require("./html");
   ok("the button shows the rest",rows()===8&&!q('[data-g="hmore:bench"]'));
 
   const css=fs.readFileSync(www("app.css"),"utf8");
-  ok("on short screens the top bar is not sticky and the rest timer is compact",/@media \(max-height:640px\)\{[^}]*\.livetop\{position:static\}[^@]*#grest\{padding/.test(css));
+  ok("on short screens the sticky top bar and the rest timer are compact and the bar stays sticky",/@media \(max-height:640px\)\{[^@]*\.livebar b\{font-size[^@]*#grest\{padding/.test(css)&&!/max-height:640px\)\{[^@]*\.livetop\{position:static/.test(css));
   finish();
 })();
