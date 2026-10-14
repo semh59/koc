@@ -89,7 +89,7 @@ function sheetCycle(){
 /* Stores a new list; on a failed save the old list stays and the user is told. */
 function cycPut(next,msg){
   const prev=S.cycle;S.cycle=next;
-  if(!save()){S.cycle=prev;return toast("Kaydedilemedi, depolama dolu")}
+  if(!commit(()=>{S.cycle=prev}))return;
   closeSheet();render();cycResched();
   toast(msg,()=>{S.cycle=prev;save();render();cycResched()});
 }

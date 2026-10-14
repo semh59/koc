@@ -233,7 +233,8 @@ let lockSeen=null;
 function lockFlag(){const v=S.settings.lockOn===true?"1":"0";if(v!==lockSeen){lockSeen=v;try{localStorage.setItem("nw_lockon",v)}catch{}}}
 lockFlag();
 /* A failed write keeps the change in memory: it is announced every time, Today and Settings show a permanent warning, the backup screen takes the in-memory state. */
-Store.onState(f=>{saveFail=f;if(f)toast("Son değişiklik kaydedilemedi. Uygulamayı kapatmadan yedek al.");else render()});
+const SAVE_FAIL="Son değişiklik kaydedilemedi. Depolama dolu olabilir; kapatmadan önce yedek al.";
+Store.onState(f=>{saveFail=f;if(f)toast(SAVE_FAIL);else render()});
 /* Only the changed shards are written, in one transaction (all of them on the first write). A shard that emptied is dropped from the store as well. */
 function saveShards(m){
   const ids=Object.keys(m),ch=Object.fromEntries(ids.filter(i=>m[i]!==lastShard[i]).map(i=>[i,m[i]]));
@@ -260,11 +261,13 @@ function save(soft){
     let ok=false;
     for(const k of ["nw_state_previous","nw_state_corrupt"])if(!ok&&Store.get(k)!=null){Store.del(k);try{localStorage.setItem("nw_state",j);ok=true}catch{}}
     otherBytes=lsOther();storeBytes=otherBytes+j.length*2;
-    if(!ok){saveFail=true;toast("Son değişiklik kaydedilemedi: depolama dolu. Uygulamayı kapatmadan yedek al.");return false}
+    if(!ok){saveFail=true;toast(SAVE_FAIL);return false}
     saveFail=false;toast("Depolama doluydu: eski güvenlik kopyaları silindi");
   }
   lastJ=j;fastWatch();return true;
 }
+/* Saves a change that is already applied in memory; when the write fails `undo` puts the old value back and the one message says what to do. */
+function commit(undo){if(save())return true;undo();save();toast(SAVE_FAIL);return false}
 /* First boot in IndexedDB mode: a state written in localStorage mode (no shards yet) is saved as shards, and the localStorage text is deleted once they are durable. */
 document.addEventListener("nw:boot",()=>{
   if(Store.mode!=="idb"||recovery||Store.sharded)return;

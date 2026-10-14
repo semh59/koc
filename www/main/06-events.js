@@ -20,7 +20,9 @@ document.addEventListener("click",ev=>{
   if(d.del){
     const id=+d.del,rm=Log.find(e=>e.id===id);if(!rm)return;
     const inWater=!!el.closest("#sheet");
-    Log.remove(e=>e.id===id);save();render();if(inWater)sheetWater();
+    Log.remove(e=>e.id===id);
+    if(!commit(()=>Log.restore([rm])))return;
+    render();if(inWater)sheetWater();
     toast("Kayıt silindi",()=>{Log.restore([rm]);save();render()});return;
   }
   if(d.sp){document.querySelectorAll("#sp .chip").forEach(c=>c.setAttribute("aria-pressed",c===el));return}

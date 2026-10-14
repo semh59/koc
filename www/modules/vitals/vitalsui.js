@@ -69,7 +69,7 @@ function vFinish(rows,msg){
   const backup=S.vitals.slice(),id0=Math.max(0,...S.vitals.map(r=>r.id))+1;
   const added=rows.map((r,i)=>({...r,sid:r.sid||VitalsLib.newSid(),id:id0+i}));
   S.vitals=S.vitals.concat(added);
-  if(!save()){S.vitals=backup;return toast("Kaydedilemedi, depolama dolu")}
+  if(!commit(()=>{S.vitals=backup}))return;
   closeSheet();render();
   if(rows.some(r=>VitalsLib.crisis(r,dayKey()))){
     return openSheet(`<h3>Ölçüm kaydedildi</h3><p>Cihazı kontrol edip ölçümü tekrarla. Değer doğruysa hekimine danış; kendini kötü hissediyorsan acil yardım al.</p><button class="btn" data-vt="close">Tamam</button>`);

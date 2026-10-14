@@ -161,7 +161,7 @@ function medSave(){
   if(!o.id)o.id=MedLib.freeId(new Set(S.meds.map(m=>m.id)));
   S.meds=MedLib.cleanMeds(S.meds.filter(m=>m.id!==o.id).concat([o]).sort((a,b)=>a.id-b.id));
   S.medLog=MedLib.cleanLog(S.medLog,S.meds);
-  if(!save()){S.meds=before;return toast("Kaydedilemedi, depolama dolu")}
+  if(!commit(()=>{S.meds=before}))return;
   medClose();render();medResched();toast("İlaç kaydedildi");
 }
 function medMark(mid,slot,st,force){
@@ -171,7 +171,7 @@ function medMark(mid,slot,st,force){
   }
   const res=MedLib.mark(S,mid,dayKey(),slot,st,st==="t"?medNowHM():undefined);
   if(!res)return;
-  if(!save()){res.undo();return toast("Kaydedilemedi, depolama dolu")}
+  if(!commit(res.undo))return;
   render();medResched();
   const m=S.meds.find(x=>x.id===mid);
   toast(st==="t"?`${m.n} alındı olarak kaydedildi`:st==="s"?`${m.n} atlandı`:"Kayıt geri alındı",()=>{res.undo();save();render();medResched()});

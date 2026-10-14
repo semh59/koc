@@ -35,7 +35,7 @@ function ciSheet(){
 function ciGo(){
   const a=ciSt.plan.add,ents=a.w.map(x=>Log.put({day:x.day,time:"12:00",type:"weight",v:x.v,text:""})),ids=Vitals.addAll([...a.t,...a.s]);
   if(ids===null){ents.forEach(e=>Log.remove(x=>x.id===e.id));return toast("Ölçüm listesi dolu, eklenemedi")}
-  if(!save()){ents.forEach(e=>Log.remove(x=>x.id===e.id));Vitals.remove(ids);return toast("Kaydedilemedi, depolama dolu")}
+  if(!commit(()=>{ents.forEach(e=>Log.remove(x=>x.id===e.id));Vitals.remove(ids)}))return;
   const n=ents.length+ids.length,eid=new Set(ents.map(e=>e.id));
   ciSt=null;closeSheet();render();
   toast(`${n} kayıt eklendi`,()=>{Log.remove(e=>eid.has(e.id));Vitals.remove(ids);save();render()});
