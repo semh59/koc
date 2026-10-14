@@ -121,7 +121,7 @@ const VitalsLib=(()=>{
   }
 
   /* ---- Doctor report PDF ---- */
-  const {w:RW,h:RH,m:RM}=ALGO.PAGE,ROW=44,FOOT=80,HEAD1=330,CHART=360;
+  const {w:RW,h:RH,m:RM,c:C}=ALGO.PAGE,ROW=44,FOOT=80,HEAD1=330,CHART=360;
   /* Table rows: one row per raw reading. A pressure reading of a session shows its measurement number (i). */
   function reportRows(rows,kind,from,to,gu,since){
     return rows.filter(r=>r.k===kind&&r.day>=from&&r.day<=to).sort(cmpAt).map(r=>{
@@ -152,48 +152,48 @@ const VitalsLib=(()=>{
     let lo=Math.min(...vs),hi=Math.max(...vs);if(hi===lo){hi+=1;lo-=1}const pad=(hi-lo)*.12;lo-=pad;hi+=pad;
     const ip=16,X=d=>x+ip+(w-2*ip)*(dayN(d)-f)/span,Y=v=>y+h-h*(v-lo)/(hi-lo);
     ctx.font="22px sans-serif";
-    ctx.strokeStyle="#9fb4ad";ctx.lineWidth=1.5;ctx.strokeRect(x,y,w,h);
+    ctx.strokeStyle=C.frame;ctx.lineWidth=1.5;ctx.strokeRect(x,y,w,h);
     for(const s of series){
       ctx.strokeStyle=s.color;ctx.lineWidth=2.5;if(ctx.setLineDash)ctx.setLineDash(s.dash?[14,8]:[]);ctx.beginPath();s.pts.forEach((p,i)=>i?ctx.lineTo(X(p.day),Y(p.v)):ctx.moveTo(X(p.day),Y(p.v)));ctx.stroke();if(ctx.setLineDash)ctx.setLineDash([]);
       for(const p of s.pts){ctx.fillStyle=s.color;mark(ctx,s.shape,X(p.day),Y(p.v),6)}
       if(s.vals){
         /* Value labels only at the first, last, lowest and highest point; overlapping labels are skipped. */
         const vv=s.pts.map(p=>p.v),keep=new Set([0,s.pts.length-1,vv.indexOf(Math.min(...vv)),vv.indexOf(Math.max(...vv))]);let right=-1e9;
-        ctx.fillStyle="#10232b";ctx.font="22px sans-serif";
+        ctx.fillStyle=C.ink;ctx.font="22px sans-serif";
         s.pts.forEach((p,i)=>{if(!keep.has(i))return;const tx=s.fmt?s.fmt(p.v):String(Math.round(p.v)),tw=ctx.measureText(tx).width,lx=Math.min(Math.max(X(p.day)-tw/2,x+2),x+w-tw-2);if(lx<right+6)return;right=lx+tw;ctx.fillText(tx,lx,Y(p.v)-14)});
       }
-      if(s.short&&s.pts.length){const p=s.pts[s.pts.length-1],tw=ctx.measureText(s.short).width;ctx.fillStyle="#10232b";ctx.font="bold 22px sans-serif";ctx.fillText(s.short,Math.min(X(p.day),x+w-tw-4),Y(p.v)+(s.below?34:-14));ctx.font="22px sans-serif"}
+      if(s.short&&s.pts.length){const p=s.pts[s.pts.length-1],tw=ctx.measureText(s.short).width;ctx.fillStyle=C.ink;ctx.font="bold 22px sans-serif";ctx.fillText(s.short,Math.min(X(p.day),x+w-tw-4),Y(p.v)+(s.below?34:-14));ctx.font="22px sans-serif"}
     }
-    ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText(fmtD(from),x,y+h+30);const e=fmtD(to);ctx.fillText(e,x+w-ctx.measureText(e).width,y+h+30);
+    ctx.fillStyle=C.mut;ctx.font="22px sans-serif";ctx.fillText(fmtD(from),x,y+h+30);const e=fmtD(to);ctx.fillText(e,x+w-ctx.measureText(e).width,y+h+30);
     const ax=v=>dec?v.toFixed(dec).replace(".",","):Math.round(v);ctx.fillText(`${ax(lo)} – ${ax(hi)}`,x+w+12,y+h);
   }
   /* info: {kind,title,period,summary:[[label,value]],chart:{series,from,to,dec},page,total,today} */
   function drawPage(ctx,items,info){
-    ctx.fillStyle="#ffffff";ctx.fillRect(0,0,RW,RH);ctx.textBaseline="alphabetic";
+    ctx.fillStyle=C.bg;ctx.fillRect(0,0,RW,RH);ctx.textBaseline="alphabetic";
     let y=RM;
     if(info.page===1){
-      ctx.fillStyle="#10232b";ctx.font="bold 46px sans-serif";ctx.fillText(info.title,RM,y+46);
-      ctx.fillStyle="#62737a";ctx.font="24px sans-serif";
+      ctx.fillStyle=C.ink;ctx.font="bold 46px sans-serif";ctx.fillText(info.title,RM,y+46);
+      ctx.fillStyle=C.mut;ctx.font="24px sans-serif";
       ctx.fillText(`${info.period}   ·   Oluşturulma: ${fmtD(info.today)}`,RM,y+90);
       ctx.fillText("Kullanıcının girdiği ölçümlerdir; yorumlanmamıştır. Bu değerleri hekiminle değerlendir.",RM,y+124);
       y+=HEAD1-RM-110;
-      ctx.fillStyle="#10232b";ctx.font="28px sans-serif";
-      for(const [k,v] of info.summary){ctx.fillStyle="#62737a";ctx.fillText(k,RM,y+30);ctx.fillStyle="#10232b";ctx.font="bold 28px sans-serif";ctx.fillText(v,RM+420,y+30);ctx.font="28px sans-serif";y+=38}
+      ctx.fillStyle=C.ink;ctx.font="28px sans-serif";
+      for(const [k,v] of info.summary){ctx.fillStyle=C.mut;ctx.fillText(k,RM,y+30);ctx.fillStyle=C.ink;ctx.font="bold 28px sans-serif";ctx.fillText(v,RM+420,y+30);ctx.font="28px sans-serif";y+=38}
       y+=20;
       if(info.chart)drawChart(ctx,RM,y,RW-2*RM-110,CHART-80,info.chart.series,info.chart.from,info.chart.to,info.chart.dec);
       y+=CHART;
     }
-    ctx.font="bold 24px sans-serif";ctx.fillStyle="#62737a";
+    ctx.font="bold 24px sans-serif";ctx.fillStyle=C.mut;
     [["Tarih",RM],["Saat",RM+190],["Seans / bağlam",RM+300],["Değer",RM+700]].forEach(([t,x])=>ctx.fillText(t,x,y+30));
-    ctx.strokeStyle="#9fb4ad";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(RM,y+40);ctx.lineTo(RW-RM,y+40);ctx.stroke();
+    ctx.strokeStyle=C.frame;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(RM,y+40);ctx.lineTo(RW-RM,y+40);ctx.stroke();
     y+=ROW;
     ctx.font="26px sans-serif";
     for(const r of items){
-      ctx.fillStyle="#10232b";ctx.fillText(r.d,RM,y+30);ctx.fillText(r.t,RM+190,y+30);ctx.fillText(r.c,RM+300,r.dose?y+24:y+30);ctx.fillText(r.v,RM+700,y+30);
-      if(r.dose){ctx.font="18px sans-serif";ctx.fillStyle="#62737a";ctx.fillText(r.dose,RM+300,y+41);ctx.font="26px sans-serif"}
+      ctx.fillStyle=C.ink;ctx.fillText(r.d,RM,y+30);ctx.fillText(r.t,RM+190,y+30);ctx.fillText(r.c,RM+300,r.dose?y+24:y+30);ctx.fillText(r.v,RM+700,y+30);
+      if(r.dose){ctx.font="18px sans-serif";ctx.fillStyle=C.mut;ctx.fillText(r.dose,RM+300,y+41);ctx.font="26px sans-serif"}
       y+=ROW;
     }
-    ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText(`NeoWell · sayfa ${info.page}/${info.total}`+(items.some(r=>r.dose)?" · Süreler uygulamaya yazılan kayıtlara göredir.":""),RM,RH-45);
+    ctx.fillStyle=C.mut;ctx.font="22px sans-serif";ctx.fillText(`NeoWell · sayfa ${info.page}/${info.total}`+(items.some(r=>r.dose)?" · Süreler uygulamaya yazılan kayıtlara göredir.":""),RM,RH-45);
   }
   return {MAX_ROWS,newSid,CTX,SESSIONS,ctxName,sessionName,LIM,check,clean,sessions,homeAvg,before,gStats,crisis,level,needsConfirm,latest,cmpAt,reportRows,paginate,drawPage,drawChart,RW,RH};
 })();

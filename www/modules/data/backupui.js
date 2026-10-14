@@ -28,13 +28,13 @@ function bkNewPw(first,again){
 async function sheetDrive(){
   const rem=await bkRemembered(),native=!!KV()&&Coach.vaultOn();
   openSheet(`<h3>Yedeği Drive'a gönder</h3>
-  <p class="m0 mb-3 mut sm">Verilerin parolayla şifrelenir. Paylaşım ekranında Google Drive'ı (ya da istediğin yeri) seç. Hesap bağlamak gerekmez. ${bkLast()}. ${BK_PHOTOS}</p>
-  <p class="hint">${S.settings.bkNoKeys?"Rehber anahtarların yedeğe girmez.":"Rehber anahtarların da yedeğe girer; istemezsen Ayarlar > Veri ve yedek'ten kapat."}${rem?"":" Eski yedeklerinle aynı parolayı kullan; parola değişirse eski dosyalar eski parolayla açılır."}</p>
+  <p class="m0 mb-3 mut sm">Verilerin parolayla şifrelenir; paylaşım ekranında Drive'ı ya da istediğin yeri seçersin. ${helpBtn("bkh","Yedek")}</p>
+  ${helpBox("bkh",`Hesap bağlamak gerekmez. ${bkLast()}. ${BK_PHOTOS} ${S.settings.bkNoKeys?"Rehber anahtarların yedeğe girmez.":"Rehber anahtarların da yedeğe girer; istemezsen Ayarlar > Veri ve yedek'ten kapat."}${rem?"":" Eski yedeklerinle aynı parolayı kullan; parola değişirse eski dosyalar eski parolayla açılır."} Geri yüklemek için: Ayarlar > Veri ve yedek > Yedekten geri yükle (dosyayı Drive'dan seçebilirsin).`)}
   ${rem?`<p>Parola bu telefonda saklı.</p><button class="btn" data-bk="send">Şimdi gönder</button><button class="mt-2 btn ghost" data-bk="forget">Parolayı unut</button>`
   :`<input class="in" id="bkp1" type="password" placeholder="Parola (en az ${BackupLib.MINPW} karakter)" autocomplete="new-password"><input class="in" id="bkp2" type="password" placeholder="Parolayı tekrar yaz" autocomplete="new-password">
   ${native?swRow('id="bkrem"',true,"Parolayı bu telefonda sakla (Keystore ile şifreli)"):""}
   <div class="hint" id="bkw" role="alert"></div><button class="btn" data-bk="send">Şifrele ve gönder</button>`}
-  <p class="hint">Parolayı unutursan yedeğini kimse açamaz, kurtarma yolu yoktur. Parolayı güvenli bir yere yaz. Geri yüklemek için: Ayarlar > Veri ve yedek > Yedekten geri yükle (dosyayı Drive'dan seçebilirsin).</p>
+  <p class="hint">Parolayı unutursan yedeğini kimse açamaz; güvenli bir yere yaz.</p>
   <button class="mt-2 btn ghost" data-bk="close">Vazgeç</button>`);
 }
 async function bkSend(){
@@ -78,9 +78,11 @@ async function abSetup(){
   if(!KV()||!Coach.vaultOn())return toast("Bu telefonda parola güvenle saklanamıyor, otomatik yedek kullanılamaz");
   const rem=await bkRemembered();
   openSheet(`<h3>Otomatik yedek</h3>
-  <p class="m0 mb-3 mut sm">Uygulamayı açtığında son yedek 7 günden eskiyse seçeceğin klasöre şifreli yedek (neowell-oto-…) yazılır, en son 4 otomatik yedek kalır; elle aldığın yedeklere dokunulmaz. Uygulamayı en az haftada bir aç.</p>
+  <p class="m0 mb-3 mut sm">Uygulamayı açtığında son yedek 7 günden eskiyse seçtiğin klasöre şifreli yedek yazılır. ${helpBtn("abh","Otomatik yedek")}</p>
+  ${helpBox("abh","Dosya adı neowell-oto-… ile başlar, en son 4 otomatik yedek kalır; elle aldığın yedeklere dokunulmaz. Uygulamayı en az haftada bir aç.")}
   ${rem?`<p>Yedek parolası bu telefonda saklı, o kullanılır.</p>`:`<input class="in" id="abp1" type="password" placeholder="Yedek parolası (en az ${BackupLib.MINPW} karakter)" autocomplete="new-password"><input class="in" id="abp2" type="password" placeholder="Parolayı tekrar yaz" autocomplete="new-password">`}
-  <p class="hint">Telefon değişirse dosyaları yeni telefona taşı ve Yedekten geri yükle ile bu parolayla aç. ${BK_PHOTOS} Parolayı unutursan yedeğini kimse açamaz, kurtarma yolu yoktur. Parolayı güvenli bir yere yaz.</p>
+  <p class="hint">Parolayı unutursan yedeğini kimse açamaz; güvenli bir yere yaz. ${helpBtn("abh2","Telefon değişirse")}</p>
+  ${helpBox("abh2",`Telefon değişirse dosyaları yeni telefona taşı ve Yedekten geri yükle ile bu parolayla aç. ${BK_PHOTOS}`)}
   <div class="hint" id="abw" role="alert"></div><button class="btn" data-ab="pick">Klasör seç ve aç</button><button class="mt-2 btn ghost" data-bk="close">Vazgeç</button>`);
 }
 async function abPick(){

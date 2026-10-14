@@ -5,7 +5,7 @@ const HB_SHOWN=7,FAST_REMINDER=11,LONG_PLAN=18;
 const hbDur=m=>`${Math.floor(m/60)} sa ${m%60} dk`;
 const hbRow=(txt,act,sub="",edit="")=>{const t=`<span class="grow">${txt}${sub?`<small class="db mut ell">${sub}</small>`:""}</span>`;return `<div class="${edit?"prow":"row"}">${edit?`<button class="grow pbtn" data-hb="${edit}">${t}</button>`:t}<button class="del" data-hb="${act}" aria-label="Kaydı sil">${Icons.svg("x")}</button></div>`};
 /* History: the newest HB_SHOWN records are open, the rest fold away. */
-const hbHist=rows=>rows.length?`<div class="grp">Geçmiş</div>${rows.slice(0,HB_SHOWN).join("")}${rows.length>HB_SHOWN?`<details class="acc"><summary>Daha fazla göster (${rows.length-HB_SHOWN})</summary>${rows.slice(HB_SHOWN).join("")}</details>`:""}`:"";
+const hbHist=rows=>rows.length?`<h4 class="grp">Geçmiş</h4>${rows.slice(0,HB_SHOWN).join("")}${rows.length>HB_SHOWN?`<details class="acc"><summary>Daha fazla göster (${rows.length-HB_SHOWN})</summary>${rows.slice(HB_SHOWN).join("")}</details>`:""}`:"";
 let hbMood=0;
 /* Sleep, mood and fast changes (deletes and re-entry for the same day included) are undone with one "Geri al". */
 function hbSet(key,val,msg){
@@ -81,8 +81,8 @@ function sheetSleepMood(){
   const sq=sl.filter(x=>x.q);
   const sum=sl.length?`<div class="row"><span class="grow">Son ${sl.length} gecenin ortalaması<small class="db mut">${sq.length?`Ortalama kalite: ${MOODN[Math.round(avg(sq.map(x=>x.q)))-1].toLowerCase()}`:"Kalite girilmedi"}</small></span><b class="num">${hbDur(Math.round(avg(sl.map(x=>x.min))))}</b></div>`:`<p class="mut">Henüz uyku kaydı yok. Saatten alabilir ya da elle ekleyebilirsin.</p>`;
   const nights=sl.slice().reverse().map(x=>`<div class="prow"><button class="grow pbtn" data-hb="sedit:${x.day}"><span class="grow">${fd(x.day)}${x.src==="hc"?`<small class="db mut">Saatten (Health Connect)</small>`:x.q?`<small class="db mut">Kalite: ${MOODN[x.q-1].toLowerCase()}</small>`:""}</span><b class="num">${hbDur(x.min)}</b></button></div>`).join("");
-  const moods=mo.length?`<div class="grp">Ruh hali</div>${mo.slice().reverse().map(x=>`<div class="prow"><button class="grow pbtn" data-hb="medit:${x.day}"><span class="grow"><span aria-hidden="true">${MOODS[x.v-1]}</span> ${MOODN[x.v-1]}<small class="db mut ell">${fd(x.day)}${x.t?" · "+esc(x.t):""}</small></span></button></div>`).join("")}`:"";
-  openSheet(`<h3>Uyku ve ruh hali</h3>${sum}${nights?`<div class="grp">Geceler</div>${nights}`:""}${moods}<div class="bgrid mb-3 mt-2"><button class="btn" data-hb="sleep">Uyku ekle</button><button class="btn" data-hb="mood">Ruh hali ekle</button></div>`);
+  const moods=mo.length?`<h4 class="grp">Ruh hali</h4>${mo.slice().reverse().map(x=>`<div class="prow"><button class="grow pbtn" data-hb="medit:${x.day}"><span class="grow"><span aria-hidden="true">${MOODS[x.v-1]}</span> ${MOODN[x.v-1]}<small class="db mut ell">${fd(x.day)}${x.t?" · "+esc(x.t):""}</small></span></button></div>`).join("")}`:"";
+  openSheet(`<h3>Uyku ve ruh hali</h3>${sum}${nights?`<h4 class="grp">Geceler</h4>${nights}`:""}${moods}<div class="bgrid mb-3 mt-2"><button class="btn" data-hb="sleep">Uyku ekle</button><button class="btn" data-hb="mood">Ruh hali ekle</button></div>`);
 }
 function sleepSave(){
   const b=$("#hbb").value,w=$("#hbw").value,h=num($("#hbh").value);

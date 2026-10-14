@@ -346,7 +346,8 @@ const Algo=(()=>{
     return r;
   }
   /* A4 page in pixels at 150 dpi, with its margin: the canvas size of every PDF report. */
-  const PAGE={w:1240,h:1754,m:70};
+  /* Print colours of every canvas report (white paper; the app theme tokens do not apply). */
+  const PAGE={w:1240,h:1754,m:70,c:{bg:"#ffffff",ink:"#10232b",mut:"#62737a",frame:"#9fb4ad",rule:"#d9e2de",band:"#e3efe9",prim:"#0f5c55",water:"#1d6fa5"}};
   return {PAGE,dayOk,timeOk,KCAL_PER_KG,ACT,actFromTriage,dayNum,fdate,trend,slopePerWeek,setClock,fullKcal,LOW_LOG_KCAL,MIN_AVG_DAYS,kcalFloor,manualKcal,goalWhy,fastLoss,lbSuspect,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,riskFlags,lossBlock,etaWeeks,lossSlope,isLosing,lossKnown,goalEta,protein,PROTEIN_NOTE,exerciseKcal,moveBonus,moveSummary,cleanWalk,netKcal,gymKcal,MEASURES,measureRange,cleanMeasures,whtr,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
 })();
 if(typeof module!=="undefined")module.exports=Algo;
