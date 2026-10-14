@@ -8,16 +8,15 @@ test("encrypted backup: create, wipe all data, rejected without or with a wrong 
   await app.open({seed:state({},{entries:[entry("note",null,"Gizli sağlık notum"),entry("weight",81.5)]}),keys:{groq:"gsk_test"}});
   const toastIs=m=>expect(app.toast).toHaveText(m);
   const bk=async()=>{await app.go("settings-data");await page.click('[data-act="backup"]')};
+  const rs=async()=>{await app.go("settings-data");await page.click('[data-obr="open"]')};
+  const restore=async(t,pw)=>{await page.fill("#obt",t);await page.fill("#obpw",pw);await page.click('[data-obr="go"]')};
 
   // Backup: a short or mismatched password is rejected, a valid one downloads an encrypted file
   await bk();
-  await page.fill("#bkpw","kisa");await page.fill("#bkpw2","kisa");
+  await page.fill("#bkpw","kisa");
   await page.click('[data-go="download"]');
   await expect(page.locator("#bkw")).toContainText("en az 10 karakter");
-  await page.fill("#bkpw",PW);await page.fill("#bkpw2",PW+"x");
-  await page.click('[data-go="download"]');
-  await expect(page.locator("#bkw")).toHaveText("Parolalar aynı değil");
-  await page.fill("#bkpw2",PW);
+  await page.fill("#bkpw",PW);
   const [dl]=await Promise.all([page.waitForEvent("download"),page.click('[data-go="download"]')]);
   expect(dl.suggestedFilename()).toBe("neowell-yedek-2026-10-06.json");
   const text=await readFile(await dl.path(),"utf8");
@@ -33,29 +32,25 @@ test("encrypted backup: create, wipe all data, rejected without or with a wrong 
   await page.evaluate("add('note',null,'Sonradan yazılan',dayKey());save()");
 
   // Restoring with no password, a wrong password or plain text leaves the data untouched
-  await bk();
-  await page.fill("#bk",text);
-  await page.click('[data-go="restore"]');
+  await rs();
+  await restore(text,"");
   await toastIs("Şifreli yedek: önce parolayı yaz");
-  await page.fill("#bkpw","Yanlis-Parola-2026");
-  await page.click('[data-go="restore"]');
+  await restore(text,"Yanlis-Parola-2026");
   await toastIs("Parola yanlış ya da yedek bozuk");
-  await page.fill("#bk",JSON.stringify({entries:[]}));await page.fill("#bkpw",PW);
-  await page.click('[data-go="restore"]');
+  await restore(JSON.stringify({entries:[]}),PW);
   await toastIs("Yalnız parolalı yedek geri yüklenir");
   expect((await app.state()).entries.map(e=>e.text)).toEqual(["Sonradan yazılan"]);
   expect(app.dialogs.length).toBe(1); // only the reset confirmation
 
   // Declining the confirmation changes nothing; the right password plus confirmation restores
-  await page.fill("#bk",text);
   app.onDialog=d=>d.dismiss();
-  await page.click('[data-go="restore"]');
+  await restore(text,PW);
   await expect.poll(()=>app.dialogs.length).toBe(2);
   expect((await app.state()).entries.map(e=>e.text)).toEqual(["Sonradan yazılan"]);
   app.onDialog=null;
-  await page.click('[data-go="restore"]');
-  await toastIs("Yedek yüklendi");
-  expect(app.dialogs[2]).toMatch(/^Yedekten 2 kayıt yüklenecek\. Mevcut veriler değişecek\./);
+  await page.click('[data-obr="go"]');
+  await expect(app.toast).toContainText("Yedek yüklendi");
+  expect(app.dialogs[2]).toMatch(/^Yedekten 2 kayıt yüklenecek\. Yedek tarihi: .*Bu telefondaki 1 kayıt değişecek\./);
   const st=await app.state();
   expect(st.entries.map(e=>e.text).sort()).toEqual(["","Gizli sağlık notum"]);
   expect(st.entries.find(e=>e.type==="weight").v).toBe(81.5);

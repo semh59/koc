@@ -3,21 +3,30 @@
 /* Fixed start-up notice: shown on the welcome screen and, for an existing install, once in a sheet until acknowledged. */
 const NOTICE="NeoWell bir tıbbi cihaz değildir ve hekim yerine geçmez. Rehber yapay zekâ kullanır ve yanılabilir; sağlıkla ilgili kararları hekiminle ver. Acil bir durumda 112'yi ara.";
 const noticeGate=()=>{if(!S.settings.noticeOk)openSheet(`<h3>Önemli uyarı</h3><div class="banner"><p>${NOTICE}</p></div><button class="btn" data-notice>Anladım</button>`)};
-/* Restoring a backup from the welcome screen (new phone, reinstall): the same code as Settings, fed from this sheet instead of the backup text box. */
-function sheetObRestore(){
-  openSheet(`<h3>Yedeğini geri yükle</h3><p class="mut">Daha önce aldığın NeoWell yedek dosyasını seç ve yedek parolanı yaz.</p>
+/* The one restore page, opened from the welcome screen and from Settings: a file or pasted backup text, the password, and a check that loads nothing. */
+async function sheetObRestore(){
+  const keep=!!KV()&&Coach.vaultOn()&&await bkRemembered()==null;
+  openSheet(`<h3>Yedekten geri yükle</h3><p class="mut">Daha önce aldığın NeoWell yedek dosyasını seç (ya da Kopyala ile aldığın metni yapıştır) ve yedek parolanı yaz.</p>
   <label class="lbl" for="obf">Yedek dosyası</label><input class="in" type="file" id="obf" accept=".json,application/json,text/plain">
+  <label class="lbl" for="obt">Ya da yedek metni</label><textarea class="in" id="obt" spellcheck="false"></textarea>
   <label class="lbl" for="obpw">Yedek parolası</label><input class="in" type="password" id="obpw" autocomplete="off">
-  <button class="btn" data-obr="go">Geri yükle</button>
-  <p class="hint">Parolayı unuttuysan yedek açılamaz. Fotoğraflar yedeğe girmez. Rehber izni ve otomatik yedek bu telefonda yeniden ayarlanır.</p>`);
+  ${keep?swRow('id="obrem"',true,"Parolayı bu telefonda sakla; Drive ve otomatik yedek aynı parolayla çalışır"):""}
+  <button class="btn" data-obr="go">Geri yükle</button><button class="mt-2 btn ghost" data-obr="check">Yalnız denetle (hiçbir şey yüklenmez)</button>
+  <p class="hint">Parolayı unuttuysan yedek açılamaz. ${BK_PHOTOS} Rehber izni ve otomatik yedek bu telefonda yeniden ayarlanır.</p>`);
 }
 async function obRestoreGo(btn){
-  const f=$("#obf").files[0];
-  if(!f)return toast("Önce yedek dosyasını seç");
-  if(f.size>5e6)return toast("Dosya çok büyük, bir NeoWell yedeği olmayabilir");
-  let text;try{text=await f.text()}catch{return toast("Dosya okunamadı")}
+  const f=$("#obf").files[0];let text;
+  if(f){
+    if(bkTooBig(f))return;
+    try{text=await f.text()}catch{return toast("Dosya okunamadı")}
+  }else text=$("#obt").value.trim();
+  if(!text)return toast("Önce yedek dosyasını seç ya da yedek metnini yapıştır");
+  const pw=$("#obpw").value,keep=$("#obrem")?.checked,label=btn.textContent;
   btn.disabled=true;btn.textContent="Açılıyor…";
-  try{await goRestore(text,$("#obpw").value)}finally{if(btn.isConnected){btn.disabled=false;btn.textContent="Geri yükle"}}
+  try{
+    if(btn.dataset.obr==="check")await checkBackup(text,pw);
+    else if(await goRestore(text,pw)&&keep)await bkRemember(pw);
+  }finally{if(btn.isConnected){btn.disabled=false;btn.textContent=label}}
 }
 document.addEventListener("click",ev=>{const r=ev.target.closest("[data-obr]");if(r)r.dataset.obr==="open"?sheetObRestore():obRestoreGo(r)});
 document.addEventListener("click",ev=>{if(ev.target.closest("[data-notice]")){S.settings.noticeOk=true;save();closeSheet()}});

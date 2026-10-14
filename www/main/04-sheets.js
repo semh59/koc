@@ -278,50 +278,54 @@ function sheetNote(){openSheet(`<h3>Not ekle</h3><textarea class="in" id="fv" pl
 function goNote(){const t=$("#fv").value.trim();if(!t)return toast("Önce notunu yaz");const e=add("note",null,t,fday());closeSheet();render();toast("Not kaydedildi",e.id)}
 
 function sheetBackup(){
-  openSheet(`<h3>Yedekle veya geri yükle</h3><div class="lbl">Yedek metni. Geri yüklemek için yedek metnini buraya yapıştır ya da "Dosyadan oku"yu kullan. Yedek alırken Kopyala'ya basınca metin burada çıkar.</div><textarea class="in" id="bk" spellcheck="false"></textarea>
-  <div class="lbl">Yedek parolası (zorunlu, en az ${BackupLib.MINPW} karakter). Yedek her zaman şifrelenir${S.settings.bkNoKeys?" ve Rehber anahtarların içine girmez":" ve Rehber anahtarların da içine girer"}. Parolayı unutursan yedeğini kimse açamaz, kurtarma yolu yoktur. Parolayı güvenli bir yere yaz. Geri yüklerken de aynı parola gerekir.</div>
-  <input class="in" id="bkpw" type="password" autocomplete="new-password" placeholder="Parola"><input class="in" id="bkpw2" type="password" autocomplete="new-password" placeholder="Yedek alırken parolayı tekrar yaz">
+  openSheet(`<h3>Yedek al</h3><p class="m0 mb-3 mut sm">${BK_PHOTOS} Yedek her zaman şifrelenir${S.settings.bkNoKeys?" ve Rehber anahtarların içine girmez":" ve Rehber anahtarların da içine girer"}. ${bkLast()}.</p>
+  <label class="lbl" for="bkpw">Yedek parolası (en az ${BackupLib.MINPW} karakter). Parolayı unutursan yedeğini kimse açamaz, kurtarma yolu yoktur. Parolayı güvenli bir yere yaz.</label>
+  <input class="in" id="bkpw" type="password" autocomplete="new-password" placeholder="Parola">
+  <div class="lbl">Kopyala'ya basınca yedek metni burada çıkar.</div><textarea class="in" id="bk" spellcheck="false" readonly></textarea>
   <div class="hint" id="bkw" role="alert"></div>
-  <div class="two"><button class="btn ghost" data-go="copy">Kopyala</button><button class="btn ghost" data-go="${isNative()?"share":"download"}">${isNative()?"Dosya olarak paylaş":"Dosya indir"}</button></div>
-  <div class="btns"><label class="tc btn ghost">Dosyadan oku<input id="bkfile" type="file" accept=".json,application/json,text/plain" hidden></label><button class="btn" data-go="restore">Bu metinden geri yükle</button></div>
-  <button class="mt-2 btn ghost" data-go="checkbk">Yalnız denetle (hiçbir şey yüklenmez)</button>`);
+  <div class="two"><button class="btn ghost" data-go="copy">Kopyala</button><button class="btn" data-go="${isNative()?"share":"download"}">${isNative()?"Dosya olarak paylaş":"Dosya indir"}</button></div>
+  <button class="mt-2 btn ghost" data-obr="open">Yedekten geri yükle</button>`);
 }
 function markBackup(soft){S.settings.lastBackup=dayKey();save(soft)}
 async function backupText(){
-  const pw=$("#bkpw").value,m2=$("#bkpw2"),bad=BackupLib.pwCheck(pw)||(m2&&m2.value!==pw?"Parolalar aynı değil":"");
+  const pw=$("#bkpw").value,bad=BackupLib.pwCheck(pw);
   if(bad){const w=$("#bkw");if(w)w.textContent=bad;toast(bad);return null}
   return backupJson(pw);
 }
 /* Share sheet on the phone, file download in a browser. */
 async function exportBackup(){
   const txt=await backupText();
-  if(txt&&await shareFile(BackupLib.manualName(dayKey()),"NeoWell yedeği","application/json",txt,true))markBackup();
+  if(txt&&await shareFile(BackupLib.manualName(dayKey()),"NeoWell yedeği","application/json",txt,true)){markBackup();toast(isNative()?BK_SENT:"Yedek dosyası indirildi. Güvenli bir yere kopyala ve yeni telefonda Geri yükle > Yalnız denetle ile sına")}
 }
 /* Decrypts and validates a backup without touching the app state; null (after a toast) when it cannot be used. */
 async function openBackup(text,pw){
   const bad=m=>{toast(m);return null};
   let r,keysIn=null;try{r=JSON.parse(text)}catch{return bad("Yedek metni okunamadı")}
-  if(!(r&&r.enc))return bad("Yalnız parolalı yedek geri yüklenir");
+  if(!(r&&(r.enc||r.neowell>1)))return bad("Yalnız parolalı yedek geri yüklenir");
   if(!pw)return bad("Şifreli yedek: önce parolayı yaz");
-  try{const p=await BackupLib.decrypt(r,pw);r=p.S;keysIn=p.keys}catch{return bad("Parola yanlış ya da yedek bozuk")}
+  let at="",app="";
+  try{const p=await BackupLib.decrypt(r,pw);r=p.S;keysIn=p.keys;at=/^\d{4}-\d{2}-\d{2}$/.test(p.at)?p.at:"";app=typeof p.app==="string"?p.app.slice(0,20):""}
+  catch(e){return bad(e.message==="version"?"Bu yedek NeoWell'in daha yeni bir sürümüyle alınmış. Önce uygulamayı güncelle":e.message==="format"?"Yedek biçimi tanınmıyor. Dosya bozuk ya da başka bir uygulamadan olabilir":"Parola yanlış ya da yedek bozuk")}
   if(!r||!Array.isArray(r.entries))return bad("Bu bir NeoWell yedeği değil");
   const b=buildState(r);
   if(!b.S.entries.length&&r.entries.length)return bad("Yedekte geçerli kayıt yok");
-  return {b,keysIn};
+  return {b,keysIn,at,app};
 }
 const backupCounts=s=>[[s.entries,"kayıt"],[s.workouts,"antrenman"],[s.meds,"ilaç"],[s.vitals,"ölçüm"]].filter(([a])=>a.length).map(([a,n])=>`${fint(a.length)} ${n}`).join(", ");
 /* "Yalnız denetle": proves the file and password work and shows what is inside, loads nothing. */
-async function checkBackup(){
-  const o=await openBackup($("#bk").value,$("#bkpw").value);if(!o)return;
+async function checkBackup(text,pw){
+  const o=await openBackup(text,pw);if(!o)return;
   const days=o.b.S.entries.map(e=>e.day).sort(),last=days[days.length-1];
   toast(`Parola doğru. Yedekte ${backupCounts(o.b.S)||"kayıt yok"}${last?`; son kayıt ${fd(last)}`:""}. Hiçbir şey yüklenmedi.`);
 }
+/* Returns whether the backup was loaded. */
 async function goRestore(text=$("#bk").value,pw=$("#bkpw").value){
   const o=await openBackup(text,pw);if(!o)return;
-  const {b,keysIn}=o,drop=b.drop,out=b.S.entries,hasData=Log.all().length>0||Gym.workouts().length>0||Meds.count()>0,fresh=obNeeded();
+  const {b,keysIn,at,app}=o,drop=b.drop,out=b.S.entries,hasData=Log.all().length>0||Gym.workouts().length>0||Meds.count()>0,fresh=obNeeded();
   const pj=JSON.stringify(S),canCopy=otherBytes+JSON.stringify(b.S).length*2+pj.length*2<=STORE_WARN;
-  if(!await confirmSheet({title:"Yedek yüklensin mi?",ok:"Yükle",danger:true,body:`Yedekten ${backupCounts(b.S)||"0 kayıt"} yüklenecek${drop?`; ${drop} geçersiz kayıt atlanacak`:""}.${hasData?" Mevcut veriler değişecek.":""}${canCopy||!hasData?"":" Depolama dolu olduğundan eski verin için güvenlik kopyası ALINAMAYACAK; geri dönüş olmaz, önce yedek al."} Devam edilsin mi?`}))return;
-  const prevS=S;
+  if(!await confirmSheet({title:"Yedek yüklensin mi?",ok:"Yükle",danger:true,body:`Yedekten ${backupCounts(b.S)||"0 kayıt"} yüklenecek${drop?`; ${drop} geçersiz kayıt atlanacak`:""}. Yedek tarihi: ${at?fd(at):"bilinmiyor"}${app?`, sürüm ${app}`:""}.${hasData?` Bu telefondaki ${backupCounts(S)||"veriler"} değişecek.`:""} ${BK_PHOTOS}${canCopy||!hasData?"":" Depolama dolu olduğundan eski verin için güvenlik kopyası ALINAMAYACAK; geri dönüş olmaz, önce yedek al."} Devam edilsin mi?`}))return;
+  /* The safety copy is taken before anything is overwritten; if the new data then does not fit, save() drops the copy and retries. */
+  const copyIn=hasData&&canCopy&&Store.set("nw_state_previous",pj),prevS=S;
   S=b.S;
   /* A backup must not change where the key goes, the consent setting or the data-sharing permission. The automatic backup folder belongs to this phone. */
   Object.assign(S.settings,Object.fromEntries(["noticeOk","hideRecents",...SHARE_KEYS].map(k=>[k,prevS.settings[k]])),{consent:prevS.settings.consent,consentV:prevS.settings.consentV,consentAt:prevS.settings.consentAt,consentP:prevS.settings.consentP,lastBackup:dayKey(),autoBk:prevS.settings.autoBk,lastAutoBk:prevS.settings.lastAutoBk});cAgeGuard();
@@ -334,17 +338,21 @@ async function goRestore(text=$("#bk").value,pw=$("#bkpw").value){
     if(!def&&keys[p.id]&&cur)p.base=cur.base;
     if(def)p.confirm=def.confirm;
   }
-  if(!save()){S=prevS;saveFail=false;return toast("Yedek yüklenemedi, depolama dolu")}
-  if(keysIn&&typeof keysIn==="object")for(const id in keysIn)if(typeof keysIn[id]==="string"&&Coach.providers().some(p=>p.id===id))try{await setKey(id,keysIn[id])}catch{toast("Bir anahtar kasaya yazılamadı")}
-  /* The safety copy keeps the old data and doubles the store: it is taken only if the total stays under the warning limit. */
-  let copy=false;
-  if(hasData&&storeBytes+pj.length*2<=STORE_WARN)copy=Store.set("nw_state_previous",pj);
+  if(!save()){S=prevS;saveFail=false;if(copyIn)Store.del("nw_state_previous");return toast("Yedek yüklenemedi, depolama dolu")}
+  let miss=false;
+  if(keysIn&&typeof keysIn==="object")for(const id in keysIn)if(typeof keysIn[id]==="string"&&Coach.providers().some(p=>p.id===id)){
+    try{await setKey(id,keysIn[id])}catch{}
+    if(getKeys()[id]!==keysIn[id])miss=true;
+  }
+  const copy=copyIn&&Store.get("nw_state_previous")!=null;
   if(!copy)Store.del("nw_state_previous");
-  S.settings.copyAt=copy?dayKey():"";
+  S.settings.copyAt=copy?dayKey():"";S.settings.keyMiss=miss;
   if(fresh)S.settings.obDone=S.settings.noticeOk=true;
   save(true);
   otherBytes=lsOther();storeBytes=otherBytes+lastJ.length*2;
   logOff=0;closeSheet();render();scheduleReminders().then(setNotif);
-  toast((drop?`Yedek yüklendi, ${drop} geçersiz kayıt atlandı`:"Yedek yüklendi")+(b.lost.length?`; okunamayan alanlar varsayılana döndü (${b.lost.join(", ")})`:"")+(copy||!hasData?"":". Eski verin için güvenlik kopyası alınamadı (depolama dolu)"));
+  const ps=prevS.settings;
+  toast((drop?`Yedek yüklendi, ${drop} geçersiz kayıt atlandı`:"Yedek yüklendi")+(b.lost.length?`; okunamayan alanlar varsayılana döndü (${b.lost.join(", ")})`:"")+(copy||!hasData?"":". Eski verin için güvenlik kopyası alınamadı (depolama dolu)")+(ps.consent&&ps.autoBk?"":". Rehber izni ve otomatik yedek bu telefonda yeniden kurulur")+(miss?". Bazı Rehber anahtarları kasaya yazılamadı, Ayarlar > Veri ve yedek'te uyarı duruyor":""));
+  return true;
 }
 

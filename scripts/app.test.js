@@ -323,13 +323,13 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   ok("provider names from one source: the privacy screen, policy, data safety and store text all list them",(()=>{const n=ev("defProviders().map(p=>p.name)"),rd=f=>require("fs").readFileSync(path.join(__dirname,"../docs/"+f),"utf8");ev("sheetPrivacy()");const pv=$q("#sheet").textContent;ev("closeSheet()");return n.length===6&&n.every(x=>pv.includes(x)&&["privacy-policy.md","play-data-safety.md","store-listing.md"].every(f=>rd(f).includes(x)))})());
   ev("setKey('groq','KEY-sirri-12345');S.settings.healthNote='gizli not'");
   ev("document.querySelector('#bkpw')||document.body.insertAdjacentHTML('beforeend','<input id=\"bkpw\">')");
-  ev("document.querySelector('#bkpw2')||document.body.insertAdjacentHTML('beforeend','<input id=\"bkpw2\"><div id=\"bkw\"></div>')");
-  const pw1=w.document.querySelector("#bkpw"),pw2=w.document.querySelector("#bkpw2");
-  for(const [a,b,msg,n] of [["","","en az 10","parolasız"],["abc","abc","en az 10","kısa"],["abcdefgh1","abcdefgh1","en az 10","9 karakter"],["1234567890","1234567890","kolay","yalnız rakam"],["Password123!","Password123!","kolay","yaygın parola + rakam"],["mavi-bulut-77","mavi-bulut-78","aynı değil","uyuşmayan"]]){
-    pw1.value=a;pw2.value=b;
+  ev("document.querySelector('#bkw')||document.body.insertAdjacentHTML('beforeend','<div id=\"bkw\"></div>')");
+  const pw1=w.document.querySelector("#bkpw");
+  for(const [a,msg,n] of [["","en az 10","parolasız"],["abc","en az 10","kısa"],["abcdefgh1","en az 10","9 karakter"],["1234567890","kolay","yalnız rakam"],["Password123!","kolay","yaygın parola + rakam"]]){
+    pw1.value=a;
     ok(`a passwordless/weak backup is rejected: ${n}`,await ev("backupText()")===null&&w.document.querySelector("#bkw").textContent.includes(msg),w.document.querySelector("#bkw").textContent);
   }
-  w.document.querySelector("#bkw").remove();pw1.value="mavi-bulut-77";pw2.value="mavi-bulut-77";
+  w.document.querySelector("#bkw").remove();pw1.value="mavi-bulut-77";
   w.backupP=ev("backupText()");
   const enc=await w.backupP;{
     ok("an encrypted backup contains no plain text",!enc.includes("gizli not")&&!enc.includes("KEY-sirri-12345")&&JSON.parse(enc).enc==="aes-gcm-pbkdf2");
@@ -849,16 +849,16 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("mismatched passwords are not sent",saved===null&&q("#bkw").textContent.includes("aynı değil"));
     q("#bkp2").value="mavi-bulut-77";click('[data-bk="send"]');await until(()=>saved);await flush();
     ok("an encrypted backup is shared: file name, no plain text, share",saved&&/^neowell-yedek-\d{4}-\d{2}-\d{2}\.json$/.test(saved.path)&&JSON.parse(saved.data).enc==="aes-gcm-pbkdf2"&&!saved.data.includes("gizli sağlık notu")&&shared.files[0]==="file:///cache/y.json",saved&&saved.data.slice(0,120));
-    ok("after sharing the last backup date is today, the notification text",ev("S.settings.lastBackup")===ev("dayKey()")&&toastT().includes("Drive"));
+    ok("after sharing the last backup date is today, the notification text",ev("S.settings.lastBackup")===ev("dayKey()")&&toastT().includes("Yalnız denetle"));
     // can it be restored (round trip)
     doc.body.insertAdjacentHTML("beforeend",'<textarea id="bk2"></textarea>');
     ev("S.settings.healthNote=''");
     const encJ=saved.data;
     ev("sheetBackup()");q("#bk").value=encJ;q("#bkpw").value="mavi-bulut-77";await ev("goRestore()");
     ok("the sent backup is restored with the same password",ev("S.settings.healthNote")==="gizli sağlık notu");
-    ev("S.settings.healthNote='sonradan'");q("#bk").value=encJ;q("#bkpw").value="mavi-bulut-77";await ev("checkBackup()");
+    ev("S.settings.healthNote='sonradan'");q("#bk").value=encJ;q("#bkpw").value="mavi-bulut-77";await ev(`checkBackup(${JSON.stringify(encJ)},"mavi-bulut-77")`);
     ok("Yalnız denetle: the right password reports what is inside and loads nothing",ev("S.settings.healthNote")==="sonradan"&&/Parola doğru. Yedekte .*kayıt.*Hiçbir şey yüklenmedi/.test(toastT()),toastT());
-    q("#bkpw").value="yanlis-parola-1";await ev("checkBackup()");
+    await ev(`checkBackup(${JSON.stringify(encJ)},"yanlis-parola-1")`);
     ok("Yalnız denetle: a wrong password says so and loads nothing",ev("S.settings.healthNote")==="sonradan"&&toastT().includes("Parola yanlış"),toastT());
     ev("S.settings.healthNote='gizli sağlık notu'");
     // cancel
@@ -1786,7 +1786,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("quota error: a persistent warning in other tabs too",$q("#view").textContent.includes("Son değişiklik kaydedilemedi"));
     ev("tab='today';render()");
     $q('.todo [data-act="databackup"]').click();
-    ok("quota error: Yedek al goes to Data and backup, the backup screen includes the in-memory (unsaved) state",ev("tab")==="settings-data"&&(()=>{$q("#bkpw").value="mavi-bulut-77";$q("#bkpw2").value="mavi-bulut-77";return true})()&&(await (await ev("BackupLib.decrypt"))(JSON.parse(await ev("backupText()")),"mavi-bulut-77")).S.entries.filter(e=>e.type==="water").length===2);
+    ok("quota error: Yedek al goes to Data and backup, the backup screen includes the in-memory (unsaved) state",ev("tab")==="settings-data"&&(()=>{$q("#bkpw").value="mavi-bulut-77";return true})()&&(await (await ev("BackupLib.decrypt"))(JSON.parse(await ev("backupText()")),"mavi-bulut-77")).S.entries.filter(e=>e.type==="water").length===2);
     ev("closeSheet()");SP.setItem=set0;
     ev("save();render()");
     ok("once quota frees up the record is written and the warning goes",!v().includes("kaydedilemedi")&&JSON.parse(w.localStorage.getItem("nw_state")).entries.length===2);

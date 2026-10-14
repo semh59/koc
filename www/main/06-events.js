@@ -51,12 +51,6 @@ $("#tundo").addEventListener("click",undoLast);
 const TOGGLES={mk:"moveKcalOn",rpe:"rpeOn",gdv:"gdVoice",gdb:"gdVib",aw:"awakeOn",comfy:"comfy",hs:"hideStreak",hn:"hideNums"}; // data-<key> checkbox -> boolean setting
 document.addEventListener("change",ev=>{
   const t=ev.target;
-  if(t.id==="bkfile"){
-    const f=t.files&&t.files[0];if(!f)return;
-    if(f.size>5e6)return toast("Dosya çok büyük, bir NeoWell yedeği olmayabilir");
-    f.text().then(x=>{$("#bk").value=x;toast("Dosya okundu. Devam etmek için geri yükle'ye dokun")},()=>toast("Dosya okunamadı"));
-    return;
-  }
   if(t.dataset.gi){gInput(t);return}
   const tg=Object.keys(TOGGLES).find(k=>t.dataset[k]!==undefined);
   if(tg){S.settings[TOGGLES[tg]]=t.checked;save();if(tg==="aw")gAwake();if(tg==="comfy"||tg==="hs"||tg==="hn")render();return}

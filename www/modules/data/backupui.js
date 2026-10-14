@@ -4,7 +4,13 @@
 const BKPW_LS="nw_bkpw_enc";
 const BF=()=>plugin("BackupFolder");
 /* The one backup payload: settings and data plus the API keys (unless the user keeps them out), encrypted with the password into a JSON string. */
-const backupJson=async pw=>JSON.stringify(await BackupLib.encrypt({S,keys:S.settings.bkNoKeys?{}:Coach.keys()},pw));
+const backupJson=async pw=>JSON.stringify(await BackupLib.encrypt({S,keys:S.settings.bkNoKeys?{}:Coach.keys(),at:dayKey(),app:appVer},pw));
+const BK_PHOTOS="Fotoğraflar yedeğe girmez; yeni telefona ayrıca taşı.";
+const BK_SENT="Yedek paylaşıldı. Ulaştığını denetle: dosyayı yeni telefonda Geri yükle > Yalnız denetle ile sına";
+const BK_MAX=2e7;
+/* The share sheet closing is not proof of arrival, so the date says "shared" and asks for a check. */
+const bkLast=()=>{const lb=S.settings.lastBackup;return lb?`Son yedek: ${fd(lb)} (paylaşıldı, ulaştığını denetle)`:"Hiç yedek alınmadı"};
+const bkTooBig=f=>f.size>BK_MAX&&(toast("Dosya 20 MB'tan büyük, bir NeoWell yedeği olmayabilir"),true);
 async function bkRemembered(){
   const kv=KV(),e=lsGet(BKPW_LS);
   if(!kv||!e)return null;
@@ -20,14 +26,15 @@ function bkNewPw(first,again){
   return {pw,bad:BackupLib.pwCheck(pw)||(pw!==$("#"+again).value?"Parolalar aynı değil":"")};
 }
 async function sheetDrive(){
-  const rem=await bkRemembered(),native=!!KV()&&Coach.vaultOn(),lb=S.settings.lastBackup;
+  const rem=await bkRemembered(),native=!!KV()&&Coach.vaultOn();
   openSheet(`<h3>Yedeği Drive'a gönder</h3>
-  <p class="m0 mb-3 mut sm">Verilerin parolayla şifrelenir. Paylaşım ekranında Google Drive'ı (ya da istediğin yeri) seç. Hesap bağlamak gerekmez.${lb?` Son yedek: ${fd(lb)}.`:""}</p>
+  <p class="m0 mb-3 mut sm">Verilerin parolayla şifrelenir. Paylaşım ekranında Google Drive'ı (ya da istediğin yeri) seç. Hesap bağlamak gerekmez. ${bkLast()}. ${BK_PHOTOS}</p>
+  <p class="hint">${S.settings.bkNoKeys?"Rehber anahtarların yedeğe girmez.":"Rehber anahtarların da yedeğe girer; istemezsen Ayarlar > Veri ve yedek'ten kapat."}${rem?"":" Eski yedeklerinle aynı parolayı kullan; parola değişirse eski dosyalar eski parolayla açılır."}</p>
   ${rem?`<p>Parola bu telefonda saklı.</p><button class="btn" data-bk="send">Şimdi gönder</button><button class="mt-2 btn ghost" data-bk="forget">Parolayı unut</button>`
   :`<input class="in" id="bkp1" type="password" placeholder="Parola (en az ${BackupLib.MINPW} karakter)" autocomplete="new-password"><input class="in" id="bkp2" type="password" placeholder="Parolayı tekrar yaz" autocomplete="new-password">
   ${native?swRow('id="bkrem"',true,"Parolayı bu telefonda sakla (Keystore ile şifreli)"):""}
   <div class="hint" id="bkw" role="alert"></div><button class="btn" data-bk="send">Şifrele ve gönder</button>`}
-  <p class="hint">Parolayı unutursan yedeğini kimse açamaz, kurtarma yolu yoktur. Parolayı güvenli bir yere yaz. Geri yüklemek için: Ayarlar > Veri ve yedek > Yedekle veya geri yükle > Dosyadan oku (dosyayı Drive'dan seçebilirsin).</p>
+  <p class="hint">Parolayı unutursan yedeğini kimse açamaz, kurtarma yolu yoktur. Parolayı güvenli bir yere yaz. Geri yüklemek için: Ayarlar > Veri ve yedek > Yedekten geri yükle (dosyayı Drive'dan seçebilirsin).</p>
   <button class="mt-2 btn ghost" data-bk="close">Vazgeç</button>`);
 }
 async function bkSend(){
@@ -42,13 +49,16 @@ async function bkSend(){
   if(!await shareFile(BackupLib.manualName(dayKey()),"NeoWell yedeği","application/json",text,true))return;
   if(remember)await bkRemember(pw);
   markBackup();closeSheet();render();scheduleReminders().then(setNotif);
-  toast("Yedek paylaşıldı. Drive'da dosyanın göründüğünü kontrol et");
+  toast(BK_SENT);
 }
 document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-bk]");if(!el)return;
   const a=el.dataset.bk;
   if(a==="send")bkSend();
-  else if(a==="forget"){lsDel(BKPW_LS);if(S.settings.autoBk){abOff();toast("Parola unutuldu, otomatik yedek de kapatıldı")}sheetDrive()}
+  else if(a==="forget")confirmSheet({title:"Parola unutulsun mu?",body:`Parola bu telefondan silinir${S.settings.autoBk?" ve otomatik yedek kapanır":""}. Yedeklerinin parolası değişmez; parolayı yazdığından emin ol, yoksa yedekler açılamaz.`,ok:"Unut",danger:true}).then(ok=>{
+    if(!ok)return;
+    lsDel(BKPW_LS);if(S.settings.autoBk){abOff();toast("Parola unutuldu, otomatik yedek de kapatıldı")}sheetDrive();
+  });
   else if(a==="close")closeSheet();
   else if(a==="nokeys"){S.settings.bkNoKeys=el.checked;save()}
 });
@@ -70,7 +80,7 @@ async function abSetup(){
   openSheet(`<h3>Otomatik yedek</h3>
   <p class="m0 mb-3 mut sm">Uygulamayı açtığında son yedek 7 günden eskiyse seçeceğin klasöre şifreli yedek (neowell-oto-…) yazılır, en son 4 otomatik yedek kalır; elle aldığın yedeklere dokunulmaz. Uygulamayı en az haftada bir aç.</p>
   ${rem?`<p>Yedek parolası bu telefonda saklı, o kullanılır.</p>`:`<input class="in" id="abp1" type="password" placeholder="Yedek parolası (en az ${BackupLib.MINPW} karakter)" autocomplete="new-password"><input class="in" id="abp2" type="password" placeholder="Parolayı tekrar yaz" autocomplete="new-password">`}
-  <p class="hint">Telefon değişirse dosyaları yeni telefona taşı ve Yedekle veya geri yükle > Dosyadan oku ile bu parolayla aç. Parolayı unutursan yedeğini kimse açamaz, kurtarma yolu yoktur. Parolayı güvenli bir yere yaz.</p>
+  <p class="hint">Telefon değişirse dosyaları yeni telefona taşı ve Yedekten geri yükle ile bu parolayla aç. ${BK_PHOTOS} Parolayı unutursan yedeğini kimse açamaz, kurtarma yolu yoktur. Parolayı güvenli bir yere yaz.</p>
   <div class="hint" id="abw" role="alert"></div><button class="btn" data-ab="pick">Klasör seç ve aç</button><button class="mt-2 btn ghost" data-bk="close">Vazgeç</button>`);
 }
 async function abPick(){
