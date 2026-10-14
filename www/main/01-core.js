@@ -50,7 +50,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- data ---------- */
 const DEF={
-  settings:{medNear:"",trial:null,ramOn:false,ramLat:0,ramLon:0,ramName:"",ramSahur:false,ramIftar:false,ramFrom:"",ramWater:false,ramMedsNo:false,ramMeds:{},comfy:false,pregnant:false,nursing:false,edFlag:false,riskOff:"",fastEdOk:false,hideStreak:false,hideNums:false,goalKg:0,kcal:0,waterMl:2500,glass:250,dayStart:0,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,shareProfile:true,noticeOk:false,lockGrace:30,piiPrev:false,piiPrevOwn:false,hideRecents:false,bkNoKeys:false,keyMiss:false,copyAt:"",lastPlateau:"",goalSugAt:"",lastBackup:"",alarmWarnDay:"",obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:false,lockOn:false,hcOn:false,hcFrom:"",cycleOn:false,cycleRem:false,fastOn:false,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
+  settings:{chipUse:{},vCtx:"",exLast:"",exMin:0,obSkipped:false,obNudge:false,obAt:"",modAsked:false,medNear:"",trial:null,ramOn:false,ramLat:0,ramLon:0,ramName:"",ramSahur:false,ramIftar:false,ramFrom:"",ramWater:false,ramMedsNo:false,ramMeds:{},comfy:false,pregnant:false,nursing:false,edFlag:false,riskOff:"",fastEdOk:false,hideStreak:false,hideNums:false,goalKg:0,kcal:0,waterMl:2500,glass:250,dayStart:0,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,shareProfile:true,noticeOk:false,lockGrace:30,piiPrev:false,piiPrevOwn:false,hideRecents:false,bkNoKeys:false,keyMiss:false,copyAt:"",lastPlateau:"",goalSugAt:"",lastBackup:"",alarmWarnDay:"",obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:false,lockOn:false,hcOn:false,hcFrom:"",cycleOn:false,cycleRem:false,fastOn:false,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
     {id:1,t:"09:00",on:true,dow:1,name:"Haftalık tartı (Pazartesi)",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -79,7 +79,7 @@ const CONSENT_V=3;
 const MED_NOTE="NeoWell tıbbi cihaz değildir, tanı koymaz ve tedavi önermez; hekim yerine geçmez. Sağlık kararların için hekimine danış.";
 /* Seconds in the background before the app lock asks again. */
 const LOCK_GRACES=[30,120,300];
-const DAY_KEYS=["copyAt","lastPlateau","goalSugAt","lastBackup","lastAutoBk","riskClearedAt","hcFrom","stepWarnDay","alarmWarnDay","stepsFrom","ramFrom"];
+const DAY_KEYS=["copyAt","lastPlateau","goalSugAt","lastBackup","lastAutoBk","riskClearedAt","hcFrom","stepWarnDay","alarmWarnDay","stepsFrom","ramFrom","obAt"];
 function cleanSettings(raw){
   const d=structuredClone(DEF.settings),o=raw&&typeof raw==="object"?raw:{};
   for(const k in RANGES){
@@ -94,6 +94,10 @@ function cleanSettings(raw){
   if(LOCK_GRACES.includes(o.lockGrace))d.lockGrace=o.lockGrace;
   if(typeof o.healthNote==="string")d.healthNote=o.healthNote.slice(0,500);
   d.trial=TrialLib.clean(o.trial);
+  for(const [k,v] of Object.entries(o.chipUse&&typeof o.chipUse==="object"?o.chipUse:{}).slice(0,12))if(/^[a-z]{2,8}$/.test(k)&&Number.isInteger(v)&&v>0&&v<1e6)d.chipUse[k]=v;
+  if(VitalsLib.CTX.some(c=>c[0]===o.vCtx))d.vCtx=o.vCtx;
+  if(typeof o.exLast==="string")d.exLast=o.exLast.slice(0,20);
+  if(Number.isInteger(o.exMin)&&o.exMin>0&&o.exMin<=600)d.exMin=o.exMin;
   if(typeof o.medNear==="string"&&/^\+?\d{7,15}$/.test(o.medNear))d.medNear=o.medNear;
   if(typeof o.ramName==="string")d.ramName=o.ramName.replace(/[\u0000-\u001F\u007F]/g,"").slice(0,40);
   if(o.ramMeds&&typeof o.ramMeds==="object")for(const [id,m] of Object.entries(o.ramMeds).slice(0,20)){

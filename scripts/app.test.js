@@ -581,7 +581,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     q("#bd2").value="86";click('[data-vt="savebp"]');
     ok("two measurements are saved: same session, raw values separate, chosen session",ev("S.vitals.length")===2&&ev("S.vitals[0].sid")===ev("S.vitals[1].sid")&&ev("S.vitals[0].session")==="evening"&&ev("S.vitals[0].sys")===128&&ev("S.vitals[1].sys")===132&&ev("S.vitals[0].pulse")===70,ev("S.vitals"));
     ok("save notice: average and no target-range note (130/84 is in range)",toastT().includes("130/84 (ortalama)")&&!toastT().includes("üstünde"),toastT());
-    ok("once measured today the Today blood pressure row goes away",!q('#view [data-vt="addbp"]'));
+    ok("once measured today the Today blood pressure row goes away",!q('#view .todo [data-vt="addbp"]'));
 
     // outlier and extreme value box
     ev("sheetBp()");
@@ -614,7 +614,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("tab='settings-modules';render()");click('[data-vt="bstoggle"]');
     ok("sugar tracking turns on, the reminder shows; no target field or ADA preset",ev("S.settings.bsOn")===true&&!q("#gFastHi")&&shown().includes(9)&&!q('[data-vt="gpreset"]')&&!/ADA 20|diyabet/i.test(q("#view").textContent));
     ev("tab='today';render()");
-    ok("on Today to-do a sugar row, no blood pressure since it is measured",!!q('#view .todo [data-vt="addbs"]')&&q(".todo").textContent.includes("Şeker")&&!q('#view [data-vt="addbp"]'));
+    ok("on Today to-do a sugar row, no blood pressure since it is measured",!!q('#view .todo [data-vt="addbs"]')&&q(".todo").textContent.includes("Şeker")&&!q('#view .todo [data-vt="addbp"]'));
     const addG=(g,ctx,day)=>{ev("sheetBs()");q("#gv").value=String(g);click(`[data-vctx="${ctx}"]`);if(day)q("#fday").value=day;click('[data-vt="savebs"]')};
     addG(95,"fasting");
     ok("sugar is saved: context and value",ev("S.vitals.filter(r=>r.k==='s').length")===1&&ev("S.vitals.find(r=>r.k==='s').ctx")==="fasting"&&ev("S.vitals.find(r=>r.k==='s').g")===95&&toastT().includes("95 mg/dL")&&!toastT().includes("üstünde"),toastT());
@@ -2253,11 +2253,13 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("add('food',700,'Fazla');add('water',1500);add('exercise',150,'Yürüyüş');render()");
     ok("when the target is exceeded 'kcal fazla', water and sport 'tamam'",(t=>t.includes("180kcal fazla")&&(t.match(/✓Hedef tamam/g)||[]).length===2)($q(".rings").textContent),$q(".rings").textContent);
     ok("the weight card is small: no chart, a one-line summary, leads to Trend",!v().includes('class="weight"')&&!!$q('#view .stepcard[data-tab="trend"]')&&!$q('#view .stepcard[data-tab="trend"] svg:not(.i)')&&$q('#view .stepcard[data-tab="trend"]').textContent.includes("86,0"));
-    ok("the Coach sentence is a Coach shortcut",!!$q('#view button.coach[data-tab="coach"]'));
+    ev("tab='trend';render()");
+    ok("the Coach sentence is a Coach shortcut, in Trend",!!$q('#view button.coach[data-tab="coach"]')&&!$q('#view .card.coachc [data-act]'));
+    ev("tab='today';render()");
     ev("S.settings.medOn=true;S.meds=[{id:1,n:'İlaç A',t:['08:00','20:00'],on:true}];S.settings.fastOn=true;S.settings.bpOn=true;render()");
     ok("medication, fasting and measurement are in the single 'Bugün yapılacaklar' card, no separate card",ev("document.querySelectorAll('#view .todo').length")===1&&$q(".todo").querySelectorAll('[data-md^="take:"]').length===2&&$q('.todo').textContent.includes('Oruç önerilmez')&&!!$q('.todo [data-vt="addbp"]')&&!v().includes("💊 İlaçlar")&&!v().includes("Ölçümler"));
     ok("to-do is compact: first 3 items shown, the rest under 'iş daha'; the time is a separate column on the medication row",$q(".todo").querySelectorAll(":scope>.row").length===3&&$q(".todo details.acc summary").textContent==="1 iş daha"&&$q(".todo details .row")&&$q('.todo .row .tm').textContent==="08:00");
-    ok("information hierarchy: summary, record, to-do, Trend/Coach shortcut",at('class="bgL"')<at('class="rings"')&&at('class="rings"')<at('class="actions"')&&at('class="actions"')<at("Bugün yapılacaklar")&&at("Bugün yapılacaklar")<at('data-tab="trend"')&&at('data-tab="trend"')<at('class="coach"'));
+    ok("information hierarchy: summary, record, to-do, Trend shortcut",at('class="bgL"')<at('class="rings"')&&at('class="rings"')<at('class="actions"')&&at('class="actions"')<at("Bugün yapılacaklar")&&at("Bugün yapılacaklar")<at('data-tab="trend"'));
     ev("S.settings.medOn=false;S.settings.fastOn=false;S.settings.bpOn=false;render()");
     ok("when modules are turned off the card goes",!v().includes("Bugün yapılacaklar"));
     ev(`S=Object.assign(S,JSON.parse(${JSON.stringify(st0)}));render()`);

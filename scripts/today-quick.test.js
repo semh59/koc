@@ -1,0 +1,38 @@
+/* Today quick chips, first-run nudges and the notes moved behind the info button. */
+const {ok,finish}=require("./ok");
+const {boot}=require("./html");
+(async()=>{
+  const w=await boot(),ev=s=>w.eval(s),q=s=>w.document.querySelector(s),all=s=>[...w.document.querySelectorAll(s)];
+  const fresh=(extra="")=>ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.noticeOk=true;${extra};tab='today';render()`);
+  const chips=()=>all(".qa .chip").map(c=>c.dataset.chip);
+  fresh();
+  ok("chips without modules: water, drink, weight, exercise, note, walk in that order",chips().join()==="water,drink,weight,exercise,note,walk",chips());
+  ok("the drink chip is named İçecek türü",q('[data-chip="drink"]').textContent.includes("İçecek türü")&&!q(".qa").textContent.includes("Başka içecek"));
+  fresh("S.settings.bpOn=true;S.settings.bsOn=true");
+  ok("blood pressure and glucose chips open their sheets when the modules are on",chips().includes("bp")&&chips().includes("bs")&&q('[data-chip="bp"]').dataset.vt==="addbp"&&q('[data-chip="bs"]').dataset.vt==="addbs");
+  q('[data-chip="bp"]').click();
+  ok("a tap on a chip is counted",ev("S.settings.chipUse.bp")===1);
+  ev("closeSheet();S.settings.chipUse={bp:3,note:2,walk:1};render()");
+  ok("the most used chips come first, equal counts keep the written order",chips().slice(0,4).join()==="bp,note,walk,water",chips());
+  fresh("S.settings.glass=150");
+  ok("the water chip label follows the glass size",q('[data-chip="water"]').textContent.includes("+150 ml"));
+  ev("tab='coach';render()");
+  ok("the Coach composer water chip follows the glass size",q("#cglass").textContent==="+150");
+  fresh("S.settings.obNudge=true");
+  ok("after setup, a first-water row adds one glass in one tap",q(".todo")&&q('.todo [data-act="water"]'));
+  q('.todo [data-act="water"]').click();
+  ok("the first-water row disappears once water exists",ev("of('water',dayKey()).length")===1&&!q('.todo [data-act="water"]'));
+  fresh("S.settings.obSkipped=true");
+  ok("after Şimdilik geç, Today offers Hedefini hesapla",q('.todo [data-act="obredo"]'));
+  q('.todo [data-act="obredo"]').click();
+  ok("it opens the setup form directly, without the welcome page",ev("obNeeded()")&&q("#obcm")&&!q("#view").textContent.includes("hoş geldin"));
+  q('[data-ob="skip"]').click();
+  ok("skipping again returns to Today and keeps the row",!ev("obNeeded()")&&q('.todo [data-act="obredo"]'));
+  fresh("S.settings.age=30;S.settings.kcal=2000;add('weight',80);const f=add('food',300,'Yoğurt');f.p=20;f.fb=5");
+  ok("the protein note is behind an info button, closed at first",q('[data-help="hpro"]')&&q("#hpro").hidden);
+  ok("the fibre explanation is behind an info button",q('[data-help="hfib"]')&&q("#hfib").hidden);
+  ok("the Coach tip is gone from Today",!q(".coachc"));
+  ev("tab='trend';render()");
+  ok("the Coach tip lives in Trend",!!q(".coachc"));
+  finish();
+})();
