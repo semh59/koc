@@ -100,7 +100,7 @@ function exSheet(id){
 }
 function gSheetHistSimple(exId,h){
   const ex=gEx(exId);
-  openSheet(`<h3>${esc(ex.n)}</h3>${h.length?`<table><thead><tr><th>Tarih</th><th>Setler</th></tr></thead><tbody>${h.slice(0,8).map(x=>`<tr><td>${fd(x.w.day)}</td><td class="num">${x.sets.map(s=>gSetLine(exId,s)).join(" · ")}</td></tr>`).join("")}</tbody></table>`:`<p class="hint">Bu egzersizle tamamladığın setler burada görünür.</p>`}<button class="btn" data-g="closesheet">Kapat</button>`);
+  openSheet(`<h3>${esc(ex.n)}</h3>${h.length?`<table><thead><tr><th>Tarih</th><th>Setler</th></tr></thead><tbody>${h.slice(0,gExHist).map(x=>`<tr><td>${fd(x.w.day)}</td><td class="num">${x.sets.map(s=>gSetLine(exId,s)).join(" · ")}</td></tr>`).join("")}</tbody></table>${h.length>gExHist?`<button class="lnk" data-g="hmore:${exId}">Daha fazla göster (${h.length-gExHist})</button>`:""}`:`<p class="hint">Bu egzersizle tamamladığın setler burada görünür.</p>`}<button class="btn" data-g="closesheet">Kapat</button>`);
 }
 const exKindSec=(id,sec)=>gKind(id)==="c"?Math.round(sec/60)+" dk":sec+" sn";
 
@@ -111,6 +111,8 @@ const gLn=f=>gLnQ=gLnQ.then(()=>{const ln=plugin("LocalNotifications");return ln
 const gNotify=(at,title,body,id=9001)=>gLn(async ln=>{await ln.cancel({notifications:[{id}]});await lnSchedule(ln,[{id,title,body,schedule:{at:new Date(at),allowWhileIdle:true},extra:{act:"open",tab:"gym"}}])});
 const gNotifyCancel=(id=9001)=>gLn(ln=>ln.cancel({notifications:[{id}]}));
 function gTimStop(){if(gTim){gTim=null;gNotifyCancel()}}
+/* A set or exercise moved or was removed: the running set timer follows its own set and stops only when that set is gone. f(ei,si) returns the new position fields, or null to stop. */
+function gTimMap(f){if(gTim){const r=f(gTim.ei,gTim.si);if(r)Object.assign(gTim,r);else gTimStop()}}
 const gTimNotify=(t,name)=>gNotify(t.end,t.phase==="rest"?"Sıradaki tur başlıyor":"⏱ Süre doldu",name);
 function gTimStart(ei,si){
   const w=gActive();if(!w)return;
