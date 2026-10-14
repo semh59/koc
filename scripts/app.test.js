@@ -2615,7 +2615,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("Trend: the Vücut ölçüleri card has an Ölçü ekle button, none on Today",!!q('#view [data-ms="open"]')&&!ev("viewToday()").includes('data-ms="open"'));
     const add=(k,v,day)=>{ev("closeSheet();sheetMeasures()");q(`[data-ms="k:${k}"]`).click();q("#fv").value=v;if(day)q("#fday").value=day;q('[data-ms="go"]').click()};
     ev("sheetMeasures()");
-    ok("page: 5 region chips, the first selected; labelled field placeholder",qa('#mk .chip').length===5&&q('#mk .chip').getAttribute("aria-pressed")==="true"&&q('label[for="fv"]').textContent.includes("cm")&&q("#fv").placeholder.startsWith("örn."));
+    ok("page: 5 region chips and the body fat chip, the first selected; labelled field placeholder",qa('#mk .chip').length===6&&q('#mk .chip').getAttribute("aria-pressed")==="true"&&q('label[for="fv"]').textContent.includes("cm")&&q("#fv").placeholder.startsWith("örn."));
     for(const v of ["19","251","abc",""]){q("#fv").value=v;q('[data-ms="go"]').click();}
     ok("outside 20-250 and non-numbers are rejected, the error is under the field, no record",ev("S.measures.length")===0&&q("#merr").textContent.includes("20 ile 250"));
     add("waist","88,4");add("waist","86,0",ev("keyOff(-6)"));add("hip","101");

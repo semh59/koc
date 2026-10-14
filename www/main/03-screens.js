@@ -22,7 +22,7 @@ function dayLogHtml(lk){
   const li=e=>`<li class="row"><span class="t num">${e.time}</span><span class="ic">${Icons.svg(e.type)}</span><button class="tx" data-edit="${e.id}" aria-label="${esc(ttx(e))}, düzenle">${ttx(e)}</button><span class="vl num">${vtxt(e)}</span><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></li>`;
   const dl=LogLib.dayLog(items);
   const waterTxt=dl.waterTotal<1000?`${Math.round(dl.waterTotal)} ml`:`${fmt(dl.waterTotal/1000,1)} L`;
-  const log=items.length?`<ul class="log">${dl.groups.map(g=>`<li class="gh"><b>${g.n}</b><span class="num">${Math.round(g.kcal)} kcal</span><button class="lnk" data-act="cp:${g.k}" aria-label="${g.n} öğününü kopyala">Kopyala</button></li>`+g.items.map(li).join("")).join("")}${dl.water.length?`<li class="row"><span class="t num">${dl.water[dl.water.length-1].time}</span><span class="ic">${Icons.svg("water")}</span><button class="tx" data-waterall="1">Su: ${waterTxt}, ${dl.water.length} kez</button><span class="vl" aria-hidden="true">›</span></li>`:""}${dl.dr.length?`<li class="row"><span class="t num">${dl.dr[dl.dr.length-1].time}</span><span class="ic">${Icons.svg("water")}</span><button class="tx" data-waterall="1">Diğer içecekler: ${Math.round(dl.drMl)} ml, ${dl.dr.length} kez</button><span class="vl" aria-hidden="true">›</span></li>`:""}${dl.rest.sort((a,b)=>b.id-a.id).map(li).join("")}</ul>`:`<div class="empty">${Icons.svg(lk===dayKey()?"water":"note")}<p class="mut">${lk===dayKey()?"Bugün henüz bir şey eklemedin. Bir bardak suyla başlayabilirsin.":"Bu güne ait bir şey yok."}</p></div>`;
+  const log=items.length?`<ul class="log">${dl.groups.map(g=>`<li class="gh"><b>${g.n}</b><span class="num">${Math.round(g.kcal)} kcal</span><button class="lnk" data-act="cp:${g.k}" aria-label="${g.n} öğününü kopyala">Kopyala</button></li>`+g.items.map(li).join("")).join("")}${dl.water.length?`<li class="row"><span class="t num">${dl.water[dl.water.length-1].time}</span><span class="ic">${Icons.svg("water")}</span><button class="tx" data-waterall="1">Su: ${waterTxt}, ${dl.water.length} kez</button><span class="vl" aria-hidden="true">›</span></li>`:""}${dl.dr.length?`<li class="row"><span class="t num">${dl.dr[dl.dr.length-1].time}</span><span class="ic">${Icons.svg("water")}</span><button class="tx" data-waterall="1">Diğer içecekler: ${Math.round(dl.drMl)} ml, ${dl.dr.length} kez${caffeineMg(dl.dr)?`, ~${caffeineMg(dl.dr)} mg kafein`:""}</button><span class="vl" aria-hidden="true">›</span></li>`:""}${dl.rest.sort((a,b)=>b.id-a.id).map(li).join("")}</ul>`:`<div class="empty">${Icons.svg(lk===dayKey()?"water":"note")}<p class="mut">${lk===dayKey()?"Bugün henüz bir şey eklemedin. Bir bardak suyla başlayabilirsin.":"Bu güne ait bir şey yok."}</p></div>`;
   return {items,log};
 }
 /* The sport ring is daily: the day's share of the weekly goal (default 150 min). The weekly total is in Trend and Gym. */
@@ -45,7 +45,7 @@ function viewToday(){
   }
   const water=sum("water",t,t),sh=st.waterMl,kc=sum("food",t,t),sw=sum("exercise",t,t),sg=sportDay();
   const kgl=kcalGoal(t),kcP=kgl>0?kc/kgl:0;
-  const sOn=S.settings.stepsOn&&isNative();
+  const sOn=(S.settings.stepsOn||S.settings.hcOn)&&isNative();
   /* The ring centre shows what is left; done / goal below with the unit. */
   const left=(v,g,u)=>v<g?[null,`${u} kaldı`]:["✓","Hedef tamam"];
   const [waterC,waterU]=left(water,sh,"L"),[spC,spU]=left(sw,sg,"dk");
@@ -190,7 +190,7 @@ const MORE_GROUPS=[["Geçmiş",[['data-tab="history"',"Geçmiş ve takvim","tren
   ["Veri",[['data-tab="settings-data"',"Uygulama kilidi","lock",0,"Açılışta telefonun ekran kilidini iste"],['data-tab="settings-data"',"Veri ve yedek","data",0,"Yedek, tabloya aktarma, silme"],['data-pv="open"',"Gizlilik ve veri","lock",0,"Veriler nerede durur, Rehber'e ne gider"]]],
   ["Uygulama",[['data-tab="settings"',"Ayarlar","settings",0,"Profil, hatırlatmalar, Rehber, görünüm"],['data-tab="settings-modules"',"Modüller","grid",0,"Takipleri aç ya da kapat"],['data-tab="settings-about"',"Hakkında","info",0,"Sürüm, kaynaklar ve tıbbi uyarı"]]]];
 function viewMore(){
-  const st=S.settings,on=k=>!k||(k==="ph"?phOk():st[k]);
+  const st=S.settings,on=k=>!k||(k==="ph"?phOk():k==="stepsOn"?st.stepsOn||st.hcOn||isNative()&&!!HP():st[k]);
   return MORE_GROUPS.map(([g,rows])=>`<h2 class="grp">${g}</h2><div class="card">${rows.filter(r=>on(r[3])).map(([a,t,i,,sub])=>navRow(a,i,t,sub)).join("")}</div>`).join("");
 }
 function viewSettings(){

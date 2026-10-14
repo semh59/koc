@@ -216,11 +216,13 @@ const Algo=(()=>{
     return {n:rec.length,avg:rec.length?rec.reduce((a,b)=>a+b,0)/rec.length:0,best,hit:vals.filter(v=>v>=goal).length,streak};
   }
   /* Body measurements (cm): drops invalid ones, keeps the last per day+site, newest 20,000. Does not mutate the input. */
-  const MEASURES=["waist","hip","chest","arm","thigh"],MEASURES_MAX=20000;
+  const MEASURES=["waist","hip","chest","arm","thigh","fat"],MEASURES_MAX=20000;
+  /* Allowed value per measure: centimetres 20-250, body fat percent 3-70. */
+  const measureRange=k=>k==="fat"?[3,70]:[20,250];
   function cleanMeasures(raw){
     const m=new Map();
     for(const x of Array.isArray(raw)?raw:[])
-      if(x&&MEASURES.includes(x.k)&&dayOk(x.day)&&typeof x.v==="number"&&x.v>=20&&x.v<=250)m.set(x.day+x.k,{day:x.day,k:x.k,v:Math.round(x.v*10)/10});
+      if(x&&MEASURES.includes(x.k)&&dayOk(x.day)&&typeof x.v==="number"&&x.v>=measureRange(x.k)[0]&&x.v<=measureRange(x.k)[1])m.set(x.day+x.k,{day:x.day,k:x.k,v:Math.round(x.v*10)/10});
     return [...m.values()].sort((a,b)=>a.day<b.day?-1:a.day>b.day?1:0).slice(-MEASURES_MAX);
   }
   const whtr=(waist,cm)=>waist>0&&cm>0?waist/cm:null;
@@ -345,6 +347,6 @@ const Algo=(()=>{
   }
   /* A4 page in pixels at 150 dpi, with its margin: the canvas size of every PDF report. */
   const PAGE={w:1240,h:1754,m:70};
-  return {PAGE,dayOk,timeOk,KCAL_PER_KG,ACT,actFromTriage,dayNum,fdate,trend,slopePerWeek,setClock,fullKcal,LOW_LOG_KCAL,MIN_AVG_DAYS,kcalFloor,manualKcal,goalWhy,fastLoss,lbSuspect,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,riskFlags,lossBlock,etaWeeks,lossSlope,isLosing,lossKnown,goalEta,protein,PROTEIN_NOTE,exerciseKcal,moveBonus,moveSummary,cleanWalk,netKcal,gymKcal,MEASURES,cleanMeasures,whtr,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
+  return {PAGE,dayOk,timeOk,KCAL_PER_KG,ACT,actFromTriage,dayNum,fdate,trend,slopePerWeek,setClock,fullKcal,LOW_LOG_KCAL,MIN_AVG_DAYS,kcalFloor,manualKcal,goalWhy,fastLoss,lbSuspect,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,riskFlags,lossBlock,etaWeeks,lossSlope,isLosing,lossKnown,goalEta,protein,PROTEIN_NOTE,exerciseKcal,moveBonus,moveSummary,cleanWalk,netKcal,gymKcal,MEASURES,measureRange,cleanMeasures,whtr,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
 })();
 if(typeof module!=="undefined")module.exports=Algo;
