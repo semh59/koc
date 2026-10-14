@@ -267,7 +267,9 @@ const gVolTx=w=>{const v=gWorkVol(w),t=gTimedSec(w);return [v>0&&`${fint(v)} kg`
 const gStats=w=>[`${gWorkSets(w)} set`,`${gDur(w)} dk`,gVolTx(w),gSsGroups(w).length&&`${gSsGroups(w).length} süperset`,gDrops(w)&&`${gDrops(w)} drop set`].filter(Boolean).join(" · ");
 const gNames=(w,n)=>{const a=w.ex.map(x=>gEx(x.id).n);return a.slice(0,n).join(", ")+(a.length>n?` +${a.length-n}`:"")};
 const gDur=w=>Math.min(WORKOUT_MIN_MAX,Math.max(1,Math.round(((w.t1||Date.now())-w.t0)/60000)));
-const gStat=w=>`${gClock(Date.now()-w.t0)} süre, ${fint(gWorkVol(w))} kg hacim`;
+/* A workout older than the longest possible one has no running clock: it was added for a past day or left open. */
+const gAged=w=>Date.now()-w.t0>WORKOUT_MIN_MAX*6e4;
+const gStat=w=>`${gAged(w)?fd(w.day)+" günü":gClock(Date.now()-w.t0)+" süre"}, ${fint(gWorkVol(w))} kg hacim`;
 const gClock=ms=>{const s=Math.max(0,Math.floor(ms/1000));return `${pad(Math.floor(s/60))}:${pad(s%60)}`};
 
 /* ---- screens ---- */
@@ -280,10 +282,10 @@ function gHome(){
   const vol=wk7.reduce((s,w)=>s+gWorkVol(w),0),sets=wk7.reduce((s,w)=>s+gWorkSets(w),0);
   // Summary: weekly count and the last workout; one primary action.
   const sum=`<div class="card"><div class="stats"><div class="stat"><div class="k">Bu hafta</div><div class="v num">${wk7.length} <small>antrenman</small></div></div><div class="stat"><div class="k">Hacim</div><div class="v num">${fint(vol)} <small>kg</small></div></div><div class="stat"><div class="k">Set</div><div class="v num">${sets}</div></div></div>
-  <p class="mut sm">${last?`Son antrenman: ${esc(last.name)}, ${fd(last.day)}`:"Henüz antrenman yok. İlk antrenmanını başlat ya da bir şablon seç."}</p><button class="mt-2 btn" data-g="start:">${Icons.svg("play")} Antrenmanı başlat</button></div>`;
+  <p class="mut sm">${last?`Son antrenman: ${esc(last.name)}, ${fd(last.day)}`:"Henüz antrenman yok. İlk antrenmanını başlat ya da bir şablon seç."}</p><button class="mt-2 btn" data-g="start:">${Icons.svg("play")} Antrenmanı başlat</button><button class="lnk" data-g="startday">Geçmiş bir güne kaydet</button></div>`;
   const tpl=S.templates.map(t=>{
     const lt=done.find(w=>w.tpl===t.id);
-    return `<div class="card trow"><button class="tmain" data-g="start:${t.id}"><b>${esc(t.name)}</b><span class="mut tex">${esc(t.ex.map(i=>gEx(i).n).join(", ")||"Egzersiz yok")}</span><span class="mut">${lt?"Son: "+fd(lt.day):"Yeni"}</span></button><span class="tact"><button class="del" data-g="tedit:${t.id}" aria-label="${esc(t.name)} şablonunu düzenle">${Icons.svg("note")}</button><button class="del" data-g="tdel:${t.id}" aria-label="${esc(t.name)} şablonunu sil">${Icons.svg("trash")}</button></span></div>`;
+    return `<div class="card trow"><button class="tmain" data-g="startgo:${t.id}"><b>${esc(t.name)}</b><span class="mut tex">${esc(t.ex.map(i=>gEx(i).n).join(", ")||"Egzersiz yok")}</span><span class="mut">${lt?"Son: "+fd(lt.day):"Yeni"}</span></button><span class="tact"><button class="del" data-g="start:${t.id}" aria-label="${esc(t.name)} şablonunu önizle">${Icons.svg("info")}</button><button class="del" data-g="tedit:${t.id}" aria-label="${esc(t.name)} şablonunu düzenle">${Icons.svg("note")}</button><button class="del" data-g="tdel:${t.id}" aria-label="${esc(t.name)} şablonunu sil">${Icons.svg("trash")}</button></span></div>`;
   }).join("");
   const recs=gRecords(done),rl=recs.slice(0,gRecMax);
   const rec=done.length?`<h2>Rekorlar</h2><div class="card">${rl.map(p=>`<div class="row"><span class="grow"><b>${esc(p.ex.n)}</b><span class="mut sm num">${gW(p.kg)||0} ${Units.wu()} × ${p.reps} · tahmini 1TM ${fint(Units.w(p.e1))} ${Units.wu()}</span></span><span class="tag">${fd(p.day)}</span></div>`).join("")||`<p class="m0 hint">Ağırlıklı bir hareketi tamamlayınca en iyi setin burada görünür.</p>`}${recs.length>rl.length?`<button class="lnk" data-g="recmore">Tüm rekorlar (${recs.length-rl.length} daha)</button>`:""}</div>`:"";
@@ -603,16 +605,28 @@ function gTeSave(){
 }
 
 /* ---- actions ---- */
-function gStart(tplId){
+/* A past day starts at noon of that day, so its order among the sessions (previous session, records) is right. */
+function gStart(tplId,day=dayKey()){
   if(gActive()){tab="gym";return render()}
   const t=tplId?S.templates.find(x=>x.id===tplId):null;
-  const w={id:S.gid++,day:dayKey(),t0:Date.now(),t1:null,name:t?t.name:"Antrenman",tpl:t?t.id:null,ex:[]};
+  const w={id:S.gid++,day,t0:day===dayKey()?Date.now():new Date(day+"T12:00:00").getTime(),t1:null,name:t?t.name:"Antrenman",tpl:t?t.id:null,ex:[]};
   if(t)for(const i of t.ex)gAddEx(w,i,t.tg&&t.tg[i]);
   S.workouts.push(w);save();tab="gym";render();
 }
 const gOpenAsk=(open,y,n)=>`<p>${open} set işaretlenmemiş. Sayılsın mı, yoksa antrenmandan çıkarılsın mı?</p><button class="btn" data-g="${y}">Sayılsın, bitir</button><button class="mt-2 btn ghost" data-g="${n}">İşaretsizleri at, bitir</button><button class="mt-2 btn ghost" data-g="closesheet">Antrenmana dön</button>`;
+function gDaySheet(){
+  openSheet(`<h3>Geçmiş bir güne antrenman</h3><label class="lbl" for="gdday">Gün</label><input class="in" type="date" id="gdday" value="${keyOff(-1)}" max="${dayKey()}">
+  <label class="lbl" for="gdtpl">Şablon</label><select class="in" id="gdtpl"><option value="">Boş antrenman</option>${S.templates.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join("")}</select>
+  <div class="ferr" id="gdderr" role="alert"></div><button class="btn" data-g="startdaygo">Başlat</button><button class="mt-2 btn ghost" data-g="closesheet">Vazgeç</button>`);
+}
+function gDayGo(){
+  const day=$("#gdday").value,t=+$("#gdtpl").value||null;
+  if(!/^\d{4}-\d\d-\d\d$/.test(day)||!dayOk(day)||day>dayKey())return ferr("gdderr","Geçerli bir gün seç, gelecek günler olmaz");
+  closeSheet();gStart(t,day);
+}
 function gFinish(){
   const w=gActive();if(!w)return;
+  if(gAged(w))return gStaleAsk();
   const open=gOpenSets(w);
   if(open)return openSheet(`<h3>Antrenman bitirilsin mi?</h3>${gOpenAsk(open,"finall","finskip")}`);
   gFinishSave(w);
@@ -653,6 +667,8 @@ function gClick(v,el){
   switch(a){
     case "start":return p1?gTplPreview(+p1):gStart(null);
     case "startgo":closeSheet();return gStart(+p1);
+    case "startday":return gDaySheet();
+    case "startdaygo":return gDayGo();
     case "gdpick":return gdPick();
     case "gdgo":return gdStart(v.slice(5));
     case "fillok":{

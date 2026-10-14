@@ -1589,7 +1589,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
       return a&&b&&c&&!d})());
     { // a workout across midnight: the sport record is consistent with the end day and end time
       const t0=new Date();t0.setDate(t0.getDate()-1);t0.setHours(23,40,0,0);
-      ev(`S.entries=S.entries.filter(e=>e.type!=='exercise');S.workouts=[{id:28,day:dayKey(new Date(${t0.getTime()})),t0:${t0.getTime()},t1:null,name:'Gece',tpl:null,ex:[${Ex("squat","[{kg:60,reps:5,done:true}]")}]}];gFinish()`);
+      ev(`S.entries=S.entries.filter(e=>e.type!=='exercise');S.workouts=[{id:28,day:dayKey(new Date(${t0.getTime()})),t0:${t0.getTime()},t1:null,name:'Gece',tpl:null,ex:[${Ex("squat","[{kg:60,reps:5,done:true}]")}]}];gFinishSave(gActive())`); // gFinish asks the duration of a start older than 10 hours
       ok("a workout across midnight: the sport record's day is the end day",ev("S.entries.find(e=>e.type==='exercise').day")===ev("dayKey()")&&ev("S.entries.find(e=>e.type==='exercise').time")===ev("(()=>{const d=new Date(S.workouts[0].t1);return pad(d.getHours())+':'+pad(d.getMinutes())})()"));
       ev("closeSheet()");
     }
@@ -2564,12 +2564,12 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("closeSheet()");
     // template preview
     ev(`S.workouts=[];S.exCfg={};S.gid=1;S.templates=[{id:1,name:"Üst",ex:["squat","plank"],tg:{squat:{sets:4,reps:6,hi:10},plank:{sets:3,sec:45}}}];tab='gym';render()`);
-    q(".tmain").click();
-    ok("tapping a template shows a preview first: exercises and target sets, the workout does not start",ev("gActive()")==null&&q("#sheet h3").textContent==="Üst"&&q("#sheet").textContent.includes("Squat")&&q("#sheet").textContent.includes("4 set · 6–10 tekrar")&&q("#sheet").textContent.includes("3 set · 45 sn")&&!q("#sheet").textContent.includes("?"),q("#sheet").textContent);
+    q('.trow [data-g="start:1"]').click();
+    ok("the preview button of a template shows the preview first: exercises and target sets, the workout does not start",ev("gActive()")==null&&q("#sheet h3").textContent==="Üst"&&q("#sheet").textContent.includes("Squat")&&q("#sheet").textContent.includes("4 set · 6–10 tekrar")&&q("#sheet").textContent.includes("3 set · 45 sn")&&!q("#sheet").textContent.includes("?"),q("#sheet").textContent);
     q('#sheet [data-g="closesheet"]').click();
     ok("Vazgeç: the workout does not start",ev("gActive()")==null&&!q("#sheet").classList.contains("on"));
-    q(".tmain").click();q('[data-g="startgo:1"]').click();
-    ok("Başlat: the workout opens with the template's set count",ev("gActive().ex[0].sets.length")===4&&ev("gActive().ex.length")===2);
+    q(".tmain").click();
+    ok("one tap on the template card starts the workout with the template's set count",ev("gActive().ex[0].sets.length")===4&&ev("gActive().ex.length")===2);
     ok("the empty workout button starts without a preview",(ev("S.workouts=[];tab='gym';render()"),q('.btn[data-g="start:"]').click(),ev("gActive()")!=null));
     // empty set
     const bw=ev("EXDB.find(e=>e.k==='b').id");
