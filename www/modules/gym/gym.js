@@ -50,14 +50,16 @@ function gCfg(id,patch){
   if(Object.keys(c).length)S.exCfg[id]=c;else delete S.exCfg[id];
 }
 /* The rest end is also announced by a local notification: the JS timer does not run while the screen is off or the app is in the background. */
-/* With no unchecked set left there is nothing to rest for: no counter and no notification. */
-const gRestStart=(w,ei)=>gRestSet(gNext(w)?Date.now()+gRestSec(w.ex[ei].id)*1000:0,gNextTx(w,ei));
+/* With no unchecked set left there is nothing to rest for, and a workout recorded for an earlier day has no real rest: no counter and no notification. */
+const gRestStart=(w,ei)=>gRestSet(gNext(w)&&!gAged(w)?Date.now()+gRestSec(w.ex[ei].id)*1000:0,gNextTx(w,ei));
 const gRestGo=(w,ei)=>{if(gSsLast(w,ei))gRestStart(w,ei)};
 /* What the rest notification names: the first exercise with a set left, counted from this one (a superset round goes back to its first exercise), or the end. */
 function gNextTx(w,ei){
   const g=gGrp(w,ei),a=g?g.a:ei,x=[...w.ex.slice(a),...w.ex.slice(0,a)].find(e=>e.sets.some(s=>!s.done));
   return x?`Sıradaki: ${gEx(x.id).n}`:"Tüm setler tamam, antrenmanı bitirebilirsin";
 }
+/* A set or exercise was deleted or moved while the counter runs: the notification names the exercise that is next now, and ends with the last set. */
+const gRestRefresh=w=>{if(restEnd)gRestSet(gNext(w)?restEnd:0,gNextTx(w,0))};
 /* tx is the line for the notification; without it (the +30 s buttons) the last one stays. */
 function gRestSet(end,tx){
   restEnd=end>Date.now()?end:0;
@@ -137,6 +139,7 @@ function cleanGym(r){
       }
       const o={id:x.id,note:typeof x.note==="string"?x.note.slice(0,300):"",sets};
       if(Number.isInteger(x.ss)&&x.ss>0&&x.ss<1000)o.ss=x.ss;
+      if(x.pr===true)o.pr=true;
       ex.push(o);
     }
     gSsNorm(ex);
@@ -237,12 +240,11 @@ function gIsPR(w,exId){
   return {ex:gEx(exId),kg:top.kg,reps:top.reps,e1:cur,prev};
 }
 const gPRs=w=>w.ex.map(x=>gIsPR(w,x.id)).filter(Boolean);
-const gSeenPR=new Set();
-/* Record at set time: that set must have produced the record, once per exercise per workout. */
+/* Record at set time: that set must have produced the record. It is announced once per exercise per workout; the flag is stored with the exercise, so a restart or unchecking and checking the set does not repeat it. */
 function gNewPR(w,exId,s){
-  const p=gIsPR(w,exId),k=w.id+":"+exId;
-  if(!p||gSeenPR.has(k)||Algo.est1RM(s.kg,s.reps)<p.e1)return null;
-  gSeenPR.add(k);return p;
+  const p=gIsPR(w,exId),x=w.ex.find(e=>e.id===exId);
+  if(!p||x.pr||Algo.est1RM(s.kg,s.reps)<p.e1)return null;
+  x.pr=true;return p;
 }
 const gWorkVol=w=>w.ex.reduce((s,x)=>s+Algo.volume(x.sets.filter(t=>t.done)),0);
 const gWorkSets=w=>w.ex.reduce((s,x)=>s+gDoneSets(x).length,0);
@@ -270,6 +272,8 @@ const gStats=w=>[`${gWorkSets(w)} set`,`${gDur(w)} dk`,gVolTx(w),gSsGroups(w).le
 const gNames=(w,n)=>{const a=w.ex.map(x=>gEx(x.id).n);return a.slice(0,n).join(", ")+(a.length>n?` +${a.length-n}`:"")};
 const gDur=w=>Math.min(WORKOUT_MIN_MAX,Math.max(1,Math.round(((w.t1||Date.now())-w.t0)/60000)));
 /* A workout older than the longest possible one has no running clock: it was added for a past day or left open. */
+/* Undo of a deletion must not add sets to a workout that was finished or discarded in the meantime. */
+const gStillLive=w=>{if(w.t1==null&&S.workouts.includes(w))return true;toast("Antrenman bitti, silinen geri konulamadı");return false};
 const gAged=w=>Date.now()-w.t0>WORKOUT_MIN_MAX*6e4;
 const gStat=w=>`${gAged(w)?fd(w.day)+" günü":gClock(Date.now()-w.t0)+" süre"}, ${fint(Units.w(gWorkVol(w)))} ${Units.wu()} hacim`;
 const gClock=ms=>{const s=Math.max(0,Math.floor(ms/1000));return `${pad(Math.floor(s/60))}:${pad(s%60)}`};
@@ -418,19 +422,19 @@ function gTick(){
 function gPickHtml(){
   const q=tr(gQuery),w=gActive();
   const all=gExAll().filter(e=>(gGroup==="Tümü"||(e.r||e.g)===gGroup)&&(!q||tr(e.n).includes(q))),list=all.slice(0,gPickMax);
-  const inW=new Set(gTeOn?gTe.ex:w?w.ex.map(x=>x.id):[]);
+  const inW=new Set(gTeOn?gTe.ex:gWeOn?gWe.ex.map(x=>x.id):w?w.ex.map(x=>x.id):[]);
   return list.map(e=>{
     const h=gHistory(e.id)[0],last=h?(gTimed(e.id)?`son ${h.sets[0].sec} sn`:`son ${gW(Math.max(...h.sets.map(s=>s.kg||0)))||0} ${Units.wu()} × ${h.sets[0].reps}`):"henüz yok";
     return `<button class="prow" data-g="addex:${e.id}"><span><b>${esc(e.n)}</b><span class="mut sm">${e.r||e.g}${e.q?", "+e.q.toLowerCase():""}, ${last}</span></span>${inW.has(e.id)?`<span class="tag">Eklendi</span>`:`<span class="plus">+</span>`}</button>`;
   }).join("")+(all.length>list.length?`<button class="lnk" data-g="pickmore">Daha fazla göster</button>`:"")||`<p class="hint">Eşleşen egzersiz yok. Başka bir ad dene.</p>`;
 }
-function gSheetPick(te){
-  gTeOn=!!te;gQuery="";gGroup="Tümü";gNew=false;gPickMax=40;
+function gSheetPick(te,we){
+  gTeOn=!!te;gWeOn=!!we;gQuery="";gGroup="Tümü";gNew=false;gPickMax=40;
   openSheet(`<h3>Egzersiz ekle</h3><input class="in" id="gq" type="search" enterkeyhint="search" aria-label="Egzersiz ara" placeholder="Egzersiz ara" autocomplete="off">
   <div class="chips" id="gchips">${["Tümü"].concat(EXREG).map(g=>`<button class="chip" data-g="grp:${g}" aria-pressed="${g==="Tümü"}">${g}</button>`).join("")}</div>
   <div id="glist" class="plist">${gPickHtml()}</div>
   <button class="lnk" data-g="newex">Yeni egzersiz oluştur</button><div id="gnew"></div>
-  <button class="btn" data-g="${te?"teback":"closesheet"}">Tamam</button>`);
+  <button class="btn" data-g="${te?"teback":we?"webk":"closesheet"}">Tamam</button>`);
 }
 function gNewRead(){const n=$("#gnn"),t=$("#gntp");if(n)gNewS.n=n.value;if(t)gNewS.tp=t.value}
 function gNewHtml(){
@@ -467,8 +471,8 @@ function gSheetHist(exId){
   const best=per.reduce((a,b)=>b.e>a.e?b:a,per[0]);
   openSheet(`<h3>${esc(ex.n)}</h3><div class="two"><div class="stat"><div class="k">En iyi set</div><div class="v num">${gW(best.top.kg)||0} ${Units.wu()} × ${best.top.reps}</div></div><div class="stat"><div class="k">Tahmini 1TM</div><div class="v num">${fint(Units.w(best.e))} ${Units.wu()}</div></div></div>
   ${exCharts(exId)}
-  <table><thead><tr><th>Tarih</th><th>Setler</th><th>Hacim</th></tr></thead><tbody>${h.slice(0,6).map((x,i)=>`<tr><td>${fd(x.w.day)}</td><td class="num">${x.sets.map(t=>gSetLine(exId,t)+gRpeTx(t)).join(", ")}</td><td class="num">${fint(Units.w(per[i].vol))} ${Units.wu()}</td></tr>`).join("")}</tbody></table>
-  <button class="btn" data-g="closesheet">Kapat</button>`);
+  <table><thead><tr><th>Tarih</th><th>Setler</th><th>Hacim</th></tr></thead><tbody>${h.slice(0,gExHist).map((x,i)=>`<tr><td>${fd(x.w.day)}</td><td class="num">${x.sets.map(t=>gSetLine(exId,t)+gRpeTx(t)).join(", ")}</td><td class="num">${fint(Units.w(per[i].vol))} ${Units.wu()}</td></tr>`).join("")}</tbody></table>
+  ${h.length>gExHist?`<button class="lnk" data-g="hmore:${exId}">Daha fazla göster (${h.length-gExHist})</button>`:""}<button class="btn" data-g="closesheet">Kapat</button>`);
 }
 function gSheetSummary(id){
   const w=S.workouts.find(x=>x.id===id);if(!w)return;
@@ -484,31 +488,62 @@ function gSheetSummary(id){
   ${gSsGroups(w).map(g=>`<div class="mut sm">Süperset: ${esc(g.map(x=>gEx(x.id).n).join(" + "))}</div>`).join("")}${gDrops(w)?`<div class="mut sm">${gDrops(w)} drop set (hacme girer, rekor hesabına girmez)</div>`:""}
   <div class="btns">${w.tpl==null?`<button class="btn ghost" data-g="savetpl:${w.id}">Şablon olarak kaydet</button>`:S.templates.some(t=>t.id===w.tpl)?`<button class="btn ghost" data-g="tplupd:${w.id}">Şablonu bu seansa göre güncelle</button>`:""}<button class="btn ghost" data-g="wedit:${w.id}">Setleri düzenle</button><button class="btn ghost" data-g="closesheet">Kapat</button><button class="btn danger" data-g="delw:${w.id}">Antrenmanı sil</button></div>`);
 }
-/* Edit sheet of a finished workout: kg, reps and duration of every set; set count, exercises and the day stay. */
+/* Edit sheet of a finished workout: name, day, exercises (add or take out) and kg, reps or duration of every set. The draft lives in gWe until Kaydet. */
+let gWe=null,gWeOn=false,gExHist=6;
+const gWeNew=id=>({id,note:"",sets:[{kg:null,reps:null,...gTimed(id)?{sec:GSEC[gKind(id)]}:{},done:true}]});
+const gSetTag=s=>s.w?"ısınma":s.t==="d"?"drop set":s.t==="f"?"başarısızlığa kadar":"";
 function gEditSheet(id){
   const w=S.workouts.find(x=>x.id===id&&gDone(x));if(!w)return;
+  if(!gWe||gWe.id!==id)gWe={id,name:w.name,day:w.day,ex:structuredClone(w.ex)};
   const wu=Units.wu();
-  const rows=w.ex.map((x,ei)=>{
-    const k=gKind(x.id),tm=gTimed(x.id),inp=(f,si,lbl,ph)=>`<input class="in num" inputmode="${f==="kg"||f==="rpe"?"decimal":"numeric"}" data-ge="${f}:${ei}:${si}" aria-label="${esc(gEx(x.id).n)} ${si+1}. set ${lbl}" placeholder="${ph}" value="${gShow(f,x.sets[si],x.id)}">`;
-    return `<div class="lbl">${esc(gEx(x.id).n)}</div>${x.sets.map((s,si)=>`<div class="two">${tm?inp("sec",si,k==="c"?"dakika":"saniye",k==="c"?"dk":"sn"):inp("kg",si,"ağırlık ("+wu+")",wu)+inp("reps",si,"tekrar","tekrar")}</div>`).join("")}`;
+  const rows=gWe.ex.map((x,ei)=>{
+    const k=gKind(x.id),tm=gTimed(x.id),n=esc(gEx(x.id).n),inp=(f,si,lbl,ph)=>`<input class="in num" inputmode="${f==="kg"||f==="rpe"?"decimal":"numeric"}" data-ge="${f}:${ei}:${si}" aria-label="${n} ${si+1}. set ${lbl}" placeholder="${ph}" value="${gShow(f,x.sets[si],x.id)}">`;
+    return `<div class="exh"><div class="lbl grow">${n}</div><button class="chip" data-g="wexrm:${ei}" aria-label="${n} egzersizini çıkar">Çıkar</button></div>${x.sets.map((s,si)=>`${gSetTag(s)?`<div class="mut sm">${si+1}. set, ${gSetTag(s)}</div>`:""}<div class="two">${tm?inp("sec",si,k==="c"?"dakika":"saniye",k==="c"?"dk":"sn"):inp("kg",si,"ağırlık ("+wu+")",wu)+inp("reps",si,"tekrar","tekrar")}</div>`).join("")}<button class="lnk" data-g="wsetadd:${ei}">+ Set</button>`;
   }).join("");
-  openSheet(`<h3>${esc(w.name)}: setleri düzenle</h3><div class="mut sm">${fd(w.day)}</div>${rows}<div class="ferr" id="gwerr" role="alert"></div>
+  openSheet(`<h3>Antrenmanı düzenle</h3><label class="lbl" for="gwn">Ad</label><input class="in" id="gwn" maxlength="60" value="${esc(gWe.name)}"><label class="lbl" for="gwd">Gün</label><input class="in" type="date" id="gwd" value="${gWe.day}" max="${dayKey()}">${rows}
+  <button class="mb-2 btn ghost" data-g="wexadd">+ Egzersiz ekle</button><div class="ferr" id="gwerr" role="alert"></div>
   <button class="btn" data-g="wsave:${w.id}">Kaydet</button><button class="mt-2 btn ghost" data-g="closesheet">Vazgeç</button>`);
 }
-function gEditSave(id){
-  const w=S.workouts.find(x=>x.id===id&&gDone(x));if(!w)return;
-  const next=structuredClone(w.ex);
+/* Reads the sheet into the draft. Strict (save) returns the first problem; otherwise an invalid box keeps its old value. */
+function gWeSync(strict){
+  const n=$("#gwn"),d=$("#gwd");if(!n)return "";
+  gWe.name=n.value;if(d&&/^\d{4}-\d\d-\d\d$/.test(d.value))gWe.day=d.value;
   for(const el of document.querySelectorAll("#sheet [data-ge]")){
-    const [f,ei,si]=el.dataset.ge.split(":"),x=next[+ei],s=x.sets[+si];
+    const [f,ei,si]=el.dataset.ge.split(":"),x=gWe.ex[+ei],s=x&&x.sets[+si];if(!s)continue;
     if(el.value.trim()===gShow(f,s,x.id))continue;
-    const r=gField(f,el.value,s,x.id);
-    if(r.err||(r.v==null&&f!=="kg"))return ferr("gwerr",`${gEx(x.id).n}, ${+si+1}. set: ${r.err||(f==="sec"?"süreyi yaz":"tekrar sayısını yaz")}`);
+    const r=gField(f,el.value,s,x.id),k=gKind(x.id);
+    const bad=r.err||(r.v==null&&(f!=="kg"||k==="w")?f==="sec"?"süreyi yaz":f==="kg"?"ağırlığı yaz, ağırlıksızsa 0 yaz":"tekrar sayısını yaz":"");
+    if(bad){if(strict)return `${gEx(x.id).n}, ${+si+1}. set: ${bad}`;continue}
     s[f]=r.v==null?0:r.v;
   }
-  const old=w.ex;w.ex=next;
-  if(!commit(()=>{w.ex=old}))return;
-  closeSheet();render();gSheetSummary(id);
-  toast("Antrenman güncellendi",()=>{w.ex=old;if(commit(()=>{w.ex=next}))render()});
+  if(strict)for(const x of gWe.ex)for(const [si,s] of x.sets.entries())
+    if(gTimed(x.id)?!(s.sec>0):!(s.reps>0)||(gKind(x.id)==="w"&&s.kg==null))return `${gEx(x.id).n}, ${si+1}. set: ${gTimed(x.id)?"süreyi yaz":s.reps>0?"ağırlığı yaz, ağırlıksızsa 0 yaz":"tekrar sayısını yaz"}`;
+  return "";
+}
+function gEditSave(id){
+  const w=S.workouts.find(x=>x.id===id&&gDone(x));if(!w||!gWe)return;
+  const bad=gWeSync(true),name=gWe.name.trim().slice(0,60),day=gWe.day;
+  if(bad)return ferr("gwerr",bad);
+  if(!name)return ferr("gwerr","Antrenmana bir ad yaz");
+  if(!dayOk(day)||day>dayKey())return ferr("gwerr","Geçerli bir gün seç, gelecek günler olmaz");
+  if(!gWe.ex.length)return ferr("gwerr","En az bir egzersiz kalmalı. Hepsini atmak için Antrenmanı sil");
+  const ent=Log.find(e=>e.wid===w.id);
+  const snap=()=>({w:{ex:w.ex,name:w.name,day:w.day,t0:w.t0,t1:w.t1},e:ent&&{day:ent.day,text:ent.text,kcal:ent.kcal}});
+  const put=o=>{Object.assign(w,o.w);if(ent){Object.assign(ent,o.e);if(o.e.kcal==null)delete ent.kcal}};
+  const before=snap();
+  w.ex=gWe.ex;w.name=name;
+  if(day!==w.day){
+    const [y,m,d]=day.split("-").map(Number),t=new Date(w.t0),t0=new Date(y,m-1,d,t.getHours(),t.getMinutes(),t.getSeconds()).getTime();
+    w.t1+=t0-w.t0;w.t0=t0;w.day=day;
+  }
+  if(ent){
+    ent.day=dayAt(w.t1);ent.text=`${ent.text.split(", ")[0]}, ${name}`;
+    const kc=Algo.gymKcal({min:gDur(w),sets:gWorkSets(w),kg:motionKg()});if(kc)ent.kcal=kc;else delete ent.kcal;
+  }
+  const after=snap();
+  if(!commit(()=>put(before)))return;
+  gWe=null;closeSheet();render();gSheetSummary(id);
+  toast("Antrenman güncellendi",()=>{put(before);if(commit(()=>put(after)))render()});
 }
 
 /* ---- ready-made programs (programs.js) ---- */
@@ -676,7 +711,7 @@ function gClick(v,el){
     case "fillok":{
       const x=w.ex[ei],ps=gPrevSet(w,x,si),k=document.querySelector(`[data-gi="kg:${ei}:${si}"]`),r=document.querySelector(`[data-gi="reps:${ei}:${si}"]`);
       if(!ps||!k||!r)return;
-      if(!k.value.trim())k.value=gW(ps.kg||0)||"0";
+      if(!k.value.trim()){x.sets[si].kg=ps.kg||0;k.value=gShow("kg",x.sets[si],x.id)||"0"}
       if(!r.value.trim())r.value=ps.reps;
       closeSheet();return document.querySelector(`[data-g="done:${ei}:${si}"]`).click();
     }
@@ -691,6 +726,10 @@ function gClick(v,el){
         if(gTe.ex.includes(p1))return toast("Bu egzersiz zaten ekli");
         gTePush(p1);$("#glist").innerHTML=gPickHtml();return;
       }
+      if(gWeOn){
+        if(gWe.ex.some(x=>x.id===p1))return toast("Bu egzersiz zaten ekli");
+        gWe.ex.push(gWeNew(p1));return gEditSheet(gWe.id);
+      }
       if(!w)return;const i=w.ex.findIndex(x=>x.id===p1);
       if(i>=0)return toast("Bu egzersiz zaten ekli");
       gAddEx(w,p1);save();$("#glist").innerHTML=gPickHtml();render();return;
@@ -703,15 +742,16 @@ function gClick(v,el){
       const {k,r,q,tp}=gNewS,ex={id:"c"+(S.gid++),n,g:GREG[r]||"Bacak",inc:2.5,r,k,c:k==="c"?"k":"g",q};if(tp)ex.tp=tp;
       S.customEx.push(ex);gNewS.n="";gNewS.tp="";
       if(gTeOn){gTePush(ex.id);save();return gTeSheet()}
+      if(gWeOn){gWe.ex.push(gWeNew(ex.id));save();return gEditSheet(gWe.id)}
       if(w)gAddEx(w,ex.id);save();closeSheet();render();return;
     }
     case "menu":return gMenu(ei);
     case "note":return gSheetNote(ei);
     case "savenote":w.ex[ei].note=$("#gnote").value.trim().slice(0,300);save();closeSheet();render();return;
-    case "mv":{gTimStop();const j=ei+si;if(j<0||j>=w.ex.length)return;[w.ex[ei],w.ex[j]]=[w.ex[j],w.ex[ei]];gSsNorm(w.ex);save();closeSheet();render();return}
+    case "mv":{const j=ei+si;if(j<0||j>=w.ex.length)return;[w.ex[ei],w.ex[j]]=[w.ex[j],w.ex[ei]];gTimMap((e,t)=>({ei:e===ei?j:e===j?ei:e,si:t}));gSsNorm(w.ex);gRestRefresh(w);save();closeSheet();render();return}
     case "rmex":{
-      gTimStop();const rm=w.ex[ei],ss=w.ex.map(x=>x.ss);w.ex.splice(ei,1);gSsNorm(w.ex);save();closeSheet();render();
-      toast("Egzersiz silindi",()=>{w.ex.splice(ei,0,rm);w.ex.forEach((x,i)=>{if(ss[i])x.ss=ss[i];else delete x.ss});save();render()});return;
+      const rm=w.ex[ei],ss=w.ex.map(x=>x.ss);gTimMap((e,t)=>e===ei?null:{ei:e>ei?e-1:e,si:t});w.ex.splice(ei,1);gSsNorm(w.ex);gRestRefresh(w);save();closeSheet();render();
+      toast("Egzersiz silindi",()=>{if(!gStillLive(w))return;w.ex.splice(ei,0,rm);gTimMap((e,t)=>({ei:e>=ei?e+1:e,si:t}));w.ex.forEach((x,i)=>{if(ss[i])x.ss=ss[i];else delete x.ss});gRestRefresh(w);save();render()});return;
     }
     case "ssl":{
       const x=w.ex[ei],p=w.ex[ei-1],old=x.ss;if(!p)return;
@@ -728,7 +768,7 @@ function gClick(v,el){
       const s=w.ex[ei].sets[si];if(!s)return;
       const tm=gTimed(w.ex[ei].id),cur=s.w?"w":s.t||"n",o=(k,t,d)=>`<button class="prow" data-g="sty${k}:${ei}:${si}"><span><b>${t}</b><span class="mut sm">${d}</span></span>${cur===k?`<span class="tag">Seçili</span>`:""}</button>`;
       openSheet(`<h3>${si+1}. set${tm?"":" türü"}</h3><div class="plist">${tm?"":o("n","Normal","Çalışma seti")+o("w","Isınma","Hacme, öneriye ve rekora girmez")+o("d","Drop set","Ağırlığı düşürüp devam; hacme girer, rekora girmez")+o("f","Başarısızlığa kadar","Tekrar yapamayana dek; hacme ve rekora girer")}
-      <button class="prow dng" data-g="setdel:${ei}:${si}"><span><b>Seti sil</b><span class="mut sm">Bu set antrenmandan çıkar</span></span></button></div><button class="btn ghost" data-g="closesheet">Kapat</button>`);
+      </div><div class="sep"><button class="btn danger" data-g="setdelask:${ei}:${si}">Seti sil</button></div><button class="mt-2 btn ghost" data-g="closesheet">Kapat</button>`);
       return;
     }
     case "styn":case "styw":case "styd":case "styf":{
@@ -786,18 +826,19 @@ function gClick(v,el){
       if(a==="finall")gCompleteAll(w);
       return gFinishSave(w);
     }
+    case "setdelask":return void confirmSheet({title:"Bu set silinsin mi?",body:"Set antrenmandan çıkar. Geri al ile döndürebilirsin.",ok:"Sil",danger:true}).then(ok=>{if(ok)gClick(`setdel:${ei}:${si}`)});
     case "setdel":{
       const x=w.ex[ei],s=x&&x.sets[si];if(!s)return;
-      gTimStop();x.sets.splice(si,1);
-      if(!gNext(w)&&restEnd)gRestSet(0);
+      gTimMap((e,t)=>e!==ei?{}:t===si?null:{si:t>si?t-1:t});x.sets.splice(si,1);gRestRefresh(w);
       if(!commit(()=>x.sets.splice(si,0,s)))return;
       closeSheet();render();
-      toast("Set silindi",()=>{x.sets.splice(si,0,s);save();render()});return;
+      toast("Set silindi",()=>{if(!gStillLive(w))return;x.sets.splice(si,0,s);gTimMap((e,t)=>e===ei&&t>=si?{si:t+1}:{});gRestRefresh(w);save();render()});return;
     }
     case "cancel":return void confirmSheet({title:"Bu antrenman kaydedilmeden silinsin mi?",ok:"Sil",danger:true}).then(ok=>{
       if(!ok)return;gTimStop();S.workouts=S.workouts.filter(x=>x!==w);save();gRestSet(0);render();
     });
-    case "hist":return gSheetHist(p1);
+    case "hist":gExHist=6;return gSheetHist(p1);
+    case "hmore":gExHist+=10;return gSheetHist(p1);
     case "mm":{
       const i=$("#mminfo");if(!i)return;
       document.querySelectorAll(".mmwrap .on").forEach(e=>e.classList.remove("on"));
@@ -805,7 +846,11 @@ function gClick(v,el){
       i.textContent=MuscleMap.tx(p1,gWeekRegions()[p1]||0);return;
     }
     case "sum":return gSheetSummary(+p1);
-    case "wedit":return gEditSheet(+p1);
+    case "wedit":gWe=null;return gEditSheet(+p1);
+    case "wexrm":gWeSync();gWe.ex.splice(ei,1);return gEditSheet(gWe.id);
+    case "wsetadd":{gWeSync();const x=gWe.ex[ei];x.sets.push({...x.sets[x.sets.length-1]});return gEditSheet(gWe.id)}
+    case "wexadd":gWeSync();return gSheetPick(false,true);
+    case "webk":return gEditSheet(gWe.id);
     case "wsave":return gEditSave(+p1);
     case "savetpl":{
       const x=S.workouts.find(y=>y.id===+p1);if(!x)return;

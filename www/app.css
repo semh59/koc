@@ -191,6 +191,7 @@ body.coach{--toast-b:var(--cmp,calc(200px + var(--sab)))}
 .livetop{position:sticky;top:var(--sat);z-index:7;background:var(--bg);margin:0 -4px var(--sp-2);padding:var(--sp-1) 0 0}.livetop .livebar{margin:0 4px var(--sp-2)}.livetop .rest{margin-bottom:var(--sp-2)}
 .livebar>div{flex:1 1 8em;min-width:0}.livebar b{overflow-wrap:break-word;font-size:var(--fs-h3)}.livebar .mut{font-size:var(--fs-s)}.btn.fin{width:auto;flex:none;padding:11px 22px}
 .fig{width:100%;height:auto;display:block}
+.sep{border-top:1px solid var(--line);margin-top:var(--sp-3);padding-top:var(--sp-3)}
 #guide{position:fixed;inset:0;z-index:15;max-width:520px;margin:0 auto;background:var(--card);display:flex;flex-direction:column;padding:calc(var(--sp-2) + var(--sat)) calc(16px + var(--sar)) calc(var(--sp-3) + var(--sab)) calc(16px + var(--sal));overflow-y:auto}#guide[hidden]{display:none}body.gdon{overflow:hidden}
 .gdtop{display:flex;align-items:center;gap:8px;min-height:var(--hit)}.gdtop b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gdx{width:var(--hit);height:var(--hit);font-size:var(--fs-h1);color:var(--mut);flex:none}
 .gdbar{height:6px;background:var(--soft);border-radius:var(--r-pill);overflow:hidden;flex:none}.gdbar i{display:block;height:100%;width:0;background:var(--prim)}
@@ -398,3 +399,5 @@ button:is(.row,.prow,.rrow){width:100%}
 :root[data-comfy]{--fs-cap:16px;--fs-s:16px;--fs-2:17px;--fs-1:18px;--fs-h3:20px;--fs-h2:22px;--fs-h1:26px;--fs-svg:16px}
 :root[data-comfy] :is(.btn,.chip,.seg button,.seg2 button,.lnk,.rbtn,.coach,.plus,.help,.cin,input.in,select.in,.chip>button,.rem input[type=time],.hgsel .in,.log button.tx,.qrow .btn,.chiprow .chip,.tmain,.exn,.gdtop){min-height:52px}
 :root[data-comfy] :is(.del,.dnav button,.shx,#csend,#back,.gdx){width:52px;height:52px}
+/* Short screens: the top bar scrolls with the page and the rest timer shrinks, so three layers do not eat the list. */
+@media (max-height:640px){.livetop{position:static}#grest{padding:var(--sp-1) var(--sp-2);bottom:calc(var(--nav-h) + var(--nx,0px) + var(--sab))}.rest b{font-size:var(--fs-h2)}body:has(#grest:not([hidden])){--toast-b:calc(var(--nav-h) + 64px + var(--nx,0px) + var(--sab))}body:has(#grest:not([hidden])) main{padding-bottom:calc(120px + var(--nx,0px) + var(--sab))}}
