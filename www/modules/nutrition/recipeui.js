@@ -29,9 +29,26 @@ function sheetRecipe(r){
   <label class="lbl" for="rcw">Pişmiş yemeğin ağırlığı (g), tarttıysan</label><input class="in num" id="rcw" inputmode="decimal" autocomplete="off" value="${recipeDraft.cw||""}" aria-describedby="rcwh"><p class="hint" id="rcwh">Boş bırakırsan çiğ ağırlıklar kullanılır. Boş tencere hariç, yalnız yemeği tart.</p>
   <div class="lbl">Malzemeler (gram)</div><div id="rrows">${rpRows()}</div>
   <label class="lbl" for="rq">Malzeme ekle</label><input class="in" id="rq" type="search" enterkeyhint="search" aria-label="Malzeme ara" placeholder="Un, yumurta, süt…" autocomplete="off"><div id="rlist" class="plist"></div>
+  <details class="acc"><summary>Metinden ekle</summary><label class="lbl" for="rpt">Malzeme listesini yapıştır, her satıra bir malzeme</label><textarea class="in" id="rpt" rows="5" autocomplete="off" placeholder="2 su bardağı mercimek&#10;200 g soğan&#10;1 yemek kaşığı zeytinyağı"></textarea><button class="btn ghost" data-rp="paste">Malzemeleri bul</button><p class="mut sm" id="rimp" aria-live="polite"></p></details>
   <div class="my-2" id="rsum" aria-live="polite"></div><div class="mb-2 mut sm" id="rnote"></div>
   <div class="ferr" id="rerr" role="alert"></div><button class="btn" data-rp="save">Kaydet</button>${r?`<div class="two"><button class="btn ghost" data-rp="dup">Çoğalt</button><button class="btn danger" data-rp="del">Sil</button></div>`:""}`);
   rpSum();
+}
+/* Pasted ingredient lines go through the quick-entry parser; found foods become rows in grams, the rest is listed for the user to add by search. */
+function rpPaste(){
+  rpRead();
+  const list=allFoods(),rows=QuickLib.parse($("#rpt").value,list),miss=[],guess=[];let n=0;
+  for(const r of rows){
+    if(r.miss){miss.push(r.text);continue}
+    if(recipeDraft.items.length>=RECIPE_ITEMS_MAX){miss.push(r.text);continue}
+    const f=list[r.f],g=f.portion?100*(r.grams!=null?1:r.q):Math.min(5000,Math.round(QuickLib.calc(f,r,[]).g)),it=LogLib.recipeItem({...f,g});
+    if(!it){miss.push(r.text);continue}
+    recipeDraft.items.push(it);n++;
+    if(r.flag)guess.push(r.text);
+  }
+  $("#rrows").innerHTML=rpRows();rpSum();
+  if(n)$("#rpt").value="";
+  $("#rimp").textContent=!rows.length?"Önce malzemeleri yaz.":`${n} malzeme eklendi.${guess.length?` Ölçüsü tutmayan satırlarda ilk porsiyonu aldım, gramı kontrol et: ${guess.join("; ")}.`:""}${miss.length?` Bulunamayan, yukarıdan arayıp ekle: ${miss.join("; ")}.`:""}`;
 }
 function rpSave(){
   rpRead();
@@ -56,6 +73,7 @@ document.addEventListener("click",ev=>{
   else if(a==="edit"&&r)sheetRecipe(r);
   else if(a==="add"&&r)sheetPortion(0,LogLib.recipeFood(r));
   else if(a==="save")rpSave();
+  else if(a==="paste")rpPaste();
   else if(a==="rm"){rpRead();recipeDraft.items.splice(+p,1);$("#rrows").innerHTML=rpRows();rpSum()}
   else if(a==="pick"){
     const f=recipeHits[+p];rpRead();if(!f)return;
