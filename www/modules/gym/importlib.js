@@ -4,11 +4,13 @@
 const ImportLib=(()=>{
   const LB=0.45359237,MAX_NEW=100,MAX_ROWS=200000,KG_MAX=1000,REPS_MAX=200,SEC_MAX=7200;
   const clean=(s,n)=>String(s==null?"":s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g,"").trim().slice(0,n);
+  /* The messages of these errors are written for the user; any other error (a bug) must not reach the screen. */
+  const fail=m=>Object.assign(new Error(m),{user:true});
   const hnorm=h=>String(h).toLowerCase().replace(/[^a-z0-9]/g,"");
   /* The delimiter is the most frequent one outside quotes in the first record. An unclosed quote means a corrupt file. */
   function parse(text){
     text=text.replace(/^\uFEFF/,"");
-    if(text.slice(0,4096).includes("\0"))throw new Error("Dosya metin değil");
+    if(text.slice(0,4096).includes("\0"))throw fail("Dosya metin değil");
     const cnt={",":0,";":0,"\t":0};let q=false;
     for(let i=0;i<text.length;i++){const c=text[i];if(c==='"')q=!q;else if(!q){if(c==="\n")break;if(c in cnt)cnt[c]++}}
     const d=Object.keys(cnt).reduce((a,b)=>cnt[b]>cnt[a]?b:a,",");
@@ -21,9 +23,9 @@ const ImportLib=(()=>{
       else if(c===d){row.push(f);f="";any=true}
       else if(c==="\n"||c==="\r"){if(c==="\r"&&text[i+1]==="\n")i++;end()}
       else{f+=c;any=true}
-      if(rows.length>MAX_ROWS)throw new Error("Dosya çok büyük");
+      if(rows.length>MAX_ROWS)throw fail("Dosya çok büyük");
     }
-    if(inQ)throw new Error("Tırnak kapanmıyor, dosya bozuk");
+    if(inQ)throw fail("Tırnak kapanmıyor, dosya bozuk");
     if(any||f!==""||row.length)end();
     return rows;
   }
@@ -62,10 +64,10 @@ const ImportLib=(()=>{
   /* Raw workout: {day,t0,t1,name,ex:[{name,note,sets:[{kg,reps,sec,dist,w,rpe}]}]}. unit is asked only for Strong files whose header has no unit. */
   function read(text,{unit="kg"}={}){
     const rows=parse(text);
-    if(rows.length<2)throw new Error("Dosyada başlık ve veri satırı yok");
+    if(rows.length<2)throw fail("Dosyada başlık ve veri satırı yok");
     const m=idx(rows[0]);
     const hevy=col(m,"exercisetitle")>=0&&col(m,"starttime")>=0,strong=col(m,"exercisename")>=0&&col(m,"date")>=0;
-    if(!hevy&&!strong)throw new Error(`Biçim tanınmadı. Strong ya da Hevy CSV dosyası bekleniyor; bulunan sütunlar: ${rows[0].slice(0,8).map(h=>clean(h,20)).join(", ")}`);
+    if(!hevy&&!strong)throw fail(`Biçim tanınmadı. Strong ya da Hevy CSV dosyası bekleniyor; bulunan sütunlar: ${rows[0].slice(0,8).map(h=>clean(h,20)).join(", ")}`);
     const c=hevy?{
       date:col(m,"starttime"),end:col(m,"endtime"),name:col(m,"title"),dur:-1,ex:col(m,"exercisetitle"),ord:col(m,"settype"),
       w:col(m,"weightkg","weightlbs","weightlb"),reps:col(m,"reps"),dist:col(m,"distancekm","distancemiles","distancemi"),sec:col(m,"durationseconds"),
@@ -75,7 +77,7 @@ const ImportLib=(()=>{
       w:col(m,"weightkg","weightlbs","weightlb","weight"),reps:col(m,"reps"),dist:col(m,"distance"),sec:col(m,"seconds"),
       note:col(m,"notes"),rpe:col(m,"rpe")
     };
-    if(c.reps<0&&c.sec<0)throw new Error("Biçim tanınmadı: tekrar ve süre sütunu yok");
+    if(c.reps<0&&c.sec<0)throw fail("Biçim tanınmadı: tekrar ve süre sütunu yok");
     const wh=c.w>=0?hnorm(rows[0][c.w]):"",fixed=/lbs?$/.test(wh)?"lbs":/kg$/.test(wh)?"kg":null;
     const unitAsk=!hevy&&!fixed,u=fixed||(hevy?"kg":unit==="lbs"?"lbs":"kg"),f=u==="lbs"?LB:1;
     const get=(r,i)=>i>=0&&r[i]!=null?r[i]:"";
@@ -100,7 +102,7 @@ const ImportLib=(()=>{
       x.sets.push(s);
     }
     const workouts=[...ws.values()].map(({by,...w})=>w);
-    if(!workouts.length)throw new Error(badDate?"Tarih sütunu okunamadı (beklenen: 2024-03-15 18:30 ya da 15 Mar 2024, 18:30)":"Dosyada okunabilir antrenman yok");
+    if(!workouts.length)throw fail(badDate?"Tarih sütunu okunamadı (beklenen: 2024-03-15 18:30 ya da 15 Mar 2024, 18:30)":"Dosyada okunabilir antrenman yok");
     return {format:hevy?"Hevy":"Strong",unit:u,unitAsk,workouts,skipped};
   }
 

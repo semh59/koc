@@ -61,7 +61,7 @@ async function scheduleReminders(){
     /* The notification plugin does not light the locked screen: for medication doses (reminder repeats excluded) a separate alarm screen wakes it briefly. */
     const mw=MW();if(mw)await mw.set({times:MedLib.wakeTimes(list),doses:MedLib.wakeDoses(list)}).catch(()=>{});
     return "ok";
-  }catch(e){return "Bildirimler kurulamadı: "+(e&&e.message||e)}
+  }catch(e){return "Bildirimler kurulamadı. Bildirim iznini kontrol edip tekrar dene"}
 }
 /* Only tapping a notification ("tap"); the water/medication buttons are caught natively in QuickLogPlugin. Without Coach consent the weekly summary opens in Trend, the backup reminder in Data and backup. */
 function notifTap(e){
@@ -99,6 +99,6 @@ async function notifTest(){
     if(p.display!=="granted"){render();return toast("Bildirim izni yok. Telefon ayarlarından NeoWell için bildirimleri aç")}
     await lnSchedule(ln,[{id:99,title:"NeoWell",body:"Test bildirimi çalışıyor",schedule:{at:new Date(Date.now()+5000),allowWhileIdle:true}}]);
     render();toast("5 saniye içinde bildirim gelmeli. İstersen uygulamadan çık");
-  }catch(e){notifDiag="Hata: "+(e&&e.message||e);render()}
+  }catch(e){notifDiag="Bildirim denemesi yapılamadı. Bildirim iznini kontrol edip tekrar dene.";render()}
 }
 

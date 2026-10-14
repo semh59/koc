@@ -213,7 +213,7 @@ async function barcodeRead(){
     if(!a.available){toast("Barkod modülü indiriliyor, bir dakika sonra tekrar dene");return bs.installGoogleBarcodeScannerModule()}
     const r=await bs.scan({formats:["EAN_13","EAN_8","UPC_A","UPC_E"]}),b=r.barcodes&&r.barcodes[0];
     if(b&&b.rawValue)await barcodeFind(b.rawValue);
-  }catch(e){if(!/cancel/i.test(e&&e.message||""))toast("Barkod okunamadı: "+((e&&e.message)||"hata"))}
+  }catch(e){if(!/cancel/i.test(e&&e.message||""))toast("Barkod okunamadı. Işığı ve mesafeyi kontrol edip tekrar dene")}
 }
 async function barcodeFind(raw){
   const code=String(raw).replace(/\D/g,"");
