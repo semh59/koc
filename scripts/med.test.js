@@ -7,7 +7,7 @@ ok("cleanMeds: empty name, no times, bad time and null are dropped",cl.length===
 ok("cleanMeds: a clashing id gets a new unique id",new Set(cl.map(m=>m.id)).size===3&&cl[0].id===1);
 ok("cleanMeds: times are sorted and unique",cl[2].t.join()==="08:00,22:00");
 ok("cleanMeds: at most 20 medications, 6 times",M.cleanMeds(Array.from({length:30},(_,i)=>med({id:i+1,n:"M"+i}))).length===20&&M.cleanMeds([med({t:["01:00","02:00","03:00","04:00","05:00","06:00","07:00"]})])[0].t.length===6);
-ok("cleanMeds: name 40 and dose 30 characters, blank dose dropped",(m=>m.n.length===40&&m.d.length===30)(M.cleanMeds([med({n:"a".repeat(80),d:"d".repeat(80)})])[0])&&M.cleanMeds([med({d:"  "})])[0].d===undefined);
+ok("cleanMeds: name 60 and dose 30 characters, blank dose dropped",(m=>m.n.length===60&&m.d.length===30)(M.cleanMeds([med({n:"a".repeat(80),d:"d".repeat(80)})])[0])&&M.cleanMeds([med({d:"  "})])[0].d===undefined);
 ok("cleanMeds: weekdays; no field when all are selected, an invalid day is dropped",M.cleanMeds([med({w:[1,3,3,9,-1]})])[0].w.join()==="1,3"&&M.cleanMeds([med({w:[0,1,2,3,4,5,6]})])[0].w===undefined);
 ok("cleanMeds: the end cannot be before the start",M.cleanMeds([med({s:"2026-09-10",e:"2026-09-01"})])[0].e===undefined&&M.cleanMeds([med({s:"2026-09-10",e:"2026-09-12"})])[0].e==="2026-09-12");
 ok("cleanMeds: stock and per-dose amount limits",(m=>m.k===30&&m.p===0.5)(M.cleanMeds([med({k:30,p:0.5})])[0])&&M.cleanMeds([med({k:-1,p:0})])[0].k===undefined&&M.cleanMeds([med({k:-1,p:0})])[0].p===undefined);
@@ -48,7 +48,7 @@ ok("no stock field is created for a medication without stock",S.meds[1].k===unde
 S=mkS();for(let i=0;i<8;i++)M.mark(S,1,"2026-09-"+String(10+i).padStart(2,"0"),"08:00","t");
 ok("stock does not go below zero",S.meds[0].k===0);
 ok("a nonexistent medication cannot be marked",M.mark(S,77,"2026-09-10","08:00","t")===null);
-ok("doses left: stock / per-dose amount",M.stockLeft({k:10,p:2})===5&&M.stockLeft({k:7})===7&&M.stockLeft({k:0.9,p:1})===0&&M.stockLeft({})===null);
+ok("days left: stock / per-day amount",M.stockDays({k:10,p:2,t:["08:00"],on:true})===5&&M.stockDays({k:7,t:["08:00"],on:true})===7&&M.stockDays({k:0.9,t:["08:00"],on:true})===0&&M.stockDays({t:["08:00"],on:true})===null);
 
 const A=M.cleanMeds([med({})]);// 2 doses a day
 const log=M.cleanLog([{m:1,day:"2026-09-10",slot:"08:00",st:"t"},{m:1,day:"2026-09-10",slot:"20:00",st:"s"},{m:1,day:"2026-09-11",slot:"08:00",st:"t"}],A);

@@ -10,7 +10,7 @@ const AlarmLib=(()=>{
     for(const day of [M.addDay(today,-1),today])for(const {m,slot} of M.dosesOn(meds,day)){
       const at=M.slotAt(day,slot).getTime();
       if(at<t-BEFORE||at>t+AHEAD||rec(m.id,day,slot))continue;
-      out.push({m:m.id,n:m.n,d:m.d||"",day,slot,at});
+      out.push({m:m.id,n:m.n,d:M.doseText(m,slot),day,slot,at});
     }
     return out.sort((a,b)=>a.at-b.at||a.m-b.m);
   }
