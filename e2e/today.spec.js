@@ -6,14 +6,15 @@ const ring=(page,label)=>page.locator(".ring",{has:page.locator(".rl",{hasText:l
 test.describe("Today",()=>{
   test("the calorie ring updates with a meal",async({app,page})=>{
     await app.open({seed:state({kcal:2000})});
-    await expect(ring(page,"Kalori").locator(".rc")).toContainText("2000");
+    await expect(ring(page,"Kalori").locator(".rc")).toContainText("0");
+    await expect(app.view).toContainText("Bugün az yemek kayıtlı");
     await page.click('.act[data-act="food"]');
     await page.click('[data-act="own"]');
     await page.fill("#ft","Ev yemeği");await page.fill("#fv","650");
     await page.click('[data-go="food"]');
-    // Acceptance: the ring centre shows remaining calories, the line below shows done / target.
+    // Under 800 kcal logged the ring centre shows the total, not a remainder; the line below shows done / target.
     await expect(app.toast).toHaveText("Kaydedildi. Bugün 650 / 2000 kcal");
-    await expect(ring(page,"Kalori").locator(".rc")).toContainText("1350");
+    await expect(ring(page,"Kalori").locator(".rc")).toContainText("650");
     await expect(ring(page,"Kalori").locator(".rs")).toHaveText("650 / 2000 kcal");
   });
 

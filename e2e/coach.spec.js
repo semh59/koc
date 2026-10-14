@@ -140,7 +140,7 @@ test.describe("Coach reliability",()=>{
     fake.st.reply=()=>JSON.stringify({reply:"Tamam.",propose:{kcal:1500,why:"x"}});
     await open(app);await send(app,page,"yedikten sonra kusuyorum");
     await expect(view(page)).toContainText("Tamam.");
-    expect((await app.state()).settings.chatRisk).toContain("ed");
+    expect((await app.state()).settings.edFlag).toBe(true);
     await page.click('[data-c="newchat"]');
     await page.fill("#cmsg","kilo vermek istiyorum");await page.click("#csend");
     await expect(view(page)).toContainText("Tamam.");
@@ -150,7 +150,7 @@ test.describe("Coach reliability",()=>{
   test("a pregnancy statement becomes a lasting brake",async({app,page,fake})=>{
     await open(app);await send(app,page,"hamileyim, ne yapmalıyım");
     await expect(view(page)).toContainText("Merhaba, buradayım.");
-    expect((await app.state()).settings.chatRisk).toContain("preg");
+    expect((await app.state()).settings.pregnant).toBe(true);
   });
   test("the idiom 'bayılıyorum' goes to the model, a real faint opens the emergency card and is not sent",async({app,page,fake})=>{
     await open(app);await send(app,page,"baklavaya bayılıyorum");

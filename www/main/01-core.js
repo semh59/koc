@@ -44,7 +44,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- data ---------- */
 const DEF={
-  settings:{medNear:"",trial:null,ramOn:false,ramLat:0,ramLon:0,ramName:"",ramSahur:false,ramIftar:false,ramFrom:"",comfy:false,fastEdOk:false,hideStreak:false,hideNums:false,goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,shareProfile:true,noticeOk:false,lockGrace:30,piiPrev:false,chatRisk:"",copyAt:"",lastPlateau:"",goalSugAt:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:false,lockOn:false,hcOn:false,hcFrom:"",cycleOn:false,cycleRem:false,fastOn:false,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
+  settings:{medNear:"",trial:null,ramOn:false,ramLat:0,ramLon:0,ramName:"",ramSahur:false,ramIftar:false,ramFrom:"",comfy:false,pregnant:false,nursing:false,edFlag:false,riskOff:"",fastEdOk:false,hideStreak:false,hideNums:false,goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,shareProfile:true,noticeOk:false,lockGrace:30,piiPrev:false,copyAt:"",lastPlateau:"",goalSugAt:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:false,lockOn:false,hcOn:false,hcFrom:"",cycleOn:false,cycleRem:false,fastOn:false,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
     {id:1,t:"09:00",on:true,dow:1,name:"Haftalık tartı (Pazartesi)",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -93,7 +93,10 @@ function cleanSettings(raw){
   d.consent=o.consent===true&&o.consentV===CONSENT_V&&!(d.age>0&&d.age<18);
   if(d.consent){d.consentV=CONSENT_V;if(dayOk(o.consentAt))d.consentAt=o.consentAt;if(typeof o.consentP==="string")d.consentP=o.consentP.slice(0,200)}
   if(!d.cycleOn)d.cycleRem=false;
-  if(/^(ed|preg|ed,preg)$/.test(o.chatRisk))d.chatRisk=o.chatRisk;
+  /* Old data kept one "chatRisk" string (ed, preg): its pregnancy sign stays a pregnancy flag, the eating-disorder sign an eating-disorder flag. */
+  const cr=typeof o.chatRisk==="string"?o.chatRisk:"";
+  d.pregnant=d.pregnant||/(^|,)preg($|,)/.test(cr);d.edFlag=d.edFlag||/(^|,)ed($|,)/.test(cr);
+  d.riskOff=["preg","nurs"].filter(k=>String(o.riskOff).includes(k)).join(",");
   if(o.theme==="light"||o.theme==="dark")d.theme=o.theme;
   if(o.wUnit==="lb")d.wUnit="lb";
   if(o.gUnit==="mmol")d.gUnit="mmol";
@@ -294,13 +297,20 @@ navigator.storage?.persist?.()?.catch(()=>{});
 /* Chat flag (eating disorder): a flag in the chat or a safety card is a permanent brake the user cannot lift. */
 const chatEd=()=>Coach.chatEd();
 /* The safety brake's input in one place; without kg the latest trend weight is used. */
-const riskMerge=(a,b)=>[...new Set(((a||"")+","+(b||"")).split(",").filter(Boolean))].sort().join(",");
-function setRisk(k){S.settings.chatRisk=riskMerge(S.settings.chatRisk,k)}
+/* A sign from the chat, the note, the setup or a question (k: ed, preg, nurs). ed stays; preg and nurs are lifted only by the user's own confirmation (liftRisk). */
+/* Weigh-in and movement reminders (ids) that are not sent while a pregnancy sign is on. */
+const PREG_OFF=[1,5];
+const RISK_KEY={ed:"edFlag",preg:"pregnant",nurs:"nursing"};
+function setRisk(k){
+  const st=S.settings;st[RISK_KEY[k]]=true;st.riskOff=st.riskOff.split(",").filter(x=>x&&x!==k).join(",");
+  if(k!=="ed")scheduleReminders().then(setNotif);
+}
+function liftRisk(k){const st=S.settings;st[RISK_KEY[k]]=false;st.riskOff=[...new Set(st.riskOff.split(",").concat(k))].filter(Boolean).join(",");scheduleReminders().then(setNotif)}
 const weightNow=()=>{const w=weights(),ks=Object.keys(w).sort();return ks.length?Algo.trend(w)[ks[ks.length-1]]:0};
 function riskInput(kg){
   const st=S.settings,from=keyOff(-89),n=k=>Vitals.all().filter(v=>v.k===k&&v.day>=from).length;
-  return {age:st.age,sex:st.sex,cm:st.heightCm,kg:kg!=null?kg:weightNow(),goalKg:st.goalKg,healthNote:st.healthNote+((st.chatRisk||"").includes("preg")?" hamilelik":""),meds:Meds.count(),glucoseCount90d:n("s"),bpCount90d:n("t"),
-    edFlag:(st.chatRisk||"").includes("ed")||chatEd(),clearedAt:st.riskClearedAt,today:dayKey()};
+  return {age:st.age,sex:st.sex,cm:st.heightCm,kg:kg!=null?kg:weightNow(),goalKg:st.goalKg,healthNote:st.healthNote,pregnant:st.pregnant,nursing:st.nursing,off:st.riskOff,meds:Meds.count(),glucoseCount90d:n("s"),bpCount90d:n("t"),
+    edFlag:st.edFlag||chatEd(),clearedAt:st.riskClearedAt,today:dayKey()};
 }
 function risk(kg){return Algo.riskFlags(riskInput(kg))}
 /* Why a hand-typed calorie target is rejected ("" when fine): the brake of the suggestion path and the sex-based floor apply to manual entry too. */

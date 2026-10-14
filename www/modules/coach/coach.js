@@ -317,7 +317,7 @@ function cSend(text){
   text=String(text||"").trim().slice(0,600);if(!text)return;
   const fl=CoachLib.redFlag(text),m=cPush({role:"user",text,pend:true});
   if(fl==="ed")setRisk("ed");
-  if(CoachLib.pregnant(text))setRisk("preg");
+  {const pg=CoachLib.pregnant(text);if(pg)setRisk(pg)}
   if(fl){
     cPush({role:"coach",text:"",card:{kind:"safety",level:fl}});
     if(fl==="emergency"||fl==="mind")m.pend=false;else m.fl=fl;
@@ -330,8 +330,8 @@ function cNoteCheck(t=S.settings.healthNote){
   const f=CoachLib.redFlag(t),preg=CoachLib.pregnant(t);
   if(f==="mind"||f==="emergency"){cPush({role:"coach",text:"",card:{kind:"safety",level:f}});toast("Notunda bir sağlık uyarısı işareti var, Rehber sekmesine bak")}
   if(f==="ed")setRisk("ed");
-  if(preg)setRisk("preg");
-  return f||(preg?"preg":null);
+  if(preg)setRisk(preg);
+  return f||preg;
 }
 async function cFlush(){
   if(busy)return;
@@ -424,7 +424,7 @@ function cProgSheet(){
 async function cProgram(o){
   if(busy||coachBlocked())return;
   const rk=risk();
-  if(rk.ed||rk.pregnant)return toast((rk.ed?"Yeme düzeniyle ilgili işaret gördüm":"Hamilelik ya da emzirme işareti var")+"; program önermiyorum, hekimine danış");
+  if(rk.ed||rk.pregnant||rk.nursing)return toast((rk.ed?"Yeme düzeniyle ilgili işaret gördüm":rk.pregnant?"Hamilelik işareti var":"Emzirme işareti var")+"; program önermiyorum, hekimine danış");
   const {ids,text}=cCatalog(o);
   const msgs=cMessages(`Haftada ${o.d} gün, seans ${o.m} dakika, ekipman ${o.q}, seviye ${o.l} için antrenman programı hazırla. "program" alanını doldur, reply'da kısaca anlat.`,"KATALOG (bölge: kimlik|ad, ...):\n"+text,true),um=cPush({role:"user",text:`Program iste: haftada ${o.d} gün, ${o.m} dk, ${o.q}, ${o.l}`});
   return cRun(async()=>{
@@ -491,7 +491,7 @@ async function cRun(job,undo){
 /* If the note holds a pregnancy or health sign, no menu is made (shared by the Coach request and on-device creation). */
 function menuNoteStop(note){
   const nf=cNoteCheck(note);
-  if(nf){save();render();toast(nf==="preg"?"Notunda hamilelik ya da emzirme işareti var, menü hazırlamıyorum; hekimine ya da diyetisyenine danış":"Notunda sağlık uyarısı işareti var, menü hazırlamıyorum; hekimine danış")}
+  if(nf){save();render();toast(nf==="preg"||nf==="nurs"?`Notunda ${nf==="preg"?"hamilelik":"emzirme"} işareti var, menü hazırlamıyorum; hekimine ya da diyetisyenine danış`:"Notunda sağlık uyarısı işareti var, menü hazırlamıyorum; hekimine danış")}
   return !!nf;
 }
 /* Key-free menu: rule-based, on the device; the plan (brake, maintenance level) is the same cMenuPlan as the Coach menu. */

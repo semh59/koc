@@ -3052,20 +3052,20 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("hard block (under 18): no confirm button, confirmation does not lift it, an explanation",!$q('[data-act="riskok"]')&&$q("#view").textContent.includes("18 yaş altındasın")&&ctx().includes("KISIT: 18 yaş altındasın"));
     ok("Trend: under a block there is no time-to-goal estimate",!/hafta(\.| arası\.)<\/p>|kestirilemiyor\./.test(ev("viewTrend()")));
     ev("S.settings.age=35;S.settings.heightCm=0;S.settings.healthNote='hamileyim';S.entries=[]");
-    ok("the pregnancy KISIT line goes even without height and weigh-in",ctx().includes("KISIT: Sağlık notunda hamilelik"));
+    ok("the pregnancy KISIT line goes even without height and weigh-in",ctx().includes("KISIT: Hamilelik işareti var"));
     ev("S.settings.healthNote='';S.chat=[{id:1,t:1,role:'user',text:'x',fl:'ed'}]");
     ok("the chat ed flag is a KISIT and a menu block",ctx().includes("Yeme düzeniyle")&&!!ev("cMenuPlan().why"));
     { // chat brake: every code path goes through a single risk(); the user cannot lift it
       const gates=()=>ev("(()=>{const c=cCalc();return [!!cMenuPlan().why,!!(risk().ed||risk().pregnant),!!risk().block]})()")
-      const brake=(chat,cr)=>ev(`${prof}S.chat=${chat};S.cid=5;S.settings.chatRisk='${cr}'`);
+      const brake=(chat,cr)=>ev(`${prof}S.chat=${chat};S.cid=5;S.settings.edFlag=${cr==='ed'};S.settings.pregnant=${cr==='preg'}`);
       const view=()=>{ev("tab='settings-profile';render()");return $q("#view")};
       brake("[{id:1,t:1,role:'user',text:'x',fl:'ed'}]","ed");
-      ok("under the brake menu, program, fasting and calorie target are off; Profil has an explanation, no Kaldır button",String(gates())==="true,true,true"&&view().textContent.includes("Sohbetten bir sağlık işareti algılandı")&&!$q('[data-act="riskclr"]'),gates());
+      ok("under the brake menu, program, fasting and calorie target are off; Profil has an explanation, no Kaldır button",String(gates())==="true,true,true"&&view().textContent.includes("kalori açığı, oruç ve program önerileri kapalı")&&!$q('[data-act="riskclr"]'),gates());
       brake("[{id:1,t:1,role:'coach',text:'',card:{kind:'safety',level:'ed'}}]","");
       ok("a safety card (ed) is a permanent brake too",String(gates())==="true,true,true"&&(view(),!$q('[data-act="riskclr"]')));
       brake("[]","preg");
-      ok("pregnancy flag: brake and explanation, no Kaldır",String(gates())==="false,true,true"&&view().textContent.includes("Sohbetten bir sağlık işareti algılandı")&&!$q('[data-act="riskclr"]'),gates());
-      ok("the brake stays even if the chat is deleted (chatRisk)",(ev("S.chat=[]"),String(gates())==="false,true,true"));
+      ok("pregnancy flag: brake and explanation, no Kaldır",String(gates())==="false,true,true"&&view().textContent.includes("kalori açığı, oruç ve program önerileri kapalı")&&!$q('[data-act="riskclr"]'),gates());
+      ok("the brake stays even if the chat is deleted (flag)",(ev("S.chat=[]"),String(gates())==="false,true,true"));
     }
     ok("cleanSettings riskClearedAt: a valid day is kept, broken and missing are empty",ev("cleanSettings({riskClearedAt:'2026-09-01'}).riskClearedAt")==="2026-09-01"&&ev("cleanSettings({riskClearedAt:'dün'}).riskClearedAt")===""&&ev("cleanSettings({}).riskClearedAt")==="");
     reset();
@@ -3073,7 +3073,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   { // onboarding: hard and soft flags are separate
     ev("S=structuredClone(DEF);Object.assign(ob,obFresh(),{step:0});render()");
     const q=s=>$q(s),val=(id,v)=>{q("#ob"+id).value=v},v=()=>q("#view").textContent;
-    val("cm","170");val("kg","80");val("age","30");q('[data-ob="dir:lose"]').click();val("goal","70");q('[data-ob="next"]').click();q("#obhd").checked=true;q('[data-ob="next"]').click();
+    val("cm","170");val("kg","80");val("age","30");q('[data-ob="dir:lose"]').click();val("goal","70");q('[data-ob="next"]').click();q("#obpg").checked=true;q('[data-ob="next"]').click();
     ok("onboarding pregnancy/eating-disorder flag: hard, no confirm button",v().includes("açığı önermiyorum")&&!q('[data-act="riskok"]'));
     q('[data-ob="next"]').click();
     ok("a typed note counts as hard in riskFlags",ev("risk().hard.length")>0);
