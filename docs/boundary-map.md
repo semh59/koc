@@ -15,6 +15,7 @@
 | providers | 2 | modules/coach/coach.js, modules/coach/index.js |
 | chats | 2 | modules/coach/coach.js, modules/coach/index.js |
 | cycle | 2 | modules/cycle/cycleui.js, modules/cycle/index.js |
+| cycleSym | 2 | modules/cycle/cycleui.js, modules/cycle/index.js |
 | bar | 2 | modules/gym/exui.js, modules/gym/gym.js |
 | plates | 2 | modules/gym/exui.js, modules/gym/gym.js |
 | exCfg | 2 | modules/gym/exui.js, modules/gym/gym.js |
@@ -65,20 +66,20 @@
 | kernel/storelib.js | 2 | 1 |
 | kernel/unitlib.js | 0 | 1 |
 | kernel/unitui.js | 6 | 1 |
-| main/01-core.js | 33 | 73 |
+| main/01-core.js | 33 | 77 |
 | main/02-state-components.js | 15 | 11 |
-| main/03-screens.js | 119 | 37 |
+| main/03-screens.js | 121 | 38 |
 | main/04-sheets.js | 69 | 65 |
-| main/05-notifications.js | 37 | 19 |
+| main/05-notifications.js | 38 | 19 |
 | main/05-permissions.js | 25 | 10 |
-| main/06-events.js | 98 | 6 |
-| main/07-actions.js | 65 | 2 |
+| main/06-events.js | 99 | 7 |
+| main/07-actions.js | 67 | 2 |
 | modules/coach/coach.js | 58 | 146 |
-| modules/coach/coachlib.js | 9 | 1 |
+| modules/coach/coachlib.js | 10 | 1 |
 | modules/coach/index.js | 5 | 1 |
 | modules/coach/insightlib.js | 6 | 1 |
-| modules/cycle/cyclelib.js | 5 | 1 |
-| modules/cycle/cycleui.js | 29 | 16 |
+| modules/cycle/cyclelib.js | 6 | 1 |
+| modules/cycle/cycleui.js | 29 | 17 |
 | modules/cycle/index.js | 3 | 1 |
 | modules/data/archivelib.js | 3 | 1 |
 | modules/data/backuplib.js | 1 | 1 |
@@ -88,7 +89,7 @@
 | modules/data/csvreadlib.js | 9 | 1 |
 | modules/data/fhirlib.js | 5 | 1 |
 | modules/data/lockui.js | 6 | 11 |
-| modules/data/onboardui.js | 43 | 18 |
+| modules/data/onboardui.js | 44 | 18 |
 | modules/data/photolib.js | 1 | 1 |
 | modules/data/photoui.js | 19 | 24 |
 | modules/data/privacyui.js | 38 | 11 |
@@ -102,20 +103,20 @@
 | modules/gym/figtpl.js | 0 | 1 |
 | modules/gym/guidelib.js | 3 | 1 |
 | modules/gym/guideui.js | 40 | 24 |
-| modules/gym/gym.js | 49 | 116 |
+| modules/gym/gym.js | 50 | 116 |
 | modules/gym/importlib.js | 7 | 1 |
 | modules/gym/importui.js | 13 | 7 |
 | modules/gym/index.js | 13 | 1 |
 | modules/gym/musclemap.js | 3 | 1 |
 | modules/gym/programs.js | 0 | 1 |
 | modules/habits/habitlib.js | 3 | 1 |
-| modules/habits/habitui.js | 27 | 21 |
+| modules/habits/habitui.js | 28 | 21 |
 | modules/habits/index.js | 17 | 1 |
-| modules/habits/ramadanlib.js | 5 | 1 |
-| modules/habits/ramadanui.js | 26 | 23 |
+| modules/habits/ramadanlib.js | 6 | 1 |
+| modules/habits/ramadanui.js | 27 | 23 |
 | modules/habits/ramcities.js | 0 | 1 |
 | modules/history/historylib.js | 5 | 1 |
-| modules/history/historyui.js | 37 | 15 |
+| modules/history/historyui.js | 38 | 15 |
 | modules/insights/activitylib.js | 1 | 1 |
 | modules/insights/activityui.js | 8 | 1 |
 | modules/insights/doctorlib.js | 7 | 1 |
@@ -135,7 +136,7 @@
 | modules/log/entries.js | 9 | 9 |
 | modules/log/index.js | 8 | 4 |
 | modules/log/loglib.js | 5 | 1 |
-| modules/log/quickui.js | 15 | 2 |
+| modules/log/quickui.js | 16 | 2 |
 | modules/measures/index.js | 7 | 1 |
 | modules/measures/measureui.js | 22 | 8 |
 | modules/meds/alarmlib.js | 3 | 1 |
@@ -146,8 +147,8 @@
 | modules/motion/index.js | 8 | 1 |
 | modules/motion/motionlib.js | 5 | 1 |
 | modules/motion/motionui.js | 23 | 17 |
-| modules/motion/stepsui.js | 35 | 16 |
-| modules/motion/walkui.js | 22 | 13 |
+| modules/motion/stepsui.js | 36 | 17 |
+| modules/motion/walkui.js | 23 | 13 |
 | modules/nutrition/foods.js | 3 | 6 |
 | modules/nutrition/index.js | 5 | 1 |
 | modules/nutrition/labellib.js | 4 | 1 |

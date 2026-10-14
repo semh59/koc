@@ -30,12 +30,12 @@ async function obRestoreGo(btn){
 }
 document.addEventListener("click",ev=>{const r=ev.target.closest("[data-obr]");if(r)r.dataset.obr==="open"?sheetObRestore():obRestoreGo(r)});
 document.addEventListener("click",ev=>{if(ev.target.closest("[data-notice]")){S.settings.noticeOk=true;save();closeSheet()}});
-const obFresh=()=>({step:-1,kg:"",cm:"",age:"",sex:"",dir:"keep",goal:"",pg:false,nu:false,ed:false,hn:false,lk:false,mods:[],err:"",bad:"",minor:false,kgOk:"",job:"",walk:""});
+const obFresh=()=>({step:-1,kg:"",cm:"",age:"",sex:"",dir:"keep",goal:"",pg:false,nu:false,ed:false,hn:false,lk:false,mods:[],err:"",bad:"",minor:false,kgOk:"",job:"",walk:"",redo:false});
 const ob=obFresh();
 const OB_MODS=[["med","İlaç hatırlatıcı","meds"],["fast","Oruç takibi","fast"],["steps","Adım sayar","steps"],["bp","Tansiyon","heart"],["bs","Şeker","water"]];
 const OB_DIRS=[["lose","Kilo ver"],["keep","Koru"],["gain","Kilo al"]];
 /* Never shown to an existing user: skipped when the flag, a profile, a record, a chat or a medication exists. */
-const obNeeded=()=>{const s=S.settings;return !s.obDone&&!s.heightCm&&!s.age&&!s.goalKg&&!s.kcal&&!s.consent&&!Log.all().length&&!Coach.chatCount()&&!Meds.count()};
+const obNeeded=()=>{const s=S.settings;return ob.redo||!s.obDone&&!s.heightCm&&!s.age&&!s.goalKg&&!s.kcal&&!s.consent&&!Log.all().length&&!Coach.chatCount()&&!Meds.count()};
 
 function obRead(){
   for(const k of ["cm","kg","age","goal"]){const f=$("#ob"+k);if(f)ob[k]=f.value.trim()}
@@ -116,6 +116,7 @@ function obFinish(){
   if(ob.pg)setRisk("preg");if(ob.nu)setRisk("nurs");if(ob.ed)setRisk("ed");
   if(ob.hn){st.healthNote=obNote();cNoteCheck()}
   if(!mods.includes("steps"))st.stepsAsked=true;
+  st.obSkipped=false;st.obNudge=true;
   add("weight",p.kg);
   obDone();scheduleReminders().then(setNotif);
   if(lock)lockEnable().then(e=>{if(e)toast(e);else render()});
@@ -126,7 +127,10 @@ document.addEventListener("click",ev=>{
   obRead();
   if(a==="fixage"){Object.assign(ob,obFresh(),{step:0});return render()}
   if(ob.minor)return;
-  if(a==="skip"){obDone();scheduleReminders().then(setNotif);return}
+  if(a==="skip"){
+    if(ob.redo){Object.assign(ob,obFresh());return render()}
+    S.settings.obSkipped=true;obDone();scheduleReminders().then(setNotif);return;
+  }
   if(ob.step<0){ob.step=0;return render()}
   if(a==="back"){ob.step--;ob.err=ob.bad="";return render()}
   if(a==="sex"||a==="dir"||a==="job"||a==="walk"){ob[a]=v;ob.err=ob.bad="";return render()}
@@ -142,6 +146,7 @@ document.addEventListener("click",ev=>{
   if(ob.step===1){ob.step=2;return render()}
   obFinish();
 });
+Act.on("obredo",()=>{Object.assign(ob,obFresh(),{step:0,redo:true});render();window.scrollTo(0,0)});
 document.addEventListener("keydown",ev=>{
   if(ev.key==="Enter"&&ev.target.closest("#view")&&ev.target.id.startsWith("ob")&&ev.target.tagName==="INPUT"){const b=$('[data-ob="next"]');if(b)b.click()}
 });

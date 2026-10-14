@@ -53,10 +53,10 @@ function viewToday(){
   const lowLog=kgl>0&&kc<Algo.LOW_LOG_KCAL,kcC=st.hideNums?"•••":kgl>0&&!lowLog?Math.round(Math.abs(kgl-kc)):Math.round(kc),kcU=kgl>0&&!lowLog?(kc>kgl?"kcal fazla":"kcal kaldı"):"kcal";
   const meals=Log.where(e=>e.type==="food"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
   const pr=cur!=null?Algo.protein(riskInput(cur)):{};
-  const macro=meals.some(e=>e.p||e.c||e.f)?`<div class="macro num">Protein <b>${Math.round(mac("p"))}</b>${pr.range?` / ${pr.range[0]}–${pr.range[1]}`:""} g${pr.doc?" (hedefi hekiminle belirle)":""}${meals.some(e=>e.c!=null||e.f!=null)?` · Karbonhidrat <b>${Math.round(mac("c"))}</b> g · Yağ <b>${Math.round(mac("f"))}</b> g`:""}</div>${pr.range||pr.doc?`<div class="mut sm macro">${Algo.PROTEIN_NOTE}</div>`:""}`:"";
+  const macro=meals.some(e=>e.p||e.c||e.f)?`<div class="macro num">Protein <b>${Math.round(mac("p"))}</b>${pr.range?` / ${pr.range[0]}–${pr.range[1]}`:""} g${pr.doc?" (hedefi hekiminle belirle)":""}${meals.some(e=>e.c!=null||e.f!=null)?` · Karbonhidrat <b>${Math.round(mac("c"))}</b> g · Yağ <b>${Math.round(mac("f"))}</b> g`:""}${pr.range||pr.doc?helpBtn("hpro","Protein"):""}</div>${pr.range||pr.doc?helpBox("hpro",Algo.PROTEIN_NOTE):""}`:"";
   /* The fibre bar only when every meal of the day has fibre data (a partial total would look like the whole day) and for adults. */
   const fibAll=meals.length>0&&meals.every(e=>e.fb!=null)&&S.settings.age>=18;
-  const fiber=fibAll?`<div class="macro num">Lif <b>${Math.round(mac("fb"))}</b> / en az 25 g</div><div class="bar" aria-hidden="true"><i style="width:${Math.min(100,mac("fb")/25*100).toFixed(0)}%"></i></div><p class="hint">Yetişkinler için Dünya Sağlık Örgütü önerisi günde en az 25 g. Gün bitmeden az görünmesi olağandır. Hedefin farklıysa hekiminin söylediğine uy.</p>`:"";
+  const fiber=fibAll?`<div class="macro num">Lif <b>${Math.round(mac("fb"))}</b> / en az 25 g${helpBtn("hfib","Lif")}</div>${helpBox("hfib","Yetişkinler için Dünya Sağlık Örgütü önerisi günde en az 25 g. Gün bitmeden az görünmesi olağandır. Hedefin farklıysa hekiminin söylediğine uy.")}<div class="bar" aria-hidden="true"><i style="width:${Math.min(100,mac("fb")/25*100).toFixed(0)}%"></i></div>`:"";
   const mi=(fibAll?["sg","na"]:["fb","sg","na"]).map(k=>[k,meals.filter(e=>e[k]!=null).length]).filter(x=>x[1]).map(([k,n])=>`${NLBL[k][0].toUpperCase()+NLBL[k].slice(1)} <b>${Math.round(mac(k))}</b> ${NUNIT(k)} (${n}/${meals.length})`);
   const nc=meals.filter(e=>e.c!=null).length,nf=meals.filter(e=>e.f!=null).length;
   const macroNote=macro&&meals.some(e=>e.c!=null||e.f!=null)&&(nc<meals.length||nf<meals.length)?`<div class="mut sm macro">Karbonhidrat ${nc}/${meals.length}, yağ ${nf}/${meals.length} öğünde veri var; toplam eksik olabilir.</div>`:"";
@@ -68,10 +68,11 @@ function viewToday(){
     <div class="rmini">${rb("water","Su",ring(water/sh,"var(--water)",waterC||fmt((sh-water)/1000,1),"Su",`${fmt(water/1000,1)} / ${fmt(sh/1000,1)} L`,waterU,"mini"+(waterC?" done":"")))}
     ${rb("exercise","Spor",ring(sw/sg,"color-mix(in srgb,var(--exercise) 80%,var(--card))",spC||Math.round(sg-sw),"Spor",`${Math.round(sw)} / ${sg} dk`,spU,"mini"+(spC?" done":"")))}${sOn?stepCard():""}</div>
   </div>${Habits.ramWaterNote()}${lowLog&&!st.hideNums?`<p class="pt-2 hint">Bugün az yemek kayıtlı; kayıtlar tamamlanınca kalanı gösteririm.</p>`:""}${macro}${macroNote}${fiber}${micro}${rangeNote}${moveAdd(t)?`<p class="pt-2 hint">Hedefe hareketten +${moveAdd(t)} kcal eklendi (kayıtlı antrenman ve yürüyüşün yarısı, tahmindir).</p>`:""}</div>`;
-  const actions=`<div class="actions"><button class="btn act" data-act="food">${Icons.svg("plus")} Yemek ekle</button><div class="qa">
-    <button class="chip act" data-act="water" aria-label="${st.glass} ml su ekle">${Icons.svg("water")} +${st.glass} ml</button><button class="chip" data-dk="open">${Icons.svg("water")} Başka içecek</button>
-    <button class="chip act" data-act="weight">${Icons.svg("weight")} Kilo</button><button class="chip act" data-act="exercise">${Icons.svg("exercise")} Spor</button>
-    <button class="chip act" data-act="note">${Icons.svg("note")} Not</button></div></div>`;
+  /* The most used quick chips come first; the order inside equal counts stays as written. */
+  const Q=[["water",'data-act="water"',"water",`+${st.glass} ml`,`${st.glass} ml su ekle`],["drink",'data-dk="open"',"water","İçecek türü"],["weight",'data-act="weight"',"weight","Kilo"],["exercise",'data-act="exercise"',"exercise","Spor"],
+    ...st.bpOn?[["bp",'data-vt="addbp"',"heart","Tansiyon"]]:[],...st.bsOn?[["bs",'data-vt="addbs"',"water","Şeker"]]:[],["note",'data-act="note"',"note","Not"],...Motion.walk()?[]:[["walk",'data-w="start"',"steps","Yürüyüş"]]];
+  const chips=Q.map((c,i)=>[c,i]).sort((x,y)=>(st.chipUse[y[0][0]]||0)-(st.chipUse[x[0][0]]||0)||x[1]-y[1]).map(([[k,a,ic,l,al]])=>`<button class="chip${a.startsWith("data-act")?" act":""}" data-chip="${k}" ${a}${al?` aria-label="${al}"`:""}>${Icons.svg(ic)} ${l}</button>`).join("");
+  const actions=`<div class="actions"><button class="btn act" data-act="food">${Icons.svg("plus")} Yemek ekle</button><div class="qa">${chips}</div></div>`;
   const lk=keyOff(-logOff);
   const {items,log}=dayLogHtml(lk);
   const lname=logOff===0?"Bugün":logOff===1?"Dün":fd(lk);
@@ -82,7 +83,9 @@ function viewToday(){
   const row=(ic,b,sub,btns)=>`<div class="row"><span>${Icons.svg(ic)} ${b}<small class="mut sm">${sub}</small></span><div class="acts">${btns.map(([a,l])=>`<button class="chip" data-act="${a}">${l}</button>`).join("")}</div></div>`;
   /* One list instead of separate cards: only pending jobs of enabled modules; no card when empty. */
   const first=[...medTodo(),...vTodo()],medBudget=isNative()&&medBudgetMsg&&st.medOn&&Meds.count()?[row("clock","İlaç hatırlatmaların sınırlı",medBudgetMsg,[])]:[];
-  const todo=[...first,...medBudget,storeMsg()?row("save",storeMsg()[0],storeMsg()[1],[["databackup","Yedek al"]]):"",
+  const firstWater=st.obNudge&&!Log.where(e=>e.type==="water").length?row("water","İlk suyunu ekle","Bir bardak su kaydı günlük ilerlemeni başlatır.",[["water",`+${st.glass} ml`]]):"";
+  const goalRow=st.obDone&&st.obSkipped&&!st.kcal?row("weight","Hedefini hesapla","Boy, kilo ve yaşınla günlük kalori ve protein hedefini hesaplarım.",[["obredo","Hesapla"]]):"";
+  const todo=[...first,...medBudget,firstWater,goalRow,storeMsg()?row("save",storeMsg()[0],storeMsg()[1],[["databackup","Yedek al"]]):"",
     abErr?row("cloud","Otomatik yedek alınamadı",abErr,[["abfix","Düzelt"]]):"",
     lateRow(),...pmTodo(),...fastTodo(),...ramadanTodo(),...trialTodo(),
     Motion.walk()?row("steps",Motion.walk().t1?"Yürüyüş kaydedilmedi":"Yürüyüş sürüyor","Adım raporunda bitir ya da kaydet.",[["walkgo","Aç"]]):"",
@@ -96,7 +99,7 @@ function viewToday(){
   const vis=Math.max(3,first.length+medBudget.length),todoCard=todo.length?`<div class="card todo"><h2 class="grp">Bugün yapılacaklar</h2>${todo.slice(0,vis).join("")}${todo.length>vis?`<details class="acc" ${keepOpen("todo")}><summary>${todo.length-vis} iş daha</summary>${todo.slice(vis).join("")}</details>`:""}</div>`:"";
   const minor=S.settings.age>0&&S.settings.age<18?`<div class="banner"><b>NeoWell 18 yaş ve üzeri için</b><p>Profilindeki yaş 18'in altında. Kalori açığı, oruç önerisi ve Rehber kapalı. Beslenme ve kilo konusunda bir yetişkinle ve hekiminle ya da diyetisyeninle konuş. Yaş yanlışsa Ayarlar > Profil'den düzelt.</p></div>`:"";
   /* .bg2 has no effect in portrait; in landscape the left column holds rings and summary, the right one jobs and entries. */
-  return `<div class="bg2"><div class="bgL">${minor}${rings}${actions}${habitRow()}</div><div class="bgR">${todoCard}${gTodayCard()}${weight}<div class="card coachc"><button class="coach" data-tab="coach">${esc(dailyTip())} <b>Rehber ›</b></button></div><div class="card">${dnav}${log}${items.some(e=>e.type==="food")?`<button class="lnk" data-act="tplnew">Bu günün yemeklerinden şablon yap</button>`:""}<button class="lnk" data-tab="history">Geçmiş ve takvim</button></div></div></div>`;
+  return `<div class="bg2"><div class="bgL">${minor}${rings}${actions}${habitRow()}</div><div class="bgR">${todoCard}${gTodayCard()}${weight}<div class="card">${dnav}${log}${items.some(e=>e.type==="food")?`<button class="lnk" data-act="tplnew">Bu günün yemeklerinden şablon yap</button>`:""}<button class="lnk" data-tab="history">Geçmiş ve takvim</button></div></div></div>`;
 }
 
 /* PDF reports in one place; the share handlers listen on the document, so they work from any screen. */
@@ -141,7 +144,8 @@ function viewTrend(){
   <div class="card">${chart(N)}${stats}</div>`:empty}${goalCard()}
   ${lossAsk()?`<div class="btns"><button class="btn ghost" data-c="why">Bu haftaya birlikte bakalım</button></div>`:""}
   ${tabBar}
-  <details class="acc more"><summary>Daha fazla ölçüm</summary><div class="card">${vTrendCards()}${labTrendCard()}${navRow('data-tab="gym"',"exercise","Haftalık spor",`${Math.round(sw)} / ${st.sportWeek} dk, ${sd} gün aktif`)}${reportRows()}</div></details>`;
+  <details class="acc more"><summary>Daha fazla ölçüm</summary><div class="card">${vTrendCards()}${labTrendCard()}${navRow('data-tab="gym"',"exercise","Haftalık spor",`${Math.round(sw)} / ${st.sportWeek} dk, ${sd} gün aktif`)}${reportRows()}</div></details>
+  <div class="card coachc"><button class="coach" data-tab="coach">${esc(dailyTip())} <b>Rehber ›</b></button></div>`;
 }
 
 const LOCK_LABEL={30:"30 saniyeden",120:"2 dakikadan",300:"5 dakikadan"};
@@ -256,7 +260,7 @@ function render(){
   $("#ttl").textContent=ttl;
   const n=streak(),sOn=n>0&&tab==="today"&&!S.settings.hideStreak;$("#streak").innerHTML=sOn?`${Icons.svg("flame")}<b class="num">${n}</b> gün`:"";$("#streak").setAttribute("aria-label",sOn?n+" günlük seri":"");
   v.innerHTML=(saveFail&&tab!=="today"&&tab!=="settings-data"?`<div class="card todo" role="alert"><div class="row"><span>${Icons.svg("save")} <b>${storeMsg()[0]}</b><small class="mut sm">${storeMsg()[1]}</small></span><button class="chip" data-act="databackup">Yedek al</button></div></div>`:"")+(tab==="coach"?viewCoach():tab==="today"?viewToday():tab==="gym"?viewGym():tab==="trend"?viewTrend():tab==="steps"?viewSteps():tab==="labs"?viewLabs():tab==="bp"?viewBp():tab==="glucose"?viewGlucose():tab==="exlib"?viewExlib():tab==="meds"?viewMeds():tab==="cycle"?viewCycle():tab==="history"?viewHistory():tab==="day"?viewDay():tab==="more"?viewMore():viewSettings());
-  document.body.classList.toggle("coach",tab==="coach");document.body.classList.toggle("bg",tab==="today");$("#composer").hidden=tab!=="coach";cmpSet();
+  document.body.classList.toggle("coach",tab==="coach");document.body.classList.toggle("bg",tab==="today");$("#composer").hidden=tab!=="coach";$("#cglass").textContent="+"+S.settings.glass;cmpSet();
   if(tab==="coach")cScroll();
   phGuard();
   document.querySelectorAll("nav button").forEach(b=>{if(b.dataset.tab===navTab())b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});

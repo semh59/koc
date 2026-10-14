@@ -48,6 +48,7 @@ document.addEventListener("click",ev=>{
   }
 });
 $("#tundo").addEventListener("click",undoLast);
+document.addEventListener("click",ev=>{const c=ev.target.closest(".qa [data-chip]");if(c){const u=S.settings.chipUse,k=c.dataset.chip;u[k]=(u[k]||0)+1;save()}});
 const TOGGLES={mk:"moveKcalOn",rpe:"rpeOn",gdv:"gdVoice",gdb:"gdVib",aw:"awakeOn",comfy:"comfy",hs:"hideStreak",hn:"hideNums"}; // data-<key> checkbox -> boolean setting
 document.addEventListener("change",ev=>{
   const t=ev.target;
@@ -129,6 +130,7 @@ function backKey(){
   if(cfmDone){cfmDone(false);return true}
   if(gdBack())return true;
   if($("#sheet").classList.contains("on")){closeSheet();return true}
+  if(ob.redo&&!ob.step){Object.assign(ob,obFresh());render();return true}
   if(obNeeded()&&ob.step){ob.step--;render();return true}
   if(UP(tab)){goBack();return true}
   if(tab!=="today"||logOff){tab="today";logOff=0;render();return true}
