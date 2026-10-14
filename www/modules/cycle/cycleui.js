@@ -53,12 +53,13 @@ function viewCycle(){
   if(!st.cycleOn)return `${emptyCard("data","Döngü takibi kapalı","Açarsan dönem günlerini kaydedip tahmini sonraki dönemi görebilirsin.",`<button class="btn" data-cy="toggle">Döngü takibini aç</button>`)}<p class="hint">Veriler yalnız telefonda durur. ${cycNote}</p>`;
   const preg=risk().pregnant,p=preg?{ok:false}:CycleLib.predict(S.cycle),f=CycleLib.fertile(p,today),dn=CycleLib.dayOfPeriod(S.cycle,today),lastRow=S.cycle[S.cycle.length-1];
   let pred;
-  if(preg)pred=`<p class="mut">Sağlık notunda hamilelik ya da emzirme geçtiği için tahmin gösterilmiyor. Sorularını hekimine danış. Kayıtların durur.</p>`;
+  if(preg)pred=`<p class="mut">Hamilelik işareti olduğu için tahmin gösterilmiyor. Sorularını hekimine danış. Kayıtların durur.</p>`;
   else if(!p.ok)pred=`<p class="mut">Yeterli veri yok. Tahmin için en az 3 dönem başlangıcı kaydet.</p>`;
   else{
     const conf=p.irregular?"düşük":p.sd<=2?"yüksek":"orta";
     pred=`<div class="ink sumv cyv cypr num">${cycRange(p.from,p.to)}</div><div class="mut sm">Son ${p.n} döngünün ortalaması ${String(p.mean).replace(".",",")} gün, sapma ${String(p.sd).replace(".",",")} gün. Güven: ${conf}.</div>${p.irregular?`<div class="mut sm" role="note">Döngülerin düzensiz görünüyor; bu tahmin güvenilir değil.</div>`:""}`;
   }
+  if(!preg&&risk().nursing)pred+=`<div class="mut sm" role="note">Emzirme döneminde döngü düzensiz olabilir; tahmin güvenilmez olabilir.</div>`;
   const label=(list,k)=>list.find(x=>x[0]===k)[1];
   const rows=S.cycle.slice().reverse().map(r=>{
     const tags=[r.flow&&label(CycleLib.FLOW,r.flow),...(r.sym||[]).map(k=>label(CycleLib.SYM,k))].filter(Boolean).join(", ");

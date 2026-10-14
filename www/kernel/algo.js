@@ -126,7 +126,7 @@ const Algo=(()=>{
      A keyword does not count when negated in Turkish ("hamile değilim", "emzirmiyorum", "kusmadım", "böbrek sorunum yok"); a non-empty note still stays soft.
      Text is folded to ASCII (ı->i, ğ->g...) and the patterns are written in ASCII, so "degilim" or "HAMILEYIM" without accents give the same result. */
   const low=s=>String(s||"").replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase().replace(/ı/g,"i").replace(/ğ/g,"g").replace(/ş/g,"s").replace(/ç/g,"c").replace(/ö/g,"o").replace(/ü/g,"u");
-  const ED=/yeme bozuklu|anoreksi|bulimi|tikinma|yemeyi birak|ac kal(?=iyor)|kus(?=ma|uyor|tur|ar|tu)/g,PREG=/hamile|gebe(?!r)|emzir|lohusa|bebek bekl(?=iyor|eyen)|bebegim olacak|dogum yapaca|anne adayi/g,KIDNEY=/bobrek|diyaliz|karaciger|siroz/g,
+  const ED=/yeme bozuklu|anoreksi|bulimi|tikinma|yemeyi birak|ac kal(?=iyor)|kus(?=ma|uyor|tur|ar|tu)/g,PREG=/hamile|gebe(?!r)|bebek bekl(?=iyor|eyen)|bebegim olacak|dogum yapaca|anne adayi/g,NURS=/emzir|lohusa/g,KIDNEY=/bobrek|diyaliz|karaciger|siroz/g,
     CHRONIC=/diyabet|seker hasta|insulin|bobrek|diyaliz|karaciger|siroz|kalp|tiroid|guatr|epilep|kanser|kemoterapi|tansiyon/g;
   function said(t,re){
     for(const m of t.matchAll(re)){
@@ -136,12 +136,15 @@ const Algo=(()=>{
     }
     return false;
   }
-  function riskFlags({age,cm,kg,goalKg,healthNote,meds,glucoseCount90d,bpCount90d,edFlag,clearedAt,today}){
+  function riskFlags({age,cm,kg,goalKg,healthNote,meds,glucoseCount90d,bpCount90d,edFlag,pregnant:pf,nursing:nf,off,clearedAt,today}){
     const t=low(healthNote).trim(),bmi=x=>x>0&&cm>0?x/Math.pow(cm/100,2):null,n=Array.isArray(meds)?meds.length:meds>0?meds:0;
-    const ed=!!edFlag||said(t,ED),pregnant=said(t,PREG),hard=[],soft=[];
+    const lifted=String(off||""),ed=!!edFlag||said(t,ED),hard=[],soft=[];
+    /* A lifted flag also silences the note text, so "hamileyim" in an old note does not bring it back. */
+    const pregnant=!lifted.includes("preg")&&(!!pf||said(t,PREG)),nursing=!lifted.includes("nurs")&&(!!nf||said(t,NURS));
     if(age>0&&age<18)hard.push("18 yaş altındasın");
     if(ed)hard.push("Yeme düzeniyle ilgili bir işaret var");
-    if(pregnant)hard.push("Sağlık notunda hamilelik ya da emzirme geçiyor");
+    if(pregnant)hard.push("Hamilelik işareti var");
+    if(nursing)hard.push("Emzirme işareti var");
     if(bmi(kg)!=null&&bmi(kg)<18.5)hard.push("Kilon boyuna göre düşük (BMI 18,5 altı)");
     if(goalKg>0&&bmi(goalKg)!=null&&bmi(goalKg)<18.5)hard.push("Hedef kilo boyuna göre çok düşük (BMI 18,5 altı)");
     if(t)soft.push(said(t,CHRONIC)?"Sağlık notunda hekim takibi gerektiren bir durum geçiyor":"Sağlık notun var");
@@ -149,7 +152,7 @@ const Algo=(()=>{
     if(glucoseCount90d>0)soft.push("Son 90 günde şeker ölçümün var");
     if(bpCount90d>0)soft.push("Son 90 günde tansiyon ölçümün var");
     const d=dayOk(clearedAt)&&dayOk(today)?dayNum(today)-dayNum(clearedAt):-1,cleared=d>=0&&d<30;
-    return {hard,soft,cleared,kidney:said(t,KIDNEY),pregnant,ed,meds:n,block:hard[0]||(!cleared&&soft[0])||""};
+    return {hard,soft,cleared,kidney:said(t,KIDNEY),pregnant,nursing,ed,meds:n,block:hard[0]||(!cleared&&soft[0])||""};
   }
   /* Why a calorie deficit is unsafe, or "". */
   const lossBlock=o=>riskFlags(o).block;

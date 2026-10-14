@@ -145,7 +145,7 @@ let notifStatus="";
 const fld=(id,label,val,small,mode)=>`<div class="field"><label for="${id}">${label}${small?`<small>${small}</small>`:""}</label><input id="${id}" type="text" inputmode="${mode||"decimal"}" value="${val}" data-set="${id}"></div>`;
 const segb=(attr,opts,sel)=>`<div class="seg2" role="group">${opts.map(([v,l])=>`<button data-${attr}="${v}" aria-pressed="${sel===v}">${l}</button>`).join("")}</div>`;
 /* A reminder of a disabled module is not listed. */
-const remShown=r=>{const st=S.settings;return !((r.id===7||r.id===8)&&!st.bpOn)&&!(r.id===9&&!st.bsOn)&&!(r.id===11&&!st.fastOn)};
+const remShown=r=>{const st=S.settings;return !(PREG_OFF.includes(r.id)&&risk().pregnant)&&!((r.id===7||r.id===8)&&!st.bpOn)&&!(r.id===9&&!st.bsOn)&&!(r.id===11&&!st.fastOn)};
 /* Checkbox row: label and switch form one 48 px touch target. */
 const swRow=(attrs,on,label,sub="")=>`<label class="chkrow"><span class="nm">${label}${sub?`<small>${sub}</small>`:""}</span><span class="sw"><input type="checkbox" ${attrs}${on?" checked":""}><span></span></span></label>`;
 /* List row: shared by the More, Settings, Gym and Data screens. */
@@ -197,7 +197,7 @@ function viewSettings(){
     <p class="hint">Az: çoğunlukla oturarak, günde 5 bin adımdan az. Orta: ayakta çalışıyor ya da 5-9 bin adım atıyorsun. Çok: fiziksel iş ya da 10 bin+ adım. Planlı antrenmanı sayma, onu ayrıca kaydedersin.</p>
     ${unitsHtml()}
     <div class="row"><button class="btn ghost grow" data-act="health">Sağlık notların${st.healthNote?" (var)":""}</button>${helpBtn("hlpsn","Sağlık notların")}</div>
-    ${helpBox("hlpsn","Hamilelik, yeme bozukluğu geçmişi, hastalık ya da ilaç varsa buraya yaz. Öneriler bunlara göre ihtiyatlı olmalı, hekim kontrolü gerekebilir.")}${st.chatRisk||chatEd()?`<div class="row"><span>Sohbetten bir sağlık işareti algılandı: kalori açığı, oruç ve program önerileri kapalı. Bu işareti uygulamadan kaldıramazsın; sağlık durumunu bir hekimle konuşmanı öneririz.</span></div>`:""}</div>
+    ${helpBox("hlpsn","Hamilelik, yeme bozukluğu geçmişi, hastalık ya da ilaç varsa buraya yaz. Öneriler bunlara göre ihtiyatlı olmalı, hekim kontrolü gerekebilir.")}${risk().block&&risk().hard.length?`<div class="row"><span>${esc(risk().hard.join(". "))}: kalori açığı, oruç ve program önerileri kapalı. Hamilelik ve emzirme işaretini "Sağlık notların"dan kaldırabilirsin; sağlık durumunu bir hekimle konuşmanı öneririz.</span></div>`:""}</div>
   <h2>Hedefler</h2><div class="card">
     ${fld("goalKg",`Hedef kilo (${wlab()})`,st.goalKg?dw(st.goalKg).replace(/,0$/,""):"",Algo.goalWhy(st.goalKg,st.heightCm,weightNow())||"Boş bırakırsan kapalı")}
     ${fld("kcal","Günlük kalori (kcal)",st.kcal||"","Boş bırakırsan kapalı","numeric")}

@@ -1,7 +1,7 @@
 /* ---------- UI state ---------- */
 let tab="today",via=null,range=30,toastTimer=null,logOff=0,recList=[],lastDay=dayKey();
-/* The goal weight shown on screens: 0 when it is off or fails the BMI check (a stored goal is still seen by the brakes). */
-const goalWeight=cur=>{const st=S.settings;return st.goalKg>0&&!Algo.goalWhy(st.goalKg,st.heightCm,cur)?st.goalKg:0};
+/* The goal weight shown on screens: 0 when it is off, fails the BMI check or a pregnancy sign is on (a stored goal is still seen by the brakes). */
+const goalWeight=cur=>{const st=S.settings;return st.goalKg>0&&!Algo.goalWhy(st.goalKg,st.heightCm,cur)&&!risk().pregnant?st.goalKg:0};
 function goalInfo(cur,first){
   const g=goalWeight(cur);if(!(g>0))return null;
   const f=first==null?cur:first,dir=f>=g?-1:1;

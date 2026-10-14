@@ -94,7 +94,7 @@ const seed=()=>ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.cycl
     ev("S.mood=[]");
   }
   ev("S.settings.healthNote='hamileyim';render()");
-  ok("with a pregnancy marker there is no prediction, a neutral note is shown",!ev("!!document.querySelector('.cypr')")&&/hamilelik/.test(v()));
+  ok("with a pregnancy marker there is no prediction, a neutral note is shown",!ev("!!document.querySelector('.cypr')")&&/Hamilelik işareti/.test(v()));
   ev("S.settings.healthNote='';S.settings.cycleOn=false;render()");
   ok("when off the screen shows an off notice, no record list",/kapalı/.test(v())&&!/Geçmiş/.test(v()));
   ev("S.settings.cycleOn=true");

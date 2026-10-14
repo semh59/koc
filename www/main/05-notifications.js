@@ -37,7 +37,8 @@ async function scheduleReminders(){
     try{await ln.registerActionTypes({types:[{id:"water",actions:[{id:"water",title:`+${S.settings.glass} ml`}]},{id:"med",actions:[{id:"med",title:"✓ Aldım"},{id:"medskip",title:"Atla"}]}]})}catch{}
     const list=[],now=Date.now(),lb=S.settings.lastBackup;
     const t0=dayKey(),waterDone=sum("water",t0,t0)>=S.settings.waterMl,fastBlock=!!risk().block;
-    for(const r of S.settings.reminders.filter(r=>r.on&&!(r.id===11&&fastBlock))){
+    const preg=risk().pregnant;
+    for(const r of S.settings.reminders.filter(r=>r.on&&!(r.id===11&&fastBlock)&&!(preg&&PREG_OFF.includes(r.id)))){
       const [h,m]=r.t.split(":").map(Number),water=WATER_REM.includes(r.id);
       for(let i=0;i<SCHED_DAYS;i++){
         if(i===0&&waterDone&&water)continue;

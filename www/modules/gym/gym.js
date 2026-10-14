@@ -768,10 +768,10 @@ function gEnergy(){
   const intake=Log.byDay("food");
   const r=Algo.adaptiveTdee({weights:wAll,intake,profile});
   if(!r.tdee)return "";
-  const bmr=Algo.bmrMifflin(profile),sg=Algo.suggestTarget({...riskInput(kg),tdee:r.tdee,bmr});
+  const bmr=Algo.bmrMifflin(profile),pg=risk(kg).pregnant,sg=pg?null:Algo.suggestTarget({...riskInput(kg),tdee:r.tdee,bmr});
   const pr=Algo.protein(riskInput(kg)).range;
   const src=r.source==="formül"?"Formül tahmini. Veri biriktikçe kendini ayarlar.":`Gerçek verinden hesaplandı, güven %${Math.round(r.confidence*100)}.`;
-  const cells=[["Tahmini harcama",`${Math.round(r.tdee/10)*10} kcal`]];
+  const cells=[["Tahmini harcama",pg?"Hekiminle belirle":`${Math.round(r.tdee/10)*10} kcal`]];
   if(sg)cells.push(["Önerilen hedef",`${sg.kcal} kcal`]);
   cells.push(["Protein aralığı",pr?`${pr[0]}–${pr[1]} g`:"Hekiminle belirle"]);
   return `<h2>Enerji dengesi</h2><div class="card">${sg&&sg.blocked?riskBox(risk(kg),"Kalori açığı önermiyorum"):""}<div class="stats">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1]}</div></div>`).join("")}</div>

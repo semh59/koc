@@ -9,19 +9,19 @@ const reset=()=>ev(`closeSheet();S=structuredClone(DEF);S.settings.obDone=true;S
   KEYS={nvidia:'k1',groq:'k2'};S.providers.forEach(p=>{p.on=p.health=p.id==='nvidia'||p.id==='groq';p.confirm=false});cConsent(true);render()`);
 boot().then(async win=>{
   w=win;ev=s=>w.eval(s);
-  const chatRisk=()=>ev("S.settings.chatRisk"),cards=k=>ev(`S.chat.filter(m=>m.card&&m.card.kind==='${k}').length`);
+  const chatRisk=()=>ev("[S.settings.edFlag&&'ed',S.settings.pregnant&&'preg',S.settings.nursing&&'nurs'].filter(Boolean).join()"),cards=k=>ev(`S.chat.filter(m=>m.card&&m.card.kind==='${k}').length`);
   ev("toast=(m,u)=>{globalThis.__t=m;globalThis.__u=u}");
   {
     reset();
     ev("S.settings.healthNote='yedikten sonra kusuyorum';cNoteCheck()");
     ok("cNoteCheck: an eating-disorder note writes ed to chatRisk",chatRisk().includes("ed"),chatRisk());
     ev("S.settings.healthNote='hamileyim';cNoteCheck()");
-    ok("cNoteCheck: a pregnancy note writes preg, ed is kept",chatRisk()==="ed,preg"||chatRisk()==="preg,ed",chatRisk());
+    ok("cNoteCheck: a pregnancy note writes preg, ed is kept",chatRisk()==="ed,preg",chatRisk());
     ev("S.settings.healthNote='göğsüm ağrıyor';cNoteCheck()");
     ok("cNoteCheck: an emergency symptom note adds a safety card to the chat",ev("S.chat.some(m=>m.card&&m.card.kind==='safety'&&m.card.level==='emergency')"));
     reset();ev("S.settings.healthNote='iyi durumdayım';cNoteCheck()");
     ok("cNoteCheck: a clean note produces no risk and no card",chatRisk()===""&&cards("safety")===0);
-    ok("saving the health note calls cNoteCheck",/health:\(\)=>\{S\.settings\.healthNote=[^}]*cNoteCheck\(\)/.test(require("./html").full()));
+    ok("saving the health note calls cNoteCheck",/async function goHealth[\s\S]*?healthNote=note;if\(note!==old\)cNoteCheck\(\)/.test(require("./html").full()));
   }
   {
     reset();let n=0;fetchWith(()=>{n++;return reply({reply:"x"})});

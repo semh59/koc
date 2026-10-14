@@ -33,8 +33,9 @@ const CoachLib=(()=>{
     }
     return null;
   }
-  const PREG=/hamileyim|hamile kal|hamilelik|gebeyim|gebe kal|emziriyorum|bebek bekliyorum/;
-  const pregnant=t=>PREG.test(low(t).replace(/(?:hamilelik|gebelik)\s+(?:yok|de[gğ]il)\w*/g,""));
+  const PREG=/hamileyim|hamile kal|hamilelik|gebeyim|gebe kal|bebek bekliyorum/;
+  /* "preg", "nurs" or null: pregnancy and nursing are separate signs. */
+  const pregnant=t=>{const x=low(t).replace(/(?:hamilelik|gebelik)\s+(?:yok|de[gğ]il)\w*/g,"");return PREG.test(x)?"preg":/emziriyorum/.test(x)?"nurs":null};
   /* Line breaks and section headings are neutralized: user text enters the system prompt as data, not as instructions. */
   const HEAD=/KURALLAR|ÇIKTI|KISIT|HESAPLANAN|PROFİL|HEDEFLER|BUGÜN|İLAÇLAR|KATALOG|SON \d+ GÜN|SON ANTRENMANLAR|SON NOTLAR|SAĞLIK NOTU|MENÜ İSTEĞİ|NOT(?=\s*:)/g;
   const oneLine=(x,n)=>String(x==null?"":x).replace(/[\r\n\u2028\u2029\t]+/g," ").replace(HEAD,m=>low(m)).replace(/\s+/g," ").trim().slice(0,n);

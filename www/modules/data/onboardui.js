@@ -21,7 +21,7 @@ async function obRestoreGo(btn){
 }
 document.addEventListener("click",ev=>{const r=ev.target.closest("[data-obr]");if(r)r.dataset.obr==="open"?sheetObRestore():obRestoreGo(r)});
 document.addEventListener("click",ev=>{if(ev.target.closest("[data-notice]")){S.settings.noticeOk=true;save();closeSheet()}});
-const obFresh=()=>({step:-1,kg:"",cm:"",age:"",sex:"",dir:"keep",goal:"",hd:false,hn:false,mods:[],err:"",bad:"",minor:false,kgOk:"",job:"",walk:""});
+const obFresh=()=>({step:-1,kg:"",cm:"",age:"",sex:"",dir:"keep",goal:"",pg:false,nu:false,ed:false,hn:false,mods:[],err:"",bad:"",minor:false,kgOk:"",job:"",walk:""});
 const ob=obFresh();
 const OB_MODS=[["med","İlaç hatırlatıcı","meds"],["fast","Oruç takibi","fast"],["steps","Adım sayar","steps"],["bp","Tansiyon","heart"],["bs","Şeker","water"]];
 const OB_DIRS=[["lose","Kilo ver"],["keep","Koru"],["gain","Kilo al"]];
@@ -30,7 +30,7 @@ const obNeeded=()=>{const s=S.settings;return !s.obDone&&!s.heightCm&&!s.age&&!s
 
 function obRead(){
   for(const k of ["cm","kg","age","goal"]){const f=$("#ob"+k);if(f)ob[k]=f.value.trim()}
-  for(const k of ["hd","hn"]){const h=$("#ob"+k);if(h)ob[k]=h.checked}
+  for(const k of ["pg","nu","ed","hn"]){const h=$("#ob"+k);if(h)ob[k]=h.checked}
 }
 /* Validated numbers or an error; the error is written under the field and the field gets aria-invalid. */
 function obParse(){
@@ -51,13 +51,13 @@ function obParse(){
   }
   return o;
 }
-/* The flags are written into the health note; riskFlags treats the first as hard (pregnancy) and the second as soft. */
-const OB_HD="İlk kurulumda işaretlendi: hamilelik, emzirme ya da yeme bozukluğu geçmişi",OB_HN="İlk kurulumda işaretlendi: hekim kontrolü ya da düzenli ilaç";
-const obNote=()=>[S.settings.healthNote,ob.hd&&OB_HD,ob.hn&&OB_HN].filter(Boolean).join(". ").slice(0,500);
+/* Pregnancy, nursing and eating-disorder answers are their own flags; the doctor/medication answer is written into the health note (a soft brake). */
+const OB_HN="İlk kurulumda işaretlendi: hekim kontrolü ya da düzenli ilaç";
+const obNote=()=>[S.settings.healthNote,ob.hn&&OB_HN].filter(Boolean).join(". ").slice(0,500);
 /* From the triage when both questions are answered, otherwise from the current setting. */
 const obAct=()=>ob.job!==""&&ob.walk!==""?Algo.actFromTriage(+ob.job,+ob.walk):S.settings.act;
 function obPlan(p){
-  const q={kg:p.kg,cm:p.cm,age:p.age,sex:ob.sex},inp={...riskInput(p.kg),age:p.age,sex:ob.sex,cm:p.cm,goalKg:p.goal,healthNote:obNote()};
+  const q={kg:p.kg,cm:p.cm,age:p.age,sex:ob.sex},r0=riskInput(p.kg),inp={...r0,age:p.age,sex:ob.sex,cm:p.cm,goalKg:p.goal,healthNote:obNote(),pregnant:ob.pg||r0.pregnant,nursing:ob.nu||r0.nursing,edFlag:ob.ed||r0.edFlag};
   const t=Algo.suggestTarget({...inp,tdee:Algo.formulaTdee({...q,act:obAct()}),bmr:Algo.bmrMifflin(q)});
   return {kcal:t.kcal,note:t.note,protein:Algo.protein(inp).range,risk:Algo.riskFlags(inp)};
 }
@@ -83,8 +83,8 @@ function obView(){
   else if(st===1)body=`<h2>Hangileri açık olsun?</h2><div class="card"><p class="flush hint">Kapalı olanlar ekranında görünmez. İstediğini sonra Ayarlar'dan açarsın.</p>
     <div class="chips">${OB_MODS.map(([k,l,ic])=>`<button class="chip" data-ob="mod:${k}" aria-pressed="${ob.mods.includes(k)}">${Icons.svg(ic)} ${l}</button>`).join("")}</div>
     ${ob.mods.includes("steps")?`<p class="p0 hint">Adım sayar için telefon izni, Bugün ekranındaki "Adım sayarı aç" satırından istenir.</p>`:""}</div>
-    <div class="card"><details class="acc"${ob.hd||ob.hn?" open":""}><summary>Sağlık notu ekle</summary><p class="hint flush">Önerilerin sana göre ihtiyatlı olması için. Hamilelik, yeme bozukluğu geçmişi, hekim kontrolü ya da ilaç varsa işaretle.</p>
-    ${swRow('id="obhd"',ob.hd,"Hamileyim, emziriyorum ya da yeme bozukluğu geçmişim var")}${swRow('id="obhn"',ob.hn,"Hekim kontrolündeyim ya da düzenli ilaç kullanıyorum")}</details></div>`;
+    <div class="card"><details class="acc"${ob.pg||ob.nu||ob.ed||ob.hn?" open":""}><summary>Sağlık notu ekle</summary><p class="hint flush">Önerilerin sana göre ihtiyatlı olması için. Hamilelik, yeme bozukluğu geçmişi, hekim kontrolü ya da ilaç varsa işaretle.</p>
+    ${swRow('id="obpg"',ob.pg,"Hamileyim")}${swRow('id="obnu"',ob.nu,"Emziriyorum")}${swRow('id="obed"',ob.ed,"Yeme bozukluğu geçmişim var")}${swRow('id="obhn"',ob.hn,"Hekim kontrolündeyim ya da düzenli ilaç kullanıyorum")}</details></div>`;
   else{
     const p=obParse(),pl=obPlan(p);next="Başla";
     body=`<h2>Günlük hedefin</h2><div class="card"><div class="lbl">Kalori</div><div class="pc sumv num">${fint(pl.kcal)} <small>kcal</small></div>
@@ -103,7 +103,8 @@ function obFinish(){
   if(ob.job!==""&&ob.walk!=="")st.act=obAct();
   Object.assign(st,{heightCm:p.cm,age:p.age,sex:ob.sex,goalKg:p.goal,medOn:mods.includes("med"),fastOn:mods.includes("fast"),bpOn:mods.includes("bp"),bsOn:mods.includes("bs")});
   if(pl.kcal>=RANGES.kcal[0]&&pl.kcal<=RANGES.kcal[1])st.kcal=pl.kcal;
-  if(ob.hd||ob.hn){st.healthNote=obNote();cNoteCheck()}
+  if(ob.pg)setRisk("preg");if(ob.nu)setRisk("nurs");if(ob.ed)setRisk("ed");
+  if(ob.hn){st.healthNote=obNote();cNoteCheck()}
   if(!mods.includes("steps"))st.stepsAsked=true;
   add("weight",p.kg);
   obDone();scheduleReminders().then(setNotif);
