@@ -3,8 +3,8 @@
 function add(type,v,text,day){
   const n=new Date();
   if(!day)logOff=0;
-  const e={id:S.nextId++,day:day||dayKey(n),time:`${pad(n.getHours())}:${pad(n.getMinutes())}`,type,v:v==null?null:v,text:text||""};
-  if(type==="exercise"&&day&&day!==dayKey(n))e.bt=true; // logged for a past day: the time is the logging moment, the exercise span is unknown (Algo.exerciseKcal)
+  const e={id:S.nextId++,day:day||dayKey(),time:`${pad(n.getHours())}:${pad(n.getMinutes())}`,type,v:v==null?null:v,text:text||""};
+  if(type==="exercise"&&day&&day!==dayKey())e.bt=true; // logged for a past day: the time is the logging moment, the exercise span is unknown (Algo.exerciseKcal)
   S.entries.push(e);save();return e;
 }
 const of=(type,day)=>S.entries.filter(e=>e.type===type&&e.day===day);
@@ -21,7 +21,7 @@ const moveAdd=day=>{
 const kcalGoal=day=>S.settings.kcal>0?S.settings.kcal+moveAdd(day):0;
 function weights(a="0000",b="9999"){const m={};for(const e of S.entries)if(e.type==="weight"&&e.day>=a&&e.day<=b)m[e.day]=e.v;return m}
 function streak(){
-  const ds=new Set(S.entries.filter(e=>e.type!=="steps").map(e=>e.day));let d=new Date();
-  if(!ds.has(dayKey(d)))d=addDays(-1);
+  const ds=new Set(S.entries.filter(e=>e.type!=="steps").map(e=>e.day));let d=addDays(0);
+  if(!ds.has(dayKey(d)))d=addDays(-1,d);
   let n=0;while(ds.has(dayKey(d))){n++;d=addDays(-1,d)}return n;
 }

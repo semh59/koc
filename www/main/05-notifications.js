@@ -25,7 +25,7 @@ async function scheduleReminders(){
     /* Full-screen notification permission (Android 14+): when off, the medication alarm does not open the locked screen; the user is told. */
     try{const w=MW();if(w){const v=(await w.fsi()).allowed!==false;if(v!==fsiOk){fsiOk=v;if(tab==="today")render()}}}catch{}
     try{
-      const dl=await ln.getDeliveredNotifications(),t1=dayKey(),y=keyOff(-1),gone=[];
+      const dl=await ln.getDeliveredNotifications(),t1=calKey(),y=calOff(-1),gone=[];
       for(const n of dl.notifications){
         if(n.id===FAST_NID&&!Habits.fast().t0)gone.push({id:FAST_NID});
         if(n.id===CycleLib.NID&&!cycNotif())gone.push({id:n.id});
@@ -48,7 +48,7 @@ async function scheduleReminders(){
       const water=WATER_REM.includes(r.id),kind=water?"water":r.id===MOVE_REM?"move":"";
       for(let i=0;i<SCHED_DAYS;i++){
         if(i===0&&waterDone&&water)continue;
-        const at=addDays(i),[h,m]=(kind?Habits.ramShift(dayKey(at),r.t,kind,WATER_REM.indexOf(r.id)):r.t).split(":").map(Number);at.setHours(h,m,0,0);
+        const at=addDays(i,new Date()),[h,m]=(kind?Habits.ramShift(dayKey(at),r.t,kind,WATER_REM.indexOf(r.id)):r.t).split(":").map(Number);at.setHours(h,m,0,0);
         if(r.dow!=null&&at.getDay()!==r.dow)continue;
         if(r.id===BACKUP_REM&&(Log.all().length<10||(lb&&Algo.dayNum(dayKey(at))-Algo.dayNum(lb)<7)))continue;
         if(at.getTime()>now+LEAD_MS)list.push(Object.assign({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}},water?{actionTypeId:"water",extra:{act:"water",v:S.settings.glass,at:at.getTime()}}:r.id===WEEKLY_REM?{extra:{act:"open",tab:"coach"}}:r.id===BACKUP_REM?{extra:{act:"open",tab:"settings-data"}}:r.id===1?{extra:{act:"open",tab:"weight"}}:{}));

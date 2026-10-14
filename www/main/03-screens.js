@@ -13,6 +13,8 @@ for(const t of ["pointerdown","pointermove"])document.addEventListener(t,ev=>{
   else if(t==="pointerdown")document.querySelectorAll(".tip").forEach(n=>n.remove());
 });
 /* One day's entry list (meal groups, water summary, other entries): shared by Today and the Day screen. */
+/* Entries of today made between 00:00 and 04:00 (after the day start), offered for "Dün gibi say" only while that window lasts. */
+const lateEntries=()=>{const h=new Date().getHours(),t=dayKey();return logOff===0&&h<4&&h>=(S.settings.dayStart||0)?Log.where(e=>e.day===t&&e.type!=="steps"&&e.time<"04:00"&&e.time>=`${pad(S.settings.dayStart||0)}:00`):[]};
 function dayLogHtml(lk){
   const items=Log.where(e=>e.day===lk&&e.type!=="steps");
   const vtxt=e=>e.type==="weight"?`${dw(e.v)} ${wlab()}`:e.type==="food"?(e.v?e.lo!=null?`~${Math.round(e.v)} kcal<small class="db mut sm">${e.lo}-${e.hi}</small>`:`${Math.round(e.v)} kcal`:""):e.type==="exercise"?`${Math.round(e.v)} dk`:"";
@@ -76,12 +78,13 @@ function viewToday(){
   const dnav=dayNav("lo",lname,logOff===0);
   const lb=st.lastBackup,old=lb?Algo.dayNum(t)-Algo.dayNum(lb):null;
   const a7=(a,b)=>sum("steps",keyOff(a),keyOff(b));
+  const lateN=lateEntries().length,lateRow=()=>lateN?row("clock",`Gece yarısından sonra ${lateN} kayıt bugüne yazıldı`,"Dünün devamıysa dünkü güne taşıyabilirsin.",[["lateyest","Dün gibi say"]]):"";
   const row=(ic,b,sub,btns)=>`<div class="row"><span>${Icons.svg(ic)} ${b}<small class="mut sm">${sub}</small></span><div class="acts">${btns.map(([a,l])=>`<button class="chip" data-act="${a}">${l}</button>`).join("")}</div></div>`;
   /* One list instead of separate cards: only pending jobs of enabled modules; no card when empty. */
   const first=[...medTodo(),...vTodo()],medBudget=isNative()&&medBudgetMsg&&st.medOn&&Meds.count()?[row("clock","İlaç hatırlatmaların sınırlı",medBudgetMsg,[])]:[];
   const todo=[...first,...medBudget,storeMsg()?row("save",storeMsg()[0],storeMsg()[1],[["databackup","Yedek al"]]):"",
     abErr?row("cloud","Otomatik yedek alınamadı",abErr,[["abfix","Düzelt"]]):"",
-    ...pmTodo(),...fastTodo(),...ramadanTodo(),...trialTodo(),
+    lateRow(),...pmTodo(),...fastTodo(),...ramadanTodo(),...trialTodo(),
     Motion.walk()?row("steps",Motion.walk().t1?"Yürüyüş kaydedilmedi":"Yürüyüş sürüyor","Adım raporunda bitir ya da kaydet.",[["walkgo","Aç"]]):"",
     sOn&&stepsRead&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?row("steps","Adım sayımı durmuş olabilir","Pil ayarında NeoWell'e kısıtlama koyma.",[["stepsfix","Ayarla"],["stepshide","Kapat"]]):"",
     !pmMany()&&isNative()&&!exactOk&&st.medOn&&Meds.count()?row("clock","İlaç alarmı birkaç dakika gecikebilir",PM_TEXT.exact.warn,[["fullalarm","İzin ver"]]):"",
@@ -205,6 +208,7 @@ function viewSettings(){
     ${fld("waterMl","Günlük su (ml)",st.waterMl,"","numeric")}
     ${fld("glass","Bir bardak (ml)",st.glass,"Su düğmesinin eklediği miktar","numeric")}
     ${fld("sportWeek","Haftalık spor (dk)",st.sportWeek,"","numeric")}
+    ${fld("dayStart","Gün başlangıcı (saat)",st.dayStart,"0 = gece yarısı. Gün bu saatte başlar; adım sensörü ve ilaç saatleri takvim gününe göre kalır","numeric")}
     ${fld("stepGoal","Günlük adım",st.stepGoal,"Adım sayar açıksa","numeric")}
     ${swHelp("data-mk",st.moveKcalOn,"Hareket kalorisini hedefe ekle","Kilo vermek istiyorsan kapalı bırak.","hlpmk","Açıkken günlük kalori hedefine, kayıtlı antrenman, yürüyüş ve koşuların tahmini enerjisinin %50'si eklenir. Adımlar sayılmaz: hareket düzeyin ve kilo trendin günlük adımı zaten içerir, bu yüzden yarısı eklenir; yine de tahmin hatalıdır ve fazla yemene yol açabilir. Hedefi yalnız artırır, azaltmaz. Kilo vermek istiyorsan kapalı bırakman daha güvenlidir.")}
   </div>`;
@@ -248,7 +252,7 @@ function render(){
   if(sb&&render.sb!==st){render.sb=st;sb.setStyle({style:st}).catch(()=>{})}
   document.body.classList.toggle("ob",onb);$("#back").hidden=onb||!UP(tab);
   if(onb){$("#ttl").innerHTML='<img class="brand" src="logo.svg" alt="" width="28" height="28">NeoWell';$("#streak").innerHTML="";$("#composer").hidden=true;v.innerHTML=recovery?recView():obView();widgetPush();return}
-  const ttl={today:`${fd(dayKey())}, ${WEEKDAYS[new Date().getDay()]}`,coach:"Rehber",gym:"Salon",trend:"Trend",more:"Daha fazla",settings:"Ayarlar",exlib:"Egzersiz kütüphanesi",steps:"Adım raporu",labs:"Tahlil takibi",bp:"Tansiyon",glucose:"Şeker",meds:"İlaçlar",cycle:"Döngü",history:"Geçmiş",day:"Gün",...Object.fromEntries(SETTINGS_TABS.map(([k,t])=>["settings-"+k,t]))}[tab];
+  const ttl={today:`${fd(dayKey())}, ${WEEKDAYS[addDays(0).getDay()]}`,coach:"Rehber",gym:"Salon",trend:"Trend",more:"Daha fazla",settings:"Ayarlar",exlib:"Egzersiz kütüphanesi",steps:"Adım raporu",labs:"Tahlil takibi",bp:"Tansiyon",glucose:"Şeker",meds:"İlaçlar",cycle:"Döngü",history:"Geçmiş",day:"Gün",...Object.fromEntries(SETTINGS_TABS.map(([k,t])=>["settings-"+k,t]))}[tab];
   $("#ttl").textContent=ttl;
   const n=streak(),sOn=n>0&&tab==="today"&&!S.settings.hideStreak;$("#streak").innerHTML=sOn?`${Icons.svg("flame")}<b class="num">${n}</b> gün`:"";$("#streak").setAttribute("aria-label",sOn?n+" günlük seri":"");
   v.innerHTML=(saveFail&&tab!=="today"&&tab!=="settings-data"?`<div class="card todo" role="alert"><div class="row"><span>${Icons.svg("save")} <b>${storeMsg()[0]}</b><small class="mut sm">${storeMsg()[1]}</small></span><button class="chip" data-act="databackup">Yedek al</button></div></div>`:"")+(tab==="coach"?viewCoach():tab==="today"?viewToday():tab==="gym"?viewGym():tab==="trend"?viewTrend():tab==="steps"?viewSteps():tab==="labs"?viewLabs():tab==="bp"?viewBp():tab==="glucose"?viewGlucose():tab==="exlib"?viewExlib():tab==="meds"?viewMeds():tab==="cycle"?viewCycle():tab==="history"?viewHistory():tab==="day"?viewDay():tab==="more"?viewMore():viewSettings());

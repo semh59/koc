@@ -29,7 +29,7 @@ async function stepsSync(){
     const r=await SC().read();let ch=!stepsRead;stepsRead=true;
     if(stepSnapAt!==(+r.snapAt||0)){stepSnapAt=+r.snapAt||0;ch=true}
     for(const d in (r.history||{}))if(dayOk(d)&&setSteps(d,r.history[d]))ch=true;
-    if(typeof r.steps==="number"){if(stepToday!==r.steps){stepToday=r.steps;ch=true}if(setSteps(dayKey(),r.steps))ch=true}
+    if(typeof r.steps==="number"){if(stepToday!==r.steps){stepToday=r.steps;ch=true}if(setSteps(calKey(),r.steps))ch=true}
     if(ch){save();if((tab==="today"||tab==="steps")&&!$("#sheet").classList.contains("on")&&!viewBusy())render();else widgetPush()}
   }catch{}
 }
@@ -39,8 +39,10 @@ function stepsTick(){
   if(document.hidden||stepBusy||(tab!=="today"&&tab!=="steps"))return;
   stepBusy=true;return stepsSync().finally(()=>{stepBusy=false});
 }
-const manualSteps=()=>Log.where(e=>e.type==="steps"&&e.text==="manual"&&e.day===dayKey()).reduce((s,e)=>s+e.v,0);
-const stepsShown=()=>{const hn=hcNow(),t=Math.max(stepToday==null?-1:stepToday,hn==null?-1:hn);return t<0?null:t+manualSteps()};
+const daySteps=man=>Log.where(e=>e.type==="steps"&&e.day===dayKey()&&(e.text==="manual")===man).reduce((s,e)=>s+e.v,0);
+const manualSteps=()=>daySteps(true);
+/* The sensor counts per calendar day: between midnight and the app day start the finished day's total is added to the new count. */
+const stepsShown=()=>{const hn=hcNow(),t=Math.max(stepToday==null?-1:stepToday,hn==null?-1:hn),late=dayKey()!==calKey()?daySteps(false):0;return t<0&&!late?null:Math.max(t,0)+late+manualSteps()};
 function sheetSteps(){openSheet(`<h3>Adım ekle (elle)</h3><p class="flush hint">Telefonu taşımadığın adımlar için. Sensör değerine eklenir.</p><input class="in num" id="fv" inputmode="numeric" placeholder="Adım sayısı" autofocus>${dayOptions()}<button class="btn" data-go="steps">Ekle</button>`)}
 function goSteps(){
   const n=num($("#fv").value,true);
@@ -54,7 +56,7 @@ function stepCard(){
 let stepRange=14;
 function viewSteps(){
   const st=S.settings,L=120,stepsOf=dayTotal("steps");
-  const all=[];for(let i=L-1;i>=0;i--){const k=keyOff(-i);all.push({k,v:stepsOf(k),d:addDays(-i)})}
+  const all=[];for(let i=L-1;i>=0;i--){const k=calOff(-i);all.push({k,v:stepsOf(k),d:addDays(-i,new Date())})}
   const N=stepRange||new Date().getDate(),days=all.slice(-N),vals=days.map(d=>d.v);
   const today=stepsShown()==null?all[L-1].v:stepsShown(),max=Math.max(st.stepGoal,...vals,1);
   const g=st.stepGoal,sr=Algo.stepStats(vals,g),s7=Algo.stepStats(all.slice(-7).map(d=>d.v),g),s30=Algo.stepStats(all.slice(-30).map(d=>d.v),g),sl=Algo.stepStats(all.map(d=>d.v),g);
@@ -68,7 +70,7 @@ function viewSteps(){
   const wAll=weights(),wd=Object.keys(wAll).sort(),kg=wd.length?Algo.trend(wAll)[wd[wd.length-1]]:null;
   const km=st.heightCm>0?today*st.heightCm*0.415/1e5:null;
   const extra=km!=null?`<div class="stat"><div class="k">Yaklaşık mesafe</div><div class="v num">${fmt(km,1)} km</div></div>${kg!=null?`<div class="stat"><div class="k">Yaklaşık enerji</div><div class="v num">${Math.round(0.5*kg*km)} kcal</div></div>`:""}`:"";
-  const rows=all.slice(-7).reverse().map(d=>`<div class="row"><span>${d.k===dayKey()?"Bugün":WEEKDAYS_SHORT[d.d.getDay()]+" "+fd(d.k)}</span><b class="num">${d.v?fint(d.v):"–"}</b></div>`).join("");
+  const rows=all.slice(-7).reverse().map(d=>`<div class="row"><span>${d.k===calKey()?"Bugün":WEEKDAYS_SHORT[d.d.getDay()]+" "+fd(d.k)}</span><b class="num">${d.v?fint(d.v):"–"}</b></div>`).join("");
   const man=Log.where(e=>e.type==="steps"&&e.text==="manual").sort((a,b)=>b.day.localeCompare(a.day)||b.id-a.id).map(e=>`<div class="row"><span>${fd(e.day)}</span><b class="num">+${fint(e.v)}</b><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></div>`).join("");
   const manualCard=`<div class="card"><div class="lbl">Elle eklenenler</div>${man||'<p class="hint">Elle eklediğin adım yok.</p>'}<button class="lnk" data-act="stepsadd">Adım ekle (elle)</button></div>`;
   /* With no steps at all: one sentence and starting a walk instead of a wall of counters and statistics. */

@@ -2,7 +2,7 @@
 /* History: month calendar, monthly summary, search and the day screen. The data comes from HistoryLib; adding and deleting records use the same flows as the Today screen. */
 let hg={seg:"cal",ym:null,q:"",focus:null};
 const hgDay=k=>WEEKDAYS[new Date(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10)).getDay()];
-const hgIndex=()=>HistoryLib.index(S,dayKey); // one pass, a few ms for 3 years of data
+const hgIndex=()=>HistoryLib.index(S,d=>dayAt(d.getTime())); // one pass, a few ms for 3 years of data
 const HG_ICON={food:"Yemek",water:"Su",exercise:"Spor",weight:"Kilo"};
 const hgMon=ym=>`${MONTHS[+ym.slice(5,7)-1]} ${ym.slice(0,4)}`;
 const hgDaysAgo=k=>Algo.dayNum(dayKey())-Algo.dayNum(k);

@@ -110,7 +110,7 @@ function gdSave(){
     const v=num(el.value);if(el.value.trim()===""||isNaN(v)||v<0||v>KG_MAX)return toast("Ağırlığı 0-1000 kg arasında yaz, ağırlıksızsa 0 yaz");
     kg[el.dataset.gdkg]=v;
   }
-  const w={id:S.gid++,day:dayKey(new Date(gd.st.t0)),t0:gd.st.t0,t1:gd.t1,name:gd.meta.n.slice(0,60),tpl:gd.meta.tpl||null,ex:[]};
+  const w={id:S.gid++,day:dayAt(gd.st.t0),t0:gd.st.t0,t1:gd.t1,name:gd.meta.n.slice(0,60),tpl:gd.meta.tpl||null,ex:[]};
   for(const x of r){
     gAddEx(w,x.ex,{sets:x.sets.length});
     const y=w.ex[w.ex.length-1];

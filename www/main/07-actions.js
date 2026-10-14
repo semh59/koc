@@ -8,6 +8,13 @@ on("water",()=>{
 });
 on("weight",()=>sheetWeight());
 on("yesterday",()=>repeatYesterday());
+on("lateyest",()=>{
+  const list=lateEntries(),y=keyOff(-1),t=dayKey();
+  if(!list.length)return;
+  list.forEach(e=>{e.day=y});
+  if(!commit(()=>list.forEach(e=>{e.day=t})))return;
+  render();toast(`${list.length} kayıt dünkü güne taşındı`,()=>{list.forEach(e=>{e.day=t});save();render()});
+});
 on("own",()=>{ownOpen();$("#ft").focus()});
 on("tplnew",()=>sheetTpl());
 on("food",()=>sheetFood());

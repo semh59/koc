@@ -572,7 +572,7 @@ function gFinishSave(w,end){
 }
 /* Sport minutes and calorie estimate of a finished workout (finish and guided save). */
 function gLogExercise(w,kind){
-  const e=add("exercise",gDur(w),`${kind}, ${w.name}`,dayKey(new Date(w.t1||Date.now())));e.wid=w.id; // the time is the end time, so the day must be the end day
+  const e=add("exercise",gDur(w),`${kind}, ${w.name}`,dayAt(w.t1||Date.now()));e.wid=w.id; // the time is the end time, so the day must be the end day
   const kc=Algo.gymKcal({min:gDur(w),sets:gWorkSets(w),kg:motionKg()});if(kc)e.kcal=kc;
 }
 function gRestore(w,entries){

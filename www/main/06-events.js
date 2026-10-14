@@ -62,7 +62,7 @@ document.addEventListener("change",ev=>{
     if(isNaN(v)||v<lo||v>hi){t.value=show(st[k]);toast(wk&&wlab()==="lb"?`${SETLBL[k]} ${dw(lo,0)} ile ${dw(hi,0)} ${wlab()} arasında olmalı`:`${SETLBL[k]} ${String(lo).replace(".",",")} ile ${String(hi).replace(".",",")} arasında${int?" tam sayı":""} olmalı`);return}
     const why=k==="kcal"?kcalWhy(v):k==="goalKg"?Algo.goalWhy(v,st.heightCm,weightNow()):"";
     if(why){t.value=show(st[k]);toast(why);return}
-    st[k]=v;if(k==="age")cAgeGuard();save();t.value=show(v);return;
+    st[k]=v;if(k==="age")cAgeGuard();save();t.value=show(v);if(k==="dayStart")dayRoll();return;
   }
   if(t.dataset.rt||t.dataset.ro){
     const r=S.settings.reminders.find(x=>x.id===+(t.dataset.rt||t.dataset.ro));
@@ -92,7 +92,14 @@ document.addEventListener("keydown",ev=>{
 document.addEventListener("click",ev=>{const b=ev.target.closest("[data-sr]");if(b){stepRange=+b.dataset.sr;render()}});
 $("#sheet").addEventListener("click",ev=>{if(ev.target.closest("[data-shx]"))closeSheet()});
 $("#cfm").addEventListener("click",ev=>{if(!cfmDone)return;const b=ev.target.closest("[data-cf]");if(b)cfmDone(b.dataset.cf==="1");else if(ev.target.id==="cfm")cfmDone(false)});
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="settings-modules")render()});stepsSync();renderSoft();cPlateauCheck();abRun();schedDue().then(d=>d&&scheduleReminders().then(setNotif))}});
+/* The app day changed (midnight or the day start): a past date being viewed stays on that date, Today stays Today. */
+function dayRoll(){
+  const k=dayKey();if(k===lastDay)return;
+  const n=Algo.dayNum(k)-Algo.dayNum(lastDay);lastDay=k;
+  logOff=logOff>0?Math.max(0,Math.min(hgOldest(),logOff+n)):0;
+  render();
+}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){if(!viewBusy())dayRoll();quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="settings-modules")render()});stepsSync();renderSoft();cPlateauCheck();abRun();schedDue().then(d=>d&&scheduleReminders().then(setNotif))}});
 
 document.querySelectorAll("[data-ic]").forEach(e=>e.innerHTML=Icons.svg(e.dataset.ic));
 render();
@@ -109,7 +116,7 @@ setInterval(stepsTick,STEP_POLL);
 if(DH())DH().info().then(r=>{oem=String(r.manufacturer||"");render()},()=>{});
 if(isNative())pmRefresh();
 try{const P=window.Capacitor?.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp","BarcodeScanner","StepCounter","Ocr","Motion","Speech","Widget","BackupFolder","MedWake","Health"].map(n=>n+"="+typeof P[n]).join(" "))}catch{}
-setInterval(()=>{if(dayKey()!==lastDay&&!viewBusy()){lastDay=dayKey();logOff=0;render()}if(lastTz&&tzKey()!==lastTz)scheduleReminders().then(setNotif)},60000);
+setInterval(()=>{if(!viewBusy())dayRoll();if(lastTz&&tzKey()!==lastTz)scheduleReminders().then(setNotif)},60000);
 LN()?.addListener?.("localNotificationActionPerformed",notifTap);
 function widgetOpen(){tab="today";logOff=0;closeSheet();render();window.scrollTo(0,0)}
 WG()?.addListener?.("open",widgetOpen);
