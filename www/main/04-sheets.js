@@ -92,6 +92,7 @@ function goWeight(){
   const e=add("weight",v,"",day);closeSheet();render();
   let msg=`${dw(v)} ${wlab()} kaydedildi`;
   if(prev!=null)msg+=`, öncekine göre ${dwS(v-prev)} ${wlab()}`;
+  if(Algo.fastLoss(weights()))msg+=". Kilon haftada %1'den hızlı düşüyor; hekimine danış";
   toast(msg,e.id);
 }
 /* Yesterday's entry carries its own meal; favourites and templates have none, so the selected chip applies. */

@@ -38,8 +38,8 @@ function viewToday(){
     weight=`<button class="stepcard" data-act="weight"><div class="scr"><span class="mut">${Icons.svg("weight")} Kilo</span><span class="mut sm">Ekle ›</span></div><div class="mut sm">İlk tartını ekle; ilerlemen buradan başlar.</div></button>`;
   }else{
     const gi=goalInfo(cur,wAll[days[0]]),sl=Algo.slopePerWeek(wAll);
-    const bits=[sl!=null?`${dwS(sl,2)} ${wlab()}/hafta`:prev!=null?`öncekine göre ${dwS(cur-prev)} ${wlab()}`:"",gi?(gi.done?"Hedefe ulaştın":`hedefe ${dw(gi.left)} ${wlab()}`):""].filter(Boolean);
-    weight=`<button class="stepcard" data-tab="trend" aria-label="Kilo grafiğini Trend'de aç"><div class="scr"><span class="mut">${Icons.svg("weight")} ${curDay===t?"Bugünkü tartı":"Son tartı, "+fd(curDay)}</span><span class="mut sm">Trend ›</span></div><div class="scr"><span class="big num wv">${dw(cur)} <small>${wlab()}</small></span><span class="mut sm num ws">${bits.join(" · ")}</span></div></button>`;
+    const bits=st.hideNums?[]:[sl!=null?`${dwS(sl,2)} ${wlab()}/hafta`:prev!=null?`öncekine göre ${dwS(cur-prev)} ${wlab()}`:"",gi?(gi.done?"Hedefe ulaştın":`hedefe ${dw(gi.left)} ${wlab()}`):""].filter(Boolean);
+    weight=`<button class="stepcard" data-tab="trend" aria-label="Kilo grafiğini Trend'de aç"><div class="scr"><span class="mut">${Icons.svg("weight")} ${curDay===t?"Bugünkü tartı":"Son tartı, "+fd(curDay)}</span><span class="mut sm">Trend ›</span></div><div class="scr"><span class="big num wv">${st.hideNums?"•••":`${dw(cur)} <small>${wlab()}</small>`}</span><span class="mut sm num ws">${bits.join(" · ")}</span></div></button>`;
   }
   const water=sum("water",t,t),sh=st.waterMl,kc=sum("food",t,t),sw=sum("exercise",t,t),sg=sportDay();
   const kgl=kcalGoal(t),kcP=kgl>0?kc/kgl:0;
@@ -47,7 +47,8 @@ function viewToday(){
   /* The ring centre shows what is left; done / goal below with the unit. */
   const left=(v,g,u)=>v<g?[null,`${u} kaldı`]:["✓","Hedef tamam"];
   const [waterC,waterU]=left(water,sh,"L"),[spC,spU]=left(sw,sg,"dk");
-  const kcC=kgl>0?Math.round(Math.abs(kgl-kc)):Math.round(kc),kcU=kgl>0?(kc>kgl?"kcal fazla":"kcal kaldı"):"kcal";
+  /* A day with almost nothing logged shows the total, not a remainder that would read as "you may eat this much more". */
+  const lowLog=kgl>0&&kc<Algo.LOW_LOG_KCAL,kcC=st.hideNums?"•••":kgl>0&&!lowLog?Math.round(Math.abs(kgl-kc)):Math.round(kc),kcU=kgl>0&&!lowLog?(kc>kgl?"kcal fazla":"kcal kaldı"):"kcal";
   const meals=Log.where(e=>e.type==="food"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
   const pr=cur!=null?Algo.protein(riskInput(cur)):{};
   const macro=meals.some(e=>e.p||e.c||e.f)?`<div class="macro num">Protein <b>${Math.round(mac("p"))}</b>${pr.range?` / ${pr.range[0]}–${pr.range[1]}`:""} g${pr.doc?" (hedefi hekiminle belirle)":""}${meals.some(e=>e.c!=null||e.f!=null)?` · Karbonhidrat <b>${Math.round(mac("c"))}</b> g · Yağ <b>${Math.round(mac("f"))}</b> g`:""}</div>${pr.range||pr.doc?`<div class="mut sm macro">${Algo.PROTEIN_NOTE}</div>`:""}`:"";
@@ -61,10 +62,10 @@ function viewToday(){
   const micro=mi.length?`<div class="macro num">${mi.join(" · ")} <span class="mut sm">öğünde veri var</span></div>`:"";
   /* Summary card: big calorie ring and the remainder; water, sport and steps in small rings; macros below. */
   const rings=`<div class="card"><div class="rings">
-    ${rb("kcal","Kalori",ring(kcP,"var(--kcal)",kcC,"Kalori",kgl>0?`${Math.round(kc)} / ${kgl} kcal`:"hedef yok",kcU,"main"))}
+    ${rb("kcal","Kalori",ring(kcP,"var(--kcal)",kcC,"Kalori",st.hideNums?"sayılar gizli":kgl>0?`${Math.round(kc)} / ${kgl} kcal`:"hedef yok",kcU,"main"))}
     <div class="rmini">${rb("water","Su",ring(water/sh,"var(--water)",waterC||fmt((sh-water)/1000,1),"Su",`${fmt(water/1000,1)} / ${fmt(sh/1000,1)} L`,waterU,"mini"+(waterC?" done":"")))}
     ${rb("exercise","Spor",ring(sw/sg,"color-mix(in srgb,var(--exercise) 80%,var(--card))",spC||Math.round(sg-sw),"Spor",`${Math.round(sw)} / ${sg} dk`,spU,"mini"+(spC?" done":"")))}${sOn?stepCard():""}</div>
-  </div>${macro}${macroNote}${fiber}${micro}${rangeNote}${moveAdd(t)?`<p class="pt-2 hint">Hedefe hareketten +${moveAdd(t)} kcal eklendi (kayıtlı antrenman ve yürüyüşün yarısı, tahmindir).</p>`:""}</div>`;
+  </div>${lowLog&&!st.hideNums?`<p class="pt-2 hint">Bugün az yemek kayıtlı; kayıtlar tamamlanınca kalanı gösteririm.</p>`:""}${macro}${macroNote}${fiber}${micro}${rangeNote}${moveAdd(t)?`<p class="pt-2 hint">Hedefe hareketten +${moveAdd(t)} kcal eklendi (kayıtlı antrenman ve yürüyüşün yarısı, tahmindir).</p>`:""}</div>`;
   const actions=`<div class="actions"><button class="btn act" data-act="food">${Icons.svg("plus")} Yemek ekle</button><div class="qa">
     <button class="chip act" data-act="water" aria-label="${st.glass} ml su ekle">${Icons.svg("water")} +${st.glass} ml</button><button class="chip" data-dk="open">${Icons.svg("water")} Başka içecek</button>
     <button class="chip act" data-act="weight">${Icons.svg("weight")} Kilo</button><button class="chip act" data-act="exercise">${Icons.svg("exercise")} Spor</button>
@@ -111,7 +112,7 @@ function viewTrend(){
     if(gi)cells.push(["Hedefe kalan",gi.done?"Ulaştın":`${dw(gi.left)} ${wlab()}`]);
     const eta=gi&&!gi.done&&!(gi.dir<0&&risk(cur).block)?ge.weeks:null;
     const etaTxt=!eta?"":ge.range?(ge.range[0]===ge.range[1]?`Son 3 haftanın eğimi sürerse ~${ge.range[0]} hafta.`:`Son 3 haftanın eğimi sürerse ${ge.range[0]}–${ge.range[1]} hafta arası.`):"Hızın değişken olduğu için hedef tarihi kestirilemiyor.";
-    stats=`<div class="stats kp">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1].replace(/ ((?:kg|lb)\/hafta|kg|lb)$/," <small>$1</small>")}</div></div>`).join("")}</div>${etaTxt?`<p class="pt-2 hint">${etaTxt}</p>`:""}`;
+    stats=`<div class="stats kp">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1].replace(/ ((?:kg|lb)\/hafta|kg|lb)$/," <small>$1</small>")}</div></div>`).join("")}</div>${etaTxt?`<p class="pt-2 hint">${etaTxt}</p>`:""}${Algo.fastLoss(wAll)?`<p class="pt-2 hint">Kilon son haftalarda haftada %1'den hızlı düşüyor. Nedeni belli değilse hekimine danış; bu bir tanı değildir.</p>`:""}`;
   }
   const waterOf=dayTotal("water"),foodOf=dayTotal("food"),sportOf=dayTotal("exercise"),stepsOf=dayTotal("steps"),wkW=weights(keyOff(-6),t);
   let rows="",hasWeek=false;const hasSteps=st.stepsOn||sum("steps",keyOff(-6),t)>0;
@@ -134,7 +135,7 @@ function viewTrend(){
   const tabBar=`<div class="seg tabs" role="tablist" aria-label="Trend bölümleri">${tabs.map(([k,l])=>`<button role="tab" id="tt-${k}" data-tsec="${k}" aria-controls="tp-${k}" aria-selected="${k===tSec}">${l}</button>`).join("")}</div>${tabs.map(([k,,h])=>`<div class="tpan" role="tabpanel" id="tp-${k}" aria-labelledby="tt-${k}"${k===tSec?"":" hidden"}>${sub(h)}</div>`).join("")}`;
   return `${days.length?`<div class="seg" role="group" aria-label="Aralık"><button data-range="30" aria-pressed="${range==30}">30 gün</button><button data-range="90" aria-pressed="${range==90}">90 gün</button><button data-range="365" aria-pressed="${range==365}">1 yıl</button><button data-range="0" aria-pressed="${range==0}">Tümü</button></div>
   <div class="card">${chart(N)}${stats}</div>`:empty}${goalCard()}
-  ${lossAsk()?`<div class="btns"><button class="btn ghost" data-c="why">Bu hafta neden kilo vermedim?</button></div>`:""}
+  ${lossAsk()?`<div class="btns"><button class="btn ghost" data-c="why">Bu haftaya birlikte bakalım</button></div>`:""}
   ${tabBar}
   <details class="acc more"><summary>Daha fazla ölçüm</summary><div class="card">${vTrendCards()}${labTrendCard()}${navRow('data-tab="gym"',"exercise","Haftalık spor",`${Math.round(sw)} / ${st.sportWeek} dk, ${sd} gün aktif`)}${reportRows()}</div></details>`;
 }
@@ -184,7 +185,7 @@ function viewSettings(){
       coach:keysStored()?"Anahtar kayıtlı":"Anahtar yok",data:storeMsg()?storeMsg()[0]:st.lastBackup?"Son yedek "+fd(st.lastBackup):"Henüz yedek dosyası yok",about:appVer?"Sürüm "+appVer:"Sürüm, kaynaklar ve tıbbi uyarı"};
     const grp=(g,ks)=>`<h2 class="grp">${g}</h2><div class="card">${SETTINGS_TABS.filter(([k])=>ks.includes(k)).map(([k,t,ic])=>navRow(`data-tab="settings-${k}"`,ic,t,esc(d[k]))).join("")}</div>`;
     return `${grp("Kişisel",["profile","reminders"])}${grp("Rehber ve modüller",["coach","modules"])}
-    <h2 class="grp">Görünüm ve erişilebilirlik</h2><div class="card"><div class="lbl" id="thml">Tema</div>${segb("thm",[["","Sistem"],["light","Açık"],["dark","Koyu"]],st.theme).replace('role="group"','role="group" aria-labelledby="thml"')}${swHelp("data-comfy",st.comfy,"Büyük yazı ve düğmeler","","hlpcf","Yazıları ve düğmeleri büyütür. Telefonun yazı boyutu ayarı da ayrıca çalışır.")}</div>
+    <h2 class="grp">Görünüm ve erişilebilirlik</h2><div class="card"><div class="lbl" id="thml">Tema</div>${segb("thm",[["","Sistem"],["light","Açık"],["dark","Koyu"]],st.theme).replace('role="group"','role="group" aria-labelledby="thml"')}${swHelp("data-comfy",st.comfy,"Büyük yazı ve düğmeler","","hlpcf","Yazıları ve düğmeleri büyütür. Telefonun yazı boyutu ayarı da ayrıca çalışır.")}${swRow("data-hs",st.hideStreak,"Seriyi gizle","Bugün'deki gün sayısını kaldırır")}${swRow("data-hn",st.hideNums,"Sayıları gizle","Bugün'de kilo ve kalori rakamları görünmez")}</div>
     ${isNative()?`<h2 class="grp">Telefon</h2><div class="card">${navRow('data-pm="open"',"bell","İzinler",pmMissing().length?`${pmMissing().length} eksik: ${esc(pmMissing().map(i=>i.t).join(", "))}`:"Bildirim, alarm, adım ve pil ayarları")}</div>`:""}
     ${grp("Veri ve uygulama",["data","about"])}`;
   }
@@ -198,7 +199,7 @@ function viewSettings(){
     <div class="row"><button class="btn ghost grow" data-act="health">Sağlık notların${st.healthNote?" (var)":""}</button>${helpBtn("hlpsn","Sağlık notların")}</div>
     ${helpBox("hlpsn","Hamilelik, yeme bozukluğu geçmişi, hastalık ya da ilaç varsa buraya yaz. Öneriler bunlara göre ihtiyatlı olmalı, hekim kontrolü gerekebilir.")}${st.chatRisk||chatEd()?`<div class="row"><span>Sohbetten bir sağlık işareti algılandı: kalori açığı, oruç ve program önerileri kapalı. Bu işareti uygulamadan kaldıramazsın; sağlık durumunu bir hekimle konuşmanı öneririz.</span></div>`:""}</div>
   <h2>Hedefler</h2><div class="card">
-    ${fld("goalKg",`Hedef kilo (${wlab()})`,st.goalKg?dw(st.goalKg).replace(/,0$/,""):"","Boş bırakırsan kapalı")}
+    ${fld("goalKg",`Hedef kilo (${wlab()})`,st.goalKg?dw(st.goalKg).replace(/,0$/,""):"",Algo.goalWhy(st.goalKg,st.heightCm,weightNow())||"Boş bırakırsan kapalı")}
     ${fld("kcal","Günlük kalori (kcal)",st.kcal||"","Boş bırakırsan kapalı","numeric")}
     ${fld("waterMl","Günlük su (ml)",st.waterMl,"","numeric")}
     ${fld("glass","Bir bardak (ml)",st.glass,"Su düğmesinin eklediği miktar","numeric")}
@@ -245,7 +246,7 @@ function render(){
   if(onb){$("#ttl").innerHTML='<img class="brand" src="logo.svg" alt="" width="28" height="28">NeoWell';$("#streak").innerHTML="";$("#composer").hidden=true;v.innerHTML=recovery?recView():obView();widgetPush();return}
   const ttl={today:`${fd(dayKey())}, ${WEEKDAYS[new Date().getDay()]}`,coach:"Rehber",gym:"Salon",trend:"Trend",more:"Daha fazla",settings:"Ayarlar",exlib:"Egzersiz kütüphanesi",steps:"Adım raporu",labs:"Tahlil takibi",bp:"Tansiyon",glucose:"Şeker",meds:"İlaçlar",cycle:"Döngü",history:"Geçmiş",day:"Gün",...Object.fromEntries(SETTINGS_TABS.map(([k,t])=>["settings-"+k,t]))}[tab];
   $("#ttl").textContent=ttl;
-  const n=streak();$("#streak").innerHTML=n>0&&tab==="today"?`${Icons.svg("flame")}<b class="num">${n}</b> gün`:"";$("#streak").setAttribute("aria-label",n+" günlük seri");
+  const n=streak(),sOn=n>0&&tab==="today"&&!S.settings.hideStreak;$("#streak").innerHTML=sOn?`${Icons.svg("flame")}<b class="num">${n}</b> gün`:"";$("#streak").setAttribute("aria-label",sOn?n+" günlük seri":"");
   v.innerHTML=(saveFail&&tab!=="today"&&tab!=="settings-data"?`<div class="card todo" role="alert"><div class="row"><span>${Icons.svg("save")} <b>${storeMsg()[0]}</b><small class="mut sm">${storeMsg()[1]}</small></span><button class="chip" data-act="databackup">Yedek al</button></div></div>`:"")+(tab==="coach"?viewCoach():tab==="today"?viewToday():tab==="gym"?viewGym():tab==="trend"?viewTrend():tab==="steps"?viewSteps():tab==="labs"?viewLabs():tab==="bp"?viewBp():tab==="glucose"?viewGlucose():tab==="exlib"?viewExlib():tab==="meds"?viewMeds():tab==="cycle"?viewCycle():tab==="history"?viewHistory():tab==="day"?viewDay():tab==="more"?viewMore():viewSettings());
   document.body.classList.toggle("coach",tab==="coach");document.body.classList.toggle("bg",tab==="today");$("#composer").hidden=tab!=="coach";cmpSet();
   if(tab==="coach")cScroll();

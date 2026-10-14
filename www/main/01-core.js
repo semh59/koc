@@ -44,8 +44,8 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- data ---------- */
 const DEF={
-  settings:{medNear:"",trial:null,ramOn:false,ramLat:0,ramLon:0,ramName:"",ramSahur:false,ramIftar:false,ramFrom:"",comfy:false,goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,shareProfile:true,noticeOk:false,lockGrace:30,piiPrev:false,chatRisk:"",copyAt:"",lastPlateau:"",goalSugAt:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:false,lockOn:false,hcOn:false,hcFrom:"",cycleOn:false,cycleRem:false,fastOn:false,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
-    {id:1,t:"09:00",on:true,name:"Sabah tartısı",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
+  settings:{medNear:"",trial:null,ramOn:false,ramLat:0,ramLon:0,ramName:"",ramSahur:false,ramIftar:false,ramFrom:"",comfy:false,fastEdOk:false,hideStreak:false,hideNums:false,goalKg:0,kcal:0,waterMl:2500,glass:250,sportWeek:150,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,shareProfile:true,noticeOk:false,lockGrace:30,piiPrev:false,chatRisk:"",copyAt:"",lastPlateau:"",goalSugAt:"",lastBackup:"",oemDone:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medShowName:false,lockOn:false,hcOn:false,hcFrom:"",cycleOn:false,cycleRem:false,fastOn:false,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
+    {id:1,t:"09:00",on:true,dow:1,name:"Haftalık tartı (Pazartesi)",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:4,t:"17:30",on:true,name:"Su (akşamüstü)",title:"💧 Su molası",body:"Günlük su hedefine bir bak."},
@@ -294,9 +294,12 @@ navigator.storage?.persist?.()?.catch(()=>{});
 /* Chat flag (eating disorder): a flag in the chat or a safety card is a permanent brake the user cannot lift. */
 const chatEd=()=>Coach.chatEd();
 /* The safety brake's input in one place; without kg the latest trend weight is used. */
+const riskMerge=(a,b)=>[...new Set(((a||"")+","+(b||"")).split(",").filter(Boolean))].sort().join(",");
+function setRisk(k){S.settings.chatRisk=riskMerge(S.settings.chatRisk,k)}
+const weightNow=()=>{const w=weights(),ks=Object.keys(w).sort();return ks.length?Algo.trend(w)[ks[ks.length-1]]:0};
 function riskInput(kg){
-  const st=S.settings,from=keyOff(-89),w=weights(),ks=Object.keys(w).sort(),n=k=>Vitals.all().filter(v=>v.k===k&&v.day>=from).length;
-  return {age:st.age,sex:st.sex,cm:st.heightCm,kg:kg!=null?kg:ks.length?Algo.trend(w)[ks[ks.length-1]]:0,goalKg:st.goalKg,healthNote:st.healthNote+((st.chatRisk||"").includes("preg")?" hamilelik":""),meds:Meds.count(),glucoseCount90d:n("s"),bpCount90d:n("t"),
+  const st=S.settings,from=keyOff(-89),n=k=>Vitals.all().filter(v=>v.k===k&&v.day>=from).length;
+  return {age:st.age,sex:st.sex,cm:st.heightCm,kg:kg!=null?kg:weightNow(),goalKg:st.goalKg,healthNote:st.healthNote+((st.chatRisk||"").includes("preg")?" hamilelik":""),meds:Meds.count(),glucoseCount90d:n("s"),bpCount90d:n("t"),
     edFlag:(st.chatRisk||"").includes("ed")||chatEd(),clearedAt:st.riskClearedAt,today:dayKey()};
 }
 function risk(kg){return Algo.riskFlags(riskInput(kg))}

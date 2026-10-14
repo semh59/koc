@@ -316,8 +316,8 @@ async function cAsk(messages,maxTokens,o={}){
 function cSend(text){
   text=String(text||"").trim().slice(0,600);if(!text)return;
   const fl=CoachLib.redFlag(text),m=cPush({role:"user",text,pend:true});
-  if(fl==="ed")cRisk("ed");
-  if(CoachLib.pregnant(text))cRisk("preg");
+  if(fl==="ed")setRisk("ed");
+  if(CoachLib.pregnant(text))setRisk("preg");
   if(fl){
     cPush({role:"coach",text:"",card:{kind:"safety",level:fl}});
     if(fl==="emergency"||fl==="mind")m.pend=false;else m.fl=fl;
@@ -325,14 +325,12 @@ function cSend(text){
   save();render();cFlush();
 }
 /* An eating-disorder or pregnancy sign seen in a chat is a permanent brake: a new chat or a deletion does not lift it (riskInput reads it). */
-const riskMerge=(a,b)=>[...new Set(((a||"")+","+(b||"")).split(",").filter(Boolean))].sort().join(",");
-function cRisk(k){S.settings.chatRisk=riskMerge(S.settings.chatRisk,k)}
 /* If the health note holds a severe sign (self-harm, emergency symptom), a safety card is shown in the chat. */
 function cNoteCheck(t=S.settings.healthNote){
   const f=CoachLib.redFlag(t),preg=CoachLib.pregnant(t);
   if(f==="mind"||f==="emergency"){cPush({role:"coach",text:"",card:{kind:"safety",level:f}});toast("Notunda bir sağlık uyarısı işareti var, Rehber sekmesine bak")}
-  if(f==="ed")cRisk("ed");
-  if(preg)cRisk("preg");
+  if(f==="ed")setRisk("ed");
+  if(preg)setRisk("preg");
   return f||(preg?"preg":null);
 }
 async function cFlush(){
@@ -403,16 +401,16 @@ function lReadK(c,el){
 /* The question and the plateau go only to a user who has a weight-loss goal, is not losing weight with enough weigh-ins in the last 28 days (at least 3, spread over 14 days) and has no calorie-deficit block (age, low weight, health note, eating-disorder sign). */
 function lossAsk(){
   const st=S.settings,w=weights(),days=Object.keys(w).sort();
-  if(!(st.goalKg>0)||!days.length)return false;
-  const tk=Algo.trend(w)[days[days.length-1]];
-  return st.goalKg<tk-0.5&&Algo.lossKnown(w)&&!Algo.isLosing(w)&&!risk(tk).block;
+  if(!days.length)return false;
+  const tk=Algo.trend(w)[days[days.length-1]],g=goalWeight(tk);
+  return g>0&&g<tk-0.5&&Algo.lossKnown(w)&&!Algo.isLosing(w)&&!risk(tk).block;
 }
 function cWhy(){
   if(!lossAsk())return;
   const kcalOf=dayTotal("food"),waterOf=dayTotal("water"),stepsOf=cDayMap("steps",cStep),sleepOf=cSleepOf(),days=[];
   for(let i=21;i>=0;i--){const k=keyOff(-i);days.push({kcal:kcalOf(k),water:waterOf(k),ad:stepsOf(k),sl:sleepOf(k)})}
   const items=InsightLib.weekWhy({days,goalKcal:S.settings.kcal,goalWater:S.settings.waterMl,weights:weights(),today:dayKey()});
-  cPush({role:"user",text:"Bu hafta neden kilo vermedim?"});cPush({role:"coach",text:"",card:{kind:"why",items}});
+  cPush({role:"user",text:"Bu haftaya birlikte bakalım"});cPush({role:"coach",text:"",card:{kind:"why",items}});
   tab="coach";save();render();
 }
 /* ---- program from the Coach ---- */
@@ -463,7 +461,7 @@ function cMenuPlan(){
     if(!c.tdee)return {why:block+". Menü hedefi hesaplanamadı; hekimine ya da diyetisyene danış"};
     if(goal<c.tdee-50){kcal=Math.round(c.tdee/10)*10;held=true}
   }
-  const cl=CoachLib.clampKcal(kcal,{tdee:c.tdee,bmr:c.bmr});
+  const cl=CoachLib.clampKcal(kcal,{tdee:c.tdee,bmr:c.bmr,sex:S.settings.sex});
   return {kcal:cl?cl.kcal:kcal,protein:c.protein,pdoc:c.proteinDoc,held,block};
 }
 function cMenuSheet(){
@@ -540,7 +538,7 @@ function cPlateauCheck(){
   const st=S.settings,t=dayKey();
   if((st.lastPlateau&&Algo.dayNum(t)-Algo.dayNum(st.lastPlateau)<14)||!lossAsk())return;
   const p=InsightLib.plateau(weights(),t);if(!p.ok)return;
-  st.lastPlateau=t;cPush({role:"coach",kind:"plateau",text:`Son ${Math.round(p.days/7)} haftadır kilon düşmüyor. Birlikte bakalım mı?`});save();render();
+  st.lastPlateau=t;cPush({role:"coach",kind:"plateau",text:`Son ${Math.round(p.days/7)} haftadır kilon yerinde duruyor. İstersen birlikte bakabiliriz.`});save();render();
 }
 
 /* ---- screen ---- */
@@ -660,7 +658,7 @@ function viewCoach(){
     }
   }
   if(typing)h+=`<div class="cm"><div class="mut sm">Rehber yazıyor</div><p class="dots">• • •</p></div>`;
-  else if(lossAsk())h+=`<div class="chips"><button class="chip" data-c="why">Bu hafta neden kilo vermedim?</button></div>`;
+  else if(lossAsk())h+=`<div class="chips"><button class="chip" data-c="why">Bu haftaya birlikte bakalım</button></div>`;
   if(!typing){
     const why=!S.settings.consent?"Rehber menüsü için önce yukarıdaki veri paylaşımını kabul et":!usable().length?"Rehber menüsü için Rehber anahtarı gerekli (Ayarlar > Rehber)":"";
     h+=`<div class="chips"><button class="chip" data-c="menu">${why?"Menü oluştur (cihazda)":"Haftalık menü öner"}</button></div>${why?`<p class="hint">${why}. Cihazda oluşturma anahtarsız çalışır, hiçbir şey gönderilmez.</p>`:""}`;
