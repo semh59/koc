@@ -68,7 +68,7 @@ document.addEventListener("change",ev=>{
     if(raw===""&&ZEROOK.includes(k)){st[k]=0;save();t.value="";toast(`${SETLBL[k]} kapatıldı`);return}
     const v=wk?Units.wIn(num(raw)):num(raw,int);
     if(isNaN(v)||v<lo||v>hi){t.value=show(st[k]);toast(wk&&wlab()==="lb"?`${SETLBL[k]} ${dw(lo,0)} ile ${dw(hi,0)} ${wlab()} arasında olmalı`:`${SETLBL[k]} ${String(lo).replace(".",",")} ile ${String(hi).replace(".",",")} arasında${int?" tam sayı":""} olmalı`);return}
-    const why=k==="kcal"?kcalWhy(v):k==="goalKg"?Algo.goalWhy(v,st.heightCm,weightNow()):"";
+    const why=k==="kcal"?kcalWhy(v):k==="goalKg"?Algo.goalWhy(v,st.heightCm,weightNow()):k==="macroP"&&Algo.protein(riskInput(weightNow())).doc?"Protein hedefini hekiminle belirle":"";
     if(why){t.value=show(st[k]);toast(why);return}
     st[k]=v;if(k==="age")cAgeGuard();save();t.value=show(v);if(k==="dayStart")dayRoll();return;
   }

@@ -53,13 +53,14 @@ function viewToday(){
   const lowLog=kgl>0&&kc<Algo.LOW_LOG_KCAL,kcC=st.hideNums?"•••":kgl>0&&!lowLog?Math.round(Math.abs(kgl-kc)):Math.round(kc),kcU=kgl>0&&!lowLog?(kc>kgl?"kcal fazla":"kcal kaldı"):"kcal";
   const meals=Log.where(e=>e.type==="food"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
   const pr=cur!=null?Algo.protein(riskInput(cur)):{};
-  const macro=meals.some(e=>e.p||e.c||e.f)?`<div class="macro num">Protein <b>${Math.round(mac("p"))}</b>${pr.range?` / ${pr.range[0]}–${pr.range[1]}`:""} g${pr.doc?" (hedefi hekiminle belirle)":""}${meals.some(e=>e.c!=null||e.f!=null)?` · Karbonhidrat <b>${Math.round(mac("c"))}</b> g · Yağ <b>${Math.round(mac("f"))}</b> g`:""}${pr.range||pr.doc?helpBtn("hpro","Protein"):""}</div>${pr.range||pr.doc?helpBox("hpro",Algo.PROTEIN_NOTE):""}`:"";
+  const goalOf=g=>st[g]?` / ${st[g]}`:"";
+  const macro=meals.some(e=>e.p||e.c||e.f)?`<div class="macro num">Protein <b>${Math.round(mac("p"))}</b>${st.macroP?goalOf("macroP"):pr.range?` / ${pr.range[0]}–${pr.range[1]}`:""} g${pr.doc&&!st.macroP?" (hedefi hekiminle belirle)":""}${meals.some(e=>e.c!=null||e.f!=null)?` · Karbonhidrat <b>${Math.round(mac("c"))}</b>${goalOf("macroC")} g · Yağ <b>${Math.round(mac("f"))}</b>${goalOf("macroF")} g`:""}${pr.range||pr.doc?helpBtn("hpro","Protein"):""}</div>${pr.range||pr.doc?helpBox("hpro",Algo.PROTEIN_NOTE):""}`:"";
   /* The fibre bar only when every meal of the day has fibre data (a partial total would look like the whole day) and for adults. */
   const fibAll=meals.length>0&&meals.every(e=>e.fb!=null)&&S.settings.age>=18;
   const fiber=fibAll?`<div class="macro num">Lif <b>${Math.round(mac("fb"))}</b> / en az 25 g${helpBtn("hfib","Lif")}</div>${helpBox("hfib","Yetişkinler için Dünya Sağlık Örgütü önerisi günde en az 25 g. Gün bitmeden az görünmesi olağandır. Hedefin farklıysa hekiminin söylediğine uy.")}<div class="bar" aria-hidden="true"><i style="width:${Math.min(100,mac("fb")/25*100).toFixed(0)}%"></i></div>`:"";
   const mi=(fibAll?["sg","na"]:["fb","sg","na"]).map(k=>[k,meals.filter(e=>e[k]!=null).length]).filter(x=>x[1]).map(([k,n])=>`${NLBL[k][0].toUpperCase()+NLBL[k].slice(1)} <b>${Math.round(mac(k))}</b> ${NUNIT(k)} (${n}/${meals.length})`);
   const nc=meals.filter(e=>e.c!=null).length,nf=meals.filter(e=>e.f!=null).length;
-  const macroNote=macro&&meals.some(e=>e.c!=null||e.f!=null)&&(nc<meals.length||nf<meals.length)?`<div class="mut sm macro">Karbonhidrat ${nc}/${meals.length}, yağ ${nf}/${meals.length} öğünde veri var; toplam eksik olabilir.</div>`:"";
+  const macroNote=macro&&meals.some(e=>e.c!=null||e.f!=null)&&(nc<meals.length||nf<meals.length)?`<div class="mut sm macro">Karbonhidrat ${nc}/${meals.length}, yağ ${nf}/${meals.length} öğünde veri var; toplam eksik olabilir. <button class="lnk" data-act="missmacro">Eksikleri tamamla</button></div>`:"";
   const dr=LogLib.dayRange(meals),rangeNote=dr?`<p class="pt-2 hint">Tarif farkına göre bugün ~${fint(dr.lo)}–${fint(dr.hi)} kcal olabilir.</p>`:"";
   const micro=mi.length?`<div class="macro num">${mi.join(" · ")} <span class="mut sm">öğünde veri var</span></div>`:"";
   /* Summary card: big calorie ring and the remainder; water, sport and steps in small rings; macros below. */
@@ -152,6 +153,13 @@ function viewTrend(){
 const LOCK_LABEL={30:"30 saniyeden",120:"2 dakikadan",300:"5 dakikadan"};
 let notifStatus="";
 const fld=(id,label,val,small,mode)=>`<div class="field"><label for="${id}">${label}${small?`<small>${small}</small>`:""}</label><input id="${id}" type="text" inputmode="${mode||"decimal"}" value="${val}" data-set="${id}"></div>`;
+/* Macro goals are optional; the label is a suggestion from the kcal target (carbohydrate 45-60 %, fat 20-35 % of energy) or the protein range, never a prescription. */
+function macroSuggest(k){
+  if(k==="p"){const r=Algo.protein(riskInput(weightNow()));return r.doc?"Hedefi hekiminle belirle":r.range?`Öneri: ${r.range[0]}–${r.range[1]} g`:""}
+  const kc=S.settings.kcal,[a,b,d]=k==="c"?[.45,.6,4]:[.2,.35,9];
+  return kc>0?`Öneri: ${Math.round(kc*a/d)}–${Math.round(kc*b/d)} g (kalorinin %${a*100}–${b*100}'i)`:"";
+}
+const macroFld=(k,lab)=>fld("macro"+k.toUpperCase(),`${lab} hedefi (g)`,S.settings["macro"+k.toUpperCase()]||"",macroSuggest(k)||"Boş bırakırsan kapalı","numeric");
 const segb=(attr,opts,sel)=>`<div class="seg2" role="group">${opts.map(([v,l])=>`<button data-${attr}="${v}" aria-pressed="${sel===v}">${l}</button>`).join("")}</div>`;
 /* A reminder of a disabled module is not listed. */
 const remShown=r=>{const st=S.settings;return !(PREG_OFF.includes(r.id)&&risk().pregnant)&&!((r.id===7||r.id===8)&&!st.bpOn)&&!(r.id===9&&!st.bsOn)&&!(r.id===11&&!st.fastOn)};
@@ -214,6 +222,8 @@ function viewSettings(){
     ${fld("glass","Bir bardak (ml)",st.glass,"Su düğmesinin eklediği miktar","numeric")}
     ${fld("sportWeek","Haftalık spor (dk)",st.sportWeek,"","numeric")}
     ${fld("dayStart","Gün başlangıcı (saat)",st.dayStart,"0 = gece yarısı. Gün bu saatte başlar; adım sensörü ve ilaç saatleri takvim gününe göre kalır","numeric")}
+    ${macroFld("p","Protein")}${macroFld("c","Karbonhidrat")}${macroFld("f","Yağ")}
+    <p class="hint">Makro hedefleri isteğe bağlıdır ve tıbbi tavsiye değildir; öneri yalnız genel bir başlangıç aralığıdır.</p>
     ${fld("stepGoal","Günlük adım",st.stepGoal,"Adım sayar açıksa","numeric")}
     ${swHelp("data-mk",st.moveKcalOn,"Hareket kalorisini hedefe ekle","Kilo vermek istiyorsan kapalı bırak.","hlpmk","Açıkken günlük kalori hedefine, kayıtlı antrenman, yürüyüş ve koşuların tahmini enerjisinin %50'si eklenir. Adımlar sayılmaz: hareket düzeyin ve kilo trendin günlük adımı zaten içerir, bu yüzden yarısı eklenir; yine de tahmin hatalıdır ve fazla yemene yol açabilir. Hedefi yalnız artırır, azaltmaz. Kilo vermek istiyorsan kapalı bırakman daha güvenlidir.")}
   </div>`;

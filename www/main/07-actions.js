@@ -15,6 +15,7 @@ on("lateyest",()=>{
   if(!commit(()=>list.forEach(e=>{e.day=t})))return;
   render();toast(`${list.length} kayıt dünkü güne taşındı`,()=>{list.forEach(e=>{e.day=t});save();render()});
 });
+on("missmacro",()=>sheetMissing());
 on("own",()=>{ownOpen();$("#ft").focus()});
 on("tplnew",()=>sheetTpl());
 on("food",()=>sheetFood());
