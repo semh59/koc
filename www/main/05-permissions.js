@@ -25,7 +25,7 @@ function pmItems(){
   if(isNative()){
     const xi=oemXiaomi(),why=bg.miss?"Planlanan bir alarm çalmadı. ":bg.slow?"Son alarm geç çaldı. ":bg.bo===false?"Pil kısıtı açık. ":"";
     const ok=bg.bo===false||bg.miss||bg.slow?false:bg.bo===true&&(bg.ontime||!xi)?true:null;
-    items.push({id:"bat",t:"Pil ve otomatik başlatma",why:why+(xi?"Xiaomi telefonlarda bu iki ayar olmadan hatırlatmalar kaçabilir.":"Pil tasarrufu hatırlatmaları geciktiriyorsa uygulamayı kısıtlamadan çıkar."),ok,need:xi||!!(bg.miss||bg.slow),go:batFix});
+    items.push({id:"bat",t:"Pil ve otomatik başlatma",why:why+(xi?"Xiaomi telefonlarda bu iki ayar olmadan hatırlatmalar kaçabilir.":"Pil tasarrufu hatırlatmaları geciktiriyorsa uygulamayı kısıtlamadan çıkar.")+(ok===null?` Otomatik başlatma durumu okunamıyor, elle kontrol et: ${DH_PATH.openAutostart}.`:""),ok,need:xi||!!(bg.miss||bg.slow),go:batFix});
   }
   return items;
 }
@@ -47,17 +47,18 @@ const PM_STATE={true:"✓ Tamam",false:"Kapalı",null:"Kontrol edilemiyor"};
 function pmSheet(){
   if(!isNative()){openSheet(`<h3>İzinler</h3><p class="mut">İzinler yalnızca telefondaki uygulamada gösterilir.</p><button class="btn ghost" data-pm="close">Kapat</button>`);return}
   const items=pmItems(),miss=items.filter(i=>i.ok===false&&(i.need||i.id==="notif"));
-  const rows=items.map(i=>`<div class="row"><span class="grow"><b>${esc(i.t)}</b><small class="db mut sm">${esc(i.why)}</small></span><span class="ta-r"><small class="db ${i.ok===false?"b7":"mut"} sm">${PM_STATE[i.ok]}</small>${i.ok===true?"":`<button class="chip" data-pm="go:${i.id}" aria-label="${esc(i.t)}: ayarla">${i.ok===false?"İzin ver":"Aç"}</button>`}</span></div>`).join("");
+  const rows=items.map(i=>`<div class="row"><span class="grow"><b>${esc(i.t)}</b><small class="db mut sm">${esc(i.why)}</small></span><span class="ta-r"><small class="db ${i.ok===false?"b7":"mut"} sm">${i.ok===null&&i.id==="bat"?"Elle kontrol et":PM_STATE[i.ok]}</small>${i.ok===true?"":`<button class="chip" data-pm="go:${i.id}" aria-label="${esc(i.t)}: ayarla">${i.ok===false?"İzin ver":"Aç"}</button>`}</span></div>`).join("");
   openSheet(`<h3>İzinler</h3><p class="mut sm">Her satırdaki düğme seni doğru ayar ekranına götürür. Geri dönünce liste kendiliğinden yenilenir.</p>
-  <div data-pm="wiz">${miss.length?`<button class="mb-3 btn" data-pm="next">Sırayla ayarla (${miss.length} eksik)</button>`:`<p class="b7">Gereken izinlerin hepsi tamam.</p>`}</div>${rows}
+  <div data-pm="wiz">${miss.length?`<button class="mb-3 btn" data-pm="next">Sırayla ayarla (${miss.length} eksik, sonra otomatik başlatma)</button>`:`<p class="b7">Gereken izinlerin hepsi tamam.</p><button class="mb-3 btn ghost" data-pm="next">Otomatik başlatmayı kontrol et</button>`}</div>${rows}
   <p class="hint">${PM_TEXT.dnd}</p>
-  <p class="hint">Telefon yeniden başlayınca ilaç alarmların kendiliğinden yeniden kurulur.${bg.boot?` Son kurulum: ${esc(MedLib.wakeLine(bg.boot))}.`:""}</p>
+  <p class="hint">${bg.boot?`Telefon yeniden başlayınca ilaç alarmların kendiliğinden yeniden kurulur. Son kurulum: ${esc(MedLib.wakeLine(bg.boot))}.`:"Telefon yeniden başladıktan sonra NeoWell'i bir kez aç; alarmlar o zaman kurulur."}</p>
   <button class="mt-3 btn ghost" data-pm="close">Kapat</button>`);
 }
 function pmTodo(){
   const m=pmMissing(),r=(t,sub,btn)=>`<div class="row"><span>${Icons.svg("bell")} ${t}<small class="mut sm">${sub}</small></span><div class="acts">${btn}</div></div>`,open='<button class="chip" data-pm="open">Ayarla</button>';
   return [
     ...(isNative()&&bg.miss&&S.settings.medOn&&S.settings.alarmWarnDay!==dayKey()?[r("Bir ilaç alarmı çalmadı",`${MedLib.dhm(bg.miss)} alarmı çalmadı. Telefon NeoWell'i arka planda durdurmuş olabilir.`,open+'<button class="chip" data-pm="hidemiss">Kapat</button>')]:[]),
+    ...(isNative()&&!bg.miss&&bg.off&&S.settings.medOn&&S.settings.alarmWarnDay!==dayKey()?[r("Telefon kapalıyken bir ilaç saati geçti",`${MedLib.dhm(bg.off)} alarmı telefon kapalıyken geçti. O dozu aldıysan İlaçlar'dan işaretle.`,'<button class="chip" data-pm="hidemiss">Kapat</button>')]:[]),
     ...(m.length>=2?[r("İzinler eksik",`${esc(m.map(i=>i.t).join(", "))}. Hepsini tek yerden ayarla.`,open)]:[])
   ];
 }
@@ -68,6 +69,6 @@ document.addEventListener("click",async ev=>{
   else if(a==="close")closeSheet();
   else if(a==="hidemiss"){S.settings.alarmWarnDay=dayKey();save();render()}
   else if(a==="go"){const i=pmItems().find(x=>x.id===arg);if(i)await i.go()}
-  else if(a==="next"){const i=pmItems().find(x=>x.ok===false&&(x.need||x.id==="notif"));if(i)await i.go()}
+  else if(a==="next"){const i=pmItems().find(x=>x.ok===false&&(x.need||x.id==="notif"));if(i)await i.go();else openDH("openAutostart")}
 });
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)pmRefresh()});

@@ -11,14 +11,24 @@ async function lnSchedule(ln,list){
   return ln.schedule({notifications:list.map(n=>({...n,...sens(n)&&{title:"NeoWell: hatırlatma",body:"Açmak için dokun"},...priv&&n.channelId==="nw_med"&&{channelId:"nw_medp"},isExactNotification}))});
 }
 const tzKey=()=>new Date().getTimezoneOffset()+Intl.DateTimeFormat().resolvedOptions().timeZone;
-/* A reminder is rebuilt when the zone offset changed, the phone moved the alarms (boot, clock or zone change, from the alarm log) or 6 hours passed. */
+/* A reminder is rebuilt when the zone offset changed, the phone moved the alarms (boot, clock or zone change after the last setup, from the alarm log) or 6 hours passed. */
 async function schedDue(){
   if(Date.now()-lastSched>RESCHEDULE_MS||!exactOk||tzKey()!==lastTz)return true;
-  try{return MedLib.clockMoved((await MW().log()).items||[])}catch{return false}
+  try{return MedLib.clockMoved((await MW().log()).items||[],lastSched)}catch{return false}
 }
 let notifAsked=false; // the system dialog is shown once per app run; a refusal is handled from the permissions centre
-async function scheduleReminders(){
+/* One run at a time: a call that arrives during a run asks for one more run after it, so a cancel is never interleaved with another run's schedule. */
+let schedRun=null,schedAgain=false;
+function scheduleReminders(){
+  if(schedRun){schedAgain=true;return schedRun}
+  return schedRun=(async()=>{
+    try{let r;do{schedAgain=false;r=await scheduleOnce()}while(schedAgain);return r}
+    finally{schedRun=null}
+  })();
+}
+async function scheduleOnce(){
   const ln=LN();if(!ln||recovery)return "web";
+  const t0=Date.now();
   try{
     let p=await ln.checkPermissions();
     if(p.display!=="granted"&&!notifAsked){notifAsked=true;p=await ln.requestPermissions()}
@@ -38,6 +48,7 @@ async function scheduleReminders(){
       }
       if(gone.length)await ln.removeDeliveredNotifications({notifications:gone});
     }catch{}
+    lastSched=0;
     const pend=await ln.getPending();
     /* Not ours to reset: the gym timers (9001 set, 9002 rest) and the guide, medication test and snooze notifications are scheduled elsewhere. */
     const keep=new Set([9001,9002,GD_NID,MED_TEST_NID,AlarmLib.SNOOZE_NID]);
@@ -54,10 +65,9 @@ async function scheduleReminders(){
         if(i===0&&water){const ad=dayAt(at.getTime());if(sum("water",ad,ad)>=S.settings.waterMl)continue}
         if(r.dow!=null&&at.getDay()!==r.dow)continue;
         if(r.id===BACKUP_REM&&(Log.all().length<10||(lb&&Algo.dayNum(dayKey(at))-Algo.dayNum(lb)<7)))continue;
-        if(at.getTime()>now+LEAD_MS)list.push(Object.assign({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}},water?{actionTypeId:"water",extra:{act:"water",v:S.settings.glass,at:at.getTime()}}:r.id===WEEKLY_REM?{extra:{act:"open",tab:"coach"}}:r.id===BACKUP_REM?{extra:{act:"open",tab:"settings-data"}}:r.id===1?{extra:{act:"open",tab:"weight"}}:{}));
+        if(at.getTime()>now+LEAD_MS)list.push(Object.assign({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}},water?{actionTypeId:"water",extra:{act:"water",v:S.settings.glass,at:at.getTime()}}:r.id===WEEKLY_REM?{extra:{act:"open",tab:"coach"}}:r.id===BACKUP_REM?{extra:{act:"open",tab:"settings-data"}}:r.id===1?{extra:{act:"open",tab:"weight"}}:r.id===7||r.id===8?{extra:{act:"open",tab:"bp"}}:r.id===9?{extra:{act:"open",tab:"glucose"}}:{}));
       }
     }
-    lastSched=now;lastTz=tzKey();
     if(S.settings.medOn){
       for(const n of MedLib.notifications(Meds.meds(),Meds.log(),new Date(),SCHED_DAYS,S.settings.medShowName))medList.push({id:n.id,title:n.title,body:n.body,schedule:{at:n.at,allowWhileIdle:true},actionTypeId:n.actionTypeId,extra:n.extra,channelId:n.channelId,ongoing:n.ongoing});
       for(const n of MedLib.notices(Meds.meds(),new Date(),S.settings.medShowName))medList.push({id:n.id,title:n.title,body:n.body,schedule:{at:n.at,allowWhileIdle:true},extra:n.extra});
@@ -73,6 +83,7 @@ async function scheduleReminders(){
     if(list.length)await lnSchedule(ln,list);
     /* The notification plugin does not light the locked screen: for medication doses (reminder repeats excluded) a separate alarm screen wakes it briefly. */
     const mw=MW();if(mw)await mw.set({times:MedLib.wakeTimes(list),doses:MedLib.wakeDoses(list,Meds.meds(),S.settings.medShowName),detail:S.settings.lockDetail}).catch(()=>{});
+    lastSched=t0;lastTz=tzKey();
     return "ok";
   }catch(e){return "Bildirimler kurulamadı. Bildirim iznini kontrol edip tekrar dene"}
 }
@@ -80,7 +91,8 @@ async function scheduleReminders(){
 function notifTap(e){
   const x=e&&e.notification&&e.notification.extra;
   if(!e||e.actionId!=="tap"||!x||(x.act!=="open"&&x.act!=="med"))return;
-  tab=x.act==="med"||x.tab==="meds"?(S.settings.medOn?"meds":"more"):x.tab==="coach"&&S.settings.consent?"coach":x.tab==="cycle"&&S.settings.cycleOn?"cycle":x.tab==="settings-data"||x.tab==="gym"?x.tab:"trend";if(x.tab==="weight")tSec="weight";via=null;closeSheet();render();window.scrollTo(0,0);
+  tab=x.act==="med"||x.tab==="meds"?(S.settings.medOn?"meds":"more"):x.tab==="coach"&&S.settings.consent?"coach":x.tab==="cycle"&&S.settings.cycleOn?"cycle":x.tab==="bp"&&S.settings.bpOn||x.tab==="glucose"&&S.settings.bsOn?x.tab:x.tab==="settings-data"||x.tab==="gym"?x.tab:"trend";if(x.tab==="weight")tSec="weight";via=null;closeSheet();render();window.scrollTo(0,0);
+  if(x.tab==="weight")sheetWeight();
   if(x.act==="med")setTimeout(()=>alarmOpen({quiet:true}),0);
 }
 function setNotif(s){notifStatus=s;if(tab==="settings-reminders")render()}
