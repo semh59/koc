@@ -1,6 +1,6 @@
 /* Salon for the gym user: set delete, finish choices, timed set copy, rest persistence, labels, template start, records, edit and breakdown, past day, units, layout. */
 const fs=require("fs"),{ok,finish}=require("./ok");
-const {boot,flush,www}=require("./html");
+const {boot,flush,www,quota}=require("./html");
 (async()=>{
   const lnLog=[];
   const w=await boot(w=>{w.Capacitor={isNativePlatform:()=>true,Plugins:{LocalNotifications:{checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),getPending:async()=>({notifications:[]}),getDeliveredNotifications:async()=>({notifications:[]}),removeDeliveredNotifications:async()=>{},registerActionTypes:async()=>{},cancel:async o=>{lnLog.push(["c",o.notifications.map(n=>n.id)])},schedule:async o=>{lnLog.push(["s",o.notifications.map(n=>n.id)])}}}}});
@@ -70,6 +70,42 @@ const {boot,flush,www}=require("./html");
     ok("an unsaved form (note) closes with Vazgeç",q('#sheet [data-g="closesheet"]').textContent==="Vazgeç");
     ev("S.templates=[{id:3,name:'Üst',ex:['squat']}];gTeOpen(3)");
     ok("the template editor keeps Vazgeç",q('#sheet [data-g="closesheet"]').textContent==="Vazgeç");
+  }
+  { // 3 breakdown, 2 edit, 5 records
+    const W=(id,day,t0,ex)=>`{id:${id},day:${JSON.stringify(day)},t0:${t0},t1:${t0+3e6},name:'A${id}',tpl:null,ex:[${ex}]}`;
+    const X=(id,sets)=>`{id:'${id}',note:'',sets:[${sets}]}`;
+    const set=(kg,r,extra="")=>`{kg:${kg},reps:${r},done:true${extra}}`;
+    fresh(`S.workouts=[${W(1,"2026-09-01",1e12,X("bench",set(60,8)+","+set(60,6)+","+set(40,12,",w:true"))+","+X("plank","{kg:null,reps:null,sec:45,done:true}"))}];S.gid=5`);
+    ev("gSheetSummary(1)");
+    ok("summary lists every exercise with its sets as kg × reps (warm-up left out) and timed sets as seconds",/Bench press60 × 8, 60 × 6/.test(text())&&/Plank45 sn/.test(text()),text());
+    ev("closeSheet();gSheetHist('bench')");
+    ok("exercise history table shows every set of the session, not only the best",/Setler/.test(text())&&/60 × 8, 60 × 6/.test(text()),text());
+    ev("gSheetSummary(1)");click('[data-g="wedit:1"]');
+    ok("edit sheet: one kg and one reps box per weight set, one duration box per timed set",qa("#sheet [data-ge^=kg]").length===3&&qa("#sheet [data-ge^=reps]").length===3&&qa("#sheet [data-ge^=sec]").length===1);
+    const set_=(sel,v)=>{q("#sheet "+sel).value=v};
+    set_('[data-ge="kg:0:1"]',"62,5");set_('[data-ge="reps:0:1"]',"5");set_('[data-ge="sec:1:0"]',"60");
+    click('[data-g="wsave:1"]');
+    ok("save: kg, reps and duration of the finished workout change, the summary shows the new values",ev("S.workouts[0].ex[0].sets[1].kg")===62.5&&ev("S.workouts[0].ex[0].sets[1].reps")===5&&ev("S.workouts[0].ex[1].sets[0].sec")===60&&/62,5 × 5/.test(text()),text());
+    ok("untouched fields keep their stored value (the warm-up set, set 1)",ev("S.workouts[0].ex[0].sets[0].kg")===60&&ev("S.workouts[0].ex[0].sets[2].w")===true);
+    q("#tundo").click();
+    ok("undo restores the old values",ev("S.workouts[0].ex[0].sets[1].kg")===60&&ev("S.workouts[0].ex[1].sets[0].sec")===45);
+    ev("gEditSheet(1)");set_('[data-ge="reps:0:0"]',"500");click('[data-g="wsave:1"]');
+    ok("an invalid value is refused under the field and nothing changes",ev("S.workouts[0].ex[0].sets[0].reps")===8&&/Bench press, 1. set/.test(q("#gwerr").textContent)&&q("#sheet").classList.contains("on"),q("#gwerr").textContent);
+    set_('[data-ge="reps:0:0"]',"");click('[data-g="wsave:1"]');
+    ok("an emptied reps box is refused",ev("S.workouts[0].ex[0].sets[0].reps")===8&&q("#gwerr").textContent!=="");
+    const {full,free}=quota(w);
+    set_('[data-ge="reps:0:0"]',"9");full();click('[data-g="wsave:1"]');
+    ok("a failed save puts the old value back",ev("S.workouts[0].ex[0].sets[0].reps")===8&&/kaydedilemedi/.test(q("#tmsg").textContent));
+    free();ev("closeSheet()");
+    // records
+    const ids=["bench","squat","row","curl","ohp","lat","legpress"];
+    fresh(`S.workouts=[${ids.map((id,i)=>W(i+1,"2026-09-"+String(10+i).padStart(2,"0"),1e12+i*1e8,X(id,set(50+i,8)))).join(",")}];S.gid=20`);
+    ev("render()");
+    const recs=qa("#view .card .row").filter(r=>r.parentNode.previousElementSibling&&r.parentNode.previousElementSibling.textContent==="Rekorlar");
+    ok("records: one row per exercise (best set), not limited to the last 3 events",recs.length===5&&ev("gRecords(S.workouts.filter(gDone)).length")===7);
+    ok("records are not inside a collapsed section",!q("#view h2+.card").closest("details")&&![...qa("#view details")].some(d=>d.querySelector("summary").textContent.includes("Rekor")));
+    click('[data-g="recmore"]');
+    ok("Tüm rekorlar shows the remaining exercises",qa("#view .card .row .tag").length>=7);
   }
   finish();
 })();
