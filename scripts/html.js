@@ -20,6 +20,8 @@ module.exports.boot=(before,html=module.exports.build())=>{
   const d=dom.window.document;
   return d.documentElement.dataset.boot?Promise.resolve(dom.window):new Promise(r=>d.addEventListener("nw:boot",()=>r(dom.window),{once:true}));
 };
+/* Makes the state write throw a quota error: returns {full(), free()}. */
+module.exports.quota=w=>{const SP=w.Storage.prototype,set=SP.setItem;return {full:()=>{SP.setItem=function(k){if(k==="nw_state")throw new w.DOMException("dolu","QuotaExceededError");return set.apply(this,arguments)}},free:()=>{SP.setItem=set}}};
 /* Polls `cond` until it is truthy; resolves false on timeout. */
 module.exports.until=async(cond,ms=3000)=>{
   for(const end=Date.now()+ms;Date.now()<end;await new Promise(r=>setTimeout(r,5)))if(await cond())return true;

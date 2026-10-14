@@ -1,8 +1,8 @@
 /* One edit sheet for log entries (food, water, weight, exercise, note): value, text, day and time; undo; failed save. */
 const {ok,finish}=require("./ok");
-const {boot}=require("./html");
+const {boot,quota}=require("./html");
 (async()=>{
-  const w=await boot(),ev=s=>w.eval(s),q=s=>w.document.querySelector(s),SP=w.Storage.prototype,set0=SP.setItem;
+  const w=await boot(),ev=s=>w.eval(s),q=s=>w.document.querySelector(s),{full,free}=quota(w);
   ev("S=structuredClone(DEF);S.settings.obDone=true;S.settings.noticeOk=true;tab='today';render()");
   const e=id=>JSON.parse(ev(`JSON.stringify(Log.find(x=>x.id===${id}))`)),open=id=>{ev("render()");if(ev(`Log.find(x=>x.id===${id}).type`)==="water"){ev(`logOff=Algo.dayNum(dayKey())-Algo.dayNum(Log.find(x=>x.id===${id}).day);sheetWater()`);q(`#sheet [data-edit="${id}"]`).click()}else{ev("logOff=0;render()");q(`[data-edit="${id}"]`).click()}};
   const set=(sel,v)=>{q("#sheet "+sel).value=v},save=()=>q('#sheet [data-go="entry"]').click(),err=()=>q("#eerr").textContent;
@@ -34,10 +34,10 @@ const {boot}=require("./html");
   q("#tundo").click();
   ok("undo brings back the old value",e(food).v===450);
   open(food);set("#ev","222");
-  SP.setItem=function(k){if(k==="nw_state")throw new w.DOMException("dolu","QuotaExceededError");return set0.apply(this,arguments)};
+  full();
   save();
   ok("a failed save keeps the old record and says so",e(food).v===450&&/kaydedilemedi/.test(q("#tmsg").textContent));
-  SP.setItem=set0;
+  free();
 
   /* other record kinds */
   const day=ev("dayKey()"),click=sel=>q(sel).click(),val=(sel,v)=>{q(sel).value=v};
