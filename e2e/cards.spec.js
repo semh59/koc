@@ -60,7 +60,7 @@ test.describe("Coach menu card",()=>{
     expect((await app.state()).chat.find(m=>m.card&&m.card.kind==="menu").card.chk.length).toBe(1);
     const dl=page.waitForEvent("download");
     await page.click('#sheet [data-c^="shopshare:"]');
-    expect((await dl).suggestedFilename()).toBe("neowell-alisveris-2026-10-06.txt");
+    expect((await dl).suggestedFilename()).toBe("neowell-liste-2026-10-06.txt");
   });
   test("a day far off the calorie target asks for confirmation before Add to today; declining adds nothing",async({app,page,fake})=>{
     fake.st.reply=b=>{const p=catalog(b).filter(x=>+x[2]>=50)[0];return JSON.stringify({reply:"x",menu:{days:[{n:"Pazartesi",meals:["breakfast","lunch","dinner"].map(m=>({m,i:[[p[0],0.25]]}))}]}})};

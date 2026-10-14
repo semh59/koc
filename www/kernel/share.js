@@ -46,6 +46,7 @@ async function shareFileSealed(name,title,mime,data,utf8){
   let env;try{env=await BackupLib.encrypt({file:{name,mime,utf8,data}},pw)}catch(e){toast("Dosya şifrelenemedi");return false}
   return shareFile(name+".enc.json",title,"application/json",JSON.stringify(env),true);
 }
-const shareOut=(sealed,...a)=>(sealed?shareFileSealed:shareFile)(...a);
+/* "Parolayla şifrele" in Raporlar ve dışa aktarma (settings.sealOut) seals every report, table and list that leaves the phone, not only the ones with their own switch. */
+const shareOut=(sealed,...a)=>(sealed||S.settings.sealOut?shareFileSealed:shareFile)(...a);
 const sharePdf=(pdf,name,title,sealed)=>shareOut(sealed,name,title,"application/pdf",BackupLib.b64(pdf));
 document.addEventListener("nw:boot",cacheClean);

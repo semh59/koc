@@ -49,7 +49,7 @@ function sheetPrivacy(){
   <button class="mt-2 btn ghost" data-pv="close">Kapat</button>`);
 }
 /* Each table is shared on its own: a chained share sheet may not open for the second file. */
-let pvSeal=false,pvSplit=false,pvIntl=false;
+let pvSplit=false,pvIntl=false;
 const pvCsv=(split=pvSplit)=>CsvLib.files(S,{exName:id=>gEx(id).n,vctx:r=>r.k==="t"?VitalsLib.sessionName(r.session):VitalsLib.ctxName(r.ctx)},{split,intl:pvIntl});
 const pvArchive=tables=>ArchiveLib.build(S,dayKey(),tables);
 const pvBundle=()=>pvArchive(Object.fromEntries(pvCsv(false).filter(f=>f.n).map(f=>[f.key,f.build()])));
@@ -59,15 +59,15 @@ const pvRow=(t,sub,act,aria,on)=>`<div class="row"><span class="grow"><b>${t}</b
 function sheetExport(){
   const ar=pvArchive(),fh=pvFhir(),files=pvCsv(),tabs=pvCsv(false).filter(f=>f.n).length;
   openSheet(`<h3>Raporlar ve dışa aktarma</h3>
+  ${swRow('data-pv="seal"',S.settings.sealOut,"Parolayla şifrele","PDF raporları, tablolar ve listeler paylaşılmadan önce parola sorulur; dosyayı yalnız parolayı bilen açar. Excel ve Sheets şifreli dosyayı doğrudan açmaz")}
   <h4 class="grp">PDF raporları</h4>${reportRows()}
-  <h4 class="grp">Tablolar (CSV)</h4><p class="mut sm">Excel ve Google Sheets'te açılır. Aşağıdan şifrelemezsen dosya şifresizdir ve paylaştığın yere gider; yedek yerine geçmez.</p>
-  ${swRow('data-pv="seal"',pvSeal,"Parolayla şifrele","Paylaşılan dosyayı yalnız parolayı bilen açabilir; Excel ve Sheets şifreli dosyayı doğrudan açmaz")}
+  <h4 class="grp">Tablolar (CSV)</h4><p class="mut sm">Excel ve Google Sheets'te açılır. Şifrelemezsen dosya şifresizdir ve paylaştığın yere gider; yedek yerine geçmez.</p>
   ${swRow('data-pv="split"',pvSplit,"Tür başına ayrı dosya","Yemek, su, kilo gibi her tür kendi tablosunda olur; her tabloda tek birim bulunur")}
   ${swRow('data-pv="intl"',pvIntl,"Nokta ondalık, virgül ayraç","Türkçe Excel için kapalı bırak; İngilizce Excel ve Google Sheets (ABD) için aç")}
   ${files.map((f,i)=>pvRow(f.label,`${f.n} satır`,"csvsh:"+i,`${f.label} paylaş`,f.n)).join("")}
   <h4 class="grp">Tüm kayıtlar</h4>
-  ${pvRow("Hepsini tek paket (tek JSON dosyası)",`${ar.total} kayıt ve ${tabs} tablo. Dışarıda: ${ArchiveLib.LEFT_OUT}`,"bundle","Hepsini tek paket olarak paylaş",ar.total)}
-  ${pvRow("Kayıtlarım (tek JSON dosyası, bazı veriler dışarıda)",`${ar.total} kayıt, tüm modüller. Dışarıda: ${ArchiveLib.LEFT_OUT}`,"archive","Kayıtlarımı paylaş",ar.total)}
+  ${pvRow("Hepsini tek paket (tek JSON dosyası)",`${ar.total} kayıt ve ${tabs} tablo. Uygulamaya geri yüklenmez, yedek yerine geçmez. Dışarıda: ${ArchiveLib.LEFT_OUT}`,"bundle","Hepsini tek paket olarak paylaş",ar.total)}
+  ${pvRow("Kayıtlarım (tek JSON dosyası, bazı veriler dışarıda)",`${ar.total} kayıt, tüm modüller. Uygulamaya geri yüklenmez, yedek yerine geçmez. Dışarıda: ${ArchiveLib.LEFT_OUT}`,"archive","Kayıtlarımı paylaş",ar.total)}
   ${pvRow("Tansiyon, kilo ve şeker (FHIR R4)",`${fh.bp} tansiyon, ${fh.weight} kilo, ${fh.glucose} şeker kaydı; başka sağlık uygulamalarının okuyabildiği biçim, yorum içermez`,"fhir","FHIR dosyasını paylaş",fh.total)}
   <button class="mt-3 btn ghost" data-pv="close">Kapat</button>`);
 }
@@ -79,13 +79,13 @@ document.addEventListener("click",ev=>{
   else if(a==="del")pvDelete(+arg);
   else if(a==="prev"){S.settings.piiPrev=el.checked;S.settings.piiPrevOwn=true;save()}
   else if(a==="netclear"){NetLog.clear();sheetPrivacy()}
-  else if(a==="export"){pvSeal=pvSplit=pvIntl=false;sheetExport()}
-  else if(a==="seal"){pvSeal=el.checked;sheetExport()}
+  else if(a==="export"){pvSplit=pvIntl=false;sheetExport()}
+  else if(a==="seal"){S.settings.sealOut=el.checked;save();sheetExport()}
   else if(a==="split"){pvSplit=el.checked;sheetExport()}
   else if(a==="intl"){pvIntl=el.checked;sheetExport()}
-  else if(a==="archive")shareOut(pvSeal,`neowell-arsiv-${dayKey()}.json`,"Kayıtlarım","application/json",pvArchive().json,true);
-  else if(a==="bundle")shareOut(pvSeal,`neowell-paket-${dayKey()}.json`,"Hepsini tek paket","application/json",pvBundle().json,true);
-  else if(a==="fhir")shareOut(pvSeal,`neowell-fhir-${dayKey()}.json`,"Tansiyon, kilo ve şeker (FHIR)","application/json",pvFhir().json,true);
-  else if(a==="csvsh"){const f=pvCsv()[+arg];shareOut(pvSeal,`neowell-${f.key}-${dayKey()}.csv`,f.label,"text/csv",f.build(),true)}
+  else if(a==="archive")shareOut(false,`neowell-kayit-${dayKey()}.json`,"Kayıtlarım","application/json",pvArchive().json,true);
+  else if(a==="bundle")shareOut(false,`neowell-paket-${dayKey()}.json`,"Hepsini tek paket","application/json",pvBundle().json,true);
+  else if(a==="fhir")shareOut(false,`neowell-aktarim-${dayKey()}.json`,"Tansiyon, kilo ve şeker (FHIR)","application/json",pvFhir().json,true);
+  else if(a==="csvsh"){const f=pvCsv()[+arg];shareOut(false,`neowell-tablo-${+arg+1}-${dayKey()}.csv`,f.label,"text/csv",f.build(),true)}
   else if(a==="consent"||a==="revoke"){cConsent(a==="consent",true);sheetPrivacy()}
 });

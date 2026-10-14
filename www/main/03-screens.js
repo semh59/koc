@@ -50,7 +50,7 @@ function viewToday(){
   const left=(v,g,u)=>v<g?[null,`${u} kaldı`]:["✓","Hedef tamam"];
   const [waterC,waterU]=left(water,sh,"L"),[spC,spU]=left(sw,sg,"dk");
   /* A day with almost nothing logged shows the total, not a remainder that would read as "you may eat this much more". */
-  const lowLog=kgl>0&&kc<Algo.LOW_LOG_KCAL,kcC=st.hideNums?"•••":kgl>0&&!lowLog?Math.round(Math.abs(kgl-kc)):Math.round(kc),kcU=kgl>0&&!lowLog?(kc>kgl?"kcal fazla":"kcal kaldı"):"kcal";
+  const lowLog=kgl>0&&kc<Algo.LOW_LOG_KCAL,kcC=st.hideNums?"•••":kgl>0&&!lowLog?Math.round(Math.abs(kgl-kc)):Math.round(kc),kcU=kgl>0&&!lowLog&&!st.hideNums?(kc>kgl?"kcal fazla":"kcal kaldı"):"kcal";
   const meals=Log.where(e=>e.type==="food"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
   const pr=cur!=null?Algo.protein(riskInput(cur)):{};
   const goalOf=g=>st[g]?` / ${st[g]}`:"";
@@ -65,10 +65,10 @@ function viewToday(){
   const micro=mi.length?`<div class="macro num">${mi.join(" · ")} <span class="mut sm">öğünde veri var</span></div>`:"";
   /* Summary card: big calorie ring and the remainder; water, sport and steps in small rings; macros below. */
   const rings=`<div class="card"><div class="rings">
-    ${rb("kcal","Kalori",ring(kcP,"var(--kcal)",kcC,"Kalori",st.hideNums?"sayılar gizli":kgl>0?`${Math.round(kc)} / ${kgl} kcal`:"hedef yok",kcU,"main"))}
+    ${rb("kcal","Kalori",ring(st.hideNums?0:kcP,"var(--kcal)",kcC,"Kalori",st.hideNums?"sayılar gizli":kgl>0?`${Math.round(kc)} / ${kgl} kcal`:"hedef yok",kcU,"main"))}
     <div class="rmini">${rb("water","Su",ring(water/sh,"var(--water)",waterC||fmt((sh-water)/1000,1),"Su",`${fmt(water/1000,1)} / ${fmt(sh/1000,1)} L`,waterU,"mini"+(waterC?" done":"")))}
     ${rb("exercise","Spor",ring(sw/sg,"color-mix(in srgb,var(--exercise) 80%,var(--card))",spC||Math.round(sg-sw),"Spor",`${Math.round(sw)} / ${sg} dk`,spU,"mini"+(spC?" done":"")))}${sOn?stepCard():""}</div>
-  </div>${Habits.ramWaterNote()}${lowLog&&!st.hideNums?`<p class="pt-2 hint">Bugün az yemek kayıtlı; kayıtlar tamamlanınca kalanı gösteririm.</p>`:""}${macro}${macroNote}${fiber}${micro}${rangeNote}${moveAdd(t)?`<p class="pt-2 hint">Hedefe hareketten +${moveAdd(t)} kcal eklendi (kayıtlı antrenman ve yürüyüşün yarısı, tahmindir).</p>`:""}</div>`;
+  </div>${Habits.ramWaterNote()}${lowLog&&!st.hideNums?`<p class="pt-2 hint">Bugün az yemek kayıtlı; kayıtlar tamamlanınca kalanı gösteririm.</p>`:""}${st.hideNums?"":`${macro}${macroNote}${fiber}${micro}${rangeNote}${moveAdd(t)?`<p class="pt-2 hint">Hedefe hareketten +${moveAdd(t)} kcal eklendi (kayıtlı antrenman ve yürüyüşün yarısı, tahmindir).</p>`:""}`}</div>`;
   /* The most used quick chips come first; the order inside equal counts stays as written. */
   const Q=[["water",'data-act="water"',"water",`+${st.glass} ml`,`${st.glass} ml su ekle`],["drink",'data-dk="open"',"water","İçecek türü"],["weight",'data-act="weight"',"weight","Kilo"],["exercise",'data-act="exercise"',"exercise","Spor"],
     ...st.bpOn?[["bp",'data-vt="addbp"',"heart","Tansiyon"]]:[],...st.bsOn?[["bs",'data-vt="addbs"',"water","Şeker"]]:[],["note",'data-act="note"',"note","Not"],...Motion.walk()?[]:[["walk",'data-w="start"',"steps","Yürüyüş"]]];
@@ -109,6 +109,8 @@ function reportRows(){
   const st=S.settings,r=(a,ic,t,sub)=>navRow(a,ic,t,sub);
   return `${r('data-doc="open"',"share","Hekime hazırlan","Tek PDF, yorum içermez")}${r('data-wk="pdf"',"share","Son 7 gün raporu","Bugün dahil 7 gün, PDF")}${st.bpOn?r('data-vt="pdfmenu:t"',"heart","Tansiyon doktor raporu","Dönem seç, PDF"):""}${st.bsOn?r('data-vt="pdfmenu:s"',"water","Şeker doktor raporu","Dönem seç, PDF"):""}${LabLib.series(Labs.all()).length?r('data-lab="pdf"',"file","Tahlil raporu","Tüm sonuçlar, PDF"):""}`;
 }
+let trendNums=false;
+document.addEventListener("visibilitychange",()=>{if(document.hidden)trendNums=false});
 function viewTrend(){
   const t=dayKey(),st=S.settings;
   const wAll=weights(),days=Object.keys(wAll).sort();
@@ -119,9 +121,11 @@ function viewTrend(){
     if(ge.slope!=null)cells.push(["Kilo hızı",`${dwS(ge.slope,2)} ${wlab()}/hafta`]);
     const gi=goalInfo(cur,first);
     if(gi)cells.push(["Hedefe kalan",gi.done?"Ulaştın":`${dw(gi.left)} ${wlab()}`]);
+    const mask=st.hideNums&&!trendNums;
+    if(mask)for(const c of cells)c[1]="•••";
     const eta=gi&&!gi.done&&!(gi.dir<0&&risk(cur).block)?ge.weeks:null;
     const etaTxt=!eta?"":ge.range?(ge.range[0]===ge.range[1]?`Son 3 haftanın eğimi sürerse ~${ge.range[0]} hafta.`:`Son 3 haftanın eğimi sürerse ${ge.range[0]}–${ge.range[1]} hafta arası.`):"Hızın değişken olduğu için hedef tarihi kestirilemiyor.";
-    stats=`<div class="stats kp">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1].replace(/ ((?:kg|lb)\/hafta|kg|lb)$/," <small>$1</small>")}</div></div>`).join("")}</div>${etaTxt?`<p class="pt-2 hint">${etaTxt}</p>`:""}${Algo.fastLoss(wAll)?`<p class="pt-2 hint">Kilon son haftalarda haftada %1'den hızlı düşüyor. Nedeni belli değilse hekimine danış; bu bir tanı değildir.</p>`:""}`;
+    stats=`<div class="stats kp">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1].replace(/ ((?:kg|lb)\/hafta|kg|lb)$/," <small>$1</small>")}</div></div>`).join("")}</div>${st.hideNums?`<button class="lnk" data-act="shownums" aria-pressed="${!mask}">${mask?"Sayıları göster":"Sayıları gizle"}</button>`:""}${etaTxt?`<p class="pt-2 hint">${etaTxt}</p>`:""}${Algo.fastLoss(wAll)?`<p class="pt-2 hint">Kilon son haftalarda haftada %1'den hızlı düşüyor. Nedeni belli değilse hekimine danış; bu bir tanı değildir.</p>`:""}`;
   }
   const waterOf=dayTotal("water"),foodOf=dayTotal("food"),sportOf=dayTotal("exercise"),stepsOf=dayTotal("steps"),wkW=weights(keyOff(-6),t);
   let rows="",hasWeek=false;const hasSteps=st.stepsOn||sum("steps",keyOff(-6),t)>0;
@@ -202,7 +206,7 @@ function viewSettings(){
       coach:keysStored()?"Anahtar kayıtlı":"Anahtar yok",data:storeMsg()?storeMsg()[0]:st.lastBackup?"Son yedek "+fd(st.lastBackup):"Henüz yedek dosyası yok",about:appVer?"Sürüm "+appVer:"Sürüm, kaynaklar ve tıbbi uyarı"};
     const grp=(g,ks)=>`<h2 class="grp">${g}</h2><div class="card">${SETTINGS_TABS.filter(([k])=>ks.includes(k)).map(([k,t,ic])=>navRow(`data-tab="settings-${k}"`,ic,t,esc(d[k]))).join("")}</div>`;
     return `${grp("Kişisel",["profile","reminders"])}${grp("Rehber ve modüller",["coach","modules"])}
-    <h2 class="grp">Görünüm ve erişilebilirlik</h2><div class="card"><div class="lbl" id="thml">Tema</div>${segb("thm",[["","Sistem"],["light","Açık"],["dark","Koyu"]],st.theme).replace('role="group"','role="group" aria-labelledby="thml"')}${swHelp("data-comfy",st.comfy,"Büyük yazı ve düğmeler","","hlpcf","Yazıları ve düğmeleri büyütür. Telefonun yazı boyutu ayarı da ayrıca çalışır.")}${swRow("data-hs",st.hideStreak,"Seriyi gizle","Bugün'deki gün sayısını kaldırır")}${swRow("data-hn",st.hideNums,"Sayıları gizle","Bugün'de kilo ve kalori rakamları görünmez")}</div>
+    <h2 class="grp">Görünüm ve erişilebilirlik</h2><div class="card"><div class="lbl" id="thml">Tema</div>${segb("thm",[["","Sistem"],["light","Açık"],["dark","Koyu"]],st.theme).replace('role="group"','role="group" aria-labelledby="thml"')}${swHelp("data-comfy",st.comfy,"Büyük yazı ve düğmeler","","hlpcf","Yazıları ve düğmeleri büyütür. Telefonun yazı boyutu ayarı da ayrıca çalışır.")}${swRow("data-hs",st.hideStreak,"Seriyi gizle","Bugün'deki gün sayısını ve adım serisini kaldırır")}${swRow("data-hn",st.hideNums,"Sayıları gizle","Bugün'de ve Trend'de kilo, kalori, besin ve adım rakamları görünmez; Trend'de dokunarak gösterirsin")}</div>
     ${isNative()?`<h2 class="grp">Telefon</h2><div class="card">${navRow('data-pm="open"',"bell","İzinler",pmMissing().length?`${pmMissing().length} eksik: ${esc(pmMissing().map(i=>i.t).join(", "))}`:"Bildirim, alarm, adım ve pil ayarları")}</div>`:""}
     ${grp("Veri ve uygulama",["data","about"])}`;
   }
@@ -242,10 +246,11 @@ function viewSettings(){
   }
   if(sub==="data")return `<div class="banner"><p class="m0">Uygulamayı silersen ya da telefon değiştirirsen her şey gider. ${esc(bkLast())}. ${BK_PHOTOS}</p></div>
     ${st.keyMiss?`<div class="mt-3 card"><p class="status" role="alert"><b>Rehber anahtarlarından bazıları yüklenemedi.</b> Geri yüklenen yedekteki bazı anahtarlar kasaya yazılamadı; Ayarlar > Rehber'den yeniden yaz.</p><div class="btns"><button class="btn ghost" data-act="keymissok">Tamam</button></div></div>`:""}
-    <div class="mt-3 card">${swRow('data-lk="toggle"',st.lockOn,"Uygulama kilidi",`Açarken ve ${LOCK_LABEL[st.lockGrace]} uzun aradan dönünce telefonun ekran kilidi (parmak izi, yüz, PIN, desen) sorulur`)}${swRow('data-lk="recents"',st.hideRecents,"Son uygulamalarda ve ekran görüntüsünde gizle","Son uygulamalar listesinde içerik görünmez, ekran görüntüsü alınamaz. Uygulama kilidinden bağımsızdır")}${st.lockOn?`<div class="lbl">Kilit ne zaman yeniden sorulsun?</div>${segb("lg",[[30,"30 saniye"],[120,"2 dakika"],[300,"5 dakika"]],st.lockGrace)}${st.lockGrace===300?`<p class="hint">Telefonu başkası alırsa 5 dakika boyunca açık kalabilir.</p>`:""}`:""}</div>
+    ${st.lockOn&&!st.hideRecents&&!st.recentsAsked?`<div class="mt-3 card"><p class="status" role="status"><b>Son uygulamalarda içerik görünüyor.</b> Uygulama kilidi açık ama son uygulamalar listesinde içerik görünür ve ekran görüntüsü alınabilir.</p><div class="btns"><button class="btn" data-act="recentson">Gizle</button><button class="btn ghost" data-act="recentsno">Gerek yok</button></div></div>`:""}
+    <div class="mt-3 card">${swRow('data-lk="toggle"',st.lockOn,"Uygulama kilidi",`Açarken ve ${LOCK_LABEL[st.lockGrace]} uzun aradan dönünce telefonun ekran kilidi (parmak izi, yüz, PIN, desen) sorulur`)}${swRow('data-lk="recents"',st.hideRecents,"Son uygulamalarda ve ekran görüntüsünde gizle","Son uygulamalar listesinde içerik görünmez, ekran görüntüsü alınamaz. Uygulama kilidinden bağımsızdır")}${swRow("data-ld",st.lockDetail,"Kilit ekranında ayrıntı göster","Kapalıyken bildirimler kilit ekranında başlık ve metin göstermez; ölçüm ve ilaç başlıkları genel yazılır")}${swRow("data-wh",st.widgetHide,"Widget'ta sayıları gizle","Uygulama kilidi açıkken widget her zaman gizli kalır")}${st.lockOn?`<div class="lbl">Kilit ne zaman yeniden sorulsun?</div>${segb("lg",[[30,"30 saniye"],[120,"2 dakika"],[300,"5 dakika"]],st.lockGrace)}${st.lockGrace===300?`<p class="hint">Telefonu başkası alırsa 5 dakika boyunca açık kalabilir.</p>`:""}`:""}</div>
     <div class="mt-3 card">${swRow('data-bk="nokeys"',st.bkNoKeys,"Rehber anahtarlarını yedeğe koyma","Açıkken yedek dosyasında anahtarların olmaz; yedeği yüklediğinde anahtarları yeniden girersin")}</div>
     <button class="mt-3 btn" data-act="drive">${Icons.svg("cloud")} Yedeği Drive'a gönder</button>
-    <div class="mt-3 card">${navRow('data-act="backup"',"save","Yedek al","Şifreli yedek dosyası oluştur")}${navRow('data-obr="open"',"save","Yedekten geri yükle","Dosya seç ya da metin yapıştır; önce denetleyebilirsin")}${navRow('data-pv="export"',"share","Raporlar ve dışa aktarma","PDF raporları, tablolar (CSV), tek paket")}${navRow('data-ci="open"',"file","Tablodan kayıt ekle (CSV)","Kilo, tansiyon ve şeker; önce önizleme gösterilir")}${navRow('data-imp="open"',"gym","Antrenman geçmişini içe aktar","Başka bir uygulamadan dışa aktardığın dosya")}${navRow('data-pv="open"',"lock","Gizlilik ve veri","Verilerin nerede durduğu")}${navRow('data-act="reset"',"trash","Tüm verileri sil","Geri alınamaz","  dng")}</div>
+    <div class="mt-3 card">${navRow('data-act="backup"',"save","Yedek al","Şifreli yedek dosyası oluştur")}${navRow('data-obr="open"',"save","Yedekten geri yükle","Dosya seç ya da metin yapıştır; önce denetleyebilirsin")}${navRow('data-sl="open"',"lock","Şifreli dosyayı aç","Parolayla şifreleyip paylaştığın raporu ya da tabloyu çöz")}${navRow('data-pv="export"',"share","Raporlar ve dışa aktarma","PDF raporları, tablolar (CSV), tek paket")}${navRow('data-ci="open"',"file","Tablodan kayıt ekle (CSV)","Kilo, tansiyon ve şeker; önce önizleme gösterilir")}${navRow('data-imp="open"',"gym","Antrenman geçmişini içe aktar","Başka bir uygulamadan dışa aktardığın dosya")}${navRow('data-pv="open"',"lock","Gizlilik ve veri","Verilerin nerede durduğu")}${navRow('data-act="reset"',"trash","Tüm verileri sil","Geri alınamaz","  dng")}</div>
     <div class="card">${storeMsg()?`<p class="status" role="alert"><b>${storeMsg()[0]}.</b> ${storeMsg()[1]}</p>`:""}${loadNote?`<p class="status" role="status">${esc(loadNote)}</p>`:""}${COPIES.filter(([k])=>Store.get(k)!=null).map(([k,n])=>`<div class="row"><span class="grow"><b>${n}</b><small class="db mut sm">${fmt(Store.get(k).length*2/1e6)} MB</small></span>${k==="nw_state_previous"&&copyHeld()?`<button class="chip" data-act="copyseen">Gördüm</button>`:""}<button class="chip" data-act="copy:${k}">Dışa aktar</button><button class="chip" data-act="copydel:${k}">Sil</button></div>`).join("")}<p class="hint">${storeMsg()?`Kullanılan alan: yaklaşık ${fmt(storeBytes/1e6)} MB, sınır telefona göre 5-10 MB.`:"Alan yeterli."}</p>
     <p class="hint">Veriler yalnızca bu telefonda durur. Google otomatik yedeğine ve telefondan telefona aktarıma bilerek dahil edilmez. Yeni telefona geçmeden önce yedek dosyanı al.</p></div>${abHtml()}`;
   return `<div class="about"><img src="logo.png" alt="NeoWell logosu" width="72" height="72"><b>NeoWell</b><span class="mut sm">Sağlığın yeni kaynağı</span></div>
@@ -292,7 +297,7 @@ let widgetLast="";
 /* The null values are intentional: the Java side shows "no goal" / hides steps when the key exists but is null, and "–" when the key is missing. */
 function widgetPush(){
   if(!WG())return;
-  const t=dayKey(),st=S.settings,d={day:t,ds:st.dayStart|0,water:sum("water",t,t),waterGoal:st.waterMl,glass:st.glass,kcalLeft:st.kcal>0?Math.round(kcalGoal(t)-sum("food",t,t)):null,steps:st.stepsOn||st.hcOn?stepsShown():null},ia=Habits.iftarAt();
+  const t=dayKey(),st=S.settings,d={day:t,ds:st.dayStart|0,water:sum("water",t,t),waterGoal:st.waterMl,glass:st.glass,kcalLeft:st.kcal>0?Math.round(kcalGoal(t)-sum("food",t,t)):null,steps:st.stepsOn||st.hcOn?stepsShown():null,...(st.lockOn||st.widgetHide)&&{hide:true}},ia=Habits.iftarAt();
   if(ia)d.iftarAt=ia;
   const j=JSON.stringify(d);if(j===widgetLast)return;
   widgetLast=j;try{WG().update(d).catch(()=>{})}catch{}

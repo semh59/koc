@@ -92,8 +92,9 @@ function goWeight(){
   const lb=prev==null&&wlab()==="kg"&&Algo.lbSuspect(v,S.settings.heightCm);
   if((lb||fresh&&Math.round(Math.abs(v-prev)*10)>=30)&&weightOk!==v){weightOk=v;$("#kerr").textContent="";$("#kwarn").innerHTML=`<div class="banner"><b>${lb?`${fmt(v)} kg çok yüksek görünüyor`:`${dwS(v-prev)} ${wlab()} fark var`}</b><p>${lb?`Libre (lb) yazmış olabilirsin: ${fmt(v)} lb ≈ ${fmt(v*0.45359237)} kg. Doğruysa devam et.`:`Son tartın ${dw(prev)} ${wlab()} idi. Yanlış yazmış olabilir misin?`}</p><button class="btn" data-go="weight">Yine de kaydet</button></div>`;return}
   const e=add("weight",v,"",day);closeSheet();render();
-  let msg=`${dw(v)} ${wlab()} kaydedildi`;
-  if(prev!=null)msg+=`, öncekine göre ${dwS(v-prev)} ${wlab()}`;
+  const hide=S.settings.hideNums;
+  let msg=hide?"Tartı kaydedildi":`${dw(v)} ${wlab()} kaydedildi`;
+  if(prev!=null&&!hide)msg+=`, öncekine göre ${dwS(v-prev)} ${wlab()}`;
   if(Algo.fastLoss(weights()))msg+=". Kilon haftada %1'den hızlı düşüyor; hekimine danış";
   toast(msg,e.id);
 }
@@ -366,10 +367,10 @@ async function openBackup(text,pw){
   let r,keysIn=null;try{r=JSON.parse(text)}catch{return bad("Yedek metni okunamadı")}
   if(!(r&&(r.enc||r.neowell>1)))return bad("Yalnız parolalı yedek geri yüklenir");
   if(!pw)return bad("Şifreli yedek: önce parolayı yaz");
-  let at="",app="";
-  try{const p=await BackupLib.decrypt(r,pw);r=p.S;keysIn=p.keys;at=/^\d{4}-\d{2}-\d{2}$/.test(p.at)?p.at:"";app=typeof p.app==="string"?p.app.slice(0,20):""}
+  let at="",app="",shared=false;
+  try{const p=await BackupLib.decrypt(r,pw);shared=!!p.file;r=p.S;keysIn=p.keys;at=/^\d{4}-\d{2}-\d{2}$/.test(p.at)?p.at:"";app=typeof p.app==="string"?p.app.slice(0,20):""}
   catch(e){return bad(e.message==="version"?"Bu yedek NeoWell'in daha yeni bir sürümüyle alınmış. Önce uygulamayı güncelle":e.message==="format"?"Yedek biçimi tanınmıyor. Dosya bozuk ya da başka bir uygulamadan olabilir":"Parola yanlış ya da yedek bozuk")}
-  if(!r||!Array.isArray(r.entries))return bad("Bu bir NeoWell yedeği değil");
+  if(!r||!Array.isArray(r.entries))return bad(shared?"Bu paylaşılan bir dosya, yedek değil. Ayarlar > Veri ve yedek > Şifreli dosyayı aç ile aç":"Bu bir NeoWell yedeği değil");
   const b=buildState(r);
   if(!b.S.entries.length&&r.entries.length)return bad("Yedekte geçerli kayıt yok");
   return {b,keysIn,at,app};
@@ -390,6 +391,7 @@ async function goRestore(text=$("#bk").value,pw=$("#bkpw").value){
   /* The safety copy is taken before anything is overwritten; if the new data then does not fit, save() drops the copy and retries. */
   const copyIn=hasData&&canCopy&&Store.set("nw_state_previous",pj),prevS=S;
   S=b.S;
+  const lostRecents=S.settings.hideRecents===true&&!prevS.settings.hideRecents;
   /* A backup must not change where the key goes, the consent setting or the data-sharing permission. The automatic backup folder belongs to this phone. */
   Object.assign(S.settings,Object.fromEntries(["noticeOk","hideRecents",...SHARE_KEYS].map(k=>[k,prevS.settings[k]])),{consent:prevS.settings.consent,consentV:prevS.settings.consentV,consentAt:prevS.settings.consentAt,consentP:prevS.settings.consentP,lastBackup:dayKey(),autoBk:prevS.settings.autoBk,lastAutoBk:prevS.settings.lastAutoBk});cAgeGuard();
   /* A brake on this phone stays and a backup brings its own, but a sign lifted on this phone or in the backup is not brought back by the other. */
@@ -418,7 +420,7 @@ async function goRestore(text=$("#bk").value,pw=$("#bkpw").value){
   otherBytes=lsOther();storeBytes=otherBytes+lastJ.length*2;
   logOff=0;closeSheet();render();scheduleReminders().then(setNotif);
   const ps=prevS.settings;
-  toast((drop?`Yedek yüklendi, ${drop} geçersiz kayıt atlandı`:"Yedek yüklendi")+(b.lost.length?`; okunamayan alanlar varsayılana döndü (${b.lost.join(", ")})`:"")+(copy||!hasData?"":". Eski verin için güvenlik kopyası alınamadı (depolama dolu); yedek al")+(ps.consent&&ps.autoBk?"":". Rehber izni ve otomatik yedek bu telefonda yeniden kurulur")+(miss?". Bazı Rehber anahtarları kasaya yazılamadı, Ayarlar > Veri ve yedek'te uyarı duruyor":""));
+  toast((drop?`Yedek yüklendi, ${drop} geçersiz kayıt atlandı`:"Yedek yüklendi")+(b.lost.length?`; okunamayan alanlar varsayılana döndü (${b.lost.join(", ")})`:"")+(copy||!hasData?"":". Eski verin için güvenlik kopyası alınamadı (depolama dolu); yedek al")+(ps.consent&&ps.autoBk?"":". Rehber izni ve otomatik yedek bu telefonda yeniden kurulur")+(lostRecents?". Son uygulamalarda gizleme bu telefonda kapalı kaldı; Ayarlar > Veri ve yedek'ten aç":"")+(S.settings.ramOn&&S.settings.ramLat&&!ramGet()?". Ramazan vakit doğrulaması yedekte yoktur; Ramazan ayarından Doğrula'ya dokun":"")+(miss?". Bazı Rehber anahtarları kasaya yazılamadı, Ayarlar > Veri ve yedek'te uyarı duruyor":""));
   return true;
 }
 

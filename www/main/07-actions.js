@@ -73,11 +73,14 @@ async function goHealth(){
 }
 on("riskok",()=>{S.settings.riskClearedAt=dayKey();save();render();toast("Onaylandı, 30 gün geçerli")});
 onPre("apply:",a=>{S.settings.kcal=+a.slice(6);save();render();toast(`Kalori hedefi ${S.settings.kcal} kcal oldu`)});
+on("shownums",()=>{trendNums=!trendNums;render()});
+on("recentson",()=>{S.settings.hideRecents=true;S.settings.recentsAsked=true;save();recentsSync();render()});
+on("recentsno",()=>{S.settings.recentsAsked=true;save();render()});
 on("keymissok",()=>{S.settings.keyMiss=false;save();render()});
-on("reset",()=>{confirmSheet({title:"Tüm veriler silinsin mi?",body:`Tüm kayıtlar, güvenlik kopyası, kayıtlı Rehber anahtarları ve kayıtlı yedek parolası silinecek. Bu geri alınamaz. ${bkLast()}. Önce yedek al: Ayarlar > Veri ve yedek > Yedek al. Devam edilsin mi?`,ok:"Hepsini sil",danger:true}).then(ok=>{if(!ok)return;
+on("reset",()=>{confirmSheet({title:"Tüm veriler silinsin mi?",body:`Tüm kayıtlar, güvenlik kopyası, kayıtlı Rehber anahtarları ve kayıtlı yedek parolası silinecek. Paylaştığın dosyalar, Drive'a gönderdiklerin ve yedek klasöründeki dosyalar silinmez. Bu geri alınamaz. ${bkLast()}. Önce yedek al: Ayarlar > Veri ve yedek > Yedek al. Devam edilsin mi?`,ok:"Hepsini sil",danger:true}).then(ok=>{if(!ok)return;
   chain(S.settings.motionOn?motionStopAll():0,()=>chain(phClear(),photosOk=>chain(nativeWipe(["Motion","MedWake","Widget","QuickLog"]),nativeOk=>{
     if(!nativeOk)toast(NATIVE_FAIL);
     if(!photosOk||!nativeOk)return;
-    BF()?.clear().catch(()=>{});cacheClean();["nw_state",...COPIES.map(([k])=>k)].forEach(k=>Store.del(k));["nw_state_usage",NetLog.KEY,KEYS_LS,KEYS_ENC,BKPW_LS,RAM_LS,"nw_keys_plain","nw_walkgps_no","nw_pdfok"].forEach(lsDel);ramCache=undefined;KEYS={};S=structuredClone(DEF);save();recentsSync();logOff=0;render();scheduleReminders().then(setNotif);toast("Tüm veriler silindi");
+    BF()?.clear().catch(()=>{});cacheClean();["nw_state",...COPIES.map(([k])=>k)].forEach(k=>Store.del(k));["nw_state_usage",NetLog.KEY,KEYS_LS,KEYS_ENC,BKPW_LS,RAM_LS,"nw_keys_plain","nw_walkgps_no","nw_pdfok","nw_ocrok"].forEach(lsDel);ramCache=undefined;KEYS={};S=structuredClone(DEF);save();recentsSync();logOff=0;render();scheduleReminders().then(setNotif);toast("Tüm veriler silindi");
   })));
 })});

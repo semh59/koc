@@ -54,6 +54,7 @@ const inert=()=>[...w.document.body.children].some(e=>e.contains($("#view"))&&e.
   ok("closes 1.5 s after everything is done",$("#alarm").hidden&&!inert());
   ev("S.medLog=[];S.settings.medShowName=false;alarmOpen()");
   ok("medShowName=false: name and dose are hidden, 'İlaç saatin geldi.' and '1 doz'",!$("#alarm").hidden&&!/Aspirin|100 mg/.test($("#alarm").innerHTML)&&txt().includes("İlaç saatin geldi.")&&txt().includes("1 doz"),txt());
+  ev("S.settings.lockDetail=true");
   const t0=Date.now();click('#alarm [data-al="snooze"]');await until(()=>n("MW.snooze").length&&$("#alarm").hidden);
   const sn=n("LN.schedule").pop()[1].notifications[0],mz=n("MW.snooze").pop();
   ok("snooze: a one-time notification 10 minutes later (name hidden) and a screen alarm, the dose is not marked, the screen closes",sn.id===7148&&Math.abs(+new Date(sn.schedule.at)-t0-600000)<5000&&sn.body==="İlaç saatin geldi."&&mz&&mz[1].at===+new Date(sn.schedule.at)&&ev("S.medLog.length")===0&&$("#alarm").hidden);

@@ -31,12 +31,12 @@ async function docGo(){
       let k=n-1;for(const s of secs){if(k<s.count)return s.draw(ctx,k);k-=s.count}
     });
   }catch(e){return toast("PDF hazırlanamadı")}
-  await sharePdf(pdf,`neowell-hekim-${today}.pdf`,"Hekime hazırlan",seal);
+  await sharePdf(pdf,`neowell-rapor-${today}.pdf`,"Hekime hazırlan",seal);
 }
 document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-doc]");if(!el)return;
   const [a,arg]=el.dataset.doc.split(":");
-  if(a==="open"){docSt={days:30,seal:false,cycle:false,q:["","","","",""]};docSheet()}
+  if(a==="open"){docSt={days:30,seal:S.settings.sealOut,cycle:false,q:["","","","",""]};docSheet()}
   else if(a==="days"){docRead();docSt.days=+arg;docSheet()}
   else if(a==="seal"||a==="cycle"){docRead();docSt[a]=el.checked;docSheet()}
   else if(a==="close"){docSt=null;closeSheet()}

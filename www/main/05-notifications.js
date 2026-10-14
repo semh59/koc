@@ -1,11 +1,14 @@
 /* ---------- notifications (APK only) ---------- */
-const WATER_REM=[2,3,4],MOVE_REM=5,BACKUP_REM=10,WEEKLY_REM=12,FAST_NID=9100;
+const WATER_REM=[2,3,4],MEAS_REM=[7,8,9],MOVE_REM=5,BACKUP_REM=10,WEEKLY_REM=12,FAST_NID=9100;
 const SCHED_DAYS=30,LEAD_MS=5000,RESCHEDULE_MS=6*36e5;let lastSched=0,lastTz="",exactOk=true,fsiOk=true,medBudgetMsg="";
 const LN=()=>plugin("LocalNotifications");
 /* Plugin 8.3+ opens the system "Alarms & reminders" screen on every schedule() with an exact alarm while the permission is missing; the exact flag follows the permission so it never does. */
 async function lnSchedule(ln,list){
-  const isExactNotification=(await ln.checkExactNotificationSetting()).exact_alarm!=="denied";
-  return ln.schedule({notifications:list.map(n=>({...n,isExactNotification}))});
+  const isExactNotification=(await ln.checkExactNotificationSetting()).exact_alarm!=="denied",priv=!S.settings.lockDetail;
+  /* With lock-screen detail off, measurement, medication and cycle notifications carry a generic title and the private channel twin (the channel id is
+     MedWakeReceiver's: "nw_med" public, "nw_medp" private). */
+  const sens=n=>priv&&n.id!==MED_TEST_NID&&(n.channelId==="nw_med"||n.id>=1e6&&!RamadanLib.isNid(n.id)||n.id===CycleLib.NID||n.id<1000&&MEAS_REM.includes(Math.floor(n.id/100)));
+  return ln.schedule({notifications:list.map(n=>({...n,...sens(n)&&{title:"NeoWell: hatırlatma",body:"Açmak için dokun"},...priv&&n.channelId==="nw_med"&&{channelId:"nw_medp"},isExactNotification}))});
 }
 const tzKey=()=>new Date().getTimezoneOffset()+Intl.DateTimeFormat().resolvedOptions().timeZone;
 /* A reminder is rebuilt when the zone offset changed, the phone moved the alarms (boot, clock or zone change, from the alarm log) or 6 hours passed. */
@@ -69,7 +72,7 @@ async function scheduleReminders(){
     const tk=await quickToken();if(tk)for(const n of list)if(n.extra&&(n.extra.act==="water"||n.extra.act==="med"))n.extra.tk=tk;
     if(list.length)await lnSchedule(ln,list);
     /* The notification plugin does not light the locked screen: for medication doses (reminder repeats excluded) a separate alarm screen wakes it briefly. */
-    const mw=MW();if(mw)await mw.set({times:MedLib.wakeTimes(list),doses:MedLib.wakeDoses(list,Meds.meds(),S.settings.medShowName)}).catch(()=>{});
+    const mw=MW();if(mw)await mw.set({times:MedLib.wakeTimes(list),doses:MedLib.wakeDoses(list,Meds.meds(),S.settings.medShowName),detail:S.settings.lockDetail}).catch(()=>{});
     return "ok";
   }catch(e){return "Bildirimler kurulamadı. Bildirim iznini kontrol edip tekrar dene"}
 }
