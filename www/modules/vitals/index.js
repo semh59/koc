@@ -5,7 +5,7 @@ Data.hist.push((S,{add})=>{for(const x of S.vitals)add(x.day,x.k==="t"?"bp":"glu
 Data.histSearch.push((S,{n,norm,out})=>{
   for(const x of S.vitals)if(x.note&&norm(x.note).includes(n))out.push({day:x.day,time:x.time,type:"vitals",kind:x.k==="t"?"Tansiyon":"Şeker",text:x.note,sub:x.k==="t"?`${x.sys}/${x.dia}`:`${Units.fg(x.g)} ${Units.gl()}`});
 });
-Data.dayRows.push([3,k=>S.vitals.filter(x=>x.day===k).sort((a,b)=>a.time<b.time?-1:1).map(x=>hgRow("heart",`${x.time} ${x.k==="t"?"Tansiyon":"Şeker"}`,x.k==="t"?`${x.sys}/${x.dia}${x.pulse?` · nabız ${x.pulse}`:""}`:`${Units.fg(x.g)} ${Units.gl()}`)).join("")]);
+Data.dayRows.push([3,k=>S.vitals.filter(x=>x.day===k).sort((a,b)=>a.time<b.time?-1:1).map(x=>hgRow("heart",`${x.time} ${x.k==="t"?"Tansiyon":"Şeker"}`,x.k==="t"?`${x.sys}/${x.dia}${x.pulse?` · nabız ${x.pulse}`:""}`:`${Units.fg(x.g)} ${Units.gl()}`,`data-vt="edit:${x.id}"`)).join("")]);
 const Vitals={
   all:()=>S.vitals,before:(day,days)=>VitalsLib.before(S.vitals,day,days),pages:(kind,days)=>vPdfPages(kind,days),
   /* Appends checked rows (from a file import) with fresh ids and sids; returns the new ids, or null when the list would pass its limit. */

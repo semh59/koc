@@ -1,11 +1,9 @@
 "use strict";
 /* Drink kind: a "water" entry plus a label (dr). Only plain water and unsweetened mineral water count toward the water goal (WeeklyLib.isWater); other drinks show in a separate "Diğer içecekler" row and raise no warning or score.
    The quick +water from notifications and widgets is an entry without dr. Uses S, add, save, num, ferr, fday, dayOptions, openSheet, closeSheet, render, toast from the main shell. */
-const DRINKS=[["water","Su"],["mineral","Maden suyu (sade)"],["tea","Çay"],["coffee","Kahve"],["soda","Gazlı içecek"],["energy","Enerji içeceği"],["milk","Süt"],["other","Diğer"]];
 /* Caffeine estimate in mg per 100 ml by drink kind; brewing and brand change it a lot, so it is always shown with "~". */
 const CAFFEINE={tea:20,coffee:40,soda:10,energy:32};
 const caffeineMg=list=>Math.round(list.reduce((a,e)=>a+(CAFFEINE[e.dr]||0)*e.v/100,0));
-const drinkName=c=>(DRINKS.find(d=>d[0]===c)||DRINKS[0])[1];
 const drinkOk=c=>c!=="water"&&DRINKS.some(d=>d[0]===c);
 function sheetDrink(){
   openSheet(`<h3>İçecek ekle</h3><div class="lbl" id="drl">İçecek</div><div class="chips" id="dr" role="group" aria-labelledby="drl">${DRINKS.map(([c,n],i)=>`<button class="chip" data-dr="${c}" aria-pressed="${i===0}">${n}</button>`).join("")}</div>
