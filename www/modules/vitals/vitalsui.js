@@ -1,5 +1,5 @@
 "use strict";
-/* Blood pressure and glucose screens. Records, averages and plots; it does not interpret values or compare them with thresholds or targets. The data is never sent to the Coach. */
+/* Blood pressure and glucose screens: records, averages and plots. The only interpretation is the emergency box and the neutral "ask your doctor" line after a save. The data is never sent to the Coach. */
 let vRange=14,vSession="morning",vCtx="fasting",vConfirm="";
 const vMmol=()=>Units.gu()==="mmol",vDec=()=>vMmol()?1:0;
 /* Averages and extremes are rounded to an integer in mg/dL and shown with 1 decimal in mmol/L. */
@@ -13,7 +13,8 @@ const vErrText=c=>c.err==="date"?"Gün ve saati seç":c.err==="glucose"?`Şeker 
 /* ---- Settings ---- */
 function vitalsSettingsHtml(){
   const st=S.settings,h="Evde ölçtüğün tansiyon ve şekeri kaydet. Uygulama değerleri yorumlamaz; kaydeder, ortalamasını ve grafiğini gösterir. Veriler telefondan çıkmaz.";
-  return modRow('data-vt="bptoggle"',st.bpOn,"Tansiyon","Ev ölçümleri, ortalama ve grafik.","hlpbp",h)+modRow('data-vt="bstoggle"',st.bsOn,"Şeker","Ölçümler, ortalama ve grafik.","hlpbs",h);
+  const lim=`<button class="lnk" data-vt="limits">Hekimimin verdiği sınır${st.bpSysHi||st.bpDiaHi||st.gFastHi?" (açık)":""}</button>`;
+  return modRow('data-vt="bptoggle"',st.bpOn,"Tansiyon","Ev ölçümleri, ortalama ve grafik.","hlpbp",h,lim)+modRow('data-vt="bstoggle"',st.bsOn,"Şeker","Ölçümler, ortalama ve grafik.","hlpbs",h,lim);
 }
 function vToggle(kind){
   const st=S.settings,on=kind==="bp"?"bpOn":"bsOn",ids=VT_REMINDERS[kind];
@@ -71,11 +72,44 @@ function vFinish(rows,msg){
   S.vitals=S.vitals.concat(added);
   if(!commit(()=>{S.vitals=backup}))return;
   closeSheet();render();
-  if(rows.some(r=>VitalsLib.crisis(r,dayKey()))){
-    return openSheet(`<h3>Ölçüm kaydedildi</h3><p>Cihazı kontrol edip ölçümü tekrarla. Değer doğruysa hekimine danış; kendini kötü hissediyorsan acil yardım al.</p><button class="btn" data-vt="close">Tamam</button>`);
-  }
+  if(vAlert(rows))return;
   const ids=new Set(added.map(r=>r.id));
-  toast(msg,()=>{S.vitals=S.vitals.filter(r=>!ids.has(r.id));save();render()});
+  toast(msg+vAsk(rows),()=>{S.vitals=S.vitals.filter(r=>!ids.has(r.id));save();render()});
+}
+const vMy=()=>({sys:S.settings.bpSysHi,dia:S.settings.bpDiaHi,g:S.settings.gFastHi});
+const vLevels=rows=>rows.map(r=>VitalsLib.level(r,dayKey(),vMy()));
+const vAsk=rows=>vLevels(rows).includes("ask")?". Hekimine danış; bu bir tanı değildir":"";
+/* Emergency box: names the value, tells low from high, and 112 is one tap away. Returns true when it opened. */
+function vAlert(rows){
+  const lv=vLevels(rows),i=lv.findIndex(l=>l==="high"||l==="low");
+  if(i<0)return false;
+  const r=rows[i],bp=r.k==="t",val=bp?`${r.sys}/${r.dia} mmHg`:`${dg(r.g)} ${glab()}`;
+  const head=`${lv[i]==="low"?"Düşük":"Yüksek"} ${bp?"tansiyon":"şeker"} ölçümü: ${val}`;
+  const sym=lv[i]==="low"?"Kendini kötü hissediyorsan, kafan karışıyorsa ya da bayılırsan":bp?"Göğüs ağrın, nefes darlığın, konuşma güçlüğün ya da şiddetli baş ağrın varsa":"Kendini çok kötü hissediyorsan, kusuyorsan ya da bilincin bulanıksa";
+  openSheet(`<h3>${head}</h3><p>Ölçüm kaydedildi. Cihazı kontrol edip ölçümü tekrarla. Değer doğruysa hekimine danış. ${sym} hemen 112'yi ara.</p><a class="btn" href="tel:112">112'yi ara</a><button class="mt-2 btn ghost" data-vt="close">Tamam</button>`);
+  return true;
+}
+function sheetLimits(){
+  const st=S.settings,f=(id,lab,v)=>`<label class="lbl" for="${id}">${lab}</label><input class="in num" id="${id}" inputmode="decimal" value="${v?(id==="vlg"?dg(v):v):""}" autocomplete="off">`;
+  openSheet(`<h3>Hekimimin verdiği sınır</h3><p class="mut sm">Hekimin bir sınır verdiyse yaz; ölçüm bu sınıra gelince "Hekimine danış" satırı çıkar. Boş bırakırsan varsayılan sınır kullanılır. Uygulama değeri yorumlamaz.</p>
+  ${f("vlsys","Büyük tansiyon (mmHg)",st.bpSysHi)}${f("vldia","Küçük tansiyon (mmHg)",st.bpDiaHi)}${f("vlg",`Şeker (${glab()})`,st.gFastHi)}
+  <div class="ferr" id="vwarn" role="alert"></div><button class="btn" data-vt="savelimits">Kaydet</button>`);
+}
+function vSaveLimits(){
+  const st=S.settings,out={};
+  for(const [id,k,lbl] of [["vlsys","bpSysHi","Büyük tansiyon"],["vldia","bpDiaHi","Küçük tansiyon"],["vlg","gFastHi","Şeker"]]){
+    const raw=vGet(id).trim();let v=0;
+    if(raw){
+      v=LabLib.optNum(raw);if(k==="gFastHi"&&v>0)v=Units.gIn(v);
+      const [lo,hi]=RANGES[k];
+      if(!(v>=lo&&v<=hi))return vWarn(`${lbl} sınırı geçerli değil`);
+    }
+    out[k]=Math.round(v);
+  }
+  const was={bpSysHi:st.bpSysHi,bpDiaHi:st.bpDiaHi,gFastHi:st.gFastHi};
+  Object.assign(st,out);
+  if(!commit(()=>Object.assign(st,was)))return;
+  closeSheet();render();toast("Sınır kaydedildi");
 }
 function vConfirmAgain(why,sig){
   if(!why||vConfirm===sig)return false;
@@ -112,7 +146,9 @@ function vSaveEdit(){
   S.vitals=was.map(r=>next.get(r.id)||r);
   if(!commit(()=>{S.vitals=was}))return;
   closeSheet();render();
-  toast("Ölçüm güncellendi",()=>{S.vitals=was;if(commit(()=>{}))render()});
+  const rows=[...next.values()];
+  if(vAlert(rows))return;
+  toast("Ölçüm güncellendi"+vAsk(rows),()=>{S.vitals=was;if(commit(()=>{}))render()});
 }
 function vSaveBp(){
   const day=vGet("fday"),time=vGet("vtime"),note=vGet("vnot"),sid=VitalsLib.newSid();
@@ -258,6 +294,8 @@ document.addEventListener("click",ev=>{
   else if(a==="edit")sheetVEdit(arg.split(",").map(Number));
   else if(a==="saveedit")vSaveEdit();
   else if(a==="close")closeSheet();
+  else if(a==="limits")sheetLimits();
+  else if(a==="savelimits")vSaveLimits();
   else if(a==="range"){vRange=+arg;render()}
   else if(a==="pdfmenu")vPdfMenu(arg);
   else if(a==="pdf"){const [k,d]=arg.split(":");vPdf(k,+d)}

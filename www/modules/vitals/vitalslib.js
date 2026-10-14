@@ -1,6 +1,6 @@
 "use strict";
 /* Blood pressure and glucose readings: validation, averages, doctor report (no DOM).
-   It does not interpret values: no thresholds, labels or colours; it only records, averages and plots. */
+   It does not label or colour values; it records, averages and plots. The only reading-based output is level(): the emergency box and the neutral "ask your doctor" line. */
 const VitalsLib=(()=>{
   const CTX=[["fasting","Açlık"],["before","Yemek öncesi"],["after","Yemekten 2 saat sonra"],["bedtime","Yatmadan önce"],["random","Rastgele"]];
   const SESSIONS=[["morning","Sabah"],["evening","Akşam"],["other","Diğer"]];
@@ -11,6 +11,8 @@ const VitalsLib=(()=>{
   const MAX_ROWS=50000,NOTE_MAX=80;
   /* Emergency box: a reading from today at or beyond these values (mg/dL for glucose). */
   const CRISIS={sys:180,dia:120,gLow:54,gHigh:400};
+  /* Neutral "ask your doctor" band below the emergency box; the user's own doctor limits (settings, 0 = off) replace these. */
+  const ASK={sys:140,dia:90,g:250};
   /* "Are you sure" question: jump from the previous reading of the same kind. */
   const JUMP_SYS=60,JUMP_G=150;
   const ALGO=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js"),{dayOk,timeOk}=ALGO;
@@ -104,6 +106,12 @@ const VitalsLib=(()=>{
   }
   /* Emergency box: only for readings dated today. */
   const crisis=(r,today)=>r.day===today&&(r.k==="t"?(r.sys>=CRISIS.sys||r.dia>=CRISIS.dia):(r.g<CRISIS.gLow||r.g>CRISIS.gHigh));
+  /* Today's reading -> "low" | "high" (emergency box), "ask" (neutral line) or null. my: {sys, dia, g} doctor limits in mg/dL, 0 = default. */
+  const level=(r,today,my={})=>{
+    if(crisis(r,today))return r.k==="s"&&r.g<CRISIS.gLow?"low":"high";
+    if(r.day!==today)return null;
+    return (r.k==="t"?r.sys>=(my.sys||ASK.sys)||r.dia>=(my.dia||ASK.dia):r.g>=(my.g||ASK.g))?"ask":null;
+  };
   /* "Are you sure" question: compared only with the latest reading of the same kind (for glucose, the same context). */
   function needsConfirm(rows,n,gu){
     const prev=latest(rows.filter(r=>r.k===n.k&&(n.k==="t"||r.ctx===n.ctx)));
@@ -187,6 +195,6 @@ const VitalsLib=(()=>{
     }
     ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText(`NeoWell · sayfa ${info.page}/${info.total}`+(items.some(r=>r.dose)?" · Süreler uygulamaya yazılan kayıtlara göredir.":""),RM,RH-45);
   }
-  return {MAX_ROWS,newSid,CTX,SESSIONS,ctxName,sessionName,LIM,check,clean,sessions,homeAvg,before,gStats,crisis,needsConfirm,latest,cmpAt,reportRows,paginate,drawPage,drawChart,RW,RH};
+  return {MAX_ROWS,newSid,CTX,SESSIONS,ctxName,sessionName,LIM,check,clean,sessions,homeAvg,before,gStats,crisis,level,needsConfirm,latest,cmpAt,reportRows,paginate,drawPage,drawChart,RW,RH};
 })();
 if(typeof module!=="undefined")module.exports=VitalsLib;

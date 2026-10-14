@@ -584,7 +584,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     q("#bs1").value="200";q("#bd1").value="100";click('[data-vt="savebp"]');
     ok("if it differs by more than 60 from the previous measurement it warns and does not save",ev("S.vitals.length")===2&&q("#vwarn").textContent.includes("Yanlış yazmış"),q("#vwarn").textContent);
     click('[data-vt="savebp"]');
-    ok("on the second tap it is saved and for an extreme value dated today the 112 box appears",ev("S.vitals.length")===3&&txt().includes("acil yardım")&&txt().includes("kaydedildi")&&!txt().match(/teşhis|hasta/i),txt());
+    ok("on the second tap it is saved and for an extreme value dated today the 112 box appears",ev("S.vitals.length")===3&&txt().includes("Yüksek tansiyon ölçümü: 200/100")&&txt().includes("112")&&txt().includes("kaydedildi")&&!txt().match(/teşhis|hasta/i),txt());
     click('#sheet [data-vt="close"]');
     ev("sheetBp()");
     q("#fday").value=ev("keyOff(-3)");q("#bs1").value="190";q("#bd1").value="125";click('[data-vt="savebp"]');
@@ -627,7 +627,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     q("#gv").value="10";click('[data-vt="savebs"]');
     ok("a sugar below 20 is rejected",ev("S.vitals.filter(r=>r.k==='s').length")===4&&toastT().includes("20-800"));
     q("#gv").value="50";click('[data-vctx="random"]');click('[data-vt="savebs"]');
-    ok("a very low value dated today shows the 112 box",ev("S.vitals.filter(r=>r.k==='s').length")===5&&txt().includes("acil yardım"));
+    ok("a very low value dated today shows the 112 box",ev("S.vitals.filter(r=>r.k==='s').length")===5&&txt().includes("Düşük şeker ölçümü")&&txt().includes("112"));
     click('#sheet [data-vt="close"]');
     ev("S.labs=[{id:1,day:'2026-09-01',k:'hba1c',n:'HbA1c',v:5.4,u:'%'}]");
     ev("tab='glucose';render()");
