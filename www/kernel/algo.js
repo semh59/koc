@@ -345,6 +345,6 @@ const Algo=(()=>{
   }
   /* A4 page in pixels at 150 dpi, with its margin: the canvas size of every PDF report. */
   const PAGE={w:1240,h:1754,m:70};
-  return {PAGE,dayOk,timeOk,KCAL_PER_KG,actFromTriage,dayNum,fdate,trend,slopePerWeek,setClock,fullKcal,LOW_LOG_KCAL,MIN_AVG_DAYS,kcalFloor,manualKcal,goalWhy,fastLoss,lbSuspect,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,riskFlags,lossBlock,etaWeeks,lossSlope,isLosing,lossKnown,goalEta,protein,PROTEIN_NOTE,exerciseKcal,moveBonus,moveSummary,cleanWalk,netKcal,gymKcal,MEASURES,cleanMeasures,whtr,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
+  return {PAGE,dayOk,timeOk,KCAL_PER_KG,ACT,actFromTriage,dayNum,fdate,trend,slopePerWeek,setClock,fullKcal,LOW_LOG_KCAL,MIN_AVG_DAYS,kcalFloor,manualKcal,goalWhy,fastLoss,lbSuspect,bmrMifflin,formulaTdee,adaptiveTdee,suggestTarget,riskFlags,lossBlock,etaWeeks,lossSlope,isLosing,lossKnown,goalEta,protein,PROTEIN_NOTE,exerciseKcal,moveBonus,moveSummary,cleanWalk,netKcal,gymKcal,MEASURES,cleanMeasures,whtr,stepStats,est1RM,volume,nextTarget,roundTo,plates,warmup};
 })();
 if(typeof module!=="undefined")module.exports=Algo;

@@ -64,6 +64,14 @@ const WeeklyLib=(()=>{
     return {rows,summary,charts,from,end:endDay,wu};
   }
 
+  /* The last 7 days next to the 7 before: daily averages over the days that have data (calories only over fully logged days). */
+  function compare(D,endDay){
+    const [y,m,d]=endDay.split("-").map(Number),prevEnd=key(new Date(y,m-1,d-7));
+    const avg=(rows,f,ok)=>{const a=rows.filter(ok).map(f);return {v:mean(a),n:a.length}};
+    const side=day=>{const r=build({...D,vitals:[],meds:[]},day).rows;return {kcal:avg(r,x=>x.kcal,x=>A.fullKcal(x.kcal)),water:avg(r,x=>x.water,x=>x.water>0),steps:avg(r,x=>x.steps,x=>x.steps>0)}};
+    return {cur:side(endDay),prev:side(prevEnd)};
+  }
+
   function drawPage(ctx,data,info){
     ctx.fillStyle="#ffffff";ctx.fillRect(0,0,RW,RH);ctx.textBaseline="alphabetic";
     let y=RM;
@@ -101,6 +109,6 @@ const WeeklyLib=(()=>{
     }
     ctx.fillStyle="#62737a";ctx.font="22px sans-serif";ctx.fillText("NeoWell",RM,RH-45);
   }
-  return {build,drawPage,isWater};
+  return {build,compare,drawPage,isWater};
 })();
 if(typeof module!=="undefined")module.exports=WeeklyLib;

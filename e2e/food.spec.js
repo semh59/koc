@@ -128,13 +128,13 @@ test.describe("Barcode (fake scanner, fake Open Food Facts reply)",()=>{
   });
   test("a missing product falls back to manual entry",async({app,page})=>{
     await scan(app,page,{status:0});
-    await expect(app.toast).toContainText("Ürün bulunamadı");
+    await expect(page.locator("#fown .banner")).toContainText("Ürün bulunamadı");
     await expect(page.locator("#ft")).toBeVisible();
   });
   test("no internet shows the Turkish error",async({app,page,errs})=>{
     errs.allow(/Failed to load resource|ERR_INTERNET_DISCONNECTED|ERR_FAILED/);
     await scan(app,page,null);
-    await expect(app.toast).toHaveText("İnternete ulaşılamadı, barkod aranamadı");
+    await expect(page.locator("#fown .banner")).toContainText("İnternete ulaşılamadı, barkod aranamadı");
   });
 });
 

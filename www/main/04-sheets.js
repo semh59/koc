@@ -129,6 +129,20 @@ function sheetWater(){
   openSheet(`<h3>Su kayıtları</h3>${L.map(e=>`<div class="prow"><button class="tx grow" data-edit="${e.id}" aria-label="${e.time}, ${e.v} ml, düzenle"><b class="num">${e.time}</b></button><span class="num">${e.v} ml${e.dr?` · ${drinkName(e.dr)}`:""}</span><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></div>`).join("")}`);
   sh.scrollTop=y;
 }
+/* Copy a meal (scope = meal key) or the whole day to another day; each food keeps its own meal on a day copy. */
+let cpScope="";
+function sheetCopy(scope){
+  const src=Log.where(e=>e.type==="food"&&e.day===keyOff(-logOff)&&(scope==="day"||LogLib.mealOf(e)===scope));
+  if(!src.length)return toast("Kopyalanacak yemek yok");
+  cpScope=scope;
+  const chips=scope==="day"?"":`<div class="lbl" id="fmll">Hangi öğüne</div><div class="chips" id="fml" role="group" aria-labelledby="fmll">${LogLib.MEALS.map(([k,n])=>`<button class="chip" data-ml="${k}" aria-pressed="${k===scope}">${n}</button>`).join("")}</div>`;
+  openSheet(`<h3>${scope==="day"?"Günü kopyala":"Öğünü kopyala"}</h3><p class="hint">${src.length} yemek, ${Math.round(src.reduce((a,e)=>a+(e.v||0),0))} kcal. Hedef gün seç.</p>${chips}${dayOptions(false,logOff?dayKey():keyOff(-1))}<button class="btn" data-go="cp">Kopyala</button>`);
+}
+function goCopy(){
+  const from=keyOff(-logOff),to=fday(),m=fmeal();
+  const src=Log.where(e=>e.type==="food"&&e.day===from&&(cpScope==="day"||LogLib.mealOf(e)===cpScope));
+  addFoods(src.map(e=>({...e,meal:cpScope==="day"?LogLib.mealOf(e):m})),to,`${src.length} yemek ${to===dayKey()?"bugüne":fd(to)+" gününe"} kopyalandı`);
+}
 /* Tap on a meal: the calories and macros it carries, what is missing, and fields to complete the macros. */
 const MACRO_IDS=[["p","epr"],["c","ech"],["f","efa"]];
 const foodDetail=e=>{
@@ -246,6 +260,11 @@ async function barcodeRead(){
     if(b&&b.rawValue)await barcodeFind(b.rawValue);
   }catch(e){if(!/cancel/i.test(e&&e.message||""))toast("Barkod okunamadı. Işığı ve mesafeyi kontrol edip tekrar dene")}
 }
+/* Barcode not resolved: the own-food form opens with the reason and the next step written in it, not in a toast that fades. */
+function barcodeMiss(code,msg){
+  sheetFood();ownOpen();setPendingBarcode(code);
+  $("#fown").insertAdjacentHTML("afterbegin",`<div class="banner" role="status"><p>${msg}</p></div>`);
+}
 async function barcodeFind(raw){
   const code=String(raw).replace(/\D/g,"");
   if(code.length<8||code.length>14)return toast("Bu bir ürün barkodu değil");
@@ -256,11 +275,10 @@ async function barcodeFind(raw){
   try{
     const r=await NetLog.fetch("off",`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=${OffLib.FIELDS}`,{headers:{"User-Agent":"NeoWell/1.0 (kisisel kullanim)"}});
     j=await r.json();
-  }catch{return toast("İnternete ulaşılamadı, barkod aranamadı")}
+  }catch{return barcodeMiss(code,"İnternete ulaşılamadı, barkod aranamadı. Ürünün adını ve kalorisini şimdi elle yazabilirsin; bağlanınca tekrar okutabilirsin.")}
   const x=OffLib.parse(j);
   if(x.status==="none"||x.status==="bad"){
-    sheetFood();ownOpen();setPendingBarcode(x.status==="none"?code:"");
-    toast(x.status==="none"&&plugin("Ocr")?"Bu barkod Open Food Facts'te yok. Paketin arkasındaki besin tablosunu 'Etiketten oku' ile fotoğraflarsan ürünü kaydederim; sonraki okutmada kendiliğinden gelir.":`${x.why}. Etiketteki değerleri elle yaz`);return;
+    return barcodeMiss(x.status==="none"?code:"",x.status==="none"?`Ürün bulunamadı, bu barkod Open Food Facts'te yok.${plugin("Ocr")?" Paketin arkasındaki besin tablosunu \"Etiket oku\" ile fotoğraflarsan ürünü kaydederim; sonraki okutmada kendiliğinden gelir.":" Ürünün adını ve kalorisini elle yazabilirsin."}`:`${x.why}. Etiketteki değerleri elle yaz.`);
   }
   const food=Object.assign({},x.food,{src:"off"});
   if(x.status==="ok"&&Nutrition.putMy(food)){save();return sheetPortion(Nutrition.my().findIndex(m=>m.b===code))}
