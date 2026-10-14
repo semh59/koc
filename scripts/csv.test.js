@@ -25,7 +25,9 @@ ok("empty data: 0 rows, header only",C.files({entries:[],workouts:[],vitals:[],s
 const g2=C.files({entries:[],workouts:W,vitals:[],sleep:[],mood:[],fast:{log:[]},meds:[],medLog:[],measures:[],moves:[],labs:[],pulse:[],hr:[]},{exName:x=>x.toUpperCase()}).find(f=>f.key==="antrenman").build().split("\r\n").slice(1,-1);
 ok("workout CSV: set type (drop, failure) and superset group number",g2.join("|")==="2026-10-01;A;A;1;40;12;;;;drop;2|2026-10-01;A;A;2;40;5;;;;başarısızlık;2|2026-10-01;A;B;1;10;5;;;;;2",g2);}
 {const f=C.files({entries:[],workouts:[],vitals:[],sleep:[],mood:[],fast:{log:[]},meds:[],medLog:[],moves:[],labs:[],measures:[{day:"2026-10-01",k:"waist",v:80},{day:"2026-10-01",k:"chest",v:100}],pulse:[],hr:[]},{}).find(x=>x.key==="kayitlar").build();
-ok("measure rows carry the lowercase Turkish region name",f.includes("ölçü_bel")&&f.includes("ölçü_göğüs")&&!f.includes("undefined"),f);}
+ok("measure rows carry the lowercase Turkish region name",f.includes("ölçü_bel")&&f.includes("ölçü_göğüs")&&!f.includes("undefined"),f);
+  const lb2=C.files({entries:[{id:1,day:"2026-10-01",time:"09:00",type:"food",v:100,text:"x"}],workouts:[],vitals:[],sleep:[],mood:[],fast:{log:[]},meds:[],medLog:[],moves:[],labs:[],measures:[{day:"2026-10-01",k:"waist",v:80}],pulse:[],hr:[]},{},{split:true}).map(x=>x.label);
+  ok("split: the file label is readable Turkish, not the raw kind name",lb2.includes("Kayıtlar: yemek")&&lb2.includes("Ölçü: bel")&&!lb2.some(l=>l.includes("_")),lb2);}
 ok("labs file: one row per result with the qualifier, unit and the report range",g("tahlil")[1]==="2026-10-01;LDL;3,2;<;mmol/L;1;3"&&g("tahlil")[0].endsWith("rapor_alt;rapor_üst"),g("tahlil"));
 ok("moves file: walk or run with minutes, steps, km, speed and kcal",g("hareket")[1]==="2026-10-01;07:30;yürüyüş;25;2800;2,1;5;90",g("hareket"));
 {const A=require("../www/modules/data/archivelib.js");

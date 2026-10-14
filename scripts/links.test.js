@@ -36,7 +36,7 @@ ok("wording: no diagnosis, score or cause-and-effect claim",!/depresyon|bozukluk
   const early=[-26,-23,-20,-17].map(o=>wk(o,100)),late=[-10,-6,-2].map(o=>wk(o,104));
   const wts={};for(let o=-30;o<=0;o+=2)wts[key(o)]=82-(o+30)*0.04;
   const line=B.strength(early.concat(late),strong,wts,T);
-  ok("strength line: weight trend change and the average 1RM change are shown side by side, with the no-cause note",/^Son 4 haftada kilo trendin -\d/.test(line)&&line.includes("3 ana harekette tahmini 1TM değişimi ortalama +%4.")&&/nedeni olmayabilir/.test(line),line);
+  ok("strength line: weight trend change and the average 1RM change are shown side by side, with the no-cause note",/^Son 4 haftada kilo trendin -\d/.test(line)&&line.includes("3 ana egzersizde tahmini 1TM değişimi ortalama +%4.")&&/nedeni olmayabilir/.test(line),line);
   ok("strength line: warm-up sets and drop sets do not move the estimate (+4 %, not the drop set's 15 reps)",line.includes("+%4."));
   ok("strength line: under 6 sessions, under 3 shared lifts, no weigh-ins or no finished workouts give nothing",B.strength(early.slice(0,2).concat(late.slice(0,3)),strong,wts,T)===null&&B.strength(early.concat(late).map(w=>({...w,ex:w.ex.slice(0,2)})),strong,wts,T)===null&&B.strength(early.concat(late),strong,{},T)===null&&B.strength(early.concat(late).map(w=>({...w,t1:null})),strong,wts,T)===null);
   ok("strength line: weigh-ins months old give nothing",B.strength(early.concat(late),strong,Object.fromEntries(Object.entries(wts).map(([k,v])=>[key(-200+Number(k.slice(8))),v])),T)===null);

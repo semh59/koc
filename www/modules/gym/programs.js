@@ -12,7 +12,7 @@ const PrgLib=(()=>{
       {n:"Alt A",ex:[["bwsquat",4,"12-15"],["walklunge",3,"10-12"],["bridge",4,"12-15"],["kickbackglute",3,"12-15"],["crunch",3,"12-15"],["deadbug",3,"10-12"]]},
       {n:"Üst B",ex:[["pushupfeet",4,"8-12"],["invrow",3,"10-12"],["pushupwide",3,"8-12"],["dipstri",3,"8-12"],["scappull",3,"12-15"],["backextfloor",3,"12-15"],["revcrunch",3,"12-15"]]},
       {n:"Alt B",ex:[["bwsquat",3,"15-20"],["jumpsquat",3,"8-10"],["bridge1",3,"8-10"],["latbound",3,"10-12"],["flutter",3,"15-20"],["plank",3,"45s"]]}]},
-    {id:"gym3",n:"Salon tüm vücut",q:"Salon",lv:"Başlangıç",d:[3,3],about:"Bileşik hareketlerle haftada 3 gün: ağır günlerde 5×5, diğerlerinde 3×8.",days:[
+    {id:"gym3",n:"Salon tüm vücut",q:"Salon",lv:"Başlangıç",d:[3,3],about:"Bileşik egzersizlerle haftada 3 gün: ağır günlerde 5×5, diğerlerinde 3×8.",days:[
       {n:"Gün A",ex:[["squat",5,"5"],["bench",5,"5"],["row",5,"5"],["bbohp",3,"8-10"],["tri",3,"10-12"],["crunch",3,"12-15"]]},
       {n:"Gün B",ex:[["rdl",3,"8"],["incbench",3,"8"],["pulldown",3,"8-10"],["legpress",3,"10-12"],["lat",3,"12-15"],["plank",3,"40s"]]},
       {n:"Gün C",ex:[["squat",3,"8"],["bench",3,"8"],["seatedrow",3,"8-10"],["bbohp",3,"8"],["legcurl",3,"10-12"],["cablecrunch",3,"12-15"]]}]},

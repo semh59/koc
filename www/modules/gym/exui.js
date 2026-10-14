@@ -20,7 +20,7 @@ function exFiltered(){
 function exListHtml(){
   const all=exFiltered(),list=all.slice(0,gLN);
   return (gLQ||exFilterN()?`<p class="hint flush">${all.length} sonuç</p>`:"")+list.map(e=>`<button class="prow exrow" data-g="exinfo:${e.id}"><span class="exthumb" aria-hidden="true">${e.tp?exFig(e,false):""}</span><span class="grow"><b>${esc(e.n)}</b><span class="mut sm">${e.r||e.g}${e.q?" · "+e.q.toLowerCase():""}${e.l?" · "+exLv(e.l):""}</span></span><span class="plus">›</span></button>`).join("")
-    +(all.length>list.length?`<button class="lnk" data-g="lmore">Daha fazla göster</button>`:"")+(all.length?"":`<p class="hint">Eşleşen hareket yok. Başka bir ad dene ya da filtreleri temizle.</p>`);
+    +(all.length>list.length?`<button class="lnk" data-g="lmore">Daha fazla göster</button>`:"")+(all.length?"":`<p class="hint">Eşleşen egzersiz yok. Başka bir ad dene ya da filtreleri temizle.</p>`);
 }
 const exChips=(arr,cur,act)=>arr.map(x=>`<button class="chip" data-g="${act}:${x}" aria-pressed="${x===cur}">${x}</button>`).join("");
 /* A bare level ("başlangıç") reads ambiguously, so the word for level is added. */
@@ -28,7 +28,7 @@ const exLv=l=>l==="Başlangıç"?"başlangıç seviyesi":l.toLowerCase()+" seviy
 function viewExlib(){
   return `<div class="srch"><input class="in" id="glq" type="search" enterkeyhint="search" aria-label="Egzersiz ara" placeholder="Egzersiz ara" autocomplete="off" value="${esc(gLQ)}"><span id="glfb">${exFilterBtn()}</span></div>
   <div id="gllist" class="card exlist">${exListHtml()}</div>
-  <p class="hint">Hareketler genel bilgi amaçlıdır, kişisel antrenman ya da tıbbi tavsiye değildir. Fotoğraflar free-exercise-db (kamu malı) kaynaklıdır.</p>`;
+  <p class="hint">Egzersiz bilgileri genel bilgi amaçlıdır, kişisel antrenman ya da tıbbi tavsiye değildir. Fotoğraflar free-exercise-db (kamu malı) kaynaklıdır.</p>`;
 }
 const exFilterN=()=>[gLReg,gLCat,gLEq].filter(x=>x!=="Tümü").length;
 const exFilterBtn=()=>{const n=exFilterN();return `<button class="btn ghost" data-g="lfilter" aria-label="Filtre${n?`, ${n} etkin`:""}">Filtre${n?` <span class="badge num">${n}</span>`:""}</button>`};
@@ -100,7 +100,7 @@ function exSheet(id){
 }
 function gSheetHistSimple(exId,h){
   const ex=gEx(exId);
-  openSheet(`<h3>${esc(ex.n)}</h3>${h.length?`<table><thead><tr><th>Tarih</th><th>Setler</th></tr></thead><tbody>${h.slice(0,8).map(x=>`<tr><td>${fd(x.w.day)}</td><td class="num">${x.sets.map(s=>gSetLine(exId,s)).join(" · ")}</td></tr>`).join("")}</tbody></table>`:`<p class="hint">Bu hareketle tamamladığın setler burada görünür.</p>`}<button class="btn" data-g="closesheet">Kapat</button>`);
+  openSheet(`<h3>${esc(ex.n)}</h3>${h.length?`<table><thead><tr><th>Tarih</th><th>Setler</th></tr></thead><tbody>${h.slice(0,8).map(x=>`<tr><td>${fd(x.w.day)}</td><td class="num">${x.sets.map(s=>gSetLine(exId,s)).join(" · ")}</td></tr>`).join("")}</tbody></table>`:`<p class="hint">Bu egzersizle tamamladığın setler burada görünür.</p>`}<button class="btn" data-g="closesheet">Kapat</button>`);
 }
 const exKindSec=(id,sec)=>gKind(id)==="c"?Math.round(sec/60)+" dk":sec+" sn";
 
@@ -191,8 +191,8 @@ function exAlternatives(w,id,max=8){
 }
 function exAltSheet(ei){
   const w=gActive(),id=w.ex[ei].id,list=exAlternatives(w,id);
-  openSheet(`<h3>${esc(gEx(id).n)}: benzer hareketler</h3>${list.length?`<div class="plist">${list.map(a=>`<button class="prow" data-g="exadd:${a.id}"><span class="grow"><b>${esc(a.n)}</b></span></button>`).join("")}</div>`:`<p class="mut">Aynı bölge ve ekipmanda başka hareket bulunamadı.</p>`}
-  <p class="hint">Yalnız aynı bölgeyi çalıştıran hareketlerin listesidir; ne olduğunu ya da ne yapman gerektiğini söylemez. Devam eden bir rahatsızlık için hekimine danış.</p><button class="btn ghost" data-g="closesheet">Kapat</button>`);
+  openSheet(`<h3>${esc(gEx(id).n)}: benzer egzersizler</h3>${list.length?`<div class="plist">${list.map(a=>`<button class="prow" data-g="exadd:${a.id}"><span class="grow"><b>${esc(a.n)}</b></span></button>`).join("")}</div>`:`<p class="mut">Aynı bölge ve ekipmanda başka egzersiz bulunamadı.</p>`}
+  <p class="hint">Yalnız aynı bölgeyi çalıştıran egzersizlerin listesidir; ne olduğunu ya da ne yapman gerektiğini söylemez. Devam eden bir rahatsızlık için hekimine danış.</p><button class="btn ghost" data-g="closesheet">Kapat</button>`);
 }
 const EXRANGES=["5-8","8-12","12-15"];
 function exRangeSheet(ei){

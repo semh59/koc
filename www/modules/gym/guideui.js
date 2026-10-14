@@ -71,7 +71,7 @@ function gdRender(){
   const st=gd.st,p=st.ph[st.i],ws=[];
   for(let i=st.i;i<st.ph.length&&ws.length<2;i++)if(st.ph[i].k==="w")ws.push(i);
   const cur=st.ph[ws[0]],nx=st.ph[ws[1]],e=cur&&gEx(cur.ex),fig=e&&e.tp?exFig(e,true):"",cue=e&&(EXCUE[e.tp]||[])[0];
-  const lbl=p.k==="w"?(p.n>1?`Set ${p.r}/${p.n}`:"Çalış"):st.i?"Dinlen, sıradaki":"Hazırlan, ilk hareket";
+  const lbl=p.k==="w"?(p.n>1?`Set ${p.r}/${p.n}`:"Çalış"):st.i?"Dinlen, sıradaki":"Hazırlan, ilk egzersiz";
   const k=st.ph.slice(0,ws[0]+1).filter(x=>x.k==="w").length,paused=st.pause!=null,rest=p.k==="r";
   const ring=`<div class="gdring${rest?" gdrs":""}"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="tr" cx="60" cy="60" r="52"/><circle class="pg" id="gdpg" cx="60" cy="60" r="52" stroke-dasharray="${GD_C.toFixed(1)}" stroke-dashoffset="0"/></svg>
     <div class="gdtm">${p.reps?`<b class="num">${p.reps}</b><span class="mut sm">tekrar</span>`:`<b class="num" id="gdt" role="timer"></b><span class="mut sm">${paused?"duraklatıldı":rest?(st.i?"dinlenme":"hazırlık"):"saniye"}</span>`}</div></div>`;
@@ -80,7 +80,7 @@ function gdRender(){
   <div class="gdbody"><div class="gdA"><div class="gdfig">${fig}</div>
   <div class="gdl">${lbl}</div><h2 class="gdn">${e?esc(e.n):""}</h2>${cue?`<p class="gdc">${esc(cue)}</p>`:""}</div>
   <div class="gdB">${ring}${p.reps?`<p class="gdc">Bitince Bitti'ye dokun · kılavuz ~${p.sec} sn</p>`:""}
-  ${nx?`<div class="gdnx"><span class="mut sm">Sonra</span><b>${esc(gdName(nx.ex))}</b><span class="num mut sm">${nx.reps?nx.reps+" tekrar":nx.sec+" sn"}</span></div>`:`<div class="gdnx"><span class="mut sm">Son hareket</span></div>`}
+  ${nx?`<div class="gdnx"><span class="mut sm">Sonra</span><b>${esc(gdName(nx.ex))}</b><span class="num mut sm">${nx.reps?nx.reps+" tekrar":nx.sec+" sn"}</span></div>`:`<div class="gdnx"><span class="mut sm">Son egzersiz</span></div>`}
   <div class="gdctl"><button class="btn ghost" data-gd="back">Geri</button><button class="btn${paused?"":" ghost"}" data-gd="${paused?"resume":"pause"}">${paused?"Devam":"Duraklat"}</button><button class="btn${p.reps&&!paused?"":" ghost"}" data-gd="${p.k==="w"&&p.reps?"done":"skip"}">${p.k==="w"&&p.reps?"Bitti":"Geç"}</button></div>
   <p class="gdrem num mut sm" id="gdrem"></p><p class="hint">Genel bilgidir, tıbbi tavsiye değildir. ${gPainNote}</p></div></div>`;
   gdUpd();
@@ -96,8 +96,8 @@ function gdSumHtml(){
   return `<div class="gdtop"><b>${esc(gd.meta.n)}</b></div>
   <h2 class="gdn tl my-2">${GuideLib.over(gd.st)?"Akış bitti":"Akış durduruldu"}</h2>
   <div class="two"><div class="stat"><div class="k">Süre</div><div class="v num">${gClock(gd.t1-gd.st.t0)}</div></div><div class="stat"><div class="k">Tamamlanan</div><div class="v num">${n}/${GuideLib.works(gd.st)}</div></div></div>
-  <div class="plist">${rows||`<p class="hint">Tamamlanan hareket yok.</p>`}</div>
-  ${n?`<p class="hint">${gd.meta.warm?"Isınma seti olarak kaydedilir: hacme, haftalık set sayısına ve spor dakikasına girmez.":"Salon geçmişine süresiyle ve spor dakikasına eklenir. Ağırlıklı harekette kullandığın ağırlığı yaz (önceki seanstaki dolu gelir)."}</p>`:""}
+  <div class="plist">${rows||`<p class="hint">Tamamlanan egzersiz yok.</p>`}</div>
+  ${n?`<p class="hint">${gd.meta.warm?"Isınma seti olarak kaydedilir: hacme, haftalık set sayısına ve spor dakikasına girmez.":"Salon geçmişine süresiyle ve spor dakikasına eklenir. Ağırlıklı egzersizde kullandığın ağırlığı yaz (önceki seanstaki dolu gelir)."}</p>`:""}
   <div class="gdfoot">${n?`<button class="btn" data-gd="save">Antrenman olarak kaydet</button>`:""}<button class="btn ghost" data-gd="close">${n?"Kaydetmeden kapat":"Kapat"}</button></div>`;
 }
 /* The weight comes from the previous session's real set, not the suggestion: a suggestion is a target, and saving it would create an increase that was never lifted and a fake record. */

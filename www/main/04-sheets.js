@@ -23,7 +23,7 @@ function closeSheet(){
    In tests, window.__confirmAuto or a non-native window.confirm stub opens no dialog; the answer is given synchronously
    (the .then callback runs in the same step) and the stub receives the plain text. */
 let cfmDone=null;
-function confirmSheet({title,body="",ok="Tamam",no="İptal",danger=false}){
+function confirmSheet({title,body="",ok="Tamam",no="Vazgeç",danger=false}){
   const msg=body||title,c=window.confirm;
   const auto=window.__confirmAuto||(typeof c==="function"&&!/\[native code\]/.test(Function.prototype.toString.call(c))&&c);
   if(auto){const v=!!auto(msg);return {then:f=>Promise.resolve(f?f(v):v)}}
@@ -398,7 +398,7 @@ async function goRestore(text=$("#bk").value,pw=$("#bkpw").value){
     if(!def&&keys[p.id]&&cur)p.base=cur.base;
     if(def)p.confirm=def.confirm;
   }
-  if(!save()){S=prevS;saveFail=false;if(copyIn)Store.del("nw_state_previous");return toast("Yedek yüklenemedi, depolama dolu")}
+  if(!save()){S=prevS;saveFail=false;if(copyIn)Store.del("nw_state_previous");return toast("Yedek yüklenemedi, depolama dolu. Mevcut verinin yedeğini al, sonra eski kayıtları sil ya da Rehber sohbetini temizle")}
   let miss=false;
   if(keysIn&&typeof keysIn==="object")for(const id in keysIn)if(typeof keysIn[id]==="string"&&Coach.providers().some(p=>p.id===id)){
     try{await setKey(id,keysIn[id])}catch{}

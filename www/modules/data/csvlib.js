@@ -17,7 +17,7 @@ const CsvLib=(()=>{
     return Data.csv.slice().sort((x,y)=>x[4]-y[4]).flatMap(([key,label,head,rows,,col])=>{
       const header=head(ctx),body=rows(ctx),one=(k,l,b)=>({key:k,label:l,n:b.length,build:()=>csv(header,b,o.intl)});
       if(!o.split||col==null||!body.length)return [one(key,label,body)];
-      return [...Map.groupBy(body,r=>r[col])].map(([kind,b])=>one(`${key}-${fold(kind).replace(/\W+/g,"_")}`,`${label.replace(/ \(.*/,"")}: ${kind}`,b));
+      return [...Map.groupBy(body,r=>r[col])].map(([kind,b])=>one(`${key}-${fold(kind).replace(/\W+/g,"_")}`,/^[^_]+_/.test(kind)?kind.replace("_",": ").replace(/^./,c=>c.toLocaleUpperCase("tr")):`${label.replace(/ \(.*/,"")}: ${kind}`,b));
     });
   }
   return {cell,csv,files};
