@@ -136,7 +136,7 @@ Puan ve senaryo sonucu: tansiyon hastası 4, çok ilaç 4, diyet hassas 6, Xiaom
 | O | Kilo hatırlatma bildirimi kilo sayfasını açmıyor; spor sayfası son tür/süreyi hatırlamıyor | `05-notifications.js:37,47`, `04-sheets.js:206-207` |
 
 ## Durum (14 Ekim 2026, kod ve testle; telefonda doğrulanmadı)
-Kapandı = kodda yapıldı ve jsdom/e2e testi var; kısa ad commit konusudur. Açık = neden yazılı. Hiçbir madde atlanmadı.
+Kapandı = kodda yapıldı; testle ya da kod incelemesiyle doğrulandı, ad commit konusudur (#23 ve #35 test dışı). Açık = neden yazılı. Hiçbir madde atlanmadı.
 
 ### Bölüm 1-5
 | # | Durum | Commit konusu / neden |
@@ -146,7 +146,7 @@ Kapandı = kodda yapıldı ve jsdom/e2e testi var; kısa ad commit konusudur. A�
 | 4, 5 | Kapandı | d01085f One commit() helper for saves: başarısız yazma eski değeri geri koyar |
 | 6 | Kapandı | 47c0910 Error text: sabit Türkçe cümle, ham `e.message` yok |
 | 7 | Kapandı | 245de78 photo add busy flag |
-| 8 | Kapandı | Konum ve kamera hataları: izin reddi ile geçici sorun ayrı metin (wording.test.js) |
+| 8 | Kapandı | 96c90ee Wording: konum ve kamera hatasında izin reddi ile geçici sorun ayrı metin (wording.test.js) |
 | 9 | Kapandı | 7c68086 Today: tansiyon ve şeker çipleri |
 | 10 | Kapandı | ee35e8f Entry sheets: tek ölçümlü tansiyon, 2. ölçüm katlı |
 | 11, 16, 17 | Kapandı | 8895642 Health Connect kartı adım sayarsız açılır; widget Yemek/Kilo düğmeleri; launcher kısayolları. İftar satırı 7ff2019 |
@@ -164,10 +164,10 @@ Kapandı = kodda yapıldı ve jsdom/e2e testi var; kısa ad commit konusudur. A�
 | 31 | Kapandı | bee5d07 Design language doc follows the code |
 | 32, 33, 34 | Kapandı | e9a01f2 Shared components; 0fd757e tek düğme ailesi, h2/h4 etiket, min-height |
 | 35 | Kapandı | 0fd757e canvas renkleri tek nesnede (`Algo.PAGE.c`); beyaz kâğıt için ham hex bilinçli |
-| 36 | Kapandı | Metin turu: onay penceresinde Vazgeç/Tamam, form Vazgeç, yalnız bilgi Kapat |
-| 37 | Kapandı | Metin turu: depolama dolu her yerde "yedek al" çözümüyle |
-| 38 | Kapandı | Metin turu: tek apostrof, egzersiz/antrenman/kilo sözlüğü |
-| 39 | Kapandı | 2c5b271 nötr plato tonu; metin turunda su satırı da nötr |
+| 36 | Kapandı | 96c90ee Wording: onay penceresinde Vazgeç/Tamam, form Vazgeç, yalnız bilgi Kapat; "iptal" sözcüğü kalmadı |
+| 37 | Kapandı | 96c90ee Wording: "depolama dolu" geçen her metin yedek almayı söyler (testle taranır) |
+| 38 | Kapandı | 96c90ee Wording: tek apostrof (Rehber'i dahil), egzersiz/antrenman/kilo sözlüğü; "ağırlık" yalnız kaldırılan yük ve besin tartısında |
+| 39 | Kapandı | 2c5b271 nötr plato tonu; 96c90ee ve devamı: su ve hareket ipucu hüküm vermez |
 
 ### Bölüm 6
 | Grup | Durum | Commit konusu / neden |
@@ -180,7 +180,7 @@ Kapandı = kodda yapıldı ve jsdom/e2e testi var; kısa ad commit konusudur. A�
 | İlaç: doz modeli, stok, geçmiş doz, düğmeler, bildirim | Kapandı | 80ac7cf, 02b77b4, d66c2e1; doktor raporu ilaç tablosu 626f7f8 |
 | Bildirim ve alarm: saat dilimi, gerçek durum, sihirbaz, dokunuşlar, gün sınırı | Kapandı | 7875a87, d5f5fbe, d3a56d7, 3ef9d92, 5a3e6fe |
 | Ramazan | Kapandı | f64e3e2, 1b1e1e8, 7ff2019 |
-| Yedek ve taşıma | Kapandı | e9995a0, 4c7e683 |
+| Yedek ve taşıma | Kapandı | e9995a0 (20 MB üstü dosya "yedek olmayabilir" iletisiyle reddedilir), 4c7e683 |
 | Su, silme, geri al | Kapandı | 776afae Undo stack |
 | Salon | Kapandı | be01d44, 9deb3c1, 1840a05, 9cac556, b89fcd4 |
 | Makro hedefi, onboarding, kcal formülü | Kapandı | e4f8b68, 97c1636, 4d8b179 |
@@ -190,3 +190,6 @@ Kapandı = kodda yapıldı ve jsdom/e2e testi var; kısa ad commit konusudur. A�
 | CSV, kopyalama, tarif, hafta karşılaştırma | Kapandı | 9483607, 4d8b179, ae40067 |
 | Gizlilik: önizleme, API anahtarı yedeği, arşiv parolası | Kapandı | 245de78 |
 | Kilo bildirimi, spor sayfası hatırlaması | Kapandı | 3ef9d92, ee35e8f |
+
+### Grafikler (plan P9.4)
+Kapandı: d4edf76 kilo, çubuk, tansiyon/şeker ve ölçü grafiği; egzersiz ve adım grafiği bu turda (balonda gün, "tüm değerler" tablosu, ekran okuyucu değeri; chart-table.test.js). Tahlil grafiği plan gereği ikinci tur kapsamında (açık).

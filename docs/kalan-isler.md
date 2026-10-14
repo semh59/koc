@@ -24,6 +24,7 @@ Tek güncel liste. Eski ayrıntılar: `todo.md` (telefon test adımları), `road
 - Güvenlik freni: yumuşak ağ geniş; yeme bozukluğu işareti kalıcı. Oruç ve protein metinleri hekim gözünden geçmedi.
 - Ramazan hesabı yalnız Ekim 2026 verisiyle ölçüldü; mevsim sapması kartta "Doğrula" ile yakalanır.
 - Faz 6: `settings` bölünmedi (veri şeması riski), modül→çekirdek bağımlılıkları daraltılmadı.
+- Testler: `test:clock` artık sınırlı iş havuzuyla koşar (eskiden 4 saat dilimi x 91 dosya aynı anda; yük altında app/units/screens sahte kırılırdı); saate bağlı testler sabit saat ya da göreli tarih kullanır. Emülatör smoke (CI) son 40 koşunun 7'sinde "Open and check in the emulator" adımında kırıldı; yerelde adb/emülatör yok, nedeni doğrulanamadı (su/widget adımı şüpheli).
 - Hukuki süreç yok (kararı); `legal-questions.md` yalnız veri akışlarını listeler.
 
 ## 5. Ar-Ge raporu (`docs/rd/`) durumu

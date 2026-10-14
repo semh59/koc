@@ -98,7 +98,7 @@
 | modules/gym/cardioui.js | 23 | 9 |
 | modules/gym/excues.js | 1 | 1 |
 | modules/gym/exlib.js | 2 | 1 |
-| modules/gym/exui.js | 51 | 50 |
+| modules/gym/exui.js | 52 | 50 |
 | modules/gym/figlib.js | 5 | 1 |
 | modules/gym/figtpl.js | 0 | 1 |
 | modules/gym/guidelib.js | 3 | 1 |
@@ -147,7 +147,7 @@
 | modules/motion/index.js | 14 | 1 |
 | modules/motion/motionlib.js | 5 | 1 |
 | modules/motion/motionui.js | 24 | 17 |
-| modules/motion/stepsui.js | 36 | 17 |
+| modules/motion/stepsui.js | 38 | 17 |
 | modules/motion/walkui.js | 23 | 14 |
 | modules/nutrition/foods.js | 3 | 6 |
 | modules/nutrition/index.js | 5 | 1 |
