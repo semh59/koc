@@ -2,7 +2,7 @@
 /* Medication reminder logic (no DOM): validation, the doses of a day, taken/skipped log, adherence, stock, notification list.
    It gives no dose advice, checks no interactions and makes no medical comment: it only reminds the user's own schedule and records it. */
 const MedLib=(()=>{
-  const MAXM=20,MAXT=6,MAXLOG=50000,BUDGET=440,MAXH=24,MAXID=999,STOCK_MAX=99999,LEAD_MS=5000,NID_BASE=1e6,NID_DAYS=40,STOCK_DAYS=7,FED=["empty","full","with"],FED_TEXT={empty:"Aç karnına",full:"Tok karnına",with:"Yemekle"},NAME_MAX=60;
+  const MAXM=20,MAXT=6,MAXLOG=50000,BUDGET=440,MAXH=24,MAXID=999,STOCK_MAX=99999,LEAD_MS=5000,NID_BASE=1e6,NID_DAYS=40,NID_SLOTS=24,STOCK_DAYS=7,FED=["empty","full","with"],FED_TEXT={empty:"Aç karnına",full:"Tok karnına",with:"Yemekle"},NAME_MAX=60;
   const TITLE="💊 İlaç zamanı",GENERIC_BODY="İlaç saatin geldi.";
   const {dayOk,timeOk,dayNum}=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
   const p2=n=>String(n).padStart(2,"0");
@@ -16,7 +16,8 @@ const MedLib=(()=>{
   const doseKey=(mid,day,slot)=>`${mid}|${day}|${slot}`;
   const freeId=used=>{for(let i=1;i<=MAXID;i++)if(!used.has(i))return i;return 0};
 
-  /* Schedule: times (t), weekdays (w) or every iv days counted from the fixed day ia, on/off (on), per-time start day (ts). The record and its history versions are cleaned the same way. */
+  /* Schedule: times (t), weekdays (w) or every iv days counted from the fixed day ia, on/off (on), per-time start day (ts), dose text d, amount p and per-time doses q.
+     The record and its history versions are cleaned the same way; a version always carries d, p, q and e (a version without q is an older one: its days show the current dose, amount and course end). */
   function cleanSched(x){
     const t=[...new Set((Array.isArray(x.t)?x.t:[]).filter(timeOk))].sort().slice(0,MAXT);
     if(!t.length)return null;
@@ -26,6 +27,18 @@ const MedLib=(()=>{
     else if(w.length&&w.length<7)o.w=w;
     const ts={};for(const sl of t)if(x.ts&&dayOk(x.ts[sl]))ts[sl]=x.ts[sl];
     if(Object.keys(ts).length)o.ts=ts;
+    const q={};
+    for(const sl of t){
+      const e=x.q&&x.q[sl];if(!e)continue;
+      const r={},d=typeof e.d==="string"?e.d.trim().slice(0,30):"",p=fin(e.p)?r2(e.p):0;
+      if(d)r.d=d;if(p>0&&p<=100)r.p=p;
+      if(d||r.p)q[sl]=r;
+    }
+    const aware=!!x.q&&typeof x.q==="object",d=typeof x.d==="string"?x.d.trim().slice(0,30):"",p=fin(x.p)&&x.p>0&&x.p<=100?r2(x.p):0;
+    if(d||aware)o.d=d;
+    if(p||aware)o.p=p;
+    if(aware)o.q=q;
+    if(dayOk(x.e)||(aware&&x.e===""))o.e=x.e;
     return o;
   }
   /* Ids are kept because log rows refer to them (1-999, unique). */
@@ -38,17 +51,10 @@ const MedLib=(()=>{
       const id=Number.isInteger(x.id)&&x.id>=1&&x.id<=MAXID&&!ids.has(x.id)?x.id:freeId(ids);
       ids.add(id);
       const o={id,n:x.n.trim().slice(0,NAME_MAX),t:c.t,on:c.on};
-      if(typeof x.d==="string"&&x.d.trim())o.d=x.d.trim().slice(0,30);
+      if(c.d)o.d=c.d;
       if(c.w)o.w=c.w;
       if(c.iv){o.iv=c.iv;o.ia=c.ia}
-      const q={};
-      for(const sl of c.t){
-        const e=x.q&&x.q[sl];if(!e)continue;
-        const r={},d=typeof e.d==="string"?e.d.trim().slice(0,30):"",p=fin(e.p)?r2(e.p):0;
-        if(d)r.d=d;if(p>0&&p<=100)r.p=p;
-        if(d||r.p)q[sl]=r;
-      }
-      if(Object.keys(q).length)o.q=q;
+      if(Object.keys(c.q||{}).length)o.q=c.q;
       if(FED.includes(x.fed))o.fed=x.fed;
       if(Number.isInteger(x.sd)&&x.sd>=1&&x.sd<=90)o.sd=x.sd;
       if(fin(x.kb)&&x.kb>0&&x.kb<=STOCK_MAX)o.kb=r2(x.kb);
@@ -60,8 +66,7 @@ const MedLib=(()=>{
       const h=(Array.isArray(x.h)?x.h:[]).filter(q=>q&&dayOk(q.u)).sort((a,b)=>a.u.localeCompare(b.u)).slice(-MAXH).map(q=>{const s=cleanSched(q);return s&&{u:q.u,...s}}).filter(Boolean);
       if(h.length)o.h=h;
       if(fin(x.k)&&x.k>=0&&x.k<=STOCK_MAX)o.k=r2(x.k);
-      const p=fin(x.p)?r2(x.p):0;
-      if(p>0&&p<=100)o.p=p;
+      if(c.p)o.p=c.p;
       out.push(o);
     }
     return out;
@@ -92,15 +97,28 @@ const MedLib=(()=>{
      so switching a medication off or deleting a time does not remove old doses from the adherence denominator. h is ascending by u; the first match is the oldest version that applies. */
   const sched=(m,day)=>(m.h||[]).find(q=>day<q.u)||m;
   const everyN=(c,day)=>!c.iv||(((dayNum(day)-dayNum(c.ia))%c.iv)+c.iv)%c.iv===0;
-  const active=(m,day)=>{const c=sched(m,day);return c.on&&(!m.s||day>=m.s)&&(!m.e||day<=m.e)&&(!c.w||c.w.includes(parseDay(day).getDay()))&&everyN(c,day)};
+  const active=(m,day)=>{const c=sched(m,day),e=c.e===undefined?m.e:c.e;return c.on&&(!m.s||day>=m.s)&&(!e||day<=e)&&(!c.w||c.w.includes(parseDay(day).getDay()))&&everyN(c,day)};
   /* A time added later, or one already past today, is not counted as missed on earlier days (ts: first day the time applies). */
   const slotOn=(m,day,slot)=>{const c=sched(m,day);return c.t.includes(slot)&&!(c.ts&&c.ts[slot]&&day<c.ts[slot])};
   /* On save, a changed schedule pushes the previous version to history; a second change on the same day keeps the first version, which describes the days before today. */
   function revise(prev,o,today){
-    const sig=a=>JSON.stringify([[...a.t].sort(),a.w||null,a.on,a.iv||null,a.ia||null]),h=prev&&prev.h?prev.h.slice():[];
-    if(prev&&sig(prev)!==sig(o)&&!(h.length&&h[h.length-1].u===today)){const {t,w,ts,on,iv,ia}=prev;h.push({u:today,t,on,...(w&&{w}),...(ts&&{ts}),...(iv&&{iv,ia})})}
+    const sig=a=>JSON.stringify([[...a.t].sort(),a.w||null,a.on,a.iv||null,a.ia||null,a.e||null,a.d||"",a.p||0,Object.entries(a.q||{}).sort().map(([s,v])=>[s,v.d||"",v.p||0])]),h=prev&&prev.h?prev.h.slice():[];
+    if(prev&&sig(prev)!==sig(o)&&!h.some(v=>v.u===today)){const {t,w,ts,on,iv,ia}=prev;h.push({u:today,t,on,...(w&&{w}),...(ts&&{ts}),...(iv&&{iv,ia}),d:prev.d||"",p:prev.p||0,q:prev.q||{},e:prev.e||""})}
     if(h.length)o.h=h;
     return o;
+  }
+  /* A time dropped or moved on save stays valid for the rest of today (a bridge version valid before tomorrow), so today's pending dose and its reminder do not vanish.
+     Returns the dropped times (a time added earlier today is not one). `o` is already revised; a second edit on the same day rebuilds the bridge from the first. */
+  function keepToday(prev,o,today){
+    const tomorrow=addDay(today,1),h=(o.h||[]).slice(),i=h.findIndex(v=>v.u===tomorrow),b=i>=0?h.splice(i,1)[0]:prev,old=b.t.filter(s=>!(b.ts?.[s]>=today)),dropped=old.filter(s=>!o.t.includes(s));
+    if(dropped.length){
+      const t=[...new Set([...old,...o.t])].sort(),ts={};
+      for(const s of t){const v=o.t.includes(s)?o.ts?.[s]:b.ts?.[s];if(v)ts[s]=v}
+      const {w,iv,ia,on}=b;
+      h.push({u:tomorrow,t,on,...(w&&{w}),...(Object.keys(ts).length&&{ts}),...(iv&&{iv,ia}),d:b.d||"",p:b.p||0,q:{...o.q,...b.q},e:b.e||""});
+    }
+    if(h.length)o.h=h;else delete o.h;
+    return dropped;
   }
   /* On save: a time the medication did not have starts today, or tomorrow when today's time has already passed. */
   function sinceFor(prevT,t,ts,today,nowT){
@@ -112,8 +130,11 @@ const MedLib=(()=>{
     return Object.keys(o).length?o:undefined;
   }
   /* Amount and text of one time: its own value, else the medication's default. */
-  const amt=(m,slot)=>m.q?.[slot]?.p??m.p??1;
-  const doseText=(m,slot)=>m.q?.[slot]?.d||m.d||"";
+  const dose=(m,day)=>{const c=day?sched(m,day):m;return c.q?c:m};
+  const amt=(m,slot,day)=>{const c=dose(m,day);return c.q?.[slot]?.p??(c.p>0?c.p:1)};
+  const doseText=(m,slot,day)=>{const c=dose(m,day);return c.q?.[slot]?.d||c.d||""};
+  /* Every time a medication has or had (current ones first): the notification ids index into it, so a bridged or recently dropped time keeps its reminder. */
+  const allSlots=m=>{const x=[...m.t];for(const s of [...new Set((m.h||[]).flatMap(v=>v.t))].sort())if(!x.includes(s))x.push(s);return x.slice(0,NID_SLOTS)};
   /* The doses of a day, sorted by time. */
   function dosesOn(meds,day){
     const out=[];
@@ -135,8 +156,8 @@ const MedLib=(()=>{
     S.medLog=S.medLog.filter(x=>x!==prev);
     if(st)S.medLog.push(Object.assign({id:S.medLog.reduce((a,x)=>Math.max(a,x.id),0)+1,m:mid,day,slot,st},timeOk(at)?{at}:{}));
     if(med.k!=null){
-      if(st==="t"&&prevSt!=="t")med.k=Math.max(0,r2(med.k-amt(med,slot)));
-      else if(st!=="t"&&prevSt==="t")med.k=Math.min(STOCK_MAX,r2(med.k+amt(med,slot)));
+      if(st==="t"&&prevSt!=="t")med.k=Math.max(0,r2(med.k-amt(med,slot,day)));
+      else if(st!=="t"&&prevSt==="t")med.k=Math.min(STOCK_MAX,r2(med.k+amt(med,slot,day)));
     }
     return {undo:()=>{
       S.medLog=S.medLog.filter(x=>!(x.m===mid&&x.day===day&&x.slot===slot));
@@ -200,34 +221,34 @@ const MedLib=(()=>{
   /* Finds the medication and the dose time from a notification id (main or repeat). */
   function doseOfId(meds,id){
     const b=(id-NID_BASE)%NID_BASE;if(!(b>=0))return null;
-    const m=meds.find(x=>x.id===Math.floor(b/1000)),slot=m&&m.t[Math.floor((b%1000)/NID_DAYS)];
+    const m=meds.find(x=>x.id===Math.floor(b/1000)),slot=m&&allSlots(m)[Math.floor((b%1000)/NID_DAYS)];
     return slot?{m,slot}:null;
   }
   /* Notifications for the next `days` days; doses already logged are skipped. Title and body follow the display setting.
      Doses of the same minute (and the same repeat step) are one notification: the id and the Aldım button of the first, the others listed in extra.g ("12_0800,13_0800"). */
   function notifications(meds,log,now,days,showName){
-    const today=key(now),nowT=now.getTime()+LEAD_MS,rec=logIndex(log,addDay(today,-1)),body=(m,slot)=>showName?`${m.n}${doseText(m,slot)?" · "+doseText(m,slot):""}`:GENERIC_BODY,groups=new Map();
-    const add=(step,at,id,m,slot)=>{const k=step+"|"+at.getTime();if(!groups.has(k))groups.set(k,[]);groups.get(k).push({step,at,id,m,slot})};
+    const today=key(now),nowT=now.getTime()+LEAD_MS,rec=logIndex(log,addDay(today,-1)),body=(m,slot,day)=>showName?`${m.n}${doseText(m,slot,day)?" · "+doseText(m,slot,day):""}`:GENERIC_BODY,groups=new Map();
+    const add=(step,at,id,m,slot,day)=>{const k=step+"|"+at.getTime();if(!groups.has(k))groups.set(k,[]);groups.get(k).push({step,at,id,m,slot,day})};
     for(let off=-1;off<days&&off<NID_DAYS-1;off++){
       const day=addDay(today,off);
       for(const m of meds){
         if(!m.on||!active(m,day))continue;
-        m.t.forEach((slot,ti)=>{
+        allSlots(m).forEach((slot,ti)=>{
           if(rec(m.id,day,slot)||!slotOn(m,day,slot))return;
           const at=slotAt(day,slot),id=nid(m,ti,off<0?NID_DAYS-1:off);
-          if(at.getTime()>nowT)add(0,at,id,m,slot);
+          if(at.getTime()>nowT)add(0,at,id,m,slot,day);
           NAGS.forEach((min,k)=>{
             const t=new Date(at.getTime()+min*60000);
-            if(t.getTime()>nowT)add(k+1,t,id+NID_BASE*(k+1),m,slot);
+            if(t.getTime()>nowT)add(k+1,t,id+NID_BASE*(k+1),m,slot,day);
           });
         });
       }
     }
     return [...groups.values()].map(g=>{
       g.sort((a,b)=>a.m.id-b.m.id);
-      const {step,at,id,m,slot}=g[0],ms=at.getTime(),one=g.length===1,names=g.map(x=>x.m.n).join(", ");
+      const {step,at,id,m,slot,day}=g[0],ms=at.getTime(),one=g.length===1,names=g.map(x=>x.m.n).join(", ");
       return {id,title:step?"💊 İlacını aldın mı?":TITLE,at,actionTypeId:one?"med":"medgrp",channelId:"nw_med",ongoing:true,
-        body:one?body(m,slot):showName?`${g.length} ilaç: ${names}`:`${g.length} ilaç saati geldi.`,
+        body:one?body(m,slot,day):showName?`${g.length} ilaç: ${names}`:`${g.length} ilaç saati geldi.`,
         extra:{act:"med",m:m.id,s:slot,at:ms,...(one?{}:{g:g.map(x=>x.m.id+"_"+x.slot.replace(":","")).join(",")})}};
     }).sort((a,b)=>a.at-b.at);
   }
@@ -335,6 +356,6 @@ const MedLib=(()=>{
     if(bad)add("Tam ekran bildirimi gönderilemedi: "+bad.fs.replace(/^err:/,""));
     return out;
   }
-  return {clockMoved,bgState,dhm,sinceDose,recentTaken,recentText,NOT_SAVED,wakeTimes,wakeDoses,wakeLine,wakeIssues,sinceFor,doseOfId,amt,doseText,stockDays,stockLow,notices,STOCK_DAYS,FED,FED_TEXT,NAME_MAX,freeId,doseKey,MAXM,MAXT,BUDGET,TITLE,GENERIC_BODY,cleanMeds,cleanLog,dosesOn,statusOf,logIndex,mark,adherence,adherenceDays,sumAdherence,notifications,fit,budgetText,dayForTap,revise,addDay,slotAt,hm,timeOk,key};
+  return {clockMoved,bgState,dhm,sinceDose,recentTaken,recentText,NOT_SAVED,wakeTimes,wakeDoses,wakeLine,wakeIssues,sinceFor,keepToday,doseOfId,amt,doseText,stockDays,stockLow,notices,STOCK_DAYS,FED,FED_TEXT,NAME_MAX,freeId,doseKey,MAXM,MAXT,BUDGET,TITLE,GENERIC_BODY,cleanMeds,cleanLog,dosesOn,statusOf,logIndex,mark,adherence,adherenceDays,sumAdherence,notifications,fit,budgetText,dayForTap,revise,addDay,slotAt,hm,timeOk,key};
 })();
 if(typeof module!=="undefined")module.exports=MedLib;
