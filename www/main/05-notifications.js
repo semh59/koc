@@ -90,14 +90,19 @@ async function exactAsk(){
 }
 let notifDiag="",oem="";
 const DH=()=>plugin("DeviceHelp");
-const openDH=m=>{const p=DH();if(p)p[m]().then(r=>{if(r.opened==="none")toast("Ayar ekranı açılamadı, telefon ayarlarından NeoWell'i bul")},()=>toast("Ayar ekranı açılamadı"))};
+/* When the direct screen could not be opened the phone showed the app's details (or nothing): the written path is what is left. */
+const DH_PATH={openAutostart:"Ayarlar > Uygulamalar > İzinler > Otomatik başlat > NeoWell'i aç",openBattery:"Ayarlar > Pil > Uygulama pil tasarrufu > NeoWell > Kısıtlama yok"};
+const openDH=m=>{const p=DH();if(p)p[m]().then(r=>{
+  if(DH_PATH[m]&&(r.opened==="none"||r.opened==="details"))openSheet(`<h3>Ayarı kendin aç</h3><p class="mut">Bu telefonda ayar ekranı doğrudan açılamadı. Şu yolu izle:</p><p><b>${DH_PATH[m]}</b></p><button class="btn" data-pm="close">Tamam</button>`);
+  else if(r.opened==="none")toast("Ayar ekranı açılamadı, telefon ayarlarından NeoWell'i bul")},()=>toast("Ayar ekranı açılamadı"))};
+const batFix=()=>oemXiaomi()?sheetOem():openDH("openBattery");
 const oemXiaomi=()=>/xiaomi|redmi|poco/.test(oem);
 function sheetOem(){
   openSheet(`<h3>Hatırlatmalar için bir kez ayar</h3><p class="flush hint">Xiaomi telefonlar, uygulamayı son uygulamalardan kaydırınca hatırlatmaları siler. Bunun için birkaç izin gerekir. Düğmeler doğrudan ilgili ekranı açar.</p>
   <div class="btns"><button class="btn ghost" data-act="oem1">1. Otomatik başlat: NeoWell'i aç</button><button class="btn ghost" data-act="oem2">2. Pil: Kısıtlama yok seç</button></div>
   <p class="hint">3. Son uygulamalar ekranında NeoWell kartını basılı tutup kilitle (asma kilit simgesi). Bu en sağlam yoldur.</p>
   <p class="hint">4. İlaç alarmının kilitli ekranı açması için: Ayarlar > Uygulamalar > NeoWell > Diğer izinler bölümünde "Kilit ekranında göster" ve "Arka planda açılır pencere göster" izinlerini aç.</p>
-  <div class="btns"><button class="btn" data-act="oemok">Yaptım</button></div>`);
+  <div class="btns"><button class="btn" data-pm="close">Kapat</button></div>`);
 }
 async function notifTest(){
   const ln=LN();if(!ln)return toast("Bildirimler yalnızca telefondaki uygulamada çalışır");

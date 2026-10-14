@@ -296,6 +296,14 @@ const MedLib=(()=>{
     if(e.err)out.push("alarm kurulurken bir sorun çıktı");
     return out.join(", ");
   }
+  /* If the next setup log comes more than a minute after the first scheduled alarm time and no ring log lies between, that alarm did not ring: returns its planned time (0 = none). */
+  const lastMiss=items=>{const e=items.filter((e,i)=>!RING(e.a)&&e.nx&&e.nx[0]&&items[i+1]&&!RING(items[i+1].a)&&items[i+1].t>e.nx[0]+60000).pop();return e?e.nx[0]:0};
+  /* What the alarm log says about background limits, for the permissions list and Today. bo: battery unrestricted (null unknown); slow: the last ring came more than a minute late;
+     miss: a planned alarm of the last 2 days that never rang and no on-time ring came after it; boot: the last setup after a phone restart. */
+  function bgState(st,items,now){
+    const last=items.filter(e=>e.a==="WAKE"&&e.p).pop(),late=!!last&&last.t-last.p>60000,m=lastMiss(items);
+    return {bo:typeof st.bo==="boolean"?st.bo:null,ontime:!!last&&!late,slow:late,miss:m&&now-m<2*864e5&&!(last&&!late&&last.t>m)?m:0,boot:items.filter(e=>e.a==="BOOT").pop()||null};
+  }
   /* Whether the phone moved the alarms by itself since the app last set them (reboot, clock or time zone change): the tail of the log after the last app setup. */
   const clockMoved=items=>{
     for(let i=items.length;i--;){const a=items[i].a;if(a==="APP")return false;if(a==="TIME"||a==="TZ"||a==="BOOT")return true}
@@ -312,10 +320,8 @@ const MedLib=(()=>{
     if(st.xp>0)add("Xiaomi: 'Arka planda açılan pencereler' izni kapalı. Uygulama izinlerinde aç, yoksa kilitli telefonda alarm ekranı açılmaz.","miui");
     if(st.bo===false)add("Pil kısıtı var: telefon uygulamayı arka planda durdurabilir, alarm geç gelebilir. Pil ayarını 'Kısıtlama yok' yap.","battery");
     if(st.ex===false)add("Tam saat alarm izni yok: ilaç bildirimi ve ekran alarmı birkaç dakika gecikebilir.","exact");
-    const w=items.filter(e=>e.a==="WAKE"),arm=items.filter(e=>!RING(e.a)).pop();
-    /* If the next setup log comes more than a minute after the first scheduled alarm time and no ring log lies between, that alarm did not ring. */
-    const miss=items.filter((e,i)=>!RING(e.a)&&e.nx&&e.nx[0]&&items[i+1]&&!RING(items[i+1].a)&&items[i+1].t>e.nx[0]+60000).pop();
-    if(miss)add(`Planlanan ${dhm(miss.nx[0])} alarmı çalmadı: telefon uygulamayı arka planda engellemiş olabilir. Otomatik başlatmayı aç, pil kısıtını kaldır.`,"autostart");
+    const w=items.filter(e=>e.a==="WAKE"),arm=items.filter(e=>!RING(e.a)).pop(),miss=lastMiss(items);
+    if(miss)add(`Planlanan ${dhm(miss)} alarmı çalmadı: telefon uygulamayı arka planda engellemiş olabilir. Otomatik başlatmayı aç, pil kısıtını kaldır.`,"autostart");
     if(arm&&arm.n===0)add("Kurulu ekran alarmı yok: ilaç saatleri telefona iletilmemiş. Uygulamayı güncelle, sonra İlaçlar ekranını bir kez aç.");
     if(!w.length)add("Kayıtlarda çalan alarm yok: alarm hiç çalmadı. Xiaomi'de otomatik başlatmayı aç.","autostart");
     const late=Math.max(0,...w.filter(e=>e.p).map(e=>e.t-e.p));
@@ -329,6 +335,6 @@ const MedLib=(()=>{
     if(bad)add("Tam ekran bildirimi gönderilemedi: "+bad.fs.replace(/^err:/,""));
     return out;
   }
-  return {clockMoved,sinceDose,recentTaken,recentText,NOT_SAVED,wakeTimes,wakeDoses,wakeLine,wakeIssues,sinceFor,doseOfId,amt,doseText,stockDays,stockLow,notices,STOCK_DAYS,FED,FED_TEXT,NAME_MAX,freeId,doseKey,MAXM,MAXT,BUDGET,TITLE,GENERIC_BODY,cleanMeds,cleanLog,dosesOn,statusOf,logIndex,mark,adherence,adherenceDays,sumAdherence,notifications,fit,budgetText,dayForTap,revise,addDay,slotAt,hm,timeOk,key};
+  return {clockMoved,bgState,dhm,sinceDose,recentTaken,recentText,NOT_SAVED,wakeTimes,wakeDoses,wakeLine,wakeIssues,sinceFor,doseOfId,amt,doseText,stockDays,stockLow,notices,STOCK_DAYS,FED,FED_TEXT,NAME_MAX,freeId,doseKey,MAXM,MAXT,BUDGET,TITLE,GENERIC_BODY,cleanMeds,cleanLog,dosesOn,statusOf,logIndex,mark,adherence,adherenceDays,sumAdherence,notifications,fit,budgetText,dayForTap,revise,addDay,slotAt,hm,timeOk,key};
 })();
 if(typeof module!=="undefined")module.exports=MedLib;

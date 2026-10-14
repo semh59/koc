@@ -1848,12 +1848,12 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     P.DeviceHelp=oldDH;ev("S.settings.medOn=false;S.meds=[];tab='today';render()");
   }
   reset();
-  w.eval("oem='xiaomi';S.settings.oemDone=false");
-  ok("on Xiaomi a settings warning appears",ev("viewToday()").includes("Hatırlatmalar için bir kez ayar"));
-  w.eval("S.settings.oemDone=true");
-  ok("when Yaptım is pressed the warning goes",!ev("viewToday()").includes("Hatırlatmalar için bir kez ayar"));
-  w.eval("oem='google';S.settings.oemDone=false");
-  ok("outside Xiaomi no warning appears",!ev("viewToday()").includes("Hatırlatmalar için bir kez ayar"));
+  w.eval("oem='xiaomi';bg={bo:false}");
+  ok("on Xiaomi with the battery restricted a settings warning appears",ev("viewToday()").includes("Hatırlatmalar için bir kez ayar"));
+  w.eval("bg={bo:true,ontime:true}");
+  ok("when the phone itself says the limits are off and the last alarm was on time the warning goes",!ev("viewToday()").includes("Hatırlatmalar için bir kez ayar"));
+  w.eval("oem='google';bg={}");
+  ok("outside Xiaomi, without evidence, no warning appears",!ev("viewToday()").includes("Hatırlatmalar için bir kez ayar")&&!ev("viewToday()").includes("Pil kısıtı alarmı"));
   ev("sheetFood()");
   const fq=w.document.querySelector("#fq");fq.value="mercimek";fq.dispatchEvent(new w.Event("input",{bubbles:true}));
   ok("food is searched in the meal window",w.document.querySelector("#flist").innerHTML.includes("Mercimek çorbası")&&w.document.querySelector("#flist [data-food]"));
@@ -2162,7 +2162,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   { // fiber, sugar, sodium
     const T=w.document.querySelector.bind(w.document),day=ev("dayKey()");
     w.fetch=async()=>({ok:true,json:async()=>offJ({"energy-kcal_100g":440,proteins_100g:8.5,carbohydrates_100g:70,fat_100g:13,fiber_100g:4,sugars_100g:20,sodium_100g:0.4})});
-    ev("S.myFoods=[];S.entries=[];S.settings.oemDone=true");await ev("barcodeFind('8690526010113')");
+    ev("S.myFoods=[];S.entries=[]");await ev("barcodeFind('8690526010113')");
     ok("barcode: fiber/sugar/sodium enter myFoods, the preview shows them",ev("[S.myFoods[0].fb,S.myFoods[0].sg,S.myFoods[0].na].join()")==="4,20,400"&&/lif 1,6 g · şeker 8,0 g · sodyum 160,0 mg/.test(T("#fprev").textContent),T("#fprev").textContent);
     ev("goNutrition()");
     ok("they pass into the record in portion proportion and survive a reload",ev("JSON.stringify(cleanEntries(S.entries).out.map(e=>[e.fb,e.sg,e.na]))")==="[[1.6,8,160]]",ev("JSON.stringify(S.entries)"));
@@ -2213,7 +2213,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("closeSheet();S.myFoods=[]");
   }
   ev("S.myFoods=[]");
-  ev("S.entries=[];S.settings.oemDone=true");
+  ev("S.entries=[]");
   const yi=ev("allFoods().findIndex(f=>f.n==='Haşlanmış yumurta')");
   ev(`sheetPortion(${yi})`);w.document.querySelector("#fqty").value="2";ev("foodPreview()");
   ok("the portion preview is computed",w.document.querySelector("#fprev").textContent.startsWith("155 kcal"),w.document.querySelector("#fprev").textContent);
@@ -2240,7 +2240,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   { // Today simplification
     const unclock=require('./clock').at(w,21); // dose and measurement rows appear when their time comes
     const st0=ev("JSON.stringify(S)");
-    ev("S.entries=[];S.meds=[];S.medLog=[];S.vitals=[];S.workouts=S.workouts.filter(x=>x.t1);S.fast={plan:16,t0:null,log:[]};Object.assign(S.settings,{medOn:false,fastOn:false,bpOn:false,bsOn:false,stepsOn:false,stepsAsked:true,oemDone:true,waterMl:2500,kcal:1900,sportWeek:150,glass:250});oem='google';tab='today';logOff=0");
+    ev("S.entries=[];S.meds=[];S.medLog=[];S.vitals=[];S.workouts=S.workouts.filter(x=>x.t1);S.fast={plan:16,t0:null,log:[]};Object.assign(S.settings,{medOn:false,fastOn:false,bpOn:false,bsOn:false,stepsOn:false,stepsAsked:true,waterMl:2500,kcal:1900,sportWeek:150,glass:250});oem='google';tab='today';logOff=0");
     ok("with nothing to do there is no 'Bugün yapılacaklar' card",!ev("viewToday()").includes("Bugün yapılacaklar"));
     ev("add('water',1000);add('food',1380,'Öğün');add('weight',86,'');add('weight',87,'',keyOff(-3));render()");
     const v=()=>ev("viewToday()"),at=s=>v().indexOf(s);

@@ -2,6 +2,7 @@
 /* İzinler: every permission the app can use in one list, with its state and a button that opens the right system screen directly, and a "Sırayla ayarla" button that walks through the missing ones.
    The list refreshes by itself when the app returns from the system settings. States come from the plugins; the battery screen cannot be read (null). */
 let pmNotif=null; // last known notification permission (true / false / null)
+let bg={}; // background limits read from the alarm log (MedLib.bgState)
 /* Items for the list. ok: true / false / null (cannot be checked). need: the person's current settings depend on it. */
 function pmItems(){
   const st=S.settings,steps=!!(isNative()&&SC()),med=!!(st.medOn&&Meds.count()),p=motionPerm||{},items=[];
@@ -15,7 +16,11 @@ function pmItems(){
     let g={granted:false};try{g=await SC().requestAccess()}catch{}
     if(!g.granted)openDH("openDetails")}});
   if(steps&&st.stepsOn)items.push({id:"loc",t:"Konum (yalnız yürüyüşte)",why:"Elle başlattığın yürüyüşte mesafeyi daha doğru ölçmek için; vermezsen mesafe boyuna göre tahmin edilir.",ok:p.fine===undefined?null:!!p.fine,need:false,go:()=>walkGpsAsk()});
-  if(isNative())items.push({id:"bat",t:"Pil ve otomatik başlatma",why:oemXiaomi()?"Xiaomi telefonlarda bu iki ayar olmadan hatırlatmalar kaçabilir.":"Pil tasarrufu hatırlatmaları geciktiriyorsa uygulamayı kısıtlamadan çıkar.",ok:oemXiaomi()?(st.oemDone?true:false):null,need:oemXiaomi(),go:()=>oemXiaomi()?sheetOem():openDH("openBattery")});
+  if(isNative()){
+    const xi=oemXiaomi(),why=bg.miss?"Planlanan bir alarm çalmadı. ":bg.slow?"Son alarm geç çaldı. ":bg.bo===false?"Pil kısıtı açık. ":"";
+    const ok=bg.bo===false||bg.miss||bg.slow?false:bg.bo===true&&(bg.ontime||!xi)?true:null;
+    items.push({id:"bat",t:"Pil ve otomatik başlatma",why:why+(xi?"Xiaomi telefonlarda bu iki ayar olmadan hatırlatmalar kaçabilir.":"Pil tasarrufu hatırlatmaları geciktiriyorsa uygulamayı kısıtlamadan çıkar."),ok,need:xi||!!(bg.miss||bg.slow),go:batFix});
+  }
   return items;
 }
 /* Items that matter for what is switched on and are missing: the Today row and the Settings summary use this. */
@@ -27,6 +32,7 @@ async function pmRefresh(){
   if(ln){try{pmNotif=(await ln.checkPermissions()).display==="granted"}catch{}}
   try{const w=MW();if(w)fsiOk=(await w.fsi()).allowed!==false}catch{}
   try{if(ln)exactOk=(await ln.checkExactNotificationSetting()).exact_alarm!=="denied"}catch{}
+  try{const w=MW();if(w){const r=await w.log();bg=MedLib.bgState(r.state||{},r.items||[],Date.now())}}catch{}
   await motionStatus();
   if(document.querySelector('#sheet [data-pm="wiz"]'))pmSheet();
   else if(tab==="today"||tab==="settings")render();
@@ -38,17 +44,22 @@ function pmSheet(){
   const rows=items.map(i=>`<div class="row"><span class="grow"><b>${esc(i.t)}</b><small class="db mut sm">${esc(i.why)}</small></span><span class="ta-r"><small class="db ${i.ok===false?"b7":"mut"} sm">${PM_STATE[i.ok]}</small>${i.ok===true?"":`<button class="chip" data-pm="go:${i.id}" aria-label="${esc(i.t)}: ayarla">${i.ok===false?"İzin ver":"Aç"}</button>`}</span></div>`).join("");
   openSheet(`<h3>İzinler</h3><p class="mut sm">Her satırdaki düğme seni doğru ayar ekranına götürür. Geri dönünce liste kendiliğinden yenilenir.</p>
   <div data-pm="wiz">${miss.length?`<button class="mb-3 btn" data-pm="next">Sırayla ayarla (${miss.length} eksik)</button>`:`<p class="b7">Gereken izinlerin hepsi tamam.</p>`}</div>${rows}
+  <p class="hint">Telefon yeniden başlayınca ilaç alarmların kendiliğinden yeniden kurulur.${bg.boot?` Son kurulum: ${esc(MedLib.wakeLine(bg.boot))}.`:""}</p>
   <button class="mt-3 btn ghost" data-pm="close">Kapat</button>`);
 }
 function pmTodo(){
-  const m=pmMissing();
-  return m.length>=2?[`<div class="row"><span>${Icons.svg("bell")} İzinler eksik<small class="mut sm">${esc(m.map(i=>i.t).join(", "))}. Hepsini tek yerden ayarla.</small></span><button class="chip" data-pm="open">Ayarla</button></div>`]:[];
+  const m=pmMissing(),r=(t,sub,btn)=>`<div class="row"><span>${Icons.svg("bell")} ${t}<small class="mut sm">${sub}</small></span><div class="acts">${btn}</div></div>`,open='<button class="chip" data-pm="open">Ayarla</button>';
+  return [
+    ...(isNative()&&bg.miss&&S.settings.medOn&&S.settings.alarmWarnDay!==dayKey()?[r("Bir ilaç alarmı çalmadı",`${MedLib.dhm(bg.miss)} alarmı çalmadı. Telefon NeoWell'i arka planda durdurmuş olabilir.`,open+'<button class="chip" data-pm="hidemiss">Kapat</button>')]:[]),
+    ...(m.length>=2?[r("İzinler eksik",`${esc(m.map(i=>i.t).join(", "))}. Hepsini tek yerden ayarla.`,open)]:[])
+  ];
 }
 document.addEventListener("click",async ev=>{
   const el=ev.target.closest("[data-pm]");if(!el||el.dataset.pm==="wiz")return;
   const [a,arg]=el.dataset.pm.split(":");
   if(a==="open"){await pmRefresh();pmSheet()}
   else if(a==="close")closeSheet();
+  else if(a==="hidemiss"){S.settings.alarmWarnDay=dayKey();save();render()}
   else if(a==="go"){const i=pmItems().find(x=>x.id===arg);if(i)await i.go()}
   else if(a==="next"){const i=pmItems().find(x=>x.ok===false&&(x.need||x.id==="notif"));if(i)await i.go()}
 });
