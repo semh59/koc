@@ -1,7 +1,7 @@
 "use strict";
 /* Progress photos (Trend). Photos live in IndexedDB (they do not eat the localStorage quota) and never reach the backup, the Coach or sharing.
    Store "m" holds the thumbnail and metadata, store "f" the JPEG scaled to 900 px on its longest side. On Android screenshots are blocked while this screen is open (DeviceHelp.secure). */
-let phList=[],phDbP=null,phUrls=[],phSecure=false;
+let phList=[],phDbP=null,phUrls=[],phSecure=false,phBusy=false;
 const phRevoke=()=>{if(URL.revokeObjectURL)phUrls.forEach(u=>URL.revokeObjectURL(u));phUrls=[]};
 const phOk=()=>typeof indexedDB!=="undefined"&&!!indexedDB;
 const phReq=r=>new Promise((ok,no)=>{r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
@@ -70,11 +70,13 @@ function sheetPhoto(){
   <label class="lbl" for="phkg">Kilo etiketi (${wlab()}, isteğe bağlı)</label><input class="in num" id="phkg" inputmode="decimal" value="${last}" autocomplete="off">
   <div class="ferr" id="pherr" role="alert"></div>
   <div class="two"><label class="tc btn">Fotoğraf çek<input type="file" accept="image/*" capture="environment" data-phf="1" hidden></label><label class="tc btn ghost">Galeriden seç<input type="file" accept="image/*" data-phf="1" hidden></label></div>
-  <p class="hint">Fotoğraf telefonda küçültülür (en uzun kenar ${PhotoLib.LONG} px). ${phTxt}</p>`);
+  <p class="hint">Fotoğraf telefonda küçültülür (en uzun kenar ${PhotoLib.LONG} px); galerideki orijinal olduğu gibi kalır. ${phTxt}</p>`);
 }
 async function phAdd(file){
+  if(phBusy)return;
   const kr=$("#phkg").value.trim(),kg=kr?PhotoLib.kgLabel(Units.wIn(num(kr))):null,day=fday();
   if(kg===undefined)return ferr("pherr",`Kilo etiketi ${dw(PhotoLib.KG[0],0)} ile ${dw(PhotoLib.KG[1],0)} ${wlab()} arası olmalı ya da boş bırak`);
+  phBusy=true;
   try{
     const r=await phShrink(file);
     if(!PhotoLib.canAdd(phList.length))return ferr("pherr",`En fazla ${PhotoLib.MAX} fotoğraf tutulur`);
@@ -82,6 +84,7 @@ async function phAdd(file){
     await phPut(m,r.blob);
     phList=PhotoLib.order([...phList,m]);closeSheet();render();toast("Fotoğraf eklendi");
   }catch(e){ferr("pherr","Fotoğraf eklenemedi, başka bir görüntü dene")}
+  finally{phBusy=false}
 }
 async function sheetPhotoView(id){
   const p=phList.find(x=>x.id===id);if(!p)return;

@@ -1,11 +1,11 @@
 /* App lock: lock at startup with a fake AppLock plugin, authentication results, enabling it in settings and returning from the background. */
 const {ok,finish}=require("./ok");
 const {boot,until,flush}=require("./html");
-async function open(lockOn,plugin,auth={ok:true}){
+async function open(lockOn,plugin,auth={ok:true},hide=false){
   const calls=[],res={auth,secure:true};
   const w=await boot(w=>{
     if(plugin)w.Capacitor={isNativePlatform:()=>true,Plugins:{AppLock:{status:async()=>({secure:res.secure}),authenticate:async o=>{calls.push("auth:"+o.title);return res.auth},setSecure:async o=>{calls.push("secure:"+o.on)}}}};
-    if(lockOn){w.localStorage.setItem("nw_lockon","1");w.localStorage.setItem("nw_state",JSON.stringify({entries:[],settings:{lockOn:true}}))}
+    if(lockOn){w.localStorage.setItem("nw_lockon","1");w.localStorage.setItem("nw_state",JSON.stringify({entries:[],settings:{lockOn:true,hideRecents:hide}}))}
   });
   return {w,calls,res};
 }
@@ -14,9 +14,11 @@ const lockOnState=w=>JSON.parse(w.localStorage.getItem("nw_state")).settings.loc
 (async()=>{
   let {w,calls}=await open(true,true);
   const $=s=>w.document.querySelector(s),root=w.document.documentElement;
-  await until(()=>calls.includes("secure:true")&&$("#lock").hidden);
+  await until(()=>calls.includes("auth:NeoWell kilidi")&&$("#lock").hidden);
   ok("with the lock on, startup asks for authentication; on success the lock screen goes away and the content shows",calls.includes("auth:NeoWell kilidi")&&$("#lock").hidden&&!root.classList.contains("locked"),calls);
-  ok("with the lock on, the recent-apps preview is blocked (FLAG_SECURE)",calls.includes("secure:true"),calls);
+  ok("the lock does not touch FLAG_SECURE: the recent-apps preview stays open unless its own setting is on",calls.includes("secure:false")&&!calls.includes("secure:true"),calls);
+  {const h=await open(true,true,{ok:true},true);await until(()=>h.calls.includes("secure:true"));
+  ok("with the hide-recents setting on, the preview is blocked at start (FLAG_SECURE), independent of the lock",h.calls.includes("secure:true"),h.calls);}
   ({w}=await open(true,false));
   ok("without the plugin (browser) no lock is applied and the content stays visible",!w.document.documentElement.classList.contains("locked"));
 
@@ -27,7 +29,7 @@ const lockOnState=w=>JSON.parse(w.localStorage.getItem("nw_state")).settings.loc
   ok("the unlock button authenticates again and unlocks",await until(()=>d.querySelector("#lock").hidden&&!d.documentElement.classList.contains("locked")&&authCount(c.calls)===2));
 
   const p=await open(true,true);
-  await until(()=>p.calls.includes("secure:true"));
+  await until(()=>authCount(p.calls)>=1);
   p.res.auth={ok:false,none:true};
   p.w.document.documentElement.classList.add("locked");
   p.w.eval("lockAsk()");
@@ -43,7 +45,7 @@ const lockOnState=w=>JSON.parse(w.localStorage.getItem("nw_state")).settings.loc
   ok("the app lock turns on and is saved when authentication succeeds",await until(()=>t.w.eval("S.settings.lockOn")===true&&lockOnState(t.w)===true));
 
   const g=await open(true,true);
-  await until(()=>g.calls.includes("secure:true"));
+  await until(()=>authCount(g.calls)>=1);
   const vis=hidden=>{Object.defineProperty(g.w.document,"hidden",{configurable:true,get:()=>hidden});g.w.document.dispatchEvent(new g.w.Event("visibilitychange"))};
   let clock=g.w.Date.now();g.w.Date.now=()=>clock;
   vis(true);clock+=10000;vis(false);await flush();

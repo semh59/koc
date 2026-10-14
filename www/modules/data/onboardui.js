@@ -21,7 +21,7 @@ async function obRestoreGo(btn){
 }
 document.addEventListener("click",ev=>{const r=ev.target.closest("[data-obr]");if(r)r.dataset.obr==="open"?sheetObRestore():obRestoreGo(r)});
 document.addEventListener("click",ev=>{if(ev.target.closest("[data-notice]")){S.settings.noticeOk=true;save();closeSheet()}});
-const obFresh=()=>({step:-1,kg:"",cm:"",age:"",sex:"",dir:"keep",goal:"",pg:false,nu:false,ed:false,hn:false,mods:[],err:"",bad:"",minor:false,kgOk:"",job:"",walk:""});
+const obFresh=()=>({step:-1,kg:"",cm:"",age:"",sex:"",dir:"keep",goal:"",pg:false,nu:false,ed:false,hn:false,lk:false,mods:[],err:"",bad:"",minor:false,kgOk:"",job:"",walk:""});
 const ob=obFresh();
 const OB_MODS=[["med","İlaç hatırlatıcı","meds"],["fast","Oruç takibi","fast"],["steps","Adım sayar","steps"],["bp","Tansiyon","heart"],["bs","Şeker","water"]];
 const OB_DIRS=[["lose","Kilo ver"],["keep","Koru"],["gain","Kilo al"]];
@@ -30,7 +30,7 @@ const obNeeded=()=>{const s=S.settings;return !s.obDone&&!s.heightCm&&!s.age&&!s
 
 function obRead(){
   for(const k of ["cm","kg","age","goal"]){const f=$("#ob"+k);if(f)ob[k]=f.value.trim()}
-  for(const k of ["pg","nu","ed","hn"]){const h=$("#ob"+k);if(h)ob[k]=h.checked}
+  for(const k of ["pg","nu","ed","hn","lk"]){const h=$("#ob"+k);if(h)ob[k]=h.checked}
 }
 /* Validated numbers or an error; the error is written under the field and the field gets aria-invalid. */
 function obParse(){
@@ -90,7 +90,8 @@ function obView(){
     body=`<h2>Günlük hedefin</h2><div class="card"><div class="lbl">Kalori</div><div class="pc sumv num">${fint(pl.kcal)} <small>kcal</small></div>
     <div class="lbl">Protein</div><div class="t-h1 b7 num">${pl.protein?`${pl.protein[0]}–${pl.protein[1]} <small class="mut">g</small>`:"Hekiminle belirle"}</div><p class="p0 hint">${Algo.PROTEIN_NOTE}</p>
     <p class="hint">Verilerin yalnızca telefonunda durur. Rehber'i açarsan, yalnızca onayınla, seçtiğin yapay zekâ sağlayıcısına (yurt dışı) gider. Rehber olmadan da uygulama tam çalışır. ${MED_NOTE} <button class="wa ib lnk" data-pv="open">Gizlilik ve veri</button></p>
-    ${pl.risk.block?riskBox(pl.risk,"Kalori açığı önermiyorum")+(p.goal>p.kg?"":`<p class="hint">Yukarıdaki değer kilonu koruma düzeyidir.</p>`):`<p class="hint">${pl.note==="Kilo verme"?"Yavaş ve güvenli kilo verme hızına göre":pl.note==="Kilo alma"?"Yavaş kilo alma hızına göre":"Kilonu koruma düzeyine göre"} hesaplandı. Kayıt girdikçe gerçek verine göre güncellenir. Tahmindir, tıbbi tavsiye değildir.</p>`}</div>`;
+    ${pl.risk.block?riskBox(pl.risk,"Kalori açığı önermiyorum")+(p.goal>p.kg?"":`<p class="hint">Yukarıdaki değer kilonu koruma düzeyidir.</p>`):`<p class="hint">${pl.note==="Kilo verme"?"Yavaş ve güvenli kilo verme hızına göre":pl.note==="Kilo alma"?"Yavaş kilo alma hızına göre":"Kilonu koruma düzeyine göre"} hesaplandı. Kayıt girdikçe gerçek verine göre güncellenir. Tahmindir, tıbbi tavsiye değildir.</p>`}</div>
+    ${AL()?`<div class="card">${swRow('id="oblk"',ob.lk,"Uygulama kilidi açılsın mı?","Uygulamayı açarken telefonun ekran kilidi (parmak izi, yüz, PIN, desen) sorulur. Sonra Ayarlar'dan değiştirirsin.")}</div>`:""}`;
   }
   const dots=`<div class="obp" role="status"><span class="mut sm">Adım ${st+1}/3</span><span class="obbar" aria-hidden="true">${[0,1,2].map(i=>`<i${i<=st?' class="on"':""}></i>`).join("")}</span></div>`;
   return `<div class="row">${dots}<button class="lnk wa" data-ob="skip">Şimdilik geç</button></div>${body}
@@ -99,7 +100,7 @@ function obView(){
 function obDone(){Object.assign(ob,obFresh());S.settings.obDone=S.settings.noticeOk=true;tab="today";logOff=0;save();render();window.scrollTo(0,0)}
 function obFinish(){
   const p=obParse();if(p.err)return;
-  const st=S.settings,pl=obPlan(p),mods=ob.mods;
+  const st=S.settings,pl=obPlan(p),mods=ob.mods,lock=ob.lk;
   if(ob.job!==""&&ob.walk!=="")st.act=obAct();
   Object.assign(st,{heightCm:p.cm,age:p.age,sex:ob.sex,goalKg:p.goal,medOn:mods.includes("med"),fastOn:mods.includes("fast"),bpOn:mods.includes("bp"),bsOn:mods.includes("bs")});
   if(pl.kcal>=RANGES.kcal[0]&&pl.kcal<=RANGES.kcal[1])st.kcal=pl.kcal;
@@ -108,6 +109,7 @@ function obFinish(){
   if(!mods.includes("steps"))st.stepsAsked=true;
   add("weight",p.kg);
   obDone();scheduleReminders().then(setNotif);
+  if(lock)lockEnable().then(e=>{if(e)toast(e);else render()});
 }
 document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-ob]");if(!el)return;

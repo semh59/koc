@@ -68,6 +68,6 @@ on("reset",()=>{confirmSheet({title:"Tüm veriler silinsin mi?",body:"Tüm kayı
   chain(S.settings.motionOn?motionStopAll():0,()=>chain(phClear(),photosOk=>chain(nativeWipe(["Motion","MedWake","Widget","QuickLog"]),nativeOk=>{
     if(!nativeOk)toast(NATIVE_FAIL);
     if(!photosOk||!nativeOk)return;
-    BF()?.clear().catch(()=>{});cacheClean();["nw_state",...COPIES.map(([k])=>k)].forEach(k=>Store.del(k));["nw_state_usage",NetLog.KEY,KEYS_LS,KEYS_ENC,BKPW_LS,RAM_LS,"nw_keys_plain","nw_walkgps_no","nw_pdfok"].forEach(lsDel);ramCache=undefined;KEYS={};S=structuredClone(DEF);save();logOff=0;render();scheduleReminders().then(setNotif);toast("Tüm veriler silindi");
+    BF()?.clear().catch(()=>{});cacheClean();["nw_state",...COPIES.map(([k])=>k)].forEach(k=>Store.del(k));["nw_state_usage",NetLog.KEY,KEYS_LS,KEYS_ENC,BKPW_LS,RAM_LS,"nw_keys_plain","nw_walkgps_no","nw_pdfok"].forEach(lsDel);ramCache=undefined;KEYS={};S=structuredClone(DEF);save();recentsSync();logOff=0;render();scheduleReminders().then(setNotif);toast("Tüm veriler silindi");
   })));
 })});
