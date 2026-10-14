@@ -3,7 +3,7 @@ const {test,expect,state,CONSENT,day,NOW}=require("./fixtures");
 const {axe,targets,scaleText}=require("./a11y");
 
 const COACH=state({...CONSENT,medOn:true,bpOn:true,bsOn:true,fastOn:true,stepsOn:true},{meds:[{id:1,n:"A",t:["09:00"],on:true}]});
-const SCREENS=["today","coach","gym","trend","more","settings","settings-profile","settings-modules","settings-data","exlib","steps","labs","bp","glucose","meds"];
+const SCREENS=["today","coach","gym","trend","more","settings","settings-profile","settings-modules","settings-data","exlib","steps","labs","bp","glucose","meds","cycle","history","settings-reminders","settings-coach","settings-about"];
 const SHEETS=['.act[data-act="food"]','.act[data-act="weight"]','#view [data-hb="mood"]'];
 const openSheet=async(app,page,a)=>{await app.go("today");await page.click(a);await expect(page.locator("#sheet.on")).toBeVisible()};
 

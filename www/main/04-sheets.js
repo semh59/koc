@@ -36,11 +36,11 @@ function confirmSheet({title,body="",ok="Tamam",no="İptal",danger=false}){
   return new Promise(res=>{cfmDone=v=>{cfmDone=null;d.hidden=true;trap();if(from&&from.isConnected)from.focus({preventScroll:true});res(v)}});
 }
 /* Recent undoable actions, newest last: each "Geri al" tap takes back one, so a double tap on "+250 ml" is undone twice. */
-const UNDO_KEEP=10,UNDO_MS=10000,undoStack=[];
+const UNDO_KEEP=10,UNDO_MS=10000,TOAST_MS=6000,undoStack=[];
 let toastSeq=0;
 function toastShow(msg,undoable){
   $("#tmsg").textContent=msg;$("#tundo").hidden=!undoable;toastSeq++;
-  $("#toast").classList.add("on");clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("#toast").classList.remove("on"),undoable?UNDO_MS:3800);
+  $("#toast").classList.add("on");clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("#toast").classList.remove("on"),undoable?UNDO_MS:TOAST_MS);
 }
 function toast(msg,undo){
   /* While saving fails, a following message such as "+250 ml" must not cover the error. */

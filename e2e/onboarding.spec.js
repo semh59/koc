@@ -1,5 +1,6 @@
 "use strict";
 const {test,expect,state}=require("./fixtures");
+const {axe}=require("./a11y");
 
 const form=page=>page.locator("#view h2").first();
 async function fill(page,{cm="178",kg="84",age="35"}={}){
@@ -7,6 +8,16 @@ async function fill(page,{cm="178",kg="84",age="35"}={}){
 }
 
 test.describe("Onboarding",()=>{
+  test("welcome asks \"Yazıyı büyüt?\": the switch enlarges text at once, is saved and the screen passes axe",async({app,page})=>{
+    await app.open();
+    const row=page.locator("#view .chkrow",{hasText:"Yazıyı büyüt?"});
+    await expect(row).toBeVisible();
+    await row.locator("input").check();
+    await expect(page.locator("html")).toHaveAttribute("data-comfy","");
+    expect((await row.boundingBox()).height).toBeGreaterThanOrEqual(47.5);
+    expect(await axe(page)).toEqual([]);
+    await expect.poll(async()=>(await app.state()).settings.comfy).toBe(true);
+  });
   test("age-18 gate: setup stops at 17 and nothing is saved, 18 passes",async({app,page})=>{
     await app.open();
     // Welcome: the only primary action is Başla, no step counter.

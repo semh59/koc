@@ -31,7 +31,7 @@ function viewLabs(){
   const lastDay=s=>s.pts[s.pts.length-1].day,list=LabLib.series(S.labs).sort((a,b)=>lastDay(a)<lastDay(b)?1:-1);
   const isOut=s=>!!LabLib.flag(s.pts[s.pts.length-1]),out=list.filter(isOut),rest=list.filter(s=>!isOut(s));
   let i=0;const cards=a=>a.map(s=>labCard(s,i++)).join("");
-  const body=out.length?`<div class="grp">Raporda yazan aralığın dışında (${out.length})</div>${cards(out)}${rest.length?`<div class="grp">Diğer sonuçlar</div>${cards(rest)}`:""}`:cards(rest);
+  const body=out.length?`<h2 class="grp">Raporda yazan aralığın dışında (${out.length})</h2>${cards(out)}${rest.length?`<h2 class="grp">Diğer sonuçlar</h2>${cards(rest)}`:""}`:cards(rest);
   return `<div class="card"><div class="lbl">Tahlil sonuçları</div>
     <p class="m0 mb-3 mut sm">PDF'ten okut ya da elle ekle. Veriler yalnızca bu telefonda kalır. Raporda yazan aralık olduğu gibi gösterilir; uygulama yorum yapmaz. Bu değerleri hekiminle değerlendir.</p>
     <div class="btns"><label class="tc btn">${Icons.svg("file")} PDF'ten oku<input id="labfile" type="file" accept="application/pdf,.pdf" hidden></label>
@@ -52,13 +52,13 @@ function labDetail(id){
   const rows=s.pts.slice().reverse().map(p=>{const pf=LabLib.flag(p),r=LabLib.rangeText(p);return `<div class="prow"><button class="grow pbtn" data-lab="edit:${p.id}" aria-label="${fd(p.day)} sonucunu düzenle"><span class="grow">${fd(p.day)}${r?`<small class="db mut num">Aralık ${esc(r)}</small>`:""}</span><span class="ta-r"><b class="num">${labV(p)}</b>${pf?`<small class="db b7">${pf==="high"?"▲ Üstünde":"▼ Altında"}</small>`:""}</span></button><button class="del" data-lab="del:${p.id}" aria-label="${fd(p.day)} sonucunu sil">${Icons.svg("x")}</button></div>`}).join("");
   openSheet(`<h3>${esc(s.n)}</h3><div class="ink sumv num">${labV(last)} <small>${esc(s.u)}</small></div>${labStat(last,rt)}<div class="mut sm">${fd(last.day)}${rt?" · Rapor aralığı: "+esc(rt):""}</div>
   <div class="mt-3">${labInfoBox(s.k,"lid",0)}</div><div class="my-2">${s.pts.length>1?labSvg(s,320,150):`<p class="hint">Grafik için aynı testten en az iki sonuç gerekir.</p>`}</div>
-  <p class="hint">${s.pts.length>1&&rt?"Gölgeli bölge raporda yazan aralıktır. ":""}Tanım yalnızca testin ne olduğunu anlatır; tanı veya yorum değildir.</p>${home}<div class="grp">Sonuçlar</div>${rows}<button class="mt-3 btn ghost" data-lab="close">Kapat</button>`);
+  <p class="hint">${s.pts.length>1&&rt?"Gölgeli bölge raporda yazan aralıktır. ":""}Tanım yalnızca testin ne olduğunu anlatır; tanı veya yorum değildir.</p>${home}<h4 class="grp">Sonuçlar</h4>${rows}<button class="mt-3 btn ghost" data-lab="close">Kapat</button>`);
 }
 
 function labRowHtml(r,i){
   const inp=(id,v,ph,cls,mode,extra)=>`<input class="in ${cls||""}" id="${id}${i}" value="${esc(v==null?"":v)}" placeholder="${ph}" ${mode?`inputmode="${mode}"`:""} ${extra||""} autocomplete="off">`;
   const f=(lab,h)=>`<label class="labf"><span>${lab}</span>${h}</label>`;
-  return `<div class="card labr"><div class="dl mb-2"><label class="grow labf"><span>Test adı</span>${inp("ln",r.n,"örn. Glukoz","","",'list="labnames"')}</label><label class="sw" aria-label="Satırı kaydet"><input type="checkbox" id="lc${i}" ${r.off?"":"checked"}><span></span></label></div>
+  return `<div class="card labr"><div class="dl mb-2"><label class="grow labf"><span>Test adı</span>${inp("ln",r.n,"örn. Glukoz","","",'list="labnames"')}</label><label class="sw"><input type="checkbox" id="lc${i}" aria-label="Satırı kaydet: ${esc(r.n||i+1)}" ${r.off?"":"checked"}><span></span></label></div>
   <div class="labg">${f("Değer",inp("lv",(r.q||"")+(r.v==null?"":LabLib.fmtN(r.v)),"","num","decimal"))}${f("Birim",inp("lu",r.u,"",""))}${f("Alt sınır",inp("ll",r.lo==null?"":LabLib.fmtN(r.lo),"","num","decimal"))}${f("Üst sınır",inp("lh",r.hi==null?"":LabLib.fmtN(r.hi),"","num","decimal"))}</div>${r.guess?`<div class="mt-1 b7 sm">${Icons.svg("info")} Emin değilim: satırı PDF'inle karşılaştır.</div>`:""}</div>`;
 }
 function labRender(){

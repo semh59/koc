@@ -31,7 +31,7 @@ function vTodo(){
   const st=S.settings,t=dayKey(),out=[],hm=vNow(),due=ids=>{const rs=st.reminders.filter(r=>ids.includes(r.id)),on=rs.filter(r=>r.on);return (on.length?on:rs).map(r=>r.t).sort()[0]<=hm};
   for(const [on,k,ic,label,act,txt,ids] of [[st.bpOn,"t","heart","Tansiyon","addbp",r=>`${r.sys}/${r.dia}`,VT_REMINDERS.bp],[st.bsOn,"s","water","Şeker","addbs",r=>dg(r.g),VT_REMINDERS.bs]]){
     const r=vLast(k);if(!on||(r&&r.day===t)||!due(ids))continue;
-    out.push(`<div class="row"><span>${Icons.svg(ic)} ${label} ölç<small class="mut sm num">${r?`son: ${txt(r)}, ${vWhen(r)}`:"ölçüm yok"}</small></span><button class="chip" data-vt="${act}">Ekle</button></div>`);
+    out.push(`<div class="row"><span>${Icons.svg(ic)} ${label} ölç<small class="mut sm num">${r?`son: ${txt(r)}, ${vWhen(r)}`:"ölçüm yok"}</small></span><button class="chip" data-vt="${act}" aria-label="${label} ölçümü ekle">Ekle</button></div>`);
   }
   return out;
 }
@@ -257,14 +257,14 @@ function vReportInfo(kind,days){
     const t=x=>x?`${Math.round(x.sys)}/${Math.round(x.dia)} mmHg (${x.n} ölçüm)`:"–";
     summary.push(["Dönem ortalaması",t(h.all)],["Sabah ortalaması",t(h.morning)],["Akşam ortalaması",t(h.evening)]);
     const pt=f=>raw.map(r=>({day:r.day,v:r[f]}));
-    series=[{pts:pt("sys"),color:"#0f5c52"},{pts:pt("dia"),color:"#2b6cb0"}];
+    series=[{pts:pt("sys"),color:Algo.PAGE.c.prim},{pts:pt("dia"),color:Algo.PAGE.c.water}];
   }else{
     title="NeoWell · Şeker raporu";
     const g=VitalsLib.gStats(all,from,end);
     if(g){summary.push(["Ortalama",`${vAvg(g.avg)} ${glab()}`],["En düşük / en yüksek",`${vMmol()?`${dg(g.min)} / ${dg(g.max)}`:`${g.min} / ${g.max}`} ${glab()}`]);
       for(const [c,x] of Object.entries(g.byCtx))summary.push([`Ortalama: ${VitalsLib.ctxName(c)}`,`${vAvg(x.avg)} ${glab()} (${x.n})`])}
     const raw=all.filter(r=>r.k==="s"&&r.day>=from&&r.day<=end);
-    series=[{pts:raw.map(r=>({day:r.day,v:Units.g(r.g)})),color:"#0f5c52"}];
+    series=[{pts:raw.map(r=>({day:r.day,v:Units.g(r.g)})),color:Algo.PAGE.c.prim}];
   }
   const pages=VitalsLib.paginate(rows.length,summary.length);
   return {rows,pages,info:{kind,title,period,summary,chart:series.some(s=>s.pts.length)?{series,from,to:end,dec:kind==="s"?vDec():0}:null,today:end}};
