@@ -6,17 +6,7 @@ STEP=start
 step() { STEP="$*"; echo "=== STEP: $*"; }
 die() { echo "$1 (step: $STEP)"; exit 1; }
 until_ok() { local t=$1 i; shift; for i in $(seq "$t"); do "$@" && return 0; sleep 1; done; return 1; }
-# A fresh install shows the intro and schedules nothing until it is finished (permission is asked after it): the smoke skips it like a user would, by tapping "Şimdilik geç" found in the UI tree.
-skip_intro() {
-  local b
-  adb shell uiautomator dump /sdcard/nw_ui.xml >/dev/null 2>&1
-  b=$(adb shell cat /sdcard/nw_ui.xml 2>/dev/null | tr '>' '
-' | grep 'Şimdilik geç' | grep -oE 'bounds="\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]"' | head -1 | grep -oE '[0-9]+' | tr '
-' ' ')
-  [ -n "$b" ] || return 1
-  set -- $b
-  adb shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
-}
+. "$(dirname "$0")/smoke-lib.sh"
 step "install"
 adb uninstall $P
 adb install release/neowell.apk || die "RELEASE APK COULD NOT BE INSTALLED"
@@ -37,7 +27,8 @@ for p in LocalNotifications Share Filesystem App BarcodeScanner MedWake AppLock 
   echo "$diag" | grep -qE "(^|[ :])$p=[1-9]" || die "RELEASE: PLUGIN MISSING OR ITS METHODS REMOVED: $p"
 done
 step "JS bridge side effects"
-until_ok 60 skip_intro || die "RELEASE: INTRO SKIP BUTTON NOT FOUND (uiautomator)"
+echo "UI texts at start: $(ui_texts)"
+until_ok 60 skip_intro || { alarm_diag; die "RELEASE: INTRO SKIP BUTTON NOT FOUND OR TAP HAD NO EFFECT (uiautomator)"; }
 # The JS bridge and native plugins are also verified by their side effects: the Widget.update preferences file and the LocalNotifications alarms.
 adb root >/dev/null; adb wait-for-device; sleep 2
 widget_ok() { adb shell cat /data/data/$P/shared_prefs/nw_widget.xml | grep -qE 'water(&quot;|")?:[0-9]+'; }
@@ -45,5 +36,5 @@ until_ok 60 widget_ok || die "RELEASE: WIDGET DATA NOT WRITTEN"
 alarms_ok() { n=$(adb shell dumpsys alarm | grep -E "RTC_WAKEUP.*$P" | wc -l); [ "$n" -ge 100 ]; }
 until_ok 90 alarms_ok
 echo "Release alarm count: $n"
-[ "$n" -ge 100 ] || die "RELEASE: REMINDER ALARMS NOT SCHEDULED"
+[ "$n" -ge 100 ] || { alarm_diag; die "RELEASE: REMINDER ALARMS NOT SCHEDULED"; }
 echo "Release check passed"
