@@ -16,6 +16,17 @@ front() { launch; until_ok 30 focused || die "APP DID NOT COME TO FRONT"; sleep 
 # After a logcat clear, waits for the app to come up (the NW-DIAG console line).
 boot_wait() { until_ok 90 booted || die "APP DID NOT START"; sleep 3; }
 
+# A fresh install shows the intro and schedules nothing until it is finished (permission is asked after it): the smoke skips it like a user would, by tapping "Şimdilik geç" found in the UI tree.
+skip_intro() {
+  local b
+  adb shell uiautomator dump /sdcard/nw_ui.xml >/dev/null 2>&1
+  b=$(adb shell cat /sdcard/nw_ui.xml 2>/dev/null | tr '>' '
+' | grep 'Şimdilik geç' | grep -oE 'bounds="\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]"' | head -1 | grep -oE '[0-9]+' | tr '
+' ' ')
+  [ -n "$b" ] || return 1
+  set -- $b
+  adb shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
+}
 adb install -r neowell.apk || exit 1
 # Crashes (Java FATAL EXCEPTION and native tombstones) land in the crash buffer; logcat -c clears it too, so it is checked before every clear and at the end.
 crashcheck() { adb logcat -d -b crash > crash.log; if grep -qE "Process: com\.neowell\.app|>>> com\.neowell\.app <<<" crash.log; then echo "APP CRASHED"; cat crash.log; exit 1; fi; }
@@ -34,6 +45,7 @@ cat smoke.log
 diag=$(grep "NW-DIAG" smoke.log | tail -1)
 [ -n "$diag" ] || { echo "APP DID NOT START: no NW-DIAG line"; grep -iE "neowell|Capacitor|AndroidRuntime|WebView" full.log | tail -80; adb shell dumpsys activity activities | grep -E "mResumed|topResumed|mFocused" | head; exit 1; }
 step "plugins, alarms, console"
+until_ok 60 skip_intro || die "INTRO SKIP BUTTON NOT FOUND (uiautomator)"
 for p in LocalNotifications Share Filesystem App KeyVault DeviceHelp BarcodeScanner StepCounter Ocr Motion Speech Widget BackupFolder MedWake; do
   echo "$diag" | grep -q "$p=object" || { echo "PLUGIN MISSING: $p"; exit 1; }
 done
