@@ -17,15 +17,34 @@ front() { launch; until_ok 30 focused || die "APP DID NOT COME TO FRONT"; sleep 
 boot_wait() { until_ok 90 booted || die "APP DID NOT START"; sleep 3; }
 
 # A fresh install shows the intro and schedules nothing until it is finished (permission is asked after it): the smoke skips it like a user would, by tapping "Şimdilik geç" found in the UI tree.
+# The button sits at the bottom of the welcome page: when its bounds are below the screen the page is scrolled first (a tap outside the display does nothing), and the tap is verified by the text being gone.
+ui_dump() { adb shell uiautomator dump /sdcard/nw_ui.xml >/dev/null 2>&1; adb shell cat /sdcard/nw_ui.xml 2>/dev/null | tr '>' '
+'; }
+ui_texts() { ui_dump | grep -oE ' (text|content-desc)="[^"]+"' | sort -u | tr '
+' '|'; echo; }
 skip_intro() {
-  local b
-  adb shell uiautomator dump /sdcard/nw_ui.xml >/dev/null 2>&1
-  b=$(adb shell cat /sdcard/nw_ui.xml 2>/dev/null | tr '>' '
-' | grep 'Şimdilik geç' | grep -oE 'bounds="\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]"' | head -1 | grep -oE '[0-9]+' | tr '
+  local b h w cy
+  b=$(ui_dump | grep 'Şimdilik geç' | grep -oE 'bounds="\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]"' | head -1 | grep -oE '[0-9]+' | tr '
 ' ' ')
   [ -n "$b" ] || return 1
   set -- $b
-  adb shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
+  read w h <<< "$(adb shell wm size | grep -oE '[0-9]+x[0-9]+' | tail -1 | tr 'x' ' ')"
+  cy=$(( ($2 + $4) / 2 ))
+  if [ -n "$h" ] && [ "$cy" -ge $(( h - 40 )) ]; then adb shell input swipe $((w / 2)) $((h * 3 / 4)) $((w / 2)) $((h / 4)) 300; return 1; fi
+  echo "UI before tap: $(ui_texts)"
+  adb shell input tap $(( ($1 + $3) / 2 )) $cy
+  sleep 2
+  ui_dump | grep -q 'Şimdilik geç' && return 1
+  echo "UI after tap: $(ui_texts)"
+  return 0
+}
+# Diagnostics printed when the reminder alarms do not appear.
+alarm_diag() {
+  echo "--- UI texts"; ui_texts
+  echo "--- dumpsys notification"; adb shell dumpsys notification | head -40
+  echo "--- logcat (NW-/console), last 60"; adb logcat -d | grep -E "NW-|Capacitor/Console" | tail -60
+  echo "--- alarm count: $(adb shell dumpsys alarm | grep -cE 'RTC_WAKEUP.*com.neowell.app')"
+  echo "--- dumpsys alarm, com.neowell.app lines (first 10)"; adb shell dumpsys alarm | grep com.neowell.app | head -10
 }
 adb install -r neowell.apk || exit 1
 # Crashes (Java FATAL EXCEPTION and native tombstones) land in the crash buffer; logcat -c clears it too, so it is checked before every clear and at the end.
@@ -45,14 +64,15 @@ cat smoke.log
 diag=$(grep "NW-DIAG" smoke.log | tail -1)
 [ -n "$diag" ] || { echo "APP DID NOT START: no NW-DIAG line"; grep -iE "neowell|Capacitor|AndroidRuntime|WebView" full.log | tail -80; adb shell dumpsys activity activities | grep -E "mResumed|topResumed|mFocused" | head; exit 1; }
 step "plugins, alarms, console"
-until_ok 60 skip_intro || die "INTRO SKIP BUTTON NOT FOUND (uiautomator)"
+echo "UI texts at start: $(ui_texts)"
+until_ok 60 skip_intro || { alarm_diag; die "INTRO SKIP BUTTON NOT FOUND OR TAP HAD NO EFFECT (uiautomator)"; }
 for p in LocalNotifications Share Filesystem App KeyVault DeviceHelp BarcodeScanner StepCounter Ocr Motion Speech Widget BackupFolder MedWake; do
   echo "$diag" | grep -q "$p=object" || { echo "PLUGIN MISSING: $p"; exit 1; }
 done
 alarms_ok() { n=$(adb shell dumpsys alarm | grep -E "RTC_WAKEUP.*com.neowell.app" | wc -l); [ "$n" -ge 100 ]; }
 until_ok 60 alarms_ok
 echo "Scheduled wake-up alarms: $n"
-[ "$n" -ge 100 ] || { echo "REMINDER ALARMS NOT SCHEDULED"; exit 1; }
+[ "$n" -ge 100 ] || { echo "REMINDER ALARMS NOT SCHEDULED"; alarm_diag; exit 1; }
 grep -q "NW-PDF ok pages=1" smoke.log || { echo "PDF (canvas, pdf.js) FAILED"; grep "NW-PDF" smoke.log; exit 1; }
 grep -q "NW-OCR ok" smoke.log || { echo "TEXT RECOGNITION (ML Kit) FAILED"; grep "NW-OCR" smoke.log; exit 1; }
 grep -q "NW-VAULT ok" smoke.log || { echo "KEY VAULT FAILED"; exit 1; }

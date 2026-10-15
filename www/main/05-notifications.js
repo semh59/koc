@@ -22,7 +22,7 @@ let schedRun=null,schedAgain=false;
 function scheduleReminders(){
   if(schedRun){schedAgain=true;return schedRun}
   return schedRun=(async()=>{
-    try{let r;do{schedAgain=false;r=await scheduleOnce()}while(schedAgain);return r}
+    try{let r;do{schedAgain=false;r=await scheduleOnce()}while(schedAgain);console.log("NW-SCHED "+r);return r}
     finally{schedRun=null}
   })();
 }
@@ -85,7 +85,7 @@ async function scheduleOnce(){
     const mw=MW();if(mw)await mw.set({times:MedLib.wakeTimes(list),doses:MedLib.wakeDoses(list,Meds.meds(),S.settings.medShowName),detail:S.settings.lockDetail}).catch(()=>{});
     lastSched=t0;lastTz=tzKey();
     return "ok";
-  }catch(e){return "Bildirimler kurulamadı. Bildirim iznini kontrol edip tekrar dene"}
+  }catch(e){console.log("NW-SCHED error "+(e&&e.message||e));return "Bildirimler kurulamadı. Bildirim iznini kontrol edip tekrar dene"}
 }
 /* Only tapping a notification ("tap"); the water/medication buttons are caught natively in QuickLogPlugin. Without Coach consent the weekly summary opens in Trend, the backup reminder in Data and backup. */
 function notifTap(e){
