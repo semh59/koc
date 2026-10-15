@@ -6,6 +6,17 @@ STEP=start
 step() { STEP="$*"; echo "=== STEP: $*"; }
 die() { echo "$1 (step: $STEP)"; exit 1; }
 until_ok() { local t=$1 i; shift; for i in $(seq "$t"); do "$@" && return 0; sleep 1; done; return 1; }
+# A fresh install shows the intro and schedules nothing until it is finished (permission is asked after it): the smoke skips it like a user would, by tapping "Şimdilik geç" found in the UI tree.
+skip_intro() {
+  local b
+  adb shell uiautomator dump /sdcard/nw_ui.xml >/dev/null 2>&1
+  b=$(adb shell cat /sdcard/nw_ui.xml 2>/dev/null | tr '>' '
+' | grep 'Şimdilik geç' | grep -oE 'bounds="\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]"' | head -1 | grep -oE '[0-9]+' | tr '
+' ' ')
+  [ -n "$b" ] || return 1
+  set -- $b
+  adb shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
+}
 step "install"
 adb uninstall $P
 adb install release/neowell.apk || die "RELEASE APK COULD NOT BE INSTALLED"
@@ -26,6 +37,7 @@ for p in LocalNotifications Share Filesystem App BarcodeScanner MedWake AppLock 
   echo "$diag" | grep -qE "(^|[ :])$p=[1-9]" || die "RELEASE: PLUGIN MISSING OR ITS METHODS REMOVED: $p"
 done
 step "JS bridge side effects"
+until_ok 60 skip_intro || die "RELEASE: INTRO SKIP BUTTON NOT FOUND (uiautomator)"
 # The JS bridge and native plugins are also verified by their side effects: the Widget.update preferences file and the LocalNotifications alarms.
 adb root >/dev/null; adb wait-for-device; sleep 2
 widget_ok() { adb shell cat /data/data/$P/shared_prefs/nw_widget.xml | grep -qE 'water(&quot;|")?:[0-9]+'; }
