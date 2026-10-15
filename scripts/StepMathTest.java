@@ -78,13 +78,13 @@ public class StepMathTest {
             StepMath.closeDay(c, "c2", 2600, 5, h) && h.get("c1") == 1600 && StepMath.update(c, "c2", 2600, 5, h) == 0, h.get("c1"));
         StepMath.State d = sampled(1000, 1500);
         h.remove("g1");
-        long early = StepMath.update(d, "d2", 1800, 5, h);
+        long early = StepMath.update(d, "g2", 1800, 5, h);
         ok("app opened before the night close: old day at the sample, the rest in the new day", h.get("g1") == 500 && early == 300, early);
-        ok("a later close on the same day does nothing", !StepMath.closeDay(d, "d2", 1900, 8, h) && StepMath.update(d, "d2", 1900, 8, h) == 400, 0);
+        ok("a later close on the same day does nothing", !StepMath.closeDay(d, "g2", 1900, 8, h) && StepMath.update(d, "g2", 1900, 8, h) == 400, 0);
         StepMath.State e = sampled(1000, 1500);
         h.remove("g1");
         ok("phone rebooted after the sample: old day at the sample, new day from the reset counter",
-            StepMath.closeDay(e, "e2", 40, 10, h) && h.get("g1") == 500 && StepMath.update(e, "e2", 40, 10, h) == 40, h.get("g1"));
+            StepMath.closeDay(e, "g2", 40, 10, h) && h.get("g1") == 500 && StepMath.update(e, "g2", 40, 10, h) == 40, h.get("g1"));
         // Day rolled over without a sample, first read at 03:00: steps since the last read go to the old day
         StepMath.State m1 = new StepMath.State();
         StepMath.update(m1, "m1", 1000, 720, h);
