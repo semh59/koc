@@ -74,7 +74,7 @@ main{flex:1;padding:4px 16px calc(92px + var(--nx,0px) + var(--sab))}
 .coachc{padding:8px 16px}.coach{display:block;width:100%;min-height:var(--hit);margin:0;padding:0;text-align:left;color:var(--mut);font-size:var(--fs-2);line-height:1.45}.coach b{color:var(--prim);white-space:nowrap}
 /* With large text the copy does not collapse into a one-letter column: it keeps at least ~10 letters of width and the action wraps below if needed.
    In a medication row the time is a fixed column on the left; the first 3 jobs are visible, the rest opens under "N more". */
-.todo .row{gap:var(--sp-2);flex-wrap:wrap}.todo>.grp{margin:0 0 var(--sp-1)}.todo .grp+.row{border-top:0}.todo .row>span{flex:1 1 10em;min-width:0;overflow-wrap:break-word}.todo .row>span+:is(.chip,button,.acts){margin-left:auto}.todo .acts{display:flex;gap:var(--sp-2)}.todo small.sm{display:block}
+.todo .row{gap:var(--sp-2);flex-wrap:wrap}.todo>.grp{margin:0 0 var(--sp-1)}.todo .grp+.row{border-top:0}.todo .row>span{flex:1 1 10em;min-width:0;overflow-wrap:break-word}.todo .row>span+:is(.chip,button,.acts){margin-left:auto}.todo .acts{display:flex;flex-wrap:wrap;gap:var(--sp-2);max-width:100%}.todo small.sm{display:block}
 .todo .tm{flex:none;min-width:3.2em;font-weight:600}.todo .acc{border-top:1px solid var(--line)}.todo .acc>summary{min-height:48px}
 
 .card{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:12px;border:1px solid var(--card-bd);box-shadow:var(--sh-1)}
@@ -169,7 +169,7 @@ body.coach{--toast-b:var(--cmp,calc(200px + var(--sab)))}
 .msg{display:flex;flex-direction:column;gap:var(--sp-2);min-width:0}.msg>.cm{margin:0}.lcard{margin:0}.lcard>p.sm{margin:var(--sp-1) 0}.lhead{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-1)}
 .lcard .lrow{flex-wrap:wrap;gap:var(--sp-1) var(--sp-3)}.lcard .lrow>.grow{flex:1 1 10em}.lcard .lrow .sm{display:block}.prow>.pbtn{display:flex;align-items:center;gap:var(--sp-2);text-align:left;min-height:56px}.rgin{width:76px;margin:0!important}.tchip{gap:var(--sp-1);padding:0 2px 0 var(--sp-4)}
 .lval{display:flex;align-items:center;gap:var(--sp-2);margin-left:auto}.lval .del{margin:-8px -8px -8px 0}
-.cul{margin:var(--sp-2) 0;padding-left:var(--sp-5)}.cul li{margin:var(--sp-1) 0;font-size:var(--fs-2)}
+.cul{margin:var(--sp-2) 0;padding-left:var(--sp-5)}.cul li{margin:var(--sp-1) 0;font-size:var(--fs-2)}.cul b{white-space:normal}
 .mday{border-top:1px solid var(--line)}.acc.mday>summary{color:var(--ink);margin:0}.mday>summary .mut{font-weight:400}.mday[open]{padding-bottom:var(--sp-3)}
 .shop .ck{flex:none;width:24px;height:24px;border-radius:50%;border:2px solid var(--fbd);display:flex;align-items:center;justify-content:center;color:transparent}.shop .ck .i{width:16px;height:16px}.shop[aria-pressed="true"] .ck{background:var(--prim);border-color:var(--prim);color:var(--prim-ink)}.shop[aria-pressed="true"] b{text-decoration:line-through;color:var(--mut)}#sheet .grp{margin:var(--sp-4) var(--sp-1) 0}
 .chip:disabled{opacity:.5;cursor:default}

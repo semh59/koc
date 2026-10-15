@@ -70,7 +70,7 @@ async function offscreen(page,root="body"){
     const W=innerWidth,H=innerHeight,out=[];
     for(const el of document.querySelectorAll(`${sel} button, ${sel} a[href], ${sel} input:not([type=hidden]), ${sel} select, ${sel} textarea`)){
       const r=el.getBoundingClientRect(),cs=getComputedStyle(el);
-      if(!r.width||!r.height||cs.visibility==="hidden"||el.closest("[hidden]"))continue;
+      if(!r.width||!r.height||cs.visibility==="hidden"||el.closest("[hidden],.chiprow"))continue;
       if(r.left<-1||r.right>W+1)out.push((el.getAttribute("aria-label")||el.textContent||el.id||el.tagName).trim().slice(0,40)+` x:${Math.round(r.left)}-${Math.round(r.right)}`);
     }
     return out;
