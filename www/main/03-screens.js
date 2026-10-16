@@ -33,6 +33,9 @@ const widgetKcal=t=>{const eaten=sum("food",t,t);return S.settings.kcal<=0?{kcal
 const sportDay=()=>Math.max(1,Math.round(S.settings.sportWeek/7));
 /* A ring is a button: today's detail and the last 14 days' chart are on the Day screen, the calendar from there. */
 const rb=(k,ad,inner,val="")=>`<button class="rbtn" data-hg="focus:${k}" aria-label="${ad}${val?`: ${val}`:""}, ayrıntı ve geçmiş">${inner}</button>`;
+/* A dose that is due is the most urgent thing on Today: its card goes above the rings. The place is decided when the screen is opened (or the app returns), never while it is open, so a card that appears must not slide a button under a thumb. */
+let todoTopLock=null;
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)todoTopLock=null});
 function viewToday(){
   const t=dayKey(),st=S.settings;
   const wAll=weights(),days=Object.keys(wAll).sort();
@@ -78,10 +81,10 @@ function viewToday(){
     <div class="rmini">${rb("water","Su",ring(water/sh,"var(--water)",waterC||wrT,"Su",`${fmt(water/1000,1)} / ${fmt(sh/1000,1)} L${fasting?", oruç saatinde":""}`,waterU,"mini"+(waterC?" done":"")),`${waterC?"hedef tamam":`${wrT} ${waterU}`}, ${fmt(water/1000,1)} / ${fmt(sh/1000,1)} L`)}
     ${rb("exercise","Spor",ring(sw/sg,"var(--exercise)",spC||spLeft,"Spor",`${Math.round(sw)} / ${sg} dk`,spU,"mini"+(spC?" done":"")),`${spC?"hedef tamam":`${spLeft} ${spU}`}, ${Math.round(sw)} / ${sg} dk`)}${sOn?stepCard():""}</div>
   </div>${notes}</div>`;
-  /* The chip order is fixed so a thumb never lands on another chip; the drink type sits right beside the water chip. */
+  /* The chips sit in a fixed two-column grid, so a thumb never lands on another chip: a value on a chip, or a walk in progress, changes its text, not its place; the drink type sits right beside the water chip. */
   const chip=([k,a,ic,l,al])=>`<button class="chip${a.startsWith("data-act")?" act":""}" data-chip="${k}" ${a}${al?` aria-label="${al}"`:""}>${Icons.svg(ic)} ${l}</button>`;
   const Q=[["weight",'data-act="weight"',"weight","Kilo"],["exercise",'data-act="exercise"',"exercise","Spor"],
-    ...st.bpOn?[["bp",'data-vt="addbp"',"heart","Tansiyon"+vChipTxt("t")]]:[],...st.bsOn?[["bs",'data-vt="addbs"',"glucose","Şeker"+vChipTxt("s")]]:[],["note",'data-act="note"',"note","Not"],...Motion.walk()?[]:[["walk",'data-w="start"',"steps","Yürüyüş"]]];
+    ...st.bpOn?[["bp",'data-vt="addbp"',"heart","Tansiyon"+vChipTxt("t")]]:[],...st.bsOn?[["bs",'data-vt="addbs"',"glucose","Şeker"+vChipTxt("s")]]:[],["note",'data-act="note"',"note","Not"],["walk",Motion.walk()?'data-act="walkgo"':'data-w="start"',"steps",Motion.walk()?"Yürüyüş sürüyor":"Yürüyüş"]];
   const chips=`<span class="qpair">${chip(["water",'data-act="water"',"water",`+${st.glass} ml`,`${st.glass} ml su ekle`])}${chip(["drink",'data-dk="open"',"water","İçecek türü"])}</span>`+Q.map(chip).join("");
   const actions=logOff>0?`<div class="actions"><p class="mut">${fd(keyOff(-logOff))} kayıtlarına bakıyorsun. Yeni kayıt bugüne eklenir.</p><button class="btn" data-lo="${-logOff}">Bugüne dön</button></div>`:`<div class="actions"><button class="btn act" data-act="food">${Icons.svg("plus")} Yemek ekle</button><div class="qa">${chips}</div></div>`;
   const lk=keyOff(-logOff);
@@ -112,9 +115,10 @@ function viewToday(){
     Log.all().length>=10&&(old==null||old>14)?row("cloud","Verilerini yedekle",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Yedekle"]]):""].filter(Boolean);
   /* Medication, measurement, a running walk or fast and the save-failed notice come first and never fold; of the rest the first 3 are visible, so the log is not pushed down. */
   const vis=Math.max(3,first.length+(saveRow?1:0)+medBudget.length),minfo=medInfo(),todoCard=todo.length||minfo?`<div class="card todo"><h2 class="grp">Bugün yapılacaklar</h2>${minfo?`<p class="hint">${minfo}</p>`:""}${todo.slice(0,vis).join("")}${first.some(r=>r.includes('data-md="take:'))?`<p class="hint">Kaçırdığın dozu ikiye katlama; emin değilsen eczacına sor.</p>`:""}${todo.length>vis?`<details class="acc" ${keepOpen("todo")}><summary>${todo.length-vis} iş daha</summary>${todo.slice(vis).join("")}</details>`:""}</div>`:"";
+  if(todoTopLock===null)todoTopLock=first.some(r=>r.includes('data-md="take:'));
   const minor=S.settings.age>0&&S.settings.age<18?`<div class="banner"><b>NeoWell 18 yaş ve üzeri için</b><p>Profilindeki yaş 18'in altında. Kalori açığı, oruç önerisi ve Rehber kapalı. Beslenme ve kilo konusunda bir yetişkinle ve hekiminle ya da diyetisyeninle konuş. Yaş yanlışsa Ayarlar > Profil'den düzelt.</p></div>`:"";
   /* .bg2 has no effect in portrait; in landscape the left column holds rings and summary, the right one jobs and entries. */
-  return `<div class="bg2"><div class="bgL">${minor}${rings}${actions}${habitRow()}</div><div class="bgR">${todoCard}${gTodayCard()}${weight}<div class="card">${dnav}${log}${items.some(e=>e.type==="food")?`<button class="lnk" data-act="cp:day">Bu günü başka güne kopyala</button><button class="lnk" data-act="tplnew">Bu günün yemeklerinden şablon yap</button>`:""}${st.bpOn||st.bsOn?`<button class="lnk" data-doc="open">Hekime hazırlan</button>`:""}<button class="lnk" data-tab="history">Geçmiş ve takvim</button></div></div></div>`;
+  return `<div class="bg2"><div class="bgL">${minor}${todoTopLock?todoCard:""}${rings}${actions}${habitRow()}</div><div class="bgR">${todoTopLock?"":todoCard}${gTodayCard()}${weight}<div class="card">${dnav}${log}${items.some(e=>e.type==="food")?`<button class="lnk" data-act="cp:day">Bu günü başka güne kopyala</button><button class="lnk" data-act="tplnew">Bu günün yemeklerinden şablon yap</button>`:""}${st.bpOn||st.bsOn?`<button class="lnk" data-doc="open">Hekime hazırlan</button>`:""}<button class="lnk" data-tab="history">Geçmiş ve takvim</button></div></div></div>`;
 }
 
 /* PDF reports in one place; the share handlers listen on the document, so they work from any screen. */
@@ -276,6 +280,7 @@ function viewSettings(){
 const COPIES=[["nw_state_corrupt","Okunamayan eski kayıt kopyası"],["nw_state_previous","Geri yüklemeden önceki güvenlik kopyası"]];
 const recView=()=>`<div class="card todo" role="alert"><h3>Kayıtların okunamadı</h3><p class="hint">Telefondaki kayıt bozuk görünüyor. Hiçbir şey silinmedi ve yeni kayıt yazılmıyor. Önce ham veriyi dışa aktar; sonra yeniden dene ya da boş başla.</p><div class="btns"><button class="btn" data-act="recexp">Ham veriyi dışa aktar</button><button class="btn ghost" data-act="rectry">Yeniden dene</button><button class="btn ghost" data-act="recnew">Boş başla</button></div></div>`;
 function render(){
+  if(tab!=="today")todoTopLock=null;
   const v=$("#view"),onb=obNeeded()||!!recovery;
   const de=document.documentElement;if(S.settings.theme)de.dataset.theme=S.settings.theme;else delete de.dataset.theme;
   if(S.settings.comfy)de.dataset.comfy="";else delete de.dataset.comfy;

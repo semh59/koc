@@ -93,7 +93,7 @@ main{flex:1;padding:4px 16px calc(92px + var(--nx,0px) + var(--sab))}
 
 /* Today: one primary action (add food), equal-weight secondary quick logs below; with large text the chips wrap to the next line. */
 .actions{display:grid;gap:var(--sp-2);margin-bottom:var(--sp-3)}
-.qa{display:flex;flex-wrap:wrap;gap:var(--sp-2)}.qa .chip{flex:1 1 auto;background:var(--card);border:1px solid var(--card-bd);box-shadow:var(--sh-1)}.qa .chip .i{color:var(--prim)}.qpair{display:flex;flex:2 1 auto;flex-wrap:wrap;gap:var(--sp-2)}
+.qa{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2)}.qa .chip{width:100%;white-space:normal;text-align:center;background:var(--card);border:1px solid var(--card-bd);box-shadow:var(--sh-1)}.qa .chip .i{color:var(--prim)}.qpair{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2)}
 /* Summary: calorie ring on the left, small rings (water, sport, steps) on the right; on a narrow screen or with large text the small ones drop below. */
 .rings{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-3) var(--sp-4)}.rings>.ring.main{flex:none;text-align:center}
 .rmini{flex:1 1 9em;min-width:0;display:grid;gap:var(--sp-2)}
@@ -401,3 +401,4 @@ button:is(.row,.prow,.rrow){width:100%}
 :root[data-comfy] :is(.del,.dnav button,.shx,#csend,#back,.gdx){width:52px;height:52px}
 /* Short screens: the sticky top bar and the fixed rest timer shrink (one tight row each), so the two layers leave room for the sets. */
 @media (max-height:640px){.livetop{padding-top:0}.livetop .livebar{gap:var(--sp-1) var(--sp-2);margin-bottom:var(--sp-1)}.livebar b{font-size:var(--fs-1)}.livetop .rest{margin-bottom:var(--sp-1)}#grest{padding:var(--sp-1) var(--sp-2);bottom:calc(var(--nav-h) + var(--nx,0px) + var(--sab))}.rest b{font-size:var(--fs-h2)}body:has(#grest:not([hidden])){--toast-b:calc(var(--nav-h) + 64px + var(--nx,0px) + var(--sab))}body:has(#grest:not([hidden])) main{padding-bottom:calc(120px + var(--nx,0px) + var(--sab))}}
+@media (max-height:500px) and (orientation:landscape){:root[data-comfy] .gdfoot{position:static}}
