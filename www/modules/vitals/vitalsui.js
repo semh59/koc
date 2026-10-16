@@ -13,7 +13,7 @@ const vErrText=c=>c.err==="date"?"Gün ve saati seç":c.err==="glucose"?`Şeker 
 /* ---- Settings ---- */
 function vitalsSettingsHtml(){
   const st=S.settings,h="Evde ölçtüğün tansiyon ve şekeri kaydet. Uygulama değerleri yorumlamaz; kaydeder, ortalamasını ve grafiğini gösterir. Veriler telefondan çıkmaz.";
-  const lim=`<button class="lnk" data-vt="limits">Hekimimin verdiği sınır${st.bpSysHi||st.bpDiaHi||st.gFastHi||st.bpSysLo||st.bpDiaLo||st.gFastLo?" (açık)":""}</button>`;
+  const lim=`<button class="lnk" data-vt="limits">Hekimimin verdiği sınır${st.bpSysHi||st.bpDiaHi||st.gFastHi||st.gPostHi||st.bpSysLo||st.bpDiaLo||st.gFastLo?" (açık)":""}</button>`;
   return modRow('data-vt="bptoggle"',st.bpOn,"Tansiyon","Ev ölçümleri, ortalama ve grafik.","hlpbp",h,lim)+modRow('data-vt="bstoggle"',st.bsOn,"Şeker","Ölçümler, ortalama ve grafik.","hlpbs",h,lim);
 }
 function vToggle(kind){
@@ -34,7 +34,10 @@ function vWhen(r){return (r.day===dayKey()?"bugün ":fd(r.day)+" ")+r.time}
 function vTodo(){
   const st=S.settings,t=dayKey(),out=[],hm=vNow(),due=ids=>{const rs=st.reminders.filter(r=>ids.includes(r.id)),on=rs.filter(r=>r.on);return (on.length?on:rs).map(r=>r.t).sort()[0]<=hm};
   for(const [on,k,ic,label,act,txt,ids] of [[st.bpOn,"t","heart","Tansiyon","addbp",r=>`${Math.round(r.sys)}/${Math.round(r.dia)}`,VT_REMINDERS.bp],[st.bsOn,"s","glucose","Şeker","addbs",r=>dg(r.g),VT_REMINDERS.bs]]){
-    const r=vShown(k);if(!on||(r&&r.day===t)||!due(ids))continue;
+    const r=vShown(k);
+    /* Home blood pressure is a morning and an evening habit: once the evening reminder time has passed with no evening session, the row returns although the morning one is done. */
+    const eveDue=k==="t"&&r&&r.day===t&&(st.reminders.find(x=>x.id===VT_REMINDERS.bp[1])||{t:"99"}).t<=hm&&!VitalsLib.sessions(S.vitals).some(x=>x.day===t&&x.session==="evening");
+    if(!on||(r&&r.day===t&&!eveDue)||(!eveDue&&!due(ids)))continue;
     out.push(`<div class="row"><span>${Icons.svg(ic)} ${label} ölç<small class="mut sm num">${r?`son: ${txt(r)}, ${vWhen(r)}`:"ölçüm yok"}</small></span><button class="chip" data-vt="${act}" aria-label="${label} ölçümü ekle">Ekle</button></div>`);
   }
   return out;
@@ -79,37 +82,39 @@ function vFinish(rows,msg){
   S.vitals=S.vitals.concat(added);
   if(!commit(()=>{S.vitals=backup}))return;
   closeSheet();render();
-  if(vAlert(rows))return;
+  if(vAlert(rows,added))return;
   const ids=new Set(added.map(r=>r.id));
   toast(msg+vAsk(rows),()=>{S.vitals=S.vitals.filter(r=>!ids.has(r.id));save();render()});
 }
-const vMy=()=>{const t=S.settings;return {sys:t.bpSysHi,dia:t.bpDiaHi,g:t.gFastHi,sysLo:t.bpSysLo,diaLo:t.bpDiaLo,gLo:t.gFastLo}};
+const vMy=()=>{const t=S.settings;return {sys:t.bpSysHi,dia:t.bpDiaHi,g:t.gFastHi,gPost:t.gPostHi,sysLo:t.bpSysLo,diaLo:t.bpDiaLo,gLo:t.gFastLo}};
 const vLevels=rows=>rows.map(r=>VitalsLib.level(r,dayKey(),vMy()));
 const vAsk=rows=>{const i=vLevels(rows).indexOf("ask");return i<0?"":`. Hekimine danış; bu bir tanı değildir${rows.length>1?` (${i+1}. ölçüm ${rows[i].sys}/${rows[i].dia})`:""}`};
 /* Emergency box: names the value, tells low from high, and 112 is one tap away. Returns true when it opened. */
-function vAlert(rows){
+let vAlertIds=null;
+function vAlert(rows,added=[]){
+  vAlertIds=new Set(added.map(r=>r.id));
   const lv=vLevels(rows),i=lv.findIndex(l=>l==="high"||l==="low");
   if(i<0)return false;
   const r=rows[i],bp=r.k==="t",val=bp?`${r.sys}/${r.dia} mmHg`:`${dg(r.g)} ${glab()}`;
   const head=`${lv[i]==="low"?"Düşük":"Yüksek"} ${bp?"tansiyon":"şeker"} ölçümü: ${val}`;
   const sym=lv[i]==="low"?"Kendini kötü hissediyorsan, kafan karışıyorsa ya da bayılırsan":bp?"Göğüs ağrın, nefes darlığın, konuşma güçlüğün ya da şiddetli baş ağrın varsa":"Kendini çok kötü hissediyorsan, kusuyorsan ya da bilincin bulanıksa";
-  openSheet(`<h3>${head}</h3><p>Ölçüm kaydedildi. Cihazı kontrol edip ölçümü tekrarla. Değer doğruysa hekimine danış. ${sym} hemen 112'yi ara.</p><a class="btn" href="tel:112">112'yi ara</a><button class="mt-2 btn ghost" data-vt="close">Tamam</button>`);
+  openSheet(`<h3>${head}</h3><p>Ölçüm kaydedildi. Cihazı kontrol edip ölçümü tekrarla. Değer doğruysa hekimine danış. ${sym} hemen 112'yi ara.</p><a class="btn" href="tel:112">112'yi ara</a><button class="mt-2 btn ghost" data-vt="close">Tamam</button>${added.length?`<button class="mt-2 lnk" data-vt="alertundo">Yanlış yazdım, bu kaydı sil</button>`:""}`);
   return true;
 }
 function sheetLimits(){
-  const st=S.settings,f=(id,lab,v)=>`<label class="lbl" for="${id}">${lab}</label><input class="in num" id="${id}" inputmode="decimal" value="${v?(id==="vlg"||id==="vlglo"?dg(v):v):""}" autocomplete="off">`;
+  const st=S.settings,f=(id,lab,v)=>`<label class="lbl" for="${id}">${lab}</label><input class="in num" id="${id}" inputmode="decimal" value="${v?(id==="vlg"||id==="vlglo"||id==="vlgp"?dg(v):v):""}" autocomplete="off">`;
   openSheet(`<h3>Hekimimin verdiği sınır</h3><p class="mut sm">Hekimin bir sınır verdiyse yaz; ölçüm bu sınıra gelince "Hekimine danış" satırı çıkar. Boş bırakırsan varsayılan sınır kullanılır. Uygulama değeri yorumlamaz.</p>
-  ${f("vlsys","Büyük tansiyon üst (mmHg)",st.bpSysHi)}${f("vldia","Küçük tansiyon üst (mmHg)",st.bpDiaHi)}${f("vlg",`Şeker üst (${glab()})`,st.gFastHi)}
+  ${f("vlsys","Büyük tansiyon üst (mmHg)",st.bpSysHi)}${f("vldia","Küçük tansiyon üst (mmHg)",st.bpDiaHi)}${f("vlg",`Şeker üst, açlık ve diğer (${glab()})`,st.gFastHi)}${f("vlgp",`Şeker üst, yemekten 2 saat sonra (${glab()})`,st.gPostHi)}
   ${f("vlsyslo","Büyük tansiyon alt (mmHg)",st.bpSysLo)}${f("vldialo","Küçük tansiyon alt (mmHg)",st.bpDiaLo)}${f("vlglo",`Şeker alt (${glab()})`,st.gFastLo)}
   <div class="ferr" id="vwarn" role="alert"></div><button class="btn" data-vt="savelimits">Kaydet</button>`);
 }
 function vSaveLimits(){
   const st=S.settings,out={};
-  const KEYS=[["vlsys","bpSysHi","Büyük tansiyon"],["vldia","bpDiaHi","Küçük tansiyon"],["vlg","gFastHi","Şeker"],["vlsyslo","bpSysLo","Büyük tansiyon alt"],["vldialo","bpDiaLo","Küçük tansiyon alt"],["vlglo","gFastLo","Şeker alt"]];
+  const KEYS=[["vlsys","bpSysHi","Büyük tansiyon"],["vldia","bpDiaHi","Küçük tansiyon"],["vlg","gFastHi","Şeker"],["vlgp","gPostHi","Tokluk şeker"],["vlsyslo","bpSysLo","Büyük tansiyon alt"],["vldialo","bpDiaLo","Küçük tansiyon alt"],["vlglo","gFastLo","Şeker alt"]];
   for(const [id,k,lbl] of KEYS){
     const raw=vGet(id).trim();let v=0;
     if(raw){
-      v=LabLib.optNum(raw);if(k.startsWith("gFast")&&v>0)v=Units.gIn(v);
+      v=LabLib.optNum(raw);if(/^gFast|^gPost/.test(k)&&v>0)v=Units.gIn(v);
       const [lo,hi]=RANGES[k];
       if(!(v>=lo&&v<=hi))return vWarn(`${lbl} sınırı geçerli değil`);
     }
@@ -306,6 +311,7 @@ document.addEventListener("click",ev=>{
   else if(a==="edit")sheetVEdit(arg.split(",").map(Number));
   else if(a==="saveedit")vSaveEdit();
   else if(a==="close")closeSheet();
+  else if(a==="alertundo"){const ids=vAlertIds;if(ids&&ids.size){S.vitals=S.vitals.filter(r=>!ids.has(r.id));save()}vAlertIds=null;closeSheet();render();toast("Kayıt silindi")}
   else if(a==="limits")sheetLimits();
   else if(a==="savelimits")vSaveLimits();
   else if(a==="range"){vRange=+arg;render()}

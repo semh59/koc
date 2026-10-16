@@ -111,7 +111,7 @@ const VitalsLib=(()=>{
     if(crisis(r,today))return r.k==="s"&&r.g<CRISIS.gLow?"low":"high";
     if(r.day!==today)return null;
     const bp=r.k==="t";
-    return (bp?r.sys>=(my.sys||ASK.sys)||r.dia>=(my.dia||ASK.dia)||r.sys<(my.sysLo||ASK.sysLo)||r.dia<(my.diaLo||ASK.diaLo):r.g>=(my.g||ASK.g)||r.g<(my.gLo||ASK.gLo))?"ask":null;
+    return (bp?r.sys>=(my.sys||ASK.sys)||r.dia>=(my.dia||ASK.dia)||r.sys<(my.sysLo||ASK.sysLo)||r.dia<(my.diaLo||ASK.diaLo):r.g>=((r.ctx==="after"&&my.gPost)||my.g||ASK.g)||r.g<(my.gLo||ASK.gLo))?"ask":null;
   };
   /* "Are you sure" question: compared only with the latest reading of the same kind (for glucose, the same context). */
   function needsConfirm(rows,n,gu){
