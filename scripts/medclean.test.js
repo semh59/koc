@@ -19,6 +19,7 @@ const unclock=require("./clock").at;
   ok("today's dose taken: its notification is cleared",await run([A],[[1,0]],1001000));
   ok("two doses in the same minute: one taken, the group notification stays",!(await run([A,B],[[1,0]],1001000)));
   ok("two doses in the same minute: both taken, it is cleared",await run([A,B],[[1,0],[2,0]],1001000));
+  restore();
   /* yesterday's unmarked 22:00 dose tapped on Today is stamped with the real time, so the double-dose check sees it */
   const restore7=unclock(w,7);
   ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.noticeOk=true;S.settings.medOn=true;S.meds=MedLib.cleanMeds([{id:1,n:'A',t:['22:00','08:00'],on:true,s:'2026-01-01'}]);S.medLog=[];tab='today';render()`);
@@ -28,6 +29,13 @@ const unclock=require("./clock").at;
   ev("medMark(1,'08:00','t',false,calKey())");
   ok("the next dose right after it asks before saving",ev("globalThis.__asked")===1&&ev("S.medLog.length")===1,ev("globalThis.__asked"));
   restore7();
-  restore();
+  /* a dose whose time has just come is "Saati geldi"; "Gecikti" and the near-contact button only after 30 minutes */
+  const restore8=unclock(w,8);
+  ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.noticeOk=true;S.settings.medOn=true;S.settings.medNear='Ali';S.meds=MedLib.cleanMeds([{id:1,n:'A',t:['08:00'],on:true,s:'2026-01-01'}]);S.medLog=[];tab='today';render()`);
+  const todo=()=>w.document.querySelector(".todo").textContent;
+  ok("dose time just reached: 'Saati geldi', no 'Gecikti', no near-contact button",/Saati geldi/.test(todo())&&!/Gecikti/.test(todo())&&!w.document.querySelector('[data-md="nearsend"]'),todo());
+  ev("S.meds=MedLib.cleanMeds([{id:1,n:'A',t:['07:00'],on:true,s:'2026-01-01'}]);render()");
+  ok("an hour late: 'Gecikti' with the near-contact button",/Gecikti/.test(todo())&&!!w.document.querySelector('[data-md="nearsend"]'),todo());
+  restore8();
   finish();
 })();

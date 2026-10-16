@@ -53,7 +53,7 @@ function toast(msg,undo){
 function undoLast(){
   const e=undoStack.pop();if(!e)return;
   const n=toastSeq,u=e.undo;
-  if(typeof u==="function")u();else{Log.remove(x=>x.id===u);save();render()}
+  if(typeof u==="function")u();else{const was=Log.find(x=>x.id===u);Log.remove(x=>x.id===u);save();render();if(was&&was.type==="water")scheduleReminders().then(setNotif)}
   if(toastSeq!==n)return;
   const next=undoStack[undoStack.length-1];
   if(next&&Date.now()-next.t<60000){toastShow(`Geri alındı. Bir önceki: ${next.msg}`,true);const b=$("#tundo");b.disabled=true;setTimeout(()=>{if(toastSeq===n+1)b.disabled=false},UNDO_GAP)}else{undoStack.length=0;$("#toast").classList.remove("on")}

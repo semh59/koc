@@ -93,10 +93,11 @@ function medTodo(){
   const t=calKey(),now=medNowHM(),y=MedLib.addDay(t,-1),rec=MedLib.logIndex(S.medLog,y);
   const ram=medRamTodo(),paused=S.meds.filter(m=>!m.on&&m.ou&&m.ou<=t).map(m=>`<div class="row"><span class="grow">${esc(m.n)}<small class="db mut sm">Ara verme süresi doldu</small></span><button class="b7 chip" data-md="resume:${m.id}" aria-label="Tekrar aç: ${esc(m.n)}">Tekrar aç</button></div>`);
   let near=0;
-  const row=(day,{m,slot},tag,sfx)=>`<div class="row"><span>${Icons.svg("meds")} <b class="num tm">${slot}</b> ${esc(m.n)}<small class="mut sm">${[esc(MedLib.doseText(m,slot,day)),MED_FED[m.fed],tag].filter(Boolean).join(" · ")}</small><small class="mut sm">Kaçırdığın dozu ikiye katlama; emin değilsen eczacına sor.</small></span><div class="acts"><button class="chip go" data-md="take:${m.id}:${slot}${sfx}" aria-label="Aldım: ${esc(m.n)}, ${slot}${day===t?"":", dün"}">${Icons.svg("check")} Aldım</button><button class="chip skip" data-md="skip:${m.id}:${slot}${sfx}" aria-label="Atla: ${esc(m.n)}, ${slot}${day===t?"":", dün"}">Atla</button>${day===t&&S.settings.medNear&&!near++?`<button class="chip" data-md="nearsend">Yakınıma haber ver</button>`:""}</div></div>`;
+  const mins=hm=>+hm.slice(0,2)*60+ +hm.slice(3,5),night=S.settings.dayStart>0&&new Date().getHours()<S.settings.dayStart; // before the day start, last evening's unmarked dose is still "late", not "yesterday's"
+  const row=(day,{m,slot},tag,sfx)=>`<div class="row"><span>${Icons.svg("meds")} <b class="num tm">${slot}</b> ${esc(m.n)}<small class="mut sm">${[esc(MedLib.doseText(m,slot,day)),MED_FED[m.fed],tag].filter(Boolean).join(" · ")}</small></span><div class="acts"><button class="chip go" data-md="take:${m.id}:${slot}${sfx}" aria-label="Aldım: ${esc(m.n)}, ${slot}${day===t?"":", dün"}">${Icons.svg("check")} Aldım</button><button class="chip skip" data-md="skip:${m.id}:${slot}${sfx}" aria-label="Atla: ${esc(m.n)}, ${slot}${day===t?"":", dün"}">Atla</button>${day===t&&S.settings.medNear&&tag==="Gecikti"&&!near++?`<button class="chip" data-md="nearsend">Yakınıma haber ver</button>`:""}</div></div>`;
   return ram.concat(paused)
-    .concat(MedLib.dosesOn(S.meds,y).filter(({m,slot})=>!rec(m.id,y,slot)).map(x=>row(y,x,"Dün kaçırıldı",":"+y)))
-    .concat(MedLib.dosesOn(S.meds,t).filter(({m,slot})=>slot<=now&&!rec(m.id,t,slot)).map(x=>row(t,x,"Gecikti","")));
+    .concat(MedLib.dosesOn(S.meds,y).filter(({m,slot})=>!rec(m.id,y,slot)).map(x=>row(y,x,night?"Gecikti":"Dün kaçırıldı",":"+y)))
+    .concat(MedLib.dosesOn(S.meds,t).filter(({m,slot})=>slot<=now&&!rec(m.id,t,slot)).map(x=>row(t,x,mins(now)-mins(x.slot)<30?"Saati geldi":"Gecikti","")));
 }
 
 /* ---- Ramadan: moving the times inside the daytime fast ---- */
