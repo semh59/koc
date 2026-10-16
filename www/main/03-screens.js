@@ -58,7 +58,7 @@ function viewToday(){
   const left=(v,g,u)=>v<g?[null,`${u} kaldı`]:["✓","Hedef tamam"];
   const [waterC,waterU0]=left(water,sh,"L"),[spC,spU]=left(sw,sg,"dk"),fasting=!waterC&&Habits.fasting(),wr=sh-water,wSm=wr<100,wrT=wSm?String(Math.round(wr)):fmt(wr/1000,1),waterU=fasting?"oruçta":!waterC&&wSm?"ml kaldı":waterU0,spLeft=Math.ceil(sg-sw);
   /* A day with almost nothing logged shows the total, not a remainder that would read as "you may eat this much more". */
-  const lowLog=kgl>0&&(kc<Algo.LOW_LOG_KCAL||!kcalCount()),kcC=st.hideNums?"•••":kgl>0&&!lowLog?Math.round(Math.abs(kgl-kc)):Math.round(kc),kcU=kgl>0&&!lowLog&&!st.hideNums?(kc>kgl?"kcal fazla":"kcal kaldı"):kgl>0&&!st.hideNums?"kcal yedin":"kcal";
+  const lowLog=kgl>0&&(kc<Algo.LOW_LOG_KCAL||!kcalCount()),kcC=st.hideNums?"•••":kgl>0&&!lowLog?Math.round(Math.abs(kgl-kc)):Math.round(kc),kcU=kgl>0&&!lowLog&&!st.hideNums?(kc>kgl?"kcal hedefin üstünde":"kcal kaldı"):kgl>0&&!st.hideNums?"kcal yedin":"kcal";
   const meals=Log.where(e=>e.type==="food"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
   const pr=cur!=null?Algo.protein(riskInput(cur)):{};
   const goalOf=g=>st[g]?` / ${st[g]}`:"";
@@ -76,7 +76,7 @@ function viewToday(){
   const notesIn=[Habits.ramWaterNote(),lowLog&&kcalCount()&&!st.hideNums?`<p class="pt-2 hint">Bugün az yemek kayıtlı; kayıtlar tamamlanınca kalanı gösteririm.</p>`:"",...st.hideNums?[]:[macro,caff,macroNote,fiber,micro,rangeNote,moveAdd(t)&&kcalCount()?`<p class="pt-2 hint">Hedefe hareketten +${moveAdd(t)} kcal eklendi (kayıtlı antrenman ve yürüyüşün yarısı, tahmindir).</p>`:""]].join("");
   const notes=notesIn?`<details class="acc" ${keepOpen("tnotes")}><summary>Ayrıntı</summary>${notesIn}</details>`:"";
   /* Summary card: big calorie ring and the remainder; water, sport and steps in small rings; macros below. */
-  const rings=`<div class="card"><div class="rings">
+  const rings=`<div class="card">${logOff>0?`<h2 class="grp">Bugünün özeti</h2>`:""}<div class="rings">
     ${rb("kcal","Kalori",ring(st.hideNums?0:kcP,"var(--kcal)",kcC,"Kalori",st.hideNums?"sayılar gizli":kgl>0?kcalCount()?`${Math.round(kc)} / ${kgl} kcal`:`${Math.round(kc)} kcal`:"hedef yok",kcU,"main"),st.hideNums?"":kgl>0&&kcalCount()?`${kcC} ${kcU}, ${Math.round(kc)} / ${kgl} kcal`:`${kcC} ${kcU}`)}
     <div class="rmini">${rb("water","Su",ring(water/sh,"var(--water)",waterC||wrT,"Su",`${fmt(water/1000,1)} / ${fmt(sh/1000,1)} L${fasting?", oruç saatinde":""}`,waterU,"mini"+(waterC?" done":"")),`${waterC?"hedef tamam":`${wrT} ${waterU}`}, ${fmt(water/1000,1)} / ${fmt(sh/1000,1)} L`)}
     ${rb("exercise","Spor",ring(sw/sg,"var(--exercise)",spC||spLeft,"Spor",`${Math.round(sw)} / ${sg} dk`,spU,"mini"+(spC?" done":"")),`${spC?"hedef tamam":`${spLeft} ${spU}`}, ${Math.round(sw)} / ${sg} dk`)}${sOn?stepCard():""}</div>
@@ -118,7 +118,7 @@ function viewToday(){
   if(todoTopLock===null)todoTopLock=first.some(r=>r.includes('data-md="take:'));
   const minor=S.settings.age>0&&S.settings.age<18?`<div class="banner"><b>NeoWell 18 yaş ve üzeri için</b><p>Profilindeki yaş 18'in altında. Kalori açığı, oruç önerisi ve Rehber kapalı. Beslenme ve kilo konusunda bir yetişkinle ve hekiminle ya da diyetisyeninle konuş. Yaş yanlışsa Ayarlar > Profil'den düzelt.</p></div>`:"";
   /* .bg2 has no effect in portrait; in landscape the left column holds rings and summary, the right one jobs and entries. */
-  return `<div class="bg2"><div class="bgL">${minor}${todoTopLock?todoCard:""}${rings}${actions}${habitRow()}</div><div class="bgR">${todoTopLock?"":todoCard}${gTodayCard()}${weight}<div class="card">${dnav}${log}${items.some(e=>e.type==="food")?`<button class="lnk" data-act="cp:day">Bu günü başka güne kopyala</button><button class="lnk" data-act="tplnew">Bu günün yemeklerinden şablon yap</button>`:""}${st.bpOn||st.bsOn?`<button class="lnk" data-doc="open">Hekime hazırlan</button>`:""}<button class="lnk" data-tab="history">Geçmiş ve takvim</button></div></div></div>`;
+  return `<div class="bg2"><div class="bgL">${minor}${todoTopLock?todoCard:""}${rings}${actions}</div><div class="bgR">${todoTopLock?"":todoCard}${habitRow()}${gTodayCard()}${weight}<div class="card">${dnav}${log}${items.some(e=>e.type==="food")?`<details class="acc" ${keepOpen("tlog")}><summary>Daha fazla</summary><button class="lnk" data-act="cp:day">Bu günü başka güne kopyala</button><button class="lnk" data-act="tplnew">Bu günün yemeklerinden şablon yap</button></details>`:""}${st.bpOn||st.bsOn?`<button class="lnk" data-doc="open">Hekime hazırlan</button>`:""}<button class="lnk" data-tab="history">Geçmiş ve takvim</button></div></div></div>`;
 }
 
 /* PDF reports in one place; the share handlers listen on the document, so they work from any screen. */
@@ -223,7 +223,7 @@ function viewSettings(){
       coach:keysStored()?"Anahtar kayıtlı":"Anahtar yok",data:storeMsg()?storeMsg()[0]:st.lastBackup?"Son yedek "+fd(st.lastBackup):"Henüz yedek dosyası yok",about:appVer?"Sürüm "+appVer:"Sürüm, kaynaklar ve tıbbi uyarı"};
     const grp=(g,ks)=>`<h2 class="grp">${g}</h2><div class="card">${SETTINGS_TABS.filter(([k])=>ks.includes(k)).map(([k,t,ic])=>navRow(`data-tab="settings-${k}"`,ic,t,esc(d[k]))).join("")}</div>`;
     return `${grp("Kişisel",["profile","reminders"])}${grp("Rehber ve modüller",["coach","modules"])}
-    <h2 class="grp">Görünüm ve erişilebilirlik</h2><div class="card"><div class="lbl" id="thml">Tema</div>${segb("thm",[["","Sistem"],["light","Açık"],["dark","Koyu"]],st.theme).replace('role="group"','role="group" aria-labelledby="thml"')}${swHelp("data-comfy",st.comfy,"Büyük yazı ve düğmeler","","hlpcf","Yazıları ve düğmeleri büyütür. Telefonun yazı boyutu ayarı da ayrıca çalışır.")}${swRow("data-hs",st.hideStreak,"Seriyi gizle","Bugün'deki gün sayısını ve adım serisini kaldırır")}${swRow("data-hn",st.hideNums,"Sayıları gizle","Bugün'de ve Trend'de kilo, kalori, besin ve adım rakamları görünmez; Trend'de dokunarak gösterirsin")}</div>
+    <h2 class="grp">Görünüm ve erişilebilirlik</h2><div class="card"><div class="lbl" id="thml">Tema</div>${segb("thm",[["","Sistem"],["light","Açık"],["dark","Koyu"]],st.theme).replace('role="group"','role="group" aria-labelledby="thml"')}${swHelp("data-comfy",st.comfy,"Büyük yazı ve düğmeler","","hlpcf","Yazıları ve düğmeleri büyütür. Telefonun yazı boyutu ayarı da ayrıca çalışır.")}${swRow("data-hs",st.hideStreak,"Seriyi gizle","Bugün'deki gün sayısını ve adım serisini kaldırır")}${swRow("data-hn",st.hideNums,"Sayıları gizle","Bugün'de ve Trend'de kilo, kalori, besin, adım, tansiyon ve şeker rakamları görünmez; Trend'de dokunarak gösterirsin")}</div>
     ${isNative()?`<h2 class="grp">Telefon</h2><div class="card">${navRow('data-pm="open"',"bell","İzinler",pmMissing().length?`${pmMissing().length} eksik: ${esc(pmMissing().map(i=>i.t).join(", "))}`:"Bildirim, alarm, adım ve pil ayarları")}</div>`:""}
     ${grp("Veri ve uygulama",["data","about"])}`;
   }
