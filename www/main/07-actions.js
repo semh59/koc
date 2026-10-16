@@ -54,7 +54,7 @@ on("bat",batFix);
 on("oem1",()=>openDH("openAutostart"));
 on("oem2",()=>openDH("openBattery"));
 on("stepsfix",batFix);
-on("stepshide",()=>{S.settings.stepWarnDay=dayKey();save();render()});
+on("stepshide",()=>{S.settings.stepWarnDay=calKey();save();render()});
 on("profile",()=>{tab="settings-profile";render();window.scrollTo(0,0)});
 on("health",()=>{
   const r=risk();

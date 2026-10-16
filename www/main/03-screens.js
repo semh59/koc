@@ -93,7 +93,7 @@ function viewToday(){
   const lname=logOff===0?"Bugün":logOff===1?"Dün":fd(lk);
   const dnav=dayNav("lo",lname,logOff===0);
   const lb=st.lastBackup,old=lb?Algo.dayNum(t)-Algo.dayNum(lb):null;
-  const a7=(a,b)=>sum("steps",keyOff(a),keyOff(b));
+  const a7=(a,b)=>sum("steps",calOff(a),calOff(b)); // steps are stored by calendar day
   const lateN=lateEntries().length,lateRow=()=>lateN?row("clock",`Gece yarısından sonra ${lateN} kayıt bugüne yazıldı`,"Dünün devamıysa dünkü güne taşıyabilirsin.",[["lateyest","Dünkü güne taşı"],["lateok","Bugüne ait"]]):"";
   const row=(ic,b,sub,btns)=>`<div class="row"><span>${Icons.svg(ic)} ${b}<small class="mut sm">${sub}</small></span><div class="acts">${btns.map(([a,l])=>`<button class="chip" data-act="${a}" aria-label="${esc(b)}: ${l}">${l}</button>`).join("")}</div></div>`;
   /* One list instead of separate cards: only pending jobs of enabled modules; no card when empty. */
@@ -118,7 +118,7 @@ function viewToday(){
   const pinned=[...first,saveRow,abRow,lateRow(),...medBudget].filter(Boolean),setup=[firstWater,...[goalRow,ageRow,comfyRow,modRow,brakeRow].filter(Boolean).slice(0,1)].filter(Boolean);
   const bkSnoozed=st.bkSnoozeAt&&Algo.dayNum(t)-Algo.dayNum(st.bkSnoozeAt)<7;
   const todo=[...pinned,...setup,...pmTodo(),...(fastRun.length?[]:fastTodo()),...ramadanTodo(),...trialTodo(),
-    sOn&&stepsRead&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?row("steps","Adım sayımı durmuş olabilir","Pil ayarında NeoWell'e kısıtlama koyma.",[["stepsfix","Ayarla"],["stepshide","Kapat"]]):"",
+    sOn&&stepsRead&&st.stepWarnDay!==calKey()&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?row("steps","Adım sayımı durmuş olabilir","Pil ayarında NeoWell'e kısıtlama koyma.",[["stepsfix","Ayarla"],["stepshide","Bugün gizle"]]):"",
     !pmMany()&&isNative()&&!exactOk&&st.medOn&&Meds.count()?row("clock","İlaç alarmı birkaç dakika gecikebilir",PM_TEXT.exact.warn,[["fullalarm","İzin ver"]]):"",
     !pmMany()&&isNative()&&!fsiOk&&st.medOn&&Meds.count()?row("clock","İlaç alarmı kilitli ekranı açmayabilir",PM_TEXT.fsi.warn,[["fullscreen","İzin ver"]]):"",
     !pmMany()&&!bg.miss&&pmMissing().some(i=>i.id==="bat")?row("bell",oemXiaomi()?"Hatırlatmalar için bir kez ayar gerekli":"Pil kısıtı alarmı geciktiriyor",oemXiaomi()?"İki izin verince hatırlatmalar kaçmaz.":"Pil ayarında NeoWell'e kısıtlama koyma.",[["bat","Ayarla"]]):"",
