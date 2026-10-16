@@ -35,6 +35,7 @@ const {boot}=require("./html");
   ok("level: bands and boundaries",L.level(T({sys:139,dia:89}),t)===null&&L.level(T({sys:140}),t)==="ask"&&L.level(T({dia:90}),t)==="ask"&&L.level(T({sys:180}),t)==="high"&&L.level(G({g:249}),t)===null&&L.level(G({g:250}),t)==="ask"&&L.level(G({g:400}),t)==="ask"&&L.level(G({g:401}),t)==="high"&&L.level(G({g:53}),t)==="low"&&L.level(G({g:54}),t)==="ask"&&L.level(G({g:69}),t)==="ask"&&L.level(G({g:70}),t)===null&&L.level(T({sys:89}),t)==="ask"&&L.level(T({sys:80,dia:50}),t)==="ask"&&L.level(T({sys:90,dia:60}),t)===null);
   ok("level: own low limit replaces the default low line",L.level(T({sys:100}),t,{sysLo:105})==="ask"&&L.level(T({sys:85}),t,{sysLo:80})===null&&L.level(G({g:75}),t,{gLo:80})==="ask"&&L.level(G({g:65}),t,{gLo:60})===null);
   ok("level: a past day gives nothing",L.level(T({sys:190,day:"2026-09-01"}),t)===null);
+  ok("level: a post-meal limit applies to 'after' readings only, the fasting limit to the rest",L.level(G({g:150,ctx:"after"}),t,{g:140,gPost:160})===null&&L.level(G({g:150,ctx:"fasting"}),t,{g:140,gPost:160})==="ask"&&L.level(G({g:170,ctx:"after"}),t,{g:140,gPost:160})==="ask");
   ok("level: own limit replaces the default",L.level(T({sys:132}),t,{sys:130})==="ask"&&L.level(T({sys:132}),t)===null&&L.level(G({g:160}),t,{g:150})==="ask");
 
   ev("closeSheet();sheetLimits()");
@@ -47,6 +48,18 @@ const {boot}=require("./html");
   ev("S.vitals=[];S.settings.bpOn=true;tab='today';const d=dayKey();S.vitals.push({id:901,k:'t',day:d,time:'08:00',sys:128,dia:82,sid:'s1',i:1,session:'morning'},{id:902,k:'t',day:d,time:'08:00',sys:140,dia:90,sid:'s1',i:2,session:'morning'});render()");
   ok("the blood pressure chip shows the session mean (134/86), the same figure as the save message",q('[data-chip="bp"]').textContent.includes("134/86"),q('[data-chip="bp"]').textContent);
   ev("S.vitals=[];render()");
+  const clock=require("./clock").at;
+  ev("S.vitals=[];S.settings.bpOn=true;tab='today';");
+  let back=clock(w,7);
+  ev("const d2=dayKey();globalThis.__d2=d2;S.vitals.push({id:911,k:'t',day:d2,time:'06:30',sys:120,dia:80,sid:'m1',i:1,session:'morning'});render()");
+  ok("morning reading done, before the evening time: no blood pressure row",!/Tansiyon ölç/.test(q("#view").textContent));
+  back();back=clock(w,21);ev("render()");
+  ok("morning reading done, evening time passed with no evening session: the row returns",/Tansiyon ölç/.test(q("#view").textContent));
+  ev("S.vitals.push({id:912,k:'t',day:globalThis.__d2,time:'20:10',sys:122,dia:80,sid:'e1',i:1,session:'evening'});render()");
+  ok("evening session done: the row is gone",!/Tansiyon ölç/.test(q("#view").textContent));
+  back();ev("S.vitals=[];render()");
+  ev("S.vitals=[]");bp(190,100);
+  ok("the emergency box has a 'delete this reading' link and it removes exactly that reading",!!q('[data-vt="alertundo"]')&&ev("S.vitals.length")>=1&&(q('[data-vt="alertundo"]').click(),ev("S.vitals.length")===0),ev("S.vitals.length"));
   /* mmol/L: the lower glucose limit shows as typed after reopening; a lower limit at or above the upper one is refused */
   ev("S.settings.gUnit='mmol';S.settings.gFastHi=0;S.settings.gFastLo=0;S.settings.bpSysHi=0;closeSheet();sheetLimits()");
   q("#vlglo").value="3,9";q('[data-vt="savelimits"]').click();
