@@ -105,17 +105,25 @@ function viewToday(){
   const ageRow=st.obDone&&!(st.age>0)&&!goalRow?row("user","Yaşını gir","Yaşa göre korumalar ve öneriler ayarlanır.",[["agego","Gir"]]):"";
   const modRow=st.obDone&&!st.modAsked&&st.obAt&&st.obAt<t&&Algo.dayNum(t)-Algo.dayNum(st.obAt)<=7?row("more","Hangilerini takip edelim?","İlaç, oruç, tansiyon, şeker ve adım takibini istediğin gibi aç.",[["obmods","Seç"],["obmodsno","Şimdi değil"]]):"";
   const saveRow=storeMsg()?row("save",storeMsg()[0],storeMsg()[1],[["databackup","Yedek al"]]):"";
-  const todo=[...first,saveRow,...medBudget,firstWater,goalRow,ageRow,modRow,
-    abErr?row("cloud","Otomatik yedek alınamadı",abErr,[["abfix","Düzelt"]]):"",
-    lateRow(),...pmTodo(),...(fastRun.length?[]:fastTodo()),...ramadanTodo(),...trialTodo(),
+  const abRow=abErr?row("cloud","Otomatik yedek alınamadı",abErr,[["abfix","Düzelt"]]):"";
+  /* A calorie target below maintenance with a soft risk flag (medication, health note, readings) that the user has not talked through with a doctor: a gentle reminder, cleared with "Hekimime danıştım". */
+  const softBrake=(()=>{
+    if(!(st.kcal>0))return false;
+    const w=weights(),ks=Object.keys(w).sort(),kg=ks.length?w[ks[ks.length-1]]:0,r=risk(kg||null),p={kg,cm:st.heightCm,age:st.age,sex:st.sex,act:st.act};
+    return !!r.block&&!r.hard.length&&!r.cleared&&kg>0&&p.cm>0&&p.age>0&&st.kcal<Math.round(Algo.formulaTdee(p)/10)*10;
+  })();
+  const brakeRow=softBrake?row("save","Kalori hedefini hekiminle gözden geçir","Sağlık notun, ilaç kaydın ya da ölçümlerin var; bakım düzeyinin altındaki hedef için önce hekimine danış.",[["riskok","Hekimime danıştım"]]):"";
+  /* Never fold: medication and measurement jobs, a running walk or fast, the save-failed and backup-failed notices, the night-entries offer. Setup rows: the first-water row plus at most one other; of the rest the first 3 rows (counting the pinned ones) are visible, so the log is not pushed down. */
+  const pinned=[...first,saveRow,abRow,lateRow(),...medBudget].filter(Boolean),setup=[firstWater,...[goalRow,ageRow,modRow,brakeRow].filter(Boolean).slice(0,1)].filter(Boolean);
+  const bkSnoozed=st.bkSnoozeAt&&Algo.dayNum(t)-Algo.dayNum(st.bkSnoozeAt)<7;
+  const todo=[...pinned,...setup,...pmTodo(),...(fastRun.length?[]:fastTodo()),...ramadanTodo(),...trialTodo(),
     sOn&&stepsRead&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?row("steps","Adım sayımı durmuş olabilir","Pil ayarında NeoWell'e kısıtlama koyma.",[["stepsfix","Ayarla"],["stepshide","Kapat"]]):"",
     !pmMany()&&isNative()&&!exactOk&&st.medOn&&Meds.count()?row("clock","İlaç alarmı birkaç dakika gecikebilir",PM_TEXT.exact.warn,[["fullalarm","İzin ver"]]):"",
     !pmMany()&&isNative()&&!fsiOk&&st.medOn&&Meds.count()?row("clock","İlaç alarmı kilitli ekranı açmayabilir",PM_TEXT.fsi.warn,[["fullscreen","İzin ver"]]):"",
     !pmMany()&&!bg.miss&&pmMissing().some(i=>i.id==="bat")?row("bell",oemXiaomi()?"Hatırlatmalar için bir kez ayar gerekli":"Pil kısıtı alarmı geciktiriyor",oemXiaomi()?"İki izin verince hatırlatmalar kaçmaz.":"Pil ayarında NeoWell'e kısıtlama koyma.",[["bat","Ayarla"]]):"",
     isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?row("steps","Adım sayarı aç","Telefonun sensörü sayar, hesap gerekmez.",[["stepsopen","Aç"],["stepsno","Şimdi değil"]]):"",
-    Log.all().length>=10&&(old==null||old>14)?row("cloud","Verilerini yedekle",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Yedekle"]]):""].filter(Boolean);
-  /* Medication, measurement, a running walk or fast and the save-failed notice come first and never fold; of the rest the first 3 are visible, so the log is not pushed down. */
-  const vis=Math.max(3,first.length+(saveRow?1:0)+medBudget.length),minfo=medInfo(),todoCard=todo.length||minfo?`<div class="card todo"><h2 class="grp">Bugün yapılacaklar</h2>${minfo?`<p class="hint">${minfo}</p>`:""}${todo.slice(0,vis).join("")}${first.some(r=>r.includes('data-md="take:'))?`<p class="hint">Kaçırdığın dozu ikiye katlama; emin değilsen eczacına sor.</p>`:""}${todo.length>vis?`<details class="acc" ${keepOpen("todo")}><summary>${todo.length-vis} iş daha</summary>${todo.slice(vis).join("")}</details>`:""}</div>`:"";
+    Log.all().length>=10&&(old==null||old>14)&&!bkSnoozed?row("cloud","Verilerini yedekle",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Yedekle"],["bksnooze","Şimdi değil"]]):""].filter(Boolean);
+  const vis=Math.max(3,pinned.length),minfo=medInfo(),todoCard=todo.length||minfo?`<div class="card todo"><h2 class="grp">Bugün yapılacaklar</h2>${minfo?`<p class="hint">${minfo}</p>`:""}${todo.slice(0,vis).join("")}${first.some(r=>r.includes('data-md="take:'))?`<p class="hint">Kaçırdığın dozu ikiye katlama; emin değilsen eczacına sor.</p>`:""}${todo.length>vis?`<details class="acc" ${keepOpen("todo")}><summary>${todo.length-vis} iş daha</summary>${todo.slice(vis).join("")}</details>`:""}</div>`:"";
   if(todoTopLock===null)todoTopLock=first.some(r=>r.includes('data-md="take:'));
   const minor=S.settings.age>0&&S.settings.age<18?`<div class="banner"><b>NeoWell 18 yaş ve üzeri için</b><p>Profilindeki yaş 18'in altında. Kalori açığı, oruç önerisi ve Rehber kapalı. Beslenme ve kilo konusunda bir yetişkinle ve hekiminle ya da diyetisyeninle konuş. Yaş yanlışsa Ayarlar > Profil'den düzelt.</p></div>`:"";
   /* .bg2 has no effect in portrait; in landscape the left column holds rings and summary, the right one jobs and entries. */
