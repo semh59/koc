@@ -19,6 +19,15 @@ const unclock=require("./clock").at;
   ok("today's dose taken: its notification is cleared",await run([A],[[1,0]],1001000));
   ok("two doses in the same minute: one taken, the group notification stays",!(await run([A,B],[[1,0]],1001000)));
   ok("two doses in the same minute: both taken, it is cleared",await run([A,B],[[1,0],[2,0]],1001000));
+  /* yesterday's unmarked 22:00 dose tapped on Today is stamped with the real time, so the double-dose check sees it */
+  const restore7=unclock(w,7);
+  ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.noticeOk=true;S.settings.medOn=true;S.meds=MedLib.cleanMeds([{id:1,n:'A',t:['22:00','08:00'],on:true,s:'2026-01-01'}]);S.medLog=[];tab='today';render()`);
+  ev("window.__confirmAuto=m=>{globalThis.__asked=(globalThis.__asked||0)+1;return false}");
+  ev("medMark(1,'22:00','t',false,calOff(-1))");
+  ok("yesterday's dose marked on Today gets the time of the tap",/^\d\d:\d\d$/.test(ev("S.medLog[0].at||''")),ev("JSON.stringify(S.medLog)"));
+  ev("medMark(1,'08:00','t',false,calKey())");
+  ok("the next dose right after it asks before saving",ev("globalThis.__asked")===1&&ev("S.medLog.length")===1,ev("globalThis.__asked"));
+  restore7();
   restore();
   finish();
 })();

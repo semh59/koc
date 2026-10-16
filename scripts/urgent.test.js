@@ -44,5 +44,16 @@ const {boot}=require("./html");
   ok("limits: saved, empty fields stay off",ev("S.settings.bpSysHi")===130&&ev("S.settings.bpDiaHi")===0&&ev("S.settings.gFastHi")===0);
   bp(135,80);
   ok("own blood pressure limit triggers the neutral line",/Hekimine danış; bu bir tanı değildir/.test(msg()),msg());
+  ev("S.vitals=[];S.settings.bpOn=true;tab='today';const d=dayKey();S.vitals.push({id:901,k:'t',day:d,time:'08:00',sys:128,dia:82,sid:'s1',i:1,session:'morning'},{id:902,k:'t',day:d,time:'08:00',sys:140,dia:90,sid:'s1',i:2,session:'morning'});render()");
+  ok("the blood pressure chip shows the session mean (134/86), the same figure as the save message",q('[data-chip="bp"]').textContent.includes("134/86"),q('[data-chip="bp"]').textContent);
+  ev("S.vitals=[];render()");
+  /* mmol/L: the lower glucose limit shows as typed after reopening; a lower limit at or above the upper one is refused */
+  ev("S.settings.gUnit='mmol';S.settings.gFastHi=0;S.settings.gFastLo=0;S.settings.bpSysHi=0;closeSheet();sheetLimits()");
+  q("#vlglo").value="3,9";q('[data-vt="savelimits"]').click();
+  ev("sheetLimits()");
+  ok("limits: a lower glucose limit in mmol/L is saved and shown as 3,9",ev("S.settings.gFastLo")>0&&q("#vlglo").value==="3,9"&&/açık/.test(ev("vitalsSettingsHtml()")),q("#vlglo").value);
+  q("#vlg").value="5";q("#vlglo").value="9";q('[data-vt="savelimits"]').click();
+  ok("limits: a lower limit above the upper one is refused",/alt sınır üst sınırdan küçük olmalı/.test(q("#vwarn").textContent));
+  ev("S.settings.gUnit='mgdl'");
   finish();
 })();

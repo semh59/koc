@@ -306,16 +306,18 @@ function medResume(id){
 const medUndoToast=(msg,res)=>toast(msg,()=>{res.undo();save();render();medResched()});
 function medMark(mid,slot,st,force,day=calKey()){
   const isToday=day===calKey();
-  if(st==="t"&&!force&&isToday){
+  /* A dose tapped on Today (also yesterday's unmarked one) was taken now; on the Meds screen's past-day list the user sets the time. */
+  const live=isToday||tab==="today";
+  if(st==="t"&&!force&&live){
     const r=MedLib.recentTaken(S.medLog,mid,day,slot,Date.now());
     if(r){confirmSheet({title:"Yine de kaydedilsin mi?",body:MedLib.recentText(r),ok:"Evet, kaydet",no:"Hayır, kaydetme"}).then(yes=>yes?medMark(mid,slot,st,true,day):toast(MedLib.NOT_SAVED));return}
   }
-  const res=MedLib.mark(S,mid,day,slot,st,st==="t"&&isToday?medNowHM():undefined);
+  const at=st==="t"&&live?medNowHM():undefined,res=MedLib.mark(S,mid,day,slot,st,at);
   if(!res)return;
   if(!commit(res.undo))return;
   render();medResched();
   const m=S.meds.find(x=>x.id===mid);
-  medUndoToast(st==="t"?`${m.n} alındı olarak kaydedildi`:st==="s"?`${m.n} atlandı`:"Kayıt geri alındı",res);
+  medUndoToast(st==="t"?`${m.n} alındı olarak kaydedildi${isToday||!at?"":`, saat ${at}. Başka saatse İlaçlar ekranında düzelt`}`:st==="s"?`${m.n} atlandı`:"Kayıt geri alındı",res);
 }
 function medAtSheet(mid,slot,day){
   const r=S.medLog.find(x=>x.m===mid&&x.day===day&&x.slot===slot&&x.st==="t"),m=S.meds.find(x=>x.id===mid);
