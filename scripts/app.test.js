@@ -2285,6 +2285,8 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("ring buttons name the value; delete buttons name the entry",[...w.document.querySelectorAll(".rbtn")].every(b=>/\d/.test(b.getAttribute("aria-label"))||/Adım|sayılar/.test(b.getAttribute("aria-label")))&&[...w.document.querySelectorAll(".log .del")].every(b=>/, sil$/.test(b.getAttribute("aria-label"))&&b.getAttribute("aria-label").length>6));
     ev("add('food',1500,'Öğle');S.settings.edFlag=true;render()");
     ok("with a hard risk flag the calorie ring is a plain total, never 'kcal kaldı'",(t=>t.includes("kcal yedin")&&!/kcal (kaldı|fazla)/.test(t))($q(".rbtn").textContent),$q(".rbtn").textContent);
+    ok("with a hard risk flag no target figure remains in the ring or its label",!/\/ \d{3,4} kcal/.test($q(".rbtn").textContent+$q(".rbtn").getAttribute("aria-label")));
+    ev("add('food',200,'Atıştırmalık');render()");
     ev("S.settings.edFlag=false;render()");
     ev("S.settings.obDone=true;S.settings.obSkipped=false;S.settings.age=0;render()");
     ok("with no age the Today list asks for it and leads to the profile",!!$q('.todo [data-act="agego"]'));
@@ -2301,12 +2303,17 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   }
   { // home screen widget
     const wc=[];w.Capacitor.Plugins.Widget={update:async d=>{wc.push(d)}};
-    ev("widgetLast='';tab='today';S.entries=[];add('water',250);add('food',400,'makarna');Object.assign(S.settings,{edFlag:false,pregnant:false,nursing:false,age:0,goalKg:0,riskOff:'',healthNote:''});S.settings.kcal=1800;S.settings.waterMl=2500;S.settings.glass=250;S.settings.stepsOn=true;stepToday=3000;add('steps',500,'manual');render()");
-    ok("widget: updated once after render with the right fields",wc.length===1&&JSON.stringify(wc[0])===JSON.stringify({day:ev("dayKey()"),ds:0,water:250,waterGoal:2500,glass:250,kcalLeft:1400,steps:3500}),wc);
+    ev("widgetLast='';tab='today';S.entries=[];add('water',250);add('food',900,'makarna');Object.assign(S.settings,{edFlag:false,pregnant:false,nursing:false,age:0,goalKg:0,riskOff:'',healthNote:''});S.settings.kcal=1800;S.settings.waterMl=2500;S.settings.glass=250;S.settings.stepsOn=true;stepToday=3000;add('steps',500,'manual');render()");
+    ok("widget: updated once after render with the right fields",wc.length===1&&JSON.stringify(wc[0])===JSON.stringify({day:ev("dayKey()"),ds:0,water:250,waterGoal:2500,glass:250,kcalLeft:900,steps:3500}),wc);
     ev("render()");
     ok("widget: not sent again when nothing changed",wc.length===1);
     ev("S.settings.kcal=0;S.settings.stepsOn=false;render()");
     ok("widget: kcalLeft when there is no target, steps null when steps are off",wc.length===2&&wc[1].kcalLeft===null&&wc[1].steps===null&&"kcalLeft" in wc[1]);
+    ev("S.settings.kcal=1800;S.entries=S.entries.filter(e=>e.type!=='food');add('food',400,'az');render()");
+    ok("widget: a day with little logged shows the total eaten, not a remainder",wc[wc.length-1].kcalEaten===400&&!("kcalLeft" in wc[wc.length-1]),JSON.stringify(wc[wc.length-1]));
+    ev("add('food',500,'çok');S.settings.edFlag=true;render()");
+    ok("widget: under a hard risk flag it shows the total eaten, never 'hedef yok'",wc[wc.length-1].kcalEaten===900&&!("kcalLeft" in wc[wc.length-1]),JSON.stringify(wc[wc.length-1]));
+    ev("S.settings.edFlag=false;S.settings.kcal=0;render()");
     ev("S.settings.stepsOn=true;tab='trend';render()");stepSteps=3200;await ev("stepsSync()");
     ok("widget: updated when steps change even outside Today",wc[wc.length-1].steps===3700,wc[wc.length-1]);
     ev("tab='coach';logOff=-2;widgetOpen()");

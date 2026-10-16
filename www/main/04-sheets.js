@@ -312,8 +312,12 @@ function goNutrition(){
   if(x.lo!=null){e.lo=Math.round(x.lo);e.hi=Math.round(x.hi)}
   save();
   closeSheet();render();
-  const t=dayKey(),top=sum("food",t,t),g=kcalGoal(t);
-  toast(g>0&&top?`Kaydedildi. Bugün ${Math.round(top)} / ${g} kcal`:"Yemek kaydedildi",e.id);
+  foodToast(e);
+}
+/* The saved-meal toast gives the day's total against the target only when the target is shown at all: not under a hard risk flag or with numbers hidden, and with the entry's own day. */
+function foodToast(e){
+  const top=sum("food",e.day,e.day),g=kcalGoal(e.day);
+  toast(g>0&&top&&kcalCount()&&!S.settings.hideNums?`Kaydedildi. ${e.day===dayKey()?"Bugün":fd(e.day)} ${Math.round(top)} / ${g} kcal`:"Yemek kaydedildi",e.id);
 }
 function goFood(){
   const text=$("#ft").value.trim(),kc=num($("#fv").value,true);
@@ -323,8 +327,7 @@ function goFood(){
   const e=add("food",isNaN(kc)?null:kc,text,fday());e.meal=fmeal();
   if(pendingBarcode&&text&&!isNaN(kc))Nutrition.addMy(text,kc,null,pendingBarcode);
   save();closeSheet();render();
-  const t=dayKey(),top=sum("food",t,t),g=kcalGoal(t);
-  toast(g>0&&top?`Kaydedildi. Bugün ${Math.round(top)} / ${g} kcal`:"Yemek kaydedildi",e.id);
+  foodToast(e);
 }
 const EXERCISE=["Yürüyüş","Koşu","Ağırlık","Bisiklet","Yüzme","Yoga","Diğer"];
 const EXERCISE_MET={Yürüyüş:3.5,Koşu:8.3,Ağırlık:5,Bisiklet:6.8,Yüzme:6,Yoga:2.5,Diğer:4};
