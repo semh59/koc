@@ -13,22 +13,22 @@ for(const t of ["pointerdown","pointermove"])document.addEventListener(t,ev=>{
   else if(t==="pointerdown")document.querySelectorAll(".tip").forEach(n=>n.remove());
 });
 /* One day's entry list (meal groups, water summary, other entries): shared by Today and the Day screen. */
-/* Entries of today made between 00:00 and 04:00 (after the day start), offered for "Dün gibi say" only while that window lasts. */
+/* Entries of today made between 00:00 and 04:00 (after the day start), offered for "Dünkü güne taşı" only while that window lasts. */
 const lateEntries=()=>{const h=new Date().getHours(),t=dayKey();return logOff===0&&h<4&&h>=(S.settings.dayStart||0)?Log.where(e=>e.day===t&&e.type!=="steps"&&e.time<"04:00"&&e.time>=`${pad(S.settings.dayStart||0)}:00`):[]};
 function dayLogHtml(lk){
   const items=Log.where(e=>e.day===lk&&e.type!=="steps");
-  const vtxt=e=>e.type==="weight"?`${dw(e.v)} ${wlab()}`:e.type==="food"?(e.v?e.lo!=null?`~${Math.round(e.v)} kcal<small class="db mut sm">${e.lo}-${e.hi}</small>`:`${Math.round(e.v)} kcal`:""):e.type==="exercise"?`${Math.round(e.v)} dk`:"";
-  const ttx=e=>e.type==="weight"?"Tartı":esc(e.text||(e.type==="food"?"Öğün":"Antrenman"))+(e.kcal?` · ~${e.kcal} kcal tahmini`:"");
-  const li=e=>`<li class="row"><span class="t num">${e.time}</span><span class="ic">${Icons.svg(e.type)}</span><button class="tx" data-edit="${e.id}" aria-label="${esc(ttx(e))}, düzenle">${ttx(e)}</button><span class="vl num">${vtxt(e)}</span><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></li>`;
+  const hn=S.settings.hideNums,vtxt=e=>hn?(e.type==="weight"||e.type==="food"&&e.v||e.type==="exercise"?"•••":""):e.type==="weight"?`${dw(e.v)} ${wlab()}`:e.type==="food"?(e.v?e.lo!=null?`~${Math.round(e.v)} kcal<small class="db mut sm">${e.lo}-${e.hi}</small>`:`${Math.round(e.v)} kcal`:""):e.type==="exercise"?`${Math.round(e.v)} dk`:"";
+  const ttx=e=>e.type==="weight"?"Tartı":esc(e.text||(e.type==="food"?"Öğün":"Antrenman"))+(e.kcal&&!hn?` · ~${e.kcal} kcal tahmini`:"");
+  const li=e=>`<li class="row"><span class="t num">${e.time}</span><span class="ic">${Icons.svg(e.type)}</span><button class="tx" data-edit="${e.id}" aria-label="${esc(ttx(e))}, düzenle">${ttx(e)}</button><span class="vl num">${vtxt(e)}</span><button class="del" data-del="${e.id}" aria-label="${esc(ttx(e))}, sil">${Icons.svg("x")}</button></li>`;
   const dl=LogLib.dayLog(items);
   const waterTxt=dl.waterTotal<1000?`${Math.round(dl.waterTotal)} ml`:`${fmt(dl.waterTotal/1000,1)} L`;
-  const log=items.length?`<ul class="log">${dl.groups.map(g=>`<li class="gh"><b>${g.n}</b><span class="num">${Math.round(g.kcal)} kcal</span><button class="lnk" data-act="cp:${g.k}" aria-label="${g.n} öğününü kopyala">Kopyala</button></li>`+g.items.map(li).join("")).join("")}${dl.water.length?`<li class="row"><span class="t num">${dl.water[dl.water.length-1].time}</span><span class="ic">${Icons.svg("water")}</span><button class="tx" data-waterall="1">Su: ${waterTxt}, ${dl.water.length} kez</button><span class="vl" aria-hidden="true">›</span></li>`:""}${dl.dr.length?`<li class="row"><span class="t num">${dl.dr[dl.dr.length-1].time}</span><span class="ic">${Icons.svg("water")}</span><button class="tx" data-waterall="1">Diğer içecekler: ${Math.round(dl.drMl)} ml, ${dl.dr.length} kez${caffeineMg(dl.dr)?`, ~${caffeineMg(dl.dr)} mg kafein`:""}</button><span class="vl" aria-hidden="true">›</span></li>`:""}${dl.rest.sort((a,b)=>b.id-a.id).map(li).join("")}</ul>`:`<div class="empty"><p class="mut">${lk===dayKey()?"Bugün henüz bir şey eklemedin. Bir bardak suyla başlayabilirsin.":"Bu güne ait bir şey yok."}</p></div>`;
+  const log=items.length?`<ul class="log">${dl.groups.map(g=>`<li class="gh"><b role="heading" aria-level="3">${g.n}</b><span class="num">${hn?"•••":Math.round(g.kcal)+" kcal"}</span><button class="lnk" data-act="cp:${g.k}" aria-label="${g.n} öğününü kopyala">Kopyala</button></li>`+g.items.map(li).join("")).join("")}${dl.water.length?`<li class="row"><span class="t num">${dl.water[dl.water.length-1].time}</span><span class="ic">${Icons.svg("water")}</span><button class="tx" data-waterall="1">Su: ${waterTxt}, ${dl.water.length} kez</button><span class="vl" aria-hidden="true">${Icons.svg("chev")}</span></li>`:""}${dl.dr.length?`<li class="row"><span class="t num">${dl.dr[dl.dr.length-1].time}</span><span class="ic">${Icons.svg("water")}</span><button class="tx" data-waterall="1">Diğer içecekler: ${Math.round(dl.drMl)} ml, ${dl.dr.length} kez${caffeineMg(dl.dr)?`, ~${caffeineMg(dl.dr)} mg kafein`:""}</button><span class="vl" aria-hidden="true">${Icons.svg("chev")}</span></li>`:""}${dl.rest.sort((a,b)=>b.id-a.id).map(li).join("")}</ul>`:`<div class="empty"><p class="mut">${lk===dayKey()?"Bugün henüz bir şey eklemedin. Bir bardak suyla başlayabilirsin.":"Bu güne ait bir şey yok."}</p></div>`;
   return {items,log};
 }
 /* The sport ring is daily: the day's share of the weekly goal (default 150 min). The weekly total is in Trend and Gym. */
 const sportDay=()=>Math.max(1,Math.round(S.settings.sportWeek/7));
 /* A ring is a button: today's detail and the last 14 days' chart are on the Day screen, the calendar from there. */
-const rb=(k,ad,inner)=>`<button class="rbtn" data-hg="focus:${k}" aria-label="${ad}, ayrıntı ve geçmiş">${inner}</button>`;
+const rb=(k,ad,inner,val="")=>`<button class="rbtn" data-hg="focus:${k}" aria-label="${ad}${val?`: ${val}`:""}, ayrıntı ve geçmiş">${inner}</button>`;
 function viewToday(){
   const t=dayKey(),st=S.settings;
   const wAll=weights(),days=Object.keys(wAll).sort();
@@ -37,18 +37,18 @@ function viewToday(){
   /* The weight card is a shortcut to Trend: a one-line summary, chart and detail live in Trend. */
   let weight;
   if(cur==null){
-    weight=`<button class="stepcard" data-act="weight"><div class="scr"><span class="mut">${Icons.svg("weight")} Kilo</span><span class="mut sm">Ekle ›</span></div><div class="mut sm">İlk tartını ekle; ilerlemen buradan başlar.</div></button>`;
+    weight=`<button class="stepcard" data-act="weight"><div class="scr"><span class="mut">${Icons.svg("weight")} Kilo</span><span class="mut sm">Ekle <span aria-hidden="true">›</span></span></div><div class="mut sm">İlk tartını ekle; ilerlemen buradan başlar.</div></button>`;
   }else{
     const gi=goalInfo(cur,wAll[days[0]]),sl=Algo.slopePerWeek(wAll);
     const bits=st.hideNums?[]:[sl!=null?`${dwS(sl,2)} ${wlab()}/hafta`:prev!=null?`öncekine göre ${dwS(cur-prev)} ${wlab()}`:"",gi?(gi.done?"Hedefe ulaştın":`hedefe ${dw(gi.left)} ${wlab()}`):""].filter(Boolean);
-    weight=`<button class="stepcard" data-tab="trend" aria-label="Kilo grafiğini Trend'de aç"><div class="scr"><span class="mut">${Icons.svg("weight")} ${curDay===t?"Bugünkü tartı":"Son tartı, "+fd(curDay)}</span><span class="mut sm">Trend ›</span></div><div class="scr"><span class="big num wv">${st.hideNums?"•••":`${dw(cur)} <small>${wlab()}</small>`}</span><span class="mut sm num ws">${bits.join(" · ")}</span></div></button>`;
+    weight=`<button class="stepcard" data-tab="trend" aria-label="${st.hideNums?"":`Kilo ${dw(cur)} ${wlab()}, `}Kilo grafiğini Trend'de aç"><div class="scr"><span class="mut">${Icons.svg("weight")} ${curDay===t?"Bugünkü tartı":"Son tartı, "+fd(curDay)}</span><span class="mut sm">Trend <span aria-hidden="true">›</span></span></div><div class="scr"><span class="big num wv">${st.hideNums?"•••":`${dw(cur)} <small>${wlab()}</small>`}</span><span class="mut sm num ws">${bits.join(" · ")}</span></div></button>`;
   }
   const water=sum("water",t,t),sh=st.waterMl,kc=sum("food",t,t),sw=sum("exercise",t,t),sg=sportDay();
   const kgl=kcalGoal(t),kcP=kgl>0?kc/kgl:0;
   const sOn=(S.settings.stepsOn||S.settings.hcOn)&&isNative();
   /* The ring centre shows what is left; done / goal below with the unit. */
   const left=(v,g,u)=>v<g?[null,`${u} kaldı`]:["✓","Hedef tamam"];
-  const [waterC,waterU0]=left(water,sh,"L"),[spC,spU]=left(sw,sg,"dk"),fasting=!waterC&&Habits.fasting(),waterU=fasting?"oruçta":waterU0;
+  const [waterC,waterU0]=left(water,sh,"L"),[spC,spU]=left(sw,sg,"dk"),fasting=!waterC&&Habits.fasting(),wr=sh-water,wSm=wr<100,wrT=wSm?String(Math.round(wr)):fmt(wr/1000,1),waterU=fasting?"oruçta":!waterC&&wSm?"ml kaldı":waterU0,spLeft=Math.ceil(sg-sw);
   /* A day with almost nothing logged shows the total, not a remainder that would read as "you may eat this much more". */
   const lowLog=kgl>0&&kc<Algo.LOW_LOG_KCAL,kcC=st.hideNums?"•••":kgl>0&&!lowLog?Math.round(Math.abs(kgl-kc)):Math.round(kc),kcU=kgl>0&&!lowLog&&!st.hideNums?(kc>kgl?"kcal fazla":"kcal kaldı"):kgl>0&&!st.hideNums?"kcal yedin":"kcal";
   const meals=Log.where(e=>e.type==="food"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
@@ -69,24 +69,24 @@ function viewToday(){
   const notes=notesIn?`<details class="acc" ${keepOpen("tnotes")}><summary>Ayrıntı</summary>${notesIn}</details>`:"";
   /* Summary card: big calorie ring and the remainder; water, sport and steps in small rings; macros below. */
   const rings=`<div class="card"><div class="rings">
-    ${rb("kcal","Kalori",ring(st.hideNums?0:kcP,"var(--kcal)",kcC,"Kalori",st.hideNums?"sayılar gizli":kgl>0?`${Math.round(kc)} / ${kgl} kcal`:"hedef yok",kcU,"main"))}
-    <div class="rmini">${rb("water","Su",ring(water/sh,"var(--water)",waterC||fmt((sh-water)/1000,1),"Su",`${fmt(water/1000,1)} / ${fmt(sh/1000,1)} L${fasting?", oruç saatinde":""}`,waterU,"mini"+(waterC?" done":"")))}
-    ${rb("exercise","Spor",ring(sw/sg,"color-mix(in srgb,var(--exercise) 80%,var(--card))",spC||Math.round(sg-sw),"Spor",`${Math.round(sw)} / ${sg} dk`,spU,"mini"+(spC?" done":"")))}${sOn?stepCard():""}</div>
+    ${rb("kcal","Kalori",ring(st.hideNums?0:kcP,"var(--kcal)",kcC,"Kalori",st.hideNums?"sayılar gizli":kgl>0?`${Math.round(kc)} / ${kgl} kcal`:"hedef yok",kcU,"main"),st.hideNums?"":kgl>0?`${kcC} ${kcU}, ${Math.round(kc)} / ${kgl} kcal`:`${kcC} ${kcU}`)}
+    <div class="rmini">${rb("water","Su",ring(water/sh,"var(--water)",waterC||wrT,"Su",`${fmt(water/1000,1)} / ${fmt(sh/1000,1)} L${fasting?", oruç saatinde":""}`,waterU,"mini"+(waterC?" done":"")),`${waterC?"hedef tamam":`${wrT} ${waterU}`}, ${fmt(water/1000,1)} / ${fmt(sh/1000,1)} L`)}
+    ${rb("exercise","Spor",ring(sw/sg,"color-mix(in srgb,var(--exercise) 80%,var(--card))",spC||spLeft,"Spor",`${Math.round(sw)} / ${sg} dk`,spU,"mini"+(spC?" done":"")),`${spC?"hedef tamam":`${spLeft} ${spU}`}, ${Math.round(sw)} / ${sg} dk`)}${sOn?stepCard():""}</div>
   </div>${st.hideNums?"":macro+caff}${notes}</div>`;
   /* The chip order is fixed so a thumb never lands on another chip; the drink type sits right beside the water chip. */
   const chip=([k,a,ic,l,al])=>`<button class="chip${a.startsWith("data-act")?" act":""}" data-chip="${k}" ${a}${al?` aria-label="${al}"`:""}>${Icons.svg(ic)} ${l}</button>`;
   const Q=[["weight",'data-act="weight"',"weight","Kilo"],["exercise",'data-act="exercise"',"exercise","Spor"],
-    ...st.bpOn?[["bp",'data-vt="addbp"',"heart","Tansiyon"]]:[],...st.bsOn?[["bs",'data-vt="addbs"',"water","Şeker"]]:[],["note",'data-act="note"',"note","Not"],...Motion.walk()?[]:[["walk",'data-w="start"',"steps","Yürüyüş"]]];
+    ...st.bpOn?[["bp",'data-vt="addbp"',"heart","Tansiyon"+vChipTxt("t")]]:[],...st.bsOn?[["bs",'data-vt="addbs"',"glucose","Şeker"+vChipTxt("s")]]:[],["note",'data-act="note"',"note","Not"],...Motion.walk()?[]:[["walk",'data-w="start"',"steps","Yürüyüş"]]];
   const chips=`<span class="qpair">${chip(["water",'data-act="water"',"water",`+${st.glass} ml`,`${st.glass} ml su ekle`])}${chip(["drink",'data-dk="open"',"water","İçecek türü"])}</span>`+Q.map(chip).join("");
-  const actions=`<div class="actions"><button class="btn act" data-act="food">${Icons.svg("plus")} Yemek ekle</button><div class="qa">${chips}</div></div>`;
+  const actions=logOff>0?`<div class="actions"><p class="mut">${fd(keyOff(-logOff))} kayıtlarına bakıyorsun. Yeni kayıt bugüne eklenir.</p><button class="btn" data-lo="${-logOff}">Bugüne dön</button></div>`:`<div class="actions"><button class="btn act" data-act="food">${Icons.svg("plus")} Yemek ekle</button><div class="qa">${chips}</div></div>`;
   const lk=keyOff(-logOff);
   const {items,log}=dayLogHtml(lk);
   const lname=logOff===0?"Bugün":logOff===1?"Dün":fd(lk);
   const dnav=dayNav("lo",lname,logOff===0);
   const lb=st.lastBackup,old=lb?Algo.dayNum(t)-Algo.dayNum(lb):null;
   const a7=(a,b)=>sum("steps",keyOff(a),keyOff(b));
-  const lateN=lateEntries().length,lateRow=()=>lateN?row("clock",`Gece yarısından sonra ${lateN} kayıt bugüne yazıldı`,"Dünün devamıysa dünkü güne taşıyabilirsin.",[["lateyest","Dün gibi say"]]):"";
-  const row=(ic,b,sub,btns)=>`<div class="row"><span>${Icons.svg(ic)} ${b}<small class="mut sm">${sub}</small></span><div class="acts">${btns.map(([a,l])=>`<button class="chip" data-act="${a}">${l}</button>`).join("")}</div></div>`;
+  const lateN=lateEntries().length,lateRow=()=>lateN?row("clock",`Gece yarısından sonra ${lateN} kayıt bugüne yazıldı`,"Dünün devamıysa dünkü güne taşıyabilirsin.",[["lateyest","Dünkü güne taşı"]]):"";
+  const row=(ic,b,sub,btns)=>`<div class="row"><span>${Icons.svg(ic)} ${b}<small class="mut sm">${sub}</small></span><div class="acts">${btns.map(([a,l])=>`<button class="chip" data-act="${a}" aria-label="${esc(b)}: ${l}">${l}</button>`).join("")}</div></div>`;
   /* One list instead of separate cards: only pending jobs of enabled modules; no card when empty. */
   const walkRow=Motion.walk()?row("steps",Motion.walk().t1?"Yürüyüş kaydedilmedi":"Yürüyüş sürüyor","Adım raporunda bitir ya da kaydet.",[["walkgo","Aç"]]):"";
   const fastRun=st.fastOn&&Habits.fasting()?fastTodo():[];

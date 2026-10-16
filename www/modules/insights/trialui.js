@@ -5,7 +5,7 @@ const trPlanTx=p=>p==="B"?"Bu gece saat 22:00'den sonra ekranı kapat.":"Bu gece
 function trialTodo(){
   const t=S.settings.trial;if(!t)return [];
   const s=TrialLib.status(t,dayKey()),out=[];
-  if(s.ask)out.push(`<div class="row"><span>Dün geceki plana uydun mu?<small class="mut sm">${esc(trPlanTx(t.plan[Algo.dayNum(s.ask)-Algo.dayNum(t.start)]).replace("Bu gece","Dün gece"))}</small></span><span><button class="chip" data-tr="ans:y">Evet</button> <button class="chip" data-tr="ans:n">Hayır</button></span></div>`);
+  if(s.ask)out.push(`<div class="row"><span>Dün geceki plana uydun mu?<small class="mut sm">${esc(trPlanTx(t.plan[Algo.dayNum(s.ask)-Algo.dayNum(t.start)]).replace("Bu gece","Dün gece"))}</small></span><div class="acts"><button class="chip" data-tr="ans:y">Evet</button><button class="chip" data-tr="ans:n">Hayır</button></div></div>`);
   return out;
 }
 function trialCard(){

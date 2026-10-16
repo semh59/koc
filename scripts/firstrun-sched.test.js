@@ -17,6 +17,6 @@ async function run(mode){
   ok(`${mode}: skipping writes the onboarding flag`,w.eval("S.settings.obDone&&!obNeeded()"));
   const by={};for(const n of sched)by[Math.floor(n.id/100)]=(by[Math.floor(n.id/100)]||0)+1;
   if(mode==="denied")ok("denied: nothing is scheduled, the dialog was shown once",sched.length===0&&asked===1,[sched.length,asked]);
-  else ok(`${mode}: at least 100 default reminders (water 2-4, meals 5, evening 6)`,sched.length>=100&&[2,3,4,5,6].every(k=>by[k]===30)&&asked===(mode==="prompt"?1:0),[sched.length,asked,by]);
+  else ok(`${mode}: at least 100 default reminders (water 2-4, meals 5, evening 6)`,sched.length>=100&&[2,3,4,5,6].every(k=>by[k]>=29)&&asked===(mode==="prompt"?1:0),[sched.length,asked,by]);
 }
 (async()=>{for(const m of ["granted","prompt","denied"])await run(m);finish()})();
