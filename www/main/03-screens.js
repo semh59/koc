@@ -87,7 +87,7 @@ function viewToday(){
   const Q=[["weight",'data-act="weight"',"weight","Kilo"],["exercise",'data-act="exercise"',"exercise","Spor"],
     ...st.bpOn?[["bp",'data-vt="addbp"',"heart","Tansiyon"+vChipTxt("t")]]:[],...st.bsOn?[["bs",'data-vt="addbs"',"glucose","Şeker"+vChipTxt("s")]]:[],["note",'data-act="note"',"note","Not"],["walk",Motion.walk()?'data-act="walkgo"':'data-w="start"',"steps",Motion.walk()?"Yürüyüş sürüyor":"Yürüyüş"]];
   const chips=`<span class="qpair">${chip(["water",'data-act="water"',"water",`+${st.glass} ml`,`${st.glass} ml su ekle`])}${chip(["drink",'data-dk="open"',"water","İçecek türü"])}</span>`+Q.map(chip).join("");
-  const actions=logOff>0?`<div class="actions"><p class="mut">${fd(keyOff(-logOff))} kayıtlarına bakıyorsun. Yeni kayıt bugüne eklenir.</p><button class="btn" data-lo="${-logOff}">Bugüne dön</button></div>`:`<div class="actions"><button class="btn act" data-act="food">${Icons.svg("plus")} Yemek ekle</button><div class="qa">${chips}</div></div>`;
+  const actions=logOff>0?`<div class="actions"><p class="mut">${fd(keyOff(-logOff))} kayıtlarına bakıyorsun. Yeni kayıt bugüne eklenir.</p><button class="btn" data-lo="${-logOff}">Bugüne dön</button></div>`:`<div class="actions"><button class="btn act" data-act="food">${Icons.svg("plus")} Yemek ekle</button><div class="qa">${chips}</div>${vAskToday()?`<p class="hint">Bugünkü bir ölçümün için hekimine danış; bu bir tanı değildir.</p>`:""}</div>`;
   const lk=keyOff(-logOff);
   const {items,log}=dayLogHtml(lk);
   const lname=logOff===0?"Bugün":logOff===1?"Dün":fd(lk);

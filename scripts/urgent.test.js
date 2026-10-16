@@ -45,6 +45,8 @@ const {boot}=require("./html");
   ok("limits: saved, empty fields stay off",ev("S.settings.bpSysHi")===130&&ev("S.settings.bpDiaHi")===0&&ev("S.settings.gFastHi")===0);
   bp(135,80);
   ok("own blood pressure limit triggers the neutral line",/Hekimine danış; bu bir tanı değildir/.test(msg()),msg());
+  ev("closeSheet();tab='today';render()");
+  ok("Today keeps the same neutral line under the chips while a reading is at that level",/Bugünkü bir ölçümün için hekimine danış; bu bir tanı değildir/.test(q(".actions").textContent),q(".actions").textContent);
   ev("S.vitals=[];S.settings.bpOn=true;tab='today';const d=dayKey();S.vitals.push({id:901,k:'t',day:d,time:'08:00',sys:128,dia:82,sid:'s1',i:1,session:'morning'},{id:902,k:'t',day:d,time:'08:00',sys:140,dia:90,sid:'s1',i:2,session:'morning'});render()");
   ok("the blood pressure chip shows the session mean (134/86), the same figure as the save message",q('[data-chip="bp"]').textContent.includes("134/86"),q('[data-chip="bp"]').textContent);
   ev("S.settings.hideNums=true;render()");
