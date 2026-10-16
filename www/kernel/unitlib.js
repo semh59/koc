@@ -15,7 +15,7 @@ const Units=(()=>{
   const gIn=(v,u=gu())=>u==="mmol"?Math.round(v*MG*10)/10:v;
   const f=(x,d)=>Number(x).toFixed(d).replace(".",",");
   const fw=(kg,d=1,u)=>f(w(kg,u),d);
-  const fwS=(dkg,d=1,u)=>{const x=w(dkg,u);return (x>0.049?"+":x<-0.049?"−":"")+f(Math.abs(x),d)};
+  const fwS=(dkg,d=1,u)=>{const x=w(dkg,u);const e=0.5*Math.pow(10,-d)-1e-9;return (x>e?"+":x<-e?"−":"")+f(Math.abs(x),d)};
   const fg=(mg,u=gu())=>u==="mmol"?f(mg/MG,1):String(Math.round(mg*10)/10).replace(".",",");
   const gl=(u=gu())=>u==="mmol"?"mmol/L":"mg/dL";
   return {src:fn=>{src=fn},flip:k=>{ov[k]=k==="w"?(wu()==="kg"?"lb":"kg"):(gu()==="mgdl"?"mmol":"mgdl")},reset:()=>{ov={}},wu,gu,w,wIn,g,gIn,fw,fwS,fg,gl};

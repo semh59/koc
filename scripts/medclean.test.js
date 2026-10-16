@@ -36,6 +36,8 @@ const unclock=require("./clock").at;
   ok("dose time just reached: 'Saati geldi', no 'Gecikti', no near-contact button",/Saati geldi/.test(todo())&&!/Gecikti/.test(todo())&&!w.document.querySelector('[data-md="nearsend"]'),todo());
   ev("S.meds=MedLib.cleanMeds([{id:1,n:'A',t:['07:00'],on:true,s:'2026-01-01'}]);render()");
   ok("an hour late: 'Gecikti' with the near-contact button",/Gecikti/.test(todo())&&!!w.document.querySelector('[data-md="nearsend"]'),todo());
+  ev("MedLib.mark(S,1,calKey(),'07:00','s');render()");
+  ok("a skipped dose is counted as skipped, not as done",/0\/1 alındı, 1 atlandı/.test(todo().replace(/\s+/g," "))||/0\/1 alındı, 1 atlandı/.test(w.document.querySelector(".todo .hint").textContent),w.document.querySelector(".todo")?.textContent);
   restore8();
   finish();
 })();

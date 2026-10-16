@@ -12,6 +12,7 @@ const U=require("../www/kernel/unitlib.js"),V=require("../www/modules/vitals/vit
   ok("mg/dL / 18.016, one decimal when displayed",U.fg(95,"mmol")==="5,3"&&U.fg(95.5,"mgdl")==="95,5"&&U.fg(95,"mgdl")==="95"&&U.gl("mmol")==="mmol/L");
   ok("mmol input rounds to 0.1 mg/dL, lb input to 3 decimals of kg",U.gIn(5.3,"mmol")===95.5&&U.wIn(185.4,"lb")===84.096,[U.gIn(5.3,"mmol"),U.wIn(185.4,"lb")]);
   ok("signed difference and settings source",U.fwS(-1,1,"lb")==="−2,2"&&U.fwS(0.01,1,"kg")==="0,0"&&(U.src(()=>({wUnit:"lb",gUnit:"mmol"})),U.wu()==="lb"&&U.gu()==="mmol"&&U.fw(100)==="220,5")&&(U.src(()=>({})),U.wu()==="kg"));
+  ok("signed difference keeps its sign at two decimals and drops it only when the rounded value is zero",U.fwS(-0.04,2,"kg")==="−0,04"&&U.fwS(0.04,2,"kg")==="+0,04"&&U.fwS(-0.004,2,"kg")==="0,00"&&U.fwS(-0.06,1,"kg")==="−0,1");
 }
 { // limits are unit independent: converted to kg first, then the same range
   const lim=(v,u)=>{const k=U.wIn(v,u);return k>=20&&k<=400};
