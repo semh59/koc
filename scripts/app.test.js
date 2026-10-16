@@ -2273,6 +2273,8 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("S.settings.medOn=true;S.meds=[{id:1,n:'İlaç A',t:['08:00','20:00'],on:true,s:calKey()}];S.settings.fastOn=true;S.settings.bpOn=true;render()");
     ok("medication, fasting and measurement are in the single 'Bugün yapılacaklar' card, no separate card",ev("document.querySelectorAll('#view .todo').length")===1&&$q(".todo").querySelectorAll('[data-md^="take:"]').length===2&&$q('.todo').textContent.includes('Oruç önerilmez')&&!!$q('.todo [data-vt="addbp"]')&&!v().includes("💊 İlaçlar")&&!v().includes("Ölçümler"));
     ok("to-do is compact: first 3 items shown, the rest under 'iş daha'; the time is a separate column on the medication row",$q(".todo").querySelectorAll(":scope>.row").length===3&&$q(".todo details.acc summary").textContent==="1 iş daha"&&$q(".todo details .row")&&$q('.todo .row .tm').textContent==="08:00");
+    ev("S.meds=[];S.settings.medNudgeOff=false;render()");
+    ok("the 'no medication yet' row can be dismissed for good",!!$q('.todo [data-act="mednono"]')&&(ev("S.settings.medNudgeOff=true;render()"),!$q('.todo [data-md="new"]')));
     ok("information hierarchy: summary, record, to-do, Trend shortcut",at('class="bgL"')<at('class="rings"')&&at('class="rings"')<at('class="actions"')&&at('class="actions"')<at("Bugün yapılacaklar")&&at("Bugün yapılacaklar")<at('data-tab="trend"'));
     ev("S.settings.medOn=false;S.settings.fastOn=false;S.settings.bpOn=false;render()");
     ok("when modules are turned off the card goes",!v().includes("Bugün yapılacaklar"));

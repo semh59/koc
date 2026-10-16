@@ -22,7 +22,7 @@ function dayLogHtml(lk){
   const li=e=>`<li class="row"><span class="t num">${e.time}</span><span class="ic">${Icons.svg(e.type)}</span><button class="tx" data-edit="${e.id}" aria-label="${esc(ttx(e))}, düzenle">${ttx(e)}</button><span class="vl num">${vtxt(e)}</span><button class="del" data-del="${e.id}" aria-label="Kaydı sil">✕</button></li>`;
   const dl=LogLib.dayLog(items);
   const waterTxt=dl.waterTotal<1000?`${Math.round(dl.waterTotal)} ml`:`${fmt(dl.waterTotal/1000,1)} L`;
-  const log=items.length?`<ul class="log">${dl.groups.map(g=>`<li class="gh"><b>${g.n}</b><span class="num">${Math.round(g.kcal)} kcal</span><button class="lnk" data-act="cp:${g.k}" aria-label="${g.n} öğününü kopyala">Kopyala</button></li>`+g.items.map(li).join("")).join("")}${dl.water.length?`<li class="row"><span class="t num">${dl.water[dl.water.length-1].time}</span><span class="ic">${Icons.svg("water")}</span><button class="tx" data-waterall="1">Su: ${waterTxt}, ${dl.water.length} kez</button><span class="vl" aria-hidden="true">›</span></li>`:""}${dl.dr.length?`<li class="row"><span class="t num">${dl.dr[dl.dr.length-1].time}</span><span class="ic">${Icons.svg("water")}</span><button class="tx" data-waterall="1">Diğer içecekler: ${Math.round(dl.drMl)} ml, ${dl.dr.length} kez${caffeineMg(dl.dr)?`, ~${caffeineMg(dl.dr)} mg kafein`:""}</button><span class="vl" aria-hidden="true">›</span></li>`:""}${dl.rest.sort((a,b)=>b.id-a.id).map(li).join("")}</ul>`:`<div class="empty">${Icons.svg(lk===dayKey()?"water":"note")}<p class="mut">${lk===dayKey()?"Bugün henüz bir şey eklemedin. Bir bardak suyla başlayabilirsin.":"Bu güne ait bir şey yok."}</p></div>`;
+  const log=items.length?`<ul class="log">${dl.groups.map(g=>`<li class="gh"><b>${g.n}</b><span class="num">${Math.round(g.kcal)} kcal</span><button class="lnk" data-act="cp:${g.k}" aria-label="${g.n} öğününü kopyala">Kopyala</button></li>`+g.items.map(li).join("")).join("")}${dl.water.length?`<li class="row"><span class="t num">${dl.water[dl.water.length-1].time}</span><span class="ic">${Icons.svg("water")}</span><button class="tx" data-waterall="1">Su: ${waterTxt}, ${dl.water.length} kez</button><span class="vl" aria-hidden="true">›</span></li>`:""}${dl.dr.length?`<li class="row"><span class="t num">${dl.dr[dl.dr.length-1].time}</span><span class="ic">${Icons.svg("water")}</span><button class="tx" data-waterall="1">Diğer içecekler: ${Math.round(dl.drMl)} ml, ${dl.dr.length} kez${caffeineMg(dl.dr)?`, ~${caffeineMg(dl.dr)} mg kafein`:""}</button><span class="vl" aria-hidden="true">›</span></li>`:""}${dl.rest.sort((a,b)=>b.id-a.id).map(li).join("")}</ul>`:`<div class="empty"><p class="mut">${lk===dayKey()?"Bugün henüz bir şey eklemedin. Bir bardak suyla başlayabilirsin.":"Bu güne ait bir şey yok."}</p></div>`;
   return {items,log};
 }
 /* The sport ring is daily: the day's share of the weekly goal (default 150 min). The weekly total is in Trend and Gym. */
@@ -50,7 +50,7 @@ function viewToday(){
   const left=(v,g,u)=>v<g?[null,`${u} kaldı`]:["✓","Hedef tamam"];
   const [waterC,waterU0]=left(water,sh,"L"),[spC,spU]=left(sw,sg,"dk"),fasting=!waterC&&Habits.fasting(),waterU=fasting?"oruçta":waterU0;
   /* A day with almost nothing logged shows the total, not a remainder that would read as "you may eat this much more". */
-  const lowLog=kgl>0&&kc<Algo.LOW_LOG_KCAL,kcC=st.hideNums?"•••":kgl>0&&!lowLog?Math.round(Math.abs(kgl-kc)):Math.round(kc),kcU=kgl>0&&!lowLog&&!st.hideNums?(kc>kgl?"kcal fazla":"kcal kaldı"):"kcal";
+  const lowLog=kgl>0&&kc<Algo.LOW_LOG_KCAL,kcC=st.hideNums?"•••":kgl>0&&!lowLog?Math.round(Math.abs(kgl-kc)):Math.round(kc),kcU=kgl>0&&!lowLog&&!st.hideNums?(kc>kgl?"kcal fazla":"kcal kaldı"):kgl>0&&!st.hideNums?"kcal yedin":"kcal";
   const meals=Log.where(e=>e.type==="food"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
   const pr=cur!=null?Algo.protein(riskInput(cur)):{};
   const goalOf=g=>st[g]?` / ${st[g]}`:"";
@@ -88,22 +88,24 @@ function viewToday(){
   const lateN=lateEntries().length,lateRow=()=>lateN?row("clock",`Gece yarısından sonra ${lateN} kayıt bugüne yazıldı`,"Dünün devamıysa dünkü güne taşıyabilirsin.",[["lateyest","Dün gibi say"]]):"";
   const row=(ic,b,sub,btns)=>`<div class="row"><span>${Icons.svg(ic)} ${b}<small class="mut sm">${sub}</small></span><div class="acts">${btns.map(([a,l])=>`<button class="chip" data-act="${a}">${l}</button>`).join("")}</div></div>`;
   /* One list instead of separate cards: only pending jobs of enabled modules; no card when empty. */
-  const first=[...medTodo(),...vTodo()],medBudget=isNative()&&medBudgetMsg&&st.medOn&&Meds.count()?[row("clock","İlaç hatırlatmaların sınırlı",medBudgetMsg,[])]:[];
+  const walkRow=Motion.walk()?row("steps",Motion.walk().t1?"Yürüyüş kaydedilmedi":"Yürüyüş sürüyor","Adım raporunda bitir ya da kaydet.",[["walkgo","Aç"]]):"";
+  const fastRun=st.fastOn&&Habits.fasting()?fastTodo():[];
+  const first=[...medTodo(),...vTodo(),walkRow,...fastRun].filter(Boolean),medBudget=isNative()&&medBudgetMsg&&st.medOn&&Meds.count()?[row("clock","İlaç hatırlatmaların sınırlı",medBudgetMsg,[])]:[];
   const firstWater=st.obNudge&&!Log.where(e=>e.type==="water").length?row("water","İlk suyunu ekle","Bir bardak su kaydı günlük ilerlemeni başlatır.",[["water",`+${st.glass} ml`]]):"";
   const goalRow=st.obDone&&st.obSkipped&&!st.kcal?row("weight","Hedefini hesapla","Boy, kilo ve yaşınla günlük kalori ve protein hedefini hesaplarım.",[["obredo","Hesapla"]]):"";
   const modRow=st.obDone&&!st.modAsked&&st.obAt&&st.obAt<t&&Algo.dayNum(t)-Algo.dayNum(st.obAt)<=7?row("more","Hangilerini takip edelim?","İlaç, oruç, tansiyon, şeker ve adım takibini istediğin gibi aç.",[["obmods","Seç"],["obmodsno","Şimdi değil"]]):"";
-  const todo=[...first,...medBudget,firstWater,goalRow,modRow,storeMsg()?row("save",storeMsg()[0],storeMsg()[1],[["databackup","Yedek al"]]):"",
+  const saveRow=storeMsg()?row("save",storeMsg()[0],storeMsg()[1],[["databackup","Yedek al"]]):"";
+  const todo=[...first,saveRow,...medBudget,firstWater,goalRow,modRow,
     abErr?row("cloud","Otomatik yedek alınamadı",abErr,[["abfix","Düzelt"]]):"",
-    lateRow(),...pmTodo(),...fastTodo(),...ramadanTodo(),...trialTodo(),
-    Motion.walk()?row("steps",Motion.walk().t1?"Yürüyüş kaydedilmedi":"Yürüyüş sürüyor","Adım raporunda bitir ya da kaydet.",[["walkgo","Aç"]]):"",
+    lateRow(),...pmTodo(),...(fastRun.length?[]:fastTodo()),...ramadanTodo(),...trialTodo(),
     sOn&&stepsRead&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?row("steps","Adım sayımı durmuş olabilir","Pil ayarında NeoWell'e kısıtlama koyma.",[["stepsfix","Ayarla"],["stepshide","Kapat"]]):"",
     !pmMany()&&isNative()&&!exactOk&&st.medOn&&Meds.count()?row("clock","İlaç alarmı birkaç dakika gecikebilir",PM_TEXT.exact.warn,[["fullalarm","İzin ver"]]):"",
     !pmMany()&&isNative()&&!fsiOk&&st.medOn&&Meds.count()?row("clock","İlaç alarmı kilitli ekranı açmayabilir",PM_TEXT.fsi.warn,[["fullscreen","İzin ver"]]):"",
     !pmMany()&&!bg.miss&&pmMissing().some(i=>i.id==="bat")?row("bell",oemXiaomi()?"Hatırlatmalar için bir kez ayar gerekli":"Pil kısıtı alarmı geciktiriyor",oemXiaomi()?"İki izin verince hatırlatmalar kaçmaz.":"Pil ayarında NeoWell'e kısıtlama koyma.",[["bat","Ayarla"]]):"",
     isNative()&&SC()&&!st.stepsOn&&!st.stepsAsked?row("steps","Adım sayarı aç","Telefonun sensörü sayar, hesap gerekmez.",[["stepsopen","Aç"],["stepsno","Şimdi değil"]]):"",
     Log.all().length>=10&&(old==null||old>14)?row("cloud","Verilerini yedekle",old==null?"Henüz yedek dosyası almadın.":`Son yedek dosyası ${old} gün önce.`,[["drive","Yedekle"]]):""].filter(Boolean);
-  /* Medication and measurement jobs come first and never fold; of the rest the first 3 are visible, so the log is not pushed down. */
-  const vis=Math.max(3,first.length+medBudget.length),todoCard=todo.length?`<div class="card todo"><h2 class="grp">Bugün yapılacaklar</h2>${todo.slice(0,vis).join("")}${todo.length>vis?`<details class="acc" ${keepOpen("todo")}><summary>${todo.length-vis} iş daha</summary>${todo.slice(vis).join("")}</details>`:""}</div>`:"";
+  /* Medication, measurement, a running walk or fast and the save-failed notice come first and never fold; of the rest the first 3 are visible, so the log is not pushed down. */
+  const vis=Math.max(3,first.length+(saveRow?1:0)+medBudget.length),todoCard=todo.length?`<div class="card todo"><h2 class="grp">Bugün yapılacaklar</h2>${todo.slice(0,vis).join("")}${todo.length>vis?`<details class="acc" ${keepOpen("todo")}><summary>${todo.length-vis} iş daha</summary>${todo.slice(vis).join("")}</details>`:""}</div>`:"";
   const minor=S.settings.age>0&&S.settings.age<18?`<div class="banner"><b>NeoWell 18 yaş ve üzeri için</b><p>Profilindeki yaş 18'in altında. Kalori açığı, oruç önerisi ve Rehber kapalı. Beslenme ve kilo konusunda bir yetişkinle ve hekiminle ya da diyetisyeninle konuş. Yaş yanlışsa Ayarlar > Profil'den düzelt.</p></div>`:"";
   /* .bg2 has no effect in portrait; in landscape the left column holds rings and summary, the right one jobs and entries. */
   return `<div class="bg2"><div class="bgL">${minor}${rings}${actions}${habitRow()}</div><div class="bgR">${todoCard}${gTodayCard()}${weight}<div class="card">${dnav}${log}${items.some(e=>e.type==="food")?`<button class="lnk" data-act="cp:day">Bu günü başka güne kopyala</button><button class="lnk" data-act="tplnew">Bu günün yemeklerinden şablon yap</button>`:""}<button class="lnk" data-tab="history">Geçmiş ve takvim</button></div></div></div>`;
