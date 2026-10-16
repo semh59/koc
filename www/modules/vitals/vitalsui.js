@@ -28,7 +28,7 @@ const vLast=k=>VitalsLib.latest(S.vitals.filter(r=>r.k===k));
 /* What Today and Trend call "son": for blood pressure the last session's mean, the same figure the save message gives. */
 const vShown=k=>{if(k!=="t")return vLast(k);const l=VitalsLib.sessions(S.vitals);return l[l.length-1]};
 /* Today's reading shown on the quick chip, so the value stays visible after the to-do row is gone. */
-const vChipTxt=k=>{const r=vShown(k);return r&&r.day===dayKey()?" "+(k==="t"?`${Math.round(r.sys)}/${Math.round(r.dia)}`:dg(r.g)):""};
+const vChipTxt=k=>{const r=vShown(k);return r&&r.day===dayKey()&&!S.settings.hideNums?" "+(k==="t"?`${Math.round(r.sys)}/${Math.round(r.dia)}`:dg(r.g)):""};
 function vWhen(r){return (r.day===dayKey()?"bugün ":fd(r.day)+" ")+r.time}
 /* Today's to-do: one row per kind that is on, not yet measured today and whose reminder time has come (the default time when the reminder is off). */
 function vTodo(){
@@ -38,7 +38,7 @@ function vTodo(){
     /* Home blood pressure is a morning and an evening habit: once the evening reminder time has passed with no evening session, the row returns although the morning one is done. */
     const eveDue=k==="t"&&r&&r.day===t&&(st.reminders.find(x=>x.id===VT_REMINDERS.bp[1])||{t:"99"}).t<=hm&&!VitalsLib.sessions(S.vitals).some(x=>x.day===t&&x.session==="evening");
     if(!on||(r&&r.day===t&&!eveDue)||(!eveDue&&!due(ids)))continue;
-    out.push(`<div class="row"><span>${Icons.svg(ic)} ${label} ölç<small class="mut sm num">${r?`son: ${txt(r)}, ${vWhen(r)}`:"ölçüm yok"}</small></span><button class="chip" data-vt="${act}" aria-label="${label} ölçümü ekle">Ekle</button></div>`);
+    out.push(`<div class="row"><span>${Icons.svg(ic)} ${label} ölç<small class="mut sm num">${r?`son: ${st.hideNums?"•••":txt(r)}, ${vWhen(r)}`:"ölçüm yok"}</small></span><button class="chip" data-vt="${act}" aria-label="${label} ölçümü ekle">Ekle</button></div>`);
   }
   return out;
 }

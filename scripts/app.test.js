@@ -2266,7 +2266,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("one primary action Yemek ekle, secondary quick records as chips: Su, Kilo, Spor, Not",$q(".actions>.btn").dataset.act==="food"&&$q(".actions .btn.ghost")===null&&[...$q(".actions .qa").querySelectorAll(".act")].map(b=>b.dataset.act).join()==="water,weight,exercise,note");
     ok("rings state the unit and the remainder",(t=>t.includes("520kcal kaldı")&&t.includes("1380 / 1900 kcal")&&t.includes("1,5L kaldı")&&t.includes("1,0 / 2,5 L")&&t.includes("21dk kaldı")&&t.includes("0 / 21 dk")&&!t.includes("7 gün"))($q(".rings").textContent),$q(".rings").textContent);
     ev("add('food',700,'Fazla');add('water',1500);add('exercise',150,'Yürüyüş');render()");
-    ok("when the target is exceeded 'kcal fazla', water and sport 'tamam'",(t=>t.includes("180kcal fazla")&&(t.match(/✓Hedef tamam/g)||[]).length===2)($q(".rings").textContent),$q(".rings").textContent);
+    ok("when the target is exceeded 'kcal hedefin üstünde', water and sport 'tamam'",(t=>t.includes("180kcal hedefin üstünde")&&(t.match(/✓Hedef tamam/g)||[]).length===2)($q(".rings").textContent),$q(".rings").textContent);
     ev(`Object.assign(S.settings,${risk0},{age:40})`);
     ok("the weight card is small: no chart, a one-line summary, leads to Trend",!v().includes('class="weight"')&&!!$q('#view .stepcard[data-tab="trend"]')&&!$q('#view .stepcard[data-tab="trend"] svg:not(.i)')&&$q('#view .stepcard[data-tab="trend"]').textContent.includes("86,0"));
     ev("tab='trend';render()");
@@ -2306,6 +2306,10 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("the card does not move while the screen stays open",at("Bugün yapılacaklar")<at('class="rings"')||!v().includes("Bugün yapılacaklar"));
     ev("tab='trend';render();tab='today';render()");
     ok("without a due dose the rings come first again",!v().includes("Bugün yapılacaklar")||at('class="rings"')<at("Bugün yapılacaklar"));
+    ev("S.settings.age=40;S.settings.medOn=true;S.meds=[{id:1,n:'İlaç A',t:['08:00'],on:true,s:calKey()}];S.medLog=[];tab='trend';render();tab='today';render()");
+    ok("sleep and mood tiles come after the to-do card",at("hbt")>at("Bugün yapılacaklar")||!v().includes('class="hbt"'));
+    ok("copy and template links are folded under 'Daha fazla' (still in the DOM)",!!$q('#view details [data-act="cp:day"]')&&!!$q('#view details [data-act="tplnew"]'));
+    ev("S.meds=[];S.settings.medOn=false;render()");
     ev("S.settings.medOn=false;S.settings.fastOn=false;S.settings.bpOn=false;render()");
     ok("when modules are turned off the card goes",!v().includes("Bugün yapılacaklar"));
     ev(`S=Object.assign(S,JSON.parse(${JSON.stringify(st0)}));render()`);

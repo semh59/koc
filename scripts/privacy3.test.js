@@ -108,7 +108,7 @@ async function openSealed(w,text,pw){
   w.eval("tab='today';render()");
   const t=w.document.querySelector(".rings").closest(".card").textContent;
   ok("hide numbers: no macros, fibre, sugar, kcal range or movement bonus, no kcal figure",!/Protein/.test(t)&&!/Lif/.test(t)&&!/Şeker/.test(t)&&!/Hedefe hareketten/.test(t)&&!/Tarif farkına/.test(t)&&!/\d{3,}/.test(t),t);
-  ok("hide numbers: the calorie ring is drawn without an arc and without 'kcal fazla'",!w.document.querySelector(".rings .ring.main .rp")&&!/kcal fazla/.test(t),t);
+  ok("hide numbers: the calorie ring is drawn without an arc and without 'kcal hedefin üstünde'",!w.document.querySelector(".rings .ring.main .rp")&&!/kcal hedefin üstünde/.test(t),t);
   w.eval("tab='trend';render()");
   const cells=()=>w.document.querySelector(".stats.kp").textContent;
   ok("hide numbers: Trend start, now, total change and rate are masked, one tap shows them",/Başlangıç/.test(cells())&&!/\d/.test(cells())&&!!w.document.querySelector('[data-act="shownums"]'),cells());
