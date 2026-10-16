@@ -45,6 +45,7 @@ on("stepsopen",()=>stepsOpen());
 on("stepsadd",()=>sheetSteps());
 on("walkgo",()=>{tab="steps";render();window.scrollTo(0,0)});
 on("stepsno",()=>{S.settings.stepsAsked=true;save();render()});
+on("mednono",()=>{S.settings.medNudgeOff=true;save();render()});
 on("stepsoff",()=>{S.settings.stepsOn=false;save();motionStopAll();render();toast("Adım sayar kapatıldı. Eski adım kayıtların durur")});
 on("bat",batFix);
 on("oem1",()=>openDH("openAutostart"));
