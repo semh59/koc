@@ -48,7 +48,7 @@ function viewToday(){
     weight=`<button class="stepcard" data-act="weight"><div class="scr"><span class="mut">${Icons.svg("weight")} Kilo</span><span class="mut sm">Ekle <span aria-hidden="true">›</span></span></div><div class="mut sm">İlk tartını ekle; ilerlemen buradan başlar.</div></button>`;
   }else{
     const gi=goalInfo(cur,wAll[days[0]]),sl=Algo.slopePerWeek(wAll);
-    const bits=st.hideNums?[]:[sl!=null?`${dwS(sl,2)} ${wlab()}/hafta`:prev!=null?`öncekine göre ${dwS(cur-prev)} ${wlab()}`:"",gi?(gi.done?"Hedefe ulaştın":`hedefe ${dw(gi.left)} ${wlab()}`):""].filter(Boolean);
+    const bits=st.hideNums?[]:[sl!=null?`${dwS(sl,2)} ${wlab()}/hafta`:prev!=null?(dwS(cur-prev)==="0,0"?`öncekiyle aynı (${fd(days[days.length-2])})`:`öncekine göre ${dwS(cur-prev)} ${wlab()} (${fd(days[days.length-2])})`):"",gi?(gi.done?"Hedefe ulaştın":`hedefe ${dw(gi.left)} ${wlab()}`):""].filter(Boolean);
     const fl=fastLossNow(wAll)?`<p class="hint">Kilon haftada %1'den hızlı düşüyor; hekimine danış.</p>`:"";
     weight=`<button class="stepcard" data-tab="trend" aria-label="${st.hideNums?"":`Kilo ${dw(cur)} ${wlab()}, `}Kilo grafiğini Trend'de aç"><div class="scr"><span class="mut">${Icons.svg("weight")} ${curDay===t?"Bugünkü tartı":"Son tartı, "+fd(curDay)}</span><span class="mut sm">Trend <span aria-hidden="true">›</span></span></div><div class="scr"><span class="big num wv">${st.hideNums?"•••":`${dw(cur)} <small>${wlab()}</small>`}</span><span class="mut sm num ws">${bits.join(" · ")}</span></div></button>${fl}`;
   }
@@ -59,7 +59,7 @@ function viewToday(){
   const left=(v,g,u)=>v<g?[null,`${u} kaldı`]:["✓","Hedef tamam"];
   const [waterC,waterU0]=left(water,sh,"L"),[spC,spU]=left(sw,sg,"dk"),fasting=!waterC&&Habits.fasting(),wr=sh-water,wSm=wr<100,wrT=wSm?String(Math.round(wr)):fmt(wr/1000,1),waterU=fasting?"oruçta":!waterC&&wSm?"ml kaldı":waterU0,spLeft=Math.ceil(sg-sw);
   /* A day with almost nothing logged shows the total, not a remainder that would read as "you may eat this much more". */
-  const lowLog=kgl>0&&(kc<Algo.LOW_LOG_KCAL||!kcalCount()),kcC=st.hideNums?"•••":kgl>0&&!lowLog?Math.round(Math.abs(kgl-kc)):Math.round(kc),kcU=kgl>0&&!lowLog&&!st.hideNums?(kc>kgl?"kcal hedefin üstünde":"kcal kaldı"):kgl>0&&!st.hideNums?"kcal yedin":"kcal";
+  const lowLog=kgl>0&&(kc<Algo.LOW_LOG_KCAL||!kcalCount()),kcAt=kgl>0&&!lowLog&&!st.hideNums&&Math.round(Math.abs(kgl-kc))===0,kcC=st.hideNums?"•••":kcAt?"✓":kgl>0&&!lowLog?Math.round(Math.abs(kgl-kc)):Math.round(kc),kcU=kcAt?"Hedefte":kgl>0&&!lowLog&&!st.hideNums?(kc>kgl?"kcal hedefin üstünde":"kcal kaldı"):kgl>0&&!st.hideNums?"kcal yedin":"kcal";
   const meals=Log.where(e=>e.type==="food"&&e.day===t),mac=k=>meals.reduce((s,e)=>s+(e[k]||0),0);
   const pr=cur!=null?Algo.protein(riskInput(cur)):{};
   const goalOf=g=>st[g]?` / ${st[g]}`:"";
