@@ -64,6 +64,7 @@ public class NeoWidget extends AppWidgetProvider {
                 o.put("day", today);
                 o.put("water", v);
                 o.remove("kcalLeft");
+                o.remove("kcalEaten");
             }
         } catch (JSONException e) {
             return;
@@ -109,7 +110,8 @@ public class NeoWidget extends AppWidgetProvider {
         boolean hide = o.optBoolean("hide");
         RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.nw_widget);
         String kcal;
-        if (!isToday || !o.has("kcalLeft")) kcal = "– kcal";
+        if (!isToday || !(o.has("kcalLeft") || o.has("kcalEaten"))) kcal = "– kcal";
+        else if (o.has("kcalEaten")) kcal = num(o.optInt("kcalEaten")) + " kcal yedin";
         else if (o.isNull("kcalLeft")) kcal = "hedef yok";
         else {
             int left = o.optInt("kcalLeft");

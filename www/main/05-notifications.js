@@ -38,13 +38,16 @@ async function scheduleOnce(){
     /* Full-screen notification permission (Android 14+): when off, the medication alarm does not open the locked screen; the user is told. */
     try{const w=MW();if(w){const v=(await w.fsi()).allowed!==false;if(v!==fsiOk){fsiOk=v;if(tab==="today")render()}}}catch{}
     try{
-      const dl=await ln.getDeliveredNotifications(),t1=calKey(),y=calOff(-1),gone=[];
+      const dl=await ln.getDeliveredNotifications(),gone=[];
       for(const n of dl.notifications){
         if(n.id===FAST_NID&&!Habits.fast().t0)gone.push({id:FAST_NID});
         if(n.id===CycleLib.NID&&!cycNotif())gone.push({id:n.id});
         if(n.id<1000000||RamadanLib.isNid(n.id))continue;
+        /* The notification stays until it is handled, so its dose day is the latest dose time before now; a notification is one minute's group, gone only when every dose in it is marked. */
         const d=MedLib.doseOfId(Meds.meds(),n.id);
-        if(!d||MedLib.statusOf(Meds.log(),d.m.id,t1,d.slot)||MedLib.statusOf(Meds.log(),d.m.id,y,d.slot))gone.push({id:n.id});
+        if(!d){gone.push({id:n.id});continue}
+        const day=MedLib.dayForTap(d.slot,Date.now()),grp=MedLib.dosesOn(Meds.meds(),day).filter(x=>x.slot===d.slot&&x.m.id!==d.m.id).concat([d]);
+        if(grp.every(x=>MedLib.statusOf(Meds.log(),x.m.id,day,x.slot)))gone.push({id:n.id});
       }
       if(gone.length)await ln.removeDeliveredNotifications({notifications:gone});
     }catch{}

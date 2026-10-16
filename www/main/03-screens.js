@@ -28,6 +28,8 @@ function dayLogHtml(lk){
 /* The sport ring is daily: the day's share of the weekly goal (default 150 min). The weekly total is in Trend and Gym. */
 /* A hard risk flag (minor, eating-disorder sign, pregnancy, low BMI) turns the calorie countdown into a plain total: no "kcal left" that reads as an allowance to restrict. */
 const kcalCount=()=>risk().hard.length===0;
+/* Widget calories: the remainder only where Today shows one; otherwise the day's total (never "hedef yok" for a person who has a target). */
+const widgetKcal=t=>{const eaten=sum("food",t,t);return S.settings.kcal<=0?{kcalLeft:null}:kcalCount()&&eaten>=Algo.LOW_LOG_KCAL?{kcalLeft:Math.round(kcalGoal(t)-eaten)}:{kcalEaten:Math.round(eaten)}};
 const sportDay=()=>Math.max(1,Math.round(S.settings.sportWeek/7));
 /* A ring is a button: today's detail and the last 14 days' chart are on the Day screen, the calendar from there. */
 const rb=(k,ad,inner,val="")=>`<button class="rbtn" data-hg="focus:${k}" aria-label="${ad}${val?`: ${val}`:""}, ayrıntı ve geçmiş">${inner}</button>`;
@@ -47,7 +49,7 @@ function viewToday(){
     weight=`<button class="stepcard" data-tab="trend" aria-label="${st.hideNums?"":`Kilo ${dw(cur)} ${wlab()}, `}Kilo grafiğini Trend'de aç"><div class="scr"><span class="mut">${Icons.svg("weight")} ${curDay===t?"Bugünkü tartı":"Son tartı, "+fd(curDay)}</span><span class="mut sm">Trend <span aria-hidden="true">›</span></span></div><div class="scr"><span class="big num wv">${st.hideNums?"•••":`${dw(cur)} <small>${wlab()}</small>`}</span><span class="mut sm num ws">${bits.join(" · ")}</span></div></button>${fl}`;
   }
   const water=sum("water",t,t),sh=st.waterMl,kc=sum("food",t,t),sw=sum("exercise",t,t),sg=sportDay();
-  const kgl=kcalGoal(t),kcP=kgl>0?kc/kgl:0;
+  const kgl=kcalGoal(t),kcP=kgl>0&&kcalCount()?kc/kgl:0;
   const sOn=(S.settings.stepsOn||S.settings.hcOn)&&isNative();
   /* The ring centre shows what is left; done / goal below with the unit. */
   const left=(v,g,u)=>v<g?[null,`${u} kaldı`]:["✓","Hedef tamam"];
@@ -68,11 +70,11 @@ function viewToday(){
   const micro=mi.length?`<div class="macro num">${mi.join(" · ")} <span class="mut sm">öğünde veri var</span></div>`:"";
   const cmg=caffeineMg(Log.where(e=>e.type==="water"&&e.day===t)),caff=cmg?`<div class="macro num">Kafein ~<b>${cmg}</b> mg <span class="mut sm">içeceklerden, tahmin</span></div>`:"";
   /* Every note of the summary card sits in one folded "Ayrıntı" line, so the first screen keeps the rings and the log. */
-  const notesIn=[Habits.ramWaterNote(),lowLog&&kcalCount()&&!st.hideNums?`<p class="pt-2 hint">Bugün az yemek kayıtlı; kayıtlar tamamlanınca kalanı gösteririm.</p>`:"",...st.hideNums?[]:[macro,caff,macroNote,fiber,micro,rangeNote,moveAdd(t)?`<p class="pt-2 hint">Hedefe hareketten +${moveAdd(t)} kcal eklendi (kayıtlı antrenman ve yürüyüşün yarısı, tahmindir).</p>`:""]].join("");
+  const notesIn=[Habits.ramWaterNote(),lowLog&&kcalCount()&&!st.hideNums?`<p class="pt-2 hint">Bugün az yemek kayıtlı; kayıtlar tamamlanınca kalanı gösteririm.</p>`:"",...st.hideNums?[]:[macro,caff,macroNote,fiber,micro,rangeNote,moveAdd(t)&&kcalCount()?`<p class="pt-2 hint">Hedefe hareketten +${moveAdd(t)} kcal eklendi (kayıtlı antrenman ve yürüyüşün yarısı, tahmindir).</p>`:""]].join("");
   const notes=notesIn?`<details class="acc" ${keepOpen("tnotes")}><summary>Ayrıntı</summary>${notesIn}</details>`:"";
   /* Summary card: big calorie ring and the remainder; water, sport and steps in small rings; macros below. */
   const rings=`<div class="card"><div class="rings">
-    ${rb("kcal","Kalori",ring(st.hideNums?0:kcP,"var(--kcal)",kcC,"Kalori",st.hideNums?"sayılar gizli":kgl>0?`${Math.round(kc)} / ${kgl} kcal`:"hedef yok",kcU,"main"),st.hideNums?"":kgl>0?`${kcC} ${kcU}, ${Math.round(kc)} / ${kgl} kcal`:`${kcC} ${kcU}`)}
+    ${rb("kcal","Kalori",ring(st.hideNums?0:kcP,"var(--kcal)",kcC,"Kalori",st.hideNums?"sayılar gizli":kgl>0?kcalCount()?`${Math.round(kc)} / ${kgl} kcal`:`${Math.round(kc)} kcal`:"hedef yok",kcU,"main"),st.hideNums?"":kgl>0&&kcalCount()?`${kcC} ${kcU}, ${Math.round(kc)} / ${kgl} kcal`:`${kcC} ${kcU}`)}
     <div class="rmini">${rb("water","Su",ring(water/sh,"var(--water)",waterC||wrT,"Su",`${fmt(water/1000,1)} / ${fmt(sh/1000,1)} L${fasting?", oruç saatinde":""}`,waterU,"mini"+(waterC?" done":"")),`${waterC?"hedef tamam":`${wrT} ${waterU}`}, ${fmt(water/1000,1)} / ${fmt(sh/1000,1)} L`)}
     ${rb("exercise","Spor",ring(sw/sg,"var(--exercise)",spC||spLeft,"Spor",`${Math.round(sw)} / ${sg} dk`,spU,"mini"+(spC?" done":"")),`${spC?"hedef tamam":`${spLeft} ${spU}`}, ${Math.round(sw)} / ${sg} dk`)}${sOn?stepCard():""}</div>
   </div>${notes}</div>`;
@@ -308,7 +310,7 @@ let widgetLast="";
 /* The null values are intentional: the Java side shows "no goal" / hides steps when the key exists but is null, and "–" when the key is missing. */
 function widgetPush(){
   if(!WG())return;
-  const t=dayKey(),st=S.settings,d={day:t,ds:st.dayStart|0,water:sum("water",t,t),waterGoal:st.waterMl,glass:st.glass,kcalLeft:st.kcal>0&&kcalCount()?Math.round(kcalGoal(t)-sum("food",t,t)):null,steps:st.stepsOn||st.hcOn?stepsShown():null,...(st.lockOn||st.widgetHide)&&{hide:true}},fw=Habits.fastWindow();
+  const t=dayKey(),st=S.settings,d={day:t,ds:st.dayStart|0,water:sum("water",t,t),waterGoal:st.waterMl,glass:st.glass,...widgetKcal(t),steps:st.stepsOn||st.hcOn?stepsShown():null,...(st.lockOn||st.widgetHide)&&{hide:true}},fw=Habits.fastWindow();
   if(fw){d.imsakAt=fw[0];d.iftarAt=fw[1]}
   const j=JSON.stringify(d);if(j===widgetLast)return;
   widgetLast=j;try{WG().update(d).catch(()=>{})}catch{}
