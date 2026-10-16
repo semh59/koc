@@ -98,7 +98,7 @@ function medTodo(){
   const row=(day,{m,slot},tag,sfx)=>`<div class="row"><span>${Icons.svg("meds")} <b class="num tm">${slot}</b> ${esc(m.n)}<small class="mut sm">${[esc(MedLib.doseText(m,slot,day)),MED_FED[m.fed],tag].filter(Boolean).join(" · ")}</small></span><div class="acts"><button class="chip go" data-md="take:${m.id}:${slot}${sfx}" aria-label="Aldım: ${esc(m.n)}, ${slot}${day===t?"":", dün"}">${Icons.svg("check")} Aldım</button><button class="chip skip" data-md="skip:${m.id}:${slot}${sfx}" aria-label="Atla: ${esc(m.n)}, ${slot}${day===t?"":", dün"}">Atla</button>${day===t&&S.settings.medNear&&tag==="Gecikti"&&!near++?`<button class="chip" data-md="nearsend">Yakınıma haber ver</button>`:""}</div></div>`;
   return ram.concat(paused)
     .concat(MedLib.dosesOn(S.meds,y).filter(({m,slot})=>!rec(m.id,y,slot)).map(x=>row(y,x,night?"Gecikti":"Dün kaçırıldı",":"+y)))
-    .concat(MedLib.dosesOn(S.meds,t).filter(({m,slot})=>slot<=now&&!rec(m.id,t,slot)).map(x=>row(t,x,mins(now)-mins(x.slot)<30?"Saati geldi":"Gecikti","")));
+    .concat(MedLib.dosesOn(S.meds,t).filter(({m,slot})=>mins(slot)<=mins(now)+30&&!rec(m.id,t,slot)).map(x=>row(t,x,mins(x.slot)>mins(now)?"Yaklaşıyor":mins(now)-mins(x.slot)<30?"Saati geldi":"Gecikti","")));
 }
 
 /* ---- Ramadan: moving the times inside the daytime fast ---- */

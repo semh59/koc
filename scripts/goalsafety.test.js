@@ -36,6 +36,7 @@ const A=require("../www/kernel/algo.js");
 
   const w7=n=>{const o={};for(let i=0;i<=21;i+=3)o[iso(i)]=80+n*(i/7);return o};
   ok("fastLoss: more than 1% a week is flagged, 0.5% is not",A.fastLoss(w7(-1),iso(21))===true&&A.fastLoss(w7(-0.4),iso(21))===false);
+  ok("fastLoss: with minDays the note waits until the weights span that long",A.fastLoss(w7(-1),iso(21),14)===true&&(sh=>A.fastLoss(sh,iso(21),0)===true&&A.fastLoss(sh,iso(21),14)===false&&A.fastLoss(sh,iso(21),7)===true)({[iso(12)]:80,[iso(15)]:79.2,[iso(18)]:78.4,[iso(21)]:77.6}));
   fresh("for(let i=21;i>=1;i-=3)add('weight',80+0.9*(i/7),'',keyOff(-i))");
   ev("sheetWeight()");q("#fv").value="80";q('[data-go="weight"]').click();
   ok("saving a weigh-in with a fast fall: neutral doctor line, no diagnosis",/haftada %1/.test(msg())&&/hekimine danış/.test(msg())&&!/hastal|bozukluk/.test(msg()),msg());

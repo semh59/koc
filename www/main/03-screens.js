@@ -28,6 +28,7 @@ function dayLogHtml(lk){
 /* The sport ring is daily: the day's share of the weekly goal (default 150 min). The weekly total is in Trend and Gym. */
 /* A hard risk flag (minor, eating-disorder sign, pregnancy, low BMI) turns the calorie countdown into a plain total: no "kcal left" that reads as an allowance to restrict. */
 const kcalCount=()=>risk().hard.length===0;
+const fastLossNow=w=>Algo.fastLoss(w,undefined,risk().hard.length?7:14);
 /* Widget calories: the remainder only where Today shows one; otherwise the day's total (never "hedef yok" for a person who has a target). */
 const widgetKcal=t=>{const eaten=sum("food",t,t);return S.settings.kcal<=0?{kcalLeft:null}:kcalCount()&&eaten>=Algo.LOW_LOG_KCAL?{kcalLeft:Math.round(kcalGoal(t)-eaten)}:{kcalEaten:Math.round(eaten)}};
 const sportDay=()=>Math.max(1,Math.round(S.settings.sportWeek/7));
@@ -48,7 +49,7 @@ function viewToday(){
   }else{
     const gi=goalInfo(cur,wAll[days[0]]),sl=Algo.slopePerWeek(wAll);
     const bits=st.hideNums?[]:[sl!=null?`${dwS(sl,2)} ${wlab()}/hafta`:prev!=null?`öncekine göre ${dwS(cur-prev)} ${wlab()}`:"",gi?(gi.done?"Hedefe ulaştın":`hedefe ${dw(gi.left)} ${wlab()}`):""].filter(Boolean);
-    const fl=Algo.fastLoss(wAll)?`<p class="hint">Kilon haftada %1'den hızlı düşüyor; hekimine danış.</p>`:"";
+    const fl=fastLossNow(wAll)?`<p class="hint">Kilon haftada %1'den hızlı düşüyor; hekimine danış.</p>`:"";
     weight=`<button class="stepcard" data-tab="trend" aria-label="${st.hideNums?"":`Kilo ${dw(cur)} ${wlab()}, `}Kilo grafiğini Trend'de aç"><div class="scr"><span class="mut">${Icons.svg("weight")} ${curDay===t?"Bugünkü tartı":"Son tartı, "+fd(curDay)}</span><span class="mut sm">Trend <span aria-hidden="true">›</span></span></div><div class="scr"><span class="big num wv">${st.hideNums?"•••":`${dw(cur)} <small>${wlab()}</small>`}</span><span class="mut sm num ws">${bits.join(" · ")}</span></div></button>${fl}`;
   }
   const water=sum("water",t,t),sh=st.waterMl,kc=sum("food",t,t),sw=sum("exercise",t,t),sg=sportDay();

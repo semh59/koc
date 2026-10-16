@@ -97,7 +97,7 @@ function goWeight(){
   const hide=S.settings.hideNums;
   let msg=hide?"Tartı kaydedildi":`${dw(v)} ${wlab()} kaydedildi`;
   if(prev!=null&&!hide)msg+=`, öncekine göre ${dwS(v-prev)} ${wlab()}`;
-  if(Algo.fastLoss(weights()))msg+=". Kilon haftada %1'den hızlı düşüyor; hekimine danış";
+  if(fastLossNow(weights()))msg+=". Kilon haftada %1'den hızlı düşüyor; hekimine danış";
   toast(msg,e.id);
 }
 /* Yesterday's entry carries its own meal; favourites and templates have none, so the selected chip applies. */
