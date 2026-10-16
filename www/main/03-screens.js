@@ -104,6 +104,7 @@ function viewToday(){
   const goalRow=st.obDone&&st.obSkipped&&!st.kcal?row("weight","Hedefini hesapla","Boy, kilo ve yaşınla günlük kalori ve protein hedefini hesaplarım.",[["obredo","Hesapla"]]):"";
   const ageRow=st.obDone&&!(st.age>0)&&!goalRow?row("user","Yaşını gir","Yaşa göre korumalar ve öneriler ayarlanır.",[["agego","Gir"]]):"";
   const modRow=st.obDone&&!st.modAsked&&st.obAt&&st.obAt<t&&Algo.dayNum(t)-Algo.dayNum(st.obAt)<=7?row("more","Hangilerini takip edelim?","İlaç, oruç, tansiyon, şeker ve adım takibini istediğin gibi aç.",[["obmods","Seç"],["obmodsno","Şimdi değil"]]):"";
+  const comfyRow=st.obDone&&st.age>=65&&!st.comfy&&!st.comfyAsked?row("user","Yazıyı büyütelim mi?","Yazılar ve düğmeler büyür. Ayarlar > Görünüm'den değiştirirsin.",[["comfyon","Büyüt"],["comfyno","Şimdi değil"]]):"";
   const saveRow=storeMsg()?row("save",storeMsg()[0],storeMsg()[1],[["databackup","Yedek al"]]):"";
   const abRow=abErr?row("cloud","Otomatik yedek alınamadı",abErr,[["abfix","Düzelt"]]):"";
   /* A calorie target below maintenance with a soft risk flag (medication, health note, readings) that the user has not talked through with a doctor: a gentle reminder, cleared with "Hekimime danıştım". */
@@ -114,7 +115,7 @@ function viewToday(){
   })();
   const brakeRow=softBrake?row("save","Kalori hedefini hekiminle gözden geçir","Sağlık notun, ilaç kaydın ya da ölçümlerin var; bakım düzeyinin altındaki hedef için önce hekimine danış.",[["riskok","Hekimime danıştım"]]):"";
   /* Never fold: medication and measurement jobs, a running walk or fast, the save-failed and backup-failed notices, the night-entries offer. Setup rows: the first-water row plus at most one other; of the rest the first 3 rows (counting the pinned ones) are visible, so the log is not pushed down. */
-  const pinned=[...first,saveRow,abRow,lateRow(),...medBudget].filter(Boolean),setup=[firstWater,...[goalRow,ageRow,modRow,brakeRow].filter(Boolean).slice(0,1)].filter(Boolean);
+  const pinned=[...first,saveRow,abRow,lateRow(),...medBudget].filter(Boolean),setup=[firstWater,...[goalRow,ageRow,comfyRow,modRow,brakeRow].filter(Boolean).slice(0,1)].filter(Boolean);
   const bkSnoozed=st.bkSnoozeAt&&Algo.dayNum(t)-Algo.dayNum(st.bkSnoozeAt)<7;
   const todo=[...pinned,...setup,...pmTodo(),...(fastRun.length?[]:fastTodo()),...ramadanTodo(),...trialTodo(),
     sOn&&stepsRead&&st.stepWarnDay!==t&&LogLib.stalled(stepSnapAt,Date.now(),a7(-1,-1),a7(-8,-2)/7)?row("steps","Adım sayımı durmuş olabilir","Pil ayarında NeoWell'e kısıtlama koyma.",[["stepsfix","Ayarla"],["stepshide","Kapat"]]):"",
