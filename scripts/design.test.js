@@ -70,7 +70,7 @@ ok("one check mark glyph (no heavy check mark)",!all.includes("✔"));
 const jsAll=Object.entries(src).filter(([f])=>f!=="index.html").map(([f,t])=>[f,t]);
 const hexJs=jsAll.filter(([f,t])=>f!=="kernel/algo.js"&&/["'`]#[0-9a-fA-F]{6}/.test(t)).map(([f])=>f);
 ok("canvas report colors live only in Algo.PAGE.c (no hex literal in any module or main script)",hexJs.length===0&&/PAGE=\{[^}]*c:\{bg:/.test(src["kernel/algo.js"]),hexJs);
-ok("toast: plain message 6 s, undo 10 s",/UNDO_MS=10000,TOAST_MS=6000/.test(all)&&/undoable\?UNDO_MS:TOAST_MS/.test(all));
+ok("toast: plain message 6 s, undo 10 s, undo of a deletion 30 s",/UNDO_MS=10000,DEL_UNDO_MS=30000,TOAST_MS=6000/.test(all)&&/undoable\?\(msg==="Kayıt silindi"\?DEL_UNDO_MS:UNDO_MS\):TOAST_MS/.test(all));
 ok("first-run welcome asks \"Yazıyı büyüt?\" with the comfort switch",/swRow\("data-comfy",S\.settings\.comfy,"Yazıyı büyüt\?"/.test(src["modules/data/onboardui.js"]));
 const medui=src["modules/meds/medui.js"];
 ok("repeated dose buttons carry the medication name in their accessible name",["take","skip"].every(a=>[...medui.matchAll(new RegExp(`data-md="${a}:[^"]*"([^>]*)>`,"g"))].every(m=>/aria-label="[^>]*\$\{esc\(m\.n\)\}/.test(m[1]))));

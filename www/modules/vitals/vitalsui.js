@@ -30,6 +30,8 @@ const vShown=k=>{if(k!=="t")return vLast(k);const l=VitalsLib.sessions(S.vitals)
 /* Today's reading shown on the quick chip, so the value stays visible after the to-do row is gone. */
 const vChipTxt=k=>{const r=vShown(k);return r&&r.day===dayKey()&&!S.settings.hideNums?" "+(k==="t"?`${Math.round(r.sys)}/${Math.round(r.dia)}`:dg(r.g)):""};
 function vWhen(r){return (r.day===dayKey()?"bugün ":fd(r.day)+" ")+r.time}
+/* The neutral line under the Today chips while any of today's readings is at the "ask your doctor" level; never colours or names the value. */
+const vAskToday=()=>S.vitals.some(r=>r.day===dayKey()&&VitalsLib.level(r,dayKey(),vMy())==="ask");
 /* Today's to-do: one row per kind that is on, not yet measured today and whose reminder time has come (the default time when the reminder is off). */
 function vTodo(){
   const st=S.settings,t=dayKey(),out=[],hm=vNow(),due=ids=>{const rs=st.reminders.filter(r=>ids.includes(r.id)),on=rs.filter(r=>r.on);return (on.length?on:rs).map(r=>r.t).sort()[0]<=hm};
