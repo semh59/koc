@@ -95,7 +95,10 @@ function medTodo(){
   const ram=medRamTodo(),paused=S.meds.filter(m=>!m.on&&m.ou&&m.ou<=t).map(m=>`<div class="row"><span class="grow">${esc(m.n)}<small class="db mut sm">Ara verme süresi doldu</small></span><button class="b7 chip" data-md="resume:${m.id}" aria-label="Tekrar aç: ${esc(m.n)}">Tekrar aç</button></div>`);
   let near=0;
   const mins=hm=>+hm.slice(0,2)*60+ +hm.slice(3,5),night=S.settings.dayStart>0&&new Date().getHours()<S.settings.dayStart; // before the day start, last evening's unmarked dose is still "late", not "yesterday's"
-  const row=(day,{m,slot},tag,sfx)=>`<div class="row"><span>${Icons.svg("meds")} <b class="num tm">${slot}</b> ${esc(m.n)}<small class="mut sm">${[esc(MedLib.doseText(m,slot,day)),MED_FED[m.fed],tag].filter(Boolean).join(" · ")}</small></span><div class="acts"><button class="chip go" data-md="take:${m.id}:${slot}${sfx}" aria-label="Aldım: ${esc(m.n)}, ${slot}${day===t?"":", dün"}">${Icons.svg("check")} Aldım</button><button class="chip skip" data-md="skip:${m.id}:${slot}${sfx}" aria-label="Atla: ${esc(m.n)}, ${slot}${day===t?"":", dün"}">Atla</button>${day===t&&S.settings.medNear&&tag==="Gecikti"&&!near++?`<button class="chip" data-md="nearsend">Yakınıma haber ver</button>`:""}</div></div>`;
+  const grpN=new Map(),grpDone=new Set(),all=(day,slot)=>day===t&&(grpN.get(slot)||0)>1&&!grpDone.has(slot)&&grpDone.add(slot)?`<button class="chip" data-md="takeall:${slot}" aria-label="Hepsini aldım: ${slot}, ${grpN.get(slot)} ilaç">Hepsini aldım</button>`:"";
+  const row=(day,{m,slot},tag,sfx)=>`<div class="row"><span>${Icons.svg("meds")} <b class="num tm">${slot}</b> ${esc(m.n)}<small class="mut sm">${[esc(MedLib.doseText(m,slot,day)),MED_FED[m.fed],tag].filter(Boolean).join(" · ")}</small></span><div class="acts"><button class="chip go" data-md="take:${m.id}:${slot}${sfx}" aria-label="Aldım: ${esc(m.n)}, ${slot}${day===t?"":", dün"}">${Icons.svg("check")} Aldım</button><button class="chip skip" data-md="skip:${m.id}:${slot}${sfx}" aria-label="Atla: ${esc(m.n)}, ${slot}${day===t?"":", dün"}">Atla</button>${all(day,slot)}${day===t&&S.settings.medNear&&tag==="Gecikti"&&!near++?`<button class="chip" data-md="nearsend">Yakınıma haber ver</button>`:""}</div></div>`;
+  /* Doses of the same minute: the first row offers one button for all of them (the others stay one by one, nothing is marked unseen). */
+  for(const {m,slot} of MedLib.dosesOn(S.meds,t))if(mins(slot)<=mins(now)+30&&!rec(m.id,t,slot))grpN.set(slot,(grpN.get(slot)||0)+1);
   return ram.concat(paused)
     .concat(MedLib.dosesOn(S.meds,y).filter(({m,slot})=>!rec(m.id,y,slot)).map(x=>row(y,x,night?"Gecikti":"Dün kaçırıldı",":"+y)))
     .concat(MedLib.dosesOn(S.meds,t).filter(({m,slot})=>mins(slot)<=mins(now)+30&&!rec(m.id,t,slot)).map(x=>row(t,x,mins(x.slot)>mins(now)?"Yaklaşıyor":mins(now)-mins(x.slot)<30?"Saati geldi":"Gecikti","")));
@@ -321,6 +324,20 @@ function medMark(mid,slot,st,force,day=calKey()){
   const m=S.meds.find(x=>x.id===mid);
   medUndoToast(st==="t"?`${m.n} alındı olarak kaydedildi${isToday||!at?"":`, saat ${at}. Başka saatse İlaçlar ekranında düzelt`}`:st==="s"?`${m.n} atlandı`:"Kayıt geri alındı",res);
 }
+function medTakeAll(slot,force){
+  const t=calKey(),ds=MedLib.dosesOn(S.meds,t).filter(d=>d.slot===slot&&!MedLib.statusOf(S.medLog,d.m.id,t,slot));
+  if(ds.length<2)return;
+  if(!force){
+    const r=ds.map(d=>MedLib.recentTaken(S.medLog,d.m.id,t,slot,Date.now())).find(Boolean);
+    if(r){confirmSheet({title:"Yine de kaydedilsin mi?",body:MedLib.recentText(r),ok:"Evet, kaydet",no:"Hayır, kaydetme"}).then(yes=>yes?medTakeAll(slot,true):toast(MedLib.NOT_SAVED));return}
+  }
+  const at=medNowHM(),rs=ds.map(d=>MedLib.mark(S,d.m.id,t,slot,"t",at)).filter(Boolean);
+  if(!rs.length)return;
+  const undo=()=>rs.slice().reverse().forEach(x=>x.undo());
+  if(!commit(undo))return;
+  render();medResched();
+  medUndoToast(`${rs.length} ilaç alındı olarak kaydedildi`,{undo});
+}
 function medAtSheet(mid,slot,day){
   const r=S.medLog.find(x=>x.m===mid&&x.day===day&&x.slot===slot&&x.st==="t"),m=S.meds.find(x=>x.id===mid);
   if(!r||!m)return;
@@ -389,6 +406,7 @@ document.addEventListener("click",ev=>{
   else if(a==="addtime"){medCollect();if(medDraft.t.length<MedLib.MAXT){medDraft.t.push("");medDraft.q.push({d:"",p:""});medRender()}}
   else if(a==="rmtime"){medCollect();medDraft.t.splice(+r[0],1);medDraft.q.splice(+r[0],1);medRender()}
   else if(a==="wd"){const w=+r[0],i=medDraft.w.indexOf(w);if(i>=0)medDraft.w.splice(i,1);else medDraft.w.push(w);el.setAttribute("aria-pressed",String(i<0))}
+  else if(a==="takeall")medTakeAll(r[0]+":"+r[1]);
   else if(a==="take")medMark(+r[0],r[1]+":"+r[2],"t",false,r[3]);
   else if(a==="skip")medMark(+r[0],r[1]+":"+r[2],"s",false,r[3]);
   else if(a==="clear")medMark(+r[0],r[1]+":"+r[2],null,false,r[3]);
