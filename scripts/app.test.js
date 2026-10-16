@@ -2258,7 +2258,8 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   { // Today simplification
     const unclock=require('./clock').at(w,21); // dose and measurement rows appear when their time comes
     const st0=ev("JSON.stringify(S)");
-    ev("S.entries=[];S.meds=[];S.medLog=[];S.vitals=[];S.workouts=S.workouts.filter(x=>x.t1);S.fast={plan:16,t0:null,log:[]};Object.assign(S.settings,{medOn:false,fastOn:false,bpOn:false,bsOn:false,stepsOn:false,stepsAsked:true,waterMl:2500,kcal:1900,sportWeek:150,glass:250});oem='google';tab='today';logOff=0");
+    const risk0=ev("JSON.stringify((({edFlag,pregnant,nursing,age,goalKg,riskOff,healthNote})=>({edFlag,pregnant,nursing,age,goalKg,riskOff,healthNote}))(S.settings))");
+    ev("S.entries=[];S.meds=[];S.medLog=[];S.vitals=[];S.workouts=S.workouts.filter(x=>x.t1);S.fast={plan:16,t0:null,log:[]};Object.assign(S.settings,{edFlag:false,pregnant:false,nursing:false,age:0,goalKg:0,riskOff:'',healthNote:'',medOn:false,fastOn:false,bpOn:false,bsOn:false,stepsOn:false,stepsAsked:true,waterMl:2500,kcal:1900,sportWeek:150,glass:250});oem='google';tab='today';logOff=0");
     ok("with nothing to do there is no 'Bugün yapılacaklar' card",!ev("viewToday()").includes("Bugün yapılacaklar"));
     ev("add('water',1000);add('food',1380,'Öğün');add('weight',86,'');add('weight',87,'',keyOff(-3));render()");
     const v=()=>ev("viewToday()"),at=s=>v().indexOf(s);
@@ -2266,6 +2267,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("rings state the unit and the remainder",(t=>t.includes("520kcal kaldı")&&t.includes("1380 / 1900 kcal")&&t.includes("1,5L kaldı")&&t.includes("1,0 / 2,5 L")&&t.includes("21dk kaldı")&&t.includes("0 / 21 dk")&&!t.includes("7 gün"))($q(".rings").textContent),$q(".rings").textContent);
     ev("add('food',700,'Fazla');add('water',1500);add('exercise',150,'Yürüyüş');render()");
     ok("when the target is exceeded 'kcal fazla', water and sport 'tamam'",(t=>t.includes("180kcal fazla")&&(t.match(/✓Hedef tamam/g)||[]).length===2)($q(".rings").textContent),$q(".rings").textContent);
+    ev(`Object.assign(S.settings,${risk0})`);
     ok("the weight card is small: no chart, a one-line summary, leads to Trend",!v().includes('class="weight"')&&!!$q('#view .stepcard[data-tab="trend"]')&&!$q('#view .stepcard[data-tab="trend"] svg:not(.i)')&&$q('#view .stepcard[data-tab="trend"]').textContent.includes("86,0"));
     ev("tab='trend';render()");
     ok("the Coach sentence is a Coach shortcut, in Trend",!!$q('#view button.coach[data-tab="coach"]')&&!$q('#view .card.coachc [data-act]'));
@@ -2281,6 +2283,9 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("hide-numbers also hides the log's kcal and the weight, and the ring labels carry no numbers",!/\d kcal|\d,\d kg/.test($q(".log").textContent)&&![...w.document.querySelectorAll(".rbtn")].some(b=>/kcal/.test(b.getAttribute("aria-label"))));
     ev("S.settings.hideNums=false;render()");
     ok("ring buttons name the value; delete buttons name the entry",[...w.document.querySelectorAll(".rbtn")].every(b=>/\d/.test(b.getAttribute("aria-label"))||/Adım|sayılar/.test(b.getAttribute("aria-label")))&&[...w.document.querySelectorAll(".log .del")].every(b=>/, sil$/.test(b.getAttribute("aria-label"))&&b.getAttribute("aria-label").length>6));
+    ev("add('food',1500,'Öğle');S.settings.edFlag=true;render()");
+    ok("with a hard risk flag the calorie ring is a plain total, never 'kcal kaldı'",(t=>t.includes("kcal yedin")&&!/kcal (kaldı|fazla)/.test(t))($q(".rbtn").textContent),$q(".rbtn").textContent);
+    ev("S.settings.edFlag=false;render()");
     ev("logOff=1;render()");
     ok("while another day is shown the quick-add chips give way to 'Bugüne dön'",!$q(".actions .chip")&&!!$q('.actions [data-lo="-1"]'));
     ev("logOff=0;render()");
@@ -2292,7 +2297,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   }
   { // home screen widget
     const wc=[];w.Capacitor.Plugins.Widget={update:async d=>{wc.push(d)}};
-    ev("widgetLast='';tab='today';S.entries=[];add('water',250);add('food',400,'makarna');S.settings.kcal=1800;S.settings.waterMl=2500;S.settings.glass=250;S.settings.stepsOn=true;stepToday=3000;add('steps',500,'manual');render()");
+    ev("widgetLast='';tab='today';S.entries=[];add('water',250);add('food',400,'makarna');Object.assign(S.settings,{edFlag:false,pregnant:false,nursing:false,age:0,goalKg:0,riskOff:'',healthNote:''});S.settings.kcal=1800;S.settings.waterMl=2500;S.settings.glass=250;S.settings.stepsOn=true;stepToday=3000;add('steps',500,'manual');render()");
     ok("widget: updated once after render with the right fields",wc.length===1&&JSON.stringify(wc[0])===JSON.stringify({day:ev("dayKey()"),ds:0,water:250,waterGoal:2500,glass:250,kcalLeft:1400,steps:3500}),wc);
     ev("render()");
     ok("widget: not sent again when nothing changed",wc.length===1);
