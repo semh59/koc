@@ -67,7 +67,7 @@ function viewToday(){
   /* The fibre bar only when every meal of the day has fibre data (a partial total would look like the whole day) and for adults. */
   const fibAll=meals.length>0&&meals.every(e=>e.fb!=null)&&S.settings.age>=18;
   const fiber=fibAll?`<div class="macro num">Lif <b>${Math.round(mac("fb"))}</b> / en az 25 g${helpBtn("hfib","Lif")}</div>${helpBox("hfib","Yetişkinler için Dünya Sağlık Örgütü önerisi günde en az 25 g. Gün bitmeden az görünmesi olağandır. Hedefin farklıysa hekiminin söylediğine uy.")}<div class="bar" aria-hidden="true"><i style="width:${Math.min(100,mac("fb")/25*100).toFixed(0)}%"></i></div>`:"";
-  const mi=(fibAll?["sg","na"]:["fb","sg","na"]).map(k=>[k,meals.filter(e=>e[k]!=null).length]).filter(x=>x[1]).map(([k,n])=>`${NLBL[k][0].toUpperCase()+NLBL[k].slice(1)} <b>${Math.round(mac(k))}</b> ${NUNIT(k)} (${n}/${meals.length})`);
+  const mi=(fibAll?["sg","na"]:["fb","sg","na"]).map(k=>[k,meals.filter(e=>e[k]!=null).length]).filter(x=>x[1]).map(([k,n])=>`${k==="sg"?"Besin şekeri":NLBL[k][0].toUpperCase()+NLBL[k].slice(1)} <b>${Math.round(mac(k))}</b> ${NUNIT(k)} (${n}/${meals.length})`);
   const nc=meals.filter(e=>e.c!=null).length,nf=meals.filter(e=>e.f!=null).length;
   const macroNote=macro&&meals.some(e=>e.c!=null||e.f!=null)&&(nc<meals.length||nf<meals.length)?`<div class="mut sm macro">Karbonhidrat ${nc}/${meals.length}, yağ ${nf}/${meals.length} öğünde veri var; toplam eksik olabilir. <button class="lnk" data-act="missmacro">Eksikleri tamamla</button></div>`:"";
   const dr=LogLib.dayRange(meals),rangeNote=dr?`<p class="pt-2 hint">Porsiyon tahminleri yaklaşık olduğu için bugünün toplamı ~${fint(dr.lo)}–${fint(dr.hi)} kcal arasında olabilir.</p>`:"";
@@ -97,7 +97,7 @@ function viewToday(){
   const lateN=lateEntries().length,lateRow=()=>lateN?row("clock",`Gece yarısından sonra ${lateN} kayıt bugüne yazıldı`,"Dünün devamıysa dünkü güne taşıyabilirsin.",[["lateyest","Dünkü güne taşı"],["lateok","Bugüne ait"]]):"";
   const row=(ic,b,sub,btns)=>`<div class="row"><span>${Icons.svg(ic)} ${b}<small class="mut sm">${sub}</small></span><div class="acts">${btns.map(([a,l])=>`<button class="chip" data-act="${a}" aria-label="${esc(b)}: ${l}">${l}</button>`).join("")}</div></div>`;
   /* One list instead of separate cards: only pending jobs of enabled modules; no card when empty. */
-  const walkRow=Motion.walk()?row("steps",Motion.walk().t1?"Yürüyüş kaydedilmedi":"Yürüyüş sürüyor","Adım raporunda bitir ya da kaydet.",[["walkgo","Aç"]]):"";
+  const walkRow=Motion.walk()?row("steps",Motion.walk().t1?"Yürüyüş kaydedilmedi":"Yürüyüş sürüyor",Motion.walk().t1?"Adım raporunda kaydet ya da sil.":"Adım raporunda bitir.",[["walkgo","Aç"]]):"";
   const fastRun=st.fastOn&&Habits.fasting()?fastTodo():[];
   const first=[...medTodo(),...vTodo(),walkRow,...fastRun].filter(Boolean),medBudget=isNative()&&medBudgetMsg&&st.medOn&&Meds.count()?[row("clock","İlaç hatırlatmaların sınırlı",medBudgetMsg,[["medsgo","İlaçlar"]])]:[];
   const firstWater=st.obNudge&&!Log.where(e=>e.type==="water").length?row("water","İlk suyunu ekle","Bir bardak su kaydı günlük ilerlemeni başlatır.",[["water",`+${st.glass} ml`]]):"";
