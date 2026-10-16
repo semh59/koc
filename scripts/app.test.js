@@ -2259,7 +2259,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     const unclock=require('./clock').at(w,21); // dose and measurement rows appear when their time comes
     const st0=ev("JSON.stringify(S)");
     const risk0=ev("JSON.stringify((({edFlag,pregnant,nursing,age,goalKg,riskOff,healthNote})=>({edFlag,pregnant,nursing,age,goalKg,riskOff,healthNote}))(S.settings))");
-    ev("S.entries=[];S.meds=[];S.medLog=[];S.vitals=[];S.workouts=S.workouts.filter(x=>x.t1);S.fast={plan:16,t0:null,log:[]};Object.assign(S.settings,{edFlag:false,pregnant:false,nursing:false,age:0,goalKg:0,riskOff:'',healthNote:'',medOn:false,fastOn:false,bpOn:false,bsOn:false,stepsOn:false,stepsAsked:true,waterMl:2500,kcal:1900,sportWeek:150,glass:250});oem='google';tab='today';logOff=0");
+    ev("S.entries=[];S.meds=[];S.medLog=[];S.vitals=[];S.workouts=S.workouts.filter(x=>x.t1);S.fast={plan:16,t0:null,log:[]};Object.assign(S.settings,{edFlag:false,pregnant:false,nursing:false,age:40,goalKg:0,riskOff:'',healthNote:'',medOn:false,fastOn:false,bpOn:false,bsOn:false,stepsOn:false,stepsAsked:true,waterMl:2500,kcal:1900,sportWeek:150,glass:250});oem='google';tab='today';logOff=0");
     ok("with nothing to do there is no 'Bugün yapılacaklar' card",!ev("viewToday()").includes("Bugün yapılacaklar"));
     ev("add('water',1000);add('food',1380,'Öğün');add('weight',86,'');add('weight',87,'',keyOff(-3));render()");
     const v=()=>ev("viewToday()"),at=s=>v().indexOf(s);
@@ -2267,7 +2267,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("rings state the unit and the remainder",(t=>t.includes("520kcal kaldı")&&t.includes("1380 / 1900 kcal")&&t.includes("1,5L kaldı")&&t.includes("1,0 / 2,5 L")&&t.includes("21dk kaldı")&&t.includes("0 / 21 dk")&&!t.includes("7 gün"))($q(".rings").textContent),$q(".rings").textContent);
     ev("add('food',700,'Fazla');add('water',1500);add('exercise',150,'Yürüyüş');render()");
     ok("when the target is exceeded 'kcal fazla', water and sport 'tamam'",(t=>t.includes("180kcal fazla")&&(t.match(/✓Hedef tamam/g)||[]).length===2)($q(".rings").textContent),$q(".rings").textContent);
-    ev(`Object.assign(S.settings,${risk0})`);
+    ev(`Object.assign(S.settings,${risk0},{age:40})`);
     ok("the weight card is small: no chart, a one-line summary, leads to Trend",!v().includes('class="weight"')&&!!$q('#view .stepcard[data-tab="trend"]')&&!$q('#view .stepcard[data-tab="trend"] svg:not(.i)')&&$q('#view .stepcard[data-tab="trend"]').textContent.includes("86,0"));
     ev("tab='trend';render()");
     ok("the Coach sentence is a Coach shortcut, in Trend",!!$q('#view button.coach[data-tab="coach"]')&&!$q('#view .card.coachc [data-act]'));
@@ -2286,7 +2286,11 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("add('food',1500,'Öğle');S.settings.edFlag=true;render()");
     ok("with a hard risk flag the calorie ring is a plain total, never 'kcal kaldı'",(t=>t.includes("kcal yedin")&&!/kcal (kaldı|fazla)/.test(t))($q(".rbtn").textContent),$q(".rbtn").textContent);
     ev("S.settings.edFlag=false;render()");
-    ev("logOff=1;render()");
+    ev("S.settings.obDone=true;S.settings.obSkipped=false;S.settings.age=0;render()");
+    ok("with no age the Today list asks for it and leads to the profile",!!$q('.todo [data-act="agego"]'));
+    ev("S.settings.age=40;render()");
+    ok("once the age is set the row is gone",!$q('.todo [data-act="agego"]'));
+    ev("S.settings.age=40;logOff=1;render()");
     ok("while another day is shown the quick-add chips give way to 'Bugüne dön'",!$q(".actions .chip")&&!!$q('.actions [data-lo="-1"]'));
     ev("logOff=0;render()");
     ok("information hierarchy: summary, record, to-do, Trend shortcut",at('class="bgL"')<at('class="rings"')&&at('class="rings"')<at('class="actions"')&&at('class="actions"')<at("Bugün yapılacaklar")&&at("Bugün yapılacaklar")<at('data-tab="trend"'));

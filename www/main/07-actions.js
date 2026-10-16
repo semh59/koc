@@ -44,6 +44,7 @@ on("notiftest",()=>notifTest());
 on("barcode",()=>barcodeRead());
 on("stepsopen",()=>stepsOpen());
 on("stepsadd",()=>sheetSteps());
+on("agego",()=>{tab="settings-profile";render();window.scrollTo(0,0)});
 on("medsgo",()=>{tab="meds";render();window.scrollTo(0,0)});
 on("walkgo",()=>{tab="steps";render();window.scrollTo(0,0)});
 on("stepsno",()=>{S.settings.stepsAsked=true;save();render()});
