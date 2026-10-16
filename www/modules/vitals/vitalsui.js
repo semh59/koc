@@ -13,7 +13,7 @@ const vErrText=c=>c.err==="date"?"Gün ve saati seç":c.err==="glucose"?`Şeker 
 /* ---- Settings ---- */
 function vitalsSettingsHtml(){
   const st=S.settings,h="Evde ölçtüğün tansiyon ve şekeri kaydet. Uygulama değerleri yorumlamaz; kaydeder, ortalamasını ve grafiğini gösterir. Veriler telefondan çıkmaz.";
-  const lim=`<button class="lnk" data-vt="limits">Hekimimin verdiği sınır${st.bpSysHi||st.bpDiaHi||st.gFastHi?" (açık)":""}</button>`;
+  const lim=`<button class="lnk" data-vt="limits">Hekimimin verdiği sınır${st.bpSysHi||st.bpDiaHi||st.gFastHi||st.bpSysLo||st.bpDiaLo||st.gFastLo?" (açık)":""}</button>`;
   return modRow('data-vt="bptoggle"',st.bpOn,"Tansiyon","Ev ölçümleri, ortalama ve grafik.","hlpbp",h,lim)+modRow('data-vt="bstoggle"',st.bsOn,"Şeker","Ölçümler, ortalama ve grafik.","hlpbs",h,lim);
 }
 function vToggle(kind){
@@ -25,21 +25,23 @@ function vToggle(kind){
 }
 /* ---- Today and Trend cards ---- */
 const vLast=k=>VitalsLib.latest(S.vitals.filter(r=>r.k===k));
+/* What Today and Trend call "son": for blood pressure the last session's mean, the same figure the save message gives. */
+const vShown=k=>{if(k!=="t")return vLast(k);const l=VitalsLib.sessions(S.vitals);return l[l.length-1]};
 /* Today's reading shown on the quick chip, so the value stays visible after the to-do row is gone. */
-const vChipTxt=k=>{const r=vLast(k);return r&&r.day===dayKey()?" "+(k==="t"?`${r.sys}/${r.dia}`:dg(r.g)):""};
+const vChipTxt=k=>{const r=vShown(k);return r&&r.day===dayKey()?" "+(k==="t"?`${Math.round(r.sys)}/${Math.round(r.dia)}`:dg(r.g)):""};
 function vWhen(r){return (r.day===dayKey()?"bugün ":fd(r.day)+" ")+r.time}
 /* Today's to-do: one row per kind that is on, not yet measured today and whose reminder time has come (the default time when the reminder is off). */
 function vTodo(){
   const st=S.settings,t=dayKey(),out=[],hm=vNow(),due=ids=>{const rs=st.reminders.filter(r=>ids.includes(r.id)),on=rs.filter(r=>r.on);return (on.length?on:rs).map(r=>r.t).sort()[0]<=hm};
-  for(const [on,k,ic,label,act,txt,ids] of [[st.bpOn,"t","heart","Tansiyon","addbp",r=>`${r.sys}/${r.dia}`,VT_REMINDERS.bp],[st.bsOn,"s","glucose","Şeker","addbs",r=>dg(r.g),VT_REMINDERS.bs]]){
-    const r=vLast(k);if(!on||(r&&r.day===t)||!due(ids))continue;
+  for(const [on,k,ic,label,act,txt,ids] of [[st.bpOn,"t","heart","Tansiyon","addbp",r=>`${Math.round(r.sys)}/${Math.round(r.dia)}`,VT_REMINDERS.bp],[st.bsOn,"s","glucose","Şeker","addbs",r=>dg(r.g),VT_REMINDERS.bs]]){
+    const r=vShown(k);if(!on||(r&&r.day===t)||!due(ids))continue;
     out.push(`<div class="row"><span>${Icons.svg(ic)} ${label} ölç<small class="mut sm num">${r?`son: ${txt(r)}, ${vWhen(r)}`:"ölçüm yok"}</small></span><button class="chip" data-vt="${act}" aria-label="${label} ölçümü ekle">Ekle</button></div>`);
   }
   return out;
 }
 function vTrendCards(){
   const st=S.settings,c=(tab,ic,t,txt)=>navRow(`data-tab="${tab}"`,ic,t,txt);
-  const one=(k,none)=>{const r=vLast(k);return r?`son: ${k==="t"?r.sys+"/"+r.dia:dg(r.g)}, ${vWhen(r)}`:none};
+  const one=(k,none)=>{const r=vShown(k);return r?`son: ${k==="t"?Math.round(r.sys)+"/"+Math.round(r.dia):dg(r.g)}, ${vWhen(r)}`:none};
   return (st.bpOn?c("bp","heart","Tansiyon",one("t","Henüz ölçüm yok")):"")+(st.bsOn?c("glucose","water","Şeker",one("s","Henüz ölçüm yok")):"");
 }
 
@@ -83,7 +85,7 @@ function vFinish(rows,msg){
 }
 const vMy=()=>{const t=S.settings;return {sys:t.bpSysHi,dia:t.bpDiaHi,g:t.gFastHi,sysLo:t.bpSysLo,diaLo:t.bpDiaLo,gLo:t.gFastLo}};
 const vLevels=rows=>rows.map(r=>VitalsLib.level(r,dayKey(),vMy()));
-const vAsk=rows=>vLevels(rows).includes("ask")?". Hekimine danış; bu bir tanı değildir":"";
+const vAsk=rows=>{const i=vLevels(rows).indexOf("ask");return i<0?"":`. Hekimine danış; bu bir tanı değildir${rows.length>1?` (${i+1}. ölçüm ${rows[i].sys}/${rows[i].dia})`:""}`};
 /* Emergency box: names the value, tells low from high, and 112 is one tap away. Returns true when it opened. */
 function vAlert(rows){
   const lv=vLevels(rows),i=lv.findIndex(l=>l==="high"||l==="low");
@@ -95,7 +97,7 @@ function vAlert(rows){
   return true;
 }
 function sheetLimits(){
-  const st=S.settings,f=(id,lab,v)=>`<label class="lbl" for="${id}">${lab}</label><input class="in num" id="${id}" inputmode="decimal" value="${v?(id==="vlg"?dg(v):v):""}" autocomplete="off">`;
+  const st=S.settings,f=(id,lab,v)=>`<label class="lbl" for="${id}">${lab}</label><input class="in num" id="${id}" inputmode="decimal" value="${v?(id==="vlg"||id==="vlglo"?dg(v):v):""}" autocomplete="off">`;
   openSheet(`<h3>Hekimimin verdiği sınır</h3><p class="mut sm">Hekimin bir sınır verdiyse yaz; ölçüm bu sınıra gelince "Hekimine danış" satırı çıkar. Boş bırakırsan varsayılan sınır kullanılır. Uygulama değeri yorumlamaz.</p>
   ${f("vlsys","Büyük tansiyon üst (mmHg)",st.bpSysHi)}${f("vldia","Küçük tansiyon üst (mmHg)",st.bpDiaHi)}${f("vlg",`Şeker üst (${glab()})`,st.gFastHi)}
   ${f("vlsyslo","Büyük tansiyon alt (mmHg)",st.bpSysLo)}${f("vldialo","Küçük tansiyon alt (mmHg)",st.bpDiaLo)}${f("vlglo",`Şeker alt (${glab()})`,st.gFastLo)}
@@ -113,6 +115,7 @@ function vSaveLimits(){
     }
     out[k]=Math.round(v);
   }
+  for(const [lo,hi,lbl] of [["bpSysLo","bpSysHi","Büyük tansiyon"],["bpDiaLo","bpDiaHi","Küçük tansiyon"],["gFastLo","gFastHi","Şeker"]])if(out[lo]>0&&out[hi]>0&&out[lo]>=out[hi])return vWarn(`${lbl}: alt sınır üst sınırdan küçük olmalı`);
   const was=Object.fromEntries(KEYS.map(([,k])=>[k,st[k]]));
   Object.assign(st,out);
   if(!commit(()=>Object.assign(st,was)))return;
