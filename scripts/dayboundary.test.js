@@ -84,7 +84,9 @@ const key=d=>`2026-10-${String(d).padStart(2,"0")}`;
   ok("the night entries of today move to yesterday; other days are not touched",ev("S.entries.find(e=>e.text==='Gece atıştırması').day")===key(6)&&ev("S.entries.find(e=>e.id===1).day")===key(6)&&ev("S.entries.find(e=>e.id===2).day")===key(7));
   ok("the offer is gone afterwards",!/Dünkü güne taşı/.test(txt()));
   now(7,5);ev("S.entries.push({id:90,day:'"+key(7)+"',time:'02:10',type:'water',v:250,text:''});render()");
-  ok("after 04:00 there is no offer",!/Dünkü güne taşı/.test(txt()));
+  ok("after 04:00 the offer stays until it is answered",/Dünkü güne taşı/.test(txt()));
+  w.document.querySelector('[data-act="lateok"]').click();
+  ok("'Bugüne ait' keeps the entries and hides the offer for the day",!/Dünkü güne taşı/.test(txt())&&ev("S.entries.find(e=>e.id===90).day")===key(7));
   now(7,2);ev("S.settings.dayStart=4;S.entries=[];render()");ev("add('water',250)");ev("render()");
   ok("with a day start after the hour there is no offer (the entry is already on the previous day)",!/Dünkü güne taşı/.test(txt())&&ev("S.entries[0].day")===key(6));
 }
