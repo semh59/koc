@@ -15,6 +15,7 @@ on("lateyest",()=>{
   if(!commit(()=>list.forEach(e=>{e.day=t})))return;
   render();toast(`${list.length} kayıt dünkü güne taşındı`,()=>{list.forEach(e=>{e.day=t});save();render()});
 });
+on("lateok",()=>{S.settings.lateOkDay=dayKey();save();render()});
 on("missmacro",()=>sheetMissing());
 onPre("cp:",a=>sheetCopy(a.slice(3)));
 on("own",()=>{ownOpen();$("#ft").focus()});

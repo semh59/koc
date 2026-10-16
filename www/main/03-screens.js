@@ -13,8 +13,8 @@ for(const t of ["pointerdown","pointermove"])document.addEventListener(t,ev=>{
   else if(t==="pointerdown")document.querySelectorAll(".tip").forEach(n=>n.remove());
 });
 /* One day's entry list (meal groups, water summary, other entries): shared by Today and the Day screen. */
-/* Entries of today made between 00:00 and 04:00 (after the day start), offered for "Dünkü güne taşı" only while that window lasts. */
-const lateEntries=()=>{const h=new Date().getHours(),t=dayKey();return logOff===0&&h<4&&h>=(S.settings.dayStart||0)?Log.where(e=>e.day===t&&e.type!=="steps"&&e.time<"04:00"&&e.time>=`${pad(S.settings.dayStart||0)}:00`):[]};
+/* Entries of today made between 00:00 and 04:00 (after the day start), offered for "Dünkü güne taşı" until the day is over or the user says they belong to today. */
+const lateEntries=()=>{const t=dayKey();return logOff===0&&S.settings.lateOkDay!==t&&(S.settings.dayStart||0)<4?Log.where(e=>e.day===t&&e.type!=="steps"&&e.time<"04:00"&&e.time>=`${pad(S.settings.dayStart||0)}:00`):[]};
 function dayLogHtml(lk){
   const items=Log.where(e=>e.day===lk&&e.type!=="steps");
   const hn=S.settings.hideNums,vtxt=e=>hn?(e.type==="weight"||e.type==="food"&&e.v||e.type==="exercise"?"•••":""):e.type==="weight"?`${dw(e.v)} ${wlab()}`:e.type==="food"?(e.v?e.lo!=null?`~${Math.round(e.v)} kcal<small class="db mut sm">${e.lo}-${e.hi}</small>`:`${Math.round(e.v)} kcal`:""):e.type==="exercise"?`${Math.round(e.v)} dk`:"";
@@ -88,7 +88,7 @@ function viewToday(){
   const dnav=dayNav("lo",lname,logOff===0);
   const lb=st.lastBackup,old=lb?Algo.dayNum(t)-Algo.dayNum(lb):null;
   const a7=(a,b)=>sum("steps",keyOff(a),keyOff(b));
-  const lateN=lateEntries().length,lateRow=()=>lateN?row("clock",`Gece yarısından sonra ${lateN} kayıt bugüne yazıldı`,"Dünün devamıysa dünkü güne taşıyabilirsin.",[["lateyest","Dünkü güne taşı"]]):"";
+  const lateN=lateEntries().length,lateRow=()=>lateN?row("clock",`Gece yarısından sonra ${lateN} kayıt bugüne yazıldı`,"Dünün devamıysa dünkü güne taşıyabilirsin.",[["lateyest","Dünkü güne taşı"],["lateok","Bugüne ait"]]):"";
   const row=(ic,b,sub,btns)=>`<div class="row"><span>${Icons.svg(ic)} ${b}<small class="mut sm">${sub}</small></span><div class="acts">${btns.map(([a,l])=>`<button class="chip" data-act="${a}" aria-label="${esc(b)}: ${l}">${l}</button>`).join("")}</div></div>`;
   /* One list instead of separate cards: only pending jobs of enabled modules; no card when empty. */
   const walkRow=Motion.walk()?row("steps",Motion.walk().t1?"Yürüyüş kaydedilmedi":"Yürüyüş sürüyor","Adım raporunda bitir ya da kaydet.",[["walkgo","Aç"]]):"";
