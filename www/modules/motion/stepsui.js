@@ -5,18 +5,20 @@ const SC=()=>plugin("StepCounter");
 let stepToday=null,stepSnapAt=0,stepsRead=false;
 /* When a day's steps drop to 0 the entry is deleted: a zero-step entry is invalid and would raise the "invalid entry dropped" warning on the next start. */
 function stepZero(e){if(!(e.v>0))Log.remove(x=>x===e)}
-function setSteps(day,v){
+/* One pass over the entries instead of a search per synced day (a year of history was thousands of scans). */
+function stepIdx(){const m=new Map();for(const e of Log.where(x=>x.type==="steps"&&x.text!=="manual"))if(!m.has(e.day))m.set(e.day,e);return m}
+function setSteps(day,v,idx){
   if(!(v>=0&&v<=200000)||day<S.settings.stepsFrom)return false; // steps the user deleted are not written back from the sensor history
-  const e=Log.find(x=>x.type==="steps"&&x.day===day&&x.text!=="manual");
+  const e=idx?idx.get(day):Log.find(x=>x.type==="steps"&&x.day===day&&x.text!=="manual");
   if(e){const m=Math.max(v,e.hc||0);if(e.v===m&&(e.ph===v||!e.hc))return false;e.ph=v;e.v=m;stepZero(e)} // 0 is valid too: when the counter resets, an old inflated entry gets corrected
   else if(v>0)Log.put({day,time:"00:00",type:"steps",v,ph:v,text:""});
   else return false;
   return true;
 }
 /* Health Connect (watch) daily steps: a day's value is the larger of the phone's (ph) and the watch's (hc), never their sum. When ph is missing (dropped as invalid by cleanEntries) v is the phone value. */
-function setHc(day,v){
+function setHc(day,v,idx){
   if(!(v>=0&&v<=200000)||day<S.settings.stepsFrom)return false;
-  const e=Log.find(x=>x.type==="steps"&&x.day===day&&x.text!=="manual");
+  const e=idx?idx.get(day):Log.find(x=>x.type==="steps"&&x.day===day&&x.text!=="manual");
   if(e){if(e.hc===v)return false;const ph=e.ph!=null?e.ph:e.v;e.ph=ph;e.hc=v;e.v=Math.max(ph,v);stepZero(e)}
   else if(v>0)Log.put({day,time:"00:00",type:"steps",v,ph:0,hc:v,text:""});
   else return false;
@@ -28,8 +30,9 @@ async function stepsSync(){
   try{
     const r=await SC().read();let ch=!stepsRead;stepsRead=true;
     if(stepSnapAt!==(+r.snapAt||0)){stepSnapAt=+r.snapAt||0;ch=true}
-    for(const d in (r.history||{}))if(dayOk(d)&&setSteps(d,r.history[d]))ch=true;
-    if(typeof r.steps==="number"){if(stepToday!==r.steps){stepToday=r.steps;ch=true}if(setSteps(calKey(),r.steps))ch=true}
+    const idx=stepIdx();
+    for(const d in (r.history||{}))if(dayOk(d)&&setSteps(d,r.history[d],idx))ch=true;
+    if(typeof r.steps==="number"){if(stepToday!==r.steps){stepToday=r.steps;ch=true}if(setSteps(calKey(),r.steps,stepIdx()))ch=true}
     if(ch){save();if((tab==="today"||tab==="steps")&&!$("#sheet").classList.contains("on")&&!viewBusy())render();else widgetPush()}
   }catch{}
 }

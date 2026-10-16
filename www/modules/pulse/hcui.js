@@ -25,7 +25,9 @@ async function hcSync(force){
     const days=Array.from({length:HC_DAYS},(_,i)=>calOff(-i)),today=days[0];
     const m=(await p.steps({days}))?.days??{};
     hcAt=Date.now();hcDay=today;let ch=was===false;
-    for(const d of days)if(typeof m[d]==="number"&&setHc(d,m[d]))ch=true;
+    const idx=new Map();
+    for(const e of Log.where(x=>x.type==="steps"&&x.text!=="manual"))if(!idx.has(e.day))idx.set(e.day,e);
+    for(const d of days)if(typeof m[d]==="number"&&setHc(d,m[d],idx))ch=true;
     const t=typeof m[today]==="number"?m[today]:null;
     if(hcToday!==t){hcToday=t;ch=true}
     if(st.sleep||st.hr){try{if(hcApplyDaily(await p.daily({days}),days))ch=true}catch(e){}}
