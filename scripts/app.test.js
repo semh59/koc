@@ -2269,6 +2269,12 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("when the target is exceeded 'kcal hedefin üstünde', water and sport 'tamam'",(t=>t.includes("180kcal hedefin üstünde")&&(t.match(/✓Hedef tamam/g)||[]).length===2)($q(".rings").textContent),$q(".rings").textContent);
     ev("render()");
     ok("Ayrıntı links to how the target was calculated (two taps from Today)",!!$q('#view details [data-tab="gym"]'));
+    ev("S.settings.hideNums=true;foodToast({day:dayKey(),id:0})");
+    ok("the saved-meal toast carries no figure while numbers are hidden",!/\d/.test($q("#tmsg").textContent),$q("#tmsg").textContent);
+    ev("S.settings.hideNums=false;foodToast({day:dayKey(),id:0})");
+    ok("and with numbers shown it says 'Bugün X / Y kcal'",/Bugün \d+ \/ \d+ kcal/.test($q("#tmsg").textContent),$q("#tmsg").textContent);
+    ev("foodToast({day:keyOff(-3),id:0})");
+    ok("an entry for another day does not say 'Bugün'",!/Bugün/.test($q("#tmsg").textContent)||$q("#tmsg").textContent==="Yemek kaydedildi",$q("#tmsg").textContent);
     ev(`Object.assign(S.settings,${risk0},{age:40})`);
     ok("the weight card is small: no chart, a one-line summary, leads to Trend",!v().includes('class="weight"')&&!!$q('#view .stepcard[data-tab="trend"]')&&!$q('#view .stepcard[data-tab="trend"] svg:not(.i)')&&$q('#view .stepcard[data-tab="trend"]').textContent.includes("86,0"));
     ev("tab='trend';render()");
