@@ -2309,7 +2309,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("a walk in progress keeps its chip in place, reads 'Yürüyüş sürüyor' and opens the step screen",(c=>c&&c.textContent.includes("Yürüyüş sürüyor")&&c.dataset.act==="walkgo"&&c===[...w.document.querySelectorAll(".qa [data-chip]")].pop())($q('[data-chip="walk"]')));
     ev("Motion.walk=globalThis.__mw;render()");
     ev("S.settings.age=40;logOff=1;render()");
-    ok("while another day is shown the quick-add chips give way to 'Bugüne dön'",!$q(".actions .chip")&&!!$q('.actions [data-lo="-1"]'));
+    ok("while another day is shown the quick-add chips give way to 'Bugüne dön'",!$q(".actions .chip")&&!!$q('.actions [data-act="backtoday"]'));
     ev("logOff=0;render()");
     ok("information hierarchy: summary, record, to-do, Trend shortcut",at('class="bgL"')<at('class="rings"')&&at('class="rings"')<at('class="actions"')&&at('class="actions"')<at("Bugün yapılacaklar")&&at("Bugün yapılacaklar")<at('data-tab="trend"'));
     ev("S.settings.medOn=true;S.meds=[{id:1,n:'İlaç A',t:['08:00'],on:true,s:calKey()}];S.medLog=[];tab='trend';render();tab='today';render()");

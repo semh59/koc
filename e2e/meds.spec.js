@@ -13,7 +13,7 @@ test("alarm log: likely problems open the relevant setting, rows are in Turkish,
   await page.locator("summary",{hasText:"Bildirim sorun giderme"}).click();
   await page.getByRole("button",{name:"Alarm kayıtları"}).click();
   await expect(app.sheet).toContainText("Ekran uyandırma kanalı düşük önemde");
-  await expect(app.sheet).toContainText("Pil kısıtı var");
+  await expect(app.sheet).toContainText("Pil kısıtlaması var");
   await expect(app.sheet).toContainText("alarm çaldı (planlanan 09:00:00, +3 sn), ekran kilitli, ekran kapalıydı, tam ekran bildirimi gönderildi");
   await expect(app.sheet).toContainText("uygulama alarmları kurdu: 2 alarm");
   await app.sheet.locator('[data-md="wset:channel:"]').click();
