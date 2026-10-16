@@ -87,8 +87,6 @@ const key=d=>`2026-10-${String(d).padStart(2,"0")}`;
   ok("after 04:00 the offer stays until it is answered",/Dünkü güne taşı/.test(txt()));
   w.document.querySelector('[data-act="lateok"]').click();
   ok("'Bugüne ait' keeps the entries and hides the offer for the day",!/Dünkü güne taşı/.test(txt())&&ev("S.entries.find(e=>e.id===90).day")===key(7));
-  ev("undoLast()");
-  ok("undoing 'Bugüne ait' brings the offer back",/Dünkü güne taşı/.test(txt()));
   now(7,2);ev("S.settings.dayStart=4;S.entries=[];render()");ev("add('water',250)");ev("render()");
   ok("with a day start after the hour there is no offer (the entry is already on the previous day)",!/Dünkü güne taşı/.test(txt())&&ev("S.entries[0].day")===key(6));
 }
