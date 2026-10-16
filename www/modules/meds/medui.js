@@ -81,10 +81,11 @@ function medRows(day=calKey()){
 /* One line for the Today card: how many of today's doses are marked and when the next one is due. */
 function medInfo(){
   if(!S.settings.medOn||!S.meds.length)return "";
-  const t=calKey(),now=medNowHM(),rec=MedLib.logIndex(S.medLog,t),ds=MedLib.dosesOn(S.meds,t);
+  const t=calKey(),now=medNowHM(),ds=MedLib.dosesOn(S.meds,t);
   if(!ds.length)return "";
-  const open=ds.filter(({m,slot})=>!rec(m.id,t,slot)),next=open.map(x=>x.slot).filter(s=>s>now).sort()[0];
-  return `İlaç: bugün ${ds.length-open.length}/${ds.length} işaretlendi${next?`, sıradaki ${next}`:open.length?"":", hepsi tamam"}`;
+  const st=ds.map(({m,slot})=>MedLib.statusOf(S.medLog,m.id,t,slot)),taken=st.filter(x=>x==="t").length,skipped=st.filter(x=>x==="s").length;
+  const next=ds.filter((d,i)=>!st[i]&&d.slot>now).map(d=>d.slot).sort()[0];
+  return `İlaç: bugün ${taken}/${ds.length} alındı${skipped?`, ${skipped} atlandı`:""}${next?`, sıradaki ${next}`:""}`;
 }
 /* Today's to-do: only doses whose time has come and that are neither taken nor skipped, and yesterday's unmarked doses ("Dün kaçırıldı", marked with that day); later ones are on the Meds screen. A marked dose is undone from the toast or the Meds screen. */
 function medTodo(){
