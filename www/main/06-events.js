@@ -123,7 +123,14 @@ setInterval(stepsTick,STEP_POLL);
 if(DH())DH().info().then(r=>{oem=String(r.manufacturer||"");render()},()=>{});
 if(isNative())pmRefresh();
 try{const P=window.Capacitor?.Plugins||{};console.log("NW-DIAG "+["LocalNotifications","Share","Filesystem","App","KeyVault","DeviceHelp","BarcodeScanner","StepCounter","Ocr","Motion","Speech","Widget","BackupFolder","MedWake","Health"].map(n=>n+"="+typeof P[n]).join(" "))}catch{}
-setInterval(()=>{if(!viewBusy())dayRoll();if(lastTz&&tzKey()!==lastTz)scheduleReminders().then(setNotif)},60000);
+/* Once a minute Today redraws when the dose or measurement rows changed (a dose time came, or a row was cleared elsewhere). The screen is not touched while a sheet is open or the user is typing. */
+let todoSig="";
+function todoTick(){
+  if(tab!=="today"||viewBusy())return;
+  const sg=medTodo().join("")+vTodo().join("");
+  if(sg!==todoSig){todoSig=sg;render()}
+}
+setInterval(()=>{if(!viewBusy())dayRoll();todoTick();if(lastTz&&tzKey()!==lastTz)scheduleReminders().then(setNotif)},60000);
 LN()?.addListener?.("localNotificationActionPerformed",notifTap);
 /* Widget buttons and launcher shortcuts name a sheet to open; they only open it, nothing is recorded from here. */
 const OPEN_GO={food:()=>sheetFood(),weight:()=>sheetWeight(),exercise:()=>sheetExercise(),water:()=>sheetDrink()};

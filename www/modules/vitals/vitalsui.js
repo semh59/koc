@@ -28,7 +28,7 @@ const vLast=k=>VitalsLib.latest(S.vitals.filter(r=>r.k===k));
 /* What Today and Trend call "son": for blood pressure the last session's mean, the same figure the save message gives. */
 const vShown=k=>{if(k!=="t")return vLast(k);const l=VitalsLib.sessions(S.vitals);return l[l.length-1]};
 /* Today's reading shown on the quick chip, so the value stays visible after the to-do row is gone. */
-const vChipTxt=k=>{const r=vShown(k);return r&&r.day===dayKey()&&!S.settings.hideNums?" "+(k==="t"?`${Math.round(r.sys)}/${Math.round(r.dia)}`:dg(r.g)):""};
+const vChipTxt=k=>{const r=vShown(k);return r&&r.day===dayKey()&&!S.settings.hideNums?" "+(k==="t"?`${Math.round(r.sys)}/${Math.round(r.dia)}`:`${dg(r.g)} ${glab()}`):""};
 function vWhen(r){return (r.day===dayKey()?"bugün ":fd(r.day)+" ")+r.time}
 /* The neutral line under the Today chips while any of today's readings is at the "ask your doctor" level; never colours or names the value. */
 const vAskToday=()=>S.vitals.some(r=>r.day===dayKey()&&VitalsLib.level(r,dayKey(),vMy())==="ask");
