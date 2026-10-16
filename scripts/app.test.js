@@ -2275,6 +2275,15 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("to-do is compact: first 3 items shown, the rest under 'iş daha'; the time is a separate column on the medication row",$q(".todo").querySelectorAll(":scope>.row").length===3&&$q(".todo details.acc summary").textContent==="1 iş daha"&&$q(".todo details .row")&&$q('.todo .row .tm').textContent==="08:00");
     ev("S.meds=[];S.settings.medNudgeOff=false;render()");
     ok("the 'no medication yet' row can be dismissed for good",!!$q('.todo [data-act="mednono"]')&&(ev("S.settings.medNudgeOff=true;render()"),!$q('.todo [data-md="new"]')));
+    ev("S.meds=[{id:1,n:'İlaç A',t:['08:00','23:59'],on:true,s:calKey()}];S.settings.medOn=true;render()");
+    ok("the to-do card says how many of today's doses are marked",/İlaç: bugün \d\/2 işaretlendi/.test($q(".todo .hint").textContent),$q(".todo").textContent);
+    ev("S.meds=[];S.settings.medOn=false;S.settings.hideNums=true;render()");
+    ok("hide-numbers also hides the log's kcal and the weight, and the ring labels carry no numbers",!/\d kcal|\d,\d kg/.test($q(".log").textContent)&&![...w.document.querySelectorAll(".rbtn")].some(b=>/kcal/.test(b.getAttribute("aria-label"))));
+    ev("S.settings.hideNums=false;render()");
+    ok("ring buttons name the value; delete buttons name the entry",[...w.document.querySelectorAll(".rbtn")].every(b=>/\d/.test(b.getAttribute("aria-label"))||/Adım|sayılar/.test(b.getAttribute("aria-label")))&&[...w.document.querySelectorAll(".log .del")].every(b=>/, sil$/.test(b.getAttribute("aria-label"))&&b.getAttribute("aria-label").length>6));
+    ev("logOff=1;render()");
+    ok("while another day is shown the quick-add chips give way to 'Bugüne dön'",!$q(".actions .chip")&&!!$q('.actions [data-lo="-1"]'));
+    ev("logOff=0;render()");
     ok("information hierarchy: summary, record, to-do, Trend shortcut",at('class="bgL"')<at('class="rings"')&&at('class="rings"')<at('class="actions"')&&at('class="actions"')<at("Bugün yapılacaklar")&&at("Bugün yapılacaklar")<at('data-tab="trend"'));
     ev("S.settings.medOn=false;S.settings.fastOn=false;S.settings.bpOn=false;render()");
     ok("when modules are turned off the card goes",!v().includes("Bugün yapılacaklar"));
