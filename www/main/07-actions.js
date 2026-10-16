@@ -76,6 +76,8 @@ async function goHealth(){
   if(flags===st.pregnant+st.nursing)toast("Kaydedildi");
 }
 on("bksnooze",()=>{S.settings.bkSnoozeAt=dayKey();save();render()});
+on("comfyon",()=>{S.settings.comfy=true;S.settings.comfyAsked=true;save();render()});
+on("comfyno",()=>{S.settings.comfyAsked=true;save();render()});
 on("riskok",()=>{S.settings.riskClearedAt=dayKey();save();render();toast("Onaylandı, 30 gün geçerli")});
 onPre("apply:",a=>{S.settings.kcal=+a.slice(6);save();render();toast(`Kalori hedefi ${S.settings.kcal} kcal oldu`)});
 on("shownums",()=>{trendNums=!trendNums;render()});

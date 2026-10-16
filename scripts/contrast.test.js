@@ -30,4 +30,10 @@ const forced=vars(html.match(/:root\[data-theme="dark"\]\{([^}]*)\}/)[1]),mediaD
 const ovr=re=>[...html.matchAll(re)].map(m=>m[1]+m[2]);
 ok("forcing dark (data-theme=dark) gives the same colors as the system dark mode: variables and the banner/info card",JSON.stringify(forced)===JSON.stringify(mediaDark)&&Object.keys(forced).length>=16&&JSON.stringify(ovr(/:root:not\(\[data-theme="light"\]\) (\.[\w.]+)(\{[^}]*\})/g))===JSON.stringify(ovr(/:root\[data-theme="dark"\] (\.[\w.]+)(\{[^}]*\})/g))&&/:root\[data-theme="dark"\]\{color-scheme:dark/.test(html)&&/:root\[data-theme="light"\]\{color-scheme:light\}/.test(html));
 ok("toast and selected exercise button in index.html use theme variables",/#toast button\{[^}]*color:var\(--tact\)/.test(html)&&/#toast\{[^}]*background:var\(--tbg\);color:var\(--tfg\)/.test(html)&&/\.ok\.on\{[^}]*color:var\(--exercise-ink\)/.test(html));
+/* large-text mode: muted text at least 7:1 on the page and card in both themes */
+{
+  const m=html.match(/:root\[data-comfy\]\{--mut:(#[0-9a-fA-F]{6})\}/),d=html.match(/:root\[data-comfy\]\[data-theme="dark"\]\{--mut:(#[0-9a-fA-F]{6})\}/);
+  ok("comfy mode: muted text >= 7:1 on page and card (light)",!!m&&cr(m[1],light.bg)>=7&&cr(m[1],light.card)>=7,m&&cr(m[1],light.bg).toFixed(2));
+  ok("comfy mode: muted text >= 7:1 on page and card (dark)",!!d&&cr(d[1],dark.bg)>=7&&cr(d[1],dark.card)>=7,d&&cr(d[1],dark.card).toFixed(2));
+}
 finish();

@@ -402,3 +402,8 @@ button:is(.row,.prow,.rrow){width:100%}
 /* Short screens: the sticky top bar and the fixed rest timer shrink (one tight row each), so the two layers leave room for the sets. */
 @media (max-height:640px){.livetop{padding-top:0}.livetop .livebar{gap:var(--sp-1) var(--sp-2);margin-bottom:var(--sp-1)}.livebar b{font-size:var(--fs-1)}.livetop .rest{margin-bottom:var(--sp-1)}#grest{padding:var(--sp-1) var(--sp-2);bottom:calc(var(--nav-h) + var(--nx,0px) + var(--sab))}.rest b{font-size:var(--fs-h2)}body:has(#grest:not([hidden])){--toast-b:calc(var(--nav-h) + 64px + var(--nx,0px) + var(--sab))}body:has(#grest:not([hidden])) main{padding-bottom:calc(120px + var(--nx,0px) + var(--sab))}}
 @media (max-height:500px) and (orientation:landscape){:root[data-comfy] .gdfoot{position:static}}
+/* Large-text mode is for people who read with difficulty: muted text reaches 7:1 (WCAG AAA) and the menu labels are at least 16 px. */
+:root[data-comfy]{--mut:#3d4d54}
+@media (prefers-color-scheme:dark){:root[data-comfy]:not([data-theme="light"]){--mut:#b4c2c7}}
+:root[data-comfy][data-theme="dark"]{--mut:#b4c2c7}
+:root[data-comfy] nav button{font-size:16px}

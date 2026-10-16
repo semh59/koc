@@ -2309,6 +2309,11 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("S.settings.age=40;S.settings.medOn=true;S.meds=[{id:1,n:'İlaç A',t:['08:00'],on:true,s:calKey()}];S.medLog=[];tab='trend';render();tab='today';render()");
     ok("sleep and mood tiles come after the to-do card",at("hbt")>at("Bugün yapılacaklar")||!v().includes('class="hbt"'));
     ok("copy and template links are folded under 'Daha fazla' (still in the DOM)",!!$q('#view details [data-act="cp:day"]')&&!!$q('#view details [data-act="tplnew"]'));
+    ev("S.settings.age=70;S.settings.comfy=false;S.settings.comfyAsked=false;S.settings.obDone=true;render()");
+    ok("from 65 the Today list offers large text once",!!$q('.todo [data-act="comfyon"]'));
+    $q('.todo [data-act="comfyon"]').click();
+    ok("accepting turns large text on and the offer goes",ev("S.settings.comfy")===true&&w.document.documentElement.hasAttribute("data-comfy")&&!$q('.todo [data-act="comfyon"]'));
+    ev("S.settings.comfy=false;S.settings.age=40;render()");
     ev("S.settings.medOn=true;S.meds=[{id:1,n:'İlaç A',t:['23:59'],on:true,s:calKey()}];Object.assign(S.settings,{heightCm:170,age:40,sex:'m',act:1.2,kcal:1500,riskClearedAt:'',goalKg:0,edFlag:false,pregnant:false,nursing:false,healthNote:'',riskOff:''});S.entries=S.entries.filter(e=>e.type!=='weight');add('weight',95,'');render()");
     ok("a calorie target below maintenance with a medication record asks to review it with a doctor",!!$q('.todo [data-act="riskok"]')&&$q(".todo").textContent.includes("hekiminle gözden geçir"),$q(".todo")?.textContent);
     $q('.todo [data-act="riskok"]').click();
