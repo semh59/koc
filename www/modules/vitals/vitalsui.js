@@ -40,7 +40,7 @@ function vTodo(){
     /* Home blood pressure is a morning and an evening habit: once the evening reminder time has passed with no evening session, the row returns although the morning one is done. */
     const eveDue=k==="t"&&r&&r.day===t&&(st.reminders.find(x=>x.id===VT_REMINDERS.bp[1])||{t:"99"}).t<=hm&&!VitalsLib.sessions(S.vitals).some(x=>x.day===t&&x.session==="evening");
     if(!on||(r&&r.day===t&&!eveDue)||(!eveDue&&!due(ids)))continue;
-    out.push(`<div class="row"><span>${Icons.svg(ic)} ${label} ölç<small class="mut sm num">${r?`son: ${st.hideNums?"•••":txt(r)}, ${vWhen(r)}`:"ölçüm yok"}</small></span><button class="chip" data-vt="${act}" aria-label="${label} ölçümü ekle">Ekle</button></div>`);
+    out.push(`<div class="row"><span>${Icons.svg(ic)} ${label} ölç<small class="mut sm num">${r?`son: ${st.hideNums?"•••":txt(r)}, ${vWhen(r)}`:"henüz ölçüm yok"}</small></span><button class="chip" data-vt="${act}" aria-label="${label} ölçümü ekle">Ekle</button></div>`);
   }
   return out;
 }

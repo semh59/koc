@@ -313,7 +313,7 @@ const MedLib=(()=>{
     if(e.ne===false)out.push("bildirimler kapalı");
     if(e.fsi===false)out.push("tam ekran izni yok");
     if(e.ci!=null&&e.ci>=0&&e.ci<4)out.push(e.ci===0?"ekran kanalı engelli":"ekran kanalı düşük önemde");
-    if(e.bo===false)out.push("pil kısıtı var");
+    if(e.bo===false)out.push("pil kısıtlaması var");
     if(e.err)out.push("alarm kurulurken bir sorun çıktı");
     return out.join(", ");
   }
@@ -344,14 +344,14 @@ const MedLib=(()=>{
     if(st.fsi===false)add("Tam ekran bildirim izni yok: alarm kilitli ekranı açamaz.","fsi");
     if(st.xl>0)add("Xiaomi: 'Kilit ekranında göster' izni kapalı. Uygulama izinlerinde aç, yoksa alarm ekranı açılmaz.","miui");
     if(st.xp>0)add("Xiaomi: 'Arka planda açılan pencereler' izni kapalı. Uygulama izinlerinde aç, yoksa kilitli telefonda alarm ekranı açılmaz.","miui");
-    if(st.bo===false)add("Pil kısıtı var: telefon uygulamayı arka planda durdurabilir, alarm geç gelebilir. Pil ayarını 'Kısıtlama yok' yap.","battery");
+    if(st.bo===false)add("Pil kısıtlaması var: telefon uygulamayı arka planda durdurabilir, alarm geç gelebilir. Pil ayarını 'Kısıtlama yok' yap.","battery");
     if(st.ex===false)add("Tam saat alarm izni yok: ilaç bildirimi ve ekran alarmı birkaç dakika gecikebilir.","exact");
     const w=items.filter(e=>e.a==="WAKE"),arm=items.filter(e=>!RING(e.a)).pop(),miss=lastMiss(items);
-    if(miss&&!miss.off)add(`Planlanan ${dhm(miss.at)} alarmı çalmadı: telefon uygulamayı arka planda engellemiş olabilir. Otomatik başlatmayı aç, pil kısıtını kaldır.`,"autostart");
+    if(miss&&!miss.off)add(`Planlanan ${dhm(miss.at)} alarmı çalmadı: telefon uygulamayı arka planda engellemiş olabilir. Otomatik başlatmayı aç, pil kısıtlamasını kaldır.`,"autostart");
     if(arm&&arm.n===0)add("Kurulu ekran alarmı yok: ilaç saatleri telefona iletilmemiş. Uygulamayı güncelle, sonra İlaçlar ekranını bir kez aç.");
     if(!w.length)add("Kayıtlarda çalan alarm yok: alarm hiç çalmadı. Xiaomi'de otomatik başlatmayı aç.","autostart");
     const late=Math.max(0,...w.filter(e=>e.p).map(e=>e.t-e.p));
-    if(late>60000)add(`Alarm planlanandan geç çaldı (en çok ${span(late)}): pil kısıtı ya da otomatik başlatma kapalı olabilir.`,"autostart");
+    if(late>60000)add(`Alarm planlanandan geç çaldı (en çok ${span(late)}): pil kısıtlaması ya da otomatik başlatma kapalı olabilir.`,"autostart");
     /* The full-screen notification went out but no alarm screen opened within 20 s: the phone showed only a banner (Samsung/One UI demotes it when notifications are not allowed over the lock screen or full-screen notifications are off). */
     const lastW=w[w.length-1];
     if(lastW&&lastW.v===2&&lastW.fs==="ok"&&!items.some(e=>e.a==="AS"&&e.t>=lastW.t-1000&&e.t<=lastW.t+20000))add("Son alarmda tam ekran bildirimi gönderildi ama alarm ekranı açılmadı, telefon yalnız bildirim gösterdi. Ekran alarmı kanalında 'Kilit ekranında göster' ve 'Açılır pencere'yi aç; Samsung'ta ayrıca Ayarlar > Uygulamalar > NeoWell > Bildirimler'de tam ekran bildirimini izin ver.","channel");
