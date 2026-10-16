@@ -23,7 +23,7 @@ function pmItems(){
     if(!g.granted)openDH("openDetails")}});
   if(steps&&st.stepsOn)items.push({id:"loc",t:"Konum (yalnız yürüyüşte)",why:"Elle başlattığın yürüyüşte mesafeyi daha doğru ölçmek için; vermezsen mesafe boyuna göre tahmin edilir.",ok:p.fine===undefined?null:!!p.fine,need:false,go:()=>walkGpsAsk()});
   if(isNative()){
-    const xi=oemXiaomi(),why=bg.miss?"Planlanan bir alarm çalmadı. ":bg.slow?"Son alarm geç çaldı. ":bg.bo===false?"Pil kısıtı açık. ":"";
+    const xi=oemXiaomi(),why=bg.miss?"Planlanan bir alarm çalmadı. ":bg.slow?"Son alarm geç çaldı. ":bg.bo===false?"Pil kısıtlaması açık. ":"";
     const ok=bg.bo===false||bg.miss||bg.slow?false:bg.bo===true&&(bg.ontime||!xi)?true:null;
     items.push({id:"bat",t:"Pil ve otomatik başlatma",why:why+(xi?"Xiaomi telefonlarda bu iki ayar olmadan hatırlatmalar kaçabilir.":"Pil tasarrufu hatırlatmaları geciktiriyorsa uygulamayı kısıtlamadan çıkar.")+(ok===null?` Otomatik başlatma durumu okunamıyor, elle kontrol et: ${DH_PATH.openAutostart}.`:""),ok,need:xi||!!(bg.miss||bg.slow),go:batFix});
   }

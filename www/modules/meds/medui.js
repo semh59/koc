@@ -90,7 +90,7 @@ function medInfo(){
 /* Today's to-do: only doses whose time has come and that are neither taken nor skipped, and yesterday's unmarked doses ("Dün kaçırıldı", marked with that day); later ones are on the Meds screen. A marked dose is undone from the toast or the Meds screen. */
 function medTodo(){
   if(!S.settings.medOn)return [];
-  if(!S.meds.length)return S.settings.medNudgeOff?[]:[`<div class="row"><span>${Icons.svg("meds")} Henüz ilaç eklemedin</span><div class="acts"><button class="chip" data-md="new">${Icons.svg("plus")} Ekle</button><button class="chip" data-act="mednono">Şimdi değil</button></div></div>`];
+  if(!S.meds.length)return S.settings.medNudgeOff?[]:[`<div class="row"><span>${Icons.svg("meds")} Henüz ilaç eklenmemiş</span><div class="acts"><button class="chip" data-md="new">${Icons.svg("plus")} Ekle</button><button class="chip" data-act="mednono">Şimdi değil</button></div></div>`];
   const t=calKey(),now=medNowHM(),y=MedLib.addDay(t,-1),rec=MedLib.logIndex(S.medLog,y);
   const ram=medRamTodo(),paused=S.meds.filter(m=>!m.on&&m.ou&&m.ou<=t).map(m=>`<div class="row"><span class="grow">${esc(m.n)}<small class="db mut sm">Ara verme süresi doldu</small></span><button class="b7 chip" data-md="resume:${m.id}" aria-label="Tekrar aç: ${esc(m.n)}">Tekrar aç</button></div>`);
   let near=0;
@@ -205,7 +205,7 @@ function viewMeds(){
   ${low?`<div class="card"><div class="lbl">Stok</div>${low}</div>`:""}
   ${a30.total?`<div class="card"><div class="lbl">Uyum</div><div class="stats"><div class="stat"><div class="k">Son 7 gün</div><div class="v num">${pct(a7)}</div><div class="mut sm">${cnt(a7)}</div></div><div class="stat"><div class="k">Son 30 gün</div><div class="v num">${pct(a30)}</div><div class="mut sm">${cnt(a30)}</div></div></div></div>`:""}
   ${days.some(d=>d.on)?`<div class="card"><div class="lbl">Son 7 gün</div><div class="dd7">${days.map(d=>d.h).join("")}</div></div>`:""}
-  ${list?`<div class="card"><div class="lbl">İlaçlarım</div>${list}<button class="mt-3 btn" data-md="new">${Icons.svg("plus")} İlaç ekle</button></div>`:emptyCard("meds","Henüz ilaç eklemedin","İlk ilacını ekle; zamanı gelince hatırlatırız.",`<button class="btn" data-md="new">${Icons.svg("plus")} İlaç ekle</button>`)}
+  ${list?`<div class="card"><div class="lbl">İlaçlarım</div>${list}<button class="mt-3 btn" data-md="new">${Icons.svg("plus")} İlaç ekle</button></div>`:emptyCard("meds","Henüz ilaç eklenmemiş","İlk ilacını ekle; zamanı gelince hatırlatırız.",`<button class="btn" data-md="new">${Icons.svg("plus")} İlaç ekle</button>`)}
   <p class="hint">Uygulama doz önermez, ilaç etkileşimlerini denetlemez, tıbbi yorum yapmaz. Kayıt yalnızca senin hatırlatıcın ve günlüğündür. İlaçlarını doktorunun ve eczacının söylediği gibi kullan.</p>`;
 }
 

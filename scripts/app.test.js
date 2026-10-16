@@ -951,7 +951,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     click('[data-md="toggle"]');
     ok("once on, the medication name option and an edit link appear",ev("S.settings.medOn")===true&&!!q('[data-md="shown"]')&&q('[data-md="shown"]').checked&&!!q('#view [data-tab="meds"]'));
     ev("tab='today';render()");
-    ok("with no medications the card suggests 'ilaç ekle'",q("#view").textContent.includes("Henüz ilaç eklemedin")&&!!q('[data-md="new"]'));
+    ok("with no medications the card suggests 'ilaç ekle'",q("#view").textContent.includes("Henüz ilaç eklenmemiş")&&!!q('[data-md="new"]'));
 
     // adding and validation
     click('[data-md="new"]');
@@ -1866,7 +1866,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   w.eval("bg={bo:true,ontime:true}");
   ok("when the phone itself says the limits are off and the last alarm was on time the warning goes",!ev("viewToday()").includes("Hatırlatmalar için bir kez ayar"));
   w.eval("oem='google';bg={}");
-  ok("outside Xiaomi, without evidence, no warning appears",!ev("viewToday()").includes("Hatırlatmalar için bir kez ayar")&&!ev("viewToday()").includes("Pil kısıtı alarmı"));
+  ok("outside Xiaomi, without evidence, no warning appears",!ev("viewToday()").includes("Hatırlatmalar için bir kez ayar")&&!ev("viewToday()").includes("Pil kısıtlaması alarmı"));
   ev("sheetFood()");
   const fq=w.document.querySelector("#fq");fq.value="mercimek";fq.dispatchEvent(new w.Event("input",{bubbles:true}));
   ok("food is searched in the meal window",w.document.querySelector("#flist").innerHTML.includes("Mercimek çorbası")&&w.document.querySelector("#flist [data-food]"));
@@ -2267,6 +2267,8 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("rings state the unit and the remainder",(t=>t.includes("520kcal kaldı")&&t.includes("1380 / 1900 kcal")&&t.includes("1,5L kaldı")&&t.includes("1,0 / 2,5 L")&&t.includes("21dk kaldı")&&t.includes("0 / 21 dk")&&!t.includes("7 gün"))($q(".rings").textContent),$q(".rings").textContent);
     ev("add('food',700,'Fazla');add('water',1500);add('exercise',150,'Yürüyüş');render()");
     ok("when the target is exceeded 'kcal hedefin üstünde', water and sport 'tamam'",(t=>t.includes("180kcal hedefin üstünde")&&(t.match(/✓Hedef tamam/g)||[]).length===2)($q(".rings").textContent),$q(".rings").textContent);
+    ev("render()");
+    ok("Ayrıntı links to how the target was calculated (two taps from Today)",!!$q('#view details [data-tab="gym"]'));
     ev(`Object.assign(S.settings,${risk0},{age:40})`);
     ok("the weight card is small: no chart, a one-line summary, leads to Trend",!v().includes('class="weight"')&&!!$q('#view .stepcard[data-tab="trend"]')&&!$q('#view .stepcard[data-tab="trend"] svg:not(.i)')&&$q('#view .stepcard[data-tab="trend"]').textContent.includes("86,0"));
     ev("tab='trend';render()");
