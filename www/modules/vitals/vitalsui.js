@@ -25,11 +25,13 @@ function vToggle(kind){
 }
 /* ---- Today and Trend cards ---- */
 const vLast=k=>VitalsLib.latest(S.vitals.filter(r=>r.k===k));
+/* Today's reading shown on the quick chip, so the value stays visible after the to-do row is gone. */
+const vChipTxt=k=>{const r=vLast(k);return r&&r.day===dayKey()?" "+(k==="t"?`${r.sys}/${r.dia}`:dg(r.g)):""};
 function vWhen(r){return (r.day===dayKey()?"bugün ":fd(r.day)+" ")+r.time}
 /* Today's to-do: one row per kind that is on, not yet measured today and whose reminder time has come (the default time when the reminder is off). */
 function vTodo(){
   const st=S.settings,t=dayKey(),out=[],hm=vNow(),due=ids=>{const rs=st.reminders.filter(r=>ids.includes(r.id)),on=rs.filter(r=>r.on);return (on.length?on:rs).map(r=>r.t).sort()[0]<=hm};
-  for(const [on,k,ic,label,act,txt,ids] of [[st.bpOn,"t","heart","Tansiyon","addbp",r=>`${r.sys}/${r.dia}`,VT_REMINDERS.bp],[st.bsOn,"s","water","Şeker","addbs",r=>dg(r.g),VT_REMINDERS.bs]]){
+  for(const [on,k,ic,label,act,txt,ids] of [[st.bpOn,"t","heart","Tansiyon","addbp",r=>`${r.sys}/${r.dia}`,VT_REMINDERS.bp],[st.bsOn,"s","glucose","Şeker","addbs",r=>dg(r.g),VT_REMINDERS.bs]]){
     const r=vLast(k);if(!on||(r&&r.day===t)||!due(ids))continue;
     out.push(`<div class="row"><span>${Icons.svg(ic)} ${label} ölç<small class="mut sm num">${r?`son: ${txt(r)}, ${vWhen(r)}`:"ölçüm yok"}</small></span><button class="chip" data-vt="${act}" aria-label="${label} ölçümü ekle">Ekle</button></div>`);
   }

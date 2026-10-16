@@ -51,7 +51,8 @@ function goSteps(){
 }
 function stepCard(){
   const g=S.settings.stepGoal,sh=stepsShown(),n=sh==null?null:Math.round(sh),ok=n!=null&&n>=g;
-  return `<button class="rbtn" data-tab="steps" aria-label="Adım raporunu aç">${ring((n??0)/g,"var(--prim)",n==null?"–":ok?"✓":fint(g-n),"Adım",`${n==null?"–":fint(n)} / ${fint(g)}`,ok?"Hedef tamam":n==null?"":"adım kaldı","mini"+(ok?" done":""))}</button>`;
+  if(S.settings.hideNums)return `<button class="rbtn" data-tab="steps" aria-label="Adım raporunu aç">${ring(0,"var(--prim)","•••","Adım","sayılar gizli","","mini")}</button>`;
+  return `<button class="rbtn" data-tab="steps" aria-label="Adım${n==null?"":`: ${ok?"hedef tamam":`${fint(g-n)} adım kaldı`}, ${fint(n)} / ${fint(g)}`}, raporu aç">${ring((n??0)/g,"var(--prim)",n==null?"–":ok?"✓":fint(g-n),"Adım",`${n==null?"–":fint(n)} / ${fint(g)}`,ok?"Hedef tamam":n==null?"":"adım kaldı","mini"+(ok?" done":""))}</button>`;
 }
 let stepRange=14;
 function viewSteps(){
