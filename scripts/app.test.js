@@ -2265,6 +2265,9 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     const v=()=>ev("viewToday()"),at=s=>v().indexOf(s);
     ok("one primary action Yemek ekle, secondary quick records as chips: Su, Kilo, Spor, Not",$q(".actions>.btn").dataset.act==="food"&&$q(".actions .btn.ghost")===null&&[...$q(".actions .qa").querySelectorAll(".act")].map(b=>b.dataset.act).join()==="water,weight,exercise,note");
     ok("rings state the unit and the remainder",(t=>t.includes("520kcal kaldı")&&t.includes("1380 / 1900 kcal")&&t.includes("1,5L kaldı")&&t.includes("1,0 / 2,5 L")&&t.includes("21dk kaldı")&&t.includes("0 / 21 dk")&&!t.includes("7 gün"))($q(".rings").textContent),$q(".rings").textContent);
+    ev("add('food',520,'Tam hedef');render()");
+    ok("exactly on the calorie target the ring says 'Hedefte', not '0 kcal kaldı'",(t=>t.includes("Hedefte")&&!t.includes("0kcal kaldı"))($q(".rings").textContent),$q(".rings").textContent);
+    ev("S.entries=S.entries.filter(e=>e.text!=='Tam hedef');render()");
     ev("add('food',700,'Fazla');add('water',1500);add('exercise',150,'Yürüyüş');render()");
     ok("when the target is exceeded 'kcal hedefin üstünde', water and sport 'tamam'",(t=>t.includes("180kcal hedefin üstünde")&&(t.match(/✓Hedef tamam/g)||[]).length===2)($q(".rings").textContent),$q(".rings").textContent);
     ev("render()");
@@ -2277,6 +2280,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("an entry for another day does not say 'Bugün'",!/Bugün/.test($q("#tmsg").textContent)||$q("#tmsg").textContent==="Yemek kaydedildi",$q("#tmsg").textContent);
     ev(`Object.assign(S.settings,${risk0},{age:40})`);
     ok("the weight card is small: no chart, a one-line summary, leads to Trend",!v().includes('class="weight"')&&!!$q('#view .stepcard[data-tab="trend"]')&&!$q('#view .stepcard[data-tab="trend"] svg:not(.i)')&&$q('#view .stepcard[data-tab="trend"]').textContent.includes("86,0"));
+    ok("the weight card names the day the difference is measured against",/öncekine göre [−+]?\d+,\d kg \(\d+ /.test($q('#view .stepcard[data-tab="trend"]').textContent),$q('#view .stepcard[data-tab="trend"]').textContent);
     ev("tab='trend';render()");
     ok("the Coach sentence is a Coach shortcut, in Trend",!!$q('#view button.coach[data-tab="coach"]')&&!$q('#view .card.coachc [data-act]'));
     ev("tab='today';render()");
