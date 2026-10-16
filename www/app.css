@@ -179,7 +179,7 @@ body.coach{--toast-b:var(--cmp,calc(200px + var(--sab)))}
 
 .chkrow{justify-content:space-between;font-size:var(--fs-2)}.chkrow .nm{flex:1;min-width:0}.chkrow small{display:block;color:var(--mut);font-size:var(--fs-s)}
 /* Gym */
-.bg2,.bgL,.bgR{display:contents}.mut{color:var(--mut)}.sm{font-size:var(--fs-s);display:block;line-height:1.4}
+.bg2,.bgL,.bgR,.bgtop{display:contents}.mut{color:var(--mut)}.sm{font-size:var(--fs-s);display:block;line-height:1.4}
 .trow{gap:var(--sp-2);padding:var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-4);border-top:0}.hscroll{display:flex;gap:var(--sp-3);overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 var(--sp-4);margin:0 calc(-1*var(--sp-4)) var(--sp-3);padding:2px var(--sp-4) var(--sp-1);scrollbar-width:none}.hscroll::-webkit-scrollbar{display:none}.hscroll>.trow{flex:0 0 min(80%,264px);scroll-snap-align:start;margin:0;flex-direction:column;align-items:stretch;padding:var(--sp-2) var(--sp-2) var(--sp-1) var(--sp-4)}.trow .tex{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.tact{display:flex;justify-content:flex-end;margin-top:auto}
 .tmain{flex:1;text-align:left;display:grid;gap:1px;min-height:var(--hit);padding:4px 0}
 .tmain .mut{font-size:var(--fs-s)}
@@ -322,7 +322,7 @@ input.in,select.in,.chip>button{min-height:var(--hit)}
   main{padding-bottom:calc(64px + var(--nx,0px) + var(--sab))}
   #composer{bottom:calc(var(--hit) + 6px + var(--nx,0px) + var(--sab));padding-top:2px;padding-bottom:4px}.cin{min-height:var(--hit)}.chiprow{margin-bottom:4px}
   #composer .chiprow{display:none}
-  body.bg #app{max-width:none}body.bg .bg2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 16px;align-items:start}body.bg .bgL,body.bg .bgR{display:block;min-width:0}
+  body.bg #app{max-width:none}body.bg .bg2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 16px;align-items:start}body.bg .bgL,body.bg .bgR,body.bg .bgtop{display:block;min-width:0}body.bg .bgL{grid-column:1;grid-row:1/3}body.bg .bgtop{grid-column:2;grid-row:1}body.bg .bgR{grid-column:2;grid-row:2}
   #sheet{max-height:calc(100vh - 8px - var(--sat));max-height:calc(100dvh - 8px - var(--sat))}.plist{max-height:30vh}
   /* Guided mode: full width, fits 100dvh; movement on the left, timer and buttons on the right (the right column scrolls). */
   #guide{max-width:none;margin:0;height:100vh;height:100dvh;padding-top:calc(2px + var(--sat));padding-bottom:calc(4px + var(--sab))}

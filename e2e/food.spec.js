@@ -69,6 +69,7 @@ test.describe("Add food",()=>{
     await page.locator('#frl [data-fv="0"]').click();
     await expect(app.toast).toContainText("eklendi");
     // Template from today's meals, then add from the template.
+    await page.click("#view details.acc:has([data-act=\"tplnew\"]) > summary");
     await page.click('[data-act="tplnew"]');
     await page.fill("#tpn","Kahvaltım");await page.click('[data-go="tpl"]');
     await expect(app.toast).toHaveText('"Kahvaltım" şablonu kaydedildi');
