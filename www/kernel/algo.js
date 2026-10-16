@@ -169,9 +169,10 @@ const Algo=(()=>{
     return kcal<fl?`Günlük hedef en az ${fl} kcal olabilir; daha düşüğü için hekimine danış`:"";
   }
   /* The trend falls faster than 1% of body weight per week (21-day slope). */
-  function fastLoss(w,today){
+  /* minDays: the first days of a diet lose mostly water, so the note waits until the weights span that long (the app gives 14 days, 7 under a hard risk flag). */
+  function fastLoss(w,today,minDays=0){
     const s=slopePerWeek(w,21,4,7,today),ks=Object.keys(w).sort();
-    return s!=null&&ks.length>0&&-s>0.01*trend(w)[ks[ks.length-1]];
+    return s!=null&&ks.length>0&&(minDays<=0||dayNum(ks[ks.length-1])-dayNum(ks[0])>=minDays)&&-s>0.01*trend(w)[ks[ks.length-1]];
   }
   /* Why a goal weight is not accepted or shown, or "". The BMI check needs the height. Below BMI 18.5 only a gain from the current weight passes. */
   function goalWhy(goalKg,cm,kg){
