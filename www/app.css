@@ -144,7 +144,7 @@ th:first-child,td:first-child{text-align:left}
 td{padding:8px 4px;text-align:right;border-top:1px solid var(--line)}
 td.today,th.today{font-weight:700}
 .bar{height:8px;border-radius:var(--r-pill);background:var(--soft);overflow:hidden;margin:8px 0 4px}
-.bar>i{display:block;height:100%;background:var(--exercise);border-radius:var(--r-pill)}
+.bar>i{display:block;height:100%;background:var(--prim);border-radius:var(--r-pill)}
 
 /* Coach */
 #composer{position:fixed;left:var(--sal);right:var(--sar);bottom:calc(72px + var(--nx,0px) + var(--sab));z-index:6;background:var(--bg);padding:var(--sp-2) 12px 8px;max-width:520px;margin:0 auto}
@@ -397,7 +397,7 @@ button:is(.row,.prow,.rrow){width:100%}
 
 /* Comfortable mode (Settings > Appearance): larger text and 52 px touch targets. The workout set grid, calendar cells, charts and the bottom menu keep their size so they still fit a 320 px screen. */
 :root[data-comfy]{--fs-cap:16px;--fs-s:16px;--fs-2:17px;--fs-1:18px;--fs-h3:20px;--fs-h2:22px;--fs-h1:26px;--fs-svg:16px}
-:root[data-comfy] :is(.btn,.chip,.seg button,.seg2 button,.lnk,.rbtn,.coach,.plus,.help,.cin,input.in,select.in,.chip>button,.rem input[type=time],.hgsel .in,.log button.tx,.qrow .btn,.chiprow .chip,.tmain,.exn,.gdtop){min-height:52px}
+:root[data-comfy] :is(.btn,.chip,.seg button,.seg2 button,.lnk,.rbtn,.coach,.plus,.help,.cin,input.in,select.in,.chip>button,.rem input[type=time],.hgsel .in,.log button.tx,.qrow .btn,.chiprow .chip,.tmain,.exn,.gdtop,.hbt,.stepcard,.acc>summary,.log .gh .lnk){min-height:52px}
 :root[data-comfy] :is(.del,.dnav button,.shx,#csend,#back,.gdx){width:52px;height:52px}
 /* Short screens: the sticky top bar and the fixed rest timer shrink (one tight row each), so the two layers leave room for the sets. */
 @media (max-height:640px){.livetop{padding-top:0}.livetop .livebar{gap:var(--sp-1) var(--sp-2);margin-bottom:var(--sp-1)}.livebar b{font-size:var(--fs-1)}.livetop .rest{margin-bottom:var(--sp-1)}#grest{padding:var(--sp-1) var(--sp-2);bottom:calc(var(--nav-h) + var(--nx,0px) + var(--sab))}.rest b{font-size:var(--fs-h2)}body:has(#grest:not([hidden])){--toast-b:calc(var(--nav-h) + 64px + var(--nx,0px) + var(--sab))}body:has(#grest:not([hidden])) main{padding-bottom:calc(120px + var(--nx,0px) + var(--sab))}}
