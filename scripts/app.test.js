@@ -2181,7 +2181,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("they pass into the record in portion proportion and survive a reload",ev("JSON.stringify(cleanEntries(S.entries).out.map(e=>[e.fb,e.sg,e.na]))")==="[[1.6,8,160]]",ev("JSON.stringify(S.entries)"));
     ev("add('food',100,'makrosuz',dayKey())");
     ev("add('food',50,'tuzlu',dayKey()).na=100");
-    ok("the Today row with a coverage note per field",/Lif <b>2<\/b> g \(1\/3\) · Şeker <b>8<\/b> g \(1\/3\) · Sodyum <b>260<\/b> mg \(2\/3\)/.test(ev("viewToday()")),ev("viewToday()").match(/Lif.{0,160}/));
+    ok("the Today row with a coverage note per field",/Lif <b>2<\/b> g \(1\/3\) · Besin şekeri <b>8<\/b> g \(1\/3\) · Sodyum <b>260<\/b> mg \(2\/3\)/.test(ev("viewToday()")),ev("viewToday()").match(/Lif.{0,160}/));
     ev("S.entries=S.entries.filter(e=>!/Crax/.test(e.text))");
     ok("a field with no data is not shown as 0",(v=>/Sodyum <b>100<\/b> mg \(1\/2\)/.test(v)&&!/Lif <b>/.test(v)&&!/Şeker <b>/.test(v))(ev("viewToday()")),ev("viewToday()").match(/Sodyum.{0,80}/));
     ev("S.entries=S.entries.filter(e=>e.text==='makrosuz')");
