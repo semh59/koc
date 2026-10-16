@@ -1,6 +1,8 @@
 ---
 name: nw-uzman-beslenme-veri
 description: Uzman: besin verisi, porsiyon, makro/mikro ve kafein doğruluğu; arama, barkod, OCR ve tarif hesapları.
+model: sonnet
+effort: high
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
 ---
 

@@ -1,6 +1,8 @@
 ---
 name: nw-kisi-kadin-dongu-hamile
 description: Persona: Döngüsünü takip eden kadın / hamilik olasılığı olan kullanıcı. Mahremiyet, duygu tonu ve tıbbi doğruluk hassas.
+model: sonnet
+effort: low
 tools: Read, Grep, Glob
 ---
 

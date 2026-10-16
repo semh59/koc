@@ -1,6 +1,8 @@
 ---
 name: nw-kisi-xiaomi-bildirim
 description: Persona: Xiaomi/MIUI-HyperOS kullanıcısı. Arka plan kısıtı, alarm ve bildirim güvenilirliği, izinler.
+model: sonnet
+effort: low
 tools: Read, Grep, Glob
 ---
 

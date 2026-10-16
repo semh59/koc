@@ -1,6 +1,8 @@
 ---
 name: nw-turkce-ve-guvenlik-dili
 description: Türkçe metin, terim ve sağlık güvenlik dili uzmanı: ekrandaki her metnin Türkçesini, terim tutarlılığını, İngilizce sızıntıyı, hata/boş durum tonunu ve 'tanı koymaz' sınırını denetler.
+model: sonnet
+effort: medium
 tools: Read, Grep, Glob
 ---
 

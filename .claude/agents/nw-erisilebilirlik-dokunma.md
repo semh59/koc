@@ -1,6 +1,8 @@
 ---
 name: nw-erisilebilirlik-dokunma
 description: Erişilebilirlik ve dokunma uzmanı: dokunma hedefi, kontrast, yazı boyutu, ekran okuyucu, tek el, küçük ekran ve yaşlı/yorgun kullanıcı koşullarını denetler.
+model: sonnet
+effort: medium
 tools: Read, Grep, Glob
 ---
 

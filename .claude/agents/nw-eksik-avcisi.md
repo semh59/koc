@@ -1,6 +1,8 @@
 ---
 name: nw-eksik-avcisi
 description: Eksik ve boşluk avcısı: kodda/planda var olup ekranda karşılığı olmayanı, ekranda olup bağlanmayan, ulaşılamayan veya ölü olanı bulur.
+model: sonnet
+effort: medium
 tools: Read, Grep, Glob
 ---
 

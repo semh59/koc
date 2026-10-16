@@ -1,6 +1,8 @@
 ---
 name: nw-uzman-vital-klinik
 description: Uzman: tansiyon ve şeker ölçümü, eşikler, uyarılar, ölçüm penceresi ve doktor raporu doğruluğu.
+model: opus
+effort: high
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
 ---
 

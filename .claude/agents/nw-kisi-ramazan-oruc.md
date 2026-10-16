@@ -1,6 +1,8 @@
 ---
 name: nw-kisi-ramazan-oruc
 description: Persona: Oruç/Ramazan tutan kullanıcı. İftar-sahur saatleri, su ve ilaç zamanlaması, bildirim sessizliği.
+model: sonnet
+effort: low
 tools: Read, Grep, Glob
 ---
 

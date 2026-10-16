@@ -11,6 +11,18 @@
 | 3. Kıl kullanıcı | 14 `nw-kisi-*` profili | Gerçek biri bunu kullanabilir mi? |
 | Süzgeç | `nw-hakem` | Bulgu gerçek mi, kasıtlı bir kararla çakışıyor mu? |
 
+## Model ve çaba (ajan dosyalarının başlığında)
+
+| Ajan | Model | Çaba | Gerekçe |
+|---|---|---|---|
+| `nw-hakem` | opus | xhigh | Tüm kurulun doğruluk kapısı; yanlış ONAY/REDDET en pahalı hata |
+| ilaç, vital-klinik, enerji, veri-doğruluğu, gizlilik uzmanları | opus | high | Hata sağlığa, veriye veya yasal riske dokunur |
+| beslenme, egzersiz, performans uzmanları | sonnet | high | Derin ama sınırlı alan; veri örnekleme ve kod okuma |
+| sadelik-hız, yaşlı erişim, 7 rol ajanı | sonnet | medium | Ekran akışı yorumu |
+| 14 kişi profili | sonnet | low | Rol oyunu; her biri kısa ve ucuz, hakem süzer |
+
+Çabayı yükseltmek, yalnız hakemin çok REDDET verdiği veya bir uzmanın yüzeysel kaldığı turda gerekir.
+
 ## Sayfa × uzman matrisi (● zorunlu, ○ bakabilir)
 
 | Sayfa | Enerji | Besin | Vital | İlaç | Egz. | Veri | Perf | Gizl. | Sade | Yaşlı |

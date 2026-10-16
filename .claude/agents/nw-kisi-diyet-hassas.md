@@ -1,6 +1,8 @@
 ---
 name: nw-kisi-diyet-hassas
 description: Persona: Yeme bozukluğu riski taşıyan/kilo takıntılı hassas kullanıcı. Suçlayıcı ton, tetikleyici sayı ve aşırı kısıtlama önerisi ona zarar verir.
+model: sonnet
+effort: low
 tools: Read, Grep, Glob
 ---
 

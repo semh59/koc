@@ -1,6 +1,8 @@
 ---
 name: nw-uzman-enerji-metabolizma
 description: Uzman: enerji dengesi ve kalori hedefi algoritmaları. BMR/TDEE, adaptif TDEE, kilo trendi süzgeci, hedef güvenliği, yuvarlama ve birim doğruluğu.
+model: opus
+effort: high
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
 ---
 

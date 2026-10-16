@@ -1,6 +1,8 @@
 ---
 name: nw-kisi-telefon-degistiren
 description: Persona: Telefon değiştiren/veri taşıyan/yedek alan kullanıcı. Yedek, geri yükleme ve veri kaybı korkusu.
+model: sonnet
+effort: low
 tools: Read, Grep, Glob
 ---
 

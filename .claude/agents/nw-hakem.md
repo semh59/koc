@@ -1,6 +1,8 @@
 ---
 name: nw-hakem
 description: Hakem: diğer ajanların bulgularını tek tek kodda ve testlerde doğrular, yanlış pozitifleri ve kasıtlı kararlarla çakışanları ayıklar. Kurul çıktısını her zaman bu ajan süzer.
+model: opus
+effort: xhigh
 tools: Read, Grep, Glob, Bash
 ---
 

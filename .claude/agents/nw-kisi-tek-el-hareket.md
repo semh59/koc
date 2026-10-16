@@ -1,6 +1,8 @@
 ---
 name: nw-kisi-tek-el-hareket
 description: Persona: Tek elle, yürürken, otobüste, yağmurda veya sallanan ortamda kullanan. Hata dokunuşu ve hızlı kayıt.
+model: sonnet
+effort: low
 tools: Read, Grep, Glob
 ---
 
