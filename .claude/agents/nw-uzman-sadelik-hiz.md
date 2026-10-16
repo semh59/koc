@@ -1,6 +1,8 @@
 ---
 name: nw-uzman-sadelik-hiz
 description: Uzman: arayüz sadeliği ve hızı. Bir bakışta anlaşılırlık, dokunuş sayısı, bilgi hiyerarşisi, gereksiz öğe, tekrar eden eylem. Basit ve hızlı ilkesinin bekçisi.
+model: sonnet
+effort: medium
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
 ---
 

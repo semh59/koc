@@ -1,6 +1,8 @@
 ---
 name: nw-gorsel-tutarlilik
 description: Görsel tutarlılık ve tasarım sistemi uzmanı: aralık, tipografi, renk, ikon, hizalama, bileşen kullanımı ve tasarım dilinden sapan her yeri bulur.
+model: sonnet
+effort: medium
 tools: Read, Grep, Glob
 ---
 

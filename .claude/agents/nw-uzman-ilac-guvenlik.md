@@ -1,6 +1,8 @@
 ---
 name: nw-uzman-ilac-guvenlik
 description: Uzman: ilaç hatırlatma güvenilirliği ve doz mantığı. Alarm zamanlaması, Android Doze/exact alarm, kaçan/çift doz, saat dilimi ve yaz saati.
+model: opus
+effort: high
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
 ---
 

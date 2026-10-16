@@ -1,6 +1,8 @@
 ---
 name: nw-kisi-rakip-gocmeni
 description: Persona: MyFitnessPal/Garmin/Yazio alışkanlıklı göçmen. 'Bizde şu vardı' diye eksik sayar, akışları rakiple kıyaslar.
+model: sonnet
+effort: low
 tools: Read, Grep, Glob
 ---
 

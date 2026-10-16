@@ -1,6 +1,8 @@
 ---
 name: nw-durum-ve-hata-uzmani
 description: Durumlar ve uç durum uzmanı: yükleniyor, boş, hata, eski veri, izin yok, çevrimdışı, kısmi başarı, çift dokunma, geri alma ve uç değer durumlarının her ekranda ele alınıp alınmadığını denetler.
+model: sonnet
+effort: medium
 tools: Read, Grep, Glob
 ---
 

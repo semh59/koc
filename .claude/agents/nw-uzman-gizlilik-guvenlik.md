@@ -1,6 +1,8 @@
 ---
 name: nw-uzman-gizlilik-guvenlik
 description: Uzman: gizlilik, güvenlik ve yasal uyum. Şifreleme, kilit, yedek, izinler, KVKK ve Google Play sağlık verisi kuralları, dışa aktarma ve paylaşım.
+model: opus
+effort: high
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
 ---
 

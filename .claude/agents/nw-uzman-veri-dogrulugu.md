@@ -1,6 +1,8 @@
 ---
 name: nw-uzman-veri-dogrulugu
 description: Uzman: sayısal ve zamansal doğruluk. Yuvarlama, birim, ondalık ayracı, saat dilimi, gün sınırı, depolama bütünlüğü, yedek/geri yükleme ve test kapsamı.
+model: opus
+effort: high
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
 ---
 

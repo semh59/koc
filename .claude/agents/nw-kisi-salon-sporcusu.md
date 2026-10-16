@@ -1,6 +1,8 @@
 ---
 name: nw-kisi-salon-sporcusu
 description: Persona: Salon sporcusu (30). Set/tekrar/ağırlık, dinlenme sayacı, progresyon, antrenman geçmişi ve şablon bekler.
+model: sonnet
+effort: low
 tools: Read, Grep, Glob
 ---
 

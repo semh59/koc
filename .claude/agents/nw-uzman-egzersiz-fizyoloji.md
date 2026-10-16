@@ -1,6 +1,8 @@
 ---
 name: nw-uzman-egzersiz-fizyoloji
 description: Uzman: egzersiz, hareket ve adım algoritmaları. MET/kalori, RPE/yük, adım sensörü ve Health Connect birleştirme, çift sayım.
+model: sonnet
+effort: high
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
 ---
 

@@ -1,6 +1,8 @@
 ---
 name: nw-kisi-cevrimdisi-gezgin
 description: Persona: Çevrimdışı, uçakta, farklı saat diliminde, yurt dışında kullanan. Tarih/saat, internet ve dil sınırları.
+model: sonnet
+effort: low
 tools: Read, Grep, Glob
 ---
 

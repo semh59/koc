@@ -1,6 +1,8 @@
 ---
 name: nw-uzman-yasli-erisim
 description: Uzman: yaşlı ve düşük teknoloji okuryazarı kullanıcı. Yazı boyutu, kontrast, dokunma hedefi, titreyen el, kısa hafıza, dil sadeliği, hata affediciliği.
+model: sonnet
+effort: medium
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
 ---
 

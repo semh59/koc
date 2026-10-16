@@ -1,6 +1,8 @@
 ---
 name: nw-uzman-mimari-performans
 description: Uzman: hız ve verimlilik. Açılış süresi, render maliyeti, düşük donanım (Xiaomi/Redmi), pil, bellek, paket boyutu, arka plan işleri.
+model: sonnet
+effort: high
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
 ---
 

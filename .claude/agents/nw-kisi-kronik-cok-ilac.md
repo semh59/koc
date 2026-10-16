@@ -1,6 +1,8 @@
 ---
 name: nw-kisi-kronik-cok-ilac
 description: Persona: Çok ilaç kullanan kronik hastalıklı kullanıcı. İlaç çakışması, doz, bitiş, stok ve doktora liste.
+model: sonnet
+effort: low
 tools: Read, Grep, Glob
 ---
 

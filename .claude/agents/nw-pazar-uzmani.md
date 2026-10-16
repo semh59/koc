@@ -1,6 +1,8 @@
 ---
 name: nw-pazar-uzmani
 description: Fikir babası: sağlık/diyet/spor uygulama pazarını (MyFitnessPal, Yazio, Lifesum, Zepp, Apple/Google Health, Fitbit, Gentler Streak, Bearable, Clue, MySugr, Withings) bilen kullanıcının ne bekleyeceğini ve NeoWell'de hangi hazır alışkanlığın/özelliğin eksik olduğunu bulur.
+model: sonnet
+effort: medium
 tools: Read, Grep, Glob
 ---
 

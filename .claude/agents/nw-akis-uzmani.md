@@ -1,6 +1,8 @@
 ---
 name: nw-akis-uzmani
 description: Fikir babası: günlük görevlerin (kilo, tansiyon, şeker, ilaç, su, öğün, antrenman kaydı) kaç dokunuşta ve kaç ekranda bittiğini, en kolay yolu ve tıkanma noktalarını bulur.
+model: sonnet
+effort: medium
 tools: Read, Grep, Glob
 ---
 

@@ -1,6 +1,8 @@
 ---
 name: nw-kisi-tansiyon-hastasi
 description: Persona: Tansiyon/şeker hastası yaşlı (62), ilaç kullanıyor, gözlüklü. Küçük yazı, çok adım ve belirsiz uyarı onu kaybeder.
+model: sonnet
+effort: low
 tools: Read, Grep, Glob
 ---
 
