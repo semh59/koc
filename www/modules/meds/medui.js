@@ -240,7 +240,8 @@ function medCollect(){
 const MED_FQ=[["d","Her gün"],["w","Belirli günler"],["n","Her N günde"]];
 const medMore=m=>!!(m.fed||m.e||m.k!=null||m.p||m.kb||m.sd||m.bp||m.q&&Object.keys(m.q).length);
 function medRender(){
-  const d=medDraft,hid=on=>on?"":" hidden";
+  /* Every choice redraws the sheet; the focus goes back to the control that was used. */
+  const d=medDraft,hid=on=>on?"":" hidden",a=document.activeElement,k=a?.closest?.("#sheet")&&(a.dataset.md?`[data-md="${a.dataset.md}"]`:a.id&&"#"+a.id);
   openSheet(`<h3>${d.id?"İlacı düzenle":"İlaç ekle"}</h3>
   <label class="lbl" for="mn">İlaç adı</label><input class="in" id="mn" maxlength="${MedLib.NAME_MAX}" value="${esc(d.n)}" autocomplete="off">
   <label class="lbl" for="md">Doz (isteğe bağlı)</label><input class="in" id="md" placeholder="örn. 1 tablet, 10 mg" maxlength="30" value="${esc(d.d)}" autocomplete="off">
@@ -265,6 +266,7 @@ function medRender(){
   ${d.id?`${swRow('id="mon"',d.on,"Hatırlatma açık")}<label class="lbl" for="mou">Ara verdiysen: tekrar hatırlatılacağı gün (isteğe bağlı)</label><input class="in" type="date" id="mou" value="${esc(d.ou)}" min="${calKey()}">`:""}
   <div class="ferr" id="mwarn" role="alert"></div>
   <button class="btn" data-md="save">Kaydet</button>${d.id?`<button class="mt-2 btn ghost" data-md="dup">Aynı ilaçtan bir tane daha</button><button class="mt-2 btn danger" data-md="del">Sil</button>`:""}<button class="mt-2 btn ghost" data-md="close">Vazgeç</button>`);
+  const f=k&&document.querySelector("#sheet "+k);if(f)f.focus();
 }
 /* The message stands under the form and the field it is about gets the focus, opened out of the fold first (a closed details cannot take focus). */
 function medWarn(m,sel,box="mwarn"){
@@ -449,8 +451,8 @@ document.addEventListener("click",ev=>{
       },true);
     });
   }
-  else if(a==="addtime"){medCollect();if(medDraft.t.length<MedLib.MAXT){medDraft.t.push("");medDraft.q.push({d:"",p:""});medRender()}}
-  else if(a==="rmtime"){medCollect();medDraft.t.splice(+r[0],1);medDraft.q.splice(+r[0],1);medRender()}
+  else if(a==="addtime"){medCollect();if(medDraft.t.length<MedLib.MAXT){medDraft.t.push("");medDraft.q.push({d:"",p:""});medRender();document.getElementById("mt"+(medDraft.t.length-1)).focus()}}
+  else if(a==="rmtime"){medCollect();medDraft.t.splice(+r[0],1);medDraft.q.splice(+r[0],1);medRender();if(document.activeElement?.id==="sht")document.getElementById("mt"+Math.min(+r[0],medDraft.t.length-1)).focus()}
   else if(a==="fq"){medCollect();const d=medDraft;d.fq=r[0];if(r[0]!=="n")d.iv="";if(r[0]==="d")d.w=ALL_DAYS.slice();medRender()}
   else if(a==="wd"){const w=+r[0],i=medDraft.w.indexOf(w);if(i>=0)medDraft.w.splice(i,1);else medDraft.w.push(w);el.setAttribute("aria-pressed",String(i<0))}
   else if(a==="takeall")medTakeAll(r[0]+":"+r[1]);
@@ -471,4 +473,13 @@ document.addEventListener("click",ev=>{
   else if(a==="dprev"){const d=MedLib.addDay(medViewDay(),-1);if(d<calOff(-MED_BACK))return toast("Daha eski güne gidilemez");medDay=d;render()}
   else if(a==="dnext"){const d=MedLib.addDay(medViewDay(),1);medDay=d<calKey()?d:"";render()}
   else if(a==="dtoday"){medDay="";render()}
+});
+/* render() rewrites the view: after a tap the focus stays on the same button, or the one now in its place, instead of falling back to the top. */
+let medFocus=null;
+document.addEventListener("click",ev=>{const el=ev.target.closest?.("#view [data-md]");medFocus=el&&{k:el.dataset.md,i:[...document.querySelectorAll("#view [data-md]")].indexOf(el),el}},true);
+document.addEventListener("click",()=>{
+  const f=medFocus;medFocus=null;
+  if(!f||f.el.isConnected||document.activeElement&&document.activeElement!==document.body)return;
+  const all=[...document.querySelectorAll("#view [data-md]")].filter(b=>!b.disabled);
+  (all.find(b=>b.dataset.md===f.k)||all[Math.min(f.i,all.length-1)])?.focus({preventScroll:true});
 });
