@@ -31,7 +31,7 @@ const DoctorLib=(()=>{
     return meds.slice().sort((a,b)=>b.on-a.on).map(m=>{
       const dose=sl=>[ML.doseText(m,sl),ML.amt(m,sl)!==1?`${ML.amt(m,sl)} adet`:""].filter(Boolean).join(", ");
       return {name:m.n,tag:[ML.FED_TEXT[m.fed],!m.on&&"Ara verildi"+(m.ou?`, ${fd(m.ou)} tarihine kadar`:"")].filter(Boolean),
-        times:m.t.map(t=>dose(t)?`${t} · ${dose(t)}`:t),days:m.iv?`her ${m.iv} günde bir`:m.w?m.w.map(d=>WD[d]).join(", "):"her gün",
+        times:m.t.map(t=>dose(t)?`${t} · ${dose(t)}`:t),days:m.prn?`gerektiğinde${m.gap?`, en az ${m.gap} saat arayla`:""}`:m.iv?`her ${m.iv} günde bir`:m.w?m.w.map(d=>WD[d]).join(", "):"her gün",
         dates:[m.s&&"Başlangıç: "+fd(m.s),m.e&&"Bitiş: "+fd(m.e)].filter(Boolean)};
     });
   }

@@ -91,5 +91,29 @@ const {boot,read}=require("./html");
   /* 40: the policy does not speak of medications as text sent to the Coach */
   {const pol=require("fs").readFileSync(require("path").join(__dirname,"../docs/privacy-policy.md"),"utf8").split(/\n/);
    ok("40: no policy sentence names medications among what goes through the Coach filter; they stay listed as not sent",!pol.some(l=>/filtreden geçer/.test(l)&&/ilaç/i.test(l))&&pol.some(l=>/gönderilmeyenler/.test(l)&&/ilaçların/.test(l)));}
+
+  /* K3: an as-needed medication: no time, no reminder, outside adherence, "Şimdi aldım" with the last record, its own double-dose guard, stock, the 20 limit */
+  reset();ev("medOpen(0)");$("#mn").value="Ağrı kesici";$('[data-md="fq:p"]').click();
+  ok("K3: choosing 'Gerektiğinde' hides the times and shows the minimum gap",$("#mt0").closest("[hidden]")&&!$("#mgap").closest("[hidden]"));
+  $("#mgap").value="6";$("#mk").value="10";$('[data-md="save"]').click();
+  const P=()=>JSON.parse(ev("JSON.stringify(S.meds[0])"));
+  ok("K3: it is saved without times and survives cleaning",P().prn===true&&P().t.length===0&&P().gap===6&&ev("MedLib.cleanMeds(JSON.parse(JSON.stringify(S.meds)))[0].prn")===true,P());
+  ok("K3: it sets no notification",ev("MedLib.notifications(S.meds,S.medLog,new Date(),3,true).length")===0);
+  ev("tab='today';render()");
+  ok("K3: Today shows 'Şimdi aldım' and that nothing is recorded yet",!!$('.todo [data-md="prn:1"]')&&$(".todo").textContent.includes("henüz kayıt yok"));
+  $('.todo [data-md="prn:1"]').click();
+  const tm=ev("S.medLog[0]?.at");
+  ok("K3: 'Şimdi aldım' records the time and takes one off the stock; the row shows the last time",ev("S.medLog.length")===1&&ev("S.medLog[0].st")==="t"&&P().k===9&&$(".todo").textContent.includes("son: "+tm),ev("JSON.stringify(S.medLog)"));
+  ok("K3: it stays out of adherence",ev("MedLib.adherence(S.meds,S.medLog,keyOff(-29),calKey(),calKey(),'23:59').total")===0);
+  ev("window.__confirmAuto=m=>{window.__asked=m;return false};medTapAt=0");$('.todo [data-md="prn:1"]').click();
+  ok("K3: a second take inside the user's 6 hours asks first, names no planned dose, and saves nothing on no",/Ağrı kesici için \d+ dakika önce "Aldım" kaydı var/.test(ev("window.__asked"))&&!/dozuna/.test(ev("window.__asked"))&&ev("S.medLog.length")===1,ev("window.__asked"));
+  ev(`S.medLog[0].ad=keyOff(-1);S.medLog[0].day=keyOff(-1);S.meds[0].gap=undefined;window.__asked='';medTapAt=0;render()`);$('.todo [data-md="prn:1"]').click();
+  ok("K3: without a gap a take more than 1 hour after the last one asks nothing",!ev("window.__asked")&&ev("S.medLog.length")===2);
+  ev("delete window.__confirmAuto;tab='meds';render()");
+  ok("K3: the Meds screen shows it as 'gerektiğinde' with 'Şimdi aldım'",view().includes("gerektiğinde")&&!!$('#view [data-md="prn:1"]'));
+  reset(`[${Array.from({length:19},(_,i)=>`{id:${i+1},n:'M${i}',t:['08:00'],on:true}`).join()},{id:20,n:'P',t:[],prn:true,on:true}]`);ev("medOpen(0)");
+  ok("K3: it counts toward the 20 medications",ev("S.meds.length")===20&&!$("#sheet").classList.contains("on"));
+  reset(`[{id:1,n:'A',t:['08:00'],on:true,s:keyOff(-5)}]`);ev("medOpen(1)");$('[data-md="fq:p"]').click();$('[data-md="save"]').click();
+  ok("K3: turning a scheduled medication into an as-needed one keeps the past days' doses",ev("MedLib.dosesOn(S.meds,keyOff(-1)).length")===1&&ev("MedLib.dosesOn(S.meds,keyOff(1)).length")===0&&ev("S.meds[0].prn")===true);
   finish();
 })();
