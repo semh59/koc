@@ -76,13 +76,13 @@ ok("pause end: kept while off, notice at 09:00 on that day, dropped once on",pz.
   ok("past day: yesterday's doses are listed with their state",text().includes("Atlandı")&&!!q(`[data-md="take:1:00:00:${Y}"]`));
   click(`[data-md="take:1:00:00:${Y}"]`);
   ok("past day: a skipped dose can be marked taken on that day",ev(`S.medLog.find(x=>x.day==='${Y}').st`)==="t"&&ev("S.medLog.length")===1);
-  click(`[data-md="at:1:00:00:${Y}"]`);q("#mat").value="07:45";click('[data-md^="atsave:1"]');
+  ev("medTapAt=0");click(`[data-md="at:1:00:00:${Y}"]`);q("#mat").value="07:45";click('[data-md^="atsave:1"]');
   ok("past day: the taken time can be edited and undone",ev("S.medLog[0].at")==="07:45"&&(ev("undoLast()"),ev("S.medLog[0].at")===undefined));
   click(`[data-md="clear:1:00:00:${Y}"]`);
   ok("past day: a missed dose of yesterday can be marked skipped afterwards",ev("S.medLog.length")===0&&(click(`[data-md="skip:1:00:00:${Y}"]`),ev("S.medLog[0].st")==="s"&&ev("S.medLog[0].day")===Y));
 
   setup([base],[{id:1,m:1,day:T,slot:"00:00",st:"s"}]);
-  click('[data-md="take:1:00:00"]');
+  ev("medTapAt=0");click('[data-md="take:1:00:00"]');
   ok("today: a skipped dose becomes taken with the current time",ev("S.medLog[0].st")==="t"&&/^\d\d:\d\d$/.test(ev("S.medLog[0].at")));
 
   setup([{...base,on:false,ou:Y}]);

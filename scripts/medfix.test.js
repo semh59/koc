@@ -148,6 +148,18 @@ const unclock=require("./clock").at;
     ok("'İlaç silindi' stays 30 s",$("#tmsg").textContent==="İlaç silindi"&&delays.includes(30000),delays);
   }
 
+  /* 10: a second tap right after a marking, on the row that moved up, is ignored */
+  {
+    const restore=unclock(w,9);
+    reset(`[{id:1,n:'A',t:['08:00'],on:true,s:'2026-01-01'},{id:2,n:'B',t:['08:30'],on:true,s:'2026-01-01'}]`);
+    ev("tab='today';render()");
+    click('#view [data-md^="take:"]');click('#view [data-md^="take:"]');
+    ok("double tap on Today's 'Aldım': one record",ev("S.medLog.length")===1&&ev("S.medLog[0].m")===1);
+    ev("medTapAt-=MED_TAP_GAP");click('#view [data-md^="take:"]');
+    ok("a tap after the pause is recorded",ev("S.medLog.length")===2);
+    restore();
+  }
+
   ev("sheetPrivacy()");
   ok("the category row says so",/yakınının numarası ve Ramazan saat kaydırmaları da silinir/.test($("#sheet").textContent));
   ev("closeSheet();delete window.__confirmAuto");

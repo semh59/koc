@@ -373,9 +373,15 @@ function medIngest(items){
   return {n:names.length,names,miss};
 }
 
+/* A tap on another dose button right after a marking is the same finger landing on the row that moved up under it, not a decision. */
+const MED_TAP_GAP=700;let medTapAt=0,medTapKey="";
 document.addEventListener("click",ev=>{
   const el=ev.target.closest("[data-md]");if(!el)return;
   const [a,...r]=el.dataset.md.split(":");
+  if(["take","skip","takeall","at"].includes(a)){
+    const t=Date.now();if(t-medTapAt<MED_TAP_GAP&&el.dataset.md!==medTapKey)return;
+    if(a!=="at"){medTapAt=t;medTapKey=el.dataset.md}
+  }
   if(a==="toggle")medToggle();
   else if(a==="near")medNearSheet();
   else if(a==="nearsave")medNearSave();
