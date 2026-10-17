@@ -139,6 +139,15 @@ const unclock=require("./clock").at;
     delete w.Capacitor;
   }
 
+  /* 28: the medication delete keeps its undo for 30 s like any deletion */
+  {
+    reset(`[{id:1,n:'A',t:['08:00'],on:true}]`);
+    const st=w.setTimeout,delays=[];w.setTimeout=(f,ms,...a)=>{delays.push(ms);return st(f,ms,...a)};
+    ev("window.__confirmAuto=()=>true;medOpen(1)");click('[data-md="del"]');
+    w.setTimeout=st;
+    ok("'İlaç silindi' stays 30 s",$("#tmsg").textContent==="İlaç silindi"&&delays.includes(30000),delays);
+  }
+
   ev("sheetPrivacy()");
   ok("the category row says so",/yakınının numarası ve Ramazan saat kaydırmaları da silinir/.test($("#sheet").textContent));
   ev("closeSheet();delete window.__confirmAuto");

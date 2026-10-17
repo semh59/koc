@@ -41,15 +41,16 @@ const UNDO_KEEP=10,UNDO_MS=10000,DEL_UNDO_MS=30000,TOAST_MS=6000,undoStack=[];
 let toastSeq=0;
 /* A second tap right after an undo is the same finger, not a decision: the chained undo wakes up after this pause. */
 const UNDO_GAP=1200;
-function toastShow(msg,undoable){
+function toastShow(msg,undoable,del){
   $("#tmsg").textContent=msg;$("#tundo").hidden=!undoable;$("#tundo").disabled=false;toastSeq++;
-  $("#toast").classList.add("on");clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("#toast").classList.remove("on"),undoable?(msg==="Kayıt silindi"?DEL_UNDO_MS:UNDO_MS):TOAST_MS);
+  $("#toast").classList.add("on");clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("#toast").classList.remove("on"),undoable?(del?DEL_UNDO_MS:UNDO_MS):TOAST_MS);
 }
-function toast(msg,undo){
+/* del: the undo of a deletion (DEL_UNDO_MS). */
+function toast(msg,undo,del){
   /* While saving fails, a following message such as "+250 ml" must not cover the error. */
   if(saveFail&&msg!==SAVE_FAIL)msg=SAVE_FAIL+" "+msg;
   if(undo!=null){undoStack.push({undo,msg,t:Date.now()});if(undoStack.length>UNDO_KEEP)undoStack.shift()}
-  toastShow(msg,undo!=null);
+  toastShow(msg,undo!=null,del);
 }
 function undoLast(){
   const e=undoStack.pop();if(!e)return;

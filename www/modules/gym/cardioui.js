@@ -54,7 +54,7 @@ document.addEventListener("click",ev=>{
     const inSheet=!!d.closest("#sheet");
     Log.remove(x=>x.id===id);save();render();
     if(inSheet)ckList().length?sheetCardioAll():closeSheet();
-    toast("Kayıt silindi",()=>{Log.restore([rm]);save();render()});return;
+    toast("Kayıt silindi",()=>{Log.restore([rm]);save();render()},true);return;
   }
   const k=ev.target.closest("[data-ckk]");
   if(k){ckSel=k.dataset.ckk;document.querySelectorAll("#ck .chip").forEach(c=>c.setAttribute("aria-pressed",c===k));return}

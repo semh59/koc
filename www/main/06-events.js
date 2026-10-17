@@ -31,7 +31,7 @@ document.addEventListener("click",ev=>{
       Log.restore([rm]);
       if(!commit(()=>Log.remove(e=>e.id===id)))return;
       render();if(inWater&&$("#sheet").classList.contains("on"))sheetWater();
-    });return;
+    },true);return;
   }
   if(d.sp){document.querySelectorAll("#sp .chip").forEach(c=>c.setAttribute("aria-pressed",c===el));return}
   if(d.food!==undefined){sheetPortion(+d.food);return}
