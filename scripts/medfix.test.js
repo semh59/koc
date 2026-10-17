@@ -18,5 +18,16 @@ const M=require("../www/modules/meds/medlib.js");
     ev("medClose()");
   }
 
+  /* 7: an end day on an edit keeps the start day, so past adherence stays */
+  reset(`[{id:1,n:'A',t:['08:00'],on:true,s:calOff(-9)}]`,`Array.from({length:10},(_,i)=>({m:1,day:calOff(-i),slot:'08:00',st:'t'}))`);
+  ev("medOpen(1)");
+  ok("edit sheet: no 'Kaç gün' field, the end day is there",!$("#mc")&&!!$("#me"));
+  $("#me").value=ev("calOff(5)");click('[data-md="save"]');
+  const adh=ev("JSON.stringify(MedLib.adherence(S.meds,S.medLog,calOff(-9),calKey(),calKey(),'23:59'))");
+  ok("end day set on the edit: the start day and 10/10 of the last 10 days stay",ev("S.meds[0].s")===ev("calOff(-9)")&&ev("S.meds[0].e")===ev("calOff(5)")&&/"total":10,"taken":10/.test(adh),adh);
+  ev("medOpen(0)");
+  ok("new medication: the 'Kaç gün' field is there",!!$("#mc"));
+  ev("medClose()");
+
   finish();
 })();
