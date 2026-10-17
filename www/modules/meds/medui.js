@@ -197,7 +197,8 @@ function medRamRedo(id){
 
 /* ---- Meds screen ---- */
 function medWhen(m){
-  const days=m.iv?`her ${m.iv} günde bir`:m.w?m.w.map(d=>WEEKDAYS_SHORT[d]).join(", "):"her gün";
+  const t=calKey(),next=m.iv&&Array.from({length:m.iv},(_,i)=>MedLib.addDay(t,i)).find(x=>MedLib.dosesOn([m],x).length);
+  const days=m.iv?`her ${m.iv} günde bir${next?`, sıradaki: ${next===t?"bugün":fd(next)}`:""}`:m.w?m.w.map(d=>WEEKDAYS_SHORT[d]).join(", "):"her gün";
   const course=m.e?`, ${fd(m.e)} tarihine kadar`:"";
   return `${m.t.join(", ")} · ${days}${course}${m.fed?" · "+MED_FED[m.fed].toLowerCase():""}${!m.on&&m.ou?`, ${fd(m.ou)} tarihine kadar ara`:""}`;
 }
@@ -228,7 +229,7 @@ function medCollect(){
   if(!medDraft)return;
   const g=id=>{const e=document.getElementById(id);return e?e.value:""};
   const d=medDraft;
-  d.n=g("mn");d.d=g("md");d.mc=g("mc");d.k=g("mk");d.p=g("mp");d.iv=g("miv");d.sd=g("msd");d.kb=g("mkb");
+  d.n=g("mn");d.d=g("md");d.mc=g("mc");d.k=g("mk");d.p=g("mp");d.iv=g("miv");d.ia=g("mia");d.sd=g("msd");d.kb=g("mkb");
   if(d.id)d.ou=g("mou");
   d.t=d.t.map((_,i)=>g("mt"+i));
   d.q=d.q.map((_,i)=>({d:g("mq"+i),p:g("mpa"+i)}));
@@ -248,7 +249,8 @@ function medRender(){
   ${d.t.length<MedLib.MAXT?`<button class="mb-3 chip" data-md="addtime">${Icons.svg("plus")} Saat ekle</button>`:""}
   <div class="lbl" id="mfql">Sıklık</div><div class="chips" role="group" aria-labelledby="mfql">${MED_FQ.map(([k,t])=>`<button class="chip" data-md="fq:${k}" aria-pressed="${d.fq===k}">${t}</button>`).join("")}</div>
   <div${hid(d.fq==="w")}><div class="chips days" role="group" aria-label="Günler">${[1,2,3,4,5,6,0].map(w=>`<button class="chip" data-md="wd:${w}" aria-pressed="${d.w.includes(w)}">${WEEKDAYS_SHORT[w]}</button>`).join("")}</div></div>
-  <div${hid(d.fq==="n")}><label class="lbl" for="miv">Her kaç günde bir? (bugünden sayılır)</label><input class="in num" id="miv" inputmode="numeric" placeholder="örn. 2" value="${esc(d.iv)}"></div>
+  <div${hid(d.fq==="n")}><label class="lbl" for="miv">Her kaç günde bir?</label><input class="in num" id="miv" inputmode="numeric" placeholder="örn. 2" value="${esc(d.iv)}">
+  <label class="lbl" for="mia">İlk doz günü</label><input class="in" type="date" id="mia" value="${esc(d.ia||calKey())}" max="${calKey()}"></div>
   ${swRow('id="mshow"',!!d.sh,MED_NAME_LABEL)}${medLockLink()}
   <details class="acc" id="mmore"${d.more?" open":""}><summary>Daha fazla seçenek</summary>
   <div class="lbl">Saate göre doz (isteğe bağlı)</div>
@@ -269,8 +271,8 @@ function medOpen(id){
   const m=id?S.meds.find(x=>x.id===id):null;
   if(!m&&S.meds.length>=MedLib.MAXM)return toast(MED_FULL);
   const sh=S.settings.medShowName===true;
-  medDraft=m?{id:m.id,n:m.n,d:m.d||"",t:m.t.slice(),q:m.t.map(s=>({d:m.q?.[s]?.d||"",p:medNum(m.q?.[s]?.p)})),w:m.w?m.w.slice():ALL_DAYS.slice(),on:m.on,mc:"",k:medNum(m.k),p:medNum(m.p),s:m.s,e:m.e,e0:m.e,ts:m.ts,bp:!!m.bp,t0:m.t.slice(),iv:m.iv?String(m.iv):"",iv0:m.iv?String(m.iv):"",ia:m.ia,fed:m.fed||"",sd:m.sd?String(m.sd):"",kb:medNum(m.kb),ou:m.ou||"",sh,fq:m.iv?"n":m.w&&m.w.length<7?"w":"d",more:medMore(m)}
-    :{id:0,n:"",d:"",t:["08:00"],q:[{d:"",p:""}],w:ALL_DAYS.slice(),on:true,mc:"",k:"",p:"",t0:[],iv:"",iv0:"",fed:"",sd:"",kb:"",ou:"",sh,fq:"d",more:false};
+  medDraft=m?{id:m.id,n:m.n,d:m.d||"",t:m.t.slice(),q:m.t.map(s=>({d:m.q?.[s]?.d||"",p:medNum(m.q?.[s]?.p)})),w:m.w?m.w.slice():ALL_DAYS.slice(),on:m.on,mc:"",k:medNum(m.k),p:medNum(m.p),s:m.s,e:m.e,e0:m.e,ts:m.ts,bp:!!m.bp,t0:m.t.slice(),iv:m.iv?String(m.iv):"",ia:m.ia,fed:m.fed||"",sd:m.sd?String(m.sd):"",kb:medNum(m.kb),ou:m.ou||"",sh,fq:m.iv?"n":m.w&&m.w.length<7?"w":"d",more:medMore(m)}
+    :{id:0,n:"",d:"",t:["08:00"],q:[{d:"",p:""}],w:ALL_DAYS.slice(),on:true,mc:"",k:"",p:"",t0:[],iv:"",fed:"",sd:"",kb:"",ou:"",sh,fq:"d",more:false};
   medRender();
 }
 function medSave(){
@@ -287,6 +289,7 @@ function medSave(){
   if(d.iv.trim()!==""&&(iv==null||!Number.isInteger(iv)||iv<2||iv>60))return warn("Aralık 2 ile 60 arasında bir tam sayı olmalı");
   if(d.sd.trim()!==""&&(sd==null||!Number.isInteger(sd)||sd<1||sd>90))return warn("Stok uyarısı 1 ile 90 arasında bir gün sayısı olmalı");
   const today=calKey(),q={};
+  if(iv&&d.ia>today)return warn("İlk doz günü bugünden sonra olamaz");
   for(let i=0;i<d.t.length;i++){
     const a=d.q[i],pa=LabLib.optNum(a.p);
     if(a.p.trim()!==""&&(pa==null||pa<=0||pa>100))return warn("Saat başına adet 0'dan büyük bir sayı olmalı");
@@ -295,7 +298,7 @@ function medSave(){
   if(!d.on&&d.ou&&d.ou<=today)return warn("Tekrar hatırlatma günü bugünden sonra olmalı");
   if(d.e&&d.e!==d.e0&&d.e<today)return warn("Bitiş günü bugünden önce olamaz");
   const o={id:d.id,n:d.n.trim(),d:d.d.trim(),t:times,q,w:d.w.length===7||iv?undefined:d.w.slice().sort(),on:d.on!==false,...(d.bp?{bp:true}:{}),...(d.fed?{fed:d.fed}:{}),...(sd?{sd}:{}),...(kb?{kb}:{}),...(!d.on&&d.ou?{ou:d.ou}:{})};
-  if(iv){o.iv=iv;o.ia=d.ia&&d.iv===d.iv0?d.ia:today}
+  if(iv){o.iv=iv;o.ia=d.ia||today}
   if(k!=null)o.k=k;if(p!=null)o.p=p;
   if(c!=null){o.s=today;o.e=MedLib.addDay(o.s,c-1)}else{if(d.s||!d.id)o.s=d.s||today;if(d.e)o.e=d.e}
   const ts=MedLib.sinceFor(d.t0,times,d.ts,today,medNowHM());if(ts)o.ts=ts;
@@ -455,7 +458,7 @@ document.addEventListener("click",ev=>{
     medDraft.k=medNum(Math.min(99999,Math.round(((LabLib.optNum(medDraft.k)||0)+kb)*100)/100));medRender();
   }
   else if(a==="fed"){medCollect();medDraft.fed=medDraft.fed===r[0]?"":r[0];medRender()}
-  else if(a==="dup"){if(S.meds.length>=MedLib.MAXM)return document.getElementById("mwarn").textContent=MED_FULL;medCollect();Object.assign(medDraft,{id:0,k:"",mc:"",s:undefined,e:undefined,ts:undefined,t0:[],ia:undefined,iv0:"",ou:"",on:true});medRender()}
+  else if(a==="dup"){if(S.meds.length>=MedLib.MAXM)return document.getElementById("mwarn").textContent=MED_FULL;medCollect();Object.assign(medDraft,{id:0,k:"",mc:"",s:undefined,e:undefined,ts:undefined,t0:[],ia:undefined,ou:"",on:true});medRender()}
   else if(a==="dprev"){const d=MedLib.addDay(medViewDay(),-1);if(d<calOff(-MED_BACK))return toast("Daha eski güne gidilemez");medDay=d;render()}
   else if(a==="dnext"){const d=MedLib.addDay(medViewDay(),1);medDay=d<calKey()?d:"";render()}
   else if(a==="dtoday"){medDay="";render()}
