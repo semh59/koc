@@ -13,12 +13,14 @@ function alarmEl(){
   return d;
 }
 const alarmShowName=()=>S.settings.medShowName===true;
+/* "Adları göster" opens the names on this screen only (reveal ends with the screen); the snooze notification still follows the setting. */
+const alarmNames=()=>alarmShowName()||!!alarm?.reveal;
 
 function alarmDraw(){
-  const a=alarm,v=AlarmLib.view(a.items,alarmShowName()),done=AlarmLib.allDone(a.items);
+  const a=alarm,v=AlarmLib.view(a.items,alarmNames()),done=AlarmLib.allDone(a.items);
   const st=i=>i.st==="t"?"Alındı":"Atlandı";
   const rows=v.rows.map((r,k)=>{
-    const i=a.items[k],dy=i.day===MedLib.key(new Date())?"":" · dün",lab=(alarmShowName()?`${r.name} ${r.slot}`:`${r.slot} dozu`)+(dy?", dün":"");
+    const i=a.items[k],dy=i.day===MedLib.key(new Date())?"":" · dün",lab=(alarmNames()?`${r.name} ${r.slot}`:`${r.slot} dozu`)+(dy?", dün":"");
     return `<div class="row wrap"><span class="grow"><b>${esc(r.name)}</b><small class="db mut"><span class="num">${r.slot}</span>${dy}${r.dose?" · "+esc(r.dose):""}</small></span>${i.st
       ?`<b class="alst">${Icons.svg("check")} ${st(i)}</b>`
       :`<span class="alact"><button class="btn" data-al="t:${k}" aria-label="${esc(lab)}: aldım">${Icons.svg("check")} Aldım</button><button class="btn ghost" data-al="s:${k}" aria-label="${esc(lab)}: atla">Atla</button></span>`}</div>`;
@@ -31,7 +33,7 @@ function alarmDraw(){
     <p id="allead" class="allead">${esc(done&&a.items.length?"Tüm dozlar alındı.":v.lead)}${v.count&&!done?` <span class="num">${v.count}</span>`:""}</p>
     ${rows?`<div class="card">${rows}</div>`:""}
     ${a.ask?`<div class="card alask" role="group" aria-label="Çift doz sorusu"><p>${esc(a.ask.text)}</p><div class="albar"><button class="btn" data-al="askno">Hayır, kaydetme</button><button class="btn ghost" data-al="askyes">Evet, kaydet</button></div></div>`:""}
-    <div class="albar">${grp.map(g=>`<button class="btn ghost" data-al="all:${g[0]}">Hepsini aldım${grp.length>1?` <span class="num">${a.items[g[0]].slot}</span>`:""}</button>`).join("")}${left?`<button class="btn ghost" data-al="snooze">10 dk sonra hatırlat</button>`:""}<button class="lnk" data-al="open">Uygulamayı aç</button></div>`;
+    <div class="albar">${grp.length&&!alarmNames()?`<button class="btn ghost" data-al="names">Adları göster</button>`:""}${grp.map(g=>`<button class="btn ghost" data-al="all:${g[0]}">Hepsini aldım${grp.length>1?` <span class="num">${a.items[g[0]].slot}</span>`:""}</button>`).join("")}${left?`<button class="btn ghost" data-al="snooze">10 dk sonra hatırlat</button>`:""}<button class="lnk" data-al="open">Uygulamayı aç</button></div>`;
 }
 
 /* o.quiet: when there is no dose to show, nothing opens (late tap on a notification). */
@@ -63,13 +65,13 @@ function alarmMark(ks,st,force){
   a.ask=null;
   if(st==="t"&&!force){
     const [i,r]=list.map(i=>[i,MedLib.recentTaken(S.medLog,i.m,i.day,i.slot,Date.now())]).find(x=>x[1])||[];
-    if(r){a.ask={ks,st,text:MedLib.recentText(r,alarmShowName()&&i.n)};a.say=a.ask.text;alarmDraw();$('#alarm [data-al="askno"]')?.focus({preventScroll:true});return}
+    if(r){a.ask={ks,st,text:MedLib.recentText(r,alarmNames()&&i.n)};a.say=a.ask.text;alarmDraw();$('#alarm [data-al="askno"]')?.focus({preventScroll:true});return}
   }
   const at=medNowHM(),undo=[];
   for(const i of list){const r=MedLib.mark(S,i.m,i.day,i.slot,st,st==="t"?at:undefined,calKey());if(r){undo.push(r);i.st=st}}
   if(!save()){undo.reverse().forEach(r=>r.undo());list.forEach(i=>{i.st=undefined});a.say=SAVE_FAIL;alarmDraw();return}
   render();medResched();
-  a.say=list.length>1?"Hepsi kaydedildi":(alarmShowName()?list[0].n+" ":"")+(st==="t"?"alındı":"atlandı");
+  a.say=list.length>1?"Hepsi kaydedildi":(alarmNames()?list[0].n+" ":"")+(st==="t"?"alındı":"atlandı");
   alarmDraw();
   const next=document.querySelector('#alarm [data-al^="t:"]');(next||$("#alt")).focus({preventScroll:true});
   if(AlarmLib.allDone(a.items)){alarmSnoozeCancel();alarmAuto()}
@@ -95,6 +97,7 @@ document.addEventListener("click",ev=>{
   else if(k==="all")alarmMark(AlarmLib.groups(alarm.items).find(g=>g[0]===+n)||[],"t");
   else if(k==="askyes"){const q=alarm.ask;alarm.ask=null;if(q)alarmMark(q.ks,q.st,true)}
   else if(k==="askno"){alarm.ask=null;alarm.say=MedLib.NOT_SAVED;alarmDraw();$("#alt").focus({preventScroll:true})}
+  else if(k==="names"){alarm.reveal=true;alarmDraw();$("#alt").focus({preventScroll:true})}
   else if(k==="snooze")alarmSnooze();
   else if(k==="open"){alarmClose();widgetOpen()}
 },true);
