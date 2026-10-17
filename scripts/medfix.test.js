@@ -58,5 +58,10 @@ const unclock=require("./clock").at;
   ok("stock set, amount per dose empty: the form says one is counted",/Boşsa her dozda 1 adet sayılır/.test($("#sheet").textContent));
   ev("medClose()");
 
+  /* 38: the blood-pressure label compares moments, not an app day with a calendar day */
+  reset(`[{id:1,n:'A',t:['22:00'],on:true,bp:true}]`,`[{m:1,day:'2026-10-05',slot:'22:00',st:'t',at:'22:05'}]`);
+  ok("day start 4: a 22:05 record and a 00:30 measurement say '2 sa 25 dk sonra'",ev("S.settings.dayStart=4;Meds.bpSince('2026-10-05','00:30')")==="Son ilaç kaydından 2 sa 25 dk sonra");
+  ev("S.settings.dayStart=0");
+
   finish();
 })();
