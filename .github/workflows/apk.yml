@@ -259,6 +259,36 @@ jobs:
           arch: x86_64
           script: bash scripts/smoke.sh && bash scripts/smoke-release.sh
 
+  # Same smoke on Android 12 (API 31, the last Android of Galaxy M51): not a release gate, it only shows a crash that API 36 hides.
+  smoke-android12:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: handoff
+          key: nw-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: nw-${{ github.run_id }}-
+          fail-on-cache-miss: true
+      - name: Place the files
+        run: |
+          cp handoff/smoke.apk neowell.apk
+          cp -r handoff/release release
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Open and check in the emulator
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 31
+          target: google_apis
+          arch: x86_64
+          script: bash scripts/smoke.sh && bash scripts/smoke-release.sh
+
   # Only after build, e2e and smoke pass. The new files are uploaded first (--clobber replaces a file of the same name) and the old release is never deleted:
   # even if the job is cut short, a downloadable version remains.
   release:
