@@ -12,10 +12,10 @@ function hbSet(key,val,msg){
   const prev=S[key],apply=v=>{const was=S[key];S[key]=v;if(!commit(()=>{S[key]=was}))return false;render();if(key==="fast")scheduleReminders().then(setNotif);return true};
   if(apply(val))toast(msg,()=>apply(prev));
 }
-/* Sleep and mood: two equal tiles with today's value inside; with large text they stack in one column. */
+/* Sleep and mood: two equal one-line tiles with today's value inside; with large text they stack in one column. */
 function habitRow(){
   const t=dayKey(),sl=S.sleep.find(x=>x.day===t),mo=S.mood.find(x=>x.day===t);
-  const tile=(a,ic,name,val)=>`<button class="hbt" data-hb="${a}">${Icons.svg(ic)}<span class="grow"><b>${name}</b><span class="db mut sm num">${val}</span></span></button>`;
+  const tile=(a,ic,name,val)=>`<button class="hbt" data-hb="${a}">${Icons.svg(ic)}<span class="grow"><b>${name}</b> <span class="mut num">${val}</span></span></button>`;
   return `<div class="bgrid mb-3">${tile("sleep","moon","Uyku",sl?hbDur(sl.min):"Ekle")}${tile("mood","smile","Ruh hali",mo?MOODN[mo.v-1]:"Ekle")}</div>`;
 }
 /* Today row: shows the running fast or the start button when fasting is on; plan and history are in Settings. Brake: a hard risk flag blocks starting (a running fast can still be ended),
