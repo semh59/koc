@@ -15,7 +15,7 @@ const {boot}=require("./html");
   $("#mmore").open=true;click('[data-md="fq:w"]');
   ok("21: 'Belirli günler' shows the day chips; an opened fold stays open across the redraw",!$('[data-md="wd:1"]').closest("[hidden]")&&$("#miv").closest("[hidden]")&&$("#mmore").open);
   reset("[{id:1,n:'A',t:['08:00'],on:true,k:20}]");ev("medOpen(1)");
-  ok("21: editing a medication with stock opens the fold",$("#mmore").open);
+  ok("21: editing a medication with stock opens the fold; Kaydet stays above it",$("#mmore").open&&!!($('[data-md="save"]').compareDocumentPosition($("#mmore"))&w.Node.DOCUMENT_POSITION_FOLLOWING));
   ok("21: per-time dose and amount boxes carry visible labels",$("#mq0").closest(".labf")&&$("#mpa0").closest(".labf"));
 
   /* 20: the interval counts from the chosen first-dose day */

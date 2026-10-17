@@ -253,6 +253,9 @@ function medRender(){
   <div${hid(d.fq==="n")}><label class="lbl" for="miv">Her kaç günde bir?</label><input class="in num" id="miv" inputmode="numeric" placeholder="örn. 2" value="${esc(d.iv)}">
   <label class="lbl" for="mia">İlk doz günü</label><input class="in" type="date" id="mia" value="${esc(d.ia||calKey())}" max="${calKey()}"></div>
   ${swRow('id="mshow"',!!d.sh,MED_NAME_LABEL)}${medLockLink()}
+  ${d.id?`${swRow('id="mon"',d.on,"Hatırlatma açık")}<label class="lbl" for="mou">Ara verme bitiş günü (o gün sana sorarım)</label><input class="in" type="date" id="mou" value="${esc(d.ou)}" min="${calKey()}">`:""}
+  <div class="ferr" id="mwarn" role="alert"></div>
+  <button class="mb-3 btn" data-md="save">Kaydet</button>
   <details class="acc" id="mmore"${d.more?" open":""}><summary>Daha fazla seçenek</summary>
   <div class="lbl">Saate göre doz (isteğe bağlı)</div>
   ${d.t.map((v,i)=>`<div class="g2"><label class="labf"><span>${i+1}. saatin dozu</span><input class="in" id="mq${i}" maxlength="30" placeholder="${esc(d.d)}" value="${esc(d.q[i].d)}" autocomplete="off"></label><label class="labf"><span>${i+1}. saatte kaç tane?</span><input class="in num" id="mpa${i}" inputmode="decimal" value="${esc(d.q[i].p)}"></label></div>`).join("")}
@@ -263,9 +266,7 @@ function medRender(){
   <div class="g2"><label class="labf"><span>Bir kutuda kaç tane var?</span><input class="in num" id="mkb" inputmode="decimal" placeholder="örn. 30" value="${esc(d.kb)}"></label><label class="labf"><span>Kaç gün kala haber vereyim? (yazmazsan ${MedLib.STOCK_DAYS})</span><input class="in num" id="msd" inputmode="numeric" placeholder="${MedLib.STOCK_DAYS}" value="${esc(d.sd)}"></label></div>
   <button class="mb-3 chip" data-md="box">${Icons.svg("plus")} Kutu ekle</button>
   ${swRow('id="mbp"',!!d.bp,"Tansiyon ilacı (ölçümlerde son dozdan beri geçen süre yazsın)")}</details>
-  ${d.id?`${swRow('id="mon"',d.on,"Hatırlatma açık")}<label class="lbl" for="mou">Ara verme bitiş günü (o gün sana sorarım)</label><input class="in" type="date" id="mou" value="${esc(d.ou)}" min="${calKey()}">`:""}
-  <div class="ferr" id="mwarn" role="alert"></div>
-  <button class="btn" data-md="save">Kaydet</button>${d.id?`<button class="mt-2 btn ghost" data-md="dup">Aynı ilaçtan bir tane daha</button><button class="mt-2 btn danger" data-md="del">Sil</button>`:""}<button class="mt-2 btn ghost" data-md="close">Vazgeç</button>`);
+  ${d.id?`<button class="mt-2 btn ghost" data-md="dup">Aynı ilaçtan bir tane daha</button><button class="mt-2 btn danger" data-md="del">Sil</button>`:""}<button class="mt-2 btn ghost" data-md="close">Vazgeç</button>`);
   const f=k&&document.querySelector("#sheet "+k);if(f)f.focus();
 }
 /* The message stands under the form and the field it is about gets the focus, opened out of the fold first (a closed details cannot take focus). */
