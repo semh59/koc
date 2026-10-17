@@ -46,6 +46,10 @@ public class HealthPlugin extends Plugin {
         io.shutdown();
     }
 
+    private boolean available() {
+        return Build.VERSION.SDK_INT >= 34 && Hc.manager(getContext()) != null;
+    }
+
     private boolean has(String perm) {
         return Build.VERSION.SDK_INT >= 34 && getContext().checkSelfPermission("android.permission.health." + perm) == PackageManager.PERMISSION_GRANTED;
     }
@@ -58,7 +62,7 @@ public class HealthPlugin extends Plugin {
     @PluginMethod
     public void status(PluginCall call) {
         JSObject r = new JSObject();
-        r.put("available", manager() != null);
+        r.put("available", available());
         r.put("granted", granted());
         r.put("sleep", has("READ_SLEEP"));
         r.put("hr", has("READ_HEART_RATE"));
@@ -67,7 +71,7 @@ public class HealthPlugin extends Plugin {
 
     @PluginMethod
     public void request(PluginCall call) {
-        if (manager() == null || (granted() && has("READ_SLEEP") && has("READ_HEART_RATE"))) {
+        if (!available() || (granted() && has("READ_SLEEP") && has("READ_HEART_RATE"))) {
             status(call);
             return;
         }
