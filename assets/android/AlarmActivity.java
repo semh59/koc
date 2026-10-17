@@ -177,6 +177,7 @@ public class AlarmActivity extends Activity {
         if (!doses.isEmpty()) {
             root.addView(button("10 dk sonra hatırlat", false, v -> {
                 MedWakePlugin.snoozeAt(this, System.currentTimeMillis() + SNOOZE);
+                MedWakeReceiver.snoozeNote(this, true);
                 finish();
             }), full(10));
         }

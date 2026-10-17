@@ -133,6 +133,7 @@ public class MedWakePlugin extends Plugin {
     @PluginMethod
     public void snooze(PluginCall call) {
         snoozeAt(getContext(), call.getData().optLong("at", 0));
+        MedWakeReceiver.snoozeNote(getContext(), false); // the app schedules its own snooze notification
         call.resolve();
     }
 

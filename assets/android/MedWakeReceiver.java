@@ -25,11 +25,13 @@ import org.json.JSONObject;
 /** Lights the locked screen at a medication dose: a separate alarm opens the screen at the same moment as the notification, which the notification plugin cannot do. */
 public class MedWakeReceiver extends BroadcastReceiver {
     static final int NID = 7150;
+    /** The app's snooze notification id: the lock-screen snooze reuses it, so one replaces the other instead of ringing twice. */
+    static final int SNOOZE_NID = 7148;
     private static final int BASE = 7100, MAX = 40, LOG_MAX = 20, MAX_DOSES = 200;
     /** An alarm may fire this early relative to its planned time. */
     static final long EARLY_MS = 5000;
     private static final long FSI_GRACE_MS = 1200, WAKE_MS = 20000, TEST_VISIBLE_MS = 120000, NOTIFICATION_TIMEOUT_MS = 30000;
-    private static final String PREFS = "nw_medwake", KEY = "times", DOSES = "doses", LOG = "log", TEST = "test", SNOOZE = "snooze", RANG = "snoozeRang", DETAIL = "detail", WAKE = "com.neowell.app.MED_WAKE";
+    private static final String PREFS = "nw_medwake", KEY = "times", DOSES = "doses", LOG = "log", TEST = "test", SNOOZE = "snooze", RANG = "snoozeRang", SNOTE = "snoozeNote", DETAIL = "detail", WAKE = "com.neowell.app.MED_WAKE";
     /** The id was bumped once because Android restores the old settings (including a lowered importance) when a deleted channel is recreated under the same id. */
     static final String CH = "nw_medwake2";
 
@@ -63,9 +65,34 @@ public class MedWakeReceiver extends BroadcastReceiver {
         prefs(c).edit().putLong(SNOOZE, at).apply();
     }
 
-    /** The snooze alarm rang: it is cleared and the moment kept, so an alarm screen that then finds no dose sends the user to the app. */
+    /** The snooze alarm rang: it is cleared and the moment kept, so an alarm screen that then finds no dose sends the user to the app.
+     *  A snooze set on the lock screen has no app notification behind it (the in-app snooze schedules its own): it rings once on the medication channel,
+     *  because the full-screen notification is skipped while the phone is unlocked and in use. */
     private static void snoozeRang(Context c) {
-        prefs(c).edit().putLong(SNOOZE, 0).putLong(RANG, System.currentTimeMillis()).apply();
+        SharedPreferences p = prefs(c);
+        boolean note = p.getBoolean(SNOTE, false);
+        p.edit().putLong(SNOOZE, 0).putLong(RANG, System.currentTimeMillis()).putBoolean(SNOTE, false).apply();
+        if (note) snoozeNotify(c);
+    }
+
+    static void snoozeNote(Context c, boolean on) {
+        prefs(c).edit().putBoolean(SNOTE, on).apply();
+    }
+
+    @SuppressWarnings("deprecation")
+    private static void snoozeNotify(Context c) {
+        try {
+            channel(c);
+            boolean on = detail(c);
+            Intent open = new Intent(c, AlarmActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            PendingIntent pi = PendingIntent.getActivity(c, SNOOZE_NID, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(c, medId(c)) : new Notification.Builder(c).setPriority(Notification.PRIORITY_MAX).setDefaults(Notification.DEFAULT_ALL);
+            b.setSmallIcon(c.getApplicationInfo().icon).setContentTitle(on ? "İlaç zamanı" : LockText.TITLE).setContentText(on ? "Ertelediğin ilacın saati geldi" : LockText.TEXT)
+                .setCategory(Notification.CATEGORY_ALARM).setVisibility(on ? Notification.VISIBILITY_PUBLIC : Notification.VISIBILITY_PRIVATE).setAutoCancel(true).setContentIntent(pi);
+            c.getSystemService(NotificationManager.class).notify(SNOOZE_NID, b.build());
+        } catch (Exception ignored) {
+            // the screen alarm of the snooze has rung already; only its sound is missing
+        }
     }
 
     static boolean afterSnooze(Context c, long now) {
