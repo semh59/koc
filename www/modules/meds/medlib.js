@@ -88,7 +88,7 @@ const MedLib=(()=>{
     for(const x of (Array.isArray(arr)?arr:[]).slice(-MAXLOG*2)){
       if(!x||!ok.has(x.m)||!dayOk(x.day)||!timeOk(x.slot)||(x.st!=="t"&&x.st!=="s"))continue;
       const o={m:x.m,day:x.day,slot:x.slot,st:x.st};
-      if(timeOk(x.at))o.at=x.at;
+      if(timeOk(x.at)){o.at=x.at;if(dayOk(x.ad))o.ad=x.ad}
       const k=doseKey(o.m,o.day,o.slot);rows.delete(k);rows.set(k,o);
     }
     return [...rows.values()].slice(-MAXLOG).map((o,i)=>Object.assign({id:i+1},o));
@@ -149,12 +149,12 @@ const MedLib=(()=>{
     return (mid,day,slot)=>m.get(doseKey(mid,day,slot));
   }
 
-  /* Mark a dose: updates S.medLog and (when taken) the stock. Returns the undo handle. */
-  function mark(S,mid,day,slot,st,at){
+  /* Mark a dose: updates S.medLog and (when taken) the stock. Returns the undo handle. ad: the calendar day of the tap, so the double-dose guard need not guess it. */
+  function mark(S,mid,day,slot,st,at,ad){
     const med=S.meds.find(m=>m.id===mid);if(!med)return null;
     const prev=S.medLog.find(x=>x.m===mid&&x.day===day&&x.slot===slot),prevSt=prev?prev.st:null,prevK=med.k;
     S.medLog=S.medLog.filter(x=>x!==prev);
-    if(st)S.medLog.push(Object.assign({id:S.medLog.reduce((a,x)=>Math.max(a,x.id),0)+1,m:mid,day,slot,st},timeOk(at)?{at}:{}));
+    if(st)S.medLog.push(Object.assign({id:S.medLog.reduce((a,x)=>Math.max(a,x.id),0)+1,m:mid,day,slot,st},timeOk(at)?{at,...(dayOk(ad)&&{ad})}:{}));
     if(med.k!=null){
       if(st==="t"&&prevSt!=="t")med.k=Math.max(0,r2(med.k-amt(med,slot,day)));
       else if(st!=="t"&&prevSt==="t")med.k=Math.min(STOCK_MAX,r2(med.k+amt(med,slot,day)));
@@ -167,15 +167,15 @@ const MedLib=(()=>{
   }
 
   /* Double-dose guard (records only, no dose advice): the same medication has a taken record for a DIFFERENT slot within the last hour and the two slots are planned more than an hour apart.
-     `at` is the moment of the tap, so a tap after midnight on the previous day's slot counts as the next day. Returns {min, slot} of the most recent such record or null. */
+     `at` is the moment of the tap on the day `ad`; an older row without `ad` that is more than an hour before its slot counts as the next day. Returns {min, slot} of the most recent such record or null. */
   const WIN=3600000;
   const slotMs=(day,t)=>{const [y,m,d]=day.split("-").map(Number),[h,mi]=t.split(":").map(Number);return new Date(y,m-1,d,h,mi).getTime()};
+  const tapMs=x=>{if(x.ad)return slotMs(x.ad,x.at);const am=slotMs(x.day,x.at);return am<slotMs(x.day,x.slot)-WIN?am+864e5:am};
   function recentTaken(log,mid,day,slot,nowMs){
     let best=null;
     for(const x of log){
       if(x.m!==mid||x.st!=="t"||!timeOk(x.at)||(x.day===day&&x.slot===slot))continue;
-      const sm=slotMs(x.day,x.slot);let am=slotMs(x.day,x.at);if(am<sm-WIN)am+=864e5;
-      const age=nowMs-am;
+      const sm=slotMs(x.day,x.slot),age=nowMs-tapMs(x);
       if(age<0||age>WIN||Math.abs(slotMs(day,slot)-sm)<=WIN)continue;
       if(!best||age<best.age)best={age,min:Math.max(1,Math.round(age/60000)),slot:x.slot};
     }

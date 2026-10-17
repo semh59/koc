@@ -2,6 +2,7 @@
 const {ok,finish}=require("./ok");
 const {boot}=require("./html");
 const M=require("../www/modules/meds/medlib.js");
+const unclock=require("./clock").at;
 
 (async()=>{
   const w=await boot(),ev=s=>w.eval(s),$=s=>w.document.querySelector(s),click=s=>$(s).click();
@@ -28,6 +29,23 @@ const M=require("../www/modules/meds/medlib.js");
   ev("medOpen(0)");
   ok("new medication: the 'Kaç gün' field is there",!!$("#mc"));
   ev("medClose()");
+
+  /* 6: the tap day is stored, so yesterday's 20:00 dose tapped today at 21:00 is seen by today's 20:00 dose */
+  {
+    const restore=unclock(w,21);
+    reset(`[{id:1,n:'A',t:['20:00'],on:true,s:'2026-01-01'}]`);
+    ev("tab='today';render();globalThis.__asked=0;window.__confirmAuto=()=>{globalThis.__asked++;return false}");
+    ev("medMark(1,'20:00','t',false,calOff(-1))");
+    ok("yesterday's dose tapped on Today stores the tap day",ev("S.medLog[0].ad")===ev("calKey()")&&ev("S.medLog[0].day")===ev("calOff(-1)"));
+    ev("medMark(1,'20:00','t',false,calKey())");
+    ok("today's 20:00 dose right after it asks 'Yine de kaydedilsin mi?'",ev("globalThis.__asked")===1&&ev("S.medLog.length")===1);
+    ev("medAtSheet(1,'20:00',calOff(-1));document.getElementById('mat').value='21:00';medAtSave(1,'20:00',calOff(-1))");
+    ok("after 'Alınan saati düzenle' the row has no tap day (the time is the dose's own day)",ev("S.medLog[0].at")==="21:00"&&ev("S.medLog[0].ad")===undefined);
+    ev("medMark(1,'20:00','t',false,calKey())");
+    ok("then today's 20:00 dose is saved without asking",ev("globalThis.__asked")===1&&ev("S.medLog.length")===2);
+    ok("cleanLog keeps the tap day",M.cleanLog([{m:1,day:"2026-01-01",slot:"20:00",st:"t",at:"21:00",ad:"2026-01-02"}],[{id:1}])[0].ad==="2026-01-02");
+    ev("delete window.__confirmAuto");restore();
+  }
 
   finish();
 })();
