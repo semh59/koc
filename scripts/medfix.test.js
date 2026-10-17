@@ -77,5 +77,17 @@ const unclock=require("./clock").at;
     delete w.Capacitor;restore();
   }
 
+  /* 12: a new wake-up while the double-dose question is open drops the question and keeps the rows marked here */
+  {
+    const restore=unclock(w,8);
+    reset(`[{id:1,n:'A',t:['06:00','07:50'],on:true,s:'2026-01-01'},{id:2,n:'B',t:['07:50'],on:true,s:'2026-01-01'}]`,`[{m:1,day:calKey(),slot:'06:00',st:'t',at:'07:30',ad:calKey()}]`);
+    ev("S.settings.medShowName=true;alarmOpen()");
+    click('#alarm [data-al="t:1"]');click('#alarm [data-al="t:0"]');
+    ok("alarm: the double-dose question is open",!!$("#alarm .alask"));
+    ev("alarmOpen()");
+    ok("alarm refreshed: the question is gone, the row marked here stays as 'Alındı'",!$("#alarm .alask")&&ev("alarm.ask")===null&&/B/.test($("#albody").textContent)&&ev("alarm.items.find(i=>i.m===2).st")==="t");
+    ev("alarmClose()");restore();
+  }
+
   finish();
 })();
