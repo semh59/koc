@@ -35,6 +35,19 @@ const unclock=require("./clock").at;
     delete w.Capacitor;restore();
   }
 
+  /* K9: with the app lock on the ordinary medication notifications are private too, and the phone side gets the same flag */
+  {
+    const restore=unclock(w,7);
+    reset(`[{id:1,n:'Aspirin',t:['08:00'],on:true,k:1}]`);
+    const calls=native();ev("Object.assign(S.settings,{medShowName:true,lockDetail:true,lockOn:true})");
+    await ev("scheduleReminders()");
+    const ns=calls.filter(c=>c[0]==="LN.schedule").pop()[1].notifications,dose=ns.find(n=>n.extra?.act==="med"),note=ns.find(n=>(n.id-1e6)%1000===900);
+    ok("detail and app lock on: the dose and the 09:00 notice are generic, the dose on the private channel, MW.set gets detail false",dose.title==="NeoWell: hatırlatma"&&dose.channelId==="nw_medp"&&!/Aspirin/.test(JSON.stringify(ns))&&!!note&&calls.last("MW.set").detail===false,[dose,note]);
+    ev("S.settings.lockOn=false");await ev("scheduleReminders()");
+    ok("app lock off again: the name and the public channel come back",/Aspirin/.test(JSON.stringify(calls.filter(c=>c[0]==="LN.schedule").pop()[1].notifications))&&calls.last("MW.set").detail===true);
+    delete w.Capacitor;restore();
+  }
+
   /* 24: the double-dose question names the medication and the dose time, and its body asks nothing */
   {
     const restore=unclock(w,10);

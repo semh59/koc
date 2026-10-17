@@ -4,12 +4,15 @@ const SCHED_DAYS=30,LEAD_MS=5000,RESCHEDULE_MS=6*36e5;let lastSched=0,lastTz="",
 const LN=()=>plugin("LocalNotifications");
 /* Plugin 8.3+ opens the system "Alarms & reminders" screen on every schedule() with an exact alarm while the permission is missing; the exact flag follows the permission so it never does. */
 async function lnSchedule(ln,list){
-  const isExactNotification=(await ln.checkExactNotificationSetting()).exact_alarm!=="denied",priv=!S.settings.lockDetail;
+  const isExactNotification=(await ln.checkExactNotificationSetting()).exact_alarm!=="denied",priv=!S.settings.lockDetail,medPriv=!medLockDetail();
   /* With lock-screen detail off, measurement, medication and cycle notifications carry a generic title and the private channel twin (the channel id is
-     MedWakeReceiver's: "nw_med" public, "nw_medp" private). */
-  const sens=n=>priv&&n.id!==MED_TEST_NID&&(n.channelId==="nw_med"||n.id>=1e6&&!RamadanLib.isNid(n.id)||n.id===CycleLib.NID||n.id<1000&&MEAS_REM.includes(Math.floor(n.id/100)));
-  return ln.schedule({notifications:list.map(n=>({...n,...sens(n)&&{title:"NeoWell: hatırlatma",body:"Açmak için dokun"},...priv&&n.channelId==="nw_med"&&{channelId:"nw_medp"},isExactNotification}))});
+     MedWakeReceiver's: "nw_med" public, "nw_medp" private). Medication ones also with the app lock on: no medication name reaches the lock screen then. */
+  const med=n=>n.channelId==="nw_med"||n.id>=1e6&&!RamadanLib.isNid(n.id);
+  const sens=n=>n.id!==MED_TEST_NID&&(med(n)?medPriv:priv&&(n.id===CycleLib.NID||n.id<1000&&MEAS_REM.includes(Math.floor(n.id/100))));
+  return ln.schedule({notifications:list.map(n=>({...n,...sens(n)&&{title:"NeoWell: hatırlatma",body:"Açmak için dokun"},...medPriv&&n.channelId==="nw_med"&&{channelId:"nw_medp"},isExactNotification}))});
 }
+/* Lock-screen detail for medication: the native channel twin follows the same flag (mw.set detail), so the JS channel choice always exists on the phone. */
+const medLockDetail=()=>S.settings.lockDetail&&!S.settings.lockOn;
 const tzKey=()=>new Date().getTimezoneOffset()+Intl.DateTimeFormat().resolvedOptions().timeZone;
 /* A reminder is rebuilt when the zone offset changed, the phone moved the alarms (boot, clock or zone change after the last setup, from the alarm log) or 6 hours passed. */
 async function schedDue(){
@@ -89,7 +92,7 @@ async function scheduleOnce(){
     /* The notification plugin does not light the locked screen: for medication doses (reminder repeats excluded) a separate alarm screen wakes it briefly.
        That screen draws over the lock screen, so a name goes there only with lock-screen detail on and never with the app lock on (no name reaches the phone side then).
        The unmarked doses of the last 3 hours go too (the in-app alarm's window): a minute partly marked or snoozed in the app keeps its open doses on the lock screen. */
-    const st=S.settings,mw=MW();if(mw)await mw.set({times:MedLib.wakeTimes(list),doses:MedLib.wakeDoses(list,Meds.meds(),st.medShowName&&st.lockDetail&&!st.lockOn,st.medOn?AlarmLib.due(Meds.meds(),Meds.log(),new Date()).filter(i=>i.at<=Date.now()+LEAD_MS):[]),detail:st.lockDetail}).catch(()=>{});
+    const st=S.settings,mw=MW();if(mw)await mw.set({times:MedLib.wakeTimes(list),doses:MedLib.wakeDoses(list,Meds.meds(),st.medShowName&&medLockDetail(),st.medOn?AlarmLib.due(Meds.meds(),Meds.log(),new Date()).filter(i=>i.at<=Date.now()+LEAD_MS):[]),detail:medLockDetail()}).catch(()=>{});
     lastSched=t0;lastTz=tzKey();
     return "ok";
   }catch(e){console.log("NW-SCHED error "+(e&&e.message||e));return "Bildirimler kurulamadı. Bildirim iznini kontrol edip tekrar dene"}
