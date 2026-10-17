@@ -114,14 +114,15 @@ function medPrn(id,force){
   if(!res||!commit(res.undo))return;
   render();medResched();medUndoToast(`${m.n} alındı olarak kaydedildi, saat ${t}`,res);
 }
-/* One line for the Today card, to the Meds screen: the next dose that has not come yet and how many of today's are marked. */
+/* One line for the Today card, to today on the Meds screen (yesterday may have been opened before): the next dose that has not come yet and how many of today's are marked. */
 function medInfo(){
   const t=calKey(),now=medNowHM(),ds=MedLib.dosesOn(S.meds,t);
   if(!ds.length)return "";
   const st=ds.map(({m,slot})=>MedLib.statusOf(S.medLog,m.id,t,slot)),taken=st.filter(x=>x==="t").length,skipped=st.filter(x=>x==="s").length;
   const up=ds.filter((d,i)=>!st[i]&&d.slot>now),nx=up.filter(d=>d.slot===up[0]?.slot);
   const cnt=`İlaç: bugün ${taken}/${ds.length} alındı${skipped?`, ${skipped} atlandı`:""}`;
-  return nx.length?navRow('data-tab="meds"',"meds",`Sıradaki: ${nx[0].slot} ${esc(nx.map(d=>d.m.n).join(", "))}`,cnt):navRow('data-tab="meds"',"meds",cnt,"");
+  const go='data-tab="meds" data-md="dtoday"';
+  return nx.length?navRow(go,"meds",`Sıradaki: ${nx[0].slot} ${esc(nx.map(d=>d.m.n).join(", "))}`,cnt):navRow(go,"meds",cnt,"");
 }
 /* Today's to-do: doses whose time has come and that are neither taken nor skipped, one row each; yesterday's unmarked doses ("Dün işaretlenmedi", marked with that day), one line to that day of the Meds screen when there are several; the next dose one line. A marked dose is undone from the toast or the Meds screen. */
 function medTodo(){
