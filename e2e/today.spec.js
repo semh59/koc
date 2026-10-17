@@ -90,6 +90,15 @@ test.describe("Today",()=>{
   });
 });
 
+test("a due dose is one row: name on the left, Aldım and Atla beside it on the right; a long name is not split",async({app,page})=>{
+  await app.open({seed:state({medOn:true},{meds:[{id:1,n:"Tansiyon",t:["08:00"],on:true},{id:2,n:"Şeker",t:["08:00"],on:true},{id:3,n:"Hidroklorotiyazid",t:["08:00"],on:true}]})});
+  const r=await page.evaluate(()=>[...document.querySelectorAll('.todo .mrow:has([data-md^="take:"])')].map(x=>{
+    const sp=x.querySelector("span"),s=sp.getBoundingClientRect(),a=x.querySelector(".acts").getBoundingClientRect(),t=[...sp.childNodes].find(n=>n.nodeType===3&&n.textContent.trim()),rg=document.createRange();
+    rg.selectNodeContents(t);return {beside:a.left>=s.right-1&&a.top<s.bottom,lines:new Set([...rg.getClientRects()].map(q=>Math.round(q.top))).size}}));
+  expect(r.slice(0,2).map(x=>x.beside)).toEqual([true,true]);
+  expect(r[2].lines).toBe(1);
+});
+
 test.describe("Log",()=>{
   test("delete an entry and Undo; go to the previous day",async({app,page})=>{
     await app.open({seed:state({},{entries:[entry("food",300,"Menemen",{x:{meal:"breakfast"}}),entry("note",null,"Dünkü not",{d:-1})]})});

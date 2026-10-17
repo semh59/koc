@@ -181,4 +181,8 @@ ok("version: CI sets versionName 1.0.<number> on every build, the About screen s
   ok("medication cancel: the sibling id formula in Java is identical to the real ids of the main notification and both repeats",Object.keys(byDose).length>=2&&Object.values(byDose).every(ids=>ids.length===3&&ids.slice().sort((x,y)=>x-y).join()===fam(ids[0])));
 }
 ok("steps: a reboot is detected from the phone boot count; a counter drop alone is not a reboot, a stale read is ignored; an old corrupt state above 60,000 is reset",/Settings\.Global\.BOOT_COUNT/.test(rd("assets/android/StepStore.java"))&&/s\.bootKnown && boot != lastBoot/.test(rd("assets/android/StepStore.java"))&&/s\.rebooted \|\| \(!s\.bootKnown && counter < s\.last\)/.test(rd("assets/android/StepMath.java"))&&/counter = stable\(s, counter\)/.test(rd("assets/android/StepMath.java"))&&/steps > StepMath\.MAX_DAY/.test(rd("assets/android/StepStore.java"))&&!/plausible/.test(rd("assets/android/StepMath.java")));
+{ // Capacitor lists a plugin's declared methods at startup: an Android 14 class in any of them (or in a lambda it creates) crashes Android 12 and 13 before the app opens
+  const hp=rd("assets/android/HealthPlugin.java"),i=hp.indexOf("private static final class Hc {"),outer=hp.slice(0,i).split(/\r?\n/).filter(l=>!l.startsWith("import ")).join(" ");
+  ok("health: no android.health type outside the nested Hc class, so the plugin loads on Android 12 and 13",i>0&&!/HealthConnect|AggregateRecords|OutcomeReceiver|StepsRecord|SleepSessionRecord|HeartRateRecord|TimeInstantRangeFilter/.test(outer));
+}
 finish();
