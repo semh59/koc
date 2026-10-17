@@ -31,9 +31,9 @@ function scheduleReminders(){
 }
 async function scheduleOnce(){
   const ln=LN();if(!ln||recovery)return "web";
-  await quickIngest(); // a dose marked on the lock screen still waits in the queue until then, and would be sent back as open
   const t0=Date.now();
   try{
+    await quickIngest(); // a dose marked on the lock screen still waits in the queue until then, and would be sent back as open
     let p=await ln.checkPermissions();
     if(p.display!=="granted"&&!notifAsked){notifAsked=true;p=await ln.requestPermissions()}
     if(p.display!=="granted")return "denied";
