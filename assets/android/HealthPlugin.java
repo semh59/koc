@@ -1,6 +1,7 @@
 package com.neowell.app;
 
 import android.content.Intent;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.health.connect.AggregateRecordsRequest;
 import android.health.connect.AggregateRecordsResponse;
@@ -43,10 +44,6 @@ public class HealthPlugin extends Plugin {
     @Override
     protected void handleOnDestroy() {
         io.shutdown();
-    }
-
-    private HealthConnectManager manager() {
-        return Build.VERSION.SDK_INT >= 34 ? getContext().getSystemService(HealthConnectManager.class) : null;
     }
 
     private boolean has(String perm) {
@@ -111,10 +108,6 @@ public class HealthPlugin extends Plugin {
         return a.isAfter(b) ? b : a;
     }
 
-    private static AggregateRecordsRequest.Builder<Long> request(Instant from, Instant to) {
-        return new AggregateRecordsRequest.Builder<Long>(new TimeInstantRangeFilter.Builder().setStartTime(from).setEndTime(to).build());
-    }
-
     /** Collects the answers of parallel aggregate calls into one result and resolves the call once, after the last answer. */
     private static final class Join {
         private final PluginCall call;
@@ -152,43 +145,15 @@ public class HealthPlugin extends Plugin {
         }
     }
 
-    private void aggregate(HealthConnectManager m, AggregateRecordsRequest<Long> req, Join j, Consumer<AggregateRecordsResponse<Long>> sink) {
-        m.aggregate(req, io, new OutcomeReceiver<AggregateRecordsResponse<Long>, HealthConnectException>() {
-            @Override
-            public void onResult(AggregateRecordsResponse<Long> res) {
-                sink.accept(res);
-                j.tick();
-            }
-
-            @Override
-            public void onError(HealthConnectException e) {
-                j.fail();
-            }
-        });
-    }
-
     /** Total steps per local day (up to now for today). Result {days: {day: steps}, partial}. */
     @PluginMethod
     public void steps(final PluginCall call) {
-        final HealthConnectManager m = manager();
         final LocalDate[] days = days(call);
-        if (m == null || !granted() || days == null) {
+        if (!granted() || days == null) {
             call.reject("unavailable");
             return;
         }
-        ZoneId z = ZoneId.systemDefault();
-        Instant now = Instant.now();
-        final JSObject out = new JSObject(), result = new JSObject();
-        result.put("days", out);
-        final Join j = new Join(call, result);
-        List<Runnable> jobs = new ArrayList<>();
-        for (LocalDate d : days) {
-            Instant from = d.atStartOfDay(z).toInstant(), to = min(d.plusDays(1).atStartOfDay(z).toInstant(), now);
-            if (to.isAfter(from))
-                jobs.add(() -> aggregate(m, request(from, to).addAggregationType(StepsRecord.STEPS_COUNT_TOTAL).build(), j,
-                    res -> j.put(out, d.toString(), res.get(StepsRecord.STEPS_COUNT_TOTAL), 1L, 0L)));
-        }
-        j.run(jobs);
+        Hc.steps(getContext(), io, call, days);
     }
 
     /**
@@ -198,34 +163,89 @@ public class HealthPlugin extends Plugin {
      */
     @PluginMethod
     public void daily(final PluginCall call) {
-        final HealthConnectManager m = manager();
         final LocalDate[] days = days(call);
-        if (m == null || days == null) {
+        if (Build.VERSION.SDK_INT < 34 || days == null) {
             call.reject("unavailable");
             return;
         }
-        final boolean sl = has("READ_SLEEP"), hr = has("READ_HEART_RATE");
-        ZoneId z = ZoneId.systemDefault();
-        Instant now = Instant.now();
-        final JSObject sleep = new JSObject(), avg = new JSObject(), low = new JSObject(), result = new JSObject();
-        result.put("sleep", sleep);
-        result.put("hrAvg", avg);
-        result.put("hrMin", low);
-        final Join j = new Join(call, result);
-        List<Runnable> jobs = new ArrayList<>();
-        for (LocalDate d : days) {
-            Instant s0 = d.minusDays(1).atTime(18, 0).atZone(z).toInstant(), s1 = min(d.atTime(18, 0).atZone(z).toInstant(), now);
-            Instant h0 = d.atStartOfDay(z).toInstant(), h1 = min(d.plusDays(1).atStartOfDay(z).toInstant(), now);
-            String day = d.toString();
-            if (sl && s1.isAfter(s0))
-                jobs.add(() -> aggregate(m, request(s0, s1).addAggregationType(SleepSessionRecord.SLEEP_DURATION_TOTAL).build(), j,
-                    res -> j.put(sleep, day, res.get(SleepSessionRecord.SLEEP_DURATION_TOTAL), 60000L, 1L)));
-            if (hr && h1.isAfter(h0))
-                jobs.add(() -> aggregate(m, request(h0, h1).addAggregationType(HeartRateRecord.BPM_AVG).addAggregationType(HeartRateRecord.BPM_MIN).build(), j, res -> {
-                    j.put(avg, day, res.get(HeartRateRecord.BPM_AVG), 1L, 1L);
-                    j.put(low, day, res.get(HeartRateRecord.BPM_MIN), 1L, 1L);
-                }));
+        Hc.daily(getContext(), io, call, days, has("READ_SLEEP"), has("READ_HEART_RATE"));
+    }
+
+    /** Every Health Connect type (Android 14+) lives here, not in the plugin's own methods or lambdas: Capacitor lists a plugin's declared methods at startup,
+     *  and on Android 12 and 13 a signature naming a missing class crashes the app before it opens. */
+    private static final class Hc {
+        static HealthConnectManager manager(Context c) {
+            return Build.VERSION.SDK_INT >= 34 ? c.getSystemService(HealthConnectManager.class) : null;
         }
-        j.run(jobs);
+
+        static AggregateRecordsRequest.Builder<Long> request(Instant from, Instant to) {
+            return new AggregateRecordsRequest.Builder<Long>(new TimeInstantRangeFilter.Builder().setStartTime(from).setEndTime(to).build());
+        }
+
+        private static void aggregate(HealthConnectManager m, ExecutorService io, AggregateRecordsRequest<Long> req, Join j, Consumer<AggregateRecordsResponse<Long>> sink) {
+            m.aggregate(req, io, new OutcomeReceiver<AggregateRecordsResponse<Long>, HealthConnectException>() {
+                @Override
+                public void onResult(AggregateRecordsResponse<Long> res) {
+                    sink.accept(res);
+                    j.tick();
+                }
+
+                @Override
+                public void onError(HealthConnectException e) {
+                    j.fail();
+                }
+            });
+        }
+
+        static void steps(Context c, ExecutorService io, final PluginCall call, final LocalDate[] days) {
+            final HealthConnectManager m = manager(c);
+            if (m == null) {
+                call.reject("unavailable");
+                return;
+            }
+            ZoneId z = ZoneId.systemDefault();
+            Instant now = Instant.now();
+            final JSObject out = new JSObject(), result = new JSObject();
+            result.put("days", out);
+            final Join j = new Join(call, result);
+            List<Runnable> jobs = new ArrayList<>();
+            for (LocalDate d : days) {
+                Instant from = d.atStartOfDay(z).toInstant(), to = min(d.plusDays(1).atStartOfDay(z).toInstant(), now);
+                if (to.isAfter(from))
+                    jobs.add(() -> aggregate(m, io, request(from, to).addAggregationType(StepsRecord.STEPS_COUNT_TOTAL).build(), j,
+                        res -> j.put(out, d.toString(), res.get(StepsRecord.STEPS_COUNT_TOTAL), 1L, 0L)));
+            }
+            j.run(jobs);
+        }
+
+        static void daily(Context c, ExecutorService io, final PluginCall call, final LocalDate[] days, boolean sl, boolean hr) {
+            final HealthConnectManager m = manager(c);
+            if (m == null) {
+                call.reject("unavailable");
+                return;
+            }
+            ZoneId z = ZoneId.systemDefault();
+            Instant now = Instant.now();
+            final JSObject sleep = new JSObject(), avg = new JSObject(), low = new JSObject(), result = new JSObject();
+            result.put("sleep", sleep);
+            result.put("hrAvg", avg);
+            result.put("hrMin", low);
+            final Join j = new Join(call, result);
+            List<Runnable> jobs = new ArrayList<>();
+            for (LocalDate d : days) {
+                Instant s0 = d.minusDays(1).atTime(18, 0).atZone(z).toInstant(), s1 = min(d.atTime(18, 0).atZone(z).toInstant(), now);
+                Instant h0 = d.atStartOfDay(z).toInstant(), h1 = min(d.plusDays(1).atStartOfDay(z).toInstant(), now);
+                String day = d.toString();
+                if (sl && s1.isAfter(s0))
+                    jobs.add(() -> aggregate(m, io, request(s0, s1).addAggregationType(SleepSessionRecord.SLEEP_DURATION_TOTAL).build(), j,
+                        res -> j.put(sleep, day, res.get(SleepSessionRecord.SLEEP_DURATION_TOTAL), 60000L, 1L)));
+                if (hr && h1.isAfter(h0))
+                    jobs.add(() -> aggregate(m, io, request(h0, h1).addAggregationType(HeartRateRecord.BPM_AVG).addAggregationType(HeartRateRecord.BPM_MIN).build(), j, res -> {
+                        j.put(avg, day, res.get(HeartRateRecord.BPM_AVG), 1L, 1L);
+                        j.put(low, day, res.get(HeartRateRecord.BPM_MIN), 1L, 1L);
+                    }));
+            }
+            j.run(jobs);
+        }
     }
 }
