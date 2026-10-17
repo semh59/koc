@@ -291,7 +291,7 @@ const medSnap=()=>{medCollect();const {o0,more,...x}=medDraft;return JSON.string
 document.addEventListener("click",ev=>{
   if(!medDraft||!document.querySelector("#sheet.on #mn")||!ev.target.closest?.("#scrim,[data-shx]")||medSnap()===medDraft.o0)return;
   ev.stopPropagation();
-  confirmSheet({title:"Vazgeçilsin mi?",body:"Değişiklikler kaydedilmez.",ok:"Vazgeç",no:"Düzenlemeye dön",danger:true}).then(ok=>{if(ok)medClose()});
+  confirmSheet({title:"Vazgeçilsin mi?",body:"Değişiklikler kaydedilmez.",ok:"Kapat",no:"Düzenlemeye dön",danger:true}).then(ok=>{if(ok)medClose()});
 },true);
 function medSave(force){
   medCollect();const d=medDraft,warn=medWarn;
