@@ -90,6 +90,12 @@ test.describe("Today",()=>{
   });
 });
 
+test("a due dose is one row: name on the left, Aldım and Atla beside it on the right",async({app,page})=>{
+  await app.open({seed:state({medOn:true},{meds:[{id:1,n:"Tansiyon",t:["08:00"],on:true},{id:2,n:"Şeker",t:["08:00"],on:true}]})});
+  const r=await page.evaluate(()=>[...document.querySelectorAll('.todo .mrow:has([data-md^="take:"])')].map(x=>{const s=x.querySelector("span").getBoundingClientRect(),a=x.querySelector(".acts").getBoundingClientRect();return a.left>=s.right-1&&a.top<s.bottom}));
+  expect(r).toEqual([true,true]);
+});
+
 test.describe("Log",()=>{
   test("delete an entry and Undo; go to the previous day",async({app,page})=>{
     await app.open({seed:state({},{entries:[entry("food",300,"Menemen",{x:{meal:"breakfast"}}),entry("note",null,"Dünkü not",{d:-1})]})});
