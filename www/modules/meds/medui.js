@@ -412,7 +412,7 @@ document.addEventListener("click",ev=>{
         const cur=keep(),meds=MedLib.cleanMeds(S.meds.concat([m]).sort((a,b)=>a.id-b.id));
         put([meds,MedLib.cleanLog(S.medLog.concat(dl),meds),r0?{...st.ramMeds,[id]:r0}:st.ramMeds,f0?{...st.ramMedsRef,[id]:f0}:st.ramMedsRef]);
         if(commit(()=>put(cur))){render();medResched()}
-      });
+      },true);
     });
   }
   else if(a==="addtime"){medCollect();if(medDraft.t.length<MedLib.MAXT){medDraft.t.push("");medDraft.q.push({d:"",p:""});medRender()}}

@@ -103,11 +103,11 @@ function sheetCycle(r){
   <div class="ferr" id="cywarn" role="alert"></div><button class="btn" data-cy="save">Kaydet</button>`);
 }
 /* Stores a new list; on a failed save the old list stays and the user is told. */
-function cycPut(next,msg){
+function cycPut(next,msg,del){
   const prev=S.cycle;S.cycle=next;
   if(!commit(()=>{S.cycle=prev}))return;
   closeSheet();render();cycResched();
-  toast(msg,()=>{S.cycle=prev;save();render();cycResched()});
+  toast(msg,()=>{S.cycle=prev;save();render();cycResched()},del);
 }
 function cycSave(){
   const v=id=>$("#"+id)?.value||"",t=dayKey();
@@ -137,7 +137,7 @@ document.addEventListener("click",ev=>{
   else if(a==="end"){const r=S.cycle[S.cycle.length-1],t=dayKey(),c=r&&CycleLib.check({...r,e:t},t);if(c?.row)cycPut(S.cycle.map(x=>x===r?{...c.row,id:r.id}:x),"Dönem bitirildi");else toast("Bitiş kaydedilemedi")}
   else if(a==="dsym"){const prev=S.cycleSym;S.cycleSym=CycleLib.toggleDay(prev,cycDay||dayKey(),arg);if(commit(()=>{S.cycleSym=prev}))render()}
   else if(a==="ddel"){const prev=S.cycleSym;S.cycleSym=prev.filter(x=>x.day!==arg);if(commit(()=>{S.cycleSym=prev})){render();toast("Günün belirtileri silindi",()=>{S.cycleSym=prev;save();render()})}}
-  else if(a==="del")cycPut(S.cycle.filter(r=>r.id!==+arg),"Kayıt silindi");
+  else if(a==="del")cycPut(S.cycle.filter(r=>r.id!==+arg),"Kayıt silindi",true);
 });
 document.addEventListener("change",ev=>{
   if(ev.target.id!=="cyd")return;
