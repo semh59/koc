@@ -42,7 +42,7 @@ async function scheduleOnce(){
       for(const n of dl.notifications){
         if(n.id===FAST_NID&&!Habits.fast().t0)gone.push({id:FAST_NID});
         if(n.id===CycleLib.NID&&!cycNotif())gone.push({id:n.id});
-        if(n.id<1000000||RamadanLib.isNid(n.id))continue;
+        if(n.id<1000000||RamadanLib.isNid(n.id)||(n.id-1e6)%1000>=900)continue; // the 09:00 stock and pause notices are no dose
         /* The notification stays until it is handled, so its dose day is the latest dose time before now; a notification is one minute's group, gone only when every dose in it is marked. */
         const d=MedLib.doseOfId(Meds.meds(),n.id);
         if(!d){gone.push({id:n.id});continue}

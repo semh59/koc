@@ -112,6 +112,19 @@ const unclock=require("./clock").at;
   ev(ram+";S.settings.medNear='+905551112233'");
   await ev("Data.privacy.find(c=>c[0]==='İlaç')[2]()");
   ok("deleting the medication category also clears the near contact and the shift records",ev("JSON.stringify([S.settings.medNear,S.settings.ramMeds,S.settings.ramMedsRef])")==='["",{},{}]');
+  /* 16: the 09:00 notices survive the cleanup of delivered notifications; dose ids never reach them */
+  {
+    const gone=[];
+    w.Capacitor={isNativePlatform:()=>true,Plugins:{LocalNotifications:{checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),getPending:async()=>({notifications:[]}),getDeliveredNotifications:async()=>({notifications:[{id:1001900},{id:1001901}]}),removeDeliveredNotifications:async o=>{gone.push(...o.notifications.map(n=>n.id))},registerActionTypes:async()=>{},cancel:async()=>{},schedule:async()=>{}}}};
+    reset(`[{id:1,n:'A',t:['08:00'],on:true,k:1}]`);
+    await ev("scheduleReminders()");
+    ok("delivered 900/901 notices are not removed as stale doses",!gone.includes(1001900)&&!gone.includes(1001901),gone);
+    delete w.Capacitor;
+    const hh=i=>String(i).padStart(2,"0")+":00",many=M.cleanMeds([{id:1,n:"A",on:true,t:[0,1,2,3,4,5].map(hh),h:[1,2,3].map(v=>({u:`2026-0${v}-01`,on:true,t:[0,1,2,3,4,5].map(i=>hh(i+6*v))}))}]);
+    const ids=M.notifications(many,[],new Date(2026,1,15,0,0),2,true).map(n=>n.id%1e6%1000);
+    ok("a medication with 24 different times: no dose id reaches 900",ids.length>0&&Math.max(...ids)<900,Math.max(...ids));
+  }
+
   ev("sheetPrivacy()");
   ok("the category row says so",/yakınının numarası ve Ramazan saat kaydırmaları da silinir/.test($("#sheet").textContent));
   ev("closeSheet();delete window.__confirmAuto");
