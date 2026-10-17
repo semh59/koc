@@ -2291,7 +2291,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("S.meds=[];S.settings.medNudgeOff=false;render()");
     ok("the 'no medication yet' row can be dismissed for good",!!$q('.todo [data-act="mednono"]')&&(ev("S.settings.medNudgeOff=true;render()"),!$q('.todo [data-md="new"]')));
     ev("S.meds=[{id:1,n:'İlaç A',t:['08:00','23:59'],on:true,s:calKey()}];S.settings.medOn=true;render()");
-    ok("the to-do card says how many of today's doses are marked",/İlaç: bugün \d\/2 alındı/.test($q(".todo .hint").textContent),$q(".todo").textContent);
+    ok("the to-do card says how many of today's doses are marked and the next one, on one line to the Meds screen",/Sıradaki: 23:59 İlaç A/.test($q('.todo [data-tab="meds"]').textContent)&&/İlaç: bugün \d\/2 alındı/.test($q('.todo [data-tab="meds"]').textContent),$q(".todo").textContent);
     ev("S.meds=[];S.settings.medOn=false;S.settings.hideNums=true;render()");
     ok("hide-numbers also hides the log's kcal and the weight, and the ring labels carry no numbers",!/\d kcal|\d,\d kg/.test($q(".log").textContent)&&![...w.document.querySelectorAll(".rbtn")].some(b=>/kcal/.test(b.getAttribute("aria-label"))));
     ev("S.settings.hideNums=false;render()");
