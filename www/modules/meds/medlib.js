@@ -349,10 +349,12 @@ const MedLib=(()=>{
     return r;
   };
   /* What the alarm log says about background limits, for the permissions list and Today. bo: battery unrestricted (null unknown); slow: the last ring came more than a minute late;
-     miss: a planned alarm of the last 2 days that never rang and no on-time ring came after it; off: the same while the phone was off (a restart followed); boot: the last setup after a phone restart. */
+     miss: a planned alarm of the last 2 days that never rang and no on-time ring came after it; off: the same while the phone was off (a restart followed); boot: the last setup after a phone restart.
+     xl, xp: Xiaomi's lock-screen and background-window permissions (0 allowed, 1+ denied, -1 unreadable; null on other phones). */
   function bgState(st,items,now){
     const last=items.filter(e=>e.a==="WAKE"&&e.p).pop(),late=!!last&&last.t-last.p>60000,m=lastMiss(items),at=m&&now-m.at<2*864e5?m.at:0;
-    return {bo:typeof st.bo==="boolean"?st.bo:null,ontime:!!last&&!late,slow:late,miss:at&&!m.off&&!(last&&!late&&last.t>at)?at:0,off:at&&m.off?at:0,boot:items.filter(e=>e.a==="BOOT").pop()||null};
+    const op=v=>typeof v==="number"?v:null;
+    return {xl:op(st.xl),xp:op(st.xp),bo:typeof st.bo==="boolean"?st.bo:null,ontime:!!last&&!late,slow:late,miss:at&&!m.off&&!(last&&!late&&last.t>at)?at:0,off:at&&m.off?at:0,boot:items.filter(e=>e.a==="BOOT").pop()||null};
   }
   /* Whether the phone moved the alarms by itself (reboot, clock or time zone change) after the app's last setup at `since` (ms). */
   const clockMoved=(items,since)=>items.some(e=>(e.a==="TIME"||e.a==="TZ"||e.a==="BOOT")&&e.t>since);
