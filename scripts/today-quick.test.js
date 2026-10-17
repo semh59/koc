@@ -24,6 +24,8 @@ const {boot}=require("./html");
   ok("Today opens the first 3 entries; the rest, day copy and template fold into one 'Daha fazla'",all("#view .log").length===1&&all(".log>li.row").length===3&&q(".log>li>details>summary").textContent==="Daha fazla (2 kayıt)"&&all(".log details .row").length===2&&!!q('.log details [data-act="cp:day"]')&&!!q('.log details [data-act="tplnew"]')&&all('#view [data-act="cp:day"]').length===1);
   ev("tab='day';logOff=0;render()");
   ok("the Day screen lists every entry, nothing folded",all(".log .row").length===5&&!q(".log details"));
+  fresh("add('weight',80)");
+  ok("the weight card is compact: the weight beside its label, no big figure; sleep and mood tiles keep the value on the name's line",(r=>!!r&&r.textContent.includes("Bugünkü tartı")&&!!r.querySelector(".wv"))(q('.stepcard[data-tab="trend"] .scr'))&&!q(".stepcard .big")&&all(".hbt").length===2&&!q(".hbt .sm,.hbt .db"));
   fresh("S.settings.obNudge=true");
   ok("after setup, a first-water row adds one glass in one tap",q(".todo")&&q('.todo [data-act="water"]'));
   q('.todo [data-act="water"]').click();

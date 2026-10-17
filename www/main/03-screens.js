@@ -29,7 +29,7 @@ function dayLogHtml(lk,max=Infinity,more=""){
     ...dl.rest.sort((a,b)=>b.id-a.id).map(e=>[1,li(e)])];
   let c=0;const cut=blocks.findIndex(b=>(c+=b[0])-b[0]>=max),rest=cut<0?[]:blocks.slice(cut),restN=rest.reduce((s,b)=>s+b[0],0);
   const fold=rest.length?`<li><details class="acc" ${keepOpen("tlog")}><summary>Daha fazla (${restN} kayıt)</summary><ul class="m0 p0">${rest.map(b=>b[1]).join("")}</ul>${items.some(e=>e.type==="food")?more:""}</details></li>`:"";
-  const log=items.length?`<ul class="log">${blocks.slice(0,cut<0?blocks.length:cut).map(b=>b[1]).join("")}${fold}</ul>`:`<div class="empty"><p class="mut">${lk===dayKey()?"Bugün henüz kayıt yok. Bir bardak suyla başlayabilirsin.":"Bu güne ait bir şey yok."}</p></div>`;
+  const log=items.length?`<ul class="log">${blocks.slice(0,cut<0?blocks.length:cut).map(b=>b[1]).join("")}${fold}</ul>`:`<p class="mut my-2">${lk===dayKey()?"Bugün henüz kayıt yok. Bir bardak suyla başlayabilirsin.":"Bu güne ait bir şey yok."}</p>`;
   return {items,log,folded:!!fold};
 }
 /* The sport ring is daily: the day's share of the weekly goal (default 150 min). The weekly total is in Trend and Gym. */
@@ -49,7 +49,7 @@ function viewToday(){
   const wAll=weights(),days=Object.keys(wAll).sort();
   const cur=days.length?wAll[days[days.length-1]]:null,prev=days.length>1?wAll[days[days.length-2]]:null;
   const curDay=days[days.length-1];
-  /* The weight card is a shortcut to Trend: a one-line summary, chart and detail live in Trend. */
+  /* The weight card is a shortcut to Trend: the last weight and one line of change; chart and detail live in Trend. */
   let weight;
   if(cur==null){
     weight=`<button class="stepcard" data-act="weight"><div class="scr"><span class="mut">${Icons.svg("weight")} Kilo</span><span class="mut sm">Ekle <span aria-hidden="true">›</span></span></div><div class="mut sm">İlk tartını ekle; ilerlemen buradan başlar.</div></button>`;
@@ -57,7 +57,7 @@ function viewToday(){
     const gi=goalInfo(cur,wAll[days[0]]),sl=Algo.slopePerWeek(wAll);
     const bits=st.hideNums?[]:[sl!=null?`${dwS(sl,2)} ${wlab()}/hafta`:prev!=null?(dwS(cur-prev)==="0,0"?`öncekiyle aynı (${fd(days[days.length-2])})`:`öncekine göre ${dwS(cur-prev)} ${wlab()} (${fd(days[days.length-2])})`):"",gi?(gi.done?"Hedefe ulaştın":`hedefe ${dw(gi.left)} ${wlab()}`):""].filter(Boolean);
     const fl=fastLossNow(wAll)?`<p class="hint">Kilon haftada %1'den hızlı düşüyor; hekimine danış.</p>`:"";
-    weight=`<button class="stepcard" data-tab="trend" aria-label="${st.hideNums?"":`Kilo ${dw(cur)} ${wlab()}, `}Kilo grafiğini Trend'de aç"><div class="scr"><span class="mut">${Icons.svg("weight")} ${curDay===t?"Bugünkü tartı":"Son tartı, "+fd(curDay)}</span><span class="mut sm">Trend <span aria-hidden="true">›</span></span></div><div class="scr"><span class="big num wv">${st.hideNums?"•••":`${dw(cur)} <small>${wlab()}</small>`}</span><span class="mut sm num ws">${bits.join(" · ")}</span></div></button>${fl}`;
+    weight=`<button class="stepcard" data-tab="trend" aria-label="${st.hideNums?"":`Kilo ${dw(cur)} ${wlab()}, `}Kilo grafiğini Trend'de aç"><div class="scr"><span class="mut">${Icons.svg("weight")} ${curDay===t?"Bugünkü tartı":"Son tartı, "+fd(curDay)}</span><span class="num b7 wv">${st.hideNums?"•••":`${dw(cur)} <small>${wlab()}</small>`} <span class="mut" aria-hidden="true">›</span></span></div>${bits.length?`<div class="mut sm num">${bits.join(" · ")}</div>`:""}</button>${fl}`;
   }
   const water=sum("water",t,t),sh=st.waterMl,kc=sum("food",t,t),sw=sum("exercise",t,t),sg=sportDay();
   const kgl=kcalGoal(t),kcP=kgl>0&&kcalCount()?kc/kgl:0;
