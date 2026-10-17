@@ -11,11 +11,16 @@ const {boot}=require("./html");
   reset();ev("medOpen(0)");
   ok("21: a new medication shows name, dose and time; the extras are folded",shown().join()==="mn,md,mt0"&&!$("#mmore").open&&$$('[data-md^="fq:"]').length===3,shown());
   click('[data-md="fq:n"]');
-  ok("21: 'Her N günde' shows only the interval field and keeps the fold state",shown().join()==="mn,md,mt0,miv"&&!$("#mmore").open,shown());
+  ok("21: 'Her N günde' shows only the interval and first-day fields and keeps the fold state",shown().join()==="mn,md,mt0,miv,mia"&&!$("#mmore").open,shown());
   $("#mmore").open=true;click('[data-md="fq:w"]');
   ok("21: 'Belirli günler' shows the day chips; an opened fold stays open across the redraw",!$('[data-md="wd:1"]').closest("[hidden]")&&$("#miv").closest("[hidden]")&&$("#mmore").open);
   reset("[{id:1,n:'A',t:['08:00'],on:true,k:20}]");ev("medOpen(1)");
   ok("21: editing a medication with stock opens the fold",$("#mmore").open);
   ok("21: per-time dose and amount boxes carry visible labels",$("#mq0").closest(".labf")&&$("#mpa0").closest(".labf"));
+
+  /* 20: the interval counts from the chosen first-dose day */
+  reset();ev("medOpen(0)");$("#mn").value="Gün aşırı";click('[data-md="fq:n"]');$("#miv").value="2";$("#mia").value=ev("keyOff(-1)");click('[data-md="save"]');
+  ok("20: every 2 days with the first dose yesterday: no dose today, one tomorrow",ev("S.meds[0].ia")===ev("keyOff(-1)")&&ev("MedLib.dosesOn(S.meds,dayKey()).length")===0&&ev("MedLib.dosesOn(S.meds,keyOff(1)).length")===1,ev("JSON.stringify(S.meds)"));
+  ok("20: the list says the next dose day",$("#view").textContent.includes("sıradaki: "+ev("fd(keyOff(1))")),$("#view").textContent);
   finish();
 })();
