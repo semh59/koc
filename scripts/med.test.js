@@ -152,7 +152,9 @@ ok("sinceFor: a new time starts today, a passed time tomorrow, an old time is ke
     const lg=(slot,at,extra={})=>({id:1,m:1,day:D,slot,st:"t",at,...extra});
     const r1=M.recentTaken([lg("08:00","08:05")],1,D,"10:00",ms("08:30"));
     ok("recentTaken: a different slot taken 25 minutes ago is reported with the minutes",r1&&r1.min===25&&r1.slot==="08:00",JSON.stringify(r1));
-    ok("recentTaken: a record older than an hour is not reported",M.recentTaken([lg("08:00","08:05")],1,D,"10:00",ms("09:20"))===null);
+    ok("recentTaken: slots 2 h apart keep the 1 h floor, a record older than that is not reported",M.recentTaken([lg("08:00","08:05")],1,D,"10:00",ms("09:20"))===null);
+    ok("recentTaken: once a day, yesterday's dose marked at 06:00 is reported when today's 08:00 is marked (half of 24 h, capped at 6 h)",(r=>r&&r.min===120)(M.recentTaken([{id:1,m:1,day:"2026-10-06",slot:"08:00",st:"t",at:"06:00",ad:D}],1,D,"08:00",ms("08:00"))));
+    ok("recentTaken: slots 12 h apart look back 6 h, not more",!!M.recentTaken([lg("08:00","08:05")],1,D,"20:00",ms("13:30"))&&M.recentTaken([lg("08:00","08:05")],1,D,"20:00",ms("14:30"))===null);
     ok("recentTaken: marking the same slot again replaces it, no warning",M.recentTaken([lg("08:00","08:05")],1,D,"08:00",ms("08:10"))===null);
     ok("recentTaken: slots planned 30 minutes apart do not ask",M.recentTaken([lg("08:00","08:05")],1,D,"08:30",ms("08:10"))===null);
     ok("recentTaken: skipped records, records without a time and other medications do not count",M.recentTaken([lg("08:00","08:05",{st:"s"}),lg("08:00",undefined),lg("08:00","08:05",{m:2})],1,D,"10:00",ms("08:30"))===null);

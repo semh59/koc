@@ -171,17 +171,18 @@ const MedLib=(()=>{
     }};
   }
 
-  /* Double-dose guard (records only, no dose advice): the same medication has a taken record for a DIFFERENT slot within the last hour and the two slots are planned more than an hour apart.
+  /* Double-dose guard (records only, no dose advice): the same medication has a taken record for a DIFFERENT slot, the two slots are planned more than an hour apart,
+     and the record is younger than half the planned gap between the two doses (at least 1 h, at most 6 h): a fixed hour missed a once-a-day dose marked twice.
      `at` is the moment of the tap on the day `ad`; an older row without `ad` that is more than an hour before its slot counts as the next day. Returns {min, slot} of the most recent such record or null. */
-  const WIN=3600000;
+  const WIN=3600000,WIN_MAX=6*WIN;
   const slotMs=(day,t)=>{const [y,m,d]=day.split("-").map(Number),[h,mi]=t.split(":").map(Number);return new Date(y,m-1,d,h,mi).getTime()};
   const tapMs=x=>{if(x.ad)return slotMs(x.ad,x.at);const am=slotMs(x.day,x.at);return am<slotMs(x.day,x.slot)-WIN?am+864e5:am};
   function recentTaken(log,mid,day,slot,nowMs){
     let best=null;
     for(const x of log){
       if(x.m!==mid||x.st!=="t"||!timeOk(x.at)||(x.day===day&&x.slot===slot))continue;
-      const sm=slotMs(x.day,x.slot),age=nowMs-tapMs(x);
-      if(age<0||age>WIN||Math.abs(slotMs(day,slot)-sm)<=WIN)continue;
+      const gap=Math.abs(slotMs(day,slot)-slotMs(x.day,x.slot)),age=nowMs-tapMs(x);
+      if(age<0||gap<=WIN||age>Math.min(WIN_MAX,Math.max(WIN,gap/2)))continue;
       if(!best||age<best.age)best={age,min:Math.max(1,Math.round(age/60000)),slot:x.slot};
     }
     return best;
