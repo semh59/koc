@@ -283,9 +283,16 @@ function medOpen(id){
   const sh=S.settings.medShowName===true;
   medDraft=m?{id:m.id,n:m.n,d:m.d||"",t:m.t.slice(),q:m.t.map(s=>({d:m.q?.[s]?.d||"",p:medNum(m.q?.[s]?.p)})),w:m.w?m.w.slice():ALL_DAYS.slice(),on:m.on,mc:"",k:medNum(m.k),p:medNum(m.p),s:m.s,e:m.e,e0:m.e,ts:m.ts,bp:!!m.bp,t0:m.t.slice(),iv:m.iv?String(m.iv):"",ia:m.ia,fed:m.fed||"",sd:m.sd?String(m.sd):"",kb:medNum(m.kb),ou:m.ou||"",sh,fq:m.iv?"n":m.w&&m.w.length<7?"w":"d",more:medMore(m)}
     :{id:0,n:"",d:"",t:["08:00"],q:[{d:"",p:""}],w:ALL_DAYS.slice(),on:true,mc:"",k:"",p:"",t0:[],iv:"",fed:"",sd:"",kb:"",ou:"",sh,fq:"d",more:false};
-  medRender();
+  medRender();medDraft.o0=medSnap();
 }
-function medSave(){
+const medSnap=()=>{medCollect();const {o0,more,...x}=medDraft;return JSON.stringify(x)};
+/* A changed sheet closed by the scrim or ✕ asks first: the core's check compares fields with their defaults, which every redraw resets. */
+document.addEventListener("click",ev=>{
+  if(!medDraft||!document.querySelector("#sheet.on #mn")||!ev.target.closest?.("#scrim,[data-shx]")||medSnap()===medDraft.o0)return;
+  ev.stopPropagation();
+  confirmSheet({title:"Vazgeçilsin mi?",body:"Değişiklikler kaydedilmez.",ok:"Vazgeç",no:"Düzenlemeye dön",danger:true}).then(ok=>{if(ok)medClose()});
+},true);
+function medSave(force){
   medCollect();const d=medDraft,warn=medWarn;
   if(!d.id&&S.meds.length>=MedLib.MAXM)return warn(MED_FULL);
   if(!d.n.trim())return warn("İlacın adını yaz","#mn");
@@ -308,6 +315,8 @@ function medSave(){
   }
   if(!d.on&&d.ou&&d.ou<=today)return warn("Tekrar hatırlatma günü bugünden sonra olmalı","#mou");
   if(d.e&&d.e!==d.e0&&d.e<today)return warn("Bitiş günü bugünden önce olamaz","#me");
+  const same=d.n.trim().toLocaleLowerCase("tr");
+  if(!force&&!d.id&&!d.cp&&S.meds.some(m=>m.n.toLocaleLowerCase("tr")===same))return confirmSheet({title:`${d.n.trim()} zaten var. Yine de eklensin mi?`,ok:"Ekle"}).then(ok=>{if(ok)medSave(true)});
   const o={id:d.id,n:d.n.trim(),d:d.d.trim(),t:times,q,w:d.w.length===7||iv?undefined:d.w.slice().sort(),on:d.on!==false,...(d.bp?{bp:true}:{}),...(d.fed?{fed:d.fed}:{}),...(sd?{sd}:{}),...(kb?{kb}:{}),...(!d.on&&d.ou?{ou:d.ou}:{})};
   if(iv){o.iv=iv;o.ia=d.ia||today}
   if(k!=null)o.k=k;if(p!=null)o.p=p;
@@ -324,7 +333,8 @@ function medSave(){
   S.settings.medShowName=d.sh===true;
   if(!commit(()=>{S.meds=before;S.settings.medShowName=shown}))return;
   medClose();render();medResched();
-  toast(dropped.length?`İlaç kaydedildi. ${dropped.join(", ")} saati bugün için geçerli kalır${added.length?`; yeni saat ${todayNew.length?"bugün de":"yarından"} geçerli`:""}.`:"İlaç kaydedildi");
+  const undo=()=>{const cur=[S.meds,S.settings.medShowName];[S.meds,S.settings.medShowName]=[before,shown];if(commit(()=>{[S.meds,S.settings.medShowName]=cur})){render();medResched()}};
+  toast(dropped.length?`İlaç kaydedildi. ${dropped.join(", ")} saati bugün için geçerli kalır${added.length?`; yeni saat ${todayNew.length?"bugün de":"yarından"} geçerli`:""}.`:"İlaç kaydedildi",was?undo:undefined);
 }
 function medBoxAdd(id){
   const m=S.meds.find(x=>x.id===id);if(!m||!m.kb)return;
@@ -354,6 +364,7 @@ function medMark(mid,slot,st,force,day=calKey()){
   if(!commit(res.undo))return;
   render();medResched();
   const m=S.meds.find(x=>x.id===mid);
+  if(st==="t"&&!live)medAtSheet(mid,slot,day);
   medUndoToast(st==="t"?`${m.n} alındı olarak kaydedildi${isToday||!at?"":`, saat ${at}. Başka saatse İlaçlar ekranında düzelt`}`:st==="s"?`${m.n} atlandı`:"Kayıt geri alındı",res);
 }
 function medTakeAll(slot,force){
@@ -435,7 +446,7 @@ document.addEventListener("click",ev=>{
   else if(a==="save")medSave();
   else if(a==="del"){
     const id=medDraft?.id,m=S.meds.find(x=>x.id===id);if(!m)return;
-    confirmSheet({title:`${m.n} silinsin mi?`,body:`${m.n} silinecek. İlacın kayıtları da silinir. Devam edilsin mi?`,ok:"Sil",danger:true}).then(ok=>{
+    confirmSheet({title:`${m.n} silinsin mi?`,body:`${m.n} ve kayıtları silinecek. Geçmişi korumak için düzenlemede 'Hatırlatma açık'ı kapatabilirsin.`,ok:"Sil",danger:true}).then(ok=>{
       if(!ok)return;
       /* The Ramadan shift records go too: freeId hands this number to the next new medication. */
       const st=S.settings,dl=S.medLog.filter(x=>x.m===id),keep=()=>[S.meds,S.medLog,st.ramMeds,st.ramMedsRef],put=v=>{[S.meds,S.medLog,st.ramMeds,st.ramMedsRef]=v},was=keep();
@@ -469,7 +480,7 @@ document.addEventListener("click",ev=>{
     medDraft.k=medNum(Math.min(99999,Math.round(((LabLib.optNum(medDraft.k)||0)+kb)*100)/100));medRender();
   }
   else if(a==="fed"){medCollect();medDraft.fed=medDraft.fed===r[0]?"":r[0];medRender()}
-  else if(a==="dup"){if(S.meds.length>=MedLib.MAXM)return medWarn(MED_FULL);medCollect();Object.assign(medDraft,{id:0,k:"",mc:"",s:undefined,e:undefined,ts:undefined,t0:[],ia:undefined,ou:"",on:true});medRender()}
+  else if(a==="dup"){if(S.meds.length>=MedLib.MAXM)return medWarn(MED_FULL);medCollect();Object.assign(medDraft,{id:0,k:"",mc:"",s:undefined,e:undefined,ts:undefined,t0:[],ia:undefined,ou:"",on:true,cp:true});medRender()}
   else if(a==="dprev"){const d=MedLib.addDay(medViewDay(),-1);if(d<calOff(-MED_BACK))return toast("Daha eski güne gidilemez");medDay=d;render()}
   else if(a==="dnext"){const d=MedLib.addDay(medViewDay(),1);medDay=d<calKey()?d:"";render()}
   else if(a==="dtoday"){medDay="";render()}
