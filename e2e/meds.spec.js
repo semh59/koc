@@ -70,6 +70,7 @@ test("blood pressure label: the dose-since line appears only after the medicatio
   await expect(app.view).toContainText("128/82");
   await expect(app.view).not.toContainText("Son ilaç kaydından");
   await app.go("meds");await page.locator('[data-md="edit:1"]').click();
+  await page.locator("summary",{hasText:"Daha fazla seçenek"}).click();
   await page.locator('label:has(#mbp), #mbp').first().click({force:true});await page.locator('[data-md="save"]').click();
   expect((await app.state()).meds[0].bp).toBe(true);
   await app.go("bp");

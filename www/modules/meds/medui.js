@@ -233,27 +233,33 @@ function medCollect(){
   d.t=d.t.map((_,i)=>g("mt"+i));
   d.q=d.q.map((_,i)=>({d:g("mq"+i),p:g("mpa"+i)}));
   if(d.id)d.e=g("me");
-  for(const [k,id] of [["on","mon"],["bp","mbp"],["sh","mshow"]]){const e=document.getElementById(id);if(e)d[k]=e.checked}
+  for(const [k,id] of [["on","mon"],["bp","mbp"],["sh","mshow"],["more","mmore"]]){const e=document.getElementById(id);if(e)d[k]=id==="mmore"?e.open:e.checked}
 }
+/* Only name, dose and times are needed; the rest waits in "Daha fazla seçenek". Fields stay in the DOM when hidden, so medCollect reads every one of them. */
+const MED_FQ=[["d","Her gün"],["w","Belirli günler"],["n","Her N günde"]];
+const medMore=m=>!!(m.fed||m.e||m.k!=null||m.p||m.kb||m.sd||m.bp||m.q&&Object.keys(m.q).length);
 function medRender(){
-  const d=medDraft;
+  const d=medDraft,hid=on=>on?"":" hidden";
   openSheet(`<h3>${d.id?"İlacı düzenle":"İlaç ekle"}</h3>
   <label class="lbl" for="mn">İlaç adı</label><input class="in" id="mn" maxlength="${MedLib.NAME_MAX}" value="${esc(d.n)}" autocomplete="off">
-  ${swRow('id="mshow"',!!d.sh,MED_NAME_LABEL)}${medLockLink()}
   <label class="lbl" for="md">Doz (isteğe bağlı)</label><input class="in" id="md" placeholder="örn. 1 tablet, 10 mg" maxlength="30" value="${esc(d.d)}" autocomplete="off">
-  <div class="lbl">Saatler (günde en çok ${MedLib.MAXT}); her saatin kendi dozu ve adedi olabilir</div>
-  ${d.t.map((v,i)=>`<div class="dl"><input class="grow in" type="time" id="mt${i}" value="${esc(v)}" aria-label="${i+1}. saat">${d.t.length>1?`<button class="del" data-md="rmtime:${i}" aria-label="${i+1}. saati kaldır">${Icons.svg("x")}</button>`:""}</div>
-  <div class="g2"><input class="in" id="mq${i}" maxlength="30" placeholder="${esc(d.d||"Bu saatin dozu")}" value="${esc(d.q[i].d)}" aria-label="${i+1}. saatin dozu" autocomplete="off"><input class="in num" id="mpa${i}" inputmode="decimal" placeholder="Adet" value="${esc(d.q[i].p)}" aria-label="${i+1}. saatin adedi"></div>`).join("")}
-  ${d.t.length<MedLib.MAXT?`<button class="mb-3 chip" data-md="addtime">＋ Saat ekle</button>`:""}
-  <div class="lbl">Günler</div><div class="chips days">${[1,2,3,4,5,6,0].map(w=>`<button class="chip" data-md="wd:${w}" aria-pressed="${d.w.includes(w)}">${WEEKDAYS_SHORT[w]}</button>`).join("")}</div>
-  <label class="lbl" for="miv">Her kaç günde bir? (isteğe bağlı; yazarsan günler yok sayılır, bugünden sayılır)</label><input class="in num" id="miv" inputmode="numeric" placeholder="örn. 2" value="${esc(d.iv)}">
+  <div class="lbl">Saatler (günde en çok ${MedLib.MAXT})</div>
+  ${d.t.map((v,i)=>`<div class="dl"><input class="grow in" type="time" id="mt${i}" value="${esc(v)}" aria-label="${i+1}. saat">${d.t.length>1?`<button class="del" data-md="rmtime:${i}" aria-label="${i+1}. saati kaldır">${Icons.svg("x")}</button>`:""}</div>`).join("")}
+  ${d.t.length<MedLib.MAXT?`<button class="mb-3 chip" data-md="addtime">${Icons.svg("plus")} Saat ekle</button>`:""}
+  <div class="lbl" id="mfql">Sıklık</div><div class="chips" role="group" aria-labelledby="mfql">${MED_FQ.map(([k,t])=>`<button class="chip" data-md="fq:${k}" aria-pressed="${d.fq===k}">${t}</button>`).join("")}</div>
+  <div${hid(d.fq==="w")}><div class="chips days" role="group" aria-label="Günler">${[1,2,3,4,5,6,0].map(w=>`<button class="chip" data-md="wd:${w}" aria-pressed="${d.w.includes(w)}">${WEEKDAYS_SHORT[w]}</button>`).join("")}</div></div>
+  <div${hid(d.fq==="n")}><label class="lbl" for="miv">Her kaç günde bir? (bugünden sayılır)</label><input class="in num" id="miv" inputmode="numeric" placeholder="örn. 2" value="${esc(d.iv)}"></div>
+  ${swRow('id="mshow"',!!d.sh,MED_NAME_LABEL)}${medLockLink()}
+  <details class="acc" id="mmore"${d.more?" open":""}><summary>Daha fazla seçenek</summary>
+  <div class="lbl">Saate göre doz (isteğe bağlı)</div>
+  ${d.t.map((v,i)=>`<div class="g2"><label class="labf"><span>${i+1}. saatin dozu</span><input class="in" id="mq${i}" maxlength="30" placeholder="${esc(d.d)}" value="${esc(d.q[i].d)}" autocomplete="off"></label><label class="labf"><span>${i+1}. saatte kaç tane?</span><input class="in num" id="mpa${i}" inputmode="decimal" value="${esc(d.q[i].p)}"></label></div>`).join("")}
   <div class="lbl" id="mfedl">Yemekle ilişkisi (isteğe bağlı)</div><div class="chips" role="group" aria-labelledby="mfedl">${MedLib.FED.map(k=>`<button class="chip" data-md="fed:${k}" aria-pressed="${d.fed===k}">${MED_FED[k]}</button>`).join("")}</div>
   ${d.id?`<label class="lbl" for="me">Kullanım bitiş günü (boş bırakırsan sürekli)</label><input class="in" type="date" id="me" value="${esc(d.e||"")}">`:`<label class="lbl" for="mc">Kaç gün kullanılacak? (boş bırakırsan sürekli)</label><input class="in num" id="mc" inputmode="numeric" placeholder="örn. 7" value="${esc(d.mc)}">`}
   <div class="lbl">Stok takibi (isteğe bağlı)</div>
   <div class="g2"><label class="labf"><span>Kutudaki adet</span><input class="in num" id="mk" inputmode="decimal" placeholder="örn. 30" value="${esc(d.k)}"></label><label class="labf"><span>Doz başına adet</span><input class="in num" id="mp" inputmode="decimal" placeholder="örn. 1" value="${esc(d.p)}">${d.k&&!d.p?`<small class="mut sm">Boşsa her dozda 1 adet sayılır</small>`:""}</label></div>
   <div class="g2"><label class="labf"><span>Kutu başına adet</span><input class="in num" id="mkb" inputmode="decimal" placeholder="örn. 30" value="${esc(d.kb)}"></label><label class="labf"><span>Uyarı: kalan gün (varsayılan ${MedLib.STOCK_DAYS})</span><input class="in num" id="msd" inputmode="numeric" placeholder="${MedLib.STOCK_DAYS}" value="${esc(d.sd)}"></label></div>
-  <button class="mb-3 chip" data-md="box">＋ Kutu ekle</button>
-  ${swRow('id="mbp"',!!d.bp,"Tansiyon ilacı (ölçüm listesinde ve raporunda kayıtlı dozdan beri geçen süre görünsün)")}
+  <button class="mb-3 chip" data-md="box">${Icons.svg("plus")} Kutu ekle</button>
+  ${swRow('id="mbp"',!!d.bp,"Tansiyon ilacı (ölçüm listesinde ve raporunda kayıtlı dozdan beri geçen süre görünsün)")}</details>
   ${d.id?`${swRow('id="mon"',d.on,"Hatırlatma açık")}<label class="lbl" for="mou">Ara verdiysen: tekrar hatırlatılacağı gün (isteğe bağlı)</label><input class="in" type="date" id="mou" value="${esc(d.ou)}" min="${calKey()}">`:""}
   <div class="ferr" id="mwarn" role="alert"></div>
   <button class="btn" data-md="save">Kaydet</button>${d.id?`<button class="mt-2 btn ghost" data-md="dup">Aynı ilaçtan bir tane daha</button><button class="mt-2 btn danger" data-md="del">Sil</button>`:""}<button class="mt-2 btn ghost" data-md="close">Vazgeç</button>`);
@@ -263,8 +269,8 @@ function medOpen(id){
   const m=id?S.meds.find(x=>x.id===id):null;
   if(!m&&S.meds.length>=MedLib.MAXM)return toast(MED_FULL);
   const sh=S.settings.medShowName===true;
-  medDraft=m?{id:m.id,n:m.n,d:m.d||"",t:m.t.slice(),q:m.t.map(s=>({d:m.q?.[s]?.d||"",p:medNum(m.q?.[s]?.p)})),w:m.w?m.w.slice():ALL_DAYS.slice(),on:m.on,mc:"",k:medNum(m.k),p:medNum(m.p),s:m.s,e:m.e,e0:m.e,ts:m.ts,bp:!!m.bp,t0:m.t.slice(),iv:m.iv?String(m.iv):"",iv0:m.iv?String(m.iv):"",ia:m.ia,fed:m.fed||"",sd:m.sd?String(m.sd):"",kb:medNum(m.kb),ou:m.ou||"",sh}
-    :{id:0,n:"",d:"",t:["08:00"],q:[{d:"",p:""}],w:ALL_DAYS.slice(),on:true,mc:"",k:"",p:"",t0:[],iv:"",iv0:"",fed:"",sd:"",kb:"",ou:"",sh};
+  medDraft=m?{id:m.id,n:m.n,d:m.d||"",t:m.t.slice(),q:m.t.map(s=>({d:m.q?.[s]?.d||"",p:medNum(m.q?.[s]?.p)})),w:m.w?m.w.slice():ALL_DAYS.slice(),on:m.on,mc:"",k:medNum(m.k),p:medNum(m.p),s:m.s,e:m.e,e0:m.e,ts:m.ts,bp:!!m.bp,t0:m.t.slice(),iv:m.iv?String(m.iv):"",iv0:m.iv?String(m.iv):"",ia:m.ia,fed:m.fed||"",sd:m.sd?String(m.sd):"",kb:medNum(m.kb),ou:m.ou||"",sh,fq:m.iv?"n":m.w&&m.w.length<7?"w":"d",more:medMore(m)}
+    :{id:0,n:"",d:"",t:["08:00"],q:[{d:"",p:""}],w:ALL_DAYS.slice(),on:true,mc:"",k:"",p:"",t0:[],iv:"",iv0:"",fed:"",sd:"",kb:"",ou:"",sh,fq:"d",more:false};
   medRender();
 }
 function medSave(){
@@ -274,6 +280,7 @@ function medSave(){
   const times=[...new Set(d.t.filter(timeOk))];
   if(!times.length||times.length!==d.t.filter(x=>x!=="").length)return warn("Saatleri doldur (boş ya da yinelenen saat var)");
   if(!d.w.length)return warn("En az bir gün seç");
+  if(d.fq==="n"&&!d.iv.trim())return warn("Kaç günde bir alınacağını yaz");
   const k=LabLib.optNum(d.k),p=LabLib.optNum(d.p),c=LabLib.optNum(d.mc),iv=LabLib.optNum(d.iv),sd=LabLib.optNum(d.sd),kb=LabLib.optNum(d.kb);
   if((d.k.trim()!==""&&(k==null||k<0||k>99999))||(d.p.trim()!==""&&(p==null||p<=0||p>100))||(d.kb.trim()!==""&&(kb==null||kb<=0||kb>99999)))return warn("Stok, kutu ve doz başına adet sayı olmalı");
   if(d.mc.trim()!==""&&(c==null||!Number.isInteger(c)||c<1||c>365))return warn("Gün sayısı 1 ile 365 arasında bir tam sayı olmalı");
@@ -432,6 +439,7 @@ document.addEventListener("click",ev=>{
   }
   else if(a==="addtime"){medCollect();if(medDraft.t.length<MedLib.MAXT){medDraft.t.push("");medDraft.q.push({d:"",p:""});medRender()}}
   else if(a==="rmtime"){medCollect();medDraft.t.splice(+r[0],1);medDraft.q.splice(+r[0],1);medRender()}
+  else if(a==="fq"){medCollect();const d=medDraft;d.fq=r[0];if(r[0]!=="n")d.iv="";if(r[0]==="d")d.w=ALL_DAYS.slice();medRender()}
   else if(a==="wd"){const w=+r[0],i=medDraft.w.indexOf(w);if(i>=0)medDraft.w.splice(i,1);else medDraft.w.push(w);el.setAttribute("aria-pressed",String(i<0))}
   else if(a==="takeall")medTakeAll(r[0]+":"+r[1]);
   else if(a==="take")medMark(+r[0],r[1]+":"+r[2],"t",false,r[3]);
