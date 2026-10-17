@@ -267,7 +267,7 @@ function viewSettings(){
   if(sub==="coach")return viewProviders();
   if(sub==="reminders"){
     const nf={web:"Bildirimler yalnızca telefondaki uygulamada çalışır.",ok:"Hatırlatmalar açık.",denied:"Bildirim izni kapalı. Telefon ayarlarından NeoWell için bildirimleri aç.","":""}[notifStatus]||notifStatus;
-    return `<div class="card"><div class="status">${esc(nf)}</div>${isNative()&&!exactOk?`<p class="flush hint">${PM_TEXT.exact.warn}</p><div class="btns"><button class="btn ghost" data-act="fullalarm">Tam saat alarm iznini aç</button></div>`:""}${notifDiag?`<p class="flush hint">${esc(notifDiag)}</p>`:""}${isNative()?`<div class="btns"><button class="btn ghost" data-act="notiftest">Test bildirimi gönder</button></div>`:""}
+    return `<div class="card"><div class="status">${esc(nf)}</div>${isNative()&&!exactOk?`<p class="flush hint">${PM_TEXT.exact.warn}</p><div class="btns"><button class="btn ghost" data-act="fullalarm">Tam saat alarm iznini aç</button></div>`:""}${notifDiag?`<p class="flush hint">${esc(notifDiag)}</p>`:""}${isNative()?`<div class="btns"><button class="btn ghost" data-act="notiftest">Test bildirimi gönder</button>${st.medOn?`<button class="btn ghost" data-md="realtest">İlaç alarmını dene</button>`:""}</div>`:""}
     ${st.reminders.filter(remShown).map(r=>`<div class="rem"><span class="nm">${esc(r.name)}</span><input type="time" value="${r.t}" data-rt="${r.id}" aria-label="${esc(r.name)} saati"><label class="sw"><input type="checkbox" ${r.on?"checked":""} data-ro="${r.id}" aria-label="${esc(r.name)} açık"><span></span></label></div>`).join("")}
     <p class="hint">Bildirim metinleri sabittir; Rehber onları değiştirmez. ${PM_TEXT.dnd}</p></div>`;
   }
