@@ -33,7 +33,7 @@ async function lockAsk(){
   lockBusy=false;
   if(r&&r.ok)return lockOpen();
   if(r&&r.none){ // the phone has no screen lock left: the user must not be locked out of their own data
-    S.settings.lockOn=false;save();lockOpen();toast("Telefonda ekran kilidi kalmadı, uygulama kilidi kapatıldı");return}
+    S.settings.lockOn=false;save();lockOpen();scheduleReminders().then(setNotif);toast("Telefonda ekran kilidi kalmadı, uygulama kilidi kapatıldı");return}
   lockMsg(r&&r.cancelled?"Kilidi açmak için doğrula.":"Doğrulanamadı, tekrar dene.");
 }
 /* Turning it on asks for verification (so it is seen working; it does not turn on without a phone screen lock). Returns the error text, or "" when it is on. */
@@ -44,11 +44,12 @@ async function lockEnable(){
   if(!st.secure)return "Önce telefonda bir ekran kilidi (PIN, desen ya da parmak izi) ayarla";
   lockBusy=true;let r;try{r=await a.authenticate({title:"Uygulama kilidini aç"})}catch(e){r={ok:false}}lockBusy=false;
   if(!r||!r.ok)return "Doğrulanamadı, kilit açılmadı";
-  S.settings.lockOn=true;save();
+  S.settings.lockOn=true;save();scheduleReminders().then(setNotif);
   return "";
 }
+/* The lock state is sent with the reminders: with the app lock on no medication name reaches the lock-screen alarm, so every change reschedules. */
 async function lockToggle(el){
-  if(!el.checked){S.settings.lockOn=false;save();render();toast("Uygulama kilidi kapatıldı");return}
+  if(!el.checked){S.settings.lockOn=false;save();render();scheduleReminders().then(setNotif);toast("Uygulama kilidi kapatıldı");return}
   const e=await lockEnable();
   if(e){el.checked=false;return toast(e)}
   render();toast("Uygulama kilidi açıldı");

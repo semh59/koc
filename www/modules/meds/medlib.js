@@ -297,11 +297,10 @@ const MedLib=(()=>{
   /* The screen-waking alarm covers main doses only: main dose ids are in [1e6, 2e6), repeats start at 2e6. */
   const wakeMain=list=>list.filter(n=>n.extra&&n.extra.act==="med"&&n.id>=NID_BASE&&n.id<2*NID_BASE);
   const wakeTimes=list=>wakeMain(list).map(n=>+n.schedule.at);
-  /* Dose details drawn by the native alarm screen; b is the notification body (generic text when the name is hidden). */
-  const wakeDoses=(list,meds,showName)=>wakeMain(list).flatMap(n=>{
-    const at=+n.schedule.at;
-    if(!n.extra.g)return [{at,nid:n.id,m:n.extra.m,s:n.extra.s,b:n.body}];
-    return n.extra.g.split(",").map(k=>{const [id,hhmm]=k.split("_"),m=meds.find(x=>x.id===+id),s=hhmm.slice(0,2)+":"+hhmm.slice(2);return {at,nid:n.id,m:+id,s,b:showName&&m?`${m.n}${doseText(m,s)?" · "+doseText(m,s):""}`:GENERIC_BODY}});
+  /* Dose details drawn by the native alarm screen over the lock screen; b is generic unless `show` (the caller decides whether a name may appear there). */
+  const wakeDoses=(list,meds,show)=>wakeMain(list).flatMap(n=>{
+    const at=+n.schedule.at,day=key(new Date(at)),ks=n.extra.g?n.extra.g.split(",").map(k=>{const [id,h]=k.split("_");return [+id,h.slice(0,2)+":"+h.slice(2)]}):[[n.extra.m,n.extra.s]];
+    return ks.map(([id,s])=>{const m=show&&meds.find(x=>x.id===id);return {at,nid:n.id,m:id,s,b:m?m.n+(doseText(m,s,day)?" · "+doseText(m,s,day):""):GENERIC_BODY}});
   });
 
   /* Turns the MedWake diagnostic log (MedWakeReceiver.java) into plain Turkish lines. The log holds no personal data. */

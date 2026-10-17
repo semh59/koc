@@ -85,8 +85,9 @@ async function scheduleOnce(){
     const keep=new Set([9001,9002,GD_NID,MED_TEST_NID,AlarmLib.SNOOZE_NID,...list.map(n=>n.id)]);
     const pn=(await ln.getPending()).notifications.filter(n=>!keep.has(n.id));if(pn.length)await ln.cancel({notifications:pn.map(n=>({id:n.id}))});
     if(list.length)await lnSchedule(ln,list);
-    /* The notification plugin does not light the locked screen: for medication doses (reminder repeats excluded) a separate alarm screen wakes it briefly. */
-    const mw=MW();if(mw)await mw.set({times:MedLib.wakeTimes(list),doses:MedLib.wakeDoses(list,Meds.meds(),S.settings.medShowName),detail:S.settings.lockDetail}).catch(()=>{});
+    /* The notification plugin does not light the locked screen: for medication doses (reminder repeats excluded) a separate alarm screen wakes it briefly.
+       That screen draws over the lock screen, so a name goes there only with lock-screen detail on and never with the app lock on (no name reaches the phone side then). */
+    const st=S.settings,mw=MW();if(mw)await mw.set({times:MedLib.wakeTimes(list),doses:MedLib.wakeDoses(list,Meds.meds(),st.medShowName&&st.lockDetail&&!st.lockOn),detail:st.lockDetail}).catch(()=>{});
     lastSched=t0;lastTz=tzKey();
     return "ok";
   }catch(e){console.log("NW-SCHED error "+(e&&e.message||e));return "Bildirimler kurulamadı. Bildirim iznini kontrol edip tekrar dene"}
