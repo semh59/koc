@@ -147,6 +147,19 @@ const unclock=require("./clock").at;
     delete w.Capacitor;restore();
   }
 
+  /* 5: notifications off alone gets its own row on Today */
+  {
+    reset(`[{id:1,n:'A',t:['23:59'],on:true}]`);native();
+    const row=()=>/Bildirimler kapalı: ilaç hatırlatması gelmez/.test($("#view").textContent),common=()=>/İzinler eksik/.test($("#view").textContent);
+    ev("pmNotif=false;exactOk=true;tab='today';render()");
+    ok("only the notification permission off: its row shows with 'İzin ver'",row()&&!common()&&!!$('#view [data-pm="go:notif"]'));
+    ev("pmNotif=true;render()");
+    ok("permission given: the row goes",!row());
+    ev("pmNotif=false;exactOk=false;render()");
+    ok("two permissions missing: only the common row",common()&&!row());
+    ev("pmNotif=null;exactOk=true");delete w.Capacitor;
+  }
+
   /* 41: a snooze from the lock screen rings once on the medication channel (source check: no Android runtime here) */
   {
     const rd=f=>require("fs").readFileSync(require("path").join(__dirname,"../assets/android",f),"utf8"),aa=rd("AlarmActivity.java"),mw=rd("MedWakeReceiver.java"),mp=rd("MedWakePlugin.java");
