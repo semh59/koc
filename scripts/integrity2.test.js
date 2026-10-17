@@ -147,9 +147,9 @@ const doses=(m,day)=>M.dosesOn(M.cleanMeds([m]),day).map(x=>x.slot).join();
   /* Yesterday's unmarked dose in the Today list */
   ev(`S.settings.medOn=true;S.meds=[{id:1,n:'İlaç A',t:['08:00'],on:true,s:'${y2}'}];S.medLog=[];tab='today';render()`);
   const todo=ev("medTodo().join('')");
-  ok("yesterday's unmarked dose is in the Today list as 'Dün kaçırıldı' with the day on its buttons",todo.includes("Dün kaçırıldı")&&todo.includes(`data-md="take:1:08:00:${y}"`)&&todo.includes(`data-md="skip:1:08:00:${y}"`),todo);
+  ok("yesterday's unmarked dose is in the Today list as 'Dün işaretlenmedi' with the day on its buttons",todo.includes("Dün işaretlenmedi")&&todo.includes(`data-md="take:1:08:00:${y}"`)&&todo.includes(`data-md="skip:1:08:00:${y}"`),todo);
   ev(`medMark(1,'08:00','s',false,'${y}')`);
-  ok("skipping it removes it from the list",!ev("medTodo().join('')").includes("Dün kaçırıldı"));
+  ok("skipping it removes it from the list",!ev("medTodo().join('')").includes("Dün işaretlenmedi"));
 
   /* Course end cleared in the edit sheet; time change toast */
   ev(`S.meds=[{id:1,n:'İlaç A',t:['12:00'],on:true,s:'${y2}',e:'${y}'}];medOpen(1)`);

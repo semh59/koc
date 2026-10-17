@@ -83,7 +83,7 @@ function medRows(day=calKey()){
     const tail=st==="t"?`<button class="chip num" data-md="at:${tag}:${day}" aria-label="${esc(m.n)} alınan saati düzenle">✓ ${r.at||"saat ekle"}</button>${undo}`
       :st==="s"?`<span class="mut">Atlandı</span><button class="b7 chip" data-md="take:${tag}${sfx}" aria-label="${isToday?"Şimdi aldım":"Aldım"}: ${esc(m.n)}">${isToday?"Şimdi aldım":"Aldım"}</button>${undo}`
       :`<button class="chip go" data-md="take:${tag}${sfx}" aria-label="Aldım: ${esc(m.n)}">${Icons.svg("check")} Aldım</button><button class="chip skip" data-md="skip:${tag}${sfx}" aria-label="Atla: ${esc(m.n)}">Atla</button>`;
-    const sub=[slot,MedLib.doseText(m,slot,day)&&esc(MedLib.doseText(m,slot,day)),MED_FED[m.fed],late&&(isToday?"Gecikti":"Kaçırıldı")].filter(Boolean).join(" · ");
+    const sub=[slot,MedLib.doseText(m,slot,day)&&esc(MedLib.doseText(m,slot,day)),MED_FED[m.fed],late&&(isToday?"Gecikti":"İşaretlenmedi")].filter(Boolean).join(" · ");
     return `<div class="wrap row mdose"><span class="grow"><b>${esc(m.n)}</b><small class="db mut num">${sub}</small></span><span class="mda">${tail}</span></div>`;
   }).join("");
 }
@@ -96,7 +96,7 @@ function medInfo(){
   const next=ds.filter((d,i)=>!st[i]&&d.slot>now).map(d=>d.slot).sort()[0];
   return `İlaç: bugün ${taken}/${ds.length} alındı${skipped?`, ${skipped} atlandı`:""}${next?`, sıradaki ${next}`:""}`;
 }
-/* Today's to-do: only doses whose time has come and that are neither taken nor skipped, and yesterday's unmarked doses ("Dün kaçırıldı", marked with that day); later ones are on the Meds screen. A marked dose is undone from the toast or the Meds screen. */
+/* Today's to-do: only doses whose time has come and that are neither taken nor skipped, and yesterday's unmarked doses ("Dün işaretlenmedi", marked with that day); later ones are on the Meds screen. A marked dose is undone from the toast or the Meds screen. */
 function medTodo(){
   if(!S.settings.medOn)return [];
   /* A test nobody confirms tells nothing: after it should have rung, Today asks, and "Hayır" opens the settings that usually block it. */
@@ -111,7 +111,7 @@ function medTodo(){
   /* Doses of the same minute: the first row offers one button for all of them (the others stay one by one, nothing is marked unseen). */
   for(const {m,slot} of MedLib.dosesOn(S.meds,t))if(mins(slot)<=mins(now)+30&&!rec(m.id,t,slot))grpN.set(slot,(grpN.get(slot)||0)+1);
   return test.concat(ram,paused)
-    .concat(MedLib.dosesOn(S.meds,y).filter(({m,slot})=>!rec(m.id,y,slot)).map(x=>row(y,x,night?"Gecikti":"Dün kaçırıldı",":"+y)))
+    .concat(MedLib.dosesOn(S.meds,y).filter(({m,slot})=>!rec(m.id,y,slot)).map(x=>row(y,x,night?"Gecikti":"Dün işaretlenmedi",":"+y)))
     .concat(MedLib.dosesOn(S.meds,t).filter(({m,slot})=>mins(slot)<=mins(now)+30&&!rec(m.id,t,slot)).map(x=>row(t,x,mins(x.slot)>mins(now)?"Yaklaşıyor":mins(now)-mins(x.slot)<30?"Saati geldi":"Gecikti","")));
 }
 
@@ -208,9 +208,9 @@ function viewMeds(){
   const pct=a=>a.pct==null?"–":"%"+a.pct,cnt=a=>a.total?`${a.total} dozdan ${a.taken} alındı`:"doz yok";
   const low=S.meds.filter(m=>MedLib.stockLow(m,t,S.medLog)).map(m=>`<div class="row"><span class="grow"><b>${esc(m.n)}</b><small class="db mut">${m.k?`Yaklaşık ${MedLib.stockDays(m)} günlük stok kaldı, tahmini bitiş ${fd(MedLib.addDay(t,MedLib.stockDays(m)))}. Yenisini almayı unutma.`:"Stok bitti, yenisini al."}</small></span>${m.kb?`<button class="chip" data-md="boxadd:${m.id}" aria-label="Kutu ekle: ${esc(m.n)}">＋ Kutu ekle</button>`:`<button class="chip" data-md="edit:${m.id}" aria-label="Stoğu güncelle: ${esc(m.n)}">Stoğu güncelle</button>`}</div>`).join("");
   const day=medViewDay(),isT=day===t;
-  /* One dot per day: ✓ all taken, – missed (not red), ! pending today, • some skipped; colour alone carries no meaning. */
+  /* One dot per day: ✓ all taken, – unmarked (not red), ! pending today, • some skipped; colour alone carries no meaning. */
   const days=last7.map((a,i)=>{
-    const c=a.missed?["miss","–","kaçırıldı"]:a.late?["late","!","bekliyor"]:a.total&&a.taken===a.total?["ok","✓","hepsi alındı"]:a.total?["part","•","bazıları atlandı"]:["none","","doz yok"];
+    const c=a.missed?["miss","–","işaretlenmedi"]:a.late?["late","!","bekliyor"]:a.total&&a.taken===a.total?["ok","✓","hepsi alındı"]:a.total?["part","•","bazıları atlandı"]:["none","","doz yok"];
     const wd=WEEKDAYS_SHORT[addDays(i-6,new Date()).getDay()];
     return {on:a.total||a.late,h:`<span class="dd" role="img" aria-label="${wd} ${fd(a.day)}: ${c[2]}"><i class="${c[0]}" aria-hidden="true">${c[1]}</i><small aria-hidden="true">${wd}</small></span>`};
   });
