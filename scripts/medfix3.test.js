@@ -38,5 +38,26 @@ const {boot}=require("./html");
   ok("23: 'Saat ekle' puts the focus on the new time field",w.document.activeElement.id==="mt1");
   $('[data-md="fq:w"]').focus();click('[data-md="fq:w"]');
   ok("23: a redraw keeps the focus on the control that was used",w.document.activeElement.dataset.md==="fq:w"&&w.document.activeElement.isConnected);
+
+  /* 32: edit undo, close question, same name, delete hint, past-day time */
+  reset("[{id:1,n:'A',t:['08:00'],on:true}]");ev("window.__rs=0;const rs0=scheduleReminders;scheduleReminders=(...a)=>{window.__rs++;return rs0(...a)}");
+  ev("medOpen(1)");$("#mt0").value="09:00";click('[data-md="save"]');const rs1=ev("__rs");click("#tundo");
+  ok("32: 'Geri al' after an edit brings the old time back and resets the reminders",ev("S.meds[0].t.join()")==="08:00"&&ev("__rs")>rs1,ev("JSON.stringify(S.meds)"));
+  let asked="";ev("window.__confirmAuto=m=>{window.__asked=m;return false}");
+  ev("medOpen(1)");click("#scrim");
+  ok("32: an unchanged sheet closes on an outside tap without a question",!$("#sheet").classList.contains("on")&&!ev("window.__asked"));
+  ev("medOpen(1)");$("#mn").value="B";click("#scrim");asked=ev("window.__asked")||"";
+  ok("32: a changed sheet asks before an outside tap closes it",/kaydedilmez/.test(asked)&&$("#sheet").classList.contains("on"),asked);
+  ev("window.__asked=''");click("#sheet [data-shx]");
+  ok("32: the ✕ asks as well",/kaydedilmez/.test(ev("window.__asked"))&&$("#sheet").classList.contains("on"));
+  ev("window.__asked='';medOpen(0)");$("#mn").value="a";click('[data-md="save"]');
+  ok("32: a new medication named like an existing one asks first and saves nothing on no",/zaten var/.test(ev("window.__asked"))&&ev("S.meds.length")===1);
+  ev("window.__asked='';medOpen(1)");click('[data-md="dup"]');click('[data-md="save"]');
+  ok("32: a copy is not asked about the same name",!ev("window.__asked")&&ev("S.meds.length")===2);
+  ev("medOpen(1)");click('[data-md="del"]');
+  ok("32: the delete question tells how to keep the history",/Hatırlatma açık/.test(ev("window.__asked")));
+  ev("delete window.__confirmAuto");
+  const Y=ev("keyOff(-1)");reset(`[{id:1,n:'A',t:['00:00'],on:true,s:'${ev("keyOff(-5)")}'}]`);click('[data-md="dprev"]');ev("medTapAt=0");click(`[data-md="take:1:00:00:${Y}"]`);
+  ok("32: Aldım on a past day opens the taken-time sheet",$("#sheet").classList.contains("on")&&!!$("#mat")&&ev(`S.medLog.some(r=>r.day==='${Y}'&&r.st==='t')`));
   finish();
 })();
