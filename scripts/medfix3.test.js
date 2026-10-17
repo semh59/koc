@@ -22,5 +22,13 @@ const {boot}=require("./html");
   reset();ev("medOpen(0)");$("#mn").value="Gün aşırı";click('[data-md="fq:n"]');$("#miv").value="2";$("#mia").value=ev("keyOff(-1)");click('[data-md="save"]');
   ok("20: every 2 days with the first dose yesterday: no dose today, one tomorrow",ev("S.meds[0].ia")===ev("keyOff(-1)")&&ev("MedLib.dosesOn(S.meds,dayKey()).length")===0&&ev("MedLib.dosesOn(S.meds,keyOff(1)).length")===1,ev("JSON.stringify(S.meds)"));
   ok("20: the list says the next dose day",$("#view").textContent.includes("sıradaki: "+ev("fd(keyOff(1))")),$("#view").textContent);
+
+  /* 22: the error is tied to its field */
+  reset();ev("medOpen(0)");click('[data-md="save"]');
+  ok("22: an empty name focuses the name field, marked invalid and described by the message",w.document.activeElement.id==="mn"&&$("#mn").getAttribute("aria-invalid")==="true"&&$("#mn").getAttribute("aria-describedby")==="mwarn");
+  $("#mn").value="A";$("#mk").value="abc";click('[data-md="save"]');
+  ok("22: a stock error opens the fold and moves the focus and the mark to the stock field",$("#mmore").open&&w.document.activeElement.id==="mk"&&!$("#mn").hasAttribute("aria-invalid"));
+  reset();ev("medNearSheet()");$("#mdnear").value="12";click('[data-md="nearsave"]');
+  ok("22: a wrong near number is an alert error on the field",$("#mdnearerr").getAttribute("role")==="alert"&&$("#mdnearerr").classList.contains("ferr")&&$("#mdnearerr").textContent.includes("rakam")&&w.document.activeElement.id==="mdnear");
   finish();
 })();

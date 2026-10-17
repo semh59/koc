@@ -23,12 +23,12 @@ const MED_NEAR_TEXT="Merhaba, ilaç saatimi kaçırmış olabilirim. Müsait olu
 function medNearSheet(){
   const v=S.settings.medNear;
   openSheet(`<h3>Yakınıma haber ver</h3><p class="mut sm">Geciken bir dozda Bugün'de "Yakınıma haber ver" düğmesi çıkar. Mesaj uygulaması numara ve kısa bir metinle açılır, göndermek sana kalır. Mesajda ilaç adı yazmaz. Numara yalnız bu telefonda durur.</p>
-  <input class="in" id="mdnear" type="tel" inputmode="tel" placeholder="Örn. +905551112233" aria-label="Yakınının telefon numarası" value="${esc(v)}"><div id="mdnearerr" class="mut sm"></div>
+  <input class="in" id="mdnear" type="tel" inputmode="tel" placeholder="Örn. +905551112233" aria-label="Yakınının telefon numarası" value="${esc(v)}"><div id="mdnearerr" class="ferr" role="alert"></div>
   <div class="btns"><button class="btn" data-md="nearsave">Kaydet</button>${v?'<button class="btn ghost" data-md="nearclear">Numarayı sil</button>':""}<button class="btn ghost" data-md="nearclose">Vazgeç</button></div>`);
 }
 function medNearSave(){
   const v=$("#mdnear").value.replace(/[\s()-]/g,"");
-  if(!/^\+?\d{7,15}$/.test(v)){$("#mdnearerr").textContent="Numara 7-15 rakam olmalı, başında + olabilir.";return}
+  if(!/^\+?\d{7,15}$/.test(v))return medWarn("Numara 7-15 rakam olmalı, başında + olabilir.","#mdnear","mdnearerr");
   medNearSet(v,"Kaydedildi");
 }
 function medNearSet(v,msg){
@@ -266,6 +266,14 @@ function medRender(){
   <div class="ferr" id="mwarn" role="alert"></div>
   <button class="btn" data-md="save">Kaydet</button>${d.id?`<button class="mt-2 btn ghost" data-md="dup">Aynı ilaçtan bir tane daha</button><button class="mt-2 btn danger" data-md="del">Sil</button>`:""}<button class="mt-2 btn ghost" data-md="close">Vazgeç</button>`);
 }
+/* The message stands under the form and the field it is about gets the focus, opened out of the fold first (a closed details cannot take focus). */
+function medWarn(m,sel,box="mwarn"){
+  const e=document.getElementById(box);if(!e)return;e.textContent=m;
+  for(const x of document.querySelectorAll("#sheet [aria-invalid]")){x.removeAttribute("aria-invalid");x.removeAttribute("aria-describedby")}
+  const f=sel&&document.querySelector("#sheet "+sel);if(!f)return;
+  const dt=f.closest("details");if(dt)dt.open=true;
+  f.setAttribute("aria-invalid","true");f.setAttribute("aria-describedby",box);f.focus();f.scrollIntoView?.({block:"center"});
+}
 const ALL_DAYS=[0,1,2,3,4,5,6],MED_FULL=`En çok ${MedLib.MAXM} ilaç eklenebilir`;
 function medOpen(id){
   const m=id?S.meds.find(x=>x.id===id):null;
@@ -276,27 +284,28 @@ function medOpen(id){
   medRender();
 }
 function medSave(){
-  medCollect();const d=medDraft,warn=m=>{const e=document.getElementById("mwarn");if(e)e.textContent=m};
+  medCollect();const d=medDraft,warn=medWarn;
   if(!d.id&&S.meds.length>=MedLib.MAXM)return warn(MED_FULL);
-  if(!d.n.trim())return warn("İlacın adını yaz");
+  if(!d.n.trim())return warn("İlacın adını yaz","#mn");
   const times=[...new Set(d.t.filter(timeOk))];
-  if(!times.length||times.length!==d.t.filter(x=>x!=="").length)return warn("Saatleri doldur (boş ya da yinelenen saat var)");
-  if(!d.w.length)return warn("En az bir gün seç");
-  if(d.fq==="n"&&!d.iv.trim())return warn("Kaç günde bir alınacağını yaz");
+  if(!times.length||times.length!==d.t.filter(x=>x!=="").length)return warn("Saatleri doldur (boş ya da yinelenen saat var)","#mt"+Math.max(0,d.t.findIndex((x,i)=>x!==""&&(!timeOk(x)||d.t.indexOf(x)<i))));
+  if(!d.w.length)return warn("En az bir gün seç",'[data-md="wd:1"]');
+  if(d.fq==="n"&&!d.iv.trim())return warn("Kaç günde bir alınacağını yaz","#miv");
   const k=LabLib.optNum(d.k),p=LabLib.optNum(d.p),c=LabLib.optNum(d.mc),iv=LabLib.optNum(d.iv),sd=LabLib.optNum(d.sd),kb=LabLib.optNum(d.kb);
-  if((d.k.trim()!==""&&(k==null||k<0||k>99999))||(d.p.trim()!==""&&(p==null||p<=0||p>100))||(d.kb.trim()!==""&&(kb==null||kb<=0||kb>99999)))return warn("Stok, kutu ve doz başına adet sayı olmalı");
-  if(d.mc.trim()!==""&&(c==null||!Number.isInteger(c)||c<1||c>365))return warn("Gün sayısı 1 ile 365 arasında bir tam sayı olmalı");
-  if(d.iv.trim()!==""&&(iv==null||!Number.isInteger(iv)||iv<2||iv>60))return warn("Aralık 2 ile 60 arasında bir tam sayı olmalı");
-  if(d.sd.trim()!==""&&(sd==null||!Number.isInteger(sd)||sd<1||sd>90))return warn("Stok uyarısı 1 ile 90 arasında bir gün sayısı olmalı");
+  const sb=d.k.trim()!==""&&(k==null||k<0||k>99999)?"#mk":d.p.trim()!==""&&(p==null||p<=0||p>100)?"#mp":d.kb.trim()!==""&&(kb==null||kb<=0||kb>99999)?"#mkb":"";
+  if(sb)return warn("Stok, kutu ve doz başına adet sayı olmalı",sb);
+  if(d.mc.trim()!==""&&(c==null||!Number.isInteger(c)||c<1||c>365))return warn("Gün sayısı 1 ile 365 arasında bir tam sayı olmalı","#mc");
+  if(d.iv.trim()!==""&&(iv==null||!Number.isInteger(iv)||iv<2||iv>60))return warn("Aralık 2 ile 60 arasında bir tam sayı olmalı","#miv");
+  if(d.sd.trim()!==""&&(sd==null||!Number.isInteger(sd)||sd<1||sd>90))return warn("Stok uyarısı 1 ile 90 arasında bir gün sayısı olmalı","#msd");
   const today=calKey(),q={};
-  if(iv&&d.ia>today)return warn("İlk doz günü bugünden sonra olamaz");
+  if(iv&&d.ia>today)return warn("İlk doz günü bugünden sonra olamaz","#mia");
   for(let i=0;i<d.t.length;i++){
     const a=d.q[i],pa=LabLib.optNum(a.p);
-    if(a.p.trim()!==""&&(pa==null||pa<=0||pa>100))return warn("Saat başına adet 0'dan büyük bir sayı olmalı");
+    if(a.p.trim()!==""&&(pa==null||pa<=0||pa>100))return warn("Saat başına adet 0'dan büyük bir sayı olmalı","#mpa"+i);
     if(timeOk(d.t[i])&&(a.d.trim()||pa!=null))q[d.t[i]]={...(a.d.trim()&&{d:a.d.trim()}),...(pa!=null&&{p:pa})};
   }
-  if(!d.on&&d.ou&&d.ou<=today)return warn("Tekrar hatırlatma günü bugünden sonra olmalı");
-  if(d.e&&d.e!==d.e0&&d.e<today)return warn("Bitiş günü bugünden önce olamaz");
+  if(!d.on&&d.ou&&d.ou<=today)return warn("Tekrar hatırlatma günü bugünden sonra olmalı","#mou");
+  if(d.e&&d.e!==d.e0&&d.e<today)return warn("Bitiş günü bugünden önce olamaz","#me");
   const o={id:d.id,n:d.n.trim(),d:d.d.trim(),t:times,q,w:d.w.length===7||iv?undefined:d.w.slice().sort(),on:d.on!==false,...(d.bp?{bp:true}:{}),...(d.fed?{fed:d.fed}:{}),...(sd?{sd}:{}),...(kb?{kb}:{}),...(!d.on&&d.ou?{ou:d.ou}:{})};
   if(iv){o.iv=iv;o.ia=d.ia||today}
   if(k!=null)o.k=k;if(p!=null)o.p=p;
@@ -454,11 +463,11 @@ document.addEventListener("click",ev=>{
   else if(a==="boxadd")medBoxAdd(+r[0]);
   else if(a==="box"){
     medCollect();const kb=LabLib.optNum(medDraft.kb);
-    if(!(kb>0&&kb<=99999))return document.getElementById("mwarn").textContent="Önce kutu başına adedi yaz";
+    if(!(kb>0&&kb<=99999))return medWarn("Önce kutu başına adedi yaz","#mkb");
     medDraft.k=medNum(Math.min(99999,Math.round(((LabLib.optNum(medDraft.k)||0)+kb)*100)/100));medRender();
   }
   else if(a==="fed"){medCollect();medDraft.fed=medDraft.fed===r[0]?"":r[0];medRender()}
-  else if(a==="dup"){if(S.meds.length>=MedLib.MAXM)return document.getElementById("mwarn").textContent=MED_FULL;medCollect();Object.assign(medDraft,{id:0,k:"",mc:"",s:undefined,e:undefined,ts:undefined,t0:[],ia:undefined,ou:"",on:true});medRender()}
+  else if(a==="dup"){if(S.meds.length>=MedLib.MAXM)return medWarn(MED_FULL);medCollect();Object.assign(medDraft,{id:0,k:"",mc:"",s:undefined,e:undefined,ts:undefined,t0:[],ia:undefined,ou:"",on:true});medRender()}
   else if(a==="dprev"){const d=MedLib.addDay(medViewDay(),-1);if(d<calOff(-MED_BACK))return toast("Daha eski güne gidilemez");medDay=d;render()}
   else if(a==="dnext"){const d=MedLib.addDay(medViewDay(),1);medDay=d<calKey()?d:"";render()}
   else if(a==="dtoday"){medDay="";render()}
