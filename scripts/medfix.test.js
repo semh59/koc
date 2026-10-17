@@ -116,5 +116,17 @@ const unclock=require("./clock").at;
   ok("the category row says so",/yakınının numarası ve Ramazan saat kaydırmaları da silinir/.test($("#sheet").textContent));
   ev("closeSheet();delete window.__confirmAuto");
 
+  /* 15: the stock warning looks at the course end */
+  {
+    const D="2026-03-10",now=new Date(2026,2,10,7),c=o=>M.cleanMeds([{id:1,n:"A",t:["08:00","20:00"],on:true,s:D,e:M.addDay(D,6),k:14,...o}])[0];
+    ok("7-day course, 14 tablets, 2 a day: no stock warning",!M.stockLow(c(),D)&&M.notices([c()],now,true).length===0);
+    ok("after the first dose of that course (13 left): still no warning",!M.stockLow(c({k:13}),D,[{m:1,day:D,slot:"08:00",st:"t"}]));
+    ok("12 tablets for that course: the warning stays",M.stockLow(c({k:12}),D));
+    ok("course ended yesterday: no warning and no 09:00 notice",!M.stockLow(c({s:"2026-03-01",e:"2026-03-09",k:1}),D)&&M.notices([c({s:"2026-03-01",e:"2026-03-09",k:1})],now,true).length===0);
+    reset(`[{id:1,n:'A',t:['08:00'],on:true,s:'2026-01-01',e:calOff(-1),k:1}]`);
+    ok("course ended yesterday: no stock card",!/stok kaldı|Stok bitti/.test($("#view").textContent));
+  }
+
+
   finish();
 })();

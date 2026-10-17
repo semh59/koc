@@ -201,7 +201,7 @@ function viewMeds(){
   const t=calKey(),nowT=medNowHM(),per=MedLib.adherenceDays(S.meds,S.medLog,calOff(-29),t,t,nowT),last7=per.slice(-7);
   const a7=MedLib.sumAdherence(last7),a30=MedLib.sumAdherence(per);
   const pct=a=>a.pct==null?"–":"%"+a.pct,cnt=a=>a.total?`${a.total} dozdan ${a.taken} alındı`:"doz yok";
-  const low=S.meds.filter(MedLib.stockLow).map(m=>`<div class="row"><span class="grow"><b>${esc(m.n)}</b><small class="db mut">${m.k?`Yaklaşık ${MedLib.stockDays(m)} günlük stok kaldı, tahmini bitiş ${fd(MedLib.addDay(t,MedLib.stockDays(m)))}. Yenisini almayı unutma.`:"Stok bitti, yenisini al."}</small></span>${m.kb?`<button class="chip" data-md="boxadd:${m.id}" aria-label="Kutu ekle: ${esc(m.n)}">＋ Kutu ekle</button>`:`<button class="chip" data-md="edit:${m.id}" aria-label="Stoğu güncelle: ${esc(m.n)}">Stoğu güncelle</button>`}</div>`).join("");
+  const low=S.meds.filter(m=>MedLib.stockLow(m,t,S.medLog)).map(m=>`<div class="row"><span class="grow"><b>${esc(m.n)}</b><small class="db mut">${m.k?`Yaklaşık ${MedLib.stockDays(m)} günlük stok kaldı, tahmini bitiş ${fd(MedLib.addDay(t,MedLib.stockDays(m)))}. Yenisini almayı unutma.`:"Stok bitti, yenisini al."}</small></span>${m.kb?`<button class="chip" data-md="boxadd:${m.id}" aria-label="Kutu ekle: ${esc(m.n)}">＋ Kutu ekle</button>`:`<button class="chip" data-md="edit:${m.id}" aria-label="Stoğu güncelle: ${esc(m.n)}">Stoğu güncelle</button>`}</div>`).join("");
   const day=medViewDay(),isT=day===t;
   /* One dot per day: ✓ all taken, – missed (not red), ! pending today, • some skipped; colour alone carries no meaning. */
   const days=last7.map((a,i)=>{

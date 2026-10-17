@@ -73,7 +73,7 @@ async function scheduleOnce(){
     }
     if(S.settings.medOn){
       for(const n of MedLib.notifications(Meds.meds(),Meds.log(),new Date(),SCHED_DAYS,S.settings.medShowName))medList.push({id:n.id,title:n.title,body:n.body,schedule:{at:n.at,allowWhileIdle:true},actionTypeId:n.actionTypeId,extra:n.extra,channelId:n.channelId,ongoing:n.ongoing});
-      for(const n of MedLib.notices(Meds.meds(),new Date(),S.settings.medShowName))medList.push({id:n.id,title:n.title,body:n.body,schedule:{at:n.at,allowWhileIdle:true},extra:n.extra});
+      for(const n of MedLib.notices(Meds.meds(),new Date(),S.settings.medShowName,Meds.log()))medList.push({id:n.id,title:n.title,body:n.body,schedule:{at:n.at,allowWhileIdle:true},extra:n.extra});
     }
     for(const n of Habits.ramReminders(now,LEAD_MS,SCHED_DAYS))list.push({id:n.id,title:n.title,body:n.body,schedule:{at:new Date(n.at),allowWhileIdle:true}});
     const cn=cycNotif();if(cn)list.push(cn);
