@@ -105,5 +105,16 @@ const unclock=require("./clock").at;
     delete w.Capacitor;restore();
   }
 
+  /* 26: alarm screen small fixes */
+  {
+    const restore=unclock(w,8);
+    reset(`[{id:1,n:'A',t:['07:00'],on:true,s:'2026-01-01'},{id:2,n:'B',t:['07:30'],on:true,s:'2026-01-01'}]`);
+    ev("S.settings.medShowName=true;alarmOpen()");click('#alarm [data-al="s:0"]');click('#alarm [data-al="s:1"]');
+    ok("both skipped: the lead says '2 doz işlendi.', never 'alındı'; a skipped row has no check icon",/2 doz işlendi\./.test($("#allead").textContent)&&!/alındı/.test($("#albody").textContent)&&!$("#alarm .alst svg"),$("#albody").textContent);
+    const css=require("fs").readFileSync(require("path").join(__dirname,"../www/app.css"),"utf8");
+    ok("the alarm buttons are at least 16 px apart and the lead is in --ink",/#alarm \.albar\{[^}]*gap:var\(--sp-4\)/.test(css)&&/#alarm \.allead\{[^}]*color:var\(--ink\)/.test(css));
+    ev("alarmClose()");restore();
+  }
+
   finish();
 })();
