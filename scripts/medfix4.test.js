@@ -54,5 +54,11 @@ const {boot,read}=require("./html");
   const row=$("#view .mdose");unclock();
   ok("36: the Meds screen dose row has the time column, one sub line and the state in a .tag",row.firstElementChild.matches("b.tm")&&row.querySelectorAll(".sub").length===1&&row.querySelector(".sub .tag")?.textContent==="Gecikti",row.outerHTML);
   ok("36: no full-width '＋' in the medication screens; the day navigator is .dnav",!read("modules/meds/medui.js").includes("＋")&&!!$('#mdoses .dnav [data-md="dprev"] svg'));
+
+  /* 30: the adherence card states its formula; each medication shows its own 30-day share */
+  reset(`[{id:1,n:'Hep',t:['09:00'],on:true,s:keyOff(-3)},{id:2,n:'Hiç',t:['09:00'],on:true,s:keyOff(-3)}]`,`[${[1,2,3].map(i=>`{m:1,day:keyOff(-${i}),slot:'09:00',st:'t'},{m:2,day:keyOff(-${i}),slot:'09:00',st:'s'}`).join()}]`);
+  const rowOf=n=>$$("#view .row").find(r=>r.querySelector("b")?.textContent===n&&r.querySelector('[data-md^="edit:"]')).textContent;
+  ok("30: one medication always taken shows %100, the always skipped one %0",rowOf("Hep").includes("son 30 gün %100")&&rowOf("Hiç").includes("son 30 gün %0"),[rowOf("Hep"),rowOf("Hiç")]);
+  ok("30: the adherence card says how it is counted",$(".dd7").closest(".card").textContent.includes("alınan / (alınan + atlanan + işaretlenmeyen)"));
   finish();
 })();
