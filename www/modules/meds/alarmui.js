@@ -71,8 +71,11 @@ function alarmMark(ks,st,force){
   for(const i of list){const r=MedLib.mark(S,i.m,i.day,i.slot,st,st==="t"?at:undefined,calKey());if(r){undo.push(r);i.st=st}}
   if(!save()){undo.reverse().forEach(r=>r.undo());list.forEach(i=>{i.st=undefined});a.say=SAVE_FAIL;alarmDraw();return}
   render();medResched();
-  a.say=list.length>1?"Hepsi kaydedildi":(alarmNames()?list[0].n+", ":"")+list[0].slot+" dozu "+(st==="t"?"alındı":"atlandı");
+  const say=names=>list.length>1?"Hepsi kaydedildi":(names?list[0].n+", ":"")+list[0].slot+" dozu "+(st==="t"?"alındı":"atlandı");
+  a.say=say(alarmNames());
   alarmDraw();
+  /* The toast sits under the alarm screen and stays after it closes; names revealed on the screen stay there. */
+  medUndoToast(say(alarmShowName()),{undo:()=>{undo.slice().reverse().forEach(r=>r.undo());list.forEach(i=>{i.st=undefined});if(alarm===a){clearTimeout(a.auto);alarmDraw()}}});
   const next=document.querySelector('#alarm [data-al^="t:"]');(next||$("#alt")).focus({preventScroll:true});
   if(AlarmLib.allDone(a.items)){alarmSnoozeCancel();alarmAuto()}
 }

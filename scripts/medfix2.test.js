@@ -92,5 +92,18 @@ const unclock=require("./clock").at;
     ev("alarmClose()");restore();
   }
 
+  /* 9: a marking on the alarm screen can be taken back from the toast after the screen closes */
+  {
+    const restore=unclock(w,8),calls=native();
+    reset(`[{id:1,n:'A',t:['08:00'],on:true,s:'2026-01-01'}]`);
+    ev("S.settings.medShowName=true;alarmOpen()");click('#alarm [data-al="s:0"]');
+    ok("alarm Atla: recorded, the toast offers 'Geri al'",ev("S.medLog.length")===1&&/08:00 dozu atlandı/.test($("#tmsg").textContent)&&!!$("#toast button"));
+    await until(()=>$("#alarm").hidden,3000);
+    const n0=calls.filter(c=>c[0]==="LN.schedule").length;
+    ev("undoLast()");await until(()=>calls.filter(c=>c[0]==="LN.schedule").length>n0);
+    ok("after the screen closed 'Geri al' removes the record and reschedules",ev("S.medLog.length")===0);
+    delete w.Capacitor;restore();
+  }
+
   finish();
 })();
