@@ -833,7 +833,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
       ev("S.entries=[];S.settings.medOn=true;S.meds=[{id:1,n:'A',t:['08:00'],on:true}];S.medLog=[]");
       await ev("scheduleReminders()");
       const btn=out.filter(n=>n.extra&&(n.extra.act==="water"||n.extra.act==="med"));
-      ok("key: old pending water/medication notifications are cancelled; the rescheduled water and medication (including repeats) notifications carry extra.tk, the others do not",can.includes(200)&&can.includes(1001001)&&btn.some(n=>n.extra.act==="water")&&btn.some(n=>n.extra.act==="med"&&n.id>=2e6)&&btn.every(n=>n.extra.tk===TK)&&out.every(n=>!n.extra||n.extra.act==="water"||n.extra.act==="med"||!("tk" in n.extra)),can.slice(0,5));
+      ok("key: old pending water/medication notifications are rescheduled over (1001001 not cancelled) or cancelled when gone from the list; the rescheduled water and medication (including repeats) notifications carry extra.tk, the others do not",can.includes(200)===!out.some(n=>n.id===200)&&!can.includes(1001001)&&out.some(n=>n.id===1001001&&n.extra.tk===TK)&&btn.some(n=>n.extra.act==="water")&&btn.some(n=>n.extra.act==="med"&&n.id>=2e6)&&btn.every(n=>n.extra.tk===TK)&&out.every(n=>!n.extra||n.extra.act==="water"||n.extra.act==="med"||!("tk" in n.extra)),can.slice(0,5));
       for(const g of [undefined,async()=>{throw new Error("yok")}]){
         if(g)w.Capacitor.Plugins.QuickLog.getToken=g;else delete w.Capacitor.Plugins.QuickLog.getToken;
         out.length=0;await ev("scheduleReminders()");
