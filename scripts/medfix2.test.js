@@ -35,5 +35,16 @@ const unclock=require("./clock").at;
     delete w.Capacitor;restore();
   }
 
+  /* 24: the double-dose question names the medication and the dose time, and its body asks nothing */
+  {
+    const restore=unclock(w,10);
+    reset(`[{id:1,n:'Aspirin',t:['08:00','10:00'],on:true,s:'2026-01-01'}]`,`[{m:1,day:calKey(),slot:'08:00',st:'t',at:'09:48',ad:calKey()}]`);
+    ev("tab='today';render();globalThis.__body='';window.__confirmAuto=b=>{globalThis.__body=b;return false};medMark(1,'10:00','t')");
+    const b=ev("globalThis.__body");
+    ok("double-dose body: name and slot, no question mark",/^Aspirin için 08:00 dozuna \d+ dakika önce "Aldım" kaydı var\./.test(b)&&!b.includes("?"),b);
+    ok("double-dose text: from an hour on it says hours",M.recentText({min:125,slot:"06:00"})==='06:00 dozuna 2 saat 5 dakika önce "Aldım" kaydı var. Bu yalnız kendi kayıtlarını karşılaştırır.');
+    ev("delete window.__confirmAuto");restore();
+  }
+
   finish();
 })();

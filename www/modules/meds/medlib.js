@@ -187,7 +187,8 @@ const MedLib=(()=>{
     }
     return best;
   }
-  const recentText=r=>`Bu ilaç için ${r.min} dakika önce de "Aldım" kaydı var. Bu yalnız kendi kayıtlarını karşılaştırır. Yine de kaydedilsin mi?`;
+  /* States the record only (which dose, how long ago); the question is the sheet title, so the body asks nothing. */
+  const recentText=(r,name)=>`${name?name+" için ":""}${r.slot} dozuna ${r.min<60?r.min+" dakika":Math.floor(r.min/60)+" saat"+(r.min%60?" "+r.min%60+" dakika":"")} önce "Aldım" kaydı var. Bu yalnız kendi kayıtlarını karşılaştırır.`;
   const NOT_SAVED="Kaydedilmedi. Hatırlatma, aldığını işaretleyene kadar sürebilir.";
 
   /* Adherence has one definition (PDF, weekly report, Coach and screens use it). The user can log today's dose late until the day ends,

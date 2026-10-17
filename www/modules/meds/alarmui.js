@@ -62,8 +62,8 @@ function alarmMark(ks,st,force){
   const a=alarm,list=ks.map(k=>a.items[k]).filter(i=>i&&!i.st);if(!list.length)return;
   a.ask=null;
   if(st==="t"&&!force){
-    const r=list.map(i=>MedLib.recentTaken(S.medLog,i.m,i.day,i.slot,Date.now())).find(Boolean);
-    if(r){a.ask={ks,st,text:MedLib.recentText(r)};a.say=a.ask.text;alarmDraw();$('#alarm [data-al="askno"]')?.focus({preventScroll:true});return}
+    const [i,r]=list.map(i=>[i,MedLib.recentTaken(S.medLog,i.m,i.day,i.slot,Date.now())]).find(x=>x[1])||[];
+    if(r){a.ask={ks,st,text:MedLib.recentText(r,alarmShowName()&&i.n)};a.say=a.ask.text;alarmDraw();$('#alarm [data-al="askno"]')?.focus({preventScroll:true});return}
   }
   const at=medNowHM(),undo=[];
   for(const i of list){const r=MedLib.mark(S,i.m,i.day,i.slot,st,st==="t"?at:undefined,calKey());if(r){undo.push(r);i.st=st}}
