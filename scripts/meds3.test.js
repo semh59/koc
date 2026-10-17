@@ -22,10 +22,10 @@ ok("group: a logged dose leaves the group, a group of two stays a group",part.bo
 const it=(id,at,act)=>({id,schedule:{at:new Date(at)},extra:{act}}),D=864e5,t0=now.getTime();
 const med=[...Array.from({length:5},(_,i)=>it(1e6+i,t0+(i+1)*D,"med")),...Array.from({length:4},(_,i)=>it(2e6+i,t0+i*3600e3,"med"))],oth=Array.from({length:3},(_,i)=>it(100+i,t0+i*1000,"water"));
 const a=M.fit(med,oth,7,t0);
-ok("budget: medication doses first, then the others, repeats are dropped first",a.list.length===7&&a.list.filter(n=>n.id>=1e6&&n.id<2e6).length===5&&a.list.filter(n=>n.id<1e6).length===2&&a.nagCut===4&&a.mainCut===0&&a.list.every((n,i,l)=>!i||l[i-1].schedule.at<=n.schedule.at));
+ok("budget: the next 48 h of medication, then the next 48 h of the others, then farther medication; repeats are dropped first",a.list.length===7&&a.list.filter(n=>n.id>=1e6&&n.id<2e6).length===4&&a.list.filter(n=>n.id<1e6).length===3&&a.nagCut===4&&a.mainCut===1&&a.otherCut===0&&a.list.every((n,i,l)=>!i||l[i-1].schedule.at<=n.schedule.at));
 ok("budget: nothing is cut and no text when everything fits",(f=>f.list.length===12&&!f.mainCut&&!f.nagCut&&M.budgetText(f)==="")(M.fit(med,oth,440,t0)));
-const b=M.fit(med,oth,3,t0);
-ok("budget: when medication itself does not fit the nearest doses stay and the text says how far they reach",b.mainCut===2&&b.list.length===3&&b.days===3&&M.budgetText(b).includes("3 gün")&&M.budgetText(a).includes("tekrar hatırlatmaları"),M.budgetText(b));
+const b=M.fit(med,[],3,t0);
+ok("budget: when medication itself does not fit the nearest doses stay and the text says how far they reach",b.mainCut===2&&b.list.length===3&&b.days===3&&M.budgetText(b).includes("3 gün")&&M.budgetText(M.fit(med,oth,9,t0)).includes("tekrar hatırlatmaları"),M.budgetText(b));
 
 /* Doctor report: medication table */
 const rep=M.cleanMeds([mk(1,"Pause İlaç",["08:00","20:00"],{on:false,ou:"2026-10-01",d:"5 mg",fed:"with"}),mk(2,"Aktif",["07:30"],{d:"1 tablet",q:{"07:30":{d:"2 tablet",p:2}},w:[1,3],s:"2026-08-01",e:"2026-12-31"}),mk(3,"İki günde",["09:00"],{iv:2,ia:"2026-09-01"})]);
@@ -97,7 +97,7 @@ ok("cycle lines: last starts with their length and the mean cycle length, no pre
   setMeds(Array.from({length:12},(_,i)=>mk(i+1,"İlaç"+(i+1),["06","10","14","18"].map(h=>`${h}:${String(i*4).padStart(2,"0")}`))));
   await ev("scheduleReminders()");
   l=sched.pop().notifications;
-  ok("schedule: at most 440 alarms, medication doses first, no repeats left, no water reminders",l.length===440&&l.every(n=>n.id>=1e6&&n.id<2e6),l.length);
+  ok("schedule: at most 440 alarms, no repeats left; the other reminders only for the next 48 h, and Today says so",l.length===440&&!l.some(n=>n.id>=2e6)&&l.some(n=>n.id<1e6)&&l.filter(n=>n.id<1e6).every(n=>+new Date(n.schedule.at)-Date.now()<2*864e5)&&q("#view").textContent.includes("diğer hatırlatmaların yalnız önümüzdeki 2 günü"),l.length);
   ok("schedule: the user sees a warning on Today when the phone limit cuts medication reminders",q("#view").textContent.includes("İlaç hatırlatmaların sınırlı")&&q("#view").textContent.includes("gün ilerisine kadar"));
   setMeds([mk(1,"Tek")]);
   await ev("scheduleReminders()");

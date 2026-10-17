@@ -186,6 +186,16 @@ const unclock=require("./clock").at;
     ev("closeSheet()");delete w.Capacitor;
   }
 
+  /* K7 + 39: the budget comes from the phone limit; the next 48 h of the other reminders always fit */
+  {
+    const now=new Date(2026,9,1,7),meds=M.cleanMeds(Array.from({length:20},(_,i)=>({id:i+1,n:"M"+i,on:true,t:Array.from({length:6},(_,k)=>`${String(k*4).padStart(2,"0")}:${String(i).padStart(2,"0")}`)})));
+    const med=M.notifications(meds,[],now,30,true).map(n=>({...n,schedule:{at:n.at}})),oth=Array.from({length:30},(_,d)=>({id:200+d,schedule:{at:new Date(+now+d*864e5+36e5)}}));
+    const f=M.fit(med,oth,M.BUDGET,+now);
+    ok("20 medications x 6 times: kept notifications plus the screen alarms stay at or under 480 of the phone's 500",f.list.length+M.WAKE_ALARMS<=480&&M.BUDGET===M.PHONE_ALARMS-M.WAKE_ALARMS-20,f.list.length);
+    ok("the other reminders of the next 48 h are kept, farther ones cut, and the text says so",f.list.filter(n=>n.id<1e3).length===2&&f.otherCut===28&&/diğer hatırlatmaların yalnız önümüzdeki 2 günü kuruldu/.test(M.budgetText(f)),M.budgetText(f));
+    ok("the screen alarm count matches the phone side (MedWakeReceiver MAX)",new RegExp("MAX = "+M.WAKE_ALARMS+",").test(require("fs").readFileSync(require("path").join(__dirname,"../assets/android/MedWakeReceiver.java"),"utf8")));
+  }
+
   /* 41: a snooze from the lock screen rings once on the medication channel (source check: no Android runtime here) */
   {
     const rd=f=>require("fs").readFileSync(require("path").join(__dirname,"../assets/android",f),"utf8"),aa=rd("AlarmActivity.java"),mw=rd("MedWakeReceiver.java"),mp=rd("MedWakePlugin.java");
