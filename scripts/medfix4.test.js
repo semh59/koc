@@ -48,5 +48,11 @@ const {boot,read}=require("./html");
   $('[data-md="dprev"]').click();
   const names=$$('#view [data-md^="take:1:"]').map(b=>b.getAttribute("aria-label"));
   ok("27: on a past day the two take buttons differ by time and name the day",names.length===2&&names[0]!==names[1]&&names.every(n=>n.includes(ev("fd(keyOff(-1))"))),names);
+
+  /* 36: time column, one sub line, the state as a tag, icons instead of '＋', the day navigator */
+  at(12,0);reset(`[{id:1,n:'A',d:'1 tablet',t:['00:00'],on:true,s:keyOff(-5)}]`);
+  const row=$("#view .mdose");unclock();
+  ok("36: the Meds screen dose row has the time column, one sub line and the state in a .tag",row.firstElementChild.matches("b.tm")&&row.querySelectorAll(".sub").length===1&&row.querySelector(".sub .tag")?.textContent==="Gecikti",row.outerHTML);
+  ok("36: no full-width '＋' in the medication screens; the day navigator is .dnav",!read("modules/meds/medui.js").includes("＋")&&!!$('#mdoses .dnav [data-md="dprev"] svg'));
   finish();
 })();

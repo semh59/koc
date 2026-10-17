@@ -55,7 +55,7 @@ ok("pause end: kept while off, notice at 09:00 on that day, dropped once on",pz.
   ok("save: per-time dose, amount, meal relation, interval, threshold and box size are stored; the name switch is saved",m.q["00:00"].d==="3 damla"&&m.q["00:00"].p===2&&m.fed==="with"&&m.iv===2&&m.ia===T&&m.sd===4&&m.kb===30&&!m.w&&ev("S.settings.medShowName")===true,m);
 
   setup([{...base,iv:2,ia:ev("keyOff(-2)"),fed:"with",q:{"00:00":{d:"3 damla"}}}]);
-  ok("Today row shows the time's dose and the meal relation",text().includes("00:00 · 3 damla · Yemekle"),text().slice(0,300));
+  ok("Today row shows the time in its column, the time's dose and the meal relation",q(".mdose .tm").textContent==="00:00"&&q(".mdose .sub").textContent.startsWith("3 damla · Yemekle"),text().slice(0,300));
 
   setup([{...base,k:5,kb:30}]);
   ok("low stock card shows the estimate and a quick box button",text().includes("5 günlük stok")&&text().includes("tahmini bitiş")&&!!q('[data-md="boxadd:1"]'));

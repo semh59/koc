@@ -76,3 +76,16 @@ test("blood pressure label: the dose-since line appears only after the medicatio
   await app.go("bp");
   await expect(app.view).toContainText("Son ilaç kaydından 2 sa 20 dk sonra");
 });
+
+test.describe("Meds screen at 320 px with 200% text",()=>{
+  test.use({viewport:{width:320,height:640}});
+  test("a skipped dose row ('Atlandı · Şimdi aldım · Geri al') wraps instead of overflowing",async({app,page})=>{
+    const {scaleText,overflow}=require("./a11y");
+    await app.open({seed:state({medOn:true,comfy:true},{meds:[{id:1,n:"Uzun adlı bir ilaç",d:"1 tablet",t:["07:00","08:00"],on:true,s:day(-3)}],medLog:[{id:1,m:1,day:day(0),slot:"07:00",st:"s"}]})});
+    await scaleText(page,2,18);
+    await app.go("meds");
+    await expect(app.view).toContainText("Atlandı");
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);
+    expect(await overflow(page)).toEqual([]);
+  });
+});
