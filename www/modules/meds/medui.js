@@ -84,14 +84,14 @@ function medAllBtn(day,rec){
 function medRows(day=calKey()){
   const isToday=day===calKey(),doses=MedLib.dosesOn(S.meds,day);
   if(!doses.length)return `<p class="m0 mut sm">${isToday?"Bugün":fd(day)} için ilaç yok.</p>`;
-  const rec=MedLib.logIndex(S.medLog,day),now=medNowHM(),sfx=isToday?"":":"+day,all=medAllBtn(day,rec);
+  const rec=MedLib.logIndex(S.medLog,day),now=medNowHM(),sfx=isToday?"":":"+day,all=medAllBtn(day,rec),dn=isToday?"":`, ${WEEKDAYS_SHORT[new Date(day+"T12:00").getDay()]} ${fd(day)}`;
   return doses.map(({m,slot}) => {
-    const r=rec(m.id,day,slot),st=r?.st,tag=`${m.id}:${slot}`;
+    const r=rec(m.id,day,slot),st=r?.st,tag=`${m.id}:${slot}`,wh=`, ${slot}${dn}`;
     const late=!st&&(isToday?slot<=now&&medDue(slot,now):"İşaretlenmedi");
-    const undo=`<button class="chip" data-md="clear:${tag}${sfx}" aria-label="${esc(m.n)} kaydını geri al">${Icons.svg("undo")} Geri al</button>`;
-    const tail=st==="t"?`<button class="chip num" data-md="at:${tag}:${day}" aria-label="${esc(m.n)} alınan saati düzenle">✓ ${r.at||"saat ekle"}</button>${undo}`
-      :st==="s"?`<span class="mut">Atlandı</span><button class="b7 chip" data-md="take:${tag}${sfx}" aria-label="${isToday?"Şimdi aldım":"Aldım"}: ${esc(m.n)}">${isToday?"Şimdi aldım":"Aldım"}</button>${undo}`
-      :`<button class="chip go" data-md="take:${tag}${sfx}" aria-label="Aldım: ${esc(m.n)}">${Icons.svg("check")} Aldım</button><button class="chip skip" data-md="skip:${tag}${sfx}" aria-label="Atla: ${esc(m.n)}">Atla</button>${all(slot)}`;
+    const undo=`<button class="chip" data-md="clear:${tag}${sfx}" aria-label="${esc(m.n)}${wh}: kaydı geri al">${Icons.svg("undo")} Geri al</button>`;
+    const tail=st==="t"?`<button class="chip num" data-md="at:${tag}:${day}" aria-label="${r?.at?`${esc(m.n)}: alındı ${r.at}, saati değiştir`:`${esc(m.n)}${wh}: alındı, saat ekle`}">✓ ${r.at||"saat ekle"}</button>${undo}`
+      :st==="s"?`<span class="mut">Atlandı</span><button class="b7 chip" data-md="take:${tag}${sfx}" aria-label="${isToday?"Şimdi aldım":"Aldım"}: ${esc(m.n)}${wh}">${isToday?"Şimdi aldım":"Aldım"}</button>${undo}`
+      :`<button class="chip go" data-md="take:${tag}${sfx}" aria-label="Aldım: ${esc(m.n)}${wh}">${Icons.svg("check")} Aldım</button><button class="chip skip" data-md="skip:${tag}${sfx}" aria-label="Atla: ${esc(m.n)}${wh}">Atla</button>${all(slot)}`;
     const sub=[slot,MedLib.doseText(m,slot,day)&&esc(MedLib.doseText(m,slot,day)),MED_FED[m.fed],late].filter(Boolean).join(" · ");
     return `<div class="wrap row mdose"><span class="grow"><b>${esc(m.n)}</b><small class="db mut num">${sub}</small></span><span class="mda">${tail}</span></div>`;
   }).join("");
@@ -225,7 +225,7 @@ function viewMeds(){
   return `${S.meds.length?`<div class="card" id="mdoses"><div class="lhead"><div class="lbl">Dozlar</div><button class="chip" data-md="new">${Icons.svg("plus")} İlaç ekle</button></div><div class="row"><button class="chip" data-md="dprev" aria-label="Önceki gün">‹</button><span class="grow tc">${isT?"Bugün":WEEKDAYS_SHORT[new Date(day+"T12:00").getDay()]+" "+fd(day)}</span>${isT?"":`<button class="chip" data-md="dtoday">Bugün</button>`}<button class="chip" data-md="dnext" aria-label="Sonraki gün"${isT?" disabled":""}>›</button></div>${medRows(day)}</div>`:""}
   ${medRamCard()}
   ${low?`<div class="card"><div class="lbl">Stok</div>${low}</div>`:""}
-  ${a30.total||dots?`<div class="card"><div class="lbl">Uyum</div>${a30.total?`<div class="stats"><div class="stat"><div class="k">Son 7 gün</div><div class="v num">${pct(a7)}</div><div class="mut sm">${cnt(a7)}</div></div><div class="stat"><div class="k">Son 30 gün</div><div class="v num">${pct(a30)}</div><div class="mut sm">${cnt(a30)}</div></div></div>`:""}${dots?`<div class="dd7">${days.map(d=>d.h).join("")}</div><p class="hint">✓ hepsi alındı · – işaretlenmedi · ! bekliyor · • bazıları atlandı</p>`:""}</div>`:""}
+  ${a30.total||dots?`<div class="card"><div class="lbl">Uyum</div>${a30.total?`<div class="stats"><div class="stat"><div class="k">Son 7 gün</div><div class="v num">${pct(a7)}</div><div class="mut sm">${cnt(a7)}</div></div><div class="stat"><div class="k">Son 30 gün</div><div class="v num">${pct(a30)}</div><div class="mut sm">${cnt(a30)}</div></div></div>`:""}${dots?`<div class="dd7" role="group" aria-label="Son 7 gün">${days.map(d=>d.h).join("")}</div><p class="hint">✓ hepsi alındı · – işaretlenmedi · ! bekliyor · • bazıları atlandı</p>`:""}</div>`:""}
   ${list?`<div class="card"><div class="lbl">İlaçlarım</div>${list}</div>`:emptyCard("meds","Henüz ilaç eklenmemiş","İlk ilacını ekle; zamanı gelince hatırlatırım.",`<button class="btn" data-md="new">${Icons.svg("plus")} İlaç ekle</button>`)}
   <p class="hint">Uygulama doz önermez, ilaç etkileşimlerini denetlemez, tıbbi yorum yapmaz. Kayıt yalnızca senin hatırlatıcın ve günlüğündür. İlaçlarını doktorunun ve eczacının söylediği gibi kullan.</p>`;
 }

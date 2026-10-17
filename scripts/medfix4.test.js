@@ -40,5 +40,13 @@ const {boot,read}=require("./html");
   ok("31: a medication whose end day has passed says '(bitti)'",[...$$("#view .card")].find(c=>c.textContent.startsWith("İlaçlarım")).textContent.includes("Biten (bitti)"));
   reset(`[${Array.from({length:20},(_,i)=>`{id:${i+1},n:'M${i}',t:['08:00'],on:true}`).join()}]`);ev("medOpen(0)");
   ok("31: at the 20 limit the message says finished medications can be deleted",$("#toast").textContent.includes("Biten ilaçları silebilirsin"),$("#toast").textContent);
+
+  /* 27: Meds screen dose buttons name the time (and the day on a past day); the ✓ chip says it was taken; the dots are one group */
+  reset(`[{id:1,n:'A',t:['08:00','20:00'],on:true,s:keyOff(-5)}]`,`[{m:1,day:calKey(),slot:'08:00',st:'t',at:'08:05'}]`);
+  ok("27: the ✓ chip is named 'A: alındı 08:05, saati değiştir'",$('[data-md^="at:1:08:00"]').getAttribute("aria-label")==="A: alındı 08:05, saati değiştir");
+  ok("27: the 7 dots are a labelled group",$(".dd7").getAttribute("role")==="group"&&$(".dd7").getAttribute("aria-label")==="Son 7 gün");
+  $('[data-md="dprev"]').click();
+  const names=$$('#view [data-md^="take:1:"]').map(b=>b.getAttribute("aria-label"));
+  ok("27: on a past day the two take buttons differ by time and name the day",names.length===2&&names[0]!==names[1]&&names.every(n=>n.includes(ev("fd(keyOff(-1))"))),names);
   finish();
 })();
