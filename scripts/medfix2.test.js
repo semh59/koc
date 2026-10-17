@@ -171,6 +171,21 @@ const unclock=require("./clock").at;
     ev("closeSheet();bg={}");delete w.Capacitor;
   }
 
+  /* 33: the real alarm test asks on Today whether it rang; Reminders has "İlaç alarmını dene" */
+  {
+    reset(`[{id:1,n:'A',t:['23:59'],on:true}]`);const calls=native();
+    ev("tab='settings-reminders';render()");
+    ok("Reminders: 'İlaç alarmını dene' runs the medication alarm test",!!$('#view [data-md="realtest"]'));
+    click('#view [data-md="realtest"]');await until(()=>calls.some(c=>c[0]==="MW.test"));
+    ev("tab='today';render()");
+    ok("right after setting it up Today does not ask yet",!/Test alarmı çaldı mı/.test($("#view").textContent));
+    ev("medTestAt-=61000;render()");
+    ok("61 s later Today asks 'Test alarmı çaldı mı? Evet / Hayır'",/Test alarmı çaldı mı/.test($("#view").textContent)&&!!$('#view [data-md="testyes"]')&&!!$('#view [data-md="testno"]'));
+    click('#view [data-md="testno"]');await until(()=>$("#sheet").classList.contains("on"));
+    ok("'Hayır' opens the permissions list and the question goes",/İzinler/.test($("#sheet").textContent)&&!/Test alarmı çaldı mı/.test($("#view").textContent));
+    ev("closeSheet()");delete w.Capacitor;
+  }
+
   /* 41: a snooze from the lock screen rings once on the medication channel (source check: no Android runtime here) */
   {
     const rd=f=>require("fs").readFileSync(require("path").join(__dirname,"../assets/android",f),"utf8"),aa=rd("AlarmActivity.java"),mw=rd("MedWakeReceiver.java"),mp=rd("MedWakePlugin.java");

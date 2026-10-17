@@ -48,14 +48,14 @@ function medToggle(){
 }
 
 /* Real dose test: the medication notification (same channel, no buttons, no name) and the screen alarm are set for the same ms; dose log and stock are untouched. */
-const MED_TEST_NID=7149;let medWakeText="";
+const MED_TEST_NID=7149;let medWakeText="",medTestAt=0;
 async function medRealTest(){
   const w=MW(),ln=LN();if(!w||!ln)return toast("Yalnızca telefondaki uygulamada çalışır");
   const at=Date.now()+60000;
   try{
     await lnSchedule(ln,[{id:MED_TEST_NID,title:MedLib.TITLE,body:"Test",schedule:{at:new Date(at),allowWhileIdle:true},channelId:"nw_med",ongoing:true,autoCancel:true}]);
     await w.test({at});
-    toast("1 dakika sonra test alarmı çalacak: telefonu kilitle, ekranı kapat ve bekle");
+    medTestAt=at;toast("1 dakika sonra test alarmı çalacak: telefonu kilitle, ekranı kapat ve bekle");
   }catch(e){toast("Test kurulamadı")}
 }
 /* Alarm log: the last 20 alarm/setup entries and likely problems; Copy shares them for support. */
@@ -99,7 +99,9 @@ function medInfo(){
 /* Today's to-do: only doses whose time has come and that are neither taken nor skipped, and yesterday's unmarked doses ("Dün kaçırıldı", marked with that day); later ones are on the Meds screen. A marked dose is undone from the toast or the Meds screen. */
 function medTodo(){
   if(!S.settings.medOn)return [];
-  if(!S.meds.length)return S.settings.medNudgeOff?[]:[`<div class="row"><span>${Icons.svg("meds")} Henüz ilaç eklenmemiş</span><div class="acts"><button class="chip" data-md="new">${Icons.svg("plus")} Ekle</button><button class="chip" data-act="mednono">Şimdi değil</button></div></div>`];
+  /* A test nobody confirms tells nothing: after it should have rung, Today asks, and "Hayır" opens the settings that usually block it. */
+  const test=medTestAt&&Date.now()>=medTestAt+1000?[`<div class="row"><span>${Icons.svg("bell")} Test alarmı çaldı mı?</span><div class="acts"><button class="chip" data-md="testyes">Evet</button><button class="chip" data-md="testno">Hayır</button></div></div>`]:[];
+  if(!S.meds.length)return test.length?test:S.settings.medNudgeOff?[]:[`<div class="row"><span>${Icons.svg("meds")} Henüz ilaç eklenmemiş</span><div class="acts"><button class="chip" data-md="new">${Icons.svg("plus")} Ekle</button><button class="chip" data-act="mednono">Şimdi değil</button></div></div>`];
   const t=calKey(),now=medNowHM(),y=MedLib.addDay(t,-1),rec=MedLib.logIndex(S.medLog,y);
   const ram=medRamTodo(),paused=S.meds.filter(m=>!m.on&&m.ou&&m.ou<=t).map(m=>`<div class="row"><span class="grow">${esc(m.n)}<small class="db mut sm">Ara verme süresi doldu</small></span><button class="b7 chip" data-md="resume:${m.id}" aria-label="Tekrar aç: ${esc(m.n)}">Tekrar aç</button></div>`);
   let near=0;
@@ -108,7 +110,7 @@ function medTodo(){
   const row=(day,{m,slot},tag,sfx)=>`<div class="row"><span>${Icons.svg("meds")} <b class="num tm">${slot}</b> ${esc(m.n)}<small class="mut sm">${[esc(MedLib.doseText(m,slot,day)),MED_FED[m.fed],tag].filter(Boolean).join(" · ")}</small></span><div class="acts"><button class="chip go" data-md="take:${m.id}:${slot}${sfx}" aria-label="Aldım: ${esc(m.n)}, ${slot}${day===t?"":", dün"}">${Icons.svg("check")} Aldım</button><button class="chip skip" data-md="skip:${m.id}:${slot}${sfx}" aria-label="Atla: ${esc(m.n)}, ${slot}${day===t?"":", dün"}">Atla</button>${all(day,slot)}${day===t&&S.settings.medNear&&tag==="Gecikti"&&!near++?`<button class="chip" data-md="nearsend">Yakınıma haber ver</button>`:""}</div></div>`;
   /* Doses of the same minute: the first row offers one button for all of them (the others stay one by one, nothing is marked unseen). */
   for(const {m,slot} of MedLib.dosesOn(S.meds,t))if(mins(slot)<=mins(now)+30&&!rec(m.id,t,slot))grpN.set(slot,(grpN.get(slot)||0)+1);
-  return ram.concat(paused)
+  return test.concat(ram,paused)
     .concat(MedLib.dosesOn(S.meds,y).filter(({m,slot})=>!rec(m.id,y,slot)).map(x=>row(y,x,night?"Gecikti":"Dün kaçırıldı",":"+y)))
     .concat(MedLib.dosesOn(S.meds,t).filter(({m,slot})=>mins(slot)<=mins(now)+30&&!rec(m.id,t,slot)).map(x=>row(t,x,mins(x.slot)>mins(now)?"Yaklaşıyor":mins(now)-mins(x.slot)<30?"Saati geldi":"Gecikti","")));
 }
@@ -396,6 +398,7 @@ document.addEventListener("click",ev=>{
   else if(a==="nearsend")medNearSend();
   else if(a==="locktest"){const w=MW();if(!w)return toast("Yalnızca telefondaki uygulamada çalışır");w.test().then(()=>toast("15 saniye sonra alarm çalacak: telefonu kilitle")).catch(()=>toast("Test kurulamadı"))}
   else if(a==="realtest")medRealTest();
+  else if(a==="testyes"||a==="testno"){medTestAt=0;render();if(a==="testyes")toast("İlaç alarmın çalışıyor");else if(oemXiaomi())sheetOem();else pmRefresh().then(pmSheet)}
   else if(a==="wakelog")medWakeLog();
   else if(a==="wset"){if(r[0]==="autostart")openDH("openAutostart");else MW()?.settings({to:r[0],id:r[1]}).catch(()=>toast("Ayar ekranı açılamadı"))}
   else if(a==="wcopy")(navigator.clipboard?navigator.clipboard.writeText(medWakeText):Promise.reject()).then(()=>toast("Kayıt panoya kopyalandı"),()=>{const s=getSelection(),g=document.createRange(),b=document.getElementById("wlog");if(b){g.selectNodeContents(b);s.removeAllRanges();s.addRange(g)}toast("Kopyalanamadı: metni seçtim, uzun basıp kopyala")});
