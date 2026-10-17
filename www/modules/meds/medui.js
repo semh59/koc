@@ -324,7 +324,7 @@ function medMark(mid,slot,st,force,day=calKey()){
   const live=isToday||tab==="today";
   if(st==="t"&&!force&&live){
     const r=MedLib.recentTaken(S.medLog,mid,day,slot,Date.now());
-    if(r){confirmSheet({title:"Yine de kaydedilsin mi?",body:MedLib.recentText(r),ok:"Evet, kaydet",no:"Hayır, kaydetme"}).then(yes=>yes?medMark(mid,slot,st,true,day):toast(MedLib.NOT_SAVED));return}
+    if(r){confirmSheet({title:"Yine de kaydedilsin mi?",body:MedLib.recentText(r,S.meds.find(x=>x.id===mid)?.n),ok:"Evet, kaydet",no:"Hayır, kaydetme"}).then(yes=>yes?medMark(mid,slot,st,true,day):toast(MedLib.NOT_SAVED));return}
   }
   const at=st==="t"&&live?medNowHM():undefined,res=MedLib.mark(S,mid,day,slot,st,at,calKey());
   if(!res)return;
@@ -337,8 +337,8 @@ function medTakeAll(slot,force){
   const t=calKey(),ds=MedLib.dosesOn(S.meds,t).filter(d=>d.slot===slot&&!MedLib.statusOf(S.medLog,d.m.id,t,slot));
   if(ds.length<2)return;
   if(!force){
-    const r=ds.map(d=>MedLib.recentTaken(S.medLog,d.m.id,t,slot,Date.now())).find(Boolean);
-    if(r){confirmSheet({title:"Yine de kaydedilsin mi?",body:MedLib.recentText(r),ok:"Evet, kaydet",no:"Hayır, kaydetme"}).then(yes=>yes?medTakeAll(slot,true):toast(MedLib.NOT_SAVED));return}
+    const [d,r]=ds.map(d=>[d,MedLib.recentTaken(S.medLog,d.m.id,t,slot,Date.now())]).find(x=>x[1])||[];
+    if(r){confirmSheet({title:"Yine de kaydedilsin mi?",body:MedLib.recentText(r,d.m.n),ok:"Evet, kaydet",no:"Hayır, kaydetme"}).then(yes=>yes?medTakeAll(slot,true):toast(MedLib.NOT_SAVED));return}
   }
   const at=medNowHM(),rs=ds.map(d=>MedLib.mark(S,d.m.id,t,slot,"t",at,t)).filter(Boolean);
   if(!rs.length)return;
