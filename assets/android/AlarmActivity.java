@@ -29,7 +29,7 @@ import org.json.JSONObject;
  */
 public class AlarmActivity extends Activity {
     private static final int TEAL = 0xFF0F5E55, INK = 0xFF16252B, SOFT = 0xFFE3EFEC;
-    private static final long WINDOW = 30 * 60000L, SNOOZE = 10 * 60000L;
+    private static final long SNOOZE = 10 * 60000L;
     /** True while an alarm screen is on top: the receiver then skips the screen-lighting lock. */
     static volatile boolean visible;
     private long shownAt;
@@ -79,7 +79,7 @@ public class AlarmActivity extends Activity {
         JSONArray a = MedWakeReceiver.doses(this);
         for (int k = 0; k < a.length(); k++) {
             JSONObject d = a.optJSONObject(k);
-            if (d != null && d.optLong("at") <= now + MedWakeReceiver.EARLY_MS && d.optLong("at") >= now - WINDOW) out.add(d);
+            if (d != null && QuickMath.alarmDue(d.optLong("at"), now, MedWakeReceiver.EARLY_MS)) out.add(d);
         }
         return out;
     }
@@ -120,7 +120,10 @@ public class AlarmActivity extends Activity {
 
     private void draw() {
         final List<JSONObject> doses = due();
-        boolean test = doses.isEmpty() && MedWakeReceiver.testActive(this, System.currentTimeMillis());
+        long now = System.currentTimeMillis();
+        boolean test = doses.isEmpty() && MedWakeReceiver.testActive(this, now);
+        // A snooze that finds nothing here: the dose may be open in the app (the list on the phone side lags behind the app), so it is not called "no dose".
+        final boolean lost = doses.isEmpty() && !test && MedWakeReceiver.afterSnooze(this, now), open = !doses.isEmpty() || lost;
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(dp(20), dp(48), dp(20), dp(24));
@@ -132,7 +135,7 @@ public class AlarmActivity extends Activity {
         clock.setTextColor(INK);
         clock.setGravity(Gravity.CENTER);
         root.addView(clock, full(0));
-        TextView head = text(test ? "Test alarmı" : doses.isEmpty() ? "Bekleyen ilaç yok" : "İlaç zamanı", 22, TEAL, true);
+        TextView head = text(test ? "Test alarmı" : lost ? "Ertelediğin ilaç için uygulamayı aç" : doses.isEmpty() ? "Bekleyen ilaç yok" : "İlaç zamanı", 22, TEAL, true);
         head.setGravity(Gravity.CENTER);
         root.addView(head, full(4));
         LinearLayout rows = new LinearLayout(this);
@@ -177,8 +180,8 @@ public class AlarmActivity extends Activity {
                 finish();
             }), full(10));
         }
-        root.addView(button(doses.isEmpty() ? "Kapat" : "Uygulamayı aç", false, v -> {
-            if (!doses.isEmpty()) startActivity(new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP));
+        root.addView(button(open ? "Uygulamayı aç" : "Kapat", false, v -> {
+            if (open) startActivity(new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP));
             finish();
         }), full(10));
         setContentView(root);

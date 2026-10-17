@@ -28,6 +28,7 @@ function scheduleReminders(){
 }
 async function scheduleOnce(){
   const ln=LN();if(!ln||recovery)return "web";
+  await quickIngest(); // a dose marked on the lock screen still waits in the queue until then, and would be sent back as open
   const t0=Date.now();
   try{
     let p=await ln.checkPermissions();
@@ -86,8 +87,9 @@ async function scheduleOnce(){
     const pn=(await ln.getPending()).notifications.filter(n=>!keep.has(n.id));if(pn.length)await ln.cancel({notifications:pn.map(n=>({id:n.id}))});
     if(list.length)await lnSchedule(ln,list);
     /* The notification plugin does not light the locked screen: for medication doses (reminder repeats excluded) a separate alarm screen wakes it briefly.
-       That screen draws over the lock screen, so a name goes there only with lock-screen detail on and never with the app lock on (no name reaches the phone side then). */
-    const st=S.settings,mw=MW();if(mw)await mw.set({times:MedLib.wakeTimes(list),doses:MedLib.wakeDoses(list,Meds.meds(),st.medShowName&&st.lockDetail&&!st.lockOn),detail:st.lockDetail}).catch(()=>{});
+       That screen draws over the lock screen, so a name goes there only with lock-screen detail on and never with the app lock on (no name reaches the phone side then).
+       The unmarked doses of the last 3 hours go too (the in-app alarm's window): a minute partly marked or snoozed in the app keeps its open doses on the lock screen. */
+    const st=S.settings,mw=MW();if(mw)await mw.set({times:MedLib.wakeTimes(list),doses:MedLib.wakeDoses(list,Meds.meds(),st.medShowName&&st.lockDetail&&!st.lockOn,st.medOn?AlarmLib.due(Meds.meds(),Meds.log(),new Date()).filter(i=>i.at<=Date.now()+LEAD_MS):[]),detail:st.lockDetail}).catch(()=>{});
     lastSched=t0;lastTz=tzKey();
     return "ok";
   }catch(e){console.log("NW-SCHED error "+(e&&e.message||e));return "Bildirimler kurulamadı. Bildirim iznini kontrol edip tekrar dene"}

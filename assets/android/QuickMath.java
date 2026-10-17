@@ -109,6 +109,13 @@ final class QuickMath {
     }
 
     /** Whether a widget water tap at "now" repeats the one at "last" (0 = none yet). */
+    /** The lock-screen alarm lists doses from the last 3 hours (the in-app alarm's window) up to one whose alarm fires `early` ms ahead. */
+    static final long ALARM_BACK_MS = 3 * 3600000L;
+
+    static boolean alarmDue(long at, long now, long early) {
+        return at >= now - ALARM_BACK_MS && at <= now + early;
+    }
+
     static boolean tooSoon(long last, long now) {
         return last > 0 && now >= last && now - last < WIDGET_GAP_MS;
     }

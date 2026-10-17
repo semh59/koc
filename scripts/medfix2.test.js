@@ -116,5 +116,21 @@ const unclock=require("./clock").at;
     ev("alarmClose()");restore();
   }
 
+  /* 8: the lock-screen alarm also gets the open doses of the last 3 hours, but never one still waiting in the button queue */
+  {
+    const restore=unclock(w,8);
+    reset(`[{id:1,n:'A',t:['08:00'],on:true,s:'2026-01-01'},{id:2,n:'B',t:['08:00'],on:true,s:'2026-01-01'},{id:3,n:'C',t:['06:30'],on:true,s:'2026-01-01'}]`);
+    let calls=native();
+    ev("medMark(1,'08:00','t')");await until(()=>calls.last("MW.set"));
+    const d=calls.last("MW.set").doses,past=d.filter(x=>x.at<=Date.now());
+    ok("after A is marked in the app, B's 08:00 and C's 06:30 stay in the phone's list with their notification ids, A does not",past.some(x=>x.m===2&&x.s==="08:00"&&x.nid===M.doseNid({id:2,t:["08:00"]},"08:00",true))&&past.some(x=>x.m===3&&x.s==="06:30")&&!past.some(x=>x.m===1),past);
+    ok("the list is sorted by time",d.every((x,i)=>!i||d[i-1].at<=x.at));
+    reset(`[{id:1,n:'A',t:['08:00'],on:true,s:'2026-01-01'}]`);
+    calls=native({QuickLog:{take:{items:[{m:1,s:"08:00",t:Date.now(),z:-new Date().getTimezoneOffset(),k:false}]},getToken:{tk:null}}});
+    await ev("scheduleReminders()");
+    ok("a dose waiting in the queue (m1_0800) is ingested first and not sent back as open",ev("MedLib.statusOf(S.medLog,1,calKey(),'08:00')")==="t"&&!calls.last("MW.set").doses.some(x=>x.at<=Date.now()),calls.last("MW.set").doses);
+    delete w.Capacitor;restore();
+  }
+
   finish();
 })();
