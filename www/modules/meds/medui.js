@@ -114,12 +114,14 @@ function medTodo(){
   const test=medTestAt&&Date.now()>=medTestAt+1000?[`<div class="row"><span>${Icons.svg("bell")} Test alarmı çaldı mı?</span><div class="acts"><button class="chip" data-md="testyes">Evet</button><button class="chip" data-md="testno">Hayır</button></div></div>`]:[];
   if(!S.meds.length)return test.length?test:S.settings.medNudgeOff?[]:[`<div class="row"><span>${Icons.svg("meds")} Henüz ilaç eklenmemiş</span><div class="acts"><button class="chip" data-md="new">${Icons.svg("plus")} Ekle</button><button class="chip" data-act="mednono">Şimdi değil</button></div></div>`];
   const t=calKey(),now=medNowHM(),y=MedLib.addDay(t,-1),rec=MedLib.logIndex(S.medLog,y);
+  /* Once, before the limit trims the oldest days: the CSV keeps them outside the app. */
+  const full=S.medLog.length>=MedLib.WARNLOG&&!S.settings.medLogWarn?[`<div class="row"><span>${Icons.svg("meds")} Eski ilaç kayıtları silinecek, CSV al<small class="sub">Kayıt ${MedLib.MAXLOG.toLocaleString("tr")} satırı geçince en eski günler silinir.</small></span><div class="acts"><button class="chip" data-pv="export" data-md="logok">CSV al</button><button class="chip" data-md="logok">Tamam</button></div></div>`]:[];
   const ram=medRamTodo(),paused=S.meds.filter(m=>!m.on&&m.ou&&m.ou<=t).map(m=>`<div class="row"><span class="grow">${esc(m.n)}<small class="db mut sm">Ara verme süresi doldu</small></span><button class="b7 chip" data-md="resume:${m.id}" aria-label="Tekrar aç: ${esc(m.n)}">Tekrar aç</button></div>`);
   let near=0;
   const night=S.settings.dayStart>0&&new Date().getHours()<S.settings.dayStart; // before the day start, last evening's unmarked dose is still "late", not "yesterday's"
   const allT=medAllBtn(t,rec),all=(day,slot)=>day===t?allT(slot):"";
   const row=(day,{m,slot},tag,sfx)=>`<div class="row"><span>${Icons.svg("meds")} <b class="num tm">${slot}</b> ${esc(m.n)}<small class="sub">${[esc(MedLib.doseText(m,slot,day)),MED_FED[m.fed],tag].filter(Boolean).join(" · ")}</small></span><div class="acts"><button class="chip go" data-md="take:${m.id}:${slot}${sfx}" aria-label="Aldım: ${esc(m.n)}, ${slot}${day===t?"":", dün"}">${Icons.svg("check")} Aldım</button><button class="chip skip" data-md="skip:${m.id}:${slot}${sfx}" aria-label="Atla: ${esc(m.n)}, ${slot}${day===t?"":", dün"}">Atla</button>${all(day,slot)}${day===t&&S.settings.medNear&&tag==="Gecikti"&&!near++?`<button class="chip" data-md="nearsend">Yakınıma haber ver</button>`:""}</div></div>`;
-  return test.concat(ram,paused)
+  return test.concat(full,ram,paused)
     .concat(MedLib.dosesOn(S.meds,y).filter(({m,slot})=>!rec(m.id,y,slot)).map(x=>row(y,x,night?"Gecikti":"Dün işaretlenmedi",":"+y)))
     .concat(MedLib.dosesOn(S.meds,t).filter(({m,slot})=>medMins(slot)<=medMins(now)+30&&!rec(m.id,t,slot)).map(x=>row(t,x,medDue(x.slot,now),"")));
 }
@@ -449,6 +451,7 @@ document.addEventListener("click",ev=>{
   else if(a==="ramgo")medRamGo(+r[0]);
   else if(a==="ramback")medRamUndo(+r[0]);
   else if(a==="ramredo")medRamRedo(+r[0]);
+  else if(a==="logok"){S.settings.medLogWarn=true;save();render()}
   else if(a==="ramno"){S.settings.ramMedsNo=true;save();render()}
   else if(a==="new")medOpen(0);
   else if(a==="edit")medOpen(+r[0]);
