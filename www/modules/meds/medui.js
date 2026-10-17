@@ -194,7 +194,7 @@ function viewMeds(){
   const t=calKey(),nowT=medNowHM(),per=MedLib.adherenceDays(S.meds,S.medLog,calOff(-29),t,t,nowT),last7=per.slice(-7);
   const a7=MedLib.sumAdherence(last7),a30=MedLib.sumAdherence(per);
   const pct=a=>a.pct==null?"–":"%"+a.pct,cnt=a=>a.total?`${a.total} dozdan ${a.taken} alındı`:"doz yok";
-  const low=S.meds.filter(MedLib.stockLow).map(m=>`<div class="row"><span class="grow"><b>${esc(m.n)}</b><small class="db mut">Yaklaşık ${MedLib.stockDays(m)} günlük stok kaldı, tahmini bitiş ${fd(MedLib.addDay(t,MedLib.stockDays(m)))}. Yenisini almayı unutma.</small></span>${m.kb?`<button class="chip" data-md="boxadd:${m.id}" aria-label="Kutu ekle: ${esc(m.n)}">＋ Kutu ekle</button>`:""}</div>`).join("");
+  const low=S.meds.filter(MedLib.stockLow).map(m=>`<div class="row"><span class="grow"><b>${esc(m.n)}</b><small class="db mut">${m.k?`Yaklaşık ${MedLib.stockDays(m)} günlük stok kaldı, tahmini bitiş ${fd(MedLib.addDay(t,MedLib.stockDays(m)))}. Yenisini almayı unutma.`:"Stok bitti, yenisini al."}</small></span>${m.kb?`<button class="chip" data-md="boxadd:${m.id}" aria-label="Kutu ekle: ${esc(m.n)}">＋ Kutu ekle</button>`:`<button class="chip" data-md="edit:${m.id}" aria-label="Stoğu güncelle: ${esc(m.n)}">Stoğu güncelle</button>`}</div>`).join("");
   const day=medViewDay(),isT=day===t;
   /* One dot per day: ✓ all taken, – missed (not red), ! pending today, • some skipped; colour alone carries no meaning. */
   const days=last7.map((a,i)=>{
@@ -239,7 +239,7 @@ function medRender(){
   <div class="lbl" id="mfedl">Yemekle ilişkisi (isteğe bağlı)</div><div class="chips" role="group" aria-labelledby="mfedl">${MedLib.FED.map(k=>`<button class="chip" data-md="fed:${k}" aria-pressed="${d.fed===k}">${MED_FED[k]}</button>`).join("")}</div>
   ${d.id?`<label class="lbl" for="me">Kullanım bitiş günü (boş bırakırsan sürekli)</label><input class="in" type="date" id="me" value="${esc(d.e||"")}">`:`<label class="lbl" for="mc">Kaç gün kullanılacak? (boş bırakırsan sürekli)</label><input class="in num" id="mc" inputmode="numeric" placeholder="örn. 7" value="${esc(d.mc)}">`}
   <div class="lbl">Stok takibi (isteğe bağlı)</div>
-  <div class="g2"><label class="labf"><span>Kutudaki adet</span><input class="in num" id="mk" inputmode="decimal" placeholder="örn. 30" value="${esc(d.k)}"></label><label class="labf"><span>Doz başına adet</span><input class="in num" id="mp" inputmode="decimal" placeholder="örn. 1" value="${esc(d.p)}"></label></div>
+  <div class="g2"><label class="labf"><span>Kutudaki adet</span><input class="in num" id="mk" inputmode="decimal" placeholder="örn. 30" value="${esc(d.k)}"></label><label class="labf"><span>Doz başına adet</span><input class="in num" id="mp" inputmode="decimal" placeholder="örn. 1" value="${esc(d.p)}">${d.k&&!d.p?`<small class="mut sm">Boşsa her dozda 1 adet sayılır</small>`:""}</label></div>
   <div class="g2"><label class="labf"><span>Kutu başına adet</span><input class="in num" id="mkb" inputmode="decimal" placeholder="örn. 30" value="${esc(d.kb)}"></label><label class="labf"><span>Uyarı: kalan gün (varsayılan ${MedLib.STOCK_DAYS})</span><input class="in num" id="msd" inputmode="numeric" placeholder="${MedLib.STOCK_DAYS}" value="${esc(d.sd)}"></label></div>
   <button class="mb-3 chip" data-md="box">＋ Kutu ekle</button>
   ${swRow('id="mbp"',!!d.bp,"Tansiyon ilacı (ölçüm listesinde ve raporunda kayıtlı dozdan beri geçen süre görünsün)")}
