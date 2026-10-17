@@ -74,7 +74,7 @@ main{flex:1;padding:4px 16px calc(92px + var(--nx,0px) + var(--sab))}
 .coachc{padding:8px 16px}.coach{display:block;width:100%;min-height:var(--hit);margin:0;padding:0;text-align:left;color:var(--mut);font-size:var(--fs-2);line-height:1.45}.coach b{color:var(--prim);white-space:nowrap}
 /* With large text the copy does not collapse into a one-letter column: it keeps at least ~10 letters of width and the action wraps below if needed.
    In a medication row the time is a fixed column on the left; the first 3 jobs are visible, the rest opens under "N more". */
-.todo .row{gap:var(--sp-2);flex-wrap:wrap}.todo>.grp{margin:0 0 var(--sp-1)}.todo .grp+.row{border-top:0}.todo .row>span{flex:1 1 10em;min-width:0;overflow-wrap:break-word}.todo .mrow>span{flex-basis:5em}.todo .row>span+:is(.chip,button,.acts){margin-left:auto}.todo .acts{display:flex;flex-wrap:wrap;gap:var(--sp-2);max-width:100%}.todo small.sm{display:block}
+.todo .row{gap:var(--sp-2);flex-wrap:wrap}.todo>.grp{margin:0 0 var(--sp-1)}.todo .grp+.row{border-top:0}.todo .row>span{flex:1 1 10em;min-width:0;overflow-wrap:break-word}.todo .mrow>span{flex-basis:5em;min-width:auto}.todo .row>span+:is(.chip,button,.acts){margin-left:auto}.todo .acts{display:flex;flex-wrap:wrap;gap:var(--sp-2);max-width:100%}.todo small.sm{display:block}
 .tm{flex:none;min-width:3.2em;font-weight:600}.sub{display:block;color:var(--mut);font-size:var(--fs-s);line-height:1.4}.todo .acc{border-top:1px solid var(--line)}.todo .acc>summary{min-height:48px}
 
 .card{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:12px;border:1px solid var(--card-bd);box-shadow:var(--sh-1)}
