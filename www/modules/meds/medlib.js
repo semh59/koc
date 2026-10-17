@@ -218,7 +218,15 @@ const MedLib=(()=>{
     const f=m.iv?1/m.iv:m.w?m.w.length/7:1,per=f*m.t.reduce((a,s)=>a+amt(m,s),0);
     return m.k==null||!m.on||!per?null:Math.floor((m.k+1e-9)/per);
   }
-  const stockLow=m=>{const d=stockDays(m);return d!=null&&d<=(m.sd||STOCK_DAYS)};
+  /* A finished course warns no more; a running one only when the stock does not cover its remaining unmarked doses. */
+  function stockLow(m,today,log=[]){
+    const d=stockDays(m);
+    if(d==null||d>(m.sd||STOCK_DAYS)||m.e&&m.e<today)return false;
+    if(!m.e)return true;
+    const rec=logIndex(log,today);let need=0;
+    for(let x=today;x<=m.e;x=addDay(x,1))for(const {slot} of dosesOn([m],x))if(!rec(m.id,x,slot))need+=amt(m,slot,x);
+    return m.k+1e-9<need;
+  }
 
   /* Notification id: 1e6 + med id * 1000 + time index * 40 + day offset (yesterday takes the last slot). Reminder repeats add 1e6 per repeat. */
   const nid=(m,ti,off)=>NID_BASE+m.id*1000+ti*NID_DAYS+off;
@@ -268,12 +276,12 @@ const MedLib=(()=>{
   const budgetText=f=>f.mainCut?`Telefon bildirim sınırı doldu: ilaç hatırlatmaların yaklaşık ${f.days} gün ilerisine kadar kuruldu. Uygulamayı açtıkça yenilenir.`:f.nagCut?"Telefon bildirim sınırı doldu: bazı tekrar hatırlatmaları kurulmadı. İlaç saatlerin korunuyor.":"";
 
   /* One-off 09:00 notices: low stock (days left within the medication's threshold) and the end of a pause. Both open the Meds screen. */
-  function notices(meds,now,showName){
+  function notices(meds,now,showName,log){
     const out=[],today=key(now),nowT=now.getTime()+LEAD_MS;
     const at=day=>{const a=slotAt(day,"09:00");return a.getTime()>nowT?a:slotAt(addDay(day,1),"09:00")};
     const add=(m,n,title,body,when)=>out.push({id:NID_BASE+m.id*1000+n,title,body:showName?`${m.n}: ${body}`:"Bir ilacınla ilgili hatırlatma var. Uygulamayı aç.",at:when,extra:{act:"open",tab:"meds"}});
     for(const m of meds){
-      if(m.on&&stockLow(m))add(m,900,"💊 İlaç stoğu azalıyor",m.k?`yaklaşık ${stockDays(m)} günlük stok kaldı.`:"stok bitti, yenisini al.",at(today));
+      if(m.on&&stockLow(m,today,log))add(m,900,"💊 İlaç stoğu azalıyor",m.k?`yaklaşık ${stockDays(m)} günlük stok kaldı.`:"stok bitti, yenisini al.",at(today));
       if(!m.on&&m.ou)add(m,901,"💊 Ara verme süresi doldu","tekrar açabilirsin.",m.ou>today?slotAt(m.ou,"09:00"):at(today));
     }
     return out.filter(n=>n.at.getTime()>nowT);
