@@ -248,10 +248,10 @@ function medRender(){
   <div class="ferr" id="mwarn" role="alert"></div>
   <button class="btn" data-md="save">Kaydet</button>${d.id?`<button class="mt-2 btn ghost" data-md="dup">Aynı ilaçtan bir tane daha</button><button class="mt-2 btn danger" data-md="del">Sil</button>`:""}<button class="mt-2 btn ghost" data-md="close">Vazgeç</button>`);
 }
-const ALL_DAYS=[0,1,2,3,4,5,6];
+const ALL_DAYS=[0,1,2,3,4,5,6],MED_FULL=`En çok ${MedLib.MAXM} ilaç eklenebilir`;
 function medOpen(id){
   const m=id?S.meds.find(x=>x.id===id):null;
-  if(!m&&S.meds.length>=MedLib.MAXM)return toast(`En çok ${MedLib.MAXM} ilaç eklenebilir`);
+  if(!m&&S.meds.length>=MedLib.MAXM)return toast(MED_FULL);
   const sh=S.settings.medShowName===true;
   medDraft=m?{id:m.id,n:m.n,d:m.d||"",t:m.t.slice(),q:m.t.map(s=>({d:m.q?.[s]?.d||"",p:medNum(m.q?.[s]?.p)})),w:m.w?m.w.slice():ALL_DAYS.slice(),on:m.on,mc:"",k:medNum(m.k),p:medNum(m.p),s:m.s,e:m.e,e0:m.e,ts:m.ts,bp:!!m.bp,t0:m.t.slice(),iv:m.iv?String(m.iv):"",iv0:m.iv?String(m.iv):"",ia:m.ia,fed:m.fed||"",sd:m.sd?String(m.sd):"",kb:medNum(m.kb),ou:m.ou||"",sh}
     :{id:0,n:"",d:"",t:["08:00"],q:[{d:"",p:""}],w:ALL_DAYS.slice(),on:true,mc:"",k:"",p:"",t0:[],iv:"",iv0:"",fed:"",sd:"",kb:"",ou:"",sh};
@@ -259,6 +259,7 @@ function medOpen(id){
 }
 function medSave(){
   medCollect();const d=medDraft,warn=m=>{const e=document.getElementById("mwarn");if(e)e.textContent=m};
+  if(!d.id&&S.meds.length>=MedLib.MAXM)return warn(MED_FULL);
   if(!d.n.trim())return warn("İlacın adını yaz");
   const times=[...new Set(d.t.filter(timeOk))];
   if(!times.length||times.length!==d.t.filter(x=>x!=="").length)return warn("Saatleri doldur (boş ya da yinelenen saat var)");
@@ -420,7 +421,7 @@ document.addEventListener("click",ev=>{
     medDraft.k=medNum(Math.min(99999,Math.round(((LabLib.optNum(medDraft.k)||0)+kb)*100)/100));medRender();
   }
   else if(a==="fed"){medCollect();medDraft.fed=medDraft.fed===r[0]?"":r[0];medRender()}
-  else if(a==="dup"){medCollect();Object.assign(medDraft,{id:0,k:"",mc:"",s:undefined,e:undefined,ts:undefined,t0:[],ia:undefined,iv0:"",ou:"",on:true});medRender()}
+  else if(a==="dup"){if(S.meds.length>=MedLib.MAXM)return document.getElementById("mwarn").textContent=MED_FULL;medCollect();Object.assign(medDraft,{id:0,k:"",mc:"",s:undefined,e:undefined,ts:undefined,t0:[],ia:undefined,iv0:"",ou:"",on:true});medRender()}
   else if(a==="dprev"){const d=MedLib.addDay(medViewDay(),-1);if(d<calOff(-MED_BACK))return toast("Daha eski güne gidilemez");medDay=d;render()}
   else if(a==="dnext"){const d=MedLib.addDay(medViewDay(),1);medDay=d<calKey()?d:"";render()}
   else if(a==="dtoday"){medDay="";render()}
