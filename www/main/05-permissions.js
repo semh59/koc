@@ -59,6 +59,8 @@ function pmTodo(){
   return [
     ...(isNative()&&bg.miss&&S.settings.medOn&&S.settings.alarmWarnDay!==dayKey()?[r("Bir ilaç alarmı çalmadı",`${MedLib.dhm(bg.miss)} alarmı çalmadı. Telefon NeoWell'i arka planda durdurmuş olabilir.`,open+'<button class="chip" data-pm="hidemiss">Kapat</button>')]:[]),
     ...(isNative()&&!bg.miss&&bg.off&&S.settings.medOn&&S.settings.alarmWarnDay!==dayKey()?[r("Telefon kapalıyken bir ilaç saati geçti",`${MedLib.dhm(bg.off)} alarmı telefon kapalıyken geçti. O dozu aldıysan İlaçlar'dan işaretle.`,'<button class="chip" data-pm="hidemiss">Kapat</button>')]:[]),
+    /* Alone it gets its own row: without notifications the medication alarm is silent and nothing else says so. */
+    ...(isNative()&&pmNotif===false&&m.length<2&&S.settings.medOn&&Meds.count()?[r("Bildirimler kapalı: ilaç hatırlatması gelmez","İzin vermezsen ilaç saatinde ne ses ne ekran gelir.",'<button class="chip" data-pm="go:notif">İzin ver</button>')]:[]),
     ...(m.length>=2?[r("İzinler eksik",`${esc(m.map(i=>i.t).join(", "))}. Hepsini tek yerden ayarla.`,open)]:[])
   ];
 }
