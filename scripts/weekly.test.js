@@ -44,9 +44,9 @@ ok("no row when there are no readings",!Object.fromEntries(W.build({...S,setting
 const meds=[{id:1,n:"A",t:["08:00","20:00"],on:true}],mlog=[{id:1,m:1,day:"2026-09-29",slot:"08:00",st:"t"},{id:2,m:1,day:"2026-09-29",slot:"20:00",st:"t"},{id:3,m:1,day:"2026-09-30",slot:"08:00",st:"s"}];
 const medS=settings({medOn:true});
 const mo=Object.fromEntries(W.build({...S,settings:medS,meds,medLog:mlog},end,7,"23:59").summary);
-ok("medication adherence row: taken / total, missed, pending today (not missed) and skipped",mo["İlaç uyumu"]==="%15 (2 / 13 doz alındı, 10 kaçırılan, 1 bugün bekliyor, 1 atlanan)",mo["İlaç uyumu"]);
+ok("medication adherence row: taken / total, unmarked, pending today (not missed) and skipped",mo["İlaç uyumu"]==="%15 (2 / 13 doz alındı, 10 işaretlenmeyen, 1 bugün bekliyor, 1 atlanan)",mo["İlaç uyumu"]);
 ok("no medication row with tracking off or without medications",!Object.fromEntries(W.build({...S,settings:settings({medOn:false}),meds,medLog:mlog},end,7).summary)["İlaç uyumu"]&&!Object.fromEntries(W.build({...S,settings:medS,meds:[],medLog:[]},end,7).summary)["İlaç uyumu"]);
-ok("a dose whose time has not come today is not counted (12:00)",Object.fromEntries(W.build({...S,settings:medS,meds,medLog:mlog},end,7,"12:00").summary)["İlaç uyumu"]==="%15 (2 / 13 doz alındı, 10 kaçırılan, 1 atlanan)");
+ok("a dose whose time has not come today is not counted (12:00)",Object.fromEntries(W.build({...S,settings:medS,meds,medLog:mlog},end,7,"12:00").summary)["İlaç uyumu"]==="%15 (2 / 13 doz alındı, 10 işaretlenmeyen, 1 atlanan)");
 
 const {ctx,drawn}=canvas();
 W.drawPage(ctx,d,{today:"2026-10-01"});

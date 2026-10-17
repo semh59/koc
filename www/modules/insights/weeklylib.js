@@ -52,7 +52,7 @@ const WeeklyLib=(()=>{
     if(st.bsOn){const g=VL.gStats(vit,from,endDay,st);if(g)summary.push(["Şeker",`ortalama ${gu==="mmol"?UN.fg(g.avg,gu):Math.round(g.avg)} ${UN.gl(gu)} (${g.n} ölçüm)`])}
     if(st.medOn&&D.meds&&D.meds.length){
       const a=ML.adherence(D.meds,D.medLog||[],from,endDay,endDay,nowTime||"23:59");
-      if(a.total)summary.push(["İlaç uyumu",`%${a.pct} (${a.taken} / ${a.total} doz alındı${a.missed?`, ${a.missed} kaçırılan`:""}${a.late?`, ${a.late} bugün bekliyor`:""}${a.skipped?`, ${a.skipped} atlanan`:""})`]);
+      if(a.total)summary.push(["İlaç uyumu",`%${a.pct} (${a.taken} / ${a.total} doz alındı${a.missed?`, ${a.missed} işaretlenmeyen`:""}${a.late?`, ${a.late} bugün bekliyor`:""}${a.skipped?`, ${a.skipped} atlanan`:""})`]);
     }
     /* A chart appears only with at least two days of data. Colours match the app: weight primary, systolic ink, diastolic water. */
     const charts=[],kp=rows.filter(r=>r.weight!=null).map(r=>({day:r.day,v:UN.w(r.weight,wu)}));
