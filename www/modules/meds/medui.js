@@ -114,16 +114,16 @@ function medPrn(id,force){
   if(!res||!commit(res.undo))return;
   render();medResched();medUndoToast(`${m.n} alındı olarak kaydedildi, saat ${t}`,res);
 }
-/* One line for the Today card: how many of today's doses are marked and when the next one is due. */
+/* One line for the Today card, to the Meds screen: the next dose that has not come yet and how many of today's are marked. */
 function medInfo(){
-  if(!S.settings.medOn||!S.meds.length)return "";
   const t=calKey(),now=medNowHM(),ds=MedLib.dosesOn(S.meds,t);
   if(!ds.length)return "";
   const st=ds.map(({m,slot})=>MedLib.statusOf(S.medLog,m.id,t,slot)),taken=st.filter(x=>x==="t").length,skipped=st.filter(x=>x==="s").length;
-  const next=ds.filter((d,i)=>!st[i]&&d.slot>now).map(d=>d.slot).sort()[0];
-  return `İlaç: bugün ${taken}/${ds.length} alındı${skipped?`, ${skipped} atlandı`:""}${next?`, sıradaki ${next}`:""}`;
+  const up=ds.filter((d,i)=>!st[i]&&d.slot>now),nx=up.filter(d=>d.slot===up[0]?.slot);
+  const cnt=`İlaç: bugün ${taken}/${ds.length} alındı${skipped?`, ${skipped} atlandı`:""}`;
+  return nx.length?navRow('data-tab="meds"',"meds",`Sıradaki: ${nx[0].slot} ${esc(nx.map(d=>d.m.n).join(", "))}`,cnt):navRow('data-tab="meds"',"meds",cnt,"");
 }
-/* Today's to-do: only doses whose time has come and that are neither taken nor skipped, and yesterday's unmarked doses ("Dün işaretlenmedi", marked with that day); later ones are on the Meds screen. A marked dose is undone from the toast or the Meds screen. */
+/* Today's to-do: doses whose time has come and that are neither taken nor skipped, one row each; yesterday's unmarked doses ("Dün işaretlenmedi", marked with that day), one line to that day of the Meds screen when there are several; the next dose one line. A marked dose is undone from the toast or the Meds screen. */
 function medTodo(){
   if(!S.settings.medOn)return [];
   /* A test nobody confirms tells nothing: after it should have rung, Today asks, and "Hayır" opens the settings that usually block it. */
@@ -135,11 +135,14 @@ function medTodo(){
   const ram=medRamTodo(),paused=S.meds.filter(m=>!m.on&&m.ou&&m.ou<=t).map(m=>`<div class="row"><span class="grow">${esc(m.n)}<small class="db mut sm">Ara verme süresi doldu</small></span><button class="b7 chip" data-md="resume:${m.id}" aria-label="Tekrar aç: ${esc(m.n)}">Tekrar aç</button></div>`);
   let near=0;
   const night=S.settings.dayStart>0&&new Date().getHours()<S.settings.dayStart; // before the day start, last evening's unmarked dose is still "late", not "yesterday's"
-  const allT=medAllBtn(t,rec),all=(day,slot)=>day===t?allT(slot):"";
-  const row=(day,{m,slot},tag,sfx)=>`<div class="row"><span>${Icons.svg("meds")} <b class="num tm">${slot}</b> ${esc(m.n)}<small class="sub">${[esc(MedLib.doseText(m,slot,day)),MED_FED[m.fed],tag].filter(Boolean).join(" · ")}</small></span><div class="acts"><button class="chip go" data-md="take:${m.id}:${slot}${sfx}" aria-label="Aldım: ${esc(m.n)}, ${slot}${day===t?"":", dün"}">${Icons.svg("check")} Aldım</button><button class="chip skip" data-md="skip:${m.id}:${slot}${sfx}" aria-label="Atla: ${esc(m.n)}, ${slot}${day===t?"":", dün"}">Atla</button>${all(day,slot)}${day===t&&S.settings.medNear&&tag==="Gecikti"&&!near++?`<button class="chip" data-md="nearsend">Yakınıma haber ver</button>`:""}</div></div>`;
-  return test.concat(full,ram,paused)
-    .concat(MedLib.dosesOn(S.meds,y).filter(({m,slot})=>!rec(m.id,y,slot)).map(x=>row(y,x,night?"Gecikti":"Dün işaretlenmedi",":"+y)))
-    .concat(MedLib.dosesOn(S.meds,t).filter(({m,slot})=>medMins(slot)<=medMins(now)+30&&!rec(m.id,t,slot)).map(x=>row(t,x,medDue(x.slot,now),"")),medPrnRows());
+  const allT=medAllBtn(t,rec);
+  const row=(day,{m,slot},tag,sfx)=>`<div class="row mrow"><span><b class="num tm">${slot}</b> ${esc(m.n)}<small class="sub">${[esc(MedLib.doseText(m,slot,day)),MED_FED[m.fed],tag].filter(Boolean).join(" · ")}</small></span><div class="acts"><button class="chip go" data-md="take:${m.id}:${slot}${sfx}" aria-label="Aldım: ${esc(m.n)}, ${slot}${day===t?"":", dün"}">${Icons.svg("check")} Aldım</button><button class="chip skip" data-md="skip:${m.id}:${slot}${sfx}" aria-label="Atla: ${esc(m.n)}, ${slot}${day===t?"":", dün"}">Atla</button>${day===t&&S.settings.medNear&&tag==="Gecikti"&&!near++?`<button class="chip" data-md="nearsend">Yakınıma haber ver</button>`:""}</div></div>`;
+  const due=MedLib.dosesOn(S.meds,t).filter(({m,slot})=>medMins(slot)<=medMins(now)&&!rec(m.id,t,slot)),yd=MedLib.dosesOn(S.meds,y).filter(({m,slot})=>!rec(m.id,y,slot));
+  /* "Hepsini aldım" is a row of its own under the doses of its minute, so it is not taken for one dose's button. */
+  const allRow=slot=>{const b=allT(slot);return b&&`<div class="row mrow"><span class="mut">Saat ${slot}, ${due.filter(d=>d.slot===slot).length} ilaç</span>${b}</div>`};
+  /* Before the day start last evening's doses are still late: rows, never the summary line. */
+  const yRows=night||yd.length<2?yd.map(x=>row(y,x,night?"Gecikti":"Dün işaretlenmedi",":"+y)):[navRow(`data-tab="meds" data-md="dday:${y}"`,"meds",`Dün ${yd.length} doz işaretlenmedi`,"Gözden geçir")];
+  return test.concat(full,ram,paused,due.flatMap((x,i)=>[row(t,x,medDue(x.slot,now),""),due[i+1]?.slot===x.slot?"":allRow(x.slot)]),yRows,medPrnRows(),medInfo()).filter(Boolean);
 }
 
 /* ---- Ramadan: moving the times inside the daytime fast ---- */
