@@ -986,11 +986,11 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("the Medications screen shows ✓ and ↩",q("#view").textContent.includes("✓")&&!!q('[data-md="clear:1:08:00"]'));
     ev("tab='today';render()");click("#tundo");
     ok("undo restores the entry and the stock",ev("S.medLog.length")===0&&ev("S.meds[0].k")===10&&!!q('[data-md="take:1:08:00"]'));
-    click('[data-md="skip:1:20:00"]');ev("tab='meds';render()");
+    ev("medTapAt=0");click('[data-md="skip:1:20:00"]');ev("tab='meds';render()");
     ok("skipped: entry, stock unchanged",ev("S.medLog[0].st")==="s"&&ev("S.meds[0].k")===10&&q("#view").textContent.includes("Atlandı"));
     click('[data-md="clear:1:20:00"]');
     ok("the mark is undone (↩)",ev("S.medLog.length")===0);
-    ev("tab='today';render()");click('[data-md="take:1:08:00"]');
+    ev("tab='today';render();medTapAt=0");click('[data-md="take:1:08:00"]');
 
     // medications screen
     ev("tab='meds';render()");
