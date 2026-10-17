@@ -44,7 +44,7 @@ function sheetPrivacy(){
   ${st.consent?`<button class="btn ghost" data-pv="revoke">Rızamı geri al</button>`:consentOk()?`<button class="btn" data-pv="consent">Açık rızamı veriyorum</button>`:""}</div>
   <h4 class="grp">Verilerini sil</h4>
   <p class="mut sm">Kategori başına silinir, geri alınamaz. <button class="lnk ib wa" data-act="backup">Önce yedek al</button></p>
-  ${PV_CATS.map(([name,n],i)=>`<div class="row"><span class="grow"><b>${name}</b><small class="db mut sm">${n()} kayıt</small></span><button class="chip" data-pv="del:${i}" ${n()?"":"disabled"} aria-label="${name} sil">Sil</button></div>`).join("")}
+  ${PV_CATS.map(([name,n,,,note],i)=>`<div class="row"><span class="grow"><b>${name}</b><small class="db mut sm">${n()} kayıt${note?`; ${note}`:""}</small></span><button class="chip" data-pv="del:${i}" ${n()?"":"disabled"} aria-label="${name} sil">Sil</button></div>`).join("")}
   <p class="hint">Kendi besinlerin, favorilerin, öğün şablonların ve antrenman şablonların bu listede yoktur; yalnız Ayarlar > Veri ve yedek > Tüm verileri sil ile gider.</p>
   <button class="mt-2 btn ghost" data-pv="close">Kapat</button>`);
 }

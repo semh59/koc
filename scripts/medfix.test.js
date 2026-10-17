@@ -89,5 +89,32 @@ const unclock=require("./clock").at;
     ev("alarmClose()");restore();
   }
 
+  /* 14: deleting (and its undo) checks the write */
+  reset(`[{id:1,n:'A',t:['08:00'],on:true},{id:2,n:'B',t:['09:00'],on:true}]`);
+  ev("window.__confirmAuto=()=>true;medOpen(1)");
+  let before=ev("JSON.stringify(S.meds)");
+  ev("(()=>{const sv=save;save=()=>false;try{document.querySelector('[data-md=\"del\"]').click()}finally{save=sv}})()");
+  ok("delete with a failed write: the list stays and 'kaydedilemedi' is shown",ev("JSON.stringify(S.meds)")===before&&/kaydedilemedi/.test($("#tmsg").textContent));
+  click('[data-md="del"]');before=ev("JSON.stringify(S.meds)");
+  ev("(()=>{const sv=save;save=()=>false;try{undoLast()}finally{save=sv}})()");
+  ok("undo of a delete with a failed write: the medication does not come back in memory",ev("JSON.stringify(S.meds)")===before&&/kaydedilemedi/.test($("#tmsg").textContent));
+
+  /* 17: the Ramadan shift record of a deleted medication goes with it and comes back with its undo */
+  const ram=`S.settings.ramOn=false;S.settings.ramMeds={1:{'08:00':'03:00'}};S.settings.ramMedsRef={1:'04:30'}`;
+  reset(`[{id:1,n:'A',t:['03:00'],on:true}]`);ev(ram);
+  ev("medOpen(1)");click('[data-md="del"]');
+  ok("delete: the shift records of that number are gone",ev("JSON.stringify([S.settings.ramMeds,S.settings.ramMedsRef])")==="[{},{}]");
+  ev("undoLast()");
+  ok("undo of the delete brings them back",ev("S.settings.ramMeds[1]['08:00']")==="03:00"&&ev("S.settings.ramMedsRef[1]")==="04:30");
+  ev("medOpen(1)");click('[data-md="del"]');
+  ev("medOpen(0)");$("#mn").value="Yeni";$("#mt0").value="03:00";click('[data-md="save"]');
+  ok("a new medication on the same number and time is not offered 'Eski saatlere dön'",ev("S.meds[0].id")===1&&ev("medRamBack().length")===0);
+  ev(ram+";S.settings.medNear='+905551112233'");
+  await ev("Data.privacy.find(c=>c[0]==='İlaç')[2]()");
+  ok("deleting the medication category also clears the near contact and the shift records",ev("JSON.stringify([S.settings.medNear,S.settings.ramMeds,S.settings.ramMedsRef])")==='["",{},{}]');
+  ev("sheetPrivacy()");
+  ok("the category row says so",/yakınının numarası ve Ramazan saat kaydırmaları da silinir/.test($("#sheet").textContent));
+  ev("closeSheet();delete window.__confirmAuto");
+
   finish();
 })();

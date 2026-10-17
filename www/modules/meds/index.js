@@ -1,5 +1,5 @@
 "use strict";
-Data.privacy.push(["İlaç",()=>S.meds.length+S.medLog.length,()=>chain(nativeWipe(["MedWake"]),ok=>{if(!ok)return toast(NATIVE_FAIL),false;S.meds=[];S.medLog=[]}),4]);
+Data.privacy.push(["İlaç",()=>S.meds.length+S.medLog.length,()=>chain(nativeWipe(["MedWake"]),ok=>{if(!ok)return toast(NATIVE_FAIL),false;S.meds=[];S.medLog=[];Object.assign(S.settings,{ramMeds:{},ramMedsRef:{},medNear:""})}),4,"yakınının numarası ve Ramazan saat kaydırmaları da silinir"]);
 const medDoseText=typeof MedLib!=="undefined"?MedLib.doseText:require("./medlib.js").doseText;
 Data.csv.push(["ilac","İlaç alımı",()=>["tarih","saat","ilaç","doz","durum","alım_saati"],({S,by,day})=>{
   const meds=new Map(S.meds.map(m=>[m.id,m]));
