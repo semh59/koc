@@ -80,5 +80,12 @@ const {boot,read}=require("./html");
   ok("25: at 40 001 rows Today says old medication records will be deleted, with a CSV button",$(".todo").textContent.includes("Eski ilaç kayıtları silinecek, CSV al")&&!!$('.todo [data-pv="export"]'));
   $('.todo [data-md="logok"]:not([data-pv])').click();
   ok("25: after 'Tamam' the warning does not come back",ev("S.settings.medLogWarn")===true&&!$(".todo")?.textContent.includes("Eski ilaç kayıtları"));
+
+  /* 34: the CSV lists the unmarked planned doses of past days with an amount column, and a separate medication list */
+  {const C=require("../www/modules/data/csvlib.js"),L=require("../www/modules/meds/medlib.js"),y=L.addDay(L.key(new Date()),-1),y2=L.addDay(y,-1);
+   const S0={entries:[],workouts:[],vitals:[],sleep:[],mood:[],fast:{log:[]},measures:[],moves:[],labs:[],pulse:[],hr:[],meds:[{id:1,n:"A",d:"1 tablet",t:["08:00"],on:true,s:y2,p:2}],medLog:[{m:1,day:y2,slot:"08:00",st:"t",at:"08:05"}]};
+   const F=C.files(S0,{exName:x=>x,vctx:()=>""}),g=k=>F.find(f=>f.key===k).build().split(/\r\n/).slice(0,-1);
+   ok("34: one taken and one unmarked dose give two rows with different states and the amount",g("ilac").slice(1).join("|")===`${y2};08:00;A;1 tablet;2;alındı;08:05|${y};08:00;A;1 tablet;2;işaretlenmedi;`&&g("ilac")[0].includes(";adet;"),g("ilac"));
+   ok("34: the medication list file has the times",g("ilac_listesi")[1].startsWith("A;1 tablet;08:00;her gün;"+y2),g("ilac_listesi"));}
   finish();
 })();
