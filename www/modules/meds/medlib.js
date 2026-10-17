@@ -2,7 +2,7 @@
 /* Medication reminder logic (no DOM): validation, the doses of a day, taken/skipped log, adherence, stock, notification list.
    It gives no dose advice, checks no interactions and makes no medical comment: it only reminds the user's own schedule and records it. */
 const MedLib=(()=>{
-  const MAXM=20,MAXT=6,MAXLOG=50000,MAXH=24,MAXID=999,STOCK_MAX=99999,LEAD_MS=5000,NID_BASE=1e6,NID_DAYS=40,NID_SLOTS=22,STOCK_DAYS=7,FED=["empty","full","with"],FED_TEXT={empty:"Aç karnına",full:"Tok karnına",with:"Yemekle"},NAME_MAX=60;
+  const MAXM=20,MAXT=6,MAXLOG=50000,WARNLOG=40000,MAXH=24,MAXID=999,STOCK_MAX=99999,LEAD_MS=5000,NID_BASE=1e6,NID_DAYS=40,NID_SLOTS=22,STOCK_DAYS=7,FED=["empty","full","with"],FED_TEXT={empty:"Aç karnına",full:"Tok karnına",with:"Yemekle"},NAME_MAX=60;
   const TITLE="💊 İlaç zamanı",GENERIC_BODY="İlaç saatin geldi.";
   const {dayOk,timeOk,dayNum}=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
   const p2=n=>String(n).padStart(2,"0");
@@ -94,7 +94,9 @@ const MedLib=(()=>{
       if(o.st==="t"&&fin(x.kd)&&x.kd>=0&&x.kd<=100)o.kd=x.kd;
       const k=doseKey(o.m,o.day,o.slot);rows.delete(k);rows.set(k,o);
     }
-    return [...rows.values()].slice(-MAXLOG).map((o,i)=>Object.assign({id:i+1},o));
+    /* Over the limit the oldest days go first (a late correction of an old day does not keep it). */
+    const all=[...rows.values()],keep=all.length>MAXLOG&&new Set(all.slice().sort((a,b)=>a.day<b.day?-1:a.day>b.day?1:0).slice(-MAXLOG));
+    return (keep?all.filter(o=>keep.has(o)):all).map((o,i)=>Object.assign({id:i+1},o));
   }
   /* Past days are judged by the schedule of that day: when times, weekdays or on/off change, the old version is pushed to h (u: valid before this day),
      so switching a medication off or deleting a time does not remove old doses from the adherence denominator. h is ascending by u; the first match is the oldest version that applies. */
@@ -390,6 +392,6 @@ const MedLib=(()=>{
     if(bad)add("Tam ekran bildirimi gönderilemedi: "+bad.fs.replace(/^err:/,""));
     return out;
   }
-  return {clockMoved,bgState,dhm,doseNid,sinceDose,recentTaken,recentText,NOT_SAVED,wakeTimes,wakeDoses,wakeLine,wakeIssues,sinceFor,keepToday,doseOfId,amt,doseText,stockDays,stockLow,notices,STOCK_DAYS,FED,FED_TEXT,NAME_MAX,freeId,doseKey,MAXM,MAXT,BUDGET,WAKE_ALARMS,PHONE_ALARMS,TITLE,GENERIC_BODY,cleanMeds,cleanLog,dosesOn,statusOf,logIndex,mark,adherence,adherenceDays,sumAdherence,notifications,fit,budgetText,dayForTap,revise,addDay,slotAt,hm,timeOk,key};
+  return {WARNLOG,MAXLOG,clockMoved,bgState,dhm,doseNid,sinceDose,recentTaken,recentText,NOT_SAVED,wakeTimes,wakeDoses,wakeLine,wakeIssues,sinceFor,keepToday,doseOfId,amt,doseText,stockDays,stockLow,notices,STOCK_DAYS,FED,FED_TEXT,NAME_MAX,freeId,doseKey,MAXM,MAXT,BUDGET,WAKE_ALARMS,PHONE_ALARMS,TITLE,GENERIC_BODY,cleanMeds,cleanLog,dosesOn,statusOf,logIndex,mark,adherence,adherenceDays,sumAdherence,notifications,fit,budgetText,dayForTap,revise,addDay,slotAt,hm,timeOk,key};
 })();
 if(typeof module!=="undefined")module.exports=MedLib;

@@ -69,5 +69,16 @@ const {boot,read}=require("./html");
   reset("[]","[]","S.settings.medOn=false");ev("tab='settings-modules';render()");$('[data-md="toggle"]').click();
   ok("18: switching on with no medications opens the add sheet",ev("S.settings.medOn")===true&&$("#sheet").classList.contains("on")&&!!$("#mn"));
   ev("medClose()");
+
+  /* 25: the log limit warns once at 40 000 rows and trims the oldest days */
+  {const L=require("../www/modules/meds/medlib.js"),meds=[{id:1,n:"A",t:["08:00"],on:true}],rows=[];
+   for(let i=0;rows.length<L.MAXLOG;i++)rows.push({m:1,day:L.addDay("2020-01-01",Math.floor(i/1440)),slot:String(Math.floor(i%1440/60)).padStart(2,"0")+":"+String(i%60).padStart(2,"0"),st:"t"});
+   rows.push({m:1,day:"2019-12-31",slot:"08:00",st:"s"});
+   const out=L.cleanLog(rows,meds);
+   ok("25: over the limit the oldest day goes first, even a row of it corrected later",out.length===L.MAXLOG&&!out.some(r=>r.day==="2019-12-31")&&out[0].day==="2020-01-01"&&out[0].slot==="00:00",out.length);}
+  reset(`[{id:1,n:'A',t:['08:00'],on:true}]`);ev(`tab='today';S.medLog=Array.from({length:${40001}},(_,i)=>({id:i+1,m:1,day:MedLib.addDay('2000-01-01',i),slot:'08:00',st:'t'}));render()`);
+  ok("25: at 40 001 rows Today says old medication records will be deleted, with a CSV button",$(".todo").textContent.includes("Eski ilaç kayıtları silinecek, CSV al")&&!!$('.todo [data-pv="export"]'));
+  $('.todo [data-md="logok"]:not([data-pv])').click();
+  ok("25: after 'Tamam' the warning does not come back",ev("S.settings.medLogWarn")===true&&!$(".todo")?.textContent.includes("Eski ilaç kayıtları"));
   finish();
 })();
