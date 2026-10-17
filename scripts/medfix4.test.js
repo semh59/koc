@@ -78,6 +78,9 @@ const {boot,read}=require("./html");
    ok("25: over the limit the oldest day goes first, even a row of it corrected later",out.length===L.MAXLOG&&!out.some(r=>r.day==="2019-12-31")&&out[0].day==="2020-01-01"&&out[0].slot==="00:00",out.length);}
   reset(`[{id:1,n:'A',t:['08:00'],on:true}]`);ev(`tab='today';S.medLog=Array.from({length:${40001}},(_,i)=>({id:i+1,m:1,day:MedLib.addDay('2000-01-01',i),slot:'08:00',st:'t'}));render()`);
   ok("25: at 40 001 rows Today says old medication records will be deleted, with a CSV button",$(".todo").textContent.includes("Eski ilaç kayıtları silinecek, CSV al")&&!!$('.todo [data-pv="export"]'));
+  $('.todo [data-pv="export"]').click();
+  ok("25: 'CSV al' opens the export sheet and the warning is not shown again",$("#sheet").classList.contains("on")&&$("#sheet").textContent.includes("Raporlar ve dışa aktarma")&&ev("S.settings.medLogWarn")===true);
+  ev("closeSheet();S.settings.medLogWarn=false;render()");
   $('.todo [data-md="logok"]:not([data-pv])').click();
   ok("25: after 'Tamam' the warning does not come back",ev("S.settings.medLogWarn")===true&&!$(".todo")?.textContent.includes("Eski ilaç kayıtları"));
 
