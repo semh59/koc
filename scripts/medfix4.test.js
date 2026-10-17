@@ -87,5 +87,9 @@ const {boot,read}=require("./html");
    const F=C.files(S0,{exName:x=>x,vctx:()=>""}),g=k=>F.find(f=>f.key===k).build().split(/\r\n/).slice(0,-1);
    ok("34: one taken and one unmarked dose give two rows with different states and the amount",g("ilac").slice(1).join("|")===`${y2};08:00;A;1 tablet;2;alındı;08:05|${y};08:00;A;1 tablet;2;işaretlenmedi;`&&g("ilac")[0].includes(";adet;"),g("ilac"));
    ok("34: the medication list file has the times",g("ilac_listesi")[1].startsWith("A;1 tablet;08:00;her gün;"+y2),g("ilac_listesi"));}
+
+  /* 40: the policy does not speak of medications as text sent to the Coach */
+  {const pol=require("fs").readFileSync(require("path").join(__dirname,"../docs/privacy-policy.md"),"utf8").split(/\n/);
+   ok("40: no policy sentence names medications among what goes through the Coach filter; they stay listed as not sent",!pol.some(l=>/filtreden geçer/.test(l)&&/ilaç/i.test(l))&&pol.some(l=>/gönderilmeyenler/.test(l)&&/ilaçların/.test(l)));}
   finish();
 })();
