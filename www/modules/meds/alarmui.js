@@ -22,7 +22,7 @@ function alarmDraw(){
   const rows=v.rows.map((r,k)=>{
     const i=a.items[k],dy=i.day===MedLib.key(new Date())?"":" · dün",lab=(alarmNames()?`${r.name} ${r.slot}`:`${r.slot} dozu`)+(dy?", dün":"");
     return `<div class="row wrap"><span class="grow"><b>${esc(r.name)}</b><small class="db mut"><span class="num">${r.slot}</span>${dy}${r.dose?" · "+esc(r.dose):""}</small></span>${i.st
-      ?`<b class="alst">${Icons.svg("check")} ${st(i)}</b>`
+      ?`<b class="alst">${i.st==="t"?Icons.svg("check")+" ":""}${st(i)}</b>`
       :`<span class="alact"><button class="btn" data-al="t:${k}" aria-label="${esc(lab)}: aldım">${Icons.svg("check")} Aldım</button><button class="btn ghost" data-al="s:${k}" aria-label="${esc(lab)}: atla">Atla</button></span>`}</div>`;
   }).join("");
   const left=a.items.filter(i=>!i.st).length,grp=AlarmLib.groups(a.items);
@@ -30,7 +30,7 @@ function alarmDraw(){
   $("#albody").innerHTML=`
     <div class="alclk num" aria-hidden="true">${MedLib.hm(new Date())}</div>
     <h2 id="alt" tabindex="-1">İlaç zamanı</h2>
-    <p id="allead" class="allead">${esc(done&&a.items.length?"Tüm dozlar alındı.":v.lead)}${v.count&&!done?` <span class="num">${v.count}</span>`:""}</p>
+    <p id="allead" class="allead">${esc(done&&a.items.length?(a.items.every(i=>i.st==="t")?"Tüm dozlar alındı.":`${a.items.length} doz işlendi.`):v.lead)}${v.count&&!done?` <span class="num">${v.count}</span>`:""}</p>
     ${rows?`<div class="card">${rows}</div>`:""}
     ${a.ask?`<div class="card alask" role="group" aria-label="Çift doz sorusu"><p>${esc(a.ask.text)}</p><div class="albar"><button class="btn" data-al="askno">Hayır, kaydetme</button><button class="btn ghost" data-al="askyes">Evet, kaydet</button></div></div>`:""}
     <div class="albar">${grp.length&&!alarmNames()?`<button class="btn ghost" data-al="names">Adları göster</button>`:""}${grp.map(g=>`<button class="btn ghost" data-al="all:${g[0]}">Hepsini aldım${grp.length>1?` <span class="num">${a.items[g[0]].slot}</span>`:""}</button>`).join("")}${left?`<button class="btn ghost" data-al="snooze">10 dk sonra hatırlat</button>`:""}<button class="lnk" data-al="open">Uygulamayı aç</button></div>`;
