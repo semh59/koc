@@ -11,10 +11,12 @@ let medDay="";
 const medViewDay=()=>medDay&&medDay<calKey()?medDay:calKey();
 
 /* ---- Settings ---- */
+const MED_NAME_LABEL="Tüm ilaçlarda ad görünsün; kilit ekranında görünmesi için 'Kilit ekranında ayrıntı' da açık olmalı";
+const medLockLink=()=>S.settings.lockOn?`<p class="hint">Uygulama kilidi açıkken ilaç adı kilit ekranında hiç görünmez.</p>`:S.settings.lockDetail?"":`<p class="hint"><button class="lnk" data-tab="settings-data">Kilit ekranında ayrıntı ayarı</button></p>`;
 function medSettingsHtml(){
   const st=S.settings;
   return modRow('data-md="toggle"',st.medOn,"İlaç hatırlatıcı","Saati gelince bildirim, tek dokunuşla kayıt.","hlpmd",`İlaçlarını ve saatlerini gir, zamanı gelince bildirim al. Bildirimdeki "Aldım" düğmesiyle uygulamayı açmadan kaydet. Uygulama doz önermez ve ilaç etkileşimlerini denetlemez: doktorunun ve eczacının söylediği gibi kullan.`,
-    `${swRow('data-md="shown"',st.medShowName,"İlaç adı bildirimde görünsün (kilit ekranında da)")}<button class="btn ghost" data-md="near">${Icons.svg("heart")} ${st.medNear?"Yakınım: "+esc(st.medNear)+" · değiştir":"Yakınıma haber ver: numara ekle"}</button><button class="btn ghost" data-tab="meds">${Icons.svg("meds")} İlaçlarımı düzenle</button>${isNative()?`<details class="acc mt-2"><summary>Bildirim sorun giderme</summary><p class="m0 hint">Kilitli ekran testinde düğmeye bas, telefonu kilitle ve ekranı kapat. 15 saniye sonra ekran yanıp ilaç ekranı açılmalı. Açılmazsa telefon ayarlarından uygulamaya kilit ekranında gösterme ve tam ekran bildirim izni ver.</p><div class="btns"><button class="btn ghost" data-md="locktest">Kilitli ekran testi</button><button class="btn ghost" data-md="realtest">Gerçek doz testi (1 dk)</button><button class="btn ghost" data-md="wakelog">Alarm kayıtları</button></div></details>`:""}`);
+    `${swRow('data-md="shown"',st.medShowName,MED_NAME_LABEL)}${medLockLink()}<button class="btn ghost" data-md="near">${Icons.svg("heart")} ${st.medNear?"Yakınım: "+esc(st.medNear)+" · değiştir":"Yakınıma haber ver: numara ekle"}</button><button class="btn ghost" data-tab="meds">${Icons.svg("meds")} İlaçlarımı düzenle</button>${isNative()?`<details class="acc mt-2"><summary>Bildirim sorun giderme</summary><p class="m0 hint">Kilitli ekran testinde düğmeye bas, telefonu kilitle ve ekranı kapat. 15 saniye sonra ekran yanıp ilaç ekranı açılmalı. Açılmazsa telefon ayarlarından uygulamaya kilit ekranında gösterme ve tam ekran bildirim izni ver.</p><div class="btns"><button class="btn ghost" data-md="locktest">Kilitli ekran testi</button><button class="btn ghost" data-md="realtest">Gerçek doz testi (1 dk)</button><button class="btn ghost" data-md="wakelog">Alarm kayıtları</button></div></details>`:""}`);
 }
 /* "Yakınıma haber ver": the messaging app opens with the number and a short text (no medicine name); the person presses send. The number stays on the phone. */
 const MED_NEAR_TEXT="Merhaba, ilaç saatimi kaçırmış olabilirim. Müsait olunca beni arar mısın?";
@@ -235,7 +237,7 @@ function medRender(){
   const d=medDraft;
   openSheet(`<h3>${d.id?"İlacı düzenle":"İlaç ekle"}</h3>
   <label class="lbl" for="mn">İlaç adı</label><input class="in" id="mn" maxlength="${MedLib.NAME_MAX}" value="${esc(d.n)}" autocomplete="off">
-  ${swRow('id="mshow"',!!d.sh,"Bildirimde ve kilit ekranında ilaç adı görünsün (kapalıyken yalnız “İlaç saatin geldi” yazar)")}
+  ${swRow('id="mshow"',!!d.sh,MED_NAME_LABEL)}${medLockLink()}
   <label class="lbl" for="md">Doz (isteğe bağlı)</label><input class="in" id="md" placeholder="örn. 1 tablet, 10 mg" maxlength="30" value="${esc(d.d)}" autocomplete="off">
   <div class="lbl">Saatler (günde en çok ${MedLib.MAXT}); her saatin kendi dozu ve adedi olabilir</div>
   ${d.t.map((v,i)=>`<div class="dl"><input class="grow in" type="time" id="mt${i}" value="${esc(v)}" aria-label="${i+1}. saat">${d.t.length>1?`<button class="del" data-md="rmtime:${i}" aria-label="${i+1}. saati kaldır">${Icons.svg("x")}</button>`:""}</div>
