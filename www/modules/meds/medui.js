@@ -27,14 +27,21 @@ function medNearSheet(){
 function medNearSave(){
   const v=$("#mdnear").value.replace(/[\s()-]/g,"");
   if(!/^\+?\d{7,15}$/.test(v)){$("#mdnearerr").textContent="Numara 7-15 rakam olmalı, başında + olabilir.";return}
-  S.settings.medNear=v;save();closeSheet();render();toast("Kaydedildi");
+  medNearSet(v,"Kaydedildi");
+}
+function medNearSet(v,msg){
+  const prev=S.settings.medNear;S.settings.medNear=v;
+  if(!commit(()=>{S.settings.medNear=prev}))return;
+  closeSheet();render();toast(msg);
 }
 function medNearSend(){
   const p=DH();if(!p||!p.sms)return toast("Mesaj yalnızca telefondaki uygulamada açılır");
   p.sms({to:S.settings.medNear,body:MED_NEAR_TEXT}).then(r=>{if(r.opened==="none")toast("Mesaj uygulaması açılamadı")},()=>toast("Mesaj uygulaması açılamadı"));
 }
 function medToggle(){
-  const st=S.settings;st.medOn=!st.medOn;save();render();medResched();
+  const st=S.settings;st.medOn=!st.medOn;
+  if(!commit(()=>{st.medOn=!st.medOn}))return;
+  render();medResched();
   toast(st.medOn?"İlaç hatırlatıcı açık. İlaçlarını ekle":"Kapatıldı. İlaç kayıtların durur, bildirimler kesildi");
 }
 
@@ -298,7 +305,7 @@ function medBoxAdd(id){
   const m=S.meds.find(x=>x.id===id);if(!m||!m.kb)return;
   const prev=m.k;m.k=Math.min(99999,Math.round(((m.k||0)+m.kb)*100)/100);
   if(!commit(()=>{m.k=prev}))return;
-  render();medResched();toast(`${m.n}: kutu eklendi`,()=>{m.k=prev;save();render();medResched()});
+  render();medResched();toast(`${m.n}: kutu eklendi`,()=>{const cur=m.k;m.k=prev;if(commit(()=>{m.k=cur})){render();medResched()}});
 }
 function medResume(id){
   const m=S.meds.find(x=>x.id===id);if(!m)return;
@@ -306,9 +313,9 @@ function medResume(id){
   MedLib.revise(m,o,calKey());
   S.meds=MedLib.cleanMeds(S.meds.map(x=>x.id===id?o:x));
   if(!commit(()=>{S.meds=before}))return;
-  render();medResched();toast(`${m.n} tekrar açıldı`,()=>{S.meds=before;save();render();medResched()});
+  render();medResched();toast(`${m.n} tekrar açıldı`,()=>{const cur=S.meds;S.meds=before;if(commit(()=>{S.meds=cur})){render();medResched()}});
 }
-const medUndoToast=(msg,res)=>toast(msg,()=>{res.undo();save();render();medResched()});
+const medUndoToast=(msg,res)=>toast(msg,()=>{const sn=Meds.snapshot();res.undo();if(commit(()=>Meds.rollback(sn))){render();medResched()}});
 function medMark(mid,slot,st,force,day=calKey()){
   const isToday=day===calKey();
   /* A dose tapped on Today (also yesterday's unmarked one) was taken now; on the Meds screen's past-day list the user sets the time. */
@@ -372,7 +379,7 @@ document.addEventListener("click",ev=>{
   if(a==="toggle")medToggle();
   else if(a==="near")medNearSheet();
   else if(a==="nearsave")medNearSave();
-  else if(a==="nearclear"){S.settings.medNear="";save();closeSheet();render();toast("Numara silindi")}
+  else if(a==="nearclear")medNearSet("","Numara silindi");
   else if(a==="nearclose")closeSheet();
   else if(a==="nearsend")medNearSend();
   else if(a==="locktest"){const w=MW();if(!w)return toast("Yalnızca telefondaki uygulamada çalışır");w.test().then(()=>toast("15 saniye sonra alarm çalacak: telefonu kilitle")).catch(()=>toast("Test kurulamadı"))}
@@ -394,12 +401,17 @@ document.addEventListener("click",ev=>{
     const id=medDraft?.id,m=S.meds.find(x=>x.id===id);if(!m)return;
     confirmSheet({title:`${m.n} silinsin mi?`,body:`${m.n} silinecek. İlacın kayıtları da silinir. Devam edilsin mi?`,ok:"Sil",danger:true}).then(ok=>{
       if(!ok)return;
-      const dl=S.medLog.filter(x=>x.m===id);
-      S.meds=S.meds.filter(x=>x.id!==id);S.medLog=MedLib.cleanLog(S.medLog,S.meds);save();
+      /* The Ramadan shift records go too: freeId hands this number to the next new medication. */
+      const st=S.settings,dl=S.medLog.filter(x=>x.m===id),keep=()=>[S.meds,S.medLog,st.ramMeds,st.ramMedsRef],put=v=>{[S.meds,S.medLog,st.ramMeds,st.ramMedsRef]=v},was=keep();
+      const {[id]:r0,...ram}=st.ramMeds,{[id]:f0,...ref}=st.ramMedsRef;
+      const meds=S.meds.filter(x=>x.id!==id);put([meds,MedLib.cleanLog(S.medLog,meds),ram,ref]);
+      if(!commit(()=>put(was)))return;
       medClose();render();medResched();
       toast("İlaç silindi",()=>{
         if(S.meds.some(x=>x.id===id))return toast("Geri alınamadı: bu numarayı yeni bir ilaç aldı");
-        S.meds=MedLib.cleanMeds(S.meds.concat([m]).sort((a,b)=>a.id-b.id));S.medLog=MedLib.cleanLog(S.medLog.concat(dl),S.meds);save();render();medResched();
+        const cur=keep(),meds=MedLib.cleanMeds(S.meds.concat([m]).sort((a,b)=>a.id-b.id));
+        put([meds,MedLib.cleanLog(S.medLog.concat(dl),meds),r0?{...st.ramMeds,[id]:r0}:st.ramMeds,f0?{...st.ramMedsRef,[id]:f0}:st.ramMedsRef]);
+        if(commit(()=>put(cur))){render();medResched()}
       });
     });
   }
