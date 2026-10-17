@@ -89,6 +89,7 @@ const MedLib=(()=>{
       if(!x||!ok.has(x.m)||!dayOk(x.day)||!timeOk(x.slot)||(x.st!=="t"&&x.st!=="s"))continue;
       const o={m:x.m,day:x.day,slot:x.slot,st:x.st};
       if(timeOk(x.at)){o.at=x.at;if(dayOk(x.ad))o.ad=x.ad}
+      if(o.st==="t"&&fin(x.kd)&&x.kd>=0&&x.kd<=100)o.kd=x.kd;
       const k=doseKey(o.m,o.day,o.slot);rows.delete(k);rows.set(k,o);
     }
     return [...rows.values()].slice(-MAXLOG).map((o,i)=>Object.assign({id:i+1},o));
@@ -154,11 +155,13 @@ const MedLib=(()=>{
     const med=S.meds.find(m=>m.id===mid);if(!med)return null;
     const prev=S.medLog.find(x=>x.m===mid&&x.day===day&&x.slot===slot),prevSt=prev?prev.st:null,prevK=med.k;
     S.medLog=S.medLog.filter(x=>x!==prev);
-    if(st)S.medLog.push(Object.assign({id:S.medLog.reduce((a,x)=>Math.max(a,x.id),0)+1,m:mid,day,slot,st},timeOk(at)?{at,...(dayOk(ad)&&{ad})}:{}));
+    /* kd: what was really taken off the stock (less than the amount when it hit 0), so taking the record back adds exactly that. */
+    let kd=prevSt==="t"?prev.kd:undefined;
     if(med.k!=null){
-      if(st==="t"&&prevSt!=="t")med.k=Math.max(0,r2(med.k-amt(med,slot,day)));
-      else if(st!=="t"&&prevSt==="t")med.k=Math.min(STOCK_MAX,r2(med.k+amt(med,slot,day)));
+      if(st==="t"&&prevSt!=="t"){const k=Math.max(0,r2(med.k-amt(med,slot,day)));kd=r2(med.k-k);med.k=k}
+      else if(st!=="t"&&prevSt==="t")med.k=Math.min(STOCK_MAX,r2(med.k+(prev.kd??amt(med,slot,day))));
     }
+    if(st)S.medLog.push(Object.assign({id:S.medLog.reduce((a,x)=>Math.max(a,x.id),0)+1,m:mid,day,slot,st},timeOk(at)?{at,...(dayOk(ad)&&{ad})}:{},st==="t"&&fin(kd)?{kd}:{}));
     return {undo:()=>{
       S.medLog=S.medLog.filter(x=>!(x.m===mid&&x.day===day&&x.slot===slot));
       if(prev)S.medLog.push(prev);
@@ -268,7 +271,7 @@ const MedLib=(()=>{
     const at=day=>{const a=slotAt(day,"09:00");return a.getTime()>nowT?a:slotAt(addDay(day,1),"09:00")};
     const add=(m,n,title,body,when)=>out.push({id:NID_BASE+m.id*1000+n,title,body:showName?`${m.n}: ${body}`:"Bir ilacınla ilgili hatırlatma var. Uygulamayı aç.",at:when,extra:{act:"open",tab:"meds"}});
     for(const m of meds){
-      if(m.on&&stockLow(m))add(m,900,"💊 İlaç stoğu azalıyor",`yaklaşık ${stockDays(m)} günlük stok kaldı.`,at(today));
+      if(m.on&&stockLow(m))add(m,900,"💊 İlaç stoğu azalıyor",m.k?`yaklaşık ${stockDays(m)} günlük stok kaldı.`:"stok bitti, yenisini al.",at(today));
       if(!m.on&&m.ou)add(m,901,"💊 Ara verme süresi doldu","tekrar açabilirsin.",m.ou>today?slotAt(m.ou,"09:00"):at(today));
     }
     return out.filter(n=>n.at.getTime()>nowT);

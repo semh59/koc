@@ -47,5 +47,16 @@ const unclock=require("./clock").at;
     ev("delete window.__confirmAuto");restore();
   }
 
+  /* 29: stock texts, undo of a stock that hit 0, a card button without box size */
+  reset(`[{id:1,n:'A',t:['00:00'],on:true,s:'2026-01-01',k:0}]`);
+  ok("stock 0: the card says 'Stok bitti', not '0 günlük', and offers 'Stoğu güncelle' without a box size",/Stok bitti, yenisini al/.test($("#view").textContent)&&!/0 günlük/.test($("#view").textContent)&&!!$('[data-md="edit:1"][aria-label^="Stoğu güncelle"]'));
+  ok("stock 0: the 09:00 notice says it ran out",/stok bitti/.test(M.notices(M.cleanMeds([{id:1,n:"A",t:["08:00"],on:true,k:0}]),new Date(2026,0,1,7),true)[0].body));
+  reset(`[{id:1,n:'A',t:['00:00'],on:true,s:'2026-01-01',k:0.5}]`);
+  ev("medMark(1,'00:00','t');medMark(1,'00:00',null)");
+  ok("stock 0.5: Aldım then Geri al on the Meds screen gives 0.5 back, not 1",ev("S.meds[0].k")===0.5,ev("S.meds[0].k"));
+  ev("medOpen(1)");
+  ok("stock set, amount per dose empty: the form says one is counted",/Boşsa her dozda 1 adet sayılır/.test($("#sheet").textContent));
+  ev("medClose()");
+
   finish();
 })();
