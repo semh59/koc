@@ -125,6 +125,20 @@ const unclock=require("./clock").at;
     ok("a medication with 24 different times: no dose id reaches 900",ids.length>0&&Math.max(...ids)<900,Math.max(...ids));
   }
 
+  /* 19: rescheduling cancels only the ids missing from the new list, before setting it */
+  {
+    const calls=[],pend=new Set([1001001,1009999,9001]);let fail=false;
+    w.Capacitor={isNativePlatform:()=>true,Plugins:{LocalNotifications:{checkPermissions:async()=>({display:"granted"}),requestPermissions:async()=>({display:"granted"}),checkExactNotificationSetting:async()=>({exact_alarm:"granted"}),getPending:async()=>({notifications:[...pend].map(id=>({id}))}),getDeliveredNotifications:async()=>({notifications:[]}),removeDeliveredNotifications:async()=>{},registerActionTypes:async()=>{},
+      cancel:async o=>{calls.push("cancel");o.notifications.forEach(n=>pend.delete(n.id));calls.can=(calls.can||[]).concat(o.notifications.map(n=>n.id))},
+      schedule:async o=>{calls.push("schedule");if(fail)throw new Error("x");o.notifications.forEach(n=>pend.add(n.id))}}}};
+    reset(`[{id:1,n:'A',t:['08:00'],on:true}]`);
+    await ev("scheduleReminders()");
+    ok("the stale id is cancelled before the new list is set, a kept id is never cancelled",calls.indexOf("cancel")<calls.indexOf("schedule")&&calls.can.join()==="1009999",calls);
+    fail=true;pend.add(1009999);await ev("scheduleReminders()");
+    ok("when setting the new list fails, the ids in it are still pending",pend.has(1001001)&&!pend.has(1009999));
+    delete w.Capacitor;
+  }
+
   ev("sheetPrivacy()");
   ok("the category row says so",/yakınının numarası ve Ramazan saat kaydırmaları da silinir/.test($("#sheet").textContent));
   ev("closeSheet();delete window.__confirmAuto");

@@ -52,10 +52,6 @@ async function scheduleOnce(){
       if(gone.length)await ln.removeDeliveredNotifications({notifications:gone});
     }catch{}
     lastSched=0;
-    const pend=await ln.getPending();
-    /* Not ours to reset: the gym timers (9001 set, 9002 rest) and the guide, medication test and snooze notifications are scheduled elsewhere. */
-    const keep=new Set([9001,9002,GD_NID,MED_TEST_NID,AlarmLib.SNOOZE_NID]);
-    const pn=pend.notifications.filter(n=>!keep.has(n.id));if(pn.length)await ln.cancel({notifications:pn.map(n=>({id:n.id}))});
     /* The plugin's daily repeat sets an alarm that Doze defers after the first notification. So every day is scheduled as its own one-shot alarm that pierces idle mode. */
     try{await ln.registerActionTypes({types:[{id:"water",actions:[{id:"water",title:`+${S.settings.glass} ml`}]},{id:"med",actions:[{id:"med",title:"✓ Aldım"},{id:"medskip",title:"Atla"}]},{id:"medgrp",actions:[{id:"med",title:"✓ Hepsini aldım"}]}]})}catch{}
     let list=[];const medList=[],now=Date.now(),lb=S.settings.lastBackup;
@@ -83,6 +79,11 @@ async function scheduleOnce(){
     list=fit.list;
     if(msg!==medBudgetMsg){medBudgetMsg=msg;if(tab==="today")render()}
     const tk=await quickToken();if(tk)for(const n of list)if(n.extra&&(n.extra.act==="water"||n.extra.act==="med"))n.extra.tk=tk;
+    /* Only pending ids missing from the new list are cancelled, and before it is set (the same id is overwritten): a failed or killed run leaves the old reminders standing,
+       and old and new lists never stand together past the phone's alarm limit (a dose id moves with the day offset). Not ours to reset: the gym timers (9001 set, 9002 rest)
+       and the guide, medication test and snooze notifications are scheduled elsewhere. */
+    const keep=new Set([9001,9002,GD_NID,MED_TEST_NID,AlarmLib.SNOOZE_NID,...list.map(n=>n.id)]);
+    const pn=(await ln.getPending()).notifications.filter(n=>!keep.has(n.id));if(pn.length)await ln.cancel({notifications:pn.map(n=>({id:n.id}))});
     if(list.length)await lnSchedule(ln,list);
     /* The notification plugin does not light the locked screen: for medication doses (reminder repeats excluded) a separate alarm screen wakes it briefly. */
     const mw=MW();if(mw)await mw.set({times:MedLib.wakeTimes(list),doses:MedLib.wakeDoses(list,Meds.meds(),S.settings.medShowName),detail:S.settings.lockDetail}).catch(()=>{});
