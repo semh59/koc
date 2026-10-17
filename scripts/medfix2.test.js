@@ -132,6 +132,21 @@ const unclock=require("./clock").at;
     delete w.Capacitor;restore();
   }
 
+  /* 11: notification taps say "alındı" or "atlandı", can be taken back, and the double-dose guard runs on them too */
+  {
+    const restore=unclock(w,10),z=-new Date().getTimezoneOffset();
+    reset(`[{id:1,n:'A',t:['08:00','09:30'],on:true,s:'2026-01-01'}]`);
+    w.Capacitor={Plugins:{QuickLog:{take:async()=>({items:[{m:1,s:"08:00",t:Date.now()-60000,z,k:true}]})}}};
+    await ev("quickIngest()");
+    ok("a 'Atla' from the notification says 'atlandı', not 'kaydedildi'",/A \(08:00\) atlandı/.test($("#tmsg").textContent)&&!/kaydedildi/.test($("#tmsg").textContent),$("#tmsg").textContent);
+    ev("undoLast()");
+    ok("its 'Geri al' removes the medication record",ev("S.medLog.length")===0);
+    w.Capacitor={Plugins:{QuickLog:{take:async()=>({items:[{m:1,s:"08:00",t:Date.now()-15*60000,z},{m:1,s:"09:30",t:Date.now()-5*60000,z}]})}}};
+    await ev("quickIngest()");
+    ok("08:00 and 09:30 'Aldım' 10 minutes apart: both recorded, the toast names the earlier dose and the minutes",ev("S.medLog.length")===2&&/A için 08:00 dozuna 10 dakika önce "Aldım" kaydı var/.test($("#tmsg").textContent),$("#tmsg").textContent);
+    delete w.Capacitor;restore();
+  }
+
   /* 41: a snooze from the lock screen rings once on the medication channel (source check: no Android runtime here) */
   {
     const rd=f=>require("fs").readFileSync(require("path").join(__dirname,"../assets/android",f),"utf8"),aa=rd("AlarmActivity.java"),mw=rd("MedWakeReceiver.java"),mp=rd("MedWakePlugin.java");

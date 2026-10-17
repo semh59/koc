@@ -362,17 +362,21 @@ function medAtSave(mid,slot,day){
   closeSheet();render();medResched();medUndoToast("Alınan saat güncellendi",res);
 }
 
-/* Taken/skipped taps from the notification buttons (quickui.js calls this). Returns the handled names. */
+/* Taken/skipped taps from the notification buttons (quickui.js calls this). Returns the taken and skipped names, the taps that fit no dose,
+   the double-dose notes (the same guard as the buttons, against the tap moment) and one undo for all of them. */
 function medIngest(items){
-  const names=[];let miss=0;
+  const took=[],skip=[],dbl=[],undo=[];let miss=0;
   for(const i of items){
     /* Checked against that day's doses: a time moved today still rings today (keepToday), and its tap must not be dropped. */
     const m=S.meds.find(x=>x.id===i.m),day=timeOk(i.s)&&MedLib.dayForTap(i.s,i.t);
     if(!m||!day||!MedLib.dosesOn(S.meds,day).some(d=>d.m.id===m.id&&d.slot===i.s)){miss++;continue}
     if(MedLib.statusOf(S.medLog,m.id,day,i.s))continue;
-    if(MedLib.mark(S,m.id,day,i.s,i.k?"s":"t",MedLib.hm(new Date(i.t)),MedLib.key(new Date(i.t))))names.push(`${m.n} (${i.s})`);
+    const r=!i.k&&MedLib.recentTaken(S.medLog,m.id,day,i.s,i.t),res=MedLib.mark(S,m.id,day,i.s,i.k?"s":"t",MedLib.hm(new Date(i.t)),MedLib.key(new Date(i.t)));
+    if(!res)continue;
+    undo.push(res);(i.k?skip:took).push(`${m.n} (${i.s})`);
+    if(r)dbl.push(MedLib.recentText(r,m.n));
   }
-  return {n:names.length,names,miss};
+  return {n:undo.length,took,skip,miss,dbl,undo:()=>undo.slice().reverse().forEach(r=>r.undo())};
 }
 
 /* A tap on another dose button right after a marking is the same finger landing on the row that moved up under it, not a decision. */
