@@ -30,5 +30,13 @@ const {boot}=require("./html");
   ok("22: a stock error opens the fold and moves the focus and the mark to the stock field",$("#mmore").open&&w.document.activeElement.id==="mk"&&!$("#mn").hasAttribute("aria-invalid"));
   reset();ev("medNearSheet()");$("#mdnear").value="12";click('[data-md="nearsave"]');
   ok("22: a wrong near number is an alert error on the field",$("#mdnearerr").getAttribute("role")==="alert"&&$("#mdnearerr").classList.contains("ferr")&&$("#mdnearerr").textContent.includes("rakam")&&w.document.activeElement.id==="mdnear");
+
+  /* 23: the focus survives the redraws */
+  reset("[{id:1,n:'A',t:['00:00'],on:true}]");$('[data-md="take:1:00:00"]').focus();click('[data-md="take:1:00:00"]');
+  ok("23: after Aldım the focus stays inside the view",w.document.getElementById("view").contains(w.document.activeElement),w.document.activeElement.outerHTML);
+  ev("medOpen(0)");click('[data-md="addtime"]');
+  ok("23: 'Saat ekle' puts the focus on the new time field",w.document.activeElement.id==="mt1");
+  $('[data-md="fq:w"]').focus();click('[data-md="fq:w"]');
+  ok("23: a redraw keeps the focus on the control that was used",w.document.activeElement.dataset.md==="fq:w"&&w.document.activeElement.isConnected);
   finish();
 })();
