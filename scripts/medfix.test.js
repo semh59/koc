@@ -63,5 +63,19 @@ const unclock=require("./clock").at;
   ok("day start 4: a 22:05 record and a 00:30 measurement say '2 sa 25 dk sonra'",ev("S.settings.dayStart=4;Meds.bpSince('2026-10-05','00:30')")==="Son ilaç kaydından 2 sa 25 dk sonra");
   ev("S.settings.dayStart=0");
 
+  /* 2: a dose moved today still takes the tap from its old time's notification */
+  {
+    let restore=unclock(w,7);
+    reset(`[{id:1,n:'A',t:['08:00'],on:true,s:'2026-01-01'}]`);
+    ev("medOpen(1)");$("#mt0").value="09:00";click('[data-md="save"]');
+    restore();restore=unclock(w,8);
+    const r=ev("JSON.stringify(medIngest([{m:1,s:'08:00',t:Date.now()+60000}]))");
+    ok("08:00 moved to 09:00 at 07:00: the 08:00 notification's 'Aldım' marks today's 08:00 dose",ev("MedLib.statusOf(S.medLog,1,calKey(),'08:00')")==="t"&&/"n":1/.test(r),r);
+    w.Capacitor={Plugins:{QuickLog:{take:async()=>({items:[{m:1,s:'10:00',t:Date.now()}]})}}};
+    await ev("quickIngest()");
+    ok("a tap that cannot be recorded is told: 'N dokunuş kaydedilemedi'",/1 dokunuş kaydedilemedi, İlaçlar'dan işaretle/.test($("#tmsg").textContent),$("#tmsg").textContent);
+    delete w.Capacitor;restore();
+  }
+
   finish();
 })();

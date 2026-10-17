@@ -33,9 +33,10 @@ async function quickIngest(){
   const msgs=[];
   if(water.length){const total=water.reduce((a,i)=>a+Math.round(i.v),0),t=dayKey();msgs.push(`Bildirimden ${total} ml eklendi, bugün ${Math.round(sum("water",t,t))} / ${S.settings.waterMl} ml`)}
   if(md.n)msgs.push(`İlaç kaydedildi: ${md.names.join(", ")}`);
+  if(md.miss)msgs.push(`${md.miss} dokunuş kaydedilemedi, İlaçlar'dan işaretle`);
   const ids=new Set(added.map(e=>e.id)),undo=()=>{S.entries=S.entries.filter(e=>!ids.has(e.id));save();render();scheduleReminders().then(setNotif)};
   if(msgs.length)toast(msgs.join(". "),added.length?undo:undefined);
   console.log("NW-QUICK ingested "+(water.length+md.n));
   const t=dayKey();
-  if(md.n||(water.length&&sum("water",t,t)>=S.settings.waterMl))scheduleReminders().then(setNotif);
+  if(md.n||md.miss||(water.length&&sum("water",t,t)>=S.settings.waterMl))scheduleReminders().then(setNotif);
 }
