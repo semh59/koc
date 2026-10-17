@@ -9,7 +9,7 @@ const {boot}=require("./html");
 
   /* 21: only name, dose and time are open on a new medication; a filled extra opens the fold on edit */
   reset();ev("medOpen(0)");
-  ok("21: a new medication shows name, dose and time; the extras are folded",shown().join()==="mn,md,mt0"&&!$("#mmore").open&&$$('[data-md^="fq:"]').length===3,shown());
+  ok("21: a new medication shows name, dose and time; the extras are folded; four frequency choices (as needed is the fourth)",shown().join()==="mn,md,mt0"&&!$("#mmore").open&&$$('[data-md^="fq:"]').length===4,shown());
   click('[data-md="fq:n"]');
   ok("21: 'Her N günde' shows only the interval and first-day fields and keeps the fold state",shown().join()==="mn,md,mt0,miv,mia"&&!$("#mmore").open,shown());
   $("#mmore").open=true;click('[data-md="fq:w"]');

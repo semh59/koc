@@ -17,11 +17,12 @@ const MedLib=(()=>{
   const freeId=used=>{for(let i=1;i<=MAXID;i++)if(!used.has(i))return i;return 0};
 
   /* Schedule: times (t), weekdays (w) or every iv days counted from the fixed day ia, on/off (on), per-time start day (ts), dose text d, amount p and per-time doses q.
+     An as-needed medication (prn) has no times: no reminder, no planned dose, so it never enters adherence.
      The record and its history versions are cleaned the same way; a version always carries d, p, q and e (a version without q is an older one: its days show the current dose, amount and course end). */
   function cleanSched(x){
-    const t=[...new Set((Array.isArray(x.t)?x.t:[]).filter(timeOk))].sort().slice(0,MAXT);
-    if(!t.length)return null;
-    const o={t,on:x.on!==false};
+    const prn=x.prn===true,t=prn?[]:[...new Set((Array.isArray(x.t)?x.t:[]).filter(timeOk))].sort().slice(0,MAXT);
+    if(!t.length&&!prn)return null;
+    const o={t,on:x.on!==false,...(prn&&{prn})};
     const w=[...new Set((Array.isArray(x.w)?x.w:[]).filter(v=>Number.isInteger(v)&&v>=0&&v<=6))].sort();
     if(Number.isInteger(x.iv)&&x.iv>=2&&x.iv<=60&&dayOk(x.ia)){o.iv=x.iv;o.ia=x.ia}
     else if(w.length&&w.length<7)o.w=w;
@@ -51,6 +52,7 @@ const MedLib=(()=>{
       const id=Number.isInteger(x.id)&&x.id>=1&&x.id<=MAXID&&!ids.has(x.id)?x.id:freeId(ids);
       ids.add(id);
       const o={id,n:x.n.trim().slice(0,NAME_MAX),t:c.t,on:c.on};
+      if(c.prn){o.prn=true;if(Number.isInteger(x.gap)&&x.gap>=1&&x.gap<=48)o.gap=x.gap}
       if(c.d)o.d=c.d;
       if(c.w)o.w=c.w;
       if(c.iv){o.iv=c.iv;o.ia=c.ia}
@@ -107,8 +109,8 @@ const MedLib=(()=>{
   const slotOn=(m,day,slot)=>{const c=sched(m,day);return c.t.includes(slot)&&!(c.ts&&c.ts[slot]&&day<c.ts[slot])};
   /* On save, a changed schedule pushes the previous version to history; a second change on the same day keeps the first version, which describes the days before today. */
   function revise(prev,o,today){
-    const sig=a=>JSON.stringify([[...a.t].sort(),a.w||null,a.on,a.iv||null,a.ia||null,a.e||null,a.d||"",a.p||0,Object.entries(a.q||{}).sort().map(([s,v])=>[s,v.d||"",v.p||0])]),h=prev&&prev.h?prev.h.slice():[];
-    if(prev&&sig(prev)!==sig(o)&&!h.some(v=>v.u===today)){const {t,w,ts,on,iv,ia}=prev;h.push({u:today,t,on,...(w&&{w}),...(ts&&{ts}),...(iv&&{iv,ia}),d:prev.d||"",p:prev.p||0,q:prev.q||{},e:prev.e||""})}
+    const sig=a=>JSON.stringify([!!a.prn,[...a.t].sort(),a.w||null,a.on,a.iv||null,a.ia||null,a.e||null,a.d||"",a.p||0,Object.entries(a.q||{}).sort().map(([s,v])=>[s,v.d||"",v.p||0])]),h=prev&&prev.h?prev.h.slice():[];
+    if(prev&&sig(prev)!==sig(o)&&!h.some(v=>v.u===today)){const {t,w,ts,on,iv,ia,prn}=prev;h.push({u:today,t,on,...(prn&&{prn}),...(w&&{w}),...(ts&&{ts}),...(iv&&{iv,ia}),d:prev.d||"",p:prev.p||0,q:prev.q||{},e:prev.e||""})}
     if(h.length)o.h=h;
     return o;
   }
@@ -189,8 +191,15 @@ const MedLib=(()=>{
     }
     return best;
   }
+  /* The newest taken record of a medication (by the moment of the tap). */
+  const lastTaken=(log,mid)=>{let b=null;for(const x of log)if(x.m===mid&&x.st==="t"&&timeOk(x.at)&&(!b||tapMs(x)>tapMs(b)))b=x;return b};
+  /* As-needed medication: there is no planned gap, so the guard looks back the user's own minimum gap (gap hours) or 1 h from the last taken record. */
+  function prnRecent(log,m,nowMs){
+    const x=lastTaken(log,m.id),age=x&&nowMs-tapMs(x);
+    return x&&age>=0&&age<(m.gap||1)*WIN?{min:Math.max(1,Math.round(age/60000))}:null;
+  }
   /* States the record only (which dose, how long ago); the question is the sheet title, so the body asks nothing. */
-  const recentText=(r,name)=>`${name?name+" için ":""}${r.slot} dozuna ${r.min<60?r.min+" dakika":Math.floor(r.min/60)+" saat"+(r.min%60?" "+r.min%60+" dakika":"")} önce "Aldım" kaydı var. Bu yalnız kendi kayıtlarını karşılaştırır.`;
+  const recentText=(r,name)=>`${name?name+" için ":""}${r.slot?r.slot+" dozuna ":""}${r.min<60?r.min+" dakika":Math.floor(r.min/60)+" saat"+(r.min%60?" "+r.min%60+" dakika":"")} önce "Aldım" kaydı var. Bu yalnız kendi kayıtlarını karşılaştırır.`;
   const NOT_SAVED="Kaydedilmedi. Hatırlatma, aldığını işaretleyene kadar sürebilir.";
 
   /* Adherence has one definition (PDF, weekly report, Coach and screens use it). The user can log today's dose late until the day ends,
@@ -392,6 +401,6 @@ const MedLib=(()=>{
     if(bad)add("Tam ekran bildirimi gönderilemedi: "+bad.fs.replace(/^err:/,""));
     return out;
   }
-  return {WARNLOG,MAXLOG,clockMoved,bgState,dhm,doseNid,sinceDose,recentTaken,recentText,NOT_SAVED,wakeTimes,wakeDoses,wakeLine,wakeIssues,sinceFor,keepToday,doseOfId,amt,doseText,stockDays,stockLow,notices,STOCK_DAYS,FED,FED_TEXT,NAME_MAX,freeId,doseKey,MAXM,MAXT,BUDGET,WAKE_ALARMS,PHONE_ALARMS,TITLE,GENERIC_BODY,cleanMeds,cleanLog,dosesOn,statusOf,logIndex,mark,adherence,adherenceDays,sumAdherence,notifications,fit,budgetText,dayForTap,revise,addDay,slotAt,hm,timeOk,key};
+  return {lastTaken,prnRecent,WARNLOG,MAXLOG,clockMoved,bgState,dhm,doseNid,sinceDose,recentTaken,recentText,NOT_SAVED,wakeTimes,wakeDoses,wakeLine,wakeIssues,sinceFor,keepToday,doseOfId,amt,doseText,stockDays,stockLow,notices,STOCK_DAYS,FED,FED_TEXT,NAME_MAX,freeId,doseKey,MAXM,MAXT,BUDGET,WAKE_ALARMS,PHONE_ALARMS,TITLE,GENERIC_BODY,cleanMeds,cleanLog,dosesOn,statusOf,logIndex,mark,adherence,adherenceDays,sumAdherence,notifications,fit,budgetText,dayForTap,revise,addDay,slotAt,hm,timeOk,key};
 })();
 if(typeof module!=="undefined")module.exports=MedLib;

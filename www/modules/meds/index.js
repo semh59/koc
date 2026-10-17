@@ -11,7 +11,7 @@ Data.csv.push(["ilac","İlaç alımı",()=>["tarih","saat","ilaç","doz","adet",
   }
   return by(rows,r=>r[0],r=>r[1]);
 },7]);
-Data.csv.push(["ilac_listesi","İlaç listesi",()=>["ilaç","doz","saatler","günler","başlangıç","bitiş","stok","hatırlatma"],({S})=>S.meds.map(m=>[m.n,m.d,m.t.join(" "),m.iv?`her ${m.iv} günde bir`:m.w?m.w.map(d=>["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"][d]).join(" "):"her gün",m.s,m.e,m.k,m.on===false?"kapalı":"açık"]),7.5]);
+Data.csv.push(["ilac_listesi","İlaç listesi",()=>["ilaç","doz","saatler","günler","başlangıç","bitiş","stok","hatırlatma"],({S})=>S.meds.map(m=>[m.n,m.d,m.t.join(" "),m.prn?"gerektiğinde":m.iv?`her ${m.iv} günde bir`:m.w?m.w.map(d=>["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"][d]).join(" "):"her gün",m.s,m.e,m.k,m.on===false?"kapalı":"açık"]),7.5]);
 Data.hist.push((S,{add})=>{for(const x of S.medLog)if(x.st==="t")add(x.day,"meds",1)});
 Data.dayRows.push([6,k=>{const ml=S.medLog.filter(x=>x.day===k);if(!ml.length)return "";const t=ml.filter(x=>x.st==="t").length,s=ml.length-t;return hgRow("meds","İlaç",`${t} alındı${s?`, ${s} atlandı`:""}`)}]);
 const Meds={

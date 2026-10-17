@@ -51,6 +51,7 @@ Kaynaklar: `docs/rd/oncelik.md`, `docs/rd/analiz-dalga-1.md`, `-2a`, `-2b`, `-3`
 ### Faz 6: Mimari artıklar (isteğe bağlı, davranış değiştirmez)
 - 6.3 BİTTİ: sınır testi artık `kernel/` dosyalarını da kapsar (S alanı ve modül iç adı).
 - 6.2 KISMEN: kullanılmayan `api` adları (`inType`, `moveAdd`, `quickBtn`) çıkarıldı; kalan adların hepsi başka bir modülce kullanılıyor. ~650 modül → çekirdek bağımlılığını daraltmak yalnız kod taşıma getirir, kullanıcıya fayda sağlamaz; yapılmadı.
+- İlaçlar kurulu (2026-10-17) K3 ertelenenler: atlama nedeni ve not, ilaç şekli ve rengi, ad tamamlama, aylık takvim, saat başına aç/tok ve dakika ("gerektiğinde alınan ilaç" yapıldı).
 - 6.1 YAPILMADI (bilinçli): `settings`i modüllere bölmek kayıtlı veri şemasını, yedek ve içe aktarma biçimini değiştirir; fayda küçük, veri kaybı riski var.
 
 ## B2. Durum (2026-10-11 sonu)
