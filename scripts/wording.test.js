@@ -15,6 +15,7 @@ const bs=String.fromCharCode(92);
   const full=src.flatMap(([f,t])=>t.split(String.fromCharCode(10)).filter(l=>/depolama dolu/i.test(l)&&!/yedek/i.test(l)).map(()=>f));
   ok("every storage-full text names the backup",full.length===0,full);
   ok("one apostrophe form: no curly ’ in user texts",hits(/[’‘]/).length===0,hits(/[’‘]/));
+  ok("no 'bildirimini izin' or 'numarayı yeni' in user texts",hits(/bildirimini izin|numarayı yeni/).length===0,hits(/bildirimini izin|numarayı yeni/));
   ok("the save-failure toast and the banner both tell to take a backup",/yedek al/.test(w.eval("SAVE_FAIL"))&&/yedek/.test(w.eval("(saveFail=true,storeMsg().join(' '))")));
   ok("the restore-failure text names the backup too",/Yedek yüklenemedi, depolama dolu\. Mevcut verinin yedeğini al/.test(read("main/04-sheets.js")));
   const say=()=>w.document.querySelector("#tmsg").textContent;
