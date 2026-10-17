@@ -60,5 +60,14 @@ const {boot,read}=require("./html");
   const rowOf=n=>$$("#view .row").find(r=>r.querySelector("b")?.textContent===n&&r.querySelector('[data-md^="edit:"]')).textContent;
   ok("30: one medication always taken shows %100, the always skipped one %0",rowOf("Hep").includes("son 30 gün %100")&&rowOf("Hiç").includes("son 30 gün %0"),[rowOf("Hep"),rowOf("Hiç")]);
   ok("30: the adherence card says how it is counted",$(".dd7").closest(".card").textContent.includes("alınan / (alınan + atlanan + işaretlenmeyen)"));
+
+  /* 18: switching the reminder off can be undone; while off the Meds screen says so; switching on without medications opens the add sheet */
+  reset(`[{id:1,n:'A',t:['09:00'],on:true}]`);ev("tab='settings-modules';render()");$('[data-md="toggle"]').click();
+  ok("18: switching off leaves a 'Geri al' that switches it back on",ev("S.settings.medOn")===false&&($("#tundo").click(),ev("S.settings.medOn")===true));
+  reset(`[{id:1,n:'A',t:['09:00'],on:true}]`,"[]","S.settings.medOn=false");ev("render()");
+  ok("18: while off the Meds screen starts with 'Hatırlatıcı kapalı' and an 'Aç' button",ev("viewMeds()").includes("Hatırlatıcı kapalı")&&$("#view .card").textContent.includes("Hatırlatıcı kapalı")&&!!$('#view .card [data-md="toggle"]'));
+  reset("[]","[]","S.settings.medOn=false");ev("tab='settings-modules';render()");$('[data-md="toggle"]').click();
+  ok("18: switching on with no medications opens the add sheet",ev("S.settings.medOn")===true&&$("#sheet").classList.contains("on")&&!!$("#mn"));
+  ev("medClose()");
   finish();
 })();
