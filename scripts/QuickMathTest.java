@@ -74,6 +74,8 @@ public class QuickMathTest {
         String many = "";
         for (int i = 0; i < 60; i++) many = QuickMath.remember(many, i + "@1790928000000");
         ok("duplicate: last 50 tokens are kept", QuickMath.seen(many, "59@1790928000000") && QuickMath.seen(many, "10@1790928000000") && !QuickMath.seen(many, "9@1790928000000"));
+        long h8 = 1790928000000L;
+        ok("alarm window: the 08:00 dose is still listed at 08:40 and at 10:59, not at 11:01, and from 5 s early", QuickMath.alarmDue(h8, h8 + 40 * 60000L, 5000) && QuickMath.alarmDue(h8, h8 + 179 * 60000L, 5000) && !QuickMath.alarmDue(h8, h8 + 181 * 60000L, 5000) && QuickMath.alarmDue(h8, h8 - 5000, 5000) && !QuickMath.alarmDue(h8, h8 - 6000, 5000));
         System.exit(bad == 0 ? 0 : 1);
     }
 }

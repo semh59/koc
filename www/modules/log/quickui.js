@@ -4,7 +4,10 @@
 async function quickToken(){const q=plugin("QuickLog");try{return q?.getToken&&(await q.getToken()).tk||null}catch{return null}}
 /* take() keeps the entries "in flight" natively until they are persisted and acked. If the write fails or the process dies first,
    they come back on the next launch; a water entry carries qt (the notification time), so it is never added twice. */
-async function quickIngest(){
+/* Runs one after another (scheduling waits for its own run): two take() calls at once would both get the in-flight entries. */
+let quickRun=Promise.resolve();
+const quickIngest=()=>quickRun=quickRun.catch(()=>{}).then(quickTake);
+async function quickTake(){
   const q=plugin("QuickLog");if(!q)return;
   let r;try{r=await q.take()}catch{return}
   const raw=r?.items||[],upto=raw.reduce((m,i)=>i&&Number.isFinite(i.t)?Math.max(m,i.t):m,0);

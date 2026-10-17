@@ -29,7 +29,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
     /** An alarm may fire this early relative to its planned time. */
     static final long EARLY_MS = 5000;
     private static final long FSI_GRACE_MS = 1200, WAKE_MS = 20000, TEST_VISIBLE_MS = 120000, NOTIFICATION_TIMEOUT_MS = 30000;
-    private static final String PREFS = "nw_medwake", KEY = "times", DOSES = "doses", LOG = "log", TEST = "test", SNOOZE = "snooze", DETAIL = "detail", WAKE = "com.neowell.app.MED_WAKE";
+    private static final String PREFS = "nw_medwake", KEY = "times", DOSES = "doses", LOG = "log", TEST = "test", SNOOZE = "snooze", RANG = "snoozeRang", DETAIL = "detail", WAKE = "com.neowell.app.MED_WAKE";
     /** The id was bumped once because Android restores the old settings (including a lowered importance) when a deleted channel is recreated under the same id. */
     static final String CH = "nw_medwake2";
 
@@ -42,7 +42,7 @@ public class MedWakeReceiver extends BroadcastReceiver {
         String a = i.getAction();
         if (WAKE.equals(a)) {
             long sn = snooze(c);
-            if (sn > 0 && sn <= System.currentTimeMillis() + EARLY_MS) saveSnooze(c, 0);
+            if (sn > 0 && sn <= System.currentTimeMillis() + EARLY_MS) snoozeRang(c);
             wake(c, goAsync());
             // Doses beyond MAX wait in line: when one rings the window slides on and the next dose is set.
             arm(c, load(c), "AFTER");
@@ -61,6 +61,16 @@ public class MedWakeReceiver extends BroadcastReceiver {
 
     static void saveSnooze(Context c, long at) {
         prefs(c).edit().putLong(SNOOZE, at).apply();
+    }
+
+    /** The snooze alarm rang: it is cleared and the moment kept, so an alarm screen that then finds no dose sends the user to the app. */
+    private static void snoozeRang(Context c) {
+        prefs(c).edit().putLong(SNOOZE, 0).putLong(RANG, System.currentTimeMillis()).apply();
+    }
+
+    static boolean afterSnooze(Context c, long now) {
+        long t = prefs(c).getLong(RANG, 0);
+        return t > 0 && now - t <= TEST_VISIBLE_MS;
     }
 
     private static String cause(String a) {
