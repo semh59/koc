@@ -317,7 +317,7 @@ function medMark(mid,slot,st,force,day=calKey()){
     const r=MedLib.recentTaken(S.medLog,mid,day,slot,Date.now());
     if(r){confirmSheet({title:"Yine de kaydedilsin mi?",body:MedLib.recentText(r),ok:"Evet, kaydet",no:"Hayır, kaydetme"}).then(yes=>yes?medMark(mid,slot,st,true,day):toast(MedLib.NOT_SAVED));return}
   }
-  const at=st==="t"&&live?medNowHM():undefined,res=MedLib.mark(S,mid,day,slot,st,at);
+  const at=st==="t"&&live?medNowHM():undefined,res=MedLib.mark(S,mid,day,slot,st,at,calKey());
   if(!res)return;
   if(!commit(res.undo))return;
   render();medResched();
@@ -331,7 +331,7 @@ function medTakeAll(slot,force){
     const r=ds.map(d=>MedLib.recentTaken(S.medLog,d.m.id,t,slot,Date.now())).find(Boolean);
     if(r){confirmSheet({title:"Yine de kaydedilsin mi?",body:MedLib.recentText(r),ok:"Evet, kaydet",no:"Hayır, kaydetme"}).then(yes=>yes?medTakeAll(slot,true):toast(MedLib.NOT_SAVED));return}
   }
-  const at=medNowHM(),rs=ds.map(d=>MedLib.mark(S,d.m.id,t,slot,"t",at)).filter(Boolean);
+  const at=medNowHM(),rs=ds.map(d=>MedLib.mark(S,d.m.id,t,slot,"t",at,t)).filter(Boolean);
   if(!rs.length)return;
   const undo=()=>rs.slice().reverse().forEach(x=>x.undo());
   if(!commit(undo))return;
@@ -361,7 +361,7 @@ function medIngest(items){
     if(!m||!timeOk(i.s)||!m.t.includes(i.s))continue;
     const day=MedLib.dayForTap(i.s,i.t);
     if(MedLib.statusOf(S.medLog,m.id,day,i.s))continue;
-    if(MedLib.mark(S,m.id,day,i.s,i.k?"s":"t",MedLib.hm(new Date(i.t))))names.push(`${m.n} (${i.s})`);
+    if(MedLib.mark(S,m.id,day,i.s,i.k?"s":"t",MedLib.hm(new Date(i.t)),MedLib.key(new Date(i.t))))names.push(`${m.n} (${i.s})`);
   }
   return {n:names.length,names};
 }

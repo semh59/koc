@@ -66,7 +66,7 @@ function alarmMark(ks,st,force){
     if(r){a.ask={ks,st,text:MedLib.recentText(r)};a.say=a.ask.text;alarmDraw();$('#alarm [data-al="askno"]')?.focus({preventScroll:true});return}
   }
   const at=medNowHM(),undo=[];
-  for(const i of list){const r=MedLib.mark(S,i.m,i.day,i.slot,st,st==="t"?at:undefined);if(r){undo.push(r);i.st=st}}
+  for(const i of list){const r=MedLib.mark(S,i.m,i.day,i.slot,st,st==="t"?at:undefined,calKey());if(r){undo.push(r);i.st=st}}
   if(!save()){undo.reverse().forEach(r=>r.undo());list.forEach(i=>{i.st=undefined});a.say=SAVE_FAIL;alarmDraw();return}
   render();medResched();
   a.say=list.length>1?"Hepsi kaydedildi":(alarmShowName()?list[0].n+" ":"")+(st==="t"?"alındı":"atlandı");
