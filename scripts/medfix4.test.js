@@ -23,5 +23,22 @@ const {boot,read}=require("./html");
   at(8,31);
   ok("13: at 08:31 it is 'Gecikti' on both",due().every(x=>x.includes("Gecikti")),due());
   unclock();
+
+  /* 31: one adherence card with the dot legend, dots open their day, add button in the Dozlar header, one tap for a minute's doses, finished courses, the limit hint */
+  reset(`[{id:1,n:'A',t:['00:00'],on:true,s:keyOff(-5)},{id:2,n:'B',t:['00:00'],on:true,s:keyOff(-5)},{id:3,n:'C',t:['00:00'],on:true,s:keyOff(-5)},{id:4,n:'Biten',t:['09:00'],on:true,s:keyOff(-5),e:keyOff(-1)}]`,`[{m:1,day:keyOff(-1),slot:'00:00',st:'t'}]`);
+  const lbls=$$("#view .card>.lbl,#view .card .lhead>.lbl").map(e=>e.textContent);
+  ok("31: one 'Uyum' card holds the 7 dots and the legend line; no separate 'Son 7 gün' card",lbls.filter(x=>x==="Uyum").length===1&&!lbls.includes("Son 7 gün")&&$$(".dd7 .dd").length===7&&$(".dd7").closest(".card").textContent.includes("✓ hepsi alındı · – işaretlenmedi · ! bekliyor · • bazıları atlandı"),lbls);
+  ok("31: 'İlaç ekle' sits in the Dozlar header and is the only add button",!!$('#mdoses .lhead [data-md="new"] svg')&&$$('#view [data-md="new"]').length===1);
+  $(`.dd7 [data-md="dday:${ev("keyOff(-3)")}"]`).click();
+  ok("31: tapping the dot of 3 days ago shows that day's doses",ev("medViewDay()")===ev("keyOff(-3)")&&$("#mdoses").textContent.includes(ev("fd(keyOff(-3))")),$("#mdoses").textContent);
+  $(`.dd7 [data-md="dday:${ev("calKey()")}"]`).click();
+  ok("31: today's dot goes back to today",ev("medDay")==="");
+  ok("31: three doses of the same minute get one 'Hepsini aldım' on the Meds screen",$$('#view [data-md="takeall:00:00"]').length===1);
+  $('#view [data-md="takeall:00:00"]').click();
+  const n3=ev("S.medLog.filter(r=>r.day===calKey()).length");$("#tundo").click();
+  ok("31: one tap marks all three and one Geri al opens all three",n3===3&&ev("S.medLog.filter(r=>r.day===calKey()).length")===0,n3);
+  ok("31: a medication whose end day has passed says '(bitti)'",[...$$("#view .card")].find(c=>c.textContent.startsWith("İlaçlarım")).textContent.includes("Biten (bitti)"));
+  reset(`[${Array.from({length:20},(_,i)=>`{id:${i+1},n:'M${i}',t:['08:00'],on:true}`).join()}]`);ev("medOpen(0)");
+  ok("31: at the 20 limit the message says finished medications can be deleted",$("#toast").textContent.includes("Biten ilaçları silebilirsin"),$("#toast").textContent);
   finish();
 })();
