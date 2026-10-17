@@ -2,7 +2,7 @@
 /* Medication reminder logic (no DOM): validation, the doses of a day, taken/skipped log, adherence, stock, notification list.
    It gives no dose advice, checks no interactions and makes no medical comment: it only reminds the user's own schedule and records it. */
 const MedLib=(()=>{
-  const MAXM=20,MAXT=6,MAXLOG=50000,BUDGET=440,MAXH=24,MAXID=999,STOCK_MAX=99999,LEAD_MS=5000,NID_BASE=1e6,NID_DAYS=40,NID_SLOTS=24,STOCK_DAYS=7,FED=["empty","full","with"],FED_TEXT={empty:"Aç karnına",full:"Tok karnına",with:"Yemekle"},NAME_MAX=60;
+  const MAXM=20,MAXT=6,MAXLOG=50000,BUDGET=440,MAXH=24,MAXID=999,STOCK_MAX=99999,LEAD_MS=5000,NID_BASE=1e6,NID_DAYS=40,NID_SLOTS=22,STOCK_DAYS=7,FED=["empty","full","with"],FED_TEXT={empty:"Aç karnına",full:"Tok karnına",with:"Yemekle"},NAME_MAX=60;
   const TITLE="💊 İlaç zamanı",GENERIC_BODY="İlaç saatin geldi.";
   const {dayOk,timeOk,dayNum}=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
   const p2=n=>String(n).padStart(2,"0");
@@ -228,7 +228,8 @@ const MedLib=(()=>{
     return m.k+1e-9<need;
   }
 
-  /* Notification id: 1e6 + med id * 1000 + time index * 40 + day offset (yesterday takes the last slot). Reminder repeats add 1e6 per repeat. */
+  /* Notification id: 1e6 + med id * 1000 + time index * 40 + day offset (yesterday takes the last slot). Reminder repeats add 1e6 per repeat.
+     22 times keep the largest dose id at 879, below the 09:00 notices (900, 901). */
   const nid=(m,ti,off)=>NID_BASE+m.id*1000+ti*NID_DAYS+off;
   const NAGS=[10,20];
   /* Finds the medication and the dose time from a notification id (main or repeat). */
