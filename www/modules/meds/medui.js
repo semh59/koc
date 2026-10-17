@@ -355,15 +355,15 @@ function medAtSave(mid,slot,day){
 
 /* Taken/skipped taps from the notification buttons (quickui.js calls this). Returns the handled names. */
 function medIngest(items){
-  const names=[];
+  const names=[];let miss=0;
   for(const i of items){
-    const m=S.meds.find(x=>x.id===i.m);
-    if(!m||!timeOk(i.s)||!m.t.includes(i.s))continue;
-    const day=MedLib.dayForTap(i.s,i.t);
+    /* Checked against that day's doses: a time moved today still rings today (keepToday), and its tap must not be dropped. */
+    const m=S.meds.find(x=>x.id===i.m),day=timeOk(i.s)&&MedLib.dayForTap(i.s,i.t);
+    if(!m||!day||!MedLib.dosesOn(S.meds,day).some(d=>d.m.id===m.id&&d.slot===i.s)){miss++;continue}
     if(MedLib.statusOf(S.medLog,m.id,day,i.s))continue;
     if(MedLib.mark(S,m.id,day,i.s,i.k?"s":"t",MedLib.hm(new Date(i.t)),MedLib.key(new Date(i.t))))names.push(`${m.n} (${i.s})`);
   }
-  return {n:names.length,names};
+  return {n:names.length,names,miss};
 }
 
 document.addEventListener("click",ev=>{
