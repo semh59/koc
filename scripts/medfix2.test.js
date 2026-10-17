@@ -46,5 +46,23 @@ const unclock=require("./clock").at;
     ev("delete window.__confirmAuto");restore();
   }
 
+  /* 3: the alarm's "Hepsini aldım" covers only doses of the same day and minute */
+  {
+    let restore=unclock(w,8);
+    reset(`[{id:1,n:'A',t:['06:00','08:00'],on:true,s:'2026-01-01'}]`);
+    ev("S.settings.medShowName=true;alarmOpen()");
+    ok("A at 06:00 and 08:00 open: no 'Hepsini aldım'",ev("alarm.items.length")===2&&!$('#alarm [data-al^="all"]'));
+    ev("alarmClose()");
+    reset(`[{id:1,n:'A',t:['06:00','08:00'],on:true,s:'2026-01-01'},{id:2,n:'B',t:['08:00'],on:true,s:'2026-01-01'}]`);
+    ev("alarmOpen()");click('#alarm [data-al^="all"]');
+    ok("A and B at 08:00: the button marks only those two",ev("JSON.stringify(S.medLog.map(x=>x.m+x.slot).sort())")==='["108:00","208:00"]'&&!ev("alarm.items.find(i=>i.slot==='06:00').st"),ev("JSON.stringify(S.medLog)"));
+    ev("alarmClose()");restore();
+    restore=unclock(w,0);
+    reset(`[{id:1,n:'A',t:['23:30'],on:true,s:'2026-01-01'}]`);
+    ev("alarmOpen()");
+    ok("at midnight yesterday's 23:30 dose says 'dün'",/23:30 · dün/.test($("#albody").textContent)&&/dün/.test($('#alarm [data-al="t:0"]').getAttribute("aria-label")),$("#albody").textContent);
+    ev("alarmClose()");restore();
+  }
+
   finish();
 })();
