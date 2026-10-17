@@ -132,5 +132,12 @@ const unclock=require("./clock").at;
     delete w.Capacitor;restore();
   }
 
+  /* 41: a snooze from the lock screen rings once on the medication channel (source check: no Android runtime here) */
+  {
+    const rd=f=>require("fs").readFileSync(require("path").join(__dirname,"../assets/android",f),"utf8"),aa=rd("AlarmActivity.java"),mw=rd("MedWakeReceiver.java"),mp=rd("MedWakePlugin.java");
+    ok("lock-screen snooze: flagged in AlarmActivity, rung by the receiver on the medication channel with the app's snooze id, cleared by the app's own snooze",
+      /snoozeAt\(this, [^;]+\);\s*MedWakeReceiver\.snoozeNote\(this, true\)/.test(aa)&&/if \(note\) snoozeNotify\(c\)/.test(mw)&&/new Notification\.Builder\(c, medId\(c\)\)/.test(mw)&&new RegExp("SNOOZE_NID = "+ev("AlarmLib.SNOOZE_NID")+";").test(mw)&&/snoozeNote\(getContext\(\), false\)/.test(mp));
+  }
+
   finish();
 })();
