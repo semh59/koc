@@ -64,5 +64,22 @@ const unclock=require("./clock").at;
     ev("alarmClose()");restore();
   }
 
+  /* K8: names hidden and two doses in one minute: "Adları göster" opens the names on this screen only */
+  {
+    const restore=unclock(w,8);
+    reset(`[{id:1,n:'Aspirin',t:['08:00'],on:true,s:'2026-01-01'},{id:2,n:'Beta',t:['08:00'],on:true,s:'2026-01-01'}]`);
+    ev("S.settings.medShowName=false;alarmOpen()");
+    ok("names hidden, two doses at 08:00: 'Adları göster' is offered and no name is on the screen",!!$('#alarm [data-al="names"]')&&!/Aspirin|Beta/.test($("#alarm").innerHTML));
+    click('#alarm [data-al="names"]');
+    ok("after the tap the rows carry the names, the setting stays off",/Aspirin/.test($("#albody").textContent)&&/Beta/.test($("#albody").textContent)&&ev("S.settings.medShowName")===false&&!$('#alarm [data-al="names"]'));
+    ev("alarmClose();alarmOpen()");
+    ok("a new alarm screen is hidden again",!/Aspirin|Beta/.test($("#alarm").innerHTML));
+    ev("alarmClose()");
+    reset(`[{id:1,n:'Aspirin',t:['08:00'],on:true,s:'2026-01-01'}]`);
+    ev("S.settings.medShowName=false;alarmOpen()");
+    ok("a single dose offers no 'Adları göster'",!$('#alarm [data-al="names"]'));
+    ev("alarmClose()");restore();
+  }
+
   finish();
 })();
