@@ -17,6 +17,8 @@ function pmItems(){
     if(r.display!=="granted")openDH("openDetails")}});
   items.push({id:"exact",...PM_TEXT.exact,ok:exactOk,need:med,go:()=>exactAsk()});
   if(st.medOn)items.push({id:"fsi",...PM_TEXT.fsi,ok:fsiOk,need:med,go:()=>MW()?.fsiSettings().catch(()=>openDH("openDetails"))});
+  for(const [id,t,why] of [["xl","Kilit ekranında göster (Xiaomi)","İlaç alarmı kilitli ekranın üstünde açılsın diye."],["xp","Arka planda açılır pencere (Xiaomi)","Telefon kilitliyken ilaç alarm ekranı açılabilsin diye."]])
+    if(st.medOn&&bg[id]!=null)items.push({id,t,why,ok:bg[id]<0?null:bg[id]===0,need:med,go:()=>MW()?.settings({to:"miui"}).catch(()=>openDH("openDetails"))});
   if(steps)items.push({id:"act",t:"Fiziksel aktivite",why:"Adım sayar ve hareket algılama için; konum sormaz.",ok:st.stepsOn?p.activity===undefined?null:!!p.activity:false,need:st.stepsOn,go:async()=>{
     if(!st.stepsOn)return stepsOpen();
     let g={granted:false};try{g=await SC().requestAccess()}catch{}

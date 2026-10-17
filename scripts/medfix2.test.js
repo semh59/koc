@@ -160,6 +160,17 @@ const unclock=require("./clock").at;
     ev("pmNotif=null;exactOk=true");delete w.Capacitor;
   }
 
+  /* 35: Xiaomi's two alarm permissions are rows of the permissions list */
+  {
+    reset(`[{id:1,n:'A',t:['23:59'],on:true}]`);native();
+    ev("bg=MedLib.bgState({xl:1,xp:0},[],Date.now());pmSheet()");
+    const rows=[...w.document.querySelectorAll("#sheet .row")].map(r=>r.textContent),xl=rows.find(t=>/Kilit ekranında göster/.test(t)),xp=rows.find(t=>/Arka planda açılır pencere/.test(t));
+    ok("xl=1: 'Kapalı' with a button; xp=0: 'Tamam'",/Kapalı/.test(xl)&&!!$('#sheet [data-pm="go:xl"]')&&/Tamam/.test(xp),rows);
+    ev("bg=MedLib.bgState({},[],Date.now());pmSheet()");
+    ok("other phones (no xl/xp): no Xiaomi rows",!/Xiaomi\)/.test($("#sheet").textContent));
+    ev("closeSheet();bg={}");delete w.Capacitor;
+  }
+
   /* 41: a snooze from the lock screen rings once on the medication channel (source check: no Android runtime here) */
   {
     const rd=f=>require("fs").readFileSync(require("path").join(__dirname,"../assets/android",f),"utf8"),aa=rd("AlarmActivity.java"),mw=rd("MedWakeReceiver.java"),mp=rd("MedWakePlugin.java");
