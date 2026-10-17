@@ -17,7 +17,9 @@ import android.widget.ScrollView;
 import android.widget.TextClock;
 import android.widget.TextView;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -158,10 +160,15 @@ public class AlarmActivity extends Activity {
         ScrollView sv = new ScrollView(this);
         sv.addView(rows);
         root.addView(sv, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1));
-        if (doses.size() > 1) {
-            root.addView(button("Hepsini aldım", true, v -> {
-                for (JSONObject d : doses) QuickLogPlugin.recordMed(this, key(d, false), d.optInt("nid"));
-                finish();
+        // "Hepsini aldım" covers the doses of one minute (same planned time), never doses of other times or days.
+        final Map<Long, List<JSONObject>> byAt = new LinkedHashMap<>();
+        for (JSONObject d : doses) byAt.computeIfAbsent(d.optLong("at"), k -> new ArrayList<>()).add(d);
+        for (final List<JSONObject> g : byAt.values()) {
+            if (g.size() < 2) continue;
+            root.addView(button(byAt.size() > 1 ? "Hepsini aldım · " + g.get(0).optString("s") : "Hepsini aldım", true, v -> {
+                for (JSONObject d : g) QuickLogPlugin.recordMed(this, key(d, false), d.optInt("nid"));
+                if (g.size() == doses.size()) finish();
+                else draw();
             }), full(12));
         }
         if (!doses.isEmpty()) {

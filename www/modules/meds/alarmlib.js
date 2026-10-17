@@ -30,6 +30,12 @@ const AlarmLib=(()=>{
     return {id:SNOOZE_NID,title:M.TITLE,body,schedule:{at:new Date(at),allowWhileIdle:true},channelId:"nw_med",extra:{act:"med"},autoCancel:true};
   }
   const allDone=items=>items.every(i=>i.st);
-  return {due,view,snoozeAt,snoozeNote,allDone,SNOOZE_NID};
+  /* Unmarked doses of the same day and minute, two or more (indices into items): "Hepsini aldım" covers one such group, never doses of other times or days. */
+  function groups(items){
+    const g=new Map();
+    items.forEach((i,k)=>{if(!i.st){const id=i.day+"|"+i.slot;g.set(id,(g.get(id)||[]).concat(k))}});
+    return [...g.values()].filter(x=>x.length>1);
+  }
+  return {due,view,snoozeAt,snoozeNote,allDone,groups,SNOOZE_NID};
 })();
 if(typeof module!=="undefined")module.exports=AlarmLib;

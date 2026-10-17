@@ -25,7 +25,8 @@ test("alarm screen opened by alarmOpen: due doses, Taken records and reschedules
 
 test("with names hidden the alarm screen shows no medication name or dose",async({app,page})=>{
   await page.addInitScript(plugins);
-  await app.open({seed:state({medOn:true,medShowName:false},MEDS),native:{}});
+  const same={meds:MEDS.meds.map(m=>m.id===2?{...m,t:["09:55"]}:m)}; // "Hepsini aldım" covers one minute only
+  await app.open({seed:state({medOn:true,medShowName:false},same),native:{}});
   await page.evaluate("alarmOpen()");
   const al=page.getByRole("alertdialog");
   await expect(al).toContainText("İlaç saatin geldi.");
