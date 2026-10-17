@@ -71,15 +71,17 @@ const MedLib=(()=>{
     }
     return out;
   }
-  /* Blood-pressure label: time between the nearest earlier recorded dose of a medication marked bp on that same day and the measurement. Records are tap times, so the wording says "kayıt". */
-  function sinceDose(meds,log,day,time){
+  /* Blood-pressure label: time between the nearest earlier recorded dose of a medication marked bp on the measurement's app day and the measurement. Records are tap times, so the wording says "kayıt".
+     The measurement has an app day (it starts at dayStart), the record a calendar day: both are turned into moments before they are compared. */
+  function sinceDose(meds,log,day,time,dayStart=0){
     const bp=new Set(meds.filter(m=>m.bp).map(m=>m.id));
     if(!bp.size||!timeOk(time))return "";
-    const at=log.filter(x=>bp.has(x.m)&&x.day===day&&x.st==="t"&&timeOk(x.at)).map(x=>x.at).sort();
+    const H=dayStart*36e5,now=slotMs(day,time)+(+time.slice(0,2)<dayStart?864e5:0);
+    const at=log.filter(x=>bp.has(x.m)&&x.st==="t"&&timeOk(x.at)).map(tapMs).filter(t=>key(new Date(t-H))===day).sort((a,b)=>a-b);
     if(!at.length)return "";
-    const mins=t=>+t.slice(0,2)*60+ +t.slice(3,5),prev=at.filter(t=>t<=time).pop();
-    if(!prev)return "İlaç kaydından önce";
-    const d=mins(time)-mins(prev),h=Math.floor(d/60),m=d%60;
+    const prev=at.filter(t=>t<=now).pop();
+    if(prev==null)return "İlaç kaydından önce";
+    const d=Math.round((now-prev)/60000),h=Math.floor(d/60),m=d%60;
     return `Son ilaç kaydından ${d<1?"az":h?`${h} sa${m?` ${m} dk`:""}`:`${m} dk`} sonra`;
   }
   /* Log: only rows of existing medications, one row per (medication, day, time); the last one written wins. */
