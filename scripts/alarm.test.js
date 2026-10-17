@@ -66,7 +66,7 @@ const inert=()=>[...w.document.body.children].some(e=>e.contains($("#view"))&&e.
   ev("S.medLog=[];tab='meds';notifTap({actionId:'tap',notification:{id:1001000,extra:{act:'med',m:1,s:'"+slot+"'}}})");await until(()=>!$("#alarm").hidden);
   ok("tapping a medication notification opens the alarm screen",!$("#alarm").hidden&&txt().includes("Aspirin"));
   click('#alarm [data-al="t:0"]');await flush();
-  ok("the live region is persistent and announces the marking",$("#allive").getAttribute("aria-live")==="polite"&&$("#allive").textContent==="Aspirin alındı");
+  ok("the live region is persistent and announces the marking",$("#allive").getAttribute("aria-live")==="polite"&&$("#allive").textContent==="Aspirin, "+slot+" dozu alındı");
   ev("S.medLog=[]");ev("alarmOpen()");click('#alarm [data-al="open"]');
   ok("Open app: the alarm closes, the home page (Today) opens",$("#alarm").hidden&&ev("tab")==="today");
   ev("S.medLog=[{id:1,m:1,day:dayKey(new Date(Date.now()-600000)),slot:'"+slot+"',st:'t'}];notifTap({actionId:'tap',notification:{id:1001000,extra:{act:'med'}}})");await flush();

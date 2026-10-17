@@ -81,5 +81,16 @@ const unclock=require("./clock").at;
     ev("alarmClose()");restore();
   }
 
+  /* 27: with names hidden two markings in a row are announced differently (the dose time is said) */
+  {
+    const restore=unclock(w,8);
+    reset(`[{id:1,n:'A',t:['06:00'],on:true,s:'2026-01-01'},{id:2,n:'B',t:['07:30'],on:true,s:'2026-01-01'}]`);
+    ev("S.settings.medShowName=false;alarmOpen()");
+    click('#alarm [data-al="t:0"]');const s1=$("#allive").textContent;
+    click('#alarm [data-al="s:1"]');const s2=$("#allive").textContent;
+    ok("names hidden: '06:00 dozu alındı' then '07:30 dozu atlandı'",s1==="06:00 dozu alındı"&&s2==="07:30 dozu atlandı",[s1,s2]);
+    ev("alarmClose()");restore();
+  }
+
   finish();
 })();
