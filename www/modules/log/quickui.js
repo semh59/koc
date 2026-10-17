@@ -26,7 +26,7 @@ async function quickTake(){
     added.push({id:S.nextId++,day:dayAt(w),time:`${pad(d.getHours())}:${pad(d.getMinutes())}`,type:"water",v:Math.round(i.v),text:"",qt:i.t});
   }
   S.entries.push(...added);
-  const md=meds.length?medIngest(meds):{n:0,names:[]};
+  const md=medIngest(meds);
   if(!save()){
     S.entries.length=n0;S.nextId=id0;Meds.rollback(med0);
     return;
@@ -35,10 +35,15 @@ async function quickTake(){
   if(!$("#sheet").classList.contains("on"))render();
   const msgs=[];
   if(water.length){const total=water.reduce((a,i)=>a+Math.round(i.v),0),t=dayKey();msgs.push(`Bildirimden ${total} ml eklendi, bugün ${Math.round(sum("water",t,t))} / ${S.settings.waterMl} ml`)}
-  if(md.n)msgs.push(`İlaç kaydedildi: ${md.names.join(", ")}`);
+  if(md.took.length)msgs.push(`Bildirimden: ${md.took.join(", ")} alındı`);
+  if(md.skip.length)msgs.push(`Bildirimden: ${md.skip.join(", ")} atlandı`);
+  msgs.push(...md.dbl.map(t=>t.replace(/\.$/,"")));
   if(md.miss)msgs.push(`${md.miss} dokunuş kaydedilemedi, İlaçlar'dan işaretle`);
-  const ids=new Set(added.map(e=>e.id)),undo=()=>{S.entries=S.entries.filter(e=>!ids.has(e.id));save();render();scheduleReminders().then(setNotif)};
-  if(msgs.length)toast(msgs.join(". "),added.length?undo:undefined);
+  const ids=new Set(added.map(e=>e.id)),undo=()=>{
+    const e0=S.entries,sn=Meds.snapshot();S.entries=S.entries.filter(e=>!ids.has(e.id));md.undo();
+    if(commit(()=>{S.entries=e0;Meds.rollback(sn)})){render();scheduleReminders().then(setNotif)}
+  };
+  if(msgs.length)toast(msgs.join(". "),added.length||md.n?undo:undefined);
   console.log("NW-QUICK ingested "+(water.length+md.n));
   const t=dayKey();
   if(md.n||md.miss||(water.length&&sum("water",t,t)>=S.settings.waterMl))scheduleReminders().then(setNotif);
