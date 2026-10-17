@@ -2,7 +2,7 @@
 /* Medication reminder logic (no DOM): validation, the doses of a day, taken/skipped log, adherence, stock, notification list.
    It gives no dose advice, checks no interactions and makes no medical comment: it only reminds the user's own schedule and records it. */
 const MedLib=(()=>{
-  const MAXM=20,MAXT=6,MAXLOG=50000,BUDGET=440,MAXH=24,MAXID=999,STOCK_MAX=99999,LEAD_MS=5000,NID_BASE=1e6,NID_DAYS=40,NID_SLOTS=22,STOCK_DAYS=7,FED=["empty","full","with"],FED_TEXT={empty:"Aç karnına",full:"Tok karnına",with:"Yemekle"},NAME_MAX=60;
+  const MAXM=20,MAXT=6,MAXLOG=50000,MAXH=24,MAXID=999,STOCK_MAX=99999,LEAD_MS=5000,NID_BASE=1e6,NID_DAYS=40,NID_SLOTS=22,STOCK_DAYS=7,FED=["empty","full","with"],FED_TEXT={empty:"Aç karnına",full:"Tok karnına",with:"Yemekle"},NAME_MAX=60;
   const TITLE="💊 İlaç zamanı",GENERIC_BODY="İlaç saatin geldi.";
   const {dayOk,timeOk,dayNum}=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
   const p2=n=>String(n).padStart(2,"0");
@@ -268,15 +268,21 @@ const MedLib=(()=>{
         extra:{act:"med",m:m.id,s:slot,at:ms,...(one?{}:{g:g.map(x=>x.m.id+"_"+x.slot.replace(":","")).join(",")})}};
     }).sort((a,b)=>a.at-b.at);
   }
-  /* Phone limit on pending alarms: medication doses and notices are kept first, the other reminders next, the repeat reminders last; inside a group the nearest are kept.
-     mainCut and nagCut count what did not fit; days is how many days ahead the kept doses reach. */
+  /* Android keeps at most 500 pending alarms per app. The screen alarms (MedWakeReceiver MAX) and a spare for the gym timers, the guide, the tests, the snoozes,
+     the step and motion alarms come off first; the rest is the notification budget. */
+  const PHONE_ALARMS=500,WAKE_ALARMS=40,SPARE=20,BUDGET=PHONE_ALARMS-WAKE_ALARMS-SPARE,SOON_MS=2*864e5;
+  /* Phone limit on pending alarms, in this order: medication doses and notices of the next 48 h, the other reminders of the next 48 h (water, measurement, backup,
+     fast end, cycle: they are never all pushed out by medication), the farther medication doses, the farther other reminders, the repeat reminders last; inside a group the nearest are kept.
+     mainCut, otherCut and nagCut count what did not fit; days is how many days ahead the kept doses reach. */
   function fit(med,others,budget,now){
-    const byAt=(a,b)=>a.schedule.at-b.schedule.at,rep=n=>n.id>=2*NID_BASE;
+    const byAt=(a,b)=>a.schedule.at-b.schedule.at,rep=n=>n.id>=2*NID_BASE,soon=n=>n.schedule.at-now<SOON_MS;
     const main=med.filter(n=>!rep(n)).sort(byAt),nag=med.filter(rep).sort(byAt),rest=others.slice().sort(byAt);
-    const km=main.slice(0,budget),kr=rest.slice(0,budget-km.length),kn=nag.slice(0,budget-km.length-kr.length),last=km[km.length-1];
-    return {list:[...km,...kr,...kn].sort(byAt),mainCut:main.length-km.length,nagCut:nag.length-kn.length,days:last?Math.max(0,Math.floor((last.schedule.at-now)/864e5)):0};
+    const kept=[...main.filter(soon),...rest.filter(soon),...main.filter(n=>!soon(n)),...rest.filter(n=>!soon(n)),...nag].slice(0,budget),keep=new Set(kept),cut=a=>a.filter(n=>!keep.has(n)).length;
+    const km=main.filter(n=>keep.has(n)),last=km[km.length-1];
+    return {list:kept.sort(byAt),mainCut:cut(main),otherCut:cut(rest),nagCut:cut(nag),days:last?Math.max(0,Math.floor((last.schedule.at-now)/864e5)):0};
   }
-  const budgetText=f=>f.mainCut?`Telefon bildirim sınırı doldu: ilaç hatırlatmaların yaklaşık ${f.days} gün ilerisine kadar kuruldu. Uygulamayı açtıkça yenilenir.`:f.nagCut?"Telefon bildirim sınırı doldu: bazı tekrar hatırlatmaları kurulmadı. İlaç saatlerin korunuyor.":"";
+  const budgetText=f=>[f.mainCut?`Telefon bildirim sınırı doldu: ilaç hatırlatmaların yaklaşık ${f.days} gün ilerisine kadar kuruldu. Uygulamayı açtıkça yenilenir.`:f.nagCut?"Telefon bildirim sınırı doldu: bazı tekrar hatırlatmaları kurulmadı. İlaç saatlerin korunuyor.":"",
+    f.otherCut?"Su, ölçüm ve diğer hatırlatmaların yalnız önümüzdeki 2 günü kuruldu.":""].filter(Boolean).join(" ");
 
   /* One-off 09:00 notices: low stock (days left within the medication's threshold) and the end of a pause. Both open the Meds screen. */
   function notices(meds,now,showName,log){
@@ -384,6 +390,6 @@ const MedLib=(()=>{
     if(bad)add("Tam ekran bildirimi gönderilemedi: "+bad.fs.replace(/^err:/,""));
     return out;
   }
-  return {clockMoved,bgState,dhm,doseNid,sinceDose,recentTaken,recentText,NOT_SAVED,wakeTimes,wakeDoses,wakeLine,wakeIssues,sinceFor,keepToday,doseOfId,amt,doseText,stockDays,stockLow,notices,STOCK_DAYS,FED,FED_TEXT,NAME_MAX,freeId,doseKey,MAXM,MAXT,BUDGET,TITLE,GENERIC_BODY,cleanMeds,cleanLog,dosesOn,statusOf,logIndex,mark,adherence,adherenceDays,sumAdherence,notifications,fit,budgetText,dayForTap,revise,addDay,slotAt,hm,timeOk,key};
+  return {clockMoved,bgState,dhm,doseNid,sinceDose,recentTaken,recentText,NOT_SAVED,wakeTimes,wakeDoses,wakeLine,wakeIssues,sinceFor,keepToday,doseOfId,amt,doseText,stockDays,stockLow,notices,STOCK_DAYS,FED,FED_TEXT,NAME_MAX,freeId,doseKey,MAXM,MAXT,BUDGET,WAKE_ALARMS,PHONE_ALARMS,TITLE,GENERIC_BODY,cleanMeds,cleanLog,dosesOn,statusOf,logIndex,mark,adherence,adherenceDays,sumAdherence,notifications,fit,budgetText,dayForTap,revise,addDay,slotAt,hm,timeOk,key};
 })();
 if(typeof module!=="undefined")module.exports=MedLib;
