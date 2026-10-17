@@ -39,10 +39,10 @@ function alarmOpen(o={}){
   if(recovery||!S.settings.medOn)return;
   const items=AlarmLib.due(S.meds,S.medLog,new Date());
   if(!items.length&&o.quiet&&!alarm)return;
-  if(alarm){ // a new wake-up while open: the list is refreshed and marked doses stay marked
-    const old=new Map(alarm.items.map(i=>[MedLib.doseKey(i.m,i.day,i.slot),i.st]));
-    for(const i of items)i.st=old.get(MedLib.doseKey(i.m,i.day,i.slot));
-    alarm.items=items.length?items:alarm.items;
+  if(alarm){ // a new wake-up while open: the list is refreshed, rows marked here stay; an open double-dose question points at row numbers, so it goes
+    const k=i=>MedLib.doseKey(i.m,i.day,i.slot),fresh=new Set(items.map(k));
+    alarm.items=alarm.items.filter(i=>i.st&&!fresh.has(k(i))).concat(items).sort((a,b)=>a.at-b.at||a.m-b.m);
+    alarm.ask=null;
   }else{
     alarm={items,from:document.activeElement,tick:setInterval(()=>{const c=document.querySelector("#alarm .alclk");if(c)c.textContent=MedLib.hm(new Date())},15000)};
   }
