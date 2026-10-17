@@ -118,7 +118,7 @@ const DH=()=>plugin("DeviceHelp");
 /* When the direct screen could not be opened the phone showed the app's details (or nothing): the written path is what is left. */
 const DH_PATH={openAutostart:"Ayarlar > Uygulamalar > İzinler > Otomatik başlat > NeoWell'i aç",openBattery:"Ayarlar > Pil > Uygulama pil tasarrufu > NeoWell > Kısıtlama yok"};
 const openDH=m=>{const p=DH();if(p)p[m]().then(r=>{
-  if(DH_PATH[m]&&(r.opened==="none"||r.opened==="details"))openSheet(`<h3>Ayarı kendin aç</h3><p class="mut">Bu telefonda ayar ekranı doğrudan açılamadı. Şu yolu izle:</p><p><b>${DH_PATH[m]}</b></p><button class="btn" data-pm="close">Tamam</button>`);
+  if(DH_PATH[m]&&(r.opened==="none"||r.opened==="details"))openSheet(`<h3>Ayarı kendin aç</h3><p class="mut">Bu telefonda ayar ekranı doğrudan açılamadı. Şu yolu izle:</p><p><b>${DH_PATH[m]}</b></p><p class="hint">Menü adı telefona göre değişebilir, ayarlarda 'NeoWell' ara.</p><button class="btn" data-pm="close">Tamam</button>`);
   else if(r.opened==="none")toast("Ayar ekranı açılamadı, telefon ayarlarından NeoWell'i bul")},()=>toast("Ayar ekranı açılamadı"))};
 const batFix=()=>oemXiaomi()?sheetOem():openDH("openBattery");
 const oemXiaomi=()=>/xiaomi|redmi|poco/.test(oem);

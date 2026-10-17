@@ -157,6 +157,6 @@ const doses=(m,day)=>M.dosesOn(M.cleanMeds([m]),day).map(x=>x.slot).join();
   set("#me","");click('[data-md="save"]');await flush();
   ok("clearing the course end in the edit sheet removes it",ev("S.meds[0].e")===undefined&&ev("S.meds[0].h[0].e")===y,ev("S.meds[0]"));
   ev("medOpen(1)");set("#mt0","13:00");click('[data-md="save"]');await flush();
-  ok("changing the time keeps today's old time and says so",ev("MedLib.dosesOn(S.meds,dayKey()).map(x=>x.slot).join()")==="12:00,13:00"&&q("#tmsg").textContent.includes("12:00 saati bugün için geçerli kalır"),q("#tmsg").textContent);
+  ok("changing the time keeps today's old time and says so",ev("MedLib.dosesOn(S.meds,dayKey()).map(x=>x.slot).join()")==="12:00,13:00"&&q("#tmsg").textContent.includes("Eski 12:00 saati bugün de çalar, yarından kalkar"),q("#tmsg").textContent);
   finish();
 })();

@@ -383,7 +383,7 @@ const MedLib=(()=>{
     if(late>60000)add(`Alarm planlanandan geç çaldı (en çok ${span(late)}): pil kısıtlaması ya da otomatik başlatma kapalı olabilir.`,"autostart");
     /* The full-screen notification went out but no alarm screen opened within 20 s: the phone showed only a banner (Samsung/One UI demotes it when notifications are not allowed over the lock screen or full-screen notifications are off). */
     const lastW=w[w.length-1];
-    if(lastW&&lastW.v===2&&lastW.fs==="ok"&&!items.some(e=>e.a==="AS"&&e.t>=lastW.t-1000&&e.t<=lastW.t+20000))add("Son alarmda tam ekran bildirimi gönderildi ama alarm ekranı açılmadı, telefon yalnız bildirim gösterdi. Ekran alarmı kanalında 'Kilit ekranında göster' ve 'Açılır pencere'yi aç; Samsung'ta ayrıca Ayarlar > Uygulamalar > NeoWell > Bildirimler'de tam ekran bildirimini izin ver.","channel");
+    if(lastW&&lastW.v===2&&lastW.fs==="ok"&&!items.some(e=>e.a==="AS"&&e.t>=lastW.t-1000&&e.t<=lastW.t+20000))add("Son alarmda tam ekran bildirimi gönderildi ama alarm ekranı açılmadı, telefon yalnız bildirim gösterdi. Bildirim ayarlarındaki 'Ekran alarmı' kanalında 'Kilit ekranında göster' ve 'Açılır pencere' ayarlarını aç; Samsung'ta ayrıca Ayarlar > Uygulamalar > NeoWell > Bildirimler'de tam ekran bildirimlerine izin ver.","channel");
     const quick=items.filter(e=>e.a==="AE"&&e.ms<1500).pop();
     if(quick)add("Alarm ekranı açıldı ve hemen kapandı: başka bir uygulama ya da ekran kilidi üstüne geçmiş olabilir.");
     const bad=w.filter(e=>e.fs&&/^err/.test(e.fs)).pop();

@@ -59,5 +59,9 @@ const {boot}=require("./html");
   ev("delete window.__confirmAuto");
   const Y=ev("keyOff(-1)");reset(`[{id:1,n:'A',t:['00:00'],on:true,s:'${ev("keyOff(-5)")}'}]`);click('[data-md="dprev"]');ev("medTapAt=0");click(`[data-md="take:1:00:00:${Y}"]`);
   ok("32: Aldım on a past day opens the taken-time sheet",$("#sheet").classList.contains("on")&&!!$("#mat")&&ev(`S.medLog.some(r=>r.day==='${Y}'&&r.st==='t')`));
+
+  /* 37: plain form words */
+  reset("[{id:1,n:'A',t:['08:00'],on:true}]");ev("medOpen(1)");
+  ok("37: the form says neither 'ilişkisi' nor 'başına adet', and the pause day says it asks",!/ilişkisi|başına adet/.test($("#sheet").textContent)&&$("#sheet").textContent.includes("Ara verme bitiş günü (o gün sana sorarım)"),$("#sheet").textContent);
   finish();
 })();

@@ -36,7 +36,7 @@ boot(w=>{
 
   ev("medRamGo(1)");await until(()=>ev("S.settings.ramMeds[1]"));await flush();
   ev(`S.settings.ramMedsRef[1]="${hm(im-20)}";tab='meds';render()`);
-  ok("imsak moved 15+ minutes since the shift: the card says so and offers a recalculation",/İmsak kaydırdığından beri yaklaşık 20 dk geriye gitti/.test($("#view").textContent)&&!!$('[data-md="ramredo:1"]'),$("#view").textContent.slice(0,300));
+  ok("imsak moved 15+ minutes since the shift: the card says so and offers a recalculation",/İmsak artık yaklaşık 20 dk daha geç/.test($("#view").textContent)&&!!$('[data-md="ramredo:1"]'),$("#view").textContent.slice(0,300));
   ev("medRamRedo(1)");await flush();
   ok("recalculating re-anchors to today's imsak and keeps three distinct times",ev("S.settings.ramMedsRef[1]")===tt[0]&&new Set(ev("S.meds[0].t")).size===3&&ev("Object.keys(S.meds[0].q).length")===1&&ev("Object.values(S.meds[0].q)[0].d")==="2 tablet");
   ev("S.settings.ramMedsRef={};tab='today';render()");
