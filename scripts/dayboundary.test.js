@@ -61,7 +61,7 @@ const key=d=>`2026-10-${String(d).padStart(2,"0")}`;
 { // rollover
   fresh();
   ev("S.entries=[{id:1,day:'"+key(1)+"',time:'09:00',type:'water',v:250,text:''}];S.nextId=2");
-  now(7,12);ev("lastDay=dayKey();logOff=2;tab='today';render()");
+  now(7,12);ev("lastDay=dayKey();logOff=2;tab='day';render()");
   const viewed=ev("keyOff(-logOff)");
   now(8,12);ev("document.dispatchEvent(new Event('visibilitychange'))");
   ok("visibilitychange: a new day while a past day is shown keeps the same date on screen",ev("logOff")===3&&ev("keyOff(-logOff)")===viewed&&viewed===key(5)&&ev("lastDay")===key(8));

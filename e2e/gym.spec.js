@@ -112,7 +112,7 @@ test.describe("Gym",()=>{
     await page.click('#sheet [data-g="closesheet"]');
     await expect(page.locator('.rrow[data-g^="sum:"]')).toHaveCount(2);
     await app.tab("today");
-    await expect(page.locator(".log")).toContainText("Ağırlık, Antrenman");
+    await expect(page.locator('[data-hg="focus:"]')).toContainText("son: Ağırlık, Antrenman");
   });
 
   test("cancelling a workout asks for confirmation",async({app,page})=>{

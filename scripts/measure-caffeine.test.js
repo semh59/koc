@@ -19,7 +19,7 @@ const {boot}=require("./html");
   ev("closeSheet();S.entries=[];tab='today';logOff=0;render()");
   q('[data-chip="drink"]').click();
   w.document.querySelector('[data-dr="coffee"]').click();q("#fv").value="250";q('[data-dk="go"]').click();
-  ok("a coffee shows a caffeine estimate in the toast and on the day's drink row",q("#tmsg").textContent.includes("~100 mg kafein")&&q(".log").textContent.includes("~100 mg kafein"),q("#tmsg").textContent);
+  ok("a coffee shows a caffeine estimate in the toast and on the day's drink row",q("#tmsg").textContent.includes("~100 mg kafein")&&(ev("tab='day';render()"),q(".log").textContent.includes("~100 mg kafein")),q("#tmsg").textContent);
   ev("S.entries=[];add('water',250);render()");
   ok("plain water adds no caffeine text",!q("#view").textContent.includes("kafein"));
   finish();

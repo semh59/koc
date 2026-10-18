@@ -3,7 +3,7 @@ const {ok,finish}=require("./ok");
 const {boot,quota}=require("./html");
 (async()=>{
   const w=await boot(),ev=s=>w.eval(s),q=s=>w.document.querySelector(s),{full,free}=quota(w);
-  ev("S=structuredClone(DEF);S.settings.obDone=true;S.settings.noticeOk=true;tab='today';render()");
+  ev("S=structuredClone(DEF);S.settings.obDone=true;S.settings.noticeOk=true;tab='day';render()");
   const e=id=>JSON.parse(ev(`JSON.stringify(Log.find(x=>x.id===${id}))`)),open=id=>{ev("render()");if(ev(`Log.find(x=>x.id===${id}).type`)==="water"){ev(`logOff=Algo.dayNum(dayKey())-Algo.dayNum(Log.find(x=>x.id===${id}).day);sheetWater()`);q(`#sheet [data-edit="${id}"]`).click()}else{ev("logOff=0;render()");q(`[data-edit="${id}"]`).click()}};
   const set=(sel,v)=>{q("#sheet "+sel).value=v},save=()=>q('#sheet [data-go="entry"]').click(),err=()=>q("#eerr").textContent;
   const food=ev("add('food',300,'Simit').id"),water=ev("add('water',250).id"),kilo=ev("add('weight',84.3).id"),spor=ev("add('exercise',30,'Koşu').id"),not=ev("add('note',null,'Eski not').id");
@@ -26,7 +26,7 @@ const {boot,quota}=require("./html");
   set("#eday",y);set("#ev","abc");save();
   ok("an invalid value is refused and the entry is unchanged",e(water).v===500&&err()!=="");
   ev("closeSheet()");
-  ev("tab='today';render()");
+  ev("tab='day';render()");
   open(not);set("#et","  ");save();
   ok("an empty note is refused",e(not).text==="Yeni not"&&err()!=="");
   ev("closeSheet()");

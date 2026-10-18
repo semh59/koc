@@ -59,7 +59,7 @@ const U=require("../www/kernel/unitlib.js"),V=require("../www/modules/vitals/vit
     ev("S.settings.waterMl=2500");
     ev("sheetDrink()");w.document.querySelector('[data-dr="coffee"]').click();w.document.querySelector("#fv").value="300";w.document.querySelector('[data-dk="go"]').click();
     const k=ev("S.entries[S.entries.length-1]");
-    ok("add drink: type label and amount are saved, not counted in water, shown in the Other drinks row and in history",k.type==="water"&&k.v===300&&k.dr==="coffee"&&ev("sum('water',dayKey(),dayKey())")===250&&/Diğer içecekler: 500 ml/.test(w.document.querySelector("#view").textContent)&&(ev("sheetWater()"),w.document.querySelector("#sheet").textContent.includes("Kahve")));
+    ok("add drink: type label and amount are saved, not counted in water, shown in the Other drinks row and in history",k.type==="water"&&k.v===300&&k.dr==="coffee"&&ev("sum('water',dayKey(),dayKey())")===250&&/Diğer içecekler: 500 ml/.test((ev("tab='day';logOff=0;render()"),w.document.querySelector("#view").textContent))&&(ev("sheetWater()"),w.document.querySelector("#sheet").textContent.includes("Kahve")));
     ev("closeSheet()");
     ev("S.settings.wUnit='lb';S.settings.gUnit='mmol';add('weight',84.1,'',dayKey());render();tab='today';render()");
     ok("lb setting: the Today card shows lb, storage stays kg",w.document.querySelector("#view").textContent.includes("185,4")&&ev("S.entries.find(e=>e.type==='weight').v")===84.1);

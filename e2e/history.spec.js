@@ -54,8 +54,9 @@ test("History: calendar, months and Trend All render fast with 3 years of data",
   const tr=await page.evaluate(()=>{const t=performance.now();range=0;tab="trend";render();return performance.now()-t});
   expect(tr,"Trend All render (ms)").toBeLessThan(1500);
 });
-test("History: reachable from Today and More; Back from the day screen returns to the calendar",async({app,page})=>{
+test("History: reachable from Today (through the day line) and More; Back from the day screen returns to the calendar",async({app,page})=>{
   await app.open({seed:seed("")});
+  await page.click('[data-hg="focus:"]');
   await expect(page.locator('#view [data-tab="history"]').first()).toBeVisible();
   await app.go("more");await expect(page.locator('#view [data-tab="history"]')).toBeVisible();
   await page.locator('#view [data-tab="history"]').click();

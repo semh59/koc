@@ -43,6 +43,7 @@ test.describe("Drink type",()=>{
     await expect(app.toast).toContainText("Çay 200 ml kaydedildi, su hedefine sayılmaz");
     const water=(await app.state()).entries.filter(e=>e.type==="water");
     expect(water.map(e=>[e.v,e.dr])).toEqual([[250,undefined],[200,"tea"]]);
+    await page.click('[data-hg="focus:"]');
     await page.locator('[data-waterall="1"]').first().click();
     await expect(page.locator("#sheet")).toContainText("200 ml · Çay");
   });

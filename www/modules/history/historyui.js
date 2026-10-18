@@ -72,7 +72,7 @@ function hgOther(k){ // the data modules produce the rows (Data.dayRows, Data.da
 }
 function viewDay(){
   const k=keyOff(-logOff),today=logOff===0;
-  const {items,log}=dayLogHtml(k),oth=hgOther(k);
+  const {items,log}=dayLogHtml(k),oth=hgOther(k),late=today?lateRow():"";
   const dl=LogLib.dayLog(items),kcal=dl.groups.reduce((s,g)=>s+g.kcal,0);
   const name=`${today?"Bugün, ":logOff===1?"Dün, ":""}${fd(k)}, ${hgDay(k)}`;
   const addBar=`<div class="qa"><button class="chip" data-hg="add:food">${Icons.svg("food")} Yemek</button><button class="chip" data-hg="add:water">${Icons.svg("water")} +${S.settings.glass} ml</button><button class="chip" data-hg="add:weight">${Icons.svg("weight")} Kilo</button><button class="chip" data-hg="add:exercise">${Icons.svg("exercise")} Spor</button><button class="chip" data-hg="add:note">${Icons.svg("note")} Not</button></div>`;
@@ -81,7 +81,7 @@ function viewDay(){
   const FOC={kcal:["Kalori",k=>sum("food",k,k),"var(--kcal)",kcalGoal(dayKey()),"kcal",Math.round],water:["Su",k=>sum("water",k,k),"var(--water)",S.settings.waterMl,"L",x=>fmt(x/1000,1)],exercise:["Spor",k=>sum("exercise",k,k),"var(--exercise)",sportDay(),"dk",Math.round]}[hg.focus];
   const focus=FOC?`<div class="card">${miniBars(14,FOC[1],FOC[2],FOC[3],FOC[0]+" · son 14 gün",FOC[4],FOC[5])}<button class="lnk" data-tab="history">Tüm geçmiş ve takvim</button></div>`:"";
   return `${focus}<div class="card">${dayNav("lo",name,today)}${tiles}${addBar}</div>
-    ${empty?emptyCard("note","Bu güne ait kayıt yok","Yukarıdan ekleyebilirsin; unuttuğun bir günü de tamamlayabilirsin."):`<div class="card">${log}</div>`}
+    ${late?`<div class="card todo">${late}</div>`:""}${empty?emptyCard("note","Bu güne ait kayıt yok","Yukarıdan ekleyebilirsin; unuttuğun bir günü de tamamlayabilirsin."):`<div class="card">${log}${items.some(e=>e.type==="food")?`<button class="lnk" data-act="cp:day">Bu günü başka güne kopyala</button><button class="lnk" data-act="tplnew">Bu günün yemeklerinden şablon yap</button>`:""}</div>`}
     ${oth.wo?`<h2>Antrenman</h2><div class="card">${oth.wo}</div>`:""}${oth.rows?`<h2>Diğer kayıtlar</h2><div class="card">${oth.rows}</div>`:""}
     <button class="lnk" data-tab="history">Takvime dön</button>`;
 }

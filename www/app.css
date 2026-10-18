@@ -93,7 +93,7 @@ main{flex:1;padding:4px 16px calc(92px + var(--nx,0px) + var(--sab))}
 
 /* Today: one primary action (add food), equal-weight secondary quick logs below; with large text the chips wrap to the next line. */
 .actions{display:grid;gap:var(--sp-2);margin-bottom:var(--sp-3)}
-.qa{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-2)}.qa .chip{width:100%;white-space:normal;text-align:center;flex-wrap:wrap;column-gap:var(--sp-1);padding:var(--sp-2) var(--sp-1);border-radius:var(--r-s);background:var(--card);border:1px solid var(--card-bd);box-shadow:var(--sh-1)}.qa .chip .i{color:var(--prim)}.qpair{display:contents}
+.qa{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-2)}.qa .chip{width:100%;white-space:normal;text-align:center;flex-wrap:wrap;column-gap:var(--sp-1);padding:var(--sp-2) var(--sp-1);border-radius:var(--r-s);font-size:var(--fs-s);background:var(--card);border:1px solid var(--card-bd);box-shadow:var(--sh-1)}.qa .chip .i{color:var(--prim)}.qpair{display:contents}
 /* Summary: calorie ring on the left, small rings (water, sport, steps) on the right; on a narrow screen or with large text the small ones drop below. */
 .rings{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-3) var(--sp-4)}.rings>.rbtn{flex:none;width:auto;text-align:center}
 .rmini{flex:1 1 8em;min-width:0;display:grid;gap:var(--sp-2)}
@@ -101,6 +101,7 @@ main{flex:1;padding:4px 16px calc(92px + var(--nx,0px) + var(--sab))}
 .ring.mini svg{grid-row:1/4;margin:0}.ring.mini .rl{grid-row:1;grid-column:2;margin:0;font-size:var(--fs-s);color:var(--mut)}
 .ring.mini .rc{position:static;grid-row:2;grid-column:2;height:auto;display:block;padding:0;text-align:left;font-size:var(--fs-h3)}.ring.mini .rc small{display:inline;font-size:var(--fs-s);margin-left:var(--sp-1)}
 .ring.mini.done .rc small{max-width:none}.ring.mini .rs{grid-row:3;grid-column:2}
+.rbtn.dline{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);padding:var(--sp-2) 0;text-align:left;border-top:1px solid var(--line);border-radius:0}
 .rbtn,.lnk{display:block;width:100%;min-height:var(--hit);border-radius:var(--r-s)}.rbtn:active,.lnk:active{background:var(--soft)}
 .bgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,8em),1fr));gap:var(--sp-2)}
 .hbt{display:flex;align-items:center;gap:var(--sp-3);min-height:var(--hit);padding:var(--sp-2) var(--sp-3);text-align:left;background:var(--card);border:1px solid var(--card-bd);box-shadow:var(--sh-1);border-radius:var(--r)}.hbt>.i{color:var(--prim)}.hbt:active{background:var(--soft)}
