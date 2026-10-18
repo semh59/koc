@@ -18,6 +18,13 @@ test.describe("Today",()=>{
     await expect(ring(page,"Kalori").locator(".rs")).toHaveText("650 / 2000 kcal");
   });
 
+  test("the water and sport rings sit beside the calorie ring",async({app,page})=>{
+    await app.open({seed:state({kcal:2000},{entries:[entry("food",1150,"Öğle")]})});
+    const m=await page.locator(".rings>.rbtn").boundingBox(),s=await page.locator(".rmini").boundingBox();
+    expect(s.x).toBeGreaterThanOrEqual(m.x+m.width);
+    expect(s.y).toBeLessThan(m.y+m.height);
+  });
+
   test("More tab opens the sleep and mood summary with the watch source",async({app,page})=>{
     await app.open({seed:state({},{sleep:[{day:day(-1),min:420,src:"hc"},{day:day(0),min:480,q:4}],mood:[{day:day(0),v:4,t:"Güzel"}]})});
     await app.go("more");
