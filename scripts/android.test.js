@@ -185,4 +185,9 @@ ok("steps: a reboot is detected from the phone boot count; a counter drop alone 
   const hp=rd("assets/android/HealthPlugin.java"),i=hp.indexOf("private static final class Hc {"),outer=hp.slice(0,i).split(/\r?\n/).filter(l=>!l.startsWith("import ")).join(" ");
   ok("health: no android.health type outside the nested Hc class, so the plugin loads on Android 12 and 13",i>0&&!/HealthConnect|AggregateRecords|OutcomeReceiver|StepsRecord|SleepSessionRecord|HeartRateRecord|TimeInstantRangeFilter/.test(outer));
 }
+{ // the screenshot of a real phone: "Yemek" wrapped to two lines, and a hidden-figures widget was an empty tile with only an app name
+  const wl=rd("assets/android/res/layout/nw_widget.xml"),jv=rd("assets/android/NeoWidget.java"),tag=id=>wl.slice(wl.indexOf('android:id="@+id/'+id+'"'),wl.indexOf("/>",wl.indexOf('android:id="@+id/'+id+'"')));
+  ok("widget: the Yemek and Kilo labels are one line, and the water button makes the button column wide enough for them",["nw_food","nw_weight"].every(id=>/android:maxLines="1"/.test(tag(id)))&&+(tag("nw_add").match(/android:minWidth="(\d+)dp"/)||[])[1]>=140);
+  ok("widget: with figures hidden it says 'Rakamlar gizli' and how to see them, in a smaller type",/hide \? "Rakamlar gizli" : kcal/.test(jv)&&/Görmek için uygulamayı aç/.test(jv)&&/setTextViewTextSize\(R\.id\.nw_kcal, TypedValue\.COMPLEX_UNIT_SP, hide \? 20 : 32\)/.test(jv));
+}
 finish();

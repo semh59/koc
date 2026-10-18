@@ -7,6 +7,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.RemoteViews;
 import java.util.Locale;
@@ -119,8 +120,10 @@ public class NeoWidget extends AppWidgetProvider {
             kcal = num(Math.abs(left));
             unit = left >= 0 ? "kcal kaldı" : "kcal fazla";
         }
-        v.setTextViewText(R.id.nw_kcal, hide ? "NeoWell" : kcal);
-        v.setTextViewText(R.id.nw_kcalu, hide ? "" : unit);
+        // Figures hidden: say so plainly (smaller type, it is a sentence) instead of an empty widget; the buttons still work.
+        v.setTextViewTextSize(R.id.nw_kcal, TypedValue.COMPLEX_UNIT_SP, hide ? 20 : 32);
+        v.setTextViewText(R.id.nw_kcal, hide ? "Rakamlar gizli" : kcal);
+        v.setTextViewText(R.id.nw_kcalu, hide ? "Görmek için uygulamayı aç" : unit);
         int goal = o.optInt("waterGoal");
         v.setTextViewText(R.id.nw_water, hide ? "" : (isToday ? liters(o.optInt("water")) : "–") + " / " + (goal > 0 ? liters(goal) : "–") + " L");
         v.setViewVisibility(R.id.nw_wbar, hide ? View.GONE : View.VISIBLE);
