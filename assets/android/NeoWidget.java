@@ -109,18 +109,22 @@ public class NeoWidget extends AppWidgetProvider {
         // The app sets "hide" while the app lock is on or the user chose to hide numbers: the widget then shows no figures.
         boolean hide = o.optBoolean("hide");
         RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.nw_widget);
-        String kcal;
-        if (!isToday || !(o.has("kcalLeft") || o.has("kcalEaten"))) kcal = "– kcal";
-        else if (o.has("kcalEaten")) kcal = num(o.optInt("kcalEaten")) + " kcal yedin";
-        else if (o.isNull("kcalLeft")) kcal = "hedef yok";
+        // Big number first, its unit under it: the figure is what the eye looks for, so it gets the large type.
+        String kcal, unit;
+        if (!isToday || !(o.has("kcalLeft") || o.has("kcalEaten"))) { kcal = "–"; unit = "kcal"; }
+        else if (o.has("kcalEaten")) { kcal = num(o.optInt("kcalEaten")); unit = "kcal yedin"; }
+        else if (o.isNull("kcalLeft")) { kcal = "–"; unit = "hedef yok"; }
         else {
             int left = o.optInt("kcalLeft");
-            // The narrow widget cuts off at the end: the meaningful word and number come first, the unit last.
-            kcal = (left >= 0 ? "Kalan " + num(left) : "Fazla " + num(-left)) + " kcal";
+            kcal = num(Math.abs(left));
+            unit = left >= 0 ? "kcal kaldı" : "kcal fazla";
         }
         v.setTextViewText(R.id.nw_kcal, hide ? "NeoWell" : kcal);
+        v.setTextViewText(R.id.nw_kcalu, hide ? "" : unit);
         int goal = o.optInt("waterGoal");
         v.setTextViewText(R.id.nw_water, hide ? "" : (isToday ? liters(o.optInt("water")) : "–") + " / " + (goal > 0 ? liters(goal) : "–") + " L");
+        v.setViewVisibility(R.id.nw_wbar, hide ? View.GONE : View.VISIBLE);
+        v.setProgressBar(R.id.nw_wbar, 100, isToday && goal > 0 ? (int) Math.min(100, o.optInt("water") * 100L / goal) : 0, false);
         boolean steps = !hide && o.has("steps") && !o.isNull("steps");
         v.setViewVisibility(R.id.nw_steps, steps ? View.VISIBLE : View.GONE);
         if (steps) v.setTextViewText(R.id.nw_steps, (stepsFresh(o) ? num(o.optLong("steps")) : "–") + " adım");
@@ -134,7 +138,7 @@ public class NeoWidget extends AppWidgetProvider {
             v.setTextViewText(R.id.nw_iftar, "İftara " + (iftarAt <= nowMs ? "~" : "") + (m >= 60 ? (m / 60) + " sa" + (m % 60 > 0 ? " " + (m % 60) + " dk" : "") : m + " dk"));
         }
         int glass = o.optInt("glass", 250);
-        v.setTextViewText(R.id.nw_add, "+" + glass);
+        v.setTextViewText(R.id.nw_add, "+" + glass + " ml");
         int flags = PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT;
         Intent open = new Intent(c, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).putExtra(OPEN, true);
         v.setOnClickPendingIntent(R.id.nw_root, PendingIntent.getActivity(c, 7201, open, flags));
