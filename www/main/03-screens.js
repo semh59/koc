@@ -123,7 +123,7 @@ function viewToday(){
     return !!r.block&&!r.hard.length&&!r.cleared&&kg>0&&p.cm>0&&p.age>0&&st.kcal<Math.round(Algo.formulaTdee(p)/10)*10;
   })();
   const brakeRow=softBrake?row("save","Kalori hedefini hekiminle gözden geçir","Sağlık notun, ilaç kaydın ya da ölçümlerin var; bakım düzeyinin altındaki hedef için önce hekimine danış.",[["riskok","Hekimime danıştım"]]):"";
-  /* Never fold: medication rows and lines (due doses, yesterday's, the next dose) and measurement jobs, a running walk or fast, the save-failed and backup-failed notices, the night-entries offer. Setup rows: the first-water row plus at most one other; of the rest the first 3 rows (counting the pinned ones) are visible, so the log is not pushed down. */
+  /* Never fold: medication rows and lines (due doses, yesterday's, the next dose) and measurement jobs, a running walk or fast, the save-failed and backup-failed notices, the night-entries offer. Setup rows: the first-water row plus at most one other; of the rest the first 3 rows (counting the pinned ones) are visible, so the quick records stay near the top. */
   const pinned=[...first,saveRow,abRow,lateRow(),...medBudget].filter(Boolean),setup=[firstWater,...[goalRow,ageRow,comfyRow,modRow,brakeRow].filter(Boolean).slice(0,1)].filter(Boolean);
   const bkSnoozed=st.bkSnoozeAt&&Algo.dayNum(t)-Algo.dayNum(st.bkSnoozeAt)<7;
   const todo=[...pinned,...setup,...pmTodo(),...(fastRun.length?[]:fastTodo()),...ramadanTodo(),...trialTodo(),
