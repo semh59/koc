@@ -89,7 +89,7 @@ function viewToday(){
     <div class="rmini">${rb("water","Su",ring(water/sh,"var(--water)",waterC||wrT,"Su",`${fmt(water/1000,1)} / ${fmt(sh/1000,1)} L${fasting?", oruç saatinde":""}`,waterU,"mini"+(waterC?" done":"")),`${waterC?"hedef tamam":`${wrT} ${waterU}`}, ${fmt(water/1000,1)} / ${fmt(sh/1000,1)} L`)}
     ${rb("exercise","Spor",ring(sw/sg,"var(--exercise)",spC||spLeft,"Spor",`${Math.round(sw)} / ${sg} dk`,spU,"mini"+(spC?" done":"")),`${spC?"hedef tamam":`${spLeft} ${spU}`}, ${Math.round(sw)} / ${sg} dk`)}${sOn?stepCard():""}</div>
   </div>${notes}</div>`;
-  /* The chips sit in a fixed two-column grid, so a thumb never lands on another chip: a value on a chip, or a walk in progress, changes its text, not its place; the drink type sits right beside the water chip. */
+  /* The chips sit in a fixed three-column grid, so a thumb never lands on another chip: a value on a chip, or a walk in progress, changes its text, not its place; the drink type sits right beside the water chip. */
   const chip=([k,a,ic,l,al])=>`<button class="chip${a.startsWith("data-act")?" act":""}" data-chip="${k}" ${a}${al?` aria-label="${al}"`:""}>${Icons.svg(ic)} ${l}</button>`;
   const Q=[["weight",'data-act="weight"',"weight","Kilo"],["exercise",'data-act="exercise"',"exercise","Spor"],
     ...st.bpOn?[["bp",'data-vt="addbp"',"heart","Tansiyon"+vChipTxt("t")]]:[],...st.bsOn?[["bs",'data-vt="addbs"',"glucose","Şeker"+vChipTxt("s")]]:[],["note",'data-act="note"',"note","Not"],["walk",Motion.walk()?'data-act="walkgo"':'data-w="start"',"steps",Motion.walk()?"Yürüyüş sürüyor":"Yürüyüş"]];

@@ -25,6 +25,14 @@ test.describe("Today",()=>{
     expect(s.y).toBeLessThan(m.y+m.height);
   });
 
+  test("quick chips: three per row, each at least 48 px, no clipped label",async({app,page})=>{
+    await app.open({seed:state()});
+    const r=await page.$$eval(".qa .chip",cs=>cs.map(c=>{const b=c.getBoundingClientRect();return {top:Math.round(b.top),h:b.height,clip:c.scrollWidth>c.clientWidth}}));
+    expect(new Set(r.slice(0,3).map(x=>x.top)).size).toBe(1);
+    expect(r[3].top).toBeGreaterThan(r[0].top);
+    expect(r.filter(x=>x.h<48||x.clip)).toEqual([]);
+  });
+
   test("More tab opens the sleep and mood summary with the watch source",async({app,page})=>{
     await app.open({seed:state({},{sleep:[{day:day(-1),min:420,src:"hc"},{day:day(0),min:480,q:4}],mood:[{day:day(0),v:4,t:"Güzel"}]})});
     await app.go("more");
