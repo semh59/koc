@@ -100,7 +100,7 @@ async function openSealed(w,text,pw){
   w.eval("S.settings.widgetHide=false;S.settings.lockOn=true;widgetPush()");await flush();
   ok("with the app lock on the widget hides too",wg.at(-1).hide===true,wg.at(-1));
   const nw=rd("assets/android/NeoWidget.java");
-  ok("native: the widget shows no figures when hide is set",/o\.optBoolean\("hide"\)/.test(nw)&&/hide \? "Rakamlar gizli" : kcal/.test(nw)&&/hide \? "Görmek için uygulamayı aç" : unit/.test(nw)&&/hide \? "" : \(isToday \? liters/.test(nw)&&/hide \? View\.GONE : View\.VISIBLE/.test(nw)&&/!hide && o\.has\("steps"\)/.test(nw));}
+  ok("native: the widget shows no figures when hide is set",/o\.optBoolean\("hide"\)/.test(nw)&&/hide \? "Rakamlar gizli" : kcal/.test(nw)&&/"Uygulama kilidi açık" : "Ayarlarda gizli"\) : unit/.test(nw)&&/hide \? "" : \(isToday \? liters/.test(nw)&&/hide \? View\.GONE : View\.VISIBLE/.test(nw)&&/!hide && o\.has\("steps"\)/.test(nw));}
 
   // --- hide numbers
   {const {w}=await open({settings:{hideNums:true,kcal:2000,waterMl:2500,moveKcalOn:true,heightCm:170}});

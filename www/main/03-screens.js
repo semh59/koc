@@ -334,7 +334,7 @@ let widgetLast="";
 /* The null values are intentional: the Java side shows "no goal" / hides steps when the key exists but is null, and "–" when the key is missing. */
 function widgetPush(){
   if(!WG())return;
-  const t=dayKey(),st=S.settings,d={day:t,ds:st.dayStart|0,water:sum("water",t,t),waterGoal:st.waterMl,glass:st.glass,...widgetKcal(t),steps:st.stepsOn||st.hcOn?stepsShown():null,...(st.lockOn||st.widgetHide)&&{hide:true}},fw=Habits.fastWindow();
+  const t=dayKey(),st=S.settings,d={day:t,ds:st.dayStart|0,water:sum("water",t,t),waterGoal:st.waterMl,glass:st.glass,...widgetKcal(t),steps:st.stepsOn||st.hcOn?stepsShown():null,...(st.lockOn||st.widgetHide)&&{hide:true,why:st.lockOn?"lock":"set"}},fw=Habits.fastWindow();
   if(fw){d.imsakAt=fw[0];d.iftarAt=fw[1]}
   const j=JSON.stringify(d);if(j===widgetLast)return;
   widgetLast=j;try{WG().update(d).catch(()=>{})}catch{}
