@@ -94,7 +94,7 @@ document.addEventListener("click",ev=>{
   const [a,p]=b.dataset.hg.split(/:(.*)/s);
   if(a==="seg"){hg.seg=p;render();return}
   if(a==="type"){hg.type=p;render();return}
-  if(a==="focus"){hg.focus=p;logOff=0;tab="day";render();window.scrollTo(0,0);return}
+  if(a==="focus"){hg.focus=p;logOff=0;if(tab==="today")via={t:"day",p:"today"};tab="day";render();window.scrollTo(0,0);return}
   if(a==="mon"){const n=ymShift(hg.ym||dayKey().slice(0,7),+p);if(n<=dayKey().slice(0,7)){hg.ym=n;render()}return}
   if(a==="now"){hg.ym=dayKey().slice(0,7);render();return}
   if(a==="ym"){hg.ym=p;hg.seg="cal";render();window.scrollTo(0,0);return}

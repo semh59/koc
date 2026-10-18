@@ -2271,7 +2271,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("add('food',700,'Fazla');add('water',1500);add('exercise',150,'Yürüyüş');render()");
     ok("when the target is exceeded 'kcal hedefin üstünde', water and sport 'tamam'",(t=>t.includes("180kcal hedefin üstünde")&&(t.match(/✓Hedef tamam/g)||[]).length===2)($q(".rings").textContent),$q(".rings").textContent);
     ev("render()");
-    ok("Ayrıntı links to how the target was calculated (two taps from Today)",!!$q('#view details [data-tab="gym"]'));
+    ok("Ayrıntı opens how the target was calculated in a sheet, not another tab (two taps from Today)",!!$q('#view details [data-act="goalhow"]')&&!$q('#view details [data-tab="gym"]'));
     ev("S.settings.hideNums=true;foodToast({day:dayKey(),id:0})");
     ok("the saved-meal toast carries no figure while numbers are hidden",!/\d/.test($q("#tmsg").textContent),$q("#tmsg").textContent);
     ev("S.settings.hideNums=false;foodToast({day:dayKey(),id:0})");
