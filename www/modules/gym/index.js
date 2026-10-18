@@ -10,6 +10,7 @@ Data.histSearch.push((S,{n,norm,out,wname})=>{
 });
 Data.dayWork.push(k=>S.workouts.filter(w=>gDone(w)&&w.day===k).sort((a,b)=>a.t0-b.t0).map(w=>`<button class="rrow" data-g="sum:${w.id}"><span class="grow tx"><b>${esc(w.name)}</b><span class="mut sm">${esc(gNames(w,4))}</span><span class="mut sm num">${gStats(w)}</span></span></button>`).join(""));
 const Gym={
+  goalHow:()=>{const c=gEnergyCtx();return c?gHow(c):""},
   workouts:()=>S.workouts,gid:()=>S.gid,isStrength:id=>{const e=gEx(id);return e.c?e.c==="g":e.k!=="c"},
   addImported:p=>{S.customEx.push(...p.newEx);S.workouts.push(...p.workouts);S.gid=p.gid},
   removeImported:(ids,cx)=>{S.workouts=S.workouts.filter(w=>!ids.has(w.id));S.customEx=S.customEx.filter(e=>!cx.has(e.id))}

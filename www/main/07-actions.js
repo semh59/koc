@@ -7,6 +7,7 @@ on("water",()=>{
   toast(`+${glass} ml, bugün ${Math.round(top)} / ${waterMl} ml`+(reached?". Günlük hedef tamam":""),e.id);
 });
 on("weight",()=>sheetWeight());
+on("goalhow",()=>openSheet(`<h3>Hedefin nasıl hesaplandı?</h3>${Gym.goalHow()||`<p class="hint">Hesabı göstermek için boy, yaş ve en az bir tartı gerekli.</p>`}<p class="hint">Hedefi sen belirlersin; burası yalnız önerinin hesabıdır.</p>`));
 on("yesterday",()=>repeatYesterday());
 on("lateyest",()=>{
   const list=lateEntries(),y=keyOff(-1),t=dayKey();

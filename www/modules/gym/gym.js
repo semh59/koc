@@ -913,22 +913,31 @@ function gInput(t){
 }
 
 /* ---- energy and target card (Trend) ---- */
-function gEnergy(){
+/* The estimate behind the target card; null until a weight, height and age exist or the data does not yet allow an estimate. */
+function gEnergyCtx(){
   const st=S.settings,wAll=weights(),days=Object.keys(wAll).sort();
-  if(!days.length)return "";
-  const kg=Algo.trend(wAll)[days[days.length-1]];
-  if(!(st.heightCm>0&&st.age>0))return `<h2>Enerji dengesi</h2><div class="card"><p class="flush hint">Harcamanı ve kalori hedefini hesaplamak için boy ve yaş gerekli.</p><button class="btn ghost" data-act="profile">Profili doldur</button></div>`;
-  const profile={kg,cm:st.heightCm,age:st.age,sex:st.sex||"",act:st.act};
-  const intake=Log.byDay("food");
-  const r=Algo.adaptiveTdee({weights:wAll,intake,profile});
-  if(!r.tdee)return "";
-  const bmr=Algo.bmrMifflin(profile),pg=risk(kg).pregnant,sg=pg?null:Algo.suggestTarget({...riskInput(kg),tdee:r.tdee,bmr});
-  const pr=Algo.protein(riskInput(kg)).range;
+  if(!days.length||!(st.heightCm>0&&st.age>0))return null;
+  const kg=Algo.trend(wAll)[days[days.length-1]],profile={kg,cm:st.heightCm,age:st.age,sex:st.sex||"",act:st.act};
+  const r=Algo.adaptiveTdee({weights:wAll,intake:Log.byDay("food"),profile});
+  if(!r.tdee)return null;
+  const pg=risk(kg).pregnant;
+  return {kg,profile,r,pg,sg:pg?null:Algo.suggestTarget({...riskInput(kg),tdee:r.tdee,bmr:Algo.bmrMifflin(profile)})};
+}
+function gHow({profile,r,sg}){
   const src=r.source==="formül"?"Formül tahmini. Veri biriktikçe kendini ayarlar.":`Gerçek verinden hesaplandı, güven %${Math.round(r.confidence*100)}.`;
+  return `${energyHow(profile,sg)}<p class="p0 hint">${Algo.PROTEIN_NOTE} ${src}${sg&&sg.limited?" Hedef güvenli alt sınırda tutuldu.":""}${sg&&sg.blocked?" Öneri bakım düzeyinde tutuldu.":""}</p>`;
+}
+function gEnergy(){
+  const st=S.settings;
+  if(!Object.keys(weights()).length)return "";
+  if(!(st.heightCm>0&&st.age>0))return `<h2>Enerji dengesi</h2><div class="card"><p class="flush hint">Harcamanı ve kalori hedefini hesaplamak için boy ve yaş gerekli.</p><button class="btn ghost" data-act="profile">Profili doldur</button></div>`;
+  const c=gEnergyCtx();
+  if(!c)return "";
+  const {kg,r,pg,sg}=c,pr=Algo.protein(riskInput(kg)).range;
   const cells=[["Tahmini harcama",pg?"Hekiminle belirle":`${Math.round(r.tdee/10)*10} kcal`]];
   if(sg)cells.push(["Önerilen hedef",`${sg.kcal} kcal`]);
   cells.push(["Protein aralığı",pr?`${pr[0]}–${pr[1]} g`:"Hekiminle belirle"]);
   return `<h2>Enerji dengesi</h2><div class="card">${sg&&sg.blocked?riskBox(risk(kg),"Kalori açığı önermiyorum"):""}<div class="stats">${cells.map(c=>`<div class="stat"><div class="k">${c[0]}</div><div class="v num">${c[1]}</div></div>`).join("")}</div>
   ${sg&&sg.kcal!==st.kcal?`<div class="btns"><button class="btn ghost" data-act="apply:${sg.kcal}">Hedefi ${sg.kcal} kcal yap</button></div>`:""}
-  <details class="acc"><summary>Nasıl hesaplandı</summary>${energyHow(profile,sg)}<p class="p0 hint">${Algo.PROTEIN_NOTE} ${src}${sg&&sg.limited?" Hedef güvenli alt sınırda tutuldu.":""}${sg&&sg.blocked?" Öneri bakım düzeyinde tutuldu.":""}</p></details></div>`;
+  <details class="acc"><summary>Nasıl hesaplandı</summary>${gHow(c)}</details></div>`;
 }
