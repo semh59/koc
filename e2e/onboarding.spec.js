@@ -137,7 +137,7 @@ test("welcome screen: restore a backup from the welcome screen without opening S
   await expect.poll(()=>app.dialogs.at(-1)).toMatch(/^Yedekten 2 kayıt yüklenecek\./);
   expect(app.dialogs.at(-1)).not.toContain("Mevcut veriler değişecek");
   await expect(app.toast).toContainText("Yedek yüklendi");
-  await expect(page.locator("#view")).toContainText("Mercimek çorbası");
+  await expect(page.locator("#view")).toContainText("Bugün: 2 kayıt");
   expect(await page.evaluate(()=>[S.settings.obDone,S.settings.noticeOk,Boolean(S.settings.heightCm)])).toEqual([true,true,true]);
   await expect(page.locator("#sheet.on")).toHaveCount(0);
 });

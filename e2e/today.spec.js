@@ -57,7 +57,7 @@ test.describe("Today",()=>{
     await expect(app.toast).toHaveText("+250 ml, bugün 250 / 2500 ml");
     await page.click('.act[data-act="water"]');
     await expect(ring(page,"Su").locator(".rs")).toHaveText("0,5 / 2,5 L");
-    await expect(page.locator('[data-waterall]')).toHaveText("Su: 500 ml, 2 kez");
+    await expect(page.locator('[data-hg="focus:"]')).toContainText("Bugün: 2 kayıt · son: Su 250 ml");
     await page.click("#tundo");
     await expect(ring(page,"Su").locator(".rs")).toHaveText("0,3 / 2,5 L");
   });
@@ -100,7 +100,8 @@ test.describe("Today",()=>{
     await expect(app.toast).toHaveText("Koşu 30 dk kaydedildi. Hafta: 30 / 150 dk");
     await page.click('.act[data-act="note"]');
     await page.fill("#fv","Bugün enerjim yüksek");await page.click('[data-go="note"]');
-    await expect(page.locator(".log")).toContainText("Bugün enerjim yüksek");
+    await expect(page.locator('[data-hg="focus:"]')).toContainText("Bugün: 2 kayıt · son: Bugün enerjim yüksek");
+    await page.click('[data-hg="focus:"]');
     await expect(page.locator(".log")).toContainText("Koşu");
   });
 });
@@ -116,8 +117,10 @@ test("a due dose is one row: name on the left, Aldım and Atla beside it on the 
 });
 
 test.describe("Log",()=>{
-  test("delete an entry and Undo; go to the previous day",async({app,page})=>{
+  test("from Today's day line: delete an entry and Undo; go to the previous day; Back returns to Today",async({app,page})=>{
     await app.open({seed:state({},{entries:[entry("food",300,"Menemen",{x:{meal:"breakfast"}}),entry("note",null,"Dünkü not",{d:-1})]})});
+    await expect(page.locator("#view .log")).toHaveCount(0);
+    await page.click('[data-hg="focus:"]');
     const row=page.locator(".log li",{hasText:"Menemen"});
     await row.locator(".del").click();
     await expect(app.toast).toHaveText("Kayıt silindi");
@@ -127,15 +130,18 @@ test.describe("Log",()=>{
     await expect(page.locator(".log li",{hasText:"Menemen"})).toHaveCount(1);
     expect((await app.state()).entries.some(e=>e.text==="Menemen")).toBe(true);
     await page.click('[data-lo="1"]');
-    await expect(page.locator(".dnav h2")).toHaveText("Dün");
+    await expect(page.locator(".dnav h2")).toContainText("Dün");
     await expect(page.locator(".log")).toContainText("Dünkü not");
     await expect(page.locator('[data-lo="-1"]')).toBeEnabled();
     await page.click('[data-lo="-1"]');
     await expect(page.locator('[data-lo="-1"]')).toBeDisabled();
+    await page.click("#back");
+    await expect(page.locator('[data-hg="focus:"]')).toContainText("Bugün: 1 kayıt · son: Menemen 300 kcal");
   });
 
   test("changing the meal",async({app,page})=>{
     await app.open({seed:state({},{entries:[entry("food",300,"Mercimek çorbası",{x:{meal:"breakfast"}})]})});
+    await page.click('[data-hg="focus:"]');
     await expect(page.locator(".log .gh").first()).toContainText("Kahvaltı");
     await page.click('[data-edit]');
     await page.click('#sheet [data-ml="dinner"]');
@@ -150,7 +156,7 @@ test.describe("Log",()=>{
     await page.click('[data-dr="tea"]');await page.fill("#fv","200");
     await page.click('[data-dk="go"]');
     await expect(ring(page,"Su").locator(".rs")).toHaveText("0,0 / 2,5 L");
-    await expect(page.locator(".log")).toContainText("Diğer içecekler: 200 ml, 1 kez");
+    await expect(page.locator('[data-hg="focus:"]')).toContainText("son: Çay 200 ml");
     await page.click('.act[data-act="water"]');
     await expect(ring(page,"Su").locator(".rs")).toHaveText("0,3 / 2,5 L");
   });

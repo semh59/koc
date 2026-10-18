@@ -35,6 +35,8 @@ test.describe("Add food",()=>{
     await page.click('[data-go="nutrition"]');
     await expect(app.toast).toContainText("Kaydedildi. Bugün");
     // Acceptance: saved under the meal heading, with the portion text and protein.
+    await expect(page.locator('[data-hg="focus:"]')).toContainText("son: Mercimek çorbası, 2 × 1 kepçe (150 g)");
+    await page.click('[data-hg="focus:"]');
     await expect(page.locator(".log .gh").first()).toContainText("Öğle");
     await expect(page.locator(".log")).toContainText("Mercimek çorbası, 2 × 1 kepçe (150 g)");
     const e=(await app.state()).entries.find(x=>x.type==="food");
@@ -50,8 +52,7 @@ test.describe("Add food",()=>{
     await expect(page.locator("#yerr")).toHaveText("Kalori çok yüksek görünüyor, kontrol et");
     await page.fill("#ft","Annemin böreği");await page.fill("#fv","420");
     await page.click('[data-go="food"]');
-    await expect(page.locator(".log")).toContainText("Annemin böreği");
-    await expect(page.locator(".log")).toContainText("420 kcal");
+    await expect(page.locator('[data-hg="focus:"]')).toContainText("son: Annemin böreği 420 kcal");
   });
 
   test("quick buttons: repeat yesterday, favorite, recent, template",async({app,page})=>{
@@ -59,20 +60,21 @@ test.describe("Add food",()=>{
     await openFood(app,page,state({},{entries:y}));
     await page.click('[data-act="yesterday"]');
     await expect(app.toast).toHaveText("Dünkü 2 yemek bugüne eklendi, 470 kcal");
-    await expect(page.locator(".log")).toContainText("Yulaf lapası");
+    await expect(page.locator('[data-hg="focus:"]')).toContainText("Bugün: 2 kayıt");
     await page.click("#tundo");
-    await expect(page.locator(".log li",{hasText:"Yulaf"})).toHaveCount(0);
+    await expect(page.locator('[data-hg="focus:"]')).toContainText("Bugün henüz kayıt yok");
     // Favorite a recent food, then add it from favorites with one tap.
     await page.click('.act[data-act="food"]');
     await page.locator('#frl [data-fva]').first().click();
     await expect(page.locator('#frl .lbl',{hasText:"Sık kullanılanlar"})).toBeVisible();
     await page.locator('#frl [data-fv="0"]').click();
     await expect(app.toast).toContainText("eklendi");
-    // Template from today's meals, then add from the template.
-    await page.click("#view details.acc:has([data-act=\"tplnew\"]) > summary");
+    // Template from today's meals on the Day screen, then add from the template on Today.
+    await page.click('[data-hg="focus:"]');
     await page.click('[data-act="tplnew"]');
     await page.fill("#tpn","Kahvaltım");await page.click('[data-go="tpl"]');
     await expect(app.toast).toHaveText('"Kahvaltım" şablonu kaydedildi');
+    await page.click("#back");
     await page.click('.act[data-act="food"]');
     await page.click('[data-tp="0"]');
     await expect(app.toast).toHaveText("Kahvaltım: 1 yemek eklendi, 120 kcal");
@@ -97,7 +99,7 @@ test.describe("Add food",()=>{
     await expect(page.locator("#flist [data-food]").first()).toContainText("Tarifim, 1 porsiyon");
     await page.locator("#flist [data-food]").first().click();
     await page.click('[data-go="nutrition"]');
-    await expect(page.locator(".log")).toContainText("Fırın makarna");
+    await expect(page.locator('[data-hg="focus:"]')).toContainText("son: Fırın makarna");
   });
 });
 
@@ -116,8 +118,7 @@ test.describe("Barcode (fake scanner, fake Open Food Facts reply)",()=>{
     await expect(page.locator("#fpc .chip").first()).toHaveText("1 porsiyon (30 g)");
     await expect(page.locator("#sheet")).toContainText("Open Food Facts");
     await page.click('[data-go="nutrition"]');
-    await expect(page.locator(".log")).toContainText("Tam Buğday Kraker (Örnek), 1 porsiyon (30 g)");
-    await expect(page.locator(".log")).toContainText("126 kcal");
+    await expect(page.locator('[data-hg="focus:"]')).toContainText("son: Tam Buğday Kraker (Örnek), 1 porsiyon (30 g) 126 kcal");
     await page.click('.act[data-act="food"]');
     await page.fill("#fq","kraker");
     await expect(page.locator("#flist [data-food]").first()).toContainText("Benim ürünüm, 100 g: 420 kcal");

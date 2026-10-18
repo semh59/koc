@@ -76,7 +76,6 @@ async function goHealth(){
   closeSheet();render();
   if(flags===st.pregnant+st.nursing)toast("Kaydedildi");
 }
-on("backtoday",()=>{logOff=0;render();window.scrollTo(0,0)});
 on("bksnooze",()=>{S.settings.bkSnoozeAt=dayKey();save();render()});
 on("comfyon",()=>{S.settings.comfy=true;S.settings.comfyAsked=true;save();render()});
 on("comfyno",()=>{S.settings.comfyAsked=true;save();render()});

@@ -1637,8 +1637,8 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("Search: ignores Turkish letters and case, takes you to the date",q("#hgres").textContent.includes("1 kayıt")&&!!q(`#hgres [data-hg="day:${oldK}"]`));
     ev("hg.q='';hg.seg='cal';hg.ym=null;logOff=800;tab='day';render()");click('[data-lo="1"]');
     ok("the previous-day button stops at the oldest record day (does not go further back)",ev("logOff")===800);
-    ev("logOff=0;tab='today';render()");
-    ok("Today: History and calendar link",!!q('#view [data-tab="history"]'));
+    ev("logOff=0;tab='today';render()");click('[data-hg="focus:"]');
+    ok("Today: the day line opens the Day screen, which links to the calendar",ev("tab")==="day"&&!!q('#view [data-tab="history"]'));
     ev("S.entries.push({id:S.nextId++,day:keyOff(-790),time:'07:00',type:'weight',v:95,text:''},{id:S.nextId++,day:keyOff(-400),time:'07:00',type:'weight',v:88,text:''});range=365;tab='trend';render()");
     ok("Trend: 1 year and Tümü buttons, 1 year weekly bars",!!q('[data-range="365"]')&&!!q('[data-range="0"]')&&q('[data-range="365"]').getAttribute("aria-pressed")==="true"&&q("#view").innerHTML.includes("haftalık ortalamalar"));
     click('[data-range="0"]');
@@ -2104,7 +2104,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   ok("removed from favorites",ev("S.favFoods.length")===0);
   ok("an old backup (no favFoods) loads, a junk favFoods does not break other data",ev("cleanHealthState({}).favFoods.length")===0&&ev("cleanHealthState({favFoods:'x',meds:[]}).favFoods.length")===0);
   ev("S.entries=[];S.mealTpl=[];S.favFoods=[];{const e=add('food',155,'Yumurta');e.p=13}{const e=add('food',90,'Ekmek');e.c=40}");
-  ok("the make-template button shows in the day list",ev("viewToday()").includes('data-act="tplnew"'));
+  ok("the make-template button shows in the day list",ev("logOff=0;viewDay()").includes('data-act="tplnew"'));
   ev("sheetTpl()");$q("#tpn").value="Kahvaltım";$q('[data-go="tpl"]').click();
   ok("the template saves all items as value copies",ev("S.mealTpl.length")===1&&ev("S.mealTpl[0].items.length")===2&&ev("S.mealTpl[0].id")===1&&ev("S.mealTpl[0].items[0].p")===13);
   ev("sheetTpl()");$q("#tc0").checked=false;$q("#tpn").value="Tek";$q('[data-go="tpl"]').click();
@@ -2293,10 +2293,10 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("S.meds=[{id:1,n:'İlaç A',t:['08:00','23:59'],on:true,s:calKey()}];S.settings.medOn=true;render()");
     ok("the to-do card says how many of today's doses are marked and the next one, on one line to the Meds screen",/Sıradaki: 23:59 İlaç A/.test($q('.todo [data-tab="meds"]').textContent)&&/İlaç: bugün \d\/2 alındı/.test($q('.todo [data-tab="meds"]').textContent),$q(".todo").textContent);
     ev("S.meds=[];S.settings.medOn=false;S.settings.hideNums=true;render()");
-    ok("hide-numbers also hides the log's kcal and the weight, and the ring labels carry no numbers",!/\d kcal|\d,\d kg/.test($q(".log").textContent)&&![...w.document.querySelectorAll(".rbtn")].some(b=>/kcal/.test(b.getAttribute("aria-label"))));
+    ok("hide-numbers also hides the log's kcal and the weight, and the ring labels carry no numbers",!/\d kcal|\d,\d kg/.test($q('[data-hg="focus:"]').textContent)&&![...w.document.querySelectorAll(".rbtn")].some(b=>/kcal/.test(b.getAttribute("aria-label"))));
     ev("S.settings.hideNums=false;render()");
-    ok("ring buttons name the value; delete buttons name the entry",[...w.document.querySelectorAll(".rbtn")].every(b=>/\d/.test(b.getAttribute("aria-label"))||/Adım|sayılar/.test(b.getAttribute("aria-label")))&&[...w.document.querySelectorAll(".log .del")].every(b=>/, sil$/.test(b.getAttribute("aria-label"))&&b.getAttribute("aria-label").length>6));
-    ev("add('food',1500,'Öğle');S.settings.edFlag=true;render()");
+    ok("ring buttons name the value; delete buttons on the Day screen name the entry",[...w.document.querySelectorAll(".rbtn")].every(b=>/\d/.test(b.getAttribute("aria-label"))||/Adım|sayılar/.test(b.getAttribute("aria-label")))&&(ev("tab='day';render()"),w.document.querySelectorAll(".log .del").length>0)&&[...w.document.querySelectorAll(".log .del")].every(b=>/, sil$/.test(b.getAttribute("aria-label"))&&b.getAttribute("aria-label").length>6));
+    ev("tab='today';add('food',1500,'Öğle');S.settings.edFlag=true;render()");
     ok("with a hard risk flag the calorie ring is a plain total, never 'kcal kaldı'",(t=>t.includes("kcal yedin")&&!/kcal (kaldı|fazla)/.test(t))($q(".rbtn").textContent),$q(".rbtn").textContent);
     ok("with a hard risk flag no target figure remains in the ring or its label",!/\/ \d{3,4} kcal/.test($q(".rbtn").textContent+$q(".rbtn").getAttribute("aria-label")));
     ev("add('food',200,'Atıştırmalık');render()");
@@ -2308,9 +2308,8 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("globalThis.__mw=Motion.walk;Motion.walk=()=>({t0:1});render()");
     ok("a walk in progress keeps its chip in place, reads 'Yürüyüş sürüyor' and opens the step screen",(c=>c&&c.textContent.includes("Yürüyüş sürüyor")&&c.dataset.act==="walkgo"&&c===[...w.document.querySelectorAll(".qa [data-chip]")].pop())($q('[data-chip="walk"]')));
     ev("Motion.walk=globalThis.__mw;render()");
-    ev("S.settings.age=40;logOff=1;render()");
-    ok("while another day is shown the quick-add chips give way to 'Bugüne dön'",!$q(".actions .chip")&&!!$q('.actions [data-act="backtoday"]'));
-    ev("logOff=0;render()");
+    ev("S.settings.age=40;tab='day';logOff=1;render();tab='today';render()");
+    ok("Today shows only today: a past day picked on the Day screen does not carry over",ev("logOff")===0&&!!$q(".actions .chip"));
     ok("information hierarchy: summary, record, to-do, Trend shortcut",at('class="bgL"')<at('class="rings"')&&at('class="rings"')<at('class="actions"')&&at('class="actions"')<at("Bugün yapılacaklar")&&at("Bugün yapılacaklar")<at('data-tab="trend"'));
     ev("S.settings.medOn=true;S.meds=[{id:1,n:'İlaç A',t:['08:00'],on:true,s:calKey()}];S.medLog=[];tab='trend';render();tab='today';render()");
     ok("a due dose puts the to-do card above the rings when the screen is opened",at("Bugün yapılacaklar")<at('class="rings"'));
@@ -2320,7 +2319,8 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("without a due dose the rings come first again",!v().includes("Bugün yapılacaklar")||at('class="rings"')<at("Bugün yapılacaklar"));
     ev("S.settings.age=40;S.settings.medOn=true;S.meds=[{id:1,n:'İlaç A',t:['08:00'],on:true,s:calKey()}];S.medLog=[];tab='trend';render();tab='today';render()");
     ok("sleep and mood tiles come after the to-do card",at("hbt")>at("Bugün yapılacaklar")||!v().includes('class="hbt"'));
-    ok("copy and template links are folded under 'Daha fazla' (still in the DOM)",!!$q('#view details [data-act="cp:day"]')&&!!$q('#view details [data-act="tplnew"]'));
+    ok("day copy and template links are on the Day screen, not on Today",!$q('#view [data-act="cp:day"]')&&(ev("tab='day';render()"),!!$q('#view [data-act="cp:day"]')&&!!$q('#view [data-act="tplnew"]')));
+    ev("tab='today';render()");
     ev("S.settings.age=70;S.settings.comfy=false;S.settings.comfyAsked=false;S.settings.obDone=true;render()");
     ok("from 65 the Today list offers large text once",!!$q('.todo [data-act="comfyon"]'));
     $q('.todo [data-act="comfyon"]').click();
@@ -2564,7 +2564,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   }
   { // daily meal groups, water merge, add-food order
     const q=s=>$q(s),lg=()=>q(".log").textContent,mk=(t,time,v,x)=>({id:0,day:ev("dayKey()"),time,type:t,v,text:t==="food"?"Menemen":"",...x});
-    ev("closeSheet();tab='today';logOff=0;S.entries=[];S.nextId=1;render()");
+    ev("closeSheet();tab='day';logOff=0;S.entries=[];S.nextId=1;render()");
     ok("cleanEntries: meal is on the allow list, invalid is dropped, no field on an old record",ev(`(()=>{const d=dayKey(),r=cleanEntries([{day:d,time:"09:00",type:"food",v:1,meal:"dinner"},{day:d,time:"09:00",type:"food",v:1,meal:"x"},{day:d,time:"09:00",type:"food",v:1},{day:d,time:"09:00",type:"water",v:1,meal:"dinner"}]).out;return r.map(e=>e.meal).join()})()`)==="dinner,,,");
     ev(`S.entries=cleanEntries([${JSON.stringify(mk("food","08:10",200))},${JSON.stringify(mk("food","13:00",300))},${JSON.stringify(mk("food","19:00",150,{meal:"snack"}))},${JSON.stringify(mk("water","09:00",250))},${JSON.stringify(mk("water","10:00",250))},${JSON.stringify(mk("water","11:00",500))}]).out;render()`);
     const heads=[...w.document.querySelectorAll(".log .gh")].map(h=>h.textContent);
@@ -2728,8 +2728,8 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev(W(51,50,20));
     ok("when a session ends the sport record keeps the minute pattern, the kcal field is net MET 6: 5x80x50/60=333",ev("S.entries.find(e=>e.type==='exercise'&&e.wid===51).v")===50&&ev("S.entries.find(e=>e.wid===51).kcal")===333);
     ok("the workout summary shows the estimated calories with a label",q("#sheet").textContent.includes("~333 kcal")&&q("#sheet").textContent.includes("tahmin"));
-    ev("closeSheet();tab='today';render()");
-    ok("Today log: the sport record with estimated calories",q("#view").textContent.includes("~333 kcal tahmini"));
+    ev("closeSheet();tab='day';logOff=0;render()");
+    ok("the day's list: the sport record with estimated calories",q("#view").textContent.includes("~333 kcal tahmini"));
     ok("kcal survives reload/backup; an invalid kcal is dropped, an old record (no kcal) is valid",ev("cleanEntries(S.entries).out.find(e=>e.type==='exercise').kcal")===333&&ev("cleanEntries([{type:'exercise',day:'2026-01-01',v:30,kcal:-5},{type:'exercise',day:'2026-01-01',v:30,kcal:99999},{type:'exercise',day:'2026-01-01',v:30,kcal:1.5}]).out.every(e=>e.kcal===undefined)")&&ev("cleanEntries([{type:'exercise',day:'2026-01-01',v:30}]).out.length")===1);
     ev("S.entries=S.entries.filter(e=>e.type==='weight')");ev("S.entries=[];");
     ev(W(52,40,10));
@@ -2889,7 +2889,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("preview: ~range and mean (2 x 200 g mantı: 700 mean, +/-30%)",q("#fprev").textContent.startsWith("700 kcal")&&q("#fprev").textContent.includes("Aralık ~524-876 kcal")&&q("#fprev").textContent.includes("protein"),q("#fprev").textContent);
     ok("it is stated in a note that this is an estimate, not a measurement; add saves the mean",q("#sheet").textContent.includes("tarif farkını")&&q("#sheet").textContent.includes("ölçüm değildir")&&q("#sheet").textContent.includes("ortalamayı"));
     ev("goNutrition()");
-    ok("the record keeps the mean, the range only on the row: ~700 kcal, 524-876 range below",ev("S.entries[0].v")===700&&ev("S.entries[0].lo")===524&&ev("S.entries[0].hi")===876&&ev("viewToday()").includes("~700 kcal")&&ev("viewToday()").includes("<small class=\"db mut sm\">524-876</small>"));
+    ok("the record keeps the mean, the range only on the row: ~700 kcal, 524-876 range below",ev("S.entries[0].v")===700&&ev("S.entries[0].lo")===524&&ev("S.entries[0].hi")===876&&ev("logOff=0;viewDay()").includes("~700 kcal")&&ev("viewDay()").includes("<small class=\"db mut sm\">524-876</small>"));
     ok("the daily total uses the mean without the range (700)",ev("sum('food',dayKey(),dayKey())")===700);
     ev("sheetPortion(allFoods().findIndex(f=>f.n==='Haşlanmış yumurta'))");
     ok("a food without a range is a single number as before, no rule note",q("#fprev").textContent.startsWith("78 kcal")&&!q("#sheet").textContent.includes("kural tabanlı"),q("#fprev").textContent);

@@ -5,7 +5,7 @@ const {boot}=require("./html");
   const w=await boot(),ev=s=>w.eval(s),q=s=>w.document.querySelector(s);
   ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.noticeOk=true;
     for(const [t,m,n,v] of [["08:00","breakfast","Yumurta",150],["09:00","breakfast","Peynir",100],["13:00","lunch","Çorba",200]]){const e=add("food",v,n);e.time=t;e.meal=m;e.p=5}
-    tab="today";logOff=0;render()`);
+    tab="day";logOff=0;render()`);
   const foods=d=>ev(`S.entries.filter(e=>e.type==="food"&&e.day===keyOff(${d})).map(e=>e.text+":"+e.meal)`);
   ok("every meal header has a Kopyala button",q('[data-act="cp:breakfast"]')&&q('[data-act="cp:lunch"]'));
   q('[data-act="cp:breakfast"]').click();
