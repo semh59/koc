@@ -93,7 +93,7 @@ main{flex:1;padding:4px 16px calc(92px + var(--nx,0px) + var(--sab))}
 
 /* Today: one primary action (add food), equal-weight secondary quick logs below; with large text the chips wrap to the next line. */
 .actions{display:grid;gap:var(--sp-2);margin-bottom:var(--sp-3)}
-.qa{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2)}.qa .chip{width:100%;white-space:normal;text-align:center;background:var(--card);border:1px solid var(--card-bd);box-shadow:var(--sh-1)}.qa .chip .i{color:var(--prim)}.qpair{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2)}
+.qa{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-2)}.qa .chip{width:100%;white-space:normal;text-align:center;flex-wrap:wrap;column-gap:var(--sp-1);padding:var(--sp-2) var(--sp-1);border-radius:var(--r-s);background:var(--card);border:1px solid var(--card-bd);box-shadow:var(--sh-1)}.qa .chip .i{color:var(--prim)}.qpair{display:contents}
 /* Summary: calorie ring on the left, small rings (water, sport, steps) on the right; on a narrow screen or with large text the small ones drop below. */
 .rings{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-3) var(--sp-4)}.rings>.rbtn{flex:none;width:auto;text-align:center}
 .rmini{flex:1 1 8em;min-width:0;display:grid;gap:var(--sp-2)}
