@@ -188,6 +188,6 @@ ok("steps: a reboot is detected from the phone boot count; a counter drop alone 
 { // the screenshot of a real phone: "Yemek" wrapped to two lines, and a hidden-figures widget was an empty tile with only an app name
   const wl=rd("assets/android/res/layout/nw_widget.xml"),jv=rd("assets/android/NeoWidget.java"),tag=id=>wl.slice(wl.indexOf('android:id="@+id/'+id+'"'),wl.indexOf("/>",wl.indexOf('android:id="@+id/'+id+'"')));
   ok("widget: the Yemek and Kilo labels are one line, and the water button makes the button column wide enough for them",["nw_food","nw_weight"].every(id=>/android:maxLines="1"/.test(tag(id)))&&+(tag("nw_add").match(/android:minWidth="(\d+)dp"/)||[])[1]>=140);
-  ok("widget: with figures hidden it says 'Rakamlar gizli' and how to see them, in a smaller type",/hide \? "Rakamlar gizli" : kcal/.test(jv)&&/Görmek için uygulamayı aç/.test(jv)&&/setTextViewTextSize\(R\.id\.nw_kcal, TypedValue\.COMPLEX_UNIT_SP, hide \? 20 : 32\)/.test(jv));
+  ok("widget: with figures hidden it says 'Rakamlar gizli' and how to see them, in a smaller type",/hide \? "Rakamlar gizli" : kcal/.test(jv)&&/Uygulama kilidi açık/.test(jv)&&/Ayarlarda gizli/.test(jv)&&/setTextViewTextSize\(R\.id\.nw_kcal, TypedValue\.COMPLEX_UNIT_SP, hide \? 20 : 32\)/.test(jv));
 }
 finish();
