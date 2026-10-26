@@ -6,6 +6,8 @@ const run=()=>cp.spawnSync(process.execPath,[path.join(__dirname,"verify-android
 if(!fs.existsSync(target)||!fs.existsSync(resource)){
   const r=cp.spawnSync(process.platform==="win32"?"npx.cmd":"npx",["cap","add","android"],{cwd:root,encoding:"utf8"});
   if(r.status) throw new Error(r.stderr||r.stdout);
+  const p=cp.spawnSync(process.execPath,[path.join(root,"scripts","patch-android.js")],{cwd:root,encoding:"utf8"});
+  if(p.status) throw new Error(p.stderr||p.stdout);
 }
 function altered(file,fn){const old=fs.readFileSync(file);try{fs.writeFileSync(file,Buffer.concat([old,Buffer.from("\n<!-- verifier-test -->\n")]));return fn()}finally{fs.writeFileSync(file,old)}}
 ok("sync verifier rejects changed Java",altered(target,()=>run().status!==0));
