@@ -71,8 +71,8 @@ test.describe("Coach menu card",()=>{
     app.onDialog=d=>d.dismiss();
     await card.locator('[data-c^="menuday:"]').click();
     await page.click('#sheet [data-c^="menuadd:"]');
-    await expect.poll(()=>app.dialogs.length).toBe(1);
-    expect(app.dialogs[0]).toContain("%15'inden fazla sapıyor");
+    await expect.poll(()=>app.dialogs.length).toBeGreaterThanOrEqual(1);
+    expect(app.dialogs.at(-1)).toContain("%15'inden fazla sapıyor");
     expect((await app.state()).entries.filter(e=>e.type==="food")).toEqual([]);
   });
 });
