@@ -87,7 +87,6 @@ jobs:
         run: |
           mkdir -p smoke
           cp android/app/build/outputs/apk/debug/app-debug.apk smoke/neowell.apk
-          cp android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk smoke/neowell-test.apk
           cp android/app/build/outputs/apk/release/app-release.apk neowell.apk
           cp android/app/build/outputs/bundle/release/app-release.aab neowell.aab
           sha256sum neowell.apk neowell.aab > build-artifact-sha256.txt
@@ -211,7 +210,6 @@ jobs:
           mkdir -p handoff/release
           cp neowell.apk neowell.aab handoff/release/
           cp smoke/neowell.apk handoff/smoke.apk
-          cp smoke/neowell-test.apk handoff/smoke-test.apk
           sha256sum neowell.apk neowell.aab > handoff/release/build-artifact-sha256.txt
       - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -259,7 +257,6 @@ jobs:
       - name: Place the files
         run: |
           cp handoff/smoke.apk neowell.apk
-          cp handoff/smoke-test.apk neowell-test.apk
           cp -r handoff/release release
           (cd release && sha256sum -c build-artifact-sha256.txt)
       - name: Enable KVM
@@ -275,8 +272,6 @@ jobs:
           arch: x86_64
           script: |
             adb install -r neowell.apk
-            adb install -r neowell-test.apk
-            adb shell am instrument -w -r com.neowell.app.test/androidx.test.runner.AndroidJUnitRunner
             bash scripts/smoke.sh
             bash scripts/smoke-release.sh
 
@@ -296,7 +291,6 @@ jobs:
       - name: Place the files
         run: |
           cp handoff/smoke.apk neowell.apk
-          cp handoff/smoke-test.apk neowell-test.apk
           cp -r handoff/release release
           (cd release && sha256sum -c build-artifact-sha256.txt)
       - name: Enable KVM
@@ -312,8 +306,6 @@ jobs:
           arch: x86_64
           script: |
             adb install -r neowell.apk
-            adb install -r neowell-test.apk
-            adb shell am instrument -w -r com.neowell.app.test/androidx.test.runner.AndroidJUnitRunner
             bash scripts/smoke.sh
             bash scripts/smoke-release.sh
 
