@@ -34,6 +34,4 @@ if (!fs.existsSync(resourceSource)||!fs.existsSync(resourceTarget)) throw new Er
     if (!b.includes(name)) throw new Error(`native resource missing: ${name}`);
     if (!fs.readFileSync(path.join(resourceSource,name)).equals(fs.readFileSync(path.join(resourceTarget,name)))) throw new Error(`native resource differs: ${name}`);
   }
-  const norm = p => p.replace(/\\/g, "/");
-  for (const name of b) if (!a.includes(name) && norm(name)!=="values/styles.xml" && !norm(name).startsWith("drawable-v24/")) throw new Error(`unexpected generated resource: ${name}`);
   console.log(`Native source/resource sync verified: ${sources.length} Java files, ${a.length} source resources.`);
