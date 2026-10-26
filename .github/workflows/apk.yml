@@ -81,7 +81,7 @@ jobs:
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug assembleDebugAndroidTest assembleRelease bundleRelease --no-daemon
+          ./gradlew assembleDebug assembleRelease bundleRelease --no-daemon
 
       - name: Collect the files
         run: |
