@@ -272,6 +272,16 @@ test.describe("Coach identity masking",()=>{
     const all={chat:await sysOf(async()=>{await page.fill("#cmsg","Bir elma kaç kalori");await page.click("#csend")}),program:await sysOf(()=>page.evaluate("cProgram({d:3,m:45,q:'Salon',l:'Orta'})")),menu:await sysOf(()=>page.evaluate("cMenu()"))};
     for(const [k,t] of Object.entries(all)){expect(t,k).toContain("PROFİL: 170 cm, 30-34 yaş, erkek");expect(t,k).toContain("günlük kalori hedefi 1900");expect(t,k).not.toMatch(/Metformin|Sağ dizim|gizli not|SON 14 GÜN|BUGÜN:|HESAPLANAN|KISIT|İLAÇ|SAĞLIK NOTU/)}
   });
+  test("protected health fields never enter actual provider body",async({app,page,fake})=>{
+    fake.st.reply=()=>JSON.stringify({reply:"Tamam.",log:[]});
+    await app.open({seed:state({...CONSENT,medOn:true,healthNote:"Sağ dizim ağrıyor",preg:true,nurs:true,ed:true,heightCm:170,age:34,sex:"m",kcal:1900},{entries:[entry("note",0,"gizli not")],meds:[{id:1,n:"Metformin",d:"500 mg",t:["08:00"],on:true}]}),keys:{groq:"gsk_test"}});
+    await app.tab("coach");
+    await page.fill("#cmsg","Ben Ahmet, 0532 123 45 67, TC 12345678901");await page.click("#csend");
+    await expect.poll(()=>fake.chats().length).toBeGreaterThan(0);
+    const body=fake.chats().at(-1).body,wire=JSON.stringify(body.messages.filter(m=>m.role!=="system"))+body.messages.find(m=>m.role==="system").content.slice(body.messages.find(m=>m.role==="system").content.indexOf("PROFİL:"));
+    expect(wire).not.toMatch(/Sağ dizim|Metformin|gizli not|Ahmet|0532|12345678901/);
+    expect(wire).toMatch(/\[TELEFON1\]|\[TC1\]|\[AD1\]/);
+  });
   test("a program request goes with short context: no 14-day table, catalog ids present, a program card appears",async({app,page,fake})=>{
     fake.st.reply=()=>JSON.stringify({reply:"Program hazır.",log:[],program:{name:"3 gün",days:[{n:"A",ex:["squat","bench","row"]},{n:"B",ex:["squat","ohp","pulldown"]},{n:"C",ex:["legpress","incdb","curl"]}]}});
     await app.open({seed:state({...CONSENT,healthNote:"Sağ dizim ağrıyor",medOn:true},{entries:[...[0,1,2,3,4,5,6].map(i=>entry("weight",80-i/10,"",{d:-i}))],meds:[{id:1,n:"Metformin",d:"500 mg",t:["08:00"],on:true}]}),keys:{groq:"gsk_test"}});
@@ -286,6 +296,8 @@ test.describe("Coach identity masking",()=>{
     await expect(page.locator("#view")).toContainText("Program hazır");
     expect(await page.evaluate("S.chat.some(m=>m.card&&m.card.kind==='program'&&m.card.days.length===3)")).toBe(true);
   });
+
+
   test("Privacy and data: the switch is off by default and persists once on",async({app,page})=>{
     await openPrev(app,false);
     await page.evaluate("sheetPrivacy()");

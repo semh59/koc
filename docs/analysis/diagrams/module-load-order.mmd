@@ -1,0 +1,19 @@
+# Modül yükleme sırası
+
+```mermaid
+flowchart TD
+  I[index.html] --> K[kernel/common yardımcıları]
+  K --> D[data ve domain scriptleri]
+  D --> X[text/x-main blokları]
+  X --> M1[main/01-core.js]
+  M1 --> M2[main/02-state-components.js]
+  M2 --> M3[main/03-screens.js]
+  M3 --> M4[main/04-sheets.js]
+  M4 --> M5[main/05-notifications.js]
+  M5 --> M6[main/05-permissions.js]
+  M6 --> M7[main/06-events.js]
+  M7 --> M8[main/07-actions.js]
+  M8 --> B[nw:boot]
+```
+
+Not: Domain scriptlerinin tam sıralı listesi `www/index.html` kaynak sırasından Faz 3'te otomatik olarak tabloya alınacak. Bu diyagram yükleme mekanizmasını ve main zincirini gösterir.

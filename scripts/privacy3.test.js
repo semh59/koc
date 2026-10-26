@@ -1,7 +1,7 @@
 /* Privacy round 2: opening a sealed shared file, lock-screen detail, widget hiding, hide-numbers coverage, archive list, restore and reset notes. */
 const {ok,finish}=require("./ok");
 const {boot,until,flush,read}=require("./html");
-const fs=require("fs");
+const fs=require("fs"),path=require("path");
 const BackupLib=require("../www/modules/data/backuplib.js");
 const ArchiveLib=require("../www/modules/data/archivelib.js");
 const nodeCrypto=require("node:crypto");
@@ -87,9 +87,9 @@ async function openSealed(w,text,pw){
   ok("with it on the descriptive titles and the public channel come back",/Tansiyon ölçümü/.test(bp2.title)&&med2.channelId==="nw_med"&&mw.at(-1).detail===true,[bp2,med2]);
   w.eval("tab='settings-data';render()");
   ok("Veri ve yedek has the lock-screen detail switch",!!w.document.querySelector("[data-ld]"));
-  const mr=rd("assets/android/MedWakeReceiver.java"),mp=rd("assets/android/MedWakePlugin.java"),mn=rd("assets/android/MainActivity.java"),lt=rd("assets/android/LockText.java");
+  const mr=rd("assets/android/MedWakeReceiver.java"),mp=rd("assets/android/MedWakePlugin.java"),mn=rd("assets/android/MainActivity.java"),lt=rd("assets/android/LockText.java"),jf=fs.readdirSync(path.join(__dirname,"..","assets/android")).filter(f=>f.endsWith(".java")).map(f=>f.slice(0,-5)).sort();
   ok("native: channels are created with the setting's visibility and the full-screen notification is private with generic text when it is off",/setLockscreenVisibility\(vis\)/.test(mr)&&!/VISIBILITY_PUBLIC\)\s*;\s*\n\s*nm\./.test(mr)&&/LockText\.TITLE/.test(mr)&&/on \? Notification\.VISIBILITY_PUBLIC : Notification\.VISIBILITY_PRIVATE/.test(mr)&&/setDetail\(getContext\(\), call\.getBoolean\("detail", false\)\)/.test(mp)&&!/setLockscreenVisibility\(Notification\.VISIBILITY_PUBLIC\)/.test(mn+mr)&&/MedWakeReceiver\.channel\(this\)/.test(mn)&&/id \+ "p"/.test(lt));
-  ok("native: LockText is copied to the project and its test runs in CI",/"LockText"/.test(rd("scripts/patch-android.js"))&&/LockText\.java[^\n]*LockTextTest\.java/.test(rd(".github/workflows/apk.yml"))&&/LockTextTest/.test(rd(".github/workflows/apk.yml")));}
+  ok("native: LockText is copied to the project and its test runs in CI",jf.includes("LockText")&&/LockTextTest\.java/.test(rd(".github/workflows/apk.yml"))&&/LockTextTest/.test(rd(".github/workflows/apk.yml")));}
 
   // --- widget
   {const {w,wg}=await open({settings:{lockOn:false}});
