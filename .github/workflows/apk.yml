@@ -52,6 +52,7 @@ jobs:
 
       - name: Generate the Android project
         run: |
+          rm -rf android
           npx cap add android
           node scripts/patch-android.js
           npx cap sync android
