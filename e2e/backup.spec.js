@@ -9,7 +9,7 @@ test("encrypted backup: create, wipe all data, rejected without or with a wrong 
   const toastIs=m=>expect(app.toast).toHaveText(m);
   const bk=async()=>{await app.go("settings-data");await page.click('[data-act="backup"]')};
   const rs=async()=>{await app.go("settings-data");await page.click('[data-obr="open"]')};
-  const restore=async(t,pw)=>{await page.fill("#obt",t);await page.fill("#obpw",pw);await page.click('[data-obr="go"]')};
+  const restore=async(t,pw)=>{await page.fill("#obt",t);await page.fill("#obpw",pw);await expect(page.locator('[data-obr="go"]')).toBeEnabled({timeout:10000});await page.click('[data-obr="go"]')};
 
   // Backup: a short or mismatched password is rejected, a valid one downloads an encrypted file
   await bk();
