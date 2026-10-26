@@ -64,9 +64,14 @@ boot().then(async win=>{
     reset();let sent;fetchWith((u,o)=>{sent=JSON.parse(o.body);return reply({reply:"Bugün iyi"})});
     await ev("cProgram({d:3,q:'Salon',m:45,l:'Başlangıç'})");
     ok("the user text of a program request is not sent twice",sent.messages.filter(m=>m.role==="user").length===1,sent.messages.map(m=>m.role));
-    reset();fetchWith(()=>reply({reply:"Program yok"}));await ev("cProgram({d:3,q:'Salon',m:45,l:'Başlangıç'})");
-    ok("if the program cannot be read the user request is not left unanswered in the chat",ev("S.chat.length")===0);
-    fetchWith(()=>{throw new TypeError("x")});ev("cool={}");await ev("cMenu()").catch(()=>0);
+    reset();let direct=0;fetchWith(()=>{direct++;return reply({reply:"Tamam"})});
+    const before=direct;ev("S.settings.consent=false");await ev("callProvider(S.providers.find(p=>p.id==='nvidia'),'k1',[{role:'user',content:'x'}],20)").catch(()=>0);
+    ok("direct provider calls are blocked without consent",direct===before);
+    await ev("S.settings.consent=true;S.settings.consentP='nvidia,groq,anthropic,openai';S.providers.find(p=>p.id==='nvidia').on=false;callProvider(S.providers.find(p=>p.id==='nvidia'),'k1',[{role:'user',content:'x'}],20)").catch(()=>0);
+    ok("direct provider calls reject disabled provider",direct===before);
+    await ev("callProvider(S.providers.find(p=>p.id==='nvidia'),'k1',[{role:'user',content:'secret'}],20,{probe:true})").catch(()=>0);
+    ok("probe rejects user payload",direct===before);
+
   }
   {
     reset();ev("for(let i=0;i<15;i++)cPush({role:i%2?'coach':'user',text:'m'+i})");

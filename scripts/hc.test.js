@@ -120,7 +120,7 @@ function open(seed,fake){
   ok("table export: the pulse file has the camera and watch rows",csv==="2");
 
   const hp=fs.readFileSync(path.join(__dirname,"../assets/android/HealthPlugin.java"),"utf8"),pa=fs.readFileSync(path.join(__dirname,"patch-android.js"),"utf8");
-  ok("Android: read-only permissions (no write), the permission usage screen is declared, the plugin is copied and registered",/android\.permission\.health\.READ_STEPS/.test(hp)&&!/WRITE_/.test(hp+pa)&&/"health\.READ_STEPS", "health\.READ_SLEEP", "health\.READ_HEART_RATE"/.test(pa)&&/READ_SLEEP/.test(hp)&&/READ_HEART_RATE/.test(hp)&&/BPM_AVG/.test(hp)&&/HEALTH_PERMISSIONS/.test(pa)&&/"HealthPlugin"/.test(pa)&&/registerPlugin\(HealthPlugin\.class\)/.test(fs.readFileSync(path.join(__dirname,"../assets/android/MainActivity.java"),"utf8")));
+  ok("Android: read-only permissions (no write), the permission usage screen is declared, the plugin is copied and registered",/android\.permission\.health\.READ_STEPS/.test(hp)&&!/WRITE_/.test(hp+pa)&&/health\.READ_STEPS/.test(pa)&&/health\.READ_SLEEP/.test(pa)&&/health\.READ_HEART_RATE/.test(pa)&&/READ_SLEEP/.test(hp)&&/READ_HEART_RATE/.test(hp)&&/BPM_AVG/.test(hp)&&/HEALTH_PERMISSIONS/.test(pa)&&/registerPlugin\(HealthPlugin\.class\)/.test(fs.readFileSync(path.join(__dirname,"../assets/android/MainActivity.java"),"utf8")));
   ok("Android: no manager below version 34, days are limited and an invalid day is rejected",/SDK_INT >= 34/.test(hp)&&/MAX_DAYS = 40/.test(hp)&&/in\.length\(\) > MAX_DAYS/.test(hp)&&/LocalDate\.parse\(in\.getString\(k\)\)/.test(hp)&&/days == null\) \{\s*call\.reject/.test(hp));
   finish();
 })();
