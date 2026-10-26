@@ -60,6 +60,7 @@ jobs:
 
       - name: Android instrumentation test contract
         run: |
+          cat android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java
           grep -q 'assertEquals("com.neowell.app"' android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java
           grep -q 'applicationId "com.neowell.app"' android/app/build.gradle
 

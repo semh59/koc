@@ -94,7 +94,7 @@ for (const f of javaFiles) {
 console.log("Native sources copied.");
 const testPath="android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java";
 if(fs.existsSync(testPath)){
-  let test=fs.readFileSync(testPath,"utf8").replace('assertEquals("com.getcapacitor.app", appContext.getPackageName());','assertEquals("com.neowell.app", appContext.getPackageName());');
+  let test=fs.readFileSync(testPath,"utf8").replace(/assertEquals\("com\.[^"]+",\s*appContext\.getPackageName\(\)\);/, 'assertEquals("com.neowell.app", appContext.getPackageName());');
   if(!test.includes('assertEquals("com.neowell.app", appContext.getPackageName());')) throw new Error("instrumentation package assertion not found");
   fs.writeFileSync(testPath,test);
 }
