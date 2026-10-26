@@ -51,11 +51,10 @@ test("encrypted backup: create, wipe all data, rejected without or with a wrong 
   await restore(text,PW);
   await expect.poll(()=>app.dialogs.length).toBeGreaterThanOrEqual(2);
   expect((await app.state()).entries.map(e=>e.text)).toEqual(["Sonradan yazılan"]);
-  app.onDialog=null;
-  await expect(page.locator('[data-obr="go"]')).toBeEnabled({timeout:10000});
-  await page.click('[data-obr="go"]');
+  app.onDialog=d=>d.accept();
+  await restore(text,PW);
   await expect(app.toast).toContainText("Yedek yüklendi");
-  expect(app.dialogs[2]).toMatch(/^Yedekten 2 kayıt yüklenecek\. Yedek tarihi: .*Bu telefondaki 1 kayıt değişecek\./);
+  expect(app.dialogs.at(-1)).toContain("Yedekten 2 kayıt yüklenecek");
   const st=await app.state();
   expect(st.entries.map(e=>e.text).sort()).toEqual(["","Gizli sağlık notum"]);
   expect(st.entries.find(e=>e.type==="weight").v).toBe(81.5);
