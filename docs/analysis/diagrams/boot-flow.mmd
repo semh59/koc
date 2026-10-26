@@ -1,0 +1,14 @@
+# Boot akışı
+
+```mermaid
+flowchart TD
+  A[index.html] --> B[DOM shell]
+  B --> C[script src files]
+  C --> D[text/x-main data-src]
+  D --> E[fetch + concatenate]
+  E --> F[append executable script]
+  F --> G[set dataset.boot]
+  G --> H[dispatch nw:boot]
+  H --> I[Data.privacy sort]
+  H --> J[initial application behavior]
+```

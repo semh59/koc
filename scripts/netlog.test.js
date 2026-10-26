@@ -6,9 +6,11 @@ global.window={fetch:async()=>({ok:true})};
 const NetLog=require("../www/kernel/netlog.js");
 
 (async()=>{
-  await NetLog.fetch("chat","https://api.groq.com/openai/v1/chat/completions",{method:"POST",body:"merhaba şifre"});
+  await NetLog.fetch("chat","https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{Authorization:"Bearer SECRET-API-KEY", "x-api-key":"SECRET-X"},body:"merhaba şifre SECRET-BODY"});
+  ok("request headers and body never enter the network log",!store.get(NetLog.KEY).includes("SECRET-API-KEY")&&!store.get(NetLog.KEY).includes("SECRET-X")&&!store.get(NetLog.KEY).includes("SECRET-BODY"));
+
   let rows=NetLog.recent();
-  ok("a request is logged with kind, host, body bytes and result, never the content",rows.length===1&&rows[0].kind==="chat"&&rows[0].host==="api.groq.com"&&rows[0].out===14&&rows[0].ok===true&&!store.get(NetLog.KEY).includes("merhaba"),rows);
+  ok("a request is logged with kind, host, body bytes and result, never the content",rows.length===1&&rows[0].kind==="chat"&&rows[0].host==="api.groq.com"&&rows[0].out===26&&rows[0].ok===true&&!store.get(NetLog.KEY).includes("merhaba"),rows);
 
   global.window.fetch=async()=>{throw new TypeError("offline")};
   let err=null;try{await NetLog.fetch("off","https://world.openfoodfacts.org/api/v2/product/1.json")}catch(e){err=e}

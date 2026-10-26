@@ -1,6 +1,8 @@
 // Copies the native sources into the generated Capacitor project (android/) and patches its manifest, resources and Gradle files.
 // Every patch is guarded by a marker, so running the script twice adds nothing twice.
 const fs = require("fs");
+const path = require("path");
+process.chdir(path.join(__dirname, ".."));
 
 const manifestPath = "android/app/src/main/AndroidManifest.xml";
 let manifest = fs.readFileSync(manifestPath, "utf8");
@@ -41,8 +43,12 @@ addToApp("WaterReceiver", '<receiver android:name=".WaterReceiver" android:expor
 // Health data must not go to the Google backup or a phone-to-phone transfer; the user's own encrypted backup is not affected.
 if (!manifest.includes('android:allowBackup="false"')) {
   if (!manifest.includes('android:allowBackup="true"')) throw new Error("allowBackup not found: the template changed, backup could not be disabled");
-  manifest = manifest.replace('android:allowBackup="true"', 'android:allowBackup="false"\n        android:fullBackupContent="@xml/nw_backup_rules"\n        android:dataExtractionRules="@xml/nw_data_rules"');
+  manifest = manifest.replace('android:allowBackup="true"', 'android:allowBackup="false"');
 }
+if (!manifest.includes('android:fullBackupContent="@xml/nw_backup_rules"') || !manifest.includes('android:dataExtractionRules="@xml/nw_data_rules"')) {
+  manifest = manifest.replace(/(android:allowBackup="false")/, '$1\n        android:fullBackupContent="@xml/nw_backup_rules"\n        android:dataExtractionRules="@xml/nw_data_rules"');
+}
+if (manifest.includes('android:allowBackup="true"') || !manifest.includes('android:fullBackupContent="@xml/nw_backup_rules"') || !manifest.includes('android:dataExtractionRules="@xml/nw_data_rules"')) throw new Error("backup policy postcondition failed");
 // Android 11+ package visibility: without declaring the TTS engine query, TextToSpeech finds no engine and guided mode stays silent.
 if (!manifest.includes("android.intent.action.TTS_SERVICE")) {
   manifest = manifest.replace("</manifest>", '    <queries><intent><action android:name="android.intent.action.TTS_SERVICE"/></intent></queries>\n</manifest>');
@@ -59,7 +65,14 @@ fs.writeFileSync(manifestPath, manifest);
 console.log("Manifest patched.");
 
 const res = "android/app/src/main/res";
-fs.cpSync("assets/android/res", res, { recursive: true });
+const sourceRes = "assets/android/res";
+const removeOwned = name => {
+  const src=`${sourceRes}/${name}`,dst=`${res}/${name}`;
+  if(fs.statSync(src).isDirectory()) for(const child of fs.readdirSync(src)) removeOwned(`${name}/${child}`);
+  else if(fs.existsSync(dst)) fs.rmSync(dst);
+};
+for(const name of fs.readdirSync(sourceRes)) removeOwned(name);
+fs.cpSync(sourceRes,res,{recursive:true});
 // From Android 12 the system draws the splash screen: without a background and icon in the theme it shows a white screen and the default icon.
 const stylesPath = `${res}/values/styles.xml`;
 let styles = fs.readFileSync(stylesPath, "utf8");
@@ -72,9 +85,19 @@ if (!styles.includes("windowSplashScreenBackground")) {
 console.log("Icons and splash screen installed.");
 
 const javaDir = "android/app/src/main/java/com/neowell/app";
-const javaFiles = ["MainActivity", "Alarms", "WindowFlags", "AlarmActivity", "AppLockPlugin", "LockText", "MedWakeReceiver", "MedWakePlugin", "KeyVaultPlugin", "DeviceHelpPlugin", "StepCounterPlugin", "StepStore", "StepMath", "StepSnapshotReceiver", "OcrPlugin", "QuickMath", "QuickLogPlugin", "MotionMath", "MotionStore", "MotionGpsService", "MotionReceiver", "MotionPlugin", "NeoWidget", "WidgetPlugin", "WaterReceiver", "SpeechPlugin", "BackupFolderPlugin", "HealthPlugin"];
-for (const f of javaFiles) fs.copyFileSync(`assets/android/${f}.java`, `${javaDir}/${f}.java`);
+const javaFiles = fs.readdirSync("assets/android").filter(f => f.endsWith(".java")).map(f => f.slice(0, -5)).sort();
+for (const f of javaFiles) {
+  const source = `assets/android/${f}.java`, target = `${javaDir}/${f}.java`;
+  fs.copyFileSync(source, target);
+  if (!fs.readFileSync(source).equals(fs.readFileSync(target))) throw new Error(`native source sync failed: ${f}.java`);
+}
 console.log("Native sources copied.");
+const testPath="android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java";
+if(fs.existsSync(testPath)){
+  let test=fs.readFileSync(testPath,"utf8").replace('assertEquals("com.getcapacitor.app", appContext.getPackageName());','assertEquals("com.neowell.app", appContext.getPackageName());');
+  if(!test.includes('assertEquals("com.neowell.app", appContext.getPackageName());')) throw new Error("instrumentation package assertion not found");
+  fs.writeFileSync(testPath,test);
+}
 
 // The debug build is only for the CI smoke test (it needs run-as, so it is debuggable) and is signed with the publicly known key in the repository.
 // The published release build is signed with the key CI decodes from its secrets; without the key the signature is missing and CI stops.

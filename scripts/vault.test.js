@@ -36,5 +36,12 @@ const open=async(seed,v)=>{
   ok("if the user already agreed to plain storage, the plain copy is kept when the read-back fails",w.localStorage.getItem("nw_keys")!==null&&w.eval("getKeys().groq")==="SIRRI-6");
   w=await open({nw_keys:JSON.stringify({groq:"SIRRI-4"})},null);
   ok("without a vault (browser) plain text works",w.eval("getKeys().groq")==="SIRRI-4");
+  w=await open({nw_keys:JSON.stringify({groq:"SIRRI-BROWSER"})},null);const ev2=s=>w.eval(s);
+  ok("browser plaintext keys load only through the explicit fallback consent path",ev2("getKeys().groq")==="SIRRI-BROWSER"&&w.localStorage.getItem("nw_keys_plain")==="1");
+  await ev2("wipeKeys()");
+  ok("wipeKeys clears browser key storage and consent marker",w.localStorage.getItem("nw_keys")===null&&w.localStorage.getItem("nw_keys_enc")===null&&w.localStorage.getItem("nw_keys_plain")===null&&Object.keys(ev2("getKeys()")).length===0);
+  let reset2=0;w=await open({nw_keys_enc:"x"},{encrypt:vault().encrypt,decrypt:async()=>({text:JSON.stringify({groq:"SIRRI-WIPE"})}),resetKey:async()=>{reset2++}});const ev3=s=>w.eval(s);
+    await ev3("wipeKeys()");
+    ok("wipeKeys resets native vault and all local key copies",reset2===1&&!["nw_keys","nw_keys_enc","nw_keys_plain"].some(k=>w.localStorage.getItem(k))&&Object.keys(ev3("getKeys()")).length===0);
   finish();
 })();

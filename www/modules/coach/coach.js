@@ -14,11 +14,33 @@ let plainOk=lsGet("nw_keys_plain")==="1",plainNo=false,vaultWarned=false,locked=
 const invalid=e=>!!e&&e.code==="KEY_INVALIDATED";
 const VAULT_RETRY="Rehber anahtarları şu an okunamadı, kayıtları silinmedi. Biraz sonra uygulamayı yeniden açıp tekrar dene";
 const plainHas=()=>{try{return Object.keys(JSON.parse(lsGet(KEYS_LS)||"{}")).length>0}catch(e){return false}};
+let browserPlainAsked=false;
+async function browserPlainConsent(){
+  if(plainOk)return true;
+  if(!plainHas())return true;
+  if(browserPlainAsked)return false;
+  browserPlainAsked=true;
+  const yes=await confirmSheet({title:"Rehber anahtarları düz saklansın mı?",body:"Bu tarayıcıda güvenli kasa yok. Anahtarları yalnız bu oturumda kullanabilir veya tarayıcıda düz saklayabilirsin.",ok:"Düz sakla",no:"Yalnız bu oturum"});
+  if(yes){plainOk=true;lsSet("nw_keys_plain","1");return true}
+  return false;
+}
+async function wipeKeys(){
+  KEYS={};lsDel(KEYS_LS);lsDel(KEYS_ENC);lsDel("nw_keys_plain");plainOk=false;plainNo=false;locked=false;
+  const kv=KV();if(kv?.resetKey)try{await kv.resetKey()}catch(e){toast("Rehber anahtar kasası temizlenemedi")}
+}
 async function persistKeys(){
-  const j=JSON.stringify(KEYS);
+  const j=JSON.stringify(KEYS),kv=KV();
   if(locked){
     /* The encrypted record could not be read because of a temporary error: it is re-read before being overwritten; if that fails the old keys are kept and nothing is written. */
     try{KEYS={...JSON.parse((await KV().decrypt({data:lsGet(KEYS_ENC)})).text),...KEYS};locked=false}catch(e){if(invalid(e)){locked=false}else return void toast(VAULT_RETRY)}
+  }
+  if(!kv){
+    if(Object.keys(KEYS).length&&!plainOk){
+      const yes=await confirmSheet({title:"Rehber anahtarları düz saklansın mı?",body:VAULT_WARN+". Düz saklarsan uygulamayı kapattıktan sonra da kalır.",ok:"Düz sakla",no:"Yalnız bu oturum"});
+      if(!yes)return void(plainNo=true);
+      plainOk=true;lsSet("nw_keys_plain","1");
+    }
+    lsSet(KEYS_LS,j);return;
   }
   if(KV()){
     try{
@@ -41,7 +63,10 @@ function setKey(id,k){if(k)KEYS[id]=k;else delete KEYS[id];return persistKeys()}
 async function keysInit(){
   const kv=KV(),enc=lsGet(KEYS_ENC);let lost=false;
   const readPlain=()=>{try{KEYS=JSON.parse(lsGet(KEYS_LS))||{}}catch(e){KEYS={}}};
-  if(!kv){readPlain();return}
+  if(!kv){
+    if(plainHas()&&!await browserPlainConsent()){KEYS={};return}
+    readPlain();return
+  }
   try{
     if(enc){
       try{KEYS=JSON.parse((await kv.decrypt({data:enc})).text)||{}}
@@ -203,11 +228,14 @@ function usageText(){
   const {n,tok}=CoachLib.usageSum(usageStore(),dayKey());
   return `Rehber kullanımı (son 30 gün): ${n} istek, ~${fint(tok)} jeton`;
 }
-const httpError=async r=>{const e=new Error("HTTP "+r.status);e.status=r.status;try{e.body=(await r.text()).slice(0,600)}catch(x){}return e};
+const httpError=async r=>{const e=new Error("HTTP "+r.status);e.status=r.status;try{const body=await r.text();e.kind=CoachLib.errKind(e.status,body)}catch(x){e.kind=CoachLib.errKind(e.status,"")}return e};
 /* o.probe: setup check. HTTP 200 with a valid body is enough; a thinking model may return without text at the limit (content null, reasoning_content set).
    In a chat, if the text is empty and the limit was hit (thinking ate the budget), it is asked once more with three times the limit. */
 async function callProvider(p,key,messages,maxTokens=700,o={}){
+  if(!o.probe&&!coachOn())throw new Error("consent");
+  if(!o.probe){const allowed=S.providers.find(x=>x.id===p.id);if(!allowed||!allowed.on||!allowed.health||getKeys()[allowed.id]!==key||!provOk())throw new Error("provider not authorized");}
   const ms=Math.min(o.ms||40000,o.until?o.until-Date.now():Infinity);
+  if(o.probe&&messages.some(m=>m.role!=="user"||typeof m.content!=="string"||m.content!=="Sadece 'tamam' yaz."))throw new Error("invalid probe payload");
   if(ms<=0){const e=new Error("Süre doldu");e.kind="time";throw e}
   const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),ms);
   try{
