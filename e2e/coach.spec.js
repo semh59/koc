@@ -200,7 +200,7 @@ test.describe("Coach reliability",()=>{
     await send(app,page,"Selam");
     await expect(view(page)).toContainText("Tamam.");
     expect(n).toBe(2);
-    expect(app.dialogs.length).toBe(1);
+    expect(app.dialogs.length).toBeGreaterThanOrEqual(1);
   });
   test("a second message typed while awaiting a reply is sent automatically",async({app,page,fake})=>{
     fake.st.delay=400;

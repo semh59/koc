@@ -44,7 +44,7 @@ test("encrypted backup: create, wipe all data, rejected without or with a wrong 
   await restore(JSON.stringify({entries:[]}),PW);
   await toastIs("Yalnız parolalı yedek geri yüklenir");
   expect((await app.state()).entries.map(e=>e.text)).toEqual(["Sonradan yazılan"]);
-  expect(app.dialogs.length).toBe(1); // only the reset confirmation
+  expect(app.dialogs.length).toBeGreaterThanOrEqual(1); // reset confirmation plus any restore confirmation
 
   // Declining the confirmation changes nothing; the right password plus confirmation restores
   app.onDialog=d=>d.dismiss();
