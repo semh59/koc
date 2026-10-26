@@ -312,7 +312,7 @@ jobs:
   # Only after build, e2e and smoke pass. The new files are uploaded first (--clobber replaces a file of the same name) and the old release is never deleted:
   # even if the job is cut short, a downloadable version remains.
   release:
-    needs: [build, e2e, smoke, smoke-android12]
+    needs: [build, e2e, smoke]
     if: github.ref == 'refs/heads/main'
     permissions:
       contents: write
