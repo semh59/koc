@@ -5,7 +5,7 @@ const root=path.join(__dirname,".."),target=path.join(root,"android","app","src"
 const run=()=>cp.spawnSync(process.execPath,[path.join(__dirname,"verify-android-sync.js")],{cwd:root,encoding:"utf8"});
 if(!fs.existsSync(target)||!fs.existsSync(resource)||!fs.existsSync(path.join(root,"android","app","src","main","AndroidManifest.xml"))){
   if(fs.existsSync(path.join(root,"android")))fs.rmSync(path.join(root,"android"),{recursive:true,force:true});
-  const r=cp.spawnSync(process.platform==="win32"?"npx.cmd":"npx",["cap","add","android"],{cwd:root,encoding:"utf8"});
+  const r=cp.spawnSync(process.platform==="win32"?"npx.cmd":"npx",["cap","add","android"],{cwd:root,encoding:"utf8",shell:process.platform==="win32"});
   if(r.status) throw new Error(r.stderr||r.stdout);
   const p=cp.spawnSync(process.execPath,[path.join(root,"scripts","patch-android.js")],{cwd:root,encoding:"utf8"});
   if(p.status) throw new Error(p.stderr||p.stdout);
