@@ -405,7 +405,7 @@ async function cFlush(){
   if(!offline&&S.chat.some(m=>m.role==="user"&&m.pend))cFlush();
 }
 function cReply(o){
-  const structured=Object.hasOwn(o,"answer")||Object.hasOwn(o,"intent"),safe=CoachLib.validateResponse(o,o.intent||"general",(cCompiledContext()||{}).facts||[]);
+  const structured=Object.hasOwn(o,"answer")||Object.hasOwn(o,"intent")||Object.hasOwn(o,"facts_used")||Object.hasOwn(o,"recommendations")||Object.hasOwn(o,"actions"),allowedFacts=(cCompiledContext()||{}).facts||[],safe=CoachLib.validateResponse(o,o.intent||"general",allowedFacts);
   if(structured&&safe===null){cPush({role:"coach",text:"Yanıt güvenlik kurallarından geçmedi; yeniden dene."});return}
   if(safe){
     const items=CoachLib.cleanItems(o.log),fd=CoachLib.cleanFood(o.food),msg={role:"coach",text:safe.answer||o.reply||"Tamam."};
