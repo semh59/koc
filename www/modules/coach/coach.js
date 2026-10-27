@@ -103,7 +103,7 @@ let pstat={},cool={},busy=false,typing=false,offline=null;
 
 /* ---- validation ---- */
 function cleanCoach(r){
-  const provs=[],defs=defProviders(),known=EXDB.map(e=>e.id).concat((Array.isArray(r.customEx)?r.customEx:[]).map(e=>e&&e.id).filter(i=>typeof i==="string"&&/^c\d+$/.test(i)));
+  const migrated=CoachLib.migrateLegacy(r||{}),provs=[],defs=defProviders(),known=EXDB.map(e=>e.id).concat((Array.isArray(r.customEx)?r.customEx:[]).map(e=>e&&e.id).filter(i=>typeof i==="string"&&/^c\d+$/.test(i)));
   for(const p of (Array.isArray(r.providers)?r.providers:[])){
     if(!p||typeof p.id!=="string"||!/^[a-z0-9]{1,16}$/.test(p.id)||p.id in Object.prototype||typeof p.name!=="string"||typeof p.base!=="string"||!/^https:\/\/[^\s]+$/.test(p.base)||typeof p.model!=="string")continue;
     if(provs.some(x=>x.id===p.id))continue;
@@ -111,14 +111,14 @@ function cleanCoach(r){
     /* The address of a built-in provider is the host allowlist: a backup or damaged record cannot send the key to another server. */
     provs.push({id:p.id,name:p.name.slice(0,40),base:def?def.base:p.base.slice(0,200),model,on:p.on===true,health:p.health===true,confirm:p.confirm===true});
   }
-  const chat=cleanChat(r.chat,known),chats=[];
-  for(const x of (Array.isArray(r.chats)?r.chats:[]).slice(0,CHATS_MAX)){
+  const chat=cleanChat(r.chat||migrated.conversations.find(c=>c.id===migrated.activeId)?.messages,known),chats=[];
+  for(const x of (Array.isArray(r.chats)?r.chats:migrated.conversations.filter(c=>c.id!==migrated.activeId).map(c=>({id:c.id,t:c.updatedAt,title:c.title,msgs:c.messages}))).slice(0,CHATS_MAX)){
     if(!x||!Number.isInteger(x.id)||!Number.isFinite(x.t)||chats.some(c=>c.id===x.id))continue;
     const msgs=cleanChat(x.msgs,known);
     if(msgs.length)chats.push({id:x.id,t:x.t,title:typeof x.title==="string"?x.title.slice(0,60):"Sohbet",msgs});
   }
   const top=Math.max(...chat.map(m=>m.id),...chats.flatMap(c=>c.msgs.map(m=>m.id)),0);
-  return {providers:provs.length?provs:defs,chat,chats:trimChats(chats),cid:Math.max(1,top+1,Number.isInteger(r.cid)?r.cid:1)};
+  return {providers:provs.length?provs:defs,chat,chats:trimChats(chats),cid:Math.max(1,top+1,Number.isInteger(r.cid)?r.cid:migrated.cid)};
 }
 const CHATS_MAX=20,ARCH_MSGS=600,ARCH_CHARS=250000,CHAT_MAX=150;
 /* The archive must not fill the storage quota: the newest chats stay and older ones are dropped once the total message or size limit is exceeded (the newest always stays). */

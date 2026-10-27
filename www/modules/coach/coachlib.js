@@ -333,6 +333,26 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
     if(store&&typeof store==="object")for(const d of Object.keys(store))if(d>=old&&store[d]&&typeof store[d]==="object")for(const r of Object.values(store[d]))if(Array.isArray(r)){n+=+r[0]||0;tok+=(+r[1]||0)+(+r[2]||0)}
     return {n,tok};
   }
+  function safeProviderBase(base){try{const u=new URL(String(base));return u.protocol==="https:"?u.origin+u.pathname.replace(/\/+$/,""):""}catch{return ""}}
+  function cloneMessages(v){return structuredClone(Array.isArray(v)?v:[])}
+  function migrateLegacy(r={}){
+    const conversations=[],chat=Array.isArray(r.chat)?r.chat:[],arch=Array.isArray(r.chats)?r.chats:[],dropped=[];
+    if(chat.length)conversations.push({id:0,title:"Aktif sohbet",createdAt:chat[0]?.t||0,updatedAt:chat[chat.length-1]?.t||0,messages:cloneMessages(chat)});
+    for(const c of arch)if(c&&Array.isArray(c.msgs))conversations.push({id:c.id,title:String(c.title||"Sohbet").slice(0,80),createdAt:c.t||0,updatedAt:c.t||0,messages:cloneMessages(c.msgs)});
+    for(const k of Object.keys(r))if(!["chat","chats","cid","providers","customEx"].includes(k))dropped.push(k);
+    return {version:1,conversations,activeId:chat.length?0:null,cid:Number.isInteger(r.cid)&&r.cid>0?r.cid:1,dropped,providers:(Array.isArray(r.providers)?r.providers:[]).filter(p=>p&&typeof p.id==="string").map(p=>({id:p.id,name:String(p.name||"").slice(0,40),base:safeProviderBase(p.base),model:String(p.model||"").slice(0,100),on:p.on===true,health:p.health===true,confirm:p.confirm===true}))};
+  }
+
+  function createRepository(legacy,persist=()=>true){
+    let state=structuredClone(migrateLegacy(legacy));
+    const copy=()=>structuredClone(state);
+    return {snapshot:copy,conversation:id=>copy().conversations.find(c=>c.id===id)||null,upsertConversation:c=>{if(!c||!Number.isInteger(c.id))return false;const i=state.conversations.findIndex(x=>x.id===c.id);if(i<0)state.conversations.push(structuredClone(c));else state.conversations[i]=structuredClone(c);return true},removeConversation:id=>{const n=state.conversations.length;state.conversations=state.conversations.filter(c=>c.id!==id);return state.conversations.length!==n},commit:()=>{const next=copy();try{return persist(next)===false?false:true}catch{return false}},migrate:()=>copy()};
+  }
+  function migrateLegacyAtomic(legacy,write=()=>true){
+    const old=structuredClone(legacy),next=migrateLegacy(old);
+    try{return write(structuredClone(next))===false?{ok:false,state:old}: {ok:true,state:next}}catch{return {ok:false,state:old}}
+  }
+
   const CONTEXT_PURPOSES=new Set(["conversation","sleep_advice","activity_advice","nutrition_advice","daily_priority"]);
   const RESPONSE_INTENTS=new Set(["sleep_advice","activity_advice","nutrition_advice","daily_priority","general","program","menu"]);
   const RECOMMENDATION_TYPES=new Set(["activity","nutrition","habit","education"]);
@@ -370,6 +390,6 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
     if(x.follow_up&&Object.keys(x.follow_up).some(k=>k!=="when"&&k!=="question"))return null;
     return x;
   }
-  return {usageOf,usageAdd,usageSum,REPLY_MAX,oneLine,pregnant,BROKEN,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,catalogText,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText,compileContext,validateResponse};
+  return {usageOf,usageAdd,usageSum,REPLY_MAX,oneLine,pregnant,BROKEN,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,catalogText,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText,compileContext,validateResponse,migrateLegacy,createRepository,migrateLegacyAtomic};
 })();
 if(typeof module!=="undefined")module.exports=CoachLib;
