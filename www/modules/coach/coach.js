@@ -197,6 +197,10 @@ function cData(){
   const st=S.settings,on=shared("Profile");
   return {profile:on?{cm:st.heightCm,age:st.age,sex:st.sex,act:st.act}:null,goalKcal:on&&st.kcal>0?st.kcal:null};
 }
+function cCompiledContext(){
+  const d=cData();
+  return CoachLib.compileContext({consent:true,purpose:"conversation",profile:d.profile,goalKcal:d.goalKcal});
+}
 /* Only an applied log card enters the history (a rejected or pending one must not look "done"), with macros and meal. */
 function cHistLog(m){
   const c=m.card;
@@ -209,7 +213,8 @@ const gate=m=>{if(!piiInit){PiiLib.deny(FOODS.map(f=>f.n));piiInit=true}return P
 function cMessages(extraUser,extraSys,noHist){
   gate([]);
   const map={},mk=s=>PiiLib.mask(s,map).text;
-  const sys=CoachLib.SYSTEM+mk((extraSys?"\n\nNOT: "+extraSys:"")+"\n\n"+CoachLib.contextText(cData()));
+  const compiled=cCompiledContext();
+  const sys=CoachLib.SYSTEM+mk((extraSys?"\n\nNOT: "+extraSys:"")+"\n\n"+CoachLib.contextText({profile:compiled&&compiled.profile?compiled.profile:null,goalKcal:compiled&&compiled.goalKcal}));
   const hist=noHist?[]:S.chat.filter(m=>m.role!=="sys"&&m.text).slice(-HIST_N).map(m=>({role:m.role==="user"?"user":"assistant",content:m.role==="user"?mk(m.text).slice(0,300):JSON.stringify({reply:mk(m.text).slice(0,260),log:cHistLog(m).map(i=>({...i,text:i.text&&mk(i.text),name:i.name&&mk(i.name)}))})}));
   const msgs=[{role:"system",content:sys}].concat(hist);
   if(extraUser)msgs.push({role:"user",content:mk(extraUser)});
@@ -232,6 +237,8 @@ const httpError=async r=>{const e=new Error("HTTP "+r.status);e.status=r.status;
 /* o.probe: setup check. HTTP 200 with a valid body is enough; a thinking model may return without text at the limit (content null, reasoning_content set).
    In a chat, if the text is empty and the limit was hit (thinking ate the budget), it is asked once more with three times the limit. */
 async function callProvider(p,key,messages,maxTokens=700,o={}){
+  if(o.probe&&!consentOk())throw Object.assign(new Error("consent"),{kind:"consent"});
+  if(o.probe&&!S.settings.consent)throw Object.assign(new Error("consent"),{kind:"consent"});
   if(!o.probe&&!coachOn())throw new Error("consent");
   if(!o.probe){const allowed=S.providers.find(x=>x.id===p.id);if(!allowed||!allowed.on||!allowed.health||getKeys()[allowed.id]!==key||!provOk())throw new Error("provider not authorized");}
   const ms=Math.min(o.ms||40000,o.until?o.until-Date.now():Infinity);
@@ -239,7 +246,9 @@ async function callProvider(p,key,messages,maxTokens=700,o={}){
   if(ms<=0){const e=new Error("Süre doldu");e.kind="time";throw e}
   const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),ms);
   try{
-    const ant=p.id==="anthropic",r=await NetLog.fetch("chat",p.base.replace(/\/+$/,"")+(ant?"/messages":"/chat/completions"),{method:"POST",signal:ctl.signal,headers:{"Content-Type":"application/json",...pHeaders(p,key)},body:JSON.stringify(pBody(p,gate(messages),maxTokens))});
+  const payload=pBody(p,gate(messages),maxTokens);
+    if(o.probe&&JSON.stringify(payload).includes("[PII"))throw new Error("invalid probe payload");
+    const ant=p.id==="anthropic",r=await NetLog.fetch("chat",p.base.replace(/\/+$/,"")+(ant?"/messages":"/chat/completions"),{method:"POST",signal:ctl.signal,headers:{"Content-Type":"application/json",...pHeaders(p,key)},body:JSON.stringify(payload)});
     if(!r.ok)throw await httpError(r);
     const j=await r.json();trackUsage(p,j,ant);const c=j&&j.choices&&j.choices[0],t=ant?(j&&Array.isArray(j.content)?j.content.filter(b=>b&&b.type==="text").map(b=>b.text).join(""):""):c&&c.message&&c.message.content;
     if(o.probe&&(ant?Array.isArray(j&&j.content):!!c))return "";
@@ -252,6 +261,7 @@ async function callProvider(p,key,messages,maxTokens=700,o={}){
 const MODELS_MS=15000;
 /* The model list can hang like any request: it gets its own timeout so the setup sheet never stays busy. */
 async function fetchModels(p,key){
+  if(!consentOk()||!S.settings.consent)throw Object.assign(new Error("consent"),{kind:"consent"});
   const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),MODELS_MS);
   try{
     const r=await NetLog.fetch("models",p.base.replace(/\/+$/,"")+"/models"+(p.id==="anthropic"?"?limit=1000":""),{headers:pHeaders(p,key),signal:ctl.signal});
@@ -395,6 +405,16 @@ async function cFlush(){
   if(!offline&&S.chat.some(m=>m.role==="user"&&m.pend))cFlush();
 }
 function cReply(o){
+  const structured=Object.hasOwn(o,"answer")||Object.hasOwn(o,"intent"),safe=CoachLib.validateResponse(o,o.intent||"general",(cCompiledContext()||{}).facts||[]);
+  if(structured&&safe===null){cPush({role:"coach",text:"Yanıt güvenlik kurallarından geçmedi; yeniden dene."});return}
+  if(safe){
+    const items=CoachLib.cleanItems(o.log),fd=CoachLib.cleanFood(o.food),msg={role:"coach",text:safe.answer||o.reply||"Tamam."};
+    if(items.length)msg.card={kind:"log",items,state:"pending"};
+    cPush(msg);
+    if(fd&&!items.length)cPush({role:"coach",text:"",card:{kind:"food",f:fd,state:"pending"}});
+    if(o.flag==="safety")cPush({role:"coach",text:"",card:{kind:"safety",level:"check"}});
+    return;
+  }
   const items=CoachLib.cleanItems(o.log),msg={role:"coach",text:o.reply||"Tamam."};
   if(items.length)msg.card={kind:"log",items,state:"pending"};
   cPush(msg);
@@ -465,6 +485,7 @@ async function cProgram(o){
   return cRun(async()=>{
     const r=await cAsk(msgs,900);
     const p=CoachLib.parse(r.text),pg=CoachLib.cleanProgram(p.program,ids,o.d);
+    if(p.intent||p.answer){const safe=CoachLib.validateResponse(p,p.intent||"general",(cCompiledContext()||{}).facts||[]);if(!safe)return cDrop(um),toast("Program yanıtı güvenlik kurallarından geçmedi")}
     if(pg)cPush({role:"coach",text:p.reply,card:Object.assign({kind:"program",state:"pending"},pg)});
     else{cDrop(um);toast("Program okunamadı, tekrar dene")}
   },()=>cDrop(um));
@@ -549,6 +570,7 @@ async function cMenu(){
   return cRun(async()=>{
     const r=await cAsk(msgs,2400);
     const o=CoachLib.parse(r.text),mn=CoachLib.cleanMenu(o.menu,cat,pl.kcal);
+    if(o.intent||o.answer){const safe=CoachLib.validateResponse(o,o.intent||"general",(cCompiledContext()||{}).facts||[]);if(!safe)return cDrop(um),toast("Menü yanıtı güvenlik kurallarından geçmedi")}
     if(mn)cPush({role:"coach",text:o.reply,card:Object.assign({kind:"menu",chk:[]},mn)});
     else{cDrop(um);toast("Menü okunamadı, tekrar dene")}
   },()=>cDrop(um));

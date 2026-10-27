@@ -13,6 +13,17 @@ boot().then(async win=>{
   ev("toast=(m,u)=>{globalThis.__t=m;globalThis.__u=u}");
   {
     reset();
+    ev("S.settings.age=30;S.settings.consent=false;globalThis.__probeCalls=0;globalThis.fetch=async()=>{globalThis.__probeCalls++;return {ok:true,status:200,json:async()=>({data:[]}),text:async()=>\"\"}};fetchModels(S.providers[0]).catch(()=>{})");
+    await new Promise(r=>setTimeout(r,50));
+    ok("provider probe sends no health data and requires consent",ev("__probeCalls===0"),ev("__probeCalls"));
+    ev("S.settings.age=34;S.settings.act=1;S.settings.consent=true;const body=JSON.stringify(cMessages('x'));globalThis.__actBody=body");
+    ok("numeric activity is serialized",ev("__actBody.includes('hareket düzeyi orta')"));
+    ev("S.settings.age=17;S.settings.consent=false;globalThis.__probeCalls=0;globalThis.fetch=async()=>{globalThis.__probeCalls++;return {ok:true,status:200,json:async()=>({data:[]}),text:async()=>\"\"}};fetchModels(S.providers[0]).catch(()=>{})");
+    await new Promise(r=>setTimeout(r,50));
+    ok("provider probe blocks underage users",ev("__probeCalls===0"),ev("__probeCalls"));
+  }
+  {
+    reset();
     ev("S.settings.healthNote='yedikten sonra kusuyorum';cNoteCheck()");
     ok("cNoteCheck: an eating-disorder note writes ed to chatRisk",chatRisk().includes("ed"),chatRisk());
     ev("S.settings.healthNote='hamileyim';cNoteCheck()");

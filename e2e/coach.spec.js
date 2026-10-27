@@ -270,7 +270,7 @@ test.describe("Coach identity masking",()=>{
     await app.tab("coach");
     const sysOf=async run=>{await expect.poll(()=>page.evaluate("!busy")).toBe(true);const k=fake.chats().length;await run();await expect.poll(()=>fake.chats().length).toBeGreaterThan(k);return fake.chats().at(-1).body.messages[0].content};
     const all={chat:await sysOf(async()=>{await page.fill("#cmsg","Bir elma kaç kalori");await page.click("#csend")}),program:await sysOf(()=>page.evaluate("cProgram({d:3,m:45,q:'Salon',l:'Orta'})")),menu:await sysOf(()=>page.evaluate("cMenu()"))};
-    for(const [k,t] of Object.entries(all)){expect(t,k).toContain("PROFİL: 170 cm, 30-34 yaş, erkek");expect(t,k).toContain("günlük kalori hedefi 1900");expect(t,k).not.toMatch(/Metformin|Sağ dizim|gizli not|SON 14 GÜN|BUGÜN:|HESAPLANAN|KISIT|İLAÇ|SAĞLIK NOTU/)}
+    for(const [k,t] of Object.entries(all)){expect(t,k).toContain("PROFİL: 170 cm, 33-37 yaş, erkek");expect(t,k).toContain("günlük kalori hedefi 1900");expect(t,k).not.toMatch(/Metformin|Sağ dizim|gizli not|SON 14 GÜN|BUGÜN:|HESAPLANAN|KISIT|İLAÇ|SAĞLIK NOTU/)}
   });
   test("protected health fields never enter actual provider body",async({app,page,fake})=>{
     fake.st.reply=()=>JSON.stringify({reply:"Tamam.",log:[]});

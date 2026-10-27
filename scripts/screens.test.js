@@ -159,7 +159,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   }
   reset();
   { // Coach provider sheet
-    ev("S.providers=defProviders();Object.assign(S.settings,{age:30});tab='settings-coach';render()");
+    ev("S.providers=defProviders();Object.assign(S.settings,{age:30,consent:true,consentP:'u1'});tab='settings-coach';render()");
     const val=(id,v)=>{$q("#"+id).value=v};
     tap("c","addprov");
     val("an","Benim");val("ab","http://acik.example");val("am","m1");tap("c","mkprov");

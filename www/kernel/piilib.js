@@ -70,9 +70,11 @@ Asuman Aslı Aylin Ayla Aysel Ayşe Ayten Banu Beyza Buse Burcu Büşra Canan Ca
     ["ADRES",RegExp(`()((?:${NOT}(?:\\p{Lu}[\\p{L}'’]+|\\d{1,4})\\s+){1,3}${KW}(?![\\p{L}])${TAIL}|(?:${NOT}[\\p{L}'’]{2,}\\s+){1,3}(?:mah|sok|cad|apt|bulv)\\.${TAIL}|${NOT}[\\p{L}'’]{2,}\\s+mahallesi(?![\\p{L}])${TAIL})`,"gu")],
     ["ADRES",/(?<![\p{L}])()((?:[Nn]o|[Kk]at|D)\s*:\s*\d+[A-Za-z]?(?:\s*\/\s*\d+)?|[Dd]aire\s*[:.]?\s*\d+)/gu,"ctx"],
     ["ADRES",/((?:posta\s*kodu|\bPK)\s*[:.]?\s*)(\d{5})(?!\d)/giu],
+    ["ADRES",/(?<![\p{L}])()(\d{1,4}\s+[\p{L}][\p{L}'’]*\s+(?:sokak|sokağı|cadde|caddesi|bulvar|bulvarı)(?:\s+(?:no|numara|kat|daire)\s*[:.]?\s*\d+[A-Za-z]?)?)/giu],
     ["AD",RegExp(`((?:(?:${TITLE})\\s+)+)(${NAME})`,"gu"),"name"],
     ["AD",RegExp(`(?<![\\p{L}])((?:${KIN.map(ci).join("|")})\\s+)(${NAME})`,"gu"),"kin"],
-    ["AD",RegExp(`(?<![\\p{L}])((?:[Bb]enim\\s+ad[ıi]m|[İi]smim)\\s+)(\\p{L}{3,})(?![\\p{L}'’])`,"gu"),"kin"],
+    ["AD",RegExp(`(?<![\\p{L}])((?:[Bb]enim\\s+ad[ıi]m|[İi]smim)\\s+)(\\p{L}{3,})(?![\\p{L}'’])`,"giu"),"kin"],
+    ["AD",/(?<![\p{L}])([Bb]en\s+)([a-zçğıöşü][a-zçğıöşü'’]{2,})(?=\s*,)/gu,"kin"],
     ["AD",RegExp(`(?<![\\p{L}])((?:${KIN.join("|")})\\s+)(${low(NAMES.join("|"))})(?![\\p{L}])`,"giu")],
     ["AD",RegExp(`()(${NAME})(?=\\s+(?:[Hh]anım|[Bb]ey|[Hh]anımefendi|[Bb]eyefendi)(?![\\p{L}]))`,"gu"),"name"],
     ["KURUM",RegExp(`()(${CAP}(?:\\s+${CAP}){0,2})(?=\\s+${ORG}(?![\\p{L}]))`,"gu"),"name"],
@@ -89,8 +91,8 @@ Asuman Aslı Aylin Ayla Aysel Ayşe Ayten Banu Beyza Buse Burcu Büşra Canan Ca
     const found=[];
     const tag=(kind,v)=>{
       found.push({kind,orig:v});
-      const mine=Object.keys(map).filter(l=>lab(l)===kind),k=low(v);
-      return mine.find(l=>low(map[l])===k)||(map[`[${kind}${mine.length+1}]`]=v,`[${kind}${mine.length+1}]`);
+      const mine=Object.keys(map).filter(l=>lab(l)===kind),k=low(String(v));
+      return mine.find(l=>low(String(map[l]))===k)||(map[`[${kind}${mine.length+1}]`]=String(v),`[${kind}${mine.length+1}]`);
     };
     for(const [kind,re,mode] of RULES)text=text.replace(re,(m,p,v,...a)=>{
       let pre="",post="";const rest=m.slice(p.length+v.length),off=a[a.length-2],str=a[a.length-1];

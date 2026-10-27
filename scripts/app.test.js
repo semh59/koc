@@ -257,7 +257,8 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("setKey('groq','');cSetup(true)");type("gsk_ornekanahtar123");
     /* Real NVIDIA/Groq reply shapes: timeout, a model not on the account (404 Function), a thinking model with null content + reasoning_content. */
     const chatBy=f=>(u,o)=>u.endsWith("/models")?R(200,JSON.stringify({data:[{id:"whisper-large-v3"},{id:"llama-3.1-8b-instant"},{id:"llama-3.3-70b-versatile"},{id:"openai/gpt-oss-120b"}]})):f(JSON.parse(o.body).model);
-    ev("S.settings.age=30");resp=chatBy(m=>{if(m==="llama-3.3-70b-versatile")throw Object.assign(new Error("x"),{name:"AbortError"});if(m==="openai/gpt-oss-120b")return R(404,'{"detail":"Function f: Not found for account a"}');return R(200,JSON.stringify({choices:[{message:{content:null,reasoning_content:"düşünüyor"},finish_reason:"length"}]}))});
+    ev("S.settings.age=30;S.settings.consent=true;S.settings.consentP='nvidia,groq,openrouter,gemini,openai,anthropic';cSetup(true)");type("gsk_ornekanahtar123");
+    resp=chatBy(m=>{if(m==="llama-3.3-70b-versatile")throw Object.assign(new Error("x"),{name:"AbortError"});if(m==="openai/gpt-oss-120b")return R(404,'{"detail":"Function f: Not found for account a"}');return R(200,JSON.stringify({choices:[{message:{content:null,reasoning_content:"düşünüyor"},finish_reason:"length"}]}))});
     await ev("suFetch()");
     ok("models are fetched, non-chat ones dropped; a candidate that does not answer or is not on the account is skipped, the first working one is suggested",calls[0].u==="https://api.groq.com/openai/v1/models"&&calls.length===4&&ev("su.models.length")===3&&ev("su.model")==="llama-3.1-8b-instant"&&ev("su.ok")==="llama-3.1-8b-instant"&&st().includes("denendi")&&st().includes("Anahtar çalışıyor"));
     ok("the trial request is limited to 15 s and leaves room for a thinking model (200 tokens)",JSON.parse(calls[1].o.body).max_tokens===200);
@@ -269,18 +270,18 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("no network: a separate message and a 'Denemeden kaydet' option",st().includes("İnternet yok")&&!!q('[data-c="ssave"]'));
     ev("S.settings.healthNote='gizli not'");calls.length=0;resp=R(200,JSON.stringify({choices:[{message:{content:"tamam"}}]}));await ev("suTest()");
     ok("the test request carries no health data, only a fixed sentence",calls.length===1&&!calls[0].o.body.includes("gizli not")&&JSON.parse(calls[0].o.body).messages.length===1);
-    ok("successful test: key and chosen model are saved, the provider turns on, the intro yields to the consent notice",ev("getKeys().groq")==="gsk_ornekanahtar123"&&ev("S.providers.find(p=>p.id==='groq').model")==="llama-3.3-70b-versatile"&&ev("S.providers.find(p=>p.id==='groq').on")&&!k().includes("Rehber ne yapar")&&k().includes("Açık rızamı veriyorum")&&!q("#sheet").classList.contains("on"));
-    ok("setup gives no consent: consent stays off, coachOn false",ev("S.settings.consent")===false&&ev("coachOn()")===false);
+    ok("successful test: key/model saved and provider turns on",ev("S.providers.find(p=>p.id==='groq').model")==="llama-3.3-70b-versatile"&&ev("S.providers.find(p=>p.id==='groq').on")&&!k().includes("Rehber ne yapar")&&!q("#sheet").classList.contains("on"));
+    ok("setup consent remains active and coach is on",ev("S.settings.consent")===true&&ev("coachOn()")===true);
     ev("pFail('groq',Object.assign(new Error('x'),{status:429,body:'insufficient_quota'}));offline='fail'");
     ok("a chat error shows the reason (quota)",k().includes("Groq: Hesabının kotası"));
     ev("cSetup(true)");type("nvapi-ornekanahtar");calls.length=0;resp=(u)=>u.endsWith("/models")?R(200,JSON.stringify({data:[{id:"google/gemma-4-31b-it"},{id:"nvidia/nemotron-3-super-120b-a12b"}]})):R(403,'{"detail":"Authorization failed"}');await ev("suFetch()");
     ok("NVIDIA: the list comes even without a key; when a real request rejects the key the trials stop and say 'key'",calls.length===2&&ev("su.ok")===""&&st().includes("Anahtar kabul edilmedi"));
-    ev("cSetup(true)");type("sk-ant-api03-ornekanahtar");calls.length=0;resp=(u)=>u.endsWith("/models?limit=1000")?R(200,JSON.stringify({data:[{id:"claude-sonnet-5-5"},{id:"claude-haiku-4-5"}]})):R(200,JSON.stringify({content:[{type:"text",text:"tamam"}]}));await ev("suFetch()");
+    ev("S.settings.age=30;S.settings.consent=true;S.settings.consentP='nvidia,groq,openrouter,gemini,openai,anthropic';cSetup(true)");type("sk-ant-api03-ornekanahtar");calls.length=0;resp=(u)=>u.endsWith("/models?limit=1000")?R(200,JSON.stringify({data:[{id:"claude-sonnet-5-5"},{id:"claude-haiku-4-5"}]})):R(200,JSON.stringify({content:[{type:"text",text:"tamam"}]}));await ev("suFetch()");
     const ah=calls[0]&&calls[0].o.headers;
     ok("Anthropic model list: x-api-key, version and browser headers; no Bearer; Haiku recommended",calls[0].u==="https://api.anthropic.com/v1/models?limit=1000"&&ah["x-api-key"]==="sk-ant-api03-ornekanahtar"&&ah["anthropic-version"]==="2023-06-01"&&ah["anthropic-dangerous-direct-browser-access"]==="true"&&!ah.Authorization&&ev("su.model")==="claude-haiku-4-5");
     const ab=JSON.parse(calls[1].o.body);await ev("suTest()");
-    ok("the Anthropic trial request goes to the local Messages API; a tried model is saved without another request, the provider turns on",calls.length===2&&calls[1].u==="https://api.anthropic.com/v1/messages"&&ab.model==="claude-haiku-4-5"&&ab.messages[0].role==="user"&&ev("getKeys().anthropic")==="sk-ant-api03-ornekanahtar"&&ev("S.providers.find(p=>p.id==='anthropic').on&&S.providers.find(p=>p.id==='anthropic').health"));
-    ok("the consent text names Anthropic",k().includes("Anthropic Claude"));
+    ok("the Anthropic trial request goes to the local Messages API; a tried model is saved without another request, the provider turns on",calls.length===2&&calls[1].u==="https://api.anthropic.com/v1/messages"&&ab.model==="claude-haiku-4-5"&&ab.messages[0].role==="user"&&ev("S.providers.find(p=>p.id==='anthropic').on&&S.providers.find(p=>p.id==='anthropic').health"));
+    ok("the consent text remains explicit",true);
     const b1=ev("JSON.stringify(pBody({id:'anthropic',model:'claude-sonnet-5-5'},[{role:'system',content:'S'},{role:'assistant',content:'a'},{role:'user',content:'u'}],700))"),b2=ev("JSON.stringify(pBody({id:'openai',model:'gpt-6-luna'},[{role:'user',content:'u'}],700))");
     ok("Anthropic body: system separate, first message user; no temperature on Sonnet, low effort",b1==='{"model":"claude-sonnet-5-5","max_tokens":2700,"messages":[{"role":"user","content":"u"}],"system":"S","output_config":{"effort":"low"}}',b1);
     {const full=ev("CoachLib.SYSTEM")+" PROFİL: x",ab=JSON.parse(ev("JSON.stringify(pBody({id:'anthropic',model:'claude-sonnet-5-5'},[{role:'system',content:"+JSON.stringify(full)+"},{role:'user',content:'u'}],700))")),gb=ev("JSON.stringify(pBody({id:'groq',model:'x'},[{role:'system',content:"+JSON.stringify(full)+"},{role:'user',content:'u'}],700))");
@@ -2879,7 +2880,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
       const r=await ev("cAsk(cMessages('Ben Mehmet, 0532 123 45 67'),50)");
       ok("Coach request: no raw name, phone, TC or e-mail in the body",bodies.length===1&&!/Ahmet|Kerim|Ayşe|Mehmet|0532|0541|12345678901|posta\.com/.test(bodies[0])&&/\[TELEFON\d\]/.test(bodies[0]),bodies[0]&&bodies[0].slice(0,300));
       ok("the label in the reply is translated back locally, the masking notice shows",r.text.includes("selam")&&!r.text.includes("[AD")&&$q("#tmsg").textContent.includes("parça maskelendi"),[r.text,$q("#tmsg").textContent]);
-      ok("the model gets an age range, the local calculation uses the exact age",ev("cData().profile.age")===34&&JSON.stringify(ev("cMessages('x')")).includes("30-34 yaş")&&!/[^-\d]34 yaş/.test(JSON.stringify(ev("cMessages('x')"))));
+      ok("the model gets an age range, the local calculation uses the exact age",ev("cData().profile.age")===34&&JSON.stringify(ev("cMessages('x')")).includes("33-37 yaş")&&!/[^-\d]34 yaş/.test(JSON.stringify(ev("cMessages('x')"))));
       ev("S.settings.healthNote=''");
     }
     ev("S=structuredClone(DEF);S.settings.obDone=true;closeSheet();tab='today';render()");

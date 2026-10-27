@@ -74,7 +74,8 @@ const CoachLib=(()=>{
       if(b<0)break;
       try{
         const o=JSON.parse(s.slice(a,b+1));
-        if(o&&typeof o==="object"&&typeof o.reply==="string"){
+        if(o&&typeof o==="object"&&(typeof o.reply==="string"||typeof o.answer==="string")){
+          if(typeof o.answer==="string"&&!o.reply)return {intent:typeof o.intent==="string"?o.intent:"general",answer:o.answer.trim().slice(0,REPLY_MAX),facts_used:Array.isArray(o.facts_used)?o.facts_used:[],assumptions:Array.isArray(o.assumptions)?o.assumptions:[],recommendations:Array.isArray(o.recommendations)?o.recommendations:[],warnings:Array.isArray(o.warnings)?o.warnings:[],actions:Array.isArray(o.actions)?o.actions:[],follow_up:o.follow_up===undefined?null:o.follow_up,confidence:o.confidence||"medium",reply:o.answer.trim().slice(0,REPLY_MAX),log:Array.isArray(o.log)?o.log:[],flag:typeof o.flag==="string"?o.flag:null,food:obj(o.food),program:obj(o.program),menu:obj(o.menu)};
           return {reply:o.reply.trim().slice(0,REPLY_MAX),log:Array.isArray(o.log)?o.log:[],propose:obj(o.propose),flag:typeof o.flag==="string"?o.flag:null,food:obj(o.food),program:obj(o.program),menu:obj(o.menu)};
         }
       }catch(e){}
@@ -298,13 +299,15 @@ food: {"name":"1 dilim pizza","kcal":280,"protein":12} ya da null.
 Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex":["kimlik"]}]} yaz: yalnız KATALOG'daki kimlikler, gün başına 3-8 egzersiz.`;
 
   /* An exact age approaches an identifier, so the model gets a 5-year band (the Coach is open from 18). The energy calculation uses the exact age locally. */
-  const ageBand=a=>{const l=a-a%5;return Math.max(l,18)+"-"+(l+4)};
+  const ageBand=a=>{const n=Number(a);if(!Number.isInteger(n)||n<18||n>100)return "";const l=Math.floor(n/5)*5;return l+"-"+Math.min(l+4,100)};
   const f1=x=>x==null?"–":comma(r1(x));
   /* Context text: only the profile (when its switch is on) and the calorie goal; nothing else about the user goes to the model. */
   function contextText(d){
     const p=d.profile;
     if(!p)return "Kullanıcı profilini paylaşmadı; kişisel miktar tahmin etme.";
-    const parts=[p.cm?p.cm+" cm":null,p.age?ageBand(p.age)+" yaş":null,p.sex==="m"?"erkek":p.sex==="f"?"kadın":null,p.act!=null?"hareket düzeyi "+["az","orta","çok"][p.act]:null,d.goalKcal?"günlük kalori hedefi "+d.goalKcal:null].filter(Boolean);
+    const age= p.ageBand || (p.age?ageBand(p.age):null);
+    const act=typeof p.act==="number"?["az","orta","çok"][p.act]:p.act==="low"?"az":p.act==="moderate"?"orta":p.act==="high"?"çok":null;
+    const parts=[p.cm?p.cm+" cm":null,age?age+" yaş":null,p.sex==="m"?"erkek":p.sex==="f"?"kadın":null,act?"hareket düzeyi "+act:null,d.goalKcal?"günlük kalori hedefi "+d.goalKcal:null].filter(Boolean);
     return "PROFİL: "+(parts.join(", ")||"girilmemiş");
   }
   /* Local token counter: numbers only (day > provider|model > [requests, input, output]); text and identifiers never enter it. */
@@ -330,6 +333,43 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
     if(store&&typeof store==="object")for(const d of Object.keys(store))if(d>=old&&store[d]&&typeof store[d]==="object")for(const r of Object.values(store[d]))if(Array.isArray(r)){n+=+r[0]||0;tok+=(+r[1]||0)+(+r[2]||0)}
     return {n,tok};
   }
-  return {usageOf,usageAdd,usageSum,REPLY_MAX,oneLine,pregnant,BROKEN,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,catalogText,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText};
+  const CONTEXT_PURPOSES=new Set(["conversation","sleep_advice","activity_advice","nutrition_advice","daily_priority"]);
+  const RESPONSE_INTENTS=new Set(["sleep_advice","activity_advice","nutrition_advice","daily_priority","general","program","menu"]);
+  const RECOMMENDATION_TYPES=new Set(["activity","nutrition","habit","education"]);
+  const ACTION_TYPES=new Set(["log_food","log_water","log_exercise","plan_propose","checkin_propose"]);
+  const CONFIDENCE=new Set(["low","medium","high"]);
+  const SAFE_TEXT=/ilaç|doz|reçete|tanı|teşhis|tedavi|insülin|antibiyotik|kendine zarar|intihar|hamile|gebelik|yeme bozukluğu|ignore|system|rules|kural/i;
+  function compileContext({consent,purpose,profile,sleep,goalKcal}={}){
+    if(typeof consent!=="boolean"||!consent||!CONTEXT_PURPOSES.has(purpose))return null;
+    const p=profile&&typeof profile==="object"?profile:{};
+    const out={purpose,profile:{}};
+    const age=Number(p.age);
+    if(Number.isInteger(age)&&age>=18&&age<=100){const low=18+Math.floor((age-18)/5)*5;out.profile.ageBand=low+"-"+Math.min(low+4,100)}
+    const cm=Number(p.cm);if(Number.isFinite(cm)&&cm>=100&&cm<=250)out.profile.cm=cm;
+    if(p.sex==="m"||p.sex==="f")out.profile.sex=p.sex;
+    if(["low","moderate","high"].includes(p.act))out.profile.act=p.act;
+    else if(Number.isInteger(p.act)&&[0,1,2].includes(p.act))out.profile.act=["low","moderate","high"][p.act];
+    if(!Object.keys(out.profile).length)delete out.profile;
+    if(Number.isFinite(Number(goalKcal))&&Number(goalKcal)>=800&&Number(goalKcal)<=5000)out.goalKcal=Math.round(Number(goalKcal));
+    out.facts=[];
+    if(purpose==="sleep_advice"&&sleep&&typeof sleep==="object"&&typeof sleep.average==="string"&&typeof sleep.period==="string"){
+      if(!SAFE_TEXT.test(sleep.average+" "+sleep.period)){
+        const average=sleep.average.replace(/[^0-9.,:+\- hmsgün]/gi,"").slice(0,40),period=sleep.period.replace(/[^0-9a-zçğıöşü _-]/gi,"").slice(0,20);
+        if(average&&period)out.facts.push({name:"sleep_average",value:average,period,source:"sleep",confidence:"medium"});
+      }
+    }
+    return out;
+  }
+  function validateResponse(x,purpose,allowedFacts=[]){
+    if(!x||typeof x!=="object"||Array.isArray(x)||typeof x.intent!=="string"||!RESPONSE_INTENTS.has(x.intent)||purpose&&x.intent!==purpose&&x.intent!=="general"||typeof x.answer!=="string"||x.answer.length>1500||!Array.isArray(x.facts_used)||!Array.isArray(x.assumptions)||!Array.isArray(x.recommendations)||!Array.isArray(x.warnings)||!Array.isArray(x.actions)||!CONFIDENCE.has(x.confidence)||(x.follow_up!==null&&(!x.follow_up||typeof x.follow_up!=="object")))return null;
+    if(x.facts_used.length>10||x.assumptions.length>10||x.recommendations.length>5||x.warnings.length>10||x.actions.length>5)return null;
+    if(x.facts_used.some(f=>!f||typeof f!=="object"||typeof f.name!=="string"||f.name.length>80||typeof f.source!=="string"||f.source.length>40||typeof f.period!=="string"||f.period.length>40||!CONFIDENCE.has(f.confidence)||allowedFacts.length&&!allowedFacts.some(a=>a.name===f.name&&a.source===f.source&&a.period===f.period)))return null;
+    if(x.assumptions.some(v=>typeof v!=="string"||v.length>300||SAFE_TEXT.test(v))||x.warnings.some(v=>typeof v!=="string"||v.length>300||SAFE_TEXT.test(v))||SAFE_TEXT.test(x.answer)||x.follow_up&&Object.values(x.follow_up).some(v=>typeof v==="string"&&SAFE_TEXT.test(v)))return null;
+    if(x.recommendations.some(r=>!r||typeof r!=="object"||!RECOMMENDATION_TYPES.has(r.type)||typeof r.title!=="string"||r.title.length>200||typeof r.reason!=="string"||r.reason.length>400||SAFE_TEXT.test(r.title+" "+r.reason)||r.requires_confirmation!==true))return null;
+    if(x.actions.some(a=>!a||typeof a!=="object"||!ACTION_TYPES.has(a.type)||a.requires_confirmation!==true||typeof a.idempotencyKey!=="string"||!/^[A-Za-z0-9._:-]{8,100}$/.test(a.idempotencyKey)))return null;
+    if(x.follow_up&&Object.keys(x.follow_up).some(k=>k!=="when"&&k!=="question"))return null;
+    return x;
+  }
+  return {usageOf,usageAdd,usageSum,REPLY_MAX,oneLine,pregnant,BROKEN,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,catalogText,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText,compileContext,validateResponse};
 })();
 if(typeof module!=="undefined")module.exports=CoachLib;
