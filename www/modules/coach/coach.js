@@ -103,22 +103,25 @@ let pstat={},cool={},busy=false,typing=false,offline=null;
 
 /* ---- validation ---- */
 function cleanCoach(r){
-  const migrated=CoachLib.migrateLegacy(r||{}),provs=[],defs=defProviders(),known=EXDB.map(e=>e.id).concat((Array.isArray(r.customEx)?r.customEx:[]).map(e=>e&&e.id).filter(i=>typeof i==="string"&&/^c\d+$/.test(i)));
-  for(const p of (Array.isArray(r.providers)?r.providers:[])){
+  const source=r||{};
+  CoachRepo=CoachLib.createRepository(source);
+  const migrated=CoachLib.migrateLegacy(source),provs=[],defs=defProviders(),known=EXDB.map(e=>e.id).concat((Array.isArray(source.customEx)?source.customEx:[]).map(e=>e&&e.id).filter(i=>typeof i==="string"&&/^c\d+$/.test(i)));
+  for(const p of (Array.isArray(source.providers)?source.providers:[])){
     if(!p||typeof p.id!=="string"||!/^[a-z0-9]{1,16}$/.test(p.id)||p.id in Object.prototype||typeof p.name!=="string"||typeof p.base!=="string"||!/^https:\/\/[^\s]+$/.test(p.base)||typeof p.model!=="string")continue;
     if(provs.some(x=>x.id===p.id))continue;
     const def=defs.find(d=>d.id===p.id),model=p.model.slice(0,100);
     /* The address of a built-in provider is the host allowlist: a backup or damaged record cannot send the key to another server. */
     provs.push({id:p.id,name:p.name.slice(0,40),base:def?def.base:p.base.slice(0,200),model,on:p.on===true,health:p.health===true,confirm:p.confirm===true});
   }
-  const chat=cleanChat(r.chat||migrated.conversations.find(c=>c.id===migrated.activeId)?.messages,known),chats=[];
-  for(const x of (Array.isArray(r.chats)?r.chats:migrated.conversations.filter(c=>c.id!==migrated.activeId).map(c=>({id:c.id,t:c.updatedAt,title:c.title,msgs:c.messages}))).slice(0,CHATS_MAX)){
+  const chat=cleanChat(source.chat||migrated.conversations.find(c=>c.id===migrated.activeId)?.messages,known),chats=[];
+  for(const x of (Array.isArray(source.chats)?source.chats:migrated.conversations.filter(c=>c.id!==migrated.activeId).map(c=>({id:c.id,t:c.updatedAt,title:c.title,msgs:c.messages}))).slice(0,CHATS_MAX)){
     if(!x||!Number.isInteger(x.id)||!Number.isFinite(x.t)||chats.some(c=>c.id===x.id))continue;
     const msgs=cleanChat(x.msgs,known);
     if(msgs.length)chats.push({id:x.id,t:x.t,title:typeof x.title==="string"?x.title.slice(0,60):"Sohbet",msgs});
   }
   const top=Math.max(...chat.map(m=>m.id),...chats.flatMap(c=>c.msgs.map(m=>m.id)),0);
-  return {providers:provs.length?provs:defs,chat,chats:trimChats(chats),cid:Math.max(1,top+1,Number.isInteger(r.cid)?r.cid:migrated.cid)};
+  if(typeof CoachRepo?.replaceLegacy==="function")CoachRepo.replaceLegacy({chat,chats,cid:Math.max(1,top+1,Number.isInteger(source.cid)?source.cid:migrated.cid),providers:provs.length?provs:defs});
+  return {providers:provs.length?provs:defs,chat,chats:trimChats(chats),cid:Math.max(1,top+1,Number.isInteger(source.cid)?source.cid:migrated.cid)};
 }
 const CHATS_MAX=20,ARCH_MSGS=600,ARCH_CHARS=250000,CHAT_MAX=150;
 /* The archive must not fill the storage quota: the newest chats stay and older ones are dropped once the total message or size limit is exceeded (the newest always stays). */
@@ -664,7 +667,14 @@ const PWARN={nvidia:"NVIDIA Build deneme koşulları kişisel ve sağlık verisi
 const consentWarn=()=>`${keyed().filter(p=>PWARN[p.id]).map(p=>`<p><b>${esc(p.name)}:</b> ${PWARN[p.id]}</p>`).join("")}${S.settings.consent&&consentOk()&&!provOk()?`<p><b>Sağlayıcı listen değişti.</b> Onayını verdiğinde bu sağlayıcılar yoktu; devam için yeniden onay ver.</p>`:""}${S.providers.some(p=>p.on&&p.health&&isCustom(p))?`<p><b>Özel sağlayıcı:</b> kendi eklediğin sunucuya (${esc(S.providers.filter(p=>p.on&&p.health&&isCustom(p)).map(p=>hostOf(p)).join(", "))}) verilerin ve anahtarın doğrudan gider; yalnız güvendiğin bir servis kullan.</p>`:""}${consentOk()?"":S.settings.age>0?`<p><b>18 yaş altı için Rehber veri paylaşımı kapalıdır.</b></p>`:`<p><b>Rehber için önce yaşını gir</b> (Ayarlar > Profil ve hedefler). Yaş bilinmeden Rehber açılmaz.</p>`}`;
 const consentHtml=()=>consentBody()+consentWarn();
 /* Deletes the chat and leaves the consent alone. */
-function cClearChat(){if(!cSwitchOk())return false;S.chat=[];S.chats=[];save();return true}
+function cClearChat(){
+  if(!cSwitchOk())return false;
+  const old={chat:structuredClone(S.chat),chats:structuredClone(S.chats),cid:S.cid,providers:structuredClone(S.providers)},repo=Coach.repository(),fixture=repo?.exportBeforeDelete?.();
+  if(!fixture||repo.deleteAfterExport(()=>true)!==true)return false;
+  S.chat=[];S.chats=[];
+  if(save())return true;
+  S.chat=old.chat;S.chats=old.chats;S.cid=old.cid;S.providers=old.providers;repo.replaceLegacy(old);save();return false;
+}
 /* Separate chats: the open chat is archived to the history and a new one starts empty; only the open chat goes to the model. */
 const chatTitle=a=>{const u=a.find(m=>m.role==="user");return (u?u.text:"Sohbet").slice(0,60)};
 function cArchive(){

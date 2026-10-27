@@ -343,10 +343,18 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
     return {version:1,conversations,activeId:chat.length?0:null,cid:Number.isInteger(r.cid)&&r.cid>0?r.cid:1,dropped,providers:(Array.isArray(r.providers)?r.providers:[]).filter(p=>p&&typeof p.id==="string").map(p=>({id:p.id,name:String(p.name||"").slice(0,40),base:safeProviderBase(p.base),model:String(p.model||"").slice(0,100),on:p.on===true,health:p.health===true,confirm:p.confirm===true}))};
   }
 
+  function legacyFromRepository(state){
+    const conversations=Array.isArray(state?.conversations)?state.conversations:[],active=conversations.find(c=>c.id===state.activeId)||conversations.find(c=>c.id===0),arch=conversations.filter(c=>c!==active);
+    return {chat:structuredClone(active?.messages||[]),chats:arch.map(c=>({id:c.id,title:c.title,t:c.updatedAt,msgs:structuredClone(c.messages||[])})),cid:Number.isInteger(state?.cid)&&state.cid>0?state.cid:1,providers:structuredClone(Array.isArray(state?.providers)?state.providers:[])};
+  }
+
   function createRepository(legacy,persist=()=>true){
-    let state=structuredClone(migrateLegacy(legacy));
+    let state=structuredClone(migrateLegacy(legacy)),committed=structuredClone(state),exported=null,exportVersion=0;
     const copy=()=>structuredClone(state);
-    return {snapshot:copy,conversation:id=>copy().conversations.find(c=>c.id===id)||null,upsertConversation:c=>{if(!c||!Number.isInteger(c.id))return false;const i=state.conversations.findIndex(x=>x.id===c.id);if(i<0)state.conversations.push(structuredClone(c));else state.conversations[i]=structuredClone(c);return true},removeConversation:id=>{const n=state.conversations.length;state.conversations=state.conversations.filter(c=>c.id!==id);return state.conversations.length!==n},commit:()=>{const next=copy();try{return persist(next)===false?false:true}catch{return false}},migrate:()=>copy()};
+    const replaceLegacy=legacy=>{state=structuredClone(migrateLegacy(legacy));committed=structuredClone(state);exported=null;exportVersion=0;return true};
+    const exportBeforeDelete=()=>{exported=copy();exportVersion++;return structuredClone(exported)};
+    const deleteAfterExport=(persistDelete=()=>true)=>{if(!exported||exportVersion!==1)return false;const next={version:1,conversations:[],activeId:null,cid:1,dropped:[],providers:[]};try{if(persistDelete(next)===false)return false}catch{return false}state=next;committed=structuredClone(next);return true};
+    return {snapshot:copy,conversation:id=>copy().conversations.find(c=>c.id===id)||null,upsertConversation:c=>{if(!c||!Number.isInteger(c.id))return false;const i=state.conversations.findIndex(x=>x.id===c.id);if(i<0)state.conversations.push(structuredClone(c));else state.conversations[i]=structuredClone(c);exported=null;exportVersion=0;return true},removeConversation:id=>{const n=state.conversations.length;state.conversations=state.conversations.filter(c=>c.id!==id);exported=null;exportVersion=0;return state.conversations.length!==n},commit:()=>{const next=copy();try{if(persist(next)===false)return state=structuredClone(committed),false;committed=next;return true}catch{return state=structuredClone(committed),false}},migrate:()=>copy(),replaceLegacy,exportBeforeDelete,deleteAfterExport};
   }
   function migrateLegacyAtomic(legacy,write=()=>true){
     const old=structuredClone(legacy),next=migrateLegacy(old);
@@ -390,6 +398,6 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
     if(x.follow_up&&Object.keys(x.follow_up).some(k=>k!=="when"&&k!=="question"))return null;
     return x;
   }
-  return {usageOf,usageAdd,usageSum,REPLY_MAX,oneLine,pregnant,BROKEN,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,catalogText,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText,compileContext,validateResponse,migrateLegacy,createRepository,migrateLegacyAtomic};
+  return {usageOf,usageAdd,usageSum,REPLY_MAX,oneLine,pregnant,BROKEN,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,catalogText,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText,compileContext,validateResponse,migrateLegacy,legacyFromRepository,createRepository,migrateLegacyAtomic};
 })();
 if(typeof module!=="undefined")module.exports=CoachLib;

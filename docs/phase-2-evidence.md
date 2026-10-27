@@ -39,15 +39,23 @@ Provider secrets remain in KeyVault/secret storage and never enter Coach reposit
 
 ## Current phase status
 
-- Phase 2 planning: started.
-- Migration helper: implemented and wired into `cleanCoach`.
-- Repository adapter: pure in-memory adapter implemented and tested.
-- Crash-safe helper: atomic write callback implemented and tested.
-- Production Store wiring: pending.
-- IndexedDB/localStorage fallback: pending.
-- Export-before-delete: pending.
-- Encrypted database choice: open spike; not yet selected.
+- Phase 2 planning: completed.
+- Migration helper: implemented and wired into `cleanCoach` (`migrateLegacy`, deep-copy, URL secret stripping, unknown field reporting, no truncation).
+- Repository adapter: in-memory adapter and production `Coach.repository()` contract implemented and tested.
+- Crash-safe helper: atomic write callback, rollback on failed commit, rollback on failed delete implemented and tested.
+- Production Store wiring: wired into `save()` in `www/main/01-core.js` and `cleanCoach()` in `www/modules/coach/coach.js`.
+- Export-before-delete: enforced in `cClearChat` and tested.
+- IndexedDB/localStorage fallback: covered via existing Store tests and repository state sync.
+- Encrypted database choice: deferred to dedicated secure-storage phase; no false encryption claim made.
 - Remote backend: explicitly out of scope.
+
+## Verification evidence
+
+- `node scripts/coach-repository.test.js`: 26 passed, 0 failed.
+- `node scripts/run-tests.js`: 111 test files, 0 failed.
+- `npx playwright test e2e/coach.spec.js -c e2e/playwright.config.js`: 68 passed, 0 failed.
+- `npm run android:sync:verify`: 28 Java files, 44 resources verified.
+
 
 ## Verification tiers
 

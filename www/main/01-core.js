@@ -271,7 +271,8 @@ function save(soft){
   }
   storeBytes=otherBytes+len*2;
   lockFlag();
-  if(idb){saveShards(m);fastWatch();return !saveFail} // a failed write reaches saveFail through Store.onState
+  if(idb){saveShards(m);if(CoachRepo?.replaceLegacy)CoachRepo.replaceLegacy(S);fastWatch();return !saveFail} // a failed write reaches saveFail through Store.onState
+  if(CoachRepo?.replaceLegacy)CoachRepo.replaceLegacy(S);
   try{localStorage.setItem("nw_state",j);saveFail=false}
   catch{
     if(soft&&copyHeld())return false;
