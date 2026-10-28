@@ -256,6 +256,7 @@ lockFlag();
 /* A failed write keeps the change in memory: it is announced every time, Today and Settings show a permanent warning, the backup screen takes the in-memory state. */
 const SAVE_FAIL="Son değişiklik kaydedilemedi. Depolama dolu olabilir; kapatmadan önce yedek al.";
 Store.onState(f=>{saveFail=f;if(f)toast(SAVE_FAIL);else render()});
+const saveDurable=()=>{if(!save())return false;return Store.mode==="idb"?Store.whenIdle().then(()=>!Store.failed):!saveFail};
 /* Only the changed shards are written, in one transaction (all of them on the first write). A shard that emptied is dropped from the store as well. */
 function saveShards(m){
   const ids=Object.keys(m),ch=Object.fromEntries(ids.filter(i=>m[i]!==lastShard[i]).map(i=>[i,m[i]]));

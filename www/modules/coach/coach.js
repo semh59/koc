@@ -915,6 +915,7 @@ let plannerDraft=null;
 let plannerPreview=null;
 let plannerKey=0;
 const plannerId=prefix=>`${prefix}-${Date.now()}-${++plannerKey}`;
+const undoKey=()=>plannerId("undo-key");
 const plannerLocalNote=`Bu işlem yalnızca bu telefonda, çevrimdışı çalışır; hiçbir ağ isteği yapılmaz.`;
 const plannerPlanFields=plan=>({title:plan?.title||"",steps:(plan?.steps||[]).join("\n")});
 function plannerRenderCard(){
@@ -943,6 +944,10 @@ function plannerShowPlanPreview(){
 }
 function plannerConfirmPlan(){
   const p=Coach.planner(), d=plannerDraft||{}, id=d.editId||plannerId("plan"), result=p.upsertPlan({id,title:d.title,steps:d.steps,status:"active",priority:1,source:"user",idempotencyKey:d.saveKey||plannerId("plan-save")});
+  if(result&&typeof result.then==="function")return result.then(plannerFinishPlan);
+  return plannerFinishPlan(result);
+}
+function plannerFinishPlan(result){
   if(!result.ok)return toast("Plan kaydedilemedi");
   closeSheet();render();toast(result.duplicate?"Plan zaten kaydedilmiş":"Plan kaydedildi");plannerDraft=null;
 }
@@ -957,8 +962,12 @@ function plannerShowCheckinPreview(){
 }
 function plannerConfirmCheckin(){
   const p=Coach.planner(),r=p.checkIn({id:plannerPreview.id,day:dayKey(),energy:plannerPreview.energy,reason:plannerPreview.reason,idempotencyKey:plannerPreview.key});
+  if(r&&typeof r.then==="function")return r.then(plannerFinishCheckin);
+  return plannerFinishCheckin(r);
+}
+function plannerFinishCheckin(r){
   if(!r.ok)return toast("Check-in kaydedilemedi");
-  const plan=p.dailyPriority({day:dayKey(),online:false});closeSheet();render();plannerPreview=null;toast("Check-in kaydedildi");
+  const p=Coach.planner(),plan=p.dailyPriority({day:dayKey(),online:false});closeSheet();render();plannerPreview=null;toast("Check-in kaydedildi");
   if(plan){const preview=p.adapt({planId:plan.planId,checkinId:r.record.id,reason:r.record.energy<2?"energy_low":"energy_ok",idempotencyKey:plannerId("adapt")});if(preview.ok)plannerShowAdaptPreview(preview)}
 }
 function plannerShowAdaptPreview(preview){
@@ -969,8 +978,12 @@ function plannerShowAdaptPreview(preview){
 function plannerConfirmAdapt(){
   if(plannerPreview?.adapt?.noop)return plannerCancel();
   const p=Coach.planner(),a=p.confirmAction({id:plannerId("action"),planId:plannerPreview.adapt.planId,type:"plan_adjust",patch:{status:"paused"},idempotencyKey:plannerId("action-key")});
+  if(a&&typeof a.then==="function")return a.then(plannerFinishAdapt);
+  return plannerFinishAdapt(a);
+}
+function plannerFinishAdapt(a){
   if(!a.ok)return toast("Uyarlama uygulanamadı");
-  closeSheet();plannerPreview=null;render();toast("Plan uyarlandı",()=>{const u=Coach.planner().undoAction(a.action.id);if(u.ok){render();toast("Uyarlama geri alındı")}},true);
+  closeSheet();plannerPreview=null;render();toast("Plan uyarlandı",()=>{const u=Coach.planner().undoAction(a.action.id,undoKey());if(u&&typeof u.then==="function")return u.then(x=>{if(x.ok){render();toast("Uyarlama geri alındı")}});if(u.ok){render();toast("Uyarlama geri alındı")}},true);
 }
 function plannerCancel(){plannerDraft=null;plannerPreview=null;closeSheet()}
 function cClick(v,el){
@@ -987,7 +1000,7 @@ function cClick(v,el){
     case "adaptconfirm":return plannerConfirmAdapt();
     case "adaptcancel":return plannerCancel();
     case "plancancel":return plannerCancel();
-    case "plannerundo":{const r=Coach.planner().undoAction(p1);if(r.ok){render();toast("Uyarlama geri alındı")}return r;}
+    case "plannerundo":{const r=Coach.planner().undoAction(p1,undoKey());if(r.ok){render();toast("Uyarlama geri alındı")}return r;}
 
     case "askfood":{const q=foodAskQ.trim();if(q){closeSheet();tab="coach";render();cSend(`${q} kaç kalori? Bir porsiyon için tahmin et.`)}return}
     case "send":{const i=$("#cmsg");const t=i.value;i.value="";return cSend(t)}

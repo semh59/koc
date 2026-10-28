@@ -38,15 +38,17 @@
 - Düşük enerji uyarlaması önce önizleniyor; onay planı duraklatıyor, `Geri al` eski planı geri yüklüyor.
 - Tüm Planner işlemleri `online:false` ile yerel; arayüz ağ isteği yapmıyor ve çevrimdışı metnini gösteriyor.
 - Kanıt: `node scripts/coach-planner.test.js`, `node scripts/coach-planner-production.test.js`, `node scripts/coach-planner-closures.test.js`, `node scripts/coach-planner-ui.test.js` geçti.
-- Kanıt: `CI=1 E2E_PORT=4501 npx playwright test -c e2e/playwright.config.js e2e/coach-planner.spec.js` — 4 geçti.
-- `npm test`, `npm run android:sync:verify`, `git diff --check` geçti.
+- Kanıt: `CI=1 E2E_PORT=4474 npx playwright test e2e/coach-planner.spec.js -c e2e/playwright.config.js` — 4 geçti.
+- `npm test` — 115 test files, 0 failed; `npm run android:sync:verify` — 28 Java files, 44 source resources; `git diff --check` — geçti.
 
 ## Faz 3 blocker evidence
 
 - `energy_ok` check-ins record successfully but return preview-only no-op; UI shows local confirmation, never pause/apply action.
 - All planner write mutators require allowlisted 8–100 character `idempotencyKey`; missing/invalid keys return `{ok:false}` without mutation; duplicate valid keys stay idempotent.
-- Production Coach wrapper rolls planner and `S` state back when `save()` fails; injected failure and recovery retry are covered.
-- Focused planner core, production, UI, and closure tests pass; module syntax and `git diff --check` pass.
+- `undoAction(id, idempotencyKey)` now rejects missing/invalid keys before mutation; UI generates and passes unique undo keys.
+- `checkSafe` now validates real Gregorian month/day boundaries, including leap years; malformed planner records remain filtered through `buildState` recovery reporting.
+- IndexedDB planner writes use async-aware `saveDurable()`; wrapper returns Promise until `Store.whenIdle()` settles, rolls back on abort, and retries on next mutation. Deterministic fake-IDB failure is covered by `scripts/store.test.js`.
+- Focused planner core, production, UI, closure, and store tests pass; module syntax and `git diff --check` pass.
 
 ## Faz 3 kalan riskler
 
