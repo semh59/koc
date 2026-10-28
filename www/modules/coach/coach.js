@@ -28,6 +28,12 @@ async function wipeKeys(){
   KEYS={};lsDel(KEYS_LS);lsDel(KEYS_ENC);lsDel("nw_keys_plain");plainOk=false;plainNo=false;locked=false;
   const kv=KV();if(kv?.resetKey)try{await kv.resetKey()}catch(e){toast("Rehber anahtar kasası temizlenemedi")}
 }
+async function deleteKeysFromSettings(){
+  const yes=await confirmSheet({title:"Kayıtlı anahtarlar silinsin mi?",body:"Kayıtlı Rehber anahtarları bu cihazdan silinecek.",ok:"Sil",no:"Vazgeç",danger:true});
+  if(!yes)return;
+  await wipeKeys();
+  toast("Kayıtlı Rehber anahtarları silindi");
+}
 async function persistKeys(){
   const j=JSON.stringify(KEYS),kv=KV();
   if(locked){
@@ -724,7 +730,7 @@ function experimentResult(x){
 function experimentStateText(r){return r.resultState==="not_started"?"Başlatılmayı bekliyor":r.resultState==="supported"?"Destekleniyor":r.resultState==="not_supported"?"Desteklenmiyor":"Yeterli veri yok"}
 function experimentCard(){
   const xs=Coach.experimentList(), cards=xs.map(x=>{const r=experimentResult(x),active=x.status==="active";return `<div class="card" data-testid="experiment-card"><h3 class="m0">${esc(x.hypothesis)}</h3><p class="mut sm">${esc(x.measurementWindow.start)} – ${esc(x.measurementWindow.end)} · Durum: <b>${x.status==="draft"?"Taslak":active?"Aktif":"Tamamlandı"}</b> · Sonuç: <b>${experimentStateText(r)}</b></p><p class="mut sm">${r.uncertainty==="measured"?`${r.measurements} yerel check-in, ortalama ${fmt(r.average,1)}`:"Belirsizlik: yeterli ölçüm yok."}</p><div class="two">${x.status==="draft"?`<button class="btn" data-c="experimentstart:${esc(x.id)}">Deneyi başlat</button>`:active?`<button class="btn" data-c="experimentcheckin:${esc(x.id)}">Yerel check-in</button>`:""}<button class="btn ghost" data-c="experimentexport:${esc(x.id)}">Dışa aktar</button><button class="btn danger" data-c="experimentdelete:${esc(x.id)}">Sil</button></div></div>`}).join("");
-  return `<section aria-labelledby="experiments-title"><div class="row"><h2 id="experiments-title" class="grp">Küçük deneyler</h2><button class="btn" data-c="experimentnew">Yeni deney</button></div><p class="hint">${experimentUiNote}</p>${cards||`<div class="card"><p class="m0">Henüz küçük deney yok.</p><p class="mut sm">Bir hipotez seç, başlangıç durumunu ve hedef davranışı yaz; sonucu yalnızca yerel kayıtlarla izle.</p></div>`}</section>`;
+  return `<section aria-labelledby="experiments-title"><div class="row"><h2 id="experiments-title" class="grp">Küçük deneyler</h2><span class="grow"></span>${xs.length?`<button class="btn danger" data-c="experimentdeleteall">Tüm deneyleri sil</button>`:""}<button class="btn" data-c="experimentnew">Yeni deney</button></div><p class="hint">${experimentUiNote}</p>${cards||`<div class="card"><p class="m0">Henüz küçük deney yok.</p><p class="mut sm">Bir hipotez seç, başlangıç durumunu ve hedef davranışı yaz; sonucu yalnızca yerel kayıtlarla izle.</p></div>`}</section>`;
 }
 function experimentOpen(){
   openSheet(`<h3>Yeni küçük deney</h3><p class="hint">${experimentUiNote}</p><label class="lbl" for="experiment-hypothesis">Hipotez</label><textarea autofocus class="in" id="experiment-hypothesis" aria-describedby="experiment-help" maxlength="300" rows="2" placeholder="Örn. Akşam yürüyüşü adım sayımı artırır"></textarea><label class="lbl" for="experiment-baseline">Başlangıç ölçümü (sayı)</label><input class="in" id="experiment-baseline" inputmode="decimal" type="number" min="0" step="any"><label class="lbl" for="experiment-target">Hedef ölçüm (sayı)</label><input class="in" id="experiment-target" inputmode="decimal" type="number" min="0" step="any"><label class="lbl" for="experiment-start">Ölçüm başlangıcı</label><input class="in" id="experiment-start" type="date"><label class="lbl" for="experiment-end">Ölçüm bitişi</label><input class="in" id="experiment-end" type="date"><p id="experiment-help" class="mut sm">Ölçüm metriği: günlük değer. Hedef, başlangıçtan en az bu değere ulaşmak olarak değerlendirilir.</p><div class="two"><button class="btn" data-c="experimentsave">Deneyi kaydet</button><button class="btn ghost" data-c="closesheet">Vazgeç</button></div>`);
@@ -749,6 +755,17 @@ function experimentSaveCheckin(id){
 }
 function experimentFinishCheckin(r){if(!r||!r.ok)return toast("Check-in kaydedilemedi");closeSheet();render();toast(r.duplicate?"Bu gün zaten kaydedildi":"Check-in kaydedildi")}
 function experimentExport(id){const x=Coach.experimentList().find(e=>e.id===id);if(!x)return;const data={experiments:[x],events:experimentEvents(id),note:"Bu kayıt nedensellik veya tıbbi sonuç göstermez."};try{const a=document.createElement("a");a.href="data:application/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(data));a.download="neowell-deney-"+id+".json";a.click();toast("Deney dışa aktarıldı; silme için dışa aktarma tamamlandı")}catch(e){toast("Dışa aktarma başarısız")}}
+async function experimentDeleteAllFromSettings(){
+  const data=Coach.experimentExport();
+  if(!data||!data.experiments.length)return toast("Silinecek deney bulunamadı");
+  const yes=await confirmSheet({title:"Tüm deneyler silinsin mi?",body:"Önce deneyler dışa aktarılır. Dışa aktarma başarısızsa hiçbir kayıt silinmez.",ok:"Dışa aktar ve sil",no:"Vazgeç",danger:true});
+  if(!yes)return;
+  let handed=false;
+  try{handed=await shareOut(false,`neowell-experiments-${dayKey()}.json`,"NeoWell deneyleri","application/json",JSON.stringify(data),true)}catch(e){}
+  if(handed!==true)return toast("Dışa aktarma başarısız; deneyler korundu");
+  const deleted=await Coach.experimentDeleteAll();
+  toast(deleted?"Tüm deneyler silindi":"Deneyler silinemedi; kayıtlar korundu");
+}
 function viewCoach(){
   let h="";
   const intro=offline==="none"||(!hasKey()&&!S.chat.length),li=a=>`<ul class="cul">${a.map(t=>`<li>${t}</li>`).join("")}</ul>`;
@@ -803,6 +820,7 @@ function viewProviders(){
   <h2 class="grp">Sağlayıcılar</h2><div class="card">${rows}<p class="hint">Birden çok sağlayıcı açıksa sırayla denenir; biri meşgulse sıradaki devreye girer. Anahtarlar bu telefonda şifreli durur, yalnız parolalı yedeğe şifreli girer.</p>
   <details class="acc"><summary>Gelişmiş</summary><p class="m0 hint">Kendi OpenAI uyumlu servisini ekleyebilirsin. Sağlık verilerin ve anahtarın o sunucuya gider.</p><div class="btns"><button class="btn ghost" data-c="addprov">Sağlayıcı ekle</button></div></details></div>
   <h2 class="grp">Hafıza ve saklama</h2><div class="card"><p class="mut sm">Rehber hafızaları cihazda kalır; her kayıt kaynak, güven, son doğrulama ve neden bilgisi taşır.</p><button class="btn ghost" data-c="memoryexport">Hafızayı dışa aktar</button><button class="btn danger" data-c="memorydeleteall">Hafızayı dışa aktar ve sil</button></div>
+  <h2 class="grp">Kayıtlı anahtarlar</h2><div class="card"><p class="mut sm">Bu cihazda saklanan Rehber anahtarlarını kaldırır.</p><button class="btn danger" data-c="deletekeys">Kayıtlı anahtarları sil</button></div>
   <h2 class="grp">Sohbet</h2><div class="card"><button class="btn danger" data-c="clearchat">Sohbeti temizle</button></div>`;
 }
 /* The addresses are only well-known key pages; panel button names may change. */
@@ -1047,6 +1065,8 @@ function cClick(v,el){
     case "experimentcheckin":return experimentOpenCheckin(p1);
     case "experimentcheckinsave":return experimentSaveCheckin(p1);
     case "experimentexport":return experimentExport(p1);
+    case "experimentdeleteall":return experimentDeleteAllFromSettings();
+    case "deletekeys":return deleteKeysFromSettings();
 
     case "plannercheck":return plannerOpenCheckin();
     case "planpreview":return plannerShowPlanPreview();
@@ -1140,7 +1160,6 @@ function cClick(v,el){
       return toast("Sohbet silindi",()=>{if(!S.chats.some(c=>c.id===x.id)){S.chats.splice(Math.min(i,S.chats.length),0,x);S.chats=trimChats(S.chats,true);save();render();cChatList()}});
     }
     case "memoryexport":{const x=Coach.memoryExport();if(x)shareOut(false,`neowell-memory-${dayKey()}.json`,"Rehber hafızası","application/json",JSON.stringify(x),true);return;}
-    case "memorydeleteall":if(cSwitchOk())confirmSheet({title:"Hafıza dışa aktarılıp silinsin mi?",body:"Önce cihazda saklanan dışa aktarma hazırlanır. Dışa aktarma başarısızsa hiçbir kayıt silinmez.",ok:"Dışa aktar ve sil",danger:true}).then(async ok=>{if(ok){const x=await Coach.memoryDeleteAll();if(!x)toast("Hafıza silinemedi; kayıtlar korundu")}});return;
     case "clearchat":if(cSwitchOk())confirmSheet({title:"Sohbet geçmişi silinsin mi?",body:"Kayıtların silinmez.",ok:"Sil",danger:true}).then(ok=>{if(ok){cClearChat();render()}});return;
     default:return cProvClick(a,p1,p2);
   }
