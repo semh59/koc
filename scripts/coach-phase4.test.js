@@ -1,0 +1,25 @@
+const {ok,finish}=require("./ok");
+const C=require("../www/modules/coach/coachlib.js");
+
+const seed=[{id:"m1",kind:"preference",value:"Akşam yürüyüşünü tercih ediyor",source:"user_note",sourceLabel:"Kullanıcı notu",confidence:"high",lastVerifiedAt:"2026-10-20",reason:"Kullanıcının seçtiği akşam rutini",retentionUntil:"2027-10-20"},{id:"m2",kind:"health",value:"silinmiş veri",source:"user_note",confidence:"high",lastVerifiedAt:"2026-10-20",reason:"test",deletedAt:"2026-10-21"}];
+const invalidDeleted=C.createMemoryRepository([{id:"bad",kind:"fact",value:"bad",source:"user_note",confidence:"high",lastVerifiedAt:"2026-10-20",reason:"bad",deletedAt:"2026-02-30"},{id:"bad2",kind:"fact",value:"bad",source:"user_note",confidence:"high",lastVerifiedAt:"2026-10-20",reason:"bad",deletedAt:"not-a-date"}]);
+ok("malformed deletedAt records are rejected from snapshots and exports",invalidDeleted.snapshot().length===0&&invalidDeleted.exportBeforeDelete().length===0);
+const repo=C.createMemoryRepository(seed);
+ok("memory repository is available",typeof C.createMemoryRepository==="function");
+ok("memory list is source-backed and excludes deleted",repo.list().length===1&&repo.list()[0].source==="user_note"&&repo.list()[0].reason.length>0);
+ok("memory find and edit preserve provenance",repo.find("m1").value.includes("Akşam")&&repo.edit("m1",{value:"Sabah yürüyüşünü tercih ediyor",confidence:"medium"}).value.startsWith("Sabah")&&repo.find("m1").source==="user_note");
+ok("memory delete is durable tombstone-free from active list",repo.delete("m1")===true&&repo.list().length===0&&repo.find("m1")==null);
+const fresh=C.createMemoryRepository(seed);
+const ctx=C.compileContext({consent:true,purpose:"conversation",memories:fresh.list(),missingData:["no_recent_weight"]});
+ok("compiled context carries provenance and missing data",ctx.facts.some(f=>f.name==="memory:m1"&&f.source==="user_note"&&f.last_verified==="2026-10-20"&&f.reason)&&ctx.missing_data.includes("no_recent_weight"));
+const deleted=C.createMemoryRepository(seed);deleted.delete("m1");
+ok("deleted memories never enter compile context",C.compileContext({consent:true,purpose:"conversation",memories:deleted.list()}).facts.every(f=>f.name!=="memory:m1"));
+const explanation=C.explainSuggestion({title:"Kısa yürüyüş",reason:"Akşam tercihinle uyumlu",sourceFacts:["memory:m1"],confidence:"medium"},{facts:ctx.facts,missingData:["no_recent_weight"]});
+ok("suggestion explanation states why source uncertainty and missing data",explanation&&explanation.why&&explanation.source&&explanation.uncertainty&&explanation.missingData.includes("no_recent_weight")&&!/tanı|nedeni budur|kesin/.test(JSON.stringify(explanation)));
+const unsafe=C.explainSuggestion({reason:"Tanı kesin: bu neden tedavi edilmeli <script>alert(1)</script>",sourceFacts:[]},{facts:[],missingData:[]});
+ok("untrusted medical and injection reasons use safe uncertainty fallback",unsafe.why!=="Tanı kesin: bu neden tedavi edilmeli <script>alert(1)</script>"&&!/[<>]|tanı|tedavi|kesin/i.test(unsafe.why)&&unsafe.uncertainty==="low");
+const durable=C.createMemoryRepository(seed),backup=durable.exportBeforeDelete();
+ok("memory export is explicit before delete",Array.isArray(backup)&&backup.length===2&&durable.deleteAfterExport(()=>true)===true&&durable.list().length===0);
+const rollback=C.createMemoryRepository(seed),before=rollback.exportBeforeDelete();
+ok("memory delete rolls back when persistence fails",rollback.deleteAfterExport(()=>false)===false&&rollback.list().length===1&&rollback.find("m1").value.includes("Akşam"));
+finish();

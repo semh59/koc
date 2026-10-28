@@ -204,7 +204,7 @@ function cData(){
 }
 function cCompiledContext(){
   const d=cData();
-  return CoachLib.compileContext({consent:true,purpose:"conversation",profile:d.profile,goalKcal:d.goalKcal});
+  return CoachLib.compileContext({consent:true,purpose:"conversation",profile:d.profile,goalKcal:d.goalKcal,memories:typeof Coach!=="undefined"&&Coach.memoryList?Coach.memoryList():[],missingData:[]});
 }
 /* Only an applied log card enters the history (a rejected or pending one must not look "done"), with macros and meal. */
 function cHistLog(m){
@@ -409,11 +409,13 @@ async function cFlush(){
   busy=false;typing=false;save();render();
   if(!offline&&S.chat.some(m=>m.role==="user"&&m.pend))cFlush();
 }
+function cExplain(suggestion,context){return CoachLib.explainSuggestion(suggestion,context||cCompiledContext()||{});}
 function cReply(o){
   const structured=Object.hasOwn(o,"answer")||Object.hasOwn(o,"intent")||Object.hasOwn(o,"facts_used")||Object.hasOwn(o,"recommendations")||Object.hasOwn(o,"actions"),allowedFacts=(cCompiledContext()||{}).facts||[],safe=CoachLib.validateResponse(o,o.intent||"general",allowedFacts);
   if(structured&&safe===null){cPush({role:"coach",text:"Yanıt güvenlik kurallarından geçmedi; yeniden dene."});return}
   if(safe){
     const items=CoachLib.cleanItems(o.log),fd=CoachLib.cleanFood(o.food),msg={role:"coach",text:safe.answer||o.reply||"Tamam."};
+    if(safe.recommendations?.length){const r=safe.recommendations[0],e=cExplain({reason:r.reason,sourceFacts:safe.facts_used.map(f=>f.name),confidence:safe.confidence},cCompiledContext()||{});msg.card={kind:"explain",explanation:e};}
     if(items.length)msg.card={kind:"log",items,state:"pending"};
     cPush(msg);
     if(fd&&!items.length)cPush({role:"coach",text:"",card:{kind:"food",f:fd,state:"pending"}});
@@ -628,6 +630,7 @@ function cCard(m){
     <div class="bgrid mt-3"><button class="btn" data-c="shop:${m.id}">Alışveriş listesi</button></div></div>`;
   }
   if(c.kind==="why")return `<div class="card lcard"><b>Son 7 gün</b>${c.items.map(x=>`<p class="sm">${esc(x.t)}</p>`).join("")}<p class="mut sm">Telefonda hesaplandı, hiçbir yere gönderilmedi.</p></div>`;
+  if(c.kind==="explain"){const e=c.explanation||{};return `<div class="card lcard"><b>Bu önerinin açıklaması</b><p class="sm"><b>Neden:</b> ${esc(e.why||"Mevcut verilere göre hazırlandı.")}</p><p class="sm"><b>Kaynak:</b> ${e.source?.length?e.source.map(x=>esc(x.source+(x.period?" · "+x.period:""))).join(", "):"Kaynak bulunamadı"}</p><p class="sm"><b>Belirsizlik:</b> ${esc(e.uncertainty||"low")}</p>${e.missingData?.length?`<p class="mut sm"><b>Eksik veri:</b> ${e.missingData.map(esc).join(", ")}</p>`:""}</div>`;}
   if(c.kind==="food"){
     return `<div class="card lcard"><div class="lhead"><b>${esc(c.f.n)}</b><span class="forecast">Tahmin</span></div><div class="lrow"><span class="grow mut sm">${c.f.p!=null?`Protein ~${Math.round(c.f.p)} g`:"1 porsiyon"}</span><span class="num b7">~${c.f.k} kcal</span></div>
     ${c.logged?`<p class="mut sm">Günlüğe eklendi</p>`:`<div class="bgrid mt-3"><button class="btn" data-c="fooddiary:${m.id}">Günlüğe ekle</button></div>`}
@@ -760,6 +763,7 @@ function viewProviders(){
   <h2 class="grp">Rehber'e giden veriler</h2><div class="card"><p class="hint">Kapattığın veri Rehber'e hiç gönderilmez. İstediğin an değiştirirsin.</p>${shareRows()}</div>
   <h2 class="grp">Sağlayıcılar</h2><div class="card">${rows}<p class="hint">Birden çok sağlayıcı açıksa sırayla denenir; biri meşgulse sıradaki devreye girer. Anahtarlar bu telefonda şifreli durur, yalnız parolalı yedeğe şifreli girer.</p>
   <details class="acc"><summary>Gelişmiş</summary><p class="m0 hint">Kendi OpenAI uyumlu servisini ekleyebilirsin. Sağlık verilerin ve anahtarın o sunucuya gider.</p><div class="btns"><button class="btn ghost" data-c="addprov">Sağlayıcı ekle</button></div></details></div>
+  <h2 class="grp">Hafıza ve saklama</h2><div class="card"><p class="mut sm">Rehber hafızaları cihazda kalır; her kayıt kaynak, güven, son doğrulama ve neden bilgisi taşır.</p><button class="btn ghost" data-c="memoryexport">Hafızayı dışa aktar</button><button class="btn danger" data-c="memorydeleteall">Hafızayı dışa aktar ve sil</button></div>
   <h2 class="grp">Sohbet</h2><div class="card"><button class="btn danger" data-c="clearchat">Sohbeti temizle</button></div>`;
 }
 /* The addresses are only well-known key pages; panel button names may change. */
@@ -989,7 +993,15 @@ function plannerCancel(){plannerDraft=null;plannerPreview=null;closeSheet()}
 function cClick(v,el){
   const [a,p1,p2]=v.split(":");
   switch(a){
+    case "memorynew":return memoryOpen();
+    case "memoryedit":return memoryOpen(p1);
+    case "memorypreview":return memoryPreview(p1);
+    case "memoryconfirm":return memoryConfirm();
+    case "memorycancel":{const id=memoryPending?.id||"";memoryPending=null;return memoryOpen(id);}
+    case "closesheet":return closeSheet();
+    case "memorydelete":return memoryDeleteAsk(p1);
     case "planner":return plannerOpenPlan(p1||"");
+
     case "plannercheck":return plannerOpenCheckin();
     case "planpreview":return plannerShowPlanPreview();
     case "planconfirm":return plannerConfirmPlan();
@@ -1081,6 +1093,8 @@ function cClick(v,el){
       const [x]=S.chats.splice(i,1);save();render();cChatList();
       return toast("Sohbet silindi",()=>{if(!S.chats.some(c=>c.id===x.id)){S.chats.splice(Math.min(i,S.chats.length),0,x);S.chats=trimChats(S.chats,true);save();render();cChatList()}});
     }
+    case "memoryexport":{const x=Coach.memoryExport();if(x)shareOut(false,`neowell-memory-${dayKey()}.json`,"Rehber hafızası","application/json",JSON.stringify(x),true);return;}
+    case "memorydeleteall":if(cSwitchOk())confirmSheet({title:"Hafıza dışa aktarılıp silinsin mi?",body:"Önce cihazda saklanan dışa aktarma hazırlanır. Dışa aktarma başarısızsa hiçbir kayıt silinmez.",ok:"Dışa aktar ve sil",danger:true}).then(async ok=>{if(ok){const x=await Coach.memoryDeleteAll();if(!x)toast("Hafıza silinemedi; kayıtlar korundu")}});return;
     case "clearchat":if(cSwitchOk())confirmSheet({title:"Sohbet geçmişi silinsin mi?",body:"Kayıtların silinmez.",ok:"Sil",danger:true}).then(ok=>{if(ok){cClearChat();render()}});return;
     default:return cProvClick(a,p1,p2);
   }

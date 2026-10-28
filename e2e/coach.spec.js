@@ -86,6 +86,32 @@ test.describe("Coach log card",()=>{
   });
 });
 
+test.describe("Coach memory controls",()=>{
+  test("create/edit cancel, delete confirmation, export failure rollback, and accessibility",async({app,page})=>{
+    await app.open({seed:state({...CONSENT}),dialogs:false});
+    await app.go("settings-coach");
+    await page.evaluate(()=>{S.coachMemories=[{id:"memory-1",kind:"preference",value:"Akşam yürüyüşü",source:"user_note",sourceLabel:"Kullanıcı notu",confidence:"high",lastVerifiedAt:"2026-10-06",reason:"Kullanıcı tercihi"}];render()});
+    await expect(page.locator("#view")).toContainText("Akşam yürüyüşü");
+    await page.click('[data-c="memoryedit:memory-1"]');
+    await page.fill("#memory-value","Değişmemeli");
+    await page.click('[data-c="closesheet"]');
+    await expect(page.locator("#view")).toContainText("Akşam yürüyüşü");
+    await page.getByRole("button",{name:"Sil",exact:true}).last().click();
+    await expect(page.locator("#cfm")).toBeVisible();
+    await page.locator('#cfm [data-cf="0"]').click();
+    await expect(page.locator("#view")).toContainText("Akşam yürüyüşü");
+    await page.evaluate(()=>{closeSheet();memoryOpen()});
+    await page.evaluate(()=>closeSheet());
+    await expect(page.locator("#view")).toContainText("Akşam yürüyüşü");
+    await page.evaluate(()=>{window.Capacitor={Plugins:{Filesystem:{readdir:async()=>({files:[]}),writeFile:async()=>{throw new Error("share failed")}},Share:{share:async()=>{throw new Error("share failed")}}}}});
+    await page.getByRole("button",{name:"Hafızayı dışa aktar ve sil",exact:true}).click();
+    await expect(page.locator("#cfm")).toBeVisible();
+    await page.locator('#cfm [data-cf="0"]').click();
+    await expect(page.locator("#view")).toContainText("Akşam yürüyüşü");
+    expect(await page.locator("#view").evaluate(el=>el.querySelectorAll("button,[role=button],input,select,textarea").length)).toBeGreaterThan(0);
+  });
+});
+
 test.describe("Coach reliability",()=>{
   const view=page=>page.locator("#view");
   test("truncated JSON never leaks raw; asked again once, and if both are truncated the closed reply is shown",async({app,page,fake})=>{

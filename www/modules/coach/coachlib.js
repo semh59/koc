@@ -383,12 +383,40 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
   }
 
   const CONTEXT_PURPOSES=new Set(["conversation","sleep_advice","activity_advice","nutrition_advice","daily_priority"]);
+  const MEMORY_CONFIDENCE=new Set(["low","medium","high"]);
+  const memoryClone=x=>structuredClone(x);
+  const memoryDate=x=>typeof x==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(x)&&(()=>{const [y,m,d]=x.split("-").map(Number),dt=new Date(Date.UTC(y,m-1,d));return dt.getUTCFullYear()===y&&dt.getUTCMonth()===m-1&&dt.getUTCDate()===d})();
+  const cleanMemory=(m={})=>{
+    if(!m||typeof m!=="object"||typeof m.id!=="string"||!/^[A-Za-z0-9._:-]{1,80}$/.test(m.id)||typeof m.value!=="string"||!m.value.trim()||m.value.length>500||typeof m.source!=="string"||!m.source.trim()||m.source.length>80||!MEMORY_CONFIDENCE.has(m.confidence)||!memoryDate(m.lastVerifiedAt)||typeof m.reason!=="string"||!m.reason.trim()||m.reason.length>300||m.retentionUntil!==undefined&&!memoryDate(m.retentionUntil)||m.deletedAt!==undefined&&!memoryDate(m.deletedAt))return null;
+    return {id:m.id,kind:typeof m.kind==="string"?m.kind.slice(0,40):"fact",value:m.value.trim().slice(0,500),source:m.source.slice(0,80),sourceLabel:typeof m.sourceLabel==="string"?m.sourceLabel.slice(0,120):m.source,confidence:m.confidence,lastVerifiedAt:m.lastVerifiedAt,reason:m.reason.trim().slice(0,300),...(typeof m.retentionUntil==="string"?{retentionUntil:m.retentionUntil}:{}),...(typeof m.deletedAt==="string"?{deletedAt:m.deletedAt}:{})};
+  };
+  function createMemoryRepository(initial=[]) {
+    const rejected=[];
+    const source=Array.isArray(initial)?initial:[];
+    let records=source.map((raw,i)=>{const clean=cleanMemory(raw);if(!clean&&raw&&typeof raw==="object"&&raw.deletedAt!==undefined)rejected.push({index:i,id:typeof raw.id==="string"?raw.id:null,field:"deletedAt",value:raw.deletedAt});return clean}).filter(Boolean).map(memoryClone),exported=null;
+    const active=()=>records.filter(m=>!m.deletedAt);
+    const list=()=>memoryClone(active());
+    const find=id=>{const m=active().find(x=>x.id===id);return m?memoryClone(m):null};
+    const edit=(id,patch={})=>{const i=records.findIndex(x=>x.id===id&&!x.deletedAt);if(i<0)return null;const next=cleanMemory({...records[i],...patch,id,source:records[i].source,sourceLabel:records[i].sourceLabel,reason:patch.reason||records[i].reason,lastVerifiedAt:patch.lastVerifiedAt||records[i].lastVerifiedAt});if(!next)return null;records[i]=next;exported=null;return memoryClone(next)};
+    const remove=id=>{const i=records.findIndex(x=>x.id===id&&!x.deletedAt);if(i<0)return false;records[i].deletedAt=new Date().toISOString();exported=null;return true};
+    const exportBeforeDelete=()=>{exported=memoryClone(records);return memoryClone(exported)};
+    const deleteAfterExport=(persist=()=>true)=>{if(!exported)return false;const old=memoryClone(records);try{if(persist(memoryClone(exported))===false)return false}catch{return false}records=[];return true};
+    const rollback=()=>{if(!exported)return false;records=memoryClone(exported);return true};
+    return {list,find,edit,delete:remove,exportBeforeDelete,deleteAfterExport,rollback,snapshot:()=>memoryClone(records),rejected:()=>memoryClone(rejected)};
+  }
   const RESPONSE_INTENTS=new Set(["sleep_advice","activity_advice","nutrition_advice","daily_priority","general","program","menu"]);
   const RECOMMENDATION_TYPES=new Set(["activity","nutrition","habit","education"]);
   const ACTION_TYPES=new Set(["log_food","log_water","log_exercise","plan_propose","checkin_propose"]);
   const CONFIDENCE=new Set(["low","medium","high"]);
   const SAFE_TEXT=/ilaç|doz|reçete|tanı|teşhis|tedavi|insülin|antibiyotik|kendine zarar|intihar|hamile|gebelik|yeme bozukluğu|ignore|system|rules|kural/i;
-  function compileContext({consent,purpose,profile,sleep,goalKcal}={}){
+  function explainSuggestion(suggestion={},context={}){
+    const facts=Array.isArray(context.facts)?context.facts:[],ids=Array.isArray(suggestion.sourceFacts)?suggestion.sourceFacts:[],used=facts.filter(f=>ids.includes(f.name));
+    const raw=typeof suggestion.reason==="string"?suggestion.reason.trim():"";
+    const safeReason=raw.length<=400&&!/[<>]/.test(raw)&&!SAFE_TEXT.test(raw)&&!/(neden(i|idir)|sebep|kesin|tedavi|tanı|teşhis|doz|ilaç|reçete)/i.test(raw);
+    const missing=Array.isArray(context.missingData)?context.missingData.slice(0,10):Array.isArray(context.missing_data)?context.missing_data.slice(0,10):[];
+    return {why:safeReason&&raw?raw:"Bu öneri mevcut verilere göre hazırlanmıştır; ek bilgi gerekebilir.",source:used.map(f=>({name:f.name,source:f.source,period:f.period||"",confidence:f.confidence})),uncertainty:safeReason&&suggestion.confidence&&MEMORY_CONFIDENCE.has(suggestion.confidence)?suggestion.confidence:"low",missingData:missing};
+  }
+  function compileContext({consent,purpose,profile,sleep,goalKcal,memories,missingData}={}){
     if(typeof consent!=="boolean"||!consent||!CONTEXT_PURPOSES.has(purpose))return null;
     const p=profile&&typeof profile==="object"?profile:{};
     const out={purpose,profile:{}};
@@ -401,6 +429,8 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
     if(!Object.keys(out.profile).length)delete out.profile;
     if(Number.isFinite(Number(goalKcal))&&Number(goalKcal)>=800&&Number(goalKcal)<=5000)out.goalKcal=Math.round(Number(goalKcal));
     out.facts=[];
+    if(Array.isArray(memories))for(const m of memories.map(cleanMemory).filter(m=>m&&!m.deletedAt).slice(0,20))out.facts.push({name:"memory:"+m.id,value:m.value,period:m.lastVerifiedAt,source:m.source,confidence:m.confidence,last_verified:m.lastVerifiedAt,reason:m.reason});
+    out.missing_data=Array.isArray(missingData)?missingData.filter(x=>typeof x==="string").slice(0,10):[];
     if(purpose==="sleep_advice"&&sleep&&typeof sleep==="object"&&typeof sleep.average==="string"&&typeof sleep.period==="string"){
       if(!SAFE_TEXT.test(sleep.average+" "+sleep.period)){
         const average=sleep.average.replace(/[^0-9.,:+\- hmsgün]/gi,"").slice(0,40),period=sleep.period.replace(/[^0-9a-zçğıöşü _-]/gi,"").slice(0,20);
@@ -419,6 +449,6 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
     if(x.follow_up&&Object.keys(x.follow_up).some(k=>k!=="when"&&k!=="question"))return null;
     return x;
   }
-  return {usageOf,usageAdd,usageSum,REPLY_MAX,oneLine,pregnant,BROKEN,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,catalogText,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText,compileContext,validateResponse,migrateLegacy,legacyFromRepository,createRepository,migrateLegacyAtomic,createPlanner};
+  return {usageOf,usageAdd,usageSum,createMemoryRepository,explainSuggestion,REPLY_MAX,oneLine,pregnant,BROKEN,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,catalogText,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText,compileContext,validateResponse,migrateLegacy,legacyFromRepository,createRepository,migrateLegacyAtomic,createPlanner};
 })();
 if(typeof module!=="undefined")module.exports=CoachLib;

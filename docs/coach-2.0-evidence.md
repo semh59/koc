@@ -2,9 +2,9 @@
 
 ## Başlangıç baseline
 
-- Repo: `D:/PROJECT/koc-ci`
+- Repo: `D:/PROJECT/NeoWell`
 - Branch: `main`
-- Başlangıç commit: `941c02e20ef6e46b7cc3970188e2dbf4fbf505f6`
+- Faz 4 çalışma başlangıcı: `d8fb3d7`
 - Mevcut Coach kaynakları: 4 dosya, 1.385 satır.
 - Mevcut Coach unit davranış testleri: 78 PASS (`scripts/coach.test.js`), 45 PASS (`scripts/coach2.test.js`), Insight 29 PASS, boundary 3 PASS.
 - Mevcut Coach browser E2E: 68 passed.
@@ -40,6 +40,22 @@
 - Kanıt: `node scripts/coach-planner.test.js`, `node scripts/coach-planner-production.test.js`, `node scripts/coach-planner-closures.test.js`, `node scripts/coach-planner-ui.test.js` geçti.
 - Kanıt: `CI=1 E2E_PORT=4474 npx playwright test e2e/coach-planner.spec.js -c e2e/playwright.config.js` — 4 geçti.
 - `npm test` — 115 test files, 0 failed; `npm run android:sync:verify` — 28 Java files, 44 source resources; `git diff --check` — geçti.
+
+## Faz 4 — local memory / explainability / retention slice
+
+- `CoachLib.createMemoryRepository` keeps only source-backed records with strict provenance/date validation; malformed `deletedAt` values are rejected and reported through `rejected()`, never retained in snapshots or exports.
+- `Coach.memoryList`, `memoryEdit`, `memoryDelete`, `memoryExport`, and async `memoryDeleteAll` are exposed through production Coach contract; deletion awaits successful share handoff and rolls back on share or durable-save failure.
+- `compileContext` accepts active memories only and emits provenance (`source`, `period`, `confidence`, `last_verified`, `reason`) plus `missing_data`; deleted memories remain absent from provider context.
+- `CoachLib.explainSuggestion` validates untrusted reasons, rejects HTML/injection, diagnosis, treatment, and causal overclaims, and returns safe low-uncertainty fallback text.
+- Memory UI retains explicit create/edit preview and cancel flows, delete confirmation, export controls, escaped values, and accessibility labels.
+- RED→GREEN evidence: `node scripts/coach-phase4.test.js` — 11 passed; `node scripts/coach-phase4-production.test.js` — all passed.
+- Full verification: `npm test` — 117 test files, 0 failed; `CI=1 E2E_PORT=4531 npx playwright test -c e2e/playwright.config.js e2e/coach.spec.js e2e/access.spec.js` — 108 passed; focused memory E2E `CI=1 E2E_PORT=4486 npx playwright test e2e/coach.spec.js --grep 'Coach memory controls' -c e2e/playwright.config.js` — 2 passed; `npm run android:sync:verify` — 28 Java files, 44 source resources; `git diff --check` — passed.
+
+## Faz 4 kalan riskler
+
+- Memory kayıtları yerel uygulama depolamasında tutulur; runtime şifreleme bu fazın kapsamında değildir.
+- Android WebView/Keystore, fiziksel cihaz ve canlı provider davranışı bu slice için doğrulanmadı.
+- E2E artifact üretimi için kapanış koşusu `workers=1`, retries kapalı, trace/screenshot kapalı olarak ayrıca yürütülecek.
 
 ## Faz 3 blocker evidence
 
