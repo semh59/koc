@@ -13,5 +13,10 @@ boot().then(w=>{
   ok("planner sheet states offline local operation",w.document.querySelector("#sheet")?.textContent.includes("çevrimdışı"));
   ev('[data-c="plannercheck"]');
   ok("check-in sheet has explicit preview action",w.document.querySelector('[data-c="checkpreview"]')!==null);
+  ev('[data-c="planner:ui-plan-1"]');
+  w.document.querySelector('#planner-steps').value="Birinci\nİkinci";
+  ev('[data-c="planpreview"]');
+  const steps=JSON.parse(w.eval("JSON.stringify(plannerDraft.steps)"));
+  ok("planner splits multiline steps",steps.length===2&&steps[0]==="Birinci"&&steps[1]==="İkinci",steps);
   finish();
 }).catch(e=>{console.error(e);process.exitCode=1});

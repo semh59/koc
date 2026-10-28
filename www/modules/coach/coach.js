@@ -931,7 +931,7 @@ function plannerOpenPlan(id=""){
   openSheet(`<h3>${plan?"Planı düzenle":"Plan oluştur"}</h3><p class="hint">${plannerLocalNote}</p><label class="lbl" for="planner-title">Öncelik</label><input class="in" id="planner-title" maxlength="200" value="${esc(f.title)}" autofocus placeholder="Örn. Akşam yürüyüşü"><label class="lbl" for="planner-steps">Adımlar</label><textarea class="in" id="planner-steps" maxlength="600" rows="4" placeholder="Her satıra bir adım">${esc(f.steps)}</textarea><div class="two"><button class="btn" data-c="planpreview">Önizle</button><button class="btn ghost" data-c="plancancel">Vazgeç</button></div>`);
 }
 function plannerReadDraft(){
-  const title=$("#planner-title")?.value.trim()||"", steps=($("#planner-steps")?.value||"").split(/\\n+/).map(x=>x.trim()).filter(Boolean);
+  const title=$("#planner-title")?.value.trim()||"", steps=($("#planner-steps")?.value||"").split(/\n+/).map(x=>x.trim()).filter(Boolean);
   return {title,steps};
 }
 function plannerShowPlanPreview(){
