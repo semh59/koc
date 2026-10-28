@@ -911,9 +911,84 @@ async function cProvClick(a,p1,p2){
     case "pdel":S.providers=S.providers.filter(x=>x.id!==p1);setKey(p1,"");save();closeSheet();render();return;
   }
 }
+let plannerDraft=null;
+let plannerPreview=null;
+let plannerKey=0;
+const plannerId=prefix=>`${prefix}-${Date.now()}-${++plannerKey}`;
+const plannerLocalNote=`Bu işlem yalnızca bu telefonda, çevrimdışı çalışır; hiçbir ağ isteği yapılmaz.`;
+const plannerPlanFields=plan=>({title:plan?.title||"",steps:(plan?.steps||[]).join("\n")});
+function plannerRenderCard(){
+  const p=Coach.planner(), daily=p.dailyPriority({day:dayKey(),online:false}), active=p.snapshot().plans.filter(x=>x.status==="active");
+  if(!daily)return `<div class="card" data-testid="planner-card"><h3>Bugünün planı</h3><p class="mut sm">Henüz plan yok. Yerel bir öncelik ekleyebilirsin.</p><div class="two"><button class="btn" data-c="planner">Plan oluştur</button><button class="btn ghost" data-c="plannercheck">Check-in</button></div></div>`;
+  const plan=p.plan(daily.planId), action=p.snapshot().actions.find(x=>x.planId===daily.planId&&!x.undone);
+  return `<div class="card" data-testid="daily-priority"><div class="scr"><h3>Bugünün önceliği</h3><span class="badge">Yerel</span></div><b>${esc(plan.title)}</b>${plan.steps.length?`<ul>${plan.steps.slice(0,3).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}<p class="mut sm">${plannerLocalNote}</p><div class="two"><button class="btn" data-c="planner:${plan.id}">Planı düzenle</button><button class="btn ghost" data-c="plannercheck">Check-in</button></div>${action?`<button class="lnk" data-c="plannerundo:${action.id}">Uyarlamayı geri al</button>`:""}</div>`;
+}
+
+function plannerOpenPlan(id=""){
+  const plan=id?Coach.planner().plan(id):null, f=plannerPlanFields(plan);
+  plannerDraft={id,title:f.title,steps:f.steps,editId:id||null};
+  openSheet(`<h3>${plan?"Planı düzenle":"Plan oluştur"}</h3><p class="hint">${plannerLocalNote}</p><label class="lbl" for="planner-title">Öncelik</label><input class="in" id="planner-title" maxlength="200" value="${esc(f.title)}" autofocus placeholder="Örn. Akşam yürüyüşü"><label class="lbl" for="planner-steps">Adımlar</label><textarea class="in" id="planner-steps" maxlength="600" rows="4" placeholder="Her satıra bir adım">${esc(f.steps)}</textarea><div class="two"><button class="btn" data-c="planpreview">Önizle</button><button class="btn ghost" data-c="plancancel">Vazgeç</button></div>`);
+}
+function plannerReadDraft(){
+  const title=$("#planner-title")?.value.trim()||"", steps=($("#planner-steps")?.value||"").split(/\\n+/).map(x=>x.trim()).filter(Boolean);
+  return {title,steps};
+}
+function plannerShowPlanPreview(){
+  const f=plannerReadDraft();
+  if(!f.title)return toast("Öncelik adı gerekli");
+  if(f.steps.length>20)return toast("En fazla 20 adım yazabilirsin");
+  plannerDraft={...plannerDraft,...f,saveKey:plannerDraft?.saveKey||plannerId("plan-save")};
+  const list=f.steps.length?`<ul>${f.steps.map(x=>"<li>"+esc(x)+"</li>").join("")}</ul>`:"<p class=\"mut sm\">Adım eklenmedi.</p>";
+  openSheet(`<h3>Planı onayla</h3><p class="hint">${plannerLocalNote}</p><div class="card"><b>${esc(f.title)}</b>${list}</div><p class="mut sm">Kaydetmeden önce bu önizlemeyi kontrol et.</p><div class="two"><button class="btn" data-c="planconfirm">Onayla ve kaydet</button><button class="btn ghost" data-c="planedit">Düzenle</button></div>`);
+}
+function plannerConfirmPlan(){
+  const p=Coach.planner(), d=plannerDraft||{}, id=d.editId||plannerId("plan"), result=p.upsertPlan({id,title:d.title,steps:d.steps,status:"active",priority:1,source:"user",idempotencyKey:d.saveKey||plannerId("plan-save")});
+  if(!result.ok)return toast("Plan kaydedilemedi");
+  closeSheet();render();toast(result.duplicate?"Plan zaten kaydedilmiş":"Plan kaydedildi");plannerDraft=null;
+}
+function plannerOpenCheckin(){
+  openSheet(`<h3>Günün check-in'i</h3><p class="hint">${plannerLocalNote}</p><label class="lbl" for="planner-energy">Enerji</label><select class="in" id="planner-energy"><option value="0">0 — çok düşük</option><option value="1">1 — düşük</option><option value="2" selected>2 — orta</option><option value="3">3 — iyi</option><option value="4">4 — çok iyi</option></select><label class="lbl" for="planner-reason">Neden?</label><textarea class="in" id="planner-reason" maxlength="200" rows="3" placeholder="İstersen kısaca yaz"></textarea><div class="two"><button class="btn" data-c="checkpreview">Önizle</button><button class="btn ghost" data-c="plancancel">Vazgeç</button></div>`);
+}
+function plannerShowCheckinPreview(){
+  const energy=Number($("#planner-energy")?.value),reason=$("#planner-reason")?.value.trim()||"Belirtilmedi";
+  if(!Number.isInteger(energy)||energy<0||energy>4)return toast("Enerji seçimi gerekli");
+  plannerPreview={energy,reason,id:plannerId("checkin"),key:plannerId("checkin-save")};
+  openSheet(`<h3>Check-in'i onayla</h3><p class="hint">${plannerLocalNote}</p><div class="card"><b>Enerji: ${energy}/4</b><p class="mut sm">${esc(reason)}</p></div><p class="mut sm">Bu bilgi yalnızca yerel planını uyarlamak için kullanılır.</p><div class="two"><button class="btn" data-c="checkconfirm">Onayla ve kaydet</button><button class="btn ghost" data-c="checkedit">Düzenle</button></div>`);
+}
+function plannerConfirmCheckin(){
+  const p=Coach.planner(),r=p.checkIn({id:plannerPreview.id,day:dayKey(),energy:plannerPreview.energy,reason:plannerPreview.reason,idempotencyKey:plannerPreview.key});
+  if(!r.ok)return toast("Check-in kaydedilemedi");
+  const plan=p.dailyPriority({day:dayKey(),online:false});closeSheet();render();plannerPreview=null;toast("Check-in kaydedildi");
+  if(plan){const preview=p.adapt({planId:plan.planId,checkinId:r.record.id,reason:r.record.energy<2?"energy_low":"energy_ok",idempotencyKey:plannerId("adapt")});if(preview.ok)plannerShowAdaptPreview(preview)}
+}
+function plannerShowAdaptPreview(preview){
+  plannerPreview={...plannerPreview,adapt:preview};
+  if(preview.noop)return toast("Check-in kaydedildi; enerji iyi, plan değiştirilmedi");
+  openSheet(`<h3>Uyarlama önizlemesi</h3><p class="hint">${plannerLocalNote}</p><p>Enerji düşükse plan geçici olarak duraklatılacak. Bu değişiklik henüz uygulanmadı.</p><div class="two"><button class="btn" data-c="adaptconfirm">Uygula</button><button class="btn ghost" data-c="adaptcancel">Vazgeç</button></div>`);
+}
+function plannerConfirmAdapt(){
+  if(plannerPreview?.adapt?.noop)return plannerCancel();
+  const p=Coach.planner(),a=p.confirmAction({id:plannerId("action"),planId:plannerPreview.adapt.planId,type:"plan_adjust",patch:{status:"paused"},idempotencyKey:plannerId("action-key")});
+  if(!a.ok)return toast("Uyarlama uygulanamadı");
+  closeSheet();plannerPreview=null;render();toast("Plan uyarlandı",()=>{const u=Coach.planner().undoAction(a.action.id);if(u.ok){render();toast("Uyarlama geri alındı")}},true);
+}
+function plannerCancel(){plannerDraft=null;plannerPreview=null;closeSheet()}
 function cClick(v,el){
   const [a,p1,p2]=v.split(":");
   switch(a){
+    case "planner":return plannerOpenPlan(p1||"");
+    case "plannercheck":return plannerOpenCheckin();
+    case "planpreview":return plannerShowPlanPreview();
+    case "planconfirm":return plannerConfirmPlan();
+    case "planedit":return plannerOpenPlan(plannerDraft?.editId||"");
+    case "checkpreview":return plannerShowCheckinPreview();
+    case "checkconfirm":return plannerConfirmCheckin();
+    case "checkedit":return plannerOpenCheckin();
+    case "adaptconfirm":return plannerConfirmAdapt();
+    case "adaptcancel":return plannerCancel();
+    case "plancancel":return plannerCancel();
+    case "plannerundo":{const r=Coach.planner().undoAction(p1);if(r.ok){render();toast("Uyarlama geri alındı")}return r;}
+
     case "askfood":{const q=foodAskQ.trim();if(q){closeSheet();tab="coach";render();cSend(`${q} kaç kalori? Bir porsiyon için tahmin et.`)}return}
     case "send":{const i=$("#cmsg");const t=i.value;i.value="";return cSend(t)}
     case "retry":offline=null;cFlush();return render();

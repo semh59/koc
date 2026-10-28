@@ -30,7 +30,29 @@
 - Consent kapalıyken probe/model discovery dış çağrısı engelleniyor.
 - PII test kapsamına küçük harfli isim ve serbest adres örneği eklendi.
 
-## Kanıt katmanı
+## Faz 3 — yerel Plan / Bugün / Check-in UI
+
+- Bugün ekranına tek yerel günlük öncelik kartı eklendi; plan yokken oluşturma ve check-in girişleri görünür.
+- Plan yazma akışı önizleme → açık onay → yerel kaydetme şeklinde; düzenleme ve vazgeçme mevcut.
+- Check-in enerji/neden akışı önizleme → açık onay şeklinde; idempotency anahtarı ile tekrarlı olay tek kayıt üretir.
+- Düşük enerji uyarlaması önce önizleniyor; onay planı duraklatıyor, `Geri al` eski planı geri yüklüyor.
+- Tüm Planner işlemleri `online:false` ile yerel; arayüz ağ isteği yapmıyor ve çevrimdışı metnini gösteriyor.
+- Kanıt: `node scripts/coach-planner.test.js`, `node scripts/coach-planner-production.test.js`, `node scripts/coach-planner-closures.test.js`, `node scripts/coach-planner-ui.test.js` geçti.
+- Kanıt: `CI=1 E2E_PORT=4501 npx playwright test -c e2e/playwright.config.js e2e/coach-planner.spec.js` — 4 geçti.
+- `npm test`, `npm run android:sync:verify`, `git diff --check` geçti.
+
+## Faz 3 blocker evidence
+
+- `energy_ok` check-ins record successfully but return preview-only no-op; UI shows local confirmation, never pause/apply action.
+- All planner write mutators require allowlisted 8–100 character `idempotencyKey`; missing/invalid keys return `{ok:false}` without mutation; duplicate valid keys stay idempotent.
+- Production Coach wrapper rolls planner and `S` state back when `save()` fails; injected failure and recovery retry are covered.
+- Focused planner core, production, UI, and closure tests pass; module syntax and `git diff --check` pass.
+
+## Faz 3 kalan riskler
+
+- Gerçek Android WebView/cihazda Planner etkileşimi ayrıca doğrulanmadı; E2E yerel Playwright sunucusudur.
+- Plan/check-in verileri mevcut uygulama depolama modelinde tutulur; runtime şifreleme yok.
+
 - Gerçek cihaz/Keystore: bu fazda henüz doğrulanmadı.
 - Gerçek provider/backend: bu projede backend yok; canlı provider testi yapılmayacak.
 

@@ -1,6 +1,6 @@
 /* ---------- events ---------- */
 document.addEventListener("click",ev=>{
-  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-rc],[data-fv],[data-fva],[data-fvd],[data-tp],[data-tpd],[data-sp],[data-lo],[data-kd],[data-g],[data-sex],[data-actl],[data-thm],[data-c],[data-food],[data-fadd],[data-fp],[data-ml],[data-edit],[data-waterall]");
+  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-rc],[data-fv],[data-fva],[data-fvd],[data-tp],[data-tpd],[data-sp],[data-lo],[data-kd],[data-g],[data-sex],[data-actl],[data-thm],[data-c],[data-food],[data-fadd],[data-fp],[data-ml],[data-edit],[data-waterall],[data-shx]");
   if(ev.target.id==="scrim"){
     const typed=[...document.querySelectorAll("#sheet input,#sheet textarea")].some(e=>!e.readOnly&&!["search","checkbox","file"].includes(e.type)&&e.value!==e.defaultValue);
     if(!typed)return closeSheet();

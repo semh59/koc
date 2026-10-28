@@ -137,7 +137,7 @@ function viewToday(){
   if(todoTopLock===null)todoTopLock=missed;
   const minor=S.settings.age>0&&S.settings.age<18?`<div class="banner"><b>NeoWell 18 yaş ve üzeri için</b><p>Profilindeki yaş 18'in altında. Kalori açığı, oruç önerisi ve Rehber kapalı. Beslenme ve kilo konusunda bir yetişkinle ve hekiminle ya da diyetisyeninle konuş. Yaş yanlışsa Ayarlar > Profil'den düzelt.</p></div>`:"";
   /* .bg2 has no effect in portrait; in landscape the left column holds the summary and quick records, the right one jobs and shortcuts. */
-  return `<div class="bg2">${todoTopLock?`<div class="bgtop">${todoCard}</div>`:""}<div class="bgL">${minor}${rings}${actions}</div><div class="bgR">${todoTopLock?"":todoCard}${habitRow()}${gTodayCard()}${weight}</div></div>`;
+  return `<div class="bg2">${todoTopLock?`<div class="bgtop">${todoCard}</div>`:""}<div class="bgL">${minor}${rings}${actions}</div><div class="bgR">${todoTopLock?"":todoCard}${habitRow()}${gTodayCard()}${plannerRenderCard()}${weight}</div></div>`;
 }
 
 /* PDF reports in one place; the share handlers listen on the document, so they work from any screen. */

@@ -259,8 +259,14 @@ Store.onState(f=>{saveFail=f;if(f)toast(SAVE_FAIL);else render()});
 /* Only the changed shards are written, in one transaction (all of them on the first write). A shard that emptied is dropped from the store as well. */
 function saveShards(m){
   const ids=Object.keys(m),ch=Object.fromEntries(ids.filter(i=>m[i]!==lastShard[i]).map(i=>[i,m[i]]));
-  if(!Object.keys(ch).length&&ids.length===(Store.ids||[]).length)return;
-  Store.putShards(ch,ids);lastShard=m;
+  if(!Object.keys(ch).length&&ids.length===(Store.ids||[]).length)return true;
+  const snapshot=structuredClone(m);
+  Store.putShards(ch,ids);
+  if(Store.mode==="idb"){
+    Store.whenIdle().then(()=>{if(!Store.failed)lastShard=snapshot});
+    return !Store.failed;
+  }
+  lastShard=snapshot;return true;
 }
 function save(soft){
   if(recovery)return false;
