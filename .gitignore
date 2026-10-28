@@ -7,3 +7,4 @@ __pycache__/
 
 koc-release-key/
 /signing/known-debug-smoke-only.keystore
+.serena/

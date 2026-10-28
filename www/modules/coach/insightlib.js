@@ -1,7 +1,12 @@
 "use strict";
 /* Coach analysis: weekly "why" factors and plateau statistics. Pure: no DOM, no S. */
 const InsightLib=(()=>{
-  const dn=k=>Math.round(Date.UTC(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10))/864e5);
+  const dn=k=>{
+    if(typeof k!=="string"||!/^(\d{4})-(\d{2})-(\d{2})$/.test(k))return NaN;
+    const [,ys,ms,ds]=k.match(/^(\d{4})-(\d{2})-(\d{2})$/),y=+ys,m=+ms,d=+ds,dt=new Date(Date.UTC(y,m-1,d));
+    return dt.getUTCFullYear()===y&&dt.getUTCMonth()===m-1&&dt.getUTCDate()===d?Math.round(dt/864e5):NaN;
+  };
+  const finite=x=>typeof x==="number"&&Number.isFinite(x);
   const f1=x=>String(Math.round(x*10)/10).replace(".",",");
   const sgn=x=>(x>0?"+":x<0?"-":"")+f1(Math.abs(x));
   const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
@@ -11,8 +16,8 @@ const InsightLib=(()=>{
   /* The window is relative to today so that the old flat series of someone who stopped weighing in is not a plateau. */
   function pts(w,today,days){
     const t=dn(today),out=[];
-    for(const k of Object.keys(w)){
-      const d=t-dn(k);if(d>=0&&d<days)out.push([dn(k),w[k]]);
+    for(const k of Object.keys(w||{})){
+      const x=dn(k),value=w[k],d=t-x;if(finite(x)&&finite(value)&&d>=0&&d<days)out.push([x,value]);
     }
     return out;
   }
@@ -51,7 +56,18 @@ const InsightLib=(()=>{
     }
     return r;
   }
-  /* d.days: the last 22 days including today, {kcal,water,ad,sl}, oldest first. Today is a partial day, so calories, water and steps skip it. */
+  function trend(w,today,opts={}){
+    const windowDays=Number.isInteger(opts.windowDays)?opts.windowDays:28;
+    const minPoints=Number.isInteger(opts.minPoints)?opts.minPoints:5;
+    const minSpanDays=Number.isInteger(opts.minSpanDays)?opts.minSpanDays:14;
+    const p=pts(w,today,windowDays),span=p.length?Math.max(...p.map(q=>q[0]))-Math.min(...p.map(q=>q[0])):0;
+    if(p.length<minPoints||span<minSpanDays)return {status:"insufficient_data",uncertainty:"insufficient_data",dataPoints:p.length,spanDays:span,windowDays};
+    const f=fit(p);
+    if(!f||!finite(f.m)||!finite(f.se))return {status:"insufficient_data",uncertainty:"insufficient_data",dataPoints:p.length,spanDays:span,windowDays};
+    const slopeKgPerWeek=7*f.m,ciKgPerWeek=7*f.se*tq(Math.max(1,f.n-2)),status=Math.abs(slopeKgPerWeek)<=ciKgPerWeek?"supported":"not_supported";
+    return {status,uncertainty:"measured",slopeKgPerWeek,ciKgPerWeek,dataPoints:f.n,spanDays:span,windowDays};
+  }
+
   function weekWhy(d){
     const days=d.days,wk=days.slice(-8,-1),prev=days.slice(-22,-8),n=x=>x||0,out=[];
     const A=AL(),full=wk.map(x=>n(x.kcal)).filter(x=>A.fullKcal(x)),miss=wk.length-full.length;
@@ -77,6 +93,6 @@ const InsightLib=(()=>{
     }else out.push({k:"tarti",t:"Tartı: karşılaştırmak için iki haftada da en az bir tartı gerekli."});
     return out;
   }
-  return {plateau,noiseSd,weekWhy};
+  return {plateau,noiseSd,weekWhy,trend};
 })();
 if(typeof module!=="undefined")module.exports=InsightLib;

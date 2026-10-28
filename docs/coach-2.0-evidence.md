@@ -83,7 +83,27 @@
 5. Coach için ayrı memory/plan/action repository ve typed event sözleşmesi yok.
 6. Gerçek Android WebView/KeyStore yaşam döngüsü doğrulaması yok.
 
-## Faz 1 hedefi
+
+## Faz 5 — yerel içgörüler ve davranış deneyleri
+
+- `www/modules/coach/insightlib.js`: `trend()` yerel kayıtları ölçüm penceresinde toplar; minimum kayıt/span eşiği altında `insufficient_data`, yeterli veride eğim ve görünür güven aralığı döndürür. Mevcut `plateau()` korunur; sonuç nedensellik veya tıbbi iddia değildir.
+- `www/modules/coach/coachlib.js`: `createExperimentRepository()` hipotez, açık ölçüm penceresi, baseline ve hedef davranışı doğrular. Sonuçlar yalnız `supported`, `not_supported`, `insufficient_data`; ölçüm yetersizliği görünür. Gregoryen takvim kontrolü, start tarihi pencere kontrolü, idempotencyKey ve ID tekilliği ile yetim olay reddi eklendi.
+- Deney tanımları ve check-in olayları local state'e eklenir. Tekrarlar tek kayıt yapar. Export önce gelir; export olmadan silme reddedilir.
+- `www/modules/coach/coach.js`: Rehber ekranına Türkçe, erişilebilir `Küçük deneyler` alanı eklendi. Kullanıcı hipotez, baseline, hedef ve ölçüm penceresi oluşturabilir (taslak), deneyi başlatabilir (aktif), yerel check-in kaydedebilir; sonuç ve belirsizlik durumunu görebilir; JSON dışa aktarabilir ve güvenle silebilir. UI açıkça ağ/provider kullanmadığını, nedensellik göstermediğini ve tıbbi öneri olmadığını söyler. Rıza paneli HTML yapısı ve mükerrer fonksiyon düzeltildi.
+- `scripts/coach-phase5-ui.test.js`: RED→GREEN üretim sınır testi; form etiketleri, yerel kaydetme, check-in, sonuç metni ve silme doğrulanıyor (8 PASS).
+- `scripts/coach-phase5.test.js`: Çekirdek veri bütünlüğü, takvim, aralık, id/idempotency tekilliği ve sonuç durumları (16 PASS).
+- `e2e/coach-experiments.spec.js`: Yaşam döngüsü, klavye/ekran okuyucu erişilebilirliği, sıfır ağ çağrısı ve export hatasında silme iptali E2E testleri (6 PASS).
+- `www/modules/coach/index.js`, `www/main/01-core.js`, `www/kernel/modules.js`: deney storage, temizleme, public API, export/delete sınırı bağlandı. Provider veya network yolu değişmedi; ham sağlık verisi gönderilmez.
+- Test kanıtları: `node scripts/coach-phase5.test.js` — 16 PASS; `node scripts/coach-phase5-ui.test.js` — 8 PASS; `node scripts/run-tests.js` — 119 test dosyası, 0 hata; `e2e/coach-experiments.spec.js` — 6 PASS; `e2e/coach.spec.js e2e/access.spec.js e2e/coach-planner.spec.js` — 112 PASS; `npm run android:sync:verify` — 28 Java, 44 kaynak PASS.
+- Full-suite timeout: `scripts/run-tests.js` içine 120s child process timeout kontrolü eklendi.
+- Whitespace ve `git diff --check` temiz.
+
+## Faz 5 kalan riskleri
+
+- Deney değerlendirmesi hedef karşılaştırmasıdır; davranışın nedensel etkisini göstermez.
+- Runtime storage şifreli değildir; yerel IndexedDB/Store üzerinde tutulur.
+- Gerçek Android WebView/cihaz doğrulaması henüz yapılmadı.
+
 
 İlk üretim değişikliği şu sözleşmeyi kurar:
 

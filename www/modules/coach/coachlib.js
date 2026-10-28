@@ -390,6 +390,44 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
     if(!m||typeof m!=="object"||typeof m.id!=="string"||!/^[A-Za-z0-9._:-]{1,80}$/.test(m.id)||typeof m.value!=="string"||!m.value.trim()||m.value.length>500||typeof m.source!=="string"||!m.source.trim()||m.source.length>80||!MEMORY_CONFIDENCE.has(m.confidence)||!memoryDate(m.lastVerifiedAt)||typeof m.reason!=="string"||!m.reason.trim()||m.reason.length>300||m.retentionUntil!==undefined&&!memoryDate(m.retentionUntil)||m.deletedAt!==undefined&&!memoryDate(m.deletedAt))return null;
     return {id:m.id,kind:typeof m.kind==="string"?m.kind.slice(0,40):"fact",value:m.value.trim().slice(0,500),source:m.source.slice(0,80),sourceLabel:typeof m.sourceLabel==="string"?m.sourceLabel.slice(0,120):m.source,confidence:m.confidence,lastVerifiedAt:m.lastVerifiedAt,reason:m.reason.trim().slice(0,300),...(typeof m.retentionUntil==="string"?{retentionUntil:m.retentionUntil}:{}),...(typeof m.deletedAt==="string"?{deletedAt:m.deletedAt}:{})};
   };
+  function createExperimentRepository(initial={}){
+    const idSafe=x=>typeof x==="string"&&/^[A-Za-z0-9._:-]{1,80}$/.test(x),keySafe=x=>typeof x==="string"&&/^[A-Za-z0-9._:-]{8,100}$/.test(x),dateSafe=x=>{
+      if(typeof x!=="string"||!/^(\d{4})-(\d{2})-(\d{2})$/.test(x))return false;
+      const [,ys,ms,ds]=x.match(/^(\d{4})-(\d{2})-(\d{2})$/),y=+ys,m=+ms,d=+ds,dt=new Date(Date.UTC(y,m-1,d));
+      return dt.getUTCFullYear()===y&&dt.getUTCMonth()===m-1&&dt.getUTCDate()===d;
+    };
+    const validDateRange=x=>x&&dateSafe(x.start)&&dateSafe(x.end)&&x.start<=x.end;
+    const startSafe=x=>x&&dateSafe(x.startedAt)&&keySafe(x.idempotencyKey);
+    const experimentSafe=x=>x&&idSafe(x.id)&&(!x.status||x.status==="draft"||x.status==="active"||x.status==="completed")&&typeof x.hypothesis==="string"&&x.hypothesis.length>=1&&x.hypothesis.length<=500&&validDateRange(x.measurementWindow)&&x.baseline&&typeof x.baseline.metric==="string"&&Number.isFinite(x.baseline.value)&&typeof x.baseline.unit==="string"&&x.targetBehavior&&typeof x.targetBehavior.description==="string"&&typeof x.targetBehavior.metric==="string"&&Number.isFinite(x.targetBehavior.target)&&["at_least","at_most","change"].includes(x.targetBehavior.direction)&&keySafe(x.idempotencyKey)&&(!x.startedAt||(dateSafe(x.startedAt)&&x.startedAt>=x.measurementWindow.start&&x.startedAt<=x.measurementWindow.end));
+    const eventSafe=x=>x&&idSafe(x.id)&&idSafe(x.experimentId)&&x.type==="checkin"&&dateSafe(x.day)&&Number.isFinite(x.value)&&keySafe(x.idempotencyKey);
+    const rejected=[];
+    const sourceExperiments=Array.isArray(initial)?initial:Array.isArray(initial.experiments)?initial.experiments:[],sourceEvents=Array.isArray(initial.events)?initial.events:[];
+    const experimentKeys=new Set(),eventKeys=new Set(),experimentIds=new Set(),eventIds=new Set();
+    let experiments=[],events=[];
+    sourceExperiments.forEach((raw,index)=>{
+      if(!experimentSafe(raw)){rejected.push({kind:"experiment",index,reason:"invalid"});return}
+      if(experimentIds.has(raw.id)){rejected.push({kind:"experiment",index,id:raw.id,reason:"duplicate_id"});return}
+      if(experimentKeys.has(raw.idempotencyKey)){rejected.push({kind:"experiment",index,id:raw.id,reason:"duplicate_idempotencyKey"});return}
+      experimentIds.add(raw.id);experimentKeys.add(raw.idempotencyKey);experiments.push(structuredClone(raw));
+    });
+    sourceEvents.forEach((raw,index)=>{
+      if(!eventSafe(raw)){rejected.push({kind:"event",index,reason:"invalid"});return}
+      if(!experimentIds.has(raw.experimentId)){rejected.push({kind:"event",index,id:raw.id,reason:"orphan_experiment"});return}
+      if(eventIds.has(raw.id)){rejected.push({kind:"event",index,id:raw.id,reason:"duplicate_id"});return}
+      if(eventKeys.has(raw.idempotencyKey)){rejected.push({kind:"event",index,id:raw.id,reason:"duplicate_idempotencyKey"});return}
+      eventIds.add(raw.id);eventKeys.add(raw.idempotencyKey);events.push(structuredClone(raw));
+    });
+    let exported=null;
+    const seen=new Map(),remember=()=>{seen.clear();for(const x of experiments)seen.set("experiment:"+x.idempotencyKey,x);for(const x of events)seen.set("event:"+x.idempotencyKey,x)};remember();
+    const result=(kind,x)=>{const old=seen.get(kind+":"+x.idempotencyKey);if(old)return {ok:true,duplicate:true,...structuredClone(old),record:structuredClone(old)};seen.set(kind+":"+x.idempotencyKey,structuredClone(x));return {ok:true,...structuredClone(x),record:structuredClone(x)}};
+    const list=()=>structuredClone(experiments),allEvents=()=>structuredClone(events);
+    const create=x=>{if(!experimentSafe(x))return {ok:false};if(experiments.some(e=>e.id===x.id))return {ok:false,error:"duplicate_id"};const record={...structuredClone(x),status:"draft"};const r=result("experiment",record);if(!r.duplicate){experiments.push(record);seen.set("experiment:"+record.idempotencyKey,record)}return r};
+    const start=(id,x)=>{const e=experiments.find(v=>v.id===id);if(!e||!startSafe(x)||x.startedAt<e.measurementWindow.start||x.startedAt>e.measurementWindow.end)return {ok:false};if(e.status==="active"&&e.startIdempotencyKey===x.idempotencyKey)return result("start",{id,startedAt:e.startedAt,idempotencyKey:x.idempotencyKey});if(e.status!=="draft")return {ok:false};const r=result("start",{id,startedAt:x.startedAt,idempotencyKey:x.idempotencyKey});if(r.duplicate)return r;e.status="active";e.startedAt=x.startedAt;e.startIdempotencyKey=x.idempotencyKey;return r};
+    const recordEvent=x=>{const e=experiments.find(v=>v.id===x?.experimentId);if(!eventSafe(x)||!e||e.status!=="active"||x.day<e.measurementWindow.start||x.day>e.measurementWindow.end)return {ok:false};if(events.some(v=>v.id===x.id))return {ok:false,error:"duplicate_id"};const r=result("event",x);if(!r.duplicate)events.push(structuredClone(x));return r};
+    const evaluate=(id,measurements=[])=>{const x=experiments.find(e=>e.id===id);if(!x||x.status==="draft")return {experimentId:id,resultState:x?"not_started":"insufficient_data",uncertainty:"insufficient_data"};const m=measurements.filter(v=>v&&dateSafe(v.day)&&Number.isFinite(v.value)&&v.day>=x.measurementWindow.start&&v.day<=x.measurementWindow.end),need=2;if(m.length<need)return {experimentId:id,resultState:"insufficient_data",uncertainty:"insufficient_data",measurements:m.length};const avg=m.reduce((s,v)=>s+v.value,0)/m.length,t=x.targetBehavior.target,d=x.targetBehavior.direction,supported=d==="at_least"?avg>=t:d==="at_most"?avg<=t:Math.abs(avg-x.baseline.value)>=Math.abs(t);return {experimentId:id,resultState:supported?"supported":"not_supported",uncertainty:"measured",measurements:m.length,average:avg};};
+    const snapshot=()=>({experiments:list(),events:allEvents()}),restore=next=>{experiments=Array.isArray(next?.experiments)?structuredClone(next.experiments):[];events=Array.isArray(next?.events)?structuredClone(next.events):[];exported=null;seen.clear();remember();return true},rejectedRecords=()=>structuredClone(rejected),exportBeforeDelete=()=>{exported=snapshot();return structuredClone(exported)},deleteOneAfterExport=(id,persist=()=>true)=>{if(!exported||!experiments.some(e=>e.id===id))return false;const backup={experiments:experiments.filter(e=>e.id===id),events:events.filter(e=>e.experimentId===id)};try{if(persist(structuredClone(backup))===false)return false}catch{return false}experiments=experiments.filter(e=>e.id!==id);events=events.filter(e=>e.experimentId!==id);exported=null;seen.clear();remember();return true},deleteAfterExport=(persist=()=>true)=>{if(!exported)return false;try{if(persist(structuredClone(exported))===false)return false}catch{return false}experiments=[];events=[];exported=null;seen.clear();return true};
+    return {list,events:allEvents,rejected:rejectedRecords,create,start,recordEvent,evaluate,snapshot,restore,exportBeforeDelete,deleteOneAfterExport,deleteAfterExport};
+  }
   function createMemoryRepository(initial=[]) {
     const rejected=[];
     const source=Array.isArray(initial)?initial:[];
@@ -449,6 +487,6 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
     if(x.follow_up&&Object.keys(x.follow_up).some(k=>k!=="when"&&k!=="question"))return null;
     return x;
   }
-  return {usageOf,usageAdd,usageSum,createMemoryRepository,explainSuggestion,REPLY_MAX,oneLine,pregnant,BROKEN,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,catalogText,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText,compileContext,validateResponse,migrateLegacy,legacyFromRepository,createRepository,migrateLegacyAtomic,createPlanner};
+  return {usageOf,usageAdd,usageSum,createMemoryRepository,createExperimentRepository,explainSuggestion,REPLY_MAX,oneLine,pregnant,BROKEN,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,catalogText,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText,compileContext,validateResponse,migrateLegacy,legacyFromRepository,createRepository,migrateLegacyAtomic,createPlanner};
 })();
 if(typeof module!=="undefined")module.exports=CoachLib;

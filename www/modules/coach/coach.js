@@ -116,6 +116,7 @@ function cleanCoach(r){
   const chat=cleanChat(source.chat||migrated.conversations.find(c=>c.id===migrated.activeId)?.messages,known),chats=[];
   const cleanPlanner=source=>{const p=CoachLib.createPlanner({plans:source.coachPlans,checkins:source.coachCheckins,actions:source.coachActions}).snapshot();return {coachPlans:p.plans,coachCheckins:p.checkins,coachActions:p.actions}};
   const planner=cleanPlanner(source);
+  const experiments=CoachLib.createExperimentRepository({experiments:source.coachExperiments,events:source.coachExperimentEvents}).snapshot();
   for(const x of (Array.isArray(source.chats)?source.chats:migrated.conversations.filter(c=>c.id!==migrated.activeId).map(c=>({id:c.id,t:c.updatedAt,title:c.title,msgs:c.messages}))).slice(0,CHATS_MAX)){
     if(!x||!Number.isInteger(x.id)||!Number.isFinite(x.t)||chats.some(c=>c.id===x.id))continue;
     const msgs=cleanChat(x.msgs,known);
@@ -123,7 +124,7 @@ function cleanCoach(r){
   }
   const top=Math.max(...chat.map(m=>m.id),...chats.flatMap(c=>c.msgs.map(m=>m.id)),0);
   if(typeof CoachRepo?.replaceLegacy==="function")CoachRepo.replaceLegacy({chat,chats,cid:Math.max(1,top+1,Number.isInteger(source.cid)?source.cid:migrated.cid),providers:provs.length?provs:defs});
-  return {providers:provs.length?provs:defs,chat,chats:trimChats(chats),cid:Math.max(1,top+1,Number.isInteger(source.cid)?source.cid:migrated.cid),coachPlans:planner.plans,coachCheckins:planner.checkins,coachActions:planner.actions};
+  return {providers:provs.length?provs:defs,chat,chats:trimChats(chats),cid:Math.max(1,top+1,Number.isInteger(source.cid)?source.cid:migrated.cid),coachPlans:planner.plans,coachCheckins:planner.checkins,coachActions:planner.actions,coachExperiments:experiments.experiments,coachExperimentEvents:experiments.events};
 }
 const CHATS_MAX=20,ARCH_MSGS=600,ARCH_CHARS=250000,CHAT_MAX=150;
 /* The archive must not fill the storage quota: the newest chats stay and older ones are dropped once the total message or size limit is exceeded (the newest always stays). */
@@ -710,6 +711,44 @@ function cConsent(on,tap){
 }
 /* Empty-chat examples: [label, message, true if it only fills the input box]. */
 const CASK=[["Bu yemek kaç kalori?","Kaç kalori: ",true],["Bu egzersiz kaç kalori yakar?","Kaç kalori yakar: ",true]];
+/* Local experiments deliberately stay outside the provider/chat path. They describe a testable
+   behavior, not a treatment; every result repeats the uncertainty and non-causal boundary. */
+let experimentDraft=null;
+const experimentUiNote="Bu küçük deney yalnızca bu telefonda çalışır; Rehber'e, sağlayıcılara veya internete veri göndermez. Nedensellik göstermez ve tıbbi öneri değildir.";
+const experimentId=()=>"exp-"+Date.now()+"-"+Math.random().toString(36).slice(2,7);
+const experimentEvents=id=>Coach.experiments().events().filter(e=>e.experimentId===id);
+function experimentResult(x){
+  const vals=experimentEvents(x.id).map(e=>({day:e.day,value:e.value}));
+  return Coach.experiments().evaluate(x.id,vals);
+}
+function experimentStateText(r){return r.resultState==="not_started"?"Başlatılmayı bekliyor":r.resultState==="supported"?"Destekleniyor":r.resultState==="not_supported"?"Desteklenmiyor":"Yeterli veri yok"}
+function experimentCard(){
+  const xs=Coach.experimentList(), cards=xs.map(x=>{const r=experimentResult(x),active=x.status==="active";return `<div class="card" data-testid="experiment-card"><h3 class="m0">${esc(x.hypothesis)}</h3><p class="mut sm">${esc(x.measurementWindow.start)} – ${esc(x.measurementWindow.end)} · Durum: <b>${x.status==="draft"?"Taslak":active?"Aktif":"Tamamlandı"}</b> · Sonuç: <b>${experimentStateText(r)}</b></p><p class="mut sm">${r.uncertainty==="measured"?`${r.measurements} yerel check-in, ortalama ${fmt(r.average,1)}`:"Belirsizlik: yeterli ölçüm yok."}</p><div class="two">${x.status==="draft"?`<button class="btn" data-c="experimentstart:${esc(x.id)}">Deneyi başlat</button>`:active?`<button class="btn" data-c="experimentcheckin:${esc(x.id)}">Yerel check-in</button>`:""}<button class="btn ghost" data-c="experimentexport:${esc(x.id)}">Dışa aktar</button><button class="btn danger" data-c="experimentdelete:${esc(x.id)}">Sil</button></div></div>`}).join("");
+  return `<section aria-labelledby="experiments-title"><div class="row"><h2 id="experiments-title" class="grp">Küçük deneyler</h2><button class="btn" data-c="experimentnew">Yeni deney</button></div><p class="hint">${experimentUiNote}</p>${cards||`<div class="card"><p class="m0">Henüz küçük deney yok.</p><p class="mut sm">Bir hipotez seç, başlangıç durumunu ve hedef davranışı yaz; sonucu yalnızca yerel kayıtlarla izle.</p></div>`}</section>`;
+}
+function experimentOpen(){
+  openSheet(`<h3>Yeni küçük deney</h3><p class="hint">${experimentUiNote}</p><label class="lbl" for="experiment-hypothesis">Hipotez</label><textarea autofocus class="in" id="experiment-hypothesis" aria-describedby="experiment-help" maxlength="300" rows="2" placeholder="Örn. Akşam yürüyüşü adım sayımı artırır"></textarea><label class="lbl" for="experiment-baseline">Başlangıç ölçümü (sayı)</label><input class="in" id="experiment-baseline" inputmode="decimal" type="number" min="0" step="any"><label class="lbl" for="experiment-target">Hedef ölçüm (sayı)</label><input class="in" id="experiment-target" inputmode="decimal" type="number" min="0" step="any"><label class="lbl" for="experiment-start">Ölçüm başlangıcı</label><input class="in" id="experiment-start" type="date"><label class="lbl" for="experiment-end">Ölçüm bitişi</label><input class="in" id="experiment-end" type="date"><p id="experiment-help" class="mut sm">Ölçüm metriği: günlük değer. Hedef, başlangıçtan en az bu değere ulaşmak olarak değerlendirilir.</p><div class="two"><button class="btn" data-c="experimentsave">Deneyi kaydet</button><button class="btn ghost" data-c="closesheet">Vazgeç</button></div>`);
+}
+function experimentSave(){
+  const hypothesis=$("#experiment-hypothesis")?.value.trim(),baseline=Number($("#experiment-baseline")?.value),target=Number($("#experiment-target")?.value),start=$("#experiment-start")?.value,end=$("#experiment-end")?.value;
+  if(!hypothesis||!Number.isFinite(baseline)||!Number.isFinite(target)||!/^\d{4}-\d{2}-\d{2}$/.test(start)||!/^\d{4}-\d{2}-\d{2}$/.test(end)||end<start)return toast("Hipotez, ölçümler ve tarih aralığı gerekli");
+  const id=experimentId(),r=Coach.experiments().create({id,hypothesis,measurementWindow:{start,end},baseline:{metric:"daily_value",value:baseline,unit:"değer"},targetBehavior:{description:"Hedef davranış",metric:"daily_value",target,direction:"at_least"},idempotencyKey:"experiment-"+id});
+  if(r&&typeof r.then==="function")return r.then(experimentFinishSave);return experimentFinishSave(r);
+}
+function experimentFinishSave(r){if(!r||!r.ok)return toast("Deney kaydedilemedi");closeSheet();render();toast(r.duplicate?"Deney zaten kaydedilmiş":"Deney kaydedildi")}
+function experimentStart(id){const x=Coach.experimentList().find(e=>e.id===id);if(!x||x.status!=="draft")return;const today=dayKey(),start=today>=x.measurementWindow.start&&today<=x.measurementWindow.end?today:x.measurementWindow.start;const r=Coach.experiments().start(id,{startedAt:start,idempotencyKey:"start-"+id});if(r&&typeof r.then==="function")return r.then(experimentFinishStart);return experimentFinishStart(r)}
+function experimentFinishStart(r){if(!r||!r.ok)return toast("Deney başlatılamadı");render();toast(r.duplicate?"Deney zaten başlatılmış":"Deney başlatıldı")}
+function experimentDelete(id){const x=Coach.experimentList().find(e=>e.id===id);if(!x)return;confirmSheet({title:"Deney silinsin mi?",body:"Bu deney ve yerel check-in kayıtları silinecek. Önce dışa aktarma yapılmadan silinmez.",ok:"Sil",no:"Vazgeç",danger:true}).then(async yes=>{if(!yes)return;const data=Coach.experimentExport();if(!data)return toast("Dışa aktarma başarısız; kayıtlar korunuyor");const one={experiments:data.experiments.filter(e=>e.id===id),events:data.events.filter(e=>e.experimentId===id)};let handed=false;try{handed=await shareOut(false,"neowell-deney-"+id+".json","NeoWell deneyi","application/json",JSON.stringify(one),true)}catch(e){}if(handed!==true)return toast("Dışa aktarma başarısız; kayıtlar korunuyor");const r=await Coach.experiments().deleteOneAfterExport(id);if(r!==true)return toast("Silme başarısız; kayıtlar korunuyor");CoachExperimentRepo=null;CoachExperimentState=null;render();toast("Deney silindi")})}
+function experimentOpenCheckin(id){
+  const x=Coach.experimentList().find(e=>e.id===id);if(!x||x.status!=="active")return;
+  openSheet(`<h3>Yerel check-in</h3><p class="hint">${esc(x.hypothesis)}</p><label class="lbl" for="experiment-checkin-day">Gün</label><input class="in" id="experiment-checkin-day" type="date" value="${esc(dayKey())}"><label class="lbl" for="experiment-checkin-value">Ölçüm değeri</label><input class="in" id="experiment-checkin-value" type="number" min="0" step="any" inputmode="decimal"><p class="mut sm">Yalnızca bu deneyin ölçüm penceresindeki kayıtlar değerlendirilir.</p><div class="two"><button class="btn" data-c="experimentcheckinsave:${esc(id)}">Check-in kaydet</button><button class="btn ghost" data-c="closesheet">Vazgeç</button></div>`);
+}
+function experimentSaveCheckin(id){
+  const day=$("#experiment-checkin-day")?.value,value=Number($("#experiment-checkin-value")?.value);if(!/^\d{4}-\d{2}-\d{2}$/.test(day)||!Number.isFinite(value))return toast("Gün ve ölçüm değeri gerekli");
+  const r=Coach.experiments().recordEvent({id:"event-"+Date.now(),experimentId:id,type:"checkin",day,value,idempotencyKey:"event-"+id+"-"+day});if(r&&typeof r.then==="function")return r.then(experimentFinishCheckin);return experimentFinishCheckin(r);
+}
+function experimentFinishCheckin(r){if(!r||!r.ok)return toast("Check-in kaydedilemedi");closeSheet();render();toast(r.duplicate?"Bu gün zaten kaydedildi":"Check-in kaydedildi")}
+function experimentExport(id){const x=Coach.experimentList().find(e=>e.id===id);if(!x)return;const data={experiments:[x],events:experimentEvents(id),note:"Bu kayıt nedensellik veya tıbbi sonuç göstermez."};try{const a=document.createElement("a");a.href="data:application/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(data));a.download="neowell-deney-"+id+".json";a.click();toast("Deney dışa aktarıldı; silme için dışa aktarma tamamlandı")}catch(e){toast("Dışa aktarma başarısız")}}
 function viewCoach(){
   let h="";
   const intro=offline==="none"||(!hasKey()&&!S.chat.length),li=a=>`<ul class="cul">${a.map(t=>`<li>${t}</li>`).join("")}</ul>`;
@@ -720,8 +759,8 @@ function viewCoach(){
     const x=S.providers.filter(p=>pstat[p.id]&&pstat[p.id].s!=="ok").sort((a,b)=>pstat[b.id].t-pstat[a.id].t)[0],dt=x&&pstat[x.id].m;
     h+=`<div class="banner"><div class="lhead"><b>Rehber'e şu an ulaşılamıyor</b>${dt?`<button class="help" data-c="hx:kerr" aria-expanded="false" aria-controls="kerr" aria-label="Hata ayrıntısı">${Icons.svg("info")}</button>`:""}</div>${dt?`<p class="helpx" id="kerr" hidden>${esc(x.name)}: ${esc(dt)}</p>`:""}<p>Bağlantını kontrol et. Mesajın bu telefonda duruyor; su, kilo ve spor kaydı çalışmaya devam ediyor.</p><button class="btn" data-c="retry">Tekrar dene</button></div>`;
   }
-  if(!coachOn()&&!intro)h+=`<div class="card"><h2 class="m0 t-h2">Rehber ile veri paylaşımı</h2>${li(["Mesajların ve istersen profilin (boy, yaş aralığı, cinsiyet, hareket, kalori hedefi) seçtiğin sağlayıcıya gider.","Yalnız sen bir düğmeye bastığında gönderilir.","İstediğin an geri alırsın; onay vermezsen uygulama tam çalışır."])}${consentWarn()}
-  <details class="acc"><summary>Detaylar</summary><div class="sm">${consentBody()}</div></details>${consentOk()?`<div class="lbl">Rehber'e hangi veriler gitsin?</div>${shareRows()}${swRow('data-pv="prev"',!S.settings.piiPrevOwn||S.settings.piiPrev,"Gönderimden önce metni göster","Her gönderimden önce giden tam metni görür, Gönder ya da Vazgeç dersin. İstersen kapat.")}<button class="btn" data-c="consent">Açık rızamı veriyorum</button>`:""}<button class="lnk" data-pv="open">Gizlilik ve veri</button></div>`;
+  if(!coachOn()&&!intro)h+=`<div class="card"><h2 class="m0 t-h2">Rehber ile veri paylaşımı</h2>${li(["Mesajların ve istersen profilin (boy, yaş aralığı, cinsiyet, hareket, kalori hedefi) seçtiğin sağlayıcıya gider.","Yalnız sen bir düğmeye bastığında gönderilir.","İstediğin an geri alırsın; onay vermezsen hiçbir veri gönderilmez."])}${consentWarn()}<details class="acc"><summary>Detaylar</summary><div class="sm">${consentBody()}</div></details>${consentOk()?`<div class="lbl">Rehber'e hangi veriler gitsin?</div>${shareRows()}${swRow('data-pv="prev"',!S.settings.piiPrevOwn||S.settings.piiPrev,"Gönderimden önce metni göster","Her gönderimden önce giden tam metni görür, Gönder ya da Vazgeç dersin. İstersen kapat.")}<button class="btn" data-c="consent">Açık rızamı veriyorum</button>`:""}<button class="lnk" data-pv="open">Gizlilik ve veri</button></div>`;
+  h+=experimentCard();
   if(S.chat.length||S.chats.length)h+=`<div class="chips cbar">${S.chat.length?`<button class="chip" data-c="newchat">Yeni sohbet</button>`:""}${S.chats.length?`<button class="chip" data-c="chats">Geçmiş</button>`:""}</div>`;
   if(!S.chat.length&&hasKey()&&coachOn())h+=emptyCard("coach","Bugün neyle başlayalım?","Bir yemeğin ya da egzersizin adını yaz, kalorisini tahmin edeyim. Menü ve program da isteyebilirsin.",`<div class="chips">${CASK.map((x,i)=>`<button class="chip" data-c="ask:${i}">${x[0]}</button>`).join("")}</div>`);
   /* The bubble carries only text; the card is a separate full-width surface outside the bubble. */
@@ -1001,6 +1040,13 @@ function cClick(v,el){
     case "closesheet":return closeSheet();
     case "memorydelete":return memoryDeleteAsk(p1);
     case "planner":return plannerOpenPlan(p1||"");
+    case "experimentnew":return experimentOpen();
+    case "experimentsave":return experimentSave();
+    case "experimentstart":return experimentStart(p1);
+    case "experimentdelete":return experimentDelete(p1);
+    case "experimentcheckin":return experimentOpenCheckin(p1);
+    case "experimentcheckinsave":return experimentSaveCheckin(p1);
+    case "experimentexport":return experimentExport(p1);
 
     case "plannercheck":return plannerOpenCheckin();
     case "planpreview":return plannerShowPlanPreview();
