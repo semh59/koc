@@ -357,8 +357,29 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
     return {snapshot:copy,conversation:id=>copy().conversations.find(c=>c.id===id)||null,upsertConversation:c=>{if(!c||!Number.isInteger(c.id))return false;const i=state.conversations.findIndex(x=>x.id===c.id);if(i<0)state.conversations.push(structuredClone(c));else state.conversations[i]=structuredClone(c);exported=null;exportVersion=0;return true},removeConversation:id=>{const n=state.conversations.length;state.conversations=state.conversations.filter(c=>c.id!==id);exported=null;exportVersion=0;return state.conversations.length!==n},commit:()=>{const next=copy();try{if(persist(next)===false)return state=structuredClone(committed),false;committed=next;return true}catch{return state=structuredClone(committed),false}},migrate:()=>copy(),replaceLegacy,exportBeforeDelete,deleteAfterExport};
   }
   function migrateLegacyAtomic(legacy,write=()=>true){
-    const old=structuredClone(legacy),next=migrateLegacy(old);
-    try{return write(structuredClone(next))===false?{ok:false,state:old}: {ok:true,state:next}}catch{return {ok:false,state:old}}
+    const old=structuredClone(legacy),next=migrateLegacy(old),planner=structuredClone({coachPlans:Array.isArray(legacy?.coachPlans)?legacy.coachPlans:[],coachCheckins:Array.isArray(legacy?.coachCheckins)?legacy.coachCheckins:[],coachActions:Array.isArray(legacy?.coachActions)?legacy.coachActions:[]});
+      try{return write(structuredClone({...next,...planner}))===false?{ok:false,state:old}: {ok:true,state:{...next,...planner}}}catch{return {ok:false,state:old}}
+  }
+
+  function createPlanner(initial={}){
+    const idSafe=x=>typeof x==="string"&&/^[A-Za-z0-9._:-]{1,80}$/.test(x),keySafe=x=>typeof x==="string"&&/^[A-Za-z0-9._:-]{8,100}$/.test(x);
+    const planSafe=p=>p&&idSafe(p.id)&&typeof p.title==="string"&&p.title.length>0&&p.title.length<=200&&["active","paused","done"].includes(p.status)&&["user","coach"].includes(p.source)&&Array.isArray(p.steps)&&p.steps.length<=20&&p.steps.every(s=>typeof s==="string"&&s.length<=300);
+    const checkSafe=x=>x&&idSafe(x.id)&&/^\d{4}-\d\d-\d\d$/.test(x.day)&&Number.isInteger(x.energy)&&x.energy>=0&&x.energy<=4&&typeof x.reason==="string"&&x.reason.length<=200&&(!x.idempotencyKey||keySafe(x.idempotencyKey));
+    const actionSafe=x=>x&&idSafe(x.id)&&idSafe(x.planId)&&x.type==="plan_adjust"&&x.patch&&typeof x.patch==="object"&&!Array.isArray(x.patch)&&Object.keys(x.patch).every(k=>k==="status")&&(!x.patch.status||["active","paused","done"].includes(x.patch.status))&&keySafe(x.idempotencyKey);
+    const valid=(items,test)=>items.filter(test).map(x=>structuredClone(x));
+    let state={plans:valid(Array.isArray(initial.plans)?initial.plans:[],planSafe),checkins:valid(Array.isArray(initial.checkins)?initial.checkins:[],checkSafe),actions:valid(Array.isArray(initial.actions)?initial.actions:[],actionSafe)};
+    const seen=new Map(),copy=()=>structuredClone(state),slot=(kind,key)=>kind+":"+key,find=(kind,key)=>keySafe(key)&&seen.has(slot(kind,key))?structuredClone(seen.get(slot(kind,key))):null;
+    const result=(kind,value,key)=>{const old=find(kind,key);if(old)return {ok:true,duplicate:true,...old,record:old};if(keySafe(key))seen.set(slot(kind,key),structuredClone(value));const record=structuredClone(value);return {ok:true,...record,record}};
+    for(const [kind,items] of [["plan",state.plans],["checkin",state.checkins],["action",state.actions]])for(const x of items)if(keySafe(x.idempotencyKey))seen.set(slot(kind,x.idempotencyKey),structuredClone(x));
+    const upsertPlan=p=>{if(!planSafe(p)||p.idempotencyKey&&!keySafe(p.idempotencyKey))return {ok:false};const x=structuredClone(p),key=x.idempotencyKey,old=find("plan",key);if(old)return {ok:true,duplicate:true,...old,record:old};const i=state.plans.findIndex(v=>v.id===x.id);if(i<0)state.plans.push(x);else state.plans[i]=x;return result("plan",x,key)};
+    const checkIn=x=>{if(!checkSafe(x))return {ok:false};const y=structuredClone(x),key=y.idempotencyKey,old=find("checkin",key);if(old)return {ok:true,duplicate:true,...old,record:old};const i=state.checkins.findIndex(v=>v.id===y.id);if(i<0)state.checkins.push(y);else state.checkins[i]=y;return result("checkin",y,key)};
+    const plan=id=>copy().plans.find(x=>x.id===id)||null;
+    const dailyPriority=({day,online=true}={})=>{const x=state.plans.filter(p=>p.status==="active").sort((a,b)=>(a.priority||99)-(b.priority||99)||a.id.localeCompare(b.id))[0];return x?{day,planId:x.id,offline:online!==true?true:false}:null};
+    const adapt=x=>{if(!x||!plan(x.planId)||!state.checkins.some(c=>c.id===x.checkinId))return {ok:false};return {ok:true,preview:true,planId:x.planId,reason:typeof x.reason==="string"?x.reason.slice(0,200):""};};
+    const confirmAction=x=>{if(!actionSafe(x)||!plan(x.planId))return {ok:false};const old=find("action",x.idempotencyKey);if(old)return {ok:true,duplicate:true,action:old};const before=plan(x.planId),after={...before,...x.patch,id:x.planId},action={...structuredClone(x),before,after};state.plans[state.plans.findIndex(v=>v.id===x.planId)]=structuredClone(after);state.actions.push(action);seen.set(slot("action",x.idempotencyKey),structuredClone(action));return {ok:true,action:structuredClone(action)}};
+    const undoAction=id=>{const a=state.actions.find(x=>x.id===id);if(!a)return {ok:false};const i=state.plans.findIndex(x=>x.id===a.planId);if(i<0)return {ok:false};state.plans[i]=structuredClone(a.before);a.undone=true;return {ok:true}};
+    const restore=next=>{state=structuredClone(next);seen.clear();for(const [kind,items] of [["plan",state.plans],["checkin",state.checkins],["action",state.actions]])for(const x of items)if(keySafe(x.idempotencyKey))seen.set(slot(kind,x.idempotencyKey),structuredClone(x))};
+    return {snapshot:copy,restore,plan,upsertPlan,checkIn,dailyPriority,adapt,confirmAction,undoAction};
   }
 
   const CONTEXT_PURPOSES=new Set(["conversation","sleep_advice","activity_advice","nutrition_advice","daily_priority"]);
@@ -398,6 +419,6 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
     if(x.follow_up&&Object.keys(x.follow_up).some(k=>k!=="when"&&k!=="question"))return null;
     return x;
   }
-  return {usageOf,usageAdd,usageSum,REPLY_MAX,oneLine,pregnant,BROKEN,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,catalogText,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText,compileContext,validateResponse,migrateLegacy,legacyFromRepository,createRepository,migrateLegacyAtomic};
+  return {usageOf,usageAdd,usageSum,REPLY_MAX,oneLine,pregnant,BROKEN,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,catalogText,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText,compileContext,validateResponse,migrateLegacy,legacyFromRepository,createRepository,migrateLegacyAtomic,createPlanner};
 })();
 if(typeof module!=="undefined")module.exports=CoachLib;

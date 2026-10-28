@@ -114,6 +114,8 @@ function cleanCoach(r){
     provs.push({id:p.id,name:p.name.slice(0,40),base:def?def.base:p.base.slice(0,200),model,on:p.on===true,health:p.health===true,confirm:p.confirm===true});
   }
   const chat=cleanChat(source.chat||migrated.conversations.find(c=>c.id===migrated.activeId)?.messages,known),chats=[];
+  const cleanPlanner=source=>{const p=CoachLib.createPlanner({plans:source.coachPlans,checkins:source.coachCheckins,actions:source.coachActions}).snapshot();return {coachPlans:p.plans,coachCheckins:p.checkins,coachActions:p.actions}};
+  const planner=cleanPlanner(source);
   for(const x of (Array.isArray(source.chats)?source.chats:migrated.conversations.filter(c=>c.id!==migrated.activeId).map(c=>({id:c.id,t:c.updatedAt,title:c.title,msgs:c.messages}))).slice(0,CHATS_MAX)){
     if(!x||!Number.isInteger(x.id)||!Number.isFinite(x.t)||chats.some(c=>c.id===x.id))continue;
     const msgs=cleanChat(x.msgs,known);
@@ -121,7 +123,7 @@ function cleanCoach(r){
   }
   const top=Math.max(...chat.map(m=>m.id),...chats.flatMap(c=>c.msgs.map(m=>m.id)),0);
   if(typeof CoachRepo?.replaceLegacy==="function")CoachRepo.replaceLegacy({chat,chats,cid:Math.max(1,top+1,Number.isInteger(source.cid)?source.cid:migrated.cid),providers:provs.length?provs:defs});
-  return {providers:provs.length?provs:defs,chat,chats:trimChats(chats),cid:Math.max(1,top+1,Number.isInteger(source.cid)?source.cid:migrated.cid)};
+  return {providers:provs.length?provs:defs,chat,chats:trimChats(chats),cid:Math.max(1,top+1,Number.isInteger(source.cid)?source.cid:migrated.cid),coachPlans:planner.plans,coachCheckins:planner.checkins,coachActions:planner.actions};
 }
 const CHATS_MAX=20,ARCH_MSGS=600,ARCH_CHARS=250000,CHAT_MAX=150;
 /* The archive must not fill the storage quota: the newest chats stay and older ones are dropped once the total message or size limit is exceeded (the newest always stays). */

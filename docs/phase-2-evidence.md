@@ -51,10 +51,11 @@ Provider secrets remain in KeyVault/secret storage and never enter Coach reposit
 
 ## Verification evidence
 
-- `node scripts/coach-repository.test.js`: 26 passed, 0 failed.
-- `node scripts/run-tests.js`: 111 test files, 0 failed.
+- `node scripts/coach-planner-closures.test.js`: 3 focused closure checks passed, 0 failed.
+- `node scripts/coach-planner.test.js && node scripts/coach-planner-production.test.js && node scripts/coach-planner-closures.test.js && node scripts/coach-repository.test.js`: all four focused suites passed.
+- `node scripts/run-tests.js`: 114 test files, 0 failed.
 - `npx playwright test e2e/coach.spec.js -c e2e/playwright.config.js`: 68 passed, 0 failed.
-- `npm run android:sync:verify`: 28 Java files, 44 resources verified.
+- `npm run android:sync:verify`: 28 Java files, 44 source resources verified.
 
 
 ## Verification tiers
