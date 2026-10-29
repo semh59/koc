@@ -84,6 +84,16 @@ if (!styles.includes("windowSplashScreenBackground")) {
 }
 console.log("Icons and splash screen installed.");
 
+const signingSrc = "signing";
+const signingDst = "android/app/signing";
+if (fs.existsSync(signingSrc)) {
+  if (fs.existsSync(signingDst)) fs.rmSync(signingDst, { recursive: true });
+  fs.cpSync(signingSrc, signingDst, { recursive: true });
+  console.log("Signing directory copied.");
+} else {
+  console.warn("Signing source directory not found, skipping.");
+}
+
 const javaDir = "android/app/src/main/java/com/neowell/app";
 const javaFiles = fs.readdirSync("assets/android").filter(f => f.endsWith(".java")).map(f => f.slice(0, -5)).sort();
 for (const f of javaFiles) {
