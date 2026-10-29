@@ -12,19 +12,33 @@ const runFile=(file)=>new Promise(resolve=>{
 
 const files = fs.readdirSync(dir).filter(f => f.endsWith(".test.js")).sort();
 const results = new Array(files.length);
-let next = 0;
-const worker = async () => {
-  while (next < files.length) {
-    const i = next++;
-    results[i] = await runFile(files[i]);
-  }
-};
-(async () => {
-  await Promise.all(Array.from({length: Math.min(4, os.cpus().length)}, worker));
-  files.forEach((f, i) => {
-    console.log(`\n=== ${f}\n${results[i].out}`);
-    if (results[i].code) failed.push(f);
-  });
-  console.log(`\n${files.length} test files, ${failed.length} failed${failed.length ? ": " + failed.join(", ") : ""}`);
-  process.exit(failed.length ? 1 : 0);
-})();
+if (process.env.NW_TEST_SEQUENTIAL) {
+  (async () => {
+    for (let i = 0; i < files.length; i++) {
+      results[i] = await runFile(files[i]);
+    }
+    files.forEach((f, i) => {
+      console.log(`\n=== ${f}\n${results[i].out}`);
+      if (results[i].code) failed.push(f);
+    });
+    console.log(`\n${files.length} test files, ${failed.length} failed${failed.length ? ": " + failed.join(", ") : ""}`);
+    process.exit(failed.length ? 1 : 0);
+  })();
+} else {
+  let next = 0;
+  const worker = async () => {
+    while (next < files.length) {
+      const i = next++;
+      results[i] = await runFile(files[i]);
+    }
+  };
+  (async () => {
+    await Promise.all(Array.from({length: Math.min(4, os.cpus().length)}, worker));
+    files.forEach((f, i) => {
+      console.log(`\n=== ${f}\n${results[i].out}`);
+      if (results[i].code) failed.push(f);
+    });
+    console.log(`\n${files.length} test files, ${failed.length} failed${failed.length ? ": " + failed.join(", ") : ""}`);
+    process.exit(failed.length ? 1 : 0);
+  })();
+}
