@@ -1,10 +1,11 @@
 "use strict";
 const {test,expect,state}=require("./fixtures");
+const ENTRY_CONSENT={entryConsentSeen:true,entryConsentVersion:1,entryConsentAt:"2026-10-06T07:00:00.000Z",entryConsentChoice:"text_only"};
 
 test.describe("Coach low-friction entry",()=>{
   test("consent, browser speech disclosure, keyboard dictation, pending proposal and explicit add",async({app,page})=>{
     const calls=[];page.on("request",r=>{if(!r.url().startsWith("http://127.0.0.1"))calls.push(r.url())});
-    await app.open({seed:state()});await app.tab("coach");
+    await app.open({seed:state(ENTRY_CONSENT)});await app.tab("coach");
     await page.click('[data-c="entryvoice"]');
     await expect(app.sheet).toContainText("Sesle kayıt izni");
     await page.click('[data-c="voiceconsentok"]');
@@ -23,7 +24,7 @@ test.describe("Coach low-friction entry",()=>{
   });
 
   test("photo consent disclosure, 44px controls, focus and no console errors at phone widths",async({app,page})=>{
-    await app.open({seed:state()});await app.tab("coach");
+    await app.open({seed:state(ENTRY_CONSENT)});await app.tab("coach");
     await page.click('[data-c="entryphoto"]');
     await expect(app.sheet).toContainText("Fotoğraf ve tarama izni");
     await expect(app.sheet).toContainText("GPS");
@@ -38,7 +39,7 @@ test.describe("Coach low-friction entry",()=>{
   });
 
   test("consent persists across reload and copy never promises on-device/no-server",async({app,page})=>{
-    await app.open({seed:state()});await app.tab("coach");
+    await app.open({seed:state(ENTRY_CONSENT)});await app.tab("coach");
     await page.click('[data-c="entryvoice"]');
     await expect(app.sheet).not.toContainText(/hiçbir sağlayıcıya veya sunucuya|yalnızca bu cihazda/i);
     await expect(app.sheet).toContainText(/tarayıcının|çevrimiçi/i);
@@ -52,7 +53,7 @@ test.describe("Coach low-friction entry",()=>{
   for(const local of [false,true]){
     test(`supported SpeechRecognition engine discloses ${local?"confirmed local":"unconfirmed vendor"} processing`,async({app,page})=>{
       await page.addInitScript(l=>{window.__sr=[];window.SpeechRecognition=function(){this.processLocally=l;this.start=()=>window.__sr.push("start");this.stop=()=>window.__sr.push("stop");this.abort=()=>window.__sr.push("abort")}},local);
-      await app.open({seed:state({voiceConsent:true})});await app.tab("coach");
+      await app.open({seed:state({...ENTRY_CONSENT,voiceConsent:true})});await app.tab("coach");
       await page.click('[data-c="entryvoice"]');
       await expect.poll(()=>page.evaluate(()=>window.__sr)).toContain("start");
       await expect(page.locator("#toast.on #tmsg")).toContainText(local?/cihazda işlediğini doğruladı/:/ses tanıması çevrimiçi.*doğrulanmadı/);

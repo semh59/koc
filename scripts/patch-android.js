@@ -8,7 +8,7 @@ const manifestPath = "android/app/src/main/AndroidManifest.xml";
 let manifest = fs.readFileSync(manifestPath, "utf8");
 // No USE_EXACT_ALARM: Play grants it only to alarm and calendar apps. Without the exact-alarm permission the plugin sets an inexact alarm and the UI says so.
 // No ACCESS_BACKGROUND_LOCATION: the location service runs only in a walk started by hand while the app is visible, so the "while in use" permission is enough.
-for (const perm of ["POST_NOTIFICATIONS", "RECEIVE_BOOT_COMPLETED", "VIBRATE", "SCHEDULE_EXACT_ALARM", "USE_FULL_SCREEN_INTENT", "CAMERA", "ACTIVITY_RECOGNITION", "ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "FOREGROUND_SERVICE", "FOREGROUND_SERVICE_LOCATION", "health.READ_STEPS", "health.READ_SLEEP", "health.READ_HEART_RATE", "USE_BIOMETRIC"]) {
+for (const perm of ["POST_NOTIFICATIONS", "RECEIVE_BOOT_COMPLETED", "VIBRATE", "SCHEDULE_EXACT_ALARM", "USE_FULL_SCREEN_INTENT", "CAMERA", "RECORD_AUDIO", "ACTIVITY_RECOGNITION", "ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "FOREGROUND_SERVICE", "FOREGROUND_SERVICE_LOCATION", "health.READ_STEPS", "health.READ_SLEEP", "health.READ_HEART_RATE", "USE_BIOMETRIC"]) {
   if (!manifest.includes(`android.permission.${perm}`)) {
     manifest = manifest.replace("</manifest>", `    <uses-permission android:name="android.permission.${perm}" />\n</manifest>`);
   }

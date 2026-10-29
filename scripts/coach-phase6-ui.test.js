@@ -2,7 +2,27 @@ const { ok, finish } = require("./ok");
 const { boot } = require("./html");
 
 boot().then(w => {
+  ok("consent cleaner rejects incomplete tuple and preserves canonical ISO instant",
+    w.eval("(()=>{const at='2026-10-06T07:00:00.000Z',good=cleanSettings({entryConsentSeen:true,entryConsentVersion:1,entryConsentAt:at,entryConsentChoice:'text_only'}),bad=cleanSettings({entryConsentSeen:true,entryConsentVersion:1,entryConsentAt:'2026-10-06',entryConsentChoice:'text_only',voiceConsent:true});return good.entryConsentAt===at&&good.entryConsentSeen===true&&good.voiceConsent===false&&bad.entryConsentSeen===false&&bad.entryConsentAt===''})()")
+  );
+  w.eval("S=structuredClone(DEF);S.settings.obDone=true;Object.assign(S.settings,{entryConsentSeen:true,entryConsentVersion:1,entryConsentAt:'',entryConsentChoice:'text_only'});tab='coach';render();");
+  ok("incomplete saved consent cannot bypass first-use draft notice",
+    w.document.body.textContent.includes("Yayın öncesi hukuki inceleme gerektirir") &&
+    w.document.querySelector('[data-c="entryconsenttextonly"]') !== null &&
+    w.document.querySelector('[data-c="entryvoice"]') === null
+  );
   w.eval("S=structuredClone(DEF);S.settings.obDone=true;tab='coach';render();");
+
+  // 0. First Coach use shows draft privacy notice and records an explicit choice.
+  ok("first Coach use shows the legal draft notice before entry controls",
+    w.document.body.textContent.includes("Yayın öncesi hukuki inceleme gerektirir") &&
+    w.document.body.textContent.includes("Veri sorumlusu henüz atanmadı") &&
+    w.document.querySelector('[data-c="entryconsenttextonly"]') !== null
+  );
+  w.document.querySelector('[data-c="entryconsenttextonly"]').click();
+  ok("text-only choice records version, timestamp and scope without enabling capture",
+    w.eval("S.settings.entryConsentSeen===true&&S.settings.entryConsentVersion===1&&typeof S.settings.entryConsentAt==='string'&&S.settings.entryConsentChoice==='text_only'&&!S.settings.voiceConsent&&!S.settings.photoConsent")
+  );
 
   // 1. Coach low-friction entry chips exist
   ok("coach renders low-friction entry controls",

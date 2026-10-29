@@ -737,59 +737,19 @@ function cConsent(on,tap){
 }
 /* Empty-chat examples: [label, message, true if it only fills the input box]. */
 const CASK=[["Bu yemek kaç kalori?","Kaç kalori: ",true],["Bu egzersiz kaç kalori yakar?","Kaç kalori yakar: ",true]];
-/* Local experiments deliberately stay outside the provider/chat path. They describe a testable
-   behavior, not a treatment; every result repeats the uncertainty and non-causal boundary. */
-let experimentDraft=null;
-const experimentUiNote="Bu küçük deney yalnızca bu telefonda çalışır; Rehber'e, sağlayıcılara veya internete veri göndermez. Nedensellik göstermez ve tıbbi öneri değildir.";
-const experimentId=()=>"exp-"+Date.now()+"-"+Math.random().toString(36).slice(2,7);
-const experimentEvents=id=>Coach.experiments().events().filter(e=>e.experimentId===id);
-function experimentResult(x){
-  const vals=experimentEvents(x.id).map(e=>({day:e.day,value:e.value}));
-  return Coach.experiments().evaluate(x.id,vals);
-}
-function experimentStateText(r){return r.resultState==="not_started"?"Başlatılmayı bekliyor":r.resultState==="supported"?"Destekleniyor":r.resultState==="not_supported"?"Desteklenmiyor":"Yeterli veri yok"}
-function experimentCard(){
-  const xs=Coach.experimentList(), cards=xs.map(x=>{const r=experimentResult(x),active=x.status==="active";return `<div class="card" data-testid="experiment-card"><h3 class="m0">${esc(x.hypothesis)}</h3><p class="mut sm">${esc(x.measurementWindow.start)} – ${esc(x.measurementWindow.end)} · Durum: <b>${x.status==="draft"?"Taslak":active?"Aktif":"Tamamlandı"}</b> · Sonuç: <b>${experimentStateText(r)}</b></p><p class="mut sm">${r.uncertainty==="measured"?`${r.measurements} yerel check-in, ortalama ${fmt(r.average,1)}`:"Belirsizlik: yeterli ölçüm yok."}</p><div class="two">${x.status==="draft"?`<button class="btn" data-c="experimentstart:${esc(x.id)}">Deneyi başlat</button>`:active?`<button class="btn" data-c="experimentcheckin:${esc(x.id)}">Yerel check-in</button>`:""}<button class="btn ghost" data-c="experimentexport:${esc(x.id)}">Dışa aktar</button><button class="btn danger" data-c="experimentdelete:${esc(x.id)}">Sil</button></div></div>`}).join("");
-  return `<section aria-labelledby="experiments-title"><div class="row"><h2 id="experiments-title" class="grp">Küçük deneyler</h2><span class="grow"></span>${xs.length?`<button class="btn danger" data-c="experimentdeleteall">Tüm deneyleri sil</button>`:""}<button class="btn" data-c="experimentnew">Yeni deney</button></div><p class="hint">${experimentUiNote}</p>${cards||`<div class="card"><p class="m0">Henüz küçük deney yok.</p><p class="mut sm">Bir hipotez seç, başlangıç durumunu ve hedef davranışı yaz; sonucu yalnızca yerel kayıtlarla izle.</p></div>`}</section>`;
-}
-function experimentOpen(){
-  openSheet(`<h3>Yeni küçük deney</h3><p class="hint">${experimentUiNote}</p><label class="lbl" for="experiment-hypothesis">Hipotez</label><textarea autofocus class="in" id="experiment-hypothesis" aria-describedby="experiment-help" maxlength="300" rows="2" placeholder="Örn. Akşam yürüyüşü adım sayımı artırır"></textarea><label class="lbl" for="experiment-baseline">Başlangıç ölçümü (sayı)</label><input class="in" id="experiment-baseline" inputmode="decimal" type="number" min="0" step="any"><label class="lbl" for="experiment-target">Hedef ölçüm (sayı)</label><input class="in" id="experiment-target" inputmode="decimal" type="number" min="0" step="any"><label class="lbl" for="experiment-start">Ölçüm başlangıcı</label><input class="in" id="experiment-start" type="date"><label class="lbl" for="experiment-end">Ölçüm bitişi</label><input class="in" id="experiment-end" type="date"><p id="experiment-help" class="mut sm">Ölçüm metriği: günlük değer. Hedef, başlangıçtan en az bu değere ulaşmak olarak değerlendirilir.</p><div class="two"><button class="btn" data-c="experimentsave">Deneyi kaydet</button><button class="btn ghost" data-c="closesheet">Vazgeç</button></div>`);
-}
-function experimentSave(){
-  const hypothesis=$("#experiment-hypothesis")?.value.trim(),baseline=Number($("#experiment-baseline")?.value),target=Number($("#experiment-target")?.value),start=$("#experiment-start")?.value,end=$("#experiment-end")?.value;
-  if(!hypothesis||!Number.isFinite(baseline)||!Number.isFinite(target)||!/^\d{4}-\d{2}-\d{2}$/.test(start)||!/^\d{4}-\d{2}-\d{2}$/.test(end)||end<start)return toast("Hipotez, ölçümler ve tarih aralığı gerekli");
-  const id=experimentId(),r=Coach.experiments().create({id,hypothesis,measurementWindow:{start,end},baseline:{metric:"daily_value",value:baseline,unit:"değer"},targetBehavior:{description:"Hedef davranış",metric:"daily_value",target,direction:"at_least"},idempotencyKey:"experiment-"+id});
-  if(r&&typeof r.then==="function")return r.then(experimentFinishSave);return experimentFinishSave(r);
-}
-function experimentFinishSave(r){if(!r||!r.ok)return toast("Deney kaydedilemedi");closeSheet();render();toast(r.duplicate?"Deney zaten kaydedilmiş":"Deney kaydedildi")}
-function experimentStart(id){const x=Coach.experimentList().find(e=>e.id===id);if(!x||x.status!=="draft")return;const today=dayKey(),start=today>=x.measurementWindow.start&&today<=x.measurementWindow.end?today:x.measurementWindow.start;const r=Coach.experiments().start(id,{startedAt:start,idempotencyKey:"start-"+id});if(r&&typeof r.then==="function")return r.then(experimentFinishStart);return experimentFinishStart(r)}
-function experimentFinishStart(r){if(!r||!r.ok)return toast("Deney başlatılamadı");render();toast(r.duplicate?"Deney zaten başlatılmış":"Deney başlatıldı")}
-function experimentDelete(id){const x=Coach.experimentList().find(e=>e.id===id);if(!x)return;confirmSheet({title:"Deney silinsin mi?",body:"Bu deney ve yerel check-in kayıtları silinecek. Önce dışa aktarma yapılmadan silinmez.",ok:"Sil",no:"Vazgeç",danger:true}).then(async yes=>{if(!yes)return;const data=Coach.experimentExport();if(!data)return toast("Dışa aktarma başarısız; kayıtlar korunuyor");const one={experiments:data.experiments.filter(e=>e.id===id),events:data.events.filter(e=>e.experimentId===id)};let handed=false;try{handed=await shareOut(false,"neowell-deney-"+id+".json","NeoWell deneyi","application/json",JSON.stringify(one),true)}catch(e){}if(handed!==true)return toast("Dışa aktarma başarısız; kayıtlar korunuyor");const r=await Coach.experiments().deleteOneAfterExport(id);if(r!==true)return toast("Silme başarısız; kayıtlar korunuyor");CoachExperimentRepo=null;CoachExperimentState=null;render();toast("Deney silindi")})}
-function experimentOpenCheckin(id){
-  const x=Coach.experimentList().find(e=>e.id===id);if(!x||x.status!=="active")return;
-  openSheet(`<h3>Yerel check-in</h3><p class="hint">${esc(x.hypothesis)}</p><label class="lbl" for="experiment-checkin-day">Gün</label><input class="in" id="experiment-checkin-day" type="date" value="${esc(dayKey())}"><label class="lbl" for="experiment-checkin-value">Ölçüm değeri</label><input class="in" id="experiment-checkin-value" type="number" min="0" step="any" inputmode="decimal"><p class="mut sm">Yalnızca bu deneyin ölçüm penceresindeki kayıtlar değerlendirilir.</p><div class="two"><button class="btn" data-c="experimentcheckinsave:${esc(id)}">Check-in kaydet</button><button class="btn ghost" data-c="closesheet">Vazgeç</button></div>`);
-}
-function experimentSaveCheckin(id){
-  const day=$("#experiment-checkin-day")?.value,value=Number($("#experiment-checkin-value")?.value);if(!/^\d{4}-\d{2}-\d{2}$/.test(day)||!Number.isFinite(value))return toast("Gün ve ölçüm değeri gerekli");
-  const r=Coach.experiments().recordEvent({id:"event-"+Date.now(),experimentId:id,type:"checkin",day,value,idempotencyKey:"event-"+id+"-"+day});if(r&&typeof r.then==="function")return r.then(experimentFinishCheckin);return experimentFinishCheckin(r);
-}
-function experimentFinishCheckin(r){if(!r||!r.ok)return toast("Check-in kaydedilemedi");closeSheet();render();toast(r.duplicate?"Bu gün zaten kaydedildi":"Check-in kaydedildi")}
-function experimentExport(id){const x=Coach.experimentList().find(e=>e.id===id);if(!x)return;const data={experiments:[x],events:experimentEvents(id),note:"Bu kayıt nedensellik veya tıbbi sonuç göstermez."};try{const a=document.createElement("a");a.href="data:application/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(data));a.download="neowell-deney-"+id+".json";a.click();toast("Deney dışa aktarıldı; silme için dışa aktarma tamamlandı")}catch(e){toast("Dışa aktarma başarısız")}}
-async function experimentDeleteAllFromSettings(){
-  const data=Coach.experimentExport();
-  if(!data||!data.experiments.length)return toast("Silinecek deney bulunamadı");
-  const yes=await confirmSheet({title:"Tüm deneyler silinsin mi?",body:"Önce deneyler dışa aktarılır. Dışa aktarma başarısızsa hiçbir kayıt silinmez.",ok:"Dışa aktar ve sil",no:"Vazgeç",danger:true});
-  if(!yes)return;
-  let handed=false;
-  try{handed=await shareOut(false,`neowell-experiments-${dayKey()}.json`,"NeoWell deneyleri","application/json",JSON.stringify(data),true)}catch(e){}
-  if(handed!==true)return toast("Dışa aktarma başarısız; deneyler korundu");
-  const deleted=await Coach.experimentDeleteAll();
-  toast(deleted?"Tüm deneyler silindi":"Deneyler silinemedi; kayıtlar korundu");
-}
+/* Experiments remain stored and managed through Coach API, but are not shown in user Coach UI. */
 function cRevokeEntryConsent(){
   cStopVoice(true);
   S.settings.voiceConsent=false;S.settings.photoConsent=false;
   coachResetSessions();save();render();toast("Ses ve fotoğraf izinleri geri alındı");
+}
+function entryConsentHtml(){
+  return `<section class="card" aria-labelledby="entry-consent-title"><h2 id="entry-consent-title" class="m0 t-h2">Ses ve fotoğrafla yemek kaydı</h2><p class="hint"><b>Yayın öncesi hukuki inceleme gerektirir. Özel beta.</b> Veri sorumlusu henüz atanmadı; bu ekran nihai hukuki metin değildir.</p><p>Seçimini istediğin zaman Gizlilik ve veri bölümünden geri alabilirsin.</p><ul class="cul"><li><b>Sesle kayıt:</b> Konuşman yemek kaydı için yazıya çevrilir. Ham ses uygulamada tutulmaz. Tarayıcı veya işletim sistemi çevrimiçi işleyebilir; cihazda kaldığı garanti edilmez.</li><li><b>Fotoğraf:</b> Etiket veya yemek görseli geçici işlenir; EXIF/GPS temizlenir. Bu akışta sağlayıcıya gönderilmez.</li><li><b>Sağlık sınırı:</b> NeoWell tıbbi cihaz değildir; tanı koymaz ve tedavi önermez.</li></ul><details class="acc"><summary>Detaylı taslak açıklama</summary><p class="mut sm">Bu beta metni veri sorumlusu, iletişim adresi, saklama süreleri ve hizmet sağlayıcı sözleşmeleri kesinleşmeden nihai aydınlatma veya açık rıza metni olarak kullanılamaz. Yayın öncesi KVKK/GDPR incelemesi zorunludur.</p></details><div class="bgrid mt-3"><button class="btn" data-c="entryconsentboth">Ses ve fotoğrafı birlikte aç</button><button class="btn ghost" data-c="entryconsenttextonly">Sadece metin kullanacağım</button></div></section>`;
+}
+function entryConsentAccept(choice){
+  const now=new Date().toISOString();
+  Object.assign(S.settings,{entryConsentSeen:true,entryConsentVersion:ENTRY_CONSENT_V,entryConsentAt:now,entryConsentChoice:choice,voiceConsent:choice==="both",photoConsent:choice==="both"});
+  save();closeSheet();render();
 }
 function entryControlsHtml(){
   return `<section aria-labelledby="entry-controls-title" class="mb-3"><div class="row"><h2 id="entry-controls-title" class="grp">Düşük sürtünmeli giriş</h2></div><p class="hint">Fotoğraf ve yerel besin araması cihazda işlenir; ses girişi açık onayınla ve konuşma motoru desteğiyle çalışır.</p><div class="chips"><button class="chip" data-c="entryvoice">Sesle kaydet</button><button class="chip" data-c="entryphoto">Fotoğraf / Etiket tara</button><button class="chip" data-c="entrylocal">Hızlı yemek / porsiyon</button>${S.settings.voiceConsent||S.settings.photoConsent?`<button class="chip" data-c="revoke-entry-consent">Ses ve fotoğraf izinlerini geri al</button>`:""}</div></section>`;
@@ -798,6 +758,7 @@ let activeSpeechRecognizer=null;
 function cStopVoice(cancelled=false){
   const r=activeSpeechRecognizer;activeSpeechRecognizer=null;
   try{if(r){cancelled&&r.abort?r.abort():r.stop?.()}}catch{}
+  try{plugin("Speech")?.stopListening?.()}catch{}
   try{Coach.voiceSession()?.[cancelled?"cancel":"stop"]()}catch{}
   toast(cancelled?"Ses girişi durduruldu":"Ses girişi durduruldu");
 }
@@ -805,6 +766,15 @@ function cStartVoice(){
   let session;
   try{session=Coach.voiceSession()}catch{return toast("Ses oturumu açılamadı")}
   try{session.start()}catch(e){return toast("Ses kaydı için açık onay gerekiyor")}
+  const sp=plugin("Speech");
+  if(sp?.listen){
+    openSheet(`<h3>Sesle yemek kaydet</h3><p class="hint">Dinliyorum. Yediklerini tek cümlede söyle; ham ses saklanmaz.</p><p id="voice-status" class="card" aria-live="polite">Hazır…</p><div class="bgrid"><button class="btn ghost" data-c="voicecancel">Vazgeç</button></div>`);
+    const onResult=ev=>{const text=ev?.text||"";if(!text)return;sp.removeAllListeners?.("result");sp.removeAllListeners?.("error");sp.stopListening?.();session.finishTranscription(text);closeSheet();cHandleVoiceTranscript(text)};
+    const onError=()=>{sp.removeAllListeners?.("result");sp.removeAllListeners?.("error");try{session.cancel()}catch{}try{session.purgeAudio()}catch{}toast("Ses tanınamadı; tekrar dene veya yaz")};
+    sp.addListener?.("result",onResult);sp.addListener?.("error",onError);
+    sp.listen().then(r=>{if(r?.started===false)onError()}).catch(onError);
+    return;
+  }
   if(session.mode==="web_speech"&&typeof window!=="undefined"&&(window.SpeechRecognition||window.webkitSpeechRecognition)){
     try{
       const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -888,8 +858,8 @@ function viewCoach(){
     h+=`<div class="banner"><div class="lhead"><b>Rehber'e şu an ulaşılamıyor</b>${dt?`<button class="help" data-c="hx:kerr" aria-expanded="false" aria-controls="kerr" aria-label="Hata ayrıntısı">${Icons.svg("info")}</button>`:""}</div>${dt?`<p class="helpx" id="kerr" hidden>${esc(x.name)}: ${esc(dt)}</p>`:""}<p>Bağlantını kontrol et. Mesajın bu telefonda duruyor; su, kilo ve spor kaydı çalışmaya devam ediyor.</p><button class="btn" data-c="retry">Tekrar dene</button></div>`;
   }
   if(!coachOn()&&!intro)h+=`<div class="card"><h2 class="m0 t-h2">Rehber ile veri paylaşımı</h2>${li(["Mesajların ve istersen profilin (boy, yaş aralığı, cinsiyet, hareket, kalori hedefi) seçtiğin sağlayıcıya gider.","Yalnız sen bir düğmeye bastığında gönderilir.","İstediğin an geri alırsın; onay vermezsen hiçbir veri gönderilmez."])}${consentWarn()}<details class="acc"><summary>Detaylar</summary><div class="sm">${consentBody()}</div></details>${consentOk()?`<div class="lbl">Rehber'e hangi veriler gitsin?</div>${shareRows()}${swRow('data-pv="prev"',!S.settings.piiPrevOwn||S.settings.piiPrev,"Gönderimden önce metni göster","Her gönderimden önce giden tam metni görür, Gönder ya da Vazgeç dersin. İstersen kapat.")}<button class="btn" data-c="consent">Açık rızamı veriyorum</button>`:""}<button class="lnk" data-pv="open">Gizlilik ve veri</button></div>`;
-  h+=experimentCard();
-  h+=entryControlsHtml();
+  if(!entryConsentRecordOk(S.settings))h+=entryConsentHtml();
+  else { h+=entryControlsHtml(); }
   if(S.chat.length||S.chats.length)h+=`<div class="chips cbar">${S.chat.length?`<button class="chip" data-c="newchat">Yeni sohbet</button>`:""}${S.chats.length?`<button class="chip" data-c="chats">Geçmiş</button>`:""}</div>`;
   if(!S.chat.length&&hasKey()&&coachOn())h+=emptyCard("coach","Bugün neyle başlayalım?","Bir yemeğin ya da egzersizin adını yaz, kalorisini tahmin edeyim. Menü ve program da isteyebilirsin.",`<div class="chips">${CASK.map((x,i)=>`<button class="chip" data-c="ask:${i}">${x[0]}</button>`).join("")}</div>`);
   /* The bubble carries only text; the card is a separate full-width surface outside the bubble. */
@@ -1170,17 +1140,11 @@ function cClick(v,el){
     case "closesheet":return closeSheet();
     case "memorydelete":return memoryDeleteAsk(p1);
     case "planner":return plannerOpenPlan(p1||"");
-    case "experimentnew":return experimentOpen();
-    case "experimentsave":return experimentSave();
-    case "experimentstart":return experimentStart(p1);
-    case "experimentdelete":return experimentDelete(p1);
-    case "experimentcheckin":return experimentOpenCheckin(p1);
-    case "experimentcheckinsave":return experimentSaveCheckin(p1);
-    case "experimentexport":return experimentExport(p1);
-    case "experimentdeleteall":return experimentDeleteAllFromSettings();
-    case "deletekeys":return deleteKeysFromSettings();
+        case "deletekeys":return deleteKeysFromSettings();
 
     case "revoke-entry-consent":return cRevokeEntryConsent();
+    case "entryconsentboth":return entryConsentAccept("both");
+    case "entryconsenttextonly":return entryConsentAccept("text_only");
     case "entryvoice":{
       if(!S.settings.voiceConsent){
         return openSheet(`<h3>Sesle kayıt izni</h3><p class="hint">Ses kaydı yalnızca açık onayınla başlar. Ham ses uygulamada tutulmaz ve NeoWell bunu Rehber sağlayıcısına göndermez; ancak tarayıcının konuşma tanıması sesi çevrimiçi işleyebilir ve cihaz içinde işlendiği doğrulanmadıkça buna güvenmemelisin. Sesle kayıt için açık onay veriyor musun?</p><div class="bgrid"><button class="btn" data-c="voiceconsentok">Açık rızamı veriyorum</button><button class="btn ghost" data-c="closesheet">Vazgeç</button></div>`);

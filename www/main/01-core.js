@@ -50,7 +50,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- data ---------- */
 const DEF={
-  settings:{vCtx:"",exLast:"",exMin:0,voiceConsent:false,photoConsent:false,obSkipped:false,obNudge:false,obAt:"",modAsked:false,medNear:"",trial:null,ramOn:false,ramLat:0,ramLon:0,ramName:"",ramSahur:false,ramIftar:false,ramFrom:"",ramSkip:"",ramRemNo:false,ramWater:false,ramMedsNo:false,ramMeds:{},ramMedsRef:{},comfy:false,pregnant:false,pregAt:"",nursing:false,edFlag:false,riskOff:"",fastEdOk:false,hideStreak:false,hideNums:false,goalKg:0,kcal:0,waterMl:2500,glass:250,dayStart:0,sportWeek:150,macroP:0,macroC:0,macroF:0,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,shareProfile:true,noticeOk:false,lockGrace:30,piiPrev:false,piiPrevOwn:false,hideRecents:false,lockDetail:false,sealOut:false,recentsAsked:false,widgetHide:false,bkNoKeys:false,keyMiss:false,copyAt:"",lastPlateau:"",goalSugAt:"",lastBackup:"",alarmWarnDay:"",lateOkDay:"",bkSnoozeAt:"",comfyAsked:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medNudgeOff:false,medLogWarn:false,medShowName:false,lockOn:false,hcOn:false,hcFrom:"",cycleOn:false,cycleRem:false,fastOn:false,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
+  settings:{vCtx:"",exLast:"",exMin:0,voiceConsent:false,photoConsent:false,entryConsentSeen:false,entryConsentVersion:0,entryConsentAt:"",entryConsentChoice:"",obSkipped:false,obNudge:false,obAt:"",modAsked:false,medNear:"",trial:null,ramOn:false,ramLat:0,ramLon:0,ramName:"",ramSahur:false,ramIftar:false,ramFrom:"",ramSkip:"",ramRemNo:false,ramWater:false,ramMedsNo:false,ramMeds:{},ramMedsRef:{},comfy:false,pregnant:false,pregAt:"",nursing:false,edFlag:false,riskOff:"",fastEdOk:false,hideStreak:false,hideNums:false,goalKg:0,kcal:0,waterMl:2500,glass:250,dayStart:0,sportWeek:150,macroP:0,macroC:0,macroF:0,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,shareProfile:true,noticeOk:false,lockGrace:30,piiPrev:false,piiPrevOwn:false,hideRecents:false,lockDetail:false,sealOut:false,recentsAsked:false,widgetHide:false,bkNoKeys:false,keyMiss:false,copyAt:"",lastPlateau:"",goalSugAt:"",lastBackup:"",alarmWarnDay:"",lateOkDay:"",bkSnoozeAt:"",comfyAsked:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medNudgeOff:false,medLogWarn:false,medShowName:false,lockOn:false,hcOn:false,hcFrom:"",cycleOn:false,cycleRem:false,fastOn:false,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
     {id:1,t:"09:00",on:true,dow:1,name:"Haftalık tartı (Pazartesi)",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -76,6 +76,9 @@ const TYPES=["water","weight","food","exercise","note","steps"];
 const {dayOk,timeOk}=Algo;
 /* Bumped when the Coach consent text changes: a consent given for an older text is void and asked again. */
 const CONSENT_V=3;
+const ENTRY_CONSENT_V=1;
+const entryConsentAtOk=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(s)&&Number.isFinite(Date.parse(s))&&Date.parse(s)<=Date.now()+60000&&(()=>{const d=new Date(s);return d.getUTCFullYear()===+s.slice(0,4)&&d.getUTCMonth()===+s.slice(5,7)-1&&d.getUTCDate()===+s.slice(8,10)&&d.getUTCHours()===+s.slice(11,13)&&d.getUTCMinutes()===+s.slice(14,16)&&d.getUTCSeconds()===+s.slice(17,19)&&d.getUTCMilliseconds()===+s.slice(20,23)})();
+const entryConsentRecordOk=s=>s&&s.entryConsentSeen===true&&s.entryConsentVersion===ENTRY_CONSENT_V&&entryConsentAtOk(s.entryConsentAt)&&(s.entryConsentChoice==="both"||s.entryConsentChoice==="text_only");
 const MED_NOTE="NeoWell tıbbi cihaz değildir, tanı koymaz ve tedavi önermez; hekim yerine geçmez. Sağlık kararların için hekimine danış.";
 /* Seconds in the background before the app lock asks again. */
 const LOCK_GRACES=[30,120,300];
@@ -89,6 +92,9 @@ function cleanSettings(raw){
   }
   for(const k in d)if(typeof d[k]==="boolean"&&typeof o[k]==="boolean")d[k]=o[k];
   for(const k of ["voiceConsent","photoConsent"])if(typeof o[k]==="boolean")d[k]=o[k];
+  const consentTuple=entryConsentRecordOk(o);
+  if(consentTuple){d.entryConsentSeen=true;d.entryConsentVersion=ENTRY_CONSENT_V;d.entryConsentAt=o.entryConsentAt;d.entryConsentChoice=o.entryConsentChoice;d.voiceConsent=o.voiceConsent===true;d.photoConsent=o.photoConsent===true;}
+  else {d.entryConsentSeen=false;d.entryConsentVersion=0;d.entryConsentAt="";d.entryConsentChoice="";d.voiceConsent=false;d.photoConsent=false;}
   for(const k of DAY_KEYS)if(dayOk(o[k]))d[k]=o[k];
   if(typeof o.pregAt==="string"&&/^\d{4}-\d\d-\d\dT[\d:.]+Z$/.test(o.pregAt))d.pregAt=o.pregAt;
   if(o.sex==="m"||o.sex==="f")d.sex=o.sex;
