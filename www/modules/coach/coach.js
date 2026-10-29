@@ -879,7 +879,7 @@ async function cRunMealScan(imageId, mimeType){
     const res=await P.recognize({image:b64});
     const lines=(res.lines||[]).map(l=>l.t);
     if(!lines.length) return openSheet(`<h3>Yazı bulunamadı</h3><p class="mut">Fotoğrafta okunabilir yazı yok. Daha net çekip tekrar dene.</p><button class="btn" data-c="photomeal">${Icons.svg("camera")} Tekrar dene</button><button class="btn ghost" data-c="closesheet">Kapat</button>`);
-    const food=CoachLib.resolveLocalLabel(lines.join(" "));
+    const food=CoachLib.resolveLocalFood(lines.join(" "));
     if(food.ok && food.items.length){
       cPush({role:"coach",text:`Taramada bulundu: "${food.sanitizedText}". Günlüğe eklemek için onayla:`,card:{kind:"log",items:food.items,state:"pending",local:true,imageId}});
       save();render();
