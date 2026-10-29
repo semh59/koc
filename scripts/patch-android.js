@@ -119,7 +119,7 @@ const patchGradle = (marker, pattern, replacement) => {
 patchGradle("signingConfigs", /android \{/, `android {
     signingConfigs {
         debug {
-            storeFile file("../../signing/known-debug-smoke-only.keystore")
+            storeFile file("../signing/known-debug-smoke-only.keystore")
             storePassword "android"
             keyAlias "androiddebugkey"
             keyPassword "android"
