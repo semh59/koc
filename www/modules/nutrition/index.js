@@ -17,5 +17,7 @@ const Nutrition={
   addMy(n,kcal,p,b){
     const f={n:n.slice(0,60),k:Math.round(kcal),portion:true};if(p!=null&&p>=0)f.p=Math.round(p*10)/10;if(b)f.b=b;
     return Nutrition.putMy(f);
-  }
+  },
+  // Label fields for nutrition label OCR review (shared with coach module)
+  LABEL_FIELDS:[["k","Kalori","kcal",900],["p","Protein","g",100],["c","Karbonhidrat","g",100],["f","Yağ","g",100],["fb","Lif","g",100],["sg","Şeker","g",100],["na","Sodyum","mg",40000]]
 };

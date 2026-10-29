@@ -839,13 +839,82 @@ function cPhotoPick(kind){
     r.onload=()=>{
       try{
         const info=CoachLib.stripExifDetailed(r.result);
-        Coach.imageSession().captureImage(info.data,{purpose:kind||"meal_scan"});
+        const capture=Coach.imageSession().captureImage(info.data,{purpose:kind||"meal_scan"});
         toast(`Görsel güvenli şekilde işlendi (${info.mimeType}; ${info.stripped?"EXIF/GPS temizlendi":"metadata bulunamadı"})`);
+        if(kind==="label_ocr") return cRunLabelOcr(capture.id, info.mimeType);
+        if(kind==="meal_scan") return cRunMealScan(capture.id, info.mimeType);
       }catch(e){toast(e.code==="UNSUPPORTED_IMAGE_FORMAT"?"Bu görsel biçimi desteklenmiyor":"Görsel işlenemedi; lütfen başka bir görsel seç")}
     };
     try{r.readAsDataURL(f)}catch{fail()}
   });
   document.body.appendChild(i);i.click();
+}
+async function cRunLabelOcr(imageId, mimeType){
+  const P=typeof plugin==="function"?plugin("Ocr"):null;
+  if(!P) return toast("Yazı okuma yalnızca telefondaki uygulamada çalışır");
+  toast("Etiket okunuyor…");
+  try{
+    const session=Coach.imageSession();
+    const imgData=session.getTemporaryImage(imageId);
+    if(!imgData) return toast("Görsel bulunamadı");
+    const b64=imgData.split(",")[1]||imgData;
+    const res=await P.recognize({image:b64});
+    const lines=(res.lines||[]).map(l=>l.t);
+    if(!lines.length) return openSheet(`<h3>Yazı bulunamadı</h3><p class="mut">Fotoğrafta okunabilir yazı yok. Daha yakından, düz ve aydınlık çekip tekrar dene.</p><button class="btn" data-c="photolabel">${Icons.svg("camera")} Tekrar dene</button><button class="btn ghost" data-c="closesheet">Kapat</button>`);
+    const parsed=typeof LabelLib!=="undefined"?LabelLib.parse(lines):null;
+    if(!parsed||!parsed.food) return toast("Etiket ayrıştırılamadı");
+    cLabelReview(parsed.food);
+  }catch(e){toast("Fotoğraf okunamadı, daha net çekip tekrar dene")}
+}
+async function cRunMealScan(imageId, mimeType){
+  const P=typeof plugin==="function"?plugin("Ocr"):null;
+  if(!P) return toast("Yazı okuma yalnızca telefondaki uygulamada çalışır");
+  toast("Yemek taranıyor…");
+  try{
+    const session=Coach.imageSession();
+    const imgData=session.getTemporaryImage(imageId);
+    if(!imgData) return toast("Görsel bulunamadı");
+    const b64=imgData.split(",")[1]||imgData;
+    const res=await P.recognize({image:b64});
+    const lines=(res.lines||[]).map(l=>l.t);
+    if(!lines.length) return openSheet(`<h3>Yazı bulunamadı</h3><p class="mut">Fotoğrafta okunabilir yazı yok. Daha net çekip tekrar dene.</p><button class="btn" data-c="photomeal">${Icons.svg("camera")} Tekrar dene</button><button class="btn ghost" data-c="closesheet">Kapat</button>`);
+    const food=CoachLib.resolveLocalLabel(lines.join(" "));
+    if(food.ok && food.items.length){
+      cPush({role:"coach",text:`Taramada bulundu: "${food.sanitizedText}". Günlüğe eklemek için onayla:`,card:{kind:"log",items:food.items,state:"pending",local:true,imageId}});
+      save();render();
+    }else{
+      toast("Yemek bulunamadı veya anlaşılamadı");
+    }
+  }catch(e){toast("Tarama başarısız, tekrar dene")}
+}
+function cLabelReview(food){
+  const miss=Nutrition.LABEL_FIELDS.slice(0,4).filter(([k])=>food[k]==null).map(x=>x[1].toLowerCase());
+  const inp=(k,ph)=>`<input class="in num" id="e${k}" value="${food[k]!=null?String(food[k]).replace(".",","):""}" placeholder="${ph}" inputmode="decimal" autocomplete="off">`;
+  openSheet(`<h3>Etiketten okunan</h3><input class="in" id="en" aria-label="Ürünün adı" placeholder="Ürünün adı (zorunlu)" autocomplete="off" autofocus>
+  <div class="mb-2 mut sm">100 g başına değerler. ${miss.length?`Okunamayan: ${miss.join(", ")}. Etiketten bakıp yaz.`:"Etiketle karşılaştırıp kontrol et."}</div>
+  <div class="g2">${Nutrition.LABEL_FIELDS.slice(0,4).map(([k,n,u])=>`<div><label class="lbl" for="e${k}">${n} (${u})</label>${inp(k,u)}</div>`).join("")}</div>
+  <div class="g3 mt-2">${Nutrition.LABEL_FIELDS.slice(4).map(([k,n,u])=>`<div><label class="lbl" for="e${k}">${n}</label>${inp(k,u)}</div>`).join("")}</div>
+  <div class="hint" id="ewarn" role="alert"></div><button class="btn" data-c="photolabelsave">Kaydet ve ekle</button><button class="mt-2 btn ghost" data-c="closesheet">Vazgeç</button>`);
+}
+function cPhotoLabelSave(){
+  const g=id=>document.getElementById(id)?.value.trim()??"",name=g("en").slice(0,60);
+  if(!name) return toast("Ürünün adını yaz");
+  const f={};
+  for(const [k] of Nutrition.LABEL_FIELDS){
+    const s=g("e"+k);if(s==="") continue;
+    f[k]=LabLib.toNum?LabLib.toNum(s.replace(/^[<>]\s*/,"")):Number(s.replace(",","."));
+    if(f[k]==null) return toast("Sayı olarak yaz, örneğin 8,5");
+  }
+  if(f.k==null) return toast("Kalori gerekli: etiketteki 100 g başına kcal değerini yaz");
+  const ew=document.getElementById("ewarn");
+  if(f.sg!=null&&f.c!=null&&f.sg>f.c+0.5){ew.textContent="Şeker, karbonhidrattan büyük olamaz: değerleri etiketle karşılaştır ya da şeker kutusunu boş bırak.";return}
+  const big=Nutrition.LABEL_FIELDS.slice(1).find(([k,,,max])=>f[k]!=null&&!(f[k]>=0&&f[k]<=max));
+  if(big){ew.textContent=`${big[1]} değeri 100 g için makul değil (0-${big[3].toLocaleString("tr-TR")} ${big[2]}).`;return}
+  const food={n:name,u:[["100 g",100]]};
+  for(const [k] of Nutrition.LABEL_FIELDS)if(f[k]!=null)food[k]=Math.round(f[k]*10)/10;
+  if(!Nutrition.putMy(food)) return toast(`Besin listesi dolu (en çok ${MYFOODS_MAX})`);
+  save();
+  closeSheet();sheetPortion(Nutrition.my().findIndex(m=>m.n===food.n));
 }
 function viewCoach(){
   let h="";
@@ -1170,14 +1239,15 @@ function cClick(v,el){
       S.settings.photoConsent=true;save();closeSheet();render();return cOpenPhotoSheet();
     }
     case "photocacheclear":{
-      Coach.clearImageCache();toast("Görsel önbelleği temizlendi");return closeSheet();
-    }
-    case "photolabel":{
-      closeSheet();cPhotoPick("label_ocr");return;
-    }
-    case "photomeal":{
-      closeSheet();cPhotoPick("meal_scan");return;
-    }
+          Coach.clearImageCache();toast("Görsel önbelleği temizlendi");return closeSheet();
+        }
+        case "photolabelsave":return cPhotoLabelSave();
+        case "photolabel":{
+          closeSheet();cPhotoPick("label_ocr");return;
+        }
+        case "photomeal":{
+          closeSheet();cPhotoPick("meal_scan");return;
+        }
     case "entrylocal":{
       return openSheet(`<h3>Hızlı yemek / porsiyon</h3><p class="hint">Porsiyon veya gramajla yediklerini yaz (ör. 2 dilim ekmek, 200 g tavuk, yarım simit). Cihazda yerel çözülür, internete gönderilmez.</p>
         <label class="lbl" for="local-food-input">Yedikleriniz</label>
