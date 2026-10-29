@@ -8,9 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  actions: read
-  checks: write
+  contents: read
 
 env:
   # Certificate fingerprint of the release (Play upload) key; if the secret is replaced with another key, CI stops.
