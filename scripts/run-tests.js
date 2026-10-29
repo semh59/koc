@@ -4,7 +4,7 @@ const dir = __dirname, failed = [];
 if (spawnSync(process.execPath, ["--check", path.join(dir, "patch-android.js")], {stdio: "inherit"}).status) failed.push("patch-android.js (syntax)");
 const runFile=(file)=>new Promise(resolve=>{
       let out="";
-      const p=spawn(process.execPath,[path.join(dir,file)]);
+      const p=spawn(process.execPath,[path.join(dir,file)], {env: process.env});
       p.stdout.on("data",d=>out+=d);p.stderr.on("data",d=>out+=d);
       const timer=setTimeout(()=>{p.kill();resolve({out:`${out}\nTIMEOUT after 120000ms`,code:124,timeout:true})},120000);
       p.on("close",code=>{clearTimeout(timer);resolve({out,code,timeout:false})});
