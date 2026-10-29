@@ -2,6 +2,7 @@
 const {spawn, spawnSync} = require("child_process"), fs = require("fs"), os = require("os"), path = require("path");
 const dir = __dirname, failed = [];
 if (spawnSync(process.execPath, ["--check", path.join(dir, "patch-android.js")], {stdio: "inherit"}).status) failed.push("patch-android.js (syntax)");
+process.on("unhandledRejection", e => {console.error("FAIL unhandledRejection in test runner:", e); process.exit(1);});
 const runFile=(file)=>new Promise(resolve=>{
       let out="";
       const p=spawn(process.execPath,[path.join(dir,file)], {env: process.env});
@@ -15,14 +16,15 @@ const results = new Array(files.length);
 if (process.env.NW_TEST_SEQUENTIAL) {
   (async () => {
     for (let i = 0; i < files.length; i++) {
-      results[i] = await runFile(files[i]);
-    }
-    files.forEach((f, i) => {
-      console.log(`\n=== ${f}\n${results[i].out}`);
-      if (results[i].code) failed.push(f);
-    });
-    console.log(`\n${files.length} test files, ${failed.length} failed${failed.length ? ": " + failed.join(", ") : ""}`);
-    process.exit(failed.length ? 1 : 0);
+          results[i] = await runFile(files[i]);
+        }
+        files.forEach((f, i) => {
+          console.log(`\n=== ${f}\n${results[i].out}`);
+          if (results[i].code) failed.push(f);
+        });
+        console.log(`\nRunner finished. Failed count: ${failed.length}`);
+        if (failed.length) console.log("Failed files:", failed.join(", "));
+        process.exit(failed.length ? 1 : 0);
   })();
 } else {
   let next = 0;
@@ -34,11 +36,12 @@ if (process.env.NW_TEST_SEQUENTIAL) {
   };
   (async () => {
     await Promise.all(Array.from({length: Math.min(4, os.cpus().length)}, worker));
-    files.forEach((f, i) => {
-      console.log(`\n=== ${f}\n${results[i].out}`);
-      if (results[i].code) failed.push(f);
-    });
-    console.log(`\n${files.length} test files, ${failed.length} failed${failed.length ? ": " + failed.join(", ") : ""}`);
-    process.exit(failed.length ? 1 : 0);
+        files.forEach((f, i) => {
+          console.log(`\n=== ${f}\n${results[i].out}`);
+          if (results[i].code) failed.push(f);
+        });
+        console.log(`\nRunner finished. Failed count: ${failed.length}`);
+        if (failed.length) console.log("Failed files:", failed.join(", "));
+        process.exit(failed.length ? 1 : 0);
   })();
 }
