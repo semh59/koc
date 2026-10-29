@@ -740,8 +740,9 @@ const CASK=[["Bu yemek kaç kalori?","Kaç kalori: ",true],["Bu egzersiz kaç ka
 /* Experiments remain stored and managed through Coach API, but are not shown in user Coach UI. */
 function cRevokeEntryConsent(){
   cStopVoice(true);
-  S.settings.voiceConsent=false;S.settings.photoConsent=false;
-  coachResetSessions();save();render();toast("Ses ve fotoğraf izinleri geri alındı");
+  const cleared={entryConsentSeen:false,entryConsentVersion:0,entryConsentAt:"",entryConsentChoice:"",voiceConsent:false,photoConsent:false};
+  Object.assign(S.settings,cleared);
+  coachResetSessions();save();render();toast("Ses ve fotoğraf izinleri geri alındı; tekrar onay istenecek");
 }
 function entryConsentHtml(){
   return `<section class="card" aria-labelledby="entry-consent-title"><h2 id="entry-consent-title" class="m0 t-h2">Ses ve fotoğrafla yemek kaydı</h2><p class="hint"><b>Yayın öncesi hukuki inceleme gerektirir. Özel beta.</b> Veri sorumlusu henüz atanmadı; bu ekran nihai hukuki metin değildir.</p><p>Seçimini istediğin zaman Gizlilik ve veri bölümünden geri alabilirsin.</p><ul class="cul"><li><b>Sesle kayıt:</b> Konuşman yemek kaydı için yazıya çevrilir. Ham ses uygulamada tutulmaz. Tarayıcı veya işletim sistemi çevrimiçi işleyebilir; cihazda kaldığı garanti edilmez.</li><li><b>Fotoğraf:</b> Etiket veya yemek görseli geçici işlenir; EXIF/GPS temizlenir. Bu akışta sağlayıcıya gönderilmez.</li><li><b>Sağlık sınırı:</b> NeoWell tıbbi cihaz değildir; tanı koymaz ve tedavi önermez.</li></ul><details class="acc"><summary>Detaylı taslak açıklama</summary><p class="mut sm">Bu beta metni veri sorumlusu, iletişim adresi, saklama süreleri ve hizmet sağlayıcı sözleşmeleri kesinleşmeden nihai aydınlatma veya açık rıza metni olarak kullanılamaz. Yayın öncesi KVKK/GDPR incelemesi zorunludur.</p></details><div class="bgrid mt-3"><button class="btn" data-c="entryconsentboth">Ses ve fotoğrafı birlikte aç</button><button class="btn ghost" data-c="entryconsenttextonly">Sadece metin kullanacağım</button></div></section>`;

@@ -80,16 +80,25 @@ boot().then(w => {
   );
 
   // 7. A visible privacy action revokes both low-friction entry consents.
-  w.eval("S.settings.voiceConsent=true;S.settings.photoConsent=true;render();");
-  ok("voice/photo revoke control is visible when either consent is active",w.document.querySelector('[data-c="revoke-entry-consent"]') !== null);
-  w.document.querySelector('[data-c="revoke-entry-consent"]').click();
-  ok("revoking entry consents clears both flags and cached session state",w.eval("S.settings.voiceConsent===false&&S.settings.photoConsent===false&&Coach.imageSession().listCache().length===0"));
+    w.eval("S.settings.voiceConsent=true;S.settings.photoConsent=true;render();");
+    ok("voice/photo revoke control is visible when either consent is active",w.document.querySelector('[data-c="revoke-entry-consent"]') !== null);
+    w.document.querySelector('[data-c="revoke-entry-consent"]').click();
+    ok("revoking entry consents clears both flags and cached session state",w.eval("S.settings.voiceConsent===false&&S.settings.photoConsent===false&&Coach.imageSession().listCache().length===0"));
 
-  // 8. Consent grant rerenders revoke control and local chat never stores raw prose.
-  w.eval("S.settings.voiceConsent=true;S.settings.photoConsent=false;render();");
-  ok("consent grant immediately exposes revoke control",w.document.querySelector('[data-c="revoke-entry-consent"]') !== null);
-  w.eval("S.settings.voiceConsent=false;S.settings.photoConsent=false;cSend(\"Zeynep, Beşiktaş'taki evimde 2 dilim ekmek\");");
-  ok("local chat does not persist raw prose PII",!w.eval("S.chat.map(m=>m.text||'').join(' ')").match(/Zeynep|Beşiktaş|evimde/i));
+    // 8. After revoke, full tuple is cleared so consent screen shows again.
+    // Accept text-only consent (voice/photo remain off), so revoke control does NOT appear.
+    w.eval("S.settings.voiceConsent=false;S.settings.photoConsent=false;render();");
+    ok("after revoke, consent screen shows again",
+      w.document.body.textContent.includes("Yayın öncesi hukuki inceleme gerektirir") &&
+      w.document.querySelector('[data-c="entryconsenttextonly"]') !== null
+    );
+    w.document.querySelector('[data-c="entryconsenttextonly"]').click();
+    ok("text-only consent does not enable voice/photo; no revoke control", w.document.querySelector('[data-c="revoke-entry-consent"]') === null);
+    // Now enable both and check revoke appears
+    w.eval("S.settings.voiceConsent=true;S.settings.photoConsent=true;render();");
+    ok("both consent exposes revoke control", w.document.querySelector('[data-c="revoke-entry-consent"]') !== null);
+    w.eval("S.settings.voiceConsent=false;S.settings.photoConsent=false;cSend(\"Zeynep, Beşiktaş'taki evimde 2 dilim ekmek\");");
+    ok("local chat does not persist raw prose PII",!w.eval("S.chat.map(m=>m.text||'').join(' ')").match(/Zeynep|Beşiktaş|evimde/i));
 
   // 9. FileReader failure triggers user-visible toast
   let toastMsg = "";
