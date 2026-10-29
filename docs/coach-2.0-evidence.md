@@ -105,6 +105,40 @@
 - Gerçek Android WebView/cihaz doğrulaması henüz yapılmadı.
 
 
+## Faz 6 — Düşük sürtünmeli giriş (Ses, Fotoğraf/Etiket ve Yerel Porsiyonlama)
+
+- `www/modules/coach/coachlib.js`:
+  - `stripExifDetailed()`: JPEG, PNG ve WebP imzalarını yapısal olarak doğrular; eksik/kesik girdileri önbellekten önce reddeder; EXIF/GPS ve ilgili metaveri parçalarını temizler.
+  - `sanitizePii()`: telefon, TCKN, e-posta, GPS ve sınırlı yerel isim/adres örneklerini log girişinden önce maskeler. Bu tam anonimleştirme garantisi değildir.
+  - `resolveLocalFood()`: QuickLib kataloğunu kullanarak sıfır ağ çağrısıyla Türkçe serbest metin porsiyon/besin çözümler; maskeli yer tutucuları besin ayrıştırmasını bozmadan atlar.
+  - `resolveLocalLabel()` / `LabelLib`: etiket satırlarından kalori/makro çıkarır.
+  - `createVoiceSession()`: ham sesi kalıcı saklamaz; `stop()` ve transkripsiyon tamamlanınca `allowAudioRetention=false` durumunda ham tamponu sıfırlar.
+  - `createImageSession()`: geçici oturum belleğinde tutar; dışa aktar/temizle destekler; kalıcı diske yazmaz.
+- `www/modules/coach/coach.js` ve `www/modules/coach/index.js`:
+  - Giriş denetimleri `data-c="entryvoice"`, `data-c="entryphoto"`, `data-c="entrylocal"` ve görünür `data-c="revoke-entry-consent"` eylemlerini sunar.
+  - Ses/fotoğraf rızası ayrı tutulur; geri alma iki bayrağı kapatır, ses/görsel oturumlarını sıfırlar, önbelleği temizler ve durumu kaydeder.
+  - Katı rıza kapısı: `voiceConsent` ve `photoConsent` onaylanmadıkça kayıt veya çekim başlatılamaz.
+  - Tarayıcı konuşma tanıma açıklaması tamamen Türkçedir ve işleme konumu doğrulanmadığında çevrimiçi işlenebileceğini açıklar.
+  - Teklif kartı: Yerel olarak çözülen besinler doğrudan state'i değiştirmez; onay/reddedilme kartı sunar.
+- Test kanıtları (son düzenleme sonrası):
+  - `node scripts/coach-phase6.test.js`: 51 PASS. Covers required PNG/WebP chunks, arbitrary local prose PII projection, and local food resolution without raw prose retention.
+      - `node scripts/coach-phase6-ui.test.js`: 13 PASS. Covers immediate revoke rendering and local chat persistence without raw prose PII.
+      - `CI=1 E2E_PORT=4605 npx playwright test e2e/coach-entry.spec.js e2e/coach.spec.js e2e/access.spec.js e2e/coach-planner.spec.js e2e/coach-experiments.spec.js -c e2e/playwright.config.js --workers=1 --retries=0`: 128 passed (3.4m).
+      - `CI=1 E2E_PORT=4606 npx playwright test -c e2e/playwright.config.js --workers=1 --retries=0`: **352 passed, 0 failed (8.4m)**. Full E2E suite clean.
+      - `CI=1 E2E_PORT=4607 npx playwright test -c e2e/playwright.config.js --workers=1 --retries=0`: **352 passed, 0 failed (8.8m)**. Second full E2E rerun clean.
+      - `npm test`: 123 test files, 0 failed.
+      - `npm run android:sync:verify`: 28 Java files, 44 source resources.
+      - `git diff --check` and `node --check` on changed JS files: passed.
+
+## Faz 6 kalan riskleri
+
+- Web SpeechRecognition tarayıcı işleme politikasına bağlıdır; cihaz içinde işlendiği doğrulanmazsa UI çevrimiçi işlenebilirliği açıklar. Durdur/iptal ve klavye diktesi yedeği vardır.
+- ML Kit OCR yerine şimdilik istemci tarafı metin/etiket ayrıştırıcı çalışır.
+- Gerçek Android donanım izinleri ve mikrofon/kamera cihaz testi Faz 8 kapsamındadır.
+- PII kapsamı sınırlı yerel bir projeksiyondur; nadir isimler, farklı adres anlatımları ve diğer kimlik türleri için tam anonimleştirme iddiası yoktur.
+- Tam E2E ve canlı/gerçek cihaz doğrulaması sonuçlanmadan Faz 6 tamamen kapanmış sayılmaz.
+
+
 İlk üretim değişikliği şu sözleşmeyi kurar:
 
 ```text

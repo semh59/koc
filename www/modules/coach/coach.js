@@ -154,7 +154,7 @@ function cleanChat(arr,known){
     if(m.kind==="plateau")o.kind=m.kind;
     if(["check","ed"].includes(m.fl))o.fl=m.fl;
     const c=m.card,state=["pending","ok","no"].includes(c&&c.state)?c.state:"pending";
-    if(c&&c.kind==="log"&&Array.isArray(c.items)){const items=CoachLib.cleanItems(c.items);if(items.length)o.card=Object.assign({kind:"log",items,state,saved:c.saved===true},CoachLib.MEAL_KEYS.includes(c.meal)?{meal:c.meal}:{})}
+    if(c&&c.kind==="log"&&Array.isArray(c.items)){const items=CoachLib.cleanItems(c.items);if(items.length)o.card=Object.assign({kind:"log",items,state,saved:c.saved===true},c.local===true?{local:true}:{},CoachLib.MEAL_KEYS.includes(c.meal)?{meal:c.meal}:{})}
     else if(c&&c.kind==="food"){const f=CoachLib.cleanFood({name:c.f?.n,kcal:c.f?.k,protein:c.f?.p});if(f)o.card=Object.assign({kind:"food",f,state},c.logged===true?{logged:true}:{})}
     else if(c&&c.kind==="safety"&&["emergency","check","mind","ed"].includes(c.level))o.card={kind:"safety",level:c.level};
     else if(c&&c.kind==="why"&&Array.isArray(c.items)){
@@ -363,9 +363,16 @@ async function cAsk(messages,maxTokens,o={}){
 }
 
 /* ---- chat flow ---- */
-function cSend(text){
+function cSend(text,isCoachMessage){
   text=String(text||"").trim().slice(0,600);if(!text)return;
-  const fl=CoachLib.redFlag(text),m=cPush({role:"user",text,pend:true});
+  let storedText;
+  if(coachOn()||isCoachMessage){
+    storedText=text;
+  }else{
+    const resolved=CoachLib.resolveLocalFood(text,{foods:FOODS});
+    storedText=resolved.ok?resolved.items.map(i=>i.text).join(", "):"[yerel giriş]";
+  }
+  const fl=CoachLib.redFlag(storedText),m=cPush({role:"user",text:storedText,pend:true});
   if(fl==="ed")setRisk("ed");
   {const pg=CoachLib.pregnant(text);if(pg)chatRisk(pg,"Mesajında")}
   if(fl){
@@ -393,7 +400,18 @@ function cNoteCheck(t=S.settings.healthNote){
 async function cFlush(){
   if(busy)return;
   const pend=S.chat.filter(m=>m.role==="user"&&m.pend);if(!pend.length)return;
-  if(!coachOn()){render();return}
+  if(!coachOn()){
+    const lastUser=pend[pend.length-1];
+    if(lastUser&&lastUser.text){
+      const local=CoachLib.resolveLocalFood(lastUser.text);
+      if(local.ok&&local.items.length){
+        pend.forEach(m=>{m.pend=false});
+        cPush({role:"coach",text:`Cihazdaki yerel besin listesinden bulundu: "${local.sanitizedText}". Günlüğe eklemek için onayla:`,card:{kind:"log",items:local.items,state:"pending",local:true}});
+        save();render();return;
+      }
+    }
+    render();return;
+  }
   busy=true;typing=true;render();
   const fl=pend.map(m=>m.fl).find(Boolean),ask={until:Date.now()+BUDGET,conf:{}};
   try{
@@ -558,7 +576,7 @@ async function cRun(job,undo){
   catch(e){undo();toast(e.message==="declined"?"Gönderim onaylanmadı":CNET)}
   finally{busy=typing=false;save();render()}
 }
-/* If the note holds a pregnancy or health sign, no menu is made (shared by the Coach request and on-device creation). */
+/* If the note holds a pregnancy or health sign, no menu is made (shared by the Coach request and cihaz içi creation). */
 function menuNoteStop(note){
   const nf=cNoteCheck(note);
   if(nf){save();render();toast(nf==="preg"||nf==="nurs"?`Notunda ${nf==="preg"?"hamilelik":"emzirme"} işareti var, menü hazırlamıyorum; hekimine ya da diyetisyenine danış`:"Notunda sağlık uyarısı işareti var, menü hazırlamıyorum; hekimine danış")}
@@ -653,7 +671,7 @@ function cCard(m){
   const est=c.items.some(i=>i.type==="food"),onlySp=c.items.every(i=>i.type==="exercise"),ml=cardMeal(c),tot=c.items.reduce((a,i)=>a+(i.type==="food"&&i.kcal?i.kcal:0),0);
   return `<div class="card lcard"><div class="lhead"><b>${est?"Öğüne ekle":onlySp?"Egzersizi ekle":"Kayıt önerisi"}</b>${est?`<span class="forecast">Tahmin</span>`:""}</div>${rows}
   ${est?`<p class="mt-2 mut sm num">Toplam ~${Math.round(tot)} kcal</p>${c.state==="pending"?`<div class="mt-2 chips" role="group" aria-label="Öğün">${LogLib.MEALS.map(([k,n])=>`<button class="chip" data-c="lml:${m.id}:${k}" aria-pressed="${ml===k}">${n}</button>`).join("")}</div>`:""}`:""}
-  ${c.state==="pending"?`<div class="bgrid mt-3"><button class="btn" data-c="ok:${m.id}">${est?"Günlüğe ekle":onlySp?"Egzersizi ekle":"Onayla"}</button><button class="btn ghost" data-c="no:${m.id}">Vazgeç</button></div>`:`<p class="mut sm">${c.state==="ok"?"Kaydedildi":"Vazgeçildi"}</p>${c.state==="ok"&&est&&!c.saved?`<div class="bgrid mt-3"><button class="btn ghost" data-c="savefood:${m.id}">Yemeği listeme kaydet</button></div>`:""}`}</div>`;
+  ${c.state==="pending"?`<div class="bgrid mt-3"><button class="btn" data-c="ok:${m.id}">${est?(c.local===true?"Öğüne ekle":"Günlüğe ekle"):onlySp?"Egzersizi ekle":"Onayla"}</button><button class="btn ghost" data-c="no:${m.id}">Vazgeç</button></div>`:`<p class="mut sm">${c.state==="ok"?"Kaydedildi":"Vazgeçildi"}</p>${c.state==="ok"&&est&&!c.saved?`<div class="bgrid mt-3"><button class="btn ghost" data-c="savefood:${m.id}">Yemeği listeme kaydet</button></div>`:""}`}</div>`;
 }
 /* Menu day options: add to today or make a meal template (one button per day on the card). */
 function cMenuDay(id,di){
@@ -681,6 +699,7 @@ const consentHtml=()=>consentBody()+consentWarn();
 /* Deletes the chat and leaves the consent alone. */
 function cClearChat(){
   if(!cSwitchOk())return false;
+  Coach.clearImageCache?.();
   const old={chat:structuredClone(S.chat),chats:structuredClone(S.chats),cid:S.cid,providers:structuredClone(S.providers)},repo=Coach.repository(),fixture=repo?.exportBeforeDelete?.();
   if(!fixture||repo.deleteAfterExport(()=>true)!==true)return false;
   S.chat=[];S.chats=[];
@@ -711,6 +730,7 @@ function cChatList(){
 /* `tap`: the user pressed the consent button; the first consent then also turns the text preview on until they choose otherwise. */
 function cConsent(on,tap){
   const s=S.settings;if(on&&!consentOk())return;
+  if(!on)coachResetSessions();
   if(on&&tap&&!s.piiPrevOwn)s.piiPrev=true;
   Object.assign(s,{consent:on,consentV:on?CONSENT_V:0,consentAt:on?dayKey():"",consentP:on?provSet():null});save();render();
   if(!on&&(S.chat.length||S.chats.length))confirmSheet({title:"Rehber sohbeti silinsin mi?",body:"Rıza geri alındı, yeni veri gitmez. İstersen yazışmaları da bu telefondan sil.",ok:"Sohbeti sil"}).then(yes=>{if(yes&&cClearChat())render()});
@@ -766,6 +786,97 @@ async function experimentDeleteAllFromSettings(){
   const deleted=await Coach.experimentDeleteAll();
   toast(deleted?"Tüm deneyler silindi":"Deneyler silinemedi; kayıtlar korundu");
 }
+function cRevokeEntryConsent(){
+  cStopVoice(true);
+  S.settings.voiceConsent=false;S.settings.photoConsent=false;
+  coachResetSessions();save();render();toast("Ses ve fotoğraf izinleri geri alındı");
+}
+function entryControlsHtml(){
+  return `<section aria-labelledby="entry-controls-title" class="mb-3"><div class="row"><h2 id="entry-controls-title" class="grp">Düşük sürtünmeli giriş</h2></div><p class="hint">Fotoğraf ve yerel besin araması cihazda işlenir; ses girişi açık onayınla ve konuşma motoru desteğiyle çalışır.</p><div class="chips"><button class="chip" data-c="entryvoice">Sesle kaydet</button><button class="chip" data-c="entryphoto">Fotoğraf / Etiket tara</button><button class="chip" data-c="entrylocal">Hızlı yemek / porsiyon</button>${S.settings.voiceConsent||S.settings.photoConsent?`<button class="chip" data-c="revoke-entry-consent">Ses ve fotoğraf izinlerini geri al</button>`:""}</div></section>`;
+}
+let activeSpeechRecognizer=null;
+function cStopVoice(cancelled=false){
+  const r=activeSpeechRecognizer;activeSpeechRecognizer=null;
+  try{if(r){cancelled&&r.abort?r.abort():r.stop?.()}}catch{}
+  try{Coach.voiceSession()?.[cancelled?"cancel":"stop"]()}catch{}
+  toast(cancelled?"Ses girişi durduruldu":"Ses girişi durduruldu");
+}
+function cStartVoice(){
+  let session;
+  try{session=Coach.voiceSession()}catch{return toast("Ses oturumu açılamadı")}
+  try{session.start()}catch(e){return toast("Ses kaydı için açık onay gerekiyor")}
+  if(session.mode==="web_speech"&&typeof window!=="undefined"&&(window.SpeechRecognition||window.webkitSpeechRecognition)){
+    try{
+      const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+      const rec=new SR();rec.lang="tr-TR";rec.interimResults=false;
+      const localConfirmed=rec.processLocally===true;
+      const disclosure=localConfirmed?"Bu tarayıcı ses tanımayı cihazda işlediğini doğruladı.":"Tarayıcının ses tanıması çevrimiçi işlenebilir; cihaz içinde işlendiği doğrulanmadı.";
+      rec.onresult=ev=>{
+        if(activeSpeechRecognizer!==rec)return;
+        activeSpeechRecognizer=null;
+        const transcript=ev.results&&ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:"";
+        session.finishTranscription(transcript);
+        closeSheet();
+        cHandleVoiceTranscript(transcript);
+      };
+      /* Only the live recognizer may react: a dismissed sheet or Durdur/Kaydı bırak already cleared it, so a late error must not reopen anything over another screen. */
+      rec.onerror=()=>{if(activeSpeechRecognizer!==rec)return;activeSpeechRecognizer=null;session.purgeAudio();toast("Ses tanıma çalışmadı; yazarak devam edebilirsin")};
+      rec.onend=()=>{if(activeSpeechRecognizer===rec){activeSpeechRecognizer=null;session.stop()}};
+      /* The dictation sheet is opened first and owns the recognizer: closing it (Escape, scrim, back) aborts listening, so listening never continues invisibly. */
+      cPromptDictationFallback(disclosure);
+      activeSpeechRecognizer=rec;
+      rec.start();
+      toast(disclosure);
+      return;
+    }catch{activeSpeechRecognizer=null;session.purgeAudio()}
+  }
+  cPromptDictationFallback();
+}
+function cPromptDictationFallback(speechCopy="Tarayıcının ses tanıması çevrimiçi işlenebilir; cihaz içinde işlendiği doğrulanmadı."){
+      openSheet(`<h3>Sesle / Klavyeyle giriş</h3><p class="hint">${speechCopy} Motor yoksa klavyenin mikrofon tuşunu kullan. Yediklerini veya içtiklerini yaz/söyle:</p><label class="lbl" for="voice-dictation-input">Sesli dikte</label><input class="in" id="voice-dictation-input" placeholder="Örn: 2 dilim ekmek, 1 bardak süt" autocomplete="off"><div class="bgrid mt-3"><button class="btn" data-c="voicedictationsave">Çöz ve ekle</button><button class="btn ghost" data-c="voicestop">Durdur</button><button class="btn ghost" data-c="voicecancel">Kaydı bırak</button></div>`);
+}
+function cHandleVoiceTranscript(transcript){
+  if(!transcript||!transcript.trim())return;
+  const res=CoachLib.resolveLocalFood(transcript);
+  if(res.ok&&res.items.length){
+    cPush({role:"coach",text:`Ses kaydından çözüldü: "${res.sanitizedText}". Günlüğe eklemek için onayla:`,card:{kind:"log",items:res.items,state:"pending",local:true}});
+    save();render();
+  }else{
+    const input=typeof $==="function"?$("#cmsg"):null;
+    if(input){input.value=res.sanitizedText;input.focus()}
+    toast(`Yazıya döküldü: "${res.sanitizedText}"`);
+  }
+}
+function cOpenPhotoSheet(){
+  const session=Coach.imageSession();
+  const cached=session.listCache().length;
+  openSheet(`<h3>Fotoğraf / Etiket tara</h3><p class="hint">Fotoğraf cihazda geçici işlenir, EXIF/GPS silinir. (Önbellekte: ${cached} geçici görsel)</p>
+    <div class="bgrid">
+      <button class="btn" data-c="photolabel">Besin etiketi tara (OCR)</button>
+      <button class="btn ghost" data-c="photomeal">Yemek fotoğrafı ekle</button>
+      ${cached?`<button class="btn danger" data-c="photocacheclear">Görsel önbelleğini temizle</button>`:""}
+      <button class="btn ghost" data-c="closesheet">Kapat</button>
+    </div>`);
+}
+function cPhotoPick(kind){
+  if(typeof document==="undefined")return;
+  const i=document.createElement("input");i.type="file";i.accept="image/jpeg,image/png,image/webp";i.capture=kind==="meal_scan"?"environment":undefined;i.hidden=true;
+  i.addEventListener("change",()=>{
+    const f=i.files?.[0];i.remove();if(!f)return;
+    const r=new FileReader();
+    const fail=()=>{try{i.remove()}catch{};toast("Görsel okunamadı; lütfen başka bir görsel seç")};
+    r.onerror=fail;r.onabort=fail;
+    r.onload=()=>{
+      try{
+        const info=CoachLib.stripExifDetailed(r.result);
+        Coach.imageSession().captureImage(info.data,{purpose:kind||"meal_scan"});
+        toast(`Görsel güvenli şekilde işlendi (${info.mimeType}; ${info.stripped?"EXIF/GPS temizlendi":"metadata bulunamadı"})`);
+      }catch(e){toast(e.code==="UNSUPPORTED_IMAGE_FORMAT"?"Bu görsel biçimi desteklenmiyor":"Görsel işlenemedi; lütfen başka bir görsel seç")}
+    };
+    try{r.readAsDataURL(f)}catch{fail()}
+  });
+  document.body.appendChild(i);i.click();
+}
 function viewCoach(){
   let h="";
   const intro=offline==="none"||(!hasKey()&&!S.chat.length),li=a=>`<ul class="cul">${a.map(t=>`<li>${t}</li>`).join("")}</ul>`;
@@ -778,6 +889,7 @@ function viewCoach(){
   }
   if(!coachOn()&&!intro)h+=`<div class="card"><h2 class="m0 t-h2">Rehber ile veri paylaşımı</h2>${li(["Mesajların ve istersen profilin (boy, yaş aralığı, cinsiyet, hareket, kalori hedefi) seçtiğin sağlayıcıya gider.","Yalnız sen bir düğmeye bastığında gönderilir.","İstediğin an geri alırsın; onay vermezsen hiçbir veri gönderilmez."])}${consentWarn()}<details class="acc"><summary>Detaylar</summary><div class="sm">${consentBody()}</div></details>${consentOk()?`<div class="lbl">Rehber'e hangi veriler gitsin?</div>${shareRows()}${swRow('data-pv="prev"',!S.settings.piiPrevOwn||S.settings.piiPrev,"Gönderimden önce metni göster","Her gönderimden önce giden tam metni görür, Gönder ya da Vazgeç dersin. İstersen kapat.")}<button class="btn" data-c="consent">Açık rızamı veriyorum</button>`:""}<button class="lnk" data-pv="open">Gizlilik ve veri</button></div>`;
   h+=experimentCard();
+  h+=entryControlsHtml();
   if(S.chat.length||S.chats.length)h+=`<div class="chips cbar">${S.chat.length?`<button class="chip" data-c="newchat">Yeni sohbet</button>`:""}${S.chats.length?`<button class="chip" data-c="chats">Geçmiş</button>`:""}</div>`;
   if(!S.chat.length&&hasKey()&&coachOn())h+=emptyCard("coach","Bugün neyle başlayalım?","Bir yemeğin ya da egzersizin adını yaz, kalorisini tahmin edeyim. Menü ve program da isteyebilirsin.",`<div class="chips">${CASK.map((x,i)=>`<button class="chip" data-c="ask:${i}">${x[0]}</button>`).join("")}</div>`);
   /* The bubble carries only text; the card is a separate full-width surface outside the bubble. */
@@ -1068,6 +1180,61 @@ function cClick(v,el){
     case "experimentdeleteall":return experimentDeleteAllFromSettings();
     case "deletekeys":return deleteKeysFromSettings();
 
+    case "revoke-entry-consent":return cRevokeEntryConsent();
+    case "entryvoice":{
+      if(!S.settings.voiceConsent){
+        return openSheet(`<h3>Sesle kayıt izni</h3><p class="hint">Ses kaydı yalnızca açık onayınla başlar. Ham ses uygulamada tutulmaz ve NeoWell bunu Rehber sağlayıcısına göndermez; ancak tarayıcının konuşma tanıması sesi çevrimiçi işleyebilir ve cihaz içinde işlendiği doğrulanmadıkça buna güvenmemelisin. Sesle kayıt için açık onay veriyor musun?</p><div class="bgrid"><button class="btn" data-c="voiceconsentok">Açık rızamı veriyorum</button><button class="btn ghost" data-c="closesheet">Vazgeç</button></div>`);
+      }
+      return cStartVoice();
+    }
+    case "voiceconsentok":{
+      S.settings.voiceConsent=true;save();closeSheet();render();return cStartVoice();
+    }
+    case "voicedictationsave":{
+      const input=typeof $==="function"?$("#voice-dictation-input"):null;
+      const text=input?input.value:"";cStopVoice(false);closeSheet();return cHandleVoiceTranscript(text);
+    }
+    case "voicestop":return cStopVoice(false);
+    case "voicecancel":return cStopVoice(true);
+    case "entryphoto":{
+      if(!S.settings.photoConsent){
+        return openSheet(`<h3>Fotoğraf ve tarama izni</h3><p class="hint">Fotoğraf ve etiket taramaları yalnızca bu cihazda geçici olarak işlenir. GPS ve EXIF bilgileri anında silinir. Açık rızan olmadan hiçbir sağlayıcıya aktarılmaz. İstediğin zaman önbelleği silebilirsin. Devam etmek için açık onay veriyor musun?</p><div class="bgrid"><button class="btn" data-c="photoconsentok">Açık rızamı veriyorum</button><button class="btn ghost" data-c="closesheet">Vazgeç</button></div>`);
+      }
+      return cOpenPhotoSheet();
+    }
+    case "photoconsentok":{
+      S.settings.photoConsent=true;save();closeSheet();render();return cOpenPhotoSheet();
+    }
+    case "photocacheclear":{
+      Coach.clearImageCache();toast("Görsel önbelleği temizlendi");return closeSheet();
+    }
+    case "photolabel":{
+      closeSheet();cPhotoPick("label_ocr");return;
+    }
+    case "photomeal":{
+      closeSheet();cPhotoPick("meal_scan");return;
+    }
+    case "entrylocal":{
+      return openSheet(`<h3>Hızlı yemek / porsiyon</h3><p class="hint">Porsiyon veya gramajla yediklerini yaz (ör. 2 dilim ekmek, 200 g tavuk, yarım simit). Cihazda yerel çözülür, internete gönderilmez.</p>
+        <label class="lbl" for="local-food-input">Yedikleriniz</label>
+        <input class="in" id="local-food-input" placeholder="2 dilim ekmek, 200 g tavuk göğsü" autocomplete="off">
+        <div class="bgrid mt-3">
+          <button class="btn" data-c="localfoodresolve">Çöz ve ekle</button>
+          <button class="btn ghost" data-c="closesheet">Vazgeç</button>
+        </div>`);
+    }
+    case "localfoodresolve":{
+      const input=typeof $==="function"?$("#local-food-input"):null;
+      const text=input?input.value:"";closeSheet();
+      if(!text||!text.trim())return;
+      const res=CoachLib.resolveLocalFood(text);
+      if(res.ok&&res.items.length){
+        cPush({role:"coach",text:`Yerel listeden bulundu: "${res.sanitizedText}". Günlüğe eklemek için onayla:`,card:{kind:"log",items:res.items,state:"pending",local:true}});
+        save();render();
+      }else{toast("Yemek bulunamadı veya anlaşılamadı")}
+      return;
+    }
+
     case "plannercheck":return plannerOpenCheckin();
     case "planpreview":return plannerShowPlanPreview();
     case "planconfirm":return plannerConfirmPlan();
@@ -1080,7 +1247,7 @@ function cClick(v,el){
     case "plancancel":return plannerCancel();
     case "plannerundo":{const r=Coach.planner().undoAction(p1,undoKey());if(r.ok){render();toast("Uyarlama geri alındı")}return r;}
 
-    case "askfood":{const q=foodAskQ.trim();if(q){closeSheet();tab="coach";render();cSend(`${q} kaç kalori? Bir porsiyon için tahmin et.`)}return}
+    case "askfood":{const q=foodAskQ.trim();if(q){closeSheet();tab="coach";render();cSend(`${q} kaç kalori? Bir porsiyon için tahmin et.`,true)}return}
     case "send":{const i=$("#cmsg");const t=i.value;i.value="";return cSend(t)}
     case "retry":offline=null;cFlush();return render();
     case "pvok":case "pvno":sheetDone(a==="pvok");return closeSheet();
@@ -1159,7 +1326,8 @@ function cClick(v,el){
       const [x]=S.chats.splice(i,1);save();render();cChatList();
       return toast("Sohbet silindi",()=>{if(!S.chats.some(c=>c.id===x.id)){S.chats.splice(Math.min(i,S.chats.length),0,x);S.chats=trimChats(S.chats,true);save();render();cChatList()}});
     }
-    case "memoryexport":{const x=Coach.memoryExport();if(x)shareOut(false,`neowell-memory-${dayKey()}.json`,"Rehber hafızası","application/json",JSON.stringify(x),true);return;}
+    case "memoryexport":{const x=Coach.memoryExport();if(x)shareOut(false,`neowell-memory-${dayKey()}.json`,`Rehber hafızası`,`application/json`,JSON.stringify(x),true);return;}
+    case "memorydeleteall":return confirmSheet({title:"Hafıza dışa aktarılıp silinsin mi?",body:"Önce tam dışa aktarma yapılır. Aktarım başarısızsa hafızalar korunur.",ok:"Dışa aktar ve sil",no:"Vazgeç",danger:true}).then(async yes=>{if(!yes)return;const out=await Coach.memoryDeleteAll();if(!out)return toast("Dışa aktarma başarısız; hafızalar korunuyor");render();toast("Hafıza dışa aktarıldı ve silindi")});
     case "clearchat":if(cSwitchOk())confirmSheet({title:"Sohbet geçmişi silinsin mi?",body:"Kayıtların silinmez.",ok:"Sil",danger:true}).then(ok=>{if(ok){cClearChat();render()}});return;
     default:return cProvClick(a,p1,p2);
   }

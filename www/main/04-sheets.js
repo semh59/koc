@@ -15,7 +15,9 @@ function openSheet(html){
   const f=s.querySelector("[autofocus]");if(f)setTimeout(()=>{const a=document.activeElement;if(f.isConnected&&!(a&&a!==f&&s.contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)))f.focus()},220);else(h||s).focus({preventScroll:true});
 }
 function closeSheet(){
-  Units.reset();plStop();sheetDone(false);setPendingBarcode("");const s=$("#sheet"),was=s.classList.contains("on"),f=sheetFrom;
+  Units.reset();plStop();sheetDone(false);setPendingBarcode("");
+  if(typeof cStopVoice==="function"&&activeSpeechRecognizer)cStopVoice(true);
+  const s=$("#sheet"),was=s.classList.contains("on"),f=sheetFrom;
   s.classList.remove("on");$("#scrim").classList.remove("on");sheetFrom=null;trap();
   if(was&&f&&f.isConnected)f.focus({preventScroll:true});
 }

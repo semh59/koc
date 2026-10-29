@@ -487,6 +487,203 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
     if(x.follow_up&&Object.keys(x.follow_up).some(k=>k!=="when"&&k!=="question"))return null;
     return x;
   }
-  return {usageOf,usageAdd,usageSum,createMemoryRepository,createExperimentRepository,explainSuggestion,REPLY_MAX,oneLine,pregnant,BROKEN,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,catalogText,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText,compileContext,validateResponse,migrateLegacy,legacyFromRepository,createRepository,migrateLegacyAtomic,createPlanner};
+  function sanitizePii(text){
+    if(typeof text!=="string")return {text:"",piiFound:false,types:[]};
+    let out=text;const types=[];
+    const replace=(re,tag,type)=>{const before=out;out=out.replace(re,tag);if(out!==before&&!types.includes(type))types.push(type)};
+    /* Order matters: structured identifiers first, prose names last so e-mail local-parts remain intact. */
+    /* TCKN must be removed before phone matching can see a suffix. */
+    replace(/(?<!\d)[1-9]\d{10}(?!\d)/g,"[TCKN]","tckn");
+    replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,"[E-POSTA]","email");
+    /* Local projection is intentionally conservative: named people and prose addresses are masked before local food parsing. */
+    replace(/(?<![\p{L}])\p{Lu}[\p{L}]+(?:\s+\p{Lu}[\p{L}]+){0,2}(?=\s*,)/gu,"[AD]","name");
+    replace(/(?<![\p{L}])[\p{L}]+(?:'(?:de|da|den|dan|te|ta|ten|tan|deki|daki|teki|taki))?\s+evimde(?![\p{L}])/giu,"[ADRES]","address");
+    /* Turkish mobile (05xx), landline (02xx/03xx/04xx), toll-free/VoIP (0850) and intl (+90). */
+    replace(/(?<!\d)(?:(?:\+|00)?90[\s.-]*)?(?:0?\s*\(\s*0?[2-58]\d{2}\s*\)|0?\s*[2-58]\d{2})[\s.-]*\d{3}[\s.-]*(?:\d{2}[\s.-]*\d{2}|\d{3,4})(?!\d)/g,"[TELEFON]","phone");
+    /* Corporate 444 x xxx / 444 xx xx */
+    replace(/(?<!\d)(?:(?:\+|00)?90[\s.-]*)?(?:(?:0?\s*\(\s*0?[2-4]\d{2}\s*\)|0?\s*[2-4]\d{2})[\s.-]*)?444[\s.-]*\d{1,2}[\s.-]*\d{2,3}(?!\d)/g,"[TELEFON]","phone");
+    /* International phone */
+    replace(/\+\d{1,3}[\s.-]*\(?\d{2,4}\)?[\s.-]*\d{3}[\s.-]*\d{2}[\s.-]*\d{2}(?!\d)/g,"[TELEFON]","phone");
+    /* Decimal-dot and decimal-comma coordinate pairs, with comma/semicolon/space separators. */
+    replace(/[-+]?\d{1,3}[.,]\d{3,}\s*(?:°\s*[NS])?\s*[,; ]\s*[-+]?\d{1,3}[.,]\d{3,}\s*(?:°\s*[EW])?/gi,"[KONUM]","gps");
+    return {text:out,piiFound:types.length>0,types};
+  }
+  const bytesOf=x=>x instanceof Uint8Array?x:new Uint8Array(x);
+  const bytesToBuffer=(parts)=>typeof Buffer!=="undefined"?Buffer.concat(parts.map(x=>Buffer.from(x))):(()=>{const n=parts.reduce((a,x)=>a+x.length,0),o=new Uint8Array(n);let p=0;for(const x of parts){o.set(x,p);p+=x.length}return o})();
+  function binaryToBytes(bin){
+    const len=bin.length,out=new Uint8Array(len);
+    for(let i=0;i<len;i++)out[i]=bin.charCodeAt(i);
+    return out;
+  }
+  const base64Bytes=b=>{
+    if(typeof Buffer!=="undefined")return Buffer.from(b).toString("base64");
+    const CHUNK=0x1000;let s="";
+    for(let i=0;i<b.length;i+=CHUNK){
+      s+=String.fromCharCode.apply(null,b.subarray?b.subarray(i,i+CHUNK):b.slice(i,i+CHUNK));
+    }
+    return btoa(s);
+  };
+  function imageBytes(data){
+    let isDataUri=false,mime="";let bytes;
+    if(typeof data==="string"){
+      if(data.startsWith("data:")){
+        isDataUri=true;const comma=data.indexOf(",");mime=data.slice(5,comma).split(";")[0].toLowerCase();const b64=data.slice(comma+1);
+        bytes=typeof Buffer!=="undefined"?Buffer.from(b64,"base64"):binaryToBytes(atob(b64));
+      } else throw Object.assign(new Error("image bytes required"),{code:"UNSUPPORTED_IMAGE_FORMAT"});
+    }else if(typeof Buffer!=="undefined"&&Buffer.isBuffer(data))bytes=data;
+    else if(data instanceof Uint8Array)bytes=data;
+    else if(data instanceof ArrayBuffer)bytes=new Uint8Array(data);
+    else throw Object.assign(new Error("image bytes required"),{code:"UNSUPPORTED_IMAGE_FORMAT"});
+    const b=bytesOf(bytes);
+    const magic=b[0]===0xff&&b[1]===0xd8?"image/jpeg":b.length>=8&&Array.from(b.slice(0,8)).join(",")==="137,80,78,71,13,10,26,10"?"image/png":b.length>=12&&String.fromCharCode(...b.slice(0,4))==="RIFF"&&String.fromCharCode(...b.slice(8,12))==="WEBP"?"image/webp":"";
+    if(!magic)throw Object.assign(new Error("Unsupported image format"),{code:"UNSUPPORTED_IMAGE_FORMAT"});
+    if((magic==="image/jpeg"&&b.length<4)||(magic==="image/png"&&b.length<20)||(magic==="image/webp"&&b.length<20))throw Object.assign(new Error("Malformed image"),{code:"MALFORMED_IMAGE"});
+    if(magic==="image/jpeg"&&!(b[b.length-2]===0xff&&b[b.length-1]===0xd9))throw Object.assign(new Error("Malformed JPEG"),{code:"MALFORMED_IMAGE"});
+    if(magic==="image/png"){
+      let i=8,count=0,hasIhdr=false,hasIend=false;while(i+12<=b.length){const n=(b[i]<<24)|(b[i+1]<<16)|(b[i+2]<<8)|b[i+3],type=String.fromCharCode(...b.slice(i+4,i+8));if(n<0||i+12+n>b.length||!/^[A-Za-z]{4}$/.test(type))throw Object.assign(new Error("Malformed PNG"),{code:"MALFORMED_IMAGE"});hasIhdr=hasIhdr||type==="IHDR";hasIend=hasIend||type==="IEND";i+=12+n;count++}if(i!==b.length||!count||!hasIhdr||!hasIend)throw Object.assign(new Error("Malformed PNG"),{code:"MALFORMED_IMAGE"});
+    }
+    if(magic==="image/webp"){
+      let i=12,count=0,hasImage=false;while(i+8<=b.length){const type=String.fromCharCode(...b.slice(i,i+4)),n=(b[i+4]|b[i+5]<<8|b[i+6]<<16|b[i+7]<<24)>>>0;if(i+8+n+(n&1)>b.length||!/^[ -~]{4}$/.test(type))throw Object.assign(new Error("Malformed WebP"),{code:"MALFORMED_IMAGE"});hasImage=hasImage||["VP8 ","VP8L","VP8X"].includes(type);i+=8+n+(n&1);count++}if(i!==b.length||!count||!hasImage)throw Object.assign(new Error("Malformed WebP"),{code:"MALFORMED_IMAGE"});
+    }
+    if(mime&&mime!==magic)throw Object.assign(new Error("Image MIME does not match bytes"),{code:"MIME_MISMATCH"});
+    mime=magic;
+    return {bytes:b,isDataUri,mime};
+  }
+  function stripJpeg(b){const out=[b.slice(0,2)];let i=2,changed=false;while(i<b.length){if(b[i]!==0xff){out.push(b.slice(i));break}let marker=b[i+1];if(marker===0xff){i++;continue}const next=i+2;if(marker===0xd9){out.push(b.slice(i,i+2));break}if(marker===0xda){out.push(b.slice(i));break}if(marker===0x00||(marker>=0xd0&&marker<=0xd7)){out.push(b.slice(i,i+2));i+=2;continue}if(i+4>b.length)throw new Error("Malformed JPEG");const len=(b[i+2]<<8)|b[i+3];if(len<2||i+2+len>b.length)throw new Error("Malformed JPEG");if((marker>=0xe0&&marker<=0xef)||marker===0xfe)changed=true;else out.push(b.slice(i,i+2+len));i+=2+len}return {bytes:bytesToBuffer(out),changed}}
+  function stripPng(b){const out=[b.slice(0,8)];let i=8,changed=false;while(i+12<=b.length){const n=(b[i]<<24)|(b[i+1]<<16)|(b[i+2]<<8)|b[i+3],total=n+12;if(n<0||i+total>b.length)throw new Error("Malformed PNG");const type=String.fromCharCode(...b.slice(i+4,i+8));if(type==="eXIf"||["tEXt","zTXt","iTXt"].includes(type))changed=true;else out.push(b.slice(i,i+total));i+=total}if(i!==b.length)throw new Error("Malformed PNG");return {bytes:bytesToBuffer(out),changed}}
+  function stripWebp(b){const out=[b.slice(0,12)];let i=12,changed=false;while(i+8<=b.length){const type=String.fromCharCode(...b.slice(i,i+4)),n=(b[i+4]|b[i+5]<<8|b[i+6]<<16|b[i+7]<<24)>>>0,total=8+n+(n&1);if(i+total>b.length)throw new Error("Malformed WebP");if(type==="EXIF"||type==="XMP ")changed=true;else out.push(b.slice(i,i+total));i+=total}if(i!==b.length)throw new Error("Malformed WebP");const result=bytesToBuffer(out);if(typeof Buffer!=="undefined")result.writeUInt32LE(result.length-8,4);else{result[4]=(result.length-8)&255;result[5]=(result.length-8)>>8&255;result[6]=(result.length-8)>>16&255;result[7]=(result.length-8)>>24&255}return {bytes:result,changed}}
+  function stripExifDetailed(data){const src=imageBytes(data),r=src.mime==="image/jpeg"?stripJpeg(src.bytes):src.mime==="image/png"?stripPng(src.bytes):stripWebp(src.bytes),out=r.bytes;let result=out;if(src.isDataUri)result=`data:${src.mime};base64,${base64Bytes(out)}`;return {data:result,mimeType:src.mime,stripped:r.changed,changed:r.changed};}
+  function stripExif(data){const r=stripExifDetailed(data);return r.data;}
+  function resolveLocalFood(text,{foods,maxItems=12}={}){
+    const raw=typeof text==="string"?text:"";
+    const sanitized=sanitizePii(raw);
+    const QL=typeof QuickLib!=="undefined"?QuickLib:(typeof require!=="undefined"?require("../nutrition/quicklib.js"):null);
+    const list=foods||(typeof FOODS!=="undefined"?FOODS:(typeof require!=="undefined"?require("../nutrition/foods.js").FOODS : null));
+    if(!QL||!list||!sanitized.text.trim())return {ok:false,kind:"log",resolvedLocally:true,networkCalls:0,items:[],sanitizedText:sanitized.text};
+    let clean=sanitized.text
+      .replace(/\[(?:ADRES|AD|TCKN|E-POSTA|TELEFON|KONUM)\]/g," ")
+      .replace(/\b(?:yedim|içtim|ictim|tükettim|tukettim|aldım|aldim)\b/gi,"")
+      .replace(/\b(?:kahvaltıda|kahvaltida|ara\s+öğünde|ara\s+ogunde)\b/gi,"")
+      .trim();
+    const splitRe=/(?:[,;\n]|\s+(?:ve|ile)\s+|\s+(?=(?:\d+|bir|iki|üç|uc|dört|dort|beş|bes|altı|alti|yedi|sekiz|dokuz|on|yarım|yarim|çeyrek|ceyrek)\s+(?:dilim|adet|porsiyon|bardak|kase|kaşık|kasik|tabak|gram|g|gr|kg|avuc|avuç|fincan|kutu|kepçe|kepce|somun|durum|dürüm)))/i;
+    const segments=clean.split(splitRe).map(s=>s.trim()).filter(Boolean);
+    const lines=segments.length?segments:[clean];
+    const items=[];
+    for(const seg of lines){
+      if(items.length>=maxItems)break;
+      const rows=QL.parse(seg,list);
+      for(const r of (Array.isArray(rows)?rows:[])){
+        if(r.miss||r.f==null)continue;
+        const f=list[r.f];if(!f)continue;
+        const c=QL.calc(f,r,["p","c","f"]);
+        const lbl=QL.label(f,r);
+        items.push({type:"food",text:lbl,kcal:Math.round(c.k),p:c.p!=null?Math.round(c.p*10)/10:null,c:c.c!=null?Math.round(c.c*10)/10:null,f:c.f!=null?Math.round(c.f*10)/10:null,g:Math.round(c.g),day:"today"});
+        if(items.length>=maxItems)break;
+      }
+    }
+    return {ok:items.length>0,kind:"log",resolvedLocally:true,networkCalls:0,items,sanitizedText:sanitized.text};
+  }
+  function resolveLocalLabel(name,parsedLabel,{grams=100}={}){
+    if(!parsedLabel||typeof parsedLabel!=="object")return {ok:false,kind:"log",resolvedLocally:true,networkCalls:0,items:[]};
+    const src=parsedLabel.food||parsedLabel;
+    const g=Number(grams)>0?Number(grams):100,factor=g/100;
+    const k=src.k!=null?Math.round(src.k*factor):null;
+    const p=src.p!=null?Math.round(src.p*factor*10)/10:null;
+    const c=src.c!=null?Math.round(src.c*factor*10)/10:null;
+    const f=src.f!=null?Math.round(src.f*factor*10)/10:null;
+    const label=`${String(name||"Besin etiketi").trim()}, ${g} g`;
+    return {ok:true,kind:"log",resolvedLocally:true,networkCalls:0,items:[{type:"food",text:label,kcal:k,p,c,f,g,day:"today"}]};
+  }
+  function createVoiceSession({consent={},recognitionEngine=null,localOnly=true,allowAudioRetention=false,onTranscript,onError}={}){
+    let recording=false,audioBuffer=[],bufferedBytes=0,transcript="";
+    const consentValue=()=>typeof consent==="function"?consent():(consent||{});
+    const hasVoiceConsent=()=>consentValue().voiceInput===true;
+    const hasAudioTransferConsent=()=>consentValue().audioTransfer===true;
+    const mode=recognitionEngine||(typeof window!=="undefined"&&(window.SpeechRecognition||window.webkitSpeechRecognition))?"web_speech":"keyboard_dictation";
+    function start(){
+      if(!hasVoiceConsent()){
+        const err=Object.assign(new Error("Ses kaydı için açık kullanıcı onayı gerekiyor."),{code:"VOICE_CONSENT_REQUIRED",error:"consent_required"});
+        if(onError)onError(err);
+        throw err;
+      }
+      recording=true;audioBuffer=[];bufferedBytes=0;transcript="";
+      return {ok:true,mode};
+    }
+    function ingestAudioChunk(chunk){
+      if(!hasVoiceConsent())throw Object.assign(new Error("Ses kaydı için açık kullanıcı onayı gerekiyor."),{code:"VOICE_CONSENT_REQUIRED",error:"consent_required"});
+      recording=true;const len=chunk?(chunk.byteLength||chunk.length||0):0;
+      audioBuffer.push(chunk);bufferedBytes+=len;
+      return {ok:true,bufferedBytes};
+    }
+    function purgeAudio(){
+      audioBuffer=null;bufferedBytes=0;recording=false;
+      return {ok:true,retainedAudioBytes:0};
+    }
+    function stop(){
+      recording=false;
+      if(!allowAudioRetention){purgeAudio();return {ok:true,retainedAudioBytes:0};}
+      return {ok:true,retainedAudioBytes:audioBuffer?bufferedBytes:0};
+    }
+    function cancel(){transcript="";return purgeAudio()}
+    function finishTranscription(text){
+      transcript=String(text||"").trim();
+      const purged=!allowAudioRetention;
+      if(purged)purgeAudio();
+      if(onTranscript)onTranscript(transcript);
+      return {transcript,purged,retainedAudioBytes:allowAudioRetention?bufferedBytes:0};
+    }
+    function sendToProvider(audioData){
+      if(!hasAudioTransferConsent()){
+        const err=Object.assign(new Error("Harici sağlayıcıya ses iletimi için açık kullanıcı rızası gerekiyor."),{code:"AUDIO_TRANSFER_CONSENT_REQUIRED",error:"provider_transfer_prohibited"});
+        if(onError)onError(err);
+        throw err;
+      }
+      return {ok:true,sent:true};
+    }
+    return {
+      get mode(){return mode},
+      get bufferedBytes(){return bufferedBytes},
+      get retainedAudioBytes(){return allowAudioRetention&&audioBuffer?bufferedBytes:0},
+      isRecording:()=>recording,
+      start,stop,cancel,ingestAudioChunk,purgeAudio,finishTranscription,sendToProvider,
+      getRawAudio:()=>(allowAudioRetention?audioBuffer:null),
+      getTranscript:()=>transcript
+    };
+  }
+  function createImageSession({consent={},maxCacheSize=10}={}){
+    const cache=new Map();
+    const consentValue=()=>typeof consent==="function"?consent():(consent||{});
+    const hasImageConsent=()=>consentValue().imageCapture===true;
+    const hasPhotoTransferConsent=()=>consentValue().photoProviderTransfer===true;
+    function captureImage(imageData,meta={}){
+      if(!hasImageConsent()){
+        throw Object.assign(new Error("Fotoğraf kaydı ve tarama için açık kullanıcı onayı gerekiyor."),{code:"IMAGE_CONSENT_REQUIRED",error:"consent_required"});
+      }
+      const stripped=stripExifDetailed(imageData);
+      const id="img-"+Date.now()+"-"+Math.random().toString(36).slice(2,7);
+      const stored=stripped.data,sizeBytes=stored?(stored.length||stored.byteLength||0):0;
+      const entry={id,timestamp:new Date().toISOString(),sizeBytes,mimeType:stripped.mimeType,sanitized:stripped.stripped===true,exifStripped:stripped.stripped===true,temporary:true,purpose:meta.purpose||"meal_scan",data:stored};
+      if(cache.size>=maxCacheSize){const firstKey=cache.keys().next().value;cache.delete(firstKey)}
+      cache.set(id,entry);
+      return {id,timestamp:entry.timestamp,sizeBytes,exifStripped:true,temporary:true};
+    }
+    function sendToProvider(id){
+      if(!hasPhotoTransferConsent())throw Object.assign(new Error("Harici model sağlayıcısına fotoğraf aktarımı için açık kullanıcı izni gerekiyor."),{code:"PROVIDER_TRANSFER_CONSENT_REQUIRED",error:"provider_transfer_prohibited"});
+      const entry=cache.get(id);if(!entry)throw new Error("image_not_found");
+      return {ok:true,sent:true,id};
+    }
+    function listCache(){
+      return [...cache.values()].map(({id,timestamp,sizeBytes,mimeType,sanitized,exifStripped,temporary,purpose})=>({id,timestamp,sizeBytes,mimeType,sanitized,exifStripped,temporary,purpose}));
+    }
+    function getTemporaryImage(id){const entry=cache.get(id);return entry?entry.data:null}
+    function exportCacheMetadata(){return listCache()}
+    function clearCache(){const count=cache.size;cache.clear();return {ok:true,cleared:count}}
+    function purgeImage(id){return {ok:cache.delete(id)}}
+    return {
+      captureImage,sendToProvider,listCache,getTemporaryImage,exportCacheMetadata,clearCache,purgeImage,
+      get retainedImageBytes(){let total=0;for(const v of cache.values())total+=v.sizeBytes||0;return total}
+    };
+  }
+  return {usageOf,usageAdd,usageSum,createMemoryRepository,createExperimentRepository,explainSuggestion,REPLY_MAX,oneLine,pregnant,BROKEN,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,catalogText,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText,compileContext,validateResponse,migrateLegacy,legacyFromRepository,createRepository,migrateLegacyAtomic,createPlanner,sanitizePii,stripExif,stripExifDetailed,resolveLocalFood,resolveLocalLabel,createVoiceSession,createImageSession};
 })();
 if(typeof module!=="undefined")module.exports=CoachLib;
