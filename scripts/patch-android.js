@@ -85,7 +85,7 @@ if (!styles.includes("windowSplashScreenBackground")) {
 console.log("Icons and splash screen installed.");
 
 const signingSrc = "signing";
-const signingDst = "android/app/signing";
+const signingDst = "android/signing";
 if (fs.existsSync(signingSrc)) {
   if (fs.existsSync(signingDst)) fs.rmSync(signingDst, { recursive: true });
   fs.cpSync(signingSrc, signingDst, { recursive: true });
