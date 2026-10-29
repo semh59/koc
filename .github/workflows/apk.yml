@@ -62,8 +62,8 @@ jobs:
 
       - name: Generate debug keystore (not in repo)
         run: |
-          mkdir -p signing
-          keytool -genkeypair -alias androiddebugkey -keypass android -storepass android -keystore signing/known-debug-smoke-only.keystore -validity 10000 -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -v
+          mkdir -p android/signing
+          keytool -genkeypair -alias androiddebugkey -keypass android -storepass android -keystore android/signing/known-debug-smoke-only.keystore -validity 10000 -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -v
 
       - name: Android instrumentation test contract
         run: |
@@ -112,7 +112,7 @@ jobs:
           grep -E "Verified using v1" verify.txt
           apk=$(grep -m1 "certificate SHA-256 digest" verify.txt | sed 's/.*: //' | norm)
           aab=$(keytool -printcert -jarfile neowell.aab | grep -m1 "SHA256:" | sed 's/.*SHA256: //' | norm)
-          dbg=$(keytool -list -keystore signing/known-debug-smoke-only.keystore -storepass android | grep -i "SHA-256" | sed 's/.*: //' | norm)
+          dbg=$(keytool -list -keystore android/signing/known-debug-smoke-only.keystore -storepass android | grep -i "SHA-256" | sed 's/.*: //' | norm)
           echo "APK: $apk"; echo "AAB: $aab"; echo "Expected: $RELEASE_SHA256"; echo "Debug: $dbg"
           [ -n "$dbg" ] && [ "$apk" != "$dbg" ] && [ "$aab" != "$dbg" ] || { echo "PUBLISHED FILE IS SIGNED WITH THE DEBUG KEY"; exit 1; }
           [ "$apk" = "$RELEASE_SHA256" ] && [ "$aab" = "$RELEASE_SHA256" ] || { echo "RELEASE SIGNING KEY MISMATCH"; exit 1; }
