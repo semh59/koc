@@ -233,7 +233,7 @@ const assemble=m=>{
   return r;
 };
 let lastShard={};
-let S=load();
+var S=load();
 function load(){
   let r=null,raw;recovery=null;
   if(Store.sharded){
@@ -321,6 +321,7 @@ const storeMsg=()=>saveFail?["Son değişiklik kaydedilemedi","Depolama dolu; de
   :storeBytes>STORE_WARN?["Depolama dolmak üzere",`${fmt(storeBytes/1e6)} MB kullanılıyor. Yedek al, sonra Rehber sohbetini temizle ya da eski kayıtları sil.`]:null;
 const isNative=()=>!!window.Capacitor?.isNativePlatform?.();
 const plugin=name=>window.Capacitor?.Plugins?.[name];
+window.plugin=plugin;
 /* Runs f with v, waiting only when v is a promise: delete flows stay synchronous where nothing is asynchronous (browser, no photo store). */
 const chain=(v,f)=>v&&typeof v.then==="function"?v.then(f):f(v);
 /* Deletes the phone-side copies (step history, motion model, widget, button queue, dose list) of the named plugins; false when one could not be cleared, so the caller does not say "deleted". */

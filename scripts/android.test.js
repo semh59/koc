@@ -4,6 +4,7 @@ const fs=require("fs"),path=require("path");
 const rd=f=>fs.readFileSync(path.join(__dirname,"..",f),"utf8");
 const patch=rd("scripts/patch-android.js"),main=rd("assets/android/MainActivity.java"),onCreate=main.slice(main.indexOf("public void onCreate"),main.indexOf("super.onCreate(savedInstanceState)")),jf=fs.readdirSync(path.join(__dirname,"..","assets/android")).filter(f=>f.endsWith(".java")).map(f=>f.slice(0,-5)).sort();
   ok("native sources: source inventory is discovered dynamically and copied with byte check",/readdirSync\("assets\/android"\).*filter\(f => f\.endsWith\("\.java"\)\).*map\(f => f\.slice\(0, -5\)\).*sort\(\)/.test(patch)&&/fs\.copyFileSync\(source, target\)/.test(patch)&&/readFileSync\(source\)\.equals\(fs\.readFileSync\(target\)\)/.test(patch)&&/assets\/android\/res/.test(patch));
+ok("Android WebView global bridge: dynamically loaded main state and plugin API are visible to external module scripts",/var S=load\(\)/.test(rd("www/main/01-core.js"))&&/window\.plugin=plugin/.test(rd("www/main/01-core.js")));
 ok("water intent: on recreation the extra is removed before super.onCreate (load -> onNewIntent)",/else getIntent\(\)\.removeExtra\(QuickLogPlugin\.ACTION_KEY\)/.test(onCreate));
 const ql=rd("assets/android/QuickLogPlugin.java"),h=ql.slice(ql.indexOf("static synchronized boolean handle"));
 ok("water intent: a launch from recent apps (LAUNCHED_FROM_HISTORY) does not replay it",h.indexOf("FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY")>0&&h.indexOf("FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY")<h.indexOf("QuickMath.amount"));
