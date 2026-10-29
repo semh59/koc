@@ -60,6 +60,7 @@ jobs:
 
       - name: Generate debug keystore (not in repo)
         run: |
+          mkdir -p signing
           keytool -genkeypair -alias androiddebugkey -keypass android -storepass android -keystore signing/known-debug-smoke-only.keystore -validity 10000 -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -v
 
       - name: Android instrumentation test contract
