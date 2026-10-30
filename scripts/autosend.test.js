@@ -30,7 +30,7 @@ ok("cAsk is called only from user-action functions",Object.keys(fns).filter(k=>k
 
 // jsdom: startup with the state that used to trigger an automatic send
 const t=new Date(),key=d=>{const x=new Date(t);x.setDate(x.getDate()-d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}-${String(x.getDate()).padStart(2,"0")}`};
-const state={settings:{consent:true,consentV:3,consentAt:key(0),consentP:"gemini,groq,nvidia,openrouter",age:30,obDone:true,noticeOk:true,lastPlan:"",lastWeekly:""},
+const state={settings:{consent:true,consentV:3,consentAt:key(0),consentP:"gemini,groq,openrouter",age:30,obDone:true,noticeOk:true,lastPlan:"",lastWeekly:""},
   providers:[{id:"groq",name:"Groq",base:"https://api.groq.com/openai/v1",model:"llama-3.1-8b-instant",on:true,health:true,confirm:false}],
   entries:[1,2,3,4,5,8,9,10].map((d,i)=>({id:i+1,day:key(d),time:"09:00",type:"water",v:500,text:""})),nextId:9,
   chat:[{id:1,role:"user",text:"merhaba",t:Date.now()-6e4,pend:true}],cid:2};

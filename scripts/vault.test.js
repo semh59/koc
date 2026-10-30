@@ -17,11 +17,11 @@ const open=async(seed,v)=>{
   const ls=k=>w.localStorage.getItem(k),ev=s=>w.eval(s);
   ok("a plain-text key is moved into the vault",ls("nw_keys")===null&&ls("nw_keys_enc")&&ev("getKeys().groq")==="SIRRI-1");
   ok("no plain text is left",!Object.keys(w.localStorage).some(k=>String(ls(k)).includes("SIRRI-1")&&k!=="nw_keys_enc"));
-  await ev("setKey('nvidia','SIRRI-2')");
+  await ev("setKey('openrouter','SIRRI-2')");
   ok("a new key is written encrypted",ls("nw_keys")===null&&Buffer.from(ls("nw_keys_enc"),"base64").toString().includes("SIRRI-2"));
   const seed={nw_keys_enc:ls("nw_keys_enc")};
   w=await open(seed,vault());
-  ok("encrypted keys are read on reopen",w.eval("getKeys().groq")==="SIRRI-1"&&w.eval("getKeys().nvidia")==="SIRRI-2");
+  ok("encrypted keys are read on reopen",w.eval("getKeys().groq")==="SIRRI-1"&&w.eval("getKeys().openrouter")==="SIRRI-2");
   let reset=0;w=await open(seed,{encrypt:vault().encrypt,resetKey:async()=>{reset++},decrypt:async()=>{throw Object.assign(new Error("decrypt: KEY_INVALIDATED"),{code:"KEY_INVALIDATED"})}});
   ok("an invalidated vault key (KEY_INVALIDATED) deletes the record, calls resetKey and starts clean",reset===1&&Object.keys(w.eval("getKeys()")).length===0&&!/SIRRI/.test(String(w.localStorage.getItem("nw_keys"))));
   w=await open(seed,failingRead("decrypt: temporary"));

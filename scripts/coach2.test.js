@@ -6,7 +6,7 @@ const reply=o=>({ok:true,status:200,json:async()=>({choices:[{message:{content:J
 const fail=s=>({ok:false,status:s,text:async()=>"",json:async()=>({})});
 let urls=[];const fetchWith=f=>{urls=[];w.fetch=async(u,o)=>{urls.push(u);return f(u,o,urls.length)}};
 const reset=()=>ev(`closeSheet();S=structuredClone(DEF);S.settings.obDone=true;S.settings.age=30;S.settings.heightCm=175;tab='coach';cool={};pstat={};offline=null;busy=false;typing=false;
-  KEYS={nvidia:'k1',groq:'k2'};S.providers.forEach(p=>{p.on=p.health=p.id==='nvidia'||p.id==='groq';p.confirm=false});cConsent(true);render()`);
+  KEYS={groq:'k1',openrouter:'k2'};S.providers.forEach(p=>{p.on=p.health=p.id==='groq'||p.id==='openrouter';p.confirm=false});cConsent(true);render()`);
 boot().then(async win=>{
   w=win;ev=s=>w.eval(s);
   const chatRisk=()=>ev("[S.settings.edFlag&&'ed',S.settings.pregnant&&'preg',S.settings.nursing&&'nurs'].filter(Boolean).join()"),cards=k=>ev(`S.chat.filter(m=>m.card&&m.card.kind==='${k}').length`);
@@ -42,24 +42,24 @@ boot().then(async win=>{
     ok("eating disorder in the menu note: no request is sent, chatRisk ed",n===0&&chatRisk().includes("ed"));
   }
   {
-    reset();fetchWith((u,o,i)=>i===1?fail(500):reply({reply:"merhaba",log:[]}));
-    let r=await ev("cAsk([{role:'user',content:'x'}],50)");
-    ok("chain: if the 1st provider fails it moves to the 2nd",r.provider.id==="groq"&&urls.length===2&&/nvidia/.test(urls[0])&&/groq/.test(urls[1]),urls);
-    ok("chain: a provider with a 500 gets a short cooldown record, a successful one does not",ev("cool.nvidia>Date.now()&&cool.nvidia<Date.now()+60000&&!cool.groq"));
+      reset();fetchWith((u,o,i)=>i===1?fail(500):reply({reply:"merhaba",log:[]}));
+          let r=await ev("cAsk([{role:'user',content:'x'}],50)");
+          ok("chain: if the 1st provider fails it moves to the 2nd",r.provider.id==="openrouter"&&urls.length===2&&/groq/.test(urls[0])&&/openrouter/.test(urls[1]),urls);
+      ok("chain: a provider with a 500 gets a short cooldown record, a successful one does not",ev("cool.groq>Date.now()&&cool.groq<Date.now()+60000&&!cool.openrouter"));
     ev("cool={};S.providers[0].confirm=S.providers[1].confirm=true;");w.confirm=()=>false;fetchWith(()=>reply({reply:"x"}));
-    let e=await ev("cAsk([{role:'user',content:'x'}],50).catch(e=>e.message)");
-    ok("chain: if every confirmation is declined the result is declined and no request is sent",e==="declined"&&urls.length===0,[e,urls]);
-    w.confirm=()=>true;ev("S.providers.forEach(p=>p.confirm=false);cool={}");
-    fetchWith(()=>{throw new TypeError("Failed to fetch")});
-    e=await ev("cAsk([{role:'user',content:'x'}],50).catch(e=>e.message)");
-    ok("chain: if all fail the result is fail; a network error records a cooldown",e==="fail"&&urls.length===2&&ev("cool.nvidia>Date.now()&&cool.groq>Date.now()"),[e,urls]);
-    ev("cSend('merhaba')");
-    ok("all failed: the chat goes offline, the message stays pending",await until(()=>ev("offline")==="none"||ev("offline")==="fail"));
-    reset();fetchWith(()=>fail(404));await ev("cAsk([{role:'user',content:'x'}],50).catch(()=>0)");
-    ok("a cooldown record for a model error (404)",ev("cool.nvidia>Date.now()+60000"));
-    reset();fetchWith(()=>reply({reply:"x"}));ev("cool.nvidia=Date.now()+1e6");
-    await ev("cAsk([{role:'user',content:'x'}],50)");
-    ok("a provider in cooldown is skipped",urls.length===1&&/groq/.test(urls[0]));
+        let e=await ev("cAsk([{role:'user',content:'x'}],50).catch(e=>e.message)");
+        ok("chain: if every confirmation is declined the result is declined and no request is sent",e==="declined"&&urls.length===0,[e,urls]);
+        w.confirm=()=>true;ev("S.providers.forEach(p=>p.confirm=false);cool={}");
+        fetchWith(()=>{throw new TypeError("Failed to fetch")});
+            e=await ev("cAsk([{role:'user',content:'x'}],50).catch(e=>e.message)");
+            ok("chain: if all fail the result is fail; a network error records a cooldown",e==="fail"&&urls.length===2&&ev("cool.groq>Date.now()&&cool.openrouter>Date.now()"),[e,urls]);
+        ev("cSend('merhaba')");
+        ok("all failed: the chat goes offline, the message stays pending",await until(()=>ev("offline")==="none"||ev("offline")==="fail"));
+        reset();fetchWith(()=>fail(404));await ev("cAsk([{role:'user',content:'x'}],50).catch(()=>0)");
+            ok("a cooldown record for a model error (404)",ev("cool.groq>Date.now()+60000"));
+            reset();fetchWith(()=>reply({reply:"x"}));ev("cool.groq=Date.now()+1e6");
+            await ev("cAsk([{role:'user',content:'x'}],50)");
+            ok("a provider in cooldown is skipped",urls.length===1&&/openrouter/.test(urls[0]));
   }
   {
     reset();ev("cool.groq=Date.now()+1e6;cSheetProv('groq');document.querySelector('#pk').value='gsk_yeni_anahtar'");ev("pRead('groq')");
@@ -76,12 +76,12 @@ boot().then(async win=>{
     await ev("cProgram({d:3,q:'Salon',m:45,l:'Başlangıç'})");
     ok("the user text of a program request is not sent twice",sent.messages.filter(m=>m.role==="user").length===1,sent.messages.map(m=>m.role));
     reset();let direct=0;fetchWith(()=>{direct++;return reply({reply:"Tamam"})});
-    const before=direct;ev("S.settings.consent=false");await ev("callProvider(S.providers.find(p=>p.id==='nvidia'),'k1',[{role:'user',content:'x'}],20)").catch(()=>0);
-    ok("direct provider calls are blocked without consent",direct===before);
-    await ev("S.settings.consent=true;S.settings.consentP='nvidia,groq,anthropic,openai';S.providers.find(p=>p.id==='nvidia').on=false;callProvider(S.providers.find(p=>p.id==='nvidia'),'k1',[{role:'user',content:'x'}],20)").catch(()=>0);
-    ok("direct provider calls reject disabled provider",direct===before);
-    await ev("callProvider(S.providers.find(p=>p.id==='nvidia'),'k1',[{role:'user',content:'secret'}],20,{probe:true})").catch(()=>0);
-    ok("probe rejects user payload",direct===before);
+        const before=direct;ev("S.settings.consent=false");await ev("callProvider(S.providers.find(p=>p.id==='groq'),'k1',[{role:'user',content:'x'}],20)").catch(()=>0);
+        ok("direct provider calls are blocked without consent",direct===before);
+        await ev("S.settings.consent=true;S.settings.consentP='groq,anthropic,openai';S.providers.find(p=>p.id==='groq').on=false;callProvider(S.providers.find(p=>p.id==='groq'),'k1',[{role:'user',content:'x'}],20)").catch(()=>0);
+        ok("direct provider calls reject disabled provider",direct===before);
+        await ev("callProvider(S.providers.find(p=>p.id==='groq'),'k1',[{role:'user',content:'secret'}],20,{probe:true})").catch(()=>0);
+        ok("probe rejects user payload",direct===before);
 
   }
   {
@@ -142,12 +142,10 @@ boot().then(async win=>{
     ok("fetchModels: a model list request that never answers is aborted and classified as a timeout",r==="time",r);
   }
   { // provider terms warnings and defaults
-    reset();
-    ok("a keyed NVIDIA provider shows its trial-terms warning in the consent area, Groq shows none",ev("consentWarn()").includes("NVIDIA Build:")&&!ev("consentWarn()").includes("Groq:"));
-    ev("S.providers.find(p=>p.id==='gemini').on=true;S.providers.find(p=>p.id==='gemini').health=true;KEYS.gemini='g'");
-    ok("a keyed Gemini provider shows the free-tier review warning",ev("consentWarn()").includes("Google Gemini:</b> Gemini ücretsiz katmanında"));
-    ok("NVIDIA is off by default",ev("defProviders().find(p=>p.id==='nvidia').on")===false&&ev("defProviders().filter(p=>p.on).map(p=>p.id).join()")==="groq,openrouter");
-  }
+        reset();ev("setKey('gemini','AIzaK');S.providers.find(p=>p.id==='gemini').on=true;S.providers.find(p=>p.id==='gemini').health=true");
+        ok("a keyed Gemini provider shows the free-tier review warning",ev("consentWarn()").includes("Google Gemini:</b> Gemini ücretsiz katmanında"));
+        ok("Groq is on by default",ev("defProviders().find(p=>p.id==='groq').on")===true&&ev("defProviders().filter(p=>p.on).map(p=>p.id).join()")==="groq,openrouter");
+      }
   { // revoking the consent offers to delete the chat too
     reset();ev("S.chat=[{id:1,role:'user',text:'merhaba',t:1}];S.cid=2");
     w.confirm=()=>false;ev("cConsent(false)");await new Promise(r=>setTimeout(r,10));

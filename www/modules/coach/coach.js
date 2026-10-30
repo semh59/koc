@@ -91,7 +91,6 @@ async function keysInit(){
 }
 /* [id, name, base, on and health by default, asks before every send]; the default model is the first preference in CoachLib.MODEL_PREF. */
 const BUILTIN=[
-  ["nvidia","NVIDIA Build","https://integrate.api.nvidia.com/v1",false,false],
   ["groq","Groq","https://api.groq.com/openai/v1",true,false],
   ["openrouter","OpenRouter","https://openrouter.ai/api/v1",true,false],
   ["gemini","Google Gemini","https://generativelanguage.googleapis.com/v1beta/openai",false,true],
@@ -693,7 +692,7 @@ const CONSENT_WHEN="Yalnız sen bir düğmeye bastığında gönderilir (mesaj g
 const CONSENT_NOT="Kilo, yemek, su, spor ve antrenman kayıtların, sağlık notun, ilaçların, uyku ve ruh halin, tahlil, tansiyon, şeker, nabız, saatten (Health Connect) gelen veriler, fotoğraf, konum ve yedek gönderilmez.";
 const consentBody=()=>`<b>Rehber ile veri paylaşımına açık rızan</b><ul class="cul"><li><b>Rehber yalnızca:</b> menü ve egzersiz programı önerir, yemek ve egzersizin kalorisini tahmin eder. Tıbbi tavsiye vermez; yanıtlarını yapay zekâ üretir, hata içerebilir ve hekim görüşü yerine geçmez.</li><li><b>Ne gönderilir:</b> ${CONSENT_SENT}. ${CONSENT_NOT}</li><li><b>Ne zaman:</b> ${CONSENT_WHEN}</li><li><b>Kime:</b> seçtiğin sağlayıcıya (${esc(S.providers.filter(p=>p.on&&p.health).map(p=>p.name).join(", ")||"hiçbiri seçili değil")}), kendi anahtarınla. Sunucuları yurt dışındadır; bu bir yurt dışına aktarımdır.</li><li><b>Seçim:</b> aşağıdan profil verisini kapatabilirsin; kapattığın hiç gönderilmez.</li><li><b>Geri alma:</b> istediğin an Ayarlar > Gizlilik ve veri ya da Yapay zekâ rehber bölümünden. Geri alınca yeni veri gitmez; önceden gönderilene sağlayıcının kendi politikası uygulanır.</li><li><b>Onay vermezsen</b> uygulama tam çalışır, yalnız Rehber konuşmaz.</li></ul>`;
 /* Status warnings are always visible on the consent card, even when the details accordion is closed. */
-const PWARN={nvidia:"NVIDIA Build deneme koşulları kişisel ve sağlık verisi göndermeyi yasaklıyor; yalnız deneme için kullan.",gemini:"Gemini ücretsiz katmanında Google içeriği insan incelemesi ve ürün geliştirme için kullanabilir; ücretli hesap kullanmıyorsan kişisel bir şey yazma."};
+const PWARN={gemini:"Gemini ücretsiz katmanında Google içeriği insan incelemesi ve ürün geliştirme için kullanabilir; ücretli hesap kullanmıyorsan kişisel bir şey yazma."};
 const consentWarn=()=>`${keyed().filter(p=>PWARN[p.id]).map(p=>`<p><b>${esc(p.name)}:</b> ${PWARN[p.id]}</p>`).join("")}${S.settings.consent&&consentOk()&&!provOk()?`<p><b>Sağlayıcı listen değişti.</b> Onayını verdiğinde bu sağlayıcılar yoktu; devam için yeniden onay ver.</p>`:""}${S.providers.some(p=>p.on&&p.health&&isCustom(p))?`<p><b>Özel sağlayıcı:</b> kendi eklediğin sunucuya (${esc(S.providers.filter(p=>p.on&&p.health&&isCustom(p)).map(p=>hostOf(p)).join(", "))}) verilerin ve anahtarın doğrudan gider; yalnız güvendiğin bir servis kullan.</p>`:""}${consentOk()?"":S.settings.age>0?`<p><b>18 yaş altı için Rehber veri paylaşımı kapalıdır.</b></p>`:`<p><b>Rehber için önce yaşını gir</b> (Ayarlar > Profil ve hedefler). Yaş bilinmeden Rehber açılmaz.</p>`}`;
 const consentHtml=()=>consentBody()+consentWarn();
 /* Deletes the chat and leaves the consent alone. */
@@ -977,7 +976,6 @@ function viewProviders(){
 }
 /* The addresses are only well-known key pages; panel button names may change. */
 const GUIDE={
-  nvidia:{site:"build.nvidia.com",steps:["Tarayıcında build.nvidia.com adresini aç, hesap oluştur ya da giriş yap.","Bir model sayfası aç (örneğin llama).","Sayfadaki anahtar oluşturma düğmesine bas. Düğme adı değişebilir, geliştirici panelinden anahtar oluştur.","Çıkan anahtarı kopyala ve aşağıya yapıştır."]},
   groq:{site:"console.groq.com/keys",steps:["Tarayıcında console.groq.com adresini aç, hesap oluştur ya da giriş yap.","Menüden anahtarlar bölümüne (API Keys) gir.","Anahtar oluştur düğmesine (Create API Key) bas, bir ad ver.","Anahtarı kopyala, bir daha gösterilmeyebilir. Aşağıya yapıştır."]},
   openrouter:{site:"openrouter.ai/keys",steps:["Tarayıcında openrouter.ai adresini aç, hesap oluştur ya da giriş yap.","Hesap menüsünden anahtarlar sayfasına (Keys) gir.","Anahtar oluştur düğmesine (Create Key) bas, bir ad ver.","Anahtarı kopyala ve aşağıya yapıştır."]},
   gemini:{site:"aistudio.google.com/apikey",steps:["Tarayıcında aistudio.google.com adresini aç ve Google hesabınla giriş yap.","Anahtar sayfasına (Get API key) gir.","Yeni anahtar oluştur düğmesine bas.","Anahtarı kopyala ve aşağıya yapıştır. Ücretsiz katmanda istemler ürün geliştirmek için kullanılabilir, bu yüzden her göndermeden önce sorulur."]},
@@ -992,7 +990,7 @@ function cGuide(id){
 }
 /* ---- setup: 1 key (provider guessed from the prefix), 2 verify and fetch the models (the recommended one preselected), 3 test and save.
    Network calls happen only on a button press and only to the chosen provider; only the key and a fixed test sentence go out. The model list stays in memory and does not enter the backup. */
-const PNOTE={nvidia:"Deneme koşulları kişisel ve sağlık verisine izin vermiyor, varsayılan kapalı",groq:"Ücretsiz, çok hızlı",openrouter:"Ücretsiz modeller var",gemini:"Ücretsiz katmanda Google insan incelemesi yapabilir, her gönderimde sorulur",openai:"Ücretli, ucuz model önerilir",anthropic:"Ücretli, ucuz model önerilir"};
+const PNOTE={gemini:"Ücretsiz katmanda Google insan incelemesi yapabilir, her gönderimde sorulur",groq:"Ücretsiz, çok hızlı",openrouter:"Ücretsiz modeller var",openai:"Ücretli, ucuz model önerilir",anthropic:"Ücretli, ucuz model önerilir"};
 const suNew=()=>({k:"",id:null,models:null,rec:"",model:"",adv:false,msg:"",fail:"",ok:"",busy:false});
 let su=suNew();
 const suProv=()=>GUIDE[su.id]?S.providers.find(p=>p.id===su.id):null;

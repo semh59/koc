@@ -316,10 +316,10 @@ jobs:
             bash scripts/smoke.sh
             bash scripts/smoke-release.sh
 
-  # Only after build, e2e and smoke pass. The new files are uploaded first (--clobber replaces a file of the same name) and the old release is never deleted:
+  # Only after build, e2e and both Android smoke lanes pass. The new files are uploaded first (--clobber replaces a file of the same name) and the old release is never deleted:
   # even if the job is cut short, a downloadable version remains.
   release:
-    needs: [build, e2e, smoke]
+    needs: [build, e2e, smoke, smoke-android12]
     if: github.ref == 'refs/heads/main'
     permissions:
       contents: write
@@ -345,7 +345,7 @@ jobs:
           publish() {
             if gh release view son-surum > /dev/null 2>&1; then
               gh release upload son-surum release/neowell.apk release/neowell.aab --clobber &&
-              gh release edit son-surum --title "$title" --notes "$notes" &&
+              gh release edit son-surum --title "$title" --notes "$notes" --target "$GITHUB_SHA" &&
               # The tag must point at the commit of the new build.
               gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/son-surum" -f sha="$GITHUB_SHA" -F force=true
             else

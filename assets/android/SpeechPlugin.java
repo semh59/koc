@@ -100,28 +100,30 @@ public class SpeechPlugin extends Plugin {
     }
 
     private void startListening() {
-        if (recognizer != null) recognizer.destroy();
-        recognizer = SpeechRecognizer.createSpeechRecognizer(getContext());
-        recognizer.setRecognitionListener(new RecognitionListener() {
-            public void onReadyForSpeech(Bundle p) {}
-            public void onBeginningOfSpeech() {}
-            public void onRmsChanged(float v) {}
-            public void onBufferReceived(byte[] b) {}
-            public void onEndOfSpeech() {}
-            public void onPartialResults(Bundle b) {}
-            public void onEvent(int t, Bundle b) {}
-            public void onError(int e) { notifyListeners("error", new JSObject().put("code", e)); }
-            public void onResults(Bundle b) {
-                java.util.ArrayList<String> xs = b.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-                notifyListeners("result", new JSObject().put("text", xs == null || xs.isEmpty() ? "" : xs.get(0)));
-            }
-        });
-        Intent i = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "tr-TR");
-        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "tr-TR");
-        i.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false);
-        recognizer.startListening(i);
-    }
+            getBridge().execute(() -> {
+                if (recognizer != null) recognizer.destroy();
+                recognizer = SpeechRecognizer.createSpeechRecognizer(getContext());
+                recognizer.setRecognitionListener(new RecognitionListener() {
+                    public void onReadyForSpeech(Bundle p) {}
+                    public void onBeginningOfSpeech() {}
+                    public void onRmsChanged(float v) {}
+                    public void onBufferReceived(byte[] b) {}
+                    public void onEndOfSpeech() {}
+                    public void onPartialResults(Bundle b) {}
+                    public void onEvent(int t, Bundle b) {}
+                    public void onError(int e) { notifyListeners("error", new JSObject().put("code", e)); }
+                    public void onResults(Bundle b) {
+                        java.util.ArrayList<String> xs = b.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                        notifyListeners("result", new JSObject().put("text", xs == null || xs.isEmpty() ? "" : xs.get(0)));
+                    }
+                });
+                Intent i = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "tr-TR");
+                i.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "tr-TR");
+                i.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false);
+                recognizer.startListening(i);
+            });
+        }
 
     @PluginMethod
     public void stopListening(PluginCall call) {

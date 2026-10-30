@@ -48,7 +48,7 @@ Bu bölümler kayıt ve görüntüleme içindir. NeoWell bu değerleri yorumlama
 
 REHBER (İSTEĞE BAĞLI, YAPAY ZEKÂ)
 - Kendi API anahtarını girersen sohbet ve kayıt önerileri alırsın; konuları ayrı sohbetlerde tutarsın. İnternet ister.
-- Rehber yalnız sen açık rıza verirsen çalışır. Rıza verirsen, yalnız sen bir düğmeye bastığında (mesaj, menü ya da program isteği) yazdıkların ve istersen profilin (boy, yaş aralığı, cinsiyet, hareket düzeyi, kalori hedefi) seçtiğin sağlayıcıya (NVIDIA Build, Groq, OpenRouter, Google Gemini, OpenAI, Anthropic Claude ya da kendi eklediğin servis; OpenAI ve Anthropic ücretlidir) gider; kendiliğinden ya da arka planda hiçbir şey gönderilmez. Sunucuları yurt dışındadır. Rızayı istediğin an geri alırsın; vermezsen uygulama tam çalışır. Rehber yalnız menü ve egzersiz programı önerir, yemek ve egzersiz kalorisini tahmin eder; sağlık verini yorumlamaz, tıbbi tavsiye vermez.
+- Rehber yalnız sen açık rıza verirsen çalışır. Rıza verirsen, yalnız sen bir düğmeye bastığında (mesaj, menü ya da program isteği) yazdıkların ve istersen profilin (boy, yaş aralığı, cinsiyet, hareket düzeyi, kalori hedefi) seçtiğin sağlayıcıya (Groq, OpenRouter, Google Gemini, OpenAI, Anthropic Claude ya da kendi eklediğin servis; OpenAI ve Anthropic ücretlidir) gider; kendiliğinden ya da arka planda hiçbir şey gönderilmez. Sunucuları yurt dışındadır. Rızayı istediğin an geri alırsın; vermezsen uygulama tam çalışır. Rehber yalnız menü ve egzersiz programı önerir, yemek ve egzersiz kalorisini tahmin eder; sağlık verini yorumlamaz, tıbbi tavsiye vermez.
 - NeoWell 18 yaş ve üzeri içindir; kurulumda 18 yaş altı kabul edilmez, yaş girilmeden Rehber açılmaz.
 
 GİZLİLİK
@@ -99,7 +99,7 @@ These sections are for logging and viewing. NeoWell does not interpret these val
 
 COACH (OPTIONAL, AI)
 - Add your own API key to get chat and logging suggestions; keep topics in separate chats. Needs internet.
-- The Coach works only with your explicit consent. If you consent, only when you tap a button (send a message, ask for a comment, menu or program) your chat, profile and recent entries are sent to the provider you picked (NVIDIA Build, Groq, OpenRouter, Google Gemini, OpenAI, Anthropic Claude or a service you add; OpenAI and Anthropic are paid); nothing is sent automatically or in the background. Their servers are outside Turkey. You can withdraw consent at any time; without it the app works fully.
+- The Coach works only with your explicit consent. If you consent, only when you tap a button (send a message, ask for a comment, menu or program) your chat, profile and recent entries are sent to the provider you picked (Groq, OpenRouter, Google Gemini, OpenAI, Anthropic Claude or a service you add; OpenAI and Anthropic are paid); nothing is sent automatically or in the background. Their servers are outside Turkey. You can withdraw consent at any time; without it the app works fully.
 - NeoWell is for adults (18+); setup does not accept ages under 18, and the Coach stays off until an age is entered.
 
 PRIVACY

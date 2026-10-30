@@ -232,8 +232,8 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("S.chat=[];S.settings.consent=false;offline=null");
     ok("without a key the intro: what it does, where data goes, offline, works without the Coach; no 'API'",k().includes("Rehber ne yapar")&&k().includes("Verin nereye gider")&&k().includes("çevrimdışı çalışmaz")&&k().includes("onay verirsen")&&k().includes("Rehber olmadan da uygulama tam çalışır")&&!/\bAPI\b/.test(k())&&!k().includes("Açık rızamı veriyorum"),k());
     ev("openSheet('x');cClick('guide',document.body)");
-    const names=ev("S.providers.filter(p=>GUIDE[p.id]).map(p=>p.name)"),st=()=>q("#sheet").textContent;
-    ok("setup: key field and 6 provider buttons; no 'API'",names.length===6&&names.every(n=>st().includes(n))&&!!q("#sk[type=password]")&&qa('[data-c^="sp:"]').length===6&&!/\bAPI\b/.test(st()),names);
+        const names=ev("S.providers.filter(p=>GUIDE[p.id]).map(p=>p.name)"),st=()=>q("#sheet").textContent;
+        ok("setup: key field and 5 provider buttons; no 'API'",names.length===5&&names.every(n=>st().includes(n))&&!!q("#sk[type=password]")&&qa('[data-c^="sp:"]').length===5&&!/\bAPI\b/.test(st()),names);
     ok("each provider's guide has 3-4 steps and a button back to the key",ev("S.providers.filter(p=>GUIDE[p.id]).every(p=>{cGuide(p.id);const s=document.querySelector('#sheet');const n=s.querySelectorAll('ol li').length;return n>=3&&n<=4&&!!s.querySelector('[data-c=\"setup\"]')})"));
     const calls=[];let resp=null;w.fetch=async(u,o)=>{calls.push({u,o});if(!resp)throw new TypeError("Failed to fetch");return typeof resp==="function"?resp(u,o):resp};
     const R=(status,body)=>({ok:status<300,status,json:async()=>JSON.parse(body),text:async()=>body});
@@ -255,9 +255,9 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("setKey('groq','gsk_x12345678');cSheetProv('groq')");await ev("cProvClick('ptest','groq')");await ev("cProvClick('pmodels','groq')");
     ok("under 18: the test and model list on the next page make no network call either",calls.length===0);
     ev("setKey('groq','');cSetup(true)");type("gsk_ornekanahtar123");
-    /* Real NVIDIA/Groq reply shapes: timeout, a model not on the account (404 Function), a thinking model with null content + reasoning_content. */
+    /* Real Groq/OpenRouter reply shapes: timeout, a model not on the account (404 Function), a thinking model with null content + reasoning_content. */
     const chatBy=f=>(u,o)=>u.endsWith("/models")?R(200,JSON.stringify({data:[{id:"whisper-large-v3"},{id:"llama-3.1-8b-instant"},{id:"llama-3.3-70b-versatile"},{id:"openai/gpt-oss-120b"}]})):f(JSON.parse(o.body).model);
-    ev("S.settings.age=30;S.settings.consent=true;S.settings.consentP='nvidia,groq,openrouter,gemini,openai,anthropic';cSetup(true)");type("gsk_ornekanahtar123");
+    ev("S.settings.age=30;S.settings.consent=true;S.settings.consentP='groq,openrouter,gemini,openai,anthropic';cSetup(true)");type("gsk_ornekanahtar123");
     resp=chatBy(m=>{if(m==="llama-3.3-70b-versatile")throw Object.assign(new Error("x"),{name:"AbortError"});if(m==="openai/gpt-oss-120b")return R(404,'{"detail":"Function f: Not found for account a"}');return R(200,JSON.stringify({choices:[{message:{content:null,reasoning_content:"düşünüyor"},finish_reason:"length"}]}))});
     await ev("suFetch()");
     ok("models are fetched, non-chat ones dropped; a candidate that does not answer or is not on the account is skipped, the first working one is suggested",calls[0].u==="https://api.groq.com/openai/v1/models"&&calls.length===4&&ev("su.models.length")===3&&ev("su.model")==="llama-3.1-8b-instant"&&ev("su.ok")==="llama-3.1-8b-instant"&&st().includes("denendi")&&st().includes("Anahtar çalışıyor"));
@@ -274,9 +274,8 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("setup consent remains active and coach is on",ev("S.settings.consent")===true&&ev("coachOn()")===true);
     ev("pFail('groq',Object.assign(new Error('x'),{status:429,body:'insufficient_quota'}));offline='fail'");
     ok("a chat error shows the reason (quota)",k().includes("Groq: Hesabının kotası"));
-    ev("cSetup(true)");type("nvapi-ornekanahtar");calls.length=0;resp=(u)=>u.endsWith("/models")?R(200,JSON.stringify({data:[{id:"google/gemma-4-31b-it"},{id:"nvidia/nemotron-3-super-120b-a12b"}]})):R(403,'{"detail":"Authorization failed"}');await ev("suFetch()");
-    ok("NVIDIA: the list comes even without a key; when a real request rejects the key the trials stop and say 'key'",calls.length===2&&ev("su.ok")===""&&st().includes("Anahtar kabul edilmedi"));
-    ev("S.settings.age=30;S.settings.consent=true;S.settings.consentP='nvidia,groq,openrouter,gemini,openai,anthropic';cSetup(true)");type("sk-ant-api03-ornekanahtar");calls.length=0;resp=(u)=>u.endsWith("/models?limit=1000")?R(200,JSON.stringify({data:[{id:"claude-sonnet-5-5"},{id:"claude-haiku-4-5"}]})):R(200,JSON.stringify({content:[{type:"text",text:"tamam"}]}));await ev("suFetch()");
+    
+    ev("S.settings.age=30;S.settings.consent=true;S.settings.consentP='groq,openrouter,gemini,openai,anthropic';cSetup(true)");type("sk-ant-api03-ornekanahtar");calls.length=0;resp=(u)=>u.endsWith("/models?limit=1000")?R(200,JSON.stringify({data:[{id:"claude-sonnet-5-5"},{id:"claude-haiku-4-5"}]})):R(200,JSON.stringify({content:[{type:"text",text:"tamam"}]}));await ev("suFetch()");
     const ah=calls[0]&&calls[0].o.headers;
     ok("Anthropic model list: x-api-key, version and browser headers; no Bearer; Haiku recommended",calls[0].u==="https://api.anthropic.com/v1/models?limit=1000"&&ah["x-api-key"]==="sk-ant-api03-ornekanahtar"&&ah["anthropic-version"]==="2023-06-01"&&ah["anthropic-dangerous-direct-browser-access"]==="true"&&!ah.Authorization&&ev("su.model")==="claude-haiku-4-5");
     const ab=JSON.parse(calls[1].o.body);await ev("suTest()");
@@ -287,11 +286,11 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     {const full=ev("CoachLib.SYSTEM")+" PROFİL: x",ab=JSON.parse(ev("JSON.stringify(pBody({id:'anthropic',model:'claude-sonnet-5-5'},[{role:'system',content:"+JSON.stringify(full)+"},{role:'user',content:'u'}],700))")),gb=ev("JSON.stringify(pBody({id:'groq',model:'x'},[{role:'system',content:"+JSON.stringify(full)+"},{role:'user',content:'u'}],700))");
     ok("Anthropic: system as two blocks, cache_control on the fixed SYSTEM block, the union is the original text",Array.isArray(ab.system)&&ab.system.length===2&&ab.system[0].cache_control.type==="ephemeral"&&ab.system[0].text===ev("CoachLib.SYSTEM")&&!ab.system[1].cache_control&&ab.system.map(x=>x.text).join("")===full);
     ok("no cache_control on other providers, system is plain text",!gb.includes("cache_control")&&JSON.parse(gb).messages[0].content===full)}
-    ev("S.settings.consent=true;S.settings.consentP='nvidia,groq,anthropic,openai';S.providers.find(p=>p.id==='nvidia').on=true;S.providers.find(p=>p.id==='nvidia').health=true;setKey('nvidia','k')");
+    ev("S.settings.consent=true;S.settings.consentP='groq,openrouter,anthropic,openai';S.providers.find(p=>p.id==='groq').on=true;S.providers.find(p=>p.id==='groq').health=true;setKey('groq','k')");
     ok("OpenAI body: max_completion_tokens and low effort; no max_tokens and temperature",b2==='{"model":"gpt-6-luna","messages":[{"role":"user","content":"u"}],"max_completion_tokens":2100,"reasoning_effort":"low"}',b2);
     let n2=0;calls.length=0;resp=()=>++n2===1?R(200,JSON.stringify({choices:[{message:{content:null,reasoning_content:"x"},finish_reason:"length"}]})):R(200,JSON.stringify({choices:[{message:{content:"yanıt"}}]}));
-    ev("S.settings.consent=true;S.settings.consentP='nvidia,groq,anthropic,openai'");
-    ok("in chat, if a thinking model hits the limit with no text it is asked again once with three times the limit",await ev("callProvider(S.providers.find(p=>p.id==='nvidia'),'k',[{role:'user',content:'x'}],700)")==="yanıt"&&JSON.parse(calls[1].o.body).max_tokens===2100);
+    ev("S.settings.consent=true;S.settings.consentP='groq,anthropic,openai'");
+    ok("in chat, if a thinking model hits the limit with no text it is asked again once with three times the limit",await ev("callProvider(S.providers.find(p=>p.id==='groq'),'k',[{role:'user',content:'x'}],700)")==="yanıt"&&JSON.parse(calls[1].o.body).max_tokens===2100);
     ev("setKey('anthropic','');Object.assign(S.providers.find(p=>p.id==='anthropic'),{on:false,health:false});delete pstat.anthropic");
     ev("delete pstat.groq;delete cool.groq;offline=null;S.providers.find(p=>p.id==='groq').model='llama-3.3-70b-versatile';S.settings.healthNote='';setKey('groq','');S.settings.consent=false");delete w.fetch;
   }
@@ -301,18 +300,18 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   ok("an invalid sport duration is dropped",ev("cleanEntries([{type:'exercise',day:'2026-01-01',v:1500},{type:'exercise',day:'2026-01-01',v:30}]).out.length")===1);
   ok("the notification text is kept",ev("cleanSettings({reminders:[{id:1,t:'09:00',on:true,body:'Bugün su içmeyi unutma'}]}).reminders[0].body")==="Bugün su içmeyi unutma");
   ok("workout duration is capped at 600 min",ev("gDur({t0:Date.now()-3e6*60,t1:null})")===600);
-  ev("S.settings.consent=false;setKey('nvidia','K1')");
+  ev("S.settings.consent=false;setKey('groq','K1')");
   const bk=ev("JSON.stringify(Object.assign({},S,{settings:Object.assign({},S.settings,{consent:true}),providers:S.providers.map(p=>Object.assign({},p,{base:'https://evil.example/v1',confirm:false}))}))");
   w.document.body.insertAdjacentHTML("beforeend",'<textarea id="bk"></textarea>');w.document.querySelector("#bk").value=bk;
   await loadBackup();
-  ok("a backup cannot change a key's address",ev("S.providers.find(p=>p.id==='nvidia').base")==="https://integrate.api.nvidia.com/v1",ev("S.providers.map(p=>p.base)"));
+  ok("a backup cannot change a key's address",ev("S.providers.find(p=>p.id==='groq').base")==="https://api.groq.com/openai/v1",ev("S.providers.map(p=>p.base)"));
   ok("a backup cannot change consent and permission",ev("S.settings.consent")===false&&ev("S.providers.find(p=>p.id==='gemini').confirm")===true);
   ok("a backup cannot change the address of a keyless built-in provider either (a key pasted later does not go to the wrong server)",ev("S.providers.every(p=>p.base===defProviders().find(d=>d.id===p.id).base)"),ev("S.providers.map(p=>p.base)"));
   ok("a custom provider's address is free; an id named like an Object.prototype member is dropped",ev("(()=>{const r=cleanCoach({providers:[{id:'u9',name:'X',base:'https://x.example/v1',model:'m',on:true,health:true},{id:'constructor',name:'Y',base:'https://y.example/v1',model:'m',on:true,health:true}]});return r.providers.find(p=>p.id==='u9').base==='https://x.example/v1'&&!r.providers.some(p=>p.id==='constructor')})()"));
-  ev("Object.assign(S.settings,{age:30,consent:true,consentV:CONSENT_V,consentP:'nvidia'});S.providers.forEach(p=>{p.on=p.health=p.id==='nvidia'});setKey('nvidia','K1');setKey('openai','')");
+  ev("Object.assign(S.settings,{age:30,consent:true,consentV:CONSENT_V,consentP:'groq'});S.providers.forEach(p=>{p.on=p.health=p.id==='groq'});setKey('groq','K1');setKey('openai','')");
   ev("S.settings.consentP=null");
   ok("consent: without consentP (old record) re-consent is asked",ev("coachOn()")===false);
-  ev("S.settings.consentP='nvidia'");
+  ev("S.settings.consentP='groq'");
   ok("consent: without an age the Coach does not open, with an age it does",ev("(S.settings.age=0,coachOn())")===false&&ev("(S.settings.age=30,coachOn())")===true);
   ev("(()=>{const o=S.providers.find(p=>p.id==='openai');o.on=o.health=true;setKey('openai','sk-x')})()");
   ok("consent: entering a key for a paid provider outside the consent-time set needs re-consent",ev("coachOn()")===false);
@@ -322,7 +321,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
   ok("archive: over the total message cap old chats are dropped, the newest stays",ev("(()=>{const c=i=>({id:i,t:i,title:'t'+i,msgs:Array.from({length:150},(_,j)=>({id:j+1,role:'user',text:'x',t:1}))});const r=trimChats([1,2,3,4,5,6].map(c));return r.length===4&&r[0].id===1})()"));
   ok("history: only an applied card goes with macros and meal; pending and rejected are empty",ev("(()=>{const m=st=>({card:{kind:'log',state:st,items:[{type:'food',text:'a',kcal:100,p:5,c:10,f:2,meal:'breakfast'}]}});const a=cHistLog(m('ok'))[0];return a.p===5&&a.c===10&&a.f===2&&a.meal==='breakfast'&&cHistLog(m('no')).length===0&&cHistLog(m('pending')).length===0})()"));
   ok("a stored provider list is kept as it is (no built-in is added back)",ev("JSON.stringify(cleanCoach({providers:[{id:'groq',name:'Groq',base:'https://api.groq.com/openai/v1',model:'m',on:true,health:true}]}).providers.map(p=>[p.id,p.model,p.on,p.health]))")==='[["groq","m",true,true]]');
-  ok("provider names from one source: the privacy screen, policy, data safety and store text all list them",(()=>{const n=ev("defProviders().map(p=>p.name)"),rd=f=>require("fs").readFileSync(path.join(__dirname,"../docs/"+f),"utf8");ev("sheetPrivacy()");const pv=$q("#sheet").textContent;ev("closeSheet()");return n.length===6&&n.every(x=>pv.includes(x)&&["privacy-policy.md","play-data-safety.md","store-listing.md"].every(f=>rd(f).includes(x)))})());
+  ok("provider names from one source: the privacy screen, policy, data safety and store text all list them",(()=>{const n=ev("defProviders().map(p=>p.name)"),rd=f=>require("fs").readFileSync(path.join(__dirname,"../docs/"+f),"utf8");ev("sheetPrivacy()");const pv=$q("#sheet").textContent;ev("closeSheet()");return n.length===5&&n.every(x=>pv.includes(x)&&["privacy-policy.md","play-data-safety.md","store-listing.md"].every(f=>rd(f).includes(x)))})());
   ev("setKey('groq','KEY-sirri-12345');S.settings.healthNote='gizli not'");
   ev("document.querySelector('#bkpw')||document.body.insertAdjacentHTML('beforeend','<input id=\"bkpw\">')");
   ev("document.querySelector('#bkpw2')||document.body.insertAdjacentHTML('beforeend','<input id=\"bkpw2\">')");
@@ -1678,7 +1677,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     const doc=w.document,q=s=>doc.querySelector(s);
     let fetched=0,reply={reply:"Yorum",log:[]};
     w.fetch=async()=>{fetched++;return {ok:true,json:async()=>({choices:[{message:{content:JSON.stringify(reply)}}]})}};
-    ev("S.chat=[];S.cid=1;S.settings.consent=false;setKey('nvidia','K1');S.entries=[];S.sleep=[];Object.assign(S.settings,{kcal:1800,goalKg:0,age:0,healthNote:'',heightCm:175});for(let i=1;i<=7;i++)add('food',i%2?2000:300,'y',keyOff(-i));add('weight',80,'',keyOff(-1));tab='trend';render()");
+    ev("S.chat=[];S.cid=1;S.settings.consent=false;setKey('groq','K1');S.entries=[];S.sleep=[];Object.assign(S.settings,{kcal:1800,goalKg:0,age:0,healthNote:'',heightCm:175});for(let i=1;i<=7;i++)add('food',i%2?2000:300,'y',keyOff(-i));add('weight',80,'',keyOff(-1));tab='trend';render()");
     const whyBtn=()=>!!q('[data-c="why"]');
     ok("the why button is hidden without a weight-loss goal (Trend and Coach)",!whyBtn()&&(ev("tab='coach';render()"),!whyBtn()));
     ev("S.settings.goalKg=70;S.settings.age=16;render()");
@@ -1735,7 +1734,8 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("program page: choices are marked",q('[data-c="po:d:2"]').getAttribute("aria-pressed")==="true"&&q('[data-c="po:q:Ev tipi"]').getAttribute("aria-pressed")==="true"&&ev("progOpt.q")==="Ev tipi");
     let f1=fetched;q('[data-c="progask"]').click();await flush();
     ok("the program request makes no call without consent",fetched===f1&&!ev("S.chat.length"));
-    ev("S.settings.consent=true;S.settings.consentP='gemini,groq,nvidia,openrouter';S.settings.age=30;progOpt={d:3,q:'Salon',m:45,l:'Başlangıç'}");
+    ev("S.settings.consent=true;S.settings.consentP='gemini,groq,openrouter';S.settings.age=30;progOpt={d:3,q:'Salon',m:45,l:'Başlangıç'}");
+    ev("setKey('gemini','AIzaSy_test');setKey('groq','gsk_test');setKey('openrouter','sk-or-test');S.providers.find(p=>p.id==='gemini').on=true;S.providers.find(p=>p.id==='gemini').health=true;S.providers.find(p=>p.id==='groq').on=true;S.providers.find(p=>p.id==='groq').health=true;S.providers.find(p=>p.id==='openrouter').on=true;S.providers.find(p=>p.id==='openrouter').health=true");
     reply={reply:"Program hazır",log:[],program:{name:"3 gün",days:[{n:"A",ex:["squat","bench","row"]},{n:"B",ex:["squat","uydurma"]},{n:"C",ex:["legpress","pulldown"]}]}};
     let sent;w.fetch=async(u,o)=>{fetched++;sent=JSON.parse(o.body);return {ok:true,json:async()=>({choices:[{message:{content:JSON.stringify(reply)}}]})}};
     await ev("cProgram(progOpt)");
@@ -1772,7 +1772,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ev("S.entries=S.entries.filter(e=>e.id<9000)");
     ev("S.settings.reminders.find(r=>r.id===12).on=true");w.Capacitor.Plugins.LocalNotifications=lnO;
     const tap=(a,x)=>ev(`notifTap(${JSON.stringify({actionId:a,notification:{extra:x}})});tab`);
-    ev("tab='today';S.settings.consent=true;S.settings.consentP='gemini,groq,nvidia,openrouter'");
+    ev("tab='today';S.settings.consent=true;S.settings.consentP='gemini,groq,openrouter'");
     ok("listener: tapping opens the Coach when consent exists",tap("tap",{act:"open",tab:"coach"})==="coach");
     ev("tab='today';S.settings.consent=false");
     ok("listener: without consent Trend opens",tap("tap",{act:"open",tab:"coach"})==="trend");
@@ -2408,7 +2408,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
       S.meds=[{id:1,n:'X',t:['09:00'],on:true}];S.medLog=[{id:1,m:1,day:dayKey(),slot:'09:00',st:'t'}];
       S.vitals=[{id:1,k:'t',day:dayKey(),time:'08:00',sys:120,dia:80,session:'morning'}];S.labs=[{id:1,day:dayKey(),k:'glu',n:'Glukoz',v:90,u:'mg/dL'}];
       S.sleep=[{day:dayKey(),min:420}];S.mood=[{day:dayKey(),v:4}];S.fast={plan:16,t0:Date.now()-36e5,log:[{t0:1,t1:2}]};
-      S.chat=[{id:1,role:'user',text:'merhaba',t:1}];S.cid=2;S.settings.consent=true;S.settings.consentP='gemini,groq,nvidia,openrouter';S.settings.consentV=CONSENT_V;S.settings.consentAt='2026-10-01';S.settings.lastBackup='2026-09-30';S.settings.obDone=true;
+      S.chat=[{id:1,role:'user',text:'merhaba',t:1}];S.cid=2;S.settings.consent=true;S.settings.consentP='gemini,groq,openrouter';S.settings.consentV=CONSENT_V;S.settings.consentAt='2026-10-01';S.settings.lastBackup='2026-09-30';S.settings.obDone=true;
       sheetPrivacy()})()`);
     const cnt=()=>ev("JSON.stringify([S.entries.length,S.workouts.length,S.moves.length,S.meds.length+S.medLog.length,S.vitals.length,S.labs.length,S.sleep.length+S.mood.length+S.fast.log.length+(S.fast.t0?1:0),S.chat.length])");
     const del=i=>{q(`[data-pv="del:${i}"]`).click()};
@@ -2527,7 +2527,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     const t2=ev("tab")==="trend";go("bp");const t3=cur();go("settings-about");
     ok("Tansiyon from Trend: Trend active and ‹ to Trend; deep Tansiyon Trend, About Daha fazla active",t1&&t2&&t3==="trend"&&cur()==="more");
     ev("S.meds=[];S.medLog=[]");
-    go("today");const tap=(x,m)=>{ev(`S.settings.medOn=${m};S.settings.consent=true;S.settings.consentP='gemini,groq,nvidia,openrouter';tab='today';notifTap(${JSON.stringify({actionId:"tap",notification:{extra:x}})})`);return ev("tab")};
+    go("today");const tap=(x,m)=>{ev(`S.settings.medOn=${m};S.settings.consent=true;S.settings.consentP='gemini,groq,openrouter';tab='today';notifTap(${JSON.stringify({actionId:"tap",notification:{extra:x}})})`);return ev("tab")};
     ok("notification tap: the ilac tab goes to İlaç (when medication is on) or Daha fazla; koc, settings-veri and old names are kept",tap({act:"open",tab:"meds"},true)==="meds"&&tap({act:"open",tab:"meds"},false)==="more"&&tap({act:"open",tab:"coach"},true)==="coach"&&tap({act:"open",tab:"settings-data"},true)==="settings-data"&&tap({act:"open",tab:"settings"},true)==="trend");
     ev("S.meds=[{id:1,n:'A',t:['08:00'],on:true}]");const mx=ev("MedLib.notifications(S.meds,[],new Date(),3,true)[0].extra");
     ok("tapping a real medication notification (act:med) opens İlaçlar, Daha fazla if medication is off",mx.act==="med"&&tap(mx,true)==="meds"&&tap(mx,false)==="more",mx);
@@ -2874,8 +2874,8 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("privacy: Tariflerim is in the category list, deleting removes the recipes, foods stay",ev("PV_CATS.find(c=>c[0]==='Tariflerim')[1]()")===1&&(ev("pvDelete(PV_CATS.findIndex(c=>c[0]==='Tariflerim'))"),ev("S.recipes.length")===0&&ev("S.myFoods.length")===1));
     ok("recipes do not go to the Coach context",(ev("S.recipes=[{id:1,n:'GizliTarifAdi',s:1,items:[{n:'GizliMalzeme',g:5,k:5}]}]"),!JSON.stringify(ev("cMessages('merhaba')")).includes("Gizli")));
     { // identity masking: no raw name, phone, TC or e-mail goes to the model; the reply is translated back locally
-      reset();await ev("setKey('nvidia','K1')");
-      ev("Object.assign(S.settings,{age:34,consent:true,consentV:CONSENT_V,consentP:'gemini,groq,nvidia,openrouter',healthNote:'Dr. Kerim Ozan 0541 222 33 44 verdi, TC 12345678901'});S.chat=[{id:1,role:'user',text:'Eşim Ayşe, mail ayse@posta.com',t:1}];S.entries=[{id:2,day:dayKey(),time:'09:00',type:'note',v:0,text:'Ahmet Yılmaz aradı'}]");
+      reset();await ev("setKey('groq','K1')");
+      ev("Object.assign(S.settings,{age:34,consent:true,consentV:CONSENT_V,consentP:'gemini,groq,openrouter',healthNote:'Dr. Kerim Ozan 0541 222 33 44 verdi, TC 12345678901'});S.chat=[{id:1,role:'user',text:'Eşim Ayşe, mail ayse@posta.com',t:1}];S.entries=[{id:2,day:dayKey(),time:'09:00',type:'note',v:0,text:'Ahmet Yılmaz aradı'}]");
       const bodies=[];w.fetch=async(u,o)=>{bodies.push(o.body);return {ok:true,json:async()=>({choices:[{message:{content:'{"reply":"[AD1] selam","log":[]}'}}]})}};
       const r=await ev("cAsk(cMessages('Ben Mehmet, 0532 123 45 67'),50)");
       ok("Coach request: no raw name, phone, TC or e-mail in the body",bodies.length===1&&!/Ahmet|Kerim|Ayşe|Mehmet|0532|0541|12345678901|posta\.com/.test(bodies[0])&&/\[TELEFON\d\]/.test(bodies[0]),bodies[0]&&bodies[0].slice(0,300));
@@ -2939,12 +2939,12 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     reset();
   }
   { // under-18 single gate
-    reset();await ev("setKey('nvidia','K1')");ev("S.settings.age=30;cConsent(true)");
+    reset();await ev("setKey('groq','K1')");ev("S.settings.age=30;cConsent(true)");
     let n=0;w.fetch=async()=>{n++;return {ok:true,json:async()=>({choices:[{message:{content:'{"reply":"x","log":[]}'}}]})}};
     w.document.body.insertAdjacentHTML("beforeend",'<input id="ageIn" data-set="age">');
     const inp=w.document.querySelector("#ageIn");inp.value="16";inp.dispatchEvent(new w.Event("change",{bubbles:true}));
     ok("once consent is given, setting the age to 16 drops the consent",ev("S.settings.consent")===false&&ev("S.settings.consentV")===0);
-    ev("S.settings.consent=true;S.settings.consentP='gemini,groq,nvidia,openrouter';S.settings.consentV=CONSENT_V"); // old/external state
+    ev("S.settings.consent=true;S.settings.consentP='gemini,groq,openrouter';S.settings.consentV=CONSENT_V"); // old/external state
     ev("cSend('merhaba')");await ev("cFlush()");ev("progOpt={d:3,q:'Salon',m:45,l:'Başlangıç'}");await ev("cProgram(progOpt)");await ev("cMenu()");
     let t="none";try{await ev("cAsk([{role:'user',content:'x'}],10)")}catch(e){t=e.message}
     ok("under 18: chat, program, menu and direct cAsk send no request",n===0&&t==="consent",[n,t]);

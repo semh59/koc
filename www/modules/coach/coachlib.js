@@ -221,14 +221,13 @@ const CoachLib=(()=>{
   }
 
   /* ---- provider setup ---- */
-  /* Only the nvapi- prefix is confirmed by documentation; the UI shows the guess as changeable. sk-ant-/sk-or- come before the generic sk-. */
-  const KEY_PREFIX=[["sk-ant-","anthropic"],["sk-or-","openrouter"],["nvapi-","nvidia"],["gsk_","groq"],["AIza","gemini"],["sk-","openai"]];
+  /* Only known provider prefixes are accepted. */
+  const KEY_PREFIX=[["sk-ant-","anthropic"],["sk-or-","openrouter"],["gsk_","groq"],["AIza","gemini"],["sk-","openai"]];
   const keyProvider=k=>{k=String(k||"").trim();const m=KEY_PREFIX.find(([p])=>k.startsWith(p));return m?m[1]:null};
   /* The recommended model is picked from the live list: the first listed id wins. A hard-coded model is a last resort because fixed names get retired. */
   const MODEL_PREF={
     groq:["llama-3.3-70b-versatile","openai/gpt-oss-120b","llama-3.1-8b-instant"],
-    nvidia:["nvidia/nemotron-3-super-120b-a12b","google/gemma-4-31b-it","moonshotai/kimi-k2.6","deepseek-ai/deepseek-v4.1-flash"],
-    openrouter:["google/gemma-4-31b-it:free","nvidia/nemotron-3-super-120b-a12b:free"],
+    openrouter:["google/gemma-4-31b-it:free","meta-llama/llama-3.3-70b-instruct:free"],
     gemini:["gemini-3.5-flash-lite","gemini-3.1-flash-lite","gemini-3.5-flash"],
     openai:["gpt-6-luna"],
     anthropic:["claude-haiku-4-5","claude-haiku-4-5-20251001","claude-sonnet-5-5"]
