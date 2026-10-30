@@ -2,7 +2,7 @@
 const {spawn, spawnSync} = require("child_process"), fs = require("fs"), os = require("os"), path = require("path");
 const dir = __dirname, failed = [];
 if (spawnSync(process.execPath, ["--check", path.join(dir, "patch-android.js")], {stdio: "inherit"}).status) failed.push("patch-android.js (syntax)");
-process.on("unhandledRejection", e => {console.error("FAIL unhandledRejection in test runner:", e); process.exit(1);});
+process.on("unhandledRejection", e => {console.error("FAIL unhandledRejection in test runner:", e); failed.push("unhandledRejection");});
 const runFile=(file)=>new Promise(resolve=>{
       let out="";
       const p=spawn(process.execPath,[path.join(dir,file)], {env: process.env});
