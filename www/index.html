@@ -11,6 +11,11 @@
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
+<script>/* ---------- polyfills for API 31 WebView (Chrome 91) ---------- */
+if (typeof window.structuredClone === "undefined") {window.structuredClone = function(x) {try {return JSON.parse(JSON.stringify(x));} catch {return Object.assign({}, x);}};}
+if (typeof window.isNative === "undefined") {window.isNative = function() {return false;};}
+if (typeof window.plugin === "undefined") {window.plugin = function(name) {return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins[name] ? window.Capacitor.Plugins[name] : null;};}
+</script>
 <div id="app">
   <header><button id="back" aria-label="Geri" data-ic="back" hidden></button><h1 id="ttl">Bugün</h1><div class="streak" id="streak"></div></header>
   <main id="view"></main>
