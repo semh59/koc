@@ -238,6 +238,6 @@ async function labSelfTest(){
     const lib=await labLoadPdf(),doc=await lib.getDocument({data:labBuildReport(),isEvalSupported:false,verbosity:0}).promise;
     console.log("NW-PDF ok pages="+doc.numPages);
     try{localStorage.setItem("nw_pdfok","1")}catch(e){}
-  }catch(e){console.log("NW-PDF hata "+(e&&e.message||e))}
+  }catch(e){console.log("NW-PDF hata "+(e&&e.stack||e&&e.message||e))}
 }
 document.addEventListener("nw:boot",()=>{if(isNative())setTimeout(labSelfTest,4000)});
