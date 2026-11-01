@@ -8,7 +8,7 @@ ui_texts() { ui_dump | grep -oE ' (text|content-desc)="[^"]+"' | sort -u | tr '
 ' '|'; echo; }
 skip_intro() {
   local b h w cy
-  b=$(ui_dump | grep 'Şimdilik geç' | grep -oE 'bounds="\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]"' | head -1 | grep -oE '[0-9]+' | tr '
+  b=$(ui_dump | grep 'Şimdilik geç' | grep -oE 'bounds="\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]"' | head -1 | grep -oE '[0-9]+' | tr '\n' ' ')
 ' ' ')
   [ -n "$b" ] || return 1
   set -- $b
