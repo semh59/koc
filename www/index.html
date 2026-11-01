@@ -12,7 +12,19 @@
 </head>
 <body>
 <script>/* ---------- polyfills for API 31 WebView (Chrome 91) ---------- */
-if (typeof window.structuredClone === "undefined") {window.structuredClone = function(x) {try {return JSON.parse(JSON.stringify(x));} catch {return Object.assign({}, x);}};}
+if (typeof window.structuredClone === "undefined") {window.structuredClone = function(x) {
+  if (x === null || typeof x !== "object") return x;
+  if (x instanceof Date) return new Date(x.getTime());
+  if (x instanceof ArrayBuffer) return x.slice(0);
+  if (ArrayBuffer.isView(x)) return new x.constructor(x.buffer || x, x.byteOffset, x.byteLength);
+  if (x instanceof Map) return new Map([...x].map(([k,v])=>[structuredClone(k),structuredClone(v)]));
+  if (x instanceof Set) return new Set([...x].map(structuredClone));
+  if (x instanceof RegExp) return new RegExp(x.source, x.flags);
+  if (x instanceof HTMLElement) return x;
+  const o = Array.isArray(x) ? [] : {};
+  for (const k in x) if (Object.prototype.hasOwnProperty.call(x, k)) o[k] = structuredClone(x[k]);
+  return o;
+};}
 if (typeof window.isNative === "undefined") {window.isNative = function() {return false;};}
 if (typeof window.plugin === "undefined") {window.plugin = function(name) {return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins[name] ? window.Capacitor.Plugins[name] : null;};}
 </script>

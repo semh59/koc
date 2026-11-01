@@ -13,7 +13,7 @@ module.exports.stripComments=s=>s.replace(/\/\*[\s\S]*?\*\//g,"").replace(/(^|[^
 module.exports.boot=(before,html=module.exports.build())=>{
   const {JSDOM}=require("jsdom");
   const dom=new JSDOM(html,{runScripts:"dangerously",pretendToBeVisual:true,url:"https://localhost/",beforeParse(w){
-    Object.assign(w,{structuredClone,TextEncoder,TextDecoder,__noSelfTest:true});
+    Object.assign(w,{structuredClone:typeof structuredClone!=="undefined"?structuredClone:function(x){try{return JSON.parse(JSON.stringify(x));}catch{return Object.assign({},x);}},TextEncoder,TextDecoder,isNative:function(){return false;},__noSelfTest:true});
     w.scrollTo=()=>{};w.confirm=()=>true;w.Element.prototype.scrollIntoView=function(){};
     before?.(w);
   }});
