@@ -235,7 +235,7 @@ async function labSelfTest(){
   if(window.__noSelfTest)return;
   try{if(localStorage.getItem("nw_pdfok"))return}catch(e){}
   try{
-    const lib=await labLoadPdf(),doc=await lib.getDocument({data:labBuildReport(),isEvalSupported:false,verbosity:0}).promise;
+    const lib=await labLoadPdf(),doc=await lib.getDocument({data:labBuildReport()}).promise;
     console.log("NW-PDF ok pages="+doc.numPages);
     try{localStorage.setItem("nw_pdfok","1")}catch(e){}
   }catch(e){console.log("NW-PDF hata "+(e&&e.stack||e&&e.message||e))}
