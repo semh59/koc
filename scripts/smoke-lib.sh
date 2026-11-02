@@ -13,6 +13,8 @@ skip_intro() {
   cy=$(( ($2 + $4) / 2 ))
   if [ -n "$h" ] && [ "$cy" -ge $(( h - 40 )) ]; then adb shell input swipe $((w / 2)) $((h * 3 / 4)) $((w / 2)) $((h / 4)) 300; return 1; fi
   echo "UI before tap: $(ui_texts)"
+  adb shell input tap $(( ($1 + $3) / 2 )) $cy
+  sleep 1
   adb shell uiautomator tap $(( ($1 + $3) / 2 )) $cy
   sleep 2
   ui_dump | grep -q 'Şimdilik geç' && return 1
