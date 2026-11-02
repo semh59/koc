@@ -24,7 +24,11 @@ clr() { crashcheck; adb logcat -c; }
 # On API 36 am kill does not always kill a background process; SIGKILL fallback, like a low-memory kill.
 appkill() { adb shell am kill com.neowell.app; until_ok 5 stopped || { p=$(adb shell pidof com.neowell.app); [ -z "$p" ] || adb shell run-as com.neowell.app kill -9 $p; }; }
 step "install and first launch"
-adb shell pm grant com.neowell.app android.permission.POST_NOTIFICATIONS
+# POST_NOTIFICATIONS added in API 33; skip on API 31 (Android 12) which precedes it
+API=$(adb shell getprop ro.build.version.sdk)
+if [ "$API" -ge 33 ]; then
+  adb shell pm grant com.neowell.app android.permission.POST_NOTIFICATIONS
+fi
 clr
 launch
 # The API 36 emulator is slow: instead of a fixed delay, startup checks wait up to 2 minutes for the OCR result (the last to finish).
