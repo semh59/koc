@@ -11,11 +11,12 @@ skip_intro() {
   set -- $b
   read w h <<< "$(adb shell wm size | grep -oE '[0-9]+x[0-9]+' | tail -1 | tr 'x' ' ')"
   cy=$(( ($2 + $4) / 2 ))
-  if [ -n "$h" ] && [ "$cy" -ge $(( h - 40 )) ]; then adb shell input swipe $((w / 2)) $((h * 3 / 4)) $((w / 2)) $((h / 4)) 300; return 1; fi
   echo "UI before tap: $(ui_texts)"
   adb shell input tap $(( ($1 + $3) / 2 )) $cy
   sleep 1
   adb shell uiautomator tap $(( ($1 + $3) / 2 )) $cy
+  sleep 1
+  adb shell input swipe $(( ($1 + $3) / 2 )) $cy $(( ($1 + $3) / 2 + 1 )) $(( cy + 1 )) 50
   sleep 2
   ui_dump | grep -q 'Şimdilik geç' && return 1
   echo "UI after tap: $(ui_texts)"
