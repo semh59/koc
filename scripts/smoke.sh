@@ -21,8 +21,8 @@ adb install -r neowell.apk || exit 1
 # Crashes (Java FATAL EXCEPTION and native tombstones) land in the crash buffer; logcat -c clears it too, so it is checked before every clear and at the end.
 crashcheck() { adb logcat -d -b crash > crash.log; if grep -qE "Process: com\.neowell\.app|>>> com\.neowell\.app <<<" crash.log; then echo "APP CRASHED"; cat crash.log; exit 1; fi; }
 clr() { crashcheck; adb logcat -c; }
-# On API 36 am kill does not always kill a background process; SIGKILL fallback, like a low-memory kill.
-appkill() { adb shell am kill com.neowell.app; until_ok 5 stopped || { p=$(adb shell pidof com.neowell.app); [ -z "$p" ] || adb shell run-as com.neowell.app kill -9 $p; }; }
+# On newer Android versions am kill may not reach a protected background process; force-stop is the reliable fallback.
+appkill() { adb shell am kill com.neowell.app; until_ok 5 stopped || { adb shell am force-stop com.neowell.app; until_ok 5 stopped || { p=$(adb shell pidof com.neowell.app); if [ -n "$p" ]; then adb shell run-as com.neowell.app kill -9 $p 2>/dev/null || true; fi; }; }; }
 step "install and first launch"
 # POST_NOTIFICATIONS added in API 33; skip on API 31 (Android 12) which precedes it
 API=$(adb shell getprop ro.build.version.sdk)
