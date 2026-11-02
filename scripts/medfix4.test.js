@@ -4,7 +4,7 @@ const {boot,read}=require("./html");
 
 (async()=>{
   const w=await boot(),ev=s=>w.eval(s),$=s=>w.document.querySelector(s),$$=s=>[...w.document.querySelectorAll(s)];
-  const reset=(meds="[]",log="[]",st="")=>ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.noticeOk=true;S.settings.medOn=true;${st};S.meds=MedLib.cleanMeds(${meds});S.medLog=MedLib.cleanLog(${log},S.meds);tab='meds';medDay='';closeSheet();render()`);
+  const reset=(meds="[]",log="[]",st="")=>ev(`S=structuredClone(DEF);S.settings.obDone=true;S.settings.noticeOk=true;S.settings.medOn=true;${st};S.meds=MedLib.cleanMeds(${meds});S.medLog=MedLib.cleanLog(${log},S.meds);tab='meds';medDay='';closeSheet();render();medTapAt=0;medTapKey='';`);
   const view=()=>$("#view").textContent;
   /* Pins the window clock to h:m today; unclock() restores it. */
   const at=(h,m)=>{const t=new Date();t.setHours(h,m,0,0);ev(`{const D=globalThis.__D0||Date;globalThis.__D0=D;const o=${t-Date.now()};Date=class extends D{constructor(...a){super(...(a.length?a:[D.now()+o]))}static now(){return D.now()+o}}}`)},unclock=()=>ev("Date=globalThis.__D0||Date");
