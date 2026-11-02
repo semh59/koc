@@ -11,7 +11,10 @@ step "install"
 adb uninstall $P
 adb install release/neowell.apk || die "RELEASE APK COULD NOT BE INSTALLED"
 adb shell dumpsys package $P | grep -E "pkgFlags|flags=" | grep -q DEBUGGABLE && die "RELEASE APK IS DEBUGGABLE"
-adb shell pm grant $P android.permission.POST_NOTIFICATIONS
+API=$(adb shell getprop ro.build.version.sdk)
+if [ "$API" -ge 33 ]; then
+  adb shell pm grant $P android.permission.POST_NOTIFICATIONS
+fi
 adb logcat -c -b all
 step "launch and plugin diagnostics"
 # A release build does not write the console to logcat: with this intent extra MainActivity writes, under the NW-DIAG tag, that every plugin loaded

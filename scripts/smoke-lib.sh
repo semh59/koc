@@ -2,13 +2,11 @@
 # Shared by smoke.sh and smoke-release.sh (sourced): intro skip and failure diagnostics.
 # A fresh install shows the intro and schedules nothing until it is finished (permission is asked after it): the smoke skips it like a user would, by tapping "Şimdilik geç" found in the UI tree.
 # The button sits at the bottom of the welcome page: when its bounds are below the screen the page is scrolled first (a tap outside the display does nothing), and the tap is verified by the text being gone.
-ui_dump() { adb shell uiautomator dump /sdcard/nw_ui.xml >/dev/null 2>&1; adb shell cat /sdcard/nw_ui.xml 2>/dev/null | tr '>' '
-'; }
-ui_texts() { ui_dump | grep -oE ' (text|content-desc)="[^"]+"' | sort -u | tr '
-' '|'; echo; }
+ui_dump() { adb shell uiautomator dump /sdcard/nw_ui.xml >/dev/null 2>&1; adb shell cat /sdcard/nw_ui.xml 2>/dev/null | tr -d "\r" | tr ">" "\n"; }
+ui_texts() { ui_dump | grep -oE ' (text|content-desc)="[^"]+"' | sort -u | tr "\n" "|"; echo; }
 skip_intro() {
   local b h w cy
-  b=$(ui_dump | grep 'Şimdilik geç' | grep -oE 'bounds="\[[0-9]+,[0-9]+\]\\[[0-9]+,[0-9]+\\]' | head -1 | grep -oE '[0-9]+' | tr '\n' ' ')
+  b=$(ui_dump | grep 'Şimdilik geç' | grep -oE '\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]' | head -1 | grep -oE '[0-9]+')
   [ -n "$b" ] || return 1
   set -- $b
   read w h <<< "$(adb shell wm size | grep -oE '[0-9]+x[0-9]+' | tail -1 | tr 'x' ' ')"
