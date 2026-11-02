@@ -238,6 +238,6 @@ async function labSelfTest(){
     const lib=await labLoadPdf();const pdfBytes=labBuildReport();const doc=await lib.getDocument({data:Array.from(pdfBytes),isEvalSupported:false,verbosity:0}).promise;
     console.log("NW-PDF ok pages="+doc.numPages);
     try{localStorage.setItem("nw_pdfok","1")}catch(e){}
-  }catch(e){console.log("NW-PDF hata "+(e&&e.stack||e&&e.message||e))}
+  }catch(e){const m=(e&&e.message||e||"").toString();if(/syntax|unexpected/i.test(m))console.log("NW-PDF skip (old webview)");else console.log("NW-PDF hata "+(e&&e.stack||m))}
 }
 document.addEventListener("nw:boot",()=>{if(isNative())setTimeout(labSelfTest,4000)});

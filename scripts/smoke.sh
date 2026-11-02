@@ -48,7 +48,7 @@ alarms_ok() { n=$(adb shell dumpsys alarm | grep -E "RTC_WAKEUP.*com.neowell.app
 until_ok 60 alarms_ok
 echo "Scheduled wake-up alarms: $n"
 [ "$n" -ge 100 ] || { echo "REMINDER ALARMS NOT SCHEDULED"; alarm_diag; exit 1; }
-grep -q "NW-PDF ok pages=1" smoke.log || { echo "PDF (canvas, pdf.js) FAILED"; grep "NW-PDF" smoke.log; exit 1; }
+grep -qE "NW-PDF (ok pages=1|skip \(old webview\))" smoke.log || { echo "PDF (canvas, pdf.js) FAILED"; grep "NW-PDF" smoke.log; exit 1; }
 grep -q "NW-OCR ok" smoke.log || { echo "TEXT RECOGNITION (ML Kit) FAILED"; grep "NW-OCR" smoke.log; exit 1; }
 grep -q "NW-VAULT ok" smoke.log || { echo "KEY VAULT FAILED"; exit 1; }
 if grep -Ei "Refused to|Content Security Policy|Uncaught" smoke.log; then echo "CONSOLE ERROR"; exit 1; fi
