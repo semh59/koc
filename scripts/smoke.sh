@@ -25,7 +25,7 @@ clr() { crashcheck; adb logcat -c; }
 appkill() { adb shell am kill com.neowell.app; until_ok 5 stopped || { adb shell am force-stop com.neowell.app; until_ok 5 stopped || { p=$(adb shell pidof com.neowell.app); if [ -n "$p" ]; then adb shell run-as com.neowell.app kill -9 $p 2>/dev/null || true; fi; }; }; }
 step "install and first launch"
 # POST_NOTIFICATIONS added in API 33; skip on API 31 (Android 12) which precedes it
-API=$(adb shell getprop ro.build.version.sdk)
+API=$(adb shell getprop ro.build.version.sdk | tr -d '\r')
 if [ "$API" -ge 33 ]; then
   adb shell pm grant com.neowell.app android.permission.POST_NOTIFICATIONS
 fi

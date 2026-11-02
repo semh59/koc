@@ -1,5 +1,5 @@
 /* ---------- screens ---------- */
-const isEmulator=()=>/emulator|Android SDK|SDK_Gphone|x86_64|Genymotion|VirtualBox/.test(navigator.userAgent) && /Android 12/.test(navigator.userAgent);
+const isEmulator=()=>isNative() && /sdk_gphone|Android SDK|emulator|google_sdk/i.test(navigator.userAgent);
 /* Touch/drag: the nearest point's value in a bubble. data-tip: [[x,y,text]...] (viewBox units). */
 function chartTip(svg,cx){
   const P=JSON.parse(svg.dataset.tip),[,,W]=svg.getAttribute("viewBox").split(" ").map(Number),r=svg.getBoundingClientRect(),x=(cx-r.left)*W/(r.width||W);
