@@ -6,6 +6,8 @@ ui_dump() { adb shell uiautomator dump /sdcard/nw_ui.xml >/dev/null 2>&1; adb sh
 ui_texts() { ui_dump | grep -oE ' (text|content-desc)="[^"]+"' | sort -u | tr "\n" "|"; echo; }
 skip_intro() {
   local b h w cy
+  # If the app is already on the home screen (intro auto-skipped on emulator), skip the tap
+  ui_dump | grep -q 'Bugün' && return 0
   b=$(ui_dump | grep 'Şimdilik geç' | grep -oE '\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]' | head -1 | grep -oE '[0-9]+')
   [ -n "$b" ] || return 1
   set -- $b
