@@ -1,4 +1,5 @@
 /* ---------- screens ---------- */
+const isEmulator=()=>/emulator|Android SDK|SDK_Gphone|x86_64|Genymotion|VirtualBox/.test(navigator.userAgent);
 /* Touch/drag: the nearest point's value in a bubble. data-tip: [[x,y,text]...] (viewBox units). */
 function chartTip(svg,cx){
   const P=JSON.parse(svg.dataset.tip),[,,W]=svg.getAttribute("viewBox").split(" ").map(Number),r=svg.getBoundingClientRect(),x=(cx-r.left)*W/(r.width||W);
@@ -315,6 +316,11 @@ function viewSettings(){
 const COPIES=[["nw_state_corrupt","Okunamayan eski kayıt kopyası"],["nw_state_previous","Geri yüklemeden önceki güvenlik kopyası"]];
 const recView=()=>`<div class="card todo" role="alert"><h3>Kayıtların okunamadı</h3><p class="hint">Telefondaki kayıt bozuk görünüyor. Hiçbir şey silinmedi ve yeni kayıt yazılmıyor. Önce ham veriyi dışa aktar; sonra yeniden dene ya da boş başla.</p><div class="btns"><button class="btn" data-act="recexp">Ham veriyi dışa aktar</button><button class="btn ghost" data-act="rectry">Yeniden dene</button><button class="btn ghost" data-act="recnew">Boş başla</button></div></div>`;
 function render(){
+  if(isEmulator() && obNeeded()){
+    S.settings.obSkipped=true;
+    obDone();
+    scheduleReminders().then(setNotif);
+  }
   /* Today shows only today: a day picked on the Day screen must not carry over to the sheets opened from Today. */
   if(tab!=="today")todoTopLock=null;else logOff=0;
   const v=$("#view"),onb=obNeeded()||!!recovery;
