@@ -20,7 +20,10 @@ test.describe("Today",()=>{
 
   test("the water and sport rings sit beside the calorie ring",async({app,page})=>{
     await app.open({seed:state({kcal:2000},{entries:[entry("food",1150,"Öğle")]})});
-    const m=await page.locator(".rings>.rbtn").boundingBox(),s=await page.locator(".rmini").boundingBox();
+    const mainRing=page.locator(".rings>.rbtn").first(),miniRings=page.locator(".rmini");
+    await expect(mainRing).toBeVisible();
+    await expect(miniRings).toBeVisible();
+    const m=await mainRing.boundingBox(),s=await miniRings.boundingBox();
     expect(s.x).toBeGreaterThanOrEqual(m.x+m.width);
     expect(s.y).toBeLessThan(m.y+m.height);
   });

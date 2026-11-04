@@ -197,7 +197,7 @@ body.coach .coach-entry{margin-top:var(--sp-4)}
 body.coach .coach-entry-head{display:grid;gap:var(--sp-1);margin-bottom:var(--sp-3)}
 body.coach .coach-entry-head .grp{margin:0}
 body.coach .coach-entry-head .hint{padding:0;color:var(--coach-page-mut)}
-body.coach .coach-entry-tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-2)}
+body.coach .coach-entry-tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2)}
 body.coach .coach-entry-tool{min-height:76px;display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-2);text-align:left;background:var(--coach-card);color:var(--coach-card-ink);border:1px solid var(--coach-line);border-radius:var(--r-s)}
 body.coach .coach-entry-tool:focus-visible{outline:3px solid var(--coach-acid);outline-offset:2px}
 body.coach .coach-entry-tool:active{transform:scale(.98)}

@@ -27,7 +27,8 @@ for (const name of sources) {
   const b = fs.readFileSync(path.join(targetDir, name));
   if (!a.equals(b)) throw new Error(`native source differs: ${name}`);
 }
-const publicSource=path.join(root,"www"),publicTarget=path.join(root,"android","app","src","main","assets","public"),webFiles=["main/01-core.js","modules/coach/coach.js","app.css"];
+const publicSource=path.join(root,"www"),publicTarget=path.join(root,"android","app","src","main","assets","public");
+const webFiles=tree(publicSource).map(name=>name.split(path.sep).join("/"));
 const resourceSource=path.join(root,"assets","android","res"),resourceTarget=path.join(root,"android","app","src","main","res");
 if (!fs.existsSync(resourceSource)||!fs.existsSync(resourceTarget)) throw new Error("native resource directory missing");
   const a=tree(resourceSource),b=tree(resourceTarget);
@@ -42,7 +43,11 @@ if (!fs.existsSync(resourceSource)||!fs.existsSync(resourceTarget)) throw new Er
           const patchOwned=new Set(fs.readdirSync(resourceSource).flatMap(f=>{const p=path.join(resourceSource,f);return fs.statSync(p).isDirectory()?tree(p).map(c=>norm(f+"/"+c)):norm(f)}));
           const capacitorDefaults=new Set(["drawable-v24/ic_launcher_foreground.xml","mipmap-anydpi-v26/ic_launcher.xml","mipmap-anydpi-v26/ic_launcher_round.xml","drawable/ic_launcher_background.xml","layout/activity_main.xml","values/strings.xml","values/styles.xml","xml/config.xml","xml/file_paths.xml"]);
           for (const name of bNorm) if (!patchOwned.has(name) && !capacitorDefaults.has(name)) throw new Error(`native target-only orphan resource: ${name}`);
-  for (const name of webFiles) {
+const webTargets=tree(publicTarget).map(name=>name.split(path.sep).join("/"));
+const generatedWebDefaults=new Set(["cordova.js","cordova_plugins.js"]);
+const unexpectedWeb=webTargets.filter(name=>!webFiles.includes(name)&&!generatedWebDefaults.has(name));
+if(webFiles.some((name,i)=>name!==webTargets.filter(target=>webFiles.includes(target))[i])||unexpectedWeb.length) throw new Error(`web asset inventory mismatch\\nwww: ${webFiles.join(", ")}\\ngenerated extras: ${unexpectedWeb.join(", ")}`);
+for (const name of webFiles) {
     const a=fs.readFileSync(path.join(publicSource,name)),b=fs.readFileSync(path.join(publicTarget,name));
     if (!a.equals(b)) throw new Error(`web asset differs: ${name}`);
   }

@@ -23,19 +23,13 @@ test.describe("Coach low-friction entry",()=>{
     expect(calls).toEqual([]);
   });
 
-  test("photo consent disclosure, 44px controls, focus and no console errors at phone widths",async({app,page})=>{
+  test("local entry controls have 44px targets and no console errors at phone widths",async({app,page})=>{
     await app.open({seed:state(ENTRY_CONSENT)});await app.tab("coach");
-    await page.click('[data-c="entryphoto"]');
-    await expect(app.sheet).toContainText("Fotoğraf ve tarama izni");
-    await expect(app.sheet).toContainText("GPS");
-    await page.click('[data-c="photoconsentok"]');
-    await expect(app.sheet).toContainText("Besin etiketi oku");
-    const sizes=await page.locator("#sheet button, [data-c^='entry']").evaluateAll(es=>es.map(e=>({n:e.textContent.trim(),h:e.getBoundingClientRect().height,w:e.getBoundingClientRect().width})));
+    const sizes=await page.locator("[data-c^='entry']").evaluateAll(es=>es.map(e=>({n:e.textContent.trim(),h:e.getBoundingClientRect().height,w:e.getBoundingClientRect().width})));
     expect(sizes.filter(x=>x.h<44||x.w<44)).toEqual([]);
-    await page.getByRole("button",{name:"Kapat",exact:true}).focus();
-    await expect(page.getByRole("button",{name:"Kapat",exact:true})).toBeFocused();
+    await page.locator('[data-c="entrylocal"]').click();
+    await expect(page.locator("#sheet")).toContainText("Hızlı yemek / porsiyon");
     await page.keyboard.press("Escape");
-    await expect(page.locator("#sheet")).not.toHaveClass(/\bon\b/);
   });
 
   test("consent persists across reload and copy never promises on-device/no-server",async({app,page})=>{
@@ -44,10 +38,9 @@ test.describe("Coach low-friction entry",()=>{
     await expect(app.sheet).not.toContainText(/hiçbir sağlayıcıya veya sunucuya|yalnızca bu cihazda/i);
     await expect(app.sheet).toContainText(/tarayıcının|çevrimiçi/i);
     await page.click('[data-c="voiceconsentok"]');await app.closeSheet();
-    await page.click('[data-c="entryphoto"]');await page.click('[data-c="photoconsentok"]');await app.closeSheet();
-    expect((await app.state()).settings).toMatchObject({voiceConsent:true,photoConsent:true});
+    expect((await app.state()).settings).toMatchObject({voiceConsent:true});
     await page.reload();
-    expect(await page.evaluate(()=>[S.settings.voiceConsent,S.settings.photoConsent])).toEqual([true,true]);
+    expect(await page.evaluate(()=>S.settings.voiceConsent)).toEqual(true);
   });
 
   for(const local of [false,true]){

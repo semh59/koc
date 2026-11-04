@@ -21,14 +21,14 @@ boot().then(async w => {
   );
   w.document.querySelector('[data-c="entryconsenttextonly"]').click();
   ok("text-only choice records version, timestamp and scope without enabling capture",
-    w.eval("S.settings.entryConsentSeen===true&&S.settings.entryConsentVersion===1&&typeof S.settings.entryConsentAt==='string'&&S.settings.entryConsentChoice==='text_only'&&!S.settings.voiceConsent&&!S.settings.photoConsent")
+    w.eval("S.settings.entryConsentSeen===true&&S.settings.entryConsentVersion===1&&typeof S.settings.entryConsentAt==='string'&&S.settings.entryConsentChoice==='text_only'&&!S.settings.voiceConsent")
   );
 
   // 1. Coach low-friction entry chips exist
-  ok("coach renders low-friction entry controls",
+  ok("coach renders local entry controls",
     w.document.querySelector('[data-c="entryvoice"]') !== null &&
-    w.document.querySelector('[data-c="entryphoto"]') !== null &&
-    w.document.querySelector('[data-c="entrylocal"]') !== null
+    w.document.querySelector('[data-c="entrylocal"]') !== null &&
+    w.document.querySelector('[data-c="entryphoto"]') === null
   );
 
   // 2. Voice consent gate
@@ -39,16 +39,7 @@ boot().then(async w => {
     w.document.body.textContent.includes("onay")
   );
 
-  // 3. Photo consent gate
-  w.eval("closeSheet();");
-  w.document.querySelector('[data-c="entryphoto"]').click();
-  ok("photo entry prompts for explicit consent if not granted",
-    w.document.body.textContent.includes("Fotoğraf") &&
-    w.document.body.textContent.includes("onay") ||
-    w.document.body.textContent.includes("rıza")
-  );
-
-  // 4. Local food resolution directly opens food card
+  // 3. Local food resolution directly opens food card
   w.eval("closeSheet();");
   w.document.querySelector('[data-c="entrylocal"]').click();
   ok("local food entry modal opens", w.document.getElementById("local-food-input") !== null);
@@ -71,52 +62,24 @@ boot().then(async w => {
   const logCountAfter = w.eval("Log.all().length");
   ok("confirming local card adds items to Log", logCountAfter >= logCountBefore + 2);
 
-  // 6. Coach API exposes phase 6 methods
-  ok("Coach API exposes Phase 6 resolution and session helpers",
+  ok("Coach API exposes local food and voice helpers",
     typeof w.eval("Coach.resolveLocalFood") === "function" &&
-    typeof w.eval("Coach.createVoiceSession") === "function" &&
-    typeof w.eval("Coach.createImageSession") === "function" &&
-    typeof w.eval("Coach.clearImageCache") === "function"
+    typeof w.eval("Coach.createVoiceSession") === "function"
   );
 
-  // 7. A visible privacy action revokes both low-friction entry consents.
-    w.eval("S.settings.voiceConsent=true;S.settings.photoConsent=true;render();");
-    ok("voice/photo revoke control is visible when either consent is active",w.document.querySelector('[data-c="revoke-entry-consent"]') !== null);
+  // 6. Visible privacy action revokes voice consent.
+    w.eval("S.settings.voiceConsent=true;render();");
+    ok("voice consent exposes revoke control", w.document.querySelector('[data-c="revoke-entry-consent"]') !== null);
     w.document.querySelector('[data-c="revoke-entry-consent"]').click();
-    ok("revoking entry consents clears both flags and cached session state",w.eval("S.settings.voiceConsent===false&&S.settings.photoConsent===false&&Coach.imageSession().listCache().length===0"));
-
-    // 8. After revoke, full tuple is cleared so consent screen shows again.
-    // Accept text-only consent (voice/photo remain off), so revoke control does NOT appear.
-    w.eval("S.settings.voiceConsent=false;S.settings.photoConsent=false;render();");
+    ok("revoking voice consent clears voice state",w.eval("S.settings.voiceConsent===false&&S.settings.entryConsentSeen===false"));
     ok("after revoke, consent screen shows again",
       w.document.body.textContent.includes("Yayın öncesi hukuki inceleme gerektirir") &&
       w.document.querySelector('[data-c="entryconsenttextonly"]') !== null
     );
     w.document.querySelector('[data-c="entryconsenttextonly"]').click();
-    ok("text-only consent does not enable voice/photo; no revoke control", w.document.querySelector('[data-c="revoke-entry-consent"]') === null);
-    // Now enable both and check revoke appears
-    w.eval("S.settings.voiceConsent=true;S.settings.photoConsent=true;render();");
-    ok("both consent exposes revoke control", w.document.querySelector('[data-c="revoke-entry-consent"]') !== null);
-    w.eval("S.settings.voiceConsent=false;S.settings.photoConsent=false;cSend(\"Zeynep, Beşiktaş'taki evimde 2 dilim ekmek\");");
+    ok("text-only consent does not enable voice; no revoke control", w.document.querySelector('[data-c="revoke-entry-consent"]') === null);
+    w.eval("cSend(\"Zeynep, Beşiktaş'taki evimde 2 dilim ekmek\");");
     ok("local chat does not persist raw prose PII",!w.eval("S.chat.map(m=>m.text||'').join(' ')").match(/Zeynep|Beşiktaş|evimde/i));
-
-  // 9. FileReader failure triggers user-visible toast
-  let toastMsg = "";
-  const origToast = w.toast;
-  w.toast = m => { toastMsg = m; if (origToast) origToast(m); };
-  const origFR = w.FileReader;
-  w.FileReader = function() {
-    this.readAsDataURL = () => { if (this.onerror) this.onerror(new Error("read failed")); };
-  };
-  w.cPhotoPick("label_ocr");
-  const fileInput = w.document.querySelector('input[type="file"]');
-  if (fileInput) {
-    Object.defineProperty(fileInput, "files", { value: [{ name: "photo.jpg" }] });
-    fileInput.dispatchEvent(new w.Event("change"));
-  }
-  await new Promise(r => setTimeout(r, 0));
-  ok("FileReader error shows user-visible toast", toastMsg.includes("Görsel okunamadı"));
-  w.FileReader = origFR;
 
   finish();
 }).catch(e => {
