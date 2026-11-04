@@ -446,6 +446,7 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
   const ACTION_TYPES=new Set(["log_food","log_water","log_exercise","plan_propose","checkin_propose"]);
   const CONFIDENCE=new Set(["low","medium","high"]);
   const SAFE_TEXT=/ilaç|doz|reçete|tanı|teşhis|tedavi|insülin|antibiyotik|kendine zarar|intihar|hamile|gebelik|yeme bozukluğu|ignore|system|rules|kural/i;
+  function safeLegacyReply(text){return typeof text==="string"&&text.length<=REPLY_MAX&&!SAFE_TEXT.test(text)&&!/\b(?:ignore|system|developer|jailbreak|prompt)\b/i.test(text)}
   function explainSuggestion(suggestion={},context={}){
     const facts=Array.isArray(context.facts)?context.facts:[],ids=Array.isArray(suggestion.sourceFacts)?suggestion.sourceFacts:[],used=facts.filter(f=>ids.includes(f.name));
     const raw=typeof suggestion.reason==="string"?suggestion.reason.trim():"";
@@ -477,7 +478,7 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
     return out;
   }
   function validateResponse(x,purpose,allowedFacts=[]){
-    if(!x||typeof x!=="object"||Array.isArray(x)||typeof x.intent!=="string"||!RESPONSE_INTENTS.has(x.intent)||purpose&&x.intent!==purpose&&x.intent!=="general"||typeof x.answer!=="string"||x.answer.length>1500||!Array.isArray(x.facts_used)||!Array.isArray(x.assumptions)||!Array.isArray(x.recommendations)||!Array.isArray(x.warnings)||!Array.isArray(x.actions)||!CONFIDENCE.has(x.confidence)||(x.follow_up!==null&&(!x.follow_up||typeof x.follow_up!=="object")))return null;
+    if(!x||typeof x!=="object"||Array.isArray(x)||typeof x.intent!=="string"||!RESPONSE_INTENTS.has(x.intent)||purpose&&x.intent!==purpose||typeof x.answer!=="string"||x.answer.length>1500||!Array.isArray(x.facts_used)||!Array.isArray(x.assumptions)||!Array.isArray(x.recommendations)||!Array.isArray(x.warnings)||!Array.isArray(x.actions)||!CONFIDENCE.has(x.confidence)||(x.follow_up!==null&&(!x.follow_up||typeof x.follow_up!=="object")))return null;
     if(x.facts_used.length>10||x.assumptions.length>10||x.recommendations.length>5||x.warnings.length>10||x.actions.length>5)return null;
     if(x.facts_used.some(f=>!f||typeof f!=="object"||typeof f.name!=="string"||f.name.length>80||typeof f.source!=="string"||f.source.length>40||typeof f.period!=="string"||f.period.length>40||!CONFIDENCE.has(f.confidence)||!allowedFacts.some(a=>a.name===f.name&&a.source===f.source&&a.period===f.period)))return null;
     if(x.assumptions.some(v=>typeof v!=="string"||v.length>300||SAFE_TEXT.test(v))||x.warnings.some(v=>typeof v!=="string"||v.length>300||SAFE_TEXT.test(v))||SAFE_TEXT.test(x.answer)||x.follow_up&&Object.values(x.follow_up).some(v=>typeof v==="string"&&SAFE_TEXT.test(v)))return null;
@@ -683,6 +684,6 @@ Program istenirse "program" alanına {"name":"...","days":[{"n":"Gün adı","ex"
       get retainedImageBytes(){let total=0;for(const v of cache.values())total+=v.sizeBytes||0;return total}
     };
   }
-  return {usageOf,usageAdd,usageSum,createMemoryRepository,createExperimentRepository,explainSuggestion,REPLY_MAX,oneLine,pregnant,BROKEN,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,catalogText,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText,compileContext,validateResponse,migrateLegacy,legacyFromRepository,createRepository,migrateLegacyAtomic,createPlanner,sanitizePii,stripExif,stripExifDetailed,resolveLocalFood,resolveLocalLabel,createVoiceSession,createImageSession};
+  return {usageOf,usageAdd,usageSum,createMemoryRepository,createExperimentRepository,explainSuggestion,safeLegacyReply,REPLY_MAX,oneLine,pregnant,BROKEN,redFlag,parse,reported,cleanItems,cleanFood,cleanProgram,cleanMenu,shopList,MEAL_KEYS,catalog,catalogText,clampKcal,SYSTEM,contextText,macroOff,sportMet,keyProvider,MODEL_PREF,parseModels,candidates,pickModel,errKind,errText,compileContext,validateResponse,migrateLegacy,legacyFromRepository,createRepository,migrateLegacyAtomic,createPlanner,sanitizePii,stripExif,stripExifDetailed,resolveLocalFood,resolveLocalLabel,createVoiceSession,createImageSession};
 })();
 if(typeof module!=="undefined")module.exports=CoachLib;

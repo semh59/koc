@@ -18,8 +18,10 @@ const toast=w=>w.document.querySelector("#toast").textContent;
 const text=w=>w.document.querySelector("#sheet").textContent;
 (async()=>{
   const w=await open({lastBackup:"2026-10-01"});
-  w.eval("setKey('groq','KEY-12345678');S.settings.healthNote='eski telefon';add('note',null,'a',dayKey());add('note',null,'b',dayKey())");
+  w.eval("setKey('groq','KEY-12345678');S.settings.consentU='u1|https://custom.example/v1';S.settings.healthNote='eski telefon';add('note',null,'a',dayKey());add('note',null,'b',dayKey())");
   const enc=await w.eval(`backupJson("${PW}")`);
+  const decoded=await w.eval(`BackupLib.decrypt(JSON.parse(${JSON.stringify(enc)}),"${PW}")`);
+  ok("custom endpoint consent is not included in encrypted backups",decoded&&decoded.S&&decoded.S.settings&&decoded.S.settings.consentU===undefined,decoded&&decoded.S&&decoded.S.settings&&decoded.S.settings.consentU);
   w.eval("S.settings.healthNote='yeni';add('note',null,'c',dayKey())");
 
   w.eval("sheetBackup()");

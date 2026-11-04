@@ -4,7 +4,7 @@
 const BKPW_LS="nw_bkpw_enc";
 const BF=()=>plugin("BackupFolder");
 /* The one backup payload: settings and data plus the API keys (unless the user keeps them out), encrypted with the password into a JSON string. */
-const backupJson=async pw=>JSON.stringify(await BackupLib.encrypt({S,keys:S.settings.bkNoKeys?{}:Coach.keys(),at:dayKey(),app:appVer},pw));
+const backupJson=async pw=>{const safeS=structuredClone(S);delete safeS.settings.consentU;return JSON.stringify(await BackupLib.encrypt({S:safeS,keys:S.settings.bkNoKeys?{}:Coach.keys(),at:dayKey(),app:appVer},pw))};
 const BK_PHOTOS="Fotoğraflar yedeğe girmez; yeni telefona ayrıca taşı.";
 const BK_SENT="Yedek paylaşıldı. Ulaştığını denetle: dosyayı yeni telefonda Geri yükle > Yalnız denetle ile sına";
 const BK_MAX=2e7;

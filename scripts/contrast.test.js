@@ -18,6 +18,7 @@ const PAIRS=[
  ["mut","card",3,"input border and faint lines"],
  ["prim","soft",4.5,"secondary (tonal) button text"],["prim","prim-soft",3,"active tab icon"],["ink","field",4.5,"input text"],["mut","field",4.5,"input placeholder"],["fbd","card",3,"input border (on a card)"],["fbd","bg",3,"input border (on the page)"],
  ["ban-ink","ban-bg",4.5,"warning box"],["inf-ink","inf-bg",4.5,"info box"],["ink","inf-bg",4.5,"info card"],["forecast-ink","forecast-bg",4.5,"forecast badge"],["info-ink","info",4.5,"blue button"],["ok","card",4.5,"success text (card)"],["ok","bg",4.5,"success text (page)"],
+ ["coach-ink","coach-bg",4.5,"Coach page text"],["coach-card-ink","coach-card",4.5,"Coach card text"],["coach-page-mut","coach-bg",4.5,"Coach page muted text"],["coach-card-mut","coach-card",4.5,"Coach card muted text"],["coach-danger","coach-bg",4.5,"Coach destructive action"],
 ];
 const DARK_ONLY=[["card-bd","bg",3,"card border on the page (no shadow in dark mode)"],["card-bd","card",3,"card border on the card"]];
 for(const [name,t] of [["light",light],["dark",dark]]){

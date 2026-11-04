@@ -16,7 +16,7 @@ function openSheet(html){
 }
 function closeSheet(){
   Units.reset();plStop();sheetDone(false);setPendingBarcode("");
-  if(typeof cStopVoice==="function"&&activeSpeechRecognizer)cStopVoice(true);
+  if(typeof cStopVoice==="function"&&(activeSpeechRecognizer||activeSpeechCleanup))cStopVoice(true);
   const s=$("#sheet"),was=s.classList.contains("on"),f=sheetFrom;
   s.classList.remove("on");$("#scrim").classList.remove("on");sheetFrom=null;trap();
   if(was&&f&&f.isConnected)f.focus({preventScroll:true});
@@ -404,7 +404,7 @@ async function goRestore(text=$("#bk").value,pw=$("#bkpw").value){
   S=b.S;
   const lostRecents=S.settings.hideRecents===true&&!prevS.settings.hideRecents;
   /* A backup must not change where the key goes, the consent setting or the data-sharing permission. The automatic backup folder belongs to this phone. */
-  Object.assign(S.settings,Object.fromEntries(["noticeOk","hideRecents",...SHARE_KEYS].map(k=>[k,prevS.settings[k]])),{consent:prevS.settings.consent,consentV:prevS.settings.consentV,consentAt:prevS.settings.consentAt,consentP:prevS.settings.consentP,lastBackup:dayKey(),autoBk:prevS.settings.autoBk,lastAutoBk:prevS.settings.lastAutoBk});cAgeGuard();
+  Object.assign(S.settings,Object.fromEntries(["noticeOk","hideRecents",...SHARE_KEYS].map(k=>[k,prevS.settings[k]])),{consent:prevS.settings.consent,consentV:prevS.settings.consentV,consentAt:prevS.settings.consentAt,consentP:prevS.settings.consentP,consentU:prevS.settings.consentU,lastBackup:dayKey(),autoBk:prevS.settings.autoBk,lastAutoBk:prevS.settings.lastAutoBk});cAgeGuard();
   /* A brake on this phone stays and a backup brings its own, but a sign lifted on this phone or in the backup is not brought back by the other. */
   {const a=S.settings,p=prevS.settings,off=[...new Set((a.riskOff+","+p.riskOff).split(",").filter(Boolean))],on=k=>!off.includes(k);
     /* The side whose pregnancy flag changed last decides it, so a sign set on this phone after the backup is not dropped. */

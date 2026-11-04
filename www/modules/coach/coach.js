@@ -245,13 +245,19 @@ function usageText(){
   return `Rehber kullanımı (son 30 gün): ${n} istek, ~${fint(tok)} jeton`;
 }
 const httpError=async r=>{const e=new Error("HTTP "+r.status);e.status=r.status;try{const body=await r.text();e.kind=CoachLib.errKind(e.status,body)}catch(x){e.kind=CoachLib.errKind(e.status,"")}return e};
+const providerAuthorized=(p,key,{probe=false}={})=>{
+  if(!p||typeof p.id!=="string"||typeof p.base!=="string"||!/^https:\/\/[^\s]+$/.test(p.base)||!consentOk())return false;
+  const allowed=S.providers.find(x=>x.id===p.id),stored=getKeys()[p.id];
+  if(!allowed||allowed.base!==p.base)return false;
+  if(!key||typeof key!=="string")return false;
+  if(!probe&&stored!==key)return false;
+  if(probe)return true;
+  return S.settings.consent===true&&allowed.on===true&&allowed.health===true&&provOk();
+};
 /* o.probe: setup check. HTTP 200 with a valid body is enough; a thinking model may return without text at the limit (content null, reasoning_content set).
    In a chat, if the text is empty and the limit was hit (thinking ate the budget), it is asked once more with three times the limit. */
 async function callProvider(p,key,messages,maxTokens=700,o={}){
-  if(o.probe&&!consentOk())throw Object.assign(new Error("consent"),{kind:"consent"});
-  if(o.probe&&!S.settings.consent)throw Object.assign(new Error("consent"),{kind:"consent"});
-  if(!o.probe&&!coachOn())throw new Error("consent");
-  if(!o.probe){const allowed=S.providers.find(x=>x.id===p.id);if(!allowed||!allowed.on||!allowed.health||getKeys()[allowed.id]!==key||!provOk())throw new Error("provider not authorized");}
+  if(!providerAuthorized(p,key,{probe:o.probe}))throw Object.assign(new Error(o.probe?"provider setup not authorized":"provider not authorized"),{kind:"provider"});
   const ms=Math.min(o.ms||40000,o.until?o.until-Date.now():Infinity);
   if(o.probe&&messages.some(m=>m.role!=="user"||typeof m.content!=="string"||m.content!=="Sadece 'tamam' yaz."))throw new Error("invalid probe payload");
   if(ms<=0){const e=new Error("Süre doldu");e.kind="time";throw e}
@@ -272,7 +278,7 @@ async function callProvider(p,key,messages,maxTokens=700,o={}){
 const MODELS_MS=15000;
 /* The model list can hang like any request: it gets its own timeout so the setup sheet never stays busy. */
 async function fetchModels(p,key){
-  if(!consentOk()||!S.settings.consent)throw Object.assign(new Error("consent"),{kind:"consent"});
+  if(!providerAuthorized(p,key,{probe:true}))throw Object.assign(new Error("provider setup not authorized"),{kind:"provider"});
   const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),MODELS_MS);
   try{
     const r=await NetLog.fetch("models",p.base.replace(/\/+$/,"")+"/models"+(p.id==="anthropic"?"?limit=1000":""),{headers:pHeaders(p,key),signal:ctl.signal});
@@ -435,8 +441,9 @@ async function cFlush(){
 }
 function cExplain(suggestion,context){return CoachLib.explainSuggestion(suggestion,context||cCompiledContext()||{});}
 function cReply(o){
-  const structured=Object.hasOwn(o,"answer")||Object.hasOwn(o,"intent")||Object.hasOwn(o,"facts_used")||Object.hasOwn(o,"recommendations")||Object.hasOwn(o,"actions"),allowedFacts=(cCompiledContext()||{}).facts||[],safe=CoachLib.validateResponse(o,o.intent||"general",allowedFacts);
+  const structured=Object.hasOwn(o,"answer")||Object.hasOwn(o,"intent")||Object.hasOwn(o,"facts_used")||Object.hasOwn(o,"recommendations")||Object.hasOwn(o,"warnings")||Object.hasOwn(o,"actions"),allowedFacts=(cCompiledContext()||{}).facts||[],safe=CoachLib.validateResponse(o,o.intent||"general",allowedFacts);
   if(structured&&safe===null){cPush({role:"coach",text:"Yanıt güvenlik kurallarından geçmedi; yeniden dene."});return}
+  if(!structured&&!CoachLib.safeLegacyReply(o.reply||"")){cPush({role:"coach",text:"Yanıt güvenlik kurallarından geçmedi; yeniden dene."});return}
   if(safe){
     const items=CoachLib.cleanItems(o.log),fd=CoachLib.cleanFood(o.food),msg={role:"coach",text:safe.answer||o.reply||"Tamam."};
     if(safe.recommendations?.length){const r=safe.recommendations[0],e=cExplain({reason:r.reason,sourceFacts:safe.facts_used.map(f=>f.name),confidence:safe.confidence},cCompiledContext()||{});msg.card={kind:"explain",explanation:e};}
@@ -516,8 +523,10 @@ async function cProgram(o){
   return cRun(async()=>{
     const r=await cAsk(msgs,900);
     const p=CoachLib.parse(r.text),pg=CoachLib.cleanProgram(p.program,ids,o.d);
-    if(p.intent||p.answer){const safe=CoachLib.validateResponse(p,p.intent||"general",(cCompiledContext()||{}).facts||[]);if(!safe)return cDrop(um),toast("Program yanıtı güvenlik kurallarından geçmedi")}
-    if(pg)cPush({role:"coach",text:p.reply,card:Object.assign({kind:"program",state:"pending"},pg)});
+    const structured=Object.hasOwn(p,"answer")||Object.hasOwn(p,"intent")||Object.hasOwn(p,"facts_used")||Object.hasOwn(p,"recommendations")||Object.hasOwn(p,"warnings")||Object.hasOwn(p,"actions"),safe=CoachLib.validateResponse(p,p.intent||"general",(cCompiledContext()||{}).facts||[]);
+    if(structured&&!safe)return cDrop(um),toast("Program yanıtı güvenlik kurallarından geçmedi");
+    if(!structured&&!CoachLib.safeLegacyReply(p.reply||""))return cDrop(um),toast("Program yanıtı güvenlik kurallarından geçmedi");
+    if(pg)cPush({role:"coach",text:safe?.answer||p.reply||"Program hazırlandı.",card:Object.assign({kind:"program",state:"pending"},pg)});
     else{cDrop(um);toast("Program okunamadı, tekrar dene")}
   },()=>cDrop(um));
 }
@@ -601,8 +610,10 @@ async function cMenu(){
   return cRun(async()=>{
     const r=await cAsk(msgs,2400);
     const o=CoachLib.parse(r.text),mn=CoachLib.cleanMenu(o.menu,cat,pl.kcal);
-    if(o.intent||o.answer){const safe=CoachLib.validateResponse(o,o.intent||"general",(cCompiledContext()||{}).facts||[]);if(!safe)return cDrop(um),toast("Menü yanıtı güvenlik kurallarından geçmedi")}
-    if(mn)cPush({role:"coach",text:o.reply,card:Object.assign({kind:"menu",chk:[]},mn)});
+    const structured=Object.hasOwn(o,"answer")||Object.hasOwn(o,"intent")||Object.hasOwn(o,"facts_used")||Object.hasOwn(o,"recommendations")||Object.hasOwn(o,"warnings")||Object.hasOwn(o,"actions"),safe=CoachLib.validateResponse(o,o.intent||"general",(cCompiledContext()||{}).facts||[]);
+    if(structured&&!safe)return cDrop(um),toast("Menü yanıtı güvenlik kurallarından geçmedi");
+    if(!structured&&!CoachLib.safeLegacyReply(o.reply||""))return cDrop(um),toast("Menü yanıtı güvenlik kurallarından geçmedi");
+    if(mn)cPush({role:"coach",text:safe?.answer||o.reply||"Menü hazırlandı.",card:Object.assign({kind:"menu",chk:[]},mn)});
     else{cDrop(um);toast("Menü okunamadı, tekrar dene")}
   },()=>cDrop(um));
 }
@@ -682,7 +693,8 @@ const consentOk=()=>S.settings.age>=18;
 const ageMsg=()=>S.settings.age>0?"18 yaş altında Rehber kapalı":"Rehber için önce yaşını gir (Ayarlar > Profil)";
 /* Consent depends on the set of providers the data will go to: if a keyed, enabled provider was not in the set at consent time (a paid or custom provider was enabled later), consent is asked again. Without consentP it is asked again too. */
 const provSet=()=>S.providers.filter(p=>p.on&&p.health).map(p=>p.id).sort().join(",");
-const provOk=()=>{const c=(S.settings.consentP||"").split(",");return keyed().every(p=>c.includes(p.id))};
+const cConsentKey=()=>S.providers.filter(p=>p.on&&p.health).filter(isCustom).map(p=>p.id+"|"+p.base).join("\n");
+const provOk=()=>{const c=(S.settings.consentP||"").split(","),u=(S.settings.consentU||"").split("\n");return keyed().every(p=>c.includes(p.id)&&(!isCustom(p)||u.includes(p.id+"|"+p.base)))};
 /* If the age later drops below 18 (settings, backup), the given consent lapses too; every send path goes through coachOn. */
 const coachOn=()=>S.settings.consent&&consentOk()&&provOk();
 function cAgeGuard(){if(S.settings.consent&&!consentOk()){Object.assign(S.settings,{consent:false,consentV:0,consentAt:""});toast(S.settings.age>0?"18 yaş altında Rehber veri paylaşımı kapatıldı":"Yaş girilmediği için Rehber veri paylaşımı kapatıldı")}}
@@ -731,7 +743,7 @@ function cConsent(on,tap){
   const s=S.settings;if(on&&!consentOk())return;
   if(!on)coachResetSessions();
   if(on&&tap&&!s.piiPrevOwn)s.piiPrev=true;
-  Object.assign(s,{consent:on,consentV:on?CONSENT_V:0,consentAt:on?dayKey():"",consentP:on?provSet():null});save();render();
+  Object.assign(s,{consent:on,consentV:on?CONSENT_V:0,consentAt:on?dayKey():"",consentP:on?provSet():null,consentU:on?cConsentKey():null});save();render();
   if(!on&&(S.chat.length||S.chats.length))confirmSheet({title:"Rehber sohbeti silinsin mi?",body:"Rıza geri alındı, yeni veri gitmez. İstersen yazışmaları da bu telefondan sil.",ok:"Sohbeti sil"}).then(yes=>{if(yes&&cClearChat())render()});
 }
 /* Empty-chat examples: [label, message, true if it only fills the input box]. */
@@ -744,7 +756,7 @@ function cRevokeEntryConsent(){
   coachResetSessions();save();render();toast("Ses ve fotoğraf izinleri geri alındı; tekrar onay istenecek");
 }
 function entryConsentHtml(){
-  return `<section class="card" aria-labelledby="entry-consent-title"><h2 id="entry-consent-title" class="m0 t-h2">Ses ve fotoğrafla yemek kaydı</h2><p class="hint"><b>Yayın öncesi hukuki inceleme gerektirir. Özel beta.</b> Veri sorumlusu henüz atanmadı; bu ekran nihai hukuki metin değildir.</p><p>Seçimini istediğin zaman Gizlilik ve veri bölümünden geri alabilirsin.</p><ul class="cul"><li><b>Sesle kayıt:</b> Konuşman yemek kaydı için yazıya çevrilir. Ham ses uygulamada tutulmaz. Tarayıcı veya işletim sistemi çevrimiçi işleyebilir; cihazda kaldığı garanti edilmez.</li><li><b>Fotoğraf:</b> Etiket veya yemek görseli geçici işlenir; EXIF/GPS temizlenir. Bu akışta sağlayıcıya gönderilmez.</li><li><b>Sağlık sınırı:</b> NeoWell tıbbi cihaz değildir; tanı koymaz ve tedavi önermez.</li></ul><details class="acc"><summary>Detaylı taslak açıklama</summary><p class="mut sm">Bu beta metni veri sorumlusu, iletişim adresi, saklama süreleri ve hizmet sağlayıcı sözleşmeleri kesinleşmeden nihai aydınlatma veya açık rıza metni olarak kullanılamaz. Yayın öncesi KVKK/GDPR incelemesi zorunludur.</p></details><div class="bgrid mt-3"><button class="btn" data-c="entryconsentboth">Ses ve fotoğrafı birlikte aç</button><button class="btn ghost" data-c="entryconsenttextonly">Sadece metin kullanacağım</button></div></section>`;
+  return `<section class="card" aria-labelledby="entry-consent-title"><h2 id="entry-consent-title" class="m0 t-h2">Ses ve fotoğrafla yemek kaydı</h2><p class="hint"><b>Yayın öncesi hukuki inceleme gerektirir. Özel beta.</b> Veri sorumlusu henüz atanmadı; bu ekran nihai hukuki metin değildir.</p><p>Seçimini istediğin zaman Gizlilik ve veri bölümünden geri alabilirsin.</p><ul class="cul"><li><b>Sesle kayıt:</b> Konuşman yemek kaydı için yazıya çevrilir. Ham ses uygulamada tutulmaz. Tarayıcı veya işletim sistemi çevrimiçi işleyebilir; cihazda kaldığı garanti edilmez.</li><li><b>Fotoğraf:</b> Etiket veya yemek fotoğrafındaki yazı geçici işlenir; EXIF/GPS temizlenir. Bu sürüm yazısız tabak fotoğrafını tanımaz ve akış sağlayıcıya gönderilmez.</li><li><b>Sağlık sınırı:</b> NeoWell tıbbi cihaz değildir; tanı koymaz ve tedavi önermez.</li></ul><details class="acc"><summary>Detaylı taslak açıklama</summary><p class="mut sm">Bu beta metni veri sorumlusu, iletişim adresi, saklama süreleri ve hizmet sağlayıcı sözleşmeleri kesinleşmeden nihai aydınlatma veya açık rıza metni olarak kullanılamaz. Yayın öncesi KVKK/GDPR incelemesi zorunludur.</p></details><div class="bgrid mt-3"><button class="btn" data-c="entryconsentboth">Ses ve fotoğrafı birlikte aç</button><button class="btn ghost" data-c="entryconsenttextonly">Sadece metin kullanacağım</button></div></section>`;
 }
 function entryConsentAccept(choice){
   const now=new Date().toISOString();
@@ -754,8 +766,9 @@ function entryConsentAccept(choice){
 function entryControlsHtml(){
   return `<section aria-labelledby="entry-controls-title" class="mb-3"><div class="row"><h2 id="entry-controls-title" class="grp">Düşük sürtünmeli giriş</h2></div><p class="hint">Fotoğraf ve yerel besin araması cihazda işlenir; ses girişi açık onayınla ve konuşma motoru desteğiyle çalışır.</p><div class="chips"><button class="chip" data-c="entryvoice">Sesle kaydet</button><button class="chip" data-c="entryphoto">Fotoğraf / Etiket tara</button><button class="chip" data-c="entrylocal">Hızlı yemek / porsiyon</button>${S.settings.voiceConsent||S.settings.photoConsent?`<button class="chip" data-c="revoke-entry-consent">Ses ve fotoğraf izinlerini geri al</button>`:""}</div></section>`;
 }
-let activeSpeechRecognizer=null;
+let activeSpeechRecognizer=null,activeSpeechCleanup=null;
 function cStopVoice(cancelled=false){
+  const cleanup=activeSpeechCleanup;activeSpeechCleanup=null;try{cleanup?.()}catch{}
   const r=activeSpeechRecognizer;activeSpeechRecognizer=null;
   try{if(r){cancelled&&r.abort?r.abort():r.stop?.()}}catch{}
   try{plugin("Speech")?.stopListening?.()}catch{}
@@ -769,8 +782,11 @@ function cStartVoice(){
   const sp=plugin("Speech");
   if(sp?.listen){
     openSheet(`<h3>Sesle yemek kaydet</h3><p class="hint">Dinliyorum. Yediklerini tek cümlede söyle; ham ses saklanmaz.</p><p id="voice-status" class="card" aria-live="polite">Hazır…</p><div class="bgrid"><button class="btn ghost" data-c="voicecancel">Vazgeç</button></div>`);
-    const onResult=ev=>{const text=ev?.text||"";if(!text)return;sp.removeAllListeners?.("result");sp.removeAllListeners?.("error");sp.stopListening?.();session.finishTranscription(text);closeSheet();cHandleVoiceTranscript(text)};
-    const onError=()=>{sp.removeAllListeners?.("result");sp.removeAllListeners?.("error");try{session.cancel()}catch{}try{session.purgeAudio()}catch{}toast("Ses tanınamadı; tekrar dene veya yaz")};
+    const session=Coach.voiceSession();
+    const cleanup=()=>{sp.removeAllListeners?.("result");sp.removeAllListeners?.("error");activeSpeechCleanup=null};
+    activeSpeechCleanup=cleanup;
+    const onResult=ev=>{const text=ev?.text||"";if(!text)return;cleanup();sp.stopListening?.();session.finishTranscription(text);closeSheet();cHandleVoiceTranscript(text)};
+    const onError=()=>{cleanup();try{session.cancel()}catch{}try{session.purgeAudio()}catch{}toast("Ses tanınamadı; tekrar dene veya yaz")};
     sp.addListener?.("result",onResult);sp.addListener?.("error",onError);
     sp.listen().then(r=>{if(r?.started===false)onError()}).catch(onError);
     return;
@@ -831,61 +847,67 @@ function cOpenPhotoSheet(){
 function cPhotoPick(kind){
   if(typeof document==="undefined")return;
   const i=document.createElement("input");i.type="file";i.accept="image/jpeg,image/png,image/webp";i.capture=kind==="meal_scan"?"environment":undefined;i.hidden=true;
-  i.addEventListener("change",()=>{
+  i.addEventListener("change",async()=>{
     const f=i.files?.[0];i.remove();if(!f)return;
-    const r=new FileReader();
     const fail=()=>{try{i.remove()}catch{};toast("Görsel okunamadı; lütfen başka bir görsel seç")};
-    r.onerror=fail;r.onabort=fail;
-    r.onload=()=>{
-      try{
-        const info=CoachLib.stripExifDetailed(r.result);
-        const capture=Coach.imageSession().captureImage(info.data,{purpose:kind||"meal_scan"});
-        toast(`Görsel güvenli şekilde işlendi (${info.mimeType}; ${info.stripped?"EXIF/GPS temizlendi":"metadata bulunamadı"})`);
-        if(kind==="label_ocr") return cRunLabelOcr(capture.id, info.mimeType);
-        if(kind==="meal_scan") return cRunMealScan(capture.id, info.mimeType);
-      }catch(e){toast(e.code==="UNSUPPORTED_IMAGE_FORMAT"?"Bu görsel biçimi desteklenmiyor":"Görsel işlenemedi; lütfen başka bir görsel seç")}
-    };
-    try{r.readAsDataURL(f)}catch{fail()}
+    try{
+      let data;
+      if(typeof createImageBitmap==="function"&&typeof document!=="undefined"){
+        const bmp=await createImageBitmap(f,{imageOrientation:"from-image"}),canvas=document.createElement("canvas");
+        canvas.width=bmp.width;canvas.height=bmp.height;canvas.getContext("2d").drawImage(bmp,0,0);bmp.close?.();
+        data=canvas.toDataURL(f.type||"image/jpeg",.92);
+      }else{
+        data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onerror=reject;r.onabort=reject;r.onload=()=>resolve(r.result);r.readAsDataURL(f)});
+      }
+      const info=CoachLib.stripExifDetailed(data);
+      const capture=Coach.imageSession().captureImage(info.data,{purpose:kind||"meal_scan",orientationNormalized:true});
+      toast(`Görsel güvenli şekilde işlendi (${info.mimeType}; ${info.stripped?"EXIF/GPS temizlendi":"metadata bulunamadı"})`);
+      if(kind==="label_ocr") return cRunLabelOcr(capture.id, info.mimeType);
+      if(kind==="meal_scan") return cRunMealScan(capture.id, info.mimeType);
+    }catch(e){toast(e.code==="UNSUPPORTED_IMAGE_FORMAT"?"Bu görsel biçimi desteklenmiyor":"Görsel okunamadı; lütfen başka bir görsel seç")}
   });
   document.body.appendChild(i);i.click();
 }
 async function cRunLabelOcr(imageId, mimeType){
   const P=typeof plugin==="function"?plugin("Ocr"):null;
-  if(!P) return toast("Yazı okuma yalnızca telefondaki uygulamada çalışır");
+  if(!P){Coach.imageSession().purgeImage(imageId);return toast("Yazı okuma yalnızca telefondaki uygulamada çalışır")}
   toast("Etiket okunuyor…");
   try{
     const session=Coach.imageSession();
     const imgData=session.getTemporaryImage(imageId);
-    if(!imgData) return toast("Görsel bulunamadı");
+    if(!imgData){session.purgeImage(imageId);return toast("Görsel bulunamadı")};
     const b64=imgData.split(",")[1]||imgData;
     const res=await P.recognize({image:b64});
     const lines=(res.lines||[]).map(l=>l.t);
-    if(!lines.length) return openSheet(`<h3>Yazı bulunamadı</h3><p class="mut">Fotoğrafta okunabilir yazı yok. Daha yakından, düz ve aydınlık çekip tekrar dene.</p><button class="btn" data-c="photolabel">${Icons.svg("camera")} Tekrar dene</button><button class="btn ghost" data-c="closesheet">Kapat</button>`);
+    if(!lines.length){session.purgeImage(imageId);return openSheet(`<h3>Yazı bulunamadı</h3><p class="mut">Fotoğrafta okunabilir yazı yok. Daha yakından, düz ve aydınlık çekip tekrar dene.</p><button class="btn" data-c="photolabel">${Icons.svg("camera")} Tekrar dene</button><button class="btn ghost" data-c="closesheet">Kapat</button>`)}
     const parsed=typeof LabelLib!=="undefined"?LabelLib.parse(lines):null;
-    if(!parsed||!parsed.food) return toast("Etiket ayrıştırılamadı");
+    if(!parsed||!parsed.food){session.purgeImage(imageId);return toast("Etiket ayrıştırılamadı")}
+    session.purgeImage(imageId);
     cLabelReview(parsed.food);
-  }catch(e){toast("Fotoğraf okunamadı, daha net çekip tekrar dene")}
+  }catch(e){Coach.imageSession().purgeImage(imageId);toast("Fotoğraf okunamadı, daha net çekip tekrar dene")}
 }
 async function cRunMealScan(imageId, mimeType){
   const P=typeof plugin==="function"?plugin("Ocr"):null;
-  if(!P) return toast("Yazı okuma yalnızca telefondaki uygulamada çalışır");
+  if(!P){Coach.imageSession().purgeImage(imageId);return toast("Yazı okuma yalnızca telefondaki uygulamada çalışır")}
   toast("Yemek taranıyor…");
   try{
     const session=Coach.imageSession();
     const imgData=session.getTemporaryImage(imageId);
-    if(!imgData) return toast("Görsel bulunamadı");
+    if(!imgData){session.purgeImage(imageId);return toast("Görsel bulunamadı")};
     const b64=imgData.split(",")[1]||imgData;
     const res=await P.recognize({image:b64});
     const lines=(res.lines||[]).map(l=>l.t);
-    if(!lines.length) return openSheet(`<h3>Yazı bulunamadı</h3><p class="mut">Fotoğrafta okunabilir yazı yok. Daha net çekip tekrar dene.</p><button class="btn" data-c="photomeal">${Icons.svg("camera")} Tekrar dene</button><button class="btn ghost" data-c="closesheet">Kapat</button>`);
+    if(!lines.length){session.purgeImage(imageId);return openSheet(`<h3>Yazı bulunamadı</h3><p class="mut">Fotoğrafta okunabilir yazı yok. Daha net çekip tekrar dene.</p><button class="btn" data-c="photomeal">${Icons.svg("camera")} Tekrar dene</button><button class="btn ghost" data-c="closesheet">Kapat</button>`)}
     const food=CoachLib.resolveLocalFood(lines.join(" "));
     if(food.ok && food.items.length){
-      cPush({role:"coach",text:`Taramada bulundu: "${food.sanitizedText}". Günlüğe eklemek için onayla:`,card:{kind:"log",items:food.items,state:"pending",local:true,imageId}});
+      session.purgeImage(imageId);
+      cPush({role:"coach",text:`Taramada bulundu: "${food.sanitizedText}". Günlüğe eklemek için onayla:`,card:{kind:"log",items:food.items,state:"pending",local:true}});
       save();render();
     }else{
+      session.purgeImage(imageId);
       toast("Yemek bulunamadı veya anlaşılamadı");
     }
-  }catch(e){toast("Tarama başarısız, tekrar dene")}
+  }catch(e){Coach.imageSession().purgeImage(imageId);toast("Tarama başarısız, tekrar dene")}
 }
 function cLabelReview(food){
   const miss=Nutrition.LABEL_FIELDS.slice(0,4).filter(([k])=>food[k]==null).map(x=>x[1].toLowerCase());
@@ -1030,7 +1052,7 @@ function suCheck(){
   else return k;
   suRender();return null;
 }
-const probe=(p,k,model,ms)=>callProvider(Object.assign({},p,{model}),k,[{role:"user",content:"Sadece 'tamam' yaz."}],200,{ms,probe:true});
+const setupCheck=(p,k,model,ms)=>callProvider(Object.assign({},p,{model}),k,[{role:"user",content:"Sadece 'tamam' yaz."}],200,{ms,probe:true});
 async function suFetch(){
   const p=suProv(),k=p&&!su.busy&&suCheck();if(!k)return;
   su.busy=true;su.msg="Modeller getiriliyor…";su.fail="";suRender();
@@ -1041,7 +1063,7 @@ async function suFetch(){
     if(!cands.length)cands.push(p.model);
     for(const m of cands){
       su.msg=`Model deneniyor (${cands.indexOf(m)+1}/${cands.length})…`;suRender();
-      try{await probe(p,k,m,15000);su.ok=m;break}catch(e){last=errOf(e);if(stop.includes(last.kind))break}
+      try{await setupCheck(p,k,m,15000);su.ok=m;break}catch(e){last=errOf(e);if(stop.includes(last.kind))break}
     }
     su.rec=su.model=su.ok||cands[0];
     if(su.ok)su.msg="Anahtar çalışıyor, önerilen model denendi ve yanıt verdi. Kaydedebilirsin.";
@@ -1056,7 +1078,7 @@ async function suTest(){
   if(model===su.ok){suSave(p,k,model);return toast(`${p.name} çalışıyor, kaydedildi`)}
   su.busy=true;su.msg="Deneniyor…";su.fail="";suRender();
   try{
-    await probe(p,k,model);
+    await setupCheck(p,k,model);
     pstat[p.id]={s:"ok",t:Date.now(),ms:Date.now()-t0};su.busy=false;suSave(p,k,model);toast(`${p.name} çalışıyor, kaydedildi`);
   }catch(e){const x=errOf(e);su.busy=false;su.fail=x.kind;su.msg=x.text;suRender()}
 }

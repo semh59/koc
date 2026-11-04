@@ -1,7 +1,7 @@
 const { ok, finish } = require("./ok");
 const { boot } = require("./html");
 
-boot().then(w => {
+boot().then(async w => {
   ok("consent cleaner rejects incomplete tuple and preserves canonical ISO instant",
     w.eval("(()=>{const at='2026-10-06T07:00:00.000Z',good=cleanSettings({entryConsentSeen:true,entryConsentVersion:1,entryConsentAt:at,entryConsentChoice:'text_only'}),bad=cleanSettings({entryConsentSeen:true,entryConsentVersion:1,entryConsentAt:'2026-10-06',entryConsentChoice:'text_only',voiceConsent:true});return good.entryConsentAt===at&&good.entryConsentSeen===true&&good.voiceConsent===false&&bad.entryConsentSeen===false&&bad.entryConsentAt===''})()")
   );
@@ -114,6 +114,7 @@ boot().then(w => {
     Object.defineProperty(fileInput, "files", { value: [{ name: "photo.jpg" }] });
     fileInput.dispatchEvent(new w.Event("change"));
   }
+  await new Promise(r => setTimeout(r, 0));
   ok("FileReader error shows user-visible toast", toastMsg.includes("Görsel okunamadı"));
   w.FileReader = origFR;
 

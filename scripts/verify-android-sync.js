@@ -27,7 +27,7 @@ for (const name of sources) {
   const b = fs.readFileSync(path.join(targetDir, name));
   if (!a.equals(b)) throw new Error(`native source differs: ${name}`);
 }
-const publicSource=path.join(root,"www"),publicTarget=path.join(root,"android","app","src","main","assets","public"),webFiles=["main/01-core.js","modules/coach/coach.js"];
+const publicSource=path.join(root,"www"),publicTarget=path.join(root,"android","app","src","main","assets","public"),webFiles=["main/01-core.js","modules/coach/coach.js","app.css"];
 const resourceSource=path.join(root,"assets","android","res"),resourceTarget=path.join(root,"android","app","src","main","res");
 if (!fs.existsSync(resourceSource)||!fs.existsSync(resourceTarget)) throw new Error("native resource directory missing");
   const a=tree(resourceSource),b=tree(resourceTarget);

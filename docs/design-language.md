@@ -1,6 +1,15 @@
 # NeoWell tasarım dili
 
-Hedef sakin, kendinden emin, az süslü bir arayüz (Apple Sağlık, Oura, Hevy çizgisi). Tüm değerler `www/app.css` başındaki `:root` token'larından gelir (koyu tema aynı dosyada, hemen altında). Yeni bir stil yazmadan önce token'a ve aşağıdaki ortak sınıflara bak.
+Coach ekranında bu sakin dili bırakıp **NEO//RAW** kullanılır: agresif, yüksek kontrastlı ve düşük bilişsel yük. Diğer ekranlar mevcut dili korur.
+
+- Coach zemini kirli kâğıt/gece yeşili; vurgu asit yeşili, uyarı sıcak kırmızı.
+- Coach kartları ve düğmeleri kalın kenarlıklı, gölgesiz ve az köşelidir.
+- Kullanıcı mesajı sağda asit blok, Rehber yanıtı solda açık blok olarak görünür.
+- Eylemler kısa fiildir; dekoratif ikon ve gereksiz açıklama yoktur.
+- `Besin etiketi tara (OCR)` ile `Yemek fotoğrafı ekle` ayrı yetenek olarak kalır.
+- Sağlık güvenlik frenleri ve erişilebilirlik kuralları değişmez.
+
+Hedef diğer ekranlarda sakin, kendinden emin, az süslü bir arayüz (Apple Sağlık, Oura, Hevy çizgisi). Tüm değerler `www/app.css` başındaki `:root` token'larından gelir (koyu tema aynı dosyada, hemen altında). Yeni bir stil yazmadan önce token'a ve aşağıdaki ortak sınıflara bak.
 
 ## Token'lar
 Kurallar `scripts/design.test.js` ile denetlenir: ölçek dışı punto, token dışı yarıçap, tarayıcı `confirm()` çağrısı, eksik koyu tema karşılığı, tanımsız `var(--x)` ve 80'i aşan satır içi stil testte kalır.

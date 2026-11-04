@@ -84,6 +84,14 @@ test.describe("Coach log card",()=>{
     const [h,c]=await Promise.all([page.locator("header").boundingBox(),page.locator("#composer").boundingBox()]);
     expect(c.y-(h.y+h.height)).toBeGreaterThan(150);
   });
+  test("on a fresh adult setup, provider discovery and fixed probe work before health-data consent",async({app,page,fake})=>{
+    await app.open({seed:state({consent:false,consentP:"",age:35}),keys:{}});
+    await app.tab("coach");await page.click('[data-c="guide"]');
+    await page.fill("#sk","g"+"sk_"+"test12345678");await page.click('[data-c="sfetch"]');
+    await expect(page.locator("#smsg")).toContainText("Anahtar çalışıyor");
+    expect(fake.st.log.map(x=>x.path)).toEqual(["/openai/v1/models","/openai/v1/chat/completions"]);
+    expect(fake.st.log[1].body.messages).toEqual([{role:"user",content:"Sadece 'tamam' yaz."}]);
+  });
 });
 
 test.describe("Coach memory controls",()=>{
@@ -196,7 +204,7 @@ test.describe("Coach reliability",()=>{
   });
   test("custom provider: the user's address is used and a clear warning appears before data is sent",async({app,page,fake})=>{
     const u1={id:"u1",name:"Benimki",base:"https://custom.example/v1",model:"m",on:true,health:true,confirm:false};
-    await app.open({seed:state({consent:true,consentV:3,consentAt:"2026-10-06",consentP:"u1"},{providers:[u1]}),keys:{u1:"k1"}});
+    await app.open({seed:state({consent:true,consentV:3,consentAt:"2026-10-06T07:00:00.000Z",consentP:"u1",consentU:"u1|https://custom.example/v1"},{providers:[u1]}),keys:{u1:"k1"}});
     await send(app,page,"Selam");
     await expect(view(page)).toContainText("Merhaba, buradayım.");
     expect(fake.chats().length).toBe(1);
@@ -205,7 +213,7 @@ test.describe("Coach reliability",()=>{
   });
   test("entering a key for a paid provider that was not part of the consent makes Coach ask again; no data is sent",async({app,page,fake})=>{
     const oa={id:"openai",name:"OpenAI",base:"https://api.openai.com/v1",model:"gpt-6-luna",on:true,health:true,confirm:false};
-    await app.open({seed:state({consent:true,consentV:3,consentAt:"2026-10-06",consentP:"groq,nvidia,openrouter"},{providers:[oa]}),keys:{openai:"sk-x"}});
+    await app.open({seed:state({consent:true,consentV:3,consentAt:"2026-10-06T07:00:00.000Z",consentP:"groq,nvidia,openrouter"},{providers:[oa]}),keys:{openai:"sk-x"}});
     await app.tab("coach");
     await expect(page.locator('[data-c="consent"]')).toBeVisible();
     await expect(view(page)).toContainText("Sağlayıcı listen değişti");

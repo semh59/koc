@@ -13,11 +13,14 @@ boot().then(async win=>{
   ev("toast=(m,u)=>{globalThis.__t=m;globalThis.__u=u}");
   {
     reset();
-    ev("S.settings.age=30;S.settings.consent=false;globalThis.__probeCalls=0;globalThis.fetch=async()=>{globalThis.__probeCalls++;return {ok:true,status:200,json:async()=>({data:[]}),text:async()=>\"\"}};fetchModels(S.providers[0]).catch(()=>{})");
+    ev("S.settings.age=30;S.settings.consent=false;globalThis.__probeCalls=0;globalThis.fetch=async()=>{globalThis.__probeCalls++;return {ok:true,status:200,json:async()=>({data:[]}),text:async()=>\"\"}};fetchModels(S.providers[0],getKeys()[S.providers[0].id]).catch(()=>{})");
     await new Promise(r=>setTimeout(r,50));
-    ok("provider probe sends no health data and requires consent",ev("__probeCalls===0"),ev("__probeCalls"));
+    ok("adult provider discovery sends only the fixed non-health probe without sharing consent",ev("__probeCalls===1"),ev("__probeCalls"));
     ev("S.settings.age=34;S.settings.act=1;S.settings.consent=true;const body=JSON.stringify(cMessages('x'));globalThis.__actBody=body");
     ok("numeric activity is serialized",ev("__actBody.includes('hareket düzeyi orta')"));
+    ev("S.settings.age=30;S.settings.consent=false;globalThis.__probeCalls=0;globalThis.fetch=async()=>{globalThis.__probeCalls++;return {ok:true,status:200,json:async()=>({data:[]}),text:async()=>\"\"}};fetchModels(S.providers[0], '').catch(()=>{})");
+    await new Promise(r=>setTimeout(r,50));
+    ok("provider discovery rejects an empty key before network",ev("__probeCalls===0"),ev("__probeCalls"));
     ev("S.settings.age=17;S.settings.consent=false;globalThis.__probeCalls=0;globalThis.fetch=async()=>{globalThis.__probeCalls++;return {ok:true,status:200,json:async()=>({data:[]}),text:async()=>\"\"}};fetchModels(S.providers[0]).catch(()=>{})");
     await new Promise(r=>setTimeout(r,50));
     ok("provider probe blocks underage users",ev("__probeCalls===0"),ev("__probeCalls"));
@@ -137,7 +140,7 @@ boot().then(async win=>{
   {
     reset();const st=w.setTimeout;w.setTimeout=(f,ms,...a)=>st(f,ms===15000?5:ms,...a);
     fetchWith((u,o)=>new Promise((_,rej)=>o.signal.addEventListener("abort",()=>rej(Object.assign(new Error("aborted"),{name:"AbortError"})))));
-    const r=await ev("fetchModels(S.providers[0],'k').then(()=>'ok',e=>errOf(e).kind)");
+    const r=await ev(`fetchModels(S.providers[0],getKeys()[S.providers[0].id]).then(()=>'ok',e=>errOf(e).kind)`);
     w.setTimeout=st;
     ok("fetchModels: a model list request that never answers is aborted and classified as a timeout",r==="time",r);
   }
