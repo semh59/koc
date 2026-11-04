@@ -3,10 +3,11 @@ const {defineConfig}=require("@playwright/test");
 const CI=!!process.env.CI,port=+process.env.E2E_PORT||4173;
 /* Locally installed Chrome (no download); on CI the Chromium from `npx playwright install chromium`. */
 const channel=process.env.E2E_CHANNEL??(CI?undefined:"chrome");
+const noCoach=process.env.NO_COACH_E2E!=="0";
 const phone=(name,width,height)=>({name,use:{viewport:{width,height},isMobile:true,hasTouch:true}});
 module.exports=defineConfig({
   testDir:__dirname,
-  testMatch:/.*\.spec\.js$/,
+  testMatch:noCoach?/no-coach-release\.spec\.js$/:/.*\.spec\.js$/,
   fullyParallel:true,
   forbidOnly:CI,
   retries:CI?1:0,

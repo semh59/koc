@@ -13,8 +13,7 @@ const Modules={
   labs:{keys:["labs"],api:["labReview"]},
   measures:{keys:["measures"]},
   cycle:{keys:["cycle","cycleSym"]},
-  motion:{keys:["walk","moves"],api:["motionKg","setHc"]},
-  coach:{keys:["chat","chats","cid","providers","coachMemories","coachPlans","coachCheckins","coachActions","coachExperiments","coachExperimentEvents"],api:["cNoteCheck","cConsent","consentHtml","consentOk","provNames","usageText","cCalc","planner","memoryList","memoryContext","memoryEdit","memoryDelete","memoryExport","memoryDeleteAll","experimentList","experimentExport","experimentDeleteAll"]}
+  motion:{keys:["walk","moves"],api:["motionKg","setHc"]}
 };
 /* Store shards: one record per module; settings belong to the core. A field in no shard goes to the "other" shard (data is never dropped silently).
    Fast-growing arrays are split into one shard per month (shard id "<module>/<month>"): adding an entry writes only that month's shard. */

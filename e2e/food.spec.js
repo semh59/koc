@@ -43,6 +43,23 @@ test.describe("Add food",()=>{
     expect(e.meal).toBe("lunch");expect(e.p).toBeGreaterThan(0);expect(e.v).toBeGreaterThan(100);
   });
 
+  test("voice search stays in food sheet when permission is refused",async({app,page})=>{
+    await page.addInitScript(()=>{
+      window.Capacitor={Plugins:{Speech:{
+        addListener:async()=>({remove(){}}),
+        removeAllListeners:async()=>{},
+        listen:async()=>({started:false,reason:"permission"}),
+        stopListening:async()=>{}
+      }}};
+    });
+    await app.open({seed:state()});await page.click('.act[data-act="food"]');
+    await page.click('[data-fvoice="start"]');
+    await expect(page.locator('[data-fvoice="consent"]')).toBeVisible();
+    await page.click('[data-fvoice="consent"]');
+    await expect(page.locator("#fq")).toBeVisible();
+    await expect(page.locator("#sheet")).toContainText("yazarak arayabilirsin");
+    await expect(page.locator("#view")).toBeVisible();
+  });
   test("write your own: rejected without a name and calories, saved with a name",async({app,page})=>{
     await openFood(app,page);
     await page.click('[data-act="own"]');

@@ -1,5 +1,5 @@
 "use strict";
-/* Progress photos: size calculation, limit, ordering and the comparison gap (no DOM). Photos never go to localStorage, the backup, the Coach or sharing. */
+/* Progress photos: size calculation, limit, ordering and the comparison gap (no DOM). Photos never go to localStorage, the backup, remote service or sharing. */
 const PhotoLib=(()=>{
   const A=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");
   const MAX=24,LONG=900,THUMB=160,QUALITY=0.75,KG=[20,400];

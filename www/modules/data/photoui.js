@@ -1,5 +1,5 @@
 "use strict";
-/* Progress photos (Trend). Photos live in IndexedDB (they do not eat the localStorage quota) and never reach the backup, the Coach or sharing.
+/* Progress photos (Trend). Photos live in IndexedDB (they do not eat the localStorage quota) and never reach the backup, remote service or sharing.
    Store "m" holds the thumbnail and metadata, store "f" the JPEG scaled to 900 px on its longest side. On Android screenshots are blocked while this screen is open (DeviceHelp.secure). */
 let phList=[],phDbP=null,phUrls=[],phSecure=false,phBusy=false;
 const phRevoke=()=>{if(URL.revokeObjectURL)phUrls.forEach(u=>URL.revokeObjectURL(u));phUrls=[]};
@@ -56,7 +56,7 @@ async function phUrl(id){
   const u=URL.createObjectURL(b);phUrls.push(u);return u;
 }
 const phCap=p=>`${fd(p.day)}${p.kg!=null?" · "+dw(p.kg)+" "+wlab():""}`,phKg=p=>p.kg!=null?dw(p.kg)+" "+wlab():"";
-const phTxt="Fotoğraflar yalnız bu telefonda, uygulamanın özel alanında durur. Rehber'e, bir sunucuya ya da paylaşım ekranına gitmez. Otomatik ve şifreli yedeğe girmez (boyut): telefon değiştirirsen ya da uygulamayı silersen kaybolur. Bu ekran açıkken Android ekran görüntüsü almayı engeller.",phNote=`<details class="acc"><summary>Gizlilik</summary><p class="m0 hint">${phTxt}</p></details>`;
+const phTxt="Fotoğraflar yalnız bu telefonda, uygulamanın özel alanında durur. uzak servise, bir sunucuya ya da paylaşım ekranına gitmez. Otomatik ve şifreli yedeğe girmez (boyut): telefon değiştirirsen ya da uygulamayı silersen kaybolur. Bu ekran açıkken Android ekran görüntüsü almayı engeller.",phNote=`<details class="acc"><summary>Gizlilik</summary><p class="m0 hint">${phTxt}</p></details>`;
 function photoCard(){
   if(!phOk())return `<h2>İlerleme fotoğrafları</h2><div class="card"><p class="hint">Bu cihazda fotoğraf saklanamıyor.</p></div>`;
   const btns=`<div class="btns"><button class="btn ghost" data-ph="add"${PhotoLib.canAdd(phList.length)?"":" disabled"}>Fotoğraf ekle${phList.length?` (${phList.length}/${PhotoLib.MAX})`:""}</button>${phList.length>1?`<button class="btn ghost" data-ph="cmp">Karşılaştır</button>`:""}</div>`;

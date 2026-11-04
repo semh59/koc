@@ -1,6 +1,6 @@
 "use strict";
 /* Keyless local weekly menu: rule-based, on device, built from the ready-made meals in the food database. Needs no network, key or consent.
-   The output is the schema CoachLib.cleanMenu accepts (without cat): {days:[{meals:[{m,items:[{n,q,k,p,c,f,g,a}]}]}]}. */
+   The output is the schema the local menu cleaner accepts (without cat): {days:[{meals:[{m,items:[{n,q,k,p,c,f,g,a}]}]}]}. */
 const MenuLocal=(()=>{
   const {FOODS:DB,foldTr:fold}=typeof FOODS!=="undefined"?{FOODS,foldTr}:require("./foods.js");
   const BY=new Map(DB.map(f=>[f.n,f]));

@@ -845,7 +845,7 @@ const FOODS=(()=>{
   return R.map(([n,k,p,c,f,u,s,r,o])=>Object.assign({n,k,p,c,f,u,s:s===1},r?{lo:r[0],hi:r[1]}:{},ALIASES[n]?{a:ALIASES[n]}:{},PROXY_NOTES[n]?{v:PROXY_NOTES[n]}:{},o?{o:true}:{},PARTS_BY_FOOD[n]?{parts:PARTS_BY_FOOD[n]}:{},FIBER[n]!=null?{fb:FIBER[n]}:{}));
 })();
 
-// The Coach menu catalog samples only the dish-focused first rows, so raw foods and recipe rows do not bloat the request.
+// The menu catalog samples only the dish-focused first rows, so raw foods and recipe rows do not bloat the request.
 const FOOD_CORE=106;
 // Lowercase and strip diacritics (Turkish I/İ/ı included) so searches ignore case and accents.
 const fold=typeof foldTr!=="undefined"?foldTr:require("../../kernel/common.js").foldTr;

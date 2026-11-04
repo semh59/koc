@@ -1,5 +1,5 @@
 "use strict";
-/* Cycle log: validation, cleaning and prediction (no DOM). The data stays on the device; it never reaches the Coach, a notification body or the widget.
+/* Cycle log: validation, cleaning and prediction (no DOM). The data stays on the device; it never reaches a provider, a notification body or the widget.
    The prediction is the average of past period starts; ovulation and the fertile window are an information-only calendar method, not a contraception or pregnancy tool. */
 const CycleLib=(()=>{
   const {dayOk,dayNum,fdate}=typeof Algo!=="undefined"?Algo:require("../../kernel/algo.js");

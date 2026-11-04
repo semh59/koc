@@ -3,14 +3,14 @@
 const GPLATE_DEF=[25,20,15,10,5,2.5,1.25],GPLATE_ALL=[25,20,15,10,5,2.5,2,1.25,1,0.5];
 const GROUPS=["Bacak","İtiş","Çekiş","Omuz","Kol","Karın"];
 const KG_MAX=1000,REPS_MAX=200,SEC_MAX=7200,WORKOUT_MIN_MAX=600,WEEK_MS=7*864e5;
-// Exercises the Coach catalog lists first.
+// Exercises the exercise catalog lists first.
 const CORE_EX=["squat","legpress","rdl","legcurl","legext","calf","bench","incdb","tri","ohp","lat","pullup","pulldown","row","curl","crunch"];
 const REST_SEC=90;
 let gPgF={d:0,lv:""},gPgD=0,gTe=null,gTeOn=false,gHistMax=20,gRecMax=5,gTim=null,gPickMax=40,restEnd=0,restTx="",gQuery="",gGroup="Tümü",gNew=false;
 
 const EXREG=["Göğüs","Sırt","Omuz","Biseps","Triseps","Ön kol","Karın","Bel","Kalça","Ön bacak","Arka bacak","Baldır","İç-dış bacak","Trapez","Boyun","Tüm vücut"];
 const EXBY=new Map(EXDB.map(e=>[e.id,e]));
-// A custom exercise derives its coarse group (used by the summary and the Coach) from its region.
+// A custom exercise derives its coarse group (used by the summary) from its region.
 const GREG={"Göğüs":"İtiş","Triseps":"İtiş","Sırt":"Çekiş","Bel":"Çekiş","Omuz":"Omuz","Trapez":"Omuz","Boyun":"Omuz","Biseps":"Kol","Ön kol":"Kol","Karın":"Karın"};
 const GNEWK={w:"Ağırlık × tekrar",b:"Tekrar",t:"Süreli",c:"Kardiyo"},GNEWQ=["Ağırlıksız","Ev tipi","Salon"];
 const GFIG={squat:"Çömelme",hinge:"Kalça menteşesi",lunge:"Hamle",stepup:"Basamağa çıkış",legext:"Bacak açma",legcurl:"Bacak bükme",legpress:"Leg press",bridge:"Kalça köprüsü",calf:"Baldır kaldırma",legspread:"Yana adım",pushup:"Şınav",bench:"Yatarak itiş",incline:"Eğimli itiş",fly:"Açma (fly)",dips:"Dips",ohp:"Omuz press",latraise:"Yana kaldırma",frontraise:"Öne kaldırma",skull:"Yatarak triceps",row:"Öne eğilip çekiş",pullup:"Barfiks",pulldown:"Yukarıdan çekiş",seatedrow:"Oturarak çekiş",backext:"Bel ekstansiyonu",shrug:"Omuz silkme",curl:"Biceps curl",pushdown:"Triceps pushdown",kickback:"Triceps kickback",overheadext:"Baş üstü triceps",crunch:"Mekik",situp:"Tam mekik",legraise:"Ters mekik",hangraise:"Asılı bacak kaldırma",plank:"Plank",climber:"Dağcı",sidebend:"Yan eğilme",woodchop:"Gövde bükme",jack:"Açılıp kapanma",run:"Koşu",highknees:"Yüksek diz",walk:"Yürüyüş",jumprope:"İp atlama",cycle:"Bisiklet",qstretch:"Ön bacak esnetme",hamstretch:"Arka bacak esnetme",armstretch:"Göğüs esnetme",neckstretch:"Boyun",twiststretch:"Gövde döndürme"};
@@ -301,13 +301,13 @@ function gHome(){
   <details class="acc" id="mmacc"><summary>Kas haritası</summary>${MuscleMap.html(wk)}<p class="hint">Bölge başına haftada 10 ile 20 set çoğu kişi için makul bir aralıktır.</p></details></div>`;
   return `${sum}
   <h2>Şablonlarım</h2>${tpl?`<div class="hscroll">${tpl}</div>`:emptyCard("gym","","Sık yaptığın antrenmanı şablon olarak kaydet, tek dokunuşla başlat.")}<button class="btn ghost" data-g="tedit:">${Icons.svg("plus")} Yeni şablon</button>
-  <div class="mt-3 card">${navRow('data-g="gdpick"',"clock","Rehberli antrenman","Esneme, ısınma ve Tabata; sesli komutla")}${navRow('data-g="lib"',"book","Egzersiz kütüphanesi","Egzersizleri ara, incele, antrenmana ekle")}${navRow('data-c="prog"',"coach","Rehber'den program iste","Hedefine ve ekipmanına göre")}</div>
+  <div class="mt-3 card">${navRow('data-g="gdpick"',"clock","Rehberli antrenman","Esneme, ısınma ve Tabata; sesli komutla")}${navRow('data-g="lib"',"book","Egzersiz kütüphanesi","Egzersizleri ara, incele, antrenmana ekle")}</div>
   ${rec}
   <details class="acc more"><summary>Haftalık dağılım</summary>${bars}</details>
   ${gPgHtml()}
   <details class="acc more"><summary>Antrenman geçmişi</summary><div class="card">${gHistHtml(done)||`<p class="m0 hint">Bitirdiğin antrenmanlar burada listelenir.</p>`}</div>${gQuickHtml()}</details>`;
 }
-/* Sports without a workout record (quick log, a bike ride or walk added by the Coach, ...): the last 20 entries, newest first. */
+/* Sports without a workout record (quick log, a bike ride or walk, ...): the last 20 entries, newest first. */
 function gQuickHtml(){
   const l=Log.where(e=>e.type==="exercise"&&!e.wid).sort((a,b)=>b.day.localeCompare(a.day)||b.id-a.id).slice(0,20);
   if(!l.length)return "";
@@ -569,7 +569,7 @@ function gPgSheet(id){
   <div class="lbl">Rehberli başlat</div><div class="chips">${ds.map((d,i)=>`<button class="chip" data-g="gdgo:p:${p.id}-${i}">${d.n}</button>`).join("")}</div>
   <div class="btns"><button class="btn" data-g="pgadd:${p.id}">Şablonlarıma ekle</button><button class="btn ghost" data-g="closesheet">Kapat</button></div>`);
 }
-/* Coach programs and ready-made programs are added the same way; each day becomes a template named "Name – Day". */
+/* Ready-made programs are added the same way; each day becomes a template named "Name – Day". */
 function gTplAdd(name,ds){
   return ds.map(d=>{
     const t={id:S.gid++,name:`${name} – ${d.n}`.slice(0,60),ex:d.ex.slice()};if(d.tg)t.tg=d.tg;

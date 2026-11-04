@@ -1,5 +1,5 @@
 "use strict";
-/* Blood pressure and glucose screens: records, averages and plots. The only interpretation is the emergency box and the neutral "ask your doctor" line after a save. The data is never sent to the Coach. */
+/* Blood pressure and glucose screens: records, averages and plots. The only interpretation is the emergency box and the neutral "ask your doctor" line after a save. The data is never sent to remote service. */
 let vRange=14,vSession="morning",vCtx="fasting",vConfirm="";
 const vMmol=()=>Units.gu()==="mmol",vDec=()=>vMmol()?1:0;
 /* Averages and extremes are rounded to an integer in mg/dL and shown with 1 decimal in mmol/L. */

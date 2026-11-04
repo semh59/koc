@@ -17,16 +17,6 @@ const QUOTES=[
   "Su iç, yürü, uyu. Temeller işe yarar.",
   "Bugün yaptığın 20 dakika, yapmadığın 60 dakikadan iyidir."
 ];
-function dailyTip(){
-  const t=dayKey(),h=new Date().getHours();
-  const sh=S.settings.waterMl,water=sum("water",t,t);
-  if(Algo.dayNum(t)%7===0&&!Object.keys(weights(t,t)).length&&h<12)return "Sabah tartısını gir. Tuvaletten sonra, kahvaltıdan önce en tutarlısı.";
-  const exp=sh*Math.min(Math.max((h-8)/14,0),1);
-  if(water<exp-250)return `Şimdiye kadar ${Math.round(water)} ml içtin; bir bardak su iyi gelir.`;
-  if(!of("exercise",t).length&&h>=17)return "Bugün henüz hareket yok. 20 dakikalık tempolu yürüyüş de sayılır.";
-  return QUOTES[Algo.dayNum(t)%QUOTES.length];
-}
-
 /* ---------- components ---------- */
 /* A round-capped ring looks closed at 93%: an incomplete ring is drawn at 92% at most so it is not mistaken for full. */
 function ring(p,color,center,label,sub,unit,cls=""){

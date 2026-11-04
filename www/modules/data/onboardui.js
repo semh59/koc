@@ -1,18 +1,18 @@
 "use strict";
 /* First run: welcome (step -1) and one form (step 0) that shows the target in place before it is saved. Inputs are written to the existing profile and settings fields; the draft lives only in memory. */
 /* Fixed start-up notice: shown on the welcome screen and, for an existing install, once in a sheet until acknowledged. */
-const NOTICE="NeoWell bir tıbbi cihaz değildir ve hekim yerine geçmez. Rehber yapay zekâ kullanır ve yanılabilir; sağlıkla ilgili kararları hekiminle ver. Acil bir durumda 112'yi ara.";
+const NOTICE="NeoWell bir tıbbi cihaz değildir ve hekim yerine geçmez. Sağlıkla ilgili kararları hekiminle ver. Acil bir durumda 112'yi ara.";
 const noticeGate=()=>{if(!S.settings.noticeOk)openSheet(`<h3>Önemli uyarı</h3><div class="banner"><p>${NOTICE}</p></div><button class="btn" data-notice>Anladım</button>`)};
 /* The one restore page, opened from the welcome screen and from Settings: a file or pasted backup text, the password, and a check that loads nothing. */
 async function sheetObRestore(){
-  const keep=!!KV()&&Coach.vaultOn()&&await bkRemembered()==null;
+  const keep=!!KV()&&await bkRemembered()==null;
   openSheet(`<h3>Yedekten geri yükle</h3><p class="mut">Daha önce aldığın NeoWell yedek dosyasını seç (ya da Kopyala ile aldığın metni yapıştır) ve yedek parolanı yaz.</p>
   <label class="lbl" for="obf">Yedek dosyası</label><input class="in" type="file" id="obf" accept=".json,application/json,text/plain">
   <label class="lbl" for="obt">Ya da yedek metni</label><textarea class="in" id="obt" spellcheck="false"></textarea>
   <label class="lbl" for="obpw">Yedek parolası</label><input class="in" type="password" id="obpw" autocomplete="off">
   ${keep?swRow('id="obrem"',true,"Parolayı bu telefonda sakla; Drive ve otomatik yedek aynı parolayla çalışır"):""}
   <button class="btn" data-obr="go">Geri yükle</button><button class="mt-2 btn ghost" data-obr="check">Yalnız denetle (hiçbir şey yüklenmez)</button>
-  <p class="hint">Parolayı unuttuysan yedek açılamaz. ${helpBtn("obh","Geri yükleme")}</p>${helpBox("obh",`${BK_PHOTOS} Rehber izni ve otomatik yedek bu telefonda yeniden ayarlanır.`)}`);
+  <p class="hint">Parolayı unuttuysan yedek açılamaz. ${helpBtn("obh","Geri yükleme")}</p>${helpBox("obh",`${BK_PHOTOS} Otomatik yedek bu telefonda yeniden ayarlanır.`)}`);
 }
 async function obRestoreGo(btn){
   const f=$("#obf").files[0];let text;
@@ -35,7 +35,7 @@ const ob=obFresh();
 const OB_MODS=[["med","İlaç hatırlatıcı","meds"],["fast","Oruç takibi","fast"],["steps","Adım sayar","steps"],["bp","Tansiyon","heart"],["bs","Şeker","water"]];
 const OB_DIRS=[["lose","Kilo ver"],["keep","Koru"],["gain","Kilo al"]];
 /* Never shown to an existing user: skipped when the flag, a profile, a record, a chat or a medication exists. */
-const obNeeded=()=>{const s=S.settings;return ob.redo||!s.obDone&&!s.heightCm&&!s.age&&!s.goalKg&&!s.kcal&&!s.consent&&!Log.all().length&&!Coach.chatCount()&&!Meds.count()};
+const obNeeded=()=>{const s=S.settings;return ob.redo||!s.obDone&&!s.heightCm&&!s.age&&!s.goalKg&&!s.kcal&&!Log.all().length&&!Meds.count()};
 
 function obRead(){
   for(const k of ["cm","kg","age","goal"]){const f=$("#ob"+k);if(f)ob[k]=f.value.trim()}
@@ -84,7 +84,7 @@ function obView(){
   const p=ob.shown===obSig()?obParse():null,ok=p&&!p.err&&!p.minor,pl=ok?obPlan(p):null;
   const target=ok?`<div class="card" id="obtarget"><h2 class="m0">Günlük hedefin</h2><div class="lbl">Kalori</div><div class="pc sumv num">${fint(pl.kcal)} <small>kcal</small></div>
     <div class="lbl">Protein</div><div class="t-h1 b7 num">${pl.protein?`${pl.protein[0]}–${pl.protein[1]} <small class="mut">g</small>`:"Hekiminle belirle"}</div><p class="p0 hint">${Algo.PROTEIN_NOTE}</p>
-    <p class="hint">Verilerin yalnızca telefonunda durur. Rehber'i açarsan, yalnızca onayınla, seçtiğin yapay zekâ sağlayıcısına (yurt dışı) gider. Rehber olmadan da uygulama tam çalışır. ${MED_NOTE} <button class="wa ib lnk" data-pv="open">Gizlilik ve veri</button></p>
+    <p class="hint">Verilerin yalnızca telefonunda durur. ${MED_NOTE} <button class="wa ib lnk" data-pv="open">Gizlilik ve veri</button></p>
     ${pl.risk.block?riskBox(pl.risk,"Kalori açığı önermiyorum")+(p.goal>p.kg?"":`<p class="hint">Yukarıdaki değer kilonu koruma düzeyidir.</p>`):`<p class="hint">${pl.note==="Kilo verme"?"Yavaş ve güvenli kilo verme hızına göre":pl.note==="Kilo alma"?"Yavaş kilo alma hızına göre":"Kilonu koruma düzeyine göre"} hesaplandı. Kayıt girdikçe gerçek verine göre güncellenir. Tahmindir, tıbbi tavsiye değildir.</p>`}${energyHowAcc({kg:p.kg,cm:p.cm,age:p.age,sex:ob.sex,act:obAct()})}</div>`:"";
   const body=`<h2>Seni tanıyalım</h2><p class="m0 mb-2 hint">Günlük kalori ve protein hedefini buna göre hesaplarız.</p><div class="card">
     ${fld("cm","Boy (cm)",ob.cm,"","numeric")}${fld("kg","Kilo (kg)",ob.kg,"","decimal")}${fld("age","Yaş",ob.age,"","numeric")}
@@ -108,7 +108,7 @@ function obFinish(){
   Object.assign(st,{heightCm:p.cm,age:p.age,sex:ob.sex,goalKg:p.goal});
   if(pl.kcal>=RANGES.kcal[0]&&pl.kcal<=RANGES.kcal[1])st.kcal=pl.kcal;
   if(ob.pg)setRisk("preg");if(ob.nu)setRisk("nurs");if(ob.ed)setRisk("ed");
-  if(ob.hn){st.healthNote=obNote();cNoteCheck()}
+  if(ob.hn)st.healthNote=obNote()
   st.obSkipped=false;st.obNudge=true;
   add("weight",p.kg);
   obDone();scheduleReminders().then(setNotif);

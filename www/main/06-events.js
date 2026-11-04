@@ -1,6 +1,6 @@
 /* ---------- events ---------- */
 document.addEventListener("click",ev=>{
-  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-rc],[data-fv],[data-fva],[data-fvd],[data-tp],[data-tpd],[data-sp],[data-lo],[data-kd],[data-g],[data-sex],[data-actl],[data-thm],[data-c],[data-food],[data-fadd],[data-fp],[data-ml],[data-edit],[data-waterall],[data-shx]");
+  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-rc],[data-fv],[data-fva],[data-fvd],[data-tp],[data-tpd],[data-sp],[data-lo],[data-kd],[data-g],[data-sex],[data-actl],[data-thm],[data-c],[data-food],[data-fadd],[data-fp],[data-ml],[data-edit],[data-waterall],[data-shx],[data-fvoice]");
   if(ev.target.id==="scrim"){
     const typed=[...document.querySelectorAll("#sheet input,#sheet textarea")].some(e=>!e.readOnly&&!["search","checkbox","file"].includes(e.type)&&e.value!==e.defaultValue);
     if(!typed)return closeSheet();
@@ -8,7 +8,8 @@ document.addEventListener("click",ev=>{
   }
   if(!el)return;
   const d=el.dataset;
-  if(d.tab){via=!PARENT[tab]&&PARENT[d.tab]?{t:d.tab,p:tab}:null;tab=d.tab;render();window.scrollTo(0,0);return}
+  if(d.fvoice){if(d.fvoice==="start")return foodVoiceStart();if(d.fvoice==="consent")return foodVoiceAccept();if(d.fvoice==="stop"){foodVoiceStop();foodVoiceSetStatus("Durduruldu. Yazıyla aramaya devam edebilirsin.");return}if(d.fvoice==="cancel")return closeSheet();}
+  if(d.tab){via=!PARENT[tab]&&!PARENT[d.tab]?null:!PARENT[tab]&&PARENT[d.tab]?{t:d.tab,p:tab}:null;tab=d.tab;render();window.scrollTo(0,0);return}
   if(d.c){cClick(d.c,el);return}
   if(d.g){gClick(d.g,el);return}
   if(d.sex!==undefined){S.settings.sex=d.sex;save();render();return}
@@ -69,7 +70,7 @@ document.addEventListener("change",ev=>{
     if(isNaN(v)||v<lo||v>hi){t.value=show(st[k]);toast(wk&&wlab()==="lb"?`${SETLBL[k]} ${dw(lo,0)} ile ${dw(hi,0)} ${wlab()} arasında olmalı`:`${SETLBL[k]} ${String(lo).replace(".",",")} ile ${String(hi).replace(".",",")} arasında${int?" tam sayı":""} olmalı`);return}
     const why=k==="kcal"?kcalWhy(v):k==="goalKg"?Algo.goalWhy(v,st.heightCm,weightNow()):k==="macroP"&&Algo.protein(riskInput(weightNow())).doc?"Protein hedefini hekiminle belirle":"";
     if(why){t.value=show(st[k]);toast(why);return}
-    st[k]=v;if(k==="age")cAgeGuard();save();t.value=show(v);if(k==="dayStart")dayRoll();return;
+    st[k]=v;save();t.value=show(v);if(k==="dayStart")dayRoll();return;
   }
   if(t.dataset.rt||t.dataset.ro){
     const r=S.settings.reminders.find(x=>x.id===+(t.dataset.rt||t.dataset.ro));
@@ -93,7 +94,6 @@ document.addEventListener("keydown",ev=>{
       if(f.length&&(!o.contains(a)||(ev.shiftKey?i<=0:i===f.length-1))){ev.preventDefault();f[ev.shiftKey?f.length-1:0].focus()}
     }
   }
-  if(ev.key==="Enter"&&ev.target.id==="cmsg"){ev.preventDefault();const i=ev.target,t=i.value;i.value="";cSend(t);return}
   if(ev.key==="Enter"&&ev.target.closest("#sheet")&&ev.target.tagName==="INPUT"&&ev.target.id!=="fq"){const b=$('#sheet [data-go],#sheet [data-vt^="save"]');if(b)b.click()}
 });
 document.addEventListener("click",ev=>{const b=ev.target.closest("[data-sr]");if(b){stepRange=+b.dataset.sr;render()}});
@@ -106,17 +106,17 @@ function dayRoll(){
   logOff=logOff>0?Math.max(0,Math.min(hgOldest(),logOff+n)):0;
   render();
 }
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){if(!viewBusy())dayRoll();quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="settings-modules")render()});stepsSync();renderSoft();cPlateauCheck();abRun();schedDue().then(d=>d&&scheduleReminders().then(setNotif))}});
+document.addEventListener("visibilitychange",()=>{if(document.hidden){foodVoiceStop?.();return}if(!document.hidden){if(!viewBusy())dayRoll();quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="settings-modules")render()});stepsSync();renderSoft();abRun();schedDue().then(d=>d&&scheduleReminders().then(setNotif))}});
 
 document.querySelectorAll("[data-ic]").forEach(e=>e.innerHTML=Icons.svg(e.dataset.ic));
 render();
-cPlateauCheck();
 if(loadNote)toast(loadNote);
 quickIngest();
 if(!obNeeded())noticeGate();
 if(!obNeeded())scheduleReminders().then(setNotif); // the first run asks for notifications only after the intro
 setInterval(gTick,1000);
-const keysP=keysInit().then(render);
+/* Automatic backup can start immediately; remote key initialization is not part of this release. */
+const keysP=Promise.resolve();
 abBoot();
 if(S.settings.stepsOn&&SC()){SC().start().catch(()=>{});stepsSync();motionBoot()}
 setInterval(stepsTick,STEP_POLL);
@@ -155,10 +155,8 @@ function backKey(){
   return false;
 }
 $("#back").addEventListener("click",goBack);
-/* The Coach chat's bottom padding comes from the composer's real height, so the last message never hides behind it (keyboard, landscape, large font). */
-function cmpSet(){const c=$("#composer");if(c.hidden)return;document.documentElement.style.setProperty("--cmp",Math.ceil(innerHeight-c.getBoundingClientRect().top)+12+"px")}
-if(window.ResizeObserver)new ResizeObserver(cmpSet).observe($("#composer"));
-addEventListener("resize",cmpSet);
+/* Keyboard: typed fields stay usable on every screen. */
+function cmpSet(){}
 /* Keyboard: whether or not the screen shrinks (edge to edge) the bottom bar is hidden, fixed areas rise by --kb, and the focused field stays visible. */
 {const vv=window.visualViewport;let base=0,lw=innerWidth;
   const kb=()=>{if(!vv)return;const h=vv.height;if(innerWidth!==lw){lw=innerWidth;base=0}base=Math.max(base,innerHeight,h);const open=base-h>120,b=Math.max(0,innerHeight-h-vv.offsetTop),d=document.documentElement.style;

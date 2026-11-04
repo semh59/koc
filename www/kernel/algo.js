@@ -35,7 +35,7 @@ const Algo=(()=>{
   /* Two-sided 80% Student t for 1..30 degrees of freedom (1.282 beyond). */
   const T80=[3.078,1.886,1.638,1.533,1.476,1.44,1.415,1.397,1.383,1.372,1.363,1.356,1.35,1.345,1.341,1.337,1.333,1.33,1.328,1.325,1.323,1.321,1.319,1.318,1.316,1.315,1.314,1.313,1.311,1.31];
   const t80=df=>df>=1?T80[Math.min(df,30)-1]||1.282:null;
-  /* The browser supplies today (setClock) because the Coach calls without a date; without a clock the window ends at the last weigh-in (pure call). */
+  /* The browser supplies today (setClock) because the callers without a date; without a clock the window ends at the last weigh-in (pure call). */
   let clock=null;
   const setClock=f=>{clock=f};
   /* With today given, a last weigh-in older than 7 days is stale: a slope from months ago says nothing about now (same rule as InsightLib.plateau). */
@@ -66,7 +66,7 @@ const Algo=(()=>{
   const actFromTriage=(job,walk)=>{const t=job+walk;return t<=1?0:t<=3?1:2};
   function formulaTdee(p){return bmrMifflin(p)*(ACT[p.act==null?1:p.act]||1.45)}
 
-  /* The one definition of a fully logged day (weekly report, Coach analysis, expenditure estimate): at least 800 kcal, and more than half the formula
+  /* The one definition of a fully logged day (weekly report, analysis, expenditure estimate): at least 800 kcal, and more than half the formula
      expenditure when known. A half-logged day would drag averages down. */
   const LOW_LOG_KCAL=800;
   const fullKcal=(kcal,tdee)=>kcal>=Math.max(LOW_LOG_KCAL,tdee>0?tdee*0.5:0);

@@ -1,5 +1,5 @@
 "use strict";
-/* Units (no DOM). Storage always stays kg and mg/dL; only input and display convert, calculations and the Coach context use kg and mg/dL.
+/* Units (no DOM). Storage always stays kg and mg/dL; only input and display convert, calculations context use kg and mg/dL.
    The settings source is given with Units.src(() => S.settings); without u the unit from settings is used. */
 const Units=(()=>{
   const LB=2.20462,MG=18.016;

@@ -1,10 +1,21 @@
 "use strict";
 /* Weekly calorie-target suggestion on the Trend screen: never applied automatically; "Şimdi değil" silences it for 7 days (goalSugAt). */
+function goalCalc(){
+  const st=S.settings,w=weights(),days=Object.keys(w).sort(),out={trendKg:null,tdee:null,bmr:null};
+  if(!days.length)return out;
+  out.trendKg=Algo.trend(w)[days[days.length-1]];
+  if(st.heightCm>0&&st.age>0){
+    const profile={kg:out.trendKg,cm:st.heightCm,age:st.age,sex:st.sex||"",act:st.act},intake={};
+    for(const e of Log.all())if(e.type==="food"&&e.v)intake[e.day]=(intake[e.day]||0)+e.v;
+    const r=Algo.adaptiveTdee({weights:w,intake,profile});out.tdee=r.tdee;out.bmr=Algo.bmrMifflin(profile);
+  }
+  return out;
+}
 function goalSug(){
   const st=S.settings,w=weights();
   if(!(st.kcal>0)||!Object.keys(w).length)return null;
-  const c=cCalc(),intake=Log.byDay("food");
-  return GoalLib.suggest({w,kcal:st.kcal,tdee:c.tdee,bmr:c.bmr,ri:riskInput(c.trendKg),intake,today:dayKey(),at:st.goalSugAt});
+  const c=goalCalc();
+  return GoalLib.suggest({w,kcal:st.kcal,tdee:c.tdee,bmr:c.bmr,ri:riskInput(c.trendKg),intake:Log.byDay("food"),today:dayKey(),at:st.goalSugAt});
 }
 function goalCard(){
   const g=goalSug();if(!g)return "";

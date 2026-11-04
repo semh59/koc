@@ -60,15 +60,14 @@ async function scheduleOnce(){
     try{await ln.registerActionTypes({types:[{id:"water",actions:[{id:"water",title:`+${S.settings.glass} ml`}]},{id:"med",actions:[{id:"med",title:"✓ Aldım"},{id:"medskip",title:"Atla"}]},{id:"medgrp",actions:[{id:"med",title:"✓ Hepsini aldım"}]}]})}catch{}
     let list=[];const medList=[],now=Date.now(),lb=S.settings.lastBackup;
     const fastBlock=!!risk().block;
-    const preg=risk().pregnant;
-    for(const r of S.settings.reminders.filter(r=>r.on&&!(r.id===11&&fastBlock)&&!(preg&&PREG_OFF.includes(r.id)))){
+    for(const r of S.settings.reminders.filter(r=>r.on&&!(r.id===11&&fastBlock))){
       const water=WATER_REM.includes(r.id),kind=water?"water":r.id===MOVE_REM?"move":"";
       for(let i=0;i<SCHED_DAYS;i++){
         const at=addDays(i,new Date()),[h,m]=(kind?Habits.ramShift(dayKey(at),r.t,kind,WATER_REM.indexOf(r.id)):r.t).split(":").map(Number);at.setHours(h,m,0,0);
         if(i===0&&water){const ad=dayAt(at.getTime());if(sum("water",ad,ad)>=S.settings.waterMl)continue}
         if(r.dow!=null&&at.getDay()!==r.dow)continue;
         if(r.id===BACKUP_REM&&(Log.all().length<10||(lb&&Algo.dayNum(dayKey(at))-Algo.dayNum(lb)<7)))continue;
-        if(at.getTime()>now+LEAD_MS)list.push(Object.assign({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}},water?{actionTypeId:"water",extra:{act:"water",v:S.settings.glass,at:at.getTime()}}:r.id===WEEKLY_REM?{extra:{act:"open",tab:"coach"}}:r.id===BACKUP_REM?{extra:{act:"open",tab:"settings-data"}}:r.id===1?{extra:{act:"open",tab:"weight"}}:r.id===7||r.id===8?{extra:{act:"open",tab:"bp"}}:r.id===9?{extra:{act:"open",tab:"glucose"}}:{}));
+        if(at.getTime()>now+LEAD_MS)list.push(Object.assign({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}},water?{actionTypeId:"water",extra:{act:"water",v:S.settings.glass,at:at.getTime()}}:r.id===WEEKLY_REM?{extra:{act:"open",tab:"trend"}}:r.id===BACKUP_REM?{extra:{act:"open",tab:"settings-data"}}:r.id===1?{extra:{act:"open",tab:"weight"}}:r.id===7||r.id===8?{extra:{act:"open",tab:"bp"}}:r.id===9?{extra:{act:"open",tab:"glucose"}}:{}));
       }
     }
     if(S.settings.medOn){
@@ -97,11 +96,11 @@ async function scheduleOnce(){
     return "ok";
   }catch(e){console.log("NW-SCHED error "+(e&&e.message||e));return "Bildirimler kurulamadı. Bildirim iznini kontrol edip tekrar dene"}
 }
-/* Only tapping a notification ("tap"); the water/medication buttons are caught natively in QuickLogPlugin. Without Coach consent the weekly summary opens in Trend, the backup reminder in Data and backup. */
+/* Only tapping a notification ("tap"); the water/medication buttons are caught natively in QuickLogPlugin. Without remote consent the weekly summary opens in Trend, the backup reminder in Data and backup. */
 function notifTap(e){
   const x=e&&e.notification&&e.notification.extra;
   if(!e||e.actionId!=="tap"||!x||(x.act!=="open"&&x.act!=="med"))return;
-  tab=x.act==="med"||x.tab==="meds"?(S.settings.medOn?"meds":"more"):x.tab==="coach"&&S.settings.consent?"coach":x.tab==="cycle"&&S.settings.cycleOn?"cycle":x.tab==="bp"&&S.settings.bpOn||x.tab==="glucose"&&S.settings.bsOn?x.tab:x.tab==="settings-data"||x.tab==="gym"?x.tab:"trend";if(x.tab==="weight")tSec="weight";via=null;closeSheet();render();window.scrollTo(0,0);
+  tab=x.act==="med"||x.tab==="meds"?(S.settings.medOn?"meds":"more"):x.tab==="cycle"&&S.settings.cycleOn?"cycle":x.tab==="bp"&&S.settings.bpOn||x.tab==="glucose"&&S.settings.bsOn?x.tab:x.tab==="settings-data"||x.tab==="gym"?x.tab:"trend";if(x.tab==="weight")tSec="weight";via=null;closeSheet();render();window.scrollTo(0,0);
   if(x.tab==="weight")sheetWeight();
   if(x.act==="med")setTimeout(()=>alarmOpen({quiet:true}),0);
 }

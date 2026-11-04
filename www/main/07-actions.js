@@ -59,7 +59,7 @@ on("stepshide",()=>{S.settings.stepWarnDay=calKey();save();render()});
 on("profile",()=>{tab="settings-profile";render();window.scrollTo(0,0)});
 on("health",()=>{
   const r=risk();
-  openSheet(`<h3>Sağlık notların</h3><div class="lbl">Güvenlik frenin bilmesi gerekenler. Yalnız telefonda durur, Rehber'e gönderilmez.</div>
+  openSheet(`<h3>Sağlık notların</h3><div class="lbl">Güvenlik frenin bilmesi gerekenler. Yalnız telefonda durur, uzak servise gönderilmez.</div>
   ${swRow('id="hpg"',r.pregnant,"Hamileyim")}${swRow('id="hnu"',r.nursing,"Emziriyorum")}
   ${r.ed?`<p class="hint">Yeme düzeniyle ilgili bir işaret var: kalori açığı, oruç ve program önerileri kapalı. Bu işareti uygulamadan kaldıramazsın; hekimine ya da diyetisyenine danış.</p>`:swRow('id="hed"',false,"Yeme bozukluğu geçmişim var")}
   <label class="lbl" for="hn">Hastalık, ilaç ve diğer notlar</label><textarea class="in" id="hn" maxlength="500">${esc(S.settings.healthNote)}</textarea><button class="btn" data-go="health">Kaydet</button>`);
@@ -71,7 +71,7 @@ async function goHealth(){
   for(const [k,was,now,title] of lifts)if(was&&!now&&!await confirmSheet({title,body:"Bu işaretle kapanan öneriler (kalori açığı, oruç, program, hatırlatmalar, döngü tahmini) yeniden açılır. Hâlâ başka bir durum varsa kutuyu açık bırak.",ok:"Evet, kaldır"}))return;
   for(const [k,was,now] of lifts){if(now&&!was)setRisk(k);else if(was&&!now)liftRisk(k)}
   if($("#hed")?.checked)setRisk("ed");
-  const old=st.healthNote,flags=st.pregnant+st.nursing;st.healthNote=note;if(note!==old)cNoteCheck();
+  const old=st.healthNote,flags=st.pregnant+st.nursing;st.healthNote=note;
   if(!commit(()=>Object.assign(S.settings,snap)))return;
   closeSheet();render();
   if(flags===st.pregnant+st.nursing)toast("Kaydedildi");
@@ -84,11 +84,10 @@ onPre("apply:",a=>{S.settings.kcal=+a.slice(6);save();render();toast(`Kalori hed
 on("shownums",()=>{trendNums=!trendNums;render()});
 on("recentson",()=>{S.settings.hideRecents=true;S.settings.recentsAsked=true;save();recentsSync();render()});
 on("recentsno",()=>{S.settings.recentsAsked=true;save();render()});
-on("keymissok",()=>{S.settings.keyMiss=false;save();render()});
-on("reset",()=>{confirmSheet({title:"Tüm veriler silinsin mi?",body:`Tüm kayıtlar, güvenlik kopyası, kayıtlı Rehber anahtarları ve kayıtlı yedek parolası silinecek. Paylaştığın dosyalar, Drive'a gönderdiklerin ve yedek klasöründeki dosyalar silinmez. Bu geri alınamaz. ${bkLast()}. Önce yedek al: Ayarlar > Veri ve yedek > Yedek al. Devam edilsin mi?`,ok:"Hepsini sil",danger:true}).then(ok=>{if(!ok)return;
+on("reset",()=>{confirmSheet({title:"Tüm veriler silinsin mi?",body:`Tüm kayıtlar, güvenlik kopyası ve kayıtlı yedek parolası silinecek. Paylaştığın dosyalar, Drive'a gönderdiklerin ve yedek klasöründeki dosyalar silinmez. Bu geri alınamaz. ${bkLast()}. Önce yedek al: Ayarlar > Veri ve yedek > Yedek al. Devam edilsin mi?`,ok:"Hepsini sil",danger:true}).then(ok=>{if(!ok)return;
   chain(S.settings.motionOn?motionStopAll():0,()=>chain(phClear(),photosOk=>chain(nativeWipe(["Motion","MedWake","Widget","QuickLog"]),nativeOk=>{
     if(!nativeOk)toast(NATIVE_FAIL);
     if(!photosOk||!nativeOk)return;
-    BF()?.clear().catch(()=>{});cacheClean();["nw_state",...COPIES.map(([k])=>k)].forEach(k=>Store.del(k));["nw_state_usage",NetLog.KEY,KEYS_LS,KEYS_ENC,BKPW_LS,RAM_LS,"nw_keys_plain","nw_walkgps_no","nw_pdfok","nw_ocrok"].forEach(lsDel);ramCache=undefined;KEYS={};S=structuredClone(DEF);save();recentsSync();logOff=0;render();scheduleReminders().then(setNotif);toast("Tüm veriler silindi");
+    BF()?.clear().catch(()=>{});cacheClean();["nw_state",...COPIES.map(([k])=>k)].forEach(k=>Store.del(k));["nw_state_usage",NetLog.KEY,BKPW_LS,RAM_LS,"nw_walkgps_no","nw_pdfok","nw_ocrok"].forEach(lsDel);ramCache=undefined;S=structuredClone(DEF);save();recentsSync();logOff=0;render();scheduleReminders().then(setNotif);toast("Tüm veriler silindi");
   })));
 })});

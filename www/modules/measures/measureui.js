@@ -1,5 +1,5 @@
 "use strict";
-/* Body measures (waist, hip, chest, arm, thigh): add sheet and Trend card. Not part of the Coach context. */
+/* Body measures (waist, hip, chest, arm, thigh): add sheet and Trend card. Not part of remote service context. */
 let mAll=false,msel="waist";
 const mLast=k=>{const a=S.measures.filter(m=>m.k===k);return a.length?a[a.length-1]:null};
 const mChips=id=>`<div class="chips" id="${id}">${Algo.MEASURES.map(k=>`<button class="chip" data-ms="k:${k}" aria-pressed="${k===msel}">${MNAME[k]}</button>`).join("")}</div>`;

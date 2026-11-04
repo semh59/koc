@@ -1,5 +1,5 @@
 "use strict";
-/* Cycle screen. The data lives only in S.cycle; it never reaches the Coach context, a notification body or the widget. No calorie or diet advice. */
+/* Cycle screen. The data lives only in S.cycle; it never reaches a provider context, a notification body or the widget. No calorie or diet advice. */
 let cycMonth="",cycFlow="",cycSym=[],cycEditId=0,cycDay="";
 /* Days past the forecast range before the note says "ask your doctor". */
 const LATE_ASK=7;
@@ -11,7 +11,7 @@ const cycNote="Bu bir tahmindir, tıbbi tavsiye değildir. Korunma ya da gebelik
 /* ---- Settings (Modules) ---- */
 function cycSettingsHtml(){
   const st=S.settings;
-  return modRow('data-cy="toggle"',st.cycleOn,"Döngü takibi","Dönem günleri ve tahmini sonraki dönem.","hlpcy",`Dönem günlerini kaydet, geçmişe bakarak tahmini sonraki dönemi gör. Veriler yalnız telefonda durur; Rehber'e, widget'a ve bildirim metnine girmez. ${cycNote}`,
+  return modRow('data-cy="toggle"',st.cycleOn,"Döngü takibi","Dönem günleri ve tahmini sonraki dönem.","hlpcy",`Dönem günlerini kaydet, geçmişe bakarak tahmini sonraki dönemi gör. Veriler yalnız telefonda durur; uzak servise, widget'a ve bildirim metnine girmez. ${cycNote}`,
     `${swRow('data-cy="rem"',st.cycleRem,"Dönem yaklaşırken hatırlat",st.cycleRem&&risk().pregnant?"Hamilelik işareti olduğu için hatırlatma durduruldu.":"Bildirimde yalnız \"Hatırlatma\" yazar, kilit ekranında konu görünmez.")}<button class="btn ghost" data-tab="cycle">Döngü ekranını aç</button>`);
 }
 function cycToggle(){
@@ -86,7 +86,7 @@ function viewCycle(){
   ${preg?"":cycMood()}
   ${cycCal(p.ok?p:null,f,today)}
   ${rows?`<div class="card"><div class="lbl">Geçmiş</div>${rows}</div>`:""}
-  <p class="hint">Veriler yalnız telefonda durur; Rehber'e, bildirim metnine ve widget'a girmez. Silmek için Gizlilik ve veri'yi kullan.</p>`;
+  <p class="hint">Veriler yalnız telefonda durur; uzak servise, bildirim metnine ve widget'a girmez. Silmek için Gizlilik ve veri'yi kullan.</p>`;
 }
 
 /* ---- Adding a record ---- */

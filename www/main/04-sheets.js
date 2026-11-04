@@ -2,10 +2,11 @@
 /* While a top layer (sheet or guide) is open the background is inert: Tab, touch and the screen reader do not reach behind it. */
 const topLayer=()=>$("#alarm")&&!$("#alarm").hidden?$("#alarm"):!$("#cfm").hidden?$("#cfm"):$("#sheet").classList.contains("on")?$("#sheet"):$("#guide").hidden?null:$("#guide");
 function trap(){const o=topLayer();for(const e of document.body.children)if(e.tagName!=="SCRIPT")e.inert=!!o&&e!==o&&!e.matches("#scrim,#toast")}
-/* sheetEnd: called when a sheet that waits for a choice closes or is replaced by another sheet (a Coach preview then counts as Cancel). */
+/* sheetEnd: called when a sheet that waits for a choice closes or is replaced by another sheet (a preview then counts as Cancel). */
 let sheetFrom=null,sheetEnd=null;
 const sheetDone=ok=>{const e=sheetEnd;sheetEnd=null;if(e)e(ok)};
 function openSheet(html){
+  if(typeof foodVoiceStop==="function")foodVoiceStop();
   Units.reset();sheetDone(false);$("#toast").classList.remove("on");const s=$("#sheet");
   if(!s.classList.contains("on"))sheetFrom=document.activeElement;
   s.innerHTML=`<div class="grab"></div><button class="shx" data-shx aria-label="Pencereyi kapat">${Icons.svg("x")}</button>${html}`;
@@ -16,7 +17,7 @@ function openSheet(html){
 }
 function closeSheet(){
   Units.reset();plStop();sheetDone(false);setPendingBarcode("");
-  if(typeof cStopVoice==="function"&&(activeSpeechRecognizer||activeSpeechCleanup))cStopVoice(true);
+  if(typeof foodVoiceStop==="function")foodVoiceStop();
   const s=$("#sheet"),was=s.classList.contains("on"),f=sheetFrom;
   s.classList.remove("on");$("#scrim").classList.remove("on");sheetFrom=null;trap();
   if(was&&f&&f.isConnected)f.focus({preventScroll:true});
@@ -124,10 +125,19 @@ function favHtml(){
 }
 const mealChips=()=>{const d=LogLib.mealOf({time:`${pad(new Date().getHours())}:00`});return `<div class="lbl" id="fmll">Öğün</div><div class="chips" id="fml" role="group" aria-labelledby="fmll">${LogLib.MEALS.map(([k,n])=>`<button class="chip" data-ml="${k}" aria-pressed="${k===d}">${n}</button>`).join("")}</div>`};
 const fmeal=()=>{const b=document.querySelector("#fml [aria-pressed=true]");return b?b.dataset.ml:undefined};
-const ownOpen=()=>{$("#fown").hidden=false;const b=$('[data-act="own"]');if(b)b.remove()};
+const ownOpen=()=>{$("#fown").hidden=false;const b=$("[data-act=\"own\"]");if(b)b.remove()};
+let foodVoiceCleanup=null,foodVoiceRecognizer=null;
+const foodVoiceSearchAtOk=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(s)&&Number.isFinite(Date.parse(s))&&Date.parse(s)<=Date.now()+60000;
+const foodVoiceAllowed=()=>S.settings.foodVoiceConsent===true&&S.settings.foodVoiceConsentVersion===1&&foodVoiceSearchAtOk(S.settings.foodVoiceConsentAt);
+function foodVoiceStop(){const c=foodVoiceCleanup;foodVoiceCleanup=null;try{c?.()}catch{}const r=foodVoiceRecognizer;foodVoiceRecognizer=null;try{r?.abort?.()}catch{}try{plugin("Speech")?.stopListening?.()}catch{}}
+function foodVoiceSetStatus(text){const e=$("#food-voice-status");if(e)e.textContent=text}
+function foodVoiceHandleTranscript(text){const q=String(text||"").trim();if(!q)return foodVoiceSetStatus("Bir yemek adı duyamadım. Yazıyla aramayı sürdürebilirsin.");const input=$("#fq");if(!input)return;input.value=q;foodAskQ=q;$("#flist").innerHTML=foodListHtml(q);foodVoiceSetStatus(`Arama hazır: “${q}”. Listeden yemeği seç.`);input.focus()}
+function foodVoiceConsent(){openSheet(`<h3>Sesle yemek ara</h3><p class="hint">Mikrofon yalnızca bu ekrandaki yerel yemek aramasını doldurur. Ham ses NeoWell'e kaydedilmez; telefonun konuşma tanıma hizmeti sesi çevrimiçi işleyebilir.</p><p>İzin vermezsen arama alanına yazarak devam edebilirsin.</p><div class="bgrid"><button class="btn" data-fvoice="consent">Mikrofonu kullan</button><button class="btn ghost" data-fvoice="cancel">Vazgeç</button></div>`)}
+function foodVoiceStart(){if(!foodVoiceAllowed())return foodVoiceConsent();foodVoiceStop();const existing=$("#fq");if(existing){let status=$("#food-voice-status");if(!status){status=document.createElement("p");status.id="food-voice-status";status.className="card";status.setAttribute("aria-live","polite");existing.parentNode.insertBefore(status,existing.nextSibling)}status.textContent="Dinliyorum…"}else openSheet(`<h3>Sesle yemek ara</h3><p class="hint">Bir yemek adı söyle. Sonuçlar yalnız bu telefondaki yemek listesinde aranır.</p><p id="food-voice-status" class="card" aria-live="polite">Dinliyorum…</p><div class="bgrid"><button class="btn ghost" data-fvoice="stop">Durdur</button></div>`);const sp=plugin("Speech");if(sp?.listen){const cleanup=()=>{sp.removeAllListeners?.("result");sp.removeAllListeners?.("error");foodVoiceCleanup=null};foodVoiceCleanup=cleanup;const onResult=ev=>{if(foodVoiceCleanup!==cleanup)return;cleanup();foodVoiceStop();foodVoiceHandleTranscript(ev?.text||"")};const onError=()=>{if(foodVoiceCleanup!==cleanup)return;cleanup();foodVoiceStop();foodVoiceSetStatus("Mikrofon açılamadı. Bu pencere açık; yazarak arayabilirsin.");toast("Sesli arama kullanılamadı; yazıyla devam edebilirsin")};sp.addListener?.("result",onResult);sp.addListener?.("error",onError);sp.listen().then(r=>{if(r?.started===false)onError()}).catch(onError);return}const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR)try{const rec=new SR();foodVoiceRecognizer=rec;rec.lang="tr-TR";rec.interimResults=false;rec.onresult=ev=>{if(foodVoiceRecognizer!==rec)return;foodVoiceRecognizer=null;foodVoiceHandleTranscript(ev.results?.[0]?.[0]?.transcript||"")};rec.onerror=()=>{if(foodVoiceRecognizer!==rec)return;foodVoiceRecognizer=null;foodVoiceSetStatus("Mikrofon açılamadı. Bu pencere açık; yazarak arayabilirsin.");toast("Sesli arama kullanılamadı; yazıyla devam edebilirsin")};rec.onend=()=>{if(foodVoiceRecognizer===rec)foodVoiceRecognizer=null};rec.start();return}catch{foodVoiceRecognizer=null}foodVoiceSetStatus("Bu cihazda sesli arama yok. Yazarak ara.")}
+function foodVoiceAccept(){Object.assign(S.settings,{foodVoiceConsent:true,foodVoiceConsentVersion:1,foodVoiceConsentAt:new Date().toISOString()});save();sheetFood();foodVoiceStart()}
 function sheetFood(){
   const dn=of("food",keyOff(-1)).length;
-  openSheet(`<h3>Yemek ekle</h3><input class="in" id="fq" type="search" enterkeyhint="search" aria-label="Besin ara" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off"><div id="flist" class="plist"></div>${mealChips()}${dayOptions(true)}<div class="qrow">${dn?`<button class="btn ghost" data-act="yesterday">↺ Dünkünü tekrarla (${dn})</button>`:""}<button class="btn ghost" data-act="own">Kendin yaz</button>${quickBtn()}${isNative()&&BS()?`<button class="btn ghost" data-act="barcode">${Icons.svg("camera")} Barkod okut</button>`:""}${ocrBtn("label",Icons.svg("tag")+" Etiket oku")}</div>
+  openSheet(`<h3>Yemek ekle</h3><div class="srch food-search"><input class="in" id="fq" type="search" enterkeyhint="search" aria-label="Besin ara" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off"><button class="btn ghost food-mic" data-fvoice="start" aria-label="Yemek aramak için mikrofonu aç" title="Yemek aramak için mikrofonu aç">${Icons.svg("mic")}<span>Mikrofon</span></button></div><div id="flist" class="plist"></div>${mealChips()}${dayOptions(true)}<div class="qrow">${dn?`<button class="btn ghost" data-act="yesterday">↺ Dünkünü tekrarla (${dn})</button>`:""}<button class="btn ghost" data-act="own">Kendin yaz</button>${quickBtn()}${isNative()&&BS()?`<button class="btn ghost" data-act="barcode">${Icons.svg("camera")} Barkod okut</button>`:""}${ocrBtn("label",Icons.svg("tag")+" Etiket oku")}</div>
   <div id="fown" hidden><input class="in" id="ft" aria-label="Yemeğin adı" placeholder="Ne yedin?" autocomplete="off"><input class="in num" id="fv" aria-label="Kalori, isteğe bağlı" inputmode="numeric" placeholder="Kalori (isteğe bağlı)"><div class="ferr" id="yerr" role="alert"></div><button class="btn" data-go="food">Kaydet</button><button class="mt-2 btn ghost" data-rp="new">Tarif oluştur</button></div><div id="frl" class="plist">${favHtml()}</div>`);
 }
 function sheetWater(){
@@ -232,7 +242,7 @@ function goTpl(){
 }
 let curFood=null,curPor=0,foodAskQ="";
 const allFoods=()=>Nutrition.my().map(m=>Object.assign({n:m.n,k:m.k,u:m.u||[["1 porsiyon",100]],portion:m.portion===true,my:true,b:m.b,src:m.src},...NUTR.map(k=>({[k]:m[k]==null?null:m[k]})))).concat(Nutrition.recipes().map(LogLib.recipeFood),FOODS);
-const foodListHtml=q=>{const L=allFoods(),ask=q.trim().length>=2?`<button class="prow" data-c="askfood"><span class="grow"><b>"${esc(q.trim())}" için Rehber'e sor</b><span class="mut sm">Yapay zekâ tahmin eder, sonra listene ekleyebilirsin</span></span><span class="aic" aria-hidden="true">${Icons.svg("sparkle")}</span></button>`:"";return foodSearch(q,8,L).map(i=>{const f=L[i];return `<div class="prow"><button class="grow pbtn" data-food="${i}"><span class="grow"><b>${esc(f.n)}</b><span class="mut sm">${f.rec?`Tarifim, 1 porsiyon: ${Math.round(f.k*f.u[0][1]/100)} kcal`:f.o?`Öğün, ${esc(f.u[0][0])}: ${Math.round(f.k*f.u[0][1]/100)} kcal`:f.my?(f.u.length>1||f.u[0][1]!==100?`Benim ürünüm, 100 g: ${f.k} kcal`:`Benim besinim, 1 porsiyon: ${f.k} kcal`):`100 g: ${f.k} kcal, protein ${fmt(f.p,0)} g`}</span></span></button><button class="plus aic" data-fadd="${i}" aria-label="${esc(f.n)}, ilk porsiyonla ekle" title="İlk porsiyonla ekle">${Icons.svg("plus")}</button></div>`}).join("")+ask};
+const foodListHtml=q=>{const L=allFoods();return foodSearch(q,8,L).map(i=>{const f=L[i];return `<div class="prow"><button class="grow pbtn" data-food="${i}"><span class="grow"><b>${esc(f.n)}</b><span class="mut sm">${f.rec?`Tarifim, 1 porsiyon: ${Math.round(f.k*f.u[0][1]/100)} kcal`:f.o?`Öğün, ${esc(f.u[0][0])}: ${Math.round(f.k*f.u[0][1]/100)} kcal`:f.my?(f.u.length>1||f.u[0][1]!==100?`Benim ürünüm, 100 g: ${f.k} kcal`:`Benim besinim, 1 porsiyon: ${f.k} kcal`):`100 g: ${f.k} kcal, protein ${fmt(f.p,0)} g`}</span></span></button><button class="plus aic" data-fadd="${i}" aria-label="${esc(f.n)}, ilk porsiyonla ekle" title="İlk porsiyonla ekle">${Icons.svg("plus")}</button></div>`}).join("")};
 function sheetPortion(i,food){
   curFood=food||allFoods()[i];curPor=0;
   openSheet(`<h3>${esc(curFood.n)}</h3><div class="lbl">Porsiyon</div><div class="chips" id="fpc">${curFood.u.map((u,j)=>`<button class="chip" data-fp="${j}" aria-pressed="${j===0}">${esc(u[0])}</button>`).join("")}</div>
@@ -353,7 +363,7 @@ function sheetNote(){openSheet(`<h3>Not ekle</h3><textarea class="in" id="fv" pl
 function goNote(){const t=$("#fv").value.trim();if(!t)return toast("Önce notunu yaz");const e=add("note",null,t,fday());closeSheet();render();toast("Not kaydedildi",e.id)}
 
 function sheetBackup(){
-  openSheet(`<h3>Yedek al</h3><p class="m0 mb-3 mut sm">${BK_PHOTOS} Yedek her zaman şifrelenir${S.settings.bkNoKeys?" ve Rehber anahtarların içine girmez":" ve Rehber anahtarların da içine girer"}. ${bkLast()}.</p>
+  openSheet(`<h3>Yedek al</h3><p class="m0 mb-3 mut sm">${BK_PHOTOS} Yedek her zaman şifrelenir. ${bkLast()}.</p>
   <label class="lbl" for="bkpw">Yedek parolası (en az ${BackupLib.MINPW} karakter). Parolayı unutursan yedeğini kimse açamaz, kurtarma yolu yoktur. Parolayı güvenli bir yere yaz.</label>
   <input class="in" id="bkpw" type="password" autocomplete="new-password" placeholder="Parola"><input class="in" id="bkpw2" type="password" autocomplete="new-password" placeholder="Parolayı tekrar yaz" aria-label="Parolayı tekrar yaz">
   <div class="lbl">Kopyala'ya basınca yedek metni burada çıkar.</div><textarea class="in" id="bk" spellcheck="false" readonly></textarea>
@@ -404,34 +414,24 @@ async function goRestore(text=$("#bk").value,pw=$("#bkpw").value){
   S=b.S;
   const lostRecents=S.settings.hideRecents===true&&!prevS.settings.hideRecents;
   /* A backup must not change where the key goes, the consent setting or the data-sharing permission. The automatic backup folder belongs to this phone. */
-  Object.assign(S.settings,Object.fromEntries(["noticeOk","hideRecents",...SHARE_KEYS].map(k=>[k,prevS.settings[k]])),{consent:prevS.settings.consent,consentV:prevS.settings.consentV,consentAt:prevS.settings.consentAt,consentP:prevS.settings.consentP,consentU:prevS.settings.consentU,lastBackup:dayKey(),autoBk:prevS.settings.autoBk,lastAutoBk:prevS.settings.lastAutoBk});cAgeGuard();
+  Object.assign(S.settings,{noticeOk:prevS.settings.noticeOk,hideRecents:prevS.settings.hideRecents,lastBackup:dayKey(),autoBk:prevS.settings.autoBk,lastAutoBk:prevS.settings.lastAutoBk});
   /* A brake on this phone stays and a backup brings its own, but a sign lifted on this phone or in the backup is not brought back by the other. */
   {const a=S.settings,p=prevS.settings,off=[...new Set((a.riskOff+","+p.riskOff).split(",").filter(Boolean))],on=k=>!off.includes(k);
     /* The side whose pregnancy flag changed last decides it, so a sign set on this phone after the backup is not dropped. */
     const newer=a.pregAt===p.pregAt?null:a.pregAt>p.pregAt?a:p,pg=newer&&{on:newer.pregnant,off:newer.riskOff.split(",").includes("preg")},at=a.pregAt>p.pregAt?a.pregAt:p.pregAt;
     Object.assign(a,{riskOff:off.join(","),edFlag:a.edFlag||p.edFlag,pregnant:(a.pregnant||p.pregnant)&&on("preg"),nursing:(a.nursing||p.nursing)&&on("nurs"),pregAt:at});
     if(pg){a.pregnant=pg.on;a.riskOff=off.filter(k=>k!=="preg"||pg.off).join(",")}}
-  const keys=getKeys();
-  for(const p of Coach.providers()){
-    const cur=prevS.providers.find(x=>x.id===p.id),def=defProviders().find(x=>x.id===p.id);
-    if(!def&&keys[p.id]&&cur)p.base=cur.base;
-    if(def)p.confirm=def.confirm;
-  }
-  if(!save()){S=prevS;saveFail=false;if(copyIn)Store.del("nw_state_previous");return toast("Yedek yüklenemedi, depolama dolu. Mevcut verinin yedeğini al, sonra eski kayıtları sil ya da Rehber sohbetini temizle")}
-  let miss=false;
-  if(keysIn&&typeof keysIn==="object")for(const id in keysIn)if(typeof keysIn[id]==="string"&&Coach.providers().some(p=>p.id===id)){
-    try{await setKey(id,keysIn[id])}catch{}
-    if(getKeys()[id]!==keysIn[id])miss=true;
-  }
+  const miss=false;
+  if(!save()){S=prevS;saveFail=false;if(copyIn)Store.del("nw_state_previous");return toast("Yedek yüklenemedi, depolama dolu. Mevcut verinin yedeğini al")}
   const copy=copyIn&&Store.get("nw_state_previous")!=null;
   if(!copy)Store.del("nw_state_previous");
-  S.settings.copyAt=copy?dayKey():"";S.settings.keyMiss=miss;
+  S.settings.copyAt=copy?dayKey():"";
   if(fresh)S.settings.obDone=S.settings.noticeOk=true;
   save(true);
   otherBytes=lsOther();storeBytes=otherBytes+lastJ.length*2;
   logOff=0;closeSheet();render();scheduleReminders().then(setNotif);
   const ps=prevS.settings;
-  toast((drop?`Yedek yüklendi, ${drop} geçersiz kayıt atlandı`:"Yedek yüklendi")+(b.lost.length?`; okunamayan alanlar varsayılana döndü (${b.lost.join(", ")})`:"")+(copy||!hasData?"":". Eski verin için güvenlik kopyası alınamadı (depolama dolu); yedek al")+(ps.consent&&ps.autoBk?"":". Rehber izni ve otomatik yedek bu telefonda yeniden kurulur")+(lostRecents?". Son uygulamalarda gizleme bu telefonda kapalı kaldı; Ayarlar > Veri ve yedek'ten aç":"")+(S.settings.ramOn&&S.settings.ramLat&&!ramGet()?". Ramazan vakit doğrulaması yedekte yoktur; Ramazan ayarından Doğrula'ya dokun":"")+(miss?". Bazı Rehber anahtarları kasaya yazılamadı, Ayarlar > Veri ve yedek'te uyarı duruyor":""));
+  toast((drop?`Yedek yüklendi, ${drop} geçersiz kayıt atlandı`:"Yedek yüklendi")+(b.lost.length?`; okunamayan alanlar varsayılana döndü (${b.lost.join(", ")})`:"")+(copy||!hasData?"":". Eski verin için güvenlik kopyası alınamadı (depolama dolu); yedek al")+(ps.autoBk?"":". otomatik yedek bu telefonda yeniden kurulur")+(lostRecents?". Son uygulamalarda gizleme bu telefonda kapalı kaldı; Ayarlar > Veri ve yedek'ten aç":"")+(S.settings.ramOn&&S.settings.ramLat&&!ramGet()?". Ramazan vakit doğrulaması yedekte yoktur; Ramazan ayarından Doğrula'ya dokun":""));
   return true;
 }
 

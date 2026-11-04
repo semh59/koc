@@ -1,5 +1,5 @@
 "use strict";
-/* File sharing used across the app (backup, CSV, reports, Coach lists) and the canvas-to-PDF helper for report pages. */
+/* File sharing used across the app (backup, CSV and reports) and the canvas-to-PDF helper for report pages. */
 
 /* Draws `count` pages (draw(ctx,pageIndex)) on canvases and puts them in a PDF as JPEGs. */
 function canvasPdf(count,draw){

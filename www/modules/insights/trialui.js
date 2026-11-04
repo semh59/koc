@@ -1,5 +1,5 @@
 "use strict";
-/* Trend > Bağlantılar > "Kendi deneyin" card and the Today question. Computed on this device only; never part of the Coach context. */
+/* Trend > Bağlantılar > "Kendi deneyin" card and the Today question. Computed on this device only; never part of remote context. */
 const TR_NOTE="Bu iki hafta için, kesin bir sonuç değil.";
 const trPlanTx=p=>p==="B"?"Bu gece saat 22:00'den sonra ekranı kapat.":"Bu gece her zamanki gibi geç.";
 function trialTodo(){

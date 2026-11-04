@@ -9,7 +9,7 @@ function pvDelete(i){
 function pvDeleteDo(name,del){
   chain(del(),r=>{if(r===false)return;Store.del("nw_state_previous");Store.del("nw_state_corrupt");otherBytes=lsOther();save();render();scheduleReminders().then(setNotif);sheetPrivacy();toast(`${name} silindi`)});
 }
-const NET_KIND={off:"barkod numarası",chat:"Rehber mesajı (onayladığın metin)",models:"model listesi (anahtarın istek başlığında gider)",ram:"ezan vakitleri (yalnız en yakın il merkezinin numarası)"};
+const NET_KIND={off:"barkod numarası",ram:"ezan vakitleri (yalnız en yakın il merkezinin numarası)"};
 /* What NeoWell itself sent in the last 30 days; Google services (barcode scanner, text recognition) run outside the WebView and are not in this list. */
 function netLogHtml(){
   const rows=NetLog.recent().reverse();
@@ -18,12 +18,12 @@ function netLogHtml(){
   const list=rows.map(r=>`<div class="row"><span class="grow">${when(r)} · ${esc(r.host)}<small class="db mut sm">${NET_KIND[r.kind]||r.kind}${r.out?`, ${fint(r.out)} bayt`:""}${r.ok?"":", başarısız"}</small></span></div>`).join("");
   return `<p class="m0"><b>${head}</b></p>${rows.length?`<details class="acc"><summary>Ayrıntı</summary>${list}<button class="chip" data-pv="netclear">Defteri temizle</button></details>`:""}<p class="mut sm">Google barkod okuyucu ve metin tanıma (Play hizmetleri) bu listede görünmez.</p>`;
 }
-/* Privacy and data: where the data lives, which services reach the internet, and the Coach consent. It is a sheet, so onboarding can open it too. */
+/* Privacy and data: where the data lives and which local features reach the internet. */
 function sheetPrivacy(){
   const st=S.settings;
   const pt=(ic,t,s)=>`<div class="row"><div class="aic">${Icons.svg(ic)}</div><span class="grow"><b>${t}</b><small class="db mut sm">${s}</small></span></div>`;
   openSheet(`<h3>Gizlilik ve veri</h3>
-  ${pt("lock","Veriler telefonunda","NeoWell'in sunucusu ve hesabı yok. Yedeği sen alır, yerini sen seçersin.")}${pt("coach","Rehber'e ne gider","Yalnız onay verirsen ve sen gönderdiğinde. Ad, telefon gibi bilgiler önce maskelenir.")}${pt("trash","Silme","Aşağıdan kategori kategori silebilirsin; geri alınamaz.")}
+  ${pt("lock","Veriler telefonunda","NeoWell'in sunucusu ve hesabı yok. Yedeği sen alır, yerini sen seçersin.")}${pt("trash","Silme","Aşağıdan kategori kategori silebilirsin; geri alınamaz.")}
   <div class="my-2 banner"><p class="m0">${MED_NOTE}</p></div>
   <details class="acc"><summary>Verin nerede</summary>
   <p class="mut sm">Tüm kayıtların yalnızca bu telefonda durur; NeoWell'in sunucusu ve hesabı yoktur. Yedek dosyasını sen oluşturur, nereye kaydedeceğini sen seçersin. İlerleme fotoğrafları yalnız bu telefonda durur ve yedeğe girmez. PDF ve tablo paylaşımları da senin seçtiğin yere gider. Google otomatik yedeğine ve telefondan telefona aktarıma bilerek dahil edilmez.</p>
@@ -31,17 +31,11 @@ function sheetPrivacy(){
   <details class="acc"><summary>İnternete çıkanlar</summary>
   <ul class="mut sm m0 mb-3 pl-4">
     <li><b>Open Food Facts</b> (barkod araması): yalnızca barkod numarası gider. Hizmet, her internet isteğinde olduğu gibi IP adresini görür.</li>
-    <li><b>Rehber</b>: yalnızca açık rızanla ve yalnız sen bir düğmeye bastığında (otomatik ya da arka planda gönderim yok), aşağıda yazılanlar, seçtiğin sağlayıcıya (${esc(provNames())} ya da kendi eklediğin servis). OpenAI ve Anthropic ücretlidir. Kurulumda yalnız anahtarın ve bir deneme cümlesi gider, sağlık verin gitmez.</li>
     <li><b>Ezan vakitleri</b> (yalnız Ramazan modunu açarsan): saatler telefonda hesaplanır; doğrulamak için en yakın il merkezinin ilçe numarası gönderilir ve Diyanet vakit tablosunun internetteki bir kopyasından (ezanvakti.emushaf.net) o tablo alınır. Konumun gönderilmez. Hizmet IP adresini görür; ilçe numarası yaklaşık bölgeni gösterir.</li>
     <li><b>Google barkod tarayıcı</b> (Play hizmetleri): görüntü telefonda işlenir, NeoWell görüntüyü almaz. Google, kendi koşullarına göre kullanım ve tanılama bilgisi toplayabilir.</li>
     <li><b>Google Drive</b>: yalnızca sen yedeği paylaşım ekranından Drive'a gönderirsen. Yedek parolayla şifrelenir.</li>
   </ul>
-  <p class="mut sm">Rehber sağlayıcısı IP adresini görür; kimlik bilgileri (ad, telefon, e-posta, TC, adres gibi) göndermeden önce telefonda maskelenir; filtre %100 garanti değildir (tam garanti yok): serbest cümleyle anlatılan adres ve listede olmayan nadir adlar yakalanmayabilir.</p>
-  <p class="mut sm">${usageText()}. Yalnız sayılar bu telefonda tutulur, hiçbir yere gönderilmez.</p>${netLogHtml()}</details>
-  <details class="acc"><summary>Rehber açık rıza metni</summary>${consentHtml()}</details>
-  ${swRow('data-pv="prev"',st.piiPrev,"Rehber'e giden metni önizle","Açıkken her gönderimden önce giden tam metni görür, Gönder ya da Vazgeç dersin.")}
-  <div class="banner info"><p class="m0">Rehber veri paylaşımı: ${st.consent?`kabul edildi (${esc(st.consentAt)})`:"kabul edilmedi"}</p>
-  ${st.consent?`<button class="btn ghost" data-pv="revoke">Rızamı geri al</button>`:consentOk()?`<button class="btn" data-pv="consent">Açık rızamı veriyorum</button>`:""}</div>
+  ${netLogHtml()}</details>
   <h4 class="grp">Verilerini sil</h4>
   <p class="mut sm">Kategori başına silinir, geri alınamaz. <button class="lnk ib wa" data-act="backup">Önce yedek al</button></p>
   ${PV_CATS.map(([name,n,,,note],i)=>`<div class="row"><span class="grow"><b>${name}</b><small class="db mut sm">${n()} kayıt${note?`; ${note}`:""}</small></span><button class="chip" data-pv="del:${i}" ${n()?"":"disabled"} aria-label="${name} sil">Sil</button></div>`).join("")}
@@ -87,5 +81,5 @@ document.addEventListener("click",ev=>{
   else if(a==="bundle")shareOut(false,`neowell-paket-${dayKey()}.json`,"Hepsini tek paket","application/json",pvBundle().json,true);
   else if(a==="fhir")shareOut(false,`neowell-aktarim-${dayKey()}.json`,"Tansiyon, kilo ve şeker (FHIR)","application/json",pvFhir().json,true);
   else if(a==="csvsh"){const f=pvCsv()[+arg];shareOut(false,`neowell-tablo-${+arg+1}-${dayKey()}.csv`,f.label,"text/csv",f.build(),true)}
-  else if(a==="consent"||a==="revoke"){cConsent(a==="consent",true);sheetPrivacy()}
+
 });
