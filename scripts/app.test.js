@@ -2585,7 +2585,7 @@ process.on("unhandledRejection",e=>{console.log("FAIL unexpected error",e);proce
     ok("with only water no meal header appears",(ev("add('water',250);render();1"),w.document.querySelectorAll(".log .gh").length===0&&lg().includes("Su: 250 ml, 1 kez")));
     ev("S.entries=[];render();sheetFood()");
     const ch=[...q("#sheet").children].filter(n=>!n.matches(".shx")).map(n=>n.id||n.className);
-    ok("add food: the search box is right under the header, before the buttons and lists",ch.indexOf("fq")===2&&ch.indexOf("fq")<ch.indexOf("frl")&&q("#sheet").querySelector(".qrow")&&ch.indexOf("fq")<ch.indexOf("qrow"),ch);
+    ok("add food: the search box is right under the header, before the buttons and lists",ch.indexOf("srch food-search")===2&&ch.indexOf("srch food-search")<ch.indexOf("frl")&&q("#sheet").querySelector(".qrow")&&ch.indexOf("srch food-search")<ch.indexOf("qrow"),ch);
     q("#ft").value="Simit";q('#fml [data-ml="dinner"]').click();q('[data-go="food"]').click();
     ok("add food: the chosen meal is written to the record, a single chip is selected",ev("S.entries[0].meal")==="dinner"&&ev("S.entries[0].text")==="Simit");
     ev("S.favFoods=[{text:'Elma',v:50}];sheetFood()");q('#fml [data-ml="breakfast"]').click();q("[data-fv]").click();

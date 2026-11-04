@@ -7,6 +7,8 @@ import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -33,10 +35,12 @@ public class SpeechPlugin extends Plugin {
     private static final int SHORT = 20;
     private TextToSpeech tts;
     private SpeechRecognizer recognizer;
+    private volatile int speechGeneration;
     private volatile boolean ready;
     private volatile String lastId = "";
     private int seq;
     private AudioManager am;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private Object focusReq; // AudioFocusRequest, API 26+
     private final AudioManager.OnAudioFocusChangeListener focusListener = change -> {};
 
@@ -100,10 +104,13 @@ public class SpeechPlugin extends Plugin {
     }
 
     private void startListening() {
-            getBridge().execute(() -> {
+        mainHandler.post(() -> {
+            final int generation = ++speechGeneration;
+            try {
                 if (recognizer != null) recognizer.destroy();
                 recognizer = SpeechRecognizer.createSpeechRecognizer(getContext());
                 recognizer.setRecognitionListener(new RecognitionListener() {
+                    private boolean current() { return generation == speechGeneration; }
                     public void onReadyForSpeech(Bundle p) {}
                     public void onBeginningOfSpeech() {}
                     public void onRmsChanged(float v) {}
@@ -111,10 +118,12 @@ public class SpeechPlugin extends Plugin {
                     public void onEndOfSpeech() {}
                     public void onPartialResults(Bundle b) {}
                     public void onEvent(int t, Bundle b) {}
-                    public void onError(int e) { notifyListeners("error", new JSObject().put("code", e)); }
+                    public void onError(int e) { if (current()) { notifyListeners("error", new JSObject().put("code", e)); cleanupRecognizer(generation); } }
                     public void onResults(Bundle b) {
+                        if (!current()) return;
                         java.util.ArrayList<String> xs = b.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                         notifyListeners("result", new JSObject().put("text", xs == null || xs.isEmpty() ? "" : xs.get(0)));
+                        cleanupRecognizer(generation);
                     }
                 });
                 Intent i = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -122,12 +131,32 @@ public class SpeechPlugin extends Plugin {
                 i.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "tr-TR");
                 i.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false);
                 recognizer.startListening(i);
-            });
-        }
+            } catch (SecurityException e) {
+                if (recognizer != null) { recognizer.destroy(); recognizer = null; }
+                notifyListeners("error", new JSObject().put("code", "permission"));
+            } catch (RuntimeException e) {
+                if (recognizer != null) { recognizer.destroy(); recognizer = null; }
+                notifyListeners("error", new JSObject().put("code", "unavailable"));
+            }
+        });
+    }
+
+    private void cleanupRecognizer(int generation) {
+        mainHandler.post(() -> {
+            if (generation != speechGeneration) return;
+            try { if (recognizer != null) recognizer.destroy(); } catch (RuntimeException ignored) {}
+            recognizer = null;
+        });
+    }
 
     @PluginMethod
     public void stopListening(PluginCall call) {
-        if (recognizer != null) { recognizer.stopListening(); recognizer.destroy(); recognizer = null; }
+        mainHandler.post(() -> {
+            speechGeneration++;
+            try { if (recognizer != null) recognizer.stopListening(); } catch (RuntimeException ignored) {}
+            try { if (recognizer != null) recognizer.destroy(); } catch (RuntimeException ignored) {}
+            recognizer = null;
+        });
         call.resolve();
     }
 
@@ -158,7 +187,11 @@ public class SpeechPlugin extends Plugin {
 
     @Override
     protected void handleOnDestroy() {
-        if (recognizer != null) { recognizer.destroy(); recognizer = null; }
+        mainHandler.post(() -> {
+            speechGeneration++;
+            try { if (recognizer != null) recognizer.destroy(); } catch (RuntimeException ignored) {}
+            recognizer = null;
+        });
         if (tts != null) tts.shutdown();
         abandonFocus();
     }

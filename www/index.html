@@ -43,7 +43,8 @@ if (typeof window.plugin === "undefined") {window.plugin = function(name) {retur
 {const n=document.querySelector("nav .in");if(window.ResizeObserver)new ResizeObserver(()=>document.documentElement.style.setProperty("--nx",Math.max(0,n.getBoundingClientRect().height-parseFloat(getComputedStyle(n.firstElementChild).minHeight))+"px")).observe(n)}</script>
 <div id="composer" hidden role="region" aria-label="Rehber'e yaz">
   <div class="chiprow"><button class="chip" data-act="water"><span data-ic="water"></span> <span id="cglass">+250</span></button><button class="chip" data-act="food"><span data-ic="food"></span> Yemek</button><button class="chip" data-act="weight"><span data-ic="weight"></span> Kilo</button><button class="chip" data-act="exercise"><span data-ic="exercise"></span> Spor</button></div>
-  <div class="cin"><input id="cmsg" aria-label="Rehber'e yaz" placeholder="Rehber'e yaz" autocomplete="off" maxlength="600"><button id="csend" data-c="send" aria-label="Gönder" data-ic="send"></button></div>
+  <div class="cin"><button id="cvoice" data-c="coachvoice" aria-label="Mesajı sesle yaz" title="Mesajı sesle yaz" data-ic="mic"></button><input id="cmsg" aria-label="Rehber'e yaz" placeholder="Rehber'e yaz" autocomplete="off" maxlength="600"><button id="csend" data-c="send" aria-label="Gönder" data-ic="send"></button></div>
+  <p id="cvoice-status" class="cvoice-status" role="status" aria-live="polite" hidden></p>
 </div>
 <div id="scrim"></div>
 <div id="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>

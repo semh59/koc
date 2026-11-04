@@ -6,6 +6,8 @@ function trap(){const o=topLayer();for(const e of document.body.children)if(e.ta
 let sheetFrom=null,sheetEnd=null;
 const sheetDone=ok=>{const e=sheetEnd;sheetEnd=null;if(e)e(ok)};
 function openSheet(html){
+  if(typeof foodVoiceStop==="function")foodVoiceStop();
+  if(typeof coachVoiceStop==="function")coachVoiceStop();
   Units.reset();sheetDone(false);$("#toast").classList.remove("on");const s=$("#sheet");
   if(!s.classList.contains("on"))sheetFrom=document.activeElement;
   s.innerHTML=`<div class="grab"></div><button class="shx" data-shx aria-label="Pencereyi kapat">${Icons.svg("x")}</button>${html}`;
@@ -16,7 +18,7 @@ function openSheet(html){
 }
 function closeSheet(){
   Units.reset();plStop();sheetDone(false);setPendingBarcode("");
-  if(typeof cStopVoice==="function"&&(activeSpeechRecognizer||activeSpeechCleanup))cStopVoice(true);
+  if(typeof foodVoiceStop==="function")foodVoiceStop();
   const s=$("#sheet"),was=s.classList.contains("on"),f=sheetFrom;
   s.classList.remove("on");$("#scrim").classList.remove("on");sheetFrom=null;trap();
   if(was&&f&&f.isConnected)f.focus({preventScroll:true});
@@ -124,10 +126,19 @@ function favHtml(){
 }
 const mealChips=()=>{const d=LogLib.mealOf({time:`${pad(new Date().getHours())}:00`});return `<div class="lbl" id="fmll">Öğün</div><div class="chips" id="fml" role="group" aria-labelledby="fmll">${LogLib.MEALS.map(([k,n])=>`<button class="chip" data-ml="${k}" aria-pressed="${k===d}">${n}</button>`).join("")}</div>`};
 const fmeal=()=>{const b=document.querySelector("#fml [aria-pressed=true]");return b?b.dataset.ml:undefined};
-const ownOpen=()=>{$("#fown").hidden=false;const b=$('[data-act="own"]');if(b)b.remove()};
+const ownOpen=()=>{$("#fown").hidden=false;const b=$("[data-act=\"own\"]");if(b)b.remove()};
+let foodVoiceCleanup=null,foodVoiceRecognizer=null;
+const foodVoiceSearchAtOk=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(s)&&Number.isFinite(Date.parse(s))&&Date.parse(s)<=Date.now()+60000;
+const foodVoiceAllowed=()=>S.settings.foodVoiceConsent===true&&S.settings.foodVoiceConsentVersion===1&&foodVoiceSearchAtOk(S.settings.foodVoiceConsentAt);
+function foodVoiceStop(){const c=foodVoiceCleanup;foodVoiceCleanup=null;try{c?.()}catch{}const r=foodVoiceRecognizer;foodVoiceRecognizer=null;try{r?.abort?.()}catch{}try{plugin("Speech")?.stopListening?.()}catch{}}
+function foodVoiceSetStatus(text){const e=$("#food-voice-status");if(e)e.textContent=text}
+function foodVoiceHandleTranscript(text){const q=String(text||"").trim();if(!q)return foodVoiceSetStatus("Bir yemek adı duyamadım. Yazıyla aramayı sürdürebilirsin.");const input=$("#fq");if(!input)return;input.value=q;foodAskQ=q;$("#flist").innerHTML=foodListHtml(q);foodVoiceSetStatus(`Arama hazır: “${q}”. Listeden yemeği seç.`);input.focus()}
+function foodVoiceConsent(){openSheet(`<h3>Sesle yemek ara</h3><p class="hint">Mikrofon yalnızca bu ekrandaki yerel yemek aramasını doldurur. Ham ses NeoWell'e kaydedilmez; telefonun konuşma tanıma hizmeti sesi çevrimiçi işleyebilir.</p><p>İzin vermezsen arama alanına yazarak devam edebilirsin.</p><div class="bgrid"><button class="btn" data-fvoice="consent">Mikrofonu kullan</button><button class="btn ghost" data-fvoice="cancel">Vazgeç</button></div>`)}
+function foodVoiceStart(){if(!foodVoiceAllowed())return foodVoiceConsent();foodVoiceStop();const existing=$("#fq");if(existing){let status=$("#food-voice-status");if(!status){status=document.createElement("p");status.id="food-voice-status";status.className="card";status.setAttribute("aria-live","polite");existing.parentNode.insertBefore(status,existing.nextSibling)}status.textContent="Dinliyorum…"}else openSheet(`<h3>Sesle yemek ara</h3><p class="hint">Bir yemek adı söyle. Sonuçlar yalnız bu telefondaki yemek listesinde aranır.</p><p id="food-voice-status" class="card" aria-live="polite">Dinliyorum…</p><div class="bgrid"><button class="btn ghost" data-fvoice="stop">Durdur</button></div>`);const sp=plugin("Speech");if(sp?.listen){const cleanup=()=>{sp.removeAllListeners?.("result");sp.removeAllListeners?.("error");foodVoiceCleanup=null};foodVoiceCleanup=cleanup;const onResult=ev=>{if(foodVoiceCleanup!==cleanup)return;cleanup();foodVoiceStop();foodVoiceHandleTranscript(ev?.text||"")};const onError=()=>{if(foodVoiceCleanup!==cleanup)return;cleanup();foodVoiceStop();foodVoiceSetStatus("Mikrofon açılamadı. Bu pencere açık; yazarak arayabilirsin.");toast("Sesli arama kullanılamadı; yazıyla devam edebilirsin")};sp.addListener?.("result",onResult);sp.addListener?.("error",onError);sp.listen().then(r=>{if(r?.started===false)onError()}).catch(onError);return}const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR)try{const rec=new SR();foodVoiceRecognizer=rec;rec.lang="tr-TR";rec.interimResults=false;rec.onresult=ev=>{if(foodVoiceRecognizer!==rec)return;foodVoiceRecognizer=null;foodVoiceHandleTranscript(ev.results?.[0]?.[0]?.transcript||"")};rec.onerror=()=>{if(foodVoiceRecognizer!==rec)return;foodVoiceRecognizer=null;foodVoiceSetStatus("Mikrofon açılamadı. Bu pencere açık; yazarak arayabilirsin.");toast("Sesli arama kullanılamadı; yazıyla devam edebilirsin")};rec.onend=()=>{if(foodVoiceRecognizer===rec)foodVoiceRecognizer=null};rec.start();return}catch{foodVoiceRecognizer=null}foodVoiceSetStatus("Bu cihazda sesli arama yok. Yazarak ara.")}
+function foodVoiceAccept(){Object.assign(S.settings,{foodVoiceConsent:true,foodVoiceConsentVersion:1,foodVoiceConsentAt:new Date().toISOString()});save();sheetFood();foodVoiceStart()}
 function sheetFood(){
   const dn=of("food",keyOff(-1)).length;
-  openSheet(`<h3>Yemek ekle</h3><input class="in" id="fq" type="search" enterkeyhint="search" aria-label="Besin ara" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off"><div id="flist" class="plist"></div>${mealChips()}${dayOptions(true)}<div class="qrow">${dn?`<button class="btn ghost" data-act="yesterday">↺ Dünkünü tekrarla (${dn})</button>`:""}<button class="btn ghost" data-act="own">Kendin yaz</button>${quickBtn()}${isNative()&&BS()?`<button class="btn ghost" data-act="barcode">${Icons.svg("camera")} Barkod okut</button>`:""}${ocrBtn("label",Icons.svg("tag")+" Etiket oku")}</div>
+  openSheet(`<h3>Yemek ekle</h3><div class="srch food-search"><input class="in" id="fq" type="search" enterkeyhint="search" aria-label="Besin ara" placeholder="Besin ara: mercimek çorbası, simit…" autocomplete="off"><button class="btn ghost food-mic" data-fvoice="start" aria-label="Yemek aramak için mikrofonu aç" title="Yemek aramak için mikrofonu aç">${Icons.svg("mic")}<span>Mikrofon</span></button></div><div id="flist" class="plist"></div>${mealChips()}${dayOptions(true)}<div class="qrow">${dn?`<button class="btn ghost" data-act="yesterday">↺ Dünkünü tekrarla (${dn})</button>`:""}<button class="btn ghost" data-act="own">Kendin yaz</button>${quickBtn()}${isNative()&&BS()?`<button class="btn ghost" data-act="barcode">${Icons.svg("camera")} Barkod okut</button>`:""}${ocrBtn("label",Icons.svg("tag")+" Etiket oku")}</div>
   <div id="fown" hidden><input class="in" id="ft" aria-label="Yemeğin adı" placeholder="Ne yedin?" autocomplete="off"><input class="in num" id="fv" aria-label="Kalori, isteğe bağlı" inputmode="numeric" placeholder="Kalori (isteğe bağlı)"><div class="ferr" id="yerr" role="alert"></div><button class="btn" data-go="food">Kaydet</button><button class="mt-2 btn ghost" data-rp="new">Tarif oluştur</button></div><div id="frl" class="plist">${favHtml()}</div>`);
 }
 function sheetWater(){

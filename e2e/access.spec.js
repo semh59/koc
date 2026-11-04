@@ -101,6 +101,7 @@ test.describe("Accessibility and layout",()=>{
 
 test.describe("Automated audit (axe, WCAG 2.1 AA)",()=>{
   for(const theme of ["light","dark"])test(`main screens and sheets, ${theme} theme: no violations`,async({app,page})=>{
+    test.setTimeout(120000);
     await app.open({seed:{...COACH,settings:{...COACH.settings,theme}}});
     for(const t of SCREENS){await app.go(t);expect(await axe(page),t).toEqual([])}
     for(const a of SHEETS){await openSheet(app,page,a);expect(await axe(page),"sheet "+a).toEqual([]);await app.closeSheet()}

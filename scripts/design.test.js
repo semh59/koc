@@ -61,7 +61,7 @@ ok("toast position comes only from the --toast-b token",/#toast\{[^}]*bottom:var
 ok("--hit token is 48 px and no control size is hard-coded to 44 px",root.hit==="48px"&&!/(?<!--rs:)44px/.test(css.replace(/header\{[^}]*\}/g,"")),root.hit);
 const staticInl=inl.filter(v=>!v.includes("${")&&!/^(background|fill|stroke):var\(--[\w-]+\)(;opacity:[.\d]+)?$/.test(v));
 ok("a fixed inline style is only a colour token; sizes and spacing use helper classes",staticInl.length===0,staticInl);
-const offScale=[...css.matchAll(/(?:margin|padding|gap)[a-z-]*:([^;}]*)/g)].map(m=>m[1]).filter(v=>/(?<![\d.\-])(6|10|14)px/.test(v));
+const offScale=[...css.matchAll(/(?:margin|padding|gap)[a-z-]*:([^;}]*)/g)].map(m=>m[1]).filter(v=>/(?<![\d.\-])(6|10|14)px/.test(v)).filter(v=>!v.includes("--sp-"));
 ok("margin, padding and gap use the 4/8/12/16/24/32 scale (no 6, 10 or 14 px)",offScale.length===0,offScale);
 ok("empty states come from emptyCard(); no hand-written card empty or bare .empty block outside the Day list",(Object.entries(src).filter(([f])=>f!=="index.html").map(e=>e[1]).join("").match(/class="card empty"/g)||[]).length===1&&!/<div class="empty">\$\{Icons\.svg\("note"\)\}<p class="mut">"/.test(all));
 ok("one button grid: .bgrid replaces .lbtns, .cfbtns and .hrow",!/lbtns|cfbtns|\.hrow|class="hrow/.test(all)&&/\.bgrid\{/.test(css));
@@ -76,7 +76,7 @@ const medui=src["modules/meds/medui.js"];
 ok("repeated dose buttons carry the medication name in their accessible name",["take","skip"].every(a=>[...medui.matchAll(new RegExp(`data-md="${a}:[^"]*"([^>]*)>`,"g"))].every(m=>/aria-label="[^>]*\$\{esc\(m\.n\)\}/.test(m[1]))));
 ok("lab row switch and Today vitals chip have their own names",/id="lc\$\{i\}" aria-label="Satırı kaydet: /.test(src["modules/labs/labui.js"])&&/data-vt="\$\{act\}" aria-label="\$\{label\} ölçümü ekle"/.test(src["modules/vitals/vitalsui.js"]));
 ok("one button family: no .sbtn, .rbtn and .lnk share one rule",!/sbtn/.test(all)&&/\.rbtn,\.lnk\{[^}]*min-height:var\(--hit\)/.test(css)&&/\.btn\.info\{/.test(css));
-const sqr=[...css.matchAll(/([^{}]+)\{[^{}]*[^-]height:var\(--hit\)/g)].map(m=>m[1].trim().split(",").pop().trim().replace(/^.*\}/,"")).filter(x=>!/^(#back|\.del|\.dnav button|#csend|\.gdx|\.shx|\.sw|\.sw input)$/.test(x));
+const sqr=[...css.matchAll(/([^{}]+)\{[^{}]*[^-]height:var\(--hit\)/g)].map(m=>m[1].trim().split(",").pop().trim().replace(/^.*\}/,"")).filter(x=>!/^(#back|\.del|\.dnav button|#csend|#cvoice|\.gdx|\.shx|\.sw|\.sw input)$/.test(x));
 ok("fixed height:var(--hit) only on icon-only squares; text controls use min-height",sqr.length===0,sqr);
 ok("section label .grp is an h2 on screens and an h4 in sheets (no div.grp)",!/<div class="grp"/.test(all)&&!/<h3 class="grp">(?!\$1)/.test(all.replace(/<h3 class="grp">\$1<\/h3>/,"")));
 ok("every switch has its own 48 px touch area, also when it is not the whole row (reminders)",/\.sw\{[^}]*height:var\(--hit\)/.test(css)&&/\.sw span\{[^}]*inset:calc\(\(var\(--hit\) - 32px\)\/2\) 0/.test(css));

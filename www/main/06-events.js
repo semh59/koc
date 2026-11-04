@@ -1,6 +1,6 @@
 /* ---------- events ---------- */
 document.addEventListener("click",ev=>{
-  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-rc],[data-fv],[data-fva],[data-fvd],[data-tp],[data-tpd],[data-sp],[data-lo],[data-kd],[data-g],[data-sex],[data-actl],[data-thm],[data-c],[data-food],[data-fadd],[data-fp],[data-ml],[data-edit],[data-waterall],[data-shx]");
+  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-rc],[data-fv],[data-fva],[data-fvd],[data-tp],[data-tpd],[data-sp],[data-lo],[data-kd],[data-g],[data-sex],[data-actl],[data-thm],[data-c],[data-food],[data-fadd],[data-fp],[data-ml],[data-edit],[data-waterall],[data-shx],[data-fvoice]");
   if(ev.target.id==="scrim"){
     const typed=[...document.querySelectorAll("#sheet input,#sheet textarea")].some(e=>!e.readOnly&&!["search","checkbox","file"].includes(e.type)&&e.value!==e.defaultValue);
     if(!typed)return closeSheet();
@@ -8,7 +8,8 @@ document.addEventListener("click",ev=>{
   }
   if(!el)return;
   const d=el.dataset;
-  if(d.tab){via=!PARENT[tab]&&PARENT[d.tab]?{t:d.tab,p:tab}:null;tab=d.tab;render();window.scrollTo(0,0);return}
+  if(d.fvoice){if(d.fvoice==="start")return foodVoiceStart();if(d.fvoice==="consent")return foodVoiceAccept();if(d.fvoice==="stop"){foodVoiceStop();foodVoiceSetStatus("Durduruldu. Yazıyla aramaya devam edebilirsin.");return}if(d.fvoice==="cancel")return closeSheet();}
+  if(d.tab){if(tab==="coach"&&d.tab!=="coach")coachVoiceStop?.();via=!PARENT[tab]&&!PARENT[d.tab]?null:!PARENT[tab]&&PARENT[d.tab]?{t:d.tab,p:tab}:null;tab=d.tab;render();window.scrollTo(0,0);return}
   if(d.c){cClick(d.c,el);return}
   if(d.g){gClick(d.g,el);return}
   if(d.sex!==undefined){S.settings.sex=d.sex;save();render();return}
@@ -106,7 +107,7 @@ function dayRoll(){
   logOff=logOff>0?Math.max(0,Math.min(hgOldest(),logOff+n)):0;
   render();
 }
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){if(!viewBusy())dayRoll();quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="settings-modules")render()});stepsSync();renderSoft();cPlateauCheck();abRun();schedDue().then(d=>d&&scheduleReminders().then(setNotif))}});
+document.addEventListener("visibilitychange",()=>{if(document.hidden){coachVoiceStop?.();return}if(!document.hidden){if(!viewBusy())dayRoll();quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="settings-modules")render()});stepsSync();renderSoft();cPlateauCheck();abRun();schedDue().then(d=>d&&scheduleReminders().then(setNotif))}});
 
 document.querySelectorAll("[data-ic]").forEach(e=>e.innerHTML=Icons.svg(e.dataset.ic));
 render();

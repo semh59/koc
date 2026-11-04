@@ -124,6 +124,7 @@ h2{font-size:var(--fs-h2);margin:var(--sp-5) var(--sp-1) var(--sp-3);font-weight
 .dnav button:disabled{color:var(--mut);background:none;cursor:default}
 .del:active{background:var(--soft)}.log .del{margin:-6px -6px -6px var(--sp-3)}.tchip .del{margin:-8px 0}
 .log .gh{display:flex;padding:var(--sp-3) var(--sp-1) var(--sp-1);justify-content:space-between;gap:var(--sp-2);border-top:1px solid var(--line)}.log .gh:first-child{border-top:0;padding-top:0}.log .gh b{font-weight:700}.log .gh .num{text-transform:none}.log .gh .lnk{width:auto;flex:none;text-transform:none}.log button.tx{text-align:left;min-height:var(--hit);margin:-8px 0}.qrow{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}.qrow .btn{width:auto;flex:1 1 auto;margin:0!important;min-height:var(--hit);padding:var(--sp-2) var(--sp-4);font-size:var(--fs-2);border-radius:var(--r-pill)}.qrow .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}.qrow .btn.ghost .i{color:var(--prim)}
+.food-search{margin-bottom:var(--sp-2)}.food-search .food-mic{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-1);flex:0 0 auto;min-width:112px;margin:0;padding:0 var(--sp-3);border-color:var(--line);color:var(--ink)}.food-search .food-mic .i{width:21px;height:21px;color:var(--prim)}.food-search .food-mic:active{transform:scale(.98)}
 .hint{color:var(--mut);font-size:var(--fs-s);line-height:1.5;padding:var(--sp-2) 4px 2px}
 .dd7{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));margin:0 calc(-1 * var(--sp-2))}.dd{display:grid;justify-items:center;align-content:center;gap:4px;min-height:var(--hit);border-radius:var(--r-s)}.dd:active{background:var(--soft)}.dd[aria-current] small{color:var(--ink);font-weight:700}.dd i{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;border:2px solid var(--line);font-style:normal;font-weight:700;font-size:var(--fs-2)}.dd .ok{background:var(--prim);border-color:var(--prim);color:var(--prim-ink)}.dd .late,.dd .part{border-color:var(--mut);color:var(--mut)}.dd small{font-size:var(--fs-cap);color:var(--mut)}
 
@@ -158,6 +159,11 @@ td.today,th.today{font-weight:700}
 .cin{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);box-shadow:var(--sh-1);border-radius:var(--r-xl);padding:0 var(--sp-1) 0 var(--sp-4);min-height:52px}.cin:focus-within{border-color:var(--prim)}
 .cin input{align-self:stretch;flex:1;min-width:0;border:0;outline:0;background:none;font-size:16px}
 #csend{width:var(--hit);height:var(--hit);border-radius:50%;background:var(--prim);color:var(--prim-ink);font-size:var(--fs-h3)}
+#cvoice{width:var(--hit);height:var(--hit);border:0;background:transparent;color:var(--mut);display:grid;place-items:center;flex:none}
+#cvoice:focus-visible{outline:3px solid var(--prim);outline-offset:2px}
+.cvoice-status{margin:4px 8px 0;color:var(--mut);font-size:var(--fs-s)}
+body.coach #cvoice{color:var(--coach-card-ink);border:2px solid var(--coach-line);border-radius:var(--r-xs)}
+body.coach #cvoice:focus-visible{outline-color:var(--coach-acid)}
 body::before{content:"";position:fixed;top:0;left:0;right:0;height:var(--sat);background:var(--bg);z-index:5;pointer-events:none}body.coach main{padding-bottom:var(--cmp,calc(200px + var(--sab)))}.chips.cbar{position:sticky;top:var(--sat);z-index:4;background:var(--bg);padding:var(--sp-2) 0;margin:-6px 0 0}
 body.coach{--toast-b:var(--cmp,calc(200px + var(--sab)));background:var(--coach-bg);color:var(--coach-ink)}
 body.coach::before{background:var(--coach-bg)}
@@ -204,6 +210,7 @@ body.coach .coach-entry-tool:active{transform:scale(.98)}
 body.coach .coach-entry-tool .coach-entry-icon{display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:50%;color:var(--coach-acid);background:var(--coach-bg)}
 body.coach .coach-entry-tool .coach-entry-icon .i{width:20px;height:20px}
 body.coach .coach-entry-tool b,body.coach .coach-entry-tool small{display:block;overflow-wrap:anywhere}
+body.coach .coach-entry-tool b{color:var(--coach-card-ink)}
 body.coach .coach-entry-tool b{font-size:var(--fs-2);line-height:1.2}
 body.coach .coach-entry-tool small{margin-top:2px;color:var(--coach-card-mut);font-size:var(--fs-cap);line-height:1.25}
 body.coach .coach-entry-revoke{display:block;margin-top:var(--sp-2);color:var(--coach-page-mut)}

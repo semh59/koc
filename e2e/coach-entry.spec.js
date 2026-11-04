@@ -3,24 +3,13 @@ const {test,expect,state}=require("./fixtures");
 const ENTRY_CONSENT={entryConsentSeen:true,entryConsentVersion:1,entryConsentAt:"2026-10-06T07:00:00.000Z",entryConsentChoice:"text_only"};
 
 test.describe("Coach low-friction entry",()=>{
-  test("consent, browser speech disclosure, keyboard dictation, pending proposal and explicit add",async({app,page})=>{
-    const calls=[];page.on("request",r=>{if(!r.url().startsWith("http://127.0.0.1"))calls.push(r.url())});
+  test("Coach sends local food entry to the food sheet, not voice capture",async({app,page})=>{
     await app.open({seed:state(ENTRY_CONSENT)});await app.tab("coach");
-    await page.click('[data-c="entryvoice"]');
-    await expect(app.sheet).toContainText("Sesle kayıt izni");
-    await page.click('[data-c="voiceconsentok"]');
-    await expect(app.sheet).toContainText("klavyenin mikrofon tuşunu");
-    await expect(app.sheet).toContainText(/tarayıcının|çevrimiçi/i);
-    await page.fill("#voice-dictation-input","2 dilim ekmek");
-    await page.click('[data-c="voicedictationsave"]');
-    await expect(page.locator(".lcard")).toContainText("Öğüne ekle");
-    const before=await page.evaluate(()=>Log.all().length);
-    await expect(page.getByRole("button",{name:"Öğüne ekle",exact:true})).toBeVisible();
+    await expect(page.locator('[data-c="entryvoice"]')).toHaveCount(0);
+    await expect(page.locator('[data-c="entrylocal"]')).toHaveCount(1);
+    await page.click('[data-c="entrylocal"]');
+    await expect(app.sheet).toContainText("Hızlı yemek / porsiyon");
     await page.keyboard.press("Escape");
-    expect(await page.evaluate(()=>Log.all().length)).toBe(before);
-    await page.getByRole("button",{name:"Öğüne ekle",exact:true}).click();
-    await expect.poll(()=>page.evaluate(()=>Log.all().length)).toBeGreaterThan(before);
-    expect(calls).toEqual([]);
   });
 
   test("local entry controls have 44px targets and no console errors at phone widths",async({app,page})=>{
@@ -32,27 +21,31 @@ test.describe("Coach low-friction entry",()=>{
     await page.keyboard.press("Escape");
   });
 
-  test("consent persists across reload and copy never promises on-device/no-server",async({app,page})=>{
+  test("Coach microphone dictates into composer without sending and keeps typed fallback on error",async({app,page})=>{
     await app.open({seed:state(ENTRY_CONSENT)});await app.tab("coach");
-    await page.click('[data-c="entryvoice"]');
-    await expect(app.sheet).not.toContainText(/hiçbir sağlayıcıya veya sunucuya|yalnızca bu cihazda/i);
-    await expect(app.sheet).toContainText(/tarayıcının|çevrimiçi/i);
-    await page.click('[data-c="voiceconsentok"]');await app.closeSheet();
-    expect((await app.state()).settings).toMatchObject({voiceConsent:true});
-    await page.reload();
-    expect(await page.evaluate(()=>S.settings.voiceConsent)).toEqual(true);
-  });
-
-  for(const local of [false,true]){
-    test(`supported SpeechRecognition engine discloses ${local?"confirmed local":"unconfirmed vendor"} processing`,async({app,page})=>{
-      await page.addInitScript(l=>{window.__sr=[];window.SpeechRecognition=function(){this.processLocally=l;this.start=()=>window.__sr.push("start");this.stop=()=>window.__sr.push("stop");this.abort=()=>window.__sr.push("abort")}},local);
-      await app.open({seed:state({...ENTRY_CONSENT,voiceConsent:true})});await app.tab("coach");
-      await page.click('[data-c="entryvoice"]');
-      await expect.poll(()=>page.evaluate(()=>window.__sr)).toContain("start");
-      await expect(page.locator("#toast.on #tmsg")).toContainText(local?/cihazda işlediğini doğruladı/:/ses tanıması çevrimiçi.*doğrulanmadı/);
-      expect(await page.evaluate(()=>document.querySelector("#view").textContent)).not.toMatch(/hiçbir sağlayıcıya veya sunucuya/);
-      await page.evaluate(()=>cStopVoice(true));
-      expect(await page.evaluate(()=>window.__sr)).toContain("abort");
+    await page.evaluate(()=>{
+      const listeners={};
+      window.Capacitor={Plugins:{Speech:{
+        addListener:async(type,fn)=>{(listeners[type]??=[]).push(fn);return {remove(){}}},
+        removeAllListeners:async type=>{delete listeners[type]},
+        listen:async()=>({started:true}),
+        stopListening:async()=>{}
+      }}};
+      window.__voiceEvent=(type,data)=>(listeners[type]||[]).forEach(fn=>fn(data));
     });
-  }
+    await page.click('[data-c="coachvoice"]');
+    await expect(page.locator('[data-c="coachvoiceconsent"]')).toBeVisible();
+    await page.click('[data-c="coachvoiceconsent"]');
+    await expect(page.locator('#cvoice-status')).toContainText("Dinliyorum");
+    await page.evaluate(()=>window.__voiceEvent("result",{text:"Bugün ne kadar su içmeliyim"}));
+    await expect(page.locator("#cmsg")).toHaveValue("Bugün ne kadar su içmeliyim");
+    await expect(page.locator("#cvoice-status")).toContainText("Göndermeye hazır");
+    expect(await page.evaluate(()=>S.chat.filter(m=>m.role==="user").length)).toBe(0);
+    await page.click('[data-c="coachvoice"]');
+    await expect(page.locator('#cvoice-status')).toContainText("Dinliyorum");
+    await page.evaluate(()=>window.__voiceEvent("error",{error:"permission"}));
+    await expect(page.locator("#cmsg")).toHaveValue("Bugün ne kadar su içmeliyim");
+    await expect(page.locator("#cvoice-status")).toContainText("Yazarak devam");
+    await expect(page.locator("#composer")).toBeVisible();
+  });
 });

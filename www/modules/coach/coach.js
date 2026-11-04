@@ -740,96 +740,25 @@ function cChatList(){
 /* `tap`: the user pressed the consent button; the first consent then also turns the text preview on until they choose otherwise. */
 function cConsent(on,tap){
   const s=S.settings;if(on&&!consentOk())return;
-  if(!on)coachResetSessions();
   if(on&&tap&&!s.piiPrevOwn)s.piiPrev=true;
   Object.assign(s,{consent:on,consentV:on?CONSENT_V:0,consentAt:on?dayKey():"",consentP:on?provSet():null,consentU:on?cConsentKey():null});save();render();
   if(!on&&(S.chat.length||S.chats.length))confirmSheet({title:"Rehber sohbeti silinsin mi?",body:"Rıza geri alındı, yeni veri gitmez. İstersen yazışmaları da bu telefondan sil.",ok:"Sohbeti sil"}).then(yes=>{if(yes&&cClearChat())render()});
 }
-/* Empty-chat examples: [label, message, true if it only fills the input box]. */
 const CASK=[["Bu yemek kaç kalori?","Kaç kalori: ",true],["Bu egzersiz kaç kalori yakar?","Kaç kalori yakar: ",true]];
+let coachVoiceCleanup=null,coachVoiceRecognizer=null;
+const coachVoiceAtOk=s=>typeof s==="string"&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(s)&&Number.isFinite(Date.parse(s))&&Date.parse(s)<=Date.now()+60000;
+const coachVoiceAllowed=()=>S.settings.coachVoiceConsent===true&&S.settings.coachVoiceConsentVersion===1&&coachVoiceAtOk(S.settings.coachVoiceConsentAt);
+function coachVoiceStatus(text,show=true){const e=$("#cvoice-status");if(e){e.textContent=text;e.hidden=!show}}
+function coachVoiceStop(){const c=coachVoiceCleanup;coachVoiceCleanup=null;try{c?.()}catch{}const r=coachVoiceRecognizer;coachVoiceRecognizer=null;try{r?.abort?.()}catch{}try{plugin("Speech")?.stopListening?.()}catch{} }
+function coachVoiceTranscript(text){const q=String(text||"").trim().slice(0,600),i=$("#cmsg");if(!i)return;if(q)i.value=q;i.focus();coachVoiceStatus(q?"Göndermeye hazır. Göndermek için düğmeye bas.":"Bir şey duyamadım. Yazarak devam edebilirsin.")}
+function coachVoiceConsent(){openSheet(`<h3>Sesle mesaj yaz</h3><p class="hint">Mikrofon yalnızca Rehber mesaj kutusunu doldurur. Ses NeoWell'e kaydedilmez; yazıya dönüşen metni sen görürsün ve yalnız Gönder düğmesine basarsan Rehber'e gider.</p><p>İzin vermezsen mesajını yazarak gönderebilirsin.</p><div class="bgrid"><button class="btn" data-c="coachvoiceconsent">Mikrofonu kullan</button><button class="btn ghost" data-c="closesheet">Vazgeç</button></div>`)}
+function coachVoiceStart(){if(!coachVoiceAllowed())return coachVoiceConsent();coachVoiceStop();coachVoiceStatus("Dinliyorum…");const sp=plugin("Speech");if(sp?.listen){const cleanup=()=>{sp.removeAllListeners?.("result");sp.removeAllListeners?.("error");coachVoiceCleanup=null};coachVoiceCleanup=cleanup;const onResult=ev=>{if(coachVoiceCleanup!==cleanup)return;cleanup();coachVoiceStop();coachVoiceTranscript(ev?.text||"")};const onError=()=>{if(coachVoiceCleanup!==cleanup)return;cleanup();coachVoiceStop();coachVoiceStatus("Mikrofon açılamadı. Yazarak devam edebilirsin.");toast("Sesli mesaj kullanılamadı; yazıyla devam edebilirsin")};sp.addListener?.("result",onResult);sp.addListener?.("error",onError);sp.listen().then(r=>{if(r?.started===false)onError()}).catch(onError);return}const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR)try{const rec=new SR();coachVoiceRecognizer=rec;rec.lang="tr-TR";rec.interimResults=false;rec.onresult=ev=>{if(coachVoiceRecognizer!==rec)return;coachVoiceRecognizer=null;coachVoiceTranscript(ev.results?.[0]?.[0]?.transcript||"")};rec.onerror=()=>{if(coachVoiceRecognizer!==rec)return;coachVoiceRecognizer=null;coachVoiceStatus("Mikrofon açılamadı. Yazarak devam edebilirsin.");toast("Sesli mesaj kullanılamadı; yazıyla devam edebilirsin")};rec.onend=()=>{if(coachVoiceRecognizer===rec)coachVoiceRecognizer=null};rec.start();return}catch{coachVoiceRecognizer=null}coachVoiceStatus("Bu cihazda sesli dikte yok. Yazarak devam edebilirsin.")}
+function coachVoiceAccept(){Object.assign(S.settings,{coachVoiceConsent:true,coachVoiceConsentVersion:1,coachVoiceConsentAt:new Date().toISOString()});save();closeSheet();coachVoiceStart()}
+/* Privacy revocation is published as a document-level boundary event; the data module does not call Coach internals. */
+document.addEventListener("nw:coach-voice-revoke",()=>coachVoiceStop());
 /* Experiments remain stored and managed through Coach API, but are not shown in user Coach UI. */
-function cRevokeEntryConsent(){
-  cStopVoice(true);
-  Object.assign(S.settings,{entryConsentSeen:false,entryConsentVersion:0,entryConsentAt:"",entryConsentChoice:"",voiceConsent:false});
-  coachResetSessions();save();render();toast("Ses izni geri alındı; tekrar onay istenecek");
-}
-function entryConsentHtml(){
-  return `<section class="card" aria-labelledby="entry-consent-title"><h2 id="entry-consent-title" class="m0 t-h2">Sesle yemek kaydı</h2><p class="hint"><b>Yayın öncesi hukuki inceleme gerektirir. Özel beta.</b> Veri sorumlusu henüz atanmadı; bu ekran nihai hukuki metin değildir.</p><p>Seçimini istediğin zaman Gizlilik ve veri bölümünden geri alabilirsin.</p><ul class="cul"><li><b>Sesle kayıt:</b> Konuşman yemek kaydı için yazıya çevrilir. Ham ses uygulamada tutulmaz. Tarayıcı veya işletim sistemi çevrimiçi işleyebilir; cihazda kaldığı garanti edilmez.</li><li><b>Sağlık sınırı:</b> NeoWell tıbbi cihaz değildir; tanı koymaz ve tedavi önermez.</li></ul><details class="acc"><summary>Detaylı taslak açıklama</summary><p class="mut sm">Bu beta metni veri sorumlusu, iletişim adresi, saklama süreleri ve hizmet sağlayıcı sözleşmeleri kesinleşmeden nihai aydınlatma veya açık rıza metni olarak kullanılamaz. Yayın öncesi KVKK/GDPR incelemesi zorunludur.</p></details><div class="bgrid mt-3"><button class="btn" data-c="entryconsentvoice">Sesle kaydı aç</button><button class="btn ghost" data-c="entryconsenttextonly">Sadece metin kullanacağım</button></div></section>`;
-}
-function entryConsentAccept(choice){
-  const now=new Date().toISOString();
-  Object.assign(S.settings,{entryConsentSeen:true,entryConsentVersion:ENTRY_CONSENT_V,entryConsentAt:now,entryConsentChoice:choice,voiceConsent:choice==="voice"});
-  save();closeSheet();render();
-}
 function entryControlsHtml(){
-  return `<section aria-labelledby="entry-controls-title" class="coach-entry mb-3"><div class="coach-entry-head"><h2 id="entry-controls-title" class="grp">Nasıl eklemek istersin?</h2><p class="hint">Yemek yaz veya konuş. İkisi de yerel olarak günlüğe öneri hazırlar.</p></div><div class="coach-entry-tools"><button class="coach-entry-tool" data-c="entrylocal"><span class="coach-entry-icon">${Icons.svg("food")}</span><span><b>Yemek yaz</b><small>Hızlı ve yerel</small></span></button><button class="coach-entry-tool" data-c="entryvoice"><span class="coach-entry-icon">${Icons.svg("note")}</span><span><b>Sesle ekle</b><small>Konuş, yazıya dönsün</small></span></button></div>${S.settings.voiceConsent?`<button class="coach-entry-revoke lnk" data-c="revoke-entry-consent">Ses iznini geri al</button>`:""}</section>`;
-}
-let activeSpeechRecognizer=null,activeSpeechCleanup=null;
-function cStopVoice(cancelled=false){
-  const cleanup=activeSpeechCleanup;activeSpeechCleanup=null;try{cleanup?.()}catch{}
-  const r=activeSpeechRecognizer;activeSpeechRecognizer=null;
-  try{if(r){cancelled&&r.abort?r.abort():r.stop?.()}}catch{}
-  try{plugin("Speech")?.stopListening?.()}catch{}
-  try{Coach.voiceSession()?.[cancelled?"cancel":"stop"]()}catch{}
-  toast(cancelled?"Ses girişi durduruldu":"Ses girişi durduruldu");
-}
-function cStartVoice(){
-  let session;
-  try{session=Coach.voiceSession()}catch{return toast("Ses oturumu açılamadı")}
-  try{session.start()}catch(e){return toast("Ses kaydı için açık onay gerekiyor")}
-  const sp=plugin("Speech");
-  if(sp?.listen){
-    openSheet(`<h3>Sesle yemek kaydet</h3><p class="hint">Dinliyorum. Yediklerini tek cümlede söyle; ham ses saklanmaz.</p><p id="voice-status" class="card" aria-live="polite">Hazır…</p><div class="bgrid"><button class="btn ghost" data-c="voicecancel">Vazgeç</button></div>`);
-    const session=Coach.voiceSession();
-    const cleanup=()=>{sp.removeAllListeners?.("result");sp.removeAllListeners?.("error");activeSpeechCleanup=null};
-    activeSpeechCleanup=cleanup;
-    const onResult=ev=>{const text=ev?.text||"";if(!text)return;cleanup();sp.stopListening?.();session.finishTranscription(text);closeSheet();cHandleVoiceTranscript(text)};
-    const onError=()=>{cleanup();try{session.cancel()}catch{}try{session.purgeAudio()}catch{}toast("Ses tanınamadı; tekrar dene veya yaz")};
-    sp.addListener?.("result",onResult);sp.addListener?.("error",onError);
-    sp.listen().then(r=>{if(r?.started===false)onError()}).catch(onError);
-    return;
-  }
-  if(session.mode==="web_speech"&&typeof window!=="undefined"&&(window.SpeechRecognition||window.webkitSpeechRecognition)){
-    try{
-      const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-      const rec=new SR();rec.lang="tr-TR";rec.interimResults=false;
-      const localConfirmed=rec.processLocally===true;
-      const disclosure=localConfirmed?"Bu tarayıcı ses tanımayı cihazda işlediğini doğruladı.":"Tarayıcının ses tanıması çevrimiçi işlenebilir; cihaz içinde işlendiği doğrulanmadı.";
-      rec.onresult=ev=>{
-        if(activeSpeechRecognizer!==rec)return;
-        activeSpeechRecognizer=null;
-        const transcript=ev.results&&ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:"";
-        session.finishTranscription(transcript);
-        closeSheet();
-        cHandleVoiceTranscript(transcript);
-      };
-      /* Only the live recognizer may react: a dismissed sheet or Durdur/Kaydı bırak already cleared it, so a late error must not reopen anything over another screen. */
-      rec.onerror=()=>{if(activeSpeechRecognizer!==rec)return;activeSpeechRecognizer=null;session.purgeAudio();toast("Ses tanıma çalışmadı; yazarak devam edebilirsin")};
-      rec.onend=()=>{if(activeSpeechRecognizer===rec){activeSpeechRecognizer=null;session.stop()}};
-      /* The dictation sheet is opened first and owns the recognizer: closing it (Escape, scrim, back) aborts listening, so listening never continues invisibly. */
-      cPromptDictationFallback(disclosure);
-      activeSpeechRecognizer=rec;
-      rec.start();
-      toast(disclosure);
-      return;
-    }catch{activeSpeechRecognizer=null;session.purgeAudio()}
-  }
-  cPromptDictationFallback();
-}
-function cPromptDictationFallback(speechCopy="Tarayıcının ses tanıması çevrimiçi işlenebilir; cihaz içinde işlendiği doğrulanmadı."){
-      openSheet(`<h3>Sesle / Klavyeyle giriş</h3><p class="hint">${speechCopy} Motor yoksa klavyenin mikrofon tuşunu kullan. Yediklerini veya içtiklerini yaz/söyle:</p><label class="lbl" for="voice-dictation-input">Sesli dikte</label><input class="in" id="voice-dictation-input" placeholder="Örn: 2 dilim ekmek, 1 bardak süt" autocomplete="off"><div class="bgrid mt-3"><button class="btn" data-c="voicedictationsave">Çöz ve ekle</button><button class="btn ghost" data-c="voicestop">Durdur</button><button class="btn ghost" data-c="voicecancel">Kaydı bırak</button></div>`);
-}
-function cHandleVoiceTranscript(transcript){
-  if(!transcript||!transcript.trim())return;
-  const res=CoachLib.resolveLocalFood(transcript);
-  if(res.ok&&res.items.length){
-    cPush({role:"coach",text:`Ses kaydından çözüldü: "${res.sanitizedText}". Günlüğe eklemek için onayla:`,card:{kind:"log",items:res.items,state:"pending",local:true}});
-    save();render();
-  }else{
-    const input=typeof $==="function"?$("#cmsg"):null;
-    if(input){input.value=res.sanitizedText;input.focus()}
-    toast(`Yazıya döküldü: "${res.sanitizedText}"`);
-  }
+  return `<section aria-labelledby="entry-controls-title" class="coach-entry mb-3"><div class="coach-entry-head"><h2 id="entry-controls-title" class="grp">Nasıl eklemek istersin?</h2><p class="hint">Yemek ekleme ekranında yerel listeden seç veya kendi yemeğini yaz.</p></div><div class="coach-entry-tools"><button class="coach-entry-tool" data-c="entrylocal"><span class="coach-entry-icon">${Icons.svg("food")}</span><span><b>Yemek ekle</b><small>Yerel listeden seç</small></span></button></div></section>`;
 }
 function viewCoach(){
   let h="";
@@ -842,8 +771,7 @@ function viewCoach(){
     h+=`<div class="banner"><div class="lhead"><b>Rehber'e şu an ulaşılamıyor</b>${dt?`<button class="help" data-c="hx:kerr" aria-expanded="false" aria-controls="kerr" aria-label="Hata ayrıntısı">${Icons.svg("info")}</button>`:""}</div>${dt?`<p class="helpx" id="kerr" hidden>${esc(x.name)}: ${esc(dt)}</p>`:""}<p>Bağlantını kontrol et. Mesajın bu telefonda duruyor; su, kilo ve spor kaydı çalışmaya devam ediyor.</p><button class="btn" data-c="retry">Tekrar dene</button></div>`;
   }
   if(!coachOn()&&!intro)h+=`<div class="card"><h2 class="m0 t-h2">Rehber ile veri paylaşımı</h2>${li(["Mesajların ve istersen profilin (boy, yaş aralığı, cinsiyet, hareket, kalori hedefi) seçtiğin sağlayıcıya gider.","Yalnız sen bir düğmeye bastığında gönderilir.","İstediğin an geri alırsın; onay vermezsen hiçbir veri gönderilmez."])}${consentWarn()}<details class="acc"><summary>Detaylar</summary><div class="sm">${consentBody()}</div></details>${consentOk()?`<div class="lbl">Rehber'e hangi veriler gitsin?</div>${shareRows()}${swRow('data-pv="prev"',!S.settings.piiPrevOwn||S.settings.piiPrev,"Gönderimden önce metni göster","Her gönderimden önce giden tam metni görür, Gönder ya da Vazgeç dersin. İstersen kapat.")}<button class="btn" data-c="consent">Açık rızamı veriyorum</button>`:""}<button class="lnk" data-pv="open">Gizlilik ve veri</button></div>`;
-  if(!entryConsentRecordOk(S.settings))h+=entryConsentHtml();
-  else { h+=entryControlsHtml(); }
+  h+=entryControlsHtml();
   if(S.chat.length||S.chats.length)h+=`<div class="chips cbar">${S.chat.length?`<button class="chip" data-c="newchat">Yeni sohbet</button>`:""}${S.chats.length?`<button class="chip" data-c="chats">Geçmiş</button>`:""}</div>`;
   if(!S.chat.length&&hasKey()&&coachOn())h+=emptyCard("coach","Bugün neyle başlayalım?","Bir yemeğin ya da egzersizin adını yaz, kalorisini tahmin edeyim. Menü ve program da isteyebilirsin.",`<div class="chips">${CASK.map((x,i)=>`<button class="chip" data-c="ask:${i}">${x[0]}</button>`).join("")}</div>`);
   /* The bubble carries only text; the card is a separate full-width surface outside the bubble. */
@@ -1125,24 +1053,6 @@ function cClick(v,el){
     case "planner":return plannerOpenPlan(p1||"");
         case "deletekeys":return deleteKeysFromSettings();
 
-    case "revoke-entry-consent":return cRevokeEntryConsent();
-    case "entryconsentvoice":return entryConsentAccept("voice");
-    case "entryconsenttextonly":return entryConsentAccept("text_only");
-    case "entryvoice":{
-      if(!S.settings.voiceConsent){
-        return openSheet(`<h3>Sesle kayıt izni</h3><p class="hint">Ses kaydı yalnızca açık onayınla başlar. Ham ses uygulamada tutulmaz ve NeoWell bunu Rehber sağlayıcısına göndermez; ancak tarayıcının konuşma tanıması sesi çevrimiçi işleyebilir ve cihaz içinde işlendiği doğrulanmadıkça buna güvenmemelisin. Sesle kayıt için açık onay veriyor musun?</p><div class="bgrid"><button class="btn" data-c="voiceconsentok">Açık rızamı veriyorum</button><button class="btn ghost" data-c="closesheet">Vazgeç</button></div>`);
-      }
-      return cStartVoice();
-    }
-    case "voiceconsentok":{
-      S.settings.voiceConsent=true;save();closeSheet();render();return cStartVoice();
-    }
-    case "voicedictationsave":{
-      const input=typeof $==="function"?$("#voice-dictation-input"):null;
-      const text=input?input.value:"";cStopVoice(false);closeSheet();return cHandleVoiceTranscript(text);
-    }
-    case "voicestop":return cStopVoice(false);
-    case "voicecancel":return cStopVoice(true);
     case "entrylocal":{
       return openSheet(`<h3>Hızlı yemek / porsiyon</h3><p class="hint">Porsiyon veya gramajla yediklerini yaz (ör. 2 dilim ekmek, 200 g tavuk, yarım simit). Cihazda yerel çözülür, internete gönderilmez.</p>
         <label class="lbl" for="local-food-input">Yedikleriniz</label>
@@ -1177,7 +1087,9 @@ function cClick(v,el){
     case "plannerundo":{const r=Coach.planner().undoAction(p1,undoKey());if(r.ok){render();toast("Uyarlama geri alındı")}return r;}
 
     case "askfood":{const q=foodAskQ.trim();if(q){closeSheet();tab="coach";render();cSend(`${q} kaç kalori? Bir porsiyon için tahmin et.`,true)}return}
-    case "send":{const i=$("#cmsg");const t=i.value;i.value="";return cSend(t)}
+    case "coachvoice":return coachVoiceStart();
+    case "coachvoiceconsent":return coachVoiceAccept();
+    case "send":{const i=$("#cmsg");const t=i.value;i.value="";coachVoiceStatus("",false);return cSend(t)}
     case "retry":offline=null;cFlush();return render();
     case "pvok":case "pvno":sheetDone(a==="pvok");return closeSheet();
 

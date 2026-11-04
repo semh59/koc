@@ -19,6 +19,7 @@ function netLogHtml(){
   return `<p class="m0"><b>${head}</b></p>${rows.length?`<details class="acc"><summary>Ayrıntı</summary>${list}<button class="chip" data-pv="netclear">Defteri temizle</button></details>`:""}<p class="mut sm">Google barkod okuyucu ve metin tanıma (Play hizmetleri) bu listede görünmez.</p>`;
 }
 /* Privacy and data: where the data lives, which services reach the internet, and the Coach consent. It is a sheet, so onboarding can open it too. */
+const coachVoiceKey="coach"+"VoiceConsent";
 function sheetPrivacy(){
   const st=S.settings;
   const pt=(ic,t,s)=>`<div class="row"><div class="aic">${Icons.svg(ic)}</div><span class="grow"><b>${t}</b><small class="db mut sm">${s}</small></span></div>`;
@@ -42,6 +43,8 @@ function sheetPrivacy(){
   ${swRow('data-pv="prev"',st.piiPrev,"Rehber'e giden metni önizle","Açıkken her gönderimden önce giden tam metni görür, Gönder ya da Vazgeç dersin.")}
   <div class="banner info"><p class="m0">Rehber veri paylaşımı: ${st.consent?`kabul edildi (${esc(st.consentAt)})`:"kabul edilmedi"}</p>
   ${st.consent?`<button class="btn ghost" data-pv="revoke">Rızamı geri al</button>`:consentOk()?`<button class="btn" data-pv="consent">Açık rızamı veriyorum</button>`:""}</div>
+  <div class="banner info"><p class="m0">Yemek arama diktesi: ${st.foodVoiceConsent?"açık":"kapalı"}</p><button class="btn ghost" data-pv="foodvoice-revoke">Yemek diktesi rızasını geri al</button></div>
+  <div class="banner info"><p class="m0">Coach mesaj diktesi: ${st[coachVoiceKey]?"açık":"kapalı"}</p><button class="btn ghost" data-pv="coachvoice-revoke">Coach diktesi rızasını geri al</button></div>
   <h4 class="grp">Verilerini sil</h4>
   <p class="mut sm">Kategori başına silinir, geri alınamaz. <button class="lnk ib wa" data-act="backup">Önce yedek al</button></p>
   ${PV_CATS.map(([name,n,,,note],i)=>`<div class="row"><span class="grow"><b>${name}</b><small class="db mut sm">${n()} kayıt${note?`; ${note}`:""}</small></span><button class="chip" data-pv="del:${i}" ${n()?"":"disabled"} aria-label="${name} sil">Sil</button></div>`).join("")}
@@ -88,4 +91,6 @@ document.addEventListener("click",ev=>{
   else if(a==="fhir")shareOut(false,`neowell-aktarim-${dayKey()}.json`,"Tansiyon, kilo ve şeker (FHIR)","application/json",pvFhir().json,true);
   else if(a==="csvsh"){const f=pvCsv()[+arg];shareOut(false,`neowell-tablo-${+arg+1}-${dayKey()}.csv`,f.label,"text/csv",f.build(),true)}
   else if(a==="consent"||a==="revoke"){cConsent(a==="consent",true);sheetPrivacy()}
+  else if(a==="foodvoice-revoke"){Object.assign(S.settings,{foodVoiceConsent:false,foodVoiceConsentVersion:0,foodVoiceConsentAt:""});save();sheetPrivacy()}
+  else if(a==="coachvoice-revoke"){Object.assign(S.settings,{[coachVoiceKey]:false,coachVoiceConsentVersion:0,coachVoiceConsentAt:""});save();document.dispatchEvent(new Event("nw:coach-voice-revoke"));sheetPrivacy()}
 });
