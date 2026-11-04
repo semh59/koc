@@ -10,7 +10,7 @@
   --ban-bg:#fbeede; --ban-bd:#ecd0a8; --ban-ink:#4d2f07; --inf-bg:#e8f1f6; --inf-bd:#c3d9e6; --inf-ink:#14425e;
   --forecast-bg:#fbe9d2; --forecast-ink:#6b3f08; --ok:#2b7a3b; --info:#1f5f86; --info-ink:#ffffff; --knob:#ffffff;
   --scrim:rgb(6 14 17/.5);
-  --coach-bg:#f2eee3; --coach-card:#121613; --coach-ink:#121613; --coach-card-ink:#f2eee3; --coach-page-mut:#475149; --coach-card-mut:#b8c0b7; --coach-line:#121613; --coach-acid:#b8ff00; --coach-warm:#ff5938; --coach-danger:#8f2015; --coach-btn-ink:#121613;
+  --coach-bg:#f3f5f1; --coach-card:#ffffff; --coach-ink:#18322f; --coach-card-ink:#18322f; --coach-page-mut:#46615b; --coach-card-mut:#526a64; --coach-line:#1d3d37; --coach-acid:#2f6f65; --coach-warm:#a04b3f; --coach-danger:#8f2015; --coach-btn-ink:#ffffff;
   --sh-1:0 1px 2px rgb(16 35 43/.06),0 2px 8px rgb(16 35 43/.04); --sh-2:0 6px 24px rgb(16 35 43/.18); --card-bd:transparent;
   /* Radius: 8/12/16/24 and pill; 50% for circles. */
   --r-xs:8px; --r-s:12px; --r:16px; --r-xl:24px; --r-pill:999px;
@@ -29,7 +29,7 @@
     --ban-bg:#3a2a14; --ban-bd:#5b4322; --ban-ink:#f3dcb8; --inf-bg:#16303d; --inf-bd:#2a4b5d; --inf-ink:#d5e8f3;
     --forecast-bg:#4a3313; --forecast-ink:#f6d9b0; --ok:#6fcf8a; --info:#1f5f86; --info-ink:#ffffff; --knob:#ffffff;
     --scrim:rgb(0 0 0/.6);
-    --coach-bg:#0b0f0c; --coach-card:#e9f2dc; --coach-ink:#e9f2dc; --coach-card-ink:#121613; --coach-page-mut:#b8c0b7; --coach-card-mut:#475149; --coach-line:#e9f2dc; --coach-acid:#b8ff00; --coach-warm:#ff7658; --coach-danger:#ff7658; --coach-btn-ink:#121613;
+    --coach-bg:#101614; --coach-card:#f3f6f1; --coach-ink:#f3f6f1; --coach-card-ink:#18322f; --coach-page-mut:#b7c7c0; --coach-card-mut:#526a64; --coach-line:#d6e4dc; --coach-acid:#2f6f65; --coach-warm:#c56a5d; --coach-danger:#c56a5d; --coach-btn-ink:#ffffff;
     --sh-1:none; --sh-2:0 0 0 1px var(--line); --card-bd:#65767c;
   }
 }
@@ -43,7 +43,7 @@
     --ban-bg:#3a2a14; --ban-bd:#5b4322; --ban-ink:#f3dcb8; --inf-bg:#16303d; --inf-bd:#2a4b5d; --inf-ink:#d5e8f3;
     --forecast-bg:#4a3313; --forecast-ink:#f6d9b0; --ok:#6fcf8a; --info:#1f5f86; --info-ink:#ffffff; --knob:#ffffff;
     --scrim:rgb(0 0 0/.6);
-    --coach-bg:#0b0f0c; --coach-card:#e9f2dc; --coach-ink:#e9f2dc; --coach-card-ink:#121613; --coach-page-mut:#b8c0b7; --coach-card-mut:#475149; --coach-line:#e9f2dc; --coach-acid:#b8ff00; --coach-warm:#ff7658; --coach-danger:#ff7658; --coach-btn-ink:#121613;
+    --coach-bg:#101614; --coach-card:#f3f6f1; --coach-ink:#f3f6f1; --coach-card-ink:#18322f; --coach-page-mut:#b7c7c0; --coach-card-mut:#526a64; --coach-line:#d6e4dc; --coach-acid:#2f6f65; --coach-warm:#c56a5d; --coach-danger:#c56a5d; --coach-btn-ink:#ffffff;
     --sh-1:none; --sh-2:0 0 0 1px var(--line); --card-bd:#65767c;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -193,6 +193,23 @@ body.coach .banner{background:var(--coach-warm);color:var(--coach-btn-ink)}
 body.coach .banner .btn.ghost{color:var(--coach-btn-ink);border-color:var(--coach-line)}
 body.coach #composer{background:var(--coach-bg);border-top:2px solid var(--coach-line);padding-top:var(--sp-3)}
 body.coach #toast{border:2px solid var(--coach-acid);border-radius:var(--r-xs)}
+body.coach .coach-entry{margin-top:var(--sp-4)}
+body.coach .coach-entry-head{display:grid;gap:var(--sp-1);margin-bottom:var(--sp-3)}
+body.coach .coach-entry-head .grp{margin:0}
+body.coach .coach-entry-head .hint{padding:0;color:var(--coach-page-mut)}
+body.coach .coach-entry-tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-2)}
+body.coach .coach-entry-tool{min-height:76px;display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-2);text-align:left;background:var(--coach-card);color:var(--coach-card-ink);border:1px solid var(--coach-line);border-radius:var(--r-s)}
+body.coach .coach-entry-tool:focus-visible{outline:3px solid var(--coach-acid);outline-offset:2px}
+body.coach .coach-entry-tool:active{transform:scale(.98)}
+body.coach .coach-entry-tool .coach-entry-icon{display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:50%;color:var(--coach-acid);background:var(--coach-bg)}
+body.coach .coach-entry-tool .coach-entry-icon .i{width:20px;height:20px}
+body.coach .coach-entry-tool b,body.coach .coach-entry-tool small{display:block;overflow-wrap:anywhere}
+body.coach .coach-entry-tool b{font-size:var(--fs-2);line-height:1.2}
+body.coach .coach-entry-tool small{margin-top:2px;color:var(--coach-card-mut);font-size:var(--fs-cap);line-height:1.25}
+body.coach .coach-entry-revoke{display:block;margin-top:var(--sp-2);color:var(--coach-page-mut)}
+body.coach .coach-reply-label{display:flex;align-items:center;gap:var(--sp-1);margin-bottom:var(--sp-2);font-size:var(--fs-cap);font-weight:800;letter-spacing:.04em;color:var(--coach-acid);text-transform:uppercase}
+body.coach .coach-reply-label .i{width:16px;height:16px}
+@media(max-width:380px){body.coach .coach-entry-tools{grid-template-columns:1fr}body.coach .coach-entry-tool{min-height:56px}}
 .banner{background:var(--ban-bg);border:1px solid var(--ban-bd);color:var(--ban-ink);border-radius:var(--r);padding:var(--sp-3) var(--sp-4);margin-bottom:var(--sp-3)}
 .banner.info{background:var(--inf-bg);border-color:var(--inf-bd);color:var(--inf-ink)}
 .banner p{margin:var(--sp-1) 0 var(--sp-3);font-size:var(--fs-2);line-height:1.45}.banner p:only-child,.banner p:last-child{margin-bottom:0}.banner .btn{width:auto;padding:var(--sp-3) 18px}

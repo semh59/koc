@@ -162,7 +162,7 @@ const photoSession = C.createImageSession ? C.createImageSession({
 
 let capturedId = null;
 if (photoSession) {
-  const cap = photoSession.captureImage(b64Jpeg, { purpose: "meal_scan" });
+  const cap = photoSession.captureImage(b64Jpeg, { purpose: "label_ocr" });
   capturedId = cap.id;
 }
 ok("captured image added to temporary session cache with EXIF stripped", capturedId && photoSession.listCache().length === 1 && photoSession.listCache()[0].exifStripped === true);
@@ -214,7 +214,7 @@ for(const [declared,bytes] of [["image/png",allMetaJpeg],["image/jpeg",png],["im
   try{C.stripExifDetailed(`data:${declared};base64,${bytes.toString("base64")}`)}catch(e){if(e.code==="MIME_MISMATCH")mismatchRejected++}
 }
 ok("data URI MIME must match JPEG/PNG/WebP magic", mismatchRejected===3);
-const imageMeta=C.createImageSession({consent:{imageCapture:true}}),webpCap=imageMeta.captureImage(webp,{purpose:"meal_scan"}),meta=imageMeta.listCache()[0];
+const imageMeta=C.createImageSession({consent:{imageCapture:true}}),webpCap=imageMeta.captureImage(webp,{purpose:"label_ocr"}),meta=imageMeta.listCache()[0];
 ok("image metadata reports detected MIME and actual strip result", meta && meta.mimeType==="image/webp" && meta.exifStripped===true && meta.sanitized===true);
 const livePhotoConsent={imageCapture:true};const livePhoto=C.createImageSession({consent:()=>livePhotoConsent});livePhotoConsent.imageCapture=false;let livePhotoBlocked=false;try{livePhoto.captureImage(webp)}catch(e){livePhotoBlocked=e.code==="IMAGE_CONSENT_REQUIRED"}ok("photo consent is read live after revoke",livePhotoBlocked);
 const settingsSrc=require("fs").readFileSync(require("path").join(__dirname,"../www/main/01-core.js"),"utf8");

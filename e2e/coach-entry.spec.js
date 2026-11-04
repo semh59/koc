@@ -29,7 +29,7 @@ test.describe("Coach low-friction entry",()=>{
     await expect(app.sheet).toContainText("Fotoğraf ve tarama izni");
     await expect(app.sheet).toContainText("GPS");
     await page.click('[data-c="photoconsentok"]');
-    await expect(app.sheet).toContainText("Fotoğraf / Etiket tara");
+    await expect(app.sheet).toContainText("Besin etiketi oku");
     const sizes=await page.locator("#sheet button, [data-c^='entry']").evaluateAll(es=>es.map(e=>({n:e.textContent.trim(),h:e.getBoundingClientRect().height,w:e.getBoundingClientRect().width})));
     expect(sizes.filter(x=>x.h<44||x.w<44)).toEqual([]);
     await page.getByRole("button",{name:"Kapat",exact:true}).focus();

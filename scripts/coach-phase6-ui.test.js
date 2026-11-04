@@ -108,7 +108,7 @@ boot().then(async w => {
   w.FileReader = function() {
     this.readAsDataURL = () => { if (this.onerror) this.onerror(new Error("read failed")); };
   };
-  w.cPhotoPick("meal_scan");
+  w.cPhotoPick("label_ocr");
   const fileInput = w.document.querySelector('input[type="file"]');
   if (fileInput) {
     Object.defineProperty(fileInput, "files", { value: [{ name: "photo.jpg" }] });

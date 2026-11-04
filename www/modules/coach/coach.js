@@ -756,7 +756,7 @@ function cRevokeEntryConsent(){
   coachResetSessions();save();render();toast("Ses ve fotoğraf izinleri geri alındı; tekrar onay istenecek");
 }
 function entryConsentHtml(){
-  return `<section class="card" aria-labelledby="entry-consent-title"><h2 id="entry-consent-title" class="m0 t-h2">Ses ve fotoğrafla yemek kaydı</h2><p class="hint"><b>Yayın öncesi hukuki inceleme gerektirir. Özel beta.</b> Veri sorumlusu henüz atanmadı; bu ekran nihai hukuki metin değildir.</p><p>Seçimini istediğin zaman Gizlilik ve veri bölümünden geri alabilirsin.</p><ul class="cul"><li><b>Sesle kayıt:</b> Konuşman yemek kaydı için yazıya çevrilir. Ham ses uygulamada tutulmaz. Tarayıcı veya işletim sistemi çevrimiçi işleyebilir; cihazda kaldığı garanti edilmez.</li><li><b>Fotoğraf:</b> Etiket veya yemek fotoğrafındaki yazı geçici işlenir; EXIF/GPS temizlenir. Bu sürüm yazısız tabak fotoğrafını tanımaz ve akış sağlayıcıya gönderilmez.</li><li><b>Sağlık sınırı:</b> NeoWell tıbbi cihaz değildir; tanı koymaz ve tedavi önermez.</li></ul><details class="acc"><summary>Detaylı taslak açıklama</summary><p class="mut sm">Bu beta metni veri sorumlusu, iletişim adresi, saklama süreleri ve hizmet sağlayıcı sözleşmeleri kesinleşmeden nihai aydınlatma veya açık rıza metni olarak kullanılamaz. Yayın öncesi KVKK/GDPR incelemesi zorunludur.</p></details><div class="bgrid mt-3"><button class="btn" data-c="entryconsentboth">Ses ve fotoğrafı birlikte aç</button><button class="btn ghost" data-c="entryconsenttextonly">Sadece metin kullanacağım</button></div></section>`;
+  return `<section class="card" aria-labelledby="entry-consent-title"><h2 id="entry-consent-title" class="m0 t-h2">Ses ve etiket fotoğrafıyla kayıt</h2><p class="hint"><b>Yayın öncesi hukuki inceleme gerektirir. Özel beta.</b> Veri sorumlusu henüz atanmadı; bu ekran nihai hukuki metin değildir.</p><p>Seçimini istediğin zaman Gizlilik ve veri bölümünden geri alabilirsin.</p><ul class="cul"><li><b>Sesle kayıt:</b> Konuşman yemek kaydı için yazıya çevrilir. Ham ses uygulamada tutulmaz. Tarayıcı veya işletim sistemi çevrimiçi işleyebilir; cihazda kaldığı garanti edilmez.</li><li><b>Fotoğraf:</b> Yalnız besin etiketindeki yazı geçici işlenir; yazısız yemek fotoğrafı bu sürümde tanınmaz. EXIF/GPS temizlenir ve görsel sağlayıcıya gönderilmez.</li><li><b>Sağlık sınırı:</b> NeoWell tıbbi cihaz değildir; tanı koymaz ve tedavi önermez.</li></ul><details class="acc"><summary>Detaylı taslak açıklama</summary><p class="mut sm">Bu beta metni veri sorumlusu, iletişim adresi, saklama süreleri ve hizmet sağlayıcı sözleşmeleri kesinleşmeden nihai aydınlatma veya açık rıza metni olarak kullanılamaz. Yayın öncesi KVKK/GDPR incelemesi zorunludur.</p></details><div class="bgrid mt-3"><button class="btn" data-c="entryconsentboth">Ses ve etiket fotoğrafını birlikte aç</button><button class="btn ghost" data-c="entryconsenttextonly">Sadece metin kullanacağım</button></div></section>`;
 }
 function entryConsentAccept(choice){
   const now=new Date().toISOString();
@@ -764,7 +764,7 @@ function entryConsentAccept(choice){
   save();closeSheet();render();
 }
 function entryControlsHtml(){
-  return `<section aria-labelledby="entry-controls-title" class="mb-3"><div class="row"><h2 id="entry-controls-title" class="grp">Düşük sürtünmeli giriş</h2></div><p class="hint">Fotoğraf ve yerel besin araması cihazda işlenir; ses girişi açık onayınla ve konuşma motoru desteğiyle çalışır.</p><div class="chips"><button class="chip" data-c="entryvoice">Sesle kaydet</button><button class="chip" data-c="entryphoto">Fotoğraf / Etiket tara</button><button class="chip" data-c="entrylocal">Hızlı yemek / porsiyon</button>${S.settings.voiceConsent||S.settings.photoConsent?`<button class="chip" data-c="revoke-entry-consent">Ses ve fotoğraf izinlerini geri al</button>`:""}</div></section>`;
+  return `<section aria-labelledby="entry-controls-title" class="coach-entry mb-3"><div class="coach-entry-head"><h2 id="entry-controls-title" class="grp">Nasıl eklemek istersin?</h2><p class="hint">Yemek yaz, konuş veya besin etiketindeki yazıyı tara. İşlem cihazda kalır.</p></div><div class="coach-entry-tools"><button class="coach-entry-tool" data-c="entrylocal"><span class="coach-entry-icon">${Icons.svg("food")}</span><span><b>Yemek yaz</b><small>Hızlı ve yerel</small></span></button><button class="coach-entry-tool" data-c="entryvoice"><span class="coach-entry-icon">${Icons.svg("note")}</span><span><b>Sesle ekle</b><small>Konuş, yazıya dönsün</small></span></button><button class="coach-entry-tool" data-c="entryphoto"><span class="coach-entry-icon">${Icons.svg("tag")}</span><span><b>Etiket oku</b><small>Yazıyı tara</small></span></button></div>${S.settings.voiceConsent||S.settings.photoConsent?`<button class="coach-entry-revoke lnk" data-c="revoke-entry-consent">Ses ve fotoğraf izinlerini geri al</button>`:""}</section>`;
 }
 let activeSpeechRecognizer=null,activeSpeechCleanup=null;
 function cStopVoice(cancelled=false){
@@ -836,17 +836,16 @@ function cHandleVoiceTranscript(transcript){
 function cOpenPhotoSheet(){
   const session=Coach.imageSession();
   const cached=session.listCache().length;
-  openSheet(`<h3>Fotoğraf / Etiket tara</h3><p class="hint">Fotoğraf cihazda geçici işlenir, EXIF/GPS silinir. (Önbellekte: ${cached} geçici görsel)</p>
+  openSheet(`<h3>Besin etiketi oku</h3><p class="hint">Yalnız etiketteki yazı okunur. Yazısız yemek fotoğrafı bu sürümde tanınmaz. Görsel cihazda geçici işlenir, EXIF/GPS silinir. (Önbellekte: ${cached} geçici görsel)</p>
     <div class="bgrid">
-      <button class="btn" data-c="photolabel">Besin etiketi tara (OCR)</button>
-      <button class="btn ghost" data-c="photomeal">Yemek fotoğrafı ekle</button>
+      <button class="btn" data-c="photolabel">${Icons.svg("tag")} Etiket fotoğrafı çek</button>
       ${cached?`<button class="btn danger" data-c="photocacheclear">Görsel önbelleğini temizle</button>`:""}
       <button class="btn ghost" data-c="closesheet">Kapat</button>
     </div>`);
 }
 function cPhotoPick(kind){
   if(typeof document==="undefined")return;
-  const i=document.createElement("input");i.type="file";i.accept="image/jpeg,image/png,image/webp";i.capture=kind==="meal_scan"?"environment":undefined;i.hidden=true;
+  const i=document.createElement("input");i.type="file";i.accept="image/jpeg,image/png,image/webp";i.capture=kind==="label_ocr"?"environment":undefined;i.hidden=true;
   i.addEventListener("change",async()=>{
     const f=i.files?.[0];i.remove();if(!f)return;
     const fail=()=>{try{i.remove()}catch{};toast("Görsel okunamadı; lütfen başka bir görsel seç")};
@@ -860,10 +859,11 @@ function cPhotoPick(kind){
         data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onerror=reject;r.onabort=reject;r.onload=()=>resolve(r.result);r.readAsDataURL(f)});
       }
       const info=CoachLib.stripExifDetailed(data);
-      const capture=Coach.imageSession().captureImage(info.data,{purpose:kind||"meal_scan",orientationNormalized:true});
+      const capture=Coach.imageSession().captureImage(info.data,{purpose:kind||"label_ocr",orientationNormalized:true});
       toast(`Görsel güvenli şekilde işlendi (${info.mimeType}; ${info.stripped?"EXIF/GPS temizlendi":"metadata bulunamadı"})`);
       if(kind==="label_ocr") return cRunLabelOcr(capture.id, info.mimeType);
-      if(kind==="meal_scan") return cRunMealScan(capture.id, info.mimeType);
+      Coach.imageSession().purgeImage(capture.id);
+      return toast("Bu sürüm yalnız besin etiketi yazısı okur");
     }catch(e){toast(e.code==="UNSUPPORTED_IMAGE_FORMAT"?"Bu görsel biçimi desteklenmiyor":"Görsel okunamadı; lütfen başka bir görsel seç")}
   });
   document.body.appendChild(i);i.click();
@@ -885,29 +885,6 @@ async function cRunLabelOcr(imageId, mimeType){
     session.purgeImage(imageId);
     cLabelReview(parsed.food);
   }catch(e){Coach.imageSession().purgeImage(imageId);toast("Fotoğraf okunamadı, daha net çekip tekrar dene")}
-}
-async function cRunMealScan(imageId, mimeType){
-  const P=typeof plugin==="function"?plugin("Ocr"):null;
-  if(!P){Coach.imageSession().purgeImage(imageId);return toast("Yazı okuma yalnızca telefondaki uygulamada çalışır")}
-  toast("Yemek taranıyor…");
-  try{
-    const session=Coach.imageSession();
-    const imgData=session.getTemporaryImage(imageId);
-    if(!imgData){session.purgeImage(imageId);return toast("Görsel bulunamadı")};
-    const b64=imgData.split(",")[1]||imgData;
-    const res=await P.recognize({image:b64});
-    const lines=(res.lines||[]).map(l=>l.t);
-    if(!lines.length){session.purgeImage(imageId);return openSheet(`<h3>Yazı bulunamadı</h3><p class="mut">Fotoğrafta okunabilir yazı yok. Daha net çekip tekrar dene.</p><button class="btn" data-c="photomeal">${Icons.svg("camera")} Tekrar dene</button><button class="btn ghost" data-c="closesheet">Kapat</button>`)}
-    const food=CoachLib.resolveLocalFood(lines.join(" "));
-    if(food.ok && food.items.length){
-      session.purgeImage(imageId);
-      cPush({role:"coach",text:`Taramada bulundu: "${food.sanitizedText}". Günlüğe eklemek için onayla:`,card:{kind:"log",items:food.items,state:"pending",local:true}});
-      save();render();
-    }else{
-      session.purgeImage(imageId);
-      toast("Yemek bulunamadı veya anlaşılamadı");
-    }
-  }catch(e){Coach.imageSession().purgeImage(imageId);toast("Tarama başarısız, tekrar dene")}
 }
 function cLabelReview(food){
   const miss=Nutrition.LABEL_FIELDS.slice(0,4).filter(([k])=>food[k]==null).map(x=>x[1].toLowerCase());
@@ -957,10 +934,10 @@ function viewCoach(){
   for(const m of S.chat){
     if(m.role==="user")h+=`<div class="ub">${esc(m.text)}</div>${m.pend?`<div class="pendl">Gönderilmedi${coachOn()&&!typing&&offline!=="fail"?`<button class="lnk wa ib" data-c="retry">Şimdi gönder</button>`:""}</div>`:""}`;
     else if(m.role==="coach"){
-      h+=`<div class="msg" data-mid="${m.id}">${m.text||m.kind==="plateau"?`<div class="cm">${m.text&&m.kind!=="plateau"?`<div class="mut sm">Yapay zekâ üretti, hekim değildir · ${cTime(m.t)}</div>`:""}<p>${esc(m.text)}</p>${m.kind==="plateau"&&lossAsk()?`<div class="bgrid mt-3"><button class="btn" data-c="why">Bak</button></div>`:""}</div>`:""}${cCard(m)}</div>`;
+      h+=`<div class="msg" data-mid="${m.id}">${m.text||m.kind==="plateau"?`<div class="cm"><div class="coach-reply-label">${Icons.svg("coach")} Rehber</div>${m.text&&m.kind!=="plateau"?`<div class="mut sm">Yapay zekâ üretti, hekim değildir · ${cTime(m.t)}</div>`:""}<p>${esc(m.text)}</p>${m.kind==="plateau"&&lossAsk()?`<div class="bgrid mt-3"><button class="btn" data-c="why">Bak</button></div>`:""}</div>`:""}${cCard(m)}</div>`;
     }
   }
-  if(typing)h+=`<div class="cm"><div class="mut sm">Rehber yazıyor</div><p class="dots">• • •</p></div>`;
+  if(typing)h+=`<div class="cm"><div class="coach-reply-label">${Icons.svg("coach")} Rehber</div><div class="mut sm">Yanıt yazıyor</div><p class="dots">• • •</p></div>`;
   else if(lossAsk())h+=`<div class="chips"><button class="chip" data-c="why">Bu haftaya birlikte bakalım</button></div>`;
   if(!typing){
     const why=!S.settings.consent?"Rehber menüsü için önce yukarıdaki veri paylaşımını kabul et":!usable().length?"Rehber menüsü için Rehber anahtarı gerekli (Ayarlar > Rehber)":"";
@@ -1267,7 +1244,7 @@ function cClick(v,el){
           closeSheet();cPhotoPick("label_ocr");return;
         }
         case "photomeal":{
-          closeSheet();cPhotoPick("meal_scan");return;
+          closeSheet();cPhotoPick("label_ocr");return;
         }
     case "entrylocal":{
       return openSheet(`<h3>Hızlı yemek / porsiyon</h3><p class="hint">Porsiyon veya gramajla yediklerini yaz (ör. 2 dilim ekmek, 200 g tavuk, yarım simit). Cihazda yerel çözülür, internete gönderilmez.</p>
