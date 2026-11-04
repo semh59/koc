@@ -107,7 +107,7 @@ function dayRoll(){
   logOff=logOff>0?Math.max(0,Math.min(hgOldest(),logOff+n)):0;
   render();
 }
-document.addEventListener("visibilitychange",()=>{if(document.hidden){coachVoiceStop?.();return}if(!document.hidden){if(!viewBusy())dayRoll();quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="settings-modules")render()});stepsSync();renderSoft();cPlateauCheck();abRun();schedDue().then(d=>d&&scheduleReminders().then(setNotif))}});
+document.addEventListener("visibilitychange",()=>{if(document.hidden){coachVoiceStop?.();foodVoiceStop?.();return}if(!document.hidden){if(!viewBusy())dayRoll();quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="settings-modules")render()});stepsSync();renderSoft();cPlateauCheck();abRun();schedDue().then(d=>d&&scheduleReminders().then(setNotif))}});
 
 document.querySelectorAll("[data-ic]").forEach(e=>e.innerHTML=Icons.svg(e.dataset.ic));
 render();

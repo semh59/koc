@@ -24,6 +24,14 @@ boot(w=>{
   w.document.querySelector('[data-fvoice="start"]').click();
   await flush();
   ok("already-approved microphone opens listening state without leaving food sheet",w.document.querySelector("#food-voice-status")!==null&&w.document.querySelector("#fq")!==null);
+  const beforeHidden=w.eval("Capacitor.Plugins.Speech.stopCalls");
+  Object.defineProperty(w.document,"hidden",{configurable:true,value:true});
+  w.document.dispatchEvent(new w.Event("visibilitychange"));
+  ok("hiding the app stops active food recognition",w.eval("Capacitor.Plugins.Speech.stopCalls")>beforeHidden);
+  Object.defineProperty(w.document,"hidden",{configurable:true,value:false});
+  w.eval("S.settings.foodVoiceConsent=true;closeSheet();sheetFood();");
+  w.document.querySelector('[data-fvoice="start"]').click();
+  await flush();
   w.eval("(window.__foodVoiceResult||(()=>{}))({text:'mercimek çorbası'});");
   ok("speech result becomes local search text",w.document.querySelector("#fq").value==="mercimek çorbası"&&w.document.querySelector("#flist").textContent.includes("mercimek"));
   w.eval("S.settings.foodVoiceConsent=true;closeSheet();sheetFood();");
