@@ -21,6 +21,7 @@ async function obRestoreGo(btn){
     try{text=await f.text()}catch{return toast("Dosya okunamadı")}
   }else text=$("#obt").value.trim();
   if(!text)return toast("Önce yedek dosyasını seç ya da yedek metnini yapıştır");
+  if(new Blob([text]).size>BK_MAX)return toast("Dosya 20 MB'tan büyük, bir NeoWell yedeği olmayabilir");
   const pw=$("#obpw").value,keep=$("#obrem")?.checked,label=btn.textContent;
   btn.disabled=true;btn.textContent="Açılıyor…";
   try{
