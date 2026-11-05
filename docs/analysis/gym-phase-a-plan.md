@@ -7,7 +7,8 @@ Egzersiz figürlerinin güvenli, tutarlı, erişilebilir ve yeni egzersizleri ta
 ## Durum
 
 - A-1 SVG/ARIA attribute güvenliği: tamamlandı ve bağımsız `CLOSE` aldı.
-- A-2–A-7: açık.
+- A-2 figür standardı: tamamlandı ve bağımsız `CLOSE` aldı.
+- A-3–A-7: açık.
 
 
 1. **SVG güvenliği:** label/ARIA attribute escape; özel egzersiz adıyla browser XSS regression.

@@ -182,7 +182,8 @@ const FigLib=(()=>{
     const dur=2.6,N=anim?14:0;
     const poses=N?sample(def,N):[full(Object.assign({},def.frames[0],def.o||{}))];
     const fs=poses.map(p=>frame(def,p).parts);
-    let h=`<svg class="fig" viewBox="0 0 ${W} ${H}" role="img" aria-label="${attr(label)}">`;
+    const view=def.view==="f"?"front":"side";
+    let h=`<svg class="fig" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" focusable="false" data-fig-view="${view}" data-fig-motion="${N?"animated":"static"}" aria-label="${attr(label)}">`;
     const n0=fs[0].length;
     for(let i=0;i<n0;i++){
       const p0=fs[0][i];

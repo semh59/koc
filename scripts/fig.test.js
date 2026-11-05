@@ -40,4 +40,6 @@ ok("image size: total at most 12 MB",(()=>{let s=0;for(const e of X)for(let i=0;
 const svg=F.svg(Object.assign({},T.squat,{o:{}}),{label:"Squat"}),st=F.svg(T.squat,{anim:false});
 ok("svg: animated and static output are produced without number errors",svg.startsWith("<svg")&&svg.includes("<animate")&&!st.includes("<animate")&&!/NaN|undefined/.test(svg+st));
 ok("svg: every exercise renders",X.every(e=>{const s=F.svg(Object.assign({},T[e.tp],e.o?{o:e.o}:{},e.pr&&e.pr!=="-"?{prop:{k:e.pr.split("@")[0],at:e.pr.split("@")[1]==="sh"?"shoulder":"wrist"}}:{}),{});return !/NaN|undefined/.test(s)}));
+const side=F.svg(T.squat,{label:"Squat"}),front=F.svg(T.fly,{label:"Açma"}),staticSvg=F.svg(T.squat,{anim:false,label:"Squat"});
+ok("svg standard: fixed frame, aspect fit, view and motion metadata",[side,front].every(s=>s.includes('viewBox="0 0 160 150"')&&s.includes('preserveAspectRatio="xMidYMid meet"')&&s.includes('focusable="false"')&&s.includes('data-fig-view="')&&s.includes('data-fig-motion="animated"'))&&front.includes('data-fig-view="front"')&&side.includes('data-fig-view="side"')&&staticSvg.includes('data-fig-motion="static"'));
 finish();
