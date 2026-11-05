@@ -144,7 +144,8 @@ status
 Üretim kuralları:
 
 - Kaynak dosyaları insan tarafından okunabilir ve batch bazında ayrılabilir.
-- `build_exlib.py` kaynakları validate eder, generated `exlib.js` ve asset çıktısını üretir.
+- `build_exlib.py` pinned `free-exercise-db` JSON verisini kullanır; veri lisansı `LICENSE.md` üzerinden Unlicense olarak doğrulanmıştır.
+- Dataset fotoğraflarının lisansı doğrulanmadığı için fotoğraf asset'i provenance'ta `unverified/blocked` kalır; bu görselleri kamu malı diye sunma.
 - Generated dosyaya elle patch yasaktır; test bunu header ve source/output karşılaştırmasıyla korur.
 - `balance.js` gibi runtime ekleri için aynı semantic/provenance manifest sözleşmesi uygulanır; uzun vadede generated katalogla aynı üretim yoluna alınması planlanır.
 - Eski ID'ler değişmez; workout geçmişi, import matcher ve backup verisi bu anahtarları kullanır. Birleştirme veya yeniden adlandırma gerekirse ayrı migration ve açık alias map olmadan yapılmaz.

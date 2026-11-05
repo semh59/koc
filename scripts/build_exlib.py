@@ -1,4 +1,4 @@
-"""Generates the exercise library: scripts/exlib-src.txt + free-exercise-db (Unlicense, pinned commit) -> www/modules/gym/exlib.js + www/ex/<id>/{0,1}.webp.
+"""Generates the exercise library: scripts/exlib-src.txt + free-exercise-db data (Unlicense, pinned commit) -> www/modules/gym/exlib.js + www/ex/<id>/{0,1}.webp. Image licensing is not inferred from the data license.
 Usage: python scripts/build_exlib.py   (needs internet; downloads are cached)
 """
 import io, json, os, urllib.request

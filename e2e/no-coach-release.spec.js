@@ -11,6 +11,18 @@ test.describe("No-Coach release",()=>{
     await expect(page.locator("#view")).not.toBeEmpty();
   });
 
+  test("exercise details show NeoWell figures without unverified photos",async({app,page})=>{
+    await app.open({seed:state()});
+    await app.tab("gym");
+    for(const id of ["squat","onefoot","fastwalk"]){
+      await page.evaluate(id=>exSheet(id),id);
+      await expect(page.locator("#sheet .exfig svg")).toHaveCount(1);
+      await expect(page.locator("#sheet img,#sheet .exph")).toHaveCount(0);
+      await expect(page.locator("#sheet")).not.toContainText("kamu malı");
+    }
+    expect(await page.evaluate(()=>performance.getEntriesByType("resource").some(x=>/\/ex\/[^/]+\/\d+\.webp/.test(x.name)))).toBe(false);
+  });
+
   test("all shipped navigation tabs open real screens",async({app,page})=>{
     await app.open({seed:state()});
     for(const tab of ["today","gym","trend","more"]){

@@ -1,0 +1,2714 @@
+{
+  "batch": "B-2-baseline",
+  "status": "review",
+  "sources": {
+    "neowell-data": {
+      "name": "NeoWell hand-written supplemental exercises",
+      "repository": "local",
+      "sourcePath": "www/modules/gym/balance.js",
+      "license": "NeoWell internal content",
+      "licenseStatus": "internal"
+    },
+    "free-exercise-db-data": {
+      "name": "free-exercise-db dataset JSON",
+      "repository": "https://github.com/yuhonas/free-exercise-db",
+      "commit": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+      "sourcePath": "dist/exercises.json",
+      "license": "Unlicense",
+      "licensePath": "LICENSE.md",
+      "licenseUrl": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+      "licenseStatus": "verified",
+      "attribution": "Data adapted from yuhonas/free-exercise-db at commit f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5 (Unlicense).",
+      "transformation": "Selected using scripts/exlib-src.txt; NeoWell names, figure mapping and cues maintained separately.",
+      "evidence": "Pinned LICENSE.md states public-domain dedication for the software/data source."
+    },
+    "free-exercise-db-images": {
+      "name": "free-exercise-db exercise images",
+      "repository": "https://github.com/yuhonas/free-exercise-db",
+      "commit": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+      "sourcePath": "exercises/*/*.jpg",
+      "license": "unknown",
+      "licensePath": "",
+      "licenseUrl": "https://github.com/yuhonas/free-exercise-db/issues/2",
+      "licenseStatus": "unverified",
+      "useStatus": "blocked",
+      "evidence": "Upstream maintainer states image origin/licensing is unknown; do not treat repository data license as image license."
+    },
+    "neowell-figure": {
+      "name": "NeoWell generated figure",
+      "repository": "local",
+      "commit": "",
+      "sourcePath": "www/modules/gym/figtpl.js",
+      "license": "NeoWell-owned generated asset",
+      "licensePath": "",
+      "licenseStatus": "internal",
+      "useStatus": "eligible",
+      "evidence": "Generated in repository; no third-party image asset claim."
+    }
+  },
+  "counts": {
+    "source": 324,
+    "local": 8,
+    "runtime": 332,
+    "accepted_new_records": 0
+  },
+  "openReview": "Legacy photos remain packaged but are not rendered in exercise detail; image license remains unverified. No new records accepted.",
+  "records": [
+    {
+      "id": "squat",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "fullsquat",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "frontsquat",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bwsquat",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "goblet",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dbsquat",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "widesquat",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "narrowsquat",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "smithsquat",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "boxsquat",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "ohsquat",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "pliesquat",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "chairsquat",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "jumpsquat",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "hacksquat",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bblunge",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dblunge",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "walklunge",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "rearlunge",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "splitsquat",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dbstepup",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bbstepup",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "legpress",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "narrowpress",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "smithpress",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "legext",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "legext1",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "rdl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "stiffdl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dbstiffdl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "goodmorning",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "legcurl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "seatedcurl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "standcurl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "ballcurl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "ghr",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "revhyper",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "kbdl1",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "kbswing",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "sumodl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "cleandl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "widestiff",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bandgm",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "cabledl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "trapdl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "hipthrust",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "glutebridge",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bridge",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bridge1",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "ballbridge",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bandbridge",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "pullthrough",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "kickbackglute",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "cablekick",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "stepupknee",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "monsterwalk",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bandhipext",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "calf",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dbcalf",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bbcalf",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "smithcalf",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "presscalf",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bandcalf",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "seatedcalf",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "calf1",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "abductor",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "adductor",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bandadd",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "sideleg",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "latbound",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "cableadd",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bench",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "incbench",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "decbench",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dbbench",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "incdb",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "decdb",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "incdbin",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dbbenchn",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dbbench1",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "smithbench",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "smithinc",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "machbench",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "levchest",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "levincchest",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "cablepress",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dbfly",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "incfly",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "decfly",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "crossover",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "lowcross",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "butterfly",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "cablefly",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "pushup",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "pushupwide",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "pushupclose",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "pushupinc",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "pushupfeet",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "pushupdec",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "pushup1",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "plyopushup",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dipschest",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bandbench",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "floorpress",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "pullover",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "chestsqueeze",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "ohp",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bbohp",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "arnold",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dbohp1",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "cableohp",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "levohp",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "pushpress",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "kbpress",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "lat",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bandlat",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "cablelat",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "altraise",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "frontraise",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "frontraise2",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "cablefront",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "plateraise",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "scaption",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "reardelt",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "cablerear",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "facepull",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "pullapart",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bandupright",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dbupright",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dbupright1",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "kbhalo",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
+    },
+    {
+      "id": "handstand",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "extrot",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bbshrug",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "shrug",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "cableshrug",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "levshrug",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "smithupright",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "scappull",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "pullup",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "chinup",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "vbarpull",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "widepull",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bandpullup",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "pulldown",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "closepulldown",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "vbarpulldown",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "underpulldown",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "pulldown1",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "straightarm",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "row",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dbrow",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dbrow1",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "longrow1",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "tbar",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "revrow",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "smithrow",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "kbrow",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "seatedrow",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "levrow",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "seatedrow1",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "invrow",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "susprow",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "incrow",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "deadlift",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "rackpull",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "defdl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "backext",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "backextfloor",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "ballhyper",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "stiffgm",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "superman",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "seatedgm",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "curl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bbcurl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "ezcurl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "hammer",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "althammer",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "altcurl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "inccurl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "seatedcurl2",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "concurl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "preacher",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "machpreacher",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "preacher1",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "cablecurl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "cablehammer",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "machcurl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "revcurl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "zottman",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "crosshammer",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "spider",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "widecurl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "closecurl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "tri",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "ropepushdown",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "vbarpushdown",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "revpushdown",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "lowtri",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "cabletri1",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "ropeoverhead",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "cableoverhead",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dboverhead",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dboverhead1",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bboverhead",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "seatedtri",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "kboverhead",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
+    },
+    {
+      "id": "skull",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dbskull",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "decskull",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bandskull",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "kickback",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "kickback1",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "closebench",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "closedbpress",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dipstri",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "paralleldip",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "benchdips",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dipmachine",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "pushuptri",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "neckfb",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "neckharness",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "wristcurl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "wristrev",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "wristcurlbar",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "wristroller",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "farmer",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "platepinch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "crunch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "cablecrunch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "deccrunch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "ballcrunch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "crunchoverhead",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "obliquecrunch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "crosscrunch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "revcrunch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "sit34",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "jackknife",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "janda",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "deadbug",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "benchlegraise",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "kneehipraise",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "legpullin",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "flutter",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "scissor",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "hangingraise",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "hangpike",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dipraise",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "plank",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "abroller",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "rollout",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "climber",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "sidebendbar",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "sidebend",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "cablesidebend",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "russiantwist",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "pallof",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "ballwoodchop",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "latstretch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "airbike",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "heeltouch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "treadjog",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "treadrun",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "trail",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "treadwalk",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bike",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "statbike",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "recbike",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "elliptical",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "stairs",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "jumprope",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "jumpingjack",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "scissorjump",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "skipping",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "buttkick",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "buttkick1",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "splitjump",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "longjump",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "rocketjump",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "boxjump",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "benchjump",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "rower",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "battleropes",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "thruster",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "cleanpress",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "getup",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "inchworm",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "hamstretch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "seatedhamstretch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "toetouch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "hamcalfstretch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "quadstretch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "elevquad",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "sidequad",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "hipflexor",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "standhipflexor",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "kneeacross",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "kneechest",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "seatedglute",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "calfstretch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "wallcalf",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "seatedcalfstretch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "chestshoulder",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "dynchest",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "behindchest",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "shoulderstretch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "armcircles",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "shouldercircles",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "upstretch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "tristretch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "bistretch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "chinchest",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "sideneck",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "neckiso",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "childpose",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "catstretch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "torsotwist",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "midback",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "upperback",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "overheadlat",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "lowerbackcurl",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "windmills",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "wgstretch",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "groiners",
+      "dataSource": "free-exercise-db-data",
+      "dataLicenseStatus": "verified",
+      "assetStatus": "unverified",
+      "assetSource": "free-exercise-db-images",
+      "decision": "review"
+    },
+    {
+      "id": "onefoot",
+      "dataSource": "neowell-data",
+      "dataLicenseStatus": "internal",
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
+    },
+    {
+      "id": "heeltoe",
+      "dataSource": "neowell-data",
+      "dataLicenseStatus": "internal",
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
+    },
+    {
+      "id": "chairstand",
+      "dataSource": "neowell-data",
+      "dataLicenseStatus": "internal",
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
+    },
+    {
+      "id": "sidestep",
+      "dataSource": "neowell-data",
+      "dataLicenseStatus": "internal",
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
+    },
+    {
+      "id": "tandem",
+      "dataSource": "neowell-data",
+      "dataLicenseStatus": "internal",
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
+    },
+    {
+      "id": "armswalk",
+      "dataSource": "neowell-data",
+      "dataLicenseStatus": "internal",
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
+    },
+    {
+      "id": "fastwalk",
+      "dataSource": "neowell-data",
+      "dataLicenseStatus": "internal",
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
+    },
+    {
+      "id": "slowwalk",
+      "dataSource": "neowell-data",
+      "dataLicenseStatus": "internal",
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
+    }
+  ]
+}

@@ -28,7 +28,7 @@ const exLv=l=>l==="Başlangıç"?"başlangıç seviyesi":l.toLowerCase()+" seviy
 function viewExlib(){
   return `<div class="srch"><input class="in" id="glq" type="search" enterkeyhint="search" aria-label="Egzersiz ara" placeholder="Egzersiz ara" autocomplete="off" value="${esc(gLQ)}"><span id="glfb">${exFilterBtn()}</span></div>
   <div id="gllist" class="card exlist">${exListHtml()}</div>
-  <p class="hint">Egzersiz bilgileri genel bilgi amaçlıdır, kişisel antrenman ya da tıbbi tavsiye değildir. Fotoğraflar free-exercise-db (kamu malı) kaynaklıdır.</p>`;
+  <p class="hint">Egzersiz bilgileri genel bilgi amaçlıdır, kişisel antrenman ya da tıbbi tavsiye değildir. Çöp adam görseli NeoWell tarafından üretilir; fotoğraf varsa lisansı ayrıca doğrulanır.</p>`;
 }
 const exFilterN=()=>[gLReg,gLCat,gLEq].filter(x=>x!=="Tümü").length;
 const exFilterBtn=()=>{const n=exFilterN();return `<button class="btn ghost" data-g="lfilter" aria-label="Filtre${n?`, ${n} etkin`:""}">Filtre${n?` <span class="badge num">${n}</span>`:""}</button>`};
@@ -89,7 +89,7 @@ function exCharts(id){
 }
 function exSheet(id){
   const e=gEx(id),d=e.tp?exDef(e):null;
-  const photos=e.im>0?`<span class="exph" aria-hidden="true"><img src="ex/${e.id}/0.webp" alt="" loading="lazy">${e.im>1?`<img class="b" src="ex/${e.id}/1.webp" alt="" loading="lazy">`:""}</span>`:"";
+  const photos="";
   const cues=(EXCUE[e.tp]||[]).map(c=>`<li>${esc(c)}</li>`).join("");
   const w=gActive(),inW=w&&w.ex.some(x=>x.id===id);
   openSheet(`<h3>${esc(e.n)}</h3><div class="mut sm">${e.r||e.g}${e.q?" · "+e.q:""}${e.l?" · "+exLv(e.l):""}${e.c?" · "+EXCAT[e.c]:""}</div>
