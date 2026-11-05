@@ -10,7 +10,7 @@ NeoWell’in yerleşik kataloğunu mevcut 332 egzersizden önce 500+ seviyesine 
 
 ## Sıra ve kapılar
 
-1. Mevcut 332 kaydı benzersizlik, kas bölgesi, tür, ekipman, seviye ve figür kapsamına göre envanterle.
+1. Mevcut 332 kaydı benzersizlik, kas bölgesi, tür, ekipman, seviye ve figür kapsamına göre envanterle. Baseline: `docs/analysis/gym-phase-b-baseline.md` ve `scripts/gym-catalog-baseline.test.js`.
 2. Eksik aileleri belirle: ev tipi, makine, serbest ağırlık, vücut ağırlığı, kardiyo, mobilite ve denge.
 3. Lisans/attribution uygun veri kaynağını kesinleştir; doğrulanmamış görsel veya metin ekleme.
 4. Kaynak verisini `exlib.js` üretim hattına uygun girdiye dönüştür; generated dosyayı elle düzenleme.
