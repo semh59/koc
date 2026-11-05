@@ -1,10 +1,10 @@
 # Egzersiz Modülü — geliştirme backlog'u
 
-Bu dosya AR-GE incelemesinden ayrıdır. İnceleme commit’inde üretim kodu değiştirilmez; geliştirme maddeleri ayrı iş olarak ele alınır.
+Bu dosya AR-GE incelemesinden ayrıdır. İnceleme commit’inde üretim kodu değiştirilmez; geliştirme maddeleri ayrı iş olarak ele alınır. Ayrıntılı yol haritaları: `gym-phase-a-plan.md` ve `gym-phase-b-plan.md`. Faz B, Faz A kapanmadan başlamaz.
 
 ## P0 — güvenlik ve veri bütünlüğü
 
-- [ ] **GYM-SEC-001:** `FigLib.svg` label/ARIA attribute sink’ini güvenli serialize et. Gerçek browser payload testi: tehlikeli DOM `0`, execution marker `null`.
+- [x] **GYM-SEC-001:** `FigLib.svg` label/ARIA attribute sink’ini güvenli serialize et. Gerçek browser payload testi: tehlikeli DOM `0`, execution marker `null`. Bağımsız kapanış: `CLOSE`.
 - [ ] **GYM-INT-001:** `gFinishSave` işlemini atomic yap. Save/quota failure sonrası memory ve persisted state aynı kalmalı; başarı summary yalnız kalıcı yazma onayından sonra açılmalı.
 
 ## P1 — doğruluk ve kullanıcı akışı

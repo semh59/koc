@@ -176,13 +176,13 @@ const FigLib=(()=>{
     return {parts:out,J};
   }
 
-  const f1=x=>(Math.round(x*10)/10);
+  const f1=x=>(Math.round(x*10)/10),attr=x=>String(x).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   /* SVG: with anim, a SMIL loop (detail sheet only); otherwise a single pose (list thumbnail). */
   function svg(def,{anim=true,label="Egzersiz"}={}){
     const dur=2.6,N=anim?14:0;
     const poses=N?sample(def,N):[full(Object.assign({},def.frames[0],def.o||{}))];
     const fs=poses.map(p=>frame(def,p).parts);
-    let h=`<svg class="fig" viewBox="0 0 ${W} ${H}" role="img" aria-label="${label}">`;
+    let h=`<svg class="fig" viewBox="0 0 ${W} ${H}" role="img" aria-label="${attr(label)}">`;
     const n0=fs[0].length;
     for(let i=0;i<n0;i++){
       const p0=fs[0][i];
