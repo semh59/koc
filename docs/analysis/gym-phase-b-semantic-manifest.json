@@ -1,0 +1,2334 @@
+{
+  "generatedAt": "B-0 audit snapshot",
+  "sourceCount": 324,
+  "runtimeCount": 332,
+  "semanticUniqueCount": 0,
+  "reviewCount": 332,
+  "legacyObservedDuplicateGroups": 78,
+  "records": [
+    {
+      "id": "squat",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar@sh\",\"kind\":\"w\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "fullsquat",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar@sh\",\"kind\":\"w\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "frontsquat",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar@sh\",\"kind\":\"w\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "bwsquat",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "goblet",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"kb\",\"kind\":\"w\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "dbsquat",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "widesquat",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar@sh\",\"kind\":\"w\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "narrowsquat",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar@sh\",\"kind\":\"w\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "smithsquat",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar@sh\",\"kind\":\"w\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "boxsquat",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar@sh\",\"kind\":\"w\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "ohsquat",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "pliesquat",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "chairsquat",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "jumpsquat",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "hacksquat",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "bblunge",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar@sh\",\"kind\":\"w\",\"pattern\":\"lunge\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "dblunge",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"lunge\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "walklunge",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"lunge\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "rearlunge",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"lunge\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "splitsquat",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"lunge\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "dbstepup",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"stepup\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "bbstepup",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar@sh\",\"kind\":\"w\",\"pattern\":\"stepup\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "legpress",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"legpress\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "narrowpress",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"legpress\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "smithpress",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"legpress\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "legext",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"legext\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "legext1",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"legext\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "rdl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "stiffdl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "dbstiffdl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "goodmorning",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar@sh\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "legcurl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"legcurl\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "seatedcurl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"legcurl\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "standcurl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"legcurl\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "ballcurl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"legcurl\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "ghr",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"backext\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "revhyper",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"backext\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "kbdl1",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"kb\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "kbswing",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"kb\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "sumodl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "cleandl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "widestiff",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "bandgm",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "cabledl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "trapdl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "hipthrust",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"bridge\",\"region\":\"kalça\"}"
+    },
+    {
+      "id": "glutebridge",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"bridge\",\"region\":\"kalça\"}"
+    },
+    {
+      "id": "bridge",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"bridge\",\"region\":\"kalça\"}"
+    },
+    {
+      "id": "bridge1",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"bridge\",\"region\":\"kalça\"}"
+    },
+    {
+      "id": "ballbridge",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"bridge\",\"region\":\"kalça\"}"
+    },
+    {
+      "id": "bandbridge",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"bridge\",\"region\":\"kalça\"}"
+    },
+    {
+      "id": "pullthrough",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"kalça\"}"
+    },
+    {
+      "id": "kickbackglute",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"legcurl\",\"region\":\"kalça\"}"
+    },
+    {
+      "id": "cablekick",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"legcurl\",\"region\":\"kalça\"}"
+    },
+    {
+      "id": "stepupknee",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"stepup\",\"region\":\"kalça\"}"
+    },
+    {
+      "id": "monsterwalk",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"legspread\",\"region\":\"kalça\"}"
+    },
+    {
+      "id": "bandhipext",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"legcurl\",\"region\":\"kalça\"}"
+    },
+    {
+      "id": "calf",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"calf\",\"region\":\"baldır\"}"
+    },
+    {
+      "id": "dbcalf",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"calf\",\"region\":\"baldır\"}"
+    },
+    {
+      "id": "bbcalf",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar@sh\",\"kind\":\"w\",\"pattern\":\"calf\",\"region\":\"baldır\"}"
+    },
+    {
+      "id": "smithcalf",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"calf\",\"region\":\"baldır\"}"
+    },
+    {
+      "id": "presscalf",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"calf\",\"region\":\"baldır\"}"
+    },
+    {
+      "id": "bandcalf",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"calf\",\"region\":\"baldır\"}"
+    },
+    {
+      "id": "seatedcalf",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"calf\",\"region\":\"baldır\"}"
+    },
+    {
+      "id": "calf1",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"calf\",\"region\":\"baldır\"}"
+    },
+    {
+      "id": "abductor",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"legspread\",\"region\":\"i̇ç-dış bacak\"}"
+    },
+    {
+      "id": "adductor",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"legspread\",\"region\":\"i̇ç-dış bacak\"}"
+    },
+    {
+      "id": "bandadd",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"legspread\",\"region\":\"i̇ç-dış bacak\"}"
+    },
+    {
+      "id": "sideleg",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"legspread\",\"region\":\"i̇ç-dış bacak\"}"
+    },
+    {
+      "id": "latbound",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"legspread\",\"region\":\"i̇ç-dış bacak\"}"
+    },
+    {
+      "id": "cableadd",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"legspread\",\"region\":\"i̇ç-dış bacak\"}"
+    },
+    {
+      "id": "bench",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"bench\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "incbench",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"incline\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "decbench",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"bench\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "dbbench",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"bench\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "incdb",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"incline\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "decdb",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"bench\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "incdbin",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"incline\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "dbbenchn",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"bench\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "dbbench1",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"bench\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "smithbench",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"bench\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "smithinc",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"incline\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "machbench",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"bench\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "levchest",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"bench\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "levincchest",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"incline\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "cablepress",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"bench\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "dbfly",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"fly\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "incfly",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"fly\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "decfly",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"fly\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "crossover",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"fly\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "lowcross",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"fly\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "butterfly",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"fly\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "cablefly",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"fly\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "pushup",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"pushup\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "pushupwide",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"pushup\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "pushupclose",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"pushup\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "pushupinc",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"pushup\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "pushupfeet",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"pushup\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "pushupdec",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"pushup\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "pushup1",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"pushup\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "plyopushup",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"pushup\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "dipschest",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"dips\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "bandbench",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"bench\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "floorpress",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"kb\",\"kind\":\"w\",\"pattern\":\"bench\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "pullover",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"bench\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "chestsqueeze",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"fly\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "ohp",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"ohp\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "bbohp",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"ohp\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "arnold",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"ohp\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "dbohp1",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"ohp\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "cableohp",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"ohp\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "levohp",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"ohp\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "pushpress",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"ohp\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "kbpress",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"kb\",\"kind\":\"w\",\"pattern\":\"ohp\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "lat",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"latraise\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "bandlat",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"latraise\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "cablelat",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"latraise\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "altraise",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"frontraise\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "frontraise",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"frontraise\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "frontraise2",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"frontraise\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "cablefront",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"frontraise\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "plateraise",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"ball\",\"kind\":\"w\",\"pattern\":\"frontraise\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "scaption",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"frontraise\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "reardelt",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"row\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "cablerear",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"latraise\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "facepull",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"seatedrow\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "pullapart",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"latraise\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "bandupright",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "dbupright",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "dbupright1",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "kbhalo",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"kb\",\"kind\":\"w\",\"pattern\":\"ohp\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "handstand",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"ohp\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "extrot",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "bbshrug",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"shrug\",\"region\":\"trapez\"}"
+    },
+    {
+      "id": "shrug",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"shrug\",\"region\":\"trapez\"}"
+    },
+    {
+      "id": "cableshrug",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"shrug\",\"region\":\"trapez\"}"
+    },
+    {
+      "id": "levshrug",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"shrug\",\"region\":\"trapez\"}"
+    },
+    {
+      "id": "smithupright",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"trapez\"}"
+    },
+    {
+      "id": "scappull",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"pullup\",\"region\":\"trapez\"}"
+    },
+    {
+      "id": "pullup",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"pullup\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "chinup",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"pullup\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "vbarpull",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"pullup\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "widepull",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"pullup\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "bandpullup",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"pullup\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "pulldown",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"pulldown\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "closepulldown",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"pulldown\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "vbarpulldown",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"pulldown\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "underpulldown",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"pulldown\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "pulldown1",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"pulldown\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "straightarm",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"pulldown\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "row",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"row\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "dbrow",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"row\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "dbrow1",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"row\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "longrow1",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"row\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "tbar",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"row\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "revrow",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"row\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "smithrow",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"row\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "kbrow",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"kb\",\"kind\":\"w\",\"pattern\":\"row\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "seatedrow",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"seatedrow\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "levrow",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"seatedrow\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "seatedrow1",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"seatedrow\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "invrow",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"seatedrow\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "susprow",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"seatedrow\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "incrow",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"row\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "deadlift",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "rackpull",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "defdl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "backext",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"backext\",\"region\":\"bel\"}"
+    },
+    {
+      "id": "backextfloor",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"backext\",\"region\":\"bel\"}"
+    },
+    {
+      "id": "ballhyper",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"backext\",\"region\":\"bel\"}"
+    },
+    {
+      "id": "stiffgm",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar@sh\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"bel\"}"
+    },
+    {
+      "id": "superman",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"backext\",\"region\":\"bel\"}"
+    },
+    {
+      "id": "seatedgm",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar@sh\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"bel\"}"
+    },
+    {
+      "id": "curl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "bbcurl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "ezcurl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "hammer",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "althammer",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "altcurl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "inccurl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "seatedcurl2",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "concurl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "preacher",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "machpreacher",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "preacher1",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "cablecurl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "cablehammer",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "machcurl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "revcurl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "zottman",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "crosshammer",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "spider",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "widecurl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "closecurl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "tri",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"pushdown\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "ropepushdown",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"pushdown\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "vbarpushdown",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"pushdown\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "revpushdown",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"pushdown\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "lowtri",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"pushdown\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "cabletri1",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"pushdown\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "ropeoverhead",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"overheadext\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "cableoverhead",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"overheadext\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "dboverhead",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"overheadext\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "dboverhead1",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"overheadext\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "bboverhead",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"overheadext\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "seatedtri",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"overheadext\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "kboverhead",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"kb\",\"kind\":\"w\",\"pattern\":\"overheadext\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "skull",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"skull\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "dbskull",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"skull\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "decskull",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"skull\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "bandskull",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"skull\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "kickback",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"kickback\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "kickback1",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"kickback\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "closebench",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"bench\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "closedbpress",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"bench\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "dipstri",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"dips\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "paralleldip",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"dips\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "benchdips",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"dips\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "dipmachine",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"dips\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "pushuptri",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"pushup\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "neckfb",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"neckstretch\",\"region\":\"boyun\"}"
+    },
+    {
+      "id": "neckharness",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"neckstretch\",\"region\":\"boyun\"}"
+    },
+    {
+      "id": "wristcurl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"ön kol\"}"
+    },
+    {
+      "id": "wristrev",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"ön kol\"}"
+    },
+    {
+      "id": "wristcurlbar",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"ön kol\"}"
+    },
+    {
+      "id": "wristroller",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"frontraise\",\"region\":\"ön kol\"}"
+    },
+    {
+      "id": "farmer",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"c\",\"pattern\":\"walk\",\"region\":\"ön kol\"}"
+    },
+    {
+      "id": "platepinch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"shrug\",\"region\":\"ön kol\"}"
+    },
+    {
+      "id": "crunch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"crunch\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "cablecrunch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"crunch\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "deccrunch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"crunch\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "ballcrunch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"crunch\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "crunchoverhead",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"crunch\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "obliquecrunch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"crunch\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "crosscrunch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"crunch\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "revcrunch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"legraise\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "sit34",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"situp\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "jackknife",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"situp\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "janda",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"situp\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "deadbug",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"legraise\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "benchlegraise",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"legraise\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "kneehipraise",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"legraise\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "legpullin",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"legraise\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "flutter",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"legraise\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "scissor",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"legraise\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "hangingraise",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"hangraise\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "hangpike",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"hangraise\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "dipraise",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"hangraise\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "plank",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"plank\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "abroller",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"plank\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "rollout",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"plank\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "climber",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"i\",\"pattern\":\"climber\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "sidebendbar",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"sidebend\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "sidebend",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"sidebend\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "cablesidebend",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"sidebend\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "russiantwist",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"woodchop\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "pallof",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"woodchop\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "ballwoodchop",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"ball\",\"kind\":\"b\",\"pattern\":\"woodchop\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "latstretch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"sidebend\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "airbike",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"cycle\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "heeltouch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"crunch\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "treadjog",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"c\",\"pattern\":\"run\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "treadrun",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"c\",\"pattern\":\"run\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "trail",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"c\",\"pattern\":\"run\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "treadwalk",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"c\",\"pattern\":\"walk\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "bike",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"c\",\"pattern\":\"cycle\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "statbike",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"c\",\"pattern\":\"cycle\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "recbike",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"c\",\"pattern\":\"cycle\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "elliptical",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"c\",\"pattern\":\"walk\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "stairs",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"c\",\"pattern\":\"stepup\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "jumprope",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"c\",\"pattern\":\"jumprope\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "jumpingjack",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"i\",\"pattern\":\"jack\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "scissorjump",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"i\",\"pattern\":\"jack\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "skipping",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"i\",\"pattern\":\"highknees\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "buttkick",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"i\",\"pattern\":\"highknees\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "buttkick1",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"i\",\"pattern\":\"highknees\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "splitjump",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"i\",\"pattern\":\"lunge\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "longjump",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"squat\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "rocketjump",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"squat\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "boxjump",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"stepup\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "benchjump",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"stepup\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "rower",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"c\",\"pattern\":\"seatedrow\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "battleropes",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"i\",\"pattern\":\"woodchop\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "thruster",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"kb\",\"kind\":\"w\",\"pattern\":\"squat\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "cleanpress",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"ohp\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "getup",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"kb\",\"kind\":\"w\",\"pattern\":\"situp\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "inchworm",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"i\",\"pattern\":\"plank\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "hamstretch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"hamstretch\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "seatedhamstretch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"hamstretch\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "toetouch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"hinge\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "hamcalfstretch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"hamstretch\",\"region\":\"arka bacak\"}"
+    },
+    {
+      "id": "quadstretch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"qstretch\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "elevquad",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"qstretch\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "sidequad",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"qstretch\",\"region\":\"ön bacak\"}"
+    },
+    {
+      "id": "hipflexor",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"lunge\",\"region\":\"kalça\"}"
+    },
+    {
+      "id": "standhipflexor",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"lunge\",\"region\":\"kalça\"}"
+    },
+    {
+      "id": "kneeacross",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"hamstretch\",\"region\":\"kalça\"}"
+    },
+    {
+      "id": "kneechest",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"hamstretch\",\"region\":\"kalça\"}"
+    },
+    {
+      "id": "seatedglute",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"hamstretch\",\"region\":\"kalça\"}"
+    },
+    {
+      "id": "calfstretch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"lunge\",\"region\":\"baldır\"}"
+    },
+    {
+      "id": "wallcalf",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"lunge\",\"region\":\"baldır\"}"
+    },
+    {
+      "id": "seatedcalfstretch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"hamstretch\",\"region\":\"baldır\"}"
+    },
+    {
+      "id": "chestshoulder",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"armstretch\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "dynchest",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"fly\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "behindchest",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"armstretch\",\"region\":\"göğüs\"}"
+    },
+    {
+      "id": "shoulderstretch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"armstretch\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "armcircles",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"armstretch\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "shouldercircles",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"shrug\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "upstretch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"armstretch\",\"region\":\"omuz\"}"
+    },
+    {
+      "id": "tristretch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"overheadext\",\"region\":\"triseps\"}"
+    },
+    {
+      "id": "bistretch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"frontraise\",\"region\":\"biseps\"}"
+    },
+    {
+      "id": "chinchest",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"neckstretch\",\"region\":\"boyun\"}"
+    },
+    {
+      "id": "sideneck",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"neckstretch\",\"region\":\"boyun\"}"
+    },
+    {
+      "id": "neckiso",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"neckstretch\",\"region\":\"boyun\"}"
+    },
+    {
+      "id": "childpose",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"hamstretch\",\"region\":\"bel\"}"
+    },
+    {
+      "id": "catstretch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"plank\",\"region\":\"bel\"}"
+    },
+    {
+      "id": "torsotwist",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"twiststretch\",\"region\":\"karın\"}"
+    },
+    {
+      "id": "midback",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"twiststretch\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "upperback",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"armstretch\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "overheadlat",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"armstretch\",\"region\":\"sırt\"}"
+    },
+    {
+      "id": "lowerbackcurl",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"crunch\",\"region\":\"bel\"}"
+    },
+    {
+      "id": "windmills",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"twiststretch\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "wgstretch",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"lunge\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "groiners",
+      "source": "scripts/exlib-src.txt",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"lunge\",\"region\":\"i̇ç-dış bacak\"}"
+    },
+    {
+      "id": "onefoot",
+      "source": "runtime-only",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"onefoot\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "heeltoe",
+      "source": "runtime-only",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"balwalk\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "chairstand",
+      "source": "runtime-only",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"chairstand\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "sidestep",
+      "source": "runtime-only",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"sidestep\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "tandem",
+      "source": "runtime-only",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"tandem\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "armswalk",
+      "source": "runtime-only",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"balwalk2\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "fastwalk",
+      "source": "runtime-only",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"walk\",\"region\":\"tüm vücut\"}"
+    },
+    {
+      "id": "slowwalk",
+      "source": "runtime-only",
+      "status": "review",
+      "reason": "incomplete-canonical-metadata",
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"walk\",\"region\":\"tüm vücut\"}"
+    }
+  ]
+}

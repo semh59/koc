@@ -1,7 +1,7 @@
 # Exercise library source: dataset name|id|Turkish name|region|template|prop|kind|pose overrides (JSON)
 # regions: Göğüs Sırt Omuz Biseps Triseps Ön kol Karın Bel Kalça Ön bacak Arka bacak Baldır İç-dış bacak Boyun Trapez Tüm vücut
 # empty kind is derived from the category: strength+bodyweight=b, strength+equipment=w, stretching=t, cardio=c, plyometrics=b. prop: bar db kb ball none, bar@sh = bar on the shoulders
-# ids are free to change; the app stores no data that depends on them
+# ids are persistent catalog keys: workouts/imports store them; never change an existing id without a migration and alias map
 ## ---- legs: quadriceps
 Barbell Squat|squat|Squat|Ön bacak|squat|bar@sh||{"a1":-60,"a2":-10}
 Barbell Full Squat|fullsquat|Derin halterli squat|Ön bacak|squat|bar@sh||{"a1":-60,"a2":-10}
