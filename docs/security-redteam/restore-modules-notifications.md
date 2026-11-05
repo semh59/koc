@@ -65,7 +65,19 @@ restore toplamı: 1.566 ms
 state entries: 60.000
 ```
 
-60.000 kayıtla kaynak tüketimi/DoS gözlenmedi. Bu tek browser/Chromium koşusudur; düşük bellekli gerçek Android cihazda aynı sonuç garanti edilmez. Dosya restore yolu için mevcut 20 MB dosya sınırı vardır; paste yolunun ayrı boyut sınırı bulunmadığı statik olarak not edilmiştir, fakat bu probe’da doğrulanmış DoS oluşmadı.
+60.000 kayıtla kaynak tüketimi/DoS gözlenmedi. Bu tek browser/Chromium koşusudur; düşük bellekli gerçek Android cihazda aynı sonuç garanti edilmez. Dosya restore yolu için mevcut 20 MB dosya sınırı vardır; paste yolunun ayrı boyut sınırı bulunmadığı statik olarak not edilmiştir.
+
+Sınırı aşan ikinci gerçek paste replay’i de çalıştırıldı:
+
+```text
+entries: 200.000
+şifreli envelope: 21.718.818 byte
+confirmation: 4.261 ms
+restore toplamı: 4.784 ms
+state entries: 200.000
+```
+
+Bu koşuda da UI responsive kaldı ve test `1 passed`, exit `0` verdi. Tek browser koşusunda doğrulanabilir DoS oluşmadı; düşük bellekli fiziksel Android cihaz riski açık kaldı.
 
 ## Komşu regression kapıları
 
