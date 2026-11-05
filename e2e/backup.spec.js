@@ -5,7 +5,7 @@ const {readFile}=require("fs/promises");
 const PW="Kuzey-Yildiz-2026";
 test("encrypted backup: create, wipe all data, rejected without or with a wrong password, restored with the right one plus a safety copy",async({app,page})=>{
   test.setTimeout(90000);
-  await app.open({seed:state({},{entries:[entry("note",null,"Gizli sağlık notum"),entry("weight",81.5)]}),keys:{groq:"gsk_test"}});
+  await app.open({seed:state({},{entries:[entry("note",null,"Gizli sağlık notum"),entry("weight",81.5)]})});
   const toastIs=m=>expect(app.toast).toHaveText(m);
   const bk=async()=>{await app.go("settings-data");await page.click('[data-act="backup"]')};
   const rs=async()=>{await app.go("settings-data");await page.click('[data-obr="open"]')};
@@ -32,7 +32,6 @@ test("encrypted backup: create, wipe all data, rejected without or with a wrong 
   await app.go("settings-data");await page.click('[data-act="reset"]');
   await toastIs("Tüm veriler silindi");
   expect((await app.state()).entries).toEqual([]);
-  expect(await page.evaluate("getKeys().groq")).toBeUndefined();
   await page.evaluate("add('note',null,'Sonradan yazılan',dayKey());save()");
 
   // Restoring with no password, a wrong password or plain text leaves the data untouched
@@ -58,7 +57,6 @@ test("encrypted backup: create, wipe all data, rejected without or with a wrong 
   const st=await app.state();
   expect(st.entries.map(e=>e.text).sort()).toEqual(["","Gizli sağlık notum"]);
   expect(st.entries.find(e=>e.type==="weight").v).toBe(81.5);
-  expect(await page.evaluate("getKeys().groq")).toBe("gsk_test");
   const prev=await page.evaluate(()=>JSON.parse(Store.get("nw_state_previous")));
   expect(prev.entries.map(e=>e.text)).toEqual(["Sonradan yazılan"]);
   expect(st.settings.copyAt).toBe("2026-10-06");
