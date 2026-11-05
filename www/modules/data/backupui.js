@@ -3,6 +3,15 @@
    The password can optionally be stored, encrypted with this phone's Keystore vault only. */
 const BKPW_LS="nw_bkpw_enc";
 const BF=()=>plugin("BackupFolder");
+/* Native smoke proof for the local Keystore used only to remember a backup password. */
+async function vaultSelfTest(){
+  const kv=KV();if(!kv||window.__noSelfTest)return;
+  try{
+    const e=await kv.encrypt({text:"neowell-vault-self-test"}),r=await kv.decrypt({data:e.data});
+    console.log("NW-VAULT "+(r.text==="neowell-vault-self-test"?"ok":"hata"));
+  }catch(e){console.log("NW-VAULT hata "+(e&&e.message||e))}
+}
+document.addEventListener("nw:boot",()=>{if(isNative())setTimeout(vaultSelfTest,1000)});
 /* The one backup payload: settings and data plus the API keys (unless the user keeps them out), encrypted with the password into a JSON string. */
 const backupJson=async pw=>{const safeS=structuredClone(S);return JSON.stringify(await BackupLib.encrypt({S:safeS,keys:{},at:dayKey(),app:appVer},pw))};
 const BK_PHOTOS="Fotoğraflar yedeğe girmez; yeni telefona ayrıca taşı.";

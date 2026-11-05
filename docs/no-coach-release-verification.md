@@ -7,7 +7,7 @@ Base: `89e239d`
 
 - `node scripts/run-no-coach-tests.js`: 80 executed, 0 failed.
 - Coach-only tests: 8 explicitly skipped because Coach is retained on `main`.
-- Mixed Coach tests: 17 explicitly scoped to `main`; not counted as no-Coach release tests.
+- Mixed Coach tests: 18 explicitly scoped to `main`; not counted as no-Coach release tests.
 - `npm run test:e2e`: 14 passed across `phone-360` and `phone-412`.
 - `node scripts/no-coach-release.test.js`: passed.
 - `node scripts/no-coach-boot.test.js`: 5/5 passed.
