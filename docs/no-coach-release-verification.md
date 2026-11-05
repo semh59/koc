@@ -19,6 +19,10 @@ Base: `89e239d`
 - `node scripts/verify-android-sync.js`: 28 Java, 44 source resources, 758 web assets.
 - `node scripts/verify-android-sync.test.js`: 5/5 negative/manifest checks passed.
 - Production syntax checks and `git diff --check`: passed.
+- CI run `41970378426` on commit `0207ad5`: build, E2E, API 36 smoke, API 31 smoke and release jobs all passed.
+- Published `no-coach` release: [GitHub release](https://github.com/semh59/koc/releases/tag/no-coach), target `0207ad5`.
+- Published APK SHA-256: `1ac8ddfe170ed8e60cdab184df9ffe00fa1780dc4ed2081e4b7846ddb320c114` (46,037,775 bytes).
+- Published AAB SHA-256: `f00a838f9bc4f3a056716b578caa0601bc2b0628d3525c38211c927a21e98ebd` (28,175,405 bytes).
 
 ## Scope proof
 
@@ -28,9 +32,6 @@ Base: `89e239d`
 - `main` Coach sources/tests remain available from `main` branch.
 - `son-surum` remains unchanged.
 
-## Open blockers
+## Open verification scope
 
-- Android Gradle build/instrumentation not run: machine has no `JAVA_HOME`/`java`.
-- Android emulator/device instrumentation not run: `adb` is unavailable.
-- No APK/AAB, CI run, tag or GitHub release created.
 - Physical-device behavior remains unverified.
