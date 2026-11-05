@@ -65,7 +65,8 @@ Görsel pilot kapısı geçmeden geniş katalog üretimi başlamaz. Yeni kayıtl
 - `docs/analysis/gym-phase-b-catalog-contract.md`
 - kaynak signature manifesti
 - `scripts/gym-catalog-semantic.test.js`
-- `docs/analysis/gym-phase-b-semantic-audit.md`
+- `docs/analysis/gym-phase-b-semantic-audit-b1.md`
+- `docs/analysis/gym-phase-b-semantic-audit.json`
 
 ### B-1 — Mevcut 332 duplicate/near-duplicate denetimi
 

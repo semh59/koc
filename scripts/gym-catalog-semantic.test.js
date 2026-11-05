@@ -68,4 +68,21 @@ ok("strict mode rejects a record without complete canonical metadata",()=>{
   return threw;
 });
 
+ok("name normalization removes language, punctuation and equipment suffixes",(()=>{
+  const a=Semantic.normalizeName("Dumbbell Bench Press");
+  const b=Semantic.normalizeName("dumbbell bench-press (kg)");
+  return a===b&&a==="bench press";
+})());
+
+ok("name candidates do not merge a real movement word",(()=>{
+  const a=Semantic.normalizeName("Romanian Deadlift");
+  const b=Semantic.normalizeName("Stiff-Legged Deadlift");
+  return a!==b;
+})());
+
+ok("name audit finds real catalog candidates without counting them",(()=>{
+  const r=Semantic.nameAudit(runtime);
+  return r.exact.length>0&&r.review.length===332&&r.semanticUniqueCount===0;
+})());
+
 finish();

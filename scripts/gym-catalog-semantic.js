@@ -6,6 +6,8 @@ const CANONICAL_FIELDS=[
 ];
 
 const text=v=>String(v==null?"":v).trim().toLowerCase();
+const EQUIPMENT_WORDS=new Set(["barbell","dumbbell","kettlebell","medicine","ball","cable","machine","smith","band","bands","ez","plate","plates","bodyweight","body","kg","lbs","lb"]);
+const normalizeName=v=>text(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ı/g,"i").replace(/[^a-z0-9]+/g," ").trim().split(/\s+/).filter(x=>!EQUIPMENT_WORDS.has(x)).join(" ");
 const list=v=>Array.isArray(v)?v.map(text).filter(Boolean):v==null?[]:[text(v)].filter(Boolean);
 const canon=v=>{
   const c=v&&typeof v==="object"&&v.canonical&&typeof v.canonical==="object"?v.canonical:v||{};
@@ -58,6 +60,13 @@ function compare(a,b){
   return sameObserved?{status:"review",distinct:false,key:aa.key,reason:"incomplete-canonical-metadata"}:{status:"review",distinct:false,key:aa.key,reason:"incomplete-canonical-metadata"};
 }
 
+function nameAudit(records){
+  const groups=new Map(),listRecords=Array.isArray(records)?records:[];
+  for(const e of listRecords){const n=normalizeName(e&&e.n);if(!groups.has(n))groups.set(n,[]);groups.get(n).push(e&&e.id||"")}
+  const exact=[...groups.entries()].filter(([name,ids])=>name&&ids.length>1).map(([name,ids])=>({name,ids}));
+  return {exact,near:[],semanticUniqueCount:0,review:listRecords.map(e=>({id:e&&e.id||"",status:"review",reason:"canonical-metadata-required"}))};
+}
+
 function audit(records,{sourceRecords=records,strict=false}={}){
   const listRecords=Array.isArray(records)?records:[];
   const sourceById=new Map((Array.isArray(sourceRecords)?sourceRecords:[]).map(x=>[x.id,x]));
@@ -76,4 +85,4 @@ function audit(records,{sourceRecords=records,strict=false}={}){
   return {sourceCount:Array.isArray(sourceRecords)?sourceRecords.length:listRecords.length,runtimeCount:listRecords.length,semanticUniqueCount:completeKeys.size,duplicates,review,manifest};
 }
 
-module.exports={CANONICAL_FIELDS,signature,key,compare,audit};
+module.exports={CANONICAL_FIELDS,signature,key,compare,audit,normalizeName,nameAudit};

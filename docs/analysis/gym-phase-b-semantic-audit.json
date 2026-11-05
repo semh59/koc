@@ -1,0 +1,701 @@
+{
+  "generatedAt": "B-1 candidate audit snapshot",
+  "sourceCount": 324,
+  "runtimeCount": 332,
+  "semanticUniqueCount": 0,
+  "reviewCount": 332,
+  "nameExactCandidateGroups": [
+    {
+      "name": "squat",
+      "ids": [
+        "squat",
+        "dbsquat",
+        "smithsquat"
+      ]
+    },
+    {
+      "name": "leg press",
+      "ids": [
+        "legpress",
+        "smithpress"
+      ]
+    },
+    {
+      "name": "duz bacak deadlift",
+      "ids": [
+        "stiffdl",
+        "dbstiffdl"
+      ]
+    },
+    {
+      "name": "calf raise",
+      "ids": [
+        "calf",
+        "dbcalf",
+        "smithcalf"
+      ]
+    },
+    {
+      "name": "bench press",
+      "ids": [
+        "bench",
+        "dbbench",
+        "smithbench"
+      ]
+    },
+    {
+      "name": "dik cekis",
+      "ids": [
+        "dbupright",
+        "smithupright"
+      ]
+    },
+    {
+      "name": "kurek",
+      "ids": [
+        "smithrow",
+        "kbrow"
+      ]
+    }
+  ],
+  "legacyObservedDuplicateGroups": 78,
+  "legacyObservedGroups": [
+    {
+      "signature": "{\"equipment\":\"bar@sh\",\"kind\":\"w\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}",
+      "ids": [
+        "squat",
+        "fullsquat",
+        "frontsquat",
+        "widesquat",
+        "narrowsquat",
+        "smithsquat",
+        "boxsquat"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}",
+      "ids": [
+        "bwsquat",
+        "jumpsquat"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}",
+      "ids": [
+        "dbsquat",
+        "pliesquat"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}",
+      "ids": [
+        "chairsquat",
+        "hacksquat"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"lunge\",\"region\":\"ön bacak\"}",
+      "ids": [
+        "dblunge",
+        "rearlunge",
+        "splitsquat"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"legpress\",\"region\":\"ön bacak\"}",
+      "ids": [
+        "legpress",
+        "narrowpress",
+        "smithpress"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"legext\",\"region\":\"ön bacak\"}",
+      "ids": [
+        "legext",
+        "legext1"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"arka bacak\"}",
+      "ids": [
+        "rdl",
+        "stiffdl",
+        "sumodl",
+        "cleandl",
+        "widestiff",
+        "trapdl"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"legcurl\",\"region\":\"arka bacak\"}",
+      "ids": [
+        "legcurl",
+        "seatedcurl",
+        "standcurl",
+        "ballcurl"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"backext\",\"region\":\"arka bacak\"}",
+      "ids": [
+        "ghr",
+        "revhyper"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"kb\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"arka bacak\"}",
+      "ids": [
+        "kbdl1",
+        "kbswing"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"arka bacak\"}",
+      "ids": [
+        "bandgm",
+        "cabledl"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"bridge\",\"region\":\"kalça\"}",
+      "ids": [
+        "hipthrust",
+        "glutebridge"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"bridge\",\"region\":\"kalça\"}",
+      "ids": [
+        "bridge",
+        "bridge1"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"bridge\",\"region\":\"kalça\"}",
+      "ids": [
+        "ballbridge",
+        "bandbridge"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"legcurl\",\"region\":\"kalça\"}",
+      "ids": [
+        "cablekick",
+        "bandhipext"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"calf\",\"region\":\"baldır\"}",
+      "ids": [
+        "calf",
+        "smithcalf",
+        "presscalf",
+        "bandcalf",
+        "seatedcalf"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"calf\",\"region\":\"baldır\"}",
+      "ids": [
+        "dbcalf",
+        "calf1"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"legspread\",\"region\":\"i̇ç-dış bacak\"}",
+      "ids": [
+        "abductor",
+        "adductor",
+        "bandadd",
+        "cableadd"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"bench\",\"region\":\"göğüs\"}",
+      "ids": [
+        "bench",
+        "decbench",
+        "smithbench"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"incline\",\"region\":\"göğüs\"}",
+      "ids": [
+        "incbench",
+        "smithinc"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"bench\",\"region\":\"göğüs\"}",
+      "ids": [
+        "dbbench",
+        "decdb",
+        "dbbenchn",
+        "dbbench1",
+        "pullover"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"incline\",\"region\":\"göğüs\"}",
+      "ids": [
+        "incdb",
+        "incdbin"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"bench\",\"region\":\"göğüs\"}",
+      "ids": [
+        "machbench",
+        "levchest",
+        "cablepress",
+        "bandbench"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"fly\",\"region\":\"göğüs\"}",
+      "ids": [
+        "dbfly",
+        "incfly",
+        "decfly"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"fly\",\"region\":\"göğüs\"}",
+      "ids": [
+        "crossover",
+        "lowcross",
+        "butterfly",
+        "cablefly"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"pushup\",\"region\":\"göğüs\"}",
+      "ids": [
+        "pushup",
+        "pushupwide",
+        "pushupclose",
+        "pushupinc",
+        "pushupfeet",
+        "pushupdec",
+        "pushup1",
+        "plyopushup"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"fly\",\"region\":\"göğüs\"}",
+      "ids": [
+        "chestsqueeze",
+        "dynchest"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"ohp\",\"region\":\"omuz\"}",
+      "ids": [
+        "ohp",
+        "arnold",
+        "dbohp1"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"ohp\",\"region\":\"omuz\"}",
+      "ids": [
+        "bbohp",
+        "pushpress"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"ohp\",\"region\":\"omuz\"}",
+      "ids": [
+        "cableohp",
+        "levohp"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"kb\",\"kind\":\"w\",\"pattern\":\"ohp\",\"region\":\"omuz\"}",
+      "ids": [
+        "kbpress",
+        "kbhalo"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"latraise\",\"region\":\"omuz\"}",
+      "ids": [
+        "bandlat",
+        "cablelat",
+        "cablerear",
+        "pullapart"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"frontraise\",\"region\":\"omuz\"}",
+      "ids": [
+        "altraise",
+        "frontraise",
+        "frontraise2",
+        "scaption"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"omuz\"}",
+      "ids": [
+        "dbupright",
+        "dbupright1",
+        "extrot"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"shrug\",\"region\":\"trapez\"}",
+      "ids": [
+        "cableshrug",
+        "levshrug"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"pullup\",\"region\":\"sırt\"}",
+      "ids": [
+        "pullup",
+        "chinup",
+        "vbarpull",
+        "widepull"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"pulldown\",\"region\":\"sırt\"}",
+      "ids": [
+        "pulldown",
+        "closepulldown",
+        "vbarpulldown",
+        "underpulldown",
+        "pulldown1",
+        "straightarm"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"row\",\"region\":\"sırt\"}",
+      "ids": [
+        "row",
+        "longrow1",
+        "tbar",
+        "revrow",
+        "smithrow"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"row\",\"region\":\"sırt\"}",
+      "ids": [
+        "dbrow",
+        "dbrow1",
+        "incrow"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"seatedrow\",\"region\":\"sırt\"}",
+      "ids": [
+        "seatedrow",
+        "levrow",
+        "seatedrow1",
+        "susprow"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"sırt\"}",
+      "ids": [
+        "deadlift",
+        "rackpull",
+        "defdl"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"backext\",\"region\":\"bel\"}",
+      "ids": [
+        "backext",
+        "ballhyper"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"bar@sh\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"bel\"}",
+      "ids": [
+        "stiffgm",
+        "seatedgm"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}",
+      "ids": [
+        "curl",
+        "hammer",
+        "althammer",
+        "altcurl",
+        "inccurl",
+        "seatedcurl2",
+        "concurl",
+        "preacher1",
+        "zottman",
+        "crosshammer"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}",
+      "ids": [
+        "bbcurl",
+        "ezcurl",
+        "preacher",
+        "revcurl",
+        "spider",
+        "widecurl",
+        "closecurl"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"biseps\"}",
+      "ids": [
+        "machpreacher",
+        "cablecurl",
+        "cablehammer",
+        "machcurl"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"pushdown\",\"region\":\"triseps\"}",
+      "ids": [
+        "tri",
+        "ropepushdown",
+        "vbarpushdown",
+        "revpushdown",
+        "lowtri",
+        "cabletri1"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"overheadext\",\"region\":\"triseps\"}",
+      "ids": [
+        "ropeoverhead",
+        "cableoverhead"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"overheadext\",\"region\":\"triseps\"}",
+      "ids": [
+        "dboverhead",
+        "dboverhead1",
+        "seatedtri"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"skull\",\"region\":\"triseps\"}",
+      "ids": [
+        "skull",
+        "decskull"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"kickback\",\"region\":\"triseps\"}",
+      "ids": [
+        "kickback",
+        "kickback1"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"dips\",\"region\":\"triseps\"}",
+      "ids": [
+        "dipstri",
+        "benchdips"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"dips\",\"region\":\"triseps\"}",
+      "ids": [
+        "paralleldip",
+        "dipmachine"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"neckstretch\",\"region\":\"boyun\"}",
+      "ids": [
+        "neckfb",
+        "chinchest",
+        "sideneck",
+        "neckiso"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"db\",\"kind\":\"w\",\"pattern\":\"curl\",\"region\":\"ön kol\"}",
+      "ids": [
+        "wristcurl",
+        "wristrev"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"crunch\",\"region\":\"karın\"}",
+      "ids": [
+        "crunch",
+        "deccrunch",
+        "crunchoverhead",
+        "obliquecrunch",
+        "crosscrunch",
+        "heeltouch"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"crunch\",\"region\":\"karın\"}",
+      "ids": [
+        "cablecrunch",
+        "ballcrunch"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"legraise\",\"region\":\"karın\"}",
+      "ids": [
+        "revcrunch",
+        "deadbug",
+        "benchlegraise",
+        "kneehipraise",
+        "legpullin",
+        "flutter"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"situp\",\"region\":\"karın\"}",
+      "ids": [
+        "sit34",
+        "jackknife",
+        "janda"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"hangraise\",\"region\":\"karın\"}",
+      "ids": [
+        "hangingraise",
+        "hangpike"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"w\",\"pattern\":\"woodchop\",\"region\":\"karın\"}",
+      "ids": [
+        "russiantwist",
+        "pallof"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"c\",\"pattern\":\"run\",\"region\":\"tüm vücut\"}",
+      "ids": [
+        "treadjog",
+        "treadrun",
+        "trail"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"c\",\"pattern\":\"walk\",\"region\":\"tüm vücut\"}",
+      "ids": [
+        "treadwalk",
+        "elliptical"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"c\",\"pattern\":\"cycle\",\"region\":\"tüm vücut\"}",
+      "ids": [
+        "bike",
+        "statbike",
+        "recbike"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"i\",\"pattern\":\"jack\",\"region\":\"tüm vücut\"}",
+      "ids": [
+        "jumpingjack",
+        "scissorjump"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"i\",\"pattern\":\"highknees\",\"region\":\"tüm vücut\"}",
+      "ids": [
+        "skipping",
+        "buttkick",
+        "buttkick1"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"squat\",\"region\":\"tüm vücut\"}",
+      "ids": [
+        "longjump",
+        "rocketjump"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"b\",\"pattern\":\"stepup\",\"region\":\"tüm vücut\"}",
+      "ids": [
+        "boxjump",
+        "benchjump"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"hamstretch\",\"region\":\"arka bacak\"}",
+      "ids": [
+        "hamstretch",
+        "seatedhamstretch",
+        "hamcalfstretch"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"qstretch\",\"region\":\"ön bacak\"}",
+      "ids": [
+        "quadstretch",
+        "elevquad",
+        "sidequad"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"lunge\",\"region\":\"kalça\"}",
+      "ids": [
+        "hipflexor",
+        "standhipflexor"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"hamstretch\",\"region\":\"kalça\"}",
+      "ids": [
+        "kneeacross",
+        "kneechest",
+        "seatedglute"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"lunge\",\"region\":\"baldır\"}",
+      "ids": [
+        "calfstretch",
+        "wallcalf"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"armstretch\",\"region\":\"göğüs\"}",
+      "ids": [
+        "chestshoulder",
+        "behindchest"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"armstretch\",\"region\":\"omuz\"}",
+      "ids": [
+        "shoulderstretch",
+        "armcircles",
+        "upstretch"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"armstretch\",\"region\":\"sırt\"}",
+      "ids": [
+        "upperback",
+        "overheadlat"
+      ]
+    },
+    {
+      "signature": "{\"equipment\":\"-\",\"kind\":\"t\",\"pattern\":\"walk\",\"region\":\"tüm vücut\"}",
+      "ids": [
+        "fastwalk",
+        "slowwalk"
+      ]
+    }
+  ],
+  "decision": "No automatic merge or unique-count increase; all records require canonical metadata review"
+}
