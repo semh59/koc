@@ -2,7 +2,7 @@ name: APK derle
 
 on:
   push:
-    branches: [main]
+    branches: [main, release/no-coach]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -42,7 +42,12 @@ jobs:
       - name: Run tests
         env:
           NW_TEST_SEQUENTIAL: "1"
-        run: npm test
+        run: |
+          if [ "${GITHUB_REF_NAME}" = "release/no-coach" ]; then
+            node scripts/run-no-coach-tests.js
+          else
+            npm test
+          fi
 
       - name: Native logic tests
         run: |
@@ -238,6 +243,8 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: End-to-end tests
+        env:
+          NO_COACH_E2E: ${{ github.ref_name == 'release/no-coach' && '1' || '0' }}
         run: npm run test:e2e
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: failure()
@@ -320,7 +327,7 @@ jobs:
   # even if the job is cut short, a downloadable version remains.
   release:
     needs: [build, e2e, smoke, smoke-android12]
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/release/no-coach'
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -341,15 +348,15 @@ jobs:
         run: |
           # GitHub keeps the date of the first publication; the title and the notes show the current version and build time. The notes are read on the phone, so they stay Turkish.
           title="NeoWell 1.0.${{ github.run_number }} ($(date -u +'%d.%m.%Y %H:%M') UTC)"
+          tag="${{ github.ref_name == 'release/no-coach' && 'no-coach' || 'son-surum' }}"
           notes="Sürüm 1.0.${{ github.run_number }}, derleme $(date -u +'%d.%m.%Y %H:%M') UTC, commit ${GITHUB_SHA::7}. Telefondan neowell.apk dosyasını indirip kur. neowell.aab Play Console yüklemesi içindir."
           publish() {
-            if gh release view son-surum > /dev/null 2>&1; then
-              gh release upload son-surum release/neowell.apk release/neowell.aab --clobber &&
-              gh release edit son-surum --title "$title" --notes "$notes" --target "$GITHUB_SHA" &&
-              # The tag must point at the commit of the new build.
-              gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/son-surum" -f sha="$GITHUB_SHA" -F force=true
+            if gh release view "$tag" > /dev/null 2>&1; then
+              gh release upload "$tag" release/neowell.apk release/neowell.aab --clobber &&
+              gh release edit "$tag" --title "$title" --notes "$notes" --target "$GITHUB_SHA" &&
+              gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/$tag" -f sha="$GITHUB_SHA" -F force=true
             else
-              gh release create son-surum release/neowell.apk release/neowell.aab --title "$title" --notes "$notes" --target "$GITHUB_SHA"
+              gh release create "$tag" release/neowell.apk release/neowell.aab --title "$title" --notes "$notes" --target "$GITHUB_SHA"
             fi
           }
           # A temporary 403/5xx from the network or API must not waste the build: 3 attempts.
