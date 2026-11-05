@@ -12,8 +12,7 @@ Egzersiz figürlerinin güvenli, tutarlı, erişilebilir ve yeni egzersizleri ta
 - A-4 motor dayanıklılığı: eksik/bozuk/tek-frame tanımlar için kontrollü fallback ve finite IK testi uygulandı; bağımsız `CLOSE` aldı.
 - A-5 görsel kalite matrisi: 332 egzersiz ve 9 temsilci aile iki browser viewport’ta bbox/path kontrolünden geçti; bağımsız `CLOSE` aldı.
 - A-6 erişilebilirlik: anlamlı ARIA/role/focusable sözleşmesi ve reduced-motion davranışı gerçek browser’da doğrulandı; bağımsız `CLOSE` aldı.
-- A-7: native ayrım ve final Faz A denetimi açık.
-
+- A-7 native ayrım ve final Faz A denetimi: browser/native-static/generated-sync kanıtları tamamlandı; fiziksel Android/WebView/OEM doğrulaması açık risk olarak kayıtlı.
 
 1. **SVG güvenliği:** label/ARIA attribute escape; özel egzersiz adıyla browser XSS regression.
 2. **Figür standardı:** ön/yan görünüş, zemin, kadraj, oran, renk, animasyon ve `aria-label` sözleşmesi.
