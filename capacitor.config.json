@@ -10,7 +10,8 @@
       "enabled": true
     },
     "SystemBars": {
-      "initialViewportFitValueHint": "cover"
+      "initialViewportFitValueHint": "cover",
+      "insetsHandling": "native"
     }
   }
 }
