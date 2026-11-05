@@ -17,7 +17,7 @@ require("./html").boot().then(w=>{
     S.vitals=[{id:1,day:d,time:"08:00",k:"t",sys:120,dia:80,note:P,session:"morning"},{id:2,day:d,time:"08:00",k:"s",g:100,ctx:"fasting",note:P}];
     S.mood=[{day:d,v:3,t:P}];S.sleep=[{day:d,min:420}];
     S.chat=[{role:"user",text:P},{role:"assistant",text:P}];
-    S.providers.forEach(p=>{p.name=P});
+    if(Array.isArray(S.providers))S.providers.forEach(p=>{p.name=P});
     const found=[];
     const scan=where=>{for(const el of ["#view","#sheet","#cfm","#ttl","#tmsg","#composer"].map(s=>document.querySelector(s))){if(!el)continue;
       if(el.querySelector('img[src="x"],svg[onload],[onerror],[onload]'))found.push(where);
