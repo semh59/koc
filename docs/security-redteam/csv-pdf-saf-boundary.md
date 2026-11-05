@@ -2,7 +2,7 @@
 
 ## Durum
 
-**Sonuç: doğrulanmış açık yok.** Bu faz `release/no-coach` dalında, commit `2ce8a135774811a268e6dde88060148554e8142c` üzerinde yürütüldü. Çalışma ağacı temizdir.
+**Sonuç: doğrulanmış açık yok.** Bu faz `release/no-coach` dalındaki bu raporu içeren commit snapshot’ında yürütüldü. Çalışma ağacı temizdir.
 
 Bu rapor browser ve Capacitor native-shim kanıtını gerçek Android cihaz kanıtından ayrı tutar.
 
@@ -94,6 +94,6 @@ Ek mevcut PDF testi pdf.js worker ile laboratuvar PDF okumasını da kapsar.
 ```text
 repo: D:/PROJECT/NeoWell
 branch: release/no-coach
-HEAD: 2ce8a135774811a268e6dde88060148554e8142c
+snapshot: raporu içeren commit
 status: clean
 ```
