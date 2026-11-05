@@ -63,6 +63,8 @@ jobs:
           npx cap add android
           node scripts/patch-android.js
           npx cap sync android
+          sed -i 's/^networkTimeout=.*/networkTimeout=120000/' android/gradle/wrapper/gradle-wrapper.properties
+          grep -q '^networkTimeout=120000$' android/gradle/wrapper/gradle-wrapper.properties
           npm run android:sync:verify
 
       - name: Generate debug keystore (not in repo)
