@@ -181,7 +181,8 @@ const FigLib=(()=>{
   function svg(def,{anim=true,label="Egzersiz"}={}){
     def=def&&Array.isArray(def.frames)&&def.frames.length?def:{frames:[{}]};
     if(def.frames.length===1)def={...def,frames:[def.frames[0],def.frames[0]]};
-    const dur=2.6,N=anim?14:0;
+    const reduce=typeof matchMedia==="function"&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const dur=2.6,N=anim&&!reduce?14:0;
     const poses=N?sample(def,N):[full(Object.assign({},def.frames[0],def.o||{}))];
     const fs=poses.map(p=>frame(def,p).parts);
     const view=def.view==="f"?"front":"side";
