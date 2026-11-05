@@ -9,7 +9,8 @@ Egzersiz figürlerinin güvenli, tutarlı, erişilebilir ve yeni egzersizleri ta
 - A-1 SVG/ARIA attribute güvenliği: tamamlandı ve bağımsız `CLOSE` aldı.
 - A-2 figür standardı: tamamlandı ve bağımsız `CLOSE` aldı.
 - A-3 hareket şablonları: 9 ana aile ve tüm kütüphane bağlantıları testle doğrulandı; bağımsız `CLOSE` aldı.
-- A-4–A-7: açık.
+- A-4 motor dayanıklılığı: eksik/bozuk/tek-frame tanımlar için kontrollü fallback ve finite IK testi uygulandı; bağımsız `CLOSE` aldı.
+- A-5–A-7: açık.
 
 
 1. **SVG güvenliği:** label/ARIA attribute escape; özel egzersiz adıyla browser XSS regression.

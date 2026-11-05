@@ -179,6 +179,8 @@ const FigLib=(()=>{
   const f1=x=>(Math.round(x*10)/10),attr=x=>String(x).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   /* SVG: with anim, a SMIL loop (detail sheet only); otherwise a single pose (list thumbnail). */
   function svg(def,{anim=true,label="Egzersiz"}={}){
+    def=def&&Array.isArray(def.frames)&&def.frames.length?def:{frames:[{}]};
+    if(def.frames.length===1)def={...def,frames:[def.frames[0],def.frames[0]]};
     const dur=2.6,N=anim?14:0;
     const poses=N?sample(def,N):[full(Object.assign({},def.frames[0],def.o||{}))];
     const fs=poses.map(p=>frame(def,p).parts);
