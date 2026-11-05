@@ -1,6 +1,6 @@
 # NeoWell derin modül ve haberleşme analizi
 
-Bu klasör, `D:/PROJECT/koc` kod tabanının fazlara bölünmüş, kanıt-temelli mimari analizini içerir.
+Bu klasör, `D:/PROJECT/NeoWell` kod tabanının fazlara bölünmüş, kanıt-temelli mimari analizini içerir.
 
 ## Faz durumu
 
@@ -15,7 +15,7 @@ Bu klasör, `D:/PROJECT/koc` kod tabanının fazlara bölünmüş, kanıt-temell
 
 ## Kanıt kuralı
 
-Sonuçlar üretim kodundan veya komut çıktısından türetilir. Önemli iddialar `dosya:satır` ile gösterilir. Bu ilk belgeler statik tarama sonuçlarıdır; runtime davranışı henüz doğrulanmış sayılmaz.
+Sonuçlar üretim kodundan veya komut çıktısından türetilir. Önemli iddialar `dosya:satır` ile gösterilir. Her belge kanıt katmanını ayrıca belirtir: statik kaynak incelemesi, host/runtime, gerçek browser UI veya fiziksel Android. Bir alt katmandaki kanıt üst katmanı doğrulanmış saymaz.
 
 ## Kapsam
 
@@ -30,6 +30,9 @@ Ana üretim kapsamı: `www/`, `assets/android/`, `scripts/`, `e2e/`, `android/`,
 - `diagrams/boot-flow.mmd` — boot diyagramı
 - `diagrams/module-load-order.mmd` — modül yükleme sırası
 
-## 4. Release guard
+## Egzersiz modülü AR-GE
+
+- `gym-rd-review.md` — bağımsız mimari, güvenlik, veri bütünlüğü, UX ve native-risk incelemesi
+- `gym-development-backlog.md` — incelemeden ayrılmış geliştirme maddeleri; üretim değişikliği içermez
 
 CI runs `npx cap add android`, `node scripts/patch-android.js`, `npx cap sync android`, then `npm run android:sync:verify` before Gradle. Local verification is available with `npm run android:sync:verify`; it fails closed if generated sources are missing, stale, or different from `assets/android/`.
