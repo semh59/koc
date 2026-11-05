@@ -414,7 +414,7 @@ async function goRestore(text=$("#bk").value,pw=$("#bkpw").value){
   S=b.S;
   const lostRecents=S.settings.hideRecents===true&&!prevS.settings.hideRecents;
   /* A backup must not change where the key goes, the consent setting or the data-sharing permission. The automatic backup folder belongs to this phone. */
-  Object.assign(S.settings,{noticeOk:prevS.settings.noticeOk,hideRecents:prevS.settings.hideRecents,lastBackup:dayKey(),autoBk:prevS.settings.autoBk,lastAutoBk:prevS.settings.lastAutoBk});
+  Object.assign(S.settings,{noticeOk:prevS.settings.noticeOk,hideRecents:prevS.settings.hideRecents,lockOn:prevS.settings.lockOn,lockGrace:prevS.settings.lockGrace,lockDetail:prevS.settings.lockDetail,widgetHide:prevS.settings.widgetHide,medShowName:prevS.settings.medShowName,lastBackup:dayKey(),autoBk:prevS.settings.autoBk,lastAutoBk:prevS.settings.lastAutoBk});
   /* A brake on this phone stays and a backup brings its own, but a sign lifted on this phone or in the backup is not brought back by the other. */
   {const a=S.settings,p=prevS.settings,off=[...new Set((a.riskOff+","+p.riskOff).split(",").filter(Boolean))],on=k=>!off.includes(k);
     /* The side whose pregnancy flag changed last decides it, so a sign set on this phone after the backup is not dropped. */
