@@ -7,7 +7,7 @@ ui_texts() { ui_dump | grep -oE ' (text|content-desc)="[^"]+"' | sort -u | tr "\
 skip_intro() {
   local b h w cy
   # If the app is already on the home screen (intro auto-skipped on emulator), skip the tap
-  ui_dump | grep -q 'Bugün' && return 0
+  ui_texts | grep -qE 'Bugün|Ana menü' && return 0
   b=$(ui_dump | grep 'Şimdilik geç' | grep -oE '\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]' | head -1 | grep -oE '[0-9]+')
   [ -n "$b" ] || return 1
   set -- $b

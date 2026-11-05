@@ -148,6 +148,7 @@ ok("steps: a reboot is detected not only by counter<last but also by elapsedReal
 ok("CI: Gradle wrapper download timeout is extended after Capacitor generation",/networkTimeout=120000/.test(rd(".github/workflows/apk.yml"))&&/gradle\/wrapper\/gradle-wrapper\.properties/.test(rd(".github/workflows/apk.yml")));
 ok("Android 12 WebView: SystemBars uses native insets, not CSS JavaScript injection",/\"insetsHandling\":\s*\"native\"/.test(rd("capacitor.config.json")));
   ok("smoke: a timed condition loop and step headings instead of fixed waits; the startup wait is not a 'sleep 10' loop",/until_ok\(\) \{/.test(sh)&&(sh.match(/^step "/gm)||[]).length>=8&&(sh.match(/sleep (\d+)/g)||[]).every(s=>+s.slice(6)<=3)&&/until_ok\(\) \{/.test(sr));
+  ok("smoke: an already-open home screen is detected from visible UI text before intro tap",/ui_texts\s*\|\s*grep -qE 'Bugün\|Ana menü'/.test(rd("scripts/smoke-lib.sh")));
 }
 ok("version: CI sets versionName 1.0.<number> on every build, the About screen shows it with App.getInfo",/versionName "1\.0\./.test(patch)&&/replace\(\/versionName/.test(patch)&&/plugin\("App"\)\?\.getInfo\?\.\(\)/.test(require("./html").full())&&require("./html").full().includes("<span>Sürüm</span><b class=\"num\">${appVer?esc(appVer)"));
 { // Play compliance and resilience fixes
