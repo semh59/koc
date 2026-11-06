@@ -79,6 +79,21 @@ test.describe("No-Coach release",()=>{
     await expect(svg.locator("animate")).toHaveCount(0);await expect(svg).toHaveAttribute("data-fig-motion","static");
   });
 
+  test("chair stand detail rises from fixed chair with planted feet",async({app,page})=>{
+    await page.emulateMedia({reducedMotion:"no-preference"});await app.open({seed:state()});await app.tab("gym");
+    await page.evaluate(()=>exSheet("chairstand"));const svg=page.locator("#sheet .exfig svg");await expect(svg).toBeVisible();
+    const samples=await svg.evaluate(el=>{
+      el.pauseAnimations();const parts=el.querySelectorAll("path.fg-prop"),seat=parts[0],body=el.querySelector("path.fg-body"),leg=el.querySelector("path.fg-near"),out=[];
+      for(const t of [0,.65,1.3,1.95,2.6]){el.setCurrentTime(t);const hip=body.getPointAtLength(0),a=leg.getPointAtLength(leg.getTotalLength()),left=seat.getPointAtLength(0),right=seat.getPointAtLength(seat.getTotalLength());out.push({hipX:hip.x,hipY:hip.y,ankleX:a.x,ankleY:a.y,seatX:left.x,seatY:left.y,seatRight:right.x});}return out;
+    });
+    expect(Math.abs(samples[0].hipY-samples[0].seatY)).toBeLessThan(.01);
+    expect(samples[0].hipX>=samples[0].seatX&&samples[0].hipX<=samples[0].seatRight).toBe(true);
+    expect(samples[2].hipY).toBeLessThan(samples[0].seatY-20);
+    expect(samples.every(s=>s.seatY===samples[0].seatY&&s.seatX===samples[0].seatX&&Math.abs(s.ankleY-136)<.01&&Math.abs(s.ankleX-samples[0].ankleX)<.01)).toBe(true);
+    await page.emulateMedia({reducedMotion:"reduce"});await page.evaluate(()=>exSheet("chairstand"));
+    await expect(svg.locator("animate")).toHaveCount(0);await expect(svg).toHaveAttribute("data-fig-motion","static");
+  });
+
   test("figure pilot gallery renders 9 families cleanly with opt-in volume and ghost",async({page})=>{
     await page.goto("/figure-pilot.html");
     await expect(page.locator("h1")).toContainText("NeoWell Çöp Adam 2.5D Görsel Pilot Matrisi");

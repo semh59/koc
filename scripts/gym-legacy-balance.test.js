@@ -36,6 +36,29 @@ function checkTandem(def){
     }
   }
 }
+function checkChairstand(def){
+  assert.notEqual(def,T.squat,"chair stand must not alias squat");
+  const poses=F.sample(def,48),frames=poses.map(p=>F.frame(def,p)),seat=frames[0].parts.find(p=>p.c==="prop"&&p.k==="line"&&p.w===4);
+  assert.ok(seat,"chair seat must be present");
+  const seatY=seat.pts[0][1],hip=frames[0].J.hip;
+  assert.ok(Math.abs(hip[1]-seatY)<.01&&hip[0]>=seat.pts[0][0]&&hip[0]<=seat.pts[1][0],"seated hip must meet seat");
+  assert.ok(frames[24].J.hip[1]<seatY-20,"standing hip must rise clear of chair");
+  const props=f=>JSON.stringify(f.parts.filter(p=>p.c==="prop"));
+  const anchor=frames[0].J.limbs.nL[2];
+  for(const f of frames){
+    assert.equal(props(f),props(frames[0]),"chair must stay fixed");
+    for(const k of ["nL","fL"]){
+      assert.ok(Math.hypot(f.J.limbs[k][2][0]-anchor[0],f.J.limbs[k][2][1]-anchor[1])<.02,"feet stay planted while rising");
+      assert.ok(Math.abs(f.J.limbs[k][3][1]-F.FLOOR)<.01,"toes stay grounded");
+    }
+    for(const arm of [f.J.limbs.nA,f.J.limbs.fA])assert.ok(arm[2][1]<arm[0][1]+5&&Math.abs(arm[2][0]-arm[0][0])<2,"hands stay near chest");
+  }
+}
+checkChairstand(T.chairstand);
+console.log("PASS chair stand has fixed seat, seated contact, rising hip and planted feet");
+for(const [name,mutate] of [["missing chair",d=>{delete d.scene}],["no rise",d=>{d.frames[1]=structuredClone(d.frames[0])}]]){
+  const def=structuredClone(T.chairstand);mutate(def);assert.throws(()=>checkChairstand(def),assert.AssertionError);console.log(`PASS chair stand guard detects ${name}`);
+}
 checkTandem(T.tandem);
 console.log("PASS tandem holds heel-to-toe stance with stationary grounded feet");
 for(const [name,mutate] of [["side-by-side feet",d=>{for(const f of d.frames){f.m1=f.l1;f.m2=f.l2}}],["moving feet",d=>{d.frames[1].l1=20}],["front view",d=>{d.view="f"}]]){
