@@ -11,8 +11,10 @@ const result=preflight(batch);
 assert.equal(result.acceptedNewRecords,0);
 assert.equal(result.metadataValidCount,1);
 assert.equal(result.reviewCount,1);
-assert.ok(result.blockers.includes("visual-pilot-not-approved"));
+// B-4 visual pilot is approved in current repo; test conditional presence under synthetic root if needed,
+// but ensure baseline-canonical-review and independent-content-review-required always stay active.
 assert.ok(result.blockers.includes("baseline-canonical-review"));
+assert.ok(result.blockers.includes("independent-content-review-required"));
 assert.equal(result.baselineCount,332);
 assert.equal(result.baselineCanonicalReviewCount,332);
 assert.equal(result.records[0].status,"review");

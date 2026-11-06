@@ -24,8 +24,8 @@ function compile(batches){
       if(!["w","b","t","i","c"].includes(e.k)||!["g","e","k","p","d"].includes(e.c)||!["Ağırlıksız","Ev tipi","Salon"].includes(e.q)||!["Başlangıç","Orta","İleri"].includes(e.l)||!Number.isFinite(e.inc)||e.inc<=0)throw Error(`invalid runtime value: ${e.id}`);
       if(!(Object.hasOwn(templates,e.tp)&&Array.isArray(templates[e.tp].frames)&&Object.hasOwn(context.cues,e.tp)&&Array.isArray(context.cues[e.tp])&&context.cues[e.tp].length>0&&context.cues[e.tp].every(c=>typeof c==="string"&&c.trim()))||m.figure_template!==e.tp||JSON.stringify(m.cue_ids)!==JSON.stringify([e.tp]))throw Error(`figure or cue missing: ${e.id}`);
       if(!SOURCES[m.source_ref]||m.license_ref!==m.source_ref||!["verified","internal"].includes(SOURCES[m.source_ref].licenseStatus))throw Error(`source or license missing: ${e.id}`);
-      if(!m.source_name||!m.transformation_note||m.retrieved_at!==null||m.status!=="review"||m.canonical_id!==null||m.signature!==null||m.family!==null||!m.canonical||Object.keys(m.canonical).length!==CANONICAL_FIELDS.length||!CANONICAL_FIELDS.every(k=>m.canonical[k]===null))throw Error(`legacy metadata must remain explicit review: ${e.id}`);
       if(!["legacy-external","legacy-local"].includes(b.batch))throw Error("new batches blocked until B-4 visual pilot and admission gate");
+      if(!m.source_name||!m.transformation_note||m.retrieved_at!==null||m.status!=="review"||m.canonical_id!==null||m.signature!==null||m.family!==null||!m.canonical||Object.keys(m.canonical).length!==CANONICAL_FIELDS.length||!CANONICAL_FIELDS.every(k=>m.canonical[k]===null))throw Error(`legacy metadata must remain explicit review: ${e.id}`);
       if(b.batch==="legacy-external"){
         if(legacySources.get(e.id)!==m.source_name)throw Error(`legacy source mapping changed: ${e.id}`);
         if(m.source_ref!=="free-exercise-db-data"||![0,1,2].includes(e.im))throw Error(`external source mismatch: ${e.id}`);

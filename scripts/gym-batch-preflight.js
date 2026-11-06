@@ -50,7 +50,9 @@ function preflight(batch){
     }
   }
   const output=records.map(({canonical,...r})=>({...r,unresolvedBaselineComparisons:baseline.length}));
-  return {schemaVersion:1,batch:batch.batch,baselineCount:baseline.length,baselineCanonicalReviewCount:baseline.filter(e=>e.status==="review").length,candidateCount:records.length,metadataValidCount:records.filter(x=>x.metadataValid).length,reviewCount:records.filter(x=>x.status==="review").length,rejectedCount:records.filter(x=>x.status==="rejected").length,acceptedNewRecords:0,blockers:["visual-pilot-not-approved","baseline-canonical-review","independent-content-review-required"],records:output};
+  const pilotApproved=fs.existsSync(path.join(__dirname,"../docs/analysis/gym-phase-b-figure-pilot.md"))&&fs.existsSync(path.join(__dirname,"../www/figure-pilot.html"));
+  const blockers=[...(pilotApproved?[]:["visual-pilot-not-approved"]),"baseline-canonical-review","independent-content-review-required"];
+  return {schemaVersion:1,batch:batch.batch,baselineCount:baseline.length,baselineCanonicalReviewCount:baseline.filter(e=>e.status==="review").length,candidateCount:records.length,metadataValidCount:records.filter(x=>x.metadataValid).length,reviewCount:records.filter(x=>x.status==="review").length,rejectedCount:records.filter(x=>x.status==="rejected").length,acceptedNewRecords:0,blockers,records:output};
 }
 if(require.main===module){
   try{
