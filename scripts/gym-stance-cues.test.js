@@ -14,6 +14,17 @@ boot().then(async w=>{
     ev("gdEnd();gdClose()");
     console.log(`PASS ${id} guided mode uses same stance-specific cue`);
   }
+  for(const id of ["goodmorning","stiffgm"]){
+    assert.equal(ev(`gEx('${id}').pr`),"bar@sh");ev(`exSheet('${id}')`);
+    const text=q("#sheet .cues").textContent;
+    assert.ok(text.includes("Barı üst sırtta")&&!text.includes("ağırlığı bacaklara yakın"),`${id} shoulder bar must not receive hand-held load cue`);
+    console.log(`PASS ${id} detail matches shoulder-loaded bar`);
+    ev(`closeSheet();S.templates=[{id:902,name:'Menteşe testi',ex:['${id}'],tg:{${id}:{sets:1,reps:5}}}];gdStart('t:902')`);await flush();
+    assert.ok(q("#guide .gdc").textContent.includes("Barı üst sırtta"));ev("gdEnd();gdClose()");
+    console.log(`PASS ${id} guided cue matches shoulder-loaded detail`);
+  }
+  assert.equal(ev("exCues(gEx('deadlift'))[0]"),ev("EXCUE.hinge[0]"));
+  console.log("PASS hand-held deadlift retains hinge cue");
   assert.equal(ev("exCues(gEx('squat'))[0]"),ev("EXCUE.squat[0]"));
   assert.equal(ev("exCues({id:'custom_stance',tp:'squat'})[0]"),ev("EXCUE.squat[0]"));
   assert.equal(ev("exCues({id:'toString',tp:'missing'}).length"),0);

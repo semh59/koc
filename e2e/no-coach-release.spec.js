@@ -107,6 +107,19 @@ test.describe("No-Coach release",()=>{
     }
   });
 
+  test("shoulder-loaded good morning cues match detail and guided mode",async({app,page})=>{
+    await app.open({seed:state()});await app.tab("gym");
+    for(const id of ["goodmorning","stiffgm"]){
+      await page.evaluate(id=>exSheet(id),id);
+      await expect(page.locator("#sheet .cues")).toContainText("Barı üst sırtta");
+      await expect(page.locator("#sheet .cues")).not.toContainText("ağırlığı bacaklara yakın");
+      await page.evaluate(id=>{closeSheet();S.templates=[{id:902,name:"Menteşe testi",ex:[id],tg:{[id]:{sets:1,reps:5}}}];gdStart("t:902")},id);
+      await expect(page.locator("#guide .gdc").first()).toContainText("Barı üst sırtta");
+      await page.evaluate(()=>{gdEnd();gdClose()});
+    }
+    await page.evaluate(()=>exSheet("deadlift"));await expect(page.locator("#sheet .cues")).toContainText("ağırlığı bacaklara yakın");
+  });
+
   test("figure pilot gallery renders 9 families cleanly with opt-in volume and ghost",async({page})=>{
     await page.goto("/figure-pilot.html");
     await expect(page.locator("h1")).toContainText("NeoWell Çöp Adam 2.5D Görsel Pilot Matrisi");
