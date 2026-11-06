@@ -130,7 +130,7 @@ const FigLib=(()=>{
       if(fr){const a=pr.at==="shoulder"?[sh[0]-B.shw*1.6,sh[1]+2]:wl,b=pr.at==="shoulder"?[sh[0]+B.shw*1.6,sh[1]+2]:wr;
         out.push({k:"line",c:"prop",w:2.4,pts:[[a[0]-8,a[1]],[b[0]+8,b[1]]]},{k:"circle",c:"plate",p:[a[0]-8,a[1]],r:6},{k:"circle",c:"plate",p:[b[0]+8,b[1]],r:6});}
       else{
-        if(def.scene==="rack"){
+        if(def.scene==="rack"||def.scene==="deficit"){
           // Open schematic projection keeps the supporting shaft separate from the outer plate.
           out.push({k:"line",c:"barshaft",w:2,pts:[[at[0]-3,at[1]],[at[0]+28,at[1]]]},{k:"circle",c:"plate",p:[at[0]+28,at[1]],r:8.5});
         }else out.push({k:"circle",c:"plate",p:at,r:8.5});
@@ -165,6 +165,8 @@ const FigLib=(()=>{
       out.push({k:"line",c:"prop",w:2.6,pts:[[X0-22,y+1],[X0+22,y+1]]},{k:"line",c:"prop",w:2,pts:[[X0+22,y+1],[X0+22,FLOOR+2]]});
     }else if(sc==="box"){
       out.push({k:"rect",c:"prop",x:X0+6,y:FLOOR-22,w:34,h:24});
+    }else if(sc==="deficit"){
+      out.push({k:"rect",c:"prop",x:75,y:126,w:18,h:10.3});
     }else if(sc==="rack"){
       out.push({k:"line",c:"prop",w:2.4,pts:[[112,def.rackY],[118,def.rackY]]},{k:"line",c:"prop",w:2.4,pts:[[118,def.rackY],[118,FLOOR+2]]});
     }else if(sc==="seat"){

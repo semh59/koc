@@ -61,7 +61,7 @@
   "nameNearCandidateGroups": [],
   "candidateSignatureCount": 0,
   "canonicalDuplicateGroups": [],
-  "legacyObservedDuplicateGroups": 77,
+  "legacyObservedDuplicateGroups": 76,
   "legacyObservedGroups": [
     {
       "signature": "{\"equipment\":\"bar@sh\",\"kind\":\"w\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}",
@@ -399,13 +399,6 @@
         "levrow",
         "seatedrow1",
         "susprow"
-      ]
-    },
-    {
-      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"sırt\"}",
-      "ids": [
-        "deadlift",
-        "defdl"
       ]
     },
     {

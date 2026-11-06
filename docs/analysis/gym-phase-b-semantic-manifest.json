@@ -4,7 +4,7 @@
   "runtimeCount": 332,
   "semanticUniqueCount": 0,
   "reviewCount": 332,
-  "legacyObservedDuplicateGroups": 77,
+  "legacyObservedDuplicateGroups": 76,
   "candidateSignatureCount": 0,
   "canonicalDuplicateGroups": 0,
   "records": [
@@ -1175,7 +1175,7 @@
       "source": "scripts/exlib-src.txt",
       "status": "review",
       "reason": "incomplete-canonical-metadata",
-      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"sırt\"}"
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"defdl\",\"region\":\"sırt\"}"
     },
     {
       "id": "backext",

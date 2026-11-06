@@ -76,7 +76,12 @@ boot().then(async w=>{
   }
   assert.equal(ev("exCues({id:'custom_hinge',tp:'hinge'})[0]"),ev("EXCUE.hinge[0]"));
   assert.equal(ev("exCues(gEx('rdl'))[0]"),ev("EXCUE.hinge[0]"));
-  assert.equal(ev("exCues(gEx('defdl'))[0]"),ev("EXCUE.hinge[0]"));
+  const checkDeficit=text=>{for(const clause of ["yükseltilmiş platform","zeminden kontrollü kaldır","kalça ve dizlerini açarak doğrul","kontrollü zemine indir","platform yüksekliği kişisel ayar önerisi değildir","açık bir izdüşüm"])assert.ok(text.includes(clause),`deficit first cue requires ${clause}`)};
+  ev("exSheet('defdl')");checkDeficit(q("#sheet .cues").textContent);
+  ev("closeSheet();S.templates=[{id:909,name:'Platform testi',ex:['defdl'],tg:{defdl:{sets:1,reps:5}}}];gdStart('t:909')");await flush();
+  const deficitGuide=q("#guide .gdc").textContent;checkDeficit(deficitGuide);
+  for(const clause of ["yükseltilmiş platform","zeminden kontrollü kaldır","kalça ve dizlerini açarak doğrul","kontrollü zemine indir","platform yüksekliği kişisel ayar önerisi değildir","açık bir izdüşüm"])assert.throws(()=>checkDeficit(deficitGuide.replace(clause,"")),assert.AssertionError);
+  ev("gdEnd();gdClose()");console.log("PASS deficit first cue in detail and guide and six clause-removal mutants");
   console.log("PASS rack pull guards reject missing override and missing limitation; other hinge cues remain unchanged");
   for(const table of ["EXCUE_BY_ID","EXCUE"]){
     const guard=`Object.hasOwn(${table},e.${table==="EXCUE_BY_ID"?"id":"tp"})`;

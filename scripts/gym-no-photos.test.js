@@ -5,9 +5,10 @@ const files=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirecto
 const runtime=require("../www/modules/gym/exlib");
 assert.equal(runtime.find(e=>e.id==="seatedgm").tp,"seatedhinge");
 assert.equal(runtime.find(e=>e.id==="rackpull").tp,"rackpull");
+assert.equal(runtime.find(e=>e.id==="defdl").tp,"defdl");
 assert.equal(runtime.length,324);assert.ok(runtime.every(e=>e.im===0));
-assert.equal(require("crypto").createHash("sha256").update(JSON.stringify(runtime.map(({im,...e})=>["seatedgm","rackpull"].includes(e.id)?{...e,tp:"hinge"}:e))).digest("hex"),"3723ba4d9dae36907b04024dce7ee16e82e557fd8e96a75fd1f256ae7f00f277","only approved image counts and seatedgm/rackpull template repairs may change in external runtime");
-console.log("PASS external IDs, names and training fields preserved except approved seatedgm/rackpull templates; image counts zeroed");
+assert.equal(require("crypto").createHash("sha256").update(JSON.stringify(runtime.map(({im,...e})=>["seatedgm","rackpull","defdl"].includes(e.id)?{...e,tp:"hinge"}:e))).digest("hex"),"3723ba4d9dae36907b04024dce7ee16e82e557fd8e96a75fd1f256ae7f00f277","only approved image counts and seatedgm/rackpull/defdl template repairs may change in external runtime");
+console.log("PASS external IDs, names and training fields preserved except approved seatedgm/rackpull/defdl templates; image counts zeroed");
 assert.equal(files(path.join(root,"www")).filter(f=>/\.(gif|webp|jpe?g)$/i.test(f)&&f.startsWith(path.join(root,"www/ex")+path.sep)).length,0,"exercise image files must be absent");
 assert.equal(files(path.join(root,"www")).filter(f=>/\.gif$/i.test(f)).length,0,"no packaged GIFs");
 console.log("PASS exercise source package has zero photos or GIFs");

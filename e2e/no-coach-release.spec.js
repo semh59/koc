@@ -128,6 +128,91 @@ test.describe("No-Coach release",()=>{
     await page.evaluate(()=>{gdEnd();gdClose()});
   });
 
+  test("deficit deadlift keeps painted feet planted and grounded load clear in detail and guide",async({app,page})=>{
+    await app.open({seed:state()});await app.tab("gym");
+    for(const motion of ["no-preference","reduce"]){
+      await page.emulateMedia({reducedMotion:motion});
+      for(const mode of ["detail","guide"]){
+        if(mode==="detail")await page.evaluate(()=>exSheet("defdl"));
+        else await page.evaluate(()=>{closeSheet();S.templates=[{id:909,name:"Defisit figür testi",ex:["defdl"],tg:{defdl:{sets:1,reps:5}}}];gdStart("t:909")});
+        const svg=page.locator(mode==="detail"?"#sheet .exfig svg":"#guide .gdfig svg");await expect(svg).toBeVisible();
+        await expect(svg).toHaveAttribute("data-fig-view","side");
+        await expect(svg).toHaveAttribute("data-fig-motion",motion==="reduce"?"static":"animated");
+        if(motion==="reduce")await expect(svg.locator("animate")).toHaveCount(0);
+        else expect(await svg.locator("animate").count()).toBeGreaterThan(0);
+        const samples=await svg.evaluate((el,animated)=>{
+          el.pauseAnimations();
+          const platform=el.querySelector("rect.fg-prop"),floor=el.querySelector("path.fg-floor"),shaft=el.querySelector("path.fg-barshaft"),plate=el.querySelector("circle.fg-plate"),body=el.querySelector("path.fg-body"),near=el.querySelectorAll("path.fg-near"),far=el.querySelectorAll("path.fg-far"),out=[];
+          const pt=(p,d)=>{const q=p.getPointAtLength(d);return [q.x,q.y]},end=p=>pt(p,p.getTotalLength()),width=p=>parseFloat(getComputedStyle(p).strokeWidth);
+          const angle=(a,b,c)=>{const u=a.map((v,i)=>v-b[i]),v=c.map((n,i)=>n-b[i]);return Math.acos(Math.max(-1,Math.min(1,(u[0]*v[0]+u[1]*v[1])/Math.hypot(...u)/Math.hypot(...v))))*180/Math.PI};
+          const painted=p=>{const s=getComputedStyle(p);return s.stroke!=="none"&&s.visibility==="visible"&&+s.opacity>0&&width(p)>0};
+          for(let i=0;i<=(animated?128:0);i++){
+            el.setCurrentTime(i*2.6/128);
+            const half=width(platform)/2,box=[platform.x.animVal.value-half,platform.y.animVal.value-half,platform.x.animVal.value+platform.width.animVal.value+half,platform.y.animVal.value+platform.height.animVal.value+half];
+            const a=pt(shaft,0),b=end(shaft),wrist=end(near[2]),cx=plate.cx.animVal.value,cy=plate.cy.animVal.value,r=plate.r.animVal.value+width(plate)/2,ground=pt(floor,0)[1]-width(floor)/2;
+            const dx=Math.max(box[0]-cx,cx-box[2],0),dy=Math.max(box[1]-cy,cy-box[3],0);
+            // Full painted rectangle over-approximates rounded corners: positive gaps prove no overlap.
+            const sx=Math.max(box[0]-Math.max(a[0],b[0]),Math.min(a[0],b[0])-box[2],0),sy=Math.max(box[1]-a[1],a[1]-box[3],0);
+            const feet=[near[1],far[2]].map(p=>({points:[pt(p,0),pt(p,p.getTotalLength()/2),end(p)],half:width(p)/2,length:p.getTotalLength()}));
+            const hip=pt(body,0),neck=end(body),legs=[near[0],far[1]];
+            out.push({box,ground,a,b,wrist,plate:[cx,cy,r],gap:ground-cy-r,tilt:Math.abs(a[1]-b[1]),length:shaft.getTotalLength(),shaftHalf:width(shaft)/2,plateClear:Math.hypot(dx,dy)-r,shaftClear:Math.hypot(sx,sy)-width(shaft)/2,feet,angles:legs.map(p=>{const h=pt(p,0),k=pt(p,24),ankle=end(p);return [angle(neck,hip,k),angle(h,k,ankle)]})});
+          }
+          return {out,painted:[platform,floor,shaft,plate,near[1],far[2]].every(painted),caps:[shaft,near[1],far[2]].map(p=>getComputedStyle(p).strokeLinecap)};
+        },motion!=="reduce");
+        const s=samples.out,label=`${motion} ${mode}`;
+        expect(samples.painted,label).toBe(true);expect(samples.caps,label).toEqual(["round","round","round"]);
+        expect(s,label).toHaveLength(motion==="reduce"?1:129);
+        expect(s[0].box[1],label).toBeCloseTo(125,2);expect(s[0].box[3],label).toBeCloseTo(137.3,2);
+        expect(s[0].ground,label).toBeCloseTo(137.3,2);
+        for(const [i,f] of s.entries()){
+          const frame=`${label} frame ${i}`;
+          expect(f.box,frame).toEqual(s[0].box);expect(f.ground,frame).toBeCloseTo(137.3,2);
+          expect(f.tilt,frame).toBeLessThan(.02);expect(f.length,frame).toBeCloseTo(31,1);expect(f.shaftHalf,frame).toBeCloseTo(1,2);
+          expect(f.a[0]-f.wrist[0],frame).toBeCloseTo(-3,1);expect(f.b[0]-f.wrist[0],frame).toBeCloseTo(28,1);
+          expect(Math.abs(f.a[1]-f.wrist[1]),frame).toBeLessThan(.02);
+          expect(Math.hypot(f.b[0]-f.plate[0],f.b[1]-f.plate[1]),frame).toBeLessThan(.02);expect(f.plate[2],frame).toBeCloseTo(9.3,2);
+          expect(f.plateClear,frame).toBeGreaterThan(0);expect(f.shaftClear,frame).toBeGreaterThan(0);expect(f.gap,frame).toBeGreaterThan(-.06);
+          for(let foot=0;foot<2;foot++){
+            expect(f.feet[foot].length,frame).toBeCloseTo(9,2);expect(f.feet[foot].half,frame).toBeCloseTo(1.7,2);
+            for(let point=0;point<3;point++){
+              const p=f.feet[foot].points[point],anchor=s[0].feet[foot].points[point];
+              expect(Math.hypot(p[0]-anchor[0],p[1]-anchor[1]),frame).toBeLessThan(.02);
+              expect(p[1]+f.feet[foot].half,frame).toBeCloseTo(125,2);
+              expect(p[0]-f.feet[foot].half,frame).toBeGreaterThanOrEqual(f.box[0]+3);expect(p[0]+f.feet[foot].half,frame).toBeLessThanOrEqual(f.box[2]-3);
+            }
+          }
+          if(i>0&&i<=64){
+            expect(f.gap,frame).toBeGreaterThanOrEqual(s[i-1].gap-.02);
+            for(let leg=0;leg<2;leg++)for(let joint=0;joint<2;joint++)expect(f.angles[leg][joint],frame).toBeGreaterThanOrEqual(s[i-1].angles[leg][joint]-.3);
+          }
+          if(i>64)expect(f.gap,frame).toBeLessThanOrEqual(s[i-1].gap+.02);
+        }
+        for(const f of [s[0],s[s.length-1]]){
+          expect(Math.abs(f.gap),label).toBeLessThan(.06);expect(f.a[1],label).toBeCloseTo(128,1);expect(f.a[1]-f.shaftHalf,label).toBeGreaterThan(f.box[1]);
+          for(const foot of f.feet)for(const p of foot.points)expect(p[1],label).toBeCloseTo(123.3,2);
+        }
+        if(motion!=="reduce"){
+          expect(s[64].gap,label).toBeGreaterThan(15);
+          for(let leg=0;leg<2;leg++)for(let joint=0;joint<2;joint++)expect(s[64].angles[leg][joint]-s[0].angles[leg][joint],label).toBeGreaterThan(20);
+          for(const key of ["a","b","wrist","plate"])for(let axis=0;axis<s[0][key].length;axis++)expect(s[128][key][axis],label).toBeCloseTo(s[0][key][axis],2);
+          for(let leg=0;leg<2;leg++)for(let joint=0;joint<2;joint++)expect(s[128].angles[leg][joint],label).toBeCloseTo(s[0].angles[leg][joint],2);
+        }
+        if(mode==="guide")await page.evaluate(()=>{gdEnd();gdClose()});
+      }
+    }
+  });
+
+  test("deficit deadlift first cue explains platform, controlled lift, extension and floor return in detail and guide",async({app,page})=>{
+    await app.open({seed:state()});await app.tab("gym");
+    for(const mode of ["detail","guide"]){
+      if(mode==="detail")await page.evaluate(()=>exSheet("defdl"));
+      else await page.evaluate(()=>{closeSheet();S.templates=[{id:910,name:"Defisit ipucu testi",ex:["defdl"],tg:{defdl:{sets:1,reps:5}}}];gdStart("t:910")});
+      const cue=page.locator(mode==="detail"?"#sheet .cues li":"#guide .gdc").first();
+      for(const clause of ["Sağlam ve kaymayan yükseltilmiş platform", "ayaklarını sabitle", "barı zeminden kontrollü kaldır", "kalça ve dizlerini açarak doğrul", "barı kontrollü zemine indir", "Çizim şematiktir", "platform yüksekliği kişisel ayar önerisi değildir", "açık bir izdüşüm", "yatay bar konumu kişisel kurulum önerisi değildir"])await expect(cue).toContainText(clause);
+      if(mode==="guide")await page.evaluate(()=>{gdEnd();gdClose()});
+    }
+  });
+
   test("heeltoe detail and guide take two forward contact steps then freeze",async({app,page})=>{
     await page.emulateMedia({reducedMotion:"no-preference"});await app.open({seed:state()});await app.tab("gym");
     for(const mode of ["detail","guide"]){
