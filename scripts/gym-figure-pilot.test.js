@@ -1,0 +1,11 @@
+"use strict";
+const assert=require("node:assert/strict"),F=require("../www/modules/gym/figlib"),T=require("../www/modules/gym/figtpl");
+const before=JSON.stringify(T.squat),s=F.svg(T.squat,{variant:"volume",ghost:true,label:"Pilot <squat>"});
+assert.ok(s.includes('data-fig-variant="volume"'));
+assert.ok(s.includes('data-ghost="start"')&&s.includes('data-ghost="end"'));
+assert.ok(s.includes('data-ground-shadow="fixed"'));
+assert.ok(s.includes('fg-joint')&&s.includes('fg-highlight')&&s.includes('fg-pelvis'));
+assert.ok(s.includes('aria-label="Pilot &lt;squat&gt;"'));
+assert.ok(!/NaN|undefined/.test(s));assert.equal(JSON.stringify(T.squat),before);
+assert.ok(!F.svg(T.squat).includes('data-fig-variant="volume"'));
+console.log("PASS opt-in volume figure has joint/pelvis depth, endpoints, fixed ground and safe label without changing default");

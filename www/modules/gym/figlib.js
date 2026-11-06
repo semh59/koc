@@ -162,7 +162,7 @@ const FigLib=(()=>{
   }
 
   /* One frame: part list (far limbs first). */
-  function frame(def,pose){
+  function frame(def,pose,volume=false){
     const J=joints(pose,def.view||"s",def.fix);
     const L=J.limbs,out=scene(def,J);
     const line=(c,w,pts)=>out.push({k:"line",c,w,pts});
@@ -172,21 +172,39 @@ const FigLib=(()=>{
     line("near",4.2,L.nL.slice(0,3));line("near",3.4,L.nL.slice(2));
     for(const q of props(J,def))out.push(q);
     line("near",4.2,L.nA);
+    if(volume){
+      for(const part of out){
+        if(part.k!=="line"||!["far","near","body"].includes(part.c))continue;
+        part.w*=1.65;
+      }
+      const muscleLines=out.filter(p=>p.k==="line"&&["near","body"].includes(p.c));
+      for(const p of muscleLines)out.push({...p,c:"highlight",w:Math.max(1,p.w*0.28)});
+      out.push({k:"circle",c:"pelvis",p:J.hip,r:4.8});
+      for(const limb of [L.nA,L.nL])for(const point of limb.slice(0,3))out.push({k:"circle",c:"joint",p:point,r:2.7});
+    }
     out.push({k:"circle",c:"head",p:J.head,r:B.head});
     return {parts:out,J};
   }
 
   const f1=x=>(Math.round(x*10)/10),attr=x=>String(x).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   /* SVG: with anim, a SMIL loop (detail sheet only); otherwise a single pose (list thumbnail). */
-  function svg(def,{anim=true,label="Egzersiz"}={}){
+  function svg(def,{anim=true,label="Egzersiz",variant="line",ghost=false}={}){
     def=def&&Array.isArray(def.frames)&&def.frames.length?def:{frames:[{}]};
     if(def.frames.length===1)def={...def,frames:[def.frames[0],def.frames[0]]};
     const reduce=typeof matchMedia==="function"&&matchMedia("(prefers-reduced-motion: reduce)").matches;
     const dur=2.6,N=anim&&!reduce?14:0;
+    const volume=variant==="volume";
     const poses=N?sample(def,N):[full(Object.assign({},def.frames[0],def.o||{}))];
-    const fs=poses.map(p=>frame(def,p).parts);
+    const fs=poses.map(p=>frame(def,p,volume).parts);
     const view=def.view==="f"?"front":"side";
-    let h=`<svg class="fig" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" focusable="false" data-fig-view="${view}" data-fig-motion="${N?"animated":"static"}" aria-label="${attr(label)}">`;
+    let h=`<svg class="fig" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" focusable="false" data-fig-variant="${volume?"volume":"line"}" data-fig-view="${view}" data-fig-motion="${N?"animated":"static"}" aria-label="${attr(label)}">`;
+    if(volume)h+='<ellipse class="fg-shadow" data-ground-shadow="fixed" cx="80" cy="138" rx="31" ry="3"/>';
+    if(volume&&ghost){
+      for(const [phase,pose] of [["start",def.frames[0]],["end",def.frames[def.frames.length-1]]]){
+        const image=svg({...def,frames:[pose]},{anim:false,label,variant:"volume"}).replace(/^<svg[^>]*>/,"").replace(/<\/svg>$/,"").replace(/<ellipse[^>]*data-ground-shadow[^>]*\/>/,"");
+        h+=`<g class="fg-ghost fg-ghost-${phase}" data-ghost="${phase}" aria-hidden="true">${image}</g>`;
+      }
+    }
     const n0=fs[0].length;
     for(let i=0;i<n0;i++){
       const p0=fs[0][i];

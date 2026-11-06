@@ -23,6 +23,21 @@ test.describe("No-Coach release",()=>{
     expect(await page.evaluate(()=>performance.getEntriesByType("resource").some(x=>/\/ex\/[^/]+\/\d+\.webp/.test(x.name)))).toBe(false);
   });
 
+  test("figure pilot gallery renders 9 families cleanly with opt-in volume and ghost",async({page})=>{
+    await page.goto("/figure-pilot.html");
+    await expect(page.locator("h1")).toContainText("NeoWell Çöp Adam 2.5D Görsel Pilot Matrisi");
+    const cards=page.locator("section.card");
+    await expect(cards).toHaveCount(9);
+    const volSvgs=page.locator('svg[data-fig-variant="volume"]');
+    await expect(volSvgs).toHaveCount(9);
+    for(let i=0;i<9;i++){
+      const s=volSvgs.nth(i);
+      await expect(s.locator('[data-ground-shadow="fixed"]')).toBeVisible();
+      await expect(s.locator('[data-ghost="start"]')).toBeAttached();
+      await expect(s.locator('[data-ghost="end"]')).toBeAttached();
+    }
+  });
+
   test("all shipped navigation tabs open real screens",async({app,page})=>{
     await app.open({seed:state()});
     for(const tab of ["today","gym","trend","more"]){
