@@ -12,7 +12,7 @@ const EXCUE={
   bridge:["Topuklardan iterek kalçayı kaldır.","Üstte kalçayı sık, beli aşırı kıvırma."],
   calf:["Parmak uçlarına tam yüksel, üstte kısa dur.","Aşağıda baldırı gerdir."],
   onefoot:["Duvara ya da sağlam bir sandalyeye elinin ulaşabileceği yerde yap.","Gözün karşıda sabit bir noktada olsun; dizini hafif bük, kalkık ayağı yere değdirmeden tut.","Dengeni kaybedersen ayağını yere bas, tutunup yeniden başla."],
-  balwalk:["Duvara ya da sağlam bir sandalyeye elinin ulaşabileceği yerde yap.","Bir ayağın topuğunu diğerinin parmak ucuna değdirerek, düz bir çizgide adım at.","Yavaş yürü; gerekirse duvara dokunarak ilerle."],
+  balwalk:["Duvara ya da sağlam bir sandalyeye elinin ulaşabileceği yerde yap. İki ileri adım gösterilir, sonra durur; görsel yeniden yüklendiğinde tekrar başlar. Bu gösterim antrenman süresini belirlemez.","Bir ayağın topuğunu diğerinin parmak ucuna değdirerek, düz bir çizgide adım at.","Yavaş yürü; gerekirse duvara dokunarak ilerle."],
   balwalk2:["Duvara ya da sağlam bir sandalyeye elinin ulaşabileceği yerde yap.","Kollarını gövdenin yanında serbest bırak, ileri bak ve yavaş yürü.","Adımlarını eşit ve kontrollü at."],
   chairstand:["Sağlam, kaymayan bir sandalyeden kalk; arkası duvara dayalı olsun.","Ayaklar omuz genişliğinde; kollarını göğsünde kavuştur, mümkünse ellerini kullanmadan kalk.","Yavaşça otur, kendini bırakma."],
   sidestep:["Duvara ya da sağlam bir sandalyeye elinin ulaşabileceği yerde yap.","Bir yana adım at, diğer ayağını yanına getir; sonra diğer yana dön.","Gövdeni dik tut, adımları küçük ve kontrollü at."],

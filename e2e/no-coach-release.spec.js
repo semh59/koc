@@ -94,6 +94,43 @@ test.describe("No-Coach release",()=>{
     await expect(svg.locator("animate")).toHaveCount(0);await expect(svg).toHaveAttribute("data-fig-motion","static");
   });
 
+  test("heeltoe detail and guide take two forward contact steps then freeze",async({app,page})=>{
+    await page.emulateMedia({reducedMotion:"no-preference"});await app.open({seed:state()});await app.tab("gym");
+    for(const mode of ["detail","guide"]){
+      if(mode==="detail")await page.evaluate(()=>exSheet("heeltoe"));
+      else await page.evaluate(()=>{closeSheet();S.templates=[{id:906,name:"Temas testi",ex:["heeltoe"],tg:{heeltoe:{sets:1,reps:5}}}];gdStart("t:906")});
+      const svg=page.locator(mode==="detail"?"#sheet .exfig svg":"#guide svg").first();await expect(svg).toBeVisible();
+      await expect(page.locator(mode==="detail"?"#sheet .cues":"#guide .gdc").first()).toContainText("İki ileri adım gösterilir, sonra durur");
+      const samples=await svg.evaluate(el=>{
+        el.pauseAnimations();const n=el.querySelectorAll("path.fg-near"),f=el.querySelectorAll("path.fg-far"),body=el.querySelector("path.fg-body"),out=[];
+        const end=p=>{const q=p.getPointAtLength(p.getTotalLength());return [q.x,q.y]};
+        for(let i=0;i<=128;i++){
+          el.setCurrentTime(i*2.6/128);const hip=body.getPointAtLength(0);
+          out.push({n:end(n[0]),nt:end(n[1]),f:end(f[1]),ft:end(f[2]),hip:hip.x});
+        }
+        const frozen=[];for(const t of [2.7,5.2,7.8]){el.setCurrentTime(t);frozen.push({n:end(n[0]),nt:end(n[1]),f:end(f[1]),ft:end(f[2]),hip:body.getPointAtLength(0).x})}
+        return {out,frozen,channels:[...el.querySelectorAll("animate")].map(a=>[a.getAttribute("repeatCount"),a.getAttribute("fill")])};
+      });
+      const s=samples.out;
+      for(let i=0;i<=128;i++)for(const key of i<=64?["f","ft"]:["n","nt"]){
+        const anchor=i<=64?s[0]:s[64];expect(Math.abs(s[i][key][0]-anchor[key][0])).toBeLessThan(.02);expect(Math.abs(s[i][key][1]-136)).toBeLessThan(.02);
+      }
+      for(const i of [0,64,128]){
+        const front=s[i].n[0]>s[i].f[0]?"n":"f",rear=front==="n"?"f":"n";
+        expect(Math.hypot(s[i][front][0]-s[i][rear+"t"][0],s[i][front][1]-s[i][rear+"t"][1])).toBeLessThan(.02);
+      }
+      expect(s[32].n[1]).toBeLessThan(129);expect(s[96].f[1]).toBeLessThan(129);
+      expect(s[128].hip-s[0].hip).toBeCloseTo(18,1);
+      for(const frame of samples.frozen)for(const key of ["n","nt","f","ft"])for(let axis=0;axis<2;axis++)expect(Math.abs(frame[key][axis]-s[128][key][axis])).toBeLessThan(.02);
+      expect(samples.channels.length).toBeGreaterThan(0);expect(samples.channels.every(c=>c[0]==="1"&&c[1]==="freeze")).toBe(true);
+    }
+    await page.evaluate(()=>{gdEnd();gdClose()});
+    await page.emulateMedia({reducedMotion:"reduce"});await page.evaluate(()=>exSheet("heeltoe"));
+    const still=page.locator("#sheet .exfig svg");await expect(still).toHaveAttribute("data-fig-motion","static");await expect(still.locator("animate")).toHaveCount(0);
+    await page.emulateMedia({reducedMotion:"no-preference"});await page.evaluate(()=>{closeSheet();exSheet("heeltoe")});
+    const replay=await still.evaluate(el=>{el.pauseAnimations();el.setCurrentTime(0);return el.querySelector("path.fg-body").getPointAtLength(0).x});expect(replay).toBeCloseTo(80,1);
+  });
+
   test("side step detail and guide alternate planted support without sliding",async({app,page})=>{
     await page.emulateMedia({reducedMotion:"no-preference"});await app.open({seed:state()});await app.tab("gym");
     for(const mode of ["detail","guide"]){

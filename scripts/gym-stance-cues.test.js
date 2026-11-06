@@ -42,6 +42,12 @@ boot().then(async w=>{
     assert.ok(guided.includes(phrase)&&guided.includes("Animasyon hız hedefi göstermez"),`${id} guided needs same tempo and limitation`);
     ev("gdEnd();gdClose()");console.log(`PASS ${id} guided mode explains tempo and animation limitation`);
   }
+  ev("exSheet('heeltoe')");
+  assert.ok(q("#sheet .cues").textContent.includes("İki ileri adım gösterilir, sonra durur"),"heeltoe detail must explain one-shot playback");
+  assert.ok(q("#sheet .cues").textContent.includes("topuğunu diğerinin parmak ucuna"));
+  ev("closeSheet();S.templates=[{id:906,name:'Temas testi',ex:['heeltoe'],tg:{heeltoe:{sets:1,reps:5}}}];gdStart('t:906')");await flush();
+  assert.ok(q("#guide .gdc").textContent.includes("İki ileri adım gösterilir, sonra durur"),"heeltoe guide must explain one-shot playback");
+  ev("gdEnd();gdClose()");console.log("PASS heeltoe detail and guide explain forward demonstration stops after two steps");
   assert.equal(ev("exCues({id:'custom_walk',tp:'walk'})[0]"),ev("EXCUE.walk[0]"));
   console.log("PASS custom walking retains general template cue");
   assert.equal(ev("exCues(gEx('deadlift'))[0]"),ev("EXCUE.hinge[0]"));

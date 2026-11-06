@@ -19,11 +19,15 @@ for(const k of names){
     if(fy==="floor"){const low=Math.max(...pts.map(v=>v[1]));if(!near(low,F.FLOOR,0.5)&&!near(J.head[1]+B.head,F.FLOOR,0.5))issues.ground.push(k)}
   }
   const a=ps[0],z=ps[ps.length-1];
-  if(!F.KEYS.every(x=>near(a[x],z[x],1e-6)))issues.nan.push(k+":loop");
+  if(def.playback==="once"){
+    const last=F.full(Object.assign({},def.frames.at(-1),def.o||{},def.frames.at(-1).o||{}));
+    const expected=F.frame(def,last),actual=F.frame(def,z);
+    if(!F.KEYS.every(x=>near(z[x],last[x],1e-6))||JSON.stringify(z.feet)!==JSON.stringify(last.feet)||JSON.stringify(actual.parts)!==JSON.stringify(expected.parts))issues.nan.push(k+":finish");
+  }else if(!F.KEYS.every(x=>near(a[x],z[x],1e-6)))issues.nan.push(k+":loop");
 }
 const u=a=>[...new Set(a)];
 ok("templates: at least 40",names.length>=40,names.length);
-ok("numbers are valid in every frame and the loop closes",u(issues.nan).length===0,u(issues.nan));
+ok("numbers are valid and playback reaches loop start or one-shot finish",u(issues.nan).length===0,u(issues.nan));
 ok("bone lengths are constant in every frame (including inverse kinematics)",u(issues.bone).length===0,u(issues.bone));
 ok("knees do not bend backwards (free legs)",u(issues.knee).length===0,u(issues.knee));
 ok("elbows do not bend backwards (free arms)",u(issues.elbow).length===0,u(issues.elbow));

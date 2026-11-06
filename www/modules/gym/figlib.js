@@ -108,10 +108,10 @@ const FigLib=(()=>{
     if(a.foot&&b.foot)o.foot=[a.foot[0]+(b.foot[0]-a.foot[0])*t,a.foot[1]+(b.foot[1]-a.foot[1])*t];
     return o;
   }
-  /* n+1 samples of the loop (0..1), ping-pong with easing. */
+  /* n+1 eased samples: forward only for one-shot demonstrations, otherwise ping-pong. */
   function sample(def,n){
     const fr=def.frames.map(f=>full(Object.assign({},f,def.o||{},f.o||{})));
-    const path=fr.length===2?[fr[0],fr[1],fr[0]]:fr.concat(fr.slice(0,-1).reverse());
+    const path=def.playback==="once"?fr:fr.length===2?[fr[0],fr[1],fr[0]]:fr.concat(fr.slice(0,-1).reverse());
     const segs=path.length-1,out=[];
     for(let i=0;i<=n;i++){
       const u=i/n*segs,si=Math.min(segs-1,Math.floor(u));
@@ -200,6 +200,7 @@ const FigLib=(()=>{
     if(def.frames.length===1)def={...def,frames:[def.frames[0],def.frames[0]]};
     const reduce=typeof matchMedia==="function"&&matchMedia("(prefers-reduced-motion: reduce)").matches;
     const dur=2.6,N=anim&&!reduce?(def.samples||14):0;
+    const playback=def.playback==="once"?'repeatCount="1" fill="freeze"':'repeatCount="indefinite"';
     const volume=variant==="volume";
     const poses=N?sample(def,N):[full(Object.assign({},def.frames[0],def.o||{}))];
     const fs=poses.map(p=>frame(def,p,volume).parts);
@@ -217,10 +218,10 @@ const FigLib=(()=>{
       const p0=fs[0][i];
       if(p0.k==="line"){
         const ds=fs.map(f=>"M"+f[i].pts.map(q=>f1(q[0])+" "+f1(q[1])).join("L"));
-        h+=`<path class="fg-${p0.c}" stroke-width="${p0.w}" fill="none" stroke-linecap="round" stroke-linejoin="round" d="${ds[0]}">${N?`<animate attributeName="d" dur="${dur}s" repeatCount="indefinite" values="${ds.join(";")}"/>`:""}</path>`;
+        h+=`<path class="fg-${p0.c}" stroke-width="${p0.w}" fill="none" stroke-linecap="round" stroke-linejoin="round" d="${ds[0]}">${N?`<animate attributeName="d" dur="${dur}s" ${playback} values="${ds.join(";")}"/>`:""}</path>`;
       }else if(p0.k==="circle"){
         const cx=fs.map(f=>f1(f[i].p[0])).join(";"),cy=fs.map(f=>f1(f[i].p[1])).join(";");
-        h+=`<circle class="fg-${p0.c}" r="${p0.r}" cx="${f1(p0.p[0])}" cy="${f1(p0.p[1])}">${N?`<animate attributeName="cx" dur="${dur}s" repeatCount="indefinite" values="${cx}"/><animate attributeName="cy" dur="${dur}s" repeatCount="indefinite" values="${cy}"/>`:""}</circle>`;
+        h+=`<circle class="fg-${p0.c}" r="${p0.r}" cx="${f1(p0.p[0])}" cy="${f1(p0.p[1])}">${N?`<animate attributeName="cx" dur="${dur}s" ${playback} values="${cx}"/><animate attributeName="cy" dur="${dur}s" ${playback} values="${cy}"/>`:""}</circle>`;
       }else if(p0.k==="rect"){
         h+=`<rect class="fg-${p0.c}" x="${p0.x}" y="${p0.y}" width="${p0.w}" height="${p0.h}" rx="2" fill="none" stroke-width="2"/>`;
       }
