@@ -58,7 +58,7 @@ const FigTpl={
   neckstretch:{view:"f",frames:[{t:0,hd:0,a1:4,a2:4,l1:3,l2:3},{t:0,hd:34,a1:4,a2:4,l1:3,l2:3}]},
   twiststretch:{view:"f",frames:[{t:0,a1:84,a2:86,l1:3,l2:3},{t:12,a1:70,a2:76,l1:3,l2:3}]},
   /* ---- balance ---- */
-  onefoot:{frames:[{t:0,a1:30,a2:30},{t:0,a1:30,a2:30,l1:80,m1:0}]},
+  onefoot:{frames:[{t:0,a1:30,a2:30,l1:4,l2:-4,m1:65,m2:-10},{t:0,a1:32,a2:32,l1:4,l2:-4,m1:65,m2:-10}]},
   balwalk:{frames:[{t:0,a1:36,a2:36,l1:16,l2:-12,m1:16,m2:-12},{t:0,a1:36,a2:36,l1:2,l2:2,m1:2,m2:2}]},
   balwalk2:{frames:[{t:0,a1:4,a2:4,l1:22,l2:-16,m1:22,m2:-16},{t:0,a1:4,a2:4,l1:2,l2:2,m1:2,m2:2}]},
   tandem:{view:"f",frames:[{t:0,a1:66,a2:74,l1:2,l2:2},{t:5,a1:76,a2:84,l1:2,l2:2}]}

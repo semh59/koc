@@ -23,6 +23,28 @@ test.describe("No-Coach release",()=>{
     expect(await page.evaluate(()=>performance.getEntriesByType("resource").some(x=>/\/ex\/[^/]+\/\d+\.webp/.test(x.name)))).toBe(false);
   });
 
+  test("single-leg hold keeps support planted in real exercise detail",async({app,page})=>{
+    await page.emulateMedia({reducedMotion:"no-preference"});
+    await app.open({seed:state()});await app.tab("gym");
+    await page.evaluate(()=>exSheet("onefoot"));
+    const svg=page.locator("#sheet .exfig svg");await expect(svg).toBeVisible();
+    const observation=await svg.evaluate(el=>{
+      el.pauseAnimations();
+      const legs=el.querySelectorAll("path.fg-near"),support=legs[0],toe=legs[1],free=el.querySelectorAll("path.fg-far")[1];
+      const anchor=support.getPointAtLength(support.getTotalLength()),samples=[];
+      for(let i=0;i<=12;i++){
+        el.setCurrentTime(i*2.6/12);
+        const a=support.getPointAtLength(support.getTotalLength()),t=toe.getPointAtLength(toe.getTotalLength()),f=free.getPointAtLength(free.getTotalLength());
+        samples.push({drift:Math.hypot(a.x-anchor.x,a.y-anchor.y),y:a.y,toeY:t.y,freeY:f.y});
+      }
+      el.setCurrentTime(0);return samples;
+    });
+    expect(observation.every(x=>x.drift<.01&&Math.abs(x.y-136)<.01&&Math.abs(x.toeY-136)<.01&&x.freeY<128)).toBe(true);
+    await page.emulateMedia({reducedMotion:"reduce"});await page.evaluate(()=>exSheet("onefoot"));
+    await expect(svg).toHaveAttribute("data-fig-motion","static");await expect(svg.locator("animate")).toHaveCount(0);
+    await page.screenshot({path:test.info().outputPath("onefoot.png")});
+  });
+
   test("figure pilot gallery renders 9 families cleanly with opt-in volume and ghost",async({page})=>{
     await page.goto("/figure-pilot.html");
     await expect(page.locator("h1")).toContainText("NeoWell Çöp Adam 2.5D Görsel Pilot Matrisi");
