@@ -58,6 +58,9 @@
       ]
     }
   ],
+  "nameNearCandidateGroups": [],
+  "candidateSignatureCount": 0,
+  "canonicalDuplicateGroups": [],
   "legacyObservedDuplicateGroups": 78,
   "legacyObservedGroups": [
     {

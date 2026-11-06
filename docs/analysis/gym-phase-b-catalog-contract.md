@@ -2,7 +2,7 @@
 
 ## Amaç
 
-Egzersiz sayısını ID, isim veya ekipman etiketiyle yapay biçimde artırmayı engellemek. Bir kayıt ancak hareketi tanımlayan canonical alanları tamamlanmış ve mevcut katalogla çakışmadığı kanıtlanmışsa `semanticUniqueCount` içine girer.
+Egzersiz sayısını ID, isim veya ekipman etiketiyle yapay biçimde artırmayı engellemek. Tam canonical metadata yalnız `candidateSignatureCount` üretir. `semanticUniqueCount` otomatik şema denetiminde `0` kalır; gerçek hareket farkı, provenance ve bağımsız kabul ayrı kanıtlanmalıdır.
 
 ## Canonical alanlar
 
@@ -24,9 +24,9 @@ Signature şu alanları zorunlu kabul eder:
 
 ## Karar sınıfları
 
-- `duplicate`: aynı canonical identity veya aynı güvenli gözlem anahtarı.
-- `distinct`: tüm canonical alanlar mevcut ve fark hareketi gerçekten değiştiriyor.
-- `review`: metadata eksik, yalnız ekipman farkı var veya farkın biomekanik anlamı kanıtlanmamış.
+- `duplicate`: yalnız tüm alanları geçerli aynı canonical signature; bu, metadatanın eşitliğidir, lisans/form doğruluğu onayı değildir.
+- `distinct`: kanıtlı insan/bağımsız kabul kararı gerektirir; otomatik karşılaştırıcı bu kararı üretmez.
+- `review`: farklı signature (ROM/tempo/ekipman/unilateral dahil), eksik veya geçersiz metadata. Eksik legacy anahtar eşitliği yalnız `observedGroups` inceleme sinyalidir.
 
 `review` kayıtları semantic unique sayıya dahil edilmez. Otomatik denetim mevcut kayıtları silmez, yeniden adlandırmaz veya ID değiştirmez.
 
@@ -36,7 +36,7 @@ Yerleşik egzersiz ID'leri kalıcı katalog anahtarıdır. Workout geçmişi, im
 
 ## Üretim davranışı
 
-- Signature kanonik alanları sıralı ve deterministik JSON olarak karşılaştırır.
+- Signature kanonik nesne anahtarlarını ve string küme alanlarını sıralar; tekrarlı küme elemanı tekilleştirilir. Enum alanları tek değer, diğer alanlar string veya string dizisidir; boolean/object/number token dönüştürülmez.
 - Display name signature kimliğine dahil edilmez.
 - Eksik canonical alanlar varsayımla doldurulmaz.
 - Legacy kayıtlarda yalnız mevcut `tp`, bölge, tür ve ekipman ile yapılan gözlem ön taramadır; kesin biomekanik doğrulama değildir.

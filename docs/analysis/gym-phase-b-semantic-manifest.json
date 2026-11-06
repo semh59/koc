@@ -5,6 +5,8 @@
   "semanticUniqueCount": 0,
   "reviewCount": 332,
   "legacyObservedDuplicateGroups": 78,
+  "candidateSignatureCount": 0,
+  "canonicalDuplicateGroups": 0,
   "records": [
     {
       "id": "squat",

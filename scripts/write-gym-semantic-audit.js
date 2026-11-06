@@ -9,7 +9,7 @@ const source=fs.readFileSync(path.join(__dirname,"exlib-src.txt"),"utf8").split(
   .map((line,i)=>{const p=line.split("|");return {sourceLine:i+1,id:p[1],n:p[2],source:"scripts/exlib-src.txt"}});
 const name=Semantic.nameAudit(ex);
 const semantic=Semantic.audit(ex,{sourceRecords:source,strict:false});
-const legacy=semantic.duplicates;
+const legacy=semantic.observedGroups;
 const out={
   generatedAt:"B-1 candidate audit snapshot",
   sourceCount:semantic.sourceCount,
@@ -17,6 +17,9 @@ const out={
   semanticUniqueCount:semantic.semanticUniqueCount,
   reviewCount:semantic.review.length,
   nameExactCandidateGroups:name.exact,
+  nameNearCandidateGroups:name.near,
+  candidateSignatureCount:semantic.candidateSignatureCount,
+  canonicalDuplicateGroups:semantic.duplicates,
   legacyObservedDuplicateGroups:legacy.length,
   legacyObservedGroups:legacy,
   decision:"No automatic merge or unique-count increase; all records require canonical metadata review"

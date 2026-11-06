@@ -22,17 +22,17 @@ ok("canonical signature is deterministic and excludes display name",(()=>{
   return JSON.stringify(a)===JSON.stringify(b)&&Semantic.key(a)===Semantic.key(b);
 })());
 
-ok("same observed movement is reported as duplicate, not a new exercise",(()=>{
+ok("same observed key is a review group, not a canonical duplicate",(()=>{
   const clone={...squat,id:"clone",n:"Başka görünen ad"};
   const r=Semantic.audit([squat,clone],{strict:false});
-  return r.duplicates.some(x=>x.ids.includes("squat")&&x.ids.includes("clone"));
+  return r.duplicates.length===0&&r.observedGroups.some(x=>x.ids.includes("squat")&&x.ids.includes("clone"));
 })());
 
-ok("complete canonical metadata can prove a real movement difference",(()=>{
+ok("complete canonical metadata still requires evidence for a movement difference",(()=>{
   const base={id:"a",n:"Squat",canonical:{pattern:"squat",primary_joints:["knee","hip"],rom:"parallel",unilateral:"bilateral",stance:"standing",load_mode:"external",equipment_role:"bar_on_shoulders",direction:"sagittal",tempo_mode:"dynamic",target_region:"quadriceps",start_end:"standing_to_standing"}};
   const variant={...base,id:"b",n:"Tek bacak squat",canonical:{...base.canonical,unilateral:"unilateral"}};
   const r=Semantic.compare(base,variant);
-  return r.status==="distinct"&&r.distinct===true;
+  return r.status==="review"&&r.distinct===false;
 })());
 
 ok("equipment-only or incomplete difference is review, not distinct",(()=>{
