@@ -94,6 +94,36 @@ test.describe("No-Coach release",()=>{
     await expect(svg.locator("animate")).toHaveCount(0);await expect(svg).toHaveAttribute("data-fig-motion","static");
   });
 
+  test("side step detail and guide alternate planted support without sliding",async({app,page})=>{
+    await page.emulateMedia({reducedMotion:"no-preference"});await app.open({seed:state()});await app.tab("gym");
+    for(const mode of ["detail","guide"]){
+      if(mode==="detail")await page.evaluate(()=>exSheet("sidestep"));
+      else await page.evaluate(()=>{closeSheet();S.templates=[{id:905,name:"Yana adım testi",ex:["sidestep"],tg:{sidestep:{sets:1,reps:5}}}];gdStart("t:905")});
+      const svg=page.locator(mode==="detail"?"#sheet .exfig svg":"#guide svg").first();await expect(svg).toBeVisible();
+      await expect(svg).toHaveAttribute("data-fig-view","front");
+      const samples=await svg.evaluate(el=>{
+        el.pauseAnimations();const n=el.querySelectorAll("path.fg-near"),f=el.querySelectorAll("path.fg-far"),body=el.querySelector("path.fg-body"),out=[];
+        const end=p=>{const q=p.getPointAtLength(p.getTotalLength());return [q.x,q.y]};
+        for(let i=0;i<=128;i++){
+          el.setCurrentTime(i*2.6/128);const hip=body.getPointAtLength(0);
+          out.push({n:end(n[0]),f:end(f[1]),nt:end(n[1]),ft:end(f[2]),hip:[hip.x,hip.y]});
+        }return out;
+      });
+      for(let i=0;i<samples.length;i++){
+        const s=samples[i],phase=Math.min(3,Math.floor(i/32)),support=["f","n","n","f"][phase];
+        expect(Math.abs(s[support][0]-[75,95,95,75][phase])).toBeLessThan(.02);
+        expect(Math.abs(s[support][1]-136)).toBeLessThan(.02);expect(Math.abs(s[support+"t"][1]-136)).toBeLessThan(.02);
+      }
+      for(const [i,swing] of [[16,"n"],[48,"f"],[80,"f"],[112,"n"]])expect(samples[i][swing][1]).toBeLessThan(132);
+      expect(samples[32].n[0]).toBeCloseTo(95,1);expect(samples[32].f[0]).toBeCloseTo(75,1);
+      expect(samples[64].f[0]).toBeCloseTo(85,1);expect(samples[64].hip[0]-samples[0].hip[0]).toBeCloseTo(10,1);
+      for(const key of Object.keys(samples[0]))for(let axis=0;axis<2;axis++)expect(Math.abs(samples[128][key][axis]-samples[0][key][axis])).toBeLessThan(.02);
+    }
+    await page.evaluate(()=>{gdEnd();gdClose()});await page.emulateMedia({reducedMotion:"reduce"});
+    await page.evaluate(()=>exSheet("sidestep"));const still=page.locator("#sheet .exfig svg");
+    await expect(still).toHaveAttribute("data-fig-motion","static");await expect(still.locator("animate")).toHaveCount(0);
+  });
+
   test("wide and narrow squat cues match across detail and guided mode",async({app,page})=>{
     await app.open({seed:state()});await app.tab("gym");
     for(const [id,phrase] of [["widesquat","omuz genişliğinden daha geniş"],["narrowsquat","omuz genişliğinden daha dar"]]){

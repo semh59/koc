@@ -66,5 +66,11 @@ const FigTpl={
 };
 FigTpl.chairstand={frames:[{t:10,a1:-30,a2:150,b1:30,b2:210,l1:90,l2:0},{t:0,a1:-30,a2:150,b1:30,b2:210,l1:0,l2:0}],scene:"seat",fix:{x:["ankle",24],y:["floor"]}};
 FigTpl.seatedhinge={frames:[{t:0,l1:90,l2:0},{t:40,l1:90,l2:0}],scene:"seat",fix:{x:["hip",0],y:["hip",24]}};
-FigTpl.sidestep=FigTpl.legspread;
+FigTpl.sidestep={view:"f",samples:16,frames:[
+  {dx:0,feet:[[5,0],[-5,0]]},
+  {dx:2.5,feet:[[10,5],[-5,0]]},
+  {dx:5,feet:[[15,0],[-5,0]]},
+  {dx:7.5,feet:[[15,0],[0,5]]},
+  {dx:10,feet:[[15,0],[5,0]]}
+],fix:{x:["hip",0],y:["hip",46]}};
 if(typeof module!=="undefined")module.exports=FigTpl;

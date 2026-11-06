@@ -8,8 +8,8 @@ const FigLib=(()=>{
   const rad=d=>d*Math.PI/180,sn=a=>Math.sin(rad(a)),cs=a=>Math.cos(rad(a));
   const dn=(a,l)=>[sn(a)*l,cs(a)*l],upv=(a,l)=>[sn(a)*l,-cs(a)*l];
   const add=(p,q)=>[p[0]+q[0],p[1]+q[1]];
-  const DEF={sy:0,hh:0,t:0,hd:null,a1:0,a2:0,b1:null,b2:null,l1:0,l2:0,l3:90,m1:null,m2:null,m3:null,hand:null,foot:null,eb:1};
-  const KEYS=["sy","hh","t","hd","a1","a2","b1","b2","l1","l2","l3","m1","m2","m3"];
+  const DEF={dx:0,sy:0,hh:0,t:0,hd:null,a1:0,a2:0,b1:null,b2:null,l1:0,l2:0,l3:90,m1:null,m2:null,m3:null,hand:null,foot:null,eb:1};
+  const KEYS=["dx","sy","hh","t","hd","a1","a2","b1","b2","l1","l2","l3","m1","m2","m3"];
   const full=p=>{
     const q=Object.assign({},DEF,p);
     if(q.hd==null)q.hd=q.t*0.6;
@@ -73,7 +73,7 @@ const FigLib=(()=>{
     }else if(fy[0]==="hip"){dy=FLOOR-(fy[1]||0)-J.pose.hh-J.hip[1]}
     else if(fy[0]==="wrist"){dy=FLOOR-(fy[1]||0)-J.limbs.nA[2][1]}
     const ref=pick(J,fx[0]);
-    shift(J,X0+(fx[1]||0)-ref[0],dy);
+    shift(J,X0+(fx[1]||0)+J.pose.dx-ref[0],dy);
     const p=J.pose,fr=J.view==="f";
     if(p.hand){
       const [hx,hh]=p.hand;
@@ -82,7 +82,13 @@ const FigLib=(()=>{
         J.limbs[k]=[s,r.joint,r.end];
       }
     }
-    if(p.foot){
+    if(p.feet){
+      // Independent targets stay in scene coordinates while the pelvis moves.
+      for(const [i,k,sg] of [[0,"nL",1],[1,"fL",-1]]){
+        const [x,height]=p.feet[i],h=J.limbs[k][0],r=ik2(h,[X0+x,FLOOR-height],B.th,B.sh,fr?-sg:-1);
+        J.limbs[k]=[h,r.joint,r.end,add(r.end,dn((fr?sg:1)*(i?p.m3:p.l3),B.ft))];
+      }
+    }else if(p.foot){
       const [fxx,fh]=p.foot,tgt=[X0+fxx,FLOOR-fh];
       for(const [k,sg] of [["nL",1],["fL",-1]]){
         const h=J.limbs[k][0],t=fr?[X0+sg*Math.abs(fxx),tgt[1]]:tgt,r=ik2(h,t,B.th,B.sh,fr?sg:-1);
@@ -96,6 +102,7 @@ const FigLib=(()=>{
   function lerpPose(a,b,t){
     const o={};
     for(const k of KEYS)o[k]=a[k]+(b[k]-a[k])*t;
+    o.feet=a.feet&&b.feet?a.feet.map((point,i)=>point.map((v,j)=>v+(b.feet[i][j]-v)*t)):null;
     o.hand=t<0.5?a.hand:b.hand;o.foot=t<0.5?a.foot:b.foot;o.eb=a.eb;
     if(a.hand&&b.hand)o.hand=[a.hand[0]+(b.hand[0]-a.hand[0])*t,a.hand[1]+(b.hand[1]-a.hand[1])*t];
     if(a.foot&&b.foot)o.foot=[a.foot[0]+(b.foot[0]-a.foot[0])*t,a.foot[1]+(b.foot[1]-a.foot[1])*t];
@@ -192,7 +199,7 @@ const FigLib=(()=>{
     def=def&&Array.isArray(def.frames)&&def.frames.length?def:{frames:[{}]};
     if(def.frames.length===1)def={...def,frames:[def.frames[0],def.frames[0]]};
     const reduce=typeof matchMedia==="function"&&matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const dur=2.6,N=anim&&!reduce?14:0;
+    const dur=2.6,N=anim&&!reduce?(def.samples||14):0;
     const volume=variant==="volume";
     const poses=N?sample(def,N):[full(Object.assign({},def.frames[0],def.o||{}))];
     const fs=poses.map(p=>frame(def,p,volume).parts);
