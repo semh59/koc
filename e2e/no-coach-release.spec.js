@@ -141,6 +141,17 @@ test.describe("No-Coach release",()=>{
     await expect(page.locator("#guide .gdc").first()).toContainText("Oturarak");await page.evaluate(()=>{gdEnd();gdClose()});
   });
 
+  test("fast and slow walking explain tempo without presenting animation as target cadence",async({app,page})=>{
+    await app.open({seed:state()});await app.tab("gym");
+    for(const [id,phrase] of [["fastwalk","Tempolu yürü"],["slowwalk","Yavaş ve rahat yürü"]]){
+      await page.evaluate(id=>exSheet(id),id);
+      await expect(page.locator("#sheet .cues")).toContainText(phrase);await expect(page.locator("#sheet .cues")).toContainText("Animasyon hız hedefi göstermez");
+      await page.evaluate(id=>{closeSheet();S.templates=[{id:904,name:"Yürüyüş testi",ex:[id],tg:{[id]:{sets:1,reps:5}}}];gdStart("t:904")},id);
+      await expect(page.locator("#guide .gdc").first()).toContainText(phrase);await expect(page.locator("#guide .gdc").first()).toContainText("Animasyon hız hedefi göstermez");
+      await page.evaluate(()=>{gdEnd();gdClose()});
+    }
+  });
+
   test("figure pilot gallery renders 9 families cleanly with opt-in volume and ghost",async({page})=>{
     await page.goto("/figure-pilot.html");
     await expect(page.locator("h1")).toContainText("NeoWell Çöp Adam 2.5D Görsel Pilot Matrisi");

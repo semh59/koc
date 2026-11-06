@@ -58,6 +58,8 @@ const EXCUE={
   twiststretch:["Gövdeyi yavaşça döndür, kalça sabit.","Nefes ver ve gevşe."]
 };
 const EXCUE_BY_ID={
+  fastwalk:["Tempolu yürü; koşuya geçmeden rahat ve kontrollü adımlar at. Animasyon hız hedefi göstermez.","Dik dur, kolların doğal sallansın; hızını kendi rahatlığına göre ayarla."],
+  slowwalk:["Yavaş ve rahat yürü; acele etmeden kontrollü adımlar at. Animasyon hız hedefi göstermez.","Dik dur, kolların doğal sallansın; hızını kendi rahatlığına göre ayarla."],
   goodmorning:["Barı üst sırtta sabit tut; boynuna dayama ve ellerinle dengede tut.","Dizlerini hafif bük, kalçanı geriye gönder; sırtını doğal konumunda tutarak kontrollü eğil ve doğrul."],
   stiffgm:["Barı üst sırtta sabit tut; boynuna dayama ve ellerinle dengede tut.","Dizlerini kilitleme; bacaklar görece düzken kalçanı geriye gönder, sırtını doğal konumunda tut ve rahat hareket aralığında doğrul."],
   widesquat:["Ayaklarını omuz genişliğinden daha geniş yerleştir; dizlerini ayak uçları doğrultusunda tut.","Topuklarını yerde tut; rahat ve kontrollü derinlikte in.","Çizim genel squat hareketini gösterir; duruş genişliği yandan görünüşte gösterilmez."],
