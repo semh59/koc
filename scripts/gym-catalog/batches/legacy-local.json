@@ -1,0 +1,350 @@
+{
+  "schemaVersion": 1,
+  "batch": "legacy-local",
+  "records": [
+    {
+      "runtime": {
+        "id": "onefoot",
+        "n": "Tek ayak üstünde duruş",
+        "r": "Tüm vücut",
+        "g": "Bacak",
+        "k": "t",
+        "q": "Ağırlıksız",
+        "l": "Başlangıç",
+        "c": "d",
+        "inc": 1,
+        "tp": "onefoot",
+        "pr": "-"
+      },
+      "metadata": {
+        "canonical_id": null,
+        "canonical": {
+          "pattern": null,
+          "primary_joints": null,
+          "rom": null,
+          "unilateral": null,
+          "stance": null,
+          "load_mode": null,
+          "equipment_role": null,
+          "direction": null,
+          "tempo_mode": null,
+          "target_region": null,
+          "start_end": null
+        },
+        "signature": null,
+        "family": null,
+        "cue_ids": [
+          "onefoot"
+        ],
+        "figure_template": "onefoot",
+        "source_ref": "neowell-data",
+        "license_ref": "neowell-data",
+        "source_name": "Tek ayak üstünde duruş",
+        "retrieved_at": null,
+        "transformation_note": "Migrated unchanged from runtime at commit 1ecc2d54a5bab21f41008b8dbdac6e1f8478feeb; acquisition date and canonical biomechanics not recorded.",
+        "status": "review"
+      }
+    },
+    {
+      "runtime": {
+        "id": "heeltoe",
+        "n": "Topuk-parmak yürüyüşü",
+        "r": "Tüm vücut",
+        "g": "Bacak",
+        "k": "t",
+        "q": "Ağırlıksız",
+        "l": "Başlangıç",
+        "c": "d",
+        "inc": 1,
+        "tp": "balwalk",
+        "pr": "-"
+      },
+      "metadata": {
+        "canonical_id": null,
+        "canonical": {
+          "pattern": null,
+          "primary_joints": null,
+          "rom": null,
+          "unilateral": null,
+          "stance": null,
+          "load_mode": null,
+          "equipment_role": null,
+          "direction": null,
+          "tempo_mode": null,
+          "target_region": null,
+          "start_end": null
+        },
+        "signature": null,
+        "family": null,
+        "cue_ids": [
+          "balwalk"
+        ],
+        "figure_template": "balwalk",
+        "source_ref": "neowell-data",
+        "license_ref": "neowell-data",
+        "source_name": "Topuk-parmak yürüyüşü",
+        "retrieved_at": null,
+        "transformation_note": "Migrated unchanged from runtime at commit 1ecc2d54a5bab21f41008b8dbdac6e1f8478feeb; acquisition date and canonical biomechanics not recorded.",
+        "status": "review"
+      }
+    },
+    {
+      "runtime": {
+        "id": "chairstand",
+        "n": "Sandalyeden kalkma (süreli)",
+        "r": "Tüm vücut",
+        "g": "Bacak",
+        "k": "t",
+        "q": "Ağırlıksız",
+        "l": "Başlangıç",
+        "c": "d",
+        "inc": 1,
+        "tp": "chairstand",
+        "pr": "-"
+      },
+      "metadata": {
+        "canonical_id": null,
+        "canonical": {
+          "pattern": null,
+          "primary_joints": null,
+          "rom": null,
+          "unilateral": null,
+          "stance": null,
+          "load_mode": null,
+          "equipment_role": null,
+          "direction": null,
+          "tempo_mode": null,
+          "target_region": null,
+          "start_end": null
+        },
+        "signature": null,
+        "family": null,
+        "cue_ids": [
+          "chairstand"
+        ],
+        "figure_template": "chairstand",
+        "source_ref": "neowell-data",
+        "license_ref": "neowell-data",
+        "source_name": "Sandalyeden kalkma (süreli)",
+        "retrieved_at": null,
+        "transformation_note": "Migrated unchanged from runtime at commit 1ecc2d54a5bab21f41008b8dbdac6e1f8478feeb; acquisition date and canonical biomechanics not recorded.",
+        "status": "review"
+      }
+    },
+    {
+      "runtime": {
+        "id": "sidestep",
+        "n": "Yan adım",
+        "r": "Tüm vücut",
+        "g": "Bacak",
+        "k": "t",
+        "q": "Ağırlıksız",
+        "l": "Başlangıç",
+        "c": "d",
+        "inc": 1,
+        "tp": "sidestep",
+        "pr": "-"
+      },
+      "metadata": {
+        "canonical_id": null,
+        "canonical": {
+          "pattern": null,
+          "primary_joints": null,
+          "rom": null,
+          "unilateral": null,
+          "stance": null,
+          "load_mode": null,
+          "equipment_role": null,
+          "direction": null,
+          "tempo_mode": null,
+          "target_region": null,
+          "start_end": null
+        },
+        "signature": null,
+        "family": null,
+        "cue_ids": [
+          "sidestep"
+        ],
+        "figure_template": "sidestep",
+        "source_ref": "neowell-data",
+        "license_ref": "neowell-data",
+        "source_name": "Yan adım",
+        "retrieved_at": null,
+        "transformation_note": "Migrated unchanged from runtime at commit 1ecc2d54a5bab21f41008b8dbdac6e1f8478feeb; acquisition date and canonical biomechanics not recorded.",
+        "status": "review"
+      }
+    },
+    {
+      "runtime": {
+        "id": "tandem",
+        "n": "Tandem duruş (ayaklar art arda)",
+        "r": "Tüm vücut",
+        "g": "Bacak",
+        "k": "t",
+        "q": "Ağırlıksız",
+        "l": "Başlangıç",
+        "c": "d",
+        "inc": 1,
+        "tp": "tandem",
+        "pr": "-"
+      },
+      "metadata": {
+        "canonical_id": null,
+        "canonical": {
+          "pattern": null,
+          "primary_joints": null,
+          "rom": null,
+          "unilateral": null,
+          "stance": null,
+          "load_mode": null,
+          "equipment_role": null,
+          "direction": null,
+          "tempo_mode": null,
+          "target_region": null,
+          "start_end": null
+        },
+        "signature": null,
+        "family": null,
+        "cue_ids": [
+          "tandem"
+        ],
+        "figure_template": "tandem",
+        "source_ref": "neowell-data",
+        "license_ref": "neowell-data",
+        "source_name": "Tandem duruş (ayaklar art arda)",
+        "retrieved_at": null,
+        "transformation_note": "Migrated unchanged from runtime at commit 1ecc2d54a5bab21f41008b8dbdac6e1f8478feeb; acquisition date and canonical biomechanics not recorded.",
+        "status": "review"
+      }
+    },
+    {
+      "runtime": {
+        "id": "armswalk",
+        "n": "Kollar yanda yürüyüş",
+        "r": "Tüm vücut",
+        "g": "Bacak",
+        "k": "t",
+        "q": "Ağırlıksız",
+        "l": "Başlangıç",
+        "c": "d",
+        "inc": 1,
+        "tp": "balwalk2",
+        "pr": "-"
+      },
+      "metadata": {
+        "canonical_id": null,
+        "canonical": {
+          "pattern": null,
+          "primary_joints": null,
+          "rom": null,
+          "unilateral": null,
+          "stance": null,
+          "load_mode": null,
+          "equipment_role": null,
+          "direction": null,
+          "tempo_mode": null,
+          "target_region": null,
+          "start_end": null
+        },
+        "signature": null,
+        "family": null,
+        "cue_ids": [
+          "balwalk2"
+        ],
+        "figure_template": "balwalk2",
+        "source_ref": "neowell-data",
+        "license_ref": "neowell-data",
+        "source_name": "Kollar yanda yürüyüş",
+        "retrieved_at": null,
+        "transformation_note": "Migrated unchanged from runtime at commit 1ecc2d54a5bab21f41008b8dbdac6e1f8478feeb; acquisition date and canonical biomechanics not recorded.",
+        "status": "review"
+      }
+    },
+    {
+      "runtime": {
+        "id": "fastwalk",
+        "n": "Hızlı yürüyüş",
+        "r": "Tüm vücut",
+        "g": "Bacak",
+        "k": "t",
+        "q": "Ağırlıksız",
+        "l": "Başlangıç",
+        "c": "k",
+        "inc": 1,
+        "tp": "walk",
+        "pr": "-"
+      },
+      "metadata": {
+        "canonical_id": null,
+        "canonical": {
+          "pattern": null,
+          "primary_joints": null,
+          "rom": null,
+          "unilateral": null,
+          "stance": null,
+          "load_mode": null,
+          "equipment_role": null,
+          "direction": null,
+          "tempo_mode": null,
+          "target_region": null,
+          "start_end": null
+        },
+        "signature": null,
+        "family": null,
+        "cue_ids": [
+          "walk"
+        ],
+        "figure_template": "walk",
+        "source_ref": "neowell-data",
+        "license_ref": "neowell-data",
+        "source_name": "Hızlı yürüyüş",
+        "retrieved_at": null,
+        "transformation_note": "Migrated unchanged from runtime at commit 1ecc2d54a5bab21f41008b8dbdac6e1f8478feeb; acquisition date and canonical biomechanics not recorded.",
+        "status": "review"
+      }
+    },
+    {
+      "runtime": {
+        "id": "slowwalk",
+        "n": "Yavaş yürüyüş",
+        "r": "Tüm vücut",
+        "g": "Bacak",
+        "k": "t",
+        "q": "Ağırlıksız",
+        "l": "Başlangıç",
+        "c": "k",
+        "inc": 1,
+        "tp": "walk",
+        "pr": "-"
+      },
+      "metadata": {
+        "canonical_id": null,
+        "canonical": {
+          "pattern": null,
+          "primary_joints": null,
+          "rom": null,
+          "unilateral": null,
+          "stance": null,
+          "load_mode": null,
+          "equipment_role": null,
+          "direction": null,
+          "tempo_mode": null,
+          "target_region": null,
+          "start_end": null
+        },
+        "signature": null,
+        "family": null,
+        "cue_ids": [
+          "walk"
+        ],
+        "figure_template": "walk",
+        "source_ref": "neowell-data",
+        "license_ref": "neowell-data",
+        "source_name": "Yavaş yürüyüş",
+        "retrieved_at": null,
+        "transformation_note": "Migrated unchanged from runtime at commit 1ecc2d54a5bab21f41008b8dbdac6e1f8478feeb; acquisition date and canonical biomechanics not recorded.",
+        "status": "review"
+      }
+    }
+  ]
+}

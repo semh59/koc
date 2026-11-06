@@ -63,10 +63,10 @@ ok("semantic audit emits one manifest row per runtime record",(()=>{
   return Array.isArray(r.manifest)&&r.manifest.length===332&&r.manifest.every(x=>x.id&&x.status&&x.signature);
 })());
 
-ok("strict mode rejects a record without complete canonical metadata",()=>{
+ok("strict mode rejects a record without complete canonical metadata",(()=>{
   let threw=false;try{Semantic.audit([unknown],{strict:true})}catch(e){threw=/canonical metadata/i.test(e.message)}
   return threw;
-});
+})());
 
 ok("name normalization removes language, punctuation and equipment suffixes",(()=>{
   const a=Semantic.normalizeName("Dumbbell Bench Press");

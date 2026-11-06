@@ -20,6 +20,8 @@
     "pdfjs-dist": "6.4.299"
   },
   "scripts": {
+    "gym:build": "node scripts/build-gym-catalog.js",
+    "gym:check": "node scripts/build-gym-catalog.js --check",
     "test:clock": "node scripts/clock-matrix.js",
     "test": "node scripts/run-tests.js",
     "test:e2e": "playwright test -c e2e/playwright.config.js",
