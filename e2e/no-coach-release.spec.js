@@ -94,6 +94,17 @@ test.describe("No-Coach release",()=>{
     await expect(svg.locator("animate")).toHaveCount(0);await expect(svg).toHaveAttribute("data-fig-motion","static");
   });
 
+  test("rack pull explains raised support and generic drawing in detail and guide",async({app,page})=>{
+    await app.open({seed:state()});await app.tab("gym");await page.evaluate(()=>exSheet("rackpull"));
+    await expect(page.locator("#sheet .cues")).toContainText("yükseltilmiş desteklerden");
+    await expect(page.locator("#sheet .cues")).toContainText("Görsel genel kalça menteşesini gösterir; destekleri ve başlangıç yüksekliğini göstermez");
+    await page.evaluate(()=>{closeSheet();S.templates=[{id:907,name:"Destekli çekiş testi",ex:["rackpull"],tg:{rackpull:{sets:1,reps:5}}}];gdStart("t:907")});
+    await expect(page.locator("#guide .gdc").first()).toContainText("yükseltilmiş desteklerden");
+    await expect(page.locator("#guide .gdc").first()).toContainText("destekleri ve başlangıç yüksekliğini göstermez");
+    for(const clause of ["kontrollü kaldır","kalça ve dizlerini açarak doğrul","desteklere kontrollü geri bırak"])await expect(page.locator("#guide .gdc").first()).toContainText(clause);
+    await page.evaluate(()=>{gdEnd();gdClose()});
+  });
+
   test("heeltoe detail and guide take two forward contact steps then freeze",async({app,page})=>{
     await page.emulateMedia({reducedMotion:"no-preference"});await app.open({seed:state()});await app.tab("gym");
     for(const mode of ["detail","guide"]){
