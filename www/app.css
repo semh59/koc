@@ -189,7 +189,7 @@ td.today,th.today{font-weight:700}
 .gdnx{display:flex;align-items:baseline;gap:var(--sp-2);background:var(--bg);border-radius:var(--r-s);padding:var(--sp-3) 12px;margin:var(--sp-2) 0 0;flex:none}.gdnx b{flex:1;min-width:0;overflow-wrap:anywhere}
 .gdctl{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:8px;margin-top:8px;flex:none}.gdctl .btn{min-height:56px;padding:8px}.gdrem{text-align:center;margin:var(--sp-2) 0 0}#guide .hint{text-align:center;padding:4px 0 0}
 .fg-far{stroke:var(--mut);opacity:.75}.fg-body,.fg-near{stroke:var(--prim)}.fg-head{stroke:var(--prim);fill:var(--card);stroke-width:2.6}
-.fg-prop{stroke:var(--kcal)}.fg-plate{stroke:var(--kcal);fill:color-mix(in srgb,var(--kcal) 35%,var(--card));stroke-width:1.6}.fg-floor{stroke:var(--line)}
+.fg-prop,.fg-barshaft{stroke:var(--kcal)}.fg-plate{stroke:var(--kcal);fill:color-mix(in srgb,var(--kcal) 35%,var(--card));stroke-width:1.6}.fg-floor{stroke:var(--line)}
 .fig[data-fig-variant="volume"] .fg-far{stroke:color-mix(in srgb,var(--mut) 75%,var(--card));opacity:.8}
 .fig[data-fig-variant="volume"] .fg-body,.fig[data-fig-variant="volume"] .fg-near{stroke:var(--prim);filter:drop-shadow(0 1px 1px rgba(0,0,0,.18))}
 .fig[data-fig-variant="volume"] .fg-highlight{stroke:rgba(255,255,255,.45);stroke-linecap:round;opacity:.9}

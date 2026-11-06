@@ -7386,7 +7386,7 @@
         "l": "Orta",
         "c": "g",
         "inc": 2.5,
-        "tp": "hinge",
+        "tp": "rackpull",
         "im": 0,
         "pr": "bar"
       },
@@ -7408,9 +7408,9 @@
         "signature": null,
         "family": null,
         "cue_ids": [
-          "hinge"
+          "rackpull"
         ],
-        "figure_template": "hinge",
+        "figure_template": "rackpull",
         "source_ref": "free-exercise-db-data",
         "license_ref": "free-exercise-db-data",
         "source_name": "Rack Pulls",

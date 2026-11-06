@@ -75,6 +75,7 @@ const FigTpl={
   tandem:{frames:[{t:0,a1:36,a2:36,l1:5.3794,l2:5.3794,m1:-5.3794,m2:-5.3794},{t:0,a1:38,a2:38,l1:5.3794,l2:5.3794,m1:-5.3794,m2:-5.3794}]}
 };
 FigTpl.chairstand={frames:[{t:10,a1:-30,a2:150,b1:30,b2:210,l1:90,l2:0},{t:0,a1:-30,a2:150,b1:30,b2:210,l1:0,l2:0}],scene:"seat",fix:{x:["ankle",24],y:["floor"]}};
+FigTpl.rackpull={frames:[{t:45,feet:[[0,0],[0,0]]},{t:0,hh:2,feet:[[0,0],[0,0]]}],scene:"rack",rackY:103.744156,fix:{x:["hip",0],y:["hip",44]},prop:{k:"bar",at:"wrist"}};
 FigTpl.seatedhinge={frames:[{t:0,l1:90,l2:0},{t:40,l1:90,l2:0}],scene:"seat",fix:{x:["hip",0],y:["hip",24]}};
 FigTpl.sidestep={view:"f",samples:16,frames:[
   {dx:0,feet:[[5,0],[-5,0]]},

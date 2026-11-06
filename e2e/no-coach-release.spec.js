@@ -94,13 +94,36 @@ test.describe("No-Coach release",()=>{
     await expect(svg.locator("animate")).toHaveCount(0);await expect(svg).toHaveAttribute("data-fig-motion","static");
   });
 
-  test("rack pull explains raised support and generic drawing in detail and guide",async({app,page})=>{
+  test("rack pull shaft contacts fixed pins then lifts in detail and guide",async({app,page})=>{
+    await page.emulateMedia({reducedMotion:"no-preference"});await app.open({seed:state()});await app.tab("gym");
+    for(const mode of ["detail","guide"]){
+      if(mode==="detail")await page.evaluate(()=>exSheet("rackpull"));
+      else await page.evaluate(()=>{closeSheet();S.templates=[{id:908,name:"Rack figür testi",ex:["rackpull"],tg:{rackpull:{sets:1,reps:5}}}];gdStart("t:908")});
+      const svg=page.locator(mode==="detail"?"#sheet .exfig svg":"#guide .gdfig svg");await expect(svg).toBeVisible();
+      const samples=await svg.evaluate(el=>{
+        el.pauseAnimations();const pin=el.querySelector("path.fg-prop"),shaft=el.querySelector("path.fg-barshaft"),plate=el.querySelector("circle.fg-plate"),leg=el.querySelector("path.fg-near"),out=[];
+        for(let i=0;i<=64;i++){
+          el.setCurrentTime(i*2.6/64);const p=pin.getPointAtLength(0),pe=pin.getPointAtLength(pin.getTotalLength()),b=shaft.getPointAtLength(0),be=shaft.getPointAtLength(shaft.getTotalLength()),a=leg.getPointAtLength(leg.getTotalLength());
+          const pw=Number(pin.getAttribute("stroke-width")),bw=Number(shaft.getAttribute("stroke-width")),cx=plate.cx.animVal.value,cy=plate.cy.animVal.value,r=plate.r.baseVal.value+parseFloat(getComputedStyle(plate).strokeWidth)/2;
+          out.push({pinX:p.x,pinY:p.y,barY:b.y,gap:p.y-pw/2-Math.max(b.y,be.y)-bw/2,tilt:Math.abs(b.y-be.y),inner:Math.min(be.x,pe.x,cx-r)-Math.max(b.x,p.x),plateClear:Math.hypot(cx-Math.max(p.x,Math.min(pe.x,cx)),cy-p.y)-r-pw/2,x:a.x,y:a.y});
+        }return {out,stroke:getComputedStyle(shaft).stroke};
+      });
+      expect(samples.stroke).not.toBe("none");const s=samples.out;
+      for(const i of [0,64])expect(s[i].inner).toBeGreaterThan(3);expect(s.every(f=>f.tilt<.02&&f.plateClear>0)).toBe(true);
+      expect(Math.abs(s[0].gap)).toBeLessThan(.06);expect(Math.abs(s[64].gap)).toBeLessThan(.06);expect(s[32].gap).toBeGreaterThan(8);
+      expect(s.every(f=>f.gap>-.06&&Math.abs(f.x-80)<.02&&Math.abs(f.y-136)<.02&&Math.abs(f.pinY-s[0].pinY)<.02&&Math.abs(f.pinX-s[0].pinX)<.02)).toBe(true);
+    }
+    await page.evaluate(()=>{gdEnd();gdClose()});await page.emulateMedia({reducedMotion:"reduce"});await page.evaluate(()=>exSheet("rackpull"));
+    const svg=page.locator("#sheet .exfig svg");await expect(svg.locator("animate")).toHaveCount(0);await expect(svg).toHaveAttribute("data-fig-motion","static");
+  });
+
+  test("rack pull explains raised support and schematic drawing in detail and guide",async({app,page})=>{
     await app.open({seed:state()});await app.tab("gym");await page.evaluate(()=>exSheet("rackpull"));
     await expect(page.locator("#sheet .cues")).toContainText("yükseltilmiş desteklerden");
-    await expect(page.locator("#sheet .cues")).toContainText("Görsel genel kalça menteşesini gösterir; destekleri ve başlangıç yüksekliğini göstermez");
+    await expect(page.locator("#sheet .cues")).toContainText("Çizim şematik bir yükseklik örneğidir; kişisel ayar önerisi değildir");
     await page.evaluate(()=>{closeSheet();S.templates=[{id:907,name:"Destekli çekiş testi",ex:["rackpull"],tg:{rackpull:{sets:1,reps:5}}}];gdStart("t:907")});
     await expect(page.locator("#guide .gdc").first()).toContainText("yükseltilmiş desteklerden");
-    await expect(page.locator("#guide .gdc").first()).toContainText("destekleri ve başlangıç yüksekliğini göstermez");
+    await expect(page.locator("#guide .gdc").first()).toContainText("kişisel ayar önerisi değildir");
     for(const clause of ["kontrollü kaldır","kalça ve dizlerini açarak doğrul","desteklere kontrollü geri bırak"])await expect(page.locator("#guide .gdc").first()).toContainText(clause);
     await page.evaluate(()=>{gdEnd();gdClose()});
   });

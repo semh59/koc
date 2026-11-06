@@ -1,6 +1,7 @@
 "use strict";
 /* Short form cues per template (general, not medical advice), shown in the exercise detail. */
 const EXCUE={
+  rackpull:["Barı desteklerden kontrollü kaldır ve desteklere geri bırak. Çizim şematik bir yükseklik örneğidir; kişisel ayar önerisi değildir."],
   seatedhinge:["Oturarak ayaklarını yere sağlam bas. Barı üst sırtta sabit tut, boynuna dayama.","Kalçan oturakta kalırken gövdeni kalçadan kontrollü öne eğ ve doğrul; sırtını doğal konumunda tut, rahat hareket aralığını aşma."],
   squat:["Ayaklar omuz genişliğinde, dizler ayak uçları doğrultusunda.","Topuklar yerde, göğüs dik; kalçayı geriye ve aşağıya oturt."],
   hinge:["Dizler hafif bükük, kalçayı geriye it; ağırlığı bacaklara yakın tut.","Sırtı düz tut, hareketi kalçadan yap."],
@@ -58,7 +59,7 @@ const EXCUE={
   twiststretch:["Gövdeyi yavaşça döndür, kalça sabit.","Nefes ver ve gevşe."]
 };
 const EXCUE_BY_ID={
-  rackpull:["Barı uygun ayarlanmış yükseltilmiş desteklerden kontrollü kaldır; sırtını doğal konumunda tutup kalça ve dizlerini açarak doğrul, ardından barı desteklere kontrollü geri bırak. Görsel genel kalça menteşesini gösterir; destekleri ve başlangıç yüksekliğini göstermez.","Dizler hafif bükük, kalçayı geriye it; ağırlığı bacaklara yakın tut.","Sırtı doğal konumunda tut; kontrollü eğil ve doğrul."],
+  rackpull:["Barı uygun ayarlanmış yükseltilmiş desteklerden kontrollü kaldır; sırtını doğal konumunda tutup kalça ve dizlerini açarak doğrul, ardından barı desteklere kontrollü geri bırak. Çizim şematik bir yükseklik örneğidir; kişisel ayar önerisi değildir.","Dizler hafif bükük, kalçayı geriye it; ağırlığı bacaklara yakın tut.","Sırtı doğal konumunda tut; kontrollü eğil ve doğrul."],
   fastwalk:["Tempolu yürü; koşuya geçmeden rahat ve kontrollü adımlar at. Animasyon hız hedefi göstermez.","Dik dur, kolların doğal sallansın; hızını kendi rahatlığına göre ayarla."],
   slowwalk:["Yavaş ve rahat yürü; acele etmeden kontrollü adımlar at. Animasyon hız hedefi göstermez.","Dik dur, kolların doğal sallansın; hızını kendi rahatlığına göre ayarla."],
   goodmorning:["Barı üst sırtta sabit tut; boynuna dayama ve ellerinle dengede tut.","Dizlerini hafif bük, kalçanı geriye gönder; sırtını doğal konumunda tutarak kontrollü eğil ve doğrul."],

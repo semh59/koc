@@ -1,7 +1,7 @@
 "use strict";
 const assert=require("node:assert/strict"),fs=require("node:fs"),vm=require("node:vm"),{boot,flush}=require("./html");
 function checkRackCue(text){
-  assert.ok(text.includes("yükseltilmiş desteklerden")&&text.includes("Görsel genel kalça menteşesini gösterir; destekleri ve başlangıç yüksekliğini göstermez"),"rack pull must distinguish raised support and generic drawing limitation");
+  assert.ok(text.includes("yükseltilmiş desteklerden")&&text.includes("Çizim şematik bir yükseklik örneğidir; kişisel ayar önerisi değildir"),"rack pull must distinguish raised support and schematic height limitation");
   assert.ok(text.includes("kontrollü kaldır")&&text.includes("kalça ve dizlerini açarak doğrul")&&text.includes("desteklere kontrollü geri bırak"),"rack pull first cue must include controlled lift, hip/knee extension and return to supports");
 }
 function checkInheritedCues(resolve){
@@ -60,7 +60,7 @@ boot().then(async w=>{
   ev("closeSheet();S.templates=[{id:907,name:'Destekli çekiş testi',ex:['rackpull'],tg:{rackpull:{sets:1,reps:5}}}];gdStart('t:907')");await flush();
   const rackGuide=q("#guide .gdc").textContent;
   checkRackCue(rackGuide);
-  ev("gdEnd();gdClose()");console.log("PASS rack pull detail and guide distinguish raised support from generic hinge drawing");
+  ev("gdEnd();gdClose()");console.log("PASS rack pull detail and guide describe raised support and schematic height");
   assert.equal(ev("exCues(gEx('deadlift'))[0]"),ev("EXCUE.hinge[0]"));
   console.log("PASS hand-held deadlift retains hinge cue");
   assert.equal(ev("exCues(gEx('squat'))[0]"),ev("EXCUE.squat[0]"));
@@ -71,7 +71,7 @@ boot().then(async w=>{
   const source=fs.readFileSync(require.resolve("../www/modules/gym/excues.js"),"utf8");
   const missingRack=vm.runInNewContext(source+"\ndelete EXCUE_BY_ID.rackpull; exCues");
   assert.throws(()=>checkRackCue(Array.from(missingRack({id:"rackpull",tp:"hinge"})).join(" ")),assert.AssertionError);
-  for(const clause of ["destekleri ve başlangıç yüksekliğini göstermez","kontrollü kaldır","kalça ve dizlerini açarak doğrul","desteklere kontrollü geri bırak"]){
+  for(const clause of ["Çizim şematik bir yükseklik örneğidir; kişisel ayar önerisi değildir","kontrollü kaldır","kalça ve dizlerini açarak doğrul","desteklere kontrollü geri bırak"]){
     assert.throws(()=>checkRackCue(rackGuide.replace(clause,"")),assert.AssertionError);
   }
   assert.equal(ev("exCues({id:'custom_hinge',tp:'hinge'})[0]"),ev("EXCUE.hinge[0]"));

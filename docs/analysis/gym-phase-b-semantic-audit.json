@@ -405,7 +405,6 @@
       "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"sırt\"}",
       "ids": [
         "deadlift",
-        "rackpull",
         "defdl"
       ]
     },
