@@ -199,11 +199,8 @@ td.today,th.today{font-weight:700}
 .fig[data-fig-variant="volume"] .fg-ghost{opacity:.22;pointer-events:none}
 .fig[data-fig-variant="volume"] .fg-ghost-end{opacity:.34}
 .exlist{padding:4px 12px}.exrow{gap:12px}.exthumb{flex:none;width:64px;height:52px;background:var(--field);border-radius:var(--r-s);padding:2px}
-.exvis{display:flex;gap:8px;margin:var(--sp-3) 0}.exfig,.exph{flex:1;min-width:0;background:var(--bg);border-radius:var(--r-s);padding:4px;display:flex;align-items:center}
-.exph{position:relative;aspect-ratio:3/2;overflow:hidden;padding:0}.exph img{width:100%;height:100%;object-fit:cover;display:block}
-.exph img.b{position:absolute;inset:0;animation:exflip 1.8s steps(1,end) infinite}
-@keyframes exflip{0%,49%{opacity:0}50%,100%{opacity:1}}
-@media (prefers-reduced-motion:reduce){.exph img.b{animation:none}}
+.exvis{display:flex;gap:8px;margin:var(--sp-3) 0}.exfig{flex:1;min-width:0;background:var(--bg);border-radius:var(--r-s);padding:4px;display:flex;align-items:center}
+
 .cues{margin:var(--sp-2) 0 var(--sp-3);padding-left:20px;font-size:var(--fs-2)}.cues li{margin:3px 0}
 .tgo{font-size:var(--fs-h3);color:var(--prim)}.rest.tim{background:color-mix(in srgb,var(--prim) 14%,var(--card));border-color:color-mix(in srgb,var(--prim) 40%,var(--line))}
 .rest{display:flex;align-items:center;gap:var(--sp-2);background:var(--prim-soft);border:1px solid color-mix(in srgb,var(--prim) 35%,var(--line));border-radius:var(--r);padding:var(--sp-2) var(--sp-3);margin-bottom:var(--sp-3)}

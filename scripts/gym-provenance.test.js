@@ -36,8 +36,8 @@ ok("every runtime record receives data and asset provenance",(()=>{
 })());
 
 ok("unverified external photos cannot be accepted into a batch",(()=>{
-  const rows=Provenance.recordManifest(runtime);
-  const photo=rows.filter(x=>x.id==="squat")[0],figure=rows.find(x=>x.id==="fastwalk");
+  const rows=Provenance.recordManifest([{id:"squat",im:2},{id:"fastwalk",im:0}]);
+  const photo=rows.find(x=>x.id==="squat"),figure=rows.find(x=>x.id==="fastwalk");
   return photo.assetStatus==="unverified"&&photo.decision==="review"&&figure.assetStatus==="not_applicable"&&figure.decision==="eligible";
 })());
 

@@ -49,6 +49,6 @@ node scripts/gym-provenance.test.js
 ## Açık iş
 
 1. Son snapshot için bağımsız denetim, commit ve CI açık.
-2. Fotoğraflar ana detaydan çıkarıldı; dosyalar silinmedi ve pakette kalır. `blocked`, paket içinde bulunmadıkları anlamına gelmez. Lisans/paketleme riski yeni yayın öncesi ayrı kaldırma veya lisans kararı gerektirir.
+2. Güncelleme: Kullanıcı onayıyla 644 fotoğraf kaynak ve Android public paketinden kaldırıldı; `im: 0` zorunlu. Ayrıntı ve güncel kanıt: `gym-legacy-media-removal.md`. Fotoğraf lisansı hâlâ bilinmiyor; eski Git geçmişi/yayımlanmış APK bu işlemle değişmez.
 3. B-3 yeni batch modeli için kayıt bazlı kaynak URL/commit, lisans, edinim tarihi, attribution ve dönüşüm notu; baseline mevcut olmayan tarihleri uydurmaz.
 4. Attribution metnini dağıtım gereğine göre hukuk/ürün incelemesinden geçirmek. APK/emülatör/fiziksel cihaz doğrulaması yerel kapılarla kapanmaz.

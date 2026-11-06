@@ -35,8 +35,8 @@ ok("library: every row has a template",X.every(e=>T[e.tp]),X.filter(e=>!T[e.tp])
 ok("library: type, region, group and equipment fields are valid",X.every(e=>"wbtci".includes(e.k)&&e.r&&e.g&&["Ağırlıksız","Ev tipi","Salon"].includes(e.q)&&e.n.length>1&&e.n.length<60),X.filter(e=>!("wbtci".includes(e.k))).map(e=>e.id));
 ok("library: at least 14 regions",new Set(X.map(e=>e.r)).size>=14,[...new Set(X.map(e=>e.r))]);
 ok("library: at least 4 exercises per region",(m=>Object.values(m).every(n=>n>=4))(X.reduce((m,e)=>(m[e.r]=(m[e.r]||0)+1,m),{})),X.reduce((m,e)=>(m[e.r]=(m[e.r]||0)+1,m),{}));
-ok("library: image files exist on disk, at least 95% have images",X.every(e=>[0,1,2].includes(e.im)&&Array.from({length:e.im},(_,i)=>fs.existsSync(path.join(__dirname,"../www/ex",e.id,i+".webp"))).every(Boolean))&&X.filter(e=>e.im>0).length>=X.length*0.95,X.filter(e=>!(e.im>=1)).map(e=>e.id));
-ok("image size: total at most 12 MB",(()=>{let s=0;for(const e of X)for(let i=0;i<e.im;i++)s+=fs.statSync(path.join(__dirname,"../www/ex",e.id,i+".webp")).size;return s<12e6})());
+ok("library: external exercise photos are disabled",X.every(e=>e.im===0));
+ok("library: exercise photo directory has no files",(()=>{const walk=p=>fs.existsSync(p)?fs.readdirSync(p,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(p,e.name)):[e.name]):[];return walk(path.join(__dirname,"../www/ex")).length===0})());
 const svg=F.svg(Object.assign({},T.squat,{o:{}}),{label:"Squat"}),st=F.svg(T.squat,{anim:false});
 ok("svg: animated and static output are produced without number errors",svg.startsWith("<svg")&&svg.includes("<animate")&&!st.includes("<animate")&&!/NaN|undefined/.test(svg+st));
 ok("svg: every exercise renders",X.every(e=>{const s=F.svg(Object.assign({},T[e.tp],e.o?{o:e.o}:{},e.pr&&e.pr!=="-"?{prop:{k:e.pr.split("@")[0],at:e.pr.split("@")[1]==="sh"?"shoulder":"wrist"}}:{}),{});return !/NaN|undefined/.test(s)}));

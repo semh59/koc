@@ -52,1047 +52,1047 @@
     "runtime": 332,
     "accepted_new_records": 0
   },
-  "openReview": "Legacy photos remain packaged but are not rendered in exercise detail; image license remains unverified. No new records accepted.",
+  "openReview": "Legacy photos removed from source and generated packages by user approval; image license remains unverified and use blocked. Data/asset eligibility is not biomechanical approval. All 332 canonical records remain review; no new records accepted.",
   "records": [
     {
       "id": "squat",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "fullsquat",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "frontsquat",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bwsquat",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "goblet",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dbsquat",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "widesquat",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "narrowsquat",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "smithsquat",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "boxsquat",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "ohsquat",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "pliesquat",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "chairsquat",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "jumpsquat",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "hacksquat",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bblunge",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dblunge",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "walklunge",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "rearlunge",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "splitsquat",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dbstepup",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bbstepup",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "legpress",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "narrowpress",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "smithpress",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "legext",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "legext1",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "rdl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "stiffdl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dbstiffdl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "goodmorning",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "legcurl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "seatedcurl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "standcurl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "ballcurl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "ghr",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "revhyper",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "kbdl1",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "kbswing",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "sumodl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "cleandl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "widestiff",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bandgm",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "cabledl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "trapdl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "hipthrust",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "glutebridge",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bridge",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bridge1",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "ballbridge",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bandbridge",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "pullthrough",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "kickbackglute",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "cablekick",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "stepupknee",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "monsterwalk",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bandhipext",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "calf",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dbcalf",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bbcalf",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "smithcalf",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "presscalf",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bandcalf",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "seatedcalf",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "calf1",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "abductor",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "adductor",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bandadd",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "sideleg",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "latbound",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "cableadd",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bench",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "incbench",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "decbench",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dbbench",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "incdb",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "decdb",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "incdbin",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dbbenchn",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dbbench1",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "smithbench",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "smithinc",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "machbench",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "levchest",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "levincchest",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "cablepress",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dbfly",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "incfly",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "decfly",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "crossover",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "lowcross",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "butterfly",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "cablefly",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "pushup",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "pushupwide",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "pushupclose",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "pushupinc",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "pushupfeet",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "pushupdec",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "pushup1",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "plyopushup",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dipschest",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bandbench",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "floorpress",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "pullover",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "chestsqueeze",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "ohp",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bbohp",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "arnold",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dbohp1",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "cableohp",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "levohp",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "pushpress",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "kbpress",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "lat",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bandlat",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "cablelat",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "altraise",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "frontraise",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "frontraise2",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "cablefront",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "plateraise",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "scaption",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "reardelt",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "cablerear",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "facepull",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "pullapart",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bandupright",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dbupright",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dbupright1",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "kbhalo",
@@ -1106,601 +1106,601 @@
       "id": "handstand",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "extrot",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bbshrug",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "shrug",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "cableshrug",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "levshrug",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "smithupright",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "scappull",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "pullup",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "chinup",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "vbarpull",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "widepull",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bandpullup",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "pulldown",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "closepulldown",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "vbarpulldown",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "underpulldown",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "pulldown1",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "straightarm",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "row",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dbrow",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dbrow1",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "longrow1",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "tbar",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "revrow",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "smithrow",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "kbrow",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "seatedrow",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "levrow",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "seatedrow1",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "invrow",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "susprow",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "incrow",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "deadlift",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "rackpull",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "defdl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "backext",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "backextfloor",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "ballhyper",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "stiffgm",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "superman",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "seatedgm",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "curl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bbcurl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "ezcurl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "hammer",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "althammer",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "altcurl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "inccurl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "seatedcurl2",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "concurl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "preacher",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "machpreacher",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "preacher1",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "cablecurl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "cablehammer",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "machcurl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "revcurl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "zottman",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "crosshammer",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "spider",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "widecurl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "closecurl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "tri",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "ropepushdown",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "vbarpushdown",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "revpushdown",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "lowtri",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "cabletri1",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "ropeoverhead",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "cableoverhead",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dboverhead",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dboverhead1",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bboverhead",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "seatedtri",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "kboverhead",
@@ -1714,937 +1714,937 @@
       "id": "skull",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dbskull",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "decskull",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bandskull",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "kickback",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "kickback1",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "closebench",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "closedbpress",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dipstri",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "paralleldip",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "benchdips",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dipmachine",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "pushuptri",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "neckfb",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "neckharness",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "wristcurl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "wristrev",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "wristcurlbar",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "wristroller",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "farmer",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "platepinch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "crunch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "cablecrunch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "deccrunch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "ballcrunch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "crunchoverhead",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "obliquecrunch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "crosscrunch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "revcrunch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "sit34",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "jackknife",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "janda",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "deadbug",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "benchlegraise",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "kneehipraise",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "legpullin",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "flutter",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "scissor",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "hangingraise",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "hangpike",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dipraise",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "plank",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "abroller",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "rollout",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "climber",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "sidebendbar",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "sidebend",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "cablesidebend",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "russiantwist",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "pallof",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "ballwoodchop",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "latstretch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "airbike",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "heeltouch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "treadjog",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "treadrun",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "trail",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "treadwalk",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bike",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "statbike",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "recbike",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "elliptical",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "stairs",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "jumprope",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "jumpingjack",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "scissorjump",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "skipping",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "buttkick",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "buttkick1",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "splitjump",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "longjump",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "rocketjump",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "boxjump",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "benchjump",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "rower",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "battleropes",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "thruster",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "cleanpress",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "getup",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "inchworm",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "hamstretch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "seatedhamstretch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "toetouch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "hamcalfstretch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "quadstretch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "elevquad",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "sidequad",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "hipflexor",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "standhipflexor",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "kneeacross",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "kneechest",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "seatedglute",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "calfstretch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "wallcalf",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "seatedcalfstretch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "chestshoulder",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "dynchest",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "behindchest",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "shoulderstretch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "armcircles",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "shouldercircles",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "upstretch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "tristretch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "bistretch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "chinchest",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "sideneck",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "neckiso",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "childpose",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "catstretch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "torsotwist",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "midback",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "upperback",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "overheadlat",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "lowerbackcurl",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "windmills",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "wgstretch",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "groiners",
       "dataSource": "free-exercise-db-data",
       "dataLicenseStatus": "verified",
-      "assetStatus": "unverified",
-      "assetSource": "free-exercise-db-images",
-      "decision": "review"
+      "assetStatus": "not_applicable",
+      "assetSource": "neowell-figure",
+      "decision": "eligible"
     },
     {
       "id": "onefoot",

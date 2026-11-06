@@ -29,4 +29,4 @@ Otomatik şema doğrulaması hareketin gerçekliğini veya benzersizliğini kan�
 - Final no-Coach runner: `86` dosya, `2280` PASS, `0` başarısız; Coach-only `8` skip, mixed `18` ayrı kapsam. Tam mixed `npm test` yeşil iddiası yok.
 - Browser E2E `16/16`; sync `28` Java, `44` resource, `758` web asset, exit `0`. Bunlar Android cihaz/emülatör çalıştırma kanıtı değildir.
 - Yerel loglar: `C:/Users/semih/AppData/Local/hermes/cache/scratch/gym-semantic-repair-host.log` ve `gym-semantic-repair-e2e.log`. Final snapshot bağımsız denetimi ve commit açık.
-- Yeni kayıt `0`. Fotoğraflar silinmez; 644 belirsiz lisanslı fotoğraf paketleme riski sürer. CI/APK/emülatör/fiziksel cihaz/hukuk onayı verilmez.
+- Güncelleme: Kullanıcı onayıyla 644 fotoğraf kaynak ve Android public paketinden kaldırıldı; bkz. `gym-legacy-media-removal.md`. Eski kanonik içerik incelemesi, CI/APK/fiziksel cihaz/hukuk kapıları açık.

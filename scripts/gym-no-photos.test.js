@@ -1,0 +1,17 @@
+"use strict";
+const assert=require("node:assert/strict"),fs=require("fs"),path=require("path"),cp=require("child_process");
+const root=path.join(__dirname,".."),{compile,readBatches}=require("./build-gym-catalog");
+const files=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?files(path.join(dir,e.name)):[path.join(dir,e.name)]);
+const runtime=require("../www/modules/gym/exlib");
+assert.equal(runtime.length,324);assert.ok(runtime.every(e=>e.im===0));
+assert.equal(require("crypto").createHash("sha256").update(JSON.stringify(runtime.map(({im,...e})=>e))).digest("hex"),"3723ba4d9dae36907b04024dce7ee16e82e557fd8e96a75fd1f256ae7f00f277","only approved image counts may change in external runtime");
+console.log("PASS external IDs, names, cues and training fields preserved with image counts zeroed");
+assert.equal(files(path.join(root,"www")).filter(f=>/\.(gif|webp|jpe?g)$/i.test(f)&&f.startsWith(path.join(root,"www/ex")+path.sep)).length,0,"exercise image files must be absent");
+assert.equal(files(path.join(root,"www")).filter(f=>/\.gif$/i.test(f)).length,0,"no packaged GIFs");
+console.log("PASS exercise source package has zero photos or GIFs");
+const source=readBatches();assert.ok(source.flatMap(b=>b.records).every(x=>x.runtime.im==null||x.runtime.im===0));
+for(const im of [1,2,"0",null]){const b=structuredClone(source);b.find(x=>x.batch==="legacy-external").records[0].runtime.im=im;assert.throws(()=>compile(b),/external source mismatch/);}
+console.log("PASS compiler rejects image-count reintroduction");
+const css=fs.readFileSync(path.join(root,"www/app.css"),"utf8"),ui=fs.readFileSync(path.join(root,"www/modules/gym/exui.js"),"utf8");
+assert.ok(!/\.exph|exflip/.test(css));assert.ok(!/const photos=|\$\{photos\}/.test(ui));
+console.log("PASS obsolete photo-rendering slots and flip animation are absent");

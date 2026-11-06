@@ -14,7 +14,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "squat",
-        "im": 2,
+        "im": 0,
         "pr": "bar@sh",
         "o": {
           "a1": -60,
@@ -62,7 +62,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "squat",
-        "im": 2,
+        "im": 0,
         "pr": "bar@sh",
         "o": {
           "a1": -60,
@@ -110,7 +110,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "squat",
-        "im": 2,
+        "im": 0,
         "pr": "bar@sh",
         "o": {
           "a1": 70,
@@ -158,7 +158,7 @@
         "c": "g",
         "inc": 1,
         "tp": "squat",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -202,7 +202,7 @@
         "c": "g",
         "inc": 2,
         "tp": "squat",
-        "im": 2,
+        "im": 0,
         "pr": "kb",
         "o": {
           "a1": 60,
@@ -250,7 +250,7 @@
         "c": "g",
         "inc": 2,
         "tp": "squat",
-        "im": 2,
+        "im": 0,
         "pr": "db",
         "o": {
           "a1": 4,
@@ -298,7 +298,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "squat",
-        "im": 2,
+        "im": 0,
         "pr": "bar@sh",
         "o": {
           "a1": -60,
@@ -346,7 +346,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "squat",
-        "im": 2,
+        "im": 0,
         "pr": "bar@sh",
         "o": {
           "a1": -60,
@@ -394,7 +394,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "squat",
-        "im": 2,
+        "im": 0,
         "pr": "bar@sh",
         "o": {
           "a1": -60,
@@ -442,7 +442,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "squat",
-        "im": 2,
+        "im": 0,
         "pr": "bar@sh",
         "o": {
           "a1": -60,
@@ -490,7 +490,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "squat",
-        "im": 2,
+        "im": 0,
         "pr": "bar",
         "o": {
           "a1": 175,
@@ -538,7 +538,7 @@
         "c": "g",
         "inc": 2,
         "tp": "squat",
-        "im": 2,
+        "im": 0,
         "pr": "db",
         "o": {
           "a1": 4,
@@ -586,7 +586,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "squat",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -630,7 +630,7 @@
         "c": "g",
         "inc": 1,
         "tp": "squat",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -674,7 +674,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "squat",
-        "im": 2,
+        "im": 0,
         "pr": "-",
         "o": {
           "a1": 4,
@@ -722,7 +722,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "lunge",
-        "im": 2,
+        "im": 0,
         "pr": "bar@sh",
         "o": {
           "a1": -60,
@@ -770,7 +770,7 @@
         "c": "g",
         "inc": 2,
         "tp": "lunge",
-        "im": 2,
+        "im": 0,
         "pr": "db",
         "o": {
           "a1": 2,
@@ -818,7 +818,7 @@
         "c": "g",
         "inc": 1,
         "tp": "lunge",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -862,7 +862,7 @@
         "c": "g",
         "inc": 2,
         "tp": "lunge",
-        "im": 2,
+        "im": 0,
         "pr": "db",
         "o": {
           "a1": 2,
@@ -910,7 +910,7 @@
         "c": "g",
         "inc": 2,
         "tp": "lunge",
-        "im": 2,
+        "im": 0,
         "pr": "db",
         "o": {
           "a1": 2,
@@ -958,7 +958,7 @@
         "c": "g",
         "inc": 2,
         "tp": "stepup",
-        "im": 2,
+        "im": 0,
         "pr": "db",
         "o": {
           "a1": 2,
@@ -1006,7 +1006,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "stepup",
-        "im": 2,
+        "im": 0,
         "pr": "bar@sh",
         "o": {
           "a1": -60,
@@ -1054,7 +1054,7 @@
         "c": "g",
         "inc": 5,
         "tp": "legpress",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -1098,7 +1098,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "legpress",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -1142,7 +1142,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "legpress",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -1186,7 +1186,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "legext",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -1230,7 +1230,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "legext",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -1274,7 +1274,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "hinge",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -1318,7 +1318,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "hinge",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -1362,7 +1362,7 @@
         "c": "g",
         "inc": 2,
         "tp": "hinge",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -1406,7 +1406,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "hinge",
-        "im": 2,
+        "im": 0,
         "pr": "bar@sh",
         "o": {
           "a1": -60,
@@ -1454,7 +1454,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "legcurl",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -1498,7 +1498,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "legcurl",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -1542,7 +1542,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "legcurl",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -1586,7 +1586,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "legcurl",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -1630,7 +1630,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "backext",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -1674,7 +1674,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "backext",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -1718,7 +1718,7 @@
         "c": "g",
         "inc": 2,
         "tp": "hinge",
-        "im": 2,
+        "im": 0,
         "pr": "kb"
       },
       "metadata": {
@@ -1762,7 +1762,7 @@
         "c": "g",
         "inc": 2,
         "tp": "hinge",
-        "im": 2,
+        "im": 0,
         "pr": "kb"
       },
       "metadata": {
@@ -1806,7 +1806,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "hinge",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -1850,7 +1850,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "hinge",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -1894,7 +1894,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "hinge",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -1938,7 +1938,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "hinge",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -1982,7 +1982,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "hinge",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -2026,7 +2026,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "hinge",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -2070,7 +2070,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "bridge",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -2114,7 +2114,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "bridge",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -2158,7 +2158,7 @@
         "c": "g",
         "inc": 1,
         "tp": "bridge",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -2202,7 +2202,7 @@
         "c": "g",
         "inc": 1,
         "tp": "bridge",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -2246,7 +2246,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "bridge",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -2290,7 +2290,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "bridge",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -2334,7 +2334,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "hinge",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -2378,7 +2378,7 @@
         "c": "g",
         "inc": 1,
         "tp": "legcurl",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -2422,7 +2422,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "legcurl",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -2466,7 +2466,7 @@
         "c": "g",
         "inc": 1,
         "tp": "stepup",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -2510,7 +2510,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "legspread",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -2554,7 +2554,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "legcurl",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -2598,7 +2598,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "calf",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -2642,7 +2642,7 @@
         "c": "g",
         "inc": 2,
         "tp": "calf",
-        "im": 2,
+        "im": 0,
         "pr": "db",
         "o": {
           "a1": 2,
@@ -2690,7 +2690,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "calf",
-        "im": 2,
+        "im": 0,
         "pr": "bar@sh",
         "o": {
           "a1": -60,
@@ -2738,7 +2738,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "calf",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -2782,7 +2782,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "calf",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -2826,7 +2826,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "calf",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -2870,7 +2870,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "calf",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -2914,7 +2914,7 @@
         "c": "g",
         "inc": 2,
         "tp": "calf",
-        "im": 2,
+        "im": 0,
         "pr": "db",
         "o": {
           "a1": 2,
@@ -2962,7 +2962,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "legspread",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -3006,7 +3006,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "legspread",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -3050,7 +3050,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "legspread",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -3094,7 +3094,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "legspread",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -3138,7 +3138,7 @@
         "c": "p",
         "inc": 1,
         "tp": "legspread",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -3182,7 +3182,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "legspread",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -3226,7 +3226,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "bench",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -3270,7 +3270,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "incline",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -3314,7 +3314,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "bench",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -3358,7 +3358,7 @@
         "c": "g",
         "inc": 2,
         "tp": "bench",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -3402,7 +3402,7 @@
         "c": "g",
         "inc": 2,
         "tp": "incline",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -3446,7 +3446,7 @@
         "c": "g",
         "inc": 2,
         "tp": "bench",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -3490,7 +3490,7 @@
         "c": "g",
         "inc": 2,
         "tp": "incline",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -3534,7 +3534,7 @@
         "c": "g",
         "inc": 2,
         "tp": "bench",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -3578,7 +3578,7 @@
         "c": "g",
         "inc": 2,
         "tp": "bench",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -3622,7 +3622,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "bench",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -3666,7 +3666,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "incline",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -3710,7 +3710,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "bench",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -3754,7 +3754,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "bench",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -3798,7 +3798,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "incline",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -3842,7 +3842,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "bench",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -3886,7 +3886,7 @@
         "c": "g",
         "inc": 2,
         "tp": "fly",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -3930,7 +3930,7 @@
         "c": "g",
         "inc": 2,
         "tp": "fly",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -3974,7 +3974,7 @@
         "c": "g",
         "inc": 2,
         "tp": "fly",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -4018,7 +4018,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "fly",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -4062,7 +4062,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "fly",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -4106,7 +4106,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "fly",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -4150,7 +4150,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "fly",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -4194,7 +4194,7 @@
         "c": "g",
         "inc": 1,
         "tp": "pushup",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -4238,7 +4238,7 @@
         "c": "g",
         "inc": 1,
         "tp": "pushup",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -4282,7 +4282,7 @@
         "c": "g",
         "inc": 1,
         "tp": "pushup",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -4326,7 +4326,7 @@
         "c": "g",
         "inc": 1,
         "tp": "pushup",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -4370,7 +4370,7 @@
         "c": "g",
         "inc": 1,
         "tp": "pushup",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -4414,7 +4414,7 @@
         "c": "g",
         "inc": 1,
         "tp": "pushup",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -4458,7 +4458,7 @@
         "c": "g",
         "inc": 1,
         "tp": "pushup",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -4502,7 +4502,7 @@
         "c": "p",
         "inc": 1,
         "tp": "pushup",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -4546,7 +4546,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "dips",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -4590,7 +4590,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "bench",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -4634,7 +4634,7 @@
         "c": "g",
         "inc": 2,
         "tp": "bench",
-        "im": 2,
+        "im": 0,
         "pr": "kb"
       },
       "metadata": {
@@ -4678,7 +4678,7 @@
         "c": "g",
         "inc": 2,
         "tp": "bench",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -4722,7 +4722,7 @@
         "c": "p",
         "inc": 2.5,
         "tp": "fly",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -4766,7 +4766,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "ohp",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -4810,7 +4810,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "ohp",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -4854,7 +4854,7 @@
         "c": "g",
         "inc": 2,
         "tp": "ohp",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -4898,7 +4898,7 @@
         "c": "g",
         "inc": 2,
         "tp": "ohp",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -4942,7 +4942,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "ohp",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -4986,7 +4986,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "ohp",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -5030,7 +5030,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "ohp",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -5074,7 +5074,7 @@
         "c": "g",
         "inc": 2,
         "tp": "ohp",
-        "im": 2,
+        "im": 0,
         "pr": "kb"
       },
       "metadata": {
@@ -5118,7 +5118,7 @@
         "c": "g",
         "inc": 1,
         "tp": "latraise",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -5162,7 +5162,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "latraise",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -5206,7 +5206,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "latraise",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -5250,7 +5250,7 @@
         "c": "g",
         "inc": 2,
         "tp": "frontraise",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -5294,7 +5294,7 @@
         "c": "g",
         "inc": 2,
         "tp": "frontraise",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -5338,7 +5338,7 @@
         "c": "g",
         "inc": 2,
         "tp": "frontraise",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -5382,7 +5382,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "frontraise",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -5426,7 +5426,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "frontraise",
-        "im": 2,
+        "im": 0,
         "pr": "ball"
       },
       "metadata": {
@@ -5470,7 +5470,7 @@
         "c": "g",
         "inc": 2,
         "tp": "frontraise",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -5514,7 +5514,7 @@
         "c": "g",
         "inc": 2,
         "tp": "row",
-        "im": 2,
+        "im": 0,
         "pr": "db",
         "o": {
           "a1": 2,
@@ -5563,7 +5563,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "latraise",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -5607,7 +5607,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "seatedrow",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -5651,7 +5651,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "latraise",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -5695,7 +5695,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "-",
         "o": {
           "a1": -10,
@@ -5743,7 +5743,7 @@
         "c": "g",
         "inc": 2,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "db",
         "o": {
           "a1": -10,
@@ -5791,7 +5791,7 @@
         "c": "g",
         "inc": 2,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "db",
         "o": {
           "a1": -10,
@@ -5883,7 +5883,7 @@
         "c": "g",
         "inc": 1,
         "tp": "ohp",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -5927,7 +5927,7 @@
         "c": "g",
         "inc": 2,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "db",
         "o": {
           "a1": 4,
@@ -5975,7 +5975,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "shrug",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -6019,7 +6019,7 @@
         "c": "g",
         "inc": 2,
         "tp": "shrug",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -6063,7 +6063,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "shrug",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -6107,7 +6107,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "shrug",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -6151,7 +6151,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "bar",
         "o": {
           "a1": -10,
@@ -6199,7 +6199,7 @@
         "c": "g",
         "inc": 1,
         "tp": "pullup",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -6243,7 +6243,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "pullup",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -6287,7 +6287,7 @@
         "c": "g",
         "inc": 1,
         "tp": "pullup",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -6331,7 +6331,7 @@
         "c": "g",
         "inc": 1,
         "tp": "pullup",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -6375,7 +6375,7 @@
         "c": "g",
         "inc": 1,
         "tp": "pullup",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -6419,7 +6419,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "pullup",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -6463,7 +6463,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "pulldown",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -6507,7 +6507,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "pulldown",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -6551,7 +6551,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "pulldown",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -6595,7 +6595,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "pulldown",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -6639,7 +6639,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "pulldown",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -6683,7 +6683,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "pulldown",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -6727,7 +6727,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "row",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -6771,7 +6771,7 @@
         "c": "g",
         "inc": 2,
         "tp": "row",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -6815,7 +6815,7 @@
         "c": "g",
         "inc": 2,
         "tp": "row",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -6859,7 +6859,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "row",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -6903,7 +6903,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "row",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -6947,7 +6947,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "row",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -6991,7 +6991,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "row",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -7035,7 +7035,7 @@
         "c": "g",
         "inc": 2,
         "tp": "row",
-        "im": 2,
+        "im": 0,
         "pr": "kb"
       },
       "metadata": {
@@ -7079,7 +7079,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "seatedrow",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -7123,7 +7123,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "seatedrow",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -7167,7 +7167,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "seatedrow",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -7211,7 +7211,7 @@
         "c": "g",
         "inc": 1,
         "tp": "seatedrow",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -7255,7 +7255,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "seatedrow",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -7299,7 +7299,7 @@
         "c": "g",
         "inc": 2,
         "tp": "row",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -7343,7 +7343,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "hinge",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -7387,7 +7387,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "hinge",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -7431,7 +7431,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "hinge",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -7475,7 +7475,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "backext",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -7519,7 +7519,7 @@
         "c": "g",
         "inc": 1,
         "tp": "backext",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -7563,7 +7563,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "backext",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -7607,7 +7607,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "hinge",
-        "im": 2,
+        "im": 0,
         "pr": "bar@sh",
         "o": {
           "a1": -60,
@@ -7655,7 +7655,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "backext",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -7699,7 +7699,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "hinge",
-        "im": 2,
+        "im": 0,
         "pr": "bar@sh",
         "o": {
           "a1": -60,
@@ -7747,7 +7747,7 @@
         "c": "g",
         "inc": 2,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -7791,7 +7791,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -7835,7 +7835,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -7879,7 +7879,7 @@
         "c": "g",
         "inc": 2,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -7923,7 +7923,7 @@
         "c": "g",
         "inc": 2,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -7967,7 +7967,7 @@
         "c": "g",
         "inc": 2,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -8011,7 +8011,7 @@
         "c": "g",
         "inc": 2,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -8055,7 +8055,7 @@
         "c": "g",
         "inc": 2,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -8099,7 +8099,7 @@
         "c": "g",
         "inc": 2,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -8143,7 +8143,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -8187,7 +8187,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -8231,7 +8231,7 @@
         "c": "g",
         "inc": 2,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -8275,7 +8275,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -8319,7 +8319,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -8363,7 +8363,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -8407,7 +8407,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -8451,7 +8451,7 @@
         "c": "g",
         "inc": 2,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -8495,7 +8495,7 @@
         "c": "g",
         "inc": 2,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -8539,7 +8539,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -8583,7 +8583,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -8627,7 +8627,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -8671,7 +8671,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "pushdown",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -8715,7 +8715,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "pushdown",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -8759,7 +8759,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "pushdown",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -8803,7 +8803,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "pushdown",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -8847,7 +8847,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "pushdown",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -8891,7 +8891,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "pushdown",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -8935,7 +8935,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "overheadext",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -8979,7 +8979,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "overheadext",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -9023,7 +9023,7 @@
         "c": "g",
         "inc": 2,
         "tp": "overheadext",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -9067,7 +9067,7 @@
         "c": "g",
         "inc": 2,
         "tp": "overheadext",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -9111,7 +9111,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "overheadext",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -9155,7 +9155,7 @@
         "c": "g",
         "inc": 2,
         "tp": "overheadext",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -9243,7 +9243,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "skull",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -9287,7 +9287,7 @@
         "c": "g",
         "inc": 2,
         "tp": "skull",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -9331,7 +9331,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "skull",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -9375,7 +9375,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "skull",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -9419,7 +9419,7 @@
         "c": "g",
         "inc": 2,
         "tp": "kickback",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -9463,7 +9463,7 @@
         "c": "g",
         "inc": 2,
         "tp": "kickback",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -9507,7 +9507,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "bench",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -9551,7 +9551,7 @@
         "c": "g",
         "inc": 2,
         "tp": "bench",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -9595,7 +9595,7 @@
         "c": "g",
         "inc": 1,
         "tp": "dips",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -9639,7 +9639,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "dips",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -9683,7 +9683,7 @@
         "c": "g",
         "inc": 1,
         "tp": "dips",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -9727,7 +9727,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "dips",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -9771,7 +9771,7 @@
         "c": "g",
         "inc": 1,
         "tp": "pushup",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -9815,7 +9815,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "neckstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -9859,7 +9859,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "neckstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -9903,7 +9903,7 @@
         "c": "g",
         "inc": 2,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "db",
         "o": {
           "a1": -10,
@@ -9951,7 +9951,7 @@
         "c": "g",
         "inc": 2,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "db",
         "o": {
           "a1": -10,
@@ -9999,7 +9999,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "curl",
-        "im": 2,
+        "im": 0,
         "pr": "bar",
         "o": {
           "a1": -10,
@@ -10047,7 +10047,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "frontraise",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -10091,7 +10091,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "walk",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -10135,7 +10135,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "shrug",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -10179,7 +10179,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "crunch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -10223,7 +10223,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "crunch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -10267,7 +10267,7 @@
         "c": "g",
         "inc": 1,
         "tp": "crunch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -10311,7 +10311,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "crunch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -10355,7 +10355,7 @@
         "c": "g",
         "inc": 1,
         "tp": "crunch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -10399,7 +10399,7 @@
         "c": "g",
         "inc": 1,
         "tp": "crunch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -10443,7 +10443,7 @@
         "c": "g",
         "inc": 1,
         "tp": "crunch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -10487,7 +10487,7 @@
         "c": "g",
         "inc": 1,
         "tp": "legraise",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -10531,7 +10531,7 @@
         "c": "g",
         "inc": 1,
         "tp": "situp",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -10575,7 +10575,7 @@
         "c": "g",
         "inc": 1,
         "tp": "situp",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -10619,7 +10619,7 @@
         "c": "g",
         "inc": 1,
         "tp": "situp",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -10663,7 +10663,7 @@
         "c": "g",
         "inc": 1,
         "tp": "legraise",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -10707,7 +10707,7 @@
         "c": "g",
         "inc": 1,
         "tp": "legraise",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -10751,7 +10751,7 @@
         "c": "g",
         "inc": 1,
         "tp": "legraise",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -10795,7 +10795,7 @@
         "c": "g",
         "inc": 1,
         "tp": "legraise",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -10839,7 +10839,7 @@
         "c": "g",
         "inc": 1,
         "tp": "legraise",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -10883,7 +10883,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "legraise",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -10927,7 +10927,7 @@
         "c": "g",
         "inc": 1,
         "tp": "hangraise",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -10971,7 +10971,7 @@
         "c": "g",
         "inc": 1,
         "tp": "hangraise",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -11015,7 +11015,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "hangraise",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -11059,7 +11059,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "plank",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -11103,7 +11103,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "plank",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -11147,7 +11147,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "plank",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -11191,7 +11191,7 @@
         "c": "p",
         "inc": 2.5,
         "tp": "climber",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -11235,7 +11235,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "sidebend",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -11279,7 +11279,7 @@
         "c": "g",
         "inc": 2,
         "tp": "sidebend",
-        "im": 2,
+        "im": 0,
         "pr": "db"
       },
       "metadata": {
@@ -11323,7 +11323,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "sidebend",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -11367,7 +11367,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "woodchop",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -11411,7 +11411,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "woodchop",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -11455,7 +11455,7 @@
         "c": "p",
         "inc": 1,
         "tp": "woodchop",
-        "im": 2,
+        "im": 0,
         "pr": "ball"
       },
       "metadata": {
@@ -11499,7 +11499,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "sidebend",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -11543,7 +11543,7 @@
         "c": "g",
         "inc": 1,
         "tp": "cycle",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -11587,7 +11587,7 @@
         "c": "g",
         "inc": 1,
         "tp": "crunch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -11631,7 +11631,7 @@
         "c": "k",
         "inc": 2.5,
         "tp": "run",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -11675,7 +11675,7 @@
         "c": "k",
         "inc": 2.5,
         "tp": "run",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -11719,7 +11719,7 @@
         "c": "k",
         "inc": 2.5,
         "tp": "run",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -11763,7 +11763,7 @@
         "c": "k",
         "inc": 2.5,
         "tp": "walk",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -11807,7 +11807,7 @@
         "c": "k",
         "inc": 2.5,
         "tp": "cycle",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -11851,7 +11851,7 @@
         "c": "k",
         "inc": 2.5,
         "tp": "cycle",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -11895,7 +11895,7 @@
         "c": "k",
         "inc": 2.5,
         "tp": "cycle",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -11939,7 +11939,7 @@
         "c": "k",
         "inc": 2.5,
         "tp": "walk",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -11983,7 +11983,7 @@
         "c": "k",
         "inc": 2.5,
         "tp": "stepup",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -12027,7 +12027,7 @@
         "c": "k",
         "inc": 2.5,
         "tp": "jumprope",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -12071,7 +12071,7 @@
         "c": "p",
         "inc": 2.5,
         "tp": "jack",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -12115,7 +12115,7 @@
         "c": "p",
         "inc": 2.5,
         "tp": "jack",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -12159,7 +12159,7 @@
         "c": "p",
         "inc": 2.5,
         "tp": "highknees",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -12203,7 +12203,7 @@
         "c": "p",
         "inc": 2.5,
         "tp": "highknees",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -12247,7 +12247,7 @@
         "c": "p",
         "inc": 2.5,
         "tp": "highknees",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -12291,7 +12291,7 @@
         "c": "p",
         "inc": 2.5,
         "tp": "lunge",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -12335,7 +12335,7 @@
         "c": "p",
         "inc": 1,
         "tp": "squat",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -12379,7 +12379,7 @@
         "c": "p",
         "inc": 1,
         "tp": "squat",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -12423,7 +12423,7 @@
         "c": "p",
         "inc": 1,
         "tp": "stepup",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -12467,7 +12467,7 @@
         "c": "p",
         "inc": 1,
         "tp": "stepup",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -12511,7 +12511,7 @@
         "c": "k",
         "inc": 2.5,
         "tp": "seatedrow",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -12555,7 +12555,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "woodchop",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -12599,7 +12599,7 @@
         "c": "g",
         "inc": 2,
         "tp": "squat",
-        "im": 2,
+        "im": 0,
         "pr": "kb"
       },
       "metadata": {
@@ -12643,7 +12643,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "ohp",
-        "im": 2,
+        "im": 0,
         "pr": "bar"
       },
       "metadata": {
@@ -12687,7 +12687,7 @@
         "c": "g",
         "inc": 2,
         "tp": "situp",
-        "im": 2,
+        "im": 0,
         "pr": "kb"
       },
       "metadata": {
@@ -12731,7 +12731,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "plank",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -12775,7 +12775,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "hamstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -12819,7 +12819,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "hamstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -12863,7 +12863,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "hinge",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -12907,7 +12907,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "hamstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -12951,7 +12951,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "qstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -12995,7 +12995,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "qstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13039,7 +13039,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "qstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13083,7 +13083,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "lunge",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13127,7 +13127,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "lunge",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13171,7 +13171,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "hamstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13215,7 +13215,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "hamstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13259,7 +13259,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "hamstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13303,7 +13303,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "lunge",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13347,7 +13347,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "lunge",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13391,7 +13391,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "hamstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13435,7 +13435,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "armstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13479,7 +13479,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "fly",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13523,7 +13523,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "armstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13567,7 +13567,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "armstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13611,7 +13611,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "armstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13655,7 +13655,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "shrug",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13699,7 +13699,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "armstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13743,7 +13743,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "overheadext",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13787,7 +13787,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "frontraise",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13831,7 +13831,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "neckstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13875,7 +13875,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "neckstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13919,7 +13919,7 @@
         "c": "g",
         "inc": 2.5,
         "tp": "neckstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -13963,7 +13963,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "hamstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -14007,7 +14007,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "plank",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -14051,7 +14051,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "twiststretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -14095,7 +14095,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "twiststretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -14139,7 +14139,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "armstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -14183,7 +14183,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "armstretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -14227,7 +14227,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "crunch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -14271,7 +14271,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "twiststretch",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -14315,7 +14315,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "lunge",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {
@@ -14359,7 +14359,7 @@
         "c": "e",
         "inc": 2.5,
         "tp": "lunge",
-        "im": 2,
+        "im": 0,
         "pr": "-"
       },
       "metadata": {

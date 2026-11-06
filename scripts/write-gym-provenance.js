@@ -5,7 +5,7 @@ require("../www/modules/gym/balance");
 const manifest={
   batch:"B-2-baseline",status:"review",sources:SOURCES,
   counts:{source:324,local:8,runtime:records.length,accepted_new_records:0},
-  openReview:"Legacy photos remain packaged but are not rendered in exercise detail; image license remains unverified. No new records accepted.",
+  openReview:"Legacy photos removed from source and generated packages by user approval; image license remains unverified and use blocked. Data/asset eligibility is not biomechanical approval. All 332 canonical records remain review; no new records accepted.",
   records:recordManifest(records)
 };
 fs.writeFileSync(path.join(__dirname,"../docs/analysis/gym-phase-b-provenance.json"),JSON.stringify(manifest,null,2)+"\n");

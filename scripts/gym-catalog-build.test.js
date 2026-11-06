@@ -13,8 +13,9 @@ assert.equal(metadata.acceptedNewRecords,0);
 console.log("PASS offline source reproduces generated catalog and all 332 review metadata rows from another cwd");
 const {compile,readBatches}=require("./build-gym-catalog");
 const batches=readBatches(),outputs=compile(batches);
-assert.equal(require("crypto").createHash("sha256").update(JSON.stringify(runtime)).digest("hex"),"4f0ef49b6de8e7f4fb082b4147f77116a06a775d2e701a8ee64387ac38628342");
-console.log("PASS all runtime values and legacy IDs match pre-B-3 commit");
+const training=runtime.map(({im,...e})=>e);
+assert.equal(require("crypto").createHash("sha256").update(JSON.stringify(training)).digest("hex"),"e89af76060e7a21b90b60ebf353495d91da95ad9e5a86768747f7df235080830");
+console.log("PASS runtime training fields and legacy IDs preserved; approved photo count change excluded");
 for(const [name,mutate,pattern] of [
   ["unknown wrapper field",b=>b[0].records[0].accepted=true,/unknown record field/],
   ["inherited template",b=>{const x=b[0].records[0];x.runtime.tp="constructor";x.metadata.figure_template="constructor";x.metadata.cue_ids=["constructor"]},/figure or cue/],

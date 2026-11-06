@@ -89,11 +89,10 @@ function exCharts(id){
 }
 function exSheet(id){
   const e=gEx(id),d=e.tp?exDef(e):null;
-  const photos="";
   const cues=(EXCUE[e.tp]||[]).map(c=>`<li>${esc(c)}</li>`).join("");
   const w=gActive(),inW=w&&w.ex.some(x=>x.id===id);
   openSheet(`<h3>${esc(e.n)}</h3><div class="mut sm">${e.r||e.g}${e.q?" · "+e.q:""}${e.l?" · "+exLv(e.l):""}${e.c?" · "+EXCAT[e.c]:""}</div>
-  ${d||photos?`<div class="exvis">${d?`<div class="exfig">${FigLib.svg(d,{anim:true,label:e.n})}</div>`:""}${photos}</div>`:""}
+  ${d?`<div class="exvis"><div class="exfig">${FigLib.svg(d,{anim:true,label:e.n})}</div></div>`:""}
   ${cues?`<ul class="cues">${cues}</ul>`:""}
   <div class="mut sm">Kayıt türü: ${EXKIND[e.k||"w"]}</div>${exHistLine(e)}${exCharts(id)}
   <div class="mt-3 btns"><button class="btn" data-g="exadd:${id}">${inW?"Antrenmanda ekli":"Antrenmana ekle"}</button><button class="btn ghost" data-g="closesheet">Kapat</button></div>`);

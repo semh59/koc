@@ -28,7 +28,7 @@ function compile(batches){
       if(!m.source_name||!m.transformation_note||m.retrieved_at!==null||m.status!=="review"||m.canonical_id!==null||m.signature!==null||m.family!==null||!m.canonical||Object.keys(m.canonical).length!==CANONICAL_FIELDS.length||!CANONICAL_FIELDS.every(k=>m.canonical[k]===null))throw Error(`legacy metadata must remain explicit review: ${e.id}`);
       if(b.batch==="legacy-external"){
         if(legacySources.get(e.id)!==m.source_name)throw Error(`legacy source mapping changed: ${e.id}`);
-        if(m.source_ref!=="free-exercise-db-data"||![0,1,2].includes(e.im))throw Error(`external source mismatch: ${e.id}`);
+        if(m.source_ref!=="free-exercise-db-data"||e.im!==0)throw Error(`external source mismatch: ${e.id}`);
         external.push(e);
       }else{
         if(!localIds.includes(e.id))throw Error(`legacy source mapping changed: ${e.id}`);

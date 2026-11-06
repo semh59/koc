@@ -35,5 +35,5 @@ Yeni batch'ler B-4 görsel pilot ve ayrı kabul kapısı tamamlanana kadar üret
 
 - Son snapshot için bağımsız denetim ve commit; yayın kapısı açık.
 - B-3b yeni batch veri/kabul modeli; B-4 görsel kalite pilotu; 332 canonical inceleme.
-- B-2'den kalan 644 lisansı belirsiz fotoğraf pakette kalır; silme/lisans kararı ayrı onay ister. Bu dilim yeni fotoğraf indirmez.
+- Güncelleme: Kullanıcı onayıyla 644 fotoğraf kaynak ve Android public paketinden kaldırıldı; bkz. `gym-legacy-media-removal.md`. Eski kanonik içerik incelemesi, CI/APK/fiziksel cihaz/hukuk kapıları açık.
 - CI/push/yayın, APK/emülatör/fiziksel cihaz ve hukuk onayı bu yerel kanıtla kapanmaz.
