@@ -66,6 +66,19 @@ test.describe("No-Coach release",()=>{
     await expect(svg).toHaveAttribute("data-fig-motion","static");await expect(svg.locator("animate")).toHaveCount(0);
   });
 
+  test("tandem detail shows stationary heel-to-toe feet",async({app,page})=>{
+    await page.emulateMedia({reducedMotion:"no-preference"});await app.open({seed:state()});await app.tab("gym");
+    await page.evaluate(()=>exSheet("tandem"));const svg=page.locator("#sheet .exfig svg");await expect(svg).toBeVisible();
+    await expect(svg).toHaveAttribute("data-fig-view","side");
+    const samples=await svg.evaluate(el=>{
+      el.pauseAnimations();const foot=el.querySelectorAll("path.fg-near")[1],rear=el.querySelectorAll("path.fg-far")[2],out=[];
+      for(const t of [0,.65,1.3,1.95,2.6]){el.setCurrentTime(t);const heel=foot.getPointAtLength(0),toe=rear.getPointAtLength(rear.getTotalLength());out.push({x:heel.x,y:heel.y,gap:Math.hypot(heel.x-toe.x,heel.y-toe.y)});}return out;
+    });
+    expect(samples.every(s=>s.gap<.11&&Math.abs(s.y-136)<.01&&Math.abs(s.x-samples[0].x)<.01)).toBe(true);
+    await page.emulateMedia({reducedMotion:"reduce"});await page.evaluate(()=>exSheet("tandem"));
+    await expect(svg.locator("animate")).toHaveCount(0);await expect(svg).toHaveAttribute("data-fig-motion","static");
+  });
+
   test("figure pilot gallery renders 9 families cleanly with opt-in volume and ghost",async({page})=>{
     await page.goto("/figure-pilot.html");
     await expect(page.locator("h1")).toContainText("NeoWell Çöp Adam 2.5D Görsel Pilot Matrisi");

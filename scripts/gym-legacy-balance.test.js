@@ -23,6 +23,24 @@ function checkArmswalk(def){
     assert.ok(Math.abs(Math.max(...J.limbs.nL.concat(J.limbs.fL).map(p=>p[1]))-F.FLOOR)<.01,"walking maintains ground reference");
   }
 }
+function checkTandem(def){
+  const frames=F.sample(def,48).map(p=>F.frame(def,p).J),start=frames[0];
+  assert.equal(def.view||"s","s","tandem uses side view to show heel-to-toe contact");
+  for(const J of frames){
+    const front=J.limbs.nL,rear=J.limbs.fL;
+    assert.ok(front[2][0]>rear[2][0]+8,"tandem ankles are in front/back order");
+    assert.ok(Math.hypot(front[2][0]-rear[3][0],front[2][1]-rear[3][1])<.1,"front heel meets rear toe");
+    for(const k of ["nL","fL"])for(const i of [2,3]){
+      assert.ok(Math.abs(J.limbs[k][i][1]-F.FLOOR)<.01,"tandem feet remain grounded");
+      assert.ok(Math.hypot(J.limbs[k][i][0]-start.limbs[k][i][0],J.limbs[k][i][1]-start.limbs[k][i][1])<1e-6,"tandem feet remain still");
+    }
+  }
+}
+checkTandem(T.tandem);
+console.log("PASS tandem holds heel-to-toe stance with stationary grounded feet");
+for(const [name,mutate] of [["side-by-side feet",d=>{for(const f of d.frames){f.m1=f.l1;f.m2=f.l2}}],["moving feet",d=>{d.frames[1].l1=20}],["front view",d=>{d.view="f"}]]){
+  const def=structuredClone(T.tandem);mutate(def);assert.throws(()=>checkTandem(def),assert.AssertionError);console.log(`PASS tandem guard detects ${name}`);
+}
 checkArmswalk(T.balwalk2);
 console.log("PASS armswalk alternates legs while keeping arms at sides");
 for(const [name,mutate] of [["coincident legs",d=>{for(const f of d.frames){f.m1=f.l1;f.m2=f.l2;f.m3=f.l3}}],["swinging arms",d=>{d.frames[0].a1=90;d.frames[0].a2=90}]]){
