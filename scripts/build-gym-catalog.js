@@ -12,13 +12,17 @@ const readBatches=()=>fs.readdirSync(batchDir).filter(f=>f.endsWith(".json")).so
 function compile(batches){
   const ids=new Set(),records=[],external=[],local=[];
   for(const b of batches){
-    if(b.schemaVersion!==1||!Array.isArray(b.records)||!b.records.length)throw Error("invalid batch schema");
-    for(const {runtime:e,metadata:m} of b.records){
+    if(b.schemaVersion!==1||Object.keys(b).some(k=>!["schemaVersion","batch","records"].includes(k))||!Array.isArray(b.records)||!b.records.length)throw Error("invalid batch schema");
+    for(const item of b.records){
+      if(!item||typeof item!=="object"||Array.isArray(item)||Object.keys(item).some(k=>!["runtime","metadata"].includes(k)))throw Error("unknown record field");
+      const {runtime:e,metadata:m}=item;
       if(!e||!m||!e.id||ids.has(e.id))throw Error("missing or duplicate id");
       ids.add(e.id);
+      if(Object.keys(e).some(k=>!["id","n","r","g","k","q","l","c","inc","tp","im","pr","o"].includes(k))||Object.keys(m).some(k=>!["canonical_id","canonical","signature","family","cue_ids","figure_template","source_ref","license_ref","source_name","retrieved_at","transformation_note","status"].includes(k)))throw Error(`unknown record field: ${e.id}`);
+      if((e.pr!==undefined&&!["-","bar","bar@sh","db","db@sh","kb","ball"].includes(e.pr))||(e.o!==undefined&&(!e.o||typeof e.o!=="object"||Array.isArray(e.o)||!Object.entries(e.o).every(([k,v])=>require("../www/modules/gym/figlib").KEYS.includes(k)&&Number.isFinite(v)&&Math.abs(v)<=360))))throw Error(`invalid figure override: ${e.id}`);
       if(!["id","n","r","g","k","q","l","c","tp"].every(k=>typeof e[k]==="string"&&e[k].trim()))throw Error(`missing runtime field: ${e.id}`);
       if(!["w","b","t","i","c"].includes(e.k)||!["g","e","k","p","d"].includes(e.c)||!["Ağırlıksız","Ev tipi","Salon"].includes(e.q)||!["Başlangıç","Orta","İleri"].includes(e.l)||!Number.isFinite(e.inc)||e.inc<=0)throw Error(`invalid runtime value: ${e.id}`);
-      if(!templates[e.tp]||!context.cues[e.tp]?.length||m.figure_template!==e.tp||JSON.stringify(m.cue_ids)!==JSON.stringify([e.tp]))throw Error(`figure or cue missing: ${e.id}`);
+      if(!(Object.hasOwn(templates,e.tp)&&Array.isArray(templates[e.tp].frames)&&Object.hasOwn(context.cues,e.tp)&&Array.isArray(context.cues[e.tp])&&context.cues[e.tp].length>0&&context.cues[e.tp].every(c=>typeof c==="string"&&c.trim()))||m.figure_template!==e.tp||JSON.stringify(m.cue_ids)!==JSON.stringify([e.tp]))throw Error(`figure or cue missing: ${e.id}`);
       if(!SOURCES[m.source_ref]||m.license_ref!==m.source_ref||!["verified","internal"].includes(SOURCES[m.source_ref].licenseStatus))throw Error(`source or license missing: ${e.id}`);
       if(!m.source_name||!m.transformation_note||m.retrieved_at!==null||m.status!=="review"||m.canonical_id!==null||m.signature!==null||m.family!==null||!m.canonical||Object.keys(m.canonical).length!==CANONICAL_FIELDS.length||!CANONICAL_FIELDS.every(k=>m.canonical[k]===null))throw Error(`legacy metadata must remain explicit review: ${e.id}`);
       if(!["legacy-external","legacy-local"].includes(b.batch))throw Error("new batches blocked until B-4 visual pilot and admission gate");

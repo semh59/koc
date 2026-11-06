@@ -16,6 +16,11 @@ const batches=readBatches(),outputs=compile(batches);
 assert.equal(require("crypto").createHash("sha256").update(JSON.stringify(runtime)).digest("hex"),"4f0ef49b6de8e7f4fb082b4147f77116a06a775d2e701a8ee64387ac38628342");
 console.log("PASS all runtime values and legacy IDs match pre-B-3 commit");
 for(const [name,mutate,pattern] of [
+  ["unknown wrapper field",b=>b[0].records[0].accepted=true,/unknown record field/],
+  ["inherited template",b=>{const x=b[0].records[0];x.runtime.tp="constructor";x.metadata.figure_template="constructor";x.metadata.cue_ids=["constructor"]},/figure or cue/],
+  ["invalid prop",b=>b[0].records[0].runtime.pr=123,/invalid figure override/],
+  ["invalid pose",b=>b[0].records[0].runtime.o={t:"bad"},/invalid figure override/],
+  ["unknown batch field",b=>b[0].unexpected=true,/invalid batch schema/],
   ["wrong legacy id",b=>b[0].records[0].runtime.id="renamed-squat",/legacy source mapping/],
   ["wrong legacy source name",b=>b[0].records[0].metadata.source_name="unverified name",/legacy source mapping/],
   ["duplicate id",b=>b[0].records[1].runtime.id=b[0].records[0].runtime.id,/duplicate id/],
@@ -33,7 +38,7 @@ for(const [name,mutate,pattern] of [
 }
 const scratch=fs.mkdtempSync(path.join(process.env.TMPDIR||require("os").tmpdir(),"gym-build-"));
 try{
-  for(const file of ["scripts/build-gym-catalog.js","scripts/gym-catalog-semantic.js","scripts/gym-provenance.js","scripts/exlib-src.txt","www/modules/gym/figtpl.js","www/modules/gym/excues.js",...Object.keys(outputs)]){
+  for(const file of ["scripts/build-gym-catalog.js","scripts/gym-catalog-semantic.js","scripts/gym-provenance.js","scripts/exlib-src.txt","www/modules/gym/figtpl.js","www/modules/gym/figlib.js","www/modules/gym/excues.js",...Object.keys(outputs)]){
     const target=path.join(scratch,file);fs.mkdirSync(path.dirname(target),{recursive:true});fs.copyFileSync(path.join(root,file),target);
   }
   fs.cpSync(path.join(__dirname,"gym-catalog/batches"),path.join(scratch,"scripts/gym-catalog/batches"),{recursive:true});
