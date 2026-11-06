@@ -45,6 +45,27 @@ test.describe("No-Coach release",()=>{
     await page.screenshot({path:test.info().outputPath("onefoot.png")});
   });
 
+  test("arms-at-sides walking alternates feet in exercise detail",async({app,page})=>{
+    await page.emulateMedia({reducedMotion:"no-preference"});
+    await app.open({seed:state()});await app.tab("gym");await page.evaluate(()=>exSheet("armswalk"));
+    const svg=page.locator("#sheet .exfig svg");await expect(svg).toBeVisible();
+    const steps=await svg.evaluate(el=>{
+      el.pauseAnimations();const out=[];
+      for(const t of [0,1.3,2.6]){
+        el.setCurrentTime(t);
+        const near=el.querySelectorAll("path.fg-near"),far=el.querySelectorAll("path.fg-far");
+        const end=p=>p.getPointAtLength(p.getTotalLength());
+        const arm=near[2],s=arm.getPointAtLength(0),w=end(arm);
+        out.push({order:end(near[0]).x-end(far[1]).x,armDown:w.y-s.y,armSide:Math.abs(w.x-s.x)});
+      }return out;
+    });
+    expect(steps[0].order*steps[1].order).toBeLessThan(0);
+    expect(Math.abs(steps[0].order-steps[2].order)).toBeLessThan(.01);
+    expect(steps.every(s=>s.armDown>30&&s.armSide<4)).toBe(true);
+    await page.emulateMedia({reducedMotion:"reduce"});await page.evaluate(()=>exSheet("armswalk"));
+    await expect(svg).toHaveAttribute("data-fig-motion","static");await expect(svg.locator("animate")).toHaveCount(0);
+  });
+
   test("figure pilot gallery renders 9 families cleanly with opt-in volume and ghost",async({page})=>{
     await page.goto("/figure-pilot.html");
     await expect(page.locator("h1")).toContainText("NeoWell Çöp Adam 2.5D Görsel Pilot Matrisi");

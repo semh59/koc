@@ -60,7 +60,7 @@ const FigTpl={
   /* ---- balance ---- */
   onefoot:{frames:[{t:0,a1:30,a2:30,l1:4,l2:-4,m1:65,m2:-10},{t:0,a1:32,a2:32,l1:4,l2:-4,m1:65,m2:-10}]},
   balwalk:{frames:[{t:0,a1:36,a2:36,l1:16,l2:-12,m1:16,m2:-12},{t:0,a1:36,a2:36,l1:2,l2:2,m1:2,m2:2}]},
-  balwalk2:{frames:[{t:0,a1:4,a2:4,l1:22,l2:-16,m1:22,m2:-16},{t:0,a1:4,a2:4,l1:2,l2:2,m1:2,m2:2}]},
+  balwalk2:{frames:[{t:0,a1:4,a2:4,b1:4,b2:4,l1:24,l2:12,m1:-18,m2:-32,m3:60},{t:0,a1:4,a2:4,b1:4,b2:4,l1:-18,l2:-32,l3:60,m1:24,m2:12,m3:90}],fix:{x:["hip",0],y:["floor"]}},
   tandem:{view:"f",frames:[{t:0,a1:66,a2:74,l1:2,l2:2},{t:5,a1:76,a2:84,l1:2,l2:2}]}
 };
 FigTpl.chairstand=FigTpl.squat;
