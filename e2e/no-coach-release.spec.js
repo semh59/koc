@@ -94,6 +94,19 @@ test.describe("No-Coach release",()=>{
     await expect(svg.locator("animate")).toHaveCount(0);await expect(svg).toHaveAttribute("data-fig-motion","static");
   });
 
+  test("wide and narrow squat cues match across detail and guided mode",async({app,page})=>{
+    await app.open({seed:state()});await app.tab("gym");
+    for(const [id,phrase] of [["widesquat","omuz genişliğinden daha geniş"],["narrowsquat","omuz genişliğinden daha dar"]]){
+      await page.evaluate(id=>exSheet(id),id);
+      await expect(page.locator("#sheet .cues")).toContainText(phrase);
+      await expect(page.locator("#sheet .cues")).toContainText("genel squat");
+      await expect(page.locator("#sheet .cues")).not.toContainText("Ayaklar omuz genişliğinde,");
+      await page.evaluate(id=>{closeSheet();S.templates=[{id:901,name:"Duruş testi",ex:[id],tg:{[id]:{sets:1,reps:5}}}];gdStart("t:901")},id);
+      await expect(page.locator("#guide .gdc").first()).toContainText(phrase);
+      await page.evaluate(()=>{gdEnd();gdClose()});
+    }
+  });
+
   test("figure pilot gallery renders 9 families cleanly with opt-in volume and ghost",async({page})=>{
     await page.goto("/figure-pilot.html");
     await expect(page.locator("h1")).toContainText("NeoWell Çöp Adam 2.5D Görsel Pilot Matrisi");

@@ -56,3 +56,10 @@ const EXCUE={
   neckstretch:["Başı yavaşça yana eğ, omuzları düşük tut.","Zorlama, hafif gerginlik yeter."],
   twiststretch:["Gövdeyi yavaşça döndür, kalça sabit.","Nefes ver ve gevşe."]
 };
+const EXCUE_BY_ID={
+  widesquat:["Ayaklarını omuz genişliğinden daha geniş yerleştir; dizlerini ayak uçları doğrultusunda tut.","Topuklarını yerde tut; rahat ve kontrollü derinlikte in.","Çizim genel squat hareketini gösterir; duruş genişliği yandan görünüşte gösterilmez."],
+  narrowsquat:["Ayaklarını omuz genişliğinden daha dar yerleştir; dizlerini ayak uçları doğrultusunda tut.","Topuklarını yerde tut; rahat ve kontrollü derinlikte in.","Çizim genel squat hareketini gösterir; duruş genişliği yandan görünüşte gösterilmez."]
+};
+function exCues(e){
+  return Object.hasOwn(EXCUE_BY_ID,e.id)?EXCUE_BY_ID[e.id]:Object.hasOwn(EXCUE,e.tp)?EXCUE[e.tp]:[];
+}

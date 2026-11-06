@@ -70,7 +70,7 @@ function gdRender(){
   if(gd.fin)return void(el.innerHTML=gdSumHtml());
   const st=gd.st,p=st.ph[st.i],ws=[];
   for(let i=st.i;i<st.ph.length&&ws.length<2;i++)if(st.ph[i].k==="w")ws.push(i);
-  const cur=st.ph[ws[0]],nx=st.ph[ws[1]],e=cur&&gEx(cur.ex),fig=e&&e.tp?exFig(e,true):"",cue=e&&(EXCUE[e.tp]||[])[0];
+  const cur=st.ph[ws[0]],nx=st.ph[ws[1]],e=cur&&gEx(cur.ex),fig=e&&e.tp?exFig(e,true):"",cue=e&&exCues(e)[0];
   const lbl=p.k==="w"?(p.n>1?`Set ${p.r}/${p.n}`:"Çalış"):st.i?"Dinlen, sıradaki":"Hazırlan, ilk egzersiz";
   const k=st.ph.slice(0,ws[0]+1).filter(x=>x.k==="w").length,paused=st.pause!=null,rest=p.k==="r";
   const ring=`<div class="gdring${rest?" gdrs":""}"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="tr" cx="60" cy="60" r="52"/><circle class="pg" id="gdpg" cx="60" cy="60" r="52" stroke-dasharray="${GD_C.toFixed(1)}" stroke-dashoffset="0"/></svg>

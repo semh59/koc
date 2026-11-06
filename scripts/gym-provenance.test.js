@@ -49,7 +49,7 @@ ok("source manifest contains no live credential or invented license claim",(()=>
 ok("uncertain source photos are not rendered in exercise detail",(()=>{
   const context={gEx:id=>runtime.find(e=>e.id===id),exDef:()=>({frames:[]}),EXCUE:{},gActive:()=>null,esc:s=>s,exLv:s=>s,exHistLine:()=>"",exCharts:()=>"",FigLib:{svg:()=>'<svg data-neowell-figure="true"></svg>'},setInterval:()=>0};
   require("vm").createContext(context);
-  require("vm").runInContext(fs.readFileSync(path.join(root,"www/modules/gym/exui.js"),"utf8"),context);
+  require("vm").runInContext(fs.readFileSync(path.join(root,"www/modules/gym/excues.js"),"utf8")+"\n"+fs.readFileSync(path.join(root,"www/modules/gym/exui.js"),"utf8"),context);
   let html="";Object.assign(context,{openSheet:s=>{html=s},exDef:()=>({frames:[]}),exHistLine:()=>"",exCharts:()=>""});
   context.exSheet("squat");
   return html.includes('data-neowell-figure="true"')&&!/<img\b|exph|kamu malı/.test(html);
