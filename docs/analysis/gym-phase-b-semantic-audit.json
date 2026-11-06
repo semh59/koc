@@ -61,7 +61,7 @@
   "nameNearCandidateGroups": [],
   "candidateSignatureCount": 0,
   "canonicalDuplicateGroups": [],
-  "legacyObservedDuplicateGroups": 78,
+  "legacyObservedDuplicateGroups": 77,
   "legacyObservedGroups": [
     {
       "signature": "{\"equipment\":\"bar@sh\",\"kind\":\"w\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}",
@@ -414,13 +414,6 @@
       "ids": [
         "backext",
         "ballhyper"
-      ]
-    },
-    {
-      "signature": "{\"equipment\":\"bar@sh\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"bel\"}",
-      "ids": [
-        "stiffgm",
-        "seatedgm"
       ]
     },
     {

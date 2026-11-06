@@ -1,6 +1,7 @@
 "use strict";
 /* Short form cues per template (general, not medical advice), shown in the exercise detail. */
 const EXCUE={
+  seatedhinge:["Oturarak ayaklarını yere sağlam bas. Barı üst sırtta sabit tut, boynuna dayama.","Kalçan oturakta kalırken gövdeni kalçadan kontrollü öne eğ ve doğrul; sırtını doğal konumunda tut, rahat hareket aralığını aşma."],
   squat:["Ayaklar omuz genişliğinde, dizler ayak uçları doğrultusunda.","Topuklar yerde, göğüs dik; kalçayı geriye ve aşağıya oturt."],
   hinge:["Dizler hafif bükük, kalçayı geriye it; ağırlığı bacaklara yakın tut.","Sırtı düz tut, hareketi kalçadan yap."],
   lunge:["Adım uzunluğu, ön diz 90° civarında kalacak kadar.","Gövde dik, ön dizin ayak ucunu çok geçmesin."],

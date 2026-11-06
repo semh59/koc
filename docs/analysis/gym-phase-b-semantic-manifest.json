@@ -4,7 +4,7 @@
   "runtimeCount": 332,
   "semanticUniqueCount": 0,
   "reviewCount": 332,
-  "legacyObservedDuplicateGroups": 78,
+  "legacyObservedDuplicateGroups": 77,
   "candidateSignatureCount": 0,
   "canonicalDuplicateGroups": 0,
   "records": [
@@ -1217,7 +1217,7 @@
       "source": "scripts/exlib-src.txt",
       "status": "review",
       "reason": "incomplete-canonical-metadata",
-      "signature": "{\"equipment\":\"bar@sh\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"bel\"}"
+      "signature": "{\"equipment\":\"bar@sh\",\"kind\":\"w\",\"pattern\":\"seatedhinge\",\"region\":\"bel\"}"
     },
     {
       "id": "curl",

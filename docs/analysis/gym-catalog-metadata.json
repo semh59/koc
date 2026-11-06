@@ -5014,9 +5014,9 @@
       "signature": null,
       "family": null,
       "cue_ids": [
-        "hinge"
+        "seatedhinge"
       ],
-      "figure_template": "hinge",
+      "figure_template": "seatedhinge",
       "source_ref": "free-exercise-db-data",
       "license_ref": "free-exercise-db-data",
       "source_name": "Seated Good Mornings",

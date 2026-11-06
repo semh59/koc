@@ -3,9 +3,10 @@ const assert=require("node:assert/strict"),fs=require("fs"),path=require("path")
 const root=path.join(__dirname,".."),{compile,readBatches}=require("./build-gym-catalog");
 const files=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?files(path.join(dir,e.name)):[path.join(dir,e.name)]);
 const runtime=require("../www/modules/gym/exlib");
+assert.equal(runtime.find(e=>e.id==="seatedgm").tp,"seatedhinge");
 assert.equal(runtime.length,324);assert.ok(runtime.every(e=>e.im===0));
-assert.equal(require("crypto").createHash("sha256").update(JSON.stringify(runtime.map(({im,...e})=>e))).digest("hex"),"3723ba4d9dae36907b04024dce7ee16e82e557fd8e96a75fd1f256ae7f00f277","only approved image counts may change in external runtime");
-console.log("PASS external IDs, names, cues and training fields preserved with image counts zeroed");
+assert.equal(require("crypto").createHash("sha256").update(JSON.stringify(runtime.map(({im,...e})=>e.id==="seatedgm"?{...e,tp:"hinge"}:e))).digest("hex"),"3723ba4d9dae36907b04024dce7ee16e82e557fd8e96a75fd1f256ae7f00f277","only approved image counts and seatedgm template repair may change in external runtime");
+console.log("PASS external IDs, names and training fields preserved except approved seatedgm template; image counts zeroed");
 assert.equal(files(path.join(root,"www")).filter(f=>/\.(gif|webp|jpe?g)$/i.test(f)&&f.startsWith(path.join(root,"www/ex")+path.sep)).length,0,"exercise image files must be absent");
 assert.equal(files(path.join(root,"www")).filter(f=>/\.gif$/i.test(f)).length,0,"no packaged GIFs");
 console.log("PASS exercise source package has zero photos or GIFs");

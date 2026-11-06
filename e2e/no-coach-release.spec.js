@@ -120,6 +120,27 @@ test.describe("No-Coach release",()=>{
     await page.evaluate(()=>exSheet("deadlift"));await expect(page.locator("#sheet .cues")).toContainText("ağırlığı bacaklara yakın");
   });
 
+  test("seated good morning keeps hip on seat and feet planted while hinging",async({app,page})=>{
+    await page.emulateMedia({reducedMotion:"no-preference"});await app.open({seed:state()});await app.tab("gym");
+    await page.evaluate(()=>exSheet("seatedgm"));const svg=page.locator("#sheet .exfig svg");await expect(svg).toBeVisible();
+    await expect(page.locator("#sheet .cues")).toContainText("Oturarak");await expect(page.locator("#sheet .cues")).toContainText("Barı üst sırtta");
+    const samples=await svg.evaluate(el=>{
+      el.pauseAnimations();const body=el.querySelector("path.fg-body"),seat=el.querySelector("path.fg-prop"),near=el.querySelectorAll("path.fg-near"),far=el.querySelectorAll("path.fg-far"),plate=el.querySelector("circle.fg-plate");
+      const pt=(p,end)=>{const q=p.getPointAtLength(end?p.getTotalLength():0);return [q.x,q.y]};
+      return [0,.65,1.3,1.95,2.6].map(t=>{el.setCurrentTime(t);return {hip:pt(body,false),neck:pt(body,true),seat:[pt(seat,false),pt(seat,true)],feet:[pt(near[0],true),pt(near[1],true),pt(far[1],true),pt(far[2],true)],plate:[plate.cx.animVal.value,plate.cy.animVal.value]}});
+    });
+    expect(samples[2].neck[0]).toBeGreaterThan(samples[0].neck[0]+15);expect(samples[2].neck[1]).toBeGreaterThan(samples[0].neck[1]+5);
+    for(const s of samples){
+      expect(s.seat).toEqual(samples[0].seat);expect(s.hip).toEqual(samples[0].hip);
+      expect(Math.abs(s.hip[1]-s.seat[0][1])).toBeLessThan(.01);expect(s.hip[0]>=s.seat[0][0]&&s.hip[0]<=s.seat[1][0]).toBe(true);
+      for(let i=0;i<4;i++){expect(s.feet[i]).toEqual(samples[0].feet[i]);expect(Math.abs(s.feet[i][1]-136)).toBeLessThan(.01);}
+      expect(Math.hypot(s.plate[0]-s.neck[0],s.plate[1]-s.neck[1]-1)).toBeLessThan(.11);
+    }
+    await page.emulateMedia({reducedMotion:"reduce"});await page.evaluate(()=>exSheet("seatedgm"));await expect(svg.locator("animate")).toHaveCount(0);await expect(svg).toHaveAttribute("data-fig-motion","static");
+    await page.evaluate(()=>{closeSheet();S.templates=[{id:903,name:"Oturarak menteşe",ex:["seatedgm"],tg:{seatedgm:{sets:1,reps:5}}}];gdStart("t:903")});
+    await expect(page.locator("#guide .gdc").first()).toContainText("Oturarak");await page.evaluate(()=>{gdEnd();gdClose()});
+  });
+
   test("figure pilot gallery renders 9 families cleanly with opt-in volume and ghost",async({page})=>{
     await page.goto("/figure-pilot.html");
     await expect(page.locator("h1")).toContainText("NeoWell Çöp Adam 2.5D Görsel Pilot Matrisi");
