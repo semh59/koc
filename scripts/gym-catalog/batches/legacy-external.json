@@ -7342,7 +7342,7 @@
         "l": "Orta",
         "c": "g",
         "inc": 2.5,
-        "tp": "hinge",
+        "tp": "deadlift",
         "im": 0,
         "pr": "bar"
       },
@@ -7364,9 +7364,9 @@
         "signature": null,
         "family": null,
         "cue_ids": [
-          "hinge"
+          "deadlift"
         ],
-        "figure_template": "hinge",
+        "figure_template": "deadlift",
         "source_ref": "free-exercise-db-data",
         "license_ref": "free-exercise-db-data",
         "source_name": "Barbell Deadlift",

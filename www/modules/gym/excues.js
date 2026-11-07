@@ -1,6 +1,7 @@
 "use strict";
 /* Short form cues per template (general, not medical advice), shown in the exercise detail. */
 const EXCUE={
+  deadlift:["Ayaklarını yere sağlam bas; ağırlığı bacaklara yakın tut; barı zeminden kontrollü kaldır, sırtını doğal konumunda tutup kalça ve dizlerini açarak doğrul, sonra barı kontrollü zemine geri indir. Çizim şematiktir; açık izdüşümle gösterilen yatay bar konumu ve hareket açıları kişisel kurulum önerisi değildir."],
   defdl:["Sağlam ve kaymayan yükseltilmiş platform üzerinde ayaklarını sabitle; barı zeminden kontrollü kaldır, kalça ve dizlerini açarak doğrul, ardından barı kontrollü zemine indir. Çizim şematiktir; platform yüksekliği kişisel ayar önerisi değildir. Yük, platformdan ayrılabilmesi için açık bir izdüşümle gösterilir; bu yatay bar konumu kişisel kurulum önerisi değildir."],
   rackpull:["Barı desteklerden kontrollü kaldır ve desteklere geri bırak. Çizim şematik bir yükseklik örneğidir; kişisel ayar önerisi değildir."],
   seatedhinge:["Oturarak ayaklarını yere sağlam bas. Barı üst sırtta sabit tut, boynuna dayama.","Kalçan oturakta kalırken gövdeni kalçadan kontrollü öne eğ ve doğrul; sırtını doğal konumunda tut, rahat hareket aralığını aşma."],

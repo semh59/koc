@@ -41,7 +41,7 @@ const gEx=id=>EXBY.get(id)||S.customEx.find(e=>e.id===id)||{id,n:"Silinmiş egze
 const gActive=()=>S.workouts.find(w=>w.t1==null)||null;
 const gDone=w=>w.t1!=null;
 /* Heavy compound lifts need longer recovery (ACSM: 2-3 min), isolation 1-2 min. Timed work gets 30 s, cardio 0; an exercise without a figure (custom) stays at 90 s. */
-const GREST_BIG=new Set(["squat","lunge","legpress","hinge","rackpull","defdl","bench","incline","ohp","row","seatedrow","pullup","pulldown","dips"]);
+const GREST_BIG=new Set(["squat","lunge","legpress","hinge","rackpull","defdl","deadlift","bench","incline","ohp","row","seatedrow","pullup","pulldown","dips"]);
 const gRestDef=id=>{const e=gEx(id),k=gKind(id);return k==="c"?0:"ti".includes(k)?30:!e.tp?REST_SEC:GREST_BIG.has(e.tp)?150:75};
 const gRestSec=id=>{const c=S.exCfg[id];return c&&c.rest!=null?c.rest:gRestDef(id)};
 const gRestTx=s=>s?gClock(s*1000):"kapalı";

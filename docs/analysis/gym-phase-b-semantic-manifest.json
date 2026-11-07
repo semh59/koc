@@ -1161,7 +1161,7 @@
       "source": "scripts/exlib-src.txt",
       "status": "review",
       "reason": "incomplete-canonical-metadata",
-      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"sırt\"}"
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"deadlift\",\"region\":\"sırt\"}"
     },
     {
       "id": "rackpull",

@@ -128,6 +128,75 @@ test.describe("No-Coach release",()=>{
     await page.evaluate(()=>{gdEnd();gdClose()});
   });
 
+  test("ordinary deadlift keeps painted feet on floor and lifts grounded bar in detail and guide",async({app,page})=>{
+    await app.open({seed:state()});await app.tab("gym");
+    expect(await page.evaluate(()=>({template:gEx("deadlift").tp,scene:exDef(gEx("deadlift")).scene,rest:gRestDef("deadlift")}))).toEqual({template:"deadlift",scene:"floorpull",rest:150});
+    for(const motion of ["no-preference","reduce"]){
+      await page.emulateMedia({reducedMotion:motion});
+      for(const mode of ["detail","guide"]){
+        if(mode==="detail")await page.evaluate(()=>exSheet("deadlift"));
+        else await page.evaluate(()=>{closeSheet();S.templates=[{id:911,name:"Zeminden çekiş testi",ex:["deadlift"],tg:{deadlift:{sets:1,reps:5}}}];gdStart("t:911")});
+        const svg=page.locator(mode==="detail"?"#sheet .exfig svg":"#guide .gdfig svg"),label=`${motion} ${mode}`;
+        await expect(svg).toBeVisible();await expect(svg).toHaveAttribute("data-fig-view","side");
+        await expect(svg).toHaveAttribute("data-fig-motion",motion==="reduce"?"static":"animated");
+        await expect(svg.locator("rect.fg-prop")).toHaveCount(0);
+        if(motion==="reduce")await expect(svg.locator("animate")).toHaveCount(0);
+        else expect(await svg.locator("animate").count()).toBeGreaterThan(0);
+        const cue=page.locator(mode==="detail"?"#sheet .cues li":"#guide .gdc").first();
+        for(const clause of ["Ayaklarını yere sağlam bas","barı zeminden kontrollü kaldır","kalça ve dizlerini açarak doğrul","barı kontrollü zemine geri indir","Çizim şematiktir","açık izdüşüm","yatay bar konumu ve hareket açıları kişisel kurulum önerisi değildir"])await expect(cue).toContainText(clause);
+        const samples=await svg.evaluate((el,animated)=>{
+          el.pauseAnimations();
+          const floor=el.querySelector("path.fg-floor"),shaft=el.querySelector("path.fg-barshaft"),plate=el.querySelector("circle.fg-plate"),body=el.querySelector("path.fg-body"),near=el.querySelectorAll("path.fg-near"),far=el.querySelectorAll("path.fg-far"),out=[];
+          const pt=(p,d)=>{const q=p.getPointAtLength(d);return [q.x,q.y]},end=p=>pt(p,p.getTotalLength()),width=p=>parseFloat(getComputedStyle(p).strokeWidth);
+          const angle=(a,b,c)=>{const u=a.map((v,i)=>v-b[i]),v=c.map((n,i)=>n-b[i]);return Math.acos(Math.max(-1,Math.min(1,(u[0]*v[0]+u[1]*v[1])/Math.hypot(...u)/Math.hypot(...v))))*180/Math.PI};
+          const painted=p=>{const s=getComputedStyle(p);return s.stroke!=="none"&&s.visibility==="visible"&&+s.opacity>0&&width(p)>0};
+          for(let i=0;i<=(animated?128:0);i++){
+            el.setCurrentTime(i*2.6/128);
+            const a=pt(shaft,0),b=end(shaft),hip=pt(body,0),neck=end(body),ground=pt(floor,0)[1]-width(floor)/2;
+            out.push({floor:[pt(floor,0),end(floor)],ground,a,b,wrist:end(near[2]),plate:[plate.cx.animVal.value,plate.cy.animVal.value,plate.r.animVal.value+width(plate)/2],length:shaft.getTotalLength(),shaftHalf:width(shaft)/2,limbBottom:Math.max(...[...el.querySelectorAll("path")].filter(p=>p!==floor).map(p=>Math.max(...Array.from({length:33},(_,j)=>pt(p,p.getTotalLength()*j/32)[1]))+width(p)/2)),
+              feet:[near[1],far[2]].map(p=>({points:[pt(p,0),pt(p,p.getTotalLength()/2),end(p)],half:width(p)/2,length:p.getTotalLength()})),
+              angles:[near[0],far[1]].map(p=>{const h=pt(p,0),k=pt(p,24);return [angle(neck,hip,k),angle(h,k,end(p))]})});
+          }
+          return {out,painted:[floor,shaft,plate,near[1],far[2]].every(painted),caps:[shaft,near[1],far[2]].map(p=>getComputedStyle(p).strokeLinecap)};
+        },motion!=="reduce");
+        const s=samples.out,gap=f=>f.ground-f.plate[1]-f.plate[2];
+        expect(samples.painted,label).toBe(true);expect(samples.caps,label).toEqual(["round","round","round"]);
+        expect(s,label).toHaveLength(motion==="reduce"?1:129);
+        for(const [i,f] of s.entries()){
+          const frame=`${label} frame ${i}`;
+          expect(f.floor,frame).toEqual(s[0].floor);expect(f.ground,frame).toBeCloseTo(137.3,2);expect(f.limbBottom,frame).toBeLessThanOrEqual(f.ground+.02);
+          expect(Math.abs(f.a[1]-f.b[1]),frame).toBeLessThan(.02);expect(f.length,frame).toBeCloseTo(31,1);expect(f.shaftHalf,frame).toBeCloseTo(1,2);
+          expect(f.a[0]-f.wrist[0],frame).toBeCloseTo(-3,1);expect(f.b[0]-f.wrist[0],frame).toBeCloseTo(28,1);expect(Math.abs(f.a[1]-f.wrist[1]),frame).toBeLessThan(.02);
+          expect(Math.hypot(f.b[0]-f.plate[0],f.b[1]-f.plate[1]),frame).toBeLessThan(.02);expect(f.plate[2],frame).toBeCloseTo(9.3,2);
+          expect(gap(f),frame).toBeGreaterThan(-.06);expect(f.ground-Math.max(f.a[1],f.b[1])-f.shaftHalf,frame).toBeGreaterThan(0);
+          for(let foot=0;foot<2;foot++){
+            expect(f.feet[foot].length,frame).toBeCloseTo(9,2);expect(f.feet[foot].half,frame).toBeCloseTo(1.7,2);
+            for(let point=0;point<3;point++){
+              const p=f.feet[foot].points[point],anchor=s[0].feet[foot].points[point];
+              expect(Math.hypot(p[0]-anchor[0],p[1]-anchor[1]),frame).toBeLessThan(.02);
+              expect(p[1],frame).toBeCloseTo(135.6,2);expect(p[1]+f.feet[foot].half,frame).toBeCloseTo(f.ground,2);
+            }
+          }
+          if(i>0&&i<=64){
+            expect(gap(f),frame).toBeGreaterThanOrEqual(gap(s[i-1])-.02);
+            for(let leg=0;leg<2;leg++)for(let joint=0;joint<2;joint++)expect(f.angles[leg][joint],frame).toBeGreaterThanOrEqual(s[i-1].angles[leg][joint]-.3);
+          }
+          if(i>64)expect(gap(f),frame).toBeLessThanOrEqual(gap(s[i-1])+.02);
+        }
+        for(const f of [s[0],s[s.length-1]]){expect(Math.abs(gap(f)),label).toBeLessThan(.06);expect(f.plate[1],label).toBeCloseTo(128,1)}
+        if(motion!=="reduce"){
+          expect(s[64].plate[1],label).toBeCloseTo(88.6,1);
+          for(let leg=0;leg<2;leg++)for(let joint=0;joint<2;joint++){
+            expect(s[64].angles[leg][joint]-s[0].angles[leg][joint],label).toBeGreaterThan(joint===0?20:10);
+            expect(s[128].angles[leg][joint],label).toBeCloseTo(s[0].angles[leg][joint],2);
+          }
+          for(const key of ["a","b","wrist","plate"])for(let axis=0;axis<s[0][key].length;axis++)expect(s[128][key][axis],label).toBeCloseTo(s[0][key][axis],2);
+        }
+        if(mode==="guide")await page.evaluate(()=>{gdEnd();gdClose()});
+      }
+    }
+  });
+
   test("deficit deadlift keeps painted feet planted and grounded load clear in detail and guide",async({app,page})=>{
     await app.open({seed:state()});await app.tab("gym");
     for(const motion of ["no-preference","reduce"]){

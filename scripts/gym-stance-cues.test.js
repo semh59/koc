@@ -61,8 +61,12 @@ boot().then(async w=>{
   const rackGuide=q("#guide .gdc").textContent;
   checkRackCue(rackGuide);
   ev("gdEnd();gdClose()");console.log("PASS rack pull detail and guide describe raised support and schematic height");
-  assert.equal(ev("exCues(gEx('deadlift'))[0]"),ev("EXCUE.hinge[0]"));
-  console.log("PASS hand-held deadlift retains hinge cue");
+  const checkDeadlift=text=>{for(const clause of ["Ayaklarını yere sağlam bas","barı zeminden kontrollü kaldır","kalça ve dizlerini açarak doğrul","barı kontrollü zemine geri indir","Çizim şematiktir","kişisel kurulum önerisi değildir"])assert.ok(text.includes(clause),`deadlift cue requires ${clause}`)};
+  ev("exSheet('deadlift')");checkDeadlift(q("#sheet .cues").textContent);
+  ev("closeSheet();S.templates=[{id:911,name:'Zemin çekiş testi',ex:['deadlift'],tg:{deadlift:{sets:1,reps:5}}}];gdStart('t:911')");await flush();
+  const deadliftGuide=q("#guide .gdc").textContent;checkDeadlift(deadliftGuide);
+  for(const clause of ["Ayaklarını yere sağlam bas","barı zeminden kontrollü kaldır","kalça ve dizlerini açarak doğrul","barı kontrollü zemine geri indir","Çizim şematiktir","kişisel kurulum önerisi değildir"])assert.throws(()=>checkDeadlift(deadliftGuide.replace(clause,"")),assert.AssertionError);
+  ev("gdEnd();gdClose()");console.log("PASS deadlift detail and guide floor pull sequence with six negative cue mutations");
   assert.equal(ev("exCues(gEx('squat'))[0]"),ev("EXCUE.squat[0]"));
   assert.equal(ev("exCues({id:'custom_stance',tp:'squat'})[0]"),ev("EXCUE.squat[0]"));
   console.log("PASS ordinary and custom squat retain template cues");
