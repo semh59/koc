@@ -26,6 +26,7 @@ async function main() {
     minify: true,
     format: "iife",
     globalName: "THREE",
+    target: ["chrome80", "es2018"],
     footer: {
       js: 'if(typeof window!=="undefined")window.THREE=THREE;if(typeof globalThis!=="undefined")globalThis.THREE=THREE;'
     },
