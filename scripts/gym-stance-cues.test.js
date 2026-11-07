@@ -85,6 +85,12 @@ boot().then(async w=>{
   const rdlGuide=q("#guide .gdc").textContent;checkRdl(rdlGuide);
   for(const clause of ["Ayakta üst konumda","dizlerini hafif bükük tut","kalçanı geriye it","kontrollü indir","kalçanı açarak üst konuma dön","ilk yerden alış kurulumunu göstermez","zemine temas şart değildir","açık izdüşüm","kişisel kurulum önerisi değildir"])assert.throws(()=>checkRdl(rdlGuide.replace(clause,"")),assert.AssertionError);
   ev("gdEnd();gdClose()");console.log("PASS rdl detail and guide top-down cycle and nine cue-removal mutants");
+  const checkKbdl1=text=>{for(const clause of ["Tek bacak üzerinde dur","aynı taraftaki elinde kettlebell tut","destek dizini hafif bükük tut","serbest bacağını denge için geriye uzat","kontrollü üst konuma dön","Çizim şematiktir","kişisel denge önerisi değildir"])assert.ok(text.includes(clause),`kbdl1 cue requires ${clause}`)};
+  ev("exSheet('kbdl1')");checkKbdl1(q("#sheet .cues").textContent);
+  ev("closeSheet();S.templates=[{id:914,name:'Tek bacak testi',ex:['kbdl1'],tg:{kbdl1:{sets:1,reps:5}}}];gdStart('t:914')");await flush();
+  const kbdl1Guide=q("#guide .gdc").textContent;checkKbdl1(kbdl1Guide);
+  for(const clause of ["Tek bacak üzerinde dur","aynı taraftaki elinde kettlebell tut","destek dizini hafif bükük tut","serbest bacağını denge için geriye uzat","kontrollü üst konuma dön","Çizim şematiktir","kişisel denge önerisi değildir"])assert.throws(()=>checkKbdl1(kbdl1Guide.replace(clause,"")),assert.AssertionError);
+  ev("gdEnd();gdClose()");console.log("PASS kbdl1 detail and guide single-leg stance and seven cue-removal mutants");
   const checkDeficit=text=>{for(const clause of ["yükseltilmiş platform","zeminden kontrollü kaldır","kalça ve dizlerini açarak doğrul","kontrollü zemine indir","platform yüksekliği kişisel ayar önerisi değildir","açık bir izdüşüm"])assert.ok(text.includes(clause),`deficit first cue requires ${clause}`)};
   ev("exSheet('defdl')");checkDeficit(q("#sheet .cues").textContent);
   ev("closeSheet();S.templates=[{id:909,name:'Platform testi',ex:['defdl'],tg:{defdl:{sets:1,reps:5}}}];gdStart('t:909')");await flush();

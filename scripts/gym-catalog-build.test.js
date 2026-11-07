@@ -18,9 +18,10 @@ assert.equal(runtime.find(e=>e.id==="rackpull").tp,"rackpull");
 assert.equal(runtime.find(e=>e.id==="defdl").tp,"defdl");
 assert.equal(runtime.find(e=>e.id==="deadlift").tp,"deadlift");
 assert.equal(runtime.find(e=>e.id==="rdl").tp,"rdl");
-const training=runtime.map(({im,...e})=>["seatedgm","rackpull","defdl","deadlift","rdl"].includes(e.id)?{...e,tp:"hinge"}:e);
+assert.equal(runtime.find(e=>e.id==="kbdl1").tp,"kbdl1");
+const training=runtime.map(({im,...e})=>["seatedgm","rackpull","defdl","deadlift","rdl","kbdl1"].includes(e.id)?{...e,tp:"hinge"}:e);
 assert.equal(require("crypto").createHash("sha256").update(JSON.stringify(training)).digest("hex"),"e89af76060e7a21b90b60ebf353495d91da95ad9e5a86768747f7df235080830");
-console.log("PASS runtime training fields and legacy IDs preserved; approved photo count and seatedgm/rackpull/defdl/deadlift/rdl template changes excluded");
+console.log("PASS runtime training fields and legacy IDs preserved; approved photo count and seatedgm/rackpull/defdl/deadlift/rdl/kbdl1 template changes excluded");
 for(const [name,mutate,pattern] of [
   ["unknown wrapper field",b=>b[0].records[0].accepted=true,/unknown record field/],
   ["inherited template",b=>{const x=b[0].records[0];x.runtime.tp="constructor";x.metadata.figure_template="constructor";x.metadata.cue_ids=["constructor"]},/figure or cue/],

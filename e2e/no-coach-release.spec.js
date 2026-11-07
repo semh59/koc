@@ -284,6 +284,94 @@ test.describe("No-Coach release",()=>{
     }
   });
 
+  for(const motion of ["no-preference","reduce"])for(const mode of ["detail","guide"])
+  test(`single-leg kettlebell deadlift hinges on support leg with raised free leg (${motion} ${mode})`,async({app,page})=>{
+    await app.open({seed:state()});await app.tab("gym");
+    expect(await page.evaluate(()=>({template:gEx("kbdl1").tp,scene:exDef(gEx("kbdl1")).scene,rest:gRestDef("kbdl1")}))).toEqual({template:"kbdl1",scene:"kbdl1",rest:150});
+    await page.emulateMedia({reducedMotion:motion});
+    if(mode==="detail")await page.evaluate(()=>exSheet("kbdl1"));
+    else await page.evaluate(()=>{closeSheet();S.templates=[{id:914,name:"Kettlebell tek bacak testi",ex:["kbdl1"],tg:{kbdl1:{sets:1,reps:5}}}];gdStart("t:914")});
+    const svg=page.locator(mode==="detail"?"#sheet .exfig svg":"#guide .gdfig svg"),label=`${motion} ${mode}`;
+    await expect(svg).toBeVisible();await expect(svg).toHaveAttribute("data-fig-view","side");
+    await expect(svg).toHaveAttribute("data-fig-motion",motion==="reduce"?"static":"animated");
+    await expect(svg.locator("rect.fg-prop")).toHaveCount(0);
+    await expect(svg.locator("circle.fg-plate")).toHaveCount(1);
+    await expect(svg.locator("path.fg-prop")).toHaveCount(1);
+    if(motion==="reduce")await expect(svg.locator("animate")).toHaveCount(0);
+    else expect(await svg.locator("animate").count()).toBeGreaterThan(0);
+    const samples=await svg.evaluate(el=>{
+      el.pauseAnimations();
+      const floor=el.querySelector("path.fg-floor"),handle=el.querySelector("path.fg-prop"),plate=el.querySelector("circle.fg-plate"),body=el.querySelector("path.fg-body"),near=el.querySelectorAll("path.fg-near"),far=el.querySelectorAll("path.fg-far"),out=[];
+      const pt=(p,d)=>{const q=p.getPointAtLength(d);return [q.x,q.y]},end=p=>pt(p,p.getTotalLength()),width=p=>parseFloat(getComputedStyle(p).strokeWidth);
+      const angle=(a,b,c)=>{const u=a.map((v,i)=>v-b[i]),v=c.map((n,i)=>n-b[i]);return Math.acos(Math.max(-1,Math.min(1,(u[0]*v[0]+u[1]*v[1])/Math.hypot(...u)/Math.hypot(...v))))*180/Math.PI};
+      for(let i=0;i<=128;i++){
+        el.setCurrentTime(i*2.6/128);
+        const hip=pt(body,0),neck=end(body),wrist=end(near[2]);
+        const sLeg=near[0],sFoot=near[1],fLeg=far[1],fFoot=far[2];
+        const sHip=pt(sLeg,0),sKnee=pt(sLeg,24),sAnkle=end(sLeg);
+        const fAnkle=end(fLeg);
+        const flex=180-angle(sHip,sKnee,sAnkle);
+        const ground=pt(floor,0)[1]-width(floor)/2;
+        const cx=plate.cx.animVal.value,cy=plate.cy.animVal.value,r=plate.r.animVal.value;
+        const footPts=[pt(sFoot,0),pt(sFoot,sFoot.getTotalLength()/2),end(sFoot)];
+        const paths=[...el.querySelectorAll("path")].filter(p=>p!==floor).map(p=>{const box=p.getBBox();return {part:p.getAttribute("class"),box:[box.x,box.y,box.width,box.height],half:width(p)/2,bottom:box.y+box.height+width(p)/2}});
+        out.push({floor:[pt(floor,0),end(floor)],ground,hip,neck,wrist,plate:[cx,cy,r],supportAnkle:sAnkle,supportFootPts:footPts,supportFlex:flex,freeAnkle:fAnkle,paths,finite:[...wrist,cx,cy,r,...sAnkle,...fAnkle].every(Number.isFinite)});
+      }
+      const parts=[floor,handle,plate,...el.querySelectorAll("path:not(.fg-floor)")];
+      return {out,visible:parts.every(p=>{const s=getComputedStyle(p);return s.stroke!=="none"&&s.visibility==="visible"&&+s.opacity>0&&+s.strokeOpacity>0&&Number.isFinite(width(p))&&width(p)>0}),legWidths:[near[0],near[1],far[1],far[2]].map(width),handleWidth:width(handle),plateWidth:width(plate),caps:[...el.querySelectorAll("path")].map(p=>getComputedStyle(p).strokeLinecap)};
+    });
+    const s=samples.out,gap=f=>f.ground-f.plate[1]-f.plate[2]-samples.plateWidth/2;
+    expect(s,label).toHaveLength(129);expect(samples.visible,label).toBe(true);
+    expect(samples.handleWidth,label).toBe(1.6);expect(samples.legWidths,label).toEqual([3.4,3.4,3.4,3.4]);expect(samples.plateWidth,label).toBe(1.6);
+    expect(samples.caps.every(c=>c==="round"),label).toBe(true);
+    for(const [i,f] of s.entries()){
+      const frame=`${label} frame ${i}`;
+      expect(f.finite,frame).toBe(true);
+      expect(f.floor,frame).toEqual([[8,138],[152,138]]);expect(f.ground,frame).toBeCloseTo(137.3,2);
+      for(const p of f.paths)expect(p.bottom,`${frame} ${p.part}`).toBeLessThanOrEqual(f.ground+.02);
+      expect(f.plate[2],frame).toBe(5.5);
+      expect(f.plate[0]-f.wrist[0],frame).toBeCloseTo(0,2);
+      expect(f.plate[1]-(f.wrist[1]+4),frame).toBeCloseTo(0,2);
+      expect(gap(f),frame).toBeGreaterThan(0);
+      expect(f.supportAnkle[1],frame).toBeCloseTo(135.6,2);
+      expect(f.supportAnkle[1]+samples.legWidths[0]/2,frame).toBeCloseTo(137.3,2);
+      for(const p of f.supportFootPts){
+        expect(p[1],frame).toBeCloseTo(135.6,2);
+        expect(p[1]+samples.legWidths[1]/2,frame).toBeCloseTo(137.3,2);
+      }
+      for(let point=0;point<3;point++)expect(f.supportFootPts[point],frame).toEqual(s[0].supportFootPts[point]);
+      expect(f.supportAnkle,frame).toEqual(s[0].supportAnkle);
+      expect(f.supportFlex,frame).toBeGreaterThan(1);expect(f.supportFlex,frame).toBeLessThan(35);
+      expect(f.freeAnkle[1]+samples.legWidths[2]/2,frame).toBeLessThan(f.ground-2);
+      if(motion==="reduce")expect(f,frame).toEqual(s[0]);
+      else if(i){
+        const lower=i<=64,prev=s[i-1];
+        expect((f.plate[1]-prev.plate[1])*(lower?1:-1),frame).toBeGreaterThanOrEqual(-.02);
+      }
+    }
+    for(const key of ["hip","neck","wrist","plate"])for(let axis=0;axis<s[0][key].length;axis++)expect(s[128][key][axis],`${label} top return ${key}`).toBeCloseTo(s[0][key][axis],2);
+    expect(s[128].supportFlex,`${label} top return supportFlex`).toBeCloseTo(s[0].supportFlex,2);
+    expect(s[128].freeAnkle[0],`${label} top return freeAnkle x`).toBeCloseTo(s[0].freeAnkle[0],2);
+    expect(s[128].freeAnkle[1],`${label} top return freeAnkle y`).toBeCloseTo(s[0].freeAnkle[1],2);
+    for(let p=0;p<s[0].paths.length;p++)for(let axis=0;axis<4;axis++)expect(s[128].paths[p].box[axis],`${label} path return ${p}`).toBeCloseTo(s[0].paths[p].box[axis],2);
+    if(motion!=="reduce"){
+      expect(s[64].hip[0]-s[64].freeAnkle[0],label).toBeGreaterThan(15);
+      expect(s[64].plate[1]-s[0].plate[1],label).toBeGreaterThan(15);
+    }
+    if(mode==="guide")await page.evaluate(()=>{gdEnd();gdClose()});
+  });
+
+  test("single-leg kettlebell deadlift first cue in detail and guide checking clauses",async({app,page})=>{
+    await app.open({seed:state()});await app.tab("gym");
+    for(const mode of ["detail","guide"]){
+      if(mode==="detail")await page.evaluate(()=>exSheet("kbdl1"));
+      else await page.evaluate(()=>{closeSheet();S.templates=[{id:914,name:"Kettlebell tek bacak testi",ex:["kbdl1"],tg:{kbdl1:{sets:1,reps:5}}}];gdStart("t:914")});
+      const cue=page.locator(mode==="detail"?"#sheet .cues li":"#guide .gdc").first();
+      for(const clause of ["Tek bacak üzerinde dur","aynı taraftaki elinde kettlebell tut","destek dizini hafif bükük tut","serbest bacağını denge için geriye uzat","kontrollü üst konuma dön","Çizim şematiktir","kişisel denge önerisi değildir"])await expect(cue).toContainText(clause);
+      if(mode==="guide")await page.evaluate(()=>{gdEnd();gdClose()});
+    }
+  });
+
   test("deficit deadlift keeps painted feet planted and grounded load clear in detail and guide",async({app,page})=>{
     await app.open({seed:state()});await app.tab("gym");
     for(const motion of ["no-preference","reduce"]){

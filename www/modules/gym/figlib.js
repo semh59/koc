@@ -182,7 +182,7 @@ const FigLib=(()=>{
     const J=joints(pose,def.view||"s",def.fix);
     const L=J.limbs,out=scene(def,J);
     const line=(c,w,pts)=>out.push({k:"line",c,w,pts});
-    const legWidth=(def.scene==="floorpull"||def.scene==="rdl")?3.4:null;
+    const legWidth=(def.scene==="floorpull"||def.scene==="rdl"||def.scene==="kbdl1")?3.4:null;
     line("far",4.2,L.fA);line("far",legWidth||4.6,L.fL.slice(0,3));line("far",3.4,L.fL.slice(2));
     if(def.view==="f"){line("body",5.6,[J.hip,J.neck]);line("body",5.6,[[J.hip[0]-B.hpw,J.hip[1]],[J.hip[0]+B.hpw,J.hip[1]]]);line("body",5.6,[[J.neck[0]-B.shw,J.neck[1]+2],[J.neck[0]+B.shw,J.neck[1]+2]]);}
     else line("body",6,[J.hip,J.neck]);

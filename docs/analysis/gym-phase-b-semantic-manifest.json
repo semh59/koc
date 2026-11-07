@@ -4,7 +4,7 @@
   "runtimeCount": 332,
   "semanticUniqueCount": 0,
   "reviewCount": 332,
-  "legacyObservedDuplicateGroups": 76,
+  "legacyObservedDuplicateGroups": 75,
   "candidateSignatureCount": 0,
   "canonicalDuplicateGroups": 0,
   "records": [
@@ -272,7 +272,7 @@
       "source": "scripts/exlib-src.txt",
       "status": "review",
       "reason": "incomplete-canonical-metadata",
-      "signature": "{\"equipment\":\"kb\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"arka bacak\"}"
+      "signature": "{\"equipment\":\"kb\",\"kind\":\"w\",\"pattern\":\"kbdl1\",\"region\":\"arka bacak\"}"
     },
     {
       "id": "kbswing",

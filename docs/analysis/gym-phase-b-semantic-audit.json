@@ -61,7 +61,7 @@
   "nameNearCandidateGroups": [],
   "candidateSignatureCount": 0,
   "canonicalDuplicateGroups": [],
-  "legacyObservedDuplicateGroups": 76,
+  "legacyObservedDuplicateGroups": 75,
   "legacyObservedGroups": [
     {
       "signature": "{\"equipment\":\"bar@sh\",\"kind\":\"w\",\"pattern\":\"squat\",\"region\":\"ön bacak\"}",
@@ -143,13 +143,6 @@
       "ids": [
         "ghr",
         "revhyper"
-      ]
-    },
-    {
-      "signature": "{\"equipment\":\"kb\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"arka bacak\"}",
-      "ids": [
-        "kbdl1",
-        "kbswing"
       ]
     },
     {
