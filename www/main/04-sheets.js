@@ -6,6 +6,7 @@ function trap(){const o=topLayer();for(const e of document.body.children)if(e.ta
 let sheetFrom=null,sheetEnd=null;
 const sheetDone=ok=>{const e=sheetEnd;sheetEnd=null;if(e)e(ok)};
 function openSheet(html){
+  if(typeof g3DStop==="function")g3DStop();
   if(typeof foodVoiceStop==="function")foodVoiceStop();
   Units.reset();sheetDone(false);$("#toast").classList.remove("on");const s=$("#sheet");
   if(!s.classList.contains("on"))sheetFrom=document.activeElement;
@@ -17,6 +18,7 @@ function openSheet(html){
 }
 function closeSheet(){
   Units.reset();plStop();sheetDone(false);setPendingBarcode("");
+  if(typeof g3DStop==="function")g3DStop();
   if(typeof foodVoiceStop==="function")foodVoiceStop();
   const s=$("#sheet"),was=s.classList.contains("on"),f=sheetFrom;
   s.classList.remove("on");$("#scrim").classList.remove("on");sheetFrom=null;trap();

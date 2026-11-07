@@ -716,6 +716,7 @@ function gClick(v,el){
       closeSheet();return document.querySelector(`[data-g="done:${ei}:${si}"]`).click();
     }
     case "pick":return gSheetPick();
+    case "open3d":return exSheet3D(p1);
     case "closesheet":return closeSheet();
     case "histmore":gHistMax+=20;return render();
     case "recmore":gRecMax=1e3;return render();

@@ -693,4 +693,34 @@ test.describe("No-Coach release",()=>{
     await expect(app.toast).toContainText("Tüm veriler silindi");
     expect((await app.state()).entries).toEqual([]);
   });
+
+  test("3D figure pilot page loads Three.js and renders interactive mannequin canvas",async({page})=>{
+    await page.goto("/figure-3d.html");
+    await expect(page.locator("h1")).toContainText("NeoWell Tam 3D Mannequin Pilotu");
+    const canvas=page.locator("#view3d canvas");
+    await expect(canvas).toBeVisible();
+    await page.click("#btn-side");
+    await page.click("#btn-front");
+    await page.click('[data-tpl="squat"]');
+    await expect(page.locator('[data-tpl="squat"]')).toHaveClass(/active/);
+    await page.click('[data-tpl="deadlift"]');
+    await expect(page.locator('[data-tpl="deadlift"]')).toHaveClass(/active/);
+  });
+
+  test("exercise detail sheet opens 3D Mannequin viewer with WebGL canvas",async({app,page})=>{
+    await app.open({seed:state()});await app.tab("gym");
+    await page.evaluate(()=>exSheet("pushup"));
+    const btn3d=page.locator('[data-g="open3d:pushup"]');
+    await expect(btn3d).toBeVisible();
+    await btn3d.click();
+    await expect(page.locator("#sheet h3")).toContainText("3D");
+    const canvas=page.locator("#ex3d-box canvas");
+    await expect(canvas).toBeVisible();
+    await page.click('.ex3dctrls button:has-text("Yan")');
+    await page.click('.ex3dctrls button:has-text("Ön")');
+    await page.click('[data-g="closesheet"]');
+    await expect(page.locator("#sheet")).not.toHaveClass(/on/);
+    const disposed=await page.evaluate(()=>gActive3DViewer===null);
+    expect(disposed).toBe(true);
+  });
 });

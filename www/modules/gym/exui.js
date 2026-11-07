@@ -87,12 +87,36 @@ function exCharts(id){
   exChM="e";exChI=null;exChId=id;
   return `<div id="xch">${exChartBody(id)}</div><p class="hint">Tüm geçmiş. 1TM setten hesaplanan bir tahmindir (Epley). Grafiğe dokununca o seansın değeri görünür.</p>`;
 }
+let gActive3DViewer=null;
+function g3DStop(){if(gActive3DViewer){gActive3DViewer.dispose();gActive3DViewer=null}}
+function exSheet3D(id){
+  g3DStop();
+  const e=gEx(id),d=e.tp?exDef(e):null;
+  if(!d)return toast("Bu egzersiz için 3D model bulunamadı");
+  openSheet(`<h3>${esc(e.n)} <span class="tag">3D</span></h3>
+  <div class="mut sm mb-2">360° döndürebilir, yakınlaştırabilirsin.</div>
+  <div id="ex3d-box" class="ex3dbox"></div>
+  <div class="mt-2 ex3dctrls">
+    <button class="btn sm ghost" onclick="if(gActive3DViewer)Fig3D.setViewAngle(gActive3DViewer,'persp')">3/4 Açılı</button>
+    <button class="btn sm ghost" onclick="if(gActive3DViewer)Fig3D.setViewAngle(gActive3DViewer,'side')">Yan</button>
+    <button class="btn sm ghost" onclick="if(gActive3DViewer)Fig3D.setViewAngle(gActive3DViewer,'front')">Ön</button>
+    <button class="btn sm ghost" onclick="if(gActive3DViewer)Fig3D.setViewAngle(gActive3DViewer,'top')">Üst</button>
+  </div>
+  <div class="mt-3 btns"><button class="btn ghost" data-g="closesheet">Kapat</button></div>`);
+  setTimeout(()=>{
+    const box=document.getElementById("ex3d-box");
+    if(!box||!window.THREE)return;
+    gActive3DViewer=Fig3D.createViewer(box,{width:box.clientWidth,height:box.clientHeight});
+    Fig3D.play(gActive3DViewer,d);
+  },60);
+}
 function exSheet(id){
   const e=gEx(id),d=e.tp?exDef(e):null;
   const cues=exCues(e).map(c=>`<li>${esc(c)}</li>`).join("");
   const w=gActive(),inW=w&&w.ex.some(x=>x.id===id);
   openSheet(`<h3>${esc(e.n)}</h3><div class="mut sm">${e.r||e.g}${e.q?" · "+e.q:""}${e.l?" · "+exLv(e.l):""}${e.c?" · "+EXCAT[e.c]:""}</div>
   ${d?`<div class="exvis"><div class="exfig">${FigLib.svg(d,{anim:true,label:e.n,variant:"volume",ghost:false})}</div></div>`:""}
+  ${d?`<div class="ex3dbar"><button class="btn sm ghost" data-g="open3d:${id}">🎮 3D Mannequin (Serbest Açı)</button></div>`:""}
   ${cues?`<ul class="cues">${cues}</ul>`:""}
   <div class="mut sm">Kayıt türü: ${EXKIND[e.k||"w"]}</div>${exHistLine(e)}${exCharts(id)}
   <div class="mt-3 btns"><button class="btn" data-g="exadd:${id}">${inW?"Antrenmanda ekli":"Antrenmana ekle"}</button><button class="btn ghost" data-g="closesheet">Kapat</button></div>`);

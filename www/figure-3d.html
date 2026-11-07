@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>NeoWell Tam 3D Egzersiz Mannequin Pilotu</title>
+  <link rel="stylesheet" href="app.css">
+  <style>
+    body { background: #0b111e; color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 16px; }
+    .wrap { max-width: 800px; margin: 0 auto; }
+    h1 { font-size: 1.4rem; margin: 0 0 8px; color: #60a5fa; }
+    p { color: #94a3b8; font-size: 0.9rem; margin-bottom: 16px; }
+    .viewport-box { position: relative; width: 100%; height: 380px; background: #0f172a; border-radius: 12px; overflow: hidden; border: 1px solid #1e293b; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+    #view3d { width: 100%; height: 100%; }
+    .overlay-controls { position: absolute; bottom: 12px; left: 12px; right: 12px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; pointer-events: none; }
+    .ctrl-group { display: flex; gap: 6px; pointer-events: auto; }
+    .cbtn { background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.12); color: #f8fafc; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+    .cbtn:hover { background: #2563eb; border-color: #60a5fa; }
+    .cbtn.active { background: #2563eb; color: #fff; font-weight: 600; }
+    .ex-selector { margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+    .ex-btn { background: #1e293b; border: 1px solid #334155; color: #cbd5e1; padding: 10px; border-radius: 8px; font-size: 0.85rem; cursor: pointer; text-align: center; }
+    .ex-btn:hover { border-color: #3b82f6; color: #fff; }
+    .ex-btn.active { background: #1d4ed8; border-color: #60a5fa; color: #fff; font-weight: bold; }
+    .info-card { margin-top: 16px; background: #131d31; border: 1px solid #1e293b; border-radius: 8px; padding: 12px 16px; }
+    .info-card b { color: #38bdf8; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>NeoWell Tam 3D Mannequin Pilotu</h1>
+    <p>Üç boyutlu eklem kinematikleri, serbest kamera açısı, dinamik ışıklandırma ve zemin düzlemi.</p>
+
+    <div class="viewport-box">
+      <div id="view3d"></div>
+      <div class="overlay-controls">
+        <div class="ctrl-group">
+          <button class="cbtn" id="btn-persp">3/4 Açılı</button>
+          <button class="cbtn" id="btn-side">Yan</button>
+          <button class="cbtn" id="btn-front">Ön</button>
+          <button class="cbtn" id="btn-top">Üst</button>
+        </div>
+        <div class="ctrl-group">
+          <button class="cbtn" id="btn-pause">Durdur / Oynat</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ex-selector" id="ex-list">
+      <button class="ex-btn active" data-tpl="pushup">Şınav (Push-up)</button>
+      <button class="ex-btn" data-tpl="squat">Squat</button>
+      <button class="ex-btn" data-tpl="deadlift">Deadlift</button>
+      <button class="ex-btn" data-tpl="bench">Bench Press</button>
+      <button class="ex-btn" data-tpl="lunge">Lunge</button>
+      <button class="ex-btn" data-tpl="overhead">Overhead Press</button>
+    </div>
+
+    <div class="info-card">
+      <div id="ex-desc"><b>Şınav (Push-up):</b> Ayaklar 3D zemin düzlemine tam oturur. Göğüs alçalırken kollar 3D eksende bükülür. Kamerayı parmağınla veya fareyle çevirebilirsin.</div>
+    </div>
+  </div>
+
+  <script src="vendor/three/three.bundle.js"></script>
+  <script src="modules/gym/figlib.js"></script>
+  <script src="modules/gym/figtpl.js"></script>
+  <script src="modules/gym/fig3d.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const box = document.getElementById("view3d");
+      const viewer = Fig3D.createViewer(box, { width: box.clientWidth, height: box.clientHeight });
+      window.addEventListener("resize", () => {
+        viewer.resize(box.clientWidth, box.clientHeight);
+      });
+
+      let currentTpl = "pushup";
+      let isPaused = false;
+
+      function loadExercise(tplKey) {
+        currentTpl = tplKey;
+        const def = FigTpl[tplKey] || FigTpl.pushup;
+        Fig3D.play(viewer, def);
+      }
+
+      loadExercise("pushup");
+
+      document.getElementById("btn-persp").onclick = () => Fig3D.setViewAngle(viewer, "persp");
+      document.getElementById("btn-side").onclick = () => Fig3D.setViewAngle(viewer, "side");
+      document.getElementById("btn-front").onclick = () => Fig3D.setViewAngle(viewer, "front");
+      document.getElementById("btn-top").onclick = () => Fig3D.setViewAngle(viewer, "top");
+
+      document.getElementById("btn-pause").onclick = () => {
+        if (isPaused) {
+          loadExercise(currentTpl);
+          isPaused = false;
+        } else {
+          if (viewer._playTimer) clearInterval(viewer._playTimer);
+          isPaused = true;
+        }
+      };
+
+      const btns = document.querySelectorAll("#ex-list .ex-btn");
+      btns.forEach(btn => {
+        btn.onclick = () => {
+          btns.forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          const tpl = btn.getAttribute("data-tpl");
+          loadExercise(tpl);
+        };
+      });
+    });
+  </script>
+</body>
+</html>
