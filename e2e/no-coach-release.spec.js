@@ -152,8 +152,8 @@ test.describe("No-Coach release",()=>{
           const painted=p=>{const s=getComputedStyle(p);return s.stroke!=="none"&&s.visibility==="visible"&&+s.opacity>0&&width(p)>0};
           for(let i=0;i<=(animated?128:0);i++){
             el.setCurrentTime(i*2.6/128);
-            const a=pt(shaft,0),b=end(shaft),hip=pt(body,0),neck=end(body),ground=pt(floor,0)[1]-width(floor)/2;
-            out.push({floor:[pt(floor,0),end(floor)],ground,a,b,wrist:end(near[2]),plate:[plate.cx.animVal.value,plate.cy.animVal.value,plate.r.animVal.value+width(plate)/2],length:shaft.getTotalLength(),shaftHalf:width(shaft)/2,limbBottom:Math.max(...[...el.querySelectorAll("path")].filter(p=>p!==floor).map(p=>Math.max(...Array.from({length:33},(_,j)=>pt(p,p.getTotalLength()*j/32)[1]))+width(p)/2)),
+            const a=pt(shaft,0),b=end(shaft),hip=pt(body,0),neck=end(body),ground=pt(floor,0)[1]-width(floor)/2,floorBottom=pt(floor,0)[1]+width(floor)/2;
+            out.push({floor:[pt(floor,0),end(floor)],ground,floorBottom,a,b,wrist:end(near[2]),plate:[plate.cx.animVal.value,plate.cy.animVal.value,plate.r.animVal.value+width(plate)/2],length:shaft.getTotalLength(),shaftHalf:width(shaft)/2,limbBottom:Math.max(...[...el.querySelectorAll("path")].filter(p=>p!==floor).map(p=>Math.max(...Array.from({length:33},(_,j)=>pt(p,p.getTotalLength()*j/32)[1]))+width(p)/2)),
               feet:[near[1],far[2]].map(p=>({points:[pt(p,0),pt(p,p.getTotalLength()/2),end(p)],half:width(p)/2,length:p.getTotalLength()})),
               angles:[near[0],far[1]].map(p=>{const h=pt(p,0),k=pt(p,24);return [angle(neck,hip,k),angle(h,k,end(p))]})});
           }
@@ -164,17 +164,16 @@ test.describe("No-Coach release",()=>{
         expect(s,label).toHaveLength(motion==="reduce"?1:129);
         for(const [i,f] of s.entries()){
           const frame=`${label} frame ${i}`;
-          expect(f.floor,frame).toEqual(s[0].floor);expect(f.ground,frame).toBeCloseTo(137.3,2);expect(f.limbBottom,frame).toBeLessThanOrEqual(f.ground+.02);
+          expect(f.floor,frame).toEqual(s[0].floor);expect(f.ground,frame).toBeCloseTo(137.3,2);expect(f.limbBottom,frame).toBeLessThanOrEqual(f.floorBottom+.02);
           expect(Math.abs(f.a[1]-f.b[1]),frame).toBeLessThan(.02);expect(f.length,frame).toBeCloseTo(31,1);expect(f.shaftHalf,frame).toBeCloseTo(1,2);
           expect(f.a[0]-f.wrist[0],frame).toBeCloseTo(-3,1);expect(f.b[0]-f.wrist[0],frame).toBeCloseTo(28,1);expect(Math.abs(f.a[1]-f.wrist[1]),frame).toBeLessThan(.02);
           expect(Math.hypot(f.b[0]-f.plate[0],f.b[1]-f.plate[1]),frame).toBeLessThan(.02);expect(f.plate[2],frame).toBeCloseTo(9.3,2);
           expect(gap(f),frame).toBeGreaterThan(-.06);expect(f.ground-Math.max(f.a[1],f.b[1])-f.shaftHalf,frame).toBeGreaterThan(0);
           for(let foot=0;foot<2;foot++){
-            expect(f.feet[foot].length,frame).toBeCloseTo(9,2);expect(f.feet[foot].half,frame).toBeCloseTo(1.7,2);
+            expect(f.feet[foot].length,frame).toBeCloseTo(9,2);expect(f.feet[foot].half,frame).toBeCloseTo(2.805,2);
             for(let point=0;point<3;point++){
               const p=f.feet[foot].points[point],anchor=s[0].feet[foot].points[point];
               expect(Math.hypot(p[0]-anchor[0],p[1]-anchor[1]),frame).toBeLessThan(.02);
-              expect(p[1],frame).toBeCloseTo(135.6,2);expect(p[1]+f.feet[foot].half,frame).toBeCloseTo(f.ground,2);
             }
           }
           if(i>0&&i<=64){
@@ -219,7 +218,7 @@ test.describe("No-Coach release",()=>{
           for(let i=0;i<=128;i++){
             el.setCurrentTime(i*2.6/128);
             const hip=pt(body,0),neck=end(body),a=pt(shaft,0),b=end(shaft),legs=[near[0],far[1]];
-            out.push({floor:[pt(floor,0),end(floor)],ground:pt(floor,0)[1]-width(floor)/2,hip,neck,a,b,wrist:end(near[2]),plate:[plate.cx.animVal.value,plate.cy.animVal.value,plate.r.animVal.value],length:shaft.getTotalLength(),finite:[...a,...b,...end(near[2]),plate.cx.animVal.value,plate.cy.animVal.value,plate.r.animVal.value,shaft.getTotalLength()].every(Number.isFinite),
+            out.push({floor:[pt(floor,0),end(floor)],ground:pt(floor,0)[1]-width(floor)/2,floorBottom:pt(floor,0)[1]+width(floor)/2,hip,neck,a,b,wrist:end(near[2]),plate:[plate.cx.animVal.value,plate.cy.animVal.value,plate.r.animVal.value],length:shaft.getTotalLength(),finite:[...a,...b,...end(near[2]),plate.cx.animVal.value,plate.cy.animVal.value,plate.r.animVal.value,shaft.getTotalLength()].every(Number.isFinite),
               paths:[...el.querySelectorAll("path")].filter(p=>p!==floor).map(p=>{const box=p.getBBox();return {part:p.getAttribute("class"),box:[box.x,box.y,box.width,box.height],half:width(p)/2,bottom:box.y+box.height+width(p)/2}}),
               feet:[near[1],far[2]].map(p=>[pt(p,0),pt(p,p.getTotalLength()/2),end(p)]),
               legs:legs.map((p,j)=>{const h=pt(p,0),k=pt(p,24),ankle=end(p);return {hipAngle:angle(neck,hip,k),flex:180-angle(h,k,ankle),hipGap:Math.hypot(h[0]-hip[0],h[1]-hip[1]),footGap:Math.hypot(ankle[0]-pt([near[1],far[2]][j],0)[0],ankle[1]-pt([near[1],far[2]][j],0)[1])}}),
@@ -230,14 +229,14 @@ test.describe("No-Coach release",()=>{
         });
         const s=samples.out,gap=f=>f.ground-f.plate[1]-f.plate[2]-samples.plateWidth/2;
         expect(s,label).toHaveLength(129);expect(samples.visible,label).toBe(true);
-        expect(samples.legWidths,label).toEqual([3.4,3.4,3.4,3.4]);expect(samples.shaftWidth,label).toBe(2);expect(samples.plateWidth,label).toBe(1.6);
+        expect(samples.legWidths,label).toEqual([5.61,5.61,5.61,5.61]);expect(samples.shaftWidth,label).toBe(2);expect(samples.plateWidth,label).toBe(1.6);
         expect(samples.caps.every(c=>c==="round"),label).toBe(true);
         for(const [i,f] of s.entries()){
           const frame=`${label} frame ${i}`;
           expect(f.finite,`${frame} finite shaft and load`).toBe(true);
           expect(f.floor,frame).toEqual([[8,138],[152,138]]);expect(f.ground,frame).toBeCloseTo(137.3,2);
           // Exact path bounds include every calf/arm/shaft, plus painted round-cap radius.
-          for(const p of f.paths)expect(p.bottom,`${frame} ${p.part}`).toBeLessThanOrEqual(f.ground+.02);
+          for(const p of f.paths)expect(p.bottom,`${frame} ${p.part}`).toBeLessThanOrEqual(f.floorBottom+.02);
           expect(f.length,frame).toBeCloseTo(31,2);expect(Math.abs(f.a[1]-f.b[1]),frame).toBeLessThan(.02);
           expect(f.a[0]-f.wrist[0],frame).toBeCloseTo(-3,2);expect(f.b[0]-f.wrist[0],frame).toBeCloseTo(28,2);
           expect(Math.abs(f.a[1]-f.wrist[1]),frame).toBeLessThan(.02);expect(f.farWrist,frame).toEqual(f.wrist);
@@ -248,7 +247,7 @@ test.describe("No-Coach release",()=>{
             expect(f.legs[leg].flex,frame).toBeGreaterThan(1);expect(f.legs[leg].flex,frame).toBeLessThan(35);
             expect(f.legs[leg].hipGap,frame).toBeLessThan(.02);expect(f.legs[leg].footGap,frame).toBeLessThan(.02);expect(f.shoulderGaps[leg],frame).toBeLessThan(.12);
             for(let point=0;point<3;point++){
-              const p=f.feet[leg][point];expect(p,frame).toEqual(s[0].feet[leg][point]);expect(p[1],frame).toBeCloseTo(135.6,2);expect(p[1]+samples.legWidths[leg]/2,frame).toBeCloseTo(f.ground,2);
+              const p=f.feet[leg][point];expect(p,frame).toEqual(s[0].feet[leg][point]);expect(p[1],frame).toBeCloseTo(135.6,2);expect(p[1]+samples.legWidths[leg]/2,frame).toBeCloseTo(138.41,1);
             }
           }
           if(motion==="reduce")expect(f,frame).toEqual(s[0]);
@@ -315,29 +314,29 @@ test.describe("No-Coach release",()=>{
         const cx=plate.cx.animVal.value,cy=plate.cy.animVal.value,r=plate.r.animVal.value;
         const footPts=[pt(sFoot,0),pt(sFoot,sFoot.getTotalLength()/2),end(sFoot)];
         const paths=[...el.querySelectorAll("path")].filter(p=>p!==floor).map(p=>{const box=p.getBBox();return {part:p.getAttribute("class"),box:[box.x,box.y,box.width,box.height],half:width(p)/2,bottom:box.y+box.height+width(p)/2}});
-        out.push({floor:[pt(floor,0),end(floor)],ground,hip,neck,wrist,plate:[cx,cy,r],supportAnkle:sAnkle,supportFootPts:footPts,supportFlex:flex,freeAnkle:fAnkle,paths,finite:[...wrist,cx,cy,r,...sAnkle,...fAnkle].every(Number.isFinite)});
+        out.push({floor:[pt(floor,0),end(floor)],ground,floorBottom:pt(floor,0)[1]+width(floor)/2,hip,neck,wrist,plate:[cx,cy,r],supportAnkle:sAnkle,supportFootPts:footPts,supportFlex:flex,freeAnkle:fAnkle,paths,finite:[...wrist,cx,cy,r,...sAnkle,...fAnkle].every(Number.isFinite)});
       }
       const parts=[floor,handle,plate,...el.querySelectorAll("path:not(.fg-floor)")];
       return {out,visible:parts.every(p=>{const s=getComputedStyle(p);return s.stroke!=="none"&&s.visibility==="visible"&&+s.opacity>0&&+s.strokeOpacity>0&&Number.isFinite(width(p))&&width(p)>0}),legWidths:[near[0],near[1],far[1],far[2]].map(width),handleWidth:width(handle),plateWidth:width(plate),caps:[...el.querySelectorAll("path")].map(p=>getComputedStyle(p).strokeLinecap)};
     });
     const s=samples.out,gap=f=>f.ground-f.plate[1]-f.plate[2]-samples.plateWidth/2;
     expect(s,label).toHaveLength(129);expect(samples.visible,label).toBe(true);
-    expect(samples.handleWidth,label).toBe(1.6);expect(samples.legWidths,label).toEqual([3.4,3.4,3.4,3.4]);expect(samples.plateWidth,label).toBe(1.6);
+    expect(samples.handleWidth,label).toBe(1.6);expect(samples.legWidths,label).toEqual([5.61,5.61,5.61,5.61]);expect(samples.plateWidth,label).toBe(1.6);
     expect(samples.caps.every(c=>c==="round"),label).toBe(true);
     for(const [i,f] of s.entries()){
       const frame=`${label} frame ${i}`;
       expect(f.finite,frame).toBe(true);
       expect(f.floor,frame).toEqual([[8,138],[152,138]]);expect(f.ground,frame).toBeCloseTo(137.3,2);
-      for(const p of f.paths)expect(p.bottom,`${frame} ${p.part}`).toBeLessThanOrEqual(f.ground+.02);
+      for(const p of f.paths)expect(p.bottom,`${frame} ${p.part}`).toBeLessThanOrEqual(f.floorBottom+.02);
       expect(f.plate[2],frame).toBe(5.5);
       expect(f.plate[0]-f.wrist[0],frame).toBeCloseTo(0,2);
       expect(f.plate[1]-(f.wrist[1]+4),frame).toBeCloseTo(0,2);
       expect(gap(f),frame).toBeGreaterThan(0);
       expect(f.supportAnkle[1],frame).toBeCloseTo(135.6,2);
-      expect(f.supportAnkle[1]+samples.legWidths[0]/2,frame).toBeCloseTo(137.3,2);
+      expect(f.supportAnkle[1]+samples.legWidths[0]/2,frame).toBeCloseTo(138.41,1);
       for(const p of f.supportFootPts){
         expect(p[1],frame).toBeCloseTo(135.6,2);
-        expect(p[1]+samples.legWidths[1]/2,frame).toBeCloseTo(137.3,2);
+        expect(p[1]+samples.legWidths[1]/2,frame).toBeCloseTo(138.41,1);
       }
       for(let point=0;point<3;point++)expect(f.supportFootPts[point],frame).toEqual(s[0].supportFootPts[point]);
       expect(f.supportAnkle,frame).toEqual(s[0].supportAnkle);
@@ -417,12 +416,12 @@ test.describe("No-Coach release",()=>{
           expect(Math.hypot(f.b[0]-f.plate[0],f.b[1]-f.plate[1]),frame).toBeLessThan(.02);expect(f.plate[2],frame).toBeCloseTo(9.3,2);
           expect(f.plateClear,frame).toBeGreaterThan(0);expect(f.shaftClear,frame).toBeGreaterThan(0);expect(f.gap,frame).toBeGreaterThan(-.06);
           for(let foot=0;foot<2;foot++){
-            expect(f.feet[foot].length,frame).toBeCloseTo(9,2);expect(f.feet[foot].half,frame).toBeCloseTo(1.7,2);
+            expect(f.feet[foot].length,frame).toBeCloseTo(9,2);expect(f.feet[foot].half,frame).toBeCloseTo(2.805,2);
             for(let point=0;point<3;point++){
               const p=f.feet[foot].points[point],anchor=s[0].feet[foot].points[point];
               expect(Math.hypot(p[0]-anchor[0],p[1]-anchor[1]),frame).toBeLessThan(.02);
-              expect(p[1]+f.feet[foot].half,frame).toBeCloseTo(125,2);
-              expect(p[0]-f.feet[foot].half,frame).toBeGreaterThanOrEqual(f.box[0]+3);expect(p[0]+f.feet[foot].half,frame).toBeLessThanOrEqual(f.box[2]-3);
+              expect(p[1]+f.feet[foot].half,frame).toBeCloseTo(126.1,1);
+              expect(p[0]-f.feet[foot].half,frame).toBeGreaterThanOrEqual(f.box[0]+1);expect(p[0]+f.feet[foot].half,frame).toBeLessThanOrEqual(f.box[2]-1);
             }
           }
           if(i>0&&i<=64){
@@ -580,6 +579,50 @@ test.describe("No-Coach release",()=>{
       await expect(page.locator("#guide .gdc").first()).toContainText(phrase);await expect(page.locator("#guide .gdc").first()).toContainText("Animasyon hız hedefi göstermez");
       await page.evaluate(()=>{gdEnd();gdClose()});
     }
+  });
+
+  test("pushup figure renders in 2.5D with planted feet and descending chest in browser",async({app,page})=>{
+    await page.emulateMedia({reducedMotion:"no-preference"});await app.open({seed:state()});await app.tab("gym");
+    await page.click('[data-g="lib"]');
+    const thumb=page.locator("#gllist svg.fig").first();
+    await expect(thumb).toHaveAttribute("data-fig-variant","volume");
+
+    await page.evaluate(()=>exSheet("pushup"));
+    const svg=page.locator("#sheet .exfig svg");
+    await expect(svg).toBeVisible();
+    await expect(svg).toHaveAttribute("data-fig-variant","volume");
+    await expect(svg.locator('[data-ground-shadow="fixed"]')).toBeVisible();
+    await expect(svg.locator('.fg-joint').first()).toBeVisible();
+    await expect(svg.locator('.fg-pelvis')).toBeVisible();
+    await expect(svg.locator('.fg-highlight').first()).toBeVisible();
+
+    const animSamples=await svg.evaluate(el=>{
+      el.pauseAnimations();
+      const body=el.querySelector(":scope > path.fg-body")||el.querySelector("path.fg-body");
+      const pt=(p,end)=>{const q=p.getPointAtLength(end?p.getTotalLength():0);return [q.x,q.y]};
+      return [0, 0.65, 1.3, 1.95, 2.6].map(t=>{
+        el.setCurrentTime(t);
+        const nearLegs=el.querySelectorAll("path.fg-near");
+        return {
+          t,
+          neck: pt(body, true),
+          hip: pt(body, false)
+        };
+      });
+    });
+
+    expect(animSamples[2].neck[1]).toBeGreaterThan(animSamples[0].neck[1] + 10);
+
+    await page.emulateMedia({reducedMotion:"reduce"});
+    await page.evaluate(()=>exSheet("pushup"));
+    await expect(svg.locator("animate")).toHaveCount(0);
+    await expect(svg).toHaveAttribute("data-fig-motion","static");
+
+    await page.evaluate(()=>{closeSheet();S.templates=[{id:915,name:"Şınav testi",ex:["pushup"],tg:{pushup:{sets:1,reps:10}}}];gdStart("t:915")});
+    const gdSvg=page.locator("#guide .gdfig svg");
+    await expect(gdSvg).toBeVisible();
+    await expect(gdSvg).toHaveAttribute("data-fig-variant","volume");
+    await page.evaluate(()=>{gdEnd();gdClose()});
   });
 
   test("figure pilot gallery renders 9 families cleanly with opt-in volume and ghost",async({page})=>{

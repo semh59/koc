@@ -72,6 +72,7 @@ const FigLib=(()=>{
       dy=FLOOR-low;
     }else if(fy[0]==="hip"){dy=FLOOR-(fy[1]||0)-J.pose.hh-J.hip[1]}
     else if(fy[0]==="wrist"){dy=FLOOR-(fy[1]||0)-J.limbs.nA[2][1]}
+    else if(pick(J,fy[0])){dy=FLOOR-(fy[1]||0)-pick(J,fy[0])[1]}
     const ref=pick(J,fx[0]);
     shift(J,X0+(fx[1]||0)+J.pose.dx-ref[0],dy);
     const p=J.pose,fr=J.view==="f";

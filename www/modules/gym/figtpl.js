@@ -14,7 +14,7 @@ const FigTpl={
   calf:{frames:[{t:0,l3:90},{t:0,l1:-4,l2:-4,l3:150}]},
   legspread:{view:"f",frames:[{t:0,l1:3,l2:3,m1:3,m2:3},{t:0,l1:40,l2:40,m1:40,m2:40}]},
   /* ---- push ---- */
-  pushup:{frames:[{t:74,l1:-74,l2:-74,l3:20,a1:0,a2:0,hand:[21,0]},{t:84,l1:-84,l2:-84,l3:20,hand:[21,0]}],fix:{x:["toe",-58],y:["floor"]}},
+  pushup:{frames:[{t:74,l1:-74,l2:-74,l3:20,a1:0,a2:0,hand:[21,0]},{t:84,l1:-84,l2:-84,l3:20,hand:[21,0]}],fix:{x:["toe",-58],y:["toe",0]}},
   bench:{frames:[{hh:0,t:-90,hd:-88,a1:180,a2:180,l1:120,l2:10,foot:[34,0]},{hh:0,t:-90,hd:-88,a1:100,a2:150,l1:120,l2:10,foot:[34,0]}],fix:{x:["hip",0],y:["hip",26]},scene:"bench",prop:{k:"bar",at:"wrist"}},
   incline:{frames:[{hh:0,t:-52,hd:-52,a1:172,a2:176,l1:110,l2:6,foot:[26,0]},{hh:0,t:-52,hd:-52,a1:96,a2:146,l1:110,l2:6,foot:[26,0]}],fix:{x:["hip",0],y:["hip",24]},scene:"incbench",prop:{k:"db",at:"wrist"}},
   fly:{view:"f",frames:[{t:0,a1:84,a2:90,l1:2,l2:2},{t:0,a1:22,a2:26,l1:2,l2:2}],prop:{k:"db",at:"wrist"}},
