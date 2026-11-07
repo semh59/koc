@@ -202,7 +202,7 @@
       "source": "scripts/exlib-src.txt",
       "status": "review",
       "reason": "incomplete-canonical-metadata",
-      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"arka bacak\"}"
+      "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"rdl\",\"region\":\"arka bacak\"}"
     },
     {
       "id": "stiffdl",

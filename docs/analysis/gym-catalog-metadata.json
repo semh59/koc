@@ -809,9 +809,9 @@
       "signature": null,
       "family": null,
       "cue_ids": [
-        "hinge"
+        "rdl"
       ],
-      "figure_template": "hinge",
+      "figure_template": "rdl",
       "source_ref": "free-exercise-db-data",
       "license_ref": "free-exercise-db-data",
       "source_name": "Romanian Deadlift",

@@ -130,7 +130,7 @@ const FigLib=(()=>{
       if(fr){const a=pr.at==="shoulder"?[sh[0]-B.shw*1.6,sh[1]+2]:wl,b=pr.at==="shoulder"?[sh[0]+B.shw*1.6,sh[1]+2]:wr;
         out.push({k:"line",c:"prop",w:2.4,pts:[[a[0]-8,a[1]],[b[0]+8,b[1]]]},{k:"circle",c:"plate",p:[a[0]-8,a[1]],r:6},{k:"circle",c:"plate",p:[b[0]+8,b[1]],r:6});}
       else{
-        if(def.scene==="rack"||def.scene==="deficit"||def.scene==="floorpull"){
+        if(def.scene==="rack"||def.scene==="deficit"||def.scene==="floorpull"||def.scene==="rdl"){
           // Open schematic projection keeps the supporting shaft separate from the outer plate.
           out.push({k:"line",c:"barshaft",w:2,pts:[[at[0]-3,at[1]],[at[0]+28,at[1]]]},{k:"circle",c:"plate",p:[at[0]+28,at[1]],r:8.5});
         }else out.push({k:"circle",c:"plate",p:at,r:8.5});
@@ -182,7 +182,7 @@ const FigLib=(()=>{
     const J=joints(pose,def.view||"s",def.fix);
     const L=J.limbs,out=scene(def,J);
     const line=(c,w,pts)=>out.push({k:"line",c,w,pts});
-    const legWidth=def.scene==="floorpull"?3.4:null;
+    const legWidth=(def.scene==="floorpull"||def.scene==="rdl")?3.4:null;
     line("far",4.2,L.fA);line("far",legWidth||4.6,L.fL.slice(0,3));line("far",3.4,L.fL.slice(2));
     if(def.view==="f"){line("body",5.6,[J.hip,J.neck]);line("body",5.6,[[J.hip[0]-B.hpw,J.hip[1]],[J.hip[0]+B.hpw,J.hip[1]]]);line("body",5.6,[[J.neck[0]-B.shw,J.neck[1]+2],[J.neck[0]+B.shw,J.neck[1]+2]]);}
     else line("body",6,[J.hip,J.neck]);

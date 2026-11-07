@@ -122,7 +122,6 @@
     {
       "signature": "{\"equipment\":\"bar\",\"kind\":\"w\",\"pattern\":\"hinge\",\"region\":\"arka bacak\"}",
       "ids": [
-        "rdl",
         "stiffdl",
         "sumodl",
         "cleandl",

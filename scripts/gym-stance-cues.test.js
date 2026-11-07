@@ -79,7 +79,12 @@ boot().then(async w=>{
     assert.throws(()=>checkRackCue(rackGuide.replace(clause,"")),assert.AssertionError);
   }
   assert.equal(ev("exCues({id:'custom_hinge',tp:'hinge'})[0]"),ev("EXCUE.hinge[0]"));
-  assert.equal(ev("exCues(gEx('rdl'))[0]"),ev("EXCUE.hinge[0]"));
+  const checkRdl=text=>{for(const clause of ["Ayakta üst konumda","dizlerini hafif bükük tut","kalçanı geriye it","kontrollü indir","kalçanı açarak üst konuma dön","ilk yerden alış kurulumunu göstermez","zemine temas şart değildir","açık izdüşüm","kişisel kurulum önerisi değildir"])assert.ok(text.includes(clause),`rdl cue requires ${clause}`)};
+  ev("exSheet('rdl')");checkRdl(q("#sheet .cues").textContent);
+  ev("closeSheet();S.templates=[{id:912,name:'RDL testi',ex:['rdl'],tg:{rdl:{sets:1,reps:5}}}];gdStart('t:912')");await flush();
+  const rdlGuide=q("#guide .gdc").textContent;checkRdl(rdlGuide);
+  for(const clause of ["Ayakta üst konumda","dizlerini hafif bükük tut","kalçanı geriye it","kontrollü indir","kalçanı açarak üst konuma dön","ilk yerden alış kurulumunu göstermez","zemine temas şart değildir","açık izdüşüm","kişisel kurulum önerisi değildir"])assert.throws(()=>checkRdl(rdlGuide.replace(clause,"")),assert.AssertionError);
+  ev("gdEnd();gdClose()");console.log("PASS rdl detail and guide top-down cycle and nine cue-removal mutants");
   const checkDeficit=text=>{for(const clause of ["yükseltilmiş platform","zeminden kontrollü kaldır","kalça ve dizlerini açarak doğrul","kontrollü zemine indir","platform yüksekliği kişisel ayar önerisi değildir","açık bir izdüşüm"])assert.ok(text.includes(clause),`deficit first cue requires ${clause}`)};
   ev("exSheet('defdl')");checkDeficit(q("#sheet .cues").textContent);
   ev("closeSheet();S.templates=[{id:909,name:'Platform testi',ex:['defdl'],tg:{defdl:{sets:1,reps:5}}}];gdStart('t:909')");await flush();
