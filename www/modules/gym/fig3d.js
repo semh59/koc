@@ -283,8 +283,10 @@ const Fig3D = (() => {
     const width = options.width || container.clientWidth || 340;
     const height = options.height || container.clientHeight || 260;
 
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark" ||
+      (!document.documentElement.getAttribute("data-theme") && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0f172a); // darker canvas for contrast
+    scene.background = new THREE.Color(isDark ? 0x0f172a : 0xf2f4f3);
 
     const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
     // 3/4 athletic perspective: angled slightly from front-right
