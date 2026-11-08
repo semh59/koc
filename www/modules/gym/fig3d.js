@@ -513,7 +513,6 @@ const Fig3D = (() => {
         renderer.setSize(w, h);
       },
       dispose() {
-        isRunning = false;
         if (this._playTimer) { clearInterval(this._playTimer); this._playTimer = null; }
         if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
         if (this._resizeObserver) { this._resizeObserver.disconnect(); this._resizeObserver = null; }
