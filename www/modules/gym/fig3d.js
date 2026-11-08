@@ -27,7 +27,7 @@ const Fig3D = (() => {
   async function createMannequin(THREE) {
     const loader = new THREE.GLTFLoader();
     const gltf = await new Promise((resolve, reject) => {
-      loader.load("models/rigged_figure.glb", resolve, undefined, reject);
+      loader.load("models/knight.glb", resolve, undefined, reject);
     });
     const model = gltf.scene;
     // Scale and center
@@ -39,39 +39,38 @@ const Fig3D = (() => {
       if (node.isBone) bones[node.name] = node;
     });
     
-    // Create a mannequin-like object for compatibility
     const mannequin = {
       group: model,
-      headGroup: bones.neck_joint_2 || model,
-      neckMesh: bones.neck_joint_1 || model,
-      chestMesh: bones.torso_joint_2 || model,
-      pelvisMesh: bones.torso_joint_1 || model,
+      headGroup: bones.head || model,
+      neckMesh: bones.spine || model,
+      chestMesh: bones.chest || model,
+      pelvisMesh: bones.hips || model,
       joints: {
-        neck: bones.neck_joint_1,
-        shR: bones.arm_joint_R_1,
-        shL: bones.arm_joint_L_1,
-        elR: bones.arm_joint_R_2,
-        elL: bones.arm_joint_L_2,
-        wrR: bones.arm_joint_R_3,
-        wrL: bones.arm_joint_L_3,
-        hipR: bones.leg_joint_R_1,
-        hipL: bones.leg_joint_L_1,
-        knR: bones.leg_joint_R_2,
-        knL: bones.leg_joint_L_2,
-        akR: bones.leg_joint_R_3,
-        akL: bones.leg_joint_L_3
+        neck: bones.spine,
+        shR: bones.upperarm_r,
+        shL: bones.upperarm_l,
+        elR: bones.lowerarm_r,
+        elL: bones.lowerarm_l,
+        wrR: bones.hand_r,
+        wrL: bones.hand_l,
+        hipR: bones.upperleg_r,
+        hipL: bones.upperleg_l,
+        knR: bones.lowerleg_r,
+        knL: bones.lowerleg_l,
+        akR: bones.foot_r,
+        akL: bones.foot_l
       },
       limbs: {
-        armUpperR: bones.arm_joint_R_1,
-        armUpperL: bones.arm_joint_L_1,
-        armLowerR: bones.arm_joint_R_2,
-        armLowerL: bones.arm_joint_L_2,
-        thighR: bones.leg_joint_R_1,
-        thighL: bones.leg_joint_L_1,
-        shinR: bones.leg_joint_R_2,
-        shinL: bones.leg_joint_L_2,
-        footR: bones.leg_joint_R_5 || bones.leg_joint_R_3,
-        footL: bones.leg_joint_L_5 || bones.leg_joint_L_3
+        armUpperR: bones.upperarm_r,
+        armUpperL: bones.upperarm_l,
+        armLowerR: bones.lowerarm_r,
+        armLowerL: bones.lowerarm_l,
+        thighR: bones.upperleg_r,
+        thighL: bones.upperleg_l,
+        shinR: bones.lowerleg_r,
+        shinL: bones.lowerleg_l,
+        footR: bones.foot_r,
+        footL: bones.foot_l
       },
       equipment: { barbell: new THREE.Group(), bench: new THREE.Group() },
       _bones: bones,
@@ -145,37 +144,34 @@ const Fig3D = (() => {
         bone.position.copy(local);
       };
       // Torso
-      if (J.neck && bones.torso_joint_3) setBoneWorldPos(bones.torso_joint_3, to3(J.neck, 0));
-      if (J.hip && bones.torso_joint_1) setBoneWorldPos(bones.torso_joint_1, to3(J.hip, 0));
+      if (J.neck && bones.spine) setBoneWorldPos(bones.spine, to3(J.neck, 0));
+      if (J.hip && bones.hips) setBoneWorldPos(bones.hips, to3(J.hip, 0));
       // Arms
       const nA = J.limbs?.nA, fA = J.limbs?.fA;
       if (nA) {
-        if (bones.arm_joint_R_1) setBoneWorldPos(bones.arm_joint_R_1, to3(nA[0], 8));
-        if (bones.arm_joint_R_2) setBoneWorldPos(bones.arm_joint_R_2, to3(nA[1], 8));
-        if (bones.arm_joint_R_3) setBoneWorldPos(bones.arm_joint_R_3, to3(nA[2], 8));
+        if (bones.upperarm_r) setBoneWorldPos(bones.upperarm_r, to3(nA[0], 8));
+        if (bones.lowerarm_r) setBoneWorldPos(bones.lowerarm_r, to3(nA[1], 8));
+        if (bones.hand_r) setBoneWorldPos(bones.hand_r, to3(nA[2], 8));
       }
       if (fA) {
-        if (bones.arm_joint_L_1) setBoneWorldPos(bones.arm_joint_L_1, to3(fA[0], -8));
-        if (bones.arm_joint_L_2) setBoneWorldPos(bones.arm_joint_L_2, to3(fA[1], -8));
-        if (bones.arm_joint_L_3) setBoneWorldPos(bones.arm_joint_L_3, to3(fA[2], -8));
+        if (bones.upperarm_l) setBoneWorldPos(bones.upperarm_l, to3(fA[0], -8));
+        if (bones.lowerarm_l) setBoneWorldPos(bones.lowerarm_l, to3(fA[1], -8));
+        if (bones.hand_l) setBoneWorldPos(bones.hand_l, to3(fA[2], -8));
       }
       // Legs
       const nL = J.limbs?.nL, fL = J.limbs?.fL;
       if (nL) {
-        if (bones.leg_joint_R_1) setBoneWorldPos(bones.leg_joint_R_1, to3(nL[0], 5));
-        if (bones.leg_joint_R_2) setBoneWorldPos(bones.leg_joint_R_2, to3(nL[1], 5));
-        if (bones.leg_joint_R_3) setBoneWorldPos(bones.leg_joint_R_3, to3(nL[2], 5));
-        if (bones.leg_joint_R_5) setBoneWorldPos(bones.leg_joint_R_5, to3(nL[3], 5));
+        if (bones.upperleg_r) setBoneWorldPos(bones.upperleg_r, to3(nL[0], 5));
+        if (bones.lowerleg_r) setBoneWorldPos(bones.lowerleg_r, to3(nL[1], 5));
+        if (bones.foot_r) setBoneWorldPos(bones.foot_r, to3(nL[2], 5));
       }
       if (fL) {
-        if (bones.leg_joint_L_1) setBoneWorldPos(bones.leg_joint_L_1, to3(fL[0], -5));
-        if (bones.leg_joint_L_2) setBoneWorldPos(bones.leg_joint_L_2, to3(fL[1], -5));
-        if (bones.leg_joint_L_3) setBoneWorldPos(bones.leg_joint_L_3, to3(fL[2], -5));
-        if (bones.leg_joint_L_5) setBoneWorldPos(bones.leg_joint_L_5, to3(fL[3], -5));
+        if (bones.upperleg_l) setBoneWorldPos(bones.upperleg_l, to3(fL[0], -5));
+        if (bones.lowerleg_l) setBoneWorldPos(bones.lowerleg_l, to3(fL[1], -5));
+        if (bones.foot_l) setBoneWorldPos(bones.foot_l, to3(fL[2], -5));
       }
       // Neck
-      if (J.head && bones.neck_joint_2) setBoneWorldPos(bones.neck_joint_2, to3(J.head, 0));
-      if (J.neck && bones.neck_joint_1) setBoneWorldPos(bones.neck_joint_1, to3(J.neck, 0));
+      if (J.head && bones.head) setBoneWorldPos(bones.head, to3(J.head, 0));
       // Update skeleton
       if (mannequin.group.skeleton) mannequin.group.skeleton.update();
       mannequin.group.updateMatrixWorld(true);
