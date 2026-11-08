@@ -119,19 +119,19 @@ const Fig3D = (() => {
     // Equipment group
     const equipGroup = new THREE.Group();
     const barMat = new THREE.MeshStandardMaterial({ color: 0xd1d5db, roughness: 0.15, metalness: 0.85 });
-    const plateMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.45, metalness: 0.3 });
+    const plateMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.3, metalness: 0.6 });
     const benchMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.6, metalness: 0.1 });
     const benchFrameMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.2, metalness: 0.8 });
 
     // Barbell
     const barMesh = new THREE.Mesh(new THREE.CylinderGeometry(1.2 * S_SCALE, 1.2 * S_SCALE, 44 * S_SCALE, 12), barMat);
     barMesh.rotateX(Math.PI / 2);
-    const plateR = new THREE.Mesh(new THREE.CylinderGeometry(4.5 * S_SCALE, 4.5 * S_SCALE, 2.2 * S_SCALE, 16), plateMat);
+    const plateR = new THREE.Mesh(new THREE.CylinderGeometry(6.5 * S_SCALE, 6.5 * S_SCALE, 2.2 * S_SCALE, 16), plateMat);
     plateR.rotateX(Math.PI / 2);
-    plateR.position.z = 18 * S_SCALE;
-    const plateL = new THREE.Mesh(new THREE.CylinderGeometry(4.5 * S_SCALE, 4.5 * S_SCALE, 2.2 * S_SCALE, 16), plateMat);
+    plateR.position.z = 20 * S_SCALE;
+    const plateL = new THREE.Mesh(new THREE.CylinderGeometry(6.5 * S_SCALE, 6.5 * S_SCALE, 2.2 * S_SCALE, 16), plateMat);
     plateL.rotateX(Math.PI / 2);
-    plateL.position.z = -18 * S_SCALE;
+    plateL.position.z = -20 * S_SCALE;
     const barbell = new THREE.Group();
     barbell.add(barMesh, plateR, plateL);
     barbell.visible = false;
@@ -300,7 +300,7 @@ const Fig3D = (() => {
       barbell.visible = true;
       const barMid = wrR.clone().lerp(wrL, 0.5);
       barbell.position.copy(barMid);
-      barbell.lookAt(wrR.x, wrR.y, wrR.z + 1);
+      barbell.lookAt(wrL.x, wrL.y, wrL.z);
     } else {
       barbell.visible = false;
     }
