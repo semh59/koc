@@ -17,9 +17,10 @@ const Fig3D = (() => {
 
   // Helper to create a stylized capsule/cylinder connecting two 3D points
   function createLimbMesh(THREE, radiusTop, radiusBottom, mat) {
-    const geom = new THREE.CylinderGeometry(radiusTop, radiusBottom, 1, 12);
-    geom.translate(0, 0.5, 0); // pivot at base
-    geom.rotateX(Math.PI / 2); // align along +Z
+    const r = (radiusTop + radiusBottom) / 2;
+    const geom = new THREE.CapsuleGeometry(r, 1, 8, 12);
+    geom.translate(0, 0.5, 0);
+    geom.rotateX(Math.PI / 2);
     return new THREE.Mesh(geom, mat);
   }
 
@@ -85,10 +86,8 @@ const Fig3D = (() => {
     group.add(neckMesh);
 
     // Torso (chest & abdomen & pelvis)
-    const chestMesh = new THREE.Mesh(new THREE.CylinderGeometry(3.8 * S_SCALE, 3.2 * S_SCALE, 20 * S_SCALE, 16), torsoMat);
-    chestMesh.scale.set(1.0, 1.0, 1.0); // wider across shoulders
-    const pelvisMesh = new THREE.Mesh(new THREE.CylinderGeometry(3.2 * S_SCALE, 2.8 * S_SCALE, 10 * S_SCALE, 16), torsoMat);
-    pelvisMesh.scale.set(1.0, 1.0, 1.0);
+    const chestMesh = new THREE.Mesh(new THREE.CapsuleGeometry(3.8 * S_SCALE, 14 * S_SCALE, 8, 16), torsoMat);
+    const pelvisMesh = new THREE.Mesh(new THREE.CapsuleGeometry(3.2 * S_SCALE, 8 * S_SCALE, 8, 16), torsoMat);
     group.add(chestMesh);
     group.add(pelvisMesh);
 
