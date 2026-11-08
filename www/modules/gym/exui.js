@@ -103,6 +103,7 @@ function exSheet3D(id){
     <button class="btn sm ghost" data-angle="side" aria-pressed="false" onclick="g3DAngle('side')">Yan</button>
     <button class="btn sm ghost" data-angle="front" aria-pressed="false" onclick="g3DAngle('front')">Ön</button>
     <button class="btn sm ghost" data-angle="top" aria-pressed="false" onclick="g3DAngle('top')">Üst</button>
+    <button class="btn sm ghost" data-angle="back" aria-pressed="false" onclick="g3DAngle('back')">Arka</button>
     <button class="btn sm ghost" onclick="g3DReset()">↺ Sıfırla</button>
   </div>
   <div class="mt-2 ex3dctrls">

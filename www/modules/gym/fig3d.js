@@ -321,6 +321,31 @@ const Fig3D = (() => {
     controls.minPolarAngle = 0.05;
     controls.maxPolarAngle = Math.PI / 2 - 0.01; // don't go below ground
 
+    // Keyboard controls for accessibility
+    const keyHandler = (ev) => {
+      const step = 0.15;
+      const t = controls.target;
+      switch (ev.key) {
+        case "ArrowLeft": camera.position.x -= step; ev.preventDefault(); break;
+        case "ArrowRight": camera.position.x += step; ev.preventDefault(); break;
+        case "ArrowUp": camera.position.y += step; ev.preventDefault(); break;
+        case "ArrowDown": camera.position.y -= step; ev.preventDefault(); break;
+        case "+": case "=": camera.position.multiplyScalar(0.9); ev.preventDefault(); break;
+        case "-": case "_": camera.position.multiplyScalar(1.1); ev.preventDefault(); break;
+        case "r": case "R":
+          camera.position.set(2.8, 2.2, 4.2);
+          controls.target.set(0, 1.1, 0);
+          camera.lookAt(controls.target);
+          controls.update();
+          ev.preventDefault();
+          break;
+        default: return;
+      }
+      camera.lookAt(t);
+      controls.update();
+    };
+    renderer.domElement.addEventListener("keydown", keyHandler);
+
     // Lighting (3-point + hemisphere, softer ambient for depth)
     const ambLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambLight);
@@ -331,8 +356,8 @@ const Fig3D = (() => {
     const sunLight = new THREE.DirectionalLight(0xffffff, 1.35);
     sunLight.position.set(5, 8, 6);
     sunLight.castShadow = true;
-    sunLight.shadow.mapSize.width = 1024;
-    sunLight.shadow.mapSize.height = 1024;
+    sunLight.shadow.mapSize.width = 512;
+    sunLight.shadow.mapSize.height = 512;
     sunLight.shadow.bias = -0.0005;
     scene.add(sunLight);
 
@@ -435,6 +460,7 @@ const Fig3D = (() => {
         if (this._playTimer) { clearInterval(this._playTimer); this._playTimer = null; }
         if (animId) cancelAnimationFrame(animId);
         if (this._resizeObserver) { this._resizeObserver.disconnect(); this._resizeObserver = null; }
+        renderer.domElement.removeEventListener("keydown", keyHandler);
         controls.dispose();
         renderer.dispose();
         if (renderer.domElement && renderer.domElement.parentNode) {
@@ -487,6 +513,8 @@ const Fig3D = (() => {
       c.position.set(4.5, 1.4, 0);
     } else if (view === "top") {
       c.position.set(0.01, 5.0, 0.01);
+    } else if (view === "back") {
+      c.position.set(0, 1.4, -4.5);
     } else {
       // 3/4 athletic
       c.position.set(2.8, 2.2, 4.2);
