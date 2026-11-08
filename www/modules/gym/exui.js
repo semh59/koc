@@ -98,7 +98,7 @@ function exSheet3D(id){
   const onboarded=localStorage.getItem("nw3d-onboarded")==="1";
   openSheet(`<h3>${esc(e.n)} <span class="tag">3D</span></h3>
   <div class="mut sm mb-2">360° döndür: sürükle · yakınlaştır: iki parmak · açı: butonlar</div>
-  ${!onboarded?`<div id="g3d-onboard" class="mut sm mb-2" style="padding:8px;background:var(--soft);border-radius:var(--r-s);">İlk kullanım: modeli döndürmek için sürükleyin, iki parmakla yakınlaştırın, açı butonlarıyla hazır görünüm seçin. <button class="btn sm ghost" onclick="localStorage.setItem('nw3d-onboarded','1');document.getElementById('g3d-onboard').remove()">Anladım</button></div>`:""}
+  ${!onboarded?`<div id="g3d-onboard" class="mut sm g3donboard">İlk kullanım: modeli döndürmek için sürükleyin, iki parmakla yakınlaştırın, açı butonlarıyla hazır görünüm seçin. <button class="btn sm ghost" onclick="localStorage.setItem('nw3d-onboarded','1');document.getElementById('g3d-onboard').remove()">Anladım</button></div>`:""}
   <div id="ex3d-box" class="ex3dbox"></div>
   <div class="mt-2 ex3dctrls" role="toolbar" aria-label="3D görünüm kontrolleri">
     <button class="btn sm ghost" data-angle="persp" aria-pressed="true" onclick="g3DAngle('persp')">3/4</button>

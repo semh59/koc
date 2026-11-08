@@ -204,6 +204,7 @@ td.today,th.today{font-weight:700}
 .ex3dbox canvas{touch-action:none;display:block;width:100%;height:100%}
 .ex3dctrls{display:flex;gap:var(--sp-2);justify-content:center;flex-wrap:wrap}
 .ex3dbar{margin-top:var(--sp-1);display:flex;justify-content:center}
+.g3donboard{padding:var(--sp-2);background:var(--soft);border-radius:var(--r-s);margin-bottom:var(--sp-2)}
 
 .cues{margin:var(--sp-2) 0 var(--sp-3);padding-left:20px;font-size:var(--fs-2)}.cues li{margin:3px 0}
 .tgo{font-size:var(--fs-h3);color:var(--prim)}.rest.tim{background:color-mix(in srgb,var(--prim) 14%,var(--card));border-color:color-mix(in srgb,var(--prim) 40%,var(--line))}
