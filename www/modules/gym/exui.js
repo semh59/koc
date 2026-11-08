@@ -114,6 +114,7 @@ function exSheet3D(id){
     gActive3DViewer=Fig3D.createViewer(box,{width:box.clientWidth,height:box.clientHeight});
     Fig3D.play(gActive3DViewer,d);
     Fig3D.highlightRegions(gActive3DViewer.mannequin,e.r||"");
+    if(gActive3DViewer.renderer&&gActive3DViewer.scene)gActive3DViewer.renderer.render(gActive3DViewer.scene,gActive3DViewer.camera);
     if(reducedMotion&&gActive3DViewer)gActive3DViewer.pause();
   },60);
 }

@@ -544,7 +544,7 @@ const Fig3D = (() => {
     viewer._playTimer = setInterval(() => {
       if (!frames.length) return;
       applyPose(viewer.mannequin, frames[idx], def);
-      render();
+      if (viewer.renderer && viewer.scene) viewer.renderer.render(viewer.scene, viewer.camera);
       if (forward) {
         idx++;
         if (idx >= frames.length) {
@@ -559,7 +559,7 @@ const Fig3D = (() => {
     }, interval);
 
     // Apply first frame immediately
-    if (frames.length) { applyPose(viewer.mannequin, frames[0], def); render(); }
+    if (frames.length) { applyPose(viewer.mannequin, frames[0], def); if (viewer.renderer && viewer.scene) viewer.renderer.render(viewer.scene, viewer.camera); }
   }
 
   function setViewAngle(viewer, view) {
