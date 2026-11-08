@@ -380,8 +380,9 @@ const Fig3D = (() => {
           break;
         default: return;
       }
-      camera.lookAt(t);
+      camera.lookAt(controls.target);
       controls.update();
+      render();
     };
     renderer.domElement.addEventListener("keydown", keyHandler);
 
@@ -441,10 +442,33 @@ const Fig3D = (() => {
     });
     scene.add(mannequin.group);
 
-    let animId = null;
-    let isRunning = true;
+    let rafId = null;
+    let animating = false;
 
-    // Auto-resize on container size changes (orientation, modal layout)
+    function render() {
+      renderer.render(scene, camera);
+    }
+
+    function startLoop() {
+      if (rafId) return;
+      function loop() {
+        controls.update();
+        render();
+        rafId = requestAnimationFrame(loop);
+      }
+      rafId = requestAnimationFrame(loop);
+    }
+
+    function stopLoop() {
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    }
+
+    controls.addEventListener("start", startLoop);
+    controls.addEventListener("end", () => setTimeout(stopLoop, 600));
+
+    // Initial render
+    render();
+
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const w = Math.max(1, Math.round(entry.contentRect.width));
@@ -453,18 +477,11 @@ const Fig3D = (() => {
           camera.aspect = w / h;
           camera.updateProjectionMatrix();
           renderer.setSize(w, h);
+          render();
         }
       }
     });
     resizeObserver.observe(container);
-
-    function renderLoop() {
-      if (!isRunning) return;
-      controls.update();
-      renderer.render(scene, camera);
-      animId = requestAnimationFrame(renderLoop);
-    }
-    renderLoop();
 
     return {
       scene,
@@ -488,6 +505,7 @@ const Fig3D = (() => {
         controls.target.set(0, 1.1, 0);
         camera.lookAt(controls.target);
         controls.update();
+        render();
       },
       resize(w, h) {
         camera.aspect = w / h;
@@ -497,7 +515,7 @@ const Fig3D = (() => {
       dispose() {
         isRunning = false;
         if (this._playTimer) { clearInterval(this._playTimer); this._playTimer = null; }
-        if (animId) cancelAnimationFrame(animId);
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
         if (this._resizeObserver) { this._resizeObserver.disconnect(); this._resizeObserver = null; }
         renderer.domElement.removeEventListener("keydown", keyHandler);
         controls.dispose();
@@ -526,6 +544,7 @@ const Fig3D = (() => {
     viewer._playTimer = setInterval(() => {
       if (!frames.length) return;
       applyPose(viewer.mannequin, frames[idx], def);
+      render();
       if (forward) {
         idx++;
         if (idx >= frames.length) {
@@ -540,7 +559,7 @@ const Fig3D = (() => {
     }, interval);
 
     // Apply first frame immediately
-    if (frames.length) applyPose(viewer.mannequin, frames[0], def);
+    if (frames.length) { applyPose(viewer.mannequin, frames[0], def); render(); }
   }
 
   function setViewAngle(viewer, view) {
@@ -559,6 +578,7 @@ const Fig3D = (() => {
       c.position.set(2.8, 2.2, 4.2);
     }
     c.lookAt(t);
+    if (viewer.renderer && viewer.scene) viewer.renderer.render(viewer.scene, viewer.camera);
   }
 
   return {
