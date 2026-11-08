@@ -283,16 +283,14 @@ const Fig3D = (() => {
     setLimbBetween(mannequin.limbs.shinR, knR, akR, 1);
     setLimbBetween(mannequin.limbs.shinL, knL, akL, 1);
 
-    // Planted feet positioning
+    // Planted feet positioning (ankle-to-toe continuity)
     const footMidR = akR.clone().lerp(toeR, 0.5);
-    footMidR.y = 1.1 * S_SCALE; // ground baseline
     mannequin.limbs.footR.position.copy(footMidR);
-    mannequin.limbs.footR.lookAt(toeR.x, 1.1 * S_SCALE, toeR.z);
+    mannequin.limbs.footR.lookAt(toeR.x, toeR.y, toeR.z);
 
     const footMidL = akL.clone().lerp(toeL, 0.5);
-    footMidL.y = 1.1 * S_SCALE;
     mannequin.limbs.footL.position.copy(footMidL);
-    mannequin.limbs.footL.lookAt(toeL.x, 1.1 * S_SCALE, toeL.z);
+    mannequin.limbs.footL.lookAt(toeL.x, toeL.y, toeL.z);
 
     // Equipment updates
     const barbell = mannequin.equipment.barbell;
@@ -384,7 +382,7 @@ const Fig3D = (() => {
       controls.update();
       render();
     };
-    renderer.domElement.addEventListener("keydown", keyHandler);
+    // (keyboard handled by activate above)
 
     // Lighting (3-point + hemisphere, softer ambient for depth)
     const ambLight = new THREE.AmbientLight(0xffffff, 0.4);
@@ -449,16 +447,37 @@ const Fig3D = (() => {
       renderer.render(scene, camera);
     }
 
-    function renderLoop() {
-      if (!isRunning) return;
-      controls.update();
-      render();
-      animId = requestAnimationFrame(renderLoop);
+    let rafId = null;
+    function startRAF() {
+      if (rafId) return;
+      function loop() {
+        controls.update();
+        render();
+        rafId = requestAnimationFrame(loop);
+      }
+      rafId = requestAnimationFrame(loop);
     }
-    renderLoop();
+    function stopRAF() {
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    }
 
-    controls.addEventListener("start", () => {});
-    controls.addEventListener("end", () => {});
+    // Stop RAF after 1.5s of inactivity
+    let idleTimer = null;
+    function scheduleIdle() {
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(stopRAF, 1500);
+    }
+
+    // Start RAF on any interaction
+    const activate = () => { startRAF(); scheduleIdle(); };
+    renderer.domElement.addEventListener("mousedown", activate);
+    renderer.domElement.addEventListener("touchstart", activate);
+    renderer.domElement.addEventListener("wheel", activate);
+    renderer.domElement.addEventListener("keydown", (e) => { activate(); keyHandler(e); });
+
+    // Initial
+    startRAF();
+    scheduleIdle();
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -505,7 +524,8 @@ const Fig3D = (() => {
       },
       dispose() {
         if (this._playTimer) { clearInterval(this._playTimer); this._playTimer = null; }
-        if (animId) { cancelAnimationFrame(animId); animId = null; }
+        if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; }
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
         if (this._resizeObserver) { this._resizeObserver.disconnect(); this._resizeObserver = null; }
         renderer.domElement.removeEventListener("keydown", keyHandler);
         controls.dispose();
