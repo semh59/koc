@@ -37,9 +37,9 @@ const Fig3D = (() => {
 
     // High quality athletic materials (matte, non-metallic skin; bright accent joints)
     const skinMat = new THREE.MeshStandardMaterial({
-      color: 0xb8c4d4,
-      roughness: 0.68,
-      metalness: 0.02
+      color: 0xe8e8e8,
+      roughness: 0.45,
+      metalness: 0.05
     });
     const jointMat = new THREE.MeshStandardMaterial({
       color: 0x4fc2a8,
@@ -47,14 +47,14 @@ const Fig3D = (() => {
       metalness: 0.55
     });
     const torsoMat = new THREE.MeshStandardMaterial({
-      color: 0x273449,
-      roughness: 0.58,
-      metalness: 0.04
+      color: 0xd8d8d8,
+      roughness: 0.5,
+      metalness: 0.05
     });
     const headMat = new THREE.MeshStandardMaterial({
-      color: 0x2a3441,
-      roughness: 0.55,
-      metalness: 0.03
+      color: 0xe0e0e0,
+      roughness: 0.45,
+      metalness: 0.05
     });
     const visorMat = new THREE.MeshStandardMaterial({
       color: 0x4fc2a8,
@@ -186,7 +186,7 @@ const Fig3D = (() => {
       meshes.forEach(m => {
         if (m && m.material && m.material.emissive) {
           m.material.emissive.setHex(0xff7a2e);
-          m.material.emissiveIntensity = 0.35;
+          m.material.emissiveIntensity = 0.8;
         }
       });
     };
@@ -322,10 +322,8 @@ const Fig3D = (() => {
     const width = options.width || container.clientWidth || 340;
     const height = options.height || container.clientHeight || 260;
 
-    const isDark = document.documentElement.getAttribute("data-theme") === "dark" ||
-      (!document.documentElement.getAttribute("data-theme") && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(isDark ? 0x0f172a : 0xf2f4f3);
+    scene.background = new THREE.Color(0x0f172a);
 
     const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
     // 3/4 athletic perspective: angled slightly from front-right

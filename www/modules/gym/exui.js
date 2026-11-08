@@ -97,22 +97,15 @@ function exSheet3D(id){
   const reducedMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const onboarded=localStorage.getItem("nw3d-onboarded")==="1";
   openSheet(`<h3>${esc(e.n)} <span class="tag">3D</span></h3>
-  <div class="mut sm mb-2">360° döndür: sürükle · yakınlaştır: iki parmak · açı: butonlar</div>
-  ${!onboarded?`<div id="g3d-onboard" class="mut sm g3donboard">İlk kullanım: modeli döndürmek için sürükleyin, iki parmakla yakınlaştırın, açı butonlarıyla hazır görünüm seçin. <button class="btn sm ghost" onclick="localStorage.setItem('nw3d-onboarded','1');document.getElementById('g3d-onboard').remove()">Anladım</button></div>`:""}
+  <div class="mut sm mb-2">Döndür: sürükle · Yakınlaştır: iki parmak</div>
+  ${!onboarded?`<div id="g3d-onboard" class="mut sm g3donboard">İlk kullanım: modeli döndürmek için sürükleyin, iki parmakla yakınlaştırın. <button class="btn sm ghost" onclick="localStorage.setItem('nw3d-onboarded','1');document.getElementById('g3d-onboard').remove()">Tamam</button></div>`:""}
   <div id="ex3d-box" class="ex3dbox"></div>
-  <div class="mt-2 ex3dctrls" role="toolbar" aria-label="3D görünüm kontrolleri">
+  <div class="mt-2 ex3dctrls" role="toolbar" aria-label="3D görünüm">
     <button class="btn sm ghost" data-angle="persp" aria-pressed="true" onclick="g3DAngle('persp')">3/4</button>
-    <button class="btn sm ghost" data-angle="side" aria-pressed="false" onclick="g3DAngle('side')">Yan</button>
     <button class="btn sm ghost" data-angle="front" aria-pressed="false" onclick="g3DAngle('front')">Ön</button>
-    <button class="btn sm ghost" data-angle="top" aria-pressed="false" onclick="g3DAngle('top')">Üst</button>
+    <button class="btn sm ghost" data-angle="side" aria-pressed="false" onclick="g3DAngle('side')">Yan</button>
     <button class="btn sm ghost" data-angle="back" aria-pressed="false" onclick="g3DAngle('back')">Arka</button>
-    <button class="btn sm ghost" onclick="g3DReset()">↺ Sıfırla</button>
-  </div>
-  <div class="mt-2 ex3dctrls">
-    <button class="btn sm ghost" id="g3d-playbtn" onclick="g3DTogglePlay()">⏸ Durdur</button>
-    <button class="btn sm ghost" onclick="g3DSetSpeed(0.5)">0.5×</button>
-    <button class="btn sm ghost" onclick="g3DSetSpeed(1)">1×</button>
-    <button class="btn sm ghost" onclick="g3DSetSpeed(1.5)">1.5×</button>
+    <button class="btn sm ghost" id="g3d-playbtn" onclick="g3DTogglePlay()">⏸</button>
   </div>
   <div class="mt-3 btns"><button class="btn ghost" data-g="closesheet">Kapat</button></div>`);
   setTimeout(()=>{
@@ -132,14 +125,12 @@ function g3DAngle(v){
     b.classList.toggle("active", b.getAttribute("data-angle")===v);
   });
 }
-function g3DReset(){ if(gActive3DViewer) Fig3D.resetView(gActive3DViewer); }
 function g3DTogglePlay(){
   if(!gActive3DViewer)return;
   const btn=document.getElementById("g3d-playbtn");
-  if(gActive3DViewer._paused){ gActive3DViewer.resume(); if(btn)btn.textContent="⏸ Durdur"; }
-  else { gActive3DViewer.pause(); if(btn)btn.textContent="▶ Oynat"; }
+  if(gActive3DViewer._paused){ gActive3DViewer.resume(); if(btn)btn.textContent="⏸"; }
+  else { gActive3DViewer.pause(); if(btn)btn.textContent="▶"; }
 }
-function g3DSetSpeed(s){ if(gActive3DViewer){ gActive3DViewer._speed=s; if(gActive3DViewer._def) Fig3D.play(gActive3DViewer,gActive3DViewer._def); } }
 function exSheet(id){
   const e=gEx(id),d=e.tp?exDef(e):null;
   const cues=exCues(e).map(c=>`<li>${esc(c)}</li>`).join("");
