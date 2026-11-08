@@ -716,8 +716,6 @@ test.describe("No-Coach release",()=>{
     await expect(page.locator("#sheet h3")).toContainText("3D");
     const canvas=page.locator("#ex3d-box canvas");
     await expect(canvas).toBeVisible();
-    await page.click('.ex3dctrls button:has-text("Yan")');
-    await page.click('.ex3dctrls button:has-text("Ön")');
     await page.click('[data-g="closesheet"]');
     await expect(page.locator("#sheet")).not.toHaveClass(/on/);
     const disposed=await page.evaluate(()=>gActive3DViewer===null);
