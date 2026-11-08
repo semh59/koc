@@ -306,6 +306,12 @@ const Fig3D = (() => {
     container.innerHTML = "";
     container.appendChild(renderer.domElement);
 
+    // Accessibility & touch handling
+    renderer.domElement.setAttribute("role", "img");
+    renderer.domElement.setAttribute("aria-label", "3D mannequin görünümü");
+    renderer.domElement.style.touchAction = "none";
+    renderer.domElement.tabIndex = 0;
+
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.08;
@@ -374,6 +380,20 @@ const Fig3D = (() => {
     let animId = null;
     let isRunning = true;
 
+    // Auto-resize on container size changes (orientation, modal layout)
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const w = Math.max(1, Math.round(entry.contentRect.width));
+        const h = Math.max(1, Math.round(entry.contentRect.height));
+        if (w > 0 && h > 0) {
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+          renderer.setSize(w, h);
+        }
+      }
+    });
+    resizeObserver.observe(container);
+
     function renderLoop() {
       if (!isRunning) return;
       controls.update();
@@ -388,7 +408,23 @@ const Fig3D = (() => {
       renderer,
       controls,
       mannequin,
+      _resizeObserver: resizeObserver,
       animState: { def: null, frames: [], t: 0, dur: 2.6 },
+      pause() {
+        if (this._playTimer) { clearInterval(this._playTimer); this._playTimer = null; }
+        this._paused = true;
+      },
+      resume(def) {
+        this._paused = false;
+        const d = def || this._def;
+        if (d) Fig3D.play(this, d);
+      },
+      resetView() {
+        camera.position.set(2.8, 2.2, 4.2);
+        controls.target.set(0, 1.1, 0);
+        camera.lookAt(controls.target);
+        controls.update();
+      },
       resize(w, h) {
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
@@ -396,7 +432,9 @@ const Fig3D = (() => {
       },
       dispose() {
         isRunning = false;
+        if (this._playTimer) { clearInterval(this._playTimer); this._playTimer = null; }
         if (animId) cancelAnimationFrame(animId);
+        if (this._resizeObserver) { this._resizeObserver.disconnect(); this._resizeObserver = null; }
         controls.dispose();
         renderer.dispose();
         if (renderer.domElement && renderer.domElement.parentNode) {
@@ -408,13 +446,15 @@ const Fig3D = (() => {
 
   function play(viewer, def) {
     if (!viewer || !def) return;
+    viewer._def = def;
     const N = 64;
     const poses = FigLib.sample(def, N);
     const frames = poses.map(p => FigLib.frame(def, p).J);
 
     let idx = 0;
     let forward = true;
-    const interval = Math.round((2600 / N));
+    const speed = viewer._speed || 1;
+    const interval = Math.round((2600 / N) / speed);
 
     if (viewer._playTimer) clearInterval(viewer._playTimer);
 
@@ -426,6 +466,7 @@ const Fig3D = (() => {
         if (idx >= frames.length) {
           if (def.playback === "once") {
             clearInterval(viewer._playTimer);
+            viewer._playTimer = null;
             return;
           }
           idx = 0;

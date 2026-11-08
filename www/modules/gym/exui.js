@@ -93,14 +93,23 @@ function exSheet3D(id){
   g3DStop();
   const e=gEx(id),d=e.tp?exDef(e):null;
   if(!d)return toast("Bu egzersiz için 3D model bulunamadı");
+  if(!Fig3D.isSupported())return toast("Bu cihaz WebGL desteklemiyor; 2D figür kullanılıyor");
+  const reducedMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   openSheet(`<h3>${esc(e.n)} <span class="tag">3D</span></h3>
-  <div class="mut sm mb-2">360° döndürebilir, yakınlaştırabilirsin.</div>
+  <div class="mut sm mb-2">360° döndür: sürükle · yakınlaştır: iki parmak · açı: butonlar</div>
   <div id="ex3d-box" class="ex3dbox"></div>
+  <div class="mt-2 ex3dctrls" role="toolbar" aria-label="3D görünüm kontrolleri">
+    <button class="btn sm ghost" data-angle="persp" aria-pressed="true" onclick="g3DAngle('persp')">3/4</button>
+    <button class="btn sm ghost" data-angle="side" aria-pressed="false" onclick="g3DAngle('side')">Yan</button>
+    <button class="btn sm ghost" data-angle="front" aria-pressed="false" onclick="g3DAngle('front')">Ön</button>
+    <button class="btn sm ghost" data-angle="top" aria-pressed="false" onclick="g3DAngle('top')">Üst</button>
+    <button class="btn sm ghost" onclick="g3DReset()">↺ Sıfırla</button>
+  </div>
   <div class="mt-2 ex3dctrls">
-    <button class="btn sm ghost" onclick="if(gActive3DViewer)Fig3D.setViewAngle(gActive3DViewer,'persp')">3/4 Açılı</button>
-    <button class="btn sm ghost" onclick="if(gActive3DViewer)Fig3D.setViewAngle(gActive3DViewer,'side')">Yan</button>
-    <button class="btn sm ghost" onclick="if(gActive3DViewer)Fig3D.setViewAngle(gActive3DViewer,'front')">Ön</button>
-    <button class="btn sm ghost" onclick="if(gActive3DViewer)Fig3D.setViewAngle(gActive3DViewer,'top')">Üst</button>
+    <button class="btn sm ghost" id="g3d-playbtn" onclick="g3DTogglePlay()">⏸ Durdur</button>
+    <button class="btn sm ghost" onclick="g3DSetSpeed(0.5)">0.5×</button>
+    <button class="btn sm ghost" onclick="g3DSetSpeed(1)">1×</button>
+    <button class="btn sm ghost" onclick="g3DSetSpeed(1.5)">1.5×</button>
   </div>
   <div class="mt-3 btns"><button class="btn ghost" data-g="closesheet">Kapat</button></div>`);
   setTimeout(()=>{
@@ -108,8 +117,25 @@ function exSheet3D(id){
     if(!box||!window.THREE)return;
     gActive3DViewer=Fig3D.createViewer(box,{width:box.clientWidth,height:box.clientHeight});
     Fig3D.play(gActive3DViewer,d);
+    if(reducedMotion&&gActive3DViewer)gActive3DViewer.pause();
   },60);
 }
+function g3DAngle(v){
+  if(!gActive3DViewer)return;
+  Fig3D.setViewAngle(gActive3DViewer,v);
+  document.querySelectorAll(".ex3dctrls [data-angle]").forEach(b=>{
+    b.setAttribute("aria-pressed", b.getAttribute("data-angle")===v?"true":"false");
+    b.classList.toggle("active", b.getAttribute("data-angle")===v);
+  });
+}
+function g3DReset(){ if(gActive3DViewer) Fig3D.resetView(gActive3DViewer); }
+function g3DTogglePlay(){
+  if(!gActive3DViewer)return;
+  const btn=document.getElementById("g3d-playbtn");
+  if(gActive3DViewer._paused){ gActive3DViewer.resume(); if(btn)btn.textContent="⏸ Durdur"; }
+  else { gActive3DViewer.pause(); if(btn)btn.textContent="▶ Oynat"; }
+}
+function g3DSetSpeed(s){ if(gActive3DViewer){ gActive3DViewer._speed=s; if(gActive3DViewer._def) Fig3D.play(gActive3DViewer,gActive3DViewer._def); } }
 function exSheet(id){
   const e=gEx(id),d=e.tp?exDef(e):null;
   const cues=exCues(e).map(c=>`<li>${esc(c)}</li>`).join("");
