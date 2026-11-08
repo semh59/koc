@@ -27,7 +27,7 @@ const Fig3D = (() => {
   async function createMannequin(THREE) {
     const loader = new THREE.GLTFLoader();
     const gltf = await new Promise((resolve, reject) => {
-      loader.load("models/knight.glb", resolve, undefined, reject);
+      loader.load("models/mannequin_f.glb", resolve, undefined, reject);
     });
     const model = gltf.scene;
     // Scale and center
@@ -41,22 +41,22 @@ const Fig3D = (() => {
     
     const mannequin = {
       group: model,
-      headGroup: bones.head || model,
-      neckMesh: bones.spine || model,
-      chestMesh: bones.chest || model,
-      pelvisMesh: bones.hips || model,
+      headGroup: bones.Head || model,
+      neckMesh: bones.neck_01 || model,
+      chestMesh: bones.spine_03 || model,
+      pelvisMesh: bones.pelvis || model,
       joints: {
-        neck: bones.spine,
+        neck: bones.neck_01,
         shR: bones.upperarm_r,
         shL: bones.upperarm_l,
         elR: bones.lowerarm_r,
         elL: bones.lowerarm_l,
         wrR: bones.hand_r,
         wrL: bones.hand_l,
-        hipR: bones.upperleg_r,
-        hipL: bones.upperleg_l,
-        knR: bones.lowerleg_r,
-        knL: bones.lowerleg_l,
+        hipR: bones.thigh_r,
+        hipL: bones.thigh_l,
+        knR: bones.calf_r,
+        knL: bones.calf_l,
         akR: bones.foot_r,
         akL: bones.foot_l
       },
@@ -65,10 +65,10 @@ const Fig3D = (() => {
         armUpperL: bones.upperarm_l,
         armLowerR: bones.lowerarm_r,
         armLowerL: bones.lowerarm_l,
-        thighR: bones.upperleg_r,
-        thighL: bones.upperleg_l,
-        shinR: bones.lowerleg_r,
-        shinL: bones.lowerleg_l,
+        thighR: bones.thigh_r,
+        thighL: bones.thigh_l,
+        shinR: bones.calf_r,
+        shinL: bones.calf_l,
         footR: bones.foot_r,
         footL: bones.foot_l
       },
@@ -144,8 +144,8 @@ const Fig3D = (() => {
         bone.position.copy(local);
       };
       // Torso
-      if (J.neck && bones.spine) setBoneWorldPos(bones.spine, to3(J.neck, 0));
-      if (J.hip && bones.hips) setBoneWorldPos(bones.hips, to3(J.hip, 0));
+      if (J.neck && bones.neck_01) setBoneWorldPos(bones.neck_01, to3(J.neck, 0));
+      if (J.hip && bones.pelvis) setBoneWorldPos(bones.pelvis, to3(J.hip, 0));
       // Arms
       const nA = J.limbs?.nA, fA = J.limbs?.fA;
       if (nA) {
@@ -161,17 +161,17 @@ const Fig3D = (() => {
       // Legs
       const nL = J.limbs?.nL, fL = J.limbs?.fL;
       if (nL) {
-        if (bones.upperleg_r) setBoneWorldPos(bones.upperleg_r, to3(nL[0], 5));
-        if (bones.lowerleg_r) setBoneWorldPos(bones.lowerleg_r, to3(nL[1], 5));
-        if (bones.foot_r) setBoneWorldPos(bones.foot_r, to3(nL[2], 5));
+        if (bones.thigh_r) setBoneWorldPos(bones.thigh_r, to3(nL[0], 5));
+        if (bones.calf_r) setBoneWorldPos(bones.calf_r, to3(nL[1], 5));
+        if (bones.foot_r) { const fp = to3(nL[2], 5); fp.y += 0.12; setBoneWorldPos(bones.foot_r, fp); }
       }
       if (fL) {
-        if (bones.upperleg_l) setBoneWorldPos(bones.upperleg_l, to3(fL[0], -5));
-        if (bones.lowerleg_l) setBoneWorldPos(bones.lowerleg_l, to3(fL[1], -5));
-        if (bones.foot_l) setBoneWorldPos(bones.foot_l, to3(fL[2], -5));
+        if (bones.thigh_l) setBoneWorldPos(bones.thigh_l, to3(fL[0], -5));
+        if (bones.calf_l) setBoneWorldPos(bones.calf_l, to3(fL[1], -5));
+        if (bones.foot_l) { const fp = to3(fL[2], -5); fp.y += 0.12; setBoneWorldPos(bones.foot_l, fp); }
       }
       // Neck
-      if (J.head && bones.head) setBoneWorldPos(bones.head, to3(J.head, 0));
+      if (J.head && bones.Head) setBoneWorldPos(bones.Head, to3(J.head, 0));
       // Update skeleton
       if (mannequin.group.skeleton) mannequin.group.skeleton.update();
       mannequin.group.updateMatrixWorld(true);
