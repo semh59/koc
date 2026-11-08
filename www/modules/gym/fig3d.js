@@ -164,6 +164,45 @@ const Fig3D = (() => {
     };
   }
 
+  function highlightRegions(mannequin, region) {
+    // Reset all emissive
+    const reset = (mesh) => {
+      if (mesh && mesh.material && mesh.material.emissive) {
+        mesh.material.emissive.setHex(0x000000);
+        mesh.material.emissiveIntensity = 0;
+      }
+    };
+    // Reset all meshes
+    const allMeshes = [mannequin.neckMesh, mannequin.chestMesh, mannequin.pelvisMesh,
+      mannequin.limbs.armUpperR, mannequin.limbs.armUpperL,
+      mannequin.limbs.armLowerR, mannequin.limbs.armLowerL,
+      mannequin.limbs.thighR, mannequin.limbs.thighL,
+      mannequin.limbs.shinR, mannequin.limbs.shinL];
+    allMeshes.forEach(reset);
+
+    // Map region to meshes
+    const r = (region || "").toLowerCase();
+    const glow = (meshes) => {
+      meshes.forEach(m => {
+        if (m && m.material && m.material.emissive) {
+          m.material.emissive.setHex(0xff7a2e);
+          m.material.emissiveIntensity = 0.35;
+        }
+      });
+    };
+
+    if (r.includes("göğüs") || r.includes("gogus")) glow([mannequin.chestMesh]);
+    else if (r.includes("sırt") || r.includes("sirt") || r.includes("trapez")) glow([mannequin.chestMesh]);
+    else if (r.includes("omuz")) glow([mannequin.joints.shR, mannequin.joints.shL, mannequin.limbs.armUpperR, mannequin.limbs.armUpperL]);
+    else if (r.includes("biseps")) glow([mannequin.limbs.armUpperR, mannequin.limbs.armUpperL]);
+    else if (r.includes("triseps")) glow([mannequin.limbs.armUpperR, mannequin.limbs.armUpperL]);
+    else if (r.includes("ön kol") || r.includes("on kol")) glow([mannequin.limbs.armLowerR, mannequin.limbs.armLowerL]);
+    else if (r.includes("karın") || r.includes("karin") || r.includes("bel")) glow([mannequin.chestMesh, mannequin.pelvisMesh]);
+    else if (r.includes("kalça") || r.includes("kalca")) glow([mannequin.pelvisMesh]);
+    else if (r.includes("baldır") || r.includes("baldır")) glow([mannequin.limbs.shinR, mannequin.limbs.shinL]);
+    else if (r.includes("bacak") || r.includes("baldır")) glow([mannequin.limbs.thighR, mannequin.limbs.thighL, mannequin.limbs.shinR, mannequin.limbs.shinL]);
+    else if (r.includes("boyun")) glow([mannequin.neckMesh]);
+  }
   function to3D(pt2d, zOffset = 0) {
     // 2D: X0=80 center, Y goes down, FLOOR=136
     // 3D: X right, Y up (0=floor), Z depth
@@ -529,7 +568,8 @@ const Fig3D = (() => {
     createViewer,
     applyPose,
     play,
-    setViewAngle
+    setViewAngle,
+    highlightRegions
   };
 })();
 

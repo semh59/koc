@@ -120,6 +120,7 @@ function exSheet3D(id){
     if(!box||!window.THREE)return;
     gActive3DViewer=Fig3D.createViewer(box,{width:box.clientWidth,height:box.clientHeight});
     Fig3D.play(gActive3DViewer,d);
+    Fig3D.highlightRegions(gActive3DViewer.mannequin,e.r||"");
     if(reducedMotion&&gActive3DViewer)gActive3DViewer.pause();
   },60);
 }
