@@ -215,8 +215,8 @@ const Fig3D = (() => {
         const currentPelvisWP = new THREE.Vector3();
         bones.pelvis.getWorldPosition(currentPelvisWP);
         const delta = hipPos.clone().sub(currentPelvisWP);
-        model.position.add(delta);
-        model.updateMatrixWorld(true);
+        mannequin.group.position.add(delta);
+        mannequin.group.updateMatrixWorld(true);
       }
       
       mannequin.group.updateMatrixWorld(true);
