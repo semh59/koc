@@ -104,10 +104,10 @@ function exSheet3D(id){
     <button class="btn sm ghost" id="g3d-playbtn" onclick="g3DTogglePlay()">⏸</button>
   </div>
   <div class="mt-3 btns"><button class="btn ghost" data-g="closesheet">Kapat</button></div>`);
-  setTimeout(()=>{
+  setTimeout(async()=>{
     const box=document.getElementById("ex3d-box");
     if(!box||!window.THREE)return;
-    gActive3DViewer=Fig3D.createViewer(box,{width:box.clientWidth,height:box.clientHeight});
+    gActive3DViewer=await Fig3D.createViewer(box,{width:box.clientWidth,height:box.clientHeight});
     Fig3D.play(gActive3DViewer,d);
     Fig3D.highlightRegions(gActive3DViewer.mannequin,e.r||"");
     if(gActive3DViewer.renderer&&gActive3DViewer.scene)gActive3DViewer.renderer.render(gActive3DViewer.scene,gActive3DViewer.camera);

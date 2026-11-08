@@ -12,6 +12,8 @@ const outFile = path.join(outDir, "three.bundle.js");
 const entryCode = `
 export * from "three";
 export { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+export { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+export { CCDIKSolver } from "three/examples/jsm/animation/CCDIKSolver.js";
 `;
 
 async function main() {

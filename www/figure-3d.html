@@ -64,9 +64,9 @@
   <script src="modules/gym/figtpl.js"></script>
   <script src="modules/gym/fig3d.js"></script>
   <script>
-    window.addEventListener("DOMContentLoaded", () => {
+    window.addEventListener("DOMContentLoaded", async () => {
       const box = document.getElementById("view3d");
-      const viewer = Fig3D.createViewer(box, { width: box.clientWidth, height: box.clientHeight });
+      const viewer = await Fig3D.createViewer(box, { width: box.clientWidth, height: box.clientHeight });
       window.addEventListener("resize", () => {
         viewer.resize(box.clientWidth, box.clientHeight);
       });
