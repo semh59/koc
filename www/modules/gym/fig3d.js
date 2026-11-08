@@ -15,15 +15,6 @@ const Fig3D = (() => {
     }
   }
 
-  // Helper to create a stylized capsule/cylinder connecting two 3D points
-  function createLimbMesh(THREE, radiusTop, radiusBottom, mat) {
-    const r = (radiusTop + radiusBottom) / 2;
-    const geom = new THREE.CapsuleGeometry(r, 1, 8, 12);
-    geom.translate(0, 0.5, 0);
-    geom.rotateX(Math.PI / 2);
-    return new THREE.Mesh(geom, mat);
-  }
-
   function setLimbBetween(mesh, p1, p2, thickness = 1) {
     const dx = p2.x - p1.x, dy = p2.y - p1.y, dz = p2.z - p1.z;
     const len = Math.hypot(dx, dy, dz);
@@ -33,134 +24,78 @@ const Fig3D = (() => {
     mesh.visible = len > 0.001;
   }
 
-  function createMannequin(THREE) {
-    const group = new THREE.Group();
-
-    // High quality athletic materials (matte, non-metallic skin; bright accent joints)
-    const skinMat = new THREE.MeshStandardMaterial({
-      color: 0xe8e8e8,
-      roughness: 0.45,
-      metalness: 0.05
+  async function createMannequin(THREE) {
+    const loader = new THREE.GLTFLoader();
+    const gltf = await new Promise((resolve, reject) => {
+      loader.load("models/mannequin_f.glb", resolve, undefined, reject);
     });
-    const jointMat = new THREE.MeshStandardMaterial({
-      color: 0x4fc2a8,
-      roughness: 0.35,
-      metalness: 0.55
+    const model = gltf.scene;
+    // Scale and center
+    model.scale.set(1.5, 1.5, 1.5);
+    
+    // Find bones
+    const bones = {};
+    model.traverse((node) => {
+      if (node.isBone) bones[node.name] = node;
     });
-    const torsoMat = new THREE.MeshStandardMaterial({
-      color: 0xd8d8d8,
-      roughness: 0.5,
-      metalness: 0.05
-    });
-    const headMat = new THREE.MeshStandardMaterial({
-      color: 0xe0e0e0,
-      roughness: 0.45,
-      metalness: 0.05
-    });
-    const visorMat = new THREE.MeshStandardMaterial({
-      color: 0x4fc2a8,
-      emissive: 0x2a9d8f,
-      emissiveIntensity: 0.25,
-      roughness: 0.15,
-      metalness: 0.75
-    });
-    const footMat = new THREE.MeshStandardMaterial({
-      color: 0x0f172a,
-      roughness: 0.62,
-      metalness: 0.08
-    });
-
-    // Head & Neck
-    const headGroup = new THREE.Group();
-    const headMesh = new THREE.Mesh(new THREE.SphereGeometry(2.5 * S_SCALE, 24, 16), headMat);
-    headMesh.scale.set(0.9, 1.1, 1.0);
-    headGroup.add(headMesh);
-
-    // Visor accent
-    const visorMesh = new THREE.Mesh(new THREE.BoxGeometry(2.4 * S_SCALE, 0.8 * S_SCALE, 1.6 * S_SCALE), visorMat);
-    visorMesh.position.set(0.8 * S_SCALE, 0.2 * S_SCALE, 0);
-    headGroup.add(visorMesh);
-
-    const neckMesh = createLimbMesh(THREE, 1.3 * S_SCALE, 1.5 * S_SCALE, skinMat);
-    group.add(headGroup);
-    group.add(neckMesh);
-
-    // Torso (chest & abdomen & pelvis)
-    const chestMesh = new THREE.Mesh(new THREE.CapsuleGeometry(3.8 * S_SCALE, 14 * S_SCALE, 8, 16), torsoMat);
-    const pelvisMesh = new THREE.Mesh(new THREE.CapsuleGeometry(3.2 * S_SCALE, 8 * S_SCALE, 8, 16), torsoMat);
-    group.add(chestMesh);
-    group.add(pelvisMesh);
-
-    // Joint Spheres
-    const jointGeom = new THREE.SphereGeometry(1.0 * S_SCALE, 16, 12);
-    const joints = {};
-    for (const name of ["neck", "shR", "shL", "elR", "elL", "wrR", "wrL", "hipR", "hipL", "knR", "knL", "akR", "akL"]) {
-      const jm = new THREE.Mesh(jointGeom, jointMat);
-      joints[name] = jm;
-      group.add(jm);
+    
+    // Store rest-pose world positions and directions
+    model.updateMatrixWorld(true);
+    const restPos = {};
+    const restDir = {};
+    for (const [name, bone] of Object.entries(bones)) {
+      const wp = new THREE.Vector3();
+      bone.getWorldPosition(wp);
+      restPos[name] = wp.clone();
+      // Direction to parent (if exists)
+      if (bone.parent && bone.parent.isBone) {
+        const pp = new THREE.Vector3();
+        bone.parent.getWorldPosition(pp);
+        restDir[name] = wp.clone().sub(pp).normalize();
+      }
     }
-
-    // Limb segments
-    const limbs = {
-      armUpperR: createLimbMesh(THREE, 1.3 * S_SCALE, 1.1 * S_SCALE, skinMat),
-      armUpperL: createLimbMesh(THREE, 1.3 * S_SCALE, 1.1 * S_SCALE, skinMat),
-      armLowerR: createLimbMesh(THREE, 1.0 * S_SCALE, 0.85 * S_SCALE, skinMat),
-      armLowerL: createLimbMesh(THREE, 1.0 * S_SCALE, 0.85 * S_SCALE, skinMat),
-      thighR: createLimbMesh(THREE, 2.0 * S_SCALE, 1.6 * S_SCALE, skinMat),
-      thighL: createLimbMesh(THREE, 2.0 * S_SCALE, 1.6 * S_SCALE, skinMat),
-      shinR: createLimbMesh(THREE, 1.4 * S_SCALE, 1.1 * S_SCALE, skinMat),
-      shinL: createLimbMesh(THREE, 1.4 * S_SCALE, 1.1 * S_SCALE, skinMat),
-      footR: new THREE.Mesh(new THREE.BoxGeometry(6 * S_SCALE, 1.5 * S_SCALE, 2.2 * S_SCALE), footMat),
-      footL: new THREE.Mesh(new THREE.BoxGeometry(6 * S_SCALE, 1.5 * S_SCALE, 2.2 * S_SCALE), footMat)
+    
+    const mannequin = {
+      group: model,
+      headGroup: bones.Head || model,
+      neckMesh: bones.neck_01 || model,
+      chestMesh: bones.spine_03 || model,
+      pelvisMesh: bones.pelvis || model,
+      joints: {
+        neck: bones.neck_01,
+        shR: bones.upperarm_r,
+        shL: bones.upperarm_l,
+        elR: bones.lowerarm_r,
+        elL: bones.lowerarm_l,
+        wrR: bones.hand_r,
+        wrL: bones.hand_l,
+        hipR: bones.thigh_r,
+        hipL: bones.thigh_l,
+        knR: bones.calf_r,
+        knL: bones.calf_l,
+        akR: bones.foot_r,
+        akL: bones.foot_l
+      },
+      limbs: {
+        armUpperR: bones.upperarm_r,
+        armUpperL: bones.upperarm_l,
+        armLowerR: bones.lowerarm_r,
+        armLowerL: bones.lowerarm_l,
+        thighR: bones.thigh_r,
+        thighL: bones.thigh_l,
+        shinR: bones.calf_r,
+        shinL: bones.calf_l,
+        footR: bones.foot_r,
+        footL: bones.foot_l
+      },
+      equipment: { barbell: new THREE.Group(), bench: new THREE.Group() },
+      _bones: bones,
+      _restPos: restPos,
+      _restDir: restDir,
+      _isGLTF: true
     };
-
-    for (const k in limbs) group.add(limbs[k]);
-
-    // Equipment group
-    const equipGroup = new THREE.Group();
-    const barMat = new THREE.MeshStandardMaterial({ color: 0xd1d5db, roughness: 0.15, metalness: 0.85 });
-    const plateMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.3, metalness: 0.6 });
-    const benchMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.6, metalness: 0.1 });
-    const benchFrameMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.2, metalness: 0.8 });
-
-    // Barbell
-    const barMesh = new THREE.Mesh(new THREE.CylinderGeometry(1.2 * S_SCALE, 1.2 * S_SCALE, 44 * S_SCALE, 12), barMat);
-    barMesh.rotateX(Math.PI / 2);
-    const plateR = new THREE.Mesh(new THREE.CylinderGeometry(6.5 * S_SCALE, 6.5 * S_SCALE, 2.2 * S_SCALE, 16), plateMat);
-    plateR.rotateX(Math.PI / 2);
-    plateR.position.z = 20 * S_SCALE;
-    const plateL = new THREE.Mesh(new THREE.CylinderGeometry(6.5 * S_SCALE, 6.5 * S_SCALE, 2.2 * S_SCALE, 16), plateMat);
-    plateL.rotateX(Math.PI / 2);
-    plateL.position.z = -20 * S_SCALE;
-    const barbell = new THREE.Group();
-    barbell.add(barMesh, plateR, plateL);
-    barbell.visible = false;
-    equipGroup.add(barbell);
-
-    // Bench
-    const bench = new THREE.Group();
-    const pad = new THREE.Mesh(new THREE.BoxGeometry(48 * S_SCALE, 3.5 * S_SCALE, 14 * S_SCALE), benchMat);
-    pad.position.y = 18 * S_SCALE;
-    const leg1 = new THREE.Mesh(new THREE.BoxGeometry(3 * S_SCALE, 18 * S_SCALE, 10 * S_SCALE), benchFrameMat);
-    leg1.position.set(-18 * S_SCALE, 9 * S_SCALE, 0);
-    const leg2 = new THREE.Mesh(new THREE.BoxGeometry(3 * S_SCALE, 18 * S_SCALE, 10 * S_SCALE), benchFrameMat);
-    leg2.position.set(18 * S_SCALE, 9 * S_SCALE, 0);
-    bench.add(pad, leg1, leg2);
-    bench.visible = false;
-    equipGroup.add(bench);
-
-    group.add(equipGroup);
-
-    return {
-      group,
-      headGroup,
-      neckMesh,
-      chestMesh,
-      pelvisMesh,
-      joints,
-      limbs,
-      equipment: { barbell, bench }
-    };
+    
+    return mannequin;
   }
 
   function highlightRegions(mannequin, region) {
@@ -213,6 +148,80 @@ const Fig3D = (() => {
   }
 
   function applyPose(mannequin, J, def) {
+    if (mannequin._isGLTF) {
+      // GLTF model: set bone positions from 2D->3D mapping
+      const S = S_SCALE;
+      const to3 = (pt, z) => new THREE.Vector3((pt[0]-80)*S, (136-pt[1])*S, z*S);
+      // Update world matrices
+      mannequin.group.updateMatrixWorld(true);
+      const bones = mannequin._bones;
+      // IK: compute rotations from 2D joint positions
+      const to3v = (pt2d, zOff) => {
+        const v = to3(pt2d, zOff);
+        return new THREE.Vector3(v.x, v.y, v.z);
+      };
+      
+      // Helper: rotate bone to point from parent to target
+      const rotateBone = (bone, targetWorldPos) => {
+        if (!bone || !bone.parent) return;
+        const parentWP = new THREE.Vector3();
+        bone.parent.getWorldPosition(parentWP);
+        const dir = targetWorldPos.clone().sub(parentWP).normalize();
+        const restD = mannequin._restDir[bone.name];
+        if (!restD) return;
+        // Compute quaternion that rotates restD to dir
+        const q = new THREE.Quaternion();
+        q.setFromUnitVectors(restD, dir);
+        // Apply relative to parent's world rotation
+        const parentWorldQuat = new THREE.Quaternion();
+        bone.parent.getWorldQuaternion(parentWorldQuat);
+        const targetQuat = q.clone().multiply(parentWorldQuat);
+        bone.quaternion.copy(parentWorldQuat.clone().invert().multiply(targetQuat));
+      };
+      
+      // Torso
+      if (J.neck) rotateBone(bones.neck_01, to3v(J.neck, 0));
+      if (J.hip) rotateBone(bones.pelvis, to3v(J.hip, 0));
+      // Arms
+      const nA = J.limbs?.nA, fA = J.limbs?.fA;
+      if (nA) {
+        if (bones.upperarm_r) rotateBone(bones.upperarm_r, to3v(nA[0], 8));
+        if (bones.lowerarm_r) rotateBone(bones.lowerarm_r, to3v(nA[1], 8));
+        if (bones.hand_r) rotateBone(bones.hand_r, to3v(nA[2], 8));
+      }
+      if (fA) {
+        if (bones.upperarm_l) rotateBone(bones.upperarm_l, to3v(fA[0], -8));
+        if (bones.lowerarm_l) rotateBone(bones.lowerarm_l, to3v(fA[1], -8));
+        if (bones.hand_l) rotateBone(bones.hand_l, to3v(fA[2], -8));
+      }
+      // Legs
+      const nL = J.limbs?.nL, fL = J.limbs?.fL;
+      if (nL) {
+        if (bones.thigh_r) rotateBone(bones.thigh_r, to3v(nL[0], 5));
+        if (bones.calf_r) rotateBone(bones.calf_r, to3v(nL[1], 5));
+        if (bones.foot_r) rotateBone(bones.foot_r, to3v(nL[2], 5));
+      }
+      if (fL) {
+        if (bones.thigh_l) rotateBone(bones.thigh_l, to3v(fL[0], -5));
+        if (bones.calf_l) rotateBone(bones.calf_l, to3v(fL[1], -5));
+        if (bones.foot_l) rotateBone(bones.foot_l, to3v(fL[2], -5));
+      }
+      // Head
+      if (J.head) rotateBone(bones.Head, to3v(J.head, 0));
+      
+      // Position the whole model at hip location
+      if (J.hip) {
+        const hipPos = to3v(J.hip, 0);
+        const currentPelvisWP = new THREE.Vector3();
+        bones.pelvis.getWorldPosition(currentPelvisWP);
+        const delta = hipPos.clone().sub(currentPelvisWP);
+        model.position.add(delta);
+        model.updateMatrixWorld(true);
+      }
+      
+      mannequin.group.updateMatrixWorld(true);
+      return;
+    }
     const isFront = def && def.view === "f";
     const shw = isFront ? 0 : 5; // lateral shoulder offset
     const hpw = isFront ? 0 : 4; // lateral hip offset
@@ -313,7 +322,7 @@ const Fig3D = (() => {
     }
   }
 
-  function createViewer(container, options = {}) {
+  async function createViewer(container, options = {}) {
     if (!window.THREE) throw new Error("Three.js bundle not loaded");
     const THREE = window.THREE;
 
@@ -431,7 +440,7 @@ const Fig3D = (() => {
     scene.add(ringMesh);
 
     // Mannequin
-    const mannequin = createMannequin(THREE);
+    const mannequin = await createMannequin(THREE);
     mannequin.group.traverse((obj) => {
       if (obj.isMesh) {
         obj.castShadow = true;
