@@ -37,22 +37,22 @@ const Fig3D = (() => {
 
     // High quality athletic materials
     const skinMat = new THREE.MeshStandardMaterial({
-      color: 0x222a36,
+      color: 0x3b4a5e,
       roughness: 0.38,
       metalness: 0.15
     });
     const jointMat = new THREE.MeshStandardMaterial({
-      color: 0x3b82f6,
+      color: 0x60a5fa,
       roughness: 0.25,
       metalness: 0.4
     });
     const torsoMat = new THREE.MeshStandardMaterial({
-      color: 0x1e293b,
+      color: 0x2d3a4f,
       roughness: 0.32,
       metalness: 0.2
     });
     const headMat = new THREE.MeshStandardMaterial({
-      color: 0x293548,
+      color: 0x3a4759,
       roughness: 0.35,
       metalness: 0.2
     });
@@ -64,7 +64,7 @@ const Fig3D = (() => {
       metalness: 0.8
     });
     const footMat = new THREE.MeshStandardMaterial({
-      color: 0x0f172a,
+      color: 0x1e293b,
       roughness: 0.5,
       metalness: 0.1
     });
@@ -284,7 +284,7 @@ const Fig3D = (() => {
     const height = options.height || container.clientHeight || 260;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0b111e); // sleek dark canvas background
+    scene.background = new THREE.Color(0x1a2332); // brighter dark canvas
 
     const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
     // 3/4 athletic perspective: angled slightly from front-right
@@ -309,25 +309,30 @@ const Fig3D = (() => {
     controls.maxPolarAngle = Math.PI / 2 - 0.01; // don't go below ground
 
     // Lighting
-    const ambLight = new THREE.AmbientLight(0xf1f5f9, 0.7);
+    const ambLight = new THREE.AmbientLight(0xffffff, 1.1);
     scene.add(ambLight);
 
-    const sunLight = new THREE.DirectionalLight(0xffffff, 1.4);
+    const sunLight = new THREE.DirectionalLight(0xffffff, 2.0);
     sunLight.position.set(4, 7, 5);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.width = 1024;
     sunLight.shadow.mapSize.height = 1024;
     scene.add(sunLight);
 
+    // Front fill light
+    const fillLight = new THREE.DirectionalLight(0xe2e8f0, 0.9);
+    fillLight.position.set(-2, 3, 4);
+    scene.add(fillLight);
+
     // Cyan athletic rim light
-    const rimLight = new THREE.DirectionalLight(0x38bdf8, 1.8);
+    const rimLight = new THREE.DirectionalLight(0x38bdf8, 1.2);
     rimLight.position.set(-5, 4, -4);
     scene.add(rimLight);
 
     // Floor Platform & Grid
     const floorGeo = new THREE.CircleGeometry(2.4, 32);
     const floorMat = new THREE.MeshStandardMaterial({
-      color: 0x111827,
+      color: 0x1e293b,
       roughness: 0.7,
       metalness: 0.1
     });
