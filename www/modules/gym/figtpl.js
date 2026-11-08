@@ -14,7 +14,7 @@ const FigTpl={
   calf:{frames:[{t:0,l3:90},{t:0,l1:-4,l2:-4,l3:150}]},
   legspread:{view:"f",frames:[{t:0,l1:3,l2:3,m1:3,m2:3},{t:0,l1:40,l2:40,m1:40,m2:40}]},
   /* ---- push ---- */
-  pushup:{frames:[{t:85,l1:-85,l2:-85,l3:20,a1:0,a2:0,hand:[21,0]},{t:90,l1:-90,l2:-90,l3:20,hand:[21,0]}],fix:{x:["toe",-58],y:["toe",0]}},
+  pushup:{frames:[{t:74,l1:-74,l2:-74,l3:20,a1:0,a2:0,hand:[21,0]},{t:84,l1:-84,l2:-84,l3:20,hand:[21,0]}],fix:{x:["toe",-58],y:["toe",0]}},
   bench:{frames:[{hh:0,t:-90,hd:-88,a1:180,a2:180,l1:120,l2:10,foot:[34,0]},{hh:0,t:-90,hd:-88,a1:100,a2:150,l1:120,l2:10,foot:[34,0]}],fix:{x:["hip",0],y:["hip",26]},scene:"bench",prop:{k:"bar",at:"wrist"}},
   incline:{frames:[{hh:0,t:-52,hd:-52,a1:172,a2:176,l1:110,l2:6,foot:[26,0]},{hh:0,t:-52,hd:-52,a1:96,a2:146,l1:110,l2:6,foot:[26,0]}],fix:{x:["hip",0],y:["hip",24]},scene:"incbench",prop:{k:"db",at:"wrist"}},
   fly:{view:"f",frames:[{t:0,a1:84,a2:90,l1:2,l2:2},{t:0,a1:22,a2:26,l1:2,l2:2}],prop:{k:"db",at:"wrist"}},
@@ -40,7 +40,7 @@ const FigTpl={
   situp:{frames:[{t:-90,hd:-88,a1:100,a2:150,l1:120,l2:10,foot:[34,0]},{t:-4,hd:-4,a1:90,a2:90,l1:120,l2:10,foot:[34,0]}],fix:{x:["hip",0],y:["hip",2]}},
   legraise:{frames:[{t:-90,hd:-88,a1:90,a2:90,l1:92,l2:92},{t:-90,hd:-88,a1:90,a2:90,l1:176,l2:176}],fix:{x:["hip",0],y:["hip",2]}},
   hangraise:{frames:[{t:0,a1:180,a2:180,l1:4,l2:2},{t:0,a1:178,a2:178,l1:90,l2:84}],fix:{x:["wrist",0],y:["wrist",112]},scene:"pullbar"},
-  plank:{frames:[{t:85,l1:-85,l2:-85,l3:20,a1:0,a2:0,hand:[21,0]},{t:86,l1:-86,l2:-86,l3:20,a1:0,a2:0,hand:[21,0]}],fix:{x:["toe",-58],y:["floor"]}},
+  plank:{frames:[{t:74,l1:-74,l2:-74,l3:20,a1:0,a2:0,hand:[21,0]},{t:76,l1:-76,l2:-76,l3:20,a1:0,a2:0,hand:[21,0]}],fix:{x:["toe",-58],y:["floor"]}},
   climber:{frames:[{t:74,l1:-74,l2:-74,l3:20,m1:30,m2:-20,m3:60,hand:[21,0]},{t:74,l1:-74,l2:-74,l3:20,m1:-74,m2:-74,m3:20,hand:[21,0]}],fix:{x:["toe",-58],y:["floor"]}},
   sidebend:{view:"f",frames:[{t:-14,a1:2,a2:2,l1:2,l2:2},{t:14,a1:2,a2:2,l1:2,l2:2}],prop:{k:"db",at:"wrist"}},
   woodchop:{view:"f",frames:[{t:-10,a1:150,a2:154,l1:6,l2:6},{t:12,a1:20,a2:24,l1:6,l2:6}]},
@@ -77,7 +77,7 @@ const FigTpl={
 FigTpl.chairstand={frames:[{t:10,a1:-30,a2:150,b1:30,b2:210,l1:90,l2:0},{t:0,a1:-30,a2:150,b1:30,b2:210,l1:0,l2:0}],scene:"seat",fix:{x:["ankle",24],y:["floor"]}};
 FigTpl.kbdl1={frames:[{t:0,feet:[[0,.4],[-6,6]]},{t:65,dx:-10,hh:-1,feet:[[0,.4],[-40,42]],m3:160}],scene:"kbdl1",fix:{x:["hip",0],y:["hip",48]},prop:{k:"kb",at:"wrist"}};
 FigTpl.rdl={frames:[{t:0,feet:[[0,.4],[0,.4]]},{t:65,dx:-10,hh:-1,feet:[[0,.4],[0,.4]]}],scene:"rdl",fix:{x:["hip",0],y:["hip",48]},prop:{k:"bar",at:"wrist"}};
-FigTpl.deadlift={frames:[{t:45,dx:-2,feet:[[0,.4],[0,.4]]},{t:0,dx:2,hh:10,feet:[[0,.4],[0,.4]]}],scene:"floorpull",fix:{x:["hip",0],y:["hip",6.08]},prop:{k:"bar",at:"wrist"}};
+FigTpl.deadlift={frames:[{t:45,dx:-8,feet:[[0,.4],[0,.4]]},{t:0,dx:5,hh:28.855844122715723,feet:[[0,.4],[0,.4]]}],scene:"floorpull",fix:{x:["hip",0],y:["hip",17.544155877284282]},prop:{k:"bar",at:"wrist"}};
 FigTpl.defdl={frames:[{t:80,dx:-15,feet:[[0,12.7],[0,12.7]]},{t:0,dx:5,hh:21.9513343960095,feet:[[0,12.7],[0,12.7]]}],scene:"deficit",fix:{x:["hip",0],y:["hip",36.7486656039905]},prop:{k:"bar",at:"wrist"}};
 FigTpl.rackpull={frames:[{t:45,feet:[[0,0],[0,0]]},{t:0,hh:2,feet:[[0,0],[0,0]]}],scene:"rack",rackY:103.744156,fix:{x:["hip",0],y:["hip",44]},prop:{k:"bar",at:"wrist"}};
 FigTpl.seatedhinge={frames:[{t:0,l1:90,l2:0},{t:40,l1:90,l2:0}],scene:"seat",fix:{x:["hip",0],y:["hip",24]}};
