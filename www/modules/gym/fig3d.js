@@ -42,7 +42,7 @@ const Fig3D = (() => {
       metalness: 0.02
     });
     const jointMat = new THREE.MeshStandardMaterial({
-      color: 0x38bdf8,
+      color: 0x4fc2a8,
       roughness: 0.35,
       metalness: 0.55
     });
@@ -57,8 +57,8 @@ const Fig3D = (() => {
       metalness: 0.03
     });
     const visorMat = new THREE.MeshStandardMaterial({
-      color: 0x38bdf8,
-      emissive: 0x0ea5e9,
+      color: 0x4fc2a8,
+      emissive: 0x2a9d8f,
       emissiveIntensity: 0.25,
       roughness: 0.15,
       metalness: 0.75
@@ -408,7 +408,7 @@ const Fig3D = (() => {
     scene.add(fillLight);
 
     // Cyan athletic rim light
-    const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.85);
+    const rimLight = new THREE.DirectionalLight(0x4fc2a8, 0.85);
     rimLight.position.set(-5, 4, -4);
     scene.add(rimLight);
 
@@ -427,7 +427,7 @@ const Fig3D = (() => {
 
     // Concentric training rings
     const ringGeo = new THREE.RingGeometry(1.6, 1.62, 32);
-    const ringMat = new THREE.MeshBasicMaterial({ color: 0x3b82f6, opacity: 0.35, transparent: true });
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0x4fc2a8, opacity: 0.35, transparent: true });
     const ringMesh = new THREE.Mesh(ringGeo, ringMat);
     ringMesh.rotation.x = -Math.PI / 2;
     ringMesh.position.y = 0.002;
