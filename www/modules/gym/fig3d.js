@@ -71,29 +71,29 @@ const Fig3D = (() => {
 
     // Head & Neck
     const headGroup = new THREE.Group();
-    const headMesh = new THREE.Mesh(new THREE.SphereGeometry(7 * S_SCALE, 16, 12), headMat);
-    headMesh.scale.set(0.9, 1.15, 1.0);
+    const headMesh = new THREE.Mesh(new THREE.SphereGeometry(2.5 * S_SCALE, 24, 16), headMat);
+    headMesh.scale.set(0.9, 1.1, 1.0);
     headGroup.add(headMesh);
 
     // Visor accent
-    const visorMesh = new THREE.Mesh(new THREE.BoxGeometry(7 * S_SCALE * 0.95, 2.5 * S_SCALE, 6 * S_SCALE), visorMat);
-    visorMesh.position.set(2 * S_SCALE, 0.5 * S_SCALE, 0);
+    const visorMesh = new THREE.Mesh(new THREE.BoxGeometry(2.4 * S_SCALE, 0.8 * S_SCALE, 1.6 * S_SCALE), visorMat);
+    visorMesh.position.set(0.8 * S_SCALE, 0.2 * S_SCALE, 0);
     headGroup.add(visorMesh);
 
-    const neckMesh = createLimbMesh(THREE, 2.4 * S_SCALE, 2.8 * S_SCALE, skinMat);
+    const neckMesh = createLimbMesh(THREE, 1.3 * S_SCALE, 1.5 * S_SCALE, skinMat);
     group.add(headGroup);
     group.add(neckMesh);
 
     // Torso (chest & abdomen & pelvis)
-    const chestMesh = new THREE.Mesh(new THREE.CylinderGeometry(8 * S_SCALE, 6.5 * S_SCALE, 18 * S_SCALE, 12), torsoMat);
-    chestMesh.scale.set(1.0, 1.0, 1.35); // wider across shoulders
-    const pelvisMesh = new THREE.Mesh(new THREE.CylinderGeometry(6.5 * S_SCALE, 5.5 * S_SCALE, 12 * S_SCALE, 12), torsoMat);
-    pelvisMesh.scale.set(0.95, 1.0, 1.25);
+    const chestMesh = new THREE.Mesh(new THREE.CylinderGeometry(3.8 * S_SCALE, 3.2 * S_SCALE, 20 * S_SCALE, 16), torsoMat);
+    chestMesh.scale.set(1.0, 1.0, 1.0); // wider across shoulders
+    const pelvisMesh = new THREE.Mesh(new THREE.CylinderGeometry(3.2 * S_SCALE, 2.8 * S_SCALE, 10 * S_SCALE, 16), torsoMat);
+    pelvisMesh.scale.set(1.0, 1.0, 1.0);
     group.add(chestMesh);
     group.add(pelvisMesh);
 
     // Joint Spheres
-    const jointGeom = new THREE.SphereGeometry(2.0 * S_SCALE, 12, 10);
+    const jointGeom = new THREE.SphereGeometry(1.0 * S_SCALE, 16, 12);
     const joints = {};
     for (const name of ["neck", "shR", "shL", "elR", "elL", "wrR", "wrL", "hipR", "hipL", "knR", "knL", "akR", "akL"]) {
       const jm = new THREE.Mesh(jointGeom, jointMat);
@@ -103,16 +103,16 @@ const Fig3D = (() => {
 
     // Limb segments
     const limbs = {
-      armUpperR: createLimbMesh(THREE, 2.5 * S_SCALE, 2.1 * S_SCALE, skinMat),
-      armUpperL: createLimbMesh(THREE, 2.5 * S_SCALE, 2.1 * S_SCALE, skinMat),
-      armLowerR: createLimbMesh(THREE, 2.0 * S_SCALE, 1.6 * S_SCALE, skinMat),
-      armLowerL: createLimbMesh(THREE, 2.0 * S_SCALE, 1.6 * S_SCALE, skinMat),
-      thighR: createLimbMesh(THREE, 3.8 * S_SCALE, 2.9 * S_SCALE, skinMat),
-      thighL: createLimbMesh(THREE, 3.8 * S_SCALE, 2.9 * S_SCALE, skinMat),
-      shinR: createLimbMesh(THREE, 2.8 * S_SCALE, 2.0 * S_SCALE, skinMat),
-      shinL: createLimbMesh(THREE, 2.8 * S_SCALE, 2.0 * S_SCALE, skinMat),
-      footR: new THREE.Mesh(new THREE.BoxGeometry(9 * S_SCALE, 2.2 * S_SCALE, 4 * S_SCALE), footMat),
-      footL: new THREE.Mesh(new THREE.BoxGeometry(9 * S_SCALE, 2.2 * S_SCALE, 4 * S_SCALE), footMat)
+      armUpperR: createLimbMesh(THREE, 1.3 * S_SCALE, 1.1 * S_SCALE, skinMat),
+      armUpperL: createLimbMesh(THREE, 1.3 * S_SCALE, 1.1 * S_SCALE, skinMat),
+      armLowerR: createLimbMesh(THREE, 1.0 * S_SCALE, 0.85 * S_SCALE, skinMat),
+      armLowerL: createLimbMesh(THREE, 1.0 * S_SCALE, 0.85 * S_SCALE, skinMat),
+      thighR: createLimbMesh(THREE, 2.0 * S_SCALE, 1.6 * S_SCALE, skinMat),
+      thighL: createLimbMesh(THREE, 2.0 * S_SCALE, 1.6 * S_SCALE, skinMat),
+      shinR: createLimbMesh(THREE, 1.4 * S_SCALE, 1.1 * S_SCALE, skinMat),
+      shinL: createLimbMesh(THREE, 1.4 * S_SCALE, 1.1 * S_SCALE, skinMat),
+      footR: new THREE.Mesh(new THREE.BoxGeometry(6 * S_SCALE, 1.5 * S_SCALE, 2.2 * S_SCALE), footMat),
+      footL: new THREE.Mesh(new THREE.BoxGeometry(6 * S_SCALE, 1.5 * S_SCALE, 2.2 * S_SCALE), footMat)
     };
 
     for (const k in limbs) group.add(limbs[k]);
@@ -127,10 +127,10 @@ const Fig3D = (() => {
     // Barbell
     const barMesh = new THREE.Mesh(new THREE.CylinderGeometry(1.2 * S_SCALE, 1.2 * S_SCALE, 44 * S_SCALE, 12), barMat);
     barMesh.rotateX(Math.PI / 2);
-    const plateR = new THREE.Mesh(new THREE.CylinderGeometry(9.5 * S_SCALE, 9.5 * S_SCALE, 2.2 * S_SCALE, 16), plateMat);
+    const plateR = new THREE.Mesh(new THREE.CylinderGeometry(4.5 * S_SCALE, 4.5 * S_SCALE, 2.2 * S_SCALE, 16), plateMat);
     plateR.rotateX(Math.PI / 2);
     plateR.position.z = 18 * S_SCALE;
-    const plateL = new THREE.Mesh(new THREE.CylinderGeometry(9.5 * S_SCALE, 9.5 * S_SCALE, 2.2 * S_SCALE, 16), plateMat);
+    const plateL = new THREE.Mesh(new THREE.CylinderGeometry(4.5 * S_SCALE, 4.5 * S_SCALE, 2.2 * S_SCALE, 16), plateMat);
     plateL.rotateX(Math.PI / 2);
     plateL.position.z = -18 * S_SCALE;
     const barbell = new THREE.Group();
@@ -186,7 +186,7 @@ const Fig3D = (() => {
       meshes.forEach(m => {
         if (m && m.material && m.material.emissive) {
           m.material.emissive.setHex(0xff7a2e);
-          m.material.emissiveIntensity = 0.8;
+          m.material.emissiveIntensity = 1.5;
         }
       });
     };
@@ -202,6 +202,7 @@ const Fig3D = (() => {
     else if (r.includes("baldır") || r.includes("baldır")) glow([mannequin.limbs.shinR, mannequin.limbs.shinL]);
     else if (r.includes("bacak") || r.includes("baldır")) glow([mannequin.limbs.thighR, mannequin.limbs.thighL, mannequin.limbs.shinR, mannequin.limbs.shinL]);
     else if (r.includes("boyun")) glow([mannequin.neckMesh]);
+    else glow([mannequin.chestMesh, mannequin.pelvisMesh, mannequin.limbs.armUpperR, mannequin.limbs.armUpperL, mannequin.limbs.thighR, mannequin.limbs.thighL]);
   }
   function to3D(pt2d, zOffset = 0) {
     // 2D: X0=80 center, Y goes down, FLOOR=136
@@ -214,8 +215,8 @@ const Fig3D = (() => {
 
   function applyPose(mannequin, J, def) {
     const isFront = def && def.view === "f";
-    const shw = isFront ? 0 : 8; // lateral shoulder offset
-    const hpw = isFront ? 0 : 5; // lateral hip offset
+    const shw = isFront ? 0 : 5; // lateral shoulder offset
+    const hpw = isFront ? 0 : 4; // lateral hip offset
 
     // Neck, Head, Hip
     const pNeck = to3D(J.neck, 0);

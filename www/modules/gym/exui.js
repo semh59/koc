@@ -101,10 +101,6 @@ function exSheet3D(id){
   ${!onboarded?`<div id="g3d-onboard" class="mut sm g3donboard">İlk kullanım: modeli döndürmek için sürükleyin, iki parmakla yakınlaştırın. <button class="btn sm ghost" onclick="localStorage.setItem('nw3d-onboarded','1');document.getElementById('g3d-onboard').remove()">Tamam</button></div>`:""}
   <div id="ex3d-box" class="ex3dbox"></div>
   <div class="mt-2 ex3dctrls" role="toolbar" aria-label="3D görünüm">
-    <button class="btn sm ghost" data-angle="persp" aria-pressed="true" onclick="g3DAngle('persp')">3/4</button>
-    <button class="btn sm ghost" data-angle="front" aria-pressed="false" onclick="g3DAngle('front')">Ön</button>
-    <button class="btn sm ghost" data-angle="side" aria-pressed="false" onclick="g3DAngle('side')">Yan</button>
-    <button class="btn sm ghost" data-angle="back" aria-pressed="false" onclick="g3DAngle('back')">Arka</button>
     <button class="btn sm ghost" id="g3d-playbtn" onclick="g3DTogglePlay()">⏸</button>
   </div>
   <div class="mt-3 btns"><button class="btn ghost" data-g="closesheet">Kapat</button></div>`);
@@ -117,14 +113,6 @@ function exSheet3D(id){
     if(gActive3DViewer.renderer&&gActive3DViewer.scene)gActive3DViewer.renderer.render(gActive3DViewer.scene,gActive3DViewer.camera);
     if(reducedMotion&&gActive3DViewer)gActive3DViewer.pause();
   },60);
-}
-function g3DAngle(v){
-  if(!gActive3DViewer)return;
-  Fig3D.setViewAngle(gActive3DViewer,v);
-  document.querySelectorAll(".ex3dctrls [data-angle]").forEach(b=>{
-    b.setAttribute("aria-pressed", b.getAttribute("data-angle")===v?"true":"false");
-    b.classList.toggle("active", b.getAttribute("data-angle")===v);
-  });
 }
 function g3DTogglePlay(){
   if(!gActive3DViewer)return;
