@@ -442,32 +442,23 @@ const Fig3D = (() => {
     });
     scene.add(mannequin.group);
 
-    let rafId = null;
-    let animating = false;
+    let animId = null;
+    let isRunning = true;
 
     function render() {
       renderer.render(scene, camera);
     }
 
-    function startLoop() {
-      if (rafId) return;
-      function loop() {
-        controls.update();
-        render();
-        rafId = requestAnimationFrame(loop);
-      }
-      rafId = requestAnimationFrame(loop);
+    function renderLoop() {
+      if (!isRunning) return;
+      controls.update();
+      render();
+      animId = requestAnimationFrame(renderLoop);
     }
+    renderLoop();
 
-    function stopLoop() {
-      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-    }
-
-    controls.addEventListener("start", startLoop);
-    controls.addEventListener("end", () => setTimeout(stopLoop, 600));
-
-    // Initial render
-    render();
+    controls.addEventListener("start", () => {});
+    controls.addEventListener("end", () => {});
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -514,7 +505,7 @@ const Fig3D = (() => {
       },
       dispose() {
         if (this._playTimer) { clearInterval(this._playTimer); this._playTimer = null; }
-        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+        if (animId) { cancelAnimationFrame(animId); animId = null; }
         if (this._resizeObserver) { this._resizeObserver.disconnect(); this._resizeObserver = null; }
         renderer.domElement.removeEventListener("keydown", keyHandler);
         controls.dispose();
