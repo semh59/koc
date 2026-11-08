@@ -17,7 +17,7 @@ const Fig3D = (() => {
 
   // Helper to create a stylized capsule/cylinder connecting two 3D points
   function createLimbMesh(THREE, radiusTop, radiusBottom, mat) {
-    const geom = new THREE.CylinderGeometry(radiusTop, radiusBottom, 1, 16);
+    const geom = new THREE.CylinderGeometry(radiusTop, radiusBottom, 1, 12);
     geom.translate(0, 0.5, 0); // pivot at base
     geom.rotateX(Math.PI / 2); // align along +Z
     return new THREE.Mesh(geom, mat);
@@ -71,7 +71,7 @@ const Fig3D = (() => {
 
     // Head & Neck
     const headGroup = new THREE.Group();
-    const headMesh = new THREE.Mesh(new THREE.SphereGeometry(7 * S_SCALE, 20, 16), headMat);
+    const headMesh = new THREE.Mesh(new THREE.SphereGeometry(7 * S_SCALE, 16, 12), headMat);
     headMesh.scale.set(0.9, 1.15, 1.0);
     headGroup.add(headMesh);
 
@@ -85,15 +85,15 @@ const Fig3D = (() => {
     group.add(neckMesh);
 
     // Torso (chest & abdomen & pelvis)
-    const chestMesh = new THREE.Mesh(new THREE.CylinderGeometry(8 * S_SCALE, 6.5 * S_SCALE, 18 * S_SCALE, 16), torsoMat);
+    const chestMesh = new THREE.Mesh(new THREE.CylinderGeometry(8 * S_SCALE, 6.5 * S_SCALE, 18 * S_SCALE, 12), torsoMat);
     chestMesh.scale.set(1.0, 1.0, 1.35); // wider across shoulders
-    const pelvisMesh = new THREE.Mesh(new THREE.CylinderGeometry(6.5 * S_SCALE, 5.5 * S_SCALE, 12 * S_SCALE, 16), torsoMat);
+    const pelvisMesh = new THREE.Mesh(new THREE.CylinderGeometry(6.5 * S_SCALE, 5.5 * S_SCALE, 12 * S_SCALE, 12), torsoMat);
     pelvisMesh.scale.set(0.95, 1.0, 1.25);
     group.add(chestMesh);
     group.add(pelvisMesh);
 
     // Joint Spheres
-    const jointGeom = new THREE.SphereGeometry(2.0 * S_SCALE, 14, 12);
+    const jointGeom = new THREE.SphereGeometry(2.0 * S_SCALE, 12, 10);
     const joints = {};
     for (const name of ["neck", "shR", "shL", "elR", "elL", "wrR", "wrL", "hipR", "hipL", "knR", "knL", "akR", "akL"]) {
       const jm = new THREE.Mesh(jointGeom, jointMat);
@@ -125,12 +125,12 @@ const Fig3D = (() => {
     const benchFrameMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.2, metalness: 0.8 });
 
     // Barbell
-    const barMesh = new THREE.Mesh(new THREE.CylinderGeometry(1.2 * S_SCALE, 1.2 * S_SCALE, 44 * S_SCALE, 16), barMat);
+    const barMesh = new THREE.Mesh(new THREE.CylinderGeometry(1.2 * S_SCALE, 1.2 * S_SCALE, 44 * S_SCALE, 12), barMat);
     barMesh.rotateX(Math.PI / 2);
-    const plateR = new THREE.Mesh(new THREE.CylinderGeometry(9.5 * S_SCALE, 9.5 * S_SCALE, 2.2 * S_SCALE, 24), plateMat);
+    const plateR = new THREE.Mesh(new THREE.CylinderGeometry(9.5 * S_SCALE, 9.5 * S_SCALE, 2.2 * S_SCALE, 16), plateMat);
     plateR.rotateX(Math.PI / 2);
     plateR.position.z = 18 * S_SCALE;
-    const plateL = new THREE.Mesh(new THREE.CylinderGeometry(9.5 * S_SCALE, 9.5 * S_SCALE, 2.2 * S_SCALE, 24), plateMat);
+    const plateL = new THREE.Mesh(new THREE.CylinderGeometry(9.5 * S_SCALE, 9.5 * S_SCALE, 2.2 * S_SCALE, 16), plateMat);
     plateL.rotateX(Math.PI / 2);
     plateL.position.z = -18 * S_SCALE;
     const barbell = new THREE.Group();
@@ -372,7 +372,7 @@ const Fig3D = (() => {
     scene.add(rimLight);
 
     // Floor Platform & Grid
-    const floorGeo = new THREE.CircleGeometry(2.4, 32);
+    const floorGeo = new THREE.CircleGeometry(2.4, 24);
     const floorMat = new THREE.MeshStandardMaterial({
       color: 0x0f172a,
       roughness: 0.85,
@@ -385,7 +385,7 @@ const Fig3D = (() => {
     scene.add(floorMesh);
 
     // Concentric training rings
-    const ringGeo = new THREE.RingGeometry(1.6, 1.62, 48);
+    const ringGeo = new THREE.RingGeometry(1.6, 1.62, 32);
     const ringMat = new THREE.MeshBasicMaterial({ color: 0x3b82f6, opacity: 0.35, transparent: true });
     const ringMesh = new THREE.Mesh(ringGeo, ringMat);
     ringMesh.rotation.x = -Math.PI / 2;
