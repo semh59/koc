@@ -1,0 +1,17 @@
+{
+  "generatedAt": "2026-11-09T17:16:26.516Z",
+  "files": [
+    {
+      "path": "www/modules/gym/human-equipment.js",
+      "sha256": "c34e6c9fb138df203366bd6b6cfd590df94deb042e041a0e6e6143bd287d166c"
+    },
+    {
+      "path": "scripts/gym-human-equipment.test.js",
+      "sha256": "8cda2f1327f22a56f153b7671258d946d203ff5d0919e0477f9a4096499d01e2"
+    },
+    {
+      "path": "www/modules/gym/human-rig.js",
+      "sha256": "05eec7f87b58399c621606b5873444ffaaa47e82de79f905da61d5eefbb65792"
+    }
+  ]
+}

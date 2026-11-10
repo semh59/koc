@@ -1,0 +1,6 @@
+PASS index.html: every script, style and image path exists
+PASS relative import() and require() paths in code exist
+PASS every app script is loaded by index.html
+All passed
+
+EXIT 0

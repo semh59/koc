@@ -1,0 +1,19 @@
+Actual GLB 947f9b100d6fc5130ad264b895d3b824a2bc5a917ba271cf0a51a41133c63b21 vertices 14517 pilot masks { chest: 350, triceps: 278, frontDeltoid: 118 }
+AssertionError [ERR_ASSERTION]: exact approved pilot region counts
++ actual - expected
+
+  {
++   chest: 292,
+-   chest: 350,
+    frontDeltoid: 118,
+    triceps: 278
+  }
+
+    at main (D:\PROJECT\NeoWell\scripts\gym-human-muscles.test.js:44:9) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: [Object],
+  expected: [Object],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}

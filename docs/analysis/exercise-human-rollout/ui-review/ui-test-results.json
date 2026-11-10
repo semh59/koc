@@ -1,0 +1,73 @@
+{
+  "time": "2026-11-10T11:29:19.270Z",
+  "tier": "jsdom actual-app caller with controlled async Fig3D; real Fig3D VM instrumented WebGLRenderer (not real GPU)",
+  "sourceSha256": "9653185b59fb603a536b001af09dead30ba3630bd258ddc3e280f638d8191855",
+  "passed": 16,
+  "failed": 0,
+  "results": [
+    {
+      "name": "actual app click -> gClick -> exSheet3D passes full catalog metadata and _template",
+      "pass": true
+    },
+    {
+      "name": "reduced-motion starts paused and pause/resume button stays synchronized",
+      "pass": true
+    },
+    {
+      "name": "actual closeSheet disposes active viewer and clears canvas/scheduled playback",
+      "pass": true
+    },
+    {
+      "name": "close during async load disposes late viewer even though hidden box stays connected",
+      "pass": true
+    },
+    {
+      "name": "mutation proof removes only generation guard and fails intended late-disposal assertion",
+      "pass": true
+    },
+    {
+      "name": "quick switch after loader starts leaves only newest viewer playback and canvas",
+      "pass": true
+    },
+    {
+      "name": "quick switch before 60ms callbacks creates no redundant/orphan pending viewer",
+      "pass": true
+    },
+    {
+      "name": "load rejection shows fallback and actual detail can reopen usable 2D",
+      "pass": true
+    },
+    {
+      "name": "post-create play failure disposes acquired viewer rather than holding GPU until close",
+      "pass": true
+    },
+    {
+      "name": "normal exercise sheet/3D contains no pilot/developer labels and marks masks schematic",
+      "pass": true
+    },
+    {
+      "name": "primary/secondary returned muscle identifiers are displayed as readable text",
+      "pass": true
+    },
+    {
+      "name": "real Fig3D GLB rejection releases renderer/controls/scene and removes canvas (VM instrumented)",
+      "pass": true
+    },
+    {
+      "name": "real Fig3D calibration fetch rejection releases already-loaded GLB resources (VM instrumented)",
+      "pass": true
+    },
+    {
+      "name": "standalone figure-3d.html shows fallback when viewer load fails",
+      "pass": true
+    },
+    {
+      "name": "HTML entries load human dependencies before Fig3D; approved GLB and calibration ship under webDir",
+      "pass": true
+    },
+    {
+      "name": "standalone figure-3d.html pause uses current viewer pause API, not removed interval field",
+      "pass": true
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+Actual GLB 947f9b100d6fc5130ad264b895d3b824a2bc5a917ba271cf0a51a41133c63b21 vertices 14517 pilot masks { chest: 350, triceps: 278, frontDeltoid: 118 }
+PASS exact pilot masks/colors, original GLB accessors/material/baseColor/map, opaque body
+AssertionError [ERR_ASSERTION]: independent local envelope / no limb leak Biseps vertex 1463
+    at main (D:\PROJECT\NeoWell\scripts\gym-human-muscles.test.js:100:4) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}

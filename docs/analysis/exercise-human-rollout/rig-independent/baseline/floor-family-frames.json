@@ -1,0 +1,882 @@
+[
+  {
+    "name": "squat",
+    "phase": 0,
+    "minY": 4.163336342344337e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification."
+      ],
+      "family": "standing",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "squat",
+    "phase": 0.25,
+    "minY": 2.7755575615628914e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification."
+      ],
+      "family": "standing",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "squat",
+    "phase": 0.5,
+    "minY": 1.1102230246251565e-16,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification."
+      ],
+      "family": "standing",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "squat",
+    "phase": 0.75,
+    "minY": 2.7755575615628914e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification."
+      ],
+      "family": "standing",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "squat",
+    "phase": 1,
+    "minY": 4.163336342344337e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification."
+      ],
+      "family": "standing",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "run",
+    "phase": 0,
+    "minY": 5.551115123125783e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification."
+      ],
+      "family": "standing",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "run",
+    "phase": 0.25,
+    "minY": 4.163336342344337e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification."
+      ],
+      "family": "standing",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "run",
+    "phase": 0.5,
+    "minY": 5.551115123125783e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification."
+      ],
+      "family": "standing",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "run",
+    "phase": 0.75,
+    "minY": 4.163336342344337e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification."
+      ],
+      "family": "standing",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "run",
+    "phase": 1,
+    "minY": 5.551115123125783e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification."
+      ],
+      "family": "standing",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "walk",
+    "phase": 0,
+    "minY": -6.938893903907228e-18,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification."
+      ],
+      "family": "standing",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "walk",
+    "phase": 0.25,
+    "minY": -7.28583859910259e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification."
+      ],
+      "family": "standing",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "walk",
+    "phase": 0.5,
+    "minY": -6.938893903907228e-18,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification."
+      ],
+      "family": "standing",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "walk",
+    "phase": 0.75,
+    "minY": -7.28583859910259e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification."
+      ],
+      "family": "standing",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "walk",
+    "phase": 1,
+    "minY": -6.938893903907228e-18,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification."
+      ],
+      "family": "standing",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "bridge",
+    "phase": 0,
+    "minY": 8.326672684688674e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "horizontal",
+      "floorCorrection": 0.10702472529695473
+    }
+  },
+  {
+    "name": "bridge",
+    "phase": 0.25,
+    "minY": 1.1102230246251565e-16,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "horizontal",
+      "floorCorrection": 0.032316877406272884
+    }
+  },
+  {
+    "name": "bridge",
+    "phase": 0.5,
+    "minY": 0.027874015118698886,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "standing",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "bridge",
+    "phase": 0.75,
+    "minY": 1.1102230246251565e-16,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "horizontal",
+      "floorCorrection": 0.032316877406272884
+    }
+  },
+  {
+    "name": "bridge",
+    "phase": 1,
+    "minY": 8.326672684688674e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "horizontal",
+      "floorCorrection": 0.10702472529695473
+    }
+  },
+  {
+    "name": "bench",
+    "phase": 0,
+    "minY": 0,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "horizontal",
+      "floorCorrection": 0.07584300834883256
+    }
+  },
+  {
+    "name": "bench",
+    "phase": 0.25,
+    "minY": 0,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "horizontal",
+      "floorCorrection": 0.07584300834883256
+    }
+  },
+  {
+    "name": "bench",
+    "phase": 0.5,
+    "minY": 0,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "horizontal",
+      "floorCorrection": 0.07584300834883256
+    }
+  },
+  {
+    "name": "bench",
+    "phase": 0.75,
+    "minY": 0,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "horizontal",
+      "floorCorrection": 0.07584300834883256
+    }
+  },
+  {
+    "name": "bench",
+    "phase": 1,
+    "minY": 0,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "horizontal",
+      "floorCorrection": 0.07584300834883256
+    }
+  },
+  {
+    "name": "crunch",
+    "phase": 0,
+    "minY": -1.3877787807814457e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "horizontal",
+      "floorCorrection": 0.07486246196360255
+    }
+  },
+  {
+    "name": "crunch",
+    "phase": 0.25,
+    "minY": 1.6265837565754282e-9,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "horizontal",
+      "floorCorrection": 0.0743204678394964
+    }
+  },
+  {
+    "name": "crunch",
+    "phase": 0.5,
+    "minY": 5.551115123125783e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "standing",
+      "floorCorrection": 0.07504618952295983
+    }
+  },
+  {
+    "name": "crunch",
+    "phase": 0.75,
+    "minY": 1.6265837565754282e-9,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "horizontal",
+      "floorCorrection": 0.0743204678394964
+    }
+  },
+  {
+    "name": "crunch",
+    "phase": 1,
+    "minY": -1.3877787807814457e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "horizontal",
+      "floorCorrection": 0.07486246196360255
+    }
+  },
+  {
+    "name": "situp",
+    "phase": 0,
+    "minY": -1.3877787807814457e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "horizontal",
+      "floorCorrection": 0.07486246196360255
+    }
+  },
+  {
+    "name": "situp",
+    "phase": 0.25,
+    "minY": 1.1102230246251565e-16,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "standing",
+      "floorCorrection": 0.07769059745799645
+    }
+  },
+  {
+    "name": "situp",
+    "phase": 0.5,
+    "minY": 3.3306690738754696e-16,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "standing",
+      "floorCorrection": 0.0805081935964791
+    }
+  },
+  {
+    "name": "situp",
+    "phase": 0.75,
+    "minY": 1.1102230246251565e-16,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "standing",
+      "floorCorrection": 0.07769059745799645
+    }
+  },
+  {
+    "name": "situp",
+    "phase": 1,
+    "minY": -1.3877787807814457e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "horizontal",
+      "floorCorrection": 0.07486246196360255
+    }
+  },
+  {
+    "name": "legraise",
+    "phase": 0,
+    "minY": 1.3974479212697233e-9,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "horizontal",
+      "floorCorrection": 0.07694863128072628
+    }
+  },
+  {
+    "name": "legraise",
+    "phase": 0.25,
+    "minY": -1.3877787807814457e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "horizontal",
+      "floorCorrection": 0.07486246196360255
+    }
+  },
+  {
+    "name": "legraise",
+    "phase": 0.5,
+    "minY": -1.3877787807814457e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "horizontal",
+      "floorCorrection": 0.07486246196360255
+    }
+  },
+  {
+    "name": "legraise",
+    "phase": 0.75,
+    "minY": -1.3877787807814457e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "horizontal",
+      "floorCorrection": 0.07486246196360255
+    }
+  },
+  {
+    "name": "legraise",
+    "phase": 1,
+    "minY": 1.3974479212697233e-9,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "horizontal",
+      "floorCorrection": 0.07694863128072628
+    }
+  },
+  {
+    "name": "legext",
+    "phase": 0,
+    "minY": -5.551115123125783e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "sitting",
+      "floorCorrection": 0.047987731795018196
+    }
+  },
+  {
+    "name": "legext",
+    "phase": 0.25,
+    "minY": 0.07717659445001102,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "sitting",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "legext",
+    "phase": 0.5,
+    "minY": 0.23253867866552203,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "sitting",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "legext",
+    "phase": 0.75,
+    "minY": 0.07717659445001102,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "sitting",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "legext",
+    "phase": 1,
+    "minY": -5.551115123125783e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "sitting",
+      "floorCorrection": 0.047987731795018196
+    }
+  },
+  {
+    "name": "legpress",
+    "phase": 0,
+    "minY": 0.1847198477842305,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "standing",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "legpress",
+    "phase": 0.25,
+    "minY": 0.18345272407191987,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "standing",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "legpress",
+    "phase": 0.5,
+    "minY": 0.1825730763805668,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "standing",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "legpress",
+    "phase": 0.75,
+    "minY": 0.18345272407191987,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "standing",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "legpress",
+    "phase": 1,
+    "minY": 0.1847198477842305,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "standing",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "pullup",
+    "phase": 0,
+    "minY": 0.06864750036062013,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification."
+      ],
+      "family": "hanging",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "pullup",
+    "phase": 0.25,
+    "minY": 0.3245315511487499,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification."
+      ],
+      "family": "hanging",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "pullup",
+    "phase": 0.5,
+    "minY": 0.6431940672744729,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification."
+      ],
+      "family": "hanging",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "pullup",
+    "phase": 0.75,
+    "minY": 0.3245315511487499,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification."
+      ],
+      "family": "hanging",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "pullup",
+    "phase": 1,
+    "minY": 0.06864750036062013,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification."
+      ],
+      "family": "hanging",
+      "floorCorrection": 0
+    }
+  },
+  {
+    "name": "balwalk",
+    "phase": 0,
+    "minY": 6.938893903907228e-18,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "standing",
+      "floorCorrection": 0.09559657538657627
+    }
+  },
+  {
+    "name": "balwalk",
+    "phase": 0.25,
+    "minY": 1.3877787807814457e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "standing",
+      "floorCorrection": 0.09504502882614174
+    }
+  },
+  {
+    "name": "balwalk",
+    "phase": 0.5,
+    "minY": 1.3877787807814457e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "standing",
+      "floorCorrection": 0.09559657538657627
+    }
+  },
+  {
+    "name": "balwalk",
+    "phase": 0.75,
+    "minY": 1.734723475976807e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "standing",
+      "floorCorrection": 0.09504502882614177
+    }
+  },
+  {
+    "name": "balwalk",
+    "phase": 1,
+    "minY": 1.3877787807814457e-17,
+    "status": {
+      "solver": "generic",
+      "limitations": [
+        "Direction retarget preserves bind lengths; 2D targets are not exact 3D end-effector contacts.",
+        "Generic palm, toe, joint twist and equipment contacts require family-specific skin/visual qualification.",
+        "Hip support height follows scene units; bench/seat and floor collisions are not IK constrained."
+      ],
+      "family": "standing",
+      "floorCorrection": 0.09559657538657627
+    }
+  }
+]

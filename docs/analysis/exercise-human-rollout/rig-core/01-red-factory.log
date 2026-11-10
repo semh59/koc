@@ -1,0 +1,10 @@
+GLB parsed: 947f9b100d6fc5130ad264b895d3b824a2bc5a917ba271cf0a51a41133c63b21
+AssertionError [ERR_ASSERTION]: HumanRig core missing after actual GLB parse
+    at main (D:\PROJECT\NeoWell\scripts\gym-human-rig.test.js:17:2) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}

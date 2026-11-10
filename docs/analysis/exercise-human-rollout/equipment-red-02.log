@@ -1,0 +1,10 @@
+PASS real THREE factory / visible bar / both-hand anchor / external plates / meter bounds
+AssertionError [ERR_ASSERTION]: visible db geometry
+    at main (D:\PROJECT\NeoWell\scripts\gym-human-equipment.test.js:26:44) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}

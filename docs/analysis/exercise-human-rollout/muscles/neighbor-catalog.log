@@ -1,0 +1,9 @@
+PASS generated catalog baseline is exactly 324 records
+PASS balance supplemental baseline is six records
+PASS walking supplemental baseline is two records
+PASS full runtime baseline has 332 unique records
+PASS every catalog record has required fields
+PASS every catalog record has a known figure and form cue
+PASS catalog ids and names are unique
+PASS catalog enums stay within production values
+All passed

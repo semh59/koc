@@ -1,0 +1,12 @@
+AssertionError [ERR_ASSERTION]: production viewer must load approved AthleticMaleBody, not old mannequin
+
+false !== true
+
+    at D:\PROJECT\NeoWell\scripts\gym-human-viewer.test.cjs:7:608 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: 'strictEqual',
+  diff: 'simple'
+}

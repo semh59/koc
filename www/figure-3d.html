@@ -62,11 +62,21 @@
   <script src="vendor/three/three.bundle.js"></script>
   <script src="modules/gym/figlib.js"></script>
   <script src="modules/gym/figtpl.js"></script>
-  <script src="modules/gym/fig3d.js"></script>
+  <script src="modules/gym/human-rig.js"></script>
+<script src="modules/gym/human-muscles.js"></script>
+<script src="modules/gym/human-equipment.js"></script>
+<script src="modules/gym/fig3d.js"></script>
   <script>
     window.addEventListener("DOMContentLoaded", async () => {
       const box = document.getElementById("view3d");
-      const viewer = await Fig3D.createViewer(box, { width: box.clientWidth, height: box.clientHeight });
+      let viewer;
+      try {
+        viewer = await Fig3D.createViewer(box, { width: box.clientWidth, height: box.clientHeight });
+      } catch (error) {
+        console.error("3D viewer yüklenemedi", error);
+        box.textContent = "3D görünüm yüklenemedi. Egzersiz açıklaması kullanılabilir.";
+        return;
+      }
       window.addEventListener("resize", () => {
         viewer.resize(box.clientWidth, box.clientHeight);
       });
@@ -89,10 +99,10 @@
 
       document.getElementById("btn-pause").onclick = () => {
         if (isPaused) {
-          loadExercise(currentTpl);
+          viewer.resume();
           isPaused = false;
         } else {
-          if (viewer._playTimer) clearInterval(viewer._playTimer);
+          viewer.pause();
           isPaused = true;
         }
       };

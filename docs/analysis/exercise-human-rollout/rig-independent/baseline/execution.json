@@ -1,0 +1,9 @@
+{
+  "command": "node docs/analysis/exercise-human-rollout/rig-independent/run-original.cjs baseline",
+  "exit": 0,
+  "signal": null,
+  "error": null,
+  "ms": 8281,
+  "stdout": "GLB parsed: 947f9b100d6fc5130ad264b895d3b824a2bc5a917ba271cf0a51a41133c63b21\nPASS factory contract / actual GLB\nPASS approved pushup contacts / knees / elbows / reset / bind\nPASS all 60 templates / actual frames / independent directions / override dispatch\nPASS skin floor / scene families / independent sides / one-shot endpoint\nPASS exact pilot source equivalence / independent skin toe and heel regions\nPASS invalid rig / finite input / physical scale guards\n",
+  "stderr": ""
+}

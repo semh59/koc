@@ -1,0 +1,17 @@
+PASS 3D Three.js bundle integrity and OrbitControls verified
+D:\PROJECT\NeoWell\www\modules\gym\fig3d.js:6
+function applyPose(m,J,def,phase=0){m._humanRig.pose(J,def,phase);if(m._equipment)m._equipment.update(J,def,m._humanRig);}
+                                                ^
+
+TypeError: Cannot read properties of undefined (reading 'pose')
+    at Object.applyPose (D:\PROJECT\NeoWell\www\modules\gym\fig3d.js:6:49)
+    at Object.<anonymous> (D:\PROJECT\NeoWell\scripts\gym-3d.test.js:65:7)
+    at Module._compile (node:internal/modules/cjs/loader:1872:14)
+    at Object..js (node:internal/modules/cjs/loader:2003:10)
+    at Module.load (node:internal/modules/cjs/loader:1594:32)
+    at Module._load (node:internal/modules/cjs/loader:1396:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47
+
+Node.js v24.19.0

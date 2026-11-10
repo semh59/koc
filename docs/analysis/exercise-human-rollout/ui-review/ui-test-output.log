@@ -1,0 +1,18 @@
+PASS actual app click -> gClick -> exSheet3D passes full catalog metadata and _template
+PASS reduced-motion starts paused and pause/resume button stays synchronized
+PASS actual closeSheet disposes active viewer and clears canvas/scheduled playback
+PASS close during async load disposes late viewer even though hidden box stays connected
+MUTATION RED (expected): late viewer must be disposed after real app close  0 !== 1
+PASS mutation proof removes only generation guard and fails intended late-disposal assertion
+PASS quick switch after loader starts leaves only newest viewer playback and canvas
+PASS quick switch before 60ms callbacks creates no redundant/orphan pending viewer
+PASS load rejection shows fallback and actual detail can reopen usable 2D
+PASS post-create play failure disposes acquired viewer rather than holding GPU until close
+PASS normal exercise sheet/3D contains no pilot/developer labels and marks masks schematic
+PASS primary/secondary returned muscle identifiers are displayed as readable text
+PASS real Fig3D GLB rejection releases renderer/controls/scene and removes canvas (VM instrumented)
+PASS real Fig3D calibration fetch rejection releases already-loaded GLB resources (VM instrumented)
+PASS standalone figure-3d.html shows fallback when viewer load fails
+PASS HTML entries load human dependencies before Fig3D; approved GLB and calibration ship under webDir
+PASS standalone figure-3d.html pause uses current viewer pause API, not removed interval field
+SUMMARY PASS 16 FAIL 0

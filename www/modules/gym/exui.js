@@ -87,8 +87,8 @@ function exCharts(id){
   exChM="e";exChI=null;exChId=id;
   return `<div id="xch">${exChartBody(id)}</div><p class="hint">Tüm geçmiş. 1TM setten hesaplanan bir tahmindir (Epley). Grafiğe dokununca o seansın değeri görünür.</p>`;
 }
-let gActive3DViewer=null;
-function g3DStop(){if(gActive3DViewer){gActive3DViewer.dispose();gActive3DViewer=null}}
+let gActive3DViewer=null,g3DGeneration=0;
+function g3DStop(){g3DGeneration++;if(gActive3DViewer){gActive3DViewer.dispose();gActive3DViewer=null}}
 function exSheet3D(id){
   g3DStop();
   const e=gEx(id),d=e.tp?exDef(e):null;
@@ -104,14 +104,25 @@ function exSheet3D(id){
     <button class="btn sm ghost" id="g3d-playbtn" onclick="g3DTogglePlay()">⏸</button>
   </div>
   <div class="mt-3 btns"><button class="btn ghost" data-g="closesheet">Kapat</button></div>`);
+  const generation=g3DGeneration;
   setTimeout(async()=>{
+    if(generation!==g3DGeneration)return;
     const box=document.getElementById("ex3d-box");
     if(!box||!window.THREE)return;
-    gActive3DViewer=await Fig3D.createViewer(box,{width:box.clientWidth,height:box.clientHeight});
-    Fig3D.play(gActive3DViewer,d);
-    Fig3D.highlightRegions(gActive3DViewer.mannequin,e.r||"");
-    if(gActive3DViewer.renderer&&gActive3DViewer.scene)gActive3DViewer.renderer.render(gActive3DViewer.scene,gActive3DViewer.camera);
-    if(reducedMotion&&gActive3DViewer)gActive3DViewer.pause();
+    let viewer=null;
+    try{
+      viewer=await Fig3D.createViewer(box,{width:box.clientWidth,height:box.clientHeight});
+      if(generation!==g3DGeneration||!box.isConnected){viewer.dispose();return;}
+      gActive3DViewer=viewer;
+      Fig3D.play(viewer,Object.assign({},d,{_template:e.tp}));
+      const muscles=Fig3D.highlightRegions(viewer.mannequin,e);
+      viewer.render();
+      const legend=document.createElement("p");legend.className="mut sm";
+      const names=muscles.primary.concat(muscles.secondary).join(", ");
+      legend.textContent=`Kırmızı: ana kas · Turuncu: yardımcı kas. Vurgulanan: ${names||"tanımlı kas yok"}. Kas alanları şematiktir.`;
+      box.after(legend);
+      if(reducedMotion){viewer.pause();const button=document.getElementById("g3d-playbtn");if(button)button.textContent="▶";}
+    }catch(error){if(viewer){viewer.dispose();if(gActive3DViewer===viewer)gActive3DViewer=null;}if(generation===g3DGeneration&&box.isConnected)box.textContent="3D görünüm yüklenemedi. 2D gösterim kullanılabilir.";console.error(error);}
   },60);
 }
 function g3DTogglePlay(){
@@ -126,7 +137,7 @@ function exSheet(id){
   const w=gActive(),inW=w&&w.ex.some(x=>x.id===id);
   openSheet(`<h3>${esc(e.n)}</h3><div class="mut sm">${e.r||e.g}${e.q?" · "+e.q:""}${e.l?" · "+exLv(e.l):""}${e.c?" · "+EXCAT[e.c]:""}</div>
   ${d?`<div class="exvis"><div class="exfig">${FigLib.svg(d,{anim:true,label:e.n,variant:"volume",ghost:false})}</div></div>`:""}
-  ${d?`<div class="ex3dbar"><button class="btn sm ghost" data-g="open3d:${id}">🎮 3D Mannequin (Serbest Açı)</button></div>`:""}
+  ${d?`<div class="ex3dbar"><button class="btn sm ghost" data-g="open3d:${id}">3D İnsan Modeli · Serbest Açı</button></div>`:""}
   ${cues?`<ul class="cues">${cues}</ul>`:""}
   <div class="mut sm">Kayıt türü: ${EXKIND[e.k||"w"]}</div>${exHistLine(e)}${exCharts(id)}
   <div class="mt-3 btns"><button class="btn" data-g="exadd:${id}">${inW?"Antrenmanda ekli":"Antrenmana ekle"}</button><button class="btn ghost" data-g="closesheet">Kapat</button></div>`);

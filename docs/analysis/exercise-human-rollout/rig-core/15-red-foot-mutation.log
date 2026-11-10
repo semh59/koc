@@ -1,0 +1,12 @@
+GLB parsed: 947f9b100d6fc5130ad264b895d3b824a2bc5a917ba271cf0a51a41133c63b21
+PASS factory contract / actual GLB
+PASS approved pushup contacts / knees / elbows / reset / bind
+AssertionError [ERR_ASSERTION]: squat source foot orientation l
+    at main (D:\PROJECT\NeoWell\scripts\gym-human-rig.test.js:64:6) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}

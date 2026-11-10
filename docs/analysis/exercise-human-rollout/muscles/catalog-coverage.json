@@ -1,0 +1,6963 @@
+[
+  {
+    "id": "squat",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "squat",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "fullsquat",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "squat",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "frontsquat",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "squat",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "bwsquat",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "squat",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "goblet",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "squat",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "dbsquat",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "squat",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "widesquat",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "squat",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "narrowsquat",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "squat",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "smithsquat",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "squat",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "boxsquat",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "squat",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "ohsquat",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "squat",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "pliesquat",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "squat",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "chairsquat",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "squat",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "jumpsquat",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "squat",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "hacksquat",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "squat",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "bblunge",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "lunge",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "dblunge",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "lunge",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "walklunge",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "lunge",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "rearlunge",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "lunge",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "splitsquat",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "lunge",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "dbstepup",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "stepup",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "bbstepup",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "stepup",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "legpress",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "legpress",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "narrowpress",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "legpress",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "smithpress",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "legpress",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "legext",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "legext",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "legext1",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "legext",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "rdl",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "rdl",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "stiffdl",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "hinge",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "dbstiffdl",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "hinge",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "goodmorning",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "hinge",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "legcurl",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "legcurl",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "seatedcurl",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "legcurl",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "standcurl",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "legcurl",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "ballcurl",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "legcurl",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "ghr",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "backext",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "revhyper",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "backext",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "kbdl1",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "kbdl1",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "kbswing",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "hinge",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "sumodl",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "hinge",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "cleandl",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "hinge",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "widestiff",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "hinge",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "bandgm",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "hinge",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "cabledl",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "hinge",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "trapdl",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "hinge",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "hipthrust",
+    "r": "Kalça",
+    "g": "Bacak",
+    "tp": "bridge",
+    "primary": [
+      "glutes"
+    ],
+    "secondary": [],
+    "counts": {
+      "glutes": 120
+    },
+    "sides": {
+      "glutes": {
+        "left": 60,
+        "right": 60
+      }
+    },
+    "total": 120,
+    "warnings": []
+  },
+  {
+    "id": "glutebridge",
+    "r": "Kalça",
+    "g": "Bacak",
+    "tp": "bridge",
+    "primary": [
+      "glutes"
+    ],
+    "secondary": [],
+    "counts": {
+      "glutes": 120
+    },
+    "sides": {
+      "glutes": {
+        "left": 60,
+        "right": 60
+      }
+    },
+    "total": 120,
+    "warnings": []
+  },
+  {
+    "id": "bridge",
+    "r": "Kalça",
+    "g": "Bacak",
+    "tp": "bridge",
+    "primary": [
+      "glutes"
+    ],
+    "secondary": [],
+    "counts": {
+      "glutes": 120
+    },
+    "sides": {
+      "glutes": {
+        "left": 60,
+        "right": 60
+      }
+    },
+    "total": 120,
+    "warnings": []
+  },
+  {
+    "id": "bridge1",
+    "r": "Kalça",
+    "g": "Bacak",
+    "tp": "bridge",
+    "primary": [
+      "glutes"
+    ],
+    "secondary": [],
+    "counts": {
+      "glutes": 120
+    },
+    "sides": {
+      "glutes": {
+        "left": 60,
+        "right": 60
+      }
+    },
+    "total": 120,
+    "warnings": []
+  },
+  {
+    "id": "ballbridge",
+    "r": "Kalça",
+    "g": "Bacak",
+    "tp": "bridge",
+    "primary": [
+      "glutes"
+    ],
+    "secondary": [],
+    "counts": {
+      "glutes": 120
+    },
+    "sides": {
+      "glutes": {
+        "left": 60,
+        "right": 60
+      }
+    },
+    "total": 120,
+    "warnings": []
+  },
+  {
+    "id": "bandbridge",
+    "r": "Kalça",
+    "g": "Bacak",
+    "tp": "bridge",
+    "primary": [
+      "glutes"
+    ],
+    "secondary": [],
+    "counts": {
+      "glutes": 120
+    },
+    "sides": {
+      "glutes": {
+        "left": 60,
+        "right": 60
+      }
+    },
+    "total": 120,
+    "warnings": []
+  },
+  {
+    "id": "pullthrough",
+    "r": "Kalça",
+    "g": "Bacak",
+    "tp": "hinge",
+    "primary": [
+      "glutes"
+    ],
+    "secondary": [],
+    "counts": {
+      "glutes": 120
+    },
+    "sides": {
+      "glutes": {
+        "left": 60,
+        "right": 60
+      }
+    },
+    "total": 120,
+    "warnings": []
+  },
+  {
+    "id": "kickbackglute",
+    "r": "Kalça",
+    "g": "Bacak",
+    "tp": "legcurl",
+    "primary": [
+      "glutes"
+    ],
+    "secondary": [],
+    "counts": {
+      "glutes": 120
+    },
+    "sides": {
+      "glutes": {
+        "left": 60,
+        "right": 60
+      }
+    },
+    "total": 120,
+    "warnings": []
+  },
+  {
+    "id": "cablekick",
+    "r": "Kalça",
+    "g": "Bacak",
+    "tp": "legcurl",
+    "primary": [
+      "glutes"
+    ],
+    "secondary": [],
+    "counts": {
+      "glutes": 120
+    },
+    "sides": {
+      "glutes": {
+        "left": 60,
+        "right": 60
+      }
+    },
+    "total": 120,
+    "warnings": []
+  },
+  {
+    "id": "stepupknee",
+    "r": "Kalça",
+    "g": "Bacak",
+    "tp": "stepup",
+    "primary": [
+      "glutes"
+    ],
+    "secondary": [],
+    "counts": {
+      "glutes": 120
+    },
+    "sides": {
+      "glutes": {
+        "left": 60,
+        "right": 60
+      }
+    },
+    "total": 120,
+    "warnings": []
+  },
+  {
+    "id": "monsterwalk",
+    "r": "Kalça",
+    "g": "Bacak",
+    "tp": "legspread",
+    "primary": [
+      "glutes"
+    ],
+    "secondary": [],
+    "counts": {
+      "glutes": 120
+    },
+    "sides": {
+      "glutes": {
+        "left": 60,
+        "right": 60
+      }
+    },
+    "total": 120,
+    "warnings": []
+  },
+  {
+    "id": "bandhipext",
+    "r": "Kalça",
+    "g": "Bacak",
+    "tp": "legcurl",
+    "primary": [
+      "glutes"
+    ],
+    "secondary": [],
+    "counts": {
+      "glutes": 120
+    },
+    "sides": {
+      "glutes": {
+        "left": 60,
+        "right": 60
+      }
+    },
+    "total": 120,
+    "warnings": []
+  },
+  {
+    "id": "calf",
+    "r": "Baldır",
+    "g": "Bacak",
+    "tp": "calf",
+    "primary": [
+      "calves"
+    ],
+    "secondary": [],
+    "counts": {
+      "calves": 96
+    },
+    "sides": {
+      "calves": {
+        "left": 48,
+        "right": 48
+      }
+    },
+    "total": 96,
+    "warnings": []
+  },
+  {
+    "id": "dbcalf",
+    "r": "Baldır",
+    "g": "Bacak",
+    "tp": "calf",
+    "primary": [
+      "calves"
+    ],
+    "secondary": [],
+    "counts": {
+      "calves": 96
+    },
+    "sides": {
+      "calves": {
+        "left": 48,
+        "right": 48
+      }
+    },
+    "total": 96,
+    "warnings": []
+  },
+  {
+    "id": "bbcalf",
+    "r": "Baldır",
+    "g": "Bacak",
+    "tp": "calf",
+    "primary": [
+      "calves"
+    ],
+    "secondary": [],
+    "counts": {
+      "calves": 96
+    },
+    "sides": {
+      "calves": {
+        "left": 48,
+        "right": 48
+      }
+    },
+    "total": 96,
+    "warnings": []
+  },
+  {
+    "id": "smithcalf",
+    "r": "Baldır",
+    "g": "Bacak",
+    "tp": "calf",
+    "primary": [
+      "calves"
+    ],
+    "secondary": [],
+    "counts": {
+      "calves": 96
+    },
+    "sides": {
+      "calves": {
+        "left": 48,
+        "right": 48
+      }
+    },
+    "total": 96,
+    "warnings": []
+  },
+  {
+    "id": "presscalf",
+    "r": "Baldır",
+    "g": "Bacak",
+    "tp": "calf",
+    "primary": [
+      "calves"
+    ],
+    "secondary": [],
+    "counts": {
+      "calves": 96
+    },
+    "sides": {
+      "calves": {
+        "left": 48,
+        "right": 48
+      }
+    },
+    "total": 96,
+    "warnings": []
+  },
+  {
+    "id": "bandcalf",
+    "r": "Baldır",
+    "g": "Bacak",
+    "tp": "calf",
+    "primary": [
+      "calves"
+    ],
+    "secondary": [],
+    "counts": {
+      "calves": 96
+    },
+    "sides": {
+      "calves": {
+        "left": 48,
+        "right": 48
+      }
+    },
+    "total": 96,
+    "warnings": []
+  },
+  {
+    "id": "seatedcalf",
+    "r": "Baldır",
+    "g": "Bacak",
+    "tp": "calf",
+    "primary": [
+      "calves"
+    ],
+    "secondary": [],
+    "counts": {
+      "calves": 96
+    },
+    "sides": {
+      "calves": {
+        "left": 48,
+        "right": 48
+      }
+    },
+    "total": 96,
+    "warnings": []
+  },
+  {
+    "id": "calf1",
+    "r": "Baldır",
+    "g": "Bacak",
+    "tp": "calf",
+    "primary": [
+      "calves"
+    ],
+    "secondary": [],
+    "counts": {
+      "calves": 96
+    },
+    "sides": {
+      "calves": {
+        "left": 48,
+        "right": 48
+      }
+    },
+    "total": 96,
+    "warnings": []
+  },
+  {
+    "id": "abductor",
+    "r": "İç-dış bacak",
+    "g": "Bacak",
+    "tp": "legspread",
+    "primary": [
+      "adductors",
+      "abductors"
+    ],
+    "secondary": [],
+    "counts": {
+      "adductors": 112,
+      "abductors": 102
+    },
+    "sides": {
+      "adductors": {
+        "left": 56,
+        "right": 56
+      },
+      "abductors": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 214,
+    "warnings": []
+  },
+  {
+    "id": "adductor",
+    "r": "İç-dış bacak",
+    "g": "Bacak",
+    "tp": "legspread",
+    "primary": [
+      "adductors",
+      "abductors"
+    ],
+    "secondary": [],
+    "counts": {
+      "adductors": 112,
+      "abductors": 102
+    },
+    "sides": {
+      "adductors": {
+        "left": 56,
+        "right": 56
+      },
+      "abductors": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 214,
+    "warnings": []
+  },
+  {
+    "id": "bandadd",
+    "r": "İç-dış bacak",
+    "g": "Bacak",
+    "tp": "legspread",
+    "primary": [
+      "adductors",
+      "abductors"
+    ],
+    "secondary": [],
+    "counts": {
+      "adductors": 112,
+      "abductors": 102
+    },
+    "sides": {
+      "adductors": {
+        "left": 56,
+        "right": 56
+      },
+      "abductors": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 214,
+    "warnings": []
+  },
+  {
+    "id": "sideleg",
+    "r": "İç-dış bacak",
+    "g": "Bacak",
+    "tp": "legspread",
+    "primary": [
+      "adductors",
+      "abductors"
+    ],
+    "secondary": [],
+    "counts": {
+      "adductors": 112,
+      "abductors": 102
+    },
+    "sides": {
+      "adductors": {
+        "left": 56,
+        "right": 56
+      },
+      "abductors": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 214,
+    "warnings": []
+  },
+  {
+    "id": "latbound",
+    "r": "İç-dış bacak",
+    "g": "Bacak",
+    "tp": "legspread",
+    "primary": [
+      "adductors",
+      "abductors"
+    ],
+    "secondary": [],
+    "counts": {
+      "adductors": 112,
+      "abductors": 102
+    },
+    "sides": {
+      "adductors": {
+        "left": 56,
+        "right": 56
+      },
+      "abductors": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 214,
+    "warnings": []
+  },
+  {
+    "id": "cableadd",
+    "r": "İç-dış bacak",
+    "g": "Bacak",
+    "tp": "legspread",
+    "primary": [
+      "adductors",
+      "abductors"
+    ],
+    "secondary": [],
+    "counts": {
+      "adductors": 112,
+      "abductors": 102
+    },
+    "sides": {
+      "adductors": {
+        "left": 56,
+        "right": 56
+      },
+      "abductors": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 214,
+    "warnings": []
+  },
+  {
+    "id": "bench",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "bench",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "incbench",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "incline",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "decbench",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "bench",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "dbbench",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "bench",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "incdb",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "incline",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "decdb",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "bench",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "incdbin",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "incline",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "dbbenchn",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "bench",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "dbbench1",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "bench",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "smithbench",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "bench",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "smithinc",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "incline",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "machbench",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "bench",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "levchest",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "bench",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "levincchest",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "incline",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "cablepress",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "bench",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "dbfly",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "fly",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "incfly",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "fly",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "decfly",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "fly",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "crossover",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "fly",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "lowcross",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "fly",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "butterfly",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "fly",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "cablefly",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "fly",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "pushup",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "pushup",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [
+      "triceps",
+      "frontDeltoid"
+    ],
+    "counts": {
+      "chest": 350,
+      "triceps": 278,
+      "frontDeltoid": 118
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      },
+      "triceps": {
+        "left": 139,
+        "right": 139
+      },
+      "frontDeltoid": {
+        "left": 59,
+        "right": 59
+      }
+    },
+    "total": 746,
+    "warnings": []
+  },
+  {
+    "id": "pushupwide",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "pushup",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "pushupclose",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "pushup",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "pushupinc",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "pushup",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "pushupfeet",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "pushup",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "pushupdec",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "pushup",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "pushup1",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "pushup",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "plyopushup",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "pushup",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "dipschest",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "dips",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "bandbench",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "bench",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "floorpress",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "bench",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "pullover",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "bench",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "chestsqueeze",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "fly",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "ohp",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "ohp",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "bbohp",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "ohp",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "arnold",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "ohp",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "dbohp1",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "ohp",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "cableohp",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "ohp",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "levohp",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "ohp",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "pushpress",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "ohp",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "kbpress",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "ohp",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "lat",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "latraise",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "bandlat",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "latraise",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "cablelat",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "latraise",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "altraise",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "frontraise",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "frontraise",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "frontraise",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "frontraise2",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "frontraise",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "cablefront",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "frontraise",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "plateraise",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "frontraise",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "scaption",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "frontraise",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "reardelt",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "row",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "cablerear",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "latraise",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "facepull",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "seatedrow",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "pullapart",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "latraise",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "bandupright",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "curl",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "dbupright",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "curl",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "dbupright1",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "curl",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "kbhalo",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "ohp",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "handstand",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "ohp",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "extrot",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "curl",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "bbshrug",
+    "r": "Trapez",
+    "g": "Omuz",
+    "tp": "shrug",
+    "primary": [
+      "trapezius"
+    ],
+    "secondary": [],
+    "counts": {
+      "trapezius": 178
+    },
+    "sides": {
+      "trapezius": {
+        "left": 99,
+        "right": 79
+      }
+    },
+    "total": 178,
+    "warnings": []
+  },
+  {
+    "id": "shrug",
+    "r": "Trapez",
+    "g": "Omuz",
+    "tp": "shrug",
+    "primary": [
+      "trapezius"
+    ],
+    "secondary": [],
+    "counts": {
+      "trapezius": 178
+    },
+    "sides": {
+      "trapezius": {
+        "left": 99,
+        "right": 79
+      }
+    },
+    "total": 178,
+    "warnings": []
+  },
+  {
+    "id": "cableshrug",
+    "r": "Trapez",
+    "g": "Omuz",
+    "tp": "shrug",
+    "primary": [
+      "trapezius"
+    ],
+    "secondary": [],
+    "counts": {
+      "trapezius": 178
+    },
+    "sides": {
+      "trapezius": {
+        "left": 99,
+        "right": 79
+      }
+    },
+    "total": 178,
+    "warnings": []
+  },
+  {
+    "id": "levshrug",
+    "r": "Trapez",
+    "g": "Omuz",
+    "tp": "shrug",
+    "primary": [
+      "trapezius"
+    ],
+    "secondary": [],
+    "counts": {
+      "trapezius": 178
+    },
+    "sides": {
+      "trapezius": {
+        "left": 99,
+        "right": 79
+      }
+    },
+    "total": 178,
+    "warnings": []
+  },
+  {
+    "id": "smithupright",
+    "r": "Trapez",
+    "g": "Omuz",
+    "tp": "curl",
+    "primary": [
+      "trapezius"
+    ],
+    "secondary": [],
+    "counts": {
+      "trapezius": 178
+    },
+    "sides": {
+      "trapezius": {
+        "left": 99,
+        "right": 79
+      }
+    },
+    "total": 178,
+    "warnings": []
+  },
+  {
+    "id": "scappull",
+    "r": "Trapez",
+    "g": "Omuz",
+    "tp": "pullup",
+    "primary": [
+      "trapezius"
+    ],
+    "secondary": [],
+    "counts": {
+      "trapezius": 178
+    },
+    "sides": {
+      "trapezius": {
+        "left": 99,
+        "right": 79
+      }
+    },
+    "total": 178,
+    "warnings": []
+  },
+  {
+    "id": "pullup",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "pullup",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "chinup",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "pullup",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "vbarpull",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "pullup",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "widepull",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "pullup",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "bandpullup",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "pullup",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "pulldown",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "pulldown",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "closepulldown",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "pulldown",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "vbarpulldown",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "pulldown",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "underpulldown",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "pulldown",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "pulldown1",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "pulldown",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "straightarm",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "pulldown",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "row",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "row",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "dbrow",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "row",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "dbrow1",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "row",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "longrow1",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "row",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "tbar",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "row",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "revrow",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "row",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "smithrow",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "row",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "kbrow",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "row",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "seatedrow",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "seatedrow",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "levrow",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "seatedrow",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "seatedrow1",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "seatedrow",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "invrow",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "seatedrow",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "susprow",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "seatedrow",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "incrow",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "row",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "deadlift",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "deadlift",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "rackpull",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "rackpull",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "defdl",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "defdl",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "backext",
+    "r": "Bel",
+    "g": "Çekiş",
+    "tp": "backext",
+    "primary": [
+      "lowerBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lowerBack": 180
+    },
+    "sides": {
+      "lowerBack": {
+        "left": 99,
+        "right": 81
+      }
+    },
+    "total": 180,
+    "warnings": []
+  },
+  {
+    "id": "backextfloor",
+    "r": "Bel",
+    "g": "Çekiş",
+    "tp": "backext",
+    "primary": [
+      "lowerBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lowerBack": 180
+    },
+    "sides": {
+      "lowerBack": {
+        "left": 99,
+        "right": 81
+      }
+    },
+    "total": 180,
+    "warnings": []
+  },
+  {
+    "id": "ballhyper",
+    "r": "Bel",
+    "g": "Çekiş",
+    "tp": "backext",
+    "primary": [
+      "lowerBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lowerBack": 180
+    },
+    "sides": {
+      "lowerBack": {
+        "left": 99,
+        "right": 81
+      }
+    },
+    "total": 180,
+    "warnings": []
+  },
+  {
+    "id": "stiffgm",
+    "r": "Bel",
+    "g": "Çekiş",
+    "tp": "hinge",
+    "primary": [
+      "lowerBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lowerBack": 180
+    },
+    "sides": {
+      "lowerBack": {
+        "left": 99,
+        "right": 81
+      }
+    },
+    "total": 180,
+    "warnings": []
+  },
+  {
+    "id": "superman",
+    "r": "Bel",
+    "g": "Çekiş",
+    "tp": "backext",
+    "primary": [
+      "lowerBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lowerBack": 180
+    },
+    "sides": {
+      "lowerBack": {
+        "left": 99,
+        "right": 81
+      }
+    },
+    "total": 180,
+    "warnings": []
+  },
+  {
+    "id": "seatedgm",
+    "r": "Bel",
+    "g": "Çekiş",
+    "tp": "seatedhinge",
+    "primary": [
+      "lowerBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lowerBack": 180
+    },
+    "sides": {
+      "lowerBack": {
+        "left": 99,
+        "right": 81
+      }
+    },
+    "total": 180,
+    "warnings": []
+  },
+  {
+    "id": "curl",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "bbcurl",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "ezcurl",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "hammer",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "althammer",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "altcurl",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "inccurl",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "seatedcurl2",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "concurl",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "preacher",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "machpreacher",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "preacher1",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "cablecurl",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "cablehammer",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "machcurl",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "revcurl",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "zottman",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "crosshammer",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "spider",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "widecurl",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "closecurl",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "tri",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "pushdown",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "ropepushdown",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "pushdown",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "vbarpushdown",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "pushdown",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "revpushdown",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "pushdown",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "lowtri",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "pushdown",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "cabletri1",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "pushdown",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "ropeoverhead",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "overheadext",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "cableoverhead",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "overheadext",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "dboverhead",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "overheadext",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "dboverhead1",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "overheadext",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "bboverhead",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "overheadext",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "seatedtri",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "overheadext",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "kboverhead",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "overheadext",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "skull",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "skull",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "dbskull",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "skull",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "decskull",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "skull",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "bandskull",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "skull",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "kickback",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "kickback",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "kickback1",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "kickback",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "closebench",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "bench",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "closedbpress",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "bench",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "dipstri",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "dips",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "paralleldip",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "dips",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "benchdips",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "dips",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "dipmachine",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "dips",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "pushuptri",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "pushup",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "neckfb",
+    "r": "Boyun",
+    "g": "Omuz",
+    "tp": "neckstretch",
+    "primary": [
+      "neck"
+    ],
+    "secondary": [],
+    "counts": {
+      "neck": 214
+    },
+    "sides": {
+      "neck": {
+        "left": 112,
+        "right": 102
+      }
+    },
+    "total": 214,
+    "warnings": []
+  },
+  {
+    "id": "neckharness",
+    "r": "Boyun",
+    "g": "Omuz",
+    "tp": "neckstretch",
+    "primary": [
+      "neck"
+    ],
+    "secondary": [],
+    "counts": {
+      "neck": 214
+    },
+    "sides": {
+      "neck": {
+        "left": 112,
+        "right": 102
+      }
+    },
+    "total": 214,
+    "warnings": []
+  },
+  {
+    "id": "wristcurl",
+    "r": "Ön kol",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "forearms"
+    ],
+    "secondary": [],
+    "counts": {
+      "forearms": 114
+    },
+    "sides": {
+      "forearms": {
+        "left": 57,
+        "right": 57
+      }
+    },
+    "total": 114,
+    "warnings": []
+  },
+  {
+    "id": "wristrev",
+    "r": "Ön kol",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "forearms"
+    ],
+    "secondary": [],
+    "counts": {
+      "forearms": 114
+    },
+    "sides": {
+      "forearms": {
+        "left": 57,
+        "right": 57
+      }
+    },
+    "total": 114,
+    "warnings": []
+  },
+  {
+    "id": "wristcurlbar",
+    "r": "Ön kol",
+    "g": "Kol",
+    "tp": "curl",
+    "primary": [
+      "forearms"
+    ],
+    "secondary": [],
+    "counts": {
+      "forearms": 114
+    },
+    "sides": {
+      "forearms": {
+        "left": 57,
+        "right": 57
+      }
+    },
+    "total": 114,
+    "warnings": []
+  },
+  {
+    "id": "wristroller",
+    "r": "Ön kol",
+    "g": "Kol",
+    "tp": "frontraise",
+    "primary": [
+      "forearms"
+    ],
+    "secondary": [],
+    "counts": {
+      "forearms": 114
+    },
+    "sides": {
+      "forearms": {
+        "left": 57,
+        "right": 57
+      }
+    },
+    "total": 114,
+    "warnings": []
+  },
+  {
+    "id": "farmer",
+    "r": "Ön kol",
+    "g": "Kol",
+    "tp": "walk",
+    "primary": [
+      "forearms"
+    ],
+    "secondary": [],
+    "counts": {
+      "forearms": 114
+    },
+    "sides": {
+      "forearms": {
+        "left": 57,
+        "right": 57
+      }
+    },
+    "total": 114,
+    "warnings": []
+  },
+  {
+    "id": "platepinch",
+    "r": "Ön kol",
+    "g": "Kol",
+    "tp": "shrug",
+    "primary": [
+      "forearms"
+    ],
+    "secondary": [],
+    "counts": {
+      "forearms": 114
+    },
+    "sides": {
+      "forearms": {
+        "left": 57,
+        "right": 57
+      }
+    },
+    "total": 114,
+    "warnings": []
+  },
+  {
+    "id": "crunch",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "crunch",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "cablecrunch",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "crunch",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "deccrunch",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "crunch",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "ballcrunch",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "crunch",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "crunchoverhead",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "crunch",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "obliquecrunch",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "crunch",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "crosscrunch",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "crunch",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "revcrunch",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "legraise",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "sit34",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "situp",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "jackknife",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "situp",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "janda",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "situp",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "deadbug",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "legraise",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "benchlegraise",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "legraise",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "kneehipraise",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "legraise",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "legpullin",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "legraise",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "flutter",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "legraise",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "scissor",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "legraise",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "hangingraise",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "hangraise",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "hangpike",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "hangraise",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "dipraise",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "hangraise",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "plank",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "plank",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "abroller",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "plank",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "rollout",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "plank",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "climber",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "climber",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "sidebendbar",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "sidebend",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "sidebend",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "sidebend",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "cablesidebend",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "sidebend",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "russiantwist",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "woodchop",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "pallof",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "woodchop",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "ballwoodchop",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "woodchop",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "latstretch",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "sidebend",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "airbike",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "cycle",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "heeltouch",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "crunch",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "treadjog",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "run",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "treadrun",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "run",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "trail",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "run",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "treadwalk",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "walk",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "bike",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "cycle",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "statbike",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "cycle",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "recbike",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "cycle",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "elliptical",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "walk",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "stairs",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "stepup",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "jumprope",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "jumprope",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "jumpingjack",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "jack",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "scissorjump",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "jack",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "skipping",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "highknees",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "buttkick",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "highknees",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "buttkick1",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "highknees",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "splitjump",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "lunge",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "longjump",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "squat",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "rocketjump",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "squat",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "boxjump",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "stepup",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "benchjump",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "stepup",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "rower",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "seatedrow",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "battleropes",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "woodchop",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "thruster",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "squat",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "cleanpress",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "ohp",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "getup",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "situp",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "inchworm",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "plank",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "hamstretch",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "hamstretch",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "seatedhamstretch",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "hamstretch",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "toetouch",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "hinge",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "hamcalfstretch",
+    "r": "Arka bacak",
+    "g": "Bacak",
+    "tp": "hamstretch",
+    "primary": [
+      "hamstrings"
+    ],
+    "secondary": [],
+    "counts": {
+      "hamstrings": 160
+    },
+    "sides": {
+      "hamstrings": {
+        "left": 80,
+        "right": 80
+      }
+    },
+    "total": 160,
+    "warnings": []
+  },
+  {
+    "id": "quadstretch",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "qstretch",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "elevquad",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "qstretch",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "sidequad",
+    "r": "Ön bacak",
+    "g": "Bacak",
+    "tp": "qstretch",
+    "primary": [
+      "quadriceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "quadriceps": 190
+    },
+    "sides": {
+      "quadriceps": {
+        "left": 95,
+        "right": 95
+      }
+    },
+    "total": 190,
+    "warnings": []
+  },
+  {
+    "id": "hipflexor",
+    "r": "Kalça",
+    "g": "Bacak",
+    "tp": "lunge",
+    "primary": [
+      "glutes"
+    ],
+    "secondary": [],
+    "counts": {
+      "glutes": 120
+    },
+    "sides": {
+      "glutes": {
+        "left": 60,
+        "right": 60
+      }
+    },
+    "total": 120,
+    "warnings": []
+  },
+  {
+    "id": "standhipflexor",
+    "r": "Kalça",
+    "g": "Bacak",
+    "tp": "lunge",
+    "primary": [
+      "glutes"
+    ],
+    "secondary": [],
+    "counts": {
+      "glutes": 120
+    },
+    "sides": {
+      "glutes": {
+        "left": 60,
+        "right": 60
+      }
+    },
+    "total": 120,
+    "warnings": []
+  },
+  {
+    "id": "kneeacross",
+    "r": "Kalça",
+    "g": "Bacak",
+    "tp": "hamstretch",
+    "primary": [
+      "glutes"
+    ],
+    "secondary": [],
+    "counts": {
+      "glutes": 120
+    },
+    "sides": {
+      "glutes": {
+        "left": 60,
+        "right": 60
+      }
+    },
+    "total": 120,
+    "warnings": []
+  },
+  {
+    "id": "kneechest",
+    "r": "Kalça",
+    "g": "Bacak",
+    "tp": "hamstretch",
+    "primary": [
+      "glutes"
+    ],
+    "secondary": [],
+    "counts": {
+      "glutes": 120
+    },
+    "sides": {
+      "glutes": {
+        "left": 60,
+        "right": 60
+      }
+    },
+    "total": 120,
+    "warnings": []
+  },
+  {
+    "id": "seatedglute",
+    "r": "Kalça",
+    "g": "Bacak",
+    "tp": "hamstretch",
+    "primary": [
+      "glutes"
+    ],
+    "secondary": [],
+    "counts": {
+      "glutes": 120
+    },
+    "sides": {
+      "glutes": {
+        "left": 60,
+        "right": 60
+      }
+    },
+    "total": 120,
+    "warnings": []
+  },
+  {
+    "id": "calfstretch",
+    "r": "Baldır",
+    "g": "Bacak",
+    "tp": "lunge",
+    "primary": [
+      "calves"
+    ],
+    "secondary": [],
+    "counts": {
+      "calves": 96
+    },
+    "sides": {
+      "calves": {
+        "left": 48,
+        "right": 48
+      }
+    },
+    "total": 96,
+    "warnings": []
+  },
+  {
+    "id": "wallcalf",
+    "r": "Baldır",
+    "g": "Bacak",
+    "tp": "lunge",
+    "primary": [
+      "calves"
+    ],
+    "secondary": [],
+    "counts": {
+      "calves": 96
+    },
+    "sides": {
+      "calves": {
+        "left": 48,
+        "right": 48
+      }
+    },
+    "total": 96,
+    "warnings": []
+  },
+  {
+    "id": "seatedcalfstretch",
+    "r": "Baldır",
+    "g": "Bacak",
+    "tp": "hamstretch",
+    "primary": [
+      "calves"
+    ],
+    "secondary": [],
+    "counts": {
+      "calves": 96
+    },
+    "sides": {
+      "calves": {
+        "left": 48,
+        "right": 48
+      }
+    },
+    "total": 96,
+    "warnings": []
+  },
+  {
+    "id": "chestshoulder",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "armstretch",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "dynchest",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "fly",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "behindchest",
+    "r": "Göğüs",
+    "g": "İtiş",
+    "tp": "armstretch",
+    "primary": [
+      "chest"
+    ],
+    "secondary": [],
+    "counts": {
+      "chest": 350
+    },
+    "sides": {
+      "chest": {
+        "left": 175,
+        "right": 175
+      }
+    },
+    "total": 350,
+    "warnings": []
+  },
+  {
+    "id": "shoulderstretch",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "armstretch",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "armcircles",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "armstretch",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "shouldercircles",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "shrug",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "upstretch",
+    "r": "Omuz",
+    "g": "Omuz",
+    "tp": "armstretch",
+    "primary": [
+      "deltoids"
+    ],
+    "secondary": [],
+    "counts": {
+      "deltoids": 354
+    },
+    "sides": {
+      "deltoids": {
+        "left": 177,
+        "right": 177
+      }
+    },
+    "total": 354,
+    "warnings": []
+  },
+  {
+    "id": "tristretch",
+    "r": "Triseps",
+    "g": "İtiş",
+    "tp": "overheadext",
+    "primary": [
+      "triceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "triceps": 278
+    },
+    "sides": {
+      "triceps": {
+        "left": 139,
+        "right": 139
+      }
+    },
+    "total": 278,
+    "warnings": []
+  },
+  {
+    "id": "bistretch",
+    "r": "Biseps",
+    "g": "Kol",
+    "tp": "frontraise",
+    "primary": [
+      "biceps"
+    ],
+    "secondary": [],
+    "counts": {
+      "biceps": 102
+    },
+    "sides": {
+      "biceps": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 102,
+    "warnings": []
+  },
+  {
+    "id": "chinchest",
+    "r": "Boyun",
+    "g": "Omuz",
+    "tp": "neckstretch",
+    "primary": [
+      "neck"
+    ],
+    "secondary": [],
+    "counts": {
+      "neck": 214
+    },
+    "sides": {
+      "neck": {
+        "left": 112,
+        "right": 102
+      }
+    },
+    "total": 214,
+    "warnings": []
+  },
+  {
+    "id": "sideneck",
+    "r": "Boyun",
+    "g": "Omuz",
+    "tp": "neckstretch",
+    "primary": [
+      "neck"
+    ],
+    "secondary": [],
+    "counts": {
+      "neck": 214
+    },
+    "sides": {
+      "neck": {
+        "left": 112,
+        "right": 102
+      }
+    },
+    "total": 214,
+    "warnings": []
+  },
+  {
+    "id": "neckiso",
+    "r": "Boyun",
+    "g": "Omuz",
+    "tp": "neckstretch",
+    "primary": [
+      "neck"
+    ],
+    "secondary": [],
+    "counts": {
+      "neck": 214
+    },
+    "sides": {
+      "neck": {
+        "left": 112,
+        "right": 102
+      }
+    },
+    "total": 214,
+    "warnings": []
+  },
+  {
+    "id": "childpose",
+    "r": "Bel",
+    "g": "Çekiş",
+    "tp": "hamstretch",
+    "primary": [
+      "lowerBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lowerBack": 180
+    },
+    "sides": {
+      "lowerBack": {
+        "left": 99,
+        "right": 81
+      }
+    },
+    "total": 180,
+    "warnings": []
+  },
+  {
+    "id": "catstretch",
+    "r": "Bel",
+    "g": "Çekiş",
+    "tp": "plank",
+    "primary": [
+      "lowerBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lowerBack": 180
+    },
+    "sides": {
+      "lowerBack": {
+        "left": 99,
+        "right": 81
+      }
+    },
+    "total": 180,
+    "warnings": []
+  },
+  {
+    "id": "torsotwist",
+    "r": "Karın",
+    "g": "Karın",
+    "tp": "twiststretch",
+    "primary": [
+      "abdominals"
+    ],
+    "secondary": [],
+    "counts": {
+      "abdominals": 121
+    },
+    "sides": {
+      "abdominals": {
+        "left": 67,
+        "right": 54
+      }
+    },
+    "total": 121,
+    "warnings": []
+  },
+  {
+    "id": "midback",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "twiststretch",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "upperback",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "armstretch",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "overheadlat",
+    "r": "Sırt",
+    "g": "Çekiş",
+    "tp": "armstretch",
+    "primary": [
+      "lats",
+      "upperBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lats": 156,
+      "upperBack": 140
+    },
+    "sides": {
+      "lats": {
+        "left": 78,
+        "right": 78
+      },
+      "upperBack": {
+        "left": 80,
+        "right": 60
+      }
+    },
+    "total": 296,
+    "warnings": []
+  },
+  {
+    "id": "lowerbackcurl",
+    "r": "Bel",
+    "g": "Çekiş",
+    "tp": "crunch",
+    "primary": [
+      "lowerBack"
+    ],
+    "secondary": [],
+    "counts": {
+      "lowerBack": 180
+    },
+    "sides": {
+      "lowerBack": {
+        "left": 99,
+        "right": 81
+      }
+    },
+    "total": 180,
+    "warnings": []
+  },
+  {
+    "id": "windmills",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "twiststretch",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "wgstretch",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "lunge",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "groiners",
+    "r": "İç-dış bacak",
+    "g": "Bacak",
+    "tp": "lunge",
+    "primary": [
+      "adductors",
+      "abductors"
+    ],
+    "secondary": [],
+    "counts": {
+      "adductors": 112,
+      "abductors": 102
+    },
+    "sides": {
+      "adductors": {
+        "left": 56,
+        "right": 56
+      },
+      "abductors": {
+        "left": 51,
+        "right": 51
+      }
+    },
+    "total": 214,
+    "warnings": []
+  },
+  {
+    "id": "onefoot",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "onefoot",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "heeltoe",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "balwalk",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "chairstand",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "chairstand",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "sidestep",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "sidestep",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "tandem",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "tandem",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "armswalk",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "balwalk2",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "fastwalk",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "walk",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  },
+  {
+    "id": "slowwalk",
+    "r": "Tüm vücut",
+    "g": "Bacak",
+    "tp": "walk",
+    "primary": [],
+    "secondary": [],
+    "counts": {},
+    "sides": {},
+    "total": 0,
+    "warnings": [
+      "UNSUPPORTED_REGION:Tüm vücut"
+    ]
+  }
+]

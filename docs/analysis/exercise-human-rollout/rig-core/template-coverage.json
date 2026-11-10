@@ -1,0 +1,302 @@
+[
+  {
+    "name": "squat",
+    "motion": 1.091366074204322,
+    "frames": 9
+  },
+  {
+    "name": "hinge",
+    "motion": 1.3665812128888364,
+    "frames": 9
+  },
+  {
+    "name": "lunge",
+    "motion": 1.3766086567187743,
+    "frames": 9
+  },
+  {
+    "name": "stepup",
+    "motion": 1.015788307654674,
+    "frames": 9
+  },
+  {
+    "name": "legext",
+    "motion": 1.1312820517752102,
+    "frames": 9
+  },
+  {
+    "name": "legcurl",
+    "motion": 1.5740974322679684,
+    "frames": 9
+  },
+  {
+    "name": "legpress",
+    "motion": 0.11281380429510157,
+    "frames": 9
+  },
+  {
+    "name": "bridge",
+    "motion": 0.7572514314602031,
+    "frames": 9
+  },
+  {
+    "name": "calf",
+    "motion": 1.0454123441565195,
+    "frames": 9
+  },
+  {
+    "name": "legspread",
+    "motion": 0.6925592382098535,
+    "frames": 9
+  },
+  {
+    "name": "pushup",
+    "motion": 0.7271589172511649,
+    "frames": 9
+  },
+  {
+    "name": "bench",
+    "motion": 1.1551116498490945,
+    "frames": 9
+  },
+  {
+    "name": "incline",
+    "motion": 1.093046103166036,
+    "frames": 9
+  },
+  {
+    "name": "fly",
+    "motion": 1.2321500052191028,
+    "frames": 9
+  },
+  {
+    "name": "dips",
+    "motion": 1.1124607726602618,
+    "frames": 9
+  },
+  {
+    "name": "ohp",
+    "motion": 2.24730469774087,
+    "frames": 9
+  },
+  {
+    "name": "latraise",
+    "motion": 1.4864945841080592,
+    "frames": 9
+  },
+  {
+    "name": "frontraise",
+    "motion": 1.5511715514667999,
+    "frames": 9
+  },
+  {
+    "name": "skull",
+    "motion": 1.5186977257723382,
+    "frames": 9
+  },
+  {
+    "name": "row",
+    "motion": 1.0765714582932515,
+    "frames": 9
+  },
+  {
+    "name": "pullup",
+    "motion": 2.343218584316506,
+    "frames": 9
+  },
+  {
+    "name": "pulldown",
+    "motion": 2.2434501020002897,
+    "frames": 9
+  },
+  {
+    "name": "seatedrow",
+    "motion": 1.7565396636515136,
+    "frames": 9
+  },
+  {
+    "name": "backext",
+    "motion": 2.3434674447248858,
+    "frames": 9
+  },
+  {
+    "name": "shrug",
+    "motion": 0.6738883937692756,
+    "frames": 9
+  },
+  {
+    "name": "curl",
+    "motion": 2.1387040571847447,
+    "frames": 9
+  },
+  {
+    "name": "pushdown",
+    "motion": 2.2061733344822727,
+    "frames": 9
+  },
+  {
+    "name": "kickback",
+    "motion": 1.6821691609903264,
+    "frames": 9
+  },
+  {
+    "name": "overheadext",
+    "motion": 1.4630384429117598,
+    "frames": 9
+  },
+  {
+    "name": "crunch",
+    "motion": 0.7140237745494834,
+    "frames": 9
+  },
+  {
+    "name": "situp",
+    "motion": 1.5478383657107504,
+    "frames": 9
+  },
+  {
+    "name": "legraise",
+    "motion": 1.1291394171373463,
+    "frames": 9
+  },
+  {
+    "name": "hangraise",
+    "motion": 1.1700740964241125,
+    "frames": 9
+  },
+  {
+    "name": "plank",
+    "motion": 0.047743296513687805,
+    "frames": 9
+  },
+  {
+    "name": "climber",
+    "motion": 1.7139596318807668,
+    "frames": 9
+  },
+  {
+    "name": "sidebend",
+    "motion": 0.56751481920555,
+    "frames": 9
+  },
+  {
+    "name": "woodchop",
+    "motion": 2.1257500510526555,
+    "frames": 9
+  },
+  {
+    "name": "jack",
+    "motion": 2.3166285851598865,
+    "frames": 9
+  },
+  {
+    "name": "run",
+    "motion": 1.7133039162318857,
+    "frames": 9
+  },
+  {
+    "name": "highknees",
+    "motion": 1.4849830209281634,
+    "frames": 9
+  },
+  {
+    "name": "walk",
+    "motion": 0.8782401741603423,
+    "frames": 9
+  },
+  {
+    "name": "jumprope",
+    "motion": 0.16274267580950535,
+    "frames": 9
+  },
+  {
+    "name": "cycle",
+    "motion": 1.2194656869464464,
+    "frames": 9
+  },
+  {
+    "name": "qstretch",
+    "motion": 1.9577755362298965,
+    "frames": 9
+  },
+  {
+    "name": "hamstretch",
+    "motion": 1.2357747145134321,
+    "frames": 9
+  },
+  {
+    "name": "armstretch",
+    "motion": 1.9143061664577758,
+    "frames": 9
+  },
+  {
+    "name": "neckstretch",
+    "motion": 0.6558949430313821,
+    "frames": 9
+  },
+  {
+    "name": "twiststretch",
+    "motion": 0.2785614416910919,
+    "frames": 9
+  },
+  {
+    "name": "onefoot",
+    "motion": 0.0384676538416138,
+    "frames": 9
+  },
+  {
+    "name": "balwalk",
+    "motion": 0.6465343352794546,
+    "frames": 9
+  },
+  {
+    "name": "balwalk2",
+    "motion": 0.8654250215447774,
+    "frames": 9
+  },
+  {
+    "name": "tandem",
+    "motion": 0.03718346320746169,
+    "frames": 9
+  },
+  {
+    "name": "chairstand",
+    "motion": 1.1729313060523083,
+    "frames": 9
+  },
+  {
+    "name": "kbdl1",
+    "motion": 1.7216365002567855,
+    "frames": 9
+  },
+  {
+    "name": "rdl",
+    "motion": 1.2571213540915478,
+    "frames": 9
+  },
+  {
+    "name": "deadlift",
+    "motion": 1.1946700676566007,
+    "frames": 9
+  },
+  {
+    "name": "defdl",
+    "motion": 1.4768112312452306,
+    "frames": 9
+  },
+  {
+    "name": "rackpull",
+    "motion": 0.893052799102646,
+    "frames": 9
+  },
+  {
+    "name": "seatedhinge",
+    "motion": 0.7938337272666047,
+    "frames": 9
+  },
+  {
+    "name": "sidestep",
+    "motion": 0.33177103844414113,
+    "frames": 9
+  }
+]

@@ -10,7 +10,8 @@ const runFile = file => new Promise(resolve => {
   const timer = setTimeout(() => {p.kill(); resolve({out: `${out}\nTIMEOUT after 120000ms`, code: 124})}, 120000);
   p.on("close", code => {clearTimeout(timer); resolve({out, code})});
 });
-const files = fs.readdirSync(dir).filter(f => f.endsWith(".test.js")).sort();
+const humanFiles = ["gym-human-rig.test.js", "gym-human-muscles.test.js", "gym-human-equipment.test.js", "gym-human-ui.test.cjs", "gym-human-viewer.test.cjs"];
+const files = [...new Set([...fs.readdirSync(dir).filter(f => f.endsWith(".test.js")), ...humanFiles])].sort();
 const results = new Array(files.length);
 const worker = (() => {let next = 0; return async () => {while (next < files.length) {const i = next++; results[i] = await runFile(files[i]);}}})();
 Promise.all(Array.from({length: process.env.NW_TEST_SEQUENTIAL ? 1 : Math.min(4, os.cpus().length)}, worker)).then(() => {
