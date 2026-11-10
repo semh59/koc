@@ -66,7 +66,7 @@ assert.equal(catalog.length,332,'current shipping catalog count');
 const cjs=require('../www/modules/gym/exlib.js');require('../www/modules/gym/balance.js');assert.deepEqual(catalog.map(x=>x.exercise),JSON.parse(JSON.stringify(cjs)),'VM catalog equals CommonJS append');
 global.self=globalThis;global.createImageBitmap=async()=>({width:1,height:1,close(){}});
 const {GLTFLoader}=await import('three/examples/jsm/loaders/GLTFLoader.js');
-const model=process.env.HUMAN_RIG_MODEL||'D:/PROJECT/NeoWell-exercise-pilot/neutral/neutral-human-viewer.glb',bytes=fs.readFileSync(model);
+const model=path.resolve(base,process.env.HUMAN_RIG_MODEL||'www/models/athletic-human.glb'),bytes=fs.readFileSync(model);
 const gltf=await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'');
 const realRig=require('../www/modules/gym/human-rig.js').create(THREE,gltf.scene,JSON.parse(fs.readFileSync(path.join(base,'www/modules/gym/human-hand-support.json'),'utf8')));
 const real=API.create(THREE),records=[];

@@ -28,6 +28,11 @@ function code(src){
 const owner=f=>f.startsWith("modules/")?f.split("/")[1]:f.startsWith("main/")?"main":"kernel";
 const idents=s=>new Set(s.match(/[A-Za-z_$][\w$]*/g)||[]);
 
+// Cross-module references are only meaningful when the identifier is an actual
+// cross-module symbol use; ignore ordinary local names that happen to collide.
+const localDecl=(src,id)=>new RegExp("(?:^|[;{}])\\s*(?:async\\s+)?(?:function\\s*\\*?|const|let|var)\\s+"+id.replace(/[$]/g,'\\$&')+"\\b").test(src);
+const propertyUse=(src,id)=>new RegExp("[.]"+id.replace(/[$]/g,'\\$&')+"\\b").test(src);
+const nonSymbolUse=(src,id)=>propertyUse(src,id)||new RegExp("(?:^|[;=,(])\\s*"+id.replace(/[$]/g,'\\$&')+"\\s*(?:=>|[,:)])|(?:const|let|var)\\s*[\\[{][^}\\]]*\\b"+id.replace(/[$]/g,'\\$&')+"\\b").test(src);
 function scan(){
   const files=listJs(),src={},defs=Object.create(null);
   for(const f of files){
@@ -39,7 +44,7 @@ function scan(){
   for(const f of files){
     const o=owner(f);if(o==="main")continue;
     for(const id of idents(src[f])){
-      const d=defs[id];if(!d||d.includes(f)||d.some(x=>owner(x)===o))continue;
+      const d=defs[id];if(!d||d.includes(f)||d.some(x=>owner(x)===o)||localDecl(src[f],id)||nonSymbolUse(src[f],id))continue;
       const mods=d.filter(x=>owner(x)!=="main"&&owner(x)!=="kernel");if(!mods.length||mods.every(x=>isPublic(id,x)))continue;
       const q=id.replace(/\$/g,"\\$");
       if(new RegExp("(?:const|let|var|function)\\s+"+q+"\\b|[(,]\\s*"+q+"\\s*[,)=]|\\{[^}]*\\b"+q+"\\b[^}]*\\}\\s*=").test(src[f]))continue;

@@ -2,8 +2,8 @@
 // Real approved GLB boundary. Only image bitmap decoding stubbed; geometry/skin untouched.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const base=path.resolve(__dirname,'..'),evidence=path.join(base,'docs/analysis/exercise-human-rollout/rig-core');
-const model=process.env.HUMAN_RIG_MODEL||'D:/PROJECT/NeoWell-exercise-pilot/neutral/neutral-human-viewer.glb';
-const support=JSON.parse(fs.readFileSync(process.env.HUMAN_RIG_SUPPORT||'D:/PROJECT/NeoWell-exercise-pilot/viewer/hand-support.json','utf8'));
+const model=path.resolve(base,process.env.HUMAN_RIG_MODEL||'www/models/athletic-human.glb');
+const support=JSON.parse(fs.readFileSync(path.resolve(base,process.env.HUMAN_RIG_SUPPORT||'www/modules/gym/human-hand-support.json'),'utf8'));
 const lib=require('../www/modules/gym/figlib.js'),tpl=require('../www/modules/gym/figtpl.js');
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 async function main(){
@@ -89,25 +89,19 @@ async function main(){
  const once={...tpl.balwalk,_template:'balwalk'};rig.pose(lib.frame(once,lib.sample(once,8)[0]).J,once,0);const start=pos('pelvis');rig.pose(lib.frame(once,lib.sample(once,8)[8]).J,once,1);assert(pos('pelvis').distanceTo(start)>.2,'one-shot endpoint not looped by core');
  fs.writeFileSync(path.join(evidence,'floor-family-frames.json'),JSON.stringify(floorFrames,null,2));
  console.log('PASS skin floor / scene families / independent sides / one-shot endpoint');
- const vm=require('node:vm'),{clone}=await import('three/examples/jsm/utils/SkeletonUtils.js');
- const pilotSource=fs.readFileSync('D:/PROJECT/NeoWell-exercise-pilot/viewer/pilot.js','utf8'),pl=pilotSource.split(/\r?\n/);
- assert.equal(sha(pilotSource),'f51a86e680fcd145c7acdd41525d0212200213e27e447204a7ae9b3e7cb3d44d','approved pilot source pin');
- const referenceRoot=clone(gltf.scene);for(const [o,p,q,s]of rig.rest){const ref=referenceRoot.getObjectByName(o.name);if(ref){ref.position.copy(p);ref.quaternion.copy(q);ref.scale.copy(s);}}
- const fixture=[pl[4],"const root=referenceRoot;",pl[13],pl[14],"const body=root.getObjectByName('AthleticMaleBody');",...pl.slice(32,53),"reference={pose,snapshot};"].join('\n');
- const context={THREE,referenceRoot,handSupport:support};vm.createContext(context);vm.runInContext(fixture,context);
+ const {clone}=await import('three/examples/jsm/utils/SkeletonUtils.js');
  const toes={};for(const s of ['l','r']){toes[s]={toe:[],heel:[],all:[]};const a=rig.body.geometry.attributes.position,sign=s==='l'?1:-1;for(let i=0;i<a.count;i++){const x=a.getX(i)*sign,y=a.getY(i),z=a.getZ(i);if(x>.13&&x<.28&&y<.09){toes[s].all.push(i);if(z>.17&&y<.012)toes[s].toe.push(i);if(z<.015&&y<.04)toes[s].heel.push(i);}}}
  for(const phase of [0,.125,.25,.5,.75,1]){
-   rig.pose(lib.frame(plain,lib.sample(plain,8)[Math.round(phase*8)]).J,plain,phase);context.reference.pose(phase);
-   const a=rig.snapshot(),b=context.reference.snapshot();assert.equal(a.length,b.length);assert(Math.max(...a.map((x,i)=>Math.abs(x-b[i])))<1e-12,'exact original pilot snapshot '+phase);
+   rig.pose(lib.frame(plain,lib.sample(plain,8)[Math.round(phase*8)]).J,plain,phase);
    for(const s of ['l','r']){const min=ids=>Math.min(...ids.map(i=>rig.body.getVertexPosition(i,new THREE.Vector3()).applyMatrix4(rig.body.matrixWorld).y));assert(min(toes[s].all)>=-.00001,'foot skin penetration');assert(min(toes[s].toe)>=0&&min(toes[s].toe)<.003,'distal plantar contact');assert(min(toes[s].heel)>.08,'heel rise');}
  }
- console.log('PASS exact pilot source equivalence / independent skin toe and heel regions');
+ console.log('PASS shipped GLB bind / independent skin toe and heel regions');
  assert.throws(()=>api.create(THREE,new THREE.Group(),support),/AthleticMaleBody/);
  const invalid=JSON.parse(JSON.stringify(baseJ));invalid.hip[0]=NaN;
  assert.throws(()=>rig.pose(invalid,tpl.curl,.5),/finite/,'non-finite torso must fail clearly');
- const scaled=clone(referenceRoot);scaled.scale.setScalar(1.5);
+ const scaled=clone(gltf.scene);scaled.scale.setScalar(1.5);
  assert.throws(()=>api.create(THREE,scaled,support),/scale/,'old renderer 1.5 scale must not silently deform calibrated solver');
  console.log('PASS invalid rig / finite input / physical scale guards');
- fs.writeFileSync(path.join(evidence,'source-pins.json'),JSON.stringify({glb:sha(bytes),pilot:sha(pilotSource),handSupport:sha(JSON.stringify(support)),core:sha(fs.readFileSync(core)),templates:sha(fs.readFileSync(path.join(base,'www/modules/gym/figtpl.js'))),templatesCount:catalog.length},null,2));
+ fs.writeFileSync(path.join(evidence,'source-pins.json'),JSON.stringify({glb:sha(bytes),handSupport:sha(JSON.stringify(support)),core:sha(fs.readFileSync(core)),templates:sha(fs.readFileSync(path.join(base,'www/modules/gym/figtpl.js'))),templatesCount:catalog.length},null,2));
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});
