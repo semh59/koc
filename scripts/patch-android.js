@@ -142,10 +142,7 @@ patchGradle("signingConfigs", /android \{/, `android {
         // lintVitalRelease does not know the documented device_* domains in nw_data_rules.xml (false positive).
         disable "FullBackupContent"
     }`);
-patchGradle("dataBinding", /android \{/, `android {
-    buildFeatures {
-        dataBinding = true
-    }`);
+
 // ML Kit text recognition for label and lab photos (the model ships inside the app, no internet needed).
 patchGradle("mlkit:text-recognition", /dependencies \{/, m => m + '\n    implementation "com.google.mlkit:text-recognition:16.0.1"');
 // Google Play services location library for the activity-recognition transitions (walk/run detection).
