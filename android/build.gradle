@@ -18,11 +18,7 @@ buildscript {
 apply from: "variables.gradle"
 
 
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
+subprojects {
     configurations.all {
         resolutionStrategy {
             force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
