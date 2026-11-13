@@ -162,7 +162,7 @@ if (run && !gradle.includes(`versionName "1.0.${run}"`)) {
   gradle = gradle.replace(/versionCode \d+/, `versionCode ${run}`).replace(/versionName "[^"]*"/, `versionName "1.0.${run}"`);
 }
 
-patchGradle("excludeKotlinStdlib", /android \{/, m => m + '\n    configurations.all {\n        resolutionStrategy.eachDependency { details ->\n            if (details.requested.group == "org.jetbrains.kotlin") {\n                details.useVersion "1.8.22"\n            }\n        }\n    }');
+patchGradle("excludeKotlinStdlib", /android \{/, m => m + '\n    configurations.all {\n        resolutionStrategy {\n            force \'org.jetbrains.kotlin:kotlin-stdlib:1.8.22\'\n            force \'org.jetbrains.kotlin:kotlin-stdlib-common:1.8.22\'\n            force \'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22\'\n            force \'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22\'\n        }\n    }\n    dependencies {\n        constraints {\n            implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22") {\n                because("kotlin-stdlib-jdk7 1.6.21 is incompatible with 1.8.22")\n            }\n            implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22") {\n                because("kotlin-stdlib-jdk8 1.6.21 is incompatible with 1.8.22")\n            }\n        }\n    }');
 // Remove old resolutionStrategyKotlin if any
 gradle = gradle.replace(/resolutionStrategyKotlin[\s\S]*?\}\);/, '');
 
