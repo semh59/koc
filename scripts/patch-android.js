@@ -163,6 +163,11 @@ if (run && !gradle.includes(`versionName "1.0.${run}"`)) {
 }
 
 patchGradle("excludeKotlinStdlib", /dependencies \{/, m => m + '\n    configurations.all { exclude group: "org.jetbrains.kotlin", module: "kotlin-stdlib-jdk7" }\n    configurations.all { exclude group: "org.jetbrains.kotlin", module: "kotlin-stdlib-jdk8" }');
+patchGradle("resolutionStrategyKotlin", /android \{/, `android {
+    configurations.all {
+        resolutionStrategy.force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+        resolutionStrategy.force 'org.jetbrains.kotlin:kotlin-stdlib-common:1.8.22'
+    }`);
 
 fs.writeFileSync(gradlePath, gradle);
 console.log("Gradle configured.");
