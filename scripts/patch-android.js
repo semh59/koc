@@ -162,7 +162,7 @@ if (run && !gradle.includes(`versionName "1.0.${run}"`)) {
   gradle = gradle.replace(/versionCode \d+/, `versionCode ${run}`).replace(/versionName "[^"]*"/, `versionName "1.0.${run}"`);
 }
 
-patchGradle("excludeKotlinStdlib", /dependencies \{/, m => m + '\n    configurations.all {\n        exclude group: "org.jetbrains.kotlin", module: "kotlin-stdlib-jdk7"\n        exclude group: "org.jetbrains.kotlin", module: "kotlin-stdlib-jdk8"\n        resolutionStrategy {\n            force \'org.jetbrains.kotlin:kotlin-stdlib:1.8.22\'\n            force \'org.jetbrains.kotlin:kotlin-stdlib-common:1.8.22\'\n            force \'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22\'\n            force \'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22\'\n        }\n    }');
+patchGradle("excludeKotlinStdlib", /dependencies \{/, m => m + '\n    configurations.all {\n        exclude group: "org.jetbrains.kotlin", module: "kotlin-stdlib-jdk7"\n        exclude group: "org.jetbrains.kotlin", module: "kotlin-stdlib-jdk8"\n        exclude group: "org.jetbrains.kotlin", module: "kotlin-stdlib-common"\n        resolutionStrategy {\n            force \'org.jetbrains.kotlin:kotlin-stdlib:1.8.22\'\n            force \'org.jetbrains.kotlin:kotlin-stdlib-common:1.8.22\'\n            force \'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22\'\n            force \'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22\'\n        }\n    }');
 // Remove old resolutionStrategyKotlin if any
 gradle = gradle.replace(/resolutionStrategyKotlin[\s\S]*?\}\);/, '');
 
