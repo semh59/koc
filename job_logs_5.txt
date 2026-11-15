@@ -1,0 +1,666 @@
+﻿2026-11-13T13:37:09.3774456Z Current runner version: '2.338.2'
+2026-11-13T13:37:09.3806104Z ##[group]Runner Image Provisioner
+2026-11-13T13:37:09.3807406Z Hosted Compute Agent
+2026-11-13T13:37:09.3808197Z Version: 20261028.624
+2026-11-13T13:37:09.3809056Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+2026-11-13T13:37:09.3810002Z Build Date: 2026-10-28T21:51:42Z
+2026-11-13T13:37:09.3810926Z Worker ID: {acf4b463-dbc9-4ea7-b10a-0146ce58b198}
+2026-11-13T13:37:09.3811860Z Region: westus2
+2026-11-13T13:37:09.3812603Z Cloud: Azure
+2026-11-13T13:37:09.3813405Z ##[endgroup]
+2026-11-13T13:37:09.3815607Z ##[group]Operating System
+2026-11-13T13:37:09.3816506Z Ubuntu
+2026-11-13T13:37:09.3817224Z 26.04.1
+2026-11-13T13:37:09.3817878Z LTS
+2026-11-13T13:37:09.3818604Z ##[endgroup]
+2026-11-13T13:37:09.3819294Z ##[group]Runner Image
+2026-11-13T13:37:09.3820152Z Image: ubuntu-26.04
+2026-11-13T13:37:09.3820874Z Version: 20261101.186.1
+2026-11-13T13:37:09.3822605Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261101.186/images/ubuntu/Ubuntu2604-Readme.md
+2026-11-13T13:37:09.3824712Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261101.186
+2026-11-13T13:37:09.3826094Z ##[endgroup]
+2026-11-13T13:37:09.3827598Z ##[group]GITHUB_TOKEN Permissions
+2026-11-13T13:37:09.3829981Z Contents: read
+2026-11-13T13:37:09.3830760Z Metadata: read
+2026-11-13T13:37:09.3831530Z ##[endgroup]
+2026-11-13T13:37:09.3834693Z Secret source: Actions
+2026-11-13T13:37:09.3836007Z Cache mode: write
+2026-11-13T13:37:09.3836923Z Prepare workflow directory
+2026-11-13T13:37:09.4419704Z Prepare all required actions
+2026-11-13T13:37:09.4476369Z Getting action download info
+2026-11-13T13:37:09.8193250Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-11-13T13:37:09.9654514Z Download action repository 'actions/setup-node@820762786026740c76f36085b0efc47a31fe5020' (SHA:820762786026740c76f36085b0efc47a31fe5020)
+2026-11-13T13:37:10.1633056Z Download action repository 'actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6' (SHA:de7274f081f381c8f8158605e0321c36c376e2e6)
+2026-11-13T13:37:10.5900055Z Download action repository 'actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9' (SHA:55cc8345863c7cc4c66a329aec7e433d2d1c52a9)
+2026-11-13T13:37:11.0508192Z Complete job name: build
+2026-11-13T13:37:11.1427026Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+2026-11-13T13:37:11.1428290Z with:
+2026-11-13T13:37:11.1429002Z   repository: semh59/koc
+2026-11-13T13:37:11.1432029Z   token: ***
+2026-11-13T13:37:11.1432731Z   ssh-strict: true
+2026-11-13T13:37:11.1433437Z   ssh-user: git
+2026-11-13T13:37:11.1434521Z   persist-credentials: true
+2026-11-13T13:37:11.1435252Z   clean: true
+2026-11-13T13:37:11.1435964Z   sparse-checkout-cone-mode: true
+2026-11-13T13:37:11.1436720Z   fetch-depth: 1
+2026-11-13T13:37:11.1437418Z   fetch-tags: false
+2026-11-13T13:37:11.1438123Z   show-progress: true
+2026-11-13T13:37:11.1438819Z   lfs: false
+2026-11-13T13:37:11.1439574Z   submodules: false
+2026-11-13T13:37:11.1440306Z   set-safe-directory: true
+2026-11-13T13:37:11.1441039Z   allow-unsafe-pr-checkout: false
+2026-11-13T13:37:11.1442062Z env:
+2026-11-13T13:37:11.1442901Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:37:11.1444010Z ##[endgroup]
+2026-11-13T13:37:11.3651952Z Syncing repository: semh59/koc
+2026-11-13T13:37:11.3655652Z ##[group]Getting Git version info
+2026-11-13T13:37:11.3659271Z Working directory is '/home/runner/work/koc/koc'
+2026-11-13T13:37:11.3661492Z [command]/usr/bin/git version
+2026-11-13T13:37:11.3682030Z git version 2.56.0
+2026-11-13T13:37:11.3700953Z ##[endgroup]
+2026-11-13T13:37:11.3715367Z Temporarily overriding HOME='/home/runner/work/_temp/5cbd7baa-9ce5-4858-be32-413b7ebd451c' before making global git config changes
+2026-11-13T13:37:11.3717409Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-13T13:37:11.3719450Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/koc/koc
+2026-11-13T13:37:11.3812670Z Deleting the contents of '/home/runner/work/koc/koc'
+2026-11-13T13:37:11.3815059Z ##[group]Determining repository object format
+2026-11-13T13:37:11.3816661Z ##[endgroup]
+2026-11-13T13:37:11.3818227Z ##[group]Initializing the repository
+2026-11-13T13:37:11.3819671Z [command]/usr/bin/git init /home/runner/work/koc/koc
+2026-11-13T13:37:11.3873464Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-13T13:37:11.3875156Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-13T13:37:11.3876652Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-13T13:37:11.3877895Z hint: call:
+2026-11-13T13:37:11.3879165Z hint:
+2026-11-13T13:37:11.3883057Z hint: 	git config --global init.defaultBranch <name>
+2026-11-13T13:37:11.3884818Z hint:
+2026-11-13T13:37:11.3888192Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-13T13:37:11.3894013Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-13T13:37:11.3904923Z hint:
+2026-11-13T13:37:11.3906076Z hint: 	git branch -m <name>
+2026-11-13T13:37:11.3907236Z hint:
+2026-11-13T13:37:11.3908584Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-13T13:37:11.3910411Z Initialized empty Git repository in /home/runner/work/koc/koc/.git/
+2026-11-13T13:37:11.3914953Z [command]/usr/bin/git remote add origin https://github.com/semh59/koc
+2026-11-13T13:37:11.3948135Z ##[endgroup]
+2026-11-13T13:37:11.3950625Z ##[group]Disabling automatic garbage collection
+2026-11-13T13:37:11.3952347Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-13T13:37:11.3987376Z ##[endgroup]
+2026-11-13T13:37:11.3989086Z ##[group]Setting up auth
+2026-11-13T13:37:11.3992051Z Removing SSH command configuration
+2026-11-13T13:37:11.3998495Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-13T13:37:11.4031994Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-13T13:37:11.5145650Z Removing HTTP extra header
+2026-11-13T13:37:11.5147998Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-13T13:37:11.5153127Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-13T13:37:11.5158732Z Removing includeIf entries pointing to credentials config files
+2026-11-13T13:37:11.5160609Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-13T13:37:11.5165343Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-13T13:37:11.5249681Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-6f2f2089-0259-421b-a8fc-2cfe25c675b3.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-13T13:37:11.5293203Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/koc/koc/.git.path /home/runner/work/_temp/git-credentials-6f2f2089-0259-421b-a8fc-2cfe25c675b3.config
+2026-11-13T13:37:11.5322174Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/koc/koc/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-6f2f2089-0259-421b-a8fc-2cfe25c675b3.config
+2026-11-13T13:37:11.5359723Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-6f2f2089-0259-421b-a8fc-2cfe25c675b3.config
+2026-11-13T13:37:11.5392577Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-6f2f2089-0259-421b-a8fc-2cfe25c675b3.config
+2026-11-13T13:37:11.5427527Z ##[endgroup]
+2026-11-13T13:37:11.5429395Z ##[group]Fetching the repository
+2026-11-13T13:37:11.5431979Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +98661be72ce2068dd4bbf49fb47aa96a48a85f21:refs/remotes/origin/main
+2026-11-13T13:37:12.3368818Z From https://github.com/semh59/koc
+2026-11-13T13:37:12.3371274Z  * [new ref]         98661be72ce2068dd4bbf49fb47aa96a48a85f21 -> origin/main
+2026-11-13T13:37:12.3375670Z [command]/usr/bin/git branch --list --remote origin/main
+2026-11-13T13:37:12.3387944Z   origin/main
+2026-11-13T13:37:12.3396160Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+2026-11-13T13:37:12.3420334Z 98661be72ce2068dd4bbf49fb47aa96a48a85f21
+2026-11-13T13:37:12.3428903Z ##[endgroup]
+2026-11-13T13:37:12.3429564Z ##[group]Determining the checkout info
+2026-11-13T13:37:12.3430119Z ##[endgroup]
+2026-11-13T13:37:12.3431460Z [command]/usr/bin/git sparse-checkout disable
+2026-11-13T13:37:12.3480408Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-13T13:37:12.3511976Z ##[group]Checking out the ref
+2026-11-13T13:37:12.3515788Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-11-13T13:37:12.4365448Z Switched to a new branch 'main'
+2026-11-13T13:37:12.4375001Z branch 'main' set up to track 'origin/main'.
+2026-11-13T13:37:12.4377884Z ##[endgroup]
+2026-11-13T13:37:12.4425378Z [command]/usr/bin/git log -1 --format=%H
+2026-11-13T13:37:12.4454836Z 98661be72ce2068dd4bbf49fb47aa96a48a85f21
+2026-11-13T13:37:12.4720701Z ##[group]Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+2026-11-13T13:37:12.4721070Z with:
+2026-11-13T13:37:12.4721289Z   node-version: 22
+2026-11-13T13:37:12.4721508Z   cache: npm
+2026-11-13T13:37:12.4721723Z   check-latest: false
+2026-11-13T13:37:12.4724015Z   token: ***
+2026-11-13T13:37:12.4724251Z   package-manager-cache: true
+2026-11-13T13:37:12.4724501Z env:
+2026-11-13T13:37:12.4724831Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:37:12.4725216Z ##[endgroup]
+2026-11-13T13:37:12.5890477Z Found in cache @ /opt/hostedtoolcache/node/22.23.4/x64
+2026-11-13T13:37:12.5891616Z ##[group]Environment details
+2026-11-13T13:37:12.9701415Z node: v22.23.4
+2026-11-13T13:37:12.9702016Z npm: 10.9.9
+2026-11-13T13:37:12.9702408Z yarn: 1.22.22
+2026-11-13T13:37:12.9703138Z ##[endgroup]
+2026-11-13T13:37:12.9721423Z [command]/opt/hostedtoolcache/node/22.23.4/x64/bin/npm config get cache
+2026-11-13T13:37:13.1371077Z /home/runner/.npm
+2026-11-13T13:37:13.5428479Z Cache hit for: node-cache-Linux-x64-npm-560cfc1f1c260066ad5bf405a22bed4e18eae015e4b98d8814a6665647b3d265
+2026-11-13T13:37:15.1854928Z Received 8388608 of 39726263 (21.1%), 8.0 MBs/sec
+2026-11-13T13:37:15.3920343Z Received 39726263 of 39726263 (100.0%), 31.4 MBs/sec
+2026-11-13T13:37:15.3921228Z Cache Size: ~38 MB (39726263 B)
+2026-11-13T13:37:15.3947735Z [command]/usr/bin/tar -xf /home/runner/work/_temp/f093104c-497e-449c-8c42-e1ad0b4962bb/cache.tzst -P -C /home/runner/work/koc/koc --use-compress-program unzstd
+2026-11-13T13:37:15.5042527Z Cache restored successfully
+2026-11-13T13:37:15.5070032Z Cache restored from key: node-cache-Linux-x64-npm-560cfc1f1c260066ad5bf405a22bed4e18eae015e4b98d8814a6665647b3d265
+2026-11-13T13:37:15.5722465Z ##[group]Run actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+2026-11-13T13:37:15.5722836Z with:
+2026-11-13T13:37:15.5723056Z   distribution: temurin
+2026-11-13T13:37:15.5723261Z   java-version: 21
+2026-11-13T13:37:15.5723459Z   java-package: jdk
+2026-11-13T13:37:15.5723791Z   check-latest: false
+2026-11-13T13:37:15.5723993Z   force-download: false
+2026-11-13T13:37:15.5724185Z   set-default: true
+2026-11-13T13:37:15.5724377Z   server-id: github
+2026-11-13T13:37:15.5724590Z   mvn-repositories-include-central: true
+2026-11-13T13:37:15.5724867Z   mvn-repositories-prioritize-central: true
+2026-11-13T13:37:15.5725134Z   overwrite-settings: true
+2026-11-13T13:37:15.5725377Z   cache-read-only: false
+2026-11-13T13:37:15.5725750Z   job-status: success
+2026-11-13T13:37:15.5727827Z   token: ***
+2026-11-13T13:37:15.5728027Z   show-download-progress: false
+2026-11-13T13:37:15.5728264Z   problem-matcher: true
+2026-11-13T13:37:15.5728462Z env:
+2026-11-13T13:37:15.5728798Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:37:15.5729139Z ##[endgroup]
+2026-11-13T13:37:15.6446111Z ##[group]Installed distributions
+2026-11-13T13:37:15.6518481Z Resolved Java 21.0.13+9 from tool-cache
+2026-11-13T13:37:15.6519447Z Setting Java 21.0.13+9 as the default
+2026-11-13T13:37:15.6521420Z 
+2026-11-13T13:37:15.6521843Z Java configuration:
+2026-11-13T13:37:15.6522427Z   Distribution: temurin
+2026-11-13T13:37:15.6522968Z   Version: 21.0.13+9
+2026-11-13T13:37:15.6524733Z   Path: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:37:15.6525336Z 
+2026-11-13T13:37:15.6525883Z ##[endgroup]
+2026-11-13T13:37:15.6560908Z Creating settings.xml with server-id: github
+2026-11-13T13:37:15.6561656Z Creating toolchains.xml for JDK version 21 from temurin
+2026-11-13T13:37:15.6562432Z Writing to /home/runner/.m2/settings.xml
+2026-11-13T13:37:15.6577614Z Writing to /home/runner/.m2/toolchains.xml
+2026-11-13T13:37:15.6588698Z Configured MAVEN_ARGS to include -ntp to suppress Maven transfer progress logs. Set 'show-download-progress: true' to keep the download progress output.
+2026-11-13T13:37:15.6687716Z ##[group]Run npm ci
+2026-11-13T13:37:15.6687989Z [36;1mnpm ci[0m
+2026-11-13T13:37:15.6739482Z shell: /usr/bin/bash -e {0}
+2026-11-13T13:37:15.6739734Z env:
+2026-11-13T13:37:15.6740033Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:37:15.6740480Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:37:15.6740879Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:37:15.6741191Z   MAVEN_ARGS: -ntp
+2026-11-13T13:37:15.6741386Z ##[endgroup]
+2026-11-13T13:37:17.7751986Z npm warn deprecated uuid@7.0.3: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+2026-11-13T13:37:18.5105440Z 
+2026-11-13T13:37:18.5106626Z added 147 packages, and audited 148 packages in 3s
+2026-11-13T13:37:18.5107523Z 
+2026-11-13T13:37:18.5112012Z 22 packages are looking for funding
+2026-11-13T13:37:18.5112731Z   run `npm fund` for details
+2026-11-13T13:37:18.5534770Z 
+2026-11-13T13:37:18.5545026Z 7 vulnerabilities (6 moderate, 1 high)
+2026-11-13T13:37:18.5564066Z 
+2026-11-13T13:37:18.5584337Z To address all issues, run:
+2026-11-13T13:37:18.5600662Z   npm audit fix
+2026-11-13T13:37:18.5601025Z 
+2026-11-13T13:37:18.5601375Z Run `npm audit` for details.
+2026-11-13T13:37:18.6042599Z ##[group]Run npm test
+2026-11-13T13:37:18.6042836Z [36;1mnpm test[0m
+2026-11-13T13:37:18.6088451Z shell: /usr/bin/bash -e {0}
+2026-11-13T13:37:18.6088673Z env:
+2026-11-13T13:37:18.6088965Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:37:18.6089438Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:37:18.6089830Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:37:18.6090151Z   MAVEN_ARGS: -ntp
+2026-11-13T13:37:18.6090343Z   NW_TEST_SEQUENTIAL: 1
+2026-11-13T13:37:18.6090542Z ##[endgroup]
+2026-11-13T13:37:18.6946234Z 
+2026-11-13T13:37:18.6951514Z > neowell-app@1.0.0 test
+2026-11-13T13:37:18.6952197Z > node scripts/run-tests.js
+2026-11-13T13:37:18.6952423Z 
+2026-11-13T13:40:10.2871508Z ok     activity.test.js (PASS 5, FAIL 0, exit 0)
+2026-11-13T13:40:10.2872661Z ok     alarm.test.js (PASS 24, FAIL 0, exit 0)
+2026-11-13T13:40:10.2873430Z ok     algo.test.js (PASS 120, FAIL 0, exit 0)
+2026-11-13T13:40:10.2874538Z ok     android.test.js (PASS 109, FAIL 0, exit 0)
+2026-11-13T13:40:10.2877579Z ok     app.test.js (PASS 1170, FAIL 0, exit 0)
+2026-11-13T13:40:10.2878309Z ok     archive.test.js (PASS 6, FAIL 0, exit 0)
+2026-11-13T13:40:10.2879333Z ok     autosend.test.js (PASS 10, FAIL 0, exit 0)
+2026-11-13T13:40:10.2880040Z ok     backup-restore.test.js (PASS 21, FAIL 0, exit 0)
+2026-11-13T13:40:10.2880707Z ok     backup.test.js (PASS 17, FAIL 0, exit 0)
+2026-11-13T13:40:10.2881379Z ok     balance.test.js (PASS 7, FAIL 0, exit 0)
+2026-11-13T13:40:10.2882062Z ok     barcode-fail.test.js (PASS 5, FAIL 0, exit 0)
+2026-11-13T13:40:10.2882858Z ok     boundary.test.js (PASS 3, FAIL 0, exit 0)
+2026-11-13T13:40:10.2886955Z ok     chart-table.test.js (PASS 9, FAIL 0, exit 0)
+2026-11-13T13:40:10.2887766Z ok     coach-2-0.test.js (PASS 14, FAIL 0, exit 0)
+2026-11-13T13:40:10.2888505Z ok     coach-delete-actions.test.js (PASS 4, FAIL 0, exit 0)
+2026-11-13T13:40:10.2889314Z ok     coach-phase4-production.test.js (PASS 9, FAIL 0, exit 0)
+2026-11-13T13:40:10.2890045Z ok     coach-phase4.test.js (PASS 11, FAIL 0, exit 0)
+2026-11-13T13:40:10.2890740Z ok     coach-phase5-ui.test.js (PASS 3, FAIL 0, exit 0)
+2026-11-13T13:40:10.2891428Z ok     coach-phase5.test.js (PASS 16, FAIL 0, exit 0)
+2026-11-13T13:40:10.2892191Z ok     coach-phase6-ui.test.js (PASS 9, FAIL 0, exit 0)
+2026-11-13T13:40:10.2892939Z ok     coach-phase6.test.js (PASS 31, FAIL 0, exit 0)
+2026-11-13T13:40:10.2893800Z ok     coach-planner-closures.test.js (PASS 4, FAIL 0, exit 0)
+2026-11-13T13:40:10.2894638Z ok     coach-planner-production.test.js (PASS 5, FAIL 0, exit 0)
+2026-11-13T13:40:10.2895378Z ok     coach-planner-ui.test.js (PASS 5, FAIL 0, exit 0)
+2026-11-13T13:40:10.2896079Z ok     coach-planner.test.js (PASS 16, FAIL 0, exit 0)
+2026-11-13T13:40:10.2896783Z ok     coach-repository.test.js (PASS 26, FAIL 0, exit 0)
+2026-11-13T13:40:10.2897461Z ok     coach-voice.test.js (PASS 5, FAIL 0, exit 0)
+2026-11-13T13:40:10.2898130Z ok     coach.test.js (PASS 78, FAIL 0, exit 0)
+2026-11-13T13:40:10.2898788Z ok     coach2.test.js (PASS 48, FAIL 0, exit 0)
+2026-11-13T13:40:10.2899446Z ok     commit.test.js (PASS 3, FAIL 0, exit 0)
+2026-11-13T13:40:10.2900025Z ok     contrast.test.js (PASS 102, FAIL 0, exit 0)
+2026-11-13T13:40:10.2900683Z ok     copy.test.js (PASS 6, FAIL 0, exit 0)
+2026-11-13T13:40:10.2901355Z ok     csv.test.js (PASS 25, FAIL 0, exit 0)
+2026-11-13T13:40:10.2902034Z ok     csvread.test.js (PASS 25, FAIL 0, exit 0)
+2026-11-13T13:40:10.2902735Z ok     ctx.test.js (PASS 13, FAIL 0, exit 0)
+2026-11-13T13:40:10.2903353Z ok     cycle.test.js (PASS 67, FAIL 0, exit 0)
+2026-11-13T13:40:10.2904252Z ok     data.test.js (PASS 26, FAIL 0, exit 0)
+2026-11-13T13:40:10.2904810Z ok     dayboundary.test.js (PASS 25, FAIL 0, exit 0)
+2026-11-13T13:40:10.2905371Z ok     dead-code.test.js (PASS 4, FAIL 0, exit 0)
+2026-11-13T13:40:10.2905951Z ok     design.test.js (PASS 36, FAIL 0, exit 0)
+2026-11-13T13:40:10.2906844Z ok     doctor.test.js (PASS 5, FAIL 0, exit 0)
+2026-11-13T13:40:10.2907443Z ok     edit.test.js (PASS 24, FAIL 0, exit 0)
+2026-11-13T13:40:10.2908093Z ok     entry-quick.test.js (PASS 22, FAIL 0, exit 0)
+2026-11-13T13:40:10.2908702Z ok     errtext.test.js (PASS 8, FAIL 0, exit 0)
+2026-11-13T13:40:10.2909321Z ok     explain.test.js (PASS 6, FAIL 0, exit 0)
+2026-11-13T13:40:10.2909917Z ok     fhir.test.js (PASS 7, FAIL 0, exit 0)
+2026-11-13T13:40:10.2910529Z ok     fig.test.js (PASS 16, FAIL 0, exit 0)
+2026-11-13T13:40:10.2911179Z ok     firstrun-sched.test.js (PASS 9, FAIL 0, exit 0)
+2026-11-13T13:40:10.2911829Z ok     food-voice.test.js (PASS 9, FAIL 0, exit 0)
+2026-11-13T13:40:10.2912431Z ok     foods.test.js (PASS 45, FAIL 0, exit 0)
+2026-11-13T13:40:10.2913019Z ok     goal.test.js (PASS 22, FAIL 0, exit 0)
+2026-11-13T13:40:10.2913820Z ok     goalsafety.test.js (PASS 28, FAIL 0, exit 0)
+2026-11-13T13:40:10.2914511Z ok     guide.test.js (PASS 31, FAIL 0, exit 0)
+2026-11-13T13:40:10.2915151Z ok     guideui.test.js (PASS 34, FAIL 0, exit 0)
+2026-11-13T13:40:10.2915783Z ok     gym2.test.js (PASS 49, FAIL 0, exit 0)
+2026-11-13T13:40:10.2916387Z ok     gym3.test.js (PASS 53, FAIL 0, exit 0)
+2026-11-13T13:40:10.2916981Z ok     habit.test.js (PASS 15, FAIL 0, exit 0)
+2026-11-13T13:40:10.2917832Z ok     hc-card.test.js (PASS 3, FAIL 0, exit 0)
+2026-11-13T13:40:10.2918412Z ok     hc.test.js (PASS 40, FAIL 0, exit 0)
+2026-11-13T13:40:10.2919043Z ok     history-data.test.js (PASS 11, FAIL 0, exit 0)
+2026-11-13T13:40:10.2919690Z ok     history.test.js (PASS 17, FAIL 0, exit 0)
+2026-11-13T13:40:10.2920254Z ok     import.test.js (PASS 38, FAIL 0, exit 0)
+2026-11-13T13:40:10.2920864Z ok     insight.test.js (PASS 29, FAIL 0, exit 0)
+2026-11-13T13:40:10.2921455Z ok     integrity2.test.js (PASS 36, FAIL 0, exit 0)
+2026-11-13T13:40:10.2922032Z ok     lab.test.js (PASS 236, FAIL 0, exit 0)
+2026-11-13T13:40:10.2922750Z ok     label.test.js (PASS 50, FAIL 0, exit 0)
+2026-11-13T13:40:10.2923475Z ok     landscape-chrome.test.js (PASS 58, FAIL 0, exit 0)
+2026-11-13T13:40:10.2924377Z ok     landscape.test.js (PASS 10, FAIL 0, exit 0)
+2026-11-13T13:40:10.2925046Z ok     leak.test.js (PASS 1, FAIL 0, exit 0)
+2026-11-13T13:40:10.2925668Z ok     links.test.js (PASS 19, FAIL 0, exit 0)
+2026-11-13T13:40:10.2926288Z ok     lock.test.js (PASS 15, FAIL 0, exit 0)
+2026-11-13T13:40:10.2926914Z ok     log.test.js (PASS 32, FAIL 0, exit 0)
+2026-11-13T13:40:10.2927541Z ok     macro.test.js (PASS 12, FAIL 0, exit 0)
+2026-11-13T13:40:10.2928218Z ok     measure-caffeine.test.js (PASS 8, FAIL 0, exit 0)
+2026-11-13T13:40:10.2928835Z ok     med.test.js (PASS 112, FAIL 0, exit 0)
+2026-11-13T13:40:10.2929518Z ok     medclean.test.js (PASS 30, FAIL 0, exit 0)
+2026-11-13T13:40:10.2930198Z ok     medfix.test.js (PASS 40, FAIL 0, exit 0)
+2026-11-13T13:40:10.2930901Z ok     medfix2.test.js (PASS 40, FAIL 0, exit 0)
+2026-11-13T13:40:10.2931576Z ok     medfix3.test.js (PASS 22, FAIL 0, exit 0)
+2026-11-13T13:40:10.2932251Z ok     medfix4.test.js (PASS 41, FAIL 0, exit 0)
+2026-11-13T13:40:10.2932944Z ok     meds2.test.js (PASS 30, FAIL 0, exit 0)
+2026-11-13T13:40:10.2933721Z ok     meds3.test.js (PASS 30, FAIL 0, exit 0)
+2026-11-13T13:40:10.2934430Z ok     menu.test.js (PASS 42, FAIL 0, exit 0)
+2026-11-13T13:40:10.2935096Z ok     menulocal.test.js (PASS 18, FAIL 0, exit 0)
+2026-11-13T13:40:10.2935717Z ok     motion.test.js (PASS 16, FAIL 0, exit 0)
+2026-11-13T13:40:10.2936325Z ok     netlog.test.js (PASS 12, FAIL 0, exit 0)
+2026-11-13T13:40:10.2936897Z ok     off.test.js (PASS 20, FAIL 0, exit 0)
+2026-11-13T13:40:10.2939014Z ok     paths.test.js (PASS 3, FAIL 0, exit 0)
+2026-11-13T13:40:10.2939775Z ok     pii-coach-2-0.test.js (PASS 1, FAIL 0, exit 0)
+2026-11-13T13:40:10.2940453Z ok     pii.test.js (PASS 39, FAIL 0, exit 0)
+2026-11-13T13:40:10.2941157Z ok     pregnancy.test.js (PASS 28, FAIL 0, exit 0)
+2026-11-13T13:40:10.2941778Z ok     privacy-ui.test.js (PASS 21, FAIL 0, exit 0)
+2026-11-13T13:40:10.2942373Z ok     privacy3.test.js (PASS 38, FAIL 0, exit 0)
+2026-11-13T13:40:10.2943181Z ok     programs.test.js (PASS 13, FAIL 0, exit 0)
+2026-11-13T13:40:10.2943935Z ok     pulse.test.js (PASS 28, FAIL 0, exit 0)
+2026-11-13T13:40:10.2944550Z ok     quick.test.js (PASS 18, FAIL 0, exit 0)
+2026-11-13T13:40:10.2945188Z ok     ramadan-meds.test.js (PASS 14, FAIL 0, exit 0)
+2026-11-13T13:40:10.2945956Z ok     ramadan-ui.test.js (PASS 29, FAIL 0, exit 0)
+2026-11-13T13:40:10.2946640Z ok     ramadan.test.js (PASS 33, FAIL 0, exit 0)
+2026-11-13T13:40:10.2947275Z ok     recipe-import.test.js (PASS 5, FAIL 0, exit 0)
+2026-11-13T13:40:10.2947884Z ok     reliability.test.js (PASS 53, FAIL 0, exit 0)
+2026-11-13T13:40:10.2948465Z ok     risk.test.js (PASS 68, FAIL 0, exit 0)
+2026-11-13T13:40:10.2949039Z ok     screens.test.js (PASS 71, FAIL 0, exit 0)
+2026-11-13T13:40:10.2949624Z ok     shards.test.js (PASS 5, FAIL 0, exit 0)
+2026-11-13T13:40:10.2950209Z ok     shortcuts.test.js (PASS 12, FAIL 0, exit 0)
+2026-11-13T13:40:10.2950829Z ok     stepsync-perf.test.js (PASS 2, FAIL 0, exit 0)
+2026-11-13T13:40:10.2951487Z ok     store.test.js (PASS 19, FAIL 0, exit 0)
+2026-11-13T13:40:10.2952184Z ok     today-quick.test.js (PASS 30, FAIL 0, exit 0)
+2026-11-13T13:40:10.2952817Z ok     todaynav.test.js (PASS 7, FAIL 0, exit 0)
+2026-11-13T13:40:10.2953436Z ok     trial.test.js (PASS 13, FAIL 0, exit 0)
+2026-11-13T13:40:10.2954712Z ok     ui-f-cycle.test.js (PASS 9, FAIL 0, exit 0)
+2026-11-13T13:40:10.2955420Z ok     ui-f-gym.test.js (PASS 25, FAIL 0, exit 0)
+2026-11-13T13:40:10.2956121Z ok     ui-f-history.test.js (PASS 17, FAIL 0, exit 0)
+2026-11-13T13:40:10.2957021Z ok     ui-f-today.test.js (PASS 14, FAIL 0, exit 0)
+2026-11-13T13:40:10.2957661Z ok     undo.test.js (PASS 8, FAIL 0, exit 0)
+2026-11-13T13:40:10.2958300Z ok     unit-toggle.test.js (PASS 6, FAIL 0, exit 0)
+2026-11-13T13:40:10.2958963Z ok     units.test.js (PASS 37, FAIL 0, exit 0)
+2026-11-13T13:40:10.2959586Z ok     urgent.test.js (PASS 27, FAIL 0, exit 0)
+2026-11-13T13:40:10.2960223Z ok     vault.test.js (PASS 14, FAIL 0, exit 0)
+2026-11-13T13:40:10.2960941Z ok     verify-android-sync.test.js (PASS 5, FAIL 0, exit 0)
+2026-11-13T13:40:10.2961639Z ok     vitals.test.js (PASS 78, FAIL 0, exit 0)
+2026-11-13T13:40:10.2962267Z ok     weekly.test.js (PASS 33, FAIL 0, exit 0)
+2026-11-13T13:40:10.2962886Z ok     wipe.test.js (PASS 14, FAIL 0, exit 0)
+2026-11-13T13:40:10.2963529Z ok     wording.test.js (PASS 14, FAIL 0, exit 0)
+2026-11-13T13:40:10.2964266Z ok     xss.test.js (PASS 1, FAIL 0, exit 0)
+2026-11-13T13:40:10.2964638Z 
+2026-11-13T13:40:10.2965015Z Full output: /tmp/neowell-test-output.log
+2026-11-13T13:40:10.2965590Z Runner finished. Failed count: 0
+2026-11-13T13:40:10.3087257Z ##[group]Run javac -d /tmp/stepmath assets/android/StepMath.java assets/android/QuickMath.java assets/android/MotionMath.java assets/android/LockText.java scripts/StepMathTest.java scripts/QuickMathTest.java scripts/MotionMathTest.java scripts/LockTextTest.java
+2026-11-13T13:40:10.3089656Z [36;1mjavac -d /tmp/stepmath assets/android/StepMath.java assets/android/QuickMath.java assets/android/MotionMath.java assets/android/LockText.java scripts/StepMathTest.java scripts/QuickMathTest.java scripts/MotionMathTest.java scripts/LockTextTest.java[0m
+2026-11-13T13:40:10.3091097Z [36;1mjava -cp /tmp/stepmath com.neowell.app.StepMathTest[0m
+2026-11-13T13:40:10.3091654Z [36;1mjava -cp /tmp/stepmath com.neowell.app.QuickMathTest[0m
+2026-11-13T13:40:10.3092184Z [36;1mjava -cp /tmp/stepmath com.neowell.app.MotionMathTest[0m
+2026-11-13T13:40:10.3092680Z [36;1mjava -cp /tmp/stepmath com.neowell.app.LockTextTest[0m
+2026-11-13T13:40:10.3144578Z shell: /usr/bin/bash -e {0}
+2026-11-13T13:40:10.3144873Z env:
+2026-11-13T13:40:10.3145180Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:40:10.3145631Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:40:10.3146047Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:40:10.3146367Z   MAVEN_ARGS: -ntp
+2026-11-13T13:40:10.3146553Z ##[endgroup]
+2026-11-13T13:40:15.4015140Z PASS known boot count: a temporary counter drop is neither steps nor a reboot
+2026-11-13T13:40:15.4034735Z PASS a correct read after a low read does not inflate today
+2026-11-13T13:40:15.4046644Z PASS changed boot count means counter reset, steps are not lost
+2026-11-13T13:40:15.4047537Z PASS first read is 0 steps
+2026-11-13T13:40:15.4048107Z PASS same-day increase
+2026-11-13T13:40:15.4059955Z PASS steps are not lost when the phone reboots
+2026-11-13T13:40:15.4060625Z PASS increase after reboot
+2026-11-13T13:40:15.4061124Z PASS second reboot
+2026-11-13T13:40:15.4061628Z PASS new day starts from 0
+2026-11-13T13:40:15.4062246Z PASS old day is written to history
+2026-11-13T13:40:15.4062747Z PASS new day increase
+2026-11-13T13:40:15.4063360Z PASS night close writes the old day fully and returns true
+2026-11-13T13:40:15.4064185Z PASS new day is 0 after close
+2026-11-13T13:40:15.4064777Z PASS close does nothing on the same day
+2026-11-13T13:40:15.4065328Z PASS reboot at night close
+2026-11-13T13:40:15.4066114Z PASS 07:00 alarm does not close the old day, returns false (snapAt not written)
+2026-11-13T13:40:15.4066941Z PASS late alarm: old day is written up to the last read
+2026-11-13T13:40:15.4069463Z PASS late alarm: morning steps do not go to the old day, new day starts from 0
+2026-11-13T13:40:15.4070818Z PASS 02:30 late alarm closes the old day with the evening steps
+2026-11-13T13:40:15.4071567Z PASS new day starts from 0 after 02:30 close
+2026-11-13T13:40:15.4072244Z PASS close on the same day returns false
+2026-11-13T13:40:15.4072923Z PASS boot morning: old day stays at the last read
+2026-11-13T13:40:15.4073761Z PASS boot morning: new day starts from 0
+2026-11-13T13:40:15.4074565Z PASS with a 23:58 sample, the 00:10 close closes the day with the sample
+2026-11-13T13:40:15.4095751Z PASS steps after 23:58 go to the new day
+2026-11-13T13:40:15.4096543Z PASS with a 23:58 sample, the late 07:00 close also uses the sample
+2026-11-13T13:40:15.4097383Z PASS at the 07:00 close, night and morning steps go to the new day
+2026-11-13T13:40:15.4098382Z PASS 23:58 alarm arrived after midnight (no sample), old rule: steps up to 00:05 go to the old day
+2026-11-13T13:40:15.4099427Z PASS app opened before the night close: old day at the sample, the rest in the new day
+2026-11-13T13:40:15.4100285Z PASS a later close on the same day does nothing
+2026-11-13T13:40:15.4101181Z PASS phone rebooted after the sample: old day at the sample, new day from the reset counter
+2026-11-13T13:40:15.4103364Z PASS rollover without sample, 03:00 read: steps in between go to the old day
+2026-11-13T13:40:15.4108064Z PASS rollover without sample, 09:00 read: old day at the last read, new day 0
+2026-11-13T13:40:15.4108808Z PASS known reboot: total 300 + 900 even if the counter exceeds the last value
+2026-11-13T13:40:15.4109217Z PASS rebooted flag is consumed
+2026-11-13T13:40:15.4109534Z PASS day key going back counts under the stored day
+2026-11-13T13:40:15.4109870Z PASS day key going back writes nothing to history
+2026-11-13T13:40:15.4110199Z PASS close alarm ignores a day key that went back
+2026-11-13T13:40:15.4553372Z PASS amount: reads v inside extra
+2026-11-13T13:40:15.4554524Z PASS amount: field order does not matter
+2026-11-13T13:40:15.4556970Z PASS amount: v outside extra is ignored
+2026-11-13T13:40:15.4557646Z PASS amount: 0 without extra
+2026-11-13T13:40:15.4558219Z PASS amount: out of range is 0
+2026-11-13T13:40:15.4558858Z PASS amount: boundary values are valid
+2026-11-13T13:40:15.4559494Z PASS amount: non-numeric or decimal v is 0
+2026-11-13T13:40:15.4705099Z PASS med: reads id and time
+2026-11-13T13:40:15.4744942Z PASS med: field order does not matter
+2026-11-13T13:40:15.4784602Z PASS med: missing field gives null
+2026-11-13T13:40:15.4804481Z PASS med: bad time and out-of-range id give null
+2026-11-13T13:40:15.4824677Z PASS med: id 999 is valid, 1000 and 5-digit ids are out of range (null)
+2026-11-13T13:40:15.4858931Z PASS compare: equal strings match, different or null do not
+2026-11-13T13:40:15.4874573Z PASS med: a water notification yields no med key
+2026-11-13T13:40:15.4894818Z PASS med group: every dose of extra.g becomes a key, a bad id or time is skipped
+2026-11-13T13:40:15.4895606Z PASS med group: without g the single key is used
+2026-11-13T13:40:15.4896115Z PASS med: skip key starts with k
+2026-11-13T13:40:15.4896533Z PASS key: signed when extra.tk matches
+2026-11-13T13:40:15.4897194Z PASS key: unsigned when tk is missing, wrong, outside extra, or the secret is missing
+2026-11-13T13:40:15.4897769Z PASS append: two records in order
+2026-11-13T13:40:15.4898135Z PASS append: null start
+2026-11-13T13:40:15.5074955Z PASS limit: at most 200 records, oldest dropped
+2026-11-13T13:40:15.5112698Z PASS parse: corrupt and out-of-range pieces are skipped
+2026-11-13T13:40:15.5115310Z PASS parse: the zone offset (minutes, may be negative) is kept; a record without one is skipped
+2026-11-13T13:40:15.5116465Z PASS append: the zone is written after the time
+2026-11-13T13:40:15.5117534Z PASS widget tap: a second tap inside the gap is a repeat, the first, a later one and a clock that went back are not
+2026-11-13T13:40:15.5118896Z PASS iftar line: nothing before imsak, the time left while the fast runs, nothing from iftar to the next imsak
+2026-11-13T13:40:15.5120611Z PASS iftar line: with the app closed the pair rolls forward by whole days, for at most 3 days
+2026-11-13T13:40:15.5129020Z PASS iftar line: missing or inverted times give nothing
+2026-11-13T13:40:15.5129898Z PASS parse: empty and null
+2026-11-13T13:40:15.5130582Z PASS token: reads extra.at, not schedule.at
+2026-11-13T13:40:15.5174990Z PASS token: null when at is missing or short (old notification, no duplicate check)
+2026-11-13T13:40:15.5184711Z PASS duplicate: same notification seen; another at the same time and prefix matches not seen
+2026-11-13T13:40:15.5192538Z PASS duplicate: last 50 tokens are kept
+2026-11-13T13:40:15.5224359Z PASS alarm window: the 08:00 dose is still listed at 08:40 and at 10:59, not at 11:01, and from 5 s early
+2026-11-13T13:40:15.5700311Z PASS expected stride: walk 110/min, height 170
+2026-11-13T13:40:15.5701295Z PASS expected stride: run 170/min
+2026-11-13T13:40:15.5702015Z PASS unknown height defaults to 170
+2026-11-13T13:40:15.5702602Z PASS stride grows with cadence
+2026-11-13T13:40:15.5703485Z PASS sample: plausible GPS stride enters the model
+2026-11-13T13:40:15.5721198Z PASS sample: impossible stride is rejected
+2026-11-13T13:40:15.5721970Z PASS sample: impossible cadence is rejected
+2026-11-13T13:40:15.5722572Z PASS scale stays within 0.7-1.3
+2026-11-13T13:40:15.5723164Z PASS learned scale is reflected in stride
+2026-11-13T13:40:15.5898241Z PASS model: encode/decode round-trips
+2026-11-13T13:40:15.5904712Z PASS model: corrupt text falls back to default
+2026-11-13T13:40:15.5905375Z PASS GPS fix: good
+2026-11-13T13:40:15.5905878Z PASS GPS fix: bad accuracy, speed accuracy or speed is rejected
+2026-11-13T13:40:15.5947485Z PASS median and deviation
+2026-11-13T13:40:15.5948164Z PASS vehicle: high speed, or fast with slow cadence
+2026-11-13T13:40:15.5948849Z PASS classify: GPS speed dominates
+2026-11-13T13:40:15.5951701Z PASS classify: ambiguous speed uses cadence and activity recognition
+2026-11-13T13:40:15.5952541Z PASS MET: walk table and interpolation
+2026-11-13T13:40:15.5953223Z PASS MET: run table and upper bound
+2026-11-13T13:40:15.5971113Z PASS kcal: net energy
+2026-11-13T13:40:15.5971679Z PASS kcal: about 0.5 kcal/kg/km for walking
+2026-11-13T13:40:15.5972205Z PASS bout: walk summary
+2026-11-13T13:40:15.5972916Z PASS bout: run summary
+2026-11-13T13:40:15.5974034Z PASS bout: high cadence is a run even if activity recognition says walk
+2026-11-13T13:40:15.5975079Z PASS bout: GPS speed corrects the walk/run decision
+2026-11-13T13:40:15.5975923Z PASS bout: short duration or few steps is dropped
+2026-11-13T13:40:15.5976771Z PASS bout: impossible cadence is dropped (shaking)
+2026-11-13T13:40:15.5978665Z PASS bout: no weight gives kcal -1
+2026-11-13T13:40:15.5979525Z PASS bout: learned longer stride increases distance
+2026-11-13T13:40:15.5980600Z PASS path: tiring walk (100/min, then 60/min) gives per-slice kcal
+2026-11-13T13:40:15.5982572Z PASS path: per-slice distance matches hand calculation
+2026-11-13T13:40:15.5983581Z PASS path: steady pace equals the average
+2026-11-13T13:40:15.5986283Z PASS path: mid-way pause adds no kcal
+2026-11-13T13:40:15.5987191Z PASS path: run-dominated slices give mode run
+2026-11-13T13:40:15.5987992Z PASS path: short, few-step or single-point is dropped
+2026-11-13T13:40:15.5988851Z PASS path: two points equal bout
+2026-11-13T13:40:15.6036930Z PASS split: a bout crossing midnight is split in two days, steps from each day's counter
+2026-11-13T13:40:15.6038723Z PASS split: the cross-day slice adds no kcal (no double counting)
+2026-11-13T13:40:15.6039582Z PASS split: no checkpoint in the new day drops that part, previous day is kept
+2026-11-13T13:40:15.6040480Z PASS split: also splits when the counter goes backwards within a day
+2026-11-13T13:40:15.6041100Z PASS split: single day equals path
+2026-11-13T13:40:15.6041627Z PASS split: invalid piece is not listed
+2026-11-13T13:40:15.6044545Z PASS day: event time is kept when event and counter reading are on the same day
+2026-11-13T13:40:15.6045470Z PASS day: event before midnight and reading after uses the counter's time
+2026-11-13T13:40:15.6385229Z PASS lock: with detail off the private twin channel is used
+2026-11-13T13:40:15.6386475Z PASS lock: with detail on the original channel is used
+2026-11-13T13:40:15.6387776Z PASS lock: the generic title names no measurement or medication
+2026-11-13T13:40:15.6457245Z ##[group]Run rm -rf android
+2026-11-13T13:40:15.6457517Z [36;1mrm -rf android[0m
+2026-11-13T13:40:15.6457727Z [36;1mnpx cap add android[0m
+2026-11-13T13:40:15.6458142Z [36;1mnode scripts/patch-android.js[0m
+2026-11-13T13:40:15.6458383Z [36;1mnpx cap sync android[0m
+2026-11-13T13:40:15.6458611Z [36;1mnpm run android:sync:verify[0m
+2026-11-13T13:40:15.6503126Z shell: /usr/bin/bash -e {0}
+2026-11-13T13:40:15.6503354Z env:
+2026-11-13T13:40:15.6503814Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:40:15.6504296Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:40:15.6504699Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:40:15.6505034Z   MAVEN_ARGS: -ntp
+2026-11-13T13:40:15.6505230Z ##[endgroup]
+2026-11-13T13:40:16.2558309Z ✔ Adding native android project in android in 31.33ms
+2026-11-13T13:40:16.2559118Z ✔ add in 32.02ms
+2026-11-13T13:40:16.5890600Z ✔ Copying web assets from www to android/app/src/main/assets/public in 316.03ms
+2026-11-13T13:40:16.5896974Z ✔ Creating capacitor.config.json in android/app/src/main/assets in 506.04μs
+2026-11-13T13:40:16.5922679Z ✔ copy android in 327.68ms
+2026-11-13T13:40:16.5981002Z ✔ Updating Android plugins in 1.11ms
+2026-11-13T13:40:16.5998422Z [info] Found 5 Capacitor plugins for android:
+2026-11-13T13:40:16.5999201Z        @capacitor-mlkit/barcode-scanning@8.2.1
+2026-11-13T13:40:16.5999810Z        @capacitor/app@8.1.2
+2026-11-13T13:40:16.6000317Z        @capacitor/filesystem@8.1.4
+2026-11-13T13:40:16.6000870Z        @capacitor/local-notifications@8.3.1
+2026-11-13T13:40:16.6001870Z        @capacitor/share@8.0.3
+2026-11-13T13:40:16.6135906Z ✔ update android in 18.89ms
+2026-11-13T13:40:16.6158897Z ✔ Syncing Gradle in 139.14μs
+2026-11-13T13:40:16.6162361Z [success] android platform added!
+2026-11-13T13:40:16.6163185Z Follow the Developer Workflow guide to get building:
+2026-11-13T13:40:16.6164310Z https://capacitorjs.com/docs/basics/workflow
+2026-11-13T13:40:16.6624704Z Manifest patched.
+2026-11-13T13:40:16.6669704Z Icons and splash screen installed.
+2026-11-13T13:40:16.6670616Z Signing source directory not found, skipping.
+2026-11-13T13:40:16.6702525Z Native sources copied.
+2026-11-13T13:40:16.6716879Z Gradle configured.
+2026-11-13T13:40:17.5022959Z ✔ Copying web assets from www to android/app/src/main/assets/public in 400.22ms
+2026-11-13T13:40:17.5034975Z ✔ Creating capacitor.config.json in android/app/src/main/assets in 749.41μs
+2026-11-13T13:40:17.5063092Z ✔ copy android in 409.01ms
+2026-11-13T13:40:17.5129632Z ✔ Updating Android plugins in 1.27ms
+2026-11-13T13:40:17.5146284Z [info] Found 5 Capacitor plugins for android:
+2026-11-13T13:40:17.5147077Z        @capacitor-mlkit/barcode-scanning@8.2.1
+2026-11-13T13:40:17.5147687Z        @capacitor/app@8.1.2
+2026-11-13T13:40:17.5148214Z        @capacitor/filesystem@8.1.4
+2026-11-13T13:40:17.5148814Z        @capacitor/local-notifications@8.3.1
+2026-11-13T13:40:17.5149838Z        @capacitor/share@8.0.3
+2026-11-13T13:40:17.5335879Z ✔ update android in 24.86ms
+2026-11-13T13:40:17.5359758Z [info] Sync finished in 0.456s
+2026-11-13T13:40:17.6456867Z 
+2026-11-13T13:40:17.6457791Z > neowell-app@1.0.0 android:sync:verify
+2026-11-13T13:40:17.6458793Z > node scripts/verify-android-sync.js
+2026-11-13T13:40:17.6459295Z 
+2026-11-13T13:40:17.9599623Z Native source/resource/web sync verified: 28 Java files, 44 source resources, 763 web assets.
+2026-11-13T13:40:17.9746112Z ##[group]Run mkdir -p android/signing
+2026-11-13T13:40:17.9746436Z [36;1mmkdir -p android/signing[0m
+2026-11-13T13:40:17.9747177Z [36;1mkeytool -genkeypair -alias androiddebugkey -keypass android -storepass android -keystore android/signing/known-debug-smoke-only.keystore -validity 10000 -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -v[0m
+2026-11-13T13:40:17.9793435Z shell: /usr/bin/bash -e {0}
+2026-11-13T13:40:17.9793899Z env:
+2026-11-13T13:40:17.9794308Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:40:17.9794926Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:40:17.9795499Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:40:17.9795949Z   MAVEN_ARGS: -ntp
+2026-11-13T13:40:17.9796205Z ##[endgroup]
+2026-11-13T13:40:18.8670418Z Generating 2,048 bit RSA key pair and self-signed certificate (SHA384withRSA) with a validity of 10,000 days
+2026-11-13T13:40:18.8690524Z 	for: CN=Android Debug, O=Android, C=US
+2026-11-13T13:40:19.3817400Z [Storing android/signing/known-debug-smoke-only.keystore]
+2026-11-13T13:40:19.8062121Z ##[group]Run grep -q '@RunWith(AndroidJUnit4.class)' android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java
+2026-11-13T13:40:19.8062917Z [36;1mgrep -q '@RunWith(AndroidJUnit4.class)' android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java[0m
+2026-11-13T13:40:19.8063847Z [36;1mgrep -q 'assertEquals("com.neowell.app"' android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java[0m
+2026-11-13T13:40:19.8064443Z [36;1mgrep -q 'applicationId "com.neowell.app"' android/app/build.gradle[0m
+2026-11-13T13:40:19.8109786Z shell: /usr/bin/bash -e {0}
+2026-11-13T13:40:19.8110013Z env:
+2026-11-13T13:40:19.8110325Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:40:19.8110751Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:40:19.8111143Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:40:19.8111513Z   MAVEN_ARGS: -ntp
+2026-11-13T13:40:19.8111707Z ##[endgroup]
+2026-11-13T13:40:19.8249152Z ##[group]Run # Never fall back to the debug signature: the published APK would be signed with a publicly known key.
+2026-11-13T13:40:19.8249794Z [36;1m# Never fall back to the debug signature: the published APK would be signed with a publicly known key.[0m
+2026-11-13T13:40:19.8250394Z [36;1m[ -n "$RELEASE_KEYSTORE_B64" ] || { echo "RELEASE_KEYSTORE_B64 secret is missing, the release cannot be signed"; exit 1; }[0m
+2026-11-13T13:40:19.8250923Z [36;1mecho "$RELEASE_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"[0m
+2026-11-13T13:40:19.8251345Z [36;1mecho "RELEASE_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"[0m
+2026-11-13T13:40:19.8296025Z shell: /usr/bin/bash -e {0}
+2026-11-13T13:40:19.8296266Z env:
+2026-11-13T13:40:19.8296558Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:40:19.8296991Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:40:19.8297440Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:40:19.8297763Z   MAVEN_ARGS: -ntp
+2026-11-13T13:40:19.8320148Z   RELEASE_KEYSTORE_B64: ***
+2026-11-13T13:40:19.8320371Z ##[endgroup]
+2026-11-13T13:40:19.8464775Z ##[group]Run chmod +x gradlew
+2026-11-13T13:40:19.8465042Z [36;1mchmod +x gradlew[0m
+2026-11-13T13:40:19.8465427Z [36;1m./gradlew assembleDebug assembleDebugAndroidTest assembleRelease bundleRelease --no-daemon[0m
+2026-11-13T13:40:19.8510081Z shell: /usr/bin/bash -e {0}
+2026-11-13T13:40:19.8510320Z env:
+2026-11-13T13:40:19.8510625Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:40:19.8511050Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:40:19.8511463Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:40:19.8511780Z   MAVEN_ARGS: -ntp
+2026-11-13T13:40:19.8512029Z   RELEASE_KEYSTORE_FILE: /home/runner/work/_temp/release.jks
+2026-11-13T13:40:19.8512513Z   RELEASE_KEYSTORE_PASSWORD: ***
+2026-11-13T13:40:19.8512970Z   RELEASE_KEY_ALIAS: ***
+2026-11-13T13:40:19.8513226Z   RELEASE_KEY_PASSWORD: ***
+2026-11-13T13:40:19.8513435Z ##[endgroup]
+2026-11-13T13:40:20.0317043Z Downloading https://services.gradle.org/distributions/gradle-8.14.3-all.zip
+2026-11-13T13:40:23.3387537Z .....................10%.....................20%......................30%.....................40%......................50%.....................60%.....................70%......................80%.....................90%......................100%
+2026-11-13T13:40:26.6793331Z 
+2026-11-13T13:40:26.6807835Z Welcome to Gradle 8.14.3!
+2026-11-13T13:40:26.6808156Z 
+2026-11-13T13:40:26.6808407Z Here are the highlights of this release:
+2026-11-13T13:40:26.6808804Z  - Java 24 support
+2026-11-13T13:40:26.6809172Z  - GraalVM Native Image toolchain selection
+2026-11-13T13:40:26.6809600Z  - Enhancements to test reporting
+2026-11-13T13:40:26.6809974Z  - Build Authoring improvements
+2026-11-13T13:40:26.6810193Z 
+2026-11-13T13:40:26.6810587Z For more details see https://docs.gradle.org/8.14.3/release-notes.html
+2026-11-13T13:40:26.6810940Z 
+2026-11-13T13:40:26.7815917Z To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+2026-11-13T13:40:28.4795889Z Daemon will be stopped at the end of the build 
+2026-11-13T13:41:03.7824796Z 
+2026-11-13T13:41:03.7844865Z FAILURE: Build completed with 2 failures.
+2026-11-13T13:41:03.7865736Z 
+2026-11-13T13:41:03.7866677Z 1: Task failed with an exception.
+2026-11-13T13:41:03.7867323Z -----------
+2026-11-13T13:41:03.7871708Z * Where:
+2026-11-13T13:41:03.7872408Z Build file '/home/runner/work/koc/koc/android/app/build.gradle' line: 18
+2026-11-13T13:41:03.7872939Z 
+2026-11-13T13:41:03.7873228Z * What went wrong:
+2026-11-13T13:41:03.7874070Z A problem occurred evaluating project ':app'.
+2026-11-13T13:41:03.7875598Z > Could not find method exclude() for arguments [{group=org.jetbrains.kotlin, module=kotlin-stdlib-jdk7}] on extension 'android' of type com.android.build.gradle.internal.dsl.BaseAppModuleExtension.
+2026-11-13T13:41:03.7876703Z 
+2026-11-13T13:41:03.7876944Z * Try:
+2026-11-13T13:41:03.7877478Z > Run with --stacktrace option to get the stack trace.
+2026-11-13T13:41:03.7878175Z > Run with --info or --debug option to get more log output.
+2026-11-13T13:41:03.7878798Z > Run with --scan to get full insights.
+2026-11-13T13:41:03.7879400Z > Get more help at https://help.gradle.org.
+2026-11-13T13:41:03.7880066Z ==============================================================================
+2026-11-13T13:41:03.7880495Z 
+2026-11-13T13:41:03.7880830Z 2: Task failed with an exception.
+2026-11-13T13:41:03.7881312Z -----------
+2026-11-13T13:41:03.7881736Z * What went wrong:
+2026-11-13T13:41:03.7882292Z A problem occurred configuring project ':app'.
+2026-11-13T13:41:03.7883399Z > Android Gradle Plugin: project ':app' does not specify `compileSdk` in build.gradle (/home/runner/work/koc/koc/android/app/build.gradle).
+2026-11-13T13:41:03.7884329Z 
+2026-11-13T13:41:03.7884584Z * Try:
+2026-11-13T13:41:03.7885707Z > Run with --stacktrace option to get the stack trace.
+2026-11-13T13:41:03.7886492Z > Run with --info or --debug option to get more log output.
+2026-11-13T13:41:03.7888614Z > Run with --scan to get full insights.
+2026-11-13T13:41:03.7889234Z > Get more help at https://help.gradle.org.
+2026-11-13T13:41:03.7889894Z ==============================================================================
+2026-11-13T13:41:03.7890325Z 
+2026-11-13T13:41:03.7890596Z BUILD FAILED in 43s
+2026-11-13T13:41:04.1378347Z ##[error]Process completed with exit code 1.
+2026-11-13T13:41:04.1526238Z Post job cleanup.
+2026-11-13T13:41:04.2299977Z Post job cleanup.
+2026-11-13T13:41:04.3116210Z [command]/usr/bin/git version
+2026-11-13T13:41:04.3156502Z git version 2.56.0
+2026-11-13T13:41:04.3186555Z Temporarily overriding HOME='/home/runner/work/_temp/9f142ad1-7573-41b4-b483-5c7ca1095bb5' before making global git config changes
+2026-11-13T13:41:04.3188191Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-13T13:41:04.3190778Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/koc/koc
+2026-11-13T13:41:04.3227358Z Removing SSH command configuration
+2026-11-13T13:41:04.3234348Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-13T13:41:04.3280161Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-13T13:41:04.3837228Z Removing HTTP extra header
+2026-11-13T13:41:04.3838411Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-13T13:41:04.3878892Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-13T13:41:04.4145069Z Removing includeIf entries pointing to credentials config files
+2026-11-13T13:41:04.4152541Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-13T13:41:04.4184605Z includeif.gitdir:/home/runner/work/koc/koc/.git.path
+2026-11-13T13:41:04.4185546Z includeif.gitdir:/home/runner/work/koc/koc/.git/worktrees/*.path
+2026-11-13T13:41:04.4186331Z includeif.gitdir:/github/workspace/.git.path
+2026-11-13T13:41:04.4187009Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-13T13:41:04.4192353Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/koc/koc/.git.path
+2026-11-13T13:41:04.4220871Z /home/runner/work/_temp/git-credentials-6f2f2089-0259-421b-a8fc-2cfe25c675b3.config
+2026-11-13T13:41:04.4232888Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/koc/koc/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-6f2f2089\-0259\-421b\-a8fc\-2cfe25c675b3\.config
+2026-11-13T13:41:04.4772119Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/koc/koc/.git/worktrees/*.path
+2026-11-13T13:41:04.4838720Z /home/runner/work/_temp/git-credentials-6f2f2089-0259-421b-a8fc-2cfe25c675b3.config
+2026-11-13T13:41:04.4875286Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/koc/koc/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-6f2f2089\-0259\-421b\-a8fc\-2cfe25c675b3\.config
+2026-11-13T13:41:04.4996564Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-11-13T13:41:04.5058897Z /github/runner_temp/git-credentials-6f2f2089-0259-421b-a8fc-2cfe25c675b3.config
+2026-11-13T13:41:04.5108210Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-6f2f2089\-0259\-421b\-a8fc\-2cfe25c675b3\.config
+2026-11-13T13:41:04.5350797Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-13T13:41:04.5383924Z /github/runner_temp/git-credentials-6f2f2089-0259-421b-a8fc-2cfe25c675b3.config
+2026-11-13T13:41:04.5392242Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-6f2f2089\-0259\-421b\-a8fc\-2cfe25c675b3\.config
+2026-11-13T13:41:04.5491533Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-13T13:41:04.5772045Z Removing credentials config '/home/runner/work/_temp/git-credentials-6f2f2089-0259-421b-a8fc-2cfe25c675b3.config'
+2026-11-13T13:41:04.5988616Z Cleaning up orphan processes

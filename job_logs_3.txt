@@ -1,0 +1,1144 @@
+﻿2026-11-13T13:17:11.2107119Z Current runner version: '2.338.2'
+2026-11-13T13:17:11.2144401Z ##[group]Runner Image Provisioner
+2026-11-13T13:17:11.2146327Z Hosted Compute Agent
+2026-11-13T13:17:11.2147509Z Version: 20261103.629
+2026-11-13T13:17:11.2148877Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+2026-11-13T13:17:11.2150271Z Build Date: 2026-11-03T17:26:59Z
+2026-11-13T13:17:11.2151707Z Worker ID: {60b2f8e4-2f9f-44af-b716-3ad9be634266}
+2026-11-13T13:17:11.2153029Z Region: westus2
+2026-11-13T13:17:11.2154136Z Cloud: Azure
+2026-11-13T13:17:11.2155524Z ##[endgroup]
+2026-11-13T13:17:11.2158012Z ##[group]Operating System
+2026-11-13T13:17:11.2159207Z Ubuntu
+2026-11-13T13:17:11.2160247Z 26.04.1
+2026-11-13T13:17:11.2161122Z LTS
+2026-11-13T13:17:11.2162121Z ##[endgroup]
+2026-11-13T13:17:11.2163090Z ##[group]Runner Image
+2026-11-13T13:17:11.2164305Z Image: ubuntu-26.04
+2026-11-13T13:17:11.2165671Z Version: 20261111.196.1
+2026-11-13T13:17:11.2168176Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261111.196/images/ubuntu/Ubuntu2604-Readme.md
+2026-11-13T13:17:11.2171122Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261111.196
+2026-11-13T13:17:11.2174286Z ##[endgroup]
+2026-11-13T13:17:11.2176563Z ##[group]GITHUB_TOKEN Permissions
+2026-11-13T13:17:11.2179406Z Contents: read
+2026-11-13T13:17:11.2180455Z Metadata: read
+2026-11-13T13:17:11.2181543Z ##[endgroup]
+2026-11-13T13:17:11.2184504Z Secret source: Actions
+2026-11-13T13:17:11.2206616Z Cache mode: write
+2026-11-13T13:17:11.2208094Z Prepare workflow directory
+2026-11-13T13:17:11.2966509Z Prepare all required actions
+2026-11-13T13:17:11.3039743Z Getting action download info
+2026-11-13T13:17:11.7008592Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-11-13T13:17:11.8287371Z Download action repository 'actions/setup-node@820762786026740c76f36085b0efc47a31fe5020' (SHA:820762786026740c76f36085b0efc47a31fe5020)
+2026-11-13T13:17:11.9371262Z Download action repository 'actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6' (SHA:de7274f081f381c8f8158605e0321c36c376e2e6)
+2026-11-13T13:17:12.3047236Z Download action repository 'actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9' (SHA:55cc8345863c7cc4c66a329aec7e433d2d1c52a9)
+2026-11-13T13:17:12.5031804Z Complete job name: build
+2026-11-13T13:17:12.6016597Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+2026-11-13T13:17:12.6017878Z with:
+2026-11-13T13:17:12.6018400Z   repository: semh59/koc
+2026-11-13T13:17:12.6022563Z   token: ***
+2026-11-13T13:17:12.6023076Z   ssh-strict: true
+2026-11-13T13:17:12.6023588Z   ssh-user: git
+2026-11-13T13:17:12.6024101Z   persist-credentials: true
+2026-11-13T13:17:12.6024690Z   clean: true
+2026-11-13T13:17:12.6025413Z   sparse-checkout-cone-mode: true
+2026-11-13T13:17:12.6026022Z   fetch-depth: 1
+2026-11-13T13:17:12.6026530Z   fetch-tags: false
+2026-11-13T13:17:12.6027048Z   show-progress: true
+2026-11-13T13:17:12.6027569Z   lfs: false
+2026-11-13T13:17:12.6108379Z   submodules: false
+2026-11-13T13:17:12.6109515Z   set-safe-directory: true
+2026-11-13T13:17:12.6110672Z   allow-unsafe-pr-checkout: false
+2026-11-13T13:17:12.6112427Z env:
+2026-11-13T13:17:12.6113684Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:17:12.6115493Z ##[endgroup]
+2026-11-13T13:17:12.8800951Z Syncing repository: semh59/koc
+2026-11-13T13:17:12.8804501Z ##[group]Getting Git version info
+2026-11-13T13:17:12.8806490Z Working directory is '/home/runner/work/koc/koc'
+2026-11-13T13:17:12.8812276Z [command]/usr/bin/git version
+2026-11-13T13:17:12.8835776Z git version 2.56.1
+2026-11-13T13:17:12.8861472Z ##[endgroup]
+2026-11-13T13:17:12.8872036Z Temporarily overriding HOME='/home/runner/work/_temp/af103da3-352f-4aa7-a745-1a8aed29908c' before making global git config changes
+2026-11-13T13:17:12.8877246Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-13T13:17:12.8882374Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/koc/koc
+2026-11-13T13:17:12.8945803Z Deleting the contents of '/home/runner/work/koc/koc'
+2026-11-13T13:17:12.8950803Z ##[group]Determining repository object format
+2026-11-13T13:17:12.8953467Z ##[endgroup]
+2026-11-13T13:17:12.8956293Z ##[group]Initializing the repository
+2026-11-13T13:17:12.8959341Z [command]/usr/bin/git init /home/runner/work/koc/koc
+2026-11-13T13:17:12.9071643Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-13T13:17:12.9073943Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-13T13:17:12.9076369Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-13T13:17:12.9077757Z hint: call:
+2026-11-13T13:17:12.9079137Z hint:
+2026-11-13T13:17:12.9080454Z hint: 	git config --global init.defaultBranch <name>
+2026-11-13T13:17:12.9082065Z hint:
+2026-11-13T13:17:12.9083645Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-13T13:17:12.9090671Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-13T13:17:12.9092348Z hint:
+2026-11-13T13:17:12.9093260Z hint: 	git branch -m <name>
+2026-11-13T13:17:12.9094261Z hint:
+2026-11-13T13:17:12.9097870Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-13T13:17:12.9099966Z Initialized empty Git repository in /home/runner/work/koc/koc/.git/
+2026-11-13T13:17:12.9104891Z [command]/usr/bin/git remote add origin https://github.com/semh59/koc
+2026-11-13T13:17:12.9199516Z ##[endgroup]
+2026-11-13T13:17:12.9201708Z ##[group]Disabling automatic garbage collection
+2026-11-13T13:17:12.9203906Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-13T13:17:12.9227802Z ##[endgroup]
+2026-11-13T13:17:12.9230176Z ##[group]Setting up auth
+2026-11-13T13:17:12.9232279Z Removing SSH command configuration
+2026-11-13T13:17:12.9236637Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-13T13:17:12.9270878Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-13T13:17:12.9715466Z Removing HTTP extra header
+2026-11-13T13:17:12.9723824Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-13T13:17:12.9760300Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-13T13:17:13.0044172Z Removing includeIf entries pointing to credentials config files
+2026-11-13T13:17:13.0049953Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-13T13:17:13.0106564Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-13T13:17:13.0387414Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-b7756d9b-0ffb-4447-9294-9e63eaf95203.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-13T13:17:13.0430434Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/koc/koc/.git.path /home/runner/work/_temp/git-credentials-b7756d9b-0ffb-4447-9294-9e63eaf95203.config
+2026-11-13T13:17:13.0478108Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/koc/koc/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-b7756d9b-0ffb-4447-9294-9e63eaf95203.config
+2026-11-13T13:17:13.0517616Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-b7756d9b-0ffb-4447-9294-9e63eaf95203.config
+2026-11-13T13:17:13.0553345Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-b7756d9b-0ffb-4447-9294-9e63eaf95203.config
+2026-11-13T13:17:13.0588655Z ##[endgroup]
+2026-11-13T13:17:13.0590887Z ##[group]Fetching the repository
+2026-11-13T13:17:13.0596056Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +1709b1337bdb77b347a3d377a05c831f168c1d9d:refs/remotes/origin/main
+2026-11-13T13:17:13.7634317Z From https://github.com/semh59/koc
+2026-11-13T13:17:13.7639704Z  * [new ref]         1709b1337bdb77b347a3d377a05c831f168c1d9d -> origin/main
+2026-11-13T13:17:13.7708807Z [command]/usr/bin/git branch --list --remote origin/main
+2026-11-13T13:17:13.7726128Z   origin/main
+2026-11-13T13:17:13.7751835Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+2026-11-13T13:17:13.7756046Z 1709b1337bdb77b347a3d377a05c831f168c1d9d
+2026-11-13T13:17:13.7763631Z ##[endgroup]
+2026-11-13T13:17:13.7767427Z ##[group]Determining the checkout info
+2026-11-13T13:17:13.7794574Z ##[endgroup]
+2026-11-13T13:17:13.7806604Z [command]/usr/bin/git sparse-checkout disable
+2026-11-13T13:17:13.7812286Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-13T13:17:13.7819524Z ##[group]Checking out the ref
+2026-11-13T13:17:13.7822750Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-11-13T13:17:13.8972207Z Switched to a new branch 'main'
+2026-11-13T13:17:13.8989626Z branch 'main' set up to track 'origin/main'.
+2026-11-13T13:17:13.9013290Z ##[endgroup]
+2026-11-13T13:17:13.9126694Z [command]/usr/bin/git log -1 --format=%H
+2026-11-13T13:17:13.9146885Z 1709b1337bdb77b347a3d377a05c831f168c1d9d
+2026-11-13T13:17:13.9674249Z ##[group]Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+2026-11-13T13:17:13.9676154Z with:
+2026-11-13T13:17:13.9677083Z   node-version: 22
+2026-11-13T13:17:13.9678095Z   cache: npm
+2026-11-13T13:17:13.9679077Z   check-latest: false
+2026-11-13T13:17:13.9689547Z   token: ***
+2026-11-13T13:17:13.9690607Z   package-manager-cache: true
+2026-11-13T13:17:13.9691813Z env:
+2026-11-13T13:17:13.9693350Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:17:13.9695413Z ##[endgroup]
+2026-11-13T13:17:14.1135613Z Found in cache @ /opt/hostedtoolcache/node/22.23.4/x64
+2026-11-13T13:17:14.1139924Z ##[group]Environment details
+2026-11-13T13:17:14.5847590Z node: v22.23.4
+2026-11-13T13:17:14.5849081Z npm: 10.9.9
+2026-11-13T13:17:14.5850537Z yarn: 1.22.22
+2026-11-13T13:17:14.5852796Z ##[endgroup]
+2026-11-13T13:17:14.5872909Z [command]/opt/hostedtoolcache/node/22.23.4/x64/bin/npm config get cache
+2026-11-13T13:17:14.7506658Z /home/runner/.npm
+2026-11-13T13:17:15.0286166Z Cache hit for: node-cache-Linux-x64-npm-560cfc1f1c260066ad5bf405a22bed4e18eae015e4b98d8814a6665647b3d265
+2026-11-13T13:17:16.3496126Z Received 0 of 39726263 (0.0%), 0.0 MBs/sec
+2026-11-13T13:17:16.6666760Z Received 39726263 of 39726263 (100.0%), 28.6 MBs/sec
+2026-11-13T13:17:16.6668138Z Cache Size: ~38 MB (39726263 B)
+2026-11-13T13:17:16.6704857Z [command]/usr/bin/tar -xf /home/runner/work/_temp/ae0bebb0-f8ca-4fe8-9026-43d0c1939e89/cache.tzst -P -C /home/runner/work/koc/koc --use-compress-program unzstd
+2026-11-13T13:17:16.7906204Z Cache restored successfully
+2026-11-13T13:17:16.7931591Z Cache restored from key: node-cache-Linux-x64-npm-560cfc1f1c260066ad5bf405a22bed4e18eae015e4b98d8814a6665647b3d265
+2026-11-13T13:17:16.8239377Z ##[group]Run actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+2026-11-13T13:17:16.8239795Z with:
+2026-11-13T13:17:16.8240006Z   distribution: temurin
+2026-11-13T13:17:16.8240248Z   java-version: 21
+2026-11-13T13:17:16.8240478Z   java-package: jdk
+2026-11-13T13:17:16.8240702Z   check-latest: false
+2026-11-13T13:17:16.8240944Z   force-download: false
+2026-11-13T13:17:16.8241177Z   set-default: true
+2026-11-13T13:17:16.8241398Z   server-id: github
+2026-11-13T13:17:16.8241647Z   mvn-repositories-include-central: true
+2026-11-13T13:17:16.8241979Z   mvn-repositories-prioritize-central: true
+2026-11-13T13:17:16.8242300Z   overwrite-settings: true
+2026-11-13T13:17:16.8242553Z   cache-read-only: false
+2026-11-13T13:17:16.8242798Z   job-status: success
+2026-11-13T13:17:16.8245578Z   token: ***
+2026-11-13T13:17:16.8245824Z   show-download-progress: false
+2026-11-13T13:17:16.8246108Z   problem-matcher: true
+2026-11-13T13:17:16.8246337Z env:
+2026-11-13T13:17:16.8246714Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:17:16.8247137Z ##[endgroup]
+2026-11-13T13:17:16.9067583Z ##[group]Installed distributions
+2026-11-13T13:17:16.9199929Z Resolved Java 21.0.13+9 from tool-cache
+2026-11-13T13:17:16.9202795Z Setting Java 21.0.13+9 as the default
+2026-11-13T13:17:16.9204052Z 
+2026-11-13T13:17:16.9204662Z Java configuration:
+2026-11-13T13:17:16.9206200Z   Distribution: temurin
+2026-11-13T13:17:16.9207256Z   Version: 21.0.13+9
+2026-11-13T13:17:16.9209907Z   Path: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:17:16.9210882Z 
+2026-11-13T13:17:16.9211986Z ##[endgroup]
+2026-11-13T13:17:16.9308034Z Creating settings.xml with server-id: github
+2026-11-13T13:17:16.9308993Z Creating toolchains.xml for JDK version 21 from temurin
+2026-11-13T13:17:16.9309756Z Writing to /home/runner/.m2/settings.xml
+2026-11-13T13:17:16.9310400Z Writing to /home/runner/.m2/toolchains.xml
+2026-11-13T13:17:16.9311942Z Configured MAVEN_ARGS to include -ntp to suppress Maven transfer progress logs. Set 'show-download-progress: true' to keep the download progress output.
+2026-11-13T13:17:16.9396056Z ##[group]Run npm ci
+2026-11-13T13:17:16.9396362Z [36;1mnpm ci[0m
+2026-11-13T13:17:16.9455234Z shell: /usr/bin/bash -e {0}
+2026-11-13T13:17:16.9455643Z env:
+2026-11-13T13:17:16.9456013Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:17:16.9456569Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:17:16.9457108Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:17:16.9457516Z   MAVEN_ARGS: -ntp
+2026-11-13T13:17:16.9457745Z ##[endgroup]
+2026-11-13T13:17:19.1071307Z npm warn deprecated uuid@7.0.3: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+2026-11-13T13:17:20.1172112Z 
+2026-11-13T13:17:20.1173503Z added 147 packages, and audited 148 packages in 3s
+2026-11-13T13:17:20.1174437Z 
+2026-11-13T13:17:20.1179002Z 22 packages are looking for funding
+2026-11-13T13:17:20.1179966Z   run `npm fund` for details
+2026-11-13T13:17:20.1725569Z 
+2026-11-13T13:17:20.1746077Z 7 vulnerabilities (6 moderate, 1 high)
+2026-11-13T13:17:20.1746832Z 
+2026-11-13T13:17:20.1765704Z To address all issues, run:
+2026-11-13T13:17:20.1785710Z   npm audit fix
+2026-11-13T13:17:20.1795014Z 
+2026-11-13T13:17:20.1795756Z Run `npm audit` for details.
+2026-11-13T13:17:20.2327929Z ##[group]Run npm test
+2026-11-13T13:17:20.2328229Z [36;1mnpm test[0m
+2026-11-13T13:17:20.2376860Z shell: /usr/bin/bash -e {0}
+2026-11-13T13:17:20.2377117Z env:
+2026-11-13T13:17:20.2377475Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:17:20.2378053Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:17:20.2378555Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:17:20.2378956Z   MAVEN_ARGS: -ntp
+2026-11-13T13:17:20.2379176Z   NW_TEST_SEQUENTIAL: 1
+2026-11-13T13:17:20.2379409Z ##[endgroup]
+2026-11-13T13:17:20.3487841Z 
+2026-11-13T13:17:20.3488885Z > neowell-app@1.0.0 test
+2026-11-13T13:17:20.3490028Z > node scripts/run-tests.js
+2026-11-13T13:17:20.3490636Z 
+2026-11-13T13:20:38.0059875Z ok     activity.test.js (PASS 5, FAIL 0, exit 0)
+2026-11-13T13:20:38.0062324Z ok     alarm.test.js (PASS 24, FAIL 0, exit 0)
+2026-11-13T13:20:38.0063522Z ok     algo.test.js (PASS 120, FAIL 0, exit 0)
+2026-11-13T13:20:38.0064913Z ok     android.test.js (PASS 109, FAIL 0, exit 0)
+2026-11-13T13:20:38.0069927Z ok     app.test.js (PASS 1170, FAIL 0, exit 0)
+2026-11-13T13:20:38.0070949Z ok     archive.test.js (PASS 6, FAIL 0, exit 0)
+2026-11-13T13:20:38.0072418Z ok     autosend.test.js (PASS 10, FAIL 0, exit 0)
+2026-11-13T13:20:38.0073535Z ok     backup-restore.test.js (PASS 21, FAIL 0, exit 0)
+2026-11-13T13:20:38.0074609Z ok     backup.test.js (PASS 17, FAIL 0, exit 0)
+2026-11-13T13:20:38.0075983Z ok     balance.test.js (PASS 7, FAIL 0, exit 0)
+2026-11-13T13:20:38.0078696Z ok     barcode-fail.test.js (PASS 5, FAIL 0, exit 0)
+2026-11-13T13:20:38.0095859Z ok     boundary.test.js (PASS 3, FAIL 0, exit 0)
+2026-11-13T13:20:38.0096936Z ok     chart-table.test.js (PASS 9, FAIL 0, exit 0)
+2026-11-13T13:20:38.0104358Z ok     coach-2-0.test.js (PASS 14, FAIL 0, exit 0)
+2026-11-13T13:20:38.0105832Z ok     coach-delete-actions.test.js (PASS 4, FAIL 0, exit 0)
+2026-11-13T13:20:38.0107127Z ok     coach-phase4-production.test.js (PASS 9, FAIL 0, exit 0)
+2026-11-13T13:20:38.0108261Z ok     coach-phase4.test.js (PASS 11, FAIL 0, exit 0)
+2026-11-13T13:20:38.0109358Z ok     coach-phase5-ui.test.js (PASS 3, FAIL 0, exit 0)
+2026-11-13T13:20:38.0110469Z ok     coach-phase5.test.js (PASS 16, FAIL 0, exit 0)
+2026-11-13T13:20:38.0111721Z ok     coach-phase6-ui.test.js (PASS 9, FAIL 0, exit 0)
+2026-11-13T13:20:38.0120615Z ok     coach-phase6.test.js (PASS 31, FAIL 0, exit 0)
+2026-11-13T13:20:38.0121769Z ok     coach-planner-closures.test.js (PASS 4, FAIL 0, exit 0)
+2026-11-13T13:20:38.0124221Z ok     coach-planner-production.test.js (PASS 5, FAIL 0, exit 0)
+2026-11-13T13:20:38.0125735Z ok     coach-planner-ui.test.js (PASS 5, FAIL 0, exit 0)
+2026-11-13T13:20:38.0126864Z ok     coach-planner.test.js (PASS 16, FAIL 0, exit 0)
+2026-11-13T13:20:38.0127800Z ok     coach-repository.test.js (PASS 26, FAIL 0, exit 0)
+2026-11-13T13:20:38.0128735Z ok     coach-voice.test.js (PASS 5, FAIL 0, exit 0)
+2026-11-13T13:20:38.0129648Z ok     coach.test.js (PASS 78, FAIL 0, exit 0)
+2026-11-13T13:20:38.0130460Z ok     coach2.test.js (PASS 48, FAIL 0, exit 0)
+2026-11-13T13:20:38.0131431Z ok     commit.test.js (PASS 3, FAIL 0, exit 0)
+2026-11-13T13:20:38.0132339Z ok     contrast.test.js (PASS 102, FAIL 0, exit 0)
+2026-11-13T13:20:38.0146059Z ok     copy.test.js (PASS 6, FAIL 0, exit 0)
+2026-11-13T13:20:38.0149066Z ok     csv.test.js (PASS 25, FAIL 0, exit 0)
+2026-11-13T13:20:38.0150110Z ok     csvread.test.js (PASS 25, FAIL 0, exit 0)
+2026-11-13T13:20:38.0151137Z ok     ctx.test.js (PASS 13, FAIL 0, exit 0)
+2026-11-13T13:20:38.0151977Z ok     cycle.test.js (PASS 67, FAIL 0, exit 0)
+2026-11-13T13:20:38.0152794Z ok     data.test.js (PASS 26, FAIL 0, exit 0)
+2026-11-13T13:20:38.0153642Z ok     dayboundary.test.js (PASS 25, FAIL 0, exit 0)
+2026-11-13T13:20:38.0154501Z ok     dead-code.test.js (PASS 4, FAIL 0, exit 0)
+2026-11-13T13:20:38.0156325Z ok     design.test.js (PASS 36, FAIL 0, exit 0)
+2026-11-13T13:20:38.0157615Z ok     doctor.test.js (PASS 5, FAIL 0, exit 0)
+2026-11-13T13:20:38.0158484Z ok     edit.test.js (PASS 24, FAIL 0, exit 0)
+2026-11-13T13:20:38.0159347Z ok     entry-quick.test.js (PASS 22, FAIL 0, exit 0)
+2026-11-13T13:20:38.0160209Z ok     errtext.test.js (PASS 8, FAIL 0, exit 0)
+2026-11-13T13:20:38.0161062Z ok     explain.test.js (PASS 6, FAIL 0, exit 0)
+2026-11-13T13:20:38.0161920Z ok     fhir.test.js (PASS 7, FAIL 0, exit 0)
+2026-11-13T13:20:38.0162758Z ok     fig.test.js (PASS 16, FAIL 0, exit 0)
+2026-11-13T13:20:38.0163641Z ok     firstrun-sched.test.js (PASS 9, FAIL 0, exit 0)
+2026-11-13T13:20:38.0164560Z ok     food-voice.test.js (PASS 9, FAIL 0, exit 0)
+2026-11-13T13:20:38.0165754Z ok     foods.test.js (PASS 45, FAIL 0, exit 0)
+2026-11-13T13:20:38.0166609Z ok     goal.test.js (PASS 22, FAIL 0, exit 0)
+2026-11-13T13:20:38.0167510Z ok     goalsafety.test.js (PASS 28, FAIL 0, exit 0)
+2026-11-13T13:20:38.0168365Z ok     guide.test.js (PASS 31, FAIL 0, exit 0)
+2026-11-13T13:20:38.0169229Z ok     guideui.test.js (PASS 34, FAIL 0, exit 0)
+2026-11-13T13:20:38.0170125Z ok     gym2.test.js (PASS 49, FAIL 0, exit 0)
+2026-11-13T13:20:38.0170985Z ok     gym3.test.js (PASS 53, FAIL 0, exit 0)
+2026-11-13T13:20:38.0171844Z ok     habit.test.js (PASS 15, FAIL 0, exit 0)
+2026-11-13T13:20:38.0173096Z ok     hc-card.test.js (PASS 3, FAIL 0, exit 0)
+2026-11-13T13:20:38.0173989Z ok     hc.test.js (PASS 40, FAIL 0, exit 0)
+2026-11-13T13:20:38.0174897Z ok     history-data.test.js (PASS 11, FAIL 0, exit 0)
+2026-11-13T13:20:38.0176475Z ok     history.test.js (PASS 17, FAIL 0, exit 0)
+2026-11-13T13:20:38.0177467Z ok     import.test.js (PASS 38, FAIL 0, exit 0)
+2026-11-13T13:20:38.0178477Z ok     insight.test.js (PASS 29, FAIL 0, exit 0)
+2026-11-13T13:20:38.0179527Z ok     integrity2.test.js (PASS 36, FAIL 0, exit 0)
+2026-11-13T13:20:38.0180557Z ok     lab.test.js (PASS 236, FAIL 0, exit 0)
+2026-11-13T13:20:38.0181647Z ok     label.test.js (PASS 50, FAIL 0, exit 0)
+2026-11-13T13:20:38.0182738Z ok     landscape-chrome.test.js (PASS 58, FAIL 0, exit 0)
+2026-11-13T13:20:38.0183842Z ok     landscape.test.js (PASS 10, FAIL 0, exit 0)
+2026-11-13T13:20:38.0184849Z ok     leak.test.js (PASS 1, FAIL 0, exit 0)
+2026-11-13T13:20:38.0186152Z ok     links.test.js (PASS 19, FAIL 0, exit 0)
+2026-11-13T13:20:38.0187185Z ok     lock.test.js (PASS 15, FAIL 0, exit 0)
+2026-11-13T13:20:38.0188161Z ok     log.test.js (PASS 32, FAIL 0, exit 0)
+2026-11-13T13:20:38.0189135Z ok     macro.test.js (PASS 12, FAIL 0, exit 0)
+2026-11-13T13:20:38.0190172Z ok     measure-caffeine.test.js (PASS 8, FAIL 0, exit 0)
+2026-11-13T13:20:38.0191221Z ok     med.test.js (PASS 112, FAIL 0, exit 0)
+2026-11-13T13:20:38.0192225Z ok     medclean.test.js (PASS 30, FAIL 0, exit 0)
+2026-11-13T13:20:38.0193244Z ok     medfix.test.js (PASS 40, FAIL 0, exit 0)
+2026-11-13T13:20:38.0194270Z ok     medfix2.test.js (PASS 40, FAIL 0, exit 0)
+2026-11-13T13:20:38.0195492Z ok     medfix3.test.js (PASS 22, FAIL 0, exit 0)
+2026-11-13T13:20:38.0196455Z ok     medfix4.test.js (PASS 41, FAIL 0, exit 0)
+2026-11-13T13:20:38.0197378Z ok     meds2.test.js (PASS 30, FAIL 0, exit 0)
+2026-11-13T13:20:38.0198291Z ok     meds3.test.js (PASS 30, FAIL 0, exit 0)
+2026-11-13T13:20:38.0199221Z ok     menu.test.js (PASS 42, FAIL 0, exit 0)
+2026-11-13T13:20:38.0200150Z ok     menulocal.test.js (PASS 18, FAIL 0, exit 0)
+2026-11-13T13:20:38.0201055Z ok     motion.test.js (PASS 16, FAIL 0, exit 0)
+2026-11-13T13:20:38.0201979Z ok     netlog.test.js (PASS 12, FAIL 0, exit 0)
+2026-11-13T13:20:38.0202861Z ok     off.test.js (PASS 20, FAIL 0, exit 0)
+2026-11-13T13:20:38.0203742Z ok     paths.test.js (PASS 3, FAIL 0, exit 0)
+2026-11-13T13:20:38.0204750Z ok     pii-coach-2-0.test.js (PASS 1, FAIL 0, exit 0)
+2026-11-13T13:20:38.0205986Z ok     pii.test.js (PASS 39, FAIL 0, exit 0)
+2026-11-13T13:20:38.0207018Z ok     pregnancy.test.js (PASS 28, FAIL 0, exit 0)
+2026-11-13T13:20:38.0208102Z ok     privacy-ui.test.js (PASS 21, FAIL 0, exit 0)
+2026-11-13T13:20:38.0209143Z ok     privacy3.test.js (PASS 38, FAIL 0, exit 0)
+2026-11-13T13:20:38.0210454Z ok     programs.test.js (PASS 13, FAIL 0, exit 0)
+2026-11-13T13:20:38.0211530Z ok     pulse.test.js (PASS 28, FAIL 0, exit 0)
+2026-11-13T13:20:38.0212552Z ok     quick.test.js (PASS 18, FAIL 0, exit 0)
+2026-11-13T13:20:38.0213642Z ok     ramadan-meds.test.js (PASS 14, FAIL 0, exit 0)
+2026-11-13T13:20:38.0214890Z ok     ramadan-ui.test.js (PASS 29, FAIL 0, exit 0)
+2026-11-13T13:20:38.0216146Z ok     ramadan.test.js (PASS 33, FAIL 0, exit 0)
+2026-11-13T13:20:38.0217139Z ok     recipe-import.test.js (PASS 5, FAIL 0, exit 0)
+2026-11-13T13:20:38.0218165Z ok     reliability.test.js (PASS 53, FAIL 0, exit 0)
+2026-11-13T13:20:38.0219077Z ok     risk.test.js (PASS 68, FAIL 0, exit 0)
+2026-11-13T13:20:38.0220015Z ok     screens.test.js (PASS 71, FAIL 0, exit 0)
+2026-11-13T13:20:38.0220890Z ok     shards.test.js (PASS 5, FAIL 0, exit 0)
+2026-11-13T13:20:38.0221704Z ok     shortcuts.test.js (PASS 12, FAIL 0, exit 0)
+2026-11-13T13:20:38.0222649Z ok     stepsync-perf.test.js (PASS 2, FAIL 0, exit 0)
+2026-11-13T13:20:38.0223609Z ok     store.test.js (PASS 19, FAIL 0, exit 0)
+2026-11-13T13:20:38.0224545Z ok     today-quick.test.js (PASS 30, FAIL 0, exit 0)
+2026-11-13T13:20:38.0225683Z ok     todaynav.test.js (PASS 7, FAIL 0, exit 0)
+2026-11-13T13:20:38.0226701Z ok     trial.test.js (PASS 13, FAIL 0, exit 0)
+2026-11-13T13:20:38.0228142Z ok     ui-f-cycle.test.js (PASS 9, FAIL 0, exit 0)
+2026-11-13T13:20:38.0229169Z ok     ui-f-gym.test.js (PASS 25, FAIL 0, exit 0)
+2026-11-13T13:20:38.0230180Z ok     ui-f-history.test.js (PASS 17, FAIL 0, exit 0)
+2026-11-13T13:20:38.0231202Z ok     ui-f-today.test.js (PASS 14, FAIL 0, exit 0)
+2026-11-13T13:20:38.0232157Z ok     undo.test.js (PASS 8, FAIL 0, exit 0)
+2026-11-13T13:20:38.0233087Z ok     unit-toggle.test.js (PASS 6, FAIL 0, exit 0)
+2026-11-13T13:20:38.0234006Z ok     units.test.js (PASS 37, FAIL 0, exit 0)
+2026-11-13T13:20:38.0234896Z ok     urgent.test.js (PASS 27, FAIL 0, exit 0)
+2026-11-13T13:20:38.0236055Z ok     vault.test.js (PASS 14, FAIL 0, exit 0)
+2026-11-13T13:20:38.0237070Z ok     verify-android-sync.test.js (PASS 5, FAIL 0, exit 0)
+2026-11-13T13:20:38.0240002Z ok     vitals.test.js (PASS 78, FAIL 0, exit 0)
+2026-11-13T13:20:38.0241145Z ok     weekly.test.js (PASS 33, FAIL 0, exit 0)
+2026-11-13T13:20:38.0242017Z ok     wipe.test.js (PASS 14, FAIL 0, exit 0)
+2026-11-13T13:20:38.0242814Z ok     wording.test.js (PASS 14, FAIL 0, exit 0)
+2026-11-13T13:20:38.0243598Z ok     xss.test.js (PASS 1, FAIL 0, exit 0)
+2026-11-13T13:20:38.0244112Z 
+2026-11-13T13:20:38.0244590Z Full output: /tmp/neowell-test-output.log
+2026-11-13T13:20:38.0245568Z Runner finished. Failed count: 0
+2026-11-13T13:20:38.0339224Z ##[group]Run javac -d /tmp/stepmath assets/android/StepMath.java assets/android/QuickMath.java assets/android/MotionMath.java assets/android/LockText.java scripts/StepMathTest.java scripts/QuickMathTest.java scripts/MotionMathTest.java scripts/LockTextTest.java
+2026-11-13T13:20:38.0342796Z [36;1mjavac -d /tmp/stepmath assets/android/StepMath.java assets/android/QuickMath.java assets/android/MotionMath.java assets/android/LockText.java scripts/StepMathTest.java scripts/QuickMathTest.java scripts/MotionMathTest.java scripts/LockTextTest.java[0m
+2026-11-13T13:20:38.0344963Z [36;1mjava -cp /tmp/stepmath com.neowell.app.StepMathTest[0m
+2026-11-13T13:20:38.0346000Z [36;1mjava -cp /tmp/stepmath com.neowell.app.QuickMathTest[0m
+2026-11-13T13:20:38.0346806Z [36;1mjava -cp /tmp/stepmath com.neowell.app.MotionMathTest[0m
+2026-11-13T13:20:38.0347673Z [36;1mjava -cp /tmp/stepmath com.neowell.app.LockTextTest[0m
+2026-11-13T13:20:38.0407268Z shell: /usr/bin/bash -e {0}
+2026-11-13T13:20:38.0407584Z env:
+2026-11-13T13:20:38.0407948Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:20:38.0408510Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:20:38.0409022Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:20:38.0409426Z   MAVEN_ARGS: -ntp
+2026-11-13T13:20:38.0409652Z ##[endgroup]
+2026-11-13T13:20:44.0711506Z PASS known boot count: a temporary counter drop is neither steps nor a reboot
+2026-11-13T13:20:44.0712929Z PASS a correct read after a low read does not inflate today
+2026-11-13T13:20:44.0726433Z PASS changed boot count means counter reset, steps are not lost
+2026-11-13T13:20:44.0727684Z PASS first read is 0 steps
+2026-11-13T13:20:44.0728478Z PASS same-day increase
+2026-11-13T13:20:44.0729369Z PASS steps are not lost when the phone reboots
+2026-11-13T13:20:44.0730218Z PASS increase after reboot
+2026-11-13T13:20:44.0730945Z PASS second reboot
+2026-11-13T13:20:44.0731642Z PASS new day starts from 0
+2026-11-13T13:20:44.0732417Z PASS old day is written to history
+2026-11-13T13:20:44.0733160Z PASS new day increase
+2026-11-13T13:20:44.0734061Z PASS night close writes the old day fully and returns true
+2026-11-13T13:20:44.0734986Z PASS new day is 0 after close
+2026-11-13T13:20:44.0736062Z PASS close does nothing on the same day
+2026-11-13T13:20:44.0737006Z PASS reboot at night close
+2026-11-13T13:20:44.0738168Z PASS 07:00 alarm does not close the old day, returns false (snapAt not written)
+2026-11-13T13:20:44.0739607Z PASS late alarm: old day is written up to the last read
+2026-11-13T13:20:44.0740905Z PASS late alarm: morning steps do not go to the old day, new day starts from 0
+2026-11-13T13:20:44.0742701Z PASS 02:30 late alarm closes the old day with the evening steps
+2026-11-13T13:20:44.0743762Z PASS new day starts from 0 after 02:30 close
+2026-11-13T13:20:44.0744656Z PASS close on the same day returns false
+2026-11-13T13:20:44.0745879Z PASS boot morning: old day stays at the last read
+2026-11-13T13:20:44.0752946Z PASS boot morning: new day starts from 0
+2026-11-13T13:20:44.0754156Z PASS with a 23:58 sample, the 00:10 close closes the day with the sample
+2026-11-13T13:20:44.0755516Z PASS steps after 23:58 go to the new day
+2026-11-13T13:20:44.0756869Z PASS with a 23:58 sample, the late 07:00 close also uses the sample
+2026-11-13T13:20:44.0758624Z PASS at the 07:00 close, night and morning steps go to the new day
+2026-11-13T13:20:44.0760181Z PASS 23:58 alarm arrived after midnight (no sample), old rule: steps up to 00:05 go to the old day
+2026-11-13T13:20:44.0761929Z PASS app opened before the night close: old day at the sample, the rest in the new day
+2026-11-13T13:20:44.0763279Z PASS a later close on the same day does nothing
+2026-11-13T13:20:44.0764673Z PASS phone rebooted after the sample: old day at the sample, new day from the reset counter
+2026-11-13T13:20:44.0766378Z PASS rollover without sample, 03:00 read: steps in between go to the old day
+2026-11-13T13:20:44.0768122Z PASS rollover without sample, 09:00 read: old day at the last read, new day 0
+2026-11-13T13:20:44.0769568Z PASS known reboot: total 300 + 900 even if the counter exceeds the last value
+2026-11-13T13:20:44.0770651Z PASS rebooted flag is consumed
+2026-11-13T13:20:44.0771604Z PASS day key going back counts under the stored day
+2026-11-13T13:20:44.0772754Z PASS day key going back writes nothing to history
+2026-11-13T13:20:44.0773881Z PASS close alarm ignores a day key that went back
+2026-11-13T13:20:44.1361169Z PASS amount: reads v inside extra
+2026-11-13T13:20:44.1366326Z PASS amount: field order does not matter
+2026-11-13T13:20:44.1367375Z PASS amount: v outside extra is ignored
+2026-11-13T13:20:44.1368335Z PASS amount: 0 without extra
+2026-11-13T13:20:44.1369167Z PASS amount: out of range is 0
+2026-11-13T13:20:44.1369998Z PASS amount: boundary values are valid
+2026-11-13T13:20:44.1370917Z PASS amount: non-numeric or decimal v is 0
+2026-11-13T13:20:44.1575638Z PASS med: reads id and time
+2026-11-13T13:20:44.1593595Z PASS med: field order does not matter
+2026-11-13T13:20:44.1635780Z PASS med: missing field gives null
+2026-11-13T13:20:44.1646003Z PASS med: bad time and out-of-range id give null
+2026-11-13T13:20:44.1656008Z PASS med: id 999 is valid, 1000 and 5-digit ids are out of range (null)
+2026-11-13T13:20:44.1666958Z PASS compare: equal strings match, different or null do not
+2026-11-13T13:20:44.1685914Z PASS med: a water notification yields no med key
+2026-11-13T13:20:44.1706131Z PASS med group: every dose of extra.g becomes a key, a bad id or time is skipped
+2026-11-13T13:20:44.1725770Z PASS med group: without g the single key is used
+2026-11-13T13:20:44.1735756Z PASS med: skip key starts with k
+2026-11-13T13:20:44.1743098Z PASS key: signed when extra.tk matches
+2026-11-13T13:20:44.1756050Z PASS key: unsigned when tk is missing, wrong, outside extra, or the secret is missing
+2026-11-13T13:20:44.1841010Z PASS append: two records in order
+2026-11-13T13:20:44.1855772Z PASS append: null start
+2026-11-13T13:20:44.2086085Z PASS limit: at most 200 records, oldest dropped
+2026-11-13T13:20:44.2096096Z PASS parse: corrupt and out-of-range pieces are skipped
+2026-11-13T13:20:44.2106002Z PASS parse: the zone offset (minutes, may be negative) is kept; a record without one is skipped
+2026-11-13T13:20:44.2126059Z PASS append: the zone is written after the time
+2026-11-13T13:20:44.2128534Z PASS widget tap: a second tap inside the gap is a repeat, the first, a later one and a clock that went back are not
+2026-11-13T13:20:44.2140325Z PASS iftar line: nothing before imsak, the time left while the fast runs, nothing from iftar to the next imsak
+2026-11-13T13:20:44.2146198Z PASS iftar line: with the app closed the pair rolls forward by whole days, for at most 3 days
+2026-11-13T13:20:44.2147754Z PASS iftar line: missing or inverted times give nothing
+2026-11-13T13:20:44.2148418Z PASS parse: empty and null
+2026-11-13T13:20:44.2149009Z PASS token: reads extra.at, not schedule.at
+2026-11-13T13:20:44.2149954Z PASS token: null when at is missing or short (old notification, no duplicate check)
+2026-11-13T13:20:44.2150970Z PASS duplicate: same notification seen; another at the same time and prefix matches not seen
+2026-11-13T13:20:44.2265836Z PASS duplicate: last 50 tokens are kept
+2026-11-13T13:20:44.2267448Z PASS alarm window: the 08:00 dose is still listed at 08:40 and at 10:59, not at 11:01, and from 5 s early
+2026-11-13T13:20:44.2744387Z PASS expected stride: walk 110/min, height 170
+2026-11-13T13:20:44.2745628Z PASS expected stride: run 170/min
+2026-11-13T13:20:44.2746734Z PASS unknown height defaults to 170
+2026-11-13T13:20:44.2747758Z PASS stride grows with cadence
+2026-11-13T13:20:44.2749935Z PASS sample: plausible GPS stride enters the model
+2026-11-13T13:20:44.2769365Z PASS sample: impossible stride is rejected
+2026-11-13T13:20:44.2770467Z PASS sample: impossible cadence is rejected
+2026-11-13T13:20:44.2771401Z PASS scale stays within 0.7-1.3
+2026-11-13T13:20:44.2772512Z PASS learned scale is reflected in stride
+2026-11-13T13:20:44.3010848Z PASS model: encode/decode round-trips
+2026-11-13T13:20:44.3013933Z PASS model: corrupt text falls back to default
+2026-11-13T13:20:44.3014843Z PASS GPS fix: good
+2026-11-13T13:20:44.3016255Z PASS GPS fix: bad accuracy, speed accuracy or speed is rejected
+2026-11-13T13:20:44.3082553Z PASS median and deviation
+2026-11-13T13:20:44.3084050Z PASS vehicle: high speed, or fast with slow cadence
+2026-11-13T13:20:44.3086008Z PASS classify: GPS speed dominates
+2026-11-13T13:20:44.3090429Z PASS classify: ambiguous speed uses cadence and activity recognition
+2026-11-13T13:20:44.3117005Z PASS MET: walk table and interpolation
+2026-11-13T13:20:44.3118126Z PASS MET: run table and upper bound
+2026-11-13T13:20:44.3119419Z PASS kcal: net energy
+2026-11-13T13:20:44.3120531Z PASS kcal: about 0.5 kcal/kg/km for walking
+2026-11-13T13:20:44.3121662Z PASS bout: walk summary
+2026-11-13T13:20:44.3124945Z PASS bout: run summary
+2026-11-13T13:20:44.3126640Z PASS bout: high cadence is a run even if activity recognition says walk
+2026-11-13T13:20:44.3129411Z PASS bout: GPS speed corrects the walk/run decision
+2026-11-13T13:20:44.3130589Z PASS bout: short duration or few steps is dropped
+2026-11-13T13:20:44.3134081Z PASS bout: impossible cadence is dropped (shaking)
+2026-11-13T13:20:44.3197005Z PASS bout: no weight gives kcal -1
+2026-11-13T13:20:44.3198100Z PASS bout: learned longer stride increases distance
+2026-11-13T13:20:44.3200458Z PASS path: tiring walk (100/min, then 60/min) gives per-slice kcal
+2026-11-13T13:20:44.3205999Z PASS path: per-slice distance matches hand calculation
+2026-11-13T13:20:44.3206995Z PASS path: steady pace equals the average
+2026-11-13T13:20:44.3207812Z PASS path: mid-way pause adds no kcal
+2026-11-13T13:20:44.3208646Z PASS path: run-dominated slices give mode run
+2026-11-13T13:20:44.3209542Z PASS path: short, few-step or single-point is dropped
+2026-11-13T13:20:44.3210380Z PASS path: two points equal bout
+2026-11-13T13:20:44.3211476Z PASS split: a bout crossing midnight is split in two days, steps from each day's counter
+2026-11-13T13:20:44.3212729Z PASS split: the cross-day slice adds no kcal (no double counting)
+2026-11-13T13:20:44.3213918Z PASS split: no checkpoint in the new day drops that part, previous day is kept
+2026-11-13T13:20:44.3215270Z PASS split: also splits when the counter goes backwards within a day
+2026-11-13T13:20:44.3216228Z PASS split: single day equals path
+2026-11-13T13:20:44.3216996Z PASS split: invalid piece is not listed
+2026-11-13T13:20:44.3218037Z PASS day: event time is kept when event and counter reading are on the same day
+2026-11-13T13:20:44.3219234Z PASS day: event before midnight and reading after uses the counter's time
+2026-11-13T13:20:44.3586250Z PASS lock: with detail off the private twin channel is used
+2026-11-13T13:20:44.3587698Z PASS lock: with detail on the original channel is used
+2026-11-13T13:20:44.3589056Z PASS lock: the generic title names no measurement or medication
+2026-11-13T13:20:44.3653329Z ##[group]Run rm -rf android
+2026-11-13T13:20:44.3653662Z [36;1mrm -rf android[0m
+2026-11-13T13:20:44.3653912Z [36;1mnpx cap add android[0m
+2026-11-13T13:20:44.3654199Z [36;1mnode scripts/patch-android.js[0m
+2026-11-13T13:20:44.3654497Z [36;1mnpx cap sync android[0m
+2026-11-13T13:20:44.3654768Z [36;1mnpm run android:sync:verify[0m
+2026-11-13T13:20:44.3702672Z shell: /usr/bin/bash -e {0}
+2026-11-13T13:20:44.3702926Z env:
+2026-11-13T13:20:44.3703276Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:20:44.3703819Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:20:44.3704320Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:20:44.3704741Z   MAVEN_ARGS: -ntp
+2026-11-13T13:20:44.3704958Z ##[endgroup]
+2026-11-13T13:20:45.0413916Z ✔ Adding native android project in android in 43.99ms
+2026-11-13T13:20:45.0415286Z ✔ add in 44.74ms
+2026-11-13T13:20:45.2412477Z ✔ Copying web assets from www to android/app/src/main/assets/public in 181.28ms
+2026-11-13T13:20:45.2418988Z ✔ Creating capacitor.config.json in android/app/src/main/assets in 417.35μs
+2026-11-13T13:20:45.2457804Z ✔ copy android in 193.17ms
+2026-11-13T13:20:45.2540019Z ✔ Updating Android plugins in 1.76ms
+2026-11-13T13:20:45.2561728Z [info] Found 5 Capacitor plugins for android:
+2026-11-13T13:20:45.2562762Z        @capacitor-mlkit/barcode-scanning@8.2.1
+2026-11-13T13:20:45.2563660Z        @capacitor/app@8.1.2
+2026-11-13T13:20:45.2564457Z        @capacitor/filesystem@8.1.4
+2026-11-13T13:20:45.2565503Z        @capacitor/local-notifications@8.3.1
+2026-11-13T13:20:45.2566340Z        @capacitor/share@8.0.3
+2026-11-13T13:20:45.2753931Z ✔ update android in 26.33ms
+2026-11-13T13:20:45.2787037Z ✔ Syncing Gradle in 168.67μs
+2026-11-13T13:20:45.2791051Z [success] android platform added!
+2026-11-13T13:20:45.2792160Z Follow the Developer Workflow guide to get building:
+2026-11-13T13:20:45.2793347Z https://capacitorjs.com/docs/basics/workflow
+2026-11-13T13:20:45.3303097Z Manifest patched.
+2026-11-13T13:20:45.3359498Z Icons and splash screen installed.
+2026-11-13T13:20:45.3360402Z Signing source directory not found, skipping.
+2026-11-13T13:20:45.3413340Z Native sources copied.
+2026-11-13T13:20:45.3421628Z Gradle configured.
+2026-11-13T13:20:46.1000369Z ✔ Copying web assets from www to android/app/src/main/assets/public in 248.11ms
+2026-11-13T13:20:46.1010787Z ✔ Creating capacitor.config.json in android/app/src/main/assets in 639.59μs
+2026-11-13T13:20:46.1055864Z ✔ copy android in 259.67ms
+2026-11-13T13:20:46.1136360Z ✔ Updating Android plugins in 1.74ms
+2026-11-13T13:20:46.1156966Z [info] Found 5 Capacitor plugins for android:
+2026-11-13T13:20:46.1157872Z        @capacitor-mlkit/barcode-scanning@8.2.1
+2026-11-13T13:20:46.1158712Z        @capacitor/app@8.1.2
+2026-11-13T13:20:46.1159443Z        @capacitor/filesystem@8.1.4
+2026-11-13T13:20:46.1160211Z        @capacitor/local-notifications@8.3.1
+2026-11-13T13:20:46.1160985Z        @capacitor/share@8.0.3
+2026-11-13T13:20:46.1422284Z ✔ update android in 33.27ms
+2026-11-13T13:20:46.1453704Z [info] Sync finished in 0.317s
+2026-11-13T13:20:46.2713899Z 
+2026-11-13T13:20:46.2714791Z > neowell-app@1.0.0 android:sync:verify
+2026-11-13T13:20:46.2715967Z > node scripts/verify-android-sync.js
+2026-11-13T13:20:46.2716545Z 
+2026-11-13T13:20:46.6816490Z Native source/resource/web sync verified: 28 Java files, 44 source resources, 763 web assets.
+2026-11-13T13:20:46.6981996Z ##[group]Run mkdir -p android/signing
+2026-11-13T13:20:46.6982637Z [36;1mmkdir -p android/signing[0m
+2026-11-13T13:20:46.6984374Z [36;1mkeytool -genkeypair -alias androiddebugkey -keypass android -storepass android -keystore android/signing/known-debug-smoke-only.keystore -validity 10000 -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -v[0m
+2026-11-13T13:20:46.7046116Z shell: /usr/bin/bash -e {0}
+2026-11-13T13:20:46.7046396Z env:
+2026-11-13T13:20:46.7046766Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:20:46.7047343Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:20:46.7047863Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:20:46.7048271Z   MAVEN_ARGS: -ntp
+2026-11-13T13:20:46.7048493Z ##[endgroup]
+2026-11-13T13:20:49.0106896Z Generating 2,048 bit RSA key pair and self-signed certificate (SHA384withRSA) with a validity of 10,000 days
+2026-11-13T13:20:49.0108313Z 	for: CN=Android Debug, O=Android, C=US
+2026-11-13T13:20:50.0394976Z [Storing android/signing/known-debug-smoke-only.keystore]
+2026-11-13T13:20:50.3112651Z ##[group]Run grep -q '@RunWith(AndroidJUnit4.class)' android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java
+2026-11-13T13:20:50.3113710Z [36;1mgrep -q '@RunWith(AndroidJUnit4.class)' android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java[0m
+2026-11-13T13:20:50.3114646Z [36;1mgrep -q 'assertEquals("com.neowell.app"' android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java[0m
+2026-11-13T13:20:50.3116218Z [36;1mgrep -q 'applicationId "com.neowell.app"' android/app/build.gradle[0m
+2026-11-13T13:20:50.3172646Z shell: /usr/bin/bash -e {0}
+2026-11-13T13:20:50.3172912Z env:
+2026-11-13T13:20:50.3173273Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:20:50.3173828Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:20:50.3174368Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:20:50.3174810Z   MAVEN_ARGS: -ntp
+2026-11-13T13:20:50.3175270Z ##[endgroup]
+2026-11-13T13:20:50.3344002Z ##[group]Run # Never fall back to the debug signature: the published APK would be signed with a publicly known key.
+2026-11-13T13:20:50.3344843Z [36;1m# Never fall back to the debug signature: the published APK would be signed with a publicly known key.[0m
+2026-11-13T13:20:50.3346012Z [36;1m[ -n "$RELEASE_KEYSTORE_B64" ] || { echo "RELEASE_KEYSTORE_B64 secret is missing, the release cannot be signed"; exit 1; }[0m
+2026-11-13T13:20:50.3346698Z [36;1mecho "$RELEASE_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"[0m
+2026-11-13T13:20:50.3347224Z [36;1mecho "RELEASE_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"[0m
+2026-11-13T13:20:50.3391931Z shell: /usr/bin/bash -e {0}
+2026-11-13T13:20:50.3392200Z env:
+2026-11-13T13:20:50.3392555Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:20:50.3393103Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:20:50.3393638Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:20:50.3394044Z   MAVEN_ARGS: -ntp
+2026-11-13T13:20:50.3423390Z   RELEASE_KEYSTORE_B64: ***
+2026-11-13T13:20:50.3423665Z ##[endgroup]
+2026-11-13T13:20:50.3559216Z ##[group]Run chmod +x gradlew
+2026-11-13T13:20:50.3559533Z [36;1mchmod +x gradlew[0m
+2026-11-13T13:20:50.3560004Z [36;1m./gradlew assembleDebug assembleDebugAndroidTest assembleRelease bundleRelease --no-daemon[0m
+2026-11-13T13:20:50.3604238Z shell: /usr/bin/bash -e {0}
+2026-11-13T13:20:50.3604510Z env:
+2026-11-13T13:20:50.3604872Z   RELEASE_SHA256: 89a6ed7d72f27525fc74a3523f99868e890b5a3f0c70de2a845ea54262f143ee
+2026-11-13T13:20:50.3605662Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:20:50.3606173Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-13T13:20:50.3606569Z   MAVEN_ARGS: -ntp
+2026-11-13T13:20:50.3606873Z   RELEASE_KEYSTORE_FILE: /home/runner/work/_temp/release.jks
+2026-11-13T13:20:50.3607374Z   RELEASE_KEYSTORE_PASSWORD: ***
+2026-11-13T13:20:50.3607864Z   RELEASE_KEY_ALIAS: ***
+2026-11-13T13:20:50.3608189Z   RELEASE_KEY_PASSWORD: ***
+2026-11-13T13:20:50.3608435Z ##[endgroup]
+2026-11-13T13:20:50.5552161Z Downloading https://services.gradle.org/distributions/gradle-8.14.3-all.zip
+2026-11-13T13:20:54.3297547Z .....................10%.....................20%......................30%.....................40%......................50%.....................60%.....................70%......................80%.....................90%......................100%
+2026-11-13T13:20:58.2414595Z 
+2026-11-13T13:20:58.2434354Z Welcome to Gradle 8.14.3!
+2026-11-13T13:20:58.2436979Z 
+2026-11-13T13:20:58.2437298Z Here are the highlights of this release:
+2026-11-13T13:20:58.2437654Z  - Java 24 support
+2026-11-13T13:20:58.2437976Z  - GraalVM Native Image toolchain selection
+2026-11-13T13:20:58.2438339Z  - Enhancements to test reporting
+2026-11-13T13:20:58.2438663Z  - Build Authoring improvements
+2026-11-13T13:20:58.2438852Z 
+2026-11-13T13:20:58.2439176Z For more details see https://docs.gradle.org/8.14.3/release-notes.html
+2026-11-13T13:20:58.2439478Z 
+2026-11-13T13:20:58.4399672Z To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+2026-11-13T13:21:00.9391710Z Daemon will be stopped at the end of the build 
+2026-11-13T13:21:43.7372407Z 
+2026-11-13T13:21:43.7406621Z > Configure project :app
+2026-11-13T13:21:43.7426293Z WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+2026-11-13T13:21:47.6365891Z 
+2026-11-13T13:21:47.6396404Z > Configure project :capacitor-cordova-android-plugins
+2026-11-13T13:21:47.6416165Z WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+2026-11-13T13:22:19.7375743Z 
+2026-11-13T13:22:19.7386188Z > Task :app:preBuild UP-TO-DATE
+2026-11-13T13:22:19.7405803Z > Task :app:preDebugBuild UP-TO-DATE
+2026-11-13T13:22:19.8378774Z > Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+2026-11-13T13:22:19.9423181Z > Task :capacitor-android:preBuild UP-TO-DATE
+2026-11-13T13:22:19.9430359Z > Task :capacitor-android:preDebugBuild UP-TO-DATE
+2026-11-13T13:22:19.9470816Z > Task :capacitor-android:writeDebugAarMetadata
+2026-11-13T13:22:19.9472984Z > Task :capacitor-app:preBuild UP-TO-DATE
+2026-11-13T13:22:19.9490641Z > Task :capacitor-app:preDebugBuild UP-TO-DATE
+2026-11-13T13:22:19.9515657Z > Task :app:javaPreCompileDebug
+2026-11-13T13:22:19.9523397Z > Task :capacitor-cordova-android-plugins:preBuild UP-TO-DATE
+2026-11-13T13:22:19.9536282Z > Task :capacitor-cordova-android-plugins:preDebugBuild UP-TO-DATE
+2026-11-13T13:22:19.9555954Z > Task :capacitor-app:writeDebugAarMetadata
+2026-11-13T13:22:19.9575852Z > Task :capacitor-filesystem:preBuild UP-TO-DATE
+2026-11-13T13:22:19.9583739Z > Task :capacitor-filesystem:preDebugBuild UP-TO-DATE
+2026-11-13T13:22:19.9601250Z > Task :capacitor-cordova-android-plugins:writeDebugAarMetadata
+2026-11-13T13:22:19.9602622Z > Task :capacitor-local-notifications:preBuild UP-TO-DATE
+2026-11-13T13:22:19.9604460Z > Task :capacitor-local-notifications:preDebugBuild UP-TO-DATE
+2026-11-13T13:22:19.9606138Z > Task :capacitor-filesystem:writeDebugAarMetadata
+2026-11-13T13:22:19.9607309Z > Task :capacitor-mlkit-barcode-scanning:preBuild UP-TO-DATE
+2026-11-13T13:22:19.9608652Z > Task :capacitor-mlkit-barcode-scanning:preDebugBuild UP-TO-DATE
+2026-11-13T13:22:19.9609863Z > Task :capacitor-local-notifications:writeDebugAarMetadata
+2026-11-13T13:22:19.9610904Z > Task :capacitor-share:preBuild UP-TO-DATE
+2026-11-13T13:22:19.9611851Z > Task :capacitor-share:preDebugBuild UP-TO-DATE
+2026-11-13T13:22:19.9612970Z > Task :capacitor-mlkit-barcode-scanning:writeDebugAarMetadata
+2026-11-13T13:22:19.9614057Z > Task :capacitor-share:writeDebugAarMetadata
+2026-11-13T13:22:20.0386747Z > Task :capacitor-android:processDebugNavigationResources
+2026-11-13T13:22:27.3376489Z > Task :capacitor-app:processDebugNavigationResources
+2026-11-13T13:22:27.3406128Z > Task :capacitor-cordova-android-plugins:processDebugNavigationResources
+2026-11-13T13:22:27.3425787Z > Task :app:checkDebugAarMetadata
+2026-11-13T13:22:27.3445907Z > Task :capacitor-filesystem:processDebugNavigationResources
+2026-11-13T13:22:27.3505946Z > Task :capacitor-local-notifications:processDebugNavigationResources
+2026-11-13T13:22:27.3644788Z > Task :capacitor-mlkit-barcode-scanning:processDebugNavigationResources
+2026-11-13T13:22:27.3657948Z > Task :capacitor-share:processDebugNavigationResources
+2026-11-13T13:22:27.5487320Z > Task :app:processDebugNavigationResources
+2026-11-13T13:22:27.8441349Z > Task :app:compileDebugNavigationResources
+2026-11-13T13:22:27.8456653Z > Task :app:generateDebugResValues
+2026-11-13T13:22:27.8508734Z > Task :capacitor-android:generateDebugResValues
+2026-11-13T13:22:27.8510184Z > Task :capacitor-android:generateDebugResources
+2026-11-13T13:22:27.9607644Z > Task :capacitor-android:packageDebugResources
+2026-11-13T13:22:27.9646052Z > Task :capacitor-app:generateDebugResValues
+2026-11-13T13:22:27.9987630Z > Task :capacitor-app:generateDebugResources
+2026-11-13T13:22:27.9988552Z > Task :capacitor-app:packageDebugResources
+2026-11-13T13:22:28.0304638Z > Task :capacitor-cordova-android-plugins:generateDebugResValues
+2026-11-13T13:22:28.0319454Z > Task :capacitor-cordova-android-plugins:generateDebugResources
+2026-11-13T13:22:28.0630568Z > Task :capacitor-cordova-android-plugins:packageDebugResources
+2026-11-13T13:22:28.0869042Z > Task :capacitor-filesystem:generateDebugResValues
+2026-11-13T13:22:28.0893971Z > Task :capacitor-filesystem:generateDebugResources
+2026-11-13T13:22:28.1099695Z > Task :capacitor-filesystem:packageDebugResources
+2026-11-13T13:22:28.1186183Z > Task :capacitor-local-notifications:generateDebugResValues
+2026-11-13T13:22:28.1205978Z > Task :capacitor-local-notifications:generateDebugResources
+2026-11-13T13:22:28.1207346Z > Task :capacitor-local-notifications:packageDebugResources
+2026-11-13T13:22:28.1226098Z > Task :capacitor-mlkit-barcode-scanning:generateDebugResValues
+2026-11-13T13:22:28.1246072Z > Task :capacitor-mlkit-barcode-scanning:generateDebugResources
+2026-11-13T13:22:28.1265940Z > Task :capacitor-mlkit-barcode-scanning:packageDebugResources
+2026-11-13T13:22:28.1296757Z > Task :capacitor-share:generateDebugResValues
+2026-11-13T13:22:28.1297949Z > Task :capacitor-share:generateDebugResources
+2026-11-13T13:22:28.1316157Z > Task :capacitor-share:packageDebugResources
+2026-11-13T13:22:28.1371570Z > Task :app:mapDebugSourceSetPaths
+2026-11-13T13:22:28.1384908Z > Task :app:generateDebugResources
+2026-11-13T13:22:29.1387194Z > Task :app:createDebugCompatibleScreenManifests
+2026-11-13T13:22:29.1406035Z > Task :app:extractDeepLinksDebug
+2026-11-13T13:22:29.1428499Z > Task :capacitor-android:extractDeepLinksDebug
+2026-11-13T13:22:30.1389951Z > Task :capacitor-android:processDebugManifest
+2026-11-13T13:22:30.1404193Z > Task :capacitor-app:extractDeepLinksDebug
+2026-11-13T13:22:30.2367646Z > Task :capacitor-app:processDebugManifest
+2026-11-13T13:22:30.2397589Z > Task :capacitor-cordova-android-plugins:extractDeepLinksDebug
+2026-11-13T13:22:30.2417206Z > Task :capacitor-cordova-android-plugins:processDebugManifest
+2026-11-13T13:22:30.2433018Z > Task :capacitor-filesystem:extractDeepLinksDebug
+2026-11-13T13:22:30.2453356Z > Task :capacitor-filesystem:processDebugManifest
+2026-11-13T13:22:30.3376499Z > Task :capacitor-local-notifications:extractDeepLinksDebug
+2026-11-13T13:22:30.3387310Z > Task :capacitor-local-notifications:processDebugManifest
+2026-11-13T13:22:30.3395600Z > Task :capacitor-mlkit-barcode-scanning:extractDeepLinksDebug
+2026-11-13T13:22:30.4388594Z > Task :app:mergeDebugResources
+2026-11-13T13:22:30.4404903Z > Task :capacitor-mlkit-barcode-scanning:processDebugManifest
+2026-11-13T13:22:30.4419489Z > Task :app:packageDebugResources
+2026-11-13T13:22:34.0406526Z > Task :capacitor-share:extractDeepLinksDebug
+2026-11-13T13:22:34.0424459Z > Task :capacitor-share:processDebugManifest
+2026-11-13T13:22:34.2374499Z > Task :app:parseDebugLocalResources
+2026-11-13T13:22:34.5376404Z > Task :app:processDebugMainManifest
+2026-11-13T13:22:34.7375217Z > Task :app:processDebugManifest
+2026-11-13T13:22:34.7425986Z > Task :app:processDebugManifestForPackage
+2026-11-13T13:22:34.7427061Z > Task :capacitor-android:compileDebugLibraryResources
+2026-11-13T13:22:34.7449877Z > Task :capacitor-app:compileDebugLibraryResources
+2026-11-13T13:22:34.8389490Z > Task :capacitor-android:parseDebugLocalResources
+2026-11-13T13:22:34.8404741Z > Task :capacitor-app:parseDebugLocalResources
+2026-11-13T13:22:34.8405849Z > Task :capacitor-app:generateDebugRFile
+2026-11-13T13:22:34.8406668Z > Task :capacitor-android:generateDebugRFile
+2026-11-13T13:22:34.8407767Z > Task :capacitor-cordova-android-plugins:compileDebugLibraryResources
+2026-11-13T13:22:34.8408885Z > Task :capacitor-filesystem:compileDebugLibraryResources
+2026-11-13T13:22:34.9427723Z > Task :capacitor-cordova-android-plugins:parseDebugLocalResources
+2026-11-13T13:22:34.9472945Z > Task :capacitor-cordova-android-plugins:generateDebugRFile
+2026-11-13T13:22:34.9496388Z > Task :capacitor-filesystem:parseDebugLocalResources
+2026-11-13T13:22:34.9536219Z > Task :capacitor-local-notifications:compileDebugLibraryResources
+2026-11-13T13:22:34.9537158Z > Task :capacitor-filesystem:generateDebugRFile
+2026-11-13T13:22:34.9538088Z > Task :capacitor-mlkit-barcode-scanning:compileDebugLibraryResources
+2026-11-13T13:22:34.9539135Z > Task :capacitor-local-notifications:parseDebugLocalResources
+2026-11-13T13:22:35.0577288Z > Task :capacitor-mlkit-barcode-scanning:parseDebugLocalResources
+2026-11-13T13:22:35.0596035Z > Task :capacitor-local-notifications:generateDebugRFile
+2026-11-13T13:22:35.0776436Z > Task :capacitor-share:compileDebugLibraryResources
+2026-11-13T13:22:35.0795925Z > Task :capacitor-mlkit-barcode-scanning:generateDebugRFile
+2026-11-13T13:22:35.0886207Z > Task :capacitor-android:javaPreCompileDebug
+2026-11-13T13:22:35.0887270Z > Task :capacitor-share:parseDebugLocalResources
+2026-11-13T13:22:44.8398499Z Note: Some input files use unchecked or unsafe operations.
+2026-11-13T13:22:44.8399062Z 
+2026-11-13T13:22:44.8400447Z > Task :capacitor-android:compileDebugJavaWithJavac
+2026-11-13T13:22:44.8407954Z Note: Recompile with -Xlint:unchecked for details.
+2026-11-13T13:22:48.2375728Z 
+2026-11-13T13:22:48.2396109Z > Task :capacitor-share:generateDebugRFile
+2026-11-13T13:22:49.1366492Z > Task :capacitor-android:bundleLibCompileToJarDebug
+2026-11-13T13:22:49.3365293Z > Task :capacitor-app:javaPreCompileDebug
+2026-11-13T13:22:49.9388191Z > Task :capacitor-app:compileDebugJavaWithJavac
+2026-11-13T13:22:49.9446862Z > Task :capacitor-app:bundleLibCompileToJarDebug
+2026-11-13T13:22:49.9466003Z > Task :capacitor-cordova-android-plugins:javaPreCompileDebug
+2026-11-13T13:22:49.9476167Z > Task :capacitor-cordova-android-plugins:compileDebugJavaWithJavac NO-SOURCE
+2026-11-13T13:22:49.9485974Z > Task :capacitor-cordova-android-plugins:bundleLibCompileToJarDebug
+2026-11-13T13:22:49.9518049Z > Task :capacitor-filesystem:checkKotlinGradlePluginConfigurationErrors SKIPPED
+2026-11-13T13:22:50.1406264Z > Task :app:processDebugResources
+2026-11-13T13:22:57.2366804Z > Task :capacitor-filesystem:javaPreCompileDebug
+2026-11-13T13:22:57.2386665Z > Task :capacitor-local-notifications:checkKotlinGradlePluginConfigurationErrors SKIPPED
+2026-11-13T13:23:19.5391670Z > Task :capacitor-filesystem:compileDebugKotlin
+2026-11-13T13:23:19.5426469Z > Task :capacitor-filesystem:compileDebugJavaWithJavac NO-SOURCE
+2026-11-13T13:23:19.5506059Z > Task :capacitor-filesystem:bundleLibCompileToJarDebug
+2026-11-13T13:23:19.6406323Z > Task :capacitor-local-notifications:javaPreCompileDebug
+2026-11-13T13:23:19.6426403Z > Task :capacitor-mlkit-barcode-scanning:javaPreCompileDebug
+2026-11-13T13:23:22.9366206Z 
+2026-11-13T13:23:22.9377846Z Note: /home/runner/work/koc/koc/node_modules/@capacitor-mlkit/barcode-scanning/android/src/main/java/io/capawesome/capacitorjs/plugins/mlkit/barcodescanning/BarcodeScannerPlugin.java uses or overrides a deprecated API.
+2026-11-13T13:23:22.9380570Z > Task :capacitor-mlkit-barcode-scanning:compileDebugJavaWithJavac
+2026-11-13T13:23:22.9397425Z Note: Recompile with -Xlint:deprecation for details.
+2026-11-13T13:23:25.7405557Z 
+2026-11-13T13:23:25.7423118Z > Task :capacitor-mlkit-barcode-scanning:bundleLibCompileToJarDebug
+2026-11-13T13:23:25.7461296Z > Task :capacitor-share:javaPreCompileDebug
+2026-11-13T13:23:26.3416798Z > Task :capacitor-share:compileDebugJavaWithJavac
+2026-11-13T13:23:26.4393194Z > Task :capacitor-share:bundleLibCompileToJarDebug
+2026-11-13T13:23:26.4445801Z > Task :app:mergeDebugShaders
+2026-11-13T13:23:26.4535894Z > Task :app:compileDebugShaders NO-SOURCE
+2026-11-13T13:23:26.4559128Z > Task :app:generateDebugAssets UP-TO-DATE
+2026-11-13T13:23:26.4625849Z > Task :capacitor-android:mergeDebugShaders
+2026-11-13T13:23:26.4667610Z > Task :capacitor-android:compileDebugShaders NO-SOURCE
+2026-11-13T13:23:26.4709957Z > Task :capacitor-android:generateDebugAssets UP-TO-DATE
+2026-11-13T13:23:26.5382120Z > Task :capacitor-android:mergeDebugAssets
+2026-11-13T13:23:26.5402178Z > Task :capacitor-app:mergeDebugShaders
+2026-11-13T13:23:26.5466046Z > Task :capacitor-app:compileDebugShaders NO-SOURCE
+2026-11-13T13:23:26.5523667Z > Task :capacitor-app:generateDebugAssets UP-TO-DATE
+2026-11-13T13:23:26.5524527Z > Task :capacitor-app:mergeDebugAssets
+2026-11-13T13:23:26.5567729Z > Task :capacitor-cordova-android-plugins:mergeDebugShaders
+2026-11-13T13:23:26.5606221Z > Task :capacitor-cordova-android-plugins:compileDebugShaders NO-SOURCE
+2026-11-13T13:23:26.5638476Z > Task :capacitor-cordova-android-plugins:generateDebugAssets UP-TO-DATE
+2026-11-13T13:23:26.6416399Z > Task :capacitor-cordova-android-plugins:mergeDebugAssets
+2026-11-13T13:23:26.6457372Z > Task :capacitor-filesystem:mergeDebugShaders
+2026-11-13T13:23:26.6475967Z > Task :capacitor-filesystem:compileDebugShaders NO-SOURCE
+2026-11-13T13:23:26.6510990Z > Task :capacitor-filesystem:generateDebugAssets UP-TO-DATE
+2026-11-13T13:23:26.6512051Z > Task :capacitor-filesystem:mergeDebugAssets
+2026-11-13T13:23:26.6535914Z > Task :capacitor-local-notifications:mergeDebugShaders
+2026-11-13T13:23:26.6536992Z > Task :capacitor-local-notifications:compileDebugShaders NO-SOURCE
+2026-11-13T13:23:26.6565017Z > Task :capacitor-local-notifications:generateDebugAssets UP-TO-DATE
+2026-11-13T13:23:26.6596667Z > Task :capacitor-local-notifications:mergeDebugAssets
+2026-11-13T13:23:26.6635867Z > Task :capacitor-mlkit-barcode-scanning:mergeDebugShaders
+2026-11-13T13:23:26.6651357Z > Task :capacitor-mlkit-barcode-scanning:compileDebugShaders NO-SOURCE
+2026-11-13T13:23:26.6696002Z > Task :capacitor-mlkit-barcode-scanning:generateDebugAssets UP-TO-DATE
+2026-11-13T13:23:26.6725917Z > Task :capacitor-mlkit-barcode-scanning:mergeDebugAssets
+2026-11-13T13:23:26.6735876Z > Task :capacitor-share:mergeDebugShaders
+2026-11-13T13:23:26.6757085Z > Task :capacitor-share:compileDebugShaders NO-SOURCE
+2026-11-13T13:23:26.6795882Z > Task :capacitor-share:generateDebugAssets UP-TO-DATE
+2026-11-13T13:23:26.7381135Z > Task :capacitor-share:mergeDebugAssets
+2026-11-13T13:23:27.2376377Z > Task :capacitor-local-notifications:compileDebugKotlin
+2026-11-13T13:23:29.2397305Z > Task :app:mergeDebugAssets
+2026-11-13T13:23:30.7364828Z > Task :app:compressDebugAssets
+2026-11-13T13:23:30.7404949Z > Task :capacitor-mlkit-barcode-scanning:bundleLibRuntimeToJarDebug
+2026-11-13T13:23:34.6396630Z > Task :capacitor-local-notifications:compileDebugJavaWithJavac NO-SOURCE
+2026-11-13T13:23:34.6456150Z > Task :capacitor-local-notifications:bundleLibCompileToJarDebug
+2026-11-13T13:23:36.6366263Z 
+2026-11-13T13:23:36.6367932Z Note: Some input files use or override a deprecated API.
+2026-11-13T13:23:36.6368749Z > Task :app:compileDebugJavaWithJavac
+2026-11-13T13:23:36.6370007Z Note: Recompile with -Xlint:deprecation for details.
+2026-11-13T13:23:37.3385788Z 
+2026-11-13T13:23:37.3446065Z > Task :capacitor-app:bundleLibRuntimeToJarDebug
+2026-11-13T13:23:37.3485849Z > Task :capacitor-filesystem:bundleLibRuntimeToJarDebug
+2026-11-13T13:23:37.5396654Z > Task :capacitor-local-notifications:bundleLibRuntimeToJarDebug
+2026-11-13T13:23:38.2366136Z > Task :capacitor-share:bundleLibRuntimeToJarDebug
+2026-11-13T13:23:38.3388618Z > Task :capacitor-android:bundleLibRuntimeToJarDebug
+2026-11-13T13:23:38.9366311Z > Task :capacitor-cordova-android-plugins:bundleLibRuntimeToJarDebug
+2026-11-13T13:23:38.9376012Z > Task :app:desugarDebugFileDependencies
+2026-11-13T13:23:41.3371609Z > Task :app:dexBuilderDebug
+2026-11-13T13:24:11.3365366Z > Task :app:mergeDebugGlobalSynthetics
+2026-11-13T13:24:36.9367070Z > Task :app:processDebugJavaRes NO-SOURCE
+2026-11-13T13:24:36.9400591Z > Task :capacitor-android:processDebugJavaRes NO-SOURCE
+2026-11-13T13:24:36.9435465Z > Task :capacitor-app:processDebugJavaRes NO-SOURCE
+2026-11-13T13:24:36.9456017Z > Task :capacitor-cordova-android-plugins:processDebugJavaRes NO-SOURCE
+2026-11-13T13:24:37.0368030Z > Task :capacitor-filesystem:processDebugJavaRes
+2026-11-13T13:24:37.0396252Z > Task :capacitor-local-notifications:processDebugJavaRes
+2026-11-13T13:24:37.0397942Z > Task :capacitor-mlkit-barcode-scanning:processDebugJavaRes NO-SOURCE
+2026-11-13T13:24:37.0415963Z > Task :capacitor-share:processDebugJavaRes NO-SOURCE
+2026-11-13T13:24:38.0396415Z > Task :app:checkDebugDuplicateClasses
+2026-11-13T13:24:39.1368279Z > Task :app:mergeDebugJavaResource
+2026-11-13T13:24:44.1371994Z > Task :capacitor-mlkit-barcode-scanning:bundleLibRuntimeToDirDebug
+2026-11-13T13:24:44.1389031Z > Task :app:mergeExtDexDebug
+2026-11-13T13:24:44.1402438Z > Task :capacitor-app:bundleLibRuntimeToDirDebug
+2026-11-13T13:24:44.2376366Z > Task :capacitor-filesystem:bundleLibRuntimeToDirDebug
+2026-11-13T13:24:44.4386649Z > Task :capacitor-local-notifications:bundleLibRuntimeToDirDebug
+2026-11-13T13:24:44.5386451Z > Task :capacitor-share:bundleLibRuntimeToDirDebug
+2026-11-13T13:24:44.8376463Z > Task :capacitor-android:bundleLibRuntimeToDirDebug
+2026-11-13T13:24:44.9376499Z > Task :capacitor-cordova-android-plugins:bundleLibRuntimeToDirDebug
+2026-11-13T13:24:45.1376237Z > Task :app:mergeProjectDexDebug
+2026-11-13T13:24:45.2388519Z > Task :app:mergeDebugJniLibFolders
+2026-11-13T13:24:45.2418580Z > Task :capacitor-android:mergeDebugJniLibFolders
+2026-11-13T13:24:45.2466055Z > Task :capacitor-android:mergeDebugNativeLibs NO-SOURCE
+2026-11-13T13:24:45.2472698Z > Task :capacitor-android:copyDebugJniLibsProjectOnly
+2026-11-13T13:24:45.2497354Z > Task :capacitor-app:mergeDebugJniLibFolders
+2026-11-13T13:24:45.2545916Z > Task :capacitor-app:mergeDebugNativeLibs NO-SOURCE
+2026-11-13T13:24:45.2546850Z > Task :capacitor-app:copyDebugJniLibsProjectOnly
+2026-11-13T13:24:45.3393063Z > Task :capacitor-cordova-android-plugins:mergeDebugJniLibFolders
+2026-11-13T13:24:45.3426165Z > Task :capacitor-cordova-android-plugins:mergeDebugNativeLibs NO-SOURCE
+2026-11-13T13:24:45.3456021Z > Task :capacitor-cordova-android-plugins:copyDebugJniLibsProjectOnly
+2026-11-13T13:24:45.3485881Z > Task :capacitor-filesystem:mergeDebugJniLibFolders
+2026-11-13T13:24:45.3503831Z > Task :capacitor-filesystem:mergeDebugNativeLibs NO-SOURCE
+2026-11-13T13:24:45.3549975Z > Task :capacitor-filesystem:copyDebugJniLibsProjectOnly
+2026-11-13T13:24:45.3576321Z > Task :capacitor-local-notifications:mergeDebugJniLibFolders
+2026-11-13T13:24:45.3626035Z > Task :capacitor-local-notifications:mergeDebugNativeLibs NO-SOURCE
+2026-11-13T13:24:45.3656002Z > Task :capacitor-local-notifications:copyDebugJniLibsProjectOnly
+2026-11-13T13:24:45.3675976Z > Task :capacitor-mlkit-barcode-scanning:mergeDebugJniLibFolders
+2026-11-13T13:24:45.3716010Z > Task :capacitor-mlkit-barcode-scanning:mergeDebugNativeLibs NO-SOURCE
+2026-11-13T13:24:45.3763083Z > Task :capacitor-mlkit-barcode-scanning:copyDebugJniLibsProjectOnly
+2026-11-13T13:24:45.3774955Z > Task :capacitor-share:mergeDebugJniLibFolders
+2026-11-13T13:24:45.3815865Z > Task :capacitor-share:mergeDebugNativeLibs NO-SOURCE
+2026-11-13T13:24:45.3857540Z > Task :capacitor-share:copyDebugJniLibsProjectOnly
+2026-11-13T13:24:45.9366037Z > Task :app:mergeLibDexDebug
+2026-11-13T13:24:45.9405696Z > Task :app:validateSigningDebug
+2026-11-13T13:24:45.9406859Z > Task :app:writeDebugAppMetadata
+2026-11-13T13:24:46.0367629Z > Task :app:mergeDebugNativeLibs
+2026-11-13T13:24:46.0369672Z > Task :app:writeDebugSigningConfigVersions
+2026-11-13T13:24:46.1365224Z > Task :capacitor-android:checkDebugAarMetadata
+2026-11-13T13:24:46.1389773Z > Task :capacitor-android:stripDebugDebugSymbols NO-SOURCE
+2026-11-13T13:24:46.1408420Z > Task :capacitor-android:copyDebugJniLibsProjectAndLocalJars
+2026-11-13T13:24:46.2366312Z 
+2026-11-13T13:24:46.2387627Z > Task :app:stripDebugDebugSymbols
+2026-11-13T13:24:46.2406976Z Unable to strip the following libraries, packaging them as they are: libimage_processing_util_jni.so, libmlkit_google_ocr_pipeline.so, libsurface_util_jni.so. Run with --info option to learn more.
+2026-11-13T13:24:52.0385686Z 
+2026-11-13T13:24:52.0406186Z > Task :capacitor-android:extractDebugAnnotations
+2026-11-13T13:24:52.1366397Z > Task :capacitor-android:extractDeepLinksForAarDebug
+2026-11-13T13:24:52.1405844Z > Task :capacitor-android:mergeDebugGeneratedProguardFiles
+2026-11-13T13:24:52.1445849Z > Task :capacitor-android:mergeDebugConsumerProguardFiles
+2026-11-13T13:24:52.1465854Z > Task :capacitor-android:prepareDebugArtProfile
+2026-11-13T13:24:52.1505821Z > Task :capacitor-android:prepareLintJarForPublish
+2026-11-13T13:24:52.1525719Z > Task :capacitor-android:mergeDebugJavaResource
+2026-11-13T13:24:52.2366344Z > Task :capacitor-android:syncDebugLibJars
+2026-11-13T13:24:52.3372147Z > Task :capacitor-android:bundleDebugAar
+2026-11-13T13:24:52.3386875Z > Task :capacitor-android:assembleDebug
+2026-11-13T13:24:52.3406038Z > Task :capacitor-app:checkDebugAarMetadata
+2026-11-13T13:24:52.3435876Z > Task :capacitor-app:stripDebugDebugSymbols NO-SOURCE
+2026-11-13T13:24:52.3436820Z > Task :capacitor-app:copyDebugJniLibsProjectAndLocalJars
+2026-11-13T13:24:52.4366224Z > Task :capacitor-app:extractDebugAnnotations
+2026-11-13T13:24:52.4387985Z > Task :capacitor-app:extractDeepLinksForAarDebug
+2026-11-13T13:24:52.4416454Z > Task :capacitor-app:mergeDebugGeneratedProguardFiles
+2026-11-13T13:24:52.4417815Z > Task :capacitor-app:mergeDebugConsumerProguardFiles
+2026-11-13T13:24:52.4485919Z > Task :capacitor-app:prepareDebugArtProfile
+2026-11-13T13:24:52.4495845Z > Task :capacitor-app:prepareLintJarForPublish
+2026-11-13T13:24:52.4545822Z > Task :capacitor-app:mergeDebugJavaResource
+2026-11-13T13:24:52.4585876Z > Task :capacitor-app:syncDebugLibJars
+2026-11-13T13:24:52.5379191Z > Task :capacitor-app:bundleDebugAar
+2026-11-13T13:24:52.5384533Z > Task :capacitor-app:assembleDebug
+2026-11-13T13:24:53.6376619Z > Task :capacitor-cordova-android-plugins:checkDebugAarMetadata
+2026-11-13T13:24:53.6395995Z > Task :app:packageDebug
+2026-11-13T13:24:53.6405834Z > Task :app:createDebugApkListingFileRedirect
+2026-11-13T13:24:53.6425687Z > Task :app:assembleDebug
+2026-11-13T13:24:53.6447519Z > Task :capacitor-cordova-android-plugins:stripDebugDebugSymbols NO-SOURCE
+2026-11-13T13:24:53.6466318Z > Task :capacitor-cordova-android-plugins:copyDebugJniLibsProjectAndLocalJars
+2026-11-13T13:24:53.9392715Z > Task :capacitor-cordova-android-plugins:extractDebugAnnotations
+2026-11-13T13:24:53.9416730Z > Task :capacitor-cordova-android-plugins:extractDeepLinksForAarDebug
+2026-11-13T13:24:53.9419434Z > Task :capacitor-cordova-android-plugins:mergeDebugGeneratedProguardFiles
+2026-11-13T13:24:53.9436884Z > Task :capacitor-cordova-android-plugins:mergeDebugConsumerProguardFiles
+2026-11-13T13:24:53.9455752Z > Task :capacitor-cordova-android-plugins:prepareDebugArtProfile
+2026-11-13T13:24:53.9475992Z > Task :capacitor-cordova-android-plugins:prepareLintJarForPublish
+2026-11-13T13:24:54.0426787Z > Task :capacitor-cordova-android-plugins:mergeDebugJavaResource
+2026-11-13T13:24:54.0428135Z > Task :capacitor-filesystem:checkDebugAarMetadata
+2026-11-13T13:24:54.0466065Z > Task :capacitor-cordova-android-plugins:syncDebugLibJars
+2026-11-13T13:24:54.0486053Z > Task :capacitor-cordova-android-plugins:bundleDebugAar
+2026-11-13T13:24:54.0525825Z > Task :capacitor-cordova-android-plugins:assembleDebug
+2026-11-13T13:24:54.0546327Z > Task :capacitor-filesystem:stripDebugDebugSymbols NO-SOURCE
+2026-11-13T13:24:54.0585997Z > Task :capacitor-filesystem:copyDebugJniLibsProjectAndLocalJars
+2026-11-13T13:24:54.3386562Z > Task :capacitor-filesystem:extractDebugAnnotations
+2026-11-13T13:24:54.3411109Z > Task :capacitor-filesystem:extractDeepLinksForAarDebug
+2026-11-13T13:24:54.3454835Z > Task :capacitor-filesystem:mergeDebugGeneratedProguardFiles
+2026-11-13T13:24:54.3465967Z > Task :capacitor-filesystem:mergeDebugConsumerProguardFiles
+2026-11-13T13:24:54.4366689Z > Task :capacitor-filesystem:prepareDebugArtProfile
+2026-11-13T13:24:54.4380215Z > Task :capacitor-filesystem:prepareLintJarForPublish
+2026-11-13T13:24:54.4425905Z > Task :capacitor-filesystem:mergeDebugJavaResource
+2026-11-13T13:24:54.4438993Z > Task :capacitor-local-notifications:checkDebugAarMetadata
+2026-11-13T13:24:54.4450423Z > Task :capacitor-filesystem:syncDebugLibJars
+2026-11-13T13:24:54.4478654Z > Task :capacitor-filesystem:bundleDebugAar
+2026-11-13T13:24:54.4495866Z > Task :capacitor-filesystem:assembleDebug
+2026-11-13T13:24:54.4507759Z > Task :capacitor-local-notifications:stripDebugDebugSymbols NO-SOURCE
+2026-11-13T13:24:54.5391447Z > Task :capacitor-local-notifications:copyDebugJniLibsProjectAndLocalJars
+2026-11-13T13:24:54.5428647Z > Task :capacitor-local-notifications:extractDebugAnnotations
+2026-11-13T13:24:54.5476103Z > Task :capacitor-local-notifications:extractDeepLinksForAarDebug
+2026-11-13T13:24:54.5506003Z > Task :capacitor-local-notifications:mergeDebugGeneratedProguardFiles
+2026-11-13T13:24:54.5544536Z > Task :capacitor-local-notifications:mergeDebugConsumerProguardFiles
+2026-11-13T13:24:54.5565905Z > Task :capacitor-local-notifications:prepareDebugArtProfile
+2026-11-13T13:24:54.6376559Z > Task :capacitor-local-notifications:prepareLintJarForPublish
+2026-11-13T13:24:54.6385995Z > Task :capacitor-local-notifications:mergeDebugJavaResource
+2026-11-13T13:24:54.6417820Z > Task :capacitor-mlkit-barcode-scanning:checkDebugAarMetadata
+2026-11-13T13:24:54.6455916Z > Task :capacitor-local-notifications:syncDebugLibJars
+2026-11-13T13:24:54.6475915Z > Task :capacitor-local-notifications:bundleDebugAar
+2026-11-13T13:24:54.6476798Z > Task :capacitor-local-notifications:assembleDebug
+2026-11-13T13:24:54.6477781Z > Task :capacitor-mlkit-barcode-scanning:stripDebugDebugSymbols NO-SOURCE
+2026-11-13T13:24:54.6479002Z > Task :capacitor-mlkit-barcode-scanning:copyDebugJniLibsProjectAndLocalJars
+2026-11-13T13:24:54.7376424Z > Task :capacitor-mlkit-barcode-scanning:extractDebugAnnotations
+2026-11-13T13:24:54.7414830Z > Task :capacitor-mlkit-barcode-scanning:extractDeepLinksForAarDebug
+2026-11-13T13:24:54.7450597Z > Task :capacitor-mlkit-barcode-scanning:mergeDebugGeneratedProguardFiles
+2026-11-13T13:24:54.7451799Z > Task :capacitor-mlkit-barcode-scanning:mergeDebugConsumerProguardFiles
+2026-11-13T13:24:54.7452876Z > Task :capacitor-mlkit-barcode-scanning:prepareDebugArtProfile
+2026-11-13T13:24:54.7453899Z > Task :capacitor-mlkit-barcode-scanning:prepareLintJarForPublish
+2026-11-13T13:24:54.7454929Z > Task :capacitor-mlkit-barcode-scanning:mergeDebugJavaResource
+2026-11-13T13:24:54.7456367Z > Task :capacitor-share:checkDebugAarMetadata
+2026-11-13T13:24:54.7457236Z > Task :capacitor-mlkit-barcode-scanning:syncDebugLibJars
+2026-11-13T13:24:54.8376177Z > Task :capacitor-mlkit-barcode-scanning:bundleDebugAar
+2026-11-13T13:24:54.8395877Z > Task :capacitor-mlkit-barcode-scanning:assembleDebug
+2026-11-13T13:24:54.8415771Z > Task :capacitor-share:stripDebugDebugSymbols NO-SOURCE
+2026-11-13T13:24:54.8435817Z > Task :capacitor-share:copyDebugJniLibsProjectAndLocalJars
+2026-11-13T13:24:54.8455645Z > Task :capacitor-share:extractDebugAnnotations
+2026-11-13T13:24:54.8475666Z > Task :capacitor-share:extractDeepLinksForAarDebug
+2026-11-13T13:24:54.8495669Z > Task :capacitor-share:mergeDebugGeneratedProguardFiles
+2026-11-13T13:24:54.8501581Z > Task :capacitor-share:mergeDebugConsumerProguardFiles
+2026-11-13T13:24:54.8502505Z > Task :capacitor-share:prepareDebugArtProfile
+2026-11-13T13:24:54.9406360Z > Task :capacitor-share:prepareLintJarForPublish
+2026-11-13T13:24:54.9436097Z > Task :capacitor-share:mergeDebugJavaResource
+2026-11-13T13:24:54.9458186Z > Task :capacitor-share:syncDebugLibJars
+2026-11-13T13:24:54.9476791Z > Task :capacitor-share:bundleDebugAar
+2026-11-13T13:24:54.9485848Z > Task :capacitor-share:assembleDebug
+2026-11-13T13:24:54.9505788Z > Task :app:preDebugAndroidTestBuild SKIPPED
+2026-11-13T13:24:54.9525773Z > Task :app:bundleDebugClassesToCompileJar
+2026-11-13T13:24:54.9545739Z > Task :app:javaPreCompileDebugAndroidTest
+2026-11-13T13:24:55.4392186Z > Task :app:checkDebugAndroidTestAarMetadata
+2026-11-13T13:24:55.4422633Z > Task :app:processDebugAndroidTestNavigationResources
+2026-11-13T13:24:55.5368720Z > Task :app:compileDebugAndroidTestNavigationResources
+2026-11-13T13:24:55.5410127Z > Task :app:generateDebugAndroidTestResValues
+2026-11-13T13:24:55.5445866Z > Task :app:mapDebugAndroidTestSourceSetPaths
+2026-11-13T13:24:55.5455900Z > Task :app:generateDebugAndroidTestResources
+2026-11-13T13:24:55.5475875Z > Task :app:mergeDebugAndroidTestResources
+2026-11-13T13:24:55.6364879Z > Task :app:processDebugAndroidTestManifest
+2026-11-13T13:24:55.7365790Z > Task :app:mergeDebugAndroidTestShaders
+2026-11-13T13:24:55.7382033Z > Task :app:compileDebugAndroidTestShaders NO-SOURCE
+2026-11-13T13:24:55.7405847Z > Task :app:generateDebugAndroidTestAssets UP-TO-DATE
+2026-11-13T13:24:55.7425634Z > Task :app:mergeDebugAndroidTestAssets
+2026-11-13T13:24:55.7426497Z > Task :app:compressDebugAndroidTestAssets
+2026-11-13T13:24:55.7445762Z > Task :app:desugarDebugAndroidTestFileDependencies
+2026-11-13T13:24:55.7465811Z > Task :app:processDebugAndroidTestJavaRes NO-SOURCE
+2026-11-13T13:24:55.9364654Z > Task :app:processDebugAndroidTestResources
+2026-11-13T13:24:56.0366414Z > Task :app:mergeDebugAndroidTestJavaResource
+2026-11-13T13:24:57.0376244Z > Task :app:compileDebugAndroidTestJavaWithJavac
+2026-11-13T13:24:57.0377220Z > Task :app:dexBuilderDebugAndroidTest
+2026-11-13T13:25:00.3373173Z > Task :app:mergeDebugAndroidTestGlobalSynthetics
+2026-11-13T13:25:00.3403989Z > Task :app:checkDebugAndroidTestDuplicateClasses
+2026-11-13T13:25:00.3415911Z > Task :app:mergeDebugAndroidTestJniLibFolders
+2026-11-13T13:25:00.4366285Z > Task :app:mergeLibDexDebugAndroidTest
+2026-11-13T13:25:00.7365246Z > Task :app:mergeExtDexDebugAndroidTest
+2026-11-13T13:25:00.7375730Z > Task :app:mergeProjectDexDebugAndroidTest
+2026-11-13T13:25:00.8396270Z > Task :app:mergeDebugAndroidTestNativeLibs NO-SOURCE
+2026-11-13T13:25:00.8435838Z > Task :app:stripDebugAndroidTestDebugSymbols NO-SOURCE
+2026-11-13T13:25:00.8475798Z > Task :app:validateSigningDebugAndroidTest
+2026-11-13T13:25:00.8515812Z > Task :app:writeDebugAndroidTestSigningConfigVersions
+2026-11-13T13:25:00.8555931Z > Task :capacitor-android:preDebugAndroidTestBuild UP-TO-DATE
+2026-11-13T13:25:00.8606120Z > Task :capacitor-android:javaPreCompileDebugAndroidTest
+2026-11-13T13:25:01.1376388Z > Task :app:packageDebugAndroidTest
+2026-11-13T13:25:01.1416063Z > Task :capacitor-android:checkDebugAndroidTestAarMetadata
+2026-11-13T13:25:01.1456006Z > Task :app:createDebugAndroidTestApkListingFileRedirect
+2026-11-13T13:25:01.1496230Z > Task :app:assembleDebugAndroidTest
+2026-11-13T13:25:01.1516041Z > Task :capacitor-android:processDebugAndroidTestNavigationResources
+2026-11-13T13:25:01.1555979Z > Task :capacitor-android:compileDebugAndroidTestNavigationResources
+2026-11-13T13:25:01.1575864Z > Task :capacitor-android:generateDebugAndroidTestResValues
+2026-11-13T13:25:01.1596093Z > Task :capacitor-android:mapDebugAndroidTestSourceSetPaths
+2026-11-13T13:25:01.1636124Z > Task :capacitor-android:generateDebugAndroidTestResources
+2026-11-13T13:25:01.9386428Z > Task :capacitor-android:processDebugAndroidTestManifest
+2026-11-13T13:25:02.0387870Z > Task :capacitor-android:mergeDebugAndroidTestShaders
+2026-11-13T13:25:02.0396352Z > Task :capacitor-android:compileDebugAndroidTestShaders NO-SOURCE
+2026-11-13T13:25:02.0407116Z > Task :capacitor-android:generateDebugAndroidTestAssets UP-TO-DATE
+2026-11-13T13:25:02.0426814Z > Task :capacitor-android:mergeDebugAndroidTestAssets
+2026-11-13T13:25:02.0441717Z > Task :capacitor-android:compressDebugAndroidTestAssets
+2026-11-13T13:25:02.0460541Z > Task :capacitor-android:desugarDebugAndroidTestFileDependencies
+2026-11-13T13:25:02.0478808Z > Task :capacitor-android:processDebugAndroidTestJavaRes NO-SOURCE
+2026-11-13T13:25:02.1365916Z > Task :capacitor-android:mergeDebugAndroidTestResources
+2026-11-13T13:25:02.6364927Z > Task :capacitor-android:mergeDebugAndroidTestJavaResource
+2026-11-13T13:25:02.6393169Z > Task :capacitor-android:checkDebugAndroidTestDuplicateClasses
+2026-11-13T13:25:07.7386328Z > Task :capacitor-android:processDebugAndroidTestResources
+2026-11-13T13:25:11.0372580Z > Task :capacitor-android:compileDebugAndroidTestJavaWithJavac NO-SOURCE
+2026-11-13T13:25:11.4376350Z > Task :capacitor-android:dexBuilderDebugAndroidTest
+2026-11-13T13:25:13.7364957Z > Task :capacitor-android:mergeDebugAndroidTestGlobalSynthetics
+2026-11-13T13:25:13.7366611Z > Task :capacitor-android:mergeExtDexDebugAndroidTest
+2026-11-13T13:25:13.8366272Z > Task :capacitor-android:mergeLibDexDebugAndroidTest
+2026-11-13T13:25:13.8384303Z > Task :capacitor-android:mergeDebugAndroidTestJniLibFolders
+2026-11-13T13:25:13.8406037Z > Task :capacitor-android:mergeDebugAndroidTestNativeLibs NO-SOURCE
+2026-11-13T13:25:13.8423428Z > Task :capacitor-android:mergeProjectDexDebugAndroidTest
+2026-11-13T13:25:13.8450381Z > Task :capacitor-android:stripDebugAndroidTestDebugSymbols NO-SOURCE
+2026-11-13T13:25:14.8385393Z > Task :capacitor-android:validateSigningDebugAndroidTest
+2026-11-13T13:25:14.8436097Z > Task :capacitor-android:writeDebugAndroidTestSigningConfigVersions
+2026-11-13T13:25:14.8455911Z > Task :capacitor-app:preDebugAndroidTestBuild UP-TO-DATE
+2026-11-13T13:25:14.9365392Z > Task :capacitor-app:javaPreCompileDebugAndroidTest
+2026-11-13T13:25:14.9382816Z > Task :capacitor-app:checkDebugAndroidTestAarMetadata
+2026-11-13T13:25:14.9398125Z > Task :capacitor-app:processDebugAndroidTestNavigationResources
+2026-11-13T13:25:14.9405958Z > Task :capacitor-app:compileDebugAndroidTestNavigationResources
+2026-11-13T13:25:14.9426006Z > Task :capacitor-app:generateDebugAndroidTestResValues
+2026-11-13T13:25:14.9445943Z > Task :capacitor-app:mapDebugAndroidTestSourceSetPaths
+2026-11-13T13:25:14.9465942Z > Task :capacitor-app:generateDebugAndroidTestResources
+2026-11-13T13:25:15.3367344Z > Task :capacitor-android:packageDebugAndroidTest
+2026-11-13T13:25:15.3405242Z > Task :capacitor-android:createDebugAndroidTestApkListingFileRedirect
+2026-11-13T13:25:15.3425975Z > Task :capacitor-android:assembleDebugAndroidTest
+2026-11-13T13:25:15.4386755Z > Task :capacitor-app:processDebugAndroidTestManifest
+2026-11-13T13:25:15.5365515Z > Task :capacitor-app:mergeDebugAndroidTestShaders
+2026-11-13T13:25:15.5386658Z > Task :capacitor-app:compileDebugAndroidTestShaders NO-SOURCE
+2026-11-13T13:25:15.5402365Z > Task :capacitor-app:generateDebugAndroidTestAssets UP-TO-DATE
+2026-11-13T13:25:15.5410615Z > Task :capacitor-app:mergeDebugAndroidTestAssets
+2026-11-13T13:25:15.5464803Z > Task :capacitor-app:compressDebugAndroidTestAssets
+2026-11-13T13:25:15.6410306Z > Task :capacitor-app:desugarDebugAndroidTestFileDependencies
+2026-11-13T13:25:15.6446085Z > Task :capacitor-app:processDebugAndroidTestJavaRes NO-SOURCE
+2026-11-13T13:25:15.6465904Z > Task :capacitor-app:mergeDebugAndroidTestResources
+2026-11-13T13:25:16.0386450Z > Task :capacitor-app:mergeDebugAndroidTestJavaResource
+2026-11-13T13:25:16.0432848Z > Task :capacitor-app:checkDebugAndroidTestDuplicateClasses
+2026-11-13T13:25:16.1396380Z > Task :capacitor-app:processDebugAndroidTestResources
+2026-11-13T13:25:16.1416318Z > Task :capacitor-app:compileDebugAndroidTestJavaWithJavac NO-SOURCE
+2026-11-13T13:25:16.3374289Z > Task :capacitor-app:dexBuilderDebugAndroidTest
+2026-11-13T13:25:18.5386428Z > Task :capacitor-app:mergeDebugAndroidTestGlobalSynthetics
+2026-11-13T13:25:18.5435481Z > Task :capacitor-app:mergeExtDexDebugAndroidTest
+2026-11-13T13:25:18.6378117Z > Task :capacitor-app:mergeLibDexDebugAndroidTest
+2026-11-13T13:25:18.6405982Z > Task :capacitor-app:mergeDebugAndroidTestJniLibFolders
+2026-11-13T13:25:18.6419767Z > Task :capacitor-app:mergeDebugAndroidTestNativeLibs NO-SOURCE
+2026-11-13T13:25:18.6445907Z > Task :capacitor-app:stripDebugAndroidTestDebugSymbols NO-SOURCE
+2026-11-13T13:25:18.6466282Z > Task :capacitor-app:validateSigningDebugAndroidTest
+2026-11-13T13:25:18.7366658Z > Task :capacitor-app:writeDebugAndroidTestSigningConfigVersions
+2026-11-13T13:25:18.7375982Z > Task :capacitor-cordova-android-plugins:preDebugAndroidTestBuild UP-TO-DATE
+2026-11-13T13:25:18.7386358Z > Task :capacitor-app:mergeProjectDexDebugAndroidTest
+2026-11-13T13:25:18.7406877Z > Task :capacitor-cordova-android-plugins:javaPreCompileDebugAndroidTest
+2026-11-13T13:25:18.7427328Z > Task :capacitor-cordova-android-plugins:checkDebugAndroidTestAarMetadata
+2026-11-13T13:25:18.7446280Z > Task :capacitor-cordova-android-plugins:processDebugAndroidTestNavigationResources
+2026-11-13T13:25:18.7466329Z > Task :capacitor-cordova-android-plugins:compileDebugAndroidTestNavigationResources
+2026-11-13T13:25:18.7467891Z > Task :capacitor-cordova-android-plugins:generateDebugAndroidTestResValues
+2026-11-13T13:25:18.8366790Z > Task :capacitor-cordova-android-plugins:mapDebugAndroidTestSourceSetPaths
+2026-11-13T13:25:18.8384322Z > Task :capacitor-cordova-android-plugins:generateDebugAndroidTestResources
+2026-11-13T13:25:19.6364593Z > Task :capacitor-app:packageDebugAndroidTest
+2026-11-13T13:25:19.6376191Z > Task :capacitor-app:createDebugAndroidTestApkListingFileRedirect
+2026-11-13T13:25:19.6395807Z > Task :capacitor-app:assembleDebugAndroidTest
+2026-11-13T13:25:19.8367586Z > Task :capacitor-cordova-android-plugins:processDebugAndroidTestManifest
+2026-11-13T13:25:19.8384539Z > Task :capacitor-cordova-android-plugins:mergeDebugAndroidTestShaders
+2026-11-13T13:25:19.8401137Z > Task :capacitor-cordova-android-plugins:compileDebugAndroidTestShaders NO-SOURCE
+2026-11-13T13:25:19.8417118Z > Task :capacitor-cordova-android-plugins:generateDebugAndroidTestAssets UP-TO-DATE
+2026-11-13T13:25:20.0377703Z > Task :capacitor-cordova-android-plugins:mergeDebugAndroidTestResources
+2026-11-13T13:25:20.0396202Z > Task :capacitor-cordova-android-plugins:mergeDebugAndroidTestAssets
+2026-11-13T13:25:20.2388693Z > Task :capacitor-cordova-android-plugins:compressDebugAndroidTestAssets
+2026-11-13T13:25:20.2390233Z > Task :capacitor-cordova-android-plugins:desugarDebugAndroidTestFileDependencies
+2026-11-13T13:25:20.2406177Z > Task :capacitor-cordova-android-plugins:processDebugAndroidTestJavaRes NO-SOURCE
+2026-11-13T13:25:20.7365411Z > Task :capacitor-cordova-android-plugins:processDebugAndroidTestResources
+2026-11-13T13:25:20.7376193Z > Task :capacitor-cordova-android-plugins:compileDebugAndroidTestJavaWithJavac NO-SOURCE
+2026-11-13T13:25:20.7396135Z > Task :capacitor-cordova-android-plugins:mergeDebugAndroidTestJavaResource
+2026-11-13T13:25:20.8364797Z > Task :capacitor-cordova-android-plugins:dexBuilderDebugAndroidTest
+2026-11-13T13:25:27.5369605Z > Task :capacitor-cordova-android-plugins:mergeDebugAndroidTestGlobalSynthetics
+2026-11-13T13:25:27.5386428Z > Task :capacitor-cordova-android-plugins:mergeDebugAndroidTestJniLibFolders
+2026-11-13T13:25:27.5406203Z > Task :capacitor-cordova-android-plugins:checkDebugAndroidTestDuplicateClasses FAILED
+2026-11-13T13:25:27.6366049Z > Task :capacitor-cordova-android-plugins:mergeDebugAndroidTestNativeLibs NO-SOURCE
+2026-11-13T13:25:27.6376604Z w: Detected multiple Kotlin daemon sessions at 
+2026-11-13T13:25:27.7383821Z 
+2026-11-13T13:25:27.7383869Z 
+2026-11-13T13:25:27.7384887Z FAILURE: Build failed with an exception.
+2026-11-13T13:25:27.7386435Z [Incubating] Problems report is available at: file:///home/runner/work/koc/koc/android/build/reports/problems/problems-report.html
+2026-11-13T13:25:27.7405539Z 
+2026-11-13T13:25:27.7405584Z 
+2026-11-13T13:25:27.7406117Z * What went wrong:
+2026-11-13T13:25:27.7407143Z Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+2026-11-13T13:25:27.7426433Z Execution failed for task ':capacitor-cordova-android-plugins:checkDebugAndroidTestDuplicateClasses'.
+2026-11-13T13:25:27.7427240Z 
+2026-11-13T13:25:27.7446416Z > A failure occurred while executing com.android.build.gradle.internal.tasks.CheckDuplicatesRunnable
+2026-11-13T13:25:27.7448258Z You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+2026-11-13T13:25:27.7467549Z    > Duplicate class kotlin.collections.jdk8.CollectionsJDK8Kt found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+2026-11-13T13:25:27.7469483Z 
+2026-11-13T13:25:27.7497466Z      Duplicate class kotlin.internal.jdk7.JDK7PlatformImplementations found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk7-1.6.21.jar -> kotlin-stdlib-jdk7-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.21)
+2026-11-13T13:25:27.7500829Z For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+2026-11-13T13:25:27.7504506Z      Duplicate class kotlin.internal.jdk7.JDK7PlatformImplementations$ReflectSdkVersion found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk7-1.6.21.jar -> kotlin-stdlib-jdk7-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.21)
+2026-11-13T13:25:27.7507085Z 346 actionable tasks: 346 executed
+2026-11-13T13:25:27.7527894Z      Duplicate class kotlin.internal.jdk8.JDK8PlatformImplementations found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+2026-11-13T13:25:27.7548614Z      Duplicate class kotlin.internal.jdk8.JDK8PlatformImplementations$ReflectSdkVersion found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+2026-11-13T13:25:27.7567672Z      Duplicate class kotlin.io.path.ExperimentalPathApi found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk7-1.6.21.jar -> kotlin-stdlib-jdk7-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.21)
+2026-11-13T13:25:27.7587494Z      Duplicate class kotlin.io.path.PathRelativizer found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk7-1.6.21.jar -> kotlin-stdlib-jdk7-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.21)
+2026-11-13T13:25:27.7607667Z      Duplicate class kotlin.io.path.PathsKt found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk7-1.6.21.jar -> kotlin-stdlib-jdk7-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.21)
+2026-11-13T13:25:27.7627447Z      Duplicate class kotlin.io.path.PathsKt__PathReadWriteKt found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk7-1.6.21.jar -> kotlin-stdlib-jdk7-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.21)
+2026-11-13T13:25:27.7647439Z      Duplicate class kotlin.io.path.PathsKt__PathUtilsKt found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk7-1.6.21.jar -> kotlin-stdlib-jdk7-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.21)
+2026-11-13T13:25:27.7667293Z      Duplicate class kotlin.jdk7.AutoCloseableKt found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk7-1.6.21.jar -> kotlin-stdlib-jdk7-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.21)
+2026-11-13T13:25:27.7671351Z      Duplicate class kotlin.jvm.jdk8.JvmRepeatableKt found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+2026-11-13T13:25:27.7697482Z      Duplicate class kotlin.random.jdk8.PlatformThreadLocalRandom found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+2026-11-13T13:25:27.7717270Z      Duplicate class kotlin.streams.jdk8.StreamsKt found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+2026-11-13T13:25:27.7737610Z      Duplicate class kotlin.streams.jdk8.StreamsKt$asSequence$$inlined$Sequence$1 found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+2026-11-13T13:25:27.7757398Z      Duplicate class kotlin.streams.jdk8.StreamsKt$asSequence$$inlined$Sequence$2 found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+2026-11-13T13:25:27.7777557Z      Duplicate class kotlin.streams.jdk8.StreamsKt$asSequence$$inlined$Sequence$3 found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+2026-11-13T13:25:27.7782014Z      Duplicate class kotlin.streams.jdk8.StreamsKt$asSequence$$inlined$Sequence$4 found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+2026-11-13T13:25:27.7807277Z      Duplicate class kotlin.text.jdk8.RegexExtensionsJDK8Kt found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+2026-11-13T13:25:27.7827461Z      Duplicate class kotlin.time.jdk8.DurationConversionsJDK8Kt found in modules kotlin-stdlib-1.8.22.jar -> kotlin-stdlib-1.8.22 (org.jetbrains.kotlin:kotlin-stdlib:1.8.22) and kotlin-stdlib-jdk8-1.6.21.jar -> kotlin-stdlib-jdk8-1.6.21 (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21)
+2026-11-13T13:25:27.7845595Z      
+2026-11-13T13:25:27.7865928Z      Learn how to fix dependency resolution errors at https://d.android.com/r/tools/classpath-sync-errors
+2026-11-13T13:25:27.7866814Z 
+2026-11-13T13:25:27.7885658Z * Try:
+2026-11-13T13:25:27.7926306Z > Run with --stacktrace option to get the stack trace.
+2026-11-13T13:25:27.7945839Z > Run with --info or --debug option to get more log output.
+2026-11-13T13:25:27.7947005Z > Run with --scan to get full insights.
+2026-11-13T13:25:27.7965841Z > Get more help at https://help.gradle.org.
+2026-11-13T13:25:27.7985366Z 
+2026-11-13T13:25:27.8005567Z BUILD FAILED in 4m 37s
+2026-11-13T13:25:28.3136738Z ##[error]Process completed with exit code 1.
+2026-11-13T13:25:28.3311764Z Post job cleanup.
+2026-11-13T13:25:28.4397984Z Post job cleanup.
+2026-11-13T13:25:28.6626211Z [command]/usr/bin/git version
+2026-11-13T13:25:28.6665644Z git version 2.56.1
+2026-11-13T13:25:28.6786399Z Temporarily overriding HOME='/home/runner/work/_temp/2edeafc1-4da7-4d72-88ac-947ac0bccf54' before making global git config changes
+2026-11-13T13:25:28.6787915Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-13T13:25:28.6812389Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/koc/koc
+2026-11-13T13:25:28.6898496Z Removing SSH command configuration
+2026-11-13T13:25:28.6936310Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-13T13:25:28.7045370Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-13T13:25:28.7155673Z Removing HTTP extra header
+2026-11-13T13:25:28.7156878Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-13T13:25:28.7180220Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-13T13:25:28.7539225Z Removing includeIf entries pointing to credentials config files
+2026-11-13T13:25:28.7540591Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-13T13:25:28.7596038Z includeif.gitdir:/home/runner/work/koc/koc/.git.path
+2026-11-13T13:25:28.7615983Z includeif.gitdir:/home/runner/work/koc/koc/.git/worktrees/*.path
+2026-11-13T13:25:28.7617345Z includeif.gitdir:/github/workspace/.git.path
+2026-11-13T13:25:28.7635884Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-13T13:25:28.7656319Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/koc/koc/.git.path
+2026-11-13T13:25:28.7672483Z /home/runner/work/_temp/git-credentials-b7756d9b-0ffb-4447-9294-9e63eaf95203.config
+2026-11-13T13:25:28.7716985Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/koc/koc/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-b7756d9b\-0ffb\-4447\-9294\-9e63eaf95203\.config
+2026-11-13T13:25:28.7765517Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/koc/koc/.git/worktrees/*.path
+2026-11-13T13:25:28.7773902Z /home/runner/work/_temp/git-credentials-b7756d9b-0ffb-4447-9294-9e63eaf95203.config
+2026-11-13T13:25:28.7817678Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/koc/koc/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-b7756d9b\-0ffb\-4447\-9294\-9e63eaf95203\.config
+2026-11-13T13:25:28.7865688Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-11-13T13:25:28.7886180Z /github/runner_temp/git-credentials-b7756d9b-0ffb-4447-9294-9e63eaf95203.config
+2026-11-13T13:25:28.7913189Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-b7756d9b\-0ffb\-4447\-9294\-9e63eaf95203\.config
+2026-11-13T13:25:28.7962661Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-13T13:25:28.7976134Z /github/runner_temp/git-credentials-b7756d9b-0ffb-4447-9294-9e63eaf95203.config
+2026-11-13T13:25:28.8023628Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-b7756d9b\-0ffb\-4447\-9294\-9e63eaf95203\.config
+2026-11-13T13:25:28.8066593Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-13T13:25:28.8483134Z Removing credentials config '/home/runner/work/_temp/git-credentials-b7756d9b-0ffb-4447-9294-9e63eaf95203.config'
+2026-11-13T13:25:28.8700021Z Cleaning up orphan processes
+2026-11-13T13:25:28.9053569Z Terminate orphan process: pid (4543) (java)
+2026-11-13T13:25:28.9099471Z Terminate orphan process: pid (4577) (java)

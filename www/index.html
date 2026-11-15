@@ -36,14 +36,12 @@ if (typeof window.plugin === "undefined") {window.plugin = function(name) {retur
   <button data-tab="today"><span class="ic" data-ic="today"></span>Bugün</button>
   <button data-tab="gym"><span class="ic" data-ic="gym"></span>Salon</button>
   <button data-tab="trend"><span class="ic" data-ic="trend"></span>Trend</button>
-  <button data-tab="coach"><span class="ic" data-ic="coach"></span>Rehber</button>
   <button data-tab="more"><span class="ic" data-ic="more"></span>Daha fazla</button>
 </div></nav>
 <script>/* With large text the menu labels wrap and the menu grows; fixed-position parts move up by --nx. */
 {const n=document.querySelector("nav .in");if(window.ResizeObserver)new ResizeObserver(()=>document.documentElement.style.setProperty("--nx",Math.max(0,n.getBoundingClientRect().height-parseFloat(getComputedStyle(n.firstElementChild).minHeight))+"px")).observe(n)}</script>
 <div id="composer" hidden role="region" aria-label="Rehber'e yaz">
   <div class="chiprow"><button class="chip" data-act="water"><span data-ic="water"></span> <span id="cglass">+250</span></button><button class="chip" data-act="food"><span data-ic="food"></span> Yemek</button><button class="chip" data-act="weight"><span data-ic="weight"></span> Kilo</button><button class="chip" data-act="exercise"><span data-ic="exercise"></span> Spor</button></div>
-  <div class="cin"><button id="cvoice" data-c="coachvoice" aria-label="Mesajı sesle yaz" title="Mesajı sesle yaz" data-ic="mic"></button><input id="cmsg" aria-label="Rehber'e yaz" placeholder="Rehber'e yaz" autocomplete="off" maxlength="600"><button id="csend" data-c="send" aria-label="Gönder" data-ic="send"></button></div>
   <p id="cvoice-status" class="cvoice-status" role="status" aria-live="polite" hidden></p>
 </div>
 <div id="scrim"></div>
@@ -90,12 +88,9 @@ if (typeof window.plugin === "undefined") {window.plugin = function(name) {retur
 <script src="modules/habits/habitlib.js"></script>
 <script src="modules/habits/ramcities.js"></script>
 <script src="modules/habits/ramadanlib.js"></script>
-<script src="modules/coach/insightlib.js"></script>
 <script src="kernel/piilib.js"></script>
-<script src="modules/coach/coachlib.js"></script>
 <script src="modules/nutrition/menulocal.js"></script>
 <script src="modules/insights/goallib.js"></script>
-<script src="modules/coach/coach.js"></script>
 <script src="modules/nutrition/recipeui.js"></script>
 <script src="modules/labs/labui.js"></script>
 <script src="modules/nutrition/ocrui.js"></script>
@@ -137,7 +132,6 @@ if (typeof window.plugin === "undefined") {window.plugin = function(name) {retur
 <script src="modules/vitals/index.js"></script>
 <script src="modules/labs/index.js"></script>
 <script src="modules/habits/index.js"></script>
-<script src="modules/coach/index.js"></script>
 <script src="modules/measures/index.js"></script>
 <script src="modules/nutrition/index.js"></script>
 <script src="modules/pulse/index.js"></script>
