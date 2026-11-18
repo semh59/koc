@@ -37,8 +37,6 @@ function sheetPrivacy(){
     <li><b>Google Drive</b>: yalnızca sen yedeği paylaşım ekranından Drive'a gönderirsen. Yedek parolayla şifrelenir.</li>
   </ul>
   ${netLogHtml()}</details>
-  <details class="acc"><summary>Rehber açık rıza metni</summary>${consentHtml()}</details>
-  ${swRow('data-pv="prev"',st.piiPrev,"Rehber'e giden metni önizle","Açıkken her gönderimden önce giden tam metni görür, Gönder ya da Vazgeç dersin.")}
   <div class="banner info"><p class="m0">Yemek arama diktesi: ${st.foodVoiceConsent?"açık":"kapalı"}</p><button class="btn ghost" data-pv="foodvoice-revoke">Yemek diktesi rızasını geri al</button></div>
   <h4 class="grp">Verilerini sil</h4>
   <p class="mut sm">Kategori başına silinir, geri alınamaz. <button class="lnk ib wa" data-act="backup">Önce yedek al</button></p>

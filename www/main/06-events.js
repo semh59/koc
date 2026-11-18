@@ -110,13 +110,11 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden)return;if(!
 
 document.querySelectorAll("[data-ic]").forEach(e=>e.innerHTML=Icons.svg(e.dataset.ic));
 render();
-cPlateauCheck();
 if(loadNote)toast(loadNote);
 quickIngest();
 if(!obNeeded())noticeGate();
 if(!obNeeded())scheduleReminders().then(setNotif); // the first run asks for notifications only after the intro
 setInterval(gTick,1000);
-const keysP=keysInit().then(render);
 abBoot();
 if(S.settings.stepsOn&&SC()){SC().start().catch(()=>{});stepsSync();motionBoot()}
 setInterval(stepsTick,STEP_POLL);
