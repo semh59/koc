@@ -18,8 +18,6 @@ const {boot}=require("./html");
   ok("the drink chip sits in one group with the water chip",q('.qpair [data-chip="water"]')&&q('.qpair [data-chip="drink"]'));
   fresh("S.settings.glass=150");
   ok("the water chip label follows the glass size",q('[data-chip="water"]').textContent.includes("+150 ml"));
-  ev("tab='coach';render()");
-  ok("the Coach composer water chip follows the glass size",q("#cglass").textContent==="+150");
   fresh("add('food',300,'Çorba');for(let i=1;i<=4;i++)add('note',null,'Not '+i);S.entries.at(-1).time='23:59'");
   ok("Today has no entry list, one line: the count and the latest entry",!q("#view .log")&&q('[data-hg="focus:"]').textContent.includes("Bugün: 5 kayıt · son: Not 4"),q('[data-hg="focus:"]')?.textContent);
   ev("S.entries[0].time='23:59';S.entries.at(-1).time='00:00';render()");

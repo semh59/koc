@@ -59,7 +59,7 @@ on("stepshide",()=>{S.settings.stepWarnDay=calKey();save();render()});
 on("profile",()=>{tab="settings-profile";render();window.scrollTo(0,0)});
 on("health",()=>{
   const r=risk();
-  openSheet(`<h3>Sağlık notların</h3><div class="lbl">Güvenlik frenin bilmesi gerekenler. Yalnız telefonda durur, Rehber'e gönderilmez.</div>
+  openSheet(`<h3>Sağlık notların</h3><div class="lbl">Güvenlik frenin bilmesi gerekenler. Yalnız telefonda durur.</div>
   ${swRow('id="hpg"',r.pregnant,"Hamileyim")}${swRow('id="hnu"',r.nursing,"Emziriyorum")}
   ${r.ed?`<p class="hint">Yeme düzeniyle ilgili bir işaret var: kalori açığı, oruç ve program önerileri kapalı. Bu işareti uygulamadan kaldıramazsın; hekimine ya da diyetisyenine danış.</p>`:swRow('id="hed"',false,"Yeme bozukluğu geçmişim var")}
   <label class="lbl" for="hn">Hastalık, ilaç ve diğer notlar</label><textarea class="in" id="hn" maxlength="500">${esc(S.settings.healthNote)}</textarea><button class="btn" data-go="health">Kaydet</button>`);
@@ -85,7 +85,7 @@ on("shownums",()=>{trendNums=!trendNums;render()});
 on("recentson",()=>{S.settings.hideRecents=true;S.settings.recentsAsked=true;save();recentsSync();render()});
 on("recentsno",()=>{S.settings.recentsAsked=true;save();render()});
 on("keymissok",()=>{S.settings.keyMiss=false;save();render()});
-on("reset",()=>{confirmSheet({title:"Tüm veriler silinsin mi?",body:`Tüm kayıtlar, güvenlik kopyası, kayıtlı Rehber anahtarları ve kayıtlı yedek parolası silinecek. Paylaştığın dosyalar, Drive'a gönderdiklerin ve yedek klasöründeki dosyalar silinmez. Bu geri alınamaz. ${bkLast()}. Önce yedek al: Ayarlar > Veri ve yedek > Yedek al. Devam edilsin mi?`,ok:"Hepsini sil",danger:true}).then(ok=>{if(!ok)return;
+on("reset",()=>{confirmSheet({title:"Tüm veriler silinsin mi?",body:`Tüm kayıtlar, güvenlik kopyası, kayıtlı yedek parolası silinecek. Paylaştığın dosyalar, Drive'a gönderdiklerin ve yedek klasöründeki dosyalar silinmez. Bu geri alınamaz. ${bkLast()}. Önce yedek al: Ayarlar > Veri ve yedek > Yedek al. Devam edilsin mi?`,ok:"Hepsini sil",danger:true}).then(ok=>{if(!ok)return;
   chain(S.settings.motionOn?motionStopAll():0,()=>chain(phClear(),photosOk=>chain(nativeWipe(["Motion","MedWake","Widget","QuickLog"]),nativeOk=>{
     if(!nativeOk)toast(NATIVE_FAIL);
     if(!photosOk||!nativeOk)return;

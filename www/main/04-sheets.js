@@ -7,7 +7,7 @@ let sheetFrom=null,sheetEnd=null;
 const sheetDone=ok=>{const e=sheetEnd;sheetEnd=null;if(e)e(ok)};
 function openSheet(html){
   if(typeof foodVoiceStop==="function")foodVoiceStop();
-  if(typeof coachVoiceStop==="function")coachVoiceStop();
+  
   Units.reset();sheetDone(false);$("#toast").classList.remove("on");const s=$("#sheet");
   if(!s.classList.contains("on"))sheetFrom=document.activeElement;
   s.innerHTML=`<div class="grab"></div><button class="shx" data-shx aria-label="Pencereyi kapat">${Icons.svg("x")}</button>${html}`;
@@ -243,7 +243,10 @@ function goTpl(){
 }
 let curFood=null,curPor=0,foodAskQ="";
 const allFoods=()=>Nutrition.my().map(m=>Object.assign({n:m.n,k:m.k,u:m.u||[["1 porsiyon",100]],portion:m.portion===true,my:true,b:m.b,src:m.src},...NUTR.map(k=>({[k]:m[k]==null?null:m[k]})))).concat(Nutrition.recipes().map(LogLib.recipeFood),FOODS);
-const foodListHtml=q=>{const L=allFoods(),ask=q.trim().length>=2?`<button class="prow" data-c="askfood"><span class="grow"><b>"${esc(q.trim())}" için Rehber'e sor</b><span class="mut sm">Yapay zekâ tahmin eder, sonra listene ekleyebilirsin</span></span><span class="aic" aria-hidden="true">${Icons.svg("sparkle")}</span></button>`:"";return foodSearch(q,8,L).map(i=>{const f=L[i];return `<div class="prow"><button class="grow pbtn" data-food="${i}"><span class="grow"><b>${esc(f.n)}</b><span class="mut sm">${f.rec?`Tarifim, 1 porsiyon: ${Math.round(f.k*f.u[0][1]/100)} kcal`:f.o?`Öğün, ${esc(f.u[0][0])}: ${Math.round(f.k*f.u[0][1]/100)} kcal`:f.my?(f.u.length>1||f.u[0][1]!==100?`Benim ürünüm, 100 g: ${f.k} kcal`:`Benim besinim, 1 porsiyon: ${f.k} kcal`):`100 g: ${f.k} kcal, protein ${fmt(f.p,0)} g`}</span></span></button><button class="plus aic" data-fadd="${i}" aria-label="${esc(f.n)}, ilk porsiyonla ekle" title="İlk porsiyonla ekle">${Icons.svg("plus")}</button></div>`}).join("")+ask};
+const foodListHtml=q=>{
+  const L=allFoods();
+  return foodSearch(q,8,L).map(i=>{const f=L[i];return `<div class="prow"><button class="grow pbtn" data-food="${i}"><span class="grow"><b>${esc(f.n)}</b><span class="mut sm">${f.rec?`Tarifim, 1 porsiyon: ${Math.round(f.k*f.u[0][1]/100)} kcal`:f.o?`Öğün, ${esc(f.u[0][0])}: ${Math.round(f.k*f.u[0][1]/100)} kcal`:f.my?(f.u.length>1||f.u[0][1]!==100?`Benim ürünüm, 100 g: ${f.k} kcal`:`Benim besinim, 1 porsiyon: ${f.k} kcal`):`100 g: ${f.k} kcal, protein ${fmt(f.p,0)} g`}</span></span></button><button class="plus aic" data-fadd="${i}" aria-label="${esc(f.n)}, ilk porsiyonla ekle" title="İlk porsiyonla ekle">${Icons.svg("plus")}</button></div>`}).join("");
+};
 function sheetPortion(i,food){
   curFood=food||allFoods()[i];curPor=0;
   openSheet(`<h3>${esc(curFood.n)}</h3><div class="lbl">Porsiyon</div><div class="chips" id="fpc">${curFood.u.map((u,j)=>`<button class="chip" data-fp="${j}" aria-pressed="${j===0}">${esc(u[0])}</button>`).join("")}</div>
@@ -364,7 +367,7 @@ function sheetNote(){openSheet(`<h3>Not ekle</h3><textarea class="in" id="fv" pl
 function goNote(){const t=$("#fv").value.trim();if(!t)return toast("Önce notunu yaz");const e=add("note",null,t,fday());closeSheet();render();toast("Not kaydedildi",e.id)}
 
 function sheetBackup(){
-  openSheet(`<h3>Yedek al</h3><p class="m0 mb-3 mut sm">${BK_PHOTOS} Yedek her zaman şifrelenir${S.settings.bkNoKeys?" ve Rehber anahtarların içine girmez":" ve Rehber anahtarların da içine girer"}. ${bkLast()}.</p>
+  openSheet(`<h3>Yedek al</h3><p class="m0 mb-3 mut sm">${BK_PHOTOS} Yedek her zaman şifrelenir. ${bkLast()}.</p>
   <label class="lbl" for="bkpw">Yedek parolası (en az ${BackupLib.MINPW} karakter). Parolayı unutursan yedeğini kimse açamaz, kurtarma yolu yoktur. Parolayı güvenli bir yere yaz.</label>
   <input class="in" id="bkpw" type="password" autocomplete="new-password" placeholder="Parola"><input class="in" id="bkpw2" type="password" autocomplete="new-password" placeholder="Parolayı tekrar yaz" aria-label="Parolayı tekrar yaz">
   <div class="lbl">Kopyala'ya basınca yedek metni burada çıkar.</div><textarea class="in" id="bk" spellcheck="false" readonly></textarea>
@@ -422,18 +425,9 @@ async function goRestore(text=$("#bk").value,pw=$("#bkpw").value){
     const newer=a.pregAt===p.pregAt?null:a.pregAt>p.pregAt?a:p,pg=newer&&{on:newer.pregnant,off:newer.riskOff.split(",").includes("preg")},at=a.pregAt>p.pregAt?a.pregAt:p.pregAt;
     Object.assign(a,{riskOff:off.join(","),edFlag:a.edFlag||p.edFlag,pregnant:(a.pregnant||p.pregnant)&&on("preg"),nursing:(a.nursing||p.nursing)&&on("nurs"),pregAt:at});
     if(pg){a.pregnant=pg.on;a.riskOff=off.filter(k=>k!=="preg"||pg.off).join(",")}}
-  const keys=getKeys();
-  for(const p of Coach.providers()){
-    const cur=prevS.providers.find(x=>x.id===p.id),def=defProviders().find(x=>x.id===p.id);
-    if(!def&&keys[p.id]&&cur)p.base=cur.base;
-    if(def)p.confirm=def.confirm;
-  }
-  if(!save()){S=prevS;saveFail=false;if(copyIn)Store.del("nw_state_previous");return toast("Yedek yüklenemedi, depolama dolu. Mevcut verinin yedeğini al, sonra eski kayıtları sil ya da Rehber sohbetini temizle")}
+  
+  if(!save()){S=prevS;saveFail=false;if(copyIn)Store.del("nw_state_previous");return toast("Yedek yüklenemedi, depolama dolu. Mevcut verinin yedeğini al, sonra eski kayıtları sil")}
   let miss=false;
-  if(keysIn&&typeof keysIn==="object")for(const id in keysIn)if(typeof keysIn[id]==="string"&&Coach.providers().some(p=>p.id===id)){
-    try{await setKey(id,keysIn[id])}catch{}
-    if(getKeys()[id]!==keysIn[id])miss=true;
-  }
   const copy=copyIn&&Store.get("nw_state_previous")!=null;
   if(!copy)Store.del("nw_state_previous");
   S.settings.copyAt=copy?dayKey():"";S.settings.keyMiss=miss;
@@ -442,7 +436,7 @@ async function goRestore(text=$("#bk").value,pw=$("#bkpw").value){
   otherBytes=lsOther();storeBytes=otherBytes+lastJ.length*2;
   logOff=0;closeSheet();render();scheduleReminders().then(setNotif);
   const ps=prevS.settings;
-  toast((drop?`Yedek yüklendi, ${drop} geçersiz kayıt atlandı`:"Yedek yüklendi")+(b.lost.length?`; okunamayan alanlar varsayılana döndü (${b.lost.join(", ")})`:"")+(copy||!hasData?"":". Eski verin için güvenlik kopyası alınamadı (depolama dolu); yedek al")+(ps.consent&&ps.autoBk?"":". Rehber izni ve otomatik yedek bu telefonda yeniden kurulur")+(lostRecents?". Son uygulamalarda gizleme bu telefonda kapalı kaldı; Ayarlar > Veri ve yedek'ten aç":"")+(S.settings.ramOn&&S.settings.ramLat&&!ramGet()?". Ramazan vakit doğrulaması yedekte yoktur; Ramazan ayarından Doğrula'ya dokun":"")+(miss?". Bazı Rehber anahtarları kasaya yazılamadı, Ayarlar > Veri ve yedek'te uyarı duruyor":""));
+  toast((drop?`Yedek yüklendi, ${drop} geçersiz kayıt atlandı`:"Yedek yüklendi")+(b.lost.length?`; okunamayan alanlar varsayılana döndü (${b.lost.join(", ")})`:"")+(copy||!hasData?"":". Eski verin için güvenlik kopyası alınamadı (depolama dolu); yedek al")+(lostRecents?". Son uygulamalarda gizleme bu telefonda kapalı kaldı; Ayarlar > Veri ve yedek'ten aç":"")+(S.settings.ramOn&&S.settings.ramLat&&!ramGet()?". Ramazan vakit doğrulaması yedekte yoktur; Ramazan ayarından Doğrula'ya dokun":""));
   return true;
 }
 

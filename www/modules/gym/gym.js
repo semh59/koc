@@ -301,7 +301,7 @@ function gHome(){
   <details class="acc" id="mmacc"><summary>Kas haritası</summary>${MuscleMap.html(wk)}<p class="hint">Bölge başına haftada 10 ile 20 set çoğu kişi için makul bir aralıktır.</p></details></div>`;
   return `${sum}
   <h2>Şablonlarım</h2>${tpl?`<div class="hscroll">${tpl}</div>`:emptyCard("gym","","Sık yaptığın antrenmanı şablon olarak kaydet, tek dokunuşla başlat.")}<button class="btn ghost" data-g="tedit:">${Icons.svg("plus")} Yeni şablon</button>
-  <div class="mt-3 card">${navRow('data-g="gdpick"',"clock","Rehberli antrenman","Esneme, ısınma ve Tabata; sesli komutla")}${navRow('data-g="lib"',"book","Egzersiz kütüphanesi","Egzersizleri ara, incele, antrenmana ekle")}${navRow('data-c="prog"',"coach","Rehber'den program iste","Hedefine ve ekipmanına göre")}</div>
+  <div class="mt-3 card">${navRow('data-g="gdpick"',"clock","Rehberli antrenman","Esneme, ısınma ve Tabata; sesli komutla")}${navRow('data-g="lib"',"book","Egzersiz kütüphanesi","Egzersizleri ara, incele, antrenmana ekle")}</div>
   ${rec}
   <details class="acc more"><summary>Haftalık dağılım</summary>${bars}</details>
   ${gPgHtml()}

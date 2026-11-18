@@ -4,7 +4,7 @@
 const BKPW_LS="nw_bkpw_enc";
 const BF=()=>plugin("BackupFolder");
 /* The one backup payload: settings and data plus the API keys (unless the user keeps them out), encrypted with the password into a JSON string. */
-const backupJson=async pw=>{const safeS=structuredClone(S);delete safeS.settings.consentU;return JSON.stringify(await BackupLib.encrypt({S:safeS,keys:S.settings.bkNoKeys?{}:Coach.keys(),at:dayKey(),app:appVer},pw))};
+const backupJson=async pw=>{const safeS=structuredClone(S);delete safeS.settings.consentU;return JSON.stringify(await BackupLib.encrypt({S:safeS,keys:S.settings.bkNoKeys?{}:{},at:dayKey(),app:appVer},pw))};
 const BK_PHOTOS="Fotoğraflar yedeğe girmez; yeni telefona ayrıca taşı.";
 const BK_SENT="Yedek paylaşıldı. Ulaştığını denetle: dosyayı yeni telefonda Geri yükle > Yalnız denetle ile sına";
 const BK_MAX=2e7;
@@ -17,7 +17,7 @@ async function bkRemembered(){
   try{return (await kv.decrypt({data:e})).text||null}catch{return null}
 }
 async function bkRemember(pw){
-  const kv=KV();if(!kv||!Coach.vaultOn())return false;
+  const kv=KV();if(!kv||false)return false;
   try{lsSet(BKPW_LS,(await kv.encrypt({text:pw})).data);return true}catch{return false}
 }
 /* A new password from two fields: the password and, when it is unusable, the warning to show. */
@@ -26,10 +26,10 @@ function bkNewPw(first,again){
   return {pw,bad:BackupLib.pwCheck(pw)||(pw!==$("#"+again).value?"Parolalar aynı değil":"")};
 }
 async function sheetDrive(){
-  const rem=await bkRemembered(),native=!!KV()&&Coach.vaultOn();
+  const rem=await bkRemembered(),native=!!KV()&&true;
   openSheet(`<h3>Yedeği Drive'a gönder</h3>
   <p class="m0 mb-3 mut sm">Verilerin parolayla şifrelenir; paylaşım ekranında Drive'ı ya da istediğin yeri seçersin. ${helpBtn("bkh","Yedek")}</p>
-  ${helpBox("bkh",`Hesap bağlamak gerekmez. ${bkLast()}. ${BK_PHOTOS} ${S.settings.bkNoKeys?"Rehber anahtarların yedeğe girmez.":"Rehber anahtarların da yedeğe girer; istemezsen Ayarlar > Veri ve yedek'ten kapat."}${rem?"":" Eski yedeklerinle aynı parolayı kullan; parola değişirse eski dosyalar eski parolayla açılır."} Geri yüklemek için: Ayarlar > Veri ve yedek > Yedekten geri yükle (dosyayı Drive'dan seçebilirsin).`)}
+  ${helpBox("bkh",`Hesap bağlamak gerekmez. ${bkLast()}. ${BK_PHOTOS} ${rem?"":" Eski yedeklerinle aynı parolayı kullan; parola değişirse eski dosyalar eski parolayla açılır."} Geri yüklemek için: Ayarlar > Veri ve yedek > Yedekten geri yükle (dosyayı Drive'dan seçebilirsin).`)}
   ${rem?`<p>Parola bu telefonda saklı.</p><button class="btn" data-bk="send">Şimdi gönder</button><button class="mt-2 btn ghost" data-bk="forget">Parolayı unut</button>`
   :`<input class="in" id="bkp1" type="password" placeholder="Parola (en az ${BackupLib.MINPW} karakter)" autocomplete="new-password"><input class="in" id="bkp2" type="password" placeholder="Parolayı tekrar yaz" autocomplete="new-password">
   ${native?swRow('id="bkrem"',true,"Parolayı bu telefonda sakla (Keystore ile şifreli)"):""}

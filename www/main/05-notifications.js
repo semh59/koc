@@ -68,7 +68,7 @@ async function scheduleOnce(){
         if(i===0&&water){const ad=dayAt(at.getTime());if(sum("water",ad,ad)>=S.settings.waterMl)continue}
         if(r.dow!=null&&at.getDay()!==r.dow)continue;
         if(r.id===BACKUP_REM&&(Log.all().length<10||(lb&&Algo.dayNum(dayKey(at))-Algo.dayNum(lb)<7)))continue;
-        if(at.getTime()>now+LEAD_MS)list.push(Object.assign({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}},water?{actionTypeId:"water",extra:{act:"water",v:S.settings.glass,at:at.getTime()}}:r.id===WEEKLY_REM?{extra:{act:"open",tab:"coach"}}:r.id===BACKUP_REM?{extra:{act:"open",tab:"settings-data"}}:r.id===1?{extra:{act:"open",tab:"weight"}}:r.id===7||r.id===8?{extra:{act:"open",tab:"bp"}}:r.id===9?{extra:{act:"open",tab:"glucose"}}:{}));
+        if(at.getTime()>now+LEAD_MS)list.push(Object.assign({id:r.id*100+i,title:r.title,body:r.body,schedule:{at,allowWhileIdle:true}},water?{actionTypeId:"water",extra:{act:"water",v:S.settings.glass,at:at.getTime()}}:r.id===WEEKLY_REM?{extra:{act:"open",tab:"trend"}}:r.id===BACKUP_REM?{extra:{act:"open",tab:"settings-data"}}:r.id===1?{extra:{act:"open",tab:"weight"}}:r.id===7||r.id===8?{extra:{act:"open",tab:"bp"}}:r.id===9?{extra:{act:"open",tab:"glucose"}}:{}));
       }
     }
     if(S.settings.medOn){
@@ -101,7 +101,7 @@ async function scheduleOnce(){
 function notifTap(e){
   const x=e&&e.notification&&e.notification.extra;
   if(!e||e.actionId!=="tap"||!x||(x.act!=="open"&&x.act!=="med"))return;
-  tab=x.act==="med"||x.tab==="meds"?(S.settings.medOn?"meds":"more"):x.tab==="coach"&&S.settings.consent?"coach":x.tab==="cycle"&&S.settings.cycleOn?"cycle":x.tab==="bp"&&S.settings.bpOn||x.tab==="glucose"&&S.settings.bsOn?x.tab:x.tab==="settings-data"||x.tab==="gym"?x.tab:"trend";if(x.tab==="weight")tSec="weight";via=null;closeSheet();render();window.scrollTo(0,0);
+  tab=x.act==="med"||x.tab==="meds"?(S.settings.medOn?"meds":"more"):x.tab==="cycle"&&S.settings.cycleOn?"cycle":x.tab==="bp"&&S.settings.bpOn||x.tab==="glucose"&&S.settings.bsOn?x.tab:x.tab==="settings-data"||x.tab==="gym"?x.tab:"trend";if(x.tab==="weight")tSec="weight";via=null;closeSheet();render();window.scrollTo(0,0);
   if(x.tab==="weight")sheetWeight();
   if(x.act==="med")setTimeout(()=>alarmOpen({quiet:true}),0);
 }

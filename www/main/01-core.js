@@ -50,7 +50,7 @@ const tr=s=>s.replace(/İ/g,"i").replace(/I/g,"ı").toLowerCase();
 
 /* ---------- data ---------- */
 const DEF={
-  settings:{vCtx:"",exLast:"",exMin:0,foodVoiceConsent:false,foodVoiceConsentAt:"",foodVoiceConsentVersion:0,coachVoiceConsent:false,coachVoiceConsentAt:"",coachVoiceConsentVersion:0,obSkipped:false,obNudge:false,obAt:"",modAsked:false,medNear:"",trial:null,ramOn:false,ramLat:0,ramLon:0,ramName:"",ramSahur:false,ramIftar:false,ramFrom:"",ramSkip:"",ramRemNo:false,ramWater:false,ramMedsNo:false,ramMeds:{},ramMedsRef:{},comfy:false,pregnant:false,pregAt:"",nursing:false,edFlag:false,riskOff:"",fastEdOk:false,hideStreak:false,hideNums:false,goalKg:0,kcal:0,waterMl:2500,glass:250,dayStart:0,sportWeek:150,macroP:0,macroC:0,macroF:0,heightCm:0,age:0,sex:"",act:1,healthNote:"",consent:false,consentV:0,consentAt:"",consentP:null,consentU:null,shareProfile:true,noticeOk:false,lockGrace:30,piiPrev:false,piiPrevOwn:false,hideRecents:false,lockDetail:false,sealOut:false,recentsAsked:false,widgetHide:false,bkNoKeys:false,keyMiss:false,copyAt:"",lastPlateau:"",goalSugAt:"",lastBackup:"",alarmWarnDay:"",lateOkDay:"",bkSnoozeAt:"",comfyAsked:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medNudgeOff:false,medLogWarn:false,medShowName:false,lockOn:false,hcOn:false,hcFrom:"",cycleOn:false,cycleRem:false,fastOn:false,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
+  settings:{vCtx:"",exLast:"",exMin:0,foodVoiceConsent:false,foodVoiceConsentAt:"",foodVoiceConsentVersion:0,obSkipped:false,obNudge:false,obAt:"",modAsked:false,medNear:"",trial:null,ramOn:false,ramLat:0,ramLon:0,ramName:"",ramSahur:false,ramIftar:false,ramFrom:"",ramSkip:"",ramRemNo:false,ramWater:false,ramMedsNo:false,ramMeds:{},ramMedsRef:{},comfy:false,pregnant:false,pregAt:"",nursing:false,edFlag:false,riskOff:"",fastEdOk:false,hideStreak:false,hideNums:false,goalKg:0,kcal:0,waterMl:2500,glass:250,dayStart:0,sportWeek:150,macroP:0,macroC:0,macroF:0,heightCm:0,age:0,sex:"",act:1,healthNote:"",noticeOk:false,lockGrace:30,hideRecents:false,lockDetail:false,sealOut:false,recentsAsked:false,widgetHide:false,copyAt:"",goalSugAt:"",lastBackup:"",alarmWarnDay:"",lateOkDay:"",bkSnoozeAt:"",comfyAsked:false,obDone:false,stepsOn:false,stepsAsked:false,bpOn:false,bsOn:false,medOn:false,medNudgeOff:false,medLogWarn:false,medShowName:false,lockOn:false,hcOn:false,hcFrom:"",cycleOn:false,cycleRem:false,fastOn:false,awakeOn:true,gdVoice:true,gdVib:true,theme:"",rpeOn:false,motionOn:false,bpSysHi:0,bpDiaHi:0,bpSysLo:0,bpDiaLo:0,gFastLo:0,gFastHi:0,gPostLo:0,gPostHi:0,stepGoal:8000,moveKcalOn:false,stepWarnDay:"",stepsFrom:"",autoBk:false,lastAutoBk:"",riskClearedAt:"",fastInfoOk:false,fastLongOk:false,reminders:[
     {id:1,t:"09:00",on:true,dow:1,name:"Haftalık tartı (Pazartesi)",title:"Günaydın ☀️",body:"Tartıl ve kilonu kaydet."},
     {id:2,t:"11:30",on:true,name:"Su (öğle öncesi)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
     {id:3,t:"14:30",on:true,name:"Su (öğleden sonra)",title:"💧 Su molası",body:"Bir bardak su iç ve kaydet."},
@@ -64,7 +64,7 @@ const DEF={
     {id:11,t:"20:00",on:false,name:"Oruç başlangıcı",title:"⏳ Oruç başlangıcı",body:"Oruç penceren başlıyor, istersen Bugün'den başlat."},
     {id:12,t:"20:30",on:true,dow:0,name:"Haftalık özet (Pazar)",title:"📊 Haftalık özet",body:"Haftanı birlikte inceleyelim, bakmak için dokun."}
   ]},
-  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,dbStep:0,plates:GPLATE_DEF.slice(),exCfg:{},providers:defProviders(),chat:[],chats:[],cid:1,coachMemories:[],coachPlans:[],coachCheckins:[],coachActions:[],coachExperiments:[],coachExperimentEvents:[],myFoods:[],recipes:[],favFoods:[],mealTpl:[],fast:{plan:16,t0:null,log:[]},sleep:[],mood:[],labs:[],vitals:[],pulse:[],hr:[],meds:[],medLog:[],moves:[],measures:[],walk:null,cycle:[],cycleSym:[]
+  entries:[],nextId:1,workouts:[],templates:[],customEx:[],gid:1,bar:20,dbStep:0,plates:GPLATE_DEF.slice(),exCfg:{},myFoods:[],recipes:[],favFoods:[],mealTpl:[],fast:{plan:16,t0:null,log:[]},sleep:[],mood:[],labs:[],vitals:[],pulse:[],hr:[],meds:[],medLog:[],moves:[],measures:[],walk:null,cycle:[],cycleSym:[]
 };
 const VR={bpSysHi:[80,300,true],bpDiaHi:[40,200,true],bpSysLo:[50,300,true],bpDiaLo:[30,200,true],gFastLo:[20,600,true],gFastHi:[20,600,true],gPostLo:[20,600,true],gPostHi:[20,600,true]};
 const RANGES={...VR,goalKg:[20,400,false],kcal:[800,8000,true],waterMl:[500,10000,true],glass:[50,1500,true],dayStart:[0,6,true],sportWeek:[10,3000,true],macroP:[10,500,true],macroC:[10,1000,true],macroF:[10,500,true],stepGoal:[1000,100000,true],heightCm:[100,250,true],age:[10,100,true],ramLat:[35.5,42.5,false],ramLon:[25.5,45,false]};
@@ -74,13 +74,11 @@ const {copyNutr,NUTR}=LogLib;
 const NLBL={p:"protein",c:"karbonhidrat",f:"yağ",fb:"lif",sg:"şeker",na:"sodyum"},NUNIT=k=>k==="na"?"mg":"g";
 const TYPES=["water","weight","food","exercise","note","steps"];
 const {dayOk,timeOk}=Algo;
-/* Bumped when the Coach consent text changes: a consent given for an older text is void and asked again. */
-const CONSENT_V=3;
 const foodVoiceConsentAtOk=s=>{if(typeof s!=="string")return false;const m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})Z$/.exec(s);if(!m)return false;const d=new Date(s);return Number.isFinite(d.getTime())&&d.getUTCFullYear()===+m[1]&&d.getUTCMonth()+1===+m[2]&&d.getUTCDate()===+m[3]&&d.getUTCHours()===+m[4]&&d.getUTCMinutes()===+m[5]&&d.getUTCSeconds()===+m[6]&&d.getUTCMilliseconds()===+m[7]&&d.getTime()<=Date.now()+60000};
 const MED_NOTE="NeoWell tıbbi cihaz değildir, tanı koymaz ve tedavi önermez; hekim yerine geçmez. Sağlık kararların için hekimine danış.";
 /* Seconds in the background before the app lock asks again. */
 const LOCK_GRACES=[30,120,300];
-const DAY_KEYS=["copyAt","lastPlateau","goalSugAt","lastBackup","lastAutoBk","riskClearedAt","hcFrom","stepWarnDay","alarmWarnDay","stepsFrom","ramFrom","ramSkip","obAt"];
+const DAY_KEYS=["copyAt","goalSugAt","lastBackup","lastAutoBk","riskClearedAt","hcFrom","stepWarnDay","alarmWarnDay","stepsFrom","ramFrom","ramSkip","obAt"];
 function cleanSettings(raw){
   const d=structuredClone(DEF.settings),o=raw&&typeof raw==="object"?raw:{};
   for(const k in RANGES){
@@ -91,9 +89,7 @@ function cleanSettings(raw){
   for(const k in d)if(typeof d[k]==="boolean"&&typeof o[k]==="boolean")d[k]=o[k];
   if(typeof o.foodVoiceConsent==="boolean"&&o.foodVoiceConsentVersion===1&&foodVoiceConsentAtOk(o.foodVoiceConsentAt)){d.foodVoiceConsent=o.foodVoiceConsent;d.foodVoiceConsentVersion=1;d.foodVoiceConsentAt=o.foodVoiceConsentAt;}
   else {d.foodVoiceConsent=false;d.foodVoiceConsentVersion=0;d.foodVoiceConsentAt="";}
-  if(typeof o.coachVoiceConsent==="boolean"&&o.coachVoiceConsentVersion===1&&foodVoiceConsentAtOk(o.coachVoiceConsentAt)){d.coachVoiceConsent=o.coachVoiceConsent;d.coachVoiceConsentVersion=1;d.coachVoiceConsentAt=o.coachVoiceConsentAt;}
-  else {d.coachVoiceConsent=false;d.coachVoiceConsentVersion=0;d.coachVoiceConsentAt="";}
-  for(const k of DAY_KEYS)if(dayOk(o[k]))d[k]=o[k];
+    for(const k of DAY_KEYS)if(dayOk(o[k]))d[k]=o[k];
   if(typeof o.pregAt==="string"&&/^\d{4}-\d\d-\d\dT[\d:.]+Z$/.test(o.pregAt))d.pregAt=o.pregAt;
   if(o.sex==="m"||o.sex==="f")d.sex=o.sex;
   if(o.act===0||o.act===1||o.act===2)d.act=o.act;
@@ -185,16 +181,10 @@ function buildState(r){
   const parts=[["ayarlar",()=>({settings:cleanSettings(r.settings)})],
     ["kayıtlar",()=>{const c=cleanEntries(r.entries);DROPS.n+=c.drop;return {entries:c.out,nextId:c.next}}],
     ["besinler",()=>({myFoods:cleanMyFoods(r.myFoods)})],["tahliller",()=>({labs:LabLib.cleanLabs(r.labs)})],["ölçümler",()=>({vitals:VitalsLib.clean(r.vitals)})],
-    ["sağlık",()=>cleanHealthState(r)],["döngü",()=>({cycle:CycleLib.clean(r.cycle,dayKey()),cycleSym:CycleLib.cleanDays(r.cycleSym,dayKey())})],["antrenman",()=>cleanGym(r)],["Rehber",()=>cleanCoach(r)]];
-  const cleanPlanner=source=>{const input=[Array.isArray(source.coachPlans)?source.coachPlans:[],Array.isArray(source.coachCheckins)?source.coachCheckins:[],Array.isArray(source.coachActions)?source.coachActions:[]],p=CoachLib.createPlanner({plans:input[0],checkins:input[1],actions:input[2]}).snapshot();DROPS.n+=input.reduce((n,a,i)=>n+a.length-p[["plans","checkins","actions"][i]].length,0);return {coachPlans:p.plans,coachCheckins:p.checkins,coachActions:p.actions}};
-  const cleanExperiments=source=>{const p=CoachLib.createExperimentRepository({experiments:source.coachExperiments,events:source.coachExperimentEvents}).snapshot();return {coachExperiments:p.experiments,coachExperimentEvents:p.events}};
-  const planner=cleanPlanner(r);
-  const experiments=cleanExperiments(r);
-  const st=structuredClone(DEF);
+    ["sağlık",()=>cleanHealthState(r)],["döngü",()=>({cycle:CycleLib.clean(r.cycle,dayKey()),cycleSym:CycleLib.cleanDays(r.cycleSym,dayKey())})],["antrenman",()=>cleanGym(r)]];
+    const st=structuredClone(DEF);
   for(const [k,fn] of parts)try{Object.assign(st,fn())}catch{LOST.push(k)}
-  Object.assign(st,planner);
-  Object.assign(st,experiments);
-  const wids=new Set(st.workouts.map(w=>w.id));
+    const wids=new Set(st.workouts.map(w=>w.id));
 
   for(const e of st.entries)if(e.wid!=null&&!wids.has(e.wid))delete e.wid;
   return {S:st,drop:DROPS.n,lost:[...new Set(LOST)]};
@@ -265,7 +255,6 @@ lockFlag();
 /* A failed write keeps the change in memory: it is announced every time, Today and Settings show a permanent warning, the backup screen takes the in-memory state. */
 const SAVE_FAIL="Son değişiklik kaydedilemedi. Depolama dolu olabilir; kapatmadan önce yedek al.";
 Store.onState(f=>{saveFail=f;if(f)toast(SAVE_FAIL);else render()});
-const saveDurable=()=>{if(!save())return false;return Store.mode==="idb"?Store.whenIdle().then(()=>!Store.failed):!saveFail};
 /* Only the changed shards are written, in one transaction (all of them on the first write). A shard that emptied is dropped from the store as well. */
 function saveShards(m){
   const ids=Object.keys(m),ch=Object.fromEntries(ids.filter(i=>m[i]!==lastShard[i]).map(i=>[i,m[i]]));
@@ -284,14 +273,11 @@ function save(soft){
   let j=null,m=null,len;
   const meas=()=>{if(idb){m=shardOf(S);len=Object.values(m).reduce((a,x)=>a+x.length,0)}else{j=JSON.stringify(S);len=j.length}};
   meas();
-  if(len>STORE_WARN/2&&Coach.chats().length){
-    let n=0;while(Coach.chats().length&&JSON.stringify(Coach.chats()).length>ARC_MAX){Coach.chats().pop();n++}
-    if(n){meas();toast(`Depolama için en eski ${n} arşiv sohbeti silindi`)}
-  }
+  
   storeBytes=otherBytes+len*2;
   lockFlag();
-  if(idb){saveShards(m);if(CoachRepo?.replaceLegacy)CoachRepo.replaceLegacy(S);fastWatch();return !saveFail} // a failed write reaches saveFail through Store.onState
-  if(CoachRepo?.replaceLegacy)CoachRepo.replaceLegacy(S);
+  if(idb){saveShards(m);fastWatch();return !saveFail} // a failed write reaches saveFail through Store.onState
+  
   try{localStorage.setItem("nw_state",j);saveFail=false}
   catch{
     if(soft&&copyHeld())return false;
@@ -315,8 +301,8 @@ document.addEventListener("nw:boot",()=>{
 /* When the fasting brake changes (note, medication, measurement, chat flag or confirmation) the fasting notifications are rescheduled whatever screen is open. */
 let fastBlk=null;
 function fastWatch(){const b=!!(S.settings.fastOn&&risk().block);if(fastBlk!=null&&b!==fastBlk)scheduleReminders().then(setNotif);fastBlk=b}
-const storeMsg=()=>saveFail?["Son değişiklik kaydedilemedi","Depolama dolu; değişiklik yalnız açık uygulamada duruyor. Kapatmadan yedek al, sonra Rehber sohbetini temizle ya da eski kayıtları sil."]
-  :storeBytes>STORE_WARN?["Depolama dolmak üzere",`${fmt(storeBytes/1e6)} MB kullanılıyor. Yedek al, sonra Rehber sohbetini temizle ya da eski kayıtları sil.`]:null;
+const storeMsg=()=>saveFail?["Son değişiklik kaydedilemedi","Depolama dolu; değişiklik yalnız açık uygulamada duruyor. Kapatmadan yedek al, sonra eski kayıtları sil."]
+  :storeBytes>STORE_WARN?["Depolama dolmak üzere",`${fmt(storeBytes/1e6)} MB kullanılıyor. Yedek al, sonra eski kayıtları sil.`]:null;
 const isNative=()=>!!window.Capacitor?.isNativePlatform?.();
 const plugin=name=>window.Capacitor?.Plugins?.[name];
 window.plugin=plugin;
@@ -331,7 +317,7 @@ const NATIVE_FAIL="Telefondaki kayıtlar silinemedi. Biraz sonra yeniden dene.";
 navigator.storage?.persist?.()?.catch(()=>{});
 
 /* Chat flag (eating disorder): a flag in the chat or a safety card is a permanent brake the user cannot lift. */
-const chatEd=()=>Coach.chatEd();
+const chatEd=()=>false;
 /* The safety brake's input in one place; without kg the latest trend weight is used. */
 /* A sign from the chat, the note, the setup or a question (k: ed, preg, nurs). ed stays; preg and nurs are lifted only by the user's own confirmation (liftRisk). */
 /* Weigh-in and movement reminders (ids) that are not sent while a pregnancy sign is on. */

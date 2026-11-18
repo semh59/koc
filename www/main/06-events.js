@@ -1,6 +1,6 @@
 /* ---------- events ---------- */
 document.addEventListener("click",ev=>{
-  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-rc],[data-fv],[data-fva],[data-fvd],[data-tp],[data-tpd],[data-sp],[data-lo],[data-kd],[data-g],[data-sex],[data-actl],[data-thm],[data-c],[data-food],[data-fadd],[data-fp],[data-ml],[data-edit],[data-waterall],[data-shx],[data-fvoice]");
+  const el=ev.target.closest("[data-tab],[data-act],[data-del],[data-go],[data-range],[data-rc],[data-fv],[data-fva],[data-fvd],[data-tp],[data-tpd],[data-sp],[data-lo],[data-kd],[data-g],[data-sex],[data-actl],[data-thm],[data-food],[data-fadd],[data-fp],[data-ml],[data-edit],[data-waterall],[data-shx],[data-fvoice]");
   if(ev.target.id==="scrim"){
     const typed=[...document.querySelectorAll("#sheet input,#sheet textarea")].some(e=>!e.readOnly&&!["search","checkbox","file"].includes(e.type)&&e.value!==e.defaultValue);
     if(!typed)return closeSheet();
@@ -9,7 +9,7 @@ document.addEventListener("click",ev=>{
   if(!el)return;
   const d=el.dataset;
   if(d.fvoice){if(d.fvoice==="start")return foodVoiceStart();if(d.fvoice==="consent")return foodVoiceAccept();if(d.fvoice==="stop"){foodVoiceStop();foodVoiceSetStatus("Durduruldu. Yazıyla aramaya devam edebilirsin.");return}if(d.fvoice==="cancel")return closeSheet();}
-  if(d.tab){if(tab==="coach"&&d.tab!=="coach")coachVoiceStop?.();via=!PARENT[tab]&&!PARENT[d.tab]?null:!PARENT[tab]&&PARENT[d.tab]?{t:d.tab,p:tab}:null;tab=d.tab;render();window.scrollTo(0,0);return}
+  if(d.tab){via=!PARENT[tab]&&!PARENT[d.tab]?null:!PARENT[tab]&&PARENT[d.tab]?{t:d.tab,p:tab}:null;tab=d.tab;render();window.scrollTo(0,0);return}
   if(d.c){cClick(d.c,el);return}
   if(d.g){gClick(d.g,el);return}
   if(d.sex!==undefined){S.settings.sex=d.sex;save();render();return}
@@ -94,7 +94,6 @@ document.addEventListener("keydown",ev=>{
       if(f.length&&(!o.contains(a)||(ev.shiftKey?i<=0:i===f.length-1))){ev.preventDefault();f[ev.shiftKey?f.length-1:0].focus()}
     }
   }
-  if(ev.key==="Enter"&&ev.target.id==="cmsg"){ev.preventDefault();const i=ev.target,t=i.value;i.value="";cSend(t);return}
   if(ev.key==="Enter"&&ev.target.closest("#sheet")&&ev.target.tagName==="INPUT"&&ev.target.id!=="fq"){const b=$('#sheet [data-go],#sheet [data-vt^="save"]');if(b)b.click()}
 });
 document.addEventListener("click",ev=>{const b=ev.target.closest("[data-sr]");if(b){stepRange=+b.dataset.sr;render()}});
@@ -107,7 +106,7 @@ function dayRoll(){
   logOff=logOff>0?Math.max(0,Math.min(hgOldest(),logOff+n)):0;
   render();
 }
-document.addEventListener("visibilitychange",()=>{if(document.hidden){coachVoiceStop?.();return}if(!document.hidden){if(!viewBusy())dayRoll();quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="settings-modules")render()});stepsSync();renderSoft();cPlateauCheck();abRun();schedDue().then(d=>d&&scheduleReminders().then(setNotif))}});
+document.addEventListener("visibilitychange",()=>{if(document.hidden)return;if(!document.hidden){if(!viewBusy())dayRoll();quickIngest();motionIngest();motionConfigure();motionStatus().then(()=>{if(tab==="settings-modules")render()});stepsSync();renderSoft();abRun();schedDue().then(d=>d&&scheduleReminders().then(setNotif))}});
 
 document.querySelectorAll("[data-ic]").forEach(e=>e.innerHTML=Icons.svg(e.dataset.ic));
 render();
@@ -156,14 +155,10 @@ function backKey(){
   return false;
 }
 $("#back").addEventListener("click",goBack);
-/* The Coach chat's bottom padding comes from the composer's real height, so the last message never hides behind it (keyboard, landscape, large font). */
-function cmpSet(){const c=$("#composer");if(c.hidden)return;document.documentElement.style.setProperty("--cmp",Math.ceil(innerHeight-c.getBoundingClientRect().top)+12+"px")}
-if(window.ResizeObserver)new ResizeObserver(cmpSet).observe($("#composer"));
-addEventListener("resize",cmpSet);
 /* Keyboard: whether or not the screen shrinks (edge to edge) the bottom bar is hidden, fixed areas rise by --kb, and the focused field stays visible. */
 {const vv=window.visualViewport;let base=0,lw=innerWidth;
   const kb=()=>{if(!vv)return;const h=vv.height;if(innerWidth!==lw){lw=innerWidth;base=0}base=Math.max(base,innerHeight,h);const open=base-h>120,b=Math.max(0,innerHeight-h-vv.offsetTop),d=document.documentElement.style;
-    document.body.classList.toggle("kb",open);d.setProperty("--kb",open?b+"px":"0px");d.setProperty("--vh",h+"px");cmpSet()};
+    document.body.classList.toggle("kb",open);d.setProperty("--kb",open?b+"px":"0px");d.setProperty("--vh",h+"px")};
   if(vv){kb();vv.addEventListener("resize",kb);vv.addEventListener("scroll",kb);addEventListener("orientationchange",()=>{base=0;kb()})}
   document.addEventListener("focusin",e=>{if(e.target.matches("input,textarea,select"))setTimeout(()=>e.target.scrollIntoView({block:"center"}),250)});
 }
