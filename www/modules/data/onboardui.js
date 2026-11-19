@@ -108,7 +108,7 @@ function obFinish(){
   Object.assign(st,{heightCm:p.cm,age:p.age,sex:ob.sex,goalKg:p.goal});
   if(pl.kcal>=RANGES.kcal[0]&&pl.kcal<=RANGES.kcal[1])st.kcal=pl.kcal;
   if(ob.pg)setRisk("preg");if(ob.nu)setRisk("nurs");if(ob.ed)setRisk("ed");
-  if(ob.hn){st.healthNote=obNote();cNoteCheck()}
+  if(ob.hn){st.healthNote=obNote()}
   st.obSkipped=false;st.obNudge=true;
   add("weight",p.kg);
   obDone();scheduleReminders().then(setNotif);

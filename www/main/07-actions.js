@@ -71,7 +71,7 @@ async function goHealth(){
   for(const [k,was,now,title] of lifts)if(was&&!now&&!await confirmSheet({title,body:"Bu işaretle kapanan öneriler (kalori açığı, oruç, program, hatırlatmalar, döngü tahmini) yeniden açılır. Hâlâ başka bir durum varsa kutuyu açık bırak.",ok:"Evet, kaldır"}))return;
   for(const [k,was,now] of lifts){if(now&&!was)setRisk(k);else if(was&&!now)liftRisk(k)}
   if($("#hed")?.checked)setRisk("ed");
-  const old=st.healthNote,flags=st.pregnant+st.nursing;st.healthNote=note;if(note!==old)cNoteCheck();
+  const old=st.healthNote,flags=st.pregnant+st.nursing;st.healthNote=note;
   if(!commit(()=>Object.assign(S.settings,snap)))return;
   closeSheet();render();
   if(flags===st.pregnant+st.nursing)toast("Kaydedildi");
